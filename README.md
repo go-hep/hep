@@ -15,3 +15,9 @@ $ go get github.com/go-hep/lhef
 
 Is available on [godoc.org](http://godoc.org/github.com/go-hep/lhef)
 
+
+## TODO
+
+- add support for read/write version-2
+- add support for read/write init-stream comments
+- add support for read/write event-stream comments
