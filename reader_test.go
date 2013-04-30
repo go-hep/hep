@@ -9,6 +9,7 @@ import (
 	"github.com/go-hep/lhef"
 )
 
+const r_debug = false
 const ifname = "testdata/ttbar.lhe"
 
 func TestLhefReading(t *testing.T) {
@@ -23,16 +24,22 @@ func TestLhefReading(t *testing.T) {
 	}
 
 	for i := 0; ; i++ {
-		fmt.Printf("===[%d]===\n", i)
+		if r_debug {
+			fmt.Printf("===[%d]===\n", i)
+		}
 		evt, err := dec.Decode()
 		if err == io.EOF {
-			fmt.Printf("** EOF **\n")
+			if r_debug {
+				fmt.Printf("** EOF **\n")
+			}
 			break
 		}
 		if err != nil {
 			t.Error(err)
 		}
-		fmt.Printf("evt: %v\n", *evt)
+		if r_debug {
+			fmt.Printf("evt: %v\n", *evt)
+		}
 	}
 }
 
