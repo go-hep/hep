@@ -1,35 +1,13 @@
-package hepevt
+package fhepevt
 
 import (
-	"fmt"
+	"github.com/go-hep/hepevt"
 )
 
-// I/O ----------------------------------------------------------------------
-
-// Event is the Go representation of the FORTRAN-77 HEPEVT common block:
-//
-//   PARAMETER (NMXHEP=2000) 
-//   COMMON/HEPEVT/NEVHEP,NHEP,ISTHEP(NMXHEP),IDHEP(NMXHEP), 
-//   &       JMOHEP(2,NMXHEP),JDAHEP(2,NMXHEP),PHEP(5,NMXHEP),VHEP(4,NMXHEP)
-type Event struct {
-	Nevhep int          // event number (or some special meaning, see doc for details)
-	Nhep   int          // actual number of entries in current event
-	Isthep []int        // status code for n'th entry
-	Idhep  []int        // particle identifier according to PDG
-	Jmohep [][2]int     // index of 1st and 2nd mother
-	Jdahep [][2]int     // index of 1st and 2nd daughter
-	Phep   [][5]float64 // particle 5-vector (px,py,pz,e,m)
-	Vhep   [][4]float64 // vertex 4-vector (x,y,z,t)
-}
-
-type Encoder interface {
-	Encode(v interface{}) error
-}
-
 // the global event, mapped onto the HEPEVT common block
-var g_evt Event
+var g_evt hepevt.Event
 
-func GetEvent() *Event {
+func GetEvent() *hepevt.Event {
 	evt := &g_evt
 	evt.Nevhep = EventNumber()
 	evt.Nhep = NumberEntries()
@@ -75,7 +53,7 @@ func GetEvent() *Event {
 	return evt
 }
 
-func SetEvent(evt *Event) {
+func SetEvent(evt *hepevt.Event) {
 	SetEventNumber(evt.Nevhep)
 	SetNumberEntries(evt.Nhep)
 	for i := 0; i < evt.Nhep; i++ {
@@ -102,13 +80,5 @@ func SetEvent(evt *Event) {
 			evt.Vhep[i][0], evt.Vhep[i][1], evt.Vhep[i][2], evt.Vhep[i][3])
 	}
 }
-func WriteTo(enc Encoder) {
-	evt := GetEvent()
-	//fmt.Printf("--- %v ---\n",evt)
 
-	err := enc.Encode(evt)
-	if err != nil {
-		fmt.Printf("** error **! %s\n", err)
-	}
-
-}
+// EOF
