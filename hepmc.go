@@ -1,5 +1,11 @@
 package hepmc
 
+// Event represents a record for MC generators (for use at any stage of generation)
+//
+// This type is intended as both a "container class" ( to store a MC
+//  event for interface between MC generators and detector simulation )
+//  and also as a "work in progress class" ( that could be used inside
+//  a generator and modified as the event is built ).
 type Event struct {
 	SignalProcessId int     // id of the signal process
 	EventNumber     int     // event number
@@ -35,6 +41,9 @@ type Particle struct {
 	GeneratedMass float64      // mass of this particle when it was generated
 }
 
+// Vertex represents a generator vertex within an event
+// A vertex is indirectly (via particle "edges") linked to other 
+//   vertices ("nodes") to form a composite "graph"
 type Vertex struct {
 	Position     FourVector  // 4-vector of vertex [mm]
 	ParticlesIn  []*Particle // all incoming particles
