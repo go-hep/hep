@@ -8,9 +8,9 @@ import (
 
 // Event is the Go representation of the FORTRAN-77 HEPEVT common block:
 //
-// |  PARAMETER (NMXHEP=2000) 
-// |  COMMON/HEPEVT/NEVHEP,NHEP,ISTHEP(NMXHEP),IDHEP(NMXHEP), 
-// | &       JMOHEP(2,NMXHEP),JDAHEP(2,NMXHEP),PHEP(5,NMXHEP),VHEP(4,NMXHEP)
+//   PARAMETER (NMXHEP=2000) 
+//   COMMON/HEPEVT/NEVHEP,NHEP,ISTHEP(NMXHEP),IDHEP(NMXHEP), 
+//   &       JMOHEP(2,NMXHEP),JDAHEP(2,NMXHEP),PHEP(5,NMXHEP),VHEP(4,NMXHEP)
 type Event struct {
 	Nevhep int          // event number (or some special meaning, see doc for details)
 	Nhep   int          // actual number of entries in current event
