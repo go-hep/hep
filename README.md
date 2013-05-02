@@ -7,7 +7,7 @@ Simple ``cgo`` bindings to the ``FORTRAN-77`` ``HEPEVT`` high energy event forma
 ## Installation
 
 ```sh
-$ go get github.com/bo-hep/hepevt
+$ go get github.com/go-hep/hepevt
 ```
 
 
