@@ -3,6 +3,7 @@ package ascii
 import (
 	"fmt"
 	"io"
+	"sync"
 
 	"github.com/go-hep/hepmc"
 )
@@ -23,7 +24,8 @@ const (
 )
 
 type Encoder struct {
-	w io.Writer
+	w    io.Writer
+	once sync.Once
 }
 
 func NewEncoder(w io.Writer) *Encoder {
@@ -33,7 +35,35 @@ func NewEncoder(w io.Writer) *Encoder {
 func (enc *Encoder) Encode(evt *hepmc.Event) error {
 	var err error
 
+	enc.once.Do(func() {
+		_, err = fmt.Fprintf(
+			enc.w,
+			"\nHepMC::Version %s\n",
+			hepmc.VersionName(),
+		)
+	})
+
+	if err != nil {
+		return err
+	}
+
 	_, err = fmt.Fprintf(enc.w, "%s\n", genevent_start)
+	if err != nil {
+		return err
+	}
+
+	// output the event data including the number of primary vertices
+	// and the total number of vertices
+	_, err = fmt.Fprintf(
+		enc.w,
+		"E %d %d %e %e %e %d\n",
+		evt.EventNumber,
+		evt.Mpi,
+		evt.Scale,
+		evt.AlphaQCD,
+		evt.AlphaQED,
+		evt.SignalProcessId,
+	)
 	return err
 }
 
