@@ -21,14 +21,15 @@ func (enc *AsciiEncoder) Encode(evt *Event) error {
 	}
 
 	for i := 0; i < evt.Nhep; i++ {
-		// convert 0-based indices to 1-based ones
 		_, err = fmt.Fprintf(
 			enc.w,
 			"%d %d %d %d %d %d %E %E %E %E %E %E %E %E %E\n",
 			evt.Isthep[i],
 			evt.Idhep[i],
+			// convert 0-based indices to 1-based ones
 			evt.Jmohep[i][0]+1, evt.Jmohep[i][1]+1,
 			evt.Jdahep[i][0]+1, evt.Jdahep[i][1]+1,
+			// <---
 			evt.Phep[i][0], evt.Phep[i][1], evt.Phep[i][2], evt.Phep[i][3],
 			evt.Phep[i][4],
 			evt.Vhep[i][0], evt.Vhep[i][1], evt.Vhep[i][2], evt.Vhep[i][3],
@@ -51,7 +52,7 @@ func NewAsciiDecoder(r io.Reader) *AsciiDecoder {
 func (dec *AsciiDecoder) Decode(evt *Event) error {
 	var err error
 
-	_, err = fmt.Fscanf(dec.r, "%d %d\n", evt.Nevhep, evt.Nhep)
+	_, err = fmt.Fscanf(dec.r, "%d %d\n", &evt.Nevhep, &evt.Nhep)
 	if err != nil {
 		return err
 	}
@@ -78,13 +79,13 @@ func (dec *AsciiDecoder) Decode(evt *Event) error {
 		_, err = fmt.Fscanf(
 			dec.r,
 			"%d %d %d %d %d %d %E %E %E %E %E %E %E %E %E\n",
-			evt.Isthep[i],
-			evt.Idhep[i],
-			evt.Jmohep[i][0], evt.Jmohep[i][1],
-			evt.Jdahep[i][0], evt.Jdahep[i][1],
-			evt.Phep[i][0], evt.Phep[i][1], evt.Phep[i][2], evt.Phep[i][3],
-			evt.Phep[i][4],
-			evt.Vhep[i][0], evt.Vhep[i][1], evt.Vhep[i][2], evt.Vhep[i][3],
+			&evt.Isthep[i],
+			&evt.Idhep[i],
+			&evt.Jmohep[i][0], &evt.Jmohep[i][1],
+			&evt.Jdahep[i][0], &evt.Jdahep[i][1],
+			&evt.Phep[i][0], &evt.Phep[i][1], &evt.Phep[i][2], &evt.Phep[i][3],
+			&evt.Phep[i][4],
+			&evt.Vhep[i][0], &evt.Vhep[i][1], &evt.Vhep[i][2], &evt.Vhep[i][3],
 		)
 		if err != nil {
 			return err
