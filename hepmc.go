@@ -11,8 +11,8 @@ type Event struct {
 	EventNumber     int     // event number
 	Mpi             int     // number of multi particle interactions
 	Scale           float64 // energy scale,
-	AQCD            float64 // QCD coupling, see hep-ph/0109068
-	AQED            float64 // QED coupling, see hep-ph/0109068
+	AlphaQCD        float64 // QCD coupling, see hep-ph/0109068
+	AlphaQED        float64 // QED coupling, see hep-ph/0109068
 
 	SignalVertex *Vertex      // signal vertex
 	Beams        [2]*Particle // incoming beams
