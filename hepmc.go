@@ -1,5 +1,14 @@
 package hepmc
 
+import (
+	"errors"
+	"fmt"
+	"io"
+)
+
+var errNilVtx = errors.New("hepmc: nil Vertex")
+var errNilParticle = errors.New("hepmc: nil Particle")
+
 // Event represents a record for MC generators (for use at any stage of generation)
 //
 // This type is intended as both a "container class" ( to store a MC
@@ -29,6 +38,43 @@ type Event struct {
 	LengthUnit   LengthUnit
 }
 
+// AddVertex adds a vertex to this event
+func (evt *Event) AddVertex(vtx *Vertex) error {
+	if vtx == nil {
+		return errNilVtx
+	}
+	if vtx.Event != nil && vtx.Event != evt {
+		//TODO: warn and remove from previous event
+	}
+	return vtx.set_parent_event(evt)
+}
+
+func (evt *Event) Print(w io.Writer) error {
+	var err error
+	_, err = fmt.Fprintf(
+		w,
+		"________________________________________________________________________________\n")
+	if err != nil {
+		return err
+	}
+
+	sig_vtx := 0
+	if evt.SignalVertex != nil {
+		sig_vtx = evt.SignalVertex.Barcode
+	}
+	_, err = fmt.Fprintf(
+		w,
+		"GenEvent: #%04d ID=%5d SignalProcessGenVertex Barcode: %d\n",
+		evt.EventNumber,
+		evt.SignalProcessId,
+		sig_vtx,
+	)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
 // Particle represents a generator particle within an event coming in/out of a vertex
 //
 // Particle is the basic building block of the event record
@@ -55,6 +101,133 @@ type Vertex struct {
 	Weights      Weights     // weights for this vertex
 	Event        *Event      // pointer to event owning this vertex
 	Barcode      int         // unique identifier in the event
+}
+
+func (vtx *Vertex) set_parent_event(evt *Event) error {
+	var err error
+	orig_evt := vtx.Event
+	vtx.Event = evt
+	if orig_evt == evt {
+		return err
+	}
+	if evt != nil {
+		evt.Vertices[vtx.Barcode] = vtx
+	}
+	if orig_evt != nil {
+		delete(orig_evt.Vertices, vtx.Barcode)
+	}
+	// we also need to loop over all the particles which are owned by
+	// this vertex and remove their barcodes from the old event.
+	for _, p := range vtx.ParticlesIn {
+		if p.ProdVertex == nil {
+			if evt != nil {
+				evt.Particles[p.Barcode] = p
+			}
+			if orig_evt != nil {
+				delete(orig_evt.Particles, p.Barcode)
+			}
+		}
+	}
+
+	for _, p := range vtx.ParticlesOut {
+		if evt != nil {
+			evt.Particles[p.Barcode] = p
+		}
+		if orig_evt != nil {
+			delete(orig_evt.Particles, p.Barcode)
+		}
+	}
+	return err
+}
+
+// AddParticleIn adds a particle to the list of in-coming particles to this vertex
+func (vtx *Vertex) AddParticleIn(p *Particle) error {
+	var err error
+	if p == nil {
+		return errNilParticle
+	}
+	// if p had a decay vertex, remove it from that vertex's list
+	if p.EndVertex != nil {
+		err = p.EndVertex.remove_particle_in(p)
+		if err != nil {
+			return err
+		}
+	}
+	// make sure we don't add it twice...
+	err = vtx.remove_particle_in(p)
+	if err != nil {
+		return err
+	}
+	p.EndVertex = vtx
+	vtx.ParticlesIn = append(vtx.ParticlesIn, p)
+	return err
+}
+
+// AddParticleOut adds a particle to the list of out-going particles to this vertex
+func (vtx *Vertex) AddParticleOut(p *Particle) error {
+	var err error
+	if p == nil {
+		return errNilParticle
+	}
+	// if p had a production vertex, remove it from that vertex's list
+	if p.ProdVertex != nil {
+		err = p.ProdVertex.remove_particle_out(p)
+		if err != nil {
+			return err
+		}
+	}
+	// make sure we don't add it twice...
+	err = vtx.remove_particle_out(p)
+	if err != nil {
+		return err
+	}
+	p.ProdVertex = vtx
+	vtx.ParticlesOut = append(vtx.ParticlesOut, p)
+	return err
+}
+
+func (vtx *Vertex) remove_particle_in(p *Particle) error {
+	var err error
+	nparts := len(vtx.ParticlesIn)
+	switch nparts {
+	case 0:
+		//FIXME: logical error ?
+		return err
+	case 1:
+		vtx.ParticlesIn = make([]*Particle, 0)
+		return err
+	}
+	parts := make([]*Particle, 0, nparts-1)
+	for _, pp := range vtx.ParticlesIn {
+		if pp == p {
+			continue
+		}
+		parts = append(parts, pp)
+	}
+	vtx.ParticlesIn = parts
+	return err
+}
+
+func (vtx *Vertex) remove_particle_out(p *Particle) error {
+	var err error
+	nparts := len(vtx.ParticlesOut)
+	switch nparts {
+	case 0:
+		//FIXME: logical error ?
+		return err
+	case 1:
+		vtx.ParticlesOut = make([]*Particle, 0)
+		return err
+	}
+	parts := make([]*Particle, 0, nparts-1)
+	for _, pp := range vtx.ParticlesOut {
+		if pp == p {
+			continue
+		}
+		parts = append(parts, pp)
+	}
+	vtx.ParticlesOut = parts
+	return err
 }
 
 type HeavyIon struct {
