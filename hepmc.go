@@ -6,8 +6,10 @@ import (
 	"io"
 )
 
-var errNilVtx = errors.New("hepmc: nil Vertex")
-var errNilParticle = errors.New("hepmc: nil Particle")
+var (
+	errNilVtx      = errors.New("hepmc: nil Vertex")
+	errNilParticle = errors.New("hepmc: nil Particle")
+)
 
 // Event represents a record for MC generators (for use at any stage of generation)
 //
