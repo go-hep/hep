@@ -16,14 +16,17 @@ type Event struct {
 
 	SignalVertex *Vertex      // signal vertex
 	Beams        [2]*Particle // incoming beams
-	Weights      []float64    // weights for this event. first weight is used by default for hit and miss
+	Weights      Weights      // weights for this event. first weight is used by default for hit and miss
 	RandomStates []int64      // container of random number generator states
 
-	Vertices  []Vertex
-	Particles []Particle
+	Vertices  map[int]*Vertex
+	Particles map[int]*Particle
 
-	HeavyIon *HeavyIon
-	PdfInfo  *PdfInfo
+	CrossSection *CrossSection
+	HeavyIon     *HeavyIon
+	PdfInfo      *PdfInfo
+	MomentumUnit MomentumUnit
+	LengthUnit   LengthUnit
 }
 
 // Particle represents a generator particle within an event coming in/out of a vertex
@@ -42,14 +45,14 @@ type Particle struct {
 }
 
 // Vertex represents a generator vertex within an event
-// A vertex is indirectly (via particle "edges") linked to other 
+// A vertex is indirectly (via particle "edges") linked to other
 //   vertices ("nodes") to form a composite "graph"
 type Vertex struct {
 	Position     FourVector  // 4-vector of vertex [mm]
 	ParticlesIn  []*Particle // all incoming particles
 	ParticlesOut []*Particle // all outgoing particles
 	Id           int         // vertex id
-	Weights      []float64   // weights for this vertex
+	Weights      Weights     // weights for this vertex
 	Event        *Event      // pointer to event owning this vertex
 	Barcode      int         // unique identifier in the event
 }
@@ -66,18 +69,30 @@ type HeavyIon struct {
 	Spectator_protons            int     // Number of spectators protons
 	Impact_parameter             float32 // Impact Parameter(fm) of collision
 	Event_plane_angle            float32 // Azimuthal angle of event plane
-	Eccentricity                 float32 // eccentricity of participating nucleons in the transverse plane (as in phobos nucl-ex/0510031) 
+	Eccentricity                 float32 // eccentricity of participating nucleons in the transverse plane (as in phobos nucl-ex/0510031)
 	Sigma_inel_NN                float32 // nucleon-nucleon inelastic (including diffractive) cross-section
+}
+
+// CrossSection is used to store the generated cross section.
+// This type is meant to be used to pass, on an event by event basis,
+// the current best guess of the total cross section.
+// It is expected that the final cross section will be stored elsewhere.
+type CrossSection struct {
+	Value float64 // value of the cross-section (in pb)
+	Error float64 // error on the value of the cross-section (in pb)
+	//IsSet bool
 }
 
 type PdfInfo struct {
 	Id1      int     // flavour code of first parton
-	Id2      int     // flavour code of second parton 
-	X1       float64 // fraction of beam momentum carried by first parton ("beam side") 
-	X2       float64 // fraction of beam momentum carried by second parton ("target side") 
-	ScalePDF float64 //  Q-scale used in evaluation of PDF's   (in GeV) 
-	Pdf1     float64 // PDF (id1, x1, Q) 
-	Pdf2     float64 // PDF (id2, x2, Q)   
+	Id2      int     // flavour code of second parton
+	LHAPdf1  int     // LHA PDF id of first parton
+	LHAPdf2  int     // LHA PDF id of second parton
+	X1       float64 // fraction of beam momentum carried by first parton ("beam side")
+	X2       float64 // fraction of beam momentum carried by second parton ("target side")
+	ScalePDF float64 //  Q-scale used in evaluation of PDF's   (in GeV)
+	Pdf1     float64 // PDF (id1, x1, Q)
+	Pdf2     float64 // PDF (id2, x2, Q)
 }
 
 // Flow represents a particle's flow and keeps track of an arbitrary number of flow patterns within a graph (i.e. color flow, charge flow, lepton number flow,...)
@@ -86,13 +101,13 @@ type PdfInfo struct {
 // Note: 0 is NOT allowed as code index nor as flow code since it
 //       is used to indicate null.
 //
-// This class can be used to keep track of flow patterns within 
+// This class can be used to keep track of flow patterns within
 //  a graph. An example is color flow. If we have two quarks going through
 //  an s-channel gluon to form two more quarks:
 //
 //  \q1       /q3   then we can keep track of the color flow with the
-//   \_______/      HepMC::Flow class as follows: 
-//   /   g   \. 
+//   \_______/      HepMC::Flow class as follows:
+//   /   g   \.
 //  /q2       \q4
 //
 //  lets say the color flows from q2-->g-->q3  and q1-->g-->q4
@@ -109,7 +124,7 @@ type PdfInfo struct {
 //    g->flow().set_icode(2,269);
 //    q4->flow().set_icode(1,269);
 //  later on if we wish to know the color partner of q1 we can ask for a list
-//  of all particles connected via this code to q1 which do have less than 
+//  of all particles connected via this code to q1 which do have less than
 //  2 color partners using:
 //    vector<GenParticle*> result=q1->dangling_connected_partners(q1->icode(1),1,2);
 //  this will return a list containing q1 and q4.
@@ -123,6 +138,26 @@ type Flow struct {
 type Polarization struct {
 	Theta float64 // polar angle of polarization in radians [0, math.Pi)
 	Phi   float64 // azimuthal angle of polarization in radians [0, 2*math.Pi)
+}
+
+type Weights struct {
+	Slice []float64      // the slice of weight values
+	Map   map[string]int // the map of name->index-in-the-slice
+}
+
+func (w Weights) At(n string) float64 {
+	idx, ok := w.Map[n]
+	if ok {
+		return w.Slice[idx]
+	}
+	panic("hepmc.Weights.At: invalid name [" + n + "]")
+}
+
+func NewWeights() Weights {
+	return Weights{
+		Slice: make([]float64, 0, 1),
+		Map:   make(map[string]int),
+	}
 }
 
 // EOF
