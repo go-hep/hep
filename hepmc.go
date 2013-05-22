@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 )
 
 var (
@@ -53,9 +54,10 @@ func (evt *Event) AddVertex(vtx *Vertex) error {
 
 func (evt *Event) Print(w io.Writer) error {
 	var err error
-	_, err = fmt.Fprintf(
-		w,
-		"________________________________________________________________________________\n")
+	const liner = ("________________________________________" +
+		"________________________________________")
+
+	_, err = fmt.Fprintf(w, "%s\n", liner)
 	if err != nil {
 		return err
 	}
@@ -71,6 +73,140 @@ func (evt *Event) Print(w io.Writer) error {
 		evt.SignalProcessId,
 		sig_vtx,
 	)
+	if err != nil {
+		return err
+	}
+	_, err = fmt.Fprintf(
+		w,
+		" Momentum units: %8s     Position units: %8s\n",
+		evt.MomentumUnit.String(),
+		evt.LengthUnit.String(),
+	)
+	if err != nil {
+		return err
+	}
+
+	if evt.CrossSection != nil {
+		_, err = fmt.Fprintf(
+			w,
+			" Cross Section: %e +/- %e\n",
+			evt.CrossSection.Value,
+			evt.CrossSection.Error,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = fmt.Fprintf(
+		w,
+		" Entries this event: %d vertices, %d particles.\n",
+		len(evt.Vertices),
+		len(evt.Particles),
+	)
+	if err != nil {
+		return err
+	}
+
+	if evt.Beams[0] != nil && evt.Beams[1] != nil {
+		_, err = fmt.Fprintf(
+			w,
+			" Beam Particle barcodes: %d %d \n",
+			evt.Beams[0].Barcode,
+			evt.Beams[1].Barcode,
+		)
+	} else {
+		_, err = fmt.Fprintf(
+			w,
+			" Beam Particles are not defined.\n",
+		)
+	}
+	if err != nil {
+		return err
+	}
+
+	// random state
+	_, err = fmt.Fprintf(
+		w,
+		" RndmState(%d)=",
+		len(evt.RandomStates),
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, rnd := range evt.RandomStates {
+		_, err = fmt.Fprintf(w, "%d ", rnd)
+		if err != nil {
+			return err
+		}
+	}
+	_, err = fmt.Fprintf(w, "\n")
+	if err != nil {
+		return err
+	}
+
+	// weights
+	_, err = fmt.Fprintf(
+		w,
+		" Wgts(%d)=",
+		len(evt.Weights.Map),
+	)
+	if err != nil {
+		return err
+	}
+
+	for n, _ := range evt.Weights.Map {
+		_, err = fmt.Fprintf(w, "(%s,%f) ", n, evt.Weights.At(n))
+		if err != nil {
+			return err
+		}
+	}
+	_, err = fmt.Fprintf(w, "\n")
+	if err != nil {
+		return err
+	}
+
+	_, err = fmt.Fprintf(
+		w,
+		" EventScale %e [energy] \t alphaQCD=%e\t alphaQED=%e\n",
+		evt.Scale,
+		evt.AlphaQCD,
+		evt.AlphaQED,
+	)
+	if err != nil {
+		return err
+	}
+
+	// print a legend to describe the particle info
+	_, err = fmt.Fprintf(
+		w,
+		"                                    GenParticle Legend\n"+
+			"        Barcode   PDG ID      ( Px,       Py,       Pz,     E )"+
+			" Stat  DecayVtx\n")
+	if err != nil {
+		return err
+	}
+
+	_, err = fmt.Fprintf(w, "%s\n", liner)
+	if err != nil {
+		return err
+	}
+
+	// print all vertices
+	barcodes := make([]int, 0, len(evt.Vertices))
+	for bc, _ := range evt.Vertices {
+		barcodes = append(barcodes, -bc)
+	}
+	sort.Ints(barcodes)
+	for _, bc := range barcodes {
+		vtx := evt.Vertices[-bc]
+		err = vtx.Print(w)
+		if err != nil {
+			return err
+		}
+	}
+	_, err = fmt.Fprintf(w, "%s\n", liner)
 	if err != nil {
 		return err
 	}
@@ -90,6 +226,33 @@ type Particle struct {
 	EndVertex     *Vertex      // pointer to decay vertex (nil if not-decayed)
 	Barcode       int          // unique identifier in the event
 	GeneratedMass float64      // mass of this particle when it was generated
+}
+
+func (p *Particle) dump(w io.Writer) error {
+	var err error
+	_, err = fmt.Fprintf(
+		w,
+		" %9d %9d %9.2e,%9.2e,%9.2e,%9.2e",
+		p.Barcode,
+		p.PdgId,
+		p.Momentum.Px(),
+		p.Momentum.Py(),
+		p.Momentum.Pz(),
+		p.Momentum.E(),
+	)
+	if err != nil {
+		return err
+	}
+
+	switch {
+	case p.EndVertex != nil && p.EndVertex.Barcode != 0:
+		_, err = fmt.Fprintf(w, "%3d %9d", p.Status, p.EndVertex.Barcode)
+	case p.EndVertex == nil:
+		_, err = fmt.Fprintf(w, "%3d", p.Status)
+	default:
+		_, err = fmt.Fprintf(w, "%3d %q", p.Status, p.EndVertex)
+	}
+	return err
 }
 
 // Vertex represents a generator vertex within an event
@@ -229,6 +392,118 @@ func (vtx *Vertex) remove_particle_out(p *Particle) error {
 		parts = append(parts, pp)
 	}
 	vtx.ParticlesOut = parts
+	return err
+}
+
+func (vtx *Vertex) Print(w io.Writer) error {
+	var err error
+	zero := FourVector{0, 0, 0, 0}
+	if vtx.Barcode != 0 {
+		if vtx.Position != zero {
+			_, err = fmt.Fprintf(
+				w,
+				"Vertex:%9d ID:%5d (X,cT)=%9.2e,%9.2e,%9.2e,%9.2e\n",
+				vtx.Barcode,
+				vtx.Id,
+				vtx.Position.X(),
+				vtx.Position.Y(),
+				vtx.Position.Z(),
+				vtx.Position.T(),
+			)
+		} else {
+			_, err = fmt.Fprintf(
+				w,
+				"GenVertex:%9d ID:%5d (X,cT):0\n",
+				vtx.Barcode,
+				vtx.Id,
+			)
+		}
+	} else {
+		// if the vertex doesn't have a unique barcode assigned, then
+		// we print its memory address instead.. so that the
+		// print out gives us a unique tag for the particle.
+		if vtx.Position != zero {
+			_, err = fmt.Fprintf(
+				w,
+				"Vertex:%q ID:%5d (X,cT)=%9.2e,%9.2e,%9.2e,%9.2e\n",
+				vtx,
+				vtx.Id,
+				vtx.Position.X(),
+				vtx.Position.Y(),
+				vtx.Position.Z(),
+				vtx.Position.T(),
+			)
+
+		} else {
+			_, err = fmt.Fprintf(
+				w,
+				"GenVertex:%9d ID:%5d (X,cT):0\n",
+				vtx.Barcode,
+				vtx.Id,
+			)
+		}
+	}
+	if err != nil {
+		return err
+	}
+
+	// print the weights if any
+	if len(vtx.Weights.Slice) > 0 {
+		_, err = fmt.Fprintf(w, " Wgts(%d)=", len(vtx.Weights.Slice))
+		if err != nil {
+			return err
+		}
+		for _, weight := range vtx.Weights.Slice {
+			_, err = fmt.Fprintf(w, "%e ", weight)
+			if err != nil {
+				return err
+			}
+		}
+		_, err = fmt.Fprintf(w, "\n")
+		if err != nil {
+			return err
+		}
+	}
+
+	// print out all incoming particles
+	for i, p := range vtx.ParticlesIn {
+		if i == 0 {
+			_, err = fmt.Fprintf(w, " I:%2d", len(vtx.ParticlesIn))
+		} else {
+			_, err = fmt.Fprintf(w, "     ")
+		}
+		if err != nil {
+			return err
+		}
+		err = p.dump(w)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(w, "\n")
+		if err != nil {
+			return err
+		}
+	}
+
+	// print out all outgoing particles
+	for i, p := range vtx.ParticlesOut {
+		if i == 0 {
+			_, err = fmt.Fprintf(w, " O:%2d", len(vtx.ParticlesOut))
+		} else {
+			_, err = fmt.Fprintf(w, "     ")
+		}
+		if err != nil {
+			return err
+		}
+		err = p.dump(w)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(w, "\n")
+		if err != nil {
+			return err
+		}
+	}
 	return err
 }
 
