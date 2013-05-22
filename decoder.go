@@ -526,6 +526,8 @@ func (dec *Decoder) decode_particle(
 	if err != nil {
 		return err
 	}
+	p.Flow.Particle = p
+
 	//fmt.Printf(">>> flow-sz: %d == %v\n", len(p.Flow.Icode), p.Flow.Icode)
 	_, err = dec.r.ReadString('\n')
 	if err != nil {
