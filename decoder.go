@@ -699,8 +699,7 @@ func (dec *Decoder) decode_ascii(evt *Event, n_vtx *int) error {
 }
 
 func (dec *Decoder) decode_extendedascii(evt *Event, n_vtx *int) error {
-	var err error = fmt.Errorf("hepmc.decode: HepMC::IO_ExtendedAscii not implemented")
-	return err
+	return dec.decode_genevent(evt, n_vtx)
 }
 
 // EOF
