@@ -10,7 +10,9 @@ type LengthUnit int
 const (
 	MEV MomentumUnit = iota // Momentum in MeV (default)
 	GEV                     // Momentum in GeV
+)
 
+const (
 	MM LengthUnit = iota // Length in mm (default)
 	CM                   // Length in cm
 )
@@ -21,11 +23,9 @@ func (mu MomentumUnit) String() string {
 		return "MEV"
 	case GEV:
 		return "GEV"
-	default:
-		err := fmt.Errorf("hepmc.units: invalid MomentumUnit value (%d)", int(mu))
-		panic(err.Error())
 	}
-	//panic("unreachable")
+	err := fmt.Errorf("hepmc.units: invalid MomentumUnit value (%d)", int(mu))
+	panic(err.Error())
 }
 
 func MomentumUnitFromString(s string) (MomentumUnit, error) {
@@ -45,11 +45,9 @@ func (lu LengthUnit) String() string {
 		return "MM"
 	case CM:
 		return "CM"
-	default:
-		err := fmt.Errorf("hepmc.units: invalid LengthUnit value (%d)", int(lu))
-		panic(err.Error())
 	}
-	//panic("unreachable")
+	err := fmt.Errorf("hepmc.units: invalid LengthUnit value (%d)", int(lu))
+	panic(err.Error())
 }
 
 func LengthUnitFromString(s string) (LengthUnit, error) {

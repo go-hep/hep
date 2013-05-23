@@ -78,7 +78,7 @@ func (evt *Event) Print(w io.Writer) error {
 	}
 	_, err = fmt.Fprintf(
 		w,
-		" Momentum units: %8s     Position units: %8s\n",
+		" Momentum units:%8s     Position units:%8s\n",
 		evt.MomentumUnit.String(),
 		evt.LengthUnit.String(),
 	)
@@ -169,7 +169,7 @@ func (evt *Event) Print(w io.Writer) error {
 
 	_, err = fmt.Fprintf(
 		w,
-		" EventScale %e [energy] \t alphaQCD=%e\t alphaQED=%e\n",
+		" EventScale %7.5f [energy] \t alphaQCD=%8.8f\t alphaQED=%8.8f\n",
 		evt.Scale,
 		evt.AlphaQCD,
 		evt.AlphaQED,
@@ -232,7 +232,7 @@ func (p *Particle) dump(w io.Writer) error {
 	var err error
 	_, err = fmt.Fprintf(
 		w,
-		" %9d %9d %9.2e,%9.2e,%9.2e,%9.2e",
+		" %9d%9d %+9.2e,%+9.2e,%+9.2e,%+9.2e",
 		p.Barcode,
 		p.PdgId,
 		p.Momentum.Px(),
@@ -246,13 +246,25 @@ func (p *Particle) dump(w io.Writer) error {
 
 	switch {
 	case p.EndVertex != nil && p.EndVertex.Barcode != 0:
-		_, err = fmt.Fprintf(w, "%3d %9d", p.Status, p.EndVertex.Barcode)
+		_, err = fmt.Fprintf(w, "%4d %9d", p.Status, p.EndVertex.Barcode)
 	case p.EndVertex == nil:
-		_, err = fmt.Fprintf(w, "%3d", p.Status)
+		_, err = fmt.Fprintf(w, "%4d", p.Status)
 	default:
-		_, err = fmt.Fprintf(w, "%3d %q", p.Status, p.EndVertex)
+		_, err = fmt.Fprintf(w, "%4d %q", p.Status, p.EndVertex)
 	}
 	return err
+}
+
+type t_particles []*Particle
+
+func (ps t_particles) Len() int {
+	return len(ps)
+}
+func (ps t_particles) Less(i, j int) bool {
+	return ps[i].Barcode < ps[j].Barcode
+}
+func (ps t_particles) Swap(i, j int) {
+	ps[i], ps[j] = ps[j], ps[i]
 }
 
 // Vertex represents a generator vertex within an event
@@ -402,7 +414,7 @@ func (vtx *Vertex) Print(w io.Writer) error {
 		if vtx.Position != zero {
 			_, err = fmt.Fprintf(
 				w,
-				"Vertex:%9d ID:%5d (X,cT)=%9.2e,%9.2e,%9.2e,%9.2e\n",
+				"Vertex:%9d ID:%5d (X,cT)=%+9.2e,%+9.2e,%+9.2e,%+9.2e\n",
 				vtx.Barcode,
 				vtx.Id,
 				vtx.Position.X(),
@@ -425,7 +437,7 @@ func (vtx *Vertex) Print(w io.Writer) error {
 		if vtx.Position != zero {
 			_, err = fmt.Fprintf(
 				w,
-				"Vertex:%q ID:%5d (X,cT)=%9.2e,%9.2e,%9.2e,%9.2e\n",
+				"Vertex:%q ID:%5d (X,cT)=%+9.2e,%+9.2e,%+9.2e,%+9.2e\n",
 				vtx,
 				vtx.Id,
 				vtx.Position.X(),
@@ -464,6 +476,8 @@ func (vtx *Vertex) Print(w io.Writer) error {
 			return err
 		}
 	}
+	// sort incoming particles by barcode
+	sort.Sort(t_particles(vtx.ParticlesIn))
 
 	// print out all incoming particles
 	for i, p := range vtx.ParticlesIn {
@@ -484,6 +498,9 @@ func (vtx *Vertex) Print(w io.Writer) error {
 			return err
 		}
 	}
+
+	// sort outgoing particles by barcode
+	sort.Sort(t_particles(vtx.ParticlesOut))
 
 	// print out all outgoing particles
 	for i, p := range vtx.ParticlesOut {

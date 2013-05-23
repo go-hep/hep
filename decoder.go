@@ -5,6 +5,7 @@ import (
 	//"bytes"
 	"fmt"
 	"io"
+	"sort"
 )
 
 type Decoder struct {
@@ -177,6 +178,7 @@ func (dec *Decoder) Decode(evt *Event) error {
 			return err
 		}
 		evt.Vertices[vtx.Barcode] = vtx
+		sort.Sort(t_particles(vtx.ParticlesOut))
 	}
 
 	// set the signal process vertex
@@ -205,6 +207,7 @@ func (dec *Decoder) Decode(evt *Event) error {
 		if p.Barcode == dec.bp2 {
 			evt.Beams[1] = p
 		}
+		sort.Sort(t_particles(vtx.ParticlesIn))
 	}
 	return err
 }
@@ -625,12 +628,78 @@ func (dec *Decoder) decode_pdf_info(pdf *PdfInfo) error {
 }
 
 func (dec *Decoder) decode_ascii(evt *Event, n_vtx *int) error {
-	var err error
+	var (
+		err         error
+		evt_nbr     int
+		mpi         int
+		scale       float64
+		a_qcd       float64
+		a_qed       float64
+		sig_proc_id int
+		n_rndm      int
+		n_weights   int
+	)
+
+	_, err = fmt.Fscanf(
+		dec.r,
+		"E %d %e %e %e %d %d %d %d",
+		&evt_nbr,
+		&scale,
+		&a_qcd,
+		&a_qed,
+		&sig_proc_id,
+		&dec.sig_proc_bc,
+		n_vtx,
+		&n_rndm,
+	)
+	if err != nil {
+		return err
+	}
+	rndm_states := make([]int64, n_rndm)
+	for i := 0; i < n_rndm; i++ {
+		_, err = fmt.Fscanf(dec.r, " %d", &rndm_states[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = fmt.Fscanf(dec.r, " %d", &n_weights)
+	if err != nil {
+		return err
+	}
+	weights := make([]float64, n_weights)
+	for i := 0; i < n_weights; i++ {
+		_, err = fmt.Fscanf(dec.r, " %e", &weights[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = dec.r.ReadString('\n')
+	if err != nil {
+		return err
+	}
+
+	// fill infos gathered so far
+	evt.SignalProcessId = sig_proc_id
+	evt.EventNumber = evt_nbr
+	evt.Mpi = mpi
+	if evt.Weights.Slice == nil {
+		evt.Weights = NewWeights()
+	}
+	evt.Weights.Slice = weights
+	evt.RandomStates = rndm_states
+	evt.Scale = scale
+	evt.AlphaQCD = a_qcd
+	evt.AlphaQED = a_qed
+
+	evt.Vertices = make(map[int]*Vertex, *n_vtx)
+	evt.Particles = make(map[int]*Particle, *n_vtx*2)
 	return err
 }
 
 func (dec *Decoder) decode_extendedascii(evt *Event, n_vtx *int) error {
-	var err error
+	var err error = fmt.Errorf("hepmc.decode: HepMC::IO_ExtendedAscii not implemented")
 	return err
 }
 
