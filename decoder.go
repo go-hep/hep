@@ -87,11 +87,11 @@ func (dec *Decoder) Decode(evt *Event) error {
 			case hepmc_extendedascii:
 				err = dec.decode_extendedascii(evt, &n_vtx)
 			case hepmc_ascii_pdt:
-				// nop
+				err = fmt.Errorf("hepmc.decode: HepMC::IO_Ascii-PARTICLE_DATA is NOT implemented (yet)")
 			case hepmc_extendedascii_pdt:
-				// nop
+				err = fmt.Errorf("hepmc.decode: HepMC::IO_ExtendedAscii-PARTICLE_DATA is NOT implemented (yet)")
 			default:
-				panic("unreachable")
+				err = fmt.Errorf("hepmc.decode: unknown file format (%v)", dec.ftype)
 			}
 			if err != nil {
 				return err
