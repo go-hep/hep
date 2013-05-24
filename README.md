@@ -1,7 +1,7 @@
 lhef
 ====
 
-[![Build Status](https://drone.io/drone/lhef/status.png)](https://drone.io/drone/lhef/latest)
+[![Build Status](https://drone.io/github.com/go-hep/lhef/status.png)](https://drone.io/github.com/go-hep/lhef/latest)
 
 ``lhef`` is a simple implementation of the _Les Houches Event File_
 format as described in [hep-ph/0609017](http://arxiv.org/abs/hep-ph/0609017v1).
