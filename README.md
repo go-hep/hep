@@ -1,6 +1,8 @@
 hepmc
 =====
 
+[![Build Status](https://drone.io/github.com/go-hep/hepmc/status.png)](https://drone.io/github.com/go-hep/hepmc/latest)
+
 ``hepmc`` is a pure ``Go`` implementation of the ``C++`` ``HepMC``
 library.
 
