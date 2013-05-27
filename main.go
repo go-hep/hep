@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	ifname = flag.String("in", "", "path to LHEF input file (default: STDIN)")
-	ofname = flag.String("out", "", "path to HEPMC output file (default: STDOUT)")
+	ifname = flag.String("i", "", "path to LHEF input file (default: STDIN)")
+	ofname = flag.String("o", "", "path to HEPMC output file (default: STDOUT)")
 
 	// in case IDWTUP == +/-4, one has to keep track of the accumulated
 	// weights and event numbers to evaluate the cross section on-the-fly.
@@ -77,7 +77,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "**error at evt #%d: %v\n", ievt, err)
 		}
 
-		var evt hepmc.Event
+		evt := hepmc.Event{Weights: hepmc.NewWeights()}
 		weight := lhevt.XWGTUP
 		evt.Weights.Add("0", weight)
 
