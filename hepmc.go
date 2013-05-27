@@ -612,6 +612,17 @@ type Weights struct {
 	Map   map[string]int // the map of name->index-in-the-slice
 }
 
+func (w Weights) Add(n string, value float64) error {
+	_, ok := w.Map[n]
+	if ok {
+		return fmt.Errorf("hepmc.Weights.Add: name [%s] already in container", n)
+	}
+	idx := len(w.Slice)
+	w.Map[n] = idx
+	w.Slice = append(w.Slice, value)
+	return nil
+}
+
 func (w Weights) At(n string) float64 {
 	idx, ok := w.Map[n]
 	if ok {
