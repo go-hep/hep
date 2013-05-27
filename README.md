@@ -14,6 +14,7 @@ $ go get github.com/go-hep/lhef2hepmc
 ## Example
 
 ```sh
-$ lhef2hepmc in.lhef out.hepmc
+$ lhef2hepmc -i in.lhef -o out.hepmc
+$ lhef2hepmc < in.lhef > out.hepmc
 ```
 
