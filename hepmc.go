@@ -218,7 +218,7 @@ func (evt *Event) Print(w io.Writer) error {
 // Particle is the basic building block of the event record
 type Particle struct {
 	Momentum      FourVector   // momentum vector
-	PdgId         int          // id according to PDG convention
+	PdgId         int64        // id according to PDG convention
 	Status        int          // status code as defined for HEPEVT
 	Flow          Flow         // flow of this particle
 	Polarization  Polarization // polarization of this particle
