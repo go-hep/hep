@@ -80,7 +80,8 @@ Loop:
 				init = tt
 				break Loop
 			case "header":
-				header = tt
+				header = tt //FIXME
+				panic(fmt.Errorf("header not implemented: %v", header))
 			}
 		}
 	}
