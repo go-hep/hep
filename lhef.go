@@ -49,7 +49,7 @@ type Weight struct {
 	Weights []float64 // the weights of this event.
 }
 
-// Clus represents a clustering of two particle entries into one as 
+// Clus represents a clustering of two particle entries into one as
 // defined in a clustering tag.
 type Clus struct {
 	P1     int32   // the first particle entry that has been clustered.
