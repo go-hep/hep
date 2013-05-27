@@ -284,13 +284,13 @@ func (vtx *Vertex) set_parent_event(evt *Event) error {
 	var err error
 	orig_evt := vtx.Event
 	vtx.Event = evt
-	if orig_evt == evt {
-		return err
-	}
+	// if orig_evt == evt {
+	// 	return err
+	// }
 	if evt != nil {
 		evt.Vertices[vtx.Barcode] = vtx
 	}
-	if orig_evt != nil {
+	if orig_evt != nil && orig_evt != evt {
 		delete(orig_evt.Vertices, vtx.Barcode)
 	}
 	// we also need to loop over all the particles which are owned by
@@ -300,7 +300,7 @@ func (vtx *Vertex) set_parent_event(evt *Event) error {
 			if evt != nil {
 				evt.Particles[p.Barcode] = p
 			}
-			if orig_evt != nil {
+			if orig_evt != nil && orig_evt != evt {
 				delete(orig_evt.Particles, p.Barcode)
 			}
 		}
@@ -310,7 +310,7 @@ func (vtx *Vertex) set_parent_event(evt *Event) error {
 		if evt != nil {
 			evt.Particles[p.Barcode] = p
 		}
-		if orig_evt != nil {
+		if orig_evt != nil && orig_evt != evt {
 			delete(orig_evt.Particles, p.Barcode)
 		}
 	}
@@ -337,6 +337,7 @@ func (vtx *Vertex) AddParticleIn(p *Particle) error {
 	}
 	p.EndVertex = vtx
 	vtx.ParticlesIn = append(vtx.ParticlesIn, p)
+	vtx.Event.Particles[p.Barcode] = p
 	return err
 }
 
@@ -360,6 +361,7 @@ func (vtx *Vertex) AddParticleOut(p *Particle) error {
 	}
 	p.ProdVertex = vtx
 	vtx.ParticlesOut = append(vtx.ParticlesOut, p)
+	vtx.Event.Particles[p.Barcode] = p
 	return err
 }
 
@@ -370,18 +372,19 @@ func (vtx *Vertex) remove_particle_in(p *Particle) error {
 	case 0:
 		//FIXME: logical error ?
 		return err
-	case 1:
-		vtx.ParticlesIn = make([]*Particle, 0)
-		return err
 	}
-	parts := make([]*Particle, 0, nparts-1)
-	for _, pp := range vtx.ParticlesIn {
+	idx := -1
+	for i, pp := range vtx.ParticlesIn {
 		if pp == p {
-			continue
+			idx = i
+			break
 		}
-		parts = append(parts, pp)
 	}
-	vtx.ParticlesIn = parts
+	if idx >= 0 {
+		copy(vtx.ParticlesIn[idx:], vtx.ParticlesIn[idx+1:])
+		vtx.ParticlesIn[len(vtx.ParticlesIn)-1] = nil
+		vtx.ParticlesIn = vtx.ParticlesIn[:len(vtx.ParticlesIn)-1]
+	}
 	return err
 }
 
@@ -392,18 +395,19 @@ func (vtx *Vertex) remove_particle_out(p *Particle) error {
 	case 0:
 		//FIXME: logical error ?
 		return err
-	case 1:
-		vtx.ParticlesOut = make([]*Particle, 0)
-		return err
 	}
-	parts := make([]*Particle, 0, nparts-1)
-	for _, pp := range vtx.ParticlesOut {
+	idx := -1
+	for i, pp := range vtx.ParticlesOut {
 		if pp == p {
-			continue
+			idx = i
+			break
 		}
-		parts = append(parts, pp)
 	}
-	vtx.ParticlesOut = parts
+	if idx >= 0 {
+		copy(vtx.ParticlesOut[idx:], vtx.ParticlesOut[idx+1:])
+		vtx.ParticlesOut[len(vtx.ParticlesOut)-1] = nil
+		vtx.ParticlesOut = vtx.ParticlesOut[:len(vtx.ParticlesOut)-1]
+	}
 	return err
 }
 
