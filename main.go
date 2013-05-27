@@ -121,6 +121,10 @@ func main() {
 		}
 
 		evt.CrossSection = &hepmc.CrossSection{Value: xsecval, Error: xsecerr}
+		vtx := hepmc.Vertex{
+			Event:   &evt,
+			Barcode: -1,
+		}
 		p1 := hepmc.Particle{
 			Momentum: hepmc.FourVector{
 				0, 0,
@@ -141,19 +145,26 @@ func main() {
 			Status:  4,
 			Barcode: 2,
 		}
-		vtx := hepmc.Vertex{
-			Barcode: -1,
+		err = vtx.AddParticleIn(&p1)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "**error at evt #%d: %v\n", ievt, err)
+			os.Exit(1)
 		}
-		vtx.AddParticleIn(&p1)
-		vtx.AddParticleIn(&p2)
+		err = vtx.AddParticleIn(&p2)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "**error at evt #%d: %v\n", ievt, err)
+			os.Exit(1)
+		}
 		evt.Beams[0] = &p1
 		evt.Beams[1] = &p2
 
+		nmax := 2
 		imax := int(lhevt.NUP)
 		for i := 0; i < imax; i++ {
 			if lhevt.ISTUP[i] != 1 {
 				continue
 			}
+			nmax += 1
 			vtx.AddParticleOut(&hepmc.Particle{
 				Momentum: hepmc.FourVector{
 					lhevt.PUP[i][0],
@@ -173,6 +184,20 @@ func main() {
 			os.Exit(1)
 		}
 
+		nparts := len(evt.Particles)
+		if nmax != nparts {
+			fmt.Fprintf(os.Stderr, "**error at evt #%d: LHEF/HEPMC inconsistency (LHEF particles: %d, HEPMC particles: %d)\n", ievt, nmax, nparts)
+			for _, p := range evt.Particles {
+				fmt.Fprintf(os.Stderr, "part: %v\n", p)
+			}
+			fmt.Fprintf(os.Stderr, "p1: %v\n", p1)
+			fmt.Fprintf(os.Stderr, "p2: %v\n", p2)
+			os.Exit(1)
+		}
+		if len(evt.Vertices) != 1 {
+			fmt.Fprintf(os.Stderr, "**error at evt #%d: inconsistent number of vertices in HEPMC (got %d, expected 1)\n", ievt, len(evt.Vertices))
+			os.Exit(1)
+		}
 		//fmt.Fprintf(os.Stderr, "nparts: %v\nnverts: %v\n", len(evt.Particles), len(evt.Vertices))
 
 		err = enc.Encode(&evt)
