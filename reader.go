@@ -48,7 +48,7 @@ func NewDecoder(r io.Reader) (*Decoder, error) {
 
 	//fmt.Printf(">>> %v\n", start)
 	version := start.Attr[0].Value
-	fmt.Printf("    version=[%s]\n", version)
+	//fmt.Printf("    version=[%s]\n", version)
 	switch version {
 	default:
 		d.Version = -42
