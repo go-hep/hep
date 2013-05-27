@@ -46,7 +46,7 @@ func NewDecoder(r io.Reader) (*Decoder, error) {
 		return nil, fmt.Errorf("lhef.Decoder: missing LesHouchesEvent start-tag")
 	}
 
-	fmt.Printf(">>> %v\n", start)
+	//fmt.Printf(">>> %v\n", start)
 	version := start.Attr[0].Value
 	fmt.Printf("    version=[%s]\n", version)
 	switch version {
@@ -88,8 +88,8 @@ Loop:
 		fmt.Printf("err, not a valid LHEF file (%T: %v)\n", tok, tok)
 		return nil, fmt.Errorf("lhef.Decoder: missing init start-tag")
 	}
-	fmt.Printf(">>> header: %v\n", header)
-	fmt.Printf(">>> init:   %v\n", init)
+	//fmt.Printf(">>> header: %v\n", header)
+	//fmt.Printf(">>> init:   %v\n", init)
 
 	// extract compulsory initialization information
 	tok, err = dec.Token()
@@ -138,7 +138,7 @@ Loop:
 			&d.Run.LPRUP[i],
 		)
 	}
-	fmt.Printf(">>> data: %v\n", d.Run)
+	//fmt.Printf(">>> data: %v\n", d.Run)
 
 	if d.Version >= 2 {
 		// do version-2 specific stuff
@@ -263,7 +263,7 @@ func (d *Decoder) Decode() (*HEPEUP, error) {
 	// read any additional comments...
 	/*evtComments*/ _ = buf.Bytes()
 
-	// do 
+	// do
 
 	// put "cursor" to next event...
 	tok, err = d.dec.Token()
