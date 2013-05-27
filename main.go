@@ -77,7 +77,17 @@ func main() {
 			fmt.Fprintf(os.Stderr, "**error at evt #%d: %v\n", ievt, err)
 		}
 
-		evt := hepmc.Event{Weights: hepmc.NewWeights()}
+		evt := hepmc.Event{
+			EventNumber: ievt + 1,
+			Particles:   make(map[int]*hepmc.Particle),
+			Vertices:    make(map[int]*hepmc.Vertex),
+			Weights:     hepmc.NewWeights(),
+		}
+
+		// define the units
+		evt.MomentumUnit = hepmc.GEV
+		evt.LengthUnit = hepmc.MM
+
 		weight := lhevt.XWGTUP
 		evt.Weights.Add("0", weight)
 
@@ -133,7 +143,6 @@ func main() {
 		}
 		vtx := hepmc.Vertex{
 			Barcode: -1,
-			Event:   &evt,
 		}
 		vtx.AddParticleIn(&p1)
 		vtx.AddParticleIn(&p2)
@@ -145,7 +154,7 @@ func main() {
 			if lhevt.ISTUP[i] != 1 {
 				continue
 			}
-			p := &hepmc.Particle{
+			vtx.AddParticleOut(&hepmc.Particle{
 				Momentum: hepmc.FourVector{
 					lhevt.PUP[i][0],
 					lhevt.PUP[i][1],
@@ -156,13 +165,20 @@ func main() {
 				PdgId:         lhevt.IDUP[i],
 				Status:        1,
 				Barcode:       3 + i,
-			}
-			vtx.AddParticleOut(p)
+			})
 		}
+		err = evt.AddVertex(&vtx)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "**error at evt #%d: %v\n", ievt, err)
+			os.Exit(1)
+		}
+
+		//fmt.Fprintf(os.Stderr, "nparts: %v\nnverts: %v\n", len(evt.Particles), len(evt.Vertices))
 
 		err = enc.Encode(&evt)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "**error at evt #%d: %v\n", ievt, err)
+			os.Exit(1)
 		}
 	}
 }
