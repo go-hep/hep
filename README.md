@@ -19,6 +19,10 @@ http://godoc.org/github.com/go-hep/hplot
 
 ## Examples
 
+### 1D histogram
+
+![hist-example](https://github.com/go-hep/hplot/raw/master/examples/hist.png)
+
 ```go
 package main
 
@@ -92,6 +96,4 @@ func stdNorm(x float64) float64 {
 
 // EOF
 ```
-
-![hist-example](https://github.com/go-hep/hplot/raw/master/examples/hist.png)
 
