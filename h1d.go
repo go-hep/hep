@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"image/color"
 
-	"code.google.com/p/plotinum/plot"
-	"code.google.com/p/plotinum/plotter"
-	"code.google.com/p/plotinum/vg"
+	"github.com/go-hep/hplot/plotinum/plotter"
+	"github.com/go-hep/hplot/plotinum/vg"
 	"github.com/go-hep/hist"
+	"github.com/go-hep/hplot/plotinum/plot"
 )
 
 type h1d struct {
@@ -103,7 +103,7 @@ func (u unitYs) XY(i int) (float64, float64) {
 func NewH1D(h hist.Hist1D) (*Histogram, error) {
 	return &Histogram{
 		Hist:      h1d{h},
-		FillColor: color.Transparent,
+		FillColor: color.White,
 		LineStyle: plotter.DefaultLineStyle,
 	}, nil
 }
@@ -177,29 +177,31 @@ func (h *Histogram) Plot(da plot.DrawArea, p *plot.Plot) {
 	}
 }
 
-// // GlyphBoxes implements the GlyphBoxes method
-// // of the plot.GlyphBoxer interface.
-// func (h *Histogram) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
-// 	axis := h.Hist.Axis()
-// 	boxes := make([]plot.GlyphBox, axis.Bins())
-// 	for i, _ := range boxes {
-// 		// normalized x and y coordinates from the X
-// 		// and Y axes of the plot
-// 		x, y := h.Hist.XY(i)
-// 		boxes[i].X = plt.X.Norm(x)
-// 		boxes[i].Y = plt.Y.Norm(y)
-// 		// The bounding box of the glyph, which is
-// 		// centered at the x, y point.
-// 		bw := h.Hist.Axis().BinWidth(i)
-// 		norm_bw := plt.Y.Norm(bw)
-// 		w := vg.Length(norm_bw)
-// 		boxes[i].Rect = plot.Rect{
-// 			Min: plot.Point{-w / 2, -w / 2},
-// 			Size: plot.Point{2 * w, 2 * w},
-// 		}
-// 	}
-// 	return boxes
-// }
+// GlyphBoxes returns a slice of GlyphBoxes,
+// one for each of the bins, implementing the
+// plot.GlyphBoxer interface.
+func (h *Histogram) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
+	axis := h.Hist.Axis()
+	bs := make([]plot.GlyphBox, axis.Bins())
+	for i, _ := range bs {
+		y := h.Hist.Content(i)
+		xmin := axis.BinLowerEdge(i)
+		w := p.X.Norm(axis.BinWidth(i))
+		bs[i].X = p.X.Norm(xmin + 0.5*w)
+		bs[i].Y = p.Y.Norm(y)
+		//h := vg.Points(1e-5) //1 //p.Y.Norm(axis.BinWidth(i))
+		bs[i].Rect.Min.X = vg.Length(xmin - 0.5*w)
+		bs[i].Rect.Min.Y = vg.Length(y - 0.5*w)
+		bs[i].Rect.Size.X = vg.Length(w)
+		bs[i].Rect.Size.Y = vg.Length(0)
+
+		r := vg.Points(5)
+		//r = vg.Length(w)
+		bs[i].Rect.Min = plot.Pt(0, 0)
+		bs[i].Rect.Size = plot.Pt(0, r)
+	}
+	return bs
+}
 
 // Normalize normalizes the histogram so that the
 // total area beneath it sums to a given value.

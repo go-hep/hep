@@ -10,17 +10,17 @@
 // interface can draw to the data area of a plot using the primitives
 // made available by this package.  Some standard implementations
 // of the Plotter interface can be found in the
-// code.google.com/p/plotinum/plotter package
+// github.com/go-hep/hplot/plotinum/plotter package
 // which is documented here:
-// http://godoc.org/code.google.com/p/plotinum/plotter
+// http://godoc.org/github.com/go-hep/hplot/plotinum/plotter
 package plot
 
 import (
-	"code.google.com/p/plotinum/vg"
-	"code.google.com/p/plotinum/vg/vgeps"
-	"code.google.com/p/plotinum/vg/vgimg"
-	"code.google.com/p/plotinum/vg/vgpdf"
-	"code.google.com/p/plotinum/vg/vgsvg"
+	"github.com/go-hep/hplot/plotinum/vg"
+	"github.com/go-hep/hplot/plotinum/vg/vgeps"
+	"github.com/go-hep/hplot/plotinum/vg/vgimg"
+	"github.com/go-hep/hplot/plotinum/vg/vgpdf"
+	"github.com/go-hep/hplot/plotinum/vg/vgsvg"
 	"fmt"
 	"image/color"
 	"io"
@@ -36,6 +36,7 @@ const (
 
 // PlotStyle describes how the Plot will look like
 type PlotStyle int
+
 const (
 	DefaultPlotStyle PlotStyle = iota
 	GnuplotStyle
@@ -78,9 +79,9 @@ type Plot struct {
 
 // Plotter is an interface that wraps the Plot method.
 // Some standard implementations of Plotter can be
-// found in the code.google.com/p/plotinum/plotter
+// found in the github.com/go-hep/hplot/plotinum/plotter
 // package, documented here:
-// http://go.pkgdoc.org/code.google.com/p/plotinum/plotter
+// http://go.pkgdoc.org/github.com/go-hep/hplot/plotinum/plotter
 type Plotter interface {
 	// Plot draws the data to a DrawArea.
 	Plot(DrawArea, *Plot)
@@ -127,7 +128,7 @@ func New() (*Plot, error) {
 func padf(xmin, xmax float64) (float64, float64) {
 	if xmin < 0 && xmax < 0 {
 		return xmin * 1.05, xmax * 0.95
-	} 
+	}
 	if xmin < 0 && xmax >= 0 {
 		return xmin * 1.05, xmax * 1.05
 	}
@@ -197,8 +198,8 @@ func (p *Plot) Draw(da DrawArea) {
 		y.draw(yda)
 
 	case GnuplotStyle:
-		xda := padX(p, da.crop(ywidth - y.Width - y.Padding, 0, 0, 0))
-		yda := padY(p, da.crop(0, xheight-x.Width - x.Padding, 0, 0))
+		xda := padX(p, da.crop(ywidth-y.Width-y.Padding, 0, 0, 0))
+		yda := padY(p, da.crop(0, xheight-x.Width-x.Padding, 0, 0))
 		x.draw(xda)
 		y.draw(yda)
 		xmin := xda.Min.X

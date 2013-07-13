@@ -28,9 +28,9 @@ import (
 	"math"
 	"math/rand"
 
-	"code.google.com/p/plotinum/plotter"
-	"code.google.com/p/plotinum/vg"
 	"github.com/go-hep/hplot"
+	"github.com/go-hep/hplot/plotinum/plotter"
+	"github.com/go-hep/hplot/plotinum/vg"
 )
 
 const NPOINTS = 10000

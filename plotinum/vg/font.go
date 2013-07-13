@@ -25,7 +25,7 @@ const (
 	// importString is the import string expected for
 	// this package.  It is used to find the font
 	// directory included with the package source.
-	importString = "code.google.com/p/plotinum/vg"
+	importString = "github.com/go-hep/hplot/plotinum/vg"
 )
 
 var (

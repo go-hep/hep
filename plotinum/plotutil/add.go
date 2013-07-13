@@ -1,10 +1,10 @@
 package plotutil
 
 import (
-	"code.google.com/p/plotinum/plot"
-	"code.google.com/p/plotinum/plotter"
-	"code.google.com/p/plotinum/vg"
+	"github.com/go-hep/hplot/plotinum/vg"
 	"fmt"
+	"github.com/go-hep/hplot/plotinum/plot"
+	"github.com/go-hep/hplot/plotinum/plotter"
 )
 
 // AddBoxPlots adds box plot plotters to a plot and

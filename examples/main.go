@@ -8,8 +8,8 @@ import (
 	"math"
 	"math/rand"
 
-	"code.google.com/p/plotinum/plotter"
-	"code.google.com/p/plotinum/vg"
+	"github.com/go-hep/hplot/plotinum/plotter"
+	"github.com/go-hep/hplot/plotinum/vg"
 	"github.com/go-hep/hplot"
 )
 

@@ -1,8 +1,8 @@
 package plotutil
 
 import (
-	"code.google.com/p/plotinum/plot"
-	"code.google.com/p/plotinum/plotter"
+	"github.com/go-hep/hplot/plotinum/plot"
+	"github.com/go-hep/hplot/plotinum/plotter"
 	"math/rand"
 )
 

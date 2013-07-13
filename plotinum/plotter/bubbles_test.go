@@ -1,7 +1,7 @@
 package plotter
 
 import (
-	"code.google.com/p/plotinum/vg"
+	"github.com/go-hep/hplot/plotinum/vg"
 	"testing"
 )
 

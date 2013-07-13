@@ -12,8 +12,8 @@ This package is under active development so portions of it may change.
 package plotutil
 
 import (
-	"code.google.com/p/plotinum/plot"
-	"code.google.com/p/plotinum/vg"
+	"github.com/go-hep/hplot/plotinum/vg"
+	"github.com/go-hep/hplot/plotinum/plot"
 	"image/color"
 )
 

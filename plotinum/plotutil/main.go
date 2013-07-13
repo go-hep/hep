@@ -3,9 +3,9 @@
 package main
 
 import (
-	"code.google.com/p/plotinum/plot"
-	"code.google.com/p/plotinum/plotter"
-	"code.google.com/p/plotinum/plotutil"
+	"github.com/go-hep/hplot/plotinum/plot"
+	"github.com/go-hep/hplot/plotinum/plotter"
+	"github.com/go-hep/hplot/plotinum/plotutil"
 	"math/rand"
 )
 

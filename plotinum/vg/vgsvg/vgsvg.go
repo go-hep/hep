@@ -9,7 +9,7 @@ package vgsvg
 import (
 	"bufio"
 	"bytes"
-	"code.google.com/p/plotinum/vg"
+	"github.com/go-hep/hplot/plotinum/vg"
 	"fmt"
 	svgo "github.com/ajstarks/svgo"
 	"image/color"

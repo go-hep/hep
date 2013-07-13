@@ -1,8 +1,8 @@
 package hplot
 
 import (
-	"code.google.com/p/plotinum/plot"
-	"code.google.com/p/plotinum/plotter"
+	"github.com/go-hep/hplot/plotinum/plotter"
+	"github.com/go-hep/hplot/plotinum/plot"
 )
 
 // NewFunction returns a Function that plots F using
@@ -19,7 +19,17 @@ var NewGrid = plotter.NewGrid
 
 // New returns a new plot with some reasonable
 // default settings.
-var New = plot.New
+func NewPlot() (*plot.Plot, error) {
+	p, err := plot.New()
+	if err != nil {
+		return nil, err
+	}
+	p.X.Padding = 0
+	p.Y.Padding = 0
+	p.Style = plot.GnuplotStyle
+	return p, err
+}
+
 
 type Values struct {
 	plotter.Values

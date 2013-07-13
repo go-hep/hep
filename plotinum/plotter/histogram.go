@@ -10,8 +10,8 @@ import (
 	"image/color"
 	"math"
 
-	"code.google.com/p/plotinum/plot"
-	"code.google.com/p/plotinum/vg"
+	"github.com/go-hep/hplot/plotinum/vg"
+	"github.com/go-hep/hplot/plotinum/plot"
 )
 
 // Histogram implements the Plotter interface,
@@ -128,14 +128,14 @@ func (h *Histogram) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
 	bs := make([]plot.GlyphBox, len(h.Bins))
 	for i, bin := range h.Bins {
 		w := bin.Max - bin.Min
-		bs[i].X = p.X.Norm(bin.Min + 0.5 * w)
+		bs[i].X = p.X.Norm(bin.Min + 0.5*w)
 		bs[i].Y = p.Y.Norm(bin.Weight)
 
 		r := vg.Points(5)
 		bs[i].Rect.Min = plot.Pt(-r, -r)
 		bs[i].Rect.Size = plot.Pt(2*r, 2*r)
 	}
-        return bs
+	return bs
 }
 
 // binPoints returns a slice containing the

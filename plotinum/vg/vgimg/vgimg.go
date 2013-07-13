@@ -11,7 +11,7 @@ import (
 	"bufio"
 	"code.google.com/p/draw2d/draw2d"
 	"code.google.com/p/go.image/tiff"
-	"code.google.com/p/plotinum/vg"
+	"github.com/go-hep/hplot/plotinum/vg"
 	"fmt"
 	"image"
 	"image/color"

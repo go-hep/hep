@@ -9,7 +9,7 @@ package vgpdf
 import (
 	"bitbucket.org/zombiezen/gopdf/pdf"
 	"bufio"
-	"code.google.com/p/plotinum/vg"
+	"github.com/go-hep/hplot/plotinum/vg"
 	"fmt"
 	"image/color"
 	"io"
