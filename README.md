@@ -93,3 +93,5 @@ func stdNorm(x float64) float64 {
 // EOF
 ```
 
+![hist-example](https://github.com/go-hep/hplot/raw/master/examples/hist.png)
+
