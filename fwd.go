@@ -2,37 +2,32 @@ package hplot
 
 import (
 	"github.com/go-hep/hplot/plotinum/plotter"
-	"github.com/go-hep/hplot/plotinum/plot"
 )
 
 // NewFunction returns a Function that plots F using
 // the default line style with 50 samples.
-var NewFunction = plotter.NewFunction
+// NewFunction returns a Function that plots F using
+// the default line style with 50 samples.
+func NewFunction(f func(float64) float64) *plotter.Function {
+	return plotter.NewFunction(f)
+}
+
+// NewLine returns a Line that uses the default line style and
+// does not draw glyphs.
+func NewLine(xys plotter.XYer) (*plotter.Line, error) {
+	return plotter.NewLine(xys)
+}
 
 // NewScatter returns a Scatter that uses the
 // default glyph style.
-var NewScatter = plotter.NewScatter
+func NewScatter(xys plotter.XYer) (*plotter.Scatter, error) {
+	return plotter.NewScatter(xys)
+}
 
 // NewGrid returns a new grid with both vertical and
 // horizontal lines using the default grid line style.
-var NewGrid = plotter.NewGrid
-
-// New returns a new plot with some reasonable
-// default settings.
-func NewPlot() (*plot.Plot, error) {
-	p, err := plot.New()
-	if err != nil {
-		return nil, err
-	}
-	p.X.Padding = 0
-	p.Y.Padding = 0
-	p.Style = plot.GnuplotStyle
-	return p, err
-}
-
-
-type Values struct {
-	plotter.Values
+func NewGrid() *plotter.Grid {
+	return plotter.NewGrid()
 }
 
 // EOF
