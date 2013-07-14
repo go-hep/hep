@@ -29,11 +29,13 @@ func Delete(evt *Event) error {
 		p.ProdVertex = nil
 		p.EndVertex = nil
 		p.Flow.Particle = nil
+		delete(evt.Particles, p.Barcode)
 	}
 	for _, vtx := range evt.Vertices {
 		vtx.Event = nil
 		vtx.ParticlesIn = nil
 		vtx.ParticlesOut = nil
+		delete(evt.Vertices, vtx.Barcode)
 	}
 
 	evt.Particles = nil
