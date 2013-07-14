@@ -50,6 +50,11 @@ func main() {
       fmt.Printf("==evt: %d\n", evt.EventNumber)
       fmt.Printf("  #parts: %d\n", len(evt.Particles))
       fmt.Printf("  #verts: %d\n", len(evt.Vertices))
+
+      err = hepmc.Delete(&evt)
+      if err != nil {
+          panic(err)
+      }
   }
 }
 ```

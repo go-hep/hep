@@ -63,6 +63,7 @@ func test_evt_rw(t *testing.T, fname, outfname string) {
 			t.Fatal(err)
 		}
 		evts[ievt] = &evt
+		defer hepmc.Delete(&evt)
 	}
 
 	o, err := os.Create(outfname)

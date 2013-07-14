@@ -70,6 +70,12 @@ func main() {
 			fmt.Printf("**error: %v\n", err)
 			os.Exit(1)
 		}
+
+		err = hepmc.Delete(&evt)
+		if err != nil {
+			fmt.Printf("**error: %v\n", err)
+			os.Exit(1)
+		}
 	}
 }
 

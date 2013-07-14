@@ -43,6 +43,7 @@ func main() {
 		Particles:       make(map[int]*hepmc.Particle),
 		Vertices:        make(map[int]*hepmc.Vertex),
 	}
+	defer hepmc.Delete(&evt)
 
 	// define the units
 	evt.MomentumUnit = hepmc.GEV

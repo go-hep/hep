@@ -12,6 +12,35 @@ var (
 	errNilParticle = errors.New("hepmc: nil Particle")
 )
 
+// Delete deletes an event and allows memory to be reclaimed by the garbage collector
+func Delete(evt *Event) error {
+	var err error
+	if evt == nil {
+		return err
+	}
+	if evt.SignalVertex != nil {
+		evt.SignalVertex.Event = nil
+	}
+	evt.SignalVertex = nil
+	evt.Beams[0] = nil
+	evt.Beams[1] = nil
+
+	for _, p := range evt.Particles {
+		p.ProdVertex = nil
+		p.EndVertex = nil
+		p.Flow.Particle = nil
+	}
+	for _, vtx := range evt.Vertices {
+		vtx.Event = nil
+		vtx.ParticlesIn = nil
+		vtx.ParticlesOut = nil
+	}
+
+	evt.Particles = nil
+	evt.Vertices = nil
+	return err
+}
+
 // Event represents a record for MC generators (for use at any stage of generation)
 //
 // This type is intended as both a "container class" ( to store a MC
