@@ -5,8 +5,8 @@
 package plot
 
 import (
-	"github.com/go-hep/hplot/plotinum/vg"
 	"fmt"
+	"github.com/go-hep/hplot/plotinum/vg"
 	"image/color"
 	"math"
 )

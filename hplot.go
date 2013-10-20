@@ -31,7 +31,7 @@ func New() (*Plot, error) {
 func padf(xmin, xmax float64) (float64, float64) {
 	if xmin < 0 && xmax < 0 {
 		return xmin * 1.05, xmax * 0.95
-	} 
+	}
 	if xmin < 0 && xmax >= 0 {
 		return xmin * 1.05, xmax * 1.05
 	}

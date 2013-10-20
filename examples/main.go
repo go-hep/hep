@@ -8,9 +8,9 @@ import (
 	"math"
 	"math/rand"
 
+	"github.com/go-hep/hplot"
 	"github.com/go-hep/hplot/plotinum/plotter"
 	"github.com/go-hep/hplot/plotinum/vg"
-	"github.com/go-hep/hplot"
 )
 
 const NPOINTS = 10000
@@ -50,7 +50,6 @@ func main() {
 	// Draw a grid behind the data
 	p.Add(hplot.NewGrid())
 
-
 	// The normal distribution function
 	norm := hplot.NewFunction(stdNorm)
 	norm.Color = color.RGBA{R: 255, A: 255}
@@ -78,4 +77,3 @@ func stdNorm(x float64) float64 {
 }
 
 // EOF
-

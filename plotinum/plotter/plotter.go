@@ -21,8 +21,8 @@ import (
 	"image/color"
 	"math"
 
-	"github.com/go-hep/hplot/plotinum/vg"
 	"github.com/go-hep/hplot/plotinum/plot"
+	"github.com/go-hep/hplot/plotinum/vg"
 )
 
 var (

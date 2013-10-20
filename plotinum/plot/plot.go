@@ -16,12 +16,12 @@
 package plot
 
 import (
+	"fmt"
 	"github.com/go-hep/hplot/plotinum/vg"
 	"github.com/go-hep/hplot/plotinum/vg/vgeps"
 	"github.com/go-hep/hplot/plotinum/vg/vgimg"
 	"github.com/go-hep/hplot/plotinum/vg/vgpdf"
 	"github.com/go-hep/hplot/plotinum/vg/vgsvg"
-	"fmt"
 	"image/color"
 	"io"
 	"math"

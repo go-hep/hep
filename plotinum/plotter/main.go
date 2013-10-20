@@ -8,10 +8,10 @@
 package main
 
 import (
-	"github.com/go-hep/hplot/plotinum/vg"
 	"fmt"
 	"github.com/go-hep/hplot/plotinum/plot"
 	"github.com/go-hep/hplot/plotinum/plotter"
+	"github.com/go-hep/hplot/plotinum/vg"
 	"image/color"
 	"math"
 	"math/rand"

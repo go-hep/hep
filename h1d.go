@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"image/color"
 
-	"github.com/go-hep/hplot/plotinum/plotter"
-	"github.com/go-hep/hplot/plotinum/vg"
 	"github.com/go-hep/hist"
 	"github.com/go-hep/hplot/plotinum/plot"
+	"github.com/go-hep/hplot/plotinum/plotter"
+	"github.com/go-hep/hplot/plotinum/vg"
 )
 
 type h1d struct {

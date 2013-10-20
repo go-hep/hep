@@ -9,8 +9,8 @@ package vgeps
 import (
 	"bufio"
 	"bytes"
-	"github.com/go-hep/hplot/plotinum/vg"
 	"fmt"
+	"github.com/go-hep/hplot/plotinum/vg"
 	"image/color"
 	"io"
 	"math"
