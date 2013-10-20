@@ -7,8 +7,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/go-hep/hplot/plotinum/plotter"
 	"github.com/go-hep/hplot"
+	"github.com/go-hep/hplot/plotinum/plotter"
 )
 
 var g_persist = flag.Bool("p", false, "lets plot windows survive after hplot exists")
