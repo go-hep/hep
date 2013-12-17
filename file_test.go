@@ -2,7 +2,6 @@ package rootio
 
 import (
 	"bytes"
-	//B "encoding/binary"
 	"io"
 	"log"
 	"os"
@@ -14,7 +13,7 @@ import (
 func TestFileReader(t *testing.T) {
 	f, err := Open("test-small.root")
 	if err != nil {
-		panic(err)
+		t.Fatal(err.Error())
 	}
 
 	pretty.DefaultConfig.IncludeUnexported = true
@@ -29,6 +28,7 @@ func TestFileReader(t *testing.T) {
 				return k
 			}
 		}
+		t.Fatalf("could not find key [%s]", n)
 		return Key{}
 	}
 
@@ -36,6 +36,10 @@ func TestFileReader(t *testing.T) {
 
 	basket := k.AsBasket()
 	buf := bytes.NewBuffer(k.ReadContents())
+
+	if buf.Len() == 0 {
+		t.Fatalf("invalid key size")
+	}
 
 	fd, _ := os.Create("mcevt.bytes")
 	io.Copy(fd, buf)
