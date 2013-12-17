@@ -11,7 +11,7 @@ import (
 )
 
 type Key struct {
-	uf *File // underlying file
+	f *File // underlying file
 
 	bytes    int32
 	version  int16
@@ -36,7 +36,7 @@ func (k *Key) Data() []byte {
 		if int64(cap(k.data)) < int64(k.objlen) {
 			k.data = make([]byte, k.objlen)
 		}
-		io.ReadFull(k.uf, k.data) // TODO(pwaller): Error check
+		io.ReadFull(k.f, k.data) // TODO(pwaller): Error check
 	}
 	return k.data
 }
@@ -50,7 +50,7 @@ func (k *Key) ReadContents() []byte {
 	if k.Compressed() {
 		// ... therefore it's compressed
 		start := k.seekkey + int64(k.keylen) + ROOT_HDRSIZE
-		r := io.NewSectionReader(k.uf, start, int64(k.bytes)-int64(k.keylen))
+		r := io.NewSectionReader(k.f, start, int64(k.bytes)-int64(k.keylen))
 		rc, err := zlib.NewReader(r)
 		if err != nil {
 			panic(err)
@@ -71,8 +71,8 @@ func (k *Key) AsBasket() *Basket {
 		panic("Key is not a basket!")
 	}
 	b := &Basket{}
-	k.uf.Seek(int64(k.pdat), os.SEEK_SET)
-	k.uf.ReadBin(b)
+	k.f.Seek(int64(k.pdat), os.SEEK_SET)
+	k.f.ReadBin(b)
 	return b
 }
 
