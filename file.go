@@ -1,4 +1,4 @@
-package root
+package rootio
 
 import (
 	B "encoding/binary"
@@ -41,7 +41,7 @@ type File struct {
 	keys []Key
 }
 
-func NewFile(path string) (*File, error) {
+func Open(path string) (*File, error) {
 	fd, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to open %q (%q)", path, err.Error())

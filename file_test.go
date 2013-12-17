@@ -1,4 +1,4 @@
-package root
+package rootio
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 )
 
 func TestFileReader(t *testing.T) {
-	f, err := NewFile("test-small.root")
+	f, err := Open("test-small.root")
 	if err != nil {
 		panic(err)
 	}
