@@ -116,8 +116,6 @@ func (f *File) ReadBin(v interface{}) {
 	}
 }
 
-var buf [256]byte
-
 func (f *File) Map() {
 	for _, k := range f.keys {
 		if k.classname == "TBasket" {
@@ -133,6 +131,7 @@ func (f *File) Map() {
 
 func (f *File) ReadString(s *string) {
 	var length byte
+	var buf [256]byte
 
 	f.ReadBin(&length)
 
