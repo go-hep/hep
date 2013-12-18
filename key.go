@@ -10,20 +10,37 @@ import (
 	//"github.com/kr/pretty"
 )
 
+// Key is a key (a label) in a ROOT file
+//
+//  The Key class includes functions to book space on a file,
+//   to create I/O buffers, to fill these buffers
+//   to compress/uncompress data buffers.
+//
+//  Before saving (making persistent) an object on a file, a key must
+//  be created. The key structure contains all the information to
+//  uniquely identify a persistent object on a file.
+//  The Key class is used by ROOT:
+//    - to write an object in the Current Directory
+//    - to write a new ntuple buffer
 type Key struct {
 	f *File // underlying file
 
-	bytes    int32
-	version  int16
-	objlen   int32
-	datetime int32
-	keylen   int32
-	cycle    int16
+	bytes    int32 // number of bytes for the compressed object+key
+	version  int16 // version of the Key struct
+	objlen   int32 // length of uncompressed object
+	datetime int32 // Date/Time when the object was written
+	keylen   int32 // number of bytes for the Key struct
+	cycle    int16 // cycle number of the object
 
+	// address of the object on file (points to Key.bytes)
+	// this is a redundant information used to cross-check
+	// the data base integrity
 	seekkey  int64
-	seekpdir int64
+	seekpdir int64 // pointer to the directory supporting this object
 
-	classname, name, title string
+	classname string // object class name
+	name      string // name of the object
+	title     string // title of the object
 
 	pdat int64 // Pointer to everything after the above.
 
