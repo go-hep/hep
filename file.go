@@ -41,6 +41,9 @@ type File struct {
 	keys []Key
 }
 
+// Open opens the named ROOT file for reading. If successful, methods on the
+// returned file can be used for reading; the associated file descriptor
+// has mode os.O_RDONLY.
 func Open(path string) (*File, error) {
 	fd, err := os.Open(path)
 	if err != nil {
@@ -184,6 +187,8 @@ func (f *File) Tell() int64 {
 	return where
 }
 
+// Close closes the File, rendering it unusable for I/O. It returns an
+// error, if any.
 func (f *File) Close() error {
 	for _, k := range f.keys {
 		k.f = nil
@@ -191,3 +196,10 @@ func (f *File) Close() error {
 	f.keys = nil
 	return f.Reader.Close()
 }
+
+// Keys returns the list of keys this File contains
+func (f *File) Keys() []Key {
+	return f.keys
+}
+
+// EOF
