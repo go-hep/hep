@@ -122,10 +122,10 @@ func (f *File) Map() {
 	for _, k := range f.keys {
 		if k.classname == "TBasket" {
 			//b := k.AsBasket()
-			fmt.Printf("%8s %70s %4v %4v %f\n", k.classname, k.name, k.bytes-k.keylen, k.objlen, float64(k.objlen)/float64(k.bytes-k.keylen))
+			fmt.Printf("%8s %60s %6v %6v %f\n", k.classname, k.name, k.bytes-k.keylen, k.objlen, float64(k.objlen)/float64(k.bytes-k.keylen))
 		} else {
 			//println(k.classname, k.name, k.title)
-			fmt.Printf("%8s %70s %4v %4v %f\n", k.classname, k.name, k.bytes-k.keylen, k.objlen, float64(k.objlen)/float64(k.bytes-k.keylen))
+			fmt.Printf("%8s %60s %6v %6v %f\n", k.classname, k.name, k.bytes-k.keylen, k.objlen, float64(k.objlen)/float64(k.bytes-k.keylen))
 		}
 	}
 
