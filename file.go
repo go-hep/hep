@@ -11,7 +11,7 @@ const LargeFileBoundary = 0x7FFFFFFF
 
 var E = B.BigEndian
 
-type UnderlyingReader interface {
+type Reader interface {
 	io.Reader
 	io.ReaderAt
 	io.Seeker
@@ -19,7 +19,7 @@ type UnderlyingReader interface {
 }
 
 type File struct {
-	UnderlyingReader
+	Reader
 	id string //non-root, identifies filename, etc.
 
 	magic   [4]byte
@@ -47,7 +47,7 @@ func Open(path string) (*File, error) {
 		return nil, fmt.Errorf("Unable to open %q (%q)", path, err.Error())
 	}
 
-	f := &File{UnderlyingReader: fd, id: path}
+	f := &File{Reader: fd, id: path}
 
 	return f, f.ReadHeader()
 }
