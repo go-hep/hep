@@ -76,10 +76,13 @@ func (k *Key) ReadContents() []byte {
 		buf := &bytes.Buffer{}
 		io.Copy(buf, rc)
 		return buf.Bytes()
-	} else {
-		// TODO..
 	}
-	return []byte{}
+	// ... not compressed
+	start := k.seekkey + int64(k.keylen)
+	r := io.NewSectionReader(k.f, start, int64(k.bytes))
+	buf := &bytes.Buffer{}
+	io.Copy(buf, r)
+	return buf.Bytes()
 }
 
 // Return Basket data associated with this key, if there is any
