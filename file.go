@@ -184,3 +184,11 @@ func (f *File) Tell() int64 {
 	}
 	return where
 }
+
+func (f *File) Close() error {
+	for _, k := range f.keys {
+		k.f = nil
+	}
+	f.keys = nil
+	return f.Reader.Close()
+}
