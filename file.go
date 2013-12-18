@@ -104,7 +104,7 @@ func (f *File) ReadHeader() (err error) {
 
 // Read a key and append it to f.keys
 func (f *File) ReadKey() {
-	f.keys = append(f.keys, Key{uf: f})
+	f.keys = append(f.keys, Key{f: f})
 	key := &(f.keys[len(f.keys)-1])
 	key.Read()
 }

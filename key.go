@@ -81,7 +81,7 @@ func (k *Key) Compressed() bool {
 }
 
 func (k *Key) Read() {
-	f := k.uf
+	f := k.f
 
 	key_offset := f.Tell()
 
