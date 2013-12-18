@@ -2,8 +2,8 @@ package rootio
 
 import (
 	"bytes"
+	B "encoding/binary"
 	"io"
-	"log"
 	"os"
 	"testing"
 
@@ -11,10 +11,11 @@ import (
 )
 
 func TestFileReader(t *testing.T) {
-	f, err := Open("test-small.root")
+	f, err := Open("testdata/small.root")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
+	defer f.Close()
 
 	pretty.DefaultConfig.IncludeUnexported = true
 
@@ -32,23 +33,63 @@ func TestFileReader(t *testing.T) {
 		return Key{}
 	}
 
-	k := getkey("mcevt_weight")
+	{
+		k := getkey("Int64")
 
-	basket := k.AsBasket()
-	buf := bytes.NewBuffer(k.ReadContents())
+		basket := k.AsBasket()
+		buf := bytes.NewBuffer(k.ReadContents())
 
-	if buf.Len() == 0 {
-		t.Fatalf("invalid key size")
+		if buf.Len() == 0 {
+			t.Fatalf("invalid key size")
+		}
+
+		if true {
+			fd, _ := os.Create("testdata_int64.bytes")
+			io.Copy(fd, buf)
+			fd.Close()
+			// buf has been consumed...
+			buf = bytes.NewBuffer(k.ReadContents())
+		}
+
+		for i := 0; i < int(basket.Nevbuf); i++ {
+			var data int64
+			err := B.Read(buf, E, &data)
+			if err != nil {
+				t.Fatalf("could not read entry [%d]: %v\n", i, err)
+			}
+			if data != int64(i) {
+				t.Fatalf("expected data=%v (got=%v)\n", i, data)
+			}
+		}
 	}
 
-	fd, _ := os.Create("mcevt.bytes")
-	io.Copy(fd, buf)
-	fd.Close()
+	{
+		k := getkey("Float64")
 
-	var contents [1024]uint32
-	for i := 0; i < int(basket.Nevbuf); i++ {
-		n := k.DecodeVector(buf, contents[:])
-		log.Print("Event: ", contents[:n])
+		basket := k.AsBasket()
+		buf := bytes.NewBuffer(k.ReadContents())
+
+		if buf.Len() == 0 {
+			t.Fatalf("invalid key size")
+		}
+
+		if true {
+			fd, _ := os.Create("testdata_float64.bytes")
+			io.Copy(fd, buf)
+			fd.Close()
+			// buf has been consumed...
+			buf = bytes.NewBuffer(k.ReadContents())
+		}
+
+		for i := 0; i < int(basket.Nevbuf); i++ {
+			var data float64
+			err := B.Read(buf, E, &data)
+			if err != nil {
+				t.Fatalf("could not read entry [%d]: %v\n", i, err)
+			}
+			if data != float64(i) {
+				t.Fatalf("expected data=%v (got=%v)\n", i, data)
+			}
+		}
 	}
-
 }
