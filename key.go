@@ -48,6 +48,18 @@ type Key struct {
 	data []byte
 }
 
+func (k *Key) ClassName() string {
+	return k.classname
+}
+
+func (k *Key) Name() string {
+	return k.name
+}
+
+func (k *Key) Title() string {
+	return k.title
+}
+
 func (k *Key) Data() []byte {
 	if !k.read {
 		if int64(cap(k.data)) < int64(k.objlen) {
