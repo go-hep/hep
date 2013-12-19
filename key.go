@@ -65,7 +65,10 @@ func (k *Key) Data() []byte {
 		if int64(cap(k.data)) < int64(k.objlen) {
 			k.data = make([]byte, k.objlen)
 		}
-		io.ReadFull(k.f, k.data) // TODO(pwaller): Error check
+		_, err := io.ReadFull(k.f, k.data)
+		if err != nil {
+			panic(fmt.Errorf("rootio.Key: %v", err))
+		}
 	}
 	return k.data
 }
@@ -75,7 +78,7 @@ func (k *Key) Data() []byte {
 // objlen.
 const ROOT_HDRSIZE = 9
 
-func (k *Key) ReadContents() []byte {
+func (k *Key) ReadContents() ([]byte, error) {
 	if k.Compressed() {
 		// ... therefore it's compressed
 		start := k.seekkey + int64(k.keylen) + ROOT_HDRSIZE
@@ -86,25 +89,37 @@ func (k *Key) ReadContents() []byte {
 		}
 
 		buf := &bytes.Buffer{}
-		io.Copy(buf, rc)
-		return buf.Bytes()
+		_, err = io.Copy(buf, rc)
+		if err != nil {
+			return nil, err
+		}
+		return buf.Bytes(), nil
 	}
 	// ... not compressed
 	start := k.seekkey + int64(k.keylen)
 	r := io.NewSectionReader(k.f, start, int64(k.bytes))
 	buf := &bytes.Buffer{}
-	io.Copy(buf, r)
-	return buf.Bytes()
+	_, err := io.Copy(buf, r)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
 
 // Return Basket data associated with this key, if there is any
 func (k *Key) AsBasket() *Basket {
 	if k.classname != "TBasket" {
-		panic("Key is not a basket!")
+		panic("rootio.Key: Key is not a basket!")
 	}
 	b := &Basket{}
-	k.f.Seek(int64(k.pdat), os.SEEK_SET)
-	k.f.ReadBin(b)
+	_, err := k.f.Seek(int64(k.pdat), os.SEEK_SET)
+	if err != nil {
+		panic(fmt.Errorf("rootio.Key: %v", err))
+	}
+	err = k.f.ReadBin(b)
+	if err != nil {
+		panic(fmt.Errorf("rootio.Key: %v", err))
+	}
 	return b
 }
 
@@ -112,34 +127,70 @@ func (k *Key) Compressed() bool {
 	return k.objlen != k.bytes-k.keylen
 }
 
-func (k *Key) Read() {
+func (k *Key) Read() error {
+	var err error
 	f := k.f
 
 	key_offset := f.Tell()
 
-	f.ReadBin(&k.bytes)
+	err = f.ReadBin(&k.bytes)
+	if err != nil {
+		return err
+	}
+
 	if k.bytes < 0 {
 		//fmt.Println("Jumping gap: ", k.bytes)
 		k.classname = "[GAP]"
-		f.Seek(int64(-k.bytes)-4, os.SEEK_CUR)
-		return
+		_, err = f.Seek(int64(-k.bytes)-4, os.SEEK_CUR)
+		return err
 	}
-	f.ReadBin(&k.version)
-	f.ReadBin(&k.objlen)
-	f.ReadBin(&k.datetime)
-	f.ReadInt16(&k.keylen)
-	f.ReadBin(&k.cycle)
-
-	if k.version > 1000 {
-		f.ReadBin(&k.seekkey)
-	} else {
-		f.ReadInt32(&k.seekkey)
+	err = f.ReadBin(&k.version)
+	if err != nil {
+		return err
 	}
 
+	err = f.ReadBin(&k.objlen)
+	if err != nil {
+		return err
+	}
+
+	err = f.ReadBin(&k.datetime)
+	if err != nil {
+		return err
+	}
+
+	err = f.ReadInt16(&k.keylen)
+	if err != nil {
+		return err
+	}
+
+	err = f.ReadBin(&k.cycle)
+	if err != nil {
+		return err
+	}
+
 	if k.version > 1000 {
-		f.ReadBin(&k.seekpdir)
+		err = f.ReadBin(&k.seekkey)
+		if err != nil {
+			return err
+		}
 	} else {
-		f.ReadInt32(&k.seekpdir)
+		err = f.ReadInt32(&k.seekkey)
+		if err != nil {
+			return err
+		}
+	}
+
+	if k.version > 1000 {
+		err = f.ReadBin(&k.seekpdir)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = f.ReadInt32(&k.seekpdir)
+		if err != nil {
+			return err
+		}
 	}
 
 	if k.seekkey == 0 {
@@ -151,11 +202,23 @@ func (k *Key) Read() {
 			k.seekkey, key_offset))
 	}
 
-	f.ReadString(&k.classname)
-	f.ReadString(&k.name)
-	f.ReadString(&k.title)
+	err = f.ReadString(&k.classname)
+	if err != nil {
+		return err
+	}
+
+	err = f.ReadString(&k.name)
+	if err != nil {
+		return err
+	}
+
+	err = f.ReadString(&k.title)
+	if err != nil {
+		return err
+	}
 
 	k.pdat = f.Tell()
 
-	f.Seek(int64(key_offset+int64(k.bytes)), os.SEEK_SET)
+	_, err = f.Seek(int64(key_offset+int64(k.bytes)), os.SEEK_SET)
+	return err
 }

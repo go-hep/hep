@@ -70,53 +70,103 @@ func (f *File) ReadHeader() (err error) {
 
 	// Header
 
-	f.ReadBin(&f.magic)
+	err = f.ReadBin(&f.magic)
+	if err != nil {
+		return err
+	}
 
 	if string(f.magic[:]) != "root" {
 		return fmt.Errorf("%q is not a root file", f.id)
 	}
 
-	f.ReadInt32(&f.version)
+	err = f.ReadInt32(&f.version)
+	if err != nil {
+		return err
+	}
 
-	f.ReadInt32(&f.begin)
-	f.ReadPtr(&f.end)
+	err = f.ReadInt32(&f.begin)
+	if err != nil {
+		return err
+	}
 
-	f.ReadPtr(&f.seekfree)
-	f.ReadPtr(&f.nbytesfree)
+	err = f.ReadPtr(&f.end)
+	if err != nil {
+		return err
+	}
 
-	f.ReadInt32(&f.nfree)
-	f.ReadPtr(&f.nbytesname)
-	f.ReadBin(&f.units)
-	f.ReadInt32(&f.compression)
-	f.ReadPtr(&f.seekinfo)
-	f.ReadInt32(&f.nbytesinfo)
-	f.ReadBin(&f.uuid)
+	err = f.ReadPtr(&f.seekfree)
+	if err != nil {
+		return err
+	}
+
+	err = f.ReadPtr(&f.nbytesfree)
+	if err != nil {
+		return err
+	}
+
+	err = f.ReadInt32(&f.nfree)
+	if err != nil {
+		return err
+	}
+
+	err = f.ReadPtr(&f.nbytesname)
+	if err != nil {
+		return err
+	}
+
+	err = f.ReadBin(&f.units)
+	if err != nil {
+		return err
+	}
+
+	err = f.ReadInt32(&f.compression)
+	if err != nil {
+		return err
+	}
+
+	err = f.ReadPtr(&f.seekinfo)
+	if err != nil {
+		return err
+	}
+
+	err = f.ReadInt32(&f.nbytesinfo)
+	if err != nil {
+		return err
+	}
+
+	err = f.ReadBin(&f.uuid)
+	if err != nil {
+		return err
+	}
 
 	stage = "reading keys"
 
 	// Contents of file
 
-	f.Seek(int64(f.begin), os.SEEK_SET)
-
-	for f.Tell() < f.end {
-		f.ReadKey()
+	_, err = f.Seek(int64(f.begin), os.SEEK_SET)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	for f.Tell() < f.end {
+		err = f.ReadKey()
+		if err != nil {
+			return err
+		}
+	}
+
+	return err
 }
 
 // Read a key and append it to f.keys
-func (f *File) ReadKey() {
+func (f *File) ReadKey() error {
 	f.keys = append(f.keys, Key{f: f})
 	key := &(f.keys[len(f.keys)-1])
-	key.Read()
+	return key.Read()
 }
 
-func (f *File) ReadBin(v interface{}) {
-	err := B.Read(f, E, v)
-	if err != nil {
-		panic(err)
-	}
+func (f *File) ReadBin(v interface{}) error {
+	return B.Read(f, E, v)
 }
 
 func (f *File) Map() {
@@ -132,21 +182,33 @@ func (f *File) Map() {
 
 }
 
-func (f *File) ReadString(s *string) {
+func (f *File) ReadString(s *string) error {
+	var err error
 	var length byte
 	var buf [256]byte
 
-	f.ReadBin(&length)
+	err = f.ReadBin(&length)
+	if err != nil {
+		return err
+	}
 
 	if length != 0 {
-		f.ReadBin(buf[:length])
+		err = f.ReadBin(buf[:length])
+		if err != nil {
+			return err
+		}
 		*s = string(buf[:length])
 	}
+	return err
 }
 
-func (f *File) ReadInt16(v interface{}) {
+func (f *File) ReadInt16(v interface{}) error {
+	var err error
 	var d int16
-	f.ReadBin(&d)
+	err = f.ReadBin(&d)
+	if err != nil {
+		return err
+	}
 
 	switch uv := v.(type) {
 	case *int32:
@@ -156,27 +218,33 @@ func (f *File) ReadInt16(v interface{}) {
 	default:
 		panic("Unknown type")
 	}
+
+	return err
 }
 
-func (f *File) ReadInt32(v interface{}) {
+func (f *File) ReadInt32(v interface{}) error {
+	var err error
 	switch uv := v.(type) {
 	case *int32:
-		f.ReadBin(v)
+		err = f.ReadBin(v)
 	case *int64:
 		var d int32
-		f.ReadBin(&d)
+		err = f.ReadBin(&d)
 		*uv = int64(d)
 	default:
 		panic("Unknown type")
 	}
+	return err
 }
 
-func (f *File) ReadPtr(v interface{}) {
+func (f *File) ReadPtr(v interface{}) error {
+	var err error
 	if f.version > 1000000 {
-		f.ReadBin(v)
+		err = f.ReadBin(v)
 	} else {
-		f.ReadInt32(v)
+		err = f.ReadInt32(v)
 	}
+	return err
 }
 
 func (f *File) Tell() int64 {
