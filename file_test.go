@@ -37,7 +37,11 @@ func TestFileReader(t *testing.T) {
 		k := getkey("Int64")
 
 		basket := k.AsBasket()
-		buf := bytes.NewBuffer(k.ReadContents())
+		data, err := k.ReadContents()
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+		buf := bytes.NewBuffer(data)
 
 		if buf.Len() == 0 {
 			t.Fatalf("invalid key size")
@@ -48,7 +52,7 @@ func TestFileReader(t *testing.T) {
 			io.Copy(fd, buf)
 			fd.Close()
 			// buf has been consumed...
-			buf = bytes.NewBuffer(k.ReadContents())
+			buf = bytes.NewBuffer(data)
 		}
 
 		for i := 0; i < int(basket.Nevbuf); i++ {
@@ -67,7 +71,11 @@ func TestFileReader(t *testing.T) {
 		k := getkey("Float64")
 
 		basket := k.AsBasket()
-		buf := bytes.NewBuffer(k.ReadContents())
+		data, err := k.ReadContents()
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+		buf := bytes.NewBuffer(data)
 
 		if buf.Len() == 0 {
 			t.Fatalf("invalid key size")
@@ -78,7 +86,7 @@ func TestFileReader(t *testing.T) {
 			io.Copy(fd, buf)
 			fd.Close()
 			// buf has been consumed...
-			buf = bytes.NewBuffer(k.ReadContents())
+			buf = bytes.NewBuffer(data)
 		}
 
 		for i := 0; i < int(basket.Nevbuf); i++ {
