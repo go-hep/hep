@@ -78,7 +78,7 @@ func (k *Key) Data() []byte {
 // objlen.
 const ROOT_HDRSIZE = 9
 
-func (k *Key) ReadContents() ([]byte, error) {
+func (k *Key) Bytes() ([]byte, error) {
 	if k.Compressed() {
 		// ... therefore it's compressed
 		start := k.seekkey + int64(k.keylen) + ROOT_HDRSIZE

@@ -37,7 +37,7 @@ func TestFileReader(t *testing.T) {
 		k := getkey("Int64")
 
 		basket := k.AsBasket()
-		data, err := k.ReadContents()
+		data, err := k.Bytes()
 		if err != nil {
 			t.Fatalf(err.Error())
 		}
@@ -71,7 +71,7 @@ func TestFileReader(t *testing.T) {
 		k := getkey("Float64")
 
 		basket := k.AsBasket()
-		data, err := k.ReadContents()
+		data, err := k.Bytes()
 		if err != nil {
 			t.Fatalf(err.Error())
 		}
