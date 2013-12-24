@@ -78,8 +78,9 @@ func (k *Key) Data() []byte {
 // objlen.
 const ROOT_HDRSIZE = 9
 
+// Bytes returns the buffer of bytes corresponding to the Key's value
 func (k *Key) Bytes() ([]byte, error) {
-	if k.Compressed() {
+	if k.isCompressed() {
 		// ... therefore it's compressed
 		start := k.seekkey + int64(k.keylen) + ROOT_HDRSIZE
 		r := io.NewSectionReader(k.f, start, int64(k.bytes)-int64(k.keylen))
@@ -123,7 +124,7 @@ func (k *Key) AsBasket() *Basket {
 	return b
 }
 
-func (k *Key) Compressed() bool {
+func (k *Key) isCompressed() bool {
 	return k.objlen != k.bytes-k.keylen
 }
 
