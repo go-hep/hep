@@ -117,7 +117,7 @@ func (k *Key) AsBasket() *Basket {
 	if err != nil {
 		panic(fmt.Errorf("rootio.Key: %v", err))
 	}
-	err = k.f.ReadBin(b)
+	err = k.f.readBin(b)
 	if err != nil {
 		panic(fmt.Errorf("rootio.Key: %v", err))
 	}
@@ -134,7 +134,7 @@ func (k *Key) Read() error {
 
 	key_offset := f.Tell()
 
-	err = f.ReadBin(&k.bytes)
+	err = f.readBin(&k.bytes)
 	if err != nil {
 		return err
 	}
@@ -145,50 +145,50 @@ func (k *Key) Read() error {
 		_, err = f.Seek(int64(-k.bytes)-4, os.SEEK_CUR)
 		return err
 	}
-	err = f.ReadBin(&k.version)
+	err = f.readBin(&k.version)
 	if err != nil {
 		return err
 	}
 
-	err = f.ReadBin(&k.objlen)
+	err = f.readBin(&k.objlen)
 	if err != nil {
 		return err
 	}
 
-	err = f.ReadBin(&k.datetime)
+	err = f.readBin(&k.datetime)
 	if err != nil {
 		return err
 	}
 
-	err = f.ReadInt16(&k.keylen)
+	err = f.readInt16(&k.keylen)
 	if err != nil {
 		return err
 	}
 
-	err = f.ReadBin(&k.cycle)
+	err = f.readBin(&k.cycle)
 	if err != nil {
 		return err
 	}
 
 	if k.version > 1000 {
-		err = f.ReadBin(&k.seekkey)
+		err = f.readBin(&k.seekkey)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = f.ReadInt32(&k.seekkey)
+		err = f.readInt32(&k.seekkey)
 		if err != nil {
 			return err
 		}
 	}
 
 	if k.version > 1000 {
-		err = f.ReadBin(&k.seekpdir)
+		err = f.readBin(&k.seekpdir)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = f.ReadInt32(&k.seekpdir)
+		err = f.readInt32(&k.seekpdir)
 		if err != nil {
 			return err
 		}
@@ -203,17 +203,17 @@ func (k *Key) Read() error {
 			k.seekkey, key_offset))
 	}
 
-	err = f.ReadString(&k.classname)
+	err = f.readString(&k.classname)
 	if err != nil {
 		return err
 	}
 
-	err = f.ReadString(&k.name)
+	err = f.readString(&k.name)
 	if err != nil {
 		return err
 	}
 
-	err = f.ReadString(&k.title)
+	err = f.readString(&k.title)
 	if err != nil {
 		return err
 	}
