@@ -270,4 +270,7 @@ func (f *File) Keys() []Key {
 	return f.keys
 }
 
+// testing interfaces
+//var _ Object = (*File)(nil)
+
 // EOF

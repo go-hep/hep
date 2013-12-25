@@ -223,3 +223,7 @@ func (k *Key) Read() error {
 	_, err = f.Seek(int64(key_offset+int64(k.bytes)), os.SEEK_SET)
 	return err
 }
+
+// testing interfaces
+
+var _ Object = (*Key)(nil)
