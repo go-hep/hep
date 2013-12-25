@@ -39,6 +39,6 @@ func main() {
 	}
 
 	for _, k := range f.Keys() {
-		fmt.Printf("%-8s %-40s %s\n", k.ClassName(), k.Name(), k.Title())
+		fmt.Printf("%-8s %-40s %s\n", k.Class(), k.Name(), k.Title())
 	}
 }

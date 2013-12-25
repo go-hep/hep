@@ -48,7 +48,7 @@ type Key struct {
 	data []byte
 }
 
-func (k *Key) ClassName() string {
+func (k *Key) Class() string {
 	return k.classname
 }
 
