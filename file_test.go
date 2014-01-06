@@ -5,6 +5,7 @@ import (
 	B "encoding/binary"
 	"io"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/kylelemons/godebug/pretty"
@@ -33,8 +34,25 @@ func TestFileReader(t *testing.T) {
 		return Key{}
 	}
 
-	{
-		k := getkey("Int64")
+	for _, table := range []struct {
+		n string
+		t reflect.Type
+	}{
+		{"Int32", reflect.TypeOf(int32(0))},
+		{"Int64", reflect.TypeOf(int64(0))},
+		{"UInt32", reflect.TypeOf(uint32(0))},
+		{"UInt64", reflect.TypeOf(uint64(0))},
+		{"Float32", reflect.TypeOf(float32(0))},
+		{"Float64", reflect.TypeOf(float64(0))},
+
+		{"ArrayInt32", reflect.TypeOf([10]int32{})},
+		{"ArrayInt64", reflect.TypeOf([10]int64{})},
+		{"ArrayUInt32", reflect.TypeOf([10]uint32{})},
+		{"ArrayUInt64", reflect.TypeOf([10]uint64{})},
+		{"ArrayFloat32", reflect.TypeOf([10]float32{})},
+		{"ArrayFloat64", reflect.TypeOf([10]float64{})},
+	} {
+		k := getkey(table.n)
 
 		basket := k.AsBasket()
 		data, err := k.Bytes()
@@ -48,7 +66,7 @@ func TestFileReader(t *testing.T) {
 		}
 
 		if true {
-			fd, _ := os.Create("testdata_int64.bytes")
+			fd, _ := os.Create("testdata/read_" + table.n + ".bytes")
 			io.Copy(fd, buf)
 			fd.Close()
 			// buf has been consumed...
@@ -56,48 +74,28 @@ func TestFileReader(t *testing.T) {
 		}
 
 		for i := 0; i < int(basket.Nevbuf); i++ {
-			var data int64
-			err := B.Read(buf, E, &data)
+			data := reflect.New(table.t)
+			err := B.Read(buf, E, data.Interface())
 			if err != nil {
 				t.Fatalf("could not read entry [%d]: %v\n", i, err)
 			}
-			if data != int64(i) {
-				t.Fatalf("expected data=%v (got=%v)\n", i, data)
+			switch table.t.Kind() {
+			case reflect.Array:
+				for jj := 0; jj < table.t.Len(); jj++ {
+					vref := reflect.ValueOf(i).Convert(table.t.Elem())
+					vchk := reflect.ValueOf(data.Elem().Index(jj).Interface()).Convert(table.t.Elem())
+					if !reflect.DeepEqual(vref, vchk) {
+						t.Fatalf("%s: expected data[%d]=%v (got=%v)\n", table.n, jj, vref.Interface(), vchk.Interface())
+					}
+				}
+			default:
+				vref := reflect.ValueOf(i).Convert(table.t)
+				vchk := reflect.ValueOf(data.Elem().Interface()).Convert(table.t)
+				if !reflect.DeepEqual(vref, vchk) {
+					t.Fatalf("%s: expected data=%v (got=%v)\n", table.n, vref.Interface(), vchk.Interface())
+				}
 			}
 		}
 	}
 
-	{
-		k := getkey("Float64")
-
-		basket := k.AsBasket()
-		data, err := k.Bytes()
-		if err != nil {
-			t.Fatalf(err.Error())
-		}
-		buf := bytes.NewBuffer(data)
-
-		if buf.Len() == 0 {
-			t.Fatalf("invalid key size")
-		}
-
-		if true {
-			fd, _ := os.Create("testdata_float64.bytes")
-			io.Copy(fd, buf)
-			fd.Close()
-			// buf has been consumed...
-			buf = bytes.NewBuffer(data)
-		}
-
-		for i := 0; i < int(basket.Nevbuf); i++ {
-			var data float64
-			err := B.Read(buf, E, &data)
-			if err != nil {
-				t.Fatalf("could not read entry [%d]: %v\n", i, err)
-			}
-			if data != float64(i) {
-				t.Fatalf("expected data=%v (got=%v)\n", i, data)
-			}
-		}
-	}
 }
