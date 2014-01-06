@@ -11,7 +11,6 @@ import (
 	"github.com/go-hep/rootio"
 )
 
-var g_fname = flag.String("f", "", "path to the ROOT to inspect")
 var g_prof = flag.String("profile", "", "filename of cpuprofile")
 
 func main() {
@@ -26,19 +25,27 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	if *g_fname == "" {
+	if flag.NArg() <= 0 {
 		fmt.Fprintf(os.Stderr, "**error** you need to give a ROOT file\n")
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	f, err := rootio.Open(*g_fname)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "**error** %v\n", err)
-		os.Exit(1)
-	}
+	for ii, fname := range flag.Args() {
 
-	for _, k := range f.Keys() {
-		fmt.Printf("%-8s %-40s %s\n", k.Class(), k.Name(), k.Title())
+		if ii > 0 {
+			fmt.Printf("\n")
+		}
+
+		fmt.Printf("=== [%s] ===\n", fname)
+		f, err := rootio.Open(fname)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "**error** %v\n", err)
+			os.Exit(1)
+		}
+
+		for _, k := range f.Keys() {
+			fmt.Printf("%-8s %-40s %s\n", k.Class(), k.Name(), k.Title())
+		}
 	}
 }
