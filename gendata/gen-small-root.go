@@ -6,9 +6,22 @@ import (
 	"github.com/go-hep/croot"
 )
 
+const ARRAYSZ = 10
+
 type Event struct {
-	I int64
-	F float64
+	I32 int32
+	I64 int64
+	U32 uint32
+	U64 uint64
+	F32 float32
+	F64 float64
+
+	ArrayI32 [ARRAYSZ]int32
+	ArrayI64 [ARRAYSZ]int64
+	ArrayU32 [ARRAYSZ]uint32
+	ArrayU64 [ARRAYSZ]uint64
+	ArrayF32 [ARRAYSZ]float32
+	ArrayF64 [ARRAYSZ]float64
 }
 
 func main() {
@@ -29,12 +42,7 @@ func main() {
 
 	e := Event{}
 
-	_, err = tree.Branch2("Int64", &e.I, "Int64/L", bufsiz)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	_, err = tree.Branch2("Float64", &e.F, "Float64/D", bufsiz)
+	_, err = tree.Branch("evt", &e, bufsiz, 0)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -45,8 +53,21 @@ func main() {
 			fmt.Printf(":: processing event %d...\n", iev)
 		}
 
-		e.I = iev
-		e.F = float64(iev)
+		e.I32 = int32(iev)
+		e.I64 = int64(iev)
+		e.U32 = uint32(iev)
+		e.U64 = uint64(iev)
+		e.F32 = float32(iev)
+		e.F64 = float64(iev)
+
+		for ii := 0; ii < ARRAYSZ; ii++ {
+			e.ArrayI32[ii] = int32(iev)
+			e.ArrayI64[ii] = int64(iev)
+			e.ArrayU32[ii] = uint32(iev)
+			e.ArrayU64[ii] = uint64(iev)
+			e.ArrayF32[ii] = float32(iev)
+			e.ArrayF64[ii] = float64(iev)
+		}
 
 		_, err = tree.Fill()
 		if err != nil {
