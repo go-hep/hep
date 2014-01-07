@@ -315,5 +315,6 @@ func (f *File) Get(namecycle string) (Object, error) {
 
 // testing interfaces
 //var _ Object = (*File)(nil)
+var _ Directory = (*File)(nil)
 
 // EOF
