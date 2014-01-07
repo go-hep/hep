@@ -108,6 +108,40 @@ func (k *Key) Bytes() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// Value returns the data corresponding to the Key's value
+func (k *Key) Value() interface{} {
+	var v interface{}
+
+	factory := Factory.Get(k.Class())
+	if factory == nil {
+		panic(fmt.Errorf("key[%v]: no factory for type [%s]\n", k.Name(), k.Class()))
+	}
+
+	vv := factory()
+	if vv, ok := vv.Interface().(ROOTUnmarshaler); ok {
+		data, err := k.Bytes()
+		if err != nil {
+			panic(fmt.Errorf("key[%v]: %v", k.Name(), err))
+		}
+		err = vv.UnmarshalROOT(data)
+		if err != nil {
+			panic(err)
+		}
+		v = vv
+	} else {
+		panic(fmt.Errorf(
+			"key[%v]: type [%s] does not satisfy the ROOTUnmarshaler interface",
+			k.Name(), k.Class(),
+		))
+	}
+
+	// FIXME: hack.
+	if vv, ok := v.(*Tree); ok {
+		vv.f = k.f
+	}
+	return v
+}
+
 // Return Basket data associated with this key, if there is any
 func (k *Key) AsBasket() *Basket {
 	if k.classname != "TBasket" {
