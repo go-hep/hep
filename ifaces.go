@@ -2,6 +2,7 @@ package rootio
 
 // Class represents a ROOT class.
 // Class instances are created by a ClassFactory.
+
 type Class interface {
 	// GetCheckSum gets the check sum for this ROOT class
 	//CheckSum() int
@@ -49,6 +50,43 @@ type Object interface {
 // ClassFactory creates ROOT classes
 type ClassFactory interface {
 	Create(name string) Class
+}
+
+// Directory describes a ROOT directory structure in memory.
+type Directory interface {
+	// return pointer to object identified by namecycle
+	//   namecycle has the format name;cycle
+	//   name  = * is illegal, cycle = * is illegal
+	//   cycle = "" or cycle = 9999 ==> apply to a memory object
+	//
+	//   examples:
+	//     foo   : get object named foo in memory
+	//             if object is not in memory, try with highest cycle from file
+	//     foo;1 : get cycle 1 of foo on file
+	Get(namecycle string) (Object, error)
+
+	// return whether an object identified by namecycle exists in directory
+	//   namecycle has the format name;cycle
+	//   name  = * is illegal, cycle = * is illegal
+	//   cycle = "" or cycle = 9999 ==> apply to a memory object
+	//
+	//   examples:
+	//     foo   : get object named foo in memory
+	//             if object is not in memory, try with highest cycle from file
+	//     foo;1 : get cycle 1 of foo on file
+	Has(namecycle string) bool
+}
+
+// ROOTUnmarshaler is the interface implemented by an object that can
+// unmarshal itself from a ROOT buffer
+type ROOTUnmarshaler interface {
+	UnmarshalROOT(data []byte) error
+}
+
+// ROOTMarshaler is the interface implemented by an object that can
+// marshal itself into a ROOT buffer
+type ROOTMarshaler interface {
+	MarshalROOT() (data []byte, err error)
 }
 
 // EOF
