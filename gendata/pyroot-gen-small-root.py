@@ -17,7 +17,7 @@ def main():
     if not f:
         raise SystemError()
 
-    t = ROOT.TTree("tree", "tree", splitlevel)
+    t = ROOT.TTree("tree", "my tree title", splitlevel)
 
     i32 = carray("i", [0])
     i64 = carray("l", [0])

@@ -11,6 +11,134 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 )
 
+func TestFileDirectory(t *testing.T) {
+	f, err := Open("testdata/small.root")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	defer f.Close()
+
+	pretty.DefaultConfig.IncludeUnexported = true
+
+	for _, table := range []struct {
+		name     string
+		expected bool
+	}{
+		{"Int32", true},
+		{"Int32;0", true},
+		{"Int32;1", true}, //FIXME: currently, cycle is just ignored.
+		{"Int32_nope", false},
+		{"Int32_nope;0", false},
+
+		{"Int64", true},
+		{"Int64;0", true},
+		{"Int64_nope", false},
+		{"Int64_nope;0", false},
+
+		{"Float64", true},
+		{"Float64;0", true},
+		{"Float64_nope", false},
+		{"Float64_nope;0", false},
+
+		{"ArrayFloat64", true},
+		{"ArrayFloat64;0", true},
+		{"ArrayFloat64_nope", false},
+		{"ArrayFloat64_nope;0", false},
+
+		{"tree", true},
+	} {
+		_, err := f.Get(table.name)
+		ok := err == nil
+		if ok != table.expected {
+			t.Fatalf("%s: expected key to exist=%v (got=%v, err=%v)", table.name, table.expected, ok, err)
+		}
+	}
+
+	for _, table := range []struct {
+		name     string
+		expected string
+	}{
+		{"Int32", "TBasket"},
+		{"Int32;0", "TBasket"},
+
+		{"Int64", "TBasket"},
+		{"Int64;0", "TBasket"},
+
+		{"Float64", "TBasket"},
+		{"Float64;0", "TBasket"},
+
+		{"ArrayFloat64", "TBasket"},
+		{"ArrayFloat64;0", "TBasket"},
+
+		{"tree", "TTree"},
+	} {
+		k, err := f.Get(table.name)
+		if err != nil {
+			t.Fatalf("%s: expected key to exist! (got %v)", table.name, err)
+		}
+
+		if k.Class() != table.expected {
+			t.Fatalf("%s: expected key with class=%s (got=%v)", table.name, table.expected, k.Class())
+		}
+	}
+
+	for _, table := range []struct {
+		name     string
+		expected string
+	}{
+		{"Int32", "Int32"},
+		{"Int32;0", "Int32"},
+
+		{"Int64", "Int64"},
+		{"Int64;0", "Int64"},
+
+		{"Float64", "Float64"},
+		{"Float64;0", "Float64"},
+
+		{"ArrayFloat64", "ArrayFloat64"},
+		{"ArrayFloat64;0", "ArrayFloat64"},
+
+		{"tree", "tree"},
+	} {
+		k, err := f.Get(table.name)
+		if err != nil {
+			t.Fatalf("%s: expected key to exist! (got %v)", table.name, err)
+		}
+
+		if k.Name() != table.expected {
+			t.Fatalf("%s: expected key with name=%s (got=%v)", table.name, table.expected, k.Name())
+		}
+	}
+
+	for _, table := range []struct {
+		name     string
+		expected string
+	}{
+		{"Int32", "tree"},
+		{"Int32;0", "tree"},
+
+		{"Int64", "tree"},
+		{"Int64;0", "tree"},
+
+		{"Float64", "tree"},
+		{"Float64;0", "tree"},
+
+		{"ArrayFloat64", "tree"},
+		{"ArrayFloat64;0", "tree"},
+
+		{"tree", "my tree title"},
+	} {
+		k, err := f.Get(table.name)
+		if err != nil {
+			t.Fatalf("%s: expected key to exist! (got %v)", table.name, err)
+		}
+
+		if k.Title() != table.expected {
+			t.Fatalf("%s: expected key with title=%s (got=%v)", table.name, table.expected, k.Title())
+		}
+	}
+}
+
 func TestFileReader(t *testing.T) {
 	f, err := Open("testdata/small.root")
 	if err != nil {
