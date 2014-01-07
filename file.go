@@ -275,7 +275,7 @@ func (f *File) Keys() []Key {
 	return f.keys
 }
 
-// return whether an object identified by namecycle exists in directory
+// Has returns whether an object identified by namecycle exists in directory
 //   namecycle has the format name;cycle
 //   name  = * is illegal, cycle = * is illegal
 //   cycle = "" or cycle = 9999 ==> apply to a memory object
@@ -294,7 +294,7 @@ func (f *File) Has(namecycle string) bool {
 	return false
 }
 
-// return pointer to object identified by namecycle
+// Get returns the object identified by namecycle
 //   namecycle has the format name;cycle
 //   name  = * is illegal, cycle = * is illegal
 //   cycle = "" or cycle = 9999 ==> apply to a memory object
