@@ -275,6 +275,44 @@ func (f *File) Keys() []Key {
 	return f.keys
 }
 
+// return whether an object identified by namecycle exists in directory
+//   namecycle has the format name;cycle
+//   name  = * is illegal, cycle = * is illegal
+//   cycle = "" or cycle = 9999 ==> apply to a memory object
+//
+//   examples:
+//     foo   : get object named foo in memory
+//             if object is not in memory, try with highest cycle from file
+//     foo;1 : get cycle 1 of foo on file
+func (f *File) Has(namecycle string) bool {
+	name, _ := decodeNameCycle(namecycle)
+	for _, k := range f.keys {
+		if k.Name() == name {
+			return true
+		}
+	}
+	return false
+}
+
+// return pointer to object identified by namecycle
+//   namecycle has the format name;cycle
+//   name  = * is illegal, cycle = * is illegal
+//   cycle = "" or cycle = 9999 ==> apply to a memory object
+//
+//   examples:
+//     foo   : get object named foo in memory
+//             if object is not in memory, try with highest cycle from file
+//     foo;1 : get cycle 1 of foo on file
+func (f *File) Get(namecycle string) (Object, error) {
+	name, _ := decodeNameCycle(namecycle)
+	for _, k := range f.keys {
+		if k.Name() == name {
+			return &k, nil
+		}
+	}
+	return nil, fmt.Errorf("rootio.File: no such key [%s]", namecycle)
+}
+
 // testing interfaces
 //var _ Object = (*File)(nil)
 
