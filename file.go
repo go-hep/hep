@@ -1,6 +1,7 @@
 package rootio
 
 import (
+	"bufio"
 	B "encoding/binary"
 	"fmt"
 	"io"
@@ -38,7 +39,7 @@ type File struct {
 	nbytesinfo  int32 // sizeof(TStreamerInfo)
 	uuid        [18]byte
 
-	keys []Key
+	root directory // root directory of this file
 }
 
 // Open opens the named ROOT file for reading. If successful, methods on the
@@ -50,7 +51,11 @@ func Open(path string) (*File, error) {
 		return nil, fmt.Errorf("Unable to open %q (%q)", path, err.Error())
 	}
 
-	f := &File{Reader: fd, id: path}
+	f := &File{
+		Reader: fd,
+		id:     path,
+	}
+	f.root = directory{file: f}
 
 	err = f.readHeader()
 	if err != nil {
@@ -226,17 +231,13 @@ func (f *File) readHeader() (err error) {
 
 // readKey reads a key and appends it to f.keys
 func (f *File) readKey() error {
-	f.keys = append(f.keys, Key{f: f})
-	key := &(f.keys[len(f.keys)-1])
+	f.root.keys = append(f.root.keys, Key{f: f})
+	key := &(f.root.keys[len(f.root.keys)-1])
 	return key.Read()
 }
 
-func (f *File) readBin(v interface{}) error {
-	return B.Read(f, E, v)
-}
-
 func (f *File) Map() {
-	for _, k := range f.keys {
+	for _, k := range f.root.keys {
 		if k.classname == "TBasket" {
 			//b := k.AsBasket()
 			fmt.Printf("%8s %60s %6v %6v %f\n", k.classname, k.name, k.bytes-k.keylen, k.objlen, float64(k.objlen)/float64(k.bytes-k.keylen))
@@ -259,16 +260,17 @@ func (f *File) Tell() int64 {
 // Close closes the File, rendering it unusable for I/O. It returns an
 // error, if any.
 func (f *File) Close() error {
-	for _, k := range f.keys {
+	for _, k := range f.root.keys {
 		k.f = nil
 	}
-	f.keys = nil
+	f.root.keys = nil
+	f.root.file = nil
 	return f.Reader.Close()
 }
 
 // Keys returns the list of keys this File contains
 func (f *File) Keys() []Key {
-	return f.keys
+	return f.root.keys
 }
 
 // Has returns whether an object identified by namecycle exists in directory
@@ -281,13 +283,7 @@ func (f *File) Keys() []Key {
 //             if object is not in memory, try with highest cycle from file
 //     foo;1 : get cycle 1 of foo on file
 func (f *File) Has(namecycle string) bool {
-	name, _ := decodeNameCycle(namecycle)
-	for _, k := range f.keys {
-		if k.Name() == name {
-			return true
-		}
-	}
-	return false
+	return f.root.Has(namecycle)
 }
 
 // Get returns the object identified by namecycle
@@ -300,13 +296,7 @@ func (f *File) Has(namecycle string) bool {
 //             if object is not in memory, try with highest cycle from file
 //     foo;1 : get cycle 1 of foo on file
 func (f *File) Get(namecycle string) (Object, error) {
-	name, _ := decodeNameCycle(namecycle)
-	for _, k := range f.keys {
-		if k.Name() == name {
-			return &k, nil
-		}
-	}
-	return nil, fmt.Errorf("rootio.File: no such key [%s]", namecycle)
+	return f.root.Get(namecycle)
 }
 
 // testing interfaces

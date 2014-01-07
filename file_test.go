@@ -153,7 +153,7 @@ func TestFileReader(t *testing.T) {
 
 	getkey := func(n string) Key {
 		var k Key
-		for _, k = range f.keys {
+		for _, k = range f.root.keys {
 			if k.name == n {
 				return k
 			}
