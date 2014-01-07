@@ -31,7 +31,7 @@ type File struct {
 	seekfree    int64 // first available record
 	nbytesfree  int64 // total bytes available
 	nfree       int32 // total free bytes
-	nbytesname  int64
+	nbytesname  int64 // number of bytes in TNamed at creation time
 	units       byte
 	compression int32
 	seekinfo    int64 // pointer to TStreamerInfo
