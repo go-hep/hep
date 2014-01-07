@@ -4,7 +4,8 @@
 // A typical usage is as follow:
 //
 //   f, err := rootio.Open("ntup.root")
-//   t := f.Get("tree").(*rootio.Tree)
+//   obj, err := f.Get("tree")
+//   tree := obj.(*rootio.Tree)
 //   fmt.Printf("entries= %v\n", t.Entries())
 package rootio
 
