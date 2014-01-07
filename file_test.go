@@ -24,28 +24,14 @@ func TestFileDirectory(t *testing.T) {
 		name     string
 		expected bool
 	}{
-		{"Int32", true},
-		{"Int32;0", true},
-		{"Int32;1", true}, //FIXME: currently, cycle is just ignored.
-		{"Int32_nope", false},
-		{"Int32_nope;0", false},
-
-		{"Int64", true},
-		{"Int64;0", true},
-		{"Int64_nope", false},
-		{"Int64_nope;0", false},
-
-		{"Float64", true},
-		{"Float64;0", true},
-		{"Float64_nope", false},
-		{"Float64_nope;0", false},
-
-		{"ArrayFloat64", true},
-		{"ArrayFloat64;0", true},
-		{"ArrayFloat64_nope", false},
-		{"ArrayFloat64_nope;0", false},
-
 		{"tree", true},
+		{"tree;0", false},
+		{"tree;1", true},
+		{"tree;9999", true},
+		{"tree_nope", false},
+		{"tree_nope;0", false},
+		{"tree_nope;1", false},
+		{"tree_nope;9999", false},
 	} {
 		_, err := f.Get(table.name)
 		ok := err == nil
