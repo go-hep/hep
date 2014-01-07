@@ -52,7 +52,12 @@ func Open(path string) (*File, error) {
 
 	f := &File{Reader: fd, id: path}
 
-	return f, f.readHeader()
+	err = f.readHeader()
+	if err != nil {
+		return nil, err
+	}
+
+	return f, nil
 }
 
 func (f *File) readHeader() (err error) {
