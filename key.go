@@ -152,7 +152,9 @@ func (k *Key) AsBasket() *Basket {
 	if err != nil {
 		panic(fmt.Errorf("rootio.Key: %v", err))
 	}
-	err = k.f.readBin(b)
+
+	dec := rootDecoder{r: k.f}
+	err = dec.readBin(b)
 	if err != nil {
 		panic(fmt.Errorf("rootio.Key: %v", err))
 	}
@@ -167,9 +169,10 @@ func (k *Key) Read() error {
 	var err error
 	f := k.f
 
+	dec := rootDecoder{r: f}
 	key_offset := f.Tell()
 
-	err = f.readBin(&k.bytes)
+	err = dec.readBin(&k.bytes)
 	if err != nil {
 		return err
 	}
@@ -177,53 +180,53 @@ func (k *Key) Read() error {
 	if k.bytes < 0 {
 		//fmt.Println("Jumping gap: ", k.bytes)
 		k.classname = "[GAP]"
-		_, err = f.Seek(int64(-k.bytes)-4, os.SEEK_CUR)
+		_, err = dec.r.(io.Seeker).Seek(int64(-k.bytes)-4, os.SEEK_CUR)
 		return err
 	}
-	err = f.readBin(&k.version)
+	err = dec.readBin(&k.version)
 	if err != nil {
 		return err
 	}
 
-	err = f.readBin(&k.objlen)
+	err = dec.readBin(&k.objlen)
 	if err != nil {
 		return err
 	}
 
-	err = f.readBin(&k.datetime)
+	err = dec.readBin(&k.datetime)
 	if err != nil {
 		return err
 	}
 
-	err = f.readInt16(&k.keylen)
+	err = dec.readInt16(&k.keylen)
 	if err != nil {
 		return err
 	}
 
-	err = f.readBin(&k.cycle)
+	err = dec.readBin(&k.cycle)
 	if err != nil {
 		return err
 	}
 
 	if k.version > 1000 {
-		err = f.readBin(&k.seekkey)
+		err = dec.readBin(&k.seekkey)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = f.readInt32(&k.seekkey)
+		err = dec.readInt32(&k.seekkey)
 		if err != nil {
 			return err
 		}
 	}
 
 	if k.version > 1000 {
-		err = f.readBin(&k.seekpdir)
+		err = dec.readBin(&k.seekpdir)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = f.readInt32(&k.seekpdir)
+		err = dec.readInt32(&k.seekpdir)
 		if err != nil {
 			return err
 		}
@@ -238,24 +241,26 @@ func (k *Key) Read() error {
 			k.seekkey, key_offset))
 	}
 
-	err = f.readString(&k.classname)
+	err = dec.readString(&k.classname)
 	if err != nil {
 		return err
 	}
 
-	err = f.readString(&k.name)
+	err = dec.readString(&k.name)
 	if err != nil {
 		return err
 	}
 
-	err = f.readString(&k.title)
+	err = dec.readString(&k.title)
 	if err != nil {
 		return err
 	}
 
-	k.pdat = f.Tell()
+	k.pdat = dec.r.(interface {
+		Tell() int64
+	}).Tell()
 
-	_, err = f.Seek(int64(key_offset+int64(k.bytes)), os.SEEK_SET)
+	_, err = dec.r.(io.Seeker).Seek(int64(key_offset+int64(k.bytes)), os.SEEK_SET)
 	return err
 }
 

@@ -73,9 +73,11 @@ func (f *File) readHeader() (err error) {
 
 	stage = "reading header"
 
+	dec := rootDecoder{r: bufio.NewReader(f)}
+
 	// Header
 
-	err = f.readBin(&f.magic)
+	err = dec.readBin(&f.magic)
 	if err != nil {
 		return err
 	}
@@ -84,57 +86,116 @@ func (f *File) readHeader() (err error) {
 		return fmt.Errorf("%q is not a root file", f.id)
 	}
 
-	err = f.readInt32(&f.version)
+	err = dec.readInt32(&f.version)
 	if err != nil {
 		return err
 	}
 
-	err = f.readInt32(&f.begin)
+	err = dec.readInt32(&f.begin)
 	if err != nil {
 		return err
 	}
 
-	err = f.readPtr(&f.end)
-	if err != nil {
-		return err
+	if f.version < 1000000 { // small file
+		var end int32
+		err = dec.readBin(&end)
+		if err != nil {
+			return err
+		}
+		f.end = int64(end)
+
+		var seekfree int32
+		err = dec.readBin(&seekfree)
+		if err != nil {
+			return err
+		}
+		f.seekfree = int64(seekfree)
+
+		err = dec.readBin(&f.nbytesfree)
+		if err != nil {
+			return err
+		}
+
+		err = dec.readBin(&f.nfree)
+		if err != nil {
+			return err
+		}
+
+		err = dec.readBin(&f.nbytesname)
+		if err != nil {
+			return err
+		}
+
+		err = dec.readBin(&f.units)
+		if err != nil {
+			return err
+		}
+
+		err = dec.readBin(&f.compression)
+		if err != nil {
+			return err
+		}
+
+		var seekinfo int32
+		err = dec.readBin(&seekinfo)
+		if err != nil {
+			return err
+		}
+		f.seekinfo = int64(seekinfo)
+
+		err = dec.readBin(&f.nbytesinfo)
+		if err != nil {
+			return err
+		}
+
+	} else { // large files
+		err = dec.readBin(&f.end)
+		if err != nil {
+			return err
+		}
+
+		err = dec.readBin(&f.seekfree)
+		if err != nil {
+			return err
+		}
+
+		err = dec.readBin(&f.nbytesfree)
+		if err != nil {
+			return err
+		}
+
+		err = dec.readBin(&f.nfree)
+		if err != nil {
+			return err
+		}
+
+		err = dec.readBin(&f.nbytesname)
+		if err != nil {
+			return err
+		}
+
+		err = dec.readBin(&f.units)
+		if err != nil {
+			return err
+		}
+
+		err = dec.readBin(&f.compression)
+		if err != nil {
+			return err
+		}
+
+		err = dec.readBin(&f.seekinfo)
+		if err != nil {
+			return err
+		}
+
+		err = dec.readBin(&f.nbytesinfo)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = f.readPtr(&f.seekfree)
-	if err != nil {
-		return err
-	}
-
-	err = f.readPtr(&f.nbytesfree)
-	if err != nil {
-		return err
-	}
-
-	err = f.readInt32(&f.nfree)
-	if err != nil {
-		return err
-	}
-
-	err = f.readPtr(&f.nbytesname)
-	if err != nil {
-		return err
-	}
-
-	err = f.readBin(&f.units)
-	if err != nil {
-		return err
-	}
-
-	err = f.readInt32(&f.compression)
-	if err != nil {
-		return err
-	}
-
-	err = f.readPtr(&f.seekinfo)
-	if err != nil {
-		return err
-	}
-
-	err = f.readInt32(&f.nbytesinfo)
+	err = dec.readBin(&f.uuid)
 	if err != nil {
 		return err
 	}
@@ -185,71 +246,6 @@ func (f *File) Map() {
 		}
 	}
 
-}
-
-func (f *File) readString(s *string) error {
-	var err error
-	var length byte
-	var buf [256]byte
-
-	err = f.readBin(&length)
-	if err != nil {
-		return err
-	}
-
-	if length != 0 {
-		err = f.readBin(buf[:length])
-		if err != nil {
-			return err
-		}
-		*s = string(buf[:length])
-	}
-	return err
-}
-
-func (f *File) readInt16(v interface{}) error {
-	var err error
-	var d int16
-	err = f.readBin(&d)
-	if err != nil {
-		return err
-	}
-
-	switch uv := v.(type) {
-	case *int32:
-		*uv = int32(d)
-	case *int64:
-		*uv = int64(d)
-	default:
-		panic("Unknown type")
-	}
-
-	return err
-}
-
-func (f *File) readInt32(v interface{}) error {
-	var err error
-	switch uv := v.(type) {
-	case *int32:
-		err = f.readBin(v)
-	case *int64:
-		var d int32
-		err = f.readBin(&d)
-		*uv = int64(d)
-	default:
-		panic("Unknown type")
-	}
-	return err
-}
-
-func (f *File) readPtr(v interface{}) error {
-	var err error
-	if f.version > 1000000 {
-		err = f.readBin(v)
-	} else {
-		err = f.readInt32(v)
-	}
-	return err
 }
 
 func (f *File) Tell() int64 {
