@@ -60,17 +60,18 @@ func (k *Key) Title() string {
 	return k.title
 }
 
-func (k *Key) Data() []byte {
+func (k *Key) load() ([]byte, error) {
 	if !k.read {
 		if int64(cap(k.data)) < int64(k.objlen) {
 			k.data = make([]byte, k.objlen)
 		}
 		_, err := io.ReadFull(k.f, k.data)
 		if err != nil {
-			panic(fmt.Errorf("rootio.Key: %v", err))
+			return nil, err
 		}
+		k.read = true
 	}
-	return k.data
+	return k.data, nil
 }
 
 // Note: this contains ZL[src][dst] where src and dst are 3 bytes each.
