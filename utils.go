@@ -7,9 +7,9 @@ import (
 )
 
 // decodeNameCycle decodes a namecycle "aap;2" into name "aap" and cycle "2"
-func decodeNameCycle(namecycle string) (string, int) {
+func decodeNameCycle(namecycle string) (string, int16) {
 	var name string
-	var cycle int
+	var cycle int16
 
 	toks := strings.Split(namecycle, ";")
 	switch len(toks) {
@@ -26,7 +26,7 @@ func decodeNameCycle(namecycle string) (string, int) {
 			// not a number
 			cycle = 9999
 		} else {
-			cycle = i
+			cycle = int16(i)
 		}
 	default:
 		panic(fmt.Errorf("invalid namecycle format [%v]", namecycle))
