@@ -13,9 +13,6 @@ func decodeNameCycle(namecycle string) (string, int16) {
 
 	toks := strings.Split(namecycle, ";")
 	switch len(toks) {
-	case 0:
-		name = namecycle
-		cycle = 9999
 	case 1:
 		name = toks[0]
 		cycle = 9999
