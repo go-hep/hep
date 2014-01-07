@@ -54,7 +54,7 @@ type ClassFactory interface {
 
 // Directory describes a ROOT directory structure in memory.
 type Directory interface {
-	// return pointer to object identified by namecycle
+	// Get returns the object identified by namecycle
 	//   namecycle has the format name;cycle
 	//   name  = * is illegal, cycle = * is illegal
 	//   cycle = "" or cycle = 9999 ==> apply to a memory object
@@ -65,7 +65,7 @@ type Directory interface {
 	//     foo;1 : get cycle 1 of foo on file
 	Get(namecycle string) (Object, error)
 
-	// return whether an object identified by namecycle exists in directory
+	// Has returns whether an object identified by namecycle exists in directory
 	//   namecycle has the format name;cycle
 	//   name  = * is illegal, cycle = * is illegal
 	//   cycle = "" or cycle = 9999 ==> apply to a memory object
