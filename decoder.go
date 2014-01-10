@@ -1,15 +1,15 @@
 package rootio
 
 import (
-	"bytes"
 	"encoding/binary"
+	"io"
 )
 
-type decodeState struct {
-	data *bytes.Buffer
+type rootDecoder struct {
+	r io.Reader
 }
 
-func (dec *decodeState) readString(s *string) error {
+func (dec *rootDecoder) readString(s *string) error {
 	var err error
 	var length byte
 	var buf [256]byte
@@ -30,11 +30,11 @@ func (dec *decodeState) readString(s *string) error {
 
 }
 
-func (dec *decodeState) readBin(v interface{}) error {
-	return binary.Read(dec.data, E, v)
+func (dec *rootDecoder) readBin(v interface{}) error {
+	return binary.Read(dec.r, E, v)
 }
 
-func (dec *decodeState) readInt16(v interface{}) error {
+func (dec *rootDecoder) readInt16(v interface{}) error {
 	var err error
 	var d int16
 	err = dec.readBin(&d)
@@ -43,6 +43,8 @@ func (dec *decodeState) readInt16(v interface{}) error {
 	}
 
 	switch uv := v.(type) {
+	case *int16:
+		*uv = int16(d)
 	case *int32:
 		*uv = int32(d)
 	case *int64:
@@ -54,7 +56,7 @@ func (dec *decodeState) readInt16(v interface{}) error {
 	return err
 }
 
-func (dec *decodeState) readInt32(v interface{}) error {
+func (dec *rootDecoder) readInt32(v interface{}) error {
 	var err error
 	switch uv := v.(type) {
 	case *int32:
@@ -69,19 +71,20 @@ func (dec *decodeState) readInt32(v interface{}) error {
 	return err
 }
 
-/*
-func (dec *decodeState) readPtr(v interface{}) error {
+func (dec *rootDecoder) readInt64(v interface{}) error {
 	var err error
-	if f.version > 1000000 {
-		err = d.readBin(v)
-	} else {
-		err = d.readInt32(v)
+	switch uv := v.(type) {
+	case *int64:
+		var d int64
+		err = dec.readBin(&d)
+		*uv = int64(d)
+	default:
+		panic("Unknown type")
 	}
 	return err
 }
-*/
 
-func (dec *decodeState) readVersion() (version int16, position, bytecount int32, err error) {
+func (dec *rootDecoder) readVersion() (version int16, position, bytecount int32, err error) {
 
 	err = dec.readBin(&bytecount)
 	if err != nil {
@@ -116,7 +119,7 @@ func (dec *decodeState) readVersion() (version int16, position, bytecount int32,
 	return version, position, bytecount, err
 }
 
-func (dec *decodeState) readTNamed() (name, title string, err error) {
+func (dec *rootDecoder) readTNamed() (name, title string, err error) {
 
 	/*
 		// FIXME: handle kIsOnHeap || kIsReferenced
@@ -141,7 +144,7 @@ func (dec *decodeState) readTNamed() (name, title string, err error) {
 	return name, title, err
 }
 
-func (dec *decodeState) readTAttLine() (color, style, width int16, err error) {
+func (dec *rootDecoder) readTAttLine() (color, style, width int16, err error) {
 	err = dec.readBin(&color)
 	if err != nil {
 		return
@@ -160,7 +163,7 @@ func (dec *decodeState) readTAttLine() (color, style, width int16, err error) {
 	return
 }
 
-func (dec *decodeState) readTAttFill() (color, style int16, err error) {
+func (dec *rootDecoder) readTAttFill() (color, style int16, err error) {
 	err = dec.readBin(&color)
 	if err != nil {
 		return
@@ -173,7 +176,7 @@ func (dec *decodeState) readTAttFill() (color, style int16, err error) {
 	return
 }
 
-func (dec *decodeState) readTAttMarker() (color, style int16, width float32, err error) {
+func (dec *rootDecoder) readTAttMarker() (color, style int16, width float32, err error) {
 	err = dec.readBin(&color)
 	if err != nil {
 		return

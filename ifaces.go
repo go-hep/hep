@@ -63,18 +63,7 @@ type Directory interface {
 	//     foo   : get object named foo in memory
 	//             if object is not in memory, try with highest cycle from file
 	//     foo;1 : get cycle 1 of foo on file
-	Get(namecycle string) (Object, error)
-
-	// Has returns whether an object identified by namecycle exists in directory
-	//   namecycle has the format name;cycle
-	//   name  = * is illegal, cycle = * is illegal
-	//   cycle = "" or cycle = 9999 ==> apply to a memory object
-	//
-	//   examples:
-	//     foo   : get object named foo in memory
-	//             if object is not in memory, try with highest cycle from file
-	//     foo;1 : get cycle 1 of foo on file
-	Has(namecycle string) bool
+	Get(namecycle string) (Object, bool)
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can

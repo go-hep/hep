@@ -1,8 +1,6 @@
 package rootio
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestFlatTree(t *testing.T) {
 	f, err := Open("testdata/small.root")
@@ -11,9 +9,9 @@ func TestFlatTree(t *testing.T) {
 	}
 	defer f.Close()
 
-	obj, err := f.Get("tree")
-	if err != nil {
-		t.Fatalf("%v", err)
+	obj, ok := f.Get("tree")
+	if !ok {
+		t.Fatalf("could not retrieve tree [tree]")
 	}
 
 	key := obj.(*Key)
