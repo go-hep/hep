@@ -62,61 +62,19 @@ func (dir *directory) readDirInfo() error {
 		return err
 	}
 
-	dec := rootDecoder{r: bytes.NewBuffer(data[f.nbytesname:])}
-	var version int16
-	err = dec.readBin(&version)
-	if err != nil {
-		return err
-	}
-	myprintf("dir-version: %v\n", version)
-
-	var ctime uint32
-	err = dec.readBin(&ctime)
-	if err != nil {
-		return err
-	}
-	dir.ctime = datime2time(ctime)
-	myprintf("dir-ctime: %v\n", dir.ctime)
-
-	var mtime uint32
-	err = dec.readBin(&mtime)
-	if err != nil {
-		return err
-	}
-	dir.mtime = datime2time(mtime)
-	myprintf("dir-mtime: %v\n", dir.mtime)
-
-	err = dec.readInt32(&dir.nbyteskeys)
+	tobject_sz := 2 /*version*/ + 4 /* fUniqueID */ + 4 /*fBits*/ + 22 /*process-id*/
+	err = dir.named.UnmarshalROOT(data[tobject_sz:f.nbytesname])
 	if err != nil {
 		return err
 	}
 
-	err = dec.readInt32(&dir.nbytesname)
-	if err != nil {
-		return err
-	}
-
-	readptr := dec.readInt64
-	if version <= 1000 {
-		readptr = dec.readInt32
-	}
-	err = readptr(&dir.seekdir)
-	if err != nil {
-		return err
-	}
-
-	err = readptr(&dir.seekparent)
-	if err != nil {
-		return err
-	}
-
-	err = readptr(&dir.seekkeys)
+	err = dir.UnmarshalROOT(data[f.nbytesname:])
 	if err != nil {
 		return err
 	}
 
 	nk := 4 // Key::fNumberOfBytes
-	dec = rootDecoder{r: bytes.NewBuffer(data[nk:])}
+	dec := rootDecoder{r: bytes.NewBuffer(data[nk:])}
 	var keyversion int16
 	err = dec.readBin(&keyversion)
 	if err != nil {
@@ -211,6 +169,18 @@ func (dir *directory) readKey() error {
 	return key.Read()
 }
 
+func (dir *directory) Class() string {
+	return "TDirectory"
+}
+
+func (dir *directory) Name() string {
+	return dir.named.Name()
+}
+
+func (dir *directory) Title() string {
+	return dir.named.Title()
+}
+
 // Get returns the object identified by namecycle
 //   namecycle has the format name;cycle
 //   name  = * is illegal, cycle = * is illegal
@@ -237,8 +207,68 @@ func (dir *directory) Get(namecycle string) (Object, bool) {
 	return nil, false
 }
 
+func (dir *directory) UnmarshalROOT(data []byte) error {
+	var err error
+	dec := rootDecoder{r: bytes.NewBuffer(data)}
+
+	var version int16
+	err = dec.readBin(&version)
+	if err != nil {
+		return err
+	}
+	myprintf("dir-version: %v\n", version)
+
+	var ctime uint32
+	err = dec.readBin(&ctime)
+	if err != nil {
+		return err
+	}
+	dir.ctime = datime2time(ctime)
+	myprintf("dir-ctime: %v\n", dir.ctime)
+
+	var mtime uint32
+	err = dec.readBin(&mtime)
+	if err != nil {
+		return err
+	}
+	dir.mtime = datime2time(mtime)
+	myprintf("dir-mtime: %v\n", dir.mtime)
+
+	err = dec.readInt32(&dir.nbyteskeys)
+	if err != nil {
+		return err
+	}
+
+	err = dec.readInt32(&dir.nbytesname)
+	if err != nil {
+		return err
+	}
+
+	readptr := dec.readInt64
+	if version <= 1000 {
+		readptr = dec.readInt32
+	}
+	err = readptr(&dir.seekdir)
+	if err != nil {
+		return err
+	}
+
+	err = readptr(&dir.seekparent)
+	if err != nil {
+		return err
+	}
+
+	err = readptr(&dir.seekkeys)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
 // testing interfaces
-//var _ Object = (*File)(nil)
+var _ Object = (*directory)(nil)
 var _ Directory = (*directory)(nil)
+var _ ROOTUnmarshaler = (*directory)(nil)
 
 // EOF
