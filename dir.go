@@ -1,7 +1,9 @@
 package rootio
 
 import (
+	"bytes"
 	"fmt"
+	"os"
 	"time"
 )
 
@@ -38,26 +40,190 @@ func (dir *directory) recordSize(version int32) int64 {
 	return nbytes
 }
 
-// Has returns whether an object identified by namecycle exists in directory
-//   namecycle has the format name;cycle
-//   name  = * is illegal, cycle = * is illegal
-//   cycle = "" or cycle = 9999 ==> apply to a memory object
-//
-//   examples:
-//     foo   : get object named foo in memory
-//             if object is not in memory, try with highest cycle from file
-//     foo;1 : get cycle 1 of foo on file
-func (dir *directory) Has(namecycle string) bool {
-	name, cycle := decodeNameCycle(namecycle)
-	for _, k := range dir.keys {
-		if k.Name() == name {
-			if cycle != 9999 {
-				return k.cycle == cycle
-			}
-			return true
+func (dir *directory) readDirInfo() error {
+	var err error
+	f := dir.file
+	nbytes := int64(f.nbytesname) + dir.recordSize(f.version)
+
+	if nbytes+f.begin > f.end {
+		return fmt.Errorf(
+			"rootio: file [%v] has an incorrect header length [%v] or incorrect end of file length [%v]",
+			f.id,
+			f.begin+nbytes,
+			f.end,
+		)
+	}
+
+	data := make([]byte, int(nbytes))
+	_, err = f.ReadAt(data, f.begin)
+	if err != nil {
+		return err
+	}
+
+	dec := rootDecoder{r: bytes.NewBuffer(data[f.nbytesname:])}
+	var version int16
+	err = dec.readBin(&version)
+	if err != nil {
+		return err
+	}
+	myprintf("dir-version: %v\n", version)
+
+	var ctime uint32
+	err = dec.readBin(&ctime)
+	if err != nil {
+		return err
+	}
+	dir.ctime = datime2time(ctime)
+	myprintf("dir-ctime: %v\n", dir.ctime)
+
+	var mtime uint32
+	err = dec.readBin(&mtime)
+	if err != nil {
+		return err
+	}
+	dir.mtime = datime2time(mtime)
+	myprintf("dir-mtime: %v\n", dir.mtime)
+
+	err = dec.readInt32(&dir.nbyteskeys)
+	if err != nil {
+		return err
+	}
+
+	err = dec.readInt32(&dir.nbytesname)
+	if err != nil {
+		return err
+	}
+
+	readptr := dec.readInt64
+	if version <= 1000 {
+		readptr = dec.readInt32
+	}
+	err = readptr(&dir.seekdir)
+	if err != nil {
+		return err
+	}
+
+	err = readptr(&dir.seekparent)
+	if err != nil {
+		return err
+	}
+
+	err = readptr(&dir.seekkeys)
+	if err != nil {
+		return err
+	}
+
+	// if (version % 1000) > 1 {
+	// 	err = dec.readBin(&f.uuid)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	nk := 4 // Key::fNumberOfBytes
+	dec = rootDecoder{r: bytes.NewBuffer(data[nk:])}
+	var keyversion int16
+	err = dec.readBin(&keyversion)
+	if err != nil {
+		return err
+	}
+
+	if keyversion > 1000 {
+		// large files
+		nk += 2     // Key::fVersion
+		nk += 2 * 4 // Key::fObjectSize, Date
+		nk += 2 * 2 // Key::fKeyLength, fCycle
+		nk += 2 * 8 // Key::fSeekKey, fSeekParentDirectory
+	} else {
+		nk += 2     // Key::fVersion
+		nk += 2 * 4 // Key::fObjectSize, Date
+		nk += 2 * 2 // Key::fKeyLength, fCycle
+		nk += 2 * 4 // Key::fSeekKey, fSeekParentDirectory
+	}
+
+	dec = rootDecoder{r: bytes.NewBuffer(data[nk:])}
+	classname := ""
+	err = dec.readString(&classname)
+	if err != nil {
+		return err
+	}
+	myprintf("class: [%v]\n", classname)
+
+	cname := ""
+	err = dec.readString(&cname)
+	if err != nil {
+		return err
+	}
+	myprintf("cname: [%v]\n", cname)
+
+	title := ""
+	err = dec.readString(&title)
+	if err != nil {
+		return err
+	}
+	myprintf("title: [%v]\n", title)
+
+	if dir.nbytesname < 10 || dir.nbytesname > 1000 {
+		return fmt.Errorf("rootio: can't read directory info.")
+	}
+
+	return err
+}
+
+func (dir *directory) readKeys() error {
+	var err error
+	if dir.seekkeys <= 0 {
+		return nil
+	}
+
+	_, err = dir.file.Seek(dir.seekkeys, os.SEEK_SET)
+	if err != nil {
+		return err
+	}
+
+	hdr := Key{f: dir.file}
+	err = hdr.Read()
+	if err != nil {
+		return err
+	}
+	//myprintf("==> hdr: %#v\n", hdr)
+
+	_, err = dir.file.Seek(dir.seekkeys, os.SEEK_SET)
+	if err != nil {
+		return err
+	}
+	data := make([]byte, int(dir.nbyteskeys))
+	_, err = dir.file.ReadAt(data, dir.seekkeys)
+	if err != nil {
+		return err
+	}
+
+	_, err = dir.file.Seek(dir.seekkeys+int64(hdr.keylen), os.SEEK_SET)
+	if err != nil {
+		return err
+	}
+	dec := rootDecoder{r: dir.file}
+
+	var nkeys int32
+	err = dec.readInt32(&nkeys)
+	if err != nil {
+		return err
+	}
+
+	for i := 0; i < int(nkeys); i++ {
+		err = dir.readKey()
+		if err != nil {
+			return err
 		}
 	}
-	return false
+	return err
+}
+
+// readKey reads a key and appends it to dir.keys
+func (dir *directory) readKey() error {
+	dir.keys = append(dir.keys, Key{f: dir.file})
+	key := &(dir.keys[len(dir.keys)-1])
+	return key.Read()
 }
 
 // Get returns the object identified by namecycle
@@ -69,21 +235,21 @@ func (dir *directory) Has(namecycle string) bool {
 //     foo   : get object named foo in memory
 //             if object is not in memory, try with highest cycle from file
 //     foo;1 : get cycle 1 of foo on file
-func (dir *directory) Get(namecycle string) (Object, error) {
+func (dir *directory) Get(namecycle string) (Object, bool) {
 	name, cycle := decodeNameCycle(namecycle)
 	for _, k := range dir.keys {
 		if k.Name() == name {
 			if cycle != 9999 {
 				if k.cycle == cycle {
-					return &k, nil
+					return &k, true
 				} else {
-					return nil, fmt.Errorf("rootio.File: no such key [%s]", namecycle)
+					return nil, false
 				}
 			}
-			return &k, nil
+			return &k, true
 		}
 	}
-	return nil, fmt.Errorf("rootio.File: no such key [%s]", namecycle)
+	return nil, false
 }
 
 // testing interfaces

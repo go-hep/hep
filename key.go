@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	//"github.com/kr/pretty"
 )
@@ -25,12 +26,12 @@ import (
 type Key struct {
 	f *File // underlying file
 
-	bytes    int32 // number of bytes for the compressed object+key
-	version  int16 // version of the Key struct
-	objlen   int32 // length of uncompressed object
-	datetime int32 // Date/Time when the object was written
-	keylen   int32 // number of bytes for the Key struct
-	cycle    int16 // cycle number of the object
+	bytes    int32     // number of bytes for the compressed object+key
+	version  int16     // version of the Key struct
+	objlen   int32     // length of uncompressed object
+	datetime time.Time // Date/Time when the object was written
+	keylen   int32     // number of bytes for the Key struct
+	cycle    int16     // cycle number of the object
 
 	// address of the object on file (points to Key.bytes)
 	// this is a redundant information used to cross-check
@@ -171,8 +172,8 @@ func (k *Key) Read() error {
 
 	dec := rootDecoder{r: f}
 	key_offset := f.Tell()
-
-	err = dec.readBin(&k.bytes)
+	myprintf(":: Key.Read (@%v)\n", key_offset)
+	err = dec.readInt32(&k.bytes)
 	if err != nil {
 		return err
 	}
@@ -183,33 +184,39 @@ func (k *Key) Read() error {
 		_, err = dec.r.(io.Seeker).Seek(int64(-k.bytes)-4, os.SEEK_CUR)
 		return err
 	}
-	err = dec.readBin(&k.version)
+	err = dec.readInt16(&k.version)
 	if err != nil {
 		return err
 	}
 
-	err = dec.readBin(&k.objlen)
+	err = dec.readInt32(&k.objlen)
 	if err != nil {
 		return err
 	}
 
-	err = dec.readBin(&k.datetime)
+	var datetime uint32
+	err = dec.readBin(&datetime)
 	if err != nil {
 		return err
 	}
+	k.datetime = datime2time(datetime)
 
 	err = dec.readInt16(&k.keylen)
 	if err != nil {
 		return err
 	}
 
-	err = dec.readBin(&k.cycle)
+	err = dec.readInt16(&k.cycle)
 	if err != nil {
 		return err
 	}
 
 	if k.version > 1000 {
-		err = dec.readBin(&k.seekkey)
+		err = dec.readInt64(&k.seekkey)
+		if err != nil {
+			return err
+		}
+		err = dec.readInt64(&k.seekpdir)
 		if err != nil {
 			return err
 		}
@@ -218,27 +225,25 @@ func (k *Key) Read() error {
 		if err != nil {
 			return err
 		}
-	}
-
-	if k.version > 1000 {
-		err = dec.readBin(&k.seekpdir)
-		if err != nil {
-			return err
-		}
-	} else {
 		err = dec.readInt32(&k.seekpdir)
 		if err != nil {
 			return err
 		}
 	}
 
+	myprintf("--- key ---\n")
+	myprintf("key-nbytes:  %v (@%v)\n", k.bytes, key_offset)
+	myprintf("key-version: %v\n", k.version)
+	myprintf("key-objlen:  %v\n", k.objlen)
+	myprintf("key-cdate:   %v\n", k.datetime)
+	myprintf("key-keylen:  %v\n", k.keylen)
+	myprintf("key-cycle:   %v\n", k.cycle)
+	myprintf("key-seekkey: %v\n", k.seekkey)
+	myprintf("key-seekpdir:%v\n", k.seekpdir)
+	myprintf("key-compress: %v %v %v %v %v\n", k.isCompressed(), k.objlen, k.bytes-k.keylen, k.bytes, k.keylen)
+
 	if k.seekkey == 0 {
 		k.seekkey = key_offset
-	}
-	if k.seekkey != key_offset {
-		//pretty.Printf("%+v", k)
-		panic(fmt.Errorf("Consistency failure: key offset %v doesn't match actual offset %v",
-			k.seekkey, key_offset))
 	}
 
 	err = dec.readString(&k.classname)
@@ -256,9 +261,23 @@ func (k *Key) Read() error {
 		return err
 	}
 
+	myprintf("key-class: [%v]\n", k.classname)
+	myprintf("key-name:  [%v]\n", k.name)
+	myprintf("key-title: [%v]\n", k.title)
+	myprintf("key-descr:  %v (@%v) [%v|%v|%v]\n", k.bytes, key_offset, k.classname, k.name, k.title)
+
 	k.pdat = dec.r.(interface {
 		Tell() int64
 	}).Tell()
+
+	if k.seekkey != key_offset {
+		err = fmt.Errorf(
+			"rootio.Key: Consistency failure: key offset %v doesn't match actual offset %v",
+			k.seekkey, key_offset,
+		)
+		//fmt.Printf("*** %v\n", err)
+		//panic(err)
+	}
 
 	_, err = dec.r.(io.Seeker).Seek(int64(key_offset+int64(k.bytes)), os.SEEK_SET)
 	return err
