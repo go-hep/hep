@@ -43,6 +43,8 @@ func (dec *rootDecoder) readInt16(v interface{}) error {
 	}
 
 	switch uv := v.(type) {
+	case *int16:
+		*uv = int16(d)
 	case *int32:
 		*uv = int32(d)
 	case *int64:
@@ -61,6 +63,19 @@ func (dec *rootDecoder) readInt32(v interface{}) error {
 		err = dec.readBin(v)
 	case *int64:
 		var d int32
+		err = dec.readBin(&d)
+		*uv = int64(d)
+	default:
+		panic("Unknown type")
+	}
+	return err
+}
+
+func (dec *rootDecoder) readInt64(v interface{}) error {
+	var err error
+	switch uv := v.(type) {
+	case *int64:
+		var d int64
 		err = dec.readBin(&d)
 		*uv = int64(d)
 	default:
