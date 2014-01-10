@@ -24,6 +24,20 @@ func TestFlatTree(t *testing.T) {
 		t.Fatalf("tree.Name: expected [tree] (got=%v)", tree.Name())
 	}
 
+	for _, table := range []struct {
+		test     string
+		value    string
+		expected string
+	}{
+		{"Name", tree.Name(), "tree"}, // name when created
+		{"Title", tree.Title(), "my tree title"},
+		{"Class", tree.Class(), "TTree"},
+	} {
+		if table.value != table.expected {
+			t.Fatalf("%v: expected [%v] got [%v]", table.test, table.expected, table.value)
+		}
+	}
+
 	entries := tree.Entries()
 	if entries != 100 {
 		t.Fatalf("tree.Entries: expected [100] (got=%v)", entries)
