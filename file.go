@@ -304,6 +304,18 @@ func (f *File) Keys() []Key {
 	return f.root.keys
 }
 
+func (f *File) Name() string {
+	return f.root.Name()
+}
+
+func (f *File) Title() string {
+	return f.root.Title()
+}
+
+func (f *File) Class() string {
+	return "TFile"
+}
+
 // Get returns the object identified by namecycle
 //   namecycle has the format name;cycle
 //   name  = * is illegal, cycle = * is illegal
@@ -318,7 +330,7 @@ func (f *File) Get(namecycle string) (Object, bool) {
 }
 
 // testing interfaces
-//var _ Object = (*File)(nil)
+var _ Object = (*File)(nil)
 var _ Directory = (*File)(nil)
 
 // EOF
