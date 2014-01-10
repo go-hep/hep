@@ -113,13 +113,6 @@ func (dir *directory) readDirInfo() error {
 		return err
 	}
 
-	// if (version % 1000) > 1 {
-	// 	err = dec.readBin(&f.uuid)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-
 	nk := 4 // Key::fNumberOfBytes
 	dec = rootDecoder{r: bytes.NewBuffer(data[nk:])}
 	var keyversion int16
@@ -187,16 +180,6 @@ func (dir *directory) readKeys() error {
 		return err
 	}
 	//myprintf("==> hdr: %#v\n", hdr)
-
-	_, err = dir.file.Seek(dir.seekkeys, os.SEEK_SET)
-	if err != nil {
-		return err
-	}
-	data := make([]byte, int(dir.nbyteskeys))
-	_, err = dir.file.ReadAt(data, dir.seekkeys)
-	if err != nil {
-		return err
-	}
 
 	_, err = dir.file.Seek(dir.seekkeys+int64(hdr.keylen), os.SEEK_SET)
 	if err != nil {
