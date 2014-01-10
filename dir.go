@@ -16,8 +16,9 @@ type directory struct {
 	seekparent int64     // location of parent directory on file
 	seekkeys   int64     // location of Keys record on file
 
-	file *File // pointer to current file in memory
-	keys []Key
+	named named // name+title of this directory
+	file  *File // pointer to current file in memory
+	keys  []Key
 }
 
 // recordSize returns the size of the directory header in bytes
