@@ -21,6 +21,20 @@ func TestFileDirectory(t *testing.T) {
 	pretty.DefaultConfig.IncludeUnexported = true
 
 	for _, table := range []struct {
+		test     string
+		value    string
+		expected string
+	}{
+		{"Name", f.Name(), "test-small.root"}, // name when created
+		{"Title", f.Title(), "small event file"},
+		{"Class", f.Class(), "TFile"},
+	} {
+		if table.value != table.expected {
+			t.Fatalf("%v: expected [%v] got [%v]", table.test, table.expected, table.value)
+		}
+	}
+
+	for _, table := range []struct {
 		name     string
 		expected bool
 	}{
