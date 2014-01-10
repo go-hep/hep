@@ -2,6 +2,8 @@
 .PHONY: all test clean build
 
 all: build test
+	@echo "#############################"
+	root-ls ./testdata/small.root
 	@echo "## bye."
 
 build:
