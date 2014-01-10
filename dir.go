@@ -23,11 +23,12 @@ type directory struct {
 
 // recordSize returns the size of the directory header in bytes
 func (dir *directory) recordSize(version int32) int64 {
-	nbytes := int64(2) // fVersion
-	nbytes += 4        // ctime
-	nbytes += 4        // mtime
-	nbytes += 4        // nbyteskeys
-	nbytes += 4        // nbytesname
+	var nbytes int64
+	nbytes += 2 // fVersion
+	nbytes += 4 // ctime
+	nbytes += 4 // mtime
+	nbytes += 4 // nbyteskeys
+	nbytes += 4 // nbytesname
 	if version >= 40000 {
 		// assume that the file may be above 2 Gbytes if file version is > 4
 		nbytes += 8 // seekdir
