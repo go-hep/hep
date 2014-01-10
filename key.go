@@ -172,14 +172,17 @@ func (k *Key) Read() error {
 
 	dec := rootDecoder{r: f}
 	key_offset := f.Tell()
+	myprintf("--- key ---\n")
 	myprintf(":: Key.Read (@%v)\n", key_offset)
+
 	err = dec.readInt32(&k.bytes)
 	if err != nil {
 		return err
 	}
+	myprintf("key-nbytes:  %v (@%v)\n", k.bytes, key_offset)
 
 	if k.bytes < 0 {
-		//fmt.Println("Jumping gap: ", k.bytes)
+		myprintf("Jumping gap: %v\n", k.bytes)
 		k.classname = "[GAP]"
 		_, err = dec.r.(io.Seeker).Seek(int64(-k.bytes)-4, os.SEEK_CUR)
 		return err
@@ -188,11 +191,13 @@ func (k *Key) Read() error {
 	if err != nil {
 		return err
 	}
+	myprintf("key-version: %v\n", k.version)
 
 	err = dec.readInt32(&k.objlen)
 	if err != nil {
 		return err
 	}
+	myprintf("key-objlen:  %v\n", k.objlen)
 
 	var datetime uint32
 	err = dec.readBin(&datetime)
@@ -200,16 +205,19 @@ func (k *Key) Read() error {
 		return err
 	}
 	k.datetime = datime2time(datetime)
+	myprintf("key-cdate:   %v\n", k.datetime)
 
 	err = dec.readInt16(&k.keylen)
 	if err != nil {
 		return err
 	}
+	myprintf("key-keylen:  %v\n", k.keylen)
 
 	err = dec.readInt16(&k.cycle)
 	if err != nil {
 		return err
 	}
+	myprintf("key-cycle:   %v\n", k.cycle)
 
 	if k.version > 1000 {
 		err = dec.readInt64(&k.seekkey)
@@ -231,13 +239,6 @@ func (k *Key) Read() error {
 		}
 	}
 
-	myprintf("--- key ---\n")
-	myprintf("key-nbytes:  %v (@%v)\n", k.bytes, key_offset)
-	myprintf("key-version: %v\n", k.version)
-	myprintf("key-objlen:  %v\n", k.objlen)
-	myprintf("key-cdate:   %v\n", k.datetime)
-	myprintf("key-keylen:  %v\n", k.keylen)
-	myprintf("key-cycle:   %v\n", k.cycle)
 	myprintf("key-seekkey: %v\n", k.seekkey)
 	myprintf("key-seekpdir:%v\n", k.seekpdir)
 	myprintf("key-compress: %v %v %v %v %v\n", k.isCompressed(), k.objlen, k.bytes-k.keylen, k.bytes, k.keylen)
