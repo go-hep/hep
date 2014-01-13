@@ -172,21 +172,71 @@ func (k *Key) Read() error {
 
 	dec := rootDecoder{r: f}
 	key_offset := f.Tell()
-	myprintf("--- key ---\n")
-	myprintf(":: Key.Read (@%v)\n", key_offset)
 
 	err = dec.readInt32(&k.bytes)
 	if err != nil {
 		return err
 	}
-	myprintf("key-nbytes:  %v (@%v)\n", k.bytes, key_offset)
+
+	if k.bytes < 0 {
+		if k.classname == "[GAP]" {
+			_, err = dec.r.(io.Seeker).Seek(int64(-k.bytes)-4, os.SEEK_CUR)
+			if err != nil {
+				return err
+			}
+			return k.Read()
+		} else {
+			return fmt.Errorf("rootio.Key: invalid bytes size [%v]", k.bytes)
+		}
+	}
+
+	buf := make([]byte, int(k.bytes))
+	_, err = f.ReadAt(buf, key_offset)
+	if err != nil {
+		return err
+	}
+
+	err = k.UnmarshalROOT(buf)
+	if err != nil {
+		return err
+	}
+
+	if k.seekkey == 0 {
+		k.seekkey = key_offset
+	}
+
+	if k.seekkey != key_offset {
+		err = fmt.Errorf(
+			"rootio.Key: Consistency failure: key offset %v doesn't match actual offset %v",
+			k.seekkey, key_offset,
+		)
+		//fmt.Printf("*** %v\n", err)
+		//panic(err)
+	}
+
+	_, err = dec.r.(io.Seeker).Seek(int64(key_offset+int64(k.bytes)), os.SEEK_SET)
+	return err
+}
+
+// UnmarshalROOT decodes the content of data into the Key
+func (k *Key) UnmarshalROOT(data []byte) error {
+	var err error
+
+	dec := rootDecoder{r: bytes.NewReader(data)}
+	myprintf("--- key ---\n")
+
+	err = dec.readInt32(&k.bytes)
+	if err != nil {
+		return err
+	}
+	myprintf("key-nbytes:  %v\n", k.bytes)
 
 	if k.bytes < 0 {
 		myprintf("Jumping gap: %v\n", k.bytes)
 		k.classname = "[GAP]"
-		_, err = dec.r.(io.Seeker).Seek(int64(-k.bytes)-4, os.SEEK_CUR)
-		return err
+		return nil
 	}
+
 	err = dec.readInt16(&k.version)
 	if err != nil {
 		return err
@@ -243,10 +293,6 @@ func (k *Key) Read() error {
 	myprintf("key-seekpdir:%v\n", k.seekpdir)
 	myprintf("key-compress: %v %v %v %v %v\n", k.isCompressed(), k.objlen, k.bytes-k.keylen, k.bytes, k.keylen)
 
-	if k.seekkey == 0 {
-		k.seekkey = key_offset
-	}
-
 	err = dec.readString(&k.classname)
 	if err != nil {
 		return err
@@ -265,25 +311,12 @@ func (k *Key) Read() error {
 	myprintf("key-class: [%v]\n", k.classname)
 	myprintf("key-name:  [%v]\n", k.name)
 	myprintf("key-title: [%v]\n", k.title)
-	myprintf("key-descr:  %v (@%v) [%v|%v|%v]\n", k.bytes, key_offset, k.classname, k.name, k.title)
 
-	k.pdat = dec.r.(interface {
-		Tell() int64
-	}).Tell()
+	//k.pdat = data
 
-	if k.seekkey != key_offset {
-		err = fmt.Errorf(
-			"rootio.Key: Consistency failure: key offset %v doesn't match actual offset %v",
-			k.seekkey, key_offset,
-		)
-		//fmt.Printf("*** %v\n", err)
-		//panic(err)
-	}
-
-	_, err = dec.r.(io.Seeker).Seek(int64(key_offset+int64(k.bytes)), os.SEEK_SET)
 	return err
 }
 
 // testing interfaces
-
 var _ Object = (*Key)(nil)
+var _ ROOTUnmarshaler = (*Key)(nil)
