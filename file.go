@@ -312,6 +312,30 @@ func (f *File) Class() string {
 	return "TFile"
 }
 
+// readStreamerInfo reads the list of StreamerInfo from this file
+func (f *File) readStreamerInfo() error {
+	var err error
+	myprintf(":: readStreamerInfo...\n")
+	//var list []Object
+	var buf []byte
+
+	if !(f.seekinfo > 0 && f.seekinfo < f.end) {
+		return fmt.Errorf("rootio: invalid pointer to StreamerInfo (pos=%v end=%v)", f.seekinfo, f.end)
+
+	}
+	buf = make([]byte, int(f.nbytesinfo))
+	nbytes, err := f.ReadAt(buf, f.seekinfo)
+	if err != nil {
+		return err
+	}
+	if nbytes != int(f.nbytesinfo) {
+		return fmt.Errorf("rootio: requested [%v] bytes. read [%v] bytes from file", f.nbytesinfo, nbytes)
+	}
+
+	myprintf(":: readStreamerInfo... [done]\n")
+	return err
+}
+
 // Get returns the object identified by namecycle
 //   namecycle has the format name;cycle
 //   name  = * is illegal, cycle = * is illegal
