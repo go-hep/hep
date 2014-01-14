@@ -181,6 +181,7 @@ func (k *Key) Read() error {
 	if err != nil {
 		return err
 	}
+	myprintf("Key::Read -- @%v => %v\n", key_offset, k.bytes)
 
 	if k.bytes < 0 {
 		if k.classname == "[GAP]" {

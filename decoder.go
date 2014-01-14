@@ -136,7 +136,7 @@ func (dec *Decoder) readVersion() (version int16, position, bytecount int32, err
 	if err != nil {
 		return
 	}
-	fmt.Printf("readVersion - bytecount=%v\n", bcnt)
+	myprintf("readVersion - bytecount=%v\n", bcnt)
 	if (int64(bcnt) & ^kByteCountMask) != 0 {
 		bytecount = int32(int64(bcnt) & ^kByteCountMask)
 	} else {
@@ -173,7 +173,7 @@ func (dec *Decoder) readClass(name *string, count *int32, isref *bool) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("::readClass. first int: [%v]\n", tag)
+	myprintf("::readClass. first int: [%v]\n", tag)
 	switch {
 	case tag == kNullTag:
 		*isref = false

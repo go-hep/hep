@@ -2,7 +2,6 @@ package rootio
 
 import (
 	"bytes"
-	"fmt"
 	"reflect"
 )
 
@@ -22,7 +21,7 @@ func (a *attline) UnmarshalROOT(data *bytes.Buffer) error {
 		println(vers, pos, bcnt)
 		return err
 	} else {
-		fmt.Printf("attline: %v %v %v\n", vers, pos, bcnt)
+		myprintf("attline: %v %v %v\n", vers, pos, bcnt)
 	}
 
 	err = dec.readBin(&a.color)

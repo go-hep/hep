@@ -2,7 +2,6 @@ package rootio
 
 import (
 	"bytes"
-	"fmt"
 )
 
 // The TNamed class is the base class for all named ROOT classes
@@ -39,7 +38,7 @@ func (n *named) UnmarshalROOT(data *bytes.Buffer) error {
 		println(vers, pos, bcnt)
 		return err
 	} else {
-		fmt.Printf("named: %v %v %v\n", vers, pos, bcnt)
+		myprintf("named: %v %v %v\n", vers, pos, bcnt)
 	}
 
 	var id uint32

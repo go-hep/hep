@@ -56,13 +56,13 @@ func (tree *Tree) UnmarshalROOT(data *bytes.Buffer) error {
 	var err error
 	dec := NewDecoder(data)
 
-	fmt.Printf(">>>>>>>>>>>>>> Tree.unmarshal...\n")
+	myprintf(">>>>>>>>>>>>>> Tree.unmarshal...\n")
 	vers, pos, bcnt, err := dec.readVersion()
 	if err != nil {
 		println(vers, pos, bcnt)
 		return err
 	}
-	fmt.Printf(">>> => [%v] [%v] [%v]\n", pos, vers, bcnt)
+	myprintf(">>> => [%v] [%v] [%v]\n", pos, vers, bcnt)
 
 	for _, a := range []ROOTUnmarshaler{
 		&tree.named,
