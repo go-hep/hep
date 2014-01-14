@@ -242,4 +242,19 @@ func (dec *Decoder) checkByteCount(pos, count int32, start int64, class string) 
 	return err
 }
 
+func (dec *Decoder) readObject(o *Object) error {
+	//start := dec.Pos()
+	//orig := dec.Clone()
+
+	var class string
+	var count int32
+	var isref bool
+	err := dec.readClass(&class, &count, &isref)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
 // EOF
