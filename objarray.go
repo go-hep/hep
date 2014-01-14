@@ -20,8 +20,8 @@ func init() {
 		o := make(objarray, 0)
 		return reflect.ValueOf(o)
 	}
-	Factory.db["TBranch"] = f
-	Factory.db["*rootio.Branch"] = f
+	Factory.db["TObjArray"] = f
+	Factory.db["*rootio.objarray"] = f
 }
 
 // check interfaces
