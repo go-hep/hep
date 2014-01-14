@@ -6,15 +6,6 @@ import (
 	"reflect"
 )
 
-type Basket struct {
-	Version      uint16
-	Buffersize   int32 // length in bytes
-	Evbuffersize int32 // length in int_t or fixed length of each entry
-	Nevbuf       int32 // number of entries in basket
-	Last         int32 // pointer to last used byte in basket
-	Flag         byte
-}
-
 func (k *Key) DecodeVector(in *bytes.Buffer, dst interface{}) (int, error) {
 	// Discard three int16s (like 40 00 00 0e 00 09)
 	x := in.Next(6)
