@@ -16,12 +16,14 @@ import (
 type Tree struct {
 	f *File // underlying file
 
-	name  string // name of the object
-	title string // title of the object
+	named named
 
 	entries  int64 // Number of entries
 	totbytes int64 // Total number of bytes in all branches before compression
 	zipbytes int64 // Total number of bytes in all branches after  compression
+
+	branches []Object // list of branches
+	leaves   []Object // direct pointers to individual branch leaves
 }
 
 func (tree *Tree) Class() string {
@@ -29,11 +31,11 @@ func (tree *Tree) Class() string {
 }
 
 func (tree *Tree) Name() string {
-	return tree.name
+	return tree.named.Name()
 }
 
 func (tree *Tree) Title() string {
-	return tree.title
+	return tree.named.Title()
 }
 
 func (tree *Tree) Entries() int64 {
