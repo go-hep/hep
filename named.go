@@ -1,6 +1,9 @@
 package rootio
 
-import "bytes"
+import (
+	"bytes"
+	"fmt"
+)
 
 // The TNamed class is the base class for all named ROOT classes
 // A TNamed contains the essential elements (name, title)
@@ -26,9 +29,38 @@ func (n *named) Class() string {
 	return "TNamed"
 }
 
-func (n *named) UnmarshalROOT(data []byte) error {
+func (n *named) UnmarshalROOT(data *bytes.Buffer) error {
 	var err error
-	dec := rootDecoder{r: bytes.NewBuffer(data)}
+	dec := NewDecoder(data)
+
+	start := dec.Pos()
+	vers, pos, bcnt, err := dec.readVersion()
+	if err != nil {
+		println(vers, pos, bcnt)
+		return err
+	} else {
+		fmt.Printf("named: %v %v %v\n", vers, pos, bcnt)
+	}
+
+	var id uint32
+	err = dec.readBin(&id)
+	if err != nil {
+		return err
+	}
+
+	var bits uint32
+	err = dec.readBin(&bits)
+	if err != nil {
+		return err
+	}
+	bits |= kIsOnHeap // by definition, de-serialized object is on heap
+	if (bits & kIsReferenced) == 0 {
+		var trash uint16
+		err = dec.readBin(&trash)
+		if err != nil {
+			return err
+		}
+	}
 
 	err = dec.readString(&n.name)
 	if err != nil {
@@ -40,6 +72,7 @@ func (n *named) UnmarshalROOT(data []byte) error {
 		return err
 	}
 
+	err = dec.checkByteCount(pos, bcnt, start, "TNamed")
 	return err
 }
 
