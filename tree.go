@@ -52,54 +52,44 @@ func (tree *Tree) ZipBytes() int64 {
 
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
-func (tree *Tree) UnmarshalROOT(data []byte) error {
+func (tree *Tree) UnmarshalROOT(data *bytes.Buffer) error {
 	var err error
-	dec := rootDecoder{r: bytes.NewBuffer(data)}
+	dec := NewDecoder(data)
 
+	fmt.Printf(">>>>>>>>>>>>>> Tree.unmarshal...\n")
 	vers, pos, bcnt, err := dec.readVersion()
 	if err != nil {
 		println(vers, pos, bcnt)
 		return err
 	}
-	//fmt.Printf(">>> version: %v\n", vers)
+	fmt.Printf(">>> => [%v] [%v] [%v]\n", pos, vers, bcnt)
 
-	name, title, err := dec.readTNamed()
-	if err != nil {
-		return err
-	}
-
-	tree.name = name
-	tree.title = title
-
-	_, _, _, err = dec.readTAttLine()
-	if err != nil {
-		return err
-	}
-
-	_, _, err = dec.readTAttFill()
-	if err != nil {
-		return err
-	}
-
-	_, _, _, err = dec.readTAttMarker()
-	if err != nil {
-		return err
+	for _, a := range []ROOTUnmarshaler{
+		&tree.named,
+		&attline{},
+		&attfill{},
+		&attmarker{},
+	} {
+		err = a.UnmarshalROOT(data)
+		if err != nil {
+			return err
+		}
 	}
 
 	if vers < 16 {
 		return fmt.Errorf(
 			"rootio.Tree: tree [%s] with version [%v] is not supported (too old)",
-			tree.name,
+			tree.Name(),
 			vers,
 		)
 	}
 
 	// FIXME: hack. where do these 18 bytes come from ?
-	var trash [18]byte
-	err = dec.readBin(&trash)
-	if err != nil {
-		return err
-	}
+	// var trash [18]byte
+	// err = dec.readBin(&trash)
+	// if err != nil {
+	// 	return err
+	// }
 
 	//fmt.Printf("### data = %v\n", dec.data.Bytes()[:64])
 	err = dec.readBin(&tree.entries)
@@ -113,6 +103,74 @@ func (tree *Tree) UnmarshalROOT(data []byte) error {
 	}
 
 	err = dec.readBin(&tree.zipbytes)
+	if err != nil {
+		return err
+	}
+
+	if vers >= 18 {
+		var flushedbytes int64
+		err = dec.readInt64(&flushedbytes)
+		if err != nil {
+			return err
+		}
+	}
+	var dummy_f64 float64
+	var dummy_i32 int32
+	var dummy_i64 int64
+
+	err = dec.readBin(&dummy_f64) // fWeight
+	if err != nil {
+		return err
+	}
+
+	err = dec.readInt32(&dummy_i32) // fTimerInterval
+	if err != nil {
+		return err
+	}
+	err = dec.readInt32(&dummy_i32) // fScanField
+	if err != nil {
+		return err
+	}
+	err = dec.readInt32(&dummy_i32) // fUpdate
+	if err != nil {
+		return err
+	}
+
+	if vers >= 18 {
+		err = dec.readInt32(&dummy_i32) // fDefaultEntryOffsetLen
+		if err != nil {
+			return err
+		}
+	}
+
+	err = dec.readInt64(&dummy_i64) // fMaxEntries
+	if err != nil {
+		return err
+	}
+
+	err = dec.readInt64(&dummy_i64) // fMaxEntryLoop
+	if err != nil {
+		return err
+	}
+
+	err = dec.readInt64(&dummy_i64) // fMaxVirtualSize
+	if err != nil {
+		return err
+	}
+
+	err = dec.readInt64(&dummy_i64) // fAutoSave
+	if err != nil {
+		return err
+	}
+
+	if vers >= 18 {
+		err = dec.readInt64(&dummy_i64) // fAutoFlush
+		if err != nil {
+			return err
+		}
+	}
+
+	err = dec.readInt64(&dummy_i64) // fEstimate
 	if err != nil {
 		return err
 	}
