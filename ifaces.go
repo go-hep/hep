@@ -1,8 +1,13 @@
 package rootio
 
+import (
+	"bytes"
+)
+
+// ifaces holds interfaces useful for rootio
+
 // Class represents a ROOT class.
 // Class instances are created by a ClassFactory.
-
 type Class interface {
 	// GetCheckSum gets the check sum for this ROOT class
 	//CheckSum() int
@@ -69,13 +74,13 @@ type Directory interface {
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 type ROOTUnmarshaler interface {
-	UnmarshalROOT(data []byte) error
+	UnmarshalROOT(data *bytes.Buffer) error
 }
 
 // ROOTMarshaler is the interface implemented by an object that can
 // marshal itself into a ROOT buffer
 type ROOTMarshaler interface {
-	MarshalROOT() (data []byte, err error)
+	MarshalROOT() (data *bytes.Buffer, err error)
 }
 
 // EOF
