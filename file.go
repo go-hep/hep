@@ -1,7 +1,7 @@
 package rootio
 
 import (
-	"bufio"
+	"bytes"
 	B "encoding/binary"
 	"fmt"
 	"io"
@@ -115,7 +115,13 @@ func (f *File) readHeader() (err error) {
 
 	stage = "reading header"
 
-	dec := rootDecoder{r: bufio.NewReader(f)}
+	buf := make([]byte, 64)
+	_, err = f.ReadAt(buf, 0)
+	if err != nil {
+		return err
+	}
+
+	dec := NewDecoder(bytes.NewBuffer(buf))
 
 	// Header
 
@@ -242,27 +248,17 @@ func (f *File) readHeader() (err error) {
 		return err
 	}
 
-	stage = "read keys of top directory"
-	err = f.root.readKeys()
+	stage = "read streamerinfos"
+	err = f.readStreamerInfo()
 	if err != nil {
 		return err
 	}
 
-	stage = "reading streamerinfos"
-
-	stage = "reading keys"
-
-	// Contents of file
-
-	// fmt.Printf("==================================>>>\n")
-	// _, err = f.Seek(int64(f.begin), os.SEEK_SET)
-	// for f.Tell() < f.end {
-	// 	err = f.root.readKey()
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-	// fmt.Printf("<<<==================================\n")
+	stage = "read keys"
+	err = f.root.readKeys()
+	if err != nil {
+		return err
+	}
 
 	return err
 }
