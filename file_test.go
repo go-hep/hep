@@ -118,15 +118,15 @@ func DontTestFileReader(t *testing.T) {
 	//f.Map()
 	//return
 
-	getkey := func(n string) Key {
-		var k Key
-		for _, k = range f.root.keys {
+	getkey := func(n string) Object {
+		for i := range f.root.keys {
+			k := &f.root.keys[i]
 			if k.name == n {
 				return k
 			}
 		}
 		t.Fatalf("could not find key [%s]", n)
-		return Key{}
+		return nil
 	}
 
 	for _, table := range []struct {
@@ -147,9 +147,10 @@ func DontTestFileReader(t *testing.T) {
 		{"ArrayFloat32", reflect.TypeOf([10]float32{})},
 		{"ArrayFloat64", reflect.TypeOf([10]float64{})},
 	} {
-		k := getkey(table.n)
+		obj := getkey(table.n)
 
-		basket := k.AsBasket()
+		k := obj.(*Key)
+		basket := obj.(*Basket)
 		data, err := k.Bytes()
 		if err != nil {
 			t.Fatalf(err.Error())
