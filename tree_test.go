@@ -9,6 +9,7 @@ func TestFlatTree(t *testing.T) {
 	}
 	defer f.Close()
 
+	myprintf(">>> f.Get(tree)...\n")
 	obj, ok := f.Get("tree")
 	if !ok {
 		t.Fatalf("could not retrieve tree [tree]")
@@ -23,6 +24,7 @@ func TestFlatTree(t *testing.T) {
 	if tree.Name() != "tree" {
 		t.Fatalf("tree.Name: expected [tree] (got=%v)", tree.Name())
 	}
+	myprintf(">>> f.Get(tree)... [done]\n")
 
 	for _, table := range []struct {
 		test     string
