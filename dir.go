@@ -62,19 +62,16 @@ func (dir *directory) readDirInfo() error {
 		return err
 	}
 
-	tobject_sz := 2 /*version*/ + 4 /* fUniqueID */ + 4 /*fBits*/ + 22 /*process-id*/
-	err = dir.named.UnmarshalROOT(data[tobject_sz:f.nbytesname])
-	if err != nil {
-		return err
-	}
-
-	err = dir.UnmarshalROOT(data[f.nbytesname:])
+	var buf *bytes.Buffer
+	buf = bytes.NewBuffer(data[f.nbytesname:])
+	err = dir.UnmarshalROOT(buf)
 	if err != nil {
 		return err
 	}
 
 	nk := 4 // Key::fNumberOfBytes
-	dec := rootDecoder{r: bytes.NewBuffer(data[nk:])}
+	buf = bytes.NewBuffer(data[nk:])
+	dec := NewDecoder(buf)
 	var keyversion int16
 	err = dec.readBin(&keyversion)
 	if err != nil {
@@ -94,7 +91,8 @@ func (dir *directory) readDirInfo() error {
 		nk += 2 * 4 // Key::fSeekKey, fSeekParentDirectory
 	}
 
-	dec = rootDecoder{r: bytes.NewBuffer(data[nk:])}
+	buf = bytes.NewBuffer(data[nk:])
+	dec = NewDecoder(buf)
 	classname := ""
 	err = dec.readString(&classname)
 	if err != nil {
@@ -108,6 +106,7 @@ func (dir *directory) readDirInfo() error {
 		return err
 	}
 	myprintf("cname: [%v]\n", cname)
+	dir.named.name = cname
 
 	title := ""
 	err = dec.readString(&title)
@@ -115,6 +114,7 @@ func (dir *directory) readDirInfo() error {
 		return err
 	}
 	myprintf("title: [%v]\n", title)
+	dir.named.title = title
 
 	if dir.nbytesname < 10 || dir.nbytesname > 1000 {
 		return fmt.Errorf("rootio: can't read directory info.")
@@ -145,7 +145,13 @@ func (dir *directory) readKeys() error {
 	if err != nil {
 		return err
 	}
-	dec := rootDecoder{r: dir.file}
+	data := make([]byte, 4)
+	_, err = dir.file.Read(data)
+	if err != nil {
+		return err
+	}
+
+	dec := NewDecoder(bytes.NewBuffer(data))
 
 	var nkeys int32
 	err = dec.readInt32(&nkeys)
@@ -207,9 +213,9 @@ func (dir *directory) Get(namecycle string) (Object, bool) {
 	return nil, false
 }
 
-func (dir *directory) UnmarshalROOT(data []byte) error {
+func (dir *directory) UnmarshalROOT(data *bytes.Buffer) error {
 	var err error
-	dec := rootDecoder{r: bytes.NewBuffer(data)}
+	dec := NewDecoder(data)
 
 	var version int16
 	err = dec.readBin(&version)
