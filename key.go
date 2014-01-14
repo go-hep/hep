@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"reflect"
 	"time"
 
 	//"github.com/kr/pretty"
@@ -43,8 +44,6 @@ type Key struct {
 	name      string // name of the object
 	title     string // title of the object
 
-	pdat int64 // Pointer to everything after the above.
-
 	read bool
 	data []byte
 }
@@ -61,15 +60,14 @@ func (k *Key) Title() string {
 	return k.title
 }
 
-func (k *Key) load() ([]byte, error) {
+// Bytes returns the buffer of bytes corresponding to the Key's value
+func (k *Key) Bytes() ([]byte, error) {
 	if !k.read {
-		if int64(cap(k.data)) < int64(k.objlen) {
-			k.data = make([]byte, k.objlen)
-		}
-		_, err := io.ReadFull(k.f, k.data)
+		data, err := k.load()
 		if err != nil {
 			return nil, err
 		}
+		k.data = data
 		k.read = true
 	}
 	return k.data, nil
@@ -80,8 +78,7 @@ func (k *Key) load() ([]byte, error) {
 // objlen.
 const ROOT_HDRSIZE = 9
 
-// Bytes returns the buffer of bytes corresponding to the Key's value
-func (k *Key) Bytes() ([]byte, error) {
+func (k *Key) load() ([]byte, error) {
 	if k.isCompressed() {
 		// ... therefore it's compressed
 		start := k.seekkey + int64(k.keylen) + ROOT_HDRSIZE
@@ -124,7 +121,8 @@ func (k *Key) Value() interface{} {
 		if err != nil {
 			panic(fmt.Errorf("key[%v]: %v", k.Name(), err))
 		}
-		err = vv.UnmarshalROOT(data)
+		buf := bytes.NewBuffer(data)
+		err = vv.UnmarshalROOT(buf)
 		if err != nil {
 			panic(err)
 		}
@@ -143,6 +141,7 @@ func (k *Key) Value() interface{} {
 	return v
 }
 
+/*
 // Return Basket data associated with this key, if there is any
 func (k *Key) AsBasket() *Basket {
 	if k.classname != "TBasket" {
@@ -161,6 +160,7 @@ func (k *Key) AsBasket() *Basket {
 	}
 	return b
 }
+*/
 
 func (k *Key) isCompressed() bool {
 	return k.objlen != k.bytes-k.keylen
@@ -170,8 +170,12 @@ func (k *Key) Read() error {
 	var err error
 	f := k.f
 
-	dec := rootDecoder{r: f}
 	key_offset := f.Tell()
+	myprintf("Key::Read -- @%v\n", key_offset)
+	dec, err := NewDecoderFromReader(f, 8)
+	if err != nil {
+		return err
+	}
 
 	err = dec.readInt32(&k.bytes)
 	if err != nil {
@@ -180,7 +184,7 @@ func (k *Key) Read() error {
 
 	if k.bytes < 0 {
 		if k.classname == "[GAP]" {
-			_, err = dec.r.(io.Seeker).Seek(int64(-k.bytes)-4, os.SEEK_CUR)
+			_, err = k.f.Seek(int64(-k.bytes)-4, os.SEEK_CUR)
 			if err != nil {
 				return err
 			}
@@ -190,12 +194,13 @@ func (k *Key) Read() error {
 		}
 	}
 
-	buf := make([]byte, int(k.bytes))
-	_, err = f.ReadAt(buf, key_offset)
+	data := make([]byte, int(k.bytes))
+	_, err = f.ReadAt(data, key_offset)
 	if err != nil {
 		return err
 	}
 
+	buf := bytes.NewBuffer(data)
 	err = k.UnmarshalROOT(buf)
 	if err != nil {
 		return err
@@ -214,15 +219,15 @@ func (k *Key) Read() error {
 		//panic(err)
 	}
 
-	_, err = dec.r.(io.Seeker).Seek(int64(key_offset+int64(k.bytes)), os.SEEK_SET)
+	_, err = k.f.Seek(int64(key_offset+int64(k.bytes)), os.SEEK_SET)
 	return err
 }
 
 // UnmarshalROOT decodes the content of data into the Key
-func (k *Key) UnmarshalROOT(data []byte) error {
+func (k *Key) UnmarshalROOT(data *bytes.Buffer) error {
 	var err error
 
-	dec := rootDecoder{r: bytes.NewReader(data)}
+	dec := NewDecoder(data)
 	myprintf("--- key ---\n")
 
 	err = dec.readInt32(&k.bytes)
@@ -315,6 +320,15 @@ func (k *Key) UnmarshalROOT(data []byte) error {
 	//k.pdat = data
 
 	return err
+}
+
+func init() {
+	f := func() reflect.Value {
+		o := &Key{}
+		return reflect.ValueOf(o)
+	}
+	Factory.db["TKey"] = f
+	Factory.db["*rootio.Key"] = f
 }
 
 // testing interfaces
