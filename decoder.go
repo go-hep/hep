@@ -1,15 +1,58 @@
 package rootio
 
 import (
+	"bytes"
 	"encoding/binary"
+	"fmt"
 	"io"
 )
 
-type rootDecoder struct {
-	r io.Reader
+type Decoder struct {
+	buf *bytes.Buffer
+	len int64
 }
 
-func (dec *rootDecoder) readString(s *string) error {
+func NewDecoder(buf *bytes.Buffer) *Decoder {
+	dec := &Decoder{
+		buf: buf,
+		len: int64(buf.Len()),
+	}
+	return dec
+}
+
+func NewDecoderFromBytes(data []byte) *Decoder {
+	buf := make([]byte, len(data))
+	copy(buf, data)
+	return NewDecoder(bytes.NewBuffer(buf))
+}
+
+func NewDecoderFromReader(r io.Reader, size int) (*Decoder, error) {
+	data := make([]byte, size)
+	n, err := r.Read(data)
+	if err != nil {
+		return nil, err
+	}
+	if n != size {
+		return nil, fmt.Errorf("rootio.Decoder: read too few bytes [%v]. requested [%v]", n, size)
+	}
+	return NewDecoder(bytes.NewBuffer(data)), nil
+}
+
+func (dec *Decoder) Clone() *Decoder {
+	o := NewDecoderFromBytes(dec.buf.Bytes())
+	o.len = dec.len
+	return o
+}
+
+func (dec *Decoder) Pos() int64 {
+	return dec.len - int64(dec.buf.Len())
+}
+
+func (dec *Decoder) Len() int64 {
+	return int64(dec.buf.Len())
+}
+
+func (dec *Decoder) readString(s *string) error {
 	var err error
 	var length byte
 	var buf [256]byte
@@ -30,11 +73,11 @@ func (dec *rootDecoder) readString(s *string) error {
 
 }
 
-func (dec *rootDecoder) readBin(v interface{}) error {
-	return binary.Read(dec.r, E, v)
+func (dec *Decoder) readBin(v interface{}) error {
+	return binary.Read(dec.buf, E, v)
 }
 
-func (dec *rootDecoder) readInt16(v interface{}) error {
+func (dec *Decoder) readInt16(v interface{}) error {
 	var err error
 	var d int16
 	err = dec.readBin(&d)
@@ -56,7 +99,7 @@ func (dec *rootDecoder) readInt16(v interface{}) error {
 	return err
 }
 
-func (dec *rootDecoder) readInt32(v interface{}) error {
+func (dec *Decoder) readInt32(v interface{}) error {
 	var err error
 	switch uv := v.(type) {
 	case *int32:
@@ -71,7 +114,7 @@ func (dec *rootDecoder) readInt32(v interface{}) error {
 	return err
 }
 
-func (dec *rootDecoder) readInt64(v interface{}) error {
+func (dec *Decoder) readInt64(v interface{}) error {
 	var err error
 	switch uv := v.(type) {
 	case *int64:
@@ -84,114 +127,119 @@ func (dec *rootDecoder) readInt64(v interface{}) error {
 	return err
 }
 
-func (dec *rootDecoder) readVersion() (version int16, position, bytecount int32, err error) {
+func (dec *Decoder) readVersion() (version int16, position, bytecount int32, err error) {
 
-	err = dec.readBin(&bytecount)
+	start := dec.Pos()
+
+	var bcnt uint32
+	err = dec.readBin(&bcnt)
 	if err != nil {
 		return
 	}
-
-	err = dec.readBin(&version)
-	if err != nil {
+	fmt.Printf("readVersion - bytecount=%v\n", bcnt)
+	if (int64(bcnt) & ^kByteCountMask) != 0 {
+		bytecount = int32(int64(bcnt) & ^kByteCountMask)
+	} else {
+		err = fmt.Errorf("rootio.readVersion: too old file")
 		return
 	}
 
-	var id int32
-	err = dec.readBin(&id)
+	var vers uint16
+	err = dec.readBin(&vers)
 	if err != nil {
 		return
 	}
+	version = int16(vers)
 
-	var bits int32
-	err = dec.readBin(&bits)
-	if err != nil {
-		return
-	}
-
+	/*
+	 */
 	//FIXME: hack
-	var trash [8]byte
-	err = dec.readBin(&trash)
-	if err != nil {
-		return
-	}
+	// var trash [8]byte
+	// err = dec.readBin(&trash)
+	// if err != nil {
+	// 	return
+	// }
 	//fmt.Printf("## data = %#v\n", trash[:])
 
+	position = int32(start)
+	myprintf("readVersion => [%v] [%v] [%v]\n", position, version, bytecount)
 	return version, position, bytecount, err
 }
 
-func (dec *rootDecoder) readTNamed() (name, title string, err error) {
-
-	/*
-		// FIXME: handle kIsOnHeap || kIsReferenced
-		// if (bits & kIsReferenced) == 0 {
-		// 	var x int16
-		// 	err = dec.readBin(&x)
-		// 	if err != nil {
-		// 		return
-		// 	}
-		// }
-	*/
-	err = dec.readString(&name)
+func (dec *Decoder) readClass(name *string, count *int32, isref *bool) error {
+	var err error
+	var tag uint32
+	err = dec.readBin(&tag)
 	if err != nil {
-		return name, title, err
+		return err
 	}
+	fmt.Printf("::readClass. first int: [%v]\n", tag)
+	switch {
+	case tag == kNullTag:
+		*isref = false
+		return err
 
-	err = dec.readString(&title)
-	if err != nil {
-		return name, title, err
+	case (tag & kByteCountMask) != 0:
+		// bufvers = 1
+		classtag := ""
+		err = dec.readString(&classtag)
+		if err != nil {
+			return err
+		}
+		if classtag == "" {
+			return fmt.Errorf("rootio.readClass: empty class tag")
+		}
+		*name = classtag
+		*count = int32(int64(tag) & ^kByteCountMask)
+		*isref = false
+	default:
+		*count = int32(tag)
+		*isref = true
 	}
-
-	return name, title, err
+	return err
 }
 
-func (dec *rootDecoder) readTAttLine() (color, style, width int16, err error) {
-	err = dec.readBin(&color)
+func (dec *Decoder) readClassTag(classtag *string) error {
+	var err error
+	var tag uint32
+	err = dec.readBin(&tag)
 	if err != nil {
-		return
+		return err
 	}
 
-	err = dec.readBin(&style)
-	if err != nil {
-		return
+	tagNewClass := tag == kNewClassTag
+	tagClassMask := (int64(tag) & (^int64(kClassMask))) != 0
+
+	if tagNewClass {
+		err = dec.readString(classtag)
+		if err != nil {
+			return err
+		}
+	} else if tagClassMask {
+		panic("not implemented")
+	} else {
+		panic(fmt.Errorf("rootio.readClassTag: unknown class-tag [%v]", tag))
 	}
 
-	err = dec.readBin(&width)
-	if err != nil {
-		return
-	}
-
-	return
+	return err
 }
 
-func (dec *rootDecoder) readTAttFill() (color, style int16, err error) {
-	err = dec.readBin(&color)
-	if err != nil {
-		return
+func (dec *Decoder) checkByteCount(pos, count int32, start int64, class string) error {
+	if count == 0 {
+		return nil
 	}
 
-	err = dec.readBin(&style)
-	if err != nil {
-		return
+	lenbuf := int64(pos) + int64(count) + 4
+	diff := dec.Pos() - start
+	if diff == lenbuf {
+		return nil
 	}
-	return
-}
-
-func (dec *rootDecoder) readTAttMarker() (color, style int16, width float32, err error) {
-	err = dec.readBin(&color)
-	if err != nil {
-		return
-	}
-
-	err = dec.readBin(&style)
-	if err != nil {
-		return
-	}
-
-	err = dec.readBin(&width)
-	if err != nil {
-		return
-	}
-	return
+	err := fmt.Errorf(
+		"**error** [%v] diff=%v len=%v (pos=%v, count=%v, start=%v)",
+		class, diff, lenbuf, pos, count, start,
+	)
+	panic(err)
+	return err
 }
 
 // EOF
