@@ -1,43 +1,34 @@
 package fads
 
 import (
-	"time"
+	"github.com/go-hep/fwk"
 )
 
-type SimCaloHit struct {
-	CellID int32
-	Ene    float64
-	Pos    [3]float64
+type Calorimeter struct {
+	fwk.TaskBase
+
+	fracmap map[int64][2]float64
+	binmap  map[float64]map[float64]struct{}
+
+	ecalres func(float64) float64
+	hcalres func(float64) float64
+
+	tower *Candidate
 }
 
-type RawCaloHit struct {
-	CellID int32
-	Ampl   int32     // amplitude
-	Time   time.Time // time stamp
+func (proc *Calorimeter) StartTask(ctx fwk.Context) fwk.Error {
+	var err fwk.Error
+	return err
 }
 
-type CaloHit struct {
-	CellID int32
-	Ene    float64 // energy of the hit
-	EneErr float64 // error on the hit energy
-	Time   float64 // time of the hit in [ns]
+func (proc *Calorimeter) Process(ctx fwk.Context) fwk.Error {
+	var err fwk.Error
+	return err
 }
 
-type Cluster struct {
-	Type       byte         // flagword defining the type of the cluster
-	Ene        float64      // energy of the cluster energy
-	EneErr     float64      // error on the energy of the cluster
-	Pos        [3]float64   // position of the cluster
-	ErrPos     [6]float64   // covariance matrix of the position
-	Theta      float64      // intrinsic directrion of cluster at position: theta
-	Phi        float64      // intrinsic direction of cluster at position: phi
-	ErrDir     [3]float64   // covariance matrix of the direction
-	Shape      []float64    // shape parameters
-	PIDs       []ParticleID // particle IDs sorted by their probability
-	Clusters   []Cluster    // clusters combined to this cluster
-	Hits       []CaloHit    // hits combined to form this cluster
-	Weights    []float64
-	SubDetEnes []float64 // subdetectors energies
+func (proc *Calorimeter) StopTask(ctx fwk.Context) fwk.Error {
+	var err fwk.Error
+	return err
 }
 
 // EOF
