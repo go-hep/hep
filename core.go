@@ -2,7 +2,6 @@ package fwk
 
 import (
 	"fmt"
-	"reflect"
 )
 
 type Error interface {
@@ -78,6 +77,12 @@ type Store interface {
 	Put(key string, value interface{}) Error
 }
 
+// DeclPorter is the interface to declare input/output ports for the data flow.
+type DeclPorter interface {
+	DeclInPort(name string) Error
+	DeclOutPort(name string) Error
+}
+
 type Level int
 
 const (
@@ -97,93 +102,5 @@ type MsgStream interface {
 
 	Msg(lvl Level, format string, a ...interface{}) (int, error)
 }
-
-func DeclProp(c Component, name string, ptr interface{}) Error {
-	app := g_app.(*appmgr)
-	_, ok := app.props[c]
-	if !ok {
-		app.props[c] = make(map[string]interface{})
-	}
-	switch reflect.TypeOf(ptr).Kind() {
-	case reflect.Ptr:
-		// ok
-	default:
-		return Errorf(
-			"fwk.DeclProp: component [%s] didn't pass a pointer for the property [%s] (type=%T)",
-			c.CompName(),
-			name,
-			ptr,
-		)
-	}
-	app.props[c][name] = ptr
-	return nil
-}
-
-func GetProp(c Component, name string) (interface{}, Error) {
-	app := g_app.(*appmgr)
-	m, ok := app.props[c]
-	if !ok {
-		return nil, Errorf(
-			"fwk.GetProp: component [%s] didn't declare any property",
-			c.CompName(),
-		)
-	}
-
-	ptr, ok := m[name]
-	if !ok {
-		return nil, Errorf(
-			"fwk.GetProp: component [%s] didn't declare any property with name [%s]",
-			c.CompName(),
-			name,
-		)
-	}
-
-	v := reflect.Indirect(reflect.ValueOf(ptr)).Interface()
-	return v, nil
-}
-
-func SetProp(c Component, name string, value interface{}) Error {
-	app := g_app.(*appmgr)
-	m, ok := app.props[c]
-	if !ok {
-		return Errorf(
-			"fwk.SetProp: component [%s] didn't declare any property",
-			c.CompName(),
-		)
-	}
-	rv := reflect.ValueOf(value)
-	rt := rv.Type()
-	ptr := reflect.ValueOf(m[name])
-	dst := ptr.Elem().Type()
-	if !rt.AssignableTo(dst) {
-		return Errorf(
-			"fwk.SetProp: component [%s:%s] has property [%s] with type [%s]. got value=%v (type=%s)",
-			c.CompType(),
-			c.CompName(),
-			name,
-			dst.Name(),
-			value,
-			rt.Name(),
-		)
-	}
-	ptr.Elem().Set(rv)
-	return nil
-}
-
-func DeclInPort(tsk Task, name string, value interface{}) Error {
-	app := g_app.(*appmgr)
-	return app.dflow.addInNode(tsk, name, value)
-}
-
-func DeclOutPort(tsk Task, name string, value interface{}) Error {
-	app := g_app.(*appmgr)
-	return app.dflow.addOutNode(tsk, name, value)
-}
-
-/*
-func DeclInOutPort(comp Component, name string, value interface{}) Error {
-	return nil
-}
-*/
 
 // EOF

@@ -1,24 +1,20 @@
 package fwk
 
-import (
-	"reflect"
-)
-
 type node struct {
-	in  map[string]reflect.Type
-	out map[string]reflect.Type
+	in  map[string]struct{}
+	out map[string]struct{}
 }
 
 func newNode() *node {
 	return &node{
-		in:  make(map[string]reflect.Type),
-		out: make(map[string]reflect.Type),
+		in:  make(map[string]struct{}),
+		out: make(map[string]struct{}),
 	}
 }
 
 type dflowsvc struct {
 	Base
-	nodes map[Task]*node
+	nodes map[string]*node
 	edges map[string]struct{}
 }
 
@@ -28,7 +24,7 @@ func newDflowSvc(name string) *dflowsvc {
 			Name: name,
 			Type: "fwk.dflowsvc",
 		},
-		nodes: make(map[Task]*node),
+		nodes: make(map[string]*node),
 		edges: make(map[string]struct{}),
 	}
 }
@@ -41,7 +37,7 @@ func (svc *dflowsvc) StopSvc(ctx Context) Error {
 	return nil
 }
 
-func (svc *dflowsvc) addInNode(tsk Task, name string, value interface{}) Error {
+func (svc *dflowsvc) addInNode(tsk string, name string) Error {
 	node, ok := svc.nodes[tsk]
 	if !ok {
 		node = newNode()
@@ -51,17 +47,17 @@ func (svc *dflowsvc) addInNode(tsk Task, name string, value interface{}) Error {
 	if ok {
 		return Errorf(
 			"fwk.DeclInPort: component [%s] already declare in-port with name [%s]",
-			tsk.CompName(),
+			tsk,
 			name,
 		)
 	}
 
-	node.in[name] = reflect.TypeOf(value)
+	node.in[name] = struct{}{}
 	svc.edges[name] = struct{}{}
 	return nil
 }
 
-func (svc *dflowsvc) addOutNode(tsk Task, name string, value interface{}) Error {
+func (svc *dflowsvc) addOutNode(tsk string, name string) Error {
 	node, ok := svc.nodes[tsk]
 	if !ok {
 		node = newNode()
@@ -71,12 +67,12 @@ func (svc *dflowsvc) addOutNode(tsk Task, name string, value interface{}) Error 
 	if ok {
 		return Errorf(
 			"fwk.DeclInPort: component [%s] already declare out-port with name [%s]",
-			tsk.CompName(),
+			tsk,
 			name,
 		)
 	}
 
-	node.out[name] = reflect.TypeOf(value)
+	node.out[name] = struct{}{}
 	svc.edges[name] = struct{}{}
 	return nil
 }

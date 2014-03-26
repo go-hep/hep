@@ -228,7 +228,7 @@ func (app *appmgr) configure(ctx Context) Error {
 
 	fmt.Printf(">>> --- [data flow] --- nodes...\n")
 	for tsk, node := range app.dflow.nodes {
-		fmt.Printf(">>> ---[%s]---\n", tsk.CompName())
+		fmt.Printf(">>> ---[%s]---\n", tsk)
 		fmt.Printf("    in:  %v\n", node.in)
 		fmt.Printf("    out: %v\n", node.out)
 	}
