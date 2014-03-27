@@ -10,7 +10,7 @@ var g_app App = nil
 type fsm int
 
 const (
-	fsm_ONLINE     fsm = 0
+	fsm_UNDEFINED  fsm = 0
 	fsm_CONFIGURED fsm = 1
 	fsm_STARTED    fsm = 2
 	fsm_RUNNING    fsm = 3
@@ -41,7 +41,7 @@ func NewApp() App {
 	var app *appmgr
 
 	app = &appmgr{
-		state:    fsm_ONLINE,
+		state:    fsm_UNDEFINED,
 		comptype: "appmgr",
 		compname: "app",
 		props:    make(map[Component]map[string]interface{}),
@@ -161,7 +161,7 @@ func (app *appmgr) Run() Error {
 	var err Error
 	var ctx Context
 
-	if app.state == fsm_ONLINE {
+	if app.state == fsm_UNDEFINED {
 		err = app.configure(ctx)
 		if err != nil {
 			return err
