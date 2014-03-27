@@ -69,7 +69,7 @@ func (pho *Photon) Charge() int32 {
 }
 
 type Electron struct {
-	Mom       fmom.PtEtaPhiM // electron momentum
+	Mom       fmom.PtEtaPhiM // electron momentum (mass=0.0)
 	EleCharge int32          // electron charge
 	EhoEem    float64        // ratio of the hadronic versus electromagnetic energy deposited in the calorimeter
 
@@ -85,7 +85,7 @@ func (ele *Electron) Charge() int32 {
 }
 
 type Muon struct {
-	Mom      fmom.PtEtaPhiM // muon momentum
+	Mom      fmom.PtEtaPhiM // muon momentum (mass=0.0)
 	MuCharge int32          // muon charge
 
 	McPart *hepmc.Particle // generated particle
@@ -123,7 +123,7 @@ func (jet *Jet) Charge() int32 {
 
 type Track struct {
 	Pid       int32          // HEP ID number
-	Mom       fmom.PtEtaPhiM // track momentum
+	Mom       fmom.PtEtaPhiM // track momentum (mass=0.0)
 	TrkCharge int32          // track charge
 
 	Eta float64 // track pseudo-rapidity at the tracker edge
