@@ -182,15 +182,15 @@ type Candidate struct {
 	DEta  float64
 	DPhi  float64
 
-	Mom  fmom.P4
-	Pos  fmom.P4
-	Area fmom.P4
+	Mom  fmom.PxPyPzE
+	Pos  fmom.PxPyPzE
+	Area fmom.PxPyPzE
 
 	Arr []Candidate
 }
 
 func (cand *Candidate) P4() fmom.P4 {
-	return cand.Mom
+	return &cand.Mom
 }
 
 func (cand *Candidate) Charge() int32 {
