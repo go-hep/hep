@@ -4,7 +4,7 @@
 #GOFLAGS := $(GOFLAGS:-race -v)
 GOFLAGS := $(GOFLAGS:-v)
 
-all: build test
+all: clean build test
 	@echo "## bye."
 
 build:
@@ -13,5 +13,8 @@ build:
 test: build
 	@go test $(GOFLAGS) ./...
 	test-fads-app -l INFO
+
+clean:
+	@go clean $(GOFLAGS) -i ./...
 
 ## EOF
