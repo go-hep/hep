@@ -134,6 +134,30 @@ func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
 
 	input := v.([]Candidate)
 	fmt.Printf(">>> candidates: %v\n", len(input))
+
+	output := make([]Candidate, 0)
+	defer func() {
+		err = store.Put(tsk.output, output)
+	}()
+
+	hadrons := make([]Candidate, 0)
+	eles := make([]Candidate, 0)
+	muons := make([]Candidate, 0)
+	defer func() {
+		err = store.Put(tsk.hadrons, hadrons)
+		if err != nil {
+			return
+		}
+		err = store.Put(tsk.eles, eles)
+		if err != nil {
+			return
+		}
+		err = store.Put(tsk.muons, muons)
+		if err != nil {
+			return
+		}
+	}()
+
 	return err
 }
 
