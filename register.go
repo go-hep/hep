@@ -11,7 +11,7 @@ func Register(c Component) error {
 	if c == nil {
 		return fmt.Errorf("fwk.Register: nil Component")
 	}
-	n := c.CompName()
+	n := c.Name()
 	oldcomp, exist := g_compdb[n]
 	if exist {
 		// already existing component with that same name !
