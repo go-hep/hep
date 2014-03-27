@@ -54,7 +54,7 @@ func (mc *mcParticle) Charge() int32 {
 }
 
 type Photon struct {
-	Mom    fmom.PtEtaPhiM // photon momentum
+	Mom    fmom.PtEtaPhiM // photon momentum (mass=0.0)
 	EhoEem float64        // ratio of the hadronic over electromagnetic energy deposited in the calorimeter
 
 	McPart *hepmc.Particle // generated particle
