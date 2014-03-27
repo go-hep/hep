@@ -7,10 +7,13 @@ GOFLAGS := $(GOFLAGS:-v)
 all: build test
 	@echo "## bye."
 
-build:
+build: clean
 	@go get $(GOFLAGS) ./...
 
 test: build
 	@go test $(GOFLAGS) ./...
+
+clean:
+	@go clean $(GOFLAGS) -i ./...
 
 ## EOF

@@ -2,10 +2,11 @@ package fwk
 
 import (
 	"fmt"
+	"reflect"
 	"sort"
 )
 
-var g_app App = nil
+var g_mgr *appmgr = nil
 
 type fsm int
 
@@ -19,9 +20,8 @@ const (
 )
 
 type appmgr struct {
-	state    fsm
-	comptype string
-	compname string
+	state fsm
+	name  string
 
 	props map[Component]map[string]interface{}
 	dflow *dflowsvc
@@ -29,57 +29,96 @@ type appmgr struct {
 
 	evtmax int64
 
-	tsks []Task
-	svcs []Svc
+	comps map[string]Component
+	tsks  []Task
+	svcs  []Svc
 }
 
 func NewApp() App {
-	if g_app != nil {
-		return g_app
-	}
-
-	var app *appmgr
-
-	app = &appmgr{
-		state:    fsm_UNDEFINED,
-		comptype: "appmgr",
-		compname: "app",
-		props:    make(map[Component]map[string]interface{}),
-		dflow:    newDflowSvc("dataflow"),
-		store:    newDataStore("evtstore"),
-		evtmax:   4,
-		tsks:     make([]Task, 0),
-		svcs:     make([]Svc, 0),
+	if g_mgr != nil {
+		return g_mgr
 	}
 
 	var err Error
+	var app *appmgr
+
+	app = &appmgr{
+		state:  fsm_UNDEFINED,
+		name:   "app",
+		props:  make(map[Component]map[string]interface{}),
+		dflow:  nil,
+		store:  nil,
+		evtmax: 4,
+		comps:  make(map[string]Component),
+		tsks:   make([]Task, 0),
+		svcs:   make([]Svc, 0),
+	}
+
+	svc, err := New("github.com/go-hep/fwk.datastore", "evtstore")
+	if err != nil {
+		fmt.Printf("**error** fwk.NewApp: could not create evtstore: %v\n", err)
+		return nil
+	}
+	app.store = svc.(*datastore)
+
+	//app.store = newDataStore("evtstore")
 	err = app.AddSvc(app.store)
 	if err != nil {
 		fmt.Printf("**error** fwk.NewApp: could not create evtstore: %v\n", err)
 		return nil
 	}
 
+	svc, err = New("github.com/go-hep/fwk.dflowsvc", "dataflow")
+	if err != nil {
+		fmt.Printf("**error** fwk.NewApp: could not create dataflow svc: %v\n", err)
+		return nil
+	}
+	app.dflow = svc.(*dflowsvc)
+
+	//app.dflow = newDflowSvc("dataflow")
 	err = app.AddSvc(app.dflow)
 	if err != nil {
 		fmt.Printf("**error** fwk.NewApp: could not create dataflow svc: %v\n", err)
 		return nil
 	}
 
-	g_app = app
+	g_mgr = app
 	return app
 }
 
-func (app *appmgr) CompType() string {
-	return app.comptype
+func (app *appmgr) Name() string {
+	return app.name
 }
 
-func (app *appmgr) CompName() string {
-	return app.compname
+func (app *appmgr) SetName(n string) {
+	app.name = n
+}
+
+func (app *appmgr) Component(n string) Component {
+	c, ok := app.comps[n]
+	if !ok {
+		return nil
+	}
+	return c
+}
+
+func (app *appmgr) HasComponent(n string) bool {
+	_, ok := app.comps[n]
+	return ok
+}
+
+func (app *appmgr) Components() []Component {
+	comps := make([]Component, 0, len(app.comps))
+	for _, c := range app.comps {
+		comps = append(comps, c)
+	}
+	return comps
 }
 
 func (app *appmgr) AddTask(tsk Task) Error {
 	var err Error
 	app.tsks = append(app.tsks, tsk)
+	app.comps[tsk.Name()] = tsk
 	return err
 }
 
@@ -87,7 +126,7 @@ func (app *appmgr) DelTask(tsk Task) Error {
 	var err Error
 	tsks := make([]Task, 0, len(app.tsks))
 	for _, t := range app.tsks {
-		if t.CompName() != tsk.CompName() {
+		if t.Name() != tsk.Name() {
 			tsks = append(tsks, t)
 		}
 	}
@@ -97,7 +136,7 @@ func (app *appmgr) DelTask(tsk Task) Error {
 
 func (app *appmgr) HasTask(n string) bool {
 	for _, t := range app.tsks {
-		if t.CompName() == n {
+		if t.Name() == n {
 			return true
 		}
 	}
@@ -106,7 +145,7 @@ func (app *appmgr) HasTask(n string) bool {
 
 func (app *appmgr) GetTask(n string) Task {
 	for _, t := range app.tsks {
-		if t.CompName() == n {
+		if t.Name() == n {
 			return t
 		}
 	}
@@ -120,6 +159,7 @@ func (app *appmgr) Tasks() []Task {
 func (app *appmgr) AddSvc(svc Svc) Error {
 	var err Error
 	app.svcs = append(app.svcs, svc)
+	app.comps[svc.Name()] = svc
 	return err
 }
 
@@ -127,7 +167,7 @@ func (app *appmgr) DelSvc(svc Svc) Error {
 	var err Error
 	svcs := make([]Svc, 0, len(app.svcs))
 	for _, s := range app.svcs {
-		if s.CompName() != svc.CompName() {
+		if s.Name() != svc.Name() {
 			svcs = append(svcs, s)
 		}
 	}
@@ -137,7 +177,7 @@ func (app *appmgr) DelSvc(svc Svc) Error {
 
 func (app *appmgr) HasSvc(n string) bool {
 	for _, s := range app.svcs {
-		if s.CompName() == n {
+		if s.Name() == n {
 			return true
 		}
 	}
@@ -146,7 +186,7 @@ func (app *appmgr) HasSvc(n string) bool {
 
 func (app *appmgr) GetSvc(n string) Svc {
 	for _, s := range app.svcs {
-		if s.CompName() == n {
+		if s.Name() == n {
 			return s
 		}
 	}
@@ -155,6 +195,74 @@ func (app *appmgr) GetSvc(n string) Svc {
 
 func (app *appmgr) Svcs() []Svc {
 	return app.svcs
+}
+
+func (app *appmgr) DeclProp(c Component, name string, ptr interface{}) Error {
+	_, ok := app.props[c]
+	if !ok {
+		app.props[c] = make(map[string]interface{})
+	}
+	switch reflect.TypeOf(ptr).Kind() {
+	case reflect.Ptr:
+		// ok
+	default:
+		return Errorf(
+			"fwk.DeclProp: component [%s] didn't pass a pointer for the property [%s] (type=%T)",
+			c.Name(),
+			name,
+			ptr,
+		)
+	}
+	app.props[c][name] = ptr
+	return nil
+}
+
+func (app *appmgr) SetProp(c Component, name string, value interface{}) Error {
+	m, ok := app.props[c]
+	if !ok {
+		return Errorf(
+			"fwk.SetProp: component [%s] didn't declare any property",
+			c.Name(),
+		)
+	}
+	rv := reflect.ValueOf(value)
+	rt := rv.Type()
+	ptr := reflect.ValueOf(m[name])
+	dst := ptr.Elem().Type()
+	if !rt.AssignableTo(dst) {
+		return Errorf(
+			"fwk.SetProp: component [%s] has property [%s] with type [%s]. got value=%v (type=%s)",
+			c.Name(),
+			name,
+			dst.Name(),
+			value,
+			rt.Name(),
+		)
+	}
+	ptr.Elem().Set(rv)
+	return nil
+}
+
+func (app *appmgr) GetProp(c Component, name string) (interface{}, Error) {
+	m, ok := app.props[c]
+	if !ok {
+		return nil, Errorf(
+			"fwk.GetProp: component [%s] didn't declare any property",
+			c.Name(),
+		)
+	}
+
+	ptr, ok := m[name]
+	if !ok {
+		return nil, Errorf(
+			"fwk.GetProp: component [%s] didn't declare any property with name [%s]",
+			c.Name(),
+			name,
+		)
+	}
+
+	v := reflect.Indirect(reflect.ValueOf(ptr)).Interface()
+	return v, nil
 }
 
 func (app *appmgr) Run() Error {
@@ -203,7 +311,7 @@ func (app *appmgr) configure(ctx Context) Error {
 	var err Error
 	fmt.Printf(">>> app.configure...\n")
 	for _, svc := range app.svcs {
-		fmt.Printf(">>> configuring [%v:%v]...\n", svc.CompType(), svc.CompName())
+		fmt.Printf(">>> configuring [%s]...\n", svc.Name())
 		cfg, ok := svc.(Configurer)
 		if !ok {
 			continue
@@ -215,7 +323,7 @@ func (app *appmgr) configure(ctx Context) Error {
 	}
 
 	for _, tsk := range app.tsks {
-		fmt.Printf(">>> configuring [%v:%v]...\n", tsk.CompType(), tsk.CompName())
+		fmt.Printf(">>> configuring [%s]...\n", tsk.Name())
 		cfg, ok := tsk.(Configurer)
 		if !ok {
 			continue
@@ -249,7 +357,7 @@ func (app *appmgr) configure(ctx Context) Error {
 func (app *appmgr) start(ctx Context) Error {
 	var err Error
 	for _, svc := range app.svcs {
-		fmt.Printf(">>> starting [%v:%v]...\n", svc.CompType(), svc.CompName())
+		fmt.Printf(">>> starting [%s]...\n", svc.Name())
 		err = svc.StartSvc(ctx)
 		if err != nil {
 			return err
@@ -257,7 +365,7 @@ func (app *appmgr) start(ctx Context) Error {
 	}
 
 	for _, tsk := range app.tsks {
-		fmt.Printf(">>> starting [%v:%v]...\n", tsk.CompType(), tsk.CompName())
+		fmt.Printf(">>> starting [%s]...\n", tsk.Name())
 		err = tsk.StartTask(ctx)
 		if err != nil {
 			return err
@@ -279,7 +387,7 @@ func (app *appmgr) run(ctx Context) Error {
 		errch := make(chan Error, len(app.tsks))
 		for _, tsk := range app.tsks {
 			go func(tsk Task) {
-				//fmt.Printf(">>> running [%v:%v]...\n", tsk.CompType(), tsk.CompName())
+				//fmt.Printf(">>> running [%s]...\n", tsk.Name())
 				ctx := context{id: ievt, slot: 0, store: app.store}
 				errch <- tsk.Process(ctx)
 			}(tsk)
@@ -318,6 +426,7 @@ func (app *appmgr) stop(ctx Context) Error {
 
 func (app *appmgr) shutdown(ctx Context) Error {
 	var err Error
+	app.comps = nil
 	app.tsks = nil
 	app.svcs = nil
 	app.state = fsm_OFFLINE
@@ -326,8 +435,12 @@ func (app *appmgr) shutdown(ctx Context) Error {
 	app.dflow = nil
 	app.store = nil
 
-	g_app = nil
+	g_mgr = nil
 	return err
+}
+
+func init() {
+	Register(reflect.TypeOf(appmgr{}))
 }
 
 // EOF

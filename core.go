@@ -15,14 +15,20 @@ func (sc statuscode) Error() string {
 }
 
 type Context interface {
-	Id() int64
-	Slot() int
-	Store() Store
+	Id() int64    // id of this context (e.g. entry number or some kind of event number)
+	Slot() int    // slot number in the pool of event sequences
+	Store() Store // data store corresponding to the id+slot
 }
 
 type Component interface {
-	CompName() string // Name of the component (ex: "MyPropagator")
-	CompType() string // Type of the component (ex: "github.com/foo/bar.Propagator")
+	Name() string     // Name of the component (ex: "MyPropagator")
+	SetName(n string) // rename a component (should only be done by the framework!)
+}
+
+type ComponentMgr interface {
+	Component(n string) Component
+	HasComponent(n string) bool
+	Components() []Component
 }
 
 type Task interface {
@@ -63,13 +69,24 @@ type SvcMgr interface {
 
 type App interface {
 	Component
+	ComponentMgr
+	SvcMgr
+	TaskMgr
+	PropMgr
+
 	Run() Error
 }
 
+type PropMgr interface {
+	DeclProp(c Component, name string, ptr interface{}) Error
+	SetProp(c Component, name string, value interface{}) Error
+	GetProp(c Component, name string) (interface{}, Error)
+}
+
 type Property interface {
-	DeclProp(name string, defvalue interface{})
-	SetProp(name string, value interface{})
-	GetProp(name string) interface{}
+	DeclProp(name string, ptr interface{}) Error
+	SetProp(name string, value interface{}) Error
+	GetProp(name string) (interface{}, Error)
 }
 
 type Store interface {
@@ -94,11 +111,11 @@ const (
 )
 
 type MsgStream interface {
-	MsgVerbose(format string, a ...interface{}) (int, error)
-	MsgDebug(format string, a ...interface{}) (int, error)
-	MsgInfo(format string, a ...interface{}) (int, error)
-	MsgWarning(format string, a ...interface{}) (int, error)
-	MsgError(format string, a ...interface{}) (int, error)
+	Verbosef(format string, a ...interface{}) (int, error)
+	Debugf(format string, a ...interface{}) (int, error)
+	Infof(format string, a ...interface{}) (int, error)
+	Warnf(format string, a ...interface{}) (int, error)
+	Errorf(format string, a ...interface{}) (int, error)
 
 	Msg(lvl Level, format string, a ...interface{}) (int, error)
 }

@@ -1,21 +1,19 @@
 package fwk
 
+import (
+	"reflect"
+)
+
 type achan chan interface{}
 
 type datastore struct {
-	Base
+	SvcBase
 	store map[string]achan
 }
 
-func newDataStore(n string) *datastore {
-	ds := &datastore{
-		Base: Base{
-			Name: n,
-			Type: "fwk.datastore",
-		},
-		store: make(map[string]achan),
-	}
-	return ds
+func (ds *datastore) Configure(ctx Context) Error {
+	ds.store = make(map[string]achan)
+	return nil
 }
 
 func (ds *datastore) Get(k string) (interface{}, Error) {
@@ -45,6 +43,10 @@ func (ds *datastore) StartSvc(ctx Context) Error {
 func (ds *datastore) StopSvc(ctx Context) Error {
 	ds.store = nil
 	return nil
+}
+
+func init() {
+	Register(reflect.TypeOf(datastore{}))
 }
 
 // EOF

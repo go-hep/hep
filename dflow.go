@@ -1,5 +1,9 @@
 package fwk
 
+import (
+	"reflect"
+)
+
 type node struct {
 	in  map[string]struct{}
 	out map[string]struct{}
@@ -13,20 +17,15 @@ func newNode() *node {
 }
 
 type dflowsvc struct {
-	Base
+	SvcBase
 	nodes map[string]*node
 	edges map[string]struct{}
 }
 
-func newDflowSvc(name string) *dflowsvc {
-	return &dflowsvc{
-		Base: Base{
-			Name: name,
-			Type: "fwk.dflowsvc",
-		},
-		nodes: make(map[string]*node),
-		edges: make(map[string]struct{}),
-	}
+func (svc *dflowsvc) Configure(ctx Context) Error {
+	svc.nodes = make(map[string]*node)
+	svc.edges = make(map[string]struct{})
+	return nil
 }
 
 func (svc *dflowsvc) StartSvc(ctx Context) Error {
@@ -75,6 +74,10 @@ func (svc *dflowsvc) addOutNode(tsk string, name string) Error {
 	node.out[name] = struct{}{}
 	svc.edges[name] = struct{}{}
 	return nil
+}
+
+func init() {
+	Register(reflect.TypeOf(dflowsvc{}))
 }
 
 // EOF
