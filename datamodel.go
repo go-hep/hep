@@ -186,7 +186,7 @@ type Candidate struct {
 	Pos  fmom.PxPyPzE
 	Area fmom.PxPyPzE
 
-	Arr []Candidate
+	Candidates []Candidate
 }
 
 func (cand *Candidate) P4() fmom.P4 {
@@ -195,6 +195,32 @@ func (cand *Candidate) P4() fmom.P4 {
 
 func (cand *Candidate) Charge() int32 {
 	return cand.CandCharge
+}
+
+func (cand *Candidate) Add(c *Candidate) {
+	cand.Candidates = append(cand.Candidates, *c)
+}
+
+func (cand *Candidate) Overlaps(o *Candidate) bool {
+	if cand == o {
+		return true
+	}
+
+	for i := range cand.Candidates {
+		cc := &cand.Candidates[i]
+		if cc.Overlaps(o) {
+			return true
+		}
+	}
+
+	for i := range o.Candidates {
+		cc := &o.Candidates[i]
+		if cc.Overlaps(cand) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // EOF
