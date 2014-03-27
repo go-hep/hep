@@ -53,6 +53,15 @@ func TestPxPyPzE(t *testing.T) {
 		}
 	}
 
+	{
+		p1 := fmom.NewPxPyPzE(10, 11, 12, 20)
+		var p2 fmom.PxPyPzE
+		p2.Set(&p1)
+		if p1 != p2 {
+			t.Fatalf("expected p4=%v (got=%v)", p1, p2)
+		}
+	}
+
 	p := fmom.NewPxPyPzE(10, 11, 12, 20)
 
 	for i, v := range []float64{
