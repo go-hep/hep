@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/go-hep/fwk"
 )
@@ -14,7 +15,7 @@ type task2 struct {
 
 func (tsk *task2) Configure(ctx fwk.Context) fwk.Error {
 	var err fwk.Error
-	fmt.Printf(">>> configure [%v]...\n", tsk.CompName())
+	fmt.Printf(">>> configure [%v]...\n", tsk.Name())
 
 	tsk.fct = func(f float64) float64 {
 		return f * f
@@ -35,22 +36,22 @@ func (tsk *task2) Configure(ctx fwk.Context) fwk.Error {
 		return err
 	}
 
-	fmt.Printf(">>> configure [%v]... [done]\n", tsk.CompName())
+	fmt.Printf(">>> configure [%v]... [done]\n", tsk.Name())
 	return err
 }
 
 func (tsk *task2) StartTask(ctx fwk.Context) fwk.Error {
-	fmt.Printf(">>> start [%v]...\n", tsk.CompName())
+	fmt.Printf(">>> start [%v]...\n", tsk.Name())
 	return nil
 }
 
 func (tsk *task2) StopTask(ctx fwk.Context) fwk.Error {
-	fmt.Printf(">>> stop [%v]...\n", tsk.CompName())
+	fmt.Printf(">>> stop [%v]...\n", tsk.Name())
 	return nil
 }
 
 func (tsk *task2) Process(ctx fwk.Context) fwk.Error {
-	fmt.Printf(">>> proc [%v]...\n", tsk.CompName())
+	fmt.Printf(">>> proc [%v]...\n", tsk.Name())
 	store := ctx.Store()
 	v, err := store.Get("floats1")
 	if err != nil {
@@ -62,4 +63,8 @@ func (tsk *task2) Process(ctx fwk.Context) fwk.Error {
 		return err
 	}
 	return nil
+}
+
+func init() {
+	fwk.Register(reflect.TypeOf(task2{}))
 }

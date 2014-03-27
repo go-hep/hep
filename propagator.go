@@ -2,6 +2,7 @@ package fads
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/go-hep/fwk"
 )
@@ -134,6 +135,10 @@ func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
 	input := v.([]Candidate)
 	fmt.Printf(">>> candidates: %v\n", len(input))
 	return err
+}
+
+func init() {
+	fwk.Register(reflect.TypeOf(ParticlePropagator{}))
 }
 
 // EOF
