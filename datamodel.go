@@ -22,118 +22,179 @@ type ScalarHt float64
 type Rho float64
 
 type mcParticle struct {
-	pid    int32 // pdg id number
-	status int32 // particle status
-	ispu   byte  // 0 or 1 for particles from pile-up interactions
+	Pid    int32 // pdg id number
+	Status int32 // particle status
+	IsPU   byte  // 0 or 1 for particles from pile-up interactions
 
-	m1 int // particle 1st mother
-	m2 int // particle 2nd mother
-	d1 int // particle 1st daughter
-	d2 int // particle 2nd daughter
+	M1 int // particle 1st mother
+	M2 int // particle 2nd mother
+	D1 int // particle 1st daughter
+	D2 int // particle 2nd daughter
 
-	charge int     // particle charge
-	mass   float64 // particle mass
+	McCharge int     // particle charge
+	Mass     float64 // particle mass
 
-	mom fmom.PxPyPzE // particle momentum (px,py,pz,e)
-	pt  float64      // particle transverse momentum
-	eta float64      // particle pseudo-rapidity
-	phi float64      // particle azimuthal angle
+	Mom fmom.PxPyPzE // particle momentum (px,py,pz,e)
 
-	rapidity float64 // particle rapidity
+	Pt  float64 // particle transverse momentum
+	Eta float64 // particle pseudo-rapidity
+	Phi float64 // particle azimuthal angle
 
-	pos [4]float64 // particle vertex position (t,x,y,z)
+	Rapidity float64 // particle rapidity
+
+	Pos [4]float64 // particle vertex position (t,x,y,z)
+}
+
+func (mc *mcParticle) P4() fmom.P4 {
+	return &mc.Mom
+}
+
+func (mc *mcParticle) Charge() int32 {
+	return int32(mc.McCharge)
 }
 
 type Photon struct {
-	p4    fmom.PtEtaPhiM // photon momentum
-	ehoem float64        // ratio of the hadronic over electromagnetic energy deposited in the calorimeter
+	Mom    fmom.PtEtaPhiM // photon momentum
+	EhoEem float64        // ratio of the hadronic over electromagnetic energy deposited in the calorimeter
 
 	McPart *hepmc.Particle // generated particle
+}
+
+func (pho *Photon) P4() fmom.P4 {
+	return &pho.Mom
+}
+
+func (pho *Photon) Charge() int32 {
+	return 0
 }
 
 type Electron struct {
-	p4          fmom.PtEtaPhiM // electron momentum
-	charge      int32          // electron charge
-	EhadOverEem float64        // ratio of the hadronic versus electromagnetic energy deposited in the calorimeter
+	Mom       fmom.PtEtaPhiM // electron momentum
+	EleCharge int32          // electron charge
+	EhoEem    float64        // ratio of the hadronic versus electromagnetic energy deposited in the calorimeter
 
 	McPart *hepmc.Particle // generated particle
+}
+
+func (ele *Electron) P4() fmom.P4 {
+	return &ele.Mom
+}
+
+func (ele *Electron) Charge() int32 {
+	return ele.EleCharge
 }
 
 type Muon struct {
-	p4     fmom.PtEtaPhiM // muon momentum
-	charge int32          // muon charge
+	Mom      fmom.PtEtaPhiM // muon momentum
+	MuCharge int32          // muon charge
 
 	McPart *hepmc.Particle // generated particle
 }
 
+func (muon *Muon) P4() fmom.P4 {
+	return &muon.Mom
+}
+
+func (muon *Muon) Charge() int32 {
+	return muon.MuCharge
+}
+
 type Jet struct {
-	p4     fmom.PtEtaPhiM // jet momentum
-	charge int32          // jet charge
+	Mom       fmom.PtEtaPhiM // jet momentum
+	JetCharge int32          // jet charge
 
-	deta float64 // jet radius in pseudo-rapidity
-	dphi float64 // jet radius in azimuthal angle
+	DEta float64 // jet radius in pseudo-rapidity
+	DPhi float64 // jet radius in azimuthal angle
 
-	btag   byte // 0 or 1 for a jet that has been tagged as containing a heavy quark
-	tautag byte // 0 or 1 for a jet that has been tagged as a tau
+	BTag   byte // 0 or 1 for a jet that has been tagged as containing a heavy quark
+	TauTag byte // 0 or 1 for a jet that has been tagged as a tau
 
 	Constituents []Particle        // pointers to constituents
 	McParts      []*hepmc.Particle // pointers to generated particles
 }
 
+func (jet *Jet) P4() fmom.P4 {
+	return &jet.Mom
+}
+
+func (jet *Jet) Charge() int32 {
+	return jet.JetCharge
+}
+
 type Track struct {
-	pid    int32          // HEP ID number
-	charge int32          // track charge
-	p4     fmom.PtEtaPhiM // track momentum
+	Pid       int32          // HEP ID number
+	Mom       fmom.PtEtaPhiM // track momentum
+	TrkCharge int32          // track charge
 
-	eta float64 // track pseudo-rapidity at the tracker edge
-	phi float64 // track azimuthal angle at the tracker edge
+	Eta float64 // track pseudo-rapidity at the tracker edge
+	Phi float64 // track azimuthal angle at the tracker edge
 
-	x float64 // track vertex position
-	y float64 // track vertex position
-	z float64 // track vertex position
+	X float64 // track vertex position
+	Y float64 // track vertex position
+	Z float64 // track vertex position
 
-	xout float64 // track vertex position at the tracker edge
-	yout float64 // track vertex position at the tracker edge
-	zout float64 // track vertex position at the tracker edge
+	Xout float64 // track vertex position at the tracker edge
+	Yout float64 // track vertex position at the tracker edge
+	Zout float64 // track vertex position at the tracker edge
 
-	mc *hepmc.Particle // pointer to generated particle
+	McPart *hepmc.Particle // pointer to generated particle
+}
+
+func (trk *Track) P4() fmom.P4 {
+	return &trk.Mom
+}
+
+func (trk *Track) Charge() int32 {
+	return trk.TrkCharge
 }
 
 type Tower struct {
-	p4   fmom.EtEtaPhiM // calorimeter tower momentum
-	ene  float64        // calorimeter tower energy
-	eem  float64        // calorimeter tower electromagnetic energy
-	ehad float64        // calorimter tower hadronic energy
+	Mom  fmom.EtEtaPhiM // calorimeter tower momentum
+	Ene  float64        // calorimeter tower energy
+	Eem  float64        // calorimeter tower electromagnetic energy
+	Ehad float64        // calorimter tower hadronic energy
 
-	edges [4]float64 // calorimeter tower edges
+	Edges [4]float64 // calorimeter tower edges
 
-	mcparts []*hepmc.Particle // pointers to generated particles
+	McParts []*hepmc.Particle // pointers to generated particles
+}
+
+func (tower *Tower) P4() fmom.P4 {
+	return &tower.Mom
 }
 
 type Candidate struct {
-	pid            int32   // HEP ID number
-	status         int32   // particle status
-	m1, m2, d1, d2 int32   // particle mothers and daughters
-	charge         int32   // particle charge
-	mass           float64 // particle mass
+	Pid            int32   // HEP ID number
+	Status         int32   // particle status
+	M1, M2, D1, D2 int32   // particle mothers and daughters
+	CandCharge     int32   // particle charge
+	CandMass       float64 // particle mass
 
-	ispu          byte // 0 or 1 for particles from pile-up interactions
-	isconstituent byte // 0 or 1 for particles being constituents
-	btag          byte // 0 or 1 for a candidate that has been tagged as containing a heavy quark
-	tautag        byte // 0 or 1 for a candidate that has been tagged as a tau
+	IsPU          byte // 0 or 1 for particles from pile-up interactions
+	IsConstituent byte // 0 or 1 for particles being constituents
+	BTag          byte // 0 or 1 for a candidate that has been tagged as containing a heavy quark
+	TauTag        byte // 0 or 1 for a candidate that has been tagged as a tau
 
-	eem  float64 // electromagnetic energy
-	ehad float64 // hadronic energy
+	Eem  float64 // electromagnetic energy
+	Ehad float64 // hadronic energy
 
-	edges [4]float64
-	deta  float64
-	dphi  float64
+	Edges [4]float64
+	DEta  float64
+	DPhi  float64
 
-	mom  fmom.P4
-	pos  fmom.P4
-	area fmom.P4
+	Mom  fmom.P4
+	Pos  fmom.P4
+	Area fmom.P4
 
-	arr []Candidate
+	Arr []Candidate
+}
+
+func (cand *Candidate) P4() fmom.P4 {
+	return cand.Mom
+}
+
+func (cand *Candidate) Charge() int32 {
+	return cand.CandCharge
 }
 
 // EOF
