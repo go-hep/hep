@@ -7,8 +7,6 @@ import (
 	"github.com/go-hep/fmom"
 )
 
-const epsilon = 1e-10
-
 func TestPxPyPzE(t *testing.T) {
 	{
 		var p4 fmom.PxPyPzE
