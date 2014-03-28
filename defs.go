@@ -1,0 +1,23 @@
+package rio
+
+type Operation int
+
+const (
+	OpRead Operation = iota
+	OpWrite
+)
+
+const (
+	lenSB = 1
+	lenDB = 2
+	lenQB = 4
+	lenOB = 8
+)
+
+const (
+	g_mark_record  uint32 = 0xabadcafe
+	g_opt_compress        = 0x00000001
+	g_align               = 0x00000003
+)
+
+// EOF
