@@ -62,9 +62,20 @@ type Stream struct {
 	bufcap int    // capacity of scratch buffer
 }
 
+// Fd returns the integer Unix file descriptor referencing the underlying open file.
+func (stream *Stream) Fd() uintptr {
+	return stream.f.Fd()
+}
+
 // Close closes a stream and the underlying file
 func (stream *Stream) Close() error {
 	return stream.f.Close()
+}
+
+// Stat returns the FileInfo structure describing underlying file. If there is an
+// error, it will be of type *os.PathError.
+func (stream *Stream) Stat() (os.FileInfo, error) {
+	return stream.f.Stat()
 }
 
 // Sync commits the current contents of the stream to stable storage.
