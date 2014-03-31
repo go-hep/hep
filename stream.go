@@ -28,6 +28,25 @@ func Open(fname string) (*Stream, error) {
 	return stream, err
 }
 
+// Create opens and connects a RIO stream to a file for writing
+func Create(fname string) (*Stream, error) {
+	var stream *Stream
+	var err error
+
+	f, err := os.Create(fname)
+	if err != nil {
+		return nil, err
+	}
+
+	stream = &Stream{
+		name:   fname,
+		f:      f,
+		bufcap: 8 * 1024,
+	}
+
+	return stream, err
+}
+
 // Stream manages operations of a single RIO stream.
 type Stream struct {
 	name string   // stream name
