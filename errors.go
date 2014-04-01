@@ -5,7 +5,8 @@ import (
 )
 
 var (
-	ErrStreamNoRecMarker = errors.New("rio: no record marker found")
+	ErrStreamNoRecMarker   = errors.New("rio: no record marker found")
+	ErrRecordNoBlockMarker = errors.New("rio: no block marker found")
 )
 
 // EOF
