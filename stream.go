@@ -249,6 +249,12 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 				return nil, io.EOF
 			}
 			record.buf = buf
+			recbuf := bytes.NewBuffer(buf)
+			err = record.read(recbuf)
+			if err != nil {
+				return record, err
+			}
+			//stream.recpos = recstart
 		}
 	}
 	return record, err
