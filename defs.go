@@ -21,4 +21,8 @@ const (
 	g_align               = 0x00000003
 )
 
+var (
+	g_mark_block_b = []byte{222, 173, 190, 239}
+)
+
 // EOF
