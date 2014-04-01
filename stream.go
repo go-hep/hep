@@ -20,9 +20,9 @@ func Open(fname string) (*Stream, error) {
 	}
 
 	stream = &Stream{
-		name:   fname,
-		f:      f,
-		bufcap: 8 * 1024,
+		name: fname,
+		f:    f,
+		recs: make(map[string]*Record),
 	}
 
 	return stream, err
@@ -39,9 +39,9 @@ func Create(fname string) (*Stream, error) {
 	}
 
 	stream = &Stream{
-		name:   fname,
-		f:      f,
-		bufcap: 8 * 1024,
+		name: fname,
+		f:    f,
+		recs: make(map[string]*Record),
 	}
 
 	return stream, err
@@ -52,14 +52,10 @@ type Stream struct {
 	name string   // stream name
 	f    *os.File // file handle
 
-	record string // record name being read
-	block  string // block name being read
-
 	recpos  int64 // start position of last record read
 	complvl int   // compression level
 
-	buf    []byte // buffer of raw data
-	bufcap int    // capacity of scratch buffer
+	recs map[string]*Record // records to read/write
 }
 
 // Fd returns the integer Unix file descriptor referencing the underlying open file.
@@ -133,6 +129,43 @@ func (stream *Stream) Seek(offset int64, whence int) (int64, error) {
 	return stream.f.Seek(offset, whence)
 }
 
+// Record adds a Record to the list of records to read/write or
+// returns the Record with that name.
+func (stream *Stream) Record(name string) *Record {
+	rec, dup := stream.recs[name]
+	if dup {
+		return rec
+	}
+	rec = &Record{
+		name:   name,
+		unpack: false,
+		blocks: make(map[string]Block),
+	}
+	stream.recs[name] = rec
+	return stream.recs[name]
+}
+
+// HasRecord returns whether a Record with name n has been added to this Stream
+func (stream *Stream) HasRecord(n string) bool {
+	_, ok := stream.recs[n]
+	return ok
+}
+
+// DelRecord removes the Record with name n from this Stream.
+// DelRecord is a no-op if such a Record was not known to the Stream.
+func (stream *Stream) DelRecord(n string) {
+	delete(stream.recs, n)
+}
+
+func (stream *Stream) dump() {
+	fmt.Printf("=========== stream [%s] ============\n", stream.name)
+	fmt.Printf("::: records: (%d)\n", len(stream.recs))
+	for k, rec := range stream.recs {
+		fmt.Printf("::: %s: %v\n", k, rec)
+	}
+	return
+}
+
 // ReadRecord reads the next record
 func (stream *Stream) ReadRecord() (*Record, error) {
 	var err error
@@ -145,7 +178,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 	for !requested {
 
 		stream.recpos = stream.CurPos()
-		fmt.Printf(">>> recpos=%d\n", stream.recpos)
+		// fmt.Printf(">>> recpos=%d\n", stream.recpos)
 
 		// interpret: 1) length of the record header
 		//            2) record marker
@@ -156,42 +189,40 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		}
 
 		//fmt.Printf(">>> buf=%v\n", buf[:])
-		fmt.Printf(">>> hdr=%v\n", rechdr)
-		fmt.Printf(">>> buftyp=0x%08x (0x%08x)\n", rechdr.BufType, g_mark_record)
+		// fmt.Printf(">>> hdr=%v\n", rechdr)
+		// fmt.Printf(">>> buftyp=0x%08x (0x%08x)\n", rechdr.BufType, g_mark_record)
 
 		if rechdr.BufType != g_mark_record {
 			return nil, ErrStreamNoRecMarker
 		}
 
 		curpos := stream.CurPos()
-		fmt.Printf(">>> pos --0: %d (%d)\n", curpos, rechdr.HdrLen-8)
+		// fmt.Printf(">>> pos --0: %d (%d)\n", curpos, rechdr.HdrLen-8)
 		var recdata recordData
 		err = stream.read(&recdata)
 		if err != nil {
 			return nil, err
 		}
-		fmt.Printf(">>> rec=%v\n", recdata)
-		buf := make([]byte, recdata.NameLen+((4-(recdata.NameLen&g_align))&g_align))
+		// fmt.Printf(">>> rec=%v\n", recdata)
+		buf := make([]byte, align4(recdata.NameLen))
 		err = stream.read(buf)
 		if err != nil {
 			return nil, err
 		}
-		recname := string(buf)
-		fmt.Printf(">>> name=[%s]\n", recname)
-		fmt.Printf(">>> pos --1: %d [%d]\n", stream.CurPos(), recdata.NameLen)
-		// FIXME:
-		// *record = Mgr.Record(recname)
-		// requested = *record != nil && (*record).Unpack()
-		requested = true
+		recname := string(buf[:recdata.NameLen])
+		// fmt.Printf(">>> name=[%s]\n", recname)
+		// fmt.Printf(">>> pos --1: %d [%d]\n", stream.CurPos(), recdata.NameLen)
+		record = stream.Record(recname)
+		requested = record != nil && record.Unpack()
 
 		// if the record is not interesting, go to next record.
 		// skip over any padding bytes inserted to make the next record header
 		// start on a 4-bytes boundary in the file
 		if !requested {
-			recdata.DataLen += (4 - (recdata.DataLen & g_align)) & g_align
+			recdata.DataLen = align4(recdata.DataLen)
 			curpos, err = stream.Seek(int64(recdata.DataLen), 1)
 			if curpos != int64(recdata.DataLen+rechdr.HdrLen)+stream.recpos {
-				fmt.Printf("pos: %d\nrec: %d\nlen: %d\n", curpos, recdata.DataLen, stream.recpos)
+				//fmt.Printf("pos: %d\nrec: %d\nlen: %d\n", curpos, recdata.DataLen, stream.recpos)
 				return nil, io.EOF
 			}
 			if err != nil {
@@ -200,22 +231,17 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 			continue
 		}
 
-		record = &Record{
-			name: recname,
-		}
-
 		// extract the compression bit from the options word
 		compress := (recdata.Options & g_opt_compress) != 0
 		if !compress {
 			// read the rest of the record data.
 			// note that uncompressed data is *ALWAYS* aligned to a 4-bytes boundary
 			// in the file, so no pad skipping is necessary
-			buf := make([]byte, recdata.DataLen)
+			buf = make([]byte, recdata.DataLen)
 			err = stream.read(buf)
 			if err != nil {
 				return nil, err
 			}
-			record.buf = buf
 
 		} else {
 			// read the compressed record data
@@ -227,7 +253,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 
 			// handle padding bytes that may have been inserted to make the next
 			// record header start on a 4-bytes boundary in the file.
-			padlen := (4 - (recdata.DataLen & g_align)) & g_align
+			padlen := align4(recdata.DataLen) - recdata.DataLen
 			if padlen > 0 {
 				curpos, err = stream.Seek(int64(padlen), 1)
 				if err != nil {
@@ -239,7 +265,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 			if err != nil {
 				return nil, err
 			}
-			buf := make([]byte, recdata.UCmpLen)
+			buf = make([]byte, recdata.UCmpLen)
 			nb, err := unzip.Read(buf)
 			unzip.Close()
 			if err != nil {
@@ -248,13 +274,13 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 			if nb != len(buf) {
 				return nil, io.EOF
 			}
-			record.buf = buf
-			recbuf := bytes.NewBuffer(buf)
-			err = record.read(recbuf)
-			if err != nil {
-				return record, err
-			}
 			//stream.recpos = recstart
+		}
+		recbuf := bytes.NewBuffer(buf)
+		//fmt.Printf("::: recbuf: %d buf:%d\n", recbuf.Len(), len(buf))
+		err = record.read(recbuf)
+		if err != nil {
+			return record, err
 		}
 	}
 	return record, err
