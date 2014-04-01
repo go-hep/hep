@@ -16,6 +16,7 @@ const (
 
 const (
 	g_mark_record  uint32 = 0xabadcafe
+	g_mark_block          = 0xdeadbeef
 	g_opt_compress        = 0x00000001
 	g_align               = 0x00000003
 )
