@@ -24,7 +24,6 @@ type recordData struct {
 // Record manages blocks of data
 type Record struct {
 	name   string           // record name
-	buf    []byte           // record payload
 	unpack bool             // whether to unpack incoming records
 	blocks map[string]Block // connected blocks
 }
@@ -74,6 +73,7 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 // read reads a record
 func (rec *Record) read(buf *bytes.Buffer) error {
 	var err error
+	//fmt.Printf("::: reading record [%s]... [%d]\n", rec.name, buf.Len())
 	// loop until data has been depleted
 	for buf.Len() > 0 {
 		// read block header
@@ -83,6 +83,7 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 			return err
 		}
 		if hdr.Typ != g_mark_block {
+			fmt.Printf("*** err record[%s]: noblockmarker\n", rec.name)
 			return ErrRecordNoBlockMarker
 		}
 
@@ -92,29 +93,44 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 			return err
 		}
 		var cbuf bytes.Buffer
-		n, err := io.CopyN(&cbuf, buf, int64(data.NameLen))
+		nlen := align4(data.NameLen)
+		n, err := io.CopyN(&cbuf, buf, int64(nlen))
 		if err != nil {
+			fmt.Printf(">>> err:%v\n", err)
 			return err
 		}
-		if n != int64(data.NameLen) {
-			return fmt.Errorf("rio: read too few bytes (got=%d. expected=%d)", n, data.NameLen)
+		if n != int64(nlen) {
+			return fmt.Errorf("rio: read too few bytes (got=%d. expected=%d)", n, nlen)
 		}
-		name := string(cbuf.Bytes())
+		name := string(cbuf.Bytes()[:data.NameLen])
 		blk, ok := rec.blocks[name]
 		if !ok {
+			fmt.Printf("*** no block [%s]. draining buffer!\n", name)
 			// drain the whole buffer
 			buf.Next(buf.Len())
 			continue
 		}
-		blkbuf := buf.Bytes()
-		nn := len(blkbuf)
-		err = blk.UnmarshalBinary(blkbuf)
+		//fmt.Printf("### %q\n", string(buf.Bytes()))
+		err = blk.UnmarshalBinary(buf)
 		if err != nil {
+			fmt.Printf("*** error unmarshaling record=%q block=%q: %v\n", rec.name, name, err)
 			return err
 		}
-		buf.Next(nn - len(blkbuf))
-	}
+		//fmt.Printf(">>> read record=%q block=%q (buf=%d)\n", rec.name, name, buf.Len())
 
+		// check whether there is still something to be read.
+		// if there is, check whether there is a block-marker
+		if buf.Len() > 0 {
+			rest := buf.Bytes()
+			idx := bytes.Index(rest, g_mark_block_b)
+			if idx > 0 {
+				buf.Next(idx - 8 /*sizeof blockHeader*/)
+			} else {
+				buf.Next(buf.Len())
+			}
+		}
+	}
+	//fmt.Printf("::: reading record [%s]... [done]\n", rec.name)
 	return err
 }
 
