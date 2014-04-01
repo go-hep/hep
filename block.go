@@ -2,13 +2,20 @@ package rio
 
 import (
 	"bytes"
-	"encoding"
 	"reflect"
 )
 
+type BinaryMarshaler interface {
+	MarshalBinary(buf *bytes.Buffer) error
+}
+
+type BinaryUnmarshaler interface {
+	UnmarshalBinary(buf *bytes.Buffer) error
+}
+
 type Block interface {
-	encoding.BinaryMarshaler
-	encoding.BinaryUnmarshaler
+	BinaryMarshaler
+	BinaryUnmarshaler
 
 	Name() string
 	// Xfer(stream *Stream, op Operation, version int) error
@@ -42,18 +49,22 @@ func (blk *blockImpl) Version() uint32 {
 	return blk.version
 }
 
-func (blk *blockImpl) MarshalBinary() ([]byte, error) {
+func (blk *blockImpl) MarshalBinary(buf *bytes.Buffer) error {
 	var err error
-	var buf bytes.Buffer
-
-	err = bwrite(&buf, blk.rv.Interface())
-	return buf.Bytes(), err
+	err = bwrite(buf, blk.version)
+	if err != nil {
+		return err
+	}
+	err = bwrite(buf, blk.name)
+	if err != nil {
+		return err
+	}
+	err = bwrite(buf, blk.rv.Interface())
+	return err
 }
 
-func (blk *blockImpl) UnmarshalBinary(data []byte) error {
+func (blk *blockImpl) UnmarshalBinary(buf *bytes.Buffer) error {
 	var err error
-	buf := bytes.NewBuffer(data)
 	err = bread(buf, blk.rv.Interface())
-	data = data[len(data)-buf.Len():]
 	return err
 }
