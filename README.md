@@ -85,3 +85,7 @@ func main() {
 	}
 }
 ```
+
+## Bibliography
+
+- `SIO`: http://www-sldnt.slac.stanford.edu/nld/new/Docs/FileFormats/sio.pdf
