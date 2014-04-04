@@ -10,8 +10,17 @@ import (
 	"github.com/go-hep/rio"
 )
 
+type RunHeader struct {
+	RunNbr   int32
+	Detector string
+	Descr    string
+	SubDets  []string
+	//Params   Parameters
+}
+
+
 func TestStreamOpen(t *testing.T) {
-	const fname = "testdata/c_sim.slcio"
+	const fname = "testdata/runhdr.rio"
 	f, err := rio.Open(fname)
 	if err != nil {
 		t.Fatalf("could not open [%s]: %v", fname)
@@ -71,19 +80,19 @@ func TestStreamCreate(t *testing.T) {
 	}
 }
 
-func TestReadLcio(t *testing.T) {
-	const fname = "testdata/c_sim.slcio"
+func TestReadRunHeader(t *testing.T) {
+	const fname = "testdata/runhdr.rio"
 	testReadStream(t, fname)
 }
 
-func TestWriteLcio(t *testing.T) {
+func TestWriteRunHeader(t *testing.T) {
 	const fname = "testdata/out.rio"
 	defer os.RemoveAll(fname)
 	testWriteStream(t, fname)
 }
 
 func TestReadWrite(t *testing.T) {
-	t.Skip()
+	//t.Skip()
 	const fname = "testdata/out.rio"
 	defer os.RemoveAll(fname)
 	testWriteStream(t, fname)
@@ -98,26 +107,18 @@ func testReadStream(t *testing.T, fname string) {
 	}
 	defer f.Close()
 
-	type LCRunHeader struct {
-		RunNbr   int32
-		Detector string
-		Descr    string
-		SubDets  []string
-		//Params   LCParameters
-	}
-
-	var runhdr LCRunHeader
+	var runhdr RunHeader
 	runhdr.RunNbr = 42
 
-	rec := f.Record("LCRunHeader")
-	if !f.HasRecord("LCRunHeader") {
+	rec := f.Record("RioRunHeader")
+	if !f.HasRecord("RioRunHeader") {
 		t.Fatalf("expected stream to have LCRunHeader record")
 	}
 	if rec.Unpack() {
 		t.Fatalf("expected record to NOT unpack by default")
 	}
-	if rec.Name() != "LCRunHeader" {
-		t.Fatalf("expected record name=[%s]. got=[%s]", "LCRunHeader", rec.Name())
+	if rec.Name() != "RioRunHeader" {
+		t.Fatalf("expected record name=[%s]. got=[%s]", "RioRunHeader", rec.Name())
 	}
 
 	rec.SetUnpack(true)
@@ -144,9 +145,9 @@ func testReadStream(t *testing.T, fname string) {
 			t.Fatalf("got nil record! (nrecs=%d)", nrecs)
 		}
 
-		if rec.Name() != "LCRunHeader" {
+		if rec.Name() != "RioRunHeader" {
 			t.Fatalf("expected record name=[%s]. got=[%s]. (nrecs=%d)",
-				"LCRunHeader",
+				"RioRunHeader",
 				rec.Name(),
 				nrecs,
 			)
@@ -155,14 +156,14 @@ func testReadStream(t *testing.T, fname string) {
 		if int(runhdr.RunNbr) != nrecs {
 			t.Fatalf("expected runnbr=%d. got=%d.", nrecs, runhdr.RunNbr)
 		}
-		if runhdr.Detector != "D09TileHcal" {
+		if runhdr.Detector != "MyDetector" {
 			t.Fatalf("expected detector=[%s]. got=[%s]. (nrecs=%d)",
-				"D09TileHcal",
+				"MyDetector",
 				runhdr.Detector,
 				nrecs,
 			)
 		}
-		subdets := []string{"ECAL007", "TPC4711"}
+		subdets := []string{"subdet 0", "subdet 1"}
 		if !reflect.DeepEqual(runhdr.SubDets, subdets) {
 			t.Fatalf("expected subdets=%v. got=%v (nrecs=%d)",
 				subdets,
@@ -180,20 +181,12 @@ func testWriteStream(t *testing.T, fname string) {
 
 	defer f.Close()
 
-	type LCRunHeader struct {
-		RunNbr   int32
-		Detector string
-		Descr    string
-		SubDets  []string
-		//Params   LCParameters
-	}
-
-	var runhdr LCRunHeader
+	var runhdr RunHeader
 	runhdr.RunNbr = 42
 
-	rec := f.Record("LCRunHeader")
+	rec := f.Record("RioRunHeader")
 	if rec == nil {
-		t.Fatalf("could not create record [LCRunHeader]")
+		t.Fatalf("could not create record [RioRunHeader]")
 	}
 	rec.SetUnpack(true)
 	if !rec.Unpack() {
@@ -206,10 +199,10 @@ func testWriteStream(t *testing.T, fname string) {
 	}
 
 	for irec := 0; irec < 10; irec++ {
-		runhdr = LCRunHeader{
+		runhdr = RunHeader{
 			RunNbr:   int32(irec),
-			Detector: "D09TileHcal",
-			SubDets:  []string{"ECAL007", "TPC4711"},
+			Detector: "MyDetector",
+			SubDets:  []string{"subdet 0", "subdet 1"},
 		}
 		err = f.WriteRecord(rec)
 		if err != nil {
