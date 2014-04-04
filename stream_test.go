@@ -48,7 +48,7 @@ func TestStreamCreate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not create [%s]: %v", fname, err)
 	}
-	
+
 	if f.Name() != fname {
 		t.Fatalf("rio.Stream.Name: expected [%s]. got [%s]", fname, f.Name())
 	}
@@ -105,7 +105,7 @@ func testReadStream(t *testing.T, fname string) {
 		SubDets  []string
 		//Params   LCParameters
 	}
-	
+
 	var runhdr LCRunHeader
 	runhdr.RunNbr = 42
 
@@ -130,7 +130,7 @@ func testReadStream(t *testing.T, fname string) {
 		t.Fatalf("error connecting [RunHeader]: %v", err)
 	}
 
-	for	nrecs := 0; nrecs < 100; nrecs++ {
+	for nrecs := 0; nrecs < 100; nrecs++ {
 		//fmt.Printf("::: irec=%d, fname=%q\n", nrecs, fname)
 		rec, err := f.ReadRecord()
 		if err != nil {
@@ -187,7 +187,7 @@ func testWriteStream(t *testing.T, fname string) {
 		SubDets  []string
 		//Params   LCParameters
 	}
-	
+
 	var runhdr LCRunHeader
 	runhdr.RunNbr = 42
 
@@ -205,11 +205,11 @@ func testWriteStream(t *testing.T, fname string) {
 		t.Fatalf("error connecting [RunHeader]: %v", err)
 	}
 
-	for	irec := 0; irec < 10; irec++ {
+	for irec := 0; irec < 10; irec++ {
 		runhdr = LCRunHeader{
-			RunNbr: int32(irec),
+			RunNbr:   int32(irec),
 			Detector: "D09TileHcal",
-			SubDets: []string{"ECAL007", "TPC4711"},
+			SubDets:  []string{"ECAL007", "TPC4711"},
 		}
 		err = f.WriteRecord(rec)
 		if err != nil {

@@ -314,8 +314,8 @@ func (stream *Stream) WriteRecord(record *Record) error {
 	recdata.DataLen = ucmplen
 
 	if record.Compress() {
-        var b bytes.Buffer
-        zip, err := zlib.NewWriterLevel(&b, stream.complvl)
+		var b bytes.Buffer
+		zip, err := zlib.NewWriterLevel(&b, stream.complvl)
 		if err != nil {
 			return err
 		}

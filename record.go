@@ -24,10 +24,10 @@ type recordData struct {
 
 // Record manages blocks of data
 type Record struct {
-	name   string           // record name
-	unpack bool             // whether to unpack incoming records
-	options uint32 // options (flag word)
-	blocks map[string]Block // connected blocks
+	name    string           // record name
+	unpack  bool             // whether to unpack incoming records
+	options uint32           // options (flag word)
+	blocks  map[string]Block // connected blocks
 }
 
 // Name returns the name of this record
@@ -162,7 +162,7 @@ func (rec *Record) write(buf *bytes.Buffer) error {
 		bhdr := blockHeader{
 			Typ: g_mark_block,
 		}
-		
+
 		bdata := blockData{
 			Version: blk.Version(),
 			NameLen: uint32(len(k)),
@@ -174,8 +174,8 @@ func (rec *Record) write(buf *bytes.Buffer) error {
 			return err
 		}
 
-		bhdr.Len = uint32(unsafe.Sizeof(bhdr)) + 
-			uint32(unsafe.Sizeof(bdata)) + 
+		bhdr.Len = uint32(unsafe.Sizeof(bhdr)) +
+			uint32(unsafe.Sizeof(bdata)) +
 			uint32(b.Len())
 
 		err = bwrite(buf, &bhdr)
