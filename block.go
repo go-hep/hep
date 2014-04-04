@@ -51,14 +51,6 @@ func (blk *blockImpl) Version() uint32 {
 
 func (blk *blockImpl) MarshalBinary(buf *bytes.Buffer) error {
 	var err error
-	err = bwrite(buf, blk.version)
-	if err != nil {
-		return err
-	}
-	err = bwrite(buf, blk.name)
-	if err != nil {
-		return err
-	}
 	err = bwrite(buf, blk.rv.Interface())
 	return err
 }
