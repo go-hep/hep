@@ -323,12 +323,11 @@ func (stream *Stream) WriteRecord(record *Record) error {
 		if err != nil {
 			return err
 		}
-		recdata.DataLen = uint32(n)
+		recdata.DataLen = align4(uint32(n))
 		err = zip.Close()
 		if err != nil {
 			return err
 		}
-		//buf.Reset()
 		buf = b
 	}
 
@@ -337,29 +336,22 @@ func (stream *Stream) WriteRecord(record *Record) error {
 		return err
 	}
 
-	//fmt.Printf(">>> %d (%d)\n", stream.CurPos(), align4(uint32(stream.CurPos())))
 	err = stream.write(&recdata)
 	if err != nil {
 		return err
 	}
-	//fmt.Printf("--- %d (%d)\n", stream.CurPos(), align4(uint32(stream.CurPos())))
-	{
-		padlen := align4(recdata.NameLen) - recdata.NameLen
-		if padlen > 0 {
-			_, err = stream.f.Write(make([]byte, int(padlen)))
-			if err != nil {
-				return err
-			}
-		}
+
+	_, err = stream.f.Write([]byte(record.name))
+	if err != nil {
+		return err
 	}
-	//fmt.Printf("<<< %d (%d)\n", stream.CurPos(), align4(uint32(stream.CurPos())))
-	// add some padding to satisfy the 4-bytes boundary.
-	nn := uint32(buf.Len())
-	padlen := align4(nn) - nn
+	
+	padlen := align4(recdata.NameLen) - recdata.NameLen
 	if padlen > 0 {
-		//fmt.Printf(">>> padding: %d -> %d (%d)\n", buf.Len(), align4(nn), padlen)
-		buf.Write(make([]byte, int(padlen)))
-		//fmt.Printf("<<< padding: %d -> %d (%d)\n", buf.Len(), align4(nn), padlen)
+		_, err = stream.f.Write(make([]byte, int(padlen)))
+		if err != nil {
+			return err
+		}
 	}
 
 	n := int64(buf.Len())

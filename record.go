@@ -113,6 +113,7 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 		if err != nil {
 			return err
 		}
+
 		var cbuf bytes.Buffer
 		nlen := align4(data.NameLen)
 		n, err := io.CopyN(&cbuf, buf, int64(nlen))
@@ -176,8 +177,8 @@ func (rec *Record) write(buf *bytes.Buffer) error {
 
 		bhdr.Len = uint32(unsafe.Sizeof(bhdr)) +
 			uint32(unsafe.Sizeof(bdata)) +
-			uint32(b.Len())
-
+			align4(bdata.NameLen) + uint32(b.Len())
+		
 		err = bwrite(buf, &bhdr)
 		if err != nil {
 			return err
@@ -186,6 +187,18 @@ func (rec *Record) write(buf *bytes.Buffer) error {
 		err = bwrite(buf, &bdata)
 		if err != nil {
 			return err
+		}
+
+		_, err = buf.Write([]byte(k))
+		if err != nil {
+			return err
+		}
+		padlen := align4(bdata.NameLen) - bdata.NameLen
+		if padlen > 0 {
+			_, err = buf.Write(make([]byte, int(padlen)))
+			if err != nil {
+				return err
+			}
 		}
 
 		_, err := io.Copy(buf, &b)
