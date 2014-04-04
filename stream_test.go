@@ -92,7 +92,7 @@ func TestWriteRunHeader(t *testing.T) {
 }
 
 func TestReadWrite(t *testing.T) {
-	//t.Skip()
+	t.Skip()
 	const fname = "testdata/out.rio"
 	defer os.RemoveAll(fname)
 	testWriteStream(t, fname)
