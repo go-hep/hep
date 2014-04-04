@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"unsafe"
 )
 
 // recordHeader describes the on-disk record (header part)
 type recordHeader struct {
-	HdrLen  uint32
-	BufType uint32
+	Len uint32
+	Typ uint32
 }
 
 // recordData describes the on-disk record (payload part)
@@ -25,6 +26,7 @@ type recordData struct {
 type Record struct {
 	name   string           // record name
 	unpack bool             // whether to unpack incoming records
+	options uint32 // options (flag word)
 	blocks map[string]Block // connected blocks
 }
 
@@ -41,6 +43,25 @@ func (rec *Record) Unpack() bool {
 // SetUnpack sets whether to unpack incoming records
 func (rec *Record) SetUnpack(unpack bool) {
 	rec.unpack = unpack
+}
+
+// Compress returns the compression flag
+func (rec *Record) Compress() bool {
+	return rec.options&g_opt_compress != 0
+}
+
+// SetCompress sets or resets the compression flag
+func (rec *Record) SetCompress(compress bool) {
+	//FIXME(sbinet)
+	//rec.options &= ^g_opt_compress
+	if compress {
+		rec.options |= g_opt_compress
+	}
+}
+
+// Options returns the options of this record.
+func (rec *Record) Options() uint32 {
+	return rec.options
 }
 
 // Connect connects a Block to this Record (for reading or writing)

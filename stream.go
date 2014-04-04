@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"unsafe"
 )
 
 // Open opens and connects a RIO stream to a file for reading
@@ -192,12 +193,12 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		// fmt.Printf(">>> hdr=%v\n", rechdr)
 		// fmt.Printf(">>> buftyp=0x%08x (0x%08x)\n", rechdr.BufType, g_mark_record)
 
-		if rechdr.BufType != g_mark_record {
+		if rechdr.Typ != g_mark_record {
 			return nil, ErrStreamNoRecMarker
 		}
 
 		curpos := stream.CurPos()
-		// fmt.Printf(">>> pos --0: %d (%d)\n", curpos, rechdr.HdrLen-8)
+		// fmt.Printf(">>> pos --0: %d (%d)\n", curpos, rechdr.Len-8)
 		var recdata recordData
 		err = stream.read(&recdata)
 		if err != nil {
@@ -221,7 +222,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		if !requested {
 			recdata.DataLen = align4(recdata.DataLen)
 			curpos, err = stream.Seek(int64(recdata.DataLen), 1)
-			if curpos != int64(recdata.DataLen+rechdr.HdrLen)+stream.recpos {
+			if curpos != int64(recdata.DataLen+rechdr.Len)+stream.recpos {
 				//fmt.Printf("pos: %d\nrec: %d\nlen: %d\n", curpos, recdata.DataLen, stream.recpos)
 				return nil, io.EOF
 			}

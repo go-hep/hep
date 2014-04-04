@@ -1,7 +1,9 @@
 package rio_test
 
 import (
+	//"fmt"
 	"io"
+	"os"
 	"reflect"
 	"testing"
 
@@ -40,6 +42,10 @@ func TestStreamOpen(t *testing.T) {
 
 func TestReadLcio(t *testing.T) {
 	const fname = "testdata/c_sim.slcio"
+	testReadStream(t, fname)
+}
+
+func testReadStream(t *testing.T, fname string) {
 
 	f, err := rio.Open(fname)
 	if err != nil {
@@ -80,6 +86,7 @@ func TestReadLcio(t *testing.T) {
 	}
 
 	for	nrecs := 0; nrecs < 100; nrecs++ {
+		//fmt.Printf("::: irec=%d, fname=%q\n", nrecs, fname)
 		rec, err := f.ReadRecord()
 		if err != nil {
 			if err == io.EOF && nrecs == 10 {
@@ -116,6 +123,101 @@ func TestReadLcio(t *testing.T) {
 				subdets,
 				runhdr.SubDets,
 			)
+		}
+	}
+}
+
+func TestStreamCreate(t *testing.T) {
+	const fname = "testdata/out.rio"
+	defer os.RemoveAll(fname)
+
+	f, err := rio.Create(fname)
+	if err != nil {
+		t.Fatalf("could not create [%s]: %v", fname, err)
+	}
+	
+	if f.Name() != fname {
+		t.Fatalf("rio.Stream.Name: expected [%s]. got [%s]", fname, f.Name())
+	}
+
+	if f.FileName() != fname {
+		t.Fatalf("rio.Stream.FileName: expected [%s]. got [%s]", fname, f.FileName())
+	}
+
+	fi, err := f.Mode()
+	if err != nil {
+		t.Fatalf("could not retrieve stream mode: %v", err)
+	}
+
+	if !fi.IsRegular() {
+		t.Fatalf("rio.Stream.Mode: expected regular file")
+	}
+
+	if f.CurPos() != 0 {
+		t.Fatalf("expected pos=%v. got=%v", 0, f.CurPos())
+	}
+}
+
+func TestWriteLcio(t *testing.T) {
+	const fname = "testdata/out.rio"
+	defer os.RemoveAll(fname)
+	testWriteStream(t, fname)
+}
+
+func TestReadWrite(t *testing.T) {
+	const fname = "testdata/out.rio"
+	defer os.RemoveAll(fname)
+	testWriteStream(t, fname)
+	testReadStream(t, fname)
+}
+
+func testWriteStream(t *testing.T, fname string) {
+	f, err := rio.Create(fname)
+	if err != nil {
+		t.Fatalf("could not create [%s]: %v", fname, err)
+	}
+
+	defer f.Close()
+
+	type LCRunHeader struct {
+		RunNbr   int32
+		Detector string
+		Descr    string
+		SubDets  []string
+		//Params   LCParameters
+	}
+	
+	var runhdr LCRunHeader
+	runhdr.RunNbr = 42
+
+	rec := f.Record("LCRunHeader")
+	if rec == nil {
+		t.Fatalf("could not create record [LCRunHeader]")
+	}
+	rec.SetUnpack(true)
+	if !rec.Unpack() {
+		t.Fatalf("expected record to unpack now")
+	}
+
+	err = rec.Connect("RunHeader", &runhdr)
+	if err != nil {
+		t.Fatalf("error connecting [RunHeader]: %v", err)
+	}
+
+	for	irec := 0; irec < 10; irec++ {
+		runhdr = LCRunHeader{
+			RunNbr: int32(irec),
+			Detector: "D09TileHcal",
+			SubDets: []string{"ECAL007", "TPC4711"},
+		}
+		err = f.WriteRecord(rec)
+		if err != nil {
+			t.Fatalf("error writing record: %v (irec=%d)", err, irec)
+		}
+
+		err = f.Sync()
+		if err != nil {
+			t.Fatalf("error flushing record: %v (irec=%d)", err, irec)
 		}
 	}
 }
