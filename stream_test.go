@@ -81,8 +81,12 @@ func TestStreamCreate(t *testing.T) {
 }
 
 func TestReadRunHeader(t *testing.T) {
-	const fname = "testdata/runhdr.rio"
-	testReadStream(t, fname)
+	testReadStream(t, "testdata/runhdr.rio")
+}
+
+func TestReadRunHeaderCompr(t *testing.T) {
+	t.Skip()
+	testReadStream(t, "testdata/runhdr-compr.rio")
 }
 
 func TestWriteRunHeader(t *testing.T) {
@@ -92,8 +96,7 @@ func TestWriteRunHeader(t *testing.T) {
 }
 
 func TestReadWrite(t *testing.T) {
-	t.Skip()
-	const fname = "testdata/out.rio"
+	const fname = "testdata/rw.rio"
 	defer os.RemoveAll(fname)
 	testWriteStream(t, fname)
 	testReadStream(t, fname)
@@ -163,6 +166,13 @@ func testReadStream(t *testing.T, fname string) {
 				nrecs,
 			)
 		}
+		if runhdr.Descr != "dummy run number" {
+			t.Fatalf("expected descr=[%s]. got=[%s]. (nrecs=%d)",
+				"dummy run number",
+				runhdr.Descr,
+				nrecs,
+			)
+		}
 		subdets := []string{"subdet 0", "subdet 1"}
 		if !reflect.DeepEqual(runhdr.SubDets, subdets) {
 			t.Fatalf("expected subdets=%v. got=%v (nrecs=%d)",
@@ -202,6 +212,7 @@ func testWriteStream(t *testing.T, fname string) {
 		runhdr = RunHeader{
 			RunNbr:   int32(irec),
 			Detector: "MyDetector",
+			Descr:    "dummy run number",
 			SubDets:  []string{"subdet 0", "subdet 1"},
 		}
 		err = f.WriteRecord(rec)
