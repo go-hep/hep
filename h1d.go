@@ -127,6 +127,7 @@ func (h *H1D) Min() float64 {
 }
 
 // check various interfaces
+var _ Object = (*H1D)(nil)
 var _ Histogram = (*H1D)(nil)
 
 // EOF
