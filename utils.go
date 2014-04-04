@@ -136,20 +136,19 @@ func bwrite(w io.Writer, data interface{}) error {
 		//fmt.Printf(">>> struct: [%v]...[done]\n", rv.Type())
 		return nil
 	case reflect.String:
-		sz := uint32(0)
+		str := rv.String()
+		sz := uint32(len(str))
 		err := bwrite(w, &sz)
 		if err != nil {
 			return err
 		}
-		strlen := align4(sz)
-		str := make([]byte, 0, strlen)
-		str = append(str, []byte(rv.String())...)
-		str = append(str, make([]byte, strlen-sz)...)
-		err = bwrite(w, str)
+		bstr := []byte(str)
+		bstr = append(bstr, make([]byte, align4(sz)-sz)...)
+		_, err = w.Write(bstr)
 		if err != nil {
 			return err
 		}
-		//fmt.Printf("++++ [%s]\n", string(str))
+		//fmt.Printf("<++++ (%d) [%s]\n", sz, string(str))
 		return nil
 
 	case reflect.Slice:
