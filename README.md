@@ -1,6 +1,8 @@
 dao
 ===
 
+[![Build Status](https://drone.io/github.com/go-hep/dao/status.png)](https://drone.io/github.com/go-hep/dao/latest)
+
 `dao` is a set of data analysis objects for HEP (histograms (1D, 2D, 3D), profiles and ntuples).
 
 `dao` is a work in progress of a concurrent friendly histogram filling toolkit.
