@@ -188,7 +188,6 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		//fmt.Printf(">>> buf=%v\n", buf[:])
 		// fmt.Printf(">>> hdr=%v\n", rechdr)
 		// fmt.Printf(">>> buftyp=0x%08x (0x%08x)\n", rechdr.BufType, g_mark_record)
@@ -338,11 +337,22 @@ func (stream *Stream) WriteRecord(record *Record) error {
 		return err
 	}
 
+	//fmt.Printf(">>> %d (%d)\n", stream.CurPos(), align4(uint32(stream.CurPos())))
 	err = stream.write(&recdata)
 	if err != nil {
 		return err
 	}
-
+	//fmt.Printf("--- %d (%d)\n", stream.CurPos(), align4(uint32(stream.CurPos())))
+	{
+		padlen := align4(recdata.NameLen) - recdata.NameLen
+		if padlen > 0 {
+			_, err = stream.f.Write(make([]byte, int(padlen)))
+			if err != nil {
+				return err
+			}
+		}
+	}
+	//fmt.Printf("<<< %d (%d)\n", stream.CurPos(), align4(uint32(stream.CurPos())))
 	// add some padding to satisfy the 4-bytes boundary.
 	nn := uint32(buf.Len())
 	padlen := align4(nn) - nn
