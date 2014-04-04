@@ -287,6 +287,84 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 	return record, err
 }
 
+func (stream *Stream) WriteRecord(record *Record) error {
+	var err error
+
+	rechdr := recordHeader{
+		Len: 0,
+		Typ: g_mark_record,
+	}
+	recdata := recordData{
+		Options: record.options,
+		DataLen: 0,
+		UCmpLen: 0,
+		NameLen: uint32(len(record.name)),
+	}
+
+	rechdr.Len = uint32(unsafe.Sizeof(rechdr)) + uint32(unsafe.Sizeof(recdata)) +
+		uint32(recdata.NameLen)
+
+	var buf bytes.Buffer
+	err = record.write(&buf)
+	if err != nil {
+		return err
+	}
+
+	ucmplen := uint32(buf.Len())
+	recdata.UCmpLen = ucmplen
+	recdata.DataLen = ucmplen
+
+	if record.Compress() {
+        var b bytes.Buffer
+        zip, err := zlib.NewWriterLevel(&b, stream.complvl)
+		if err != nil {
+			return err
+		}
+		n, err := zip.Write(buf.Bytes())
+		if err != nil {
+			return err
+		}
+		recdata.DataLen = uint32(n)
+		err = zip.Close()
+		if err != nil {
+			return err
+		}
+		//buf.Reset()
+		buf = b
+	}
+
+	err = stream.write(&rechdr)
+	if err != nil {
+		return err
+	}
+
+	err = stream.write(&recdata)
+	if err != nil {
+		return err
+	}
+
+	// add some padding to satisfy the 4-bytes boundary.
+	nn := uint32(buf.Len())
+	padlen := align4(nn) - nn
+	if padlen > 0 {
+		//fmt.Printf(">>> padding: %d -> %d (%d)\n", buf.Len(), align4(nn), padlen)
+		buf.Write(make([]byte, int(padlen)))
+		//fmt.Printf("<<< padding: %d -> %d (%d)\n", buf.Len(), align4(nn), padlen)
+	}
+
+	n := int64(buf.Len())
+	w, err := io.Copy(stream.f, &buf)
+	if err != nil {
+		return err
+	}
+
+	if n != w {
+		return fmt.Errorf("rio: written to few bytes (%d). expected (%d)", w, n)
+	}
+
+	return err
+}
+
 func (stream *Stream) read(data interface{}) error {
 	return bread(stream.f, data)
 }

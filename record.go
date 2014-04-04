@@ -155,4 +155,45 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 	return err
 }
 
+func (rec *Record) write(buf *bytes.Buffer) error {
+	var err error
+	for k, blk := range rec.blocks {
+
+		bhdr := blockHeader{
+			Typ: g_mark_block,
+		}
+		
+		bdata := blockData{
+			Version: blk.Version(),
+			NameLen: uint32(len(k)),
+		}
+
+		var b bytes.Buffer
+		err = blk.MarshalBinary(&b)
+		if err != nil {
+			return err
+		}
+
+		bhdr.Len = uint32(unsafe.Sizeof(bhdr)) + 
+			uint32(unsafe.Sizeof(bdata)) + 
+			uint32(b.Len())
+
+		err = bwrite(buf, &bhdr)
+		if err != nil {
+			return err
+		}
+
+		err = bwrite(buf, &bdata)
+		if err != nil {
+			return err
+		}
+
+		_, err := io.Copy(buf, &b)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
 // EOF
