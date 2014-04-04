@@ -2,16 +2,15 @@
 .PHONY: all test clean build
 
 #GOFLAGS := $(GOFLAGS:-race -v)
-GOFLAGS := $(GOFLAGS:-v)
 
 all: build test
-	@echo "## bye."
+	@# done
 
 build: clean
 	@go get $(GOFLAGS) ./...
 
 test: build
-	@go test $(GOFLAGS) ./...
+	@go test $(GOFLAGS) -v ./...
 
 clean:
 	@go clean $(GOFLAGS) -i ./...
