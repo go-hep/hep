@@ -40,8 +40,53 @@ func TestStreamOpen(t *testing.T) {
 	}
 }
 
+func TestStreamCreate(t *testing.T) {
+	const fname = "testdata/out.rio"
+	defer os.RemoveAll(fname)
+
+	f, err := rio.Create(fname)
+	if err != nil {
+		t.Fatalf("could not create [%s]: %v", fname, err)
+	}
+	
+	if f.Name() != fname {
+		t.Fatalf("rio.Stream.Name: expected [%s]. got [%s]", fname, f.Name())
+	}
+
+	if f.FileName() != fname {
+		t.Fatalf("rio.Stream.FileName: expected [%s]. got [%s]", fname, f.FileName())
+	}
+
+	fi, err := f.Mode()
+	if err != nil {
+		t.Fatalf("could not retrieve stream mode: %v", err)
+	}
+
+	if !fi.IsRegular() {
+		t.Fatalf("rio.Stream.Mode: expected regular file")
+	}
+
+	if f.CurPos() != 0 {
+		t.Fatalf("expected pos=%v. got=%v", 0, f.CurPos())
+	}
+}
+
 func TestReadLcio(t *testing.T) {
 	const fname = "testdata/c_sim.slcio"
+	testReadStream(t, fname)
+}
+
+func TestWriteLcio(t *testing.T) {
+	const fname = "testdata/out.rio"
+	defer os.RemoveAll(fname)
+	testWriteStream(t, fname)
+}
+
+func TestReadWrite(t *testing.T) {
+	t.Skip()
+	const fname = "testdata/out.rio"
+	defer os.RemoveAll(fname)
+	testWriteStream(t, fname)
 	testReadStream(t, fname)
 }
 
@@ -125,50 +170,6 @@ func testReadStream(t *testing.T, fname string) {
 			)
 		}
 	}
-}
-
-func TestStreamCreate(t *testing.T) {
-	const fname = "testdata/out.rio"
-	defer os.RemoveAll(fname)
-
-	f, err := rio.Create(fname)
-	if err != nil {
-		t.Fatalf("could not create [%s]: %v", fname, err)
-	}
-	
-	if f.Name() != fname {
-		t.Fatalf("rio.Stream.Name: expected [%s]. got [%s]", fname, f.Name())
-	}
-
-	if f.FileName() != fname {
-		t.Fatalf("rio.Stream.FileName: expected [%s]. got [%s]", fname, f.FileName())
-	}
-
-	fi, err := f.Mode()
-	if err != nil {
-		t.Fatalf("could not retrieve stream mode: %v", err)
-	}
-
-	if !fi.IsRegular() {
-		t.Fatalf("rio.Stream.Mode: expected regular file")
-	}
-
-	if f.CurPos() != 0 {
-		t.Fatalf("expected pos=%v. got=%v", 0, f.CurPos())
-	}
-}
-
-func TestWriteLcio(t *testing.T) {
-	const fname = "testdata/out.rio"
-	defer os.RemoveAll(fname)
-	testWriteStream(t, fname)
-}
-
-func TestReadWrite(t *testing.T) {
-	const fname = "testdata/out.rio"
-	defer os.RemoveAll(fname)
-	testWriteStream(t, fname)
-	testReadStream(t, fname)
 }
 
 func testWriteStream(t *testing.T, fname string) {
