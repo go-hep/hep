@@ -189,8 +189,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 			return nil, err
 		}
 		//fmt.Printf(">>> buf=%v\n", buf[:])
-		// fmt.Printf(">>> hdr=%v\n", rechdr)
-		// fmt.Printf(">>> buftyp=0x%08x (0x%08x)\n", rechdr.BufType, g_mark_record)
+		//fmt.Printf(">>> rechdr=%v\n", rechdr)
 
 		if rechdr.Typ != g_mark_record {
 			return nil, ErrStreamNoRecMarker
@@ -203,7 +202,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		if err != nil {
 			return nil, err
 		}
-		// fmt.Printf(">>> rec=%v\n", recdata)
+		//fmt.Printf(">>> rec=%v\n", recdata)
 		buf := make([]byte, align4(recdata.NameLen))
 		err = stream.read(buf)
 		if err != nil {
@@ -301,7 +300,7 @@ func (stream *Stream) WriteRecord(record *Record) error {
 	}
 
 	rechdr.Len = uint32(unsafe.Sizeof(rechdr)) + uint32(unsafe.Sizeof(recdata)) +
-		uint32(recdata.NameLen)
+		               uint32(recdata.NameLen)
 
 	var buf bytes.Buffer
 	err = record.write(&buf)
