@@ -20,19 +20,19 @@ func TestH1D(t *testing.T) {
 		t.Errorf("expected H1D.Name() == %q (got %q)\n",
 			n, "h1")
 	}
-	nbins := h1.Axis(0).Bins()
+	nbins := h1.Axis().Bins()
 	if nbins != 100 {
 		t.Errorf("expected H1D.Axis.Bins() == %v (got %v)\n",
 			100, nbins,
 		)
 	}
-	low := h1.Axis(0).LowerEdge()
+	low := h1.Axis().LowerEdge()
 	if low != 0. {
 		t.Errorf("expected H1D.Axis.LowerEdge() == %v (got %v)\n",
 			0., low,
 		)
 	}
-	up := h1.Axis(0).UpperEdge()
+	up := h1.Axis().UpperEdge()
 	if up != 100. {
 		t.Errorf("expected H1D.Axis.UpperEdge() == %v (got %v)\n",
 			100., up,
@@ -40,7 +40,7 @@ func TestH1D(t *testing.T) {
 	}
 
 	for idx := 0; idx < nbins; idx++ {
-		size := h1.Axis(0).BinWidth(idx)
+		size := h1.Axis().BinWidth(idx)
 		if size != 1. {
 			t.Errorf("expected H1D.Axis.BinWidth(%v) == %v (got %v)\n",
 				idx, 1., size,

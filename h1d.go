@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -43,12 +42,8 @@ func (h *H1D) Rank() int {
 	return 1
 }
 
-// Axis returns the i-th axis of this histgram.
-// i should be between [0,Rank) otherwise Axis panics
-func (h *H1D) Axis(i int) Axis {
-	if i > 0 {
-		panic(fmt.Errorf("invalid axis number [%d >0]", i))
-	}
+// Axis returns the axis of this histgram.
+func (h *H1D) Axis() Axis {
 	return h.axis
 }
 
