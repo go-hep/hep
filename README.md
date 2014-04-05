@@ -88,6 +88,11 @@ func main() {
 }
 ```
 
+## TODO
+
+- implement read/write pointers
+- implement buffered i/o
+
 ## Bibliography
 
 - `SIO`: http://www-sldnt.slac.stanford.edu/nld/new/Docs/FileFormats/sio.pdf
