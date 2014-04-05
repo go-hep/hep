@@ -85,7 +85,6 @@ func TestReadRunHeader(t *testing.T) {
 }
 
 func TestReadRunHeaderCompr(t *testing.T) {
-	t.Skip()
 	testReadStream(t, "testdata/runhdr-compr.rio")
 }
 
