@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"image/color"
 
-	"github.com/go-hep/hist"
+	"github.com/go-hep/dao"
 	"github.com/go-hep/hplot/plotinum/plot"
 	"github.com/go-hep/hplot/plotinum/plotter"
 	"github.com/go-hep/hplot/plotinum/vg"
 )
 
 type h1d struct {
-	hist.Hist1D
+	*dao.H1D
 }
 
 func (h h1d) XY(i int) (float64, float64) {
@@ -79,7 +79,7 @@ func NewHistogram(xy plotter.XYer, n int) (*Histogram, error) {
 		return nil, errors.New("Histogram with non-positive number of bins")
 	}
 	h := hist_from_xyer(xy, n)
-	return NewH1D(h)
+	return NewH1D(h.H1D)
 }
 
 // NewHist returns a new histogram, as in
@@ -98,9 +98,9 @@ func (u unitYs) XY(i int) (float64, float64) {
 }
 
 // NewH1D returns a new histogram, as in
-// NewHistogram, except that it accepts a hist.Hist1D
+// NewHistogram, except that it accepts a dao.H1D
 // instead of a plotter.XYer
-func NewH1D(h hist.Hist1D) (*Histogram, error) {
+func NewH1D(h *dao.H1D) (*Histogram, error) {
 	return &Histogram{
 		Hist:      h1d{h},
 		FillColor: color.White,
@@ -217,7 +217,7 @@ func (h *Histogram) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
 
 func hist_from_xyer(xys plotter.XYer, n int) h1d {
 	xmin, xmax := plotter.Range(plotter.XValues{xys})
-	h := hist.NewHist1D(n, xmin, xmax)
+	h := dao.NewH1D(n, xmin, xmax)
 
 	for i := 0; i < xys.Len(); i++ {
 		x, y := xys.XY(i)
