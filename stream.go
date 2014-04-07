@@ -158,6 +158,15 @@ func (stream *Stream) DelRecord(n string) {
 	delete(stream.recs, n)
 }
 
+// Records returns the list of Records currently attached to this Stream.
+func (stream *Stream) Records() []*Record {
+	recs := make([]*Record, 0, len(stream.recs))
+	for _, rec := range stream.recs {
+		recs = append(recs, rec)
+	}
+	return recs
+}
+
 func (stream *Stream) dump() {
 	fmt.Printf("=========== stream [%s] ============\n", stream.name)
 	fmt.Printf("::: records: (%d)\n", len(stream.recs))
