@@ -52,8 +52,7 @@ func (rec *Record) Compress() bool {
 
 // SetCompress sets or resets the compression flag
 func (rec *Record) SetCompress(compress bool) {
-	//FIXME(sbinet)
-	//rec.options &= ^g_opt_compress
+	rec.options &= g_opt_not_compress
 	if compress {
 		rec.options |= g_opt_compress
 	}
@@ -104,7 +103,7 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 			return err
 		}
 		if hdr.Typ != g_mark_block {
-			fmt.Printf("*** err record[%s]: noblockmarker\n", rec.name)
+			// fmt.Printf("*** err record[%s]: noblockmarker\n", rec.name)
 			return ErrRecordNoBlockMarker
 		}
 
@@ -118,7 +117,7 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 		nlen := align4(data.NameLen)
 		n, err := io.CopyN(&cbuf, buf, int64(nlen))
 		if err != nil {
-			fmt.Printf(">>> err:%v\n", err)
+			// fmt.Printf(">>> err:%v\n", err)
 			return err
 		}
 		if n != int64(nlen) {
@@ -127,7 +126,7 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 		name := string(cbuf.Bytes()[:data.NameLen])
 		blk, ok := rec.blocks[name]
 		if !ok {
-			fmt.Printf("*** no block [%s]. draining buffer!\n", name)
+			// fmt.Printf("*** no block [%s]. draining buffer!\n", name)
 			// drain the whole buffer
 			buf.Next(buf.Len())
 			continue
@@ -135,7 +134,7 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 		//fmt.Printf("### %q\n", string(buf.Bytes()))
 		err = blk.UnmarshalBinary(buf)
 		if err != nil {
-			fmt.Printf("*** error unmarshaling record=%q block=%q: %v\n", rec.name, name, err)
+			// fmt.Printf("*** error unmarshaling record=%q block=%q: %v\n", rec.name, name, err)
 			return err
 		}
 		//fmt.Printf(">>> read record=%q block=%q (buf=%d)\n", rec.name, name, buf.Len())
@@ -178,6 +177,9 @@ func (rec *Record) write(buf *bytes.Buffer) error {
 		bhdr.Len = uint32(unsafe.Sizeof(bhdr)) +
 			uint32(unsafe.Sizeof(bdata)) +
 			align4(bdata.NameLen) + uint32(b.Len())
+
+		// fmt.Printf("blockHeader: %v\n", bhdr)
+		// fmt.Printf("blockData:   %v (%s)\n", bdata, k)
 
 		err = bwrite(buf, &bhdr)
 		if err != nil {

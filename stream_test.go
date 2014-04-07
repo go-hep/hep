@@ -16,6 +16,9 @@ type RunHeader struct {
 	Descr    string
 	SubDets  []string
 	//Params   Parameters
+
+	Ints   []int64
+	Floats []float64
 }
 
 func TestStreamOpen(t *testing.T) {
@@ -108,8 +111,14 @@ func testReadStream(t *testing.T, fname string) {
 	}
 	defer f.Close()
 
-	var runhdr RunHeader
-	runhdr.RunNbr = 42
+	runhdr := RunHeader{
+		RunNbr:   42,
+		Detector: "---",
+		Descr:    "---",
+		SubDets:  []string{},
+		Floats:   []float64{},
+		Ints:     []int64{},
+	}
 
 	rec := f.Record("RioRunHeader")
 	if !f.HasRecord("RioRunHeader") {
@@ -176,6 +185,20 @@ func testReadStream(t *testing.T, fname string) {
 			t.Fatalf("expected subdets=%v. got=%v (nrecs=%d)",
 				subdets,
 				runhdr.SubDets,
+				nrecs,
+			)
+		}
+
+		floats := []float64{
+			float64(nrecs) + 100,
+			float64(nrecs) + 200,
+			float64(nrecs) + 300,
+		}
+		if !reflect.DeepEqual(runhdr.Floats, floats) {
+			t.Fatalf("expected floats=%v. got=%v (nrecs=%d)",
+				floats,
+				runhdr.Floats,
+				nrecs,
 			)
 		}
 	}
@@ -212,6 +235,16 @@ func testWriteStream(t *testing.T, fname string) {
 			Detector: "MyDetector",
 			Descr:    "dummy run number",
 			SubDets:  []string{"subdet 0", "subdet 1"},
+			Floats: []float64{
+				float64(irec) + 100,
+				float64(irec) + 200,
+				float64(irec) + 300,
+			},
+			Ints: []int64{
+				int64(irec) + 100,
+				int64(irec) + 200,
+				int64(irec) + 300,
+			},
 		}
 		err = f.WriteRecord(rec)
 		if err != nil {

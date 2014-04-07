@@ -11,11 +11,16 @@ func align4(sz uint32) uint32 {
 	return sz + (4-(sz&g_align))&g_align
 }
 
+// align4_i64 returns sz adjusted to align at 4-byte boundaries
+func align4_i64(sz int64) int64 {
+	return sz + (4-(sz&int64(g_align)))&int64(g_align)
+}
+
 func bread(r io.Reader, data interface{}) error {
 	bo := binary.BigEndian
 	rv := reflect.ValueOf(data)
-	//fmt.Printf("::: [%v] :::...\n", rv.Type())
-	//defer fmt.Printf("### [%v] [done]\n", rv.Type())
+	// fmt.Printf("::: [%v] :::...\n", rv.Type())
+	// defer fmt.Printf("### [%v] [done]\n", rv.Type())
 
 	switch rv.Type().Kind() {
 	case reflect.Ptr:
@@ -23,46 +28,43 @@ func bread(r io.Reader, data interface{}) error {
 	}
 	switch rv.Type().Kind() {
 	case reflect.Struct:
-		//fmt.Printf(">>> struct: [%v]...\n", rv.Type())
+		// fmt.Printf(">>> struct: [%v]...\n", rv.Type())
 		for i, n := 0, rv.NumField(); i < n; i++ {
-			//fmt.Printf(">>> i=%d [%v] (%v)...\n", i, rv.Field(i).Type(), rv.Type().Name())
+			// fmt.Printf(">>> i=%d [%v] (%v)...\n", i, rv.Field(i).Type(), rv.Type().Name()+"."+rv.Type().Field(i).Name)
 			err := bread(r, rv.Field(i).Addr().Interface())
 			if err != nil {
 				return err
 			}
-			//fmt.Printf(">>> i=%d [%v] (%v)...[done]\n", i, rv.Field(i).Type(), rv.Type().Name())
+			// fmt.Printf(">>> i=%d [%v] (%v)...[done=>%v]\n", i, rv.Field(i).Type(), rv.Type().Name(), rv.Field(i).Interface())
 		}
-		//fmt.Printf(">>> struct: [%v]...[done]\n", rv.Type())
+		// fmt.Printf(">>> struct: [%v]...[done]\n", rv.Type())
 		return nil
 	case reflect.String:
-		sz := uint32(0)
+		// fmt.Printf("++++> string...\n")
+		sz := int64(0)
 		err := bread(r, &sz)
 		if err != nil {
 			return err
 		}
-		strlen := align4(sz)
-		//fmt.Printf("string [%d=>%d]...\n", sz, strlen)
+		strlen := align4_i64(sz)
+		// fmt.Printf("string [%d=>%d]...\n", sz, strlen)
 		str := make([]byte, strlen)
-		err = bread(r, str)
+		_, err = r.Read(str)
 		if err != nil {
 			return err
 		}
 		rv.SetString(string(str[:sz]))
-		//fmt.Printf("++++ [%s]\n", string(str))
+		//fmt.Printf("<++++ [%s]\n", string(str))
 		return nil
 
 	case reflect.Slice:
-		//fmt.Printf(">>> slice: [%v|%v]...\n", rv.Type(), rv.Type().Elem().Kind())
-		rve := rv.Type().Elem()
-		if kk := rve.Kind(); kk != reflect.String && kk != reflect.Struct {
-			return binary.Read(r, bo, data)
-		}
-		sz := uint32(0)
+		//fmt.Printf("<<< slice: [%v|%v]...\n", rv.Type(), rv.Type().Elem().Kind())
+		sz := int64(0)
 		err := bread(r, &sz)
 		if err != nil {
 			return err
 		}
-		//fmt.Printf(">>> slice: %d [%v]\n", sz, rv.Type())
+		//fmt.Printf("<<< slice: %d [%v]\n", sz, rv.Type())
 		slice := reflect.MakeSlice(rv.Type(), int(sz), int(sz))
 		for i := 0; i < int(sz); i++ {
 			err = bread(r, slice.Index(i).Addr().Interface())
@@ -71,12 +73,12 @@ func bread(r io.Reader, data interface{}) error {
 			}
 		}
 		rv.Set(slice)
-		//fmt.Printf(">>> slice: [%v]... [done] (%v)\n", rv.Type(), slice.Interface())
+		//fmt.Printf("<<< slice: [%v]... [done] (%v)\n", rv.Type(), rv.Interface())
 		return err
 
 	case reflect.Map:
 		//fmt.Printf(">>> map: [%v]...\n", rv.Type())
-		sz := uint32(0)
+		sz := int64(0)
 		err := bread(r, &sz)
 		if err != nil {
 			return err
@@ -112,16 +114,13 @@ func bread(r io.Reader, data interface{}) error {
 }
 
 func bwrite(w io.Writer, data interface{}) error {
-	//return binary.Write(w, binary.BigEndian, data)
-	bo := binary.BigEndian
-	rv := reflect.ValueOf(data)
-	//fmt.Printf("::: [%v] :::...\n", rv.Type())
-	//defer fmt.Printf("### [%v] [done]\n", rv.Type())
 
-	switch rv.Type().Kind() {
-	case reflect.Ptr:
-		rv = rv.Elem()
-	}
+	bo := binary.BigEndian
+	rrv := reflect.ValueOf(data)
+	rv := reflect.Indirect(rrv)
+	// fmt.Printf("::: [%v] :::...\n", rrv.Type())
+	// defer fmt.Printf("### [%v] [done]\n", rrv.Type())
+
 	switch rv.Type().Kind() {
 	case reflect.Struct:
 		//fmt.Printf(">>> struct: [%v]...\n", rv.Type())
@@ -137,27 +136,25 @@ func bwrite(w io.Writer, data interface{}) error {
 		return nil
 	case reflect.String:
 		str := rv.String()
-		sz := uint32(len(str))
+		sz := int64(len(str))
+		// fmt.Printf("++++> (%d) [%s]\n", sz, string(str))
 		err := bwrite(w, &sz)
 		if err != nil {
 			return err
 		}
 		bstr := []byte(str)
-		bstr = append(bstr, make([]byte, align4(sz)-sz)...)
+		bstr = append(bstr, make([]byte, align4_i64(sz)-sz)...)
 		_, err = w.Write(bstr)
 		if err != nil {
 			return err
 		}
-		//fmt.Printf("<++++ (%d) [%s]\n", sz, string(str))
+		// fmt.Printf("<++++ (%d) [%s]\n", sz, string(str))
 		return nil
 
 	case reflect.Slice:
-		//fmt.Printf(">>> slice: [%v|%v]...\n", rv.Type(), rv.Type().Elem().Kind())
-		rve := rv.Type().Elem()
-		if kk := rve.Kind(); kk != reflect.String && kk != reflect.Struct {
-			return binary.Write(w, bo, data)
-		}
-		sz := uint32(rv.Len())
+		// fmt.Printf(">>> slice: [%v|%v]...\n", rv.Type(), rv.Type().Elem().Kind())
+		sz := int64(rv.Len())
+		// fmt.Printf(">>> slice: %d [%v]\n", sz, rv.Type())
 		err := bwrite(w, &sz)
 		if err != nil {
 			return err
@@ -168,12 +165,12 @@ func bwrite(w io.Writer, data interface{}) error {
 				return err
 			}
 		}
-		//fmt.Printf(">>> slice: [%v]... [done] (%v)\n", rv.Type(), slice.Interface())
+		// fmt.Printf(">>> slice: [%v]... [done] (%v)\n", rv.Type(), rv.Interface())
 		return err
 
 	case reflect.Map:
 		//fmt.Printf(">>> map: [%v]...\n", rv.Type())
-		sz := uint32(rv.Len())
+		sz := int64(rv.Len())
 		err := bwrite(w, &sz)
 		if err != nil {
 			return err

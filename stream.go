@@ -181,6 +181,9 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 	var err error
 	var record *Record
 
+	// fmt.Printf("~~~ Read()... ~~~~~~~~~~~~~~~~~~\n")
+	// defer fmt.Printf("~~~ Read()... ~~~~~~~~~~~~~~~~~~ [done]\n")
+
 	stream.recpos = -1
 
 	requested := false
@@ -188,7 +191,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 	for !requested {
 
 		stream.recpos = stream.CurPos()
-		// fmt.Printf(">>> recpos=%d\n", stream.recpos)
+		// fmt.Printf(">>> recpos=%d <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", stream.recpos)
 
 		// interpret: 1) length of the record header
 		//            2) record marker
@@ -211,9 +214,9 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		if err != nil {
 			return nil, err
 		}
-		//fmt.Printf(">>> rec=%v\n", recdata)
+		// fmt.Printf(">>> rec=%v\n", recdata)
 		buf := make([]byte, align4(recdata.NameLen))
-		err = stream.read(buf)
+		_, err = stream.f.Read(buf)
 		if err != nil {
 			return nil, err
 		}
@@ -221,6 +224,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		// fmt.Printf(">>> name=[%s]\n", recname)
 		// fmt.Printf(">>> pos --1: %d [%d]\n", stream.CurPos(), recdata.NameLen)
 		record = stream.Record(recname)
+		record.options = recdata.Options
 		requested = record != nil && record.Unpack()
 
 		// if the record is not interesting, go to next record.
@@ -240,13 +244,13 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		}
 
 		// extract the compression bit from the options word
-		compress := (recdata.Options & g_opt_compress) != 0
+		compress := record.Compress()
 		if !compress {
 			// read the rest of the record data.
 			// note that uncompressed data is *ALWAYS* aligned to a 4-bytes boundary
 			// in the file, so no pad skipping is necessary
 			buf = make([]byte, recdata.DataLen)
-			err = stream.read(buf)
+			_, err = stream.f.Read(buf)
 			if err != nil {
 				return nil, err
 			}
@@ -254,7 +258,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		} else {
 			// read the compressed record data
 			cbuf := make([]byte, recdata.DataLen)
-			err = stream.read(cbuf)
+			_, err = stream.f.Read(cbuf)
 			if err != nil {
 				return nil, err
 			}
@@ -296,6 +300,8 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 
 func (stream *Stream) WriteRecord(record *Record) error {
 	var err error
+	// fmt.Printf("~~~ Write(%v)...\n", record.Name())
+	// defer fmt.Printf("~~~ Write(%v)... [done]\n", record.Name())
 
 	rechdr := recordHeader{
 		Len: 0,
@@ -327,15 +333,16 @@ func (stream *Stream) WriteRecord(record *Record) error {
 		if err != nil {
 			return err
 		}
-		n, err := zip.Write(buf.Bytes())
+		_, err = zip.Write(buf.Bytes())
 		if err != nil {
 			return err
 		}
-		recdata.DataLen = align4(uint32(n))
 		err = zip.Close()
 		if err != nil {
 			return err
 		}
+		recdata.DataLen = align4(uint32(b.Len()))
+
 		buf = b
 	}
 
