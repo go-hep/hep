@@ -92,6 +92,7 @@ func main() {
 
 - implement read/write pointers
 - implement buffered i/o
+- handle big files (ie: file offsets as `int64`)
 
 ## Bibliography
 
