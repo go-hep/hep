@@ -201,6 +201,19 @@ func testReadStream(t *testing.T, fname string) {
 				nrecs,
 			)
 		}
+
+		ints := []int64{
+			int64(nrecs) + 100,
+			int64(nrecs) + 200,
+			int64(nrecs) + 300,
+		}
+		if !reflect.DeepEqual(runhdr.Ints, ints) {
+			t.Fatalf("expected ints=%v. got=%v (nrecs=%d)",
+				floats,
+				runhdr.Floats,
+				nrecs,
+			)
+		}
 	}
 }
 
