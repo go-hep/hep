@@ -18,7 +18,6 @@ type RunHeader struct {
 	//Params   Parameters
 }
 
-
 func TestStreamOpen(t *testing.T) {
 	const fname = "testdata/runhdr.rio"
 	f, err := rio.Open(fname)

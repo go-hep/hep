@@ -178,7 +178,7 @@ func (rec *Record) write(buf *bytes.Buffer) error {
 		bhdr.Len = uint32(unsafe.Sizeof(bhdr)) +
 			uint32(unsafe.Sizeof(bdata)) +
 			align4(bdata.NameLen) + uint32(b.Len())
-		
+
 		err = bwrite(buf, &bhdr)
 		if err != nil {
 			return err

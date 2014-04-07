@@ -300,7 +300,7 @@ func (stream *Stream) WriteRecord(record *Record) error {
 	}
 
 	rechdr.Len = uint32(unsafe.Sizeof(rechdr)) + uint32(unsafe.Sizeof(recdata)) +
-		               uint32(recdata.NameLen)
+		uint32(recdata.NameLen)
 
 	var buf bytes.Buffer
 	err = record.write(&buf)
@@ -344,7 +344,7 @@ func (stream *Stream) WriteRecord(record *Record) error {
 	if err != nil {
 		return err
 	}
-	
+
 	padlen := align4(recdata.NameLen) - recdata.NameLen
 	if padlen > 0 {
 		_, err = stream.f.Write(make([]byte, int(padlen)))
