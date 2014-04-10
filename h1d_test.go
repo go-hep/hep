@@ -1,6 +1,9 @@
 package dao_test
 
 import (
+	"bytes"
+	"encoding/gob"
+	"reflect"
 	"sync"
 	"testing"
 
@@ -137,6 +140,59 @@ func BenchmarkNH1DFillFlat(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		st_process_evts(100, hists, st_process_evts_flat)
 	}
+}
+
+func TestH1DSerialization(t *testing.T) {
+	const nentries = 50
+	href := dao.NewH1D(100, 0., 100.)
+	for i := 0; i < nentries; i++ {
+		href.Fill(rnd()*100., 1.)
+	}
+	href.Annotation()["title"] = "histo title"
+	href.Annotation()["name"] = "histo name"
+
+	// test gob.GobDecode/gob.GobEncode interface
+	func() {
+		buf := new(bytes.Buffer)
+		enc := gob.NewEncoder(buf)
+		err := enc.Encode(href)
+		if err != nil {
+			t.Fatalf("could not serialize histogram: %v", err)
+		}
+
+		var hnew dao.H1D
+		buf = bytes.NewBuffer(buf.Bytes())
+		dec := gob.NewDecoder(buf)
+		err = dec.Decode(&hnew)
+		if err != nil {
+			t.Fatalf("could not deserialize histogram: %v", err)
+		}
+
+		if !reflect.DeepEqual(href, &hnew) {
+			t.Fatalf("ref=%v\nnew=%v\n", href, &hnew)
+		}
+	}()
+
+	// test rio.Binary(Un)Marshaler
+	func() {
+		buf := new(bytes.Buffer)
+		err := href.MarshalBinary(buf)
+		if err != nil {
+			t.Fatalf("could not serialize histogram: %v", err)
+		}
+
+		var hnew dao.H1D
+		buf = bytes.NewBuffer(buf.Bytes())
+		err = hnew.UnmarshalBinary(buf)
+		if err != nil {
+			t.Fatalf("could not deserialize histogram: %v", err)
+		}
+
+		if !reflect.DeepEqual(href, &hnew) {
+			t.Fatalf("ref=%v\nnew=%v\n", href, &hnew)
+		}
+	}()
+
 }
 
 // EOF
