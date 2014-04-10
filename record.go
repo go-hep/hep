@@ -71,9 +71,17 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 		return fmt.Errorf("rio.Record: Block name [%s] already connected", name)
 	}
 	var block Block
-	switch ptr.(type) {
+	switch ptr := ptr.(type) {
 	case Block:
-		block = ptr.(Block)
+		block = ptr
+	case BinaryCodec:
+		rt := reflect.TypeOf(ptr)
+		block = &mBlockImpl{
+			blk:     ptr,
+			version: 0,
+			name:    rt.Name(),
+		}
+
 	default:
 		rt := reflect.TypeOf(ptr)
 		if rt.Kind() != reflect.Ptr {
