@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"math"
 )
@@ -74,7 +76,92 @@ func (axis *EvenBinAxis) CoordToIndex(coord float64) int {
 	panic("unreachable")
 }
 
+func (axis *EvenBinAxis) MarshalBinary(buf *bytes.Buffer) error {
+	enc := gob.NewEncoder(buf)
+	err := axis.gobEncode(enc)
+	return err
+}
+
+func (axis *EvenBinAxis) UnmarshalBinary(buf *bytes.Buffer) error {
+	dec := gob.NewDecoder(buf)
+	err := axis.gobDecode(dec)
+	return err
+}
+
+func (axis *EvenBinAxis) GobEncode() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	enc := gob.NewEncoder(buf)
+	err := axis.gobEncode(enc)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), err
+}
+
+func (axis *EvenBinAxis) GobDecode(data []byte) error {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	err := axis.gobDecode(dec)
+	return err
+}
+
+func (axis *EvenBinAxis) gobEncode(enc *gob.Encoder) error {
+	var err error
+
+	err = enc.Encode(axis.nbins)
+	if err != nil {
+		return err
+	}
+
+	err = enc.Encode(axis.low)
+	if err != nil {
+		return err
+	}
+
+	err = enc.Encode(axis.high)
+	if err != nil {
+		return err
+	}
+
+	err = enc.Encode(axis.size)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (axis *EvenBinAxis) gobDecode(dec *gob.Decoder) error {
+	var err error
+
+	err = dec.Decode(&axis.nbins)
+	if err != nil {
+		return err
+	}
+
+	err = dec.Decode(&axis.low)
+	if err != nil {
+		return err
+	}
+
+	err = dec.Decode(&axis.high)
+	if err != nil {
+		return err
+	}
+
+	err = dec.Decode(&axis.size)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
 // check EvenBinAxis satisfies Axis interface
 var _ Axis = (*EvenBinAxis)(nil)
+
+func init() {
+	gob.Register((*EvenBinAxis)(nil))
+}
 
 // EOF
