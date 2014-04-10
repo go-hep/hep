@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"bytes"
+	"encoding/gob"
 	"math"
 )
 
@@ -126,8 +128,90 @@ func (h *H1D) Min() float64 {
 	return ymin
 }
 
+func (h *H1D) MarshalBinary(buf *bytes.Buffer) error {
+	enc := gob.NewEncoder(buf)
+	err := h.gobEncode(enc)
+	return err
+}
+
+func (h *H1D) UnmarshalBinary(buf *bytes.Buffer) error {
+	dec := gob.NewDecoder(buf)
+	err := h.gobDecode(dec)
+	return err
+}
+
+func (h *H1D) GobEncode() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	enc := gob.NewEncoder(buf)
+	err := h.gobEncode(enc)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), err
+}
+
+func (h *H1D) GobDecode(data []byte) error {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	err := h.gobDecode(dec)
+	return err
+}
+
+func (h *H1D) gobEncode(enc *gob.Encoder) error {
+	var err error
+	err = enc.Encode(h.allbins)
+	if err != nil {
+		return err
+	}
+
+	err = enc.Encode(&h.axis)
+	if err != nil {
+		return err
+	}
+
+	err = enc.Encode(h.entries)
+	if err != nil {
+		return err
+	}
+
+	err = enc.Encode(h.ann)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (h *H1D) gobDecode(dec *gob.Decoder) error {
+	var err error
+	err = dec.Decode(&h.allbins)
+	if err != nil {
+		return err
+	}
+	h.bins = h.allbins[2:]
+
+	err = dec.Decode(&h.axis)
+	if err != nil {
+		return err
+	}
+
+	err = dec.Decode(&h.entries)
+	if err != nil {
+		return err
+	}
+
+	err = dec.Decode(&h.ann)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
 // check various interfaces
 var _ Object = (*H1D)(nil)
 var _ Histogram = (*H1D)(nil)
+
+func init() {
+	gob.Register((*H1D)(nil))
+}
 
 // EOF
