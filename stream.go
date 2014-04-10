@@ -222,7 +222,6 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		}
 		recname := string(buf[:recdata.NameLen])
 		// fmt.Printf(">>> name=[%s]\n", recname)
-		// fmt.Printf(">>> pos --1: %d [%d]\n", stream.CurPos(), recdata.NameLen)
 		record = stream.Record(recname)
 		record.options = recdata.Options
 		requested = record != nil && record.Unpack()
@@ -234,7 +233,6 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 			recdata.DataLen = align4(recdata.DataLen)
 			curpos, err = stream.Seek(int64(recdata.DataLen), 1)
 			if curpos != int64(recdata.DataLen+rechdr.Len)+stream.recpos {
-				//fmt.Printf("pos: %d\nrec: %d\nlen: %d\n", curpos, recdata.DataLen, stream.recpos)
 				return nil, io.EOF
 			}
 			if err != nil {
