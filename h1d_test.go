@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/go-hep/dao"
+	"github.com/go-hep/rio"
 )
 
 func TestH1D(t *testing.T) {
@@ -194,5 +195,10 @@ func TestH1DSerialization(t *testing.T) {
 	}()
 
 }
+
+// test serialization interfaces
+var _ rio.BinaryMarshaler = (*dao.H1D)(nil)
+var _ rio.BinaryUnmarshaler = (*dao.H1D)(nil)
+var _ rio.BinaryCodec = (*dao.H1D)(nil)
 
 // EOF
