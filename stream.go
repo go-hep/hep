@@ -315,7 +315,7 @@ func (stream *Stream) WriteRecord(record *Record) error {
 	}
 
 	rechdr.Len = uint32(unsafe.Sizeof(rechdr)) + uint32(unsafe.Sizeof(recdata)) +
-		uint32(recdata.NameLen)
+		align4(uint32(recdata.NameLen))
 
 	var buf bytes.Buffer
 	err = record.write(&buf)
