@@ -13,9 +13,13 @@ type BinaryUnmarshaler interface {
 	UnmarshalBinary(buf *bytes.Buffer) error
 }
 
-type Block interface {
+type BinaryCodec interface {
 	BinaryMarshaler
 	BinaryUnmarshaler
+}
+
+type Block interface {
+	BinaryCodec
 
 	Name() string
 	// Xfer(stream *Stream, op Operation, version int) error
@@ -59,4 +63,26 @@ func (blk *blockImpl) UnmarshalBinary(buf *bytes.Buffer) error {
 	var err error
 	err = bread(buf, blk.rv.Interface())
 	return err
+}
+
+type mBlockImpl struct {
+	version uint32
+	name    string
+	blk     BinaryCodec
+}
+
+func (blk *mBlockImpl) Name() string {
+	return blk.name
+}
+
+func (blk *mBlockImpl) Version() uint32 {
+	return blk.version
+}
+
+func (blk *mBlockImpl) MarshalBinary(buf *bytes.Buffer) error {
+	return blk.blk.MarshalBinary(buf)
+}
+
+func (blk *mBlockImpl) UnmarshalBinary(buf *bytes.Buffer) error {
+	return blk.blk.UnmarshalBinary(buf)
 }
