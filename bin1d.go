@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"bytes"
+	"encoding/gob"
 	"math"
 )
 
@@ -55,6 +57,89 @@ func (b *Bin1D) Scale(factor float64) {
 	b.sw *= factor
 	b.swc *= factor
 	b.sw2 *= factor * factor
+}
+
+func (b *Bin1D) MarshalBinary(buf *bytes.Buffer) error {
+	enc := gob.NewEncoder(buf)
+	err := b.gobEncode(enc)
+	return err
+}
+
+func (b *Bin1D) UnmarshalBinary(buf *bytes.Buffer) error {
+	dec := gob.NewDecoder(buf)
+	err := b.gobDecode(dec)
+	return err
+}
+
+func (b *Bin1D) GobEncode() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	enc := gob.NewEncoder(buf)
+	err := b.gobEncode(enc)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), err
+}
+
+func (b *Bin1D) gobEncode(enc *gob.Encoder) error {
+	var err error
+
+	err = enc.Encode(b.entries)
+	if err != nil {
+		return err
+	}
+
+	err = enc.Encode(b.sw)
+	if err != nil {
+		return err
+	}
+
+	err = enc.Encode(b.swc)
+	if err != nil {
+		return err
+	}
+
+	err = enc.Encode(b.sw2)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (b *Bin1D) GobDecode(data []byte) error {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	err := b.gobDecode(dec)
+	return err
+}
+
+func (b *Bin1D) gobDecode(dec *gob.Decoder) error {
+	var err error
+	err = dec.Decode(&b.entries)
+	if err != nil {
+		return err
+	}
+
+	err = dec.Decode(&b.sw)
+	if err != nil {
+		return err
+	}
+
+	err = dec.Decode(&b.swc)
+	if err != nil {
+		return err
+	}
+
+	err = dec.Decode(&b.sw2)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func init() {
+	gob.Register((*Bin1D)(nil))
 }
 
 // EOF
