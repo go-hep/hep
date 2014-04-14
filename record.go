@@ -68,7 +68,8 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 	var err error
 	_, dup := rec.blocks[name]
 	if dup {
-		return fmt.Errorf("rio.Record: Block name [%s] already connected", name)
+		//return fmt.Errorf("rio.Record: Block name [%s] already connected", name)
+		//return ErrBlockConnected
 	}
 	var block Block
 	switch ptr := ptr.(type) {
