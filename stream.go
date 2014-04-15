@@ -1,4 +1,4 @@
-package rio
+package sio
 
 import (
 	"bytes"
@@ -374,7 +374,7 @@ func (stream *Stream) WriteRecord(record *Record) error {
 	}
 
 	if n != w {
-		return fmt.Errorf("rio: written to few bytes (%d). expected (%d)", w, n)
+		return fmt.Errorf("sio: written to few bytes (%d). expected (%d)", w, n)
 	}
 
 	return err

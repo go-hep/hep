@@ -1,13 +1,13 @@
-package rio
+package sio
 
 import (
 	"errors"
 )
 
 var (
-	ErrStreamNoRecMarker   = errors.New("rio: no record marker found")
-	ErrRecordNoBlockMarker = errors.New("rio: no block marker found")
-	ErrBlockConnected      = errors.New("rio: block already connected")
+	ErrStreamNoRecMarker   = errors.New("sio: no record marker found")
+	ErrRecordNoBlockMarker = errors.New("sio: no block marker found")
+	ErrBlockConnected      = errors.New("sio: block already connected")
 )
 
 // EOF

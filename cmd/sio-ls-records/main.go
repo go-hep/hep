@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/go-hep/rio"
+	"github.com/go-hep/sio"
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	f, err := rio.Open(fname)
+	f, err := sio.Open(fname)
 	if err != nil {
 		fmt.Printf("*** error: %v\n", err)
 		os.Exit(1)

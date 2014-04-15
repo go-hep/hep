@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/go-hep/rio"
+	"github.com/go-hep/sio"
 )
 
 type RunHeader struct {
@@ -19,11 +19,11 @@ type RunHeader struct {
 }
 
 func main() {
-	fname := flag.String("fname", "runhdr.rio", "file to create")
+	fname := flag.String("fname", "runhdr.sio", "file to create")
 	compr := flag.Bool("compr", false, "enable records compression")
 	flag.Parse()
 
-	f, err := rio.Create(*fname)
+	f, err := sio.Create(*fname)
 	if err != nil {
 		fmt.Printf("*** error: %v\n", err)
 		os.Exit(1)

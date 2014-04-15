@@ -1,4 +1,4 @@
-package rio
+package sio
 
 import (
 	"bytes"
@@ -68,7 +68,7 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 	var err error
 	_, dup := rec.blocks[name]
 	if dup {
-		//return fmt.Errorf("rio.Record: Block name [%s] already connected", name)
+		//return fmt.Errorf("sio.Record: Block name [%s] already connected", name)
 		//return ErrBlockConnected
 	}
 	var block Block
@@ -86,7 +86,7 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 	default:
 		rt := reflect.TypeOf(ptr)
 		if rt.Kind() != reflect.Ptr {
-			return fmt.Errorf("rio: Connect needs a pointer to a block of data")
+			return fmt.Errorf("sio: Connect needs a pointer to a block of data")
 		}
 		block = &blockImpl{
 			rt:      rt,
@@ -130,7 +130,7 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 			return err
 		}
 		if n != int64(nlen) {
-			return fmt.Errorf("rio: read too few bytes (got=%d. expected=%d)", n, nlen)
+			return fmt.Errorf("sio: read too few bytes (got=%d. expected=%d)", n, nlen)
 		}
 		name := string(cbuf.Bytes()[:data.NameLen])
 		blk, ok := rec.blocks[name]

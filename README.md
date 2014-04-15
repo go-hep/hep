@@ -1,20 +1,20 @@
-rio
+sio
 ===
 
-[![Build Status](https://drone.io/github.com/go-hep/rio/status.png)](https://drone.io/github.com/go-hep/rio/latest)
+[![Build Status](https://drone.io/github.com/go-hep/sio/status.png)](https://drone.io/github.com/go-hep/sio/latest)
 
-`rio` is a Record-oriented I/O library, modeled after SIO (Serial I/O).
+`sio` is a pure `Go` implementation of SIO (Serial I/O).
 
 ## Installation
 
 ```sh
-$ go get github.com/go-hep/rio
+$ go get github.com/go-hep/sio
 ```
 
 ## Documentation
 
 The documentation is browsable at godoc.org:
- http://godoc.org/github.com/go-hep/rio
+ http://godoc.org/github.com/go-hep/sio
 
 ## Example
 
@@ -25,7 +25,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/go-hep/rio"
+	"github.com/go-hep/sio"
 )
 
 type LCRunHeader struct {
@@ -39,7 +39,7 @@ func main() {
 	fname := "c_sim.slcio"
 	fmt.Printf(">>> opening [%s]\n", fname)
 
-	f, err := rio.Open(fname)
+	f, err := sio.Open(fname)
 	if err != nil {
 		panic(err)
 	}
@@ -55,7 +55,7 @@ func main() {
 	fmt.Printf("::: [%s]\n", f.FileName())
 	for {
 		fmt.Printf("-----------------------------------------------\n")
-		var rec *rio.Record
+		var rec *sio.Record
 
 		rec, err = f.ReadRecord()
 		fmt.Printf("***\n")

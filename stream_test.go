@@ -1,4 +1,4 @@
-package rio_test
+package sio_test
 
 import (
 	//"fmt"
@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-hep/rio"
+	"github.com/go-hep/sio"
 )
 
 type RunHeader struct {
@@ -22,19 +22,19 @@ type RunHeader struct {
 }
 
 func TestStreamOpen(t *testing.T) {
-	const fname = "testdata/runhdr.rio"
-	f, err := rio.Open(fname)
+	const fname = "testdata/runhdr.sio"
+	f, err := sio.Open(fname)
 	if err != nil {
 		t.Fatalf("could not open [%s]: %v", fname)
 	}
 	defer f.Close()
 
 	if f.Name() != fname {
-		t.Fatalf("rio.Stream.Name: expected [%s]. got [%s]", fname, f.Name())
+		t.Fatalf("sio.Stream.Name: expected [%s]. got [%s]", fname, f.Name())
 	}
 
 	if f.FileName() != fname {
-		t.Fatalf("rio.Stream.FileName: expected [%s]. got [%s]", fname, f.FileName())
+		t.Fatalf("sio.Stream.FileName: expected [%s]. got [%s]", fname, f.FileName())
 	}
 
 	fi, err := f.Mode()
@@ -43,7 +43,7 @@ func TestStreamOpen(t *testing.T) {
 	}
 
 	if !fi.IsRegular() {
-		t.Fatalf("rio.Stream.Mode: expected regular file")
+		t.Fatalf("sio.Stream.Mode: expected regular file")
 	}
 
 	if f.CurPos() != 0 {
@@ -52,20 +52,20 @@ func TestStreamOpen(t *testing.T) {
 }
 
 func TestStreamCreate(t *testing.T) {
-	const fname = "testdata/out.rio"
+	const fname = "testdata/out.sio"
 	defer os.RemoveAll(fname)
 
-	f, err := rio.Create(fname)
+	f, err := sio.Create(fname)
 	if err != nil {
 		t.Fatalf("could not create [%s]: %v", fname, err)
 	}
 
 	if f.Name() != fname {
-		t.Fatalf("rio.Stream.Name: expected [%s]. got [%s]", fname, f.Name())
+		t.Fatalf("sio.Stream.Name: expected [%s]. got [%s]", fname, f.Name())
 	}
 
 	if f.FileName() != fname {
-		t.Fatalf("rio.Stream.FileName: expected [%s]. got [%s]", fname, f.FileName())
+		t.Fatalf("sio.Stream.FileName: expected [%s]. got [%s]", fname, f.FileName())
 	}
 
 	fi, err := f.Mode()
@@ -74,7 +74,7 @@ func TestStreamCreate(t *testing.T) {
 	}
 
 	if !fi.IsRegular() {
-		t.Fatalf("rio.Stream.Mode: expected regular file")
+		t.Fatalf("sio.Stream.Mode: expected regular file")
 	}
 
 	if f.CurPos() != 0 {
@@ -83,21 +83,21 @@ func TestStreamCreate(t *testing.T) {
 }
 
 func TestReadRunHeader(t *testing.T) {
-	testReadStream(t, "testdata/runhdr.rio")
+	testReadStream(t, "testdata/runhdr.sio")
 }
 
 func TestReadRunHeaderCompr(t *testing.T) {
-	testReadStream(t, "testdata/runhdr-compr.rio")
+	testReadStream(t, "testdata/runhdr-compr.sio")
 }
 
 func TestWriteRunHeader(t *testing.T) {
-	const fname = "testdata/out.rio"
+	const fname = "testdata/out.sio"
 	defer os.RemoveAll(fname)
 	testWriteStream(t, fname)
 }
 
 func TestReadWrite(t *testing.T) {
-	const fname = "testdata/rw.rio"
+	const fname = "testdata/rw.sio"
 	defer os.RemoveAll(fname)
 	testWriteStream(t, fname)
 	testReadStream(t, fname)
@@ -105,7 +105,7 @@ func TestReadWrite(t *testing.T) {
 
 func testReadStream(t *testing.T, fname string) {
 
-	f, err := rio.Open(fname)
+	f, err := sio.Open(fname)
 	if err != nil {
 		t.Fatalf("could not open [%s]: %v", fname)
 	}
@@ -218,7 +218,7 @@ func testReadStream(t *testing.T, fname string) {
 }
 
 func testWriteStream(t *testing.T, fname string) {
-	f, err := rio.Create(fname)
+	f, err := sio.Create(fname)
 	if err != nil {
 		t.Fatalf("could not create [%s]: %v", fname, err)
 	}

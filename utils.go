@@ -1,4 +1,4 @@
-package rio
+package sio
 
 import (
 	"encoding/binary"
