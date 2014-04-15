@@ -25,7 +25,7 @@ func TestStreamOpen(t *testing.T) {
 	const fname = "testdata/runhdr.rio"
 	f, err := rio.Open(fname)
 	if err != nil {
-		t.Fatalf("could not open [%s]: %v", fname)
+		t.Fatalf("could not open [%s]: %v", fname, err)
 	}
 	defer f.Close()
 
@@ -107,7 +107,7 @@ func testReadStream(t *testing.T, fname string) {
 
 	f, err := rio.Open(fname)
 	if err != nil {
-		t.Fatalf("could not open [%s]: %v", fname)
+		t.Fatalf("could not open [%s]: %v", fname, err)
 	}
 	defer f.Close()
 
