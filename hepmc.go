@@ -72,6 +72,11 @@ type Event struct {
 	LengthUnit   LengthUnit
 }
 
+// Delete prepares this event for GC-reclaim
+func (evt *Event) Delete() error {
+	return Delete(evt)
+}
+
 // AddVertex adds a vertex to this event
 func (evt *Event) AddVertex(vtx *Vertex) error {
 	if vtx == nil {
