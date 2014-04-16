@@ -34,7 +34,7 @@ import (
 
 func main() {
 	var err error
-	var r io.Reader
+	var r io.ReadCloser
 	var w io.Writer = os.Stdout
 
 	switch len(os.Args) {
@@ -46,6 +46,7 @@ func main() {
 			fmt.Printf("**error: %v\n", err)
 			os.Exit(1)
 		}
+		defer r.Close()
 	default:
 	}
 
