@@ -39,7 +39,7 @@ func (tsk TaskBase) DeclOutPort(name string) Error {
 func (tsk TaskBase) DeclProp(name string, ptr interface{}) Error {
 	c := g_mgr.GetTask(tsk.name)
 	if c == nil {
-		return Errorf("fwk.DeclProp: no Task [%s] known to TaskMgr", name)
+		return Errorf("fwk.DeclProp: no Task [%s] known to TaskMgr", tsk.name)
 	}
 
 	_, ok := g_mgr.props[c]
@@ -64,7 +64,7 @@ func (tsk TaskBase) DeclProp(name string, ptr interface{}) Error {
 func (tsk TaskBase) SetProp(name string, value interface{}) Error {
 	c := g_mgr.GetTask(tsk.name)
 	if c == nil {
-		return Errorf("fwk.SetProp: no Task [%s] known to TaskMgr", name)
+		return Errorf("fwk.SetProp: no Task [%s] known to TaskMgr", tsk.name)
 	}
 
 	m, ok := g_mgr.props[c]
@@ -96,7 +96,7 @@ func (tsk TaskBase) SetProp(name string, value interface{}) Error {
 func (tsk TaskBase) GetProp(name string) (interface{}, Error) {
 	c := g_mgr.GetTask(tsk.name)
 	if c == nil {
-		return nil, Errorf("fwk.GetProp: no Task [%s] known to TaskMgr", name)
+		return nil, Errorf("fwk.GetProp: no Task [%s] known to TaskMgr", tsk.name)
 	}
 
 	m, ok := g_mgr.props[c]
