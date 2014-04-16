@@ -102,6 +102,11 @@ func (app *appmgr) Component(n string) Component {
 	return c
 }
 
+func (app *appmgr) addComponent(c Component) Error {
+	app.comps[c.Name()] = c
+	return nil
+}
+
 func (app *appmgr) HasComponent(n string) bool {
 	_, ok := app.comps[n]
 	return ok
