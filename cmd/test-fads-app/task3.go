@@ -24,7 +24,7 @@ func (tsk *task3) Configure(ctx fwk.Context) fwk.Error {
 		return err
 	}
 
-	err = tsk.DeclOutPort(tsk.parts)
+	err = tsk.DeclOutPort(tsk.parts, reflect.TypeOf([]fads.Candidate{}))
 	if err != nil {
 		return err
 	}

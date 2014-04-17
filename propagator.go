@@ -83,27 +83,27 @@ func (tsk *ParticlePropagator) Configure(ctx fwk.Context) fwk.Error {
 		return err
 	}
 
-	err = tsk.DeclInPort(tsk.input)
+	err = tsk.DeclInPort(tsk.input, reflect.TypeOf([]Candidate{}))
 	if err != nil {
 		return err
 	}
 
-	err = tsk.DeclOutPort(tsk.output)
+	err = tsk.DeclOutPort(tsk.output, reflect.TypeOf([]Candidate{}))
 	if err != nil {
 		return err
 	}
 
-	err = tsk.DeclOutPort(tsk.hadrons)
+	err = tsk.DeclOutPort(tsk.hadrons, reflect.TypeOf([]Candidate{}))
 	if err != nil {
 		return err
 	}
 
-	err = tsk.DeclOutPort(tsk.eles)
+	err = tsk.DeclOutPort(tsk.eles, reflect.TypeOf([]Candidate{}))
 	if err != nil {
 		return err
 	}
 
-	err = tsk.DeclOutPort(tsk.muons)
+	err = tsk.DeclOutPort(tsk.muons, reflect.TypeOf([]Candidate{}))
 	if err != nil {
 		return err
 	}

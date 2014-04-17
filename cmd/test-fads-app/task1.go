@@ -36,12 +36,12 @@ func (tsk *task1) Configure(ctx fwk.Context) fwk.Error {
 		return err
 	}
 
-	err = tsk.DeclOutPort("floats1")
+	err = tsk.DeclOutPort("floats1", reflect.TypeOf(float64(1.0)))
 	if err != nil {
 		return err
 	}
 
-	err = tsk.DeclOutPort("floats2")
+	err = tsk.DeclOutPort("floats2", reflect.TypeOf(float64(1.0)))
 	if err != nil {
 		return err
 	}
