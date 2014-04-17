@@ -35,6 +35,11 @@ func (ds *datastore) Put(k string, v interface{}) Error {
 	return nil
 }
 
+func (ds *datastore) Has(k string) bool {
+	_, ok := ds.store[k]
+	return ok
+}
+
 func (ds *datastore) StartSvc(ctx Context) Error {
 	ds.store = make(map[string]achan)
 	return nil
@@ -48,5 +53,8 @@ func (ds *datastore) StopSvc(ctx Context) Error {
 func init() {
 	Register(reflect.TypeOf(datastore{}))
 }
+
+// interface tests
+var _ Store = (*datastore)(nil)
 
 // EOF

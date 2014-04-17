@@ -93,6 +93,7 @@ type Property interface {
 type Store interface {
 	Get(key string) (interface{}, Error)
 	Put(key string, value interface{}) Error
+	Has(key string) bool
 }
 
 // DeclPorter is the interface to declare input/output ports for the data flow.
