@@ -2,6 +2,7 @@ package fwk
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"sort"
 )
@@ -393,7 +394,16 @@ func (app *appmgr) run(ctx Context) Error {
 		for _, tsk := range app.tsks {
 			go func(tsk Task) {
 				//fmt.Printf(">>> running [%s]...\n", tsk.Name())
-				ctx := context{id: ievt, slot: 0, store: app.store}
+				ctx := context{
+					id:    ievt,
+					slot:  0,
+					store: app.store,
+					msg: msgstream{
+						lvl: LvlInfo,
+						w:   os.Stdout,
+						n:   tsk.Name(),
+					},
+				}
 				errch <- tsk.Process(ctx)
 			}(tsk)
 		}

@@ -4,6 +4,7 @@ type context struct {
 	id    int64
 	slot  int
 	store Store
+	msg   msgstream
 }
 
 func (ctx context) Id() int64 {
