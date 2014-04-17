@@ -110,7 +110,7 @@ const (
 	LvlDebug   Level = -10
 	LvlInfo    Level = 0
 	LvlWarning Level = 10
-	LvlEror    Level = 20
+	LvlError   Level = 20
 )
 
 type MsgStream interface {
