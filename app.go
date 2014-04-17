@@ -388,6 +388,19 @@ func (app *appmgr) run(ctx Context) Error {
 	for ievt := int64(0); ievt < app.evtmax; ievt++ {
 		fmt.Printf(">>> app.running evt=%d...\n", ievt)
 		for k := range app.dflow.edges {
+			ch, ok := app.store.store[k]
+			if ok {
+				select {
+				case vv := <-ch:
+					if vv, ok := vv.(Deleter); ok {
+						err = vv.Delete()
+						if err != nil {
+							return err
+						}
+					}
+				default:
+				}
+			}
 			app.store.store[k] = make(achan, 1)
 		}
 		errch := make(chan Error, len(app.tsks))
