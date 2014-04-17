@@ -35,12 +35,6 @@ func main() {
 	}
 	mgr.AddTask(c.(fwk.Task))
 
-	c, err = fwk.New("github.com/go-hep/fads.HepMcReader", "hepmcreader")
-	if err != nil {
-		panic(err)
-	}
-	mgr.AddTask(c.(fwk.Task))
-
 	err = app.Run()
 	if err != nil {
 		panic(err)
