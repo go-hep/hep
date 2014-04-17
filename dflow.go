@@ -36,7 +36,7 @@ func (svc *dflowsvc) StopSvc(ctx Context) Error {
 	return nil
 }
 
-func (svc *dflowsvc) addInNode(tsk string, name string) Error {
+func (svc *dflowsvc) addInNode(tsk string, name string, t reflect.Type) Error {
 	node, ok := svc.nodes[tsk]
 	if !ok {
 		node = newNode()
@@ -56,7 +56,7 @@ func (svc *dflowsvc) addInNode(tsk string, name string) Error {
 	return nil
 }
 
-func (svc *dflowsvc) addOutNode(tsk string, name string) Error {
+func (svc *dflowsvc) addOutNode(tsk string, name string, t reflect.Type) Error {
 	node, ok := svc.nodes[tsk]
 	if !ok {
 		node = newNode()

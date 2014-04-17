@@ -2,6 +2,7 @@ package fwk
 
 import (
 	"fmt"
+	"reflect"
 )
 
 type Error interface {
@@ -96,8 +97,8 @@ type Store interface {
 
 // DeclPorter is the interface to declare input/output ports for the data flow.
 type DeclPorter interface {
-	DeclInPort(name string) Error
-	DeclOutPort(name string) Error
+	DeclInPort(name string, t reflect.Type) Error
+	DeclOutPort(name string, t reflect.Type) Error
 }
 
 type Level int

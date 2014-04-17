@@ -28,12 +28,12 @@ func (tsk *TaskBase) SetName(n string) {
 	tsk.name = n
 }
 
-func (tsk TaskBase) DeclInPort(name string) Error {
-	return g_mgr.dflow.addInNode(tsk.name, name)
+func (tsk TaskBase) DeclInPort(name string, t reflect.Type) Error {
+	return g_mgr.dflow.addInNode(tsk.name, name, t)
 }
 
-func (tsk TaskBase) DeclOutPort(name string) Error {
-	return g_mgr.dflow.addOutNode(tsk.name, name)
+func (tsk TaskBase) DeclOutPort(name string, t reflect.Type) Error {
+	return g_mgr.dflow.addOutNode(tsk.name, name, t)
 }
 
 func (tsk TaskBase) DeclProp(name string, ptr interface{}) Error {
