@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/go-hep/fads"
@@ -16,7 +15,8 @@ type task3 struct {
 
 func (tsk *task3) Configure(ctx fwk.Context) fwk.Error {
 	var err fwk.Error
-	fmt.Printf(">>> configure [%v]...\n", tsk.Name())
+	msg := ctx.Msg()
+	msg.Infof("configure...\n")
 
 	tsk.parts = "/fads/StableParticles"
 	err = tsk.DeclProp("Output", &tsk.parts)
@@ -29,22 +29,25 @@ func (tsk *task3) Configure(ctx fwk.Context) fwk.Error {
 		return err
 	}
 
-	fmt.Printf(">>> configure [%v]... [done]\n", tsk.Name())
+	msg.Infof("configure... [done]\n")
 	return err
 }
 
 func (tsk *task3) StartTask(ctx fwk.Context) fwk.Error {
-	fmt.Printf(">>> start [%v]...\n", tsk.Name())
+	msg := ctx.Msg()
+	msg.Infof("start...\n")
 	return nil
 }
 
 func (tsk *task3) StopTask(ctx fwk.Context) fwk.Error {
-	fmt.Printf(">>> stop [%v]...\n", tsk.Name())
+	msg := ctx.Msg()
+	msg.Infof("stop...\n")
 	return nil
 }
 
 func (tsk *task3) Process(ctx fwk.Context) fwk.Error {
-	fmt.Printf(">>> proc [%v]...\n", tsk.Name())
+	msg := ctx.Msg()
+	msg.Infof("proc...\n")
 	store := ctx.Store()
 
 	parts := make([]fads.Candidate, 0)

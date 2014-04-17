@@ -1,7 +1,6 @@
 package fads
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/go-hep/fwk"
@@ -126,6 +125,7 @@ func (tsk *ParticlePropagator) StopTask(ctx fwk.Context) fwk.Error {
 func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
 	var err fwk.Error
 	store := ctx.Store()
+	msg := ctx.Msg()
 
 	v, err := store.Get(tsk.input)
 	if err != nil {
@@ -133,7 +133,7 @@ func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
 	}
 
 	input := v.([]Candidate)
-	fmt.Printf(">>> candidates: %v\n", len(input))
+	msg.Infof(">>> candidates: %v\n", len(input))
 
 	output := make([]Candidate, 0)
 	defer func() {
