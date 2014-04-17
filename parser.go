@@ -48,7 +48,7 @@ func parse(r io.Reader, table *Table) error {
 					stoks += ", "
 				}
 			}
-			fmt.Printf("** error: line %d (%d): %v\n", lineno, len(tokens), stoks)
+			//fmt.Printf("** error: line %d (%d): %v\n", lineno, len(tokens), stoks)
 			return fmt.Errorf("heppdt: malformed line:%d: %v", lineno, string(bline))
 		}
 		var id int64
