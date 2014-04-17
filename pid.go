@@ -26,12 +26,12 @@ type Quarks struct {
 }
 
 // Particle Identification number
-//  In the standard numbering scheme, the PID digits (base 10) are:
-//            +/- n nr nl nq1 nq2 nq3 nj
-//  It is expected that any 7 digit number used as a PID will adhere to
-//  the Monte Carlo numbering scheme documented by the PDG.
-//  Note that particles not already explicitly defined
-//  can be expressed within this numbering scheme.
+// In the standard numbering scheme, the PID digits (base 10) are:
+//           +/- n nr nl nq1 nq2 nq3 nj
+// It is expected that any 7 digit number used as a PID will adhere to
+// the Monte Carlo numbering scheme documented by the PDG.
+// Note that particles not already explicitly defined
+// can be expressed within this numbering scheme.
 type PID int
 
 /*
