@@ -1,7 +1,6 @@
 package fwk
 
 import (
-	"fmt"
 	"os"
 	"reflect"
 	"sort"
@@ -27,6 +26,7 @@ type appmgr struct {
 	props map[Component]map[string]interface{}
 	dflow *dflowsvc
 	store *datastore
+	msg   msgstream
 
 	evtmax int64
 
@@ -43,12 +43,19 @@ func NewApp() App {
 	var err Error
 	var app *appmgr
 
+	const appname = "app"
+
 	app = &appmgr{
-		state:  fsm_UNDEFINED,
-		name:   "app",
-		props:  make(map[Component]map[string]interface{}),
-		dflow:  nil,
-		store:  nil,
+		state: fsm_UNDEFINED,
+		name:  appname,
+		props: make(map[Component]map[string]interface{}),
+		dflow: nil,
+		store: nil,
+		msg: msgstream{
+			lvl: LvlInfo,
+			w:   os.Stdout,
+			n:   appname,
+		},
 		evtmax: 4,
 		comps:  make(map[string]Component),
 		tsks:   make([]Task, 0),
@@ -57,7 +64,7 @@ func NewApp() App {
 
 	svc, err := New("github.com/go-hep/fwk.datastore", "evtstore")
 	if err != nil {
-		fmt.Printf("**error** fwk.NewApp: could not create evtstore: %v\n", err)
+		app.msg.Errorf("fwk.NewApp: could not create evtstore: %v\n", err)
 		return nil
 	}
 	app.store = svc.(*datastore)
@@ -65,13 +72,13 @@ func NewApp() App {
 	//app.store = newDataStore("evtstore")
 	err = app.AddSvc(app.store)
 	if err != nil {
-		fmt.Printf("**error** fwk.NewApp: could not create evtstore: %v\n", err)
+		app.msg.Errorf("fwk.NewApp: could not create evtstore: %v\n", err)
 		return nil
 	}
 
 	svc, err = New("github.com/go-hep/fwk.dflowsvc", "dataflow")
 	if err != nil {
-		fmt.Printf("**error** fwk.NewApp: could not create dataflow svc: %v\n", err)
+		app.msg.Errorf("fwk.NewApp: could not create dataflow svc: %v\n", err)
 		return nil
 	}
 	app.dflow = svc.(*dflowsvc)
@@ -79,7 +86,7 @@ func NewApp() App {
 	//app.dflow = newDflowSvc("dataflow")
 	err = app.AddSvc(app.dflow)
 	if err != nil {
-		fmt.Printf("**error** fwk.NewApp: could not create dataflow svc: %v\n", err)
+		app.msg.Errorf("fwk.NewApp: could not create dataflow svc: %v\n", err)
 		return nil
 	}
 
@@ -315,9 +322,9 @@ func (app *appmgr) Run() Error {
 
 func (app *appmgr) configure(ctx Context) Error {
 	var err Error
-	fmt.Printf(">>> app.configure...\n")
+	app.msg.Debugf("configure...\n")
 	for _, svc := range app.svcs {
-		fmt.Printf(">>> configuring [%s]...\n", svc.Name())
+		app.msg.Debugf("configuring [%s]...\n", svc.Name())
 		cfg, ok := svc.(Configurer)
 		if !ok {
 			continue
@@ -329,7 +336,7 @@ func (app *appmgr) configure(ctx Context) Error {
 	}
 
 	for _, tsk := range app.tsks {
-		fmt.Printf(">>> configuring [%s]...\n", tsk.Name())
+		app.msg.Debugf("configuring [%s]...\n", tsk.Name())
 		cfg, ok := tsk.(Configurer)
 		if !ok {
 			continue
@@ -340,30 +347,30 @@ func (app *appmgr) configure(ctx Context) Error {
 		}
 	}
 
-	fmt.Printf(">>> --- [data flow] --- nodes...\n")
+	app.msg.Infof(">>> --- [data flow] --- nodes...\n")
 	for tsk, node := range app.dflow.nodes {
-		fmt.Printf(">>> ---[%s]---\n", tsk)
-		fmt.Printf("    in:  %v\n", node.in)
-		fmt.Printf("    out: %v\n", node.out)
+		app.msg.Infof(">>> ---[%s]---\n", tsk)
+		app.msg.Infof("    in:  %v\n", node.in)
+		app.msg.Infof("    out: %v\n", node.out)
 	}
 
-	fmt.Printf(">>> --- [data flow] --- edges...\n")
+	app.msg.Infof(">>> --- [data flow] --- edges...\n")
 	edges := make([]string, 0, len(app.dflow.edges))
 	for n := range app.dflow.edges {
 		edges = append(edges, n)
 	}
 	sort.Strings(edges)
-	fmt.Printf(" edges: %v\n", edges)
+	app.msg.Infof(" edges: %v\n", edges)
 
 	app.state = fsm_CONFIGURED
-	fmt.Printf(">>> app.configure... [done]\n")
+	app.msg.Debugf("configure... [done]\n")
 	return err
 }
 
 func (app *appmgr) start(ctx Context) Error {
 	var err Error
 	for _, svc := range app.svcs {
-		fmt.Printf(">>> starting [%s]...\n", svc.Name())
+		app.msg.Debugf("starting [%s]...\n", svc.Name())
 		err = svc.StartSvc(ctx)
 		if err != nil {
 			return err
@@ -371,7 +378,7 @@ func (app *appmgr) start(ctx Context) Error {
 	}
 
 	for _, tsk := range app.tsks {
-		fmt.Printf(">>> starting [%s]...\n", tsk.Name())
+		app.msg.Debugf("starting [%s]...\n", tsk.Name())
 		err = tsk.StartTask(ctx)
 		if err != nil {
 			return err
@@ -386,7 +393,7 @@ func (app *appmgr) run(ctx Context) Error {
 	var err Error
 	app.state = fsm_RUNNING
 	for ievt := int64(0); ievt < app.evtmax; ievt++ {
-		fmt.Printf(">>> app.running evt=%d...\n", ievt)
+		app.msg.Infof(">>> running evt=%d...\n", ievt)
 		for k := range app.dflow.edges {
 			ch, ok := app.store.store[k]
 			if ok {
@@ -406,7 +413,7 @@ func (app *appmgr) run(ctx Context) Error {
 		errch := make(chan Error, len(app.tsks))
 		for _, tsk := range app.tsks {
 			go func(tsk Task) {
-				//fmt.Printf(">>> running [%s]...\n", tsk.Name())
+				//app.msg.Infof(">>> running [%s]...\n", tsk.Name())
 				ctx := context{
 					id:    ievt,
 					slot:  0,
