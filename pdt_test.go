@@ -26,7 +26,7 @@ func TestDefaultTable(t *testing.T) {
 		t.Fatalf("expected mass=0.33. got=%v", p.Mass)
 	}
 	if math.Abs(-1./3.-p.Charge) > epsilon {
-		t.Fatalf("expected e-charge=1/3. got=%v", p.Charge)
+		t.Fatalf("expected e-charge=-1/3. got=%v", p.Charge)
 	}
 }
 
