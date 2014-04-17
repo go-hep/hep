@@ -280,7 +280,16 @@ func (app *appmgr) GetProp(c Component, name string) (interface{}, Error) {
 
 func (app *appmgr) Run() Error {
 	var err Error
-	var ctx Context
+	var ctx Context = context{
+		id:    0,
+		slot:  0,
+		store: nil,
+		msg: msgstream{
+			lvl: LvlInfo,
+			w:   os.Stdout,
+			n:   "<root>",
+		},
+	}
 
 	if app.state == fsm_UNDEFINED {
 		err = app.configure(ctx)
