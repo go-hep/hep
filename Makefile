@@ -6,7 +6,7 @@
 all: build test
 	@# done
 
-build: clean
+build: clean tabledata.go
 	@go get $(GOFLAGS) ./...
 
 test: build
@@ -14,5 +14,8 @@ test: build
 
 clean:
 	@go clean $(GOFLAGS) -i ./...
+
+tabledata.go: tabledata.tbl
+	@cat tabledata.header tabledata.tbl tabledata.footer >| tabledata.go
 
 ## EOF
