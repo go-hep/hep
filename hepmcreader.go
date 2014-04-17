@@ -5,8 +5,10 @@ import (
 	"os"
 	"reflect"
 
+	"github.com/go-hep/fmom"
 	"github.com/go-hep/fwk"
 	"github.com/go-hep/hepmc"
+	"github.com/go-hep/heppdt"
 )
 
 type HepMcReader struct {
@@ -16,9 +18,10 @@ type HepMcReader struct {
 	r     io.ReadCloser
 	dec   *hepmc.Decoder // hepmc decoder
 
+	mcevt       string // original HepMC event
 	allparts    string // all particles
 	stableparts string // all stable particles
-	hadrons     string // all hadrons
+	partons     string // all partons
 }
 
 func (tsk *HepMcReader) Configure(ctx fwk.Context) fwk.Error {
@@ -31,21 +34,27 @@ func (tsk *HepMcReader) Configure(ctx fwk.Context) fwk.Error {
 		return err
 	}
 
+	tsk.mcevt = "/fads/McEvent"
 	tsk.allparts = "/fads/AllParticles"
 	tsk.stableparts = "/fads/StableParticles"
-	tsk.hadrons = "/fads/Hadrons"
+	tsk.partons = "/fads/Partons"
 
-	err = tsk.DeclOutPort(tsk.allparts, reflect.TypeOf(hepmc.Event{}))
+	err = tsk.DeclOutPort(tsk.mcevt, reflect.TypeOf(hepmc.Event{}))
 	if err != nil {
 		return err
 	}
 
-	err = tsk.DeclOutPort(tsk.stableparts, reflect.TypeOf(hepmc.Event{}))
+	err = tsk.DeclOutPort(tsk.allparts, reflect.TypeOf([]Candidate{}))
 	if err != nil {
 		return err
 	}
 
-	err = tsk.DeclOutPort(tsk.hadrons, reflect.TypeOf(hepmc.Event{}))
+	err = tsk.DeclOutPort(tsk.stableparts, reflect.TypeOf([]Candidate{}))
+	if err != nil {
+		return err
+	}
+
+	err = tsk.DeclOutPort(tsk.partons, reflect.TypeOf([]Candidate{}))
 	if err != nil {
 		return err
 	}
@@ -83,7 +92,7 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) fwk.Error {
 		return err
 	}
 
-	err = store.Put(tsk.allparts, &evt)
+	err = store.Put(tsk.mcevt, &evt)
 	if err != nil {
 		return err
 	}
@@ -93,6 +102,67 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) fwk.Error {
 		evt.EventNumber,
 		len(evt.Particles), len(evt.Vertices),
 	)
+
+	allparts := make([]Candidate, 0, len(evt.Particles)/2)
+	stableparts := make([]Candidate, 0)
+	partons := make([]Candidate, 0)
+
+	for _, p := range evt.Particles {
+		allparts = append(allparts, Candidate{
+			Pid:        int32(p.PdgId),
+			Status:     int32(p.Status),
+			M2:         1,
+			D2:         1,
+			CandCharge: -999,
+			CandMass:   -999.9,
+			Mom:        fmom.PxPyPzE(p.Momentum),
+		})
+		c := &allparts[len(allparts)-1]
+		pdg := heppdt.ParticleByID(heppdt.PID(p.PdgId))
+		if pdg != nil {
+			c.CandCharge = int32(pdg.Charge)
+			c.CandMass = pdg.Mass
+		}
+
+		// FIXME(sbinet)
+		if vtx := p.ProdVertex; vtx != nil {
+			c.M1 = 1
+			c.Pos = fmom.PxPyPzE(vtx.Position)
+		}
+
+		if pdg == nil {
+			continue
+		}
+
+		pdgcode := p.PdgId
+		if pdgcode < 0 {
+			pdgcode = -pdgcode
+		}
+
+		switch {
+		case p.Status == 1 && pdg.IsStable():
+			stableparts = append(stableparts, *c)
+
+		case pdgcode <= 5 || pdgcode == 21 || pdgcode == 15:
+			partons = append(partons, *c)
+		}
+
+	}
+
+	err = store.Put(tsk.allparts, allparts)
+	if err != nil {
+		return err
+	}
+
+	err = store.Put(tsk.stableparts, stableparts)
+	if err != nil {
+		return err
+	}
+
+	err = store.Put(tsk.partons, partons)
+	if err != nil {
+		return err
+	}
 	return err
 }
 
