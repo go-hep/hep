@@ -18,7 +18,7 @@ func (tsk *task3) Configure(ctx fwk.Context) fwk.Error {
 	msg := ctx.Msg()
 	msg.Infof("configure...\n")
 
-	tsk.parts = "/fads/StableParticles"
+	tsk.parts = "/fads/test/StableParticles"
 	err = tsk.DeclProp("Output", &tsk.parts)
 	if err != nil {
 		return err
