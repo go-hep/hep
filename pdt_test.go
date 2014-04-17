@@ -28,6 +28,24 @@ func TestDefaultTable(t *testing.T) {
 	if math.Abs(-1./3.-p.Charge) > epsilon {
 		t.Fatalf("expected e-charge=-1/3. got=%v", p.Charge)
 	}
+
+	p = ParticleByID(1000020040)
+	if p == nil {
+		t.Fatalf("could not retrieve info about pid=1000020040")
+	}
+	if p.ID != 1000020040 {
+		t.Fatalf("expected pid=1000020040. got=%d", p.ID)
+	}
+	if p.Name != "Alpha-(He4)" {
+		t.Fatalf("expected name=Alpha-(He4). got=%q", p.Name)
+	}
+	if p.Mass != 3.72742 {
+		t.Fatalf("expected mass=3.72742. got=%v", p.Mass)
+	}
+	if math.Abs(2.-p.Charge) > epsilon {
+		t.Fatalf("expected e-charge=2. got=%v", p.Charge)
+	}
+
 }
 
 func TestLocation(t *testing.T) {
