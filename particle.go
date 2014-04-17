@@ -12,3 +12,15 @@ type Particle struct {
 	Quarks      []Constituent // constituents
 	Resonance   Resonance     // resonance
 }
+
+// IsStable returns whether this particle is stable
+func (p *Particle) IsStable() bool {
+	res := &p.Resonance
+	if res.Width.Value == -1. {
+		return false
+	}
+	if res.Width.Value > 0 || res.Lifetime().Value > 0 {
+		return false
+	}
+	return true
+}
