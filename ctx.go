@@ -19,4 +19,8 @@ func (ctx context) Store() Store {
 	return ctx.store
 }
 
+func (ctx context) Msg() MsgStream {
+	return ctx.msg
+}
+
 // EOF

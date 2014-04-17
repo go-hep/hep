@@ -16,9 +16,10 @@ func (sc statuscode) Error() string {
 }
 
 type Context interface {
-	Id() int64    // id of this context (e.g. entry number or some kind of event number)
-	Slot() int    // slot number in the pool of event sequences
-	Store() Store // data store corresponding to the id+slot
+	Id() int64      // id of this context (e.g. entry number or some kind of event number)
+	Slot() int      // slot number in the pool of event sequences
+	Store() Store   // data store corresponding to the id+slot
+	Msg() MsgStream // messaging for this context (id+slot)
 }
 
 type Component interface {
@@ -113,13 +114,17 @@ const (
 )
 
 type MsgStream interface {
-	Verbosef(format string, a ...interface{}) (int, error)
-	Debugf(format string, a ...interface{}) (int, error)
-	Infof(format string, a ...interface{}) (int, error)
-	Warnf(format string, a ...interface{}) (int, error)
-	Errorf(format string, a ...interface{}) (int, error)
+	Debugf(format string, a ...interface{}) (int, Error)
+	Infof(format string, a ...interface{}) (int, Error)
+	Warnf(format string, a ...interface{}) (int, Error)
+	Errorf(format string, a ...interface{}) (int, Error)
 
-	Msg(lvl Level, format string, a ...interface{}) (int, error)
+	Msg(lvl Level, format string, a ...interface{}) (int, Error)
+}
+
+// Deleter prepares values to be GC-reclaimed
+type Deleter interface {
+	Delete() error
 }
 
 // EOF
