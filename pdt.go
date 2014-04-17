@@ -34,8 +34,8 @@ func (t *Table) Len() int {
 	return len(t.pdt)
 }
 
-// Pdt returns the particle data table
-func (t *Table) Pdt() map[PID]*Particle {
+// PDT returns the particle data table
+func (t *Table) PDT() map[PID]*Particle {
 	return t.pdt
 }
 

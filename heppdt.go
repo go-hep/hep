@@ -10,9 +10,9 @@ func Len() int {
 	return defaultTable.Len()
 }
 
-// Pdt returns the default particle data table content
-func Pdt() map[PID]*Particle {
-	return defaultTable.Pdt()
+// PDT returns the default particle data table content
+func PDT() map[PID]*Particle {
+	return defaultTable.PDT()
 }
 
 // ParticleByID returns the particle information via particle ID
