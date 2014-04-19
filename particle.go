@@ -1,5 +1,9 @@
 package heppdt
 
+import (
+	"math"
+)
+
 // Particle holds informations on a particle as per the PDG booklet
 type Particle struct {
 	ID          PID           // particle ID
