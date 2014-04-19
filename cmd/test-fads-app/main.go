@@ -11,25 +11,7 @@ func main() {
 	app := fwk.NewApp()
 	mgr := app.(fwk.TaskMgr)
 
-	c, err := fwk.New("main.task1", "t1")
-	if err != nil {
-		panic(err)
-	}
-	mgr.AddTask(c.(fwk.Task))
-
-	c, err = fwk.New("main.task2", "t2")
-	if err != nil {
-		panic(err)
-	}
-	mgr.AddTask(c.(fwk.Task))
-
-	c, err = fwk.New("main.task3", "reader")
-	if err != nil {
-		panic(err)
-	}
-	mgr.AddTask(c.(fwk.Task))
-
-	c, err = fwk.New("github.com/go-hep/fads.ParticlePropagator", "pprop")
+	c, err := fwk.New("github.com/go-hep/fads.ParticlePropagator", "pprop")
 	if err != nil {
 		panic(err)
 	}
