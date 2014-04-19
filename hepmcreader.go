@@ -27,8 +27,7 @@ type HepMcReader struct {
 func (tsk *HepMcReader) Configure(ctx fwk.Context) fwk.Error {
 	var err fwk.Error
 
-	tsk.fname = "hepmc.data"
-	tsk.fname = "/home/binet/dev/hepsw/atlasdelphes/data/test.hepmc"
+	tsk.fname = "testdata/hepmc.data"
 	err = tsk.DeclProp("Input", &tsk.fname)
 	if err != nil {
 		return err
