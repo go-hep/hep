@@ -49,44 +49,44 @@ func TestDefaultTable(t *testing.T) {
 }
 
 func TestLocation(t *testing.T) {
-	if nj != 1 {
-		t.Fatalf("expected nj==1. got=%d", nj)
+	if Nj != 1 {
+		t.Fatalf("expected Nj==1. got=%d", Nj)
 	}
 
-	if nq3 != 2 {
-		t.Fatalf("expected nq3==2. got=%d", nq3)
+	if Nq3 != 2 {
+		t.Fatalf("expected Nq3==2. got=%d", Nq3)
 	}
 
-	if nq2 != 3 {
-		t.Fatalf("expected nq2==3. got=%d", nq2)
+	if Nq2 != 3 {
+		t.Fatalf("expected Nq2==3. got=%d", Nq2)
 	}
 
-	if nq1 != 4 {
-		t.Fatalf("expected nq1==4. got=%d", nq1)
+	if Nq1 != 4 {
+		t.Fatalf("expected Nq1==4. got=%d", Nq1)
 	}
 
-	if nl != 5 {
-		t.Fatalf("expected nl==5. got=%d", nl)
+	if Nl != 5 {
+		t.Fatalf("expected Nl==5. got=%d", Nl)
 	}
 
-	if nr != 6 {
-		t.Fatalf("expected nr==6. got=%d", nr)
+	if Nr != 6 {
+		t.Fatalf("expected Nr==6. got=%d", Nr)
 	}
 
-	if n != 7 {
-		t.Fatalf("expected n==7. got=%d", n)
+	if N != 7 {
+		t.Fatalf("expected N==7. got=%d", N)
 	}
 
-	if n8 != 8 {
-		t.Fatalf("expected n8==8. got=%d", n8)
+	if N8 != 8 {
+		t.Fatalf("expected N8==8. got=%d", N8)
 	}
 
-	if n9 != 9 {
-		t.Fatalf("expected n9==9. got=%d", n9)
+	if N9 != 9 {
+		t.Fatalf("expected N9==9. got=%d", N9)
 	}
 
-	if n10 != 10 {
-		t.Fatalf("expected n10==10. got=%d", n10)
+	if N10 != 10 {
+		t.Fatalf("expected N10==10. got=%d", N10)
 	}
 
 }

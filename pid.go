@@ -6,20 +6,20 @@ import (
 
 type location int
 
-//  PID digits (base 10) are: n nr nl nq1 nq2 nq3 nj
+//  PID digits (base 10) are: n Nr Nl Nq1 Nq2 Nq3 Nj
 //  The location enum provides a convenient index into the PID.
 const (
 	_ location = iota
-	nj
-	nq3
-	nq2
-	nq1
-	nl
-	nr
-	n
-	n8
-	n9
-	n10
+	Nj
+	Nq3
+	Nq2
+	Nq1
+	Nl
+	Nr
+	N
+	N8
+	N9
+	N10
 )
 
 /// constituent quarks
@@ -31,7 +31,7 @@ type Quarks struct {
 
 // Particle Identification number
 // In the standard numbering scheme, the PID digits (base 10) are:
-//           +/- n nr nl nq1 nq2 nq3 nj
+//           +/- n Nr Nl Nq1 Nq2 Nq3 Nj
 // It is expected that any 7 digit number used as a PID will adhere to
 // the Monte Carlo numbering scheme documented by the PDG.
 // Note that particles not already explicitly defined
@@ -49,11 +49,11 @@ func (pid PID) ExtraBits() int {
 // ID==100 is a special case (internal generator ID's are 81-100)
 // Also, 101 and 102 are now used for geantinos
 func (pid PID) FundamentalID() int {
-	if pid.Digit(n10) == 1 && pid.Digit(n9) == 0 {
+	if pid.Digit(N10) == 1 && pid.Digit(N9) == 0 {
 		return 0
 	}
 
-	if pid.Digit(nq2) == 2 && pid.Digit(nq1) == 0 {
+	if pid.Digit(Nq2) == 2 && pid.Digit(Nq1) == 0 {
 		return pid.AbsPID() % 10000
 	} else if pid.AbsPID() <= 102 {
 		return pid.AbsPID()
@@ -64,7 +64,7 @@ func (pid PID) FundamentalID() int {
 
 // Digit splits the PID into constituent integers
 func (pid PID) Digit(loc location) int {
-	//  PID digits (base 10) are: n nr nl nq1 nq2 nq3 nj
+	//  PID digits (base 10) are: n Nr Nl Nq1 Nq2 Nq3 Nj
 	//  the location enum provides a convenient index into the PID
 	num := int(math.Pow(10.0, float64(loc-1)))
 	return int(pid.AbsPID()/num) % 10
@@ -90,11 +90,11 @@ func (pid PID) findQ(q int) bool {
 		}
 		return false
 	}
-	if pid.Digit(nq3) == q || pid.Digit(nq2) == q || pid.Digit(nq1) == q {
+	if pid.Digit(Nq3) == q || pid.Digit(Nq2) == q || pid.Digit(Nq1) == q {
 		return true
 	}
 	if pid.IsPentaquark() {
-		if pid.Digit(nl) == q || pid.Digit(nr) == q {
+		if pid.Digit(Nl) == q || pid.Digit(Nr) == q {
 			return true
 		}
 	}
@@ -168,10 +168,10 @@ func (pid PID) IsMeson() bool {
 	case id == 110 || id == 990 || id == 9990:
 		// pomeron, etc...
 		return true
-	case pid.Digit(nj) > 0 && pid.Digit(nq3) > 0 && pid.Digit(nq2) > 0 && pid.Digit(nq1) == 0:
+	case pid.Digit(Nj) > 0 && pid.Digit(Nq3) > 0 && pid.Digit(Nq2) > 0 && pid.Digit(Nq1) == 0:
 		// check for illegal antiparticles
 		switch {
-		case pid.Digit(nq3) == pid.Digit(nq2) && id < 0:
+		case pid.Digit(Nq3) == pid.Digit(Nq2) && id < 0:
 			return false
 		default:
 			return true
@@ -191,7 +191,7 @@ func (pid PID) IsBaryon() bool {
 		return false
 	case pid.AbsPID() == 2110 || pid.AbsPID() == 2210:
 		return true
-	case pid.Digit(nj) > 0 && pid.Digit(nq3) > 0 && pid.Digit(nq2) > 0 && pid.Digit(nq1) > 0:
+	case pid.Digit(Nj) > 0 && pid.Digit(Nq3) > 0 && pid.Digit(Nq2) > 0 && pid.Digit(Nq1) > 0:
 		return true
 	}
 	return false
@@ -206,10 +206,10 @@ func (pid PID) IsDiQuark() bool {
 		return false
 	case pid.FundamentalID() <= 100 && pid.FundamentalID() > 0:
 		return false
-	case pid.Digit(nj) > 0 && pid.Digit(nq3) == 0 && pid.Digit(nq2) > 0 && pid.Digit(nq1) > 0:
+	case pid.Digit(Nj) > 0 && pid.Digit(Nq3) == 0 && pid.Digit(Nq2) > 0 && pid.Digit(Nq1) > 0:
 		// EvtGen uses the diquarks for quark pairs, so for instance,
 		// 5501 is a valid "diquark" for EvtGen
-		// if pid.Digit(nj) == 1 && pid.Digit(nq2) == pid.Digit(nq1) { 	// illegal
+		// if pid.Digit(Nj) == 1 && pid.Digit(Nq2) == pid.Digit(Nq1) { 	// illegal
 		//   return false
 		// } else {
 		return true
@@ -257,7 +257,7 @@ func (pid PID) IsNucleus() bool {
 		return true
 	}
 	// new standard: +/- 10LZZZAAAI
-	if pid.Digit(n10) == 1 && pid.Digit(n9) == 0 {
+	if pid.Digit(N10) == 1 && pid.Digit(N9) == 0 {
 		// charge should always be less than or equal to baryon number
 		if pid.A() >= pid.Z() {
 			return true
@@ -273,27 +273,27 @@ func (pid PID) IsPentaquark() bool {
 	switch {
 	case pid.ExtraBits() > 0:
 		return false
-	case pid.Digit(n) != 9:
+	case pid.Digit(N) != 9:
 		return false
-	case pid.Digit(nr) == 9 || pid.Digit(nr) == 0:
+	case pid.Digit(Nr) == 9 || pid.Digit(Nr) == 0:
 		return false
-	case pid.Digit(nj) == 9 || pid.Digit(nl) == 0:
-		return false
-
-	case pid.Digit(nq1) == 0:
-		return false
-	case pid.Digit(nq2) == 0:
-		return false
-	case pid.Digit(nq3) == 0:
-		return false
-	case pid.Digit(nj) == 0:
+	case pid.Digit(Nj) == 9 || pid.Digit(Nl) == 0:
 		return false
 
-	case pid.Digit(nq2) > pid.Digit(nq1):
+	case pid.Digit(Nq1) == 0:
 		return false
-	case pid.Digit(nq1) > pid.Digit(nl):
+	case pid.Digit(Nq2) == 0:
 		return false
-	case pid.Digit(nl) > pid.Digit(nr):
+	case pid.Digit(Nq3) == 0:
+		return false
+	case pid.Digit(Nj) == 0:
+		return false
+
+	case pid.Digit(Nq2) > pid.Digit(Nq1):
+		return false
+	case pid.Digit(Nq1) > pid.Digit(Nl):
+		return false
+	case pid.Digit(Nl) > pid.Digit(Nr):
 		return false
 	}
 
@@ -306,9 +306,9 @@ func (pid PID) IsSUSY() bool {
 	switch {
 	case pid.ExtraBits() > 0:
 		return false
-	case pid.Digit(n) != 1 && pid.Digit(n) != 2:
+	case pid.Digit(N) != 1 && pid.Digit(N) != 2:
 		return false
-	case pid.Digit(nr) != 0:
+	case pid.Digit(Nr) != 0:
 		return false
 	case pid.FundamentalID() == 0:
 		return false
@@ -325,18 +325,18 @@ func (pid PID) IsRhadron() bool {
 	switch {
 	case pid.ExtraBits() > 0:
 		return false
-	case pid.Digit(n) != 1:
+	case pid.Digit(N) != 1:
 		return false
-	case pid.Digit(nr) != 0:
+	case pid.Digit(Nr) != 0:
 		return false
 	case pid.IsSUSY():
 		return false
 
-	case pid.Digit(nq2) == 0:
+	case pid.Digit(Nq2) == 0:
 		return false // All R-hadrons have a least 3 core digits
-	case pid.Digit(nq3) == 0:
+	case pid.Digit(Nq3) == 0:
 		return false // All R-hadrons have a least 3 core digits
-	case pid.Digit(nj) == 0:
+	case pid.Digit(Nj) == 0:
 		return false // All R-hadrons have a least 3 core digits
 	}
 
@@ -357,15 +357,15 @@ func (pid PID) IsDyon() bool {
 	switch {
 	case pid.ExtraBits() > 0:
 		return false
-	case pid.Digit(n) != 4:
+	case pid.Digit(N) != 4:
 		return false
-	case pid.Digit(nr) != 1:
+	case pid.Digit(Nr) != 1:
 		return false
-	case pid.Digit(nl) != 1 && pid.Digit(nl) != 2:
+	case pid.Digit(Nl) != 1 && pid.Digit(Nl) != 2:
 		return false
-	case pid.Digit(nq3) == 0:
+	case pid.Digit(Nq3) == 0:
 		return false // all Dyons have at least 1 core digit
-	case pid.Digit(nj) != 0:
+	case pid.Digit(Nj) != 0:
 		return false // dyons have spin zero for now
 	}
 
@@ -382,9 +382,9 @@ func (pid PID) IsQBall() bool {
 	switch {
 	case pid.ExtraBits() > 0:
 		return false
-	case pid.Digit(n) != 1 && pid.Digit(n) != 2:
+	case pid.Digit(N) != 1 && pid.Digit(N) != 2:
 		return false
-	case pid.Digit(nr) != 0:
+	case pid.Digit(Nr) != 0:
 		return false
 	case pid.FundamentalID() == 0:
 		return false
@@ -464,7 +464,7 @@ func (pid PID) A() int {
 	switch {
 	case pid.AbsPID() == 2212:
 		return 1
-	case pid.Digit(n10) != 1 || pid.Digit(n9) != 0:
+	case pid.Digit(N10) != 1 || pid.Digit(N9) != 0:
 		return 0
 	}
 	return (pid.AbsPID() / 10) % 1000
@@ -476,7 +476,7 @@ func (pid PID) Z() int {
 	switch {
 	case pid.AbsPID() == 2212:
 		return 1
-	case pid.Digit(n10) != 1 || pid.Digit(n9) != 0:
+	case pid.Digit(N10) != 1 || pid.Digit(N9) != 0:
 		return 0
 	}
 	return (pid.AbsPID() / 10000) % 1000
@@ -494,7 +494,7 @@ func (pid PID) Lambda() int {
 		return 0
 	}
 
-	return pid.Digit(n8)
+	return pid.Digit(N8)
 }
 
 // JSpin returns 2J+1, where J is the total spin
@@ -533,44 +533,44 @@ func (pid PID) LSpin() int {
 		return 0
 	}
 
-	nl := (pid.AbsPID() / 10000) % 10
+	Nl := (pid.AbsPID() / 10000) % 10
 	js := pid.AbsPID() % 10
 
-	if nl == 0 && js == 3 {
+	if Nl == 0 && js == 3 {
 		return 0
-	} else if nl == 0 && js == 5 {
+	} else if Nl == 0 && js == 5 {
 		return 1
-	} else if nl == 0 && js == 7 {
+	} else if Nl == 0 && js == 7 {
 		return 2
-	} else if nl == 0 && js == 9 {
+	} else if Nl == 0 && js == 9 {
 		return 3
-	} else if nl == 0 && js == 1 {
+	} else if Nl == 0 && js == 1 {
 		return 0
-	} else if nl == 1 && js == 3 {
+	} else if Nl == 1 && js == 3 {
 		return 1
-	} else if nl == 1 && js == 5 {
+	} else if Nl == 1 && js == 5 {
 		return 2
-	} else if nl == 1 && js == 7 {
+	} else if Nl == 1 && js == 7 {
 		return 3
-	} else if nl == 1 && js == 9 {
+	} else if Nl == 1 && js == 9 {
 		return 4
-	} else if nl == 2 && js == 3 {
+	} else if Nl == 2 && js == 3 {
 		return 1
-	} else if nl == 2 && js == 5 {
+	} else if Nl == 2 && js == 5 {
 		return 2
-	} else if nl == 2 && js == 7 {
+	} else if Nl == 2 && js == 7 {
 		return 3
-	} else if nl == 2 && js == 9 {
+	} else if Nl == 2 && js == 9 {
 		return 4
-	} else if nl == 1 && js == 1 {
+	} else if Nl == 1 && js == 1 {
 		return 1
-	} else if nl == 3 && js == 3 {
+	} else if Nl == 3 && js == 3 {
 		return 2
-	} else if nl == 3 && js == 5 {
+	} else if Nl == 3 && js == 5 {
 		return 3
-	} else if nl == 3 && js == 7 {
+	} else if Nl == 3 && js == 7 {
 		return 4
-	} else if nl == 3 && js == 9 {
+	} else if Nl == 3 && js == 9 {
 		return 5
 	}
 	// default to zero
@@ -588,20 +588,20 @@ func (pid PID) SSpin() int {
 		return 0
 	}
 
-	nl := (pid.AbsPID() / 10000) % 10
+	Nl := (pid.AbsPID() / 10000) % 10
 	js := pid.AbsPID() % 10
 
-	if nl == 0 && js >= 3 {
+	if Nl == 0 && js >= 3 {
 		return 1
-	} else if nl == 0 && js == 1 {
+	} else if Nl == 0 && js == 1 {
 		return 0
-	} else if nl == 1 && js >= 3 {
+	} else if Nl == 1 && js >= 3 {
 		return 0
-	} else if nl == 2 && js >= 3 {
+	} else if Nl == 2 && js >= 3 {
 		return 1
-	} else if nl == 1 && js == 1 {
+	} else if Nl == 1 && js == 1 {
 		return 1
-	} else if nl == 3 && js >= 3 {
+	} else if Nl == 3 && js >= 3 {
 		return 1
 	}
 	// default to zero
@@ -624,9 +624,9 @@ var ch100 = [100]int{
 // threeCharge
 func (pid PID) threeCharge() int {
 	var charge int
-	q1 := pid.Digit(nq1)
-	q2 := pid.Digit(nq2)
-	q3 := pid.Digit(nq3)
+	q1 := pid.Digit(Nq1)
+	q2 := pid.Digit(Nq2)
+	q3 := pid.Digit(Nq3)
 	ida := pid.AbsPID()
 	fid := pid.FundamentalID()
 
@@ -644,7 +644,7 @@ func (pid PID) threeCharge() int {
 		charge = 3 * ((ida / 10) % 1000)
 		// this is half right
 		// the charge sign will be changed below if pid < 0
-		if pid.Digit(nl) == 2 {
+		if pid.Digit(Nl) == 2 {
 			charge = -charge
 		}
 	} else if fid > 0 && fid <= 100 { // use table
@@ -661,7 +661,7 @@ func (pid PID) threeCharge() int {
 		if ida == 5100061 || ida == 5100062 {
 			charge = 6
 		}
-	} else if pid.Digit(nj) == 0 { // KL, Ks, or undefined
+	} else if pid.Digit(Nj) == 0 { // KL, Ks, or undefined
 		return 0
 	} else if (q1 == 0) || (pid.IsRhadron() && (q1 == 9)) { // meson			// mesons
 		if q2 == 3 || q2 == 5 {
@@ -671,7 +671,7 @@ func (pid PID) threeCharge() int {
 		}
 	} else if q3 == 0 { // diquarks
 		charge = ch100[q2-1] + ch100[q1-1]
-	} else if pid.IsBaryon() || (pid.IsRhadron() && (pid.Digit(nl) == 9)) { // baryon 			// baryons
+	} else if pid.IsBaryon() || (pid.IsRhadron() && (pid.Digit(Nl) == 9)) { // baryon 			// baryons
 		charge = ch100[q3-1] + ch100[q2-1] + ch100[q1-1]
 	}
 	if charge == 0 {
@@ -698,8 +698,8 @@ func (pid PID) Charge() float64 {
 // Quarks returns a list of 3 constituent quarks
 func (pid PID) Quarks() Quarks {
 	return Quarks{
-		Nq1: int16(pid.Digit(nq1)),
-		Nq2: int16(pid.Digit(nq2)),
-		Nq3: int16(pid.Digit(nq3)),
+		Nq1: int16(pid.Digit(Nq1)),
+		Nq2: int16(pid.Digit(Nq2)),
+		Nq3: int16(pid.Digit(Nq3)),
 	}
 }
