@@ -42,23 +42,7 @@ func (tsk TaskBase) DeclProp(name string, ptr interface{}) Error {
 		return Errorf("fwk.DeclProp: no Task [%s] known to TaskMgr", tsk.name)
 	}
 
-	_, ok := g_mgr.props[c]
-	if !ok {
-		g_mgr.props[c] = make(map[string]interface{})
-	}
-	switch reflect.TypeOf(ptr).Kind() {
-	case reflect.Ptr:
-		// ok
-	default:
-		return Errorf(
-			"fwk.DeclProp: component [%s] didn't pass a pointer for the property [%s] (type=%T)",
-			c.Name(),
-			name,
-			ptr,
-		)
-	}
-	g_mgr.props[c][name] = ptr
-	return nil
+	return g_mgr.DeclProp(c, name, ptr)
 }
 
 func (tsk TaskBase) SetProp(name string, value interface{}) Error {
@@ -67,30 +51,7 @@ func (tsk TaskBase) SetProp(name string, value interface{}) Error {
 		return Errorf("fwk.SetProp: no Task [%s] known to TaskMgr", tsk.name)
 	}
 
-	m, ok := g_mgr.props[c]
-	if !ok {
-		return Errorf(
-			"fwk.SetProp: component [%s] didn't declare any property",
-			c.Name(),
-		)
-	}
-	rv := reflect.ValueOf(value)
-	rt := rv.Type()
-	ptr := reflect.ValueOf(m[name])
-	dst := ptr.Elem().Type()
-	if !rt.AssignableTo(dst) {
-		return Errorf(
-			"fwk.SetProp: component [%s] has property [%s] with type [%s]. got value=%v (type=%s)",
-			c.Name(),
-			name,
-			dst.Name(),
-			value,
-			rt.Name(),
-		)
-	}
-	ptr.Elem().Set(rv)
-	return nil
-
+	return g_mgr.SetProp(c, name, value)
 }
 
 func (tsk TaskBase) GetProp(name string) (interface{}, Error) {
@@ -99,25 +60,7 @@ func (tsk TaskBase) GetProp(name string) (interface{}, Error) {
 		return nil, Errorf("fwk.GetProp: no Task [%s] known to TaskMgr", tsk.name)
 	}
 
-	m, ok := g_mgr.props[c]
-	if !ok {
-		return nil, Errorf(
-			"fwk.GetProp: component [%s] didn't declare any property",
-			c.Name(),
-		)
-	}
-
-	ptr, ok := m[name]
-	if !ok {
-		return nil, Errorf(
-			"fwk.GetProp: component [%s] didn't declare any property with name [%s]",
-			c.Name(),
-			name,
-		)
-	}
-
-	v := reflect.Indirect(reflect.ValueOf(ptr)).Interface()
-	return v, nil
+	return g_mgr.GetProp(c, name)
 }
 
 type SvcBase struct {
