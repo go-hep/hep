@@ -162,6 +162,13 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) fwk.Error {
 	if err != nil {
 		return err
 	}
+
+	msg.Infof("allparts: %d\nstables: %d\npartons: %d\n",
+		len(allparts),
+		len(stableparts),
+		len(partons),
+	)
+
 	return err
 }
 
