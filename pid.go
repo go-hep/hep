@@ -694,3 +694,12 @@ func (pid PID) Charge() float64 {
 	}
 	return float64(c) * onethird
 }
+
+// Quarks returns a list of 3 constituent quarks
+func (pid PID) Quarks() Quarks {
+	return Quarks{
+		Nq1: int16(pid.Digit(nq1)),
+		Nq2: int16(pid.Digit(nq2)),
+		Nq3: int16(pid.Digit(nq3)),
+	}
+}
