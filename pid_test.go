@@ -33,5 +33,8 @@ func TestPID(t *testing.T) {
 			pid.Digit(heppdt.Nj),
 			extra,
 		)
+		if !pid.IsValid() {
+			//t.Fatalf("pid=%d is invalid", int(pid))
+		}
 	}
 }
