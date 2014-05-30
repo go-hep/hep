@@ -44,6 +44,16 @@ func TestPID(t *testing.T) {
 			valid: true,
 			isqlb: true,
 		},
+		{
+			id: 25,
+			nx: 0, nr:0, n1:0, nq1:0, nq2:0, nq3:2, nj:5,
+			extra: 0,
+			jspin: 0, lspin:0, spin:0,
+			fid: 0,
+			charge: 0,
+			valid: true,
+			isqlb: true,
+		},
 	} {
 		id := table.id
 		pid := heppdt.PID(id)
