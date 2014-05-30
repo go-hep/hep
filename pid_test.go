@@ -42,6 +42,7 @@ func TestPID(t *testing.T) {
 			fid: 0,
 			charge: -1./3.,
 			valid: true,
+			isqlb: true,
 		},
 	} {
 		id := table.id
