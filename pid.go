@@ -683,8 +683,8 @@ func (pid PID) threeCharge() int {
 
 }
 
-const onethird = 1./3.0
-const onethirtith = 1./30.0
+const onethird = 1. / 3.0
+const onethirtith = 1. / 30.0
 
 // Charge returns the actual charge which might be fractional
 func (pid PID) Charge() float64 {

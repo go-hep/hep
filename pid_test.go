@@ -8,27 +8,27 @@ import (
 
 func TestPID(t *testing.T) {
 	/*
-	ids := []int{ 5, 25, 15, 213, -3214, 10213, 9050225, -200543, 129050225,
-		2000025, 3101, 3301, -2212, 1000020040, -1000060120, 555,
-		5000040, 5100005, 24, 5100024, 5100025, 9221132, 
-		4111370, -4120240, 4110050, 10013730,
-		1000993, 1000612, 1000622, 1000632, 1006213, 1000652, 
-		1009113, 1009213, 1009323,
-		1093114, 1009333, 1006313, 1092214, 1006223,
-	}
+		ids := []int{ 5, 25, 15, 213, -3214, 10213, 9050225, -200543, 129050225,
+			2000025, 3101, 3301, -2212, 1000020040, -1000060120, 555,
+			5000040, 5100005, 24, 5100024, 5100025, 9221132,
+			4111370, -4120240, 4110050, 10013730,
+			1000993, 1000612, 1000622, 1000632, 1006213, 1000652,
+			1009113, 1009213, 1009323,
+			1093114, 1009333, 1006313, 1092214, 1006223,
+		}
 	*/
 
-	for _, table := range []struct{
-		id int
+	for _, table := range []struct {
+		id                            int
 		nx, nr, n1, nq1, nq2, nq3, nj int
-		extra int
-		jspin, lspin, spin int
-		fid int
-		charge float64
-		valid bool
-		
-		ishadron, ismeson,isrhadron,isbaryon bool
-		islepton, isdiquark, isnucleus bool
+		extra                         int
+		jspin, lspin, spin            int
+		fid                           int
+		charge                        float64
+		valid                         bool
+
+		ishadron, ismeson, isrhadron, isbaryon bool
+		islepton, isdiquark, isnucleus         bool
 
 		issusy, isdyon, isqlb, isunknown bool
 
@@ -36,33 +36,33 @@ func TestPID(t *testing.T) {
 	}{
 		{
 			id: 5,
-			nx: 0, nr:0, n1:0, nq1:0, nq2:0, nq3:0, nj:5,
+			nx: 0, nr: 0, n1: 0, nq1: 0, nq2: 0, nq3: 0, nj: 5,
 			extra: 0,
-			jspin: 2, lspin:0, spin:0,
-			fid: 0,
-			charge: -1./3.,
-			valid: true,
-			isqlb: true,
+			jspin: 2, lspin: 0, spin: 0,
+			fid:    0,
+			charge: -1. / 3.,
+			valid:  true,
+			isqlb:  true,
 		},
 		{
 			id: 25,
-			nx: 0, nr:0, n1:0, nq1:0, nq2:0, nq3:2, nj:5,
+			nx: 0, nr: 0, n1: 0, nq1: 0, nq2: 0, nq3: 2, nj: 5,
 			extra: 0,
-			jspin: 0, lspin:0, spin:0,
-			fid: 0,
+			jspin: 0, lspin: 0, spin: 0,
+			fid:    0,
 			charge: 0,
-			valid: true,
-			isqlb: true,
+			valid:  true,
+			isqlb:  true,
 		},
 		{
 			id: 15,
-			nx: 0, nr:0, n1:0, nq1:0, nq2:0, nq3:1, nj:5,
+			nx: 0, nr: 0, n1: 0, nq1: 0, nq2: 0, nq3: 1, nj: 5,
 			extra: 0,
-			jspin: 2, lspin:0, spin:0,
-			fid: 0,
-			charge: -1,
-			valid: true,
-			isqlb: true,
+			jspin: 2, lspin: 0, spin: 0,
+			fid:      0,
+			charge:   -1,
+			valid:    true,
+			isqlb:    true,
 			islepton: true,
 		},
 		// {
@@ -175,8 +175,8 @@ func TestPID(t *testing.T) {
 			t.Fatalf("expected pid=%d is-quark/lepton/boson=%v. got=%v", int(pid), table.isqlb, pid.AbsPID() < 100)
 		}
 
-		if table.isunknown != (!pid.IsSUSY() && !pid.IsDyon() && !pid.IsHadron() && 
-			!pid.IsLepton()	&& !pid.IsDiQuark() && !pid.IsNucleus() && 
+		if table.isunknown != (!pid.IsSUSY() && !pid.IsDyon() && !pid.IsHadron() &&
+			!pid.IsLepton() && !pid.IsDiQuark() && !pid.IsNucleus() &&
 			!(pid.AbsPID() < 100)) {
 			t.Fatalf("expected pid=%d isunknown=%v. got=%v", int(pid), table.isunknown, !table.isunknown)
 		}
