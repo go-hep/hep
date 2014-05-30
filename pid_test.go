@@ -65,6 +65,19 @@ func TestPID(t *testing.T) {
 			isqlb: true,
 			islepton: true,
 		},
+		// {
+		// 	id: 213,
+		// 	nx: 0, nr:0, n1:0, nq1:0, nq2:2, nq3:1, nj:3,
+		// 	extra: 0,
+		// 	jspin: 3, lspin:0, spin:1,
+		// 	fid: 0,
+		// 	charge: 1,
+		// 	valid: true,
+		// 	ishadron: true,
+		// 	ismeson: true,
+		// 	hasup: true,
+		// 	hasdown: true,
+		// },
 	} {
 		id := table.id
 		pid := heppdt.PID(id)
@@ -169,7 +182,7 @@ func TestPID(t *testing.T) {
 		}
 
 		if table.hasup != pid.HasUp() {
-			t.Fatalf("expected pid=%d has=%v. got=%v", int(pid), table.hasup, pid.HasUp())
+			t.Fatalf("expected pid=%d hasup=%v. got=%v", int(pid), table.hasup, pid.HasUp())
 		}
 
 		if table.hasdown != pid.HasDown() {
