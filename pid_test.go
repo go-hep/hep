@@ -26,6 +26,13 @@ func TestPID(t *testing.T) {
 		fid int
 		charge float64
 		valid bool
+		
+		ishadron, ismeson,isrhadron,isbaryon bool
+		islepton, isdiquark, isnucleus bool
+
+		issusy, isdyon, isqlb, isunknown bool
+
+		hasup, hasdown, hasstrange, hascharm, hasbottom, hastop bool
 	}{
 		{
 			id: 5,
@@ -91,6 +98,76 @@ func TestPID(t *testing.T) {
 
 		if pid.IsValid() != table.valid {
 			t.Fatalf("expected pid=%d valid=%v. got=%v", int(pid), table.valid, pid.IsValid())
+		}
+
+		if table.ishadron != pid.IsHadron() {
+			t.Fatalf("expected pid=%d ishadron=%v. got=%v", int(pid), table.ishadron, pid.IsHadron())
+		}
+
+		if table.ismeson != pid.IsMeson() {
+			t.Fatalf("expected pid=%d ismeson=%v. got=%v", int(pid), table.ismeson, pid.IsMeson())
+		}
+
+		if table.isrhadron != pid.IsRhadron() {
+			t.Fatalf("expected pid=%d isrhadron=%v. got=%v", int(pid), table.isrhadron, pid.IsRhadron())
+		}
+
+		if table.isbaryon != pid.IsBaryon() {
+			t.Fatalf("expected pid=%d isbaryon=%v. got=%v", int(pid), table.isbaryon, pid.IsBaryon())
+		}
+
+		if table.islepton != pid.IsLepton() {
+			t.Fatalf("expected pid=%d islepton=%v. got=%v", int(pid), table.islepton, pid.IsLepton())
+		}
+
+		if table.isdiquark != pid.IsDiQuark() {
+			t.Fatalf("expected pid=%d isdiquark=%v. got=%v", int(pid), table.isdiquark, pid.IsDiQuark())
+		}
+
+		if table.isnucleus != pid.IsNucleus() {
+			t.Fatalf("expected pid=%d isnucleus=%v. got=%v", int(pid), table.isnucleus, pid.IsNucleus())
+		}
+
+		if table.issusy != pid.IsSUSY() {
+			t.Fatalf("expected pid=%d issusy=%v. got=%v", int(pid), table.issusy, pid.IsSUSY())
+		}
+
+		if table.isdyon != pid.IsDyon() {
+			t.Fatalf("expected pid=%d isdyon=%v. got=%v", int(pid), table.isdyon, pid.IsDyon())
+		}
+
+		if table.isqlb != (pid.AbsPID() < 100) {
+			t.Fatalf("expected pid=%d is-quark/lepton/boson=%v. got=%v", int(pid), table.isqlb, pid.AbsPID() < 100)
+		}
+
+		if table.isunknown != (!pid.IsSUSY() && !pid.IsDyon() && !pid.IsHadron() && 
+			!pid.IsLepton()	&& !pid.IsDiQuark() && !pid.IsNucleus() && 
+			!(pid.AbsPID() < 100)) {
+			t.Fatalf("expected pid=%d isunknown=%v. got=%v", int(pid), table.isunknown, !table.isunknown)
+		}
+
+		if table.hasup != pid.HasUp() {
+			t.Fatalf("expected pid=%d has=%v. got=%v", int(pid), table.hasup, pid.HasUp())
+		}
+
+		if table.hasdown != pid.HasDown() {
+			t.Fatalf("expected pid=%d hasdown=%v. got=%v", int(pid), table.hasdown, pid.HasDown())
+		}
+
+		if table.hasstrange != pid.HasStrange() {
+			t.Fatalf("expected pid=%d hasstrange=%v. got=%v", int(pid), table.hasstrange, pid.HasStrange())
+		}
+
+		if table.hascharm != pid.HasCharm() {
+			t.Fatalf("expected pid=%d hascharm=%v. got=%v", int(pid), table.hascharm, pid.HasCharm())
+		}
+
+		if table.hasbottom != pid.HasBottom() {
+			t.Fatalf("expected pid=%d hasbottom=%v. got=%v", int(pid), table.hasbottom, pid.HasBottom())
+		}
+
+		if table.hastop != pid.HasTop() {
+			t.Fatalf("expected pid=%d hastop=%v. got=%v", int(pid), table.hastop, pid.HasTop())
 		}
 	}
 }
