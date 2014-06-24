@@ -1,16 +1,19 @@
 ## simple makefile to log workflow
-.PHONY: all test clean build run
+.PHONY: all test clean build install
 
-#GOFLAGS := $(GOFLAGS:-race -v)
-GOFLAGS := $(GOFLAGS:-v)
+GOFLAGS ?= $(GOFLAGS:)
 
-all: build test
+all: install test
 
-build: clean
+
+build:
+	@go build $(GOFLAGS) ./...
+
+install:
 	@go get $(GOFLAGS) ./...
 
-test: build
-	@go test $(GOFLAGS) -v ./...
+test: install
+	@go test $(GOFLAGS) ./...
 
 clean:
 	@go clean $(GOFLAGS) -i ./...
