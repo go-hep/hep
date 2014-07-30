@@ -79,9 +79,11 @@ func NewApp() App {
 		dflow: nil,
 		store: nil,
 		msg: msgstream{
-			lvl: LvlInfo,
+			//lvl: LvlInfo,
+			//lvl: LvlDebug,
+			lvl: LvlError,
 			w:   os.Stdout,
-			n:   appname,
+			n:   fmt.Sprintf("%-20s", appname),
 		},
 		evtmax: -1,
 		comps:  make(map[string]Component),
@@ -334,7 +336,7 @@ func (app *appmgr) Run() Error {
 		slot:  0,
 		store: nil,
 		msg: msgstream{
-			lvl: LvlInfo,
+			lvl: app.msg.lvl,
 			w:   os.Stdout,
 			n:   "<root>",
 		},
@@ -483,9 +485,9 @@ func (app *appmgr) run(ctx Context) Error {
 					slot:  0,
 					store: app.store,
 					msg: msgstream{
-						lvl: LvlInfo,
+						lvl: app.msg.lvl,
 						w:   os.Stdout,
-						n:   tsk.Name(),
+						n:   fmt.Sprintf("%-20s", tsk.Name()),
 					},
 				}
 				errch <- tsk.Process(ctx)
