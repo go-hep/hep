@@ -25,61 +25,12 @@ type ParticlePropagator struct {
 func (tsk *ParticlePropagator) Configure(ctx fwk.Context) fwk.Error {
 	var err fwk.Error
 
-	tsk.radius = 1.0
-	err = tsk.DeclProp("Radius", &tsk.radius)
-	if err != nil {
-		return err
-	}
-	tsk.radius2 = tsk.radius * tsk.radius
-
-	tsk.halflen = 3.0
-	err = tsk.DeclProp("HalfLength", &tsk.halflen)
-	if err != nil {
-		return err
-	}
-
-	tsk.bz = 0.0
-	err = tsk.DeclProp("Bz", &tsk.bz)
-	if err != nil {
-		return err
-	}
-
 	if tsk.radius < 1.0e-2 {
-		return fwk.Errorf("")
+		return fwk.Errorf("%s: too small radius value (%v)", tsk.Name(), tsk.radius)
 	}
 
 	if tsk.halflen < 1.0e-2 {
-		return fwk.Errorf("")
-	}
-
-	tsk.input = "/fads/StableParticles"
-	err = tsk.DeclProp("InputArray", &tsk.input)
-	if err != nil {
-		return err
-	}
-
-	tsk.output = "StableParticles"
-	err = tsk.DeclProp("OutputArray", &tsk.output)
-	if err != nil {
-		return err
-	}
-
-	tsk.hadrons = "ChargedHadrons"
-	err = tsk.DeclProp("ChargedHadrons", &tsk.hadrons)
-	if err != nil {
-		return err
-	}
-
-	tsk.eles = "Electrons"
-	err = tsk.DeclProp("Electrons", &tsk.eles)
-	if err != nil {
-		return err
-	}
-
-	tsk.muons = "Muons"
-	err = tsk.DeclProp("Muons", &tsk.muons)
-	if err != nil {
-		return err
+		return fwk.Errorf("%s: too small 1/2-length value (%v)", tsk.Name(), tsk.halflen)
 	}
 
 	err = tsk.DeclInPort(tsk.input, reflect.TypeOf([]Candidate{}))
@@ -162,7 +113,64 @@ func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(ParticlePropagator{}))
+	fwk.Register(reflect.TypeOf(ParticlePropagator{}),
+		func(name string, mgr fwk.App) (fwk.Component, fwk.Error) {
+			var err fwk.Error
+			tsk := &ParticlePropagator{
+				TaskBase: fwk.NewTask(name, mgr),
+			}
+			tsk.radius = 1.0
+			err = tsk.DeclProp("Radius", &tsk.radius)
+			if err != nil {
+				return nil, err
+			}
+			tsk.radius2 = tsk.radius * tsk.radius
+
+			tsk.halflen = 3.0
+			err = tsk.DeclProp("HalfLength", &tsk.halflen)
+			if err != nil {
+				return nil, err
+			}
+
+			tsk.bz = 0.0
+			err = tsk.DeclProp("Bz", &tsk.bz)
+			if err != nil {
+				return nil, err
+			}
+
+			tsk.input = "/fads/StableParticles"
+			err = tsk.DeclProp("InputArray", &tsk.input)
+			if err != nil {
+				return nil, err
+			}
+
+			tsk.output = "StableParticles"
+			err = tsk.DeclProp("OutputArray", &tsk.output)
+			if err != nil {
+				return nil, err
+			}
+
+			tsk.hadrons = "ChargedHadrons"
+			err = tsk.DeclProp("ChargedHadrons", &tsk.hadrons)
+			if err != nil {
+				return nil, err
+			}
+
+			tsk.eles = "Electrons"
+			err = tsk.DeclProp("Electrons", &tsk.eles)
+			if err != nil {
+				return nil, err
+			}
+
+			tsk.muons = "Muons"
+			err = tsk.DeclProp("Muons", &tsk.muons)
+			if err != nil {
+				return nil, err
+			}
+
+			return tsk, err
+		},
+	)
 }
 
 // EOF
