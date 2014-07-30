@@ -303,6 +303,30 @@ func (app *appmgr) GetProp(c Component, name string) (interface{}, Error) {
 	return v, nil
 }
 
+func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) Error {
+	if app.state < fsm_CONFIGURING {
+		return Errorf(
+			"fwk.DeclInPort: invalid App state (%s). put the DeclInPort in Configure() of %T:%s",
+			app.state,
+			c,
+			c.Name(),
+		)
+	}
+	return app.dflow.addInNode(c.Name(), name, t)
+}
+
+func (app *appmgr) DeclOutPort(c Component, name string, t reflect.Type) Error {
+	if app.state < fsm_CONFIGURING {
+		return Errorf(
+			"fwk.DeclOutPort: invalid App state (%s). put the DeclInPort in Configure() of %T:%s",
+			app.state,
+			c,
+			c.Name(),
+		)
+	}
+	return app.dflow.addOutNode(c.Name(), name, t)
+}
+
 func (app *appmgr) Run() Error {
 	var err Error
 	var ctx Context = context{
