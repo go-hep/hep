@@ -79,9 +79,9 @@ func NewApp() App {
 		dflow: nil,
 		store: nil,
 		msg: msgstream{
-			//lvl: LvlInfo,
+			lvl: LvlInfo,
 			//lvl: LvlDebug,
-			lvl: LvlError,
+			//lvl: LvlError,
 			w:   os.Stdout,
 			n:   fmt.Sprintf("%-20s", appname),
 		},
