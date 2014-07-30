@@ -27,17 +27,6 @@ type HepMcReader struct {
 func (tsk *HepMcReader) Configure(ctx fwk.Context) fwk.Error {
 	var err fwk.Error
 
-	tsk.fname = "testdata/hepmc.data"
-	err = tsk.DeclProp("Input", &tsk.fname)
-	if err != nil {
-		return err
-	}
-
-	tsk.mcevt = "/fads/McEvent"
-	tsk.allparts = "/fads/AllParticles"
-	tsk.stableparts = "/fads/StableParticles"
-	tsk.partons = "/fads/Partons"
-
 	err = tsk.DeclOutPort(tsk.mcevt, reflect.TypeOf(hepmc.Event{}))
 	if err != nil {
 		return err
@@ -173,5 +162,25 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) fwk.Error {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(HepMcReader{}))
+	fwk.Register(reflect.TypeOf(HepMcReader{}),
+		func(name string, mgr fwk.App) (fwk.Component, fwk.Error) {
+			var err fwk.Error
+
+			tsk := &HepMcReader{
+				TaskBase:    fwk.NewTask(name, mgr),
+				fname:       "hepmc.data",
+				mcevt:       "/fads/McEvent",
+				allparts:    "/fads/AllParticles",
+				stableparts: "/fads/StableParticles",
+				partons:     "/fads/Partons",
+			}
+
+			err = tsk.DeclProp("Input", &tsk.fname)
+			if err != nil {
+				return nil, err
+			}
+
+			return tsk, err
+		},
+	)
 }
