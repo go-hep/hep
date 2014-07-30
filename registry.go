@@ -5,13 +5,13 @@ import (
 	"sort"
 )
 
-type factoryDb map[string]reflect.Type
+type factoryDb map[string]func(name string, mgr App) (Component, Error)
 
 var g_factory factoryDb = make(factoryDb)
 
-func Register(t reflect.Type) {
+func Register(t reflect.Type, fct func(name string, mgr App) (Component, Error)) {
 	comp := t.PkgPath() + "." + t.Name()
-	g_factory[comp] = t
+	g_factory[comp] = fct
 	//fmt.Printf("### factories ###\n%v\n", g_factory)
 }
 
@@ -24,17 +24,44 @@ func Registry() []string {
 	return comps
 }
 
-func New(t, n string) (Component, Error) {
+func (app *appmgr) New(t, n string) (Component, Error) {
 	var err Error
-	rt, ok := g_factory[t]
+	fct, ok := g_factory[t]
 	if !ok {
-		return nil, Errorf("no component with type [%s] registered\n", t)
+		return nil, Errorf("no component with type [%s] registered", t)
 	}
-	c := reflect.New(rt).Interface().(Component)
-	c.SetName(n)
-	if g_mgr != nil {
-		err = g_mgr.addComponent(c)
+
+	if _, dup := app.props[n]; dup {
+		return nil, Errorf("component with name [%s] already created", n)
 	}
+	app.props[n] = make(map[string]interface{})
+
+	c, err := fct(n, app)
+	if err != nil {
+		return nil, Errorf("error creating [%s:%s] %v", t, n, err)
+	}
+	if c.Name() == "" {
+		return nil, Errorf("factory for [%s] does NOT set the name of the component", t)
+	}
+
+	err = app.addComponent(c)
+	if err != nil {
+		return nil, err
+	}
+
+	switch c := c.(type) {
+	case Svc:
+		err = app.AddSvc(c)
+		if err != nil {
+			return nil, err
+		}
+	case Task:
+		err = app.AddTask(c)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return c, err
 }
 
