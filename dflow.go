@@ -25,8 +25,6 @@ type dflowsvc struct {
 }
 
 func (svc *dflowsvc) Configure(ctx Context) Error {
-	svc.nodes = make(map[string]*node)
-	svc.edges = make(map[string]reflect.Type)
 	return nil
 }
 
@@ -148,7 +146,16 @@ func (svc *dflowsvc) addOutNode(tsk string, name string, t reflect.Type) Error {
 }
 
 func init() {
-	Register(reflect.TypeOf(dflowsvc{}))
+	Register(reflect.TypeOf(dflowsvc{}),
+		func(name string, mgr App) (Component, Error) {
+			svc := &dflowsvc{
+				SvcBase: NewSvc(name, mgr),
+				nodes:   make(map[string]*node),
+				edges:   make(map[string]reflect.Type),
+			}
+			return svc, nil
+		},
+	)
 }
 
 // EOF
