@@ -41,7 +41,7 @@ func main() {
 		Type: "github.com/go-hep/fads.HepMcReader",
 		Name: "hepmcreader",
 		Props: job.P{
-			"Input": "testdata/full.hepmc.data",
+			"Input": "testdata/hepmc.data",
 		},
 	})
 
