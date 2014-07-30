@@ -189,6 +189,17 @@ type Candidate struct {
 	Candidates []Candidate
 }
 
+func (cand *Candidate) Clone() *Candidate {
+	c := *cand
+	c.Candidates = make([]Candidate, 0, len(cand.Candidates))
+	for i := range cand.Candidates {
+		cc := &cand.Candidates[i]
+		c.Add(cc)
+	}
+
+	return &c
+}
+
 func (cand *Candidate) P4() fmom.P4 {
 	return &cand.Mom
 }
