@@ -103,6 +103,12 @@ type DeclPorter interface {
 	DeclOutPort(name string, t reflect.Type) Error
 }
 
+// PortMgr is the interface to manage input/output ports for the data flow
+type PortMgr interface {
+	DeclInPort(c Component, name string, t reflect.Type) Error
+	DeclOutPort(c Component, name string, t reflect.Type) Error
+}
+
 type Level int
 
 const (
