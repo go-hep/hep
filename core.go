@@ -23,8 +23,7 @@ type Context interface {
 }
 
 type Component interface {
-	Name() string     // Name of the component (ex: "MyPropagator")
-	SetName(n string) // rename a component (should only be done by the framework!)
+	Name() string // Name of the component (ex: "MyPropagator")
 }
 
 type ComponentMgr interface {
