@@ -12,7 +12,7 @@ build:
 
 test: build
 	@go test $(GOFLAGS) ./...
-	test-fads-app -l INFO
+	time test-fads-app -l INFO -cpu-prof
 
 clean:
 	@go clean $(GOFLAGS) -i ./...
