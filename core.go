@@ -75,8 +75,11 @@ type App interface {
 	SvcMgr
 	TaskMgr
 	PropMgr
+	PortMgr
 
 	Run() Error
+
+	Msg() MsgStream
 }
 
 type PropMgr interface {
