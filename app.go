@@ -1,6 +1,9 @@
 package fwk
 
 import (
+	"fmt"
+	"io"
+	"math"
 	"os"
 	"reflect"
 	"sort"
@@ -11,13 +14,42 @@ var g_mgr *appmgr = nil
 type fsm int
 
 const (
-	fsm_UNDEFINED  fsm = 0
-	fsm_CONFIGURED fsm = 1
-	fsm_STARTED    fsm = 2
-	fsm_RUNNING    fsm = 3
-	fsm_STOPPED    fsm = 4
-	fsm_OFFLINE    fsm = 5
+	fsm_UNDEFINED fsm = iota
+	fsm_CONFIGURING
+	fsm_CONFIGURED
+	fsm_STARTING
+	fsm_STARTED
+	fsm_RUNNING
+	fsm_STOPPING
+	fsm_STOPPED
+	fsm_OFFLINE
 )
+
+func (state fsm) String() string {
+	switch state {
+	case fsm_UNDEFINED:
+		return "UNDEFINED"
+	case fsm_CONFIGURING:
+		return "CONFIGURING"
+	case fsm_CONFIGURED:
+		return "CONFIGURED"
+	case fsm_STARTING:
+		return "STARTING"
+	case fsm_STARTED:
+		return "STARTED"
+	case fsm_RUNNING:
+		return "RUNNING"
+	case fsm_STOPPING:
+		return "STOPPING"
+	case fsm_STOPPED:
+		return "STOPPED"
+	case fsm_OFFLINE:
+		return "OFFLINE"
+
+	default:
+		panic(Errorf("invalid FSM value %d", int(state)))
+	}
+}
 
 type appmgr struct {
 	state fsm
@@ -332,6 +364,7 @@ func (app *appmgr) Run() Error {
 func (app *appmgr) configure(ctx Context) Error {
 	var err Error
 	app.msg.Debugf("configure...\n")
+	app.state = fsm_CONFIGURING
 	for _, svc := range app.svcs {
 		app.msg.Debugf("configuring [%s]...\n", svc.Name())
 		cfg, ok := svc.(Configurer)
@@ -378,6 +411,7 @@ func (app *appmgr) configure(ctx Context) Error {
 
 func (app *appmgr) start(ctx Context) Error {
 	var err Error
+	app.state = fsm_STARTING
 	for _, svc := range app.svcs {
 		app.msg.Debugf("starting [%s]...\n", svc.Name())
 		err = svc.StartSvc(ctx)
@@ -451,6 +485,7 @@ func (app *appmgr) run(ctx Context) Error {
 
 func (app *appmgr) stop(ctx Context) Error {
 	var err Error
+	app.state = fsm_STOPPING
 	for _, tsk := range app.tsks {
 		err = tsk.StopTask(ctx)
 		if err != nil {
