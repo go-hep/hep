@@ -26,6 +26,22 @@ func (p4 *PxPyPzE) E() float64 {
 	return p4[3]
 }
 
+func (p4 *PxPyPzE) X() float64 {
+	return p4[0]
+}
+
+func (p4 *PxPyPzE) Y() float64 {
+	return p4[1]
+}
+
+func (p4 *PxPyPzE) Z() float64 {
+	return p4[2]
+}
+
+func (p4 *PxPyPzE) T() float64 {
+	return p4[3]
+}
+
 func (p4 *PxPyPzE) M2() float64 {
 	px := p4.Px()
 	py := p4.Py()
