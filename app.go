@@ -89,7 +89,7 @@ func NewApp() App {
 		svcs:   make([]Svc, 0),
 	}
 
-	svc, err := New("github.com/go-hep/fwk.datastore", "evtstore")
+	svc, err := app.New("github.com/go-hep/fwk.datastore", "evtstore")
 	if err != nil {
 		app.msg.Errorf("fwk.NewApp: could not create evtstore: %v\n", err)
 		return nil
@@ -103,7 +103,7 @@ func NewApp() App {
 		return nil
 	}
 
-	svc, err = New("github.com/go-hep/fwk.dflowsvc", "dataflow")
+	svc, err = app.New("github.com/go-hep/fwk.dflowsvc", "dataflow")
 	if err != nil {
 		app.msg.Errorf("fwk.NewApp: could not create dataflow svc: %v\n", err)
 		return nil

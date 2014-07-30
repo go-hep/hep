@@ -30,6 +30,7 @@ type ComponentMgr interface {
 	Component(n string) Component
 	HasComponent(n string) bool
 	Components() []Component
+	New(t, n string) (Component, Error)
 }
 
 type Task interface {
