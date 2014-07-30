@@ -124,10 +124,6 @@ func (app *appmgr) Name() string {
 	return app.name
 }
 
-func (app *appmgr) SetName(n string) {
-	app.name = n
-}
-
 func (app *appmgr) Component(n string) Component {
 	c, ok := app.comps[n]
 	if !ok {
