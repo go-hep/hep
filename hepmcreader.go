@@ -1,6 +1,7 @@
 package fads
 
 import (
+	"bufio"
 	"io"
 	"os"
 	"reflect"
@@ -56,7 +57,7 @@ func (tsk *HepMcReader) StartTask(ctx fwk.Context) fwk.Error {
 	if err != nil {
 		return err
 	}
-	tsk.dec = hepmc.NewDecoder(tsk.r)
+	tsk.dec = hepmc.NewDecoder(bufio.NewReader(tsk.r))
 	return err
 }
 
