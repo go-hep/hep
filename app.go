@@ -83,7 +83,7 @@ func NewApp() App {
 			w:   os.Stdout,
 			n:   appname,
 		},
-		evtmax: 4,
+		evtmax: -1,
 		comps:  make(map[string]Component),
 		tsks:   make([]Task, 0),
 		svcs:   make([]Svc, 0),
@@ -336,7 +336,7 @@ func (app *appmgr) Run() Error {
 
 	if app.state == fsm_STARTED {
 		err = app.run(ctx)
-		if err != nil {
+		if err != nil && err != io.EOF {
 			return err
 		}
 	}
@@ -432,6 +432,9 @@ func (app *appmgr) start(ctx Context) Error {
 func (app *appmgr) run(ctx Context) Error {
 	var err Error
 	app.state = fsm_RUNNING
+	if app.evtmax == -1 {
+		app.evtmax = math.MaxInt64
+	}
 	for ievt := int64(0); ievt < app.evtmax; ievt++ {
 		app.msg.Infof(">>> running evt=%d...\n", ievt)
 		for k := range app.dflow.edges {
