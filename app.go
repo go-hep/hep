@@ -53,7 +53,7 @@ type appmgr struct {
 	state fsm
 	name  string
 
-	props map[Component]map[string]interface{}
+	props map[string]map[string]interface{}
 	dflow *dflowsvc
 	store *datastore
 	msg   msgstream
@@ -75,7 +75,7 @@ func NewApp() App {
 	app = &appmgr{
 		state: fsm_UNDEFINED,
 		name:  appname,
-		props: make(map[Component]map[string]interface{}),
+		props: make(map[string]map[string]interface{}),
 		dflow: nil,
 		store: nil,
 		msg: msgstream{
@@ -237,9 +237,10 @@ func (app *appmgr) Svcs() []Svc {
 }
 
 func (app *appmgr) DeclProp(c Component, name string, ptr interface{}) Error {
-	_, ok := app.props[c]
+	cname := c.Name()
+	_, ok := app.props[cname]
 	if !ok {
-		app.props[c] = make(map[string]interface{})
+		app.props[cname] = make(map[string]interface{})
 	}
 	switch reflect.TypeOf(ptr).Kind() {
 	case reflect.Ptr:
@@ -252,12 +253,13 @@ func (app *appmgr) DeclProp(c Component, name string, ptr interface{}) Error {
 			ptr,
 		)
 	}
-	app.props[c][name] = ptr
+	app.props[cname][name] = ptr
 	return nil
 }
 
 func (app *appmgr) SetProp(c Component, name string, value interface{}) Error {
-	m, ok := app.props[c]
+	cname := c.Name()
+	m, ok := app.props[cname]
 	if !ok {
 		return Errorf(
 			"fwk.SetProp: component [%s] didn't declare any property",
@@ -283,7 +285,8 @@ func (app *appmgr) SetProp(c Component, name string, value interface{}) Error {
 }
 
 func (app *appmgr) GetProp(c Component, name string) (interface{}, Error) {
-	m, ok := app.props[c]
+	cname := c.Name()
+	m, ok := app.props[cname]
 	if !ok {
 		return nil, Errorf(
 			"fwk.GetProp: component [%s] didn't declare any property",
