@@ -538,6 +538,10 @@ func (app *appmgr) shutdown(ctx Context) Error {
 	return err
 }
 
+func (app *appmgr) Msg() MsgStream {
+	return app.msg
+}
+
 func init() {
 	Register(reflect.TypeOf(appmgr{}))
 }
