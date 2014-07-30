@@ -543,7 +543,14 @@ func (app *appmgr) Msg() MsgStream {
 }
 
 func init() {
-	Register(reflect.TypeOf(appmgr{}))
+	Register(
+		reflect.TypeOf(appmgr{}),
+		func(name string, mgr App) (Component, Error) {
+			app := NewApp().(*appmgr)
+			app.name = name
+			return app, nil
+		},
+	)
 }
 
 // EOF
