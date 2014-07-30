@@ -9,8 +9,6 @@ import (
 	"sort"
 )
 
-var g_mgr *appmgr = nil
-
 type fsm int
 
 const (
@@ -68,9 +66,6 @@ type appmgr struct {
 }
 
 func NewApp() App {
-	if g_mgr != nil {
-		return g_mgr
-	}
 
 	var err Error
 	var app *appmgr
@@ -122,7 +117,6 @@ func NewApp() App {
 		return nil
 	}
 
-	g_mgr = app
 	return app
 }
 
@@ -515,7 +509,6 @@ func (app *appmgr) shutdown(ctx Context) Error {
 	app.dflow = nil
 	app.store = nil
 
-	g_mgr = nil
 	return err
 }
 
