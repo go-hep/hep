@@ -18,17 +18,6 @@ func (tsk *task3) Configure(ctx fwk.Context) fwk.Error {
 	msg := ctx.Msg()
 	msg.Infof("configure...\n")
 
-	tsk.parts = "/fads/test/StableParticles"
-	err = tsk.DeclProp("Output", &tsk.parts)
-	if err != nil {
-		return err
-	}
-
-	err = tsk.DeclOutPort(tsk.parts, reflect.TypeOf([]fads.Candidate{}))
-	if err != nil {
-		return err
-	}
-
 	msg.Infof("configure... [done]\n")
 	return err
 }
@@ -60,5 +49,24 @@ func (tsk *task3) Process(ctx fwk.Context) fwk.Error {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(task3{}))
+	fwk.Register(reflect.TypeOf(task3{}),
+		func(name string, mgr fwk.App) (fwk.Component, fwk.Error) {
+			var err fwk.Error
+			tsk := &task3{
+				TaskBase: fwk.NewTask(name, mgr),
+				parts:    "/fads/test/StableParticles",
+			}
+			err = tsk.DeclProp("Output", &tsk.parts)
+			if err != nil {
+				return nil, err
+			}
+
+			err = tsk.DeclOutPort(tsk.parts, reflect.TypeOf([]fads.Candidate{}))
+			if err != nil {
+				return nil, err
+			}
+
+			return tsk, err
+		},
+	)
 }

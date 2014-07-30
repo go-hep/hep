@@ -17,25 +17,6 @@ func (tsk *task2) Configure(ctx fwk.Context) fwk.Error {
 	msg := ctx.Msg()
 	msg.Infof("configure...\n")
 
-	tsk.fct = func(f float64) float64 {
-		return f * f
-	}
-
-	err = tsk.DeclProp("Fct", &tsk.fct)
-	if err != nil {
-		return err
-	}
-
-	err = tsk.DeclInPort("floats1", reflect.TypeOf(float64(1.0)))
-	if err != nil {
-		return err
-	}
-
-	err = tsk.DeclOutPort("massaged_floats1", reflect.TypeOf(float64(1.0)))
-	if err != nil {
-		return err
-	}
-
 	msg.Infof("configure... [done]\n")
 	return err
 }
@@ -69,5 +50,31 @@ func (tsk *task2) Process(ctx fwk.Context) fwk.Error {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(task2{}))
+	fwk.Register(reflect.TypeOf(task2{}),
+		func(name string, mgr fwk.App) (fwk.Component, fwk.Error) {
+			var err fwk.Error
+			tsk := &task2{
+				TaskBase: fwk.NewTask(name, mgr),
+			}
+			tsk.fct = func(f float64) float64 {
+				return f * f
+			}
+
+			err = tsk.DeclProp("Fct", &tsk.fct)
+			if err != nil {
+				return nil, err
+			}
+
+			err = tsk.DeclInPort("floats1", reflect.TypeOf(float64(1.0)))
+			if err != nil {
+				return nil, err
+			}
+
+			err = tsk.DeclOutPort("massaged_floats1", reflect.TypeOf(float64(1.0)))
+			if err != nil {
+				return nil, err
+			}
+			return tsk, err
+		},
+	)
 }
