@@ -34,7 +34,10 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	app := job.New(nil)
+	app := job.New(nil, job.P{
+		"EvtMax":   int64(-1),
+		"MsgLevel": job.MsgLevel(*g_lvl),
+	})
 
 	// propagate particles in cylinder
 	app.Create(job.C{
