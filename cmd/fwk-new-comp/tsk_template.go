@@ -12,7 +12,7 @@ type {{.Name}} struct {
     fwk.TaskBase
 }
 
-func (tsk *{{.Name}}) Configure() fwk.Error {
+func (tsk *{{.Name}}) Configure(ctx fwk.Context) fwk.Error {
     var err fwk.Error
 
 	// err = tsk.DeclInPort(tsk.input, reflect.TypeOf(sometype{}))

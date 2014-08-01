@@ -12,7 +12,7 @@ type {{.Name}} struct {
     fwk.SvcBase
 }
 
-func (svc *{{.Name}}) Configure() fwk.Error {
+func (svc *{{.Name}}) Configure(ctx fwk.Context) fwk.Error {
     var err fwk.Error
 
 	// err = svc.DeclInPort(svc.input, reflect.TypeOf(sometype{}))
