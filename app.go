@@ -278,6 +278,7 @@ func (app *appmgr) SetProp(c Component, name string, value interface{}) Error {
 			c.Name(),
 		)
 	}
+
 	rv := reflect.ValueOf(value)
 	rt := rv.Type()
 	ptr := reflect.ValueOf(m[name])
@@ -293,6 +294,7 @@ func (app *appmgr) SetProp(c Component, name string, value interface{}) Error {
 		)
 	}
 	ptr.Elem().Set(rv)
+
 	return nil
 }
 
