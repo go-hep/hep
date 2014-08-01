@@ -51,6 +51,7 @@ func main() {
 		Name: "hepmcreader",
 		Props: job.P{
 			"Input": "testdata/hepmc.data",
+			//"Input": "testdata/full.hepmc.data",
 		},
 	})
 
