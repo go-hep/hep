@@ -8,13 +8,13 @@ import (
 
 func gen_task(c Component) error {
 	var err error
-	err = gen(os.Stderr, g_task_template, c)
+	err = gen(os.Stdout, g_task_template, c)
 	return err
 }
 
 func gen_svc(c Component) error {
 	var err error
-	err = gen(os.Stderr, g_svc_template, c)
+	err = gen(os.Stdout, g_svc_template, c)
 	return err
 }
 
