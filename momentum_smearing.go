@@ -93,10 +93,10 @@ func (tsk *MomentumSmearing) Process(ctx fwk.Context) fwk.Error {
 
 func init() {
 	fwk.Register(reflect.TypeOf(MomentumSmearing{}),
-		func(name string, mgr fwk.App) (fwk.Component, fwk.Error) {
+		func(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
 			var err fwk.Error
 			tsk := &MomentumSmearing{
-				TaskBase: fwk.NewTask(name, mgr),
+				TaskBase: fwk.NewTask(typ, name, mgr),
 				input:    "InputParticles",
 				output:   "OutputParticles",
 				smear:    func(x, y float64) float64 { return 0 },

@@ -87,10 +87,10 @@ func (tsk *Efficiency) Process(ctx fwk.Context) fwk.Error {
 
 func init() {
 	fwk.Register(reflect.TypeOf(Efficiency{}),
-		func(name string, mgr fwk.App) (fwk.Component, fwk.Error) {
+		func(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
 			var err fwk.Error
 			tsk := &Efficiency{
-				TaskBase: fwk.NewTask(name, mgr),
+				TaskBase: fwk.NewTask(typ, name, mgr),
 				input:    "InputParticles",
 				output:   "OutputParticles",
 				eff:      func(x, y float64) float64 { return 1 },

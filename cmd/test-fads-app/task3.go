@@ -50,10 +50,10 @@ func (tsk *task3) Process(ctx fwk.Context) fwk.Error {
 
 func init() {
 	fwk.Register(reflect.TypeOf(task3{}),
-		func(name string, mgr fwk.App) (fwk.Component, fwk.Error) {
+		func(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
 			var err fwk.Error
 			tsk := &task3{
-				TaskBase: fwk.NewTask(name, mgr),
+				TaskBase: fwk.NewTask(typ, name, mgr),
 				parts:    "/fads/test/StableParticles",
 			}
 			err = tsk.DeclProp("Output", &tsk.parts)

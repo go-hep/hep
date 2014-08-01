@@ -51,10 +51,10 @@ func (tsk *task2) Process(ctx fwk.Context) fwk.Error {
 
 func init() {
 	fwk.Register(reflect.TypeOf(task2{}),
-		func(name string, mgr fwk.App) (fwk.Component, fwk.Error) {
+		func(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
 			var err fwk.Error
 			tsk := &task2{
-				TaskBase: fwk.NewTask(name, mgr),
+				TaskBase: fwk.NewTask(typ, name, mgr),
 			}
 			tsk.fct = func(f float64) float64 {
 				return f * f

@@ -56,10 +56,10 @@ func (tsk *task1) Process(ctx fwk.Context) fwk.Error {
 
 func init() {
 	fwk.Register(reflect.TypeOf(task1{}),
-		func(name string, mgr fwk.App) (fwk.Component, fwk.Error) {
+		func(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
 			var err fwk.Error
 			tsk := &task1{
-				TaskBase: fwk.NewTask(name, mgr),
+				TaskBase: fwk.NewTask(typ, name, mgr),
 				f1:       -1,
 				f2:       +2,
 			}

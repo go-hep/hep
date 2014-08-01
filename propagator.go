@@ -312,10 +312,10 @@ func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
 
 func init() {
 	fwk.Register(reflect.TypeOf(ParticlePropagator{}),
-		func(name string, mgr fwk.App) (fwk.Component, fwk.Error) {
+		func(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
 			var err fwk.Error
 			tsk := &ParticlePropagator{
-				TaskBase: fwk.NewTask(name, mgr),
+				TaskBase: fwk.NewTask(typ, name, mgr),
 			}
 			tsk.radius = 1.0
 			err = tsk.DeclProp("Radius", &tsk.radius)
