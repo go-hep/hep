@@ -1,7 +1,6 @@
 package fmom
 
 import (
-	"fmt"
 	"math"
 	"reflect"
 	"testing"
@@ -88,11 +87,6 @@ func TestAdd(t *testing.T) {
 		p2 := table.p2.Clone()
 
 		sum := Add(p1, p2)
-
-		var pp PxPyPzE
-		pp.Set(table.p1)
-		fmt.Printf("p1= %#v\n", table.p1)
-		fmt.Printf("px= %#v\n", pp)
 
 		if !deepEqual(sum, table.exp) {
 			t.Fatalf("exp: %#v\ngot: %#v", table.exp, sum)
