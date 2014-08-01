@@ -58,7 +58,7 @@ func (tsk *Efficiency) Process(ctx fwk.Context) fwk.Error {
 	}
 
 	input := v.([]Candidate)
-	msg.Infof(">>> input: %v\n", len(input))
+	msg.Debugf(">>> input: %v\n", len(input))
 
 	output := make([]Candidate, 0, len(input))
 	defer func() {
@@ -80,7 +80,7 @@ func (tsk *Efficiency) Process(ctx fwk.Context) fwk.Error {
 		output = append(output, *cand)
 	}
 
-	msg.Infof(">>> output: %v\n", len(output))
+	msg.Debugf(">>> output: %v\n", len(output))
 
 	return err
 }

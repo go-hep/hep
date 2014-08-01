@@ -86,7 +86,7 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) fwk.Error {
 		return err
 	}
 
-	msg.Infof(
+	msg.Debugf(
 		"event number: %d, #parts=%d #vtx=%d\n",
 		evt.EventNumber,
 		len(evt.Particles), len(evt.Vertices),
@@ -153,7 +153,7 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) fwk.Error {
 		return err
 	}
 
-	msg.Infof("allparts: %d\nstables: %d\npartons: %d\n",
+	msg.Debugf("allparts: %d\nstables: %d\npartons: %d\n",
 		len(allparts),
 		len(stableparts),
 		len(partons),

@@ -86,7 +86,7 @@ func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
 	}
 
 	input := v.([]Candidate)
-	msg.Infof(">>> candidates: %v\n", len(input))
+	msg.Debugf(">>> candidates: %v\n", len(input))
 
 	output := make([]Candidate, 0)
 	defer func() {
@@ -306,7 +306,7 @@ func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
 		}
 	}
 
-	msg.Infof(">>> output:     %v\n", len(output))
+	msg.Debugf(">>> output:     %v\n", len(output))
 	return err
 }
 
