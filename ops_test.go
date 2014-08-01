@@ -142,7 +142,7 @@ func TestIAdd(t *testing.T) {
 			t.Fatalf("exp: %#v\ngot: %#v", table.exp, sum)
 		}
 
-		if !deepEqual(sum, p1) {
+		if !reflect.DeepEqual(sum, p1) {
 			t.Fatalf("fmom.IAdd did not modify p1 in-place:\nexp: %#v\ngot: %#v", sum, p1)
 		}
 		if !reflect.DeepEqual(p2, table.p2) {
