@@ -404,6 +404,7 @@ func (app *appmgr) Run() Error {
 
 func (app *appmgr) configure(ctx Context) Error {
 	var err Error
+	defer app.msg.flush()
 	app.msg.Debugf("configure...\n")
 	app.state = fsm_CONFIGURING
 	for _, svc := range app.svcs {
@@ -452,6 +453,7 @@ func (app *appmgr) configure(ctx Context) Error {
 
 func (app *appmgr) start(ctx Context) Error {
 	var err Error
+	defer app.msg.flush()
 	app.state = fsm_STARTING
 	for _, svc := range app.svcs {
 		app.msg.Debugf("starting [%s]...\n", svc.Name())
@@ -475,6 +477,7 @@ func (app *appmgr) start(ctx Context) Error {
 
 func (app *appmgr) run(ctx Context) Error {
 	var err Error
+	defer app.msg.flush()
 	app.state = fsm_RUNNING
 	if app.evtmax == -1 {
 		app.evtmax = math.MaxInt64
@@ -509,22 +512,27 @@ func (app *appmgr) run(ctx Context) Error {
 					msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
 				}
 				errch <- tsk.Process(ctx)
+				// FIXME(sbinet) dont be so eager to flush...
+				ctx.msg.flush()
 			}(tsk)
 		}
 		for i := 0; i < len(app.tsks); i++ {
 			err := <-errch
 			if err != nil {
 				close(errch)
+				app.msg.flush()
 				return err
 			}
 
 		}
+		app.msg.flush()
 	}
 	return err
 }
 
 func (app *appmgr) stop(ctx Context) Error {
 	var err Error
+	defer app.msg.flush()
 	app.state = fsm_STOPPING
 	for _, tsk := range app.tsks {
 		err = tsk.StopTask(ctx)
@@ -546,6 +554,7 @@ func (app *appmgr) stop(ctx Context) Error {
 
 func (app *appmgr) shutdown(ctx Context) Error {
 	var err Error
+	defer app.msg.flush()
 	app.comps = nil
 	app.tsks = nil
 	app.svcs = nil
