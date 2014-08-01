@@ -104,19 +104,22 @@ func (p4 *IPtCotThPhiM) Rapidity() float64 {
 func (p4 *IPtCotThPhiM) Px() float64 {
 	cosphi := p4.CosPhi()
 	ipt := p4.IPt()
-	return cosphi / ipt
+	pt := 1 / ipt
+	return pt * cosphi
 }
 
 func (p4 *IPtCotThPhiM) Py() float64 {
 	sinphi := p4.SinPhi()
 	ipt := p4.IPt()
-	return sinphi / ipt
+	pt := 1 / ipt
+	return pt * sinphi
 }
 
 func (p4 *IPtCotThPhiM) Pz() float64 {
 	cotth := p4.CotTh()
 	ipt := p4.IPt()
-	return cotth / ipt
+	pt := 1 / ipt
+	return pt * cotth
 }
 
 func (p4 *IPtCotThPhiM) CosPhi() float64 {
