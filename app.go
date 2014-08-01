@@ -117,6 +117,18 @@ func NewApp() App {
 		return nil
 	}
 
+	err = app.DeclProp(app, "EvtMax", &app.evtmax)
+	if err != nil {
+		app.msg.Errorf("fwk.NewApp: could not declare property 'EvtMax': %v\n", err)
+		return nil
+	}
+
+	err = app.DeclProp(app, "MsgLevel", &app.msg.lvl)
+	if err != nil {
+		app.msg.Errorf("fwk.NewApp: could not declare property 'MsgLevel': %v\n", err)
+		return nil
+	}
+
 	return app
 }
 
