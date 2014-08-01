@@ -18,13 +18,17 @@ type Job struct {
 	app fwk.App
 }
 
-func New(app fwk.App) *Job {
+func New(app fwk.App, props P) *Job {
 	if app == nil {
 		app = fwk.NewApp()
 	}
-	return &Job{
-		app: app,
+
+	job := &Job{app: app}
+	for k, v := range props {
+		job.SetProp(app, k, v)
+
 	}
+	return job
 }
 
 func (job *Job) Create(cfg C) fwk.Component {

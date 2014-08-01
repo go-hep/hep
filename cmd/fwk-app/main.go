@@ -16,7 +16,7 @@ func handle_err(err error) {
 func main() {
 	fmt.Printf("::: fwk-app...\n")
 
-	app := job.New(fwk.NewApp())
+	app := job.New(fwk.NewApp(), nil)
 
 	app.Create(job.C{
 		Type: "github.com/go-hep/fads.ParticlePropagator",
