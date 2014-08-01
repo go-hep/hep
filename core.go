@@ -117,7 +117,7 @@ type PortMgr interface {
 type Level int
 
 const (
-	LvlVerbose Level = -20
+	//LvlVerbose Level = -20
 	LvlDebug   Level = -10
 	LvlInfo    Level = 0
 	LvlWarning Level = 10
