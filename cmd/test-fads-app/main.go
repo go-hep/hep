@@ -13,6 +13,10 @@ import (
 var (
 	g_lvl      = flag.String("l", "INFO", "log level (DEBUG|INFO|WARN|ERROR)")
 	g_cpu_prof = flag.Bool("cpu-prof", false, "enable CPU profiling")
+
+	abs  = math.Abs
+	sqrt = math.Sqrt
+	pow  = math.Pow
 )
 
 func main() {
@@ -32,11 +36,13 @@ func main() {
 
 	app := job.New(nil)
 
+	// propagate particles in cylinder
 	app.Create(job.C{
 		Type: "github.com/go-hep/fads.ParticlePropagator",
 		Name: "pprop",
 	})
 
+	// read HepMC data
 	app.Create(job.C{
 		Type: "github.com/go-hep/fads.HepMcReader",
 		Name: "hepmcreader",
@@ -45,6 +51,7 @@ func main() {
 		},
 	})
 
+	// charged hadron tracking efficiency
 	app.Create(job.C{
 		Type: "github.com/go-hep/fads.Efficiency",
 		Name: "charged-hadron-trk-eff",
@@ -72,6 +79,7 @@ func main() {
 		},
 	})
 
+	// electron tracking efficiency
 	app.Create(job.C{
 		Type: "github.com/go-hep/fads.Efficiency",
 		Name: "electron-trk-eff",
@@ -103,6 +111,7 @@ func main() {
 		},
 	})
 
+	// muon tracking efficiency
 	app.Create(job.C{
 		Type: "github.com/go-hep/fads.Efficiency",
 		Name: "muon-trk-eff",
@@ -130,14 +139,91 @@ func main() {
 		},
 	})
 
-	/*
-		c, err = fwk.New("github.com/go-hep/fads.MomentumSmearing", "charged-hadron-smearer")
-		if err != nil {
-			panic(err)
-		}
-		mgr.AddTask(c.(fwk.Task))
-	*/
-	//mgr.DeclProp(c, "Input", )
+	// momentum resolution for charged tracks
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.MomentumSmearing",
+		Name: "charged-hadron-mom-smearing",
+		Props: job.P{
+			"Input":  "EffChargedHadrons",
+			"Output": "SmearChargedHadrons",
+			"Resolution": func(eta, pt float64) float64 {
+				switch {
+				case (abs(eta) <= 1.5) && (pt > 0.1 && pt <= 1.0):
+					return 0.02
+				case (abs(eta) <= 1.5) && (pt > 1.0 && pt <= 1.0e1):
+					return (0.01)
+				case (abs(eta) <= 1.5) && (pt > 1.0e1 && pt <= 2.0e2):
+					return (0.03)
+				case (abs(eta) <= 1.5) && (pt > 2.0e2):
+					return (0.05)
+				case (abs(eta) > 1.5 && abs(eta) <= 2.5) && (pt > 0.1 && pt <= 1.0):
+					return (0.03)
+				case (abs(eta) > 1.5 && abs(eta) <= 2.5) && (pt > 1.0 && pt <= 1.0e1):
+					return (0.02)
+				case (abs(eta) > 1.5 && abs(eta) <= 2.5) && (pt > 1.0e1 && pt <= 2.0e2):
+					return (0.04)
+				case (abs(eta) > 1.5 && abs(eta) <= 2.5) && (pt > 2.0e2):
+					return (0.05)
+				}
+				return 0
+			},
+		},
+	})
+
+	// energy resolution for electrons
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.EnergySmearing",
+		Name: "electron-ene-smearing",
+		Props: job.P{
+			"Input":  "EffElectrons",
+			"Output": "SmearElectrons",
+			"Resolution": func(eta, ene float64) float64 {
+				switch {
+				case (abs(eta) <= 2.5) && (ene > 0.1 && ene <= 2.5e1):
+					return (ene * 0.015)
+				case (abs(eta) <= 2.5) && (ene > 2.5e1):
+					return sqrt(pow(ene*0.005, 2) + ene*pow(0.05, 2) + pow(0.25, 2))
+				case (abs(eta) > 2.5 && abs(eta) <= 3.0):
+					return sqrt(pow(ene*0.005, 2) + ene*pow(0.05, 2) + pow(0.25, 2))
+				case (abs(eta) > 3.0 && abs(eta) <= 5.0):
+					return sqrt(pow(ene*0.107, 2) + ene*pow(2.08, 2))
+				}
+
+				return 0
+			},
+		},
+	})
+
+	// momentum resolution for muons
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.MomentumSmearing",
+		Name: "muon-mom-smearing",
+		Props: job.P{
+			"Input":  "EffMuons",
+			"Output": "SmearMuons",
+			"Resolution": func(eta, pt float64) float64 {
+				switch {
+				case (abs(eta) <= 1.5) && (pt > 0.1 && pt <= 1.0):
+					return (0.03)
+				case (abs(eta) <= 1.5) && (pt > 1.0 && pt <= 5.0e1):
+					return (0.03)
+				case (abs(eta) <= 1.5) && (pt > 5.0e1 && pt <= 1.0e2):
+					return (0.04)
+				case (abs(eta) <= 1.5) && (pt > 1.0e2):
+					return (0.07)
+				case (abs(eta) > 1.5 && abs(eta) <= 2.5) && (pt > 0.1 && pt <= 1.0):
+					return (0.04)
+				case (abs(eta) > 1.5 && abs(eta) <= 2.5) && (pt > 1.0 && pt <= 5.0e1):
+					return (0.04)
+				case (abs(eta) > 1.5 && abs(eta) <= 2.5) && (pt > 5.0e1 && pt <= 1.0e2):
+					return (0.05)
+				case (abs(eta) > 1.5 && abs(eta) <= 2.5) && (pt > 1.0e2):
+					return (0.10)
+				}
+				return 0
+			},
+		},
+	})
 
 	app.Run()
 
