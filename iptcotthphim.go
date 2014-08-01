@@ -10,6 +10,11 @@ func NewIPtCotThPhiM(pt, eta, phi, m float64) IPtCotThPhiM {
 	return IPtCotThPhiM([4]float64{pt, eta, phi, m})
 }
 
+func (p4 *IPtCotThPhiM) Clone() P4 {
+	pp := *p4
+	return &pp
+}
+
 func (p4 *IPtCotThPhiM) IPt() float64 {
 	return p4[0]
 }

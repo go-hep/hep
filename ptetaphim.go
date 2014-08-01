@@ -10,6 +10,11 @@ func NewPtEtaPhiM(pt, eta, phi, m float64) PtEtaPhiM {
 	return PtEtaPhiM([4]float64{pt, eta, phi, m})
 }
 
+func (p4 *PtEtaPhiM) Clone() P4 {
+	pp := *p4
+	return &pp
+}
+
 func (p4 *PtEtaPhiM) Pt() float64 {
 	return p4[0]
 }

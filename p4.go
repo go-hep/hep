@@ -24,6 +24,7 @@ type P4 interface {
 	TanTh() float64    // tan(Theta)
 
 	Set(p4 P4)
+	Clone() P4
 }
 
 // EOF

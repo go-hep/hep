@@ -10,6 +10,11 @@ func NewPxPyPzE(px, py, pz, e float64) PxPyPzE {
 	return PxPyPzE([4]float64{px, py, pz, e})
 }
 
+func (p4 *PxPyPzE) Clone() P4 {
+	pp := *p4
+	return &pp
+}
+
 func (p4 *PxPyPzE) Px() float64 {
 	return p4[0]
 }

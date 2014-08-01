@@ -10,6 +10,11 @@ func NewEEtaPhiM(et, eta, phi, m float64) EEtaPhiM {
 	return EEtaPhiM([4]float64{et, eta, phi, m})
 }
 
+func (p4 *EEtaPhiM) Clone() P4 {
+	pp := *p4
+	return &pp
+}
+
 func (p4 *EEtaPhiM) E() float64 {
 	return p4[0]
 }
