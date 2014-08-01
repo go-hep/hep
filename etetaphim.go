@@ -123,13 +123,13 @@ func (p4 *EtEtaPhiM) Rapidity() float64 {
 func (p4 *EtEtaPhiM) Px() float64 {
 	pt := p4.Pt()
 	cosphi := p4.CosPhi()
-	return pt / cosphi
+	return pt * cosphi
 }
 
 func (p4 *EtEtaPhiM) Py() float64 {
 	pt := p4.Pt()
 	sinphi := p4.SinPhi()
-	return pt / sinphi
+	return pt * sinphi
 }
 
 func (p4 *EtEtaPhiM) Pz() float64 {
