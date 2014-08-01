@@ -102,20 +102,51 @@ func TestAdd(t *testing.T) {
 }
 
 func TestIAdd(t *testing.T) {
-	p1 := NewPxPyPzE(10, 10, 10, 20)
-	p2 := NewPxPyPzE(10, 10, 10, 20)
+	for _, table := range []struct {
+		p1  P4
+		p2  P4
+		exp P4
+	}{
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			exp: newPxPyPzE(NewPxPyPzE(20, 20, 20, 40)),
+		},
+		{
+			p1:  newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			exp: newEEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+		},
+		{
+			p1:  newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			exp: newEtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+		},
+		{
+			p1:  newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			exp: newPtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+		},
+		{
+			p1:  newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			exp: newIPtCotThPhiM(NewPxPyPzE(20, 20, 20, 40)),
+		},
+	} {
+		p1 := table.p1.Clone()
+		p2 := table.p2.Clone()
 
-	sum := IAdd(&p1, &p2)
-	exp := NewPxPyPzE(20, 20, 20, 40)
-	if !reflect.DeepEqual(sum, &exp) {
-		t.Fatalf("exp: %#v\ngot: %#v", &exp, sum)
-	}
-	if !reflect.DeepEqual(&p1, sum) {
-		t.Fatalf("iadd did not modify p1 in place:\np1=%#v\nsum=%#v", &p1, sum)
-	}
+		sum := IAdd(p1, p2)
 
-	exp = NewPxPyPzE(10, 10, 10, 20)
-	if !reflect.DeepEqual(p2, exp) {
-		t.Fatalf("iadd modified p2:\np2= %#v\nexp=%#v", p2, exp)
+		if !deepEqual(sum, table.exp) {
+			t.Fatalf("exp: %#v\ngot: %#v", table.exp, sum)
+		}
+
+		if !deepEqual(sum, p1) {
+			t.Fatalf("fmom.IAdd did not modify p1 in-place:\nexp: %#v\ngot: %#v", sum, p1)
+		}
+		if !reflect.DeepEqual(p2, table.p2) {
+			t.Fatalf("fmom.IAdd modified p2:\np1=%#v (ref)\np2=%#v (new)", table.p2, p2)
+		}
 	}
 }
