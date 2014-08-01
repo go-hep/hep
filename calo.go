@@ -20,7 +20,7 @@ type Calorimeter struct {
 	fwk.TaskBase
 
 	fracmap map[int]EneFrac
-	binmap  map[float64]map[float64]struct{}
+	binmap  map[float64]map[float64]struct{} // std::map<float64, std::set<float64>>
 
 	etaphibins []EtaPhiBin
 	ecalres    func(eta, ene float64) float64
@@ -47,6 +47,18 @@ func (tsk *Calorimeter) Configure(ctx fwk.Context) fwk.Error {
 	//	return err
 	// }
 
+	tsk.binmap = make(map[float64]map[float64]struct{}, len(tsk.etaphibins))
+	for i := range tsk.etaphibins {
+		bin := tsk.etaphibins[i]
+		for _, eta := range bin.EtaBins {
+			for _, phi := range bin.PhiBins {
+				if _, ok := tsk.binmap[eta]; !ok {
+					tsk.binmap[eta] = make(map[float64]struct{}, len(bin.PhiBins))
+				}
+				tsk.binmap[eta][phi] = struct{}{}
+			}
+		}
+	}
 	return err
 }
 
