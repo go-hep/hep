@@ -307,6 +307,16 @@ func (app *appmgr) GetProp(c Component, name string) (interface{}, Error) {
 	return v, nil
 }
 
+func (app *appmgr) HasProp(c Component, name string) bool {
+	cname := c.Name()
+	_, ok := app.props[cname]
+	if !ok {
+		return ok
+	}
+	_, ok = app.props[cname][name]
+	return ok
+}
+
 func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) Error {
 	if app.state < fsm_CONFIGURING {
 		return Errorf(

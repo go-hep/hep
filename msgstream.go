@@ -9,7 +9,7 @@ import (
 
 type msgstream struct {
 	lvl Level
-	w   io.Writer
+	w   *bufio.Writer
 	n   string
 }
 
@@ -17,10 +17,10 @@ func NewMsgStream(name string, lvl Level, w io.Writer) msgstream {
 	if w == nil {
 		w = os.Stdout
 	}
-	w = bufio.NewWriter(w)
+
 	return msgstream{
 		lvl: lvl,
-		w:   w,
+		w:   bufio.NewWriter(w),
 		n:   fmt.Sprintf("%-20s", name),
 	}
 }
@@ -34,10 +34,12 @@ func (msg msgstream) Infof(format string, a ...interface{}) (int, Error) {
 }
 
 func (msg msgstream) Warnf(format string, a ...interface{}) (int, Error) {
+	defer msg.flush()
 	return msg.Msg(LvlWarning, format, a...)
 }
 
 func (msg msgstream) Errorf(format string, a ...interface{}) (int, Error) {
+	defer msg.flush()
 	return msg.Msg(LvlError, format, a...)
 }
 
@@ -46,6 +48,10 @@ func (msg msgstream) Msg(lvl Level, format string, a ...interface{}) (int, Error
 		return 0, nil
 	}
 	return fmt.Fprintf(msg.w, msg.n+": "+format, a...)
+}
+
+func (msg msgstream) flush() error {
+	return msg.w.Flush()
 }
 
 // EOF
