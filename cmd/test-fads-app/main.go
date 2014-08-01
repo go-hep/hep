@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime/pprof"
 
+	"github.com/go-hep/fads"
 	"github.com/go-hep/fwk/job"
 )
 
@@ -239,6 +240,106 @@ func main() {
 		},
 	})
 
+	phi10 := make([]float64, 0, 37)
+	for i := -18; i <= 18; i++ {
+		phi10 = append(phi10, float64(i)*math.Pi/18.0)
+	}
+
+	phi20 := make([]float64, 0, 19)
+	for i := -9; i <= 9; i++ {
+		phi20 = append(phi20, float64(i)*math.Pi/9.0)
+	}
+
+	// calorimeter
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.Calorimeter",
+		Name: "calo",
+		Props: job.P{
+			"EtaPhiBins": []fads.EtaPhiBin{
+				// 10-degrees towers
+				{
+					EtaBins: []float64{
+						-3.2,
+						-2.5, -2.4, -2.3, -2.2, -2.1, -2.0,
+						-1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0,
+						-0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, +0.0,
+						+0.1, +0.2, +0.3, +0.4, +0.5, +0.6, +0.7, +0.8, +0.9,
+						+1.0, +1.1, +1.2, +1.3, +1.4, +1.5, +1.6, +1.7, +1.8, +1.9,
+						+2.0, +2.1, +2.2, +2.3, +2.4, +2.5, +2.6,
+						+3.3,
+					},
+					PhiBins: phi10,
+				},
+
+				// 20-degrees towers
+				{
+					EtaBins: []float64{
+						-4.9, -4.7, -4.5, -4.3, -4.1,
+						-3.9, -3.7, -3.5, -3.3, -3.0,
+						-2.8, -2.6,
+						+2.8, +3.0, +3.2, +3.5, +3.7, +3.9,
+						+4.1, +4.3, +4.5, +4.7, +4.9,
+					},
+					PhiBins: phi20,
+				},
+			},
+
+			// default energy fractions: abs(pid) -> {ECal, HCal}
+			"EnergyFraction": map[int]fads.EneFrac{
+				0: {
+					ECal: 0,
+					HCal: 1,
+				},
+				// energy fractions for ele,gamma and pi0
+				11:  {ECal: 1, HCal: 0},
+				22:  {ECal: 1, HCal: 0},
+				111: {ECal: 1, HCal: 0},
+				// energy fractions for muons, neutrinos and neutralinos
+				12:      {ECal: 0.0, HCal: 0.0},
+				13:      {ECal: 0.0, HCal: 0.0},
+				14:      {ECal: 0.0, HCal: 0.0},
+				16:      {ECal: 0.0, HCal: 0.0},
+				1000022: {ECal: 0.0, HCal: 0.0},
+				1000023: {ECal: 0.0, HCal: 0.0},
+				1000025: {ECal: 0.0, HCal: 0.0},
+				1000035: {ECal: 0.0, HCal: 0.0},
+				1000045: {ECal: 0.0, HCal: 0.0},
+				// energy fractions for K0short and Lambda
+				310:  {ECal: 0.3, HCal: 0.7},
+				3122: {ECal: 0.3, HCal: 0.7},
+			},
+
+			// ecal resolution (eta and energy)
+			// http://arxiv.org/pdf/physics/0608012v1 jinst8_08_s08003
+			// http://villaolmo.mib.infn.it/ICATPP9th_2005/Calorimetry/Schram.p.pdf
+			// http://www.physics.utoronto.ca/~krieger/procs/ComoProceedings.pdf
+			"ECalResolution": func(eta, ene float64) float64 {
+				switch {
+				case (abs(eta) <= 3.2):
+					return sqrt(pow(ene, 2)*pow(0.0017, 2) + ene*pow(0.101, 2))
+
+				case (abs(eta) > 3.2 && abs(eta) <= 4.9):
+					return sqrt(pow(ene, 2)*pow(0.0350, 2) + ene*pow(0.285, 2))
+				}
+				return 0
+			},
+
+			// hcal resolution (eta and energy)
+			// http://arxiv.org/pdf/hep-ex/0004009v1
+			// http://villaolmo.mib.infn.it/ICATPP9th_2005/Calorimetry/Schram.p.pdf
+			"HCalResolution": func(eta, ene float64) float64 {
+				switch {
+				case (abs(eta) <= 1.7):
+					return sqrt(pow(ene, 2)*pow(0.0302, 2) + ene*pow(0.5205, 2) + pow(1.59, 2))
+				case (abs(eta) > 1.7 && abs(eta) <= 3.2):
+					return sqrt(pow(ene, 2)*pow(0.0500, 2) + ene*pow(0.706, 2))
+				case (abs(eta) > 3.2 && abs(eta) <= 4.9):
+					return sqrt(pow(ene, 2)*pow(0.9420, 2) + ene*pow(0.075, 2))
+				}
+				return 0
+			},
+		},
+	})
 	app.Run()
 
 	fmt.Printf("::: fads-app... [done]\n")
