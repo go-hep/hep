@@ -229,6 +229,16 @@ func main() {
 		},
 	})
 
+	// track merger
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.Merger",
+		Name: "track-merger",
+		Props: job.P{
+			"Inputs": []string{"SmearChargedHadrons", "SmearElectrons", "SmearMuons"},
+			"Output": "tracks",
+		},
+	})
+
 	app.Run()
 
 	fmt.Printf("::: fads-app... [done]\n")
