@@ -21,7 +21,7 @@ func NewMsgStream(name string, lvl Level, w io.Writer) msgstream {
 	return msgstream{
 		lvl: lvl,
 		w:   bufio.NewWriter(w),
-		n:   fmt.Sprintf("%-20s", name),
+		n:   fmt.Sprintf("%-20s ", name),
 	}
 }
 
@@ -47,7 +47,8 @@ func (msg msgstream) Msg(lvl Level, format string, a ...interface{}) (int, Error
 	if lvl < msg.lvl {
 		return 0, nil
 	}
-	return fmt.Fprintf(msg.w, msg.n+": "+format, a...)
+	format = msg.n + msg.lvl.msgstring() + " " + format
+	return fmt.Fprintf(msg.w, format, a...)
 }
 
 func (msg msgstream) flush() error {

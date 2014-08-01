@@ -124,6 +124,34 @@ const (
 	LvlError   Level = 20
 )
 
+func (lvl Level) msgstring() string {
+	switch lvl {
+	case LvlDebug:
+		return "DBG "
+	case LvlInfo:
+		return "INFO"
+	case LvlWarning:
+		return "WARN"
+	case LvlError:
+		return "ERR "
+	}
+	panic(Errorf("fwk.Level: invalid fwk.Level value [%d]", int(lvl)))
+}
+
+func (lvl Level) String() string {
+	switch lvl {
+	case LvlDebug:
+		return "DEBUG"
+	case LvlInfo:
+		return "INFO"
+	case LvlWarning:
+		return "WARN"
+	case LvlError:
+		return "ERROR"
+	}
+	panic(Errorf("fwk.Level: invalid fwk.Level value [%d]", int(lvl)))
+}
+
 type MsgStream interface {
 	Debugf(format string, a ...interface{}) (int, Error)
 	Infof(format string, a ...interface{}) (int, Error)
