@@ -3,10 +3,12 @@ package main
 const g_svc_template = `package {{.Package}}
 
 import (
+	"reflect"
+
 	"github.com/go-hep/fwk"
 )
 
-type {{.Name}} interface {
+type {{.Name}} struct {
     fwk.SvcBase
 }
 
