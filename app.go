@@ -310,9 +310,9 @@ func (app *appmgr) GetProp(c Component, name string) (interface{}, Error) {
 func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) Error {
 	if app.state < fsm_CONFIGURING {
 		return Errorf(
-			"fwk.DeclInPort: invalid App state (%s). put the DeclInPort in Configure() of %T:%s",
+			"fwk.DeclInPort: invalid App state (%s). put the DeclInPort in Configure() of %s:%s",
 			app.state,
-			c,
+			c.Type(),
 			c.Name(),
 		)
 	}
@@ -322,9 +322,9 @@ func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) Error {
 func (app *appmgr) DeclOutPort(c Component, name string, t reflect.Type) Error {
 	if app.state < fsm_CONFIGURING {
 		return Errorf(
-			"fwk.DeclOutPort: invalid App state (%s). put the DeclInPort in Configure() of %T:%s",
+			"fwk.DeclOutPort: invalid App state (%s). put the DeclInPort in Configure() of %s:%s",
 			app.state,
-			c,
+			c.Type(),
 			c.Name(),
 		)
 	}
