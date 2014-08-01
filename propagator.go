@@ -337,13 +337,13 @@ func init() {
 			}
 
 			tsk.input = "/fads/StableParticles"
-			err = tsk.DeclProp("InputArray", &tsk.input)
+			err = tsk.DeclProp("Input", &tsk.input)
 			if err != nil {
 				return nil, err
 			}
 
 			tsk.output = "StableParticles"
-			err = tsk.DeclProp("OutputArray", &tsk.output)
+			err = tsk.DeclProp("Output", &tsk.output)
 			if err != nil {
 				return nil, err
 			}
