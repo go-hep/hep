@@ -24,6 +24,16 @@ type MomentumSmearing struct {
 func (tsk *MomentumSmearing) Configure(ctx fwk.Context) fwk.Error {
 	var err fwk.Error
 
+	err = tsk.DeclInPort(tsk.input, reflect.TypeOf([]Candidate{}))
+	if err != nil {
+		return err
+	}
+
+	err = tsk.DeclOutPort(tsk.output, reflect.TypeOf([]Candidate{}))
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
@@ -119,16 +129,6 @@ func init() {
 			}
 
 			err = tsk.DeclProp("Seed", &tsk.seed)
-			if err != nil {
-				return nil, err
-			}
-
-			err = tsk.DeclInPort(tsk.input, reflect.TypeOf([]Candidate{}))
-			if err != nil {
-				return nil, err
-			}
-
-			err = tsk.DeclOutPort(tsk.output, reflect.TypeOf([]Candidate{}))
 			if err != nil {
 				return nil, err
 			}
