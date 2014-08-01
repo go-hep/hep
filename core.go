@@ -23,6 +23,7 @@ type Context interface {
 }
 
 type Component interface {
+	Type() string // Type of the component (ex: "github.com/go-hep/fads.MomentumSmearing")
 	Name() string // Name of the component (ex: "MyPropagator")
 }
 

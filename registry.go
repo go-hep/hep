@@ -5,11 +5,12 @@ import (
 	"sort"
 )
 
-type factoryDb map[string]func(name string, mgr App) (Component, Error)
+type FactoryFunc func(t, n string, mgr App) (Component, Error)
+type factoryDb map[string]FactoryFunc
 
 var g_factory factoryDb = make(factoryDb)
 
-func Register(t reflect.Type, fct func(name string, mgr App) (Component, Error)) {
+func Register(t reflect.Type, fct FactoryFunc) {
 	comp := t.PkgPath() + "." + t.Name()
 	g_factory[comp] = fct
 	//fmt.Printf("### factories ###\n%v\n", g_factory)
@@ -36,7 +37,7 @@ func (app *appmgr) New(t, n string) (Component, Error) {
 	}
 	app.props[n] = make(map[string]interface{})
 
-	c, err := fct(n, app)
+	c, err := fct(t, n, app)
 	if err != nil {
 		return nil, Errorf("error creating [%s:%s] %v", t, n, err)
 	}

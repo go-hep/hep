@@ -5,23 +5,25 @@ import (
 )
 
 type TaskBase struct {
-	name string
-	mgr  App
+	t   string
+	n   string
+	mgr App
 }
 
-func NewTask(name string, mgr App) TaskBase {
+func NewTask(typ, name string, mgr App) TaskBase {
 	return TaskBase{
-		name: name,
-		mgr:  mgr,
+		t:   typ,
+		n:   name,
+		mgr: mgr,
 	}
 }
 
-func (tsk TaskBase) Name() string {
-	return tsk.name
+func (tsk *TaskBase) Type() string {
+	return tsk.t
 }
 
-func (tsk *TaskBase) SetName(n string) {
-	tsk.name = n
+func (tsk *TaskBase) Name() string {
+	return tsk.n
 }
 
 func (tsk *TaskBase) DeclInPort(name string, t reflect.Type) Error {
@@ -45,23 +47,25 @@ func (tsk *TaskBase) GetProp(name string) (interface{}, Error) {
 }
 
 type SvcBase struct {
-	name string
-	mgr  App
+	t   string
+	n   string
+	mgr App
 }
 
-func NewSvc(name string, mgr App) SvcBase {
+func NewSvc(typ, name string, mgr App) SvcBase {
 	return SvcBase{
-		name: name,
-		mgr:  mgr,
+		t:   typ,
+		n:   name,
+		mgr: mgr,
 	}
 }
 
-func (svc SvcBase) Name() string {
-	return svc.name
+func (svc *SvcBase) Type() string {
+	return svc.t
 }
 
-func (svc *SvcBase) SetName(n string) {
-	svc.name = n
+func (svc *SvcBase) Name() string {
+	return svc.n
 }
 
 func (svc *SvcBase) DeclProp(name string, ptr interface{}) Error {

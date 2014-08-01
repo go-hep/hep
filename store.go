@@ -51,9 +51,9 @@ func (ds *datastore) StopSvc(ctx Context) Error {
 
 func init() {
 	Register(reflect.TypeOf(datastore{}),
-		func(name string, mgr App) (Component, Error) {
+		func(typ, name string, mgr App) (Component, Error) {
 			return &datastore{
-				SvcBase: NewSvc(name, mgr),
+				SvcBase: NewSvc(typ, name, mgr),
 				store:   make(map[string]achan),
 			}, nil
 		},

@@ -147,9 +147,9 @@ func (svc *dflowsvc) addOutNode(tsk string, name string, t reflect.Type) Error {
 
 func init() {
 	Register(reflect.TypeOf(dflowsvc{}),
-		func(name string, mgr App) (Component, Error) {
+		func(t, name string, mgr App) (Component, Error) {
 			svc := &dflowsvc{
-				SvcBase: NewSvc(name, mgr),
+				SvcBase: NewSvc(t, name, mgr),
 				nodes:   make(map[string]*node),
 				edges:   make(map[string]reflect.Type),
 			}
