@@ -87,6 +87,7 @@ type PropMgr interface {
 	DeclProp(c Component, name string, ptr interface{}) Error
 	SetProp(c Component, name string, value interface{}) Error
 	GetProp(c Component, name string) (interface{}, Error)
+	HasProp(c Component, name string) bool
 }
 
 type Property interface {
