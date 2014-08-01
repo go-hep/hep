@@ -1,10 +1,8 @@
 package fwk
 
 import (
-	"fmt"
 	"io"
 	"math"
-	"os"
 	"reflect"
 	"sort"
 )
@@ -78,13 +76,13 @@ func NewApp() App {
 		props: make(map[string]map[string]interface{}),
 		dflow: nil,
 		store: nil,
-		msg: msgstream{
-			lvl: LvlInfo,
-			//lvl: LvlDebug,
-			//lvl: LvlError,
-			w:   os.Stdout,
-			n:   fmt.Sprintf("%-20s", appname),
-		},
+		msg: NewMsgStream(
+			appname,
+			LvlInfo,
+			//LvlDebug,
+			//LvlError,
+			nil,
+		),
 		evtmax: -1,
 		comps:  make(map[string]Component),
 		tsks:   make([]Task, 0),
@@ -339,11 +337,7 @@ func (app *appmgr) Run() Error {
 		id:    0,
 		slot:  0,
 		store: nil,
-		msg: msgstream{
-			lvl: app.msg.lvl,
-			w:   os.Stdout,
-			n:   "<root>",
-		},
+		msg:   NewMsgStream("<root>", app.msg.lvl, nil),
 	}
 
 	if app.state == fsm_UNDEFINED {
@@ -488,11 +482,7 @@ func (app *appmgr) run(ctx Context) Error {
 					id:    ievt,
 					slot:  0,
 					store: app.store,
-					msg: msgstream{
-						lvl: app.msg.lvl,
-						w:   os.Stdout,
-						n:   fmt.Sprintf("%-20s", tsk.Name()),
-					},
+					msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
 				}
 				errch <- tsk.Process(ctx)
 			}(tsk)

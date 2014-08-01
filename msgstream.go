@@ -1,14 +1,28 @@
 package fwk
 
 import (
+	"bufio"
 	"fmt"
 	"io"
+	"os"
 )
 
 type msgstream struct {
 	lvl Level
 	w   io.Writer
 	n   string
+}
+
+func NewMsgStream(name string, lvl Level, w io.Writer) msgstream {
+	if w == nil {
+		w = os.Stdout
+	}
+	w = bufio.NewWriter(w)
+	return msgstream{
+		lvl: lvl,
+		w:   w,
+		n:   fmt.Sprintf("%-20s", name),
+	}
 }
 
 func (msg msgstream) Debugf(format string, a ...interface{}) (int, Error) {
