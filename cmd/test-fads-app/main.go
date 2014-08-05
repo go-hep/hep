@@ -13,6 +13,7 @@ import (
 
 var (
 	g_lvl      = flag.String("l", "INFO", "log level (DEBUG|INFO|WARN|ERROR)")
+	g_evtmax   = flag.Int("evtmax", -1, "number of events to process")
 	g_cpu_prof = flag.Bool("cpu-prof", false, "enable CPU profiling")
 
 	abs  = math.Abs
@@ -36,7 +37,7 @@ func main() {
 	}
 
 	app := job.New(nil, job.P{
-		"EvtMax":   int64(-1),
+		"EvtMax":   int64(*g_evtmax),
 		"MsgLevel": job.MsgLevel(*g_lvl),
 	})
 
