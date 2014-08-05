@@ -227,9 +227,9 @@ func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
 			//    t_r : time to exit from the sides
 			//    t_z : time to exit from the front or the back
 			tr := 0.0 // in [ns]
-			signpz := 1.0
-			if math.Signbit(pz) {
-				signpz = -1.0
+			signpz := -1.0
+			if pz > 0 {
+				signpz = +1.0
 			}
 
 			tz := 0.0
