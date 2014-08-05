@@ -160,9 +160,21 @@ func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
 			pz := cand.Mom.Pz()
 			e := cand.Mom.E()
 
+			zt := z + pz*t
+			if math.Abs(zt) > tsk.halflen {
+				invpz := 1.0 / pz
+				t3 := (+tsk.halflen - z) * invpz
+				t4 := (-tsk.halflen - z) * invpz
+				if t3 < 0 {
+					t = t4
+				} else {
+					t = t3
+				}
+			}
+
 			xt := x + px*t
 			yt := y + py*t
-			zt := z + pz*t
+			zt = z + pz*t
 
 			mother := cand
 			c := cand.Clone()
