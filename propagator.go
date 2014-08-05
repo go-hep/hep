@@ -27,6 +27,7 @@ type ParticlePropagator struct {
 func (tsk *ParticlePropagator) Configure(ctx fwk.Context) fwk.Error {
 	var err fwk.Error
 
+	tsk.radius2 = tsk.radius * tsk.radius
 	if tsk.radius < 1.0e-2 {
 		return fwk.Errorf("%s: too small radius value (%v)", tsk.Name(), tsk.radius)
 	}
