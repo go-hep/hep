@@ -45,6 +45,20 @@ func main() {
 	app.Create(job.C{
 		Type: "github.com/go-hep/fads.ParticlePropagator",
 		Name: "pprop",
+		Props: job.P{
+			"Input":          "/fads/StableParticles",
+			"Output":         "/fads/pprop/StableParticles",
+			"ChargedHadrons": "/fads/pprop/ChargedHadrons",
+			"Electrons":      "/fads/pprop/Electrons",
+			"Muons":          "/fads/pprop/Muons",
+
+			// radius of the magnetic field coverage, in meters
+			"Radius": 1.15,
+			// half-length of the magnetic field coverage, in meters
+			"HalfLength": 3.51,
+			// magnetic field
+			"Bz": 2.0,
+		},
 	})
 
 	// read HepMC data
@@ -62,8 +76,8 @@ func main() {
 		Type: "github.com/go-hep/fads.Efficiency",
 		Name: "charged-hadron-trk-eff",
 		Props: job.P{
-			"Input":  "ChargedHadrons",
-			"Output": "EffChargedHadrons",
+			"Input":  "/fads/pprop/ChargedHadrons",
+			"Output": "/fads/charged-hadron-trk-eff/ChargedHadrons",
 			"Eff": func(eta, pt float64) float64 {
 				switch {
 				case (pt <= 0.1):
@@ -90,8 +104,8 @@ func main() {
 		Type: "github.com/go-hep/fads.Efficiency",
 		Name: "electron-trk-eff",
 		Props: job.P{
-			"Input":  "Electrons",
-			"Output": "EffElectrons",
+			"Input":  "/fads/pprop/Electrons",
+			"Output": "/fads/electron-trk-eff/Electrons",
 			"Eff": func(eta, pt float64) float64 {
 				switch {
 				case pt <= 0.1:
@@ -122,8 +136,8 @@ func main() {
 		Type: "github.com/go-hep/fads.Efficiency",
 		Name: "muon-trk-eff",
 		Props: job.P{
-			"Input":  "Muons",
-			"Output": "EffMuons",
+			"Input":  "/fads/pprop/Muons",
+			"Output": "/fads/muon-trk-eff/Muons",
 			"Eff": func(eta, pt float64) float64 {
 				switch {
 				case (pt <= 0.1):
@@ -150,8 +164,8 @@ func main() {
 		Type: "github.com/go-hep/fads.MomentumSmearing",
 		Name: "charged-hadron-mom-smearing",
 		Props: job.P{
-			"Input":  "EffChargedHadrons",
-			"Output": "SmearChargedHadrons",
+			"Input":  "/fads/charged-hadron-trk-eff/ChargedHadrons",
+			"Output": "/fads/charged-hadron-mom-smearing/ChargedHadrons",
 			"Resolution": func(eta, pt float64) float64 {
 				switch {
 				case (abs(eta) <= 1.5) && (pt > 0.1 && pt <= 1.0):
@@ -181,8 +195,8 @@ func main() {
 		Type: "github.com/go-hep/fads.EnergySmearing",
 		Name: "electron-ene-smearing",
 		Props: job.P{
-			"Input":  "EffElectrons",
-			"Output": "SmearElectrons",
+			"Input":  "/fads/electron-trk-eff/Electrons",
+			"Output": "/fads/electron-ene-smearing/Electrons",
 			"Resolution": func(eta, ene float64) float64 {
 				switch {
 				case (abs(eta) <= 2.5) && (ene > 0.1 && ene <= 2.5e1):
@@ -205,8 +219,8 @@ func main() {
 		Type: "github.com/go-hep/fads.MomentumSmearing",
 		Name: "muon-mom-smearing",
 		Props: job.P{
-			"Input":  "EffMuons",
-			"Output": "SmearMuons",
+			"Input":  "/fads/muon-trk-eff/Muons",
+			"Output": "/fads/muon-mom-smearing/Muons",
 			"Resolution": func(eta, pt float64) float64 {
 				switch {
 				case (abs(eta) <= 1.5) && (pt > 0.1 && pt <= 1.0):
@@ -236,8 +250,12 @@ func main() {
 		Type: "github.com/go-hep/fads.Merger",
 		Name: "track-merger",
 		Props: job.P{
-			"Inputs": []string{"SmearChargedHadrons", "SmearElectrons", "SmearMuons"},
-			"Output": "tracks",
+			"Inputs": []string{
+				"/fads/charged-hadron-mom-smearing/ChargedHadrons",
+				"/fads/electron-ene-smearing/Electrons",
+				"/fads/muon-mom-smearing/Muons",
+			},
+			"Output": "/fads/track-merger/tracks",
 		},
 	})
 
@@ -256,34 +274,43 @@ func main() {
 		Type: "github.com/go-hep/fads.Calorimeter",
 		Name: "calo",
 		Props: job.P{
-			"EtaPhiBins": []fads.EtaPhiBin{
-				// 10-degrees towers
-				{
-					EtaBins: []float64{
-						-3.2,
-						-2.5, -2.4, -2.3, -2.2, -2.1, -2.0,
-						-1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0,
-						-0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, +0.0,
-						+0.1, +0.2, +0.3, +0.4, +0.5, +0.6, +0.7, +0.8, +0.9,
-						+1.0, +1.1, +1.2, +1.3, +1.4, +1.5, +1.6, +1.7, +1.8, +1.9,
-						+2.0, +2.1, +2.2, +2.3, +2.4, +2.5, +2.6,
-						+3.3,
-					},
-					PhiBins: phi10,
-				},
+			"Particles":   "/fads/pprop/StableParticles",
+			"Tracks":      "/fads/track-merger/tracks",
+			"Towers":      "/fads/calo/towers",
+			"Photons":     "/fads/calo/photons",
+			"EFlowTracks": "/fads/calo/eflowtracks",
+			"EFlowTowers": "/fads/calo/eflowtowers",
 
-				// 20-degrees towers
-				{
-					EtaBins: []float64{
-						-4.9, -4.7, -4.5, -4.3, -4.1,
-						-3.9, -3.7, -3.5, -3.3, -3.0,
-						-2.8, -2.6,
-						+2.8, +3.0, +3.2, +3.5, +3.7, +3.9,
-						+4.1, +4.3, +4.5, +4.7, +4.9,
+			"EtaPhiBins": fads.NewEtaPhiGrid(
+				[]fads.EtaPhiBin{
+					// 10-degrees towers: 0 <= |eta| <= 3.2
+					{
+						EtaBins: []float64{
+							-3.2,
+							-2.5, -2.4, -2.3, -2.2, -2.1, -2.0,
+							-1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0,
+							-0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, +0.0,
+							+0.1, +0.2, +0.3, +0.4, +0.5, +0.6, +0.7, +0.8, +0.9,
+							+1.0, +1.1, +1.2, +1.3, +1.4, +1.5, +1.6, +1.7, +1.8, +1.9,
+							+2.0, +2.1, +2.2, +2.3, +2.4, +2.5, +2.6,
+							+3.3,
+						},
+						PhiBins: phi10,
 					},
-					PhiBins: phi20,
+
+					// 20-degrees towers: 2.8 <= |eta| <= 4.9
+					{
+						EtaBins: []float64{
+							-4.9, -4.7, -4.5, -4.3, -4.1,
+							-3.9, -3.7, -3.5, -3.3, -3.0,
+							-2.8, -2.6,
+							+2.8, +3.0, +3.2, +3.5, +3.7, +3.9,
+							+4.1, +4.3, +4.5, +4.7, +4.9,
+						},
+						PhiBins: phi20,
+					},
 				},
-			},
+			),
 
 			// default energy fractions: abs(pid) -> {ECal, HCal}
 			"EnergyFraction": map[int]fads.EneFrac{
