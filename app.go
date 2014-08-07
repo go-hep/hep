@@ -485,7 +485,7 @@ func (app *appmgr) run(ctx Context) Error {
 	for ievt := int64(0); ievt < app.evtmax; ievt++ {
 		app.msg.Infof(">>> running evt=%d...\n", ievt)
 		for k := range app.dflow.edges {
-			//app.msg.Infof("--- edge [%s]... (%v)\n", k, rt)
+			// app.msg.Infof("--- edge [%s]... (%v)\n", k, rt)
 			ch, ok := app.store.store[k]
 			if ok {
 				select {
