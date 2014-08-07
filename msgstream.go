@@ -25,25 +25,25 @@ func NewMsgStream(name string, lvl Level, w io.Writer) msgstream {
 	}
 }
 
-func (msg msgstream) Debugf(format string, a ...interface{}) (int, Error) {
+func (msg msgstream) Debugf(format string, a ...interface{}) (int, error) {
 	return msg.Msg(LvlDebug, format, a...)
 }
 
-func (msg msgstream) Infof(format string, a ...interface{}) (int, Error) {
+func (msg msgstream) Infof(format string, a ...interface{}) (int, error) {
 	return msg.Msg(LvlInfo, format, a...)
 }
 
-func (msg msgstream) Warnf(format string, a ...interface{}) (int, Error) {
+func (msg msgstream) Warnf(format string, a ...interface{}) (int, error) {
 	defer msg.flush()
 	return msg.Msg(LvlWarning, format, a...)
 }
 
-func (msg msgstream) Errorf(format string, a ...interface{}) (int, Error) {
+func (msg msgstream) Errorf(format string, a ...interface{}) (int, error) {
 	defer msg.flush()
 	return msg.Msg(LvlError, format, a...)
 }
 
-func (msg msgstream) Msg(lvl Level, format string, a ...interface{}) (int, Error) {
+func (msg msgstream) Msg(lvl Level, format string, a ...interface{}) (int, error) {
 	if lvl < msg.lvl {
 		return 0, nil
 	}

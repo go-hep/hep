@@ -26,23 +26,23 @@ func (tsk *TaskBase) Name() string {
 	return tsk.n
 }
 
-func (tsk *TaskBase) DeclInPort(name string, t reflect.Type) Error {
+func (tsk *TaskBase) DeclInPort(name string, t reflect.Type) error {
 	return tsk.mgr.DeclInPort(tsk, name, t)
 }
 
-func (tsk *TaskBase) DeclOutPort(name string, t reflect.Type) Error {
+func (tsk *TaskBase) DeclOutPort(name string, t reflect.Type) error {
 	return tsk.mgr.DeclOutPort(tsk, name, t)
 }
 
-func (tsk *TaskBase) DeclProp(name string, ptr interface{}) Error {
+func (tsk *TaskBase) DeclProp(name string, ptr interface{}) error {
 	return tsk.mgr.DeclProp(tsk, name, ptr)
 }
 
-func (tsk *TaskBase) SetProp(name string, value interface{}) Error {
+func (tsk *TaskBase) SetProp(name string, value interface{}) error {
 	return tsk.mgr.SetProp(tsk, name, value)
 }
 
-func (tsk *TaskBase) GetProp(name string) (interface{}, Error) {
+func (tsk *TaskBase) GetProp(name string) (interface{}, error) {
 	return tsk.mgr.GetProp(tsk, name)
 }
 
@@ -68,15 +68,15 @@ func (svc *SvcBase) Name() string {
 	return svc.n
 }
 
-func (svc *SvcBase) DeclProp(name string, ptr interface{}) Error {
+func (svc *SvcBase) DeclProp(name string, ptr interface{}) error {
 	return svc.mgr.DeclProp(svc, name, ptr)
 }
 
-func (svc *SvcBase) SetProp(name string, value interface{}) Error {
+func (svc *SvcBase) SetProp(name string, value interface{}) error {
 	return svc.mgr.SetProp(svc, name, value)
 }
 
-func (svc *SvcBase) GetProp(name string) (interface{}, Error) {
+func (svc *SvcBase) GetProp(name string) (interface{}, error) {
 	return svc.mgr.GetProp(svc, name)
 }
 

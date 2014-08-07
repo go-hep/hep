@@ -24,19 +24,19 @@ type dflowsvc struct {
 	edges map[string]reflect.Type
 }
 
-func (svc *dflowsvc) Configure(ctx Context) Error {
+func (svc *dflowsvc) Configure(ctx Context) error {
 	return nil
 }
 
-func (svc *dflowsvc) StartSvc(ctx Context) Error {
+func (svc *dflowsvc) StartSvc(ctx Context) error {
 	return nil
 }
 
-func (svc *dflowsvc) StopSvc(ctx Context) Error {
+func (svc *dflowsvc) StopSvc(ctx Context) error {
 	return nil
 }
 
-func (svc *dflowsvc) addInNode(tsk string, name string, t reflect.Type) Error {
+func (svc *dflowsvc) addInNode(tsk string, name string, t reflect.Type) error {
 	node, ok := svc.nodes[tsk]
 	if !ok {
 		node = newNode()
@@ -101,7 +101,7 @@ func (svc *dflowsvc) addInNode(tsk string, name string, t reflect.Type) Error {
 	return nil
 }
 
-func (svc *dflowsvc) addOutNode(tsk string, name string, t reflect.Type) Error {
+func (svc *dflowsvc) addOutNode(tsk string, name string, t reflect.Type) error {
 	node, ok := svc.nodes[tsk]
 	if !ok {
 		node = newNode()
@@ -147,7 +147,7 @@ func (svc *dflowsvc) addOutNode(tsk string, name string, t reflect.Type) Error {
 
 func init() {
 	Register(reflect.TypeOf(dflowsvc{}),
-		func(t, name string, mgr App) (Component, Error) {
+		func(t, name string, mgr App) (Component, error) {
 			svc := &dflowsvc{
 				SvcBase: NewSvc(t, name, mgr),
 				nodes:   make(map[string]*node),

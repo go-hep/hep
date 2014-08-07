@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func Errorf(format string, args ...interface{}) Error {
+func Errorf(format string, args ...interface{}) error {
 	return fmt.Errorf(format, args...)
 }
 
