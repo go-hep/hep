@@ -73,7 +73,7 @@ func main() {
 
 	// charged hadron tracking efficiency
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.Efficiency",
+		Type: "github.com/go-hep/fads.efficiency",
 		Name: "charged-hadron-trk-eff",
 		Props: job.P{
 			"Input":  "/fads/pprop/ChargedHadrons",
@@ -101,7 +101,7 @@ func main() {
 
 	// electron tracking efficiency
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.Efficiency",
+		Type: "github.com/go-hep/fads.efficiency",
 		Name: "electron-trk-eff",
 		Props: job.P{
 			"Input":  "/fads/pprop/Electrons",
@@ -133,7 +133,7 @@ func main() {
 
 	// muon tracking efficiency
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.Efficiency",
+		Type: "github.com/go-hep/fads.efficiency",
 		Name: "muon-trk-eff",
 		Props: job.P{
 			"Input":  "/fads/pprop/Muons",
@@ -192,7 +192,7 @@ func main() {
 
 	// energy resolution for electrons
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.EnergySmearing",
+		Type: "github.com/go-hep/fads.energySmearing",
 		Name: "electron-ene-smearing",
 		Props: job.P{
 			"Input":  "/fads/electron-trk-eff/Electrons",
