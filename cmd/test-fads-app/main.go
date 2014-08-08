@@ -43,7 +43,7 @@ func main() {
 
 	// propagate particles in cylinder
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.ParticlePropagator",
+		Type: "github.com/go-hep/fads.propagator",
 		Name: "pprop",
 		Props: job.P{
 			"Input":          "/fads/StableParticles",

@@ -9,7 +9,7 @@ import (
 	"github.com/go-hep/fwk"
 )
 
-type ParticlePropagator struct {
+type propagator struct {
 	fwk.TaskBase
 
 	radius  float64
@@ -25,7 +25,7 @@ type ParticlePropagator struct {
 	muons   string
 }
 
-func (tsk *ParticlePropagator) Configure(ctx fwk.Context) error {
+func (tsk *propagator) Configure(ctx fwk.Context) error {
 	var err error
 
 	tsk.radius2 = tsk.radius * tsk.radius
@@ -65,19 +65,19 @@ func (tsk *ParticlePropagator) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *ParticlePropagator) StartTask(ctx fwk.Context) error {
+func (tsk *propagator) StartTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *ParticlePropagator) StopTask(ctx fwk.Context) error {
+func (tsk *propagator) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *ParticlePropagator) Process(ctx fwk.Context) error {
+func (tsk *propagator) Process(ctx fwk.Context) error {
 	var err error
 	store := ctx.Store()
 	msg := ctx.Msg()
@@ -326,10 +326,10 @@ func (tsk *ParticlePropagator) Process(ctx fwk.Context) error {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(ParticlePropagator{}),
+	fwk.Register(reflect.TypeOf(propagator{}),
 		func(typ, name string, mgr fwk.App) (fwk.Component, error) {
 			var err error
-			tsk := &ParticlePropagator{
+			tsk := &propagator{
 				TaskBase: fwk.NewTask(typ, name, mgr),
 			}
 			tsk.radius = 1.0
