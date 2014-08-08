@@ -370,6 +370,22 @@ func main() {
 			},
 		},
 	})
+
+	// eflow merger
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.Merger",
+		Name: "eflow-merger",
+		Props: job.P{
+			"Inputs": []string{
+				"/fads/calo/eflowtracks",
+				"/fads/calo/eflowtowers",
+			},
+			"Output":         "/fads/eflow-merger/eflow",
+			"MomentumOutput": "/fads/eflow-merger/momentum",
+			"EnergyOutput":   "/fads/eflow-merger/energy",
+		},
+	})
+
 	app.Run()
 
 	fmt.Printf("::: fads-app... [done]\n")
