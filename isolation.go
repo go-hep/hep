@@ -7,11 +7,11 @@ import (
 )
 
 type Isolation struct {
-    fwk.TaskBase
+	fwk.TaskBase
 }
 
-func (tsk *Isolation) Configure(ctx fwk.Context) fwk.Error {
-    var err fwk.Error
+func (tsk *Isolation) Configure(ctx fwk.Context) error {
+	var err error
 
 	// err = tsk.DeclInPort(tsk.input, reflect.TypeOf(sometype{}))
 	// if err != nil {
@@ -23,29 +23,29 @@ func (tsk *Isolation) Configure(ctx fwk.Context) fwk.Error {
 	//	return err
 	// }
 
-    return err
+	return err
 }
 
-func (tsk *Isolation) StartTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *Isolation) StartTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *Isolation) StopTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *Isolation) StopTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *Isolation) Process(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *Isolation) Process(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func newIsolation(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
-	var err fwk.Error
+func newIsolation(typ, name string, mgr fwk.App) (fwk.Component, error) {
+	var err error
 
 	tsk := &Isolation{
 		TaskBase: fwk.NewTask(typ, name, mgr),

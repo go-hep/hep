@@ -168,8 +168,8 @@ type calorimeter struct {
 	gauss random.Dist
 }
 
-func (tsk *calorimeter) Configure(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *calorimeter) Configure(ctx fwk.Context) error {
+	var err error
 
 	err = tsk.DeclInPort(tsk.particles, reflect.TypeOf([]Candidate{}))
 	if err != nil {
@@ -205,20 +205,20 @@ func (tsk *calorimeter) Configure(ctx fwk.Context) fwk.Error {
 	return err
 }
 
-func (tsk *calorimeter) StartTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *calorimeter) StartTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *calorimeter) StopTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *calorimeter) StopTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *calorimeter) Process(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *calorimeter) Process(ctx fwk.Context) error {
+	var err error
 
 	store := ctx.Store()
 	msg := ctx.Msg()
@@ -476,8 +476,8 @@ func (tsk *calorimeter) lognormal(mean, sigma float64) float64 {
 	return math.Exp(a + b*tsk.gauss())
 }
 
-func newCalorimeter(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
-	var err fwk.Error
+func newCalorimeter(typ, name string, mgr fwk.App) (fwk.Component, error) {
+	var err error
 
 	tsk := &calorimeter{
 		TaskBase: fwk.NewTask(typ, name, mgr),

@@ -21,8 +21,8 @@ type EnergySmearing struct {
 	src   rand.Source
 }
 
-func (tsk *EnergySmearing) Configure(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *EnergySmearing) Configure(ctx fwk.Context) error {
+	var err error
 
 	err = tsk.DeclInPort(tsk.input, reflect.TypeOf([]Candidate{}))
 	if err != nil {
@@ -37,20 +37,20 @@ func (tsk *EnergySmearing) Configure(ctx fwk.Context) fwk.Error {
 	return err
 }
 
-func (tsk *EnergySmearing) StartTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *EnergySmearing) StartTask(ctx fwk.Context) error {
+	var err error
 	tsk.src = rand.NewSource(tsk.seed)
 	return err
 }
 
-func (tsk *EnergySmearing) StopTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *EnergySmearing) StopTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *EnergySmearing) Process(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *EnergySmearing) Process(ctx fwk.Context) error {
+	var err error
 	store := ctx.Store()
 	msg := ctx.Msg()
 
@@ -104,8 +104,8 @@ func (tsk *EnergySmearing) Process(ctx fwk.Context) fwk.Error {
 
 func init() {
 	fwk.Register(reflect.TypeOf(EnergySmearing{}),
-		func(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
-			var err fwk.Error
+		func(typ, name string, mgr fwk.App) (fwk.Component, error) {
+			var err error
 			tsk := &EnergySmearing{
 				TaskBase: fwk.NewTask(typ, name, mgr),
 				input:    "InputParticles",

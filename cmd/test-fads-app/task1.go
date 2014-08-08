@@ -13,8 +13,8 @@ type task1 struct {
 	f2 float64
 }
 
-func (tsk *task1) Configure(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *task1) Configure(ctx fwk.Context) error {
+	var err error
 	msg := ctx.Msg()
 
 	msg.Infof("configure ...\n")
@@ -23,20 +23,20 @@ func (tsk *task1) Configure(ctx fwk.Context) fwk.Error {
 	return err
 }
 
-func (tsk *task1) StartTask(ctx fwk.Context) fwk.Error {
+func (tsk *task1) StartTask(ctx fwk.Context) error {
 	msg := ctx.Msg()
 	msg.Infof("start...\n")
 	return nil
 }
 
-func (tsk *task1) StopTask(ctx fwk.Context) fwk.Error {
+func (tsk *task1) StopTask(ctx fwk.Context) error {
 	msg := ctx.Msg()
 	msg.Infof("stop...\n")
 	return nil
 }
 
-func (tsk *task1) Process(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *task1) Process(ctx fwk.Context) error {
+	var err error
 	msg := ctx.Msg()
 	msg.Infof("proc...\n")
 	store := ctx.Store()
@@ -56,8 +56,8 @@ func (tsk *task1) Process(ctx fwk.Context) fwk.Error {
 
 func init() {
 	fwk.Register(reflect.TypeOf(task1{}),
-		func(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
-			var err fwk.Error
+		func(typ, name string, mgr fwk.App) (fwk.Component, error) {
+			var err error
 			tsk := &task1{
 				TaskBase: fwk.NewTask(typ, name, mgr),
 				f1:       -1,

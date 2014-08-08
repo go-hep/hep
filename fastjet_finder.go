@@ -7,11 +7,11 @@ import (
 )
 
 type FastJetFinder struct {
-    fwk.TaskBase
+	fwk.TaskBase
 }
 
-func (tsk *FastJetFinder) Configure(ctx fwk.Context) fwk.Error {
-    var err fwk.Error
+func (tsk *FastJetFinder) Configure(ctx fwk.Context) error {
+	var err error
 
 	// err = tsk.DeclInPort(tsk.input, reflect.TypeOf(sometype{}))
 	// if err != nil {
@@ -23,29 +23,29 @@ func (tsk *FastJetFinder) Configure(ctx fwk.Context) fwk.Error {
 	//	return err
 	// }
 
-    return err
+	return err
 }
 
-func (tsk *FastJetFinder) StartTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *FastJetFinder) StartTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *FastJetFinder) StopTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *FastJetFinder) StopTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *FastJetFinder) Process(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *FastJetFinder) Process(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func newFastJetFinder(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
-	var err fwk.Error
+func newFastJetFinder(typ, name string, mgr fwk.App) (fwk.Component, error) {
+	var err error
 
 	tsk := &FastJetFinder{
 		TaskBase: fwk.NewTask(typ, name, mgr),

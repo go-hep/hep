@@ -26,8 +26,8 @@ type HepMcReader struct {
 	partons     string // all partons
 }
 
-func (tsk *HepMcReader) Configure(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *HepMcReader) Configure(ctx fwk.Context) error {
+	var err error
 
 	err = tsk.DeclOutPort(tsk.mcevt, reflect.TypeOf(hepmc.Event{}))
 	if err != nil {
@@ -52,8 +52,8 @@ func (tsk *HepMcReader) Configure(ctx fwk.Context) fwk.Error {
 	return err
 }
 
-func (tsk *HepMcReader) StartTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *HepMcReader) StartTask(ctx fwk.Context) error {
+	var err error
 	tsk.r, err = os.Open(tsk.fname)
 	if err != nil {
 		return err
@@ -62,8 +62,8 @@ func (tsk *HepMcReader) StartTask(ctx fwk.Context) fwk.Error {
 	return err
 }
 
-func (tsk *HepMcReader) StopTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *HepMcReader) StopTask(ctx fwk.Context) error {
+	var err error
 	err = tsk.r.Close()
 	if err != nil {
 		return err
@@ -71,8 +71,8 @@ func (tsk *HepMcReader) StopTask(ctx fwk.Context) fwk.Error {
 	return err
 }
 
-func (tsk *HepMcReader) Process(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *HepMcReader) Process(ctx fwk.Context) error {
+	var err error
 	store := ctx.Store()
 	msg := ctx.Msg()
 
@@ -171,8 +171,8 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) fwk.Error {
 
 func init() {
 	fwk.Register(reflect.TypeOf(HepMcReader{}),
-		func(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
-			var err fwk.Error
+		func(typ, name string, mgr fwk.App) (fwk.Component, error) {
+			var err error
 
 			tsk := &HepMcReader{
 				TaskBase:    fwk.NewTask(typ, name, mgr),

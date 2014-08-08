@@ -7,11 +7,11 @@ import (
 )
 
 type UniqueObjectFinder struct {
-    fwk.TaskBase
+	fwk.TaskBase
 }
 
-func (tsk *UniqueObjectFinder) Configure(ctx fwk.Context) fwk.Error {
-    var err fwk.Error
+func (tsk *UniqueObjectFinder) Configure(ctx fwk.Context) error {
+	var err error
 
 	// err = tsk.DeclInPort(tsk.input, reflect.TypeOf(sometype{}))
 	// if err != nil {
@@ -23,29 +23,29 @@ func (tsk *UniqueObjectFinder) Configure(ctx fwk.Context) fwk.Error {
 	//	return err
 	// }
 
-    return err
+	return err
 }
 
-func (tsk *UniqueObjectFinder) StartTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *UniqueObjectFinder) StartTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *UniqueObjectFinder) StopTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *UniqueObjectFinder) StopTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *UniqueObjectFinder) Process(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *UniqueObjectFinder) Process(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func newUniqueObjectFinder(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
-	var err fwk.Error
+func newUniqueObjectFinder(typ, name string, mgr fwk.App) (fwk.Component, error) {
+	var err error
 
 	tsk := &UniqueObjectFinder{
 		TaskBase: fwk.NewTask(typ, name, mgr),

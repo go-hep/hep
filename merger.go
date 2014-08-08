@@ -17,8 +17,8 @@ type Merger struct {
 	outmom string
 }
 
-func (tsk *Merger) Configure(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *Merger) Configure(ctx fwk.Context) error {
+	var err error
 
 	for _, input := range tsk.inputs {
 		err = tsk.DeclInPort(input, reflect.TypeOf([]Candidate{}))
@@ -45,20 +45,20 @@ func (tsk *Merger) Configure(ctx fwk.Context) fwk.Error {
 	return err
 }
 
-func (tsk *Merger) StartTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *Merger) StartTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *Merger) StopTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *Merger) StopTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *Merger) Process(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *Merger) Process(ctx fwk.Context) error {
+	var err error
 
 	store := ctx.Store()
 	msg := ctx.Msg()
@@ -118,8 +118,8 @@ func (tsk *Merger) Process(ctx fwk.Context) fwk.Error {
 	return err
 }
 
-func newMerger(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
-	var err fwk.Error
+func newMerger(typ, name string, mgr fwk.App) (fwk.Component, error) {
+	var err error
 
 	tsk := &Merger{
 		TaskBase: fwk.NewTask(typ, name, mgr),

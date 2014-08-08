@@ -13,8 +13,8 @@ type task3 struct {
 	parts string
 }
 
-func (tsk *task3) Configure(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *task3) Configure(ctx fwk.Context) error {
+	var err error
 	msg := ctx.Msg()
 	msg.Infof("configure...\n")
 
@@ -22,19 +22,19 @@ func (tsk *task3) Configure(ctx fwk.Context) fwk.Error {
 	return err
 }
 
-func (tsk *task3) StartTask(ctx fwk.Context) fwk.Error {
+func (tsk *task3) StartTask(ctx fwk.Context) error {
 	msg := ctx.Msg()
 	msg.Infof("start...\n")
 	return nil
 }
 
-func (tsk *task3) StopTask(ctx fwk.Context) fwk.Error {
+func (tsk *task3) StopTask(ctx fwk.Context) error {
 	msg := ctx.Msg()
 	msg.Infof("stop...\n")
 	return nil
 }
 
-func (tsk *task3) Process(ctx fwk.Context) fwk.Error {
+func (tsk *task3) Process(ctx fwk.Context) error {
 	msg := ctx.Msg()
 	msg.Infof("proc...\n")
 	store := ctx.Store()
@@ -50,8 +50,8 @@ func (tsk *task3) Process(ctx fwk.Context) fwk.Error {
 
 func init() {
 	fwk.Register(reflect.TypeOf(task3{}),
-		func(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
-			var err fwk.Error
+		func(typ, name string, mgr fwk.App) (fwk.Component, error) {
+			var err error
 			tsk := &task3{
 				TaskBase: fwk.NewTask(typ, name, mgr),
 				parts:    "/fads/test/StableParticles",

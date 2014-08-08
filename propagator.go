@@ -25,8 +25,8 @@ type ParticlePropagator struct {
 	muons   string
 }
 
-func (tsk *ParticlePropagator) Configure(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *ParticlePropagator) Configure(ctx fwk.Context) error {
+	var err error
 
 	tsk.radius2 = tsk.radius * tsk.radius
 	if tsk.radius < 1.0e-2 {
@@ -65,20 +65,20 @@ func (tsk *ParticlePropagator) Configure(ctx fwk.Context) fwk.Error {
 	return err
 }
 
-func (tsk *ParticlePropagator) StartTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *ParticlePropagator) StartTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *ParticlePropagator) StopTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *ParticlePropagator) StopTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *ParticlePropagator) Process(ctx fwk.Context) error {
+	var err error
 	store := ctx.Store()
 	msg := ctx.Msg()
 
@@ -327,8 +327,8 @@ func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
 
 func init() {
 	fwk.Register(reflect.TypeOf(ParticlePropagator{}),
-		func(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
-			var err fwk.Error
+		func(typ, name string, mgr fwk.App) (fwk.Component, error) {
+			var err error
 			tsk := &ParticlePropagator{
 				TaskBase: fwk.NewTask(typ, name, mgr),
 			}
