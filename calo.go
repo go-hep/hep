@@ -365,7 +365,7 @@ func (tsk *calorimeter) Process(ctx fwk.Context) error {
 	// then flags and then by particle or track number
 	sort.Sort(Int64Slice(twrhits))
 
-	msg.Infof("tower-hits: %d (%d)\n", nhits, len(twrhits))
+	msg.Debugf("tower-hits: %d (%d)\n", nhits, len(twrhits))
 
 	// process hits
 	for _, towerid := range twrhits {
