@@ -165,6 +165,9 @@ type calorimeter struct {
 	eflowtracks string
 	eflowtowers string
 
+	seed int64
+	src  rand.Source
+
 	gauss random.Dist
 }
 
@@ -201,7 +204,8 @@ func (tsk *calorimeter) Configure(ctx fwk.Context) error {
 		return err
 	}
 
-	tsk.gauss = random.Gauss(0, 1, nil) // FIXME: setup a seed
+	tsk.src = rand.NewSource(tsk.seed)
+	tsk.gauss = random.Gauss(0, 1, &tsk.src)
 	return err
 }
 
@@ -493,6 +497,8 @@ func newCalorimeter(typ, name string, mgr fwk.App) (fwk.Component, error) {
 		photons:     "/fads/photons",
 		eflowtracks: "/fads/eflowtracks",
 		eflowtowers: "/fads/eflowtowers",
+
+		seed: 1234,
 	}
 
 	// --
@@ -545,6 +551,11 @@ func newCalorimeter(typ, name string, mgr fwk.App) (fwk.Component, error) {
 	}
 
 	err = tsk.DeclProp("EFlowTowers", &tsk.eflowtowers)
+	if err != nil {
+		return nil, err
+	}
+
+	err = tsk.DeclProp("Seed", &tsk.seed)
 	if err != nil {
 		return nil, err
 	}
