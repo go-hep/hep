@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"sort"
 
 	"github.com/go-hep/fmom"
 	"github.com/go-hep/fwk"
@@ -138,16 +139,19 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) fwk.Error {
 
 	}
 
+	sort.Sort(sort.Reverse(ByPt(allparts)))
 	err = store.Put(tsk.allparts, allparts)
 	if err != nil {
 		return err
 	}
 
+	sort.Sort(sort.Reverse(ByPt(stableparts)))
 	err = store.Put(tsk.stableparts, stableparts)
 	if err != nil {
 		return err
 	}
 
+	sort.Sort(sort.Reverse(ByPt(partons)))
 	err = store.Put(tsk.partons, partons)
 	if err != nil {
 		return err
