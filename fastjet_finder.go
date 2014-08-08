@@ -6,11 +6,11 @@ import (
 	"github.com/go-hep/fwk"
 )
 
-type FastJetFinder struct {
+type fastjetFinder struct {
 	fwk.TaskBase
 }
 
-func (tsk *FastJetFinder) Configure(ctx fwk.Context) error {
+func (tsk *fastjetFinder) Configure(ctx fwk.Context) error {
 	var err error
 
 	// err = tsk.DeclInPort(tsk.input, reflect.TypeOf(sometype{}))
@@ -26,19 +26,19 @@ func (tsk *FastJetFinder) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *FastJetFinder) StartTask(ctx fwk.Context) error {
+func (tsk *fastjetFinder) StartTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *FastJetFinder) StopTask(ctx fwk.Context) error {
+func (tsk *fastjetFinder) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *FastJetFinder) Process(ctx fwk.Context) error {
+func (tsk *fastjetFinder) Process(ctx fwk.Context) error {
 	var err error
 
 	return err
@@ -47,7 +47,7 @@ func (tsk *FastJetFinder) Process(ctx fwk.Context) error {
 func newFastJetFinder(typ, name string, mgr fwk.App) (fwk.Component, error) {
 	var err error
 
-	tsk := &FastJetFinder{
+	tsk := &fastjetFinder{
 		TaskBase: fwk.NewTask(typ, name, mgr),
 		// input:    "Input",
 		// output:   "Output",
@@ -67,5 +67,5 @@ func newFastJetFinder(typ, name string, mgr fwk.App) (fwk.Component, error) {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(FastJetFinder{}), newFastJetFinder)
+	fwk.Register(reflect.TypeOf(fastjetFinder{}), newFastJetFinder)
 }
