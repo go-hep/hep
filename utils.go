@@ -11,7 +11,7 @@ const (
 // DeltaPhi returns the delta Phi in range [-pi,pi[ from two P4
 func DeltaPhi(p1, p2 P4) float64 {
 	// FIXME: do something more efficient when p1&p2 are PxPyPzE
-	dphi := -p1.Phi() + p2.Phi()
+	dphi := p1.Phi() - p2.Phi()
 	return -math.Remainder(dphi, twopi)
 }
 
