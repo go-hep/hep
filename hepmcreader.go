@@ -130,8 +130,11 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) fwk.Error {
 		}
 
 		switch {
-		case p.Status == 1 && pdg.IsStable():
-			stableparts = append(stableparts, *c)
+		case p.Status == 1: // && pdg.IsStable():
+			width := pdg.Resonance.Width.Value
+			if width <= 1e-10 {
+				stableparts = append(stableparts, *c)
+			}
 
 		case pdgcode <= 5 || pdgcode == 21 || pdgcode == 15:
 			partons = append(partons, *c)
