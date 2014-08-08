@@ -532,6 +532,23 @@ func main() {
 			"JetPtMin": 20.0,
 		},
 	})
+
+	// jet finder
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.fastjetFinder",
+		Name: "fastjet-finder",
+		Props: job.P{
+			"Input":  "/fads/calo/towers",
+			"Output": "/fads/fastjet-finder/jets",
+			"Rho":    "/fads/fastjet-finder/rho",
+
+			"JetAlgorithm": fastjet.AntiKtAlgorithm,
+			"ParameterR":   0.6,
+
+			"JetPtMin": 20.0,
+		},
+	})
+
 	app.Run()
 	fmt.Printf("::: fads-app... [done]\n")
 }
