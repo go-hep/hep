@@ -234,4 +234,9 @@ func (cand *Candidate) Overlaps(o *Candidate) bool {
 	return false
 }
 
+// Classifier classifies candidates into categories
+type Classifier interface {
+	Category(cand *Candidate) int
+}
+
 // EOF
