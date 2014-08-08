@@ -6,11 +6,11 @@ import (
 	"github.com/go-hep/fwk"
 )
 
-type UniqueObjectFinder struct {
+type uniqueObjectFinder struct {
 	fwk.TaskBase
 }
 
-func (tsk *UniqueObjectFinder) Configure(ctx fwk.Context) error {
+func (tsk *uniqueObjectFinder) Configure(ctx fwk.Context) error {
 	var err error
 
 	// err = tsk.DeclInPort(tsk.input, reflect.TypeOf(sometype{}))
@@ -26,19 +26,19 @@ func (tsk *UniqueObjectFinder) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *UniqueObjectFinder) StartTask(ctx fwk.Context) error {
+func (tsk *uniqueObjectFinder) StartTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *UniqueObjectFinder) StopTask(ctx fwk.Context) error {
+func (tsk *uniqueObjectFinder) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *UniqueObjectFinder) Process(ctx fwk.Context) error {
+func (tsk *uniqueObjectFinder) Process(ctx fwk.Context) error {
 	var err error
 
 	return err
@@ -47,7 +47,7 @@ func (tsk *UniqueObjectFinder) Process(ctx fwk.Context) error {
 func newUniqueObjectFinder(typ, name string, mgr fwk.App) (fwk.Component, error) {
 	var err error
 
-	tsk := &UniqueObjectFinder{
+	tsk := &uniqueObjectFinder{
 		TaskBase: fwk.NewTask(typ, name, mgr),
 		// input:    "Input",
 		// output:   "Output",
@@ -67,5 +67,5 @@ func newUniqueObjectFinder(typ, name string, mgr fwk.App) (fwk.Component, error)
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(UniqueObjectFinder{}), newUniqueObjectFinder)
+	fwk.Register(reflect.TypeOf(uniqueObjectFinder{}), newUniqueObjectFinder)
 }
