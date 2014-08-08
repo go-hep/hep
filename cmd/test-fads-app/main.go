@@ -8,6 +8,7 @@ import (
 	"runtime/pprof"
 
 	"github.com/go-hep/fads"
+	"github.com/go-hep/fastjet"
 	"github.com/go-hep/fwk/job"
 )
 
@@ -516,6 +517,21 @@ func main() {
 		},
 	})
 
+	// mc truth jet finder
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.fastjetFinder",
+		Name: "mc-jet-finder",
+		Props: job.P{
+			"Input":  "/fads/",
+			"Output": "/fads/mc-jet-finder/jets",
+			"Rho":    "/fads/mc-jet-finder/rho",
+
+			"JetAlgorithm": fastjet.AntiKtAlgorithm,
+			"ParameterR":   0.6,
+
+			"JetPtMin": 20.0,
+		},
+	})
 	app.Run()
 	fmt.Printf("::: fads-app... [done]\n")
 }
