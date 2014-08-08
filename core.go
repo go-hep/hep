@@ -5,10 +5,6 @@ import (
 	"reflect"
 )
 
-type Error interface {
-	error
-}
-
 type statuscode int
 
 func (sc statuscode) Error() string {
@@ -31,20 +27,20 @@ type ComponentMgr interface {
 	Component(n string) Component
 	HasComponent(n string) bool
 	Components() []Component
-	New(t, n string) (Component, Error)
+	New(t, n string) (Component, error)
 }
 
 type Task interface {
 	Component
 
-	StartTask(ctx Context) Error
-	Process(ctx Context) Error
-	StopTask(ctx Context) Error
+	StartTask(ctx Context) error
+	Process(ctx Context) error
+	StopTask(ctx Context) error
 }
 
 type TaskMgr interface {
-	AddTask(tsk Task) Error
-	DelTask(tsk Task) Error
+	AddTask(tsk Task) error
+	DelTask(tsk Task) error
 	HasTask(n string) bool
 	GetTask(n string) Task
 	Tasks() []Task
@@ -52,19 +48,19 @@ type TaskMgr interface {
 
 type Configurer interface {
 	Component
-	Configure(ctx Context) Error
+	Configure(ctx Context) error
 }
 
 type Svc interface {
 	Component
 
-	StartSvc(ctx Context) Error
-	StopSvc(ctx Context) Error
+	StartSvc(ctx Context) error
+	StopSvc(ctx Context) error
 }
 
 type SvcMgr interface {
-	AddSvc(svc Svc) Error
-	DelSvc(svc Svc) Error
+	AddSvc(svc Svc) error
+	DelSvc(svc Svc) error
 	HasSvc(n string) bool
 	GetSvc(n string) Svc
 	Svcs() []Svc
@@ -78,40 +74,40 @@ type App interface {
 	PropMgr
 	PortMgr
 
-	Run() Error
+	Run() error
 
 	Msg() MsgStream
 }
 
 type PropMgr interface {
-	DeclProp(c Component, name string, ptr interface{}) Error
-	SetProp(c Component, name string, value interface{}) Error
-	GetProp(c Component, name string) (interface{}, Error)
+	DeclProp(c Component, name string, ptr interface{}) error
+	SetProp(c Component, name string, value interface{}) error
+	GetProp(c Component, name string) (interface{}, error)
 	HasProp(c Component, name string) bool
 }
 
 type Property interface {
-	DeclProp(name string, ptr interface{}) Error
-	SetProp(name string, value interface{}) Error
-	GetProp(name string) (interface{}, Error)
+	DeclProp(name string, ptr interface{}) error
+	SetProp(name string, value interface{}) error
+	GetProp(name string) (interface{}, error)
 }
 
 type Store interface {
-	Get(key string) (interface{}, Error)
-	Put(key string, value interface{}) Error
+	Get(key string) (interface{}, error)
+	Put(key string, value interface{}) error
 	Has(key string) bool
 }
 
 // DeclPorter is the interface to declare input/output ports for the data flow.
 type DeclPorter interface {
-	DeclInPort(name string, t reflect.Type) Error
-	DeclOutPort(name string, t reflect.Type) Error
+	DeclInPort(name string, t reflect.Type) error
+	DeclOutPort(name string, t reflect.Type) error
 }
 
 // PortMgr is the interface to manage input/output ports for the data flow
 type PortMgr interface {
-	DeclInPort(c Component, name string, t reflect.Type) Error
-	DeclOutPort(c Component, name string, t reflect.Type) Error
+	DeclInPort(c Component, name string, t reflect.Type) error
+	DeclOutPort(c Component, name string, t reflect.Type) error
 }
 
 type Level int
@@ -153,12 +149,12 @@ func (lvl Level) String() string {
 }
 
 type MsgStream interface {
-	Debugf(format string, a ...interface{}) (int, Error)
-	Infof(format string, a ...interface{}) (int, Error)
-	Warnf(format string, a ...interface{}) (int, Error)
-	Errorf(format string, a ...interface{}) (int, Error)
+	Debugf(format string, a ...interface{}) (int, error)
+	Infof(format string, a ...interface{}) (int, error)
+	Warnf(format string, a ...interface{}) (int, error)
+	Errorf(format string, a ...interface{}) (int, error)
 
-	Msg(lvl Level, format string, a ...interface{}) (int, Error)
+	Msg(lvl Level, format string, a ...interface{}) (int, error)
 }
 
 // Deleter prepares values to be GC-reclaimed

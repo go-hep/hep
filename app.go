@@ -65,7 +65,7 @@ type appmgr struct {
 
 func NewApp() App {
 
-	var err Error
+	var err error
 	var app *appmgr
 
 	const appname = "app"
@@ -148,7 +148,7 @@ func (app *appmgr) Component(n string) Component {
 	return c
 }
 
-func (app *appmgr) addComponent(c Component) Error {
+func (app *appmgr) addComponent(c Component) error {
 	app.comps[c.Name()] = c
 	return nil
 }
@@ -166,15 +166,15 @@ func (app *appmgr) Components() []Component {
 	return comps
 }
 
-func (app *appmgr) AddTask(tsk Task) Error {
-	var err Error
+func (app *appmgr) AddTask(tsk Task) error {
+	var err error
 	app.tsks = append(app.tsks, tsk)
 	app.comps[tsk.Name()] = tsk
 	return err
 }
 
-func (app *appmgr) DelTask(tsk Task) Error {
-	var err Error
+func (app *appmgr) DelTask(tsk Task) error {
+	var err error
 	tsks := make([]Task, 0, len(app.tsks))
 	for _, t := range app.tsks {
 		if t.Name() != tsk.Name() {
@@ -207,15 +207,15 @@ func (app *appmgr) Tasks() []Task {
 	return app.tsks
 }
 
-func (app *appmgr) AddSvc(svc Svc) Error {
-	var err Error
+func (app *appmgr) AddSvc(svc Svc) error {
+	var err error
 	app.svcs = append(app.svcs, svc)
 	app.comps[svc.Name()] = svc
 	return err
 }
 
-func (app *appmgr) DelSvc(svc Svc) Error {
-	var err Error
+func (app *appmgr) DelSvc(svc Svc) error {
+	var err error
 	svcs := make([]Svc, 0, len(app.svcs))
 	for _, s := range app.svcs {
 		if s.Name() != svc.Name() {
@@ -248,7 +248,7 @@ func (app *appmgr) Svcs() []Svc {
 	return app.svcs
 }
 
-func (app *appmgr) DeclProp(c Component, name string, ptr interface{}) Error {
+func (app *appmgr) DeclProp(c Component, name string, ptr interface{}) error {
 	cname := c.Name()
 	_, ok := app.props[cname]
 	if !ok {
@@ -269,7 +269,7 @@ func (app *appmgr) DeclProp(c Component, name string, ptr interface{}) Error {
 	return nil
 }
 
-func (app *appmgr) SetProp(c Component, name string, value interface{}) Error {
+func (app *appmgr) SetProp(c Component, name string, value interface{}) error {
 	cname := c.Name()
 	m, ok := app.props[cname]
 	if !ok {
@@ -298,7 +298,7 @@ func (app *appmgr) SetProp(c Component, name string, value interface{}) Error {
 	return nil
 }
 
-func (app *appmgr) GetProp(c Component, name string) (interface{}, Error) {
+func (app *appmgr) GetProp(c Component, name string) (interface{}, error) {
 	cname := c.Name()
 	m, ok := app.props[cname]
 	if !ok {
@@ -331,7 +331,7 @@ func (app *appmgr) HasProp(c Component, name string) bool {
 	return ok
 }
 
-func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) Error {
+func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) error {
 	if app.state < fsm_CONFIGURING {
 		return Errorf(
 			"fwk.DeclInPort: invalid App state (%s). put the DeclInPort in Configure() of %s:%s",
@@ -343,7 +343,7 @@ func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) Error {
 	return app.dflow.addInNode(c.Name(), name, t)
 }
 
-func (app *appmgr) DeclOutPort(c Component, name string, t reflect.Type) Error {
+func (app *appmgr) DeclOutPort(c Component, name string, t reflect.Type) error {
 	if app.state < fsm_CONFIGURING {
 		return Errorf(
 			"fwk.DeclOutPort: invalid App state (%s). put the DeclInPort in Configure() of %s:%s",
@@ -355,8 +355,8 @@ func (app *appmgr) DeclOutPort(c Component, name string, t reflect.Type) Error {
 	return app.dflow.addOutNode(c.Name(), name, t)
 }
 
-func (app *appmgr) Run() Error {
-	var err Error
+func (app *appmgr) Run() error {
+	var err error
 	var ctx Context = context{
 		id:    0,
 		slot:  0,
@@ -402,8 +402,8 @@ func (app *appmgr) Run() Error {
 	return err
 }
 
-func (app *appmgr) configure(ctx Context) Error {
-	var err Error
+func (app *appmgr) configure(ctx Context) error {
+	var err error
 	defer app.msg.flush()
 	app.msg.Debugf("configure...\n")
 	app.state = fsm_CONFIGURING
@@ -451,8 +451,8 @@ func (app *appmgr) configure(ctx Context) Error {
 	return err
 }
 
-func (app *appmgr) start(ctx Context) Error {
-	var err Error
+func (app *appmgr) start(ctx Context) error {
+	var err error
 	defer app.msg.flush()
 	app.state = fsm_STARTING
 	for _, svc := range app.svcs {
@@ -475,8 +475,8 @@ func (app *appmgr) start(ctx Context) Error {
 	return err
 }
 
-func (app *appmgr) run(ctx Context) Error {
-	var err Error
+func (app *appmgr) run(ctx Context) error {
+	var err error
 	defer app.msg.flush()
 	app.state = fsm_RUNNING
 	if app.evtmax == -1 {
@@ -501,7 +501,7 @@ func (app *appmgr) run(ctx Context) Error {
 			}
 			app.store.store[k] = make(achan, 1)
 		}
-		errch := make(chan Error, len(app.tsks))
+		errch := make(chan error, len(app.tsks))
 		for _, tsk := range app.tsks {
 			go func(tsk Task) {
 				//app.msg.Infof(">>> running [%s]...\n", tsk.Name())
@@ -530,8 +530,8 @@ func (app *appmgr) run(ctx Context) Error {
 	return err
 }
 
-func (app *appmgr) stop(ctx Context) Error {
-	var err Error
+func (app *appmgr) stop(ctx Context) error {
+	var err error
 	defer app.msg.flush()
 	app.state = fsm_STOPPING
 	for _, tsk := range app.tsks {
@@ -552,8 +552,8 @@ func (app *appmgr) stop(ctx Context) Error {
 	return err
 }
 
-func (app *appmgr) shutdown(ctx Context) Error {
-	var err Error
+func (app *appmgr) shutdown(ctx Context) error {
+	var err error
 	defer app.msg.flush()
 	app.comps = nil
 	app.tsks = nil
@@ -574,7 +574,7 @@ func (app *appmgr) Msg() MsgStream {
 func init() {
 	Register(
 		reflect.TypeOf(appmgr{}),
-		func(t, name string, mgr App) (Component, Error) {
+		func(t, name string, mgr App) (Component, error) {
 			app := NewApp().(*appmgr)
 			app.name = name
 			return app, nil

@@ -81,28 +81,30 @@ func (job *Job) Run() {
 	}
 }
 
-func (job *Job) Debugf(format string, a ...interface{}) (int, fwk.Error) {
+func (job *Job) Debugf(format string, a ...interface{}) (int, error) {
 	return job.app.Msg().Debugf(format, a...)
 }
 
-func (job *Job) Infof(format string, a ...interface{}) (int, fwk.Error) {
+func (job *Job) Infof(format string, a ...interface{}) (int, error) {
 	return job.app.Msg().Infof(format, a...)
 }
 
-func (job *Job) Warnf(format string, a ...interface{}) (int, fwk.Error) {
+func (job *Job) Warnf(format string, a ...interface{}) (int, error) {
 	return job.app.Msg().Warnf(format, a...)
 }
 
-func (job *Job) Errorf(format string, a ...interface{}) (int, fwk.Error) {
+func (job *Job) Errorf(format string, a ...interface{}) (int, error) {
 	return job.app.Msg().Errorf(format, a...)
 }
 
-func (job *Job) Load(r io.Reader) fwk.Error {
-	var err fwk.Error
+func (job *Job) Load(r io.Reader) error {
+	var err error
 	panic("not implemented")
 	return err
 }
 
-func (job *Job) RunScripts(files ...string) fwk.Error {
+func (job *Job) RunScripts(files ...string) error {
+	var err error
 	panic("not implemented")
+	return err
 }

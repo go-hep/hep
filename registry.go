@@ -5,7 +5,7 @@ import (
 	"sort"
 )
 
-type FactoryFunc func(t, n string, mgr App) (Component, Error)
+type FactoryFunc func(t, n string, mgr App) (Component, error)
 type factoryDb map[string]FactoryFunc
 
 var g_factory factoryDb = make(factoryDb)
@@ -25,8 +25,8 @@ func Registry() []string {
 	return comps
 }
 
-func (app *appmgr) New(t, n string) (Component, Error) {
-	var err Error
+func (app *appmgr) New(t, n string) (Component, error) {
+	var err error
 	fct, ok := g_factory[t]
 	if !ok {
 		return nil, Errorf("no component with type [%s] registered", t)

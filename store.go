@@ -11,11 +11,11 @@ type datastore struct {
 	store map[string]achan
 }
 
-func (ds *datastore) Configure(ctx Context) Error {
+func (ds *datastore) Configure(ctx Context) error {
 	return nil
 }
 
-func (ds *datastore) Get(k string) (interface{}, Error) {
+func (ds *datastore) Get(k string) (interface{}, error) {
 	//fmt.Printf(">>> get(%v)...\n", k)
 	ch, ok := ds.store[k]
 	if !ok {
@@ -27,7 +27,7 @@ func (ds *datastore) Get(k string) (interface{}, Error) {
 	return v, nil
 }
 
-func (ds *datastore) Put(k string, v interface{}) Error {
+func (ds *datastore) Put(k string, v interface{}) error {
 	//fmt.Printf(">>> put(%v, %v)...\n", k, v)
 	ds.store[k] <- v
 	//fmt.Printf("<<< put(%v, %v)...\n", k, v)
@@ -39,19 +39,19 @@ func (ds *datastore) Has(k string) bool {
 	return ok
 }
 
-func (ds *datastore) StartSvc(ctx Context) Error {
+func (ds *datastore) StartSvc(ctx Context) error {
 	ds.store = make(map[string]achan)
 	return nil
 }
 
-func (ds *datastore) StopSvc(ctx Context) Error {
+func (ds *datastore) StopSvc(ctx Context) error {
 	ds.store = nil
 	return nil
 }
 
 func init() {
 	Register(reflect.TypeOf(datastore{}),
-		func(typ, name string, mgr App) (Component, Error) {
+		func(typ, name string, mgr App) (Component, error) {
 			return &datastore{
 				SvcBase: NewSvc(typ, name, mgr),
 				store:   make(map[string]achan),
