@@ -501,6 +501,21 @@ func main() {
 		},
 	})
 
+	// missing-et merger
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.merger",
+		Name: "missing-et",
+		Props: job.P{
+			"Inputs": []string{
+				"/fads/calo/eflowtracks",
+				"/fads/calo/eflowtowers",
+			},
+			"Output":         "/fads/missing-et",
+			"MomentumOutput": "/fads/missing-et/momentum",
+			"EnergyOutput":   "/fads/missing-et/energy",
+		},
+	})
+
 	app.Run()
 	fmt.Printf("::: fads-app... [done]\n")
 }
