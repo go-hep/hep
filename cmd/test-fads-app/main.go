@@ -255,7 +255,9 @@ func main() {
 				"/fads/electron-ene-smearing/Electrons",
 				"/fads/muon-mom-smearing/Muons",
 			},
-			"Output": "/fads/track-merger/tracks",
+			"Output":         "/fads/track-merger/tracks",
+			"MomentumOutput": "/fads/track-merger/momentum",
+			"EnergyOutput":   "/fads/track-merger/energy",
 		},
 	})
 
