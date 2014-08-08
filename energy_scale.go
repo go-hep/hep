@@ -6,11 +6,11 @@ import (
 	"github.com/go-hep/fwk"
 )
 
-type EnergyScale struct {
+type energyScale struct {
 	fwk.TaskBase
 }
 
-func (tsk *EnergyScale) Configure(ctx fwk.Context) error {
+func (tsk *energyScale) Configure(ctx fwk.Context) error {
 	var err error
 
 	// err = tsk.DeclInPort(tsk.input, reflect.TypeOf(sometype{}))
@@ -26,19 +26,19 @@ func (tsk *EnergyScale) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *EnergyScale) StartTask(ctx fwk.Context) error {
+func (tsk *energyScale) StartTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *EnergyScale) StopTask(ctx fwk.Context) error {
+func (tsk *energyScale) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *EnergyScale) Process(ctx fwk.Context) error {
+func (tsk *energyScale) Process(ctx fwk.Context) error {
 	var err error
 
 	return err
@@ -47,7 +47,7 @@ func (tsk *EnergyScale) Process(ctx fwk.Context) error {
 func newEnergyScale(typ, name string, mgr fwk.App) (fwk.Component, error) {
 	var err error
 
-	tsk := &EnergyScale{
+	tsk := &energyScale{
 		TaskBase: fwk.NewTask(typ, name, mgr),
 		// input:    "Input",
 		// output:   "Output",
@@ -67,5 +67,5 @@ func newEnergyScale(typ, name string, mgr fwk.App) (fwk.Component, error) {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(EnergyScale{}), newEnergyScale)
+	fwk.Register(reflect.TypeOf(energyScale{}), newEnergyScale)
 }
