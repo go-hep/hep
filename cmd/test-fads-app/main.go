@@ -161,7 +161,7 @@ func main() {
 
 	// momentum resolution for charged tracks
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.MomentumSmearing",
+		Type: "github.com/go-hep/fads.momentumSmearing",
 		Name: "charged-hadron-mom-smearing",
 		Props: job.P{
 			"Input":  "/fads/charged-hadron-trk-eff/ChargedHadrons",
@@ -216,7 +216,7 @@ func main() {
 
 	// momentum resolution for muons
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.MomentumSmearing",
+		Type: "github.com/go-hep/fads.momentumSmearing",
 		Name: "muon-mom-smearing",
 		Props: job.P{
 			"Input":  "/fads/muon-trk-eff/Muons",

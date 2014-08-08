@@ -10,7 +10,7 @@ import (
 	"github.com/go-hep/random"
 )
 
-type MomentumSmearing struct {
+type momentumSmearing struct {
 	fwk.TaskBase
 
 	input  string
@@ -21,7 +21,7 @@ type MomentumSmearing struct {
 	src   rand.Source
 }
 
-func (tsk *MomentumSmearing) Configure(ctx fwk.Context) error {
+func (tsk *momentumSmearing) Configure(ctx fwk.Context) error {
 	var err error
 
 	err = tsk.DeclInPort(tsk.input, reflect.TypeOf([]Candidate{}))
@@ -37,19 +37,19 @@ func (tsk *MomentumSmearing) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *MomentumSmearing) StartTask(ctx fwk.Context) error {
+func (tsk *momentumSmearing) StartTask(ctx fwk.Context) error {
 	var err error
 	tsk.src = rand.NewSource(tsk.seed)
 	return err
 }
 
-func (tsk *MomentumSmearing) StopTask(ctx fwk.Context) error {
+func (tsk *momentumSmearing) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *MomentumSmearing) Process(ctx fwk.Context) error {
+func (tsk *momentumSmearing) Process(ctx fwk.Context) error {
 	var err error
 	store := ctx.Store()
 	msg := ctx.Msg()
@@ -102,10 +102,10 @@ func (tsk *MomentumSmearing) Process(ctx fwk.Context) error {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(MomentumSmearing{}),
+	fwk.Register(reflect.TypeOf(momentumSmearing{}),
 		func(typ, name string, mgr fwk.App) (fwk.Component, error) {
 			var err error
-			tsk := &MomentumSmearing{
+			tsk := &momentumSmearing{
 				TaskBase: fwk.NewTask(typ, name, mgr),
 				input:    "InputParticles",
 				output:   "OutputParticles",
