@@ -247,7 +247,7 @@ func main() {
 
 	// track merger
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.Merger",
+		Type: "github.com/go-hep/fads.merger",
 		Name: "track-merger",
 		Props: job.P{
 			"Inputs": []string{
@@ -373,7 +373,7 @@ func main() {
 
 	// eflow merger
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.Merger",
+		Type: "github.com/go-hep/fads.merger",
 		Name: "eflow-merger",
 		Props: job.P{
 			"Inputs": []string{
