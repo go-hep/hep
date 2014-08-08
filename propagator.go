@@ -236,7 +236,7 @@ func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
 			if pz == 0 {
 				tz = 1e99
 			} else {
-				tz = gammam / (pz * 1e9 / cLight) * (-z * tsk.halflen * signpz)
+				tz = gammam / (pz * 1e9 / cLight) * (-z + tsk.halflen*signpz)
 			}
 
 			absr := math.Abs(r)
@@ -295,7 +295,7 @@ func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
 			if rt > 0.0 {
 				mother := cand
 				c := cand.Clone()
-				c.Pos = fmom.NewPxPyPzE(xt*1e3, yt*1e3, zt*1e3, cand.Pos.T()+t*e*1e3)
+				c.Pos = fmom.NewPxPyPzE(xt*1e3, yt*1e3, zt*1e3, cand.Pos.T()+t*cLight*1e3)
 				c.Add(mother)
 
 				output = append(output, *c)
