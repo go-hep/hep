@@ -522,7 +522,7 @@ func main() {
 		Type: "github.com/go-hep/fads.fastjetFinder",
 		Name: "mc-jet-finder",
 		Props: job.P{
-			"Input":  "/fads/",
+			"Input":  "/fads/StableParticles",
 			"Output": "/fads/mc-jet-finder/jets",
 			"Rho":    "/fads/mc-jet-finder/rho",
 
