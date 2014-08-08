@@ -102,8 +102,8 @@ func TestDeltaR(t *testing.T) {
 		},
 	} {
 		dR := DeltaR(table.p1, table.p2)
-		if math.Abs(dR-table.exp) > epsilon_test {
-			t.Fatalf("DeltaR differ\np1=%#v\np2=%#v\nexp=%+e\ngot=%+e\n",
+		if dR-table.exp > epsilon_test {
+			t.Fatalf("DeltaR error\np1=%#v\np2=%#v\nexp=%+e\ngot=%+e\n",
 				table.p1,
 				table.p2,
 				table.exp,
