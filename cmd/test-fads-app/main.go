@@ -410,6 +410,20 @@ func main() {
 		},
 	})
 
+	// photon isolation
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.isolation",
+		Name: "photon-iso",
+		Props: job.P{
+			"Candidates": "/fads/photon-eff/photons",
+			"Isolations": "/fads/eflow-merger/eflow",
+			"Output":     "/fads/photon-iso/photons",
+
+			"DeltaRMax":  0.5,
+			"PtMin":      0.5,
+			"PtRatioMax": 0.1,
+		},
+	})
 	app.Run()
 
 	fmt.Printf("::: fads-app... [done]\n")
