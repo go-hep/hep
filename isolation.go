@@ -6,11 +6,11 @@ import (
 	"github.com/go-hep/fwk"
 )
 
-type Isolation struct {
+type isolation struct {
 	fwk.TaskBase
 }
 
-func (tsk *Isolation) Configure(ctx fwk.Context) error {
+func (tsk *isolation) Configure(ctx fwk.Context) error {
 	var err error
 
 	// err = tsk.DeclInPort(tsk.input, reflect.TypeOf(sometype{}))
@@ -26,19 +26,19 @@ func (tsk *Isolation) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *Isolation) StartTask(ctx fwk.Context) error {
+func (tsk *isolation) StartTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *Isolation) StopTask(ctx fwk.Context) error {
+func (tsk *isolation) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *Isolation) Process(ctx fwk.Context) error {
+func (tsk *isolation) Process(ctx fwk.Context) error {
 	var err error
 
 	return err
@@ -47,7 +47,7 @@ func (tsk *Isolation) Process(ctx fwk.Context) error {
 func newIsolation(typ, name string, mgr fwk.App) (fwk.Component, error) {
 	var err error
 
-	tsk := &Isolation{
+	tsk := &isolation{
 		TaskBase: fwk.NewTask(typ, name, mgr),
 		// input:    "Input",
 		// output:   "Output",
@@ -67,5 +67,5 @@ func newIsolation(typ, name string, mgr fwk.App) (fwk.Component, error) {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(Isolation{}), newIsolation)
+	fwk.Register(reflect.TypeOf(isolation{}), newIsolation)
 }
