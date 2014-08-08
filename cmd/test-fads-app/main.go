@@ -271,7 +271,7 @@ func main() {
 
 	// calorimeter
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.Calorimeter",
+		Type: "github.com/go-hep/fads.calorimeter",
 		Name: "calo",
 		Props: job.P{
 			"Particles":   "/fads/pprop/StableParticles",
