@@ -3,6 +3,7 @@ package fads
 import (
 	"math"
 	"reflect"
+	"sort"
 
 	"github.com/go-hep/fmom"
 	"github.com/go-hep/fwk"
@@ -319,6 +320,7 @@ func (tsk *ParticlePropagator) Process(ctx fwk.Context) fwk.Error {
 		}
 	}
 
+	sort.Sort(sort.Reverse(ByPt(output)))
 	msg.Debugf(">>> output:     %v\n", len(output))
 	return err
 }
