@@ -486,6 +486,21 @@ func main() {
 		},
 	})
 
+	// muon isolation
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.isolation",
+		Name: "muon-iso",
+		Props: job.P{
+			"Candidates": "/fads/muon-eff/muons",
+			"Isolations": "/fads/eflow-merger/eflow",
+			"Output":     "/fads/muon-iso/muons",
+
+			"DeltaRMax":  0.5,
+			"PtMin":      0.5,
+			"PtRatioMax": 0.1,
+		},
+	})
+
 	app.Run()
 	fmt.Printf("::: fads-app... [done]\n")
 }
