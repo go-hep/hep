@@ -6,11 +6,11 @@ import (
 	"github.com/go-hep/fwk"
 )
 
-type TauTagging struct {
+type tautagging struct {
 	fwk.TaskBase
 }
 
-func (tsk *TauTagging) Configure(ctx fwk.Context) error {
+func (tsk *tautagging) Configure(ctx fwk.Context) error {
 	var err error
 
 	// err = tsk.DeclInPort(tsk.input, reflect.TypeOf(sometype{}))
@@ -26,19 +26,19 @@ func (tsk *TauTagging) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *TauTagging) StartTask(ctx fwk.Context) error {
+func (tsk *tautagging) StartTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *TauTagging) StopTask(ctx fwk.Context) error {
+func (tsk *tautagging) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *TauTagging) Process(ctx fwk.Context) error {
+func (tsk *tautagging) Process(ctx fwk.Context) error {
 	var err error
 
 	return err
@@ -47,7 +47,7 @@ func (tsk *TauTagging) Process(ctx fwk.Context) error {
 func newTauTagging(typ, name string, mgr fwk.App) (fwk.Component, error) {
 	var err error
 
-	tsk := &TauTagging{
+	tsk := &tautagging{
 		TaskBase: fwk.NewTask(typ, name, mgr),
 		// input:    "Input",
 		// output:   "Output",
@@ -67,5 +67,5 @@ func newTauTagging(typ, name string, mgr fwk.App) (fwk.Component, error) {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(TauTagging{}), newTauTagging)
+	fwk.Register(reflect.TypeOf(tautagging{}), newTauTagging)
 }
