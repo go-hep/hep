@@ -1,6 +1,6 @@
 fastjet
 =======
 
-Simple `Go`-based implementation of `C++` `FastJet` library.
+Simple `Go`-based implementation of the `C++` `FastJet` library.
 
 
