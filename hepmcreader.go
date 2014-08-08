@@ -13,7 +13,7 @@ import (
 	"github.com/go-hep/heppdt"
 )
 
-type HepMcReader struct {
+type hepmcReader struct {
 	fwk.TaskBase
 
 	fname string // input filename
@@ -26,7 +26,7 @@ type HepMcReader struct {
 	partons     string // all partons
 }
 
-func (tsk *HepMcReader) Configure(ctx fwk.Context) error {
+func (tsk *hepmcReader) Configure(ctx fwk.Context) error {
 	var err error
 
 	err = tsk.DeclOutPort(tsk.mcevt, reflect.TypeOf(hepmc.Event{}))
@@ -52,7 +52,7 @@ func (tsk *HepMcReader) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *HepMcReader) StartTask(ctx fwk.Context) error {
+func (tsk *hepmcReader) StartTask(ctx fwk.Context) error {
 	var err error
 	tsk.r, err = os.Open(tsk.fname)
 	if err != nil {
@@ -62,7 +62,7 @@ func (tsk *HepMcReader) StartTask(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *HepMcReader) StopTask(ctx fwk.Context) error {
+func (tsk *hepmcReader) StopTask(ctx fwk.Context) error {
 	var err error
 	err = tsk.r.Close()
 	if err != nil {
@@ -71,7 +71,7 @@ func (tsk *HepMcReader) StopTask(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *HepMcReader) Process(ctx fwk.Context) error {
+func (tsk *hepmcReader) Process(ctx fwk.Context) error {
 	var err error
 	store := ctx.Store()
 	msg := ctx.Msg()
@@ -170,11 +170,11 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) error {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(HepMcReader{}),
+	fwk.Register(reflect.TypeOf(hepmcReader{}),
 		func(typ, name string, mgr fwk.App) (fwk.Component, error) {
 			var err error
 
-			tsk := &HepMcReader{
+			tsk := &hepmcReader{
 				TaskBase:    fwk.NewTask(typ, name, mgr),
 				fname:       "hepmc.data",
 				mcevt:       "/fads/McEvent",

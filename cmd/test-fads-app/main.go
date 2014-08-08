@@ -63,7 +63,7 @@ func main() {
 
 	// read HepMC data
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.HepMcReader",
+		Type: "github.com/go-hep/fads.hepmcReader",
 		Name: "hepmcreader",
 		Props: job.P{
 			"Input": "testdata/hepmc.data",
