@@ -424,7 +424,30 @@ func main() {
 			"PtRatioMax": 0.1,
 		},
 	})
-	app.Run()
 
+	// electron efficiency
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.efficiency",
+		Name: "electron-eff",
+		Props: job.P{
+			"Input":  "/fads/electron-ene-smearing/Electrons",
+			"Output": "/fads/electron-eff/electrons",
+			"Eff": func(eta, pt float64) float64 {
+				switch {
+				case (pt <= 10.0):
+					return (0.00)
+				case (abs(eta) <= 1.5) && (pt > 10.0):
+					return (0.95)
+				case (abs(eta) > 1.5 && abs(eta) <= 2.5) && (pt > 10.0):
+					return (0.85)
+				case (abs(eta) > 2.5):
+					return (0.00)
+				}
+				return 0
+			},
+		},
+	})
+
+	app.Run()
 	fmt.Printf("::: fads-app... [done]\n")
 }
