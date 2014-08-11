@@ -1,5 +1,6 @@
 package fastjet
 
+// JetAlgorithm defines the algorithm used for clustering jets
 type JetAlgorithm int
 
 const (
