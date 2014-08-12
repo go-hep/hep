@@ -7,21 +7,25 @@ import (
 
 // Equal returns true if p1==p2
 func Equal(p1, p2 P4) bool {
-	if cmpeq(p1.E(), p2.E()) &&
-		cmpeq(p1.Px(), p2.Px()) &&
-		cmpeq(p1.Py(), p2.Py()) &&
-		cmpeq(p1.Pz(), p2.Pz()) {
+	return p4equal(p1, p2, 1e-14)
+}
+
+func p4equal(p1, p2 P4, epsilon float64) bool {
+	if cmpeq(p1.E(), p2.E(), epsilon) &&
+		cmpeq(p1.Px(), p2.Px(), epsilon) &&
+		cmpeq(p1.Py(), p2.Py(), epsilon) &&
+		cmpeq(p1.Pz(), p2.Pz(), epsilon) {
 		return true
 	}
 	return false
 }
 
-func cmpeq(x, y float64) bool {
+func cmpeq(x, y, epsilon float64) bool {
 	if x == y {
 		return true
 	}
 
-	return math.Abs(x-y) < 1e-14
+	return math.Abs(x-y) < epsilon
 }
 
 // Add returns the sum p1+p2.
