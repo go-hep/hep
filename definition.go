@@ -112,12 +112,12 @@ type JetDefinition struct {
 	plugin     Plugin
 }
 
-func NewJetDefinition(alg JetAlgorithm, r float64) JetDefinition {
+func NewJetDefinition(alg JetAlgorithm, r float64, scheme RecombinationScheme, strategy Strategy) JetDefinition {
 	return JetDefinition{
 		alg:        alg,
 		r:          r,
-		recombiner: NewRecombiner(EScheme),
-		strategy:   BestStrategy,
+		recombiner: NewRecombiner(scheme),
+		strategy:   strategy,
 	}
 }
 
