@@ -317,11 +317,18 @@ func (cs *ClusterSequence) addStepToHistory(istep, i1, i2, idx int, dij float64)
 func (cs *ClusterSequence) runN3Dumb() error {
 	var err error
 	njets := len(cs.jets)
-	jets := make([]*Jet, njets)
+	type jetinfo struct {
+		jet *Jet
+		idx int
+	}
+	jets := make([]jetinfo, njets)
 	indices := make([]int, njets)
 
 	for i := range cs.jets {
-		jets[i] = &cs.jets[i]
+		jets[i] = jetinfo{
+			jet: &cs.jets[i],
+			idx: i,
+		}
 		indices[i] = i
 	}
 
@@ -329,9 +336,9 @@ func (cs *ClusterSequence) runN3Dumb() error {
 		ii := 0
 		jj := -2
 		// find smallest beam distance
-		ymin := cs.jetScaleForAlgorithm(jets[0])
+		ymin := cs.jetScaleForAlgorithm(jets[0].jet)
 		for i := 0; i < n; i++ {
-			y := cs.jetScaleForAlgorithm(jets[i])
+			y := cs.jetScaleForAlgorithm(jets[i].jet)
 			if y < ymin {
 				ymin = y
 				ii = i
@@ -341,9 +348,9 @@ func (cs *ClusterSequence) runN3Dumb() error {
 
 		// find smallest distance between pair of jets
 		for i := 0; i < n-1; i++ {
-			ijet := jets[i]
+			ijet := jets[i].jet
 			for j := i + 1; j < n; j++ {
-				jjet := jets[j]
+				jjet := jets[j].jet
 				jetscale := math.Min(
 					cs.jetScaleForAlgorithm(ijet),
 					cs.jetScaleForAlgorithm(jjet),
@@ -361,13 +368,15 @@ func (cs *ClusterSequence) runN3Dumb() error {
 		newn := 2*len(jets) - n
 		if jj >= 0 {
 			//combine pair
-			nn, err := cs.ijRecombinationStep(indices[ii], indices[jj], ymin)
+			nn, err := cs.ijRecombinationStep(jets[ii].idx, jets[jj].idx, ymin)
 			if err != nil {
 				return err
 			}
-
 			// internal bookkeeping
-			jets[ii] = &cs.jets[nn]
+			jets[ii] = jetinfo{
+				jet: &cs.jets[nn],
+				idx: nn,
+			}
 			// have jj point to jet that was pointed at by n-1
 			// since original jj is no longer current
 			jets[jj] = jets[n-1]
@@ -375,10 +384,13 @@ func (cs *ClusterSequence) runN3Dumb() error {
 			indices[jj] = indices[n-1]
 		} else {
 			// combine ii with beam
-			err = cs.ibRecombinationStep(indices[ii], ymin)
+			err = cs.ibRecombinationStep(jets[ii].idx, ymin)
 			if err != nil {
 				return err
 			}
+			// put last jet in place of ii which has disappeared
+			jets[ii] = jets[n-1]
+			indices[ii] = indices[n-1]
 		}
 	}
 	return err
