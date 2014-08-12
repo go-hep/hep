@@ -37,14 +37,23 @@ func (jet *Jet) Pt2() float64 {
 }
 
 func (jet *Jet) Rapidity() float64 {
-	m := jet.M()
-	m2 := math.Max(0, m*m) // effective mass - force non-tachyonic mass
-	e := jet.E() + math.Abs(jet.Pz())
-	rap := 0.5 * math.Log((jet.Pt2()+m2)/(e*e))
-	if jet.Pz() > 0 {
-		rap = -rap
-	}
-	return rap
+	return 0.5 * math.Log((jet.E()+jet.Pz())/(jet.E()-jet.Pz()))
+	/*
+		var rap float64
+		if jet.E() == math.Abs(jet.Pz()) && jet.Pt2() == 0 {
+			rap = MaxRap + math.Abs(jet.Pz())
+		} else {
+			m := jet.M()
+			m2 := math.Max(0, m*m) // effective mass - force non-tachyonic mass
+			e := jet.E() + math.Abs(jet.Pz())
+			rap = 0.5 * math.Log((jet.Pt2()+m2)/(e*e))
+		}
+
+		if jet.Pz() > 0 {
+			rap = -rap
+		}
+		return rap
+	*/
 }
 
 func (jet *Jet) Constituents() []Jet {
