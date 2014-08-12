@@ -5,5 +5,5 @@ type ClusterSequenceStructure struct {
 }
 
 func (css ClusterSequenceStructure) Constituents(jet *Jet) ([]Jet, error) {
-	return css.cs.constituents(jet)
+	return css.cs.Constituents(jet)
 }

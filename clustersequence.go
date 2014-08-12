@@ -165,7 +165,8 @@ func (cs *ClusterSequence) run() error {
 	return err
 }
 
-func (cs *ClusterSequence) constituents(jet *Jet) ([]Jet, error) {
+// Constituents retrieves the list of constituents of a given jet
+func (cs *ClusterSequence) Constituents(jet *Jet) ([]Jet, error) {
 	return cs.addConstituents(jet)
 }
 
