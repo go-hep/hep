@@ -1,11 +1,11 @@
 package fastjet_test
 
 import (
-	"fmt"
 	"sort"
 	"testing"
 
 	"github.com/go-hep/fastjet"
+	"github.com/go-hep/fmom"
 )
 
 func TestSimple(t *testing.T) {
@@ -13,16 +13,62 @@ func TestSimple(t *testing.T) {
 		fastjet.NewJet(+99.0, +0.1, 0, 100.0),
 		fastjet.NewJet(+04.0, -0.1, 0, 005.0),
 		fastjet.NewJet(-99.0, +0.0, 0, 099.0),
+		fastjet.NewJet(+99.0, +0.1, 0, 199.0),
+		fastjet.NewJet(-99.0, +0.0, 0, 299.0),
+		fastjet.NewJet(-99.0, +1.0, 0, 399.0),
+		fastjet.NewJet(+50.0, +1.0, 100, 399.0),
 	}
+
+	// for i, jet := range particles {
+	// 	fmt.Printf("part[%d]: pt=%+e eta=%+e rap=%+e phi=%+e\n",
+	// 		i, jet.Pt(), jet.Eta(), jet.Rapidity(), jet.Phi(),
+	// 	)
+	// }
 
 	// choose a jet definition
 	r := 0.7
-	def := fastjet.NewJetDefinition(fastjet.AntiKtAlgorithm, r)
+	def := fastjet.NewJetDefinition(fastjet.AntiKtAlgorithm, r, fastjet.EScheme, fastjet.BestStrategy)
+
+	if def.R() != r {
+		t.Fatalf("expected r-param=%v. got=%v", r, def.R())
+	}
+
+	if def.RecombinationScheme() != fastjet.EScheme {
+		t.Fatalf("expected scheme=%v. got=%v", def.RecombinationScheme(), fastjet.EScheme)
+	}
+
+	if def.Strategy() != fastjet.BestStrategy {
+		t.Fatalf("expected strategy=%v. got=%v", def.Strategy(), fastjet.BestStrategy)
+	}
 
 	// run the clustering, extract jets
 	cs, err := fastjet.NewClusterSequence(particles, def)
 	if err != nil {
 		t.Fatalf("clustering failed: %v", err)
+	}
+
+	expected := []struct {
+		jet fmom.PxPyPzE
+		cts []fmom.PxPyPzE
+	}{
+		{
+			jet: fmom.NewPxPyPzE(-2.970000e+02, +1.000000e+00, +0.000000e+00, +7.970000e+02),
+			cts: []fmom.PxPyPzE{
+
+				fmom.NewPxPyPzE(-9.900000e+01, +1.000000e+00, +0.000000e+00, +3.990000e+02),
+				fmom.NewPxPyPzE(-9.900000e+01, +0.000000e+00, +0.000000e+00, +9.900000e+01),
+				fmom.NewPxPyPzE(-9.900000e+01, +0.000000e+00, +0.000000e+00, +2.990000e+02),
+			},
+		},
+		{
+			jet: fmom.NewPxPyPzE(+2.520000e+02, +1.100000e+00, +1.000000e+02, +7.030000e+02),
+			cts: []fmom.PxPyPzE{
+				fmom.NewPxPyPzE(+5.000000e+01, +1.000000e+00, +1.000000e+02, +3.990000e+02),
+				fmom.NewPxPyPzE(+4.000000e+00, -1.000000e-01, +0.000000e+00, +5.000000e+00),
+				fmom.NewPxPyPzE(+9.900000e+01, +1.000000e-01, +0.000000e+00, +1.000000e+02),
+				fmom.NewPxPyPzE(+9.900000e+01, +1.000000e-01, +0.000000e+00, +1.990000e+02),
+			},
+		},
 	}
 
 	const ptmin = 0
@@ -32,19 +78,34 @@ func TestSimple(t *testing.T) {
 	}
 	sort.Sort(fastjet.ByPt(jets))
 
-	// print out some infos
-	fmt.Printf("clustered with: %s\n", def.Description())
-
+	if len(jets) != len(expected) {
+		t.Fatalf("expected %d jets. got=%d", len(expected), len(jets))
+	}
 	// print the jets
 	for i := range jets {
+		ref := &expected[i]
 		jet := &jets[i]
-		fmt.Printf("jet[%d]: pt=%+e eta=%+e phi=%+e\n",
-			i, jet.Pt(), jet.Eta(), jet.Phi(),
-		)
+		if !fmom.Equal(&ref.jet, jet) {
+			t.Fatalf("jet[%d] differ:\nexp: %v\ngot: %v\n", i,
+				ref.jet,
+				jet.PxPyPzE,
+			)
+		}
 		constituents := jet.Constituents()
+		if len(constituents) != len(ref.cts) {
+			t.Fatalf("jet[%d]: expected %d constituents. got=%d",
+				i, len(ref.cts), len(constituents),
+			)
+		}
 		for j := range constituents {
 			jj := &constituents[j]
-			fmt.Printf("  constituent[%d]: pt=%+e\n", j, jj.Pt())
+			if !fmom.Equal(&ref.cts[j], jj) {
+				t.Fatalf("jet[%d].constituent[%d] differ:\nexp: %v\ngot: %v\n",
+					i, j,
+					ref.cts[j],
+					jj.PxPyPzE,
+				)
+			}
 		}
 	}
 }
