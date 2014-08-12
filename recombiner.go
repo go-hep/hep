@@ -38,7 +38,7 @@ func (rec DefaultRecombiner) Recombine(j1, j2 *Jet) (Jet, error) {
 
 	switch rec.Scheme() {
 	case EScheme:
-		jet.PxPyPzE = fmom.NewPxPyPzE(
+		jet = NewJet(
 			j1.Px()+j2.Px(),
 			j1.Py()+j2.Py(),
 			j1.Pz()+j2.Pz(),
@@ -70,14 +70,14 @@ func (rec DefaultRecombiner) Recombine(j1, j2 *Jet) (Jet, error) {
 			phi2 -= 2 * math.Pi
 		}
 		phi := (w1*phi1 + w2*phi2) / (w1 + w2)
-		jet.PxPyPzE = fmom.NewPxPyPzE(
+		jet = NewJet(
 			pt*math.Cos(phi),
 			pt*math.Sin(phi),
 			pt*math.Sinh(y),
 			pt*math.Cosh(y),
 		)
 	} else {
-		jet.PxPyPzE = fmom.NewPxPyPzE(0, 0, 0, 0)
+		jet = NewJet(0, 0, 0, 0)
 	}
 
 	return jet, err
