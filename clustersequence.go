@@ -47,6 +47,7 @@ func NewClusterSequence(jets []Jet, def JetDefinition) (*ClusterSequence, error)
 
 	cs.r2 = cs.r * cs.r
 	cs.invR2 = 1.0 / cs.r2
+	cs.structure = ClusterSequenceStructure{cs}
 
 	copy(cs.jets, jets)
 	err = cs.init()
@@ -164,6 +165,50 @@ func (cs *ClusterSequence) run() error {
 	return err
 }
 
+func (cs *ClusterSequence) constituents(jet *Jet) ([]Jet, error) {
+	return cs.addConstituents(jet)
+}
+
+func (cs *ClusterSequence) addConstituents(jet *Jet) ([]Jet, error) {
+	var err error
+	var subjets []Jet
+
+	// find position in cluster history
+	i := jet.hidx
+	hh := &cs.history[i]
+	parent1 := hh.parent1
+	if parent1 == inexistentParent {
+		// It is an original particle (labelled by its parent having value
+		// inexistentParent), therefore add it on to the subjet vector
+		// Note: we add the initial particle and not simply 'jet' so that
+		//       calling addCconstituents with a subtracted jet containing
+		//       only one particle will work.
+		subjets = append(subjets, cs.jets[i])
+		return subjets, err
+	}
+
+	// add parent 1
+	sub1, err := cs.addConstituents(&cs.jets[cs.history[parent1].jet])
+	if err != nil {
+		return subjets, err
+	}
+	subjets = append(subjets, sub1...)
+
+	// see if parent2 is a real jet, then add its constituents
+	parent2 := hh.parent2
+	if parent2 == beamJetIndex {
+		return subjets, err
+	}
+
+	sub2, err := cs.addConstituents(&cs.jets[cs.history[parent2].jet])
+	if err != nil {
+		return subjets, err
+	}
+	subjets = append(subjets, sub2...)
+
+	return subjets, err
+}
+
 func (cs *ClusterSequence) jetScaleForAlgorithm(jet *Jet) float64 {
 	switch cs.alg {
 
@@ -199,6 +244,10 @@ func (cs *ClusterSequence) jetScaleForAlgorithm(jet *Jet) float64 {
 	default:
 		panic(fmt.Errorf("fastjet: unrecognised jet algorithm (%v)", cs.alg))
 	}
+}
+
+func (cs *ClusterSequence) setStructure(j *Jet) {
+	j.structure = cs.structure
 }
 
 // do_ij_recombination_step
@@ -259,8 +308,7 @@ func (cs *ClusterSequence) addStepToHistory(istep, i1, i2, idx int, dij float64)
 	// get cross-referencing right
 	if idx != invalidIndex {
 		cs.jets[idx].hidx = step
-		// FIXME: jet-structure
-		// cs.setStructure
+		cs.setStructure(&cs.jets[idx])
 	}
 
 	return err
