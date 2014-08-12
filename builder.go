@@ -6,4 +6,7 @@ type ClusterBuilder interface {
 	InclusiveJets(ptmin float64) ([]Jet, error)
 
 	// ExclusiveJets
+
+	// Constituents retrieves the constituents of a jet
+	Constituents(jet *Jet) ([]Jet, error)
 }
