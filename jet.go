@@ -22,22 +22,41 @@ type Jet struct {
 	UserInfo  UserInfo // holds extra user information for this Jet
 	hidx      int      // cluster sequence history index
 	structure JetStructure
+
+	// -- cache
+
+	rap float64
+	pt2 float64
+	phi float64
 }
 
 func NewJet(px, py, pz, e float64) Jet {
-	return Jet{
+	jet := Jet{
 		PxPyPzE: fmom.NewPxPyPzE(px, py, pz, e),
 		hidx:    -1,
 	}
+	jet.setupCache()
+	return jet
+}
+
+func (jet *Jet) setupCache() {
+	pt := jet.Pt()
+	jet.pt2 = pt * pt
+
+	jet.rap = 0.5 * math.Log((jet.E()+jet.Pz())/(jet.E()-jet.Pz()))
+	jet.phi = jet.PxPyPzE.Phi()
 }
 
 func (jet *Jet) Pt2() float64 {
-	pt := jet.Pt()
-	return pt * pt
+	return jet.pt2
+}
+
+func (jet *Jet) Phi() float64 {
+	return jet.phi
 }
 
 func (jet *Jet) Rapidity() float64 {
-	return 0.5 * math.Log((jet.E()+jet.Pz())/(jet.E()-jet.Pz()))
+	return jet.rap
 	/*
 		var rap float64
 		if jet.E() == math.Abs(jet.Pz()) && jet.Pt2() == 0 {
@@ -67,8 +86,12 @@ func (jet *Jet) Constituents() []Jet {
 
 // Distance returns the squared cylinder (rapidity-phi) distance between 2 jets
 func Distance(j1, j2 *Jet) float64 {
-	dphi := deltaPhi(j1, j2)
-	drap := deltaRap(j1, j2)
+	//dphi := deltaPhi(j1, j2)
+	dphi := math.Abs(j1.Phi() - j2.Phi())
+	if dphi > math.Pi {
+		dphi = 2*math.Pi - dphi
+	}
+	drap := j1.Rapidity() - j2.Rapidity()
 	return dphi*dphi + drap*drap
 }
 
