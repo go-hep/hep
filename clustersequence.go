@@ -252,7 +252,6 @@ func (cs *ClusterSequence) setStructure(j *Jet) {
 
 // do_ij_recombination_step
 func (cs *ClusterSequence) ijRecombinationStep(i, j int, dij float64) (int, error) {
-	fmt.Printf("ij-recomb: i=%d j=%d dij=%+e\n", i, j, dij)
 
 	k := -1
 	// create the new jet by recombining the first two
@@ -269,6 +268,7 @@ func (cs *ClusterSequence) ijRecombinationStep(i, j int, dij float64) (int, erro
 
 	ihist := ijet.hidx
 	jhist := jjet.hidx
+
 	err = cs.addStepToHistory(khist, imin(ihist, jhist), imax(ihist, jhist), k, dij)
 	return k, err
 }
@@ -281,7 +281,6 @@ func (cs *ClusterSequence) ibRecombinationStep(i int, dib float64) error {
 
 func (cs *ClusterSequence) addStepToHistory(istep, i1, i2, idx int, dij float64) error {
 	var err error
-	fmt.Printf("istep=%d i1=%d i2=%d idx=%d dij=%+e\n", istep, i1, i2, idx, dij)
 
 	cs.history = append(cs.history,
 		history{
