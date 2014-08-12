@@ -11,7 +11,7 @@ type Plugin interface {
 }
 
 var (
-	g_plugins map[string]Plugin
+	g_plugins = make(map[string]Plugin)
 )
 
 func Register(name string, plugin Plugin) {
