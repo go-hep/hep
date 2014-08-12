@@ -6,6 +6,12 @@ import (
 	"github.com/go-hep/fmom"
 )
 
+// // Used to protect against parton-level events where pt can be zero
+// // for some partons, giving rapidity=infinity. KtJet fails in those cases.
+// const (
+// 	MaxRap = 1e5
+// )
+
 // UserInfo holds extra user information in a Jet
 type UserInfo interface{}
 
