@@ -1,9 +1,12 @@
 package fads
 
 import (
+	"math"
 	"reflect"
+	"sort"
 
 	"github.com/go-hep/fastjet"
+	"github.com/go-hep/fmom"
 	"github.com/go-hep/fwk"
 )
 
@@ -15,6 +18,7 @@ type fastjetFinder struct {
 	output string
 	rho    string
 
+	jetDef           fastjet.JetDefinition
 	jetAlg           fastjet.JetAlgorithm
 	paramR           float64
 	jetPtMin         float64
@@ -71,6 +75,8 @@ func (tsk *fastjetFinder) Configure(ctx fwk.Context) error {
 		return fwk.Errorf("fastjet-finder: only implemented with *NO* area-definition")
 	}
 
+	tsk.jetDef = fastjet.NewJetDefinition(tsk.jetAlg, tsk.paramR, fastjet.EScheme, fastjet.BestStrategy)
+
 	return err
 }
 
@@ -89,6 +95,102 @@ func (tsk *fastjetFinder) StopTask(ctx fwk.Context) error {
 func (tsk *fastjetFinder) Process(ctx fwk.Context) error {
 	var err error
 
+	store := ctx.Store()
+
+	v, err := store.Get(tsk.input)
+	if err != nil {
+		return err
+	}
+	input := v.([]Candidate)
+
+	output := make([]Candidate, 0)
+	defer func() {
+		err = store.Put(tsk.output, &output)
+	}()
+
+	injets := make([]fastjet.Jet, 0, len(input))
+	for i := range input {
+		cand := &input[i]
+		jet := fastjet.NewJet(cand.Mom.Px(), cand.Mom.Py(), cand.Mom.Pz(), cand.Mom.E())
+		jet.UserInfo = i
+		injets = append(injets, jet)
+	}
+
+	// construct jets
+	var bldr fastjet.ClusterBuilder
+	if tsk.areaDef != nil {
+		// FIXME
+		panic("not implemented")
+	} else {
+		bldr, err = fastjet.NewClusterSequence(injets, tsk.jetDef)
+		if err != nil {
+			return err
+		}
+	}
+
+	// compute rho and store it
+	if tsk.computeRho {
+		// FIXME
+		panic("not implemented")
+	}
+
+	outjets, err := bldr.InclusiveJets(tsk.jetPtMin)
+	if err != nil {
+		return err
+	}
+	sort.Sort(fastjet.ByPt(outjets))
+
+	detaMax := 0.0
+	dphiMax := 0.0
+	output = make([]Candidate, 0, len(outjets))
+	for i := range outjets {
+		jet := &outjets[i]
+		area := fmom.PxPyPzE{0, 0, 0, 0}
+		if tsk.areaDef != nil {
+			// FIXME
+			panic("not implemented")
+			// area = jet.Area()
+		}
+
+		cand := Candidate{
+			Mom: jet.PxPyPzE,
+		}
+
+		time := 0.0
+		wtime := 0.0
+		csts, err := bldr.Constituents(jet)
+		if err != nil {
+			return err
+		}
+
+		for j := range csts {
+			idx := csts[j].UserInfo.(int)
+			cst := &input[idx]
+			deta := math.Abs(cand.Mom.Eta() - cst.Mom.Eta())
+			dphi := math.Abs(fmom.DeltaPhi(&cand.Mom, &cst.Mom))
+			if deta > detaMax {
+				detaMax = deta
+			}
+			if dphi > dphiMax {
+				dphiMax = dphi
+			}
+
+			esqrt := math.Sqrt(cst.Mom.E())
+			time += esqrt * cst.Pos.T()
+			wtime += esqrt
+
+			cand.Add(cst)
+		}
+
+		cand.Pos[3] = time / wtime
+		cand.Area = area
+		cand.DEta = detaMax
+		cand.DPhi = dphiMax
+
+		output = append(output, cand)
+	}
+
+	// fmt.Printf("%s: input=%02d outjets=%02d\n", tsk.Name(), len(input), len(output))
 	return err
 }
 
