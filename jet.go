@@ -56,9 +56,13 @@ func (jet *Jet) Rapidity() float64 {
 	*/
 }
 
+// Constituents returns the list of constituents for this jet.
 func (jet *Jet) Constituents() []Jet {
-	// FIXME
-	return nil
+	subjets, err := jet.structure.Constituents(jet)
+	if err != nil {
+		panic(err)
+	}
+	return subjets
 }
 
 // Distance returns the squared cylinder (rapidity-phi) distance between 2 jets
