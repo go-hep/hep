@@ -170,10 +170,10 @@ type Candidate struct {
 	CandCharge     int32   // particle charge
 	CandMass       float64 // particle mass
 
-	IsPU          byte // 0 or 1 for particles from pile-up interactions
-	IsConstituent byte // 0 or 1 for particles being constituents
-	BTag          uint // b-tag information (bit-mask)
-	TauTag        uint // tau-tag information (bit-mask)
+	IsPU          byte   // 0 or 1 for particles from pile-up interactions
+	IsConstituent byte   // 0 or 1 for particles being constituents
+	BTag          uint32 // b-tag information (bit-mask)
+	TauTag        uint32 // tau-tag information (bit-mask)
 
 	Eem  float64 // electromagnetic energy
 	Ehad float64 // hadronic energy
