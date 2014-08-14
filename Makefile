@@ -12,7 +12,7 @@ build:
 
 test: build
 	@go test $(GOFLAGS) ./...
-	test-fads-app -l INFO -evtmax=-1 -cpu-prof
+	fads-app -l INFO -evtmax=-1 -cpu-prof
 
 clean:
 	@go clean $(GOFLAGS) -i ./...
