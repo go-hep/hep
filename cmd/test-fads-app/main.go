@@ -6,6 +6,7 @@ import (
 	"math"
 	"os"
 	"runtime/pprof"
+	"time"
 
 	"github.com/go-hep/fads"
 	"github.com/go-hep/fastjet"
@@ -23,6 +24,7 @@ var (
 )
 
 func main() {
+	start := time.Now()
 	fmt.Printf("::: fads-app...\n")
 
 	flag.Parse()
@@ -550,5 +552,6 @@ func main() {
 	})
 
 	app.Run()
+	fmt.Printf("::: fads-app:   time=%v\n", time.Since(start))
 	fmt.Printf("::: fads-app... [done]\n")
 }
