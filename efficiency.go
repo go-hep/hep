@@ -85,38 +85,38 @@ func (tsk *Efficiency) Process(ctx fwk.Context) error {
 	return err
 }
 
+func newEfficiency(typ, name string, mgr fwk.App) (fwk.Component, error) {
+	var err error
+	tsk := &Efficiency{
+		TaskBase: fwk.NewTask(typ, name, mgr),
+		input:    "InputParticles",
+		output:   "OutputParticles",
+		eff:      func(x, y float64) float64 { return 1 },
+		seed:     1234,
+	}
+	err = tsk.DeclProp("Input", &tsk.input)
+	if err != nil {
+		return nil, err
+	}
+
+	err = tsk.DeclProp("Output", &tsk.output)
+	if err != nil {
+		return nil, err
+	}
+
+	err = tsk.DeclProp("Eff", &tsk.eff)
+	if err != nil {
+		return nil, err
+	}
+
+	err = tsk.DeclProp("Seed", &tsk.seed)
+	if err != nil {
+		return nil, err
+	}
+
+	return tsk, err
+}
+
 func init() {
-	fwk.Register(reflect.TypeOf(Efficiency{}),
-		func(typ, name string, mgr fwk.App) (fwk.Component, error) {
-			var err error
-			tsk := &Efficiency{
-				TaskBase: fwk.NewTask(typ, name, mgr),
-				input:    "InputParticles",
-				output:   "OutputParticles",
-				eff:      func(x, y float64) float64 { return 1 },
-				seed:     1234,
-			}
-			err = tsk.DeclProp("Input", &tsk.input)
-			if err != nil {
-				return nil, err
-			}
-
-			err = tsk.DeclProp("Output", &tsk.output)
-			if err != nil {
-				return nil, err
-			}
-
-			err = tsk.DeclProp("Eff", &tsk.eff)
-			if err != nil {
-				return nil, err
-			}
-
-			err = tsk.DeclProp("Seed", &tsk.seed)
-			if err != nil {
-				return nil, err
-			}
-
-			return tsk, err
-		},
-	)
+	fwk.Register(reflect.TypeOf(Efficiency{}), newEfficiency)
 }
