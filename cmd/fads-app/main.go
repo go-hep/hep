@@ -24,11 +24,23 @@ var (
 )
 
 func main() {
-	start := time.Now()
-	fmt.Printf("::: fads-app...\n")
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, `Usage: fads-app [options] <hepmc-input-file>
+
+ex:
+ $ fads-app -l=INFO -evtmax=-1 ./testdata/hepmc.data
+
+options:
+`,
+		)
+		flag.PrintDefaults()
+	}
 
 	flag.Parse()
 
+	start := time.Now()
+
+	fmt.Printf("::: fads-app...\n")
 	if *g_cpu_prof {
 		f, err := os.Create("cpu.prof")
 		if err != nil {
@@ -64,13 +76,18 @@ func main() {
 		},
 	})
 
+	input := "testdata/hepmc.data"
+	//input := "testdata/full.hepmc.data"
+	if flag.NArg() > 0 {
+		input = flag.Arg(0)
+	}
+
 	// read HepMC data
 	app.Create(job.C{
 		Type: "github.com/go-hep/fads.HepMcReader",
 		Name: "hepmcreader",
 		Props: job.P{
-			"Input": "testdata/hepmc.data",
-			//"Input": "testdata/full.hepmc.data",
+			"Input": input,
 		},
 	})
 
