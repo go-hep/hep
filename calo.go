@@ -356,14 +356,14 @@ func (tsk *Calorimeter) Process(ctx fwk.Context) error {
 	for towerid, hits := range hits {
 		// hits are sorted first by eta bin-id, then phi bin-id,
 		// then flags and then by particle or track number
-		sort.Sort(Int64Slice(hits))
+		sort.Sort(int64Slice(hits))
 		twrhits = append(twrhits, towerid)
 		nhits += len(hits)
 	}
 
 	// hits are sorted first by eta bin-id, then phi bin-id,
 	// then flags and then by particle or track number
-	sort.Sort(Int64Slice(twrhits))
+	sort.Sort(int64Slice(twrhits))
 
 	msg.Debugf("tower-hits: %d (%d)\n", nhits, len(twrhits))
 
