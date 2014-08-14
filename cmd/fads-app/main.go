@@ -580,6 +580,6 @@ options:
 	})
 
 	app.Run()
-	fmt.Printf("::: fads-app:   time=%v\n", time.Since(start))
-	fmt.Printf("::: fads-app... [done]\n")
+
+	fmt.Printf("::: fads-app... [done] (time=%v)\n", time.Since(start))
 }
