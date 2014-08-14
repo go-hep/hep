@@ -105,7 +105,7 @@ func (tsk *FastJetFinder) Process(ctx fwk.Context) error {
 
 	output := make([]Candidate, 0)
 	defer func() {
-		err = store.Put(tsk.output, &output)
+		err = store.Put(tsk.output, output)
 	}()
 
 	injets := make([]fastjet.Jet, 0, len(input))
