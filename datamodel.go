@@ -172,8 +172,8 @@ type Candidate struct {
 
 	IsPU          byte // 0 or 1 for particles from pile-up interactions
 	IsConstituent byte // 0 or 1 for particles being constituents
-	BTag          byte // 0 or 1 for a candidate that has been tagged as containing a heavy quark
-	TauTag        byte // 0 or 1 for a candidate that has been tagged as a tau
+	BTag          uint // b-tag information (bit-mask)
+	TauTag        uint // tau-tag information (bit-mask)
 
 	Eem  float64 // electromagnetic energy
 	Ehad float64 // hadronic energy
