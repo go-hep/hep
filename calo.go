@@ -424,7 +424,7 @@ func (tsk *Calorimeter) Process(ctx fwk.Context) error {
 				calotower.HCal.Add(ene*twrhcal[n], t)
 				tower.Add(part)
 			}
-			msg.Debugf("hit=0x%x >> flags=0x%x, n=%d\n", hit, flags, n)
+			// msg.Debugf("hit=0x%x >> flags=0x%x, n=%d\n", hit, flags, n)
 		}
 
 		ecalSigma := tsk.ecalres(calotower.Eta, calotower.ECal.Ene)
