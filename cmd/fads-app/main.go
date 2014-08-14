@@ -21,6 +21,7 @@ var (
 	abs  = math.Abs
 	sqrt = math.Sqrt
 	pow  = math.Pow
+	tanh = math.Tanh
 )
 
 func main() {
@@ -579,6 +580,63 @@ options:
 		},
 	})
 
+	// b-tagging
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.BTagging",
+		Name: "btag",
+		Props: job.P{
+			"Partons": "/fads/Partons",
+			"Jets":    "/fads/jet-ene-scale/jets",
+			"Output":  "/fads/btag/jets",
+
+			"BitNumber":    uint(0),
+			"DeltaR":       0.5,
+			"PartonPtMin":  1.0,
+			"PartonEtaMax": 2.5,
+
+			// efficiency formula: [pdg-code] -> (pt,eta)
+			// pdg-code: the highest PDG code of a quark or gluon inside a DeltaR-cone
+			//           around the jet axis
+			//           gluon's pdg-code has the lowest priority.
+			"Eff": map[int]func(pt, eta float64) float64{
+				// default efficiency (mis-identification rate)
+				0: func(pt, eta float64) float64 { return 0.001 },
+
+				// efficiency for c-jets (mis-identification rate)
+				4: func(pt, eta float64) float64 {
+					switch {
+					case pt <= 15.0:
+						return (0.000)
+
+					case (abs(eta) <= 1.2) && (pt > 15.0):
+						return (0.2 * tanh(pt*0.03-0.4))
+
+					case (abs(eta) > 1.2 && abs(eta) <= 2.5) && (pt > 15.0):
+						return (0.1 * tanh(pt*0.03-0.4))
+
+					case (abs(eta) > 2.5):
+						return (0.000)
+					}
+					return 0
+				},
+
+				// efficiency for b-jets
+				5: func(pt, eta float64) float64 {
+					switch {
+					case (pt <= 15.0):
+						return (0.000)
+					case (abs(eta) <= 1.2) && (pt > 15.0):
+						return (0.5 * tanh(pt*0.03-0.4))
+					case (abs(eta) > 1.2 && abs(eta) <= 2.5) && (pt > 15.0):
+						return (0.4 * tanh(pt*0.03-0.4))
+					case (abs(eta) > 2.5):
+						return (0.000)
+					}
+					return 0
+				},
+			},
+		},
+	})
 	app.Run()
 
 	fmt.Printf("::: fads-app... [done] (time=%v)\n", time.Since(start))
