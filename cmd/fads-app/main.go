@@ -637,7 +637,32 @@ options:
 			},
 		},
 	})
-	app.Run()
 
+	// tau-tagging
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.TauTagging",
+		Name: "tau-tag",
+		Props: job.P{
+			"Particles": "/fads/AllParticles",
+			"Partons":   "/fads/Partons",
+			"Jets":      "/fads/btag/jets",
+			"Output":    "/fads/tau-tag/jets",
+
+			"DeltaR":    0.5,
+			"TauPtMin":  1.0,
+			"TauEtaMax": 2.5,
+
+			// efficiency formula: [pdg-code] -> (pt,eta)
+			"Eff": map[int]func(pt, eta float64) float64{
+				// default efficiency (mis-identification rate)
+				0: func(pt, eta float64) float64 { return 0.001 },
+
+				// efficiency for tau-jets
+				15: func(pt, eta float64) float64 { return 0.4 },
+			},
+		},
+	})
+
+	app.Run()
 	fmt.Printf("::: fads-app... [done] (time=%v)\n", time.Since(start))
 }
