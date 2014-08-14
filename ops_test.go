@@ -202,3 +202,67 @@ func TestEqual(t *testing.T) {
 		}
 	}
 }
+
+func TestScale(t *testing.T) {
+	for _, table := range []struct {
+		p   P4
+		a   float64
+		exp P4
+	}{
+		{
+			p:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			a:   1,
+			exp: newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+		},
+
+		{
+			p:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			a:   0,
+			exp: newPxPyPzE(NewPxPyPzE(0, 0, 0, 0)),
+		},
+
+		{
+			p:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			a:   -1,
+			exp: newPxPyPzE(NewPxPyPzE(-10, -10, -10, -20)),
+		},
+
+		{
+			p:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			a:   2,
+			exp: newPxPyPzE(NewPxPyPzE(20, 20, 20, 40)),
+		},
+
+		{
+			p:   newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			a:   2,
+			exp: newEEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+		},
+		{
+			p:   newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			a:   2,
+			exp: newEtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+		},
+		{
+			p:   newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			a:   2,
+			exp: newPtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+		},
+		{
+			p:   newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			a:   2,
+			exp: newIPtCotThPhiM(NewPxPyPzE(20, 20, 20, 40)),
+		},
+	} {
+		p := table.p.Clone()
+
+		o := Scale(table.a, p)
+
+		if !deepEqual(o, table.exp) {
+			t.Fatalf("exp: %#v\ngot: %#v", table.exp, o)
+		}
+		if !reflect.DeepEqual(p, table.p) {
+			t.Fatalf("add modified p:\np=%#v (ref)\np=%#v (new)", table.p, p)
+		}
+	}
+}
