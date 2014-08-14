@@ -79,7 +79,7 @@ func (tsk *Merger) Process(ctx fwk.Context) error {
 			return err
 		}
 		input := v.([]Candidate)
-		msg.Debugf(">>> input: %v\n", len(input))
+		msg.Debugf(">>> input[%s]: %v\n", k, len(input))
 
 		for i := range input {
 			cand := &input[i]
