@@ -551,6 +551,17 @@ func main() {
 		},
 	})
 
+	// jet energy scale
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.EnergyScale",
+		Name: "jet-ene-scale",
+		Props: job.P{
+			"Input":  "/fads/fastjet-finder/jets",
+			"Output": "/fads/jet-ene-scale/jets",
+			"Scale":  func(eta, pt float64) float64 { return 1.08 },
+		},
+	})
+
 	app.Run()
 	fmt.Printf("::: fads-app:   time=%v\n", time.Since(start))
 	fmt.Printf("::: fads-app... [done]\n")
