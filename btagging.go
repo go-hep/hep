@@ -6,11 +6,11 @@ import (
 	"github.com/go-hep/fwk"
 )
 
-type btagging struct {
+type BTagging struct {
 	fwk.TaskBase
 }
 
-func (tsk *btagging) Configure(ctx fwk.Context) error {
+func (tsk *BTagging) Configure(ctx fwk.Context) error {
 	var err error
 
 	// err = tsk.DeclInPort(tsk.input, reflect.TypeOf(sometype{}))
@@ -26,19 +26,19 @@ func (tsk *btagging) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *btagging) StartTask(ctx fwk.Context) error {
+func (tsk *BTagging) StartTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *btagging) StopTask(ctx fwk.Context) error {
+func (tsk *BTagging) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *btagging) Process(ctx fwk.Context) error {
+func (tsk *BTagging) Process(ctx fwk.Context) error {
 	var err error
 
 	return err
@@ -47,7 +47,7 @@ func (tsk *btagging) Process(ctx fwk.Context) error {
 func newBTagging(typ, name string, mgr fwk.App) (fwk.Component, error) {
 	var err error
 
-	tsk := &btagging{
+	tsk := &BTagging{
 		TaskBase: fwk.NewTask(typ, name, mgr),
 		// input:    "Input",
 		// output:   "Output",
@@ -67,5 +67,5 @@ func newBTagging(typ, name string, mgr fwk.App) (fwk.Component, error) {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(btagging{}), newBTagging)
+	fwk.Register(reflect.TypeOf(BTagging{}), newBTagging)
 }

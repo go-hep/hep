@@ -10,7 +10,7 @@ import (
 	"github.com/go-hep/random"
 )
 
-type energySmearing struct {
+type EnergySmearing struct {
 	fwk.TaskBase
 
 	input  string
@@ -21,7 +21,7 @@ type energySmearing struct {
 	src   rand.Source
 }
 
-func (tsk *energySmearing) Configure(ctx fwk.Context) error {
+func (tsk *EnergySmearing) Configure(ctx fwk.Context) error {
 	var err error
 
 	err = tsk.DeclInPort(tsk.input, reflect.TypeOf([]Candidate{}))
@@ -37,19 +37,19 @@ func (tsk *energySmearing) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *energySmearing) StartTask(ctx fwk.Context) error {
+func (tsk *EnergySmearing) StartTask(ctx fwk.Context) error {
 	var err error
 	tsk.src = rand.NewSource(tsk.seed)
 	return err
 }
 
-func (tsk *energySmearing) StopTask(ctx fwk.Context) error {
+func (tsk *EnergySmearing) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *energySmearing) Process(ctx fwk.Context) error {
+func (tsk *EnergySmearing) Process(ctx fwk.Context) error {
 	var err error
 	store := ctx.Store()
 	msg := ctx.Msg()
@@ -103,10 +103,10 @@ func (tsk *energySmearing) Process(ctx fwk.Context) error {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(energySmearing{}),
+	fwk.Register(reflect.TypeOf(EnergySmearing{}),
 		func(typ, name string, mgr fwk.App) (fwk.Component, error) {
 			var err error
-			tsk := &energySmearing{
+			tsk := &EnergySmearing{
 				TaskBase: fwk.NewTask(typ, name, mgr),
 				input:    "InputParticles",
 				output:   "OutputParticles",

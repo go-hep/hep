@@ -19,7 +19,7 @@ func (iso isoclassifier) Category(track *Candidate) int {
 	return 0
 }
 
-type isolation struct {
+type Isolation struct {
 	fwk.TaskBase
 
 	candidates string
@@ -35,7 +35,7 @@ type isolation struct {
 	classifier isoclassifier
 }
 
-func (tsk *isolation) Configure(ctx fwk.Context) error {
+func (tsk *Isolation) Configure(ctx fwk.Context) error {
 	var err error
 
 	err = tsk.DeclInPort(tsk.candidates, reflect.TypeOf([]Candidate{}))
@@ -63,19 +63,19 @@ func (tsk *isolation) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *isolation) StartTask(ctx fwk.Context) error {
+func (tsk *Isolation) StartTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *isolation) StopTask(ctx fwk.Context) error {
+func (tsk *Isolation) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *isolation) Process(ctx fwk.Context) error {
+func (tsk *Isolation) Process(ctx fwk.Context) error {
 	var err error
 
 	deltaRMax2 := tsk.deltaRMax * tsk.deltaRMax
@@ -159,7 +159,7 @@ func (tsk *isolation) Process(ctx fwk.Context) error {
 func newIsolation(typ, name string, mgr fwk.App) (fwk.Component, error) {
 	var err error
 
-	tsk := &isolation{
+	tsk := &Isolation{
 		TaskBase:   fwk.NewTask(typ, name, mgr),
 		candidates: "InputCandidates",
 		isolations: "InputIsolations",
@@ -225,5 +225,5 @@ func newIsolation(typ, name string, mgr fwk.App) (fwk.Component, error) {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(isolation{}), newIsolation)
+	fwk.Register(reflect.TypeOf(Isolation{}), newIsolation)
 }

@@ -10,8 +10,8 @@ import (
 	"github.com/go-hep/fwk"
 )
 
-// fastjetFinder finds jets using the fastjet library
-type fastjetFinder struct {
+// FastJetFinder finds jets using the fastjet library
+type FastJetFinder struct {
 	fwk.TaskBase
 
 	input  string
@@ -49,7 +49,7 @@ type fastjetFinder struct {
 	etaRangeMap    map[float64]float64
 }
 
-func (tsk *fastjetFinder) Configure(ctx fwk.Context) error {
+func (tsk *FastJetFinder) Configure(ctx fwk.Context) error {
 	var err error
 
 	err = tsk.DeclInPort(tsk.input, reflect.TypeOf([]Candidate{}))
@@ -80,19 +80,19 @@ func (tsk *fastjetFinder) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *fastjetFinder) StartTask(ctx fwk.Context) error {
+func (tsk *FastJetFinder) StartTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *fastjetFinder) StopTask(ctx fwk.Context) error {
+func (tsk *FastJetFinder) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *fastjetFinder) Process(ctx fwk.Context) error {
+func (tsk *FastJetFinder) Process(ctx fwk.Context) error {
 	var err error
 
 	store := ctx.Store()
@@ -197,7 +197,7 @@ func (tsk *fastjetFinder) Process(ctx fwk.Context) error {
 func newFastJetFinder(typ, name string, mgr fwk.App) (fwk.Component, error) {
 	var err error
 
-	tsk := &fastjetFinder{
+	tsk := &FastJetFinder{
 		TaskBase: fwk.NewTask(typ, name, mgr),
 
 		input:  "/fads/fastjet/input",
@@ -358,5 +358,5 @@ func newFastJetFinder(typ, name string, mgr fwk.App) (fwk.Component, error) {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(fastjetFinder{}), newFastJetFinder)
+	fwk.Register(reflect.TypeOf(FastJetFinder{}), newFastJetFinder)
 }

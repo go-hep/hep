@@ -8,7 +8,7 @@ import (
 	"github.com/go-hep/random"
 )
 
-type efficiency struct {
+type Efficiency struct {
 	fwk.TaskBase
 
 	input  string
@@ -19,7 +19,7 @@ type efficiency struct {
 	dist random.Dist
 }
 
-func (tsk *efficiency) Configure(ctx fwk.Context) error {
+func (tsk *Efficiency) Configure(ctx fwk.Context) error {
 	var err error
 	err = tsk.DeclInPort(tsk.input, reflect.TypeOf([]Candidate{}))
 	if err != nil {
@@ -34,20 +34,20 @@ func (tsk *efficiency) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *efficiency) StartTask(ctx fwk.Context) error {
+func (tsk *Efficiency) StartTask(ctx fwk.Context) error {
 	var err error
 	src := rand.NewSource(tsk.seed)
 	tsk.dist = random.Flat(0, 1, &src)
 	return err
 }
 
-func (tsk *efficiency) StopTask(ctx fwk.Context) error {
+func (tsk *Efficiency) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *efficiency) Process(ctx fwk.Context) error {
+func (tsk *Efficiency) Process(ctx fwk.Context) error {
 	var err error
 	store := ctx.Store()
 	msg := ctx.Msg()
@@ -86,10 +86,10 @@ func (tsk *efficiency) Process(ctx fwk.Context) error {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(efficiency{}),
+	fwk.Register(reflect.TypeOf(Efficiency{}),
 		func(typ, name string, mgr fwk.App) (fwk.Component, error) {
 			var err error
-			tsk := &efficiency{
+			tsk := &Efficiency{
 				TaskBase: fwk.NewTask(typ, name, mgr),
 				input:    "InputParticles",
 				output:   "OutputParticles",

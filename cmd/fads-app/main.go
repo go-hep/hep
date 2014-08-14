@@ -46,7 +46,7 @@ func main() {
 
 	// propagate particles in cylinder
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.propagator",
+		Type: "github.com/go-hep/fads.Propagator",
 		Name: "pprop",
 		Props: job.P{
 			"Input":          "/fads/StableParticles",
@@ -66,7 +66,7 @@ func main() {
 
 	// read HepMC data
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.hepmcReader",
+		Type: "github.com/go-hep/fads.HepMcReader",
 		Name: "hepmcreader",
 		Props: job.P{
 			"Input": "testdata/hepmc.data",
@@ -76,7 +76,7 @@ func main() {
 
 	// charged hadron tracking efficiency
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.efficiency",
+		Type: "github.com/go-hep/fads.Efficiency",
 		Name: "charged-hadron-trk-eff",
 		Props: job.P{
 			"Input":  "/fads/pprop/ChargedHadrons",
@@ -104,7 +104,7 @@ func main() {
 
 	// electron tracking efficiency
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.efficiency",
+		Type: "github.com/go-hep/fads.Efficiency",
 		Name: "electron-trk-eff",
 		Props: job.P{
 			"Input":  "/fads/pprop/Electrons",
@@ -136,7 +136,7 @@ func main() {
 
 	// muon tracking efficiency
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.efficiency",
+		Type: "github.com/go-hep/fads.Efficiency",
 		Name: "muon-trk-eff",
 		Props: job.P{
 			"Input":  "/fads/pprop/Muons",
@@ -164,7 +164,7 @@ func main() {
 
 	// momentum resolution for charged tracks
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.momentumSmearing",
+		Type: "github.com/go-hep/fads.MomentumSmearing",
 		Name: "charged-hadron-mom-smearing",
 		Props: job.P{
 			"Input":  "/fads/charged-hadron-trk-eff/ChargedHadrons",
@@ -195,7 +195,7 @@ func main() {
 
 	// energy resolution for electrons
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.energySmearing",
+		Type: "github.com/go-hep/fads.EnergySmearing",
 		Name: "electron-ene-smearing",
 		Props: job.P{
 			"Input":  "/fads/electron-trk-eff/Electrons",
@@ -219,7 +219,7 @@ func main() {
 
 	// momentum resolution for muons
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.momentumSmearing",
+		Type: "github.com/go-hep/fads.MomentumSmearing",
 		Name: "muon-mom-smearing",
 		Props: job.P{
 			"Input":  "/fads/muon-trk-eff/Muons",
@@ -250,7 +250,7 @@ func main() {
 
 	// track merger
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.merger",
+		Type: "github.com/go-hep/fads.Merger",
 		Name: "track-merger",
 		Props: job.P{
 			"Inputs": []string{
@@ -276,7 +276,7 @@ func main() {
 
 	// calorimeter
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.calorimeter",
+		Type: "github.com/go-hep/fads.Calorimeter",
 		Name: "calo",
 		Props: job.P{
 			"Particles":   "/fads/pprop/StableParticles",
@@ -376,7 +376,7 @@ func main() {
 
 	// eflow merger
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.merger",
+		Type: "github.com/go-hep/fads.Merger",
 		Name: "eflow-merger",
 		Props: job.P{
 			"Inputs": []string{
@@ -391,7 +391,7 @@ func main() {
 
 	// photon efficiency
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.efficiency",
+		Type: "github.com/go-hep/fads.Efficiency",
 		Name: "photon-eff",
 		Props: job.P{
 			"Input":  "/fads/calo/photons",
@@ -415,7 +415,7 @@ func main() {
 
 	// photon isolation
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.isolation",
+		Type: "github.com/go-hep/fads.Isolation",
 		Name: "photon-iso",
 		Props: job.P{
 			"Candidates": "/fads/photon-eff/photons",
@@ -430,7 +430,7 @@ func main() {
 
 	// electron efficiency
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.efficiency",
+		Type: "github.com/go-hep/fads.Efficiency",
 		Name: "electron-eff",
 		Props: job.P{
 			"Input":  "/fads/electron-ene-smearing/Electrons",
@@ -453,7 +453,7 @@ func main() {
 
 	// electron isolation
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.isolation",
+		Type: "github.com/go-hep/fads.Isolation",
 		Name: "electron-iso",
 		Props: job.P{
 			"Candidates": "/fads/electron-eff/electrons",
@@ -468,7 +468,7 @@ func main() {
 
 	// muon efficiency
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.efficiency",
+		Type: "github.com/go-hep/fads.Efficiency",
 		Name: "muon-eff",
 		Props: job.P{
 			"Input":  "/fads/muon-mom-smearing/Muons",
@@ -491,7 +491,7 @@ func main() {
 
 	// muon isolation
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.isolation",
+		Type: "github.com/go-hep/fads.Isolation",
 		Name: "muon-iso",
 		Props: job.P{
 			"Candidates": "/fads/muon-eff/muons",
@@ -506,7 +506,7 @@ func main() {
 
 	// missing-et merger
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.merger",
+		Type: "github.com/go-hep/fads.Merger",
 		Name: "missing-et",
 		Props: job.P{
 			"Inputs": []string{
@@ -521,7 +521,7 @@ func main() {
 
 	// mc truth jet finder
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.fastjetFinder",
+		Type: "github.com/go-hep/fads.FastJetFinder",
 		Name: "mc-jet-finder",
 		Props: job.P{
 			"Input":  "/fads/StableParticles",
@@ -537,7 +537,7 @@ func main() {
 
 	// jet finder
 	app.Create(job.C{
-		Type: "github.com/go-hep/fads.fastjetFinder",
+		Type: "github.com/go-hep/fads.FastJetFinder",
 		Name: "fastjet-finder",
 		Props: job.P{
 			"Input":  "/fads/calo/towers",

@@ -9,7 +9,7 @@ import (
 	"github.com/go-hep/fwk"
 )
 
-type propagator struct {
+type Propagator struct {
 	fwk.TaskBase
 
 	radius  float64
@@ -25,7 +25,7 @@ type propagator struct {
 	muons   string
 }
 
-func (tsk *propagator) Configure(ctx fwk.Context) error {
+func (tsk *Propagator) Configure(ctx fwk.Context) error {
 	var err error
 
 	tsk.radius2 = tsk.radius * tsk.radius
@@ -65,19 +65,19 @@ func (tsk *propagator) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *propagator) StartTask(ctx fwk.Context) error {
+func (tsk *Propagator) StartTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *propagator) StopTask(ctx fwk.Context) error {
+func (tsk *Propagator) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *propagator) Process(ctx fwk.Context) error {
+func (tsk *Propagator) Process(ctx fwk.Context) error {
 	var err error
 	store := ctx.Store()
 	msg := ctx.Msg()
@@ -326,10 +326,10 @@ func (tsk *propagator) Process(ctx fwk.Context) error {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(propagator{}),
+	fwk.Register(reflect.TypeOf(Propagator{}),
 		func(typ, name string, mgr fwk.App) (fwk.Component, error) {
 			var err error
-			tsk := &propagator{
+			tsk := &Propagator{
 				TaskBase: fwk.NewTask(typ, name, mgr),
 			}
 			tsk.radius = 1.0

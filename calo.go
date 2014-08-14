@@ -148,7 +148,7 @@ type EneFrac struct {
 	HCal float64
 }
 
-type calorimeter struct {
+type Calorimeter struct {
 	fwk.TaskBase
 
 	efrac map[int]EneFrac
@@ -171,7 +171,7 @@ type calorimeter struct {
 	gauss random.Dist
 }
 
-func (tsk *calorimeter) Configure(ctx fwk.Context) error {
+func (tsk *Calorimeter) Configure(ctx fwk.Context) error {
 	var err error
 
 	err = tsk.DeclInPort(tsk.particles, reflect.TypeOf([]Candidate{}))
@@ -209,19 +209,19 @@ func (tsk *calorimeter) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *calorimeter) StartTask(ctx fwk.Context) error {
+func (tsk *Calorimeter) StartTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *calorimeter) StopTask(ctx fwk.Context) error {
+func (tsk *Calorimeter) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *calorimeter) Process(ctx fwk.Context) error {
+func (tsk *Calorimeter) Process(ctx fwk.Context) error {
 	var err error
 
 	store := ctx.Store()
@@ -469,7 +469,7 @@ func (tsk *calorimeter) Process(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *calorimeter) lognormal(mean, sigma float64) float64 {
+func (tsk *Calorimeter) lognormal(mean, sigma float64) float64 {
 	if mean <= 0 {
 		return 0
 	}
@@ -483,7 +483,7 @@ func (tsk *calorimeter) lognormal(mean, sigma float64) float64 {
 func newCalorimeter(typ, name string, mgr fwk.App) (fwk.Component, error) {
 	var err error
 
-	tsk := &calorimeter{
+	tsk := &Calorimeter{
 		TaskBase: fwk.NewTask(typ, name, mgr),
 
 		bins:    NewEtaPhiGrid(nil),
@@ -564,5 +564,5 @@ func newCalorimeter(typ, name string, mgr fwk.App) (fwk.Component, error) {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(calorimeter{}), newCalorimeter)
+	fwk.Register(reflect.TypeOf(Calorimeter{}), newCalorimeter)
 }

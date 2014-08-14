@@ -8,7 +8,7 @@ import (
 	"github.com/go-hep/fwk"
 )
 
-type merger struct {
+type Merger struct {
 	fwk.TaskBase
 
 	inputs []string
@@ -17,7 +17,7 @@ type merger struct {
 	outmom string
 }
 
-func (tsk *merger) Configure(ctx fwk.Context) error {
+func (tsk *Merger) Configure(ctx fwk.Context) error {
 	var err error
 
 	for _, input := range tsk.inputs {
@@ -45,19 +45,19 @@ func (tsk *merger) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *merger) StartTask(ctx fwk.Context) error {
+func (tsk *Merger) StartTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *merger) StopTask(ctx fwk.Context) error {
+func (tsk *Merger) StopTask(ctx fwk.Context) error {
 	var err error
 
 	return err
 }
 
-func (tsk *merger) Process(ctx fwk.Context) error {
+func (tsk *Merger) Process(ctx fwk.Context) error {
 	var err error
 
 	store := ctx.Store()
@@ -121,7 +121,7 @@ func (tsk *merger) Process(ctx fwk.Context) error {
 func newMerger(typ, name string, mgr fwk.App) (fwk.Component, error) {
 	var err error
 
-	tsk := &merger{
+	tsk := &Merger{
 		TaskBase: fwk.NewTask(typ, name, mgr),
 		inputs:   []string{},
 		output:   "candidates",
@@ -153,5 +153,5 @@ func newMerger(typ, name string, mgr fwk.App) (fwk.Component, error) {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(merger{}), newMerger)
+	fwk.Register(reflect.TypeOf(Merger{}), newMerger)
 }
