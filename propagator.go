@@ -320,7 +320,7 @@ func (tsk *Propagator) Process(ctx fwk.Context) error {
 		}
 	}
 
-	sort.Sort(sort.Reverse(ByPt(output)))
+	sort.Sort(ByPt(output))
 	msg.Debugf(">>> output:     %v\n", len(output))
 	return err
 }

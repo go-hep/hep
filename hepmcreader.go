@@ -142,19 +142,19 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) error {
 
 	}
 
-	sort.Sort(sort.Reverse(ByPt(allparts)))
+	sort.Sort(ByPt(allparts))
 	err = store.Put(tsk.allparts, allparts)
 	if err != nil {
 		return err
 	}
 
-	sort.Sort(sort.Reverse(ByPt(stableparts)))
+	sort.Sort(ByPt(stableparts))
 	err = store.Put(tsk.stableparts, stableparts)
 	if err != nil {
 		return err
 	}
 
-	sort.Sort(sort.Reverse(ByPt(partons)))
+	sort.Sort(ByPt(partons))
 	err = store.Put(tsk.partons, partons)
 	if err != nil {
 		return err

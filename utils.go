@@ -20,6 +20,7 @@ func (p int64Slice) Swap(i, j int) {
 	p[i], p[j] = p[j], p[i]
 }
 
+// ByPt sorts candidate by descending Pt
 type ByPt []Candidate
 
 func (p ByPt) Len() int {
@@ -27,7 +28,7 @@ func (p ByPt) Len() int {
 }
 
 func (p ByPt) Less(i, j int) bool {
-	return p[i].Mom.Pt() < p[j].Mom.Pt()
+	return p[i].Mom.Pt() > p[j].Mom.Pt()
 }
 
 func (p ByPt) Swap(i, j int) {
