@@ -484,22 +484,9 @@ func (app *appmgr) run(ctx Context) error {
 	}
 	for ievt := int64(0); ievt < app.evtmax; ievt++ {
 		app.msg.Infof(">>> running evt=%d...\n", ievt)
-		for k := range app.dflow.edges {
-			// app.msg.Infof("--- edge [%s]... (%v)\n", k, rt)
-			ch, ok := app.store.store[k]
-			if ok {
-				select {
-				case vv := <-ch:
-					if vv, ok := vv.(Deleter); ok {
-						err = vv.Delete()
-						if err != nil {
-							return err
-						}
-					}
-				default:
-				}
-			}
-			app.store.store[k] = make(achan, 1)
+		err = stores[0].reset(app.dflow.keys())
+		if err != nil {
+			return err
 		}
 		errch := make(chan error, len(app.tsks))
 		for _, tsk := range app.tsks {
