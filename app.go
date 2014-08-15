@@ -1,9 +1,11 @@
 package fwk
 
 import (
+	"fmt"
 	"io"
 	"math"
 	"reflect"
+	"runtime"
 	"sort"
 )
 
@@ -57,6 +59,7 @@ type appmgr struct {
 	msg   msgstream
 
 	evtmax int64
+	nprocs int
 
 	comps map[string]Component
 	tsks  []Task
@@ -84,6 +87,7 @@ func NewApp() App {
 			nil,
 		),
 		evtmax: -1,
+		nprocs: 0,
 		comps:  make(map[string]Component),
 		tsks:   make([]Task, 0),
 		svcs:   make([]Svc, 0),
@@ -120,6 +124,12 @@ func NewApp() App {
 	err = app.DeclProp(app, "EvtMax", &app.evtmax)
 	if err != nil {
 		app.msg.Errorf("fwk.NewApp: could not declare property 'EvtMax': %v\n", err)
+		return nil
+	}
+
+	err = app.DeclProp(app, "NProcs", &app.nprocs)
+	if err != nil {
+		app.msg.Errorf("fwk.NewApp: could not declare property 'NProcs': %v\n", err)
 		return nil
 	}
 
@@ -407,6 +417,17 @@ func (app *appmgr) configure(ctx Context) error {
 	defer app.msg.flush()
 	app.msg.Debugf("configure...\n")
 	app.state = fsm_CONFIGURING
+
+	if app.evtmax == -1 {
+		app.evtmax = math.MaxInt64
+	}
+	if app.nprocs < 0 {
+		app.nprocs = runtime.NumCPU()
+	}
+	if app.nprocs == 0 {
+		app.nprocs = 1
+	}
+
 	for _, svc := range app.svcs {
 		app.msg.Debugf("configuring [%s]...\n", svc.Name())
 		cfg, ok := svc.(Configurer)
@@ -479,41 +500,61 @@ func (app *appmgr) run(ctx Context) error {
 	var err error
 	defer app.msg.flush()
 	app.state = fsm_RUNNING
-	if app.evtmax == -1 {
-		app.evtmax = math.MaxInt64
+
+	evts := make(chan int64, 100*app.nprocs)
+	done := make(chan struct{})
+	errch := make(chan error)
+
+	workers := make([]worker, app.nprocs)
+	for i := 0; i < app.nprocs; i++ {
+		workers[i] = worker{
+			slot:  i,
+			keys:  app.dflow.keys(),
+			store: *app.store,
+			ctxs:  make([]context, len(app.tsks)),
+			msg:   NewMsgStream(fmt.Sprintf("%s-worker-%03d", app.name, i), app.msg.lvl, nil),
+			evts:  evts,
+			done:  done,
+			errch: errch,
+		}
+		wrk := &workers[i]
+		wrk.store.store = make(map[string]achan, len(app.dflow.keys()))
+		for j, tsk := range app.tsks {
+			wrk.ctxs[j] = context{
+				id:    -1,
+				slot:  i,
+				store: &wrk.store,
+				msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
+			}
+		}
+		go func(wrk *worker) {
+			wrk.run(app.tsks)
+		}(wrk)
+		//workers <- wrk
 	}
-	for ievt := int64(0); ievt < app.evtmax; ievt++ {
-		app.msg.Infof(">>> running evt=%d...\n", ievt)
-		err = stores[0].reset(app.dflow.keys())
-		if err != nil {
-			return err
+
+	go func() {
+		for ievt := int64(0); ievt < app.evtmax; ievt++ {
+			evts <- ievt
 		}
-		errch := make(chan error, len(app.tsks))
-		for _, tsk := range app.tsks {
-			go func(tsk Task) {
-				//app.msg.Infof(">>> running [%s]...\n", tsk.Name())
-				ctx := context{
-					id:    ievt,
-					slot:  0,
-					store: app.store,
-					msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
-				}
-				errch <- tsk.Process(ctx)
-				// FIXME(sbinet) dont be so eager to flush...
-				ctx.msg.flush()
-			}(tsk)
+		close(evts)
+		for _ = range workers {
+			done <- struct{}{}
 		}
-		for i := 0; i < len(app.tsks); i++ {
-			err := <-errch
+	}()
+
+	for {
+		select {
+		case err = <-errch:
+			// FIXME(sbinet) drain workers
 			if err != nil {
-				close(errch)
-				app.msg.flush()
 				return err
 			}
-
+			// case <-quit:
+			// 	return err
 		}
-		app.msg.flush()
 	}
+
 	return err
 }
 
