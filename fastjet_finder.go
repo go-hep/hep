@@ -117,7 +117,7 @@ func (tsk *FastJetFinder) Process(ctx fwk.Context) error {
 	}
 
 	// construct jets
-	var bldr fastjet.ClusterBuilder
+	var bldr fastjet.Builder
 	if tsk.areaDef != nil {
 		// FIXME
 		panic("not implemented")
