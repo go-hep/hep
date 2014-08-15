@@ -6,7 +6,7 @@ import (
 
 type Plugin interface {
 	Description() string
-	RunClustering(builder ClusterBuilder) error
+	RunClustering(builder Builder) error
 	R() float64
 }
 
