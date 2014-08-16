@@ -46,6 +46,11 @@ func TestSimpleSeqApp(t *testing.T) {
 		},
 	})
 
+	app.Create(job.C{
+		Type: "github.com/go-hep/fwk/testdata.svc1",
+		Name: "svc1",
+	})
+
 	app.Run()
 }
 
