@@ -51,5 +51,4 @@ func (wrk *worker) run(tsks []Task) {
 			return
 		}
 	}
-	return
 }
