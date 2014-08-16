@@ -13,12 +13,18 @@ import (
 	"github.com/go-hep/heppdt"
 )
 
+type hepmcinput struct {
+	evt hepmc.Event
+	err error
+}
+
 type HepMcReader struct {
 	fwk.TaskBase
 
 	fname string // input filename
 	r     io.ReadCloser
 	dec   *hepmc.Decoder // hepmc decoder
+	evtch chan *hepmcinput
 
 	mcevt       string // original HepMC event
 	allparts    string // all particles
@@ -59,6 +65,20 @@ func (tsk *HepMcReader) StartTask(ctx fwk.Context) error {
 		return err
 	}
 	tsk.dec = hepmc.NewDecoder(bufio.NewReader(tsk.r))
+
+	go func() {
+		for {
+			// FIXME(sbinet) introduce a <-quit channel ?
+			// FIXME(sbinet) handle back pressure for slow consumers
+			var evt hepmcinput
+			evt.err = tsk.dec.Decode(&evt.evt)
+			tsk.evtch <- &evt
+			if evt.err != nil {
+				return
+			}
+		}
+	}()
+
 	return err
 }
 
@@ -76,13 +96,14 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) error {
 	store := ctx.Store()
 	msg := ctx.Msg()
 
-	var evt hepmc.Event
-	err = tsk.dec.Decode(&evt)
+	inch := <-tsk.evtch
+	err = inch.err
 	if err != nil {
 		return err
 	}
 
-	err = store.Put(tsk.mcevt, &evt)
+	evt := &inch.evt
+	err = store.Put(tsk.mcevt, evt)
 	if err != nil {
 		return err
 	}
@@ -177,6 +198,7 @@ func init() {
 			tsk := &HepMcReader{
 				TaskBase:    fwk.NewTask(typ, name, mgr),
 				fname:       "hepmc.data",
+				evtch:       make(chan *hepmcinput),
 				mcevt:       "/fads/McEvent",
 				allparts:    "/fads/AllParticles",
 				stableparts: "/fads/StableParticles",
