@@ -67,8 +67,6 @@ func (def JetDefinition) Description() string {
 	default:
 		panic(fmt.Errorf("fastjet.Description: invalid jet algorithm (%d)", int(def.alg)))
 	}
-
-	panic("unreachable")
 }
 
 func (def JetDefinition) R() float64 {
