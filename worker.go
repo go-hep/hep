@@ -8,7 +8,7 @@ type worker struct {
 	msg   msgstream
 
 	evts  <-chan int64
-	done  <-chan struct{}
+	quit  <-chan struct{}
 	errch chan<- error
 }
 
@@ -47,7 +47,7 @@ func (wrk *worker) run(tsks []Task) {
 			}
 			wrk.msg.flush()
 
-		case <-wrk.done:
+		case <-wrk.quit:
 			return
 		}
 	}

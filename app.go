@@ -421,13 +421,13 @@ func (app *appmgr) configure(ctx Context) error {
 	if app.evtmax == -1 {
 		app.evtmax = math.MaxInt64
 	}
+
 	if app.nprocs < 0 {
 		app.nprocs = runtime.NumCPU()
 	}
-	if app.nprocs == 0 {
-		app.nprocs = 1
+	if app.nprocs > 1 {
+		runtime.GOMAXPROCS(app.nprocs)
 	}
-	runtime.GOMAXPROCS(app.nprocs)
 
 	for _, svc := range app.svcs {
 		app.msg.Debugf("configuring [%s]...\n", svc.Name())
@@ -502,9 +502,66 @@ func (app *appmgr) run(ctx Context) error {
 	defer app.msg.flush()
 	app.state = fsm_RUNNING
 
+	switch app.nprocs {
+	case 0:
+		err = app.run_seq(ctx)
+	default:
+		err = app.run_workers(ctx)
+	}
+
+	return err
+}
+
+func (app *appmgr) run_seq(ctx Context) error {
+	var err error
+	keys := app.dflow.keys()
+	ctxs := make([]context, len(app.tsks))
+	for j, tsk := range app.tsks {
+		ctxs[j] = context{
+			id:    -1,
+			slot:  0,
+			store: app.store,
+			msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
+		}
+	}
+
+	for ievt := int64(0); ievt < app.evtmax; ievt++ {
+		app.msg.Infof(">>> running evt=%d...\n", ievt)
+		err = app.store.reset(keys)
+		if err != nil {
+			return err
+		}
+		errch := make(chan error, len(app.tsks))
+		for i, tsk := range app.tsks {
+			go func(i int, tsk Task) {
+				//app.msg.Infof(">>> running [%s]...\n", tsk.Name())
+				ctx := ctxs[i]
+				ctx.id = ievt
+				errch <- tsk.Process(ctx)
+				// FIXME(sbinet) dont be so eager to flush...
+				ctx.msg.flush()
+			}(i, tsk)
+		}
+		for i := 0; i < len(app.tsks); i++ {
+			err := <-errch
+			if err != nil {
+				close(errch)
+				app.msg.flush()
+				return err
+			}
+
+		}
+		app.msg.flush()
+	}
+	return err
+}
+
+func (app *appmgr) run_workers(ctx Context) error {
+	var err error
+
 	evts := make(chan int64, 100*app.nprocs)
+	quit := make(chan struct{}, app.nprocs)
 	done := make(chan struct{})
-	wdone := make(chan struct{})
 	errch := make(chan error)
 
 	workers := make([]worker, app.nprocs)
@@ -516,7 +573,7 @@ func (app *appmgr) run(ctx Context) error {
 			ctxs:  make([]context, len(app.tsks)),
 			msg:   NewMsgStream(fmt.Sprintf("%s-worker-%03d", app.name, i), app.msg.lvl, nil),
 			evts:  evts,
-			done:  done,
+			quit:  quit,
 			errch: errch,
 		}
 		wrk := &workers[i]
@@ -531,7 +588,7 @@ func (app *appmgr) run(ctx Context) error {
 		}
 		go func(wrk *worker) {
 			wrk.run(app.tsks)
-			wdone <- struct{}{}
+			done <- struct{}{}
 		}(wrk)
 	}
 
@@ -544,7 +601,7 @@ func (app *appmgr) run(ctx Context) error {
 
 	drain := func() {
 		for _ = range workers {
-			done <- struct{}{}
+			quit <- struct{}{}
 		}
 	}
 
@@ -559,7 +616,7 @@ ctrl:
 				return err
 			}
 
-		case <-wdone:
+		case <-done:
 			ndone += 1
 			if ndone == len(workers) {
 				break ctrl
