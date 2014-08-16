@@ -8,13 +8,17 @@ import (
 // InputStreamer reads data from the underlying io.Reader
 // and puts it into fwk's Context
 type InputStreamer interface {
+	Open(r io.Reader) error
 	Read(ctx Context) error
+	Close() error
 }
 
 // OutputStreamer gets data from the Context
 // and writes it to the underlying io.Writer
 type OutputStreamer interface {
+	Open(w io.Writer) error
 	Write(ctx Context) error
+	Close() error
 }
 
 type indata struct {
