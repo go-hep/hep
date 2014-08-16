@@ -41,6 +41,4 @@ func (s RecombinationScheme) String() string {
 	default:
 		panic(fmt.Errorf("fastjet: invalid RecombinationScheme (%d)", int(s)))
 	}
-
-	panic("unreachable")
 }
