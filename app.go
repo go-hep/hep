@@ -453,20 +453,10 @@ func (app *appmgr) configure(ctx Context) error {
 		}
 	}
 
-	app.msg.Infof(">>> --- [data flow] --- nodes...\n")
-	for tsk, node := range app.dflow.nodes {
-		app.msg.Infof(">>> ---[%s]---\n", tsk)
-		app.msg.Infof("    in:  %v\n", node.in)
-		app.msg.Infof("    out: %v\n", node.out)
+	err = app.printDataFlow()
+	if err != nil {
+		return err
 	}
-
-	app.msg.Infof(">>> --- [data flow] --- edges...\n")
-	edges := make([]string, 0, len(app.dflow.edges))
-	for n := range app.dflow.edges {
-		edges = append(edges, n)
-	}
-	sort.Strings(edges)
-	app.msg.Infof(" edges: %v\n", edges)
 
 	app.state = fsm_CONFIGURED
 	app.msg.Debugf("configure... [done]\n")
@@ -666,6 +656,27 @@ func (app *appmgr) shutdown(ctx Context) error {
 
 func (app *appmgr) Msg() MsgStream {
 	return app.msg
+}
+
+func (app *appmgr) printDataFlow() error {
+	var err error
+
+	app.msg.Infof(">>> --- [data flow] --- nodes...\n")
+	for tsk, node := range app.dflow.nodes {
+		app.msg.Infof(">>> ---[%s]---\n", tsk)
+		app.msg.Infof("    in:  %v\n", node.in)
+		app.msg.Infof("    out: %v\n", node.out)
+	}
+
+	app.msg.Infof(">>> --- [data flow] --- edges...\n")
+	edges := make([]string, 0, len(app.dflow.edges))
+	for n := range app.dflow.edges {
+		edges = append(edges, n)
+	}
+	sort.Strings(edges)
+	app.msg.Infof(" edges: %v\n", edges)
+
+	return err
 }
 
 func init() {
