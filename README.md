@@ -17,3 +17,9 @@ $ go get github.com/go-hep/fads/...
 
 Is available on `godoc`: http://godoc.org/github.com/go-hep/fads
 
+## Example
+
+A test application is available over there:
+
+https://github.com/go-hep/fads/blob/master/cmd/fads-app/main.go
+
