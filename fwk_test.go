@@ -113,23 +113,63 @@ func TestDuplicateProperty(t *testing.T) {
 
 func TestInputStream(t *testing.T) {
 	for _, evtmax := range []int64{0, 1, 10, 100, -1} {
-		app := newapp(evtmax, 1)
-		app.Create(job.C{
-			Type: "github.com/go-hep/fwk/testdata.inputstream",
-			Name: "input",
-			Props: job.P{
-				"Output": "t1-floats1",
-			},
-		})
+		for _, nprocs := range []int{0, 1, 2, 4} {
+			app := newapp(evtmax, nprocs)
 
-		app.Create(job.C{
-			Type: "github.com/go-hep/fwk/testdata.task2",
-			Name: "t2",
-			Props: job.P{
-				"Input":  "t1-floats1",
-				"Output": "t1-floats1-massaged",
-			},
-		})
-		app.Run()
+			app.Create(job.C{
+				Type: "github.com/go-hep/fwk/testdata.task2",
+				Name: "t2",
+				Props: job.P{
+					"Input":  "t1-floats1",
+					"Output": "t1-floats1-massaged",
+				},
+			})
+
+			// put input-stream after 't2', to test dataflow re-ordering
+			app.Create(job.C{
+				Type: "github.com/go-hep/fwk/testdata.inputstream",
+				Name: "input",
+				Props: job.P{
+					"Output": "t1-floats1",
+				},
+			})
+			app.Run()
+		}
+	}
+}
+
+func TestOutputStream(t *testing.T) {
+	for _, evtmax := range []int64{0, 1, 10, 100, -1} {
+		for _, nprocs := range []int{0, 1, 2, 4} {
+			app := newapp(evtmax, nprocs)
+
+			// put output-stream before 't2', to test dataflow re-ordering
+			app.Create(job.C{
+				Type: "github.com/go-hep/fwk/testdata.outputstream",
+				Name: "output",
+				Props: job.P{
+					"Input": "t1-floats1-massaged",
+				},
+			})
+
+			app.Create(job.C{
+				Type: "github.com/go-hep/fwk/testdata.task2",
+				Name: "t2",
+				Props: job.P{
+					"Input":  "t1-floats1",
+					"Output": "t1-floats1-massaged",
+				},
+			})
+
+			// put input-stream after 't2', to test dataflow re-ordering
+			app.Create(job.C{
+				Type: "github.com/go-hep/fwk/testdata.inputstream",
+				Name: "input",
+				Props: job.P{
+					"Output": "t1-floats1",
+				},
+			})
+			app.Run()
+		}
 	}
 }
