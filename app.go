@@ -504,6 +504,7 @@ func (app *appmgr) run(ctx Context) error {
 
 	evts := make(chan int64, 100*app.nprocs)
 	done := make(chan struct{})
+	wdone := make(chan struct{})
 	errch := make(chan error)
 
 	workers := make([]worker, app.nprocs)
@@ -530,8 +531,8 @@ func (app *appmgr) run(ctx Context) error {
 		}
 		go func(wrk *worker) {
 			wrk.run(app.tsks)
+			wdone <- struct{}{}
 		}(wrk)
-		//workers <- wrk
 	}
 
 	go func() {
@@ -539,20 +540,29 @@ func (app *appmgr) run(ctx Context) error {
 			evts <- ievt
 		}
 		close(evts)
+	}()
+
+	drain := func() {
 		for _ = range workers {
 			done <- struct{}{}
 		}
-	}()
+	}
 
+	ndone := 0
+ctrl:
 	for {
 		select {
 		case err = <-errch:
-			// FIXME(sbinet) drain workers
 			if err != nil {
+				// FIXME(sbinet) gather status of drained workers
+				drain()
 				return err
 			}
-			// case <-quit:
-			// 	return err
+		case <-wdone:
+			ndone += 1
+			if ndone == len(workers) {
+				break ctrl
+			}
 		}
 	}
 
