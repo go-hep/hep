@@ -427,6 +427,7 @@ func (app *appmgr) configure(ctx Context) error {
 	if app.nprocs == 0 {
 		app.nprocs = 1
 	}
+	runtime.GOMAXPROCS(app.nprocs)
 
 	for _, svc := range app.svcs {
 		app.msg.Debugf("configuring [%s]...\n", svc.Name())
