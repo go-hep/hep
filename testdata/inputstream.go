@@ -69,7 +69,7 @@ func (tsk *inputstream) Process(ctx fwk.Context) error {
 	return err
 }
 
-func newinputstream(typ, name string, mgr fwk.App) (fwk.Component, error) {
+func newInputstream(typ, name string, mgr fwk.App) (fwk.Component, error) {
 	var err error
 
 	tsk := &inputstream{
@@ -93,5 +93,5 @@ func newinputstream(typ, name string, mgr fwk.App) (fwk.Component, error) {
 }
 
 func init() {
-	fwk.Register(reflect.TypeOf(inputstream{}), newinputstream)
+	fwk.Register(reflect.TypeOf(inputstream{}), newInputstream)
 }
