@@ -57,7 +57,7 @@ func (def JetDefinition) Description() string {
 		return fmt.Sprintf("e+e- kt (Durham) algorithm with %s", def.Recombiner().Description())
 
 	case EeGenKtAlgorithm:
-		return fmt.Sprintf("e+e- generalised kt algorithm with R = %v, p = %s and %s",
+		return fmt.Sprintf("e+e- generalised kt algorithm with R = %v, p = %v and %s",
 			def.R(), def.ExtraParam(), def.Recombiner().Description(),
 		)
 
