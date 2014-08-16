@@ -84,7 +84,6 @@ func (rec DefaultRecombiner) Recombine(j1, j2 *Jet) (Jet, error) {
 }
 
 func (rec DefaultRecombiner) Preprocess(jet *Jet) error {
-	var err error
 
 	switch rec.Scheme() {
 	case EScheme, BIPtScheme, BIPt2Scheme:
@@ -114,8 +113,6 @@ func (rec DefaultRecombiner) Preprocess(jet *Jet) error {
 	default:
 		return fmt.Errorf("fastjet.Preprocess: invalid recombination scheme (%v)", rec.Scheme())
 	}
-
-	return err
 }
 
 func (rec DefaultRecombiner) Scheme() RecombinationScheme {
