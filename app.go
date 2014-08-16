@@ -558,6 +558,7 @@ ctrl:
 				drain()
 				return err
 			}
+
 		case <-wdone:
 			ndone += 1
 			if ndone == len(workers) {
