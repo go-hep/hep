@@ -15,7 +15,10 @@ type worker struct {
 func (wrk *worker) run(tsks []Task) {
 	for {
 		select {
-		case ievt := <-wrk.evts:
+		case ievt, ok := <-wrk.evts:
+			if !ok {
+				return
+			}
 			wrk.msg.Infof(">>> running evt=%d...\n", ievt)
 			err := wrk.store.reset(wrk.keys)
 			if err != nil {
