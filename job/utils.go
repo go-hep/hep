@@ -20,5 +20,4 @@ func MsgLevel(lvl string) fwk.Level {
 	default:
 		panic(fmt.Errorf("fwk.MsgLevel: invalid fwk.Level string %q", lvl))
 	}
-	return fwk.LvlInfo
 }
