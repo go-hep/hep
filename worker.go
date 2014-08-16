@@ -39,7 +39,10 @@ func (wrk *worker) run(tsks []Task) {
 			for i := 0; i < len(tsks); i++ {
 				err := <-errch
 				if err != nil {
-					close(errch)
+					//FIXME(sbinet) we should really cleanup local errch
+					// but if we close it too early, still running tasks
+					// might send their error status to a closed channel
+					//close(errch)
 					wrk.msg.flush()
 					wrk.errch <- err
 					return

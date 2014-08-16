@@ -535,7 +535,10 @@ func (app *appmgr) runSequential(ctx Context) error {
 		for i := 0; i < len(app.tsks); i++ {
 			err := <-errch
 			if err != nil {
-				close(errch)
+				//FIXME(sbinet) we should really cleanup local errch
+				// but if we close it too early, still running tasks
+				// might send their error status to a closed channel
+				//close(errch)
 				app.msg.flush()
 				return err
 			}
