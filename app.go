@@ -1,9 +1,11 @@
 package fwk
 
 import (
+	"fmt"
 	"io"
 	"math"
 	"reflect"
+	"runtime"
 	"sort"
 )
 
@@ -57,6 +59,7 @@ type appmgr struct {
 	msg   msgstream
 
 	evtmax int64
+	nprocs int
 
 	comps map[string]Component
 	tsks  []Task
@@ -84,6 +87,7 @@ func NewApp() App {
 			nil,
 		),
 		evtmax: -1,
+		nprocs: 0,
 		comps:  make(map[string]Component),
 		tsks:   make([]Task, 0),
 		svcs:   make([]Svc, 0),
@@ -120,6 +124,12 @@ func NewApp() App {
 	err = app.DeclProp(app, "EvtMax", &app.evtmax)
 	if err != nil {
 		app.msg.Errorf("fwk.NewApp: could not declare property 'EvtMax': %v\n", err)
+		return nil
+	}
+
+	err = app.DeclProp(app, "NProcs", &app.nprocs)
+	if err != nil {
+		app.msg.Errorf("fwk.NewApp: could not declare property 'NProcs': %v\n", err)
 		return nil
 	}
 
@@ -407,6 +417,18 @@ func (app *appmgr) configure(ctx Context) error {
 	defer app.msg.flush()
 	app.msg.Debugf("configure...\n")
 	app.state = fsm_CONFIGURING
+
+	if app.evtmax == -1 {
+		app.evtmax = math.MaxInt64
+	}
+
+	if app.nprocs < 0 {
+		app.nprocs = runtime.NumCPU()
+	}
+	if app.nprocs > 1 {
+		runtime.GOMAXPROCS(app.nprocs)
+	}
+
 	for _, svc := range app.svcs {
 		app.msg.Debugf("configuring [%s]...\n", svc.Name())
 		cfg, ok := svc.(Configurer)
@@ -479,42 +501,46 @@ func (app *appmgr) run(ctx Context) error {
 	var err error
 	defer app.msg.flush()
 	app.state = fsm_RUNNING
-	if app.evtmax == -1 {
-		app.evtmax = math.MaxInt64
+
+	switch app.nprocs {
+	case 0:
+		err = app.run_seq(ctx)
+	default:
+		err = app.run_workers(ctx)
 	}
+
+	return err
+}
+
+func (app *appmgr) run_seq(ctx Context) error {
+	var err error
+	keys := app.dflow.keys()
+	ctxs := make([]context, len(app.tsks))
+	for j, tsk := range app.tsks {
+		ctxs[j] = context{
+			id:    -1,
+			slot:  0,
+			store: app.store,
+			msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
+		}
+	}
+
 	for ievt := int64(0); ievt < app.evtmax; ievt++ {
 		app.msg.Infof(">>> running evt=%d...\n", ievt)
-		for k := range app.dflow.edges {
-			// app.msg.Infof("--- edge [%s]... (%v)\n", k, rt)
-			ch, ok := app.store.store[k]
-			if ok {
-				select {
-				case vv := <-ch:
-					if vv, ok := vv.(Deleter); ok {
-						err = vv.Delete()
-						if err != nil {
-							return err
-						}
-					}
-				default:
-				}
-			}
-			app.store.store[k] = make(achan, 1)
+		err = app.store.reset(keys)
+		if err != nil {
+			return err
 		}
 		errch := make(chan error, len(app.tsks))
-		for _, tsk := range app.tsks {
-			go func(tsk Task) {
+		for i, tsk := range app.tsks {
+			go func(i int, tsk Task) {
 				//app.msg.Infof(">>> running [%s]...\n", tsk.Name())
-				ctx := context{
-					id:    ievt,
-					slot:  0,
-					store: app.store,
-					msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
-				}
+				ctx := ctxs[i]
+				ctx.id = ievt
 				errch <- tsk.Process(ctx)
 				// FIXME(sbinet) dont be so eager to flush...
 				ctx.msg.flush()
-			}(tsk)
+			}(i, tsk)
 		}
 		for i := 0; i < len(app.tsks); i++ {
 			err := <-errch
@@ -527,6 +553,77 @@ func (app *appmgr) run(ctx Context) error {
 		}
 		app.msg.flush()
 	}
+	return err
+}
+
+func (app *appmgr) run_workers(ctx Context) error {
+	var err error
+
+	evts := make(chan int64, 100*app.nprocs)
+	quit := make(chan struct{}, app.nprocs)
+	done := make(chan struct{})
+	errch := make(chan error)
+
+	workers := make([]worker, app.nprocs)
+	for i := 0; i < app.nprocs; i++ {
+		workers[i] = worker{
+			slot:  i,
+			keys:  app.dflow.keys(),
+			store: *app.store,
+			ctxs:  make([]context, len(app.tsks)),
+			msg:   NewMsgStream(fmt.Sprintf("%s-worker-%03d", app.name, i), app.msg.lvl, nil),
+			evts:  evts,
+			quit:  quit,
+			errch: errch,
+		}
+		wrk := &workers[i]
+		wrk.store.store = make(map[string]achan, len(app.dflow.keys()))
+		for j, tsk := range app.tsks {
+			wrk.ctxs[j] = context{
+				id:    -1,
+				slot:  i,
+				store: &wrk.store,
+				msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
+			}
+		}
+		go func(wrk *worker) {
+			wrk.run(app.tsks)
+			done <- struct{}{}
+		}(wrk)
+	}
+
+	go func() {
+		for ievt := int64(0); ievt < app.evtmax; ievt++ {
+			evts <- ievt
+		}
+		close(evts)
+	}()
+
+	drain := func() {
+		for _ = range workers {
+			quit <- struct{}{}
+		}
+	}
+
+	ndone := 0
+ctrl:
+	for {
+		select {
+		case err = <-errch:
+			if err != nil {
+				// FIXME(sbinet) gather status of drained workers
+				drain()
+				return err
+			}
+
+		case <-done:
+			ndone += 1
+			if ndone == len(workers) {
+				break ctrl
+			}
+		}
+	}
+
 	return err
 }
 

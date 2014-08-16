@@ -36,6 +36,14 @@ func (svc *dflowsvc) StopSvc(ctx Context) error {
 	return nil
 }
 
+func (svc *dflowsvc) keys() []string {
+	keys := make([]string, 0, len(svc.edges))
+	for k := range svc.edges {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 func (svc *dflowsvc) addInNode(tsk string, name string, t reflect.Type) error {
 	node, ok := svc.nodes[tsk]
 	if !ok {

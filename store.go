@@ -49,6 +49,28 @@ func (ds *datastore) StopSvc(ctx Context) error {
 	return nil
 }
 
+// reset deletes the payload and resets the associated channel
+func (ds *datastore) reset(keys []string) error {
+	var err error
+	for _, k := range keys {
+		ch, ok := ds.store[k]
+		if ok {
+			select {
+			case vv := <-ch:
+				if vv, ok := vv.(Deleter); ok {
+					err = vv.Delete()
+					if err != nil {
+						return err
+					}
+				}
+			default:
+			}
+		}
+		ds.store[k] = make(achan, 1)
+	}
+	return err
+}
+
 func init() {
 	Register(reflect.TypeOf(datastore{}),
 		func(typ, name string, mgr App) (Component, error) {
