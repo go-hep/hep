@@ -85,8 +85,14 @@ func TestSimpleConcApp(t *testing.T) {
 
 func TestDuplicateProperty(t *testing.T) {
 	defer func() {
-		if r := recover(); r == nil {
+		r := recover()
+		if r == nil {
 			t.Fatalf("expected a panic")
+		}
+		exp := `fwk.DeclOutPort: component [t0] already declared out-port with name [t0-floats1 (type=float64)].
+fwk.DeclOutPort: component [t1] is trying to add a duplicate out-port [t0-floats1 (type=float64)]`
+		if r.(error).Error() != exp {
+			t.Fatalf("expected error {%s}.\ngot={%v}\n", exp, r)
 		}
 	}()
 
