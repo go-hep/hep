@@ -12,8 +12,8 @@ type {{.Name}} struct {
     fwk.TaskBase
 }
 
-func (tsk *{{.Name}}) Configure(ctx fwk.Context) fwk.Error {
-    var err fwk.Error
+func (tsk *{{.Name}}) Configure(ctx fwk.Context) error {
+    var err error
 
 	// err = tsk.DeclInPort(tsk.input, reflect.TypeOf(sometype{}))
 	// if err != nil {
@@ -28,26 +28,26 @@ func (tsk *{{.Name}}) Configure(ctx fwk.Context) fwk.Error {
     return err
 }
 
-func (tsk *{{.Name}}) StartTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *{{.Name}}) StartTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *{{.Name}}) StopTask(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *{{.Name}}) StopTask(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (tsk *{{.Name}}) Process(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (tsk *{{.Name}}) Process(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func new{{.Name}}(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
-	var err fwk.Error
+func new{{.Name}}(typ, name string, mgr fwk.App) (fwk.Component, error) {
+	var err error
 
 	tsk := &{{.Name}}{
 		TaskBase: fwk.NewTask(typ, name, mgr),

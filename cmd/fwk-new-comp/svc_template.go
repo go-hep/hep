@@ -12,8 +12,8 @@ type {{.Name}} struct {
     fwk.SvcBase
 }
 
-func (svc *{{.Name}}) Configure(ctx fwk.Context) fwk.Error {
-    var err fwk.Error
+func (svc *{{.Name}}) Configure(ctx fwk.Context) error {
+    var err error
 
 	// err = svc.DeclInPort(svc.input, reflect.TypeOf(sometype{}))
 	// if err != nil {
@@ -28,20 +28,20 @@ func (svc *{{.Name}}) Configure(ctx fwk.Context) fwk.Error {
     return err
 }
 
-func (svc *{{.Name}}) StartSvc(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (svc *{{.Name}}) StartSvc(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func (svc *{{.Name}}) StopSvc(ctx fwk.Context) fwk.Error {
-	var err fwk.Error
+func (svc *{{.Name}}) StopSvc(ctx fwk.Context) error {
+	var err error
 
 	return err
 }
 
-func new{{Name}}(typ, name string, mgr fwk.App) (fwk.Component, fwk.Error) {
-	var err fwk.Error
+func new{{Name}}(typ, name string, mgr fwk.App) (fwk.Component, error) {
+	var err error
 	svc := &{{.Name}}{
 		SvcBase: fwk.NewSvc(typ, name, mgr),
 		// input:    "Input",
