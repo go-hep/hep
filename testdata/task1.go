@@ -9,6 +9,9 @@ import (
 type task1 struct {
 	fwk.TaskBase
 
+	f1prop string
+	f2prop string
+
 	f1 float64
 	f2 float64
 }
@@ -19,12 +22,12 @@ func (tsk *task1) Configure(ctx fwk.Context) error {
 
 	msg.Infof("configure ...\n")
 
-	err = tsk.DeclOutPort("floats1", reflect.TypeOf(float64(1.0)))
+	err = tsk.DeclOutPort(tsk.f1prop, reflect.TypeOf(float64(1.0)))
 	if err != nil {
 		return err
 	}
 
-	err = tsk.DeclOutPort("floats2", reflect.TypeOf(float64(1.0)))
+	err = tsk.DeclOutPort(tsk.f2prop, reflect.TypeOf(float64(1.0)))
 	if err != nil {
 		return err
 	}
@@ -51,12 +54,12 @@ func (tsk *task1) Process(ctx fwk.Context) error {
 	msg.Infof("proc...\n")
 	store := ctx.Store()
 
-	err = store.Put("floats1", tsk.f1)
+	err = store.Put(tsk.f1prop, tsk.f1)
 	if err != nil {
 		return err
 	}
 
-	err = store.Put("floats2", tsk.f2)
+	err = store.Put(tsk.f2prop, tsk.f2)
 	if err != nil {
 		return err
 	}
@@ -70,8 +73,20 @@ func init() {
 			var err error
 			tsk := &task1{
 				TaskBase: fwk.NewTask(typ, name, mgr),
+				f1prop:   "floats1",
+				f2prop:   "floats2",
 				f1:       -1,
 				f2:       +2,
+			}
+
+			err = tsk.DeclProp("Floats1", &tsk.f1prop)
+			if err != nil {
+				return nil, err
+			}
+
+			err = tsk.DeclProp("Floats2", &tsk.f2prop)
+			if err != nil {
+				return nil, err
 			}
 
 			err = tsk.DeclProp("Float1", &tsk.f1)

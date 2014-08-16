@@ -9,7 +9,9 @@ import (
 type task2 struct {
 	fwk.TaskBase
 
-	fct func(f float64) float64
+	input  string
+	output string
+	fct    func(f float64) float64
 }
 
 func (tsk *task2) Configure(ctx fwk.Context) error {
@@ -17,12 +19,12 @@ func (tsk *task2) Configure(ctx fwk.Context) error {
 	msg := ctx.Msg()
 	msg.Infof("configure...\n")
 
-	err = tsk.DeclInPort("floats1", reflect.TypeOf(float64(1.0)))
+	err = tsk.DeclInPort(tsk.input, reflect.TypeOf(float64(1.0)))
 	if err != nil {
 		return err
 	}
 
-	err = tsk.DeclOutPort("massaged_floats1", reflect.TypeOf(float64(1.0)))
+	err = tsk.DeclOutPort(tsk.output, reflect.TypeOf(float64(1.0)))
 	if err != nil {
 		return err
 	}
@@ -47,12 +49,12 @@ func (tsk *task2) Process(ctx fwk.Context) error {
 	store := ctx.Store()
 	msg := ctx.Msg()
 	msg.Infof("proc...\n")
-	v, err := store.Get("floats1")
+	v, err := store.Get(tsk.input)
 	if err != nil {
 		return err
 	}
 	v = tsk.fct(v.(float64))
-	err = store.Put("massaged_floats1", v)
+	err = store.Put(tsk.output, v)
 	if err != nil {
 		return err
 	}
@@ -65,9 +67,21 @@ func init() {
 			var err error
 			tsk := &task2{
 				TaskBase: fwk.NewTask(typ, name, mgr),
+				input:    "floats1",
+				output:   "massaged_floats1",
 			}
 			tsk.fct = func(f float64) float64 {
 				return f * f
+			}
+
+			err = tsk.DeclProp("Input", &tsk.input)
+			if err != nil {
+				return nil, err
+			}
+
+			err = tsk.DeclProp("Output", &tsk.output)
+			if err != nil {
+				return nil, err
 			}
 
 			err = tsk.DeclProp("Fct", &tsk.fct)
