@@ -494,15 +494,15 @@ func (app *appmgr) run(ctx Context) error {
 
 	switch app.nprocs {
 	case 0:
-		err = app.run_seq(ctx)
+		err = app.runSequential(ctx)
 	default:
-		err = app.run_workers(ctx)
+		err = app.runConcurrent(ctx)
 	}
 
 	return err
 }
 
-func (app *appmgr) run_seq(ctx Context) error {
+func (app *appmgr) runSequential(ctx Context) error {
 	var err error
 	keys := app.dflow.keys()
 	ctxs := make([]context, len(app.tsks))
@@ -546,7 +546,7 @@ func (app *appmgr) run_seq(ctx Context) error {
 	return err
 }
 
-func (app *appmgr) run_workers(ctx Context) error {
+func (app *appmgr) runConcurrent(ctx Context) error {
 	var err error
 
 	evts := make(chan int64, 100*app.nprocs)
