@@ -55,6 +55,4 @@ func (s Strategy) String() string {
 	default:
 		panic(fmt.Errorf("fastjet: invalid Strategy (%d)", int(s)))
 	}
-
-	panic("unreachable")
 }
