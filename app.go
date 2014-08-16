@@ -661,20 +661,20 @@ func (app *appmgr) Msg() MsgStream {
 func (app *appmgr) printDataFlow() error {
 	var err error
 
-	app.msg.Infof(">>> --- [data flow] --- nodes...\n")
+	app.msg.Debugf(">>> --- [data flow] --- nodes...\n")
 	for tsk, node := range app.dflow.nodes {
-		app.msg.Infof(">>> ---[%s]---\n", tsk)
-		app.msg.Infof("    in:  %v\n", node.in)
-		app.msg.Infof("    out: %v\n", node.out)
+		app.msg.Debugf(">>> ---[%s]---\n", tsk)
+		app.msg.Debugf("    in:  %v\n", node.in)
+		app.msg.Debugf("    out: %v\n", node.out)
 	}
 
-	app.msg.Infof(">>> --- [data flow] --- edges...\n")
+	app.msg.Debugf(">>> --- [data flow] --- edges...\n")
 	edges := make([]string, 0, len(app.dflow.edges))
 	for n := range app.dflow.edges {
 		edges = append(edges, n)
 	}
 	sort.Strings(edges)
-	app.msg.Infof(" edges: %v\n", edges)
+	app.msg.Debugf(" edges: %v\n", edges)
 
 	return err
 }
