@@ -110,3 +110,26 @@ func TestDuplicateProperty(t *testing.T) {
 	})
 	app.Run()
 }
+
+func TestInputStream(t *testing.T) {
+	for _, evtmax := range []int64{0, 1, 10, 100, -1} {
+		app := newapp(evtmax, 1)
+		app.Create(job.C{
+			Type: "github.com/go-hep/fwk/testdata.inputstream",
+			Name: "input",
+			Props: job.P{
+				"Output": "t1-floats1",
+			},
+		})
+
+		app.Create(job.C{
+			Type: "github.com/go-hep/fwk/testdata.task2",
+			Name: "t2",
+			Props: job.P{
+				"Input":  "t1-floats1",
+				"Output": "t1-floats1-massaged",
+			},
+		})
+		app.Run()
+	}
+}
