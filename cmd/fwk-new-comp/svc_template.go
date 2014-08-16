@@ -40,7 +40,7 @@ func (svc *{{.Name}}) StopSvc(ctx fwk.Context) error {
 	return err
 }
 
-func new{{Name}}(typ, name string, mgr fwk.App) (fwk.Component, error) {
+func new{{.Name}}(typ, name string, mgr fwk.App) (fwk.Component, error) {
 	var err error
 	svc := &{{.Name}}{
 		SvcBase: fwk.NewSvc(typ, name, mgr),
