@@ -26,28 +26,43 @@ func (wrk *worker) run(tsks []Task) {
 				return
 			}
 			errch := make(chan error, len(tsks))
+			quit := make(chan struct{})
 			for i, tsk := range tsks {
 				go func(i int, tsk Task) {
 					//wrk.msg.Infof(">>> running [%s]...\n", tsk.Name())
 					ctx := wrk.ctxs[i]
 					ctx.id = ievt
-					errch <- tsk.Process(ctx)
-					// FIXME(sbinet) dont be so eager to flush...
-					ctx.msg.flush()
+					select {
+					case errch <- tsk.Process(ctx):
+						// FIXME(sbinet) dont be so eager to flush...
+						ctx.msg.flush()
+					case <-quit:
+						ctx.msg.flush()
+					}
 				}(i, tsk)
 			}
-			for i := 0; i < len(tsks); i++ {
-				err := <-errch
-				if err != nil {
-					//FIXME(sbinet) we should really cleanup local errch
-					// but if we close it too early, still running tasks
-					// might send their error status to a closed channel
-					//close(errch)
+			ndone := 0
+		errloop:
+			for {
+				select {
+				case err = <-errch:
+					ndone += 1
+					if err != nil {
+						close(quit)
+						wrk.msg.flush()
+						wrk.errch <- err
+						return
+					}
+					if ndone == len(tsks) {
+						break errloop
+					}
+				case <-wrk.quit:
+					close(quit)
 					wrk.msg.flush()
-					wrk.errch <- err
 					return
 				}
 			}
+			close(quit)
 			wrk.msg.flush()
 
 		case <-wrk.quit:

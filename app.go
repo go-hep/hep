@@ -522,27 +522,34 @@ func (app *appmgr) runSequential(ctx Context) error {
 			return err
 		}
 		errch := make(chan error, len(app.tsks))
+		quit := make(chan struct{})
 		for i, tsk := range app.tsks {
 			go func(i int, tsk Task) {
 				//app.msg.Infof(">>> running [%s]...\n", tsk.Name())
 				ctx := ctxs[i]
 				ctx.id = ievt
-				errch <- tsk.Process(ctx)
-				// FIXME(sbinet) dont be so eager to flush...
-				ctx.msg.flush()
+				select {
+				case errch <- tsk.Process(ctx):
+					// FIXME(sbinet) dont be so eager to flush...
+					ctx.msg.flush()
+				case <-quit:
+					// FIXME(sbinet) dont be so eager to flush...
+					ctx.msg.flush()
+				}
 			}(i, tsk)
 		}
-		for i := 0; i < len(app.tsks); i++ {
-			err := <-errch
+		ndone := 0
+	errloop:
+		for err = range errch {
+			ndone += 1
 			if err != nil {
-				//FIXME(sbinet) we should really cleanup local errch
-				// but if we close it too early, still running tasks
-				// might send their error status to a closed channel
-				//close(errch)
+				close(quit)
 				app.msg.flush()
 				return err
 			}
-
+			if ndone == len(app.tsks) {
+				break errloop
+			}
 		}
 		app.msg.flush()
 	}
@@ -553,7 +560,7 @@ func (app *appmgr) runConcurrent(ctx Context) error {
 	var err error
 
 	evts := make(chan int64, 100*app.nprocs)
-	quit := make(chan struct{}, app.nprocs)
+	quit := make(chan struct{})
 	done := make(chan struct{})
 	errch := make(chan error)
 
@@ -592,12 +599,6 @@ func (app *appmgr) runConcurrent(ctx Context) error {
 		close(evts)
 	}()
 
-	drain := func() {
-		for _ = range workers {
-			quit <- struct{}{}
-		}
-	}
-
 	ndone := 0
 ctrl:
 	for {
@@ -605,7 +606,7 @@ ctrl:
 		case err = <-errch:
 			if err != nil {
 				// FIXME(sbinet) gather status of drained workers
-				drain()
+				close(quit)
 				return err
 			}
 
