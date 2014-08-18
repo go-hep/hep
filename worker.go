@@ -68,30 +68,22 @@ func (wrk *worker) run(tsks []Task) {
 				wrk.errc <- err
 				return
 			}
-			errc := make(chan error, len(tsks))
-			quit := make(chan struct{})
+			run := taskrunner{
+				ievt: ievt,
+				errc: make(chan error, len(tsks)),
+				quit: make(chan struct{}),
+			}
 			for i, tsk := range tsks {
-				go func(i int, tsk Task) {
-					//wrk.msg.Infof(">>> running [%s]...\n", tsk.Name())
-					ctx := wrk.ctxs[i]
-					ctx.id = ievt
-					select {
-					case errc <- tsk.Process(ctx):
-						// FIXME(sbinet) dont be so eager to flush...
-						ctx.msg.flush()
-					case <-quit:
-						ctx.msg.flush()
-					}
-				}(i, tsk)
+				go run.run(i, wrk.ctxs[i], tsk)
 			}
 			ndone := 0
 		errloop:
 			for {
 				select {
-				case err = <-errc:
+				case err = <-run.errc:
 					ndone += 1
 					if err != nil {
-						close(quit)
+						close(run.quit)
 						wrk.msg.flush()
 						wrk.errc <- err
 						return
@@ -100,16 +92,34 @@ func (wrk *worker) run(tsks []Task) {
 						break errloop
 					}
 				case <-wrk.quit:
-					close(quit)
+					close(run.quit)
 					wrk.msg.flush()
 					return
 				}
 			}
-			close(quit)
+			close(run.quit)
 			wrk.msg.flush()
 
 		case <-wrk.quit:
 			return
 		}
+	}
+}
+
+type taskrunner struct {
+	errc chan error
+	quit chan struct{}
+
+	ievt int64
+}
+
+func (run taskrunner) run(i int, ctx context, tsk Task) {
+	ctx.id = run.ievt
+	select {
+	case run.errc <- tsk.Process(ctx):
+		// FIXME(sbinet) dont be so eager to flush...
+		ctx.msg.flush()
+	case <-run.quit:
+		ctx.msg.flush()
 	}
 }

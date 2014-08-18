@@ -520,29 +520,20 @@ func (app *appmgr) runSequential(ctx Context) error {
 		if err != nil {
 			return err
 		}
-		errch := make(chan error, len(app.tsks))
-		quit := make(chan struct{})
+		run := taskrunner{
+			ievt: ievt,
+			errc: make(chan error, len(app.tsks)),
+			quit: make(chan struct{}),
+		}
 		for i, tsk := range app.tsks {
-			go func(i int, tsk Task) {
-				//app.msg.Infof(">>> running [%s]...\n", tsk.Name())
-				ctx := ctxs[i]
-				ctx.id = ievt
-				select {
-				case errch <- tsk.Process(ctx):
-					// FIXME(sbinet) dont be so eager to flush...
-					ctx.msg.flush()
-				case <-quit:
-					// FIXME(sbinet) dont be so eager to flush...
-					ctx.msg.flush()
-				}
-			}(i, tsk)
+			go run.run(i, ctxs[i], tsk)
 		}
 		ndone := 0
 	errloop:
-		for err = range errch {
+		for err = range run.errc {
 			ndone += 1
 			if err != nil {
-				close(quit)
+				close(run.quit)
 				app.msg.flush()
 				return err
 			}
