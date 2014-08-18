@@ -690,6 +690,24 @@ options:
 			},
 		},
 	})
+
+	// scalar HT merger
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.Merger",
+		Name: "scalar-ht",
+		Props: job.P{
+			"Inputs": []string{
+				"/fads/uobj-finder/jets",
+				"/fads/uobj-finder/electrons",
+				"/fads/uobj-finder/photons",
+				"/fads/uobj-finder/muons",
+			},
+			"Output":         "/fads/scalar-ht",
+			"MomentumOutput": "/fads/scalar-ht/momentum",
+			"EnergyOutput":   "/fads/scalar-ht/energy",
+		},
+	})
+
 	app.Run()
 	fmt.Printf("::: fads-app... [done] (time=%v)\n", time.Since(start))
 }
