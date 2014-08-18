@@ -515,10 +515,18 @@ func (app *appmgr) runSequential(ctx Context) error {
 		}
 	}
 
-	ctrl, err := app.startInputStreams()
+	ictrl, err := app.startInputStreams()
 	if err != nil {
 		return err
 	}
+	defer close(ictrl.Quit)
+
+	octrl, err := app.startOutputStreams()
+	if err != nil {
+		return err
+	}
+
+	defer close(octrl.Quit)
 
 	for ievt := int64(0); ievt < app.evtmax; ievt++ {
 		app.msg.Infof(">>> running evt=%d...\n", ievt)
@@ -550,17 +558,23 @@ func (app *appmgr) runSequential(ctx Context) error {
 		app.msg.flush()
 	}
 
-	close(ctrl.Quit)
 	return err
 }
 
 func (app *appmgr) runConcurrent(ctx Context) error {
 	var err error
 
-	stream, err := app.startInputStreams()
+	istream, err := app.startInputStreams()
 	if err != nil {
 		return err
 	}
+	defer close(istream.Quit)
+
+	ostream, err := app.startOutputStreams()
+	if err != nil {
+		return err
+	}
+	defer close(ostream.Quit)
 
 	ctrl := workercontrol{
 		evts: make(chan int64, 100*app.nprocs),
@@ -600,7 +614,6 @@ ctrl:
 		}
 	}
 
-	close(stream.Quit)
 	return err
 }
 
@@ -616,6 +629,30 @@ func (app *appmgr) startInputStreams() (StreamControl, error) {
 	// start input streams
 	for _, tsk := range app.tsks {
 		in, ok := tsk.(*InputStream)
+		if !ok {
+			continue
+		}
+		err = in.connect(ctrl)
+		if err != nil {
+			return ctrl, err
+		}
+	}
+
+	return ctrl, err
+}
+
+func (app *appmgr) startOutputStreams() (StreamControl, error) {
+	var err error
+
+	ctrl := StreamControl{
+		Ctx:  make(chan Context),
+		Err:  make(chan error), // FIXME: impl. back-pressure
+		Quit: make(chan struct{}),
+	}
+
+	// start output streams
+	for _, tsk := range app.tsks {
+		in, ok := tsk.(*OutputStream)
 		if !ok {
 			continue
 		}
