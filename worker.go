@@ -18,12 +18,13 @@ type worker struct {
 	ctxs  []context
 	msg   msgstream
 
-	evts  <-chan int64
-	quit  <-chan struct{}
-	errch chan<- error
+	evts <-chan int64
+	quit <-chan struct{}
+	done chan<- struct{}
+	errc chan<- error
 }
 
-func newWorker(i int, app *appmgr, ctrl workercontrol) *worker {
+func newWorker(i int, app *appmgr, ctrl *workercontrol) *worker {
 	wrk := &worker{
 		slot:  i,
 		keys:  app.dflow.keys(),
@@ -32,7 +33,8 @@ func newWorker(i int, app *appmgr, ctrl workercontrol) *worker {
 		msg:   NewMsgStream(fmt.Sprintf("%s-worker-%03d", app.name, i), app.msg.lvl, nil),
 		evts:  ctrl.evts,
 		quit:  ctrl.quit,
-		errch: ctrl.errc,
+		done:  ctrl.done,
+		errc:  ctrl.errc,
 	}
 	wrk.store.store = make(map[string]achan, len(wrk.keys))
 	for j, tsk := range app.tsks {
@@ -50,6 +52,10 @@ func newWorker(i int, app *appmgr, ctrl workercontrol) *worker {
 }
 
 func (wrk *worker) run(tsks []Task) {
+	defer func() {
+		wrk.done <- struct{}{}
+	}()
+
 	for {
 		select {
 		case ievt, ok := <-wrk.evts:
@@ -59,10 +65,10 @@ func (wrk *worker) run(tsks []Task) {
 			wrk.msg.Infof(">>> running evt=%d...\n", ievt)
 			err := wrk.store.reset(wrk.keys)
 			if err != nil {
-				wrk.errch <- err
+				wrk.errc <- err
 				return
 			}
-			errch := make(chan error, len(tsks))
+			errc := make(chan error, len(tsks))
 			quit := make(chan struct{})
 			for i, tsk := range tsks {
 				go func(i int, tsk Task) {
@@ -70,7 +76,7 @@ func (wrk *worker) run(tsks []Task) {
 					ctx := wrk.ctxs[i]
 					ctx.id = ievt
 					select {
-					case errch <- tsk.Process(ctx):
+					case errc <- tsk.Process(ctx):
 						// FIXME(sbinet) dont be so eager to flush...
 						ctx.msg.flush()
 					case <-quit:
@@ -82,12 +88,12 @@ func (wrk *worker) run(tsks []Task) {
 		errloop:
 			for {
 				select {
-				case err = <-errch:
+				case err = <-errc:
 					ndone += 1
 					if err != nil {
 						close(quit)
 						wrk.msg.flush()
-						wrk.errch <- err
+						wrk.errc <- err
 						return
 					}
 					if ndone == len(tsks) {

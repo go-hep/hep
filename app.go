@@ -1,7 +1,6 @@
 package fwk
 
 import (
-	"fmt"
 	"io"
 	"math"
 	"reflect"
@@ -559,58 +558,37 @@ func (app *appmgr) runSequential(ctx Context) error {
 func (app *appmgr) runConcurrent(ctx Context) error {
 	var err error
 
-	evts := make(chan int64, 100*app.nprocs)
-	quit := make(chan struct{})
-	done := make(chan struct{})
-	errch := make(chan error)
+	ctrl := workercontrol{
+		evts: make(chan int64, 100*app.nprocs),
+		quit: make(chan struct{}),
+		done: make(chan struct{}),
+		errc: make(chan error),
+	}
 
 	workers := make([]worker, app.nprocs)
 	for i := 0; i < app.nprocs; i++ {
-		workers[i] = worker{
-			slot:  i,
-			keys:  app.dflow.keys(),
-			store: *app.store,
-			ctxs:  make([]context, len(app.tsks)),
-			msg:   NewMsgStream(fmt.Sprintf("%s-worker-%03d", app.name, i), app.msg.lvl, nil),
-			evts:  evts,
-			quit:  quit,
-			errch: errch,
-		}
-		wrk := &workers[i]
-		wrk.store.store = make(map[string]achan, len(app.dflow.keys()))
-		for j, tsk := range app.tsks {
-			wrk.ctxs[j] = context{
-				id:    -1,
-				slot:  i,
-				store: &wrk.store,
-				msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
-			}
-		}
-		go func(wrk *worker) {
-			wrk.run(app.tsks)
-			done <- struct{}{}
-		}(wrk)
+		workers[i] = *newWorker(i, app, &ctrl)
 	}
 
 	go func() {
 		for ievt := int64(0); ievt < app.evtmax; ievt++ {
-			evts <- ievt
+			ctrl.evts <- ievt
 		}
-		close(evts)
+		close(ctrl.evts)
 	}()
 
 	ndone := 0
 ctrl:
 	for {
 		select {
-		case err = <-errch:
+		case err = <-ctrl.errc:
 			if err != nil {
 				// FIXME(sbinet) gather status of drained workers
-				close(quit)
+				close(ctrl.quit)
 				return err
 			}
 
-		case <-done:
+		case <-ctrl.done:
 			ndone += 1
 			if ndone == len(workers) {
 				break ctrl
