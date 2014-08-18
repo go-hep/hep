@@ -129,7 +129,7 @@ func (tsk *TauTagging) Process(ctx fwk.Context) error {
 
 	output := make([]Candidate, 0, len(jets))
 	defer func() {
-		err = store.Put(tsk.output, jets)
+		err = store.Put(tsk.output, output)
 	}()
 
 	msg.Debugf("particles: %d\n", len(particles))
