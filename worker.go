@@ -1,5 +1,16 @@
 package fwk
 
+import (
+	"fmt"
+)
+
+type workercontrol struct {
+	evts chan int64
+	quit chan struct{}
+	done chan struct{}
+	errc chan error
+}
+
 type worker struct {
 	slot  int
 	keys  []string
@@ -10,6 +21,32 @@ type worker struct {
 	evts  <-chan int64
 	quit  <-chan struct{}
 	errch chan<- error
+}
+
+func newWorker(i int, app *appmgr, ctrl workercontrol) *worker {
+	wrk := &worker{
+		slot:  i,
+		keys:  app.dflow.keys(),
+		store: *app.store,
+		ctxs:  make([]context, len(app.tsks)),
+		msg:   NewMsgStream(fmt.Sprintf("%s-worker-%03d", app.name, i), app.msg.lvl, nil),
+		evts:  ctrl.evts,
+		quit:  ctrl.quit,
+		errch: ctrl.errc,
+	}
+	wrk.store.store = make(map[string]achan, len(wrk.keys))
+	for j, tsk := range app.tsks {
+		wrk.ctxs[j] = context{
+			id:    -1,
+			slot:  i,
+			store: &wrk.store,
+			msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
+		}
+	}
+
+	go wrk.run(app.tsks)
+
+	return wrk
 }
 
 func (wrk *worker) run(tsks []Task) {
