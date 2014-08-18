@@ -98,6 +98,12 @@ type Store interface {
 	Has(key string) bool
 }
 
+// Port holds the name and type of a data item in a store
+type Port struct {
+	Name string
+	Type reflect.Type
+}
+
 // DeclPorter is the interface to declare input/output ports for the data flow.
 type DeclPorter interface {
 	DeclInPort(name string, t reflect.Type) error
