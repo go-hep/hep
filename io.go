@@ -5,12 +5,19 @@ import (
 	"reflect"
 )
 
+type StreamControl struct {
+	Ports []Port
+	Ctx   chan Context
+	Err   chan error
+	Quit  chan struct{}
+}
+
 // InputStreamer reads data from the underlying io.Reader
 // and puts it into fwk's Context
 type InputStreamer interface {
-	Open(r io.Reader) error
+	Connect(ports []Port) error
 	Read(ctx Context) error
-	Close() error
+	Disconnect() error
 }
 
 // OutputStreamer gets data from the Context
@@ -21,62 +28,77 @@ type OutputStreamer interface {
 	Close() error
 }
 
-type indata struct {
-	val float64
-	err error
-}
-
 type InputStream struct {
-	SvcBase
+	TaskBase
 
-	output string
-	max    int64
-
-	data chan indata
+	streamer InputStreamer
+	ctrl     StreamControl
 }
 
-func (svc *InputStream) Configure(ctx Context) error {
+func (tsk *InputStream) Configure(ctx Context) error {
 	var err error
 
-	err = svc.mgr.DeclOutPort(svc, svc.output, reflect.TypeOf(float64(1)))
+	for _, port := range tsk.ctrl.Ports {
+		err = tsk.DeclOutPort(port.Name, port.Type)
+		if err != nil {
+			return err
+		}
+	}
+
+	return err
+}
+
+func (tsk *InputStream) StartTask(ctx Context) error {
+	var err error
+
+	return err
+}
+
+func (tsk *InputStream) StopTask(ctx Context) error {
+	var err error
+
+	return err
+}
+
+func (tsk *InputStream) connect(ctrl StreamControl) error {
+	ctrl.Ports = make([]Port, len(tsk.ctrl.Ports))
+	copy(ctrl.Ports, tsk.ctrl.Ports)
+
+	tsk.ctrl = ctrl
+	err := tsk.streamer.Connect(ctrl.Ports)
 	if err != nil {
 		return err
 	}
 
+	go tsk.read()
+
 	return err
 }
 
-func (svc *InputStream) StartSvc(ctx Context) error {
-	var err error
+func (tsk *InputStream) disconnect() error {
+	return tsk.streamer.Disconnect()
+}
 
-	go func() {
-		for i := int64(0); i < svc.max; i++ {
-			svc.data <- indata{val: float64(i)}
+func (tsk *InputStream) read() {
+	for {
+		select {
+
+		case ctx := <-tsk.ctrl.Ctx:
+			tsk.ctrl.Err <- tsk.streamer.Read(ctx)
+
+		case <-tsk.ctrl.Quit:
+			return
 		}
-		svc.data <- indata{err: io.EOF}
-	}()
-
-	return err
-}
-
-func (svc *InputStream) StopSvc(ctx Context) error {
-	var err error
-
-	return err
-}
-
-func (svc *InputStream) Process(ctx Context) error {
-	var err error
-
-	store := ctx.Store()
-	data := <-svc.data
-
-	if data.err != nil {
-		return data.err
 	}
+}
 
-	err = store.Put(svc.output, data.val)
+func (tsk *InputStream) Process(ctx Context) error {
+	var err error
+
+	tsk.ctrl.Ctx <- ctx
+	err = <-tsk.ctrl.Err
 	if err != nil {
+		close(tsk.ctrl.Quit)
 		return err
 	}
 
@@ -86,24 +108,25 @@ func (svc *InputStream) Process(ctx Context) error {
 func newInputStream(typ, name string, mgr App) (Component, error) {
 	var err error
 
-	svc := &InputStream{
-		SvcBase: NewSvc(typ, name, mgr),
-		output:  "Output",
-		max:     -1,
-		data:    make(chan indata),
+	tsk := &InputStream{
+		TaskBase: NewTask(typ, name, mgr),
+		streamer: nil,
+		ctrl: StreamControl{
+			Ports: make([]Port, 0),
+		},
 	}
 
-	err = svc.DeclProp("Max", &svc.max)
+	err = tsk.DeclProp("Ports", &tsk.ctrl.Ports)
 	if err != nil {
 		return nil, err
 	}
 
-	err = svc.DeclProp("Output", &svc.output)
+	err = tsk.DeclProp("Streamer", &tsk.streamer)
 	if err != nil {
 		return nil, err
 	}
 
-	return svc, err
+	return tsk, err
 }
 
 func init() {
