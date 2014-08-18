@@ -7,6 +7,51 @@ import (
 	"github.com/go-hep/fwk"
 )
 
+type InputStream struct {
+	output string
+	max    int
+	data   chan indata
+}
+
+func (stream *InputStream) Connect(ports []fwk.Port) error {
+	var err error
+	stream.data = make(chan indata)
+	stream.output = ports[0].Name
+	stream.max = 10000
+
+	go func() {
+		for i := 0; i < stream.max; i++ {
+			stream.data <- indata{val: float64(i)}
+		}
+		stream.data <- indata{err: io.EOF}
+	}()
+
+	return err
+}
+
+func (stream *InputStream) Read(ctx fwk.Context) error {
+	var err error
+
+	store := ctx.Store()
+	data := <-stream.data
+
+	if data.err != nil {
+		return data.err
+	}
+
+	err = store.Put(stream.output, data.val)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (stream *InputStream) Disconnect() error {
+	var err error
+	return err
+}
+
 type indata struct {
 	val float64
 	err error
