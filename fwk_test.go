@@ -1,10 +1,12 @@
 package fwk_test
 
 import (
+	"reflect"
 	"testing"
 
+	"github.com/go-hep/fwk"
 	"github.com/go-hep/fwk/job"
-	_ "github.com/go-hep/fwk/testdata"
+	"github.com/go-hep/fwk/testdata"
 )
 
 func newapp(evtmax int64, nprocs int) *job.Job {
@@ -138,10 +140,16 @@ func TestInputStream(t *testing.T) {
 
 			// put input-stream after 't2', to test dataflow re-ordering
 			app.Create(job.C{
-				Type: "github.com/go-hep/fwk/testdata.inputstream",
+				Type: "github.com/go-hep/fwk.InputStream",
 				Name: "input",
 				Props: job.P{
-					"Output": "t1-floats1",
+					"Ports": []fwk.Port{
+						{
+							Name: "t1-floats1",
+							Type: reflect.TypeOf(float64(1)),
+						},
+					},
+					"Streamer": &testdata.InputStream{},
 				},
 			})
 			app.Run()
