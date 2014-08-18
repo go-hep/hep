@@ -505,11 +505,12 @@ func (app *appmgr) runSequential(ctx Context) error {
 	var err error
 	keys := app.dflow.keys()
 	ctxs := make([]context, len(app.tsks))
+	store := *app.store
 	for j, tsk := range app.tsks {
 		ctxs[j] = context{
 			id:    -1,
 			slot:  0,
-			store: app.store,
+			store: &store,
 			msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
 		}
 	}
@@ -521,7 +522,7 @@ func (app *appmgr) runSequential(ctx Context) error {
 
 	for ievt := int64(0); ievt < app.evtmax; ievt++ {
 		app.msg.Infof(">>> running evt=%d...\n", ievt)
-		err = app.store.reset(keys)
+		err = store.reset(keys)
 		if err != nil {
 			return err
 		}
