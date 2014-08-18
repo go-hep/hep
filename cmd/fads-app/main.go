@@ -665,6 +665,31 @@ options:
 		},
 	})
 
+	// find uniquely identified photons/electrons/taus/jets
+	app.Create(job.C{
+		Type: "github.com/go-hep/fads.UniqueObjectFinder",
+		Name: "uobj-finder",
+		Props: job.P{
+			"Keys": []fads.ObjPair{
+				{
+					In:  "/fads/photon-iso/photons",
+					Out: "/fads/uobj-finder/photons",
+				},
+				{
+					In:  "/fads/electron-iso/electrons",
+					Out: "/fads/uobj-finder/electrons",
+				},
+				{
+					In:  "/fads/muon-iso/muons",
+					Out: "/fads/uobj-finder/muons",
+				},
+				{
+					In:  "/fads/tau-tag/jets",
+					Out: "/fads/uobj-finder/jets",
+				},
+			},
+		},
+	})
 	app.Run()
 	fmt.Printf("::: fads-app... [done] (time=%v)\n", time.Since(start))
 }
