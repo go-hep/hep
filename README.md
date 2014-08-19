@@ -61,7 +61,7 @@ options:
 `fwk-list-components` lists all the currently available components.
 
 ```sh
-$ fwk-list-components 
+$ fwk-list-components
 ::: components... (5)
 [0000/0005] github.com/go-hep/fwk.InputStream
 [0001/0005] github.com/go-hep/fwk.OutputStream
