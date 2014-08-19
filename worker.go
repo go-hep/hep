@@ -68,22 +68,27 @@ func (wrk *worker) run(tsks []Task) {
 				wrk.errc <- err
 				return
 			}
-			run := taskrunner{
+
+			evt := taskrunner{
 				ievt: ievt,
 				errc: make(chan error, len(tsks)),
 				quit: make(chan struct{}),
 			}
 			for i, tsk := range tsks {
-				go run.run(i, wrk.ctxs[i], tsk)
+				go evt.run(i, wrk.ctxs[i], tsk)
 			}
 			ndone := 0
 		errloop:
 			for {
 				select {
-				case err = <-run.errc:
+				case err, ok := <-evt.errc:
+					if !ok {
+						return
+					}
 					ndone += 1
 					if err != nil {
-						close(run.quit)
+						close(evt.quit)
+						wrk.store.close()
 						wrk.msg.flush()
 						wrk.errc <- err
 						return
@@ -92,15 +97,18 @@ func (wrk *worker) run(tsks []Task) {
 						break errloop
 					}
 				case <-wrk.quit:
-					close(run.quit)
+					wrk.store.close()
+					close(evt.quit)
 					wrk.msg.flush()
 					return
 				}
 			}
-			close(run.quit)
+			wrk.store.close()
+			close(evt.quit)
 			wrk.msg.flush()
 
 		case <-wrk.quit:
+			wrk.store.close()
 			return
 		}
 	}
