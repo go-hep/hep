@@ -31,6 +31,10 @@ func New(app fwk.App, props P) *Job {
 	return job
 }
 
+func (job *Job) App() fwk.App {
+	return job.app
+}
+
 func (job *Job) Create(cfg C) fwk.Component {
 	c, err := job.app.New(cfg.Type, cfg.Name)
 	if err != nil {
