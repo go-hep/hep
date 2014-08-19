@@ -48,16 +48,18 @@ func (tsk *task2) StopTask(ctx fwk.Context) error {
 func (tsk *task2) Process(ctx fwk.Context) error {
 	store := ctx.Store()
 	msg := ctx.Msg()
-	msg.Infof("proc... (id=%d|%d)\n", ctx.Id(), ctx.Slot())
 	v, err := store.Get(tsk.input)
 	if err != nil {
 		return err
 	}
-	v = tsk.fct(v.(int64))
-	err = store.Put(tsk.output, v)
+	i := v.(int64)
+	o := tsk.fct(i)
+	err = store.Put(tsk.output, o)
 	if err != nil {
 		return err
 	}
+
+	msg.Infof("proc... (id=%d|%d) => [%d -> %d]\n", ctx.Id(), ctx.Slot(), i, o)
 	return nil
 }
 
