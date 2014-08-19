@@ -26,9 +26,80 @@ The documentation is available on `godoc`:
 
 ## Examples
 
+
+### `fwk` tuto examples
+
 The [examples](https://github.com/go-hep/fwk/blob/master/examples)
 directory contains a few simple applications which exercize the `fwk`
 toolkit.
+
+The examples/tutorials should be readily available as soon as you've
+executed:
+
+```sh
+$ go get github.com/go-hep/fwk/examples/...
+```
+
+*e.g.:*
+
+```sh
+$ fwk-ex-tuto-1 -help
+Usage: fwk-ex-tuto1 [options]
+
+ex:
+ $ fwk-ex-tuto-1 -l=INFO -evtmax=-1
+
+options:
+  -evtmax=10: number of events to process
+  -l="INFO": message level (DEBUG|INFO|WARN|ERROR)
+  -nprocs=0: number of events to process concurrently
+```
+
+```sh
+$ fwk-ex-tuto-1
+::: fwk-ex-tuto-1...
+t2                   INFO configure...
+t2                   INFO configure... [done]
+t1                   INFO configure ...
+t1                   INFO configure ... [done]
+t2                   INFO start...
+t1                   INFO start...
+app                  INFO >>> running evt=0...
+t1                   INFO proc... (id=0|0) => [10, 20]
+t2                   INFO proc... (id=0|0) => [10 -> 100]
+app                  INFO >>> running evt=1...
+t1                   INFO proc... (id=1|0) => [10, 20]
+t2                   INFO proc... (id=1|0) => [10 -> 100]
+app                  INFO >>> running evt=2...
+t1                   INFO proc... (id=2|0) => [10, 20]
+t2                   INFO proc... (id=2|0) => [10 -> 100]
+app                  INFO >>> running evt=3...
+t1                   INFO proc... (id=3|0) => [10, 20]
+t2                   INFO proc... (id=3|0) => [10 -> 100]
+app                  INFO >>> running evt=4...
+t1                   INFO proc... (id=4|0) => [10, 20]
+t2                   INFO proc... (id=4|0) => [10 -> 100]
+app                  INFO >>> running evt=5...
+t1                   INFO proc... (id=5|0) => [10, 20]
+t2                   INFO proc... (id=5|0) => [10 -> 100]
+app                  INFO >>> running evt=6...
+t1                   INFO proc... (id=6|0) => [10, 20]
+t2                   INFO proc... (id=6|0) => [10 -> 100]
+app                  INFO >>> running evt=7...
+t1                   INFO proc... (id=7|0) => [10, 20]
+t2                   INFO proc... (id=7|0) => [10 -> 100]
+app                  INFO >>> running evt=8...
+t1                   INFO proc... (id=8|0) => [10, 20]
+t2                   INFO proc... (id=8|0) => [10 -> 100]
+app                  INFO >>> running evt=9...
+t1                   INFO proc... (id=9|0) => [10, 20]
+t2                   INFO proc... (id=9|0) => [10 -> 100]
+t2                   INFO stop...
+t1                   INFO stop...
+::: fwk-ex-tuto-1... [done] (cpu=587.366us)
+```
+
+### Physics-oriented demonstrator
 
 There is also a more physics-oriented example/demonstrator: [fads](https://github.com/go-hep/fads)
 
