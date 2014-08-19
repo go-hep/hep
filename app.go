@@ -548,6 +548,7 @@ func (app *appmgr) runSequential(ctx Context) error {
 			ndone += 1
 			if err != nil {
 				close(run.quit)
+				store.close()
 				app.msg.flush()
 				return err
 			}
@@ -555,6 +556,7 @@ func (app *appmgr) runSequential(ctx Context) error {
 				break errloop
 			}
 		}
+		store.close()
 		app.msg.flush()
 	}
 
@@ -577,7 +579,7 @@ func (app *appmgr) runConcurrent(ctx Context) error {
 	defer close(ostream.Quit)
 
 	ctrl := workercontrol{
-		evts: make(chan int64, 100*app.nprocs),
+		evts: make(chan int64, 2*app.nprocs),
 		quit: make(chan struct{}),
 		done: make(chan struct{}),
 		errc: make(chan error),
@@ -599,15 +601,19 @@ func (app *appmgr) runConcurrent(ctx Context) error {
 ctrl:
 	for {
 		select {
-		case err = <-ctrl.errc:
-			if err != nil {
-				// FIXME(sbinet) gather status of drained workers
-				close(ctrl.quit)
-				return err
+		case eworker, ok := <-ctrl.errc:
+			if !ok {
+				continue
+			}
+			if eworker != nil && err == nil {
+				// only record first error.
+				// FIXME(sbinet) record all of them (errstack)
+				err = eworker
 			}
 
 		case <-ctrl.done:
 			ndone += 1
+			app.msg.Infof("workers done: %d/%d\n", ndone, app.nprocs)
 			if ndone == len(workers) {
 				break ctrl
 			}
