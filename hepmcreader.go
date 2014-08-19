@@ -13,18 +13,54 @@ import (
 	"github.com/go-hep/heppdt"
 )
 
-type hepmcinput struct {
-	evt hepmc.Event
-	err error
+type HepMcStreamer struct {
+	Name string // input filename
+	r    io.ReadCloser
+	dec  *hepmc.Decoder
+
+	mcevt string // hepmc event key
+}
+
+func (s *HepMcStreamer) Connect(ports []fwk.Port) error {
+	var err error
+	s.r, err = os.Open(s.Name)
+	if err != nil {
+		return err
+	}
+
+	s.dec = hepmc.NewDecoder(bufio.NewReader(s.r))
+
+	port := ports[0]
+	if port.Type != reflect.TypeOf(hepmc.Event{}) {
+		err = fwk.Errorf("fads: invalid port. expected type=hepmc.Event. got=%v", port.Type)
+		return err
+	}
+
+	s.mcevt = port.Name
+
+	return err
+}
+
+func (s *HepMcStreamer) Read(ctx fwk.Context) error {
+	var err error
+
+	var evt hepmc.Event
+	err = s.dec.Decode(&evt)
+	if err != nil {
+		return err
+	}
+
+	store := ctx.Store()
+	err = store.Put(s.mcevt, evt)
+	return err
+}
+
+func (s *HepMcStreamer) Disconnect() error {
+	return s.r.Close()
 }
 
 type HepMcReader struct {
 	fwk.TaskBase
-
-	fname string // input filename
-	r     io.ReadCloser
-	dec   *hepmc.Decoder // hepmc decoder
-	evtch chan *hepmcinput
 
 	mcevt       string // original HepMC event
 	allparts    string // all particles
@@ -35,7 +71,7 @@ type HepMcReader struct {
 func (tsk *HepMcReader) Configure(ctx fwk.Context) error {
 	var err error
 
-	err = tsk.DeclOutPort(tsk.mcevt, reflect.TypeOf(hepmc.Event{}))
+	err = tsk.DeclInPort(tsk.mcevt, reflect.TypeOf(hepmc.Event{}))
 	if err != nil {
 		return err
 	}
@@ -60,34 +96,11 @@ func (tsk *HepMcReader) Configure(ctx fwk.Context) error {
 
 func (tsk *HepMcReader) StartTask(ctx fwk.Context) error {
 	var err error
-	tsk.r, err = os.Open(tsk.fname)
-	if err != nil {
-		return err
-	}
-	tsk.dec = hepmc.NewDecoder(bufio.NewReader(tsk.r))
-
-	go func() {
-		for {
-			// FIXME(sbinet) introduce a <-quit channel ?
-			// FIXME(sbinet) handle back pressure for slow consumers
-			var evt hepmcinput
-			evt.err = tsk.dec.Decode(&evt.evt)
-			tsk.evtch <- &evt
-			if evt.err != nil {
-				return
-			}
-		}
-	}()
-
 	return err
 }
 
 func (tsk *HepMcReader) StopTask(ctx fwk.Context) error {
 	var err error
-	err = tsk.r.Close()
-	if err != nil {
-		return err
-	}
 	return err
 }
 
@@ -96,17 +109,11 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) error {
 	store := ctx.Store()
 	msg := ctx.Msg()
 
-	inch := <-tsk.evtch
-	err = inch.err
+	v, err := store.Get(tsk.mcevt)
 	if err != nil {
 		return err
 	}
-
-	evt := &inch.evt
-	err = store.Put(tsk.mcevt, evt)
-	if err != nil {
-		return err
-	}
+	evt := v.(hepmc.Event)
 
 	msg.Debugf(
 		"event number: %d, #parts=%d #vtx=%d\n",
@@ -197,15 +204,13 @@ func init() {
 
 			tsk := &HepMcReader{
 				TaskBase:    fwk.NewTask(typ, name, mgr),
-				fname:       "hepmc.data",
-				evtch:       make(chan *hepmcinput),
 				mcevt:       "/fads/McEvent",
 				allparts:    "/fads/AllParticles",
 				stableparts: "/fads/StableParticles",
 				partons:     "/fads/Partons",
 			}
 
-			err = tsk.DeclProp("Input", &tsk.fname)
+			err = tsk.DeclProp("Input", &tsk.mcevt)
 			if err != nil {
 				return nil, err
 			}
