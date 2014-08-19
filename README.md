@@ -2,6 +2,7 @@ fwk
 ===
 
 [![Build Status](https://drone.io/github.com/go-hep/fwk/status.png)](https://drone.io/github.com/go-hep/fwk/latest)
+[![GoDoc](https://godoc.org/github.com/go-hep/fwk?status.svg)](https://godoc.org/github.com/go-hep/fwk)
 
 `fwk` is a HEP oriented concurrent framework written in `Go`.
 `fwk` should be easy to pick up and use for small and fast analyses but should also support reconstruction, simulation, ... use cases.
