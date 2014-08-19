@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"reflect"
 	"runtime/pprof"
 	"time"
 
 	"github.com/go-hep/fads"
 	"github.com/go-hep/fastjet"
+	"github.com/go-hep/fwk"
 	"github.com/go-hep/fwk/job"
+	"github.com/go-hep/hepmc"
 )
 
 var (
@@ -87,10 +90,27 @@ options:
 
 	// read HepMC data
 	app.Create(job.C{
+		Type: "github.com/go-hep/fwk.InputStream",
+		Name: "hepmc-streamer",
+		Props: job.P{
+			"Ports": []fwk.Port{
+				{
+					Name: "/fads/McEvent",
+					Type: reflect.TypeOf(hepmc.Event{}),
+				},
+			},
+			"Streamer": &fads.HepMcStreamer{
+				Name: input,
+			},
+		},
+	})
+
+	// transform HepMC data into fads collection
+	app.Create(job.C{
 		Type: "github.com/go-hep/fads.HepMcReader",
 		Name: "hepmcreader",
 		Props: job.P{
-			"Input": input,
+			"Input": "/fads/McEvent",
 		},
 	})
 
