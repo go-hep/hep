@@ -23,6 +23,22 @@ func printf(format string, args ...interface{}) (int, error) {
 }
 
 func main() {
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, `Usage: %[1]s [options] <component-name>
+
+ex:
+ $ %[1]s -c=task -p=mypackage mytask
+ $ %[1]s -c=task -p mypackage mytask >| mytask.go
+ $ %[1]s -c=svc  -p mypackage mysvc  >| mysvc.go
+
+options:
+`,
+			os.Args[0],
+		)
+		flag.PrintDefaults()
+	}
+
 	flag.Parse()
 	sc := run()
 	os.Exit(sc)
