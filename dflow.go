@@ -29,7 +29,35 @@ func (svc *dflowsvc) Configure(ctx Context) error {
 }
 
 func (svc *dflowsvc) StartSvc(ctx Context) error {
-	return nil
+	var err error
+	// - make sure all input keys of components are available
+	//   as output keys of a task
+	// - also detect whether a key is labeled as an out-port
+	//   by 2 different components
+	out := make(map[string]string) // outport-name -> producer-name
+	for tsk, node := range svc.nodes {
+		for k := range node.out {
+			n, dup := out[k]
+			if dup {
+				return Errorf("%s: component [%s] already declared port [%s] as its output (current=%s)",
+					svc.Name(), n, k, tsk,
+				)
+			}
+			out[k] = tsk
+		}
+	}
+
+	for tsk, node := range svc.nodes {
+		for k := range node.in {
+			_, ok := out[k]
+			if !ok {
+				return Errorf("%s: component [%s] declared port [%s] as input but NO KNOWN producer",
+					svc.Name(), tsk, k,
+				)
+			}
+		}
+	}
+	return err
 }
 
 func (svc *dflowsvc) StopSvc(ctx Context) error {
