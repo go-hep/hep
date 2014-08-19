@@ -1,4 +1,4 @@
-// fwk provides a set of tools to process High Energy Physics events data.
+// Package fwk provides a set of tools to process High Energy Physics events data.
 // fwk is a components-based framework, a-la Gaudi, with builtin support for concurrency.
 //
 // A fwk application consists of a set of components (fwk.Task) which are:
