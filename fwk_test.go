@@ -94,19 +94,7 @@ func TestSimpleConcApp(t *testing.T) {
 	}
 }
 
-func TestDuplicateProperty(t *testing.T) {
-	defer func() {
-		r := recover()
-		if r == nil {
-			t.Fatalf("expected a panic")
-		}
-		exp := `fwk.DeclOutPort: component [t0] already declared out-port with name [t0-ints1 (type=int64)].
-fwk.DeclOutPort: component [t1] is trying to add a duplicate out-port [t0-ints1 (type=int64)]`
-		if r.(error).Error() != exp {
-			t.Fatalf("expected error {%s}.\ngot={%v}\n", exp, r)
-		}
-	}()
-
+func TestDuplicateOutputPort(t *testing.T) {
 	app := newapp(1, 1)
 	app.Create(job.C{
 		Type: "github.com/go-hep/fwk/testdata.task1",
@@ -125,7 +113,45 @@ fwk.DeclOutPort: component [t1] is trying to add a duplicate out-port [t0-ints1 
 			"Ints2": "t0-ints2",
 		},
 	})
-	app.Run()
+	err := app.App().Run()
+	if err == nil {
+		t.Fatalf("expected an error\n")
+	}
+	exp := fwk.Errorf(`fwk.DeclOutPort: component [t0] already declared out-port with name [t0-ints1 (type=int64)].
+fwk.DeclOutPort: component [t1] is trying to add a duplicate out-port [t0-ints1 (type=int64)]`)
+	if !reflect.DeepEqual(err, exp) {
+		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, err)
+	}
+}
+
+func TestMissingInputPort(t *testing.T) {
+	app := newapp(1, 1)
+	app.Create(job.C{
+		Type: "github.com/go-hep/fwk/testdata.task1",
+		Name: "t1",
+		Props: job.P{
+			"Ints1": "t1-ints1",
+			"Ints2": "t1-ints2",
+		},
+	})
+
+	app.Create(job.C{
+		Type: "github.com/go-hep/fwk/testdata.task2",
+		Name: "t2",
+		Props: job.P{
+			"Input":  "t1-ints1--NOT-THERE",
+			"Output": "t2-ints2",
+		},
+	})
+
+	err := app.App().Run()
+	if err == nil {
+		t.Fatalf("expected an error\n")
+	}
+	exp := fwk.Errorf("dataflow: component [%s] declared port [t1-ints1--NOT-THERE] as input but NO KNOWN producer", "t2")
+	if !reflect.DeepEqual(err, exp) {
+		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, err)
+	}
 }
 
 func getsum(n int64) int64 {
