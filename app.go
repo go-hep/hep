@@ -63,6 +63,7 @@ type appmgr struct {
 	comps map[string]Component
 	tsks  []Task
 	svcs  []Svc
+	ctxs  [2][]context
 }
 
 func NewApp() App {
@@ -428,25 +429,45 @@ func (app *appmgr) configure(ctx Context) error {
 		runtime.GOMAXPROCS(app.nprocs)
 	}
 
-	for _, svc := range app.svcs {
+	tsks := make([]context, len(app.tsks))
+	for j, tsk := range app.tsks {
+		tsks[j] = context{
+			id:    -1,
+			slot:  0,
+			store: app.store,
+			msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
+		}
+	}
+
+	svcs := make([]context, len(app.svcs))
+	for j, svc := range app.svcs {
+		svcs[j] = context{
+			id:    -1,
+			slot:  0,
+			store: app.store,
+			msg:   NewMsgStream(svc.Name(), app.msg.lvl, nil),
+		}
+	}
+
+	for i, svc := range app.svcs {
 		app.msg.Debugf("configuring [%s]...\n", svc.Name())
 		cfg, ok := svc.(Configurer)
 		if !ok {
 			continue
 		}
-		err = cfg.Configure(ctx)
+		err = cfg.Configure(svcs[i])
 		if err != nil {
 			return err
 		}
 	}
 
-	for _, tsk := range app.tsks {
+	for i, tsk := range app.tsks {
 		app.msg.Debugf("configuring [%s]...\n", tsk.Name())
 		cfg, ok := tsk.(Configurer)
 		if !ok {
 			continue
 		}
-		err = cfg.Configure(ctx)
+		err = cfg.Configure(tsks[i])
 		if err != nil {
 			return err
 		}
@@ -457,6 +478,8 @@ func (app *appmgr) configure(ctx Context) error {
 		return err
 	}
 
+	app.ctxs[0] = tsks
+	app.ctxs[1] = svcs
 	app.state = fsm_CONFIGURED
 	app.msg.Debugf("configure... [done]\n")
 	return err
@@ -466,17 +489,17 @@ func (app *appmgr) start(ctx Context) error {
 	var err error
 	defer app.msg.flush()
 	app.state = fsm_STARTING
-	for _, svc := range app.svcs {
+	for i, svc := range app.svcs {
 		app.msg.Debugf("starting [%s]...\n", svc.Name())
-		err = svc.StartSvc(ctx)
+		err = svc.StartSvc(app.ctxs[1][i])
 		if err != nil {
 			return err
 		}
 	}
 
-	for _, tsk := range app.tsks {
+	for i, tsk := range app.tsks {
 		app.msg.Debugf("starting [%s]...\n", tsk.Name())
-		err = tsk.StartTask(ctx)
+		err = tsk.StartTask(app.ctxs[0][i])
 		if err != nil {
 			return err
 		}
@@ -675,15 +698,15 @@ func (app *appmgr) stop(ctx Context) error {
 	var err error
 	defer app.msg.flush()
 	app.state = fsm_STOPPING
-	for _, tsk := range app.tsks {
-		err = tsk.StopTask(ctx)
+	for i, tsk := range app.tsks {
+		err = tsk.StopTask(app.ctxs[0][i])
 		if err != nil {
 			return err
 		}
 	}
 
-	for _, svc := range app.svcs {
-		err = svc.StopSvc(ctx)
+	for i, svc := range app.svcs {
+		err = svc.StopSvc(app.ctxs[1][i])
 		if err != nil {
 			return err
 		}
