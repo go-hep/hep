@@ -11,7 +11,7 @@ type task2 struct {
 
 	input  string
 	output string
-	fct    func(f float64) float64
+	fct    func(f int64) int64
 }
 
 func (tsk *task2) Configure(ctx fwk.Context) error {
@@ -19,12 +19,12 @@ func (tsk *task2) Configure(ctx fwk.Context) error {
 	msg := ctx.Msg()
 	msg.Infof("configure...\n")
 
-	err = tsk.DeclInPort(tsk.input, reflect.TypeOf(float64(1.0)))
+	err = tsk.DeclInPort(tsk.input, reflect.TypeOf(int64(1)))
 	if err != nil {
 		return err
 	}
 
-	err = tsk.DeclOutPort(tsk.output, reflect.TypeOf(float64(1.0)))
+	err = tsk.DeclOutPort(tsk.output, reflect.TypeOf(int64(1)))
 	if err != nil {
 		return err
 	}
@@ -48,12 +48,12 @@ func (tsk *task2) StopTask(ctx fwk.Context) error {
 func (tsk *task2) Process(ctx fwk.Context) error {
 	store := ctx.Store()
 	msg := ctx.Msg()
-	msg.Infof("proc...\n")
+	msg.Infof("proc... (id=%d|%d)\n", ctx.Id(), ctx.Slot())
 	v, err := store.Get(tsk.input)
 	if err != nil {
 		return err
 	}
-	v = tsk.fct(v.(float64))
+	v = tsk.fct(v.(int64))
 	err = store.Put(tsk.output, v)
 	if err != nil {
 		return err
@@ -67,10 +67,10 @@ func init() {
 			var err error
 			tsk := &task2{
 				TaskBase: fwk.NewTask(typ, name, mgr),
-				input:    "floats1",
-				output:   "massaged_floats1",
+				input:    "ints1",
+				output:   "massaged_ints1",
 			}
-			tsk.fct = func(f float64) float64 {
+			tsk.fct = func(f int64) int64 {
 				return f * f
 			}
 

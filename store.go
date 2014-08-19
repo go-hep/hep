@@ -9,6 +9,7 @@ type achan chan interface{}
 type datastore struct {
 	SvcBase
 	store map[string]achan
+	quit  chan struct{}
 }
 
 func (ds *datastore) Configure(ctx Context) error {
@@ -16,22 +17,29 @@ func (ds *datastore) Configure(ctx Context) error {
 }
 
 func (ds *datastore) Get(k string) (interface{}, error) {
-	//fmt.Printf(">>> get(%v)...\n", k)
 	ch, ok := ds.store[k]
 	if !ok {
 		return nil, Errorf("Store.Get: no such key [%v]", k)
 	}
-	v := <-ch
-	ch <- v
-	//fmt.Printf("<<< get(%v, %v)...\n", k, v)
-	return v, nil
+	select {
+	case v, ok := <-ch:
+		if !ok {
+			return nil, Errorf("%s: closed channel for key [%s]", ds.Name(), k)
+		}
+		ch <- v
+		return v, nil
+	case <-ds.quit:
+		return nil, Errorf("%s: timeout to get [%s]", ds.Name(), k)
+	}
 }
 
 func (ds *datastore) Put(k string, v interface{}) error {
-	//fmt.Printf(">>> put(%v, %v)...\n", k, v)
-	ds.store[k] <- v
-	//fmt.Printf("<<< put(%v, %v)...\n", k, v)
-	return nil
+	select {
+	case ds.store[k] <- v:
+		return nil
+	case <-ds.quit:
+		return Errorf("%s: timeout to put [%s]", ds.Name(), k)
+	}
 }
 
 func (ds *datastore) Has(k string) bool {
@@ -68,7 +76,13 @@ func (ds *datastore) reset(keys []string) error {
 		}
 		ds.store[k] = make(achan, 1)
 	}
+	ds.quit = make(chan struct{})
 	return err
+}
+
+// close notifies components hanging on store.Get or .Put that event has been aborted
+func (ds *datastore) close() {
+	close(ds.quit)
 }
 
 func init() {
@@ -77,6 +91,7 @@ func init() {
 			return &datastore{
 				SvcBase: NewSvc(typ, name, mgr),
 				store:   make(map[string]achan),
+				quit:    make(chan struct{}),
 			}, nil
 		},
 	)

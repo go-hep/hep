@@ -9,11 +9,11 @@ import (
 type task1 struct {
 	fwk.TaskBase
 
-	f1prop string
-	f2prop string
+	i1prop string
+	i2prop string
 
-	f1 float64
-	f2 float64
+	i1 int64
+	i2 int64
 }
 
 func (tsk *task1) Configure(ctx fwk.Context) error {
@@ -22,12 +22,12 @@ func (tsk *task1) Configure(ctx fwk.Context) error {
 
 	msg.Infof("configure ...\n")
 
-	err = tsk.DeclOutPort(tsk.f1prop, reflect.TypeOf(float64(1.0)))
+	err = tsk.DeclOutPort(tsk.i1prop, reflect.TypeOf(int64(1.0)))
 	if err != nil {
 		return err
 	}
 
-	err = tsk.DeclOutPort(tsk.f2prop, reflect.TypeOf(float64(1.0)))
+	err = tsk.DeclOutPort(tsk.i2prop, reflect.TypeOf(int64(1.0)))
 	if err != nil {
 		return err
 	}
@@ -51,15 +51,15 @@ func (tsk *task1) StopTask(ctx fwk.Context) error {
 func (tsk *task1) Process(ctx fwk.Context) error {
 	var err error
 	msg := ctx.Msg()
-	msg.Infof("proc...\n")
+	msg.Infof("proc... (id=%d|%d)\n", ctx.Id(), ctx.Slot())
 	store := ctx.Store()
 
-	err = store.Put(tsk.f1prop, tsk.f1)
+	err = store.Put(tsk.i1prop, tsk.i1)
 	if err != nil {
 		return err
 	}
 
-	err = store.Put(tsk.f2prop, tsk.f2)
+	err = store.Put(tsk.i2prop, tsk.i2)
 	if err != nil {
 		return err
 	}
@@ -73,33 +73,33 @@ func init() {
 			var err error
 			tsk := &task1{
 				TaskBase: fwk.NewTask(typ, name, mgr),
-				f1prop:   "floats1",
-				f2prop:   "floats2",
-				f1:       -1,
-				f2:       +2,
+				i1prop:   "ints1",
+				i2prop:   "ints2",
+				i1:       -1,
+				i2:       +2,
 			}
 
-			err = tsk.DeclProp("Floats1", &tsk.f1prop)
+			err = tsk.DeclProp("Ints1", &tsk.i1prop)
 			if err != nil {
 				return nil, err
 			}
 
-			err = tsk.DeclProp("Floats2", &tsk.f2prop)
+			err = tsk.DeclProp("Ints2", &tsk.i2prop)
 			if err != nil {
 				return nil, err
 			}
 
-			err = tsk.DeclProp("Float1", &tsk.f1)
+			err = tsk.DeclProp("Int1", &tsk.i1)
 			if err != nil {
 				return nil, err
 			}
 
-			err = tsk.DeclProp("Float2", &tsk.f2)
+			err = tsk.DeclProp("Int2", &tsk.i2)
 			if err != nil {
 				return nil, err
 			}
 
-			err = tsk.SetProp("Float1", 1.0)
+			err = tsk.SetProp("Int1", int64(1))
 			if err != nil {
 				return nil, err
 			}

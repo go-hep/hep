@@ -1,34 +1,34 @@
 package testdata
 
 import (
-	"bytes"
 	"fmt"
 	"io"
-	"reflect"
 
 	"github.com/go-hep/fwk"
 )
 
-type outdata struct {
-	val float64
-	err error
-}
-
-type outputstream struct {
-	fwk.TaskBase
-
+type OutputStream struct {
 	input string
-	w     io.Writer
 
-	ctx   chan fwk.Context
-	quit  chan struct{}
-	errch chan error
+	W io.Writer
 }
 
-func (tsk *outputstream) Configure(ctx fwk.Context) error {
+func (out *OutputStream) Connect(ports []fwk.Port) error {
 	var err error
+	out.input = ports[0].Name
+	return err
+}
 
-	err = tsk.DeclInPort(tsk.input, reflect.TypeOf(float64(1)))
+func (out *OutputStream) Write(ctx fwk.Context) error {
+	var err error
+	store := ctx.Store()
+	v, err := store.Get(out.input)
+	if err != nil {
+		return err
+	}
+
+	data := v.(int64)
+	_, err = out.W.Write([]byte(fmt.Sprintf("%d\n", data)))
 	if err != nil {
 		return err
 	}
@@ -36,89 +36,16 @@ func (tsk *outputstream) Configure(ctx fwk.Context) error {
 	return err
 }
 
-func (tsk *outputstream) StartTask(ctx fwk.Context) error {
+func (out *OutputStream) Disconnect() error {
 	var err error
-
-	go tsk.write()
-
-	return err
-}
-
-func (tsk *outputstream) StopTask(ctx fwk.Context) error {
-	var err error
-
-	go func() {
-		tsk.quit <- struct{}{}
-	}()
-
-	return err
-}
-
-func (tsk *outputstream) Process(ctx fwk.Context) error {
-	var err error
-
-	tsk.ctx <- ctx
-	err = <-tsk.errch
+	w, ok := out.W.(io.Closer)
+	if !ok {
+		return err
+	}
+	err = w.Close()
 	if err != nil {
-		close(tsk.ctx)
 		return err
 	}
 
 	return err
-}
-
-func (tsk *outputstream) write() {
-
-	for {
-		select {
-		case ctx, ok := <-tsk.ctx:
-			if !ok {
-				return
-			}
-			store := ctx.Store()
-			v, err := store.Get(tsk.input)
-			if err != nil {
-				tsk.errch <- err
-				return
-			}
-			data := v.(float64)
-			_, err = tsk.w.Write([]byte(fmt.Sprintf("%f\n", data)))
-			tsk.errch <- err
-			if err != nil {
-				return
-			}
-
-		case <-tsk.quit:
-			return
-		}
-	}
-}
-
-func newOutputstream(typ, name string, mgr fwk.App) (fwk.Component, error) {
-	var err error
-
-	tsk := &outputstream{
-		TaskBase: fwk.NewTask(typ, name, mgr),
-		input:    "Input",
-		ctx:      make(chan fwk.Context),
-		errch:    make(chan error),
-		quit:     make(chan struct{}),
-		w:        new(bytes.Buffer),
-	}
-
-	err = tsk.DeclProp("Input", &tsk.input)
-	if err != nil {
-		return nil, err
-	}
-
-	err = tsk.DeclProp("Output", &tsk.w)
-	if err != nil {
-		return nil, err
-	}
-
-	return tsk, err
-}
-
-func init() {
-	fwk.Register(reflect.TypeOf(outputstream{}), newOutputstream)
 }

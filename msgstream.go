@@ -1,26 +1,30 @@
 package fwk
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
 )
 
+type WriteSyncer interface {
+	io.Writer
+	Sync() error
+}
+
 type msgstream struct {
 	lvl Level
-	w   *bufio.Writer
+	w   WriteSyncer
 	n   string
 }
 
-func NewMsgStream(name string, lvl Level, w io.Writer) msgstream {
+func NewMsgStream(name string, lvl Level, w WriteSyncer) msgstream {
 	if w == nil {
 		w = os.Stdout
 	}
 
 	return msgstream{
 		lvl: lvl,
-		w:   bufio.NewWriter(w),
+		w:   w,
 		n:   fmt.Sprintf("%-20s ", name),
 	}
 }
@@ -52,7 +56,7 @@ func (msg msgstream) Msg(lvl Level, format string, a ...interface{}) (int, error
 }
 
 func (msg msgstream) flush() error {
-	return msg.w.Flush()
+	return msg.w.Sync()
 }
 
 // EOF

@@ -505,18 +505,32 @@ func (app *appmgr) runSequential(ctx Context) error {
 	var err error
 	keys := app.dflow.keys()
 	ctxs := make([]context, len(app.tsks))
+	store := *app.store
 	for j, tsk := range app.tsks {
 		ctxs[j] = context{
 			id:    -1,
 			slot:  0,
-			store: app.store,
+			store: &store,
 			msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
 		}
 	}
 
+	ictrl, err := app.startInputStreams()
+	if err != nil {
+		return err
+	}
+	defer close(ictrl.Quit)
+
+	octrl, err := app.startOutputStreams()
+	if err != nil {
+		return err
+	}
+
+	defer close(octrl.Quit)
+
 	for ievt := int64(0); ievt < app.evtmax; ievt++ {
 		app.msg.Infof(">>> running evt=%d...\n", ievt)
-		err = app.store.reset(keys)
+		err = store.reset(keys)
 		if err != nil {
 			return err
 		}
@@ -534,6 +548,7 @@ func (app *appmgr) runSequential(ctx Context) error {
 			ndone += 1
 			if err != nil {
 				close(run.quit)
+				store.close()
 				app.msg.flush()
 				return err
 			}
@@ -541,16 +556,30 @@ func (app *appmgr) runSequential(ctx Context) error {
 				break errloop
 			}
 		}
+		store.close()
 		app.msg.flush()
 	}
+
 	return err
 }
 
 func (app *appmgr) runConcurrent(ctx Context) error {
 	var err error
 
+	istream, err := app.startInputStreams()
+	if err != nil {
+		return err
+	}
+	defer close(istream.Quit)
+
+	ostream, err := app.startOutputStreams()
+	if err != nil {
+		return err
+	}
+	defer close(ostream.Quit)
+
 	ctrl := workercontrol{
-		evts: make(chan int64, 100*app.nprocs),
+		evts: make(chan int64, 2*app.nprocs),
 		quit: make(chan struct{}),
 		done: make(chan struct{}),
 		errc: make(chan error),
@@ -572,15 +601,19 @@ func (app *appmgr) runConcurrent(ctx Context) error {
 ctrl:
 	for {
 		select {
-		case err = <-ctrl.errc:
-			if err != nil {
-				// FIXME(sbinet) gather status of drained workers
-				close(ctrl.quit)
-				return err
+		case eworker, ok := <-ctrl.errc:
+			if !ok {
+				continue
+			}
+			if eworker != nil && err == nil {
+				// only record first error.
+				// FIXME(sbinet) record all of them (errstack)
+				err = eworker
 			}
 
 		case <-ctrl.done:
 			ndone += 1
+			app.msg.Infof("workers done: %d/%d\n", ndone, app.nprocs)
 			if ndone == len(workers) {
 				break ctrl
 			}
@@ -588,6 +621,54 @@ ctrl:
 	}
 
 	return err
+}
+
+func (app *appmgr) startInputStreams() (StreamControl, error) {
+	var err error
+
+	ctrl := StreamControl{
+		Ctx:  make(chan Context),
+		Err:  make(chan error), // FIXME: impl. back-pressure
+		Quit: make(chan struct{}),
+	}
+
+	// start input streams
+	for _, tsk := range app.tsks {
+		in, ok := tsk.(*InputStream)
+		if !ok {
+			continue
+		}
+		err = in.connect(ctrl)
+		if err != nil {
+			return ctrl, err
+		}
+	}
+
+	return ctrl, err
+}
+
+func (app *appmgr) startOutputStreams() (StreamControl, error) {
+	var err error
+
+	ctrl := StreamControl{
+		Ctx:  make(chan Context),
+		Err:  make(chan error), // FIXME: impl. back-pressure
+		Quit: make(chan struct{}),
+	}
+
+	// start output streams
+	for _, tsk := range app.tsks {
+		in, ok := tsk.(*OutputStream)
+		if !ok {
+			continue
+		}
+		err = in.connect(ctrl)
+		if err != nil {
+			return ctrl, err
+		}
+	}
+
+	return ctrl, err
 }
 
 func (app *appmgr) stop(ctx Context) error {
