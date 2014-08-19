@@ -60,13 +60,14 @@
 //   func (tsk *MyTask) Process(ctx fwk.Context) error {
 //      var err error
 //
-//      // retrieve store associated with this event / region-of-interest
+//      // retrieve the store associated with this event / region-of-interest
 //      store := ctx.Store()
+//
 //      v, err := store.Get("Electrons")
 //      if err != nil {
 //         return err
 //      }
-//      eles := v.([]Electron) // type-cast to correct type
+//      eles := v.([]Electron) // type-cast to the correct (underlying) type
 //
 //      // create output collection
 //      out := make([]Electron, 0, len(eles))
