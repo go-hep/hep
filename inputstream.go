@@ -77,6 +77,7 @@ func (tsk *InputStream) Process(ctx Context) error {
 
 	tsk.ctrl.Ctx <- ctx
 	err = <-tsk.ctrl.Err
+
 	if err != nil {
 		return err
 	}
