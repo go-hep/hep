@@ -23,3 +23,10 @@ The documentation is available on `godoc`:
 
  http://godoc.org/github.com/go-hep/fwk
 
+
+## Examples
+
+The [https://github.com/go-hep/fwk/blob/master/examples](examples)
+directory contains a few simple applications which exercize the `fwk`
+toolkit.
+
