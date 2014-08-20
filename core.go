@@ -13,7 +13,7 @@ func (sc statuscode) Error() string {
 
 // Context is the interface to access context-local data.
 type Context interface {
-	Id() int64      // id of this context (e.g. entry number or some kind of event number)
+	ID() int64      // id of this context (e.g. entry number or some kind of event number)
 	Slot() int      // slot number in the pool of event sequences
 	Store() Store   // data store corresponding to the id+slot
 	Msg() MsgStream // messaging for this context (id+slot)
