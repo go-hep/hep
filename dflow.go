@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"sort"
+
+	"github.com/go-hep/fwk/utils/tarjan"
 )
 
 type node struct {
@@ -30,12 +33,21 @@ func (svc *dflowsvc) Configure(ctx Context) error {
 
 func (svc *dflowsvc) StartSvc(ctx Context) error {
 	var err error
+
+	// sort node-names for reproducibility
+	nodenames := make([]string, 0, len(svc.nodes))
+	for n := range svc.nodes {
+		nodenames = append(nodenames, n)
+	}
+	sort.Strings(nodenames)
+
 	// - make sure all input keys of components are available
 	//   as output keys of a task
 	// - also detect whether a key is labeled as an out-port
 	//   by 2 different components
 	out := make(map[string]string) // outport-name -> producer-name
-	for tsk, node := range svc.nodes {
+	for _, tsk := range nodenames {
+		node := svc.nodes[tsk]
 		for k := range node.out {
 			n, dup := out[k]
 			if dup {
@@ -47,7 +59,8 @@ func (svc *dflowsvc) StartSvc(ctx Context) error {
 		}
 	}
 
-	for tsk, node := range svc.nodes {
+	for _, tsk := range nodenames {
+		node := svc.nodes[tsk]
 		for k := range node.in {
 			_, ok := out[k]
 			if !ok {
@@ -57,6 +70,51 @@ func (svc *dflowsvc) StartSvc(ctx Context) error {
 			}
 		}
 	}
+
+	// detect cycles.
+	graph := make(map[interface{}][]interface{})
+	for _, n := range nodenames {
+		node := svc.nodes[n]
+		graph[n] = []interface{}{}
+		for in := range node.in {
+			for _, o := range nodenames {
+				if o == n {
+					continue
+				}
+				onode := svc.nodes[o]
+				connected := false
+				for out := range onode.out {
+					if in == out {
+						connected = true
+						break
+					}
+				}
+				if connected {
+					graph[n] = append(graph[n], o)
+				}
+			}
+		}
+	}
+
+	cycles := tarjan.Connections(graph)
+	if len(cycles) > 0 {
+		msg := ctx.Msg()
+		ncycles := 0
+		for _, cycle := range cycles {
+			if len(cycle) > 1 {
+				ncycles += 1
+				msg.Errorf("cycle detected: %v\n", cycle)
+			}
+		}
+		s := ""
+		if ncycles > 1 {
+			s = "s"
+		}
+		if ncycles > 0 {
+			return Errorf("%s: cycle%s detected: %d", svc.Name(), s, ncycles)
+		}
+	}
+
 	return err
 }
 
