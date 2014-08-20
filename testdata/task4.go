@@ -60,7 +60,7 @@ func (tsk *task4) Process(ctx fwk.Context) error {
 		return err
 	}
 
-	msg.Infof("proc... (id=%d|%d) => [%d -> %d]\n", ctx.Id(), ctx.Slot(), i, o)
+	msg.Infof("proc... (id=%d|%d) => [%d -> %d]\n", ctx.ID(), ctx.Slot(), i, o)
 	return nil
 }
 
