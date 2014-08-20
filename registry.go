@@ -29,7 +29,7 @@ func Register(t reflect.Type, fct FactoryFunc) {
 // Registry returns the list of all registered and known components.
 func Registry() []string {
 	comps := make([]string, 0, len(gFactory))
-	for k, _ := range gFactory {
+	for k := range gFactory {
 		comps = append(comps, k)
 	}
 	sort.Strings(comps)
