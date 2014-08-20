@@ -5,29 +5,41 @@ import (
 	"sort"
 )
 
+// FactoryFunc creates a Component of type t and name n, managed by the fwk.App mgr.
 type FactoryFunc func(t, n string, mgr App) (Component, error)
+
+// factoryDb associates a fully-qualified type-name (pkg-path + type-name) with
+// a component factory-function.
 type factoryDb map[string]FactoryFunc
 
-var g_factory factoryDb = make(factoryDb)
+var gFactory factoryDb = make(factoryDb)
 
+// Register registers a type t with the FactoryFunc fct.
+//
+// fwk.ComponentMgr will then be able to create new values of that type t
+// using the associated FactoryFunc fct.
+// If a type t was already registered, the previous FactoryFunc value will be
+// silently overridden with the new FactoryFunc value.
 func Register(t reflect.Type, fct FactoryFunc) {
 	comp := t.PkgPath() + "." + t.Name()
-	g_factory[comp] = fct
-	//fmt.Printf("### factories ###\n%v\n", g_factory)
+	gFactory[comp] = fct
+	//fmt.Printf("### factories ###\n%v\n", gFactory)
 }
 
+// Registry returns the list of all registered and known components.
 func Registry() []string {
-	comps := make([]string, 0, len(g_factory))
-	for k, _ := range g_factory {
+	comps := make([]string, 0, len(gFactory))
+	for k := range gFactory {
 		comps = append(comps, k)
 	}
 	sort.Strings(comps)
 	return comps
 }
 
+// New creates a new Component value with type t and name n.
 func (app *appmgr) New(t, n string) (Component, error) {
 	var err error
-	fct, ok := g_factory[t]
+	fct, ok := gFactory[t]
 	if !ok {
 		return nil, Errorf("no component with type [%s] registered", t)
 	}

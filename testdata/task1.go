@@ -51,7 +51,7 @@ func (tsk *task1) StopTask(ctx fwk.Context) error {
 func (tsk *task1) Process(ctx fwk.Context) error {
 	var err error
 	msg := ctx.Msg()
-	msg.Infof("proc... (id=%d|%d) => [%d, %d]\n", ctx.Id(), ctx.Slot(), tsk.i1, tsk.i2)
+	msg.Infof("proc... (id=%d|%d) => [%d, %d]\n", ctx.ID(), ctx.Slot(), tsk.i1, tsk.i2)
 	store := ctx.Store()
 
 	err = store.Put(tsk.i1prop, tsk.i1)

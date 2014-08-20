@@ -150,12 +150,12 @@ func (svc *dflowsvc) addInNode(tsk string, name string, t reflect.Type) error {
 	if dup {
 		// make sure types match
 		if edgetyp != t {
-			type elem_t struct {
+			type elemT struct {
 				port string // in/out
 				task string // task which defined the port
 				typ  reflect.Type
 			}
-			cont := []elem_t{}
+			cont := []elemT{}
 			nodenames := make([]string, 0, len(svc.nodes))
 			for tskname := range svc.nodes {
 				nodenames = append(nodenames, tskname)
@@ -168,7 +168,7 @@ func (svc *dflowsvc) addInNode(tsk string, name string, t reflect.Type) error {
 						continue
 					}
 					cont = append(cont,
-						elem_t{
+						elemT{
 							port: "in ",
 							task: tskname,
 							typ:  in,
@@ -180,7 +180,7 @@ func (svc *dflowsvc) addInNode(tsk string, name string, t reflect.Type) error {
 						continue
 					}
 					cont = append(cont,
-						elem_t{
+						elemT{
 							port: "out",
 							task: tskname,
 							typ:  out,

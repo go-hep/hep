@@ -71,7 +71,7 @@ func (tsk *reducer) Process(ctx fwk.Context) error {
 	tsk.mux.Unlock()
 
 	msg := ctx.Msg()
-	msg.Infof("sum=%d (id=%d|%d)\n", sum, ctx.Id(), ctx.Slot())
+	msg.Infof("sum=%d (id=%d|%d)\n", sum, ctx.ID(), ctx.Slot())
 	return err
 }
 

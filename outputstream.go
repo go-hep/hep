@@ -4,6 +4,16 @@ import (
 	"reflect"
 )
 
+// OutputStream implements a task writing data to an OutputStreamer.
+//
+// OutputStream is concurrent-safe.
+//
+// OutputStream declares a property 'Ports', a []fwk.Port, which will
+// be used to declare the input ports the task will access to,
+// writing out data via the underlying OutputStreamer.
+//
+// OutputStream declares a property 'Streamer', a fwk.OutputStreamer,
+// which will be used to actually write data to.
 type OutputStream struct {
 	TaskBase
 
@@ -11,6 +21,7 @@ type OutputStream struct {
 	ctrl     StreamControl
 }
 
+// Configure declares the input ports defined by the 'Ports' property.
 func (tsk *OutputStream) Configure(ctx Context) error {
 	var err error
 
@@ -24,12 +35,14 @@ func (tsk *OutputStream) Configure(ctx Context) error {
 	return err
 }
 
+// StartTask starts the OutputStreamer task
 func (tsk *OutputStream) StartTask(ctx Context) error {
 	var err error
 
 	return err
 }
 
+// StopTask stops the OutputStreamer task
 func (tsk *OutputStream) StopTask(ctx Context) error {
 	var err error
 
@@ -72,6 +85,8 @@ func (tsk *OutputStream) write() {
 	}
 }
 
+// Process gets data from the store and
+// writes it out via the underlying OutputStreamer
 func (tsk *OutputStream) Process(ctx Context) error {
 	var err error
 

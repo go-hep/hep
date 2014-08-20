@@ -7,7 +7,7 @@ type context struct {
 	msg   msgstream
 }
 
-func (ctx context) Id() int64 {
+func (ctx context) ID() int64 {
 	return ctx.id
 }
 

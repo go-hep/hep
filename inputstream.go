@@ -4,6 +4,16 @@ import (
 	"reflect"
 )
 
+// InputStream implements a task reading data from an InputStreamer.
+//
+// InputStream is concurrent-safe.
+//
+// InputStream declares a property 'Ports', a []fwk.Port, which will
+// be used to declare the output ports the streamer will publish,
+// loading in data from the underlying InputStreamer.
+//
+// InputStream declares a property 'Streamer', a fwk.InputStreamer,
+// which will be used to actually read data from.
 type InputStream struct {
 	TaskBase
 
@@ -11,6 +21,7 @@ type InputStream struct {
 	ctrl     StreamControl
 }
 
+// Configure declares the output ports defined by the 'Ports' property.
 func (tsk *InputStream) Configure(ctx Context) error {
 	var err error
 
@@ -24,12 +35,14 @@ func (tsk *InputStream) Configure(ctx Context) error {
 	return err
 }
 
+// StartTask starts the InputStreamer task
 func (tsk *InputStream) StartTask(ctx Context) error {
 	var err error
 
 	return err
 }
 
+// StopTask stops the InputStreamer task
 func (tsk *InputStream) StopTask(ctx Context) error {
 	var err error
 
@@ -72,6 +85,8 @@ func (tsk *InputStream) read() {
 	}
 }
 
+// Process loads data from the underlying InputStreamer
+// and puts it in the event store.
 func (tsk *InputStream) Process(ctx Context) error {
 	var err error
 

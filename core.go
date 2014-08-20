@@ -11,8 +11,9 @@ func (sc statuscode) Error() string {
 	return fmt.Sprintf("fwk: error code [%d]", int(sc))
 }
 
+// Context is the interface to access context-local data.
 type Context interface {
-	Id() int64      // id of this context (e.g. entry number or some kind of event number)
+	ID() int64      // id of this context (e.g. entry number or some kind of event number)
 	Slot() int      // slot number in the pool of event sequences
 	Store() Store   // data store corresponding to the id+slot
 	Msg() MsgStream // messaging for this context (id+slot)
@@ -28,6 +29,8 @@ type Component interface {
 	Name() string // Name of the component (ex: "MyPropagator")
 }
 
+// ComponentMgr manages components.
+// ComponentMgr creates and provides access to all the components in a fwk App.
 type ComponentMgr interface {
 	Component(n string) Component
 	HasComponent(n string) bool
@@ -35,6 +38,8 @@ type ComponentMgr interface {
 	New(t, n string) (Component, error)
 }
 
+// Task is a component processing event-level data.
+// Task.Process is called for every component and for every input event.
 type Task interface {
 	Component
 
@@ -43,6 +48,7 @@ type Task interface {
 	StopTask(ctx Context) error
 }
 
+// TaskMgr manages tasks.
 type TaskMgr interface {
 	AddTask(tsk Task) error
 	DelTask(tsk Task) error
@@ -51,11 +57,16 @@ type TaskMgr interface {
 	Tasks() []Task
 }
 
+// Configurer are components which can be configured via properties
+// declared or created by the job-options.
 type Configurer interface {
 	Component
 	Configure(ctx Context) error
 }
 
+// Svc is a component providing services or helper features.
+// Services are started before the main event loop processing and
+// stopped just after.
 type Svc interface {
 	Component
 
@@ -63,6 +74,7 @@ type Svc interface {
 	StopSvc(ctx Context) error
 }
 
+// SvcMgr manages services.
 type SvcMgr interface {
 	AddSvc(svc Svc) error
 	DelSvc(svc Svc) error
@@ -71,6 +83,8 @@ type SvcMgr interface {
 	Svcs() []Svc
 }
 
+// App is the component orchestrating all the other components
+// in a coherent application to process physics events.
 type App interface {
 	Component
 	ComponentMgr
@@ -84,6 +98,7 @@ type App interface {
 	Msg() MsgStream
 }
 
+// PropMgr manages properties attached to components.
 type PropMgr interface {
 	DeclProp(c Component, name string, ptr interface{}) error
 	SetProp(c Component, name string, value interface{}) error
@@ -91,12 +106,16 @@ type PropMgr interface {
 	HasProp(c Component, name string) bool
 }
 
+// Property is a pair key/value, associated to a component.
+// Properties of a given component can be modified
+// by a job-option or by other components.
 type Property interface {
 	DeclProp(name string, ptr interface{}) error
 	SetProp(name string, value interface{}) error
 	GetProp(name string) (interface{}, error)
 }
 
+// Store provides access to a concurrent-safe map[string]interface{} store.
 type Store interface {
 	Get(key string) (interface{}, error)
 	Put(key string, value interface{}) error
@@ -121,6 +140,7 @@ type PortMgr interface {
 	DeclOutPort(c Component, name string, t reflect.Type) error
 }
 
+// Level regulates the verbosity level of a component.
 type Level int
 
 const (
@@ -145,6 +165,7 @@ func (lvl Level) msgstring() string {
 	panic(Errorf("fwk.Level: invalid fwk.Level value [%d]", int(lvl)))
 }
 
+// String prints the human-readable representation of a Level value.
 func (lvl Level) String() string {
 	switch lvl {
 	case LvlDebug:
@@ -159,6 +180,7 @@ func (lvl Level) String() string {
 	panic(Errorf("fwk.Level: invalid fwk.Level value [%d]", int(lvl)))
 }
 
+// MsgStream provides access to verbosity-defined formated messages, a la fmt.Printf.
 type MsgStream interface {
 	Debugf(format string, a ...interface{}) (int, error)
 	Infof(format string, a ...interface{}) (int, error)

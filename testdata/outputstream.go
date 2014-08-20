@@ -38,14 +38,6 @@ func (out *OutputStream) Write(ctx fwk.Context) error {
 
 func (out *OutputStream) Disconnect() error {
 	var err error
-	w, ok := out.W.(io.Closer)
-	if !ok {
-		return err
-	}
-	err = w.Close()
-	if err != nil {
-		return err
-	}
 
 	return err
 }

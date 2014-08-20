@@ -85,7 +85,7 @@ func (wrk *worker) run(tsks []Task) {
 					if !ok {
 						return
 					}
-					ndone += 1
+					ndone++
 					if err != nil {
 						close(evt.quit)
 						wrk.store.close()
