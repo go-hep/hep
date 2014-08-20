@@ -7,6 +7,9 @@ import (
 
 // FactoryFunc creates a Component of type t and name n, managed by the fwk.App mgr.
 type FactoryFunc func(t, n string, mgr App) (Component, error)
+
+// factoryDb associates a fully-qualified type-name (pkg-path + type-name) with
+// a component factory-function.
 type factoryDb map[string]FactoryFunc
 
 var g_factory factoryDb = make(factoryDb)
