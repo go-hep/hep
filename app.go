@@ -11,36 +11,36 @@ import (
 type fsm int
 
 const (
-	fsm_UNDEFINED fsm = iota
-	fsm_CONFIGURING
-	fsm_CONFIGURED
-	fsm_STARTING
-	fsm_STARTED
-	fsm_RUNNING
-	fsm_STOPPING
-	fsm_STOPPED
-	fsm_OFFLINE
+	fsmUNDEFINED fsm = iota
+	fsmCONFIGURING
+	fsmCONFIGURED
+	fsmSTARTING
+	fsmSTARTED
+	fsmRUNNING
+	fsmSTOPPING
+	fsmSTOPPED
+	fsmOFFLINE
 )
 
 func (state fsm) String() string {
 	switch state {
-	case fsm_UNDEFINED:
+	case fsmUNDEFINED:
 		return "UNDEFINED"
-	case fsm_CONFIGURING:
+	case fsmCONFIGURING:
 		return "CONFIGURING"
-	case fsm_CONFIGURED:
+	case fsmCONFIGURED:
 		return "CONFIGURED"
-	case fsm_STARTING:
+	case fsmSTARTING:
 		return "STARTING"
-	case fsm_STARTED:
+	case fsmSTARTED:
 		return "STARTED"
-	case fsm_RUNNING:
+	case fsmRUNNING:
 		return "RUNNING"
-	case fsm_STOPPING:
+	case fsmSTOPPING:
 		return "STOPPING"
-	case fsm_STOPPED:
+	case fsmSTOPPED:
 		return "STOPPED"
-	case fsm_OFFLINE:
+	case fsmOFFLINE:
 		return "OFFLINE"
 
 	default:
@@ -75,7 +75,7 @@ func NewApp() App {
 	const appname = "app"
 
 	app = &appmgr{
-		state: fsm_UNDEFINED,
+		state: fsmUNDEFINED,
 		name:  appname,
 		props: make(map[string]map[string]interface{}),
 		dflow: nil,
@@ -345,7 +345,7 @@ func (app *appmgr) HasProp(c Component, name string) bool {
 }
 
 func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) error {
-	if app.state < fsm_CONFIGURING {
+	if app.state < fsmCONFIGURING {
 		return Errorf(
 			"fwk.DeclInPort: invalid App state (%s). put the DeclInPort in Configure() of %s:%s",
 			app.state,
@@ -357,7 +357,7 @@ func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) error {
 }
 
 func (app *appmgr) DeclOutPort(c Component, name string, t reflect.Type) error {
-	if app.state < fsm_CONFIGURING {
+	if app.state < fsmCONFIGURING {
 		return Errorf(
 			"fwk.DeclOutPort: invalid App state (%s). put the DeclInPort in Configure() of %s:%s",
 			app.state,
@@ -377,35 +377,35 @@ func (app *appmgr) Run() error {
 		msg:   NewMsgStream("<root>", app.msg.lvl, nil),
 	}
 
-	if app.state == fsm_UNDEFINED {
+	if app.state == fsmUNDEFINED {
 		err = app.configure(ctx)
 		if err != nil {
 			return err
 		}
 	}
 
-	if app.state == fsm_CONFIGURED {
+	if app.state == fsmCONFIGURED {
 		err = app.start(ctx)
 		if err != nil {
 			return err
 		}
 	}
 
-	if app.state == fsm_STARTED {
+	if app.state == fsmSTARTED {
 		err = app.run(ctx)
 		if err != nil && err != io.EOF {
 			return err
 		}
 	}
 
-	if app.state == fsm_RUNNING {
+	if app.state == fsmRUNNING {
 		err = app.stop(ctx)
 		if err != nil {
 			return err
 		}
 	}
 
-	if app.state == fsm_STOPPED {
+	if app.state == fsmSTOPPED {
 		err = app.shutdown(ctx)
 		if err != nil {
 			return err
@@ -419,7 +419,7 @@ func (app *appmgr) configure(ctx Context) error {
 	var err error
 	defer app.msg.flush()
 	app.msg.Debugf("configure...\n")
-	app.state = fsm_CONFIGURING
+	app.state = fsmCONFIGURING
 
 	if app.evtmax == -1 {
 		app.evtmax = math.MaxInt64
@@ -483,7 +483,7 @@ func (app *appmgr) configure(ctx Context) error {
 
 	app.ctxs[0] = tsks
 	app.ctxs[1] = svcs
-	app.state = fsm_CONFIGURED
+	app.state = fsmCONFIGURED
 	app.msg.Debugf("configure... [done]\n")
 	return err
 }
@@ -491,7 +491,7 @@ func (app *appmgr) configure(ctx Context) error {
 func (app *appmgr) start(ctx Context) error {
 	var err error
 	defer app.msg.flush()
-	app.state = fsm_STARTING
+	app.state = fsmSTARTING
 	for i, svc := range app.svcs {
 		app.msg.Debugf("starting [%s]...\n", svc.Name())
 		err = svc.StartSvc(app.ctxs[1][i])
@@ -508,14 +508,14 @@ func (app *appmgr) start(ctx Context) error {
 		}
 	}
 
-	app.state = fsm_STARTED
+	app.state = fsmSTARTED
 	return err
 }
 
 func (app *appmgr) run(ctx Context) error {
 	var err error
 	defer app.msg.flush()
-	app.state = fsm_RUNNING
+	app.state = fsmRUNNING
 
 	switch app.nprocs {
 	case 0:
@@ -700,7 +700,7 @@ func (app *appmgr) startOutputStreams() (StreamControl, error) {
 func (app *appmgr) stop(ctx Context) error {
 	var err error
 	defer app.msg.flush()
-	app.state = fsm_STOPPING
+	app.state = fsmSTOPPING
 	for i, tsk := range app.tsks {
 		err = tsk.StopTask(app.ctxs[0][i])
 		if err != nil {
@@ -715,7 +715,7 @@ func (app *appmgr) stop(ctx Context) error {
 		}
 	}
 
-	app.state = fsm_STOPPED
+	app.state = fsmSTOPPED
 	return err
 }
 
@@ -725,7 +725,7 @@ func (app *appmgr) shutdown(ctx Context) error {
 	app.comps = nil
 	app.tsks = nil
 	app.svcs = nil
-	app.state = fsm_OFFLINE
+	app.state = fsmOFFLINE
 
 	app.props = nil
 	app.dflow = nil
