@@ -12,7 +12,7 @@ type FactoryFunc func(t, n string, mgr App) (Component, error)
 // a component factory-function.
 type factoryDb map[string]FactoryFunc
 
-var gFactory factoryDb = make(factoryDb)
+var gFactory = make(factoryDb)
 
 // Register registers a type t with the FactoryFunc fct.
 //
