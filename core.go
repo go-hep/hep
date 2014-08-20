@@ -144,11 +144,10 @@ type PortMgr interface {
 type Level int
 
 const (
-	//LvlVerbose Level = -20
-	LvlDebug   Level = -10
-	LvlInfo    Level = 0
-	LvlWarning Level = 10
-	LvlError   Level = 20
+	LvlDebug   Level = -10 // LvlDebug defines the DBG verbosity level
+	LvlInfo    Level = 0   // LvlInfo defines the INFO verbosity level
+	LvlWarning Level = 10  // LvlWarning defines the WARN verbosity level
+	LvlError   Level = 20  // LvlError defines the ERR verbosity level
 )
 
 func (lvl Level) msgstring() string {
