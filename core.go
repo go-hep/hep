@@ -143,6 +143,7 @@ type PortMgr interface {
 // Level regulates the verbosity level of a component.
 type Level int
 
+// Default verbosity levels.
 const (
 	LvlDebug   Level = -10 // LvlDebug defines the DBG verbosity level
 	LvlInfo    Level = 0   // LvlInfo defines the INFO verbosity level
