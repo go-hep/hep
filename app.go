@@ -66,6 +66,7 @@ type appmgr struct {
 	ctxs  [2][]context
 }
 
+// NewApp creates a (default) fwk application with (default and) sensible options.
 func NewApp() App {
 
 	var err error
@@ -142,10 +143,12 @@ func NewApp() App {
 	return app
 }
 
+// Type returns the fully qualified type of this application
 func (app *appmgr) Type() string {
 	return "github.com/go-hep/fwk.appmgr"
 }
 
+// Name returns the name of this application
 func (app *appmgr) Name() string {
 	return app.name
 }
