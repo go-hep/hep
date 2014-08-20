@@ -42,7 +42,7 @@ options:
 
 	// create a default fwk application, with some properties
 	// extracted from the CLI
-	app := job.New(nil, job.P{
+	app := job.New(job.P{
 		"EvtMax":   *g_evtmax,
 		"NProcs":   *g_nprocs,
 		"MsgLevel": job.MsgLevel(*g_lvl),

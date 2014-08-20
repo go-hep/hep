@@ -14,7 +14,7 @@ import (
 )
 
 func newapp(evtmax int64, nprocs int) *job.Job {
-	app := job.New(nil, job.P{
+	app := job.NewJob(nil, job.P{
 		"EvtMax":   evtmax,
 		"NProcs":   nprocs,
 		"MsgLevel": job.MsgLevel("ERROR"),

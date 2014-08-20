@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/go-hep/fwk"
 	"github.com/go-hep/fwk/job"
 )
 
@@ -16,7 +15,7 @@ func handle_err(err error) {
 func main() {
 	fmt.Printf("::: fwk-app...\n")
 
-	app := job.New(fwk.NewApp(), nil)
+	app := job.New(nil)
 
 	app.Create(job.C{
 		Type: "github.com/go-hep/fads.ParticlePropagator",

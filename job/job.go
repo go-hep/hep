@@ -20,7 +20,7 @@ type Job struct {
 	app fwk.App
 }
 
-func New(app fwk.App, props P) *Job {
+func newJob(app fwk.App, props P) *Job {
 	if app == nil {
 		app = fwk.NewApp()
 	}
@@ -33,6 +33,19 @@ func New(app fwk.App, props P) *Job {
 	return job
 }
 
+// NewJob create a new Job from the given fwk.App value
+// and configures it with the given properties P.
+func NewJob(app fwk.App, props P) *Job {
+	return newJob(app, props)
+}
+
+// New create a new Job with the default fwk.App implementation
+// and configures it with the given properties P.
+func New(props P) *Job {
+	return newJob(nil, props)
+}
+
+// App returns the underlying fwk.App value of this Job.
 func (job *Job) App() fwk.App {
 	return job.app
 }
