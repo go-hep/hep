@@ -370,7 +370,7 @@ func (app *appmgr) DeclOutPort(c Component, name string, t reflect.Type) error {
 
 func (app *appmgr) Run() error {
 	var err error
-	var ctx Context = context{
+	ctx := context{
 		id:    0,
 		slot:  0,
 		store: nil,
@@ -571,7 +571,7 @@ func (app *appmgr) runSequential(ctx Context) error {
 		ndone := 0
 	errloop:
 		for err = range run.errc {
-			ndone += 1
+			ndone++
 			if err != nil {
 				close(run.quit)
 				store.close()
@@ -638,7 +638,7 @@ ctrl:
 			}
 
 		case <-ctrl.done:
-			ndone += 1
+			ndone++
 			app.msg.Infof("workers done: %d/%d\n", ndone, app.nprocs)
 			if ndone == len(workers) {
 				break ctrl
