@@ -199,6 +199,45 @@ func TestMismatchPortTypes(t *testing.T) {
 	}
 }
 
+func TestPortsCycles(t *testing.T) {
+	app := newapp(1, 1)
+	app.Create(job.C{
+		Type: "github.com/go-hep/fwk/testdata.task2",
+		Name: "t1-cycle",
+		Props: job.P{
+			"Input":  "input",
+			"Output": "data-1",
+		},
+	})
+
+	app.Create(job.C{
+		Type: "github.com/go-hep/fwk/testdata.task2",
+		Name: "t2",
+		Props: job.P{
+			"Input":  "data-1",
+			"Output": "data-2",
+		},
+	})
+
+	app.Create(job.C{
+		Type: "github.com/go-hep/fwk/testdata.task2",
+		Name: "t3",
+		Props: job.P{
+			"Input":  "data-2",
+			"Output": "input",
+		},
+	})
+
+	err := app.App().Run()
+	if err == nil {
+		t.Fatalf("expected an error\n")
+	}
+	exp := fwk.Errorf("dataflow: cycle detected: 1")
+	if !reflect.DeepEqual(err, exp) {
+		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, err)
+	}
+}
+
 func getsum(n int64) int64 {
 	sum := int64(0)
 	for i := int64(0); i < n; i++ {
