@@ -156,7 +156,13 @@ func (svc *dflowsvc) addInNode(tsk string, name string, t reflect.Type) error {
 				typ  reflect.Type
 			}
 			cont := []elem_t{}
-			for tskname, node := range svc.nodes {
+			nodenames := make([]string, 0, len(svc.nodes))
+			for tskname := range svc.nodes {
+				nodenames = append(nodenames, tskname)
+			}
+			sort.Strings(nodenames)
+			for _, tskname := range nodenames {
+				node := svc.nodes[tskname]
 				for k, in := range node.in {
 					if k != name {
 						continue
@@ -216,7 +222,13 @@ func (svc *dflowsvc) addOutNode(tsk string, name string, t reflect.Type) error {
 	if dup {
 		// edge already exists
 		// loop over nodes, find out who already defined that edge
-		for duptsk, dupnode := range svc.nodes {
+		nodenames := make([]string, 0, len(svc.nodes))
+		for tskname := range svc.nodes {
+			nodenames = append(nodenames, tskname)
+		}
+		sort.Strings(nodenames)
+		for _, duptsk := range nodenames {
+			dupnode := svc.nodes[duptsk]
 			if duptsk == tsk {
 				continue
 			}
