@@ -56,7 +56,7 @@ options:
 		defer pprof.StopCPUProfile()
 	}
 
-	app := job.New(nil, job.P{
+	app := job.New(job.P{
 		"EvtMax":   int64(*g_evtmax),
 		"NProcs":   *g_nprocs,
 		"MsgLevel": job.MsgLevel(*g_lvl),
