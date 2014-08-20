@@ -154,6 +154,51 @@ func TestMissingInputPort(t *testing.T) {
 	}
 }
 
+func TestMismatchPortTypes(t *testing.T) {
+	app := newapp(1, 1)
+	app.Create(job.C{
+		Type: "github.com/go-hep/fwk/testdata.task1",
+		Name: "t1",
+		Props: job.P{
+			"Ints1": "t1-ints1",
+			"Ints2": "t1-ints2",
+		},
+	})
+
+	app.Create(job.C{
+		Type: "github.com/go-hep/fwk/testdata.task2",
+		Name: "t2",
+		Props: job.P{
+			"Input":  "t1-ints1",
+			"Output": "data",
+		},
+	})
+
+	app.Create(job.C{
+		Type: "github.com/go-hep/fwk/testdata.task4",
+		Name: "t4",
+		Props: job.P{
+			"Input":  "data",
+			"Output": "out-data",
+		},
+	})
+
+	err := app.App().Run()
+	if err == nil {
+		t.Fatalf("expected an error\n")
+	}
+	exp := fwk.Errorf(`fwk.DeclInPort: detected type inconsistency for port [data]:
+ component=%[1]q port=out type=int64
+ component=%[2]q port=in  type=float64
+`,
+		"t2",
+		"t4",
+	)
+	if !reflect.DeepEqual(err, exp) {
+		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, err)
+	}
+}
+
 func getsum(n int64) int64 {
 	sum := int64(0)
 	for i := int64(0); i < n; i++ {
