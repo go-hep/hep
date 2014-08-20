@@ -102,7 +102,7 @@ func (svc *dflowsvc) StartSvc(ctx Context) error {
 		ncycles := 0
 		for _, cycle := range cycles {
 			if len(cycle) > 1 {
-				ncycles += 1
+				ncycles++
 				msg.Errorf("cycle detected: %v\n", cycle)
 			}
 		}
