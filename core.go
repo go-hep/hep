@@ -93,9 +93,29 @@ type App interface {
 	PropMgr
 	PortMgr
 
-	Run() error
+	Runner
+	Scripter() Scripter
 
 	Msg() MsgStream
+}
+
+// Runner runs a fwk App in a batch fashion:
+//  - Configure
+//  - Start
+//  - Run event loop
+//  - Stop
+//  - Shutdown
+type Runner interface {
+	Run() error
+}
+
+// Scripter gives finer control to running a fwk App
+type Scripter interface {
+	Configure() error
+	Start() error
+	Run(evtmax int64) error
+	Stop() error
+	Shutdown() error
 }
 
 // PropMgr manages properties attached to components.
