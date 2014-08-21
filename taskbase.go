@@ -59,49 +59,4 @@ func (tsk *TaskBase) GetProp(n string) (interface{}, error) {
 	return tsk.mgr.GetProp(tsk, n)
 }
 
-// SvcBase provides a base implementation for fwk.Svc
-type SvcBase struct {
-	t   string
-	n   string
-	mgr App
-}
-
-// NewSvc creates a new SvcBase of type typ and name name,
-// managed by the fwk.App mgr.
-func NewSvc(typ, name string, mgr App) SvcBase {
-	return SvcBase{
-		t:   typ,
-		n:   name,
-		mgr: mgr,
-	}
-}
-
-// Type returns the fully qualified type of the underlying service.
-// e.g. "github.com/go-hep/fwk/testdata.svc1"
-func (svc *SvcBase) Type() string {
-	return svc.t
-}
-
-// Name returns the name of the underlying service.
-// e.g. "my-service"
-func (svc *SvcBase) Name() string {
-	return svc.n
-}
-
-// DeclProp declares this service has a property named n,
-// and takes a pointer to the associated value.
-func (svc *SvcBase) DeclProp(n string, ptr interface{}) error {
-	return svc.mgr.DeclProp(svc, n, ptr)
-}
-
-// SetProp sets the property name n with the value v.
-func (svc *SvcBase) SetProp(name string, value interface{}) error {
-	return svc.mgr.SetProp(svc, name, value)
-}
-
-// GetProp returns the value of the property named n.
-func (svc *SvcBase) GetProp(name string) (interface{}, error) {
-	return svc.mgr.GetProp(svc, name)
-}
-
 // EOF
