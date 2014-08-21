@@ -73,7 +73,7 @@
 //      // create output collection
 //      out := make([]Electron, 0, len(eles))
 //
-//      // make sure the collection be put in the store
+//      // make sure the collection will be put in the store
 //      defer func() {
 //         err = store.Put("ReScaledElectrons", out)
 //      }()
