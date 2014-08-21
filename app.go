@@ -415,6 +415,10 @@ func (app *appmgr) Run() error {
 	return err
 }
 
+func (app *appmgr) Scripter() Scripter {
+	return &irunner{app}
+}
+
 func (app *appmgr) configure(ctx Context) error {
 	var err error
 	defer app.msg.flush()
