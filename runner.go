@@ -4,11 +4,11 @@ type irunner struct {
 	app *appmgr
 }
 
-func (ui *irunner) lvl() Level {
+func (ui irunner) lvl() Level {
 	return ui.app.msg.lvl
 }
 
-func (ui *irunner) state() fsm {
+func (ui irunner) state() fsm {
 	return ui.app.state
 }
 
