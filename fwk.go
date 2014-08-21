@@ -32,7 +32,7 @@
 //   // main event-loop processing finished.
 //   func (tsk *MyTask) StopTask(ctx fwk.Context)  error { return nil }
 //
-// A fwk application processes data concurrently, a 2 different levels:
+// A fwk application processes data concurrently, at 2 different levels:
 //  - event-level concurrency: multiple events are processed concurrently
 //    at any given time, during the event loop;
 //  - task-level concurrency: during the event loop, multiple tasks are
