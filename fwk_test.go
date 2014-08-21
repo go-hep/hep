@@ -423,7 +423,7 @@ func TestOutputStream(t *testing.T) {
 }
 
 func Benchmark___SeqApp(b *testing.B) {
-	app := newapp(10, 0)
+	app := newapp(100, 0)
 	app.Create(job.C{
 		Type: "github.com/go-hep/fwk/testdata.task1",
 		Name: "t0",
@@ -443,7 +443,7 @@ func Benchmark___SeqApp(b *testing.B) {
 	})
 
 	input := "t0"
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 100; i++ {
 		name := fmt.Sprintf("tx-%d", i)
 		out := fmt.Sprintf("tx-%d", i)
 		app.Create(job.C{
@@ -457,14 +457,28 @@ func Benchmark___SeqApp(b *testing.B) {
 		input = out
 	}
 
+	ui := app.App().Scripter()
+	err := ui.Configure()
+	if err != nil {
+		b.Fatalf("error: %v\n", err)
+	}
+
+	err = ui.Start()
+	if err != nil {
+		b.Fatalf("error: %v\n", err)
+	}
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		app.Run()
+		err = ui.Run(-1)
+		if err != nil && err != io.EOF {
+			b.Fatalf("error: %v\n", err)
+		}
 	}
 }
 
 func Benchmark__ConcApp(b *testing.B) {
-	app := newapp(10, 4)
+	app := newapp(100, 4)
 	app.Create(job.C{
 		Type: "github.com/go-hep/fwk/testdata.task1",
 		Name: "t0",
@@ -484,7 +498,7 @@ func Benchmark__ConcApp(b *testing.B) {
 	})
 
 	input := "t0"
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 100; i++ {
 		name := fmt.Sprintf("tx-%d", i)
 		out := fmt.Sprintf("tx-%d", i)
 		app.Create(job.C{
@@ -498,8 +512,22 @@ func Benchmark__ConcApp(b *testing.B) {
 		input = out
 	}
 
+	ui := app.App().Scripter()
+	err := ui.Configure()
+	if err != nil {
+		b.Fatalf("error: %v\n", err)
+	}
+
+	err = ui.Start()
+	if err != nil {
+		b.Fatalf("error: %v\n", err)
+	}
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		app.Run()
+		err = ui.Run(-1)
+		if err != nil && err != io.EOF {
+			b.Fatalf("error: %v\n", err)
+		}
 	}
 }
