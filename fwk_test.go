@@ -422,8 +422,49 @@ func TestOutputStream(t *testing.T) {
 	}
 }
 
-func BenchmarkSeqApp(b *testing.B) {
+func Benchmark___SeqApp(b *testing.B) {
 	app := newapp(10, 0)
+	app.Create(job.C{
+		Type: "github.com/go-hep/fwk/testdata.task1",
+		Name: "t0",
+		Props: job.P{
+			"Ints1": "t0-ints1",
+			"Ints2": "t0-ints2",
+		},
+	})
+
+	app.Create(job.C{
+		Type: "github.com/go-hep/fwk/testdata.task1",
+		Name: "t1",
+		Props: job.P{
+			"Ints1": "t0",
+			"Ints2": "t2-ints2",
+		},
+	})
+
+	input := "t0"
+	for i := 0; i < 10; i++ {
+		name := fmt.Sprintf("tx-%d", i)
+		out := fmt.Sprintf("tx-%d", i)
+		app.Create(job.C{
+			Type: "github.com/go-hep/fwk/testdata.task2",
+			Name: name,
+			Props: job.P{
+				"Input":  input,
+				"Output": out,
+			},
+		})
+		input = out
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		app.Run()
+	}
+}
+
+func Benchmark__ConcApp(b *testing.B) {
+	app := newapp(10, 4)
 	app.Create(job.C{
 		Type: "github.com/go-hep/fwk/testdata.task1",
 		Name: "t0",
