@@ -17,7 +17,8 @@ type P map[string]interface{}
 
 // Job is the go-based scripting interface to create, configure and run a fwk.App.
 type Job struct {
-	app fwk.App
+	stmts []Stmt
+	app   fwk.App
 }
 
 func newJob(app fwk.App, props P) *Job {
@@ -25,10 +26,21 @@ func newJob(app fwk.App, props P) *Job {
 		app = fwk.NewApp()
 	}
 
-	job := &Job{app: app}
+	job := &Job{
+		stmts: []Stmt{
+			{
+				Type: StmtCreate,
+				Data: C{
+					Name:  app.Name(),
+					Type:  app.Type(),
+					Props: props,
+				},
+			},
+		},
+		app: app,
+	}
 	for k, v := range props {
 		job.SetProp(app, k, v)
-
 	}
 	return job
 }
@@ -71,6 +83,11 @@ func (job *Job) Create(cfg C) fwk.Component {
 	for k, v := range cfg.Props {
 		job.SetProp(c, k, v)
 	}
+
+	job.stmts = append(job.stmts, Stmt{
+		Type: StmtCreate,
+		Data: cfg,
+	})
 	return c
 }
 
@@ -98,6 +115,17 @@ func (job *Job) SetProp(c fwk.Component, name string, value interface{}) {
 		)
 		panic(err)
 	}
+
+	job.stmts = append(job.stmts, Stmt{
+		Type: StmtSetProp,
+		Data: C{
+			Type: c.Type(),
+			Name: c.Name(),
+			Props: P{
+				name: value,
+			},
+		},
+	})
 }
 
 // Run runs the underlying fwk.App.
@@ -112,6 +140,13 @@ func (job *Job) Run() {
 		)
 		panic(err)
 	}
+}
+
+// Stmts returns the list of statements this Job has seen so far.
+func (job *Job) Stmts() []Stmt {
+	stmts := make([]Stmt, len(job.stmts))
+	copy(stmts, job.stmts)
+	return stmts
 }
 
 // Debugf displays a (formated) DBG message
