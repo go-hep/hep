@@ -53,7 +53,7 @@ func (ds *datastore) StartSvc(ctx Context) error {
 }
 
 func (ds *datastore) StopSvc(ctx Context) error {
-	ds.store = nil
+	ds.store = make(map[string]achan)
 	return nil
 }
 
