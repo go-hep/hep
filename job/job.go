@@ -50,6 +50,11 @@ func (job *Job) App() fwk.App {
 	return job.app
 }
 
+// UI returns a fwk Scripter
+func (job *Job) UI() UI {
+	return UI{job.app.Scripter()}
+}
+
 // Create creates a fwk.Component according to the configuration
 // data held by cfg.
 // Create panics if no such component was registered with fwk.
