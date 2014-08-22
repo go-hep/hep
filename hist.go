@@ -1,4 +1,4 @@
-package dao
+package dal
 
 type Annotation map[string]interface{}
 

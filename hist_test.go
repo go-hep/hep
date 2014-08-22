@@ -1,4 +1,4 @@
-package dao_test
+package dal_test
 
 import (
 	"math/rand"
