@@ -1,11 +1,12 @@
 package parallel_test
 
 import (
-	"code.google.com/p/rog-go/parallel"
 	"sort"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/go-hep/fwk/utils/parallel"
 )
 
 func TestParallelMaxPar(t *testing.T) {
