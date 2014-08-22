@@ -2,6 +2,7 @@ hbook
 =====
 
 [![Build Status](https://drone.io/github.com/go-hep/hbook/status.png)](https://drone.io/github.com/go-hep/hbook/latest)
+[![GoDoc](https://godoc.org/github.com/go-hep/hbook?status.svg)](https://godoc.org/github.com/go-hep/hbook)
 
 `hbook` is a set of data analysis tools for HEP (histograms (1D, 2D, 3D), profiles and ntuples).
 
