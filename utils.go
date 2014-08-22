@@ -122,6 +122,7 @@ func bwrite(w io.Writer, data interface{}) error {
 	// defer fmt.Printf("### [%v] [done]\n", rrv.Type())
 
 	switch rv.Type().Kind() {
+
 	case reflect.Struct:
 		//fmt.Printf(">>> struct: [%v]...\n", rv.Type())
 		for i, n := 0, rv.NumField(); i < n; i++ {
@@ -134,6 +135,7 @@ func bwrite(w io.Writer, data interface{}) error {
 		}
 		//fmt.Printf(">>> struct: [%v]...[done]\n", rv.Type())
 		return nil
+
 	case reflect.String:
 		str := rv.String()
 		sz := int64(len(str))
@@ -142,8 +144,7 @@ func bwrite(w io.Writer, data interface{}) error {
 		if err != nil {
 			return err
 		}
-		bstr := []byte(str)
-		bstr = append(bstr, make([]byte, align4_i64(sz)-sz)...)
+		bstr := append([]byte(str), make([]byte, align4_i64(sz)-sz)...)
 		_, err = w.Write(bstr)
 		if err != nil {
 			return err
