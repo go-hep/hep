@@ -1,4 +1,4 @@
-package dal_test
+package hbook_test
 
 import (
 	"math/rand"

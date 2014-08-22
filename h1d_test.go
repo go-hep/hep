@@ -1,4 +1,4 @@
-package dal_test
+package hbook_test
 
 import (
 	"bytes"
@@ -7,12 +7,12 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/go-hep/dal"
+	"github.com/go-hep/hbook"
 	"github.com/go-hep/rio"
 )
 
 func TestH1D(t *testing.T) {
-	h1 := dal.NewH1D(100, 0., 100.)
+	h1 := hbook.NewH1D(100, 0., 100.)
 	if h1 == nil {
 		t.Errorf("nil pointer to H1D")
 	}
@@ -55,7 +55,7 @@ func TestH1D(t *testing.T) {
 
 func BenchmarkH1DSTFillConst(b *testing.B) {
 	b.StopTimer()
-	h1 := dal.NewH1D(100, 0., 100.)
+	h1 := hbook.NewH1D(100, 0., 100.)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
@@ -65,7 +65,7 @@ func BenchmarkH1DSTFillConst(b *testing.B) {
 
 func BenchmarkH1DFillFlat(b *testing.B) {
 	b.StopTimer()
-	h1 := dal.NewH1D(100, 0., 100.)
+	h1 := hbook.NewH1D(100, 0., 100.)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
@@ -75,7 +75,7 @@ func BenchmarkH1DFillFlat(b *testing.B) {
 
 func BenchmarkH1DFillFlatGo(b *testing.B) {
 	b.StopTimer()
-	h1 := dal.NewH1D(100, 0., 100.)
+	h1 := hbook.NewH1D(100, 0., 100.)
 	wg := new(sync.WaitGroup)
 	//wg.Add(b.N)
 	b.StartTimer()
@@ -94,7 +94,7 @@ func BenchmarkH1DFillFlatGo(b *testing.B) {
 	wg.Wait()
 }
 
-func st_process_evts(n int, hists []*dal.H1D, process func(hists []*dal.H1D)) {
+func st_process_evts(n int, hists []*hbook.H1D, process func(hists []*hbook.H1D)) {
 	var wg sync.WaitGroup
 	for i := 0; i < n; i++ {
 		wg.Add(1)
@@ -106,16 +106,16 @@ func st_process_evts(n int, hists []*dal.H1D, process func(hists []*dal.H1D)) {
 	wg.Wait()
 }
 
-func st_process_evts_const(hists []*dal.H1D) {
+func st_process_evts_const(hists []*hbook.H1D) {
 	for _, h := range hists {
 		h.Fill(10., 1.)
 	}
 }
 func BenchmarkNH1DFillConst(b *testing.B) {
 	b.StopTimer()
-	hists := make([]*dal.H1D, 100)
+	hists := make([]*hbook.H1D, 100)
 	for i := 0; i < 100; i++ {
-		hists[i] = dal.NewH1D(100, 0., 100.)
+		hists[i] = hbook.NewH1D(100, 0., 100.)
 	}
 	b.StartTimer()
 
@@ -124,7 +124,7 @@ func BenchmarkNH1DFillConst(b *testing.B) {
 	}
 }
 
-func st_process_evts_flat(hists []*dal.H1D) {
+func st_process_evts_flat(hists []*hbook.H1D) {
 	for _, h := range hists {
 		h.Fill(rnd()*100., 1.)
 	}
@@ -132,9 +132,9 @@ func st_process_evts_flat(hists []*dal.H1D) {
 
 func BenchmarkNH1DFillFlat(b *testing.B) {
 	b.StopTimer()
-	hists := make([]*dal.H1D, 100)
+	hists := make([]*hbook.H1D, 100)
 	for i := 0; i < 100; i++ {
-		hists[i] = dal.NewH1D(100, 0., 100.)
+		hists[i] = hbook.NewH1D(100, 0., 100.)
 	}
 	b.StartTimer()
 
@@ -145,7 +145,7 @@ func BenchmarkNH1DFillFlat(b *testing.B) {
 
 func TestH1DSerialization(t *testing.T) {
 	const nentries = 50
-	href := dal.NewH1D(100, 0., 100.)
+	href := hbook.NewH1D(100, 0., 100.)
 	for i := 0; i < nentries; i++ {
 		href.Fill(rnd()*100., 1.)
 	}
@@ -161,7 +161,7 @@ func TestH1DSerialization(t *testing.T) {
 			t.Fatalf("could not serialize histogram: %v", err)
 		}
 
-		var hnew dal.H1D
+		var hnew hbook.H1D
 		buf = bytes.NewBuffer(buf.Bytes())
 		dec := gob.NewDecoder(buf)
 		err = dec.Decode(&hnew)
@@ -182,7 +182,7 @@ func TestH1DSerialization(t *testing.T) {
 			t.Fatalf("could not serialize histogram: %v", err)
 		}
 
-		var hnew dal.H1D
+		var hnew hbook.H1D
 		buf = bytes.NewBuffer(buf.Bytes())
 		err = hnew.UnmarshalBinary(buf)
 		if err != nil {
@@ -197,8 +197,8 @@ func TestH1DSerialization(t *testing.T) {
 }
 
 // test serialization interfaces
-var _ rio.BinaryMarshaler = (*dal.H1D)(nil)
-var _ rio.BinaryUnmarshaler = (*dal.H1D)(nil)
-var _ rio.BinaryCodec = (*dal.H1D)(nil)
+var _ rio.BinaryMarshaler = (*hbook.H1D)(nil)
+var _ rio.BinaryUnmarshaler = (*hbook.H1D)(nil)
+var _ rio.BinaryCodec = (*hbook.H1D)(nil)
 
 // EOF
