@@ -1,5 +1,9 @@
 package fwk
 
+import (
+	"github.com/go-hep/fwk/fsm"
+)
+
 type irunner struct {
 	app *appmgr
 }
@@ -8,7 +12,7 @@ func (ui irunner) lvl() Level {
 	return ui.app.msg.lvl
 }
 
-func (ui irunner) state() fsm {
+func (ui irunner) state() fsm.State {
 	return ui.app.state
 }
 
@@ -38,8 +42,8 @@ func (ui *irunner) Start() error {
 		msg:   NewMsgStream("<root>", ui.lvl(), nil),
 	}
 
-	if ui.state() < fsmCONFIGURED {
-		return Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsmCONFIGURED)
+	if ui.state() < fsm.Configured {
+		return Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsm.Configured)
 	}
 
 	err = ui.app.start(ctx)
@@ -59,8 +63,8 @@ func (ui *irunner) Run(evtmax int64) error {
 		msg:   NewMsgStream("<root>", ui.lvl(), nil),
 	}
 
-	if ui.state() < fsmSTARTED {
-		return Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsmSTARTED)
+	if ui.state() < fsm.Started {
+		return Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsm.Started)
 	}
 
 	err = ui.app.run(ctx)
@@ -80,8 +84,8 @@ func (ui *irunner) Stop() error {
 		msg:   NewMsgStream("<root>", ui.lvl(), nil),
 	}
 
-	if ui.state() < fsmRUNNING {
-		return Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsmRUNNING)
+	if ui.state() < fsm.Running {
+		return Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsm.Running)
 	}
 
 	err = ui.app.stop(ctx)
@@ -101,8 +105,8 @@ func (ui *irunner) Shutdown() error {
 		msg:   NewMsgStream("<root>", ui.lvl(), nil),
 	}
 
-	if ui.state() < fsmSTOPPED {
-		return Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsmSTOPPED)
+	if ui.state() < fsm.Stopped {
+		return Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsm.Stopped)
 	}
 
 	err = ui.app.start(ctx)

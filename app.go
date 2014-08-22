@@ -7,50 +7,12 @@ import (
 	"runtime"
 	"sort"
 	"time"
+
+	"github.com/go-hep/fwk/fsm"
 )
-
-type fsm int
-
-const (
-	fsmUNDEFINED fsm = iota
-	fsmCONFIGURING
-	fsmCONFIGURED
-	fsmSTARTING
-	fsmSTARTED
-	fsmRUNNING
-	fsmSTOPPING
-	fsmSTOPPED
-	fsmOFFLINE
-)
-
-func (state fsm) String() string {
-	switch state {
-	case fsmUNDEFINED:
-		return "UNDEFINED"
-	case fsmCONFIGURING:
-		return "CONFIGURING"
-	case fsmCONFIGURED:
-		return "CONFIGURED"
-	case fsmSTARTING:
-		return "STARTING"
-	case fsmSTARTED:
-		return "STARTED"
-	case fsmRUNNING:
-		return "RUNNING"
-	case fsmSTOPPING:
-		return "STOPPING"
-	case fsmSTOPPED:
-		return "STOPPED"
-	case fsmOFFLINE:
-		return "OFFLINE"
-
-	default:
-		panic(Errorf("invalid FSM value %d", int(state)))
-	}
-}
 
 type appmgr struct {
-	state fsm
+	state fsm.State
 	name  string
 
 	props map[string]map[string]interface{}
@@ -76,7 +38,7 @@ func NewApp() App {
 	const appname = "app"
 
 	app = &appmgr{
-		state: fsmUNDEFINED,
+		state: fsm.Undefined,
 		name:  appname,
 		props: make(map[string]map[string]interface{}),
 		dflow: nil,
@@ -346,7 +308,7 @@ func (app *appmgr) HasProp(c Component, name string) bool {
 }
 
 func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) error {
-	if app.state < fsmCONFIGURING {
+	if app.state < fsm.Configuring {
 		return Errorf(
 			"fwk.DeclInPort: invalid App state (%s). put the DeclInPort in Configure() of %s:%s",
 			app.state,
@@ -358,7 +320,7 @@ func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) error {
 }
 
 func (app *appmgr) DeclOutPort(c Component, name string, t reflect.Type) error {
-	if app.state < fsmCONFIGURING {
+	if app.state < fsm.Configuring {
 		return Errorf(
 			"fwk.DeclOutPort: invalid App state (%s). put the DeclInPort in Configure() of %s:%s",
 			app.state,
@@ -367,6 +329,10 @@ func (app *appmgr) DeclOutPort(c Component, name string, t reflect.Type) error {
 		)
 	}
 	return app.dflow.addOutNode(c.Name(), name, t)
+}
+
+func (app *appmgr) FSMState() fsm.State {
+	return app.state
 }
 
 func (app *appmgr) Run() error {
@@ -382,35 +348,35 @@ func (app *appmgr) Run() error {
 	var mstart runtime.MemStats
 	runtime.ReadMemStats(&mstart)
 
-	if app.state == fsmUNDEFINED {
+	if app.state == fsm.Undefined {
 		err = app.configure(ctx)
 		if err != nil {
 			return err
 		}
 	}
 
-	if app.state == fsmCONFIGURED {
+	if app.state == fsm.Configured {
 		err = app.start(ctx)
 		if err != nil {
 			return err
 		}
 	}
 
-	if app.state == fsmSTARTED {
+	if app.state == fsm.Started {
 		err = app.run(ctx)
 		if err != nil && err != io.EOF {
 			return err
 		}
 	}
 
-	if app.state == fsmRUNNING {
+	if app.state == fsm.Running {
 		err = app.stop(ctx)
 		if err != nil {
 			return err
 		}
 	}
 
-	if app.state == fsmSTOPPED {
+	if app.state == fsm.Stopped {
 		err = app.shutdown(ctx)
 		if err != nil {
 			return err
@@ -437,7 +403,7 @@ func (app *appmgr) configure(ctx Context) error {
 	var err error
 	defer app.msg.flush()
 	app.msg.Debugf("configure...\n")
-	app.state = fsmCONFIGURING
+	app.state = fsm.Configuring
 
 	if app.evtmax == -1 {
 		app.evtmax = math.MaxInt64
@@ -498,7 +464,7 @@ func (app *appmgr) configure(ctx Context) error {
 
 	app.ctxs[0] = tsks
 	app.ctxs[1] = svcs
-	app.state = fsmCONFIGURED
+	app.state = fsm.Configured
 	app.msg.Debugf("configure... [done]\n")
 	return err
 }
@@ -506,7 +472,7 @@ func (app *appmgr) configure(ctx Context) error {
 func (app *appmgr) start(ctx Context) error {
 	var err error
 	defer app.msg.flush()
-	app.state = fsmSTARTING
+	app.state = fsm.Starting
 	for i, svc := range app.svcs {
 		app.msg.Debugf("starting [%s]...\n", svc.Name())
 		err = svc.StartSvc(app.ctxs[1][i])
@@ -523,14 +489,14 @@ func (app *appmgr) start(ctx Context) error {
 		}
 	}
 
-	app.state = fsmSTARTED
+	app.state = fsm.Started
 	return err
 }
 
 func (app *appmgr) run(ctx Context) error {
 	var err error
 	defer app.msg.flush()
-	app.state = fsmRUNNING
+	app.state = fsm.Running
 
 	maxprocs := runtime.GOMAXPROCS(app.nprocs)
 
@@ -719,7 +685,7 @@ func (app *appmgr) startOutputStreams() (StreamControl, error) {
 func (app *appmgr) stop(ctx Context) error {
 	var err error
 	defer app.msg.flush()
-	app.state = fsmSTOPPING
+	app.state = fsm.Stopping
 	for i, tsk := range app.tsks {
 		err = tsk.StopTask(app.ctxs[0][i])
 		if err != nil {
@@ -734,7 +700,7 @@ func (app *appmgr) stop(ctx Context) error {
 		}
 	}
 
-	app.state = fsmSTOPPED
+	app.state = fsm.Stopped
 	return err
 }
 
@@ -744,7 +710,7 @@ func (app *appmgr) shutdown(ctx Context) error {
 	app.comps = nil
 	app.tsks = nil
 	app.svcs = nil
-	app.state = fsmOFFLINE
+	app.state = fsm.Offline
 
 	app.props = nil
 	app.dflow = nil

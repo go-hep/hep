@@ -3,6 +3,8 @@ package fwk
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/go-hep/fwk/fsm"
 )
 
 type statuscode int
@@ -93,6 +95,8 @@ type App interface {
 	PropMgr
 	PortMgr
 
+	FSMStater
+
 	Runner
 	Scripter() Scripter
 
@@ -158,6 +162,11 @@ type DeclPorter interface {
 type PortMgr interface {
 	DeclInPort(c Component, name string, t reflect.Type) error
 	DeclOutPort(c Component, name string, t reflect.Type) error
+}
+
+// FSMStater is the interface used to query the current state of the fwk application
+type FSMStater interface {
+	FSMState() fsm.State
 }
 
 // Level regulates the verbosity level of a component.
