@@ -11,6 +11,7 @@ import (
 	"github.com/go-hep/fwk"
 	"github.com/go-hep/fwk/job"
 	"github.com/go-hep/fwk/testdata"
+	"github.com/go-hep/fwk/utils/errstack"
 )
 
 func newapp(evtmax int64, nprocs int) *job.Job {
@@ -117,10 +118,11 @@ func TestDuplicateOutputPort(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error\n")
 	}
-	exp := fwk.Errorf(`fwk.DeclOutPort: component [t0] already declared out-port with name [t0-ints1 (type=int64)].
+	exp := fmt.Errorf(`fwk.DeclOutPort: component [t0] already declared out-port with name [t0-ints1 (type=int64)].
 fwk.DeclOutPort: component [t1] is trying to add a duplicate out-port [t0-ints1 (type=int64)]`)
-	if !reflect.DeepEqual(err, exp) {
-		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, err)
+	errs := err.(*errstack.Error)
+	if !reflect.DeepEqual(errs.Err, exp) {
+		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, errs.Err)
 	}
 }
 
@@ -148,9 +150,10 @@ func TestMissingInputPort(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error\n")
 	}
-	exp := fwk.Errorf("dataflow: component [%s] declared port [t1-ints1--NOT-THERE] as input but NO KNOWN producer", "t2")
-	if !reflect.DeepEqual(err, exp) {
-		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, err)
+	exp := fmt.Errorf("dataflow: component [%s] declared port [t1-ints1--NOT-THERE] as input but NO KNOWN producer", "t2")
+	errs := err.(*errstack.Error)
+	if !reflect.DeepEqual(errs.Err, exp) {
+		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, errs.Err)
 	}
 }
 
@@ -187,15 +190,16 @@ func TestMismatchPortTypes(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error\n")
 	}
-	exp := fwk.Errorf(`fwk.DeclInPort: detected type inconsistency for port [data]:
+	exp := fmt.Errorf(`fwk.DeclInPort: detected type inconsistency for port [data]:
  component=%[1]q port=out type=int64
  component=%[2]q port=in  type=float64
 `,
 		"t2",
 		"t4",
 	)
-	if !reflect.DeepEqual(err, exp) {
-		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, err)
+	errs := err.(*errstack.Error)
+	if !reflect.DeepEqual(errs.Err, exp) {
+		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, errs.Err)
 	}
 }
 
@@ -232,9 +236,10 @@ func TestPortsCycles(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error\n")
 	}
-	exp := fwk.Errorf("dataflow: cycle detected: 1")
-	if !reflect.DeepEqual(err, exp) {
-		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, err)
+	exp := fmt.Errorf("dataflow: cycle detected: 1")
+	errs := err.(*errstack.Error)
+	if !reflect.DeepEqual(errs.Err, exp) {
+		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, errs.Err)
 	}
 }
 

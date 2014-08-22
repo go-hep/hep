@@ -193,7 +193,7 @@ func (svc *dflowsvc) addInNode(tsk string, name string, t reflect.Type) error {
 			for _, c := range cont {
 				fmt.Fprintf(&o, " component=%q port=%s type=%v\n", c.task, c.port, c.typ)
 			}
-			return fmt.Errorf(string(o.Bytes()))
+			return Errorf(string(o.Bytes()))
 		}
 	}
 
