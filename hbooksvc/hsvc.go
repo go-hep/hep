@@ -33,14 +33,12 @@ func (svc *hsvc) Configure(ctx fwk.Context) error {
 func (svc *hsvc) StartSvc(ctx fwk.Context) error {
 	var err error
 
-	svc.h1ds = make(map[fwk.HID]fwk.H1D)
 	return err
 }
 
 func (svc *hsvc) StopSvc(ctx fwk.Context) error {
 	var err error
 
-	svc.h1ds = make(map[fwk.HID]fwk.H1D)
 	return err
 }
 
@@ -55,12 +53,15 @@ func (svc *hsvc) BookH1D(name string, nbins int, low, high float64) (fwk.H1D, er
 		return h1d, fwk.Errorf("fwk: can not book histograms during FSM-state %v", svc.FSMState())
 	}
 
+	svc.h1ds[h1d.ID] = h1d
 	return h1d, err
 }
 
 func (svc *hsvc) FillH1D(id fwk.HID, x, w float64) {
 	// FIXME(sbinet) make it concurrency-safe
-	svc.h1ds[id].Hist.Fill(x, w)
+	h := svc.h1ds[id]
+	h.Hist.Fill(x, w)
+	svc.h1ds[id] = h
 }
 
 func newhsvc(typ, name string, mgr fwk.App) (fwk.Component, error) {
