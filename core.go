@@ -19,6 +19,8 @@ type Context interface {
 	Slot() int      // slot number in the pool of event sequences
 	Store() Store   // data store corresponding to the id+slot
 	Msg() MsgStream // messaging for this context (id+slot)
+
+	Svc(n string) (Svc, error) // retrieve an already existing Svc by name
 }
 
 // Component is the interface satisfied by all values in fwk.

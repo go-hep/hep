@@ -342,6 +342,7 @@ func (app *appmgr) Run() error {
 		slot:  0,
 		store: nil,
 		msg:   NewMsgStream("<root>", app.msg.lvl, nil),
+		mgr:   app,
 	}
 
 	start := time.Now()
@@ -420,6 +421,7 @@ func (app *appmgr) configure(ctx Context) error {
 			slot:  0,
 			store: app.store,
 			msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
+			mgr:   app,
 		}
 	}
 
@@ -430,6 +432,7 @@ func (app *appmgr) configure(ctx Context) error {
 			slot:  0,
 			store: app.store,
 			msg:   NewMsgStream(svc.Name(), app.msg.lvl, nil),
+			mgr:   app,
 		}
 	}
 
@@ -523,6 +526,7 @@ func (app *appmgr) runSequential(ctx Context) error {
 			slot:  0,
 			store: &store,
 			msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
+			mgr:   app,
 		}
 	}
 

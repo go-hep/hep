@@ -5,6 +5,7 @@ type context struct {
 	slot  int
 	store Store
 	msg   msgstream
+	mgr   App
 }
 
 func (ctx context) ID() int64 {
@@ -21,6 +22,14 @@ func (ctx context) Store() Store {
 
 func (ctx context) Msg() MsgStream {
 	return ctx.msg
+}
+
+func (ctx context) Svc(n string) (Svc, error) {
+	svc := ctx.mgr.GetSvc(n)
+	if svc == nil {
+		return nil, Errorf("fwk: no such service [%s]", n)
+	}
+	return svc, nil
 }
 
 // EOF

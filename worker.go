@@ -43,6 +43,7 @@ func newWorker(i int, app *appmgr, ctrl *workercontrol) *worker {
 			slot:  i,
 			store: &wrk.store,
 			msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
+			mgr:   app,
 		}
 	}
 
