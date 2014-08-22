@@ -432,9 +432,6 @@ func (app *appmgr) configure(ctx Context) error {
 	if app.nprocs < 0 {
 		app.nprocs = runtime.NumCPU()
 	}
-	if app.nprocs > 1 {
-		runtime.GOMAXPROCS(app.nprocs)
-	}
 
 	tsks := make([]context, len(app.tsks))
 	for j, tsk := range app.tsks {
@@ -521,12 +518,16 @@ func (app *appmgr) run(ctx Context) error {
 	defer app.msg.flush()
 	app.state = fsmRUNNING
 
+	maxprocs := runtime.GOMAXPROCS(app.nprocs)
+
 	switch app.nprocs {
 	case 0:
 		err = app.runSequential(ctx)
 	default:
 		err = app.runConcurrent(ctx)
 	}
+
+	runtime.GOMAXPROCS(maxprocs)
 
 	return err
 }
