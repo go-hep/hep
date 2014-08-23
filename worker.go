@@ -43,7 +43,7 @@ func newWorker(i int, app *appmgr, ctrl *workercontrol) *worker {
 			slot:  i,
 			store: &wrk.store,
 			msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
-			mgr:   app,
+			mgr:   nil, // nobody's supposed to access mgr's state during event-loop
 		}
 	}
 
