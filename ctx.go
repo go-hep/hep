@@ -25,6 +25,10 @@ func (ctx context) Msg() MsgStream {
 }
 
 func (ctx context) Svc(n string) (Svc, error) {
+	if ctx.mgr == nil {
+		return nil, Errorf("fwk: no fwk.App available to this Context")
+	}
+
 	svc := ctx.mgr.GetSvc(n)
 	if svc == nil {
 		return nil, Errorf("fwk: no such service [%s]", n)
