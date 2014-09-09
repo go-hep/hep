@@ -7,11 +7,15 @@ import (
 )
 
 type MyInt int
+type MyStruct struct {
+	I int
+}
 
 type svc1 struct {
 	fwk.SvcBase
 
 	i MyInt
+	s MyStruct
 }
 
 func (svc *svc1) Configure(ctx fwk.Context) error {
@@ -40,7 +44,12 @@ func newsvc1(typ, name string, mgr fwk.App) (fwk.Component, error) {
 		SvcBase: fwk.NewSvc(typ, name, mgr),
 	}
 
-	err = svc.DeclProp("MyInt", &svc.i)
+	err = svc.DeclProp("Int", &svc.i)
+	if err != nil {
+		return nil, err
+	}
+
+	err = svc.DeclProp("Struct", &svc.s)
 	if err != nil {
 		return nil, err
 	}
