@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	nentries = 1000
-	nhists   = 100
+	nentries = 100
+	nhists   = 10
 )
 
 func newapp(evtmax int64, nprocs int) *job.Job {
