@@ -64,7 +64,6 @@ func NewApp() App {
 	}
 	app.store = svc.(*datastore)
 
-	//app.store = newDataStore("evtstore")
 	err = app.AddSvc(app.store)
 	if err != nil {
 		app.msg.Errorf("fwk.NewApp: could not create evtstore: %v\n", err)
@@ -78,7 +77,6 @@ func NewApp() App {
 	}
 	app.dflow = svc.(*dflowsvc)
 
-	//app.dflow = newDflowSvc("dataflow")
 	err = app.AddSvc(app.dflow)
 	if err != nil {
 		app.msg.Errorf("fwk.NewApp: could not create dataflow svc: %v\n", err)
