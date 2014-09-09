@@ -387,11 +387,19 @@ func (app *appmgr) Run() error {
 	app.msg.Infof("cpu: %v\n", time.Since(start))
 	var mdone runtime.MemStats
 	runtime.ReadMemStats(&mdone)
-	app.msg.Infof("mem: alloc:     %10d kB\n", (mdone.Alloc-mstart.Alloc)/1024)
-	app.msg.Infof("mem: tot-alloc: %10d kB\n", (mdone.TotalAlloc-mstart.TotalAlloc)/1024)
-	app.msg.Infof("mem: n-mallocs: %10d\n", (mdone.Mallocs - mstart.Mallocs))
-	app.msg.Infof("mem: n-frees:   %10d\n", (mdone.Frees - mstart.Frees))
-	app.msg.Infof("mem: gc-pauses: %10d ms\n", (mdone.PauseTotalNs-mstart.PauseTotalNs)/1000000)
+
+	diff := func(v1, v0 uint64) int64 {
+		if v0 > v1 {
+			return -int64(v0 - v1)
+		}
+		return int64(v1 - v0)
+	}
+
+	app.msg.Infof("mem: alloc:     %10d kB\n", diff(mdone.Alloc, mstart.Alloc)/1024)
+	app.msg.Infof("mem: tot-alloc: %10d kB\n", diff(mdone.TotalAlloc, mstart.TotalAlloc)/1024)
+	app.msg.Infof("mem: n-mallocs: %10d\n", diff(mdone.Mallocs, mstart.Mallocs))
+	app.msg.Infof("mem: n-frees:   %10d\n", diff(mdone.Frees, mstart.Frees))
+	app.msg.Infof("mem: gc-pauses: %10d ms\n", diff(mdone.PauseTotalNs, mstart.PauseTotalNs)/1000000)
 
 	return err
 }
