@@ -2,16 +2,22 @@ package hbooksvc
 
 import (
 	"reflect"
+	"sync"
 
 	"github.com/go-hep/fwk"
 	"github.com/go-hep/fwk/fsm"
 	"github.com/go-hep/hbook"
 )
 
+type h1d struct {
+	fwk.H1D
+	mu sync.RWMutex
+}
+
 type hsvc struct {
 	fwk.SvcBase
 
-	h1ds map[fwk.HID]fwk.H1D
+	h1ds map[fwk.HID]*h1d
 }
 
 func (svc *hsvc) Configure(ctx fwk.Context) error {
@@ -44,24 +50,26 @@ func (svc *hsvc) StopSvc(ctx fwk.Context) error {
 
 func (svc *hsvc) BookH1D(name string, nbins int, low, high float64) (fwk.H1D, error) {
 	var err error
-	h1d := fwk.H1D{
+	h := fwk.H1D{
 		ID:   fwk.HID(name),
 		Hist: hbook.NewH1D(nbins, low, high),
 	}
 
 	if !(svc.FSMState() < fsm.Running) {
-		return h1d, fwk.Errorf("fwk: can not book histograms during FSM-state %v", svc.FSMState())
+		return h, fwk.Errorf("fwk: can not book histograms during FSM-state %v", svc.FSMState())
 	}
 
-	svc.h1ds[h1d.ID] = h1d
-	return h1d, err
+	hh := &h1d{H1D: h}
+	svc.h1ds[h.ID] = hh
+	return hh.H1D, err
 }
 
 func (svc *hsvc) FillH1D(id fwk.HID, x, w float64) {
 	// FIXME(sbinet) make it concurrency-safe
 	h := svc.h1ds[id]
+	h.mu.Lock()
 	h.Hist.Fill(x, w)
-	svc.h1ds[id] = h
+	h.mu.Unlock()
 }
 
 func newhsvc(typ, name string, mgr fwk.App) (fwk.Component, error) {
@@ -70,7 +78,7 @@ func newhsvc(typ, name string, mgr fwk.App) (fwk.Component, error) {
 		SvcBase: fwk.NewSvc(typ, name, mgr),
 		// input:    "Input",
 		// output:   "Output",
-		h1ds: make(map[fwk.HID]fwk.H1D),
+		h1ds: make(map[fwk.HID]*h1d),
 	}
 
 	// err = svc.DeclProp("Input", &svc.input)
