@@ -65,7 +65,6 @@ func (svc *hsvc) BookH1D(name string, nbins int, low, high float64) (fwk.H1D, er
 }
 
 func (svc *hsvc) FillH1D(id fwk.HID, x, w float64) {
-	// FIXME(sbinet) make it concurrency-safe
 	h := svc.h1ds[id]
 	h.mu.Lock()
 	h.Hist.Fill(x, w)
