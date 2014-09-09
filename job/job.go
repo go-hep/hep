@@ -40,7 +40,7 @@ func newJob(app fwk.App, props P) *Job {
 		app: app,
 	}
 	for k, v := range props {
-		job.SetProp(app, k, v)
+		job.setProp(app, k, v)
 	}
 	return job
 }
@@ -81,7 +81,7 @@ func (job *Job) Create(cfg C) fwk.Component {
 	}
 
 	for k, v := range cfg.Props {
-		job.SetProp(c, k, v)
+		job.setProp(c, k, v)
 	}
 
 	job.stmts = append(job.stmts, Stmt{
@@ -95,6 +95,20 @@ func (job *Job) Create(cfg C) fwk.Component {
 // SetProp panics if the component does not have such property or
 // if the types do not match.
 func (job *Job) SetProp(c fwk.Component, name string, value interface{}) {
+	job.setProp(c, name, value)
+	job.stmts = append(job.stmts, Stmt{
+		Type: StmtSetProp,
+		Data: C{
+			Type: c.Type(),
+			Name: c.Name(),
+			Props: P{
+				name: value,
+			},
+		},
+	})
+}
+
+func (job *Job) setProp(c fwk.Component, name string, value interface{}) {
 	if !job.app.HasProp(c, name) {
 		err := fwk.Errorf("component [%s:%s] has no property named %q\n",
 			c.Type(),
@@ -115,17 +129,6 @@ func (job *Job) SetProp(c fwk.Component, name string, value interface{}) {
 		)
 		panic(err)
 	}
-
-	job.stmts = append(job.stmts, Stmt{
-		Type: StmtSetProp,
-		Data: C{
-			Type: c.Type(),
-			Name: c.Name(),
-			Props: P{
-				name: value,
-			},
-		},
-	})
 }
 
 // Run runs the underlying fwk.App.
