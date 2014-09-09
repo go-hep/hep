@@ -62,7 +62,7 @@ func (wrk *worker) run(tsks []Task) {
 			if !ok {
 				return
 			}
-			wrk.msg.Infof(">>> running evt=%d...\n", ievt)
+			wrk.msg.Debugf(">>> running evt=%d...\n", ievt)
 			err := wrk.store.reset(wrk.keys)
 			if err != nil {
 				wrk.errc <- err
