@@ -6,8 +6,12 @@ import (
 	"github.com/go-hep/fwk"
 )
 
+type MyInt int
+
 type svc1 struct {
 	fwk.SvcBase
+
+	i MyInt
 }
 
 func (svc *svc1) Configure(ctx fwk.Context) error {
@@ -34,6 +38,11 @@ func newsvc1(typ, name string, mgr fwk.App) (fwk.Component, error) {
 	var err error
 	svc := &svc1{
 		SvcBase: fwk.NewSvc(typ, name, mgr),
+	}
+
+	err = svc.DeclProp("MyInt", &svc.i)
+	if err != nil {
+		return nil, err
 	}
 
 	return svc, err
