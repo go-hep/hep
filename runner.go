@@ -4,9 +4,12 @@ import (
 	"github.com/go-hep/fwk/fsm"
 )
 
+// irunner wraps an appmgr to implement fwk.Scripter
 type irunner struct {
 	app *appmgr
 }
+
+var _ Scripter = (*irunner)(nil)
 
 func (ui irunner) lvl() Level {
 	return ui.app.msg.lvl
