@@ -97,7 +97,13 @@ t1                   INFO proc... (id=9|0) => [10, 20]
 t2                   INFO proc... (id=9|0) => [10 -> 100]
 t2                   INFO stop...
 t1                   INFO stop...
-::: fwk-ex-tuto-1... [done] (cpu=587.366us)
+app                  INFO cpu: 432.039us
+app                  INFO mem: alloc:             68 kB
+app                  INFO mem: tot-alloc:         79 kB
+app                  INFO mem: n-mallocs:        410
+app                  INFO mem: n-frees:           60
+app                  INFO mem: gc-pauses:          0 ms
+::: fwk-ex-tuto-1... [done] (cpu=625.918us)
 ```
 
 ### Physics-oriented demonstrator
