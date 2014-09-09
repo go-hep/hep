@@ -1,6 +1,7 @@
 package job
 
 import (
+	"bytes"
 	"reflect"
 	"testing"
 
@@ -40,7 +41,8 @@ func TestGoEncode(t *testing.T) {
 		Type: "github.com/go-hep/fwk/testdata.svc1",
 		Name: "svc1",
 		Props: P{
-			"MyInt": testdata.MyInt(12),
+			"Int":    testdata.MyInt(12),
+			"Struct": testdata.MyStruct{12},
 		},
 	}
 
@@ -54,7 +56,13 @@ func TestGoEncode(t *testing.T) {
 	}
 
 	job.Create(cfg0)
-	job.Create(cfg1)
+
+	comp1 := job.Create(cfg1)
+	prop11 := P{
+		"Ints1": "t1-ints1-modified",
+	}
+	job.SetProp(comp1, "Ints1", prop11["Ints1"])
+
 	job.Create(cfg2)
 
 	exp := []Stmt{
@@ -71,6 +79,14 @@ func TestGoEncode(t *testing.T) {
 			Data: cfg1,
 		},
 		{
+			Type: StmtSetProp,
+			Data: C{
+				Type:  comp1.Type(),
+				Name:  comp1.Name(),
+				Props: prop11,
+			},
+		},
+		{
 			Type: StmtCreate,
 			Data: cfg2,
 		},
@@ -82,7 +98,8 @@ func TestGoEncode(t *testing.T) {
 		t.Fatalf("unexpected statments:\nexp=%#v\ngot=%#v\n", exp, stmts)
 	}
 
-	enc := NewGoEncoder(nil)
+	buf := new(bytes.Buffer)
+	enc := NewGoEncoder(buf)
 	err := enc.Encode(stmts)
 	if err != nil {
 		t.Fatalf("error go-encoding: %v\n", err)
