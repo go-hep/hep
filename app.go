@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"runtime"
 	"sort"
+	"time"
 )
 
 type fsm int
@@ -377,6 +378,10 @@ func (app *appmgr) Run() error {
 		msg:   NewMsgStream("<root>", app.msg.lvl, nil),
 	}
 
+	start := time.Now()
+	var mstart runtime.MemStats
+	runtime.ReadMemStats(&mstart)
+
 	if app.state == fsmUNDEFINED {
 		err = app.configure(ctx)
 		if err != nil {
@@ -411,6 +416,15 @@ func (app *appmgr) Run() error {
 			return err
 		}
 	}
+
+	app.msg.Infof("cpu: %v\n", time.Since(start))
+	var mdone runtime.MemStats
+	runtime.ReadMemStats(&mdone)
+	app.msg.Infof("mem: alloc:     %10d kB\n", (mdone.Alloc-mstart.Alloc)/1024)
+	app.msg.Infof("mem: tot-alloc: %10d kB\n", (mdone.TotalAlloc-mstart.TotalAlloc)/1024)
+	app.msg.Infof("mem: n-mallocs: %10d\n", (mdone.Mallocs - mstart.Mallocs))
+	app.msg.Infof("mem: n-frees:   %10d\n", (mdone.Frees - mstart.Frees))
+	app.msg.Infof("mem: gc-pauses: %10d ms\n", (mdone.PauseTotalNs-mstart.PauseTotalNs)/1000000)
 
 	return err
 }
