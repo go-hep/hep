@@ -40,7 +40,7 @@ func Connections(graph map[interface{}][]interface{}) [][]interface{} {
 		nodes: make([]node, 0, len(graph)),
 		index: make(map[interface{}]int, len(graph)),
 	}
-	for v, _ := range g.graph {
+	for v := range g.graph {
 		if _, ok := g.index[v]; !ok {
 			g.strongConnect(v)
 		}

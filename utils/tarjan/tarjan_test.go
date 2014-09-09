@@ -36,10 +36,10 @@ func TestTypeString(t *testing.T) {
 	o := Connections(graph)
 	output := sortConnections(o)
 	exp := [][]string{
-		[]string{"1", "2", "3"},
-		[]string{"6", "7"},
-		[]string{"4", "5"},
-		[]string{"8"},
+		{"1", "2", "3"},
+		{"6", "7"},
+		{"4", "5"},
+		{"8"},
 	}
 	if !reflect.DeepEqual(output, exp) {
 		t.Fatalf("FAIL.\nexp=%v\ngot=%v\n", exp, output)
@@ -60,10 +60,10 @@ func TestTypeInt(t *testing.T) {
 	o := Connections(graph)
 	output := sortConnections(o)
 	exp := [][]string{
-		[]string{"1", "2", "3"},
-		[]string{"6", "7"},
-		[]string{"4", "5"},
-		[]string{"8"},
+		{"1", "2", "3"},
+		{"6", "7"},
+		{"4", "5"},
+		{"8"},
 	}
 	if !reflect.DeepEqual(output, exp) {
 		t.Fatalf("FAIL.\nexp=%v\ngot=%v\n", exp, output)
@@ -84,10 +84,10 @@ func TestTypeMixed(t *testing.T) {
 	o := Connections(graph)
 	output := sortConnections(o)
 	exp := [][]string{
-		[]string{"1", "2", "3"},
-		[]string{"6", "7"},
-		[]string{"4", "5"},
-		[]string{"8"},
+		{"1", "2", "3"},
+		{"6", "7"},
+		{"4", "5"},
+		{"8"},
 	}
 	if !reflect.DeepEqual(output, exp) {
 		t.Fatalf("FAIL.\nexp=%v\ngot=%v\n", exp, output)
