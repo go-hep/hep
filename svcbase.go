@@ -1,5 +1,9 @@
 package fwk
 
+import (
+	"github.com/go-hep/fwk/fsm"
+)
+
 // SvcBase provides a base implementation for fwk.Svc
 type SvcBase struct {
 	t   string
@@ -43,6 +47,11 @@ func (svc *SvcBase) SetProp(name string, value interface{}) error {
 // GetProp returns the value of the property named n.
 func (svc *SvcBase) GetProp(name string) (interface{}, error) {
 	return svc.mgr.GetProp(svc, name)
+}
+
+// FSMState returns the current state of the FSM
+func (svc *SvcBase) FSMState() fsm.State {
+	return svc.mgr.FSMState()
 }
 
 // EOF

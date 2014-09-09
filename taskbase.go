@@ -2,6 +2,8 @@ package fwk
 
 import (
 	"reflect"
+
+	"github.com/go-hep/fwk/fsm"
 )
 
 // TaskBase provides a base implementation for fwk.Task
@@ -57,6 +59,11 @@ func (tsk *TaskBase) SetProp(n string, v interface{}) error {
 // GetProp returns the value of the property named n.
 func (tsk *TaskBase) GetProp(n string) (interface{}, error) {
 	return tsk.mgr.GetProp(tsk, n)
+}
+
+// FSMState returns the current state of the FSM
+func (tsk *TaskBase) FSMState() fsm.State {
+	return tsk.mgr.FSMState()
 }
 
 // EOF

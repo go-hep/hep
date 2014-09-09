@@ -3,6 +3,8 @@ package fwk
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/go-hep/fwk/fsm"
 )
 
 type statuscode int
@@ -17,6 +19,8 @@ type Context interface {
 	Slot() int      // slot number in the pool of event sequences
 	Store() Store   // data store corresponding to the id+slot
 	Msg() MsgStream // messaging for this context (id+slot)
+
+	Svc(n string) (Svc, error) // retrieve an already existing Svc by name
 }
 
 // Component is the interface satisfied by all values in fwk.
@@ -93,6 +97,8 @@ type App interface {
 	PropMgr
 	PortMgr
 
+	FSMStater
+
 	Runner
 	Scripter() Scripter
 
@@ -158,6 +164,11 @@ type DeclPorter interface {
 type PortMgr interface {
 	DeclInPort(c Component, name string, t reflect.Type) error
 	DeclOutPort(c Component, name string, t reflect.Type) error
+}
+
+// FSMStater is the interface used to query the current state of the fwk application
+type FSMStater interface {
+	FSMState() fsm.State
 }
 
 // Level regulates the verbosity level of a component.
