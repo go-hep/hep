@@ -29,7 +29,7 @@ func newJob(app fwk.App, props P) *Job {
 	job := &Job{
 		stmts: []Stmt{
 			{
-				Type: StmtCreate,
+				Type: StmtNewApp,
 				Data: C{
 					Name:  app.Name(),
 					Type:  app.Type(),

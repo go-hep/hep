@@ -51,7 +51,7 @@ func TestStmt(t *testing.T) {
 
 	exp := []Stmt{
 		{
-			Type: StmtCreate,
+			Type: StmtNewApp,
 			Data: appcfg,
 		},
 		{
@@ -134,7 +134,7 @@ func TestStmtWithProps(t *testing.T) {
 
 	exp := []Stmt{
 		{
-			Type: StmtCreate,
+			Type: StmtNewApp,
 			Data: appcfg,
 		},
 		{

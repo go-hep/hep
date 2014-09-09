@@ -16,8 +16,10 @@ type StmtType int
 // String returns the string representation of a StmtType
 func (stmt StmtType) String() string {
 	switch stmt {
+	case StmtNewApp:
+		return "NewApp"
 	case StmtCreate:
-		return "CREATE"
+		return "Create"
 	case StmtSetProp:
 		return "SetProp"
 	}
@@ -25,6 +27,7 @@ func (stmt StmtType) String() string {
 }
 
 const (
-	StmtCreate StmtType = iota
+	StmtNewApp StmtType = iota
+	StmtCreate
 	StmtSetProp
 )
