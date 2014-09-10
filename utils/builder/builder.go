@@ -1,7 +1,11 @@
+// package builder builds a fwk-app binary from a list of go files.
+//
+// builder's architecture and sources are heavily inspired from golint:
+//   https://github.com/golang/lint
+//
 package builder
 
 import (
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -24,6 +28,7 @@ type file struct {
 	name string
 }
 
+// Builder generates and builds fwk-based applications.
 type Builder struct {
 	fset  *token.FileSet
 	files map[string]*file
@@ -37,6 +42,7 @@ type Builder struct {
 	Usage string // usage string displayed by compiled binary (with -help)
 }
 
+// NewBuilder creates a Builder from a list of file names or directories
 func NewBuilder(fnames ...string) (*Builder, error) {
 	var err error
 
@@ -83,6 +89,7 @@ options:
 	return b, err
 }
 
+// Build applies some type-checking, collects setup functions and generates the sources of the fwk-based application.
 func (b *Builder) Build() error {
 	var err error
 
@@ -349,84 +356,3 @@ func (w walker) Visit(node ast.Node) ast.Visitor {
 	}
 	return nil
 }
-
-func receiverType(fn *ast.FuncDecl) string {
-	switch e := fn.Recv.List[0].Type.(type) {
-	case *ast.Ident:
-		return e.Name
-	case *ast.StarExpr:
-		return e.X.(*ast.Ident).Name
-	}
-	panic(fmt.Sprintf("unknown method receiver AST node type %T", fn.Recv.List[0].Type))
-}
-
-/*
-func (p *pkg) typeCheck() error {
-	config := &types.Config{
-		// By setting a no-op error reporter, the type checker does as much work as possible.
-		Error:  func(error) {},
-		Import: gcImporter,
-	}
-	info := &types.Info{
-		Types: make(map[ast.Expr]types.TypeAndValue),
-		Defs:  make(map[*ast.Ident]types.Object),
-		Uses:  make(map[*ast.Ident]types.Object),
-	}
-	var anyFile *file
-	var astFiles []*ast.File
-	for _, f := range p.files {
-		anyFile = f
-		astFiles = append(astFiles, f.f)
-	}
-	pkg, err := config.Check(anyFile.f.Name.Name, p.fset, astFiles, info)
-	// Remember the typechecking info, even if config.Check failed,
-	// since we will get partial information.
-	p.typesPkg = pkg
-	p.typesInfo = info
-	return err
-}
-
-func (p *pkg) typeCheck() error {
-	config := &types.Config{
-		// By setting a no-op error reporter, the type checker does as much work as possible.
-		Error:  func(error) {},
-		Import: gcImporter,
-	}
-	info := &types.Info{
-		Types: make(map[ast.Expr]types.TypeAndValue),
-		Defs:  make(map[*ast.Ident]types.Object),
-		Uses:  make(map[*ast.Ident]types.Object),
-	}
-	var anyFile *file
-	var astFiles []*ast.File
-	for _, f := range p.files {
-		anyFile = f
-		astFiles = append(astFiles, f.f)
-	}
-	pkg, err := config.Check(anyFile.f.Name.Name, p.fset, astFiles, info)
-	// Remember the typechecking info, even if config.Check failed,
-	// since we will get partial information.
-	p.typesPkg = pkg
-	p.typesInfo = info
-	return err
-}
-	pkg := &pkg{
-		fset:  token.NewFileSet(),
-		files: make(map[string]*file),
-	}
-	for filename, src := range files {
-		f, err := parser.ParseFile(pkg.fset, filename, src, parser.ParseComments)
-		if err != nil {
-			return nil, err
-		}
-		// TODO(dsymonds): Check for package name mismatch.
-		pkg.files[filename] = &file{
-			pkg:      pkg,
-			f:        f,
-			fset:     pkg.fset,
-			src:      src,
-			filename: filename,
-		}
-	}
-
-*/
