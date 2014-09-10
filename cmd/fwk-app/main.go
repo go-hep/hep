@@ -19,7 +19,8 @@ var (
 
 func init() {
 	g_cmd = &commander.Command{
-		UsageLine: "fwk-app",
+		UsageLine: "fwk-app <sub-command> [options] [args [...]]",
+		Short:     "builds and runs fwk-based applications",
 		Subcommands: []*commander.Command{
 			fwk_make_cmd_run(),
 			fwk_make_cmd_build(),

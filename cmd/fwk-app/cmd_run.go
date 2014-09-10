@@ -29,6 +29,7 @@ ex:
 	}
 
 	cmd.Flag.String("o", "", "name of the resulting binary (default=name of parent directory)")
+	cmd.Flag.Bool("k", false, "whether to keep the resulting binary after a successful run")
 
 	// flags passed to sub-process
 	cmd.Flag.String("l", "INFO", "log level (DEBUG|INFO|WARN|ERROR)")
@@ -94,6 +95,10 @@ func fwk_run_cmd_run(cmd *commander.Command, args []string) error {
 			return err
 		}
 		bin = filepath.Join(pwd, bin)
+	}
+
+	if !cmd.Flag.Lookup("k").Value.Get().(bool) {
+		defer os.Remove(bin)
 	}
 
 	sub := exec.Command(bin, subargs...)

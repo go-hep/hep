@@ -14,7 +14,7 @@ func fwk_make_cmd_build() *commander.Command {
 		UsageLine: "build [options] <config.go> [<config2.go> [...]]",
 		Short:     "build a fwk job",
 		Long: `
-run runs a fwk-based job.
+build builds a fwk-based job and produces a binary.
 
 ex:
  $ fwk-app build config.go
