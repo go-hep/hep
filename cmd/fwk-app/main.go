@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"os"
 
-	"github.com/go-hep/fwk/job"
+	"github.com/gonuts/commander"
+	"github.com/gonuts/flag"
 )
 
 func handle_err(err error) {
@@ -12,33 +13,30 @@ func handle_err(err error) {
 	}
 }
 
+var (
+	g_cmd *commander.Command
+)
+
+func init() {
+	g_cmd = &commander.Command{
+		UsageLine: "fwk-app <sub-command> [options] [args [...]]",
+		Short:     "builds and runs fwk-based applications",
+		Subcommands: []*commander.Command{
+			fwk_make_cmd_run(),
+			fwk_make_cmd_build(),
+		},
+		Flag: *flag.NewFlagSet("fwk-app", flag.ExitOnError),
+	}
+}
+
 func main() {
-	fmt.Printf("::: fwk-app...\n")
 
-	app := job.New(nil)
+	var err error
 
-	app.Create(job.C{
-		Type: "github.com/go-hep/fads.ParticlePropagator",
-		Name: "pprop",
-	})
+	err = g_cmd.Flag.Parse(os.Args[1:])
+	handle_err(err)
 
-	app.Create(job.C{
-		Type: "github.com/go-hep/fads.HepMcReader",
-		Name: "hepmcreader",
-		Props: job.P{
-			"Input": "testdata/hepmc.data",
-		},
-	})
-
-	app.Create(job.C{
-		Type: "github.com/go-hep/fads.Efficiency",
-		Name: "charged-hadron-trk-eff",
-		Props: job.P{
-			"Input": "ChargedHadrons",
-		},
-	})
-
-	app.Run()
-
-	fmt.Printf("::: fwk-app... [done]\n")
+	args := g_cmd.Flag.Args()
+	err = g_cmd.Dispatch(args)
+	handle_err(err)
 }
