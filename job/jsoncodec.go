@@ -13,3 +13,8 @@ func NewJSONEncoder(w io.Writer) *json.Encoder {
 	}
 	return json.NewEncoder(w)
 }
+
+// NewJSONDecoder returns a new decoder that reads from r.
+func NewJSONDecoder(r io.Reader) *json.Decoder {
+	return json.NewDecoder(r)
+}

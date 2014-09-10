@@ -105,5 +105,19 @@ func TestJSONEncode(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error json-encoding: %v\n", err)
 	}
-	//io.Copy(os.Stdout, buf)
+
+	dec := NewJSONDecoder(buf)
+	stmts = make([]Stmt, 0)
+	err = dec.Decode(&stmts)
+	if err != nil {
+		t.Fatalf("error json-decoding: %v\n", err)
+	}
+
+	// FIXME(sbinet)
+	//  issue is that JSON won't deserialize 'MyStruct' into testdata.MyStruct...
+	//  same for 'MyInt' and testdata.MyInt
+	//
+	// if !reflect.DeepEqual(exp, stmts) {
+	// 	t.Fatalf("unexpected statments:\nexp=%#v\ngot=%#v\n", exp, stmts)
+	// }
 }
