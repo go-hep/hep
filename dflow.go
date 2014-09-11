@@ -21,6 +21,8 @@ func newNode() *node {
 	}
 }
 
+// dflowsvc models and describes the runtime data-flow and (data) dependencies between
+// components as declared during configuration.
 type dflowsvc struct {
 	SvcBase
 	nodes map[string]*node
