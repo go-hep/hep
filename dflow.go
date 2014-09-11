@@ -3,9 +3,11 @@ package fwk
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"reflect"
 	"sort"
 
+	"code.google.com/p/gographviz"
 	"github.com/go-hep/fwk/utils/tarjan"
 )
 
@@ -27,6 +29,8 @@ type dflowsvc struct {
 	SvcBase
 	nodes map[string]*node
 	edges map[string]reflect.Type
+
+	dotfile string // path to a DOT file where to dump the data dependency graph.
 }
 
 func (svc *dflowsvc) Configure(ctx Context) error {
@@ -117,6 +121,12 @@ func (svc *dflowsvc) StartSvc(ctx Context) error {
 		}
 	}
 
+	if svc.dotfile != "" {
+		err = svc.dumpgraph()
+		if err != nil {
+			return err
+		}
+	}
 	return err
 }
 
@@ -253,17 +263,69 @@ func (svc *dflowsvc) addOutNode(tsk string, name string, t reflect.Type) error {
 	return nil
 }
 
+func (svc *dflowsvc) dumpgraph() error {
+	var err error
+	g := gographviz.NewGraph()
+	gname := "dataflow"
+	g.SetName(gname)
+	g.SetDir(true)
+
+	quote := func(s string) string {
+		return fmt.Sprintf("%q", s)
+	}
+
+	for name, typ := range svc.edges {
+		typename := typ.String()
+		attr_data := map[string]string{
+			`"node"`: `"data"`,
+			`"type"`: quote(typename),
+		}
+		g.AddNode(gname, quote(name), attr_data)
+	}
+
+	attr_task := map[string]string{
+		`"node"`:  `"task"`,
+		`"shape"`: `"component"`,
+	}
+	for name, node := range svc.nodes {
+		g.AddNode(gname, quote(name), attr_task)
+
+		for in := range node.in {
+			g.AddEdge(quote(in), quote(name), true, nil)
+		}
+
+		for out := range node.out {
+			g.AddEdge(quote(name), quote(out), true, nil)
+		}
+	}
+
+	err = ioutil.WriteFile(svc.dotfile, []byte(g.String()), 0644)
+	if err != nil {
+		return Error(err)
+	}
+
+	return err
+}
+
+func newDataFlowSvc(typ, name string, mgr App) (Component, error) {
+	var err error
+	svc := &dflowsvc{
+		SvcBase: NewSvc(typ, name, mgr),
+		nodes:   make(map[string]*node),
+		edges:   make(map[string]reflect.Type),
+		dotfile: "", // empty: no dump
+	}
+
+	err = svc.DeclProp("DotFile", &svc.dotfile)
+	if err != nil {
+		return nil, err
+	}
+
+	return svc, err
+}
+
 func init() {
-	Register(reflect.TypeOf(dflowsvc{}),
-		func(t, name string, mgr App) (Component, error) {
-			svc := &dflowsvc{
-				SvcBase: NewSvc(t, name, mgr),
-				nodes:   make(map[string]*node),
-				edges:   make(map[string]reflect.Type),
-			}
-			return svc, nil
-		},
-	)
+	Register(reflect.TypeOf(dflowsvc{}), newDataFlowSvc)
 }
 
 // EOF
