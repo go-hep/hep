@@ -6,6 +6,7 @@ import (
 
 type achan chan interface{}
 
+// datastore stores (event) data and provides concurrent-safe access to it.
 type datastore struct {
 	SvcBase
 	store map[string]achan
