@@ -60,9 +60,6 @@ options:
 		"MsgLevel": job.MsgLevel(*g_lvl),
 	})
 
-	// dump dataflow graph
-	app.SetProp(app.App().Component("dataflow"), "DotFile", "dflow.dot")
-
 	r, err := os.Open(ifname)
 	if err != nil {
 		app.Errorf("could not open input file [%s]: %v\n", ifname, err)

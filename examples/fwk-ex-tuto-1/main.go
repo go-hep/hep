@@ -48,9 +48,6 @@ options:
 		"MsgLevel": job.MsgLevel(*g_lvl),
 	})
 
-	// dump dataflow graph
-	app.SetProp(app.App().Component("dataflow"), "DotFile", "dflow.dot")
-
 	// create a task that reads integers from some location
 	// and publish the square of these integers under some other location
 	app.Create(job.C{
