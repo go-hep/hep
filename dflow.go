@@ -313,7 +313,7 @@ func newDataFlowSvc(typ, name string, mgr App) (Component, error) {
 		SvcBase: NewSvc(typ, name, mgr),
 		nodes:   make(map[string]*node),
 		edges:   make(map[string]reflect.Type),
-		dotfile: "data-flow.dot", // empty: no dump
+		dotfile: "", // empty: no dump
 	}
 
 	err = svc.DeclProp("DotFile", &svc.dotfile)
