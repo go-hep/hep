@@ -204,6 +204,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		//fmt.Printf(">>> rechdr=%v\n", rechdr)
 
 		if rechdr.Typ != g_mark_record {
+			// fmt.Printf("rechdr.typ = %#v\n", rechdr.Typ)
 			return nil, ErrStreamNoRecMarker
 		}
 
