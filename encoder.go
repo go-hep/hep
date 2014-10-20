@@ -3,6 +3,7 @@ package hepmc
 import (
 	"fmt"
 	"io"
+	"sort"
 )
 
 type Encoder struct {
@@ -158,7 +159,12 @@ func (enc *Encoder) Encode(evt *Event) error {
 	}
 
 	// output all of the vertices
+	vertices := make([]*Vertex, 0, len(evt.Vertices))
 	for _, vtx := range evt.Vertices {
+		vertices = append(vertices, vtx)
+	}
+	sort.Sort(sort.Reverse(t_vertices(vertices)))
+	for _, vtx := range vertices {
 		err = enc.encode_vertex(vtx)
 		if err != nil {
 			return err
@@ -255,7 +261,13 @@ func (enc *Encoder) encode_flow(flow *Flow) error {
 	if err != nil {
 		return err
 	}
-	for k, v := range flow.Icode {
+	icodes := make([]int, 0, len(flow.Icode))
+	for k := range flow.Icode {
+		icodes = append(icodes, k)
+	}
+	sort.Ints(icodes)
+	for _, k := range icodes {
+		v := flow.Icode[k]
 		_, err = fmt.Fprintf(enc.w, " %d %d", k, v)
 		if err != nil {
 			return err

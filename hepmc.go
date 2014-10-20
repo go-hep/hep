@@ -303,6 +303,18 @@ func (ps t_particles) Swap(i, j int) {
 	ps[i], ps[j] = ps[j], ps[i]
 }
 
+type t_vertices []*Vertex
+
+func (ps t_vertices) Len() int {
+	return len(ps)
+}
+func (ps t_vertices) Less(i, j int) bool {
+	return ps[i].Barcode < ps[j].Barcode
+}
+func (ps t_vertices) Swap(i, j int) {
+	ps[i], ps[j] = ps[j], ps[i]
+}
+
 // Vertex represents a generator vertex within an event
 // A vertex is indirectly (via particle "edges") linked to other
 //   vertices ("nodes") to form a composite "graph"
