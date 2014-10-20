@@ -693,27 +693,31 @@ type Flow struct {
 	Icode    map[int]int // flow patterns as (code_index, icode)
 }
 
+// Polarization holds informations about a particle's polarization
 type Polarization struct {
 	Theta float64 // polar angle of polarization in radians [0, math.Pi)
 	Phi   float64 // azimuthal angle of polarization in radians [0, 2*math.Pi)
 }
 
+// Weights holds informations about the event's and vertices' generation weights.
 type Weights struct {
 	Slice []float64      // the slice of weight values
 	Map   map[string]int // the map of name->index-in-the-slice
 }
 
-func (w Weights) Add(n string, value float64) error {
+// Add adds a new weight with name n and value v.
+func (w Weights) Add(n string, v float64) error {
 	_, ok := w.Map[n]
 	if ok {
 		return fmt.Errorf("hepmc.Weights.Add: name [%s] already in container", n)
 	}
 	idx := len(w.Slice)
 	w.Map[n] = idx
-	w.Slice = append(w.Slice, value)
+	w.Slice = append(w.Slice, v)
 	return nil
 }
 
+// At returns the weight's value named n.
 func (w Weights) At(n string) float64 {
 	idx, ok := w.Map[n]
 	if ok {
@@ -722,6 +726,7 @@ func (w Weights) At(n string) float64 {
 	panic("hepmc.Weights.At: invalid name [" + n + "]")
 }
 
+// NewWeights creates a new set of weights.
 func NewWeights() Weights {
 	return Weights{
 		Slice: make([]float64, 0, 1),
