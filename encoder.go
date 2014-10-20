@@ -6,15 +6,18 @@ import (
 	"sort"
 )
 
+// Encoder encodes a hepmc Event into a stream.
 type Encoder struct {
 	w            io.Writer
 	seen_evt_hdr bool
 }
 
+// NewEncoder returns a new hepmc Encoder that writes into the io.Writer.
 func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{w: w}
 }
 
+// Close closes the encoder and adds a footer to the stream.
 func (enc *Encoder) Close() error {
 	var err error
 	if enc.seen_evt_hdr {
@@ -30,6 +33,7 @@ func (enc *Encoder) Close() error {
 	return err
 }
 
+// Encode writes evt into the stream.
 func (enc *Encoder) Encode(evt *Event) error {
 	var err error
 

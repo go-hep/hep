@@ -91,6 +91,7 @@ func (evt *Event) AddVertex(vtx *Vertex) error {
 	return vtx.set_parent_event(evt)
 }
 
+// Print prints the event to w in a human-readable format
 func (evt *Event) Print(w io.Writer) error {
 	var err error
 	const liner = ("________________________________________" +
@@ -494,6 +495,7 @@ func (vtx *Vertex) remove_particle_out(p *Particle) error {
 	return err
 }
 
+// Print prints the vertex to w in a human-readable format
 func (vtx *Vertex) Print(w io.Writer) error {
 	var err error
 	zero := FourVector{0, 0, 0, 0}
@@ -611,6 +613,7 @@ func (vtx *Vertex) Print(w io.Writer) error {
 	return err
 }
 
+// HeavyIon holds additional information for heavy-ion collisions
 type HeavyIon struct {
 	Ncoll_hard                   int     // number of hard scatterings
 	Npart_proj                   int     // number of projectile participants
@@ -637,6 +640,7 @@ type CrossSection struct {
 	//IsSet bool
 }
 
+// PdfInfo holds informations about the partons distribution functions
 type PdfInfo struct {
 	ID1      int     // flavour code of first parton
 	ID2      int     // flavour code of second parton
@@ -644,7 +648,7 @@ type PdfInfo struct {
 	LHAPdf2  int     // LHA PDF id of second parton
 	X1       float64 // fraction of beam momentum carried by first parton ("beam side")
 	X2       float64 // fraction of beam momentum carried by second parton ("target side")
-	ScalePDF float64 //  Q-scale used in evaluation of PDF's   (in GeV)
+	ScalePDF float64 // Q-scale used in evaluation of PDF's   (in GeV)
 	Pdf1     float64 // PDF (id1, x1, Q)
 	Pdf2     float64 // PDF (id2, x2, Q)
 }

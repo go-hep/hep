@@ -8,6 +8,7 @@ import (
 	"sort"
 )
 
+// Decoder decodes a hepmc Event from a stream
 type Decoder struct {
 	r *bufio.Reader
 	//bbuf io.Reader
@@ -20,6 +21,7 @@ type Decoder struct {
 	bp2         int // barcode of beam2
 }
 
+// NewDecoder returns a new hepmc Decoder that reads from the io.Reader.
 func NewDecoder(r io.Reader) *Decoder {
 	//tbuf := bytes.NewBuffer(nil)
 	//tr := io.TeeReader(r, tbuf)
@@ -30,6 +32,7 @@ func NewDecoder(r io.Reader) *Decoder {
 	return &Decoder{r: bufio.NewReader(r)}
 }
 
+// Decode reads the next value from the stream and stores it into evt.
 func (dec *Decoder) Decode(evt *Event) error {
 	var err error
 

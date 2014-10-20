@@ -11,13 +11,17 @@ type MomentumUnit int
 type LengthUnit int
 
 const (
-	MEV MomentumUnit = iota // Momentum in MeV (default)
-	GEV                     // Momentum in GeV
+	// MEV is a Momentum in MeV (default)
+	MEV MomentumUnit = iota
+	// GEV is a Momentum in GeV
+	GEV
 )
 
 const (
-	MM LengthUnit = iota // Length in mm (default)
-	CM                   // Length in cm
+	// MM is a Length in mm (default)
+	MM LengthUnit = iota
+	// CM is a Length in cm
+	CM
 )
 
 func (mu MomentumUnit) String() string {
