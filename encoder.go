@@ -24,7 +24,7 @@ func (enc *Encoder) Close() error {
 		_, err = fmt.Fprintf(
 			enc.w,
 			"%s\n",
-			genevent_end,
+			endGenEvent,
 		)
 		if err != nil {
 			return err
@@ -47,7 +47,7 @@ func (enc *Encoder) Encode(evt *Event) error {
 			return err
 		}
 
-		_, err = fmt.Fprintf(enc.w, "%s\n", genevent_start)
+		_, err = fmt.Fprintf(enc.w, "%s\n", startGenEvent)
 		if err != nil {
 			return err
 		}
@@ -182,7 +182,7 @@ func (enc *Encoder) encode_vertex(vtx *Vertex) error {
 	orphans := 0
 	for _, p := range vtx.ParticlesIn {
 		if p.ProdVertex == nil {
-			orphans += 1
+			orphans++
 		}
 	}
 

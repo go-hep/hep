@@ -14,7 +14,7 @@ type Decoder struct {
 	//bbuf io.Reader
 	//tbuf *bytes.Buffer
 	seen_evt_hdr bool
-	ftype        hepmc_ftype
+	ftype        hepmcFileType
 
 	sig_proc_bc int // barcode of signal vertex
 	bp1         int // barcode of beam1
@@ -83,15 +83,15 @@ func (dec *Decoder) Decode(evt *Event) error {
 		case 'E':
 			// call appropriate decoder method
 			switch dec.ftype {
-			case hepmc_genevent:
+			case hepmcGenEvent:
 				err = dec.decode_genevent(evt, &n_vtx)
-			case hepmc_ascii:
+			case hepmcASCII:
 				err = dec.decode_ascii(evt, &n_vtx)
-			case hepmc_extendedascii:
+			case hepmcExtendedASCII:
 				err = dec.decode_extendedascii(evt, &n_vtx)
-			case hepmc_ascii_pdt:
+			case hepmcASCIIPdt:
 				err = fmt.Errorf("hepmc.decode: HepMC::IO_Ascii-PARTICLE_DATA is NOT implemented (yet)")
-			case hepmc_extendedascii_pdt:
+			case hepmcExtendedASCIIPdt:
 				err = fmt.Errorf("hepmc.decode: HepMC::IO_ExtendedAscii-PARTICLE_DATA is NOT implemented (yet)")
 			default:
 				err = fmt.Errorf("hepmc.decode: unknown file format (%v)", dec.ftype)
@@ -123,7 +123,7 @@ func (dec *Decoder) Decode(evt *Event) error {
 			evt.Weights.Map = names
 
 		case 'U':
-			if dec.ftype == hepmc_genevent {
+			if dec.ftype == hepmcGenEvent {
 				err = dec.decode_units(evt)
 				if err != nil {
 					return err
@@ -136,7 +136,7 @@ func (dec *Decoder) Decode(evt *Event) error {
 			}
 		case 'H':
 			switch dec.ftype {
-			case hepmc_genevent, hepmc_extendedascii:
+			case hepmcGenEvent, hepmcExtendedASCII:
 				var hi HeavyIon
 				err = dec.decode_heavy_ion(&hi)
 				if err != nil {
@@ -146,7 +146,7 @@ func (dec *Decoder) Decode(evt *Event) error {
 			}
 		case 'F':
 			switch dec.ftype {
-			case hepmc_genevent, hepmc_extendedascii:
+			case hepmcGenEvent, hepmcExtendedASCII:
 				var pdf PdfInfo
 				err = dec.decode_pdf_info(&pdf)
 				if err != nil {
@@ -231,24 +231,24 @@ func (dec *Decoder) find_file_type() error {
 		case "":
 			// no-op
 
-		case genevent_start:
-			dec.ftype = hepmc_genevent
+		case startGenEvent:
+			dec.ftype = hepmcGenEvent
 			return nil
 
-		case ascii_start:
-			dec.ftype = hepmc_ascii
+		case startASCII:
+			dec.ftype = hepmcASCII
 			return nil
 
-		case extendedascii_start:
-			dec.ftype = hepmc_extendedascii
+		case startExtendedASCII:
+			dec.ftype = hepmcExtendedASCII
 			return nil
 
-		case pdt_start:
-			dec.ftype = hepmc_ascii_pdt
+		case startPdt:
+			dec.ftype = hepmcASCIIPdt
 			return nil
 
-		case extendedascii_pdt_start:
-			dec.ftype = hepmc_extendedascii_pdt
+		case startExtendedASCIIPdt:
+			dec.ftype = hepmcExtendedASCIIPdt
 			return nil
 		}
 	}
@@ -273,26 +273,26 @@ func (dec *Decoder) find_end_key() error {
 		line = line[:len(line)-1]
 	}
 
-	var ftype hepmc_ftype
+	var ftype hepmcFileType
 	switch line {
 	default:
 		err = fmt.Errorf("hepmc.decode: invalid file type (value=%q)", line)
 		return err
 
-	case genevent_end:
-		ftype = hepmc_genevent
+	case endGenEvent:
+		ftype = hepmcGenEvent
 
-	case ascii_end:
-		ftype = hepmc_ascii
+	case endASCII:
+		ftype = hepmcASCII
 
-	case extendedascii_end:
-		ftype = hepmc_extendedascii
+	case endExtendedASCII:
+		ftype = hepmcExtendedASCII
 
-	case pdt_end:
-		ftype = hepmc_ascii_pdt
+	case endPdt:
+		ftype = hepmcASCIIPdt
 
-	case extendedascii_pdt_end:
-		ftype = hepmc_extendedascii_pdt
+	case endExtendedASCIIPdt:
+		ftype = hepmcExtendedASCIIPdt
 	}
 
 	if ftype != dec.ftype {
@@ -502,7 +502,7 @@ func (dec *Decoder) decode_particle(evt *Event, p *Particle, pidx_to_end_vtx map
 	if err != nil {
 		return err
 	}
-	if dec.ftype != hepmc_ascii {
+	if dec.ftype != hepmcASCII {
 		_, err = fmt.Fscanf(
 			dec.r, " %e", &p.GeneratedMass)
 		if err != nil {
