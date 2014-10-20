@@ -405,10 +405,7 @@ func (dec *Decoder) decode_genevent(evt *Event, n_vtx *int) error {
 	return err
 }
 
-func (dec *Decoder) decode_vertex(
-	evt *Event,
-	vtx *Vertex,
-	pidx_to_end_vtx map[int]int) error {
+func (dec *Decoder) decode_vertex(evt *Event, vtx *Vertex, pidx_to_end_vtx map[int]int) error {
 
 	var err error
 	peek, err := dec.r.Peek(1)
@@ -477,10 +474,7 @@ func (dec *Decoder) decode_vertex(
 	return err
 }
 
-func (dec *Decoder) decode_particle(
-	evt *Event,
-	p *Particle,
-	pidx_to_end_vtx map[int]int) error {
+func (dec *Decoder) decode_particle(evt *Event, p *Particle, pidx_to_end_vtx map[int]int) error {
 
 	var err error
 	peek, err := dec.r.Peek(1)
