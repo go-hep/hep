@@ -608,8 +608,8 @@ func (dec *Decoder) decode_pdf_info(pdf *PdfInfo) error {
 	_, err = fmt.Fscanf(
 		dec.r,
 		"F %d %d %e %e %e %e %e %d %d\n",
-		&pdf.Id1,
-		&pdf.Id2,
+		&pdf.ID1,
+		&pdf.ID2,
 		&pdf.X1,
 		&pdf.X2,
 		&pdf.ScalePDF,

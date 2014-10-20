@@ -322,8 +322,8 @@ func (enc *Encoder) encode_pdf_info(pdf *PdfInfo) error {
 	_, err = fmt.Fprintf(
 		enc.w,
 		"F %d %d %1.16e %1.16e %1.16e %1.16e %1.16e %d %d\n",
-		pdf.Id1,
-		pdf.Id2,
+		pdf.ID1,
+		pdf.ID2,
 		pdf.X1,
 		pdf.X2,
 		pdf.ScalePDF,

@@ -638,8 +638,8 @@ type CrossSection struct {
 }
 
 type PdfInfo struct {
-	Id1      int     // flavour code of first parton
-	Id2      int     // flavour code of second parton
+	ID1      int     // flavour code of first parton
+	ID2      int     // flavour code of second parton
 	LHAPdf1  int     // LHA PDF id of first parton
 	LHAPdf2  int     // LHA PDF id of second parton
 	X1       float64 // fraction of beam momentum carried by first parton ("beam side")
