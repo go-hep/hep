@@ -196,7 +196,7 @@ func (evt *Event) Print(w io.Writer) error {
 		return err
 	}
 
-	for n, _ := range evt.Weights.Map {
+	for n := range evt.Weights.Map {
 		_, err = fmt.Fprintf(w, "(%s,%f) ", n, evt.Weights.At(n))
 		if err != nil {
 			return err
@@ -235,7 +235,7 @@ func (evt *Event) Print(w io.Writer) error {
 
 	// print all vertices
 	barcodes := make([]int, 0, len(evt.Vertices))
-	for bc, _ := range evt.Vertices {
+	for bc := range evt.Vertices {
 		barcodes = append(barcodes, -bc)
 	}
 	sort.Ints(barcodes)
