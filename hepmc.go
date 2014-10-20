@@ -70,6 +70,9 @@ type Event struct {
 	PdfInfo      *PdfInfo
 	MomentumUnit MomentumUnit
 	LengthUnit   LengthUnit
+
+	bcparts int // barcode suggestions for particles
+	bcverts int // barcode suggestions for vertices
 }
 
 // Delete prepares this event for GC-reclaim
@@ -249,6 +252,28 @@ func (evt *Event) Print(w io.Writer) error {
 	return err
 }
 
+func (evt *Event) removeVertex(bc int) {
+	// TODO(sbinet) remove barcode from suggested vtx-barcodes ?
+	delete(evt.Vertices, bc)
+}
+
+func (evt *Event) removeParticle(bc int) {
+	// TODO(sbinet) remove barcode from suggested particle-barcodes ?
+	delete(evt.Particles, bc)
+}
+
+func (evt *Event) vBarcode() int {
+	// TODO(sbinet) make goroutine-safe
+	evt.bcverts++
+	return -evt.bcverts
+}
+
+func (evt *Event) pBarcode() int {
+	// TODO(sbinet) make goroutine-safe
+	evt.bcparts++
+	return evt.bcparts
+}
+
 // Particle represents a generator particle within an event coming in/out of a vertex
 //
 // Particle is the basic building block of the event record
@@ -336,10 +361,13 @@ func (vtx *Vertex) set_parent_event(evt *Event) error {
 	// 	return err
 	// }
 	if evt != nil {
+		if vtx.Barcode == 0 {
+			vtx.Barcode = evt.vBarcode()
+		}
 		evt.Vertices[vtx.Barcode] = vtx
 	}
 	if orig_evt != nil && orig_evt != evt {
-		delete(orig_evt.Vertices, vtx.Barcode)
+		orig_evt.removeVertex(vtx.Barcode)
 	}
 	// we also need to loop over all the particles which are owned by
 	// this vertex and remove their barcodes from the old event.
@@ -349,7 +377,7 @@ func (vtx *Vertex) set_parent_event(evt *Event) error {
 				evt.Particles[p.Barcode] = p
 			}
 			if orig_evt != nil && orig_evt != evt {
-				delete(orig_evt.Particles, p.Barcode)
+				orig_evt.removeParticle(p.Barcode)
 			}
 		}
 	}
@@ -359,7 +387,7 @@ func (vtx *Vertex) set_parent_event(evt *Event) error {
 			evt.Particles[p.Barcode] = p
 		}
 		if orig_evt != nil && orig_evt != evt {
-			delete(orig_evt.Particles, p.Barcode)
+			orig_evt.removeParticle(p.Barcode)
 		}
 	}
 	return err
@@ -382,6 +410,9 @@ func (vtx *Vertex) AddParticleIn(p *Particle) error {
 	err = vtx.remove_particle_in(p)
 	if err != nil {
 		return err
+	}
+	if p.Barcode == 0 {
+		p.Barcode = vtx.Event.pBarcode()
 	}
 	p.EndVertex = vtx
 	vtx.ParticlesIn = append(vtx.ParticlesIn, p)
@@ -406,6 +437,9 @@ func (vtx *Vertex) AddParticleOut(p *Particle) error {
 	err = vtx.remove_particle_out(p)
 	if err != nil {
 		return err
+	}
+	if p.Barcode == 0 {
+		p.Barcode = vtx.Event.pBarcode()
 	}
 	p.ProdVertex = vtx
 	vtx.ParticlesOut = append(vtx.ParticlesOut, p)
