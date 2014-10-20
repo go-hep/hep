@@ -487,8 +487,9 @@ func (vtx *Vertex) remove_particle_out(p *Particle) error {
 	}
 	if idx >= 0 {
 		copy(vtx.ParticlesOut[idx:], vtx.ParticlesOut[idx+1:])
-		vtx.ParticlesOut[len(vtx.ParticlesOut)-1] = nil
-		vtx.ParticlesOut = vtx.ParticlesOut[:len(vtx.ParticlesOut)-1]
+		n := len(vtx.ParticlesOut)
+		vtx.ParticlesOut[n-1] = nil
+		vtx.ParticlesOut = vtx.ParticlesOut[:n-1]
 	}
 	return err
 }
