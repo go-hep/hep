@@ -13,12 +13,12 @@ type Decoder struct {
 	r *bufio.Reader
 	//bbuf io.Reader
 	//tbuf *bytes.Buffer
-	seen_evt_hdr bool
-	ftype        hepmcFileType
+	seenEvtHdr bool
+	ftype      hepmcFileType
 
-	sig_proc_bc int // barcode of signal vertex
-	bp1         int // barcode of beam1
-	bp2         int // barcode of beam2
+	sigProcBc int // barcode of signal vertex
+	bp1       int // barcode of beam1
+	bp2       int // barcode of beam2
 }
 
 // NewDecoder returns a new hepmc Decoder that reads from the io.Reader.
@@ -37,15 +37,15 @@ func (dec *Decoder) Decode(evt *Event) error {
 	var err error
 
 	// search for event listing key
-	if !dec.seen_evt_hdr {
-		err = dec.find_file_type()
+	if !dec.seenEvtHdr {
+		err = dec.findFileType()
 		if err != nil {
 			return err
 		}
-		dec.seen_evt_hdr = true
+		dec.seenEvtHdr = true
 	}
 
-	dec.sig_proc_bc = 0
+	dec.sigProcBc = 0
 	dec.bp1 = 0
 	dec.bp2 = 0
 
@@ -57,7 +57,7 @@ func (dec *Decoder) Decode(evt *Event) error {
 	}
 
 	if peek[0] != 'E' {
-		err = dec.find_end_key()
+		err = dec.findEndKey()
 		if err != nil {
 			err = fmt.Errorf("hepmc.decode: invalid file (expected 'E' got '%v')", string(peek[0]))
 			return err
@@ -71,9 +71,9 @@ func (dec *Decoder) Decode(evt *Event) error {
 		return err
 	}
 
-	n_vtx := 0
-	reading_evt_hdr := true
-	for reading_evt_hdr {
+	nVtx := 0
+	readingEvtHdr := true
+	for readingEvtHdr {
 		peek, err = dec.r.Peek(1)
 		if err != nil {
 			return err
@@ -84,11 +84,11 @@ func (dec *Decoder) Decode(evt *Event) error {
 			// call appropriate decoder method
 			switch dec.ftype {
 			case hepmcGenEvent:
-				err = dec.decode_genevent(evt, &n_vtx)
+				err = dec.decodeEvent(evt, &nVtx)
 			case hepmcASCII:
-				err = dec.decode_ascii(evt, &n_vtx)
+				err = dec.decodeASCII(evt, &nVtx)
 			case hepmcExtendedASCII:
-				err = dec.decode_extendedascii(evt, &n_vtx)
+				err = dec.decodeExtendedASCII(evt, &nVtx)
 			case hepmcASCIIPdt:
 				err = fmt.Errorf("hepmc.decode: HepMC::IO_Ascii-PARTICLE_DATA is NOT implemented (yet)")
 			case hepmcExtendedASCIIPdt:
@@ -100,13 +100,13 @@ func (dec *Decoder) Decode(evt *Event) error {
 				return err
 			}
 		case 'N':
-			n_weights := 0
-			_, err = fmt.Fscanf(dec.r, "N %d", &n_weights)
+			nWeights := 0
+			_, err = fmt.Fscanf(dec.r, "N %d", &nWeights)
 			if err != nil {
 				return err
 			}
-			names := make(map[string]int, n_weights)
-			for i := 0; i < n_weights; i++ {
+			names := make(map[string]int, nWeights)
+			for i := 0; i < nWeights; i++ {
 				nn := ""
 				_, err = fmt.Fscanf(dec.r, " %q", &nn)
 				if err != nil {
@@ -124,13 +124,13 @@ func (dec *Decoder) Decode(evt *Event) error {
 
 		case 'U':
 			if dec.ftype == hepmcGenEvent {
-				err = dec.decode_units(evt)
+				err = dec.decodeUnits(evt)
 				if err != nil {
 					return err
 				}
 			}
 		case 'C':
-			err = dec.decode_cross_section(evt)
+			err = dec.decodeCrossSection(evt)
 			if err != nil {
 				return err
 			}
@@ -138,7 +138,7 @@ func (dec *Decoder) Decode(evt *Event) error {
 			switch dec.ftype {
 			case hepmcGenEvent, hepmcExtendedASCII:
 				var hi HeavyIon
-				err = dec.decode_heavy_ion(&hi)
+				err = dec.decodeHeavyIon(&hi)
 				if err != nil {
 					return err
 				}
@@ -148,14 +148,14 @@ func (dec *Decoder) Decode(evt *Event) error {
 			switch dec.ftype {
 			case hepmcGenEvent, hepmcExtendedASCII:
 				var pdf PdfInfo
-				err = dec.decode_pdf_info(&pdf)
+				err = dec.decodePdfInfo(&pdf)
 				if err != nil {
 					return err
 				}
 				evt.PdfInfo = &pdf
 			}
 		case 'V', 'P':
-			reading_evt_hdr = false
+			readingEvtHdr = false
 
 		default:
 
@@ -170,37 +170,37 @@ func (dec *Decoder) Decode(evt *Event) error {
 	// end vertices of particles are not connected until
 	// after the full event is read
 	//  => store the values in a map until then
-	pidx_to_end_vtx := make(map[int]int, n_vtx) // particle-idx to end_vtx barcode
+	pidxToEndVtx := make(map[int]int, nVtx) // particle-idx to end_vtx barcode
 
 	// decode the vertices
-	for i := 0; i < n_vtx; i++ {
+	for i := 0; i < nVtx; i++ {
 		vtx := &Vertex{}
 		vtx.Event = evt
-		err = dec.decode_vertex(evt, vtx, pidx_to_end_vtx)
+		err = dec.decodeVertex(evt, vtx, pidxToEndVtx)
 		if err != nil {
 			return err
 		}
 		evt.Vertices[vtx.Barcode] = vtx
-		sort.Sort(t_particles(vtx.ParticlesOut))
+		sort.Sort(Particles(vtx.ParticlesOut))
 	}
 
 	// set the signal process vertex
-	if dec.sig_proc_bc != 0 {
+	if dec.sigProcBc != 0 {
 		for _, vtx := range evt.Vertices {
-			if vtx.Barcode == dec.sig_proc_bc {
+			if vtx.Barcode == dec.sigProcBc {
 				evt.SignalVertex = vtx
 				break
 			}
 		}
 		if evt.SignalVertex == nil {
-			return fmt.Errorf("hepmc.decode: could not find signal vertex (barcode=%d)", dec.sig_proc_bc)
+			return fmt.Errorf("hepmc.decode: could not find signal vertex (barcode=%d)", dec.sigProcBc)
 		}
 	}
 
 	// connect particles to their end vertices
-	for i, end_vtx_bc := range pidx_to_end_vtx {
+	for i, endVtxBc := range pidxToEndVtx {
 		p := evt.Particles[i]
-		vtx := evt.Vertices[end_vtx_bc]
+		vtx := evt.Vertices[endVtxBc]
 		vtx.ParticlesIn = append(vtx.ParticlesIn, p)
 		p.EndVertex = vtx
 		// also look for the beam particles
@@ -210,12 +210,12 @@ func (dec *Decoder) Decode(evt *Event) error {
 		if p.Barcode == dec.bp2 {
 			evt.Beams[1] = p
 		}
-		sort.Sort(t_particles(vtx.ParticlesIn))
+		sort.Sort(Particles(vtx.ParticlesIn))
 	}
 	return err
 }
 
-func (dec *Decoder) find_file_type() error {
+func (dec *Decoder) findFileType() error {
 
 	for {
 		line, err := dec.r.ReadString('\n')
@@ -258,7 +258,7 @@ func (dec *Decoder) find_file_type() error {
 
 }
 
-func (dec *Decoder) find_end_key() error {
+func (dec *Decoder) findEndKey() error {
 
 	peek, err := dec.r.Peek(1)
 	if peek[0] != 'H' {
@@ -304,26 +304,26 @@ func (dec *Decoder) find_end_key() error {
 	return err
 }
 
-func (dec *Decoder) decode_units(evt *Event) error {
+func (dec *Decoder) decodeUnits(evt *Event) error {
 	var err error
-	mom_unit := ""
-	len_unit := ""
-	_, err = fmt.Fscanf(dec.r, "U %s %s\n", &mom_unit, &len_unit)
+	momUnit := ""
+	lenUnit := ""
+	_, err = fmt.Fscanf(dec.r, "U %s %s\n", &momUnit, &lenUnit)
 	if err != nil {
 		return err
 	}
-	evt.MomentumUnit, err = MomentumUnitFromString(mom_unit)
+	evt.MomentumUnit, err = MomentumUnitFromString(momUnit)
 	if err != nil {
 		return err
 	}
-	evt.LengthUnit, err = LengthUnitFromString(len_unit)
+	evt.LengthUnit, err = LengthUnitFromString(lenUnit)
 	if err != nil {
 		return err
 	}
 	return err
 }
 
-func (dec *Decoder) decode_cross_section(evt *Event) error {
+func (dec *Decoder) decodeCrossSection(evt *Event) error {
 	var err error
 	var x CrossSection
 	_, err = fmt.Fscanf(dec.r, "C %e %e\n", &x.Value, &x.Error)
@@ -334,51 +334,51 @@ func (dec *Decoder) decode_cross_section(evt *Event) error {
 	return err
 }
 
-func (dec *Decoder) decode_genevent(evt *Event, n_vtx *int) error {
+func (dec *Decoder) decodeEvent(evt *Event, nVtx *int) error {
 	var (
-		err         error
-		evt_nbr     int
-		mpi         int
-		scale       float64
-		a_qcd       float64
-		a_qed       float64
-		sig_proc_id int
-		n_rndm      int
-		n_weights   int
+		err       error
+		evtNbr    int
+		mpi       int
+		scale     float64
+		aqcd      float64
+		aqed      float64
+		sigProcID int
+		nRndm     int
+		nWeights  int
 	)
 
 	_, err = fmt.Fscanf(
 		dec.r,
 		"E %d %d %e %e %e %d %d %d %d %d %d",
-		&evt_nbr,
+		&evtNbr,
 		&mpi,
 		&scale,
-		&a_qcd,
-		&a_qed,
-		&sig_proc_id,
-		&dec.sig_proc_bc,
-		n_vtx,
+		&aqcd,
+		&aqed,
+		&sigProcID,
+		&dec.sigProcBc,
+		nVtx,
 		&dec.bp1,
 		&dec.bp2,
-		&n_rndm,
+		&nRndm,
 	)
 	if err != nil {
 		return err
 	}
-	rndm_states := make([]int64, n_rndm)
-	for i := 0; i < n_rndm; i++ {
-		_, err = fmt.Fscanf(dec.r, " %d", &rndm_states[i])
+	rndmStates := make([]int64, nRndm)
+	for i := 0; i < nRndm; i++ {
+		_, err = fmt.Fscanf(dec.r, " %d", &rndmStates[i])
 		if err != nil {
 			return err
 		}
 	}
 
-	_, err = fmt.Fscanf(dec.r, " %d", &n_weights)
+	_, err = fmt.Fscanf(dec.r, " %d", &nWeights)
 	if err != nil {
 		return err
 	}
-	weights := make([]float64, n_weights)
-	for i := 0; i < n_weights; i++ {
+	weights := make([]float64, nWeights)
+	for i := 0; i < nWeights; i++ {
 		_, err = fmt.Fscanf(dec.r, " %e", &weights[i])
 		if err != nil {
 			return err
@@ -391,24 +391,24 @@ func (dec *Decoder) decode_genevent(evt *Event, n_vtx *int) error {
 	}
 
 	// fill infos gathered so far
-	evt.SignalProcessId = sig_proc_id
-	evt.EventNumber = evt_nbr
+	evt.SignalProcessID = sigProcID
+	evt.EventNumber = evtNbr
 	evt.Mpi = mpi
 	if evt.Weights.Slice == nil {
 		evt.Weights = NewWeights()
 	}
 	evt.Weights.Slice = weights
-	evt.RandomStates = rndm_states
+	evt.RandomStates = rndmStates
 	evt.Scale = scale
-	evt.AlphaQCD = a_qcd
-	evt.AlphaQED = a_qed
+	evt.AlphaQCD = aqcd
+	evt.AlphaQED = aqed
 
-	evt.Vertices = make(map[int]*Vertex, *n_vtx)
-	evt.Particles = make(map[int]*Particle, *n_vtx*2)
+	evt.Vertices = make(map[int]*Vertex, *nVtx)
+	evt.Particles = make(map[int]*Particle, *nVtx*2)
 	return err
 }
 
-func (dec *Decoder) decode_vertex(evt *Event, vtx *Vertex, pidx_to_end_vtx map[int]int) error {
+func (dec *Decoder) decodeVertex(evt *Event, vtx *Vertex, pidxToEndVtx map[int]int) error {
 
 	var err error
 	peek, err := dec.r.Peek(1)
@@ -423,25 +423,25 @@ func (dec *Decoder) decode_vertex(evt *Event, vtx *Vertex, pidx_to_end_vtx map[i
 	}
 
 	orphans := 0
-	n_parts_out := 0
-	n_weights := 0
+	nPartsOut := 0
+	nWeights := 0
 
 	_, err = fmt.Fscanf(
 		dec.r,
 		"V %d %d %e %e %e %e %d %d %d",
 		&vtx.Barcode,
-		&vtx.Id,
+		&vtx.ID,
 		&vtx.Position[0], &vtx.Position[1], &vtx.Position[2], &vtx.Position[3],
 		&orphans,
-		&n_parts_out,
-		&n_weights,
+		&nPartsOut,
+		&nWeights,
 	)
 	if err != nil {
 		return err
 	}
 	// FIXME: reuse buffers ?
-	vtx.Weights.Slice = make([]float64, n_weights)
-	for i := 0; i < n_weights; i++ {
+	vtx.Weights.Slice = make([]float64, nWeights)
+	for i := 0; i < nWeights; i++ {
 		_, err = fmt.Fscanf(dec.r, " %e", &vtx.Weights.Slice[i])
 		if err != nil {
 			return err
@@ -457,17 +457,17 @@ func (dec *Decoder) decode_vertex(evt *Event, vtx *Vertex, pidx_to_end_vtx map[i
 	// incoming particles are added to a map and handled later.
 	for i := 0; i < orphans; i++ {
 		p := &Particle{}
-		err = dec.decode_particle(evt, p, pidx_to_end_vtx)
+		err = dec.decodeParticle(evt, p, pidxToEndVtx)
 		if err != nil {
 			return err
 		}
 		evt.Particles[p.Barcode] = p
 	}
 	// FIXME: reuse buffers ?
-	vtx.ParticlesOut = make([]*Particle, n_parts_out)
-	for i := 0; i < n_parts_out; i++ {
+	vtx.ParticlesOut = make([]*Particle, nPartsOut)
+	for i := 0; i < nPartsOut; i++ {
 		p := &Particle{ProdVertex: vtx}
-		err = dec.decode_particle(evt, p, pidx_to_end_vtx)
+		err = dec.decodeParticle(evt, p, pidxToEndVtx)
 		if err != nil {
 			return err
 		}
@@ -477,7 +477,7 @@ func (dec *Decoder) decode_vertex(evt *Event, vtx *Vertex, pidx_to_end_vtx map[i
 	return err
 }
 
-func (dec *Decoder) decode_particle(evt *Event, p *Particle, pidx_to_end_vtx map[int]int) error {
+func (dec *Decoder) decodeParticle(evt *Event, p *Particle, pidxToEndVtx map[int]int) error {
 
 	var err error
 	peek, err := dec.r.Peek(1)
@@ -491,12 +491,12 @@ func (dec *Decoder) decode_particle(evt *Event, p *Particle, pidx_to_end_vtx map
 		)
 	}
 
-	end_bc := 0
+	endBc := 0
 	_, err = fmt.Fscanf(
 		dec.r,
 		"P %d %d %e %e %e %e",
 		&p.Barcode,
-		&p.PdgId,
+		&p.PdgID,
 		&p.Momentum[0], &p.Momentum[1], &p.Momentum[2], &p.Momentum[3],
 	)
 	if err != nil {
@@ -516,13 +516,13 @@ func (dec *Decoder) decode_particle(evt *Event, p *Particle, pidx_to_end_vtx map
 		&p.Status,
 		&p.Polarization.Theta,
 		&p.Polarization.Phi,
-		&end_bc,
+		&endBc,
 	)
 	if err != nil {
 		return nil
 	}
 
-	err = dec.decode_flow(&p.Flow)
+	err = dec.decodeFlow(&p.Flow)
 	if err != nil {
 		return err
 	}
@@ -536,22 +536,22 @@ func (dec *Decoder) decode_particle(evt *Event, p *Particle, pidx_to_end_vtx map
 
 	// all particles are connected to their end vertex separately
 	// after all particles and vertices have been created
-	if end_bc != 0 {
-		pidx_to_end_vtx[p.Barcode] = end_bc
+	if endBc != 0 {
+		pidxToEndVtx[p.Barcode] = endBc
 	}
 	return err
 }
 
-func (dec *Decoder) decode_flow(flow *Flow) error {
+func (dec *Decoder) decodeFlow(flow *Flow) error {
 	var err error
-	n_flow := 0
-	_, err = fmt.Fscanf(dec.r, "%d", &n_flow)
+	nFlow := 0
+	_, err = fmt.Fscanf(dec.r, "%d", &nFlow)
 	if err != nil {
 		return err
 	}
 	//fmt.Printf("flow-sz: %d\n", n_flow)
-	flow.Icode = make(map[int]int, n_flow)
-	for i := 0; i < n_flow; i++ {
+	flow.Icode = make(map[int]int, nFlow)
+	for i := 0; i < nFlow; i++ {
 		k := 0
 		v := 0
 		_, err = fmt.Fscanf(dec.r, " %d %d", &k, &v)
@@ -564,7 +564,7 @@ func (dec *Decoder) decode_flow(flow *Flow) error {
 	return err
 }
 
-func (dec *Decoder) decode_heavy_ion(hi *HeavyIon) error {
+func (dec *Decoder) decodeHeavyIon(hi *HeavyIon) error {
 	var err error
 	peek, err := dec.r.Peek(1)
 	if err != nil {
@@ -579,24 +579,24 @@ func (dec *Decoder) decode_heavy_ion(hi *HeavyIon) error {
 	_, err = fmt.Fscanf(
 		dec.r,
 		"H %d %d %d %d %d %d %d %d %d %e %e %e %e\n",
-		&hi.Ncoll_hard,
-		&hi.Npart_proj,
-		&hi.Npart_targ,
-		&hi.Ncoll,
-		&hi.N_Nwounded_collisions,
-		&hi.Nwounded_N_collisions,
-		&hi.Nwounded_Nwounded_collisions,
-		&hi.Spectator_neutrons,
-		&hi.Spectator_protons,
-		&hi.Impact_parameter,
-		&hi.Event_plane_angle,
+		&hi.NCollHard,
+		&hi.NPartProj,
+		&hi.NPartTarg,
+		&hi.NColl,
+		&hi.NNwColl,
+		&hi.NwNColl,
+		&hi.NwNwColl,
+		&hi.SpectatorNeutrons,
+		&hi.SpectatorProtons,
+		&hi.ImpactParameter,
+		&hi.EventPlaneAngle,
 		&hi.Eccentricity,
-		&hi.Sigma_inel_NN,
+		&hi.SigmaInelNN,
 	)
 	return err
 }
 
-func (dec *Decoder) decode_pdf_info(pdf *PdfInfo) error {
+func (dec *Decoder) decodePdfInfo(pdf *PdfInfo) error {
 	var err error
 	peek, err := dec.r.Peek(1)
 	if err != nil {
@@ -624,48 +624,48 @@ func (dec *Decoder) decode_pdf_info(pdf *PdfInfo) error {
 	return err
 }
 
-func (dec *Decoder) decode_ascii(evt *Event, n_vtx *int) error {
+func (dec *Decoder) decodeASCII(evt *Event, nVtx *int) error {
 	var (
-		err         error
-		evt_nbr     int
-		mpi         int
-		scale       float64
-		a_qcd       float64
-		a_qed       float64
-		sig_proc_id int
-		n_rndm      int
-		n_weights   int
+		err       error
+		evtNbr    int
+		mpi       int
+		scale     float64
+		aqcd      float64
+		aqed      float64
+		sigProcID int
+		nRndm     int
+		nWeights  int
 	)
 
 	_, err = fmt.Fscanf(
 		dec.r,
 		"E %d %e %e %e %d %d %d %d",
-		&evt_nbr,
+		&evtNbr,
 		&scale,
-		&a_qcd,
-		&a_qed,
-		&sig_proc_id,
-		&dec.sig_proc_bc,
-		n_vtx,
-		&n_rndm,
+		&aqcd,
+		&aqed,
+		&sigProcID,
+		&dec.sigProcBc,
+		nVtx,
+		&nRndm,
 	)
 	if err != nil {
 		return err
 	}
-	rndm_states := make([]int64, n_rndm)
-	for i := 0; i < n_rndm; i++ {
-		_, err = fmt.Fscanf(dec.r, " %d", &rndm_states[i])
+	rndmStates := make([]int64, nRndm)
+	for i := 0; i < nRndm; i++ {
+		_, err = fmt.Fscanf(dec.r, " %d", &rndmStates[i])
 		if err != nil {
 			return err
 		}
 	}
 
-	_, err = fmt.Fscanf(dec.r, " %d", &n_weights)
+	_, err = fmt.Fscanf(dec.r, " %d", &nWeights)
 	if err != nil {
 		return err
 	}
-	weights := make([]float64, n_weights)
-	for i := 0; i < n_weights; i++ {
+	weights := make([]float64, nWeights)
+	for i := 0; i < nWeights; i++ {
 		_, err = fmt.Fscanf(dec.r, " %e", &weights[i])
 		if err != nil {
 			return err
@@ -678,25 +678,25 @@ func (dec *Decoder) decode_ascii(evt *Event, n_vtx *int) error {
 	}
 
 	// fill infos gathered so far
-	evt.SignalProcessId = sig_proc_id
-	evt.EventNumber = evt_nbr
+	evt.SignalProcessID = sigProcID
+	evt.EventNumber = evtNbr
 	evt.Mpi = mpi
 	if evt.Weights.Slice == nil {
 		evt.Weights = NewWeights()
 	}
 	evt.Weights.Slice = weights
-	evt.RandomStates = rndm_states
+	evt.RandomStates = rndmStates
 	evt.Scale = scale
-	evt.AlphaQCD = a_qcd
-	evt.AlphaQED = a_qed
+	evt.AlphaQCD = aqcd
+	evt.AlphaQED = aqed
 
-	evt.Vertices = make(map[int]*Vertex, *n_vtx)
-	evt.Particles = make(map[int]*Particle, *n_vtx*2)
+	evt.Vertices = make(map[int]*Vertex, *nVtx)
+	evt.Particles = make(map[int]*Particle, *nVtx*2)
 	return err
 }
 
-func (dec *Decoder) decode_extendedascii(evt *Event, n_vtx *int) error {
-	return dec.decode_genevent(evt, n_vtx)
+func (dec *Decoder) decodeExtendedASCII(evt *Event, nVtx *int) error {
+	return dec.decodeEvent(evt, nVtx)
 }
 
 // EOF

@@ -50,7 +50,7 @@ func Delete(evt *Event) error {
 //  and also as a "work in progress class" ( that could be used inside
 //  a generator and modified as the event is built ).
 type Event struct {
-	SignalProcessId int     // id of the signal process
+	SignalProcessID int     // id of the signal process
 	EventNumber     int     // event number
 	Mpi             int     // number of multi particle interactions
 	Scale           float64 // energy scale,
@@ -88,7 +88,7 @@ func (evt *Event) AddVertex(vtx *Vertex) error {
 	if vtx.Event != nil && vtx.Event != evt {
 		//TODO: warn and remove from previous event
 	}
-	return vtx.set_parent_event(evt)
+	return vtx.setParentEvent(evt)
 }
 
 // Print prints the event to w in a human-readable format
@@ -102,16 +102,16 @@ func (evt *Event) Print(w io.Writer) error {
 		return err
 	}
 
-	sig_vtx := 0
+	sigVtx := 0
 	if evt.SignalVertex != nil {
-		sig_vtx = evt.SignalVertex.Barcode
+		sigVtx = evt.SignalVertex.Barcode
 	}
 	_, err = fmt.Fprintf(
 		w,
 		"GenEvent: #%04d ID=%5d SignalProcessGenVertex Barcode: %d\n",
 		evt.EventNumber,
-		evt.SignalProcessId,
-		sig_vtx,
+		evt.SignalProcessID,
+		sigVtx,
 	)
 	if err != nil {
 		return err
@@ -280,7 +280,7 @@ func (evt *Event) pBarcode() int {
 // Particle is the basic building block of the event record
 type Particle struct {
 	Momentum      FourVector   // momentum vector
-	PdgId         int64        // id according to PDG convention
+	PdgID         int64        // id according to PDG convention
 	Status        int          // status code as defined for HEPEVT
 	Flow          Flow         // flow of this particle
 	Polarization  Polarization // polarization of this particle
@@ -296,7 +296,7 @@ func (p *Particle) dump(w io.Writer) error {
 		w,
 		" %9d%9d %+9.2e,%+9.2e,%+9.2e,%+9.2e",
 		p.Barcode,
-		p.PdgId,
+		p.PdgID,
 		p.Momentum.Px(),
 		p.Momentum.Py(),
 		p.Momentum.Pz(),
@@ -317,27 +317,29 @@ func (p *Particle) dump(w io.Writer) error {
 	return err
 }
 
-type t_particles []*Particle
+// Particles is a []*Particle sorted by increasing-barcodes
+type Particles []*Particle
 
-func (ps t_particles) Len() int {
+func (ps Particles) Len() int {
 	return len(ps)
 }
-func (ps t_particles) Less(i, j int) bool {
+func (ps Particles) Less(i, j int) bool {
 	return ps[i].Barcode < ps[j].Barcode
 }
-func (ps t_particles) Swap(i, j int) {
+func (ps Particles) Swap(i, j int) {
 	ps[i], ps[j] = ps[j], ps[i]
 }
 
-type t_vertices []*Vertex
+// Vertices is a []*Vertex sorted by increasing-barcodes
+type Vertices []*Vertex
 
-func (ps t_vertices) Len() int {
+func (ps Vertices) Len() int {
 	return len(ps)
 }
-func (ps t_vertices) Less(i, j int) bool {
+func (ps Vertices) Less(i, j int) bool {
 	return ps[i].Barcode < ps[j].Barcode
 }
-func (ps t_vertices) Swap(i, j int) {
+func (ps Vertices) Swap(i, j int) {
 	ps[i], ps[j] = ps[j], ps[i]
 }
 
@@ -348,15 +350,15 @@ type Vertex struct {
 	Position     FourVector  // 4-vector of vertex [mm]
 	ParticlesIn  []*Particle // all incoming particles
 	ParticlesOut []*Particle // all outgoing particles
-	Id           int         // vertex id
+	ID           int         // vertex id
 	Weights      Weights     // weights for this vertex
 	Event        *Event      // pointer to event owning this vertex
 	Barcode      int         // unique identifier in the event
 }
 
-func (vtx *Vertex) set_parent_event(evt *Event) error {
+func (vtx *Vertex) setParentEvent(evt *Event) error {
 	var err error
-	orig_evt := vtx.Event
+	origEvt := vtx.Event
 	vtx.Event = evt
 	// if orig_evt == evt {
 	// 	return err
@@ -367,8 +369,8 @@ func (vtx *Vertex) set_parent_event(evt *Event) error {
 		}
 		evt.Vertices[vtx.Barcode] = vtx
 	}
-	if orig_evt != nil && orig_evt != evt {
-		orig_evt.removeVertex(vtx.Barcode)
+	if origEvt != nil && origEvt != evt {
+		origEvt.removeVertex(vtx.Barcode)
 	}
 	// we also need to loop over all the particles which are owned by
 	// this vertex and remove their barcodes from the old event.
@@ -377,8 +379,8 @@ func (vtx *Vertex) set_parent_event(evt *Event) error {
 			if evt != nil {
 				evt.Particles[p.Barcode] = p
 			}
-			if orig_evt != nil && orig_evt != evt {
-				orig_evt.removeParticle(p.Barcode)
+			if origEvt != nil && origEvt != evt {
+				origEvt.removeParticle(p.Barcode)
 			}
 		}
 	}
@@ -387,8 +389,8 @@ func (vtx *Vertex) set_parent_event(evt *Event) error {
 		if evt != nil {
 			evt.Particles[p.Barcode] = p
 		}
-		if orig_evt != nil && orig_evt != evt {
-			orig_evt.removeParticle(p.Barcode)
+		if origEvt != nil && origEvt != evt {
+			origEvt.removeParticle(p.Barcode)
 		}
 	}
 	return err
@@ -402,13 +404,13 @@ func (vtx *Vertex) AddParticleIn(p *Particle) error {
 	}
 	// if p had a decay vertex, remove it from that vertex's list
 	if p.EndVertex != nil {
-		err = p.EndVertex.remove_particle_in(p)
+		err = p.EndVertex.removeParticleIn(p)
 		if err != nil {
 			return err
 		}
 	}
 	// make sure we don't add it twice...
-	err = vtx.remove_particle_in(p)
+	err = vtx.removeParticleIn(p)
 	if err != nil {
 		return err
 	}
@@ -429,13 +431,13 @@ func (vtx *Vertex) AddParticleOut(p *Particle) error {
 	}
 	// if p had a production vertex, remove it from that vertex's list
 	if p.ProdVertex != nil {
-		err = p.ProdVertex.remove_particle_out(p)
+		err = p.ProdVertex.removeParticleOut(p)
 		if err != nil {
 			return err
 		}
 	}
 	// make sure we don't add it twice...
-	err = vtx.remove_particle_out(p)
+	err = vtx.removeParticleOut(p)
 	if err != nil {
 		return err
 	}
@@ -448,7 +450,7 @@ func (vtx *Vertex) AddParticleOut(p *Particle) error {
 	return err
 }
 
-func (vtx *Vertex) remove_particle_in(p *Particle) error {
+func (vtx *Vertex) removeParticleIn(p *Particle) error {
 	var err error
 	nparts := len(vtx.ParticlesIn)
 	switch nparts {
@@ -471,7 +473,7 @@ func (vtx *Vertex) remove_particle_in(p *Particle) error {
 	return err
 }
 
-func (vtx *Vertex) remove_particle_out(p *Particle) error {
+func (vtx *Vertex) removeParticleOut(p *Particle) error {
 	var err error
 	nparts := len(vtx.ParticlesOut)
 	switch nparts {
@@ -505,7 +507,7 @@ func (vtx *Vertex) Print(w io.Writer) error {
 				w,
 				"Vertex:%9d ID:%5d (X,cT)=%+9.2e,%+9.2e,%+9.2e,%+9.2e\n",
 				vtx.Barcode,
-				vtx.Id,
+				vtx.ID,
 				vtx.Position.X(),
 				vtx.Position.Y(),
 				vtx.Position.Z(),
@@ -516,7 +518,7 @@ func (vtx *Vertex) Print(w io.Writer) error {
 				w,
 				"GenVertex:%9d ID:%5d (X,cT):0\n",
 				vtx.Barcode,
-				vtx.Id,
+				vtx.ID,
 			)
 		}
 	} else {
@@ -528,7 +530,7 @@ func (vtx *Vertex) Print(w io.Writer) error {
 				w,
 				"Vertex:%q ID:%5d (X,cT)=%+9.2e,%+9.2e,%+9.2e,%+9.2e\n",
 				vtx,
-				vtx.Id,
+				vtx.ID,
 				vtx.Position.X(),
 				vtx.Position.Y(),
 				vtx.Position.Z(),
@@ -540,7 +542,7 @@ func (vtx *Vertex) Print(w io.Writer) error {
 				w,
 				"GenVertex:%9d ID:%5d (X,cT):0\n",
 				vtx.Barcode,
-				vtx.Id,
+				vtx.ID,
 			)
 		}
 	}
@@ -566,7 +568,7 @@ func (vtx *Vertex) Print(w io.Writer) error {
 		}
 	}
 	// sort incoming particles by barcode
-	sort.Sort(t_particles(vtx.ParticlesIn))
+	sort.Sort(Particles(vtx.ParticlesIn))
 
 	// print out all incoming particles
 	for i, p := range vtx.ParticlesIn {
@@ -589,7 +591,7 @@ func (vtx *Vertex) Print(w io.Writer) error {
 	}
 
 	// sort outgoing particles by barcode
-	sort.Sort(t_particles(vtx.ParticlesOut))
+	sort.Sort(Particles(vtx.ParticlesOut))
 
 	// print out all outgoing particles
 	for i, p := range vtx.ParticlesOut {
@@ -615,19 +617,19 @@ func (vtx *Vertex) Print(w io.Writer) error {
 
 // HeavyIon holds additional information for heavy-ion collisions
 type HeavyIon struct {
-	Ncoll_hard                   int     // number of hard scatterings
-	Npart_proj                   int     // number of projectile participants
-	Npart_targ                   int     // number of target participants
-	Ncoll                        int     // number of NN (nucleon-nucleon) collisions
-	N_Nwounded_collisions        int     // Number of N-Nwounded collisions
-	Nwounded_N_collisions        int     // Number of Nwounded-N collisons
-	Nwounded_Nwounded_collisions int     // Number of Nwounded-Nwounded collisions
-	Spectator_neutrons           int     // Number of spectators neutrons
-	Spectator_protons            int     // Number of spectators protons
-	Impact_parameter             float32 // Impact Parameter(fm) of collision
-	Event_plane_angle            float32 // Azimuthal angle of event plane
-	Eccentricity                 float32 // eccentricity of participating nucleons in the transverse plane (as in phobos nucl-ex/0510031)
-	Sigma_inel_NN                float32 // nucleon-nucleon inelastic (including diffractive) cross-section
+	NCollHard         int     // number of hard scatterings
+	NPartProj         int     // number of projectile participants
+	NPartTarg         int     // number of target participants
+	NColl             int     // number of NN (nucleon-nucleon) collisions
+	NNwColl           int     // Number of N-Nwounded collisions
+	NwNColl           int     // Number of Nwounded-N collisons
+	NwNwColl          int     // Number of Nwounded-Nwounded collisions
+	SpectatorNeutrons int     // Number of spectators neutrons
+	SpectatorProtons  int     // Number of spectators protons
+	ImpactParameter   float32 // Impact Parameter(fm) of collision
+	EventPlaneAngle   float32 // Azimuthal angle of event plane
+	Eccentricity      float32 // eccentricity of participating nucleons in the transverse plane (as in phobos nucl-ex/0510031)
+	SigmaInelNN       float32 // nucleon-nucleon inelastic (including diffractive) cross-section
 }
 
 // CrossSection is used to store the generated cross section.

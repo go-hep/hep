@@ -41,7 +41,7 @@ func main() {
 
 	// first create the event container, with signal process 20, event number 1
 	evt := hepmc.Event{
-		SignalProcessId: 20,
+		SignalProcessID: 20,
 		EventNumber:     1,
 		Particles:       make(map[int]*hepmc.Particle),
 		Vertices:        make(map[int]*hepmc.Vertex),
@@ -59,7 +59,7 @@ func main() {
 
 	err = v1.AddParticleIn(&hepmc.Particle{
 		Momentum: hepmc.FourVector{0, 0, 7000, 7000},
-		PdgId:    2212,
+		PdgID:    2212,
 		Status:   3,
 	})
 	handle_err(err)
@@ -70,7 +70,7 @@ func main() {
 
 	err = v2.AddParticleIn(&hepmc.Particle{
 		Momentum: hepmc.FourVector{0, 0, -7000, 7000},
-		PdgId:    2212,
+		PdgID:    2212,
 		Status:   3,
 		//Barcode:  2,
 	})
@@ -79,7 +79,7 @@ func main() {
 	// create the outgoing particles of v1 and v2
 	p3 := &hepmc.Particle{
 		Momentum: hepmc.FourVector{.750, -1.569, 32.191, 32.238},
-		PdgId:    1,
+		PdgID:    1,
 		Status:   3,
 		// Barcode: 3,
 	}
@@ -88,7 +88,7 @@ func main() {
 
 	p4 := &hepmc.Particle{
 		Momentum: hepmc.FourVector{-3.047, -19., -54.629, 57.920},
-		PdgId:    -2,
+		PdgID:    -2,
 		Status:   3,
 		// Barcode: 4,
 	}
@@ -108,14 +108,14 @@ func main() {
 
 	err = v3.AddParticleOut(&hepmc.Particle{
 		Momentum: hepmc.FourVector{-3.813, 0.113, -1.833, 4.233},
-		PdgId:    22,
+		PdgID:    22,
 		Status:   1,
 	})
 	handle_err(err)
 
 	p5 := &hepmc.Particle{
 		Momentum: hepmc.FourVector{1.517, -20.68, -20.605, 85.925},
-		PdgId:    -24,
+		PdgID:    -24,
 		Status:   3,
 	}
 	err = v3.AddParticleOut(p5)
@@ -133,14 +133,14 @@ func main() {
 
 	err = v4.AddParticleOut(&hepmc.Particle{
 		Momentum: hepmc.FourVector{-2.445, 28.816, 6.082, 29.552},
-		PdgId:    1,
+		PdgID:    1,
 		Status:   1,
 	})
 	handle_err(err)
 
 	err = v4.AddParticleOut(&hepmc.Particle{
 		Momentum: hepmc.FourVector{3.962, -49.498, -26.687, 56.373},
-		PdgId:    -2,
+		PdgID:    -2,
 		Status:   1,
 	})
 	handle_err(err)

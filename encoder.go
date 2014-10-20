@@ -8,8 +8,8 @@ import (
 
 // Encoder encodes a hepmc Event into a stream.
 type Encoder struct {
-	w            io.Writer
-	seen_evt_hdr bool
+	w          io.Writer
+	seenEvtHdr bool
 }
 
 // NewEncoder returns a new hepmc Encoder that writes into the io.Writer.
@@ -20,7 +20,7 @@ func NewEncoder(w io.Writer) *Encoder {
 // Close closes the encoder and adds a footer to the stream.
 func (enc *Encoder) Close() error {
 	var err error
-	if enc.seen_evt_hdr {
+	if enc.seenEvtHdr {
 		_, err = fmt.Fprintf(
 			enc.w,
 			"%s\n",
@@ -37,7 +37,7 @@ func (enc *Encoder) Close() error {
 func (enc *Encoder) Encode(evt *Event) error {
 	var err error
 
-	if !enc.seen_evt_hdr {
+	if !enc.seenEvtHdr {
 		_, err = fmt.Fprintf(
 			enc.w,
 			"\nHepMC::Version %s\n",
@@ -52,12 +52,12 @@ func (enc *Encoder) Encode(evt *Event) error {
 			return err
 		}
 
-		enc.seen_evt_hdr = true
+		enc.seenEvtHdr = true
 	}
 
-	sig_bc := 0
+	sigBc := 0
 	if evt.SignalVertex != nil {
-		sig_bc = evt.SignalVertex.Barcode
+		sigBc = evt.SignalVertex.Barcode
 	}
 	bp1 := 0
 	if evt.Beams[0] != nil {
@@ -77,8 +77,8 @@ func (enc *Encoder) Encode(evt *Event) error {
 		evt.Scale,
 		evt.AlphaQCD,
 		evt.AlphaQED,
-		evt.SignalProcessId,
-		sig_bc,
+		evt.SignalProcessID,
+		sigBc,
 		len(evt.Vertices),
 		bp1,
 		bp2,
@@ -144,20 +144,20 @@ func (enc *Encoder) Encode(evt *Event) error {
 
 	// cross-section
 	if evt.CrossSection != nil {
-		err = enc.encode_cross_section(evt.CrossSection)
+		err = enc.encodeCrossSection(evt.CrossSection)
 		if err != nil {
 			return err
 		}
 	}
 
 	if evt.HeavyIon != nil {
-		err = enc.encode_heavy_ion(evt.HeavyIon)
+		err = enc.encodeHeavyIon(evt.HeavyIon)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = enc.encode_pdf_info(evt.PdfInfo)
+	err = enc.encodePdfInfo(evt.PdfInfo)
 	if err != nil {
 		return err
 	}
@@ -167,9 +167,9 @@ func (enc *Encoder) Encode(evt *Event) error {
 	for _, vtx := range evt.Vertices {
 		vertices = append(vertices, vtx)
 	}
-	sort.Sort(sort.Reverse(t_vertices(vertices)))
+	sort.Sort(sort.Reverse(Vertices(vertices)))
 	for _, vtx := range vertices {
-		err = enc.encode_vertex(vtx)
+		err = enc.encodeVertex(vtx)
 		if err != nil {
 			return err
 		}
@@ -177,7 +177,7 @@ func (enc *Encoder) Encode(evt *Event) error {
 	return err
 }
 
-func (enc *Encoder) encode_vertex(vtx *Vertex) error {
+func (enc *Encoder) encodeVertex(vtx *Vertex) error {
 	var err error
 	orphans := 0
 	for _, p := range vtx.ParticlesIn {
@@ -190,7 +190,7 @@ func (enc *Encoder) encode_vertex(vtx *Vertex) error {
 		enc.w,
 		"V %d %d %1.16e %1.16e %1.16e %1.16e %d %d %d",
 		vtx.Barcode,
-		vtx.Id,
+		vtx.ID,
 		vtx.Position.X(), vtx.Position.Y(), vtx.Position.Z(), vtx.Position.T(),
 		orphans,
 		len(vtx.ParticlesOut),
@@ -212,7 +212,7 @@ func (enc *Encoder) encode_vertex(vtx *Vertex) error {
 
 	for _, p := range vtx.ParticlesIn {
 		if p.ProdVertex == nil {
-			err = enc.encode_particle(p)
+			err = enc.encodeParticle(p)
 			if err != nil {
 				return err
 			}
@@ -220,7 +220,7 @@ func (enc *Encoder) encode_vertex(vtx *Vertex) error {
 	}
 
 	for _, p := range vtx.ParticlesOut {
-		err = enc.encode_particle(p)
+		err = enc.encodeParticle(p)
 		if err != nil {
 			return err
 		}
@@ -228,30 +228,30 @@ func (enc *Encoder) encode_vertex(vtx *Vertex) error {
 	return err
 }
 
-func (enc *Encoder) encode_particle(p *Particle) error {
+func (enc *Encoder) encodeParticle(p *Particle) error {
 	var err error
 
-	end_bc := 0
+	endBc := 0
 	if p.EndVertex != nil {
-		end_bc = p.EndVertex.Barcode
+		endBc = p.EndVertex.Barcode
 	}
 
 	_, err = fmt.Fprintf(
 		enc.w,
 		"P %d %d %1.16e %1.16e %1.16e %1.16e %1.16e %d %1.16e %1.16e %d",
 		p.Barcode,
-		p.PdgId,
+		p.PdgID,
 		p.Momentum.Px(), p.Momentum.Py(), p.Momentum.Pz(), p.Momentum.E(),
 		p.GeneratedMass,
 		p.Status,
 		p.Polarization.Theta,
 		p.Polarization.Phi,
-		end_bc,
+		endBc,
 	)
 	if err != nil {
 		return err
 	}
-	err = enc.encode_flow(&p.Flow)
+	err = enc.encodeFlow(&p.Flow)
 	if err != nil {
 		return err
 	}
@@ -259,7 +259,7 @@ func (enc *Encoder) encode_particle(p *Particle) error {
 	return err
 }
 
-func (enc *Encoder) encode_flow(flow *Flow) error {
+func (enc *Encoder) encodeFlow(flow *Flow) error {
 	var err error
 	_, err = fmt.Fprintf(enc.w, " %d", len(flow.Icode))
 	if err != nil {
@@ -280,7 +280,7 @@ func (enc *Encoder) encode_flow(flow *Flow) error {
 	return err
 }
 
-func (enc *Encoder) encode_cross_section(x *CrossSection) error {
+func (enc *Encoder) encodeCrossSection(x *CrossSection) error {
 	var err error
 	_, err = fmt.Fprintf(
 		enc.w,
@@ -291,29 +291,29 @@ func (enc *Encoder) encode_cross_section(x *CrossSection) error {
 	return err
 }
 
-func (enc *Encoder) encode_heavy_ion(hi *HeavyIon) error {
+func (enc *Encoder) encodeHeavyIon(hi *HeavyIon) error {
 	var err error
 	_, err = fmt.Fprintf(
 		enc.w,
 		"H %d %d %d %d %d %d %d %d %d %1.16e %1.16e %1.16e %1.16e\n",
-		hi.Ncoll_hard,
-		hi.Npart_proj,
-		hi.Npart_targ,
-		hi.Ncoll,
-		hi.N_Nwounded_collisions,
-		hi.Nwounded_N_collisions,
-		hi.Nwounded_Nwounded_collisions,
-		hi.Spectator_neutrons,
-		hi.Spectator_protons,
-		hi.Impact_parameter,
-		hi.Event_plane_angle,
+		hi.NCollHard,
+		hi.NPartProj,
+		hi.NPartTarg,
+		hi.NColl,
+		hi.NNwColl,
+		hi.NwNColl,
+		hi.NwNwColl,
+		hi.SpectatorNeutrons,
+		hi.SpectatorProtons,
+		hi.ImpactParameter,
+		hi.EventPlaneAngle,
 		hi.Eccentricity,
-		hi.Sigma_inel_NN,
+		hi.SigmaInelNN,
 	)
 	return err
 }
 
-func (enc *Encoder) encode_pdf_info(pdf *PdfInfo) error {
+func (enc *Encoder) encodePdfInfo(pdf *PdfInfo) error {
 	var err error
 	if pdf == nil {
 		_, err = fmt.Fprintf(
