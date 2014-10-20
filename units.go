@@ -4,7 +4,10 @@ import (
 	"fmt"
 )
 
+// MomentumUnit describes the units of momentum quantities (MeV or GeV)
 type MomentumUnit int
+
+// LengthUnit describes the units of length quantities (mm or cm)
 type LengthUnit int
 
 const (
@@ -28,6 +31,7 @@ func (mu MomentumUnit) String() string {
 	panic(err.Error())
 }
 
+// MomentumUnitFromString creates a MomentumUnit value from its string representation
 func MomentumUnitFromString(s string) (MomentumUnit, error) {
 	switch s {
 	case "MEV":
@@ -50,6 +54,7 @@ func (lu LengthUnit) String() string {
 	panic(err.Error())
 }
 
+// LengthUnitFromString creates a LengthUnit value from its string representation
 func LengthUnitFromString(s string) (LengthUnit, error) {
 	switch s {
 	case "MM":
