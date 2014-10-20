@@ -10,8 +10,7 @@ import (
 	"github.com/go-hep/hepmc"
 )
 
-const fname = "testdata/test.hepmc"
-
+//const fname = "testdata/test.hepmc"
 //const fname = "testdata/one.hepmc"
 
 func TestEventRW(t *testing.T) {
@@ -19,27 +18,26 @@ func TestEventRW(t *testing.T) {
 	for _, table := range []struct {
 		fname    string
 		outfname string
+		nevts    int
 	}{
-		{fname, "out.hepmc"},
-		{"out.hepmc", "rb.out.hepmc"},
+		{"testdata/small.hepmc", "out.small.hepmc", 1},
+
+		{"testdata/test.hepmc", "out.hepmc", 6},
+		{"out.hepmc", "rb.out.hepmc", 6},
 	} {
-		test_evt_rw(t, table.fname, table.outfname)
+		test_evt_rw(t, table.fname, table.outfname, table.nevts)
 	}
 
 	// clean-up
-	for _, fname := range []string{"out.hepmc", "rb.out.hepmc"} {
+	for _, fname := range []string{"out.small.hepmc", "out.hepmc", "rb.out.hepmc"} {
 		err := os.Remove(fname)
-		if err != nil {
-			t.Fatal(err)
-		}
-		err = os.Remove(fname + ".todiff")
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 }
 
-func test_evt_rw(t *testing.T, fname, outfname string) {
+func test_evt_rw(t *testing.T, fname, outfname string, nevts int) {
 	f, err := os.Open(fname)
 	if err != nil {
 		t.Fatal(err)
@@ -52,17 +50,17 @@ func test_evt_rw(t *testing.T, fname, outfname string) {
 	}
 
 	const NEVTS = 10
-	evts := make([]*hepmc.Event, 6)
+	evts := make([]*hepmc.Event, 0, NEVTS)
 	for ievt := 0; ievt < NEVTS; ievt++ {
 		var evt hepmc.Event
 		err = dec.Decode(&evt)
 		if err != nil {
-			if err == io.EOF && ievt == 6 {
+			if err == io.EOF && ievt == nevts {
 				break
 			}
-			t.Fatal(err)
+			t.Fatalf("file: %s. ievt=%d err=%v\n", fname, ievt, err)
 		}
-		evts[ievt] = &evt
+		evts = append(evts, &evt)
 		defer hepmc.Delete(&evt)
 	}
 
@@ -79,36 +77,21 @@ func test_evt_rw(t *testing.T, fname, outfname string) {
 	for _, evt := range evts {
 		err = enc.Encode(evt)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatalf("file: %s. err=%v\n", fname, err)
 		}
 	}
 	err = enc.Close()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("file: %s. err=%v\n", fname, err)
 	}
 
 	// test output files
-	cmd := exec.Command(
-		"/bin/sh", "-c",
-		fmt.Sprintf("(cat %s | sort >| %s.todiff)", outfname, outfname),
-	)
+	cmd := exec.Command("diff", "-urN", fname, outfname)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
-		t.Fatal(err)
-	}
-
-	cmd = exec.Command(
-		"diff", "-urN",
-		"testdata/ref.hepmc.todiff",
-		fmt.Sprintf("%s.todiff", outfname),
-	)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("file: %s. err=%v\n", fname, err)
 	}
 
 }
