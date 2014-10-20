@@ -131,7 +131,7 @@ func main() {
 				dec.Run.EBMUP[0],
 				dec.Run.EBMUP[0],
 			},
-			PdgId:   dec.Run.IDBMUP[0],
+			PdgID:   dec.Run.IDBMUP[0],
 			Status:  4,
 			Barcode: 1,
 		}
@@ -141,7 +141,7 @@ func main() {
 				dec.Run.EBMUP[1],
 				dec.Run.EBMUP[1],
 			},
-			PdgId:   dec.Run.IDBMUP[1],
+			PdgID:   dec.Run.IDBMUP[1],
 			Status:  4,
 			Barcode: 2,
 		}
@@ -173,7 +173,7 @@ func main() {
 					lhevt.PUP[i][3],
 				},
 				GeneratedMass: lhevt.PUP[i][4],
-				PdgId:         lhevt.IDUP[i],
+				PdgID:         lhevt.IDUP[i],
 				Status:        1,
 				Barcode:       3 + i,
 			})
