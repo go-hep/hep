@@ -7,6 +7,7 @@ import (
 	"math"
 	"os"
 
+	"github.com/go-hep/fmom"
 	"github.com/go-hep/hepmc"
 	"github.com/go-hep/lhef"
 )
@@ -126,7 +127,7 @@ func main() {
 			Barcode: -1,
 		}
 		p1 := hepmc.Particle{
-			Momentum: hepmc.FourVector{
+			Momentum: fmom.PxPyPzE{
 				0, 0,
 				dec.Run.EBMUP[0],
 				dec.Run.EBMUP[0],
@@ -136,7 +137,7 @@ func main() {
 			Barcode: 1,
 		}
 		p2 := hepmc.Particle{
-			Momentum: hepmc.FourVector{
+			Momentum: fmom.PxPyPzE{
 				0, 0,
 				dec.Run.EBMUP[1],
 				dec.Run.EBMUP[1],
@@ -166,7 +167,7 @@ func main() {
 			}
 			nmax += 1
 			vtx.AddParticleOut(&hepmc.Particle{
-				Momentum: hepmc.FourVector{
+				Momentum: fmom.PxPyPzE{
 					lhevt.PUP[i][0],
 					lhevt.PUP[i][1],
 					lhevt.PUP[i][2],
