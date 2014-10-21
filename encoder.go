@@ -88,7 +88,7 @@ func (enc *Encoder) Encode(evt *Event) error {
 		return err
 	}
 	for _, rndm := range evt.RandomStates {
-		_, err = fmt.Fprintf(enc.w, " %1.16e", rndm)
+		_, err = fmt.Fprintf(enc.w, " %d", rndm)
 		if err != nil {
 			return err
 		}

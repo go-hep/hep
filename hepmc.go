@@ -312,7 +312,7 @@ func (p *Particle) dump(w io.Writer) error {
 	case p.EndVertex == nil:
 		_, err = fmt.Fprintf(w, "%4d", p.Status)
 	default:
-		_, err = fmt.Fprintf(w, "%4d %q", p.Status, p.EndVertex)
+		_, err = fmt.Fprintf(w, "%4d %p", p.Status, p.EndVertex)
 	}
 	return err
 }
@@ -528,7 +528,7 @@ func (vtx *Vertex) Print(w io.Writer) error {
 		if vtx.Position != zero {
 			_, err = fmt.Fprintf(
 				w,
-				"Vertex:%q ID:%5d (X,cT)=%+9.2e,%+9.2e,%+9.2e,%+9.2e\n",
+				"Vertex:%p ID:%5d (X,cT)=%+9.2e,%+9.2e,%+9.2e,%+9.2e\n",
 				vtx,
 				vtx.ID,
 				vtx.Position.X(),
