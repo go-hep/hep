@@ -27,6 +27,7 @@ package main
 import (
 	"os"
 
+	"github.com/go-hep/fmom"
 	"github.com/go-hep/hepmc"
 )
 
@@ -58,7 +59,7 @@ func main() {
 	handle_err(err)
 
 	err = v1.AddParticleIn(&hepmc.Particle{
-		Momentum: hepmc.FourVector{0, 0, 7000, 7000},
+		Momentum: fmom.PxPyPzE{0, 0, 7000, 7000},
 		PdgID:    2212,
 		Status:   3,
 	})
@@ -69,7 +70,7 @@ func main() {
 	handle_err(err)
 
 	err = v2.AddParticleIn(&hepmc.Particle{
-		Momentum: hepmc.FourVector{0, 0, -7000, 7000},
+		Momentum: fmom.PxPyPzE{0, 0, -7000, 7000},
 		PdgID:    2212,
 		Status:   3,
 		//Barcode:  2,
@@ -78,7 +79,7 @@ func main() {
 
 	// create the outgoing particles of v1 and v2
 	p3 := &hepmc.Particle{
-		Momentum: hepmc.FourVector{.750, -1.569, 32.191, 32.238},
+		Momentum: fmom.PxPyPzE{.750, -1.569, 32.191, 32.238},
 		PdgID:    1,
 		Status:   3,
 		// Barcode: 3,
@@ -87,7 +88,7 @@ func main() {
 	handle_err(err)
 
 	p4 := &hepmc.Particle{
-		Momentum: hepmc.FourVector{-3.047, -19., -54.629, 57.920},
+		Momentum: fmom.PxPyPzE{-3.047, -19., -54.629, 57.920},
 		PdgID:    -2,
 		Status:   3,
 		// Barcode: 4,
@@ -107,14 +108,14 @@ func main() {
 	handle_err(err)
 
 	err = v3.AddParticleOut(&hepmc.Particle{
-		Momentum: hepmc.FourVector{-3.813, 0.113, -1.833, 4.233},
+		Momentum: fmom.PxPyPzE{-3.813, 0.113, -1.833, 4.233},
 		PdgID:    22,
 		Status:   1,
 	})
 	handle_err(err)
 
 	p5 := &hepmc.Particle{
-		Momentum: hepmc.FourVector{1.517, -20.68, -20.605, 85.925},
+		Momentum: fmom.PxPyPzE{1.517, -20.68, -20.605, 85.925},
 		PdgID:    -24,
 		Status:   3,
 	}
@@ -123,7 +124,7 @@ func main() {
 
 	// create v4
 	v4 := &hepmc.Vertex{
-		Position: hepmc.FourVector{0.12, -0.3, 0.05, 0.004},
+		Position: fmom.PxPyPzE{0.12, -0.3, 0.05, 0.004},
 	}
 	err = evt.AddVertex(v4)
 	handle_err(err)
@@ -132,14 +133,14 @@ func main() {
 	handle_err(err)
 
 	err = v4.AddParticleOut(&hepmc.Particle{
-		Momentum: hepmc.FourVector{-2.445, 28.816, 6.082, 29.552},
+		Momentum: fmom.PxPyPzE{-2.445, 28.816, 6.082, 29.552},
 		PdgID:    1,
 		Status:   1,
 	})
 	handle_err(err)
 
 	err = v4.AddParticleOut(&hepmc.Particle{
-		Momentum: hepmc.FourVector{3.962, -49.498, -26.687, 56.373},
+		Momentum: fmom.PxPyPzE{3.962, -49.498, -26.687, 56.373},
 		PdgID:    -2,
 		Status:   1,
 	})

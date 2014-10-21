@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"sort"
+
+	"github.com/go-hep/fmom"
 )
 
 var (
@@ -279,7 +281,7 @@ func (evt *Event) pBarcode() int {
 //
 // Particle is the basic building block of the event record
 type Particle struct {
-	Momentum      FourVector   // momentum vector
+	Momentum      fmom.PxPyPzE // momentum vector
 	PdgID         int64        // id according to PDG convention
 	Status        int          // status code as defined for HEPEVT
 	Flow          Flow         // flow of this particle
@@ -347,13 +349,13 @@ func (ps Vertices) Swap(i, j int) {
 // A vertex is indirectly (via particle "edges") linked to other
 //   vertices ("nodes") to form a composite "graph"
 type Vertex struct {
-	Position     FourVector  // 4-vector of vertex [mm]
-	ParticlesIn  []*Particle // all incoming particles
-	ParticlesOut []*Particle // all outgoing particles
-	ID           int         // vertex id
-	Weights      Weights     // weights for this vertex
-	Event        *Event      // pointer to event owning this vertex
-	Barcode      int         // unique identifier in the event
+	Position     fmom.PxPyPzE // 4-vector of vertex [mm]
+	ParticlesIn  []*Particle  // all incoming particles
+	ParticlesOut []*Particle  // all outgoing particles
+	ID           int          // vertex id
+	Weights      Weights      // weights for this vertex
+	Event        *Event       // pointer to event owning this vertex
+	Barcode      int          // unique identifier in the event
 }
 
 func (vtx *Vertex) setParentEvent(evt *Event) error {
@@ -500,7 +502,7 @@ func (vtx *Vertex) removeParticleOut(p *Particle) error {
 // Print prints the vertex to w in a human-readable format
 func (vtx *Vertex) Print(w io.Writer) error {
 	var err error
-	zero := FourVector{0, 0, 0, 0}
+	zero := fmom.PxPyPzE{0, 0, 0, 0}
 	if vtx.Barcode != 0 {
 		if vtx.Position != zero {
 			_, err = fmt.Fprintf(
