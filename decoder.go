@@ -43,8 +43,14 @@ func (dec *Decoder) readlines(r *bufio.Reader) {
 			err:    nil,
 		}
 	}
+
+	err := s.Err()
+	if err == nil {
+		err = io.EOF
+	}
+
 	dec.stream <- rstream{
-		err: s.Err(),
+		err: err,
 	}
 }
 
