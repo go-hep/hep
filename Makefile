@@ -1,18 +1,23 @@
 ## simple makefile to log workflow
-.PHONY: all test clean build
+.PHONY: all test clean build install
 
-#GOFLAGS := $(GOFLAGS:-race -v)
-GOFLAGS := $(GOFLAGS:-v)
+GOFLAGS ?= $(GOFLAGS:)
 
-all: clean build test
-	@echo "## bye."
+all: install test
+
 
 build:
+	@go build $(GOFLAGS) ./...
+
+install:
 	@go get $(GOFLAGS) ./...
 
-test: build
+test: install
 	@go test $(GOFLAGS) ./...
 	fads-app -l INFO -evtmax=-1 -cpu-prof
+
+bench: install
+	@go test -bench=. $(GOFLAGS) ./...
 
 clean:
 	@go clean $(GOFLAGS) -i ./...
