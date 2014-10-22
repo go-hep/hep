@@ -127,7 +127,7 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) error {
 
 	for _, p := range evt.Particles {
 		allparts = append(allparts, Candidate{
-			Pid:        int32(p.PdgId),
+			Pid:        int32(p.PdgID),
 			Status:     int32(p.Status),
 			M2:         1,
 			D2:         1,
@@ -136,7 +136,7 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) error {
 			Mom:        fmom.PxPyPzE(p.Momentum),
 		})
 		c := &allparts[len(allparts)-1]
-		pdg := heppdt.ParticleByID(heppdt.PID(p.PdgId))
+		pdg := heppdt.ParticleByID(heppdt.PID(p.PdgID))
 		if pdg != nil {
 			c.CandCharge = int32(pdg.Charge)
 			c.CandMass = pdg.Mass
@@ -152,7 +152,7 @@ func (tsk *HepMcReader) Process(ctx fwk.Context) error {
 			continue
 		}
 
-		pdgcode := p.PdgId
+		pdgcode := p.PdgID
 		if pdgcode < 0 {
 			pdgcode = -pdgcode
 		}
