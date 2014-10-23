@@ -41,6 +41,12 @@ func (tsk *CPUCruncher) Configure(ctx fwk.Context) error {
 		}
 	}
 
+	if len(tsk.cpus) <= 0 {
+		msg := ctx.Msg()
+		msg.Errorf("invalid cpu-timings list: %v\n", tsk.cpus)
+		return fwk.Errorf("invalid cpu-timings")
+	}
+
 	return err
 }
 
@@ -55,7 +61,10 @@ func (tsk *CPUCruncher) StartTask(ctx fwk.Context) error {
 			case <-tsk.quit:
 				return
 			default:
-				v := tsk.cpus[i%n]
+				if i >= n {
+					i = 0
+				}
+				v := tsk.cpus[i]
 				i++
 				tsk.cpuch <- v
 			}

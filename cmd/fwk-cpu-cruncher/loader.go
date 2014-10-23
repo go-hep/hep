@@ -36,7 +36,7 @@ func loadConfig(fname string, app *job.Job) {
 			Props: job.P{
 				"Inputs":  alg.Inputs,
 				"Outputs": alg.Outputs,
-				"CPU":     alg.Wall,
+				"CPU":     alg.CPU,
 			},
 		})
 	}
