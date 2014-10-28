@@ -1,6 +1,9 @@
 slha
 ====
 
+[![Build Status](https://drone.io/github.com/go-hep/slha/status.png)](https://drone.io/github.com/go-hep/slha/latest)
+[![GoDoc](https://godoc.org/github.com/go-hep/slha?status.svg)](https://godoc.org/github.com/go-hep/slha)
+
 Package `slha` implements encoding and decoding of SUSY Les Houches
 Accords (SLHA) data format.
 
