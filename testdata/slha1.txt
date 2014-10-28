@@ -1,0 +1,19 @@
+# Example input in Les Houches format
+Block MODSEL                # Select model
+    1   1                   # sugra
+Block SMINPUTS              # Standard Model inputs
+    1   1.279340000e+02     # alpha^(-1) SM MSbar(MZ)
+    2   1.166370000e-05     # G_Fermi
+    3   1.172000000e-01     # alpha_s(MZ) SM MSbar
+    4   9.118760000e+01     # MZ(pole)
+    5   4.250000000e+00     # mb(mb) SM MSbar
+    6   1.743000000e+02     # mtop(pole)
+    7   1.777000000e+00     # mtau(pole)
+Block MINPAR                # Input parameters
+    1   1.000000000e+02     # m0
+    2   2.500000000e+02     # m12
+    3   1.000000000e+01     # tanb
+    4   1.000000000e+00     # sign(mu)
+    5  -1.000000000e+02     # A0
+Block EXTPAR                # non-minimal input parameters
+    1   2.500000000e+02     # m1(mGUT)
