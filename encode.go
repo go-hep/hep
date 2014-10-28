@@ -15,8 +15,15 @@ func blockFormat(name string, nargs int) string {
 		return " %9d   %16.8E   # %s\n"
 
 	case "NMIX", "UMIX", "VMIX", "STOPMIX", "SBOTMIX", "STAUMIX",
+		"USQMIX", "DSQMIX", "SELMIX", "SNUMIX", // FIXME(sbinet) right format ?
 		"AU", "AD", "AE",
-		"YU", "YD", "YE":
+		"YU", "YD", "YE",
+		"TU", "TD", "TE",
+		"TUIN", "TDIN", "TEIN",
+		"MSQ2IN", "MSU2IN", "MSD2IN", "MSL2IN", "MSE2IN",
+		"MSQ2", "MSU2", "MSD2", "MSL2", "MSE2",
+		"VCKM", "IMVCKM",
+		"UPMNS", "IMUPMNS":
 		//return "(1x,I2,1x,I2,3x,1P,E16.8,0P,3x,’#’,1x,A)"
 		return " %2d %2d   %16.8E   # %s\n"
 
@@ -30,11 +37,11 @@ func blockFormat(name string, nargs int) string {
 		//return "(1x,I5,3x,1P,E16.8,0P,3x,’#’,1x,A)"
 		return " %5d   %16.8E   # %s\n"
 
-	case "SMINPUTS":
+	case "SMINPUTS", "VCKMIN", "UPMNSIN":
 		//return "(1x,I5,3x,A)"
 		return " %5d   %16.8E   # %s\n"
 
-	case "MINPAR":
+	case "MINPAR", "EXTPAR", "QEXTPAR":
 		return " %5d   %16.8E   # %s\n"
 
 	case "SPINFO", "DCINFO":
