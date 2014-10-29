@@ -19,10 +19,12 @@ func TestDecode(t *testing.T) {
 	}
 	defer f.Close()
 
-	var data slha.SLHA
-	err = slha.NewDecoder(f).Decode(&data)
+	data, err := slha.Decode(f)
 	if err != nil {
 		t.Fatalf("error decoding file [%s]: %v\n", fname, err)
+	}
+	if data == nil {
+		t.Fatalf("got nil SLHA data\n")
 	}
 }
 
@@ -34,8 +36,7 @@ func TestEncode(t *testing.T) {
 	}
 	defer f.Close()
 
-	var data slha.SLHA
-	err = slha.NewDecoder(f).Decode(&data)
+	data, err := slha.Decode(f)
 	if err != nil {
 		t.Fatalf("error decoding file [%s]: %v\n", fname, err)
 	}
@@ -46,8 +47,9 @@ func TestEncode(t *testing.T) {
 		t.Fatalf("error creating file [%s]: %v\n", ofname, err)
 	}
 	defer out.Close()
+	defer os.Remove(ofname)
 
-	err = slha.NewEncoder(out).Encode(&data)
+	err = slha.Encode(out, data)
 	if err != nil {
 		t.Fatalf("error encoding file [%s]: %v\n", ofname, err)
 	}
@@ -71,8 +73,7 @@ func TestRW(t *testing.T) {
 		}
 		defer f.Close()
 
-		var wdata slha.SLHA
-		err = slha.NewDecoder(f).Decode(&wdata)
+		wdata, err := slha.Decode(f)
 		if err != nil {
 			t.Fatalf("error decoding file [%s]: %v\n", fname, err)
 		}
@@ -85,7 +86,7 @@ func TestRW(t *testing.T) {
 		}
 		defer f.Close()
 
-		err = slha.NewEncoder(f).Encode(&wdata)
+		err = slha.Encode(f, wdata)
 		if err != nil {
 			t.Fatalf("error encoding file [%s]: %v\n", ofname, err)
 		}
@@ -101,14 +102,13 @@ func TestRW(t *testing.T) {
 		}
 		defer f.Close()
 
-		var rdata slha.SLHA
-		err = slha.NewDecoder(f).Decode(&rdata)
+		rdata, err := slha.Decode(f)
 		if err != nil {
 			t.Fatalf("error re-decoding file [%s]: %v\n", ofname, err)
 		}
 		f.Close()
 
-		if ok, str := compareSLHA(rdata, wdata); !ok {
+		if ok, str := compareSLHA(*rdata, *wdata); !ok {
 			t.Fatalf("error - SLHA data differ - file %s\n%s\n", ofname, str)
 		} else {
 			os.Remove(ofname)

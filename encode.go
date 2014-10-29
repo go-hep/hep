@@ -63,18 +63,8 @@ const (
 	decayLineBack  = "   # %s\n"
 )
 
-// Encoder writes SLHA objects to an output stream.
-type Encoder struct {
-	w io.Writer
-}
-
-// NewEncoder returns a new Encoder that writes to w.
-func NewEncoder(w io.Writer) *Encoder {
-	return &Encoder{w: w}
-}
-
-// Encode writes the SLHA encoding of data to the stream, followed by a newline character.
-func (enc *Encoder) Encode(data *SLHA) error {
+// Encode writes the SLHA informations to w.
+func Encode(w io.Writer, data *SLHA) error {
 	var err error
 	for i := range data.Blocks {
 		blk := &data.Blocks[i]
@@ -85,7 +75,7 @@ func (enc *Encoder) Encode(data *SLHA) error {
 		if blk.Comment != "" {
 			str = append(str, " # "+blk.Comment)
 		}
-		_, err = fmt.Fprintf(enc.w, "%s\n", strings.Join(str, " "))
+		_, err = fmt.Fprintf(w, "%s\n", strings.Join(str, " "))
 		if err != nil {
 			return err
 		}
@@ -101,12 +91,12 @@ func (enc *Encoder) Encode(data *SLHA) error {
 			}
 			args = append(args, v.Interface(), v.Comment())
 			format := blockFormat(blk.Name, len(args))
-			_, err = fmt.Fprintf(enc.w, format, args...)
+			_, err = fmt.Fprintf(w, format, args...)
 			if err != nil {
 				return err
 			}
 		}
-		_, err = fmt.Fprintf(enc.w, "#\n")
+		_, err = fmt.Fprintf(w, "#\n")
 		if err != nil {
 			return err
 		}
@@ -115,42 +105,42 @@ func (enc *Encoder) Encode(data *SLHA) error {
 	for i := range data.Particles {
 		part := &data.Particles[i]
 
-		_, err = fmt.Fprintf(enc.w, "%sDECAY %9d   %16.8E   # %s\n", particleHeader, part.PdgID, part.Width, part.Comment)
+		_, err = fmt.Fprintf(w, "%sDECAY %9d   %16.8E   # %s\n", particleHeader, part.PdgID, part.Width, part.Comment)
 		if err != nil {
 			return err
 		}
 		if len(part.Decays) <= 0 {
-			_, err = fmt.Fprintf(enc.w, "#\n")
+			_, err = fmt.Fprintf(w, "#\n")
 			if err != nil {
 				return err
 			}
 			continue
 		}
 
-		_, err = fmt.Fprintf(enc.w, decayHeader)
+		_, err = fmt.Fprintf(w, decayHeader)
 		if err != nil {
 			return err
 		}
 
 		for j := range part.Decays {
 			decay := &part.Decays[j]
-			_, err = fmt.Fprintf(enc.w, decayLineFront, decay.Br, len(decay.IDs))
+			_, err = fmt.Fprintf(w, decayLineFront, decay.Br, len(decay.IDs))
 			if err != nil {
 				return err
 			}
 			for _, id := range decay.IDs {
-				_, err = fmt.Fprintf(enc.w, decayLineID, id)
+				_, err = fmt.Fprintf(w, decayLineID, id)
 				if err != nil {
 					return err
 				}
 			}
-			_, err = fmt.Fprintf(enc.w, decayLineBack, decay.Comment)
+			_, err = fmt.Fprintf(w, decayLineBack, decay.Comment)
 			if err != nil {
 				return err
 			}
 		}
 
-		_, err = fmt.Fprintf(enc.w, "#\n")
+		_, err = fmt.Fprintf(w, "#\n")
 		if err != nil {
 			return err
 		}

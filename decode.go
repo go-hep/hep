@@ -18,19 +18,8 @@ var (
 	reDecay = regexp.MustCompile(`DECAY\s+(-?\d+)\s+([\d\.E+-]+|NAN).*`)
 )
 
-// Decoder reads and decodes SLHA objects from an input stream.
-type Decoder struct {
-	r *bufio.Scanner
-}
-
-// NewDecoder returns a new decoder that reads from r.
-func NewDecoder(r io.Reader) *Decoder {
-	dec := &Decoder{r: bufio.NewScanner(r)}
-	return dec
-}
-
-// Decode reads the next SLHA entry from its input and stores in data.
-func (dec *Decoder) Decode(data *SLHA) error {
+// Decode reads SLHA informations from r and returns them as a *slha.SLHA.
+func Decode(r io.Reader) (*SLHA, error) {
 	var err error
 	type stateType int
 	const (
@@ -40,8 +29,10 @@ func (dec *Decoder) Decode(data *SLHA) error {
 	var state stateType
 	var blk *Block
 	var part *Particle
-	for dec.r.Scan() {
-		bline := dec.r.Bytes()
+	var data SLHA
+	scan := bufio.NewScanner(r)
+	for scan.Scan() {
+		bline := scan.Bytes()
 		if len(bline) <= 0 {
 			continue
 		}
@@ -62,7 +53,7 @@ func (dec *Decoder) Decode(data *SLHA) error {
 			state = stBlock
 			all := reBlock.FindStringSubmatch(string(bup))
 			if all == nil {
-				return fmt.Errorf("slha.decode: invalid block: %q", string(bline))
+				return nil, fmt.Errorf("slha.decode: invalid block: %q", string(bline))
 			}
 			groups := all[1:]
 			// for i, v := range groups {
@@ -84,7 +75,7 @@ func (dec *Decoder) Decode(data *SLHA) error {
 				}
 				blk.Q, err = strconv.ParseFloat(qstr, 64)
 				if err != nil {
-					return err
+					return nil, err
 				}
 			}
 			// fmt.Printf("Block> %v\n", blk)
@@ -99,18 +90,18 @@ func (dec *Decoder) Decode(data *SLHA) error {
 			}
 			all := reDecay.FindStringSubmatch(string(bup))
 			if all == nil {
-				return fmt.Errorf("slha.decode: invalid decay: %q", string(bline))
+				return nil, fmt.Errorf("slha.decode: invalid decay: %q", string(bline))
 			}
 			groups := all[1:]
 			pdgid, err := strconv.Atoi(groups[0])
 			if err != nil {
-				return err
+				return nil, err
 			}
 			width := math.NaN()
 			if len(groups) > 1 && groups[1] != "" {
 				width, err = strconv.ParseFloat(groups[1], 64)
 				if err != nil {
-					return err
+					return nil, err
 				}
 			}
 			i := len(data.Particles)
@@ -127,14 +118,14 @@ func (dec *Decoder) Decode(data *SLHA) error {
 			// data line
 			switch state {
 			case stBlock:
-				err = dec.addBlockEntry(bline, blk)
+				err = addBlockEntry(bline, blk)
 				if err != nil {
-					return err
+					return nil, err
 				}
 			case stDecay:
-				err = dec.addDecayEntry(bline, part)
+				err = addDecayEntry(bline, part)
 				if err != nil {
-					return err
+					return nil, err
 				}
 			}
 		default:
@@ -142,10 +133,10 @@ func (dec *Decoder) Decode(data *SLHA) error {
 			fmt.Fprintf(os.Stderr, "**WARN** ignoring unknown section [%s]\n", string(bup))
 		}
 	}
-	err = dec.r.Err()
+	err = scan.Err()
 	if err != nil {
 		if err != io.EOF {
-			return err
+			return nil, err
 		}
 		err = nil
 	}
@@ -161,10 +152,10 @@ func (dec *Decoder) Decode(data *SLHA) error {
 			}
 		}
 	}
-	return err
+	return &data, err
 }
 
-func (dec *Decoder) addBlockEntry(line []byte, blk *Block) error {
+func addBlockEntry(line []byte, blk *Block) error {
 	var err error
 	var val Value
 	hidx := bytes.Index(line, []byte("#"))
@@ -242,7 +233,7 @@ func anyvalue(str string) (interface{}, error) {
 	return vv, err
 }
 
-func (dec *Decoder) addDecayEntry(line []byte, part *Particle) error {
+func addDecayEntry(line []byte, part *Particle) error {
 	var err error
 	comment := ""
 	hidx := bytes.Index(line, []byte("#"))

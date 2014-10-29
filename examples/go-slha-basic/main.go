@@ -23,8 +23,7 @@ func main() {
 
 	defer f.Close()
 
-	var data slha.SLHA
-	err = slha.NewDecoder(f).Decode(&data)
+	data, err := slha.Decode(f)
 	handle(err)
 
 	spinfo := data.Blocks.Get("SPINFO")
