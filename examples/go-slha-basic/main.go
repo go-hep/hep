@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -9,42 +10,71 @@ import (
 
 func handle(err error) {
 	if err != nil {
+		printf("**error: %v\n", err)
 		panic(err)
 	}
 }
 
-func main() {
-	fname := "testdata/sps1a.spc"
-	if len(os.Args) > 1 {
-		fname = os.Args[1]
-	}
-	f, err := os.Open(fname)
-	handle(err)
+func printf(format string, args ...interface{}) (int, error) {
+	return fmt.Fprintf(os.Stderr, format, args...)
+}
 
+func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, " $ %s <path-to-SLHA-file>\n", os.Args[0])
+		flag.PrintDefaults()
+	}
+
+	flag.Parse()
+	if flag.NArg() <= 0 {
+		printf("**error** need an input file name\n")
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	fname := flag.Arg(0)
+
+	f, err := os.Open(fname)
+	if err != nil {
+		printf("could not open file [%s]: %v\n", fname, err)
+		os.Exit(1)
+	}
 	defer f.Close()
 
 	data, err := slha.Decode(f)
-	handle(err)
+	if err != nil {
+		printf("could not decode file [%s]: %v\n", fname, err)
+		os.Exit(1)
+	}
 
 	spinfo := data.Blocks.Get("SPINFO")
-	value, err := spinfo.Get(1)
-	handle(err)
-	fmt.Printf("spinfo: %s -- %q\n", value.Interface(), value.Comment())
+	if spinfo != nil {
+		value, err := spinfo.Get(1)
+		handle(err)
+		fmt.Printf("spinfo: %s -- %q\n", value.Interface(), value.Comment())
+	}
 
 	modsel := data.Blocks.Get("MODSEL")
-	value, err = modsel.Get(1)
-	handle(err)
-	fmt.Printf("modsel: %d -- %q\n", value.Interface(), value.Comment())
+	if modsel != nil {
+		value, err := modsel.Get(1)
+		handle(err)
+		fmt.Printf("modsel: %d -- %q\n", value.Interface(), value.Comment())
+	}
 
 	mass := data.Blocks.Get("MASS")
-	value, err = mass.Get(5)
-	handle(err)
-	fmt.Printf("mass[pdgid=5]: %v -- %q\n", value.Interface(), value.Comment())
+	if mass != nil {
+		value, err := mass.Get(5)
+		handle(err)
+		fmt.Printf("mass[pdgid=5]: %v -- %q\n", value.Interface(), value.Comment())
+	}
 
 	nmix := data.Blocks.Get("NMIX")
-	value, err = nmix.Get(1, 2)
-	handle(err)
-	fmt.Printf("nmix[1,2] = %v -- %q\n", value.Interface(), value.Comment())
+	if nmix != nil {
+		value, err := nmix.Get(1, 2)
+		handle(err)
+		fmt.Printf("nmix[1,2] = %v -- %q\n", value.Interface(), value.Comment())
+	}
 }
 
 // Output:
