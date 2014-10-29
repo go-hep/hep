@@ -220,16 +220,35 @@ func anyvalue(str string) (interface{}, error) {
 	var err error
 	var vv interface{}
 
-	if v, err := strconv.ParseFloat(str, 64); err == nil {
-		vv = reflect.ValueOf(v).Interface()
-	} else {
-		if v, err := strconv.Atoi(str); err == nil {
-			vv = reflect.ValueOf(int64(v)).Interface()
-		} else {
-			vv = str
+	vfloat, err := strconv.ParseFloat(str, 64)
+	if err == nil {
+		vv = reflect.ValueOf(vfloat).Interface()
+		return vv, err
+	}
+
+	if strings.Count(str, "D") == 1 {
+		vfloat, err = strconv.ParseFloat(strings.Replace(str, "D", "E", 1), 64)
+		if err == nil {
+			vv = reflect.ValueOf(vfloat).Interface()
+			return vv, err
 		}
 	}
 
+	if strings.Count(str, "d") == 1 {
+		vfloat, err = strconv.ParseFloat(strings.Replace(str, "d", "E", 1), 64)
+		if err == nil {
+			vv = reflect.ValueOf(vfloat).Interface()
+			return vv, err
+		}
+	}
+
+	vint, err := strconv.Atoi(str)
+	if err == nil {
+		vv = reflect.ValueOf(int64(vint)).Interface()
+		return vv, err
+	}
+
+	vv = str
 	return vv, err
 }
 
