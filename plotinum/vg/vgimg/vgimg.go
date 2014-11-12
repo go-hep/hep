@@ -10,7 +10,7 @@ package vgimg
 import (
 	"bufio"
 	"code.google.com/p/draw2d/draw2d"
-	"code.google.com/p/go.image/tiff"
+	"golang.org/x/image/tiff"
 	"fmt"
 	"github.com/go-hep/hplot/plotinum/vg"
 	"image"
