@@ -32,7 +32,7 @@ $ go get github.com/go-hep/fads/cmd/fads-app
 - Run it like so:
 
 ```sh
-$ fads-app ./go-hep/fads/testdata/hepmc.data
+$ fads-app $GOPATH/src/github.com/go-hep/fads/testdata/hepmc.data
 ```
 
 - help:
