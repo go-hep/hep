@@ -23,3 +23,30 @@ A test application is available over there:
 
 https://github.com/go-hep/fads/blob/master/cmd/fads-app/main.go
 
+- Install it like so:
+
+```sh
+$ go get github.com/go-hep/fads/cmd/fads-app
+```
+
+- Run it like so:
+
+```sh
+$ fads-app ./go-hep/fads/testdata/hepmc.data
+```
+
+- help:
+
+```sh
+$ fads-app -help
+Usage: fads-app [options] <hepmc-input-file>
+
+ex:
+ $ fads-app -l=INFO -evtmax=-1 ./testdata/hepmc.data
+
+options:
+  -cpu-prof=false: enable CPU profiling
+  -evtmax=-1: number of events to process
+  -l="INFO": log level (DEBUG|INFO|WARN|ERROR)
+  -nprocs=0: number of concurrent events to process
+```
