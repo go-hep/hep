@@ -53,7 +53,7 @@ func NewApp() App {
 			nil,
 		),
 		evtmax: -1,
-		nprocs: 0,
+		nprocs: -1,
 		comps:  make(map[string]Component),
 		tsks:   make([]Task, 0),
 		svcs:   make([]Svc, 0),
