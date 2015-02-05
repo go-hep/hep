@@ -1,11 +1,17 @@
 package fwk
 
+import (
+	nctx "golang.org/x/net/context"
+)
+
 type context struct {
 	id    int64
 	slot  int
 	store Store
 	msg   msgstream
 	mgr   App
+
+	ctx nctx.Context
 }
 
 func (ctx context) ID() int64 {

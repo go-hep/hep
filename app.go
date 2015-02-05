@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-hep/fwk/fsm"
+	nctx "golang.org/x/net/context"
 )
 
 type appmgr struct {
@@ -23,10 +24,11 @@ type appmgr struct {
 	evtmax int64
 	nprocs int
 
-	comps map[string]Component
-	tsks  []Task
-	svcs  []Svc
-	ctxs  [2][]context
+	comps   map[string]Component
+	tsks    []Task
+	svcs    []Svc
+	istream Task
+	ctxs    [2][]context
 }
 
 // NewApp creates a (default) fwk application with (default and) sensible options.
@@ -523,6 +525,10 @@ func (app *appmgr) run(ctx Context) error {
 
 func (app *appmgr) runSequential(ctx Context) error {
 	var err error
+
+	runctx, runCancel := nctx.WithCancel(nctx.Background())
+	defer runCancel()
+
 	keys := app.dflow.keys()
 	ctxs := make([]context, len(app.tsks))
 	store := *app.store
@@ -536,7 +542,7 @@ func (app *appmgr) runSequential(ctx Context) error {
 		}
 	}
 
-	ictrl, err := app.startInputStreams()
+	ictrl, err := app.startInputStream()
 	if err != nil {
 		return err
 	}
@@ -550,15 +556,23 @@ func (app *appmgr) runSequential(ctx Context) error {
 	defer close(octrl.Quit)
 
 	for ievt := int64(0); ievt < app.evtmax; ievt++ {
+		evtctx, evtCancel := nctx.WithCancel(runctx)
+
 		app.msg.Infof(">>> running evt=%d...\n", ievt)
 		err = store.reset(keys)
 		if err != nil {
 			return err
 		}
+		err = app.istream.Process(ctxs[0])
+		if err != nil {
+			store.close()
+			app.msg.flush()
+			return err
+		}
 		run := taskrunner{
-			ievt: ievt,
-			errc: make(chan error, len(app.tsks)),
-			quit: make(chan struct{}),
+			ievt:   ievt,
+			errc:   make(chan error, len(app.tsks)),
+			evtctx: evtctx,
 		}
 		for i, tsk := range app.tsks {
 			go run.run(i, ctxs[i], tsk)
@@ -568,7 +582,7 @@ func (app *appmgr) runSequential(ctx Context) error {
 		for err = range run.errc {
 			ndone++
 			if err != nil {
-				close(run.quit)
+				evtCancel()
 				store.close()
 				app.msg.flush()
 				return err
@@ -587,7 +601,17 @@ func (app *appmgr) runSequential(ctx Context) error {
 func (app *appmgr) runConcurrent(ctx Context) error {
 	var err error
 
-	istream, err := app.startInputStreams()
+	runctx, runCancel := nctx.WithCancel(nctx.Background())
+	defer runCancel()
+
+	ctrl := workercontrol{
+		evts:   make(chan context, 2*app.nprocs),
+		done:   make(chan struct{}),
+		errc:   make(chan error),
+		runctx: runctx,
+	}
+
+	istream, err := app.startInputStream()
 	if err != nil {
 		return err
 	}
@@ -599,21 +623,44 @@ func (app *appmgr) runConcurrent(ctx Context) error {
 	}
 	defer close(ostream.Quit)
 
-	ctrl := workercontrol{
-		evts: make(chan int64, 2*app.nprocs),
-		quit: make(chan struct{}),
-		done: make(chan struct{}),
-		errc: make(chan error),
-	}
-
 	workers := make([]worker, app.nprocs)
 	for i := 0; i < app.nprocs; i++ {
 		workers[i] = *newWorker(i, app, &ctrl)
 	}
 
 	go func() {
+		keys := app.dflow.keys()
+		msg := NewMsgStream(app.istream.Name(), app.msg.lvl, nil)
 		for ievt := int64(0); ievt < app.evtmax; ievt++ {
-			ctrl.evts <- ievt
+			evtctx, evtCancel := nctx.WithCancel(runctx)
+			store := *app.store
+			store.store = make(map[string]achan, len(keys))
+			err := store.reset(keys)
+			if err != nil {
+				evtCancel()
+				close(ctrl.evts)
+				ctrl.errc <- err
+				return
+			}
+			ctx := context{
+				id:    ievt,
+				slot:  0,
+				store: &store,
+				msg:   msg,
+				mgr:   nil, // nobody's supposed to access mgr's state during event-loop
+				ctx:   evtctx,
+			}
+
+			err = app.istream.Process(ctx)
+			if err != nil {
+				if err != io.EOF {
+					evtCancel()
+					ctrl.errc <- err
+				}
+				close(ctrl.evts)
+				return
+			}
+			ctrl.evts <- ctx
 		}
 		close(ctrl.evts)
 	}()
@@ -631,6 +678,12 @@ ctrl:
 				// FIXME(sbinet) record all of them (errstack)
 				err = eworker
 			}
+			if eworker == io.EOF {
+				app.msg.Infof(">>> got EOF <<<\n")
+			}
+
+		case <-runctx.Done():
+			return runctx.Err()
 
 		case <-ctrl.done:
 			ndone++
@@ -644,7 +697,7 @@ ctrl:
 	return err
 }
 
-func (app *appmgr) startInputStreams() (StreamControl, error) {
+func (app *appmgr) startInputStream() (StreamControl, error) {
 	var err error
 
 	ctrl := StreamControl{
@@ -653,16 +706,34 @@ func (app *appmgr) startInputStreams() (StreamControl, error) {
 		Quit: make(chan struct{}),
 	}
 
-	// start input streams
-	for _, tsk := range app.tsks {
+	idx := -1
+	inputs := make([]*InputStream, 0)
+
+	// collect input streams
+	for i, tsk := range app.tsks {
 		in, ok := tsk.(*InputStream)
 		if !ok {
 			continue
 		}
-		err = in.connect(ctrl)
+		inputs = append(inputs, in)
+		idx = i
+	}
+
+	switch len(inputs) {
+	case 0:
+		// create an event "pumper"
+		tsk := &inputStream{NewTask("fwk.inputStream", "app-evtloop", app)}
+		app.istream = tsk
+	case 1:
+		app.istream = inputs[0]
+		app.tsks = append(app.tsks[:idx], app.tsks[idx+1:]...)
+		err := inputs[0].connect(ctrl)
 		if err != nil {
 			return ctrl, err
 		}
+
+	default:
+		return ctrl, Errorf("found more than one InputStream! (n=%d)", len(inputs))
 	}
 
 	return ctrl, err

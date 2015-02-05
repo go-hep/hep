@@ -77,7 +77,8 @@ func (tsk *InputStream) read() {
 		select {
 
 		case ctx := <-tsk.ctrl.Ctx:
-			tsk.ctrl.Err <- tsk.streamer.Read(ctx)
+			err := tsk.streamer.Read(ctx)
+			tsk.ctrl.Err <- err
 
 		case <-tsk.ctrl.Quit:
 			return
@@ -122,6 +123,24 @@ func newInputStream(typ, name string, mgr App) (Component, error) {
 	}
 
 	return tsk, err
+}
+
+// inputStream provides fake input events when no input file is present
+type inputStream struct {
+	TaskBase
+}
+
+func (tsk *inputStream) StartTask(ctx Context) error {
+	return nil
+}
+
+func (tsk *inputStream) StopTask(ctx Context) error {
+	panic("boo")
+	return nil
+}
+
+func (tsk *inputStream) Process(ctx Context) error {
+	return nil
 }
 
 func init() {
