@@ -46,6 +46,7 @@ func (tsk *OutputStream) StartTask(ctx Context) error {
 func (tsk *OutputStream) StopTask(ctx Context) error {
 	var err error
 
+	err = tsk.disconnect()
 	return err
 }
 
@@ -65,10 +66,6 @@ func (tsk *OutputStream) connect(ctrl StreamControl) error {
 }
 
 func (tsk *OutputStream) disconnect() error {
-	select {
-	case tsk.ctrl.Quit <- struct{}{}:
-	default:
-	}
 	return tsk.streamer.Disconnect()
 }
 

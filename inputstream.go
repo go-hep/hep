@@ -46,6 +46,7 @@ func (tsk *InputStream) StartTask(ctx Context) error {
 func (tsk *InputStream) StopTask(ctx Context) error {
 	var err error
 
+	err = tsk.disconnect()
 	return err
 }
 
@@ -65,10 +66,6 @@ func (tsk *InputStream) connect(ctrl StreamControl) error {
 }
 
 func (tsk *InputStream) disconnect() error {
-	select {
-	case tsk.ctrl.Quit <- struct{}{}:
-	default:
-	}
 	return tsk.streamer.Disconnect()
 }
 
@@ -77,8 +74,7 @@ func (tsk *InputStream) read() {
 		select {
 
 		case ctx := <-tsk.ctrl.Ctx:
-			err := tsk.streamer.Read(ctx)
-			tsk.ctrl.Err <- err
+			tsk.ctrl.Err <- tsk.streamer.Read(ctx)
 
 		case <-tsk.ctrl.Quit:
 			return
@@ -135,7 +131,6 @@ func (tsk *inputStream) StartTask(ctx Context) error {
 }
 
 func (tsk *inputStream) StopTask(ctx Context) error {
-	panic("boo")
 	return nil
 }
 

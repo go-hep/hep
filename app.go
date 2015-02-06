@@ -764,6 +764,14 @@ func (app *appmgr) stop(ctx Context) error {
 	var err error
 	defer app.msg.flush()
 	app.state = fsm.Stopping
+
+	if app.istream != nil {
+		err = app.istream.StopTask(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
 	for i, tsk := range app.tsks {
 		err = tsk.StopTask(app.ctxs[0][i])
 		if err != nil {
