@@ -243,14 +243,6 @@ func TestPortsCycles(t *testing.T) {
 	}
 }
 
-func getsum(n int64) int64 {
-	sum := int64(0)
-	for i := int64(0); i < n; i++ {
-		sum += i
-	}
-	return sum
-}
-
 func getsumsq(n int64) int64 {
 	sum := int64(0)
 	for i := int64(0); i < n; i++ {
@@ -270,7 +262,7 @@ func newTestReader(max int) io.Reader {
 func TestInputStream(t *testing.T) {
 	const max = 1000
 	for _, evtmax := range []int64{0, 1, 10, 100, -1} {
-		for _, nprocs := range []int{0, 1, 2, 4, 8} {
+		for _, nprocs := range []int{0, 1, 2, 4, 8, -1} {
 			nmax := evtmax
 			if nmax < 0 {
 				nmax = max
@@ -309,13 +301,15 @@ func TestInputStream(t *testing.T) {
 				Type: "github.com/go-hep/fwk/testdata.reducer",
 				Name: "reducer",
 				Props: job.P{
-					"Input": "t1-ints1",
-					"Sum":   getsum(nmax),
+					"Input": "t1-ints1-massaged",
+					"Sum":   getsumsq(nmax),
 				},
 			})
 
-			app.Run()
-
+			err := app.App().Run()
+			if err != nil {
+				t.Errorf("error (evtmax=%d nprocs=%d): %v\n", evtmax, nprocs, err)
+			}
 		}
 	}
 }
@@ -323,7 +317,7 @@ func TestInputStream(t *testing.T) {
 func TestOutputStream(t *testing.T) {
 	const max = 1000
 	for _, evtmax := range []int64{0, 1, 10, 100, -1} {
-		for _, nprocs := range []int{0, 1, 2, 4, 8} {
+		for _, nprocs := range []int{0, 1, 2, 4, 8, -1} {
 			nmax := evtmax
 			if nmax < 0 {
 				nmax = max
@@ -369,8 +363,8 @@ func TestOutputStream(t *testing.T) {
 				Type: "github.com/go-hep/fwk/testdata.reducer",
 				Name: "reducer",
 				Props: job.P{
-					"Input": "t1-ints1",
-					"Sum":   getsum(nmax),
+					"Input": "t1-ints1-massaged",
+					"Sum":   getsumsq(nmax),
 				},
 			})
 
@@ -390,7 +384,10 @@ func TestOutputStream(t *testing.T) {
 					},
 				},
 			})
-			app.Run()
+			err = app.App().Run()
+			if err != nil {
+				t.Errorf("error (evtmax=%d nprocs=%d): %v\n", evtmax, nprocs, err)
+			}
 
 			err = w.Close()
 			if err != nil {

@@ -46,6 +46,7 @@ func (tsk *InputStream) StartTask(ctx Context) error {
 func (tsk *InputStream) StopTask(ctx Context) error {
 	var err error
 
+	err = tsk.disconnect()
 	return err
 }
 
@@ -65,10 +66,6 @@ func (tsk *InputStream) connect(ctrl StreamControl) error {
 }
 
 func (tsk *InputStream) disconnect() error {
-	select {
-	case tsk.ctrl.Quit <- struct{}{}:
-	default:
-	}
 	return tsk.streamer.Disconnect()
 }
 
@@ -122,6 +119,23 @@ func newInputStream(typ, name string, mgr App) (Component, error) {
 	}
 
 	return tsk, err
+}
+
+// inputStream provides fake input events when no input file is present
+type inputStream struct {
+	TaskBase
+}
+
+func (tsk *inputStream) StartTask(ctx Context) error {
+	return nil
+}
+
+func (tsk *inputStream) StopTask(ctx Context) error {
+	return nil
+}
+
+func (tsk *inputStream) Process(ctx Context) error {
+	return nil
 }
 
 func init() {

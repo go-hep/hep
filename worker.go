@@ -2,48 +2,47 @@ package fwk
 
 import (
 	"fmt"
+
+	nctx "golang.org/x/net/context"
 )
 
 type workercontrol struct {
-	evts chan int64
-	quit chan struct{}
-	done chan struct{}
-	errc chan error
+	evts   chan context
+	done   chan struct{}
+	errc   chan error
+	runctx nctx.Context
 }
 
 type worker struct {
-	slot  int
-	keys  []string
-	store datastore
-	ctxs  []context
-	msg   msgstream
+	slot int
+	keys []string
+	//store datastore
+	ctxs []context
+	msg  msgstream
 
-	evts <-chan int64
-	quit <-chan struct{}
-	done chan<- struct{}
-	errc chan<- error
+	evts   <-chan context
+	done   chan<- struct{}
+	errc   chan<- error
+	runctx nctx.Context
 }
 
 func newWorker(i int, app *appmgr, ctrl *workercontrol) *worker {
 	wrk := &worker{
-		slot:  i,
-		keys:  app.dflow.keys(),
-		store: *app.store,
-		ctxs:  make([]context, len(app.tsks)),
-		msg:   NewMsgStream(fmt.Sprintf("%s-worker-%03d", app.name, i), app.msg.lvl, nil),
-		evts:  ctrl.evts,
-		quit:  ctrl.quit,
-		done:  ctrl.done,
-		errc:  ctrl.errc,
+		slot:   i,
+		keys:   app.dflow.keys(),
+		ctxs:   make([]context, len(app.tsks)),
+		msg:    NewMsgStream(fmt.Sprintf("%s-worker-%03d", app.name, i), app.msg.lvl, nil),
+		evts:   ctrl.evts,
+		done:   ctrl.done,
+		errc:   ctrl.errc,
+		runctx: ctrl.runctx,
 	}
-	wrk.store.store = make(map[string]achan, len(wrk.keys))
 	for j, tsk := range app.tsks {
 		wrk.ctxs[j] = context{
-			id:    -1,
-			slot:  i,
-			store: &wrk.store,
-			msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
-			mgr:   nil, // nobody's supposed to access mgr's state during event-loop
+			id:   -1,
+			slot: i,
+			msg:  NewMsgStream(tsk.Name(), app.msg.lvl, nil),
+			mgr:  nil, // nobody's supposed to access mgr's state during event-loop
 		}
 	}
 
@@ -63,20 +62,20 @@ func (wrk *worker) run(tsks []Task) {
 			if !ok {
 				return
 			}
-			wrk.msg.Debugf(">>> running evt=%d...\n", ievt)
-			err := wrk.store.reset(wrk.keys)
-			if err != nil {
-				wrk.errc <- err
-				return
-			}
+			wrk.msg.Debugf(">>> running evt=%d...\n", ievt.ID())
 
+			evtstore := ievt.store.(*datastore)
+			evtctx, evtCancel := nctx.WithCancel(wrk.runctx)
 			evt := taskrunner{
-				ievt: ievt,
-				errc: make(chan error, len(tsks)),
-				quit: make(chan struct{}),
+				ievt:   ievt.ID(),
+				errc:   make(chan error, len(tsks)),
+				evtctx: evtctx,
 			}
 			for i, tsk := range tsks {
-				go evt.run(i, wrk.ctxs[i], tsk)
+				ctx := wrk.ctxs[i]
+				ctx.store = evtstore
+				ctx.ctx = evtctx
+				go evt.run(i, ctx, tsk)
 			}
 			ndone := 0
 		errloop:
@@ -88,36 +87,40 @@ func (wrk *worker) run(tsks []Task) {
 					}
 					ndone++
 					if err != nil {
-						close(evt.quit)
-						wrk.store.close()
+						evtCancel()
+						evtstore.close()
 						wrk.msg.flush()
+
 						wrk.errc <- err
 						return
 					}
 					if ndone == len(tsks) {
 						break errloop
 					}
-				case <-wrk.quit:
-					wrk.store.close()
-					close(evt.quit)
+				case <-evtctx.Done():
+					evtstore.close()
 					wrk.msg.flush()
 					return
 				}
 			}
-			wrk.store.close()
-			close(evt.quit)
+			err := evtstore.reset(wrk.keys)
+			evtstore.close()
 			wrk.msg.flush()
 
-		case <-wrk.quit:
-			wrk.store.close()
+			if err != nil {
+				wrk.errc <- err
+				return
+			}
+		case <-wrk.runctx.Done():
+			//wrk.store.close()
 			return
 		}
 	}
 }
 
 type taskrunner struct {
-	errc chan error
-	quit chan struct{}
+	errc   chan error
+	evtctx nctx.Context
 
 	ievt int64
 }
@@ -128,7 +131,7 @@ func (run taskrunner) run(i int, ctx context, tsk Task) {
 	case run.errc <- tsk.Process(ctx):
 		// FIXME(sbinet) dont be so eager to flush...
 		ctx.msg.flush()
-	case <-run.quit:
+	case <-run.evtctx.Done():
 		ctx.msg.flush()
 	}
 }

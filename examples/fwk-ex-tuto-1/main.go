@@ -18,7 +18,7 @@ import (
 var (
 	g_lvl    = flag.String("l", "INFO", "message level (DEBUG|INFO|WARN|ERROR)")
 	g_evtmax = flag.Int64("evtmax", 10, "number of events to process")
-	g_nprocs = flag.Int("nprocs", 0, "number of events to process concurrently")
+	g_nprocs = flag.Int("nprocs", -1, "number of events to process concurrently")
 )
 
 func main() {
