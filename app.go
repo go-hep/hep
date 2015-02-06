@@ -678,9 +678,6 @@ ctrl:
 				// FIXME(sbinet) record all of them (errstack)
 				err = eworker
 			}
-			if eworker == io.EOF {
-				app.msg.Infof(">>> got EOF <<<\n")
-			}
 
 		case <-runctx.Done():
 			return runctx.Err()
