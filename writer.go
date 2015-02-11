@@ -22,11 +22,11 @@ type Writer struct {
 }
 
 // NewWriter returns a new write-only rio stream
-func NewWriter(w io.Writer) *Writer {
+func NewWriter(w io.Writer) (*Writer, error) {
 	// a rio stream starts with rio magic.
 	_, err := w.Write(magic[:])
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	return &Writer{
@@ -34,7 +34,7 @@ func NewWriter(w io.Writer) *Writer {
 		options: 0,
 		version: 1,
 		recs:    make(map[string]*Record),
-	}
+	}, nil
 }
 
 // Record adds a Record to the list of records to write or

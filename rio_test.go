@@ -51,15 +51,15 @@ func TestReader(t *testing.T) {
 
 	{
 		rbuf := bytes.NewReader(magic[:])
-		r := NewReader(rbuf)
-		if r == nil {
-			t.Fatalf("error creating new rio Reader")
+		r, err := NewReader(rbuf)
+		if err != nil || r == nil {
+			t.Fatalf("error creating new rio Reader: %v", err)
 		}
 	}
 	{
 		rbuf := new(bytes.Buffer)
-		r := NewReader(rbuf)
-		if r != nil {
+		r, err := NewReader(rbuf)
+		if err == nil || r != nil {
 			t.Fatalf("NewReader should have failed")
 		}
 	}
@@ -68,13 +68,13 @@ func TestReader(t *testing.T) {
 func TestRW(t *testing.T) {
 	const nmax = 10
 	wbuf := new(bytes.Buffer)
-	w := NewWriter(wbuf)
-	if w == nil {
-		t.Fatalf("error creating new rio Writer")
+	w, err := NewWriter(wbuf)
+	if w == nil || err != nil {
+		t.Fatalf("error creating new rio Writer: %v", err)
 	}
 
 	wrec := w.Record("data")
-	err := wrec.Connect("event", &event{})
+	err = wrec.Connect("event", &event{})
 	if err != nil {
 		t.Fatalf("error connecting block: %v", err)
 	}
@@ -114,9 +114,9 @@ func TestRW(t *testing.T) {
 		t.Fatalf("error closing writer: %v\n", err)
 	}
 
-	r := NewReader(wbuf)
-	if r == nil {
-		t.Fatalf("error creating new rio Reader")
+	r, err := NewReader(wbuf)
+	if err != nil {
+		t.Fatalf("error creating new rio Reader: %v", err)
 	}
 
 	rrec := r.Record("data")

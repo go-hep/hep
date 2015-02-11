@@ -30,9 +30,9 @@ func main() {
 	}
 	defer f.Close()
 
-	r := rio.NewReader(f)
-	if r == nil {
-		fmt.Printf("*** error creating rio.Reader\n")
+	r, err := rio.NewReader(f)
+	if err != nil {
+		fmt.Printf("*** error creating rio.Reader: %v\n", err)
 		os.Exit(2)
 	}
 

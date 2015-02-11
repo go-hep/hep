@@ -24,12 +24,18 @@ type Reader struct {
 }
 
 // NewReader returns a new read-only rio stream
-func NewReader(r io.Reader) *Reader {
+func NewReader(r io.Reader) (*Reader, error) {
 	// a rio stream starts with rio magic
 	hdr := [4]byte{}
 	_, err := r.Read(hdr[:])
-	if err != nil || hdr != magic {
-		return nil
+	if err != nil {
+		return nil, errorf("rio: error reading magic-header: %v", err)
+	}
+	if hdr != magic {
+		return nil, errorf("rio: not a rio-stream. magic-header=%q. want=%q",
+			string(hdr[:]),
+			string(magic[:]),
+		)
 	}
 
 	buf := new(bytes.Buffer)
@@ -41,7 +47,7 @@ func NewReader(r io.Reader) *Reader {
 		version: rioHdrVersion,
 		recs:    make(map[string]*Record),
 		rrr:     buf,
-	}
+	}, nil
 }
 
 // Record adds a Record to the list of records to read or
