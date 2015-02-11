@@ -12,7 +12,6 @@ import (
 	"testing"
 
 	"github.com/go-hep/hbook"
-	"github.com/go-hep/rio"
 )
 
 func TestH1D(t *testing.T) {
@@ -166,7 +165,6 @@ func TestH1DSerialization(t *testing.T) {
 		}
 
 		var hnew hbook.H1D
-		buf = bytes.NewBuffer(buf.Bytes())
 		dec := gob.NewDecoder(buf)
 		err = dec.Decode(&hnew)
 		if err != nil {
@@ -178,17 +176,16 @@ func TestH1DSerialization(t *testing.T) {
 		}
 	}()
 
-	// test rio.Binary(Un)Marshaler
+	// test rio.Encoder/Decoder
 	func() {
 		buf := new(bytes.Buffer)
-		err := href.MarshalBinary(buf)
+		err := href.RioEncode(buf)
 		if err != nil {
 			t.Fatalf("could not serialize histogram: %v", err)
 		}
 
 		var hnew hbook.H1D
-		buf = bytes.NewBuffer(buf.Bytes())
-		err = hnew.UnmarshalBinary(buf)
+		err = hnew.RioDecode(buf)
 		if err != nil {
 			t.Fatalf("could not deserialize histogram: %v", err)
 		}
@@ -199,10 +196,5 @@ func TestH1DSerialization(t *testing.T) {
 	}()
 
 }
-
-// test serialization interfaces
-var _ rio.BinaryMarshaler = (*hbook.H1D)(nil)
-var _ rio.BinaryUnmarshaler = (*hbook.H1D)(nil)
-var _ rio.BinaryCodec = (*hbook.H1D)(nil)
 
 // EOF
