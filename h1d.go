@@ -11,7 +11,6 @@ import (
 	"math"
 
 	"github.com/go-hep/rio"
-	"github.com/gonuts/binary"
 )
 
 // H1D is a 1-dim histogram with weighted entries.
@@ -147,14 +146,25 @@ func (h *H1D) UnmarshalBinary(data []byte) error {
 	return h.RioDecode(buf)
 }
 
+func (h *H1D) GobEncode() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	err := h.RioEncode(buf)
+	return buf.Bytes(), err
+}
+
+func (h *H1D) GobDecode(data []byte) error {
+	buf := bytes.NewReader(data)
+	return h.RioDecode(buf)
+}
+
 func (h *H1D) RioEncode(w io.Writer) error {
-	enc := binary.NewEncoder(w)
+	enc := gob.NewEncoder(w)
 	err := enc.Encode(h.allbins)
 	if err != nil {
 		return err
 	}
 
-	err = enc.Encode(h.axis)
+	err = enc.Encode(&h.axis)
 	if err != nil {
 		return err
 	}
@@ -172,21 +182,17 @@ func (h *H1D) RioEncode(w io.Writer) error {
 }
 
 func (h *H1D) RioDecode(r io.Reader) error {
-	dec := binary.NewDecoder(r)
+	dec := gob.NewDecoder(r)
 	err := dec.Decode(&h.allbins)
 	if err != nil {
 		return err
 	}
 	h.bins = h.allbins[2:]
 
-	// FIXME(sbinet): need some gob-like type registration
-	// err = dec.Decode(&h.axis)
-	axis := &EvenBinAxis{}
-	err = axis.RioDecode(r)
+	err = dec.Decode(&h.axis)
 	if err != nil {
 		return err
 	}
-	h.axis = axis
 
 	err = dec.Decode(&h.entries)
 	if err != nil {
