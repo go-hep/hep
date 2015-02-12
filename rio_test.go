@@ -86,13 +86,13 @@ func TestRW(t *testing.T) {
 			evtnbr: int64(1000 + i),
 			id:     fmt.Sprintf("id-%04d", i),
 			eles: []electron{
-				electron{[4]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3)}},
-				electron{[4]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3)}},
+				{[4]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3)}},
+				{[4]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3)}},
 			},
 			muons: []muon{
-				muon{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
-				muon{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
-				muon{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
+				{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
+				{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
+				{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
 			},
 		}
 		if wblk.raw.Version != data.RioVersion() {
@@ -150,13 +150,13 @@ func TestRW(t *testing.T) {
 			evtnbr: int64(1000 + i),
 			id:     fmt.Sprintf("id-%04d", i),
 			eles: []electron{
-				electron{[4]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3)}},
-				electron{[4]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3)}},
+				{[4]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3)}},
+				{[4]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3)}},
 			},
 			muons: []muon{
-				muon{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
-				muon{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
-				muon{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
+				{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
+				{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
+				{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
 			},
 		}
 
