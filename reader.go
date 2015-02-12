@@ -6,7 +6,6 @@ package rio
 
 import (
 	"bufio"
-	"bytes"
 	"io"
 
 	riobin "github.com/gonuts/binary"
@@ -16,7 +15,6 @@ import (
 type Reader struct {
 	r io.Reader
 
-	rrr     *bytes.Buffer
 	options Options
 	version Version
 
@@ -38,15 +36,12 @@ func NewReader(r io.Reader) (*Reader, error) {
 		)
 	}
 
-	buf := new(bytes.Buffer)
-	r = io.TeeReader(r, buf)
-	rr := bufio.NewReader(r) //Size(r, 4)
+	rr := bufio.NewReader(r)
 	return &Reader{
 		r:       rr,
 		options: 0,
 		version: rioHdrVersion,
 		recs:    make(map[string]*Record),
-		rrr:     buf,
 	}, nil
 }
 
