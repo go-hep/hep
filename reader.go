@@ -31,10 +31,10 @@ func NewReader(r io.Reader) (*Reader, error) {
 	if err != nil {
 		return nil, errorf("rio: error reading magic-header: %v", err)
 	}
-	if hdr != magic {
+	if hdr != rioMagic {
 		return nil, errorf("rio: not a rio-stream. magic-header=%q. want=%q",
 			string(hdr[:]),
-			string(magic[:]),
+			string(rioMagic[:]),
 		)
 	}
 

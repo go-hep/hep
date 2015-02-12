@@ -26,7 +26,7 @@ type Version uint32
 type frameType [4]byte
 
 var (
-	magic = [4]byte{'r', 'i', 'o', '\x00'}
+	rioMagic = [4]byte{'r', 'i', 'o', '\x00'}
 
 	recFrame = frameType{0xab, 0xad, 0xca, 0xfe} // 0xabadcafe
 	blkFrame = frameType{0xde, 0xad, 0xbe, 0xef} // 0xdeadbeef

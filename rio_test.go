@@ -50,7 +50,7 @@ func TestEmptyRWRecord(t *testing.T) {
 func TestReader(t *testing.T) {
 
 	{
-		rbuf := bytes.NewReader(magic[:])
+		rbuf := bytes.NewReader(rioMagic[:])
 		r, err := NewReader(rbuf)
 		if err != nil || r == nil {
 			t.Fatalf("error creating new rio Reader: %v", err)

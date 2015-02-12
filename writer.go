@@ -24,7 +24,7 @@ type Writer struct {
 // NewWriter returns a new write-only rio stream
 func NewWriter(w io.Writer) (*Writer, error) {
 	// a rio stream starts with rio magic.
-	_, err := w.Write(magic[:])
+	_, err := w.Write(rioMagic[:])
 	if err != nil {
 		return nil, err
 	}
