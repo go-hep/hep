@@ -7,7 +7,10 @@ package hbook
 import (
 	"bytes"
 	"encoding/gob"
+	"io"
 	"math"
+
+	"github.com/go-hep/rio"
 )
 
 // H1D is a 1-dim histogram with weighted entries.
@@ -132,38 +135,31 @@ func (h *H1D) Min() float64 {
 	return ymin
 }
 
-func (h *H1D) MarshalBinary(buf *bytes.Buffer) error {
-	enc := gob.NewEncoder(buf)
-	err := h.gobEncode(enc)
-	return err
+func (h *H1D) MarshalBinary() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	err := h.RioEncode(buf)
+	return buf.Bytes(), err
 }
 
-func (h *H1D) UnmarshalBinary(buf *bytes.Buffer) error {
-	dec := gob.NewDecoder(buf)
-	err := h.gobDecode(dec)
-	return err
+func (h *H1D) UnmarshalBinary(data []byte) error {
+	buf := bytes.NewReader(data)
+	return h.RioDecode(buf)
 }
 
 func (h *H1D) GobEncode() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	enc := gob.NewEncoder(buf)
-	err := h.gobEncode(enc)
-	if err != nil {
-		return nil, err
-	}
+	err := h.RioEncode(buf)
 	return buf.Bytes(), err
 }
 
 func (h *H1D) GobDecode(data []byte) error {
-	buf := bytes.NewBuffer(data)
-	dec := gob.NewDecoder(buf)
-	err := h.gobDecode(dec)
-	return err
+	buf := bytes.NewReader(data)
+	return h.RioDecode(buf)
 }
 
-func (h *H1D) gobEncode(enc *gob.Encoder) error {
-	var err error
-	err = enc.Encode(h.allbins)
+func (h *H1D) RioEncode(w io.Writer) error {
+	enc := gob.NewEncoder(w)
+	err := enc.Encode(h.allbins)
 	if err != nil {
 		return err
 	}
@@ -185,9 +181,9 @@ func (h *H1D) gobEncode(enc *gob.Encoder) error {
 	return err
 }
 
-func (h *H1D) gobDecode(dec *gob.Decoder) error {
-	var err error
-	err = dec.Decode(&h.allbins)
+func (h *H1D) RioDecode(r io.Reader) error {
+	dec := gob.NewDecoder(r)
+	err := dec.Decode(&h.allbins)
 	if err != nil {
 		return err
 	}
@@ -210,9 +206,18 @@ func (h *H1D) gobDecode(dec *gob.Decoder) error {
 	return err
 }
 
+func (h *H1D) RioVersion() rio.Version {
+	return 0
+}
+
 // check various interfaces
 var _ Object = (*H1D)(nil)
 var _ Histogram = (*H1D)(nil)
+
+// serialization interfaces
+var _ rio.RioEncoder = (*H1D)(nil)
+var _ rio.RioDecoder = (*H1D)(nil)
+var _ rio.RioStreamer = (*H1D)(nil)
 
 func init() {
 	gob.Register((*H1D)(nil))

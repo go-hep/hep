@@ -8,7 +8,11 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"io"
 	"math"
+
+	"github.com/go-hep/rio"
+	"github.com/gonuts/binary"
 )
 
 type EvenBinAxis struct {
@@ -80,38 +84,26 @@ func (axis *EvenBinAxis) CoordToIndex(coord float64) int {
 	panic("unreachable")
 }
 
-func (axis *EvenBinAxis) MarshalBinary(buf *bytes.Buffer) error {
-	enc := gob.NewEncoder(buf)
-	err := axis.gobEncode(enc)
-	return err
-}
-
-func (axis *EvenBinAxis) UnmarshalBinary(buf *bytes.Buffer) error {
-	dec := gob.NewDecoder(buf)
-	err := axis.gobDecode(dec)
-	return err
-}
-
-func (axis *EvenBinAxis) GobEncode() ([]byte, error) {
+func (axis *EvenBinAxis) MarshalBinary() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	enc := gob.NewEncoder(buf)
-	err := axis.gobEncode(enc)
-	if err != nil {
-		return nil, err
-	}
+	err := axis.RioEncode(buf)
 	return buf.Bytes(), err
 }
 
-func (axis *EvenBinAxis) GobDecode(data []byte) error {
-	buf := bytes.NewBuffer(data)
-	dec := gob.NewDecoder(buf)
-	err := axis.gobDecode(dec)
+func (axis *EvenBinAxis) UnmarshalBinary(data []byte) error {
+	buf := bytes.NewReader(data)
+	err := axis.RioDecode(buf)
 	return err
 }
 
-func (axis *EvenBinAxis) gobEncode(enc *gob.Encoder) error {
+func (axis *EvenBinAxis) RioVersion() rio.Version {
+	return 0
+}
+
+func (axis *EvenBinAxis) RioEncode(w io.Writer) error {
 	var err error
 
+	enc := binary.NewEncoder(w)
 	err = enc.Encode(axis.nbins)
 	if err != nil {
 		return err
@@ -135,9 +127,10 @@ func (axis *EvenBinAxis) gobEncode(enc *gob.Encoder) error {
 	return err
 }
 
-func (axis *EvenBinAxis) gobDecode(dec *gob.Decoder) error {
+func (axis *EvenBinAxis) RioDecode(r io.Reader) error {
 	var err error
 
+	dec := binary.NewDecoder(r)
 	err = dec.Decode(&axis.nbins)
 	if err != nil {
 		return err
@@ -163,6 +156,11 @@ func (axis *EvenBinAxis) gobDecode(dec *gob.Decoder) error {
 
 // check EvenBinAxis satisfies Axis interface
 var _ Axis = (*EvenBinAxis)(nil)
+
+// serialization interfaces
+var _ rio.RioEncoder = (*EvenBinAxis)(nil)
+var _ rio.RioDecoder = (*EvenBinAxis)(nil)
+var _ rio.RioStreamer = (*EvenBinAxis)(nil)
 
 func init() {
 	gob.Register((*EvenBinAxis)(nil))
