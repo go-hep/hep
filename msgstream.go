@@ -21,7 +21,11 @@ type msgstream struct {
 // NewMsgStream creates a new MsgStream value with name name and minimum
 // verbosity level lvl.
 // This MsgStream will print messages into w.
-func NewMsgStream(name string, lvl Level, w WriteSyncer) msgstream {
+func NewMsgStream(name string, lvl Level, w WriteSyncer) MsgStream {
+	return newMsgStream(name, lvl, w)
+}
+
+func newMsgStream(name string, lvl Level, w WriteSyncer) msgstream {
 	if w == nil {
 		w = os.Stdout
 	}

@@ -31,7 +31,7 @@ func newWorker(i int, app *appmgr, ctrl *workercontrol) *worker {
 		slot:   i,
 		keys:   app.dflow.keys(),
 		ctxs:   make([]context, len(app.tsks)),
-		msg:    NewMsgStream(fmt.Sprintf("%s-worker-%03d", app.name, i), app.msg.lvl, nil),
+		msg:    newMsgStream(fmt.Sprintf("%s-worker-%03d", app.name, i), app.msg.lvl, nil),
 		evts:   ctrl.evts,
 		done:   ctrl.done,
 		errc:   ctrl.errc,
@@ -41,7 +41,7 @@ func newWorker(i int, app *appmgr, ctrl *workercontrol) *worker {
 		wrk.ctxs[j] = context{
 			id:   -1,
 			slot: i,
-			msg:  NewMsgStream(tsk.Name(), app.msg.lvl, nil),
+			msg:  newMsgStream(tsk.Name(), app.msg.lvl, nil),
 			mgr:  nil, // nobody's supposed to access mgr's state during event-loop
 		}
 	}

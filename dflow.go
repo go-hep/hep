@@ -276,19 +276,19 @@ func (svc *dflowsvc) dumpgraph() error {
 
 	for name, typ := range svc.edges {
 		typename := typ.String()
-		attr_data := map[string]string{
+		attrdata := map[string]string{
 			`"node"`: `"data"`,
 			`"type"`: quote(typename),
 		}
-		g.AddNode(gname, quote(name), attr_data)
+		g.AddNode(gname, quote(name), attrdata)
 	}
 
-	attr_task := map[string]string{
+	attrtask := map[string]string{
 		`"node"`:  `"task"`,
 		`"shape"`: `"component"`,
 	}
 	for name, node := range svc.nodes {
-		g.AddNode(gname, quote(name), attr_task)
+		g.AddNode(gname, quote(name), attrtask)
 
 		for in := range node.in {
 			g.AddEdge(quote(in), quote(name), true, nil)

@@ -45,7 +45,7 @@ func NewApp() App {
 		props: make(map[string]map[string]interface{}),
 		dflow: nil,
 		store: nil,
-		msg: NewMsgStream(
+		msg: newMsgStream(
 			appname,
 			LvlInfo,
 			//LvlDebug,
@@ -341,7 +341,7 @@ func (app *appmgr) Run() error {
 		id:    0,
 		slot:  0,
 		store: nil,
-		msg:   NewMsgStream("<root>", app.msg.lvl, nil),
+		msg:   newMsgStream("<root>", app.msg.lvl, nil),
 		mgr:   app,
 	}
 
@@ -428,7 +428,7 @@ func (app *appmgr) configure(ctx Context) error {
 			id:    -1,
 			slot:  0,
 			store: app.store,
-			msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
+			msg:   newMsgStream(tsk.Name(), app.msg.lvl, nil),
 			mgr:   app,
 		}
 	}
@@ -439,7 +439,7 @@ func (app *appmgr) configure(ctx Context) error {
 			id:    -1,
 			slot:  0,
 			store: app.store,
-			msg:   NewMsgStream(svc.Name(), app.msg.lvl, nil),
+			msg:   newMsgStream(svc.Name(), app.msg.lvl, nil),
 			mgr:   app,
 		}
 	}
@@ -537,7 +537,7 @@ func (app *appmgr) runSequential(ctx Context) error {
 			id:    -1,
 			slot:  0,
 			store: &store,
-			msg:   NewMsgStream(tsk.Name(), app.msg.lvl, nil),
+			msg:   newMsgStream(tsk.Name(), app.msg.lvl, nil),
 			mgr:   app,
 		}
 	}
@@ -630,7 +630,7 @@ func (app *appmgr) runConcurrent(ctx Context) error {
 
 	go func() {
 		keys := app.dflow.keys()
-		msg := NewMsgStream(app.istream.Name(), app.msg.lvl, nil)
+		msg := newMsgStream(app.istream.Name(), app.msg.lvl, nil)
 		for ievt := int64(0); ievt < app.evtmax; ievt++ {
 			evtctx, evtCancel := nctx.WithCancel(runctx)
 			store := *app.store
@@ -704,7 +704,7 @@ func (app *appmgr) startInputStream() (StreamControl, error) {
 	}
 
 	idx := -1
-	inputs := make([]*InputStream, 0)
+	inputs := make([]*InputStream, 0, len(app.tsks))
 
 	// collect input streams
 	for i, tsk := range app.tsks {

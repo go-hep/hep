@@ -25,7 +25,7 @@ func (ui *irunner) Configure() error {
 		id:    0,
 		slot:  0,
 		store: nil,
-		msg:   NewMsgStream("<root>", ui.lvl(), nil),
+		msg:   newMsgStream("<root>", ui.lvl(), nil),
 	}
 
 	err = ui.app.configure(ctx)
@@ -42,7 +42,7 @@ func (ui *irunner) Start() error {
 		id:    0,
 		slot:  0,
 		store: nil,
-		msg:   NewMsgStream("<root>", ui.lvl(), nil),
+		msg:   newMsgStream("<root>", ui.lvl(), nil),
 	}
 
 	if ui.state() < fsm.Configured {
@@ -63,7 +63,7 @@ func (ui *irunner) Run(evtmax int64) error {
 		id:    0,
 		slot:  0,
 		store: nil,
-		msg:   NewMsgStream("<root>", ui.lvl(), nil),
+		msg:   newMsgStream("<root>", ui.lvl(), nil),
 	}
 
 	if ui.state() < fsm.Started {
@@ -84,7 +84,7 @@ func (ui *irunner) Stop() error {
 		id:    0,
 		slot:  0,
 		store: nil,
-		msg:   NewMsgStream("<root>", ui.lvl(), nil),
+		msg:   newMsgStream("<root>", ui.lvl(), nil),
 	}
 
 	if ui.state() < fsm.Running {
@@ -105,7 +105,7 @@ func (ui *irunner) Shutdown() error {
 		id:    0,
 		slot:  0,
 		store: nil,
-		msg:   NewMsgStream("<root>", ui.lvl(), nil),
+		msg:   newMsgStream("<root>", ui.lvl(), nil),
 	}
 
 	if ui.state() < fsm.Stopped {
