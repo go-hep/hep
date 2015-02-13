@@ -100,7 +100,7 @@ type decoder struct {
 
 func (dec *decoder) Decode(v interface{}) error {
 	switch v := v.(type) {
-	case RioDecoder:
+	case Decoder:
 		return v.RioDecode(dec.r)
 	}
 

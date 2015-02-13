@@ -53,7 +53,7 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 
 	version := Version(0)
 	switch t := ptr.(type) {
-	case RioStreamer:
+	case Streamer:
 		version = t.RioVersion()
 	}
 
