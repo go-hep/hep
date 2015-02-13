@@ -158,9 +158,9 @@ func (axis *EvenBinAxis) RioDecode(r io.Reader) error {
 var _ Axis = (*EvenBinAxis)(nil)
 
 // serialization interfaces
-var _ rio.RioEncoder = (*EvenBinAxis)(nil)
-var _ rio.RioDecoder = (*EvenBinAxis)(nil)
-var _ rio.RioStreamer = (*EvenBinAxis)(nil)
+var _ rio.Encoder = (*EvenBinAxis)(nil)
+var _ rio.Decoder = (*EvenBinAxis)(nil)
+var _ rio.Streamer = (*EvenBinAxis)(nil)
 
 func init() {
 	gob.Register((*EvenBinAxis)(nil))

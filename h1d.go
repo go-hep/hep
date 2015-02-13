@@ -215,9 +215,9 @@ var _ Object = (*H1D)(nil)
 var _ Histogram = (*H1D)(nil)
 
 // serialization interfaces
-var _ rio.RioEncoder = (*H1D)(nil)
-var _ rio.RioDecoder = (*H1D)(nil)
-var _ rio.RioStreamer = (*H1D)(nil)
+var _ rio.Encoder = (*H1D)(nil)
+var _ rio.Decoder = (*H1D)(nil)
+var _ rio.Streamer = (*H1D)(nil)
 
 func init() {
 	gob.Register((*H1D)(nil))
