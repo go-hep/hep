@@ -1,38 +1,240 @@
+// Copyright 2015 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package rio
 
 import (
 	"bytes"
-	"fmt"
 	"io"
-	"reflect"
-	"unsafe"
+	"io/ioutil"
 )
 
-// recordHeader describes the on-disk record (header part)
-type recordHeader struct {
-	Len uint32
-	Typ uint32
-}
-
-// recordData describes the on-disk record (payload part)
-type recordData struct {
-	Options uint32
-	DataLen uint32 // length of compressed record data
-	UCmpLen uint32 // length of uncompressed record data
-	NameLen uint32 // length of record name
-}
-
-// Record manages blocks of data
+// Record manages and describes blocks of data
 type Record struct {
-	name    string           // record name
-	unpack  bool             // whether to unpack incoming records
-	options uint32           // options (flag word)
-	blocks  map[string]Block // connected blocks
+	unpack bool           // whether to unpack incoming/outcoming records
+	blocks []Block        // connected blocks
+	bmap   map[string]int // connected blocks
+
+	w *Writer
+	r *Reader
+
+	cw Compressor
+	xr Decompressor
+
+	raw rioRecord
+}
+
+func newRecord(name string, options Options) *Record {
+
+	rec := Record{
+		unpack: false,
+		blocks: make([]Block, 0, 2),
+		bmap:   make(map[string]int, 2),
+		raw: rioRecord{
+			Header: rioHeader{
+				Len:   0,
+				Frame: recFrame,
+			},
+			Options: options,
+			Name:    name,
+		},
+	}
+
+	return &rec
+}
+
+// Connect connects a Block to this Record (for reading or writing)
+func (rec *Record) Connect(name string, ptr interface{}) error {
+	_, dup := rec.bmap[name]
+	if dup {
+		return errorf("rio: block [%s] already connected to record [%s]", name, rec.Name())
+	}
+
+	version := Version(0)
+	switch t := ptr.(type) {
+	case RioStreamer:
+		version = t.RioVersion()
+	}
+
+	rec.bmap[name] = len(rec.blocks)
+	rec.blocks = append(
+		rec.blocks,
+		newBlock(name, version),
+	)
+
+	return nil
+}
+
+// Block returns the block named name for reading or writing
+// Block returns nil if the block doesn't exist
+func (rec *Record) Block(name string) *Block {
+	i, ok := rec.bmap[name]
+	if !ok {
+		return nil
+	}
+	block := &rec.blocks[i]
+	return block
+}
+
+// compress compresses r into w
+func (rec *Record) compress(w io.Writer, r io.Reader) error {
+	_, err := io.Copy(rec.cw, r)
+	if err != nil {
+		_ = rec.cw.Close()
+		return err
+	}
+
+	err = rec.cw.Close()
+	return err
+}
+
+// decompress decompresses r into w
+func (rec *Record) decompress(w io.Writer, r io.Reader) error {
+	rec.xr.Reset(r)
+	_, err := io.Copy(w, rec.xr)
+	if err != nil {
+		_ = rec.xr.Close()
+		return err
+	}
+
+	//err = rec.xr.Close()
+	return err
+}
+
+// Write writes data to the Writer, in the rio format
+func (rec *Record) Write() error {
+	var err error
+	xbuf := new(bytes.Buffer) // FIXME(sbinet): use a sync.Pool
+
+	for i := range rec.blocks {
+		block := &rec.blocks[i]
+		err = block.raw.RioEncode(xbuf)
+		if err != nil {
+			return errorf("rio: error writing block #%d (%s): %v", i, block.Name(), err)
+		}
+	}
+
+	xlen := xbuf.Len()
+
+	var cbuf *bytes.Buffer
+	switch {
+	case rec.Compress():
+		cbuf = new(bytes.Buffer)
+		switch {
+		case rec.cw == nil:
+			compr := rec.raw.Options.CompressorKind()
+			cw, err := compr.NewCompressor(cbuf, rec.raw.Options)
+			if err != nil {
+				return err
+			}
+			rec.cw = cw
+		default:
+			err = rec.cw.Reset(cbuf)
+			if err != nil {
+				return err
+			}
+		}
+		_, err = io.Copy(rec.cw, xbuf)
+		if err != nil {
+			return errorf("rio: error compressing blocks: %v", err)
+		}
+		err = rec.cw.Flush()
+		if err != nil {
+			return errorf("rio: error compressing blocks: %v", err)
+		}
+
+	default:
+		cbuf = xbuf
+	}
+
+	clen := cbuf.Len()
+
+	rec.raw.Header.Len = uint64(clen)
+	rec.raw.CLen = uint64(clen)
+	rec.raw.XLen = uint64(xlen)
+
+	buf := new(bytes.Buffer)
+	err = rec.raw.RioEncode(buf)
+	if err != nil {
+		return err
+	}
+
+	_, err = rec.w.w.Write(buf.Bytes())
+	if err != nil {
+		return err
+	}
+
+	_, err = rec.w.w.Write(cbuf.Bytes())
+	if err != nil {
+		return err
+	}
+
+	n := rioAlignU64(rec.raw.Header.Len)
+	if n != rec.raw.Header.Len {
+		_, err = rec.w.w.Write(make([]byte, int(n-rec.raw.Header.Len)))
+	}
+
+	return err
+}
+
+// Read reads data from the Reader, in the rio format
+func (rec *Record) Read() error {
+	err := rec.raw.RioDecode(rec.r.r)
+	if err != nil {
+		return err
+	}
+
+	clen := int64(rioAlignU64(rec.raw.CLen))
+	if !rec.unpack {
+		switch r := rec.r.r.(type) {
+		case io.Seeker:
+			_, err = r.Seek(clen, 0)
+		default:
+			_, err = io.CopyN(ioutil.Discard, r, clen)
+		}
+		return err
+	}
+
+	r := &io.LimitedReader{
+		R: rec.r.r,
+		N: clen,
+	}
+
+	// decompression
+	switch {
+	case rec.xr == nil:
+		compr := rec.raw.Options.CompressorKind()
+		xr, err := compr.NewDecompressor(r)
+		if err != nil {
+			return err
+		}
+		rec.xr = xr
+	default:
+		err = rec.xr.Reset(r)
+		if err != nil {
+			panic(err)
+			return err
+		}
+	}
+
+	for i := range rec.blocks {
+		block := &rec.blocks[i]
+		err = block.raw.RioDecode(rec.xr)
+		if err != nil {
+			return err
+		}
+	}
+
+	if r.N > 0 {
+		return errorf("rio: record read too few bytes (want=%d. got=%d)", clen, clen-r.N)
+	}
+	return err
 }
 
 // Name returns the name of this record
 func (rec *Record) Name() string {
-	return rec.name
+	return rec.raw.Name
 }
 
 // Unpack returns whether to unpack incoming records
@@ -47,177 +249,12 @@ func (rec *Record) SetUnpack(unpack bool) {
 
 // Compress returns the compression flag
 func (rec *Record) Compress() bool {
-	return rec.options&g_opt_compress != 0
-}
-
-// SetCompress sets or resets the compression flag
-func (rec *Record) SetCompress(compress bool) {
-	rec.options &= g_opt_not_compress
-	if compress {
-		rec.options |= g_opt_compress
-	}
+	return CompressorKind((rec.raw.Options&gMaskCompr)>>16) != CompressNone
 }
 
 // Options returns the options of this record.
-func (rec *Record) Options() uint32 {
-	return rec.options
-}
-
-// Connect connects a Block to this Record (for reading or writing)
-func (rec *Record) Connect(name string, ptr interface{}) error {
-	var err error
-	_, dup := rec.blocks[name]
-	if dup {
-		//return fmt.Errorf("rio.Record: Block name [%s] already connected", name)
-		//return ErrBlockConnected
-	}
-	var block Block
-	switch ptr := ptr.(type) {
-	case Block:
-		block = ptr
-	case BinaryCodec:
-		rt := reflect.TypeOf(ptr)
-		block = &mBlockImpl{
-			blk:     ptr,
-			version: 0,
-			name:    rt.Name(),
-		}
-
-	default:
-		rt := reflect.TypeOf(ptr)
-		if rt.Kind() != reflect.Ptr {
-			return fmt.Errorf("rio: Connect needs a pointer to a block of data")
-		}
-		block = &blockImpl{
-			rt:      rt,
-			rv:      reflect.ValueOf(ptr),
-			version: 0,
-			name:    rt.Name(),
-		}
-	}
-	rec.blocks[name] = block
-	return err
-}
-
-// read reads a record
-func (rec *Record) read(buf *bytes.Buffer) error {
-	var err error
-	//fmt.Printf("::: reading record [%s]... [%d]\n", rec.name, buf.Len())
-	// loop until data has been depleted
-	for buf.Len() > 0 {
-		// read block header
-		var hdr blockHeader
-		err = bread(buf, &hdr)
-		if err != nil {
-			return err
-		}
-		if hdr.Typ != g_mark_block {
-			// fmt.Printf("*** err record[%s]: noblockmarker\n", rec.name)
-			return ErrRecordNoBlockMarker
-		}
-
-		var data blockData
-		err = bread(buf, &data)
-		if err != nil {
-			return err
-		}
-
-		var cbuf bytes.Buffer
-		nlen := align4(data.NameLen)
-		n, err := io.CopyN(&cbuf, buf, int64(nlen))
-		if err != nil {
-			// fmt.Printf(">>> err:%v\n", err)
-			return err
-		}
-		if n != int64(nlen) {
-			return fmt.Errorf("rio: read too few bytes (got=%d. expected=%d)", n, nlen)
-		}
-		name := string(cbuf.Bytes()[:data.NameLen])
-		blk, ok := rec.blocks[name]
-		if !ok {
-			// fmt.Printf("*** no block [%s]. draining buffer!\n", name)
-			// drain the whole buffer
-			buf.Next(buf.Len())
-			continue
-		}
-		//fmt.Printf("### %q\n", string(buf.Bytes()))
-		err = blk.UnmarshalBinary(buf)
-		if err != nil {
-			// fmt.Printf("*** error unmarshaling record=%q block=%q: %v\n", rec.name, name, err)
-			return err
-		}
-		//fmt.Printf(">>> read record=%q block=%q (buf=%d)\n", rec.name, name, buf.Len())
-
-		// check whether there is still something to be read.
-		// if there is, check whether there is a block-marker
-		if buf.Len() > 0 {
-			rest := buf.Bytes()
-			idx := bytes.Index(rest, g_mark_block_b)
-			if idx > 0 {
-				buf.Next(idx - 8 /*sizeof blockHeader*/)
-			} else {
-				buf.Next(buf.Len())
-			}
-		}
-	}
-	//fmt.Printf("::: reading record [%s]... [done]\n", rec.name)
-	return err
-}
-
-func (rec *Record) write(buf *bytes.Buffer) error {
-	var err error
-	for k, blk := range rec.blocks {
-
-		bhdr := blockHeader{
-			Typ: g_mark_block,
-		}
-
-		bdata := blockData{
-			Version: blk.Version(),
-			NameLen: uint32(len(k)),
-		}
-
-		var b bytes.Buffer
-		err = blk.MarshalBinary(&b)
-		if err != nil {
-			return err
-		}
-
-		bhdr.Len = uint32(unsafe.Sizeof(bhdr)) +
-			uint32(unsafe.Sizeof(bdata)) +
-			align4(bdata.NameLen) + uint32(b.Len())
-
-		// fmt.Printf("blockHeader: %v\n", bhdr)
-		// fmt.Printf("blockData:   %v (%s)\n", bdata, k)
-
-		err = bwrite(buf, &bhdr)
-		if err != nil {
-			return err
-		}
-
-		err = bwrite(buf, &bdata)
-		if err != nil {
-			return err
-		}
-
-		_, err = buf.Write([]byte(k))
-		if err != nil {
-			return err
-		}
-		padlen := align4(bdata.NameLen) - bdata.NameLen
-		if padlen > 0 {
-			_, err = buf.Write(make([]byte, int(padlen)))
-			if err != nil {
-				return err
-			}
-		}
-
-		_, err := io.Copy(buf, &b)
-		if err != nil {
-			return err
-		}
-	}
-	return err
+func (rec *Record) Options() Options {
+	return rec.raw.Options
 }
 
 // EOF

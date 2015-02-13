@@ -1,88 +1,68 @@
+// Copyright 2015 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package rio
 
 import (
 	"bytes"
-	"reflect"
 )
 
-type BinaryMarshaler interface {
-	MarshalBinary(buf *bytes.Buffer) error
+// Block manages and desribes a block of data
+type Block struct {
+	raw rioBlock
 }
 
-type BinaryUnmarshaler interface {
-	UnmarshalBinary(buf *bytes.Buffer) error
+func newBlock(name string, version Version) Block {
+	block := Block{
+		raw: rioBlock{
+			Header: rioHeader{
+				Len:   0,
+				Frame: blkFrame,
+			},
+			Version: version,
+			Name:    name,
+		},
+	}
+
+	return block
 }
 
-type BinaryCodec interface {
-	BinaryMarshaler
-	BinaryUnmarshaler
+// Name returns the name of this block
+func (blk *Block) Name() string {
+	return blk.raw.Name
 }
 
-type Block interface {
-	BinaryCodec
-
-	Name() string
-	// Xfer(stream *Stream, op Operation, version int) error
-	Version() uint32
+// RioVersion returns the rio-binary version of the block
+func (blk *Block) RioVersion() Version {
+	return blk.raw.Version
 }
 
-// blockHeader describes the on-disk block data (header part)
-type blockHeader struct {
-	Len uint32 // length of this block
-	Typ uint32 // block marker
-}
-
-// blockData describes the on-disk block data (payload part)
-type blockData struct {
-	Version uint32 // version of this block
-	NameLen uint32 // length of the block name
-}
-
-type blockImpl struct {
-	rv      reflect.Value
-	rt      reflect.Type
-	version uint32
-	name    string
-}
-
-func (blk *blockImpl) Name() string {
-	return blk.name
-}
-
-func (blk *blockImpl) Version() uint32 {
-	return blk.version
-}
-
-func (blk *blockImpl) MarshalBinary(buf *bytes.Buffer) error {
+// Write writes data to the Writer, in the rio format
+func (blk *Block) Write(data interface{}) error {
 	var err error
-	err = bwrite(buf, blk.rv.Interface())
-	return err
+
+	buf := new(bytes.Buffer) // FIXME(sbinet): use a sync.Pool
+	enc := encoder{w: buf}
+	err = enc.Encode(data)
+	if err != nil {
+		return err
+	}
+
+	blk.raw.Data = buf.Bytes()
+	blk.raw.Header.Len = uint64(len(blk.raw.Data))
+	return nil
 }
 
-func (blk *blockImpl) UnmarshalBinary(buf *bytes.Buffer) error {
+// Read reads data from the Reader, in the rio format
+func (blk *Block) Read(data interface{}) error {
 	var err error
-	err = bread(buf, blk.rv.Interface())
+
+	buf := bytes.NewReader(blk.raw.Data) // FIXME(sbinet): use a sync.Pool
+	dec := decoder{r: buf}
+	err = dec.Decode(data)
+	if err != nil {
+		return err
+	}
 	return err
-}
-
-type mBlockImpl struct {
-	version uint32
-	name    string
-	blk     BinaryCodec
-}
-
-func (blk *mBlockImpl) Name() string {
-	return blk.name
-}
-
-func (blk *mBlockImpl) Version() uint32 {
-	return blk.version
-}
-
-func (blk *mBlockImpl) MarshalBinary(buf *bytes.Buffer) error {
-	return blk.blk.MarshalBinary(buf)
-}
-
-func (blk *mBlockImpl) UnmarshalBinary(buf *bytes.Buffer) error {
-	return blk.blk.UnmarshalBinary(buf)
 }

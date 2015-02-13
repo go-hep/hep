@@ -23,22 +23,32 @@ func main() {
 		os.Exit(1)
 	}
 
-	f, err := rio.Open(fname)
+	f, err := os.Open(fname)
 	if err != nil {
 		fmt.Printf("*** error: %v\n", err)
 		os.Exit(1)
 	}
 	defer f.Close()
 
-	_, _ = f.ReadRecord()
-
-	_, err = f.Seek(0, 0)
+	r, err := rio.NewReader(f)
 	if err != nil {
-		fmt.Printf("*** error: %v\n", err)
+		fmt.Printf("*** error creating rio.Reader: %v\n", err)
+		os.Exit(2)
 	}
 
-	for _, rec := range f.Records() {
-		fmt.Printf(" -> %v\n", rec.Name())
+	scan := rio.NewScanner(r)
+	for scan.Scan() {
+		// scans through the whole stream
+		err = scan.Err()
+		if err != nil {
+			break
+		}
+		fmt.Printf(" -> %v\n", scan.Record().Name())
+	}
+	err = scan.Err()
+	if err != nil {
+		fmt.Printf("*** error: %v\n", err)
+		os.Exit(2)
 	}
 
 	fmt.Printf("::: inspecting file [%s]... [done]\n", fname)
