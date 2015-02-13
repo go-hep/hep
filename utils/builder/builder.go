@@ -15,9 +15,9 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/go-hep/fwk"
 	"golang.org/x/tools/go/gcimporter"
 	"golang.org/x/tools/go/types"
-	"github.com/go-hep/fwk"
 )
 
 type file struct {
