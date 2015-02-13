@@ -213,7 +213,6 @@ func (rec *Record) Read() error {
 	default:
 		err = rec.xr.Reset(r)
 		if err != nil {
-			panic(err)
 			return err
 		}
 	}
