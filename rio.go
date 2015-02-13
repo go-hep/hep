@@ -6,6 +6,7 @@ package rio
 
 import (
 	"bytes"
+	"compress/flate"
 	"encoding/binary"
 	"io"
 	"reflect"
@@ -15,8 +16,9 @@ const (
 	gAlign        = 0x00000003
 	rioHdrVersion = Version(0)
 
-	gCompress    = Options(0x00000001)
-	gNotCompress = Options(0xfffffffe)
+	gMaskCodec = Options(0x000000ff)
+	gMaskLevel = Options(0x0000ff00)
+	gMaskCompr = Options(0xffff0000)
 )
 
 // Version describes a rio on-disk version of a serialized block.
@@ -116,6 +118,35 @@ func (hdr *rioHeader) RioVersion() Version {
 // Options describes the various options attached to a rio stream
 // such as: compression method, compression level, codec, ...
 type Options uint32
+
+func (o Options) CompressorKind() CompressorKind {
+	return CompressorKind((o & gMaskCompr) >> 16)
+}
+
+func (o Options) CompressorLevel() int {
+	lvl := int((o & gMaskLevel) >> 8)
+	if lvl == 0xff {
+		return flate.DefaultCompression
+	}
+	return lvl
+}
+
+func (o Options) CompressorCodec() int {
+	return int(o & gMaskCodec)
+}
+
+// NewOptions returns a new Options value carefully crafted from the CompressorKind and
+// compression level
+func NewOptions(compr CompressorKind, lvl int, codec int) Options {
+	if lvl <= flate.DefaultCompression || lvl >= 0xff {
+		lvl = 0xff
+	}
+	// FIXME(sbinet): decide on how to handle different codecs (gob|cbor|xdr|riobin|...)
+	opts := Options(Options(compr)<<16) |
+		Options(Options(lvl)<<8) |
+		Options(Options(codec)&gMaskCodec)
+	return opts
+}
 
 // rioRecord
 type rioRecord struct {
@@ -357,23 +388,23 @@ func (blk *rioBlock) RioDecode(r io.Reader) error {
 	}
 	name := make([]byte, rioAlign(int(nsize)))
 
-	nb, err := r.Read(name)
+	nb, err := io.ReadFull(r, name)
 	if err != nil {
 		return errorf("rio: read block name failed: %v", err)
 	}
 	if int(nb) != len(name) {
-		return errorf("rio: read too few bytes (want=%d. got=%d)", len(name), nb)
+		return errorf("rio: read too few bytes for name (want=%d. got=%d)", len(name), nb)
 	}
 
 	blk.Name = string(name[:int(nsize)])
 
 	data := make([]byte, rioAlign(int(blk.Header.Len)))
-	nb, err = r.Read(data)
+	nb, err = io.ReadFull(r, data)
 	if err != nil {
 		return errorf("rio: read block data failed: %v", err)
 	}
 	if int(nb) != len(data) {
-		return errorf("rio: read too few bytes (want=%d. got=%d)", len(data), nb)
+		return errorf("rio: read too few bytes for data (want=%d. got=%d)", len(data), nb)
 	}
 	blk.Data = data[:int(blk.Header.Len)]
 

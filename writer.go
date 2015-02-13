@@ -37,6 +37,17 @@ func NewWriter(w io.Writer) (*Writer, error) {
 	}, nil
 }
 
+// SetCompressor enables compression and sets the compression method.
+func (w *Writer) SetCompressor(compr CompressorKind, lvl int) error {
+	var err error
+
+	// FIXME(sbinet) handle codec (gob|cbor|xdr|riobin|...)
+	codec := 0
+	w.options = NewOptions(compr, lvl, codec)
+
+	return err
+}
+
 // Record adds a Record to the list of records to write or
 // returns the Record with that name.
 func (w *Writer) Record(name string) *Record {

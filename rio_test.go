@@ -1,7 +1,12 @@
+// Copyright 2015 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package rio
 
 import (
 	"bytes"
+	"compress/flate"
 	"encoding/binary"
 	"encoding/gob"
 	"fmt"
@@ -9,6 +14,31 @@ import (
 	"reflect"
 	"testing"
 )
+
+func TestOptions(t *testing.T) {
+	for _, kind := range []CompressorKind{CompressNone, CompressZlib, CompressGzip} {
+		for _, level := range []int{flate.DefaultCompression, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9} {
+			for _, codec := range []int{0, 1, 2} {
+				o := NewOptions(kind, level, codec)
+				if o.CompressorKind() != kind {
+					t.Errorf("invalid CompressorKind. want=%v. got=%v",
+						kind, o.CompressorKind(),
+					)
+				}
+				if o.CompressorLevel() != level {
+					t.Errorf("invalid CompressorLevel. want=%v. got=%v",
+						level, o.CompressorLevel(),
+					)
+				}
+				if o.CompressorCodec() != codec {
+					t.Errorf("invalid CompressorCodec. want=%v. got=%v",
+						codec, o.CompressorCodec(),
+					)
+				}
+			}
+		}
+	}
+}
 
 func TestEmptyRWRecord(t *testing.T) {
 	wrec := rioRecord{
@@ -66,108 +96,190 @@ func TestReader(t *testing.T) {
 }
 
 func TestRW(t *testing.T) {
-	const nmax = 10
-	wbuf := new(bytes.Buffer)
-	w, err := NewWriter(wbuf)
-	if w == nil || err != nil {
-		t.Fatalf("error creating new rio Writer: %v", err)
-	}
-
-	wrec := w.Record("data")
-	err = wrec.Connect("event", &event{})
-	if err != nil {
-		t.Fatalf("error connecting block: %v", err)
-	}
-	wblk := wrec.Block("event")
-
-	for i := 0; i < nmax; i++ {
-		data := event{
-			runnbr: int64(i),
-			evtnbr: int64(1000 + i),
-			id:     fmt.Sprintf("id-%04d", i),
-			eles: []electron{
-				{[4]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3)}},
-				{[4]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3)}},
-			},
-			muons: []muon{
-				{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
-				{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
-				{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
-			},
-		}
-		if wblk.raw.Version != data.RioVersion() {
-			t.Fatalf("error rio-version. want=%d. got=%d", data.RioVersion(), wblk.raw.Version)
-		}
-
-		err := wblk.Write(&data)
-		if err != nil {
-			t.Fatalf("error writing data[%d]: %v\n", i, err)
-		}
-
-		err = wrec.Write()
-		if err != nil {
-			t.Fatalf("error writing record[%d]: %v\n", i, err)
-		}
-	}
-	err = w.Close()
-	if err != nil {
-		t.Fatalf("error closing writer: %v\n", err)
-	}
-
-	r, err := NewReader(wbuf)
-	if err != nil {
-		t.Fatalf("error creating new rio Reader: %v", err)
-	}
-
-	rrec := r.Record("data")
-	err = rrec.Connect("event", &event{})
-	if err != nil {
-		t.Fatalf("error connecting block: %v", err)
-	}
-	rblk := rrec.Block("event")
-
-	for i := 0; i < nmax; i++ {
-		err := rrec.Read()
-		if err != nil {
-			t.Fatalf("error loading record[%d]: %v\nbuf: %v\nraw: %#v\n", i, err,
-				wbuf.Bytes(),
-				rblk.raw,
+	const nmax = 100
+	makeles := func(i int) []electron {
+		eles := make([]electron, 0, nmax)
+		for j := 0; j < nmax; j++ {
+			eles = append(
+				eles,
+				electron{[4]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3)}},
 			)
 		}
-
-		var data event
-		err = rblk.Read(&data)
-		if err != nil {
-			t.Fatalf("error reading data[%d]: %v\n", i, err)
+		return eles
+	}
+	makemuons := func(i int) []muon {
+		muons := make([]muon, 0, nmax)
+		for j := 0; j < nmax; j++ {
+			muons = append(
+				muons,
+				muon{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
+			)
 		}
-
-		if rblk.raw.Version != data.RioVersion() {
-			t.Fatalf("error rio-version. want=%d. got=%d", data.RioVersion(), rblk.raw.Version)
-		}
-
-		want := event{
-			runnbr: int64(i),
-			evtnbr: int64(1000 + i),
-			id:     fmt.Sprintf("id-%04d", i),
-			eles: []electron{
-				{[4]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3)}},
-				{[4]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3)}},
-			},
-			muons: []muon{
-				{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
-				{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
-				{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
-			},
-		}
-
-		if !reflect.DeepEqual(data, want) {
-			t.Fatalf("error data[%d].\nwant=%#v\ngot =%#v\n", i, want, data)
-		}
+		return muons
 	}
 
-	err = r.Close()
-	if err != nil {
-		t.Fatalf("error closing reading: %v\n", err)
+	for ii, test := range []struct {
+		lvl   int
+		ckind CompressorKind
+	}{
+		{
+			lvl:   0,
+			ckind: CompressNone,
+		},
+		{
+			lvl:   1,
+			ckind: CompressNone,
+		},
+
+		// flate
+		{
+			lvl:   flate.NoCompression,
+			ckind: CompressFlate,
+		},
+		{
+			lvl:   flate.DefaultCompression,
+			ckind: CompressFlate,
+		},
+		{
+			lvl:   flate.BestCompression,
+			ckind: CompressFlate,
+		},
+		{
+			lvl:   flate.BestSpeed,
+			ckind: CompressFlate,
+		},
+
+		// zlib
+		{
+			lvl:   flate.NoCompression,
+			ckind: CompressZlib,
+		},
+		{
+			lvl:   flate.DefaultCompression,
+			ckind: CompressZlib,
+		},
+		{
+			lvl:   flate.BestCompression,
+			ckind: CompressZlib,
+		},
+		{
+			lvl:   flate.BestSpeed,
+			ckind: CompressZlib,
+		},
+
+		// gzip
+		{
+			lvl:   flate.NoCompression,
+			ckind: CompressGzip,
+		},
+		{
+			lvl:   flate.DefaultCompression,
+			ckind: CompressGzip,
+		},
+		{
+			lvl:   flate.BestCompression,
+			ckind: CompressGzip,
+		},
+		{
+			lvl:   flate.BestSpeed,
+			ckind: CompressGzip,
+		},
+	} {
+		wbuf := new(bytes.Buffer)
+		w, err := NewWriter(wbuf)
+		if w == nil || err != nil {
+			t.Fatalf("test[%d]: error creating new rio Writer: %v", ii, err)
+		}
+
+		err = w.SetCompressor(test.ckind, test.lvl)
+		if err != nil {
+			t.Fatalf("test[%d]: error setting compressor (%#v): %v", ii, test, err)
+		}
+
+		wrec := w.Record("data")
+		err = wrec.Connect("event", &event{})
+		if err != nil {
+			t.Fatalf("test[%d]: error connecting block: %v", ii, err)
+		}
+		wblk := wrec.Block("event")
+
+		for i := 0; i < nmax; i++ {
+			data := event{
+				runnbr: int64(i),
+				evtnbr: int64(1000 + i),
+				id:     fmt.Sprintf("id-%04d", i),
+				eles:   makeles(i),
+				muons:  makemuons(i),
+			}
+			if wblk.raw.Version != data.RioVersion() {
+				t.Fatalf("test[%d]: error rio-version. want=%d. got=%d", ii, data.RioVersion(), wblk.raw.Version)
+			}
+
+			err := wblk.Write(&data)
+			if err != nil {
+				t.Fatalf("test[%d]: error writing data[%d]: %v\n", ii, i, err)
+			}
+
+			err = wrec.Write()
+			if err != nil {
+				t.Fatalf("test[%d]: error writing record[%d]: %v\n", ii, i, err)
+			}
+		}
+		err = w.Close()
+		if err != nil {
+			t.Fatalf("test[%d]: error closing writer: %v\n", ii, err)
+		}
+
+		// fmt.Printf("::: kind: %7q lvl: %2d: size=%8d\n", test.ckind, test.lvl, wbuf.Len())
+
+		r, err := NewReader(wbuf)
+		if err != nil {
+			t.Fatalf("test[%d]: error creating new rio Reader: %v", ii, err)
+		}
+
+		rrec := r.Record("data")
+		err = rrec.Connect("event", &event{})
+		if err != nil {
+			t.Fatalf("test[%d]: error connecting block: %v", ii, err)
+		}
+		rblk := rrec.Block("event")
+
+		for i := 0; i < nmax; i++ {
+			err := rrec.Read()
+			if err != nil {
+				t.Fatalf("test[%d]: error loading record[%d]: %v\nbuf: %v\nraw: %#v\n", ii, i, err,
+					wbuf.Bytes(),
+					rblk.raw,
+				)
+			}
+
+			var data event
+			err = rblk.Read(&data)
+			if err != nil {
+				t.Fatalf("test[%d]: error reading data[%d]: %v\n", ii, i, err)
+			}
+
+			if rblk.raw.Version != data.RioVersion() {
+				t.Fatalf("test[%d]: error rio-version. want=%d. got=%d", ii, data.RioVersion(), rblk.raw.Version)
+			}
+
+			want := event{
+				runnbr: int64(i),
+				evtnbr: int64(1000 + i),
+				id:     fmt.Sprintf("id-%04d", i),
+				eles:   makeles(i),
+				muons:  makemuons(i),
+			}
+
+			if !reflect.DeepEqual(data, want) {
+				t.Fatalf("test[%d]: error data[%d].\nwant=%#v\ngot =%#v\n", ii, i, want, data)
+			}
+		}
+
+		err = r.Close()
+		if err != nil {
+			t.Fatalf("test[%d]: error closing reading: %v\n", ii, err)
+		}
 	}
 }
 

@@ -21,6 +21,23 @@ type Reader struct {
 	recs map[string]*Record // map of all connected records
 }
 
+type bufioReader struct {
+	*bufio.Reader
+}
+
+func (r *bufioReader) Read(p []byte) (int, error) {
+	n, err := r.Reader.Read(p)
+	if n < len(p) && err == nil {
+		// retry. buffer was perhaps depleted.
+		var nn int
+		nn, err = r.Reader.Read(p[n:])
+		if nn > 0 {
+			n += nn
+		}
+	}
+	return n, err
+}
+
 // NewReader returns a new read-only rio stream
 func NewReader(r io.Reader) (*Reader, error) {
 	// a rio stream starts with rio magic
@@ -36,9 +53,11 @@ func NewReader(r io.Reader) (*Reader, error) {
 		)
 	}
 
-	rr := bufio.NewReader(r)
+	//r = bufio.NewReaderSize(r, 10*1024*1024)
+	//r = bufio.NewReader(r)
+	r = &bufioReader{bufio.NewReader(r)}
 	return &Reader{
-		r:       rr,
+		r:       r,
 		options: 0,
 		version: rioHdrVersion,
 		recs:    make(map[string]*Record),

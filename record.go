@@ -19,10 +19,14 @@ type Record struct {
 	w *Writer
 	r *Reader
 
+	cw Compressor
+	xr Decompressor
+
 	raw rioRecord
 }
 
 func newRecord(name string, options Options) *Record {
+
 	rec := Record{
 		unpack: false,
 		blocks: make([]Block, 0, 2),
@@ -36,6 +40,7 @@ func newRecord(name string, options Options) *Record {
 			Name:    name,
 		},
 	}
+
 	return &rec
 }
 
@@ -72,6 +77,31 @@ func (rec *Record) Block(name string) *Block {
 	return block
 }
 
+// compress compresses r into w
+func (rec *Record) compress(w io.Writer, r io.Reader) error {
+	_, err := io.Copy(rec.cw, r)
+	if err != nil {
+		_ = rec.cw.Close()
+		return err
+	}
+
+	err = rec.cw.Close()
+	return err
+}
+
+// decompress decompresses r into w
+func (rec *Record) decompress(w io.Writer, r io.Reader) error {
+	rec.xr.Reset(r)
+	_, err := io.Copy(w, rec.xr)
+	if err != nil {
+		_ = rec.xr.Close()
+		return err
+	}
+
+	//err = rec.xr.Close()
+	return err
+}
+
 // Write writes data to the Writer, in the rio format
 func (rec *Record) Write() error {
 	var err error
@@ -85,12 +115,44 @@ func (rec *Record) Write() error {
 		}
 	}
 
-	// FIXME(sbinet): handle compression
-	cbuf := xbuf
+	xlen := xbuf.Len()
 
-	rec.raw.Header.Len = uint64(cbuf.Len())
-	rec.raw.CLen = uint64(cbuf.Len())
-	rec.raw.XLen = uint64(xbuf.Len())
+	var cbuf *bytes.Buffer
+	switch {
+	case rec.Compress():
+		cbuf = new(bytes.Buffer)
+		switch {
+		case rec.cw == nil:
+			compr := rec.raw.Options.CompressorKind()
+			cw, err := compr.NewCompressor(cbuf, rec.raw.Options)
+			if err != nil {
+				return err
+			}
+			rec.cw = cw
+		default:
+			err = rec.cw.Reset(cbuf)
+			if err != nil {
+				return err
+			}
+		}
+		_, err = io.Copy(rec.cw, xbuf)
+		if err != nil {
+			return errorf("rio: error compressing blocks: %v", err)
+		}
+		err = rec.cw.Flush()
+		if err != nil {
+			return errorf("rio: error compressing blocks: %v", err)
+		}
+
+	default:
+		cbuf = xbuf
+	}
+
+	clen := cbuf.Len()
+
+	rec.raw.Header.Len = uint64(clen)
+	rec.raw.CLen = uint64(clen)
+	rec.raw.XLen = uint64(xlen)
 
 	buf := new(bytes.Buffer)
 	err = rec.raw.RioEncode(buf)
@@ -138,9 +200,27 @@ func (rec *Record) Read() error {
 		R: rec.r.r,
 		N: clen,
 	}
+
+	// decompression
+	switch {
+	case rec.xr == nil:
+		compr := rec.raw.Options.CompressorKind()
+		xr, err := compr.NewDecompressor(r)
+		if err != nil {
+			return err
+		}
+		rec.xr = xr
+	default:
+		err = rec.xr.Reset(r)
+		if err != nil {
+			panic(err)
+			return err
+		}
+	}
+
 	for i := range rec.blocks {
 		block := &rec.blocks[i]
-		err = block.raw.RioDecode(r)
+		err = block.raw.RioDecode(rec.xr)
 		if err != nil {
 			return err
 		}
@@ -169,15 +249,7 @@ func (rec *Record) SetUnpack(unpack bool) {
 
 // Compress returns the compression flag
 func (rec *Record) Compress() bool {
-	return rec.raw.Options&gCompress != 0
-}
-
-// SetCompress sets or resets the compression flag
-func (rec *Record) SetCompress(compress bool) {
-	rec.raw.Options &= gNotCompress
-	if compress {
-		rec.raw.Options |= gCompress
-	}
+	return CompressorKind((rec.raw.Options&gMaskCompr)>>16) != CompressNone
 }
 
 // Options returns the options of this record.
