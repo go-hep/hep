@@ -13,14 +13,16 @@ import (
 	"github.com/go-hep/fastjet"
 	"github.com/go-hep/fwk"
 	"github.com/go-hep/fwk/job"
+	"github.com/go-hep/fwk/rio"
 	"github.com/go-hep/hepmc"
 )
 
 var (
-	g_lvl      = flag.String("l", "INFO", "log level (DEBUG|INFO|WARN|ERROR)")
-	g_evtmax   = flag.Int("evtmax", -1, "number of events to process")
-	g_nprocs   = flag.Int("nprocs", -1, "number of concurrent events to process")
-	g_cpu_prof = flag.Bool("cpu-prof", false, "enable CPU profiling")
+	lvl     = flag.String("l", "INFO", "log level (DEBUG|INFO|WARN|ERROR)")
+	evtmax  = flag.Int("evtmax", -1, "number of events to process")
+	nprocs  = flag.Int("nprocs", -1, "number of concurrent events to process")
+	cpuprof = flag.Bool("cpu-prof", false, "enable CPU profiling")
+	output  = flag.String("o", "data.rio", "name of output events file")
 
 	abs  = math.Abs
 	sqrt = math.Sqrt
@@ -46,7 +48,7 @@ options:
 	start := time.Now()
 
 	fmt.Printf("::: fads-app...\n")
-	if *g_cpu_prof {
+	if *cpuprof {
 		f, err := os.Create("cpu.prof")
 		if err != nil {
 			panic(err)
@@ -57,9 +59,9 @@ options:
 	}
 
 	app := job.New(job.P{
-		"EvtMax":   int64(*g_evtmax),
-		"NProcs":   *g_nprocs,
-		"MsgLevel": job.MsgLevel(*g_lvl),
+		"EvtMax":   int64(*evtmax),
+		"NProcs":   *nprocs,
+		"MsgLevel": job.MsgLevel(*lvl),
 	})
 
 	// propagate particles in cylinder
@@ -725,6 +727,39 @@ options:
 			"Output":         "/fads/scalar-ht",
 			"MomentumOutput": "/fads/scalar-ht/momentum",
 			"EnergyOutput":   "/fads/scalar-ht/energy",
+		},
+	})
+
+	// output
+	app.Create(job.C{
+		Type: "github.com/go-hep/fwk.OutputStream",
+		Name: "rio-output",
+		Props: job.P{
+			"Ports": []fwk.Port{
+				{
+					Name: "/fads/McEvent",
+					Type: reflect.TypeOf(hepmc.Event{}),
+				},
+				{
+					Name: "/fads/uobj-finder/jets",
+					Type: reflect.TypeOf([]fads.Candidate{}),
+				},
+				{
+					Name: "/fads/uobj-finder/electrons",
+					Type: reflect.TypeOf([]fads.Candidate{}),
+				},
+				{
+					Name: "/fads/uobj-finder/photons",
+					Type: reflect.TypeOf([]fads.Candidate{}),
+				},
+				{
+					Name: "/fads/uobj-finder/muons",
+					Type: reflect.TypeOf([]fads.Candidate{}),
+				},
+			},
+			"Streamer": &rio.OutputStreamer{
+				Name: *output,
+			},
 		},
 	})
 
