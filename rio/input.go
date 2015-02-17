@@ -13,21 +13,19 @@ import (
 	"github.com/go-hep/rio"
 )
 
-// InputStream reads data from a (set of) rio-stream(s)
-type InputStream struct {
-	Names []string      // input filenames
-	r     io.ReadCloser // underlying input file(s)
-	rio   *rio.Reader   // input rio-stream
-	scan  *rio.Scanner  // input records-scanner
-	recs  []*rio.Record // list of connected records to read in
-	ports []fwk.Port
+// InputStreamer reads data from a (set of) rio-stream(s)
+type InputStreamer struct {
+	Names []string            // input filenames
+	r     io.ReadCloser       // underlying input file(s)
+	rio   *rio.Reader         // input rio-stream
+	scan  *rio.Scanner        // input records-scanner
+	ports map[string]fwk.Port // input ports to read/populate
 }
 
-func (input *InputStream) Connect(ports []fwk.Port) error {
+func (input *InputStreamer) Connect(ports []fwk.Port) error {
 	var err error
 
-	input.ports = make([]fwk.Port, len(ports))
-	copy(input.ports, ports)
+	input.ports = make(map[string]fwk.Port, len(ports))
 
 	// FIXME(sbinet): handle multi-reader
 	// FIXME(sbinet): handle local/remote files, protocols
@@ -42,13 +40,13 @@ func (input *InputStream) Connect(ports []fwk.Port) error {
 	}
 
 	recnames := make([]rio.Selector, 0, len(input.ports))
-	for _, port := range input.ports {
+	for _, port := range ports {
+		input.ports[port.Name] = port
 		rec := input.rio.Record(port.Name)
 		err = rec.Connect(port.Name, reflect.New(port.Type))
 		if err != nil {
 			return err
 		}
-		input.recs = append(input.recs, rec)
 		recnames = append(recnames, rio.Selector{Name: port.Name, Unpack: true})
 	}
 
@@ -57,12 +55,39 @@ func (input *InputStream) Connect(ports []fwk.Port) error {
 	return err
 }
 
-func (input *InputStream) Read(ctx fwk.Context) error {
+func (input *InputStreamer) Read(ctx fwk.Context) error {
 	var err error
+	store := ctx.Store()
+	recs := make(map[string]struct{}, len(input.ports))
+	for i := 0; i < len(input.ports); i++ {
+		if !input.scan.Scan() {
+			err = input.scan.Err()
+			if err == nil {
+				return io.EOF
+			}
+		}
+		rec := input.scan.Record()
+		blk := rec.Block(rec.Name())
+		obj := reflect.New(input.ports[rec.Name()].Type).Elem()
+		err := blk.Read(obj.Addr().Interface())
+		if err != nil {
+			return fwk.Errorf("block-read error: %v", err)
+		}
+		err = store.Put(rec.Name(), obj.Interface())
+		if err != nil {
+			return fwk.Errorf("store-put error: %v", err)
+		}
+		recs[rec.Name()] = struct{}{}
+	}
+
+	if len(recs) != len(input.ports) {
+		return fwk.Errorf("fwk.rio: expected inputs: %d. got: %d.", len(input.ports), len(recs))
+	}
+
 	return err
 }
 
-func (input *InputStream) Disconnect() error {
+func (input *InputStreamer) Disconnect() error {
 	var err error
 	// make sure we don't leak filedescriptors
 	defer input.r.Close()
