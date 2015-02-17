@@ -137,27 +137,27 @@ func (h *H1D) Min() float64 {
 
 func (h *H1D) MarshalBinary() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := h.RioEncode(buf)
+	err := h.RioMarshal(buf)
 	return buf.Bytes(), err
 }
 
 func (h *H1D) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewReader(data)
-	return h.RioDecode(buf)
+	return h.RioUnmarshal(buf)
 }
 
 func (h *H1D) GobEncode() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := h.RioEncode(buf)
+	err := h.RioMarshal(buf)
 	return buf.Bytes(), err
 }
 
 func (h *H1D) GobDecode(data []byte) error {
 	buf := bytes.NewReader(data)
-	return h.RioDecode(buf)
+	return h.RioUnmarshal(buf)
 }
 
-func (h *H1D) RioEncode(w io.Writer) error {
+func (h *H1D) RioMarshal(w io.Writer) error {
 	enc := gob.NewEncoder(w)
 	err := enc.Encode(h.allbins)
 	if err != nil {
@@ -181,7 +181,7 @@ func (h *H1D) RioEncode(w io.Writer) error {
 	return err
 }
 
-func (h *H1D) RioDecode(r io.Reader) error {
+func (h *H1D) RioUnmarshal(r io.Reader) error {
 	dec := gob.NewDecoder(r)
 	err := dec.Decode(&h.allbins)
 	if err != nil {
@@ -215,8 +215,8 @@ var _ Object = (*H1D)(nil)
 var _ Histogram = (*H1D)(nil)
 
 // serialization interfaces
-var _ rio.Encoder = (*H1D)(nil)
-var _ rio.Decoder = (*H1D)(nil)
+var _ rio.Marshaler = (*H1D)(nil)
+var _ rio.Unmarshaler = (*H1D)(nil)
 var _ rio.Streamer = (*H1D)(nil)
 
 func init() {

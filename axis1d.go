@@ -86,13 +86,13 @@ func (axis *EvenBinAxis) CoordToIndex(coord float64) int {
 
 func (axis *EvenBinAxis) MarshalBinary() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := axis.RioEncode(buf)
+	err := axis.RioMarshal(buf)
 	return buf.Bytes(), err
 }
 
 func (axis *EvenBinAxis) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewReader(data)
-	err := axis.RioDecode(buf)
+	err := axis.RioUnmarshal(buf)
 	return err
 }
 
@@ -100,7 +100,7 @@ func (axis *EvenBinAxis) RioVersion() rio.Version {
 	return 0
 }
 
-func (axis *EvenBinAxis) RioEncode(w io.Writer) error {
+func (axis *EvenBinAxis) RioMarshal(w io.Writer) error {
 	var err error
 
 	enc := binary.NewEncoder(w)
@@ -127,7 +127,7 @@ func (axis *EvenBinAxis) RioEncode(w io.Writer) error {
 	return err
 }
 
-func (axis *EvenBinAxis) RioDecode(r io.Reader) error {
+func (axis *EvenBinAxis) RioUnmarshal(r io.Reader) error {
 	var err error
 
 	dec := binary.NewDecoder(r)
@@ -158,8 +158,8 @@ func (axis *EvenBinAxis) RioDecode(r io.Reader) error {
 var _ Axis = (*EvenBinAxis)(nil)
 
 // serialization interfaces
-var _ rio.Encoder = (*EvenBinAxis)(nil)
-var _ rio.Decoder = (*EvenBinAxis)(nil)
+var _ rio.Marshaler = (*EvenBinAxis)(nil)
+var _ rio.Unmarshaler = (*EvenBinAxis)(nil)
 var _ rio.Streamer = (*EvenBinAxis)(nil)
 
 func init() {

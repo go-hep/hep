@@ -176,16 +176,16 @@ func TestH1DSerialization(t *testing.T) {
 		}
 	}()
 
-	// test rio.Encoder/Decoder
+	// test rio.Marshaler/Unmarshaler
 	func() {
 		buf := new(bytes.Buffer)
-		err := href.RioEncode(buf)
+		err := href.RioMarshal(buf)
 		if err != nil {
 			t.Fatalf("could not serialize histogram: %v", err)
 		}
 
 		var hnew hbook.H1D
-		err = hnew.RioDecode(buf)
+		err = hnew.RioUnmarshal(buf)
 		if err != nil {
 			t.Fatalf("could not deserialize histogram: %v", err)
 		}
