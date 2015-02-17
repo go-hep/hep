@@ -211,13 +211,15 @@ func (rec *Record) readBlocks(r io.Reader) error {
 
 	// decompression
 	switch {
-	case rec.xr == nil:
+	// FIXME(sbinet): some state isn't correctly carried over in compr.Reset...
+	case rec.xr == nil || true:
 		compr := rec.raw.Options.CompressorKind()
 		xr, err := compr.NewDecompressor(lr)
 		if err != nil {
 			return err
 		}
 		rec.xr = xr
+
 	default:
 		err = rec.xr.Reset(lr)
 		if err != nil {
