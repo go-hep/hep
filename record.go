@@ -227,6 +227,8 @@ func (rec *Record) readBlocks(r io.Reader) error {
 
 	switch len(rec.bmap) {
 	case 0:
+		// no block previously connected.
+		// loop over all block data and add new blocks to this record.
 		for {
 			blk := newBlock("", 0)
 			err = blk.raw.RioDecode(rec.xr)
