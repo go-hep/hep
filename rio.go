@@ -100,7 +100,7 @@ func (hdr *rioHeader) RioDecode(r io.Reader) error {
 
 	err = binary.Read(r, Endian, &hdr.Len)
 	if err != nil {
-		if err == io.EOF {
+		if err == io.EOF || err == io.ErrUnexpectedEOF {
 			return err
 		}
 		return errorf("rio: read header length failed: %v", err)
@@ -244,7 +244,7 @@ func (rec *rioRecord) RioDecode(r io.Reader) error {
 
 	err = rec.Header.RioDecode(r)
 	if err != nil {
-		if err == io.EOF {
+		if err == io.EOF || err == io.ErrUnexpectedEOF {
 			return err
 		}
 		return errorf("rio: read record header failed: %v", err)
@@ -378,6 +378,9 @@ func (blk *rioBlock) RioDecode(r io.Reader) error {
 
 	err = blk.Header.RioDecode(r)
 	if err != nil {
+		if err == io.EOF || err == io.ErrUnexpectedEOF {
+			return err
+		}
 		return errorf("rio: read block header failed: %v", err)
 	}
 
