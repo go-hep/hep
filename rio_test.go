@@ -292,7 +292,7 @@ type event struct {
 	muons  []muon
 }
 
-func (evt *event) RioEncode(w io.Writer) error {
+func (evt *event) RioMarshal(w io.Writer) error {
 	err := binary.Write(w, Endian, evt.runnbr)
 	if err != nil {
 		return err
@@ -308,7 +308,7 @@ func (evt *event) RioEncode(w io.Writer) error {
 		return err
 	}
 	for _, ele := range evt.eles {
-		err = ele.RioEncode(w)
+		err = ele.RioMarshal(w)
 		if err != nil {
 			return err
 		}
@@ -319,7 +319,7 @@ func (evt *event) RioEncode(w io.Writer) error {
 		return err
 	}
 	for _, muon := range evt.muons {
-		err = muon.RioEncode(w)
+		err = muon.RioMarshal(w)
 		if err != nil {
 			return err
 		}
@@ -338,7 +338,7 @@ func (evt *event) RioEncode(w io.Writer) error {
 	return err
 }
 
-func (evt *event) RioDecode(r io.Reader) error {
+func (evt *event) RioUnmarshal(r io.Reader) error {
 	err := binary.Read(r, Endian, &evt.runnbr)
 	if err != nil {
 		return err
@@ -358,7 +358,7 @@ func (evt *event) RioDecode(r io.Reader) error {
 	evt.eles = make([]electron, int(neles))
 	for i := range evt.eles {
 		ele := &evt.eles[i]
-		err = ele.RioDecode(r)
+		err = ele.RioUnmarshal(r)
 		if err != nil {
 			return err
 		}
@@ -373,7 +373,7 @@ func (evt *event) RioDecode(r io.Reader) error {
 	evt.muons = make([]muon, int(nmuons))
 	for i := range evt.muons {
 		muon := &evt.muons[i]
-		err = muon.RioDecode(r)
+		err = muon.RioUnmarshal(r)
 		if err != nil {
 			return err
 		}
@@ -403,11 +403,11 @@ type electron struct {
 	p4 [4]float64
 }
 
-func (ele *electron) RioEncode(w io.Writer) error {
+func (ele *electron) RioMarshal(w io.Writer) error {
 	return binary.Write(w, Endian, ele.p4)
 }
 
-func (ele *electron) RioDecode(r io.Reader) error {
+func (ele *electron) RioUnmarshal(r io.Reader) error {
 	return binary.Read(r, Endian, &ele.p4)
 }
 
@@ -415,10 +415,10 @@ type muon struct {
 	p4 [4]float64
 }
 
-func (muon *muon) RioEncode(w io.Writer) error {
+func (muon *muon) RioMarshal(w io.Writer) error {
 	return binary.Write(w, Endian, muon.p4)
 }
 
-func (muon *muon) RioDecode(r io.Reader) error {
+func (muon *muon) RioUnmarshal(r io.Reader) error {
 	return binary.Read(r, Endian, &muon.p4)
 }

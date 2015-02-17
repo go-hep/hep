@@ -52,7 +52,7 @@ func (s *Scanner) Scan() bool {
 	}
 
 	for {
-		err := s.rec.raw.RioDecode(s.r.r)
+		err := s.rec.raw.RioUnmarshal(s.r.r)
 		if err != nil {
 			s.err = err
 			return false

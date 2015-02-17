@@ -100,8 +100,8 @@ type decoder struct {
 
 func (dec *decoder) Decode(v interface{}) error {
 	switch v := v.(type) {
-	case Decoder:
-		return v.RioDecode(dec.r)
+	case Unmarshaler:
+		return v.RioUnmarshal(dec.r)
 	}
 
 	d := riobin.NewDecoder(dec.r)

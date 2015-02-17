@@ -109,7 +109,7 @@ func (rec *Record) Write() error {
 
 	for i := range rec.blocks {
 		block := &rec.blocks[i]
-		err = block.raw.RioEncode(xbuf)
+		err = block.raw.RioMarshal(xbuf)
 		if err != nil {
 			return errorf("rio: error writing block #%d (%s): %v", i, block.Name(), err)
 		}
@@ -155,7 +155,7 @@ func (rec *Record) Write() error {
 	rec.raw.XLen = uint64(xlen)
 
 	buf := new(bytes.Buffer)
-	err = rec.raw.RioEncode(buf)
+	err = rec.raw.RioMarshal(buf)
 	if err != nil {
 		return err
 	}
@@ -180,7 +180,7 @@ func (rec *Record) Write() error {
 
 // Read reads data from the Reader, in the rio format
 func (rec *Record) Read() error {
-	err := rec.raw.RioDecode(rec.r.r)
+	err := rec.raw.RioUnmarshal(rec.r.r)
 	if err != nil {
 		return err
 	}
@@ -231,7 +231,7 @@ func (rec *Record) readBlocks(r io.Reader) error {
 		// loop over all block data and add new blocks to this record.
 		for {
 			blk := newBlock("", 0)
-			err = blk.raw.RioDecode(rec.xr)
+			err = blk.raw.RioUnmarshal(rec.xr)
 			if err == io.EOF || err == io.ErrUnexpectedEOF {
 				err = nil
 				break
@@ -245,7 +245,7 @@ func (rec *Record) readBlocks(r io.Reader) error {
 	default:
 		for i := range rec.blocks {
 			block := &rec.blocks[i]
-			err = block.raw.RioDecode(rec.xr)
+			err = block.raw.RioUnmarshal(rec.xr)
 			if err != nil {
 				return err
 			}

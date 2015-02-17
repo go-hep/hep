@@ -73,8 +73,8 @@ type encoder struct {
 
 func (enc *encoder) Encode(v interface{}) error {
 	switch v := v.(type) {
-	case Encoder:
-		return v.RioEncode(enc.w)
+	case Marshaler:
+		return v.RioMarshal(enc.w)
 	}
 
 	e := riobin.NewEncoder(enc.w)
