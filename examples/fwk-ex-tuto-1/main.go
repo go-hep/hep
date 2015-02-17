@@ -16,14 +16,14 @@ import (
 )
 
 var (
-	g_lvl    = flag.String("l", "INFO", "message level (DEBUG|INFO|WARN|ERROR)")
-	g_evtmax = flag.Int64("evtmax", 10, "number of events to process")
-	g_nprocs = flag.Int("nprocs", -1, "number of events to process concurrently")
+	lvl    = flag.String("l", "INFO", "message level (DEBUG|INFO|WARN|ERROR)")
+	evtmax = flag.Int64("evtmax", 10, "number of events to process")
+	nprocs = flag.Int("nprocs", -1, "number of events to process concurrently")
 )
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, `Usage: fwk-ex-tuto1 [options]
+		fmt.Fprintf(os.Stderr, `Usage: %[1]s [options]
 
 ex:
  $ %[1]s -l=INFO -evtmax=-1
@@ -43,9 +43,9 @@ options:
 	// create a default fwk application, with some properties
 	// extracted from the CLI
 	app := job.New(job.P{
-		"EvtMax":   *g_evtmax,
-		"NProcs":   *g_nprocs,
-		"MsgLevel": job.MsgLevel(*g_lvl),
+		"EvtMax":   *evtmax,
+		"NProcs":   *nprocs,
+		"MsgLevel": job.MsgLevel(*lvl),
 	})
 
 	// create a task that reads integers from some location

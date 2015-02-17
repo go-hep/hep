@@ -2,7 +2,9 @@ package hbooksvc
 
 import (
 	"fmt"
+	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/go-hep/fwk"
@@ -36,12 +38,20 @@ func TestHbookSvcSeq(t *testing.T) {
 	}
 
 	app.Create(job.C{
-		Type:  "github.com/go-hep/fwk/hbooksvc.hsvc",
-		Name:  "histsvc",
-		Props: job.P{},
+		Type: "github.com/go-hep/fwk/hbooksvc.hsvc",
+		Name: "histsvc",
+		Props: job.P{
+			"Streams": map[string]Stream{
+				"/my-hist": {
+					Name: "hist-seq.rio",
+					Mode: Write,
+				},
+			},
+		},
 	})
 
 	app.Run()
+	os.Remove("hist-seq.rio")
 }
 
 func TestHbookSvcConc(t *testing.T) {
@@ -59,23 +69,97 @@ func TestHbookSvcConc(t *testing.T) {
 		}
 
 		app.Create(job.C{
-			Type:  "github.com/go-hep/fwk/hbooksvc.hsvc",
-			Name:  "histsvc",
-			Props: job.P{},
+			Type: "github.com/go-hep/fwk/hbooksvc.hsvc",
+			Name: "histsvc",
+			Props: job.P{
+				"Streams": map[string]Stream{
+					"/my-hist": {
+						Name: fmt.Sprintf("hist-conc-%d.rio", nprocs),
+						Mode: Write,
+					},
+				},
+			},
 		})
 
 		app.Run()
+		os.Remove(fmt.Sprintf("hist-conc-%d.rio", nprocs))
+	}
+}
+
+func TestHbookStreamName(t *testing.T) {
+	var svc hsvc
+	for _, test := range []struct {
+		name string
+		want []string
+	}{
+		{
+			name: "histo",
+			want: []string{"", "histo"},
+		},
+		{
+			name: "/histo",
+			want: []string{"", "histo"},
+		},
+		{
+			name: "/histo/",
+			want: []string{"", "histo"},
+		},
+		{
+			name: "/my-stream/histo",
+			want: []string{"my-stream", "histo"},
+		},
+		{
+			name: "my-stream/histo",
+			want: []string{"my-stream", "histo"},
+		},
+		{
+			name: "my-stream/histo/",
+			want: []string{"my-stream", "histo"},
+		},
+		{
+			name: "/my-stream/histo/",
+			want: []string{"my-stream", "histo"},
+		},
+		{
+			name: "/my-stream/hdir/histo",
+			want: []string{"my-stream", "hdir/histo"},
+		},
+		{
+			name: "/my-stream/hdir/histo/",
+			want: []string{"my-stream", "hdir/histo"},
+		},
+		{
+			name: "my-stream/hdir/histo",
+			want: []string{"my-stream", "hdir/histo"},
+		},
+		{
+			name: "my-stream/hdir/histo/",
+			want: []string{"my-stream", "hdir/histo"},
+		},
+	} {
+		stream, name := svc.split(test.name)
+		got := []string{stream, name}
+		if !reflect.DeepEqual(got, test.want) {
+			t.Errorf("test.split(%q): got=%v. want=%v\n", test.name, got, test.want)
+		}
 	}
 }
 
 type testhsvc struct {
 	fwk.TaskBase
 
-	hsvc fwk.HistSvc
-	h1d  fwk.H1D
+	hsvc   fwk.HistSvc
+	h1d    fwk.H1D
+	stream string
 }
 
 func (tsk *testhsvc) Configure(ctx fwk.Context) error {
+	var err error
+
+	return err
+}
+
+func (tsk *testhsvc) StartTask(ctx fwk.Context) error {
 	var err error
 
 	svc, err := ctx.Svc("histsvc")
@@ -85,16 +169,17 @@ func (tsk *testhsvc) Configure(ctx fwk.Context) error {
 
 	tsk.hsvc = svc.(fwk.HistSvc)
 
-	tsk.h1d, err = tsk.hsvc.BookH1D("h1d-"+tsk.Name(), 100, -10, 10)
+	if !strings.HasPrefix(tsk.stream, "/") {
+		tsk.stream = "/" + tsk.stream
+	}
+	if strings.HasSuffix(tsk.stream, "/") {
+		tsk.stream = tsk.stream[:len(tsk.stream)-1]
+	}
+
+	tsk.h1d, err = tsk.hsvc.BookH1D(tsk.stream+"/h1d-"+tsk.Name(), 100, -10, 10)
 	if err != nil {
 		return err
 	}
-
-	return err
-}
-
-func (tsk *testhsvc) StartTask(ctx fwk.Context) error {
-	var err error
 
 	return err
 }
@@ -130,6 +215,12 @@ func newtesthsvc(typ, name string, mgr fwk.App) (fwk.Component, error) {
 
 	tsk := &testhsvc{
 		TaskBase: fwk.NewTask(typ, name, mgr),
+		stream:   "",
+	}
+
+	err = tsk.DeclProp("Stream", &tsk.stream)
+	if err != nil {
+		return nil, err
 	}
 
 	return tsk, err

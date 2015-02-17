@@ -15,6 +15,9 @@ import (
 	// we need to access some tools defined in testdata (the ascii InputStream)
 	// so we need to directly import that package
 	"github.com/go-hep/fwk/testdata"
+
+	// for persistency
+	"github.com/go-hep/fwk/rio"
 )
 
 var (
@@ -25,10 +28,10 @@ var (
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, `Usage: %[1]s [options] <input-file>
+		fmt.Fprintf(os.Stderr, `Usage: fwk-ex-tuto-6-write-data [options] <input-ascii> <output-file>
 
 ex:
- $ %[1]s -l=INFO -evtmax=-1 ./input.ascii
+ $ %[1]s -l=INFO -evtmax=100 ./input.ascii ./output.rio
 
 options:
 `,
@@ -39,9 +42,14 @@ options:
 
 	flag.Parse()
 
-	fname := "input.ascii"
+	input := "input.ascii"
 	if flag.NArg() > 0 {
-		fname = flag.Arg(0)
+		input = flag.Arg(0)
+	}
+
+	output := "output.rio"
+	if flag.NArg() > 1 {
+		output = flag.Arg(1)
 	}
 
 	start := time.Now()
@@ -55,13 +63,6 @@ options:
 		"MsgLevel": job.MsgLevel(*lvl),
 	})
 
-	f, err := os.Open(fname)
-	if err != nil {
-		app.Errorf("could not open file [%s]: %v\n", fname, err)
-		os.Exit(1)
-	}
-	defer f.Close()
-
 	// create a task that reads integers from some location
 	// and publish the square of these integers under some other location
 	app.Create(job.C{
@@ -72,6 +73,13 @@ options:
 			"Output": "t1-ints1-massaged",
 		},
 	})
+
+	f, err := os.Open(input)
+	if err != nil {
+		app.Errorf("could not open file [%s]: %v\n", input, err)
+		os.Exit(1)
+	}
+	defer f.Close()
 
 	// create an input-stream, reading from some io.Reader
 	// note we create it after the one that consumes these integers
@@ -92,6 +100,23 @@ options:
 		},
 	})
 
+	// output
+	app.Create(job.C{
+		Type: "github.com/go-hep/fwk.OutputStream",
+		Name: "rio-output",
+		Props: job.P{
+			"Ports": []fwk.Port{
+				{
+					Name: "t1-ints1-massaged",      // location of data to write out
+					Type: reflect.TypeOf(int64(0)), // type of that data
+				},
+			},
+			"Streamer": &rio.OutputStreamer{
+				Name: output,
+			},
+		},
+	})
+
 	// run the application
 	app.Run()
 
@@ -101,53 +126,38 @@ options:
 /*
 output:
 
-$ fwk-ex-tuto-2
-::: fwk-ex-tuto-2...
+$ ::: fwk-ex-tuto-6-write-data...
 t2                   INFO configure...
 t2                   INFO configure... [done]
 t2                   INFO start...
-app                  INFO >>> running evt=0...
-t2                   INFO proc... (id=0|0) => [0 -> 0]
-app                  INFO >>> running evt=1...
 t2                   INFO proc... (id=1|0) => [1 -> 1]
-app                  INFO >>> running evt=2...
+t2                   INFO proc... (id=0|1) => [0 -> 0]
 t2                   INFO proc... (id=2|0) => [2 -> 4]
-app                  INFO >>> running evt=3...
-t2                   INFO proc... (id=3|0) => [3 -> 9]
-app                  INFO >>> running evt=4...
-t2                   INFO proc... (id=4|0) => [4 -> 16]
-app                  INFO >>> running evt=5...
+t2                   INFO proc... (id=3|1) => [3 -> 9]
+t2                   INFO proc... (id=4|1) => [4 -> 16]
 t2                   INFO proc... (id=5|0) => [5 -> 25]
-app                  INFO >>> running evt=6...
-t2                   INFO proc... (id=6|0) => [6 -> 36]
-app                  INFO >>> running evt=7...
+t2                   INFO proc... (id=6|1) => [6 -> 36]
 t2                   INFO proc... (id=7|0) => [7 -> 49]
-app                  INFO >>> running evt=8...
-t2                   INFO proc... (id=8|0) => [8 -> 64]
-app                  INFO >>> running evt=9...
+t2                   INFO proc... (id=8|1) => [8 -> 64]
 t2                   INFO proc... (id=9|0) => [9 -> 81]
-app                  INFO >>> running evt=10...
-t2                   INFO proc... (id=10|0) => [10 -> 100]
-app                  INFO >>> running evt=11...
+t2                   INFO proc... (id=10|1) => [10 -> 100]
 t2                   INFO proc... (id=11|0) => [11 -> 121]
-app                  INFO >>> running evt=12...
-t2                   INFO proc... (id=12|0) => [12 -> 144]
-app                  INFO >>> running evt=13...
+t2                   INFO proc... (id=12|1) => [12 -> 144]
 t2                   INFO proc... (id=13|0) => [13 -> 169]
-app                  INFO >>> running evt=14...
-t2                   INFO proc... (id=14|0) => [14 -> 196]
-app                  INFO >>> running evt=15...
+t2                   INFO proc... (id=14|1) => [14 -> 196]
 t2                   INFO proc... (id=15|0) => [15 -> 225]
-app                  INFO >>> running evt=16...
-t2                   INFO proc... (id=16|0) => [16 -> 256]
-app                  INFO >>> running evt=17...
+t2                   INFO proc... (id=16|1) => [16 -> 256]
 t2                   INFO proc... (id=17|0) => [17 -> 289]
-app                  INFO >>> running evt=18...
-t2                   INFO proc... (id=18|0) => [18 -> 324]
-app                  INFO >>> running evt=19...
+t2                   INFO proc... (id=18|1) => [18 -> 324]
 t2                   INFO proc... (id=19|0) => [19 -> 361]
-app                  INFO >>> running evt=20...
+app                  INFO workers done: 1/2
+app                  INFO workers done: 2/2
 t2                   INFO stop...
-::: fwk-ex-tuto-2... [done] (cpu=1.06487ms)
-
+app                  INFO cpu: 5.096738ms
+app                  INFO mem: alloc:            139 kB
+app                  INFO mem: tot-alloc:        170 kB
+app                  INFO mem: n-mallocs:       2185
+app                  INFO mem: n-frees:          775
+app                  INFO mem: gc-pauses:          0 ms
+::: fwk-ex-tuto-6-write-data... [done] (cpu=5.347258ms)
 */
