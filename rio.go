@@ -16,8 +16,8 @@ const (
 	gAlign        = 0x00000003
 	rioHdrVersion = Version(0)
 
-	gMaskCodec = Options(0x000000ff)
-	gMaskLevel = Options(0x0000ff00)
+	gMaskCodec = Options(0x00000fff)
+	gMaskLevel = Options(0x0000f000)
 	gMaskCompr = Options(0xffff0000)
 )
 
@@ -129,8 +129,8 @@ func (o Options) CompressorKind() CompressorKind {
 
 // CompressorLevel extracts the compression level from the Options value
 func (o Options) CompressorLevel() int {
-	lvl := int((o & gMaskLevel) >> 8)
-	if lvl == 0xff {
+	lvl := int((o & gMaskLevel) >> 12)
+	if lvl == 0xf {
 		return flate.DefaultCompression
 	}
 	return lvl
@@ -144,12 +144,12 @@ func (o Options) CompressorCodec() int {
 // NewOptions returns a new Options value carefully crafted from the CompressorKind and
 // compression level
 func NewOptions(compr CompressorKind, lvl int, codec int) Options {
-	if lvl <= flate.DefaultCompression || lvl >= 0xff {
-		lvl = 0xff
+	if lvl <= flate.DefaultCompression || lvl >= 0xf {
+		lvl = 0xf
 	}
 	// FIXME(sbinet): decide on how to handle different codecs (gob|cbor|xdr|riobin|...)
 	opts := Options(Options(compr)<<16) |
-		Options(Options(lvl)<<8) |
+		Options(Options(lvl)<<12) |
 		Options(Options(codec)&gMaskCodec)
 	return opts
 }
