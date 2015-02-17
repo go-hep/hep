@@ -196,8 +196,16 @@ func (rec *Record) Read() error {
 		return err
 	}
 
-	r := &io.LimitedReader{
-		R: rec.r.r,
+	return rec.readBlocks(rec.r.r)
+}
+
+// readBlocks reads the blocks data from the Reader
+func (rec *Record) readBlocks(r io.Reader) error {
+	var err error
+	clen := int64(rioAlignU64(rec.raw.CLen))
+
+	lr := &io.LimitedReader{
+		R: r,
 		N: clen,
 	}
 
@@ -205,28 +213,45 @@ func (rec *Record) Read() error {
 	switch {
 	case rec.xr == nil:
 		compr := rec.raw.Options.CompressorKind()
-		xr, err := compr.NewDecompressor(r)
+		xr, err := compr.NewDecompressor(lr)
 		if err != nil {
 			return err
 		}
 		rec.xr = xr
 	default:
-		err = rec.xr.Reset(r)
+		err = rec.xr.Reset(lr)
 		if err != nil {
 			return err
 		}
 	}
 
-	for i := range rec.blocks {
-		block := &rec.blocks[i]
-		err = block.raw.RioDecode(rec.xr)
-		if err != nil {
-			return err
+	switch len(rec.bmap) {
+	case 0:
+		for {
+			blk := newBlock("", 0)
+			err = blk.raw.RioDecode(rec.xr)
+			if err == io.EOF || err == io.ErrUnexpectedEOF {
+				err = nil
+				break
+			}
+			if err != nil {
+				return err
+			}
+			rec.bmap[blk.Name()] = len(rec.blocks)
+			rec.blocks = append(rec.blocks, blk)
+		}
+	default:
+		for i := range rec.blocks {
+			block := &rec.blocks[i]
+			err = block.raw.RioDecode(rec.xr)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-	if r.N > 0 {
-		return errorf("rio: record read too few bytes (want=%d. got=%d)", clen, clen-r.N)
+	if lr.N > 0 {
+		return errorf("rio: record read too few bytes (want=%d. got=%d)", clen, clen-lr.N)
 	}
 	return err
 }

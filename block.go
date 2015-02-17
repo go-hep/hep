@@ -57,7 +57,6 @@ func (blk *Block) Write(data interface{}) error {
 // Read reads data from the Reader, in the rio format
 func (blk *Block) Read(data interface{}) error {
 	var err error
-
 	buf := bytes.NewReader(blk.raw.Data) // FIXME(sbinet): use a sync.Pool
 	dec := decoder{r: buf}
 	err = dec.Decode(data)
