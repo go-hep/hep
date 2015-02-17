@@ -246,8 +246,8 @@ func (rec *Record) readBlocks(r io.Reader) error {
 		}
 	default:
 		for i := range rec.blocks {
-			block := &rec.blocks[i]
-			err = block.raw.RioUnmarshal(rec.xr)
+			blk := &rec.blocks[i]
+			err = blk.raw.RioUnmarshal(rec.xr)
 			if err != nil {
 				return err
 			}
