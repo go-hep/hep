@@ -150,9 +150,9 @@ func (rec *Record) Write() error {
 
 	clen := cbuf.Len()
 
-	rec.raw.Header.Len = uint64(clen)
-	rec.raw.CLen = uint64(clen)
-	rec.raw.XLen = uint64(xlen)
+	rec.raw.Header.Len = uint32(clen)
+	rec.raw.CLen = uint32(clen)
+	rec.raw.XLen = uint32(xlen)
 
 	buf := new(bytes.Buffer)
 	err = rec.raw.RioMarshal(buf)
@@ -170,7 +170,7 @@ func (rec *Record) Write() error {
 		return err
 	}
 
-	n := rioAlignU64(rec.raw.Header.Len)
+	n := rioAlignU32(rec.raw.Header.Len)
 	if n != rec.raw.Header.Len {
 		_, err = rec.w.w.Write(make([]byte, int(n-rec.raw.Header.Len)))
 	}
@@ -185,7 +185,7 @@ func (rec *Record) Read() error {
 		return err
 	}
 
-	clen := int64(rioAlignU64(rec.raw.CLen))
+	clen := int64(rioAlignU32(rec.raw.CLen))
 	if !rec.unpack {
 		switch r := rec.r.r.(type) {
 		case io.Seeker:
@@ -202,7 +202,7 @@ func (rec *Record) Read() error {
 // readBlocks reads the blocks data from the Reader
 func (rec *Record) readBlocks(r io.Reader) error {
 	var err error
-	clen := int64(rioAlignU64(rec.raw.CLen))
+	clen := int64(rioAlignU32(rec.raw.CLen))
 
 	lr := &io.LimitedReader{
 		R: r,

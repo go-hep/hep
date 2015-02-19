@@ -58,7 +58,7 @@ func (s *Scanner) Scan() bool {
 			return false
 		}
 
-		clen := int64(rioAlignU64(s.rec.raw.CLen))
+		clen := int64(rioAlignU32(s.rec.raw.CLen))
 
 		name := s.rec.Name()
 		if len(s.filter) > 0 {

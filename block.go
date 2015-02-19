@@ -50,7 +50,7 @@ func (blk *Block) Write(data interface{}) error {
 	}
 
 	blk.raw.Data = buf.Bytes()
-	blk.raw.Header.Len = uint64(len(blk.raw.Data))
+	blk.raw.Header.Len = uint32(len(blk.raw.Data))
 	return nil
 }
 

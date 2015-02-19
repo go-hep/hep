@@ -72,7 +72,7 @@ type Streamer interface {
 type rioHeader struct {
 	// Length of payload in bytes (not counting Len nor Frame).
 	// Always a multiple of four.
-	Len uint64
+	Len uint32
 
 	// Framing used to try identifying what kind of payload follows
 	// (record or block)
@@ -164,7 +164,7 @@ type rioRecord struct {
 	// Total length in bytes for all the blocks in the record.
 	// Always a multiple of four.
 	// If the record is not compressed, same value than XLen.
-	CLen uint64
+	CLen uint32
 
 	// length of un-compressed record content.
 	// Total length in bytes for all the blocks in the record when decompressed.
@@ -173,7 +173,7 @@ type rioRecord struct {
 	// record content.
 	// When the record is compressed, this number is used to allocate a buffer into which
 	// the record is decompressed.
-	XLen uint64
+	XLen uint32
 
 	// name of the record. padded with zeros to a four byte boundary
 	Name string
