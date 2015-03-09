@@ -100,11 +100,8 @@ func (hdr *rioHeader) RioUnmarshal(r io.Reader) error {
 
 	err = binary.Read(r, Endian, &hdr.Len)
 	if err != nil {
-		if err == io.EOF || err == io.ErrUnexpectedEOF {
+		if err == io.EOF {
 			return err
-		}
-		if errf, ok := err.(*flate.ReadError); ok && (errf.Err == io.EOF || errf.Err == io.ErrUnexpectedEOF) {
-			return errf.Err
 		}
 		return errorf("rio: read header length failed: %v", err)
 	}

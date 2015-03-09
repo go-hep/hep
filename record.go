@@ -211,19 +211,26 @@ func (rec *Record) readBlocks(r io.Reader) error {
 
 	// decompression
 	switch {
-	// FIXME(sbinet): some state isn't correctly carried over in compr.Reset...
-	case rec.xr == nil || true:
+	case rec.xr == nil:
 		compr := rec.raw.Options.CompressorKind()
 		xr, err := compr.NewDecompressor(lr)
 		if err != nil {
 			return err
 		}
 		rec.xr = xr
+		lr = &io.LimitedReader{
+			R: xr,
+			N: int64(rec.raw.XLen),
+		}
 
 	default:
 		err = rec.xr.Reset(lr)
 		if err != nil {
 			return err
+		}
+		lr = &io.LimitedReader{
+			R: rec.xr,
+			N: int64(rec.raw.XLen),
 		}
 	}
 
@@ -231,10 +238,10 @@ func (rec *Record) readBlocks(r io.Reader) error {
 	case 0:
 		// no block previously connected.
 		// loop over all block data and add new blocks to this record.
-		for {
+		for lr.N > 0 {
 			blk := newBlock("", 0)
-			err = blk.raw.RioUnmarshal(rec.xr)
-			if err == io.EOF || err == io.ErrUnexpectedEOF {
+			err = blk.raw.RioUnmarshal(lr)
+			if err == io.EOF {
 				err = nil
 				break
 			}
@@ -247,7 +254,7 @@ func (rec *Record) readBlocks(r io.Reader) error {
 	default:
 		for i := range rec.blocks {
 			blk := &rec.blocks[i]
-			err = blk.raw.RioUnmarshal(rec.xr)
+			err = blk.raw.RioUnmarshal(lr)
 			if err != nil {
 				return err
 			}
