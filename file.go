@@ -4,7 +4,10 @@
 
 package rio
 
-import "io"
+import (
+	"io"
+	"sort"
+)
 
 // File random-read-access to a rio stream
 type File struct {
@@ -80,6 +83,7 @@ func (f *File) Keys() []string {
 	for _, rec := range f.meta.Records {
 		keys = append(keys, rec.Name)
 	}
+	sort.Strings(keys)
 	return keys
 }
 
