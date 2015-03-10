@@ -1,7 +1,7 @@
 slha
 ====
 
-[![Build Status](https://drone.io/github.com/go-hep/slha/status.png)](https://drone.io/github.com/go-hep/slha/latest)
+[![Build Status](https://secure.travis-ci.org/go-hep/slha.png)](http://travis-ci.org/go-hep/slha)
 [![GoDoc](https://godoc.org/github.com/go-hep/slha?status.svg)](https://godoc.org/github.com/go-hep/slha)
 
 Package `slha` implements encoding and decoding of SUSY Les Houches
