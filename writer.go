@@ -19,7 +19,8 @@ type Writer struct {
 	options Options
 	version Version
 
-	recs map[string]*Record
+	recs    map[string]*Record
+	offsets map[*Record][]int64
 }
 
 // NewWriter returns a new write-only rio stream
