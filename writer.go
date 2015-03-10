@@ -12,30 +12,48 @@ import (
 	riobin "github.com/gonuts/binary"
 )
 
+type cwriter struct {
+	w *bufio.Writer
+	n int64
+}
+
+func (w *cwriter) Write(data []byte) (int, error) {
+	n, err := w.w.Write(data)
+	w.n += int64(n)
+	return n, err
+}
+
+func (w *cwriter) Flush() error {
+	return w.w.Flush()
+}
+
 // Writer is a rio write-only stream
 type Writer struct {
-	w *bufio.Writer
+	w *cwriter
 
 	options Options
 	version Version
 
 	recs    map[string]*Record
-	offsets map[*Record][]int64
+	offsets map[string][]int64
+	closed  bool
 }
 
 // NewWriter returns a new write-only rio stream
 func NewWriter(w io.Writer) (*Writer, error) {
+	ww := &cwriter{bufio.NewWriter(w), 0}
 	// a rio stream starts with rio magic.
-	_, err := w.Write(rioMagic[:])
+	_, err := ww.Write(rioMagic[:])
 	if err != nil {
 		return nil, err
 	}
 
 	return &Writer{
-		w:       bufio.NewWriter(w),
+		w:       ww,
 		options: NewOptions(CompressDefault, flate.DefaultCompression, 0),
 		version: 1,
 		recs:    make(map[string]*Record),
+		offsets: make(map[string][]int64),
 	}, nil
 }
 
@@ -65,6 +83,43 @@ func (w *Writer) Record(name string) *Record {
 // Close finishes writing the rio write-only stream.
 // It does not (and can not) close the underlying writer.
 func (w *Writer) Close() error {
+	if w.closed {
+		return nil
+	}
+	w.closed = true
+	pos := w.w.n
+	var meta Metadata
+	for _, rec := range w.recs {
+		var blocks []struct{ Name, Type string }
+		for _, blk := range rec.blocks {
+			blocks = append(blocks, struct{ Name, Type string }{blk.Name(), nameFromType(blk.typ)})
+		}
+		meta.Records = append(meta.Records, struct {
+			Name   string
+			Blocks []struct{ Name, Type string }
+		}{
+			Name:   rec.Name(),
+			Blocks: blocks,
+		})
+	}
+	meta.Offsets = w.offsets
+
+	err := w.WriteValue("rio.meta", &meta)
+	if err != nil {
+		return err
+	}
+
+	ftr := rioFooter{
+		Header: rioHeader{
+			Len:   uint32(ftrSize),
+			Frame: ftrFrame,
+		},
+		Meta: pos,
+	}
+	err = ftr.RioMarshal(w.w)
+	if err != nil {
+		return err
+	}
 	return w.w.Flush()
 }
 

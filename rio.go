@@ -40,6 +40,7 @@ var (
 	hdrSize = int(reflect.TypeOf(rioHeader{}).Size())
 	recSize = int(reflect.TypeOf(rioRecord{}).Size())
 	blkSize = int(reflect.TypeOf(rioBlock{}).Size())
+	ftrSize = int(reflect.TypeOf(rioFooter{}).Size())
 )
 
 // Marshaler is the interface implemented by an object that can
@@ -247,6 +248,21 @@ func (rec *rioRecord) RioMarshal(w io.Writer) error {
 func (rec *rioRecord) RioUnmarshal(r io.Reader) error {
 	var err error
 
+	err = rec.unmarshalHeader(r)
+	if err != nil {
+		return err
+	}
+
+	err = rec.unmarshalData(r)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (rec *rioRecord) unmarshalHeader(r io.Reader) error {
+	var err error
+
 	err = rec.Header.RioUnmarshal(r)
 	if err != nil {
 		if err == io.EOF || err == io.ErrUnexpectedEOF {
@@ -258,6 +274,12 @@ func (rec *rioRecord) RioUnmarshal(r io.Reader) error {
 	if rec.Header.Frame != recFrame {
 		return errorf("rio: read record header corrupted (frame=%#v)", rec.Header.Frame)
 	}
+
+	return err
+}
+
+func (rec *rioRecord) unmarshalData(r io.Reader) error {
+	var err error
 
 	err = binary.Read(r, Endian, &rec.Options)
 	if err != nil {
@@ -432,9 +454,96 @@ func (blk *rioBlock) RioVersion() Version {
 	return blk.Version
 }
 
+// rioFooter marks the end of a rio stream
 type rioFooter struct {
-	Header  rioHeader
-	Version Version
-	Name    string
-	Data    []byte
+	Header rioHeader
+	Meta   int64 // position of the record holding stream metadata, in bytes from rio-magic
+}
+
+func (ftr *rioFooter) MarshalBinary() ([]byte, error) {
+	buf := bytes.NewBuffer(make([]byte, 0, recSize))
+	err := ftr.RioMarshal(buf)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), err
+}
+
+func (ftr *rioFooter) UnmarshalBinary(data []byte) error {
+	r := bytes.NewReader(data)
+	return ftr.RioUnmarshal(r)
+}
+
+func (ftr *rioFooter) RioVersion() Version {
+	return rioHdrVersion
+}
+
+func (ftr *rioFooter) RioMarshal(w io.Writer) error {
+	var err error
+
+	err = ftr.Header.RioMarshal(w)
+	if err != nil {
+		return errorf("rio: write footer header failed: %v", err)
+	}
+
+	err = binary.Write(w, Endian, ftr.Meta)
+	if err != nil {
+		return errorf("rio: write footer meta failed: %v", err)
+	}
+
+	return err
+}
+
+func (ftr *rioFooter) RioUnmarshal(r io.Reader) error {
+	var err error
+
+	err = ftr.unmarshalHeader(r)
+	if err != nil {
+		return err
+	}
+
+	err = ftr.unmarshalData(r)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (ftr *rioFooter) unmarshalHeader(r io.Reader) error {
+	var err error
+	err = ftr.Header.RioUnmarshal(r)
+	if err != nil {
+		if err == io.EOF {
+			return err
+		}
+		return errorf("rio: read footer header failed: %v", err)
+	}
+
+	if ftr.Header.Frame != ftrFrame {
+		return errorf("rio: read footer header corrupted (frame=%#v)", ftr.Header.Frame)
+	}
+
+	return err
+}
+
+func (ftr *rioFooter) unmarshalData(r io.Reader) error {
+	var err error
+
+	err = binary.Read(r, Endian, &ftr.Meta)
+	if err != nil {
+		return errorf("rio: read footer meta failed: %v", err)
+	}
+
+	return err
+}
+
+// Metadata stores metadata about a rio stream
+type Metadata struct {
+	Records []struct {
+		Name   string
+		Blocks []struct{ Name, Type string }
+	}
+	Offsets map[string][]int64
 }

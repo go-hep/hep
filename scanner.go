@@ -5,6 +5,7 @@
 package rio
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 )
@@ -52,46 +53,68 @@ func (s *Scanner) Scan() bool {
 	}
 
 	for {
-		err := s.rec.raw.RioUnmarshal(s.r.r)
+		var hdr rioHeader
+		err := hdr.RioUnmarshal(s.r.r)
 		if err != nil {
 			s.err = err
 			return false
 		}
 
-		clen := int64(rioAlignU32(s.rec.raw.CLen))
+		switch hdr.Frame {
+		case ftrFrame:
+			ftr := rioFooter{Header: hdr}
+			err = ftr.unmarshalData(s.r.r)
+			if err != nil {
+				s.err = err
+				return false
+			}
+			continue
+		case recFrame:
+			s.rec.raw.Header = hdr
+			err := s.rec.raw.unmarshalData(s.r.r)
+			if err != nil {
+				s.err = err
+				return false
+			}
 
-		name := s.rec.Name()
-		if len(s.filter) > 0 {
-			_, ok := s.filter[name]
-			if !ok {
+			clen := int64(rioAlignU32(s.rec.raw.CLen))
+
+			name := s.rec.Name()
+			if len(s.filter) > 0 {
+				_, ok := s.filter[name]
+				if !ok {
+					_, err = s.seek(clen, 0)
+					if err != nil {
+						s.err = err
+						return false
+					}
+					continue
+				}
+			}
+
+			s.rec.unpack = s.filter[name].Unpack
+
+			switch s.rec.unpack {
+
+			case true:
+				err = s.rec.readBlocks(s.r.r)
+				if err != nil {
+					s.err = err
+					return false
+				}
+				return true
+
+			case false:
 				_, err = s.seek(clen, 0)
 				if err != nil {
 					s.err = err
 					return false
 				}
-				continue
+				return true
 			}
-		}
 
-		s.rec.unpack = s.filter[name].Unpack
-
-		switch s.rec.unpack {
-
-		case true:
-			err = s.rec.readBlocks(s.r.r)
-			if err != nil {
-				s.err = err
-				return false
-			}
-			return true
-
-		case false:
-			_, err = s.seek(clen, 0)
-			if err != nil {
-				s.err = err
-				return false
-			}
-			return true
+		default:
+			panic(fmt.Errorf("unknown frame %v", hdr.Frame))
 		}
 	}
 
