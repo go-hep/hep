@@ -52,7 +52,11 @@ func NewReader(r io.Reader) (*Reader, error) {
 			string(rioMagic[:]),
 		)
 	}
+	return newReader(r)
+}
 
+// newReader returns a new read-only rio stream
+func newReader(r io.Reader) (*Reader, error) {
 	//r = bufio.NewReaderSize(r, 10*1024*1024)
 	//r = bufio.NewReader(r)
 	r = &bufioReader{bufio.NewReader(r)}

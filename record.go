@@ -169,14 +169,19 @@ func (rec *Record) Write() error {
 
 // Read reads data from the Reader, in the rio format
 func (rec *Record) Read() error {
-	err := rec.raw.RioUnmarshal(rec.r.r)
+	return rec.readRecord(rec.r.r)
+}
+
+// readRecord reads data from the Reader r, in the rio format
+func (rec *Record) readRecord(r io.Reader) error {
+	err := rec.raw.RioUnmarshal(r)
 	if err != nil {
 		return err
 	}
 
 	clen := int64(rioAlignU32(rec.raw.CLen))
 	if !rec.unpack {
-		switch r := rec.r.r.(type) {
+		switch r := r.(type) {
 		case io.Seeker:
 			_, err = r.Seek(clen, 0)
 		default:
@@ -185,7 +190,7 @@ func (rec *Record) Read() error {
 		return err
 	}
 
-	return rec.readBlocks(rec.r.r)
+	return rec.readBlocks(r)
 }
 
 // readBlocks reads the blocks data from the Reader
