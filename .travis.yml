@@ -2,3 +2,11 @@ language: go
 go:
   - 1.4
   - tip
+
+notifications:
+  email:
+    recipients:
+      - binet@cern.ch
+    on_success: change
+    on_failure: always
+
