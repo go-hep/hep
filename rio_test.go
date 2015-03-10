@@ -411,6 +411,10 @@ type electron struct {
 	p4 [4]float64
 }
 
+func newElectron(px, py, pz, e float64) electron {
+	return electron{[4]float64{px, py, pz, e}}
+}
+
 func (ele *electron) RioMarshal(w io.Writer) error {
 	return binary.Write(w, Endian, ele.p4)
 }
@@ -421,6 +425,10 @@ func (ele *electron) RioUnmarshal(r io.Reader) error {
 
 type muon struct {
 	p4 [4]float64
+}
+
+func newMuon(px, py, pz, e float64) muon {
+	return muon{[4]float64{px, py, pz, e}}
 }
 
 func (muon *muon) RioMarshal(w io.Writer) error {
