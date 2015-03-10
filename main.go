@@ -197,17 +197,21 @@ func main() {
 	fname := flag.String("f", "", "paw script to execute")
 	flag.Parse()
 
+	os.Exit(xmain(*fname))
+}
+
+func xmain(fname string) int {
 	icmd := newCmd()
 	defer icmd.Close()
 
-	switch *fname {
+	switch fname {
 	case "":
 		err := icmd.Run()
 		if err != nil {
 			panic(err)
 		}
 	default:
-		f, err := os.Open(*fname)
+		f, err := os.Open(fname)
 		if err != nil {
 			panic(err)
 		}
@@ -218,8 +222,10 @@ func main() {
 			err := icmd.exec(line)
 			if err != nil {
 				fmt.Printf("**error** %v\n", err)
-				os.Exit(1)
+				return 1
 			}
 		}
 	}
+
+	return 0
 }
