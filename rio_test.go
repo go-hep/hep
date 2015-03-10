@@ -16,13 +16,21 @@ import (
 )
 
 func TestOptions(t *testing.T) {
-	for _, kind := range []CompressorKind{CompressNone, CompressZlib, CompressGzip} {
+	for _, kind := range []struct {
+		kind CompressorKind
+		want CompressorKind
+	}{
+		{CompressDefault, CompressZlib},
+		{CompressNone, CompressNone},
+		{CompressZlib, CompressZlib},
+		{CompressGzip, CompressGzip},
+	} {
 		for _, level := range []int{flate.DefaultCompression, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9} {
 			for _, codec := range []int{0, 1, 2} {
-				o := NewOptions(kind, level, codec)
-				if o.CompressorKind() != kind {
+				o := NewOptions(kind.kind, level, codec)
+				if o.CompressorKind() != kind.want {
 					t.Errorf("invalid CompressorKind. want=%v. got=%v",
-						kind, o.CompressorKind(),
+						kind.want, o.CompressorKind(),
 					)
 				}
 				if o.CompressorLevel() != level {
