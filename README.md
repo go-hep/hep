@@ -1,6 +1,8 @@
 lhef2hepmc
 ==========
 
+[![Build Status](https://secure.travis-ci.org/go-hep/lhef2hepmc.png)](http://travis-ci.org/go-hep/lhef2hepmc)
+
 ``lhef2hepmc`` is a simple `LHEF` -> `HEPMC` converter program.
 It is a pure ``Go`` re-implementation of the `C++` converter from
 `Rivet`.
