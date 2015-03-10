@@ -6,6 +6,7 @@ package rio
 
 import (
 	"bufio"
+	"compress/flate"
 	"io"
 
 	riobin "github.com/gonuts/binary"
@@ -31,7 +32,7 @@ func NewWriter(w io.Writer) (*Writer, error) {
 
 	return &Writer{
 		w:       bufio.NewWriter(w),
-		options: 0,
+		options: NewOptions(CompressDefault, flate.DefaultCompression, 0),
 		version: 1,
 		recs:    make(map[string]*Record),
 	}, nil

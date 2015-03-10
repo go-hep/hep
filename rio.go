@@ -147,6 +147,11 @@ func NewOptions(compr CompressorKind, lvl int, codec int) Options {
 	if lvl <= flate.DefaultCompression || lvl >= 0xf {
 		lvl = 0xf
 	}
+
+	if compr == CompressDefault {
+		compr = CompressZlib
+	}
+
 	// FIXME(sbinet): decide on how to handle different codecs (gob|cbor|xdr|riobin|...)
 	opts := Options(Options(compr)<<16) |
 		Options(Options(lvl)<<12) |
