@@ -6,11 +6,13 @@ package rio
 
 import (
 	"bytes"
+	"reflect"
 )
 
 // Block manages and desribes a block of data
 type Block struct {
 	raw rioBlock
+	typ reflect.Type
 }
 
 func newBlock(name string, version Version) Block {

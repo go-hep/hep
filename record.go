@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
+	"reflect"
 )
 
 // Record manages and describes blocks of data
@@ -62,6 +63,7 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 		rec.blocks,
 		newBlock(name, version),
 	)
+	rec.blocks[rec.bmap[name]].typ = reflect.TypeOf(ptr)
 
 	return nil
 }
