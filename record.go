@@ -223,30 +223,22 @@ func (rec *Record) readBlocks(r io.Reader) error {
 		}
 	}
 
-	switch len(rec.bmap) {
-	case 0:
-		// no block previously connected.
-		// loop over all block data and add new blocks to this record.
-		for lr.N > 0 {
-			blk := newBlock("", 0)
-			err = blk.raw.RioUnmarshal(lr)
-			if err == io.EOF {
-				err = nil
-				break
-			}
-			if err != nil {
-				return err
-			}
-			rec.bmap[blk.Name()] = len(rec.blocks)
-			rec.blocks = append(rec.blocks, blk)
+	for lr.N > 0 {
+		blk := newBlock("", 0)
+		err = blk.raw.RioUnmarshal(lr)
+		if err == io.EOF {
+			err = nil
+			break
 		}
-	default:
-		for i := range rec.blocks {
-			blk := &rec.blocks[i]
-			err = blk.raw.RioUnmarshal(lr)
-			if err != nil {
-				return err
-			}
+		if err != nil {
+			return err
+		}
+		n := blk.Name()
+		if i, ok := rec.bmap[n]; ok {
+			rec.blocks[i] = blk
+		} else {
+			rec.bmap[n] = len(rec.blocks)
+			rec.blocks = append(rec.blocks, blk)
 		}
 	}
 
