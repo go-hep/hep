@@ -47,10 +47,12 @@ func TestFile(t *testing.T) {
 	}
 
 	r := bytes.NewReader(buf.Bytes())
+
 	f, err := Open(r)
 	if err != nil {
 		t.Fatalf("error opening file: %v\n", err)
 	}
+	defer f.Close()
 
 	keys := []string{"evt1", "evt2"}
 	if !reflect.DeepEqual(keys, f.Keys()) {

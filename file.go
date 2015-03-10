@@ -121,3 +121,9 @@ func (f *File) Has(name string) bool {
 	_, ok := f.meta.Offsets[name]
 	return ok
 }
+
+// Close closes access to the rio-file.
+// It does not (and can not) close the underlying reader.
+func (f *File) Close() error {
+	return nil
+}
