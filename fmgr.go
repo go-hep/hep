@@ -8,11 +8,17 @@ import (
 	"github.com/go-hep/rio"
 )
 
+type fileType interface {
+	io.Reader
+	io.Seeker
+	io.Closer
+}
+
 type rfile struct {
 	id  int
 	n   string
-	r   io.ReadCloser
-	rio *rio.Reader
+	r   fileType
+	rio *rio.File
 }
 
 func (r *rfile) open(fname string) error {
@@ -24,7 +30,7 @@ func (r *rfile) open(fname string) error {
 		return err
 	}
 
-	r.rio, err = rio.NewReader(r.r)
+	r.rio, err = rio.Open(r.r)
 	if err != nil {
 		return err
 	}
@@ -35,38 +41,9 @@ func (r *rfile) open(fname string) error {
 func (r *rfile) ls() error {
 	var err error
 
-	f, err := os.Open(r.n)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	rr, err := rio.NewReader(f)
-	if err != nil {
-		return err
-	}
-	defer rr.Close()
-
-	// FIXME(sbinet) instead of crawling through the whole file,
-	//               use rio.StreamHdr when available.
-	recs := make(map[string]struct{})
-	scan := rio.NewScanner(rr)
-	for scan.Scan() {
-		err = scan.Err()
-		if err != nil {
-			break
-		}
-		n := scan.Record().Name()
-		recs[n] = struct{}{}
-	}
 	fmt.Printf("/file/id/%d name=%s\n", r.id, r.n)
-	for k := range recs {
+	for _, k := range r.rio.Keys() {
 		fmt.Printf("  %s\n", k)
-	}
-
-	err = scan.Err()
-	if err != nil {
-		return err
 	}
 
 	return err
@@ -75,50 +52,16 @@ func (r *rfile) ls() error {
 func (r *rfile) read(name string, ptr interface{}) error {
 	var err error
 
-	f, err := os.Open(r.n)
+	if !r.rio.Has(name) {
+		return fmt.Errorf("no record [%s] in file [id=%d name=%s]", name, r.id, r.n)
+	}
+
+	err = r.rio.Get(name, ptr)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
-	rr, err := rio.NewReader(f)
-	if err != nil {
-		return err
-	}
-	defer rr.Close()
-
-	scan := rio.NewScanner(rr)
-	scan.Select([]rio.Selector{
-		{Name: name, Unpack: true},
-	})
-
-	for scan.Scan() {
-		err = scan.Err()
-		if err != nil {
-			break
-		}
-		rec := scan.Record()
-		n := rec.Name()
-		if n != name {
-			continue
-		}
-
-		blk := rec.Block(name)
-		err = blk.Read(ptr)
-		if err != nil {
-			return err
-		}
-		return err
-	}
-	err = scan.Err()
-	if err != nil {
-		if err == io.EOF {
-			err = nil
-		}
-		return err
-	}
-
-	return fmt.Errorf("no record [%s] in file [id=%d name=%s]", name, r.id, r.n)
+	return err
 }
 
 func (r *rfile) close() error {
