@@ -8,6 +8,8 @@ import (
 	"bytes"
 	"encoding/gob"
 	"math"
+
+	"github.com/go-hep/dtypes"
 )
 
 type Bin1D struct {
@@ -144,6 +146,7 @@ func (b *Bin1D) gobDecode(dec *gob.Decoder) error {
 
 func init() {
 	gob.Register((*Bin1D)(nil))
+	dtypes.Register((*Bin1D)(nil))
 }
 
 // EOF
