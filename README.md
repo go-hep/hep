@@ -1,7 +1,7 @@
 heppdt
 ======
 
-[![Build Status](https://drone.io/github.com/go-hep/heppdt/status.png)](https://drone.io/github.com/go-hep/heppdt/latest)
+[![Build Status](https://secure.travis-ci.org/go-hep/heppdt.png)](http://travis-ci.org/go-hep/heppdt)
 
 `heppdt` provides access to the HEP Particle Data Table.
 
