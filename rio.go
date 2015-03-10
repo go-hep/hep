@@ -19,6 +19,8 @@ const (
 	gMaskCodec = Options(0x00000fff)
 	gMaskLevel = Options(0x0000f000)
 	gMaskCompr = Options(0xffff0000)
+
+	rioMeta = ".rio.meta"
 )
 
 // Version describes a rio on-disk version of a serialized block.

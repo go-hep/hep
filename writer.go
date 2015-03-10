@@ -104,7 +104,7 @@ func (w *Writer) Close() error {
 	}
 	meta.Offsets = w.offsets
 
-	err := w.WriteValue("rio.meta", &meta)
+	err := w.WriteValue(rioMeta, &meta)
 	if err != nil {
 		return err
 	}
