@@ -1,7 +1,7 @@
 fwk
 ===
 
-[![Build Status](https://drone.io/github.com/go-hep/fwk/status.png)](https://drone.io/github.com/go-hep/fwk/latest)
+[![Build Status](https://secure.travis-ci.org/go-hep/fwk.png)](http://travis-ci.org/go-hep/fwk)
 [![GoDoc](https://godoc.org/github.com/go-hep/fwk?status.svg)](https://godoc.org/github.com/go-hep/fwk)
 
 `fwk` is a HEP oriented concurrent framework written in `Go`.
