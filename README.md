@@ -1,7 +1,7 @@
 sio
 ===
 
-[![Build Status](https://drone.io/github.com/go-hep/sio/status.png)](https://drone.io/github.com/go-hep/sio/latest)
+[![Build Status](https://secure.travis-ci.org/go-hep/sio.png)](http://travis-ci.org/go-hep/sio)
 
 `sio` is a pure `Go` implementation of SIO (Serial I/O).
 
