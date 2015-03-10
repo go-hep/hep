@@ -1,7 +1,7 @@
 fmom
 ====
 
-[![Build Status](https://drone.io/github.com/go-hep/fmom/status.png)](https://drone.io/github.com/go-hep/fmom/latest)
+[![Build Status](https://secure.travis-ci.org/go-hep/fmom.png)](http://travis-ci.org/go-hep/fmom)
 
 `fmom` provides facilities to create and manipulate Lorentz 4-vectors.
 
