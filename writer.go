@@ -146,7 +146,8 @@ func (w *Writer) writeRecord(rec *Record, hdr, data []byte) error {
 	return err
 }
 
-// WriteValue writes a value to the stream
+// WriteValue writes a value to the stream.
+// The value is written to a record named `name` with one block `name`.
 func (w *Writer) WriteValue(name string, value interface{}) error {
 	var err error
 
