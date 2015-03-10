@@ -35,7 +35,7 @@ type Writer struct {
 	version Version
 
 	recs    map[string]*Record
-	offsets map[string][]int64
+	offsets map[string][]offset
 	closed  bool
 }
 
@@ -53,7 +53,7 @@ func NewWriter(w io.Writer) (*Writer, error) {
 		options: NewOptions(CompressDefault, flate.DefaultCompression, 0),
 		version: 1,
 		recs:    make(map[string]*Record),
-		offsets: make(map[string][]int64),
+		offsets: make(map[string][]offset),
 	}, nil
 }
 
@@ -90,17 +90,17 @@ func (w *Writer) Close() error {
 	pos := w.w.n
 	var meta Metadata
 	for _, rec := range w.recs {
-		var blocks []struct{ Name, Type string }
+		var blocks []blockInfo
 		for _, blk := range rec.blocks {
-			blocks = append(blocks, struct{ Name, Type string }{blk.Name(), nameFromType(blk.typ)})
+			blocks = append(blocks, blockInfo{blk.Name(), nameFromType(blk.typ)})
 		}
-		meta.Records = append(meta.Records, struct {
-			Name   string
-			Blocks []struct{ Name, Type string }
-		}{
-			Name:   rec.Name(),
-			Blocks: blocks,
-		})
+		meta.Records = append(
+			meta.Records,
+			recordInfo{
+				Name:   rec.Name(),
+				Blocks: blocks,
+			},
+		)
 	}
 	meta.Offsets = w.offsets
 
@@ -126,7 +126,7 @@ func (w *Writer) Close() error {
 // writeRecord writes all the record data
 func (w *Writer) writeRecord(rec *Record, hdr, data []byte) error {
 	var err error
-	w.offsets[rec.Name()] = append(w.offsets[rec.Name()], w.w.n)
+	beg := w.w.n
 
 	_, err = w.w.Write(hdr)
 	if err != nil {
@@ -143,6 +143,8 @@ func (w *Writer) writeRecord(rec *Record, hdr, data []byte) error {
 		_, err = w.w.Write(make([]byte, int(n-rec.raw.Header.Len)))
 	}
 
+	end := w.w.n
+	w.offsets[rec.Name()] = append(w.offsets[rec.Name()], offset{beg, end - beg})
 	return err
 }
 
