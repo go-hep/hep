@@ -68,6 +68,53 @@ func (w *Writer) Close() error {
 	return w.w.Flush()
 }
 
+// writeRecord writes all the record data
+func (w *Writer) writeRecord(rec *Record, hdr, data []byte) error {
+	var err error
+	w.offsets[rec.Name()] = append(w.offsets[rec.Name()], w.w.n)
+
+	_, err = w.w.Write(hdr)
+	if err != nil {
+		return err
+	}
+
+	_, err = w.w.Write(data)
+	if err != nil {
+		return err
+	}
+
+	n := rioAlignU32(rec.raw.Header.Len)
+	if n != rec.raw.Header.Len {
+		_, err = w.w.Write(make([]byte, int(n-rec.raw.Header.Len)))
+	}
+
+	return err
+}
+
+// WriteValue writes a value to the stream
+func (w *Writer) WriteValue(name string, value interface{}) error {
+	var err error
+
+	rec := w.Record(name)
+	err = rec.Connect(name, value)
+	if err != nil {
+		return err
+	}
+
+	blk := rec.Block(name)
+	err = blk.Write(value)
+	if err != nil {
+		return err
+	}
+
+	err = rec.Write()
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
 // encoder manages the encoding of data values into rioRecords
 type encoder struct {
 	w io.Writer

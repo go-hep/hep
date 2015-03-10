@@ -162,20 +162,7 @@ func (rec *Record) Write() error {
 		return err
 	}
 
-	_, err = rec.w.w.Write(buf.Bytes())
-	if err != nil {
-		return err
-	}
-
-	_, err = rec.w.w.Write(cbuf.Bytes())
-	if err != nil {
-		return err
-	}
-
-	n := rioAlignU32(rec.raw.Header.Len)
-	if n != rec.raw.Header.Len {
-		_, err = rec.w.w.Write(make([]byte, int(n-rec.raw.Header.Len)))
-	}
+	err = rec.w.writeRecord(rec, buf.Bytes(), cbuf.Bytes())
 
 	return err
 }
