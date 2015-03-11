@@ -16,7 +16,7 @@ type fileType interface {
 }
 
 type rfile struct {
-	id  int
+	id  string
 	n   string
 	r   fileType
 	rio *rio.File
@@ -42,7 +42,7 @@ func (r *rfile) open(fname string) error {
 func (r *rfile) ls() error {
 	var err error
 
-	fmt.Printf("/file/id/%d name=%s\n", r.id, r.n)
+	fmt.Printf("/file/id/%s name=%s\n", r.id, r.n)
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
 	for _, k := range r.rio.Keys() {
 		fmt.Fprintf(w, " \t- %s\t(type=%q)\n", k.Name, k.Blocks[0].Type)
@@ -57,7 +57,7 @@ func (r *rfile) read(name string, ptr interface{}) error {
 	var err error
 
 	if !r.rio.Has(name) {
-		return fmt.Errorf("no record [%s] in file [id=%d name=%s]", name, r.id, r.n)
+		return fmt.Errorf("no record [%s] in file [id=%s name=%s]", name, r.id, r.n)
 	}
 
 	err = r.rio.Get(name, ptr)
@@ -78,7 +78,7 @@ func (r *rfile) close() error {
 }
 
 type wfile struct {
-	id  int
+	id  string
 	n   string
 	w   io.WriteCloser
 	rio *rio.Writer
@@ -111,22 +111,22 @@ func (w *wfile) close() error {
 }
 
 type fileMgr struct {
-	rfds map[int]rfile
-	wfds map[int]wfile
+	rfds map[string]rfile
+	wfds map[string]wfile
 }
 
 func newFileMgr() fileMgr {
 	return fileMgr{
-		rfds: make(map[int]rfile),
-		wfds: make(map[int]wfile),
+		rfds: make(map[string]rfile),
+		wfds: make(map[string]wfile),
 	}
 }
 
-func (mgr *fileMgr) open(id int, fname string) error {
+func (mgr *fileMgr) open(id string, fname string) error {
 	var err error
 	r, dup := mgr.rfds[id]
 	if dup {
-		return fmt.Errorf("paw: file [id=%d name=%s] already open", id, r.n)
+		return fmt.Errorf("paw: file [id=%s name=%s] already open", id, r.n)
 	}
 
 	r.id = id
@@ -139,7 +139,7 @@ func (mgr *fileMgr) open(id int, fname string) error {
 	return nil
 }
 
-func (mgr *fileMgr) close(id int) error {
+func (mgr *fileMgr) close(id string) error {
 	r, ok := mgr.rfds[id]
 	if ok {
 		delete(mgr.rfds, id)
@@ -152,13 +152,13 @@ func (mgr *fileMgr) close(id int) error {
 		return w.close()
 	}
 
-	return fmt.Errorf("paw: unknown file [id=%d]", id)
+	return fmt.Errorf("paw: unknown file [id=%s]", id)
 }
 
-func (mgr *fileMgr) ls(id int) error {
+func (mgr *fileMgr) ls(id string) error {
 	r, ok := mgr.rfds[id]
 	if !ok {
-		return fmt.Errorf("paw: unknown file [id=%d]", id)
+		return fmt.Errorf("paw: unknown file [id=%s]", id)
 	}
 
 	err := r.ls()
@@ -169,11 +169,11 @@ func (mgr *fileMgr) ls(id int) error {
 	return err
 }
 
-func (mgr *fileMgr) create(id int, fname string) error {
+func (mgr *fileMgr) create(id string, fname string) error {
 	var err error
 	w, dup := mgr.wfds[id]
 	if dup {
-		return fmt.Errorf("paw: file [id=%d name=%s] already open", id, w.n)
+		return fmt.Errorf("paw: file [id=%s name=%s] already open", id, w.n)
 	}
 
 	w.id = id

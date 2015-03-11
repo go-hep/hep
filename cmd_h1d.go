@@ -7,7 +7,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 )
 
@@ -22,14 +21,11 @@ func (cmd *cmdH1DOpen) Name() string {
 
 func (cmd *cmdH1DOpen) Run(args []string) error {
 	var err error
-	if len(args) != 2 {
-		return fmt.Errorf("%s: need histo-id and histo-name", cmd.Name())
+	if len(args) < 2 {
+		return fmt.Errorf("%s: need histo-id and histo-name (got=%v)", cmd.Name(), args)
 	}
 
-	hid, err := strconv.Atoi(args[0])
-	if err != nil {
-		return err
-	}
+	hid := args[0]
 
 	// e.g: /file/id/1/my-histo
 	hname := args[1]
@@ -55,18 +51,17 @@ func (cmd *cmdH1DOpen) Complete(line string) []string {
 			args[2] = "/file/id/"
 		}
 		for id := range cmd.ctx.fmgr.rfds {
-			sid := strconv.Itoa(id)
 			switch {
-			case strings.HasPrefix("/file/id/"+sid+"/", args[2]):
+			case strings.HasPrefix("/file/id/"+id+"/", args[2]):
 				r := cmd.ctx.fmgr.rfds[id]
-				v := "/file/id/" + sid + "/"
+				v := "/file/id/" + id + "/"
 				for _, k := range r.rio.Keys() {
 					if strings.HasPrefix(v+k.Name, args[2]) {
 						o = append(o, strings.Join(args[:2], " ")+" "+v+k.Name)
 					}
 				}
-			case strings.HasPrefix("/file/id/"+sid, args[2]):
-				o = append(o, strings.Join(args[:2], " ")+" /file/id/"+sid)
+			case strings.HasPrefix("/file/id/"+id, args[2]):
+				o = append(o, strings.Join(args[:2], " ")+" /file/id/"+id)
 			}
 		}
 	}
@@ -88,11 +83,7 @@ func (cmd *cmdH1DPlot) Run(args []string) error {
 		return fmt.Errorf("%s: need a histo-id to plot", cmd.Name())
 	}
 
-	hid, err := strconv.Atoi(args[0])
-	if err != nil {
-		return err
-	}
-
+	hid := args[0]
 	err = cmd.ctx.hmgr.plotH1D(hid)
 	return err
 }

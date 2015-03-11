@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/go-hep/hbook"
@@ -12,16 +11,16 @@ import (
 )
 
 type histMgr struct {
-	h1ds map[int]*hbook.H1D
+	h1ds map[string]*hbook.H1D
 }
 
 func newHistMgr() histMgr {
 	return histMgr{
-		h1ds: make(map[int]*hbook.H1D),
+		h1ds: make(map[string]*hbook.H1D),
 	}
 }
 
-func (mgr *histMgr) openH1D(fmgr *fileMgr, hid int, path string) error {
+func (mgr *histMgr) openH1D(fmgr *fileMgr, hid, path string) error {
 	var err error
 	const prefix = "/file/id/"
 	if !strings.HasPrefix(path, prefix) {
@@ -41,14 +40,11 @@ func (mgr *histMgr) openH1D(fmgr *fileMgr, hid int, path string) error {
 		return fmt.Errorf("invalid path [%s] (missing file-id and histo-name)", path)
 	}
 
-	fid, err := strconv.Atoi(toks[0])
-	if err != nil {
-		return err
-	}
+	fid := toks[0]
 
 	r, ok := fmgr.rfds[fid]
 	if !ok {
-		return fmt.Errorf("unknown file-id [%d]", fid)
+		return fmt.Errorf("unknown file-id [%s]", fid)
 	}
 
 	hname := toks[1]
@@ -63,11 +59,11 @@ func (mgr *histMgr) openH1D(fmgr *fileMgr, hid int, path string) error {
 	return err
 }
 
-func (mgr *histMgr) plotH1D(hid int) error {
+func (mgr *histMgr) plotH1D(hid string) error {
 	var err error
 	h, ok := mgr.h1ds[hid]
 	if !ok {
-		return fmt.Errorf("unknown H1D [id=%d]", hid)
+		return fmt.Errorf("unknown H1D [id=%s]", hid)
 	}
 
 	fmt.Printf("== h1d: name=%q\nentries=%d\nmean=%+8.3f\nRMS= %+8.3f\n",

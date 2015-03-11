@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
@@ -23,10 +22,7 @@ func (cmd *cmdFileOpen) Name() string {
 
 func (cmd *cmdFileOpen) Run(args []string) error {
 	var err error
-	id, err := strconv.Atoi(args[0])
-	if err != nil {
-		return err
-	}
+	id := args[0]
 	fname := args[1]
 	err = cmd.ctx.fmgr.open(id, fname)
 	return err
@@ -78,10 +74,7 @@ func (cmd *cmdFileCreate) Name() string {
 
 func (cmd *cmdFileCreate) Run(args []string) error {
 	var err error
-	id, err := strconv.Atoi(args[0])
-	if err != nil {
-		return err
-	}
+	id := args[0]
 	fname := args[1]
 	err = cmd.ctx.fmgr.create(id, fname)
 	return err
@@ -107,10 +100,7 @@ func (cmd *cmdFileClose) Name() string {
 
 func (cmd *cmdFileClose) Run(args []string) error {
 	var err error
-	id, err := strconv.Atoi(args[0])
-	if err != nil {
-		return err
-	}
+	id := args[0]
 	err = cmd.ctx.fmgr.close(id)
 	return err
 }
@@ -139,10 +129,7 @@ func (cmd *cmdFileList) Run(args []string) error {
 		return fmt.Errorf("%s: need a file id", cmd.Name())
 	}
 
-	id, err := strconv.Atoi(args[0])
-	if err != nil {
-		return err
-	}
+	id := args[0]
 	err = cmd.ctx.fmgr.ls(id)
 	return err
 }
