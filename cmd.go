@@ -13,8 +13,6 @@ import (
 	"github.com/peterh/liner"
 )
 
-type Func func(args []string) error
-
 type Cmdr interface {
 	Name() string
 	Run(args []string) error

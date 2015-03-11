@@ -61,8 +61,8 @@ func (cmd *cmdH1DOpen) Complete(line string) []string {
 				r := cmd.ctx.fmgr.rfds[id]
 				v := "/file/id/" + sid + "/"
 				for _, k := range r.rio.Keys() {
-					if strings.HasPrefix(v+k, args[2]) {
-						o = append(o, strings.Join(args[:2], " ")+" "+v+k)
+					if strings.HasPrefix(v+k.Name, args[2]) {
+						o = append(o, strings.Join(args[:2], " ")+" "+v+k.Name)
 					}
 				}
 			case strings.HasPrefix("/file/id/"+sid, args[2]):

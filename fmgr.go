@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"text/tabwriter"
 
 	"github.com/go-hep/rio"
 )
@@ -42,9 +43,12 @@ func (r *rfile) ls() error {
 	var err error
 
 	fmt.Printf("/file/id/%d name=%s\n", r.id, r.n)
+	w := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
 	for _, k := range r.rio.Keys() {
-		fmt.Printf("  %s\n", k)
+		fmt.Fprintf(w, " \t- %s\t(type=%q)\n", k.Name, k.Blocks[0].Type)
 	}
+	w.Flush()
+	fmt.Printf("\n")
 
 	return err
 }

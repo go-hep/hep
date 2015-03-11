@@ -33,8 +33,9 @@ paw> /?
 paw> /file/open 1 hsimple.rio
 paw> /file/ls 1
 /file/id/1 name=hsimple.rio
-  h1
-  h2
+ 	- h1	(type="*github.com/go-hep/hbook.H1D")
+ 	- h2	(type="*github.com/go-hep/hbook.H1D")
+
 paw> /hist/open 11 /file/id/1/h1
 paw> /hist/plot 11
 == h1d: name="h1"
