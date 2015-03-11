@@ -17,6 +17,10 @@ func main() {
 }
 
 func xmain() int {
+
+	fname := flag.String("f", "", "paw script to execute")
+	flag.Parse()
+
 	fmt.Printf(`
 :::::::::::::::::::::::::::::
 :::   Welcome to PAW-Go   :::
@@ -26,8 +30,6 @@ Type /help for help.
 ^D to quit.
 
 `)
-	fname := flag.String("f", "", "paw script to execute")
-	flag.Parse()
 
 	icmd := newCmd()
 	defer icmd.Close()
