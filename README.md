@@ -18,7 +18,7 @@ $ pawgo
 :::   Welcome to PAW-Go   :::
 :::::::::::::::::::::::::::::
 
-Type /help for help.
+Type /? for help.
 ^D to quit.
 
 paw> /file/open 1 hsimple.rio
