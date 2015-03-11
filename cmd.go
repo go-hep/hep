@@ -36,7 +36,7 @@ func newCmd() *Cmd {
 		hmgr: newHistMgr(),
 	}
 	c.cmds = map[string]Cmdr{
-		"/help":        &cmdHelp{&c},
+		"/?":           &cmdHelp{&c},
 		"/file/open":   &cmdFileOpen{&c},
 		"/file/close":  &cmdFileClose{&c},
 		"/file/create": &cmdFileCreate{&c},

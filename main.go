@@ -26,7 +26,7 @@ func xmain() int {
 :::   Welcome to PAW-Go   :::
 :::::::::::::::::::::::::::::
 
-Type /help for help.
+Type /? for help.
 ^D to quit.
 
 `)

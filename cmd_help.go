@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strings"
 	"text/tabwriter"
 )
 
@@ -18,13 +19,13 @@ type cmdHelp struct {
 }
 
 func (cmd *cmdHelp) Name() string {
-	return "/help"
+	return "/?"
 }
 
 func (cmd *cmdHelp) Run(args []string) error {
 	var err error
 	switch len(args) {
-	case 1:
+	case 0:
 		var cmds []string
 		for k := range cmd.ctx.cmds {
 			cmds = append(cmds, k)
@@ -36,6 +37,14 @@ func (cmd *cmdHelp) Run(args []string) error {
 			c.Help(w)
 		}
 		w.Flush()
+	case 1:
+		c, ok := cmd.ctx.cmds[args[0]]
+		if !ok {
+			return fmt.Errorf("unknown command %q", args[0])
+		}
+		w := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
+		c.Help(w)
+		w.Flush()
 	}
 	return err
 }
@@ -46,5 +55,19 @@ func (cmd *cmdHelp) Help(w io.Writer) {
 
 func (cmd *cmdHelp) Complete(line string) []string {
 	var o []string
+	args := strings.Split(line, " ")
+	switch len(args) {
+	case 0, 1:
+		return o
+	case 2:
+		if args[1] == "" {
+			args[1] = "/"
+		}
+		for k := range cmd.ctx.cmds {
+			if strings.HasPrefix(k, args[1]) {
+				o = append(o, strings.Join(args[:1], " ")+" "+k)
+			}
+		}
+	}
 	return o
 }
