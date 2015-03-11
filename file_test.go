@@ -54,7 +54,26 @@ func TestFile(t *testing.T) {
 	}
 	defer f.Close()
 
-	keys := []string{"evt1", "evt2"}
+	keys := []RecordDesc{
+		{
+			Name: "evt1",
+			Blocks: []BlockDesc{
+				{
+					Name: "evt1",
+					Type: "*github.com/go-hep/rio.event",
+				},
+			},
+		},
+		{
+			Name: "evt2",
+			Blocks: []BlockDesc{
+				{
+					Name: "evt2",
+					Type: "*github.com/go-hep/rio.event",
+				},
+			},
+		},
+	}
 	if !reflect.DeepEqual(keys, f.Keys()) {
 		t.Fatalf("keys differ.\ngot= %v\nwant=%v\n", f.Keys(), keys)
 	}
