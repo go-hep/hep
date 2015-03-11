@@ -543,24 +543,30 @@ func (ftr *rioFooter) unmarshalData(r io.Reader) error {
 
 // Metadata stores metadata about a rio stream
 type Metadata struct {
-	Records []recordInfo
-	Offsets map[string][]offset
+	Records []RecordDesc
+	Offsets map[string][]Span
 }
 
-// recordInfo provides high-level informations about a Record
-type recordInfo struct {
+// RecordDesc provides high-level informations about a Record
+type RecordDesc struct {
 	Name   string
-	Blocks []blockInfo
+	Blocks []BlockDesc
 }
 
-// blockInfo provides high-level informations about a Block
-type blockInfo struct {
+// BlockDesc provides high-level informations about a Block
+type BlockDesc struct {
 	Name string
 	Type string
 }
 
-// offset is a pair (position, length)
-type offset struct {
+// Span is a pair (position, length)
+type Span struct {
 	Pos int64
 	Len int64
 }
+
+type recordsByName []RecordDesc
+
+func (p recordsByName) Len() int           { return len(p) }
+func (p recordsByName) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p recordsByName) Less(i, j int) bool { return p[i].Name < p[j].Name }

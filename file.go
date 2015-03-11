@@ -78,12 +78,12 @@ func Open(r io.ReadSeeker) (*File, error) {
 }
 
 // Keys returns the list of record names.
-func (f *File) Keys() []string {
-	keys := make([]string, 0, len(f.meta.Records))
+func (f *File) Keys() []RecordDesc {
+	keys := make([]RecordDesc, 0, len(f.meta.Records))
 	for _, rec := range f.meta.Records {
-		keys = append(keys, rec.Name)
+		keys = append(keys, rec)
 	}
-	sort.Strings(keys)
+	sort.Sort(recordsByName(keys))
 	return keys
 }
 

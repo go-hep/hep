@@ -35,7 +35,7 @@ type Writer struct {
 	version Version
 
 	recs    map[string]*Record
-	offsets map[string][]offset
+	offsets map[string][]Span
 	closed  bool
 }
 
@@ -53,7 +53,7 @@ func NewWriter(w io.Writer) (*Writer, error) {
 		options: NewOptions(CompressDefault, flate.DefaultCompression, 0),
 		version: 1,
 		recs:    make(map[string]*Record),
-		offsets: make(map[string][]offset),
+		offsets: make(map[string][]Span),
 	}, nil
 }
 
@@ -90,13 +90,13 @@ func (w *Writer) Close() error {
 	pos := w.w.n
 	var meta Metadata
 	for _, rec := range w.recs {
-		var blocks []blockInfo
+		var blocks []BlockDesc
 		for _, blk := range rec.blocks {
-			blocks = append(blocks, blockInfo{blk.Name(), nameFromType(blk.typ)})
+			blocks = append(blocks, BlockDesc{blk.Name(), nameFromType(blk.typ)})
 		}
 		meta.Records = append(
 			meta.Records,
-			recordInfo{
+			RecordDesc{
 				Name:   rec.Name(),
 				Blocks: blocks,
 			},
@@ -144,7 +144,7 @@ func (w *Writer) writeRecord(rec *Record, hdr, data []byte) error {
 	}
 
 	end := w.w.n
-	w.offsets[rec.Name()] = append(w.offsets[rec.Name()], offset{beg, end - beg})
+	w.offsets[rec.Name()] = append(w.offsets[rec.Name()], Span{beg, end - beg})
 	return err
 }
 
