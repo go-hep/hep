@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/peterh/liner"
@@ -16,9 +15,16 @@ import (
 
 type Func func(args []string) error
 
+type Cmdr interface {
+	Name() string
+	Run(args []string) error
+	Help(w io.Writer)
+	Complete(line string) []string
+}
+
 type Cmd struct {
 	rl   *liner.State
-	cmds map[string]Func
+	cmds map[string]Cmdr
 	fmgr fileMgr
 	hmgr histMgr
 }
@@ -29,14 +35,15 @@ func newCmd() *Cmd {
 		fmgr: newFileMgr(),
 		hmgr: newHistMgr(),
 	}
-	c.cmds = map[string]Func{
-		"/file/open":   c.cmdOpenFile,
-		"/file/close":  c.cmdCloseFile,
-		"/file/create": c.cmdCreateFile,
-		"/file/ls":     c.cmdListFile,
+	c.cmds = map[string]Cmdr{
+		"/help":        &cmdHelp{&c},
+		"/file/open":   &cmdFileOpen{&c},
+		"/file/close":  &cmdFileClose{&c},
+		"/file/create": &cmdFileCreate{&c},
+		"/file/ls":     &cmdFileList{&c},
 
-		"/hist/open": c.cmdOpenH1D,
-		"/hist/plot": c.cmdPlotH1D,
+		"/hist/open": &cmdH1DOpen{&c},
+		"/hist/plot": &cmdH1DPlot{&c},
 	}
 
 	c.rl.SetTabCompletionStyle(liner.TabPrints)
@@ -44,7 +51,16 @@ func newCmd() *Cmd {
 		var o []string
 		for k := range c.cmds {
 			if strings.HasPrefix(k, line) {
-				o = append(o, k)
+				o = append(o, k+" ")
+			}
+		}
+		if len(o) > 0 {
+			return o
+		}
+
+		for k, cmd := range c.cmds {
+			if strings.HasPrefix(line, k) {
+				o = append(o, cmd.Complete(line)...)
 			}
 		}
 		return o
@@ -57,85 +73,6 @@ func newCmd() *Cmd {
 	}
 
 	return &c
-}
-
-func (c *Cmd) cmdOpenFile(args []string) error {
-	//fmt.Printf("/file/open: %v\n", args)
-	id, err := strconv.Atoi(args[0])
-	if err != nil {
-		return err
-	}
-	fname := args[1]
-	err = c.fmgr.open(id, fname)
-	return err
-}
-
-func (c *Cmd) cmdCreateFile(args []string) error {
-	//fmt.Printf("/file/create: %v\n", args)
-	id, err := strconv.Atoi(args[0])
-	if err != nil {
-		return err
-	}
-	fname := args[1]
-	err = c.fmgr.create(id, fname)
-	return err
-}
-
-func (c *Cmd) cmdCloseFile(args []string) error {
-	//fmt.Printf("/file/close: %v\n", args)
-	id, err := strconv.Atoi(args[0])
-	if err != nil {
-		return err
-	}
-	err = c.fmgr.close(id)
-	return err
-}
-
-func (c *Cmd) cmdListFile(args []string) error {
-	//fmt.Printf("/file/ls: %v\n", args)
-	if len(args) != 1 {
-		return fmt.Errorf("/file/ls: need a file id")
-	}
-
-	id, err := strconv.Atoi(args[0])
-	if err != nil {
-		return err
-	}
-	err = c.fmgr.ls(id)
-	return err
-}
-
-func (c *Cmd) cmdOpenH1D(args []string) error {
-	var err error
-	if len(args) != 2 {
-		return fmt.Errorf("/hist/open: need histo-id and histo-name")
-	}
-
-	hid, err := strconv.Atoi(args[0])
-	if err != nil {
-		return err
-	}
-
-	// e.g: /file/id/1/my-histo
-	hname := args[1]
-
-	err = c.hmgr.openH1D(&c.fmgr, hid, hname)
-	return err
-}
-
-func (c *Cmd) cmdPlotH1D(args []string) error {
-	var err error
-	if len(args) < 1 {
-		return fmt.Errorf("/hist/plot: need a histo-id to plot")
-	}
-
-	hid, err := strconv.Atoi(args[0])
-	if err != nil {
-		return err
-	}
-
-	err = c.hmgr.plotH1D(hid)
-	return err
 }
 
 func (c *Cmd) Close() error {
@@ -186,10 +123,10 @@ func (c *Cmd) Run() error {
 
 func (c *Cmd) exec(line string) error {
 	args := strings.Split(line, " ")
-	fct, ok := c.cmds[args[0]]
+	cmd, ok := c.cmds[args[0]]
 	if !ok {
 		return fmt.Errorf("unknown command %q", args[0])
 	}
-	err := fct(args[1:])
+	err := cmd.Run(args[1:])
 	return err
 }
