@@ -21,6 +21,15 @@ $ pawgo
 Type /? for help.
 ^D to quit.
 
+paw> /?
+/?            -- print help
+/file/close   -- close a file
+/file/create  -- create file for write access
+/file/list    -- list a file's content
+/file/open    -- open file for read access
+/hist/open    -- open a histogram
+/hist/plot    -- plot a histogram
+
 paw> /file/open 1 hsimple.rio
 paw> /file/ls 1
 /file/id/1 name=hsimple.rio
