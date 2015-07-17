@@ -25,16 +25,25 @@ HEPEVT_DEF HEPEVT;
 #define hepevt HEPEVT
 
 #else
+
+#ifdef __APPLE__
+# define HEPEVT_EXTERN
+#else
+# define HEPEVT_EXTERN extern
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-  extern struct {
+  HEPEVT_EXTERN struct {
     char data[hepevt_bytes_allocation];
   } hepevt_ __attribute__((weak));
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 #define hepevt hepevt_
+#undef HEPEVT_EXTERN
+
 #endif // Platform
 
 #ifdef __cplusplus
