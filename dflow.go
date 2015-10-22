@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"sort"
 
-	"code.google.com/p/gographviz"
+	"github.com/awalterschulze/gographviz"
 	"github.com/go-hep/fwk/utils/tarjan"
 )
 
