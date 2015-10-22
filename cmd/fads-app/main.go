@@ -3,10 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"math"
 	"os"
 	"reflect"
 	"runtime/pprof"
+	"runtime/trace"
 	"time"
 
 	"github.com/go-hep/fads"
@@ -22,6 +24,7 @@ var (
 	evtmax  = flag.Int("evtmax", -1, "number of events to process")
 	nprocs  = flag.Int("nprocs", -1, "number of concurrent events to process")
 	cpuprof = flag.Bool("cpu-prof", false, "enable CPU profiling")
+	ptrace  = flag.String("trace", "", "path to file where to store traces")
 	output  = flag.String("o", "data.rio", "name of output events file")
 
 	abs  = math.Abs
@@ -56,6 +59,26 @@ options:
 		defer f.Close()
 		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
+	}
+
+	if *ptrace != "" {
+		f, err := os.Create(*ptrace)
+		if err != nil {
+			log.Fatalf(
+				"error creating trace-file [%s]: %v\n",
+				*ptrace,
+				err,
+			)
+		}
+		defer f.Close()
+		err = trace.Start(f)
+		if err != nil {
+			log.Fatalf(
+				"error starting runtime/trace: %v\n",
+				err,
+			)
+		}
+		defer trace.Stop()
 	}
 
 	app := job.New(job.P{
