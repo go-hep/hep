@@ -43,7 +43,8 @@ func main() {
 		if err != nil {
 			break
 		}
-		fmt.Printf(" -> %v\n", scan.Record().Name())
+		rec := scan.Record()
+		fmt.Printf(" -> %v\n", rec.Name())
 	}
 	err = scan.Err()
 	if err != nil {
