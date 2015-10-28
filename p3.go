@@ -1,16 +1,16 @@
 package fmom
 
-type ThreeVector [3]float64
+type Vec3 [3]float64
 
-func (vec *ThreeVector) X() float64 {
+func (vec *Vec3) X() float64 {
 	return vec[0]
 }
 
-func (vec *ThreeVector) Y() float64 {
+func (vec *Vec3) Y() float64 {
 	return vec[1]
 }
 
-func (vec *ThreeVector) Z() float64 {
+func (vec *Vec3) Z() float64 {
 	return vec[2]
 }
 
