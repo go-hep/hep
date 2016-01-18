@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/go-hep/hbook"
+	"github.com/gonum/plot/plotter"
 )
 
 func TestH1D(t *testing.T) {
@@ -54,6 +55,8 @@ func TestH1D(t *testing.T) {
 			)
 		}
 	}
+
+	var _ plotter.XYer = h1
 }
 
 func BenchmarkH1DSTFillConst(b *testing.B) {

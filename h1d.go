@@ -83,6 +83,18 @@ func (h *H1D) Content(idx int) float64 {
 	return h.bins[idx].sw
 }
 
+// Len returns the number of bins for this histogram
+func (h *H1D) Len() int {
+	return h.Axis().Bins()
+}
+
+// XY returns the x,y values for the i-th bin
+func (h *H1D) XY(i int) (float64, float64) {
+	x := float64(h.Axis().BinLowerEdge(i))
+	y := h.Content(i)
+	return x, y
+}
+
 // Mean returns the mean of this histogram.
 func (h *H1D) Mean() float64 {
 	summeans := 0.0
