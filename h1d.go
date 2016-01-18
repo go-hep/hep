@@ -78,8 +78,8 @@ func (h *H1D) Fill(x, w float64) {
 	//fmt.Printf("H1D.fill(x=%v, w=%v)...[done]\n", x, w)
 }
 
-// Content returns the content of the idx-th bin.
-func (h *H1D) Content(idx int) float64 {
+// Value returns the content of the idx-th bin.
+func (h *H1D) Value(idx int) float64 {
 	return h.bins[idx].sw
 }
 
@@ -91,7 +91,7 @@ func (h *H1D) Len() int {
 // XY returns the x,y values for the i-th bin
 func (h *H1D) XY(i int) (float64, float64) {
 	x := float64(h.Axis().BinLowerEdge(i))
-	y := h.Content(i)
+	y := h.Value(i)
 	return x, y
 }
 

@@ -57,6 +57,7 @@ func TestH1D(t *testing.T) {
 	}
 
 	var _ plotter.XYer = h1
+	var _ plotter.Valuer = h1
 }
 
 func BenchmarkH1DSTFillConst(b *testing.B) {
