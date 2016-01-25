@@ -61,7 +61,7 @@ func main() {
 		}
 	}
 	err = rows.Err()
-	if err != nil && err != io.EOF {
+	if err != nil {
 		log.Fatalf("error: %v\n", err)
 	}
 }
@@ -109,7 +109,7 @@ func main() {
 		}
 	}
 	err = rows.Err()
-	if err != nil && err != io.EOF {
+	if err != nil {
 		log.Fatalf("error: %v\n", err)
 	}
 }
