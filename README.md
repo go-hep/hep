@@ -1,6 +1,8 @@
 csvutil
 =======
 
+[![GoDoc](https://godoc.org/github.com/go-hep/csvutil?status.svg)](https://godoc.org/github.com/go-hep/csvutil)
+
 `csvutil` is a set of types and funcs to deal with CSV data files in a somewhat convenient way.
 
 ## Installation
