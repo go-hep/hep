@@ -19,6 +19,8 @@ Documentation is available on [godoc](https://godoc.org):
 
 ## Example
 
+### Reading CSV into a struct
+
 ```go
 package main
 
@@ -54,6 +56,54 @@ func main() {
 			S string
 		}{}
 		err = rows.Scan(&data)
+		if err != nil {
+			log.Fatalf("error reading row %d: %v\n", irow, err)
+		}
+	}
+	err = rows.Err()
+	if err != nil && err != io.EOF {
+		log.Fatalf("error: %v\n", err)
+	}
+}
+```
+
+### Reading CSV into a slice of values
+
+```go
+package main
+
+import (
+	"io"
+	"log"
+	"os"
+
+	"github.com/go-hep/csvutil"
+)
+
+func main() {
+	fname := "testdata/simple.csv"
+	tbl, err := csvutil.Open(fname)
+	if err != nil {
+		log.Fatalf("could not open %s: %v\n", fname, err)
+	}
+	defer tbl.Close()
+	tbl.Reader.Comma = ';'
+	tbl.Reader.Comment = '#'
+
+	rows, err := tbl.ReadRows(0, 10)
+	if err != nil {
+		log.Fatalf("could read rows [0, 10): %v\n", err)
+	}
+	defer rows.Close()
+
+	irow := 0
+	for rows.Next() {
+		var (
+			I int
+			F float64
+			S string
+		)
+		err = rows.Scan(&I, &F, &S)
 		if err != nil {
 			log.Fatalf("error reading row %d: %v\n", irow, err)
 		}
