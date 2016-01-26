@@ -5,8 +5,10 @@
 package csvutil_test
 
 import (
+	"bytes"
 	"fmt"
 	"io"
+	"os/exec"
 	"testing"
 
 	"github.com/go-hep/csvutil"
@@ -282,4 +284,98 @@ func TestCSVReaderScanArgsSubSample(t *testing.T) {
 	if irow-2 != 8 {
 		t.Errorf("error: got %d rows. expected 8\n", irow-2)
 	}
+}
+
+func TestCSVWriterArgs(t *testing.T) {
+	fname := "testdata/out-args.csv"
+	tbl, err := csvutil.Create(fname)
+	if err != nil {
+		t.Errorf("could not create %s: %v\n", fname, err)
+	}
+	defer tbl.Close()
+	tbl.Writer.Comma = ';'
+
+	err = tbl.WriteHeader("## a simple set of data: int64;float64;string\n")
+	if err != nil {
+		t.Errorf("error writing header: %v\n", err)
+	}
+
+	for i := 0; i < 10; i++ {
+		var (
+			f = float64(i)
+			s = fmt.Sprintf("str-%d", i)
+		)
+		err = tbl.WriteRow(i, f, s)
+		if err != nil {
+			t.Errorf("error writing row %d: %v\n", i, err)
+			break
+		}
+	}
+
+	err = tbl.Close()
+	if err != nil {
+		t.Errorf("error closing table: %v\n", err)
+	}
+
+	err = diff("testdata/simple.csv", fname)
+	if err != nil {
+		t.Errorf("files differ: %v\n", err)
+	}
+}
+
+func TestCSVWriterStruct(t *testing.T) {
+	fname := "testdata/out-struct.csv"
+	tbl, err := csvutil.Create(fname)
+	if err != nil {
+		t.Errorf("could not create %s: %v\n", fname, err)
+	}
+	defer tbl.Close()
+	tbl.Writer.Comma = ';'
+
+	err = tbl.WriteHeader("## a simple set of data: int64;float64;string\n")
+	if err != nil {
+		t.Errorf("error writing header: %v\n", err)
+	}
+
+	for i := 0; i < 10; i++ {
+		data := struct {
+			I int
+			F float64
+			S string
+		}{
+			I: i,
+			F: float64(i),
+			S: fmt.Sprintf("str-%d", i),
+		}
+		err = tbl.WriteRow(data)
+		if err != nil {
+			t.Errorf("error writing row %d: %v\n", i, err)
+			break
+		}
+	}
+
+	err = tbl.Close()
+	if err != nil {
+		t.Errorf("error closing table: %v\n", err)
+	}
+
+	err = diff("testdata/simple.csv", fname)
+	if err != nil {
+		t.Errorf("files differ: %v\n", err)
+	}
+}
+
+func diff(ref, chk string) error {
+	cmd := exec.Command("diff", "-urN", ref, chk)
+	buf := new(bytes.Buffer)
+	cmd.Stdout = buf
+	cmd.Stderr = buf
+	err := cmd.Run()
+	if err != nil {
+		return fmt.Errorf("diff %v %v failed: %v\n%v\n",
+			ref, chk, err,
+			buf.String(),
+		)
+	}
+	return nil
 }

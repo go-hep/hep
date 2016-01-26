@@ -33,11 +33,21 @@ func Open(fname string) (*Table, error) {
 	return table, err
 }
 
+func Create(fname string) (*Table, error) {
+	w, err := os.Create(fname)
+	if err != nil {
+		return nil, err
+	}
+	table := &Table{
+		Writer: csv.NewWriter(bufio.NewWriter(w)),
+		f:      w,
+	}
+	return table, err
+}
+
 type Table struct {
 	Reader *csv.Reader
-
-	//TODO(sbinet) add a writer
-	//Writer *csv.Writer
+	Writer *csv.Writer
 
 	f      *os.File
 	closed bool
@@ -49,8 +59,16 @@ func (tbl *Table) Close() error {
 		return tbl.err
 	}
 
+	if tbl.Writer != nil {
+		tbl.Writer.Flush()
+		tbl.err = tbl.Writer.Error()
+	}
+
 	if tbl.f != nil {
-		tbl.err = tbl.f.Close()
+		err := tbl.f.Close()
+		if err != nil && tbl.err == nil {
+			tbl.err = err
+		}
 		tbl.f = nil
 		tbl.closed = true
 	}
@@ -76,6 +94,75 @@ func (tbl *Table) ReadRows(beg, end int64) (*Rows, error) {
 		}
 	}
 	return rows, nil
+}
+
+// WriteHeader writes a header to the underlying CSV file
+func (t *Table) WriteHeader(hdr string) error {
+	_, err := t.f.WriteString(hdr)
+	return err
+}
+
+// WriteRow writes the data into the columns at the current row.
+func (t *Table) WriteRow(args ...interface{}) error {
+	var err error
+	if t.Writer == nil {
+		return fmt.Errorf("csvutil: Table is not in write mode")
+	}
+
+	switch len(args) {
+	case 0:
+		return fmt.Errorf("csvutil: Table.WriteRow needs at least one argument")
+
+	case 1:
+		// maybe special case: struct?
+		rv := reflect.Indirect(reflect.ValueOf(args[0]))
+		rt := rv.Type()
+		switch rt.Kind() {
+		case reflect.Struct:
+			err = t.writeStruct(rv)
+			return err
+		}
+	}
+
+	err = t.write(args...)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (t *Table) write(args ...interface{}) error {
+	rec := make([]string, len(args))
+	for i, arg := range args {
+		rv := reflect.Indirect(reflect.ValueOf(arg))
+		rt := rv.Type()
+		switch rt.Kind() {
+		case reflect.Bool:
+			rec[i] = strconv.FormatBool(rv.Bool())
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			rec[i] = strconv.FormatInt(rv.Int(), 10)
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			rec[i] = strconv.FormatUint(rv.Uint(), 10)
+		case reflect.Float32, reflect.Float64:
+			rec[i] = strconv.FormatFloat(rv.Float(), 'g', -1, rt.Bits())
+		case reflect.String:
+			rec[i] = rv.String()
+		default:
+			return fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v", arg)
+		}
+	}
+	return t.Writer.Write(rec)
+}
+
+func (t *Table) writeStruct(rv reflect.Value) error {
+	rt := rv.Type()
+	args := make([]interface{}, rt.NumField())
+	for i := range args {
+		args[i] = rv.Field(i).Interface()
+	}
+
+	return t.write(args...)
 }
 
 type Rows struct {
@@ -121,10 +208,11 @@ func (rows *Rows) Scan(dest ...interface{}) error {
 
 	case 1:
 		// maybe special case: struct?
-		rt := reflect.TypeOf(dest[0]).Elem()
+		rv := reflect.ValueOf(dest[0]).Elem()
+		rt := rv.Type()
 		switch rt.Kind() {
 		case reflect.Struct:
-			err = rows.scanStruct(dest[0])
+			err = rows.scanStruct(rv)
 			return err
 		}
 	}
@@ -180,9 +268,8 @@ func (rows *Rows) scan(args ...interface{}) error {
 	return err
 }
 
-func (rows *Rows) scanStruct(ptr interface{}) error {
-	rt := reflect.TypeOf(ptr).Elem()
-	rv := reflect.ValueOf(ptr).Elem()
+func (rows *Rows) scanStruct(rv reflect.Value) error {
+	rt := rv.Type()
 	args := make([]interface{}, rt.NumField())
 	for i := 0; i < rt.NumField(); i++ {
 		args[i] = rv.Field(i).Addr().Interface()
