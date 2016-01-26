@@ -17,9 +17,9 @@ var (
 	db *sql.DB
 )
 
-func TestPlot1D(t *testing.T) {
+func TestScanH1D(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
-	h, err := hplt.Plot1D(db, "select x from data", h)
+	h, err := hplt.ScanH1D(db, "select x from data", h)
 	if err != nil {
 		t.Errorf("error running query: %v\n", err)
 	}
@@ -57,9 +57,9 @@ func TestPlot1D(t *testing.T) {
 	}
 }
 
-func TestPlot1DWhere(t *testing.T) {
+func TestScanH1DWhere(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
-	h, err := hplt.Plot1D(db, "select x from data where id > 4", h)
+	h, err := hplt.ScanH1D(db, "select x from data where id > 4", h)
 	if err != nil {
 		t.Errorf("error running query: %v\n", err)
 	}
@@ -102,9 +102,9 @@ func TestPlot1DWhere(t *testing.T) {
 	}
 }
 
-func TestPlot1DInt(t *testing.T) {
+func TestScanH1DInt(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
-	h, err := hplt.Plot1D(db, "select id from data", h)
+	h, err := hplt.ScanH1D(db, "select id from data", h)
 	if err != nil {
 		t.Errorf("error running query: %v\n", err)
 	}

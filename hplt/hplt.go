@@ -15,15 +15,15 @@ import (
 	"github.com/go-hep/hbook"
 )
 
-// Plot executes a query against the given db and runs the function f against that context.
+// Scan executes a query against the given db and runs the function f against that context.
 //
 // e.g.
-//  err = hplt.Plot(db, "select (x,y) from table where z>10", func(x,y float64) error {
+//  err = hplt.Scan(db, "select (x,y) from table where z>10", func(x,y float64) error {
 //    h1.Fill(x, 1)
 //    h2.Fill(y, 1)
 //    return nil
 //  })
-func Plot(db *sql.DB, query string, f interface{}) error {
+func Scan(db *sql.DB, query string, f interface{}) error {
 	rv := reflect.ValueOf(f)
 	rt := rv.Type()
 	if rt.Kind() != reflect.Func {
@@ -65,17 +65,17 @@ func Plot(db *sql.DB, query string, f interface{}) error {
 	return err
 }
 
-// Plot1D executes a query against the given db and fills the histogram with
+// ScanH1D executes a query against the given db and fills the histogram with
 // the results of the query.
 // If h is nil, a (100-bins, xmin, xmax) histogram is created,
 // where xmin and xmax are inferred from the content of the underlying database.
-func Plot1D(db *sql.DB, query string, h *hbook.H1D) (*hbook.H1D, error) {
+func ScanH1D(db *sql.DB, query string, h *hbook.H1D) (*hbook.H1D, error) {
 	var data []float64
 	var (
 		xmin = +math.MaxFloat64
 		xmax = -math.MaxFloat64
 	)
-	err := Plot(db, query, func(x float64) error {
+	err := Scan(db, query, func(x float64) error {
 		data = append(data, x)
 		if xmin > x {
 			xmin = x
