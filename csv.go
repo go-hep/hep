@@ -69,6 +69,12 @@ func (tbl *Table) ReadRows(beg, end int64) (*Rows, error) {
 	if end == -1 {
 		rows.n = math.MaxInt64
 	}
+	if beg > 0 {
+		err := rows.skip(beg)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return rows, nil
 }
 
@@ -107,11 +113,6 @@ func (rows *Rows) Scan(dest ...interface{}) error {
 	defer func() {
 		rows.err = err
 	}()
-
-	rows.record, err = rows.tbl.Reader.Read()
-	if err != nil {
-		return err
-	}
 
 	switch len(dest) {
 	case 0:
@@ -189,6 +190,18 @@ func (rows *Rows) scanStruct(ptr interface{}) error {
 	return rows.scan(args...)
 }
 
+func (rows *Rows) skip(n int64) error {
+	var err error
+	for i := int64(0); i < n; i++ {
+		_, err = rows.tbl.Reader.Read()
+		if err != nil {
+			return err
+		}
+		rows.cur++
+	}
+	return err
+}
+
 // Next prepares the next result row for reading with the Scan method.
 // It returns true on success, false if there is no next result row.
 // Every call to Scan, even the first one, must be preceded by a call to Next.
@@ -204,6 +217,15 @@ func (rows *Rows) Next() bool {
 	rows.i += rows.inc
 	if !next {
 		rows.err = rows.Close()
+		return next
 	}
+
+	var err error
+	rows.record, err = rows.tbl.Reader.Read()
+	if err != nil {
+		rows.err = err
+		return false
+	}
+
 	return next
 }

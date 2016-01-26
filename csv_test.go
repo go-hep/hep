@@ -236,3 +236,50 @@ func TestCSVReaderScanUntilEOF(t *testing.T) {
 		t.Errorf("error: expected io.EOF. got=%v\n", err)
 	}
 }
+
+func TestCSVReaderScanArgsSubSample(t *testing.T) {
+	fname := "testdata/simple.csv"
+	tbl, err := csvutil.Open(fname)
+	if err != nil {
+		t.Errorf("could not open %s: %v\n", fname, err)
+	}
+	defer tbl.Close()
+	tbl.Reader.Comma = ';'
+	tbl.Reader.Comment = '#'
+
+	rows, err := tbl.ReadRows(2, 10)
+	if err != nil {
+		t.Errorf("could read rows [2, 10): %v\n", err)
+	}
+	defer rows.Close()
+
+	irow := 2
+	for rows.Next() {
+		var (
+			i int
+			f float64
+			s string
+		)
+		err = rows.Scan(&i, &f, &s)
+		if err != nil {
+			t.Errorf("error reading row %d: %v\n", irow, err)
+		}
+		exp := fmt.Sprintf("%d;%d;str-%d", irow, irow, irow)
+		got := fmt.Sprintf("%v;%v;%v", i, f, s)
+		if exp != got {
+			t.Errorf("error reading row %d\nexp=%q\ngot=%q\n",
+				irow, exp, got,
+			)
+		}
+		irow++
+	}
+
+	err = rows.Err()
+	if err != nil {
+		t.Errorf("error iterating over rows: %v\n", err)
+	}
+
+	if irow-2 != 8 {
+		t.Errorf("error: got %d rows. expected 8\n", irow-2)
+	}
+}
