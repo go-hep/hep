@@ -207,7 +207,7 @@ func (rows *Rows) Scan(dest ...interface{}) error {
 
 	switch len(dest) {
 	case 0:
-		err = fmt.Errorf("csv: Rows.Scan needs at least one argument")
+		err = fmt.Errorf("csvutil: Rows.Scan needs at least one argument")
 		return err
 
 	case 1:
@@ -265,7 +265,7 @@ func (rows *Rows) scan(args ...interface{}) error {
 			rv.SetString(rec)
 
 		default:
-			return fmt.Errorf("csv: invalid type (%T) %q", rv.Interface(), rec)
+			return fmt.Errorf("csvutil: invalid type (%T) %q", rv.Interface(), rec)
 		}
 	}
 
