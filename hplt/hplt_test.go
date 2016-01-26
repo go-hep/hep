@@ -141,6 +141,50 @@ func TestScanH1DInt(t *testing.T) {
 		t.Errorf("error: rms=%v. want=%v\n", rms, want.rms)
 	}
 }
+
+func TestScan(t *testing.T) {
+	h := hbook.NewH1D(10, 0, 10)
+	err := hplt.Scan(db, "select id, x from data", func(id int64, x float64) error {
+		h.Fill(x, 1)
+		return nil
+	})
+	if err != nil {
+		t.Errorf("error running query: %v\n", err)
+	}
+	want := struct {
+		entries int64
+		len     int
+		mean    float64
+		rms     float64
+	}{
+		entries: 10,
+		len:     10,
+		mean:    4.5,
+		rms:     2.8722813232690143,
+	}
+
+	if h.Entries() != want.entries {
+		t.Errorf("error. got %v entries. want=%v\n", h.Entries(), want.entries)
+	}
+	if h.Len() != want.len {
+		t.Errorf("error. got %v bins. want=%d\n", h.Len(), want.len)
+	}
+
+	for i := 0; i < h.Len(); i++ {
+		v := h.Value(i)
+		if v != 1 {
+			t.Errorf("error bin(%d)=%v. want=1\n", i, v)
+		}
+	}
+
+	if mean := h.Mean(); mean != want.mean {
+		t.Errorf("error: mean=%v. want=%v\n", mean, want.mean)
+	}
+	if rms := h.RMS(); rms != want.rms {
+		t.Errorf("error: rms=%v. want=%v\n", rms, want.rms)
+	}
+}
+
 func init() {
 	var err error
 	db, err = sql.Open("ql", "memory://mem.db")

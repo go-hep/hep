@@ -40,7 +40,7 @@ err := hplt.Scan(db, "select x from ntuple", func(x float64) error {
 
 // filling a hbook.H1D with an even more complex query
 h := hbook.NewH1D(100, -10, 10)
-err := hplt.Scan(db, "select (x,y) from ntuple", func (x, y float64) error {
+err := hplt.Scan(db, "select x, y from ntuple", func (x, y float64) error {
 	h.Fill(math.Sqrt(x*x+y*y))
 	return nil
 })
