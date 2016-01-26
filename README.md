@@ -27,7 +27,6 @@ package main
 import (
 	"io"
 	"log"
-	"os"
 
 	"github.com/go-hep/csvutil"
 )
@@ -75,7 +74,6 @@ package main
 import (
 	"io"
 	"log"
-	"os"
 
 	"github.com/go-hep/csvutil"
 )
@@ -111,6 +109,97 @@ func main() {
 	err = rows.Err()
 	if err != nil {
 		log.Fatalf("error: %v\n", err)
+	}
+}
+```
+
+### Writing CSV from a struct
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/go-hep/csvutil"
+)
+
+func main() {
+	fname := "testdata/out.csv"
+	tbl, err := csvutil.Create(fname)
+	if err != nil {
+		log.Fatalf("could not create %s: %v\n", fname, err)
+	}
+	defer tbl.Close()
+	tbl.Writer.Comma = ';'
+
+	err = tbl.WriteHeader("## a simple set of data: int64;float64;string\n")
+	if err != nil {
+		log.Fatalf("error writing header: %v\n", err)
+	}
+
+	for i := 0; i < 10; i++ {
+		data := struct {
+			I int
+			F float64
+			S string
+		}{
+			I: i,
+			F: float64(i),
+			S: fmt.Sprintf("str-%d", i),
+		}
+		err = tbl.WriteRow(data)
+		if err != nil {
+			log.Fatalf("error writing row %d: %v\n", i, err)
+		}
+	}
+
+	err = tbl.Close()
+	if err != nil {
+		log.Fatalf("error closing table: %v\n", err)
+	}
+}
+```
+
+### Writing from a slice of values
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/go-hep/csvutil"
+)
+
+func main() {
+	fname := "testdata/out.csv"
+	tbl, err := csvutil.Create(fname)
+	if err != nil {
+		log.Fatalf("could not create %s: %v\n", fname, err)
+	}
+	defer tbl.Close()
+	tbl.Writer.Comma = ';'
+
+	err = tbl.WriteHeader("## a simple set of data: int64;float64;string\n")
+	if err != nil {
+		log.Fatalf("error writing header: %v\n", err)
+	}
+
+	for i := 0; i < 10; i++ {
+		var (
+			f = float64(i)
+			s = fmt.Sprintf("str-%d", i)
+		)
+		err = tbl.WriteRow(i, f, s)
+		if err != nil {
+			log.Fatalf("error writing row %d: %v\n", i, err)
+		}
+	}
+
+	err = tbl.Close()
+	if err != nil {
+		log.Fatalf("error closing table: %v\n", err)
 	}
 }
 ```
