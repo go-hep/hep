@@ -12,6 +12,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 func min(a, b int) int {
@@ -98,6 +99,9 @@ func (tbl *Table) ReadRows(beg, end int64) (*Rows, error) {
 
 // WriteHeader writes a header to the underlying CSV file
 func (t *Table) WriteHeader(hdr string) error {
+	if !strings.HasSuffix(hdr, "\n") {
+		hdr += "\n"
+	}
 	_, err := t.f.WriteString(hdr)
 	return err
 }

@@ -332,7 +332,8 @@ func TestCSVWriterStruct(t *testing.T) {
 	defer tbl.Close()
 	tbl.Writer.Comma = ';'
 
-	err = tbl.WriteHeader("## a simple set of data: int64;float64;string\n")
+	// test WriteHeader w/o a trailing newline
+	err = tbl.WriteHeader("## a simple set of data: int64;float64;string")
 	if err != nil {
 		t.Errorf("error writing header: %v\n", err)
 	}
