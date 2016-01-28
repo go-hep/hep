@@ -126,11 +126,14 @@ func (*csvDriver) Open(cfg string) (driver.Conn, error) {
 		cfg: c,
 	}
 
+	err = conn.initDB()
+	if err != nil {
+		return nil, err
+	}
+
 	log.Printf(">>> doimport? %v\n", doImport)
 	if doImport {
 		err = conn.importCSV()
-	} else {
-		err = conn.initDB()
 	}
 	log.Printf(">>> doimport? %v [done]\n", doImport)
 
@@ -146,27 +149,27 @@ type csvConn struct {
 	f   *os.File
 	cfg Conn
 
-	ql *sql.DB
-	tx []driver.Tx
+	conn  driver.Conn
+	exec  driver.Execer
+	query driver.Queryer
+	tx    driver.Tx
 }
 
 func (conn *csvConn) initDB() error {
-	ql, err := qlopen(conn.cfg.File)
+	c, err := qlopen(conn.cfg.File)
 	if err != nil {
 		return err
 	}
 
-	conn.ql = ql
+	conn.conn = c
+	conn.exec = c.(driver.Execer)
+	conn.query = c.(driver.Queryer)
 	return nil
 }
 
 // Prepare returns a prepared statement, bound to this connection.
 func (conn *csvConn) Prepare(query string) (driver.Stmt, error) {
-	stmt, err := conn.ql.Prepare(query)
-	if err != nil {
-		return nil, err
-	}
-	return &csvStmt{conn: conn, query: query, stmt: stmt}, nil
+	return conn.conn.Prepare(query)
 }
 
 // Close invalidates and potentially stops any current
@@ -184,7 +187,7 @@ func (conn *csvConn) Close() error {
 	// FIXME(sbinet) write-back to file if needed.
 	// err = conn.exportCSV()
 
-	err = conn.ql.Close()
+	err = conn.conn.Close()
 	if err != nil {
 		return err
 	}
@@ -200,59 +203,66 @@ func (conn *csvConn) Close() error {
 // Begin starts and returns a new transaction.
 func (conn *csvConn) Begin() (driver.Tx, error) {
 	log.Printf(">>> conn.Begin()...\n")
-	tx, err := conn.ql.Begin()
+	tx, err := conn.conn.Begin()
 	if err != nil {
 		log.Fatalf("conn-begin: %v\n", err)
 		return nil, err
 	}
-	conn.tx = append(conn.tx, tx)
-	return conn, err
+	conn.tx = tx
+	return tx, err
 }
 
 func (conn *csvConn) Exec(query string, args []driver.Value) (driver.Result, error) {
 	log.Printf(">>> conn.Exec(%s)...\n", query)
-	return conn.ql.Exec(query, params(args)...)
+	return conn.exec.Exec(query, args)
 }
 
 func (conn *csvConn) Query(query string, args []driver.Value) (driver.Rows, error) {
-	rows, err := conn.ql.Query(query, params(args)...)
+	rows, err := conn.query.Query(query, args)
 	if err != nil {
 		return nil, err
 	}
-	return &csvRows{rows}, err
+	return rows, err
 }
 
 func (conn *csvConn) Commit() error {
-	ntx := len(conn.tx)
-	if conn.tx == nil || ntx == 0 {
+	if conn.tx == nil {
 		return fmt.Errorf("csvdriver: commit while not in transaction")
 	}
-	tx := conn.tx[ntx-1]
-	err := tx.Commit()
-	conn.tx = conn.tx[:ntx-1]
+	err := conn.tx.Commit()
+	conn.tx = nil
 	return err
 }
 
 func (conn *csvConn) Rollback() error {
-	ntx := len(conn.tx)
-	if conn.tx == nil || ntx == 0 {
-		return fmt.Errorf("csvdriver: commit while not in transaction")
+	if conn.tx == nil {
+		return fmt.Errorf("csvdriver: rollback while not in transaction")
 	}
-	tx := conn.tx[ntx-1]
-	err := tx.Rollback()
-	conn.tx = conn.tx[:ntx-1]
+	err := conn.tx.Rollback()
+	conn.tx = nil
 	return err
 }
 
-func qlopen(name string) (*sql.DB, error) {
-	db, err := sql.Open("ql", "memory://"+name)
+func qlopen(name string) (driver.Conn, error) {
+	conn, err := qldrv.Open("memory://" + name)
 	if err != nil {
 		return nil, err
 	}
 
-	return db, nil
+	return conn, nil
 }
+
+var (
+	qldrv driver.Driver
+)
 
 func init() {
 	sql.Register("csv", &csvDriver{})
+
+	db, err := sql.Open("ql", "memory:///dev/null")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+	qldrv = db.Driver()
 }

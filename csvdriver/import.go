@@ -19,15 +19,6 @@ import (
 func (conn *csvConn) importCSV() error {
 	log.Printf(">>> importCSV()...\n")
 
-	log.Printf(">>> qlopen(%s)...\n", conn.cfg.File)
-	ql, err := qlopen(conn.cfg.File)
-	if err != nil {
-		return err
-	}
-	log.Printf(">>> qlopen(%s)... [done]\n", conn.cfg.File)
-
-	conn.ql = ql
-
 	tbl, err := csvutil.Open(conn.cfg.File)
 	if err != nil {
 		return err
@@ -42,7 +33,7 @@ func (conn *csvConn) importCSV() error {
 	}
 
 	log.Printf(">>> conn.ql.Begin()...\n")
-	tx, err := conn.ql.Begin()
+	tx, err := conn.Begin()
 	if err != nil {
 		log.Fatalf("tx-err: %v\n", err)
 		return err
@@ -50,7 +41,7 @@ func (conn *csvConn) importCSV() error {
 	defer tx.Commit()
 
 	log.Printf(">>> conn.ql.Exec(create-table)...\n")
-	_, err = tx.Exec("create table csv (" + schema.Decl() + ")")
+	_, err = conn.Exec("create table csv ("+schema.Decl()+")", nil)
 	if err != nil {
 		log.Fatalf("create-err: %v\n", err)
 		return err
@@ -74,7 +65,7 @@ func (conn *csvConn) importCSV() error {
 			vargs[i] = reflect.ValueOf(arg).Elem().Interface()
 		}
 		log.Printf(">>> conn.ql.Exec(insert-row)...\n")
-		_, err = tx.Exec(insert, params(vargs)...)
+		_, err = conn.Exec(insert, vargs)
 		if err != nil {
 			return err
 		}

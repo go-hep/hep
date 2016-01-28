@@ -7,6 +7,7 @@ package csvdriver_test
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/go-hep/csvutil/csvdriver"
@@ -14,7 +15,7 @@ import (
 
 func TestOpen(t *testing.T) {
 	db, err := csvdriver.Conn{
-		File:    "../testdata/simple.csv",
+		File:    "testdata/simple.csv",
 		Comment: '#',
 		Comma:   ';',
 	}.Open()
@@ -74,7 +75,7 @@ func TestOpen(t *testing.T) {
 }
 
 func TestOpenName(t *testing.T) {
-	db, err := sql.Open("csv", "../testdata/simple-foo.csv")
+	db, err := sql.Open("csv", "testdata/simple-noheaders.csv")
 	if err != nil {
 		t.Errorf("error opening CSV file: %v\n", err)
 	}
@@ -87,7 +88,7 @@ func TestOpenName(t *testing.T) {
 }
 
 func TestQL(t *testing.T) {
-	db, err := sql.Open("ql", "memory://out-create.csv-")
+	db, err := sql.Open("ql", "memory://out-create-ql.csv")
 	if err != nil {
 		t.Fatalf("error creating CSV-QL file: %v\n", err)
 	}
@@ -124,7 +125,10 @@ func TestQL(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	db, err := csvdriver.Create("out-create.csv")
+	const fname = "testdata/out-create.csv"
+	defer os.Remove(fname)
+
+	db, err := csvdriver.Create(fname)
 	if err != nil {
 		t.Fatalf("error creating CSV file: %v\n", err)
 	}
