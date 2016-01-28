@@ -40,7 +40,7 @@ func TestOpen(t *testing.T) {
 		}
 	*/
 
-	rows, err := tx.Query("select var1, var2, var3 from csv;")
+	rows, err := tx.Query("select var1, var2, var3 from csv order by id();")
 	if err != nil {
 		t.Errorf("error querying db: %v\n", err)
 		return
@@ -133,8 +133,6 @@ func TestCreate(t *testing.T) {
 		t.Fatalf("error creating CSV file: %v\n", err)
 	}
 	defer db.Close()
-
-	fmt.Printf("stats: %v\n", db.Stats())
 
 	err = db.Ping()
 	if err != nil {

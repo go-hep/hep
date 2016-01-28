@@ -8,7 +8,6 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"io"
-	"log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -25,21 +24,24 @@ func (conn *csvConn) importCSV() error {
 	tbl.Reader.Comma = conn.cfg.Comma
 	tbl.Reader.Comment = conn.cfg.Comment
 
-	schema, err := inferSchemaFromTable(tbl)
+	schema, err := inferSchema(conn)
 	if err != nil {
 		return err
 	}
 
 	tx, err := conn.Begin()
 	if err != nil {
-		log.Fatalf("tx-err: %v\n", err)
 		return err
 	}
 	defer tx.Commit()
 
 	_, err = conn.Exec("create table csv ("+schema.Decl()+")", nil)
 	if err != nil {
-		log.Fatalf("create-err: %v\n", err)
+		return err
+	}
+
+	_, err = conn.Exec("create index csv_id on csv (id());", nil)
+	if err != nil {
 		return err
 	}
 
@@ -80,6 +82,18 @@ func (conn *csvConn) importCSV() error {
 	}
 
 	return nil
+}
+
+func inferSchema(conn *csvConn) (schemaType, error) {
+	tbl, err := csvutil.Open(conn.cfg.File)
+	if err != nil {
+		return nil, err
+	}
+	defer tbl.Close()
+	tbl.Reader.Comma = conn.cfg.Comma
+	tbl.Reader.Comment = conn.cfg.Comment
+
+	return inferSchemaFromTable(tbl)
 }
 
 func inferSchemaFromTable(tbl *csvutil.Table) (schemaType, error) {
