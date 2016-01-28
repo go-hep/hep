@@ -95,6 +95,26 @@ func (h *H1D) XY(i int) (float64, float64) {
 	return x, y
 }
 
+// DataRange implements the gonum/plot.DataRanger interface
+func (h *H1D) DataRange() (xmin, xmax, ymin, ymax float64) {
+	axis := h.Axis()
+	xmin = float64(axis.BinLowerEdge(0))
+	xmax = float64(axis.BinUpperEdge(h.Len()))
+	ymin = +math.MaxFloat64
+	ymax = -math.MaxFloat64
+	n := h.Len()
+	for i := 0; i < n; i++ {
+		y := h.Value(i)
+		if y > ymax {
+			ymax = y
+		}
+		if y < ymin {
+			ymin = y
+		}
+	}
+	return xmin, xmax, ymin, ymax
+}
+
 // Mean returns the mean of this histogram.
 func (h *H1D) Mean() float64 {
 	summeans := 0.0
