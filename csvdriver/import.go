@@ -17,8 +17,6 @@ import (
 )
 
 func (conn *csvConn) importCSV() error {
-	log.Printf(">>> importCSV()...\n")
-
 	tbl, err := csvutil.Open(conn.cfg.File)
 	if err != nil {
 		return err
@@ -32,7 +30,6 @@ func (conn *csvConn) importCSV() error {
 		return err
 	}
 
-	log.Printf(">>> conn.ql.Begin()...\n")
 	tx, err := conn.Begin()
 	if err != nil {
 		log.Fatalf("tx-err: %v\n", err)
@@ -40,7 +37,6 @@ func (conn *csvConn) importCSV() error {
 	}
 	defer tx.Commit()
 
-	log.Printf(">>> conn.ql.Exec(create-table)...\n")
 	_, err = conn.Exec("create table csv ("+schema.Decl()+")", nil)
 	if err != nil {
 		log.Fatalf("create-err: %v\n", err)
@@ -64,13 +60,11 @@ func (conn *csvConn) importCSV() error {
 		for i, arg := range pargs {
 			vargs[i] = reflect.ValueOf(arg).Elem().Interface()
 		}
-		log.Printf(">>> conn.ql.Exec(insert-row)...\n")
 		_, err = conn.Exec(insert, vargs)
 		if err != nil {
 			return err
 		}
 	}
-	log.Printf(">>> conn.ql.Exec(insert-row)... [done]\n")
 
 	err = rows.Err()
 	if err == io.EOF {
@@ -80,12 +74,10 @@ func (conn *csvConn) importCSV() error {
 		return err
 	}
 
-	log.Printf(">>> conn.ql.Commit()...\n")
 	err = tx.Commit()
 	if err != nil {
 		return err
 	}
-	log.Printf(">>> conn.ql.Commit()... [done]\n")
 
 	return nil
 }

@@ -10,7 +10,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -99,7 +98,6 @@ type csvDriver struct{}
 // The returned connection is only used by one goroutine at a
 // time.
 func (*csvDriver) Open(cfg string) (driver.Conn, error) {
-	log.Printf(">>> driver.Open(%s)...\n", cfg)
 	c := Conn{}
 	if strings.HasPrefix(cfg, "{") {
 		err := json.Unmarshal([]byte(cfg), &c)
@@ -131,17 +129,14 @@ func (*csvDriver) Open(cfg string) (driver.Conn, error) {
 		return nil, err
 	}
 
-	log.Printf(">>> doimport? %v\n", doImport)
 	if doImport {
 		err = conn.importCSV()
 	}
-	log.Printf(">>> doimport? %v [done]\n", doImport)
 
 	if err != nil {
 		return nil, err
 	}
 
-	log.Printf(">>> driver.Open(%s)... [done]\n", cfg)
 	return conn, err
 }
 
@@ -202,10 +197,8 @@ func (conn *csvConn) Close() error {
 
 // Begin starts and returns a new transaction.
 func (conn *csvConn) Begin() (driver.Tx, error) {
-	log.Printf(">>> conn.Begin()...\n")
 	tx, err := conn.conn.Begin()
 	if err != nil {
-		log.Fatalf("conn-begin: %v\n", err)
 		return nil, err
 	}
 	conn.tx = tx
@@ -213,7 +206,6 @@ func (conn *csvConn) Begin() (driver.Tx, error) {
 }
 
 func (conn *csvConn) Exec(query string, args []driver.Value) (driver.Result, error) {
-	log.Printf(">>> conn.Exec(%s)...\n", query)
 	return conn.exec.Exec(query, args)
 }
 
