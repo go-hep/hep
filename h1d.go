@@ -98,11 +98,11 @@ func (h *H1D) XY(i int) (float64, float64) {
 // DataRange implements the gonum/plot.DataRanger interface
 func (h *H1D) DataRange() (xmin, xmax, ymin, ymax float64) {
 	axis := h.Axis()
+	n := h.Len()
 	xmin = float64(axis.BinLowerEdge(0))
-	xmax = float64(axis.BinUpperEdge(h.Len()))
+	xmax = float64(axis.BinUpperEdge(n - 1))
 	ymin = +math.MaxFloat64
 	ymax = -math.MaxFloat64
-	n := h.Len()
 	for i := 0; i < n; i++ {
 		y := h.Value(i)
 		if y > ymax {
