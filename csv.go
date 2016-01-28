@@ -197,6 +197,20 @@ func (rows *Rows) Close() error {
 	return nil
 }
 
+// NumFields returns the number of fields in the current CSV-record.
+// NumFields assumes Rows.Next() has been called at least once.
+func (rows *Rows) NumFields() int {
+	return len(rows.record)
+}
+
+// Fields returns the raw string values of the fields of the current CSV-record.
+// Fields assumes Rows.Next() has been called at least once.
+func (rows *Rows) Fields() []string {
+	fields := make([]string, len(rows.record))
+	copy(fields, rows.record)
+	return fields
+}
+
 // Scan copies the columns in the current row into the values pointed at by
 // dest.
 func (rows *Rows) Scan(dest ...interface{}) error {
