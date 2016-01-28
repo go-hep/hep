@@ -153,7 +153,7 @@ func (t *Table) write(args ...interface{}) error {
 		case reflect.String:
 			rec[i] = rv.String()
 		default:
-			return fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v", arg)
+			return fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v (kind=%v)", arg, rt.Kind())
 		}
 	}
 	return t.Writer.Write(rec)
@@ -265,7 +265,7 @@ func (rows *Rows) scan(args ...interface{}) error {
 			rv.SetString(rec)
 
 		default:
-			return fmt.Errorf("csvutil: invalid type (%T) %q", rv.Interface(), rec)
+			return fmt.Errorf("csvutil: invalid type (%T) %q (kind=%v)", rv.Interface(), rec, rt.Kind())
 		}
 	}
 
