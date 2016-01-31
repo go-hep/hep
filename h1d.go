@@ -90,7 +90,13 @@ func (h *H1D) Len() int {
 
 // XY returns the x,y values for the i-th bin
 func (h *H1D) XY(i int) (float64, float64) {
-	x := float64(h.Axis().BinLowerEdge(i))
+	x := 0.
+	switch i == h.Len()-1 {
+	case false:
+		x = float64(h.Axis().BinLowerEdge(i))
+	case true:
+		x = float64(h.Axis().BinUpperEdge(i))
+	}
 	y := h.Value(i)
 	return x, y
 }
