@@ -3,14 +3,13 @@
 package main
 
 import (
-	//"fmt"
 	"image/color"
 	"math"
 	"math/rand"
 
 	"github.com/go-hep/hplot"
-	"github.com/go-hep/hplot/plotinum/plotter"
-	"github.com/go-hep/hplot/plotinum/vg"
+	"github.com/gonum/plot/plotter"
+	"github.com/gonum/plot/vg"
 )
 
 const NPOINTS = 10000

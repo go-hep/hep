@@ -6,37 +6,17 @@ import (
 	"image/color"
 
 	"github.com/go-hep/hbook"
-	"github.com/go-hep/hplot/plotinum/plot"
-	"github.com/go-hep/hplot/plotinum/plotter"
-	"github.com/go-hep/hplot/plotinum/vg"
+	"github.com/gonum/plot"
+	"github.com/gonum/plot/plotter"
+	"github.com/gonum/plot/vg"
+	"github.com/gonum/plot/vg/draw"
 )
-
-type h1d struct {
-	*hbook.H1D
-}
-
-func (h h1d) XY(i int) (float64, float64) {
-	axis := h.Axis()
-	xmin := axis.BinLowerEdge(i)
-	xmax := axis.BinUpperEdge(i)
-	x := 0.5 * (xmax - xmin)
-	y := h.Content(i)
-	return x, y
-}
-
-func (h h1d) Len() int {
-	return int(h.Axis().Bins())
-}
-
-func (h h1d) Value(idx int) float64 {
-	return h.Content(idx)
-}
 
 // Histogram implements the plotter.Plotter interface,
 // drawing a histogram of the data.
 type Histogram struct {
 	// Hist is the histogramming data
-	Hist h1d
+	Hist *hbook.H1D
 
 	// FillColor is the color used to fill each
 	// bar of the histogram.  If the color is nil
@@ -45,7 +25,7 @@ type Histogram struct {
 
 	// LineStyle is the style of the outline of each
 	// bar of the histogram.
-	plot.LineStyle
+	draw.LineStyle
 
 	// InfoStyle is the style of infos displayed for
 	// the histogram (entries, mean, rms)
@@ -79,7 +59,7 @@ func NewHistogram(xy plotter.XYer, n int) (*Histogram, error) {
 		return nil, errors.New("Histogram with non-positive number of bins")
 	}
 	h := hist_from_xyer(xy, n)
-	return NewH1D(h.H1D)
+	return NewH1D(h)
 }
 
 // NewHist returns a new histogram, as in
@@ -102,7 +82,7 @@ func (u unitYs) XY(i int) (float64, float64) {
 // instead of a plotter.XYer
 func NewH1D(h *hbook.H1D) (*Histogram, error) {
 	return &Histogram{
-		Hist:      h1d{h},
+		Hist:      h,
 		FillColor: color.White,
 		LineStyle: plotter.DefaultLineStyle,
 	}, nil
@@ -119,40 +99,40 @@ func (h *Histogram) DataRange() (xmin, xmax, ymin, ymax float64) {
 
 // Plot implements the Plotter interface, drawing a line
 // that connects each point in the Line.
-func (h *Histogram) Plot(da plot.DrawArea, p *plot.Plot) {
-	trX, trY := p.Transforms(&da)
-	var pts []plot.Point
+func (h *Histogram) Plot(c draw.Canvas, p *plot.Plot) {
+	trX, trY := p.Transforms(&c)
+	var pts []draw.Point
 	hist := h.Hist
 	axis := hist.Axis()
 	nbins := int(axis.Bins())
 	for bin := 0; bin < nbins; bin++ {
 		switch bin {
 		case 0:
-			pts = append(pts, plot.Pt(trX(axis.BinLowerEdge(bin)), trY(0)))
-			pts = append(pts, plot.Pt(trX(axis.BinLowerEdge(bin)), trY(hist.Content(bin))))
-			pts = append(pts, plot.Pt(trX(axis.BinUpperEdge(bin)), trY(hist.Content(bin))))
+			pts = append(pts, draw.Point{trX(axis.BinLowerEdge(bin)), trY(0)})
+			pts = append(pts, draw.Point{trX(axis.BinLowerEdge(bin)), trY(hist.Value(bin))})
+			pts = append(pts, draw.Point{trX(axis.BinUpperEdge(bin)), trY(hist.Value(bin))})
 
 		case nbins - 1:
-			pts = append(pts, plot.Pt(trX(axis.BinUpperEdge(bin-1)), trY(hist.Content(bin-1))))
-			pts = append(pts, plot.Pt(trX(axis.BinLowerEdge(bin)), trY(hist.Content(bin))))
-			pts = append(pts, plot.Pt(trX(axis.BinUpperEdge(bin)), trY(hist.Content(bin))))
-			pts = append(pts, plot.Pt(trX(axis.BinUpperEdge(bin)), trY(0.)))
+			pts = append(pts, draw.Point{trX(axis.BinUpperEdge(bin - 1)), trY(hist.Value(bin - 1))})
+			pts = append(pts, draw.Point{trX(axis.BinLowerEdge(bin)), trY(hist.Value(bin))})
+			pts = append(pts, draw.Point{trX(axis.BinUpperEdge(bin)), trY(hist.Value(bin))})
+			pts = append(pts, draw.Point{trX(axis.BinUpperEdge(bin)), trY(0.)})
 
 		default:
-			pts = append(pts, plot.Pt(trX(axis.BinUpperEdge(bin-1)), trY(hist.Content(bin-1))))
-			pts = append(pts, plot.Pt(trX(axis.BinLowerEdge(bin)), trY(hist.Content(bin))))
-			pts = append(pts, plot.Pt(trX(axis.BinUpperEdge(bin)), trY(hist.Content(bin))))
+			pts = append(pts, draw.Point{trX(axis.BinUpperEdge(bin - 1)), trY(hist.Value(bin - 1))})
+			pts = append(pts, draw.Point{trX(axis.BinLowerEdge(bin)), trY(hist.Value(bin))})
+			pts = append(pts, draw.Point{trX(axis.BinUpperEdge(bin)), trY(hist.Value(bin))})
 		}
 	}
 
 	if h.FillColor != nil {
-		da.FillPolygon(h.FillColor, da.ClipPolygonXY(pts))
+		c.FillPolygon(h.FillColor, c.ClipPolygonXY(pts))
 	}
-	da.StrokeLines(h.LineStyle, da.ClipLinesXY(pts)...)
+	c.StrokeLines(h.LineStyle, c.ClipLinesXY(pts)...)
 
 	fnt, err := vg.MakeFont(plotter.DefaultFont, plotter.DefaultFontSize)
 	if err == nil {
-		sty := plot.TextStyle{Font: fnt}
+		sty := draw.TextStyle{Font: fnt}
 		legend := hist_legend{
 			ColWidth:  plotter.DefaultFontSize,
 			TextStyle: sty,
@@ -173,7 +153,7 @@ func (h *Histogram) Plot(da plot.DrawArea, p *plot.Plot) {
 		}
 		legend.Top = true
 
-		legend.draw(da)
+		legend.draw(c)
 	}
 }
 
@@ -184,21 +164,21 @@ func (h *Histogram) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
 	axis := h.Hist.Axis()
 	bs := make([]plot.GlyphBox, axis.Bins())
 	for i, _ := range bs {
-		y := h.Hist.Content(i)
+		y := h.Hist.Value(i)
 		xmin := axis.BinLowerEdge(i)
 		w := p.X.Norm(axis.BinWidth(i))
 		bs[i].X = p.X.Norm(xmin + 0.5*w)
 		bs[i].Y = p.Y.Norm(y)
 		//h := vg.Points(1e-5) //1 //p.Y.Norm(axis.BinWidth(i))
-		bs[i].Rect.Min.X = vg.Length(xmin - 0.5*w)
-		bs[i].Rect.Min.Y = vg.Length(y - 0.5*w)
-		bs[i].Rect.Size.X = vg.Length(w)
-		bs[i].Rect.Size.Y = vg.Length(0)
+		bs[i].Rectangle.Min.X = vg.Length(xmin - 0.5*w)
+		bs[i].Rectangle.Min.Y = vg.Length(y - 0.5*w)
+		bs[i].Rectangle.Max.X = vg.Length(w)
+		bs[i].Rectangle.Max.Y = vg.Length(0)
 
 		r := vg.Points(5)
 		//r = vg.Length(w)
-		bs[i].Rect.Min = plot.Pt(0, 0)
-		bs[i].Rect.Size = plot.Pt(0, r)
+		bs[i].Rectangle.Min = draw.Point{0, 0}
+		bs[i].Rectangle.Max = draw.Point{0, r}
 	}
 	return bs
 }
@@ -215,7 +195,7 @@ func (h *Histogram) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
 // 	}
 // }
 
-func hist_from_xyer(xys plotter.XYer, n int) h1d {
+func hist_from_xyer(xys plotter.XYer, n int) *hbook.H1D {
 	xmin, xmax := plotter.Range(plotter.XValues{xys})
 	h := hbook.NewH1D(n, xmin, xmax)
 
@@ -224,7 +204,7 @@ func hist_from_xyer(xys plotter.XYer, n int) h1d {
 		h.Fill(x, y)
 	}
 
-	return h1d{h}
+	return h
 }
 
 // A Legend gives a description of the meaning of different
@@ -234,7 +214,7 @@ func hist_from_xyer(xys plotter.XYer, n int) h1d {
 type hist_legend struct {
 	// TextStyle is the style given to the legend
 	// entry texts.
-	plot.TextStyle
+	draw.TextStyle
 
 	// Padding is the amount of padding to add
 	// betweeneach entry of the legend.  If Padding
@@ -274,52 +254,52 @@ type legendEntry struct {
 	value string
 }
 
-// draw draws the legend to the given DrawArea.
-func (l *hist_legend) draw(da plot.DrawArea) {
-	textx := da.Min.X
+// draw draws the legend to the given canvas.
+func (l *hist_legend) draw(c draw.Canvas) {
+	textx := c.Min.X
 	hdr := l.entryWidth() //+ l.TextStyle.Width(" ")
 	l.ColWidth = hdr
 	valx := textx + l.ColWidth + l.TextStyle.Width(" ")
 	if !l.Left {
-		textx = da.Max().X - l.ColWidth
+		textx = c.Max.X - l.ColWidth
 		valx = textx - l.TextStyle.Width(" ")
 	}
 	valx += l.XOffs
 	textx += l.XOffs
 
 	enth := l.entryHeight()
-	y := da.Max().Y - enth
+	y := c.Max.Y - enth
 	if !l.Top {
-		y = da.Min.Y + (enth+l.Padding)*(vg.Length(len(l.entries))-1)
+		y = c.Min.Y + (enth+l.Padding)*(vg.Length(len(l.entries))-1)
 	}
 	y += l.YOffs
 
-	colx := &plot.DrawArea{
-		Canvas: da.Canvas,
-		Rect: plot.Rect{
-			Min:  plot.Point{da.Min.X, y},
-			Size: plot.Point{2 * l.ColWidth, enth},
+	colx := &draw.Canvas{
+		Canvas: c.Canvas,
+		Rectangle: draw.Rectangle{
+			Min: draw.Point{c.Min.X, y},
+			Max: draw.Point{2 * l.ColWidth, enth},
 		},
 	}
 	for _, e := range l.entries {
 		yoffs := (enth - l.TextStyle.Height(e.text)) / 2
-		da.FillText(l.TextStyle, textx-hdr, colx.Min.Y+yoffs, +0, 0, e.text)
-		da.FillText(l.TextStyle, textx+hdr, colx.Min.Y+yoffs, -1, 0, e.value)
+		c.FillText(l.TextStyle, textx-hdr, colx.Min.Y+yoffs, +0, 0, e.text)
+		c.FillText(l.TextStyle, textx+hdr, colx.Min.Y+yoffs, -1, 0, e.value)
 		colx.Min.Y -= enth + l.Padding
 	}
 
 	bbox_xmin := textx - hdr - l.TextStyle.Width(" ")
-	bbox_xmax := da.Max().X
+	bbox_xmax := c.Max.X
 	bbox_ymin := colx.Min.Y + enth
-	bbox_ymax := da.Max().Y
-	bbox := []plot.Point{
+	bbox_ymax := c.Max.Y
+	bbox := []draw.Point{
 		{bbox_xmin, bbox_ymax},
 		{bbox_xmin, bbox_ymin},
 		{bbox_xmax, bbox_ymin},
 		{bbox_xmax, bbox_ymax},
 		{bbox_xmin, bbox_ymax},
 	}
-	da.StrokeLines(plotter.DefaultLineStyle, bbox)
+	c.StrokeLines(plotter.DefaultLineStyle, bbox)
 }
 
 // entryHeight returns the height of the tallest legend
@@ -357,23 +337,3 @@ func (l *hist_legend) Add(name string, value interface{}) {
 	}
 	l.entries = append(l.entries, legendEntry{text: name, value: str})
 }
-
-// crop returns a new DrawArea corresponding to the receiver
-// area with the given number of inches added to the minimum
-// and maximum x and y values of the DrawArea's Rect.
-func crop_da(da plot.DrawArea, minx, miny, maxx, maxy vg.Length) plot.DrawArea {
-	minpt := plot.Point{
-		X: da.Min.X + minx,
-		Y: da.Min.Y + miny,
-	}
-	sz := plot.Point{
-		X: da.Max().X + maxx - minpt.X,
-		Y: da.Max().Y + maxy - minpt.Y,
-	}
-	return plot.DrawArea{
-		Canvas: vg.Canvas(da),
-		Rect:   plot.Rect{Min: minpt, Size: sz},
-	}
-}
-
-// EOF

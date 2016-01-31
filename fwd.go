@@ -1,7 +1,7 @@
 package hplot
 
 import (
-	"github.com/go-hep/hplot/plotinum/plotter"
+	"github.com/gonum/plot/plotter"
 )
 
 // NewFunction returns a Function that plots F using

@@ -7,7 +7,7 @@ package hplot
 import (
 	"math"
 
-	"github.com/go-hep/hplot/plotinum/plot"
+	"github.com/gonum/plot"
 )
 
 // Plot is the basic type representing a plot.
@@ -22,9 +22,9 @@ func New() (*Plot, error) {
 	if err != nil {
 		return nil, err
 	}
-	p.X.Padding = 0
-	p.Y.Padding = 0
-	p.Style = plot.GnuplotStyle
+	//p.X.Padding = 0
+	//p.Y.Padding = 0
+	//p.Style = plot.GnuplotStyle
 	return &Plot{*p}, nil
 }
 
