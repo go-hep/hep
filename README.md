@@ -29,17 +29,18 @@ http://godoc.org/github.com/go-hep/hplot
 package main
 
 import (
-  //"fmt"
 	"image/color"
 	"math"
 	"math/rand"
 
 	"github.com/go-hep/hplot"
-	"github.com/go-hep/hplot/plotinum/plotter"
-	"github.com/go-hep/hplot/plotinum/vg"
+	"github.com/gonum/plot/plotter"
+	"github.com/gonum/plot/vg"
 )
 
 const NPOINTS = 10000
+
+var HMAX = 1.0
 
 func main() {
 	// Draw some random values from the standard
@@ -65,11 +66,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	// h.Infos.Style = hplot.HInfo_None
 	p.Add(h)
-  
-	// Draw a grid behind the data
-	p.Add(hplot.NewGrid())
 
+	// normalize histo
+	HMAX = h.Hist.Max() / stdNorm(0)
 
 	// The normal distribution function
 	norm := hplot.NewFunction(stdNorm)
@@ -77,12 +78,11 @@ func main() {
 	norm.Width = vg.Points(2)
 	p.Add(norm)
 
+	// draw a grid
+	p.Add(hplot.NewGrid())
+
 	// Save the plot to a PNG file.
-	if err := p.Save(4, 4, "hist.png"); err != nil {
-		panic(err)
-	}
-	// Save the plot to a PDF file.
-	if err := p.Save(4, 4, "hist.pdf"); err != nil {
+	if err := p.Save(4*vg.Inch, 4*vg.Inch, "hist.png"); err != nil {
 		panic(err)
 	}
 }
@@ -92,10 +92,8 @@ func main() {
 func stdNorm(x float64) float64 {
 	const sigma = 1.0
 	const mu = 0.0
-	const root2pi = 2.50662827459517818309
-	return 1.0 / (sigma * root2pi) * math.Exp(-((x-mu)*(x-mu))/(2*sigma*sigma))
+	const root2π = 2.50662827459517818309
+	return 1.0 / (sigma * root2π) * math.Exp(-((x-mu)*(x-mu))/(2*sigma*sigma)) * HMAX
 }
-
-// EOF
 ```
 
