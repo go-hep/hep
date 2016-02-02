@@ -36,7 +36,8 @@ type HInfoStyle int
 
 const (
 	HInfo_DefaultStyle HInfoStyle = 0 // HInfo_Entries | HInfo_Mean | HInfo_RMS
-	HInfo_Entries      HInfoStyle = iota << 1
+	HInfo_None         HInfoStyle = iota << 1
+	HInfo_Entries
 	HInfo_Mean
 	HInfo_RMS
 )
@@ -58,7 +59,7 @@ func NewHistogram(xy plotter.XYer, n int) (*Histogram, error) {
 	if n <= 0 {
 		return nil, errors.New("Histogram with non-positive number of bins")
 	}
-	h := hist_from_xyer(xy, n)
+	h := newHistFromXYer(xy, n)
 	return NewH1D(h)
 }
 
@@ -130,30 +131,32 @@ func (h *Histogram) Plot(c draw.Canvas, p *plot.Plot) {
 	}
 	c.StrokeLines(h.LineStyle, c.ClipLinesXY(pts)...)
 
-	fnt, err := vg.MakeFont(plotter.DefaultFont, plotter.DefaultFontSize)
-	if err == nil {
-		sty := draw.TextStyle{Font: fnt}
-		legend := hist_legend{
-			ColWidth:  plotter.DefaultFontSize,
-			TextStyle: sty,
-		}
+	if h.Infos.Style != HInfo_None {
+		fnt, err := vg.MakeFont(plotter.DefaultFont, plotter.DefaultFontSize)
+		if err == nil {
+			sty := draw.TextStyle{Font: fnt}
+			legend := hist_legend{
+				ColWidth:  plotter.DefaultFontSize,
+				TextStyle: sty,
+			}
 
-		switch h.Infos.Style {
-		case HInfo_DefaultStyle:
-			legend.Add("Entries", hist.Entries())
-			legend.Add("Mean", hist.Mean())
-			legend.Add("RMS", hist.RMS())
-		case HInfo_Entries:
-			legend.Add("Entries", hist.Entries())
-		case HInfo_Mean:
-			legend.Add("Mean", hist.Mean())
-		case HInfo_RMS:
-			legend.Add("RMS", hist.RMS())
-		default:
-		}
-		legend.Top = true
+			switch h.Infos.Style {
+			case HInfo_DefaultStyle:
+				legend.Add("Entries", hist.Entries())
+				legend.Add("Mean", hist.Mean())
+				legend.Add("RMS", hist.RMS())
+			case HInfo_Entries:
+				legend.Add("Entries", hist.Entries())
+			case HInfo_Mean:
+				legend.Add("Mean", hist.Mean())
+			case HInfo_RMS:
+				legend.Add("RMS", hist.RMS())
+			default:
+			}
+			legend.Top = true
 
-		legend.draw(c)
+			legend.draw(c)
+		}
 	}
 }
 
@@ -195,7 +198,7 @@ func (h *Histogram) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
 // 	}
 // }
 
-func hist_from_xyer(xys plotter.XYer, n int) *hbook.H1D {
+func newHistFromXYer(xys plotter.XYer, n int) *hbook.H1D {
 	xmin, xmax := plotter.Range(plotter.XValues{xys})
 	h := hbook.NewH1D(n, xmin, xmax)
 
