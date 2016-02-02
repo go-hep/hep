@@ -3,7 +3,7 @@ hplot
 
 [![Build Status](https://drone.io/github.com/go-hep/hplot/status.png)](https://drone.io/github.com/go-hep/hplot/latest)
 
-`hplot` is a WIP package relying on `plotinum` to plot histograms,
+`hplot` is a WIP package relying on `gonum/plot` to plot histograms,
 n-tuples and functions.
 
 ## Installation
