@@ -2,25 +2,23 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package hplt_test
+package hbook_test
 
 import (
 	"database/sql"
 	"testing"
 
-	_ "github.com/cznic/ql/driver"
 	"github.com/go-hep/csvutil/csvdriver"
 	"github.com/go-hep/hbook"
-	"github.com/go-hep/hbook/hplt"
 )
 
 var (
-	db *sql.DB
+	nt *hbook.NTuple
 )
 
 func TestScanH1D(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
-	h, err := hplt.ScanH1D(db, "select x from data", h)
+	h, err := nt.ScanH1D("x", h)
 	if err != nil {
 		t.Errorf("error running query: %v\n", err)
 	}
@@ -60,7 +58,7 @@ func TestScanH1D(t *testing.T) {
 
 func TestScanH1DWhere(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
-	h, err := hplt.ScanH1D(db, "select x from data where id > 4", h)
+	h, err := nt.ScanH1D("x where (id > 4 && id < 10)", h)
 	if err != nil {
 		t.Errorf("error running query: %v\n", err)
 	}
@@ -105,7 +103,7 @@ func TestScanH1DWhere(t *testing.T) {
 
 func TestScanH1DInt(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
-	h, err := hplt.ScanH1D(db, "select id from data", h)
+	h, err := nt.ScanH1D("id", h)
 	if err != nil {
 		t.Errorf("error running query: %v\n", err)
 	}
@@ -145,7 +143,7 @@ func TestScanH1DInt(t *testing.T) {
 
 func TestScan(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
-	err := hplt.Scan(db, "select id, x from data", func(id int64, x float64) error {
+	err := nt.Scan("id, x", func(id int64, x float64) error {
 		h.Fill(x, 1)
 		return nil
 	})
@@ -189,11 +187,17 @@ func TestScan(t *testing.T) {
 func TestScanH1DFromCSVWithCommas(t *testing.T) {
 	db, err := sql.Open("csv", "testdata/simple-comma.csv")
 	if err != nil {
-		t.Fatalf("error opening CSV db: %v\b", err)
+		t.Fatalf("error opening CSV db: %v\n", err)
+	}
+	defer db.Close()
+
+	nt, err := hbook.OpenNTuple(db, "csv")
+	if err != nil {
+		t.Fatalf("error opening ntuple: %v\n", err)
 	}
 
 	h := hbook.NewH1D(10, 0, 10)
-	h, err = hplt.ScanH1D(db, "select var2 from csv", h)
+	h, err = nt.ScanH1D("var2", h)
 	if err != nil {
 		t.Errorf("error running query: %v\n", err)
 	}
@@ -238,11 +242,17 @@ func TestScanH1DFromCSV(t *testing.T) {
 		Comment: '#',
 	}.Open()
 	if err != nil {
-		t.Fatalf("error opening CSV db: %v\b", err)
+		t.Fatalf("error opening CSV db: %v\n", err)
+	}
+	defer db.Close()
+
+	nt, err := hbook.OpenNTuple(db, "csv")
+	if err != nil {
+		t.Fatalf("error opening ntuple: %v\n", err)
 	}
 
 	h := hbook.NewH1D(10, 0, 10)
-	h, err = hplt.ScanH1D(db, "select var2 from csv", h)
+	h, err = nt.ScanH1D("var2", h)
 	if err != nil {
 		t.Errorf("error running query: %v\n", err)
 	}
@@ -282,7 +292,7 @@ func TestScanH1DFromCSV(t *testing.T) {
 
 func init() {
 	var err error
-	db, err = sql.Open("ql", "memory://mem.db")
+	db, err := sql.Open("ql", "memory://mem.db")
 	if err != nil {
 		panic(err)
 	}
@@ -306,4 +316,8 @@ func init() {
 		panic(err)
 	}
 
+	nt, err = hbook.OpenNTuple(db, "data")
+	if err != nil {
+		panic(err)
+	}
 }

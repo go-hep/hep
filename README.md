@@ -23,6 +23,8 @@ Documentation is available on godoc:
 
 ## Example
 
+### H1D
+
 ```go
 package main
 
@@ -38,4 +40,59 @@ func main() {
 	 }
 }
 
+```
+
+### NTuple
+
+#### Open an existing n-tuple
+
+```go
+package main
+
+import (
+	"database/sql"
+	"fmt"
+
+	_ "github.com/go-hep/csvutil/csvdriver"
+	"github.com/go-hep/hbook"
+)
+
+func main() {
+	db, err := sql.Open("csv", "data.csv")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	nt, err := hbook.OpenNTuple(db, "csv")
+	if err != nil {
+		panic(err)
+	}
+
+	h1, err := nt.ScanH1D("px where pt>100", nil)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("h1: %v\n", h1)
+
+	h2 := hbook.NewH1D(100, -10, 10)
+	h2, err = nt.ScanH1D("px where pt>100 && pt < 1000", h2)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("h2: %v\n", h2)
+
+	h11 := hbook.NewH1D(100, -10, 10)
+	h22 := hbook.NewH1D(100, -10, 10)
+	err = nt.Scan("px, py where pt>100", func(px, py float64) error {
+		h11.Fill(px, 1)
+		h22.Fill(py, 1)
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("h11: %v\n", h11)
+	fmt.Printf("h22: %v\n", h22)
+}
 ```
