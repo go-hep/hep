@@ -5,9 +5,11 @@
 package hplot
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/gonum/plot"
+	"github.com/gonum/plot/vg"
 )
 
 // Plot is the basic type representing a plot.
@@ -73,4 +75,22 @@ func (p *Plot) Add(ps ...plot.Plotter) {
 	p.Plot.Add(ps...)
 }
 
-// EOF
+// Save saves the plot to an image file.  The file format is determined
+// by the extension.
+//
+// Supported extensions are:
+//
+//  .eps, .jpg, .jpeg, .pdf, .png, .svg, .tif and .tiff.
+//
+// If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
+func (p *Plot) Save(w, h vg.Length, file string) (err error) {
+	switch {
+	case w <= 0 && h <= 0:
+		return fmt.Errorf("hplot: invalid plot length (w<=0 && h<=0)")
+	case w <= 0:
+		w = h * math.Phi
+	case h <= 0:
+		h = w / math.Phi
+	}
+	return p.Plot.Save(w, h, file)
+}

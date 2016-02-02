@@ -7,8 +7,8 @@ import (
 	"math"
 	"math/rand"
 
+	"github.com/go-hep/hbook"
 	"github.com/go-hep/hplot"
-	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/vg"
 )
 
@@ -20,9 +20,10 @@ func main() {
 	// Draw some random values from the standard
 	// normal distribution.
 	rand.Seed(int64(0))
-	v := make(plotter.Values, NPOINTS)
-	for i := range v {
-		v[i] = rand.NormFloat64()
+	hist := hbook.NewH1D(20, -4, +4)
+	for i := 0; i < NPOINTS; i++ {
+		v := rand.NormFloat64()
+		hist.Fill(v, 1)
 	}
 
 	// Make a plot and set its title.
@@ -36,7 +37,7 @@ func main() {
 
 	// Create a histogram of our values drawn
 	// from the standard normal.
-	h, err := hplot.NewHist(v, 16)
+	h, err := hplot.NewH1D(hist)
 	if err != nil {
 		panic(err)
 	}
@@ -56,7 +57,7 @@ func main() {
 	p.Add(hplot.NewGrid())
 
 	// Save the plot to a PNG file.
-	if err := p.Save(4*vg.Inch, 4*vg.Inch, "hist.png"); err != nil {
+	if err := p.Save(6*vg.Inch, -1, "hist.png"); err != nil {
 		panic(err)
 	}
 }
