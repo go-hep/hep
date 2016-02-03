@@ -349,10 +349,11 @@ func TestCreateNTupleFromStruct(t *testing.T) {
 	defer db.Close()
 
 	type dataType struct {
-		I  int64
-		F  float64
-		FF float64 `rio:"ff"`
-		S  string  `rio:"STR" hbook:"str"`
+		I   int64
+		F   float64
+		FF  float64 `rio:"ff"`
+		S   string  `rio:"STR" hbook:"str"`
+		not string
 	}
 
 	const ntname = "ntup"
