@@ -35,11 +35,11 @@ type Histogram struct {
 type HInfoStyle int
 
 const (
-	HInfo_DefaultStyle HInfoStyle = 0 // HInfo_Entries | HInfo_Mean | HInfo_RMS
-	HInfo_None         HInfoStyle = iota << 1
-	HInfo_Entries
-	HInfo_Mean
-	HInfo_RMS
+	HInfoNone    HInfoStyle = 0
+	HInfoEntries HInfoStyle = iota << 1
+	HInfoMean
+	HInfoRMS
+	HInfoSummary // HInfoEntries | HInfoMean | HInfoRMS
 )
 
 type HInfos struct {
@@ -131,7 +131,7 @@ func (h *Histogram) Plot(c draw.Canvas, p *plot.Plot) {
 	}
 	c.StrokeLines(h.LineStyle, c.ClipLinesXY(pts)...)
 
-	if h.Infos.Style != HInfo_None {
+	if h.Infos.Style != HInfoNone {
 		fnt, err := vg.MakeFont(plotter.DefaultFont, plotter.DefaultFontSize)
 		if err == nil {
 			sty := draw.TextStyle{Font: fnt}
@@ -141,15 +141,15 @@ func (h *Histogram) Plot(c draw.Canvas, p *plot.Plot) {
 			}
 
 			switch h.Infos.Style {
-			case HInfo_DefaultStyle:
+			case HInfoSummary:
 				legend.Add("Entries", hist.Entries())
 				legend.Add("Mean", hist.Mean())
 				legend.Add("RMS", hist.RMS())
-			case HInfo_Entries:
+			case HInfoEntries:
 				legend.Add("Entries", hist.Entries())
-			case HInfo_Mean:
+			case HInfoMean:
 				legend.Add("Mean", hist.Mean())
-			case HInfo_RMS:
+			case HInfoRMS:
 				legend.Add("RMS", hist.RMS())
 			default:
 			}

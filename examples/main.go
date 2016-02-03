@@ -41,7 +41,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// h.Infos.Style = hplot.HInfo_None
+	h.Infos.Style = hplot.HInfoSummary
 	p.Add(h)
 
 	// normalize histo
