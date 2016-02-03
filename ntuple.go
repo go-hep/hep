@@ -168,7 +168,7 @@ func schemaFrom(src ...interface{}) ([]Descriptor, error) {
 func getTag(tag reflect.StructTag, keys ...string) string {
 	for _, k := range keys {
 		v := tag.Get(k)
-		if v != "" {
+		if v != "" && v != "-" {
 			return v
 		}
 	}

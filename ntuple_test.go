@@ -351,7 +351,7 @@ func TestCreateNTupleFromStruct(t *testing.T) {
 	type dataType struct {
 		I   int64
 		F   float64
-		FF  float64 `rio:"ff"`
+		FF  float64 `rio:"ff" hbook:"-"`
 		S   string  `rio:"STR" hbook:"str"`
 		not string
 	}
