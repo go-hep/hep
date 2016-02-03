@@ -15,14 +15,15 @@ import (
 )
 
 var (
-	ErrNotExist = errors.New("ntuple does not exist")
+	ErrNotExist      = errors.New("hbook: ntuple does not exist")
+	ErrMissingColDef = errors.New("hbook: expected at least one column definition")
 )
 
 // NTuple provides read/write access to row-wise data.
 type NTuple struct {
 	db     *sql.DB
 	name   string
-	schema []columnDescr
+	schema []Descriptor
 }
 
 // OpenNTuple inspects the given database handle and tries to return
@@ -52,16 +53,74 @@ func OpenNTuple(db *sql.DB, name string) (*NTuple, error) {
 //  nt, err := hbook.CreateNTuple(db, "nt", struct{X float64 `hbook:"x"`}{})
 //  nt, err := hbook.CreateNTuple(db, "nt", int64(0), float64(0))
 func CreateNTuple(db *sql.DB, name string, cols ...interface{}) (*NTuple, error) {
+	var err error
 	nt := &NTuple{
 		db:   db,
 		name: name,
 	}
-	return nt, nil
+	var schema []Descriptor
+	switch len(cols) {
+	case 0:
+		return nil, ErrMissingColDef
+	case 1:
+		rv := reflect.Indirect(reflect.ValueOf(cols[0]))
+		rt := rv.Type()
+		switch rt.Kind() {
+		case reflect.Struct:
+			schema, err = schemaFromStruct(rt)
+		default:
+			schema, err = schemaFrom(cols...)
+		}
+	default:
+		schema, err = schemaFrom(cols...)
+	}
+	if err != nil {
+		return nil, err
+	}
+	nt.schema = schema
+	return nt, err
+}
+
+// Name returns the name of this n-tuple.
+func (nt *NTuple) Name() string {
+	return nt.name
+}
+
+// Cols returns the columns' descriptors of this n-tuple.
+// Modifying it directly leads to undefined behaviour.
+func (nt *NTuple) Cols() []Descriptor {
+	return nt.schema
+}
+
+// Descriptor describes a column
+type Descriptor interface {
+	Name() string       // the column name
+	Type() reflect.Type // the column type
 }
 
 type columnDescr struct {
-	Name string
-	Type reflect.Type
+	name string
+	typ  reflect.Type
+}
+
+func (col *columnDescr) Name() string {
+	return col.name
+}
+
+func (col *columnDescr) Type() reflect.Type {
+	return col.typ
+}
+
+func schemaFromStruct(rt reflect.Type) ([]Descriptor, error) {
+	var schema []Descriptor
+	var err error
+	return schema, err
+}
+
+func schemaFrom(src ...interface{}) ([]Descriptor, error) {
+	var schema []Descriptor
+	var err error
+	return schema, err
 }
 
 // Scan executes a query against the ntuple and runs the function f against that context.
