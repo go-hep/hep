@@ -91,11 +91,7 @@ func NewH1D(h *hbook.H1D) (*Histogram, error) {
 
 // DataRange returns the minimum and maximum X and Y values
 func (h *Histogram) DataRange() (xmin, xmax, ymin, ymax float64) {
-	xmin = h.Hist.Axis().LowerEdge()
-	xmax = h.Hist.Axis().UpperEdge()
-	ymin = h.Hist.Min()
-	ymax = h.Hist.Max()
-	return
+	return h.Hist.DataRange()
 }
 
 // Plot implements the Plotter interface, drawing a line
