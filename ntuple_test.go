@@ -16,7 +16,7 @@ var (
 	nt *hbook.NTuple
 )
 
-func TestScanH1D(t *testing.T) {
+func TestNTupleScanH1D(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
 	h, err := nt.ScanH1D("x", h)
 	if err != nil {
@@ -56,7 +56,7 @@ func TestScanH1D(t *testing.T) {
 	}
 }
 
-func TestScanH1DWhere(t *testing.T) {
+func TestNTupleScanH1DWhere(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
 	h, err := nt.ScanH1D("x where (id > 4 && id < 10)", h)
 	if err != nil {
@@ -101,7 +101,7 @@ func TestScanH1DWhere(t *testing.T) {
 	}
 }
 
-func TestScanH1DInt(t *testing.T) {
+func TestNTupleScanH1DInt(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
 	h, err := nt.ScanH1D("id", h)
 	if err != nil {
@@ -141,7 +141,7 @@ func TestScanH1DInt(t *testing.T) {
 	}
 }
 
-func TestScan(t *testing.T) {
+func TestNTupleScan(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
 	err := nt.Scan("id, x", func(id int64, x float64) error {
 		h.Fill(x, 1)
@@ -184,7 +184,7 @@ func TestScan(t *testing.T) {
 	}
 }
 
-func TestScanH1DFromCSVWithCommas(t *testing.T) {
+func TestNTupleScanH1DFromCSVWithCommas(t *testing.T) {
 	db, err := sql.Open("csv", "testdata/simple-comma.csv")
 	if err != nil {
 		t.Fatalf("error opening CSV db: %v\n", err)
@@ -235,7 +235,7 @@ func TestScanH1DFromCSVWithCommas(t *testing.T) {
 	}
 }
 
-func TestScanH1DFromCSV(t *testing.T) {
+func TestNTupleScanH1DFromCSV(t *testing.T) {
 	db, err := csvdriver.Conn{
 		File:    "testdata/simple.csv",
 		Comma:   ';',
