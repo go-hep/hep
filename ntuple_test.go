@@ -14,10 +14,10 @@ import (
 )
 
 var (
-	nt *hbook.NTuple
+	nt *hbook.Ntuple
 )
 
-func TestNTupleScanH1D(t *testing.T) {
+func TestNtupleScanH1D(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
 	h, err := nt.ScanH1D("x", h)
 	if err != nil {
@@ -57,7 +57,7 @@ func TestNTupleScanH1D(t *testing.T) {
 	}
 }
 
-func TestNTupleScanH1DWhere(t *testing.T) {
+func TestNtupleScanH1DWhere(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
 	h, err := nt.ScanH1D("x where (id > 4 && id < 10)", h)
 	if err != nil {
@@ -102,7 +102,7 @@ func TestNTupleScanH1DWhere(t *testing.T) {
 	}
 }
 
-func TestNTupleScanH1DInt(t *testing.T) {
+func TestNtupleScanH1DInt(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
 	h, err := nt.ScanH1D("id", h)
 	if err != nil {
@@ -142,7 +142,7 @@ func TestNTupleScanH1DInt(t *testing.T) {
 	}
 }
 
-func TestNTupleScan(t *testing.T) {
+func TestNtupleScan(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
 	err := nt.Scan("id, x", func(id int64, x float64) error {
 		h.Fill(x, 1)
@@ -185,14 +185,14 @@ func TestNTupleScan(t *testing.T) {
 	}
 }
 
-func TestNTupleScanH1DFromCSVWithCommas(t *testing.T) {
+func TestNtupleScanH1DFromCSVWithCommas(t *testing.T) {
 	db, err := sql.Open("csv", "testdata/simple-comma.csv")
 	if err != nil {
 		t.Fatalf("error opening CSV db: %v\n", err)
 	}
 	defer db.Close()
 
-	nt, err := hbook.OpenNTuple(db, "csv")
+	nt, err := hbook.OpenNtuple(db, "csv")
 	if err != nil {
 		t.Fatalf("error opening ntuple: %v\n", err)
 	}
@@ -236,7 +236,7 @@ func TestNTupleScanH1DFromCSVWithCommas(t *testing.T) {
 	}
 }
 
-func TestNTupleScanH1DFromCSV(t *testing.T) {
+func TestNtupleScanH1DFromCSV(t *testing.T) {
 	db, err := csvdriver.Conn{
 		File:    "testdata/simple.csv",
 		Comma:   ';',
@@ -247,7 +247,7 @@ func TestNTupleScanH1DFromCSV(t *testing.T) {
 	}
 	defer db.Close()
 
-	nt, err := hbook.OpenNTuple(db, "csv")
+	nt, err := hbook.OpenNtuple(db, "csv")
 	if err != nil {
 		t.Fatalf("error opening ntuple: %v\n", err)
 	}
@@ -291,7 +291,7 @@ func TestNTupleScanH1DFromCSV(t *testing.T) {
 	}
 }
 
-func TestCreateNTuple(t *testing.T) {
+func TestCreateNtuple(t *testing.T) {
 	db, err := sql.Open("ql", "memory://ntuple.db")
 	if err != nil {
 		t.Fatalf("error creating db: %v\n", err)
@@ -299,7 +299,7 @@ func TestCreateNTuple(t *testing.T) {
 	defer db.Close()
 
 	const ntname = "ntup"
-	nt, err := hbook.CreateNTuple(db, ntname, int64(0), float64(0))
+	nt, err := hbook.CreateNtuple(db, ntname, int64(0), float64(0))
 	if err != nil {
 		t.Fatalf("error creating ntuple: %v\n", err)
 	}
@@ -341,7 +341,7 @@ func TestCreateNTuple(t *testing.T) {
 	}
 }
 
-func TestCreateNTupleFromStruct(t *testing.T) {
+func TestCreateNtupleFromStruct(t *testing.T) {
 	db, err := sql.Open("ql", "memory://ntuple-struct.db")
 	if err != nil {
 		t.Fatalf("error creating db: %v\n", err)
@@ -357,7 +357,7 @@ func TestCreateNTupleFromStruct(t *testing.T) {
 	}
 
 	const ntname = "ntup"
-	nt, err := hbook.CreateNTuple(db, ntname, dataType{})
+	nt, err := hbook.CreateNtuple(db, ntname, dataType{})
 	if err != nil {
 		t.Fatalf("error creating ntuple: %v\n", err)
 	}
@@ -433,7 +433,7 @@ func init() {
 		panic(err)
 	}
 
-	nt, err = hbook.OpenNTuple(db, "data")
+	nt, err = hbook.OpenNtuple(db, "data")
 	if err != nil {
 		panic(err)
 	}

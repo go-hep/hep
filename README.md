@@ -42,7 +42,7 @@ func main() {
 
 ```
 
-### NTuple
+### Ntuple
 
 #### Open an existing n-tuple
 
@@ -64,7 +64,7 @@ func main() {
 	}
 	defer db.Close()
 
-	nt, err := hbook.OpenNTuple(db, "csv")
+	nt, err := hbook.OpenNtuple(db, "csv")
 	if err != nil {
 		panic(err)
 	}

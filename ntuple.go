@@ -20,23 +20,23 @@ var (
 	ErrMissingColDef = errors.New("hbook: expected at least one column definition")
 )
 
-// NTuple provides read/write access to row-wise data.
-type NTuple struct {
+// Ntuple provides read/write access to row-wise data.
+type Ntuple struct {
 	db     *sql.DB
 	name   string
 	schema []Descriptor
 }
 
-// OpenNTuple inspects the given database handle and tries to return
-// an NTuple connected to a table with the given name.
-// OpenNTuple returns ErrNotExist if no such table exists.
-// If name is "", OpenNTuple will connect to the one-and-only table in the db.
+// OpenNtuple inspects the given database handle and tries to return
+// an Ntuple connected to a table with the given name.
+// OpenNtuple returns ErrNotExist if no such table exists.
+// If name is "", OpenNtuple will connect to the one-and-only table in the db.
 //
 // e.g.:
 //  db, err := sql.Open("csv", "file.csv")
-//  nt, err := hbook.OpenNTuple(db, "ntup")
-func OpenNTuple(db *sql.DB, name string) (*NTuple, error) {
-	nt := &NTuple{
+//  nt, err := hbook.OpenNtuple(db, "ntup")
+func OpenNtuple(db *sql.DB, name string) (*Ntuple, error) {
+	nt := &Ntuple{
 		db:   db,
 		name: name,
 	}
@@ -45,18 +45,18 @@ func OpenNTuple(db *sql.DB, name string) (*NTuple, error) {
 	return nt, nil
 }
 
-// CreateNTuple creates a new ntuple with the given name inside the given database handle.
+// CreateNtuple creates a new ntuple with the given name inside the given database handle.
 // The n-tuple schema is inferred from the cols argument. cols can be:
 //  - a single struct value (columns are inferred from the names+types of the exported fields)
 //  - a list of builtin values (the columns names are varX where X=[1-len(cols)])
 //  - a list of hbook.Descriptors
 //
 // e.g.:
-//  nt, err := hbook.CreateNTuple(db, "nt", struct{X float64 `hbook:"x"`}{})
-//  nt, err := hbook.CreateNTuple(db, "nt", int64(0), float64(0))
-func CreateNTuple(db *sql.DB, name string, cols ...interface{}) (*NTuple, error) {
+//  nt, err := hbook.CreateNtuple(db, "nt", struct{X float64 `hbook:"x"`}{})
+//  nt, err := hbook.CreateNtuple(db, "nt", int64(0), float64(0))
+func CreateNtuple(db *sql.DB, name string, cols ...interface{}) (*Ntuple, error) {
 	var err error
-	nt := &NTuple{
+	nt := &Ntuple{
 		db:   db,
 		name: name,
 	}
@@ -84,13 +84,13 @@ func CreateNTuple(db *sql.DB, name string, cols ...interface{}) (*NTuple, error)
 }
 
 // Name returns the name of this n-tuple.
-func (nt *NTuple) Name() string {
+func (nt *Ntuple) Name() string {
 	return nt.name
 }
 
 // Cols returns the columns' descriptors of this n-tuple.
 // Modifying it directly leads to undefined behaviour.
-func (nt *NTuple) Cols() []Descriptor {
+func (nt *Ntuple) Cols() []Descriptor {
 	return nt.schema
 }
 
@@ -183,7 +183,7 @@ func getTag(tag reflect.StructTag, keys ...string) string {
 //    h2.Fill(y, 1)
 //    return nil
 //  })
-func (nt *NTuple) Scan(query string, f interface{}) error {
+func (nt *Ntuple) Scan(query string, f interface{}) error {
 	rv := reflect.ValueOf(f)
 	rt := rv.Type()
 	if rt.Kind() != reflect.Func {
@@ -234,7 +234,7 @@ func (nt *NTuple) Scan(query string, f interface{}) error {
 // the results of the query.
 // If h is nil, a (100-bins, xmin, xmax) histogram is created,
 // where xmin and xmax are inferred from the content of the underlying database.
-func (nt *NTuple) ScanH1D(query string, h *H1D) (*H1D, error) {
+func (nt *Ntuple) ScanH1D(query string, h *H1D) (*H1D, error) {
 	var data []float64
 	var (
 		xmin = +math.MaxFloat64
@@ -272,7 +272,7 @@ func Scatter1D(db *sql.DB, query string) error {
 }
 */
 
-func (nt *NTuple) massageQuery(q string) (string, error) {
+func (nt *Ntuple) massageQuery(q string) (string, error) {
 	const (
 		tokWHERE = " WHERE "
 		tokWhere = " where "
