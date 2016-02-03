@@ -29,6 +29,7 @@ type NTuple struct {
 // OpenNTuple inspects the given database handle and tries to return
 // an NTuple connected to a table with the given name.
 // OpenNTuple returns ErrNotExist if no such table exists.
+// If name is "", OpenNTuple will connect to the one-and-only table in the db.
 //
 // e.g.:
 //  db, err := sql.Open("csv", "file.csv")
