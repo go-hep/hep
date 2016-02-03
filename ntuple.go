@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"go/ast"
 	"io"
 	"math"
 	"reflect"
@@ -115,13 +116,63 @@ func (col *columnDescr) Type() reflect.Type {
 func schemaFromStruct(rt reflect.Type) ([]Descriptor, error) {
 	var schema []Descriptor
 	var err error
+	for i := 0; i < rt.NumField(); i++ {
+		f := rt.Field(i)
+		if !ast.IsExported(f.Name) {
+			continue
+		}
+		ft := f.Type
+		switch ft.Kind() {
+		case reflect.Chan:
+			return nil, fmt.Errorf("hbook: chans not supported")
+		case reflect.Interface:
+			return nil, fmt.Errorf("hbook: interfaces not supported")
+		case reflect.Map:
+			return nil, fmt.Errorf("hbook: maps not supported")
+		case reflect.Slice:
+			return nil, fmt.Errorf("hbook: nested slices not supported")
+		case reflect.Struct:
+			return nil, fmt.Errorf("hbook: nested structs not supported")
+		}
+		fname := getTag(f.Tag, "hbook", "rio", "db")
+		if fname == "" {
+			fname = f.Name
+		}
+		schema = append(schema, &columnDescr{fname, ft})
+	}
 	return schema, err
 }
 
 func schemaFrom(src ...interface{}) ([]Descriptor, error) {
 	var schema []Descriptor
 	var err error
+	for i, col := range src {
+		rt := reflect.TypeOf(col)
+		switch rt.Kind() {
+		case reflect.Chan:
+			return nil, fmt.Errorf("hbook: chans not supported")
+		case reflect.Interface:
+			return nil, fmt.Errorf("hbook: interfaces not supported")
+		case reflect.Map:
+			return nil, fmt.Errorf("hbook: maps not supported")
+		case reflect.Slice:
+			return nil, fmt.Errorf("hbook: slices not supported")
+		case reflect.Struct:
+			return nil, fmt.Errorf("hbook: structs not supported")
+		}
+		schema = append(schema, &columnDescr{fmt.Sprintf("var%d", i+1), rt})
+	}
 	return schema, err
+}
+
+func getTag(tag reflect.StructTag, keys ...string) string {
+	for _, k := range keys {
+		v := tag.Get(k)
+		if v != "" {
+			return v
+		}
+	}
+	return ""
 }
 
 // Scan executes a query against the ntuple and runs the function f against that context.

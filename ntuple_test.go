@@ -6,6 +6,7 @@ package hbook_test
 
 import (
 	"database/sql"
+	"reflect"
 	"testing"
 
 	"github.com/go-hep/csvutil/csvdriver"
@@ -305,6 +306,103 @@ func TestCreateNTuple(t *testing.T) {
 
 	if nt.Name() != ntname {
 		t.Errorf("invalid ntuple name. got=%q want=%q\n", nt.Name(), ntname)
+	}
+
+	descr := []struct {
+		n string
+		t reflect.Type
+	}{
+		{
+			n: "var1",
+			t: reflect.TypeOf(int64(0)),
+		},
+		{
+			n: "var2",
+			t: reflect.TypeOf(float64(0)),
+		},
+	}
+	if len(nt.Cols()) != len(descr) {
+		t.Fatalf("invalid cols. got=%d. want=%d\n", len(nt.Cols()), len(descr))
+	}
+
+	for i := 0; i < len(descr); i++ {
+		col := nt.Cols()[i]
+		exp := descr[i]
+		if col.Name() != exp.n {
+			t.Errorf("col[%d]: invalid name. got=%q. want=%q\n",
+				i, col.Name(), exp.n,
+			)
+		}
+		if col.Type() != exp.t {
+			t.Errorf("col[%d]: invalid type. got=%v. want=%v\n",
+				i, col.Type(), exp.t,
+			)
+		}
+	}
+}
+
+func TestCreateNTupleFromStruct(t *testing.T) {
+	db, err := sql.Open("ql", "memory://ntuple-struct.db")
+	if err != nil {
+		t.Fatalf("error creating db: %v\n", err)
+	}
+	defer db.Close()
+
+	type dataType struct {
+		I  int64
+		F  float64
+		FF float64 `rio:"ff"`
+		S  string  `rio:"STR" hbook:"str"`
+	}
+
+	const ntname = "ntup"
+	nt, err := hbook.CreateNTuple(db, ntname, dataType{})
+	if err != nil {
+		t.Fatalf("error creating ntuple: %v\n", err)
+	}
+
+	if nt.Name() != ntname {
+		t.Errorf("invalid ntuple name. got=%q want=%q\n", nt.Name(), ntname)
+	}
+
+	descr := []struct {
+		n string
+		t reflect.Type
+	}{
+		{
+			n: "I",
+			t: reflect.TypeOf(int64(0)),
+		},
+		{
+			n: "F",
+			t: reflect.TypeOf(float64(0)),
+		},
+		{
+			n: "ff",
+			t: reflect.TypeOf(float64(0)),
+		},
+		{
+			n: "str",
+			t: reflect.TypeOf(""),
+		},
+	}
+	if len(nt.Cols()) != len(descr) {
+		t.Fatalf("invalid cols. got=%d. want=%d\n", len(nt.Cols()), len(descr))
+	}
+
+	for i := 0; i < len(descr); i++ {
+		col := nt.Cols()[i]
+		exp := descr[i]
+		if col.Name() != exp.n {
+			t.Errorf("col[%d]: invalid name. got=%q. want=%q\n",
+				i, col.Name(), exp.n,
+			)
+		}
+		if col.Type() != exp.t {
+			t.Errorf("col[%d]: invalid type. got=%v. want=%v\n",
+				i, col.Type(), exp.t,
+			)
+		}
 	}
 }
 
