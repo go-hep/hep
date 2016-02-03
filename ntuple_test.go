@@ -290,6 +290,24 @@ func TestNTupleScanH1DFromCSV(t *testing.T) {
 	}
 }
 
+func TestCreateNTuple(t *testing.T) {
+	db, err := sql.Open("ql", "memory://ntuple.db")
+	if err != nil {
+		t.Fatalf("error creating db: %v\n", err)
+	}
+	defer db.Close()
+
+	const ntname = "ntup"
+	nt, err := hbook.CreateNTuple(db, ntname, int64(0), float64(0))
+	if err != nil {
+		t.Fatalf("error creating ntuple: %v\n", err)
+	}
+
+	if nt.Name() != ntname {
+		t.Errorf("invalid ntuple name. got=%q want=%q\n", nt.Name(), ntname)
+	}
+}
+
 func init() {
 	var err error
 	db, err := sql.Open("ql", "memory://mem.db")
