@@ -5,11 +5,15 @@
 package hplot
 
 import (
-	"fmt"
 	"math"
 
+	"golang.org/x/exp/shiny/screen"
+
+	"github.com/go-hep/hplot/vgshiny"
 	"github.com/gonum/plot"
 	"github.com/gonum/plot/vg"
+	"github.com/gonum/plot/vg/draw"
+	"github.com/gonum/plot/vg/vgimg"
 )
 
 // Plot is the basic type representing a plot.
@@ -64,11 +68,32 @@ func (p *Plot) Add(ps ...plot.Plotter) {
 func (p *Plot) Save(w, h vg.Length, file string) (err error) {
 	switch {
 	case w <= 0 && h <= 0:
-		return fmt.Errorf("hplot: invalid plot length (w<=0 && h<=0)")
+		w = vgimg.DefaultWidth
+		h = vgimg.DefaultWidth / math.Phi
 	case w <= 0:
 		w = h * math.Phi
 	case h <= 0:
 		h = w / math.Phi
 	}
 	return p.Plot.Save(w, h, file)
+}
+
+// Show displays the plot to the screen, with the given dimensions
+func (p *Plot) Show(w, h vg.Length, scr screen.Screen) (*vgshiny.Canvas, error) {
+	switch {
+	case w <= 0 && h <= 0:
+		w = vgimg.DefaultWidth
+		h = vgimg.DefaultWidth / math.Phi
+	case w <= 0:
+		w = h * math.Phi
+	case h <= 0:
+		h = w / math.Phi
+	}
+	c, err := vgshiny.New(scr, w, h)
+	if err != nil {
+		return nil, err
+	}
+	p.Draw(draw.New(c))
+	c.Paint()
+	return c, err
 }
