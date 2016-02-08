@@ -65,6 +65,8 @@ func (p *Plot) Add(ps ...plot.Plotter) {
 //  .eps, .jpg, .jpeg, .pdf, .png, .svg, .tif and .tiff.
 //
 // If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
+// If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
+// (the width is defaulted to vgimg.DefaultWidth).
 func (p *Plot) Save(w, h vg.Length, file string) (err error) {
 	switch {
 	case w <= 0 && h <= 0:
@@ -78,7 +80,11 @@ func (p *Plot) Save(w, h vg.Length, file string) (err error) {
 	return p.Plot.Save(w, h, file)
 }
 
-// Show displays the plot to the screen, with the given dimensions
+// Show displays the plot to the screen, with the given dimensions.
+//
+// If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
+// If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
+// (the width is defaulted to vgimg.DefaultWidth).
 func (p *Plot) Show(w, h vg.Length, scr screen.Screen) (*vgshiny.Canvas, error) {
 	switch {
 	case w <= 0 && h <= 0:
