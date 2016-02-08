@@ -26,13 +26,14 @@ type Canvas struct {
 	img draw.Image
 }
 
+// New creates a new canvas with the given width and height.
 func New(s screen.Screen, w, h vg.Length) (*Canvas, error) {
 	ww := w / vg.Inch * vg.Length(vgimg.DefaultDPI)
 	hh := h / vg.Inch * vg.Length(vgimg.DefaultDPI)
-	img := draw.Image(image.NewRGBA(image.Rect(0, 0, int(ww+0.5), int(hh+0.5))))
+	size := image.Pt(int(ww+0.5), int(hh+0.5))
+	img := draw.Image(image.NewRGBA(image.Rect(0, 0, size.X, size.Y)))
 	cc := vgimg.NewWith(vgimg.UseImage(img))
 
-	size := img.Bounds().Size()
 	win, err := s.NewWindow(&screen.NewWindowOptions{
 		Width:  size.X,
 		Height: size.Y,
@@ -54,6 +55,7 @@ func New(s screen.Screen, w, h vg.Length) (*Canvas, error) {
 	}, nil
 }
 
+// Paint paints the canvas' content on the screen.
 func (c *Canvas) Paint() screen.PublishResult {
 	w, h := c.Size()
 	rect := image.Rect(0, 0, int(w), int(h))
@@ -61,17 +63,23 @@ func (c *Canvas) Paint() screen.PublishResult {
 
 	c.win.Fill(rect, color.Black, draw.Src)
 	draw.Draw(c.buf.RGBA(), c.buf.Bounds(), c.img, image.Point{}, draw.Src)
-	if !sr.In(rect) {
-		sr = rect
-	}
 	c.win.Upload(image.Point{}, c.buf, sr)
 
 	return c.win.Publish()
 }
 
+// Release releases shiny/screen resources.
 func (c *Canvas) Release() {
 	c.buf.Release()
 	c.win.Release()
 	c.buf = nil
 	c.win = nil
+}
+
+func (c *Canvas) NextEvent() interface{} {
+	return c.win.NextEvent()
+}
+
+func (c *Canvas) Send(evt interface{}) {
+	c.win.Send(evt)
 }
