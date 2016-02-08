@@ -3,15 +3,15 @@ package main
 import (
 	"image"
 	"image/color"
-	"image/draw"
 	"log"
 	"math/rand"
 
 	"github.com/go-hep/hbook"
 	"github.com/go-hep/hplot"
+	"github.com/go-hep/hplot/vgshiny"
 	"github.com/gonum/plot/plotter"
+	"github.com/gonum/plot/vg"
 	vgdraw "github.com/gonum/plot/vg/draw"
-	"github.com/gonum/plot/vg/vgimg"
 	"golang.org/x/exp/shiny/driver"
 	"golang.org/x/exp/shiny/screen"
 	"golang.org/x/mobile/event/key"
@@ -77,16 +77,26 @@ func newPlot() (*hplot.Plot, error) {
 }
 
 func main() {
-	driver.Main(func(s screen.Screen) {
-		w, err := newWindow(s, image.Point{xmax, ymax})
+	driver.Main(func(scr screen.Screen) {
+		{
+			p, err := newPlot()
+			if err != nil {
+				log.Fatal(err)
+			}
+			c, err := p.Show(-1, -1, scr)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer c.Release()
+		}
+		w, err := newWidget(scr, image.Point{xmax, ymax})
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer w.Release()
 
-		img := image.NewRGBA(image.Rect(0, 0, xmax, ymax))
 		for {
-			switch e := w.w.NextEvent().(type) {
+			switch e := w.canvas.NextEvent().(type) {
 			case key.Event:
 				repaint := false
 				switch e.Code {
@@ -97,74 +107,43 @@ func main() {
 						repaint = true
 					}
 
-				case key.CodeN:
+				case key.CodeN, key.CodeSpacebar:
 					p, err := newPlot()
 					if err != nil {
 						log.Fatal(err)
 					}
-					img = image.NewRGBA(image.Rect(0, 0, xmax, ymax))
-					c := vgimg.NewWith(vgimg.UseImage(img))
-					p.Draw(vgdraw.New(c))
+					p.Draw(vgdraw.New(w.canvas))
 					repaint = true
 				}
 				if repaint {
-					w.w.Send(paint.Event{})
+					w.canvas.Send(paint.Event{})
 				}
 
 			case paint.Event:
-				w.display(img)
+				w.canvas.Paint()
 			}
 		}
 	})
 }
 
-type window struct {
-	s screen.Screen
-	w screen.Window
-	b screen.Buffer
+type widget struct {
+	s      screen.Screen
+	canvas *vgshiny.Canvas
 }
 
-func newWindow(s screen.Screen, size image.Point) (*window, error) {
-	w, err := s.NewWindow(
-		&screen.NewWindowOptions{
-			Width:  size.X,
-			Height: size.Y,
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-	buf, err := s.NewBuffer(size)
+func newWidget(s screen.Screen, size image.Point) (*widget, error) {
+	c, err := vgshiny.New(s, vg.Length(size.X), vg.Length(size.Y))
 	if err != nil {
 		return nil, err
 	}
 
-	return &window{s: s, w: w, b: buf}, err
+	return &widget{s: s, canvas: c}, err
 }
 
-func (w *window) Release() {
-	if w.b != nil {
-		w.b.Release()
-		w.b = nil
-	}
-	if w.w != nil {
-		w.w.Release()
-		w.w = nil
+func (w *widget) Release() {
+	if w.canvas != nil {
+		w.canvas.Release()
+		w.canvas = nil
 	}
 	w.s = nil
-}
-
-func (w *window) display(img image.Image) screen.PublishResult {
-	rect := image.Rect(0, 0, xmax, ymax)
-	sr := img.Bounds()
-
-	w.w.Fill(rect, bkgCol, draw.Src)
-	draw.Draw(w.b.RGBA(), w.b.Bounds(), img, image.Point{}, draw.Src)
-	if !sr.In(rect) {
-		sr = rect
-	}
-	w.w.Upload(image.Point{}, w.b, sr)
-
-	o := w.w.Publish()
-	return o
 }
