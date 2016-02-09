@@ -69,8 +69,7 @@ func newPlot() (*hplot.Plot, error) {
 	h2.Color = color.RGBA{255, 0, 0, 255}
 	h2.FillColor = nil
 
-	p.Add(h1)
-	p.Add(h2)
+	p.Add(h1, h2)
 
 	p.Add(plotter.NewGrid())
 	return p, err
