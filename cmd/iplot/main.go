@@ -87,7 +87,10 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			defer c.Release()
+			go func() {
+				c.Run(nil)
+				c.Release()
+			}()
 		}
 		w, err := newWidget(scr, image.Point{xmax, ymax})
 		if err != nil {
@@ -95,25 +98,29 @@ func main() {
 		}
 		defer w.Release()
 
-		for {
-			switch e := w.canvas.NextEvent().(type) {
+		w.canvas.Run(func(e interface{}) bool {
+			switch e := e.(type) {
 			case key.Event:
 				repaint := false
 				switch e.Code {
 				case key.CodeEscape, key.CodeQ:
-					return
+					if e.Direction == key.DirPress {
+						return false
+					}
 				case key.CodeR:
 					if e.Direction == key.DirPress {
 						repaint = true
 					}
 
 				case key.CodeN, key.CodeSpacebar:
-					p, err := newPlot()
-					if err != nil {
-						log.Fatal(err)
+					if e.Direction == key.DirPress {
+						p, err := newPlot()
+						if err != nil {
+							log.Fatal(err)
+						}
+						p.Draw(vgdraw.New(w.canvas))
+						repaint = true
 					}
-					p.Draw(vgdraw.New(w.canvas))
-					repaint = true
 				}
 				if repaint {
 					w.canvas.Send(paint.Event{})
@@ -122,7 +129,8 @@ func main() {
 			case paint.Event:
 				w.canvas.Paint()
 			}
-		}
+			return true
+		})
 	})
 }
 
