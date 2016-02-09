@@ -7,6 +7,7 @@ package hbook_test
 import (
 	"bytes"
 	"encoding/gob"
+	"math"
 	"reflect"
 	"sync"
 	"testing"
@@ -58,6 +59,56 @@ func TestH1D(t *testing.T) {
 
 	var _ plotter.XYer = h1
 	var _ plotter.Valuer = h1
+}
+
+func TestH1DIntegral(t *testing.T) {
+	h1 := hbook.NewH1D(6, 0, 6)
+	h1.Fill(-0.5, 1.3)
+	h1.Fill(0, 1)
+	h1.Fill(0.5, 1.6)
+	h1.Fill(1.2, 0.7)
+	h1.Fill(2.1, 0.3)
+	h1.Fill(4.2, 1.2)
+	h1.Fill(5.9, 0.5)
+	h1.Fill(6, 2.1)
+
+	integral := h1.Integral()
+	if integral != 5.3 {
+		t.Errorf("expected H1D.Integral() == 5.3 (got %v)\n", integral)
+	}
+	integralall := h1.Integral(math.Inf(-1), math.Inf(+1))
+	if integralall != 8.7 {
+		t.Errorf("expected H1D.Integral(math.Inf(-1), math.Inf(+1)) == 8.7 (got %v)\n", integralall)
+	}
+	integralu := h1.Integral(math.Inf(-1), h1.Axis().UpperEdge())
+	if integralu != 6.6 {
+		t.Errorf("expected H1D.Integral(math.Inf(-1), h1.axis.UpperEdge()) == 6.6 (got %v)\n", integralu)
+	}
+	integralo := h1.Integral(h1.Axis().LowerEdge(), math.Inf(+1))
+	if integralo != 7.4 {
+		t.Errorf("expected H1D.Integral(h1.Axis().LowerEdge(), math.Inf(+1)) == 7.4 (got %v)\n", integralo)
+	}
+	integralrange := h1.Integral(0.5, 5.5)
+	if integralrange != 2.7 {
+		t.Errorf("expected H1D.Integral(0.5, 5.5) == 2.7 (got %v)\n", integralrange)
+	}
+
+	mean1, rms1 := h1.Mean(), h1.RMS()
+
+	h1.Scale(1 / integral)
+	integral = h1.Integral()
+	if integral != 1 {
+		t.Errorf("expected H1D.Integral() == 1 (got %v)\n", integral)
+	}
+
+	mean2, rms2 := h1.Mean(), h1.RMS()
+
+	if math.Abs(mean1-mean2)/mean1 > 1e-12 {
+		t.Errorf("mean has changed while rescaling (mean1, mean2) = (%v, %v)", mean1, mean2)
+	}
+	if math.Abs(rms1-rms2)/rms1 > 1e-12 {
+		t.Errorf("rms has changed while rescaling (rms1, rms2) = (%v, %v)", rms1, rms2)
+	}
 }
 
 func BenchmarkH1DSTFillConst(b *testing.B) {

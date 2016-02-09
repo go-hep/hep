@@ -121,6 +121,56 @@ func (h *H1D) DataRange() (xmin, xmax, ymin, ymax float64) {
 	return xmin, xmax, ymin, ymax
 }
 
+// Scale scales the content of each bin by the given factor.
+func (h *H1D) Scale(factor float64) {
+	for i := range h.allbins {
+		h.allbins[i].Scale(factor)
+	}
+}
+
+// Integral computes the integral of the histogram. The number of parameters can be 0 or 2.
+// If 0, all in-range bins are included.
+// If 2, the first parameter must be the lower bound of the range in which the
+// integral is computed and the second one the upper range.
+// If the lower bound is math.Inf(-1) then the underflow bin is included.
+// If the upper bound is math.Inf(+1) then the overflow bin is included.
+//
+// Examples:
+//    h.Integral(): includes all in-range bins
+//    h.Integral(math.Inf(-1), math.Inf(+1)): includes all in-range bins plus underflow and overflow
+//    h.Integral(h1.Axis().LowerEdge(), math.Inf(+1)): includes all in-range bins plus overflow
+//    h.Integral(0.5, 5.5): includes all bins whose lower edge is >= 0.5 and < 5.5
+func (h *H1D) Integral(args ...float64) float64 {
+	min, max := 0., 0.
+	switch len(args) {
+	case 0:
+		min, max = h.axis.LowerEdge(), h.axis.UpperEdge()
+	case 2:
+		min = args[0]
+		max = args[1]
+		if min > max {
+			panic("hbook: min > max")
+		}
+	default:
+		panic("hbook: invalid number of arguments. expected 0 or 2.")
+	}
+
+	integral := 0.
+	for i := range h.bins {
+		binloweredge := h.axis.BinLowerEdge(i)
+		if binloweredge >= min && binloweredge < max {
+			integral += h.bins[i].sw
+		}
+	}
+	if math.IsInf(min, -1) {
+		integral += h.allbins[0].sw
+	}
+	if math.IsInf(max, +1) {
+		integral += h.allbins[1].sw
+	}
+	return integral
+}
+
 // Mean returns the mean of this histogram.
 func (h *H1D) Mean() float64 {
 	summeans := 0.0
