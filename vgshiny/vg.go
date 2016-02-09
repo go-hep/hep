@@ -13,6 +13,8 @@ import (
 	"github.com/gonum/plot/vg"
 	"github.com/gonum/plot/vg/vgimg"
 	"golang.org/x/exp/shiny/screen"
+	"golang.org/x/mobile/event/key"
+	"golang.org/x/mobile/event/paint"
 )
 
 // Canvas implements the vg.Canvas interface,
@@ -76,10 +78,37 @@ func (c *Canvas) Release() {
 	c.win = nil
 }
 
-func (c *Canvas) NextEvent() interface{} {
-	return c.win.NextEvent()
-}
-
+// Send sends an event to the underlying shiny window.
 func (c *Canvas) Send(evt interface{}) {
 	c.win.Send(evt)
+}
+
+// Run runs the function f for each event on the event queue of the underlying shiny window.
+// f is expected to return true to continue processing events and false otherwise.
+// If f is nil, a default processing function will be used.
+// The default processing functions handles paint.Event events and exits when 'q' or 'ESC' are pressed.
+func (c *Canvas) Run(f func(e interface{}) bool) {
+	if f == nil {
+		f = func(e interface{}) bool {
+			switch e := e.(type) {
+			case paint.Event:
+				c.Paint()
+			case key.Event:
+				switch e.Code {
+				case key.CodeEscape, key.CodeQ:
+					if e.Direction == key.DirPress {
+						return false
+					}
+				}
+			}
+			return true
+
+		}
+	}
+	for {
+		e := c.win.NextEvent()
+		if !f(e) {
+			return
+		}
+	}
 }
