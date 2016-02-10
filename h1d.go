@@ -128,18 +128,29 @@ func (h *H1D) Scale(factor float64) {
 	}
 }
 
-// Integral computes the integral of the histogram. The number of parameters can be 0 or 2.
+// Integral computes the integral of the histogram.
+//
+// The number of parameters can be 0 or 2.
 // If 0, all in-range bins are included.
-// If 2, the first parameter must be the lower bound of the range in which the
-// integral is computed and the second one the upper range.
+// If 2, the first parameter must be the lower bound of the range in which
+// the integral is computed and the second one the upper range.
+//
 // If the lower bound is math.Inf(-1) then the underflow bin is included.
 // If the upper bound is math.Inf(+1) then the overflow bin is included.
 //
 // Examples:
-//    h.Integral(): includes all in-range bins
-//    h.Integral(math.Inf(-1), math.Inf(+1)): includes all in-range bins plus underflow and overflow
-//    h.Integral(h1.Axis().LowerEdge(), math.Inf(+1)): includes all in-range bins plus overflow
-//    h.Integral(0.5, 5.5): includes all bins whose lower edge is >= 0.5 and < 5.5
+//
+//    // integral of all in-range bins
+//    v := h.Integral()
+//
+//    // integral of all in-range bins, underflow and overflow bins included.
+//    v := h.Integral(math.Inf(-1), math.Inf(+1))
+//
+//    // integrall of all in-range bins, overflow bin included
+//    v := h.Integral(h.Axis().LowerEdge(), math.Inf(+1))
+//
+//    // integrall of all bins for which the lower edge is in [0.5, 5.5)
+//    v := h.Integral(0.5, 5.5)
 func (h *H1D) Integral(args ...float64) float64 {
 	min, max := 0., 0.
 	switch len(args) {
@@ -157,8 +168,8 @@ func (h *H1D) Integral(args ...float64) float64 {
 
 	integral := 0.
 	for i := range h.bins {
-		binloweredge := h.axis.BinLowerEdge(i)
-		if binloweredge >= min && binloweredge < max {
+		v := h.axis.BinLowerEdge(i)
+		if v >= min && v < max {
 			integral += h.bins[i].sw
 		}
 	}
