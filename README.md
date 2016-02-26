@@ -29,9 +29,10 @@ paw> /?
 /file/open 	-- open file for read access
 /hist/open 	-- open a histogram
 /hist/plot 	-- plot a histogram
-paw> /file/open f hsimple.rio
+
+paw> /file/open f testdata/hsimple.rio
 paw> /file/ls f
-/file/id/f name=hsimple.rio
+/file/id/f name=testdata/hsimple.rio
  	- h1	(type="*github.com/go-hep/hbook.H1D")
  	- h2	(type="*github.com/go-hep/hbook.H1D")
 
