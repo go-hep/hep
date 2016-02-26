@@ -80,6 +80,8 @@ func (mgr *histMgr) plotH1D(wmgr *winMgr, hid string) error {
 	if err != nil {
 		return err
 	}
+	hh.Infos.Style = hplot.HInfoSummary
+
 	p.Add(hh)
 
 	err = wmgr.newPlot(p)

@@ -68,7 +68,7 @@ func (cmd *cmdH1DOpen) Complete(line string) []string {
 	return o
 }
 
-// cmdH1DPlot opens a histogram
+// cmdH1DPlot plots a histogram
 type cmdH1DPlot struct {
 	ctx *Cmd
 }
