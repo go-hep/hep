@@ -9,14 +9,20 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
+	"golang.org/x/exp/shiny/driver"
+	"golang.org/x/exp/shiny/screen"
 )
 
 func main() {
-	rc := xmain()
+	rc := 0
+	driver.Main(func(scr screen.Screen) {
+		rc = xmain(scr)
+	})
 	os.Exit(rc)
 }
 
-func xmain() int {
+func xmain(scr screen.Screen) int {
 
 	fname := flag.String("f", "", "paw script to execute")
 	flag.Parse()
@@ -31,7 +37,7 @@ Type /? for help.
 
 `)
 
-	icmd := newCmd()
+	icmd := newCmd(scr)
 	defer icmd.Close()
 
 	switch *fname {

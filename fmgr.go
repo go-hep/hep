@@ -115,8 +115,8 @@ type fileMgr struct {
 	wfds map[string]wfile
 }
 
-func newFileMgr() fileMgr {
-	return fileMgr{
+func newFileMgr() *fileMgr {
+	return &fileMgr{
 		rfds: make(map[string]rfile),
 		wfds: make(map[string]wfile),
 	}

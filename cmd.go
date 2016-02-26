@@ -10,6 +10,8 @@ import (
 	"os"
 	"strings"
 
+	"golang.org/x/exp/shiny/screen"
+
 	"github.com/peterh/liner"
 )
 
@@ -23,13 +25,15 @@ type Cmdr interface {
 type Cmd struct {
 	rl   *liner.State
 	cmds map[string]Cmdr
-	fmgr fileMgr
-	hmgr histMgr
+	wmgr *winMgr
+	fmgr *fileMgr
+	hmgr *histMgr
 }
 
-func newCmd() *Cmd {
+func newCmd(scr screen.Screen) *Cmd {
 	c := Cmd{
 		rl:   liner.NewLiner(),
+		wmgr: newWinMgr(scr),
 		fmgr: newFileMgr(),
 		hmgr: newHistMgr(),
 	}

@@ -30,7 +30,7 @@ func (cmd *cmdH1DOpen) Run(args []string) error {
 	// e.g: /file/id/1/my-histo
 	hname := args[1]
 
-	err = cmd.ctx.hmgr.openH1D(&cmd.ctx.fmgr, hid, hname)
+	err = cmd.ctx.hmgr.openH1D(cmd.ctx.fmgr, hid, hname)
 	return err
 }
 
@@ -84,7 +84,7 @@ func (cmd *cmdH1DPlot) Run(args []string) error {
 	}
 
 	hid := args[0]
-	err = cmd.ctx.hmgr.plotH1D(hid)
+	err = cmd.ctx.hmgr.plotH1D(cmd.ctx.wmgr, hid)
 	return err
 }
 

@@ -5,17 +5,15 @@ import (
 	"strings"
 
 	"github.com/go-hep/hbook"
-	"github.com/gonum/plot"
-	"github.com/gonum/plot/vg/draw"
-	"github.com/gonum/plot/vg/vgx11"
+	"github.com/go-hep/hplot"
 )
 
 type histMgr struct {
 	h1ds map[string]*hbook.H1D
 }
 
-func newHistMgr() histMgr {
-	return histMgr{
+func newHistMgr() *histMgr {
+	return &histMgr{
 		h1ds: make(map[string]*hbook.H1D),
 	}
 }
@@ -59,7 +57,7 @@ func (mgr *histMgr) openH1D(fmgr *fileMgr, hid, path string) error {
 	return err
 }
 
-func (mgr *histMgr) plotH1D(hid string) error {
+func (mgr *histMgr) plotH1D(wmgr *winMgr, hid string) error {
 	var err error
 	h, ok := mgr.h1ds[hid]
 	if !ok {
@@ -70,7 +68,7 @@ func (mgr *histMgr) plotH1D(hid string) error {
 		h.Name(), h.Entries(), h.Mean(), h.RMS(),
 	)
 
-	p, err := plot.New()
+	p, err := hplot.New()
 	if err != nil {
 		return err
 	}
@@ -78,19 +76,16 @@ func (mgr *histMgr) plotH1D(hid string) error {
 	p.X.Label.Text = "x"
 	p.Y.Label.Text = "y"
 
-	hh, err := NewH1D(h)
+	hh, err := hplot.NewH1D(h)
 	if err != nil {
 		return err
 	}
 	p.Add(hh)
 
-	cnv, err := vgx11.New(4*96, 4*96, "paw")
+	err = wmgr.newPlot(p)
 	if err != nil {
 		return err
 	}
-
-	p.Draw(draw.New(cnv))
-	cnv.Paint()
 
 	return err
 }
