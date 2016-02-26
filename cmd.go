@@ -103,6 +103,7 @@ func (c *Cmd) Run() error {
 		o, err := c.rl.Prompt("paw> ")
 		if err != nil {
 			if err == io.EOF {
+				os.Stdout.Write([]byte("\n"))
 				err = nil
 			}
 			return err
