@@ -5,7 +5,6 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"os"
@@ -24,7 +23,11 @@ func main() {
 
 func xmain(scr screen.Screen) int {
 
-	fname := flag.String("f", "", "paw script to execute")
+	interactive := flag.Bool(
+		"i", false,
+		"enable interactive mode: drop into PAW-Go prompt after processing script files",
+	)
+
 	flag.Parse()
 
 	fmt.Printf(`
@@ -40,27 +43,30 @@ Type /? for help.
 	icmd := newCmd(scr)
 	defer icmd.Close()
 
-	switch *fname {
-	case "":
-		err := icmd.Run()
-		if err != nil {
-			panic(err)
-		}
-	default:
-		f, err := os.Open(*fname)
-		if err != nil {
-			panic(err)
-		}
-		scan := bufio.NewScanner(f)
-		for scan.Scan() {
-			line := scan.Text()
-			fmt.Printf("paw> %s\n", line)
-			err := icmd.exec(line)
+	if flag.NArg() > 0 {
+		for _, fname := range flag.Args() {
+			f, err := os.Open(fname)
 			if err != nil {
-				fmt.Printf("**error** %v\n", err)
+				icmd.msg.Printf("error: %v\n", err)
+				return 1
+			}
+			defer f.Close()
+
+			err = icmd.RunScript(f)
+			if err != nil {
+				icmd.msg.Printf("error running script [%s]: %v\n", f.Name(), err)
 				return 1
 			}
 		}
+		if !*interactive {
+			return 0
+		}
+	}
+
+	err := icmd.Run()
+	if err != nil {
+		icmd.msg.Printf("error running interpreter: %v\n", err)
+		return 1
 	}
 
 	return 0

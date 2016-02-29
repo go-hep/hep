@@ -5,8 +5,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strings"
 
@@ -23,6 +25,7 @@ type Cmdr interface {
 }
 
 type Cmd struct {
+	msg  *log.Logger
 	rl   *liner.State
 	cmds map[string]Cmdr
 	wmgr *winMgr
@@ -32,6 +35,7 @@ type Cmd struct {
 
 func newCmd(scr screen.Screen) *Cmd {
 	c := Cmd{
+		msg:  log.New(os.Stdout, "paw: ", 0),
 		rl:   liner.NewLiner(),
 		wmgr: newWinMgr(scr),
 		fmgr: newFileMgr(),
@@ -114,7 +118,7 @@ func (c *Cmd) Run() error {
 		}
 		err = c.exec(o)
 		if err != nil {
-			fmt.Printf("**error** %v\n", err)
+			c.msg.Printf("error: %v\n", err)
 			if err == io.EOF {
 				return err
 			}
@@ -122,6 +126,32 @@ func (c *Cmd) Run() error {
 		c.rl.AppendHistory(o)
 	}
 	panic("unreachable")
+}
+
+func (c *Cmd) RunScript(r io.Reader) error {
+	scan := bufio.NewScanner(r)
+	for scan.Scan() {
+		err := scan.Err()
+		if err != nil {
+			break
+		}
+		line := scan.Text()
+		if line == "" || line[0] == '#' {
+			continue
+		}
+		c.msg.Printf("# %s\n", line)
+		err = c.exec(line)
+		if err != nil {
+			c.msg.Printf("error executing %q: %v\n", line, err)
+			return err
+		}
+	}
+
+	err := scan.Err()
+	if err == io.EOF {
+		err = nil
+	}
+	return err
 }
 
 func (c *Cmd) exec(line string) error {
