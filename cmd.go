@@ -14,6 +14,7 @@ import (
 
 	"golang.org/x/exp/shiny/screen"
 
+	"github.com/google/shlex"
 	"github.com/peterh/liner"
 )
 
@@ -141,7 +142,7 @@ func (c *Cmd) RunScript(r io.Reader) error {
 		if line == "" || line[0] == '#' {
 			continue
 		}
-		c.msg.Printf("# %s\n", line)
+		fmt.Printf("# %s\n", line)
 		err = c.exec(line)
 		if err == io.EOF {
 			return err
@@ -160,11 +161,14 @@ func (c *Cmd) RunScript(r io.Reader) error {
 }
 
 func (c *Cmd) exec(line string) error {
-	args := strings.Split(line, " ")
+	args, err := shlex.Split(line)
+	if err != nil {
+		return fmt.Errorf("paw: splitting line failed: %v", err)
+	}
 	cmd, ok := c.cmds[args[0]]
 	if !ok {
 		return fmt.Errorf("unknown command %q", args[0])
 	}
-	err := cmd.Run(args[1:])
+	err = cmd.Run(args[1:])
 	return err
 }
