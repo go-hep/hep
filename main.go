@@ -7,6 +7,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 
 	"golang.org/x/exp/shiny/driver"
@@ -36,7 +37,7 @@ func xmain(scr screen.Screen) int {
 :::::::::::::::::::::::::::::
 
 Type /? for help.
-^D to quit.
+^D or /quit to quit.
 
 `)
 
@@ -53,6 +54,9 @@ Type /? for help.
 			defer f.Close()
 
 			err = icmd.RunScript(f)
+			if err == io.EOF {
+				return 0
+			}
 			if err != nil {
 				icmd.msg.Printf("error running script [%s]: %v\n", f.Name(), err)
 				return 1
@@ -64,6 +68,9 @@ Type /? for help.
 	}
 
 	err := icmd.Run()
+	if err == io.EOF {
+		err = nil
+	}
 	if err != nil {
 		icmd.msg.Printf("error running interpreter: %v\n", err)
 		return 1

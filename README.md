@@ -19,7 +19,7 @@ $ pawgo
 :::::::::::::::::::::::::::::
 
 Type /? for help.
-^D to quit.
+^D or /quit to quit.
 
 paw> /?
 /? 		-- print help

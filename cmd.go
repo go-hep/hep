@@ -50,6 +50,8 @@ func newCmd(scr screen.Screen) *Cmd {
 
 		"/hist/open": &cmdH1DOpen{&c},
 		"/hist/plot": &cmdH1DPlot{&c},
+
+		"/quit": &cmdQuit{&c},
 	}
 
 	c.rl.SetTabCompletionStyle(liner.TabPrints)
@@ -118,10 +120,10 @@ func (c *Cmd) Run() error {
 		}
 		err = c.exec(o)
 		if err != nil {
-			c.msg.Printf("error: %v\n", err)
 			if err == io.EOF {
 				return err
 			}
+			c.msg.Printf("error: %v\n", err)
 		}
 		c.rl.AppendHistory(o)
 	}
@@ -141,6 +143,9 @@ func (c *Cmd) RunScript(r io.Reader) error {
 		}
 		c.msg.Printf("# %s\n", line)
 		err = c.exec(line)
+		if err == io.EOF {
+			return err
+		}
 		if err != nil {
 			c.msg.Printf("error executing %q: %v\n", line, err)
 			return err
