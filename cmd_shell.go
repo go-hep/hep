@@ -40,6 +40,7 @@ func (cmd *cmdShell) Complete(line string) []string {
 	var o []string
 	args, err := shlex.Split(line)
 	if err != nil {
+		cmd.ctx.msg.Printf("error splitting line: %v\n", err)
 		return o
 	}
 	if len(args) < 2 {
