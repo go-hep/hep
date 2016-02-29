@@ -44,6 +44,7 @@ func newCmd(scr screen.Screen) *Cmd {
 	}
 	c.cmds = map[string]Cmdr{
 		"/?":           &cmdHelp{&c},
+		"/!":           &cmdShell{&c},
 		"/file/open":   &cmdFileOpen{&c},
 		"/file/close":  &cmdFileClose{&c},
 		"/file/create": &cmdFileCreate{&c},

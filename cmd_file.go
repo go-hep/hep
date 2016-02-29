@@ -9,6 +9,8 @@ import (
 	"io"
 	"path/filepath"
 	"strings"
+
+	"github.com/google/shlex"
 )
 
 // cmdFileOpen opens a file for read access
@@ -34,7 +36,10 @@ func (cmd *cmdFileOpen) Help(w io.Writer) {
 
 func (cmd *cmdFileOpen) Complete(line string) []string {
 	var o []string
-	args := strings.Split(line, " ")
+	args, err := shlex.Split(line)
+	if err != nil {
+		return o
+	}
 	switch len(args) {
 	case 0:
 		return o
