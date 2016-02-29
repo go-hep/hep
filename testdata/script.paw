@@ -1,0 +1,7 @@
+/file/open f ./testdata/hsimple.rio
+/file/ls f
+
+/hist/open h /file/id/f/h1
+/hist/plot h
+
+## EOF
