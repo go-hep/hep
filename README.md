@@ -22,7 +22,7 @@ Type /? for help.
 ^D or /quit to quit.
 
 paw> /?
-/!              -- runs a shell command
+/!              -- run a shell command
 /?              -- print help
 /file/close     -- close a file
 /file/create    -- create file for write access
