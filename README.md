@@ -23,7 +23,7 @@ http://godoc.org/github.com/go-hep/hplot
 
 ### 1D histogram
 
-![hist-example](https://github.com/go-hep/hplot/raw/master/examples/hist.png)
+![hist-example](https://github.com/go-hep/hplot/raw/master/testdata/h1d_plot_golden.png)
 
 ```go
 package main
