@@ -130,18 +130,18 @@ func (tbl *Table) ReadRows(beg, end int64) (*Rows, error) {
 }
 
 // WriteHeader writes a header to the underlying CSV file
-func (t *Table) WriteHeader(hdr string) error {
+func (tbl *Table) WriteHeader(hdr string) error {
 	if !strings.HasSuffix(hdr, "\n") {
 		hdr += "\n"
 	}
-	_, err := t.f.WriteString(hdr)
+	_, err := tbl.f.WriteString(hdr)
 	return err
 }
 
 // WriteRow writes the data into the columns at the current row.
-func (t *Table) WriteRow(args ...interface{}) error {
+func (tbl *Table) WriteRow(args ...interface{}) error {
 	var err error
-	if t.Writer == nil {
+	if tbl.Writer == nil {
 		return fmt.Errorf("csvutil: Table is not in write mode")
 	}
 
@@ -155,12 +155,12 @@ func (t *Table) WriteRow(args ...interface{}) error {
 		rt := rv.Type()
 		switch rt.Kind() {
 		case reflect.Struct:
-			err = t.writeStruct(rv)
+			err = tbl.writeStruct(rv)
 			return err
 		}
 	}
 
-	err = t.write(args...)
+	err = tbl.write(args...)
 	if err != nil {
 		return err
 	}
@@ -168,7 +168,7 @@ func (t *Table) WriteRow(args ...interface{}) error {
 	return err
 }
 
-func (t *Table) write(args ...interface{}) error {
+func (tbl *Table) write(args ...interface{}) error {
 	rec := make([]string, len(args))
 	for i, arg := range args {
 		rv := reflect.Indirect(reflect.ValueOf(arg))
@@ -188,17 +188,17 @@ func (t *Table) write(args ...interface{}) error {
 			return fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v (kind=%v)", arg, rt.Kind())
 		}
 	}
-	return t.Writer.Write(rec)
+	return tbl.Writer.Write(rec)
 }
 
-func (t *Table) writeStruct(rv reflect.Value) error {
+func (tbl *Table) writeStruct(rv reflect.Value) error {
 	rt := rv.Type()
 	args := make([]interface{}, rt.NumField())
 	for i := range args {
 		args[i] = rv.Field(i).Interface()
 	}
 
-	return t.write(args...)
+	return tbl.write(args...)
 }
 
 // Rows is an iterator over an interval of rows inside a CSV file.
