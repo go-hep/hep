@@ -46,6 +46,24 @@ func Create(fname string) (*Table, error) {
 	return table, err
 }
 
+func Append(fname string) (*Table, error) {
+	f, err := os.OpenFile(fname, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = f.Seek(0, os.SEEK_END)
+	if err != nil {
+		return nil, err
+	}
+
+	table := &Table{
+		Writer: csv.NewWriter(bufio.NewWriter(f)),
+		f:      f,
+	}
+	return table, err
+}
+
 type Table struct {
 	Reader *csv.Reader
 	Writer *csv.Writer

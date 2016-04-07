@@ -366,6 +366,80 @@ func TestCSVWriterStruct(t *testing.T) {
 	}
 }
 
+func TestCSVAppend(t *testing.T) {
+	fname := "testdata/append-test.csv"
+	tbl, err := csvutil.Create(fname)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tbl.Close()
+
+	tbl.Writer.Comma = ';'
+
+	// test WriteHeader w/o a trailing newline
+	err = tbl.WriteHeader("## a simple set of data: int64;float64;string")
+	if err != nil {
+		t.Errorf("error writing header: %v\n", err)
+	}
+
+	for i := 0; i < 10; i++ {
+		data := struct {
+			I int
+			F float64
+			S string
+		}{
+			I: i,
+			F: float64(i),
+			S: fmt.Sprintf("str-%d", i),
+		}
+		err = tbl.WriteRow(data)
+		if err != nil {
+			t.Errorf("error writing row %d: %v\n", i, err)
+			break
+		}
+	}
+
+	err = tbl.Close()
+	if err != nil {
+		t.Errorf("error closing table: %v\n", err)
+	}
+
+	// re-open to append
+	tbl, err = csvutil.Append(fname)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tbl.Close()
+
+	tbl.Writer.Comma = ';'
+	for i := 10; i < 20; i++ {
+		data := struct {
+			I int
+			F float64
+			S string
+		}{
+			I: i,
+			F: float64(i),
+			S: fmt.Sprintf("str-%d", i),
+		}
+		err = tbl.WriteRow(data)
+		if err != nil {
+			t.Errorf("error writing row %d: %v\n", i, err)
+			break
+		}
+	}
+
+	err = tbl.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = diff("testdata/append.csv", fname)
+	if err != nil {
+		t.Errorf("files differ: %v\n", err)
+	}
+}
+
 func diff(ref, chk string) error {
 	cmd := exec.Command("diff", "-urN", ref, chk)
 	buf := new(bytes.Buffer)
