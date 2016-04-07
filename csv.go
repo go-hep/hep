@@ -108,6 +108,7 @@ func (tbl *Table) Close() error {
 }
 
 // ReadRows returns a row iterator semantically equivalent to [beg,end).
+// If end==-1, the iterator will be configured to read rows until EOF.
 func (tbl *Table) ReadRows(beg, end int64) (*Rows, error) {
 	inc := int64(1)
 	rows := &Rows{
