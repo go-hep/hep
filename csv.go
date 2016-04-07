@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Package csvutil exposes functions and types to easily handle CSV files.
+// csvutil builds upon the encoding/csv package and provides the Table type.
+// A Table can read data from a CSV file into a struct value whose fields are
+// the various columns of the CSV file.
+// Conversely, a Table can write data into a CSV file from a struct value.
 package csvutil
 
 import (
@@ -22,6 +27,7 @@ func min(a, b int) int {
 	return b
 }
 
+// Open opens a Table in read mode connected to a CSV file.
 func Open(fname string) (*Table, error) {
 	r, err := os.Open(fname)
 	if err != nil {
@@ -34,6 +40,7 @@ func Open(fname string) (*Table, error) {
 	return table, err
 }
 
+// Create creates a new CSV file and returns a Table in write mode.
 func Create(fname string) (*Table, error) {
 	w, err := os.Create(fname)
 	if err != nil {
@@ -46,6 +53,9 @@ func Create(fname string) (*Table, error) {
 	return table, err
 }
 
+// Append opens an already existing CSV file and returns a Table in write mode.
+// The file cursor is positioned at the end of the file so new data can be
+// appended via the returned Table.
 func Append(fname string) (*Table, error) {
 	f, err := os.OpenFile(fname, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
@@ -64,6 +74,8 @@ func Append(fname string) (*Table, error) {
 	return table, err
 }
 
+// Table provides read- or write-access to a CSV file.
+// Table supports reading and writing data to/from a struct value.
 type Table struct {
 	Reader *csv.Reader
 	Writer *csv.Writer
@@ -73,6 +85,7 @@ type Table struct {
 	err    error
 }
 
+// Close closes the table and the underlying CSV file.
 func (tbl *Table) Close() error {
 	if tbl.closed {
 		return tbl.err
@@ -94,6 +107,7 @@ func (tbl *Table) Close() error {
 	return tbl.err
 }
 
+// ReadRows returns a row iterator semantically equivalent to [beg,end).
 func (tbl *Table) ReadRows(beg, end int64) (*Rows, error) {
 	inc := int64(1)
 	rows := &Rows{
@@ -187,6 +201,7 @@ func (t *Table) writeStruct(rv reflect.Value) error {
 	return t.write(args...)
 }
 
+// Rows is an iterator over an interval of rows inside a CSV file.
 type Rows struct {
 	tbl    *Table
 	i      int64    // number of rows iterated over
@@ -231,6 +246,9 @@ func (rows *Rows) Fields() []string {
 
 // Scan copies the columns in the current row into the values pointed at by
 // dest.
+// dest can be either:
+// - a pointer to a struct value (whose fields will be filled with column values)
+// - a slice of values
 func (rows *Rows) Scan(dest ...interface{}) error {
 	var err error
 	defer func() {
