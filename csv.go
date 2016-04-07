@@ -186,7 +186,7 @@ func (tbl *Table) write(args ...interface{}) error {
 		case reflect.String:
 			rec[i] = rv.String()
 		default:
-			return fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v (kind=%v)", arg, rt.Kind())
+			return fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v (kind=%[2]v)", arg, rt.Kind())
 		}
 	}
 	return tbl.Writer.Write(rec)
