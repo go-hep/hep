@@ -1,7 +1,7 @@
 hplot
 ====
 
-[![Build Status](https://drone.io/github.com/go-hep/hplot/status.png)](https://drone.io/github.com/go-hep/hplot/latest) [![GoDoc](https://godoc.org/github.com/go-hep/hplot?status.svg)](https://godoc.org/github.com/go-hep/hplot)
+[![Build Status](https://secure.travis-ci.org/go-hep/hplot.png)](http://travis-ci.org/go-hep/hplot) [![GoDoc](https://godoc.org/github.com/go-hep/hplot?status.svg)](https://godoc.org/github.com/go-hep/hplot)
 
 `hplot` is a WIP package relying on `gonum/plot` to plot histograms,
 n-tuples and functions.
