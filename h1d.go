@@ -102,27 +102,27 @@ func (h *Histogram) DataRange() (xmin, xmax, ymin, ymax float64) {
 // that connects each point in the Line.
 func (h *Histogram) Plot(c draw.Canvas, p *plot.Plot) {
 	trX, trY := p.Transforms(&c)
-	var pts []draw.Point
+	var pts []vg.Point
 	hist := h.Hist
 	axis := hist.Axis()
 	nbins := int(axis.Bins())
 	for bin := 0; bin < nbins; bin++ {
 		switch bin {
 		case 0:
-			pts = append(pts, draw.Point{trX(axis.BinLowerEdge(bin)), trY(0)})
-			pts = append(pts, draw.Point{trX(axis.BinLowerEdge(bin)), trY(hist.Value(bin))})
-			pts = append(pts, draw.Point{trX(axis.BinUpperEdge(bin)), trY(hist.Value(bin))})
+			pts = append(pts, vg.Point{trX(axis.BinLowerEdge(bin)), trY(0)})
+			pts = append(pts, vg.Point{trX(axis.BinLowerEdge(bin)), trY(hist.Value(bin))})
+			pts = append(pts, vg.Point{trX(axis.BinUpperEdge(bin)), trY(hist.Value(bin))})
 
 		case nbins - 1:
-			pts = append(pts, draw.Point{trX(axis.BinUpperEdge(bin - 1)), trY(hist.Value(bin - 1))})
-			pts = append(pts, draw.Point{trX(axis.BinLowerEdge(bin)), trY(hist.Value(bin))})
-			pts = append(pts, draw.Point{trX(axis.BinUpperEdge(bin)), trY(hist.Value(bin))})
-			pts = append(pts, draw.Point{trX(axis.BinUpperEdge(bin)), trY(0.)})
+			pts = append(pts, vg.Point{trX(axis.BinUpperEdge(bin - 1)), trY(hist.Value(bin - 1))})
+			pts = append(pts, vg.Point{trX(axis.BinLowerEdge(bin)), trY(hist.Value(bin))})
+			pts = append(pts, vg.Point{trX(axis.BinUpperEdge(bin)), trY(hist.Value(bin))})
+			pts = append(pts, vg.Point{trX(axis.BinUpperEdge(bin)), trY(0.)})
 
 		default:
-			pts = append(pts, draw.Point{trX(axis.BinUpperEdge(bin - 1)), trY(hist.Value(bin - 1))})
-			pts = append(pts, draw.Point{trX(axis.BinLowerEdge(bin)), trY(hist.Value(bin))})
-			pts = append(pts, draw.Point{trX(axis.BinUpperEdge(bin)), trY(hist.Value(bin))})
+			pts = append(pts, vg.Point{trX(axis.BinUpperEdge(bin - 1)), trY(hist.Value(bin - 1))})
+			pts = append(pts, vg.Point{trX(axis.BinLowerEdge(bin)), trY(hist.Value(bin))})
+			pts = append(pts, vg.Point{trX(axis.BinUpperEdge(bin)), trY(hist.Value(bin))})
 		}
 	}
 
@@ -180,8 +180,8 @@ func (h *Histogram) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
 
 		r := vg.Points(5)
 		//r = vg.Length(w)
-		bs[i].Rectangle.Min = draw.Point{0, 0}
-		bs[i].Rectangle.Max = draw.Point{0, r}
+		bs[i].Rectangle.Min = vg.Point{0, 0}
+		bs[i].Rectangle.Max = vg.Point{0, r}
 	}
 	return bs
 }
@@ -279,9 +279,9 @@ func (l *hist_legend) draw(c draw.Canvas) {
 
 	colx := &draw.Canvas{
 		Canvas: c.Canvas,
-		Rectangle: draw.Rectangle{
-			Min: draw.Point{c.Min.X, y},
-			Max: draw.Point{2 * l.ColWidth, enth},
+		Rectangle: vg.Rectangle{
+			Min: vg.Point{c.Min.X, y},
+			Max: vg.Point{2 * l.ColWidth, enth},
 		},
 	}
 	for _, e := range l.entries {
@@ -295,7 +295,7 @@ func (l *hist_legend) draw(c draw.Canvas) {
 	bbox_xmax := c.Max.X
 	bbox_ymin := colx.Min.Y + enth
 	bbox_ymax := c.Max.Y
-	bbox := []draw.Point{
+	bbox := []vg.Point{
 		{bbox_xmin, bbox_ymax},
 		{bbox_xmin, bbox_ymin},
 		{bbox_xmax, bbox_ymin},

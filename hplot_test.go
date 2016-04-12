@@ -91,9 +91,9 @@ func Example_subplot() {
 	p1.Draw(dc)
 	sub := draw.Canvas{
 		Canvas: dc,
-		Rectangle: draw.Rectangle{
-			Min: draw.Point{0.70 * width, 0.50 * height},
-			Max: draw.Point{1.00 * width, 1.00 * height},
+		Rectangle: vg.Rectangle{
+			Min: vg.Point{0.70 * width, 0.50 * height},
+			Max: vg.Point{1.00 * width, 1.00 * height},
 		},
 	}
 	p2.Draw(sub)
@@ -198,18 +198,18 @@ func Example_diffplot() {
 	dc := draw.New(c)
 	top := draw.Canvas{
 		Canvas: dc,
-		Rectangle: draw.Rectangle{
-			Min: draw.Point{0, 0.3 * height},
-			Max: draw.Point{width, height},
+		Rectangle: vg.Rectangle{
+			Min: vg.Point{0, 0.3 * height},
+			Max: vg.Point{width, height},
 		},
 	}
 	p1.Draw(top)
 
 	bottom := draw.Canvas{
 		Canvas: dc,
-		Rectangle: draw.Rectangle{
-			Min: draw.Point{0, 0},
-			Max: draw.Point{width, 0.3 * height},
+		Rectangle: vg.Rectangle{
+			Min: vg.Point{0, 0},
+			Max: vg.Point{width, 0.3 * height},
 		},
 	}
 	p2.Draw(bottom)
