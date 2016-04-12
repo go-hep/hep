@@ -169,3 +169,9 @@ func main() {
 ![sub-plot](https://github.com/go-hep/hplot/raw/master/testdata/sub_plot_golden.png)
 
 https://godoc.org/github.com/go-hep/hplot#example-package--Subplot
+
+### Diff-plots
+
+![diff-plot](https://github.com/go-hep/hplot/raw/master/testdata/diff_plot_golden.png)
+
+https://godoc.org/github.com/go-hep/hplot#example-package--Diffplot

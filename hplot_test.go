@@ -116,3 +116,118 @@ func Example_subplot() {
 func TestSubPlot(t *testing.T) {
 	Example_subplot()
 }
+
+func Example_diffplot() {
+
+	const npoints = 10000
+
+	// Draw some random values from the standard
+	// normal distribution.
+	rand.Seed(int64(0))
+
+	hist1 := hbook.NewH1D(20, -4, +4)
+	hist2 := hbook.NewH1D(20, -4, +4)
+
+	for i := 0; i < npoints; i++ {
+		v1 := rand.NormFloat64()
+		v2 := rand.NormFloat64() + 0.5
+		hist1.Fill(v1, 1)
+		hist2.Fill(v2, 1)
+	}
+
+	// Make a plot and set its title.
+	p1, err := hplot.New()
+	if err != nil {
+		log.Fatalf("error: %v\n", err)
+	}
+	p1.Title.Text = "Histos"
+	p1.Y.Label.Text = "Y"
+
+	// Create a histogram of our values drawn
+	// from the standard normal.
+	h1, err := hplot.NewH1D(hist1)
+	if err != nil {
+		panic(err)
+	}
+	h1.LineStyle.Color = color.RGBA{R: 255, A: 255}
+	h1.FillColor = nil
+	p1.Add(h1)
+
+	h2, err := hplot.NewH1D(hist2)
+	if err != nil {
+		panic(err)
+	}
+	h2.LineStyle.Color = color.RGBA{B: 255, A: 255}
+	h2.FillColor = nil
+	p1.Add(h2)
+
+	// hide X-axis labels
+	p1.X.Tick.Marker = hplot.NoTicks{}
+
+	p1.Add(hplot.NewGrid())
+
+	hist3 := hbook.NewH1D(20, -4, +4)
+	for i := 0; i < hist3.Len(); i++ {
+		v1 := hist1.Value(i)
+		v2 := hist2.Value(i)
+		x1, _ := hist1.XY(i)
+		hist3.Fill(x1, v1-v2)
+	}
+
+	hdiff, err := hplot.NewH1D(hist3)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	p2, err := hplot.New()
+	if err != nil {
+		log.Fatalf("error: %v\n", err)
+	}
+	p2.X.Label.Text = "X"
+	p2.Y.Label.Text = "Delta-Y"
+	p2.Add(hdiff)
+	p2.Add(hplot.NewGrid())
+
+	const (
+		width  = 15 * vg.Centimeter
+		height = width / math.Phi
+	)
+
+	c := vgimg.PngCanvas{vgimg.New(width, height)}
+	dc := draw.New(c)
+	top := draw.Canvas{
+		Canvas: dc,
+		Rectangle: draw.Rectangle{
+			Min: draw.Point{0, 0.3 * height},
+			Max: draw.Point{width, height},
+		},
+	}
+	p1.Draw(top)
+
+	bottom := draw.Canvas{
+		Canvas: dc,
+		Rectangle: draw.Rectangle{
+			Min: draw.Point{0, 0},
+			Max: draw.Point{width, 0.3 * height},
+		},
+	}
+	p2.Draw(bottom)
+
+	f, err := os.Create("testdata/diff_plot.png")
+	if err != nil {
+		log.Fatalf("error: %v\n", err)
+	}
+	defer f.Close()
+	_, err = c.WriteTo(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = f.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func TestDiffPlot(t *testing.T) {
+	Example_diffplot()
+}
