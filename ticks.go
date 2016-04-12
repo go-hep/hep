@@ -56,3 +56,11 @@ func maxInt(a, b int) int {
 	}
 	return b
 }
+
+// NoTicks implements plot.Ticker but does not display any tick.
+type NoTicks struct{}
+
+// Ticks returns Ticks in a specified range
+func (NoTicks) Ticks(min, max float64) []plot.Tick {
+	return nil
+}
