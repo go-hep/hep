@@ -17,6 +17,7 @@ import (
 	"github.com/gonum/plot/vg"
 	"github.com/gonum/plot/vg/draw"
 	"github.com/gonum/plot/vg/vgimg"
+	"github.com/gonum/plot/vg/vgtex"
 )
 
 // An example of a plot + sub-plot
@@ -230,4 +231,66 @@ func Example_diffplot() {
 
 func TestDiffPlot(t *testing.T) {
 	Example_diffplot()
+}
+
+func Example_latexplot() {
+
+	const npoints = 10000
+
+	// Draw some random values from the standard
+	// normal distribution.
+	rand.Seed(int64(0))
+
+	hist := hbook.NewH1D(20, -4, +4)
+	for i := 0; i < npoints; i++ {
+		v := rand.NormFloat64()
+		hist.Fill(v, 1)
+	}
+
+	// Make a plot and set its title.
+	p, err := hplot.New()
+	if err != nil {
+		log.Fatalf("error: %v\n", err)
+	}
+	p.Title.Text = `Gaussian distribution: $f(x) = \frac{e^{-(x - \mu)^{2}/(2\sigma^{2}) }} {\sigma\sqrt{2\pi}}$`
+	p.Y.Label.Text = `$f(x)$`
+	p.X.Label.Text = `$x$`
+
+	// Create a histogram of our values drawn
+	// from the standard normal.
+	h, err := hplot.NewH1D(hist)
+	if err != nil {
+		panic(err)
+	}
+	h.LineStyle.Color = color.RGBA{R: 255, A: 255}
+	h.FillColor = nil
+	h.Infos.Style = hplot.HInfoSummary
+	p.Add(h)
+
+	p.Add(hplot.NewGrid())
+
+	const (
+		width  = 15 * vg.Centimeter
+		height = width / math.Phi
+	)
+
+	c := vgtex.NewDocument(width, height)
+	p.Draw(draw.New(c))
+	f, err := os.Create("testdata/latex_plot.tex")
+	if err != nil {
+		log.Fatalf("error: %v\n", err)
+	}
+	defer f.Close()
+	_, err = c.WriteTo(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = f.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func TestLatexPlot(t *testing.T) {
+	Example_latexplot()
 }

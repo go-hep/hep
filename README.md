@@ -175,3 +175,9 @@ https://godoc.org/github.com/go-hep/hplot#example-package--Subplot
 ![diff-plot](https://github.com/go-hep/hplot/raw/master/testdata/diff_plot_golden.png)
 
 https://godoc.org/github.com/go-hep/hplot#example-package--Diffplot
+
+### LaTeX-plots
+
+[latex-plot (PDF)](https://github.com/go-hep/hplot/blob/master/testdata/latex_plot_golden.pdf)
+
+https://godoc.org/github.com/go-hep/hplot#example-package--Latexplot
