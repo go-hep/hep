@@ -9,6 +9,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"io"
 	"io/ioutil"
 	"os"
@@ -16,8 +17,6 @@ import (
 	"path/filepath"
 
 	"github.com/go-hep/fwk"
-	"golang.org/x/tools/go/gcimporter"
-	"golang.org/x/tools/go/types"
 )
 
 type file struct {
@@ -131,9 +130,9 @@ func (b *Builder) Build() error {
 func (b *Builder) doTypeCheck() error {
 	var err error
 	config := &types.Config{
-		// By setting a no-op error reporter, the type checker does as much work as possible.
-		Error:  func(error) {},
-		Import: gcimporter.Import,
+		// By setting a no-op error reporter, the type checker does
+		// as much work as possible.
+		Error: func(error) {},
 	}
 	info := &types.Info{
 		Types: make(map[ast.Expr]types.TypeAndValue),
