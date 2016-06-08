@@ -123,6 +123,11 @@ func (z zip) XY(i int) (x, y float64) { return z.x[i], z.y[i] }
 
 // ZipXY zips together 2 slices x and y in such a way to implement the
 // plotter.XYer interface.
+//
+// ZipXY panics if the slices are not of the same length.
 func ZipXY(x, y []float64) plotter.XYer {
+	if len(x) != len(y) {
+		panic("hplot: slices length differ")
+	}
 	return zip{x: x, y: y}
 }
