@@ -15,6 +15,7 @@ import (
 
 	"github.com/go-hep/hplot/vgshiny"
 	"github.com/gonum/plot"
+	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/vg"
 	"github.com/gonum/plot/vg/draw"
 	"github.com/gonum/plot/vg/vgimg"
@@ -106,4 +107,22 @@ func (p *Plot) Show(w, h vg.Length, scr screen.Screen) (*vgshiny.Canvas, error) 
 	p.Draw(draw.New(c))
 	c.Paint()
 	return c, err
+}
+
+// zip zips together 2 slices and implements the plotter.XYer interface.
+type zip struct {
+	x []float64
+	y []float64
+}
+
+// Len implements the plotter.XYer interface
+func (z zip) Len() int { return len(z.x) }
+
+// XY implements the plotter.XYer interface
+func (z zip) XY(i int) (x, y float64) { return z.x[i], z.y[i] }
+
+// ZipXY zips together 2 slices x and y in such a way to implement the
+// plotter.XYer interface.
+func ZipXY(x, y []float64) plotter.XYer {
+	return zip{x: x, y: y}
 }
