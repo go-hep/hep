@@ -4,6 +4,7 @@ import (
 	"math"
 	"math/rand"
 	"reflect"
+	"sync"
 
 	"github.com/go-hep/fmom"
 	"github.com/go-hep/fwk"
@@ -19,6 +20,7 @@ type MomentumSmearing struct {
 	smear func(x, y float64) float64
 	seed  int64
 	src   rand.Source
+	srcmu sync.Mutex
 }
 
 func (tsk *MomentumSmearing) Configure(ctx fwk.Context) error {
@@ -74,8 +76,10 @@ func (tsk *MomentumSmearing) Process(ctx fwk.Context) error {
 		pt := cand.Mom.Pt()
 
 		// apply smearing
+		tsk.srcmu.Lock()
 		smearPt := random.Gauss(pt, tsk.smear(pt, eta)*pt, &tsk.src)
 		pt = smearPt()
+		tsk.srcmu.Unlock()
 
 		if pt <= 0 {
 			continue

@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"reflect"
 	"sort"
+	"sync"
 
 	"github.com/go-hep/fwk"
 	"github.com/go-hep/random"
@@ -169,6 +170,7 @@ type Calorimeter struct {
 	src  rand.Source
 
 	gauss random.Dist
+	dmu   sync.Mutex
 }
 
 func (tsk *Calorimeter) Configure(ctx fwk.Context) error {
@@ -477,7 +479,10 @@ func (tsk *Calorimeter) lognormal(mean, sigma float64) float64 {
 	b := math.Sqrt(math.Log(1 + (sigma*sigma)/(mean*mean)))
 	a := math.Log(mean) - 0.5*b*b
 
-	return math.Exp(a + b*tsk.gauss())
+	tsk.dmu.Lock()
+	bgauss := tsk.gauss()
+	tsk.dmu.Unlock()
+	return math.Exp(a + bgauss)
 }
 
 func newCalorimeter(typ, name string, mgr fwk.App) (fwk.Component, error) {

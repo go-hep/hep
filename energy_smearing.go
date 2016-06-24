@@ -4,6 +4,7 @@ import (
 	"math"
 	"math/rand"
 	"reflect"
+	"sync"
 
 	"github.com/go-hep/fmom"
 	"github.com/go-hep/fwk"
@@ -19,6 +20,7 @@ type EnergySmearing struct {
 	smear func(eta, ene float64) float64
 	seed  int64
 	src   rand.Source
+	srcmu sync.Mutex
 }
 
 func (tsk *EnergySmearing) Configure(ctx fwk.Context) error {
@@ -74,8 +76,10 @@ func (tsk *EnergySmearing) Process(ctx fwk.Context) error {
 		ene := cand.Mom.E()
 
 		// apply smearing
+		tsk.srcmu.Lock()
 		smearEne := random.Gauss(ene, tsk.smear(eta, ene), &tsk.src)
 		ene = smearEne()
+		tsk.srcmu.Unlock()
 
 		if ene <= 0 {
 			continue

@@ -3,6 +3,7 @@ package fads
 import (
 	"math/rand"
 	"reflect"
+	"sync"
 
 	"github.com/go-hep/fwk"
 	"github.com/go-hep/random"
@@ -17,6 +18,7 @@ type Efficiency struct {
 	eff  func(pt, eta float64) float64
 	seed int64
 	dist random.Dist
+	dmu  sync.Mutex
 }
 
 func (tsk *Efficiency) Configure(ctx fwk.Context) error {
@@ -71,7 +73,9 @@ func (tsk *Efficiency) Process(ctx fwk.Context) error {
 		pt := cand.Mom.Pt()
 
 		// apply efficiency
+		tsk.dmu.Lock()
 		eff := tsk.dist()
+		tsk.dmu.Unlock()
 		max := tsk.eff(pt, eta)
 		if eff > max {
 			continue

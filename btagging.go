@@ -4,6 +4,7 @@ import (
 	"math"
 	"math/rand"
 	"reflect"
+	"sync"
 
 	"github.com/go-hep/fmom"
 	"github.com/go-hep/fwk"
@@ -47,7 +48,8 @@ type BTagging struct {
 	seed int64
 	src  rand.Source
 
-	flat random.Dist
+	flat   random.Dist
+	flatmu sync.Mutex
 }
 
 func (tsk *BTagging) Configure(ctx fwk.Context) error {
@@ -157,9 +159,11 @@ func (tsk *BTagging) Process(ctx fwk.Context) error {
 
 		// apply efficiency
 		tag := uint32(0)
+		tsk.flatmu.Lock()
 		if tsk.flat() <= eff(pt, eta) {
 			tag = 1
 		}
+		tsk.flatmu.Unlock()
 		jet.BTag |= tag << tsk.bit
 
 		output = append(output, *jet)

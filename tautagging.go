@@ -4,6 +4,7 @@ import (
 	"math"
 	"math/rand"
 	"reflect"
+	"sync"
 
 	"github.com/go-hep/fmom"
 	"github.com/go-hep/fwk"
@@ -63,7 +64,8 @@ type TauTagging struct {
 	seed int64
 	src  rand.Source
 
-	flat random.Dist
+	flat   random.Dist
+	flatmu sync.Mutex
 }
 
 func (tsk *TauTagging) Configure(ctx fwk.Context) error {
@@ -152,9 +154,11 @@ func (tsk *TauTagging) Process(ctx fwk.Context) error {
 		pt := jet.Mom.Pt()
 
 		charge := int32(-1)
+		tsk.flatmu.Lock()
 		if tsk.flat() > 0.5 {
 			charge = 1
 		}
+		tsk.flatmu.Unlock()
 
 		for j := range taus {
 			mc := &taus[j]
@@ -185,9 +189,11 @@ func (tsk *TauTagging) Process(ctx fwk.Context) error {
 
 		// apply efficiency
 		tag := uint32(0)
+		tsk.flatmu.Lock()
 		if tsk.flat() <= eff(pt, eta) {
 			tag = 1
 		}
+		tsk.flatmu.Unlock()
 		jet.TauTag = tag
 		jet.CandCharge = charge
 
