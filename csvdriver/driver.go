@@ -131,10 +131,9 @@ func (*csvDriver) Open(cfg string) (driver.Conn, error) {
 
 	if doImport {
 		err = conn.importCSV()
-	}
-
-	if err != nil {
-		return nil, err
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return conn, err
