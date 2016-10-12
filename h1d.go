@@ -286,8 +286,11 @@ func (l *hist_legend) draw(c draw.Canvas) {
 	}
 	for _, e := range l.entries {
 		yoffs := (enth - l.TextStyle.Height(e.text)) / 2
-		c.FillText(l.TextStyle, vg.Point{textx - hdr, colx.Min.Y + yoffs}, +0, 0, e.text)
-		c.FillText(l.TextStyle, vg.Point{textx + hdr, colx.Min.Y + yoffs}, -1, 0, e.value)
+		txt := l.TextStyle
+		txt.XAlign = draw.XLeft
+		c.FillText(txt, vg.Point{textx - hdr, colx.Min.Y + yoffs}, e.text)
+		txt.XAlign = draw.XRight
+		c.FillText(txt, vg.Point{textx + hdr, colx.Min.Y + yoffs}, e.value)
 		colx.Min.Y -= enth + l.Padding
 	}
 
