@@ -7,8 +7,6 @@ import (
 	"os"
 	"reflect"
 	"testing"
-
-	"github.com/kylelemons/godebug/pretty"
 )
 
 func TestFileDirectory(t *testing.T) {
@@ -17,8 +15,6 @@ func TestFileDirectory(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	defer f.Close()
-
-	pretty.DefaultConfig.IncludeUnexported = true
 
 	for _, table := range []struct {
 		test     string
@@ -112,8 +108,6 @@ func DontTestFileReader(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	defer f.Close()
-
-	pretty.DefaultConfig.IncludeUnexported = true
 
 	//f.Map()
 	//return
