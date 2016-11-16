@@ -18,6 +18,12 @@ import (
 var (
 	ErrNotExist      = errors.New("hbook: ntuple does not exist")
 	ErrMissingColDef = errors.New("hbook: expected at least one column definition")
+
+	errChanType   = errors.New("hbook: chans not supported")
+	errIfaceType  = errors.New("hbook: interfaces not supported")
+	errMapType    = errors.New("hbook: maps not supported")
+	errSliceType  = errors.New("hbook: nested slices not supported")
+	errStructType = errors.New("hbook: nested structs not supported")
 )
 
 // Ntuple provides read/write access to row-wise data.
@@ -124,15 +130,15 @@ func schemaFromStruct(rt reflect.Type) ([]Descriptor, error) {
 		ft := f.Type
 		switch ft.Kind() {
 		case reflect.Chan:
-			return nil, fmt.Errorf("hbook: chans not supported")
+			return nil, errChanType
 		case reflect.Interface:
-			return nil, fmt.Errorf("hbook: interfaces not supported")
+			return nil, errIfaceType
 		case reflect.Map:
-			return nil, fmt.Errorf("hbook: maps not supported")
+			return nil, errMapType
 		case reflect.Slice:
-			return nil, fmt.Errorf("hbook: nested slices not supported")
+			return nil, errSliceType
 		case reflect.Struct:
-			return nil, fmt.Errorf("hbook: nested structs not supported")
+			return nil, errStructType
 		}
 		fname := getTag(f.Tag, "hbook", "rio", "db")
 		if fname == "" {
@@ -150,15 +156,15 @@ func schemaFrom(src ...interface{}) ([]Descriptor, error) {
 		rt := reflect.TypeOf(col)
 		switch rt.Kind() {
 		case reflect.Chan:
-			return nil, fmt.Errorf("hbook: chans not supported")
+			return nil, errChanType
 		case reflect.Interface:
-			return nil, fmt.Errorf("hbook: interfaces not supported")
+			return nil, errIfaceType
 		case reflect.Map:
-			return nil, fmt.Errorf("hbook: maps not supported")
+			return nil, errMapType
 		case reflect.Slice:
-			return nil, fmt.Errorf("hbook: slices not supported")
+			return nil, errSliceType
 		case reflect.Struct:
-			return nil, fmt.Errorf("hbook: structs not supported")
+			return nil, errStructType
 		}
 		schema = append(schema, &columnDescr{fmt.Sprintf("var%d", i+1), rt})
 	}
