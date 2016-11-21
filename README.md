@@ -30,31 +30,40 @@ package main
 
 import (
 	"image/color"
-	"math"
+	"log"
 	"math/rand"
 
+	"github.com/go-hep/hbook"
 	"github.com/go-hep/hplot"
-	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/vg"
+	"github.com/gonum/stat/distuv"
 )
 
-const NPOINTS = 10000
-
-var HMAX = 1.0
-
 func main() {
+	const npoints = 10000
+
+	// Create a normal distribution.
+	dist := distuv.Normal{
+		Mu:     0,
+		Sigma:  1,
+		Source: rand.New(rand.NewSource(0)),
+	}
+
 	// Draw some random values from the standard
 	// normal distribution.
-	rand.Seed(int64(0))
-	v := make(plotter.Values, NPOINTS)
-	for i := range v {
-		v[i] = rand.NormFloat64()
+	hist := hbook.NewH1D(20, -4, +4)
+	for i := 0; i < npoints; i++ {
+		v := dist.Rand()
+		hist.Fill(v, 1)
 	}
+
+	// normalize histogram
+	hist.Scale(1 / hist.Integral())
 
 	// Make a plot and set its title.
 	p, err := hplot.New()
 	if err != nil {
-		panic(err)
+		log.Fatalf("error: %v\n", err)
 	}
 	p.Title.Text = "Histogram"
 	p.X.Label.Text = "X"
@@ -62,18 +71,15 @@ func main() {
 
 	// Create a histogram of our values drawn
 	// from the standard normal.
-	h, err := hplot.NewHist(v, 16)
+	h, err := hplot.NewH1D(hist)
 	if err != nil {
 		panic(err)
 	}
-	// h.Infos.Style = hplot.HInfo_None
+	h.Infos.Style = hplot.HInfoSummary
 	p.Add(h)
 
-	// normalize histo
-	HMAX = h.Hist.Max() / stdNorm(0)
-
 	// The normal distribution function
-	norm := hplot.NewFunction(stdNorm)
+	norm := hplot.NewFunction(dist.Prob)
 	norm.Color = color.RGBA{R: 255, A: 255}
 	norm.Width = vg.Points(2)
 	p.Add(norm)
@@ -82,18 +88,9 @@ func main() {
 	p.Add(hplot.NewGrid())
 
 	// Save the plot to a PNG file.
-	if err := p.Save(4*vg.Inch, 4*vg.Inch, "hist.png"); err != nil {
-		panic(err)
+	if err := p.Save(6*vg.Inch, -1, "testdata/h1d_plot.png"); err != nil {
+		log.Fatalf("error saving plot: %v\n", err)
 	}
-}
-
-// stdNorm returns the probability of drawing a
-// value from a standard normal distribution.
-func stdNorm(x float64) float64 {
-	const sigma = 1.0
-	const mu = 0.0
-	const root2π = 2.50662827459517818309
-	return 1.0 / (sigma * root2π) * math.Exp(-((x-mu)*(x-mu))/(2*sigma*sigma)) * HMAX
 }
 ```
 
@@ -113,23 +110,28 @@ import (
 	"github.com/go-hep/hplot"
 	"github.com/gonum/plot/vg"
 	"github.com/gonum/plot/vg/draw"
+	"github.com/gonum/stat/distuv"
 )
 
+// An example of making a tile-plot
 func main() {
 	tp, err := hplot.NewTiledPlot(draw.Tiles{Cols: 3, Rows: 2})
 	if err != nil {
 		log.Fatalf("error: %v\n", err)
 	}
 
-	// Draw some random values from the standard
-	// normal distribution.
-	rand.Seed(int64(0))
+	// Create a normal distribution.
+	dist := distuv.Normal{
+		Mu:     0,
+		Sigma:  1,
+		Source: rand.New(rand.NewSource(0)),
+	}
 
 	newHist := func(p *hplot.Plot) error {
 		const npoints = 10000
 		hist := hbook.NewH1D(20, -4, +4)
 		for i := 0; i < npoints; i++ {
-			v := rand.NormFloat64()
+			v := dist.Rand()
 			hist.Fill(v, 1)
 		}
 

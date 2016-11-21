@@ -18,29 +18,30 @@ import (
 	"github.com/gonum/plot/vg/draw"
 	"github.com/gonum/plot/vg/vgimg"
 	"github.com/gonum/plot/vg/vgtex"
+	"github.com/gonum/stat/distuv"
 )
 
 // An example of a plot + sub-plot
 func Example_subplot() {
 	const npoints = 10000
-	var hmax = 1.0
 
-	// stdNorm returns the probability of drawing a
-	// value from a standard normal distribution.
-	stdNorm := func(x float64) float64 {
-		const sigma = 1.0
-		const mu = 0.0
-		const root2π = 2.50662827459517818309
-		return 1.0 / (sigma * root2π) * math.Exp(-((x-mu)*(x-mu))/(2*sigma*sigma)) * hmax
+	// Create a normal distribution.
+	dist := distuv.Normal{
+		Mu:     0,
+		Sigma:  1,
+		Source: rand.New(rand.NewSource(0)),
 	}
+
 	// Draw some random values from the standard
 	// normal distribution.
-	rand.Seed(int64(0))
 	hist := hbook.NewH1D(20, -4, +4)
 	for i := 0; i < npoints; i++ {
-		v := rand.NormFloat64()
+		v := dist.Rand()
 		hist.Fill(v, 1)
 	}
+
+	// normalize histo
+	hist.Scale(1 / hist.Integral())
 
 	// Make a plot and set its title.
 	p1, err := hplot.New()
@@ -59,11 +60,8 @@ func Example_subplot() {
 	}
 	p1.Add(h)
 
-	// normalize histo
-	hmax = h.Hist.Max() / stdNorm(0)
-
 	// The normal distribution function
-	norm := hplot.NewFunction(stdNorm)
+	norm := hplot.NewFunction(dist.Prob)
 	norm.Color = color.RGBA{R: 255, A: 255}
 	norm.Width = vg.Points(2)
 	p1.Add(norm)
@@ -122,16 +120,19 @@ func Example_diffplot() {
 
 	const npoints = 10000
 
-	// Draw some random values from the standard
-	// normal distribution.
-	rand.Seed(int64(0))
+	// Create a normal distribution.
+	dist := distuv.Normal{
+		Mu:     0,
+		Sigma:  1,
+		Source: rand.New(rand.NewSource(0)),
+	}
 
 	hist1 := hbook.NewH1D(20, -4, +4)
 	hist2 := hbook.NewH1D(20, -4, +4)
 
 	for i := 0; i < npoints; i++ {
-		v1 := rand.NormFloat64()
-		v2 := rand.NormFloat64() + 0.5
+		v1 := dist.Rand()
+		v2 := dist.Rand() + 0.5
 		hist1.Fill(v1, 1)
 		hist2.Fill(v2, 1)
 	}
@@ -237,13 +238,16 @@ func Example_latexplot() {
 
 	const npoints = 10000
 
-	// Draw some random values from the standard
-	// normal distribution.
-	rand.Seed(int64(0))
+	// Create a normal distribution.
+	dist := distuv.Normal{
+		Mu:     0,
+		Sigma:  1,
+		Source: rand.New(rand.NewSource(0)),
+	}
 
 	hist := hbook.NewH1D(20, -4, +4)
 	for i := 0; i < npoints; i++ {
-		v := rand.NormFloat64()
+		v := dist.Rand()
 		hist.Fill(v, 1)
 	}
 

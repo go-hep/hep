@@ -14,6 +14,7 @@ import (
 	"github.com/go-hep/hplot"
 	"github.com/gonum/plot/vg"
 	"github.com/gonum/plot/vg/draw"
+	"github.com/gonum/stat/distuv"
 )
 
 // An example of making a tile-plot
@@ -23,15 +24,18 @@ func ExampleTiledPlot() {
 		log.Fatalf("error: %v\n", err)
 	}
 
-	// Draw some random values from the standard
-	// normal distribution.
-	rand.Seed(int64(0))
+	// Create a normal distribution.
+	dist := distuv.Normal{
+		Mu:     0,
+		Sigma:  1,
+		Source: rand.New(rand.NewSource(0)),
+	}
 
 	newHist := func(p *hplot.Plot) error {
 		const npoints = 10000
 		hist := hbook.NewH1D(20, -4, +4)
 		for i := 0; i < npoints; i++ {
-			v := rand.NormFloat64()
+			v := dist.Rand()
 			hist.Fill(v, 1)
 		}
 
