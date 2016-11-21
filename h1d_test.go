@@ -7,36 +7,36 @@ package hplot_test
 import (
 	"image/color"
 	"log"
-	"math"
 	"math/rand"
 	"testing"
 
 	"github.com/go-hep/hbook"
 	"github.com/go-hep/hplot"
 	"github.com/gonum/plot/vg"
+	"github.com/gonum/stat/distuv"
 )
 
 // An example of making a 1D-histogram.
 func ExampleHistogram() {
 	const npoints = 10000
-	var hmax = 1.0
 
-	// stdNorm returns the probability of drawing a
-	// value from a standard normal distribution.
-	stdNorm := func(x float64) float64 {
-		const sigma = 1.0
-		const mu = 0.0
-		const root2π = 2.50662827459517818309
-		return 1.0 / (sigma * root2π) * math.Exp(-((x-mu)*(x-mu))/(2*sigma*sigma)) * hmax
+	// Create a normal distribution.
+	dist := distuv.Normal{
+		Mu:     0,
+		Sigma:  1,
+		Source: rand.New(rand.NewSource(0)),
 	}
+
 	// Draw some random values from the standard
 	// normal distribution.
-	rand.Seed(int64(0))
 	hist := hbook.NewH1D(20, -4, +4)
 	for i := 0; i < npoints; i++ {
-		v := rand.NormFloat64()
+		v := dist.Rand()
 		hist.Fill(v, 1)
 	}
+
+	// normalize histogram
+	hist.Scale(1 / hist.Integral())
 
 	// Make a plot and set its title.
 	p, err := hplot.New()
@@ -56,11 +56,8 @@ func ExampleHistogram() {
 	h.Infos.Style = hplot.HInfoSummary
 	p.Add(h)
 
-	// normalize histo
-	hmax = h.Hist.Max() / stdNorm(0)
-
 	// The normal distribution function
-	norm := hplot.NewFunction(stdNorm)
+	norm := hplot.NewFunction(dist.Prob)
 	norm.Color = color.RGBA{R: 255, A: 255}
 	norm.Width = vg.Points(2)
 	p.Add(norm)
