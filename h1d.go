@@ -166,18 +166,21 @@ func (h *H1D) Integral(args ...float64) float64 {
 		panic("hbook: invalid number of arguments. expected 0 or 2.")
 	}
 
-	integral := 0.
+	integral := 0.0
 	for i := range h.bins {
 		v := h.axis.BinLowerEdge(i)
+		width := h.axis.BinWidth(i)
 		if v >= min && v < max {
-			integral += h.bins[i].sw
+			integral += h.bins[i].sw * width
 		}
 	}
 	if math.IsInf(min, -1) {
-		integral += h.allbins[0].sw
+		width := h.axis.BinWidth(UnderflowBin)
+		integral += h.allbins[0].sw * width
 	}
 	if math.IsInf(max, +1) {
-		integral += h.allbins[1].sw
+		width := h.axis.BinWidth(OverflowBin)
+		integral += h.allbins[1].sw * width
 	}
 	return integral
 }
