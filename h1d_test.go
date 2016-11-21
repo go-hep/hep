@@ -109,6 +109,21 @@ func TestH1DIntegral(t *testing.T) {
 	if math.Abs(rms1-rms2)/rms1 > 1e-12 {
 		t.Errorf("rms has changed while rescaling (rms1, rms2) = (%v, %v)", rms1, rms2)
 	}
+
+	h2 := hbook.NewH1D(2, 0, 1)
+	h2.Fill(0.0, 1)
+	h2.Fill(0.5, 1)
+	for _, ibin := range []int{0, 1} {
+		if got, want := h2.Value(ibin), 1.0; got != want {
+			t.Errorf("got H1D.Value(%d) = %v. want %v\n", ibin, got, want)
+		}
+	}
+	if got, want := h2.Axis().BinWidth(0), 0.5; got != want {
+		t.Errorf("got H1D.Axis.BinWidth == %v. want %v\n", got, want)
+	}
+	if got, want := h2.Integral(), 1.0; got != want {
+		t.Errorf("got H1D.Integral() == %v. want %v\n", got, want)
+	}
 }
 
 func BenchmarkH1DSTFillConst(b *testing.B) {
