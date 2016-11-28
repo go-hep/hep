@@ -9,8 +9,8 @@ all: build test
 build:
 	@echo "build github.com/go-hep/rootio"
 	@go get -v .
-	@echo "build github.com/go-hep/rootio/root-ls"
-	@go get -v ./root-ls
+	@echo "build github.com/go-hep/rootio/cmd/root-ls"
+	@go get -v ./cmd/root-ls
 
 test: build
 	@go test -v
