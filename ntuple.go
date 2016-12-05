@@ -241,32 +241,34 @@ func (nt *Ntuple) Scan(query string, f interface{}) error {
 // If h is nil, a (100-bins, xmin, xmax) histogram is created,
 // where xmin and xmax are inferred from the content of the underlying database.
 func (nt *Ntuple) ScanH1D(query string, h *H1D) (*H1D, error) {
-	var data []float64
-	var (
-		xmin = +math.MaxFloat64
-		xmax = -math.MaxFloat64
-	)
-	err := nt.Scan(query, func(x float64) error {
-		data = append(data, x)
-		if xmin > x {
-			xmin = x
-		}
-		if xmax < x {
-			xmax = x
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
 	if h == nil {
+		var (
+			xmin = +math.MaxFloat64
+			xmax = -math.MaxFloat64
+		)
+		// FIXME(sbinet) leverage the underlying db min/max functions,
+		// instead of crawling through the whole data set.
+		err := nt.Scan(query, func(x float64) error {
+			if xmin > x {
+				xmin = x
+			}
+			if xmax < x {
+				xmax = x
+			}
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+
 		h = NewH1D(100, xmin, xmax)
 	}
 
-	for _, x := range data {
+	err := nt.Scan(query, func(x float64) error {
 		h.Fill(x, 1)
-	}
+		return nil
+	})
+
 	return h, err
 }
 
