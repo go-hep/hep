@@ -18,7 +18,7 @@ func (*dist0D) Rank() int {
 	return 1
 }
 
-// Entries returns the number of Entries in the distribution.
+// Entries returns the number of entries in the distribution.
 func (d *dist0D) Entries() int64 {
 	return d.n
 }
@@ -76,7 +76,7 @@ func (*dist1D) Rank() int {
 	return 1
 }
 
-// Entries returns the number of Entries in the distribution.
+// Entries returns the number of entries in the distribution.
 func (d *dist1D) Entries() int64 {
 	return d.dist.Entries()
 }

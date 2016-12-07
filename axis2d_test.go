@@ -30,14 +30,14 @@ func TestAxis2DCoords(t *testing.T) {
 		{x: -1.0, y: +1.9, want: 390},
 		{x: +0.0, y: +1.9, want: 395},
 		{x: +0.9, y: +1.9, want: ax.nx*ax.ny - 1},
-		{x: +0.0, y: +2.0, want: -ax2d_N},
-		{x: +0.0, y: -2.1, want: -ax2d_S},
-		{x: +1.0, y: +2.0, want: -ax2d_NE},
-		{x: +1.0, y: -2.0, want: -ax2d_E},
-		{x: +1.0, y: -2.1, want: -ax2d_SE},
-		{x: -1.1, y: -2.1, want: -ax2d_SW},
-		{x: -1.1, y: -2.0, want: -ax2d_W},
-		{x: -1.1, y: +2.0, want: -ax2d_NW},
+		{x: +0.0, y: +2.0, want: -axN},
+		{x: +0.0, y: -2.1, want: -axS},
+		{x: +1.0, y: +2.0, want: -axNE},
+		{x: +1.0, y: -2.0, want: -axE},
+		{x: +1.0, y: -2.1, want: -axSE},
+		{x: -1.1, y: -2.1, want: -axSW},
+		{x: -1.1, y: -2.0, want: -axW},
+		{x: -1.1, y: +2.0, want: -axNW},
 	} {
 		got := ax.coordToIndex(test.x, test.y)
 		if got != test.want {

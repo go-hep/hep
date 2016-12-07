@@ -59,7 +59,7 @@ func (h *H1D) Rank() int {
 	return 1
 }
 
-// Axis returns the axis of this histgram.
+// Axis returns the axis of this histogram.
 func (h *H1D) Axis() Axis {
 	return h.axis
 }
@@ -81,7 +81,7 @@ func (h *H1D) Fill(x, w float64) {
 	default:
 		h.bins[idx].fill(x, w)
 	}
-	h.entries += 1
+	h.entries++
 	//fmt.Printf("H1D.fill(x=%v, w=%v)...[done]\n", x, w)
 }
 
@@ -245,28 +245,33 @@ func (h *H1D) Min() float64 {
 	return ymin
 }
 
+// MarshalBinary implements encoding.BinaryMarshaler
 func (h *H1D) MarshalBinary() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := h.RioMarshal(buf)
 	return buf.Bytes(), err
 }
 
+// UnmarshalBinary implements encoding.BinaryUnmarshaler
 func (h *H1D) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewReader(data)
 	return h.RioUnmarshal(buf)
 }
 
+// GobEncode implements encoding/gob.GobEncoder
 func (h *H1D) GobEncode() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := h.RioMarshal(buf)
 	return buf.Bytes(), err
 }
 
+// GobDecode implements encoding/gob.GobDecoder
 func (h *H1D) GobDecode(data []byte) error {
 	buf := bytes.NewReader(data)
 	return h.RioUnmarshal(buf)
 }
 
+// RioMarshal implements rio.RioMarshaler
 func (h *H1D) RioMarshal(w io.Writer) error {
 	enc := gob.NewEncoder(w)
 	err := enc.Encode(h.allbins)
@@ -291,6 +296,7 @@ func (h *H1D) RioMarshal(w io.Writer) error {
 	return err
 }
 
+// RioUnmarshal implements rio.RioUnmarshaler
 func (h *H1D) RioUnmarshal(r io.Reader) error {
 	dec := gob.NewDecoder(r)
 	err := dec.Decode(&h.allbins)
@@ -316,6 +322,7 @@ func (h *H1D) RioUnmarshal(r io.Reader) error {
 	return err
 }
 
+// RioVersion implements rio.RioStreamer
 func (h *H1D) RioVersion() rio.Version {
 	return 0
 }

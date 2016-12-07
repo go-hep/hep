@@ -6,7 +6,7 @@ package hbook
 
 import "math"
 
-// Indices for the under- and over-flow bins.
+// Indices for the under- and over-flow 1-dim bins.
 const (
 	UnderflowBin = -2
 	OverflowBin  = -1
@@ -23,14 +23,24 @@ const (
 
 // Axis describes an axis (1D, 2D, ...)
 type Axis interface {
+	// Kind returns the binning kind (Fixed,Variable) of an axis
 	Kind() AxisKind
+	// LowerEdge returns the lower edge of the axis.
 	LowerEdge() float64
+	// UpperEdge returns the upper edge of the axis.
 	UpperEdge() float64
+	// Bins returns the number of bins in the axis.
 	Bins() int
-	BinLowerEdge(idx int) float64
-	BinUpperEdge(idx int) float64
+	// BinLowerEdge returns the lower edge of the bin at index i.
+	// It panics if i is outside the axis range.
+	BinLowerEdge(i int) float64
+	// BinUpperEdge returns the upper edge of the bin at index i.
+	// It panics if i is outside the axis range.
+	BinUpperEdge(i int) float64
+	// BinWidth returns the width of the bin at index i.
 	BinWidth(idx int) float64
-	CoordToIndex(coord float64) int
+	// CoordToIndex returns the bin index corresponding to the coordinate x.
+	CoordToIndex(x float64) int
 }
 
 // Range is a 1-dim interval [Min, Max].

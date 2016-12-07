@@ -6,14 +6,14 @@ package hbook
 
 // indices for the 2D-axis overflows
 const (
-	ax2d_NW int = iota
-	ax2d_N
-	ax2d_NE
-	ax2d_E
-	ax2d_SE
-	ax2d_S
-	ax2d_SW
-	ax2d_W
+	axNW int = iota
+	axN
+	axNE
+	axE
+	axSE
+	axS
+	axSW
+	axW
 )
 
 type axis2D struct {
@@ -35,10 +35,10 @@ func newAxis2D(nx int, xlow, xhigh float64, ny int, ylow, yhigh float64) axis2D 
 	if ylow >= yhigh {
 		panic("hbook: invalid Y-axis limits")
 	}
-	if nx == 0 {
+	if nx <= 0 {
 		panic("hbook: X-axis with zero bins")
 	}
-	if ny == 0 {
+	if ny <= 0 {
 		panic("hbook: Y-axis with zero bins")
 	}
 	ax := axis2D{
@@ -108,38 +108,21 @@ func (axis *axis2D) coordToIndex(x, y float64) int {
 		iy := int((y - axis.yrange.Min) * axis.ystep)
 		return iy*axis.nx + ix
 	case x >= axis.xrange.Max && axis.yrange.Min <= y && y < axis.yrange.Max:
-		return -ax2d_E
+		return -axE
 	case axis.xrange.Min > x && axis.yrange.Min <= y && y < axis.yrange.Max:
-		return -ax2d_W
+		return -axW
 	case axis.xrange.Min <= x && x < axis.xrange.Max && axis.yrange.Min > y:
-		return -ax2d_S
+		return -axS
 	case axis.xrange.Min <= x && x < axis.xrange.Max && y >= axis.yrange.Max:
-		return -ax2d_N
+		return -axN
 	case axis.xrange.Min > x && y >= axis.yrange.Max:
-		return -ax2d_NW
+		return -axNW
 	case x >= axis.xrange.Max && y >= axis.yrange.Max:
-		return -ax2d_NE
+		return -axNE
 	case axis.xrange.Min > x && y < axis.yrange.Min:
-		return -ax2d_SW
+		return -axSW
 	case x >= axis.xrange.Max && y < axis.yrange.Min:
-		return -ax2d_SE
+		return -axSE
 	}
 	panic("not reachable")
-}
-
-// EvenBinAxis2D is an evenly-binned 2D axis
-type EvenBinAxis2D struct {
-	x EvenBinAxis
-	y EvenBinAxis
-}
-
-func NewEvenBinAxis2D(nx int, xlow, xhigh float64, ny int, ylow, yhigh float64) *EvenBinAxis2D {
-	return &EvenBinAxis2D{
-		x: *NewEvenBinAxis(nx, xlow, xhigh),
-		y: *NewEvenBinAxis(ny, ylow, yhigh),
-	}
-}
-
-func (axis *EvenBinAxis2D) Kind() AxisKind {
-	return FixedBinning
 }

@@ -23,83 +23,105 @@ type EvenBinAxis struct {
 	size  float64 // bin size
 }
 
-func NewEvenBinAxis(nbins int, low, high float64) *EvenBinAxis {
+// NewEvenBinAxis returns a new axis with n bins between xmax and xmax.
+// It panics if n is <= 0 or if xmin >= xmax.
+func NewEvenBinAxis(n int, xmin, xmax float64) *EvenBinAxis {
+	if n <= 0 {
+		panic("hbook: X-axis with zero bins")
+	}
+	if xmin >= xmax {
+		panic("hbook: invalid X-axis limits")
+	}
 	axis := &EvenBinAxis{
-		nbins: nbins,
-		low:   low,
-		high:  high,
-		size:  (high - low) / float64(nbins),
+		nbins: n,
+		low:   xmin,
+		high:  xmax,
+		size:  (xmax - xmin) / float64(n),
 	}
 	return axis
 }
 
+// Kind returns the binning kind (Fixed,Variable) of an axis
 func (axis *EvenBinAxis) Kind() AxisKind {
 	return FixedBinning
 }
 
+// LowerEdge returns the lower edge of the axis.
 func (axis *EvenBinAxis) LowerEdge() float64 {
 	return axis.low
 }
 
+// UpperEdge returns the upper edge of the axis.
 func (axis *EvenBinAxis) UpperEdge() float64 {
 	return axis.high
 }
 
+// Bins returns the number of bins in the axis.
 func (axis *EvenBinAxis) Bins() int {
 	return axis.nbins
 }
 
-func (axis *EvenBinAxis) BinLowerEdge(idx int) float64 {
-	if idx >= 0 && idx <= axis.nbins {
-		return axis.low + float64(idx)*axis.size
+// BinLowerEdge returns the lower edge of the bin at index i.
+// It panics if i is outside the axis range.
+func (axis *EvenBinAxis) BinLowerEdge(i int) float64 {
+	if i >= 0 && i <= axis.nbins {
+		return axis.low + float64(i)*axis.size
 	}
-	if idx == UnderflowBin {
+	if i == UnderflowBin {
 		return axis.low
 	}
-	panic(fmt.Errorf("hist: out of bound index (%d)", idx))
+	panic(fmt.Errorf("hbook: out of bound index (%d)", i))
 }
 
-func (axis *EvenBinAxis) BinUpperEdge(idx int) float64 {
-	if idx >= 0 && idx < axis.nbins {
-		return axis.low + float64(idx+1)*axis.size
+// BinUpperEdge returns the upper edge of the bin at index i.
+// It panics if i is outside the axis range.
+func (axis *EvenBinAxis) BinUpperEdge(i int) float64 {
+	if i >= 0 && i < axis.nbins {
+		return axis.low + float64(i+1)*axis.size
 	}
-	if idx == OverflowBin {
+	if i == OverflowBin {
 		return axis.high
 	}
-	panic(fmt.Errorf("hist: out of bound index (%d)", idx))
+	panic(fmt.Errorf("hbook: out of bound index (%d)", i))
 }
 
-func (axis *EvenBinAxis) BinWidth(idx int) float64 {
+// BinWidth returns the width of the bin at index i.
+func (axis *EvenBinAxis) BinWidth(i int) float64 {
 	return axis.size
 }
 
-func (axis *EvenBinAxis) CoordToIndex(coord float64) int {
+// CoordToIndex returns the bin index corresponding to the coordinate x.
+func (axis *EvenBinAxis) CoordToIndex(x float64) int {
 	switch {
-	case coord < axis.low:
+	case x < axis.low:
 		return UnderflowBin
-	case coord >= axis.high:
+	case x >= axis.high:
 		return OverflowBin
 	default:
-		return int(math.Floor((coord - axis.low) / float64(axis.size)))
+		return int(math.Floor((x - axis.low) / float64(axis.size)))
 	}
 }
 
+// MarshalBinary implements encoding.BinaryMarshaler
 func (axis *EvenBinAxis) MarshalBinary() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := axis.RioMarshal(buf)
 	return buf.Bytes(), err
 }
 
+// UnmarshalBinary implements encoding.BinaryUnmarshaler
 func (axis *EvenBinAxis) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewReader(data)
 	err := axis.RioUnmarshal(buf)
 	return err
 }
 
+// RioVersion implements rio.RioStreamer
 func (axis *EvenBinAxis) RioVersion() rio.Version {
 	return 0
 }
 
+// RioMarshal implements rio.RioMarshaler
 func (axis *EvenBinAxis) RioMarshal(w io.Writer) error {
 	var err error
 
@@ -127,6 +149,7 @@ func (axis *EvenBinAxis) RioMarshal(w io.Writer) error {
 	return err
 }
 
+// RioUnmarshal implements rio.RioUnmarshaler
 func (axis *EvenBinAxis) RioUnmarshal(r io.Reader) error {
 	var err error
 

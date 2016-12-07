@@ -12,6 +12,7 @@ import (
 	"github.com/go-hep/dtypes"
 )
 
+// Bin1D models a bin in a 1-dim space.
 type Bin1D struct {
 	entries int64
 	sw      float64 // sum of weights
@@ -19,6 +20,7 @@ type Bin1D struct {
 	sw2     float64 // sum of squared weights
 }
 
+// Entries returns the number of entries in this bin.
 func (b *Bin1D) Entries() int64 {
 	return b.entries
 }
@@ -65,18 +67,21 @@ func (b *Bin1D) Scale(factor float64) {
 	b.sw2 *= factor * factor
 }
 
+// MarshalBinary implements encoding.BinaryMarshaler
 func (b *Bin1D) MarshalBinary(buf *bytes.Buffer) error {
 	enc := gob.NewEncoder(buf)
 	err := b.gobEncode(enc)
 	return err
 }
 
+// UnmarshalBinary implements encoding.BinaryUnmarshaler
 func (b *Bin1D) UnmarshalBinary(buf *bytes.Buffer) error {
 	dec := gob.NewDecoder(buf)
 	err := b.gobDecode(dec)
 	return err
 }
 
+// GobEncode implements encoding/gob.GobEncoder
 func (b *Bin1D) GobEncode() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	enc := gob.NewEncoder(buf)
@@ -113,6 +118,7 @@ func (b *Bin1D) gobEncode(enc *gob.Encoder) error {
 	return err
 }
 
+// GobDecode implements encoding/gob.GobDecoder
 func (b *Bin1D) GobDecode(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)

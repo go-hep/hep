@@ -22,6 +22,7 @@ func (b *Bin2D) fill(x, y, w float64) {
 	b.dist.fill(x, y, w)
 }
 
+// Entries returns the number of entries in this bin.
 func (b *Bin2D) Entries() int64 {
 	return b.dist.Entries()
 }
@@ -31,10 +32,12 @@ func (b *Bin2D) EffEntries() float64 {
 	return b.dist.EffEntries()
 }
 
+// SumW returns the sum of weights in this bin.
 func (b *Bin2D) SumW() float64 {
 	return b.dist.SumW()
 }
 
+// SumW2 returns the sum of squared weights in this bin.
 func (b *Bin2D) SumW2() float64 {
 	return b.dist.SumW2()
 }

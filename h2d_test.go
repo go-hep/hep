@@ -229,7 +229,7 @@ func TestH2DPlot(t *testing.T) {
 	}
 
 	if ok, err := cmpimg.Equal("png", got, want); !ok || err != nil {
-		t.Fatal("error: testdata/h2d_plot.png differ with reference file: %v\n", err)
+		t.Fatalf("error: testdata/h2d_plot.png differ with reference file: %v\n", err)
 	}
 }
 

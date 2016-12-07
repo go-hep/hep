@@ -16,7 +16,11 @@ import (
 )
 
 var (
-	ErrNotExist      = errors.New("hbook: ntuple does not exist")
+	// ErrNotExist is returned when an n-tuple could not be located in a sql.DB
+	ErrNotExist = errors.New("hbook: ntuple does not exist")
+
+	// ErrMissingColDef is returned when some information is missing wrt
+	// an n-tuple column definition
 	ErrMissingColDef = errors.New("hbook: expected at least one column definition")
 
 	errChanType   = errors.New("hbook: chans not supported")
