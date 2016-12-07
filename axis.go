@@ -4,18 +4,24 @@
 
 package hbook
 
+import "math"
+
+// Indices for the under- and over-flow bins.
 const (
 	UnderflowBin = -2
 	OverflowBin  = -1
 )
 
+// AxisKind describes the kind of a given axis (fixed-binning, or variable-size binning)
 type AxisKind int
 
+// Enumeration of the known axis kinds.
 const (
-	FixedBinning    AxisKind = 0
-	VariableBinning AxisKind = 1
+	FixedBinning AxisKind = iota
+	VariableBinning
 )
 
+// Axis describes an axis (1D, 2D, ...)
 type Axis interface {
 	Kind() AxisKind
 	LowerEdge() float64
@@ -27,4 +33,13 @@ type Axis interface {
 	CoordToIndex(coord float64) int
 }
 
-// EOF
+// Range is a 1-dim interval [Min, Max].
+type Range struct {
+	Min float64
+	Max float64
+}
+
+// Width returns the size of the range.
+func (r Range) Width() float64 {
+	return math.Abs(r.Max - r.Min)
+}
