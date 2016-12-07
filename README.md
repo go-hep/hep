@@ -53,10 +53,6 @@ import (
 
 	"github.com/go-hep/hbook"
 	"github.com/gonum/matrix/mat64"
-	"github.com/gonum/plot"
-	"github.com/gonum/plot/palette/brewer"
-	"github.com/gonum/plot/plotter"
-	"github.com/gonum/plot/vg"
 	"github.com/gonum/stat/distmv"
 )
 
@@ -81,29 +77,8 @@ func main() {
 		v = dist.Rand(v)
 		h.Fill(v[0], v[1], 1)
 	}
-
-	p, err := plot.New()
-	if err != nil {
-		log.Fatalf("error: %v\n", err)
-	}
-	p.Title.Text = "Hist-2D"
-	p.X.Label.Text = "x"
-	p.Y.Label.Text = "y"
-
-	plt, err := brewer.GetPalette(brewer.TypeAny, "RdYlBu", 11)
-	if err != nil {
-		log.Fatal(err)
-	}
-	p.Add(plotter.NewHeatMap(h.GridXYZ(), plt))
-	p.Add(plotter.NewGrid())
-	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/h2d_plot.png")
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 ```
-
-![h2d-example](https://github.com/go-hep/hbook/raw/master/testdata/h2d_plot_golden.png)
 
 ### Ntuple
 

@@ -5,18 +5,14 @@
 package hbook_test
 
 import (
-	"io/ioutil"
+	"log"
 	"math"
 	"math/rand"
 	"testing"
 
 	"github.com/go-hep/hbook"
-	"github.com/go-hep/hbook/internal/cmpimg"
 	"github.com/gonum/matrix/mat64"
-	"github.com/gonum/plot"
-	"github.com/gonum/plot/palette/brewer"
 	"github.com/gonum/plot/plotter"
-	"github.com/gonum/plot/vg"
 	"github.com/gonum/stat/distmv"
 )
 
@@ -215,25 +211,7 @@ func TestH2D(t *testing.T) {
 // check H2D can be plotted
 var _ plotter.GridXYZ = ((*hbook.H2D)(nil)).GridXYZ()
 
-func TestH2DPlot(t *testing.T) {
-	ExampleNewH2D_plot(t)
-
-	want, err := ioutil.ReadFile("testdata/h2d_plot_golden.png")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	got, err := ioutil.ReadFile("testdata/h2d_plot.png")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if ok, err := cmpimg.Equal("png", got, want); !ok || err != nil {
-		t.Fatalf("error: testdata/h2d_plot.png differ with reference file: %v\n", err)
-	}
-}
-
-func ExampleNewH2D_plot(t *testing.T) {
+func ExampleH2D() {
 	h := hbook.NewH2D(100, -10, 10, 100, -10, 10)
 
 	const npoints = 10000
@@ -244,7 +222,7 @@ func ExampleNewH2D_plot(t *testing.T) {
 		rand.New(rand.NewSource(1234)),
 	)
 	if !ok {
-		t.Fatalf("error creating distmv.Normal")
+		log.Fatalf("error creating distmv.Normal")
 	}
 
 	v := make([]float64, 2)
@@ -253,24 +231,5 @@ func ExampleNewH2D_plot(t *testing.T) {
 	for i := 0; i < npoints; i++ {
 		v = dist.Rand(v)
 		h.Fill(v[0], v[1], 1)
-	}
-
-	p, err := plot.New()
-	if err != nil {
-		t.Fatalf("error: %v\n", err)
-	}
-	p.Title.Text = "Hist-2D"
-	p.X.Label.Text = "x"
-	p.Y.Label.Text = "y"
-
-	plt, err := brewer.GetPalette(brewer.TypeAny, "RdYlBu", 11)
-	if err != nil {
-		t.Fatal(err)
-	}
-	p.Add(plotter.NewHeatMap(h.GridXYZ(), plt))
-	p.Add(plotter.NewGrid())
-	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/h2d_plot.png")
-	if err != nil {
-		t.Fatal(err)
 	}
 }
