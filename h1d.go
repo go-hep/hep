@@ -38,7 +38,14 @@ func NewH1D(nbins int, low, high float64) *H1D {
 
 // Name returns the name of this histogram, if any
 func (h *H1D) Name() string {
-	n := h.ann["name"].(string)
+	v, ok := h.ann["name"]
+	if !ok {
+		return ""
+	}
+	n, ok := v.(string)
+	if !ok {
+		return ""
+	}
 	return n
 }
 

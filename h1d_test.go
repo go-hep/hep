@@ -126,6 +126,29 @@ func TestH1DIntegral(t *testing.T) {
 	}
 }
 
+func TestH1DNegativeWeights(t *testing.T) {
+	h1 := hbook.NewH1D(5, 0, 100)
+	h1.Fill(10, -200)
+	h1.Fill(20, 1)
+	h1.Fill(30, 0.2)
+	h1.Fill(10, +200)
+
+	h2 := hbook.NewH1D(5, 0, 100)
+	h2.Fill(20, 1)
+	h2.Fill(30, 0.2)
+
+	if h1.Mean() != h2.Mean() {
+		t.Errorf("mean differ:\nh1=%v\nh2=%v\n", h1.Mean(), h2.Mean())
+	}
+	if h1.RMS() != h2.RMS() {
+		t.Errorf("rms differ:\nh1=%v\nh2=%v\n", h1.RMS(), h2.RMS())
+	}
+	// FIXME(sbinet)
+	// if h1.StdDev() != h2.StdDev() {
+	//	t.Errorf("std-dev differ:\nh1=%v\nh2=%v\n", h1.StdDev(), h2.StdDev())
+	//}
+}
+
 func BenchmarkH1DSTFillConst(b *testing.B) {
 	b.StopTimer()
 	h1 := hbook.NewH1D(100, 0., 100.)
