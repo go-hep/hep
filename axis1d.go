@@ -15,6 +15,7 @@ import (
 	"github.com/gonuts/binary"
 )
 
+// EvenBinAxis is an evenly-binned 1D axis
 type EvenBinAxis struct {
 	nbins int     // number of bins for this axis
 	low   float64 // low-edge of this axis
@@ -81,7 +82,6 @@ func (axis *EvenBinAxis) CoordToIndex(coord float64) int {
 	default:
 		return int(math.Floor((coord - axis.low) / float64(axis.size)))
 	}
-	panic("unreachable")
 }
 
 func (axis *EvenBinAxis) MarshalBinary() ([]byte, error) {

@@ -24,7 +24,7 @@ func (b *Bin1D) Entries() int64 {
 }
 
 func (b *Bin1D) fill(coord, weight float64) {
-	b.entries += 1
+	b.entries++
 	b.sw += weight
 	b.swc += weight * coord
 	b.sw2 += weight * weight
