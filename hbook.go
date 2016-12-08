@@ -4,6 +4,15 @@
 
 package hbook
 
+import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"io"
+	"sort"
+	"strings"
+)
+
 // Bin models 1D, 2D, ... bins.
 type Bin interface {
 	Rank() int           // Number of dimensions of the bin
@@ -33,4 +42,39 @@ type Histogram interface {
 
 	// Entries returns the number of entries of this histogram.
 	Entries() int64
+}
+
+// MarshalYODA implements the YODAMarshaler interface.
+func (ann Annotation) MarshalYODA() ([]byte, error) {
+	keys := make([]string, 0, len(ann))
+	for k := range ann {
+		if k == "" {
+			continue
+		}
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	buf := new(bytes.Buffer)
+	for _, k := range keys {
+		fmt.Fprintf(buf, "%s=%v\n", k, ann[k])
+	}
+	return buf.Bytes(), nil
+}
+
+// UnmarshalYODA implements the YODAUnmarshaler interface.
+func (ann *Annotation) UnmarshalYODA(data []byte) error {
+	var err error
+	s := bufio.NewScanner(bytes.NewReader(data))
+	for s.Scan() {
+		txt := s.Text()
+		i := strings.Index(txt, "=")
+		k := txt[:i]
+		v := txt[i+1:]
+		(*ann)[k] = v
+	}
+	err = s.Err()
+	if err == io.EOF {
+		err = nil
+	}
+	return err
 }

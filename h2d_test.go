@@ -5,9 +5,11 @@
 package hbook_test
 
 import (
+	"io/ioutil"
 	"log"
 	"math"
 	"math/rand"
+	"reflect"
 	"testing"
 
 	"github.com/go-hep/hbook"
@@ -231,5 +233,54 @@ func ExampleH2D() {
 	for i := 0; i < npoints; i++ {
 		v = dist.Rand(v)
 		h.Fill(v[0], v[1], 1)
+	}
+}
+
+func TestH2DWriteYODA(t *testing.T) {
+	h := hbook.NewH2D(5, -1, 1, 5, -2, +2)
+	h.Fill(+0.5, +1, 1)
+	h.Fill(-0.5, +1, 1)
+	h.Fill(+0.0, -1, 1)
+
+	chk, err := h.MarshalYODA()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ref, err := ioutil.ReadFile("testdata/h2d_golden.yoda")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(chk, ref) {
+		t.Fatalf("h2d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
+			string(chk),
+			string(ref),
+		)
+	}
+}
+
+func TestH2DReadYODA(t *testing.T) {
+	ref, err := ioutil.ReadFile("testdata/h2d_golden.yoda")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var h hbook.H2D
+	err = h.UnmarshalYODA(ref)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	chk, err := h.MarshalYODA()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(chk, ref) {
+		t.Fatalf("h2d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
+			string(chk),
+			string(ref),
+		)
 	}
 }
