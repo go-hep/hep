@@ -256,12 +256,8 @@ func (nt *Ntuple) ScanH1D(query string, h *hbook.H1D) (*hbook.H1D, error) {
 		// FIXME(sbinet) leverage the underlying db min/max functions,
 		// instead of crawling through the whole data set.
 		err := nt.Scan(query, func(x float64) error {
-			if xmin > x {
-				xmin = x
-			}
-			if xmax < x {
-				xmax = x
-			}
+			xmin = math.Min(xmin, x)
+			xmax = math.Max(xmax, x)
 			return nil
 		})
 		if err != nil {
