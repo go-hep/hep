@@ -104,7 +104,7 @@ func (h *Histogram) Plot(c draw.Canvas, p *plot.Plot) {
 	trX, trY := p.Transforms(&c)
 	var pts []vg.Point
 	hist := h.Hist
-	axis := hist.Axis()
+	axis := hist.Binning()
 	nbins := int(axis.Bins())
 	for bin := 0; bin < nbins; bin++ {
 		switch bin {
@@ -164,7 +164,7 @@ func (h *Histogram) Plot(c draw.Canvas, p *plot.Plot) {
 // one for each of the bins, implementing the
 // plot.GlyphBoxer interface.
 func (h *Histogram) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
-	axis := h.Hist.Axis()
+	axis := h.Hist.Binning()
 	bs := make([]plot.GlyphBox, axis.Bins())
 	for i, _ := range bs {
 		y := h.Hist.Value(i)
