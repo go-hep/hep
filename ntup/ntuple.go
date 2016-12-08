@@ -275,13 +275,43 @@ func (nt *Ntuple) ScanH1D(query string, h *hbook.H1D) (*hbook.H1D, error) {
 	return h, err
 }
 
-/*
-// Scatter1D
-func Scatter1D(db *sql.DB, query string) error {
-	var err error
-	return err
+// ScanH2D executes a query against the ntuple and fills the histogram with
+// the results of the query.
+// If h is nil, a (100-bins, xmin, xmax) (100-bins, ymin, ymax) 2d-histogram
+// is created,
+// where xmin, xmax and ymin,ymax are inferred from the content of the
+// underlying database.
+func (nt *Ntuple) ScanH2D(query string, h *hbook.H2D) (*hbook.H2D, error) {
+	if h == nil {
+		var (
+			xmin = +math.MaxFloat64
+			xmax = -math.MaxFloat64
+			ymin = +math.MaxFloat64
+			ymax = -math.MaxFloat64
+		)
+		// FIXME(sbinet) leverage the underlying db min/max functions,
+		// instead of crawling through the whole data set.
+		err := nt.Scan(query, func(x, y float64) error {
+			xmin = math.Min(xmin, x)
+			xmax = math.Max(xmax, x)
+			ymin = math.Min(ymin, y)
+			ymax = math.Max(ymax, y)
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		h = hbook.NewH2D(100, xmin, xmax, 100, ymin, ymax)
+	}
+
+	err := nt.Scan(query, func(x, y float64) error {
+		h.Fill(x, y, 1)
+		return nil
+	})
+
+	return h, err
 }
-*/
 
 func (nt *Ntuple) massageQuery(q string) (string, error) {
 	const (
