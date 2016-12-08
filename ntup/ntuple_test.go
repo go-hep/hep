@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package hbook_test
+package ntup_test
 
 import (
 	"database/sql"
@@ -11,13 +11,14 @@ import (
 
 	"github.com/go-hep/csvutil/csvdriver"
 	"github.com/go-hep/hbook"
+	"github.com/go-hep/hbook/ntup"
 )
 
 var (
-	nt *hbook.Ntuple
+	nt *ntup.Ntuple
 )
 
-func TestNtupleScanH1D(t *testing.T) {
+func TestScanH1D(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
 	h, err := nt.ScanH1D("x", h)
 	if err != nil {
@@ -57,7 +58,7 @@ func TestNtupleScanH1D(t *testing.T) {
 	}
 }
 
-func TestNtupleScanH1DWhere(t *testing.T) {
+func TestScanH1DWhere(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
 	h, err := nt.ScanH1D("x where (id > 4 && id < 10)", h)
 	if err != nil {
@@ -102,7 +103,7 @@ func TestNtupleScanH1DWhere(t *testing.T) {
 	}
 }
 
-func TestNtupleScanH1DInt(t *testing.T) {
+func TestScanH1DInt(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
 	h, err := nt.ScanH1D("id", h)
 	if err != nil {
@@ -142,7 +143,7 @@ func TestNtupleScanH1DInt(t *testing.T) {
 	}
 }
 
-func TestNtupleScan(t *testing.T) {
+func TestScan(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
 	err := nt.Scan("id, x", func(id int64, x float64) error {
 		h.Fill(x, 1)
@@ -185,14 +186,14 @@ func TestNtupleScan(t *testing.T) {
 	}
 }
 
-func TestNtupleScanH1DFromCSVWithCommas(t *testing.T) {
+func TestScanH1DFromCSVWithCommas(t *testing.T) {
 	db, err := sql.Open("csv", "testdata/simple-comma.csv")
 	if err != nil {
 		t.Fatalf("error opening CSV db: %v\n", err)
 	}
 	defer db.Close()
 
-	nt, err := hbook.OpenNtuple(db, "csv")
+	nt, err := ntup.Open(db, "csv")
 	if err != nil {
 		t.Fatalf("error opening ntuple: %v\n", err)
 	}
@@ -236,7 +237,7 @@ func TestNtupleScanH1DFromCSVWithCommas(t *testing.T) {
 	}
 }
 
-func TestNtupleScanH1DFromCSV(t *testing.T) {
+func TestScanH1DFromCSV(t *testing.T) {
 	db, err := csvdriver.Conn{
 		File:    "testdata/simple.csv",
 		Comma:   ';',
@@ -247,7 +248,7 @@ func TestNtupleScanH1DFromCSV(t *testing.T) {
 	}
 	defer db.Close()
 
-	nt, err := hbook.OpenNtuple(db, "csv")
+	nt, err := ntup.Open(db, "csv")
 	if err != nil {
 		t.Fatalf("error opening ntuple: %v\n", err)
 	}
@@ -291,7 +292,7 @@ func TestNtupleScanH1DFromCSV(t *testing.T) {
 	}
 }
 
-func TestCreateNtuple(t *testing.T) {
+func TestCreate(t *testing.T) {
 	db, err := sql.Open("ql", "memory://ntuple.db")
 	if err != nil {
 		t.Fatalf("error creating db: %v\n", err)
@@ -299,7 +300,7 @@ func TestCreateNtuple(t *testing.T) {
 	defer db.Close()
 
 	const ntname = "ntup"
-	nt, err := hbook.CreateNtuple(db, ntname, int64(0), float64(0))
+	nt, err := ntup.Create(db, ntname, int64(0), float64(0))
 	if err != nil {
 		t.Fatalf("error creating ntuple: %v\n", err)
 	}
@@ -341,7 +342,7 @@ func TestCreateNtuple(t *testing.T) {
 	}
 }
 
-func TestCreateNtupleFromStruct(t *testing.T) {
+func TestCreateFromStruct(t *testing.T) {
 	db, err := sql.Open("ql", "memory://ntuple-struct.db")
 	if err != nil {
 		t.Fatalf("error creating db: %v\n", err)
@@ -357,7 +358,7 @@ func TestCreateNtupleFromStruct(t *testing.T) {
 	}
 
 	const ntname = "ntup"
-	nt, err := hbook.CreateNtuple(db, ntname, dataType{})
+	nt, err := ntup.Create(db, ntname, dataType{})
 	if err != nil {
 		t.Fatalf("error creating ntuple: %v\n", err)
 	}
@@ -433,7 +434,7 @@ func init() {
 		panic(err)
 	}
 
-	nt, err = hbook.OpenNtuple(db, "data")
+	nt, err = ntup.Open(db, "data")
 	if err != nil {
 		panic(err)
 	}

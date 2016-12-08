@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package hbook
+// package ntup provides a way to create, open and iterate over n-tuple data.
+package ntup
 
 import (
 	"database/sql"
@@ -13,39 +14,41 @@ import (
 	"math"
 	"reflect"
 	"strings"
+
+	"github.com/go-hep/hbook"
 )
 
 var (
 	// ErrNotExist is returned when an n-tuple could not be located in a sql.DB
-	ErrNotExist = errors.New("hbook: ntuple does not exist")
+	ErrNotExist = errors.New("hbook/ntup: ntuple does not exist")
 
 	// ErrMissingColDef is returned when some information is missing wrt
 	// an n-tuple column definition
-	ErrMissingColDef = errors.New("hbook: expected at least one column definition")
+	ErrMissingColDef = errors.New("hbook/ntup: expected at least one column definition")
 
-	errChanType   = errors.New("hbook: chans not supported")
-	errIfaceType  = errors.New("hbook: interfaces not supported")
-	errMapType    = errors.New("hbook: maps not supported")
-	errSliceType  = errors.New("hbook: nested slices not supported")
-	errStructType = errors.New("hbook: nested structs not supported")
+	errChanType   = errors.New("hbook/ntup: chans not supported")
+	errIfaceType  = errors.New("hbook/ntup: interfaces not supported")
+	errMapType    = errors.New("hbook/ntup: maps not supported")
+	errSliceType  = errors.New("hbook/ntup: nested slices not supported")
+	errStructType = errors.New("hbook/ntup: nested structs not supported")
 )
 
-// Ntuple provides read/write access to row-wise data.
+// Ntuple provides read/write access to row-wise n-tuple data.
 type Ntuple struct {
 	db     *sql.DB
 	name   string
 	schema []Descriptor
 }
 
-// OpenNtuple inspects the given database handle and tries to return
+// Open inspects the given database handle and tries to return
 // an Ntuple connected to a table with the given name.
-// OpenNtuple returns ErrNotExist if no such table exists.
-// If name is "", OpenNtuple will connect to the one-and-only table in the db.
+// Open returns ErrNotExist if no such table exists.
+// If name is "", Open will connect to the one-and-only table in the db.
 //
 // e.g.:
 //  db, err := sql.Open("csv", "file.csv")
-//  nt, err := hbook.OpenNtuple(db, "ntup")
-func OpenNtuple(db *sql.DB, name string) (*Ntuple, error) {
+//  nt, err := ntup.Open(db, "ntup")
+func Open(db *sql.DB, name string) (*Ntuple, error) {
 	nt := &Ntuple{
 		db:   db,
 		name: name,
@@ -55,16 +58,16 @@ func OpenNtuple(db *sql.DB, name string) (*Ntuple, error) {
 	return nt, nil
 }
 
-// CreateNtuple creates a new ntuple with the given name inside the given database handle.
+// Create creates a new ntuple with the given name inside the given database handle.
 // The n-tuple schema is inferred from the cols argument. cols can be:
 //  - a single struct value (columns are inferred from the names+types of the exported fields)
 //  - a list of builtin values (the columns names are varX where X=[1-len(cols)])
-//  - a list of hbook.Descriptors
+//  - a list of ntup.Descriptors
 //
 // e.g.:
-//  nt, err := hbook.CreateNtuple(db, "nt", struct{X float64 `hbook:"x"`}{})
-//  nt, err := hbook.CreateNtuple(db, "nt", int64(0), float64(0))
-func CreateNtuple(db *sql.DB, name string, cols ...interface{}) (*Ntuple, error) {
+//  nt, err := ntup.Create(db, "nt", struct{X float64 `hbook:"x"`}{})
+//  nt, err := ntup.Create(db, "nt", int64(0), float64(0))
+func Create(db *sql.DB, name string, cols ...interface{}) (*Ntuple, error) {
 	var err error
 	nt := &Ntuple{
 		db:   db,
@@ -197,10 +200,10 @@ func (nt *Ntuple) Scan(query string, f interface{}) error {
 	rv := reflect.ValueOf(f)
 	rt := rv.Type()
 	if rt.Kind() != reflect.Func {
-		return fmt.Errorf("hbook: expected a func, got %T", f)
+		return fmt.Errorf("hbook/ntup: expected a func, got %T", f)
 	}
 	if rt.NumOut() != 1 || rt.Out(0) != reflect.TypeOf((*error)(nil)).Elem() {
-		return fmt.Errorf("hbook: expected a func returning an error. got %T", f)
+		return fmt.Errorf("hbook/ntup: expected a func returning an error. got %T", f)
 	}
 	vargs := make([]reflect.Value, rt.NumIn())
 	args := make([]interface{}, rt.NumIn())
@@ -244,7 +247,7 @@ func (nt *Ntuple) Scan(query string, f interface{}) error {
 // the results of the query.
 // If h is nil, a (100-bins, xmin, xmax) histogram is created,
 // where xmin and xmax are inferred from the content of the underlying database.
-func (nt *Ntuple) ScanH1D(query string, h *H1D) (*H1D, error) {
+func (nt *Ntuple) ScanH1D(query string, h *hbook.H1D) (*hbook.H1D, error) {
 	if h == nil {
 		var (
 			xmin = +math.MaxFloat64
@@ -265,7 +268,7 @@ func (nt *Ntuple) ScanH1D(query string, h *H1D) (*H1D, error) {
 			return nil, err
 		}
 
-		h = NewH1D(100, xmin, xmax)
+		h = hbook.NewH1D(100, xmin, xmax)
 	}
 
 	err := nt.Scan(query, func(x float64) error {
