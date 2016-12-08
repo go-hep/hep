@@ -28,8 +28,8 @@ type Histogram interface {
 	// Rank returns the number of dimensions of this histogram.
 	Rank() int
 
-	// Axis returns the axis of this histogram.
-	Axis() Axis
+	// Binning returns the binning of this histogram.
+	Binning() Binning
 
 	// Entries returns the number of entries of this histogram.
 	Entries() int64

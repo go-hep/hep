@@ -12,30 +12,30 @@ const (
 	OverflowBin  = -1
 )
 
-// AxisKind describes the kind of a given axis (fixed-binning, or variable-size binning)
-type AxisKind int
+// BinningKind describes the kind of binning: fixed-binning, or variable-size binning.
+type BinningKind int
 
-// Enumeration of the known axis kinds.
+// Enumeration of the known binning kinds.
 const (
-	FixedBinning AxisKind = iota
+	FixedBinning BinningKind = iota
 	VariableBinning
 )
 
-// Axis describes an axis (1D, 2D, ...)
-type Axis interface {
-	// Kind returns the binning kind (Fixed,Variable) of an axis
-	Kind() AxisKind
-	// LowerEdge returns the lower edge of the axis.
+// Binning describes the binning of a histogram (1D, 2D, ...)
+type Binning interface {
+	// Kind returns the binning kind (Fixed,Variable)
+	Kind() BinningKind
+	// LowerEdge returns the lower edge of the binning.
 	LowerEdge() float64
-	// UpperEdge returns the upper edge of the axis.
+	// UpperEdge returns the upper edge of the binning.
 	UpperEdge() float64
-	// Bins returns the number of bins in the axis.
+	// Bins returns the number of bins in the binning.
 	Bins() int
 	// BinLowerEdge returns the lower edge of the bin at index i.
-	// It panics if i is outside the axis range.
+	// It panics if i is outside the binning range.
 	BinLowerEdge(i int) float64
 	// BinUpperEdge returns the upper edge of the bin at index i.
-	// It panics if i is outside the axis range.
+	// It panics if i is outside the binning range.
 	BinUpperEdge(i int) float64
 	// BinWidth returns the width of the bin at index i.
 	BinWidth(idx int) float64

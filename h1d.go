@@ -18,7 +18,7 @@ import (
 type H1D struct {
 	bins    []Bin1D // in-range bins
 	allbins []Bin1D // in-range bins and under/over-flow bins
-	axis    Axis
+	bng     Binning
 	entries int64      // number of entries for this histogram
 	ann     Annotation // Annotations for this histogram (title, labels,...)
 }
@@ -28,7 +28,7 @@ func NewH1D(nbins int, low, high float64) *H1D {
 	h := &H1D{
 		bins:    nil,
 		allbins: make([]Bin1D, nbins+2),
-		axis:    NewEvenBinAxis(nbins, low, high),
+		bng:     newEvenBinning(nbins, low, high),
 		entries: 0,
 		ann:     make(Annotation),
 	}
@@ -59,9 +59,9 @@ func (h *H1D) Rank() int {
 	return 1
 }
 
-// Axis returns the axis of this histogram.
-func (h *H1D) Axis() Axis {
-	return h.axis
+// Binning returns the binning of this histogram.
+func (h *H1D) Binning() Binning {
+	return h.bng
 }
 
 // Entries returns the number of entries in this histogram
@@ -72,7 +72,7 @@ func (h *H1D) Entries() int64 {
 // Fill fills this histogram with x and weight w.
 func (h *H1D) Fill(x, w float64) {
 	//fmt.Printf("H1D.fill(x=%v, w=%v)...\n", x, w)
-	idx := h.axis.CoordToIndex(x)
+	idx := h.bng.CoordToIndex(x)
 	switch idx {
 	case UnderflowBin:
 		h.allbins[0].fill(x, w)
@@ -92,7 +92,7 @@ func (h *H1D) Value(idx int) float64 {
 
 // Len returns the number of bins for this histogram
 func (h *H1D) Len() int {
-	return h.Axis().Bins()
+	return h.Binning().Bins()
 }
 
 // XY returns the x,y values for the i-th bin
@@ -100,9 +100,9 @@ func (h *H1D) XY(i int) (float64, float64) {
 	x := 0.
 	switch i == h.Len()-1 {
 	case false:
-		x = float64(h.Axis().BinLowerEdge(i))
+		x = float64(h.Binning().BinLowerEdge(i))
 	case true:
-		x = float64(h.Axis().BinUpperEdge(i))
+		x = float64(h.Binning().BinUpperEdge(i))
 	}
 	y := h.Value(i)
 	return x, y
@@ -110,10 +110,10 @@ func (h *H1D) XY(i int) (float64, float64) {
 
 // DataRange implements the gonum/plot.DataRanger interface
 func (h *H1D) DataRange() (xmin, xmax, ymin, ymax float64) {
-	axis := h.Axis()
+	bng := h.Binning()
 	n := h.Len()
-	xmin = float64(axis.BinLowerEdge(0))
-	xmax = float64(axis.BinUpperEdge(n - 1))
+	xmin = float64(bng.BinLowerEdge(0))
+	xmax = float64(bng.BinUpperEdge(n - 1))
 	ymin = +math.MaxFloat64
 	ymax = -math.MaxFloat64
 	for i := 0; i < n; i++ {
@@ -154,7 +154,7 @@ func (h *H1D) Scale(factor float64) {
 //    v := h.Integral(math.Inf(-1), math.Inf(+1))
 //
 //    // integrall of all in-range bins, overflow bin included
-//    v := h.Integral(h.Axis().LowerEdge(), math.Inf(+1))
+//    v := h.Integral(h.Binning().LowerEdge(), math.Inf(+1))
 //
 //    // integrall of all bins for which the lower edge is in [0.5, 5.5)
 //    v := h.Integral(0.5, 5.5)
@@ -162,7 +162,7 @@ func (h *H1D) Integral(args ...float64) float64 {
 	min, max := 0., 0.
 	switch len(args) {
 	case 0:
-		min, max = h.axis.LowerEdge(), h.axis.UpperEdge()
+		min, max = h.bng.LowerEdge(), h.bng.UpperEdge()
 	case 2:
 		min = args[0]
 		max = args[1]
@@ -175,18 +175,18 @@ func (h *H1D) Integral(args ...float64) float64 {
 
 	integral := 0.0
 	for i := range h.bins {
-		v := h.axis.BinLowerEdge(i)
-		width := h.axis.BinWidth(i)
+		v := h.bng.BinLowerEdge(i)
+		width := h.bng.BinWidth(i)
 		if v >= min && v < max {
 			integral += h.bins[i].sw * width
 		}
 	}
 	if math.IsInf(min, -1) {
-		width := h.axis.BinWidth(UnderflowBin)
+		width := h.bng.BinWidth(UnderflowBin)
 		integral += h.allbins[0].sw * width
 	}
 	if math.IsInf(max, +1) {
-		width := h.axis.BinWidth(OverflowBin)
+		width := h.bng.BinWidth(OverflowBin)
 		integral += h.allbins[1].sw * width
 	}
 	return integral
@@ -279,7 +279,7 @@ func (h *H1D) RioMarshal(w io.Writer) error {
 		return err
 	}
 
-	err = enc.Encode(&h.axis)
+	err = enc.Encode(&h.bng)
 	if err != nil {
 		return err
 	}
@@ -305,7 +305,7 @@ func (h *H1D) RioUnmarshal(r io.Reader) error {
 	}
 	h.bins = h.allbins[2:]
 
-	err = dec.Decode(&h.axis)
+	err = dec.Decode(&h.bng)
 	if err != nil {
 		return err
 	}

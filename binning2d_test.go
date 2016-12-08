@@ -7,7 +7,7 @@ package hbook
 import "testing"
 
 func TestAxis2DCoords(t *testing.T) {
-	ax := newAxis2D(10, -1, 1, 40, -2, +2)
+	ax := newBinning2D(10, -1, 1, 40, -2, +2)
 	for i, test := range []struct {
 		x, y float64
 		want int
@@ -30,14 +30,14 @@ func TestAxis2DCoords(t *testing.T) {
 		{x: -1.0, y: +1.9, want: 390},
 		{x: +0.0, y: +1.9, want: 395},
 		{x: +0.9, y: +1.9, want: ax.nx*ax.ny - 1},
-		{x: +0.0, y: +2.0, want: -axN},
-		{x: +0.0, y: -2.1, want: -axS},
-		{x: +1.0, y: +2.0, want: -axNE},
-		{x: +1.0, y: -2.0, want: -axE},
-		{x: +1.0, y: -2.1, want: -axSE},
-		{x: -1.1, y: -2.1, want: -axSW},
-		{x: -1.1, y: -2.0, want: -axW},
-		{x: -1.1, y: +2.0, want: -axNW},
+		{x: +0.0, y: +2.0, want: -bngN},
+		{x: +0.0, y: -2.1, want: -bngS},
+		{x: +1.0, y: +2.0, want: -bngNE},
+		{x: +1.0, y: -2.0, want: -bngE},
+		{x: +1.0, y: -2.1, want: -bngSE},
+		{x: -1.1, y: -2.1, want: -bngSW},
+		{x: -1.1, y: -2.0, want: -bngW},
+		{x: -1.1, y: +2.0, want: -bngNW},
 	} {
 		got := ax.coordToIndex(test.x, test.y)
 		if got != test.want {

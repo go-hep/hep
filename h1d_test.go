@@ -29,29 +29,29 @@ func TestH1D(t *testing.T) {
 		t.Errorf("expected H1D.Name() == %q (got %q)\n",
 			n, "h1")
 	}
-	nbins := h1.Axis().Bins()
+	nbins := h1.Binning().Bins()
 	if nbins != 100 {
-		t.Errorf("expected H1D.Axis.Bins() == %v (got %v)\n",
+		t.Errorf("expected H1D.Binning.Bins() == %v (got %v)\n",
 			100, nbins,
 		)
 	}
-	low := h1.Axis().LowerEdge()
+	low := h1.Binning().LowerEdge()
 	if low != 0. {
-		t.Errorf("expected H1D.Axis.LowerEdge() == %v (got %v)\n",
+		t.Errorf("expected H1D.Binning.LowerEdge() == %v (got %v)\n",
 			0., low,
 		)
 	}
-	up := h1.Axis().UpperEdge()
+	up := h1.Binning().UpperEdge()
 	if up != 100. {
-		t.Errorf("expected H1D.Axis.UpperEdge() == %v (got %v)\n",
+		t.Errorf("expected H1D.Binning.UpperEdge() == %v (got %v)\n",
 			100., up,
 		)
 	}
 
 	for idx := 0; idx < nbins; idx++ {
-		size := h1.Axis().BinWidth(idx)
+		size := h1.Binning().BinWidth(idx)
 		if size != 1. {
-			t.Errorf("expected H1D.Axis.BinWidth(%v) == %v (got %v)\n",
+			t.Errorf("expected H1D.Binning.BinWidth(%v) == %v (got %v)\n",
 				idx, 1., size,
 			)
 		}
@@ -80,13 +80,13 @@ func TestH1DIntegral(t *testing.T) {
 	if integralall != 8.7 {
 		t.Errorf("expected H1D.Integral(math.Inf(-1), math.Inf(+1)) == 8.7 (got %v)\n", integralall)
 	}
-	integralu := h1.Integral(math.Inf(-1), h1.Axis().UpperEdge())
+	integralu := h1.Integral(math.Inf(-1), h1.Binning().UpperEdge())
 	if integralu != 6.6 {
-		t.Errorf("expected H1D.Integral(math.Inf(-1), h1.axis.UpperEdge()) == 6.6 (got %v)\n", integralu)
+		t.Errorf("expected H1D.Integral(math.Inf(-1), h1.Binning().UpperEdge()) == 6.6 (got %v)\n", integralu)
 	}
-	integralo := h1.Integral(h1.Axis().LowerEdge(), math.Inf(+1))
+	integralo := h1.Integral(h1.Binning().LowerEdge(), math.Inf(+1))
 	if integralo != 7.4 {
-		t.Errorf("expected H1D.Integral(h1.Axis().LowerEdge(), math.Inf(+1)) == 7.4 (got %v)\n", integralo)
+		t.Errorf("expected H1D.Integral(h1.Binning().LowerEdge(), math.Inf(+1)) == 7.4 (got %v)\n", integralo)
 	}
 	integralrange := h1.Integral(0.5, 5.5)
 	if integralrange != 2.7 {
@@ -118,8 +118,8 @@ func TestH1DIntegral(t *testing.T) {
 			t.Errorf("got H1D.Value(%d) = %v. want %v\n", ibin, got, want)
 		}
 	}
-	if got, want := h2.Axis().BinWidth(0), 0.5; got != want {
-		t.Errorf("got H1D.Axis.BinWidth == %v. want %v\n", got, want)
+	if got, want := h2.Binning().BinWidth(0), 0.5; got != want {
+		t.Errorf("got H1D.Binning().BinWidth == %v. want %v\n", got, want)
 	}
 	if got, want := h2.Integral(), 1.0; got != want {
 		t.Errorf("got H1D.Integral() == %v. want %v\n", got, want)
