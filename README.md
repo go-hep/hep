@@ -243,3 +243,55 @@ func main() {
 ```
 
 ![h2d-example](https://github.com/go-hep/hplot/raw/master/testdata/h2d_plot_golden.png)
+
+### Scatter2D
+
+```go
+package main
+
+func main() {
+	const npoints = 1000
+
+	dist, ok := distmv.NewNormal(
+		[]float64{0, 1},
+		mat64.NewSymDense(2, []float64{4, 0, 0, 2}),
+		rand.New(rand.NewSource(1234)),
+	)
+	if !ok {
+		t.Fatalf("error creating distmv.Normal")
+	}
+
+	s2d := hbook.NewScatter2D()
+
+	v := make([]float64, 2)
+	// Draw some random values from the standard
+	// normal distribution.
+	for i := 0; i < npoints; i++ {
+		v = dist.Rand(v)
+		s2d.Fill(hbook.Point2D{X: v[0], Y: v[1]})
+	}
+
+	p, err := hplot.New()
+	if err != nil {
+		log.Panic(err)
+	}
+	p.Title.Text = "Scatter-2D"
+	p.X.Label.Text = "X"
+	p.Y.Label.Text = "Y"
+	p.Add(plotter.NewGrid())
+
+	s := hplot.NewScatter2D(s2d)
+	s.GlyphStyle.Color = color.RGBA{R: 255, A: 255}
+	s.GlyphStyle.Radius = vg.Points(2)
+
+	p.Add(s)
+
+	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/scatter2d.png")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+```
+
+![scatter2d-example](https://github.com/go-hep/hplot/raw/master/testdata/scatter2d_golden.png)
+![scatter2d-errbars-example](https://github.com/go-hep/hplot/raw/master/testdata/scatter2d_errbars_golden.png)
