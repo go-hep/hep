@@ -148,6 +148,13 @@ func (h *H2D) MaxY() float64 {
 	return h.bng.maxY()
 }
 
+// Integral computes the integral of the histogram.
+//
+// Overflows are included in the computation.
+func (h *H2D) Integral() float64 {
+	return h.SumW()
+}
+
 // GridXYZ returns an anonymous struct value that implements
 // gonum/plot/plotter.GridXYZ and is ready to plot.
 func (h *H2D) GridXYZ() h2dGridXYZ {
