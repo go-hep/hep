@@ -202,20 +202,24 @@ func (d *dist2D) SumW2() float64 {
 	return d.x.SumW2()
 }
 
-func (d *dist2D) sumWX() float64 {
-	return d.x.SumW()
+// SumWX returns the 1st order weighted x moment
+func (d *dist2D) SumWX() float64 {
+	return d.x.SumWX()
 }
 
-func (d *dist2D) sumWX2() float64 {
-	return d.x.SumW2()
+// SumWX2 returns the 2nd order weighted x moment
+func (d *dist2D) SumWX2() float64 {
+	return d.x.SumWX2()
 }
 
-func (d *dist2D) sumWY() float64 {
-	return d.y.SumW()
+// SumWY returns the 1st order weighted y moment
+func (d *dist2D) SumWY() float64 {
+	return d.y.SumWX()
 }
 
-func (d *dist2D) sumWY2() float64 {
-	return d.y.SumW2()
+// SumWY2 returns the 2nd order weighted y moment
+func (d *dist2D) SumWY2() float64 {
+	return d.y.SumWX2()
 }
 
 // errW returns the absolute error on sumW()
