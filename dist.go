@@ -162,7 +162,7 @@ func (d *dist1D) fill(x, w float64) {
 func (d *dist1D) scaleW(f float64) {
 	d.dist.scaleW(f)
 	d.sumWX *= f
-	d.sumWX2 *= f * f
+	d.sumWX2 *= f
 }
 
 func (d *dist1D) scaleX(f float64) {
