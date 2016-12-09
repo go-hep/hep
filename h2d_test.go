@@ -26,184 +26,184 @@ func TestH2D(t *testing.T) {
 		ymax = 100.0
 	)
 
-	h1 := hbook.NewH2D(nx, xmin, xmax, ny, ymin, ymax)
-	if h1 == nil {
+	h := hbook.NewH2D(nx, xmin, xmax, ny, ymin, ymax)
+	if h == nil {
 		t.Fatalf("nil pointer to H2D")
 	}
 
-	if min := h1.MinX(); min != xmin {
+	if min := h.MinX(); min != xmin {
 		t.Errorf("x-min error: got=%v. want=%v\n", min, xmin)
 	}
-	if max := h1.MaxX(); max != xmax {
+	if max := h.MaxX(); max != xmax {
 		t.Errorf("x-max error: got=%v. want=%v\n", max, xmax)
 	}
-	if min := h1.MinY(); min != ymin {
+	if min := h.MinY(); min != ymin {
 		t.Errorf("y-min error: got=%v. want=%v\n", min, ymin)
 	}
-	if max := h1.MaxY(); max != ymax {
+	if max := h.MaxY(); max != ymax {
 		t.Errorf("y-max error: got=%v. want=%v\n", max, ymax)
 	}
 
-	if name := h1.Name(); name != "" {
+	if name := h.Name(); name != "" {
 		t.Errorf("name error: got=%q. want=%q\n", name, "")
 	}
-	h1.Annotation()["name"] = "h1"
-	if name := h1.Name(); name != "h1" {
+	h.Annotation()["name"] = "h1"
+	if name := h.Name(); name != "h1" {
 		t.Errorf("name error: got=%q. want=%q\n", name, "h1")
 	}
 
-	if n := h1.Entries(); n != 0 {
+	if n := h.Entries(); n != 0 {
 		t.Errorf("entries error: got=%v. want=%v\n", n, 0)
 	}
 
-	h1.Fill(1, 1, 1)
-	if n, want := h1.Entries(), int64(1); n != want {
+	h.Fill(1, 1, 1)
+	if n, want := h.Entries(), int64(1); n != want {
 		t.Errorf("entries error: got=%v. want=%v\n", n, want)
 	}
-	if n, want := h1.EffEntries(), 1.0; n != want {
+	if n, want := h.EffEntries(), 1.0; n != want {
 		t.Errorf("eff-entries error: got=%v. want=%v\n", n, want)
 	}
 
-	if w, want := h1.SumW(), 1.0; w != want {
+	if w, want := h.SumW(), 1.0; w != want {
 		t.Errorf("sum-w: got=%v. want=%v\n", w, want)
 	}
 
-	if w2, want := h1.SumW2(), 1.0; w2 != want {
+	if w2, want := h.SumW2(), 1.0; w2 != want {
 		t.Errorf("sum-w2: got=%v. want=%v\n", w2, want)
 	}
 
-	if v, want := h1.MeanX(), 1.0; v != want {
+	if v, want := h.MeanX(), 1.0; v != want {
 		t.Errorf("x-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.VarianceX(), math.NaN(); !math.IsNaN(v) {
+	if v, want := h.VarianceX(), math.NaN(); !math.IsNaN(v) {
 		t.Errorf("x-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.StdDevX(), math.NaN(); !math.IsNaN(v) {
+	if v, want := h.StdDevX(), math.NaN(); !math.IsNaN(v) {
 		t.Errorf("x-std-dev: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.MeanY(), 1.0; v != want {
+	if v, want := h.MeanY(), 1.0; v != want {
 		t.Errorf("y-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.VarianceY(), math.NaN(); !math.IsNaN(v) {
+	if v, want := h.VarianceY(), math.NaN(); !math.IsNaN(v) {
 		t.Errorf("y-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.StdDevY(), math.NaN(); !math.IsNaN(v) {
+	if v, want := h.StdDevY(), math.NaN(); !math.IsNaN(v) {
 		t.Errorf("y-std-dev: got=%v. want=%v\n", v, want)
 	}
 
-	h1.Fill(23, 1, 1)
-	if n, want := h1.Entries(), int64(2); n != want {
+	h.Fill(23, 1, 1)
+	if n, want := h.Entries(), int64(2); n != want {
 		t.Errorf("entries error: got=%v. want=%v\n", n, want)
 	}
-	if n, want := h1.EffEntries(), 2.0; n != want {
+	if n, want := h.EffEntries(), 2.0; n != want {
 		t.Errorf("eff-entries error: got=%v. want=%v\n", n, want)
 	}
-	if w, want := h1.SumW(), 2.0; w != want {
+	if w, want := h.SumW(), 2.0; w != want {
 		t.Errorf("sum-w: got=%v. want=%v\n", w, want)
 	}
 
-	if w2, want := h1.SumW2(), 2.0; w2 != want {
+	if w2, want := h.SumW2(), 2.0; w2 != want {
 		t.Errorf("sum-w2: got=%v. want=%v\n", w2, want)
 	}
 
-	if v, want := h1.MeanX(), 12.0; v != want {
+	if v, want := h.MeanX(), 12.0; v != want {
 		t.Errorf("x-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.VarianceX(), 242.0; v != want {
+	if v, want := h.VarianceX(), 242.0; v != want {
 		t.Errorf("x-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.StdDevX(), 15.556349186104045; v != want {
+	if v, want := h.StdDevX(), 15.556349186104045; v != want {
 		t.Errorf("x-std-dev: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.MeanY(), 1.0; v != want {
+	if v, want := h.MeanY(), 1.0; v != want {
 		t.Errorf("y-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.VarianceY(), 0.0; v != want {
+	if v, want := h.VarianceY(), 0.0; v != want {
 		t.Errorf("y-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.StdDevY(), 0.0; v != want {
+	if v, want := h.StdDevY(), 0.0; v != want {
 		t.Errorf("y-std-dev: got=%v. want=%v\n", v, want)
 	}
 
-	h1.Fill(200, 200, 1)
-	if w, want := h1.SumW(), 3.0; w != want {
+	h.Fill(200, 200, 1)
+	if w, want := h.SumW(), 3.0; w != want {
 		t.Errorf("sum-w: got=%v. want=%v\n", w, want)
 	}
 
-	if w2, want := h1.SumW2(), 3.0; w2 != want {
+	if w2, want := h.SumW2(), 3.0; w2 != want {
 		t.Errorf("sum-w2: got=%v. want=%v\n", w2, want)
 	}
 
-	if v, want := h1.MeanX(), 74.66666666666667; v != want {
+	if v, want := h.MeanX(), 74.66666666666667; v != want {
 		t.Errorf("x-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.VarianceX(), 11902.333333333334; v != want {
+	if v, want := h.VarianceX(), 11902.333333333334; v != want {
 		t.Errorf("x-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.StdDevX(), 109.09781543795152; v != want {
+	if v, want := h.StdDevX(), 109.09781543795152; v != want {
 		t.Errorf("x-std-dev: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.MeanY(), 67.33333333333333; v != want {
+	if v, want := h.MeanY(), 67.33333333333333; v != want {
 		t.Errorf("y-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.VarianceY(), 13200.333333333334; v != want {
+	if v, want := h.VarianceY(), 13200.333333333334; v != want {
 		t.Errorf("y-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.StdDevY(), 114.89270356873553; v != want {
+	if v, want := h.StdDevY(), 114.89270356873553; v != want {
 		t.Errorf("y-std-dev: got=%v. want=%v\n", v, want)
 	}
 
-	h1.Fill(-100, -100, 0.5)
-	if n, want := h1.Entries(), int64(4); n != want {
+	h.Fill(-100, -100, 0.5)
+	if n, want := h.Entries(), int64(4); n != want {
 		t.Errorf("entries error: got=%v. want=%v\n", n, want)
 	}
-	if n, want := h1.EffEntries(), 3.769230769230769; n != want {
+	if n, want := h.EffEntries(), 3.769230769230769; n != want {
 		t.Errorf("eff-entries error: got=%v. want=%v\n", n, want)
 	}
-	if w, want := h1.SumW(), 3.5; w != want {
+	if w, want := h.SumW(), 3.5; w != want {
 		t.Errorf("sum-w: got=%v. want=%v\n", w, want)
 	}
 
-	if w2, want := h1.SumW2(), 3.25; w2 != want {
+	if w2, want := h.SumW2(), 3.25; w2 != want {
 		t.Errorf("sum-w2: got=%v. want=%v\n", w2, want)
 	}
 
-	if v, want := h1.MeanX(), 49.714285714285715; v != want {
+	if v, want := h.MeanX(), 49.714285714285715; v != want {
 		t.Errorf("x-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.VarianceX(), 14342.111111111111; v != want {
+	if v, want := h.VarianceX(), 14342.111111111111; v != want {
 		t.Errorf("x-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.StdDevX(), 119.75855339436558; v != want {
+	if v, want := h.StdDevX(), 119.75855339436558; v != want {
 		t.Errorf("x-std-dev: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.MeanY(), 43.42857142857143; v != want {
+	if v, want := h.MeanY(), 43.42857142857143; v != want {
 		t.Errorf("y-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.VarianceY(), 14933.666666666666; v != want {
+	if v, want := h.VarianceY(), 14933.666666666666; v != want {
 		t.Errorf("y-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h1.StdDevY(), 122.20338238635895; v != want {
+	if v, want := h.StdDevY(), 122.20338238635895; v != want {
 		t.Errorf("y-std-dev: got=%v. want=%v\n", v, want)
 	}
 }
