@@ -48,6 +48,15 @@ func NewScatter2DFrom(x, y []float64) *Scatter2D {
 	return s
 }
 
+// NewScatter2DFromH1D creates a new 2-dim scatter from the given H1D.
+func NewScatter2DFromH1D(h *H1D) *Scatter2D {
+	s := NewScatter2D()
+	for k, v := range h.ann {
+		s.ann[k] = v
+	}
+	panic("not implemented")
+}
+
 // Annotation returns the annotations attached to the
 // scatter. (e.g. name, title, ...)
 func (s *Scatter2D) Annotation() Annotation {
