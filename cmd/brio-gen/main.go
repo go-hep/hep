@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"go/ast"
 	"go/importer"
 	"go/types"
 	"io"
@@ -52,7 +51,7 @@ func main() {
 // Generator holds the state of the generation.
 type Generator struct {
 	buf *bytes.Buffer
-	pkg *Package
+	pkg *types.Package
 }
 
 func newGenerator(path string) (*Generator, error) {
@@ -63,12 +62,7 @@ func newGenerator(path string) (*Generator, error) {
 
 	return &Generator{
 		buf: new(bytes.Buffer),
-		pkg: &Package{
-			dir:  pkg.Path(),
-			name: pkg.Name(),
-			defs: make(map[*ast.Ident]types.Object),
-			pkg:  pkg,
-		},
+		pkg: pkg,
 	}, nil
 }
 
@@ -76,18 +70,11 @@ func (g *Generator) Printf(format string, args ...interface{}) {
 	fmt.Fprintf(g.buf, format, args...)
 }
 
-type Package struct {
-	dir  string
-	name string
-	defs map[*ast.Ident]types.Object
-	pkg  *types.Package
-}
-
 func (g *Generator) generate(typeName string) {
-	scope := g.pkg.pkg.Scope()
+	scope := g.pkg.Scope()
 	obj := scope.Lookup(typeName)
 	if obj == nil {
-		log.Fatalf("no such type %q in package %q\n", typeName, g.pkg.pkg.Path()+"/"+g.pkg.pkg.Name())
+		log.Fatalf("no such type %q in package %q\n", typeName, g.pkg.Path()+"/"+g.pkg.Name())
 	}
 
 	tn, ok := obj.(*types.TypeName)
