@@ -9,9 +9,9 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"go/format"
 	"go/importer"
 	"go/types"
-	"io"
 	"log"
 	"os"
 	"strings"
@@ -44,8 +44,12 @@ func main() {
 		g.generate(t)
 	}
 
+	buf, err := format.Source(g.buf.Bytes())
+	if err != nil {
+		log.Fatalf("gofmt: %v\n", err)
+	}
 	// FIXME(sbinet): debug
-	io.Copy(os.Stdout, g.buf)
+	os.Stdout.Write(buf)
 }
 
 // Generator holds the state of the generation.
@@ -103,103 +107,165 @@ func (o *%[1]s) MarshalBinary() (data []byte, err error) {
 	for i := 0; i < typ.NumFields(); i++ {
 		ft := typ.Field(i)
 		log.Printf("field[%d]: %v\n", i, ft)
-		ut := ft.Type().Underlying()
-		switch ut := ut.(type) {
-		case *types.Basic:
-			switch kind := ut.Kind(); kind {
-			case types.Uint:
-				g.Printf(
-					"\tbinary.LittleEndian.PutUint64(buf[:8], uint64(o.%s))\n",
-					ft.Name(),
-				)
-				g.Printf("\tdata = append(data, buf[:8])\n")
-			case types.Uint8:
-				g.Printf("\tdata = append(data, byte(o.%s))\n", ft.Name())
-			case types.Uint16:
-				g.Printf(
-					"\tbinary.LittleEndian.PutUint16(buf[:2], o.%s)\n",
-					ft.Name(),
-				)
-				g.Printf("\tdata = append(data, buf[:2])\n")
-			case types.Uint32:
-				g.Printf(
-					"\tbinary.LittleEndian.PutUint32(buf[:4], o.%s)\n",
-					ft.Name(),
-				)
-				g.Printf("\tdata = append(data, buf[:4])\n")
-			case types.Uint64:
-				g.Printf(
-					"\tbinary.LittleEndian.PutUint64(buf[:8], o.%s)\n",
-					ft.Name(),
-				)
-				g.Printf("\tdata = append(data, buf[:8])\n")
-			case types.Int:
-				g.Printf(
-					"\tbinary.LittleEndian.PutUint64(buf[:8], int64(o.%s))\n",
-					ft.Name(),
-				)
-				g.Printf("\tdata = append(data, buf[:8])\n")
-			case types.Int8:
-				g.Printf("\tdata = append(data, byte(o.%s))\n", ft.Name())
-			case types.Int16:
-				g.Printf(
-					"\tbinary.LittleEndian.PutUint16(buf[:2], uint16(o.%s))\n",
-					ft.Name(),
-				)
-				g.Printf("\tdata = append(data, buf[:2])\n")
-			case types.Int32:
-				g.Printf(
-					"\tbinary.LittleEndian.PutUint32(buf[:4], uint32(o.%s))\n",
-					ft.Name(),
-				)
-				g.Printf("\tdata = append(data, buf[:4])\n")
-			case types.Int64:
-				g.Printf(
-					"\tbinary.LittleEndian.PutUint64(buf[:8], uint64(o.%s))\n",
-					ft.Name(),
-				)
-				g.Printf("\tdata = append(data, buf[:8])\n")
-			case types.Float32:
-				g.imps["math"]++
-				g.Printf(
-					"\tbinary.LittleEndian.PutUint32(buf[:4], math.Float32bits(o.%s))\n",
-					ft.Name(),
-				)
-				g.Printf("\tdata = append(data, buf[:4])\n")
-			case types.Float64:
-				g.imps["math"]++
-				g.Printf(
-					"\tbinary.LittleEndian.PutUint64(buf[:8], math.Float64bits(o.%s))\n",
-					ft.Name(),
-				)
-				g.Printf("\tdata = append(data, buf[:8])\n")
-			case types.Complex64:
-				g.imps["math"]++
-				g.Printf(
-					"\tbinary.LittleEndian.PutUint64(buf[:4], math.Float32bits(real(o.%s)))\n",
-					ft.Name(),
-				)
-				g.Printf("\tdata = append(data, buf[:4])\n")
-				g.Printf(
-					"\tbinary.LittleEndian.PutUint64(buf[:4], math.Float32bits(imag(o.%s)))\n",
-					ft.Name(),
-				)
-				g.Printf("\tdata = append(data, buf[:4])\n")
-			case types.Complex128:
-				g.imps["math"]++
-				g.Printf(
-					"\tbinary.LittleEndian.PutUint64(buf[:8], math.Float64bits(real(o.%s)))\n",
-					ft.Name(),
-				)
-				g.Printf("\tdata = append(data, buf[:8])\n")
-				g.Printf(
-					"\tbinary.LittleEndian.PutUint64(buf[:8], math.Float64bits(imag(o.%s)))\n",
-					ft.Name(),
-				)
-				g.Printf("\tdata = append(data, buf[:8])\n")
-			}
-		}
+		g.genMarshalType(ft.Type(), "o."+ft.Name())
 	}
 
 	g.Printf("\treturn data, err\n}\n\n")
+}
+
+func (g *Generator) genMarshalType(t types.Type, n string) {
+	ut := t.Underlying()
+	switch ut := ut.(type) {
+	case *types.Basic:
+		switch kind := ut.Kind(); kind {
+
+		case types.Bool:
+			g.Printf("\tif %s { data = append(data, uint8(1))\n", n)
+			g.Printf("\t}else { data = append(data, uint8(0)) }\n")
+
+		case types.Uint:
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint64(buf[:8], uint64(%s))\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:8])\n")
+
+		case types.Uint8:
+			g.Printf("\tdata = append(data, byte(%s))\n", n)
+
+		case types.Uint16:
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint16(buf[:2], %s)\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:2])\n")
+
+		case types.Uint32:
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint32(buf[:4], %s)\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:4])\n")
+
+		case types.Uint64:
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint64(buf[:8], %s)\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:8])\n")
+
+		case types.Int:
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint64(buf[:8], int64(%s))\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:8])\n")
+
+		case types.Int8:
+			g.Printf("\tdata = append(data, byte(%s))\n", n)
+
+		case types.Int16:
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint16(buf[:2], uint16(%s))\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:2])\n")
+
+		case types.Int32:
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint32(buf[:4], uint32(%s))\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:4])\n")
+
+		case types.Int64:
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint64(buf[:8], uint64(%s))\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:8])\n")
+
+		case types.Float32:
+			g.imps["math"]++
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint32(buf[:4], math.Float32bits(%s))\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:4])\n")
+
+		case types.Float64:
+			g.imps["math"]++
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint64(buf[:8], math.Float64bits(%s))\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:8])\n")
+
+		case types.Complex64:
+			g.imps["math"]++
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint64(buf[:4], math.Float32bits(real(%s)))\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:4])\n")
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint64(buf[:4], math.Float32bits(imag(%s)))\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:4])\n")
+
+		case types.Complex128:
+			g.imps["math"]++
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint64(buf[:8], math.Float64bits(real(%s)))\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:8])\n")
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint64(buf[:8], math.Float64bits(imag(%s)))\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:8])\n")
+
+		case types.String:
+			g.Printf(
+				"\tbinary.LittleEndian.PutUint64(buf[:8], uint64(len(%s)))\n",
+				n,
+			)
+			g.Printf("\tdata = append(data, buf[:8])\n")
+			g.Printf("\tdata = append(data, []byte(%s)...)\n")
+		}
+
+	case *types.Struct:
+		nn := strings.Replace(n, ".", "_", -1)
+		g.Printf("\tdata_%s, err := %s.MarshalBinary()\n", nn, n)
+		g.Printf("\tif err != nil {\n\t\treturn nil, err\n\t}\n")
+		g.Printf("\tdata = append(data, data_%s...)\n", nn)
+
+	case *types.Array:
+		g.Printf("\tfor i := range %s {\n", n)
+		if _, ok := ut.Elem().(*types.Pointer); ok {
+			g.Printf("\t\to := %s[i]\n", n)
+		} else {
+			g.Printf("\t\to := &%s[i]\n", n)
+		}
+		g.genMarshalType(ut.Elem(), "o")
+		g.Printf("\t}\n")
+
+	case *types.Slice:
+		g.Printf(
+			"\tbinary.LittleEndian.PutUint64(buf[:8], uint64(len(%s)))\n",
+			n,
+		)
+		g.Printf("\tdata = append(data, buf[:8])\n")
+		// FIXME(sbinet): add special case for []byte
+		g.Printf("\tfor i := range %s {\n", n)
+		if _, ok := ut.Elem().(*types.Pointer); ok {
+			g.Printf("\t\to := %s[i]\n", n)
+		} else {
+			g.Printf("\t\to := &%s[i]\n", n)
+		}
+		g.genMarshalType(ut.Elem(), "o")
+		g.Printf("\t}\n")
+	}
 }
