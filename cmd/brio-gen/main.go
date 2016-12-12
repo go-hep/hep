@@ -253,14 +253,18 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 		g.Printf("}\n")
 
 	case *types.Array:
-		g.Printf("\tfor i := range %s {\n", n)
-		if _, ok := ut.Elem().(*types.Pointer); ok {
-			g.Printf("\t\to := %s[i]\n", n)
+		if isByteType(ut.Elem()) {
+			g.Printf("data = append(data, %s[:]...)\n", n)
 		} else {
-			g.Printf("\t\to := &%s[i]\n", n)
+			g.Printf("\tfor i := range %s {\n", n)
+			if _, ok := ut.Elem().(*types.Pointer); ok {
+				g.Printf("\t\to := %s[i]\n", n)
+			} else {
+				g.Printf("\t\to := &%s[i]\n", n)
+			}
+			g.genMarshalType(ut.Elem(), "o")
+			g.Printf("\t}\n")
 		}
-		g.genMarshalType(ut.Elem(), "o")
-		g.Printf("\t}\n")
 
 	case *types.Slice:
 		g.Printf(
@@ -396,19 +400,37 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 		g.Printf("}\n")
 
 	case *types.Array:
-		g.Printf("for i := range %s {\n", n)
-		g.genUnmarshalType(ut.Elem(), n+"[i]")
-		g.Printf("}\n")
+		if isByteType(ut.Elem()) {
+			g.Printf("copy(%s[:], data[:n])\n", n)
+			g.Printf("data = data[n:]\n")
+		} else {
+			g.Printf("for i := range %s {\n", n)
+			nn := n + "[i]"
+			if _, ok := ut.Elem().(*types.Pointer); ok {
+				// FIXME(sbinet): allocate a temp variable
+				g.Printf("o := %s[i]\n", n)
+				nn = "o"
+			}
+			if _, ok := ut.Elem().Underlying().(*types.Struct); ok {
+				g.Printf("o := &%s[i]\n", n)
+				nn = "o"
+			}
+			g.genUnmarshalType(ut.Elem(), nn)
+			g.Printf("}\n")
+		}
 
 	case *types.Slice:
 		g.Printf("{\n")
 		g.Printf("n := int(binary.LittleEndian.Uint64(data[:8]))\n")
 		g.Printf("data = data[8:]\n")
 		if isByteType(ut.Elem()) {
+			g.Printf("%[1]s = append(%[1]s, data[:n]...)\n", n)
+			g.Printf("data = data[n:]\n")
 		} else {
 			g.Printf("for i := range %s {\n", n)
 			nn := n + "[i]"
 			if _, ok := ut.Elem().(*types.Pointer); ok {
+				// FIXME(sbinet): allocate a temp variable
 				g.Printf("o := %s[i]\n", n)
 				nn = "o"
 			}
