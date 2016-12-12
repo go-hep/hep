@@ -285,6 +285,12 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 			g.Printf("\t}\n")
 		}
 
+	case *types.Pointer:
+		g.Printf("{\n")
+		g.Printf("v := *%s\n", n)
+		g.genUnmarshal(ut.Elem(), "v")
+		g.Printf("}\n")
+
 	default:
 		log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
 	}
@@ -406,16 +412,18 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 		} else {
 			g.Printf("for i := range %s {\n", n)
 			nn := n + "[i]"
-			if _, ok := ut.Elem().(*types.Pointer); ok {
-				// FIXME(sbinet): allocate a temp variable
-				g.Printf("o := %s[i]\n", n)
-				nn = "o"
+			if pt, ok := ut.Elem().(*types.Pointer); ok {
+				g.Printf("var oi %s\n", qualTypeName(pt.Elem()))
+				nn = "oi"
 			}
 			if _, ok := ut.Elem().Underlying().(*types.Struct); ok {
-				g.Printf("o := &%s[i]\n", n)
-				nn = "o"
+				g.Printf("oi := &%s[i]\n", n)
+				nn = "oi"
 			}
 			g.genUnmarshalType(ut.Elem(), nn)
+			if _, ok := ut.Elem().(*types.Pointer); ok {
+				g.Printf("%s[i] = oi\n", n)
+			}
 			g.Printf("}\n")
 		}
 
@@ -429,18 +437,28 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 		} else {
 			g.Printf("for i := range %s {\n", n)
 			nn := n + "[i]"
-			if _, ok := ut.Elem().(*types.Pointer); ok {
-				// FIXME(sbinet): allocate a temp variable
-				g.Printf("o := %s[i]\n", n)
-				nn = "o"
+			if pt, ok := ut.Elem().(*types.Pointer); ok {
+				g.Printf("var oi %s\n", qualTypeName(pt.Elem()))
+				nn = "oi"
 			}
 			if _, ok := ut.Elem().Underlying().(*types.Struct); ok {
-				g.Printf("o := &%s[i]\n", n)
-				nn = "o"
+				g.Printf("oi := &%s[i]\n", n)
+				nn = "oi"
 			}
 			g.genUnmarshalType(ut.Elem(), nn)
+			if _, ok := ut.Elem().(*types.Pointer); ok {
+				g.Printf("%s[i] = oi\n", n)
+			}
 			g.Printf("}\n")
 		}
+		g.Printf("}\n")
+
+	case *types.Pointer:
+		g.Printf("{\n")
+		elt := ut.Elem()
+		g.Printf("var v %s\n", qualTypeName(elt))
+		g.genUnmarshal(elt, "v")
+		g.Printf("%s = &v\n\n", n)
 		g.Printf("}\n")
 
 	default:
@@ -455,4 +473,13 @@ func isByteType(t types.Type) bool {
 		return false
 	}
 	return b.Kind() == types.Byte
+}
+
+func qualTypeName(t types.Type) string {
+	n := types.TypeString(t, nil)
+	i := strings.LastIndex(n, "/")
+	if i < 0 {
+		return n
+	}
+	return string(n[i+1:])
 }
