@@ -126,3 +126,8 @@ func (bng *binning2D) coordToIndex(x, y float64) int {
 	}
 	panic("not reachable")
 }
+
+// Bins returns the slice of bins for this binning.
+func (bng *binning2D) Bins() []Bin2D {
+	return bng.bins
+}
