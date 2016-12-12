@@ -22,7 +22,7 @@ func TestScatter2D(t *testing.T) {
 		t.Errorf("got len=%d. want=%d\n", got, want)
 	}
 
-	pt := hbook.Point2D{X: 10, Y: -10, ErrX: hbook.Range{5, 5}, ErrY: hbook.Range{6, 6}}
+	pt := hbook.Point2D{X: 10, Y: -10, ErrX: hbook.Range{Min: 5, Max: 5}, ErrY: hbook.Range{Min: 6, Max: 6}}
 	s.Fill(pt)
 
 	if got, want := s.Len(), 4; got != want {
@@ -42,7 +42,7 @@ func ExampleScatter2D() {
 
 	fmt.Printf("len=%d\n", s.Len())
 
-	s.Fill(hbook.Point2D{X: 10, Y: -10, ErrX: hbook.Range{5, 5}, ErrY: hbook.Range{6, 6}})
+	s.Fill(hbook.Point2D{X: 10, Y: -10, ErrX: hbook.Range{Min: 5, Max: 5}, ErrY: hbook.Range{Min: 6, Max: 6}})
 	fmt.Printf("len=%d\n", s.Len())
 	fmt.Printf("pt[%d]=%+v\n", 3, s.Point(3))
 
@@ -60,7 +60,7 @@ func ExampleScatter2D_newScatter2DFrom() {
 
 	fmt.Printf("len=%d\n", s.Len())
 
-	s.Fill(hbook.Point2D{X: 10, Y: -10, ErrX: hbook.Range{5, 5}, ErrY: hbook.Range{6, 6}})
+	s.Fill(hbook.Point2D{X: 10, Y: -10, ErrX: hbook.Range{Min: 5, Max: 5}, ErrY: hbook.Range{Min: 6, Max: 6}})
 	fmt.Printf("len=%d\n", s.Len())
 	fmt.Printf("pt[%d]=%+v\n", 3, s.Point(3))
 
