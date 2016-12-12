@@ -33,16 +33,16 @@ func TestH2D(t *testing.T) {
 		t.Fatalf("nil pointer to H2D")
 	}
 
-	if min := h.MinX(); min != xmin {
+	if min := h.XMin(); min != xmin {
 		t.Errorf("x-min error: got=%v. want=%v\n", min, xmin)
 	}
-	if max := h.MaxX(); max != xmax {
+	if max := h.XMax(); max != xmax {
 		t.Errorf("x-max error: got=%v. want=%v\n", max, xmax)
 	}
-	if min := h.MinY(); min != ymin {
+	if min := h.YMin(); min != ymin {
 		t.Errorf("y-min error: got=%v. want=%v\n", min, ymin)
 	}
-	if max := h.MaxY(); max != ymax {
+	if max := h.YMax(); max != ymax {
 		t.Errorf("y-max error: got=%v. want=%v\n", max, ymax)
 	}
 
@@ -74,27 +74,27 @@ func TestH2D(t *testing.T) {
 		t.Errorf("sum-w2: got=%v. want=%v\n", w2, want)
 	}
 
-	if v, want := h.MeanX(), 1.0; v != want {
+	if v, want := h.XMean(), 1.0; v != want {
 		t.Errorf("x-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.VarianceX(), math.NaN(); !math.IsNaN(v) {
+	if v, want := h.XVariance(), math.NaN(); !math.IsNaN(v) {
 		t.Errorf("x-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.StdDevX(), math.NaN(); !math.IsNaN(v) {
+	if v, want := h.XStdDev(), math.NaN(); !math.IsNaN(v) {
 		t.Errorf("x-std-dev: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.MeanY(), 1.0; v != want {
+	if v, want := h.YMean(), 1.0; v != want {
 		t.Errorf("y-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.VarianceY(), math.NaN(); !math.IsNaN(v) {
+	if v, want := h.YVariance(), math.NaN(); !math.IsNaN(v) {
 		t.Errorf("y-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.StdDevY(), math.NaN(); !math.IsNaN(v) {
+	if v, want := h.YStdDev(), math.NaN(); !math.IsNaN(v) {
 		t.Errorf("y-std-dev: got=%v. want=%v\n", v, want)
 	}
 
@@ -113,27 +113,27 @@ func TestH2D(t *testing.T) {
 		t.Errorf("sum-w2: got=%v. want=%v\n", w2, want)
 	}
 
-	if v, want := h.MeanX(), 12.0; v != want {
+	if v, want := h.XMean(), 12.0; v != want {
 		t.Errorf("x-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.VarianceX(), 242.0; v != want {
+	if v, want := h.XVariance(), 242.0; v != want {
 		t.Errorf("x-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.StdDevX(), 15.556349186104045; v != want {
+	if v, want := h.XStdDev(), 15.556349186104045; v != want {
 		t.Errorf("x-std-dev: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.MeanY(), 1.0; v != want {
+	if v, want := h.YMean(), 1.0; v != want {
 		t.Errorf("y-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.VarianceY(), 0.0; v != want {
+	if v, want := h.YVariance(), 0.0; v != want {
 		t.Errorf("y-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.StdDevY(), 0.0; v != want {
+	if v, want := h.YStdDev(), 0.0; v != want {
 		t.Errorf("y-std-dev: got=%v. want=%v\n", v, want)
 	}
 
@@ -146,27 +146,27 @@ func TestH2D(t *testing.T) {
 		t.Errorf("sum-w2: got=%v. want=%v\n", w2, want)
 	}
 
-	if v, want := h.MeanX(), 74.66666666666667; v != want {
+	if v, want := h.XMean(), 74.66666666666667; v != want {
 		t.Errorf("x-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.VarianceX(), 11902.333333333334; v != want {
+	if v, want := h.XVariance(), 11902.333333333334; v != want {
 		t.Errorf("x-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.StdDevX(), 109.09781543795152; v != want {
+	if v, want := h.XStdDev(), 109.09781543795152; v != want {
 		t.Errorf("x-std-dev: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.MeanY(), 67.33333333333333; v != want {
+	if v, want := h.YMean(), 67.33333333333333; v != want {
 		t.Errorf("y-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.VarianceY(), 13200.333333333334; v != want {
+	if v, want := h.YVariance(), 13200.333333333334; v != want {
 		t.Errorf("y-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.StdDevY(), 114.89270356873553; v != want {
+	if v, want := h.YStdDev(), 114.89270356873553; v != want {
 		t.Errorf("y-std-dev: got=%v. want=%v\n", v, want)
 	}
 
@@ -185,27 +185,27 @@ func TestH2D(t *testing.T) {
 		t.Errorf("sum-w2: got=%v. want=%v\n", w2, want)
 	}
 
-	if v, want := h.MeanX(), 49.714285714285715; v != want {
+	if v, want := h.XMean(), 49.714285714285715; v != want {
 		t.Errorf("x-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.VarianceX(), 14342.111111111111; v != want {
+	if v, want := h.XVariance(), 14342.111111111111; v != want {
 		t.Errorf("x-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.StdDevX(), 119.75855339436558; v != want {
+	if v, want := h.XStdDev(), 119.75855339436558; v != want {
 		t.Errorf("x-std-dev: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.MeanY(), 43.42857142857143; v != want {
+	if v, want := h.YMean(), 43.42857142857143; v != want {
 		t.Errorf("y-mean: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.VarianceY(), 14933.666666666666; v != want {
+	if v, want := h.YVariance(), 14933.666666666666; v != want {
 		t.Errorf("y-variance: got=%v. want=%v\n", v, want)
 	}
 
-	if v, want := h.StdDevY(), 122.20338238635895; v != want {
+	if v, want := h.YStdDev(), 122.20338238635895; v != want {
 		t.Errorf("y-std-dev: got=%v. want=%v\n", v, want)
 	}
 }

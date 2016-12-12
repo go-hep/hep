@@ -70,63 +70,63 @@ func (h *H2D) SumW2() float64 {
 	return h.bng.dist.SumW2()
 }
 
-// MeanX returns the mean X.
+// XMean returns the mean X.
 // Overflows are included in the computation.
-func (h *H2D) MeanX() float64 {
+func (h *H2D) XMean() float64 {
 	return h.bng.dist.xMean()
 }
 
-// MeanY returns the mean Y.
+// YMean returns the mean Y.
 // Overflows are included in the computation.
-func (h *H2D) MeanY() float64 {
+func (h *H2D) YMean() float64 {
 	return h.bng.dist.yMean()
 }
 
-// VarianceX returns the variance in X.
+// XVariance returns the variance in X.
 // Overflows are included in the computation.
-func (h *H2D) VarianceX() float64 {
+func (h *H2D) XVariance() float64 {
 	return h.bng.dist.xVariance()
 }
 
-// VarianceY returns the variance in Y.
+// YVariance returns the variance in Y.
 // Overflows are included in the computation.
-func (h *H2D) VarianceY() float64 {
+func (h *H2D) YVariance() float64 {
 	return h.bng.dist.yVariance()
 }
 
-// StdDevX returns the standard deviation in X.
+// XStdDev returns the standard deviation in X.
 // Overflows are included in the computation.
-func (h *H2D) StdDevX() float64 {
+func (h *H2D) XStdDev() float64 {
 	return h.bng.dist.xStdDev()
 }
 
-// StdDevY returns the standard deviation in Y.
+// YStdDev returns the standard deviation in Y.
 // Overflows are included in the computation.
-func (h *H2D) StdDevY() float64 {
+func (h *H2D) YStdDev() float64 {
 	return h.bng.dist.yStdDev()
 }
 
-// StdErrX returns the standard error in X.
+// XStdErr returns the standard error in X.
 // Overflows are included in the computation.
-func (h *H2D) StdErrX() float64 {
+func (h *H2D) XStdErr() float64 {
 	return h.bng.dist.xStdErr()
 }
 
-// StdErrY returns the standard error in Y.
+// YStdErr returns the standard error in Y.
 // Overflows are included in the computation.
-func (h *H2D) StdErrY() float64 {
+func (h *H2D) YStdErr() float64 {
 	return h.bng.dist.yStdErr()
 }
 
-// RMSX returns the RMS in X.
+// XRMS returns the RMS in X.
 // Overflows are included in the computation.
-func (h *H2D) RMSX() float64 {
+func (h *H2D) XRMS() float64 {
 	return h.bng.dist.xRMS()
 }
 
-// RMSY returns the RMS in Y.
+// YRMS returns the RMS in Y.
 // Overflows are included in the computation.
-func (h *H2D) RMSY() float64 {
+func (h *H2D) YRMS() float64 {
 	return h.bng.dist.yRMS()
 }
 
@@ -135,23 +135,23 @@ func (h *H2D) Fill(x, y, w float64) {
 	h.bng.fill(x, y, w)
 }
 
-// MinX returns the low edge of the X-axis of this histogram.
-func (h *H2D) MinX() float64 {
+// XMin returns the low edge of the X-axis of this histogram.
+func (h *H2D) XMin() float64 {
 	return h.bng.xMin()
 }
 
-// MaxX returns the high edge of the X-axis of this histogram.
-func (h *H2D) MaxX() float64 {
+// XMax returns the high edge of the X-axis of this histogram.
+func (h *H2D) XMax() float64 {
 	return h.bng.xMax()
 }
 
-// MinY returns the low edge of the Y-axis of this histogram.
-func (h *H2D) MinY() float64 {
+// YMin returns the low edge of the Y-axis of this histogram.
+func (h *H2D) YMin() float64 {
 	return h.bng.yMin()
 }
 
-// MaxY returns the high edge of the Y-axis of this histogram.
-func (h *H2D) MaxY() float64 {
+// YMax returns the high edge of the Y-axis of this histogram.
+func (h *H2D) YMax() float64 {
 	return h.bng.yMax()
 }
 
@@ -216,7 +216,7 @@ func (h *H2D) MarshalYODA() ([]byte, error) {
 	}
 	buf.Write(data)
 
-	fmt.Fprintf(buf, "# Mean: (%e, %e)\n", h.MeanX(), h.MeanY())
+	fmt.Fprintf(buf, "# Mean: (%e, %e)\n", h.XMean(), h.YMean())
 	fmt.Fprintf(buf, "# Volume: %e\n", h.Integral())
 
 	fmt.Fprintf(buf, "# ID\t ID\t sumw\t sumw2\t sumwx\t sumwx2\t sumwy\t sumwy2\t sumwxy\t numEntries\n")
