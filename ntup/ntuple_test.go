@@ -33,7 +33,7 @@ func TestScanH1D(t *testing.T) {
 		entries: 10,
 		len:     10,
 		mean:    4.5,
-		rms:     2.8722813232690143,
+		rms:     5.338539126015656,
 	}
 
 	if h.Entries() != want.entries {
@@ -50,10 +50,10 @@ func TestScanH1D(t *testing.T) {
 		}
 	}
 
-	if mean := h.Mean(); mean != want.mean {
+	if mean := h.XMean(); mean != want.mean {
 		t.Errorf("error: mean=%v. want=%v\n", mean, want.mean)
 	}
-	if rms := h.RMS(); rms != want.rms {
+	if rms := h.XRMS(); rms != want.rms {
 		t.Errorf("error: rms=%v. want=%v\n", rms, want.rms)
 	}
 }
@@ -74,7 +74,7 @@ func TestScanH1DWhere(t *testing.T) {
 		entries: 5,
 		len:     10,
 		mean:    7,
-		rms:     1.4142135623730951,
+		rms:     7.14142842854285,
 	}
 
 	if h.Entries() != want.entries {
@@ -95,10 +95,10 @@ func TestScanH1DWhere(t *testing.T) {
 		}
 	}
 
-	if mean := h.Mean(); mean != want.mean {
+	if mean := h.XMean(); mean != want.mean {
 		t.Errorf("error: mean=%v. want=%v\n", mean, want.mean)
 	}
-	if rms := h.RMS(); rms != want.rms {
+	if rms := h.XRMS(); rms != want.rms {
 		t.Errorf("error: rms=%v. want=%v\n", rms, want.rms)
 	}
 }
@@ -118,7 +118,7 @@ func TestScanH1DInt(t *testing.T) {
 		entries: 10,
 		len:     10,
 		mean:    4.5,
-		rms:     2.8722813232690143,
+		rms:     5.338539126015656,
 	}
 
 	if h.Entries() != want.entries {
@@ -135,10 +135,10 @@ func TestScanH1DInt(t *testing.T) {
 		}
 	}
 
-	if mean := h.Mean(); mean != want.mean {
+	if mean := h.XMean(); mean != want.mean {
 		t.Errorf("error: mean=%v. want=%v\n", mean, want.mean)
 	}
-	if rms := h.RMS(); rms != want.rms {
+	if rms := h.XRMS(); rms != want.rms {
 		t.Errorf("error: rms=%v. want=%v\n", rms, want.rms)
 	}
 }
@@ -161,7 +161,7 @@ func TestScan(t *testing.T) {
 		entries: 10,
 		len:     10,
 		mean:    4.5,
-		rms:     2.8722813232690143,
+		rms:     5.338539126015656,
 	}
 
 	if h.Entries() != want.entries {
@@ -178,10 +178,10 @@ func TestScan(t *testing.T) {
 		}
 	}
 
-	if mean := h.Mean(); mean != want.mean {
+	if mean := h.XMean(); mean != want.mean {
 		t.Errorf("error: mean=%v. want=%v\n", mean, want.mean)
 	}
-	if rms := h.RMS(); rms != want.rms {
+	if rms := h.XRMS(); rms != want.rms {
 		t.Errorf("error: rms=%v. want=%v\n", rms, want.rms)
 	}
 }
@@ -212,7 +212,7 @@ func TestScanH1DFromCSVWithCommas(t *testing.T) {
 		entries: 10,
 		len:     10,
 		mean:    4.5,
-		rms:     2.8722813232690143,
+		rms:     5.338539126015656,
 	}
 
 	if h.Entries() != want.entries {
@@ -229,10 +229,10 @@ func TestScanH1DFromCSVWithCommas(t *testing.T) {
 		}
 	}
 
-	if mean := h.Mean(); mean != want.mean {
+	if mean := h.XMean(); mean != want.mean {
 		t.Errorf("error: mean=%v. want=%v\n", mean, want.mean)
 	}
-	if rms := h.RMS(); rms != want.rms {
+	if rms := h.XRMS(); rms != want.rms {
 		t.Errorf("error: rms=%v. want=%v\n", rms, want.rms)
 	}
 }
@@ -267,7 +267,7 @@ func TestScanH1DFromCSV(t *testing.T) {
 		entries: 10,
 		len:     10,
 		mean:    4.5,
-		rms:     2.8722813232690143,
+		rms:     5.338539126015656,
 	}
 
 	if h.Entries() != want.entries {
@@ -284,10 +284,10 @@ func TestScanH1DFromCSV(t *testing.T) {
 		}
 	}
 
-	if mean := h.Mean(); mean != want.mean {
+	if mean := h.XMean(); mean != want.mean {
 		t.Errorf("error: mean=%v. want=%v\n", mean, want.mean)
 	}
-	if rms := h.RMS(); rms != want.rms {
+	if rms := h.XRMS(); rms != want.rms {
 		t.Errorf("error: rms=%v. want=%v\n", rms, want.rms)
 	}
 }

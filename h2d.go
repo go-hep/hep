@@ -73,61 +73,61 @@ func (h *H2D) SumW2() float64 {
 // MeanX returns the mean X.
 // Overflows are included in the computation.
 func (h *H2D) MeanX() float64 {
-	return h.bng.dist.meanX()
+	return h.bng.dist.xMean()
 }
 
 // MeanY returns the mean Y.
 // Overflows are included in the computation.
 func (h *H2D) MeanY() float64 {
-	return h.bng.dist.meanY()
+	return h.bng.dist.yMean()
 }
 
 // VarianceX returns the variance in X.
 // Overflows are included in the computation.
 func (h *H2D) VarianceX() float64 {
-	return h.bng.dist.varianceX()
+	return h.bng.dist.xVariance()
 }
 
 // VarianceY returns the variance in Y.
 // Overflows are included in the computation.
 func (h *H2D) VarianceY() float64 {
-	return h.bng.dist.varianceY()
+	return h.bng.dist.yVariance()
 }
 
 // StdDevX returns the standard deviation in X.
 // Overflows are included in the computation.
 func (h *H2D) StdDevX() float64 {
-	return h.bng.dist.stdDevX()
+	return h.bng.dist.xStdDev()
 }
 
 // StdDevY returns the standard deviation in Y.
 // Overflows are included in the computation.
 func (h *H2D) StdDevY() float64 {
-	return h.bng.dist.stdDevY()
+	return h.bng.dist.yStdDev()
 }
 
 // StdErrX returns the standard error in X.
 // Overflows are included in the computation.
 func (h *H2D) StdErrX() float64 {
-	return h.bng.dist.stdErrX()
+	return h.bng.dist.xStdErr()
 }
 
 // StdErrY returns the standard error in Y.
 // Overflows are included in the computation.
 func (h *H2D) StdErrY() float64 {
-	return h.bng.dist.stdErrY()
+	return h.bng.dist.yStdErr()
 }
 
 // RMSX returns the RMS in X.
 // Overflows are included in the computation.
 func (h *H2D) RMSX() float64 {
-	return h.bng.dist.rmsX()
+	return h.bng.dist.xRMS()
 }
 
 // RMSY returns the RMS in Y.
 // Overflows are included in the computation.
 func (h *H2D) RMSY() float64 {
-	return h.bng.dist.rmsY()
+	return h.bng.dist.yRMS()
 }
 
 // Fill fills this histogram with (x,y) and weight w.
@@ -137,22 +137,22 @@ func (h *H2D) Fill(x, y, w float64) {
 
 // MinX returns the low edge of the X-axis of this histogram.
 func (h *H2D) MinX() float64 {
-	return h.bng.minX()
+	return h.bng.xMin()
 }
 
 // MaxX returns the high edge of the X-axis of this histogram.
 func (h *H2D) MaxX() float64 {
-	return h.bng.maxX()
+	return h.bng.xMax()
 }
 
 // MinY returns the low edge of the Y-axis of this histogram.
 func (h *H2D) MinY() float64 {
-	return h.bng.minY()
+	return h.bng.yMin()
 }
 
 // MaxY returns the high edge of the Y-axis of this histogram.
 func (h *H2D) MaxY() float64 {
-	return h.bng.maxY()
+	return h.bng.yMax()
 }
 
 // Integral computes the integral of the histogram.

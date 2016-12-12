@@ -7,11 +7,16 @@ package hbook
 import (
 	"bufio"
 	"bytes"
+	"encoding/gob"
 	"fmt"
 	"io"
 	"sort"
 	"strings"
 )
+
+//go:generate brio-gen -p github.com/go-hep/hbook -t dist0D,dist1D,dist2D -o dist_brio.go
+//go:generate brio-gen -p github.com/go-hep/hbook -t Range,binning1D,Bin1D,binning2D,Bin2D -o binning_brio.go
+//go:generate brio-gen -p github.com/go-hep/hbook -t H1D,H2D -o hbook_brio.go
 
 // Bin models 1D, 2D, ... bins.
 type Bin interface {
@@ -36,9 +41,6 @@ type Histogram interface {
 
 	// Rank returns the number of dimensions of this histogram.
 	Rank() int
-
-	// Binning returns the binning of this histogram.
-	Binning() Binning
 
 	// Entries returns the number of entries of this histogram.
 	Entries() int64
@@ -77,4 +79,24 @@ func (ann *Annotation) UnmarshalYODA(data []byte) error {
 		err = nil
 	}
 	return err
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler
+func (ann *Annotation) MarshalBinary() ([]byte, error) {
+	var v map[string]interface{} = *ann
+	buf := new(bytes.Buffer)
+	err := gob.NewEncoder(buf).Encode(v)
+	return buf.Bytes(), err
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler
+func (ann *Annotation) UnmarshalBinary(data []byte) error {
+	var v = make(map[string]interface{})
+	buf := bytes.NewReader(data)
+	err := gob.NewDecoder(buf).Decode(&v)
+	if err != nil {
+		return err
+	}
+	*ann = Annotation(v)
+	return nil
 }

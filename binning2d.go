@@ -55,9 +55,9 @@ func newBinning2D(nx int, xlow, xhigh float64, ny int, ylow, yhigh float64) binn
 			i := iy*nx + ix
 			bin := &ax.bins[i]
 			bin.xrange.Min = xlow + float64(ix)/ax.xstep
-			bin.xrange.Max = bin.xrange.Min + 1/ax.xstep
+			bin.xrange.Max = bin.xrange.Min + 1.0/ax.xstep
 			bin.yrange.Min = ylow + float64(iy)/ax.ystep
-			bin.yrange.Max = bin.yrange.Min + 1/ax.ystep
+			bin.yrange.Max = bin.yrange.Min + 1.0/ax.ystep
 		}
 	}
 	return ax
@@ -71,23 +71,23 @@ func (bng *binning2D) effEntries() float64 {
 	return bng.dist.EffEntries()
 }
 
-// minX returns the low edge of the X-axis
-func (bng *binning2D) minX() float64 {
+// xMin returns the low edge of the X-axis
+func (bng *binning2D) xMin() float64 {
 	return bng.xrange.Min
 }
 
-// maxX returns the high edge of the X-axis
-func (bng *binning2D) maxX() float64 {
+// xMax returns the high edge of the X-axis
+func (bng *binning2D) xMax() float64 {
 	return bng.xrange.Max
 }
 
-// minY returns the low edge of the Y-axis
-func (bng *binning2D) minY() float64 {
+// yMin returns the low edge of the Y-axis
+func (bng *binning2D) yMin() float64 {
 	return bng.yrange.Min
 }
 
-// maxY returns the high edge of the Y-axis
-func (bng *binning2D) maxY() float64 {
+// yMax returns the high edge of the Y-axis
+func (bng *binning2D) yMax() float64 {
 	return bng.yrange.Max
 }
 

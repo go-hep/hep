@@ -4,187 +4,99 @@
 
 package hbook
 
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"io"
-	"math"
-
-	"github.com/go-hep/rio"
-	"github.com/gonuts/binary"
-)
-
-// evenBinning is an evenly-binned 1D axis
-type evenBinning struct {
-	nbins int     // number of bins for this binning
-	low   float64 // low-edge of this binning
-	high  float64 // high-edge of this binning
-	size  float64 // bin size
+// binning1D is a 1-dim binning of the x-axis.
+type binning1D struct {
+	bins     []Bin1D
+	dist     dist1D
+	outflows [2]dist1D
+	xrange   Range
+	xstep    float64
 }
 
-// newEvenBinning returns a new binning with n bins between xmax and xmax.
-// It panics if n is <= 0 or if xmin >= xmax.
-func newEvenBinning(n int, xmin, xmax float64) *evenBinning {
-	if n <= 0 {
-		panic("hbook: X-axis with zero bins")
-	}
+func newBinning1D(n int, xmin, xmax float64) binning1D {
 	if xmin >= xmax {
 		panic("hbook: invalid X-axis limits")
 	}
-	bng := &evenBinning{
-		nbins: n,
-		low:   xmin,
-		high:  xmax,
-		size:  (xmax - xmin) / float64(n),
+	if n <= 0 {
+		panic("hbook: X-axis with zero bins")
 	}
+	bng := binning1D{
+		bins:   make([]Bin1D, n),
+		xrange: Range{Min: xmin, Max: xmax},
+	}
+	bng.xstep = float64(n) / bng.xrange.Width()
+	for i := range bng.bins {
+		bin := &bng.bins[i]
+		bin.xrange.Min = xmin + float64(i)/bng.xstep
+		bin.xrange.Max = bin.xrange.Min + 1.0/bng.xstep
+	}
+
 	return bng
 }
 
-// Kind returns the binning kind (Fixed,Variable)
-func (bng *evenBinning) Kind() BinningKind {
-	return FixedBinning
+func (bng *binning1D) entries() int64 {
+	return bng.dist.Entries()
 }
 
-// LowerEdge returns the lower edge of the binning.
-func (bng *evenBinning) LowerEdge() float64 {
-	return bng.low
+func (bng *binning1D) effEntries() float64 {
+	return bng.dist.EffEntries()
 }
 
-// UpperEdge returns the upper edge of the binning.
-func (bng *evenBinning) UpperEdge() float64 {
-	return bng.high
+// xMin returns the low edge of the X-axis
+func (bng *binning1D) xMin() float64 {
+	return bng.xrange.Min
 }
 
-// Bins returns the number of bins in the binning.
-func (bng *evenBinning) Bins() int {
-	return bng.nbins
+// xMax returns the high edge of the X-axis
+func (bng *binning1D) xMax() float64 {
+	return bng.xrange.Max
 }
 
-// BinLowerEdge returns the lower edge of the bin at index i.
-// It panics if i is outside the binning range.
-func (bng *evenBinning) BinLowerEdge(i int) float64 {
-	if i >= 0 && i <= bng.nbins {
-		return bng.low + float64(i)*bng.size
+func (bng *binning1D) fill(x, w float64) {
+	idx := bng.coordToIndex(x)
+	bng.dist.fill(x, w)
+	if idx < 0 {
+		bng.outflows[-idx-1].fill(x, w)
+		return
 	}
-	if i == UnderflowBin {
-		return bng.low
-	}
-	panic(fmt.Errorf("hbook: out of bound index (%d)", i))
+	bng.bins[idx].fill(x, w)
 }
 
-// BinUpperEdge returns the upper edge of the bin at index i.
-// It panics if i is outside the binning range.
-func (bng *evenBinning) BinUpperEdge(i int) float64 {
-	if i >= 0 && i < bng.nbins {
-		return bng.low + float64(i+1)*bng.size
-	}
-	if i == OverflowBin {
-		return bng.high
-	}
-	panic(fmt.Errorf("hbook: out of bound index (%d)", i))
-}
-
-// BinWidth returns the width of the bin at index i.
-func (bng *evenBinning) BinWidth(i int) float64 {
-	return bng.size
-}
-
-// CoordToIndex returns the bin index corresponding to the coordinate x.
-func (bng *evenBinning) CoordToIndex(x float64) int {
+// coordToIndex returns the bin index corresponding to the coordinate x.
+func (bng *binning1D) coordToIndex(x float64) int {
 	switch {
-	case x < bng.low:
-		return UnderflowBin
-	case x >= bng.high:
-		return OverflowBin
 	default:
-		return int(math.Floor((x - bng.low) / float64(bng.size)))
+		i := int((x - bng.xrange.Min) * bng.xstep)
+		return i
+	case x < bng.xrange.Min:
+		return UnderflowBin
+	case x >= bng.xrange.Max:
+		return OverflowBin
 	}
 }
 
-// MarshalBinary implements encoding.BinaryMarshaler
-func (bng *evenBinning) MarshalBinary() ([]byte, error) {
-	buf := new(bytes.Buffer)
-	err := bng.RioMarshal(buf)
-	return buf.Bytes(), err
+func (bng *binning1D) scaleW(f float64) {
+	bng.dist.scaleW(f)
+	bng.outflows[0].scaleW(f)
+	bng.outflows[1].scaleW(f)
+	for i := range bng.bins {
+		bin := &bng.bins[i]
+		bin.scaleW(f)
+	}
 }
 
-// UnmarshalBinary implements encoding.BinaryUnmarshaler
-func (bng *evenBinning) UnmarshalBinary(data []byte) error {
-	buf := bytes.NewReader(data)
-	err := bng.RioUnmarshal(buf)
-	return err
+func (bng *binning1D) BinLowerEdge(i int) float64 {
+	return bng.bins[i].xrange.Min
 }
 
-// RioVersion implements rio.RioStreamer
-func (bng *evenBinning) RioVersion() rio.Version {
-	return 0
+func (bng *binning1D) BinUpperEdge(i int) float64 {
+	return bng.bins[i].xrange.Max
 }
 
-// RioMarshal implements rio.RioMarshaler
-func (bng *evenBinning) RioMarshal(w io.Writer) error {
-	var err error
-
-	enc := binary.NewEncoder(w)
-	err = enc.Encode(bng.nbins)
-	if err != nil {
-		return err
-	}
-
-	err = enc.Encode(bng.low)
-	if err != nil {
-		return err
-	}
-
-	err = enc.Encode(bng.high)
-	if err != nil {
-		return err
-	}
-
-	err = enc.Encode(bng.size)
-	if err != nil {
-		return err
-	}
-
-	return err
+func (bng *binning1D) BinWidth(i int) float64 {
+	return bng.bins[i].xrange.Width()
 }
 
-// RioUnmarshal implements rio.RioUnmarshaler
-func (bng *evenBinning) RioUnmarshal(r io.Reader) error {
-	var err error
-
-	dec := binary.NewDecoder(r)
-	err = dec.Decode(&bng.nbins)
-	if err != nil {
-		return err
-	}
-
-	err = dec.Decode(&bng.low)
-	if err != nil {
-		return err
-	}
-
-	err = dec.Decode(&bng.high)
-	if err != nil {
-		return err
-	}
-
-	err = dec.Decode(&bng.size)
-	if err != nil {
-		return err
-	}
-
-	return err
-}
-
-// check evenBinning satisfies Binning interface
-var _ Binning = (*evenBinning)(nil)
-
-// serialization interfaces
-var _ rio.Marshaler = (*evenBinning)(nil)
-var _ rio.Unmarshaler = (*evenBinning)(nil)
-var _ rio.Streamer = (*evenBinning)(nil)
-
-func init() {
-	gob.Register((*evenBinning)(nil))
+func (bng *binning1D) Bins() []Bin1D {
+	return bng.bins
 }

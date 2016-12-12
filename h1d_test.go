@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/go-hep/hbook"
+	"github.com/gonum/floats"
 	"github.com/gonum/plot/plotter"
 )
 
@@ -29,34 +30,28 @@ func TestH1D(t *testing.T) {
 		t.Errorf("expected H1D.Name() == %q (got %q)\n",
 			n, "h1")
 	}
-	nbins := h1.Binning().Bins()
-	if nbins != 100 {
-		t.Errorf("expected H1D.Binning.Bins() == %v (got %v)\n",
-			100, nbins,
+	xmin := h1.XMin()
+	if xmin != 0. {
+		t.Errorf("expected H1D.Min() == %v (got %v)\n",
+			0., xmin,
 		)
 	}
-	low := h1.Binning().LowerEdge()
-	if low != 0. {
-		t.Errorf("expected H1D.Binning.LowerEdge() == %v (got %v)\n",
-			0., low,
+	xmax := h1.XMax()
+	if xmax != 100. {
+		t.Errorf("expected H1D.Max() == %v (got %v)\n",
+			100., xmax,
 		)
 	}
-	up := h1.Binning().UpperEdge()
-	if up != 100. {
-		t.Errorf("expected H1D.Binning.UpperEdge() == %v (got %v)\n",
-			100., up,
-		)
-	}
-
-	for idx := 0; idx < nbins; idx++ {
-		size := h1.Binning().BinWidth(idx)
-		if size != 1. {
-			t.Errorf("expected H1D.Binning.BinWidth(%v) == %v (got %v)\n",
-				idx, 1., size,
-			)
+	/*
+		for idx := 0; idx < nbins; idx++ {
+			size := h1.Binning().BinWidth(idx)
+			if size != 1. {
+				t.Errorf("expected H1D.Binning.BinWidth(%v) == %v (got %v)\n",
+					idx, 1., size,
+				)
+			}
 		}
-	}
-
+	*/
 	var _ plotter.XYer = h1
 	var _ plotter.Valuer = h1
 }
@@ -73,18 +68,22 @@ func TestH1DIntegral(t *testing.T) {
 	h1.Fill(6, 2.1)
 
 	integral := h1.Integral()
-	if integral != 5.3 {
-		t.Errorf("expected H1D.Integral() == 5.3 (got %v)\n", integral)
+	if integral != 8.7 {
+		t.Errorf("expected H1D.Integral() == 8.7 (got %v)\n", integral)
 	}
+	if got, want := h1.Integral(h1.XMin(), h1.XMax()), 5.3; got != want {
+		t.Errorf("H1D.Integral(xmin,xmax) = %v. want=%v\n", got, want)
+	}
+
 	integralall := h1.Integral(math.Inf(-1), math.Inf(+1))
 	if integralall != 8.7 {
 		t.Errorf("expected H1D.Integral(math.Inf(-1), math.Inf(+1)) == 8.7 (got %v)\n", integralall)
 	}
-	integralu := h1.Integral(math.Inf(-1), h1.Binning().UpperEdge())
+	integralu := h1.Integral(math.Inf(-1), h1.XMax())
 	if integralu != 6.6 {
 		t.Errorf("expected H1D.Integral(math.Inf(-1), h1.Binning().UpperEdge()) == 6.6 (got %v)\n", integralu)
 	}
-	integralo := h1.Integral(h1.Binning().LowerEdge(), math.Inf(+1))
+	integralo := h1.Integral(h1.XMin(), math.Inf(+1))
 	if integralo != 7.4 {
 		t.Errorf("expected H1D.Integral(h1.Binning().LowerEdge(), math.Inf(+1)) == 7.4 (got %v)\n", integralo)
 	}
@@ -93,7 +92,7 @@ func TestH1DIntegral(t *testing.T) {
 		t.Errorf("expected H1D.Integral(0.5, 5.5) == 2.7 (got %v)\n", integralrange)
 	}
 
-	mean1, rms1 := h1.Mean(), h1.RMS()
+	mean1, rms1 := h1.XMean(), h1.XRMS()
 
 	h1.Scale(1 / integral)
 	integral = h1.Integral()
@@ -101,7 +100,7 @@ func TestH1DIntegral(t *testing.T) {
 		t.Errorf("expected H1D.Integral() == 1 (got %v)\n", integral)
 	}
 
-	mean2, rms2 := h1.Mean(), h1.RMS()
+	mean2, rms2 := h1.XMean(), h1.XRMS()
 
 	if math.Abs(mean1-mean2)/mean1 > 1e-12 {
 		t.Errorf("mean has changed while rescaling (mean1, mean2) = (%v, %v)", mean1, mean2)
@@ -118,10 +117,8 @@ func TestH1DIntegral(t *testing.T) {
 			t.Errorf("got H1D.Value(%d) = %v. want %v\n", ibin, got, want)
 		}
 	}
-	if got, want := h2.Binning().BinWidth(0), 0.5; got != want {
-		t.Errorf("got H1D.Binning().BinWidth == %v. want %v\n", got, want)
-	}
-	if got, want := h2.Integral(), 1.0; got != want {
+
+	if got, want := h2.Integral(), 2.0; got != want {
 		t.Errorf("got H1D.Integral() == %v. want %v\n", got, want)
 	}
 }
@@ -137,16 +134,18 @@ func TestH1DNegativeWeights(t *testing.T) {
 	h2.Fill(20, 1)
 	h2.Fill(30, 0.2)
 
-	if h1.Mean() != h2.Mean() {
-		t.Errorf("mean differ:\nh1=%v\nh2=%v\n", h1.Mean(), h2.Mean())
+	const tol = 1e-12
+	if x1, x2 := h1.XMean(), h2.XMean(); !floats.EqualWithinAbs(x1, x2, tol) {
+		t.Errorf("mean differ:\nh1=%v\nh2=%v\n", x1, x2)
 	}
-	if h1.RMS() != h2.RMS() {
-		t.Errorf("rms differ:\nh1=%v\nh2=%v\n", h1.RMS(), h2.RMS())
+	if x1, x2 := h1.XRMS(), h2.XRMS(); !floats.EqualWithinAbs(x1, x2, tol) {
+		t.Errorf("rms differ:\nh1=%v\nh2=%v\n", x1, x2)
 	}
-	// FIXME(sbinet)
-	// if h1.StdDev() != h2.StdDev() {
-	//	t.Errorf("std-dev differ:\nh1=%v\nh2=%v\n", h1.StdDev(), h2.StdDev())
-	//}
+	/* FIXME
+	if x1, x2 := h1.StdDevX(), h2.StdDevX(); !floats.EqualWithinAbs(x1, x2, tol) {
+		t.Errorf("std-dev differ:\nh1=%v\nh2=%v\n", x1, x2)
+	}
+	*/
 }
 
 func BenchmarkH1DSTFillConst(b *testing.B) {
@@ -289,5 +288,3 @@ func TestH1DSerialization(t *testing.T) {
 	}()
 
 }
-
-// EOF

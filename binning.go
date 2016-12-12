@@ -8,8 +8,8 @@ import "math"
 
 // Indices for the under- and over-flow 1-dim bins.
 const (
-	UnderflowBin = -2
-	OverflowBin  = -1
+	UnderflowBin = -1
+	OverflowBin  = -2
 )
 
 // BinningKind describes the kind of binning: fixed-binning, or variable-size binning.

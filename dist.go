@@ -232,53 +232,53 @@ func (d *dist2D) relErrW() float64 {
 	return d.x.relErrW()
 }
 
-// meanX returns the weighted mean of the distribution
-func (d *dist2D) meanX() float64 {
+// xMean returns the weighted mean of the distribution
+func (d *dist2D) xMean() float64 {
 	return d.x.mean()
 }
 
-// meanY returns the weighted mean of the distribution
-func (d *dist2D) meanY() float64 {
+// yMean returns the weighted mean of the distribution
+func (d *dist2D) yMean() float64 {
 	return d.y.mean()
 }
 
-// varianceX returns the weighted variance of the distribution
-func (d *dist2D) varianceX() float64 {
+// xVariance returns the weighted variance of the distribution
+func (d *dist2D) xVariance() float64 {
 	return d.x.variance()
 }
 
-// varianceY returns the weighted variance of the distribution
-func (d *dist2D) varianceY() float64 {
+// yVariance returns the weighted variance of the distribution
+func (d *dist2D) yVariance() float64 {
 	return d.y.variance()
 }
 
-// stdDevX returns the weighted standard deviation of the distribution
-func (d *dist2D) stdDevX() float64 {
+// xStdDev returns the weighted standard deviation of the distribution
+func (d *dist2D) xStdDev() float64 {
 	return d.x.stdDev()
 }
 
-// stdDevY returns the weighted standard deviation of the distribution
-func (d *dist2D) stdDevY() float64 {
+// yStdDev returns the weighted standard deviation of the distribution
+func (d *dist2D) yStdDev() float64 {
 	return d.y.stdDev()
 }
 
-// stdErrX returns the weighted standard error of the distribution
-func (d *dist2D) stdErrX() float64 {
+// xStdErr returns the weighted standard error of the distribution
+func (d *dist2D) xStdErr() float64 {
 	return d.x.stdErr()
 }
 
-// stdErrY returns the weighted standard error of the distribution
-func (d *dist2D) stdErrY() float64 {
+// yStdErr returns the weighted standard error of the distribution
+func (d *dist2D) yStdErr() float64 {
 	return d.y.stdErr()
 }
 
-// rmsX returns the weighted RMS of the distribution
-func (d *dist2D) rmsX() float64 {
+// xRMS returns the weighted RMS of the distribution
+func (d *dist2D) xRMS() float64 {
 	return d.x.rms()
 }
 
-// rmsY returns the weighted RMS of the distribution
-func (d *dist2D) rmsY() float64 {
+// yRMS returns the weighted RMS of the distribution
+func (d *dist2D) yRMS() float64 {
 	return d.y.rms()
 }
 
