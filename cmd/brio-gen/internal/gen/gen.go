@@ -97,6 +97,7 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 		g.printf("{\nsub, err := %s.MarshalBinary()\n", n)
 		g.printf("if err != nil {\nreturn nil, err\n}\n")
 		g.printf("binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))\n")
+		g.printf("data = append(data, buf[:8]...)\n")
 		g.printf("data = append(data, sub...)\n")
 		g.printf("}\n")
 		return
@@ -228,6 +229,7 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 		g.printf("{\nsub, err := %s.MarshalBinary()\n", n)
 		g.printf("if err != nil {\nreturn nil, err\n}\n")
 		g.printf("binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))\n")
+		g.printf("data = append(data, buf[:8]...)\n")
 		g.printf("data = append(data, sub...)\n")
 		g.printf("}\n")
 
