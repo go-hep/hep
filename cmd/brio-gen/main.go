@@ -192,7 +192,7 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 			g.Printf("\tdata = append(data, buf[:8])\n")
 
 		case types.Float32:
-			g.imps["math"]++
+			g.imps["math"] = 1
 			g.Printf(
 				"\tbinary.LittleEndian.PutUint32(buf[:4], math.Float32bits(%s))\n",
 				n,
@@ -200,7 +200,7 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 			g.Printf("\tdata = append(data, buf[:4])\n")
 
 		case types.Float64:
-			g.imps["math"]++
+			g.imps["math"] = 1
 			g.Printf(
 				"\tbinary.LittleEndian.PutUint64(buf[:8], math.Float64bits(%s))\n",
 				n,
@@ -208,7 +208,7 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 			g.Printf("\tdata = append(data, buf[:8])\n")
 
 		case types.Complex64:
-			g.imps["math"]++
+			g.imps["math"] = 1
 			g.Printf(
 				"\tbinary.LittleEndian.PutUint64(buf[:4], math.Float32bits(real(%s)))\n",
 				n,
@@ -221,7 +221,7 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 			g.Printf("\tdata = append(data, buf[:4])\n")
 
 		case types.Complex128:
-			g.imps["math"]++
+			g.imps["math"] = 1
 			g.Printf(
 				"\tbinary.LittleEndian.PutUint64(buf[:8], math.Float64bits(real(%s)))\n",
 				n,
@@ -355,18 +355,22 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 			g.Printf("\tdata = data[8:]\n")
 
 		case types.Float32:
+			g.imps["math"] = 1
 			g.Printf("\t%s = math.Float32frombits(binary.LittleEndian.Uint32(data[:4]))\n", n)
 			g.Printf("\tdata = data[4:]\n")
 
 		case types.Float64:
+			g.imps["math"] = 1
 			g.Printf("\t%s = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))\n", n)
 			g.Printf("\tdata = data[8:]\n")
 
 		case types.Complex64:
+			g.imps["math"] = 1
 			g.Printf("\t%s = complex(math.Float32frombits(binary.LittleEndian.Uint32(data[:4])), math.Float32frombits(binary.LittleEndian.Uint32(data[4:8])))\n", n)
 			g.Printf("\tdata = data[8:]\n")
 
 		case types.Complex128:
+			g.imps["math"] = 1
 			g.Printf("\t%s = complex(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])), math.Float64frombits(binary.LittleEndian.Uint64(data[8:16])))\n", n)
 			g.Printf("\tdata = data[16:]\n")
 
