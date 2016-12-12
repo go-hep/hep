@@ -85,6 +85,7 @@ func (bng *binning1D) scaleW(f float64) {
 	}
 }
 
+// Bins returns the slice of bins for this binning.
 func (bng *binning1D) Bins() []Bin1D {
 	return bng.bins
 }
