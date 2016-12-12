@@ -40,3 +40,63 @@ func (b *Bin1D) SumW() float64 {
 func (b *Bin1D) SumW2() float64 {
 	return b.dist.SumW2()
 }
+
+// XEdges returns the [low,high] edges of this bin.
+func (b *Bin1D) XEdges() Range {
+	return b.xrange
+}
+
+// XMin returns the lower limit of the bin (inclusive).
+func (b *Bin1D) XMin() float64 {
+	return b.xrange.Min
+}
+
+// XMax returns the upper limit of the bin (exclusive).
+func (b *Bin1D) XMax() float64 {
+	return b.xrange.Max
+}
+
+// XMid returns the geometric center of the bin.
+// i.e.: 0.5*(high+low)
+func (b *Bin1D) XMid() float64 {
+	return 0.5 * (b.xrange.Min + b.xrange.Max)
+}
+
+// XWidth returns the (signed) width of the bin
+func (b *Bin1D) XWidth() float64 {
+	return b.xrange.Max - b.xrange.Min
+}
+
+// XFocus returns the mean position in the bin, or the midpoint (if the
+// sum of weights for this bin is 0).
+func (b *Bin1D) XFocus() float64 {
+	if b.SumW() == 0 {
+		return b.XMid()
+	}
+	return b.XMean()
+}
+
+// XMean returns the mean X.
+func (b *Bin1D) XMean() float64 {
+	return b.dist.mean()
+}
+
+// XVariance returns the variance in X.
+func (b *Bin1D) XVariance() float64 {
+	return b.dist.variance()
+}
+
+// XStdDev returns the standard deviation in X.
+func (b *Bin1D) XStdDev() float64 {
+	return b.dist.stdDev()
+}
+
+// XStdErr returns the standard error in X.
+func (b *Bin1D) XStdErr() float64 {
+	return b.dist.stdErr()
+}
+
+// XRMS returns the RMS in X.
+func (b *Bin1D) XRMS() float64 {
+	return b.dist.rms()
+}

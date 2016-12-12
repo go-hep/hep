@@ -85,18 +85,6 @@ func (bng *binning1D) scaleW(f float64) {
 	}
 }
 
-func (bng *binning1D) BinLowerEdge(i int) float64 {
-	return bng.bins[i].xrange.Min
-}
-
-func (bng *binning1D) BinUpperEdge(i int) float64 {
-	return bng.bins[i].xrange.Max
-}
-
-func (bng *binning1D) BinWidth(i int) float64 {
-	return bng.bins[i].xrange.Width()
-}
-
 func (bng *binning1D) Bins() []Bin1D {
 	return bng.bins
 }
