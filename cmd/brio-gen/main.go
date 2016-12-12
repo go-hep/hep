@@ -258,14 +258,27 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 			n,
 		)
 		g.Printf("\tdata = append(data, buf[:8])\n")
-		// FIXME(sbinet): add special case for []byte
-		g.Printf("\tfor i := range %s {\n", n)
-		if _, ok := ut.Elem().(*types.Pointer); ok {
-			g.Printf("\t\to := %s[i]\n", n)
+		if isByteType(ut.Elem()) {
+			g.Printf("\tdata = append(data, %s...)\n", n)
 		} else {
-			g.Printf("\t\to := &%s[i]\n", n)
+			g.Printf("\tfor i := range %s {\n", n)
+			if _, ok := ut.Elem().(*types.Pointer); ok {
+				g.Printf("\t\to := %s[i]\n", n)
+			} else {
+				g.Printf("\t\to := &%s[i]\n", n)
+			}
+			g.genMarshalType(ut.Elem(), "o")
+			g.Printf("\t}\n")
 		}
-		g.genMarshalType(ut.Elem(), "o")
-		g.Printf("\t}\n")
+	default:
+		log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
 	}
+}
+
+func isByteType(t types.Type) bool {
+	b, ok := t.Underlying().(*types.Basic)
+	if !ok {
+		return false
+	}
+	return b.Kind() == types.Byte
 }
