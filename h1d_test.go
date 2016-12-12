@@ -6,18 +6,19 @@ package hplot_test
 
 import (
 	"image/color"
-	"log"
+	"io/ioutil"
 	"math/rand"
 	"testing"
 
 	"github.com/go-hep/hbook"
 	"github.com/go-hep/hplot"
+	"github.com/go-hep/hplot/internal/cmpimg"
 	"github.com/gonum/plot/vg"
 	"github.com/gonum/stat/distuv"
 )
 
 // An example of making a 1D-histogram.
-func ExampleHistogram() {
+func ExampleH1D(t *testing.T) {
 	const npoints = 10000
 
 	// Create a normal distribution.
@@ -36,12 +37,16 @@ func ExampleHistogram() {
 	}
 
 	// normalize histogram
-	hist.Scale(1 / hist.Integral())
+	area := 0.0
+	for _, bin := range hist.Binning().Bins() {
+		area += bin.SumW() * bin.XWidth()
+	}
+	hist.Scale(1 / area)
 
 	// Make a plot and set its title.
 	p, err := hplot.New()
 	if err != nil {
-		log.Fatalf("error: %v\n", err)
+		t.Fatalf("error: %v\n", err)
 	}
 	p.Title.Text = "Histogram"
 	p.X.Label.Text = "X"
@@ -51,7 +56,7 @@ func ExampleHistogram() {
 	// from the standard normal.
 	h, err := hplot.NewH1D(hist)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	h.Infos.Style = hplot.HInfoSummary
 	p.Add(h)
@@ -67,10 +72,24 @@ func ExampleHistogram() {
 
 	// Save the plot to a PNG file.
 	if err := p.Save(6*vg.Inch, -1, "testdata/h1d_plot.png"); err != nil {
-		log.Fatalf("error saving plot: %v\n", err)
+		t.Fatalf("error saving plot: %v\n", err)
 	}
 }
 
 func TestHistogram1D(t *testing.T) {
-	ExampleHistogram()
+	ExampleH1D(t)
+
+	want, err := ioutil.ReadFile("testdata/h1d_plot_golden.png")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := ioutil.ReadFile("testdata/h1d_plot.png")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if ok, err := cmpimg.Equal("png", got, want); !ok || err != nil {
+		t.Fatalf("error: testdata/h1d_plot.png differ with reference file: %v\n", err)
+	}
 }

@@ -58,7 +58,11 @@ func main() {
 	}
 
 	// normalize histogram
-	hist.Scale(1 / hist.Integral())
+	area := 0.0
+	for _, bin := range hist.Binning().Bins() {
+		area += bin.SumW() * bin.XWidth()
+	}
+	hist.Scale(1 / area)
 
 	// Make a plot and set its title.
 	p, err := hplot.New()

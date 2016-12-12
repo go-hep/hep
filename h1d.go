@@ -16,9 +16,9 @@ import (
 	"github.com/gonum/plot/vg/draw"
 )
 
-// Histogram implements the plotter.Plotter interface,
+// H1D implements the plotter.Plotter interface,
 // drawing a histogram of the data.
-type Histogram struct {
+type H1D struct {
 	// Hist is the histogramming data
 	Hist *hbook.H1D
 
@@ -50,7 +50,7 @@ type HInfos struct {
 	Style HInfoStyle
 }
 
-// NewHistogram returns a new histogram
+// NewH1FromXYer returns a new histogram
 // that represents the distribution of values
 // using the given number of bins.
 //
@@ -59,7 +59,7 @@ type HInfos struct {
 //
 // If the number of bins is non-positive than
 // a reasonable default is used.
-func NewHistogram(xy plotter.XYer, n int) (*Histogram, error) {
+func NewH1FromXYer(xy plotter.XYer, n int) (*H1D, error) {
 	if n <= 0 {
 		return nil, errors.New("Histogram with non-positive number of bins")
 	}
@@ -67,11 +67,11 @@ func NewHistogram(xy plotter.XYer, n int) (*Histogram, error) {
 	return NewH1D(h)
 }
 
-// NewHist returns a new histogram, as in
-// NewHistogram, except that it accepts a plotter.Valuer
+// NewH1FromValuer returns a new histogram, as in
+// NewH1FromXYer, except that it accepts a plotter.Valuer
 // instead of an XYer.
-func NewHist(vs plotter.Valuer, n int) (*Histogram, error) {
-	return NewHistogram(unitYs{vs}, n)
+func NewH1FromValuer(vs plotter.Valuer, n int) (*H1D, error) {
+	return NewH1FromXYer(unitYs{vs}, n)
 }
 
 type unitYs struct {
@@ -83,10 +83,10 @@ func (u unitYs) XY(i int) (float64, float64) {
 }
 
 // NewH1D returns a new histogram, as in
-// NewHistogram, except that it accepts a hbook.H1D
+// NewH1DFromXYer, except that it accepts a hbook.H1D
 // instead of a plotter.XYer
-func NewH1D(h *hbook.H1D) (*Histogram, error) {
-	return &Histogram{
+func NewH1D(h *hbook.H1D) (*H1D, error) {
+	return &H1D{
 		Hist:      h,
 		FillColor: color.White,
 		LineStyle: plotter.DefaultLineStyle,
@@ -94,13 +94,13 @@ func NewH1D(h *hbook.H1D) (*Histogram, error) {
 }
 
 // DataRange returns the minimum and maximum X and Y values
-func (h *Histogram) DataRange() (xmin, xmax, ymin, ymax float64) {
+func (h *H1D) DataRange() (xmin, xmax, ymin, ymax float64) {
 	return h.Hist.DataRange()
 }
 
 // Plot implements the Plotter interface, drawing a line
 // that connects each point in the Line.
-func (h *Histogram) Plot(c draw.Canvas, p *plot.Plot) {
+func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 	trX, trY := p.Transforms(&c)
 	var pts []vg.Point
 	hist := h.Hist
@@ -165,7 +165,7 @@ func (h *Histogram) Plot(c draw.Canvas, p *plot.Plot) {
 // GlyphBoxes returns a slice of GlyphBoxes,
 // one for each of the bins, implementing the
 // plot.GlyphBoxer interface.
-func (h *Histogram) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
+func (h *H1D) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
 	bins := h.Hist.Binning().Bins()
 	bs := make([]plot.GlyphBox, len(bins))
 	for i, _ := range bs {

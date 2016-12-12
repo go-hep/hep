@@ -52,7 +52,7 @@ func main() {
 	}
 
 	// create histogram from data
-	h, err := hplot.NewHist(values, 16)
+	h, err := hplot.NewH1FromValuer(values, 16)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "**error** creating histogram: %v\n", err)
 		os.Exit(1)
