@@ -191,12 +191,12 @@ func (tsk *testhsvc) StopTask(ctx fwk.Context) error {
 	if h.Entries() != nentries {
 		return fwk.Errorf("expected %d entries. got=%d", nentries, h.Entries())
 	}
-	mean := h.Mean()
+	mean := h.XMean()
 	if mean != 4.5 {
 		return fwk.Errorf("expected mean=%v. got=%v", 4.5, mean)
 	}
 
-	rms := h.RMS()
+	rms := h.XRMS()
 	if rms != 2.8722813232690143 {
 		return fwk.Errorf("expected RMS=%v. got=%v", 2.8722813232690143, rms)
 	}

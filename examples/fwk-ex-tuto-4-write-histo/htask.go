@@ -53,12 +53,12 @@ func (tsk *testhsvc) StopTask(ctx fwk.Context) error {
 	if h.Entries() != *evtmax {
 		return fwk.Errorf("expected %d entries. got=%d", *evtmax, h.Entries())
 	}
-	mean := h.Mean()
+	mean := h.XMean()
 	if mean != 4.5 {
 		return fwk.Errorf("expected mean=%v. got=%v", 4.5, mean)
 	}
 
-	rms := h.RMS()
+	rms := h.XRMS()
 	if rms != 2.8722813232690143 {
 		return fwk.Errorf("expected RMS=%v. got=%v", 2.8722813232690143, rms)
 	}
@@ -67,8 +67,8 @@ func (tsk *testhsvc) StopTask(ctx fwk.Context) error {
 	msg.Infof("histo[%s]: entries=%v mean=%v RMS=%v\n",
 		tsk.h1d.ID,
 		h.Entries(),
-		h.Mean(),
-		h.RMS(),
+		h.XMean(),
+		h.XRMS(),
 	)
 
 	return err
