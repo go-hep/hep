@@ -65,7 +65,7 @@ func (mgr *histMgr) plotH1D(wmgr *winMgr, hid string) error {
 	}
 
 	fmt.Printf("== h1d: name=%q\nentries=%d\nmean=%+8.3f\nRMS= %+8.3f\n",
-		h.Name(), h.Entries(), h.Mean(), h.RMS(),
+		h.Name(), h.Entries(), h.XMean(), h.XRMS(),
 	)
 
 	p, err := hplot.New()
