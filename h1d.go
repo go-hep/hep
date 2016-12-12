@@ -104,25 +104,27 @@ func (h *Histogram) Plot(c draw.Canvas, p *plot.Plot) {
 	trX, trY := p.Transforms(&c)
 	var pts []vg.Point
 	hist := h.Hist
-	axis := hist.Binning()
-	nbins := int(axis.Bins())
-	for bin := 0; bin < nbins; bin++ {
-		switch bin {
+	bins := h.Hist.Binning().Bins()
+	nbins := len(bins)
+	for i, bin := range bins {
+		switch i {
 		case 0:
-			pts = append(pts, vg.Point{trX(axis.BinLowerEdge(bin)), trY(0)})
-			pts = append(pts, vg.Point{trX(axis.BinLowerEdge(bin)), trY(hist.Value(bin))})
-			pts = append(pts, vg.Point{trX(axis.BinUpperEdge(bin)), trY(hist.Value(bin))})
+			pts = append(pts, vg.Point{trX(bin.XMin()), trY(0)})
+			pts = append(pts, vg.Point{trX(bin.XMin()), trY(bin.SumW())})
+			pts = append(pts, vg.Point{trX(bin.XMax()), trY(bin.SumW())})
 
 		case nbins - 1:
-			pts = append(pts, vg.Point{trX(axis.BinUpperEdge(bin - 1)), trY(hist.Value(bin - 1))})
-			pts = append(pts, vg.Point{trX(axis.BinLowerEdge(bin)), trY(hist.Value(bin))})
-			pts = append(pts, vg.Point{trX(axis.BinUpperEdge(bin)), trY(hist.Value(bin))})
-			pts = append(pts, vg.Point{trX(axis.BinUpperEdge(bin)), trY(0.)})
+			lft := bins[i-1]
+			pts = append(pts, vg.Point{trX(lft.XMax()), trY(lft.SumW())})
+			pts = append(pts, vg.Point{trX(bin.XMin()), trY(bin.SumW())})
+			pts = append(pts, vg.Point{trX(bin.XMax()), trY(bin.SumW())})
+			pts = append(pts, vg.Point{trX(bin.XMax()), trY(0.)})
 
 		default:
-			pts = append(pts, vg.Point{trX(axis.BinUpperEdge(bin - 1)), trY(hist.Value(bin - 1))})
-			pts = append(pts, vg.Point{trX(axis.BinLowerEdge(bin)), trY(hist.Value(bin))})
-			pts = append(pts, vg.Point{trX(axis.BinUpperEdge(bin)), trY(hist.Value(bin))})
+			lft := bins[i-1]
+			pts = append(pts, vg.Point{trX(lft.XMax()), trY(lft.SumW())})
+			pts = append(pts, vg.Point{trX(bin.XMin()), trY(bin.SumW())})
+			pts = append(pts, vg.Point{trX(bin.XMax()), trY(bin.SumW())})
 		}
 	}
 
@@ -143,14 +145,14 @@ func (h *Histogram) Plot(c draw.Canvas, p *plot.Plot) {
 			switch h.Infos.Style {
 			case HInfoSummary:
 				legend.Add("Entries", hist.Entries())
-				legend.Add("Mean", hist.Mean())
-				legend.Add("RMS", hist.RMS())
+				legend.Add("Mean", hist.XMean())
+				legend.Add("RMS", hist.XRMS())
 			case HInfoEntries:
 				legend.Add("Entries", hist.Entries())
 			case HInfoMean:
-				legend.Add("Mean", hist.Mean())
+				legend.Add("Mean", hist.XMean())
 			case HInfoRMS:
-				legend.Add("RMS", hist.RMS())
+				legend.Add("RMS", hist.XRMS())
 			default:
 			}
 			legend.Top = true
@@ -164,12 +166,13 @@ func (h *Histogram) Plot(c draw.Canvas, p *plot.Plot) {
 // one for each of the bins, implementing the
 // plot.GlyphBoxer interface.
 func (h *Histogram) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
-	axis := h.Hist.Binning()
-	bs := make([]plot.GlyphBox, axis.Bins())
+	bins := h.Hist.Binning().Bins()
+	bs := make([]plot.GlyphBox, len(bins))
 	for i, _ := range bs {
-		y := h.Hist.Value(i)
-		xmin := axis.BinLowerEdge(i)
-		w := p.X.Norm(axis.BinWidth(i))
+		bin := bins[i]
+		y := bin.SumW()
+		xmin := bin.XMin()
+		w := p.X.Norm(bin.XWidth())
 		bs[i].X = p.X.Norm(xmin + 0.5*w)
 		bs[i].Y = p.Y.Norm(y)
 		//h := vg.Points(1e-5) //1 //p.Y.Norm(axis.BinWidth(i))
