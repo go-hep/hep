@@ -23,6 +23,8 @@ type Generator struct {
 	// set of imported packages.
 	// usually: "encoding/binary", "math"
 	imps map[string]int
+
+	Verbose bool // enable verbose mode
 }
 
 // NewGenerator returns a new code generator for package p,
@@ -60,7 +62,9 @@ func (g *Generator) Generate(typeName string) {
 	if !ok {
 		log.Fatalf("%q is not a named struct (%v)\n", typeName, tn)
 	}
-	log.Printf("typ: %+v\n", typ)
+	if g.Verbose {
+		log.Printf("typ: %+v\n", typ)
+	}
 
 	g.genMarshal(typ, typeName)
 	g.genUnmarshal(typ, typeName)
@@ -77,7 +81,6 @@ func (o *%[1]s) MarshalBinary() (data []byte, err error) {
 	typ := t.Underlying().(*types.Struct)
 	for i := 0; i < typ.NumFields(); i++ {
 		ft := typ.Field(i)
-		log.Printf("field[%d]: %v\n", i, ft)
 		g.genMarshalType(ft.Type(), "o."+ft.Name())
 	}
 
@@ -271,7 +274,6 @@ func (o *%[1]s) UnmarshalBinary(data []byte) (err error) {
 	typ := t.Underlying().(*types.Struct)
 	for i := 0; i < typ.NumFields(); i++ {
 		ft := typ.Field(i)
-		log.Printf("field[%d]: %v\n", i, ft)
 		g.genUnmarshalType(ft.Type(), "o."+ft.Name())
 	}
 
