@@ -15,6 +15,11 @@ import (
 	"strings"
 )
 
+var (
+	binMa *types.Interface // encoding.BinaryMarshaler
+	binUn *types.Interface // encoding.BinaryUnmarshaler
+)
+
 // Generator holds the state of the generation.
 type Generator struct {
 	buf *bytes.Buffer
@@ -42,7 +47,7 @@ func NewGenerator(p string) (*Generator, error) {
 	}, nil
 }
 
-func (g *Generator) Printf(format string, args ...interface{}) {
+func (g *Generator) printf(format string, args ...interface{}) {
 	fmt.Fprintf(g.buf, format, args...)
 }
 
@@ -71,7 +76,7 @@ func (g *Generator) Generate(typeName string) {
 }
 
 func (g *Generator) genMarshal(t types.Type, typeName string) {
-	g.Printf(`// MarshalBinary implements encoding.BinaryMarshaler
+	g.printf(`// MarshalBinary implements encoding.BinaryMarshaler
 func (o *%[1]s) MarshalBinary() (data []byte, err error) {
 	var buf [8]byte
 `,
@@ -84,177 +89,186 @@ func (o *%[1]s) MarshalBinary() (data []byte, err error) {
 		g.genMarshalType(ft.Type(), "o."+ft.Name())
 	}
 
-	g.Printf("return data, err\n}\n\n")
+	g.printf("return data, err\n}\n\n")
 }
 
 func (g *Generator) genMarshalType(t types.Type, n string) {
+	if types.Implements(t, binMa) || types.Implements(types.NewPointer(t), binMa) {
+		g.printf("{\nsub, err := %s.MarshalBinary()\n", n)
+		g.printf("if err != nil {\nreturn nil, err\n}\n")
+		g.printf("binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))\n")
+		g.printf("data = append(data, sub...)\n")
+		g.printf("}\n")
+		return
+	}
+
 	ut := t.Underlying()
 	switch ut := ut.(type) {
 	case *types.Basic:
 		switch kind := ut.Kind(); kind {
 
 		case types.Bool:
-			g.Printf("if %s { data = append(data, uint8(1))\n", n)
-			g.Printf("}else { data = append(data, uint8(0)) }\n")
+			g.printf("if %s { data = append(data, uint8(1))\n", n)
+			g.printf("}else { data = append(data, uint8(0)) }\n")
 
 		case types.Uint:
-			g.Printf("binary.LittleEndian.PutUint64(buf[:8], uint64(%s))\n", n)
-			g.Printf("data = append(data, buf[:8]...)\n")
+			g.printf("binary.LittleEndian.PutUint64(buf[:8], uint64(%s))\n", n)
+			g.printf("data = append(data, buf[:8]...)\n")
 
 		case types.Uint8:
-			g.Printf("data = append(data, byte(%s))\n", n)
+			g.printf("data = append(data, byte(%s))\n", n)
 
 		case types.Uint16:
-			g.Printf(
+			g.printf(
 				"binary.LittleEndian.PutUint16(buf[:2], %s)\n",
 				n,
 			)
-			g.Printf("data = append(data, buf[:2]...)\n")
+			g.printf("data = append(data, buf[:2]...)\n")
 
 		case types.Uint32:
-			g.Printf(
+			g.printf(
 				"binary.LittleEndian.PutUint32(buf[:4], %s)\n",
 				n,
 			)
-			g.Printf("data = append(data, buf[:4]...)\n")
+			g.printf("data = append(data, buf[:4]...)\n")
 
 		case types.Uint64:
-			g.Printf(
+			g.printf(
 				"binary.LittleEndian.PutUint64(buf[:8], %s)\n",
 				n,
 			)
-			g.Printf("data = append(data, buf[:8]...)\n")
+			g.printf("data = append(data, buf[:8]...)\n")
 
 		case types.Int:
-			g.Printf(
+			g.printf(
 				"binary.LittleEndian.PutUint64(buf[:8], uint64(%s))\n",
 				n,
 			)
-			g.Printf("data = append(data, buf[:8]...)\n")
+			g.printf("data = append(data, buf[:8]...)\n")
 
 		case types.Int8:
-			g.Printf("data = append(data, byte(%s))\n", n)
+			g.printf("data = append(data, byte(%s))\n", n)
 
 		case types.Int16:
-			g.Printf(
+			g.printf(
 				"binary.LittleEndian.PutUint16(buf[:2], uint16(%s))\n",
 				n,
 			)
-			g.Printf("data = append(data, buf[:2]...)\n")
+			g.printf("data = append(data, buf[:2]...)\n")
 
 		case types.Int32:
-			g.Printf(
+			g.printf(
 				"binary.LittleEndian.PutUint32(buf[:4], uint32(%s))\n",
 				n,
 			)
-			g.Printf("data = append(data, buf[:4]...)\n")
+			g.printf("data = append(data, buf[:4]...)\n")
 
 		case types.Int64:
-			g.Printf(
+			g.printf(
 				"binary.LittleEndian.PutUint64(buf[:8], uint64(%s))\n",
 				n,
 			)
-			g.Printf("data = append(data, buf[:8]...)\n")
+			g.printf("data = append(data, buf[:8]...)\n")
 
 		case types.Float32:
 			g.imps["math"] = 1
-			g.Printf(
+			g.printf(
 				"binary.LittleEndian.PutUint32(buf[:4], math.Float32bits(%s))\n",
 				n,
 			)
-			g.Printf("data = append(data, buf[:4]...)\n")
+			g.printf("data = append(data, buf[:4]...)\n")
 
 		case types.Float64:
 			g.imps["math"] = 1
-			g.Printf(
+			g.printf(
 				"binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(%s))\n",
 				n,
 			)
-			g.Printf("data = append(data, buf[:8]...)\n")
+			g.printf("data = append(data, buf[:8]...)\n")
 
 		case types.Complex64:
 			g.imps["math"] = 1
-			g.Printf(
+			g.printf(
 				"binary.LittleEndian.PutUint64(buf[:4], math.Float32bits(real(%s)))\n",
 				n,
 			)
-			g.Printf("data = append(data, buf[:4]...)\n")
-			g.Printf(
+			g.printf("data = append(data, buf[:4]...)\n")
+			g.printf(
 				"binary.LittleEndian.PutUint64(buf[:4], math.Float32bits(imag(%s)))\n",
 				n,
 			)
-			g.Printf("data = append(data, buf[:4]...)\n")
+			g.printf("data = append(data, buf[:4]...)\n")
 
 		case types.Complex128:
 			g.imps["math"] = 1
-			g.Printf(
+			g.printf(
 				"binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(real(%s)))\n",
 				n,
 			)
-			g.Printf("data = append(data, buf[:8]...)\n")
-			g.Printf(
+			g.printf("data = append(data, buf[:8]...)\n")
+			g.printf(
 				"binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(imag(%s)))\n",
 				n,
 			)
-			g.Printf("data = append(data, buf[:8]...)\n")
+			g.printf("data = append(data, buf[:8]...)\n")
 
 		case types.String:
-			g.Printf(
+			g.printf(
 				"binary.LittleEndian.PutUint64(buf[:8], uint64(len(%s)))\n",
 				n,
 			)
-			g.Printf("data = append(data, buf[:8]...)\n")
-			g.Printf("data = append(data, []byte(%s)...)\n", n)
+			g.printf("data = append(data, buf[:8]...)\n")
+			g.printf("data = append(data, []byte(%s)...)\n", n)
 
 		default:
 			log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
 		}
 
 	case *types.Struct:
-		g.Printf("{\nsub, err := %s.MarshalBinary()\n", n)
-		g.Printf("if err != nil {\nreturn nil, err\n}\n")
-		g.Printf("binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))\n")
-		g.Printf("data = append(data, sub...)\n")
-		g.Printf("}\n")
+		g.printf("{\nsub, err := %s.MarshalBinary()\n", n)
+		g.printf("if err != nil {\nreturn nil, err\n}\n")
+		g.printf("binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))\n")
+		g.printf("data = append(data, sub...)\n")
+		g.printf("}\n")
 
 	case *types.Array:
 		if isByteType(ut.Elem()) {
-			g.Printf("data = append(data, %s[:]...)\n", n)
+			g.printf("data = append(data, %s[:]...)\n", n)
 		} else {
-			g.Printf("for i := range %s {\n", n)
+			g.printf("for i := range %s {\n", n)
 			if _, ok := ut.Elem().(*types.Pointer); ok {
-				g.Printf("o := %s[i]\n", n)
+				g.printf("o := %s[i]\n", n)
 			} else {
-				g.Printf("o := &%s[i]\n", n)
+				g.printf("o := &%s[i]\n", n)
 			}
 			g.genMarshalType(ut.Elem(), "o")
-			g.Printf("}\n")
+			g.printf("}\n")
 		}
 
 	case *types.Slice:
-		g.Printf(
+		g.printf(
 			"binary.LittleEndian.PutUint64(buf[:8], uint64(len(%s)))\n",
 			n,
 		)
-		g.Printf("data = append(data, buf[:8]...)\n")
+		g.printf("data = append(data, buf[:8]...)\n")
 		if isByteType(ut.Elem()) {
-			g.Printf("data = append(data, %s...)\n", n)
+			g.printf("data = append(data, %s...)\n", n)
 		} else {
-			g.Printf("for i := range %s {\n", n)
+			g.printf("for i := range %s {\n", n)
 			if _, ok := ut.Elem().(*types.Pointer); ok {
-				g.Printf("o := %s[i]\n", n)
+				g.printf("o := %s[i]\n", n)
 			} else {
-				g.Printf("o := &%s[i]\n", n)
+				g.printf("o := &%s[i]\n", n)
 			}
 			g.genMarshalType(ut.Elem(), "o")
-			g.Printf("}\n")
+			g.printf("}\n")
 		}
 
 	case *types.Pointer:
-		g.Printf("{\n")
-		g.Printf("v := *%s\n", n)
+		g.printf("{\n")
+		g.printf("v := *%s\n", n)
 		g.genUnmarshal(ut.Elem(), "v")
-		g.Printf("}\n")
+		g.printf("}\n")
 
 	default:
 		log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
@@ -262,7 +276,7 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 }
 
 func (g *Generator) genUnmarshal(t types.Type, typeName string) {
-	g.Printf(`// UnmarshalBinary implements encoding.BinaryUnmarshaler
+	g.printf(`// UnmarshalBinary implements encoding.BinaryUnmarshaler
 func (o *%[1]s) UnmarshalBinary(data []byte) (err error) {
 `,
 		typeName,
@@ -274,157 +288,168 @@ func (o *%[1]s) UnmarshalBinary(data []byte) (err error) {
 		g.genUnmarshalType(ft.Type(), "o."+ft.Name())
 	}
 
-	g.Printf("return err\n}\n\n")
+	g.printf("return err\n}\n\n")
 }
 
 func (g *Generator) genUnmarshalType(t types.Type, n string) {
+	if types.Implements(t, binUn) || types.Implements(types.NewPointer(t), binUn) {
+		g.printf("{\n")
+		g.printf("n := int(binary.LittleEndian.Uint64(data[:8]))\n")
+		g.printf("data = data[8:]\n")
+		g.printf("err = %s.UnmarshalBinary(data[:n])\n", n)
+		g.printf("if err != nil {\nreturn err\n}\n")
+		g.printf("data = data[n:]\n")
+		g.printf("}\n")
+		return
+	}
+
 	ut := t.Underlying()
 	switch ut := ut.(type) {
 	case *types.Basic:
 		switch kind := ut.Kind(); kind {
 
 		case types.Bool:
-			g.Printf("if data[i] == 1 { %s = true }\n", n)
-			g.Printf("}else { %s = false }\n", n)
-			g.Printf("data = data[1:]\n")
+			g.printf("if data[i] == 1 { %s = true }\n", n)
+			g.printf("}else { %s = false }\n", n)
+			g.printf("data = data[1:]\n")
 
 		case types.Uint:
-			g.Printf("%s = uint(binary.LittleEndian.Uint64(data[:8]))\n", n)
-			g.Printf("data = data[8:]\n")
+			g.printf("%s = uint(binary.LittleEndian.Uint64(data[:8]))\n", n)
+			g.printf("data = data[8:]\n")
 
 		case types.Uint8:
-			g.Printf("%s = data[0]\n", n)
-			g.Printf("data = data[1:]\n")
+			g.printf("%s = data[0]\n", n)
+			g.printf("data = data[1:]\n")
 
 		case types.Uint16:
-			g.Printf("%s = binary.LittleEndian.Uint16(data[:2])\n", n)
-			g.Printf("data = data[2:]\n")
+			g.printf("%s = binary.LittleEndian.Uint16(data[:2])\n", n)
+			g.printf("data = data[2:]\n")
 
 		case types.Uint32:
-			g.Printf("%s = binary.LittleEndian.Uint32(data[:4])\n", n)
-			g.Printf("data = data[4:]\n")
+			g.printf("%s = binary.LittleEndian.Uint32(data[:4])\n", n)
+			g.printf("data = data[4:]\n")
 
 		case types.Uint64:
-			g.Printf("%s = binary.LittleEndian.Uint64(data[:8])\n", n)
-			g.Printf("data = data[8:]\n")
+			g.printf("%s = binary.LittleEndian.Uint64(data[:8])\n", n)
+			g.printf("data = data[8:]\n")
 
 		case types.Int:
-			g.Printf("%s = int(binary.LittleEndian.Uint64(data[:8]))\n", n)
-			g.Printf("data = data[8:]\n")
+			g.printf("%s = int(binary.LittleEndian.Uint64(data[:8]))\n", n)
+			g.printf("data = data[8:]\n")
 
 		case types.Int8:
-			g.Printf("%s = int8(data[0])\n", n)
-			g.Printf("data = data[1:]\n")
+			g.printf("%s = int8(data[0])\n", n)
+			g.printf("data = data[1:]\n")
 
 		case types.Int16:
-			g.Printf("%s = int16(binary.LittleEndian.Uint16(data[:2]))\n", n)
-			g.Printf("data = data[2:]\n")
+			g.printf("%s = int16(binary.LittleEndian.Uint16(data[:2]))\n", n)
+			g.printf("data = data[2:]\n")
 
 		case types.Int32:
-			g.Printf("%s = int32(binary.LittleEndian.Uint32(data[:4]))\n", n)
-			g.Printf("data = data[4:]\n")
+			g.printf("%s = int32(binary.LittleEndian.Uint32(data[:4]))\n", n)
+			g.printf("data = data[4:]\n")
 
 		case types.Int64:
-			g.Printf("%s = int64(binary.LittleEndian.Uint64(data[:8]))\n", n)
-			g.Printf("data = data[8:]\n")
+			g.printf("%s = int64(binary.LittleEndian.Uint64(data[:8]))\n", n)
+			g.printf("data = data[8:]\n")
 
 		case types.Float32:
 			g.imps["math"] = 1
-			g.Printf("%s = math.Float32frombits(binary.LittleEndian.Uint32(data[:4]))\n", n)
-			g.Printf("data = data[4:]\n")
+			g.printf("%s = math.Float32frombits(binary.LittleEndian.Uint32(data[:4]))\n", n)
+			g.printf("data = data[4:]\n")
 
 		case types.Float64:
 			g.imps["math"] = 1
-			g.Printf("%s = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))\n", n)
-			g.Printf("data = data[8:]\n")
+			g.printf("%s = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))\n", n)
+			g.printf("data = data[8:]\n")
 
 		case types.Complex64:
 			g.imps["math"] = 1
-			g.Printf("%s = complex(math.Float32frombits(binary.LittleEndian.Uint32(data[:4])), math.Float32frombits(binary.LittleEndian.Uint32(data[4:8])))\n", n)
-			g.Printf("data = data[8:]\n")
+			g.printf("%s = complex(math.Float32frombits(binary.LittleEndian.Uint32(data[:4])), math.Float32frombits(binary.LittleEndian.Uint32(data[4:8])))\n", n)
+			g.printf("data = data[8:]\n")
 
 		case types.Complex128:
 			g.imps["math"] = 1
-			g.Printf("%s = complex(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])), math.Float64frombits(binary.LittleEndian.Uint64(data[8:16])))\n", n)
-			g.Printf("data = data[16:]\n")
+			g.printf("%s = complex(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])), math.Float64frombits(binary.LittleEndian.Uint64(data[8:16])))\n", n)
+			g.printf("data = data[16:]\n")
 
 		case types.String:
-			g.Printf("{\n")
-			g.Printf("n := int(binary.LittleEndian.Uint64(data[:8]))\n")
-			g.Printf("data = data[8:])\n")
-			g.Printf("%s = string(data[:n])\n", n)
-			g.Printf("data = data[n:]\n")
-			g.Printf("}\n")
+			g.printf("{\n")
+			g.printf("n := int(binary.LittleEndian.Uint64(data[:8]))\n")
+			g.printf("data = data[8:])\n")
+			g.printf("%s = string(data[:n])\n", n)
+			g.printf("data = data[n:]\n")
+			g.printf("}\n")
 
 		default:
 			log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
 		}
 
 	case *types.Struct:
-		g.Printf("{\n")
-		g.Printf("n := int(binary.LittleEndian.Uint64(data[:8]))\n")
-		g.Printf("data = data[8:]\n")
-		g.Printf("err = %s.UnmarshalBinary(data[:n])\n", n)
-		g.Printf("if err != nil {\nreturn err\n}\n")
-		g.Printf("data = data[n:]\n")
-		g.Printf("}\n")
+		g.printf("{\n")
+		g.printf("n := int(binary.LittleEndian.Uint64(data[:8]))\n")
+		g.printf("data = data[8:]\n")
+		g.printf("err = %s.UnmarshalBinary(data[:n])\n", n)
+		g.printf("if err != nil {\nreturn err\n}\n")
+		g.printf("data = data[n:]\n")
+		g.printf("}\n")
 
 	case *types.Array:
 		if isByteType(ut.Elem()) {
-			g.Printf("copy(%s[:], data[:n])\n", n)
-			g.Printf("data = data[n:]\n")
+			g.printf("copy(%s[:], data[:n])\n", n)
+			g.printf("data = data[n:]\n")
 		} else {
-			g.Printf("for i := range %s {\n", n)
+			g.printf("for i := range %s {\n", n)
 			nn := n + "[i]"
 			if pt, ok := ut.Elem().(*types.Pointer); ok {
-				g.Printf("var oi %s\n", qualTypeName(pt.Elem(), g.pkg))
+				g.printf("var oi %s\n", qualTypeName(pt.Elem(), g.pkg))
 				nn = "oi"
 			}
 			if _, ok := ut.Elem().Underlying().(*types.Struct); ok {
-				g.Printf("oi := &%s[i]\n", n)
+				g.printf("oi := &%s[i]\n", n)
 				nn = "oi"
 			}
 			g.genUnmarshalType(ut.Elem(), nn)
 			if _, ok := ut.Elem().(*types.Pointer); ok {
-				g.Printf("%s[i] = oi\n", n)
+				g.printf("%s[i] = oi\n", n)
 			}
-			g.Printf("}\n")
+			g.printf("}\n")
 		}
 
 	case *types.Slice:
-		g.Printf("{\n")
-		g.Printf("n := int(binary.LittleEndian.Uint64(data[:8]))\n")
-		g.Printf("%[1]s = make([]%[2]s, n)\n", n, qualTypeName(ut.Elem(), g.pkg))
-		g.Printf("data = data[8:]\n")
+		g.printf("{\n")
+		g.printf("n := int(binary.LittleEndian.Uint64(data[:8]))\n")
+		g.printf("%[1]s = make([]%[2]s, n)\n", n, qualTypeName(ut.Elem(), g.pkg))
+		g.printf("data = data[8:]\n")
 		if isByteType(ut.Elem()) {
-			g.Printf("%[1]s = append(%[1]s, data[:n]...)\n", n)
-			g.Printf("data = data[n:]\n")
+			g.printf("%[1]s = append(%[1]s, data[:n]...)\n", n)
+			g.printf("data = data[n:]\n")
 		} else {
-			g.Printf("for i := range %s {\n", n)
+			g.printf("for i := range %s {\n", n)
 			nn := n + "[i]"
 			if pt, ok := ut.Elem().(*types.Pointer); ok {
-				g.Printf("var oi %s\n", qualTypeName(pt.Elem(), g.pkg))
+				g.printf("var oi %s\n", qualTypeName(pt.Elem(), g.pkg))
 				nn = "oi"
 			}
 			if _, ok := ut.Elem().Underlying().(*types.Struct); ok {
-				g.Printf("oi := &%s[i]\n", n)
+				g.printf("oi := &%s[i]\n", n)
 				nn = "oi"
 			}
 			g.genUnmarshalType(ut.Elem(), nn)
 			if _, ok := ut.Elem().(*types.Pointer); ok {
-				g.Printf("%s[i] = oi\n", n)
+				g.printf("%s[i] = oi\n", n)
 			}
-			g.Printf("}\n")
+			g.printf("}\n")
 		}
-		g.Printf("}\n")
+		g.printf("}\n")
 
 	case *types.Pointer:
-		g.Printf("{\n")
+		g.printf("{\n")
 		elt := ut.Elem()
-		g.Printf("var v %s\n", qualTypeName(elt, g.pkg))
+		g.printf("var v %s\n", qualTypeName(elt, g.pkg))
 		g.genUnmarshal(elt, "v")
-		g.Printf("%s = &v\n\n", n)
-		g.Printf("}\n")
+		g.printf("%s = &v\n\n", n)
+		g.printf("}\n")
 
 	default:
 		log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
@@ -475,4 +500,23 @@ import (
 		log.Printf("=== error ===\n%s\n", buf.Bytes())
 	}
 	return src, err
+}
+
+func init() {
+	pkg, err := importer.Default().Import("encoding")
+	if err != nil {
+		log.Fatalf("error finding package \"encoding\": %v\n", err)
+	}
+
+	o := pkg.Scope().Lookup("BinaryMarshaler")
+	if o == nil {
+		log.Fatalf("could not find interface encoding.BinaryMarshaler\n")
+	}
+	binMa = o.(*types.TypeName).Type().Underlying().(*types.Interface)
+
+	o = pkg.Scope().Lookup("BinaryUnmarshaler")
+	if o == nil {
+		log.Fatalf("could not find interface encoding.BinaryUnmarshaler\n")
+	}
+	binUn = o.(*types.TypeName).Type().Underlying().(*types.Interface)
 }
