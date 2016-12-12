@@ -272,6 +272,9 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 		g.genUnmarshal(ut.Elem(), "v")
 		g.printf("}\n")
 
+	case *types.Interface:
+		log.Fatalf("marshal interface not supported (type=%v)\n", t)
+
 	default:
 		log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
 	}
@@ -452,6 +455,9 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 		g.genUnmarshal(elt, "v")
 		g.printf("%s = &v\n\n", n)
 		g.printf("}\n")
+
+	case *types.Interface:
+		log.Fatalf("marshal interface not supported (type=%v)\n", t)
 
 	default:
 		log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
