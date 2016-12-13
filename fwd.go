@@ -33,5 +33,3 @@ func NewScatter(xys plotter.XYer) (*plotter.Scatter, error) {
 func NewGrid() *plotter.Grid {
 	return plotter.NewGrid()
 }
-
-// EOF

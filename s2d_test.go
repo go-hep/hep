@@ -86,8 +86,8 @@ func ExampleS2D_withErrorBars(t *testing.T) {
 	p.Add(plotter.NewGrid())
 
 	s := hplot.NewS2D(s2d)
-	s.XErrBars()
-	s.YErrBars()
+	s.Options |= hplot.WithXErrBars
+	s.Options |= hplot.WithYErrBars
 	s.GlyphStyle.Color = color.RGBA{R: 255, A: 255}
 	s.GlyphStyle.Radius = vg.Points(4)
 

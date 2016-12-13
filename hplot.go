@@ -131,3 +131,12 @@ func ZipXY(x, y []float64) plotter.XYer {
 	}
 	return zip{x: x, y: y}
 }
+
+// Options encodes various options to pass to a plot.
+type Options int32
+
+const (
+	OptNone      Options = 1 << iota // default
+	WithXErrBars                     // enable display of X-error bars (if available)
+	WithYErrBars                     // enable display of Y-error bars (if available)
+)

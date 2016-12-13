@@ -19,15 +19,21 @@ type S2D struct {
 	// at each point.
 	draw.GlyphStyle
 
+	// Options controls various display options of this plot.
+	Options Options
+
 	xbars *plotter.XErrorBars
 	ybars *plotter.YErrorBars
 }
 
-// XErrBars enables the X error bars
-func (pts *S2D) XErrBars() error {
+// withXErrBars enables the X error bars
+func (pts *S2D) withXErrBars() error {
+	if pts.Options&WithXErrBars == 0 {
+		pts.xbars = nil
+		return nil
+	}
 	xerr, ok := pts.Data.(plotter.XErrorer)
 	if !ok {
-		panic("boo-x")
 		return nil
 	}
 
@@ -44,8 +50,12 @@ func (pts *S2D) XErrBars() error {
 	return nil
 }
 
-// YErrBars enables the Y error bars
-func (pts *S2D) YErrBars() error {
+// withYErrBars enables the Y error bars
+func (pts *S2D) withYErrBars() error {
+	if pts.Options&WithYErrBars == 0 {
+		pts.ybars = nil
+		return nil
+	}
 	yerr, ok := pts.Data.(plotter.YErrorer)
 	if !ok {
 		return nil
@@ -71,13 +81,19 @@ func NewS2D(data plotter.XYer) *S2D {
 		GlyphStyle: plotter.DefaultGlyphStyle,
 	}
 	s.GlyphStyle.Shape = draw.CrossGlyph{}
-
 	return s
 }
 
 // Plot draws the Scatter, implementing the plot.Plotter
 // interface.
 func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
+	for _, f := range []func() error{pts.withXErrBars, pts.withYErrBars} {
+		err := f()
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	trX, trY := plt.Transforms(&c)
 	for i := 0; i < pts.Data.Len(); i++ {
 		x, y := pts.Data.XY(i)

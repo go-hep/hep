@@ -168,7 +168,7 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 func (h *H1D) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
 	bins := h.Hist.Binning().Bins()
 	bs := make([]plot.GlyphBox, len(bins))
-	for i, _ := range bs {
+	for i := range bs {
 		bin := bins[i]
 		y := bin.SumW()
 		xmin := bin.XMin()
