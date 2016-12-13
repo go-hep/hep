@@ -137,7 +137,7 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 		fnt, err := vg.MakeFont(plotter.DefaultFont, plotter.DefaultFontSize)
 		if err == nil {
 			sty := draw.TextStyle{Font: fnt}
-			legend := hist_legend{
+			legend := histLegend{
 				ColWidth:  plotter.DefaultFontSize,
 				TextStyle: sty,
 			}
@@ -217,7 +217,7 @@ func newHistFromXYer(xys plotter.XYer, n int) *hbook.H1D {
 // data elements of the plot.  Each legend entry has a name
 // and a thumbnail, where the thumbnail shows a small
 // sample of the display style of the corresponding data.
-type hist_legend struct {
+type histLegend struct {
 	// TextStyle is the style given to the legend
 	// entry texts.
 	draw.TextStyle
@@ -261,7 +261,7 @@ type legendEntry struct {
 }
 
 // draw draws the legend to the given canvas.
-func (l *hist_legend) draw(c draw.Canvas) {
+func (l *histLegend) draw(c draw.Canvas) {
 	textx := c.Min.X
 	hdr := l.entryWidth() //+ l.TextStyle.Width(" ")
 	l.ColWidth = hdr
@@ -297,23 +297,23 @@ func (l *hist_legend) draw(c draw.Canvas) {
 		colx.Min.Y -= enth + l.Padding
 	}
 
-	bbox_xmin := textx - hdr - l.TextStyle.Width(" ")
-	bbox_xmax := c.Max.X
-	bbox_ymin := colx.Min.Y + enth
-	bbox_ymax := c.Max.Y
+	bboxXmin := textx - hdr - l.TextStyle.Width(" ")
+	bboxXmax := c.Max.X
+	bboxYmin := colx.Min.Y + enth
+	bboxYmax := c.Max.Y
 	bbox := []vg.Point{
-		{bbox_xmin, bbox_ymax},
-		{bbox_xmin, bbox_ymin},
-		{bbox_xmax, bbox_ymin},
-		{bbox_xmax, bbox_ymax},
-		{bbox_xmin, bbox_ymax},
+		{bboxXmin, bboxYmax},
+		{bboxXmin, bboxYmin},
+		{bboxXmax, bboxYmin},
+		{bboxXmax, bboxYmax},
+		{bboxXmin, bboxYmax},
 	}
 	c.StrokeLines(plotter.DefaultLineStyle, bbox)
 }
 
 // entryHeight returns the height of the tallest legend
 // entry text.
-func (l *hist_legend) entryHeight() (height vg.Length) {
+func (l *histLegend) entryHeight() (height vg.Length) {
 	for _, e := range l.entries {
 		if h := l.TextStyle.Height(e.text); h > height {
 			height = h
@@ -324,7 +324,7 @@ func (l *hist_legend) entryHeight() (height vg.Length) {
 
 // entryWidth returns the width of the largest legend
 // entry text.
-func (l *hist_legend) entryWidth() (width vg.Length) {
+func (l *histLegend) entryWidth() (width vg.Length) {
 	for _, e := range l.entries {
 		if w := l.TextStyle.Width(e.value); w > width {
 			width = w
@@ -336,7 +336,7 @@ func (l *hist_legend) entryWidth() (width vg.Length) {
 // Add adds an entry to the legend with the given name.
 // The entry's thumbnail is drawn as the composite of all of the
 // thumbnails.
-func (l *hist_legend) Add(name string, value interface{}) {
+func (l *histLegend) Add(name string, value interface{}) {
 	str := ""
 	switch value.(type) {
 	case float64, float32:
