@@ -127,8 +127,9 @@ func (d *dist1D) mean() float64 {
 // see: https://en.wikipedia.org/wiki/Weighted_arithmetic_mean
 func (d *dist1D) variance() float64 {
 	// FIXME(sbinet): check for low stats?
-	num := d.sumWX2*d.SumW() - math.Pow(d.sumWX, 2)
-	den := math.Pow(d.SumW(), 2) - d.SumW2()
+	sumw := d.SumW()
+	num := d.sumWX2*sumw - d.sumWX*d.sumWX
+	den := sumw*sumw - d.SumW2()
 	v := num / den
 	return math.Abs(v)
 }
