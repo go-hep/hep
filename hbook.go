@@ -16,7 +16,8 @@ import (
 
 //go:generate brio-gen -p github.com/go-hep/hbook -t dist0D,dist1D,dist2D -o dist_brio.go
 //go:generate brio-gen -p github.com/go-hep/hbook -t Range,binning1D,Bin1D,binning2D,Bin2D -o binning_brio.go
-//go:generate brio-gen -p github.com/go-hep/hbook -t H1D,H2D -o hbook_brio.go
+//go:generate brio-gen -p github.com/go-hep/hbook -t Point2D -o points_brio.go
+//go:generate brio-gen -p github.com/go-hep/hbook -t H1D,H2D,Scatter2D -o hbook_brio.go
 
 // Bin models 1D, 2D, ... bins.
 type Bin interface {

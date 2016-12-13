@@ -5,6 +5,8 @@
 package hbook_test
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -161,5 +163,35 @@ func TestScatter2DReadYODA(t *testing.T) {
 			string(chk),
 			string(ref),
 		)
+	}
+}
+
+func TestScatter2DSerialization(t *testing.T) {
+	sref := hbook.NewScatter2D()
+	for i := 0; i < 10; i++ {
+		v := float64(i)
+		sref.Fill(hbook.Point2D{X: v, Y: v, ErrX: hbook.Range{Min: v, Max: 2 * v}, ErrY: hbook.Range{Min: v, Max: 3 * v}})
+	}
+	sref.Annotation()["title"] = "scatter2d title"
+	sref.Annotation()["name"] = "s2d-name"
+
+	{
+		buf := new(bytes.Buffer)
+		enc := gob.NewEncoder(buf)
+		err := enc.Encode(sref)
+		if err != nil {
+			t.Fatalf("could not serialize scatter2d: %v\n", err)
+		}
+
+		var snew hbook.Scatter2D
+		dec := gob.NewDecoder(buf)
+		err = dec.Decode(&snew)
+		if err != nil {
+			t.Fatalf("could not deserialize scatter2d: %v\n", err)
+		}
+
+		if !reflect.DeepEqual(sref, &snew) {
+			t.Fatalf("ref=%v\nnew=%v\n", sref, &snew)
+		}
 	}
 }
