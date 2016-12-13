@@ -54,7 +54,22 @@ func NewScatter2DFromH1D(h *H1D) *Scatter2D {
 	for k, v := range h.ann {
 		s.ann[k] = v
 	}
-	panic("not implemented")
+	for _, bin := range h.bng.bins {
+		x := bin.XMid()
+		exm := x - bin.XMin()
+		exp := bin.XMax() - x
+		var y, ey float64
+		if w := bin.XWidth(); w != 0 {
+			ww := 1 / w
+			y = bin.SumW() * ww
+			ey = math.Sqrt(bin.SumW2()) * ww
+		} else {
+			y = math.NaN()  // FIXME(sbinet): use quiet-NaN ?
+			ey = math.NaN() // FIXME(sbinet): use quiet-NaN ?
+		}
+		s.Fill(Point2D{X: x, Y: y, ErrX: Range{exm, exp}, ErrY: Range{ey, ey}})
+	}
+	return s
 }
 
 // Annotation returns the annotations attached to the
