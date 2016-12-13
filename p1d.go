@@ -145,6 +145,10 @@ func (p *P1D) Scale(factor float64) {
 	p.bng.scaleW(factor)
 }
 
+// check various interfaces
+var _ Object = (*P1D)(nil)
+var _ Histogram = (*P1D)(nil)
+
 // annYODA creates a new Annotation with fields compatible with YODA
 func (p *P1D) annYODA() Annotation {
 	ann := make(Annotation, len(p.ann))

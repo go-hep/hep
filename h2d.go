@@ -192,6 +192,7 @@ func (g h2dGridXYZ) Y(r int) float64 {
 
 // check various interfaces
 var _ Object = (*H2D)(nil)
+var _ Histogram = (*H2D)(nil)
 
 // annYODA creates a new Annotation with fields compatible with YODA
 func (h *H2D) annYODA() Annotation {
