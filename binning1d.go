@@ -4,6 +4,12 @@
 
 package hbook
 
+// Indices for the under- and over-flow 1-dim bins.
+const (
+	UnderflowBin = -1
+	OverflowBin  = -2
+)
+
 // binning1D is a 1-dim binning of the x-axis.
 type binning1D struct {
 	bins     []Bin1D

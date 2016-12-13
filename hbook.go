@@ -10,6 +10,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"io"
+	"math"
 	"sort"
 	"strings"
 )
@@ -26,6 +27,17 @@ type Bin interface {
 	EffEntries() float64 // Effective number of entries in the bin
 	SumW() float64       // sum of weights
 	SumW2() float64      // sum of squared weights
+}
+
+// Range is a 1-dim interval [Min, Max].
+type Range struct {
+	Min float64
+	Max float64
+}
+
+// Width returns the size of the range.
+func (r Range) Width() float64 {
+	return math.Abs(r.Max - r.Min)
 }
 
 // Annotation is a bag of attributes that are attached to a histogram.
