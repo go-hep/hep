@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"math/rand"
 	"reflect"
@@ -320,4 +321,59 @@ func TestH1DSerialization(t *testing.T) {
 		}
 	}()
 
+}
+
+func TestH1DWriteYODA(t *testing.T) {
+	h := hbook.NewH1D(10, -4, 4)
+	h.Fill(1, 1)
+	h.Fill(2, 1)
+	h.Fill(-3, 1)
+	h.Fill(-4, 1)
+	h.Fill(0, 1)
+	h.Fill(0, 1)
+	h.Fill(10, 1)
+	h.Fill(-10, 1)
+
+	chk, err := h.MarshalYODA()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ref, err := ioutil.ReadFile("testdata/h1d_golden.yoda")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(chk, ref) {
+		ioutil.WriteFile("testdata/h1d.yoda", chk, 0644)
+		t.Fatalf("h2d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
+			string(chk),
+			string(ref),
+		)
+	}
+}
+
+func TestH1DReadYODA(t *testing.T) {
+	ref, err := ioutil.ReadFile("testdata/h1d_golden.yoda")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var h hbook.H1D
+	err = h.UnmarshalYODA(ref)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	chk, err := h.MarshalYODA()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(chk, ref) {
+		t.Fatalf("h1d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
+			string(chk),
+			string(ref),
+		)
+	}
 }

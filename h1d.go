@@ -5,6 +5,7 @@
 package hbook
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/binary"
 	"encoding/gob"
@@ -319,6 +320,127 @@ func (h *H1D) MarshalYODA() ([]byte, error) {
 	}
 	fmt.Fprintf(buf, "END YODA_HISTO1D\n\n")
 	return buf.Bytes(), err
+}
+
+// UnmarshalYODA implements the YODAUnmarshaler interface.
+func (h *H1D) UnmarshalYODA(data []byte) error {
+	var err error
+	var path string
+	r := bytes.NewBuffer(data)
+	_, err = fmt.Fscanf(r, "BEGIN YODA_HISTO1D %s\n", &path)
+	if err != nil {
+		return err
+	}
+	ann := make(Annotation)
+
+	// pos of end of annotations
+	pos := bytes.Index(r.Bytes(), []byte("\n# Mean:"))
+	if pos < 0 {
+		return fmt.Errorf("hbook: invalid H1D-YODA data")
+	}
+	err = ann.UnmarshalYODA(r.Bytes()[:pos+1])
+	if err != nil {
+		return fmt.Errorf("hbook: %v\nhbook: %q", err, string(r.Bytes()[:pos+1]))
+	}
+	h.ann = ann
+	r.Next(pos)
+
+	var ctx struct {
+		total bool
+		under bool
+		over  bool
+		bins  bool
+	}
+
+	// sets of xlow values, to infer number of bins in X.
+	xset := make(map[float64]int)
+
+	var (
+		dist   dist1D
+		oflows [2]dist1D
+		bins   []Bin1D
+		xmin   = math.Inf(+1)
+		xmax   = math.Inf(-1)
+	)
+	s := bufio.NewScanner(r)
+scanLoop:
+	for s.Scan() {
+		buf := s.Bytes()
+		if len(buf) == 0 || buf[0] == '#' {
+			continue
+		}
+		rbuf := bytes.NewReader(buf)
+		switch {
+		case bytes.HasPrefix(buf, []byte("END YODA_HISTO1D")):
+			break scanLoop
+		case !ctx.total && bytes.HasPrefix(buf, []byte("Total   \t")):
+			ctx.total = true
+			d := &dist
+			_, err = fmt.Fscanf(
+				rbuf,
+				"Total   \tTotal   \t%e\t%e\t%e\t%e\t%d\n",
+				&d.dist.sumW, &d.dist.sumW2,
+				&d.sumWX, &d.sumWX2,
+				&d.dist.n,
+			)
+			if err != nil {
+				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+			}
+		case !ctx.under && bytes.HasPrefix(buf, []byte("Underflow\t")):
+			ctx.under = true
+			d := &oflows[0]
+			_, err = fmt.Fscanf(
+				rbuf,
+				"Underflow\tUnderflow\t%e\t%e\t%e\t%e\t%d\n",
+				&d.dist.sumW, &d.dist.sumW2,
+				&d.sumWX, &d.sumWX2,
+				&d.dist.n,
+			)
+			if err != nil {
+				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+			}
+		case !ctx.over && bytes.HasPrefix(buf, []byte("Overflow\t")):
+			ctx.over = true
+			d := &oflows[1]
+			_, err = fmt.Fscanf(
+				rbuf,
+				"Overflow\tOverflow\t%e\t%e\t%e\t%e\t%d\n",
+				&d.dist.sumW, &d.dist.sumW2,
+				&d.sumWX, &d.sumWX2,
+				&d.dist.n,
+			)
+			if err != nil {
+				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+			}
+			ctx.bins = true
+		case ctx.bins:
+			var bin Bin1D
+			d := &bin.dist
+			_, err = fmt.Fscanf(
+				rbuf,
+				"%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
+				&bin.xrange.Min, &bin.xrange.Max,
+				&d.dist.sumW, &d.dist.sumW2,
+				&d.sumWX, &d.sumWX2,
+				&d.dist.n,
+			)
+			if err != nil {
+				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+			}
+			xset[bin.xrange.Min] = 1
+			xmin = math.Min(xmin, bin.xrange.Min)
+			xmax = math.Max(xmax, bin.xrange.Max)
+			bins = append(bins, bin)
+
+		default:
+			return fmt.Errorf("hbook: invalid H1D-YODA data: %q", string(buf))
+		}
+	}
+	h.bng = newBinning1D(len(xset), xmin, xmax)
+	h.bng.dist = dist
+	h.bng.bins = bins
+	h.bng.outflows = oflows
+	return err
 }
 
 // check various interfaces

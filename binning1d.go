@@ -25,10 +25,11 @@ func newBinning1D(n int, xmin, xmax float64) binning1D {
 		xrange: Range{Min: xmin, Max: xmax},
 	}
 	bng.xstep = float64(n) / bng.xrange.Width()
+	width := bng.xrange.Width() / float64(n)
 	for i := range bng.bins {
 		bin := &bng.bins[i]
-		bin.xrange.Min = xmin + float64(i)/bng.xstep
-		bin.xrange.Max = bin.xrange.Min + 1.0/bng.xstep
+		bin.xrange.Min = xmin + float64(i)*width
+		bin.xrange.Max = xmin + float64(i+1)*width
 	}
 
 	return bng
