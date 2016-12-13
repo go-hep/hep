@@ -52,14 +52,36 @@ func NewScatter2DFrom(x, y []float64) *Scatter2D {
 	return s
 }
 
+// Scatter2DOptions controls how Scatter2D scatters are created
+// from H1D and P1D.
+type Scatter2DOptions struct {
+	UseFocus  bool
+	UseStdDev bool
+}
+
 // NewScatter2DFromH1D creates a new 2-dim scatter from the given H1D.
-func NewScatter2DFromH1D(h *H1D) *Scatter2D {
+// NewScatter2DFromH1D optionally takes a Scatter2DOptions slice:
+// only the first element is considered.
+func NewScatter2DFromH1D(h *H1D, opts ...Scatter2DOptions) *Scatter2D {
 	s := NewScatter2D()
 	for k, v := range h.ann {
 		s.ann[k] = v
 	}
+	var opt Scatter2DOptions
+	if len(opts) > 0 {
+		opt = opts[0]
+	}
+	// YODA support
+	if _, ok := s.ann["Type"]; ok {
+		s.ann["Type"] = "Scatter2D"
+	}
 	for _, bin := range h.bng.bins {
-		x := bin.XMid()
+		var x float64
+		if opt.UseFocus {
+			x = bin.XFocus()
+		} else {
+			x = bin.XMid()
+		}
 		exm := x - bin.XMin()
 		exp := bin.XMax() - x
 		var y, ey float64
@@ -67,6 +89,49 @@ func NewScatter2DFromH1D(h *H1D) *Scatter2D {
 			ww := 1 / w
 			y = bin.SumW() * ww
 			ey = math.Sqrt(bin.SumW2()) * ww
+		} else {
+			y = math.NaN()  // FIXME(sbinet): use quiet-NaN ?
+			ey = math.NaN() // FIXME(sbinet): use quiet-NaN ?
+		}
+		s.Fill(Point2D{X: x, Y: y, ErrX: Range{exm, exp}, ErrY: Range{ey, ey}})
+	}
+	return s
+}
+
+// NewScatter2DFromP1D creates a new 2-dim scatter from the given P1D.
+// NewScatter2DFromP1D optionally takes a Scatter2DOptions slice:
+// only the first element is considered.
+func NewScatter2DFromP1D(p *P1D, opts ...Scatter2DOptions) *Scatter2D {
+	s := NewScatter2D()
+	for k, v := range p.ann {
+		p.ann[k] = v
+	}
+	var opt Scatter2DOptions
+	if len(opts) > 0 {
+		opt = opts[0]
+	}
+	// YODA support
+	if _, ok := s.ann["Type"]; ok {
+		s.ann["Type"] = "Scatter2D"
+	}
+	for _, bin := range p.bng.bins {
+		var x float64
+		if opt.UseFocus {
+			x = bin.XFocus()
+		} else {
+			x = bin.XMid()
+		}
+		exm := x - bin.XMin()
+		exp := bin.XMax() - x
+		var y, ey float64
+		if w := bin.XWidth(); w != 0 {
+			ww := 1 / w
+			y = bin.SumW() * ww
+			if opt.UseStdDev {
+				ey = bin.XStdDev()
+			} else {
+				ey = bin.XStdErr()
+			}
 		} else {
 			y = math.NaN()  // FIXME(sbinet): use quiet-NaN ?
 			ey = math.NaN() // FIXME(sbinet): use quiet-NaN ?
