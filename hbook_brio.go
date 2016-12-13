@@ -148,7 +148,7 @@ func (o *P1D) UnmarshalBinary(data []byte) (err error) {
 }
 
 // MarshalBinary implements encoding.BinaryMarshaler
-func (o *Scatter2D) MarshalBinary() (data []byte, err error) {
+func (o *S2D) MarshalBinary() (data []byte, err error) {
 	var buf [8]byte
 	binary.LittleEndian.PutUint64(buf[:8], uint64(len(o.pts)))
 	data = append(data, buf[:8]...)
@@ -177,7 +177,7 @@ func (o *Scatter2D) MarshalBinary() (data []byte, err error) {
 }
 
 // UnmarshalBinary implements encoding.BinaryUnmarshaler
-func (o *Scatter2D) UnmarshalBinary(data []byte) (err error) {
+func (o *S2D) UnmarshalBinary(data []byte) (err error) {
 	{
 		n := int(binary.LittleEndian.Uint64(data[:8]))
 		o.pts = make([]Point2D, n)

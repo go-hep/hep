@@ -86,14 +86,14 @@ func ExampleH2D() {
 }
 ```
 
-### Scatter2D
+### S2D
 
-[embedmd]:# (scatter2d_test.go go /func ExampleScatter2D/ /\n}/)
+[embedmd]:# (s2d_test.go go /func ExampleS2D/ /\n}/)
 ```go
-func ExampleScatter2D() {
-	s := hbook.NewScatter2D(hbook.Point2D{X: 1, Y: 1}, hbook.Point2D{X: 2, Y: 1.5}, hbook.Point2D{X: -1, Y: +2})
+func ExampleS2D() {
+	s := hbook.NewS2D(hbook.Point2D{X: 1, Y: 1}, hbook.Point2D{X: 2, Y: 1.5}, hbook.Point2D{X: -1, Y: +2})
 	if s == nil {
-		log.Fatal("nil pointer to Scatter2D")
+		log.Fatal("nil pointer to S2D")
 	}
 
 	fmt.Printf("len=%d\n", s.Len())

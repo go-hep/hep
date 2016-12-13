@@ -13,18 +13,18 @@ import (
 	"sort"
 )
 
-// Scatter2D is a collection of 2-dim data points with errors.
-type Scatter2D struct {
+// S2D is a collection of 2-dim data points with errors.
+type S2D struct {
 	pts []Point2D
 	ann Annotation
 }
 
-// NewScatter2D creates a new 2-dim scatter with pts as an optional
+// NewS2D creates a new 2-dim scatter with pts as an optional
 // initial set of data points.
 //
 // If n <= 0, the initial capacity is 0.
-func NewScatter2D(pts ...Point2D) *Scatter2D {
-	s := &Scatter2D{
+func NewS2D(pts ...Point2D) *S2D {
+	s := &S2D{
 		pts: make([]Point2D, len(pts)),
 		ann: make(Annotation),
 	}
@@ -32,15 +32,15 @@ func NewScatter2D(pts ...Point2D) *Scatter2D {
 	return s
 }
 
-// NewScatter2DFrom creates a new 2-dim scatter with x,y data slices.
+// NewS2DFrom creates a new 2-dim scatter with x,y data slices.
 //
 // It panics if the lengths of the 2 slices don't match.
-func NewScatter2DFrom(x, y []float64) *Scatter2D {
+func NewS2DFrom(x, y []float64) *S2D {
 	if len(x) != len(y) {
 		panic("hbook: len differ")
 	}
 
-	s := &Scatter2D{
+	s := &S2D{
 		pts: make([]Point2D, len(x)),
 		ann: make(Annotation),
 	}
@@ -52,22 +52,21 @@ func NewScatter2DFrom(x, y []float64) *Scatter2D {
 	return s
 }
 
-// Scatter2DOptions controls how Scatter2D scatters are created
-// from H1D and P1D.
-type Scatter2DOptions struct {
+// S2DOpts controls how S2D scatters are created from H1D and P1D.
+type S2DOpts struct {
 	UseFocus  bool
 	UseStdDev bool
 }
 
-// NewScatter2DFromH1D creates a new 2-dim scatter from the given H1D.
-// NewScatter2DFromH1D optionally takes a Scatter2DOptions slice:
+// NewS2DFromH1D creates a new 2-dim scatter from the given H1D.
+// NewS2DFromH1D optionally takes a S2DOpts slice:
 // only the first element is considered.
-func NewScatter2DFromH1D(h *H1D, opts ...Scatter2DOptions) *Scatter2D {
-	s := NewScatter2D()
+func NewS2DFromH1D(h *H1D, opts ...S2DOpts) *S2D {
+	s := NewS2D()
 	for k, v := range h.ann {
 		s.ann[k] = v
 	}
-	var opt Scatter2DOptions
+	var opt S2DOpts
 	if len(opts) > 0 {
 		opt = opts[0]
 	}
@@ -98,15 +97,15 @@ func NewScatter2DFromH1D(h *H1D, opts ...Scatter2DOptions) *Scatter2D {
 	return s
 }
 
-// NewScatter2DFromP1D creates a new 2-dim scatter from the given P1D.
-// NewScatter2DFromP1D optionally takes a Scatter2DOptions slice:
+// NewS2DFromP1D creates a new 2-dim scatter from the given P1D.
+// NewS2DFromP1D optionally takes a S2DOpts slice:
 // only the first element is considered.
-func NewScatter2DFromP1D(p *P1D, opts ...Scatter2DOptions) *Scatter2D {
-	s := NewScatter2D()
+func NewS2DFromP1D(p *P1D, opts ...S2DOpts) *S2D {
+	s := NewS2D()
 	for k, v := range p.ann {
 		p.ann[k] = v
 	}
-	var opt Scatter2DOptions
+	var opt S2DOpts
 	if len(opts) > 0 {
 		opt = opts[0]
 	}
@@ -143,12 +142,12 @@ func NewScatter2DFromP1D(p *P1D, opts ...Scatter2DOptions) *Scatter2D {
 
 // Annotation returns the annotations attached to the
 // scatter. (e.g. name, title, ...)
-func (s *Scatter2D) Annotation() Annotation {
+func (s *S2D) Annotation() Annotation {
 	return s.ann
 }
 
 // Name returns the name of this scatter
-func (s *Scatter2D) Name() string {
+func (s *S2D) Name() string {
 	v, ok := s.ann["name"]
 	if !ok {
 		return ""
@@ -161,17 +160,17 @@ func (s *Scatter2D) Name() string {
 }
 
 // Rank returns the number of dimensions of this scatter.
-func (*Scatter2D) Rank() int {
+func (*S2D) Rank() int {
 	return 2
 }
 
 // Entries returns the number of entries of this histogram.
-func (s *Scatter2D) Entries() int64 {
+func (s *S2D) Entries() int64 {
 	return int64(len(s.pts))
 }
 
 // Fill adds new points to the scatter.
-func (s *Scatter2D) Fill(pts ...Point2D) {
+func (s *S2D) Fill(pts ...Point2D) {
 	if len(pts) == 0 {
 		return
 	}
@@ -182,7 +181,7 @@ func (s *Scatter2D) Fill(pts ...Point2D) {
 }
 
 // Sort sorts the data points by x,y and x-err,y-err.
-func (s *Scatter2D) Sort() {
+func (s *S2D) Sort() {
 	sort.Sort(points2D(s.pts))
 }
 
@@ -191,19 +190,19 @@ func (s *Scatter2D) Sort() {
 // Users may not modify the returned slice.
 // Users may not rely on the stability of the indices as the slice of points
 // may be re-sorted at any point in time.
-func (s *Scatter2D) Points() []Point2D {
+func (s *S2D) Points() []Point2D {
 	return s.pts
 }
 
 // Point returns the point at index i.
 //
 // Point panics if i is out of bounds.
-func (s *Scatter2D) Point(i int) Point2D {
+func (s *S2D) Point(i int) Point2D {
 	return s.pts[i]
 }
 
 // ScaleX rescales the X values by a factor f.
-func (s *Scatter2D) ScaleX(f float64) {
+func (s *S2D) ScaleX(f float64) {
 	for i := range s.pts {
 		p := &s.pts[i]
 		p.ScaleX(f)
@@ -211,7 +210,7 @@ func (s *Scatter2D) ScaleX(f float64) {
 }
 
 // ScaleY rescales the Y values by a factor f.
-func (s *Scatter2D) ScaleY(f float64) {
+func (s *S2D) ScaleY(f float64) {
 	for i := range s.pts {
 		p := &s.pts[i]
 		p.ScaleY(f)
@@ -219,7 +218,7 @@ func (s *Scatter2D) ScaleY(f float64) {
 }
 
 // ScaleXY rescales the X and Y values by a factor f.
-func (s *Scatter2D) ScaleXY(f float64) {
+func (s *S2D) ScaleXY(f float64) {
 	for i := range s.pts {
 		p := &s.pts[i]
 		p.ScaleX(f)
@@ -230,7 +229,7 @@ func (s *Scatter2D) ScaleXY(f float64) {
 // Len returns the number of points in the scatter.
 //
 // Len implements the gonum/plot/plotter.XYer interface.
-func (s *Scatter2D) Len() int {
+func (s *S2D) Len() int {
 	return len(s.pts)
 }
 
@@ -238,7 +237,7 @@ func (s *Scatter2D) Len() int {
 //
 // XY panics if i is out of bounds.
 // XY implements the gonum/plot/plotter.XYer interface.
-func (s *Scatter2D) XY(i int) (x, y float64) {
+func (s *S2D) XY(i int) (x, y float64) {
 	pt := s.pts[i]
 	x = pt.X
 	y = pt.Y
@@ -248,7 +247,7 @@ func (s *Scatter2D) XY(i int) (x, y float64) {
 // XError returns the two error values for X data.
 //
 // XError implements the gonum/plot/plotter.XErrorer interface.
-func (s *Scatter2D) XError(i int) (float64, float64) {
+func (s *S2D) XError(i int) (float64, float64) {
 	pt := s.pts[i]
 	return pt.ErrX.Min, pt.ErrX.Max
 }
@@ -256,7 +255,7 @@ func (s *Scatter2D) XError(i int) (float64, float64) {
 // YError returns the two error values for Y data.
 //
 // YError implements the gonum/plot/plotter.YErrorer interface.
-func (s *Scatter2D) YError(i int) (float64, float64) {
+func (s *S2D) YError(i int) (float64, float64) {
 	pt := s.pts[i]
 	return pt.ErrY.Min, pt.ErrY.Max
 }
@@ -264,7 +263,7 @@ func (s *Scatter2D) YError(i int) (float64, float64) {
 // DataRange returns the minimum and maximum
 // x and y values, implementing the gonum/plot.DataRanger
 // interface.
-func (s *Scatter2D) DataRange() (xmin, xmax, ymin, ymax float64) {
+func (s *S2D) DataRange() (xmin, xmax, ymin, ymax float64) {
 	xmin = math.Inf(+1)
 	ymin = math.Inf(+1)
 	xmax = math.Inf(-1)
@@ -279,7 +278,7 @@ func (s *Scatter2D) DataRange() (xmin, xmax, ymin, ymax float64) {
 }
 
 // annYODA creates a new Annotation with fields compatible with YODA
-func (s *Scatter2D) annYODA() Annotation {
+func (s *S2D) annYODA() Annotation {
 	ann := make(Annotation, len(s.ann))
 	ann["Type"] = "Scatter2D"
 	ann["Path"] = "/" + s.Name()
@@ -291,7 +290,7 @@ func (s *Scatter2D) annYODA() Annotation {
 }
 
 // MarshalYODA implements the YODAMarshaler interface.
-func (s *Scatter2D) MarshalYODA() ([]byte, error) {
+func (s *S2D) MarshalYODA() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	ann := s.annYODA()
 	fmt.Fprintf(buf, "BEGIN YODA_SCATTER2D %s\n", ann["Path"])
@@ -316,7 +315,7 @@ func (s *Scatter2D) MarshalYODA() ([]byte, error) {
 }
 
 // UnmarshalYODA implements the YODAUnmarshaler interface.
-func (s *Scatter2D) UnmarshalYODA(data []byte) error {
+func (s *S2D) UnmarshalYODA(data []byte) error {
 	var err error
 	var path string
 	r := bytes.NewBuffer(data)

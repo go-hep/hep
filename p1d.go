@@ -28,8 +28,8 @@ func NewP1D(n int, xmin, xmax float64) *P1D {
 /*
 // FIXME(sbinet): need support of variable-size bins
 //
-// NewP1DFromScatter2D creates a 1-dim profile histogram from a 2-dim scatter's binning.
-func NewP1DFromH1D(s*Scatter2D) *P1D {
+// NewP1DFromS2D creates a 1-dim profile histogram from a 2-dim scatter's binning.
+func NewP1DFromH1D(s*S2D) *P1D {
 	return &P1D{
 		bng: newBinningP1D(len(h.Binning().Bins()), h.XMin(), h.XMax()),
 		ann: make(Annotation),
@@ -206,7 +206,7 @@ func (p *P1D) MarshalYODA() ([]byte, error) {
 }
 
 // UnmarshalYODA implements the YODAUnmarshaler interface.
-func (h *P1D) UnmarshalYODA(data []byte) error {
+func (p *P1D) UnmarshalYODA(data []byte) error {
 	var err error
 	var path string
 	r := bytes.NewBuffer(data)
@@ -225,7 +225,7 @@ func (h *P1D) UnmarshalYODA(data []byte) error {
 	if err != nil {
 		return fmt.Errorf("hbook: %v\nhbook: %q", err, string(r.Bytes()[:pos+1]))
 	}
-	h.ann = ann
+	p.ann = ann
 	r.Next(pos)
 
 	var ctx struct {
@@ -327,10 +327,10 @@ scanLoop:
 			return fmt.Errorf("hbook: invalid P1D-YODA data: %q", string(buf))
 		}
 	}
-	h.bng = newBinningP1D(len(xset), xmin, xmax)
-	h.bng.dist = dist
-	h.bng.bins = bins
-	h.bng.outflows = oflows
+	p.bng = newBinningP1D(len(xset), xmin, xmax)
+	p.bng.dist = dist
+	p.bng.bins = bins
+	p.bng.outflows = oflows
 	return err
 }
 
