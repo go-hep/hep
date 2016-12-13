@@ -109,22 +109,22 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 	for i, bin := range bins {
 		switch i {
 		case 0:
-			pts = append(pts, vg.Point{trX(bin.XMin()), trY(0)})
-			pts = append(pts, vg.Point{trX(bin.XMin()), trY(bin.SumW())})
-			pts = append(pts, vg.Point{trX(bin.XMax()), trY(bin.SumW())})
+			pts = append(pts, vg.Point{X: trX(bin.XMin()), Y: trY(0)})
+			pts = append(pts, vg.Point{X: trX(bin.XMin()), Y: trY(bin.SumW())})
+			pts = append(pts, vg.Point{X: trX(bin.XMax()), Y: trY(bin.SumW())})
 
 		case nbins - 1:
 			lft := bins[i-1]
-			pts = append(pts, vg.Point{trX(lft.XMax()), trY(lft.SumW())})
-			pts = append(pts, vg.Point{trX(bin.XMin()), trY(bin.SumW())})
-			pts = append(pts, vg.Point{trX(bin.XMax()), trY(bin.SumW())})
-			pts = append(pts, vg.Point{trX(bin.XMax()), trY(0.)})
+			pts = append(pts, vg.Point{X: trX(lft.XMax()), Y: trY(lft.SumW())})
+			pts = append(pts, vg.Point{X: trX(bin.XMin()), Y: trY(bin.SumW())})
+			pts = append(pts, vg.Point{X: trX(bin.XMax()), Y: trY(bin.SumW())})
+			pts = append(pts, vg.Point{X: trX(bin.XMax()), Y: trY(0.)})
 
 		default:
 			lft := bins[i-1]
-			pts = append(pts, vg.Point{trX(lft.XMax()), trY(lft.SumW())})
-			pts = append(pts, vg.Point{trX(bin.XMin()), trY(bin.SumW())})
-			pts = append(pts, vg.Point{trX(bin.XMax()), trY(bin.SumW())})
+			pts = append(pts, vg.Point{X: trX(lft.XMax()), Y: trY(lft.SumW())})
+			pts = append(pts, vg.Point{X: trX(bin.XMin()), Y: trY(bin.SumW())})
+			pts = append(pts, vg.Point{X: trX(bin.XMax()), Y: trY(bin.SumW())})
 		}
 	}
 
@@ -183,8 +183,8 @@ func (h *H1D) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
 
 		r := vg.Points(5)
 		//r = vg.Length(w)
-		bs[i].Rectangle.Min = vg.Point{0, 0}
-		bs[i].Rectangle.Max = vg.Point{0, r}
+		bs[i].Rectangle.Min = vg.Point{X: 0, Y: 0}
+		bs[i].Rectangle.Max = vg.Point{X: 0, Y: r}
 	}
 	return bs
 }
