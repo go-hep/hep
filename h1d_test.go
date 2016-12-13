@@ -6,13 +6,11 @@ package hplot_test
 
 import (
 	"image/color"
-	"io/ioutil"
 	"math/rand"
 	"testing"
 
 	"github.com/go-hep/hbook"
 	"github.com/go-hep/hplot"
-	"github.com/go-hep/hplot/internal/cmpimg"
 	"github.com/gonum/plot/vg"
 	"github.com/gonum/stat/distuv"
 )
@@ -76,20 +74,7 @@ func ExampleH1D(t *testing.T) {
 	}
 }
 
-func TestHistogram1D(t *testing.T) {
+func TestH1D(t *testing.T) {
 	ExampleH1D(t)
-
-	want, err := ioutil.ReadFile("testdata/h1d_plot_golden.png")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	got, err := ioutil.ReadFile("testdata/h1d_plot.png")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if ok, err := cmpimg.Equal("png", got, want); !ok || err != nil {
-		t.Fatalf("error: testdata/h1d_plot.png differ with reference file: %v\n", err)
-	}
+	checkPlot(t, "testdata/h1d_plot_golden.png")
 }

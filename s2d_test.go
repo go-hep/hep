@@ -6,22 +6,20 @@ package hplot_test
 
 import (
 	"image/color"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"testing"
 
 	"github.com/go-hep/hbook"
 	"github.com/go-hep/hplot"
-	"github.com/go-hep/hplot/internal/cmpimg"
 	"github.com/gonum/matrix/mat64"
 	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/vg"
 	"github.com/gonum/stat/distmv"
 )
 
-// ExampleScatter2D draws some scatter points.
-func ExampleScatter2D(t *testing.T) {
+// ExampleS2D draws some scatter points.
+func ExampleS2D(t *testing.T) {
 	const npoints = 1000
 
 	dist, ok := distmv.NewNormal(
@@ -33,7 +31,7 @@ func ExampleScatter2D(t *testing.T) {
 		t.Fatalf("error creating distmv.Normal")
 	}
 
-	s2d := hbook.NewScatter2D()
+	s2d := hbook.NewS2D()
 
 	v := make([]float64, 2)
 	// Draw some random values from the standard
@@ -52,45 +50,31 @@ func ExampleScatter2D(t *testing.T) {
 	p.Y.Label.Text = "Y"
 	p.Add(plotter.NewGrid())
 
-	s := hplot.NewScatter2D(s2d)
+	s := hplot.NewS2D(s2d)
 	s.GlyphStyle.Color = color.RGBA{R: 255, A: 255}
 	s.GlyphStyle.Radius = vg.Points(2)
 
 	p.Add(s)
 
-	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/scatter2d.png")
+	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d.png")
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func TestScatter2D(t *testing.T) {
-	ExampleScatter2D(t)
-
-	want, err := ioutil.ReadFile("testdata/scatter2d_golden.png")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	got, err := ioutil.ReadFile("testdata/scatter2d.png")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if ok, err := cmpimg.Equal("png", got, want); !ok || err != nil {
-		t.Fatalf("error: testdata/scatter2d.png differ with reference file: %v\n", err)
-	}
-
+func TestS2D(t *testing.T) {
+	ExampleS2D(t)
+	checkPlot(t, "testdata/s2d_golden.png")
 }
 
-// ExampleScatter2D_withErrorBars draws some scatter points
+// ExampleS2D_withErrorBars draws some scatter points
 // with their error bars.
-func ExampleScatter2D_withErrorBars(t *testing.T) {
+func ExampleS2D_withErrorBars(t *testing.T) {
 	pts := []hbook.Point2D{
 		{X: 1, Y: 1, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, ErrY: hbook.Range{Min: 2, Max: 3}},
 		{X: 2, Y: 2, ErrX: hbook.Range{Min: 0.5, Max: 1.5}, ErrY: hbook.Range{Min: 5, Max: 2}},
 	}
-	s2d := hbook.NewScatter2D(pts...)
+	s2d := hbook.NewS2D(pts...)
 
 	p, err := hplot.New()
 	if err != nil {
@@ -101,7 +85,7 @@ func ExampleScatter2D_withErrorBars(t *testing.T) {
 	p.Y.Label.Text = "Y"
 	p.Add(plotter.NewGrid())
 
-	s := hplot.NewScatter2D(s2d)
+	s := hplot.NewS2D(s2d)
 	s.XErrBars()
 	s.YErrBars()
 	s.GlyphStyle.Color = color.RGBA{R: 255, A: 255}
@@ -109,27 +93,13 @@ func ExampleScatter2D_withErrorBars(t *testing.T) {
 
 	p.Add(s)
 
-	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/scatter2d_errbars.png")
+	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d_errbars.png")
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestScatter2DWithErrorBars(t *testing.T) {
-	ExampleScatter2D_withErrorBars(t)
-
-	want, err := ioutil.ReadFile("testdata/scatter2d_errbars_golden.png")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	got, err := ioutil.ReadFile("testdata/scatter2d_errbars.png")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if ok, err := cmpimg.Equal("png", got, want); !ok || err != nil {
-		t.Fatalf("error: testdata/scatter2d_errbars.png differ with reference file: %v\n", err)
-	}
-
+	ExampleS2D_withErrorBars(t)
+	checkPlot(t, "testdata/s2d_errbars_golden.png")
 }

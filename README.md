@@ -24,22 +24,9 @@ http://godoc.org/github.com/go-hep/hplot
 ### 1D histogram
 
 ![hist-example](https://github.com/go-hep/hplot/raw/master/testdata/h1d_plot_golden.png)
-
+[embedmd]:# (h1d_test.go go /func ExampleH1D/ /\n}/)
 ```go
-package main
-
-import (
-	"image/color"
-	"log"
-	"math/rand"
-
-	"github.com/go-hep/hbook"
-	"github.com/go-hep/hplot"
-	"github.com/gonum/plot/vg"
-	"github.com/gonum/stat/distuv"
-)
-
-func main() {
+func ExampleH1D(t *testing.T) {
 	const npoints = 10000
 
 	// Create a normal distribution.
@@ -67,7 +54,7 @@ func main() {
 	// Make a plot and set its title.
 	p, err := hplot.New()
 	if err != nil {
-		log.Fatalf("error: %v\n", err)
+		t.Fatalf("error: %v\n", err)
 	}
 	p.Title.Text = "Histogram"
 	p.X.Label.Text = "X"
@@ -77,7 +64,7 @@ func main() {
 	// from the standard normal.
 	h, err := hplot.NewH1D(hist)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	h.Infos.Style = hplot.HInfoSummary
 	p.Add(h)
@@ -93,7 +80,7 @@ func main() {
 
 	// Save the plot to a PNG file.
 	if err := p.Save(6*vg.Inch, -1, "testdata/h1d_plot.png"); err != nil {
-		log.Fatalf("error saving plot: %v\n", err)
+		t.Fatalf("error saving plot: %v\n", err)
 	}
 }
 ```
@@ -101,27 +88,12 @@ func main() {
 ### Tiles of 1D histograms
 
 ![tiled-plot](https://github.com/go-hep/hplot/raw/master/testdata/tiled_plot_histogram_golden.png)
-
+[embedmd]:# (tiledplot_test.go go /func ExampleTiledPlot/ /\n}/)
 ```go
-package main
-
-import (
-	"fmt"
-	"log"
-	"math/rand"
-
-	"github.com/go-hep/hbook"
-	"github.com/go-hep/hplot"
-	"github.com/gonum/plot/vg"
-	"github.com/gonum/plot/vg/draw"
-	"github.com/gonum/stat/distuv"
-)
-
-// An example of making a tile-plot
-func main() {
+func ExampleTiledPlot(t *testing.T) {
 	tp, err := hplot.NewTiledPlot(draw.Tiles{Cols: 3, Rows: 2})
 	if err != nil {
-		log.Fatalf("error: %v\n", err)
+		t.Fatalf("error: %v\n", err)
 	}
 
 	// Create a normal distribution.
@@ -154,7 +126,7 @@ func main() {
 			p.X.Max = +5
 			err := newHist(p)
 			if err != nil {
-				log.Fatalf("error creating histogram (%d,%d): %v\n", i, j, err)
+				t.Fatalf("error creating histogram (%d,%d): %v\n", i, j, err)
 			}
 			p.Title.Text = fmt.Sprintf("hist - (%02d, %02d)", i, j)
 		}
@@ -165,7 +137,7 @@ func main() {
 
 	err = tp.Save(15*vg.Centimeter, -1, "testdata/tiled_plot_histogram.png")
 	if err != nil {
-		log.Fatalf("error: %v\n", err)
+		t.Fatalf("error: %v\n", err)
 	}
 }
 ```
@@ -190,24 +162,9 @@ https://godoc.org/github.com/go-hep/hplot#example-package--Latexplot
 
 ### 2D histogram
 
+[embedmd]:# (h2d_test.go go /func ExampleH2D/ /\n}/)
 ```go
-package main
-
-import (
-	"log"
-	"math/rand"
-
-	"github.com/go-hep/hbook"
-	"github.com/go-hep/hplot"
-	"github.com/gonum/matrix/mat64"
-	"github.com/gonum/plot"
-	"github.com/gonum/plot/palette/brewer"
-	"github.com/gonum/plot/plotter"
-	"github.com/gonum/plot/vg"
-	"github.com/gonum/stat/distmv"
-)
-
-func main() {
+func ExampleH2D(t *testing.T) {
 	h := hbook.NewH2D(100, -10, 10, 100, -10, 10)
 
 	const npoints = 10000
@@ -218,7 +175,7 @@ func main() {
 		rand.New(rand.NewSource(1234)),
 	)
 	if !ok {
-		log.Fatalf("error creating distmv.Normal")
+		t.Fatalf("error creating distmv.Normal")
 	}
 
 	v := make([]float64, 2)
@@ -231,7 +188,7 @@ func main() {
 
 	p, err := plot.New()
 	if err != nil {
-		log.Fatalf("error: %v\n", err)
+		t.Fatalf("error: %v\n", err)
 	}
 	p.Title.Text = "Hist-2D"
 	p.X.Label.Text = "x"
@@ -241,19 +198,17 @@ func main() {
 	p.Add(plotter.NewGrid())
 	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/h2d_plot.png")
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 }
 ```
-
 ![h2d-example](https://github.com/go-hep/hplot/raw/master/testdata/h2d_plot_golden.png)
 
 ### Scatter2D
 
+[embedmd]:# (s2d_test.go go /func ExampleS2D/ /\n}/)
 ```go
-package main
-
-func main() {
+func ExampleS2D(t *testing.T) {
 	const npoints = 1000
 
 	dist, ok := distmv.NewNormal(
@@ -265,7 +220,7 @@ func main() {
 		t.Fatalf("error creating distmv.Normal")
 	}
 
-	s2d := hbook.NewScatter2D()
+	s2d := hbook.NewS2D()
 
 	v := make([]float64, 2)
 	// Draw some random values from the standard
@@ -284,18 +239,17 @@ func main() {
 	p.Y.Label.Text = "Y"
 	p.Add(plotter.NewGrid())
 
-	s := hplot.NewScatter2D(s2d)
+	s := hplot.NewS2D(s2d)
 	s.GlyphStyle.Color = color.RGBA{R: 255, A: 255}
 	s.GlyphStyle.Radius = vg.Points(2)
 
 	p.Add(s)
 
-	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/scatter2d.png")
+	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d.png")
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 ```
-
-![scatter2d-example](https://github.com/go-hep/hplot/raw/master/testdata/scatter2d_golden.png)
-![scatter2d-errbars-example](https://github.com/go-hep/hplot/raw/master/testdata/scatter2d_errbars_golden.png)
+![s2d-example](https://github.com/go-hep/hplot/raw/master/testdata/s2d_golden.png)
+![s2d-errbars-example](https://github.com/go-hep/hplot/raw/master/testdata/s2d_errbars_golden.png)

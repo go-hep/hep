@@ -6,7 +6,6 @@ package hplot_test
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"testing"
 
@@ -18,10 +17,10 @@ import (
 )
 
 // An example of making a tile-plot
-func ExampleTiledPlot() {
+func ExampleTiledPlot(t *testing.T) {
 	tp, err := hplot.NewTiledPlot(draw.Tiles{Cols: 3, Rows: 2})
 	if err != nil {
-		log.Fatalf("error: %v\n", err)
+		t.Fatalf("error: %v\n", err)
 	}
 
 	// Create a normal distribution.
@@ -54,7 +53,7 @@ func ExampleTiledPlot() {
 			p.X.Max = +5
 			err := newHist(p)
 			if err != nil {
-				log.Fatalf("error creating histogram (%d,%d): %v\n", i, j, err)
+				t.Fatalf("error creating histogram (%d,%d): %v\n", i, j, err)
 			}
 			p.Title.Text = fmt.Sprintf("hist - (%02d, %02d)", i, j)
 		}
@@ -65,10 +64,11 @@ func ExampleTiledPlot() {
 
 	err = tp.Save(15*vg.Centimeter, -1, "testdata/tiled_plot_histogram.png")
 	if err != nil {
-		log.Fatalf("error: %v\n", err)
+		t.Fatalf("error: %v\n", err)
 	}
 }
 
 func TestTiledPlot(t *testing.T) {
-	ExampleTiledPlot()
+	ExampleTiledPlot(t)
+	checkPlot(t, "testdata/tiled_plot_histogram_golden.png")
 }

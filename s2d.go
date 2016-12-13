@@ -11,8 +11,8 @@ import (
 	"github.com/gonum/plot/vg/draw"
 )
 
-// Scatter2D plots a set of 2-dim points with error bars.
-type Scatter2D struct {
+// S2D plots a set of 2-dim points with error bars.
+type S2D struct {
 	Data plotter.XYer
 
 	// GlyphStyle is the style of the glyphs drawn
@@ -24,7 +24,7 @@ type Scatter2D struct {
 }
 
 // XErrBars enables the X error bars
-func (pts *Scatter2D) XErrBars() error {
+func (pts *S2D) XErrBars() error {
 	xerr, ok := pts.Data.(plotter.XErrorer)
 	if !ok {
 		panic("boo-x")
@@ -45,7 +45,7 @@ func (pts *Scatter2D) XErrBars() error {
 }
 
 // YErrBars enables the Y error bars
-func (pts *Scatter2D) YErrBars() error {
+func (pts *S2D) YErrBars() error {
 	yerr, ok := pts.Data.(plotter.YErrorer)
 	if !ok {
 		return nil
@@ -64,8 +64,9 @@ func (pts *Scatter2D) YErrBars() error {
 	return nil
 }
 
-func NewScatter2D(data plotter.XYer) *Scatter2D {
-	s := &Scatter2D{
+// NewS2D creates a 2-dim scatter plot from a XYer.
+func NewS2D(data plotter.XYer) *S2D {
+	s := &S2D{
 		Data:       data,
 		GlyphStyle: plotter.DefaultGlyphStyle,
 	}
@@ -76,7 +77,7 @@ func NewScatter2D(data plotter.XYer) *Scatter2D {
 
 // Plot draws the Scatter, implementing the plot.Plotter
 // interface.
-func (pts *Scatter2D) Plot(c draw.Canvas, plt *plot.Plot) {
+func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 	trX, trY := plt.Transforms(&c)
 	for i := 0; i < pts.Data.Len(); i++ {
 		x, y := pts.Data.XY(i)
@@ -97,7 +98,7 @@ func (pts *Scatter2D) Plot(c draw.Canvas, plt *plot.Plot) {
 // DataRange returns the minimum and maximum
 // x and y values, implementing the plot.DataRanger
 // interface.
-func (pts *Scatter2D) DataRange() (xmin, xmax, ymin, ymax float64) {
+func (pts *S2D) DataRange() (xmin, xmax, ymin, ymax float64) {
 	if dr, ok := pts.Data.(plot.DataRanger); ok {
 		return dr.DataRange()
 	}
@@ -106,7 +107,7 @@ func (pts *Scatter2D) DataRange() (xmin, xmax, ymin, ymax float64) {
 
 // GlyphBoxes returns a slice of plot.GlyphBoxes,
 // implementing the plot.GlyphBoxer interface.
-func (pts *Scatter2D) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
+func (pts *S2D) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 	bs := make([]plot.GlyphBox, pts.Data.Len())
 	for i := 0; i < pts.Data.Len(); i++ {
 		x, y := pts.Data.XY(i)
@@ -125,6 +126,6 @@ func (pts *Scatter2D) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 
 // Thumbnail the thumbnail for the Scatter,
 // implementing the plot.Thumbnailer interface.
-func (pts *Scatter2D) Thumbnail(c *draw.Canvas) {
+func (pts *S2D) Thumbnail(c *draw.Canvas) {
 	c.DrawGlyph(pts.GlyphStyle, c.Center())
 }

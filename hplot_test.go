@@ -6,20 +6,47 @@ package hplot_test
 
 import (
 	"image/color"
+	"io/ioutil"
 	"log"
 	"math"
 	"math/rand"
 	"os"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/go-hep/hbook"
 	"github.com/go-hep/hplot"
+	"github.com/go-hep/hplot/internal/cmpimg"
 	"github.com/gonum/plot/vg"
 	"github.com/gonum/plot/vg/draw"
 	"github.com/gonum/plot/vg/vgimg"
 	"github.com/gonum/plot/vg/vgtex"
 	"github.com/gonum/stat/distuv"
 )
+
+func checkPlot(t *testing.T, ref string) {
+	fname := strings.Replace(ref, "_golden", "", 1)
+
+	want, err := ioutil.ReadFile(ref)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := ioutil.ReadFile(fname)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if ok, err := cmpimg.Equal("png", got, want); !ok || err != nil {
+		if err != nil {
+			t.Fatalf("error: comparing %q with reference file: %v\n", fname, err)
+		} else {
+			t.Fatalf("error: %q differ with reference file\n", fname)
+		}
+	}
+	os.Remove(fname)
+}
 
 // An example of a plot + sub-plot
 func Example_subplot() {
@@ -41,7 +68,11 @@ func Example_subplot() {
 	}
 
 	// normalize histo
-	hist.Scale(1 / hist.Integral())
+	area := 0.0
+	for _, bin := range hist.Binning().Bins() {
+		area += bin.SumW() * bin.XWidth()
+	}
+	hist.Scale(1 / area)
 
 	// Make a plot and set its title.
 	p1, err := hplot.New()
@@ -114,6 +145,7 @@ func Example_subplot() {
 
 func TestSubPlot(t *testing.T) {
 	Example_subplot()
+	checkPlot(t, "testdata/sub_plot_golden.png")
 }
 
 func Example_diffplot() {
@@ -232,6 +264,7 @@ func Example_diffplot() {
 
 func TestDiffPlot(t *testing.T) {
 	Example_diffplot()
+	checkPlot(t, "testdata/diff_plot_golden.png")
 }
 
 func Example_latexplot() {
@@ -297,4 +330,16 @@ func Example_latexplot() {
 
 func TestLatexPlot(t *testing.T) {
 	Example_latexplot()
+	ref, err := ioutil.ReadFile("testdata/latex_plot_golden.tex")
+	if err != nil {
+		t.Fatal(err)
+	}
+	chk, err := ioutil.ReadFile("testdata/latex_plot.tex")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(ref, chk) {
+		t.Fatal("files testdata/latex_plot{,_golden}.tex differ\n")
+	}
+	os.Remove("testdata/latex_plot.tex")
 }

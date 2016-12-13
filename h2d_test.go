@@ -5,13 +5,11 @@
 package hplot_test
 
 import (
-	"io/ioutil"
 	"math/rand"
 	"testing"
 
 	"github.com/go-hep/hbook"
 	"github.com/go-hep/hplot"
-	"github.com/go-hep/hplot/internal/cmpimg"
 	"github.com/gonum/matrix/mat64"
 	"github.com/gonum/plot"
 	"github.com/gonum/plot/plotter"
@@ -20,24 +18,11 @@ import (
 )
 
 func TestH2D(t *testing.T) {
-	ExampleNewH2D(t)
-
-	want, err := ioutil.ReadFile("testdata/h2d_plot_golden.png")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	got, err := ioutil.ReadFile("testdata/h2d_plot.png")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if ok, err := cmpimg.Equal("png", got, want); !ok || err != nil {
-		t.Fatalf("error: testdata/h2d_plot.png differ with reference file: %v\n", err)
-	}
+	ExampleH2D(t)
+	checkPlot(t, "testdata/h2d_plot_golden.png")
 }
 
-func ExampleNewH2D(t *testing.T) {
+func ExampleH2D(t *testing.T) {
 	h := hbook.NewH2D(100, -10, 10, 100, -10, 10)
 
 	const npoints = 10000
