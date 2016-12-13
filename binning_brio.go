@@ -133,6 +133,112 @@ func (o *binning1D) UnmarshalBinary(data []byte) (err error) {
 }
 
 // MarshalBinary implements encoding.BinaryMarshaler
+func (o *binningP1D) MarshalBinary() (data []byte, err error) {
+	var buf [8]byte
+	binary.LittleEndian.PutUint64(buf[:8], uint64(len(o.bins)))
+	data = append(data, buf[:8]...)
+	for i := range o.bins {
+		o := &o.bins[i]
+		{
+			sub, err := o.MarshalBinary()
+			if err != nil {
+				return nil, err
+			}
+			binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))
+			data = append(data, buf[:8]...)
+			data = append(data, sub...)
+		}
+	}
+	{
+		sub, err := o.dist.MarshalBinary()
+		if err != nil {
+			return nil, err
+		}
+		binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))
+		data = append(data, buf[:8]...)
+		data = append(data, sub...)
+	}
+	for i := range o.outflows {
+		o := &o.outflows[i]
+		{
+			sub, err := o.MarshalBinary()
+			if err != nil {
+				return nil, err
+			}
+			binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))
+			data = append(data, buf[:8]...)
+			data = append(data, sub...)
+		}
+	}
+	{
+		sub, err := o.xrange.MarshalBinary()
+		if err != nil {
+			return nil, err
+		}
+		binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))
+		data = append(data, buf[:8]...)
+		data = append(data, sub...)
+	}
+	binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(o.xstep))
+	data = append(data, buf[:8]...)
+	return data, err
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler
+func (o *binningP1D) UnmarshalBinary(data []byte) (err error) {
+	{
+		n := int(binary.LittleEndian.Uint64(data[:8]))
+		o.bins = make([]BinP1D, n)
+		data = data[8:]
+		for i := range o.bins {
+			oi := &o.bins[i]
+			{
+				n := int(binary.LittleEndian.Uint64(data[:8]))
+				data = data[8:]
+				err = oi.UnmarshalBinary(data[:n])
+				if err != nil {
+					return err
+				}
+				data = data[n:]
+			}
+		}
+	}
+	{
+		n := int(binary.LittleEndian.Uint64(data[:8]))
+		data = data[8:]
+		err = o.dist.UnmarshalBinary(data[:n])
+		if err != nil {
+			return err
+		}
+		data = data[n:]
+	}
+	for i := range o.outflows {
+		oi := &o.outflows[i]
+		{
+			n := int(binary.LittleEndian.Uint64(data[:8]))
+			data = data[8:]
+			err = oi.UnmarshalBinary(data[:n])
+			if err != nil {
+				return err
+			}
+			data = data[n:]
+		}
+	}
+	{
+		n := int(binary.LittleEndian.Uint64(data[:8]))
+		data = data[8:]
+		err = o.xrange.UnmarshalBinary(data[:n])
+		if err != nil {
+			return err
+		}
+		data = data[n:]
+	}
+	o.xstep = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+	data = data[8:]
+	return err
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler
 func (o *Bin1D) MarshalBinary() (data []byte, err error) {
 	var buf [8]byte
 	{
@@ -158,6 +264,53 @@ func (o *Bin1D) MarshalBinary() (data []byte, err error) {
 
 // UnmarshalBinary implements encoding.BinaryUnmarshaler
 func (o *Bin1D) UnmarshalBinary(data []byte) (err error) {
+	{
+		n := int(binary.LittleEndian.Uint64(data[:8]))
+		data = data[8:]
+		err = o.xrange.UnmarshalBinary(data[:n])
+		if err != nil {
+			return err
+		}
+		data = data[n:]
+	}
+	{
+		n := int(binary.LittleEndian.Uint64(data[:8]))
+		data = data[8:]
+		err = o.dist.UnmarshalBinary(data[:n])
+		if err != nil {
+			return err
+		}
+		data = data[n:]
+	}
+	return err
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler
+func (o *BinP1D) MarshalBinary() (data []byte, err error) {
+	var buf [8]byte
+	{
+		sub, err := o.xrange.MarshalBinary()
+		if err != nil {
+			return nil, err
+		}
+		binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))
+		data = append(data, buf[:8]...)
+		data = append(data, sub...)
+	}
+	{
+		sub, err := o.dist.MarshalBinary()
+		if err != nil {
+			return nil, err
+		}
+		binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))
+		data = append(data, buf[:8]...)
+		data = append(data, sub...)
+	}
+	return data, err
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler
+func (o *BinP1D) UnmarshalBinary(data []byte) (err error) {
 	{
 		n := int(binary.LittleEndian.Uint64(data[:8]))
 		data = data[8:]

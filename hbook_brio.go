@@ -101,6 +101,53 @@ func (o *H2D) UnmarshalBinary(data []byte) (err error) {
 }
 
 // MarshalBinary implements encoding.BinaryMarshaler
+func (o *P1D) MarshalBinary() (data []byte, err error) {
+	var buf [8]byte
+	{
+		sub, err := o.bng.MarshalBinary()
+		if err != nil {
+			return nil, err
+		}
+		binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))
+		data = append(data, buf[:8]...)
+		data = append(data, sub...)
+	}
+	{
+		sub, err := o.ann.MarshalBinary()
+		if err != nil {
+			return nil, err
+		}
+		binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))
+		data = append(data, buf[:8]...)
+		data = append(data, sub...)
+	}
+	return data, err
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler
+func (o *P1D) UnmarshalBinary(data []byte) (err error) {
+	{
+		n := int(binary.LittleEndian.Uint64(data[:8]))
+		data = data[8:]
+		err = o.bng.UnmarshalBinary(data[:n])
+		if err != nil {
+			return err
+		}
+		data = data[n:]
+	}
+	{
+		n := int(binary.LittleEndian.Uint64(data[:8]))
+		data = data[8:]
+		err = o.ann.UnmarshalBinary(data[:n])
+		if err != nil {
+			return err
+		}
+		data = data[n:]
+	}
+	return err
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler
 func (o *Scatter2D) MarshalBinary() (data []byte, err error) {
 	var buf [8]byte
 	binary.LittleEndian.PutUint64(buf[:8], uint64(len(o.pts)))
