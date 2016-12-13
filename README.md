@@ -25,38 +25,44 @@ Documentation is available on godoc:
 
 ### H1D
 
+[embedmd]:# (h1d_test.go go /func ExampleH1D/ /\n}/)
 ```go
-package main
+func ExampleH1D() {
+	const npoints = 10000
 
-import (
-	   "math/rand"
-	   "github.com/go-hep/hbook"
-)
+	// Create a normal distribution.
+	dist := distuv.Normal{
+		Mu:     0,
+		Sigma:  1,
+		Source: rand.New(rand.NewSource(0)),
+	}
 
-func main() {
-	 h := hbook.NewH1D(100, 0, 100)
-	 for i := 0; i < 100; i++ {
-	 	 h.Fill(rand.Float64()*100, 1.)
-	 }
+	// Draw some random values from the standard
+	// normal distribution.
+	h := hbook.NewH1D(20, -4, +4)
+	for i := 0; i < npoints; i++ {
+		v := dist.Rand()
+		h.Fill(v, 1)
+	}
+
+	fmt.Printf("mean:    %v\n", h.XMean())
+	fmt.Printf("rms:     %v\n", h.XRMS())
+	fmt.Printf("std-dev: %v\n", h.XStdDev())
+	fmt.Printf("std-err: %v\n", h.XStdErr())
+
+	// Output:
+	// mean:    -0.017341752512581167
+	// rms:     0.9913281479386786
+	// std-dev: 0.9912260153046148
+	// std-err: 0.00991226015304615
 }
-
 ```
 
 ### H2D
 
+[embedmd]:# (h2d_test.go go /func ExampleH2D/ /\n}/)
 ```go
-package main
-
-import (
-	"log"
-	"math/rand"
-
-	"github.com/go-hep/hbook"
-	"github.com/gonum/matrix/mat64"
-	"github.com/gonum/stat/distmv"
-)
-
-func main() {
+func ExampleH2D() {
 	h := hbook.NewH2D(100, -10, 10, 100, -10, 10)
 
 	const npoints = 10000
@@ -77,6 +83,29 @@ func main() {
 		v = dist.Rand(v)
 		h.Fill(v[0], v[1], 1)
 	}
+}
+```
+
+### Scatter2D
+
+[embedmd]:# (scatter2d_test.go go /func ExampleScatter2D/ /\n}/)
+```go
+func ExampleScatter2D() {
+	s := hbook.NewScatter2D(hbook.Point2D{X: 1, Y: 1}, hbook.Point2D{X: 2, Y: 1.5}, hbook.Point2D{X: -1, Y: +2})
+	if s == nil {
+		log.Fatal("nil pointer to Scatter2D")
+	}
+
+	fmt.Printf("len=%d\n", s.Len())
+
+	s.Fill(hbook.Point2D{X: 10, Y: -10, ErrX: hbook.Range{Min: 5, Max: 5}, ErrY: hbook.Range{Min: 6, Max: 6}})
+	fmt.Printf("len=%d\n", s.Len())
+	fmt.Printf("pt[%d]=%+v\n", 3, s.Point(3))
+
+	// Output:
+	// len=3
+	// len=4
+	// pt[3]={X:10 Y:-10 ErrX:{Min:5 Max:5} ErrY:{Min:6 Max:6}}
 }
 ```
 

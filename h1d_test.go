@@ -7,7 +7,9 @@ package hbook_test
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
 	"math"
+	"math/rand"
 	"reflect"
 	"sync"
 	"testing"
@@ -15,7 +17,38 @@ import (
 	"github.com/go-hep/hbook"
 	"github.com/gonum/floats"
 	"github.com/gonum/plot/plotter"
+	"github.com/gonum/stat/distuv"
 )
+
+func ExampleH1D() {
+	const npoints = 10000
+
+	// Create a normal distribution.
+	dist := distuv.Normal{
+		Mu:     0,
+		Sigma:  1,
+		Source: rand.New(rand.NewSource(0)),
+	}
+
+	// Draw some random values from the standard
+	// normal distribution.
+	h := hbook.NewH1D(20, -4, +4)
+	for i := 0; i < npoints; i++ {
+		v := dist.Rand()
+		h.Fill(v, 1)
+	}
+
+	fmt.Printf("mean:    %v\n", h.XMean())
+	fmt.Printf("rms:     %v\n", h.XRMS())
+	fmt.Printf("std-dev: %v\n", h.XStdDev())
+	fmt.Printf("std-err: %v\n", h.XStdErr())
+
+	// Output:
+	// mean:    -0.017341752512581167
+	// rms:     0.9913281479386786
+	// std-dev: 0.9912260153046148
+	// std-err: 0.00991226015304615
+}
 
 func TestH1D(t *testing.T) {
 	h1 := hbook.NewH1D(100, 0., 100.)
