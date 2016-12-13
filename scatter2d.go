@@ -5,6 +5,10 @@
 package hbook
 
 import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"io"
 	"math"
 	"sort"
 )
@@ -207,4 +211,96 @@ func (s *Scatter2D) DataRange() (xmin, xmax, ymin, ymax float64) {
 		ymax = math.Max(p.YMax(), ymax)
 	}
 	return
+}
+
+// annYODA creates a new Annotation with fields compatible with YODA
+func (s *Scatter2D) annYODA() Annotation {
+	ann := make(Annotation, len(s.ann))
+	ann["Type"] = "Scatter2D"
+	ann["Path"] = "/" + s.Name()
+	ann["Title"] = ""
+	for k, v := range s.ann {
+		ann[k] = v
+	}
+	return ann
+}
+
+// MarshalYODA implements the YODAMarshaler interface.
+func (s *Scatter2D) MarshalYODA() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	ann := s.annYODA()
+	fmt.Fprintf(buf, "BEGIN YODA_SCATTER2D %s\n", ann["Path"])
+	data, err := ann.MarshalYODA()
+	if err != nil {
+		return nil, err
+	}
+	buf.Write(data)
+
+	// TODO: change ordering to {vals} {errs} {errs} ...
+	fmt.Fprintf(buf, "# xval\t xerr-\t xerr+\t yval\t yerr-\t yerr+\n")
+	s.Sort()
+	for _, pt := range s.pts {
+		fmt.Fprintf(
+			buf,
+			"%e\t%e\t%e\t%e\t%e\t%e\n",
+			pt.X, pt.ErrX.Min, pt.ErrX.Max, pt.Y, pt.ErrY.Min, pt.ErrY.Max,
+		)
+	}
+	fmt.Fprintf(buf, "END YODA_SCATTER2D\n\n")
+	return buf.Bytes(), err
+}
+
+// UnmarshalYODA implements the YODAUnmarshaler interface.
+func (s *Scatter2D) UnmarshalYODA(data []byte) error {
+	var err error
+	var path string
+	r := bytes.NewBuffer(data)
+	_, err = fmt.Fscanf(r, "BEGIN YODA_SCATTER2D %s\n", &path)
+	if err != nil {
+		return err
+	}
+	ann := make(Annotation)
+
+	// pos of end of annotations
+	pos := bytes.Index(r.Bytes(), []byte("\n# xval\t xerr-\t"))
+	if pos < 0 {
+		return fmt.Errorf("hbook: invalid Scatter2D-YODA data")
+	}
+	err = ann.UnmarshalYODA(r.Bytes()[:pos+1])
+	if err != nil {
+		return fmt.Errorf("hbook: %v\nhbook: %q", err, string(r.Bytes()[:pos+1]))
+	}
+	s.ann = ann
+	r.Next(pos)
+
+	sc := bufio.NewScanner(r)
+scanLoop:
+	for sc.Scan() {
+		buf := sc.Bytes()
+		if len(buf) == 0 || buf[0] == '#' {
+			continue
+		}
+		rbuf := bytes.NewReader(buf)
+		switch {
+		case bytes.HasPrefix(buf, []byte("END YODA_SCATTER2D")):
+			break scanLoop
+		default:
+			var pt Point2D
+			fmt.Fscanf(
+				rbuf,
+				"%e\t%e\t%e\t%e\t%e\t%e\n",
+				&pt.X, &pt.ErrX.Min, &pt.ErrX.Max, &pt.Y, &pt.ErrY.Min, &pt.ErrY.Max,
+			)
+			if err != nil {
+				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+			}
+			s.Fill(pt)
+		}
+	}
+	err = sc.Err()
+	if err == io.EOF {
+		err = nil
+	}
+	s.Sort()
+	return err
 }

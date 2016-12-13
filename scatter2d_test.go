@@ -6,7 +6,9 @@ package hbook_test
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
+	"reflect"
 	"testing"
 
 	"github.com/go-hep/hbook"
@@ -106,4 +108,58 @@ func ExampleScatter2D_newScatter2DFromH1D() {
 	// point=(+3.00 +/- (+0.20,+0.20), +2.50 +/- (+2.50, +2.50))
 	// point=(+3.40 +/- (+0.20,+0.20), +0.00 +/- (+0.00, +0.00))
 	// point=(+3.80 +/- (+0.20,+0.20), +0.00 +/- (+0.00, +0.00))
+}
+
+func TestScatter2DWriteYODA(t *testing.T) {
+	h := hbook.NewH1D(20, -4, +4)
+	h.Fill(1, 2)
+	h.Fill(2, 3)
+	h.Fill(3, 1)
+	h.Fill(1, 1)
+	h.Fill(-2, 1)
+	h.Fill(-3, 1)
+
+	s := hbook.NewScatter2DFromH1D(h)
+
+	chk, err := s.MarshalYODA()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ref, err := ioutil.ReadFile("testdata/s2d_golden.yoda")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(chk, ref) {
+		t.Fatalf("s2d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
+			string(chk),
+			string(ref),
+		)
+	}
+}
+
+func TestScatter2DReadYODA(t *testing.T) {
+	ref, err := ioutil.ReadFile("testdata/s2d_golden.yoda")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var s hbook.Scatter2D
+	err = s.UnmarshalYODA(ref)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	chk, err := s.MarshalYODA()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(chk, ref) {
+		t.Fatalf("s2d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
+			string(chk),
+			string(ref),
+		)
+	}
 }
