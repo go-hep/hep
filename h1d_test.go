@@ -345,7 +345,6 @@ func TestH1DWriteYODA(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(chk, ref) {
-		ioutil.WriteFile("testdata/h1d.yoda", chk, 0644)
 		t.Fatalf("h2d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
 			string(chk),
 			string(ref),
