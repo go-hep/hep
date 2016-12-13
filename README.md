@@ -92,7 +92,7 @@ import (
 	"fmt"
 
 	_ "github.com/go-hep/csvutil/csvdriver"
-	"github.com/go-hep/hbook"
+	"github.com/go-hep/hbook/ntup"
 )
 
 func main() {
@@ -102,7 +102,7 @@ func main() {
 	}
 	defer db.Close()
 
-	nt, err := hbook.OpenNtuple(db, "csv")
+	nt, err := ntup.Open(db, "csv")
 	if err != nil {
 		panic(err)
 	}
