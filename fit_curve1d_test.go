@@ -1,14 +1,30 @@
-# fit
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
-`fit` is a WIP package to provide easy fitting models and curve fitting functions.
+package fit_test
 
-## Curve1D
+import (
+	"bufio"
+	"image/color"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+	"testing"
 
-### Fit a gaussian
+	"github.com/go-hep/fit"
+	"github.com/go-hep/hplot"
+	"github.com/gonum/floats"
+	"github.com/gonum/optimize"
+	"github.com/gonum/plot/plotter"
+	"github.com/gonum/plot/vg"
+)
 
-![func1d-gaussian-example](https://github.com/go-hep/fit/raw/master/testdata/gauss-plot.png)
-[embedmd]:# (fit_curve1d_test.go go /func ExampleCurve1D_gaussian/ /\n}/)
-```go
+func TestCurve1D(t *testing.T) {
+	ExampleCurve1D_gaussian(t)
+}
+
 func ExampleCurve1D_gaussian(t *testing.T) {
 	const (
 		height = 3.0
@@ -72,9 +88,30 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 		}
 	}
 }
-```
 
-### Fit an exponential
+func readXY(fname string) (xs, ys []float64, err error) {
+	f, err := os.Open(fname)
+	if err != nil {
+		return xs, ys, err
+	}
+	defer f.Close()
 
-![func1d-curve-example](https://github.com/go-hep/fit/raw/master/testdata/curve-plot.png)
-![func1d-ceres-example](https://github.com/go-hep/fit/raw/master/testdata/ceres-plot.png)
+	scan := bufio.NewScanner(f)
+	for scan.Scan() {
+		line := scan.Text()
+		toks := strings.Split(line, " ")
+		x, err := strconv.ParseFloat(toks[0], 64)
+		if err != nil {
+			return xs, ys, err
+		}
+		xs = append(xs, x)
+
+		y, err := strconv.ParseFloat(toks[1], 64)
+		if err != nil {
+			return xs, ys, err
+		}
+		ys = append(ys, y)
+	}
+
+	return
+}
