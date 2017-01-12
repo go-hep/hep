@@ -78,6 +78,7 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 			return gauss(x, res.X[0], res.X[1], res.X[2])
 		})
 		f.Color = color.RGBA{255, 0, 0, 255}
+		f.Samples = 1000
 		p.Add(f)
 
 		p.Add(plotter.NewGrid())
