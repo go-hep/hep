@@ -29,18 +29,18 @@ func TestCurve1D(t *testing.T) {
 }
 
 func ExampleCurve1D_gaussian(t *testing.T) {
-	const (
-		height = 3.0
-		mean   = 30.0
-		sigma  = 20.0
-		ndf    = 2.0
+	var (
+		cst   = 3.0
+		mean  = 30.0
+		sigma = 20.0
+		want  = []float64{cst, mean, sigma}
 	)
 
 	xdata, ydata, err := readXY("testdata/gauss-data.txt")
 
-	gauss := func(x, mu, sigma, height float64) float64 {
+	gauss := func(x, cst, mu, sigma float64) float64 {
 		v := (x - mu)
-		return height * math.Exp(-v*v/sigma)
+		return cst * math.Exp(-v*v/sigma)
 	}
 
 	res, err := fit.Curve1D(
@@ -61,7 +61,7 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 	if err := res.Status.Err(); err != nil {
 		t.Fatal(err)
 	}
-	if got, want := res.X, []float64{mean, sigma, height}; !floats.EqualApprox(got, want, 1e-3) {
+	if got := res.X; !floats.EqualApprox(got, want, 1e-3) {
 		t.Fatalf("got= %v\nwant=%v\n", got, want)
 	}
 
