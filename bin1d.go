@@ -41,6 +41,11 @@ func (b *Bin1D) SumW2() float64 {
 	return b.dist.SumW2()
 }
 
+// ErrW returns the absolute error on SumW()
+func (b *Bin1D) ErrW() float64 {
+	return b.dist.errW()
+}
+
 // XEdges returns the [low,high] edges of this bin.
 func (b *Bin1D) XEdges() Range {
 	return b.xrange
