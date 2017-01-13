@@ -1,5 +1,7 @@
 # fit
 
+[![GoDoc](https://godoc.org/github.com/go-hep/fit?status.svg)](https://godoc.org/github.com/go-hep/fit)
+
 `fit` is a WIP package to provide easy fitting models and curve fitting functions.
 
 ## Curve1D
