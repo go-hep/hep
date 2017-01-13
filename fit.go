@@ -7,21 +7,30 @@ package fit
 
 import (
 	"github.com/gonum/diff/fd"
-	"github.com/gonum/optimize"
 )
 
+// Func1D describes a 1D function to fit some data.
 type Func1D struct {
-	F  func(x float64, ps []float64) float64 // function to minimize
-	N  int                                   // number of parameters
-	Ps []float64                             // initial parameters values
+	// F is the function to minimize.
+	// ps is the slice of parameters to optimize during the fit.
+	F func(x float64, ps []float64) float64
+
+	// N is the number of parameters to optimize during the fit.
+	// If N is 0, Ps must not be nil.
+	N int
+
+	// Ps is the initial values for the parameters.
+	// If Ps is nil, the set of initial parameters values is a slice of
+	// length N filled with zeros.
+	Ps []float64
 
 	X   []float64
 	Y   []float64
 	Err []float64
 
-	sig2 []float64
+	sig2 []float64 // inverse of squares of measurement errors along Y.
 
-	fct  func(ps []float64) float64
+	fct  func(ps []float64) float64 // cost function (objective function)
 	grad func(grad, ps []float64)
 }
 
@@ -67,21 +76,4 @@ func (f *Func1D) init() {
 	f.grad = func(grad, ps []float64) {
 		fd.Gradient(grad, f.fct, ps, nil)
 	}
-}
-
-func Curve1D(f Func1D, settings *optimize.Settings, m optimize.Method) (*optimize.Result, error) {
-	f.init()
-
-	p := optimize.Problem{
-		Func: f.fct,
-		Grad: f.grad,
-	}
-
-	if m == nil {
-		m = &optimize.NelderMead{}
-	}
-
-	p0 := make([]float64, len(f.Ps))
-	copy(p0, f.Ps)
-	return optimize.Local(p, p0, settings, m)
 }

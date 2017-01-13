@@ -7,7 +7,7 @@
 ### Fit a gaussian
 
 ![func1d-gaussian-example](https://github.com/go-hep/fit/raw/master/testdata/gauss-plot.png)
-[embedmd]:# (fit_curve1d_test.go go /func ExampleCurve1D_gaussian/ /\n}/)
+[embedmd]:# (curve1d_test.go go /func ExampleCurve1D_gaussian/ /\n}/)
 ```go
 func ExampleCurve1D_gaussian(t *testing.T) {
 	const (
@@ -78,7 +78,7 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 ### Fit an exponential
 
 ![func1d-exp-example](https://github.com/go-hep/fit/raw/master/testdata/exp-plot.png)
-[embedmd]:# (fit_curve1d_test.go go /func ExampleCurve1D_exponential/ /\n}/)
+[embedmd]:# (curve1d_test.go go /func ExampleCurve1D_exponential/ /\n}/)
 ```go
 func ExampleCurve1D_exponential(t *testing.T) {
 	const (
@@ -151,7 +151,7 @@ func ExampleCurve1D_exponential(t *testing.T) {
 ### Fit a polynomial
 
 ![func1d-poly-example](https://github.com/go-hep/fit/raw/master/testdata/poly-plot.png)
-[embedmd]:# (fit_curve1d_test.go go /func ExampleCurve1D_poly/ /\n}/)
+[embedmd]:# (curve1d_test.go go /func ExampleCurve1D_poly/ /\n}/)
 ```go
 func ExampleCurve1D_poly(t *testing.T) {
 	var (
