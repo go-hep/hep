@@ -1,6 +1,7 @@
 # fit
 
 [![GoDoc](https://godoc.org/github.com/go-hep/fit?status.svg)](https://godoc.org/github.com/go-hep/fit)
+[![Build Status](https://travis-ci.org/go-hep/fit.svg?branch=master)](https://travis-ci.org/go-hep/fit)
 
 `fit` is a WIP package to provide easy fitting models and curve fitting functions.
 
