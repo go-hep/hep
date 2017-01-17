@@ -182,12 +182,12 @@ func (g h2dGridXYZ) Z(c, r int) float64 {
 }
 
 func (g h2dGridXYZ) X(c int) float64 {
-	return g.h.bng.bins[c].xrange.Min
+	return g.h.bng.bins[c].XMid()
 }
 
 func (g h2dGridXYZ) Y(r int) float64 {
 	idx := r * g.h.bng.nx
-	return g.h.bng.bins[idx].yrange.Min
+	return g.h.bng.bins[idx].YMid()
 }
 
 // check various interfaces
