@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/go-hep/fit"
+	"github.com/go-hep/hbook"
 	"github.com/go-hep/hplot"
 	"github.com/gonum/floats"
 	"github.com/gonum/optimize"
@@ -26,6 +27,7 @@ func TestCurve1D(t *testing.T) {
 	ExampleCurve1D_gaussian(t)
 	ExampleCurve1D_exponential(t)
 	ExampleCurve1D_poly(t)
+	ExampleCurve1D_powerlaw(t)
 }
 
 func ExampleCurve1D_gaussian(t *testing.T) {
@@ -227,6 +229,83 @@ func ExampleCurve1D_poly(t *testing.T) {
 	}
 }
 
+func ExampleCurve1D_powerlaw(t *testing.T) {
+	var (
+		amp   = 11.021171432949746
+		index = -2.027389113217428
+		want  = []float64{amp, index}
+	)
+
+	xdata, ydata, yerrs, err := readXYerr("testdata/powerlaw-data.txt")
+
+	plaw := func(x, amp, index float64) float64 {
+		return amp * math.Pow(x, index)
+	}
+
+	res, err := fit.Curve1D(
+		fit.Func1D{
+			F: func(x float64, ps []float64) float64 {
+				return plaw(x, ps[0], ps[1])
+			},
+			X:   xdata,
+			Y:   ydata,
+			Err: yerrs,
+			Ps:  []float64{1, 1},
+		},
+		nil, &optimize.NelderMead{},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := res.Status.Err(); err != nil {
+		t.Fatal(err)
+	}
+	if got := res.X; !floats.EqualApprox(got, want, 1e-3) {
+		t.Fatalf("got= %v\nwant=%v\n", got, want)
+	}
+
+	{
+		p, err := hplot.New()
+		if err != nil {
+			t.Fatal(err)
+		}
+		p.X.Label.Text = "f(x) = a * x^b"
+		p.Y.Label.Text = "y-data"
+		p.X.Min = 0
+		p.X.Max = 10
+		p.Y.Min = 0
+		p.Y.Max = 10
+
+		pts := make([]hbook.Point2D, len(xdata))
+		for i := range pts {
+			pts[i].X = xdata[i]
+			pts[i].Y = ydata[i]
+			pts[i].ErrY.Min = 0.5 * yerrs[i]
+			pts[i].ErrY.Max = 0.5 * yerrs[i]
+		}
+
+		s := hplot.NewS2D(hbook.NewS2D(pts...))
+		s.Options |= hplot.WithYErrBars
+		s.Color = color.RGBA{0, 0, 255, 255}
+		p.Add(s)
+
+		f := plotter.NewFunction(func(x float64) float64 {
+			return plaw(x, res.X[0], res.X[1])
+		})
+		f.Color = color.RGBA{255, 0, 0, 255}
+		f.Samples = 1000
+		p.Add(f)
+
+		p.Add(plotter.NewGrid())
+
+		err = p.Save(20*vg.Centimeter, -1, "testdata/powerlaw-plot.png")
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func genXY(n int, f func(x float64, ps []float64) float64, ps []float64, xmin, xmax float64) ([]float64, []float64) {
 	xdata := make([]float64, n)
 	ydata := make([]float64, n)
@@ -267,6 +346,39 @@ func readXY(fname string) (xs, ys []float64, err error) {
 			return xs, ys, err
 		}
 		ys = append(ys, y)
+	}
+
+	return
+}
+
+func readXYerr(fname string) (xs, ys, yerrs []float64, err error) {
+	f, err := os.Open(fname)
+	if err != nil {
+		return xs, ys, yerrs, err
+	}
+	defer f.Close()
+
+	scan := bufio.NewScanner(f)
+	for scan.Scan() {
+		line := scan.Text()
+		toks := strings.Split(line, " ")
+		x, err := strconv.ParseFloat(toks[0], 64)
+		if err != nil {
+			return xs, ys, yerrs, err
+		}
+		xs = append(xs, x)
+
+		y, err := strconv.ParseFloat(toks[1], 64)
+		if err != nil {
+			return xs, ys, yerrs, err
+		}
+		ys = append(ys, y)
+
+		yerr, err := strconv.ParseFloat(toks[2], 64)
+		if err != nil {
+			return xs, ys, yerrs, err
+		}
+		yerrs = append(yerrs, yerr)
 	}
 
 	return

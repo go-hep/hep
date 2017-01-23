@@ -103,18 +103,18 @@ func ExampleH1D_gaussian(t *testing.T) {
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_gaussian/ /\n}/)
 ```go
 func ExampleCurve1D_gaussian(t *testing.T) {
-	const (
-		height = 3.0
-		mean   = 30.0
-		sigma  = 20.0
-		ndf    = 2.0
+	var (
+		cst   = 3.0
+		mean  = 30.0
+		sigma = 20.0
+		want  = []float64{cst, mean, sigma}
 	)
 
 	xdata, ydata, err := readXY("testdata/gauss-data.txt")
 
-	gauss := func(x, mu, sigma, height float64) float64 {
+	gauss := func(x, cst, mu, sigma float64) float64 {
 		v := (x - mu)
-		return height * math.Exp(-v*v/sigma)
+		return cst * math.Exp(-v*v/sigma)
 	}
 
 	res, err := fit.Curve1D(
@@ -135,7 +135,7 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 	if err := res.Status.Err(); err != nil {
 		t.Fatal(err)
 	}
-	if got, want := res.X, []float64{mean, sigma, height}; !floats.EqualApprox(got, want, 1e-3) {
+	if got := res.X; !floats.EqualApprox(got, want, 1e-3) {
 		t.Fatalf("got= %v\nwant=%v\n", got, want)
 	}
 
@@ -161,6 +161,89 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 		p.Add(plotter.NewGrid())
 
 		err = p.Save(20*vg.Centimeter, -1, "testdata/gauss-plot.png")
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+```
+
+### Fit a powerlaw (with Y-errors)
+
+![func1d-powerlaw-example](https://github.com/go-hep/fit/raw/master/testdata/powerlaw-plot.png)
+[embedmd]:# (curve1d_test.go go /func ExampleCurve1D_powerlaw/ /\n}/)
+```go
+func ExampleCurve1D_powerlaw(t *testing.T) {
+	var (
+		amp   = 11.021171432949746
+		index = -2.027389113217428
+		want  = []float64{amp, index}
+	)
+
+	xdata, ydata, yerrs, err := readXYerr("testdata/powerlaw-data.txt")
+
+	plaw := func(x, amp, index float64) float64 {
+		return amp * math.Pow(x, index)
+	}
+
+	res, err := fit.Curve1D(
+		fit.Func1D{
+			F: func(x float64, ps []float64) float64 {
+				return plaw(x, ps[0], ps[1])
+			},
+			X:   xdata,
+			Y:   ydata,
+			Err: yerrs,
+			Ps:  []float64{1, 1},
+		},
+		nil, &optimize.NelderMead{},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := res.Status.Err(); err != nil {
+		t.Fatal(err)
+	}
+	if got := res.X; !floats.EqualApprox(got, want, 1e-3) {
+		t.Fatalf("got= %v\nwant=%v\n", got, want)
+	}
+
+	{
+		p, err := hplot.New()
+		if err != nil {
+			t.Fatal(err)
+		}
+		p.X.Label.Text = "f(x) = a * x^b"
+		p.Y.Label.Text = "y-data"
+		p.X.Min = 0
+		p.X.Max = 10
+		p.Y.Min = 0
+		p.Y.Max = 10
+
+		pts := make([]hbook.Point2D, len(xdata))
+		for i := range pts {
+			pts[i].X = xdata[i]
+			pts[i].Y = ydata[i]
+			pts[i].ErrY.Min = 0.5 * yerrs[i]
+			pts[i].ErrY.Max = 0.5 * yerrs[i]
+		}
+
+		s := hplot.NewS2D(hbook.NewS2D(pts...))
+		s.Options |= hplot.WithYErrBars
+		s.Color = color.RGBA{0, 0, 255, 255}
+		p.Add(s)
+
+		f := plotter.NewFunction(func(x float64) float64 {
+			return plaw(x, res.X[0], res.X[1])
+		})
+		f.Color = color.RGBA{255, 0, 0, 255}
+		f.Samples = 1000
+		p.Add(f)
+
+		p.Add(plotter.NewGrid())
+
+		err = p.Save(20*vg.Centimeter, -1, "testdata/powerlaw-plot.png")
 		if err != nil {
 			t.Fatal(err)
 		}
