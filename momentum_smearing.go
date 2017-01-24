@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-hep/fmom"
 	"github.com/go-hep/fwk"
-	"github.com/go-hep/random"
+	"github.com/gonum/stat/distuv"
 )
 
 type MomentumSmearing struct {
@@ -19,7 +19,7 @@ type MomentumSmearing struct {
 
 	smear func(x, y float64) float64
 	seed  int64
-	src   rand.Source
+	src   *rand.Rand
 	srcmu sync.Mutex
 }
 
@@ -41,7 +41,7 @@ func (tsk *MomentumSmearing) Configure(ctx fwk.Context) error {
 
 func (tsk *MomentumSmearing) StartTask(ctx fwk.Context) error {
 	var err error
-	tsk.src = rand.NewSource(tsk.seed)
+	tsk.src = rand.New(rand.NewSource(tsk.seed))
 	return err
 }
 
@@ -77,8 +77,8 @@ func (tsk *MomentumSmearing) Process(ctx fwk.Context) error {
 
 		// apply smearing
 		tsk.srcmu.Lock()
-		smearPt := random.Gauss(pt, tsk.smear(pt, eta)*pt, &tsk.src)
-		pt = smearPt()
+		smearPt := distuv.Normal{Mu: pt, Sigma: tsk.smear(pt, eta) * pt, Source: tsk.src}
+		pt = smearPt.Rand()
 		tsk.srcmu.Unlock()
 
 		if pt <= 0 {

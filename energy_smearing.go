@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-hep/fmom"
 	"github.com/go-hep/fwk"
-	"github.com/go-hep/random"
+	"github.com/gonum/stat/distuv"
 )
 
 type EnergySmearing struct {
@@ -19,7 +19,7 @@ type EnergySmearing struct {
 
 	smear func(eta, ene float64) float64
 	seed  int64
-	src   rand.Source
+	src   *rand.Rand
 	srcmu sync.Mutex
 }
 
@@ -41,7 +41,7 @@ func (tsk *EnergySmearing) Configure(ctx fwk.Context) error {
 
 func (tsk *EnergySmearing) StartTask(ctx fwk.Context) error {
 	var err error
-	tsk.src = rand.NewSource(tsk.seed)
+	tsk.src = rand.New(rand.NewSource(tsk.seed))
 	return err
 }
 
@@ -77,8 +77,8 @@ func (tsk *EnergySmearing) Process(ctx fwk.Context) error {
 
 		// apply smearing
 		tsk.srcmu.Lock()
-		smearEne := random.Gauss(ene, tsk.smear(eta, ene), &tsk.src)
-		ene = smearEne()
+		smearEne := distuv.Normal{Mu: ene, Sigma: tsk.smear(eta, ene), Source: tsk.src}
+		ene = smearEne.Rand()
 		tsk.srcmu.Unlock()
 
 		if ene <= 0 {

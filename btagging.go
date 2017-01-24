@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-hep/fmom"
 	"github.com/go-hep/fwk"
-	"github.com/go-hep/random"
+	"github.com/gonum/stat/distuv"
 )
 
 type btagclassifier struct {
@@ -46,9 +46,9 @@ type BTagging struct {
 	eff  map[int]func(pt, eta float64) float64
 
 	seed int64
-	src  rand.Source
+	src  *rand.Rand
 
-	flat   random.Dist
+	flat   distuv.Uniform
 	flatmu sync.Mutex
 }
 
@@ -70,8 +70,8 @@ func (tsk *BTagging) Configure(ctx fwk.Context) error {
 		return err
 	}
 
-	tsk.src = rand.NewSource(tsk.seed)
-	tsk.flat = random.Flat(0, 1, &tsk.src)
+	tsk.src = rand.New(rand.NewSource(tsk.seed))
+	tsk.flat = distuv.Uniform{Min: 0, Max: 1, Source: tsk.src}
 	return err
 }
 
@@ -160,7 +160,7 @@ func (tsk *BTagging) Process(ctx fwk.Context) error {
 		// apply efficiency
 		tag := uint32(0)
 		tsk.flatmu.Lock()
-		if tsk.flat() <= eff(pt, eta) {
+		if tsk.flat.Rand() <= eff(pt, eta) {
 			tag = 1
 		}
 		tsk.flatmu.Unlock()

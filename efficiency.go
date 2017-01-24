@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/go-hep/fwk"
-	"github.com/go-hep/random"
+	"github.com/gonum/stat/distuv"
 )
 
 type Efficiency struct {
@@ -17,7 +17,7 @@ type Efficiency struct {
 
 	eff  func(pt, eta float64) float64
 	seed int64
-	dist random.Dist
+	dist distuv.Uniform
 	dmu  sync.Mutex
 }
 
@@ -38,8 +38,8 @@ func (tsk *Efficiency) Configure(ctx fwk.Context) error {
 
 func (tsk *Efficiency) StartTask(ctx fwk.Context) error {
 	var err error
-	src := rand.NewSource(tsk.seed)
-	tsk.dist = random.Flat(0, 1, &src)
+	src := rand.New(rand.NewSource(tsk.seed))
+	tsk.dist = distuv.Uniform{Min: 0, Max: 1, Source: src}
 	return err
 }
 
@@ -74,7 +74,7 @@ func (tsk *Efficiency) Process(ctx fwk.Context) error {
 
 		// apply efficiency
 		tsk.dmu.Lock()
-		eff := tsk.dist()
+		eff := tsk.dist.Rand()
 		tsk.dmu.Unlock()
 		max := tsk.eff(pt, eta)
 		if eff > max {

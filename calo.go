@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/go-hep/fwk"
-	"github.com/go-hep/random"
+	"github.com/gonum/stat/distuv"
 )
 
 type etaphiBin struct {
@@ -167,9 +167,9 @@ type Calorimeter struct {
 	eflowtowers string
 
 	seed int64
-	src  rand.Source
+	src  *rand.Rand
 
-	gauss random.Dist
+	gauss distuv.Normal
 	dmu   sync.Mutex
 }
 
@@ -206,8 +206,8 @@ func (tsk *Calorimeter) Configure(ctx fwk.Context) error {
 		return err
 	}
 
-	tsk.src = rand.NewSource(tsk.seed)
-	tsk.gauss = random.Gauss(0, 1, &tsk.src)
+	tsk.src = rand.New(rand.NewSource(tsk.seed))
+	tsk.gauss = distuv.Normal{Mu: 0, Sigma: 1, Source: tsk.src}
 	return err
 }
 
@@ -480,7 +480,7 @@ func (tsk *Calorimeter) lognormal(mean, sigma float64) float64 {
 	a := math.Log(mean) - 0.5*b*b
 
 	tsk.dmu.Lock()
-	bgauss := tsk.gauss()
+	bgauss := tsk.gauss.Rand()
 	tsk.dmu.Unlock()
 	return math.Exp(a + bgauss)
 }
