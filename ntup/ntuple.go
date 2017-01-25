@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // package ntup provides a way to create, open and iterate over n-tuple data.
-package ntup
+package ntup // import "github.com/go-hep/hbook/ntup"
 
 import (
 	"database/sql"
