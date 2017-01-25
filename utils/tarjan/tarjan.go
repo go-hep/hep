@@ -1,3 +1,7 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 // Copyright (c) 2013 - Max Persson <max@looplab.se>
 // Copyright (c) 2010-2013 - Gustavo Niemeyer <gustavo@niemeyer.net>
 //
@@ -26,7 +30,7 @@
 // Based on an implementation by Gustavo Niemeyer (in mgo/txn):
 // http://bazaar.launchpad.net/+branch/mgo/v2/view/head:/txn/tarjan.go
 //
-package tarjan
+package tarjan // import "github.com/go-hep/fwk/utils/tarjan"
 
 // Connections creates a slice where each item is a slice of strongly connected vertices.
 //

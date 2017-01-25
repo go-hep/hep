@@ -1,3 +1,7 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 // the following has been extracted from Rog Peppe's parallel package
 // published under the new BSD-3 clause license
 //   http://opensource.org/licenses/BSD-3-Clause
@@ -8,7 +12,7 @@
 // The parallel package provides a way of running functions
 // concurrently while limiting the maximum number
 // running at once.
-package parallel
+package parallel // import "github.com/go-hep/fwk/utils/parallel"
 
 import (
 	"fmt"

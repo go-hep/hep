@@ -1,9 +1,13 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 // package builder builds a fwk-app binary from a list of go files.
 //
 // builder's architecture and sources are heavily inspired from golint:
 //   https://github.com/golang/lint
 //
-package builder
+package builder // import "github.com/go-hep/fwk/utils/builder"
 
 import (
 	"go/ast"
