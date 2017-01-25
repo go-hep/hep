@@ -4,7 +4,7 @@
 
 // Package cmpimg compares the raw representation of images taking into account
 // idiosyncracies related to their underlying format (SVG, PDF, PNG, ...).
-package cmpimg
+package cmpimg // import "github.com/go-hep/hplot/internal/cmpimg"
 
 import (
 	"bytes"

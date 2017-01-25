@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package vgshiny provides a vg.Canvas implementation backed by a shiny/screen.Window
-package vgshiny
+package vgshiny // import "github.com/go-hep/hplot/vgshiny"
 
 import (
 	"image"
