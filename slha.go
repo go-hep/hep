@@ -1,5 +1,9 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 // Package slha implements encoding and decoding of SUSY Les Houches Accords (SLHA) data format.
-package slha
+package slha // import "github.com/go-hep/slha"
 
 import (
 	"fmt"
