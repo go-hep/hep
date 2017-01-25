@@ -1,4 +1,9 @@
-package lhef
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Package lhef implements the "Les Houches Event File" data format.
+package lhef // import "github.com/go-hep/lhef"
 
 // XSecInfo contains information given in the xsecinfo tag.
 type XSecInfo struct {
