@@ -87,6 +87,7 @@ func TestReadRunHeader(t *testing.T) {
 }
 
 func TestReadRunHeaderCompr(t *testing.T) {
+	t.Skip("sio read compression disabled")
 	testReadStream(t, "testdata/runhdr-compr.sio")
 }
 
