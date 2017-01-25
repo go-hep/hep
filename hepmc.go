@@ -1,4 +1,9 @@
-package hepmc
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Package hepmc is a pure Go implementation of the C++ HepMC-2 library.
+package hepmc // import "github.com/go-hep/hepmc"
 
 import (
 	"errors"
