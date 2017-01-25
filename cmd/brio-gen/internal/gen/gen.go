@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package gen
+package gen // import "github.com/go-hep/brio/cmd/brio-gen/internal/gen"
 
 import (
 	"bytes"
