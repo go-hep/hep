@@ -3,4 +3,4 @@
 // license that can be found in the LICENSE file.
 
 // Package rio is a record-oriented persistency mechanism.
-package rio
+package rio // import "github.com/go-hep/rio"
