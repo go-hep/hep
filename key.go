@@ -9,7 +9,6 @@ import (
 	"compress/zlib"
 	"fmt"
 	"io"
-	"os"
 	"reflect"
 	"time"
 )
@@ -147,7 +146,7 @@ func (k *Key) AsBasket() *Basket {
 		panic("rootio.Key: Key is not a basket!")
 	}
 	b := &Basket{}
-	_, err := k.f.Seek(int64(k.pdat), os.SEEK_SET)
+	_, err := k.f.Seek(int64(k.pdat), io.SeekStart)
 	if err != nil {
 		panic(fmt.Errorf("rootio.Key: %v", err))
 	}
@@ -184,7 +183,7 @@ func (k *Key) Read() error {
 
 	if k.bytes < 0 {
 		if k.classname == "[GAP]" {
-			_, err = k.f.Seek(int64(-k.bytes)-4, os.SEEK_CUR)
+			_, err = k.f.Seek(int64(-k.bytes)-4, io.SeekCurrent)
 			if err != nil {
 				return err
 			}
@@ -219,7 +218,7 @@ func (k *Key) Read() error {
 		//panic(err)
 	}
 
-	_, err = k.f.Seek(int64(key_offset+int64(k.bytes)), os.SEEK_SET)
+	_, err = k.f.Seek(int64(key_offset+int64(k.bytes)), io.SeekStart)
 	return err
 }
 
