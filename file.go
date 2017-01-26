@@ -77,7 +77,7 @@ type File struct {
 	nbytesinfo  int32 // sizeof(TStreamerInfo)
 	uuid        [18]byte
 
-	root directory // root directory of this file
+	dir directory // root directory of this file
 }
 
 // Open opens the named ROOT file for reading. If successful, methods on the
@@ -93,7 +93,7 @@ func Open(path string) (*File, error) {
 		Reader: fd,
 		id:     path,
 	}
-	f.root = directory{file: f}
+	f.dir = directory{file: f}
 
 	err = f.readHeader()
 	if err != nil {
@@ -157,7 +157,7 @@ func (f *File) readHeader() error {
 
 	var err error
 
-	err = f.root.readDirInfo()
+	err = f.dir.readDirInfo()
 	if err != nil {
 		return err
 	}
@@ -167,7 +167,7 @@ func (f *File) readHeader() error {
 		return err
 	}
 
-	err = f.root.readKeys()
+	err = f.dir.readKeys()
 	if err != nil {
 		return err
 	}
@@ -176,7 +176,7 @@ func (f *File) readHeader() error {
 }
 
 func (f *File) Map() {
-	for _, k := range f.root.keys {
+	for _, k := range f.dir.keys {
 		if k.classname == "TBasket" {
 			//b := k.AsBasket()
 			fmt.Printf("%8s %60s %6v %6v %f\n", k.classname, k.name, k.bytes-k.keylen, k.objlen, float64(k.objlen)/float64(k.bytes-k.keylen))
@@ -198,25 +198,25 @@ func (f *File) Tell() int64 {
 // Close closes the File, rendering it unusable for I/O.
 // It returns an error, if any.
 func (f *File) Close() error {
-	for _, k := range f.root.keys {
+	for _, k := range f.dir.keys {
 		k.f = nil
 	}
-	f.root.keys = nil
-	f.root.file = nil
+	f.dir.keys = nil
+	f.dir.file = nil
 	return f.Reader.Close()
 }
 
 // Keys returns the list of keys this File contains
 func (f *File) Keys() []Key {
-	return f.root.keys
+	return f.dir.keys
 }
 
 func (f *File) Name() string {
-	return f.root.Name()
+	return f.dir.Name()
 }
 
 func (f *File) Title() string {
-	return f.root.Title()
+	return f.dir.Title()
 }
 
 func (f *File) Class() string {
@@ -257,7 +257,7 @@ func (f *File) readStreamerInfo() error {
 //             if object is not in memory, try with highest cycle from file
 //     foo;1 : get cycle 1 of foo on file
 func (f *File) Get(namecycle string) (Object, bool) {
-	return f.root.Get(namecycle)
+	return f.dir.Get(namecycle)
 }
 
 var _ Object = (*File)(nil)

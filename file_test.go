@@ -121,8 +121,8 @@ func TestFileReader(t *testing.T) {
 	t.Skip()
 
 	getkey := func(n string) Object {
-		for i := range f.root.keys {
-			k := &f.root.keys[i]
+		for i := range f.dir.keys {
+			k := &f.dir.keys[i]
 			if k.name == n {
 				return k
 			}
