@@ -13,12 +13,12 @@ func TestDecoder(t *testing.T) {
 	data := make([]byte, 32)
 	dec := newDecoder(bytes.NewBuffer(data))
 
-	if dec.Len() != 32 {
-		t.Fatalf("expected len=%v. got %v", len(data), dec.Len())
+	if got, want := dec.Len(), int64(32); got != want {
+		t.Fatalf("got len=%v. want=%v", got, want)
 	}
 	start := dec.Pos()
 	if start != 0 {
-		t.Fatalf("expected start=%v. got %v", 0, start)
+		t.Fatalf("got start=%v. want=%v", start, 0)
 	}
 
 	var x int16
@@ -29,6 +29,6 @@ func TestDecoder(t *testing.T) {
 
 	pos := dec.Pos()
 	if pos != 2 {
-		t.Fatalf("expected pos=%v. got %v", 16, pos)
+		t.Fatalf("got pos=%v. want=%v", pos, 16)
 	}
 }

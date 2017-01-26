@@ -20,40 +20,40 @@ func TestFlatTree(t *testing.T) {
 	}
 
 	key := obj.(*Key)
-	if key.Name() != "tree" {
-		t.Fatalf("key.Name: expected [tree] (got=%v)", key.Name())
+	if got, want := key.Name(), "tree"; got != want {
+		t.Fatalf("key.Name: got=%q. want=%q", got, want)
 	}
 
 	tree := key.Value().(*Tree)
-	if tree.Name() != "tree" {
-		t.Fatalf("tree.Name: expected [tree] (got=%v)", tree.Name())
+	if got, want := tree.Name(), "tree"; got != want {
+		t.Fatalf("tree.Name: got=%q. want=%q", got, want)
 	}
 	myprintf(">>> f.Get(tree)... [done]\n")
 
 	for _, table := range []struct {
-		test     string
-		value    string
-		expected string
+		test  string
+		value string
+		want  string
 	}{
 		{"Name", tree.Name(), "tree"}, // name when created
 		{"Title", tree.Title(), "my tree title"},
 		{"Class", tree.Class(), "TTree"},
 	} {
-		if table.value != table.expected {
-			t.Fatalf("%v: expected [%v] got [%v]", table.test, table.expected, table.value)
+		if table.value != table.want {
+			t.Fatalf("%v: got=[%v]. want=[%v]", table.test, table.value, table.want)
 		}
 	}
 
 	entries := tree.Entries()
-	if entries != 100 {
-		t.Fatalf("tree.Entries: expected [100] (got=%v)", entries)
+	if got, want := entries, int64(100); got != want {
+		t.Fatalf("tree.Entries: got=%v. want=%v", got, want)
 	}
 
-	if tree.totbytes != 40506 {
-		t.Fatalf("tree.totbytes: expected [40506] (got=%v)", tree.totbytes)
+	if got, want := tree.totbytes, int64(40506); got != want {
+		t.Fatalf("tree.totbytes: got=%v. want=%v", got, want)
 	}
 
-	if tree.zipbytes != 4184 {
-		t.Fatalf("tree.zipbytes: expected [4184] (got=%v)", tree.zipbytes)
+	if got, want := tree.zipbytes, int64(4184); got != want {
+		t.Fatalf("tree.zipbytes: got=%v. want=%v", got, want)
 	}
 }

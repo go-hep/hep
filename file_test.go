@@ -21,22 +21,22 @@ func TestFileDirectory(t *testing.T) {
 	defer f.Close()
 
 	for _, table := range []struct {
-		test     string
-		value    string
-		expected string
+		test  string
+		value string
+		want  string
 	}{
 		{"Name", f.Name(), "test-small.root"}, // name when created
 		{"Title", f.Title(), "small event file"},
 		{"Class", f.Class(), "TFile"},
 	} {
-		if table.value != table.expected {
-			t.Fatalf("%v: expected [%v] got [%v]", table.test, table.expected, table.value)
+		if table.value != table.want {
+			t.Fatalf("%v: got=%q, want=%q", table.test, table.value, table.want)
 		}
 	}
 
 	for _, table := range []struct {
-		name     string
-		expected bool
+		name string
+		want bool
 	}{
 		{"tree", true},
 		{"tree;0", false},
@@ -48,14 +48,14 @@ func TestFileDirectory(t *testing.T) {
 		{"tree_nope;9999", false},
 	} {
 		_, ok := f.Get(table.name)
-		if ok != table.expected {
-			t.Fatalf("%s: expected key to exist=%v (got=%v)", table.name, table.expected, ok)
+		if ok != table.want {
+			t.Fatalf("%s: got key (%v). want=%v", table.name, ok, table.want)
 		}
 	}
 
 	for _, table := range []struct {
-		name     string
-		expected string
+		name string
+		want string
 	}{
 		{"tree", "TTree"},
 		{"tree;1", "TTree"},
@@ -65,14 +65,14 @@ func TestFileDirectory(t *testing.T) {
 			t.Fatalf("%s: expected key to exist! (got %v)", table.name, ok)
 		}
 
-		if k.Class() != table.expected {
-			t.Fatalf("%s: expected key with class=%s (got=%v)", table.name, table.expected, k.Class())
+		if k.Class() != table.want {
+			t.Fatalf("%s: got key with class=%s (want=%s)", table.name, k.Class(), table.want)
 		}
 	}
 
 	for _, table := range []struct {
-		name     string
-		expected string
+		name string
+		want string
 	}{
 		{"tree", "tree"},
 		{"tree;1", "tree"},
@@ -83,14 +83,14 @@ func TestFileDirectory(t *testing.T) {
 		}
 
 		k := o.(Named)
-		if k.Name() != table.expected {
-			t.Fatalf("%s: expected key with name=%s (got=%v)", table.name, table.expected, k.Name())
+		if k.Name() != table.want {
+			t.Fatalf("%s: got key with name=%s (want=%v)", table.name, k.Name(), table.want)
 		}
 	}
 
 	for _, table := range []struct {
-		name     string
-		expected string
+		name string
+		want string
 	}{
 		{"tree", "my tree title"},
 		{"tree;1", "my tree title"},
@@ -101,8 +101,8 @@ func TestFileDirectory(t *testing.T) {
 		}
 
 		k := o.(Named)
-		if k.Title() != table.expected {
-			t.Fatalf("%s: expected key with title=%s (got=%v)", table.name, table.expected, k.Title())
+		if k.Title() != table.want {
+			t.Fatalf("%s: got key with title=%s (want=%v)", table.name, k.Title(), table.want)
 		}
 	}
 }
