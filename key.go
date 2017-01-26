@@ -78,30 +78,27 @@ func (k *Key) Bytes() ([]byte, error) {
 // Note: this contains ZL[src][dst] where src and dst are 3 bytes each.
 // Won't bother with this for the moment, since we can cross-check against
 // objlen.
-const ROOT_HDRSIZE = 9
+const rootHDRSIZE = 9
 
 func (k *Key) load() ([]byte, error) {
+	var buf bytes.Buffer
 	if k.isCompressed() {
-		// ... therefore it's compressed
-		start := k.seekkey + int64(k.keylen) + ROOT_HDRSIZE
+		start := k.seekkey + int64(k.keylen) + rootHDRSIZE
 		r := io.NewSectionReader(k.f, start, int64(k.bytes)-int64(k.keylen))
 		rc, err := zlib.NewReader(r)
 		if err != nil {
 			panic(err)
 		}
 
-		buf := &bytes.Buffer{}
-		_, err = io.Copy(buf, rc)
+		_, err = io.Copy(&buf, rc)
 		if err != nil {
 			return nil, err
 		}
 		return buf.Bytes(), nil
 	}
-	// ... not compressed
 	start := k.seekkey + int64(k.keylen)
 	r := io.NewSectionReader(k.f, start, int64(k.bytes))
-	buf := &bytes.Buffer{}
-	_, err := io.Copy(buf, r)
+	_, err := io.Copy(&buf, r)
 	if err != nil {
 		return nil, err
 	}
