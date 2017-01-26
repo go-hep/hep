@@ -125,7 +125,7 @@ func (f *File) readHeader() (err error) {
 		return err
 	}
 
-	dec := NewDecoder(bytes.NewBuffer(buf))
+	dec := newDecoder(bytes.NewBuffer(buf))
 
 	// Header
 

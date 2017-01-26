@@ -33,7 +33,7 @@ func (b *Basket) UnmarshalROOT(data *bytes.Buffer) error {
 		return fmt.Errorf("rootio.Basket: Key is not a Basket")
 	}
 
-	dec := NewDecoder(data)
+	dec := newDecoder(data)
 	err = dec.readBin(&b.Version)
 	if err != nil {
 		return err

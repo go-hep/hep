@@ -75,7 +75,7 @@ func (dir *directory) readDirInfo() error {
 
 	nk := 4 // Key::fNumberOfBytes
 	buf = bytes.NewBuffer(data[nk:])
-	dec := NewDecoder(buf)
+	dec := newDecoder(buf)
 	var keyversion int16
 	err = dec.readBin(&keyversion)
 	if err != nil {
@@ -96,7 +96,7 @@ func (dir *directory) readDirInfo() error {
 	}
 
 	buf = bytes.NewBuffer(data[nk:])
-	dec = NewDecoder(buf)
+	dec = newDecoder(buf)
 	classname := ""
 	err = dec.readString(&classname)
 	if err != nil {
@@ -155,7 +155,7 @@ func (dir *directory) readKeys() error {
 		return err
 	}
 
-	dec := NewDecoder(bytes.NewBuffer(data))
+	dec := newDecoder(bytes.NewBuffer(data))
 
 	var nkeys int32
 	err = dec.readInt32(&nkeys)
@@ -219,7 +219,7 @@ func (dir *directory) Get(namecycle string) (Object, bool) {
 
 func (dir *directory) UnmarshalROOT(data *bytes.Buffer) error {
 	var err error
-	dec := NewDecoder(data)
+	dec := newDecoder(data)
 
 	var version int16
 	err = dec.readBin(&version)

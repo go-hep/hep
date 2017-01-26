@@ -11,26 +11,26 @@ import (
 	"io"
 )
 
-type Decoder struct {
+type decoder struct {
 	buf *bytes.Buffer
 	len int64
 }
 
-func NewDecoder(buf *bytes.Buffer) *Decoder {
-	dec := &Decoder{
+func newDecoder(buf *bytes.Buffer) *decoder {
+	dec := &decoder{
 		buf: buf,
 		len: int64(buf.Len()),
 	}
 	return dec
 }
 
-func NewDecoderFromBytes(data []byte) *Decoder {
+func newDecoderFromBytes(data []byte) *decoder {
 	buf := make([]byte, len(data))
 	copy(buf, data)
-	return NewDecoder(bytes.NewBuffer(buf))
+	return newDecoder(bytes.NewBuffer(buf))
 }
 
-func NewDecoderFromReader(r io.Reader, size int) (*Decoder, error) {
+func newDecoderFromReader(r io.Reader, size int) (*decoder, error) {
 	data := make([]byte, size)
 	n, err := r.Read(data)
 	if err != nil {
@@ -39,24 +39,24 @@ func NewDecoderFromReader(r io.Reader, size int) (*Decoder, error) {
 	if n != size {
 		return nil, fmt.Errorf("rootio.Decoder: read too few bytes [%v]. requested [%v]", n, size)
 	}
-	return NewDecoder(bytes.NewBuffer(data)), nil
+	return newDecoder(bytes.NewBuffer(data)), nil
 }
 
-func (dec *Decoder) Clone() *Decoder {
-	o := NewDecoderFromBytes(dec.buf.Bytes())
+func (dec *decoder) Clone() *decoder {
+	o := newDecoderFromBytes(dec.buf.Bytes())
 	o.len = dec.len
 	return o
 }
 
-func (dec *Decoder) Pos() int64 {
+func (dec *decoder) Pos() int64 {
 	return dec.len - int64(dec.buf.Len())
 }
 
-func (dec *Decoder) Len() int64 {
+func (dec *decoder) Len() int64 {
 	return int64(dec.buf.Len())
 }
 
-func (dec *Decoder) readString(s *string) error {
+func (dec *decoder) readString(s *string) error {
 	var err error
 	var length byte
 	var buf [256]byte
@@ -77,11 +77,11 @@ func (dec *Decoder) readString(s *string) error {
 
 }
 
-func (dec *Decoder) readBin(v interface{}) error {
+func (dec *decoder) readBin(v interface{}) error {
 	return binary.Read(dec.buf, E, v)
 }
 
-func (dec *Decoder) readInt16(v interface{}) error {
+func (dec *decoder) readInt16(v interface{}) error {
 	var err error
 	var d int16
 	err = dec.readBin(&d)
@@ -103,7 +103,7 @@ func (dec *Decoder) readInt16(v interface{}) error {
 	return err
 }
 
-func (dec *Decoder) readInt32(v interface{}) error {
+func (dec *decoder) readInt32(v interface{}) error {
 	var err error
 	switch uv := v.(type) {
 	case *int32:
@@ -118,7 +118,7 @@ func (dec *Decoder) readInt32(v interface{}) error {
 	return err
 }
 
-func (dec *Decoder) readInt64(v interface{}) error {
+func (dec *decoder) readInt64(v interface{}) error {
 	var err error
 	switch uv := v.(type) {
 	case *int64:
@@ -131,7 +131,7 @@ func (dec *Decoder) readInt64(v interface{}) error {
 	return err
 }
 
-func (dec *Decoder) readVersion() (version int16, position, bytecount int32, err error) {
+func (dec *decoder) readVersion() (version int16, position, bytecount int32, err error) {
 
 	start := dec.Pos()
 
@@ -170,7 +170,7 @@ func (dec *Decoder) readVersion() (version int16, position, bytecount int32, err
 	return version, position, bytecount, err
 }
 
-func (dec *Decoder) readClass(name *string, count *int32, isref *bool) error {
+func (dec *decoder) readClass(name *string, count *int32, isref *bool) error {
 	var err error
 	var tag uint32
 	err = dec.readBin(&tag)
@@ -203,7 +203,7 @@ func (dec *Decoder) readClass(name *string, count *int32, isref *bool) error {
 	return err
 }
 
-func (dec *Decoder) readClassTag(classtag *string) error {
+func (dec *decoder) readClassTag(classtag *string) error {
 	var err error
 	var tag uint32
 	err = dec.readBin(&tag)
@@ -228,7 +228,7 @@ func (dec *Decoder) readClassTag(classtag *string) error {
 	return err
 }
 
-func (dec *Decoder) checkByteCount(pos, count int32, start int64, class string) error {
+func (dec *decoder) checkByteCount(pos, count int32, start int64, class string) error {
 	if count == 0 {
 		return nil
 	}
@@ -246,7 +246,7 @@ func (dec *Decoder) checkByteCount(pos, count int32, start int64, class string) 
 	return err
 }
 
-func (dec *Decoder) readObject(o *Object) error {
+func (dec *decoder) readObject(o *Object) error {
 	//start := dec.Pos()
 	//orig := dec.Clone()
 

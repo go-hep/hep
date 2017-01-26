@@ -174,7 +174,7 @@ func (k *Key) Read() error {
 
 	key_offset := f.Tell()
 	myprintf("Key::Read -- @%v\n", key_offset)
-	dec, err := NewDecoderFromReader(f, 8)
+	dec, err := newDecoderFromReader(f, 8)
 	if err != nil {
 		return err
 	}
@@ -230,7 +230,7 @@ func (k *Key) Read() error {
 func (k *Key) UnmarshalROOT(data *bytes.Buffer) error {
 	var err error
 
-	dec := NewDecoder(data)
+	dec := newDecoder(data)
 	myprintf("--- key ---\n")
 
 	err = dec.readInt32(&k.bytes)

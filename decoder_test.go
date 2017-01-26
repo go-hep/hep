@@ -11,7 +11,7 @@ import (
 
 func TestDecoder(t *testing.T) {
 	data := make([]byte, 32)
-	dec := NewDecoder(bytes.NewBuffer(data))
+	dec := newDecoder(bytes.NewBuffer(data))
 
 	if dec.Len() != 32 {
 		t.Fatalf("expected len=%v. got %v", len(data), dec.Len())

@@ -34,7 +34,7 @@ func (n *named) Class() string {
 
 func (n *named) UnmarshalROOT(data *bytes.Buffer) error {
 	var err error
-	dec := NewDecoder(data)
+	dec := newDecoder(data)
 
 	start := dec.Pos()
 	vers, pos, bcnt, err := dec.readVersion()

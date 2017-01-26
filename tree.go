@@ -58,7 +58,7 @@ func (tree *Tree) ZipBytes() int64 {
 // unmarshal itself from a ROOT buffer
 func (tree *Tree) UnmarshalROOT(data *bytes.Buffer) error {
 	var err error
-	dec := NewDecoder(data)
+	dec := newDecoder(data)
 
 	myprintf(">>>>>>>>>>>>>> Tree.unmarshal...\n")
 	vers, pos, bcnt, err := dec.readVersion()

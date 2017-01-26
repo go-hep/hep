@@ -16,7 +16,7 @@ type attfill struct {
 
 func (a *attfill) UnmarshalROOT(data *bytes.Buffer) error {
 	var err error
-	dec := NewDecoder(data)
+	dec := newDecoder(data)
 
 	start := dec.Pos()
 	vers, pos, bcnt, err := dec.readVersion()
