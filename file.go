@@ -6,15 +6,12 @@ package rootio
 
 import (
 	"bytes"
-	B "encoding/binary"
 	"fmt"
 	"io"
 	"os"
 )
 
 const LargeFileBoundary = 0x7FFFFFFF
-
-var E = B.BigEndian
 
 type Reader interface {
 	io.Reader
@@ -182,7 +179,6 @@ func (f *File) Map() {
 			fmt.Printf("%8s %60s %6v %6v %f\n", k.classname, k.name, k.bytes-k.keylen, k.objlen, float64(k.objlen)/float64(k.bytes-k.keylen))
 		}
 	}
-
 }
 
 func (f *File) Tell() int64 {
@@ -193,8 +189,8 @@ func (f *File) Tell() int64 {
 	return where
 }
 
-// Close closes the File, rendering it unusable for I/O. It returns an
-// error, if any.
+// Close closes the File, rendering it unusable for I/O.
+// It returns an error, if any.
 func (f *File) Close() error {
 	for _, k := range f.root.keys {
 		k.f = nil

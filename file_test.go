@@ -6,7 +6,7 @@ package rootio
 
 import (
 	"bytes"
-	B "encoding/binary"
+	"encoding/binary"
 	"io"
 	"os"
 	"reflect"
@@ -173,7 +173,7 @@ func TestFileReader(t *testing.T) {
 
 		for i := 0; i < int(basket.Nevbuf); i++ {
 			data := reflect.New(table.t)
-			err := B.Read(buf, E, data.Interface())
+			err := binary.Read(buf, binary.BigEndian, data.Interface())
 			if err != nil {
 				t.Fatalf("could not read entry [%d]: %v\n", i, err)
 			}

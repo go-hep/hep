@@ -80,7 +80,7 @@ func (dec *decoder) readBin(v interface{}) {
 	if dec.err != nil {
 		return
 	}
-	dec.err = binary.Read(dec.buf, E, v)
+	dec.err = binary.Read(dec.buf, binary.BigEndian, v)
 }
 
 func (dec *decoder) readInt16(v interface{}) {
