@@ -15,13 +15,14 @@ package rootio // import "github.com/go-hep/rootio"
 
 import (
 	"bytes"
+	"reflect"
 )
 
 // Class represents a ROOT class.
 // Class instances are created by a ClassFactory.
 type Class interface {
 	// GetCheckSum gets the check sum for this ROOT class
-	//CheckSum() int
+	CheckSum() int
 
 	// Members returns the list of members for this ROOT class
 	Members() []Member
@@ -29,8 +30,8 @@ type Class interface {
 	// Version returns the version number for this ROOT class
 	Version() int
 
-	// Name returns the ROOT class name for this ROOT class
-	Name() string
+	// ClassName returns the ROOT class name for this ROOT class
+	ClassName() string
 }
 
 // Member represents a single member of a ROOT class
@@ -48,7 +49,7 @@ type Member interface {
 	Type() Class
 
 	// GetValue returns the value of this member
-	//GetValue(o Object) reflect.Value
+	Value(o Object) reflect.Value
 }
 
 // Object represents a ROOT object
