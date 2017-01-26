@@ -187,8 +187,8 @@ func init() {
 		o := &Tree{}
 		return reflect.ValueOf(o)
 	}
-	Factory.db["TTree"] = f
-	Factory.db["*rootio.Tree"] = f
+	Factory.add("TTree", f)
+	Factory.add("*rootio.Tree", f)
 }
 
 var _ Object = (*Tree)(nil)

@@ -82,8 +82,8 @@ func init() {
 		o := &Basket{}
 		return reflect.ValueOf(o)
 	}
-	Factory.db["TBasket"] = f
-	Factory.db["*rootio.Basket"] = f
+	Factory.add("TBasket", f)
+	Factory.add("*rootio.Basket", f)
 }
 
 var _ Object = (*Key)(nil)

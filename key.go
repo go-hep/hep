@@ -326,8 +326,8 @@ func init() {
 		o := &Key{}
 		return reflect.ValueOf(o)
 	}
-	Factory.db["TKey"] = f
-	Factory.db["*rootio.Key"] = f
+	Factory.add("TKey", f)
+	Factory.add("*rootio.Key", f)
 }
 
 // testing interfaces

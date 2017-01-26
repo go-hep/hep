@@ -50,8 +50,8 @@ func init() {
 		o := &attmarker{}
 		return reflect.ValueOf(o)
 	}
-	Factory.db["TAttMarker"] = f
-	Factory.db["*rootio.attmarker"] = f
+	Factory.add("TAttMarker", f)
+	Factory.add("*rootio.attmarker", f)
 }
 
 var _ ROOTUnmarshaler = (*attmarker)(nil)

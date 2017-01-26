@@ -52,8 +52,8 @@ func init() {
 		o := &attline{}
 		return reflect.ValueOf(o)
 	}
-	Factory.db["TAttLine"] = f
-	Factory.db["*rootio.attline"] = f
+	Factory.add("TAttLine", f)
+	Factory.add("*rootio.attline", f)
 }
 
 var _ ROOTUnmarshaler = (*attline)(nil)

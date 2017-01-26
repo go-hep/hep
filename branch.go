@@ -55,8 +55,8 @@ func init() {
 		o := &Branch{}
 		return reflect.ValueOf(o)
 	}
-	Factory.db["TBranch"] = f
-	Factory.db["*rootio.Branch"] = f
+	Factory.add("TBranch", f)
+	Factory.add("*rootio.Branch", f)
 }
 
 var _ Object = (*Branch)(nil)

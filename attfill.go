@@ -44,8 +44,8 @@ func init() {
 		o := &attfill{}
 		return reflect.ValueOf(o)
 	}
-	Factory.db["TAttFill"] = f
-	Factory.db["*rootio.attfill"] = f
+	Factory.add("TAttFill", f)
+	Factory.add("*rootio.attfill", f)
 }
 
 var _ ROOTUnmarshaler = (*attfill)(nil)

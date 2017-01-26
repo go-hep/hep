@@ -9,7 +9,9 @@ import (
 	"reflect"
 )
 
-type objarray []Object
+type objarray struct {
+	arr []Object
+}
 
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
@@ -21,11 +23,13 @@ func (arr *objarray) UnmarshalROOT(data *bytes.Buffer) error {
 
 func init() {
 	f := func() reflect.Value {
-		o := make(objarray, 0)
+		o := &objarray{
+			arr: make([]Object, 0),
+		}
 		return reflect.ValueOf(o)
 	}
-	Factory.db["TObjArray"] = f
-	Factory.db["*rootio.objarray"] = f
+	Factory.add("TObjArray", f)
+	Factory.add("*rootio.objarray", f)
 }
 
 //var _ Object = (*objarray)(nil) // FIXME(sbinet)
