@@ -57,15 +57,10 @@ func (tree *Tree) ZipBytes() int64 {
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (tree *Tree) UnmarshalROOT(data *bytes.Buffer) error {
-	var err error
 	dec := newDecoder(data)
 
 	myprintf(">>>>>>>>>>>>>> Tree.unmarshal...\n")
-	vers, pos, bcnt, err := dec.readVersion()
-	if err != nil {
-		println(vers, pos, bcnt)
-		return err
-	}
+	vers, pos, bcnt := dec.readVersion()
 	myprintf(">>> => [%v] [%v] [%v]\n", pos, vers, bcnt)
 
 	for _, a := range []ROOTUnmarshaler{
@@ -74,7 +69,7 @@ func (tree *Tree) UnmarshalROOT(data *bytes.Buffer) error {
 		&attfill{},
 		&attmarker{},
 	} {
-		err = a.UnmarshalROOT(data)
+		err := a.UnmarshalROOT(data)
 		if err != nil {
 			return err
 		}
@@ -96,90 +91,42 @@ func (tree *Tree) UnmarshalROOT(data *bytes.Buffer) error {
 	// }
 
 	//fmt.Printf("### data = %v\n", dec.data.Bytes()[:64])
-	err = dec.readBin(&tree.entries)
-	if err != nil {
-		return err
-	}
-
-	err = dec.readBin(&tree.totbytes)
-	if err != nil {
-		return err
-	}
-
-	err = dec.readBin(&tree.zipbytes)
-	if err != nil {
-		return err
-	}
-
+	dec.readBin(&tree.entries)
+	dec.readBin(&tree.totbytes)
+	dec.readBin(&tree.zipbytes)
 	if vers >= 18 {
 		var flushedbytes int64
-		err = dec.readInt64(&flushedbytes)
-		if err != nil {
-			return err
-		}
-	}
-	var dummy_f64 float64
-	var dummy_i32 int32
-	var dummy_i64 int64
-
-	err = dec.readBin(&dummy_f64) // fWeight
-	if err != nil {
-		return err
+		dec.readInt64(&flushedbytes)
 	}
 
-	err = dec.readInt32(&dummy_i32) // fTimerInterval
-	if err != nil {
-		return err
-	}
-	err = dec.readInt32(&dummy_i32) // fScanField
-	if err != nil {
-		return err
-	}
-	err = dec.readInt32(&dummy_i32) // fUpdate
-	if err != nil {
-		return err
-	}
+	// dummy values
+	var (
+		f64 float64
+		i32 int32
+		i64 int64
+	)
+
+	dec.readBin(&f64)   // fWeight
+	dec.readInt32(&i32) // fTimerInterval
+	dec.readInt32(&i32) // fScanField
+	dec.readInt32(&i32) // fUpdate
 
 	if vers >= 18 {
-		err = dec.readInt32(&dummy_i32) // fDefaultEntryOffsetLen
-		if err != nil {
-			return err
-		}
+		dec.readInt32(&i32) // fDefaultEntryOffsetLen
 	}
 
-	err = dec.readInt64(&dummy_i64) // fMaxEntries
-	if err != nil {
-		return err
-	}
-
-	err = dec.readInt64(&dummy_i64) // fMaxEntryLoop
-	if err != nil {
-		return err
-	}
-
-	err = dec.readInt64(&dummy_i64) // fMaxVirtualSize
-	if err != nil {
-		return err
-	}
-
-	err = dec.readInt64(&dummy_i64) // fAutoSave
-	if err != nil {
-		return err
-	}
+	dec.readInt64(&i64) // fMaxEntries
+	dec.readInt64(&i64) // fMaxEntryLoop
+	dec.readInt64(&i64) // fMaxVirtualSize
+	dec.readInt64(&i64) // fAutoSave
 
 	if vers >= 18 {
-		err = dec.readInt64(&dummy_i64) // fAutoFlush
-		if err != nil {
-			return err
-		}
+		dec.readInt64(&i64) // fAutoFlush
 	}
 
-	err = dec.readInt64(&dummy_i64) // fEstimate
-	if err != nil {
-		return err
-	}
+	dec.readInt64(&i64) // fEstimate
 
-	return err
+	return dec.err
 }
 
 func init() {

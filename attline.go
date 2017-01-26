@@ -16,35 +16,18 @@ type attline struct {
 }
 
 func (a *attline) UnmarshalROOT(data *bytes.Buffer) error {
-	var err error
 	dec := newDecoder(data)
 
 	start := dec.Pos()
-	vers, pos, bcnt, err := dec.readVersion()
-	if err != nil {
-		println(vers, pos, bcnt)
-		return err
-	} else {
-		myprintf("attline: %v %v %v\n", vers, pos, bcnt)
-	}
+	vers, pos, bcnt := dec.readVersion()
+	myprintf("attline-vers=%v\n", vers)
 
-	err = dec.readBin(&a.color)
-	if err != nil {
-		return err
-	}
+	dec.readBin(&a.color)
+	dec.readBin(&a.style)
+	dec.readBin(&a.width)
+	dec.checkByteCount(pos, bcnt, start, "TAttLine")
 
-	err = dec.readBin(&a.style)
-	if err != nil {
-		return err
-	}
-
-	err = dec.readBin(&a.width)
-	if err != nil {
-		return err
-	}
-
-	err = dec.checkByteCount(pos, bcnt, start, "TAttLine")
-	return err
+	return dec.err
 }
 
 func init() {

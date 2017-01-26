@@ -33,50 +33,27 @@ func (n *named) Class() string {
 }
 
 func (n *named) UnmarshalROOT(data *bytes.Buffer) error {
-	var err error
 	dec := newDecoder(data)
 
 	start := dec.Pos()
-	vers, pos, bcnt, err := dec.readVersion()
-	if err != nil {
-		println(vers, pos, bcnt)
-		return err
-	} else {
-		myprintf("named: %v %v %v\n", vers, pos, bcnt)
-	}
+	vers, pos, bcnt := dec.readVersion()
+	myprintf("named: %v %v %v\n", vers, pos, bcnt)
 
 	var id uint32
-	err = dec.readBin(&id)
-	if err != nil {
-		return err
-	}
+	dec.readBin(&id)
 
 	var bits uint32
-	err = dec.readBin(&bits)
-	if err != nil {
-		return err
-	}
+	dec.readBin(&bits)
 	bits |= kIsOnHeap // by definition, de-serialized object is on heap
 	if (bits & kIsReferenced) == 0 {
 		var trash uint16
-		err = dec.readBin(&trash)
-		if err != nil {
-			return err
-		}
+		dec.readBin(&trash)
 	}
 
-	err = dec.readString(&n.name)
-	if err != nil {
-		return err
-	}
-
-	err = dec.readString(&n.title)
-	if err != nil {
-		return err
-	}
-
-	err = dec.checkByteCount(pos, bcnt, start, "TNamed")
-	return err
+	dec.readString(&n.name)
+	dec.readString(&n.title)
+	dec.checkByteCount(pos, bcnt, start, "TNamed")
+	return dec.err
 }
 
 var _ Object = (*named)(nil)

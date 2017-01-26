@@ -175,10 +175,11 @@ func (k *Key) Read() error {
 		return err
 	}
 
-	err = dec.readInt32(&k.bytes)
-	if err != nil {
-		return err
+	dec.readInt32(&k.bytes)
+	if dec.err != nil {
+		return dec.err
 	}
+
 	myprintf("Key::Read -- @%v => %v\n", key_offset, k.bytes)
 
 	if k.bytes < 0 {
@@ -224,15 +225,10 @@ func (k *Key) Read() error {
 
 // UnmarshalROOT decodes the content of data into the Key
 func (k *Key) UnmarshalROOT(data *bytes.Buffer) error {
-	var err error
-
 	dec := newDecoder(data)
 	myprintf("--- key ---\n")
 
-	err = dec.readInt32(&k.bytes)
-	if err != nil {
-		return err
-	}
+	dec.readInt32(&k.bytes)
 	myprintf("key-nbytes:  %v\n", k.bytes)
 
 	if k.bytes < 0 {
@@ -241,84 +237,41 @@ func (k *Key) UnmarshalROOT(data *bytes.Buffer) error {
 		return nil
 	}
 
-	err = dec.readInt16(&k.version)
-	if err != nil {
-		return err
-	}
-	myprintf("key-version: %v\n", k.version)
-
-	err = dec.readInt32(&k.objlen)
-	if err != nil {
-		return err
-	}
-	myprintf("key-objlen:  %v\n", k.objlen)
-
+	dec.readInt16(&k.version)
+	dec.readInt32(&k.objlen)
 	var datetime uint32
-	err = dec.readBin(&datetime)
-	if err != nil {
-		return err
-	}
+	dec.readBin(&datetime)
 	k.datetime = datime2time(datetime)
-	myprintf("key-cdate:   %v\n", k.datetime)
-
-	err = dec.readInt16(&k.keylen)
-	if err != nil {
-		return err
-	}
-	myprintf("key-keylen:  %v\n", k.keylen)
-
-	err = dec.readInt16(&k.cycle)
-	if err != nil {
-		return err
-	}
-	myprintf("key-cycle:   %v\n", k.cycle)
+	dec.readInt16(&k.keylen)
+	dec.readInt16(&k.cycle)
 
 	if k.version > 1000 {
-		err = dec.readInt64(&k.seekkey)
-		if err != nil {
-			return err
-		}
-		err = dec.readInt64(&k.seekpdir)
-		if err != nil {
-			return err
-		}
+		dec.readInt64(&k.seekkey)
+		dec.readInt64(&k.seekpdir)
 	} else {
-		err = dec.readInt32(&k.seekkey)
-		if err != nil {
-			return err
-		}
-		err = dec.readInt32(&k.seekpdir)
-		if err != nil {
-			return err
-		}
+		dec.readInt32(&k.seekkey)
+		dec.readInt32(&k.seekpdir)
 	}
 
+	dec.readString(&k.classname)
+	dec.readString(&k.name)
+	dec.readString(&k.title)
+
+	myprintf("key-version: %v\n", k.version)
+	myprintf("key-objlen:  %v\n", k.objlen)
+	myprintf("key-cdate:   %v\n", k.datetime)
+	myprintf("key-keylen:  %v\n", k.keylen)
+	myprintf("key-cycle:   %v\n", k.cycle)
 	myprintf("key-seekkey: %v\n", k.seekkey)
 	myprintf("key-seekpdir:%v\n", k.seekpdir)
 	myprintf("key-compress: %v %v %v %v %v\n", k.isCompressed(), k.objlen, k.bytes-k.keylen, k.bytes, k.keylen)
-
-	err = dec.readString(&k.classname)
-	if err != nil {
-		return err
-	}
-
-	err = dec.readString(&k.name)
-	if err != nil {
-		return err
-	}
-
-	err = dec.readString(&k.title)
-	if err != nil {
-		return err
-	}
-
 	myprintf("key-class: [%v]\n", k.classname)
 	myprintf("key-name:  [%v]\n", k.name)
 	myprintf("key-title: [%v]\n", k.title)
 
 	//k.pdat = data
 
-	return err
+	return dec.err
 }
 
 func init() {

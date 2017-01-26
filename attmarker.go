@@ -16,33 +16,17 @@ type attmarker struct {
 }
 
 func (a *attmarker) UnmarshalROOT(data *bytes.Buffer) error {
-	var err error
 	dec := newDecoder(data)
 
 	start := dec.Pos()
-	vers, pos, bcnt, err := dec.readVersion()
-	if err != nil {
-		println(vers, pos, bcnt)
-		return err
-	}
+	vers, pos, bcnt := dec.readVersion()
+	myprintf("attmarker-vers=%v\n", vers)
+	dec.readBin(&a.color)
+	dec.readBin(&a.style)
+	dec.readBin(&a.width)
+	dec.checkByteCount(pos, bcnt, start, "TAttMarker")
 
-	err = dec.readBin(&a.color)
-	if err != nil {
-		return err
-	}
-
-	err = dec.readBin(&a.style)
-	if err != nil {
-		return err
-	}
-
-	err = dec.readBin(&a.width)
-	if err != nil {
-		return err
-	}
-
-	err = dec.checkByteCount(pos, bcnt, start, "TAttMarker")
-	return err
+	return dec.err
 }
 
 func init() {

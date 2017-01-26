@@ -106,22 +106,10 @@ func Open(path string) (*File, error) {
 	return f, nil
 }
 
-func (f *File) readHeader() (err error) {
-
-	var stage string
-
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("Error reading file named %q while %s (%q)",
-				f.id, stage, r.(error).Error())
-		}
-	}()
-
-	stage = "reading header"
+func (f *File) readHeader() error {
 
 	buf := make([]byte, 64)
-	_, err = f.ReadAt(buf, 0)
-	if err != nil {
+	if _, err := f.ReadAt(buf, 0); err != nil {
 		return err
 	}
 
@@ -129,136 +117,53 @@ func (f *File) readHeader() (err error) {
 
 	// Header
 
-	err = dec.readBin(&f.magic)
-	if err != nil {
-		return err
-	}
-
+	dec.readBin(&f.magic)
 	if string(f.magic[:]) != "root" {
-		return fmt.Errorf("%q is not a root file", f.id)
+		return fmt.Errorf("rootio: %q is not a root file", f.id)
 	}
 
-	err = dec.readInt32(&f.version)
-	if err != nil {
-		return err
-	}
-
-	err = dec.readInt32(&f.begin)
-	if err != nil {
-		return err
-	}
+	dec.readInt32(&f.version)
+	dec.readInt32(&f.begin)
 
 	if f.version < 1000000 { // small file
-		err = dec.readInt32(&f.end)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readInt32(&f.seekfree)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readInt32(&f.nbytesfree)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readInt32(&f.nfree)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readInt32(&f.nbytesname)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readBin(&f.units)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readInt32(&f.compression)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readInt32(&f.seekinfo)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readInt32(&f.nbytesinfo)
-		if err != nil {
-			return err
-		}
-
+		dec.readInt32(&f.end)
+		dec.readInt32(&f.seekfree)
+		dec.readInt32(&f.nbytesfree)
+		dec.readInt32(&f.nfree)
+		dec.readInt32(&f.nbytesname)
+		dec.readBin(&f.units)
+		dec.readInt32(&f.compression)
+		dec.readInt32(&f.seekinfo)
+		dec.readInt32(&f.nbytesinfo)
 	} else { // large files
-		err = dec.readInt64(&f.end)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readInt64(&f.seekfree)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readInt32(&f.nbytesfree)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readInt32(&f.nfree)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readInt32(&f.nbytesname)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readBin(&f.units)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readInt32(&f.compression)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readInt64(&f.seekinfo)
-		if err != nil {
-			return err
-		}
-
-		err = dec.readInt32(&f.nbytesinfo)
-		if err != nil {
-			return err
-		}
+		dec.readInt64(&f.end)
+		dec.readInt64(&f.seekfree)
+		dec.readInt32(&f.nbytesfree)
+		dec.readInt32(&f.nfree)
+		dec.readInt32(&f.nbytesname)
+		dec.readBin(&f.units)
+		dec.readInt32(&f.compression)
+		dec.readInt64(&f.seekinfo)
+		dec.readInt32(&f.nbytesinfo)
 	}
 
-	err = dec.readBin(&f.uuid)
-	if err != nil {
-		return err
+	dec.readBin(&f.uuid)
+	if dec.err != nil {
+		return dec.err
 	}
 
-	stage = "read directory info"
+	var err error
+
 	err = f.root.readDirInfo()
 	if err != nil {
 		return err
 	}
 
-	stage = "read streamerinfos"
 	err = f.readStreamerInfo()
 	if err != nil {
 		return err
 	}
 
-	stage = "read keys"
 	err = f.root.readKeys()
 	if err != nil {
 		return err

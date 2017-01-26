@@ -15,28 +15,17 @@ type attfill struct {
 }
 
 func (a *attfill) UnmarshalROOT(data *bytes.Buffer) error {
-	var err error
 	dec := newDecoder(data)
 
 	start := dec.Pos()
-	vers, pos, bcnt, err := dec.readVersion()
-	if err != nil {
-		println(vers, pos, bcnt)
-		return err
-	}
+	vers, pos, bcnt := dec.readVersion()
+	myprintf("attfill-vers=%v\n", vers)
 
-	err = dec.readBin(&a.color)
-	if err != nil {
-		return err
-	}
+	dec.readBin(&a.color)
+	dec.readBin(&a.style)
+	dec.checkByteCount(pos, bcnt, start, "TAttFill")
 
-	err = dec.readBin(&a.style)
-	if err != nil {
-		return err
-	}
-
-	err = dec.checkByteCount(pos, bcnt, start, "TAttFill")
-	return err
+	return dec.err
 }
 
 func init() {

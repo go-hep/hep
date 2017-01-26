@@ -22,9 +22,9 @@ func TestDecoder(t *testing.T) {
 	}
 
 	var x int16
-	err := dec.readBin(&x)
-	if err != nil {
-		t.Fatalf("error reading int16: %v", err)
+	dec.readBin(&x)
+	if dec.err != nil {
+		t.Fatalf("error reading int16: %v", dec.err)
 	}
 
 	pos := dec.Pos()

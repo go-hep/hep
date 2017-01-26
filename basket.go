@@ -24,8 +24,7 @@ type Basket struct {
 func (b *Basket) UnmarshalROOT(data *bytes.Buffer) error {
 
 	//fmt.Printf("+++++ Basket.UnmarshalROOT ++++\n")
-	err := b.Key.UnmarshalROOT(data)
-	if err != nil {
+	if err := b.Key.UnmarshalROOT(data); err != nil {
 		return err
 	}
 
@@ -34,47 +33,23 @@ func (b *Basket) UnmarshalROOT(data *bytes.Buffer) error {
 	}
 
 	dec := newDecoder(data)
-	err = dec.readBin(&b.Version)
-	if err != nil {
-		return err
-	}
-
-	err = dec.readInt32(&b.Buffersize)
-	if err != nil {
-		return err
-	}
-
-	err = dec.readInt32(&b.Evbuffersize)
-	if err != nil {
-		return err
-	}
-
+	dec.readBin(&b.Version)
+	dec.readInt32(&b.Buffersize)
+	dec.readInt32(&b.Evbuffersize)
 	if b.Evbuffersize < 0 {
-		err = fmt.Errorf("rootio.Basket: incorrect Evbuffersize [%v]", b.Evbuffersize)
+		err := fmt.Errorf("rootio.Basket: incorrect Evbuffersize [%v]", b.Evbuffersize)
 		b.Evbuffersize = 0
 		return err
 	}
 
-	err = dec.readInt32(&b.Nevbuf)
-	if err != nil {
-		return err
-	}
-
-	err = dec.readInt32(&b.Last)
-	if err != nil {
-		return err
-	}
-
-	err = dec.readBin(&b.Flag)
-	if err != nil {
-		return err
-	}
-
+	dec.readInt32(&b.Nevbuf)
+	dec.readInt32(&b.Last)
+	dec.readBin(&b.Flag)
 	if b.Last > b.Buffersize {
 		b.Buffersize = b.Last
 	}
 
-	return err
+	return dec.err
 }
 
 func init() {
