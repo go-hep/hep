@@ -1,3 +1,7 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package rootio
 
 import (
@@ -82,6 +86,5 @@ func init() {
 	Factory.db["*rootio.Basket"] = f
 }
 
-// testing interfaces
 var _ Object = (*Key)(nil)
 var _ ROOTUnmarshaler = (*Key)(nil)

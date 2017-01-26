@@ -1,3 +1,7 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package rootio
 
 import (
@@ -24,8 +28,5 @@ func init() {
 	Factory.db["*rootio.objarray"] = f
 }
 
-// check interfaces
-//var _ Object = (*objarray)(nil)
+//var _ Object = (*objarray)(nil) // FIXME(sbinet)
 var _ ROOTUnmarshaler = (*objarray)(nil)
-
-// EOF

@@ -1,10 +1,21 @@
-package rootio
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Package rootio provides a pure-go read-access to ROOT files.
+// rootio might, with time, provide write-access too.
+//
+// A typical usage is as follow:
+//
+//   f, err := rootio.Open("ntup.root")
+//   obj, err := f.Get("tree")
+//   tree := obj.(*rootio.Tree)
+//   fmt.Printf("entries= %v\n", t.Entries())
+package rootio // import "github.com/go-hep/rootio"
 
 import (
 	"bytes"
 )
-
-// ifaces holds interfaces useful for rootio
 
 // Class represents a ROOT class.
 // Class instances are created by a ClassFactory.
@@ -82,5 +93,3 @@ type ROOTUnmarshaler interface {
 type ROOTMarshaler interface {
 	MarshalROOT() (data *bytes.Buffer, err error)
 }
-
-// EOF

@@ -1,3 +1,7 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package rootio
 
 import (
@@ -47,5 +51,3 @@ func datime2time(d uint32) time.Time {
 	return time.Date(int(year), time.Month(month), int(day),
 		int(hour), int(min), int(sec), nsec, time.UTC)
 }
-
-// EOF

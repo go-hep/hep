@@ -1,3 +1,7 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package rootio
 
 import (
@@ -75,8 +79,5 @@ func (n *named) UnmarshalROOT(data *bytes.Buffer) error {
 	return err
 }
 
-// testing interfaces
 var _ Object = (*named)(nil)
 var _ ROOTUnmarshaler = (*named)(nil)
-
-// EOF
