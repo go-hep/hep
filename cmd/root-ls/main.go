@@ -47,6 +47,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "**error** %v\n", err)
 			os.Exit(1)
 		}
+		fmt.Printf("version: %v\n", f.Version())
 
 		for _, k := range f.Keys() {
 			fmt.Printf("%-8s %-40s %s\n", k.Class(), k.Name(), k.Title())

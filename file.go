@@ -103,6 +103,11 @@ func Open(path string) (*File, error) {
 	return f, nil
 }
 
+// Version returns the ROOT version this file was created with.
+func (f *File) Version() int {
+	return int(f.version)
+}
+
 func (f *File) readHeader() error {
 
 	buf := make([]byte, 64)
@@ -143,6 +148,7 @@ func (f *File) readHeader() error {
 		dec.readInt64(&f.seekinfo)
 		dec.readInt32(&f.nbytesinfo)
 	}
+	f.version %= 1000000
 
 	dec.readBin(&f.uuid)
 	if dec.err != nil {
