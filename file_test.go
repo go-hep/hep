@@ -77,11 +77,12 @@ func TestFileDirectory(t *testing.T) {
 		{"tree", "tree"},
 		{"tree;1", "tree"},
 	} {
-		k, ok := f.Get(table.name)
+		o, ok := f.Get(table.name)
 		if !ok {
 			t.Fatalf("%s: expected key to exist! (got %v)", table.name, ok)
 		}
 
+		k := o.(Named)
 		if k.Name() != table.expected {
 			t.Fatalf("%s: expected key with name=%s (got=%v)", table.name, table.expected, k.Name())
 		}
@@ -94,11 +95,12 @@ func TestFileDirectory(t *testing.T) {
 		{"tree", "my tree title"},
 		{"tree;1", "my tree title"},
 	} {
-		k, ok := f.Get(table.name)
+		o, ok := f.Get(table.name)
 		if !ok {
 			t.Fatalf("%s: expected key to exist! (got %v)", table.name, ok)
 		}
 
+		k := o.(Named)
 		if k.Title() != table.expected {
 			t.Fatalf("%s: expected key with title=%s (got=%v)", table.name, table.expected, k.Title())
 		}
@@ -106,15 +108,17 @@ func TestFileDirectory(t *testing.T) {
 }
 
 // FIXME: this should be done in tree_test
-func DontTestFileReader(t *testing.T) {
+func TestFileReader(t *testing.T) {
 	f, err := Open("testdata/small.root")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 	defer f.Close()
 
-	//f.Map()
+	f.Map()
 	//return
+
+	t.Skip()
 
 	getkey := func(n string) Object {
 		for i := range f.root.keys {

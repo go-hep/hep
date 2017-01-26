@@ -55,6 +55,11 @@ type Member interface {
 type Object interface {
 	// Class returns the ROOT class of this object
 	Class() string
+}
+
+// Named represents a ROOT TNamed object
+type Named interface {
+	Object
 
 	// Name returns the name of this ROOT object
 	Name() string

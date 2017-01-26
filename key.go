@@ -285,4 +285,5 @@ func init() {
 
 // testing interfaces
 var _ Object = (*Key)(nil)
+var _ Named = (*Key)(nil)
 var _ ROOTUnmarshaler = (*Key)(nil)

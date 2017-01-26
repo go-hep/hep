@@ -259,4 +259,5 @@ func (f *File) Get(namecycle string) (Object, bool) {
 }
 
 var _ Object = (*File)(nil)
+var _ Named = (*File)(nil)
 var _ Directory = (*File)(nil)

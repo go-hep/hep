@@ -60,4 +60,5 @@ func init() {
 }
 
 var _ Object = (*Branch)(nil)
+var _ Named = (*Branch)(nil)
 var _ ROOTUnmarshaler = (*Branch)(nil)

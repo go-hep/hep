@@ -231,5 +231,6 @@ func (dir *directory) UnmarshalROOT(data *bytes.Buffer) error {
 }
 
 var _ Object = (*directory)(nil)
+var _ Named = (*directory)(nil)
 var _ Directory = (*directory)(nil)
 var _ ROOTUnmarshaler = (*directory)(nil)

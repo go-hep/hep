@@ -139,4 +139,5 @@ func init() {
 }
 
 var _ Object = (*Tree)(nil)
+var _ Named = (*Tree)(nil)
 var _ ROOTUnmarshaler = (*Tree)(nil)
