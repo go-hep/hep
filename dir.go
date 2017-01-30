@@ -5,7 +5,6 @@
 package rootio
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"time"
@@ -64,19 +63,16 @@ func (dir *directory) readDirInfo() error {
 		return err
 	}
 
-	var buf *bytes.Buffer
-	buf = bytes.NewBuffer(data[f.nbytesname:])
-	if err := dir.UnmarshalROOT(buf); err != nil {
+	r := NewRBuffer(data[f.nbytesname:], nil, 0)
+	if err := dir.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
 	nk := 4 // Key::fNumberOfBytes
-	buf = bytes.NewBuffer(data[nk:])
-	dec := newDecoder(buf)
-	var keyversion int16
-	dec.readBin(&keyversion)
-	if dec.err != nil {
-		return dec.err
+	r = NewRBuffer(data[nk:], nil, 0)
+	keyversion := r.ReadI16()
+	if r.Err() != nil {
+		return r.Err()
 	}
 
 	if keyversion > 1000 {
@@ -92,27 +88,21 @@ func (dir *directory) readDirInfo() error {
 		nk += 2 * 4 // Key::fSeekKey, fSeekParentDirectory
 	}
 
-	buf = bytes.NewBuffer(data[nk:])
-	dec = newDecoder(buf)
-	classname := ""
-	dec.readString(&classname)
+	r = NewRBuffer(data[nk:], nil, 0)
+	classname := r.ReadString()
+
+	dir.named.name = r.ReadString()
+	dir.named.title = r.ReadString()
+
 	myprintf("class: [%v]\n", classname)
-
-	cname := ""
-	dec.readString(&cname)
-	myprintf("cname: [%v]\n", cname)
-	dir.named.name = cname
-
-	title := ""
-	dec.readString(&title)
-	myprintf("title: [%v]\n", title)
-	dir.named.title = title
+	myprintf("cname: [%v]\n", dir.named.name)
+	myprintf("title: [%v]\n", dir.named.title)
 
 	if dir.nbytesname < 10 || dir.nbytesname > 1000 {
 		return fmt.Errorf("rootio: can't read directory info.")
 	}
 
-	return dec.err
+	return r.Err()
 }
 
 func (dir *directory) readKeys() error {
@@ -143,17 +133,16 @@ func (dir *directory) readKeys() error {
 		return err
 	}
 
-	dec := newDecoder(bytes.NewBuffer(data))
+	r := NewRBuffer(data, nil, 0)
 
-	var nkeys int32
-	dec.readInt32(&nkeys)
+	nkeys := r.ReadI32()
 	for i := 0; i < int(nkeys); i++ {
 		err = dir.readKey()
 		if err != nil {
 			return err
 		}
 	}
-	return dec.err
+	return r.Err()
 }
 
 // readKey reads a key and appends it to dir.keys
@@ -201,33 +190,30 @@ func (dir *directory) Get(namecycle string) (Object, bool) {
 	return nil, false
 }
 
-func (dir *directory) UnmarshalROOT(data *bytes.Buffer) error {
-	dec := newDecoder(data)
-
-	var version int16
-	dec.readBin(&version)
+func (dir *directory) UnmarshalROOT(r *RBuffer) error {
+	var (
+		version = r.ReadI16()
+		ctime   = r.ReadU32()
+		mtime   = r.ReadU32()
+	)
 	myprintf("dir-version: %v\n", version)
-
-	var ctime uint32
-	dec.readBin(&ctime)
-	dir.ctime = datime2time(ctime)
 	myprintf("dir-ctime: %v\n", dir.ctime)
-
-	var mtime uint32
-	dec.readBin(&mtime)
-	dir.mtime = datime2time(mtime)
 	myprintf("dir-mtime: %v\n", dir.mtime)
 
-	dec.readInt32(&dir.nbyteskeys)
-	dec.readInt32(&dir.nbytesname)
-	readptr := dec.readInt64
+	dir.mtime = datime2time(mtime)
+	dir.ctime = datime2time(ctime)
+
+	dir.nbyteskeys = r.ReadI32()
+	dir.nbytesname = r.ReadI32()
+
+	readptr := r.ReadI64
 	if version <= 1000 {
-		readptr = dec.readInt32
+		readptr = func() int64 { return int64(r.ReadI32()) }
 	}
-	readptr(&dir.seekdir)
-	readptr(&dir.seekparent)
-	readptr(&dir.seekkeys)
-	return dec.err
+	dir.seekdir = readptr()
+	dir.seekparent = readptr()
+	dir.seekkeys = readptr()
+	return r.Err()
 }
 
 var _ Object = (*directory)(nil)

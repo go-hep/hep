@@ -4,10 +4,7 @@
 
 package rootio
 
-import (
-	"bytes"
-	"reflect"
-)
+import "reflect"
 
 type attline struct {
 	color int16
@@ -15,19 +12,17 @@ type attline struct {
 	width int16
 }
 
-func (a *attline) UnmarshalROOT(data *bytes.Buffer) error {
-	dec := newDecoder(data)
-
-	start := dec.Pos()
-	vers, pos, bcnt := dec.readVersion()
+func (a *attline) UnmarshalROOT(r *RBuffer) error {
+	start := r.Pos()
+	vers, pos, bcnt := r.ReadVersion()
 	myprintf("attline-vers=%v\n", vers)
 
-	dec.readBin(&a.color)
-	dec.readBin(&a.style)
-	dec.readBin(&a.width)
-	dec.checkByteCount(pos, bcnt, start, "TAttLine")
+	a.color = r.ReadI16()
+	a.style = r.ReadI16()
+	a.width = r.ReadI16()
+	r.CheckByteCount(pos, bcnt, start, "TAttLine")
 
-	return dec.err
+	return r.Err()
 }
 
 func init() {

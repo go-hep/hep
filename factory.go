@@ -5,6 +5,7 @@
 package rootio
 
 import (
+	"fmt"
 	"reflect"
 	"sync"
 )
@@ -49,6 +50,14 @@ func (f *factory) Get(n string) FactoryFct {
 		return fct
 	}
 	return nil
+}
+
+func (f *factory) get(n string) FactoryFct {
+	fct := f.Get(n)
+	if fct == nil {
+		panic(fmt.Errorf("rootio: no factory for type %q", n))
+	}
+	return fct
 }
 
 func (f *factory) add(n string, fct FactoryFct) {

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build ignore
+
 package rootio
 
 import (
@@ -9,18 +11,22 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"io/ioutil"
 )
 
 type decoder struct {
 	buf *bytes.Buffer
 	len int64
 	err error
+
+	refs map[int64]interface{}
 }
 
 func newDecoder(buf *bytes.Buffer) *decoder {
 	dec := &decoder{
-		buf: buf,
-		len: int64(buf.Len()),
+		buf:  buf,
+		len:  int64(buf.Len()),
+		refs: make(map[int64]interface{}),
 	}
 	return dec
 }
@@ -74,6 +80,24 @@ func (dec *decoder) readString(s *string) {
 		}
 		*s = string(buf[:length])
 	}
+}
+
+func (dec *decoder) readCString(n int, s *string) {
+	if dec.err != nil {
+		return
+	}
+
+	buf := make([]byte, n)
+	for i := 0; i < n; i++ {
+		var b byte
+		dec.readBin(&b)
+		if b == 0 {
+			buf = buf[:i]
+			break
+		}
+		buf[i] = b
+	}
+	*s = string(buf)
 }
 
 func (dec *decoder) readBin(v interface{}) {
@@ -168,16 +192,6 @@ func (dec *decoder) readVersion() (version int16, position, bytecount int32) {
 	}
 	version = int16(vers)
 
-	/*
-	 */
-	//FIXME: hack
-	// var trash [8]byte
-	// err = dec.readBin(&trash)
-	// if err != nil {
-	// 	return
-	// }
-	//fmt.Printf("## data = %#v\n", trash[:])
-
 	position = int32(start)
 	myprintf("readVersion => [%v] [%v] [%v]\n", position, version, bytecount)
 	return version, position, bytecount
@@ -270,6 +284,7 @@ func (dec *decoder) checkByteCount(pos, count int32, start int64, class string) 
 	return
 }
 
+/*
 func (dec *decoder) readObject(o *Object) {
 	if dec.err != nil {
 		return
@@ -283,4 +298,113 @@ func (dec *decoder) readObject(o *Object) {
 	var isref bool
 	dec.readClass(&class, &count, &isref)
 	return
+}
+*/
+
+func (dec *decoder) skipObject() {
+	if dec.err != nil {
+		return
+	}
+	_, dec.err = io.CopyN(ioutil.Discard, dec.buf, 10)
+}
+
+func (dec *decoder) readObject(name string) Object {
+	if dec.err != nil {
+		return nil
+	}
+
+	fct := Factory.get(name)
+	obj := fct().Interface().(Object)
+
+	dec.err = obj.(ROOTUnmarshaler).UnmarshalROOT(NewRBuffer(dec.buf.Bytes(), nil))
+	return obj
+}
+
+func (dec *decoder) readObjectRef() Object {
+	if dec.err != nil {
+		return nil
+	}
+
+	fmt.Printf("--- readobjref ---\n")
+
+	var (
+		objStartPos = dec.Pos()
+		tag         uint32
+		vers        uint32
+		startPos    int64
+		bcnt        int32
+	)
+	dec.readBin(&bcnt)
+	fmt.Printf("bcnt=%v\n", bcnt)
+
+	if bcnt&kByteCountMask == 0 || int64(bcnt) == kNewClassTag {
+		tag = uint32(bcnt)
+		bcnt = 0
+	} else {
+		vers = 1
+		startPos = dec.Pos()
+		dec.readBin(&tag)
+	}
+
+	tag64 := int64(tag)
+
+	fmt.Printf("objP= %v\n", objStartPos)
+	fmt.Printf("vers= %v\n", vers)
+	fmt.Printf("tag=  %v | class-mask=%v | new-class=%v\n", tag, int64(tag)&kClassMask == 0, int64(tag) == kNewClassTag)
+	fmt.Printf("bcnt= %v\n", bcnt)
+	fmt.Printf("spos= %v\n", startPos)
+
+	if tag64&kClassMask == 0 {
+		fmt.Printf("--> kClassMask\n")
+		switch tag64 {
+		case 0:
+			return nil
+		case 1:
+			// FIXME(sbinet): tag==1 means "self", but we don't currently have self available
+			panic("rootio: tag==1 'self' not implemented")
+			return nil
+		}
+
+		obj := dec.refs[tag64]
+		if obj == nil {
+			panic(fmt.Errorf("rootio: invalid object ref [%d]", tag64))
+		}
+		return obj.(Object)
+	}
+
+	if tag64 == kNewClassTag {
+		fmt.Printf("--> kNewClassTag\n")
+		var cname string
+		dec.readCString(80, &cname)
+		fmt.Printf("--> class-name: %q\n", cname)
+
+		fct := Factory.get(cname)
+
+		if vers > 0 {
+			dec.refs[startPos+kMapOffset] = fct
+		} else {
+			dec.refs[int64(len(dec.refs)+1)] = fct
+		}
+
+		obj := fct().Interface().(Object)
+
+		if vers > 0 {
+			dec.refs[objStartPos+kMapOffset] = obj
+		} else {
+			dec.refs[int64(len(dec.refs)+1)] = obj
+		}
+		dec.err = obj.(ROOTUnmarshaler).UnmarshalROOT(NewRBuffer(dec.buf.Bytes(), nil))
+		if dec.err != nil {
+			return nil
+		}
+		return obj
+
+	} else {
+		fmt.Printf("--> ^kClassMask\n")
+		tag64 &= ^kClassMask
+		fmt.Printf("--> tag64=%v\n", tag64)
+	}
+
+	fmt.Printf("tag=  %v | class-mask=%v | new-class=%v\n", tag64, tag64&kClassMask == 0, tag64 == kNewClassTag)
+	return nil
 }

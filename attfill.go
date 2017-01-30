@@ -4,28 +4,23 @@
 
 package rootio
 
-import (
-	"bytes"
-	"reflect"
-)
+import "reflect"
 
 type attfill struct {
 	color int16
 	style int16
 }
 
-func (a *attfill) UnmarshalROOT(data *bytes.Buffer) error {
-	dec := newDecoder(data)
-
-	start := dec.Pos()
-	vers, pos, bcnt := dec.readVersion()
+func (a *attfill) UnmarshalROOT(r *RBuffer) error {
+	start := r.Pos()
+	vers, pos, bcnt := r.ReadVersion()
 	myprintf("attfill-vers=%v\n", vers)
 
-	dec.readBin(&a.color)
-	dec.readBin(&a.style)
-	dec.checkByteCount(pos, bcnt, start, "TAttFill")
+	a.color = r.ReadI16()
+	a.style = r.ReadI16()
+	r.CheckByteCount(pos, bcnt, start, "TAttFill")
 
-	return dec.err
+	return r.Err()
 }
 
 func init() {

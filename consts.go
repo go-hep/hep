@@ -4,6 +4,8 @@
 
 package rootio
 
+import "unsafe"
+
 // start of payload in a TFile (in bytes)
 const kBEGIN = 100
 
@@ -60,6 +62,29 @@ const (
 	kByteCountMask = 0x40000000
 )
 
+// constants from core/foundation/inc/ESTLType.h
+const (
+	kNotSTL      = 0
+	kSTLvector   = 1
+	kSTLlist     = 2
+	kSTLdeque    = 3
+	kSTLmap      = 4
+	kSTLmultimap = 5
+	kSTLset      = 6
+	kSTLmultiset = 7
+	kSTLbitset   = 8
+	// Here the c++11 containers start. Order counts. For example,
+	// tstreamerelements in written rootfiles carry a value and we cannot
+	// introduce shifts.
+	kSTLforwardlist       = 9
+	kSTLunorderedset      = 10
+	kSTLunorderedmultiset = 11
+	kSTLunorderedmap      = 12
+	kSTLunorderedmultimap = 13
+	kSTLend               = 14
+	kSTLany               = 300 /* TVirtualStreamerInfo::kSTL */
+)
+
 const (
 	kNullTag = 0
 	// on tag :
@@ -74,3 +99,5 @@ const (
 	//baskets
 	kDisplacementMask = 0xFF000000
 )
+
+var ptrSize = unsafe.Sizeof((*int)(nil))

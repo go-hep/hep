@@ -74,6 +74,40 @@ type ClassFactory interface {
 	Create(name string) Class
 }
 
+// Collection is a collection of ROOT Objects.
+type Collection interface {
+	Object
+
+	// Name returns the name of the collection.
+	Name() string
+
+	// Last returns the last element index
+	Last() int
+
+	// At returns the element at index i
+	At(i int) Object
+
+	// Len returns the number of elements in the collection
+	Len() int
+}
+
+// SeqCollection is a sequential collection of ROOT Objects.
+type SeqCollection interface {
+	Collection
+}
+
+// List is a list of ROOT Objects.
+type List interface {
+	SeqCollection
+}
+
+// ObjArray is an array of ROOT Objects.
+type ObjArray interface {
+	SeqCollection
+	LowerBound() int
+	UpperBound() int
+}
+
 // Directory describes a ROOT directory structure in memory.
 type Directory interface {
 	// Get returns the object identified by namecycle
@@ -88,10 +122,18 @@ type Directory interface {
 	Get(namecycle string) (Object, bool)
 }
 
+// StreamerInfo describes a ROOT Streamer.
+type StreamerInfo interface {
+	Named
+	CheckSum() int
+	ClassVersion() int
+	Elements() ObjArray
+}
+
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 type ROOTUnmarshaler interface {
-	UnmarshalROOT(data *bytes.Buffer) error
+	UnmarshalROOT(r *RBuffer) error
 }
 
 // ROOTMarshaler is the interface implemented by an object that can

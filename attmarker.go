@@ -4,10 +4,7 @@
 
 package rootio
 
-import (
-	"bytes"
-	"reflect"
-)
+import "reflect"
 
 type attmarker struct {
 	color int16
@@ -15,18 +12,16 @@ type attmarker struct {
 	width float32
 }
 
-func (a *attmarker) UnmarshalROOT(data *bytes.Buffer) error {
-	dec := newDecoder(data)
-
-	start := dec.Pos()
-	vers, pos, bcnt := dec.readVersion()
+func (a *attmarker) UnmarshalROOT(r *RBuffer) error {
+	start := r.Pos()
+	vers, pos, bcnt := r.ReadVersion()
 	myprintf("attmarker-vers=%v\n", vers)
-	dec.readBin(&a.color)
-	dec.readBin(&a.style)
-	dec.readBin(&a.width)
-	dec.checkByteCount(pos, bcnt, start, "TAttMarker")
+	a.color = r.ReadI16()
+	a.style = r.ReadI16()
+	a.width = r.ReadF32()
+	r.CheckByteCount(pos, bcnt, start, "TAttMarker")
 
-	return dec.err
+	return r.Err()
 }
 
 func init() {

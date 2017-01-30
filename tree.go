@@ -5,7 +5,6 @@
 package rootio
 
 import (
-	"bytes"
 	"fmt"
 	"reflect"
 )
@@ -56,12 +55,10 @@ func (tree *Tree) ZipBytes() int64 {
 
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
-func (tree *Tree) UnmarshalROOT(data *bytes.Buffer) error {
-	dec := newDecoder(data)
-
-	myprintf(">>>>>>>>>>>>>> Tree.unmarshal...\n")
-	vers, pos, bcnt := dec.readVersion()
+func (tree *Tree) UnmarshalROOT(r *RBuffer) error {
+	vers, pos, bcnt := r.ReadVersion()
 	myprintf(">>> => [%v] [%v] [%v]\n", pos, vers, bcnt)
+	fmt.Printf("--- Tree vers=%d pos=%d count=%d\n", vers, pos, bcnt)
 
 	for _, a := range []ROOTUnmarshaler{
 		&tree.named,
@@ -69,7 +66,7 @@ func (tree *Tree) UnmarshalROOT(data *bytes.Buffer) error {
 		&attfill{},
 		&attmarker{},
 	} {
-		err := a.UnmarshalROOT(data)
+		err := a.UnmarshalROOT(r)
 		if err != nil {
 			return err
 		}
@@ -90,43 +87,34 @@ func (tree *Tree) UnmarshalROOT(data *bytes.Buffer) error {
 	// 	return err
 	// }
 
-	//fmt.Printf("### data = %v\n", dec.data.Bytes()[:64])
-	dec.readBin(&tree.entries)
-	dec.readBin(&tree.totbytes)
-	dec.readBin(&tree.zipbytes)
+	tree.entries = r.ReadI64()
+	tree.totbytes = r.ReadI64()
+	tree.zipbytes = r.ReadI64()
 	if vers >= 18 {
-		var flushedbytes int64
-		dec.readInt64(&flushedbytes)
+		_ = r.ReadI64() // flushed bytes
 	}
 
-	// dummy values
-	var (
-		f64 float64
-		i32 int32
-		i64 int64
-	)
-
-	dec.readBin(&f64)   // fWeight
-	dec.readInt32(&i32) // fTimerInterval
-	dec.readInt32(&i32) // fScanField
-	dec.readInt32(&i32) // fUpdate
+	_ = r.ReadF64() // fWeight
+	_ = r.ReadI32() // fTimerInterval
+	_ = r.ReadI32() // fScanField
+	_ = r.ReadI32() // fUpdate
 
 	if vers >= 18 {
-		dec.readInt32(&i32) // fDefaultEntryOffsetLen
+		_ = r.ReadI32() // fDefaultEntryOffsetLen
 	}
 
-	dec.readInt64(&i64) // fMaxEntries
-	dec.readInt64(&i64) // fMaxEntryLoop
-	dec.readInt64(&i64) // fMaxVirtualSize
-	dec.readInt64(&i64) // fAutoSave
+	_ = r.ReadI64() // fMaxEntries
+	_ = r.ReadI64() // fMaxEntryLoop
+	_ = r.ReadI64() // fMaxVirtualSize
+	_ = r.ReadI64() // fAutoSave
 
 	if vers >= 18 {
-		dec.readInt64(&i64) // fAutoFlush
+		_ = r.ReadI64() // fAutoFlush
 	}
 
-	dec.readInt64(&i64) // fEstimate
+	_ = r.ReadI64() // fEstimate
 
-	return dec.err
+	return r.Err()
 }
 
 func init() {

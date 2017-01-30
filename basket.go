@@ -5,7 +5,6 @@
 package rootio
 
 import (
-	"bytes"
 	"fmt"
 	"reflect"
 )
@@ -21,10 +20,12 @@ type Basket struct {
 	Flag         byte
 }
 
-func (b *Basket) UnmarshalROOT(data *bytes.Buffer) error {
+func (b *Basket) Class() string {
+	return "TBasket"
+}
 
-	//fmt.Printf("+++++ Basket.UnmarshalROOT ++++\n")
-	if err := b.Key.UnmarshalROOT(data); err != nil {
+func (b *Basket) UnmarshalROOT(r *RBuffer) error {
+	if err := b.Key.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
@@ -32,24 +33,24 @@ func (b *Basket) UnmarshalROOT(data *bytes.Buffer) error {
 		return fmt.Errorf("rootio.Basket: Key is not a Basket")
 	}
 
-	dec := newDecoder(data)
-	dec.readBin(&b.Version)
-	dec.readInt32(&b.Buffersize)
-	dec.readInt32(&b.Evbuffersize)
+	b.Version = r.ReadU16()
+	b.Buffersize = r.ReadI32()
+	b.Evbuffersize = r.ReadI32()
+
 	if b.Evbuffersize < 0 {
 		err := fmt.Errorf("rootio.Basket: incorrect Evbuffersize [%v]", b.Evbuffersize)
 		b.Evbuffersize = 0
 		return err
 	}
 
-	dec.readInt32(&b.Nevbuf)
-	dec.readInt32(&b.Last)
-	dec.readBin(&b.Flag)
+	b.Nevbuf = r.ReadI32()
+	b.Last = r.ReadI32()
+	b.Flag = r.ReadU8()
 	if b.Last > b.Buffersize {
 		b.Buffersize = b.Last
 	}
 
-	return dec.err
+	return r.Err()
 }
 
 func init() {
@@ -61,6 +62,6 @@ func init() {
 	Factory.add("*rootio.Basket", f)
 }
 
-var _ Object = (*Key)(nil)
-var _ Named = (*Key)(nil)
-var _ ROOTUnmarshaler = (*Key)(nil)
+var _ Object = (*Basket)(nil)
+var _ Named = (*Basket)(nil)
+var _ ROOTUnmarshaler = (*Basket)(nil)

@@ -15,7 +15,10 @@ import (
 	"github.com/go-hep/rootio"
 )
 
-var g_prof = flag.String("profile", "", "filename of cpuprofile")
+var (
+	g_prof = flag.String("profile", "", "filename of cpuprofile")
+	dumpSI = flag.Bool("sinfos", false, "dump StreamerInfos")
+)
 
 func main() {
 	flag.Parse()
@@ -44,10 +47,21 @@ func main() {
 		fmt.Printf("=== [%s] ===\n", fname)
 		f, err := rootio.Open(fname)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "**error** %v\n", err)
+			fmt.Fprintf(os.Stderr, "rootio: failed to open [%s]: %v\n", fname, err)
 			os.Exit(1)
 		}
 		fmt.Printf("version: %v\n", f.Version())
+		if *dumpSI {
+			fmt.Printf("streamer-infos:\n")
+			sinfos := f.StreamerInfo()
+			for i, v := range sinfos {
+				name := v.Class()
+				if vv, ok := v.(rootio.Named); ok {
+					name = vv.Name()
+				}
+				fmt.Printf(" %02d: %s\n", i, name)
+			}
+		}
 
 		for _, k := range f.Keys() {
 			fmt.Printf("%-8s %-40s %s\n", k.Class(), k.Name(), k.Title())

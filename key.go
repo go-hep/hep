@@ -47,6 +47,7 @@ type Key struct {
 
 	read bool
 	data []byte
+	obj  Object
 }
 
 func (k *Key) Class() string {
@@ -72,6 +73,46 @@ func (k *Key) Bytes() ([]byte, error) {
 		k.read = true
 	}
 	return k.data, nil
+}
+
+// Object returns the (ROOT) object corresponding to the Key's value.
+func (k *Key) Object() (Object, error) {
+	if k.obj != nil {
+		return k.obj, nil
+	}
+
+	buf, err := k.Bytes()
+	if err != nil {
+		return nil, err
+	}
+
+	fct := Factory.Get(k.Class())
+	if fct == nil {
+		return nil, fmt.Errorf("rootio: no registered factory for class %q (key=%q)", k.Class(), k.Name())
+	}
+
+	v := fct()
+	obj, ok := v.Interface().(Object)
+	if !ok {
+		return nil, fmt.Errorf("rootio: class %q does not implement rootio.Object (key=%q)", k.Class(), k.Name())
+	}
+
+	vv, ok := obj.(ROOTUnmarshaler)
+	if !ok {
+		return nil, fmt.Errorf("rootio: class %q does not implement rootio.ROOTUnmarshaler (key=%q)", k.Class(), k.Name())
+	}
+
+	err = vv.UnmarshalROOT(NewRBuffer(buf, nil, uint32(k.keylen)))
+	if err != nil {
+		return nil, err
+	}
+
+	// FIXME: hack.
+	if vv, ok := obj.(*Tree); ok {
+		vv.f = k.f
+	}
+
+	return obj, nil
 }
 
 // Note: this contains ZL[src][dst] where src and dst are 3 bytes each.
@@ -106,35 +147,9 @@ func (k *Key) load() ([]byte, error) {
 
 // Value returns the data corresponding to the Key's value
 func (k *Key) Value() interface{} {
-	var v interface{}
-
-	factory := Factory.Get(k.Class())
-	if factory == nil {
-		panic(fmt.Errorf("key[%v]: no factory for type [%s]\n", k.Name(), k.Class()))
-	}
-
-	vv := factory()
-	if vv, ok := vv.Interface().(ROOTUnmarshaler); ok {
-		data, err := k.Bytes()
-		if err != nil {
-			panic(fmt.Errorf("key[%v]: %v", k.Name(), err))
-		}
-		buf := bytes.NewBuffer(data)
-		err = vv.UnmarshalROOT(buf)
-		if err != nil {
-			panic(err)
-		}
-		v = vv
-	} else {
-		panic(fmt.Errorf(
-			"key[%v]: type [%s] does not satisfy the ROOTUnmarshaler interface",
-			k.Name(), k.Class(),
-		))
-	}
-
-	// FIXME: hack.
-	if vv, ok := v.(*Tree); ok {
-		vv.f = k.f
+	v, err := k.Object()
+	if err != nil {
+		panic(err)
 	}
 	return v
 }
@@ -170,14 +185,18 @@ func (k *Key) Read() error {
 
 	key_offset := f.Tell()
 	myprintf("Key::Read -- @%v\n", key_offset)
-	dec, err := newDecoderFromReader(f, 8)
+
+	data := make([]byte, 8)
+	_, err = io.ReadFull(f, data[:])
 	if err != nil {
 		return err
 	}
 
-	dec.readInt32(&k.bytes)
-	if dec.err != nil {
-		return dec.err
+	r := NewRBuffer(data, nil, 0)
+
+	k.bytes = r.ReadI32()
+	if r.Err() != nil {
+		return r.Err()
 	}
 
 	myprintf("Key::Read -- @%v => %v\n", key_offset, k.bytes)
@@ -194,14 +213,14 @@ func (k *Key) Read() error {
 		}
 	}
 
-	data := make([]byte, int(k.bytes))
+	data = make([]byte, int(k.bytes))
 	_, err = f.ReadAt(data, key_offset)
 	if err != nil {
 		return err
 	}
 
-	buf := bytes.NewBuffer(data)
-	err = k.UnmarshalROOT(buf)
+	r = NewRBuffer(data, nil, uint32(k.keylen))
+	err = k.UnmarshalROOT(r)
 	if err != nil {
 		return err
 	}
@@ -224,11 +243,13 @@ func (k *Key) Read() error {
 }
 
 // UnmarshalROOT decodes the content of data into the Key
-func (k *Key) UnmarshalROOT(data *bytes.Buffer) error {
-	dec := newDecoder(data)
-	myprintf("--- key ---\n")
+func (k *Key) UnmarshalROOT(r *RBuffer) error {
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-	dec.readInt32(&k.bytes)
+	myprintf("--- key ---\n")
+	k.bytes = r.ReadI32()
 	myprintf("key-nbytes:  %v\n", k.bytes)
 
 	if k.bytes < 0 {
@@ -237,25 +258,23 @@ func (k *Key) UnmarshalROOT(data *bytes.Buffer) error {
 		return nil
 	}
 
-	dec.readInt16(&k.version)
-	dec.readInt32(&k.objlen)
-	var datetime uint32
-	dec.readBin(&datetime)
-	k.datetime = datime2time(datetime)
-	dec.readInt16(&k.keylen)
-	dec.readInt16(&k.cycle)
+	k.version = r.ReadI16()
+	k.objlen = r.ReadI32()
+	k.datetime = datime2time(r.ReadU32())
+	k.keylen = int32(r.ReadI16())
+	k.cycle = r.ReadI16()
 
 	if k.version > 1000 {
-		dec.readInt64(&k.seekkey)
-		dec.readInt64(&k.seekpdir)
+		k.seekkey = r.ReadI64()
+		k.seekpdir = r.ReadI64()
 	} else {
-		dec.readInt32(&k.seekkey)
-		dec.readInt32(&k.seekpdir)
+		k.seekkey = int64(r.ReadI32())
+		k.seekpdir = int64(r.ReadI32())
 	}
 
-	dec.readString(&k.classname)
-	dec.readString(&k.name)
-	dec.readString(&k.title)
+	k.classname = r.ReadString()
+	k.name = r.ReadString()
+	k.title = r.ReadString()
 
 	myprintf("key-version: %v\n", k.version)
 	myprintf("key-objlen:  %v\n", k.objlen)
@@ -271,7 +290,7 @@ func (k *Key) UnmarshalROOT(data *bytes.Buffer) error {
 
 	//k.pdat = data
 
-	return dec.err
+	return r.Err()
 }
 
 func init() {
@@ -283,7 +302,6 @@ func init() {
 	Factory.add("*rootio.Key", f)
 }
 
-// testing interfaces
 var _ Object = (*Key)(nil)
 var _ Named = (*Key)(nil)
 var _ ROOTUnmarshaler = (*Key)(nil)

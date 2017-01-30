@@ -4,9 +4,7 @@
 
 package rootio
 
-import (
-	"bytes"
-)
+import "reflect"
 
 // The TNamed class is the base class for all named ROOT classes
 // A TNamed contains the essential elements (name, title)
@@ -32,29 +30,36 @@ func (n *named) Class() string {
 	return "TNamed"
 }
 
-func (n *named) UnmarshalROOT(data *bytes.Buffer) error {
-	dec := newDecoder(data)
-
-	start := dec.Pos()
-	vers, pos, bcnt := dec.readVersion()
+func (n *named) UnmarshalROOT(r *RBuffer) error {
+	start := r.Pos()
+	vers, pos, bcnt := r.ReadVersion()
 	myprintf("named: %v %v %v\n", vers, pos, bcnt)
 
-	var id uint32
-	dec.readBin(&id)
-
-	var bits uint32
-	dec.readBin(&bits)
+	var (
+		_    = r.ReadU32() // id
+		bits = r.ReadU32() // bits
+	)
 	bits |= kIsOnHeap // by definition, de-serialized object is on heap
 	if (bits & kIsReferenced) == 0 {
-		var trash uint16
-		dec.readBin(&trash)
+		_ = r.ReadU16()
 	}
 
-	dec.readString(&n.name)
-	dec.readString(&n.title)
-	dec.checkByteCount(pos, bcnt, start, "TNamed")
-	return dec.err
+	n.name = r.ReadString()
+	n.title = r.ReadString()
+
+	r.CheckByteCount(pos, bcnt, start, "TNamed")
+	return r.Err()
+}
+
+func init() {
+	f := func() reflect.Value {
+		o := &named{}
+		return reflect.ValueOf(o)
+	}
+	Factory.add("TNamed", f)
+	Factory.add("*rootio.named", f)
 }
 
 var _ Object = (*named)(nil)
+var _ Named = (*named)(nil)
 var _ ROOTUnmarshaler = (*named)(nil)

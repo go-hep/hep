@@ -4,10 +4,7 @@
 
 package rootio
 
-import (
-	"bytes"
-	"reflect"
-)
+import "reflect"
 
 type Branch struct {
 	f *File
@@ -44,7 +41,7 @@ func (b *Branch) Class() string {
 
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
-func (b *Branch) UnmarshalROOT(data *bytes.Buffer) error {
+func (b *Branch) UnmarshalROOT(r *RBuffer) error {
 	var err error
 	panic("not implemented")
 	return err

@@ -5,7 +5,6 @@
 package rootio
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -77,7 +76,8 @@ type File struct {
 	nbytesinfo  int32 // sizeof(TStreamerInfo)
 	uuid        [18]byte
 
-	dir directory // root directory of this file
+	dir   directory // root directory of this file
+	siKey Key
 }
 
 // Open opens the named ROOT file for reading. If successful, methods on the
@@ -86,7 +86,7 @@ type File struct {
 func Open(path string) (*File, error) {
 	fd, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to open %q (%q)", path, err.Error())
+		return nil, fmt.Errorf("rootio: unable to open %q (%q)", path, err.Error())
 	}
 
 	f := &File{
@@ -97,7 +97,7 @@ func Open(path string) (*File, error) {
 
 	err = f.readHeader()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rootio: failed to read header %q: %v", path, err)
 	}
 
 	return f, nil
@@ -115,64 +115,67 @@ func (f *File) readHeader() error {
 		return err
 	}
 
-	dec := newDecoder(bytes.NewBuffer(buf))
+	r := NewRBuffer(buf, nil, 0)
 
 	// Header
 
-	dec.readBin(&f.magic)
-	if string(f.magic[:]) != "root" {
+	if _, err := io.ReadFull(r.r, f.magic[:]); err != nil || string(f.magic[:]) != "root" {
+		if err != nil {
+			return fmt.Errorf("rootio: failed to read ROOT file magic header: %v", err)
+		}
 		return fmt.Errorf("rootio: %q is not a root file", f.id)
 	}
 
-	dec.readInt32(&f.version)
-	dec.readInt32(&f.begin)
-
+	f.version = r.ReadI32()
+	f.begin = int64(r.ReadI32())
 	if f.version < 1000000 { // small file
-		dec.readInt32(&f.end)
-		dec.readInt32(&f.seekfree)
-		dec.readInt32(&f.nbytesfree)
-		dec.readInt32(&f.nfree)
-		dec.readInt32(&f.nbytesname)
-		dec.readBin(&f.units)
-		dec.readInt32(&f.compression)
-		dec.readInt32(&f.seekinfo)
-		dec.readInt32(&f.nbytesinfo)
+		f.end = int64(r.ReadI32())
+		f.seekfree = int64(r.ReadI32())
+		f.nbytesfree = r.ReadI32()
+		f.nfree = r.ReadI32()
+		f.nbytesname = r.ReadI32()
+		f.units = r.ReadU8()
+		f.compression = r.ReadI32()
+		f.seekinfo = int64(r.ReadI32())
+		f.nbytesinfo = r.ReadI32()
 	} else { // large files
-		dec.readInt64(&f.end)
-		dec.readInt64(&f.seekfree)
-		dec.readInt32(&f.nbytesfree)
-		dec.readInt32(&f.nfree)
-		dec.readInt32(&f.nbytesname)
-		dec.readBin(&f.units)
-		dec.readInt32(&f.compression)
-		dec.readInt64(&f.seekinfo)
-		dec.readInt32(&f.nbytesinfo)
+		f.end = r.ReadI64()
+		f.seekfree = r.ReadI64()
+		f.nbytesfree = r.ReadI32()
+		f.nfree = r.ReadI32()
+		f.nbytesname = r.ReadI32()
+		f.units = r.ReadU8()
+		f.compression = r.ReadI32()
+		f.seekinfo = r.ReadI64()
+		f.nbytesinfo = r.ReadI32()
 	}
 	f.version %= 1000000
 
-	dec.readBin(&f.uuid)
-	if dec.err != nil {
-		return dec.err
+	if _, err := io.ReadFull(r.r, f.uuid[:]); err != nil || r.Err() != nil {
+		if err != nil {
+			return fmt.Errorf("rootio: failed to read ROOT's UUID file: %v", err)
+		}
+		return r.Err()
 	}
 
 	var err error
 
 	err = f.dir.readDirInfo()
 	if err != nil {
-		return err
+		return fmt.Errorf("rootio: failed to read ROOT directory infos: %v", err)
 	}
 
 	err = f.readStreamerInfo()
 	if err != nil {
-		return err
+		return fmt.Errorf("rootio: failed to read ROOT streamer infos: %v", err)
 	}
 
 	err = f.dir.readKeys()
 	if err != nil {
-		return err
+		return fmt.Errorf("rootio: failed to read ROOT file keys: %v", err)
 	}
 
-	return err
+	return nil
 }
 
 func (f *File) Map() {
@@ -225,16 +228,11 @@ func (f *File) Class() string {
 
 // readStreamerInfo reads the list of StreamerInfo from this file
 func (f *File) readStreamerInfo() error {
-	var err error
-	myprintf(":: readStreamerInfo...\n")
-	//var list []Object
-	var buf []byte
-
 	if !(f.seekinfo > 0 && f.seekinfo < f.end) {
 		return fmt.Errorf("rootio: invalid pointer to StreamerInfo (pos=%v end=%v)", f.seekinfo, f.end)
 
 	}
-	buf = make([]byte, int(f.nbytesinfo))
+	buf := make([]byte, int(f.nbytesinfo))
 	nbytes, err := f.ReadAt(buf, f.seekinfo)
 	if err != nil {
 		return err
@@ -243,8 +241,19 @@ func (f *File) readStreamerInfo() error {
 		return fmt.Errorf("rootio: requested [%v] bytes. read [%v] bytes from file", f.nbytesinfo, nbytes)
 	}
 
-	myprintf(":: readStreamerInfo... [done]\n")
+	err = f.siKey.UnmarshalROOT(NewRBuffer(buf, nil, 0))
+	f.siKey.f = f
 	return err
+}
+
+// StreamerInfo returns the list of StreamerInfos of this file.
+func (f *File) StreamerInfo() []Object {
+	objs := f.siKey.Value().(List)
+	infos := make([]Object, objs.Len())
+	for i := range infos {
+		infos[i] = objs.At(i)
+	}
+	return infos
 }
 
 // Get returns the object identified by namecycle
