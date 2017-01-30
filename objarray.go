@@ -4,9 +4,13 @@
 
 package rootio
 
-import "reflect"
+import (
+	"fmt"
+	"reflect"
+)
 
 type objarray struct {
+	obj   tobject
 	named named
 	last  int
 	arr   []Object
@@ -53,8 +57,7 @@ func (arr *objarray) UnmarshalROOT(r *RBuffer) error {
 	myprintf("objarray-vers=%v\n", vers)
 
 	if vers > 2 {
-		var obj tobject
-		if err := obj.UnmarshalROOT(r); err != nil {
+		if err := arr.obj.UnmarshalROOT(r); err != nil {
 			return err
 		}
 	}
@@ -65,11 +68,15 @@ func (arr *objarray) UnmarshalROOT(r *RBuffer) error {
 	nobjs := int(r.ReadI32())
 	arr.low = r.ReadI32()
 
-	if vers != 3 {
-		panic("boo")
-	}
+	/*
+		if vers != 3 {
+			panic(fmt.Errorf("TObjArray-version: %d", vers))
+		}
+	*/
 
+	fmt.Printf("--> tobjs: %d|%d, vers=%d, bcnt=%d\n", nobjs, arr.low, vers, bcnt)
 	arr.arr = make([]Object, nobjs)
+	arr.last = -1
 	for i := range arr.arr {
 		obj := r.ReadObjectAny()
 		if obj != nil {

@@ -116,9 +116,8 @@ func TestFileReader(t *testing.T) {
 	defer f.Close()
 
 	f.Map()
-	//return
-
-	t.Skip()
+	// FIXME(sbinet)
+	return
 
 	getkey := func(n string) Object {
 		for i := range f.dir.keys {

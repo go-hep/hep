@@ -5,6 +5,7 @@
 package rootio
 
 import (
+	"encoding/hex"
 	"fmt"
 	"reflect"
 )
@@ -56,9 +57,18 @@ func (tree *Tree) ZipBytes() int64 {
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (tree *Tree) UnmarshalROOT(r *RBuffer) error {
+	beg := r.Pos()
+
 	vers, pos, bcnt := r.ReadVersion()
 	myprintf(">>> => [%v] [%v] [%v]\n", pos, vers, bcnt)
 	fmt.Printf("--- Tree vers=%d pos=%d count=%d\n", vers, pos, bcnt)
+	{
+		buf := r.bytes()
+		if len(buf) > 256 {
+			buf = buf[:256]
+		}
+		fmt.Printf("--- hex ---\n%s\n", string(hex.Dump(buf)))
+	}
 
 	for _, a := range []ROOTUnmarshaler{
 		&tree.named,
@@ -90,6 +100,9 @@ func (tree *Tree) UnmarshalROOT(r *RBuffer) error {
 	tree.entries = r.ReadI64()
 	tree.totbytes = r.ReadI64()
 	tree.zipbytes = r.ReadI64()
+	if vers >= 19 { // FIXME
+		_ = r.ReadI64() // fSavedBytes
+	}
 	if vers >= 18 {
 		_ = r.ReadI64() // flushed bytes
 	}
@@ -101,6 +114,10 @@ func (tree *Tree) UnmarshalROOT(r *RBuffer) error {
 
 	if vers >= 18 {
 		_ = r.ReadI32() // fDefaultEntryOffsetLen
+	}
+	nclus := 0
+	if vers >= 19 { // FIXME
+		nclus = int(r.ReadI32()) // fNClusterRange
 	}
 
 	_ = r.ReadI64() // fMaxEntries
@@ -114,6 +131,28 @@ func (tree *Tree) UnmarshalROOT(r *RBuffer) error {
 
 	_ = r.ReadI64() // fEstimate
 
+	if vers >= 19 { // FIXME
+		if nclus == 0 {
+			_ = r.ReadI8() // fClusterRangeEnd
+			_ = r.ReadI8() // fClusterSize
+		} else {
+			panic("not implemented")
+		}
+	}
+
+	var branches objarray
+	if err := branches.UnmarshalROOT(r); err != nil {
+		return err
+	}
+	tree.branches = branches.arr[:branches.last+1]
+
+	var leaves objarray
+	if err := leaves.UnmarshalROOT(r); err != nil {
+		return err
+	}
+	tree.leaves = leaves.arr[:leaves.last+1]
+
+	r.CheckByteCount(pos, bcnt, beg, "TTree")
 	return r.Err()
 }
 
