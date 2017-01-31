@@ -127,7 +127,18 @@ type StreamerInfo interface {
 	Named
 	CheckSum() int
 	ClassVersion() int
-	Elements() ObjArray
+	Elements() []StreamerElement
+}
+
+// StreamerElement describes a ROOT StreamerElement
+type StreamerElement interface {
+	Named
+	ArrayDim() int
+	ArrayLen() int
+	Type() int
+	Offset() uintptr
+	Size() uintptr
+	TypeName() string
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can

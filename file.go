@@ -247,11 +247,15 @@ func (f *File) readStreamerInfo() error {
 }
 
 // StreamerInfo returns the list of StreamerInfos of this file.
-func (f *File) StreamerInfo() []Object {
+func (f *File) StreamerInfo() []StreamerInfo {
 	objs := f.siKey.Value().(List)
-	infos := make([]Object, objs.Len())
-	for i := range infos {
-		infos[i] = objs.At(i)
+	infos := make([]StreamerInfo, 0, objs.Len())
+	for i := 0; i < objs.Len(); i++ {
+		obj, ok := objs.At(i).(StreamerInfo)
+		if !ok {
+			continue
+		}
+		infos = append(infos, obj)
 	}
 	return infos
 }

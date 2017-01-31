@@ -85,6 +85,7 @@ func TestReadRBuffer(t *testing.T) {
 		{
 			name: "TObjArray",
 			want: &objarray{
+				obj:   tobject{uuid: 0, bits: 50331648},
 				named: named{name: "my-objs"},
 				arr: []Object{
 					&named{name: "n0", title: "t0"},

@@ -54,12 +54,12 @@ func main() {
 		if *dumpSI {
 			fmt.Printf("streamer-infos:\n")
 			sinfos := f.StreamerInfo()
-			for i, v := range sinfos {
-				name := v.Class()
-				if vv, ok := v.(rootio.Named); ok {
-					name = vv.Name()
+			for _, v := range sinfos {
+				name := v.Name()
+				fmt.Printf(" StreamerInfo for %q version=%d title=%q\n", name, v.ClassVersion(), v.Title())
+				for _, elm := range v.Elements() {
+					fmt.Printf("  %-15s %-20s offset=%3d type=%3d %s\n", elm.TypeName(), elm.Name(), elm.Offset(), elm.Type(), elm.Title())
 				}
-				fmt.Printf(" %02d: %s\n", i, name)
 			}
 		}
 

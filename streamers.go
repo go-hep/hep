@@ -13,7 +13,7 @@ type tstreamerInfo struct {
 	named  named
 	chksum uint32
 	clsver int32
-	elems  ObjArray
+	elems  []StreamerElement
 }
 
 func (tsi *tstreamerInfo) Class() string {
@@ -36,7 +36,7 @@ func (tsi *tstreamerInfo) ClassVersion() int {
 	return int(tsi.clsver)
 }
 
-func (tsi *tstreamerInfo) Elements() ObjArray {
+func (tsi *tstreamerInfo) Elements() []StreamerElement {
 	return tsi.elems
 }
 
@@ -53,7 +53,12 @@ func (tsi *tstreamerInfo) UnmarshalROOT(r *RBuffer) error {
 	tsi.clsver = r.ReadI32()
 	objs := r.ReadObjectAny()
 
-	tsi.elems = objs.(ObjArray)
+	elems := objs.(ObjArray)
+	tsi.elems = make([]StreamerElement, elems.Len())
+	for i := range tsi.elems {
+		elem := elems.At(i)
+		tsi.elems[i] = elem.(StreamerElement)
+	}
 
 	r.CheckByteCount(pos, bcnt, start, "TStreamerInfo")
 	return r.Err()
@@ -79,6 +84,30 @@ func (tse *tstreamerElement) Name() string {
 
 func (tse *tstreamerElement) Title() string {
 	return tse.named.Title()
+}
+
+func (tse *tstreamerElement) ArrayDim() int {
+	return int(tse.arrdim)
+}
+
+func (tse *tstreamerElement) ArrayLen() int {
+	return int(tse.arrlen)
+}
+
+func (tse *tstreamerElement) Type() int {
+	return int(tse.etype)
+}
+
+func (tse *tstreamerElement) Offset() uintptr {
+	return 0
+}
+
+func (tse *tstreamerElement) Size() uintptr {
+	return uintptr(tse.esize)
+}
+
+func (tse *tstreamerElement) TypeName() string {
+	return tse.ename
 }
 
 func (tse *tstreamerElement) UnmarshalROOT(r *RBuffer) error {
@@ -124,6 +153,30 @@ func (tsb *tstreamerBase) Title() string {
 	return tsb.tse.Title()
 }
 
+func (tsb *tstreamerBase) ArrayDim() int {
+	return tsb.tse.ArrayDim()
+}
+
+func (tsb *tstreamerBase) ArrayLen() int {
+	return tsb.tse.ArrayLen()
+}
+
+func (tsb *tstreamerBase) Type() int {
+	return tsb.tse.Type()
+}
+
+func (tsb *tstreamerBase) Offset() uintptr {
+	return tsb.tse.Offset()
+}
+
+func (tsb *tstreamerBase) Size() uintptr {
+	return tsb.tse.Size()
+}
+
+func (tsb *tstreamerBase) TypeName() string {
+	return tsb.tse.TypeName()
+}
+
 func (tsb *tstreamerBase) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
@@ -154,6 +207,30 @@ func (tsb *tstreamerBasicType) Name() string {
 
 func (tsb *tstreamerBasicType) Title() string {
 	return tsb.tse.Title()
+}
+
+func (tsb *tstreamerBasicType) ArrayDim() int {
+	return tsb.tse.ArrayDim()
+}
+
+func (tsb *tstreamerBasicType) ArrayLen() int {
+	return tsb.tse.ArrayLen()
+}
+
+func (tsb *tstreamerBasicType) Type() int {
+	return tsb.tse.Type()
+}
+
+func (tsb *tstreamerBasicType) Offset() uintptr {
+	return tsb.tse.Offset()
+}
+
+func (tsb *tstreamerBasicType) Size() uintptr {
+	return tsb.tse.Size()
+}
+
+func (tsb *tstreamerBasicType) TypeName() string {
+	return tsb.tse.TypeName()
 }
 
 func (tsb *tstreamerBasicType) UnmarshalROOT(r *RBuffer) error {
@@ -214,6 +291,30 @@ func (tsb *tstreamerBasicPointer) Title() string {
 	return tsb.tse.Title()
 }
 
+func (tsb *tstreamerBasicPointer) ArrayDim() int {
+	return tsb.tse.ArrayDim()
+}
+
+func (tsb *tstreamerBasicPointer) ArrayLen() int {
+	return tsb.tse.ArrayLen()
+}
+
+func (tsb *tstreamerBasicPointer) Type() int {
+	return tsb.tse.Type()
+}
+
+func (tsb *tstreamerBasicPointer) Offset() uintptr {
+	return tsb.tse.Offset()
+}
+
+func (tsb *tstreamerBasicPointer) Size() uintptr {
+	return tsb.tse.Size()
+}
+
+func (tsb *tstreamerBasicPointer) TypeName() string {
+	return tsb.tse.TypeName()
+}
+
 func (tsb *tstreamerBasicPointer) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -247,6 +348,30 @@ func (tso *tstreamerObject) Title() string {
 	return tso.tse.Title()
 }
 
+func (tsb *tstreamerObject) ArrayDim() int {
+	return tsb.tse.ArrayDim()
+}
+
+func (tsb *tstreamerObject) ArrayLen() int {
+	return tsb.tse.ArrayLen()
+}
+
+func (tsb *tstreamerObject) Type() int {
+	return tsb.tse.Type()
+}
+
+func (tsb *tstreamerObject) Offset() uintptr {
+	return tsb.tse.Offset()
+}
+
+func (tsb *tstreamerObject) Size() uintptr {
+	return tsb.tse.Size()
+}
+
+func (tsb *tstreamerObject) TypeName() string {
+	return tsb.tse.TypeName()
+}
+
 func (tso *tstreamerObject) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -274,6 +399,30 @@ func (tso *tstreamerObjectPointer) Name() string {
 
 func (tso *tstreamerObjectPointer) Title() string {
 	return tso.tse.Title()
+}
+
+func (tsb *tstreamerObjectPointer) ArrayDim() int {
+	return tsb.tse.ArrayDim()
+}
+
+func (tsb *tstreamerObjectPointer) ArrayLen() int {
+	return tsb.tse.ArrayLen()
+}
+
+func (tsb *tstreamerObjectPointer) Type() int {
+	return tsb.tse.Type()
+}
+
+func (tsb *tstreamerObjectPointer) Offset() uintptr {
+	return tsb.tse.Offset()
+}
+
+func (tsb *tstreamerObjectPointer) Size() uintptr {
+	return tsb.tse.Size()
+}
+
+func (tsb *tstreamerObjectPointer) TypeName() string {
+	return tsb.tse.TypeName()
 }
 
 func (tso *tstreamerObjectPointer) UnmarshalROOT(r *RBuffer) error {
@@ -305,6 +454,30 @@ func (tso *tstreamerObjectAny) Title() string {
 	return tso.tse.Title()
 }
 
+func (tsb *tstreamerObjectAny) ArrayDim() int {
+	return tsb.tse.ArrayDim()
+}
+
+func (tsb *tstreamerObjectAny) ArrayLen() int {
+	return tsb.tse.ArrayLen()
+}
+
+func (tsb *tstreamerObjectAny) Type() int {
+	return tsb.tse.Type()
+}
+
+func (tsb *tstreamerObjectAny) Offset() uintptr {
+	return tsb.tse.Offset()
+}
+
+func (tsb *tstreamerObjectAny) Size() uintptr {
+	return tsb.tse.Size()
+}
+
+func (tsb *tstreamerObjectAny) TypeName() string {
+	return tsb.tse.TypeName()
+}
+
 func (tso *tstreamerObjectAny) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -332,6 +505,30 @@ func (tss *tstreamerString) Name() string {
 
 func (tss *tstreamerString) Title() string {
 	return tss.tse.Title()
+}
+
+func (tsb *tstreamerString) ArrayDim() int {
+	return tsb.tse.ArrayDim()
+}
+
+func (tsb *tstreamerString) ArrayLen() int {
+	return tsb.tse.ArrayLen()
+}
+
+func (tsb *tstreamerString) Type() int {
+	return tsb.tse.Type()
+}
+
+func (tsb *tstreamerString) Offset() uintptr {
+	return tsb.tse.Offset()
+}
+
+func (tsb *tstreamerString) Size() uintptr {
+	return tsb.tse.Size()
+}
+
+func (tsb *tstreamerString) TypeName() string {
+	return tsb.tse.TypeName()
 }
 
 func (tss *tstreamerString) UnmarshalROOT(r *RBuffer) error {
@@ -363,6 +560,30 @@ func (tss *tstreamerSTL) Name() string {
 
 func (tss *tstreamerSTL) Title() string {
 	return tss.tse.Title()
+}
+
+func (tsb *tstreamerSTL) ArrayDim() int {
+	return tsb.tse.ArrayDim()
+}
+
+func (tsb *tstreamerSTL) ArrayLen() int {
+	return tsb.tse.ArrayLen()
+}
+
+func (tsb *tstreamerSTL) Type() int {
+	return tsb.tse.Type()
+}
+
+func (tsb *tstreamerSTL) Offset() uintptr {
+	return tsb.tse.Offset()
+}
+
+func (tsb *tstreamerSTL) Size() uintptr {
+	return tsb.tse.Size()
+}
+
+func (tsb *tstreamerSTL) TypeName() string {
+	return tsb.tse.TypeName()
 }
 
 func (tss *tstreamerSTL) UnmarshalROOT(r *RBuffer) error {
@@ -486,36 +707,45 @@ var _ ROOTUnmarshaler = (*tstreamerInfo)(nil)
 
 var _ Object = (*tstreamerElement)(nil)
 var _ Named = (*tstreamerElement)(nil)
+var _ StreamerElement = (*tstreamerElement)(nil)
 var _ ROOTUnmarshaler = (*tstreamerElement)(nil)
 
 var _ Object = (*tstreamerBase)(nil)
 var _ Named = (*tstreamerBase)(nil)
+var _ StreamerElement = (*tstreamerBase)(nil)
 var _ ROOTUnmarshaler = (*tstreamerBase)(nil)
 
 var _ Object = (*tstreamerBasicType)(nil)
 var _ Named = (*tstreamerBasicType)(nil)
+var _ StreamerElement = (*tstreamerBasicType)(nil)
 var _ ROOTUnmarshaler = (*tstreamerBasicType)(nil)
 
 var _ Object = (*tstreamerBasicPointer)(nil)
 var _ Named = (*tstreamerBasicPointer)(nil)
+var _ StreamerElement = (*tstreamerBasicPointer)(nil)
 var _ ROOTUnmarshaler = (*tstreamerBasicPointer)(nil)
 
 var _ Object = (*tstreamerObject)(nil)
 var _ Named = (*tstreamerObject)(nil)
+var _ StreamerElement = (*tstreamerObject)(nil)
 var _ ROOTUnmarshaler = (*tstreamerObject)(nil)
 
 var _ Object = (*tstreamerObjectPointer)(nil)
 var _ Named = (*tstreamerObjectPointer)(nil)
+var _ StreamerElement = (*tstreamerObjectPointer)(nil)
 var _ ROOTUnmarshaler = (*tstreamerObjectPointer)(nil)
 
 var _ Object = (*tstreamerObjectAny)(nil)
 var _ Named = (*tstreamerObjectAny)(nil)
+var _ StreamerElement = (*tstreamerObjectAny)(nil)
 var _ ROOTUnmarshaler = (*tstreamerObjectAny)(nil)
 
 var _ Object = (*tstreamerString)(nil)
 var _ Named = (*tstreamerString)(nil)
+var _ StreamerElement = (*tstreamerString)(nil)
 var _ ROOTUnmarshaler = (*tstreamerString)(nil)
 
 var _ Object = (*tstreamerSTL)(nil)
 var _ Named = (*tstreamerSTL)(nil)
+var _ StreamerElement = (*tstreamerSTL)(nil)
 var _ ROOTUnmarshaler = (*tstreamerSTL)(nil)
