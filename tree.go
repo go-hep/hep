@@ -165,16 +165,59 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
-func init() {
-	f := func() reflect.Value {
-		o := &ttree{}
-		return reflect.ValueOf(o)
+type tntuple struct {
+	ttree
+	nvars int
+}
+
+func (nt *tntuple) Class() string {
+	return "TNtuple"
+}
+
+func (nt *tntuple) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
 	}
-	Factory.add("TTree", f)
-	Factory.add("*rootio.ttree", f)
+
+	beg := r.Pos()
+	/*vers*/ _, pos, bcnt := r.ReadVersion()
+
+	if err := nt.ttree.UnmarshalROOT(r); err != nil {
+		r.err = err
+		return r.err
+	}
+
+	nt.nvars = int(r.ReadI32())
+
+	r.CheckByteCount(pos, bcnt, beg, "TNtuple")
+	return r.err
+}
+
+func init() {
+	{
+		f := func() reflect.Value {
+			o := &ttree{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TTree", f)
+		Factory.add("*rootio.ttree", f)
+	}
+	{
+		f := func() reflect.Value {
+			o := &tntuple{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TNtuple", f)
+		Factory.add("*rootio.tntuple", f)
+	}
 }
 
 var _ Object = (*ttree)(nil)
 var _ Named = (*ttree)(nil)
 var _ Tree = (*ttree)(nil)
 var _ ROOTUnmarshaler = (*ttree)(nil)
+
+var _ Object = (*tntuple)(nil)
+var _ Named = (*tntuple)(nil)
+var _ Tree = (*tntuple)(nil)
+var _ ROOTUnmarshaler = (*tntuple)(nil)
