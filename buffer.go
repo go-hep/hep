@@ -7,13 +7,15 @@ package rootio
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"math"
 	"reflect"
+	"sort"
 )
 
-func (k *Key) DecodeVector(in *bytes.Buffer, dst interface{}) (int, error) {
+func (k *Key) decodeVector(in *bytes.Buffer, dst interface{}) (int, error) {
 	// Discard three int16s (like 40 00 00 0e 00 09)
 	x := in.Next(6)
 	_ = x // sometimes we want to look at this.
@@ -31,33 +33,54 @@ func (k *Key) DecodeVector(in *bytes.Buffer, dst interface{}) (int, error) {
 	return int(n), nil
 }
 
-// RBuffer is a read-only ROOT buffer for streaming.
-type RBuffer struct {
-	r    *bytes.Reader
-	err  error
-	klen uint32
-	refs map[int64]interface{}
+type rbuff interface {
+	io.Reader
+	io.Seeker
+	io.ReaderAt
 }
 
-func NewRBuffer(data []byte, refs map[int64]interface{}, klen uint32) *RBuffer {
+// RBuffer is a read-only ROOT buffer for streaming.
+type RBuffer struct {
+	r      rbuff
+	err    error
+	offset uint32
+	refs   map[int64]interface{}
+}
+
+func NewRBufferFrom(r rbuff, refs map[int64]interface{}, offset uint32) *RBuffer {
 	if refs == nil {
 		refs = make(map[int64]interface{})
 	}
 
 	return &RBuffer{
-		r:    bytes.NewReader(data),
-		refs: refs,
-		klen: klen,
+		r:      r,
+		refs:   refs,
+		offset: offset,
+	}
+}
+
+func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32) *RBuffer {
+	if refs == nil {
+		refs = make(map[int64]interface{})
+	}
+
+	return &RBuffer{
+		r:      bytes.NewReader(data),
+		refs:   refs,
+		offset: offset,
 	}
 }
 
 func (r *RBuffer) Pos() int64 {
 	pos, _ := r.r.Seek(0, io.SeekCurrent)
-	return pos
+	return pos + int64(r.offset)
 }
 
 func (r *RBuffer) Len() int64 {
-	return int64(r.r.Len())
+	pos, _ := r.r.Seek(0, io.SeekCurrent)
+	end, _ := r.r.Seek(0, io.SeekEnd)
+	r.r.Seek(pos, io.SeekStart)
+	return end - pos
 }
 
 func (r *RBuffer) Err() error {
@@ -77,6 +100,32 @@ func (r *RBuffer) bytes() []byte {
 	io.ReadFull(r.r, out)
 	r.r.Seek(pos, io.SeekStart)
 	return out
+}
+
+func (r *RBuffer) dumpRefs() {
+	fmt.Printf("--- refs ---\n")
+	ids := make([]int64, 0, len(r.refs))
+	for k := range r.refs {
+		ids = append(ids, k)
+	}
+	sort.Sort(int64Slice(ids))
+	for _, id := range ids {
+		fmt.Printf(" id=%4d -> %v\n", id, r.refs[id])
+	}
+}
+
+type int64Slice []int64
+
+func (p int64Slice) Len() int           { return len(p) }
+func (p int64Slice) Less(i, j int) bool { return p[i] < p[j] }
+func (p int64Slice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+func (r *RBuffer) dumpHex(n int) {
+	buf := r.bytes()
+	if len(buf) > n {
+		buf = buf[:n]
+	}
+	fmt.Printf("--- hex --- (pos=%d len=%d)\n%s\n", r.Pos(), r.Len(), string(hex.Dump(buf)))
 }
 
 func (r *RBuffer) ReadString() string {
@@ -122,6 +171,18 @@ func (r *RBuffer) ReadCString(n int) string {
 		}
 	}
 	return string(buf)
+}
+
+func (r *RBuffer) ReadBool() bool {
+	if r.err != nil {
+		return false
+	}
+
+	v := r.ReadI8()
+	if v != 0 {
+		return true
+	}
+	return false
 }
 
 func (r *RBuffer) ReadI8() int8 {
@@ -295,6 +356,63 @@ func (r *RBuffer) ReadFastArrayI32(n int) []int32 {
 	return arr
 }
 
+func (r *RBuffer) ReadFastArrayI64(n int) []int64 {
+	if r.err != nil {
+		return nil
+	}
+	if n <= 0 || int64(n) > r.Len() {
+		return nil
+	}
+
+	arr := make([]int64, n)
+	for i := range arr {
+		arr[i] = r.ReadI64()
+	}
+
+	if r.err != nil {
+		return nil
+	}
+	return arr
+}
+
+func (r *RBuffer) ReadFastArrayF32(n int) []float32 {
+	if r.err != nil {
+		return nil
+	}
+	if n <= 0 || int64(n) > r.Len() {
+		return nil
+	}
+
+	arr := make([]float32, n)
+	for i := range arr {
+		arr[i] = r.ReadF32()
+	}
+
+	if r.err != nil {
+		return nil
+	}
+	return arr
+}
+
+func (r *RBuffer) ReadFastArrayF64(n int) []float64 {
+	if r.err != nil {
+		return nil
+	}
+	if n <= 0 || int64(n) > r.Len() {
+		return nil
+	}
+
+	arr := make([]float64, n)
+	for i := range arr {
+		arr[i] = r.ReadF64()
+	}
+
+	if r.err != nil {
+		return nil
+	}
+	return arr
+}
+
 func (r *RBuffer) ReadVersion() (vers int16, pos, n int32) {
 	if r.err != nil {
 		return
@@ -343,20 +461,24 @@ func (r *RBuffer) CheckByteCount(pos, count int32, start int64, class string) {
 	}
 
 	var (
-		n    = int64(pos) + int64(count) + 4
-		diff = r.Pos()
+		want = int64(pos) + int64(count) + 4
+		got  = r.Pos()
 	)
 
-	if diff == n {
+	switch {
+	case got == want:
 		return
-	}
 
-	if diff != n {
-		r.err = fmt.Errorf("rootio.CheckByteCount: len=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
-			n, diff, pos, count, start, class,
+	case got > want:
+		r.err = fmt.Errorf("rootio.CheckByteCount: read too many bytes. cur=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
+			got, want, pos, count, start, class,
 		)
-		fmt.Printf("*** err: %v\n", r.err)
-		panic(r.err) // FIXME(sbinet)
+		return
+
+	case got < want:
+		r.err = fmt.Errorf("rootio.CheckByteCount: read too few bytes. cur=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
+			got, want, pos, count, start, class,
+		)
 		return
 	}
 
@@ -385,155 +507,104 @@ func (r *RBuffer) ReadObject(class string) Object {
 }
 
 func (r *RBuffer) ReadObjectAny() (obj Object) {
+	return r.readObjectRef()
+}
+
+func (r *RBuffer) readObjectRef() (obj Object) {
 	if r.err != nil {
 		return obj
 	}
 
-	start := r.Pos()
-
-	name, count, isref := r.ReadClass()
-	if isref {
-		panic("rootio: not implemented")
-	} else {
-		switch name {
-		case "":
-			obj = nil
-			r.r.Seek(start+int64(count)+4, io.SeekStart)
-		default:
-			fct := Factory.get(name)
-			obj = fct().Interface().(Object)
-			if err := obj.(ROOTUnmarshaler).UnmarshalROOT(r); err != nil {
-				r.err = err
-			}
-			r.r.Seek(start+int64(count)+4, io.SeekStart)
-		}
-	}
-
-	return obj
-}
-
-func (r *RBuffer) ReadClass() (name string, count uint32, isref bool) {
-	if r.err != nil {
-		return
-	}
-
-	i := r.ReadU32()
-	switch {
-	case i == kNullTag:
-		fmt.Printf("+++ kNullTag\n")
-
-	case i&kByteCountMask != 0:
-		clstag := r.ReadClassTag()
-		if clstag == "" {
-			panic("rootio: empty class tag")
-		}
-		name = clstag
-		count = uint32(int64(i) & ^kByteCountMask)
-	default:
-		count = uint32(i)
-		isref = true
-	}
-	return name, count, isref
-}
-
-func (r *RBuffer) ReadClassTag() (clstag string) {
-	if r.err != nil {
-		return ""
-	}
-
-	tag := r.ReadU32()
-	switch {
-	case tag == kNewClassTag:
-		clstag = r.ReadCString(80)
-
-	case (int64(tag) & int64(kClassMask)) != 0:
-		ref := uint32(int64(tag) & ^kClassMask)
-		ref -= r.klen
-		pos := r.Pos()
-		defer r.r.Seek(pos, io.SeekStart)
-		r.r.Seek(-(pos - int64(ref-kMapOffset)), io.SeekCurrent)
-		clstag = r.ReadClassTag()
-	default:
-		panic(fmt.Errorf("rootio: unknown class-tag: %v\n", tag))
-	}
-	return clstag
-}
-
-/*
-func (r *RBuffer) ReadObjectRef() Object {
-	if r.err != nil {
-		return nil
-	}
-
+	beg := r.Pos()
 	var (
-		objStartPos = r.Pos()
-		tag         uint32
-		vers        uint32
-		startPos    int64
-		bcnt        = r.ReadI32()
+		tag   uint32
+		vers  int32
+		start int64
+		bcnt  = r.ReadU32()
 	)
 
-	if bcnt&kByteCountMask == 0 || int64(bcnt) == kNewClassTag {
-		tag = uint32(bcnt)
+	if int64(bcnt)&kByteCountMask == 0 || int64(bcnt) == kNewClassTag {
+		tag = bcnt
 		bcnt = 0
 	} else {
 		vers = 1
-		startPos = r.Pos()
+		start = r.Pos()
 		tag = r.ReadU32()
 	}
 
 	tag64 := int64(tag)
-
-	if tag64&kClassMask == 0 {
-		fmt.Printf("--> kClassMask\n")
-		switch tag64 {
-		case 0:
+	switch {
+	case tag64&kClassMask == 0:
+		if tag64 == 0 {
 			return nil
-		case 1:
-			// FIXME(sbinet): tag==1 means "self", but we don't currently have self available
-			panic("rootio: tag==1 'self' not implemented")
+		}
+		// FIXME(sbinet): tag==1 means "self". not implemented yet.
+		if tag == 1 {
 			return nil
 		}
 
-		obj := r.refs[tag64]
-		if obj == nil {
-			panic(fmt.Errorf("rootio: invalid object ref [%d]", tag64))
-		}
-		return obj.(Object)
-	}
-
-	if tag64 == kNewClassTag {
-		cname := r.ReadCString(80)
-
-		fct := Factory.get(cname)
-
-		if vers > 0 {
-			r.refs[startPos+kMapOffset] = fct
-		} else {
-			r.refs[int64(len(r.refs)+1)] = fct
-		}
-
-		obj := fct().Interface().(Object)
-
-		if vers > 0 {
-			r.refs[objStartPos+kMapOffset] = obj
-		} else {
-			r.refs[int64(len(r.refs)+1)] = obj
-		}
-		if r.err != nil {
+		o, ok := r.refs[tag64]
+		if !ok {
+			r.dumpRefs()
+			r.err = fmt.Errorf("rootio: invalid tag [%v] found", tag64)
 			return nil
 		}
-
-		r.err = obj.(ROOTUnmarshaler).UnmarshalROOT(r)
-		if r.err != nil {
+		obj, ok = o.(Object)
+		if !ok {
+			r.err = fmt.Errorf("rootio: invalid tag [%v] found (not a rootio.Object)", tag64)
 			return nil
 		}
 		return obj
 
-	} else {
-		tag64 &= ^kClassMask
-	}
+	case tag64 == kNewClassTag:
+		cname := r.ReadCString(80)
+		fct := Factory.get(cname)
 
-	return nil
+		if vers > 0 {
+			r.refs[start+kMapOffset] = fct
+		} else {
+			r.refs[int64(len(r.refs))+1] = fct
+		}
+
+		obj = fct().Interface().(Object)
+		if err := obj.(ROOTUnmarshaler).UnmarshalROOT(r); err != nil {
+			r.err = err
+			return nil
+		}
+
+		if vers > 0 {
+			r.refs[beg+kMapOffset] = obj
+		} else {
+			r.refs[int64(len(r.refs))+1] = obj
+		}
+		return obj
+
+	default:
+		ref := tag64 & ^kClassMask
+		cls, ok := r.refs[ref]
+		if !ok {
+			r.err = fmt.Errorf("rootio: invalid class-tag reference [%v] found", ref)
+			return nil
+		}
+
+		fct, ok := cls.(FactoryFct)
+		if !ok {
+			r.err = fmt.Errorf("rootio: invalid class-tag reference [%v] found (not a rootio.FactoryFct)", ref)
+			return nil
+		}
+
+		obj = fct().Interface().(Object)
+		if vers > 0 {
+			r.refs[beg+kMapOffset] = obj
+		} else {
+			r.refs[int64(len(r.refs))+1] = obj
+		}
+
+		if err := obj.(ROOTUnmarshaler).UnmarshalROOT(r); err != nil {
+			r.err = err
+			return nil
+		}
+		return obj
+	}
+	panic("unreachable")
 }
-*/

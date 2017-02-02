@@ -7,10 +7,11 @@ package rootio
 import (
 	"fmt"
 	"io"
+	"reflect"
 	"time"
 )
 
-type directory struct {
+type tdirectory struct {
 	ctime      time.Time // time of directory's creation
 	mtime      time.Time // time of directory's last modification
 	nbyteskeys int32     // number of bytes for the keys
@@ -19,13 +20,13 @@ type directory struct {
 	seekparent int64     // location of parent directory on file
 	seekkeys   int64     // location of Keys record on file
 
-	named named // name+title of this directory
-	file  *File // pointer to current file in memory
+	named tnamed // name+title of this directory
+	file  *File  // pointer to current file in memory
 	keys  []Key
 }
 
 // recordSize returns the size of the directory header in bytes
-func (dir *directory) recordSize(version int32) int64 {
+func (dir *tdirectory) recordSize(version int32) int64 {
 	var nbytes int64
 	nbytes += 2 // fVersion
 	nbytes += 4 // ctime
@@ -45,7 +46,7 @@ func (dir *directory) recordSize(version int32) int64 {
 	return nbytes
 }
 
-func (dir *directory) readDirInfo() error {
+func (dir *tdirectory) readDirInfo() error {
 	f := dir.file
 	nbytes := int64(f.nbytesname) + dir.recordSize(f.version)
 
@@ -105,7 +106,7 @@ func (dir *directory) readDirInfo() error {
 	return r.Err()
 }
 
-func (dir *directory) readKeys() error {
+func (dir *tdirectory) readKeys() error {
 	var err error
 	if dir.seekkeys <= 0 {
 		return nil
@@ -117,50 +118,42 @@ func (dir *directory) readKeys() error {
 	}
 
 	hdr := Key{f: dir.file}
-	err = hdr.Read()
+	err = hdr.UnmarshalROOT(NewRBufferFrom(dir.file, nil, 0))
 	if err != nil {
 		return err
 	}
-	//myprintf("==> hdr: %#v\n", hdr)
 
 	_, err = dir.file.Seek(dir.seekkeys+int64(hdr.keylen), io.SeekStart)
 	if err != nil {
 		return err
 	}
-	data := make([]byte, 4)
-	_, err = dir.file.Read(data)
-	if err != nil {
-		return err
-	}
 
-	r := NewRBuffer(data, nil, 0)
-
+	r := NewRBufferFrom(dir.file, nil, 0)
 	nkeys := r.ReadI32()
-	for i := 0; i < int(nkeys); i++ {
-		err = dir.readKey()
+	if r.Err() != nil {
+		return r.err
+	}
+	dir.keys = make([]Key, int(nkeys))
+	for i := range dir.keys {
+		k := &dir.keys[i]
+		k.f = dir.file
+		err := k.UnmarshalROOT(r)
 		if err != nil {
 			return err
 		}
 	}
-	return r.Err()
+	return nil
 }
 
-// readKey reads a key and appends it to dir.keys
-func (dir *directory) readKey() error {
-	dir.keys = append(dir.keys, Key{f: dir.file})
-	key := &(dir.keys[len(dir.keys)-1])
-	return key.Read()
-}
-
-func (dir *directory) Class() string {
+func (dir *tdirectory) Class() string {
 	return "TDirectory"
 }
 
-func (dir *directory) Name() string {
+func (dir *tdirectory) Name() string {
 	return dir.named.Name()
 }
 
-func (dir *directory) Title() string {
+func (dir *tdirectory) Title() string {
 	return dir.named.Title()
 }
 
@@ -173,7 +166,7 @@ func (dir *directory) Title() string {
 //     foo   : get object named foo in memory
 //             if object is not in memory, try with highest cycle from file
 //     foo;1 : get cycle 1 of foo on file
-func (dir *directory) Get(namecycle string) (Object, bool) {
+func (dir *tdirectory) Get(namecycle string) (Object, bool) {
 	name, cycle := decodeNameCycle(namecycle)
 	for _, k := range dir.keys {
 		if k.Name() == name {
@@ -190,7 +183,7 @@ func (dir *directory) Get(namecycle string) (Object, bool) {
 	return nil, false
 }
 
-func (dir *directory) UnmarshalROOT(r *RBuffer) error {
+func (dir *tdirectory) UnmarshalROOT(r *RBuffer) error {
 	var (
 		version = r.ReadI16()
 		ctime   = r.ReadU32()
@@ -216,7 +209,16 @@ func (dir *directory) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
-var _ Object = (*directory)(nil)
-var _ Named = (*directory)(nil)
-var _ Directory = (*directory)(nil)
-var _ ROOTUnmarshaler = (*directory)(nil)
+func init() {
+	f := func() reflect.Value {
+		o := &tdirectory{}
+		return reflect.ValueOf(o)
+	}
+	Factory.add("TDirectory", f)
+	Factory.add("*rootio.tdirectory", f)
+}
+
+var _ Object = (*tdirectory)(nil)
+var _ Named = (*tdirectory)(nil)
+var _ Directory = (*tdirectory)(nil)
+var _ ROOTUnmarshaler = (*tdirectory)(nil)

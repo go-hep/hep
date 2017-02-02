@@ -11,26 +11,26 @@ import "reflect"
 // to identify a derived object in containers, directories and files.
 // Most member functions defined in this base class are in general
 // overridden by the derived classes.
-type named struct {
+type tnamed struct {
 	name  string
 	title string
 }
 
 // Name returns the name of the instance
-func (n *named) Name() string {
+func (n *tnamed) Name() string {
 	return n.name
 }
 
 // Title returns the title of the instance
-func (n *named) Title() string {
+func (n *tnamed) Title() string {
 	return n.title
 }
 
-func (n *named) Class() string {
+func (n *tnamed) Class() string {
 	return "TNamed"
 }
 
-func (n *named) UnmarshalROOT(r *RBuffer) error {
+func (n *tnamed) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
 	myprintf("named: %v %v %v\n", vers, pos, bcnt)
@@ -53,13 +53,13 @@ func (n *named) UnmarshalROOT(r *RBuffer) error {
 
 func init() {
 	f := func() reflect.Value {
-		o := &named{}
+		o := &tnamed{}
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TNamed", f)
-	Factory.add("*rootio.named", f)
+	Factory.add("*rootio.tnamed", f)
 }
 
-var _ Object = (*named)(nil)
-var _ Named = (*named)(nil)
-var _ ROOTUnmarshaler = (*named)(nil)
+var _ Object = (*tnamed)(nil)
+var _ Named = (*tnamed)(nil)
+var _ ROOTUnmarshaler = (*tnamed)(nil)

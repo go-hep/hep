@@ -62,17 +62,13 @@ func (k *Key) Title() string {
 	return k.title
 }
 
-// Bytes returns the buffer of bytes corresponding to the Key's value
-func (k *Key) Bytes() ([]byte, error) {
-	if !k.read {
-		data, err := k.load()
-		if err != nil {
-			return nil, err
-		}
-		k.data = data
-		k.read = true
+// Value returns the data corresponding to the Key's value
+func (k *Key) Value() interface{} {
+	v, err := k.Object()
+	if err != nil {
+		panic(err)
 	}
-	return k.data, nil
+	return v
 }
 
 // Object returns the (ROOT) object corresponding to the Key's value.
@@ -107,27 +103,39 @@ func (k *Key) Object() (Object, error) {
 		return nil, err
 	}
 
-	// FIXME: hack.
-	if vv, ok := obj.(*Tree); ok {
-		vv.f = k.f
+	if vv, ok := obj.(SetFiler); ok {
+		vv.SetFile(k.f)
 	}
 
 	return obj, nil
 }
 
-// Note: this contains ZL[src][dst] where src and dst are 3 bytes each.
-// Won't bother with this for the moment, since we can cross-check against
-// objlen.
-const rootHDRSIZE = 9
+// Bytes returns the buffer of bytes corresponding to the Key's value
+func (k *Key) Bytes() ([]byte, error) {
+	if !k.read {
+		data, err := k.load()
+		if err != nil {
+			return nil, err
+		}
+		k.data = data
+		k.read = true
+	}
+	return k.data, nil
+}
 
 func (k *Key) load() ([]byte, error) {
 	var buf bytes.Buffer
 	if k.isCompressed() {
+		// Note: this contains ZL[src][dst] where src and dst are 3 bytes each.
+		// Won't bother with this for the moment, since we can cross-check against
+		// objlen.
+		const rootHDRSIZE = 9
+
 		start := k.seekkey + int64(k.keylen) + rootHDRSIZE
 		r := io.NewSectionReader(k.f, start, int64(k.bytes)-int64(k.keylen))
 		rc, err := zlib.NewReader(r)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
 		_, err = io.Copy(&buf, rc)
@@ -145,101 +153,8 @@ func (k *Key) load() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// Value returns the data corresponding to the Key's value
-func (k *Key) Value() interface{} {
-	v, err := k.Object()
-	if err != nil {
-		panic(err)
-	}
-	return v
-}
-
-/*
-// Return Basket data associated with this key, if there is any
-func (k *Key) AsBasket() *Basket {
-	if k.classname != "TBasket" {
-		panic("rootio.Key: Key is not a basket!")
-	}
-	b := &Basket{}
-	_, err := k.f.Seek(int64(k.pdat), io.SeekStart)
-	if err != nil {
-		panic(fmt.Errorf("rootio.Key: %v", err))
-	}
-
-	dec := rootDecoder{r: k.f}
-	err = dec.readBin(b)
-	if err != nil {
-		panic(fmt.Errorf("rootio.Key: %v", err))
-	}
-	return b
-}
-*/
-
 func (k *Key) isCompressed() bool {
 	return k.objlen != k.bytes-k.keylen
-}
-
-func (k *Key) Read() error {
-	var err error
-	f := k.f
-
-	key_offset := f.Tell()
-	myprintf("Key::Read -- @%v\n", key_offset)
-
-	data := make([]byte, 8)
-	_, err = io.ReadFull(f, data[:])
-	if err != nil {
-		return err
-	}
-
-	r := NewRBuffer(data, nil, 0)
-
-	k.bytes = r.ReadI32()
-	if r.Err() != nil {
-		return r.Err()
-	}
-
-	myprintf("Key::Read -- @%v => %v\n", key_offset, k.bytes)
-
-	if k.bytes < 0 {
-		if k.classname == "[GAP]" {
-			_, err = k.f.Seek(int64(-k.bytes)-4, io.SeekCurrent)
-			if err != nil {
-				return err
-			}
-			return k.Read()
-		} else {
-			return fmt.Errorf("rootio.Key: invalid bytes size [%v]", k.bytes)
-		}
-	}
-
-	data = make([]byte, int(k.bytes))
-	_, err = f.ReadAt(data, key_offset)
-	if err != nil {
-		return err
-	}
-
-	r = NewRBuffer(data, nil, uint32(k.keylen))
-	err = k.UnmarshalROOT(r)
-	if err != nil {
-		return err
-	}
-
-	if k.seekkey == 0 {
-		k.seekkey = key_offset
-	}
-
-	if k.seekkey != key_offset {
-		err = fmt.Errorf(
-			"rootio.Key: Consistency failure: key offset %v doesn't match actual offset %v",
-			k.seekkey, key_offset,
-		)
-		//fmt.Printf("*** %v\n", err)
-		//panic(err)
-	}
-
-	_, err = k.f.Seek(int64(key_offset+int64(k.bytes)), io.SeekStart)
-	return err
 }
 
 // UnmarshalROOT decodes the content of data into the Key
@@ -248,12 +163,8 @@ func (k *Key) UnmarshalROOT(r *RBuffer) error {
 		return r.Err()
 	}
 
-	myprintf("--- key ---\n")
 	k.bytes = r.ReadI32()
-	myprintf("key-nbytes:  %v\n", k.bytes)
-
 	if k.bytes < 0 {
-		myprintf("Jumping gap: %v\n", k.bytes)
 		k.classname = "[GAP]"
 		return nil
 	}

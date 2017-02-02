@@ -12,12 +12,12 @@ import (
 type Basket struct {
 	*Key
 
-	Version      uint16
-	Buffersize   int32 // length in bytes
-	Evbuffersize int32 // length in int_t or fixed length of each entry
-	Nevbuf       int32 // number of entries in basket
-	Last         int32 // pointer to last used byte in basket
-	Flag         byte
+	vers    uint16
+	bufsize int // length in bytes
+	nevsize int // length in int_t or fixed length of each entry
+	nevbuf  int // number of entries in basket
+	last    int // pointer to last used byte in basket
+	flag    byte
 }
 
 func (b *Basket) Class() string {
@@ -25,6 +25,10 @@ func (b *Basket) Class() string {
 }
 
 func (b *Basket) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
+	}
+
 	if err := b.Key.UnmarshalROOT(r); err != nil {
 		return err
 	}
@@ -33,22 +37,33 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 		return fmt.Errorf("rootio.Basket: Key is not a Basket")
 	}
 
-	b.Version = r.ReadU16()
-	b.Buffersize = r.ReadI32()
-	b.Evbuffersize = r.ReadI32()
+	b.vers = r.ReadU16()
+	b.bufsize = int(r.ReadI32())
+	b.nevsize = int(r.ReadI32())
 
-	if b.Evbuffersize < 0 {
-		err := fmt.Errorf("rootio.Basket: incorrect Evbuffersize [%v]", b.Evbuffersize)
-		b.Evbuffersize = 0
-		return err
+	if b.nevsize < 0 {
+		r.err = fmt.Errorf("rootio.Basket: incorrect event buffer size [%v]", b.nevsize)
+		b.nevsize = 0
+		return r.err
 	}
 
-	b.Nevbuf = r.ReadI32()
-	b.Last = r.ReadI32()
-	b.Flag = r.ReadU8()
-	if b.Last > b.Buffersize {
-		b.Buffersize = b.Last
+	b.nevbuf = int(r.ReadI32())
+	b.last = int(r.ReadI32())
+	b.flag = r.ReadU8()
+
+	if b.last > b.bufsize {
+		b.bufsize = b.last
 	}
+
+	fmt.Printf("+++ TBasket: %q %q vers=%d bufsize=%d nevsize=%d nevbuf=%d last=%v flag=0x%x\n",
+		b.Name(), b.Title(), b.vers, b.bufsize, b.nevsize, b.nevbuf, b.last, b.flag,
+	)
+
+	if b.flag == 0 {
+		return r.Err()
+	}
+
+	panic("not implemented")
 
 	return r.Err()
 }

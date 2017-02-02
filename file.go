@@ -76,7 +76,7 @@ type File struct {
 	nbytesinfo  int32 // sizeof(TStreamerInfo)
 	uuid        [18]byte
 
-	dir   directory // root directory of this file
+	dir   tdirectory // root directory of this file
 	siKey Key
 }
 
@@ -93,7 +93,7 @@ func Open(path string) (*File, error) {
 		Reader: fd,
 		id:     path,
 	}
-	f.dir = directory{file: f}
+	f.dir = tdirectory{file: f}
 
 	err = f.readHeader()
 	if err != nil {
@@ -228,7 +228,7 @@ func (f *File) Class() string {
 
 // readStreamerInfo reads the list of StreamerInfo from this file
 func (f *File) readStreamerInfo() error {
-	if !(f.seekinfo > 0 && f.seekinfo < f.end) {
+	if f.seekinfo <= 0 || f.seekinfo >= f.end {
 		return fmt.Errorf("rootio: invalid pointer to StreamerInfo (pos=%v end=%v)", f.seekinfo, f.end)
 
 	}

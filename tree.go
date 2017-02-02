@@ -5,70 +5,73 @@
 package rootio
 
 import (
-	"encoding/hex"
 	"fmt"
 	"reflect"
 )
 
-// A Tree object is a list of Branch.
+// A ttree object is a list of Branch.
 //   To Create a TTree object one must:
 //    - Create the TTree header via the TTree constructor
 //    - Call the TBranch constructor for every branch.
 //
 //   To Fill this object, use member function Fill with no parameters
 //     The Fill function loops on all defined TBranch
-type Tree struct {
+type ttree struct {
 	f *File // underlying file
 
-	named named
+	named tnamed
 
 	entries  int64 // Number of entries
 	totbytes int64 // Total number of bytes in all branches before compression
 	zipbytes int64 // Total number of bytes in all branches after  compression
 
-	branches []Object // list of branches
-	leaves   []Object // direct pointers to individual branch leaves
+	branches []Branch // list of branches
+	leaves   []Leaf   // direct pointers to individual branch leaves
 }
 
-func (tree *Tree) Class() string {
-	return "TTree" //tree.classname
+func (tree *ttree) Class() string {
+	return "TTree"
 }
 
-func (tree *Tree) Name() string {
+func (tree *ttree) Name() string {
 	return tree.named.Name()
 }
 
-func (tree *Tree) Title() string {
+func (tree *ttree) Title() string {
 	return tree.named.Title()
 }
 
-func (tree *Tree) Entries() int64 {
+func (tree *ttree) Entries() int64 {
 	return tree.entries
 }
 
-func (tree *Tree) TotBytes() int64 {
+func (tree *ttree) TotBytes() int64 {
 	return tree.totbytes
 }
 
-func (tree *Tree) ZipBytes() int64 {
+func (tree *ttree) ZipBytes() int64 {
 	return tree.zipbytes
+}
+
+func (tree *ttree) Branches() []Branch {
+	return tree.branches
+}
+
+func (tree *ttree) Leaves() []Leaf {
+	return tree.leaves
+}
+
+func (tree *ttree) SetFile(f *File) {
+	tree.f = f
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
-func (tree *Tree) UnmarshalROOT(r *RBuffer) error {
+func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
 	vers, pos, bcnt := r.ReadVersion()
 	myprintf(">>> => [%v] [%v] [%v]\n", pos, vers, bcnt)
-	fmt.Printf("--- Tree vers=%d pos=%d count=%d\n", vers, pos, bcnt)
-	{
-		buf := r.bytes()
-		if len(buf) > 256 {
-			buf = buf[:256]
-		}
-		fmt.Printf("--- hex ---\n%s\n", string(hex.Dump(buf)))
-	}
 
 	for _, a := range []ROOTUnmarshaler{
 		&tree.named,
@@ -89,13 +92,6 @@ func (tree *Tree) UnmarshalROOT(r *RBuffer) error {
 			vers,
 		)
 	}
-
-	// FIXME: hack. where do these 18 bytes come from ?
-	// var trash [18]byte
-	// err = dec.readBin(&trash)
-	// if err != nil {
-	// 	return err
-	// }
 
 	tree.entries = r.ReadI64()
 	tree.totbytes = r.ReadI64()
@@ -132,25 +128,38 @@ func (tree *Tree) UnmarshalROOT(r *RBuffer) error {
 	_ = r.ReadI64() // fEstimate
 
 	if vers >= 19 { // FIXME
-		if nclus == 0 {
-			_ = r.ReadI8() // fClusterRangeEnd
-			_ = r.ReadI8() // fClusterSize
-		} else {
-			panic("not implemented")
-		}
+		_ = r.ReadI8()
+		_ = r.ReadFastArrayI64(nclus) // fClusterRangeEnd
+		_ = r.ReadI8()
+		_ = r.ReadFastArrayI64(nclus) // fClusterSize
 	}
 
 	var branches objarray
 	if err := branches.UnmarshalROOT(r); err != nil {
 		return err
 	}
-	tree.branches = branches.arr[:branches.last+1]
+	tree.branches = make([]Branch, branches.last+1)
+	for i := range tree.branches {
+		tree.branches[i] = branches.At(i).(Branch)
+		tree.branches[i].SetTree(tree)
+	}
 
 	var leaves objarray
 	if err := leaves.UnmarshalROOT(r); err != nil {
 		return err
 	}
-	tree.leaves = leaves.arr[:leaves.last+1]
+	tree.leaves = make([]Leaf, leaves.last+1)
+	for i := range tree.leaves {
+		tree.leaves[i] = leaves.At(i).(Leaf)
+		tree.leaves[i].SetBranch(tree.branches[i])
+	}
+
+	for _ = range []string{
+		"fAliases", "fIndexValues", "fIndex", "fTreeIndex", "fFriends",
+		"fUserInfo", "fBranchRef",
+	} {
+		_ = r.ReadObjectAny()
+	}
 
 	r.CheckByteCount(pos, bcnt, beg, "TTree")
 	return r.Err()
@@ -158,13 +167,14 @@ func (tree *Tree) UnmarshalROOT(r *RBuffer) error {
 
 func init() {
 	f := func() reflect.Value {
-		o := &Tree{}
+		o := &ttree{}
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TTree", f)
-	Factory.add("*rootio.Tree", f)
+	Factory.add("*rootio.ttree", f)
 }
 
-var _ Object = (*Tree)(nil)
-var _ Named = (*Tree)(nil)
-var _ ROOTUnmarshaler = (*Tree)(nil)
+var _ Object = (*ttree)(nil)
+var _ Named = (*ttree)(nil)
+var _ Tree = (*ttree)(nil)
+var _ ROOTUnmarshaler = (*ttree)(nil)

@@ -170,7 +170,7 @@ func TestFileReader(t *testing.T) {
 			buf = bytes.NewBuffer(data)
 		}
 
-		for i := 0; i < int(basket.Nevbuf); i++ {
+		for i := 0; i < int(basket.nevbuf); i++ {
 			data := reflect.New(table.t)
 			err := binary.Read(buf, binary.BigEndian, data.Interface())
 			if err != nil {

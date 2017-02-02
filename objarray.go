@@ -4,17 +4,14 @@
 
 package rootio
 
-import (
-	"fmt"
-	"reflect"
-)
+import "reflect"
 
 type objarray struct {
-	obj   tobject
-	named named
-	last  int
-	arr   []Object
-	low   int32
+	obj  tobject
+	name string
+	last int
+	arr  []Object
+	low  int32
 }
 
 func (arr *objarray) Class() string {
@@ -22,11 +19,15 @@ func (arr *objarray) Class() string {
 }
 
 func (arr *objarray) Name() string {
-	return arr.named.Name()
+	n := arr.name
+	if n == "" {
+		return "TObjArray"
+	}
+	return n
 }
 
 func (arr *objarray) Title() string {
-	return arr.named.Title()
+	return "An array of objects"
 }
 
 func (arr *objarray) At(i int) Object {
@@ -45,10 +46,6 @@ func (arr *objarray) LowerBound() int {
 	return int(arr.low)
 }
 
-func (arr *objarray) UpperBound() int {
-	panic("not implemented")
-}
-
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (arr *objarray) UnmarshalROOT(r *RBuffer) error {
@@ -62,23 +59,19 @@ func (arr *objarray) UnmarshalROOT(r *RBuffer) error {
 		}
 	}
 	if vers > 1 {
-		arr.named.name = r.ReadString()
+		arr.name = r.ReadString()
 	}
 
 	nobjs := int(r.ReadI32())
 	arr.low = r.ReadI32()
 
-	/*
-		if vers != 3 {
-			panic(fmt.Errorf("TObjArray-version: %d", vers))
-		}
-	*/
-
-	fmt.Printf("--> tobjs: %d|%d, vers=%d, bcnt=%d\n", nobjs, arr.low, vers, bcnt)
 	arr.arr = make([]Object, nobjs)
 	arr.last = -1
 	for i := range arr.arr {
 		obj := r.ReadObjectAny()
+		if r.err != nil {
+			panic(r.err.Error() + " (name=" + arr.Name() + ")" + " (name=" + arr.Name() + ")")
+		}
 		if obj != nil {
 			arr.last = i
 			arr.arr[i] = obj

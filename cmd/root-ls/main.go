@@ -58,7 +58,7 @@ func main() {
 				name := v.Name()
 				fmt.Printf(" StreamerInfo for %q version=%d title=%q\n", name, v.ClassVersion(), v.Title())
 				for _, elm := range v.Elements() {
-					fmt.Printf("  %-15s %-20s offset=%3d type=%3d %s\n", elm.TypeName(), elm.Name(), elm.Offset(), elm.Type(), elm.Title())
+					fmt.Printf("  %-15s %-20s offset=%3d type=%3d size=%3d %s\n", elm.TypeName(), elm.Name(), elm.Offset(), elm.Type(), elm.Size(), elm.Title())
 				}
 			}
 		}

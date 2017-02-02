@@ -18,6 +18,8 @@ import (
 	"reflect"
 )
 
+//go:generate go run ./gen-code.go
+
 // Class represents a ROOT class.
 // Class instances are created by a ClassFactory.
 type Class interface {
@@ -105,7 +107,6 @@ type List interface {
 type ObjArray interface {
 	SeqCollection
 	LowerBound() int
-	UpperBound() int
 }
 
 // Directory describes a ROOT directory structure in memory.
@@ -139,6 +140,50 @@ type StreamerElement interface {
 	Offset() uintptr
 	Size() uintptr
 	TypeName() string
+}
+
+// SetFiler is a simple interface to establish File ownership.
+type SetFiler interface {
+	SetFile(f *File)
+}
+
+// Tree is a collection of branches of data.
+type Tree interface {
+	Named
+	Entries() int64
+	TotBytes() int64
+	ZipBytes() int64
+	Branches() []Branch
+	Leaves() []Leaf
+}
+
+// Branch describes a branch of a ROOT Tree.
+type Branch interface {
+	Named
+	SetTree(Tree)
+}
+
+// Leaf describes branches data types
+type Leaf interface {
+	Named
+	ArrayDim() int
+	SetBranch(Branch)
+	Branch() Branch
+	HasRange() bool
+	IsUnsigned() bool
+	LeafCount() Leaf // returns the leaf count if is variable length
+	Len() int        // Len returns the number of fixed length elements
+	LenType() int    // LenType returns the number of bytes for this data type
+	MaxIndex() []int
+	Offset() int
+	Value(int) interface{}
+}
+
+// Array describes ROOT abstract array type.
+type Array interface {
+	Len() int // number of array elements
+	Get(i int) interface{}
+	Set(i int, v interface{})
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can

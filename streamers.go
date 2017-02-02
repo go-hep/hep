@@ -10,7 +10,7 @@ import (
 )
 
 type tstreamerInfo struct {
-	named  named
+	named  tnamed
 	chksum uint32
 	clsver int32
 	elems  []StreamerElement
@@ -52,12 +52,18 @@ func (tsi *tstreamerInfo) UnmarshalROOT(r *RBuffer) error {
 	tsi.chksum = r.ReadU32()
 	tsi.clsver = r.ReadI32()
 	objs := r.ReadObjectAny()
+	if r.err != nil {
+		return r.err
+	}
 
 	elems := objs.(ObjArray)
-	tsi.elems = make([]StreamerElement, elems.Len())
-	for i := range tsi.elems {
-		elem := elems.At(i)
-		tsi.elems[i] = elem.(StreamerElement)
+	tsi.elems = nil
+	if elems.Len() > 0 {
+		tsi.elems = make([]StreamerElement, elems.Len())
+		for i := range tsi.elems {
+			elem := elems.At(i)
+			tsi.elems[i] = elem.(StreamerElement)
+		}
 	}
 
 	r.CheckByteCount(pos, bcnt, start, "TStreamerInfo")
@@ -65,7 +71,7 @@ func (tsi *tstreamerInfo) UnmarshalROOT(r *RBuffer) error {
 }
 
 type tstreamerElement struct {
-	named  named
+	named  tnamed
 	etype  int32    // element type
 	esize  int32    // size of element
 	arrlen int32    // cumulative size of all array dims
@@ -137,56 +143,24 @@ func (tse *tstreamerElement) UnmarshalROOT(r *RBuffer) error {
 }
 
 type tstreamerBase struct {
-	tse      tstreamerElement
-	baseVers int32 // version number of the base class
+	tstreamerElement
+	vbase int32 // version number of the base class
 }
 
 func (tsb *tstreamerBase) Class() string {
 	return "TStreamerBase"
 }
 
-func (tsb *tstreamerBase) Name() string {
-	return tsb.tse.Name()
-}
-
-func (tsb *tstreamerBase) Title() string {
-	return tsb.tse.Title()
-}
-
-func (tsb *tstreamerBase) ArrayDim() int {
-	return tsb.tse.ArrayDim()
-}
-
-func (tsb *tstreamerBase) ArrayLen() int {
-	return tsb.tse.ArrayLen()
-}
-
-func (tsb *tstreamerBase) Type() int {
-	return tsb.tse.Type()
-}
-
-func (tsb *tstreamerBase) Offset() uintptr {
-	return tsb.tse.Offset()
-}
-
-func (tsb *tstreamerBase) Size() uintptr {
-	return tsb.tse.Size()
-}
-
-func (tsb *tstreamerBase) TypeName() string {
-	return tsb.tse.TypeName()
-}
-
 func (tsb *tstreamerBase) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
 
-	if err := tsb.tse.UnmarshalROOT(r); err != nil {
+	if err := tsb.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
 	if vers > 2 {
-		tsb.baseVers = r.ReadI32()
+		tsb.vbase = r.ReadI32()
 	}
 
 	r.CheckByteCount(pos, bcnt, beg, "TStreamerBase")
@@ -194,54 +168,22 @@ func (tsb *tstreamerBase) UnmarshalROOT(r *RBuffer) error {
 }
 
 type tstreamerBasicType struct {
-	tse tstreamerElement
+	tstreamerElement
 }
 
 func (tsb *tstreamerBasicType) Class() string {
 	return "TStreamerBasicType"
 }
 
-func (tsb *tstreamerBasicType) Name() string {
-	return tsb.tse.Name()
-}
-
-func (tsb *tstreamerBasicType) Title() string {
-	return tsb.tse.Title()
-}
-
-func (tsb *tstreamerBasicType) ArrayDim() int {
-	return tsb.tse.ArrayDim()
-}
-
-func (tsb *tstreamerBasicType) ArrayLen() int {
-	return tsb.tse.ArrayLen()
-}
-
-func (tsb *tstreamerBasicType) Type() int {
-	return tsb.tse.Type()
-}
-
-func (tsb *tstreamerBasicType) Offset() uintptr {
-	return tsb.tse.Offset()
-}
-
-func (tsb *tstreamerBasicType) Size() uintptr {
-	return tsb.tse.Size()
-}
-
-func (tsb *tstreamerBasicType) TypeName() string {
-	return tsb.tse.TypeName()
-}
-
 func (tsb *tstreamerBasicType) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 	/*vers*/ _, pos, bcnt := r.ReadVersion()
 
-	if err := tsb.tse.UnmarshalROOT(r); err != nil {
+	if err := tsb.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
-	etype := tsb.tse.etype
+	etype := tsb.tstreamerElement.etype
 	if kOffsetL < etype && etype < kOffsetP {
 		etype -= kOffsetL
 	}
@@ -249,31 +191,31 @@ func (tsb *tstreamerBasicType) UnmarshalROOT(r *RBuffer) error {
 	basic := true
 	switch etype {
 	case kBool, kUChar, kChar:
-		tsb.tse.esize = 1
+		tsb.tstreamerElement.esize = 1
 	case kUShort, kShort:
-		tsb.tse.esize = 2
+		tsb.tstreamerElement.esize = 2
 	case kBits, kUInt, kInt, kCounter:
-		tsb.tse.esize = 4
+		tsb.tstreamerElement.esize = 4
 	case kULong, kULong64, kLong, kLong64:
-		tsb.tse.esize = 8
+		tsb.tstreamerElement.esize = 8
 	case kFloat, kFloat16:
-		tsb.tse.esize = 4
+		tsb.tstreamerElement.esize = 4
 	case kDouble, kDouble32:
-		tsb.tse.esize = 8
+		tsb.tstreamerElement.esize = 8
 	case kCharStar:
-		tsb.tse.esize = int32(ptrSize)
+		tsb.tstreamerElement.esize = int32(ptrSize)
 	default:
 		basic = false
 	}
-	if basic && tsb.tse.arrlen > 0 {
-		tsb.tse.esize *= tsb.tse.arrlen
+	if basic && tsb.tstreamerElement.arrlen > 0 {
+		tsb.tstreamerElement.esize *= tsb.tstreamerElement.arrlen
 	}
 	r.CheckByteCount(pos, bcnt, beg, "TStreamerBasicType")
 	return r.Err()
 }
 
 type tstreamerBasicPointer struct {
-	tse   tstreamerElement
+	tstreamerElement
 	cvers int32  // version number of the class with the counter
 	cname string // name of data member holding the array count
 	ccls  string // name of the class with the counter
@@ -283,44 +225,12 @@ func (tsb *tstreamerBasicPointer) Class() string {
 	return "TStreamerBasicPointer"
 }
 
-func (tsb *tstreamerBasicPointer) Name() string {
-	return tsb.tse.Name()
-}
-
-func (tsb *tstreamerBasicPointer) Title() string {
-	return tsb.tse.Title()
-}
-
-func (tsb *tstreamerBasicPointer) ArrayDim() int {
-	return tsb.tse.ArrayDim()
-}
-
-func (tsb *tstreamerBasicPointer) ArrayLen() int {
-	return tsb.tse.ArrayLen()
-}
-
-func (tsb *tstreamerBasicPointer) Type() int {
-	return tsb.tse.Type()
-}
-
-func (tsb *tstreamerBasicPointer) Offset() uintptr {
-	return tsb.tse.Offset()
-}
-
-func (tsb *tstreamerBasicPointer) Size() uintptr {
-	return tsb.tse.Size()
-}
-
-func (tsb *tstreamerBasicPointer) TypeName() string {
-	return tsb.tse.TypeName()
-}
-
 func (tsb *tstreamerBasicPointer) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
 	/*vers*/ _, pos, bcnt := r.ReadVersion()
 
-	if err := tsb.tse.UnmarshalROOT(r); err != nil {
+	if err := tsb.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
@@ -333,43 +243,11 @@ func (tsb *tstreamerBasicPointer) UnmarshalROOT(r *RBuffer) error {
 }
 
 type tstreamerObject struct {
-	tse tstreamerElement
+	tstreamerElement
 }
 
 func (tso *tstreamerObject) Class() string {
 	return "TStreamerObject"
-}
-
-func (tso *tstreamerObject) Name() string {
-	return tso.tse.Name()
-}
-
-func (tso *tstreamerObject) Title() string {
-	return tso.tse.Title()
-}
-
-func (tsb *tstreamerObject) ArrayDim() int {
-	return tsb.tse.ArrayDim()
-}
-
-func (tsb *tstreamerObject) ArrayLen() int {
-	return tsb.tse.ArrayLen()
-}
-
-func (tsb *tstreamerObject) Type() int {
-	return tsb.tse.Type()
-}
-
-func (tsb *tstreamerObject) Offset() uintptr {
-	return tsb.tse.Offset()
-}
-
-func (tsb *tstreamerObject) Size() uintptr {
-	return tsb.tse.Size()
-}
-
-func (tsb *tstreamerObject) TypeName() string {
-	return tsb.tse.TypeName()
 }
 
 func (tso *tstreamerObject) UnmarshalROOT(r *RBuffer) error {
@@ -377,7 +255,7 @@ func (tso *tstreamerObject) UnmarshalROOT(r *RBuffer) error {
 
 	/*vers*/ _, pos, bcnt := r.ReadVersion()
 
-	if err := tso.tse.UnmarshalROOT(r); err != nil {
+	if err := tso.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
@@ -386,43 +264,11 @@ func (tso *tstreamerObject) UnmarshalROOT(r *RBuffer) error {
 }
 
 type tstreamerObjectPointer struct {
-	tse tstreamerElement
+	tstreamerElement
 }
 
 func (tso *tstreamerObjectPointer) Class() string {
 	return "TStreamerObjectPointer"
-}
-
-func (tso *tstreamerObjectPointer) Name() string {
-	return tso.tse.Name()
-}
-
-func (tso *tstreamerObjectPointer) Title() string {
-	return tso.tse.Title()
-}
-
-func (tsb *tstreamerObjectPointer) ArrayDim() int {
-	return tsb.tse.ArrayDim()
-}
-
-func (tsb *tstreamerObjectPointer) ArrayLen() int {
-	return tsb.tse.ArrayLen()
-}
-
-func (tsb *tstreamerObjectPointer) Type() int {
-	return tsb.tse.Type()
-}
-
-func (tsb *tstreamerObjectPointer) Offset() uintptr {
-	return tsb.tse.Offset()
-}
-
-func (tsb *tstreamerObjectPointer) Size() uintptr {
-	return tsb.tse.Size()
-}
-
-func (tsb *tstreamerObjectPointer) TypeName() string {
-	return tsb.tse.TypeName()
 }
 
 func (tso *tstreamerObjectPointer) UnmarshalROOT(r *RBuffer) error {
@@ -430,7 +276,7 @@ func (tso *tstreamerObjectPointer) UnmarshalROOT(r *RBuffer) error {
 
 	/*vers*/ _, pos, bcnt := r.ReadVersion()
 
-	if err := tso.tse.UnmarshalROOT(r); err != nil {
+	if err := tso.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
@@ -439,43 +285,11 @@ func (tso *tstreamerObjectPointer) UnmarshalROOT(r *RBuffer) error {
 }
 
 type tstreamerObjectAny struct {
-	tse tstreamerElement
+	tstreamerElement
 }
 
 func (tso *tstreamerObjectAny) Class() string {
 	return "TStreamerObjectAny"
-}
-
-func (tso *tstreamerObjectAny) Name() string {
-	return tso.tse.Name()
-}
-
-func (tso *tstreamerObjectAny) Title() string {
-	return tso.tse.Title()
-}
-
-func (tsb *tstreamerObjectAny) ArrayDim() int {
-	return tsb.tse.ArrayDim()
-}
-
-func (tsb *tstreamerObjectAny) ArrayLen() int {
-	return tsb.tse.ArrayLen()
-}
-
-func (tsb *tstreamerObjectAny) Type() int {
-	return tsb.tse.Type()
-}
-
-func (tsb *tstreamerObjectAny) Offset() uintptr {
-	return tsb.tse.Offset()
-}
-
-func (tsb *tstreamerObjectAny) Size() uintptr {
-	return tsb.tse.Size()
-}
-
-func (tsb *tstreamerObjectAny) TypeName() string {
-	return tsb.tse.TypeName()
 }
 
 func (tso *tstreamerObjectAny) UnmarshalROOT(r *RBuffer) error {
@@ -483,7 +297,7 @@ func (tso *tstreamerObjectAny) UnmarshalROOT(r *RBuffer) error {
 
 	/*vers*/ _, pos, bcnt := r.ReadVersion()
 
-	if err := tso.tse.UnmarshalROOT(r); err != nil {
+	if err := tso.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
@@ -491,44 +305,33 @@ func (tso *tstreamerObjectAny) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
+type tstreamerObjectAnyPointer struct {
+	tstreamerElement
+}
+
+func (tso *tstreamerObjectAnyPointer) Class() string {
+	return "TStreamerObjectAnyPointer"
+}
+
+func (tso *tstreamerObjectAnyPointer) UnmarshalROOT(r *RBuffer) error {
+	beg := r.Pos()
+
+	/*vers*/ _, pos, bcnt := r.ReadVersion()
+
+	if err := tso.tstreamerElement.UnmarshalROOT(r); err != nil {
+		return err
+	}
+
+	r.CheckByteCount(pos, bcnt, beg, "TStreamerObjectAnyPointer")
+	return r.Err()
+}
+
 type tstreamerString struct {
-	tse tstreamerElement
+	tstreamerElement
 }
 
 func (tss *tstreamerString) Class() string {
 	return "TStreamerString"
-}
-
-func (tss *tstreamerString) Name() string {
-	return tss.tse.Name()
-}
-
-func (tss *tstreamerString) Title() string {
-	return tss.tse.Title()
-}
-
-func (tsb *tstreamerString) ArrayDim() int {
-	return tsb.tse.ArrayDim()
-}
-
-func (tsb *tstreamerString) ArrayLen() int {
-	return tsb.tse.ArrayLen()
-}
-
-func (tsb *tstreamerString) Type() int {
-	return tsb.tse.Type()
-}
-
-func (tsb *tstreamerString) Offset() uintptr {
-	return tsb.tse.Offset()
-}
-
-func (tsb *tstreamerString) Size() uintptr {
-	return tsb.tse.Size()
-}
-
-func (tsb *tstreamerString) TypeName() string {
-	return tsb.tse.TypeName()
 }
 
 func (tss *tstreamerString) UnmarshalROOT(r *RBuffer) error {
@@ -536,7 +339,7 @@ func (tss *tstreamerString) UnmarshalROOT(r *RBuffer) error {
 
 	/*vers*/ _, pos, bcnt := r.ReadVersion()
 
-	if err := tss.tse.UnmarshalROOT(r); err != nil {
+	if err := tss.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
@@ -545,7 +348,7 @@ func (tss *tstreamerString) UnmarshalROOT(r *RBuffer) error {
 }
 
 type tstreamerSTL struct {
-	tse   tstreamerElement
+	tstreamerElement
 	vtype int32 // type of STL vector
 	ctype int32 // STL contained type
 }
@@ -554,44 +357,12 @@ func (tss *tstreamerSTL) Class() string {
 	return "TStreamerSTL"
 }
 
-func (tss *tstreamerSTL) Name() string {
-	return tss.tse.Name()
-}
-
-func (tss *tstreamerSTL) Title() string {
-	return tss.tse.Title()
-}
-
-func (tsb *tstreamerSTL) ArrayDim() int {
-	return tsb.tse.ArrayDim()
-}
-
-func (tsb *tstreamerSTL) ArrayLen() int {
-	return tsb.tse.ArrayLen()
-}
-
-func (tsb *tstreamerSTL) Type() int {
-	return tsb.tse.Type()
-}
-
-func (tsb *tstreamerSTL) Offset() uintptr {
-	return tsb.tse.Offset()
-}
-
-func (tsb *tstreamerSTL) Size() uintptr {
-	return tsb.tse.Size()
-}
-
-func (tsb *tstreamerSTL) TypeName() string {
-	return tsb.tse.TypeName()
-}
-
 func (tss *tstreamerSTL) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
 	/*vers*/ _, pos, bcnt := r.ReadVersion()
 
-	if err := tss.tse.UnmarshalROOT(r); err != nil {
+	if err := tss.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
@@ -600,9 +371,9 @@ func (tss *tstreamerSTL) UnmarshalROOT(r *RBuffer) error {
 
 	if tss.vtype == kSTLmultimap || tss.vtype == kSTLset {
 		switch {
-		case strings.HasPrefix(tss.tse.ename, "std::set") || strings.HasPrefix(tss.tse.ename, "set"):
+		case strings.HasPrefix(tss.tstreamerElement.ename, "std::set") || strings.HasPrefix(tss.tstreamerElement.ename, "set"):
 			tss.vtype = kSTLset
-		case strings.HasPrefix(tss.tse.ename, "std::multimap") || strings.HasPrefix(tss.tse.ename, "multimap"):
+		case strings.HasPrefix(tss.tstreamerElement.ename, "std::multimap") || strings.HasPrefix(tss.tstreamerElement.ename, "multimap"):
 			tss.vtype = kSTLmultimap
 		}
 	}
@@ -612,8 +383,50 @@ func (tss *tstreamerSTL) UnmarshalROOT(r *RBuffer) error {
 }
 
 func (tss *tstreamerSTL) isaPointer() bool {
-	tname := tss.tse.ename
+	tname := tss.tstreamerElement.ename
 	return strings.HasSuffix(tname, "*")
+}
+
+type tstreamerSTLstring struct {
+	tstreamerSTL
+}
+
+func (tss *tstreamerSTLstring) Class() string {
+	return "TStreamerSTLstring"
+}
+
+func (tss *tstreamerSTLstring) UnmarshalROOT(r *RBuffer) error {
+	beg := r.Pos()
+
+	/*vers*/ _, pos, bcnt := r.ReadVersion()
+
+	if err := tss.tstreamerSTL.UnmarshalROOT(r); err != nil {
+		return err
+	}
+
+	r.CheckByteCount(pos, bcnt, beg, "TStreamerSTLstring")
+	return r.Err()
+}
+
+type tstreamerArtificial struct {
+	tstreamerElement
+}
+
+func (tss *tstreamerArtificial) Class() string {
+	return "TStreamerSTLstring"
+}
+
+func (tsa *tstreamerArtificial) UnmarshalROOT(r *RBuffer) error {
+	beg := r.Pos()
+
+	/*vers*/ _, pos, bcnt := r.ReadVersion()
+
+	if err := tsa.tstreamerElement.UnmarshalROOT(r); err != nil {
+		return err
+	}
+
+	r.CheckByteCount(pos, bcnt, beg, "TStreamerArtificial")
+	return r.Err()
 }
 
 func init() {
@@ -684,6 +497,14 @@ func init() {
 	}
 	{
 		f := func() reflect.Value {
+			o := &tstreamerObjectAnyPointer{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TStreamerObjectAnyPointer", f)
+		Factory.add("*rootio.tstreamerObjectAnyPointer", f)
+	}
+	{
+		f := func() reflect.Value {
 			o := &tstreamerString{}
 			return reflect.ValueOf(o)
 		}
@@ -697,6 +518,27 @@ func init() {
 		}
 		Factory.add("TStreamerSTL", f)
 		Factory.add("*rootio.tstreamerSTL", f)
+	}
+	{
+		f := func() reflect.Value {
+			o := &tstreamerSTLstring{
+				tstreamerSTL: tstreamerSTL{
+					vtype: kSTLstring,
+					ctype: kSTLstring,
+				},
+			}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TStreamerSTLstring", f)
+		Factory.add("*rootio.tstreamerSTLstring", f)
+	}
+	{
+		f := func() reflect.Value {
+			o := &tstreamerArtificial{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TStreamerArtificial", f)
+		Factory.add("*rootio.tstreamerArtificial", f)
 	}
 }
 
@@ -749,3 +591,13 @@ var _ Object = (*tstreamerSTL)(nil)
 var _ Named = (*tstreamerSTL)(nil)
 var _ StreamerElement = (*tstreamerSTL)(nil)
 var _ ROOTUnmarshaler = (*tstreamerSTL)(nil)
+
+var _ Object = (*tstreamerSTLstring)(nil)
+var _ Named = (*tstreamerSTLstring)(nil)
+var _ StreamerElement = (*tstreamerSTLstring)(nil)
+var _ ROOTUnmarshaler = (*tstreamerSTLstring)(nil)
+
+var _ Object = (*tstreamerArtificial)(nil)
+var _ Named = (*tstreamerArtificial)(nil)
+var _ StreamerElement = (*tstreamerArtificial)(nil)
+var _ ROOTUnmarshaler = (*tstreamerArtificial)(nil)
