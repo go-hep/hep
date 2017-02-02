@@ -70,7 +70,7 @@ func (arr *objarray) UnmarshalROOT(r *RBuffer) error {
 	for i := range arr.arr {
 		obj := r.ReadObjectAny()
 		if r.err != nil {
-			panic(r.err.Error() + " (name=" + arr.Name() + ")" + " (name=" + arr.Name() + ")")
+			return r.err
 		}
 		if obj != nil {
 			arr.last = i

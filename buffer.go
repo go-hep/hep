@@ -76,6 +76,10 @@ func (r *RBuffer) Pos() int64 {
 	return pos + int64(r.offset)
 }
 
+func (r *RBuffer) setPos(pos int64) {
+	r.r.Seek(pos-int64(r.offset), io.SeekStart)
+}
+
 func (r *RBuffer) Len() int64 {
 	pos, _ := r.r.Seek(0, io.SeekCurrent)
 	end, _ := r.r.Seek(0, io.SeekEnd)
@@ -95,7 +99,7 @@ func (r *RBuffer) read(data []byte) {
 }
 
 func (r *RBuffer) bytes() []byte {
-	pos := r.Pos()
+	pos, _ := r.r.Seek(0, io.SeekCurrent)
 	out := make([]byte, int(r.Len()))
 	io.ReadFull(r.r, out)
 	r.r.Seek(pos, io.SeekStart)
@@ -125,7 +129,7 @@ func (r *RBuffer) dumpHex(n int) {
 	if len(buf) > n {
 		buf = buf[:n]
 	}
-	fmt.Printf("--- hex --- (pos=%d len=%d)\n%s\n", r.Pos(), r.Len(), string(hex.Dump(buf)))
+	fmt.Printf("--- hex --- (pos=%d len=%d end=%d)\n%s\n", r.Pos(), n, r.Len(), string(hex.Dump(buf)))
 }
 
 func (r *RBuffer) ReadString() string {
@@ -133,8 +137,9 @@ func (r *RBuffer) ReadString() string {
 		return ""
 	}
 
-	n := int(r.ReadU8())
-	if n == 255 {
+	u8 := r.ReadU8()
+	n := int(u8)
+	if u8 == 255 {
 		// large string
 		n = int(r.ReadU32())
 	}
@@ -451,6 +456,19 @@ func (r *RBuffer) SkipVersion(class string) {
 	}
 }
 
+func (r *RBuffer) chk(pos, count int32) bool {
+	if count <= 0 {
+		return true
+	}
+
+	var (
+		want = int64(pos) + int64(count) + 4
+		got  = r.Pos()
+	)
+
+	return got == want
+}
+
 func (r *RBuffer) CheckByteCount(pos, count int32, start int64, class string) {
 	if r.err != nil {
 		return
@@ -507,10 +525,6 @@ func (r *RBuffer) ReadObject(class string) Object {
 }
 
 func (r *RBuffer) ReadObjectAny() (obj Object) {
-	return r.readObjectRef()
-}
-
-func (r *RBuffer) readObjectRef() (obj Object) {
 	if r.err != nil {
 		return obj
 	}

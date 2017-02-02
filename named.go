@@ -31,23 +31,37 @@ func (n *tnamed) Class() string {
 }
 
 func (n *tnamed) UnmarshalROOT(r *RBuffer) error {
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("named: %v %v %v\n", vers, pos, bcnt)
+	if r.err != nil {
+		return r.err
+	}
+
+	beg := r.Pos()
+	/*vers*/ _, pos, bcnt := r.ReadVersion()
 
 	var (
 		_    = r.ReadU32() // id
 		bits = r.ReadU32() // bits
 	)
 	bits |= kIsOnHeap // by definition, de-serialized object is on heap
-	if (bits & kIsReferenced) == 0 {
+	if bits&kIsReferenced == 0 {
 		_ = r.ReadU16()
 	}
 
 	n.name = r.ReadString()
 	n.title = r.ReadString()
 
-	r.CheckByteCount(pos, bcnt, start, "TNamed")
+	if !r.chk(pos, bcnt) {
+		// FIXME(sbinet): horrible hack.
+		r.setPos(beg)
+		/*vers*/ _, pos, bcnt = r.ReadVersion()
+		_ = r.ReadU32()
+		bits = r.ReadU32()
+		bits |= kIsOnHeap
+		_ = r.ReadU16()
+		n.name = r.ReadString()
+		n.title = r.ReadString()
+	}
+	r.CheckByteCount(pos, bcnt, beg, "TNamed")
 	return r.Err()
 }
 

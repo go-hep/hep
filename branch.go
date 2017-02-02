@@ -12,21 +12,21 @@ import (
 type tbranch struct {
 	named          tnamed
 	attfill        attfill
-	compress       int       // compression level and algorithm
-	basketSize     int       // initial size of Basket buffer
-	entryOffsetLen int       // initial length of entryOffset table in the basket buffers
-	writeBasket    int       // last basket number written
-	entryNumber    int64     // current entry number (last one filled in this branch)
-	offset         int       // offset of this branch
-	maxBaskets     int       // maximum number of baskets so far
-	splitLevel     int       // branch split level
-	entries        int64     // number of entries
-	firstEntry     int64     // number of the first entry in this branch
-	totBytes       int64     // total number of bytes in all leaves before compression
-	zipBytes       int64     // total number of bytes in all leaves after compression
-	branches       []tbranch // list of branches of this branch
-	leaves         []Leaf    // list of leaves of this branch
-	baskets        []Basket  // list of baskets of this branch
+	compress       int      // compression level and algorithm
+	basketSize     int      // initial size of Basket buffer
+	entryOffsetLen int      // initial length of entryOffset table in the basket buffers
+	writeBasket    int      // last basket number written
+	entryNumber    int64    // current entry number (last one filled in this branch)
+	offset         int      // offset of this branch
+	maxBaskets     int      // maximum number of baskets so far
+	splitLevel     int      // branch split level
+	entries        int64    // number of entries
+	firstEntry     int64    // number of the first entry in this branch
+	totBytes       int64    // total number of bytes in all leaves before compression
+	zipBytes       int64    // total number of bytes in all leaves after compression
+	branches       []Branch // list of branches of this branch
+	leaves         []Leaf   // list of leaves of this branch
+	baskets        []Basket // list of baskets of this branch
 
 	basketBytes []int32 // length of baskets on file
 	basketEntry []int64 // table of first entry in each basket
@@ -108,10 +108,10 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 			r.err = err
 			return r.err
 		}
-		b.branches = make([]tbranch, branches.last+1)
+		b.branches = make([]Branch, branches.last+1)
 		for i := range b.branches {
-			br := branches.At(i).(*tbranch)
-			b.branches[i] = *br
+			br := branches.At(i).(Branch)
+			b.branches[i] = br
 		}
 	}
 
@@ -140,18 +140,18 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 		}
 	}
 
-	b.basketBytes = make([]int32, b.maxBaskets)
-	b.basketEntry = make([]int64, b.maxBaskets)
-	b.basketSeek = make([]int64, b.maxBaskets)
+	b.basketBytes = nil
+	b.basketEntry = nil
+	b.basketSeek = nil
 
 	/*isArray*/ _ = r.ReadI8()
-	copy(b.basketBytes, r.ReadFastArrayI32(b.maxBaskets))
+	b.basketBytes = r.ReadFastArrayI32(b.maxBaskets)
 
 	/*isArray*/ _ = r.ReadI8()
 	_ = r.ReadFastArrayI64(b.maxBaskets)
 
 	/*isArray*/ _ = r.ReadI8()
-	copy(b.basketSeek, r.ReadFastArrayI64(b.maxBaskets))
+	b.basketSeek = r.ReadFastArrayI64(b.maxBaskets)
 
 	b.fname = r.ReadString()
 
@@ -164,16 +164,94 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
-func init() {
-	f := func() reflect.Value {
-		o := &tbranch{}
-		return reflect.ValueOf(o)
+// tbranchElement is a Branch for objects.
+type tbranchElement struct {
+	tbranch
+	class   string          // class name of referenced object
+	parent  string          // name of parent class
+	clones  string          // named of class in TClonesArray (if any)
+	chksum  uint32          // checksum of class
+	clsver  uint16          // version number of class
+	id      int32           // element serial number in fInfo
+	btype   int32           // branch type
+	stype   int32           // branch streamer type
+	max     int32           // maximum entries for a TClonesArray or variable array
+	bcount1 *tbranchElement // pointer to primary branchcount branch
+	bcount2 *tbranchElement // pointer to secondary branchcount branch
+}
+
+func (b *tbranchElement) Class() string {
+	return "TBranchElement"
+}
+
+// ROOTUnmarshaler is the interface implemented by an object that can
+// unmarshal itself from a ROOT buffer
+func (b *tbranchElement) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
 	}
-	Factory.add("TBranch", f)
-	Factory.add("*rootio.tbranch", f)
+
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion()
+	if vers < 10 {
+		r.err = fmt.Errorf("rootio: TBranchElement version too old (%d < 10)", vers)
+		return r.err
+	}
+
+	if err := b.tbranch.UnmarshalROOT(r); err != nil {
+		r.err = err
+		return r.err
+	}
+
+	b.class = r.ReadString()
+	b.parent = r.ReadString()
+	b.clones = r.ReadString()
+	b.chksum = r.ReadU32()
+	b.clsver = r.ReadU16()
+	b.id = r.ReadI32()
+	b.btype = r.ReadI32()
+	b.stype = r.ReadI32()
+	b.max = r.ReadI32()
+
+	bcount1 := r.ReadObjectAny()
+	if bcount1 != nil {
+		b.bcount1 = bcount1.(*tbranchElement)
+	}
+
+	bcount2 := r.ReadObjectAny()
+	if bcount2 != nil {
+		b.bcount2 = bcount2.(*tbranchElement)
+	}
+
+	r.CheckByteCount(pos, bcnt, beg, "TBranchElement")
+	return r.err
+}
+
+func init() {
+	{
+		f := func() reflect.Value {
+			o := &tbranch{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TBranch", f)
+		Factory.add("*rootio.tbranch", f)
+	}
+	{
+		f := func() reflect.Value {
+			o := &tbranchElement{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TBranchElement", f)
+		Factory.add("*rootio.tbranchElement", f)
+	}
 }
 
 var _ Object = (*tbranch)(nil)
 var _ Named = (*tbranch)(nil)
 var _ Branch = (*tbranch)(nil)
 var _ ROOTUnmarshaler = (*tbranch)(nil)
+
+var _ Object = (*tbranchElement)(nil)
+var _ Named = (*tbranchElement)(nil)
+var _ Branch = (*tbranchElement)(nil)
+var _ ROOTUnmarshaler = (*tbranchElement)(nil)

@@ -76,9 +76,12 @@ func (leaf *tleaf) Value(int) interface{} {
 }
 
 func (leaf *tleaf) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
+	}
+
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("tleaf: %v %v %v\n", vers, pos, bcnt)
+	/*vers*/ _, pos, bcnt := r.ReadVersion()
 
 	if err := leaf.named.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -105,16 +108,62 @@ func (leaf *tleaf) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
-func init() {
-	f := func() reflect.Value {
-		o := &tleaf{}
-		return reflect.ValueOf(o)
+// tleafElement is a Leaf for a general object derived from Object.
+type tleafElement struct {
+	tleaf
+	id    int32 // element serial number in fInfo
+	ltype int32 // leaf type
+}
+
+func (leaf *tleafElement) Class() string {
+	return "TLeafElement"
+}
+
+func (leaf *tleafElement) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
 	}
-	Factory.add("TLeaf", f)
-	Factory.add("*rootio.tleaf", f)
+	beg := r.Pos()
+
+	/*vers*/ _, pos, bcnt := r.ReadVersion()
+
+	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
+		r.err = err
+		return r.err
+	}
+
+	leaf.id = r.ReadI32()
+	leaf.ltype = r.ReadI32()
+
+	r.CheckByteCount(pos, bcnt, beg, "TLeafElement")
+	return r.err
+}
+
+func init() {
+	{
+		f := func() reflect.Value {
+			o := &tleaf{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TLeaf", f)
+		Factory.add("*rootio.tleaf", f)
+	}
+	{
+		f := func() reflect.Value {
+			o := &tleafElement{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TLeafElement", f)
+		Factory.add("*rootio.tleafElement", f)
+	}
 }
 
 var _ Object = (*tleaf)(nil)
 var _ Named = (*tleaf)(nil)
 var _ Leaf = (*tleaf)(nil)
 var _ ROOTUnmarshaler = (*tleaf)(nil)
+
+var _ Object = (*tleafElement)(nil)
+var _ Named = (*tleafElement)(nil)
+var _ Leaf = (*tleafElement)(nil)
+var _ ROOTUnmarshaler = (*tleafElement)(nil)
