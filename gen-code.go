@@ -136,68 +136,14 @@ import (
 
 const leafTmpl = `// {{.Name}} implements ROOT T{{.Name}}
 type {{.Name}} struct {
-	leaf tleaf
+	tleaf
 	min	{{.Type}}
 	max {{.Type}}
-}
-
-// Name returns the name of the instance
-func (leaf *{{.Name}}) Name() string {
-	return leaf.leaf.Name()
-}
-
-// Title returns the title of the instance
-func (leaf *{{.Name}}) Title() string {
-	return leaf.leaf.Title()
 }
 
 // Class returns the ROOT class name.
 func (leaf *{{.Name}}) Class() string {
 	return "T{{.Name}}"
-}
-
-func (leaf *{{.Name}}) ArrayDim() int {
-	return leaf.leaf.ArrayDim()
-}
-
-func (leaf *{{.Name}}) SetBranch(b Branch) {
-	leaf.leaf.SetBranch(b)
-}
-
-func (leaf *{{.Name}}) Branch() Branch {
-	return leaf.leaf.Branch()
-}
-
-func (leaf *{{.Name}}) HasRange() bool {
-	return leaf.leaf.HasRange()
-}
-
-func (leaf *{{.Name}}) IsUnsigned() bool {
-	return leaf.leaf.IsUnsigned()
-}
-
-func (leaf *{{.Name}}) LeafCount() Leaf {
-	return leaf.leaf.LeafCount()
-}
-
-func (leaf *{{.Name}}) Len() int {
-	return leaf.leaf.Len()
-}
-
-func (leaf *{{.Name}}) LenType() int {
-	return leaf.leaf.LenType()
-}
-
-func (leaf *{{.Name}}) MaxIndex() []int {
-	return leaf.leaf.MaxIndex()
-}
-
-func (leaf *{{.Name}}) Offset() int {
-	return leaf.leaf.Offset()
-}
-
-func (leaf *{{.Name}}) Value(i int) interface{} {
-	return leaf.leaf.Value(i)
 }
 
 // Minimum returns the minimum value of the leaf.
@@ -215,7 +161,7 @@ func (leaf *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion()
 	myprintf("{{.Name}}: %v %v %v\n", vers, pos, bcnt)
 
-	if err := leaf.leaf.UnmarshalROOT(r); err != nil {
+	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
 		return r.err
 	}
