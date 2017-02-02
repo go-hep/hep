@@ -65,7 +65,7 @@ func TestReadRBuffer(t *testing.T) {
 	for _, test := range []struct {
 		name string
 		file string
-		want Object
+		want ROOTUnmarshaler
 	}{
 		{
 			name: "TNamed",
@@ -1383,6 +1383,26 @@ func TestReadRBuffer(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "TArrayI",
+			file: "testdata/tarrayi.dat",
+			want: &ArrayI{Data: []int32{0, 1, 2, 3, 4}},
+		},
+		{
+			name: "TArrayL64",
+			file: "testdata/tarrayl64.dat",
+			want: &ArrayL64{Data: []int64{0, 1, 2, 3, 4}},
+		},
+		{
+			name: "TArrayF",
+			file: "testdata/tarrayf.dat",
+			want: &ArrayF{Data: []float32{0, 1, 2, 3, 4}},
+		},
+		{
+			name: "TArrayD",
+			file: "testdata/tarrayd.dat",
+			want: &ArrayD{Data: []float64{0, 1, 2, 3, 4}},
+		},
 	} {
 		test := test
 		file := test.file
@@ -1395,15 +1415,15 @@ func TestReadRBuffer(t *testing.T) {
 	}
 }
 
-func testReadRBuffer(t *testing.T, name, file string, want Object) {
+func testReadRBuffer(t *testing.T, name, file string, want interface{}) {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	r := NewRBuffer(data, nil, 0)
-	obj := Factory.get(want.Class())().Interface().(Object)
-	err = obj.(ROOTUnmarshaler).UnmarshalROOT(r)
+	obj := Factory.get(name)().Interface().(ROOTUnmarshaler)
+	err = obj.UnmarshalROOT(r)
 	if err != nil {
 		t.Fatal(err)
 	}
