@@ -3,7 +3,7 @@
 
 all: build test
 	@echo "#############################"
-	root-ls -sinfos ./testdata/small.root
+	root-ls -sinfos -t ./testdata/small.root
 	@echo "## bye."
 
 build: gen

@@ -16,15 +16,16 @@ import (
 )
 
 var (
-	g_prof = flag.String("profile", "", "filename of cpuprofile")
+	doProf = flag.String("profile", "", "filename of cpuprofile")
 	dumpSI = flag.Bool("sinfos", false, "dump StreamerInfos")
+	doTree = flag.Bool("t", false, "print Tree recursively")
 )
 
 func main() {
 	flag.Parse()
 
-	if *g_prof != "" {
-		f, err := os.Create(*g_prof)
+	if *doProf != "" {
+		f, err := os.Create(*doProf)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -65,6 +66,15 @@ func main() {
 
 		for _, k := range f.Keys() {
 			fmt.Printf("%-8s %-40s %s\n", k.Class(), k.Name(), k.Title())
+			if *doTree {
+				tree, ok := k.Value().(rootio.Tree)
+				if !ok {
+					continue
+				}
+				for _, b := range tree.Branches() {
+					fmt.Printf("  %-20s %-20q %v\n", b.Name(), b.Title(), b.Class())
+				}
+			}
 		}
 	}
 }
