@@ -17,8 +17,8 @@ import (
 
 var (
 	doProf = flag.String("profile", "", "filename of cpuprofile")
-	dumpSI = flag.Bool("sinfos", false, "dump StreamerInfos")
-	doTree = flag.Bool("t", false, "print Tree recursively")
+	doSI   = flag.Bool("sinfos", false, "print StreamerInfos")
+	doTree = flag.Bool("t", false, "print Tree(s) (recursively)")
 )
 
 func main() {
@@ -52,7 +52,7 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Printf("version: %v\n", f.Version())
-		if *dumpSI {
+		if *doSI {
 			fmt.Printf("streamer-infos:\n")
 			sinfos := f.StreamerInfo()
 			for _, v := range sinfos {
@@ -65,16 +65,18 @@ func main() {
 		}
 
 		for _, k := range f.Keys() {
-			fmt.Printf("%-8s %-40s %s\n", k.Class(), k.Name(), k.Title())
 			if *doTree {
 				tree, ok := k.Value().(rootio.Tree)
+				fmt.Printf("%-8s %-40s %s (entries=%d)\n", k.Class(), k.Name(), k.Title(), tree.Entries())
 				if !ok {
 					continue
 				}
 				for _, b := range tree.Branches() {
 					fmt.Printf("  %-20s %-20q %v\n", b.Name(), b.Title(), b.Class())
 				}
+				continue
 			}
+			fmt.Printf("%-8s %-40s %s\n", k.Class(), k.Name(), k.Title())
 		}
 	}
 }
