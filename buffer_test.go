@@ -88,6 +88,15 @@ func TestReadRBuffer(t *testing.T) {
 			},
 		},
 		{
+			name: "TNamed",
+			file: "testdata/tnamed-long-string.dat",
+			want: &tnamed{
+				obj:   tobject{id: 0x0, bits: 0x3000000},
+				name:  strings.Repeat("*", 256),
+				title: "my-title",
+			},
+		},
+		{
 			name: "TList",
 			want: &tlist{
 				name: "list-name",
