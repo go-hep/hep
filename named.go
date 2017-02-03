@@ -12,6 +12,7 @@ import "reflect"
 // Most member functions defined in this base class are in general
 // overridden by the derived classes.
 type tnamed struct {
+	obj   tobject
 	name  string
 	title string
 }
@@ -38,15 +39,9 @@ func (n *tnamed) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 	/*vers*/ _, pos, bcnt := r.ReadVersion()
 
-	var (
-		_    = r.ReadU32() // id
-		bits = r.ReadU32() // bits
-	)
-	bits &= 0xffffff00 // FIXME(sbinet): horrible hack
-
-	bits |= kIsOnHeap // by definition, de-serialized object is on heap
-	if bits&kIsReferenced == 0 {
-		_ = r.ReadU16()
+	if err := n.obj.UnmarshalROOT(r); err != nil {
+		r.err = err
+		return r.err
 	}
 
 	n.name = r.ReadString()

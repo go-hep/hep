@@ -69,37 +69,43 @@ func TestReadRBuffer(t *testing.T) {
 	}{
 		{
 			name: "TNamed",
-			want: &tnamed{name: "my-name", title: "my-title"},
+			want: &tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "my-name", title: "my-title"},
 		},
 		{
 			name: "TNamed",
 			file: "testdata/tnamed-cmssw.dat",
-			want: &tnamed{name: "edmTriggerResults_TriggerResults__HLT.present", title: "edmTriggerResults_TriggerResults__HLT.present"},
+			want: &tnamed{
+				obj:  tobject{id: 0x0, bits: 0x3000000},
+				name: "edmTriggerResults_TriggerResults__HLT.present", title: "edmTriggerResults_TriggerResults__HLT.present",
+			},
 		},
 		{
 			name: "TNamed",
 			file: "testdata/tnamed-cmssw-2.dat",
-			want: &tnamed{name: "edmTriggerResults_TriggerResults__HLT.present", title: "edmTriggerResults_TriggerResults__HLT.present"},
+			want: &tnamed{
+				obj:  tobject{id: 0x0, bits: 0x3500000},
+				name: "edmTriggerResults_TriggerResults__HLT.present", title: "edmTriggerResults_TriggerResults__HLT.present",
+			},
 		},
 		{
 			name: "TList",
 			want: &tlist{
 				name: "list-name",
 				objs: []Object{
-					&tnamed{name: "n0", title: "t0"},
-					&tnamed{name: "n1", title: "t1"},
+					&tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "n0", title: "t0"},
+					&tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "n1", title: "t1"},
 				},
 			},
 		},
 		{
 			name: "TObjArray",
 			want: &objarray{
-				obj:  tobject{uuid: 0, bits: 50331648},
+				obj:  tobject{id: 0x0, bits: 0x3000000},
 				name: "my-objs",
 				arr: []Object{
-					&tnamed{name: "n0", title: "t0"},
-					&tnamed{name: "n1", title: "t1"},
-					&tnamed{name: "n2", title: "t2"},
+					&tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "n0", title: "t0"},
+					&tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "n1", title: "t1"},
+					&tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "n2", title: "t2"},
 				},
 				last: 2,
 			},
@@ -111,13 +117,13 @@ func TestReadRBuffer(t *testing.T) {
 				name: "",
 				objs: []Object{
 					&tstreamerInfo{
-						named:  tnamed{name: "TTree", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TTree", title: ""},
 						chksum: 0xa2a28f2,
 						clsver: 19,
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TNamed", title: "The basis for a named object (name, title)"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TNamed", title: "The basis for a named object (name, title)"},
 									etype:  67,
 									esize:  0,
 									arrlen: 0,
@@ -129,7 +135,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TAttLine", title: "Line attributes"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TAttLine", title: "Line attributes"},
 									etype:  0,
 									esize:  0,
 									arrlen: 0,
@@ -141,7 +147,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TAttFill", title: "Fill area attributes"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TAttFill", title: "Fill area attributes"},
 									etype:  0,
 									esize:  0,
 									arrlen: 0,
@@ -153,7 +159,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TAttMarker", title: "Marker attributes"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TAttMarker", title: "Marker attributes"},
 									etype:  0,
 									esize:  0,
 									arrlen: 0,
@@ -165,7 +171,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fEntries", title: "Number of entries"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fEntries", title: "Number of entries"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -176,7 +182,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fTotBytes", title: "Total number of bytes in all branches before compression"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fTotBytes", title: "Total number of bytes in all branches before compression"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -187,7 +193,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fZipBytes", title: "Total number of bytes in all branches after compression"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fZipBytes", title: "Total number of bytes in all branches after compression"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -198,7 +204,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fSavedBytes", title: "Number of autosaved bytes"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fSavedBytes", title: "Number of autosaved bytes"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -209,7 +215,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fFlushedBytes", title: "Number of autoflushed bytes"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fFlushedBytes", title: "Number of autoflushed bytes"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -220,7 +226,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fWeight", title: "Tree weight (see TTree::SetWeight)"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fWeight", title: "Tree weight (see TTree::SetWeight)"},
 									etype:  8,
 									esize:  8,
 									arrlen: 0,
@@ -231,7 +237,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fTimerInterval", title: "Timer interval in milliseconds"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fTimerInterval", title: "Timer interval in milliseconds"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -242,7 +248,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fScanField", title: "Number of runs before prompting in Scan"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fScanField", title: "Number of runs before prompting in Scan"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -253,7 +259,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fUpdate", title: "Update frequency for EntryLoop"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fUpdate", title: "Update frequency for EntryLoop"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -264,7 +270,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fDefaultEntryOffsetLen", title: "Initial Length of fEntryOffset table in the basket buffers"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fDefaultEntryOffsetLen", title: "Initial Length of fEntryOffset table in the basket buffers"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -275,7 +281,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fNClusterRange", title: "Number of Cluster range in addition to the one defined by 'AutoFlush'"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fNClusterRange", title: "Number of Cluster range in addition to the one defined by 'AutoFlush'"},
 									etype:  6,
 									esize:  4,
 									arrlen: 0,
@@ -286,7 +292,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMaxEntries", title: "Maximum number of entries in case of circular buffers"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMaxEntries", title: "Maximum number of entries in case of circular buffers"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -297,7 +303,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMaxEntryLoop", title: "Maximum number of entries to process"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMaxEntryLoop", title: "Maximum number of entries to process"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -308,7 +314,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMaxVirtualSize", title: "Maximum total size of buffers kept in memory"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMaxVirtualSize", title: "Maximum total size of buffers kept in memory"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -319,7 +325,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fAutoSave", title: "Autosave tree when fAutoSave bytes produced"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fAutoSave", title: "Autosave tree when fAutoSave bytes produced"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -330,7 +336,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fAutoFlush", title: "Autoflush tree when fAutoFlush entries written"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fAutoFlush", title: "Autoflush tree when fAutoFlush entries written"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -341,7 +347,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fEstimate", title: "Number of entries to estimate histogram limits"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fEstimate", title: "Number of entries to estimate histogram limits"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -352,7 +358,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicPointer{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fClusterRangeEnd", title: "[fNClusterRange] Last entry of a cluster range."},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fClusterRangeEnd", title: "[fNClusterRange] Last entry of a cluster range."},
 									etype:  56,
 									esize:  8,
 									arrlen: 0,
@@ -366,7 +372,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicPointer{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fClusterSize", title: "[fNClusterRange] Number of entries in each cluster for a given range."},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fClusterSize", title: "[fNClusterRange] Number of entries in each cluster for a given range."},
 									etype:  56,
 									esize:  8,
 									arrlen: 0,
@@ -380,7 +386,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObject{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fBranches", title: "List of Branches"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fBranches", title: "List of Branches"},
 									etype:  61,
 									esize:  64,
 									arrlen: 0,
@@ -391,7 +397,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObject{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fLeaves", title: "Direct pointers to individual branch leaves"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fLeaves", title: "Direct pointers to individual branch leaves"},
 									etype:  61,
 									esize:  64,
 									arrlen: 0,
@@ -402,7 +408,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObjectPointer{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fAliases", title: "List of aliases for expressions based on the tree branches."},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fAliases", title: "List of aliases for expressions based on the tree branches."},
 									etype:  64,
 									esize:  8,
 									arrlen: 0,
@@ -413,7 +419,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObjectAny{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fIndexValues", title: "Sorted index values"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fIndexValues", title: "Sorted index values"},
 									etype:  62,
 									esize:  24,
 									arrlen: 0,
@@ -424,7 +430,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObjectAny{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fIndex", title: "Index of sorted values"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fIndex", title: "Index of sorted values"},
 									etype:  62,
 									esize:  24,
 									arrlen: 0,
@@ -435,7 +441,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObjectPointer{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fTreeIndex", title: "Pointer to the tree Index (if any)"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fTreeIndex", title: "Pointer to the tree Index (if any)"},
 									etype:  64,
 									esize:  8,
 									arrlen: 0,
@@ -446,7 +452,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObjectPointer{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fFriends", title: "pointer to list of friend elements"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fFriends", title: "pointer to list of friend elements"},
 									etype:  64,
 									esize:  8,
 									arrlen: 0,
@@ -457,7 +463,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObjectPointer{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fUserInfo", title: "pointer to a list of user objects associated to this Tree"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fUserInfo", title: "pointer to a list of user objects associated to this Tree"},
 									etype:  64,
 									esize:  8,
 									arrlen: 0,
@@ -468,7 +474,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObjectPointer{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fBranchRef", title: "Branch supporting the TRefTable (if any)"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fBranchRef", title: "Branch supporting the TRefTable (if any)"},
 									etype:  64,
 									esize:  8,
 									arrlen: 0,
@@ -480,13 +486,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TNamed", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TNamed", title: ""},
 						chksum: 0xfbe93f79,
 						clsver: 1,
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TObject", title: "Basic ROOT object"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TObject", title: "Basic ROOT object"},
 									etype:  66,
 									esize:  0,
 									arrlen: 0,
@@ -498,7 +504,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerString{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fName", title: "object identifier"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fName", title: "object identifier"},
 									etype:  65,
 									esize:  24,
 									arrlen: 0,
@@ -509,7 +515,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerString{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fTitle", title: "object title"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fTitle", title: "object title"},
 									etype:  65,
 									esize:  24,
 									arrlen: 0,
@@ -521,13 +527,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TObject", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TObject", title: ""},
 						chksum: 0x52d96731,
 						clsver: 1,
 						elems: []StreamerElement{
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fUniqueID", title: "object unique identifier"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fUniqueID", title: "object unique identifier"},
 									etype:  13,
 									esize:  4,
 									arrlen: 0,
@@ -538,7 +544,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fBits", title: "bit field status word"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fBits", title: "bit field status word"},
 									etype:  15,
 									esize:  4,
 									arrlen: 0,
@@ -550,13 +556,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TAttLine", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TAttLine", title: ""},
 						chksum: 0x51a23e92,
 						clsver: 1,
 						elems: []StreamerElement{
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fLineColor", title: "line color"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fLineColor", title: "line color"},
 									etype:  2,
 									esize:  2,
 									arrlen: 0,
@@ -567,7 +573,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fLineStyle", title: "line style"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fLineStyle", title: "line style"},
 									etype:  2,
 									esize:  2,
 									arrlen: 0,
@@ -578,7 +584,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fLineWidth", title: "line width"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fLineWidth", title: "line width"},
 									etype:  2,
 									esize:  2,
 									arrlen: 0,
@@ -590,13 +596,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TAttFill", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TAttFill", title: ""},
 						chksum: 0x47c56358,
 						clsver: 1,
 						elems: []StreamerElement{
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fFillColor", title: "fill area color"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fFillColor", title: "fill area color"},
 									etype:  2,
 									esize:  2,
 									arrlen: 0,
@@ -607,7 +613,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fFillStyle", title: "fill area style"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fFillStyle", title: "fill area style"},
 									etype:  2,
 									esize:  2,
 									arrlen: 0,
@@ -619,13 +625,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TAttMarker", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TAttMarker", title: ""},
 						chksum: 0xfacd2184,
 						clsver: 2,
 						elems: []StreamerElement{
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMarkerColor", title: "Marker color index"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMarkerColor", title: "Marker color index"},
 									etype:  2,
 									esize:  2,
 									arrlen: 0,
@@ -636,7 +642,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMarkerStyle", title: "Marker style"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMarkerStyle", title: "Marker style"},
 									etype:  2,
 									esize:  2,
 									arrlen: 0,
@@ -647,7 +653,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMarkerSize", title: "Marker size"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMarkerSize", title: "Marker size"},
 									etype:  5,
 									esize:  4,
 									arrlen: 0,
@@ -659,13 +665,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TBranch", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TBranch", title: ""},
 						chksum: 0x911cc38e,
 						clsver: 12,
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TNamed", title: "The basis for a named object (name, title)"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TNamed", title: "The basis for a named object (name, title)"},
 									etype:  67,
 									esize:  0,
 									arrlen: 0,
@@ -677,7 +683,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TAttFill", title: "Fill area attributes"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TAttFill", title: "Fill area attributes"},
 									etype:  0,
 									esize:  0,
 									arrlen: 0,
@@ -689,7 +695,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fCompress", title: "Compression level and algorithm"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fCompress", title: "Compression level and algorithm"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -700,7 +706,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fBasketSize", title: "Initial Size of  Basket Buffer"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fBasketSize", title: "Initial Size of  Basket Buffer"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -711,7 +717,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fEntryOffsetLen", title: "Initial Length of fEntryOffset table in the basket buffers"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fEntryOffsetLen", title: "Initial Length of fEntryOffset table in the basket buffers"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -722,7 +728,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fWriteBasket", title: "Last basket number written"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fWriteBasket", title: "Last basket number written"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -733,7 +739,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fEntryNumber", title: "Current entry number (last one filled in this branch)"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fEntryNumber", title: "Current entry number (last one filled in this branch)"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -744,7 +750,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fOffset", title: "Offset of this branch"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fOffset", title: "Offset of this branch"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -755,7 +761,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMaxBaskets", title: "Maximum number of Baskets so far"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMaxBaskets", title: "Maximum number of Baskets so far"},
 									etype:  6,
 									esize:  4,
 									arrlen: 0,
@@ -766,7 +772,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fSplitLevel", title: "Branch split level"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fSplitLevel", title: "Branch split level"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -777,7 +783,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fEntries", title: "Number of entries"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fEntries", title: "Number of entries"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -788,7 +794,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fFirstEntry", title: "Number of the first entry in this branch"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fFirstEntry", title: "Number of the first entry in this branch"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -799,7 +805,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fTotBytes", title: "Total number of bytes in all leaves before compression"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fTotBytes", title: "Total number of bytes in all leaves before compression"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -810,7 +816,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fZipBytes", title: "Total number of bytes in all leaves after compression"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fZipBytes", title: "Total number of bytes in all leaves after compression"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -821,7 +827,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObject{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fBranches", title: "-> List of Branches of this branch"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fBranches", title: "-> List of Branches of this branch"},
 									etype:  61,
 									esize:  64,
 									arrlen: 0,
@@ -832,7 +838,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObject{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fLeaves", title: "-> List of leaves of this branch"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fLeaves", title: "-> List of leaves of this branch"},
 									etype:  61,
 									esize:  64,
 									arrlen: 0,
@@ -843,7 +849,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObject{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fBaskets", title: "-> List of baskets of this branch"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fBaskets", title: "-> List of baskets of this branch"},
 									etype:  61,
 									esize:  64,
 									arrlen: 0,
@@ -854,7 +860,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicPointer{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fBasketBytes", title: "[fMaxBaskets] Length of baskets on file"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fBasketBytes", title: "[fMaxBaskets] Length of baskets on file"},
 									etype:  43,
 									esize:  4,
 									arrlen: 0,
@@ -868,7 +874,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicPointer{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fBasketEntry", title: "[fMaxBaskets] Table of first entry in eack basket"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fBasketEntry", title: "[fMaxBaskets] Table of first entry in eack basket"},
 									etype:  56,
 									esize:  8,
 									arrlen: 0,
@@ -882,7 +888,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicPointer{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fBasketSeek", title: "[fMaxBaskets] Addresses of baskets on file"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fBasketSeek", title: "[fMaxBaskets] Addresses of baskets on file"},
 									etype:  56,
 									esize:  8,
 									arrlen: 0,
@@ -896,7 +902,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerString{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fFileName", title: "Name of file where buffers are stored (\"\" if in same file as Tree header)"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fFileName", title: "Name of file where buffers are stored (\"\" if in same file as Tree header)"},
 									etype:  65,
 									esize:  24,
 									arrlen: 0,
@@ -908,13 +914,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TLeafI", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TLeafI", title: ""},
 						chksum: 0xd0548a75,
 						clsver: 1,
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TLeaf", title: "Leaf: description of a Branch data type"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TLeaf", title: "Leaf: description of a Branch data type"},
 									etype:  0,
 									esize:  0,
 									arrlen: 0,
@@ -926,7 +932,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMinimum", title: "Minimum value if leaf range is specified"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMinimum", title: "Minimum value if leaf range is specified"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -937,7 +943,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMaximum", title: "Maximum value if leaf range is specified"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMaximum", title: "Maximum value if leaf range is specified"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -949,13 +955,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TLeaf", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TLeaf", title: ""},
 						chksum: 0x2b643927,
 						clsver: 2,
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TNamed", title: "The basis for a named object (name, title)"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TNamed", title: "The basis for a named object (name, title)"},
 									etype:  67,
 									esize:  0,
 									arrlen: 0,
@@ -967,7 +973,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fLen", title: "Number of fixed length elements"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fLen", title: "Number of fixed length elements"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -978,7 +984,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fLenType", title: "Number of bytes for this data type"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fLenType", title: "Number of bytes for this data type"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -989,7 +995,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fOffset", title: "Offset in ClonesArray object (if one)"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fOffset", title: "Offset in ClonesArray object (if one)"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -1000,7 +1006,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fIsRange", title: "(=kTRUE if leaf has a range, kFALSE otherwise)"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fIsRange", title: "(=kTRUE if leaf has a range, kFALSE otherwise)"},
 									etype:  18,
 									esize:  1,
 									arrlen: 0,
@@ -1011,7 +1017,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fIsUnsigned", title: "(=kTRUE if unsigned, kFALSE otherwise)"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fIsUnsigned", title: "(=kTRUE if unsigned, kFALSE otherwise)"},
 									etype:  18,
 									esize:  1,
 									arrlen: 0,
@@ -1022,7 +1028,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObjectPointer{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fLeafCount", title: "Pointer to Leaf count if variable length (we do not own the counter)"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fLeafCount", title: "Pointer to Leaf count if variable length (we do not own the counter)"},
 									etype:  64,
 									esize:  8,
 									arrlen: 0,
@@ -1034,13 +1040,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TLeafL", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TLeafL", title: ""},
 						chksum: 0x74651570,
 						clsver: 1,
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TLeaf", title: "Leaf: description of a Branch data type"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TLeaf", title: "Leaf: description of a Branch data type"},
 									etype:  0,
 									esize:  0,
 									arrlen: 0,
@@ -1052,7 +1058,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMinimum", title: "Minimum value if leaf range is specified"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMinimum", title: "Minimum value if leaf range is specified"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -1063,7 +1069,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMaximum", title: "Maximum value if leaf range is specified"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMaximum", title: "Maximum value if leaf range is specified"},
 									etype:  16,
 									esize:  8,
 									arrlen: 0,
@@ -1075,13 +1081,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TLeafF", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TLeafF", title: ""},
 						chksum: 0x51705bd0,
 						clsver: 1,
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TLeaf", title: "Leaf: description of a Branch data type"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TLeaf", title: "Leaf: description of a Branch data type"},
 									etype:  0,
 									esize:  0,
 									arrlen: 0,
@@ -1093,7 +1099,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMinimum", title: "Minimum value if leaf range is specified"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMinimum", title: "Minimum value if leaf range is specified"},
 									etype:  5,
 									esize:  4,
 									arrlen: 0,
@@ -1104,7 +1110,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMaximum", title: "Maximum value if leaf range is specified"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMaximum", title: "Maximum value if leaf range is specified"},
 									etype:  5,
 									esize:  4,
 									arrlen: 0,
@@ -1116,13 +1122,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TLeafD", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TLeafD", title: ""},
 						chksum: 0x9716fde,
 						clsver: 1,
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TLeaf", title: "Leaf: description of a Branch data type"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TLeaf", title: "Leaf: description of a Branch data type"},
 									etype:  0,
 									esize:  0,
 									arrlen: 0,
@@ -1134,7 +1140,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMinimum", title: "Minimum value if leaf range is specified"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMinimum", title: "Minimum value if leaf range is specified"},
 									etype:  8,
 									esize:  8,
 									arrlen: 0,
@@ -1145,7 +1151,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fMaximum", title: "Maximum value if leaf range is specified"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fMaximum", title: "Maximum value if leaf range is specified"},
 									etype:  8,
 									esize:  8,
 									arrlen: 0,
@@ -1157,13 +1163,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TList", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TList", title: ""},
 						chksum: 0x79c882a7,
 						clsver: 5,
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TSeqCollection", title: "Sequenceable collection ABC"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TSeqCollection", title: "Sequenceable collection ABC"},
 									etype:  0,
 									esize:  0,
 									arrlen: 0,
@@ -1176,13 +1182,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TSeqCollection", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TSeqCollection", title: ""},
 						chksum: 0xd79a0d4d,
 						clsver: 0,
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TCollection", title: "Collection abstract base class"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TCollection", title: "Collection abstract base class"},
 									etype:  0,
 									esize:  0,
 									arrlen: 0,
@@ -1195,13 +1201,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TCollection", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TCollection", title: ""},
 						chksum: 0x8fd14d5e,
 						clsver: 3,
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TObject", title: "Basic ROOT object"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TObject", title: "Basic ROOT object"},
 									etype:  66,
 									esize:  0,
 									arrlen: 0,
@@ -1213,7 +1219,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerString{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fName", title: "name of the collection"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fName", title: "name of the collection"},
 									etype:  65,
 									esize:  24,
 									arrlen: 0,
@@ -1224,7 +1230,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fSize", title: "number of elements in collection"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fSize", title: "number of elements in collection"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -1236,19 +1242,19 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TString", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TString", title: ""},
 						chksum: 0x17419,
 						clsver: 2,
 						elems:  nil,
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TBranchRef", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TBranchRef", title: ""},
 						chksum: 0xae295353,
 						clsver: 1,
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TBranch", title: "Branch descriptor"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TBranch", title: "Branch descriptor"},
 									etype:  0,
 									esize:  0,
 									arrlen: 0,
@@ -1260,7 +1266,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObjectPointer{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fRefTable", title: "pointer to the TRefTable"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fRefTable", title: "pointer to the TRefTable"},
 									etype:  64,
 									esize:  8,
 									arrlen: 0,
@@ -1272,13 +1278,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TRefTable", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TRefTable", title: ""},
 						chksum: 0xac58de3a,
 						clsver: 3,
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TObject", title: "Basic ROOT object"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TObject", title: "Basic ROOT object"},
 									etype:  66,
 									esize:  0,
 									arrlen: 0,
@@ -1290,7 +1296,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fSize", title: "dummy for backward compatibility"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fSize", title: "dummy for backward compatibility"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -1301,7 +1307,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObjectPointer{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fParents", title: "array of Parent objects  (eg TTree branch) holding the referenced objects"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fParents", title: "array of Parent objects  (eg TTree branch) holding the referenced objects"},
 									etype:  64,
 									esize:  8,
 									arrlen: 0,
@@ -1312,7 +1318,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerObjectPointer{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fOwner", title: "Object owning this TRefTable"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fOwner", title: "Object owning this TRefTable"},
 									etype:  64,
 									esize:  8,
 									arrlen: 0,
@@ -1323,7 +1329,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerSTL{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fProcessGUIDs", title: "UUIDs of TProcessIDs used in fParentIDs"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fProcessGUIDs", title: "UUIDs of TProcessIDs used in fParentIDs"},
 									etype:  500,
 									esize:  24,
 									arrlen: 0,
@@ -1337,13 +1343,13 @@ func TestReadRBuffer(t *testing.T) {
 						},
 					},
 					&tstreamerInfo{
-						named:  tnamed{name: "TObjArray", title: ""},
+						named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TObjArray", title: ""},
 						chksum: 0xf6eac680,
 						clsver: 3,
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "TSeqCollection", title: "Sequenceable collection ABC"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "TSeqCollection", title: "Sequenceable collection ABC"},
 									etype:  0,
 									esize:  0,
 									arrlen: 0,
@@ -1355,7 +1361,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fLowerBound", title: "Lower bound of the array"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fLowerBound", title: "Lower bound of the array"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -1366,7 +1372,7 @@ func TestReadRBuffer(t *testing.T) {
 							},
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
-									named:  tnamed{name: "fLast", title: "Last element in array containing an object"},
+									named:  tnamed{obj: tobject{id: 0x0, bits: 0x3000000}, name: "fLast", title: "Last element in array containing an object"},
 									etype:  3,
 									esize:  4,
 									arrlen: 0,
@@ -1381,11 +1387,11 @@ func TestReadRBuffer(t *testing.T) {
 						name: "listOfRules",
 						objs: []Object{
 							&tobjString{
-								obj: tobject{uuid: 0x0, bits: 0x3000000},
+								obj: tobject{id: 0x0, bits: 0x3000000},
 								str: "type=read sourceClass=\"TTree\" targetClass=\"TTree\" version=\"[-16]\" source=\"\" target=\"fDefaultEntryOffsetLen\" code=\"{ fDefaultEntryOffsetLen = 1000; }\" ",
 							},
 							&tobjString{
-								obj: tobject{uuid: 0x0, bits: 0x3000000},
+								obj: tobject{id: 0x0, bits: 0x3000000},
 								str: "type=read sourceClass=\"TTree\" targetClass=\"TTree\" version=\"[-18]\" source=\"\" target=\"fNClusterRange\" code=\"{ fNClusterRange = 0; }\" ",
 							},
 						},
@@ -1439,6 +1445,6 @@ func testReadRBuffer(t *testing.T, name, file string, want interface{}) {
 	}
 
 	if !reflect.DeepEqual(obj, want) {
-		t.Fatalf("error:\ngot= %+v\nwant=%+v\n", obj, want)
+		t.Fatalf("error: %q\ngot= %+v\nwant=%+v\n", file, obj, want)
 	}
 }

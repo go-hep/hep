@@ -7,7 +7,7 @@ package rootio
 import "reflect"
 
 type tobject struct {
-	uuid uint32
+	id   uint32
 	bits uint32
 }
 
@@ -17,7 +17,7 @@ func (obj *tobject) Class() string {
 
 func (obj *tobject) UnmarshalROOT(r *RBuffer) error {
 	r.SkipVersion("")
-	obj.uuid = r.ReadU32()
+	obj.id = r.ReadU32()
 	obj.bits = r.ReadU32()
 	obj.bits |= kIsOnHeap
 	if obj.bits&kIsReferenced != 0 {
