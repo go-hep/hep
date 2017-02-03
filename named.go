@@ -42,6 +42,8 @@ func (n *tnamed) UnmarshalROOT(r *RBuffer) error {
 		_    = r.ReadU32() // id
 		bits = r.ReadU32() // bits
 	)
+	bits &= 0xffffff00 // FIXME(sbinet): horrible hack
+
 	bits |= kIsOnHeap // by definition, de-serialized object is on heap
 	if bits&kIsReferenced == 0 {
 		_ = r.ReadU16()
@@ -50,17 +52,6 @@ func (n *tnamed) UnmarshalROOT(r *RBuffer) error {
 	n.name = r.ReadString()
 	n.title = r.ReadString()
 
-	if !r.chk(pos, bcnt) {
-		// FIXME(sbinet): horrible hack.
-		r.setPos(beg)
-		/*vers*/ _, pos, bcnt = r.ReadVersion()
-		_ = r.ReadU32()
-		bits = r.ReadU32()
-		bits |= kIsOnHeap
-		_ = r.ReadU16()
-		n.name = r.ReadString()
-		n.title = r.ReadString()
-	}
 	r.CheckByteCount(pos, bcnt, beg, "TNamed")
 	return r.Err()
 }

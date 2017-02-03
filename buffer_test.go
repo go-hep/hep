@@ -72,6 +72,16 @@ func TestReadRBuffer(t *testing.T) {
 			want: &tnamed{name: "my-name", title: "my-title"},
 		},
 		{
+			name: "TNamed",
+			file: "testdata/tnamed-cmssw.dat",
+			want: &tnamed{name: "edmTriggerResults_TriggerResults__HLT.present", title: "edmTriggerResults_TriggerResults__HLT.present"},
+		},
+		{
+			name: "TNamed",
+			file: "testdata/tnamed-cmssw-2.dat",
+			want: &tnamed{name: "edmTriggerResults_TriggerResults__HLT.present", title: "edmTriggerResults_TriggerResults__HLT.present"},
+		},
+		{
 			name: "TList",
 			want: &tlist{
 				name: "list-name",

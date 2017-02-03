@@ -93,8 +93,11 @@ const (
 	kMapOffset      = 2
 	kByteCountVMask = 0x4000
 
-	kIsReferenced = 1 << 4
 	kIsOnHeap     = 0x01000000
+	kNotDeleted   = 0x02000000
+	kZombie       = 0x04000000
+	kBitMask      = 0x00ffffff
+	kIsReferenced = 1 << 4
 
 	//baskets
 	kDisplacementMask = 0xFF000000
