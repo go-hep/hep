@@ -195,3 +195,19 @@ func TestFileReader(t *testing.T) {
 		}
 	}
 }
+
+func TestFileOpenStreamerInfo(t *testing.T) {
+	for _, fname := range []string{
+		"testdata/small.root",
+		"testdata/simple.root",
+	} {
+		f, err := Open(fname)
+		if err != nil {
+			t.Errorf("error opening %q: %v\n", fname, err)
+			continue
+		}
+		defer f.Close()
+
+		_ = f.StreamerInfo()
+	}
+}

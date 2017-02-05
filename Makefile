@@ -2,8 +2,6 @@
 .PHONY: all test clean build gen
 
 all: build test
-	@echo "#############################"
-	root-ls -sinfos -t ./testdata/small.root
 	@echo "## bye."
 
 build: gen
