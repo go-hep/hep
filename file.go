@@ -103,6 +103,22 @@ func Open(path string) (*File, error) {
 	return f, nil
 }
 
+// NewReader creates a new ROOT file reader.
+func NewReader(r Reader, name string) (*File, error) {
+	f := &File{
+		Reader: r,
+		id:     name,
+	}
+	f.dir = tdirectory{file: f}
+
+	err := f.readHeader()
+	if err != nil {
+		return nil, fmt.Errorf("rootio: failed to read header: %v", err)
+	}
+
+	return f, nil
+}
+
 // Version returns the ROOT version this file was created with.
 func (f *File) Version() int {
 	return int(f.version)
