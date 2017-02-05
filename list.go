@@ -80,13 +80,48 @@ func (li *tlist) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
-func init() {
-	f := func() reflect.Value {
-		o := &tlist{}
-		return reflect.ValueOf(o)
+type thashList struct {
+	tlist
+}
+
+func (*thashList) Class() string {
+	return "THashList"
+}
+
+func (li *thashList) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
 	}
-	Factory.add("TList", f)
-	Factory.add("*rootio.tlist", f)
+
+	beg := r.Pos()
+	/*vers*/ _, pos, bcnt := r.ReadVersion()
+
+	if err := li.tlist.UnmarshalROOT(r); err != nil {
+		r.err = err
+		return r.err
+	}
+
+	r.CheckByteCount(pos, bcnt, beg, "THashList")
+	return r.err
+}
+
+func init() {
+	{
+		f := func() reflect.Value {
+			o := &tlist{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TList", f)
+		Factory.add("*rootio.tlist", f)
+	}
+	{
+		f := func() reflect.Value {
+			o := &thashList{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("THashList", f)
+		Factory.add("*rootio.thashList", f)
+	}
 }
 
 var _ Object = (*tlist)(nil)
@@ -94,3 +129,9 @@ var _ Collection = (*tlist)(nil)
 var _ SeqCollection = (*tlist)(nil)
 var _ List = (*tlist)(nil)
 var _ ROOTUnmarshaler = (*tlist)(nil)
+
+var _ Object = (*thashList)(nil)
+var _ Collection = (*thashList)(nil)
+var _ SeqCollection = (*thashList)(nil)
+var _ List = (*thashList)(nil)
+var _ ROOTUnmarshaler = (*thashList)(nil)
