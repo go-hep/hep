@@ -12,6 +12,10 @@ type attfill struct {
 }
 
 func (a *attfill) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
+	}
+
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
 	myprintf("attfill-vers=%v\n", vers)

@@ -13,6 +13,10 @@ type attmarker struct {
 }
 
 func (a *attmarker) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
+	}
+
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
 	myprintf("attmarker-vers=%v\n", vers)

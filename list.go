@@ -48,12 +48,12 @@ func (li *tlist) UnmarshalROOT(r *RBuffer) error {
 		return fmt.Errorf("rootio: TList version too old (%d <= 3)", vers)
 	}
 
-	_ = r.ReadU32() // id
-	bits := r.ReadU32()
-	bits |= kIsOnHeap // by definition, de-serialized objects are on the heap
-	if bits&kIsReferenced == 0 {
-		_ = r.ReadU16()
+	var obj tobject
+	if err := obj.UnmarshalROOT(r); err != nil {
+		r.err = err
+		return r.err
 	}
+
 	li.name = r.ReadString()
 	size := int(r.ReadI32())
 

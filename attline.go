@@ -13,6 +13,10 @@ type attline struct {
 }
 
 func (a *attline) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
+	}
+
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
 	myprintf("attline-vers=%v\n", vers)
