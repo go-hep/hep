@@ -72,7 +72,7 @@ func rootHandle(w http.ResponseWriter, r *http.Request) error {
 			return err
 		}
 		defer f.Close()
-		_, err = f.Seek(0, io.SeekStart)
+		_, err = f.Seek(0, 0)
 		if err != nil {
 			return err
 		}

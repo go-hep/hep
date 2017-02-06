@@ -6,7 +6,6 @@ package rootio
 
 import (
 	"fmt"
-	"io"
 	"reflect"
 	"time"
 )
@@ -112,7 +111,7 @@ func (dir *tdirectory) readKeys() error {
 		return nil
 	}
 
-	_, err = dir.file.Seek(dir.seekkeys, io.SeekStart)
+	_, err = dir.file.Seek(dir.seekkeys, ioSeekStart)
 	if err != nil {
 		return err
 	}
@@ -123,7 +122,7 @@ func (dir *tdirectory) readKeys() error {
 		return err
 	}
 
-	_, err = dir.file.Seek(dir.seekkeys+int64(hdr.keylen), io.SeekStart)
+	_, err = dir.file.Seek(dir.seekkeys+int64(hdr.keylen), ioSeekStart)
 	if err != nil {
 		return err
 	}

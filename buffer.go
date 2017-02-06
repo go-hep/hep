@@ -72,18 +72,18 @@ func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32) *RBuffer
 }
 
 func (r *RBuffer) Pos() int64 {
-	pos, _ := r.r.Seek(0, io.SeekCurrent)
+	pos, _ := r.r.Seek(0, ioSeekCurrent)
 	return pos + int64(r.offset)
 }
 
 func (r *RBuffer) setPos(pos int64) {
-	r.r.Seek(pos-int64(r.offset), io.SeekStart)
+	r.r.Seek(pos-int64(r.offset), ioSeekStart)
 }
 
 func (r *RBuffer) Len() int64 {
-	pos, _ := r.r.Seek(0, io.SeekCurrent)
-	end, _ := r.r.Seek(0, io.SeekEnd)
-	r.r.Seek(pos, io.SeekStart)
+	pos, _ := r.r.Seek(0, ioSeekCurrent)
+	end, _ := r.r.Seek(0, ioSeekEnd)
+	r.r.Seek(pos, ioSeekStart)
 	return end - pos
 }
 
@@ -99,10 +99,10 @@ func (r *RBuffer) read(data []byte) {
 }
 
 func (r *RBuffer) bytes() []byte {
-	pos, _ := r.r.Seek(0, io.SeekCurrent)
+	pos, _ := r.r.Seek(0, ioSeekCurrent)
 	out := make([]byte, int(r.Len()))
 	io.ReadFull(r.r, out)
-	r.r.Seek(pos, io.SeekStart)
+	r.r.Seek(pos, ioSeekStart)
 	return out
 }
 
@@ -509,7 +509,7 @@ func (r *RBuffer) SkipObject() {
 	}
 	//v, pos, n := r.ReadVersion()
 	//fmt.Printf("--- skip-object: v=%d pos=%d n=%d\n", v, pos, n)
-	r.r.Seek(10, io.SeekCurrent)
+	r.r.Seek(10, ioSeekCurrent)
 	//_, r.err = r.r.Seek(int64(n), io.SeekCurrent)
 }
 
