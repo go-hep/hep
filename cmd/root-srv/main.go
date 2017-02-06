@@ -51,7 +51,15 @@ func rootHandle(w http.ResponseWriter, r *http.Request) error {
 			return err
 		}
 
-		err = t.Execute(w, token)
+		var data = struct {
+			Token string
+			Path  string
+		}{
+			Token: token,
+			Path:  r.URL.Path + "root-file-upload",
+		}
+
+		err = t.Execute(w, data)
 		if err != nil {
 			return err
 		}
@@ -88,9 +96,9 @@ const page = `<html>
 </head>
 <body>
 <h2>go-hep/rootio ROOT file inspector</h2>
-<form enctype="multipart/form-data" action="/root-file-upload" method="post">
+<form enctype="multipart/form-data" action={{.Path}} method="post">
       <input type="file" name="upload-file" />
-      <input type="hidden" name="token" value="{{.}}"/>
+      <input type="hidden" name="token" value="{{.Token}}"/>
       <input type="submit" value="upload" />
 </form>
 </body>
