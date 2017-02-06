@@ -6,6 +6,7 @@ package rootio
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"sync"
 )
@@ -49,7 +50,14 @@ func (f *factory) Get(n string) FactoryFct {
 	if ok {
 		return fct
 	}
-	return nil
+
+	fct = func() reflect.Value {
+		o := &dobject{class: n}
+		return reflect.ValueOf(o)
+	}
+	Factory.add(n, fct)
+	log.Printf("rootio: adding dummy factory for %q\n", n)
+	return fct
 }
 
 func (f *factory) get(n string) FactoryFct {
