@@ -113,6 +113,43 @@ func (h *th1) UnmarshalROOT(r *RBuffer) error {
 	return r.err
 }
 
+type th2 struct {
+	th1
+	scale   float64 // scale factor
+	tsumwy  float64 // total sum of weight*y
+	tsumwy2 float64 // total sum of weight*y*y
+	tsumwxy float64 // total sum of weight*x*y
+}
+
+func (*th2) Class() string {
+	return "TH2"
+}
+
+func (h *th2) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
+	}
+
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion()
+	if vers < 3 {
+		return errorf("rootio: TH2 version too old (%d<3)", vers)
+	}
+
+	if err := h.th1.UnmarshalROOT(r); err != nil {
+		r.err = err
+		return r.err
+	}
+
+	h.scale = r.ReadF64()
+	h.tsumwy = r.ReadF64()
+	h.tsumwy2 = r.ReadF64()
+	h.tsumwxy = r.ReadF64()
+
+	r.CheckByteCount(pos, bcnt, beg, "TH2")
+	return r.err
+}
+
 func init() {
 	{
 		f := func() reflect.Value {
@@ -122,8 +159,20 @@ func init() {
 		Factory.add("TH1", f)
 		Factory.add("*rootio.th1", f)
 	}
+	{
+		f := func() reflect.Value {
+			o := &th2{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TH2", f)
+		Factory.add("*rootio.th2", f)
+	}
 }
 
 var _ Object = (*th1)(nil)
 var _ Named = (*th1)(nil)
 var _ ROOTUnmarshaler = (*th1)(nil)
+
+var _ Object = (*th2)(nil)
+var _ Named = (*th2)(nil)
+var _ ROOTUnmarshaler = (*th2)(nil)
