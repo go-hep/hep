@@ -128,7 +128,7 @@ func inspect(r rootio.Reader, fname string) (string, error) {
 				fmt.Fprintf(w, "  %-20s %-20q %v\n", b.Name(), b.Title(), b.Class())
 			}
 		default:
-			fmt.Fprintf(w, "%-8s %-40s %s\n", k.Class(), k.Name(), k.Title())
+			fmt.Fprintf(w, "%-8s %-40s %s (cycle=%d)\n", k.Class(), k.Name(), k.Title(), k.Cycle())
 		}
 	}
 

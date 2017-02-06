@@ -75,7 +75,7 @@ func main() {
 					continue
 				}
 			}
-			fmt.Printf("%-8s %-40s %s\n", k.Class(), k.Name(), k.Title())
+			fmt.Printf("%-8s %-40s %s (cycle=%d)\n", k.Class(), k.Name(), k.Title(), k.Cycle())
 		}
 	}
 }

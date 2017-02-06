@@ -62,6 +62,10 @@ func (k *Key) Title() string {
 	return k.title
 }
 
+func (k *Key) Cycle() int {
+	return int(k.cycle)
+}
+
 // Value returns the data corresponding to the Key's value
 func (k *Key) Value() interface{} {
 	v, err := k.Object()
