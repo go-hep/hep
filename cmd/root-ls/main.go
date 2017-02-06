@@ -67,14 +67,13 @@ func main() {
 		for _, k := range f.Keys() {
 			if *doTree {
 				tree, ok := k.Value().(rootio.Tree)
-				fmt.Printf("%-8s %-40s %s (entries=%d)\n", k.Class(), k.Name(), k.Title(), tree.Entries())
-				if !ok {
+				if ok {
+					fmt.Printf("%-8s %-40s %s (entries=%d)\n", k.Class(), k.Name(), k.Title(), tree.Entries())
+					for _, b := range tree.Branches() {
+						fmt.Printf("  %-20s %-20q %v\n", b.Name(), b.Title(), b.Class())
+					}
 					continue
 				}
-				for _, b := range tree.Branches() {
-					fmt.Printf("  %-20s %-20q %v\n", b.Name(), b.Title(), b.Class())
-				}
-				continue
 			}
 			fmt.Printf("%-8s %-40s %s\n", k.Class(), k.Name(), k.Title())
 		}
