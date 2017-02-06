@@ -14,6 +14,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-hep/rootio"
@@ -56,7 +57,7 @@ func rootHandle(w http.ResponseWriter, r *http.Request) error {
 			Path  string
 		}{
 			Token: token,
-			Path:  r.URL.Path + "root-file-upload",
+			Path:  strings.Replace(r.URL.Path+"/root-file-upload", "//", "/", -1),
 		}
 
 		err = t.Execute(w, data)
