@@ -105,6 +105,7 @@ func (h *th1) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	n := int(r.ReadI32())
+	_ = r.ReadI8()
 	h.buffer = r.ReadFastArrayF64(n)
 	h.erropt = r.ReadI32()
 
@@ -142,7 +143,7 @@ func (h *th1f) UnmarshalROOT(r *RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TH1")
+	r.CheckByteCount(pos, bcnt, beg, "TH1F")
 	return r.err
 }
 

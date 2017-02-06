@@ -488,13 +488,13 @@ func (r *RBuffer) CheckByteCount(pos, count int32, start int64, class string) {
 		return
 
 	case got > want:
-		r.err = fmt.Errorf("rootio.CheckByteCount: read too many bytes. cur=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
+		r.err = fmt.Errorf("rootio.CheckByteCount: read too many bytes. got=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
 			got, want, pos, count, start, class,
 		)
 		return
 
 	case got < want:
-		r.err = fmt.Errorf("rootio.CheckByteCount: read too few bytes. cur=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
+		r.err = fmt.Errorf("rootio.CheckByteCount: read too few bytes. got=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
 			got, want, pos, count, start, class,
 		)
 		return
