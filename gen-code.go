@@ -17,6 +17,7 @@ import (
 func main() {
 	genLeaves()
 	genArrays()
+	genH1()
 }
 
 func genLeaves() {
@@ -28,7 +29,7 @@ func genLeaves() {
 
 	fmt.Fprintf(f, srcHeader)
 
-	for _, typ := range []struct {
+	for i, typ := range []struct {
 		Name string
 		Type string
 		Func string
@@ -59,6 +60,9 @@ func genLeaves() {
 			Func: "r.ReadF64()",
 		},
 	} {
+		if i > 0 {
+			fmt.Fprintf(f, "\n")
+		}
 		tmpl := template.Must(template.New(typ.Name).Parse(leafTmpl))
 		err = tmpl.Execute(f, typ)
 		if err != nil {
@@ -81,7 +85,7 @@ func genArrays() {
 
 	fmt.Fprintf(f, srcHeader)
 
-	for _, typ := range []struct {
+	for i, typ := range []struct {
 		Name string
 		Type string
 		Func string
@@ -107,7 +111,52 @@ func genArrays() {
 			Func: "r.ReadFastArrayF64",
 		},
 	} {
+		if i > 0 {
+			fmt.Fprintf(f, "\n")
+		}
 		tmpl := template.Must(template.New(typ.Name).Parse(arrayTmpl))
+		err = tmpl.Execute(f, typ)
+		if err != nil {
+			log.Fatalf("error executing template for %q: %v\n", typ.Name, err)
+		}
+	}
+
+	err = f.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func genH1() {
+	f, err := os.Create("h1_gen.go")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	fmt.Fprintf(f, srcHeader)
+
+	for i, typ := range []struct {
+		Name string
+		Type string
+	}{
+		{
+			Name: "H1F",
+			Type: "ArrayF",
+		},
+		{
+			Name: "H1D",
+			Type: "ArrayD",
+		},
+		{
+			Name: "H1I",
+			Type: "ArrayI",
+		},
+	} {
+		if i > 0 {
+			fmt.Fprintf(f, "\n")
+		}
+		tmpl := template.Must(template.New(typ.Name).Parse(h1Tmpl))
 		err = tmpl.Execute(f, typ)
 		if err != nil {
 			log.Fatalf("error executing template for %q: %v\n", typ.Name, err)
@@ -235,5 +284,55 @@ func init() {
 }
 
 var _ Array = (*{{.Name}})(nil)
+var _ ROOTUnmarshaler = (*{{.Name}})(nil)
+`
+
+const h1Tmpl = `// {{.Name}} implements ROOT T{{.Name}}
+type {{.Name}} struct {
+	th1
+	arr {{.Type}}
+}
+
+// Class returns the ROOT class name.
+func (*{{.Name}}) Class() string {
+	return "T{{.Name}}"
+}
+
+func (h *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
+	}
+
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion()
+	if vers < 2 {
+		return errorf("rootio: T{{.Name}} version too old (%d<2)", vers)
+	}
+
+	for _, v := range []ROOTUnmarshaler{
+		&h.th1,
+		&h.arr,
+	} {
+		if err := v.UnmarshalROOT(r); err != nil {
+			r.err = err
+			return r.err
+		}
+	}
+
+	r.CheckByteCount(pos, bcnt, beg, "T{{.Name}}")
+	return r.err
+}
+
+func init() {
+	f := func() reflect.Value {
+		o := &{{.Name}}{}
+		return reflect.ValueOf(o)
+	}
+	Factory.add("T{{.Name}}", f)
+	Factory.add("*rootio.{{.Name}}", f)
+}
+
+var _ Object = (*{{.Name}})(nil)
+var _ Named = (*{{.Name}})(nil)
 var _ ROOTUnmarshaler = (*{{.Name}})(nil)
 `

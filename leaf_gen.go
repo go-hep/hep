@@ -62,6 +62,7 @@ var _ Object = (*LeafC)(nil)
 var _ Named = (*LeafC)(nil)
 var _ Leaf = (*LeafC)(nil)
 var _ ROOTUnmarshaler = (*LeafC)(nil)
+
 // LeafI implements ROOT TLeafI
 type LeafI struct {
 	tleaf
@@ -114,6 +115,7 @@ var _ Object = (*LeafI)(nil)
 var _ Named = (*LeafI)(nil)
 var _ Leaf = (*LeafI)(nil)
 var _ ROOTUnmarshaler = (*LeafI)(nil)
+
 // LeafL implements ROOT TLeafL
 type LeafL struct {
 	tleaf
@@ -166,6 +168,7 @@ var _ Object = (*LeafL)(nil)
 var _ Named = (*LeafL)(nil)
 var _ Leaf = (*LeafL)(nil)
 var _ ROOTUnmarshaler = (*LeafL)(nil)
+
 // LeafF implements ROOT TLeafF
 type LeafF struct {
 	tleaf
@@ -218,6 +221,7 @@ var _ Object = (*LeafF)(nil)
 var _ Named = (*LeafF)(nil)
 var _ Leaf = (*LeafF)(nil)
 var _ ROOTUnmarshaler = (*LeafF)(nil)
+
 // LeafD implements ROOT TLeafD
 type LeafD struct {
 	tleaf

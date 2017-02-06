@@ -58,6 +58,7 @@ func init() {
 
 var _ Array = (*ArrayI)(nil)
 var _ ROOTUnmarshaler = (*ArrayI)(nil)
+
 // ArrayL64 implements ROOT TArrayL64
 type ArrayL64 struct {
 	Data []int64
@@ -106,6 +107,7 @@ func init() {
 
 var _ Array = (*ArrayL64)(nil)
 var _ ROOTUnmarshaler = (*ArrayL64)(nil)
+
 // ArrayF implements ROOT TArrayF
 type ArrayF struct {
 	Data []float32
@@ -154,6 +156,7 @@ func init() {
 
 var _ Array = (*ArrayF)(nil)
 var _ ROOTUnmarshaler = (*ArrayF)(nil)
+
 // ArrayD implements ROOT TArrayD
 type ArrayD struct {
 	Data []float64

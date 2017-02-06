@@ -51,3 +51,7 @@ func datime2time(d uint32) time.Time {
 	return time.Date(int(year), time.Month(month), int(day),
 		int(hour), int(min), int(sec), nsec, time.UTC)
 }
+
+func errorf(format string, args ...interface{}) error {
+	return fmt.Errorf(format, args...)
+}

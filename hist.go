@@ -113,40 +113,6 @@ func (h *th1) UnmarshalROOT(r *RBuffer) error {
 	return r.err
 }
 
-type th1f struct {
-	th1
-	arr ArrayF
-}
-
-func (th1f) Class() string {
-	return "TH1F"
-}
-
-func (h *th1f) UnmarshalROOT(r *RBuffer) error {
-	if r.err != nil {
-		return r.err
-	}
-
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	if vers < 2 {
-		return fmt.Errorf("rootio: TH1F version too old (%d<2)", vers)
-	}
-
-	for _, v := range []ROOTUnmarshaler{
-		&h.th1,
-		&h.arr,
-	} {
-		if err := v.UnmarshalROOT(r); err != nil {
-			r.err = err
-			return r.err
-		}
-	}
-
-	r.CheckByteCount(pos, bcnt, beg, "TH1F")
-	return r.err
-}
-
 func init() {
 	{
 		f := func() reflect.Value {
@@ -156,20 +122,8 @@ func init() {
 		Factory.add("TH1", f)
 		Factory.add("*rootio.th1", f)
 	}
-	{
-		f := func() reflect.Value {
-			o := &th1f{}
-			return reflect.ValueOf(o)
-		}
-		Factory.add("TH1F", f)
-		Factory.add("*rootio.th1f", f)
-	}
 }
 
 var _ Object = (*th1)(nil)
 var _ Named = (*th1)(nil)
 var _ ROOTUnmarshaler = (*th1)(nil)
-
-var _ Object = (*th1f)(nil)
-var _ Named = (*th1f)(nil)
-var _ ROOTUnmarshaler = (*th1f)(nil)
