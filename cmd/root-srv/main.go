@@ -130,7 +130,7 @@ func inspect(r rootio.Reader, fname string) (string, error) {
 		case rootio.Tree:
 			tree := obj
 			fmt.Fprintf(w, "%-8s %-40s %s (entries=%d)\n", k.Class(), k.Name(), k.Title(), tree.Entries())
-			displayBranches(tree, 2)
+			displayBranches(w, tree, 2)
 		default:
 			fmt.Fprintf(w, "%-8s %-40s %s (cycle=%d)\n", k.Class(), k.Name(), k.Title(), k.Cycle())
 		}
@@ -143,10 +143,10 @@ type brancher interface {
 	Branches() []rootio.Branch
 }
 
-func displayBranches(bres brancher, indent int) {
+func displayBranches(w io.Writer, bres brancher, indent int) {
 	branches := bres.Branches()
 	for _, b := range branches {
-		fmt.Printf("%s%-20s %-20q %v\n", strings.Repeat(" ", indent), b.Name(), b.Title(), b.Class())
-		displayBranches(b, indent+2)
+		fmt.Fprintf(w, "%s%-20s %-20q %v\n", strings.Repeat(" ", indent), b.Name(), b.Title(), b.Class())
+		displayBranches(w, b, indent+2)
 	}
 }
