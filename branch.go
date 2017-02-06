@@ -135,8 +135,11 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 		}
 		b.baskets = make([]Basket, baskets.last+1)
 		for i := range b.baskets {
-			bk := baskets.At(i).(*Basket)
-			b.baskets[i] = *bk
+			bk := baskets.At(i)
+			// FIXME(sbinet) check why some are nil
+			if bk != nil {
+				b.baskets[i] = *(bk.(*Basket))
+			}
 		}
 	}
 
@@ -193,8 +196,8 @@ func (b *tbranchElement) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
-	if vers < 10 {
-		r.err = fmt.Errorf("rootio: TBranchElement version too old (%d < 10)", vers)
+	if vers < 9 {
+		r.err = fmt.Errorf("rootio: TBranchElement version too old (%d < 9)", vers)
 		return r.err
 	}
 
@@ -207,7 +210,11 @@ func (b *tbranchElement) UnmarshalROOT(r *RBuffer) error {
 	b.parent = r.ReadString()
 	b.clones = r.ReadString()
 	b.chksum = r.ReadU32()
-	b.clsver = r.ReadU16()
+	if vers >= 10 {
+		b.clsver = r.ReadU16()
+	} else {
+		b.clsver = uint16(r.ReadU32())
+	}
 	b.id = r.ReadI32()
 	b.btype = r.ReadI32()
 	b.stype = r.ReadI32()

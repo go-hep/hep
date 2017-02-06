@@ -6,11 +6,12 @@ package rootio
 
 import (
 	"fmt"
+	"io"
 	"reflect"
 )
 
 type Basket struct {
-	*Key
+	Key
 
 	vers    uint16
 	bufsize int // length in bytes
@@ -18,6 +19,9 @@ type Basket struct {
 	nevbuf  int // number of entries in basket
 	last    int // pointer to last used byte in basket
 	flag    byte
+
+	header       bool    // true when only the basket header must be read/written
+	displacement []int32 // displacement of entries in key.buffer
 }
 
 func (b *Basket) Class() string {
@@ -55,17 +59,45 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 		b.bufsize = b.last
 	}
 
-	fmt.Printf("+++ TBasket: %q %q vers=%d bufsize=%d nevsize=%d nevbuf=%d last=%v flag=0x%x\n",
-		b.Name(), b.Title(), b.vers, b.bufsize, b.nevsize, b.nevbuf, b.last, b.flag,
-	)
-
 	if b.flag == 0 {
-		return r.Err()
+		return r.err
 	}
 
-	panic("not implemented")
+	if b.flag%10 != 2 {
+		if b.nevbuf > 0 {
+			n := int(r.ReadI32())
+			b.displacement = r.ReadFastArrayI32(n)
+			if 20 < b.flag && b.flag < 40 {
+				const displacement uint32 = 0xFF000000
+				for i, v := range b.displacement {
+					b.displacement[i] = int32(uint32(v) &^ displacement)
+				}
+			}
+		}
+		if b.flag > 40 {
+			n := int(r.ReadI32())
+			b.displacement = r.ReadFastArrayI32(n)
+		}
+	}
 
-	return r.Err()
+	if b.flag == 1 || b.flag > 10 {
+		// reading raw data
+		var sz = int32(b.last)
+		if b.vers <= 1 {
+			sz = r.ReadI32()
+		}
+		if sz > b.Key.keylen {
+			// FIXME(sbinet) load buffer TKey data
+			//
+		}
+
+		_, err := io.ReadFull(r.r, make([]byte, int(sz)))
+		if err != nil {
+			r.err = err
+		}
+	}
+
+	return r.err
 }
 
 func init() {
