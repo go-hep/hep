@@ -4,7 +4,7 @@
 
 package rootio
 
-import "unsafe"
+import "reflect"
 
 // start of payload in a TFile (in bytes)
 const kBEGIN = 100
@@ -103,4 +103,4 @@ const (
 	kDisplacementMask = 0xFF000000
 )
 
-var ptrSize = unsafe.Sizeof((*int)(nil))
+var ptrSize = reflect.TypeOf((*int)(nil)).Size()
