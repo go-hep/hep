@@ -161,6 +161,8 @@ type Tree interface {
 type Branch interface {
 	Named
 	SetTree(Tree)
+	Branches() []Branch
+	Leaves() []Leaf
 }
 
 // Leaf describes branches data types

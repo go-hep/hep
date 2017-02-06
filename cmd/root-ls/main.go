@@ -11,6 +11,7 @@ import (
 	"log"
 	"os"
 	"runtime/pprof"
+	"strings"
 
 	"github.com/go-hep/rootio"
 )
@@ -69,13 +70,23 @@ func main() {
 				tree, ok := k.Value().(rootio.Tree)
 				if ok {
 					fmt.Printf("%-8s %-40s %s (entries=%d)\n", k.Class(), k.Name(), k.Title(), tree.Entries())
-					for _, b := range tree.Branches() {
-						fmt.Printf("  %-20s %-20q %v\n", b.Name(), b.Title(), b.Class())
-					}
+					displayBranches(tree, 2)
 					continue
 				}
 			}
 			fmt.Printf("%-8s %-40s %s (cycle=%d)\n", k.Class(), k.Name(), k.Title(), k.Cycle())
 		}
+	}
+}
+
+type brancher interface {
+	Branches() []rootio.Branch
+}
+
+func displayBranches(bres brancher, indent int) {
+	branches := bres.Branches()
+	for _, b := range branches {
+		fmt.Printf("%s%-20s %-20q %v\n", strings.Repeat(" ", indent), b.Name(), b.Title(), b.Class())
+		displayBranches(b, indent+2)
 	}
 }

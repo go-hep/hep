@@ -62,6 +62,14 @@ func (b *tbranch) SetTree(t Tree) {
 	b.tree = t
 }
 
+func (b *tbranch) Branches() []Branch {
+	return b.branches
+}
+
+func (b *tbranch) Leaves() []Leaf {
+	return b.leaves
+}
+
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
