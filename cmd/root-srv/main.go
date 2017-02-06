@@ -97,11 +97,16 @@ const page = `<html>
 </head>
 <body>
 <h2>go-hep/rootio ROOT file inspector</h2>
-<form enctype="multipart/form-data" action={{.Path}} method="post">
-      <input type="file" name="upload-file" />
+<form id="rootio-form" enctype="multipart/form-data" action={{.Path}} method="post">
+      <input id="rootio-file" type="file" name="upload-file" />
       <input type="hidden" name="token" value="{{.Token}}"/>
       <input type="submit" value="upload" />
 </form>
+<script type="text/javascript">
+	document.getElementById("rootio-file").onchange = function() {
+		document.getElementById("rootio-form").submit();
+	}
+</script>
 </body>
 </html>
 `
