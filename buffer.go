@@ -559,8 +559,8 @@ func (r *RBuffer) ReadObjectAny() (obj Object) {
 
 		o, ok := r.refs[tag64]
 		if !ok {
-			r.dumpRefs()
-			r.err = fmt.Errorf("rootio: invalid tag [%v] found", tag64)
+			r.setPos(beg + int64(bcnt) + 4)
+			// r.err = fmt.Errorf("rootio: invalid tag [%v] found", tag64)
 			return nil
 		}
 		obj, ok = o.(Object)
