@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"reflect"
 	"sort"
@@ -572,7 +573,15 @@ func (r *RBuffer) ReadObjectAny() (obj Object) {
 
 	case tag64 == kNewClassTag:
 		cname := r.ReadCString(80)
-		fct := Factory.get(cname)
+		fct := Factory.Get(cname)
+		if fct == nil {
+			fct = func() reflect.Value {
+				o := &dobject{class: cname}
+				return reflect.ValueOf(o)
+			}
+			Factory.add(cname, fct)
+			log.Printf("rootio: adding dummy factory for %q\n", cname)
+		}
 
 		if vers > 0 {
 			r.refs[start+kMapOffset] = fct
