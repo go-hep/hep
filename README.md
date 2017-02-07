@@ -1,6 +1,9 @@
 hep
 ===
 
+[![Build Status](https://secure.travis-ci.org/go-hep/hep.png)](http://travis-ci.org/go-hep/hep)
+[![GoDoc](https://godoc.org/go-hep.org/x/hep?status.svg)](https://godoc.org/go-hep.org/x/hep)
+
 `hep` is a set of libraries and tools to perform High Energy Physics analyses with ease and [Go](https://golang.org)
 
 See [go-hep.org](https://go-hep.org) for more informations.
