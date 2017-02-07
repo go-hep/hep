@@ -1,0 +1,21 @@
+## a simple PAW-Go test script
+
+## /! runs a shell command
+/! ls ./testdata
+
+## open the rio file hsimple.rio, assign it the variable name 'f'
+/file/open f ./testdata/hsimple.rio
+
+## list the content of the rio file 'f'
+/file/ls f
+
+## open the hbook.H1D histogram 'h1' from file 'f', assign it the variable name 'h'
+/hist/open h /file/id/f/h1
+
+## plot the hbook.H1D histogram 'h'
+/hist/plot h
+
+## leaving /quit uncommented will make PAW-Go exit
+# /quit
+
+## EOF
