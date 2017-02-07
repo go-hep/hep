@@ -13,7 +13,7 @@ import (
 // LeafC implements ROOT TLeafC
 type LeafC struct {
 	tleaf
-	min	int32
+	min int32
 	max int32
 }
 
@@ -66,7 +66,7 @@ var _ ROOTUnmarshaler = (*LeafC)(nil)
 // LeafI implements ROOT TLeafI
 type LeafI struct {
 	tleaf
-	min	int32
+	min int32
 	max int32
 }
 
@@ -119,7 +119,7 @@ var _ ROOTUnmarshaler = (*LeafI)(nil)
 // LeafL implements ROOT TLeafL
 type LeafL struct {
 	tleaf
-	min	int64
+	min int64
 	max int64
 }
 
@@ -172,7 +172,7 @@ var _ ROOTUnmarshaler = (*LeafL)(nil)
 // LeafF implements ROOT TLeafF
 type LeafF struct {
 	tleaf
-	min	float32
+	min float32
 	max float32
 }
 
@@ -225,7 +225,7 @@ var _ ROOTUnmarshaler = (*LeafF)(nil)
 // LeafD implements ROOT TLeafD
 type LeafD struct {
 	tleaf
-	min	float64
+	min float64
 	max float64
 }
 

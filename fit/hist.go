@@ -5,8 +5,8 @@
 package fit
 
 import (
-	"github.com/go-hep/hbook"
 	"github.com/gonum/optimize"
+	"go-hep.org/x/hep/hbook"
 )
 
 // H1D returns the fit of histogram h with function f and optimization method m.

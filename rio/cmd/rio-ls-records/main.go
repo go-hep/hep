@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/go-hep/rio"
+	"go-hep.org/x/hep/rio"
 )
 
 func main() {

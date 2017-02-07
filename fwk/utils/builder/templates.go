@@ -17,8 +17,8 @@ import (
 	"os"
 	"runtime/pprof"
 
-	_ "github.com/go-hep/fwk"
-	"github.com/go-hep/fwk/job"
+	_ "go-hep.org/x/hep/fwk"
+	"go-hep.org/x/hep/fwk/job"
 )
 
 var (

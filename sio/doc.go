@@ -3,4 +3,4 @@
 // license that can be found in the LICENSE file.
 
 // Package sio implements a record-oriented persistency mechanism.
-package sio // import "github.com/go-hep/sio"
+package sio // import "go-hep.org/x/hep/sio"

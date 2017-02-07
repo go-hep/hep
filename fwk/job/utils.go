@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fwk"
 )
 
 // MsgLevel returns the fwk.Level according to the given lvl string value.

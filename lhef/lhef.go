@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package lhef implements the "Les Houches Event File" data format.
-package lhef // import "github.com/go-hep/lhef"
+package lhef // import "go-hep.org/x/hep/lhef"
 
 // XSecInfo contains information given in the xsecinfo tag.
 type XSecInfo struct {

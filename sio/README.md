@@ -8,13 +8,13 @@ sio
 ## Installation
 
 ```sh
-$ go get github.com/go-hep/sio
+$ go get go-hep.org/x/hep/sio
 ```
 
 ## Documentation
 
 The documentation is browsable at godoc.org:
- http://godoc.org/github.com/go-hep/sio
+ http://godoc.org/go-hep.org/x/hep/sio
 
 ## Example
 
@@ -25,7 +25,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/go-hep/sio"
+	"go-hep.org/x/hep/sio"
 )
 
 type LCRunHeader struct {

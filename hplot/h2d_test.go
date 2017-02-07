@@ -8,13 +8,13 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/go-hep/hbook"
-	"github.com/go-hep/hplot"
 	"github.com/gonum/matrix/mat64"
 	"github.com/gonum/plot"
 	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/vg"
 	"github.com/gonum/stat/distmv"
+	"go-hep.org/x/hep/hbook"
+	"go-hep.org/x/hep/hplot"
 )
 
 func TestH2D(t *testing.T) {

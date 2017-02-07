@@ -7,12 +7,12 @@ import (
 	"time"
 
 	// job is the scripting interface to 'fwk'
-	"github.com/go-hep/fwk/job"
+	"go-hep.org/x/hep/fwk/job"
 
 	// side-effect import 'testdata'.
 	// merely importing it will register the components defined in this package
 	// with the fwk components' factory.
-	_ "github.com/go-hep/fwk/testdata"
+	_ "go-hep.org/x/hep/fwk/testdata"
 )
 
 var (
@@ -51,7 +51,7 @@ options:
 	// create a task that reads integers from some location
 	// and publish the square of these integers under some other location
 	app.Create(job.C{
-		Type: "github.com/go-hep/fwk/testdata.task2",
+		Type: "go-hep.org/x/hep/fwk/testdata.task2",
 		Name: "t2",
 		Props: job.P{
 			"Input":  "t1-ints1",
@@ -63,7 +63,7 @@ options:
 	// note we create it after the one that consumes these integers
 	// to exercize the automatic data-flow scheduling.
 	app.Create(job.C{
-		Type: "github.com/go-hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/testdata.task1",
 		Name: "t1",
 		Props: job.P{
 			"Ints1": "t1-ints1",

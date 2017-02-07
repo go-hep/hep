@@ -8,7 +8,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/go-hep/fwk/fsm"
+	"go-hep.org/x/hep/fwk/fsm"
 	nctx "golang.org/x/net/context"
 )
 
@@ -59,7 +59,7 @@ func NewApp() App {
 		svcs:   make([]Svc, 0),
 	}
 
-	svc, err := app.New("github.com/go-hep/fwk.datastore", "evtstore")
+	svc, err := app.New("go-hep.org/x/hep/fwk.datastore", "evtstore")
 	if err != nil {
 		app.msg.Errorf("fwk.NewApp: could not create evtstore: %v\n", err)
 		return nil
@@ -72,7 +72,7 @@ func NewApp() App {
 		return nil
 	}
 
-	svc, err = app.New("github.com/go-hep/fwk.dflowsvc", "dataflow")
+	svc, err = app.New("go-hep.org/x/hep/fwk.dflowsvc", "dataflow")
 	if err != nil {
 		app.msg.Errorf("fwk.NewApp: could not create dataflow svc: %v\n", err)
 		return nil
@@ -108,7 +108,7 @@ func NewApp() App {
 
 // Type returns the fully qualified type of this application
 func (app *appmgr) Type() string {
-	return "github.com/go-hep/fwk.appmgr"
+	return "go-hep.org/x/hep/fwk.appmgr"
 }
 
 // Name returns the name of this application

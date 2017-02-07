@@ -30,7 +30,7 @@
 // Based on an implementation by Gustavo Niemeyer (in mgo/txn):
 // http://bazaar.launchpad.net/+branch/mgo/v2/view/head:/txn/tarjan.go
 //
-package tarjan // import "github.com/go-hep/fwk/utils/tarjan"
+package tarjan // import "go-hep.org/x/hep/fwk/utils/tarjan"
 
 // Connections creates a slice where each item is a slice of strongly connected vertices.
 //

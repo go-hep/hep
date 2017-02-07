@@ -12,12 +12,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-hep/fit"
-	"github.com/go-hep/hplot"
 	"github.com/gonum/optimize"
 	"github.com/gonum/plot"
 	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/vg"
+	"go-hep.org/x/hep/fit"
+	"go-hep.org/x/hep/hplot"
 )
 
 func fitFunc(x float64, p []float64) float64 {

@@ -1,7 +1,7 @@
 package fwk
 
 import (
-	"github.com/go-hep/fwk/fsm"
+	"go-hep.org/x/hep/fwk/fsm"
 )
 
 // irunner wraps an appmgr to implement fwk.Scripter

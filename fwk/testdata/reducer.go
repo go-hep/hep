@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fwk"
 )
 
 type reducer struct {

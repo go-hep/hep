@@ -8,7 +8,7 @@ import (
 	"sort"
 
 	"github.com/awalterschulze/gographviz"
-	"github.com/go-hep/fwk/utils/tarjan"
+	"go-hep.org/x/hep/fwk/utils/tarjan"
 )
 
 type node struct {

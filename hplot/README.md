@@ -1,7 +1,7 @@
 hplot
 ====
 
-[![Build Status](https://secure.travis-ci.org/go-hep/hplot.png)](http://travis-ci.org/go-hep/hplot) [![GoDoc](https://godoc.org/github.com/go-hep/hplot?status.svg)](https://godoc.org/github.com/go-hep/hplot)
+[![Build Status](https://secure.travis-ci.org/go-hep/hplot.png)](http://travis-ci.org/go-hep/hplot) [![GoDoc](https://godoc.org/go-hep.org/x/hep/hplot?status.svg)](https://godoc.org/go-hep.org/x/hep/hplot)
 
 `hplot` is a WIP package relying on `gonum/plot` to plot histograms,
 n-tuples and functions.
@@ -9,21 +9,21 @@ n-tuples and functions.
 ## Installation
 
 ```sh
-$ go get github.com/go-hep/hplot
+$ go get go-hep.org/x/hep/hplot
 ```
 
 ## Documentation
 
 Is available on ``godoc``:
 
-http://godoc.org/github.com/go-hep/hplot
+http://godoc.org/go-hep.org/x/hep/hplot
 
 
 ## Examples
 
 ### 1D histogram
 
-![hist-example](https://github.com/go-hep/hplot/raw/master/testdata/h1d_plot_golden.png)
+![hist-example](https://go-hep.org/x/hep/hplot/raw/master/testdata/h1d_plot_golden.png)
 [embedmd]:# (h1d_test.go go /func ExampleH1D/ /\n}/)
 ```go
 func ExampleH1D(t *testing.T) {
@@ -87,7 +87,7 @@ func ExampleH1D(t *testing.T) {
 
 ### Tiles of 1D histograms
 
-![tiled-plot](https://github.com/go-hep/hplot/raw/master/testdata/tiled_plot_histogram_golden.png)
+![tiled-plot](https://go-hep.org/x/hep/hplot/raw/master/testdata/tiled_plot_histogram_golden.png)
 [embedmd]:# (tiledplot_test.go go /func ExampleTiledPlot/ /\n}/)
 ```go
 func ExampleTiledPlot(t *testing.T) {
@@ -144,21 +144,21 @@ func ExampleTiledPlot(t *testing.T) {
 
 ### Subplots
 
-![sub-plot](https://github.com/go-hep/hplot/raw/master/testdata/sub_plot_golden.png)
+![sub-plot](https://go-hep.org/x/hep/hplot/raw/master/testdata/sub_plot_golden.png)
 
-https://godoc.org/github.com/go-hep/hplot#example-package--Subplot
+https://godoc.org/go-hep.org/x/hep/hplot#example-package--Subplot
 
 ### Diff-plots
 
-![diff-plot](https://github.com/go-hep/hplot/raw/master/testdata/diff_plot_golden.png)
+![diff-plot](https://go-hep.org/x/hep/hplot/raw/master/testdata/diff_plot_golden.png)
 
-https://godoc.org/github.com/go-hep/hplot#example-package--Diffplot
+https://godoc.org/go-hep.org/x/hep/hplot#example-package--Diffplot
 
 ### LaTeX-plots
 
-[latex-plot (PDF)](https://github.com/go-hep/hplot/blob/master/testdata/latex_plot_golden.pdf)
+[latex-plot (PDF)](https://go-hep.org/x/hep/hplot/blob/master/testdata/latex_plot_golden.pdf)
 
-https://godoc.org/github.com/go-hep/hplot#example-package--Latexplot
+https://godoc.org/go-hep.org/x/hep/hplot#example-package--Latexplot
 
 ### 2D histogram
 
@@ -202,7 +202,7 @@ func ExampleH2D(t *testing.T) {
 	}
 }
 ```
-![h2d-example](https://github.com/go-hep/hplot/raw/master/testdata/h2d_plot_golden.png)
+![h2d-example](https://go-hep.org/x/hep/hplot/raw/master/testdata/h2d_plot_golden.png)
 
 ### Scatter2D
 
@@ -251,5 +251,5 @@ func ExampleS2D(t *testing.T) {
 	}
 }
 ```
-![s2d-example](https://github.com/go-hep/hplot/raw/master/testdata/s2d_golden.png)
-![s2d-errbars-example](https://github.com/go-hep/hplot/raw/master/testdata/s2d_errbars_golden.png)
+![s2d-example](https://go-hep.org/x/hep/hplot/raw/master/testdata/s2d_golden.png)
+![s2d-errbars-example](https://go-hep.org/x/hep/hplot/raw/master/testdata/s2d_errbars_golden.png)

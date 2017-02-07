@@ -3,7 +3,7 @@ package fads
 import (
 	"math"
 
-	"github.com/go-hep/fmom"
+	"go-hep.org/x/hep/fmom"
 )
 
 type int64Slice []int64

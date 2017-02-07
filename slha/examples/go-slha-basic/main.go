@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/go-hep/slha"
+	"go-hep.org/x/hep/slha"
 )
 
 func handle(err error) {

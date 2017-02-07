@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fwk"
 )
 
 type CPUCruncher struct {

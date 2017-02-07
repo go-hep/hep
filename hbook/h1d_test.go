@@ -15,10 +15,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/go-hep/hbook"
 	"github.com/gonum/floats"
 	"github.com/gonum/plot/plotter"
 	"github.com/gonum/stat/distuv"
+	"go-hep.org/x/hep/hbook"
 )
 
 func ExampleH1D() {

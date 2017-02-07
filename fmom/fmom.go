@@ -3,4 +3,4 @@
 // license that can be found in the LICENSE file.
 
 // Package fmom provides types and functions to operate with Lorentz 4-vectors.
-package fmom // import "github.com/go-hep/fmom"
+package fmom // import "go-hep.org/x/hep/fmom"

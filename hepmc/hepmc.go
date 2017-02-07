@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package hepmc is a pure Go implementation of the C++ HepMC-2 library.
-package hepmc // import "github.com/go-hep/hepmc"
+package hepmc // import "go-hep.org/x/hep/hepmc"
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 	"io"
 	"sort"
 
-	"github.com/go-hep/fmom"
+	"go-hep.org/x/hep/fmom"
 )
 
 var (

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/go-hep/sio"
+	"go-hep.org/x/hep/sio"
 )
 
 type RunHeader struct {

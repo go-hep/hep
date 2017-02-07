@@ -6,7 +6,7 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/go-hep/rio"
+	"go-hep.org/x/hep/rio"
 )
 
 type fileType interface {

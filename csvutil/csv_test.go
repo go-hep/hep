@@ -11,7 +11,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/go-hep/csvutil"
+	"go-hep.org/x/hep/csvutil"
 )
 
 func TestCSVReaderScanArgs(t *testing.T) {

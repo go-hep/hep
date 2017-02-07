@@ -9,9 +9,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-hep/csvutil/csvdriver"
-	"github.com/go-hep/hbook"
-	"github.com/go-hep/hbook/ntup"
+	"go-hep.org/x/hep/csvutil/csvdriver"
+	"go-hep.org/x/hep/hbook"
+	"go-hep.org/x/hep/hbook/ntup"
 )
 
 var (

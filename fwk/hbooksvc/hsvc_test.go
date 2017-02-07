@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-hep/fwk"
-	"github.com/go-hep/fwk/job"
+	"go-hep.org/x/hep/fwk"
+	"go-hep.org/x/hep/fwk/job"
 )
 
 const (
@@ -31,14 +31,14 @@ func TestHbookSvcSeq(t *testing.T) {
 
 	for i := 0; i < nhists; i++ {
 		app.Create(job.C{
-			Type:  "github.com/go-hep/fwk/hbooksvc.testhsvc",
+			Type:  "go-hep.org/x/hep/fwk/hbooksvc.testhsvc",
 			Name:  fmt.Sprintf("t%03d", i),
 			Props: job.P{},
 		})
 	}
 
 	app.Create(job.C{
-		Type: "github.com/go-hep/fwk/hbooksvc.hsvc",
+		Type: "go-hep.org/x/hep/fwk/hbooksvc.hsvc",
 		Name: "histsvc",
 		Props: job.P{
 			"Streams": map[string]Stream{
@@ -62,14 +62,14 @@ func TestHbookSvcConc(t *testing.T) {
 
 		for i := 0; i < nhists; i++ {
 			app.Create(job.C{
-				Type:  "github.com/go-hep/fwk/hbooksvc.testhsvc",
+				Type:  "go-hep.org/x/hep/fwk/hbooksvc.testhsvc",
 				Name:  fmt.Sprintf("t%03d", i),
 				Props: job.P{},
 			})
 		}
 
 		app.Create(job.C{
-			Type: "github.com/go-hep/fwk/hbooksvc.hsvc",
+			Type: "go-hep.org/x/hep/fwk/hbooksvc.hsvc",
 			Name: "histsvc",
 			Props: job.P{
 				"Streams": map[string]Stream{

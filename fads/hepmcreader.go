@@ -7,10 +7,10 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/go-hep/fmom"
-	"github.com/go-hep/fwk"
-	"github.com/go-hep/hepmc"
-	"github.com/go-hep/heppdt"
+	"go-hep.org/x/hep/fmom"
+	"go-hep.org/x/hep/fwk"
+	"go-hep.org/x/hep/hepmc"
+	"go-hep.org/x/hep/heppdt"
 )
 
 type HepMcStreamer struct {

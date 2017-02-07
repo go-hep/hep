@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package job // import "github.com/go-hep/fwk/job"
+package job // import "go-hep.org/x/hep/fwk/job"
 
 import (
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fwk"
 )
 
 // C describes the configuration data of a fwk.Component
 type C struct {
 	Name  string // name of the fwk.Component to create (eg "my-propagator")
-	Type  string // type of the fwk.Component to create (eg "github.com/go-hep/fads.Propagator")
+	Type  string // type of the fwk.Component to create (eg "go-hep.org/x/hep/fads.Propagator")
 	Props P      // properties of the fwk.Component to create
 }
 

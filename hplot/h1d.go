@@ -9,11 +9,11 @@ import (
 	"fmt"
 	"image/color"
 
-	"github.com/go-hep/hbook"
 	"github.com/gonum/plot"
 	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/vg"
 	"github.com/gonum/plot/vg/draw"
+	"go-hep.org/x/hep/hbook"
 )
 
 // H1D implements the plotter.Plotter interface,

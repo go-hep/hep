@@ -3,7 +3,7 @@ package testdata
 import (
 	"reflect"
 
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fwk"
 )
 
 type task2 struct {

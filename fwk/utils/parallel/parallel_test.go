@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-hep/fwk/utils/parallel"
+	"go-hep.org/x/hep/fwk/utils/parallel"
 )
 
 func TestParallelMaxPar(t *testing.T) {

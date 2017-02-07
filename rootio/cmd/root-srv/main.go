@@ -17,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-hep/rootio"
+	"go-hep.org/x/hep/rootio"
 )
 
 var (

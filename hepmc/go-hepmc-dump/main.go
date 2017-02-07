@@ -29,7 +29,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/go-hep/hepmc"
+	"go-hep.org/x/hep/hepmc"
 )
 
 func main() {

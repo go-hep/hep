@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/go-hep/fmom"
+	"go-hep.org/x/hep/fmom"
 )
 
 type Recombiner interface {

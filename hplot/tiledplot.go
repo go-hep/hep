@@ -13,10 +13,10 @@ import (
 
 	"golang.org/x/exp/shiny/screen"
 
-	"github.com/go-hep/hplot/vgshiny"
 	"github.com/gonum/plot/vg"
 	"github.com/gonum/plot/vg/draw"
 	"github.com/gonum/plot/vg/vgimg"
+	"go-hep.org/x/hep/hplot/vgshiny"
 )
 
 // TiledPlot is a regularly spaced set of plots, aranged as tiles.

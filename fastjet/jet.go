@@ -3,7 +3,7 @@ package fastjet
 import (
 	"math"
 
-	"github.com/go-hep/fmom"
+	"go-hep.org/x/hep/fmom"
 )
 
 // // Used to protect against parton-level events where pt can be zero

@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package hepevt provides access to the HEPEVT event format record from FORTRAN-77.
-package hepevt // import "github.com/go-hep/hepevt"
+package hepevt // import "go-hep.org/x/hep/hepevt"
 
 // Event is the Go representation of the FORTRAN-77 HEPEVT common block:
 //

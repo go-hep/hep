@@ -10,12 +10,12 @@ fmom
 Is done with `go get`:
 
 ```sh
-$ go get github.com/go-hep/fmom
+$ go get go-hep.org/x/hep/fmom
 ```
 
 ## Documentation
 
 Is provided via `godoc`:
 
-  http://godoc.org/github.com/go-hep/fmom
+  http://godoc.org/go-hep.org/x/hep/fmom
 

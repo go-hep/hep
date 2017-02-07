@@ -8,13 +8,13 @@ rio
 ## Installation
 
 ```sh
-$ go get github.com/go-hep/rio
+$ go get go-hep.org/x/hep/rio
 ```
 
 ## Documentation
 
 The documentation is browsable at godoc.org:
- http://godoc.org/github.com/go-hep/rio
+ http://godoc.org/go-hep.org/x/hep/rio
 
 ## Example
 
@@ -25,7 +25,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/go-hep/rio"
+	"go-hep.org/x/hep/rio"
 )
 
 type LCRunHeader struct {

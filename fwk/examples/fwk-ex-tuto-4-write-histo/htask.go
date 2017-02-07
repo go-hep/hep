@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fwk"
 )
 
 type testhsvc struct {

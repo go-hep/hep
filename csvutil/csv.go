@@ -7,7 +7,7 @@
 // A Table can read data from a CSV file into a struct value whose fields are
 // the various columns of the CSV file.
 // Conversely, a Table can write data into a CSV file from a struct value.
-package csvutil // import "github.com/go-hep/csvutil"
+package csvutil // import "go-hep.org/x/hep/csvutil"
 
 import (
 	"bufio"

@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/go-hep/hepmc"
+	"go-hep.org/x/hep/hepmc"
 )
 
 func TestEventRW(t *testing.T) {

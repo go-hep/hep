@@ -3,7 +3,7 @@ package job
 import (
 	"io"
 
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fwk"
 )
 
 // UI wraps a fwk.Scripter and panics when an error occurs

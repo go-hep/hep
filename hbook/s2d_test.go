@@ -13,7 +13,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-hep/hbook"
+	"go-hep.org/x/hep/hbook"
 )
 
 func TestS2D(t *testing.T) {

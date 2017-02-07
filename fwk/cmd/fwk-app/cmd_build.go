@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/go-hep/fwk/utils/builder"
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
+	"go-hep.org/x/hep/fwk/utils/builder"
 )
 
 func fwk_make_cmd_build() *commander.Command {

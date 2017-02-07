@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-hep/hbook"
-	"github.com/go-hep/hplot"
+	"go-hep.org/x/hep/hbook"
+	"go-hep.org/x/hep/hplot"
 )
 
 type histMgr struct {

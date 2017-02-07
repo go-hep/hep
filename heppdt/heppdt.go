@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package heppdt provides access to the HEP Particle Data Table.
-package heppdt // import "github.com/go-hep/heppdt"
+package heppdt // import "go-hep.org/x/hep/heppdt"
 
 // Name returns the name of the default particle data table
 func Name() string {

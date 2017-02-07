@@ -11,7 +11,7 @@
 //   obj, err := f.Get("tree")
 //   tree := obj.(*rootio.Tree)
 //   fmt.Printf("entries= %v\n", t.Entries())
-package rootio // import "github.com/go-hep/rootio"
+package rootio // import "go-hep.org/x/hep/rootio"
 
 import (
 	"bytes"

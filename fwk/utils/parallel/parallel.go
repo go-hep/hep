@@ -12,7 +12,7 @@
 // The parallel package provides a way of running functions
 // concurrently while limiting the maximum number
 // running at once.
-package parallel // import "github.com/go-hep/fwk/utils/parallel"
+package parallel // import "go-hep.org/x/hep/fwk/utils/parallel"
 
 import (
 	"fmt"

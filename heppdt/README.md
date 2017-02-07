@@ -10,12 +10,12 @@ It has been heavily inspired from the `C++` `HepPDT` library.
 ## Installation
 
 ```sh
-$ go get github.com/go-hep/heppdt
+$ go get go-hep.org/x/hep/heppdt
 ```
 
 ## Documentation
 
-Documentation is available on http://godoc.org/github.com/go-hep/heppdt
+Documentation is available on http://godoc.org/go-hep.org/x/hep/heppdt
 
 
 ## References

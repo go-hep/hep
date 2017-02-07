@@ -7,7 +7,7 @@
 // builder's architecture and sources are heavily inspired from golint:
 //   https://github.com/golang/lint
 //
-package builder // import "github.com/go-hep/fwk/utils/builder"
+package builder // import "go-hep.org/x/hep/fwk/utils/builder"
 
 import (
 	"go/ast"
@@ -20,7 +20,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fwk"
 )
 
 type file struct {
@@ -214,7 +214,7 @@ func (b *Builder) scanSetupFuncs() error {
 			// FIXME(sbinet)
 			//  - go the extra mile and create a proper type.Type from type.New("func(*job.Job)")
 			//  - compare the types
-			if param.String() != "*github.com/go-hep/fwk/job.Job" {
+			if param.String() != "*go-hep.org/x/hep/fwk/job.Job" {
 				// fmt.Fprintf(os.Stderr,
 				// 	"file: %q - func=%s [invalid type=%s]\n",
 				// 	f.name, fn.Name.Name,

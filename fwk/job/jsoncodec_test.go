@@ -6,14 +6,14 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-hep/fwk"
-	"github.com/go-hep/fwk/testdata"
+	"go-hep.org/x/hep/fwk"
+	"go-hep.org/x/hep/fwk/testdata"
 )
 
 func TestJSONEncode(t *testing.T) {
 	appcfg := C{
 		Name: "app",
-		Type: "github.com/go-hep/fwk.appmgr",
+		Type: "go-hep.org/x/hep/fwk.appmgr",
 		Props: P{
 			"EvtMax": int64(10),
 			"NProcs": 42,
@@ -21,7 +21,7 @@ func TestJSONEncode(t *testing.T) {
 	}
 
 	cfg0 := C{
-		Type: "github.com/go-hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/testdata.task1",
 		Name: "t0",
 		Props: P{
 			"Ints1": "t0-ints1",
@@ -30,7 +30,7 @@ func TestJSONEncode(t *testing.T) {
 	}
 
 	cfg1 := C{
-		Type: "github.com/go-hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/testdata.task1",
 		Name: "t1",
 		Props: P{
 			"Ints1": "t1-ints1",
@@ -39,7 +39,7 @@ func TestJSONEncode(t *testing.T) {
 	}
 
 	cfg2 := C{
-		Type: "github.com/go-hep/fwk/testdata.svc1",
+		Type: "go-hep.org/x/hep/fwk/testdata.svc1",
 		Name: "svc1",
 		Props: P{
 			"Int":    testdata.MyInt(12),

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package errstack // import "github.com/go-hep/fwk/utils/errstack"
+package errstack // import "go-hep.org/x/hep/fwk/utils/errstack"
 
 import (
 	"fmt"

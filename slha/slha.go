@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package slha implements encoding and decoding of SUSY Les Houches Accords (SLHA) data format.
-package slha // import "github.com/go-hep/slha"
+package slha // import "go-hep.org/x/hep/slha"
 
 import (
 	"fmt"

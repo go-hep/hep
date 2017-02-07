@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/go-hep/fmom"
+	"go-hep.org/x/hep/fmom"
 )
 
 func TestIPtCotThPhiM(t *testing.T) {

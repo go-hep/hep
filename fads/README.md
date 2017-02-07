@@ -2,7 +2,7 @@ fads
 ====
 
 [![Build Status](https://secure.travis-ci.org/go-hep/fads.png)](http://travis-ci.org/go-hep/fads)
-[![GoDoc](https://godoc.org/github.com/go-hep/fads?status.svg)](https://godoc.org/github.com/go-hep/fads)
+[![GoDoc](https://godoc.org/go-hep.org/x/hep/fads?status.svg)](https://godoc.org/go-hep.org/x/hep/fads)
 
 `fads`, a FAst Detector Simulation, is a Go-based detector simulation including a tracking system embedded into a magnetic field, calorimeters and a muon system.
 
@@ -11,18 +11,18 @@ fads
 Is done via `go get`:
 
 ```sh
-$ go get github.com/go-hep/fads/...
+$ go get go-hep.org/x/hep/fads/...
 ```
 
 ## Documentation
 
-Is available on `godoc`: http://godoc.org/github.com/go-hep/fads
+Is available on `godoc`: http://godoc.org/go-hep.org/x/hep/fads
 
 ## Example
 
 A test application is available over there:
 
-https://github.com/go-hep/fads/blob/master/cmd/fads-app/main.go
+https://go-hep.org/x/hep/fads/blob/master/cmd/fads-app/main.go
 
 A more in-depth tutorial is available at [go-hep/tutos](https://github.com/go-hep/tutos) but, in a nutshell:
 
@@ -39,7 +39,7 @@ options:
   -l="INFO": log level (DEBUG|INFO|WARN|ERROR)
   -nprocs=0: number of concurrent events to process
 
-$ fads-app $GOPATH/src/github.com/go-hep/fads/testdata/hepmc.data
+$ fads-app $GOPATH/src/go-hep.org/x/hep/fads/testdata/hepmc.data
 ::: fads-app...
 app                  INFO >>> running evt=0...
 app                  INFO >>> running evt=1...

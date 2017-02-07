@@ -12,7 +12,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-hep/brio/cmd/brio-gen/internal/gen"
+	"go-hep.org/x/hep/brio/cmd/brio-gen/internal/gen"
 )
 
 var (

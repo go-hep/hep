@@ -6,7 +6,7 @@ pawgo
 ## Installation
 
 ```sh
-$ go get -u github.com/go-hep/pawgo
+$ go get -u go-hep.org/x/hep/pawgo
 ```
 
 ## Example
@@ -35,8 +35,8 @@ paw> /?
 paw> /file/open f testdata/hsimple.rio
 paw> /file/ls f
 /file/id/f name=testdata/hsimple.rio
- 	- h1	(type="*github.com/go-hep/hbook.H1D")
- 	- h2	(type="*github.com/go-hep/hbook.H1D")
+ 	- h1	(type="*go-hep.org/x/hep/hbook.H1D")
+ 	- h2	(type="*go-hep.org/x/hep/hbook.H1D")
 
 paw> /hist/open h /file/id/f/h1
 paw> /hist/plot h

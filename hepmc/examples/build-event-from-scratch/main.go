@@ -27,8 +27,8 @@ package main
 import (
 	"os"
 
-	"github.com/go-hep/fmom"
-	"github.com/go-hep/hepmc"
+	"go-hep.org/x/hep/fmom"
+	"go-hep.org/x/hep/hepmc"
 )
 
 func handle_err(err error) {

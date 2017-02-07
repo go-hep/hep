@@ -60,7 +60,7 @@ func TestFile(t *testing.T) {
 			Blocks: []BlockDesc{
 				{
 					Name: "evt1",
-					Type: "*github.com/go-hep/rio.event",
+					Type: "*go-hep.org/x/hep/rio.event",
 				},
 			},
 		},
@@ -69,7 +69,7 @@ func TestFile(t *testing.T) {
 			Blocks: []BlockDesc{
 				{
 					Name: "evt2",
-					Type: "*github.com/go-hep/rio.event",
+					Type: "*go-hep.org/x/hep/rio.event",
 				},
 			},
 		},

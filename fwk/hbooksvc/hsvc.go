@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package hbooksvc // import "github.com/go-hep/fwk/hbooksvc"
+package hbooksvc // import "go-hep.org/x/hep/fwk/hbooksvc"
 
 import (
 	"os"
@@ -10,10 +10,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/go-hep/fwk"
-	"github.com/go-hep/fwk/fsm"
-	"github.com/go-hep/hbook"
-	"github.com/go-hep/rio"
+	"go-hep.org/x/hep/fwk"
+	"go-hep.org/x/hep/fwk/fsm"
+	"go-hep.org/x/hep/hbook"
+	"go-hep.org/x/hep/rio"
 )
 
 type h1d struct {

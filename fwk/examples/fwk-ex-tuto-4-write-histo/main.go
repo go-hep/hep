@@ -7,10 +7,10 @@ import (
 	"time"
 
 	// job is the scripting interface to 'fwk'
-	"github.com/go-hep/fwk/job"
+	"go-hep.org/x/hep/fwk/job"
 
 	// for hsbooksvc.Stream
-	"github.com/go-hep/fwk/hbooksvc"
+	"go-hep.org/x/hep/fwk/hbooksvc"
 )
 
 var (
@@ -71,7 +71,7 @@ options:
 	})
 
 	app.Create(job.C{
-		Type: "github.com/go-hep/fwk/hbooksvc.hsvc",
+		Type: "go-hep.org/x/hep/fwk/hbooksvc.hsvc",
 		Name: "histsvc",
 		Props: job.P{
 			"Streams": map[string]hbooksvc.Stream{

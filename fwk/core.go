@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/go-hep/fwk/fsm"
+	"go-hep.org/x/hep/fwk/fsm"
 )
 
 type statuscode int
@@ -26,10 +26,10 @@ type Context interface {
 // Component is the interface satisfied by all values in fwk.
 //
 // A component can be asked for:
-// its Type() (ex: "github.com/go-hep/fads.MomentumSmearing")
+// its Type() (ex: "go-hep.org/x/hep/fads.MomentumSmearing")
 // its Name() (ex: "MyPropagator")
 type Component interface {
-	Type() string // Type of the component (ex: "github.com/go-hep/fads.MomentumSmearing")
+	Type() string // Type of the component (ex: "go-hep.org/x/hep/fads.MomentumSmearing")
 	Name() string // Name of the component (ex: "MyPropagator")
 }
 

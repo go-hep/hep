@@ -7,7 +7,7 @@ import (
 	"runtime/pprof"
 	"time"
 
-	"github.com/go-hep/fwk/job"
+	"go-hep.org/x/hep/fwk/job"
 )
 
 var (

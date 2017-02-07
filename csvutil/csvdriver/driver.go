@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // package csvdriver registers a database/sql/driver.Driver implementation for CSV files.
-package csvdriver // import "github.com/go-hep/csvutil/csvdriver"
+package csvdriver // import "go-hep.org/x/hep/csvutil/csvdriver"
 
 import (
 	"database/sql"

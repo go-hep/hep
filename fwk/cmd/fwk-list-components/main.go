@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fwk"
 )
 
 func main() {

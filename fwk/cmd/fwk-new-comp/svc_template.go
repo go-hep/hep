@@ -5,7 +5,7 @@ const g_svc_template = `package {{.Package}}
 import (
 	"reflect"
 
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fwk"
 )
 
 type {{.Name}} struct {

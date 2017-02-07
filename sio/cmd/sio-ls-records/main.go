@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main // import "github.com/go-hep/sio/cmd/sio-ls-records"
+package main // import "go-hep.org/x/hep/sio/cmd/sio-ls-records"
 
 import (
 	"flag"
 	"fmt"
 	"os"
 
-	"github.com/go-hep/sio"
+	"go-hep.org/x/hep/sio"
 )
 
 func main() {

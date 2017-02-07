@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package fit provides functions to fit data.
-package fit // import "github.com/go-hep/fit"
+package fit // import "go-hep.org/x/hep/fit"
 
 import (
 	"github.com/gonum/diff/fd"

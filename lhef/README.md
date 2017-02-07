@@ -9,13 +9,13 @@ format as described in [hep-ph/0609017](http://arxiv.org/abs/hep-ph/0609017v1).
 ## Installation
 
 ```sh
-$ go get github.com/go-hep/lhef
+$ go get go-hep.org/x/hep/lhef
 ```
 
 
 ## Documentation
 
-Is available on [godoc.org](http://godoc.org/github.com/go-hep/lhef)
+Is available on [godoc.org](http://godoc.org/go-hep.org/x/hep/lhef)
 
 
 ## TODO

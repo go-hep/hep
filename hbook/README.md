@@ -2,7 +2,7 @@ hbook
 =====
 
 [![Build Status](https://secure.travis-ci.org/go-hep/hbook.png)](http://travis-ci.org/go-hep/hbook)
-[![GoDoc](https://godoc.org/github.com/go-hep/hbook?status.svg)](https://godoc.org/github.com/go-hep/hbook)
+[![GoDoc](https://godoc.org/go-hep.org/x/hep/hbook?status.svg)](https://godoc.org/go-hep.org/x/hep/hbook)
 
 `hbook` is a set of data analysis tools for HEP (histograms (1D, 2D, 3D), profiles and ntuples).
 
@@ -12,14 +12,14 @@ It is loosely based on `AIDA` interfaces and concepts as well as the "simplicity
 ## Installation
 
 ```sh
-$ go get github.com/go-hep/hbook
+$ go get go-hep.org/x/hep/hbook
 ```
 
 ## Documentation
 
 Documentation is available on godoc:
 
- http://godoc.org/github.com/go-hep/hbook
+ http://godoc.org/go-hep.org/x/hep/hbook
 
 ## Example
 
@@ -120,8 +120,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/go-hep/csvutil/csvdriver"
-	"github.com/go-hep/hbook/ntup"
+	_ "go-hep.org/x/hep/csvutil/csvdriver"
+	"go-hep.org/x/hep/hbook/ntup"
 )
 
 func main() {

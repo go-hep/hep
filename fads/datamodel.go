@@ -1,8 +1,8 @@
 package fads
 
 import (
-	"github.com/go-hep/fmom"
-	"github.com/go-hep/hepmc"
+	"go-hep.org/x/hep/fmom"
+	"go-hep.org/x/hep/hepmc"
 )
 
 type Particle interface {

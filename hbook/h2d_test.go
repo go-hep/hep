@@ -12,10 +12,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-hep/hbook"
 	"github.com/gonum/matrix/mat64"
 	"github.com/gonum/plot/plotter"
 	"github.com/gonum/stat/distmv"
+	"go-hep.org/x/hep/hbook"
 )
 
 func TestH2D(t *testing.T) {

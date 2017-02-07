@@ -1,7 +1,7 @@
 package fwk
 
 import (
-	"github.com/go-hep/hbook"
+	"go-hep.org/x/hep/hbook"
 )
 
 // HID is a histogram identifier

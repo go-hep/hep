@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/go-hep/fwk/job"
+	"go-hep.org/x/hep/fwk/job"
 )
 
 func loadConfig(fname string, app *job.Job) {

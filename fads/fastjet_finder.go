@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/go-hep/fastjet"
-	"github.com/go-hep/fmom"
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fastjet"
+	"go-hep.org/x/hep/fmom"
+	"go-hep.org/x/hep/fwk"
 )
 
 // FastJetFinder finds jets using the fastjet library

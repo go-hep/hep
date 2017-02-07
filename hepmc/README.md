@@ -9,12 +9,12 @@ library.
 ## Installation
 
 ```sh
-$ go get github.com/go-hep/hepmc
+$ go get go-hep.org/x/hep/hepmc
 ```
 
 ## Documentation
 
-Doc is on [godoc](http://godoc.org/github.com/go-hep/hepmc)
+Doc is on [godoc](http://godoc.org/go-hep.org/x/hep/hepmc)
 
 ## Example
 
@@ -26,7 +26,7 @@ import (
   "io"
   "os"
   
-  "github.com/go-hep/hepmc"
+  "go-hep.org/x/hep/hepmc"
 )
 
 func main() {

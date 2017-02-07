@@ -3,7 +3,7 @@ package heppdt_test
 import (
 	"testing"
 
-	"github.com/go-hep/heppdt"
+	"go-hep.org/x/hep/heppdt"
 )
 
 func TestPID(t *testing.T) {

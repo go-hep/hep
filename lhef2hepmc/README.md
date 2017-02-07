@@ -10,7 +10,7 @@ It is a pure ``Go`` re-implementation of the `C++` converter from
 ## Installation
 
 ```sh
-$ go get github.com/go-hep/lhef2hepmc
+$ go get go-hep.org/x/hep/lhef2hepmc
 ```
 
 ## Example

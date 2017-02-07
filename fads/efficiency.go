@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/go-hep/fwk"
 	"github.com/gonum/stat/distuv"
+	"go-hep.org/x/hep/fwk"
 )
 
 type Efficiency struct {

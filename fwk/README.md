@@ -2,7 +2,7 @@ fwk
 ===
 
 [![Build Status](https://secure.travis-ci.org/go-hep/fwk.png)](http://travis-ci.org/go-hep/fwk)
-[![GoDoc](https://godoc.org/github.com/go-hep/fwk?status.svg)](https://godoc.org/github.com/go-hep/fwk)
+[![GoDoc](https://godoc.org/go-hep.org/x/hep/fwk?status.svg)](https://godoc.org/go-hep.org/x/hep/fwk)
 
 `fwk` is a HEP oriented concurrent framework written in `Go`.
 `fwk` should be easy to pick up and use for small and fast analyses but should also support reconstruction, simulation, ... use cases.
@@ -12,7 +12,7 @@ fwk
 `fwk`, like any pure-Go package, is `go get` able:
 
 ```sh
-$ go get github.com/go-hep/fwk/...
+$ go get go-hep.org/x/hep/fwk/...
 ```
 
 (yes, with the ellipsis after the slash, to install all the "sub-packages")
@@ -22,7 +22,7 @@ $ go get github.com/go-hep/fwk/...
 
 The documentation is available on `godoc`:
 
- http://godoc.org/github.com/go-hep/fwk
+ http://godoc.org/go-hep.org/x/hep/fwk
 
 
 ## Examples
@@ -30,7 +30,7 @@ The documentation is available on `godoc`:
 
 ### `fwk` tuto examples
 
-The [examples](https://github.com/go-hep/fwk/blob/master/examples)
+The [examples](https://go-hep.org/x/hep/fwk/blob/master/examples)
 directory contains a few simple applications which exercize the `fwk`
 toolkit.
 
@@ -38,7 +38,7 @@ The examples/tutorials should be readily available as soon as you've
 executed:
 
 ```sh
-$ go get github.com/go-hep/fwk/examples/...
+$ go get go-hep.org/x/hep/fwk/examples/...
 ```
 
 *e.g.:*
@@ -108,7 +108,7 @@ app                  INFO mem: gc-pauses:          0 ms
 
 ### Physics-oriented demonstrator
 
-There is also a more physics-oriented example/demonstrator: [fads](https://github.com/go-hep/fads)
+There is also a more physics-oriented example/demonstrator: [fads](https://go-hep.org/x/hep/fads)
 
 
 ## Tools
@@ -141,9 +141,9 @@ options:
 ```sh
 $ fwk-list-components
 ::: components... (5)
-[0000/0005] github.com/go-hep/fwk.InputStream
-[0001/0005] github.com/go-hep/fwk.OutputStream
-[0002/0005] github.com/go-hep/fwk.appmgr
-[0003/0005] github.com/go-hep/fwk.datastore
-[0004/0005] github.com/go-hep/fwk.dflowsvc
+[0000/0005] go-hep.org/x/hep/fwk.InputStream
+[0001/0005] go-hep.org/x/hep/fwk.OutputStream
+[0002/0005] go-hep.org/x/hep/fwk.appmgr
+[0003/0005] go-hep.org/x/hep/fwk.datastore
+[0004/0005] go-hep.org/x/hep/fwk.dflowsvc
 ```

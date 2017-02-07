@@ -1,7 +1,7 @@
 package fwk
 
 import (
-	"github.com/go-hep/fwk/fsm"
+	"go-hep.org/x/hep/fwk/fsm"
 )
 
 // SvcBase provides a base implementation for fwk.Svc
@@ -22,7 +22,7 @@ func NewSvc(typ, name string, mgr App) SvcBase {
 }
 
 // Type returns the fully qualified type of the underlying service.
-// e.g. "github.com/go-hep/fwk/testdata.svc1"
+// e.g. "go-hep.org/x/hep/fwk/testdata.svc1"
 func (svc *SvcBase) Type() string {
 	return svc.t
 }

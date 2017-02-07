@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // root-ls dumps the content of a ROOT file
-package main // import "github.com/go-hep/rootio/cmd/root-ls"
+package main // import "go-hep.org/x/hep/rootio/cmd/root-ls"
 
 import (
 	"flag"
@@ -13,7 +13,7 @@ import (
 	"runtime/pprof"
 	"strings"
 
-	"github.com/go-hep/rootio"
+	"go-hep.org/x/hep/rootio"
 )
 
 var (

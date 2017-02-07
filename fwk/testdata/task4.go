@@ -3,7 +3,7 @@ package testdata
 import (
 	"reflect"
 
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fwk"
 )
 
 // task4 is like task2, except it works on float64s

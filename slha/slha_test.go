@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-hep/slha"
+	"go-hep.org/x/hep/slha"
 )
 
 func TestDecode(t *testing.T) {

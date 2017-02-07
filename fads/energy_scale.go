@@ -3,8 +3,8 @@ package fads
 import (
 	"reflect"
 
-	"github.com/go-hep/fmom"
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fmom"
+	"go-hep.org/x/hep/fwk"
 )
 
 type EnergyScale struct {

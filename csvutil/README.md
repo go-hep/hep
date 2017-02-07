@@ -1,21 +1,21 @@
 csvutil
 =======
 
-[![GoDoc](https://godoc.org/github.com/go-hep/csvutil?status.svg)](https://godoc.org/github.com/go-hep/csvutil)
+[![GoDoc](https://godoc.org/go-hep.org/x/hep/csvutil?status.svg)](https://godoc.org/go-hep.org/x/hep/csvutil)
 
 `csvutil` is a set of types and funcs to deal with CSV data files in a somewhat convenient way.
 
 ## Installation
 
 ```sh
-$> go get github.com/go-hep/csvutil
+$> go get go-hep.org/x/hep/csvutil
 ```
 
 ## Documentation
 
 Documentation is available on [godoc](https://godoc.org):
 
-[godoc.org/github.com/go-hep/csvutil](https://godoc.org/github.com/go-hep/csvutil)
+[godoc.org/go-hep.org/x/hep/csvutil](https://godoc.org/go-hep.org/x/hep/csvutil)
 
 ## Example
 
@@ -28,7 +28,7 @@ import (
 	"io"
 	"log"
 
-	"github.com/go-hep/csvutil"
+	"go-hep.org/x/hep/csvutil"
 )
 
 func main() {
@@ -75,7 +75,7 @@ import (
 	"io"
 	"log"
 
-	"github.com/go-hep/csvutil"
+	"go-hep.org/x/hep/csvutil"
 )
 
 func main() {
@@ -121,7 +121,7 @@ package main
 import (
 	"log"
 
-	"github.com/go-hep/csvutil"
+	"go-hep.org/x/hep/csvutil"
 )
 
 func main() {
@@ -169,7 +169,7 @@ package main
 import (
 	"log"
 
-	"github.com/go-hep/csvutil"
+	"go-hep.org/x/hep/csvutil"
 )
 
 func main() {

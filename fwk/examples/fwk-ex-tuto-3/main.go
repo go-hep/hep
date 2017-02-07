@@ -7,14 +7,14 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fwk"
 
 	// job is the scripting interface to 'fwk'
-	"github.com/go-hep/fwk/job"
+	"go-hep.org/x/hep/fwk/job"
 
 	// we need to access some tools defined in testdata (the ascii InputStream)
 	// so we need to directly import that package
-	"github.com/go-hep/fwk/testdata"
+	"go-hep.org/x/hep/fwk/testdata"
 )
 
 var (
@@ -77,7 +77,7 @@ options:
 	// create a task that reads integers from some location
 	// and publish the square of these integers under some other location
 	app.Create(job.C{
-		Type: "github.com/go-hep/fwk/testdata.task2",
+		Type: "go-hep.org/x/hep/fwk/testdata.task2",
 		Name: "t2",
 		Props: job.P{
 			"Input":  "t1-ints1",
@@ -89,7 +89,7 @@ options:
 	// note we create it after the one that consumes these integers
 	// to exercize the automatic data-flow scheduling.
 	app.Create(job.C{
-		Type: "github.com/go-hep/fwk.InputStream",
+		Type: "go-hep.org/x/hep/fwk.InputStream",
 		Name: "input",
 		Props: job.P{
 			"Ports": []fwk.Port{
@@ -106,7 +106,7 @@ options:
 
 	// create an output-stream
 	app.Create(job.C{
-		Type: "github.com/go-hep/fwk.OutputStream",
+		Type: "go-hep.org/x/hep/fwk.OutputStream",
 		Name: "output",
 		Props: job.P{
 			"Ports": []fwk.Port{

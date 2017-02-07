@@ -4,8 +4,8 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/go-hep/fastjet"
-	"github.com/go-hep/fmom"
+	"go-hep.org/x/hep/fastjet"
+	"go-hep.org/x/hep/fmom"
 )
 
 func TestSimple(t *testing.T) {

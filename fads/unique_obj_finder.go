@@ -3,7 +3,7 @@ package fads
 import (
 	"reflect"
 
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fwk"
 )
 
 type ObjPair struct {

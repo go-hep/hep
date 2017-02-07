@@ -6,19 +6,19 @@
 // Use of this source code is governed by an MIT-style license
 // that can be found in the LICENSE file.
 
-package hplot // import "github.com/go-hep/hplot"
+package hplot // import "go-hep.org/x/hep/hplot"
 
 import (
 	"math"
 
 	"golang.org/x/exp/shiny/screen"
 
-	"github.com/go-hep/hplot/vgshiny"
 	"github.com/gonum/plot"
 	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/vg"
 	"github.com/gonum/plot/vg/draw"
 	"github.com/gonum/plot/vg/vgimg"
+	"go-hep.org/x/hep/hplot/vgshiny"
 )
 
 // Plot is the basic type representing a plot.

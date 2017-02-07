@@ -3,7 +3,7 @@ package fwk
 import (
 	"reflect"
 
-	"github.com/go-hep/fwk/fsm"
+	"go-hep.org/x/hep/fwk/fsm"
 )
 
 // TaskBase provides a base implementation for fwk.Task
@@ -24,7 +24,7 @@ func NewTask(typ, name string, mgr App) TaskBase {
 }
 
 // Type returns the fully qualified type of the underlying task.
-// e.g. "github.com/go-hep/fwk/testdata.task1"
+// e.g. "go-hep.org/x/hep/fwk/testdata.task1"
 func (tsk *TaskBase) Type() string {
 	return tsk.t
 }

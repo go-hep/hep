@@ -14,7 +14,7 @@ import (
 	"math"
 
 	"github.com/go-hep/dtypes"
-	"github.com/go-hep/rio"
+	"go-hep.org/x/hep/rio"
 )
 
 // H1D is a 1-dim histogram with weighted entries.

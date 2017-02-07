@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-hep/fwk/utils/errstack"
+	"go-hep.org/x/hep/fwk/utils/errstack"
 )
 
 func TestNewNil(t *testing.T) {

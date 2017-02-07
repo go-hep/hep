@@ -1,7 +1,7 @@
 package fwk
 
 import (
-	"github.com/go-hep/fwk/utils/errstack"
+	"go-hep.org/x/hep/fwk/utils/errstack"
 )
 
 // Errorf formats according to a format specifier and returns the string as

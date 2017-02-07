@@ -3,4 +3,4 @@
 // license that can be found in the LICENSE file.
 
 // Package fastjet is a Go-based implementation of the C++ FastJet library.
-package fastjet // import "github.com/go-hep/fastjet"
+package fastjet // import "go-hep.org/x/hep/fastjet"

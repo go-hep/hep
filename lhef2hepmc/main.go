@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main // import "github.com/go-hep/lhef2hepmc"
+package main // import "go-hep.org/x/hep/lhef2hepmc"
 
 import (
 	"flag"
@@ -11,9 +11,9 @@ import (
 	"math"
 	"os"
 
-	"github.com/go-hep/fmom"
-	"github.com/go-hep/hepmc"
-	"github.com/go-hep/lhef"
+	"go-hep.org/x/hep/fmom"
+	"go-hep.org/x/hep/hepmc"
+	"go-hep.org/x/hep/lhef"
 )
 
 var (

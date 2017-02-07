@@ -4,8 +4,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/go-hep/fwk"
-	"github.com/go-hep/rio"
+	"go-hep.org/x/hep/fwk"
+	"go-hep.org/x/hep/rio"
 )
 
 // Mode describes the open-mode of a stream

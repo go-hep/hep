@@ -9,8 +9,8 @@ import (
 	"os"
 	"reflect"
 
-	"github.com/go-hep/fwk"
-	"github.com/go-hep/rio"
+	"go-hep.org/x/hep/fwk"
+	"go-hep.org/x/hep/rio"
 )
 
 // OutputStreamer writes data to a rio-stream.

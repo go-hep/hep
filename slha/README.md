@@ -2,7 +2,7 @@ slha
 ====
 
 [![Build Status](https://secure.travis-ci.org/go-hep/slha.png)](http://travis-ci.org/go-hep/slha)
-[![GoDoc](https://godoc.org/github.com/go-hep/slha?status.svg)](https://godoc.org/github.com/go-hep/slha)
+[![GoDoc](https://godoc.org/go-hep.org/x/hep/slha?status.svg)](https://godoc.org/go-hep.org/x/hep/slha)
 
 Package `slha` implements encoding and decoding of SUSY Les Houches
 Accords (SLHA) data format.
@@ -10,7 +10,7 @@ Accords (SLHA) data format.
 ## Installation
 
 ```sh
-$ go get github.com/go-hep/slha
+$ go get go-hep.org/x/hep/slha
 ```
 
 ## Example
@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/go-hep/slha"
+	"go-hep.org/x/hep/slha"
 )
 
 func handle(err error) {
@@ -75,7 +75,7 @@ func main() {
 
 ## Documentation
 
-Documentation is available on [godoc](https://godoc.org/github.com/go-hep/slha):
+Documentation is available on [godoc](https://godoc.org/go-hep.org/x/hep/slha):
 
-  https://godoc.org/github.com/go-hep/slha
+  https://godoc.org/go-hep.org/x/hep/slha
 

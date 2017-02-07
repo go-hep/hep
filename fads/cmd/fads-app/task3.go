@@ -3,8 +3,8 @@ package main
 import (
 	"reflect"
 
-	"github.com/go-hep/fads"
-	"github.com/go-hep/fwk"
+	"go-hep.org/x/hep/fads"
+	"go-hep.org/x/hep/fwk"
 )
 
 type task3 struct {

@@ -86,4 +86,4 @@
 //
 //      return err
 //   }
-package fwk // import "github.com/go-hep/fwk"
+package fwk // import "go-hep.org/x/hep/fwk"

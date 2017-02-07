@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-hep/lhef"
+	"go-hep.org/x/hep/lhef"
 )
 
 const r_debug = false
