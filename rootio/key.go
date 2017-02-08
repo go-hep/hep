@@ -45,9 +45,7 @@ type Key struct {
 	name  string // name of the object
 	title string // title of the object
 
-	read bool
-	data []byte
-	obj  Object
+	obj Object
 }
 
 func (k *Key) Class() string {
@@ -111,20 +109,17 @@ func (k *Key) Object() (Object, error) {
 		vv.SetFile(k.f)
 	}
 
+	k.obj = obj
 	return obj, nil
 }
 
 // Bytes returns the buffer of bytes corresponding to the Key's value
 func (k *Key) Bytes() ([]byte, error) {
-	if !k.read {
-		data, err := k.load()
-		if err != nil {
-			return nil, err
-		}
-		k.data = data
-		k.read = true
+	data, err := k.load()
+	if err != nil {
+		return nil, err
 	}
-	return k.data, nil
+	return data, nil
 }
 
 func (k *Key) load() ([]byte, error) {
