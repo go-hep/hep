@@ -41,9 +41,9 @@ type Key struct {
 	seekkey  int64
 	seekpdir int64 // pointer to the directory supporting this object
 
-	classname string // object class name
-	name      string // name of the object
-	title     string // title of the object
+	class string // object class name
+	name  string // name of the object
+	title string // title of the object
 
 	read bool
 	data []byte
@@ -51,7 +51,7 @@ type Key struct {
 }
 
 func (k *Key) Class() string {
-	return k.classname
+	return k.class
 }
 
 func (k *Key) Name() string {
@@ -169,7 +169,7 @@ func (k *Key) UnmarshalROOT(r *RBuffer) error {
 
 	k.bytes = r.ReadI32()
 	if k.bytes < 0 {
-		k.classname = "[GAP]"
+		k.class = "[GAP]"
 		return nil
 	}
 
@@ -187,7 +187,7 @@ func (k *Key) UnmarshalROOT(r *RBuffer) error {
 		k.seekpdir = int64(r.ReadI32())
 	}
 
-	k.classname = r.ReadString()
+	k.class = r.ReadString()
 	k.name = r.ReadString()
 	k.title = r.ReadString()
 
@@ -199,7 +199,7 @@ func (k *Key) UnmarshalROOT(r *RBuffer) error {
 	myprintf("key-seekkey: %v\n", k.seekkey)
 	myprintf("key-seekpdir:%v\n", k.seekpdir)
 	myprintf("key-compress: %v %v %v %v %v\n", k.isCompressed(), k.objlen, k.bytes-k.keylen, k.bytes, k.keylen)
-	myprintf("key-class: [%v]\n", k.classname)
+	myprintf("key-class: [%v]\n", k.class)
 	myprintf("key-name:  [%v]\n", k.name)
 	myprintf("key-title: [%v]\n", k.title)
 
