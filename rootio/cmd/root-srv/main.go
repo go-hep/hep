@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"text/tabwriter"
 	"time"
 
 	"go-hep.org/x/hep/rootio"
@@ -121,6 +122,7 @@ func inspect(r rootio.Reader, fname string) (string, error) {
 	w := new(bytes.Buffer)
 	fmt.Fprintf(w, "=== inspecting file %q...\n", fname)
 	fmt.Fprintf(w, "version: %v\n", f.Version())
+	ww := tabwriter.NewWriter(w, 8, 4, 1, ' ', 0)
 	for _, k := range f.Keys() {
 		obj, err := k.Object()
 		if err != nil {
@@ -129,14 +131,44 @@ func inspect(r rootio.Reader, fname string) (string, error) {
 		switch obj := obj.(type) {
 		case rootio.Tree:
 			tree := obj
-			fmt.Fprintf(w, "%-8s %-40s %s (entries=%d)\n", k.Class(), k.Name(), k.Title(), tree.Entries())
-			displayBranches(w, tree, 2)
+			ww := tabwriter.NewWriter(ww, 8, 4, 1, ' ', 0)
+			fmt.Fprintf(ww, "%s\t%s\t%s\t(entries=%d)\n", k.Class(), k.Name(), k.Title(), tree.Entries())
+			displayBranches(ww, tree, 2)
+			ww.Flush()
 		default:
-			fmt.Fprintf(w, "%-8s %-40s %s (cycle=%d)\n", k.Class(), k.Name(), k.Title(), k.Cycle())
+			fmt.Fprintf(ww, "%s\t%s\t%s\t(cycle=%d)\n", k.Class(), k.Name(), k.Title(), k.Cycle())
 		}
 	}
-
+	ww.Flush()
 	return string(w.Bytes()), nil
+}
+
+type windent struct {
+	hdr []byte
+	w   io.Writer
+}
+
+func newWindent(n int, w io.Writer) *windent {
+	return &windent{
+		hdr: bytes.Repeat([]byte(" "), n),
+		w:   w,
+	}
+}
+
+func (w *windent) Write(data []byte) (int, error) {
+	return w.w.Write(append(w.hdr, data...))
+}
+
+func (w *windent) Flush() error {
+	ww, ok := w.w.(flusher)
+	if !ok {
+		return nil
+	}
+	return ww.Flush()
+}
+
+type flusher interface {
+	Flush() error
 }
 
 type brancher interface {
@@ -145,8 +177,13 @@ type brancher interface {
 
 func displayBranches(w io.Writer, bres brancher, indent int) {
 	branches := bres.Branches()
-	for _, b := range branches {
-		fmt.Fprintf(w, "%s%-20s %-20q %v\n", strings.Repeat(" ", indent), b.Name(), b.Title(), b.Class())
-		displayBranches(w, b, indent+2)
+	if len(branches) <= 0 {
+		return
 	}
+	ww := newWindent(indent, w)
+	for _, b := range branches {
+		fmt.Fprintf(ww, "%s\t%q\t%v\n", b.Name(), b.Title(), b.Class())
+		displayBranches(ww, b, 2)
+	}
+	ww.Flush()
 }
