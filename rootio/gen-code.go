@@ -36,6 +36,16 @@ func genLeaves() {
 		Func string
 	}{
 		{
+			Name: "LeafO",
+			Type: "bool",
+			Func: "r.ReadBool()",
+		},
+		{
+			Name: "LeafS",
+			Type: "int16",
+			Func: "r.ReadI16()",
+		},
+		{
 			Name: "LeafC",
 			Type: "int32",
 			Func: "r.ReadI32()",

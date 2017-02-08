@@ -10,6 +10,112 @@ import (
 	"reflect"
 )
 
+// LeafO implements ROOT TLeafO
+type LeafO struct {
+	tleaf
+	min	bool
+	max bool
+}
+
+// Class returns the ROOT class name.
+func (leaf *LeafO) Class() string {
+	return "TLeafO"
+}
+
+// Minimum returns the minimum value of the leaf.
+func (leaf *LeafO) Minimum() bool {
+	return leaf.min
+}
+
+// Maximum returns the maximum value of the leaf.
+func (leaf *LeafO) Maximum() bool {
+	return leaf.max
+}
+
+func (leaf *LeafO) UnmarshalROOT(r *RBuffer) error {
+	start := r.Pos()
+	vers, pos, bcnt := r.ReadVersion()
+	myprintf("LeafO: %v %v %v\n", vers, pos, bcnt)
+
+	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
+		r.err = err
+		return r.err
+	}
+
+	leaf.min = r.ReadBool()
+	leaf.max = r.ReadBool()
+
+	r.CheckByteCount(pos, bcnt, start, "TLeafO")
+	return r.Err()
+}
+
+func init() {
+	f := func() reflect.Value {
+		o := &LeafO{}
+		return reflect.ValueOf(o)
+	}
+	Factory.add("TLeafO", f)
+	Factory.add("*rootio.LeafO", f)
+}
+
+var _ Object = (*LeafO)(nil)
+var _ Named = (*LeafO)(nil)
+var _ Leaf = (*LeafO)(nil)
+var _ ROOTUnmarshaler = (*LeafO)(nil)
+
+// LeafS implements ROOT TLeafS
+type LeafS struct {
+	tleaf
+	min	int16
+	max int16
+}
+
+// Class returns the ROOT class name.
+func (leaf *LeafS) Class() string {
+	return "TLeafS"
+}
+
+// Minimum returns the minimum value of the leaf.
+func (leaf *LeafS) Minimum() int16 {
+	return leaf.min
+}
+
+// Maximum returns the maximum value of the leaf.
+func (leaf *LeafS) Maximum() int16 {
+	return leaf.max
+}
+
+func (leaf *LeafS) UnmarshalROOT(r *RBuffer) error {
+	start := r.Pos()
+	vers, pos, bcnt := r.ReadVersion()
+	myprintf("LeafS: %v %v %v\n", vers, pos, bcnt)
+
+	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
+		r.err = err
+		return r.err
+	}
+
+	leaf.min = r.ReadI16()
+	leaf.max = r.ReadI16()
+
+	r.CheckByteCount(pos, bcnt, start, "TLeafS")
+	return r.Err()
+}
+
+func init() {
+	f := func() reflect.Value {
+		o := &LeafS{}
+		return reflect.ValueOf(o)
+	}
+	Factory.add("TLeafS", f)
+	Factory.add("*rootio.LeafS", f)
+}
+
+var _ Object = (*LeafS)(nil)
+var _ Named = (*LeafS)(nil)
+var _ Leaf = (*LeafS)(nil)
+var _ ROOTUnmarshaler = (*LeafS)(nil)
+
 // LeafC implements ROOT TLeafC
 type LeafC struct {
 	tleaf
