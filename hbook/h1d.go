@@ -13,7 +13,6 @@ import (
 	"io"
 	"math"
 
-	"github.com/go-hep/dtypes"
 	"go-hep.org/x/hep/rio"
 )
 
@@ -454,5 +453,4 @@ var _ rio.Streamer = (*H1D)(nil)
 
 func init() {
 	gob.Register((*H1D)(nil))
-	dtypes.Register((*H1D)(nil))
 }
