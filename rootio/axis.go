@@ -36,8 +36,8 @@ func (a *taxis) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
-	if vers < 10 {
-		return fmt.Errorf("rootio: TAxis version too old (%d<10)", vers)
+	if vers < 9 {
+		return fmt.Errorf("rootio: TAxis version too old (%d<9)", vers)
 	}
 
 	for _, v := range []ROOTUnmarshaler{
@@ -65,14 +65,18 @@ func (a *taxis) UnmarshalROOT(r *RBuffer) error {
 	a.time = r.ReadBool()
 	a.tfmt = r.ReadString()
 
+	a.labels = nil
 	labels := r.ReadObjectAny()
 	if labels != nil {
 		a.labels = labels.(*thashList)
 	}
 
-	modlabs := r.ReadObjectAny()
-	if modlabs != nil {
-		a.modlabs = modlabs.(*tlist)
+	a.modlabs = nil
+	if vers >= 10 {
+		modlabs := r.ReadObjectAny()
+		if modlabs != nil {
+			a.modlabs = modlabs.(*tlist)
+		}
 	}
 
 	r.CheckByteCount(pos, bcnt, beg, "TAxis")
