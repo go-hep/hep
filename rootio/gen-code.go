@@ -9,6 +9,8 @@ package main
 
 import (
 	"fmt"
+	"go/format"
+	"io/ioutil"
 	"log"
 	"os"
 	"text/template"
@@ -19,6 +21,23 @@ func main() {
 	genArrays()
 	genH1()
 	genH2()
+}
+
+func gofmt(f *os.File) {
+	fname := f.Name()
+	src, err := ioutil.ReadFile(fname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	src, err = format.Source(src)
+	if err != nil {
+		log.Fatalf("error formating sources of %q: %v\n", fname, err)
+	}
+
+	err = ioutil.WriteFile(fname, src, 0644)
+	if err != nil {
+		log.Fatalf("error writing back %q: %v\n", fname, err)
+	}
 }
 
 func genLeaves() {
@@ -85,6 +104,7 @@ func genLeaves() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	gofmt(f)
 }
 
 func genArrays() {
@@ -136,6 +156,7 @@ func genArrays() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	gofmt(f)
 }
 
 func genH1() {
@@ -178,6 +199,7 @@ func genH1() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	gofmt(f)
 }
 
 func genH2() {
@@ -220,6 +242,7 @@ func genH2() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	gofmt(f)
 }
 
 const srcHeader = `// Copyright 2017 The go-hep Authors.  All rights reserved.

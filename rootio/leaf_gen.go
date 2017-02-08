@@ -13,7 +13,7 @@ import (
 // LeafO implements ROOT TLeafO
 type LeafO struct {
 	tleaf
-	min	bool
+	min bool
 	max bool
 }
 
@@ -66,7 +66,7 @@ var _ ROOTUnmarshaler = (*LeafO)(nil)
 // LeafS implements ROOT TLeafS
 type LeafS struct {
 	tleaf
-	min	int16
+	min int16
 	max int16
 }
 
