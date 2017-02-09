@@ -1,7 +1,6 @@
 # fit
 
-[![GoDoc](https://godoc.org/go-hep.org/x/hep/fit?status.svg)](https://godoc.org/go-hep.org/x/hep/fit)
-[![Build Status](https://travis-ci.org/go-hep/fit.svg?branch=master)](https://travis-ci.org/go-hep/fit)
+![GoDoc](https://godoc.org/go-hep.org/x/hep/fit?status.svg)](https://godoc.org/go-hep.org/x/hep/fit)
 
 `fit` is a WIP package to provide easy fitting models and curve fitting functions.
 
@@ -9,7 +8,7 @@
 
 ### Fit a gaussian
 
-![h1d-gaussian-example](https://go-hep.org/x/hep/fit/raw/master/testdata/h1d-gauss-plot.png)
+![h1d-gaussian-example](https://github.com/go-hep/hep/raw/master/fit/testdata/h1d-gauss-plot.png)
 [embedmd]:# (hist_test.go go /func ExampleH1D_gaussian/ /\n}/)
 ```go
 func ExampleH1D_gaussian(t *testing.T) {
@@ -99,7 +98,7 @@ func ExampleH1D_gaussian(t *testing.T) {
 
 ### Fit a gaussian
 
-![func1d-gaussian-example](https://go-hep.org/x/hep/fit/raw/master/testdata/gauss-plot.png)
+![func1d-gaussian-example](https://github.com/go-hep/hep/raw/master/fit/testdata/gauss-plot.png)
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_gaussian/ /\n}/)
 ```go
 func ExampleCurve1D_gaussian(t *testing.T) {
@@ -170,7 +169,7 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 
 ### Fit a powerlaw (with Y-errors)
 
-![func1d-powerlaw-example](https://go-hep.org/x/hep/fit/raw/master/testdata/powerlaw-plot.png)
+![func1d-powerlaw-example](https://github.com/go-hep/hep/raw/master/fit/testdata/powerlaw-plot.png)
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_powerlaw/ /\n}/)
 ```go
 func ExampleCurve1D_powerlaw(t *testing.T) {
@@ -253,7 +252,7 @@ func ExampleCurve1D_powerlaw(t *testing.T) {
 
 ### Fit an exponential
 
-![func1d-exp-example](https://go-hep.org/x/hep/fit/raw/master/testdata/exp-plot.png)
+![func1d-exp-example](https://github.com/go-hep/hep/raw/master/fit/testdata/exp-plot.png)
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_exponential/ /\n}/)
 ```go
 func ExampleCurve1D_exponential(t *testing.T) {
@@ -326,7 +325,7 @@ func ExampleCurve1D_exponential(t *testing.T) {
 
 ### Fit a polynomial
 
-![func1d-poly-example](https://go-hep.org/x/hep/fit/raw/master/testdata/poly-plot.png)
+![func1d-poly-example](https://github.com/go-hep/hep/raw/master/fit/testdata/poly-plot.png)
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_poly/ /\n}/)
 ```go
 func ExampleCurve1D_poly(t *testing.T) {
