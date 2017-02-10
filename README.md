@@ -47,4 +47,11 @@ $ go get go-hep.org/x/hep/fads
 
 Just select the package you are interested in and `go get` will take care of fetching, building and installing it, as well as its dependencies, recursively.
 
+## Contact
 
+If you need help with `go-hep` or want to contribute to `go-hep`, feel free to join the `go-hep` mailing list:
+
+- `go-hep@googlegroups.com`
+- https://groups.google.com/forum/#!forum/go-hep
+
+or send a mail with the subject `subscribe` to `go-hep+subscribe@googlegroups.com` like so: [click](mailto:go-hep+subscribe@googlegroups.com?subject=subscribe).
