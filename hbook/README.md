@@ -1,7 +1,6 @@
 hbook
 =====
 
-[![Build Status](https://secure.travis-ci.org/go-hep/hbook.png)](http://travis-ci.org/go-hep/hbook)
 [![GoDoc](https://godoc.org/go-hep.org/x/hep/hbook?status.svg)](https://godoc.org/go-hep.org/x/hep/hbook)
 
 `hbook` is a set of data analysis tools for HEP (histograms (1D, 2D, 3D), profiles and ntuples).
