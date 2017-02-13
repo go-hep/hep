@@ -153,8 +153,11 @@ type Tree interface {
 	Entries() int64
 	TotBytes() int64
 	ZipBytes() int64
+	Branch(name string) Branch
 	Branches() []Branch
 	Leaves() []Leaf
+
+	loadEntry(i int64) error
 }
 
 // Branch describes a branch of a ROOT Tree.
@@ -163,6 +166,9 @@ type Branch interface {
 	SetTree(Tree)
 	Branches() []Branch
 	Leaves() []Leaf
+
+	loadEntry(i int64) error
+	scan(ptr interface{}) error
 }
 
 // Leaf describes branches data types

@@ -5,6 +5,8 @@
 package rootio
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"reflect"
@@ -22,6 +24,8 @@ type Basket struct {
 
 	header       bool    // true when only the basket header must be read/written
 	displacement []int32 // displacement of entries in key.buffer
+
+	buf *bytes.Reader
 }
 
 func (b *Basket) Class() string {
@@ -98,6 +102,19 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	return r.err
+}
+
+func (b *Basket) loadEntry(entry int64) error {
+	var err error
+	_, err = b.buf.Seek(entry*int64(b.nevsize), ioSeekStart)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (b *Basket) scan(ptr interface{}) error {
+	return binary.Read(b.buf, binary.BigEndian, ptr)
 }
 
 func init() {

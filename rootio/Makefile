@@ -4,7 +4,7 @@
 all: build test
 	@echo "## bye."
 
-build: gen
+build:
 	@go get -v ./...
 
 gen:

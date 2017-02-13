@@ -57,12 +57,31 @@ func (tree *ttree) Branches() []Branch {
 	return tree.branches
 }
 
+func (tree *ttree) Branch(name string) Branch {
+	for _, br := range tree.branches {
+		if br.Name() == name {
+			return br
+		}
+	}
+	return nil
+}
+
 func (tree *ttree) Leaves() []Leaf {
 	return tree.leaves
 }
 
 func (tree *ttree) SetFile(f *File) {
 	tree.f = f
+}
+
+func (tree *ttree) loadEntry(entry int64) error {
+	for _, b := range tree.branches {
+		err := b.loadEntry(entry)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can

@@ -5,6 +5,7 @@
 package rootio
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 )
@@ -38,7 +39,7 @@ type tbranch struct {
 	readentry   int64   // current entry number when reading
 	firstbasket int64   // first entry in the current basket
 	nextbasket  int64   // next entry that will reaquire us to go to the next basket
-	currbasket  *Basket // pointer to the current basket
+	basket      *Basket // pointer to the current basket
 
 	tree   Tree        // tree header
 	mother *tbranch    // top-level parent branch in the tree
@@ -81,7 +82,7 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion()
 
 	b.tree = nil
-	b.currbasket = nil
+	b.basket = nil
 	b.firstbasket = -1
 	b.nextbasket = -1
 
@@ -159,7 +160,7 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 	b.basketBytes = r.ReadFastArrayI32(b.maxBaskets)
 
 	/*isArray*/ _ = r.ReadI8()
-	_ = r.ReadFastArrayI64(b.maxBaskets)
+	b.basketEntry = r.ReadFastArrayI64(b.maxBaskets)
 
 	/*isArray*/ _ = r.ReadI8()
 	b.basketSeek = r.ReadFastArrayI64(b.maxBaskets)
@@ -173,6 +174,66 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	return r.Err()
+}
+
+func (b *tbranch) loadEntry(ientry int64) error {
+	var err error
+	err = b.loadBasket(ientry)
+	if err != nil {
+		return err
+	}
+
+	err = b.basket.loadEntry(ientry)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (b *tbranch) loadBasket(entry int64) error {
+	var err error
+
+	ib := b.findBasketIndex(entry)
+	if ib < 0 {
+		return errorf("rootio: no basket for entry %d", entry)
+	}
+	if ib < len(b.baskets) {
+		b.basket = &b.baskets[ib]
+		return nil
+	}
+
+	buf := make([]byte, int(b.basketBytes[ib]))
+	// FIXME(sbinet)
+	f := b.tree.(*ttree).f
+	_, err = f.ReadAt(buf, b.basketSeek[ib])
+	if err != nil {
+		return err
+	}
+
+	b.baskets = append(b.baskets, Basket{})
+	b.basket = &b.baskets[len(b.baskets)-1]
+	err = b.basket.UnmarshalROOT(NewRBuffer(buf, nil, 0))
+	if err != nil {
+		return err
+	}
+	b.basket.f = f
+
+	buf, err = b.basket.Bytes()
+	if err != nil {
+		return err
+	}
+	b.basket.buf = bytes.NewReader(buf)
+
+	return err
+}
+
+func (b *tbranch) findBasketIndex(entry int64) int {
+	return 0
+}
+
+func (b *tbranch) scan(ptr interface{}) error {
+	return b.basket.scan(ptr)
 }
 
 // tbranchElement is a Branch for objects.
