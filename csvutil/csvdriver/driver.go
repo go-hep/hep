@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	_ "github.com/cznic/ql/driver"
 )
@@ -86,7 +87,11 @@ func Create(name string) (*sql.DB, error) {
 	return c.Open()
 }
 
-type csvDriver struct{}
+// csvDriver implements the interface required by database/sql/driver.
+type csvDriver struct {
+	dbs map[string]*csvConn
+	mu  sync.Mutex
+}
 
 // Open returns a new connection to the database.
 // The name is a string in a driver-specific format.
@@ -97,7 +102,7 @@ type csvDriver struct{}
 //
 // The returned connection is only used by one goroutine at a
 // time.
-func (*csvDriver) Open(cfg string) (driver.Conn, error) {
+func (drv *csvDriver) Open(cfg string) (driver.Conn, error) {
 	c := Conn{}
 	if strings.HasPrefix(cfg, "{") {
 		err := json.Unmarshal([]byte(cfg), &c)
@@ -115,33 +120,48 @@ func (*csvDriver) Open(cfg string) (driver.Conn, error) {
 		doImport = true
 	}
 
-	f, err := os.OpenFile(c.File, c.Mode, c.Perm)
-	if err != nil {
-		return nil, err
+	drv.mu.Lock()
+	defer drv.mu.Unlock()
+	if drv.dbs == nil {
+		drv.dbs = make(map[string]*csvConn)
 	}
-	conn := &csvConn{
-		f:   f,
-		cfg: c,
-	}
-
-	err = conn.initDB()
-	if err != nil {
-		return nil, err
-	}
-
-	if doImport {
-		err = conn.importCSV()
+	conn := drv.dbs[c.File]
+	if conn == nil {
+		var f *os.File
+		f, err = os.OpenFile(c.File, c.Mode, c.Perm)
 		if err != nil {
 			return nil, err
 		}
+		conn = &csvConn{
+			f:    f,
+			cfg:  c,
+			drv:  drv,
+			refs: 0,
+		}
+
+		err = conn.initDB()
+		if err != nil {
+			return nil, err
+		}
+
+		if doImport {
+			err = conn.importCSV()
+			if err != nil {
+				return nil, err
+			}
+		}
+		drv.dbs[c.File] = conn
 	}
+	conn.refs++
 
 	return conn, err
 }
 
 type csvConn struct {
-	f   *os.File
-	cfg Conn
+	f    *os.File
+	cfg  Conn
+	drv  *csvDriver
+	refs int
 
 	conn  driver.Conn
 	exec  driver.Execer
@@ -175,6 +195,10 @@ func (conn *csvConn) Prepare(query string) (driver.Stmt, error) {
 // idle connections, it shouldn't be necessary for drivers to
 // do their own connection caching.
 func (conn *csvConn) Close() error {
+	if conn.refs > 1 {
+		conn.refs--
+		return nil
+	}
 	var err error
 	defer conn.f.Close()
 
@@ -190,6 +214,13 @@ func (conn *csvConn) Close() error {
 	if err != nil {
 		return err
 	}
+
+	conn.drv.mu.Lock()
+	if conn.refs == 1 {
+		delete(conn.drv.dbs, conn.f.Name())
+	}
+	conn.refs = 0
+	conn.drv.mu.Unlock()
 
 	return err
 }

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"go-hep.org/x/hep/csvutil/csvdriver"
 )
@@ -33,12 +34,19 @@ func TestOpen(t *testing.T) {
 	}
 	defer tx.Commit()
 
-	/*
-		err = db.Ping()
+	var done = make(chan error)
+	go func() {
+		done <- db.Ping()
+	}()
+
+	select {
+	case <-time.After(2 * time.Second):
+		t.Fatalf("ping timeout")
+	case err := <-done:
 		if err != nil {
 			t.Fatalf("error pinging db: %v\n", err)
 		}
-	*/
+	}
 
 	rows, err := tx.Query("select var1, var2, var3 from csv order by id();")
 	if err != nil {
