@@ -5,7 +5,6 @@
 package rootio
 
 import (
-	"bytes"
 	"fmt"
 	"reflect"
 )
@@ -38,7 +37,7 @@ type tbranch struct {
 	readbasket  int     // current basket number when reading
 	readentry   int64   // current entry number when reading
 	firstbasket int64   // first entry in the current basket
-	nextbasket  int64   // next entry that will reaquire us to go to the next basket
+	nextbasket  int64   // next entry that will require us to go to the next basket
 	basket      *Basket // pointer to the current basket
 
 	tree   Tree        // tree header
@@ -69,6 +68,17 @@ func (b *tbranch) Branches() []Branch {
 
 func (b *tbranch) Leaves() []Leaf {
 	return b.leaves
+}
+
+func (b *tbranch) getReadEntry() int64 {
+	return b.readentry
+}
+
+func (b *tbranch) getEntry(i int64) {
+	err := b.loadEntry(i)
+	if err != nil {
+		panic(errorf("rootio: branch [%s] failed to load entry %d: %v", b.Name(), i, err))
+	}
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -133,6 +143,7 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 		b.leaves = make([]Leaf, leaves.last+1)
 		for i := range b.leaves {
 			leaf := leaves.At(i).(Leaf)
+			leaf.SetBranch(b)
 			b.leaves[i] = leaf
 		}
 	}
@@ -156,14 +167,17 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 	b.basketEntry = nil
 	b.basketSeek = nil
 
-	/*isArray*/ _ = r.ReadI8()
-	b.basketBytes = r.ReadFastArrayI32(b.maxBaskets)
+	/*isArray*/
+	_ = r.ReadI8()
+	b.basketBytes = r.ReadFastArrayI32(b.maxBaskets)[:b.writeBasket:b.writeBasket]
 
-	/*isArray*/ _ = r.ReadI8()
-	b.basketEntry = r.ReadFastArrayI64(b.maxBaskets)
+	/*isArray*/
+	_ = r.ReadI8()
+	b.basketEntry = r.ReadFastArrayI64(b.maxBaskets)[:b.writeBasket+1 : b.writeBasket+1]
 
-	/*isArray*/ _ = r.ReadI8()
-	b.basketSeek = r.ReadFastArrayI64(b.maxBaskets)
+	/*isArray*/
+	_ = r.ReadI8()
+	b.basketSeek = r.ReadFastArrayI64(b.maxBaskets)[:b.writeBasket:b.writeBasket]
 
 	b.fname = r.ReadString()
 
@@ -178,16 +192,23 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 
 func (b *tbranch) loadEntry(ientry int64) error {
 	var err error
+	b.readentry = ientry
 	err = b.loadBasket(ientry)
 	if err != nil {
 		return err
 	}
 
-	err = b.basket.loadEntry(ientry)
+	err = b.basket.loadEntry(ientry - b.firstEntry)
 	if err != nil {
 		return err
 	}
 
+	for _, leaf := range b.leaves {
+		err = b.basket.readLeaf(ientry-b.firstEntry, leaf)
+		if err != nil {
+			return err
+		}
+	}
 	return err
 }
 
@@ -218,22 +239,54 @@ func (b *tbranch) loadBasket(entry int64) error {
 		return err
 	}
 	b.basket.f = f
+	b.firstEntry = entry
 
 	buf, err = b.basket.Bytes()
 	if err != nil {
 		return err
 	}
-	b.basket.buf = bytes.NewReader(buf)
+	b.basket.rbuf = NewRBuffer(buf, nil, uint32(b.basket.keylen))
 
+	for _, leaf := range b.leaves {
+		err = leaf.readBasket(b.basket.rbuf)
+		if err != nil {
+			return err
+		}
+	}
+
+	if b.entryOffsetLen > 0 {
+		last := int64(b.basket.last)
+		err = b.basket.rbuf.setPos(last)
+		if err != nil {
+			return err
+		}
+		n := b.basket.rbuf.ReadI32()
+		b.basket.offsets = b.basket.rbuf.ReadFastArrayI32(int(n))
+		if b.basket.rbuf.err != nil {
+			return b.basket.rbuf.err
+		}
+	}
 	return err
 }
 
 func (b *tbranch) findBasketIndex(entry int64) int {
-	return 0
+	// FIXME(sbinet): use sort.SearchInts ?
+	for i, v := range b.basketEntry[1:] {
+		if v > entry && v > 0 {
+			return i
+		}
+	}
+	return -1
 }
 
 func (b *tbranch) scan(ptr interface{}) error {
-	return b.basket.scan(ptr)
+	for _, leaf := range b.leaves {
+		err := leaf.scan(b.basket.rbuf, ptr)
+		if err != nil {
+			return err
+		}
+	}
+	return b.basket.rbuf.err
 }
 
 // tbranchElement is a Branch for objects.

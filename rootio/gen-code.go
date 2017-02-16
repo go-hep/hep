@@ -50,44 +50,60 @@ func genLeaves() {
 	fmt.Fprintf(f, srcHeader)
 
 	for i, typ := range []struct {
-		Name string
-		Type string
-		Func string
+		Name       string
+		Type       string
+		DoUnsigned bool
+		Func       string
+		FuncArray  string
+		Count      bool
 	}{
 		{
-			Name: "LeafO",
-			Type: "bool",
-			Func: "r.ReadBool()",
+			Name:      "LeafO",
+			Type:      "bool",
+			Func:      "r.ReadBool()",
+			FuncArray: "r.ReadFastArrayBool",
 		},
 		{
-			Name: "LeafS",
-			Type: "int16",
-			Func: "r.ReadI16()",
+			Name:       "LeafS",
+			Type:       "int16",
+			DoUnsigned: true,
+			Func:       "r.ReadI16()",
+			FuncArray:  "r.ReadFastArrayI16",
+			Count:      true,
 		},
 		{
-			Name: "LeafC",
-			Type: "int32",
-			Func: "r.ReadI32()",
+			Name:      "LeafC",
+			Type:      "int32",
+			Func:      "r.ReadI32()",
+			FuncArray: "r.ReadFastArrayI32",
 		},
 		{
-			Name: "LeafI",
-			Type: "int32",
-			Func: "r.ReadI32()",
+			Name:       "LeafI",
+			Type:       "int32",
+			DoUnsigned: true,
+			Func:       "r.ReadI32()",
+			FuncArray:  "r.ReadFastArrayI32",
+			Count:      true,
 		},
 		{
-			Name: "LeafL",
-			Type: "int64",
-			Func: "r.ReadI64()",
+			Name:       "LeafL",
+			Type:       "int64",
+			DoUnsigned: true,
+			Func:       "r.ReadI64()",
+			FuncArray:  "r.ReadFastArrayI64",
+			Count:      true,
 		},
 		{
-			Name: "LeafF",
-			Type: "float32",
-			Func: "r.ReadF32()",
+			Name:      "LeafF",
+			Type:      "float32",
+			Func:      "r.ReadF32()",
+			FuncArray: "r.ReadFastArrayF32",
 		},
 		{
-			Name: "LeafD",
-			Type: "float64",
-			Func: "r.ReadF64()",
+			Name:      "LeafD",
+			Type:      "float64",
+			Func:      "r.ReadF64()",
+			FuncArray: "r.ReadFastArrayF64",
 		},
 	} {
 		if i > 0 {
@@ -262,6 +278,7 @@ import (
 const leafTmpl = `// {{.Name}} implements ROOT T{{.Name}}
 type {{.Name}} struct {
 	tleaf
+	val []{{.Type}}
 	min	{{.Type}}
 	max {{.Type}}
 }
@@ -281,6 +298,28 @@ func (leaf *{{.Name}}) Maximum() {{.Type}} {
 	return leaf.max
 }
 
+// Value returns the leaf value at index i.
+func (leaf *{{.Name}}) Value(i int) interface{} {
+	return leaf.val[i]
+}
+
+// value returns the leaf value.
+func (leaf *{{.Name}}) value() interface{} {
+	return leaf.val
+}
+
+{{if .Count}}
+// ivalue returns the first leaf value as int
+func (leaf *{{.Name}}) ivalue() int {
+	return int(leaf.val[0])
+}
+
+// imax returns the leaf maximum value as int
+func (leaf *{{.Name}}) imax() int {
+	return int(leaf.max)
+}
+{{end}}
+
 func (leaf *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
@@ -296,6 +335,81 @@ func (leaf *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 
 	r.CheckByteCount(pos, bcnt, start, "T{{.Name}}")
 	return r.Err()
+}
+
+func (leaf *{{.Name}}) readBasket(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
+	}
+
+	if leaf.count == nil && len(leaf.val) == 1 {
+		leaf.val[0] = {{.Func}}
+	} else {
+		if leaf.count != nil {
+			entry := leaf.Branch().getReadEntry()
+			if leaf.count.Branch().getReadEntry() != entry {
+				leaf.count.Branch().getEntry(entry)
+			}
+			n := leaf.count.ivalue()
+			max := leaf.count.imax()
+			if n > max {
+				n = max
+			}
+			leaf.val = {{.FuncArray}}(leaf.tleaf.len * n)
+		} else {
+			leaf.val = {{.FuncArray}}(leaf.tleaf.len)
+		}
+	}
+	return r.err
+}
+
+func (leaf *{{.Name}}) scan(r *RBuffer, ptr interface{}) error {
+	if r.err != nil {
+		return r.err
+	}
+
+	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
+		return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
+	}
+
+	switch v := ptr.(type) {
+	case *{{.Type}}:
+		*v = leaf.val[0]
+	case *[]{{.Type}}:
+		if len(*v) < len(leaf.val) || *v == nil {
+			*v = make([]{{.Type}}, len(leaf.val))
+		}
+		copy(*v, leaf.val)
+		*v = (*v)[:leaf.count.ivalue()]
+	case []{{.Type}}:
+		if len(v) < len(leaf.val) {
+			v = make([]{{.Type}}, len(leaf.val))
+		}
+		copy(v, leaf.val)
+{{if .DoUnsigned}}
+	case *u{{.Type}}:
+		*v = u{{.Type}}(leaf.val[0])
+	case *[]u{{.Type}}:
+		if len(*v) < len(leaf.val) || *v == nil {
+			*v = make([]u{{.Type}}, len(leaf.val))
+		}
+		for i, u := range leaf.val {
+			(*v)[i] = u{{.Type}}(u)
+		}
+		*v = (*v)[:leaf.count.ivalue()]
+	case []u{{.Type}}:
+		if len(v) < len(leaf.val) {
+			v = make([]u{{.Type}}, len(leaf.val))
+		}
+		for i := range v {
+			v[i] = u{{.Type}}(leaf.val[i])
+		}
+{{end}}
+	default:
+		panic(errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+	}
+
+	return r.err
 }
 
 func init() {

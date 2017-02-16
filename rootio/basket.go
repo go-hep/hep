@@ -5,8 +5,6 @@
 package rootio
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
 	"io"
 	"reflect"
@@ -22,10 +20,11 @@ type Basket struct {
 	last    int // pointer to last used byte in basket
 	flag    byte
 
-	header       bool    // true when only the basket header must be read/written
-	displacement []int32 // displacement of entries in key.buffer
+	header  bool    // true when only the basket header must be read/written
+	displ   []int32 // displacement of entries in key.buffer
+	offsets []int32 // offset of entries in key.buffer
 
-	buf *bytes.Reader
+	rbuf *RBuffer
 }
 
 func (b *Basket) Class() string {
@@ -70,17 +69,17 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 	if b.flag%10 != 2 {
 		if b.nevbuf > 0 {
 			n := int(r.ReadI32())
-			b.displacement = r.ReadFastArrayI32(n)
+			b.offsets = r.ReadFastArrayI32(n)
 			if 20 < b.flag && b.flag < 40 {
 				const displacement uint32 = 0xFF000000
-				for i, v := range b.displacement {
-					b.displacement[i] = int32(uint32(v) &^ displacement)
+				for i, v := range b.offsets {
+					b.offsets[i] = int32(uint32(v) &^ displacement)
 				}
 			}
 		}
 		if b.flag > 40 {
 			n := int(r.ReadI32())
-			b.displacement = r.ReadFastArrayI32(n)
+			b.offsets = r.ReadFastArrayI32(n)
 		}
 	}
 
@@ -93,6 +92,7 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 		if sz > b.Key.keylen {
 			// FIXME(sbinet) load buffer TKey data
 			//
+			panic("not implemented")
 		}
 
 		_, err := io.ReadFull(r.r, make([]byte, int(sz)))
@@ -106,15 +106,27 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 
 func (b *Basket) loadEntry(entry int64) error {
 	var err error
-	_, err = b.buf.Seek(entry*int64(b.nevsize), ioSeekStart)
-	if err != nil {
-		return err
+	var offset = int64(b.keylen)
+	if n := int64(len(b.offsets)); n > 0 {
+		offset = int64(b.offsets[int(entry)])
 	}
+	pos := entry*int64(b.nevsize) + offset
+	err = b.rbuf.setPos(pos)
 	return err
 }
 
-func (b *Basket) scan(ptr interface{}) error {
-	return binary.Read(b.buf, binary.BigEndian, ptr)
+func (b *Basket) readLeaf(entry int64, leaf Leaf) error {
+	var offset int64
+	if len(b.offsets) == 0 {
+		offset = entry*int64(b.nevsize) + int64(leaf.Offset()) + int64(b.keylen)
+	} else {
+		offset = int64(b.offsets[int(entry)]) + int64(leaf.Offset())
+	}
+	err := b.rbuf.setPos(offset)
+	if err != nil {
+		return err
+	}
+	return leaf.readBasket(b.rbuf)
 }
 
 func init() {

@@ -13,7 +13,7 @@ type tleaf struct {
 	offset   int
 	hasrange bool
 	unsigned bool
-	count    Leaf
+	count    leafCount
 	branch   Branch
 }
 
@@ -56,6 +56,15 @@ func (leaf *tleaf) LeafCount() Leaf {
 }
 
 func (leaf *tleaf) Len() int {
+	if leaf.count != nil {
+		// variable length array
+		n := leaf.count.ivalue()
+		max := leaf.count.imax()
+		if n > max {
+			n = max
+		}
+		return leaf.len * n
+	}
 	return leaf.len
 }
 
@@ -71,7 +80,19 @@ func (leaf *tleaf) Offset() int {
 	return leaf.offset
 }
 
-func (leaf *tleaf) Value(int) interface{} {
+func (leaf *tleaf) Value(i int) interface{} {
+	panic("not implemented")
+}
+
+func (leaf *tleaf) value() interface{} {
+	panic("not implemented")
+}
+
+func (leaf *tleaf) readBasket(r *RBuffer) error {
+	panic("not implemented")
+}
+
+func (leaf *tleaf) scan(r *RBuffer, ptr interface{}) error {
 	panic("not implemented")
 }
 
@@ -97,7 +118,7 @@ func (leaf *tleaf) UnmarshalROOT(r *RBuffer) error {
 	leaf.count = nil
 	ptr := r.ReadObjectAny()
 	if ptr != nil {
-		leaf.count = ptr.(Leaf)
+		leaf.count = ptr.(leafCount)
 	}
 
 	r.CheckByteCount(pos, bcnt, start, "TLeaf")

@@ -168,6 +168,8 @@ type Branch interface {
 	Leaves() []Leaf
 
 	loadEntry(i int64) error
+	getReadEntry() int64
+	getEntry(i int64)
 	scan(ptr interface{}) error
 }
 
@@ -185,6 +187,17 @@ type Leaf interface {
 	MaxIndex() []int
 	Offset() int
 	Value(int) interface{}
+
+	readBasket(r *RBuffer) error
+	value() interface{}
+	scan(r *RBuffer, ptr interface{}) error
+}
+
+// leafCount describes leaves that are used for array length count
+type leafCount interface {
+	Leaf
+	ivalue() int // for leaf-count
+	imax() int
 }
 
 // Array describes ROOT abstract array type.

@@ -24,6 +24,14 @@ type Event struct {
 	ArrayU64 [ARRAYSZ]uint64
 	ArrayF32 [ARRAYSZ]float32
 	ArrayF64 [ARRAYSZ]float64
+
+	N        int32
+	SliceI32 []int32
+	SliceI64 []int64
+	SliceU32 []uint32
+	SliceU64 []uint64
+	SliceF32 []float32
+	SliceF64 []float64
 }
 
 func main() {
@@ -40,7 +48,7 @@ func main() {
 	}
 
 	// create a tree
-	tree := croot.NewTree("tree", "tree", splitlevel)
+	tree := croot.NewTree("tree", "my tree title", splitlevel)
 
 	e := Event{}
 
@@ -69,6 +77,22 @@ func main() {
 			e.ArrayU64[ii] = uint64(iev)
 			e.ArrayF32[ii] = float32(iev)
 			e.ArrayF64[ii] = float64(iev)
+		}
+
+		e.N = int32(iev) % 10
+		e.SliceI32 = make([]int32, int(e.N))
+		e.SliceI64 = make([]int64, int(e.N))
+		e.SliceU32 = make([]uint32, int(e.N))
+		e.SliceU64 = make([]uint64, int(e.N))
+		e.SliceF32 = make([]float32, int(e.N))
+		e.SliceF64 = make([]float64, int(e.N))
+		for ii := 0; ii < int(e.N); ii++ {
+			e.SliceI32[ii] = int32(iev)
+			e.SliceI64[ii] = int64(iev)
+			e.SliceU32[ii] = uint32(iev)
+			e.SliceU64[ii] = uint64(iev)
+			e.SliceF32[ii] = float32(iev)
+			e.SliceF64[ii] = float64(iev)
 		}
 
 		_, err = tree.Fill()

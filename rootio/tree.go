@@ -90,7 +90,6 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
 	vers, pos, bcnt := r.ReadVersion()
-	myprintf(">>> => [%v] [%v] [%v]\n", pos, vers, bcnt)
 
 	for _, a := range []ROOTUnmarshaler{
 		&tree.named,

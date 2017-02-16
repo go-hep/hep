@@ -76,8 +76,16 @@ func (r *RBuffer) Pos() int64 {
 	return pos + int64(r.offset)
 }
 
-func (r *RBuffer) setPos(pos int64) {
-	r.r.Seek(pos-int64(r.offset), ioSeekStart)
+func (r *RBuffer) setPos(pos int64) error {
+	pos -= int64(r.offset)
+	got, err := r.r.Seek(pos, ioSeekStart)
+	if err != nil {
+		return err
+	}
+	if got != pos {
+		return errorf("rootio: RBuffer too short (got=%v want=%v)", got, pos)
+	}
+	return nil
 }
 
 func (r *RBuffer) Len() int64 {
@@ -339,6 +347,44 @@ func (r *RBuffer) ReadStaticArrayI32() []int32 {
 		return nil
 	}
 
+	return arr
+}
+
+func (r *RBuffer) ReadFastArrayBool(n int) []bool {
+	if r.err != nil {
+		return nil
+	}
+	if n <= 0 || int64(n) > r.Len() {
+		return nil
+	}
+
+	arr := make([]bool, n)
+	for i := range arr {
+		arr[i] = r.ReadBool()
+	}
+
+	if r.err != nil {
+		return nil
+	}
+	return arr
+}
+
+func (r *RBuffer) ReadFastArrayI16(n int) []int16 {
+	if r.err != nil {
+		return nil
+	}
+	if n <= 0 || int64(n) > r.Len() {
+		return nil
+	}
+
+	arr := make([]int16, n)
+	for i := range arr {
+		arr[i] = r.ReadI16()
+	}
+
+	if r.err != nil {
+		return nil
+	}
 	return arr
 }
 

@@ -14,7 +14,7 @@ import (
 )
 
 func TestFileDirectory(t *testing.T) {
-	f, err := Open("testdata/small.root")
+	f, err := Open("testdata/small-flat-tree.root")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -109,7 +109,7 @@ func TestFileDirectory(t *testing.T) {
 
 // FIXME: this should be done in tree_test
 func TestFileReader(t *testing.T) {
-	f, err := Open("testdata/small.root")
+	f, err := Open("testdata/small-flat-tree.root")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -198,7 +198,7 @@ func TestFileReader(t *testing.T) {
 
 func TestFileOpenStreamerInfo(t *testing.T) {
 	for _, fname := range []string{
-		"testdata/small.root",
+		"testdata/small-flat-tree.root",
 		"testdata/simple.root",
 	} {
 		f, err := Open(fname)
