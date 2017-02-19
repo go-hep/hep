@@ -4,8 +4,6 @@
 
 package rootio
 
-import "reflect"
-
 // start of payload in a TFile (in bytes)
 const kBEGIN = 100
 
@@ -103,4 +101,4 @@ const (
 	kDisplacementMask = 0xFF000000
 )
 
-var ptrSize = reflect.TypeOf((*int)(nil)).Size()
+var ptrSize = 4 << (^uintptr(0) >> 63)
