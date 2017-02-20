@@ -3,6 +3,7 @@ go_import_path: go-hep.org/x/hep
 go:
   - 1.6
   - 1.7
+  - 1.8
   - tip
 
 sudo: false
