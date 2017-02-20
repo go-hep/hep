@@ -279,7 +279,7 @@ const leafTmpl = `// {{.Name}} implements ROOT T{{.Name}}
 type {{.Name}} struct {
 	tleaf
 	val []{{.Type}}
-	min	{{.Type}}
+	min {{.Type}}
 	max {{.Type}}
 }
 
@@ -382,9 +382,6 @@ func (leaf *{{.Name}}) scan(r *RBuffer, ptr interface{}) error {
 		copy(*v, leaf.val)
 		*v = (*v)[:leaf.count.ivalue()]
 	case []{{.Type}}:
-		if len(v) < len(leaf.val) {
-			v = make([]{{.Type}}, len(leaf.val))
-		}
 		copy(v, leaf.val)
 {{if .DoUnsigned}}
 	case *u{{.Type}}:
@@ -398,9 +395,6 @@ func (leaf *{{.Name}}) scan(r *RBuffer, ptr interface{}) error {
 		}
 		*v = (*v)[:leaf.count.ivalue()]
 	case []u{{.Type}}:
-		if len(v) < len(leaf.val) {
-			v = make([]u{{.Type}}, len(leaf.val))
-		}
 		for i := range v {
 			v[i] = u{{.Type}}(leaf.val[i])
 		}

@@ -159,7 +159,7 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 	tree.branches = make([]Branch, branches.last+1)
 	for i := range tree.branches {
 		tree.branches[i] = branches.At(i).(Branch)
-		tree.branches[i].SetTree(tree)
+		tree.branches[i].setTree(tree)
 	}
 
 	var leaves objarray

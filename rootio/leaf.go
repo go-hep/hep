@@ -35,7 +35,7 @@ func (leaf *tleaf) ArrayDim() int {
 	panic("not implemented")
 }
 
-func (leaf *tleaf) SetBranch(b Branch) {
+func (leaf *tleaf) setBranch(b Branch) {
 	leaf.branch = b
 }
 
@@ -146,7 +146,7 @@ func (leaf *tleafElement) UnmarshalROOT(r *RBuffer) error {
 	}
 	beg := r.Pos()
 
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion()
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err

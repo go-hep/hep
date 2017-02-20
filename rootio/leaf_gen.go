@@ -105,9 +105,6 @@ func (leaf *LeafO) scan(r *RBuffer, ptr interface{}) error {
 		copy(*v, leaf.val)
 		*v = (*v)[:leaf.count.ivalue()]
 	case []bool:
-		if len(v) < len(leaf.val) {
-			v = make([]bool, len(leaf.val))
-		}
 		copy(v, leaf.val)
 
 	default:
@@ -236,9 +233,6 @@ func (leaf *LeafS) scan(r *RBuffer, ptr interface{}) error {
 		copy(*v, leaf.val)
 		*v = (*v)[:leaf.count.ivalue()]
 	case []int16:
-		if len(v) < len(leaf.val) {
-			v = make([]int16, len(leaf.val))
-		}
 		copy(v, leaf.val)
 
 	case *uint16:
@@ -252,9 +246,6 @@ func (leaf *LeafS) scan(r *RBuffer, ptr interface{}) error {
 		}
 		*v = (*v)[:leaf.count.ivalue()]
 	case []uint16:
-		if len(v) < len(leaf.val) {
-			v = make([]uint16, len(leaf.val))
-		}
 		for i := range v {
 			v[i] = uint16(leaf.val[i])
 		}
@@ -375,9 +366,6 @@ func (leaf *LeafC) scan(r *RBuffer, ptr interface{}) error {
 		copy(*v, leaf.val)
 		*v = (*v)[:leaf.count.ivalue()]
 	case []int32:
-		if len(v) < len(leaf.val) {
-			v = make([]int32, len(leaf.val))
-		}
 		copy(v, leaf.val)
 
 	default:
@@ -506,9 +494,6 @@ func (leaf *LeafI) scan(r *RBuffer, ptr interface{}) error {
 		copy(*v, leaf.val)
 		*v = (*v)[:leaf.count.ivalue()]
 	case []int32:
-		if len(v) < len(leaf.val) {
-			v = make([]int32, len(leaf.val))
-		}
 		copy(v, leaf.val)
 
 	case *uint32:
@@ -522,9 +507,6 @@ func (leaf *LeafI) scan(r *RBuffer, ptr interface{}) error {
 		}
 		*v = (*v)[:leaf.count.ivalue()]
 	case []uint32:
-		if len(v) < len(leaf.val) {
-			v = make([]uint32, len(leaf.val))
-		}
 		for i := range v {
 			v[i] = uint32(leaf.val[i])
 		}
@@ -655,9 +637,6 @@ func (leaf *LeafL) scan(r *RBuffer, ptr interface{}) error {
 		copy(*v, leaf.val)
 		*v = (*v)[:leaf.count.ivalue()]
 	case []int64:
-		if len(v) < len(leaf.val) {
-			v = make([]int64, len(leaf.val))
-		}
 		copy(v, leaf.val)
 
 	case *uint64:
@@ -671,9 +650,6 @@ func (leaf *LeafL) scan(r *RBuffer, ptr interface{}) error {
 		}
 		*v = (*v)[:leaf.count.ivalue()]
 	case []uint64:
-		if len(v) < len(leaf.val) {
-			v = make([]uint64, len(leaf.val))
-		}
 		for i := range v {
 			v[i] = uint64(leaf.val[i])
 		}
@@ -794,9 +770,6 @@ func (leaf *LeafF) scan(r *RBuffer, ptr interface{}) error {
 		copy(*v, leaf.val)
 		*v = (*v)[:leaf.count.ivalue()]
 	case []float32:
-		if len(v) < len(leaf.val) {
-			v = make([]float32, len(leaf.val))
-		}
 		copy(v, leaf.val)
 
 	default:
@@ -915,9 +888,6 @@ func (leaf *LeafD) scan(r *RBuffer, ptr interface{}) error {
 		copy(*v, leaf.val)
 		*v = (*v)[:leaf.count.ivalue()]
 	case []float64:
-		if len(v) < len(leaf.val) {
-			v = make([]float64, len(leaf.val))
-		}
 		copy(v, leaf.val)
 
 	default:

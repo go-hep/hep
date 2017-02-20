@@ -163,10 +163,10 @@ type Tree interface {
 // Branch describes a branch of a ROOT Tree.
 type Branch interface {
 	Named
-	SetTree(Tree)
 	Branches() []Branch
 	Leaves() []Leaf
 
+	setTree(Tree)
 	loadEntry(i int64) error
 	getReadEntry() int64
 	getEntry(i int64)
@@ -177,7 +177,6 @@ type Branch interface {
 type Leaf interface {
 	Named
 	ArrayDim() int
-	SetBranch(Branch)
 	Branch() Branch
 	HasRange() bool
 	IsUnsigned() bool
@@ -188,6 +187,7 @@ type Leaf interface {
 	Offset() int
 	Value(int) interface{}
 
+	setBranch(Branch)
 	readBasket(r *RBuffer) error
 	value() interface{}
 	scan(r *RBuffer, ptr interface{}) error

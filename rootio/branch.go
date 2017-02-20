@@ -58,7 +58,7 @@ func (b *tbranch) Class() string {
 	return "TBranch"
 }
 
-func (b *tbranch) SetTree(t Tree) {
+func (b *tbranch) setTree(t Tree) {
 	b.tree = t
 }
 
@@ -143,7 +143,7 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 		b.leaves = make([]Leaf, leaves.last+1)
 		for i := range b.leaves {
 			leaf := leaves.At(i).(Leaf)
-			leaf.SetBranch(b)
+			leaf.setBranch(b)
 			b.leaves[i] = leaf
 		}
 	}
