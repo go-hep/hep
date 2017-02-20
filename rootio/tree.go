@@ -74,6 +74,10 @@ func (tree *ttree) SetFile(f *File) {
 	tree.f = f
 }
 
+func (tree *ttree) getFile() *File {
+	return tree.f
+}
+
 func (tree *ttree) loadEntry(entry int64) error {
 	for _, b := range tree.branches {
 		err := b.loadEntry(entry)

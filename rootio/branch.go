@@ -225,8 +225,7 @@ func (b *tbranch) loadBasket(entry int64) error {
 	}
 
 	buf := make([]byte, int(b.basketBytes[ib]))
-	// FIXME(sbinet)
-	f := b.tree.(*ttree).f
+	f := b.tree.getFile()
 	_, err = f.ReadAt(buf, b.basketSeek[ib])
 	if err != nil {
 		return err

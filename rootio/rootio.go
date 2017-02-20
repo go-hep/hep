@@ -157,6 +157,7 @@ type Tree interface {
 	Branches() []Branch
 	Leaves() []Leaf
 
+	getFile() *File
 	loadEntry(i int64) error
 }
 
