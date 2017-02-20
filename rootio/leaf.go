@@ -176,6 +176,14 @@ func (leaf *tleafElement) UnmarshalROOT(r *RBuffer) error {
 	return r.err
 }
 
+func (leaf *tleafElement) readBasket(r *RBuffer) error {
+	panic("not implemented")
+}
+
+func (leaf *tleafElement) scan(r *RBuffer, ptr interface{}) error {
+	panic("not implemented")
+}
+
 func init() {
 	{
 		f := func() reflect.Value {
