@@ -61,7 +61,7 @@ func Open(r io.ReadSeeker) (*File, error) {
 		return nil, errorf("rio: error seeking metadata (err=%v)", err)
 	}
 
-	rec := newRecord(rioMeta, 0)
+	rec := newRecord(MetaRecord, 0)
 	rec.unpack = true
 
 	err = rec.readRecord(f.r)
@@ -69,7 +69,7 @@ func Open(r io.ReadSeeker) (*File, error) {
 		return nil, err
 	}
 
-	err = rec.Block(rioMeta).Read(&f.meta)
+	err = rec.Block(MetaRecord).Read(&f.meta)
 	if err != nil {
 		return nil, err
 	}

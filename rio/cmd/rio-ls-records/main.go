@@ -14,8 +14,6 @@ import (
 	"go-hep.org/x/hep/rio"
 )
 
-const rioMeta = ".rio.meta"
-
 func main() {
 
 	log.SetFlags(0)
@@ -73,7 +71,7 @@ func inspect(fname string) {
 			break
 		}
 		rec := scan.Record()
-		if rec.Name() == rioMeta {
+		if rec.Name() == rio.MetaRecord {
 			continue
 		}
 		rtype := rtypes[rec.Name()]
@@ -104,7 +102,7 @@ func metaData(fname string) map[string]string {
 	}
 
 	scan := rio.NewScanner(r)
-	scan.Select([]rio.Selector{{Name: rioMeta, Unpack: true}})
+	scan.Select([]rio.Selector{{Name: rio.MetaRecord, Unpack: true}})
 	if !scan.Scan() {
 		log.Fatal(scan.Err())
 	}
@@ -113,7 +111,7 @@ func metaData(fname string) map[string]string {
 		return rtypes
 	}
 
-	blk := rec.Block(".rio.meta")
+	blk := rec.Block(rio.MetaRecord)
 	if blk == nil {
 		return rtypes
 	}

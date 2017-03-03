@@ -20,7 +20,8 @@ const (
 	gMaskLevel = Options(0x0000f000)
 	gMaskCompr = Options(0xffff0000)
 
-	rioMeta = ".rio.meta"
+	// Name of the metadata record holding Metadata informations about the rio stream
+	MetaRecord = ".rio.meta"
 )
 
 // Version describes a rio on-disk version of a serialized block.
