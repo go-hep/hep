@@ -11,7 +11,7 @@ sudo: false
 notifications:
   email:
     recipients:
-      - go-hep-dev@googlegroups.com
+      - go.hep.dev@gmail.com
     on_success: always
     on_failure: always
 
