@@ -11,7 +11,7 @@ sudo: false
 notifications:
   email:
     recipients:
-      - binet@cern.ch
-    on_success: change
+      - go-hep-dev@googlegroups.com
+    on_success: always
     on_failure: always
 
