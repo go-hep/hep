@@ -84,7 +84,7 @@ options:
 		Name: "histsvc",
 		Props: job.P{
 			"Streams": map[string]hbooksvc.Stream{
-				"/rivet": {
+				"/MC_GENERIC": {
 					Name: "rivet.rio",
 					Mode: hbooksvc.Write,
 				},

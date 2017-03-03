@@ -307,7 +307,7 @@ func newMcGeneric(typ, name string, mgr fwk.App) (fwk.Component, error) {
 		mcevt:    "/fads/McEvent",
 		etamax:   5,
 		ptmin:    0.5, // GeV
-		hstream:  "/rivet",
+		hstream:  "/MC_GENERIC",
 	}
 
 	err = tsk.DeclProp("Input", &tsk.mcevt)
