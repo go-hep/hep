@@ -242,13 +242,19 @@ func (tsk *McGeneric) Process(ctx fwk.Context) error {
 		rap := mc.Mom.Rapidity()
 		absrap := math.Abs(rap)
 
+		pt := mc.Mom.Pt()
+		ene := mc.Mom.E()
+		// hep/fmom.P4 returns phi in [-pi,pi) range.
+		// convert to [0,2pi) to match Rivet convention.
+		phi := angle0to2Pi(mc.Mom.Phi())
+
 		tsk.hsvc.FillP1D(tsk.hetaSumEt.ID, abseta, mc.Mom.Et(), weight)
 		nfsparts++
 		tsk.hsvc.FillH1D(tsk.heta.ID, eta, weight)
 		tsk.hsvc.FillH1D(tsk.hrap.ID, rap, weight)
-		tsk.hsvc.FillH1D(tsk.hpt.ID, mc.Mom.Pt(), weight)
-		tsk.hsvc.FillH1D(tsk.hene.ID, mc.Mom.E(), weight)
-		tsk.hsvc.FillH1D(tsk.hphi.ID, mc.Mom.Phi(), weight)
+		tsk.hsvc.FillH1D(tsk.hpt.ID, pt, weight)
+		tsk.hsvc.FillH1D(tsk.hene.ID, ene, weight)
+		tsk.hsvc.FillH1D(tsk.hphi.ID, phi, weight)
 
 		switch eta > 0 {
 		case true:
@@ -270,10 +276,10 @@ func (tsk *McGeneric) Process(ctx fwk.Context) error {
 
 		ncfsparts++
 		tsk.hsvc.FillH1D(tsk.hetaCh.ID, eta, weight)
-		tsk.hsvc.FillH1D(tsk.hrapCh.ID, mc.Mom.Rapidity(), weight)
-		tsk.hsvc.FillH1D(tsk.hptCh.ID, mc.Mom.Pt(), weight)
-		tsk.hsvc.FillH1D(tsk.heneCh.ID, mc.Mom.E(), weight)
-		tsk.hsvc.FillH1D(tsk.hphiCh.ID, mc.Mom.Phi(), weight)
+		tsk.hsvc.FillH1D(tsk.hrapCh.ID, rap, weight)
+		tsk.hsvc.FillH1D(tsk.hptCh.ID, pt, weight)
+		tsk.hsvc.FillH1D(tsk.heneCh.ID, ene, weight)
+		tsk.hsvc.FillH1D(tsk.hphiCh.ID, phi, weight)
 
 		switch eta > 0 {
 		case true:
@@ -335,4 +341,20 @@ func newMcGeneric(typ, name string, mgr fwk.App) (fwk.Component, error) {
 
 func init() {
 	fwk.Register(reflect.TypeOf(McGeneric{}), newMcGeneric)
+}
+
+const twoPi = 2 * math.Pi
+
+func angle0to2Pi(v float64) float64 {
+	v = math.Mod(v, twoPi)
+	if v == 0 {
+		return 0
+	}
+	if v < 0 {
+		v += twoPi
+	}
+	if v == twoPi {
+		v = 0
+	}
+	return v
 }
