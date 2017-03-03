@@ -148,10 +148,7 @@ func (tsk *McGeneric) StopTask(ctx fwk.Context) error {
 		tsk.hmult.Hist, tsk.heta.Hist, tsk.hrap.Hist, tsk.hpt.Hist, tsk.hene.Hist, tsk.hphi.Hist,
 		tsk.hmultCh.Hist, tsk.hetaCh.Hist, tsk.hrapCh.Hist, tsk.hptCh.Hist, tsk.heneCh.Hist, tsk.hphiCh.Hist,
 	} {
-		area := 0.0
-		for _, bin := range h.Binning().Bins() {
-			area += bin.SumW() * bin.XWidth()
-		}
+		area := h.Integral()
 		h.Scale(1 / area)
 	}
 
