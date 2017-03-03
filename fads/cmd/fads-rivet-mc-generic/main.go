@@ -13,6 +13,22 @@
 // mc-generic selects final state particles passing some acceptance
 // cuts (|eta|<5 && pt>0.5 GeV), and fills performance plots for these final
 // state particles (and the sub-sample of the charged final state particles.)
+//
+// Example:
+//
+//  $> curl -O -L http://www.hepforge.org/archive/rivet/Z-hadronic-LEP.hepmc
+//  $> fads-rivet-mc-generic -nprocs=1 ./Z-hadronic-LEP.hepmc
+//  ::: fads-rivet-mc-generic...
+//  app                  INFO workers done: 1/1
+//  app                  INFO cpu: 6.115538196s
+//  app                  INFO mem: alloc:          12997 kB
+//  app                  INFO mem: tot-alloc:     751784 kB
+//  app                  INFO mem: n-mallocs:    7300674
+//  app                  INFO mem: n-frees:      7336526
+//  app                  INFO mem: gc-pauses:          2 ms
+//  ::: fads-rivet-mc-generic... [done] (time=6.11575694s)
+//
+//  $> rio2yoda rivet.rio >| rivet.yoda
 package main
 
 import (
