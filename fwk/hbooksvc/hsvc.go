@@ -160,6 +160,7 @@ func (svc *hsvc) BookH1D(name string, nbins int, low, high float64) (fwk.H1D, er
 		ID:   fwk.HID(hid),
 		Hist: hbook.NewH1D(nbins, low, high),
 	}
+	h.Hist.Annotation()["name"] = svc.fullname(stream, hid)
 
 	switch stream {
 	case "":
@@ -214,6 +215,7 @@ func (svc *hsvc) BookH2D(name string, nx int, xmin, xmax float64, ny int, ymin, 
 		ID:   fwk.HID(hid),
 		Hist: hbook.NewH2D(nx, xmin, xmax, ny, ymin, ymax),
 	}
+	h.Hist.Annotation()["name"] = svc.fullname(stream, hid)
 
 	switch stream {
 	case "":
@@ -268,6 +270,7 @@ func (svc *hsvc) BookP1D(name string, nbins int, low, high float64) (fwk.P1D, er
 		ID:      fwk.HID(hid),
 		Profile: hbook.NewP1D(nbins, low, high),
 	}
+	h.Profile.Annotation()["name"] = svc.fullname(stream, hid)
 
 	switch stream {
 	case "":
@@ -322,6 +325,7 @@ func (svc *hsvc) BookS2D(name string) (fwk.S2D, error) {
 		ID:      fwk.HID(hid),
 		Scatter: hbook.NewS2D(),
 	}
+	h.Scatter.Annotation()["name"] = svc.fullname(stream, hid)
 
 	switch stream {
 	case "":
@@ -361,6 +365,13 @@ func (svc *hsvc) BookS2D(name string) (fwk.S2D, error) {
 	hh := &s2d{S2D: h}
 	svc.s2ds[h.ID] = hh
 	return hh.S2D, err
+}
+
+func (svc *hsvc) fullname(stream, hid string) string {
+	if stream == "" {
+		return hid
+	}
+	return stream + "/" + hid
 }
 
 // split splits a booking histo name into (stream-name, histo-name).
