@@ -27,7 +27,7 @@ type istream struct {
 	fname string // file name
 	f     io.ReadCloser
 	r     *rio.Reader
-	objs  []fwk.H1D
+	objs  []fwk.Hist
 }
 
 func (stream *istream) close() error {
@@ -102,15 +102,15 @@ type ostream struct {
 	fname string // file name
 	f     io.WriteCloser
 	w     *rio.Writer
-	objs  []fwk.H1D
+	objs  []fwk.Hist
 }
 
 func (stream *ostream) write() error {
 	for i := range stream.objs {
 		obj := stream.objs[i]
-		name := string(obj.ID)
+		name := string(obj.Name())
 		rec := stream.w.Record(name)
-		err := rec.Connect(name, obj.Hist)
+		err := rec.Connect(name, obj.Value())
 		if err != nil {
 			return fwk.Errorf(
 				"error writing object [%s] to stream [%s]: %v",
@@ -119,7 +119,7 @@ func (stream *ostream) write() error {
 		}
 
 		blk := rec.Block(name)
-		err = blk.Write(obj.Hist)
+		err = blk.Write(obj.Value())
 		if err != nil {
 			return fwk.Errorf(
 				"error writing object [%s] to stream [%s]: %v",
