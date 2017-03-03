@@ -1,9 +1,15 @@
-//+build ignore
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// +build ignore
+
 package main
 
 import (
+	"compress/zlib"
 	"flag"
-	"fmt"
+	"log"
 	"os"
 
 	"go-hep.org/x/hep/rio"
@@ -23,32 +29,41 @@ func main() {
 	compr := flag.Bool("compr", false, "enable records compression")
 	flag.Parse()
 
-	f, err := rio.Create(*fname)
+	f, err := os.Create(*fname)
 	if err != nil {
-		fmt.Printf("*** error: %v\n", err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 	defer func() {
 		err = f.Close()
 		if err != nil {
-			fmt.Printf("*** error closing file [%s]: %v\n", *fname, err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 	}()
 
-	var runhdr RunHeader
-	rec := f.Record("RioRunHeader")
-	if rec == nil {
-		fmt.Printf("*** error: could not fetch record [RioRunHeader]\n")
-		os.Exit(1)
+	w, err := rio.NewWriter(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer w.Close()
+
+	if *compr {
+		err = w.SetCompressor(rio.CompressZlib, zlib.DefaultCompression)
+		if err != nil {
+			log.Fatalf("error setting compressor: %v\n", err)
+		}
 	}
 
-	rec.SetCompress(*compr)
+	var runhdr RunHeader
+	rec := w.Record("RioRunHeader")
+	if rec == nil {
+		log.Fatal("could not fetch record [RioRunHeader]\n")
+	}
+
 	err = rec.Connect("RunHeader", &runhdr)
 	if err != nil {
-		fmt.Printf("error connecting [RunHeader]: %v", err)
-		os.Exit(1)
+		log.Fatalf("error connecting [RunHeader]: %v", err)
 	}
+	blk := rec.Block("RunHeader")
 
 	for irec := 0; irec < 10; irec++ {
 		runhdr = RunHeader{
@@ -67,16 +82,13 @@ func main() {
 				int64(irec) + 300,
 			},
 		}
-		err = f.WriteRecord(rec)
+		err = blk.Write(&runhdr)
 		if err != nil {
-			fmt.Printf("error writing record: %v (irec=%d)", err, irec)
-			os.Exit(1)
+			log.Fatalf("error writing block: %v (irec=%d)", err, irec)
 		}
-
-		err = f.Sync()
+		err = rec.Write()
 		if err != nil {
-			fmt.Printf("error flushing record: %v (irec=%d)", err, irec)
-			os.Exit(1)
+			log.Fatalf("error writing record: %v (irec=%d)", err, irec)
 		}
 	}
 }
