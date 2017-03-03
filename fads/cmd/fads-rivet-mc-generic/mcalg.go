@@ -148,8 +148,9 @@ func (tsk *McGeneric) StopTask(ctx fwk.Context) error {
 		tsk.hmult.Hist, tsk.heta.Hist, tsk.hrap.Hist, tsk.hpt.Hist, tsk.hene.Hist, tsk.hphi.Hist,
 		tsk.hmultCh.Hist, tsk.hetaCh.Hist, tsk.hrapCh.Hist, tsk.hptCh.Hist, tsk.heneCh.Hist, tsk.hphiCh.Hist,
 	} {
-		area := h.Integral()
-		h.Scale(1 / area)
+		f := 1 / h.Integral()
+		h.Scale(f)
+		h.Annotation()["ScaledBy"] = f
 	}
 
 	for _, v := range []struct {
