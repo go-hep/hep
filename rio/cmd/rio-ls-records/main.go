@@ -8,37 +8,61 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	"go-hep.org/x/hep/rio"
 )
 
+const rioMeta = ".rio.meta"
+
 func main() {
-	var fname string
+
+	log.SetFlags(0)
+	log.SetPrefix("rio-ls-records: ")
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, `Usage: rio-ls-records [options] <file.rio> [<file2.rio> [<file3.rio> [...]]]
+	
+ex:
+ $ rio-ls-records file.rio
+ `,
+		)
+	}
 
 	flag.Parse()
 
-	if flag.NArg() > 0 {
-		fname = flag.Arg(0)
-	}
-
-	fmt.Printf("::: inspecting file [%s]...\n", fname)
-	if fname == "" {
+	if flag.NArg() < 1 {
+		log.Printf("missing filename argument\n")
 		flag.Usage()
+		flag.PrintDefaults()
 		os.Exit(1)
 	}
+
+	for _, fname := range flag.Args() {
+		inspect(fname)
+	}
+}
+
+func inspect(fname string) {
+	log.Printf("inspecting file [%s]...\n", fname)
+	if fname == "" {
+		flag.Usage()
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
+	rtypes := metaData(fname)
 
 	f, err := os.Open(fname)
 	if err != nil {
-		fmt.Printf("*** error: %v\n", err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 	defer f.Close()
 
 	r, err := rio.NewReader(f)
 	if err != nil {
-		fmt.Printf("*** error creating rio.Reader: %v\n", err)
-		os.Exit(2)
+		log.Fatalf("error creating rio.Reader: %v\n", err)
 	}
 
 	scan := rio.NewScanner(r)
@@ -49,13 +73,61 @@ func main() {
 			break
 		}
 		rec := scan.Record()
-		fmt.Printf(" -> %v\n", rec.Name())
+		if rec.Name() == rioMeta {
+			continue
+		}
+		rtype := rtypes[rec.Name()]
+		if rtype != "" {
+			rtype = "type=" + rtype
+		}
+		fmt.Printf(" -> %-20s%s\n", rec.Name(), rtype)
 	}
 	err = scan.Err()
 	if err != nil {
-		fmt.Printf("*** error: %v\n", err)
-		os.Exit(2)
+		log.Fatalf("error during file scan: %v\n", err)
 	}
 
-	fmt.Printf("::: inspecting file [%s]... [done]\n", fname)
+	log.Printf("inspecting file [%s]... [done]\n", fname)
+}
+
+func metaData(fname string) map[string]string {
+	f, err := os.Open(fname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	var rtypes = make(map[string]string)
+	r, err := rio.NewReader(f)
+	if err != nil {
+		return rtypes
+	}
+
+	scan := rio.NewScanner(r)
+	scan.Select([]rio.Selector{{Name: rioMeta, Unpack: true}})
+	if !scan.Scan() {
+		log.Fatal(scan.Err())
+	}
+	rec := scan.Record()
+	if rec == nil {
+		return rtypes
+	}
+
+	blk := rec.Block(".rio.meta")
+	if blk == nil {
+		return rtypes
+	}
+
+	var meta rio.Metadata
+	err = blk.Read(&meta)
+	if err != nil {
+		return rtypes
+	}
+
+	for _, mrec := range meta.Records {
+		mblk := mrec.Blocks[0]
+		rtypes[mblk.Name] = mblk.Type
+	}
+
+	return rtypes
 }
