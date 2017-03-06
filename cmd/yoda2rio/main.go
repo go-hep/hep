@@ -120,16 +120,11 @@ func yodaSlice(r io.Reader) ([]Yoda, error) {
 			}
 			o = append(o, &yoda{name: name, ptr: v.Addr().Interface()})
 		}
-
 	}
 	err = scan.Err()
-	if err == io.EOF {
-		err = nil
-	}
 	if err != nil {
 		return nil, err
 	}
-
 	return o, nil
 }
 
