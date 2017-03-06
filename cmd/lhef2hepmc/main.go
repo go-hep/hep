@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// lhef2hepmc converts a LHEF input file into a HepMC file.
+//
+// Example:
+//
+//  $> lhef2hepmc -i in.lhef -o out.hepmc
+//  $> lhef2hepmc < in.lhef > out.hepmc
 package main // import "go-hep.org/x/hep/cmd/lhef2hepmc"
 
 import (
