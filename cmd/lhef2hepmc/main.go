@@ -12,8 +12,8 @@ package main // import "go-hep.org/x/hep/cmd/lhef2hepmc"
 
 import (
 	"flag"
-	"fmt"
 	"io"
+	"log"
 	"math"
 	"os"
 
@@ -32,12 +32,16 @@ var (
 	// Better to be sure that crossSection() is never used to fill the
 	// histograms, but only in the finalization stage, by reweighting the
 	// histograms with crossSection()/sumOfWeights()
-	acc_weight         = 0.0
-	acc_weight_squared = 0.0
-	evt_nbr            = 0
+	sumw  = 0.0
+	sumw2 = 0.0
+	nevt  = 0
 )
 
 func main() {
+	log.SetFlags(0)
+	log.SetPrefix("lhef2hepmc: ")
+	log.SetOutput(os.Stderr)
+
 	flag.Parse()
 
 	var r io.Reader
@@ -46,8 +50,7 @@ func main() {
 	} else {
 		f, err := os.Open(*ifname)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "**error: %v\n", err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 		r = f
 		defer f.Close()
@@ -59,8 +62,7 @@ func main() {
 	} else {
 		f, err := os.Create(*ofname)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "**error: %v\n", err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 		w = f
 		defer f.Close()
@@ -68,14 +70,12 @@ func main() {
 
 	dec, err := lhef.NewDecoder(r)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "**error: %v\n", err)
-		os.Exit(1)
+		log.Fatalf("error creating LHEF decoder: %v", err)
 	}
 
 	enc := hepmc.NewEncoder(w)
 	if enc == nil {
-		fmt.Fprintf(os.Stderr, "**error: nil hepmc.Encoder\n")
-		os.Exit(1)
+		log.Fatalf("error creating HepMC encoder: %v", err)
 	}
 	defer enc.Close()
 
@@ -85,7 +85,7 @@ func main() {
 			break
 		}
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "**error at evt #%d: %v\n", ievt, err)
+			log.Fatalf("error at event #%d: %v", ievt, err)
 		}
 
 		evt := hepmc.Event{
@@ -110,25 +110,20 @@ func main() {
 			xsecerr = dec.Run.XSECUP[1]
 
 		case 4:
-			acc_weight += weight
-			acc_weight_squared += weight * weight
-			evt_nbr += 1
-			xsecval = acc_weight / float64(evt_nbr)
-			xsecerr2 := (acc_weight_squared/float64(evt_nbr) - xsecval*xsecval) / float64(evt_nbr)
+			sumw += weight
+			sumw2 += weight * weight
+			nevt++
+			xsecval = sumw / float64(nevt)
+			xsecerr2 := (sumw2/float64(nevt) - xsecval*xsecval) / float64(nevt)
 
 			if xsecerr2 < 0 {
-				fmt.Fprintf(os.Stderr, "WARNING: xsecerr^2 < 0. forcing to zero. (%f)\n", xsecerr2)
+				log.Printf("WARNING: xsecerr^2 < 0. forcing to zero. (%f)\n", xsecerr2)
 				xsecerr2 = 0.
 			}
 			xsecerr = math.Sqrt(xsecerr2)
 
 		default:
-			fmt.Fprintf(
-				os.Stderr,
-				"**error: IDWTUP=%v value not handled yet.\n",
-				dec.Run.IDWTUP,
-			)
-			os.Exit(1)
+			log.Fatalf("IDWTUP=%v value not handled yet", dec.Run.IDWTUP)
 		}
 
 		evt.CrossSection = &hepmc.CrossSection{Value: xsecval, Error: xsecerr}
@@ -158,13 +153,11 @@ func main() {
 		}
 		err = vtx.AddParticleIn(&p1)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "**error at evt #%d: %v\n", ievt, err)
-			os.Exit(1)
+			log.Fatalf("error at event #%d: %v", ievt, err)
 		}
 		err = vtx.AddParticleIn(&p2)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "**error at evt #%d: %v\n", ievt, err)
-			os.Exit(1)
+			log.Fatalf("error at event #%d: %v\n", ievt, err)
 		}
 		evt.Beams[0] = &p1
 		evt.Beams[1] = &p2
@@ -191,32 +184,26 @@ func main() {
 		}
 		err = evt.AddVertex(&vtx)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "**error at evt #%d: %v\n", ievt, err)
-			os.Exit(1)
+			log.Fatalf("error at event #%d: %v\n", ievt, err)
 		}
 
 		nparts := len(evt.Particles)
 		if nmax != nparts {
-			fmt.Fprintf(os.Stderr, "**error at evt #%d: LHEF/HEPMC inconsistency (LHEF particles: %d, HEPMC particles: %d)\n", ievt, nmax, nparts)
+			log.Printf("error at event #%d: LHEF/HEPMC inconsistency (LHEF particles: %d, HEPMC particles: %d)\n", ievt, nmax, nparts)
 			for _, p := range evt.Particles {
-				fmt.Fprintf(os.Stderr, "part: %v\n", p)
+				log.Printf("part: %v\n", p)
 			}
-			fmt.Fprintf(os.Stderr, "p1: %v\n", p1)
-			fmt.Fprintf(os.Stderr, "p2: %v\n", p2)
+			log.Printf("p1: %v\n", p1)
+			log.Printf("p2: %v\n", p2)
 			os.Exit(1)
 		}
 		if len(evt.Vertices) != 1 {
-			fmt.Fprintf(os.Stderr, "**error at evt #%d: inconsistent number of vertices in HEPMC (got %d, expected 1)\n", ievt, len(evt.Vertices))
-			os.Exit(1)
+			log.Fatalf("error at event #%d: inconsistent number of vertices in HEPMC (got %d, expected 1)\n", ievt, len(evt.Vertices))
 		}
-		//fmt.Fprintf(os.Stderr, "nparts: %v\nnverts: %v\n", len(evt.Particles), len(evt.Vertices))
 
 		err = enc.Encode(&evt)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "**error at evt #%d: %v\n", ievt, err)
-			os.Exit(1)
+			log.Fatalf("error at event #%d: %v\n", ievt, err)
 		}
 	}
 }
-
-// EOF
