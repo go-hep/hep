@@ -4,6 +4,8 @@
 
 package fastjet
 
+// ClusterSequenceStructure is a ClusterSequence that implements
+// the JetStructure interface.
 type ClusterSequenceStructure struct {
 	cs *ClusterSequence
 }
