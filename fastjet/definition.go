@@ -18,6 +18,7 @@ type JetDefinition struct {
 	plugin     Plugin
 }
 
+// NewJetDefinition returns a new JetDefinition with the provided configuration.
 func NewJetDefinition(alg JetAlgorithm, r float64, scheme RecombinationScheme, strategy Strategy) JetDefinition {
 	return JetDefinition{
 		alg:        alg,
@@ -27,6 +28,19 @@ func NewJetDefinition(alg JetAlgorithm, r float64, scheme RecombinationScheme, s
 	}
 }
 
+// NewJetDefinitionExtra returns a new JetDefinition with an extra float64 parameter.
+func NewJetDefinitionExtra(alg JetAlgorithm, r float64, scheme RecombinationScheme, strategy Strategy, extra float64) JetDefinition {
+	return JetDefinition{
+		alg:        alg,
+		r:          r,
+		extra:      extra,
+		recombiner: NewRecombiner(scheme),
+		strategy:   strategy,
+	}
+}
+
+// Description returns a string description of the current JetDefinition
+// matching the one from C++ FastJet.
 func (def JetDefinition) Description() string {
 	switch def.alg {
 	case PluginAlgorithm:
