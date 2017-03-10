@@ -34,21 +34,17 @@ func (rec DefaultRecombiner) Description() string {
 }
 
 func (rec DefaultRecombiner) Recombine(j1, j2 *Jet) (Jet, error) {
-	var err error
-	var jet Jet
-
 	w1 := 0.0
 	w2 := 0.0
 
 	switch rec.Scheme() {
 	case EScheme:
-		jet = NewJet(
+		return NewJet(
 			j1.Px()+j2.Px(),
 			j1.Py()+j2.Py(),
 			j1.Pz()+j2.Pz(),
 			j1.E()+j2.E(),
-		)
-		return jet, err
+		), nil
 
 	case PtScheme, EtScheme, BIPtScheme:
 		w1 = j1.Pt()
@@ -59,7 +55,7 @@ func (rec DefaultRecombiner) Recombine(j1, j2 *Jet) (Jet, error) {
 		w2 = j2.Pt2()
 
 	default:
-		return jet, fmt.Errorf("fastjet.Recombine: invalid recombination scheme (%v)", rec.Scheme())
+		return Jet{}, fmt.Errorf("fastjet.Recombine: invalid recombination scheme (%v)", rec.Scheme())
 	}
 
 	pt := j1.Pt() + j2.Pt()
@@ -74,17 +70,15 @@ func (rec DefaultRecombiner) Recombine(j1, j2 *Jet) (Jet, error) {
 			phi2 -= 2 * math.Pi
 		}
 		phi := (w1*phi1 + w2*phi2) / (w1 + w2)
-		jet = NewJet(
+		return NewJet(
 			pt*math.Cos(phi),
 			pt*math.Sin(phi),
 			pt*math.Sinh(y),
 			pt*math.Cosh(y),
-		)
-	} else {
-		jet = NewJet(0, 0, 0, 0)
+		), nil
 	}
 
-	return jet, err
+	return NewJet(0, 0, 0, 0), nil
 }
 
 func (rec DefaultRecombiner) Preprocess(jet *Jet) error {
