@@ -140,6 +140,14 @@ func (leaf *tleafElement) Class() string {
 	return "TLeafElement"
 }
 
+func (leaf *tleafElement) ivalue() int {
+	panic("not implemented")
+}
+
+func (leaf *tleafElement) imax() int {
+	panic("not implemented")
+}
+
 func (leaf *tleafElement) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
