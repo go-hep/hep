@@ -1,7 +1,7 @@
 sio
 ===
 
-[![Build Status](https://secure.travis-ci.org/go-hep/sio.png)](http://travis-ci.org/go-hep/sio)
+[![GoDoc](https://godoc.org/go-hep.org/x/hep/sio?status.svg)](https://godoc.org/go-hep.org/x/hep/sio)
 
 `sio` is a pure `Go` implementation of SIO (Serial I/O).
 

@@ -1,7 +1,6 @@
 fwk
 ===
 
-[![Build Status](https://secure.travis-ci.org/go-hep/fwk.png)](http://travis-ci.org/go-hep/fwk)
 [![GoDoc](https://godoc.org/go-hep.org/x/hep/fwk?status.svg)](https://godoc.org/go-hep.org/x/hep/fwk)
 
 `fwk` is a HEP oriented concurrent framework written in `Go`.
@@ -30,7 +29,7 @@ The documentation is available on `godoc`:
 
 ### `fwk` tuto examples
 
-The [examples](https://go-hep.org/x/hep/fwk/blob/master/examples)
+The [examples](https://github.com/go-hep/hep/blob/master/fwk/examples)
 directory contains a few simple applications which exercize the `fwk`
 toolkit.
 

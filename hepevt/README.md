@@ -1,9 +1,9 @@
 hepevt
 ======
 
-[![Build Status](https://drone.io/go-hep.org/x/hep/hepevt/status.png)](https://drone.io/go-hep.org/x/hep/hepevt/latest)
+[![GoDoc](https://godoc.org/go-hep.org/x/hep/hepevt?status.svg)](https://godoc.org/go-hep.org/x/hep/hepevt)
 
-Simple ``cgo`` bindings to the ``FORTRAN-77`` ``HEPEVT`` high energy event format library.
+Simple implementation of the ``FORTRAN-77`` ``HEPEVT`` high energy event format in pure-Go.
 
 
 ## Installation

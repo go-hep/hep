@@ -1,6 +1,5 @@
 # rootio
 
-[![Build Status](https://secure.travis-ci.org/go-hep/rootio.png)](http://travis-ci.org/go-hep/rootio)
 [![GoDoc](https://godoc.org/go-hep.org/x/hep/rootio?status.svg)](https://godoc.org/go-hep.org/x/hep/rootio)
 
 Experimental, pure-Go package to read ROOT files (and perhaps write

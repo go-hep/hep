@@ -1,7 +1,7 @@
 rio
 ===
 
-[![Build Status](https://secure.travis-ci.org/go-hep/rio.png)](http://travis-ci.org/go-hep/rio)
+[![GoDoc](https://godoc.org/go-hep.org/x/hep/rio?status.svg)](https://godoc.org/go-hep.org/x/hep/rio)
 
 `rio` is a Record-oriented I/O library, modeled after SIO (Serial I/O).
 

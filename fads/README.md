@@ -1,7 +1,6 @@
 fads
 ====
 
-[![Build Status](https://secure.travis-ci.org/go-hep/fads.png)](http://travis-ci.org/go-hep/fads)
 [![GoDoc](https://godoc.org/go-hep.org/x/hep/fads?status.svg)](https://godoc.org/go-hep.org/x/hep/fads)
 
 `fads`, a FAst Detector Simulation, is a Go-based detector simulation including a tracking system embedded into a magnetic field, calorimeters and a muon system.

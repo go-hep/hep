@@ -1,7 +1,7 @@
 heppdt
 ======
 
-[![Build Status](https://secure.travis-ci.org/go-hep/heppdt.png)](http://travis-ci.org/go-hep/heppdt)
+[![GoDoc](https://godoc.org/go-hep.org/x/hep/heppdt?status.svg)](https://godoc.org/go-hep.org/x/hep/heppdt)
 
 `heppdt` provides access to the HEP Particle Data Table.
 

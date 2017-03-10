@@ -1,7 +1,7 @@
 fmom
 ====
 
-[![Build Status](https://secure.travis-ci.org/go-hep/fmom.png)](http://travis-ci.org/go-hep/fmom)
+[![GoDoc](https://godoc.org/go-hep.org/x/hep/fmom?status.svg)](https://godoc.org/go-hep.org/x/hep/fmom)
 
 `fmom` provides facilities to create and manipulate Lorentz 4-vectors.
 
