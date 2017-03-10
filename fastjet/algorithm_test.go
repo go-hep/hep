@@ -104,22 +104,6 @@ func TestJetAlgorithms(t *testing.T) {
 		},
 		{
 			input: "testdata/single-pp-event.dat",
-			name:  "genkt_p0.0_r0.4_escheme_best",
-			def: fastjet.NewJetDefinitionExtra(
-				fastjet.GenKtAlgorithm, 0.4, fastjet.EScheme, fastjet.BestStrategy, 0,
-			),
-			ptmin: 0,
-		},
-		{
-			input: "testdata/single-pp-event.dat",
-			name:  "genkt_p1.0_r0.4_escheme_best",
-			def: fastjet.NewJetDefinitionExtra(
-				fastjet.GenKtAlgorithm, 0.4, fastjet.EScheme, fastjet.BestStrategy, 1,
-			),
-			ptmin: 0,
-		},
-		{
-			input: "testdata/single-pp-event.dat",
 			name:  "genkt_p-1.0_r0.4_escheme_best",
 			def: fastjet.NewJetDefinitionExtra(
 				fastjet.GenKtAlgorithm, 0.4, fastjet.EScheme, fastjet.BestStrategy, -1,
@@ -128,17 +112,17 @@ func TestJetAlgorithms(t *testing.T) {
 		},
 		{
 			input: "testdata/single-pp-event.dat",
-			name:  "genkt_p0.0_r0.7_escheme_best",
+			name:  "genkt_p+0.0_r0.4_escheme_best",
 			def: fastjet.NewJetDefinitionExtra(
-				fastjet.GenKtAlgorithm, 0.7, fastjet.EScheme, fastjet.BestStrategy, 0,
+				fastjet.GenKtAlgorithm, 0.4, fastjet.EScheme, fastjet.BestStrategy, 0,
 			),
 			ptmin: 0,
 		},
 		{
 			input: "testdata/single-pp-event.dat",
-			name:  "genkt_p1.0_r0.7_escheme_best",
+			name:  "genkt_p+1.0_r0.4_escheme_best",
 			def: fastjet.NewJetDefinitionExtra(
-				fastjet.GenKtAlgorithm, 0.7, fastjet.EScheme, fastjet.BestStrategy, 1,
+				fastjet.GenKtAlgorithm, 0.4, fastjet.EScheme, fastjet.BestStrategy, 1,
 			),
 			ptmin: 0,
 		},
@@ -152,17 +136,17 @@ func TestJetAlgorithms(t *testing.T) {
 		},
 		{
 			input: "testdata/single-pp-event.dat",
-			name:  "genkt_p0.0_r1.0_escheme_best",
+			name:  "genkt_p+0.0_r0.7_escheme_best",
 			def: fastjet.NewJetDefinitionExtra(
-				fastjet.GenKtAlgorithm, 1.0, fastjet.EScheme, fastjet.BestStrategy, 0,
+				fastjet.GenKtAlgorithm, 0.7, fastjet.EScheme, fastjet.BestStrategy, 0,
 			),
 			ptmin: 0,
 		},
 		{
 			input: "testdata/single-pp-event.dat",
-			name:  "genkt_p1.0_r1.0_escheme_best",
+			name:  "genkt_p+1.0_r0.7_escheme_best",
 			def: fastjet.NewJetDefinitionExtra(
-				fastjet.GenKtAlgorithm, 1.0, fastjet.EScheme, fastjet.BestStrategy, 1,
+				fastjet.GenKtAlgorithm, 0.7, fastjet.EScheme, fastjet.BestStrategy, 1,
 			),
 			ptmin: 0,
 		},
@@ -171,6 +155,22 @@ func TestJetAlgorithms(t *testing.T) {
 			name:  "genkt_p-1.0_r1.0_escheme_best",
 			def: fastjet.NewJetDefinitionExtra(
 				fastjet.GenKtAlgorithm, 1.0, fastjet.EScheme, fastjet.BestStrategy, -1,
+			),
+			ptmin: 0,
+		},
+		{
+			input: "testdata/single-pp-event.dat",
+			name:  "genkt_p+0.0_r1.0_escheme_best",
+			def: fastjet.NewJetDefinitionExtra(
+				fastjet.GenKtAlgorithm, 1.0, fastjet.EScheme, fastjet.BestStrategy, 0,
+			),
+			ptmin: 0,
+		},
+		{
+			input: "testdata/single-pp-event.dat",
+			name:  "genkt_p+1.0_r1.0_escheme_best",
+			def: fastjet.NewJetDefinitionExtra(
+				fastjet.GenKtAlgorithm, 1.0, fastjet.EScheme, fastjet.BestStrategy, 1,
 			),
 			ptmin: 0,
 		},
@@ -186,7 +186,7 @@ func TestJetAlgorithms(t *testing.T) {
 		},
 		{
 			input: "testdata/single-ee-event.dat",
-			name:  "eegenkt_p0.0_r0.4_escheme_best",
+			name:  "eegenkt_p+0.0_r0.4_escheme_best",
 			def: fastjet.NewJetDefinitionExtra(
 				fastjet.EeGenKtAlgorithm, 0.4, fastjet.EScheme, fastjet.BestStrategy, 0,
 			),
@@ -194,7 +194,7 @@ func TestJetAlgorithms(t *testing.T) {
 		},
 		{
 			input: "testdata/single-ee-event.dat",
-			name:  "eegenkt_p1.0_r0.4_escheme_best",
+			name:  "eegenkt_p+1.0_r0.4_escheme_best",
 			def: fastjet.NewJetDefinitionExtra(
 				fastjet.EeGenKtAlgorithm, 0.4, fastjet.EScheme, fastjet.BestStrategy, 1,
 			),
@@ -210,7 +210,7 @@ func TestJetAlgorithms(t *testing.T) {
 		},
 		{
 			input: "testdata/single-ee-event.dat",
-			name:  "eegenkt_p0.0_r0.7_escheme_best",
+			name:  "eegenkt_p+0.0_r0.7_escheme_best",
 			def: fastjet.NewJetDefinitionExtra(
 				fastjet.EeGenKtAlgorithm, 0.7, fastjet.EScheme, fastjet.BestStrategy, 0,
 			),
@@ -218,7 +218,7 @@ func TestJetAlgorithms(t *testing.T) {
 		},
 		{
 			input: "testdata/single-ee-event.dat",
-			name:  "eegenkt_p1.0_r0.7_escheme_best",
+			name:  "eegenkt_p+1.0_r0.7_escheme_best",
 			def: fastjet.NewJetDefinitionExtra(
 				fastjet.EeGenKtAlgorithm, 0.7, fastjet.EScheme, fastjet.BestStrategy, 1,
 			),
@@ -234,7 +234,7 @@ func TestJetAlgorithms(t *testing.T) {
 		},
 		{
 			input: "testdata/single-ee-event.dat",
-			name:  "eegenkt_p0.0_r1.0_escheme_best",
+			name:  "eegenkt_p+0.0_r1.0_escheme_best",
 			def: fastjet.NewJetDefinitionExtra(
 				fastjet.EeGenKtAlgorithm, 1.0, fastjet.EScheme, fastjet.BestStrategy, 0,
 			),
@@ -242,7 +242,7 @@ func TestJetAlgorithms(t *testing.T) {
 		},
 		{
 			input: "testdata/single-ee-event.dat",
-			name:  "eegenkt_p1.0_r1.0_escheme_best",
+			name:  "eegenkt_p+1.0_r1.0_escheme_best",
 			def: fastjet.NewJetDefinitionExtra(
 				fastjet.EeGenKtAlgorithm, 1.0, fastjet.EScheme, fastjet.BestStrategy, 1,
 			),
