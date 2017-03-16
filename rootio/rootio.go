@@ -208,6 +208,16 @@ type Array interface {
 	Set(i int, v interface{})
 }
 
+// Axis describes a ROOT TAxis.
+type Axis interface {
+	Named
+	XMin() float64
+	XMax() float64
+	NBins() int
+	XBins() []float64
+	BinCenter(int) float64
+}
+
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 type ROOTUnmarshaler interface {

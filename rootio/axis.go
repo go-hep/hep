@@ -29,6 +29,31 @@ func (a *taxis) Class() string {
 	return "TAxis"
 }
 
+func (a *taxis) XMin() float64 {
+	return a.xmin
+}
+
+func (a *taxis) XMax() float64 {
+	return a.xmax
+}
+
+func (a *taxis) NBins() int {
+	return a.nbins
+}
+
+func (a *taxis) XBins() []float64 {
+	return a.xbins.Data
+}
+
+func (a *taxis) BinCenter(i int) float64 {
+	if len(a.xbins.Data) == 0 || i < 1 || i > a.nbins {
+		width := (a.xmax - a.xmin) / float64(a.nbins)
+		return a.xmin + (float64(i)-0.5)*width
+	}
+	width := a.xbins.Data[i] - a.xbins.Data[i-1]
+	return a.xbins.Data[i-1] + 0.5*width
+}
+
 func (a *taxis) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -96,4 +121,5 @@ func init() {
 
 var _ Object = (*taxis)(nil)
 var _ Named = (*taxis)(nil)
+var _ Axis = (*taxis)(nil)
 var _ ROOTUnmarshaler = (*taxis)(nil)
