@@ -171,12 +171,12 @@ func (dir *tdirectory) Get(namecycle string) (Object, bool) {
 		if k.Name() == name {
 			if cycle != 9999 {
 				if k.cycle == cycle {
-					return &k, true
+					return k.Value().(Object), true
 				} else {
 					return nil, false
 				}
 			}
-			return &k, true
+			return k.Value().(Object), true
 		}
 	}
 	return nil, false
