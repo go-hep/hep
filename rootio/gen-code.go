@@ -10,6 +10,7 @@ package main
 import (
 	"fmt"
 	"go/format"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -40,6 +41,14 @@ func gofmt(f *os.File) {
 	}
 }
 
+func genImports(w io.Writer, imports ...string) {
+	fmt.Fprintf(w, srcHeader)
+	for _, imp := range imports {
+		fmt.Fprintf(w, "\t%q\n", imp)
+	}
+	fmt.Fprintf(w, ")\n\n")
+}
+
 func genLeaves() {
 	f, err := os.Create("leaf_gen.go")
 	if err != nil {
@@ -47,7 +56,7 @@ func genLeaves() {
 	}
 	defer f.Close()
 
-	fmt.Fprintf(f, srcHeader)
+	genImports(f)
 
 	for i, typ := range []struct {
 		Name       string
@@ -130,7 +139,7 @@ func genArrays() {
 	}
 	defer f.Close()
 
-	fmt.Fprintf(f, srcHeader)
+	genImports(f)
 
 	for i, typ := range []struct {
 		Name string
@@ -182,7 +191,7 @@ func genH1() {
 	}
 	defer f.Close()
 
-	fmt.Fprintf(f, srcHeader)
+	genImports(f, "math")
 
 	for i, typ := range []struct {
 		Name string
@@ -225,7 +234,7 @@ func genH2() {
 	}
 	defer f.Close()
 
-	fmt.Fprintf(f, srcHeader)
+	genImports(f)
 
 	for i, typ := range []struct {
 		Name string
@@ -271,8 +280,6 @@ package rootio
 
 import (
 	"reflect"
-)
-
 `
 
 const leafTmpl = `// {{.Name}} implements ROOT T{{.Name}}
@@ -507,6 +514,40 @@ func (h *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 	return r.err
 }
 
+func (h *{{.Name}}) Array() {{.Type}} {
+	return h.arr
+}
+
+// Rank returns the number of dimensions of this histogram.
+func (h *{{.Name}}) Rank() int {
+	return 1
+}
+
+// NbinsX returns the number of bins in X.
+func (h *{{.Name}}) NbinsX() int {
+	return h.th1.xaxis.nbins
+}
+
+// XAxis returns the axis along X.
+func (h*{{.Name}}) XAxis() Axis {
+	return &h.th1.xaxis
+}
+
+// BinCenter returns the bin center value
+func (h *{{.Name}}) BinCenter(i int) float64 {
+	return h.th1.xaxis.BinCenter(i)
+}
+
+// BinContent returns the bin content
+func (h *{{.Name}}) BinContent(i int) float64 {
+	return float64(h.arr.Data[i])
+}
+
+// BinError returns the bin error
+func (h *{{.Name}}) BinError(i int) float64 {
+	return math.Sqrt(float64(h.th1.sumw2.Data[i]))
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := &{{.Name}}{}
@@ -530,6 +571,25 @@ type {{.Name}} struct {
 // Class returns the ROOT class name.
 func (*{{.Name}}) Class() string {
 	return "T{{.Name}}"
+}
+
+func (h *{{.Name}}) Array() {{.Type}} {
+	return h.arr
+}
+
+// Rank returns the number of dimensions of this histogram.
+func (h *{{.Name}}) Rank() int {
+	return 2
+}
+
+// NbinsX returns the number of bins in X.
+func (h *{{.Name}}) NbinsX() int {
+	return h.th1.xaxis.nbins
+}
+
+// NbinsY returns the number of bins in Y.
+func (h *{{.Name}}) NbinsY() int {
+	return h.th1.yaxis.nbins
 }
 
 func (h *{{.Name}}) UnmarshalROOT(r *RBuffer) error {

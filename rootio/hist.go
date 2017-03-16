@@ -41,6 +41,20 @@ func (h *th1) Class() string {
 	return "TH1"
 }
 
+// Entries returns the number of entries for this histogram.
+func (h *th1) Entries() float64 {
+	return h.entries
+}
+
+// SumW returns the sum of weights
+func (h *th1) SumW() float64 {
+	return h.tsumw
+}
+
+func (h *th1) SumW2() []float64 {
+	return h.sumw2.Data
+}
+
 func (h *th1) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err

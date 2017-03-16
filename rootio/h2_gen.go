@@ -21,6 +21,25 @@ func (*H2F) Class() string {
 	return "TH2F"
 }
 
+func (h *H2F) Array() ArrayF {
+	return h.arr
+}
+
+// Rank returns the number of dimensions of this histogram.
+func (h *H2F) Rank() int {
+	return 2
+}
+
+// NbinsX returns the number of bins in X.
+func (h *H2F) NbinsX() int {
+	return h.th1.xaxis.nbins
+}
+
+// NbinsY returns the number of bins in Y.
+func (h *H2F) NbinsY() int {
+	return h.th1.yaxis.nbins
+}
+
 func (h *H2F) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -70,6 +89,25 @@ func (*H2D) Class() string {
 	return "TH2D"
 }
 
+func (h *H2D) Array() ArrayD {
+	return h.arr
+}
+
+// Rank returns the number of dimensions of this histogram.
+func (h *H2D) Rank() int {
+	return 2
+}
+
+// NbinsX returns the number of bins in X.
+func (h *H2D) NbinsX() int {
+	return h.th1.xaxis.nbins
+}
+
+// NbinsY returns the number of bins in Y.
+func (h *H2D) NbinsY() int {
+	return h.th1.yaxis.nbins
+}
+
 func (h *H2D) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -117,6 +155,25 @@ type H2I struct {
 // Class returns the ROOT class name.
 func (*H2I) Class() string {
 	return "TH2I"
+}
+
+func (h *H2I) Array() ArrayI {
+	return h.arr
+}
+
+// Rank returns the number of dimensions of this histogram.
+func (h *H2I) Rank() int {
+	return 2
+}
+
+// NbinsX returns the number of bins in X.
+func (h *H2I) NbinsX() int {
+	return h.th1.xaxis.nbins
+}
+
+// NbinsY returns the number of bins in Y.
+func (h *H2I) NbinsY() int {
+	return h.th1.yaxis.nbins
 }
 
 func (h *H2I) UnmarshalROOT(r *RBuffer) error {

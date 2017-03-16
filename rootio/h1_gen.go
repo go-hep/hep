@@ -7,6 +7,7 @@
 package rootio
 
 import (
+	"math"
 	"reflect"
 )
 
@@ -44,6 +45,40 @@ func (h *H1F) UnmarshalROOT(r *RBuffer) error {
 
 	r.CheckByteCount(pos, bcnt, beg, "TH1F")
 	return r.err
+}
+
+func (h *H1F) Array() ArrayF {
+	return h.arr
+}
+
+// Rank returns the number of dimensions of this histogram.
+func (h *H1F) Rank() int {
+	return 1
+}
+
+// NbinsX returns the number of bins in X.
+func (h *H1F) NbinsX() int {
+	return h.th1.xaxis.nbins
+}
+
+// XAxis returns the axis along X.
+func (h *H1F) XAxis() Axis {
+	return &h.th1.xaxis
+}
+
+// BinCenter returns the bin center value
+func (h *H1F) BinCenter(i int) float64 {
+	return h.th1.xaxis.BinCenter(i)
+}
+
+// BinContent returns the bin content
+func (h *H1F) BinContent(i int) float64 {
+	return float64(h.arr.Data[i])
+}
+
+// BinError returns the bin error
+func (h *H1F) BinError(i int) float64 {
+	return math.Sqrt(float64(h.th1.sumw2.Data[i]))
 }
 
 func init() {
@@ -95,6 +130,40 @@ func (h *H1D) UnmarshalROOT(r *RBuffer) error {
 	return r.err
 }
 
+func (h *H1D) Array() ArrayD {
+	return h.arr
+}
+
+// Rank returns the number of dimensions of this histogram.
+func (h *H1D) Rank() int {
+	return 1
+}
+
+// NbinsX returns the number of bins in X.
+func (h *H1D) NbinsX() int {
+	return h.th1.xaxis.nbins
+}
+
+// XAxis returns the axis along X.
+func (h *H1D) XAxis() Axis {
+	return &h.th1.xaxis
+}
+
+// BinCenter returns the bin center value
+func (h *H1D) BinCenter(i int) float64 {
+	return h.th1.xaxis.BinCenter(i)
+}
+
+// BinContent returns the bin content
+func (h *H1D) BinContent(i int) float64 {
+	return float64(h.arr.Data[i])
+}
+
+// BinError returns the bin error
+func (h *H1D) BinError(i int) float64 {
+	return math.Sqrt(float64(h.th1.sumw2.Data[i]))
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := &H1D{}
@@ -142,6 +211,40 @@ func (h *H1I) UnmarshalROOT(r *RBuffer) error {
 
 	r.CheckByteCount(pos, bcnt, beg, "TH1I")
 	return r.err
+}
+
+func (h *H1I) Array() ArrayI {
+	return h.arr
+}
+
+// Rank returns the number of dimensions of this histogram.
+func (h *H1I) Rank() int {
+	return 1
+}
+
+// NbinsX returns the number of bins in X.
+func (h *H1I) NbinsX() int {
+	return h.th1.xaxis.nbins
+}
+
+// XAxis returns the axis along X.
+func (h *H1I) XAxis() Axis {
+	return &h.th1.xaxis
+}
+
+// BinCenter returns the bin center value
+func (h *H1I) BinCenter(i int) float64 {
+	return h.th1.xaxis.BinCenter(i)
+}
+
+// BinContent returns the bin content
+func (h *H1I) BinContent(i int) float64 {
+	return float64(h.arr.Data[i])
+}
+
+// BinError returns the bin error
+func (h *H1I) BinError(i int) float64 {
+	return math.Sqrt(float64(h.th1.sumw2.Data[i]))
 }
 
 func init() {
