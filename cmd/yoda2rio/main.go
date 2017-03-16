@@ -11,17 +11,12 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
-	"reflect"
-	"strings"
 
-	"go-hep.org/x/hep/hbook"
+	"go-hep.org/x/hep/hbook/yodacnv"
 	"go-hep.org/x/hep/rio"
 )
 
@@ -66,112 +61,15 @@ func convert(w *rio.Writer, fname string) {
 	}
 	defer r.Close()
 
-	vs, err := yodaSlice(r)
+	vs, err := yodacnv.Read(r)
 	if err != nil {
 		log.Fatalf("error decoding YODA file [%s]: %v\n", fname, err)
 	}
 
 	for _, v := range vs {
-		err = w.WriteValue(v.Name(), v.Value())
+		err = w.WriteValue(v.Name(), v)
 		if err != nil {
 			log.Fatalf("error writing %q from YODA file [%s]: %v\n", v.Name(), fname, err)
 		}
 	}
-}
-
-var (
-	yodaHeader = []byte("BEGIN YODA_")
-	yodaFooter = []byte("END YODA_")
-)
-
-func yodaSlice(r io.Reader) ([]Yoda, error) {
-	var (
-		err   error
-		o     []Yoda
-		block = make([]byte, 0, 1024)
-		rt    reflect.Type
-		name  string
-	)
-	scan := bufio.NewScanner(r)
-	for scan.Scan() {
-		raw := scan.Bytes()
-		switch {
-		case bytes.HasPrefix(raw, yodaHeader):
-			rt, name, err = splitHeader(raw)
-			if err != nil {
-				log.Fatalf("error parsing YODA header: %v", err)
-			}
-			block = block[:0]
-			block = append(block, raw...)
-			block = append(block, '\n')
-
-		default:
-			block = append(block, raw...)
-			block = append(block, '\n')
-
-		case bytes.HasPrefix(raw, yodaFooter):
-			block = append(block, raw...)
-			block = append(block, '\n')
-
-			v := reflect.New(rt).Elem()
-			err = v.Addr().Interface().(unmarshalYoda).UnmarshalYODA(block)
-			if err != nil {
-				log.Fatalf("error unmarshaling YODA %q (type=%v): %v\n%v\n===\n", name, rt.Name(), err, string(block))
-			}
-			o = append(o, &yoda{name: name, ptr: v.Addr().Interface()})
-		}
-	}
-	err = scan.Err()
-	if err != nil {
-		return nil, err
-	}
-	return o, nil
-}
-
-func splitHeader(raw []byte) (reflect.Type, string, error) {
-	raw = raw[len(yodaHeader):]
-	i := bytes.Index(raw, []byte(" "))
-	if i == -1 || i >= len(raw) {
-		return nil, "", fmt.Errorf("invalid YODA header (missing space)")
-	}
-
-	var rt reflect.Type
-
-	switch string(raw[:i]) {
-	case "HISTO1D":
-		rt = reflect.TypeOf((*hbook.H1D)(nil)).Elem()
-	case "HISTO2D":
-		rt = reflect.TypeOf((*hbook.H2D)(nil)).Elem()
-	case "PROFILE1D":
-		rt = reflect.TypeOf((*hbook.P1D)(nil)).Elem()
-	case "SCATTER2D":
-		rt = reflect.TypeOf((*hbook.S2D)(nil)).Elem()
-	default:
-		log.Fatalf("unhandled YODA object type %q", string(raw[:i]))
-	}
-
-	name := raw[i+2:] // +2 to also remove the leading '/'
-	return rt, strings.TrimSpace(string(name)), nil
-}
-
-type Yoda interface {
-	Name() string
-	Value() interface{}
-}
-
-type unmarshalYoda interface {
-	UnmarshalYODA([]byte) error
-}
-
-type yoda struct {
-	name string
-	ptr  interface{}
-}
-
-func (y *yoda) Name() string {
-	return y.name
-}
-
-func (y *yoda) Value() interface{} {
-	return y.ptr
 }
