@@ -1,3 +1,7 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package heppdt
 
 import (
@@ -22,7 +26,7 @@ const (
 	N10
 )
 
-/// constituent quarks
+// Quarks describes a given quark mixture
 type Quarks struct {
 	Nq1 int16
 	Nq2 int16

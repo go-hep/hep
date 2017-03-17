@@ -1,6 +1,11 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package heppdt
 
-const tabledata = `//  This table was generated from 
+const tabledata = `
+//  This table was generated from 
 //  http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/SimGeneral/HepPDTESSource/data/Pythia6Table.tbl?rev=1.2&cvsroot=CMSSW&content-type=text/vnd.viewcvs-markup
 //  (version 1.2).
 //  It is essentially a copy of the pythia particle table, with a few heavy ions
@@ -557,5 +562,3 @@ const tabledata = `//  This table was generated from
  1000020030 He3                     6      2.80923     0.00000   0.00000E+00
  1000020040 Alpha-(He4)             6      3.72742     0.00000   0.00000E+00
 `
-
-// EOF
