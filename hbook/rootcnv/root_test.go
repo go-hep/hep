@@ -6,6 +6,8 @@ package rootcnv_test
 
 import (
 	"bytes"
+	"fmt"
+	"log"
 	"reflect"
 	"testing"
 
@@ -13,6 +15,36 @@ import (
 	"go-hep.org/x/hep/hbook/yodacnv"
 	"go-hep.org/x/hep/rootio"
 )
+
+func ExampleH1D() {
+	f, err := rootio.Open("testdata/gauss-h1.root")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	obj, ok := f.Get("h1d")
+	if !ok {
+		log.Fatalf("no such histo %q\n", "h1d")
+	}
+
+	root := obj.(*rootio.H1D)
+	h, err := rootcnv.H1D(root)
+	if err != nil {
+		log.Fatalf("error converting TH1D: %v\n", err)
+	}
+
+	fmt.Printf("name:    %q\n", root.Name())
+	fmt.Printf("mean:    %v\n", h.XMean())
+	fmt.Printf("std-dev: %v\n", h.XStdDev())
+	fmt.Printf("std-err: %v\n", h.XStdErr())
+
+	// Output:
+	// name:    "h1d"
+	// mean:    0.028120161729965475
+	// std-dev: 2.5450388581847907
+	// std-err: 0.025447022905060374
+}
 
 func TestH1D(t *testing.T) {
 	f, err := rootio.Open("testdata/gauss-h1.root")
@@ -87,7 +119,7 @@ END YODA_HISTO1D
 		}
 		rhisto := obj.(yodacnv.Marshaler)
 
-		h, err := rootcnv.NewH1D(rhisto)
+		h, err := rootcnv.H1D(rhisto)
 		if err != nil {
 			t.Errorf("%s: convertion error: %v", test.name, err)
 			continue

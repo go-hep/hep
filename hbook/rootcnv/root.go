@@ -10,8 +10,8 @@ import (
 	"go-hep.org/x/hep/hbook/yodacnv"
 )
 
-// NewH1D creates a new H1D from a TH1x.
-func NewH1D(r yodacnv.Marshaler) (*hbook.H1D, error) {
+// H1D creates a new H1D from a TH1x.
+func H1D(r yodacnv.Marshaler) (*hbook.H1D, error) {
 	raw, err := r.MarshalYODA()
 	if err != nil {
 		return nil, err
