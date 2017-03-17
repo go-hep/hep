@@ -191,7 +191,7 @@ func genH1() {
 	}
 	defer f.Close()
 
-	genImports(f, "math")
+	genImports(f, "bytes", "fmt", "math")
 
 	for i, typ := range []struct {
 		Name string
@@ -546,6 +546,113 @@ func (h *{{.Name}}) BinContent(i int) float64 {
 // BinError returns the bin error
 func (h *{{.Name}}) BinError(i int) float64 {
 	return math.Sqrt(float64(h.th1.sumw2.Data[i]))
+}
+
+// BinLowEdge returns the bin lower edge value
+func (h *{{.Name}}) BinLowEdge(i int) float64 {
+	return h.th1.xaxis.BinLowEdge(i)
+}
+
+// BinWidth returns the bin width
+func (h *{{.Name}}) BinWidth(i int) float64 {
+	return h.th1.xaxis.BinWidth(i)
+}
+
+func (h *{{.Name}}) dist0D(i int) dist0D {
+	v := h.BinContent(i)
+	err := h.BinError(i)
+	n := h.entries(v, err)
+	sumw := h.arr.Data[i]
+	sumw2 := h.th1.sumw2.Data[i]
+	return dist0D{
+		n:     n,
+		sumw:  float64(sumw),
+		sumw2: float64(sumw2),
+	}
+}
+
+func (h *{{.Name}}) entries(height, err float64) int64 {
+	if height <= 0 {
+		return 0
+	}
+	v := height / err
+	return int64(v*v+0.5)
+}
+
+// MarshalYODA implements the YODAMarshaler interface.
+func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
+	axis := h.XAxis()
+	if edges := axis.XBins(); len(edges) != 0 {
+		return nil, fmt.Errorf("rootio: converting {{.Name}} with variable bins size to YODA not implemented")
+	}
+
+	nx := h.NbinsX()
+	var (
+		dflow = [2]dist0D{
+			h.dist0D(0),    // underflow
+			h.dist0D(nx+1), // overflow
+		}
+		dtot = dist0D{
+			n:      int64(h.Entries()),
+			sumw:   float64(h.SumW()),
+			sumw2:  float64(h.SumW2()),
+			sumwx:  float64(h.SumWX()),
+			sumwx2: float64(h.SumWX2()),
+		}
+		dists = make([]dist0D, int(nx))
+	)
+
+	for i := 0; i < nx; i++ {
+		dists[i] = h.dist0D(i+1)
+	}
+
+	buf := new(bytes.Buffer)
+	fmt.Fprintf(buf, "BEGIN YODA_HISTO1D /%s\n", h.Name())
+	fmt.Fprintf(buf, "Path=/%s\n", h.Name())
+	fmt.Fprintf(buf, "Title=%s\n", h.Title())
+	fmt.Fprintf(buf, "Type=Histo1D\n")
+	fmt.Fprintf(buf, "# Mean: %e\n", math.NaN())
+	fmt.Fprintf(buf, "# Area: %e\n", math.NaN())
+
+	fmt.Fprintf(buf, "# ID\t ID\t sumw\t sumw2\t sumwx\t sumwx2\t numEntries\n")
+
+	var name = "Total   "
+	fmt.Fprintf(
+		buf,
+		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
+		name, name,
+		dtot.SumW(), dtot.SumW2(), dtot.SumWX(), dtot.SumWX2(), dtot.Entries(),
+	)
+
+	name = "Underflow"
+	fmt.Fprintf(
+		buf,
+		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
+		name, name,
+		dflow[0].SumW(), dflow[0].SumW2(), dflow[0].SumWX(), dflow[0].SumWX2(), dflow[0].Entries(),
+	)
+
+	name = "Overflow"
+	fmt.Fprintf(
+		buf,
+		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
+		name, name,
+		dflow[1].SumW(), dflow[1].SumW2(), dflow[1].SumWX(), dflow[1].SumWX2(), dflow[1].Entries(),
+	)
+	fmt.Fprintf(buf, "# xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries\n")
+	for i, d := range dists {
+		xmin := h.BinLowEdge(i+1)
+		xmax := h.BinWidth(i+1) + xmin
+		fmt.Fprintf(
+			buf,
+			"%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
+			xmin, xmax,
+			d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.Entries(),
+		)
+	}
+	fmt.Fprintf(buf, "END YODA_HISTO1D\n\n")
+
+	return buf.Bytes(), nil
 }
 
 func init() {

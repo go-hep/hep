@@ -46,12 +46,28 @@ func (h *th1) Entries() float64 {
 	return h.entries
 }
 
-// SumW returns the sum of weights
+// SumW returns the total sum of weights
 func (h *th1) SumW() float64 {
 	return h.tsumw
 }
 
-func (h *th1) SumW2() []float64 {
+// SumW2 returns the total sum of squares of weights
+func (h *th1) SumW2() float64 {
+	return h.tsumw2
+}
+
+// SumWX returns the total sum of weights*x
+func (h *th1) SumWX() float64 {
+	return h.tsumwx
+}
+
+// SumWX2 returns the total sum of weights*x*x
+func (h *th1) SumWX2() float64 {
+	return h.tsumwx2
+}
+
+// SumW2s returns the array of sum of squares of weights
+func (h *th1) SumW2s() []float64 {
 	return h.sumw2.Data
 }
 
@@ -162,6 +178,34 @@ func (h *th2) UnmarshalROOT(r *RBuffer) error {
 
 	r.CheckByteCount(pos, bcnt, beg, "TH2")
 	return r.err
+}
+
+type dist0D struct {
+	n      int64
+	sumw   float64
+	sumw2  float64
+	sumwx  float64
+	sumwx2 float64
+}
+
+func (d dist0D) Entries() int64 {
+	return d.n
+}
+
+func (d dist0D) SumW() float64 {
+	return d.sumw
+}
+
+func (d dist0D) SumW2() float64 {
+	return d.sumw2
+}
+
+func (d dist0D) SumWX() float64 {
+	return d.sumwx
+}
+
+func (d dist0D) SumWX2() float64 {
+	return d.sumwx2
 }
 
 func init() {

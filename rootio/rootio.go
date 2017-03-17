@@ -216,6 +216,8 @@ type Axis interface {
 	NBins() int
 	XBins() []float64
 	BinCenter(int) float64
+	BinLowEdge(int) float64
+	BinWidth(int) float64
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
