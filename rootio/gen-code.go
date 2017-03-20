@@ -581,13 +581,8 @@ func (h *{{.Name}}) entries(height, err float64) int64 {
 
 // MarshalYODA implements the YODAMarshaler interface.
 func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
-	axis := h.XAxis()
-	if edges := axis.XBins(); len(edges) != 0 {
-		return nil, fmt.Errorf("rootio: converting {{.Name}} with variable bins size to YODA not implemented")
-	}
-
-	nx := h.NbinsX()
 	var (
+		nx    = h.NbinsX()
 		dflow = [2]dist0D{
 			h.dist0D(0),    // underflow
 			h.dist0D(nx+1), // overflow
