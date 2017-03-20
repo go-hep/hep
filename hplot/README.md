@@ -24,6 +24,7 @@ http://godoc.org/go-hep.org/x/hep/hplot
 ### 1D histogram
 
 ![hist-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_plot_golden.png)
+
 [embedmd]:# (h1d_test.go go /func ExampleH1D/ /\n}/)
 ```go
 func ExampleH1D(t *testing.T) {
@@ -88,6 +89,7 @@ func ExampleH1D(t *testing.T) {
 ### Tiles of 1D histograms
 
 ![tiled-plot](https://github.com/go-hep/hep/raw/master/hplot/testdata/tiled_plot_histogram_golden.png)
+
 [embedmd]:# (tiledplot_test.go go /func ExampleTiledPlot/ /\n}/)
 ```go
 func ExampleTiledPlot(t *testing.T) {

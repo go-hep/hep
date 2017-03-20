@@ -9,6 +9,7 @@
 ### Fit a gaussian
 
 ![h1d-gaussian-example](https://github.com/go-hep/hep/raw/master/fit/testdata/h1d-gauss-plot.png)
+
 [embedmd]:# (hist_test.go go /func ExampleH1D_gaussian/ /\n}/)
 ```go
 func ExampleH1D_gaussian(t *testing.T) {
@@ -99,6 +100,7 @@ func ExampleH1D_gaussian(t *testing.T) {
 ### Fit a gaussian
 
 ![func1d-gaussian-example](https://github.com/go-hep/hep/raw/master/fit/testdata/gauss-plot.png)
+
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_gaussian/ /\n}/)
 ```go
 func ExampleCurve1D_gaussian(t *testing.T) {
@@ -170,6 +172,7 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 ### Fit a powerlaw (with Y-errors)
 
 ![func1d-powerlaw-example](https://github.com/go-hep/hep/raw/master/fit/testdata/powerlaw-plot.png)
+
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_powerlaw/ /\n}/)
 ```go
 func ExampleCurve1D_powerlaw(t *testing.T) {
@@ -253,6 +256,7 @@ func ExampleCurve1D_powerlaw(t *testing.T) {
 ### Fit an exponential
 
 ![func1d-exp-example](https://github.com/go-hep/hep/raw/master/fit/testdata/exp-plot.png)
+
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_exponential/ /\n}/)
 ```go
 func ExampleCurve1D_exponential(t *testing.T) {
@@ -326,6 +330,7 @@ func ExampleCurve1D_exponential(t *testing.T) {
 ### Fit a polynomial
 
 ![func1d-poly-example](https://github.com/go-hep/hep/raw/master/fit/testdata/poly-plot.png)
+
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_poly/ /\n}/)
 ```go
 func ExampleCurve1D_poly(t *testing.T) {
