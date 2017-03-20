@@ -5,6 +5,7 @@
 package hbook_test
 
 import (
+	"fmt"
 	"math/rand"
 )
 
@@ -23,4 +24,12 @@ func rnd() float64 {
 	return float64(*g_seed%95) / float64(95)
 }
 
-// EOF
+func panics(fn func()) (panicked bool, message string) {
+	defer func() {
+		r := recover()
+		panicked = r != nil
+		message = fmt.Sprint(r)
+	}()
+	fn()
+	return
+}

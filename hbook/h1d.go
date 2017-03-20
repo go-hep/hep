@@ -30,6 +30,28 @@ func NewH1D(n int, xmin, xmax float64) *H1D {
 	}
 }
 
+// NewH1DFromEdges returns a 1-dim histogram given a slice of edges.
+// The number of bins is thus len(edges)-1.
+// It panics if the length of edges is <= 1.
+// It panics if the edges are not sorted.
+// It panics if there are duplicate edge values.
+func NewH1DFromEdges(edges ...float64) *H1D {
+	return &H1D{
+		bng: newBinning1DFromEdges(edges),
+		ann: make(Annotation),
+	}
+}
+
+// NewH1DFromBins returns a 1-dim histogram given a slice of 1-dim bins.
+// It panics if the length of bins is < 1.
+// It panics if the bins overlap.
+func NewH1DFromBins(bins ...Range) *H1D {
+	return &H1D{
+		bng: newBinning1DFromBins(bins),
+		ann: make(Annotation),
+	}
+}
+
 // Name returns the name of this histogram, if any
 func (h *H1D) Name() string {
 	v, ok := h.ann["name"]
@@ -435,10 +457,12 @@ scanLoop:
 			return fmt.Errorf("hbook: invalid H1D-YODA data: %q", string(buf))
 		}
 	}
-	h.bng = newBinning1D(len(xset), xmin, xmax)
-	h.bng.dist = dist
-	h.bng.bins = bins
-	h.bng.outflows = oflows
+	h.bng = binning1D{
+		bins:     bins,
+		dist:     dist,
+		outflows: oflows,
+		xrange:   Range{xmin, xmax},
+	}
 	return err
 }
 

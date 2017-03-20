@@ -4,6 +4,10 @@
 
 package hbook
 
+import (
+	"sort"
+)
+
 // Indices for the under- and over-flow 1-dim bins.
 const (
 	UnderflowBin = -1
@@ -16,7 +20,6 @@ type binning1D struct {
 	dist     dist1D
 	outflows [2]dist1D
 	xrange   Range
-	xstep    float64
 }
 
 func newBinning1D(n int, xmin, xmax float64) binning1D {
@@ -30,14 +33,61 @@ func newBinning1D(n int, xmin, xmax float64) binning1D {
 		bins:   make([]Bin1D, n),
 		xrange: Range{Min: xmin, Max: xmax},
 	}
-	bng.xstep = float64(n) / bng.xrange.Width()
 	width := bng.xrange.Width() / float64(n)
 	for i := range bng.bins {
 		bin := &bng.bins[i]
 		bin.xrange.Min = xmin + float64(i)*width
 		bin.xrange.Max = xmin + float64(i+1)*width
 	}
+	return bng
+}
 
+func newBinning1DFromBins(xbins []Range) binning1D {
+	if len(xbins) < 1 {
+		panic("hbook: too few 1-dim bins")
+	}
+	n := len(xbins)
+	bng := binning1D{
+		bins: make([]Bin1D, n),
+	}
+	for i, xbin := range xbins {
+		bin := &bng.bins[i]
+		bin.xrange = xbin
+	}
+	sort.Sort(Bin1Ds(bng.bins))
+	for i := 0; i < len(bng.bins)-1; i++ {
+		b0 := bng.bins[i]
+		b1 := bng.bins[i+1]
+		if b0.xrange.Max > b1.xrange.Min {
+			panic("hbook: invalid binning (overlap)")
+		}
+	}
+	bng.xrange = Range{Min: bng.bins[0].XMin(), Max: bng.bins[n-1].XMax()}
+	return bng
+}
+
+func newBinning1DFromEdges(edges []float64) binning1D {
+	if len(edges) <= 1 {
+		panic("hbook: too few 1-dim bin edges")
+	}
+	if !sort.IsSorted(sort.Float64Slice(edges)) {
+		panic("hbook: edges slice not sorted")
+	}
+	n := len(edges) - 1
+	bng := binning1D{
+		bins:   make([]Bin1D, n),
+		xrange: Range{Min: edges[0], Max: edges[n]},
+	}
+	for i := range bng.bins {
+		bin := &bng.bins[i]
+		xmin := edges[i]
+		xmax := edges[i+1]
+		if xmin == xmax {
+			panic("hbook: duplicates in edge values")
+		}
+		bin.xrange.Min = xmin
+		bin.xrange.Max = xmax
+	}
 	return bng
 }
 
@@ -66,6 +116,10 @@ func (bng *binning1D) fill(x, w float64) {
 		bng.outflows[-idx-1].fill(x, w)
 		return
 	}
+	if idx == len(bng.bins) {
+		// gap bin.
+		return
+	}
 	bng.bins[idx].fill(x, w)
 }
 
@@ -73,8 +127,7 @@ func (bng *binning1D) fill(x, w float64) {
 func (bng *binning1D) coordToIndex(x float64) int {
 	switch {
 	default:
-		i := int((x - bng.xrange.Min) * bng.xstep)
-		return i
+		return Bin1Ds(bng.bins).IndexOf(x)
 	case x < bng.xrange.Min:
 		return UnderflowBin
 	case x >= bng.xrange.Max:

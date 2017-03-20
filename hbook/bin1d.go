@@ -4,6 +4,8 @@
 
 package hbook
 
+import "sort"
+
 // Bin1D models a bin in a 1-dim space.
 type Bin1D struct {
 	xrange Range
@@ -104,4 +106,30 @@ func (b *Bin1D) XStdErr() float64 {
 // XRMS returns the RMS in X.
 func (b *Bin1D) XRMS() float64 {
 	return b.dist.rms()
+}
+
+// Bin1Ds is a sorted slice of Bin1D implementing sort.Interface.
+type Bin1Ds []Bin1D
+
+func (p Bin1Ds) Len() int           { return len(p) }
+func (p Bin1Ds) Less(i, j int) bool { return p[i].xrange.Min < p[j].xrange.Min }
+func (p Bin1Ds) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+// IndexOf returns the index of the Bin1D containing the value v.
+// It returns UndeflowBin if v is smaller than the smallest bin value.
+// It returns OverflowBin if v is greater than the greatest bin value.
+// It returns len(bins) if v falls within a bins gap.
+func (p Bin1Ds) IndexOf(v float64) int {
+	i := sort.Search(len(p), func(i int) bool { return v < p[i].xrange.Max })
+	if i == len(p) {
+		return OverflowBin
+	}
+	rng := p[i].xrange
+	if i == 0 && v < rng.Min {
+		return UnderflowBin
+	}
+	if rng.Min <= v && v < rng.Max {
+		return i
+	}
+	return len(p)
 }

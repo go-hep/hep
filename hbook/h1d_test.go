@@ -90,6 +90,207 @@ func TestH1D(t *testing.T) {
 	var _ plotter.Valuer = h1
 }
 
+func TestH1DEdges(t *testing.T) {
+	h := hbook.NewH1DFromEdges(
+		-4.0, -3.6, -3.2, -2.8, -2.4, -2.0, -1.6, -1.2, -0.8, -0.4,
+		+0.0, +0.4, +0.8, +1.2, +1.6, +2.0, +2.4, +2.8, +3.2, +3.6,
+		+4.0,
+	)
+	if got, want := h.XMin(), -4.0; got != want {
+		t.Errorf("got xmin=%v. want=%v", got, want)
+	}
+	if got, want := h.XMax(), +4.0; got != want {
+		t.Errorf("got xmax=%v. want=%v", got, want)
+	}
+
+	bins := hbook.Bin1Ds(h.Binning().Bins())
+	for _, test := range []struct {
+		v    float64
+		want int
+	}{
+		{v: -4.1, want: hbook.UnderflowBin},
+		{v: -4.0, want: 0},
+		{v: -3.6, want: 1},
+		{v: -3.2, want: 2},
+		{v: -2.8, want: 3},
+		{v: -2.4, want: 4},
+		{v: -2.0, want: 5},
+		{v: -1.6, want: 6},
+		{v: -1.2, want: 7},
+		{v: -0.8, want: 8},
+		{v: -0.4, want: 9},
+		{v: +0.0, want: 10},
+		{v: +0.4, want: 11},
+		{v: +0.8, want: 12},
+		{v: +1.2, want: 13},
+		{v: +1.6, want: 14},
+		{v: +2.0, want: 15},
+		{v: +2.4, want: 16},
+		{v: +2.8, want: 17},
+		{v: +3.2, want: 18},
+		{v: +3.6, want: 19},
+		{v: +4.0, want: hbook.OverflowBin},
+	} {
+		idx := bins.IndexOf(test.v)
+		if idx != test.want {
+			t.Errorf("invalid index for %v. got=%d. want=%d\n", test.v, idx, test.want)
+		}
+	}
+}
+
+func TestH1DBins(t *testing.T) {
+	h := hbook.NewH1DFromBins([]hbook.Range{
+		{-4.0, -3.6}, {-3.6, -3.2}, {-3.2, -2.8}, {-2.8, -2.4}, {-2.4, -2.0},
+		{-2.0, -1.6}, {-1.6, -1.2}, {-1.2, -0.8}, {-0.8, -0.4}, {-0.4, +0.0},
+		{+0.0, +0.4}, {+0.4, +0.8}, {+0.8, +1.2}, {+1.2, +1.6}, {+1.6, +2.0},
+		{+2.0, +2.4}, {+2.4, +2.8}, {+2.8, +3.2}, {+3.2, +3.6}, {+3.6, +4.0},
+	}...)
+	if got, want := h.XMin(), -4.0; got != want {
+		t.Errorf("got xmin=%v. want=%v", got, want)
+	}
+	if got, want := h.XMax(), +4.0; got != want {
+		t.Errorf("got xmax=%v. want=%v", got, want)
+	}
+	bins := hbook.Bin1Ds(h.Binning().Bins())
+	for _, test := range []struct {
+		v    float64
+		want int
+	}{
+		{v: -4.1, want: hbook.UnderflowBin},
+		{v: -4.0, want: 0},
+		{v: -3.6, want: 1},
+		{v: -3.2, want: 2},
+		{v: -2.8, want: 3},
+		{v: -2.4, want: 4},
+		{v: -2.0, want: 5},
+		{v: -1.6, want: 6},
+		{v: -1.2, want: 7},
+		{v: -0.8, want: 8},
+		{v: -0.4, want: 9},
+		{v: +0.0, want: 10},
+		{v: +0.4, want: 11},
+		{v: +0.8, want: 12},
+		{v: +1.2, want: 13},
+		{v: +1.6, want: 14},
+		{v: +2.0, want: 15},
+		{v: +2.4, want: 16},
+		{v: +2.8, want: 17},
+		{v: +3.2, want: 18},
+		{v: +3.6, want: 19},
+		{v: +4.0, want: hbook.OverflowBin},
+	} {
+		idx := bins.IndexOf(test.v)
+		if idx != test.want {
+			t.Errorf("invalid index for %v. got=%d. want=%d\n", test.v, idx, test.want)
+		}
+	}
+
+}
+
+func TestH1DBinsWithGaps(t *testing.T) {
+	h1 := hbook.NewH1DFromBins([]hbook.Range{
+		{-10, -5}, {-5, 0}, {0, 4} /*GAP*/, {5, 10},
+	}...)
+	if got, want := h1.XMin(), -10.0; got != want {
+		t.Errorf("got xmin=%v. want=%v", got, want)
+	}
+	if got, want := h1.XMax(), 10.0; got != want {
+		t.Errorf("got xmax=%v. want=%v", got, want)
+	}
+
+	bins := hbook.Bin1Ds(h1.Binning().Bins())
+	for _, test := range []struct {
+		v    float64
+		want int
+	}{
+		{v: -20, want: hbook.UnderflowBin},
+		{v: -10, want: 0},
+		{v: -9, want: 0},
+		{v: -5, want: 1},
+		{v: 0, want: 2},
+		{v: 4.5, want: len(bins)},
+		{v: 5, want: 3},
+		{v: 6, want: 3},
+		{v: 10, want: hbook.OverflowBin},
+	} {
+		idx := bins.IndexOf(test.v)
+		if idx != test.want {
+			t.Errorf("invalid index for %v. got=%d. want=%d\n", test.v, idx, test.want)
+		}
+	}
+
+	h := hbook.NewH1DFromBins([]hbook.Range{
+		{0, 1}, {1, 2}, {3, 4},
+	}...)
+	h.Fill(0, 1)
+	h.Fill(1, 1)
+	h.Fill(2, 1) // gap
+	h.Fill(3, 1)
+
+	raw, err := h.MarshalYODA()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want, err := ioutil.ReadFile("testdata/h1d_gaps_golden.yoda")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(raw, want) {
+		t.Fatalf("got:\n%s\nwant:\n%s\n", string(raw), string(want))
+	}
+
+	var href hbook.H1D
+	err = href.UnmarshalYODA(want)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	raw, err = href.MarshalYODA()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(raw, want) {
+		t.Fatalf("got:\n%s\nwant:\n%s\n", string(raw), string(want))
+	}
+}
+
+func TestH1DEdgesWithPanics(t *testing.T) {
+	for _, test := range [][]float64{
+		{0},
+		{0, 1, 0.5, 2},
+		{0, 1, 1},
+		{0, 1, 0, 1},
+		{0, 1, 2, 2},
+		{0, 1, 2, 2, 2},
+	} {
+		panicked, _ := panics(func() {
+			_ = hbook.NewH1DFromEdges(test...)
+		})
+		if !panicked {
+			t.Fatalf("edges %v should have panicked", test)
+		}
+	}
+}
+
+func TestH1DBinsWithPanics(t *testing.T) {
+	for _, test := range [][]hbook.Range{
+		{{0, 1}, {0.5, 1.5}},
+		{{0, 1}, {-1, 2}},
+		{{0, 1.5}, {-1, 1}},
+		{{0, 1}, {0.5, 0.6}},
+	} {
+		panicked, _ := panics(func() {
+			_ = hbook.NewH1DFromBins(test...)
+		})
+		if !panicked {
+			t.Fatalf("bins %v should have panicked", test)
+		}
+	}
+}
+
 func TestH1DIntegral(t *testing.T) {
 	h1 := hbook.NewH1D(6, 0, 6)
 	h1.Fill(-0.5, 1.3)

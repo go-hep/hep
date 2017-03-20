@@ -73,8 +73,6 @@ func (o *binning1D) MarshalBinary() (data []byte, err error) {
 		data = append(data, buf[:8]...)
 		data = append(data, sub...)
 	}
-	binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(o.xstep))
-	data = append(data, buf[:8]...)
 	return data, err
 }
 
@@ -127,8 +125,6 @@ func (o *binning1D) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
-	o.xstep = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
-	data = data[8:]
 	return err
 }
 
