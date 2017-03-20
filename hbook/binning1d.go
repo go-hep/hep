@@ -5,6 +5,7 @@
 package hbook
 
 import (
+	"errors"
 	"sort"
 )
 
@@ -12,6 +13,18 @@ import (
 const (
 	UnderflowBin = -1
 	OverflowBin  = -2
+)
+
+var (
+	errInvalidXAxis   = errors.New("hbook: invalid X-axis limits")
+	errEmptyXAxis     = errors.New("hbook: X-axis with zero bins")
+	errShortXAxis     = errors.New("hbook: too few 1-dim bins")
+	errOverlapXAxis   = errors.New("hbook: invalid binning (overlap)")
+	errNotSortedXAxis = errors.New("hbook: edges slice not sorted")
+	errDupEdgesXAxis  = errors.New("hbook: duplicates in edge values")
+
+	errInvalidYAxis = errors.New("hbook: invalid Y-axis limits")
+	errEmptyYAxis   = errors.New("hbook: Y-axis with zero bins")
 )
 
 // binning1D is a 1-dim binning of the x-axis.
@@ -24,10 +37,10 @@ type binning1D struct {
 
 func newBinning1D(n int, xmin, xmax float64) binning1D {
 	if xmin >= xmax {
-		panic("hbook: invalid X-axis limits")
+		panic(errInvalidXAxis)
 	}
 	if n <= 0 {
-		panic("hbook: X-axis with zero bins")
+		panic(errEmptyXAxis)
 	}
 	bng := binning1D{
 		bins:   make([]Bin1D, n),
@@ -44,7 +57,7 @@ func newBinning1D(n int, xmin, xmax float64) binning1D {
 
 func newBinning1DFromBins(xbins []Range) binning1D {
 	if len(xbins) < 1 {
-		panic("hbook: too few 1-dim bins")
+		panic(errShortXAxis)
 	}
 	n := len(xbins)
 	bng := binning1D{
@@ -59,7 +72,7 @@ func newBinning1DFromBins(xbins []Range) binning1D {
 		b0 := bng.bins[i]
 		b1 := bng.bins[i+1]
 		if b0.xrange.Max > b1.xrange.Min {
-			panic("hbook: invalid binning (overlap)")
+			panic(errOverlapXAxis)
 		}
 	}
 	bng.xrange = Range{Min: bng.bins[0].XMin(), Max: bng.bins[n-1].XMax()}
@@ -68,10 +81,10 @@ func newBinning1DFromBins(xbins []Range) binning1D {
 
 func newBinning1DFromEdges(edges []float64) binning1D {
 	if len(edges) <= 1 {
-		panic("hbook: too few 1-dim bin edges")
+		panic(errShortXAxis)
 	}
 	if !sort.IsSorted(sort.Float64Slice(edges)) {
-		panic("hbook: edges slice not sorted")
+		panic(errNotSortedXAxis)
 	}
 	n := len(edges) - 1
 	bng := binning1D{
@@ -83,7 +96,7 @@ func newBinning1DFromEdges(edges []float64) binning1D {
 		xmin := edges[i]
 		xmax := edges[i+1]
 		if xmin == xmax {
-			panic("hbook: duplicates in edge values")
+			panic(errDupEdgesXAxis)
 		}
 		bin.xrange.Min = xmin
 		bin.xrange.Max = xmax

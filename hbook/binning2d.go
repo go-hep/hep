@@ -30,16 +30,16 @@ type binning2D struct {
 
 func newBinning2D(nx int, xlow, xhigh float64, ny int, ylow, yhigh float64) binning2D {
 	if xlow >= xhigh {
-		panic("hbook: invalid X-axis limits")
+		panic(errInvalidXAxis)
 	}
 	if ylow >= yhigh {
-		panic("hbook: invalid Y-axis limits")
+		panic(errInvalidYAxis)
 	}
 	if nx <= 0 {
-		panic("hbook: X-axis with zero bins")
+		panic(errEmptyXAxis)
 	}
 	if ny <= 0 {
-		panic("hbook: Y-axis with zero bins")
+		panic(errEmptyYAxis)
 	}
 	ax := binning2D{
 		bins:   make([]Bin2D, nx*ny),
