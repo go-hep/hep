@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// package ntup provides a way to create, open and iterate over n-tuple data.
+// Package ntup provides a way to create, open and iterate over n-tuple data.
 package ntup // import "go-hep.org/x/hep/hbook/ntup"
 
 import (
