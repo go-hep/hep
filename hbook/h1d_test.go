@@ -140,10 +140,10 @@ func TestH1DEdges(t *testing.T) {
 
 func TestH1DBins(t *testing.T) {
 	h := hbook.NewH1DFromBins([]hbook.Range{
-		{-4.0, -3.6}, {-3.6, -3.2}, {-3.2, -2.8}, {-2.8, -2.4}, {-2.4, -2.0},
-		{-2.0, -1.6}, {-1.6, -1.2}, {-1.2, -0.8}, {-0.8, -0.4}, {-0.4, +0.0},
-		{+0.0, +0.4}, {+0.4, +0.8}, {+0.8, +1.2}, {+1.2, +1.6}, {+1.6, +2.0},
-		{+2.0, +2.4}, {+2.4, +2.8}, {+2.8, +3.2}, {+3.2, +3.6}, {+3.6, +4.0},
+		{Min: -4.0, Max: -3.6}, {Min: -3.6, Max: -3.2}, {Min: -3.2, Max: -2.8}, {Min: -2.8, Max: -2.4}, {Min: -2.4, Max: -2.0},
+		{Min: -2.0, Max: -1.6}, {Min: -1.6, Max: -1.2}, {Min: -1.2, Max: -0.8}, {Min: -0.8, Max: -0.4}, {Min: -0.4, Max: +0.0},
+		{Min: +0.0, Max: +0.4}, {Min: +0.4, Max: +0.8}, {Min: +0.8, Max: +1.2}, {Min: +1.2, Max: +1.6}, {Min: +1.6, Max: +2.0},
+		{Min: +2.0, Max: +2.4}, {Min: +2.4, Max: +2.8}, {Min: +2.8, Max: +3.2}, {Min: +3.2, Max: +3.6}, {Min: +3.6, Max: +4.0},
 	}...)
 	if got, want := h.XMin(), -4.0; got != want {
 		t.Errorf("got xmin=%v. want=%v", got, want)
@@ -189,7 +189,7 @@ func TestH1DBins(t *testing.T) {
 
 func TestH1DBinsWithGaps(t *testing.T) {
 	h1 := hbook.NewH1DFromBins([]hbook.Range{
-		{-10, -5}, {-5, 0}, {0, 4} /*GAP*/, {5, 10},
+		{Min: -10, Max: -5}, {Min: -5, Max: 0}, {Min: 0, Max: 4} /*GAP*/, {Min: 5, Max: 10},
 	}...)
 	if got, want := h1.XMin(), -10.0; got != want {
 		t.Errorf("got xmin=%v. want=%v", got, want)
@@ -220,7 +220,7 @@ func TestH1DBinsWithGaps(t *testing.T) {
 	}
 
 	h := hbook.NewH1DFromBins([]hbook.Range{
-		{0, 1}, {1, 2}, {3, 4},
+		{Min: 0, Max: 1}, {Min: 1, Max: 2}, {Min: 3, Max: 4},
 	}...)
 	h.Fill(0, 1)
 	h.Fill(1, 1)
@@ -277,10 +277,10 @@ func TestH1DEdgesWithPanics(t *testing.T) {
 
 func TestH1DBinsWithPanics(t *testing.T) {
 	for _, test := range [][]hbook.Range{
-		{{0, 1}, {0.5, 1.5}},
-		{{0, 1}, {-1, 2}},
-		{{0, 1.5}, {-1, 1}},
-		{{0, 1}, {0.5, 0.6}},
+		{{Min: 0, Max: 1}, {Min: 0.5, Max: 1.5}},
+		{{Min: 0, Max: 1}, {Min: -1, Max: 2}},
+		{{Min: 0, Max: 1.5}, {Min: -1, Max: 1}},
+		{{Min: 0, Max: 1}, {Min: 0.5, Max: 0.6}},
 	} {
 		panicked, _ := panics(func() {
 			_ = hbook.NewH1DFromBins(test...)
