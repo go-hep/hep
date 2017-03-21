@@ -96,6 +96,10 @@ func (leaf *tleaf) scan(r *RBuffer, ptr interface{}) error {
 	panic("not implemented")
 }
 
+func (leaf *tleaf) TypeName() string {
+	panic("not implemented")
+}
+
 func (leaf *tleaf) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -145,6 +149,10 @@ func (leaf *tleafElement) ivalue() int {
 }
 
 func (leaf *tleafElement) imax() int {
+	panic("not implemented")
+}
+
+func (leaf *tleafElement) TypeName() string {
 	panic("not implemented")
 }
 

@@ -187,6 +187,7 @@ type Leaf interface {
 	MaxIndex() []int
 	Offset() int
 	Value(int) interface{}
+	TypeName() string
 
 	setBranch(Branch)
 	readBasket(r *RBuffer) error

@@ -43,6 +43,10 @@ func (leaf *LeafO) value() interface{} {
 	return leaf.val
 }
 
+func (leaf *LeafO) TypeName() string {
+	return "bool"
+}
+
 func (leaf *LeafO) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
@@ -169,6 +173,10 @@ func (leaf *LeafS) ivalue() int {
 // imax returns the leaf maximum value as int
 func (leaf *LeafS) imax() int {
 	return int(leaf.max)
+}
+
+func (leaf *LeafS) TypeName() string {
+	return "int16"
 }
 
 func (leaf *LeafS) UnmarshalROOT(r *RBuffer) error {
@@ -304,6 +312,10 @@ func (leaf *LeafC) value() interface{} {
 	return leaf.val
 }
 
+func (leaf *LeafC) TypeName() string {
+	return "int32"
+}
+
 func (leaf *LeafC) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
@@ -430,6 +442,10 @@ func (leaf *LeafI) ivalue() int {
 // imax returns the leaf maximum value as int
 func (leaf *LeafI) imax() int {
 	return int(leaf.max)
+}
+
+func (leaf *LeafI) TypeName() string {
+	return "int32"
 }
 
 func (leaf *LeafI) UnmarshalROOT(r *RBuffer) error {
@@ -575,6 +591,10 @@ func (leaf *LeafL) imax() int {
 	return int(leaf.max)
 }
 
+func (leaf *LeafL) TypeName() string {
+	return "int64"
+}
+
 func (leaf *LeafL) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
@@ -708,6 +728,10 @@ func (leaf *LeafF) value() interface{} {
 	return leaf.val
 }
 
+func (leaf *LeafF) TypeName() string {
+	return "float32"
+}
+
 func (leaf *LeafF) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
@@ -824,6 +848,10 @@ func (leaf *LeafD) Value(i int) interface{} {
 // value returns the leaf value.
 func (leaf *LeafD) value() interface{} {
 	return leaf.val
+}
+
+func (leaf *LeafD) TypeName() string {
+	return "float64"
 }
 
 func (leaf *LeafD) UnmarshalROOT(r *RBuffer) error {

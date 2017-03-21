@@ -327,6 +327,10 @@ func (leaf *{{.Name}}) imax() int {
 }
 {{end}}
 
+func (leaf *{{.Name}}) TypeName() string {
+	return "{{.Type}}"
+}
+
 func (leaf *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
