@@ -14,6 +14,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -70,12 +71,7 @@ func rootHandle(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	var data = Page{
-		Token: token,
-		Path:  strings.Replace(r.URL.Path+"/root-file-upload", "//", "/", -1),
-	}
-
-	return t.Execute(w, data)
+	return t.Execute(w, struct{ Token string }{token})
 }
 
 func uploadHandle(w http.ResponseWriter, r *http.Request) error {
@@ -100,10 +96,18 @@ func uploadHandle(w http.ResponseWriter, r *http.Request) error {
 	}
 	db.set(session(r, handler.Filename), rfile)
 
-	nodes, err := fileJsTree(rfile, handler.Filename)
-	if err != nil {
-		return err
+	var nodes []jsNode
+	db.RLock()
+	defer db.RUnlock()
+
+	for k, rfile := range db.files {
+		node, err := fileJsTree(rfile, k)
+		if err != nil {
+			return err
+		}
+		nodes = append(nodes, node...)
 	}
+	sort.Sort(jsNodes(nodes))
 	return json.NewEncoder(w).Encode(nodes)
 }
 
@@ -161,6 +165,7 @@ func plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 const page = `<html>
 <head>
     <title>go-hep/rootio file inspector</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
 	<link rel="stylesheet" href="https://www.w3schools.com/w3css/3/w3.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
@@ -193,40 +198,40 @@ const page = `<html>
 		cursor:pointer;
 		-webkit-border-radius: 5px;
 	}
-	.rootio-browser {
-		resize: horizontal;
-		overflow: auto;
-		padding:5px 15px;
-		float: left;
-		height: 95%;
-	}
 	</style>
 </head>
 <body>
-<div class="flex-container w3-light-grey">
-	<div class="rootio-browser flex-item w3-container w3-card w3-white">
-		<div>
-			<h2>go-hep/rootio ROOT file inspector</h2>
-		</div>
-		<form id="rootio-form" enctype="multipart/form-data" action="{{.Path}}" method="post">
-			<label for="rootio-file" class="rootio-file-upload" style="font-size:16px">
-			<i class="fa fa-cloud-upload" aria-hidden="true" style="font-size:16px"></i> Upload
-			</label>
-			<input id="rootio-file" type="file" name="upload-file"/>
-			<input type="hidden" name="token" value="{{.Token}}"/>
-			<input type="hidden" value="upload" />
-		</form>
-		<div id="rootio-file-tree" class="rootio-file-tree flex-item">
-		</div>
+
+<!-- Sidebar -->
+<div class="w3-sidebar w3-bar-block w3-card-4 w3-light-grey" style="width:25%">
+	<div class="w3-bar-item w3-card-2 w3-black">
+		<h2>go-hep/rootio ROOT file inspector</h2>
 	</div>
-	<div class="flex-item w3-container w3-content" id="rootio-display">
+	<div class="w3-bar-item">
+	<form id="rootio-form" enctype="multipart/form-data" action="/root-file-upload" method="post">
+		<label for="rootio-file" class="rootio-file-upload" style="font-size:16px">
+		<i class="fa fa-cloud-upload" aria-hidden="true" style="font-size:16px"></i> Upload
+		</label>
+		<input id="rootio-file" type="file" name="upload-file"/>
+		<input type="hidden" name="token" value="{{.Token}}"/>
+		<input type="hidden" value="upload" />
+	</form>
+	</div>
+	<div id="rootio-file-tree" class="w3-bar-item">
 	</div>
 </div>
+
+<!-- Page Content -->
+<div style="margin-left:25%; height:100%" class="w3-grey">
+	<div class="w3-container w3-content w3-cell w3-cell-middle w3-cell-row w3-center w3-justify" id="rootio-display">
+	</div>
+</div>
+
 <script type="text/javascript">
 	document.getElementById("rootio-file").onchange = function() {
 		var data = new FormData($("#rootio-form")[0]);
 		$.ajax({
-			url: "{{.Path}}",
+			url: "/root-file-upload",
 			method: "POST",
 			data: data,
 			processData: false,
@@ -255,9 +260,14 @@ const page = `<html>
 
 	function plotCallback(data, status) {
 		var node = $("<div></div>");
-		node.addClass("w3-panel w3-white w3-card-2 w3-display-middle");
-		node.html(JSON.parse(data));
-		$("#rootio-display").html(node);
+		node.addClass("w3-panel w3-white w3-card-2 w3-display-container w3-content w3-center");
+		node.css("width","100%");
+		node.html(
+			""
+			+JSON.parse(data)
+			+"<span onclick=\"this.parentElement.style.display='none'\" class=\"w3-button w3-display-topright w3-hover-red w3-tiny\">X</span>"
+		);
+		$("#rootio-display").append(node);
 	};
 </script>
 </body>

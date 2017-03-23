@@ -7,7 +7,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"math"
 	"net/http"
 	"strings"
@@ -20,22 +19,6 @@ import (
 	"go-hep.org/x/hep/hplot"
 	"go-hep.org/x/hep/rootio"
 )
-
-type Page struct {
-	Token string
-	Path  string
-
-	FileTree template.HTML
-	Display  string
-}
-
-func (p Page) DoFileTree() bool {
-	return p.FileTree != ""
-}
-
-func (p Page) DoDisplay() bool {
-	return p.Display != ""
-}
 
 type dbFiles struct {
 	sync.RWMutex
@@ -94,6 +77,12 @@ type brancher interface {
 	Branches() []rootio.Branch
 }
 
+type jsNodes []jsNode
+
+func (p jsNodes) Len() int           { return len(p) }
+func (p jsNodes) Less(i, j int) bool { return p[i].ID < p[j].ID }
+func (p jsNodes) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
 func newJsNodes(bres brancher, id string) ([]jsNode, error) {
 	var err error
 	branches := bres.Branches()
@@ -125,6 +114,7 @@ func newJsNodes(bres brancher, id string) ([]jsNode, error) {
 
 func fileJsTree(f *rootio.File, fname string) ([]jsNode, error) {
 	root := jsNode{
+		ID:   fname,
 		Text: fmt.Sprintf("%s (version=%v)", fname, f.Version()),
 		Icon: "fa fa-file",
 	}
