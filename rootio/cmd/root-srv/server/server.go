@@ -35,8 +35,9 @@ var (
 func Init() {
 	http.Handle("/", appHandler(rootHandle))
 	http.Handle("/root-file-upload", appHandler(uploadHandle))
-	http.Handle("/plot/", appHandler(plotH1Handle))
-	http.Handle("/plot2d/", appHandler(plotH2Handle))
+	http.Handle("/plot-1d/", appHandler(plotH1Handle))
+	http.Handle("/plot-2d/", appHandler(plotH2Handle))
+	http.Handle("/plot-branch/", appHandler(plotBranchHandle))
 }
 
 type appHandler func(http.ResponseWriter, *http.Request) error
@@ -106,17 +107,9 @@ func uploadHandle(w http.ResponseWriter, r *http.Request) error {
 	return json.NewEncoder(w).Encode(nodes)
 }
 
-func plotH2Handle(w http.ResponseWriter, r *http.Request) error {
-	log.Printf(">>> request: %q\n", r.URL.Path)
-
-	return json.NewEncoder(w).Encode(map[string]string{
-		"url": r.URL.Path,
-	})
-}
-
 func plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 	log.Printf(">>> request: %q\n", r.URL.Path)
-	url := r.URL.Path[len("/plot/"):]
+	url := r.URL.Path[len("/plot-1d/"):]
 	toks := strings.Split(url, "/")
 	fname := toks[0]
 	f := db.get(session(r, fname))
@@ -155,6 +148,22 @@ func plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return json.NewEncoder(w).Encode(string(svg))
+}
+
+func plotH2Handle(w http.ResponseWriter, r *http.Request) error {
+	log.Printf(">>> request: %q\n", r.URL.Path)
+
+	return json.NewEncoder(w).Encode(map[string]string{
+		"url": r.URL.Path,
+	})
+}
+
+func plotBranchHandle(w http.ResponseWriter, r *http.Request) error {
+	log.Printf(">>> request: %q\n", r.URL.Path)
+
+	return json.NewEncoder(w).Encode(map[string]string{
+		"url": r.URL.Path,
+	})
 }
 
 const page = `<html>
@@ -198,7 +207,7 @@ const page = `<html>
 <body>
 
 <!-- Sidebar -->
-<div class="w3-sidebar w3-bar-block w3-card-4 w3-light-grey" style="width:25%">
+<div id="rootio-sidebar" class="w3-sidebar w3-bar-block w3-card-4 w3-light-grey" style="width:25%">
 	<div class="w3-bar-item w3-card-2 w3-black">
 		<h2>go-hep/rootio ROOT file inspector</h2>
 	</div>
@@ -217,8 +226,8 @@ const page = `<html>
 </div>
 
 <!-- Page Content -->
-<div style="margin-left:25%; height:100%" class="w3-grey">
-	<div class="w3-container w3-content w3-cell w3-cell-middle w3-cell-row w3-center w3-justify" id="rootio-display">
+<div style="margin-left:25%; height:100%" class="w3-grey" id="rootio-container">
+<div class="w3-container w3-content w3-cell w3-cell-middle w3-cell-row w3-center w3-justify w3-grey" style="width:100%" id="rootio-display">
 	</div>
 </div>
 
@@ -260,9 +269,22 @@ const page = `<html>
 		node.html(
 			""
 			+JSON.parse(data)
-			+"<span onclick=\"this.parentElement.style.display='none'\" class=\"w3-button w3-display-topright w3-hover-red w3-tiny\">X</span>"
+			+"<span onclick=\"this.parentElement.style.display='none'; updateHeight();\" class=\"w3-button w3-display-topright w3-hover-red w3-tiny\">X</span>"
 		);
 		$("#rootio-display").append(node);
+		updateHeight();
+	};
+
+	function updateHeight() {
+		var hmenu = $("#rootio-sidebar").height();
+		var hcont = $("#rootio-container").height();
+		var hdisp = $("#rootio-display").height();
+		if (hdisp > hcont) {
+			$("#rootio-container").height(hdisp);
+		}
+		if (hdisp < hmenu && hcont > hmenu) {
+			$("#rootio-container").height(hmenu);
+		}
 	};
 </script>
 </body>

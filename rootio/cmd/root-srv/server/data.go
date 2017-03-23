@@ -91,17 +91,12 @@ func newJsNodes(bres brancher, id string) ([]jsNode, error) {
 	}
 	var nodes []jsNode
 	for _, b := range branches {
+		id := strings.Join([]string{id, b.Name()}, "/")
 		node := jsNode{
-			ID:   strings.Join([]string{id, b.Name()}, "/"),
+			ID:   id,
 			Text: b.Name(),
 			Icon: "fa fa-leaf",
-		}
-		node.LiAttr = jsAttr{
-			"href": "/plot/" + node.ID,
-		}
-		node.Attr = jsAttr{
-			"href": "/plot2d/" + node.ID,
-			"plot": true,
+			Attr: attrFor(b.(rootio.Object), id),
 		}
 		node.Children, err = newJsNodes(b, node.ID)
 		if err != nil {
@@ -170,12 +165,12 @@ func attrFor(obj rootio.Object, id string) jsAttr {
 	case strings.HasPrefix(cls, "TH1"):
 		return jsAttr{
 			"plot": true,
-			"href": "/plot/" + id,
+			"href": "/plot-1d/" + id,
 		}
 	case strings.HasPrefix(cls, "TH2"):
 		return jsAttr{
 			"plot": true,
-			"href": "/plot/" + id,
+			"href": "/plot-2d/" + id,
 		}
 	case strings.HasPrefix(cls, "TBranch"):
 		return jsAttr{
