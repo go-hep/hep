@@ -17,39 +17,138 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/satori/go.uuid"
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hbook/yodacnv"
 	"go-hep.org/x/hep/hplot"
 	"go-hep.org/x/hep/rootio"
 )
 
-var (
-	db = dbFiles{
-		files: make(map[string]*rootio.File),
-	}
-)
+const cookieName = "ROOTIO_SRV"
+
+type server struct {
+	mu       sync.RWMutex
+	cookies  map[string]*http.Cookie
+	sessions map[string]*dbFiles
+}
 
 // Init initializes the web server handles.
 func Init() {
-	http.Handle("/", appHandler(rootHandle))
-	http.Handle("/root-file-upload", appHandler(uploadHandle))
-	http.Handle("/plot-1d/", appHandler(plotH1Handle))
-	http.Handle("/plot-2d/", appHandler(plotH2Handle))
-	http.Handle("/plot-branch/", appHandler(plotBranchHandle))
+	app := newServer()
+	http.Handle("/", app.wrap(app.rootHandle))
+	http.Handle("/root-file-upload", app.wrap(app.uploadHandle))
+	http.Handle("/plot-1d/", app.wrap(app.plotH1Handle))
+	http.Handle("/plot-2d/", app.wrap(app.plotH2Handle))
+	http.Handle("/plot-branch/", app.wrap(app.plotBranchHandle))
 }
 
-type appHandler func(http.ResponseWriter, *http.Request) error
+func newServer() *server {
+	srv := &server{
+		cookies:  make(map[string]*http.Cookie),
+		sessions: make(map[string]*dbFiles),
+	}
+	go srv.run()
+	return srv
+}
 
-func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if err := fn(w, r); err != nil {
-		log.Printf("error %q: %v\n", r.URL.Path, err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+func (srv *server) run() {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+	for range ticker.C {
+		srv.gc()
 	}
 }
 
-func rootHandle(w http.ResponseWriter, r *http.Request) error {
+func (srv *server) gc() {
+	srv.mu.Lock()
+	defer srv.mu.Unlock()
+	for name, cookie := range srv.cookies {
+		now := time.Now()
+		if now.After(cookie.Expires) {
+			srv.sessions[name].close()
+			delete(srv.sessions, name)
+			delete(srv.cookies, name)
+			cookie.MaxAge = -1
+		}
+	}
+}
+
+func (srv *server) expired(cookie *http.Cookie) bool {
+	now := time.Now()
+	return now.After(cookie.Expires)
+}
+
+func (srv *server) wrap(fn func(w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := srv.setCookie(w, r)
+		if err != nil {
+			log.Printf("error retrieving cookie: %v\n", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if err := fn(w, r); err != nil {
+			log.Printf("error %q: %v\n", r.URL.Path, err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}
+}
+
+func (srv *server) setCookie(w http.ResponseWriter, r *http.Request) error {
+	srv.mu.Lock()
+	defer srv.mu.Unlock()
+	cookie, err := r.Cookie(cookieName)
+	if err != nil && err != http.ErrNoCookie {
+		return err
+	}
+
+	if cookie != nil {
+		if v, ok := srv.sessions[cookie.Value]; v == nil || !ok {
+			srv.sessions[cookie.Value] = newDbFiles()
+			srv.cookies[cookie.Value] = cookie
+		}
+		return nil
+	}
+
+	cookie = &http.Cookie{
+		Name:    cookieName,
+		Value:   uuid.NewV4().String(),
+		Expires: time.Now().Add(24 * time.Hour),
+	}
+	srv.sessions[cookie.Value] = newDbFiles()
+	srv.cookies[cookie.Value] = cookie
+	http.SetCookie(w, cookie)
+	return nil
+}
+
+func (srv *server) cookie(r *http.Request) (*http.Cookie, error) {
+	srv.mu.RLock()
+	defer srv.mu.RUnlock()
+	cookie, err := r.Cookie(cookieName)
+	if err != nil {
+		return nil, err
+	}
+
+	if cookie == nil {
+		return nil, http.ErrNoCookie
+	}
+	return srv.cookies[cookie.Value], nil
+}
+
+func (srv *server) db(r *http.Request) (*dbFiles, error) {
+	srv.mu.RLock()
+	defer srv.mu.RUnlock()
+	cookie, err := srv.cookie(r)
+	if err != nil {
+		return nil, err
+	}
+	return srv.sessions[cookie.Value], nil
+}
+
+func (srv *server) rootHandle(w http.ResponseWriter, r *http.Request) error {
 	switch r.Method {
 	case http.MethodGet:
 		// ok
@@ -70,7 +169,7 @@ func rootHandle(w http.ResponseWriter, r *http.Request) error {
 	return t.Execute(w, struct{ Token string }{token})
 }
 
-func uploadHandle(w http.ResponseWriter, r *http.Request) error {
+func (srv *server) uploadHandle(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != http.MethodPost {
 		log.Printf("invalid request %q", r.Method)
 		return fmt.Errorf("invalid request %q for /root-file-upload", r.Method)
@@ -90,12 +189,17 @@ func uploadHandle(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	db.set(session(r, handler.Filename), rfile)
+
+	db, err := srv.db(r)
+	if err != nil {
+		return err
+	}
+	db.set(handler.Filename, rfile)
 
 	var nodes []jsNode
+
 	db.RLock()
 	defer db.RUnlock()
-
 	for k, rfile := range db.files {
 		node, err := fileJsTree(rfile, k)
 		if err != nil {
@@ -107,12 +211,18 @@ func uploadHandle(w http.ResponseWriter, r *http.Request) error {
 	return json.NewEncoder(w).Encode(nodes)
 }
 
-func plotH1Handle(w http.ResponseWriter, r *http.Request) error {
+func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 	log.Printf(">>> request: %q\n", r.URL.Path)
 	url := r.URL.Path[len("/plot-1d/"):]
 	toks := strings.Split(url, "/")
 	fname := toks[0]
-	f := db.get(session(r, fname))
+
+	db, err := srv.db(r)
+	if err != nil {
+		return err
+	}
+
+	f := db.get(fname)
 	obj, ok := f.Get(toks[1]) // FIXME(sbinet): handle sub-dirs
 	if !ok {
 		return fmt.Errorf("could not find %q in file %q", toks[1], fname)
@@ -150,7 +260,7 @@ func plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 	return json.NewEncoder(w).Encode(string(svg))
 }
 
-func plotH2Handle(w http.ResponseWriter, r *http.Request) error {
+func (srv *server) plotH2Handle(w http.ResponseWriter, r *http.Request) error {
 	log.Printf(">>> request: %q\n", r.URL.Path)
 
 	return json.NewEncoder(w).Encode(map[string]string{
@@ -158,7 +268,7 @@ func plotH2Handle(w http.ResponseWriter, r *http.Request) error {
 	})
 }
 
-func plotBranchHandle(w http.ResponseWriter, r *http.Request) error {
+func (srv *server) plotBranchHandle(w http.ResponseWriter, r *http.Request) error {
 	log.Printf(">>> request: %q\n", r.URL.Path)
 
 	return json.NewEncoder(w).Encode(map[string]string{

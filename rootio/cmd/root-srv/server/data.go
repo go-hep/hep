@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"fmt"
 	"math"
-	"net/http"
 	"strings"
 	"sync"
 
@@ -23,6 +22,21 @@ import (
 type dbFiles struct {
 	sync.RWMutex
 	files map[string]*rootio.File
+}
+
+func newDbFiles() *dbFiles {
+	return &dbFiles{
+		files: make(map[string]*rootio.File),
+	}
+}
+
+func (db *dbFiles) close() {
+	db.Lock()
+	defer db.Unlock()
+	for _, f := range db.files {
+		f.Close()
+	}
+	db.files = nil
 }
 
 func (db *dbFiles) get(name string) *rootio.File {
@@ -50,11 +64,6 @@ func (db *dbFiles) del(name string) {
 	}
 	f.Close()
 	delete(db.files, name)
-}
-
-func session(r *http.Request, name string) string {
-	// FIXME(sbinet): use a real cookie+session to mangle file name
-	return name
 }
 
 type jsNode struct {
