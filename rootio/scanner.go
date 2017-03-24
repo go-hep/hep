@@ -18,6 +18,7 @@ type Scanner struct {
 	err  error // last error
 
 	mbr []Branch    // activated branches
+	cbr []Branch    // branches activated because holding slice index
 	ibr []scanField // indices of activated branches
 
 	typ reflect.Type // type bound to this scanner (a struct, a map, a slice of types)
@@ -65,6 +66,52 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 	}, nil
 }
 
+// ScanVar describes a variable to be read out of a tree during a scan.
+type ScanVar struct {
+	Name string       // name of the branch to read
+	Type reflect.Type // variable type
+}
+
+// NewScannerVars creates a new Scanner from a list of branches.
+// It will return an error if the provided type does not match the
+// type stored in the corresponding branch.
+func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
+	if len(vars) <= 0 {
+		return nil, errorf("rootio: NewScannerVars expects at least one branch name")
+	}
+
+	mbr := make([]Branch, len(vars))
+	ibr := make([]scanField, cap(mbr))
+	cbr := make([]Branch, 0)
+	for i, sv := range vars {
+		br := t.Branch(sv.Name)
+		if br == nil {
+			return nil, errorf("rootio: Tree %q has no branch named %q", t.Name(), sv.Name)
+		}
+		mbr[i] = br
+		ibr[i] = scanField{br: br, i: 0}
+		leaf := br.Leaves()[0]
+		if lcnt := leaf.LeafCount(); lcnt != nil {
+			lbr := t.Branch(lcnt.Name())
+			if lbr == nil {
+				return nil, errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
+			}
+			cbr = append(cbr, lbr)
+		}
+	}
+	return &Scanner{
+		tree: t,
+		i:    0,
+		n:    t.Entries(),
+		cur:  -1,
+		err:  nil,
+		ibr:  ibr,
+		mbr:  mbr,
+		cbr:  cbr,
+		typ:  nil,
+	}, nil
+}
+
 // Close closes the Scanner, preventing further iteration.
 // Close is idempotent and does not affect the result of Err.
 func (s *Scanner) Close() error {
@@ -88,6 +135,16 @@ func (s *Scanner) Entry() int64 {
 	return s.cur
 }
 
+// Seek points the scanner to the i-th entry, ready to call Next.
+func (s *Scanner) Seek(i int64) error {
+	if s.err != nil {
+		return s.err
+	}
+	s.i = i
+	s.cur = i - 1
+	return s.err
+}
+
 // Next prepares the next result row for reading with the Scan method.
 // It returns true on success, false if there is no next result row.
 // Every call to Scan, even the first one, must be preceded by a call to Next.
@@ -98,9 +155,6 @@ func (s *Scanner) Next() bool {
 	next := s.i < s.n
 	s.cur++
 	s.i++
-	if !next {
-		s.err = s.Close()
-	}
 	return next
 }
 
@@ -138,7 +192,31 @@ func (s *Scanner) scanMap(data map[string]interface{}) error {
 }
 
 func (s *Scanner) scan(args ...interface{}) error {
-	panic("not implemented")
+	var err error
+
+	// load leaf count data
+	for _, br := range s.cbr {
+		err = br.loadEntry(s.cur)
+		if err != nil {
+			// FIXME(sbinet): properly decorate error
+			return err
+		}
+	}
+
+	for i, ptr := range args {
+		fv := reflect.ValueOf(ptr).Elem()
+		br := s.ibr[i]
+		err = br.br.loadEntry(s.cur)
+		if err != nil {
+			// FIXME(sbinet): properly decorate error
+			return err
+		}
+		err = br.br.scan(fv.Addr().Interface())
+		if err != nil {
+			return err
+		}
+	}
+	return err
 }
 
 func (s *Scanner) scanStruct(data interface{}) error {
