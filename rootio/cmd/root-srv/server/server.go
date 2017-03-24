@@ -366,6 +366,7 @@ const page = `<html>
 			function(evt, data){
 				data.instance.toggle_node(data.node);
 				if (data.node.a_attr.plot) {
+					data.instance.deselect_node(data.node);
 					$.get(data.node.a_attr.href, plotCallback);
 				}
 			}
