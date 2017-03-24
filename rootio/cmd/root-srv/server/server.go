@@ -10,20 +10,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"image/color"
 	"io"
 	"log"
 	"net/http"
 	"sort"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/satori/go.uuid"
-	"go-hep.org/x/hep/hbook/rootcnv"
-	"go-hep.org/x/hep/hbook/yodacnv"
-	"go-hep.org/x/hep/hplot"
 	"go-hep.org/x/hep/rootio"
 )
 
@@ -40,6 +35,7 @@ func Init() {
 	app := newServer()
 	http.Handle("/", app.wrap(app.rootHandle))
 	http.Handle("/root-file-upload", app.wrap(app.uploadHandle))
+	http.Handle("/refresh", app.wrap(app.refreshHandle))
 	http.Handle("/plot-1d/", app.wrap(app.plotH1Handle))
 	http.Handle("/plot-2d/", app.wrap(app.plotH2Handle))
 	http.Handle("/plot-branch/", app.wrap(app.plotBranchHandle))
@@ -211,69 +207,25 @@ func (srv *server) uploadHandle(w http.ResponseWriter, r *http.Request) error {
 	return json.NewEncoder(w).Encode(nodes)
 }
 
-func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
-	log.Printf(">>> request: %q\n", r.URL.Path)
-	url := r.URL.Path[len("/plot-1d/"):]
-	toks := strings.Split(url, "/")
-	fname := toks[0]
-
+func (srv *server) refreshHandle(w http.ResponseWriter, r *http.Request) error {
 	db, err := srv.db(r)
 	if err != nil {
 		return err
 	}
 
-	f := db.get(fname)
-	obj, ok := f.Get(toks[1]) // FIXME(sbinet): handle sub-dirs
-	if !ok {
-		return fmt.Errorf("could not find %q in file %q", toks[1], fname)
+	db.RLock()
+	defer db.RUnlock()
+
+	var nodes []jsNode
+	for k, rfile := range db.files {
+		node, err := fileJsTree(rfile, k)
+		if err != nil {
+			return err
+		}
+		nodes = append(nodes, node...)
 	}
-
-	robj, ok := obj.(yodacnv.Marshaler)
-	if !ok {
-		return fmt.Errorf("object %q could not be converted to hbook.H1D", toks[1])
-	}
-	h1d, err := rootcnv.H1D(robj)
-	if err != nil {
-		return err
-	}
-
-	plot, err := hplot.New()
-	if err != nil {
-		return err
-	}
-	plot.Title.Text = obj.(rootio.Named).Title()
-
-	h, err := hplot.NewH1D(h1d)
-	if err != nil {
-		return err
-	}
-	h.Infos.Style = hplot.HInfoSummary
-	h.Color = color.RGBA{255, 0, 0, 255}
-
-	plot.Add(h, hplot.NewGrid())
-
-	svg, err := renderSVG(plot)
-	if err != nil {
-		return err
-	}
-
-	return json.NewEncoder(w).Encode(string(svg))
-}
-
-func (srv *server) plotH2Handle(w http.ResponseWriter, r *http.Request) error {
-	log.Printf(">>> request: %q\n", r.URL.Path)
-
-	return json.NewEncoder(w).Encode(map[string]string{
-		"url": r.URL.Path,
-	})
-}
-
-func (srv *server) plotBranchHandle(w http.ResponseWriter, r *http.Request) error {
-	log.Printf(">>> request: %q\n", r.URL.Path)
-
-	return json.NewEncoder(w).Encode(map[string]string{
-		"url": r.URL.Path,
-	})
+	sort.Sort(jsNodes(nodes))
+	return json.NewEncoder(w).Encode(nodes)
 }
 
 const page = `<html>
@@ -367,6 +319,16 @@ const page = `<html>
 				}
 			}
 		);
+		$.ajax({
+			url: "/refresh",
+			method: "GET",
+			processData: false,
+			contentType: false,
+			success: displayFileTree,
+			error: function(er){
+				alert("refresh failed: "+er);
+			}
+		});
 	});
 
 	function displayFileTree(data) {
@@ -383,7 +345,7 @@ const page = `<html>
 			+JSON.parse(data)
 			+"<span onclick=\"this.parentElement.style.display='none'; updateHeight();\" class=\"w3-button w3-display-topright w3-hover-red w3-tiny\">X</span>"
 		);
-		$("#rootio-display").append(node);
+		$("#rootio-display").prepend(node);
 		updateHeight();
 	};
 
