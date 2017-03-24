@@ -350,11 +350,7 @@ const page = `<html>
 			data: data,
 			processData: false,
 			contentType: false,
-			success: function(result){
-				// console.log("json-result: "+result);
-				$('#rootio-file-tree').jstree(true).settings.core.data = JSON.parse(result);
-				$("#rootio-file-tree").jstree(true).refresh();
-			},
+			success: displayFileTree,
 			error: function(er){
 				alert("upload failed: "+er);
 			}
@@ -372,6 +368,11 @@ const page = `<html>
 			}
 		);
 	});
+
+	function displayFileTree(data) {
+		$('#rootio-file-tree').jstree(true).settings.core.data = JSON.parse(data);
+		$("#rootio-file-tree").jstree(true).refresh();
+	};
 
 	function plotCallback(data, status) {
 		var node = $("<div></div>");
