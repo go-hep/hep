@@ -129,6 +129,11 @@ func (srv *server) plotBranchHandle(w http.ResponseWriter, r *http.Request) erro
 		tname = fmt.Sprintf("[%d]%s", leaf.Len(), tname)
 	}
 
+	_, err = f.Seek(0, 0) // FIXME(sbinet): factor this into rootio.Scanner
+	if err != nil {
+		return fmt.Errorf("error seeking to beginning of file: %v", err)
+	}
+
 	sc, err := rootio.NewScannerVars(tree, rootio.ScanVar{Name: leaf.Name()})
 	if err != nil {
 		return fmt.Errorf("error creating scanner for branch %q in tree %q of file %q: %v", bname, tree.Name(), fname, err)
