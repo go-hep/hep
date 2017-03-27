@@ -121,6 +121,7 @@ type Directory interface {
 	//             if object is not in memory, try with highest cycle from file
 	//     foo;1 : get cycle 1 of foo on file
 	Get(namecycle string) (Object, bool)
+	Keys() []Key
 }
 
 // StreamerInfo describes a ROOT Streamer.

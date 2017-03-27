@@ -108,6 +108,13 @@ func (k *Key) Object() (Object, error) {
 	if vv, ok := obj.(SetFiler); ok {
 		vv.SetFile(k.f)
 	}
+	if dir, ok := obj.(*tdirectory); ok {
+		dir.file = k.f
+		err = dir.readKeys()
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	k.obj = obj
 	return obj, nil

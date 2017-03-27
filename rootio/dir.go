@@ -167,19 +167,23 @@ func (dir *tdirectory) Title() string {
 //     foo;1 : get cycle 1 of foo on file
 func (dir *tdirectory) Get(namecycle string) (Object, bool) {
 	name, cycle := decodeNameCycle(namecycle)
-	for _, k := range dir.keys {
+	for i := range dir.keys {
+		k := &dir.keys[i]
 		if k.Name() == name {
 			if cycle != 9999 {
 				if k.cycle == cycle {
 					return k.Value().(Object), true
-				} else {
-					return nil, false
 				}
+				continue
 			}
 			return k.Value().(Object), true
 		}
 	}
 	return nil, false
+}
+
+func (dir *tdirectory) Keys() []Key {
+	return dir.keys
 }
 
 func (dir *tdirectory) UnmarshalROOT(r *RBuffer) error {
