@@ -6,11 +6,13 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"image/color"
 	"log"
 	"math"
 	"net/http"
+	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -20,6 +22,19 @@ import (
 	"go-hep.org/x/hep/hplot"
 	"go-hep.org/x/hep/rootio"
 )
+
+var errNotExist = errors.New("server: object does not exist")
+
+func walk(f rootio.Directory, path []string) (rootio.Object, error) {
+	o, ok := f.Get(path[0])
+	if !ok {
+		return nil, errNotExist
+	}
+	if dir, ok := o.(rootio.Directory); ok {
+		return walk(dir, path[1:])
+	}
+	return o, nil
+}
 
 func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 	url := r.URL.Path[len("/plot-1d/"):]
@@ -34,9 +49,9 @@ func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 	defer db.RUnlock()
 
 	f := db.get(fname)
-	obj, ok := f.Get(toks[1]) // FIXME(sbinet): handle sub-dirs
-	if !ok {
-		return fmt.Errorf("could not find %q in file %q", toks[1], fname)
+	obj, err := walk(f, toks[1:])
+	if err != nil {
+		return fmt.Errorf("could not find %q in file %q: %v", filepath.Join(toks[1:]...), fname, err)
 	}
 
 	robj, ok := obj.(yodacnv.Marshaler)
@@ -91,14 +106,14 @@ func (srv *server) plotBranchHandle(w http.ResponseWriter, r *http.Request) erro
 	defer db.RUnlock()
 
 	f := db.get(fname)
-	obj, ok := f.Get(toks[1]) // FIXME(sbinet): handle sub-dirs
-	if !ok {
-		return fmt.Errorf("could not find %q in file %q", toks[1], fname)
+	obj, err := walk(f, toks[1:])
+	if err != nil {
+		return fmt.Errorf("could not find %q in file %q: %v", filepath.Join(toks[1:]...), fname, err)
 	}
 
 	tree := obj.(rootio.Tree)
 
-	bname := toks[2]
+	bname := toks[len(toks)-1]
 	b := tree.Branch(bname) // FIXME(sbinet): handle sub-branches
 	if b == nil {
 		return fmt.Errorf("could not find branch %q in tree %q of file %q", bname, tree.Name(), fname)

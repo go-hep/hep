@@ -123,8 +123,12 @@ func fileJsTree(f *rootio.File, fname string) ([]jsNode, error) {
 		Icon: "fa fa-file",
 	}
 	root.State.Opened = true
+	return dirTree(f, fname, root)
+}
+
+func dirTree(dir rootio.Directory, path string, root jsNode) ([]jsNode, error) {
 	var nodes []jsNode
-	for _, k := range f.Keys() {
+	for _, k := range dir.Keys() {
 		obj, err := k.Object()
 		if err != nil {
 			return nil, fmt.Errorf("failed to extract key %q: %v", k.Name(), err)
@@ -133,7 +137,7 @@ func fileJsTree(f *rootio.File, fname string) ([]jsNode, error) {
 		case rootio.Tree:
 			tree := obj
 			node := jsNode{
-				ID:   strings.Join([]string{fname, k.Name()}, "/"),
+				ID:   strings.Join([]string{path, k.Name()}, "/"),
 				Text: fmt.Sprintf("%s (entries=%d)", k.Name(), tree.Entries()),
 				Icon: "fa fa-tree",
 			}
@@ -142,8 +146,21 @@ func fileJsTree(f *rootio.File, fname string) ([]jsNode, error) {
 				return nil, err
 			}
 			nodes = append(nodes, node)
+		case rootio.Directory:
+			dir := obj
+			node := jsNode{
+				ID:   strings.Join([]string{path, k.Name()}, "/"),
+				Text: k.Name(),
+				Icon: "fa fa-folder",
+			}
+			node.Children, err = dirTree(dir, path+"/"+k.Name(), node)
+			if err != nil {
+				return nil, err
+			}
+			node.Children = node.Children[0].Children
+			nodes = append(nodes, node)
 		default:
-			id := strings.Join([]string{fname, k.Name() + fmt.Sprintf(";%d", k.Cycle())}, "/")
+			id := strings.Join([]string{path, k.Name() + fmt.Sprintf(";%d", k.Cycle())}, "/")
 			nodes = append(nodes, jsNode{
 				ID:   id,
 				Text: fmt.Sprintf("%s;%d", k.Name(), k.Cycle()),
