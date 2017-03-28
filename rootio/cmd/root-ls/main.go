@@ -71,17 +71,29 @@ func main() {
 
 		w := tabwriter.NewWriter(os.Stdout, 8, 4, 1, ' ', 0)
 		for _, k := range f.Keys() {
-			if *doTree {
-				tree, ok := k.Value().(rootio.Tree)
-				if ok {
-					w := tabwriter.NewWriter(w, 8, 4, 1, ' ', 0)
-					fmt.Fprintf(w, "%s\t%s\t%s\t(entries=%d)\n", k.Class(), k.Name(), k.Title(), tree.Entries())
-					displayBranches(w, tree, 2)
-					w.Flush()
-					continue
-				}
-			}
-			fmt.Fprintf(w, "%s\t%s\t%s\t(cycle=%d)\n", k.Class(), k.Name(), k.Title(), k.Cycle())
+			walk(w, k)
+		}
+		w.Flush()
+	}
+}
+
+func walk(w io.Writer, k rootio.Key) {
+	obj := k.Value()
+	if *doTree {
+		tree, ok := obj.(rootio.Tree)
+		if ok {
+			w := tabwriter.NewWriter(w, 8, 4, 1, ' ', 0)
+			fmt.Fprintf(w, "%s\t%s\t%s\t(entries=%d)\n", k.Class(), k.Name(), k.Title(), tree.Entries())
+			displayBranches(w, tree, 2)
+			w.Flush()
+			return
+		}
+	}
+	fmt.Fprintf(w, "%s\t%s\t%s\t(cycle=%d)\n", k.Class(), k.Name(), k.Title(), k.Cycle())
+	if dir, ok := obj.(rootio.Directory); ok {
+		w := newWindent(2, w)
+		for _, k := range dir.Keys() {
+			walk(w, k)
 		}
 		w.Flush()
 	}
