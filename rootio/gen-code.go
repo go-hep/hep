@@ -549,7 +549,10 @@ func (h *{{.Name}}) BinContent(i int) float64 {
 
 // BinError returns the bin error
 func (h *{{.Name}}) BinError(i int) float64 {
-	return math.Sqrt(float64(h.th1.sumw2.Data[i]))
+	if len(h.th1.sumw2.Data) > 0 {
+		return math.Sqrt(float64(h.th1.sumw2.Data[i]))
+	}
+	return math.Sqrt(math.Abs(h.BinContent(i)))
 }
 
 // BinLowEdge returns the bin lower edge value
@@ -567,7 +570,10 @@ func (h *{{.Name}}) dist0D(i int) dist0D {
 	err := h.BinError(i)
 	n := h.entries(v, err)
 	sumw := h.arr.Data[i]
-	sumw2 := h.th1.sumw2.Data[i]
+	sumw2 := 0.0
+	if len(h.th1.sumw2.Data) > 0 {
+		sumw2 = h.th1.sumw2.Data[i]
+	}
 	return dist0D{
 		n:     n,
 		sumw:  float64(sumw),
