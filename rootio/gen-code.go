@@ -234,7 +234,7 @@ func genH2() {
 	}
 	defer f.Close()
 
-	genImports(f)
+	genImports(f, "bytes", "fmt", "math")
 
 	for i, typ := range []struct {
 		Name string
@@ -537,37 +537,51 @@ func (h*{{.Name}}) XAxis() Axis {
 	return &h.th1.xaxis
 }
 
-// BinCenter returns the bin center value
-func (h *{{.Name}}) BinCenter(i int) float64 {
-	return h.th1.xaxis.BinCenter(i)
-}
-
-// BinContent returns the bin content
-func (h *{{.Name}}) BinContent(i int) float64 {
-	return float64(h.arr.Data[i])
-}
-
-// BinError returns the bin error
-func (h *{{.Name}}) BinError(i int) float64 {
-	if len(h.th1.sumw2.Data) > 0 {
-		return math.Sqrt(float64(h.th1.sumw2.Data[i]))
+// bin returns the regularized bin number given an x bin pair.
+func (h *{{.Name}}) bin(ix int) int {
+	nx := h.th1.xaxis.nbins + 1 // overflow bin
+	switch {
+	case ix < 0:
+		ix = 0
+	case ix > nx:
+		ix = nx
 	}
-	return math.Sqrt(math.Abs(h.BinContent(i)))
+	return ix
 }
 
-// BinLowEdge returns the bin lower edge value
-func (h *{{.Name}}) BinLowEdge(i int) float64 {
+// XBinCenter returns the bin center value in X.
+func (h *{{.Name}}) XBinCenter(i int) float64 {
+	return float64(h.th1.xaxis.BinCenter(i))
+}
+
+// XBinContent returns the bin content value in X.
+func (h *{{.Name}}) XBinContent(i int) float64 {
+	ibin := h.bin(i)
+	return float64(h.arr.Data[ibin])
+}
+
+// XBinError returns the bin error in X.
+func (h *{{.Name}}) XBinError(i int) float64 {
+	ibin := h.bin(i)
+	if len(h.th1.sumw2.Data) > 0 {
+		return math.Sqrt(float64(h.th1.sumw2.Data[ibin]))
+	}
+	return math.Sqrt(math.Abs(float64(h.arr.Data[ibin])))
+}
+
+// XBinLowEdge returns the bin lower edge value in X.
+func (h *{{.Name}}) XBinLowEdge(i int) float64 {
 	return h.th1.xaxis.BinLowEdge(i)
 }
 
-// BinWidth returns the bin width
-func (h *{{.Name}}) BinWidth(i int) float64 {
+// XBinWidth returns the bin width in X.
+func (h *{{.Name}}) XBinWidth(i int) float64 {
 	return h.th1.xaxis.BinWidth(i)
 }
 
 func (h *{{.Name}}) dist0D(i int) dist0D {
-	v := h.BinContent(i)
-	err := h.BinError(i)
+	v := h.XBinContent(i)
+	err := h.XBinError(i)
 	n := h.entries(v, err)
 	sumw := h.arr.Data[i]
 	sumw2 := 0.0
@@ -646,8 +660,8 @@ func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
 	)
 	fmt.Fprintf(buf, "# xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries\n")
 	for i, d := range dists {
-		xmin := h.BinLowEdge(i+1)
-		xmax := h.BinWidth(i+1) + xmin
+		xmin := h.XBinLowEdge(i+1)
+		xmax := h.XBinWidth(i+1) + xmin
 		fmt.Fprintf(
 			buf,
 			"%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
@@ -699,9 +713,228 @@ func (h *{{.Name}}) NbinsX() int {
 	return h.th1.xaxis.nbins
 }
 
+// XAxis returns the axis along X.
+func (h*{{.Name}}) XAxis() Axis {
+	return &h.th1.xaxis
+}
+
+// XBinCenter returns the bin center value in X.
+func (h *{{.Name}}) XBinCenter(i int) float64 {
+	return float64(h.th1.xaxis.BinCenter(i))
+}
+
+// XBinContent returns the bin content value in X.
+func (h *{{.Name}}) XBinContent(i int) float64 {
+	return float64(h.arr.Data[i])
+}
+
+// XBinError returns the bin error in X.
+func (h *{{.Name}}) XBinError(i int) float64 {
+	if len(h.th1.sumw2.Data) > 0 {
+		return math.Sqrt(float64(h.th1.sumw2.Data[i]))
+	}
+	return math.Sqrt(math.Abs(float64(h.arr.Data[i])))
+}
+
+// XBinLowEdge returns the bin lower edge value in X.
+func (h *{{.Name}}) XBinLowEdge(i int) float64 {
+	return h.th1.xaxis.BinLowEdge(i)
+}
+
+// XBinWidth returns the bin width in X.
+func (h *{{.Name}}) XBinWidth(i int) float64 {
+	return h.th1.xaxis.BinWidth(i)
+}
+
 // NbinsY returns the number of bins in Y.
 func (h *{{.Name}}) NbinsY() int {
 	return h.th1.yaxis.nbins
+}
+
+// YAxis returns the axis along Y.
+func (h*{{.Name}}) YAxis() Axis {
+	return &h.th1.yaxis
+}
+
+// YBinCenter returns the bin center value in Y.
+func (h *{{.Name}}) YBinCenter(i int) float64 {
+	return float64(h.th1.yaxis.BinCenter(i))
+}
+
+// YBinContent returns the bin content value in Y.
+func (h *{{.Name}}) YBinContent(i int) float64 {
+	return float64(h.arr.Data[i])
+}
+
+// YBinError returns the bin error in Y.
+func (h *{{.Name}}) YBinError(i int) float64 {
+	if len(h.th1.sumw2.Data) > 0 {
+		return math.Sqrt(float64(h.th1.sumw2.Data[i]))
+	}
+	return math.Sqrt(math.Abs(float64(h.arr.Data[i])))
+}
+
+// YBinLowEdge returns the bin lower edge value in Y.
+func (h *{{.Name}}) YBinLowEdge(i int) float64 {
+	return h.th1.yaxis.BinLowEdge(i)
+}
+
+// YBinWidth returns the bin width in Y.
+func (h *{{.Name}}) YBinWidth(i int) float64 {
+	return h.th1.yaxis.BinWidth(i)
+}
+
+// bin returns the regularized bin number given an (x,y) bin index pair.
+func (h *{{.Name}}) bin(ix, iy int) int {
+	nx := h.th1.xaxis.nbins + 1 // overflow bin
+	ny := h.th1.yaxis.nbins + 1 // overflow bin
+	switch {
+	case ix < 0:
+		ix = 0
+	case ix > nx:
+		ix = nx
+	}
+	switch {
+	case iy < 0:
+		iy = 0
+	case iy > ny:
+		iy = ny
+	}
+	return ix + (nx+1)*iy
+}
+
+func (h *{{.Name}}) dist2D(ix, iy int) dist2D {
+	i := h.bin(ix, iy)
+	vx := h.XBinContent(i)
+	xerr := h.XBinError(i)
+	nx := h.entries(vx, xerr)
+	vy := h.YBinContent(i)
+	yerr := h.YBinError(i)
+	ny := h.entries(vy, yerr)
+
+	sumw := h.arr.Data[i]
+	sumw2 := 0.0
+	if len(h.th1.sumw2.Data) > 0 {
+		sumw2 = h.th1.sumw2.Data[i]
+	}
+	return dist2D{
+		x: dist0D{
+			n:     nx,
+			sumw:  float64(sumw),
+			sumw2: float64(sumw2),
+		},
+		y: dist0D{
+			n:     ny,
+			sumw:  float64(sumw),
+			sumw2: float64(sumw2),
+		},
+	}
+}
+
+func (h *{{.Name}}) entries(height, err float64) int64 {
+	if height <= 0 {
+		return 0
+	}
+	v := height / err
+	return int64(v*v + 0.5)
+}
+
+func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
+	var (
+		nx       = h.NbinsX()
+		ny       = h.NbinsY()
+		xinrange = 1
+		yinrange = 1
+		dflow    = [8]dist2D{
+			h.dist2D(0, 0),
+			h.dist2D(0, yinrange),
+			h.dist2D(0, ny+1),
+			h.dist2D(nx+1, 0),
+			h.dist2D(nx+1, yinrange),
+			h.dist2D(nx+1, ny+1),
+			h.dist2D(xinrange, 0),
+			h.dist2D(xinrange, ny+1),
+		}
+		dtot = dist2D{
+			x: dist0D{
+				n:      int64(h.Entries()),
+				sumw:   float64(h.SumW()),
+				sumw2:  float64(h.SumW2()),
+				sumwx:  float64(h.SumWX()),
+				sumwx2: float64(h.SumWX2()),
+			},
+			y: dist0D{
+				n:      int64(h.Entries()),
+				sumw:   float64(h.SumW()),
+				sumw2:  float64(h.SumW2()),
+				sumwx:  float64(h.SumWY()),
+				sumwx2: float64(h.SumWY2()),
+			},
+			sumWXY: h.SumWXY(),
+		}
+		dists = make([]dist2D, int(nx*ny))
+	)
+	for ix := 0; ix < nx; ix++ {
+		for iy := 0; iy < ny; iy++ {
+			i := iy*nx + ix
+			dists[i] = h.dist2D(ix+1, iy+1)
+		}
+	}
+
+	buf := new(bytes.Buffer)
+	fmt.Fprintf(buf, "BEGIN YODA_HISTO2D /%s\n", h.Name())
+	fmt.Fprintf(buf, "Path=/%s\n", h.Name())
+	fmt.Fprintf(buf, "Title=%s\n", h.Title())
+	fmt.Fprintf(buf, "Type=Histo2D\n")
+	fmt.Fprintf(buf, "# Mean: %e\n", math.NaN())
+	fmt.Fprintf(buf, "# Volume: %e\n", math.NaN())
+
+	fmt.Fprintf(buf, "# ID\t ID\t sumw\t sumw2\t sumwx\t sumwx2\t sumwy\t sumwy2\t sumwxy\t numEntries\n")
+
+	var name = "Total   "
+	d := &dtot
+	fmt.Fprintf(
+		buf,
+		"%s\t%s\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
+		name, name,
+		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.sumWXY, d.Entries(),
+	)
+
+	if false { // FIXME(sbinet)
+		for _, d := range dflow {
+			fmt.Fprintf(
+				buf,
+				"%s\t%s\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
+				name, name,
+				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.sumWXY, d.Entries(),
+			)
+
+		}
+	} else {
+		// outflows
+		fmt.Fprintf(buf, "# 2D outflow persistency not currently supported until API is stable\n")
+	}
+
+	// bins
+	fmt.Fprintf(buf, "# xlow\t xhigh\t ylow\t yhigh\t sumw\t sumw2\t sumwx\t sumwx2\t sumwy\t sumwy2\t sumwxy\t numEntries\n")
+	for ix := 0; ix < nx; ix++ {
+		for iy := 0; iy < ny; iy++ {
+			xmin := h.XBinLowEdge(ix + 1)
+			xmax := h.XBinWidth(ix+1) + xmin
+			ymin := h.YBinLowEdge(iy + 1)
+			ymax := h.YBinWidth(iy+1) + ymin
+			i := iy*nx+ix
+			d := &dists[i]
+			fmt.Fprintf(
+				buf,
+				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
+				xmin, xmax, ymin, ymax,
+				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.sumWXY, d.Entries(),
+			)
+		}
+	}
+	fmt.Fprintf(buf, "END YODA_HISTO2D\n\n")
+	return buf.Bytes(), nil
 }
 
 func (h *{{.Name}}) UnmarshalROOT(r *RBuffer) error {

@@ -46,6 +46,42 @@ func ExampleH1D() {
 	// std-err: 0.025447022905060374
 }
 
+func ExampleH2D() {
+	f, err := rootio.Open("testdata/gauss-h2.root")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	obj, ok := f.Get("h2d")
+	if !ok {
+		log.Fatalf("no such histo %q\n", "h2d")
+	}
+
+	root := obj.(*rootio.H2D)
+	h, err := rootcnv.H2D(root)
+	if err != nil {
+		log.Fatalf("error converting TH2D: %v\n", err)
+	}
+
+	fmt.Printf("name:      %q\n", root.Name())
+	fmt.Printf("x-mean:    %v\n", h.XMean())
+	fmt.Printf("x-std-dev: %v\n", h.XStdDev())
+	fmt.Printf("x-std-err: %v\n", h.XStdErr())
+	fmt.Printf("y-mean:    %v\n", h.YMean())
+	fmt.Printf("y-std-dev: %v\n", h.YStdDev())
+	fmt.Printf("y-std-err: %v\n", h.YStdErr())
+
+	// Output:
+	// name:      "h2d"
+	// x-mean:    -0.005792200073827981
+	// x-std-dev: 2.2708057036302542
+	// x-std-err: 0.06540325697671126
+	// y-mean:    0.894201827242525
+	// y-std-dev: 1.8307942514179008
+	// y-std-err: 0.05273014186354511
+}
+
 func TestH1D(t *testing.T) {
 	f, err := rootio.Open("testdata/gauss-h1.root")
 	if err != nil {
@@ -174,6 +210,99 @@ END YODA_HISTO1D
 		rhisto := obj.(yodacnv.Marshaler)
 
 		h, err := rootcnv.H1D(rhisto)
+		if err != nil {
+			t.Errorf("%s: convertion error: %v", test.name, err)
+			continue
+		}
+
+		buf := new(bytes.Buffer)
+		err = yodacnv.Write(buf, h)
+		if err != nil {
+			t.Errorf("%s: YODA error: %v", test.name, err)
+			continue
+		}
+
+		if !reflect.DeepEqual(buf.Bytes(), test.want) {
+			t.Errorf("error converting %s:\ngot:\n%s\nwant:\n%s\n",
+				test.name,
+				string(buf.Bytes()),
+				string(test.want),
+			)
+			continue
+		}
+	}
+}
+
+func TestH2D(t *testing.T) {
+	f, err := rootio.Open("testdata/gauss-h2.root")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	for _, test := range []struct {
+		name string
+		want []byte
+	}{
+		{
+			name: "h2f",
+			want: []byte(`BEGIN YODA_HISTO2D /h2f
+Path=/h2f
+Title=h2f
+Type=Histo2D
+# Mean: (-5.792200e-03, 8.942018e-01)
+# Volume: 1.083600e+04
+# ID	 ID	 sumw	 sumw2	 sumwx	 sumwx2	 sumwy	 sumwy2	 sumwxy	 numEntries
+Total   	Total   	1.083600e+04	9.740400e+04	-6.276428e+01	5.583048e+04	9.689571e+03	4.495449e+04	-1.878975e+02	10008
+# 2D outflow persistency not currently supported until API is stable
+# xlow	 xhigh	 ylow	 yhigh	 sumw	 sumw2	 sumwx	 sumwx2	 sumwy	 sumwy2	 sumwxy	 numEntries
+0.000000e+00	1.000000e+00	0.000000e+00	1.000000e+00	5.010000e+02	5.010000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	501
+0.000000e+00	1.000000e+00	1.000000e+00	2.000000e+00	4.880000e+02	4.880000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	488
+0.000000e+00	1.000000e+00	2.000000e+00	3.000000e+00	3.140000e+02	3.140000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	314
+1.000000e+00	2.000000e+00	0.000000e+00	1.000000e+00	3.850000e+02	3.850000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	385
+1.000000e+00	2.000000e+00	1.000000e+00	2.000000e+00	3.790000e+02	3.790000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	379
+1.000000e+00	2.000000e+00	2.000000e+00	3.000000e+00	2.210000e+02	2.210000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	221
+2.000000e+00	3.000000e+00	0.000000e+00	1.000000e+00	2.280000e+02	2.280000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	228
+2.000000e+00	3.000000e+00	1.000000e+00	2.000000e+00	2.320000e+02	2.320000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	232
+2.000000e+00	3.000000e+00	2.000000e+00	3.000000e+00	1.640000e+02	1.640000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	164
+END YODA_HISTO2D
+
+`),
+		},
+		{
+			name: "h2d",
+			want: []byte(`BEGIN YODA_HISTO2D /h2d
+Path=/h2d
+Title=h2d
+Type=Histo2D
+# Mean: (-5.792200e-03, 8.942018e-01)
+# Volume: 1.083600e+04
+# ID	 ID	 sumw	 sumw2	 sumwx	 sumwx2	 sumwy	 sumwy2	 sumwxy	 numEntries
+Total   	Total   	1.083600e+04	9.740400e+04	-6.276428e+01	5.583048e+04	9.689571e+03	4.495449e+04	-1.878975e+02	10008
+# 2D outflow persistency not currently supported until API is stable
+# xlow	 xhigh	 ylow	 yhigh	 sumw	 sumw2	 sumwx	 sumwx2	 sumwy	 sumwy2	 sumwxy	 numEntries
+0.000000e+00	1.000000e+00	0.000000e+00	1.000000e+00	5.010000e+02	5.010000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	501
+0.000000e+00	1.000000e+00	1.000000e+00	2.000000e+00	4.880000e+02	4.880000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	488
+0.000000e+00	1.000000e+00	2.000000e+00	3.000000e+00	3.140000e+02	3.140000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	314
+1.000000e+00	2.000000e+00	0.000000e+00	1.000000e+00	3.850000e+02	3.850000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	385
+1.000000e+00	2.000000e+00	1.000000e+00	2.000000e+00	3.790000e+02	3.790000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	379
+1.000000e+00	2.000000e+00	2.000000e+00	3.000000e+00	2.210000e+02	2.210000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	221
+2.000000e+00	3.000000e+00	0.000000e+00	1.000000e+00	2.280000e+02	2.280000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	228
+2.000000e+00	3.000000e+00	1.000000e+00	2.000000e+00	2.320000e+02	2.320000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	232
+2.000000e+00	3.000000e+00	2.000000e+00	3.000000e+00	1.640000e+02	1.640000e+02	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	164
+END YODA_HISTO2D
+
+`),
+		},
+	} {
+		obj, ok := f.Get(test.name)
+		if !ok {
+			t.Errorf("%s: no key %q", test.name, test.name)
+			continue
+		}
+		rhisto := obj.(yodacnv.Marshaler)
+
+		h, err := rootcnv.H2D(rhisto)
 		if err != nil {
 			t.Errorf("%s: convertion error: %v", test.name, err)
 			continue

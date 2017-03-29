@@ -180,6 +180,21 @@ func (h *th2) UnmarshalROOT(r *RBuffer) error {
 	return r.err
 }
 
+// SumWY returns the total sum of weights*y
+func (h *th2) SumWY() float64 {
+	return h.tsumwy
+}
+
+// SumWY2 returns the total sum of weights*y*y
+func (h *th2) SumWY2() float64 {
+	return h.tsumwy2
+}
+
+// SumWXY returns the total sum of weights*x*y
+func (h *th2) SumWXY() float64 {
+	return h.tsumwxy
+}
+
 type dist0D struct {
 	n      int64
 	sumw   float64
@@ -206,6 +221,48 @@ func (d dist0D) SumWX() float64 {
 
 func (d dist0D) SumWX2() float64 {
 	return d.sumwx2
+}
+
+// dist2D is a 2-dim distribution.
+type dist2D struct {
+	x      dist0D  // x moments
+	y      dist0D  // y moments
+	sumWXY float64 // 2nd-order cross-term
+}
+
+// Entries returns the number of entries in the distribution.
+func (d *dist2D) Entries() int64 {
+	return d.x.Entries()
+}
+
+// SumW returns the sum of weights of the distribution.
+func (d *dist2D) SumW() float64 {
+	return d.x.SumW()
+}
+
+// SumW2 returns the sum of squared weights of the distribution.
+func (d *dist2D) SumW2() float64 {
+	return d.x.SumW2()
+}
+
+// SumWX returns the 1st order weighted x moment
+func (d *dist2D) SumWX() float64 {
+	return d.x.SumWX()
+}
+
+// SumWX2 returns the 2nd order weighted x moment
+func (d *dist2D) SumWX2() float64 {
+	return d.x.SumWX2()
+}
+
+// SumWY returns the 1st order weighted y moment
+func (d *dist2D) SumWY() float64 {
+	return d.y.SumWX()
+}
+
+// SumWY2 returns the 2nd order weighted y moment
+func (d *dist2D) SumWY2() float64 {
+	return d.y.SumWX2()
 }
 
 func init() {

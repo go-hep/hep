@@ -68,37 +68,51 @@ func (h *H1F) XAxis() Axis {
 	return &h.th1.xaxis
 }
 
-// BinCenter returns the bin center value
-func (h *H1F) BinCenter(i int) float64 {
-	return h.th1.xaxis.BinCenter(i)
-}
-
-// BinContent returns the bin content
-func (h *H1F) BinContent(i int) float64 {
-	return float64(h.arr.Data[i])
-}
-
-// BinError returns the bin error
-func (h *H1F) BinError(i int) float64 {
-	if len(h.th1.sumw2.Data) > 0 {
-		return math.Sqrt(float64(h.th1.sumw2.Data[i]))
+// bin returns the regularized bin number given an x bin pair.
+func (h *H1F) bin(ix int) int {
+	nx := h.th1.xaxis.nbins + 1 // overflow bin
+	switch {
+	case ix < 0:
+		ix = 0
+	case ix > nx:
+		ix = nx
 	}
-	return math.Sqrt(math.Abs(h.BinContent(i)))
+	return ix
 }
 
-// BinLowEdge returns the bin lower edge value
-func (h *H1F) BinLowEdge(i int) float64 {
+// XBinCenter returns the bin center value in X.
+func (h *H1F) XBinCenter(i int) float64 {
+	return float64(h.th1.xaxis.BinCenter(i))
+}
+
+// XBinContent returns the bin content value in X.
+func (h *H1F) XBinContent(i int) float64 {
+	ibin := h.bin(i)
+	return float64(h.arr.Data[ibin])
+}
+
+// XBinError returns the bin error in X.
+func (h *H1F) XBinError(i int) float64 {
+	ibin := h.bin(i)
+	if len(h.th1.sumw2.Data) > 0 {
+		return math.Sqrt(float64(h.th1.sumw2.Data[ibin]))
+	}
+	return math.Sqrt(math.Abs(float64(h.arr.Data[ibin])))
+}
+
+// XBinLowEdge returns the bin lower edge value in X.
+func (h *H1F) XBinLowEdge(i int) float64 {
 	return h.th1.xaxis.BinLowEdge(i)
 }
 
-// BinWidth returns the bin width
-func (h *H1F) BinWidth(i int) float64 {
+// XBinWidth returns the bin width in X.
+func (h *H1F) XBinWidth(i int) float64 {
 	return h.th1.xaxis.BinWidth(i)
 }
 
 func (h *H1F) dist0D(i int) dist0D {
-	v := h.BinContent(i)
-	err := h.BinError(i)
+	v := h.XBinContent(i)
+	err := h.XBinError(i)
 	n := h.entries(v, err)
 	sumw := h.arr.Data[i]
 	sumw2 := 0.0
@@ -177,8 +191,8 @@ func (h *H1F) MarshalYODA() ([]byte, error) {
 	)
 	fmt.Fprintf(buf, "# xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries\n")
 	for i, d := range dists {
-		xmin := h.BinLowEdge(i + 1)
-		xmax := h.BinWidth(i+1) + xmin
+		xmin := h.XBinLowEdge(i + 1)
+		xmax := h.XBinWidth(i+1) + xmin
 		fmt.Fprintf(
 			buf,
 			"%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
@@ -259,37 +273,51 @@ func (h *H1D) XAxis() Axis {
 	return &h.th1.xaxis
 }
 
-// BinCenter returns the bin center value
-func (h *H1D) BinCenter(i int) float64 {
-	return h.th1.xaxis.BinCenter(i)
-}
-
-// BinContent returns the bin content
-func (h *H1D) BinContent(i int) float64 {
-	return float64(h.arr.Data[i])
-}
-
-// BinError returns the bin error
-func (h *H1D) BinError(i int) float64 {
-	if len(h.th1.sumw2.Data) > 0 {
-		return math.Sqrt(float64(h.th1.sumw2.Data[i]))
+// bin returns the regularized bin number given an x bin pair.
+func (h *H1D) bin(ix int) int {
+	nx := h.th1.xaxis.nbins + 1 // overflow bin
+	switch {
+	case ix < 0:
+		ix = 0
+	case ix > nx:
+		ix = nx
 	}
-	return math.Sqrt(math.Abs(h.BinContent(i)))
+	return ix
 }
 
-// BinLowEdge returns the bin lower edge value
-func (h *H1D) BinLowEdge(i int) float64 {
+// XBinCenter returns the bin center value in X.
+func (h *H1D) XBinCenter(i int) float64 {
+	return float64(h.th1.xaxis.BinCenter(i))
+}
+
+// XBinContent returns the bin content value in X.
+func (h *H1D) XBinContent(i int) float64 {
+	ibin := h.bin(i)
+	return float64(h.arr.Data[ibin])
+}
+
+// XBinError returns the bin error in X.
+func (h *H1D) XBinError(i int) float64 {
+	ibin := h.bin(i)
+	if len(h.th1.sumw2.Data) > 0 {
+		return math.Sqrt(float64(h.th1.sumw2.Data[ibin]))
+	}
+	return math.Sqrt(math.Abs(float64(h.arr.Data[ibin])))
+}
+
+// XBinLowEdge returns the bin lower edge value in X.
+func (h *H1D) XBinLowEdge(i int) float64 {
 	return h.th1.xaxis.BinLowEdge(i)
 }
 
-// BinWidth returns the bin width
-func (h *H1D) BinWidth(i int) float64 {
+// XBinWidth returns the bin width in X.
+func (h *H1D) XBinWidth(i int) float64 {
 	return h.th1.xaxis.BinWidth(i)
 }
 
 func (h *H1D) dist0D(i int) dist0D {
-	v := h.BinContent(i)
-	err := h.BinError(i)
+	v := h.XBinContent(i)
+	err := h.XBinError(i)
 	n := h.entries(v, err)
 	sumw := h.arr.Data[i]
 	sumw2 := 0.0
@@ -368,8 +396,8 @@ func (h *H1D) MarshalYODA() ([]byte, error) {
 	)
 	fmt.Fprintf(buf, "# xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries\n")
 	for i, d := range dists {
-		xmin := h.BinLowEdge(i + 1)
-		xmax := h.BinWidth(i+1) + xmin
+		xmin := h.XBinLowEdge(i + 1)
+		xmax := h.XBinWidth(i+1) + xmin
 		fmt.Fprintf(
 			buf,
 			"%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
@@ -450,37 +478,51 @@ func (h *H1I) XAxis() Axis {
 	return &h.th1.xaxis
 }
 
-// BinCenter returns the bin center value
-func (h *H1I) BinCenter(i int) float64 {
-	return h.th1.xaxis.BinCenter(i)
-}
-
-// BinContent returns the bin content
-func (h *H1I) BinContent(i int) float64 {
-	return float64(h.arr.Data[i])
-}
-
-// BinError returns the bin error
-func (h *H1I) BinError(i int) float64 {
-	if len(h.th1.sumw2.Data) > 0 {
-		return math.Sqrt(float64(h.th1.sumw2.Data[i]))
+// bin returns the regularized bin number given an x bin pair.
+func (h *H1I) bin(ix int) int {
+	nx := h.th1.xaxis.nbins + 1 // overflow bin
+	switch {
+	case ix < 0:
+		ix = 0
+	case ix > nx:
+		ix = nx
 	}
-	return math.Sqrt(math.Abs(h.BinContent(i)))
+	return ix
 }
 
-// BinLowEdge returns the bin lower edge value
-func (h *H1I) BinLowEdge(i int) float64 {
+// XBinCenter returns the bin center value in X.
+func (h *H1I) XBinCenter(i int) float64 {
+	return float64(h.th1.xaxis.BinCenter(i))
+}
+
+// XBinContent returns the bin content value in X.
+func (h *H1I) XBinContent(i int) float64 {
+	ibin := h.bin(i)
+	return float64(h.arr.Data[ibin])
+}
+
+// XBinError returns the bin error in X.
+func (h *H1I) XBinError(i int) float64 {
+	ibin := h.bin(i)
+	if len(h.th1.sumw2.Data) > 0 {
+		return math.Sqrt(float64(h.th1.sumw2.Data[ibin]))
+	}
+	return math.Sqrt(math.Abs(float64(h.arr.Data[ibin])))
+}
+
+// XBinLowEdge returns the bin lower edge value in X.
+func (h *H1I) XBinLowEdge(i int) float64 {
 	return h.th1.xaxis.BinLowEdge(i)
 }
 
-// BinWidth returns the bin width
-func (h *H1I) BinWidth(i int) float64 {
+// XBinWidth returns the bin width in X.
+func (h *H1I) XBinWidth(i int) float64 {
 	return h.th1.xaxis.BinWidth(i)
 }
 
 func (h *H1I) dist0D(i int) dist0D {
-	v := h.BinContent(i)
-	err := h.BinError(i)
+	v := h.XBinContent(i)
+	err := h.XBinError(i)
 	n := h.entries(v, err)
 	sumw := h.arr.Data[i]
 	sumw2 := 0.0
@@ -559,8 +601,8 @@ func (h *H1I) MarshalYODA() ([]byte, error) {
 	)
 	fmt.Fprintf(buf, "# xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries\n")
 	for i, d := range dists {
-		xmin := h.BinLowEdge(i + 1)
-		xmax := h.BinWidth(i+1) + xmin
+		xmin := h.XBinLowEdge(i + 1)
+		xmax := h.XBinWidth(i+1) + xmin
 		fmt.Fprintf(
 			buf,
 			"%e\t%e\t%e\t%e\t%e\t%e\t%d\n",

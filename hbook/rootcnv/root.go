@@ -23,3 +23,17 @@ func H1D(r yodacnv.Marshaler) (*hbook.H1D, error) {
 	}
 	return &h, nil
 }
+
+// H2D creates a new H2D from a TH2x.
+func H2D(r yodacnv.Marshaler) (*hbook.H2D, error) {
+	raw, err := r.MarshalYODA()
+	if err != nil {
+		return nil, err
+	}
+	var h hbook.H2D
+	err = h.UnmarshalYODA(raw)
+	if err != nil {
+		return nil, err
+	}
+	return &h, nil
+}
