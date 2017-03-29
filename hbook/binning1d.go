@@ -143,13 +143,12 @@ func (bng *binning1D) fill(x, w float64) {
 // coordToIndex returns the bin index corresponding to the coordinate x.
 func (bng *binning1D) coordToIndex(x float64) int {
 	switch {
-	default:
-		return Bin1Ds(bng.bins).IndexOf(x)
 	case x < bng.xrange.Min:
 		return UnderflowBin
 	case x >= bng.xrange.Max:
 		return OverflowBin
 	}
+	return Bin1Ds(bng.bins).IndexOf(x)
 }
 
 func (bng *binning1D) scaleW(f float64) {
