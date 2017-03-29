@@ -221,6 +221,7 @@ func (b *tbranch) loadBasket(entry int64) error {
 	}
 	if ib < len(b.baskets) {
 		b.basket = &b.baskets[ib]
+		b.firstEntry = b.basketEntry[ib]
 		return nil
 	}
 

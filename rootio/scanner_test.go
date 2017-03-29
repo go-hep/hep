@@ -236,3 +236,36 @@ func TestScannerVars(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestScannerVarsMultipleTimes(t *testing.T) {
+	f, err := Open("testdata/mc_105986.ZZ.root")
+	if err != nil {
+		t.Skip(err)
+	}
+
+	obj, ok := f.Get("mini")
+	if !ok {
+		t.Fatalf("no mini")
+	}
+	tree := obj.(Tree)
+
+	for i := 0; i < 10; i++ {
+		sc, err := NewScannerVars(tree, ScanVar{Name: "lep_pt"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer sc.Close()
+
+		for sc.Next() {
+			var data []float32
+			err := sc.Scan(&data)
+			if err != nil {
+				t.Error(err)
+			}
+		}
+		err = sc.Err()
+		if err != nil {
+			t.Error(err)
+		}
+	}
+}
