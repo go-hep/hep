@@ -87,10 +87,49 @@ func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (srv *server) plotH2Handle(w http.ResponseWriter, r *http.Request) error {
-	log.Printf(">>> request: %q\n", r.URL.Path)
-	return json.NewEncoder(w).Encode(map[string]string{
-		"url": r.URL.Path,
-	})
+	url := r.URL.Path[len("/plot-2d/"):]
+	toks := strings.Split(url, "/")
+	fname := toks[0]
+
+	db, err := srv.db(r)
+	if err != nil {
+		return err
+	}
+	db.RLock()
+	defer db.RUnlock()
+
+	f := db.get(fname)
+	obj, err := walk(f, toks[1:])
+	if err != nil {
+		return fmt.Errorf("could not find %q in file %q: %v", filepath.Join(toks[1:]...), fname, err)
+	}
+
+	robj, ok := obj.(yodacnv.Marshaler)
+	if !ok {
+		return fmt.Errorf("object %q could not be converted to hbook.H1D", toks[1])
+	}
+	h2d, err := rootcnv.H2D(robj)
+	if err != nil {
+		return err
+	}
+
+	plot, err := hplot.New()
+	if err != nil {
+		return err
+	}
+	plot.Title.Text = obj.(rootio.Named).Title()
+
+	h := hplot.NewH2D(h2d, nil)
+	h.Infos.Style = hplot.HInfoSummary
+
+	plot.Add(h, hplot.NewGrid())
+
+	svg, err := renderSVG(plot)
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(string(svg))
 }
 
 func (srv *server) plotBranchHandle(w http.ResponseWriter, r *http.Request) error {
