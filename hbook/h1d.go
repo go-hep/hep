@@ -35,7 +35,7 @@ func NewH1D(n int, xmin, xmax float64) *H1D {
 // It panics if the length of edges is <= 1.
 // It panics if the edges are not sorted.
 // It panics if there are duplicate edge values.
-func NewH1DFromEdges(edges ...float64) *H1D {
+func NewH1DFromEdges(edges []float64) *H1D {
 	return &H1D{
 		bng: newBinning1DFromEdges(edges),
 		ann: make(Annotation),

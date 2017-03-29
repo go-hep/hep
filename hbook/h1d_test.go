@@ -91,11 +91,11 @@ func TestH1D(t *testing.T) {
 }
 
 func TestH1DEdges(t *testing.T) {
-	h := hbook.NewH1DFromEdges(
+	h := hbook.NewH1DFromEdges([]float64{
 		-4.0, -3.6, -3.2, -2.8, -2.4, -2.0, -1.6, -1.2, -0.8, -0.4,
 		+0.0, +0.4, +0.8, +1.2, +1.6, +2.0, +2.4, +2.8, +3.2, +3.6,
 		+4.0,
-	)
+	})
 	if got, want := h.XMin(), -4.0; got != want {
 		t.Errorf("got xmin=%v. want=%v", got, want)
 	}
@@ -267,7 +267,7 @@ func TestH1DEdgesWithPanics(t *testing.T) {
 		{0, 1, 2, 2, 2},
 	} {
 		panicked, _ := panics(func() {
-			_ = hbook.NewH1DFromEdges(test...)
+			_ = hbook.NewH1DFromEdges(test)
 		})
 		if !panicked {
 			t.Fatalf("edges %v should have panicked", test)
