@@ -210,6 +210,78 @@ func TestH2D(t *testing.T) {
 	}
 }
 
+func TestH2Edges(t *testing.T) {
+	h := hbook.NewH2DFromEdges(
+		[]float64{+0, +1, +2, +3},
+		[]float64{-3, -2, -1, +0},
+	)
+	if got, want := h.XMin(), +0.0; got != want {
+		t.Errorf("got xmin=%v. want=%v", got, want)
+	}
+	if got, want := h.YMin(), -3.0; got != want {
+		t.Errorf("got ymin=%v. want=%v", got, want)
+	}
+	if got, want := h.XMax(), +3.0; got != want {
+		t.Errorf("got xmax=%v. want=%v", got, want)
+	}
+	if got, want := h.YMax(), +0.0; got != want {
+		t.Errorf("got ymax=%v. want=%v", got, want)
+	}
+}
+
+func TestH2EdgesWithPanics(t *testing.T) {
+	for _, test := range []struct {
+		xs []float64
+		ys []float64
+	}{
+		{
+			xs: []float64{0},
+			ys: []float64{0, 1},
+		},
+		{
+			xs: []float64{0},
+			ys: []float64{0},
+		},
+		{
+			xs: []float64{0, 1, 0.5, 2},
+			ys: []float64{0, 1, 2},
+		},
+		{
+			xs: []float64{0, 1, 1},
+			ys: []float64{0, 1, 2},
+		},
+		{
+			xs: []float64{0, 1, 0, 1},
+			ys: []float64{0, 1, 2},
+		},
+		{
+			xs: []float64{0, 1, 2, 2},
+			ys: []float64{0, 1, 2},
+		},
+		{
+			xs: []float64{0, 1, 2, 2, 2},
+			ys: []float64{0, 1, 2},
+		},
+	} {
+		{
+			panicked, _ := panics(func() {
+				_ = hbook.NewH2DFromEdges(test.xs, test.ys)
+			})
+			if !panicked {
+				t.Errorf("edges {x=%v, y=%v} should have panicked", test.xs, test.ys)
+			}
+		}
+		{
+			panicked, _ := panics(func() {
+				_ = hbook.NewH2DFromEdges(test.ys, test.xs)
+			})
+			if !panicked {
+				t.Errorf("edges {y=%v, x=%v} should have panicked", test.xs, test.ys)
+			}
+		}
+	}
+}
+
 // check H2D can be plotted
 var _ plotter.GridXYZ = ((*hbook.H2D)(nil)).GridXYZ()
 

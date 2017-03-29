@@ -388,10 +388,34 @@ func (o *binning2D) MarshalBinary() (data []byte, err error) {
 	data = append(data, buf[:8]...)
 	binary.LittleEndian.PutUint64(buf[:8], uint64(o.ny))
 	data = append(data, buf[:8]...)
-	binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(o.xstep))
+	binary.LittleEndian.PutUint64(buf[:8], uint64(len(o.xedges)))
 	data = append(data, buf[:8]...)
-	binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(o.ystep))
+	for i := range o.xedges {
+		o := &o.xedges[i]
+		{
+			sub, err := o.MarshalBinary()
+			if err != nil {
+				return nil, err
+			}
+			binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))
+			data = append(data, buf[:8]...)
+			data = append(data, sub...)
+		}
+	}
+	binary.LittleEndian.PutUint64(buf[:8], uint64(len(o.yedges)))
 	data = append(data, buf[:8]...)
+	for i := range o.yedges {
+		o := &o.yedges[i]
+		{
+			sub, err := o.MarshalBinary()
+			if err != nil {
+				return nil, err
+			}
+			binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))
+			data = append(data, buf[:8]...)
+			data = append(data, sub...)
+		}
+	}
 	return data, err
 }
 
@@ -457,10 +481,40 @@ func (o *binning2D) UnmarshalBinary(data []byte) (err error) {
 	data = data[8:]
 	o.ny = int(binary.LittleEndian.Uint64(data[:8]))
 	data = data[8:]
-	o.xstep = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
-	data = data[8:]
-	o.ystep = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
-	data = data[8:]
+	{
+		n := int(binary.LittleEndian.Uint64(data[:8]))
+		o.xedges = make([]Bin1D, n)
+		data = data[8:]
+		for i := range o.xedges {
+			oi := &o.xedges[i]
+			{
+				n := int(binary.LittleEndian.Uint64(data[:8]))
+				data = data[8:]
+				err = oi.UnmarshalBinary(data[:n])
+				if err != nil {
+					return err
+				}
+				data = data[n:]
+			}
+		}
+	}
+	{
+		n := int(binary.LittleEndian.Uint64(data[:8]))
+		o.yedges = make([]Bin1D, n)
+		data = data[8:]
+		for i := range o.yedges {
+			oi := &o.yedges[i]
+			{
+				n := int(binary.LittleEndian.Uint64(data[:8]))
+				data = data[8:]
+				err = oi.UnmarshalBinary(data[:n])
+				if err != nil {
+					return err
+				}
+				data = data[n:]
+			}
+		}
+	}
 	return err
 }
 

@@ -18,13 +18,17 @@ const (
 var (
 	errInvalidXAxis   = errors.New("hbook: invalid X-axis limits")
 	errEmptyXAxis     = errors.New("hbook: X-axis with zero bins")
-	errShortXAxis     = errors.New("hbook: too few 1-dim bins")
-	errOverlapXAxis   = errors.New("hbook: invalid binning (overlap)")
-	errNotSortedXAxis = errors.New("hbook: edges slice not sorted")
-	errDupEdgesXAxis  = errors.New("hbook: duplicates in edge values")
+	errShortXAxis     = errors.New("hbook: too few 1-dim X-bins")
+	errOverlapXAxis   = errors.New("hbook: invalid X-binning (overlap)")
+	errNotSortedXAxis = errors.New("hbook: X-edges slice not sorted")
+	errDupEdgesXAxis  = errors.New("hbook: duplicates in X-edge values")
 
-	errInvalidYAxis = errors.New("hbook: invalid Y-axis limits")
-	errEmptyYAxis   = errors.New("hbook: Y-axis with zero bins")
+	errInvalidYAxis   = errors.New("hbook: invalid Y-axis limits")
+	errEmptyYAxis     = errors.New("hbook: Y-axis with zero bins")
+	errShortYAxis     = errors.New("hbook: too few 1-dim Y-bins")
+	errOverlapYAxis   = errors.New("hbook: invalid Y-binning (overlap)")
+	errNotSortedYAxis = errors.New("hbook: Y-edges slice not sorted")
+	errDupEdgesYAxis  = errors.New("hbook: duplicates in Y-edge values")
 )
 
 // binning1D is a 1-dim binning of the x-axis.

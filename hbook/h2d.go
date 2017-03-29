@@ -25,6 +25,19 @@ func NewH2D(nx int, xlow, xhigh float64, ny int, ylow, yhigh float64) *H2D {
 	}
 }
 
+// NewH2DFromEdges creates a new 2-dim histogram from slices
+// of edges in x and y.
+// The number of bins in x and y is thus len(edges)-1.
+// It panics if the length of edges is <=1 (in any dimension.)
+// It panics if the edges are not sorted (in any dimension.)
+// It panics if there are duplicate edge values (in any dimension.)
+func NewH2DFromEdges(xedges []float64, yedges []float64) *H2D {
+	return &H2D{
+		bng: newBinning2DFromEdges(xedges, yedges),
+		ann: make(Annotation),
+	}
+}
+
 // Name returns the name of this histogram, if any
 func (h *H2D) Name() string {
 	v, ok := h.ann["name"]
