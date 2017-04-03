@@ -6,13 +6,18 @@ import (
 	"reflect"
 )
 
-// align4 returns sz adjusted to align at 4-byte boundaries
-func align4(sz uint32) uint32 {
+// align4U32 returns sz adjusted to align at 4-byte boundaries
+func align4U32(sz uint32) uint32 {
 	return sz + (4-(sz&g_align))&g_align
 }
 
-// align4_i64 returns sz adjusted to align at 4-byte boundaries
-func align4_i64(sz int64) int64 {
+// align4I32 returns sz adjusted to align at 4-byte boundaries
+func align4I32(sz int32) int32 {
+	return sz + (4-(sz&int32(g_align)))&int32(g_align)
+}
+
+// align4I64 returns sz adjusted to align at 4-byte boundaries
+func align4I64(sz int64) int64 {
 	return sz + (4-(sz&int64(g_align)))&int64(g_align)
 }
 
@@ -41,12 +46,12 @@ func bread(r io.Reader, data interface{}) error {
 		return nil
 	case reflect.String:
 		// fmt.Printf("++++> string...\n")
-		sz := int64(0)
+		sz := uint32(0)
 		err := bread(r, &sz)
 		if err != nil {
 			return err
 		}
-		strlen := align4_i64(sz)
+		strlen := align4U32(sz)
 		// fmt.Printf("string [%d=>%d]...\n", sz, strlen)
 		str := make([]byte, strlen)
 		_, err = r.Read(str)
@@ -59,7 +64,7 @@ func bread(r io.Reader, data interface{}) error {
 
 	case reflect.Slice:
 		//fmt.Printf("<<< slice: [%v|%v]...\n", rv.Type(), rv.Type().Elem().Kind())
-		sz := int64(0)
+		sz := uint32(0)
 		err := bread(r, &sz)
 		if err != nil {
 			return err
@@ -78,7 +83,7 @@ func bread(r io.Reader, data interface{}) error {
 
 	case reflect.Map:
 		//fmt.Printf(">>> map: [%v]...\n", rv.Type())
-		sz := int64(0)
+		sz := uint32(0)
 		err := bread(r, &sz)
 		if err != nil {
 			return err
@@ -136,14 +141,14 @@ func bwrite(w io.Writer, data interface{}) error {
 		return nil
 	case reflect.String:
 		str := rv.String()
-		sz := int64(len(str))
+		sz := uint32(len(str))
 		// fmt.Printf("++++> (%d) [%s]\n", sz, string(str))
 		err := bwrite(w, &sz)
 		if err != nil {
 			return err
 		}
 		bstr := []byte(str)
-		bstr = append(bstr, make([]byte, align4_i64(sz)-sz)...)
+		bstr = append(bstr, make([]byte, align4U32(sz)-sz)...)
 		_, err = w.Write(bstr)
 		if err != nil {
 			return err
@@ -153,7 +158,7 @@ func bwrite(w io.Writer, data interface{}) error {
 
 	case reflect.Slice:
 		// fmt.Printf(">>> slice: [%v|%v]...\n", rv.Type(), rv.Type().Elem().Kind())
-		sz := int64(rv.Len())
+		sz := uint32(rv.Len())
 		// fmt.Printf(">>> slice: %d [%v]\n", sz, rv.Type())
 		err := bwrite(w, &sz)
 		if err != nil {
@@ -170,7 +175,7 @@ func bwrite(w io.Writer, data interface{}) error {
 
 	case reflect.Map:
 		//fmt.Printf(">>> map: [%v]...\n", rv.Type())
-		sz := int64(rv.Len())
+		sz := uint32(rv.Len())
 		err := bwrite(w, &sz)
 		if err != nil {
 			return err

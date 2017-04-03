@@ -215,7 +215,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 			return nil, err
 		}
 		// fmt.Printf(">>> rec=%v\n", recdata)
-		buf := make([]byte, align4(recdata.NameLen))
+		buf := make([]byte, align4U32(recdata.NameLen))
 		_, err = stream.f.Read(buf)
 		if err != nil {
 			return nil, err
@@ -230,7 +230,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		// skip over any padding bytes inserted to make the next record header
 		// start on a 4-bytes boundary in the file
 		if !requested {
-			recdata.DataLen = align4(recdata.DataLen)
+			recdata.DataLen = align4U32(recdata.DataLen)
 			curpos, err = stream.Seek(int64(recdata.DataLen), 1)
 			if curpos != int64(recdata.DataLen+rechdr.Len)+stream.recpos {
 				return nil, io.EOF
@@ -263,7 +263,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 
 			// handle padding bytes that may have been inserted to make the next
 			// record header start on a 4-bytes boundary in the file.
-			padlen := align4(recdata.DataLen) - recdata.DataLen
+			padlen := align4U32(recdata.DataLen) - recdata.DataLen
 			if padlen > 0 {
 				curpos, err = stream.Seek(int64(padlen), 1)
 				if err != nil {
@@ -313,7 +313,7 @@ func (stream *Stream) WriteRecord(record *Record) error {
 	}
 
 	rechdr.Len = uint32(unsafe.Sizeof(rechdr)) + uint32(unsafe.Sizeof(recdata)) +
-		align4(uint32(recdata.NameLen))
+		align4U32(uint32(recdata.NameLen))
 
 	var buf bytes.Buffer
 	err = record.write(&buf)
@@ -339,7 +339,7 @@ func (stream *Stream) WriteRecord(record *Record) error {
 		if err != nil {
 			return err
 		}
-		recdata.DataLen = align4(uint32(b.Len()))
+		recdata.DataLen = align4U32(uint32(b.Len()))
 
 		buf = b
 	}
@@ -359,7 +359,7 @@ func (stream *Stream) WriteRecord(record *Record) error {
 		return err
 	}
 
-	padlen := align4(recdata.NameLen) - recdata.NameLen
+	padlen := align4U32(recdata.NameLen) - recdata.NameLen
 	if padlen > 0 {
 		_, err = stream.f.Write(make([]byte, int(padlen)))
 		if err != nil {
