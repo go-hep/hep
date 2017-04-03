@@ -1,7 +1,6 @@
 package sio_test
 
 import (
-	//"fmt"
 	"io"
 	"os"
 	"reflect"

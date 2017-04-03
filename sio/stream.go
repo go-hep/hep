@@ -233,7 +233,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 			recdata.DataLen = align4U32(recdata.DataLen)
 			curpos, err = stream.Seek(int64(recdata.DataLen), 1)
 			if curpos != int64(recdata.DataLen+rechdr.Len)+stream.recpos {
-				return nil, io.EOF
+				return nil, io.ErrUnexpectedEOF
 			}
 			if err != nil {
 				return nil, err
@@ -276,13 +276,13 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 				return nil, err
 			}
 			buf = make([]byte, recdata.UCmpLen)
-			nb, err := unzip.Read(buf)
+			nb, err := io.ReadFull(unzip, buf)
 			unzip.Close()
 			if err != nil {
 				return nil, err
 			}
 			if nb != len(buf) {
-				return nil, io.EOF
+				return nil, io.ErrUnexpectedEOF
 			}
 			//stream.recpos = recstart
 		}
