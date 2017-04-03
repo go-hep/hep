@@ -7,6 +7,7 @@ package fastjet
 import (
 	"fmt"
 	"math"
+	"go-hep.org/x/hep/fmom"
 )
 
 // history holds information about the clustering
@@ -246,6 +247,14 @@ func (cs *ClusterSequence) jetScaleForAlgorithm(jet *Jet) float64 {
 		}
 		return 1.0
 
+	case EeGenKtAlgorithm:
+		kt2 := jet.E()
+		p := cs.def.ExtraParam()
+		if p <= 0 && kt2 < 1e-300 {
+			kt2 = 1e-300
+		}
+		return math.Pow(kt2,2*p)
+
 	default:
 		panic(fmt.Errorf("fastjet: unrecognised jet algorithm (%v)", cs.alg))
 	}
@@ -360,11 +369,30 @@ func (cs *ClusterSequence) runN3Dumb() error {
 					cs.jetScaleForAlgorithm(ijet),
 					cs.jetScaleForAlgorithm(jjet),
 				)
-				y := jetscale * Distance(ijet, jjet) * cs.invR2
-				if y < ymin {
-					ymin = y
-					ii = i
-					jj = j
+				switch cs.alg {
+				case EeGenKtAlgorithm:	//distance between jets min(diB, djB)*(1-cos theta)/(1-cos R)
+					denominator := 1- math.Cos(cs.r)
+					if cs.r > math.Pi {//if R>pi min(diB, djB)*(1-cos theta)/(3+cos R)
+						denominator = 3+ math.Cos(cs.r)
+					}
+					y := math.MaxFloat64
+					if denominator!=0{
+						y = jetscale * (1-fmom.CosTheta(&ijet.PxPyPzE,&jjet.PxPyPzE))/denominator
+					}
+					if y < ymin {
+						ymin = y
+						ii = i
+						jj = j
+					}
+					break
+				default:
+					y := jetscale * Distance(ijet, jjet) * cs.invR2
+					if y < ymin {
+						ymin = y
+						ii = i
+						jj = j
+					}
+					break
 				}
 			}
 		}
@@ -400,3 +428,4 @@ func (cs *ClusterSequence) runN3Dumb() error {
 	}
 	return err
 }
+
