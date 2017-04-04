@@ -216,7 +216,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		}
 		// fmt.Printf(">>> rec=%v\n", recdata)
 		buf := make([]byte, align4U32(recdata.NameLen))
-		_, err = stream.f.Read(buf)
+		_, err = io.ReadFull(stream.f, buf)
 		if err != nil {
 			return nil, err
 		}
@@ -248,7 +248,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 			// note that uncompressed data is *ALWAYS* aligned to a 4-bytes boundary
 			// in the file, so no pad skipping is necessary
 			buf = make([]byte, recdata.DataLen)
-			_, err = stream.f.Read(buf)
+			_, err = io.ReadFull(stream.f, buf)
 			if err != nil {
 				return nil, err
 			}
@@ -256,7 +256,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		} else {
 			// read the compressed record data
 			cbuf := make([]byte, recdata.DataLen)
-			_, err = stream.f.Read(cbuf)
+			_, err = io.ReadFull(stream.f, cbuf)
 			if err != nil {
 				return nil, err
 			}
