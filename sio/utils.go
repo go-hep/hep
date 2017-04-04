@@ -1,6 +1,7 @@
 package sio
 
 import (
+	"bytes"
 	"encoding/binary"
 	"io"
 	"reflect"
@@ -19,6 +20,15 @@ func align4I32(sz int32) int32 {
 // align4I64 returns sz adjusted to align at 4-byte boundaries
 func align4I64(sz int64) int64 {
 	return sz + (4-(sz&int64(g_align)))&int64(g_align)
+}
+
+// Unmarshal unmarshals a slice of bytes into ptr.
+// If ptr implements BinaryCodec, use it.
+func Unmarshal(buf *bytes.Buffer, ptr interface{}) error {
+	if ptr, ok := ptr.(BinaryCodec); ok {
+		return ptr.UnmarshalBinary(buf)
+	}
+	return bread(buf, ptr)
 }
 
 func bread(r io.Reader, data interface{}) error {
