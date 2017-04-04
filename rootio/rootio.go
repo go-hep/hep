@@ -222,6 +222,22 @@ type Axis interface {
 	BinWidth(int) float64
 }
 
+// Graph describes a ROOT TGraph
+type Graph interface {
+	Named
+	Len() int
+	XY(i int) (float64, float64)
+}
+
+// GraphErrors describes a ROOT TGraphErrors
+type GraphErrors interface {
+	Graph
+	// XError returns two error values for X data.
+	XError(i int) (float64, float64)
+	// YError returns two error values for Y data.
+	YError(i int) (float64, float64)
+}
+
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 type ROOTUnmarshaler interface {
