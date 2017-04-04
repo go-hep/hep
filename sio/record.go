@@ -134,28 +134,25 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 		}
 		name := string(cbuf.Bytes()[:data.NameLen])
 		blk, ok := rec.blocks[name]
-		if !ok {
-			// fmt.Printf("*** no block [%s]. draining buffer!\n", name)
-			// drain the whole buffer
-			buf.Next(buf.Len())
-			continue
+		if ok {
+			// fmt.Printf("### %q\n", string(buf.Bytes()))
+			err = blk.UnmarshalBinary(buf)
+			if err != nil {
+				// fmt.Printf("*** error unmarshaling record=%q block=%q: %v\n", rec.name, name, err)
+				return err
+			}
+			//fmt.Printf(">>> read record=%q block=%q (buf=%d)\n", rec.name, name, buf.Len())
 		}
-		//fmt.Printf("### %q\n", string(buf.Bytes()))
-		err = blk.UnmarshalBinary(buf)
-		if err != nil {
-			// fmt.Printf("*** error unmarshaling record=%q block=%q: %v\n", rec.name, name, err)
-			return err
-		}
-		//fmt.Printf(">>> read record=%q block=%q (buf=%d)\n", rec.name, name, buf.Len())
 
 		// check whether there is still something to be read.
 		// if there is, check whether there is a block-marker
 		if buf.Len() > 0 {
-			rest := buf.Bytes()
-			idx := bytes.Index(rest, g_mark_block_b)
-			if idx > 0 {
-				buf.Next(idx - 8 /*sizeof blockHeader*/)
+			next := bytes.Index(buf.Bytes(), g_mark_block_b)
+			if next > 0 {
+				pos := next - 4 // sizeof mark-block
+				buf.Next(pos)   // drain the buffer until next block
 			} else {
+				// drain the whole buffer
 				buf.Next(buf.Len())
 			}
 		}
