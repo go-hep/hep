@@ -76,7 +76,7 @@ func ExampleGraphErrors() {
 	// (x,y)[3] = (+4.000000e+00 +/- [+4.000000e-01, +4.000000e-01], +8.000000e+00 +/- [+8.000000e-01, +8.000000e-01])
 }
 
-func ExampleGraphAsymmErrors() {
+func ExampleGraphErrors_asymmErrors() {
 	f, err := rootio.Open("testdata/graphs.root")
 	if err != nil {
 		log.Fatal(err)
