@@ -37,7 +37,7 @@ func walk(f rootio.Directory, path []string) (rootio.Object, error) {
 }
 
 func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
-	url := r.URL.Path[len("/plot-1d/"):]
+	url := r.URL.Path[len("/plot-h1/"):]
 	toks := strings.Split(url, "/")
 	fname := toks[0]
 
@@ -87,7 +87,7 @@ func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (srv *server) plotH2Handle(w http.ResponseWriter, r *http.Request) error {
-	url := r.URL.Path[len("/plot-2d/"):]
+	url := r.URL.Path[len("/plot-h2/"):]
 	toks := strings.Split(url, "/")
 	fname := toks[0]
 
@@ -121,6 +121,59 @@ func (srv *server) plotH2Handle(w http.ResponseWriter, r *http.Request) error {
 
 	h := hplot.NewH2D(h2d, nil)
 	h.Infos.Style = hplot.HInfoSummary
+
+	plot.Add(h, hplot.NewGrid())
+
+	svg, err := renderSVG(plot)
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(string(svg))
+}
+
+func (srv *server) plotS2Handle(w http.ResponseWriter, r *http.Request) error {
+	url := r.URL.Path[len("/plot-s2/"):]
+	toks := strings.Split(url, "/")
+	fname := toks[0]
+
+	db, err := srv.db(r)
+	if err != nil {
+		return err
+	}
+	db.RLock()
+	defer db.RUnlock()
+
+	f := db.get(fname)
+	obj, err := walk(f, toks[1:])
+	if err != nil {
+		return fmt.Errorf("could not find %q in file %q: %v", filepath.Join(toks[1:]...), fname, err)
+	}
+
+	robj, ok := obj.(rootio.Graph)
+	if !ok {
+		return fmt.Errorf("object %q could not be converted to rootio.Graph", toks[1])
+	}
+	s2d, err := rootcnv.S2D(robj)
+	if err != nil {
+		return err
+	}
+
+	plot, err := hplot.New()
+	if err != nil {
+		return err
+	}
+	plot.Title.Text = robj.Title()
+
+	var opts hplot.Options
+	if _, ok := obj.(rootio.GraphErrors); ok {
+		opts = hplot.WithXErrBars | hplot.WithYErrBars
+	}
+	h := hplot.NewS2D(s2d, opts)
+	if err != nil {
+		return err
+	}
+	h.Color = color.RGBA{255, 0, 0, 255}
 
 	plot.Add(h, hplot.NewGrid())
 

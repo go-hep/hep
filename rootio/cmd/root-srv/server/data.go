@@ -181,6 +181,8 @@ func iconFor(obj rootio.Object) string {
 		return "fa fa-bar-chart-o"
 	case strings.HasPrefix(cls, "TH2"):
 		return "fa fa-bar-chart-o"
+	case strings.HasPrefix(cls, "TGraph"):
+		return "fa fa-bar-chart-o"
 	}
 	return "fa fa-cube"
 }
@@ -191,12 +193,17 @@ func attrFor(obj rootio.Object, id string) jsAttr {
 	case strings.HasPrefix(cls, "TH1"):
 		return jsAttr{
 			"plot": true,
-			"href": "/plot-1d/" + id,
+			"href": "/plot-h1/" + id,
 		}
 	case strings.HasPrefix(cls, "TH2"):
 		return jsAttr{
 			"plot": true,
-			"href": "/plot-2d/" + id,
+			"href": "/plot-h2/" + id,
+		}
+	case strings.HasPrefix(cls, "TGraph"):
+		return jsAttr{
+			"plot": true,
+			"href": "/plot-s2/" + id,
 		}
 	case strings.HasPrefix(cls, "TBranch"):
 		return jsAttr{

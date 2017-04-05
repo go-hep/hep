@@ -36,8 +36,9 @@ func Init() {
 	http.Handle("/", app.wrap(app.rootHandle))
 	http.Handle("/root-file-upload", app.wrap(app.uploadHandle))
 	http.Handle("/refresh", app.wrap(app.refreshHandle))
-	http.Handle("/plot-1d/", app.wrap(app.plotH1Handle))
-	http.Handle("/plot-2d/", app.wrap(app.plotH2Handle))
+	http.Handle("/plot-h1/", app.wrap(app.plotH1Handle))
+	http.Handle("/plot-h2/", app.wrap(app.plotH2Handle))
+	http.Handle("/plot-s2/", app.wrap(app.plotS2Handle))
 	http.Handle("/plot-branch/", app.wrap(app.plotBranchHandle))
 }
 
