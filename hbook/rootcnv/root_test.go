@@ -82,6 +82,47 @@ func ExampleH2D() {
 	// y-std-err: 0.05273014186354511
 }
 
+func ExampleS2D() {
+	f, err := rootio.Open("../../rootio/testdata/graphs.root")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	obj, ok := f.Get("tgae")
+	if !ok {
+		log.Fatalf("no such graph %q\n", "tgae")
+	}
+
+	root := obj.(rootio.GraphErrors)
+	g, err := rootcnv.S2D(root)
+	if err != nil {
+		log.Fatalf("error converting TGraphErrors: %v\n", err)
+	}
+
+	fmt.Printf("name:  %q\n", g.Annotation()["name"])
+	fmt.Printf("title: %q\n", g.Annotation()["title"])
+	fmt.Printf("#pts:  %v\n", g.Len())
+	for i, pt := range g.Points() {
+		x := pt.X
+		y := pt.Y
+		xlo := pt.ErrX.Min
+		xhi := pt.ErrX.Max
+		ylo := pt.ErrY.Min
+		yhi := pt.ErrY.Max
+		fmt.Printf("(x,y)[%d] = (%+e +/- [%+e, %+e], %+e +/- [%+e, %+e])\n", i, x, xlo, xhi, y, ylo, yhi)
+	}
+
+	// Output:
+	// name:  "tgae"
+	// title: "graph with asymmetric errors"
+	// #pts:  4
+	// (x,y)[0] = (+1.000000e+00 +/- [+1.000000e-01, +2.000000e-01], +2.000000e+00 +/- [+3.000000e-01, +4.000000e-01])
+	// (x,y)[1] = (+2.000000e+00 +/- [+2.000000e-01, +4.000000e-01], +4.000000e+00 +/- [+6.000000e-01, +8.000000e-01])
+	// (x,y)[2] = (+3.000000e+00 +/- [+3.000000e-01, +6.000000e-01], +6.000000e+00 +/- [+9.000000e-01, +1.200000e+00])
+	// (x,y)[3] = (+4.000000e+00 +/- [+4.000000e-01, +8.000000e-01], +8.000000e+00 +/- [+1.200000e+00, +1.600000e+00])
+}
+
 func TestH1D(t *testing.T) {
 	f, err := rootio.Open("testdata/gauss-h1.root")
 	if err != nil {
