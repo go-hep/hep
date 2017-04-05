@@ -5,6 +5,8 @@
 package hplot
 
 import (
+	"math"
+
 	"github.com/gonum/plot"
 	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/vg"
@@ -19,8 +21,8 @@ type S2D struct {
 	// at each point.
 	draw.GlyphStyle
 
-	// Options controls various display options of this plot.
-	Options Options
+	// options controls various display options of this plot.
+	options Options
 
 	xbars *plotter.XErrorBars
 	ybars *plotter.YErrorBars
@@ -28,7 +30,7 @@ type S2D struct {
 
 // withXErrBars enables the X error bars
 func (pts *S2D) withXErrBars() error {
-	if pts.Options&WithXErrBars == 0 {
+	if pts.options&WithXErrBars == 0 {
 		pts.xbars = nil
 		return nil
 	}
@@ -52,7 +54,7 @@ func (pts *S2D) withXErrBars() error {
 
 // withYErrBars enables the Y error bars
 func (pts *S2D) withYErrBars() error {
-	if pts.Options&WithYErrBars == 0 {
+	if pts.options&WithYErrBars == 0 {
 		pts.ybars = nil
 		return nil
 	}
@@ -75,11 +77,19 @@ func (pts *S2D) withYErrBars() error {
 }
 
 // NewS2D creates a 2-dim scatter plot from a XYer.
-func NewS2D(data plotter.XYer) *S2D {
+func NewS2D(data plotter.XYer, opts ...Options) *S2D {
 	s := &S2D{
 		Data:       data,
 		GlyphStyle: plotter.DefaultGlyphStyle,
 	}
+	for _, opt := range opts {
+		s.options |= opt
+	}
+
+	for _, f := range []func() error{s.withXErrBars, s.withYErrBars} {
+		_ = f()
+	}
+
 	s.GlyphStyle.Shape = draw.CrossGlyph{}
 	return s
 }
@@ -87,13 +97,6 @@ func NewS2D(data plotter.XYer) *S2D {
 // Plot draws the Scatter, implementing the plot.Plotter
 // interface.
 func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
-	for _, f := range []func() error{pts.withXErrBars, pts.withYErrBars} {
-		err := f()
-		if err != nil {
-			panic(err)
-		}
-	}
-
 	trX, trY := plt.Transforms(&c)
 	for i := 0; i < pts.Data.Len(); i++ {
 		x, y := pts.Data.XY(i)
