@@ -119,9 +119,28 @@ func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 // interface.
 func (pts *S2D) DataRange() (xmin, xmax, ymin, ymax float64) {
 	if dr, ok := pts.Data.(plot.DataRanger); ok {
-		return dr.DataRange()
+		xmin, xmax, ymin, ymax = dr.DataRange()
+	} else {
+		xmin, xmax, ymin, ymax = plotter.XYRange(pts.Data)
 	}
-	return plotter.XYRange(pts.Data)
+
+	if pts.xbars != nil {
+		xmin1, xmax1, ymin1, ymax1 := pts.xbars.DataRange()
+		xmin = math.Min(xmin1, xmin)
+		xmax = math.Max(xmax1, xmax)
+		ymin = math.Min(ymin1, ymin)
+		ymax = math.Max(ymax1, ymax)
+	}
+
+	if pts.ybars != nil {
+		xmin1, xmax1, ymin1, ymax1 := pts.ybars.DataRange()
+		xmin = math.Min(xmin1, xmin)
+		xmax = math.Max(xmax1, xmax)
+		ymin = math.Min(ymin1, ymin)
+		ymax = math.Max(ymax1, ymax)
+	}
+
+	return xmin, xmax, ymin, ymax
 }
 
 // GlyphBoxes returns a slice of plot.GlyphBoxes,
