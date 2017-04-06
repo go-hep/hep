@@ -1,3 +1,7 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package sio
 
 import (
@@ -387,5 +391,3 @@ func (stream *Stream) read(data interface{}) error {
 func (stream *Stream) write(data interface{}) error {
 	return bwrite(stream.f, data)
 }
-
-// EOF

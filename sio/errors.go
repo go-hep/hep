@@ -1,3 +1,7 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package sio
 
 import (
@@ -9,5 +13,3 @@ var (
 	ErrRecordNoBlockMarker = errors.New("sio: no block marker found")
 	ErrBlockConnected      = errors.New("sio: block already connected")
 )
-
-// EOF
