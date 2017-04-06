@@ -169,11 +169,14 @@ func main() {
 
 var goName = strings.Title
 
+// StructDef models a TTree content as a Go struct, where each TBranch
+// of the tree is translated as a field of the struct.
 type StructDef struct {
 	Name   string
 	Fields []FieldDef
 }
 
+// FieldDef describes a Go struct field, corresponding to a TTree's branch.
 type FieldDef struct {
 	Name       string
 	Type       string
@@ -181,6 +184,7 @@ type FieldDef struct {
 	BranchName string
 }
 
+// Context holds together various informations about the TTree being processed.
 type Context struct {
 	Package       string
 	DataReader    *StructDef
