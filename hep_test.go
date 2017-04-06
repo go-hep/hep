@@ -27,10 +27,11 @@ func TestGofmt(t *testing.T) {
 	cmd := exec.Command(exe, "-d", ".")
 	buf := new(bytes.Buffer)
 	cmd.Stdout = buf
+	cmd.Stderr = buf
 
 	err = cmd.Run()
 	if err != nil {
-		t.Fatalf("error running %s: %v", exe, err)
+		t.Fatalf("error running %s:\n%s\n%v", exe, string(buf.Bytes()), err)
 	}
 
 	if len(buf.Bytes()) != 0 {
