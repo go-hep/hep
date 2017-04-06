@@ -2,7 +2,42 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// root-ls dumps the content of a ROOT file
+// root-ls dumps the content of a ROOT file.
+//
+// Usage: root-ls [options] file1.root [file2.root [...]]
+//
+// ex:
+//
+//  $> root-ls -t ./testdata/graphs.root ./testdata/small-flat-tree.root
+//  === [./testdata/graphs.root] ===
+//  version: 60806
+//  TGraph            tg      graph without errors         (cycle=1)
+//  TGraphErrors      tge     graph with errors            (cycle=1)
+//  TGraphAsymmErrors tgae    graph with asymmetric errors (cycle=1)
+//
+//  === [./testdata/small-flat-tree.root] ===
+//  version: 60804
+//  TTree          tree                 my tree title (entries=100)
+//    Int32        "Int32/I"            TBranch
+//    Int64        "Int64/L"            TBranch
+//    UInt32       "UInt32/i"           TBranch
+//    UInt64       "UInt64/l"           TBranch
+//    Float32      "Float32/F"          TBranch
+//    Float64      "Float64/D"          TBranch
+//    ArrayInt32   "ArrayInt32[10]/I"   TBranch
+//    ArrayInt64   "ArrayInt64[10]/L"   TBranch
+//    ArrayUInt32  "ArrayInt32[10]/i"   TBranch
+//    ArrayUInt64  "ArrayInt64[10]/l"   TBranch
+//    ArrayFloat32 "ArrayFloat32[10]/F" TBranch
+//    ArrayFloat64 "ArrayFloat64[10]/D" TBranch
+//    N            "N/I"                TBranch
+//    SliceInt32   "SliceInt32[N]/I"    TBranch
+//    SliceInt64   "SliceInt64[N]/L"    TBranch
+//    SliceUInt32  "SliceInt32[N]/i"    TBranch
+//    SliceUInt64  "SliceInt64[N]/l"    TBranch
+//    SliceFloat32 "SliceFloat32[N]/F"  TBranch
+//    SliceFloat64 "SliceFloat64[N]/D"  TBranch
+//
 package main // import "go-hep.org/x/hep/rootio/cmd/root-ls"
 
 import (
@@ -25,6 +60,20 @@ var (
 )
 
 func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(
+			os.Stderr,
+			`Usage: root-ls [options] file1.root [file2.root [...]]
+
+ex:
+ $> root-ls ./testdata/graphs.root
+
+options:
+`,
+		)
+		flag.PrintDefaults()
+	}
+
 	flag.Parse()
 
 	if *doProf != "" {
@@ -37,7 +86,7 @@ func main() {
 	}
 
 	if flag.NArg() <= 0 {
-		fmt.Fprintf(os.Stderr, "**error** you need to give a ROOT file\n")
+		fmt.Fprintf(os.Stderr, "error: you need to give a ROOT file\n\n")
 		flag.Usage()
 		os.Exit(1)
 	}
