@@ -220,3 +220,106 @@ func TestDeltaPhi(t *testing.T) {
 		}
 	}
 }
+
+func TestCosTheta(t *testing.T) {
+	for _, table := range []struct {
+		p1  P4
+		p2  P4
+		exp float64
+	}{
+		// pxpypze
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			exp: 1,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newPxPyPzE(NewPxPyPzE(-10, -10, -10, +20)),
+			exp: -1,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newPxPyPzE(NewPxPyPzE(+10, -10, +10, +20)),
+			exp: 1.0/3,
+		},
+
+		// eetaphim
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			exp: 1,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newEEtaPhiM(NewPxPyPzE(-10, -10, -10, +20)),
+			exp: -1,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newEEtaPhiM(NewPxPyPzE(+10, -10, +10, +20)),
+			exp: 1.0/3,
+		},
+
+		// etetaphim
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			exp: 1,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newEtEtaPhiM(NewPxPyPzE(-10, -10, -10, +20)),
+			exp: -1,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newEtEtaPhiM(NewPxPyPzE(+10, -10, +10, +20)),
+			exp: 1.0/3,
+		},
+
+		// ptetaphim
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			exp: 1,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newPtEtaPhiM(NewPxPyPzE(-10, -10, -10, +20)),
+			exp: -1,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newPtEtaPhiM(NewPxPyPzE(+10, -10, +10, +20)),
+			exp: 1.0/3,
+		},
+
+		// iptcotthphim
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			exp: 1,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newIPtCotThPhiM(NewPxPyPzE(-10, -10, -10, +20)),
+			exp: -1,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newIPtCotThPhiM(NewPxPyPzE(+10, -10, +10, +20)),
+			exp: 1.0/3,
+		},
+	} {
+		costh := CosTheta(table.p1, table.p2)
+		if costh-table.exp > epsilon_test {
+			t.Fatalf("CosTheta error\np1=%#v\np2=%#v\nexp=%+e\ngot=%+e\n",
+				table.p1,
+				table.p2,
+				table.exp,
+				costh,
+			)
+		}
+	}
+}
