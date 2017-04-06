@@ -262,7 +262,7 @@ func (d *Decoder) Decode() (*HEPEUP, error) {
 	}
 
 	// read any additional comments...
-	/*evtComments*/ _ = buf.Bytes()
+	_ /*evtComments*/ = buf.Bytes()
 
 	// do
 

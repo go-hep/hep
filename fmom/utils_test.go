@@ -241,7 +241,7 @@ func TestCosTheta(t *testing.T) {
 		{
 			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
 			p2:  newPxPyPzE(NewPxPyPzE(+10, -10, +10, +20)),
-			exp: 1.0/3,
+			exp: 1.0 / 3,
 		},
 
 		// eetaphim
@@ -258,7 +258,7 @@ func TestCosTheta(t *testing.T) {
 		{
 			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
 			p2:  newEEtaPhiM(NewPxPyPzE(+10, -10, +10, +20)),
-			exp: 1.0/3,
+			exp: 1.0 / 3,
 		},
 
 		// etetaphim
@@ -275,7 +275,7 @@ func TestCosTheta(t *testing.T) {
 		{
 			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
 			p2:  newEtEtaPhiM(NewPxPyPzE(+10, -10, +10, +20)),
-			exp: 1.0/3,
+			exp: 1.0 / 3,
 		},
 
 		// ptetaphim
@@ -292,7 +292,7 @@ func TestCosTheta(t *testing.T) {
 		{
 			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
 			p2:  newPtEtaPhiM(NewPxPyPzE(+10, -10, +10, +20)),
-			exp: 1.0/3,
+			exp: 1.0 / 3,
 		},
 
 		// iptcotthphim
@@ -309,7 +309,7 @@ func TestCosTheta(t *testing.T) {
 		{
 			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
 			p2:  newIPtCotThPhiM(NewPxPyPzE(+10, -10, +10, +20)),
-			exp: 1.0/3,
+			exp: 1.0 / 3,
 		},
 	} {
 		costh := CosTheta(table.p1, table.p2)

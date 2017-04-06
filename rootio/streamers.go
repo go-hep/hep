@@ -177,7 +177,7 @@ func (tsb *tstreamerBasicType) Class() string {
 
 func (tsb *tstreamerBasicType) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion()
 
 	if err := tsb.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -228,7 +228,7 @@ func (tsb *tstreamerBasicPointer) Class() string {
 func (tsb *tstreamerBasicPointer) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion()
 
 	if err := tsb.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -253,7 +253,7 @@ func (tso *tstreamerObject) Class() string {
 func (tso *tstreamerObject) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion()
 
 	if err := tso.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -274,7 +274,7 @@ func (tso *tstreamerObjectPointer) Class() string {
 func (tso *tstreamerObjectPointer) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion()
 
 	if err := tso.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -295,7 +295,7 @@ func (tso *tstreamerObjectAny) Class() string {
 func (tso *tstreamerObjectAny) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion()
 
 	if err := tso.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -316,7 +316,7 @@ func (tso *tstreamerObjectAnyPointer) Class() string {
 func (tso *tstreamerObjectAnyPointer) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion()
 
 	if err := tso.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -337,7 +337,7 @@ func (tss *tstreamerString) Class() string {
 func (tss *tstreamerString) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion()
 
 	if err := tss.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -360,7 +360,7 @@ func (tss *tstreamerSTL) Class() string {
 func (tss *tstreamerSTL) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion()
 
 	if err := tss.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -398,7 +398,7 @@ func (tss *tstreamerSTLstring) Class() string {
 func (tss *tstreamerSTLstring) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion()
 
 	if err := tss.tstreamerSTL.UnmarshalROOT(r); err != nil {
 		return err
@@ -419,7 +419,7 @@ func (tss *tstreamerArtificial) Class() string {
 func (tsa *tstreamerArtificial) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion()
 
 	if err := tsa.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err

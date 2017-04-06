@@ -177,7 +177,7 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 		//tree.leaves[i].SetBranch(tree.branches[i])
 	}
 
-	for _ = range []string{
+	for range []string{
 		"fAliases", "fIndexValues", "fIndex", "fTreeIndex", "fFriends",
 		"fUserInfo", "fBranchRef",
 	} {

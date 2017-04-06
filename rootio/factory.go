@@ -29,7 +29,7 @@ func (f *factory) Len() int {
 func (f *factory) Keys() []string {
 	f.mu.RLock()
 	keys := make([]string, 0, len(f.db))
-	for k, _ := range f.db {
+	for k := range f.db {
 		keys = append(keys, k)
 	}
 	f.mu.RUnlock()

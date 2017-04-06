@@ -32,9 +32,9 @@ func DeltaR(p1, p2 P4) float64 {
 	return math.Sqrt(deta*deta + dphi*dphi)
 }
 
-//DotProduct returns the dot product of two 4-vectors.
-func DotProduct(p1, p2 P4)float64{
-	dot := p1.Px()*p2.Px()+p1.Py()*p2.Py()+p1.Pz()*p2.Pz()
+// DotProduct returns the dot product of two 4-vectors.
+func DotProduct(p1, p2 P4) float64 {
+	dot := p1.Px()*p2.Px() + p1.Py()*p2.Py() + p1.Pz()*p2.Pz()
 	return dot
 }
 
@@ -42,7 +42,7 @@ func DotProduct(p1, p2 P4)float64{
 func CosTheta(p1, p2 P4) float64 {
 	mag1 := p1.P()
 	mag2 := p2.P()
-	dot := DotProduct(p1,p2)
-	cosTh := dot / (mag1*mag2)
+	dot := DotProduct(p1, p2)
+	cosTh := dot / (mag1 * mag2)
 	return cosTh
 }
