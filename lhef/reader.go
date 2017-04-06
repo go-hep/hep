@@ -1,3 +1,7 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package lhef
 
 import (
@@ -42,7 +46,6 @@ func NewDecoder(r io.Reader) (*Decoder, error) {
 	// make sure we are reading a LHEF file
 	start, ok := tok.(xml.StartElement)
 	if !ok || start.Name.Local != "LesHouchesEvents" {
-		fmt.Printf("err, not a LHEF file (%T: %v)\n", tok, tok)
 		return nil, fmt.Errorf("lhef.Decoder: missing LesHouchesEvent start-tag")
 	}
 
@@ -86,21 +89,16 @@ Loop:
 		}
 	}
 	if init.Name.Local != "init" {
-		fmt.Printf("err, not a valid LHEF file (%T: %v)\n", tok, tok)
 		return nil, fmt.Errorf("lhef.Decoder: missing init start-tag")
 	}
-	//fmt.Printf(">>> header: %v\n", header)
-	//fmt.Printf(">>> init:   %v\n", init)
 
 	// extract compulsory initialization information
 	tok, err = dec.Token()
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return nil, err
 	}
 	data, ok := tok.(xml.CharData)
 	if !ok || len(data) == 0 {
-		fmt.Printf("err, not a valid LHEF file (%T: %v)\n", tok, tok)
 		return nil, fmt.Errorf("lhef.Decoder: missing init payload")
 	}
 	buf := bytes.NewBuffer(data)
@@ -119,8 +117,6 @@ Loop:
 		&d.Run.NPRUP,
 	)
 	if err != nil {
-		fmt.Printf("err:  %v\n", err)
-		fmt.Printf("data: %v\n", string(data))
 		return nil, err
 	}
 
@@ -147,11 +143,9 @@ Loop:
 
 	tok, err = dec.Token()
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return nil, err
 	}
 	if end, ok := tok.(xml.EndElement); !ok || end.Name.Local != "init" {
-		fmt.Printf("err: not a valid LHEF file (%T: %v) (expected </init>)\n", tok, tok)
 		return nil, fmt.Errorf("lhef.Decoder: missing init end-tag")
 	}
 
@@ -199,7 +193,6 @@ func (d *Decoder) Decode() (*HEPEUP, error) {
 	// extract payload data
 	tok, err := d.dec.Token()
 	if err != nil {
-		fmt.Printf("--> 1 err: %v\n", err)
 		return nil, err
 	}
 	data, ok := tok.(xml.CharData)
@@ -269,17 +262,11 @@ func (d *Decoder) Decode() (*HEPEUP, error) {
 	// put "cursor" to next event...
 	tok, err = d.dec.Token()
 	if err != nil {
-		fmt.Printf("err: %v\n", err)
 		return nil, err
 	}
 	if end, ok := tok.(xml.EndElement); !ok || end.Name.Local != "event" {
-		fmt.Printf("err: not a valid LHEF file (%T: %v) (expected </event>)\n", tok, tok)
 		return nil, fmt.Errorf("lhef.Decoder: missing event end-tag")
 	}
 
 	return evt, nil
 }
-
-// xml.Decoder.Token() (t Token, err error)
-
-// EOF

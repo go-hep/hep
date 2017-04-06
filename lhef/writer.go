@@ -1,3 +1,7 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package lhef
 
 import (
@@ -6,6 +10,8 @@ import (
 	"sync"
 )
 
+// Encoder encodes a LHEF event to the underlying writer, following the
+// Les Houches Event File format.
 type Encoder struct {
 	w      io.Writer
 	once   sync.Once
@@ -14,6 +20,7 @@ type Encoder struct {
 
 }
 
+// NewEncoder creates a new Encoder connected to the given writer.
 func NewEncoder(w io.Writer) (*Encoder, error) {
 	enc := &Encoder{
 		w: w,
@@ -186,5 +193,3 @@ func (e *Encoder) Close() error {
 	}
 	return err
 }
-
-// EOF
