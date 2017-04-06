@@ -16,6 +16,11 @@ See [go-hep.org](https://go-hep.org) for more informations.
 
 Documentation for `hep` is served by [GoDoc](https://godoc.org/go-hep.org/x/hep).
 
+## Contributing
+
+Guidelines for contributing to [go-hep](https://go-hep.org) are available here:
+ [go-hep.org/contributing](https://go-hep.org/contributing)
+
 ## Content
 
 `go-hep` currently sports the following packages:
