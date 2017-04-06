@@ -250,10 +250,6 @@ func TestJetAlgorithms(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			// FIXME(sbinet): correctly implement jet algorithms for e+e-
-			if test.input == "testdata/single-ee-event.dat" {
-				t.Skipf("e+e- jet algorithms not implemented")
-			}
 			test := test
 			particles, err := loadParticles(test.input)
 			if err != nil {

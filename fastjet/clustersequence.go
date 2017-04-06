@@ -7,6 +7,8 @@ package fastjet
 import (
 	"fmt"
 	"math"
+
+	"go-hep.org/x/hep/fmom"
 )
 
 // history holds information about the clustering
@@ -246,6 +248,14 @@ func (cs *ClusterSequence) jetScaleForAlgorithm(jet *Jet) float64 {
 		}
 		return 1.0
 
+	case EeGenKtAlgorithm:
+		kt2 := jet.E()
+		p := cs.def.ExtraParam()
+		if p <= 0 && kt2 < 1e-300 {
+			kt2 = 1e-300
+		}
+		return math.Pow(kt2, 2*p)
+
 	default:
 		panic(fmt.Errorf("fastjet: unrecognised jet algorithm (%v)", cs.alg))
 	}
@@ -360,7 +370,19 @@ func (cs *ClusterSequence) runN3Dumb() error {
 					cs.jetScaleForAlgorithm(ijet),
 					cs.jetScaleForAlgorithm(jjet),
 				)
-				y := jetscale * Distance(ijet, jjet) * cs.invR2
+				y := math.MaxFloat64
+				switch cs.alg {
+				case EeGenKtAlgorithm:
+					den := 1 - math.Cos(cs.r)
+					if cs.r > math.Pi {
+						den = 3 + math.Cos(cs.r)
+					}
+					if den != 0 {
+						y = jetscale * (1 - fmom.CosTheta(&ijet.PxPyPzE, &jjet.PxPyPzE)) / den
+					}
+				default:
+					y = jetscale * Distance(ijet, jjet) * cs.invR2
+				}
 				if y < ymin {
 					ymin = y
 					ii = i
