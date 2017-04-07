@@ -211,3 +211,17 @@ func (p4 *PxPyPzE) Set(p P4) {
 	p4[2] = p.Pz()
 	p4[3] = p.E()
 }
+
+func dotProduct(p1, p2 *PxPyPzE)float64{
+	dotproduct := p1.Px()*p2.Px()+p1.Py()*p2.Py()+p1.Pz()*p2.Pz()
+	return dotproduct
+}
+
+//return the cosine of the angle between the momentum of two jets
+func CosTheta(p1, p2 *PxPyPzE) float64 {
+	mag1 := math.Sqrt(p1.Px()*p1.Px()+p1.Py()*p1.Py()+p1.Pz()*p1.Pz())
+	mag2 := math.Sqrt(p2.Px()*p2.Px()+p2.Py()*p2.Py()+p2.Pz()*p2.Pz())
+	dotproduct := dotProduct(p1,p2)
+	cosTh := dotproduct / (mag1*mag2)
+	return cosTh
+}
