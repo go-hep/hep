@@ -27,10 +27,10 @@ func align4I64(sz int64) int64 {
 }
 
 // Unmarshal unmarshals a slice of bytes into ptr.
-// If ptr implements BinaryCodec, use it.
+// If ptr implements Codec, use it.
 func Unmarshal(buf *bytes.Buffer, ptr interface{}) error {
-	if ptr, ok := ptr.(BinaryCodec); ok {
-		return ptr.UnmarshalBinary(buf)
+	if ptr, ok := ptr.(Unmarshaler); ok {
+		return ptr.UnmarshalSio(buf)
 	}
 	return bread(buf, ptr)
 }

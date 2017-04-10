@@ -79,7 +79,7 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 	switch ptr := ptr.(type) {
 	case Block:
 		block = ptr
-	case BinaryCodec:
+	case Codec:
 		rt := reflect.TypeOf(ptr)
 		block = &userBlock{
 			blk:     ptr,
@@ -140,7 +140,7 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 		blk, ok := rec.blocks[name]
 		if ok {
 			// fmt.Printf("### %q\n", string(buf.Bytes()))
-			err = blk.UnmarshalBinary(buf)
+			err = blk.UnmarshalSio(buf)
 			if err != nil {
 				// fmt.Printf("*** error unmarshaling record=%q block=%q: %v\n", rec.name, name, err)
 				return err
@@ -179,7 +179,7 @@ func (rec *Record) write(buf *bytes.Buffer) error {
 		}
 
 		var b bytes.Buffer
-		err = blk.MarshalBinary(&b)
+		err = blk.MarshalSio(&b)
 		if err != nil {
 			return err
 		}
