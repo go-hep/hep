@@ -28,6 +28,8 @@ type Codec interface {
 	Unmarshaler
 }
 
+// Block is the interface implemented by an object that can be
+// stored to (and loaded from) an SIO stream.
 type Block interface {
 	Codec
 
