@@ -5,7 +5,6 @@
 package sio
 
 import (
-	"bytes"
 	"encoding/binary"
 	"io"
 	"reflect"
@@ -26,16 +25,16 @@ func align4I64(sz int64) int64 {
 	return sz + (4-(sz&int64(g_align)))&int64(g_align)
 }
 
-// Unmarshal unmarshals a slice of bytes into ptr.
+// Unmarshal unmarshals a stream of bytes into ptr.
 // If ptr implements Codec, use it.
-func Unmarshal(buf *bytes.Buffer, ptr interface{}) error {
+func Unmarshal(r Reader, ptr interface{}) error {
 	if ptr, ok := ptr.(Unmarshaler); ok {
-		return ptr.UnmarshalSio(buf)
+		return ptr.UnmarshalSio(r)
 	}
-	return bread(buf, ptr)
+	return bread(r, ptr)
 }
 
-func bread(r io.Reader, data interface{}) error {
+func bread(r Reader, data interface{}) error {
 	bo := binary.BigEndian
 	rv := reflect.ValueOf(data)
 	// fmt.Printf("::: [%v] :::...\n", rv.Type())

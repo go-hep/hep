@@ -5,28 +5,8 @@
 package sio
 
 import (
-	"bytes"
 	"reflect"
 )
-
-// Marshaler is the interface implemented by an object that can marshal
-// itself into a binary, sio-compatible, form.
-type Marshaler interface {
-	MarshalSio(buf *bytes.Buffer) error
-}
-
-// Unmarshaler is the interface implemented by an object that can
-// unmarshal a binary, sio-compatible, representation of itself.
-type Unmarshaler interface {
-	UnmarshalSio(buf *bytes.Buffer) error
-}
-
-// Code is the interface implemented by an object that can
-// unmarshal and marshal itself from and to a binary, sio-compatible, form.
-type Codec interface {
-	Marshaler
-	Unmarshaler
-}
 
 // Block is the interface implemented by an object that can be
 // stored to (and loaded from) an SIO stream.
@@ -65,15 +45,15 @@ func (blk *genericBlock) Version() uint32 {
 	return blk.version
 }
 
-func (blk *genericBlock) MarshalSio(buf *bytes.Buffer) error {
+func (blk *genericBlock) MarshalSio(w Writer) error {
 	var err error
-	err = bwrite(buf, blk.rv.Interface())
+	err = bwrite(w, blk.rv.Interface())
 	return err
 }
 
-func (blk *genericBlock) UnmarshalSio(buf *bytes.Buffer) error {
+func (blk *genericBlock) UnmarshalSio(r Reader) error {
 	var err error
-	err = bread(buf, blk.rv.Interface())
+	err = bread(r, blk.rv.Interface())
 	return err
 }
 
@@ -92,10 +72,10 @@ func (blk *userBlock) Version() uint32 {
 	return blk.version
 }
 
-func (blk *userBlock) MarshalSio(buf *bytes.Buffer) error {
-	return blk.blk.MarshalSio(buf)
+func (blk *userBlock) MarshalSio(w Writer) error {
+	return blk.blk.MarshalSio(w)
 }
 
-func (blk *userBlock) UnmarshalSio(buf *bytes.Buffer) error {
-	return blk.blk.UnmarshalSio(buf)
+func (blk *userBlock) UnmarshalSio(r Reader) error {
+	return blk.blk.UnmarshalSio(r)
 }
