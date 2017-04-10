@@ -12,17 +12,17 @@ import (
 
 // align4U32 returns sz adjusted to align at 4-byte boundaries
 func align4U32(sz uint32) uint32 {
-	return sz + (4-(sz&g_align))&g_align
+	return sz + (4-(sz&alignLen))&alignLen
 }
 
 // align4I32 returns sz adjusted to align at 4-byte boundaries
 func align4I32(sz int32) int32 {
-	return sz + (4-(sz&int32(g_align)))&int32(g_align)
+	return sz + (4-(sz&int32(alignLen)))&int32(alignLen)
 }
 
 // align4I64 returns sz adjusted to align at 4-byte boundaries
 func align4I64(sz int64) int64 {
-	return sz + (4-(sz&int64(g_align)))&int64(g_align)
+	return sz + (4-(sz&int64(alignLen)))&int64(alignLen)
 }
 
 // Unmarshal unmarshals a stream of bytes into ptr.

@@ -207,7 +207,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		//fmt.Printf(">>> buf=%v\n", buf[:])
 		//fmt.Printf(">>> rechdr=%v\n", rechdr)
 
-		if rechdr.Typ != g_mark_record {
+		if rechdr.Typ != recMarker {
 			return nil, ErrStreamNoRecMarker
 		}
 
@@ -307,7 +307,7 @@ func (stream *Stream) WriteRecord(record *Record) error {
 
 	rechdr := recordHeader{
 		Len: 0,
-		Typ: g_mark_record,
+		Typ: recMarker,
 	}
 	recdata := recordData{
 		Options: record.options,

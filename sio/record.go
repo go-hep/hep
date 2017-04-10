@@ -51,14 +51,14 @@ func (rec *Record) SetUnpack(unpack bool) {
 
 // Compress returns the compression flag
 func (rec *Record) Compress() bool {
-	return rec.options&g_opt_compress != 0
+	return rec.options&optCompress != 0
 }
 
 // SetCompress sets or resets the compression flag
 func (rec *Record) SetCompress(compress bool) {
-	rec.options &= g_opt_not_compress
+	rec.options &= optNotCompress
 	if compress {
-		rec.options |= g_opt_compress
+		rec.options |= optCompress
 	}
 }
 
@@ -115,7 +115,7 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 		if err != nil {
 			return err
 		}
-		if hdr.Typ != g_mark_block {
+		if hdr.Typ != blkMarker {
 			// fmt.Printf("*** err record[%s]: noblockmarker\n", rec.name)
 			return ErrRecordNoBlockMarker
 		}
@@ -151,7 +151,7 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 		// check whether there is still something to be read.
 		// if there is, check whether there is a block-marker
 		if buf.Len() > 0 {
-			next := bytes.Index(buf.Bytes(), g_mark_block_b)
+			next := bytes.Index(buf.Bytes(), blkMarkerBeg)
 			if next > 0 {
 				pos := next - 4 // sizeof mark-block
 				buf.Next(pos)   // drain the buffer until next block
@@ -170,7 +170,7 @@ func (rec *Record) write(buf *bytes.Buffer) error {
 	for k, blk := range rec.blocks {
 
 		bhdr := blockHeader{
-			Typ: g_mark_block,
+			Typ: blkMarker,
 		}
 
 		bdata := blockData{
