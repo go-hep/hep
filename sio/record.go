@@ -92,7 +92,7 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 		if rt.Kind() != reflect.Ptr {
 			return fmt.Errorf("sio: Connect needs a pointer to a block of data")
 		}
-		block = &blockImpl{
+		block = &genericBlock{
 			rt:      rt,
 			rv:      reflect.ValueOf(ptr),
 			version: 0,

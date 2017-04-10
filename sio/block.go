@@ -42,28 +42,29 @@ type blockData struct {
 	NameLen uint32 // length of the block name
 }
 
-type blockImpl struct {
+// genericBlock provides a generic, reflect-based Block implementation
+type genericBlock struct {
 	rv      reflect.Value
 	rt      reflect.Type
 	version uint32
 	name    string
 }
 
-func (blk *blockImpl) Name() string {
+func (blk *genericBlock) Name() string {
 	return blk.name
 }
 
-func (blk *blockImpl) Version() uint32 {
+func (blk *genericBlock) Version() uint32 {
 	return blk.version
 }
 
-func (blk *blockImpl) MarshalBinary(buf *bytes.Buffer) error {
+func (blk *genericBlock) MarshalBinary(buf *bytes.Buffer) error {
 	var err error
 	err = bwrite(buf, blk.rv.Interface())
 	return err
 }
 
-func (blk *blockImpl) UnmarshalBinary(buf *bytes.Buffer) error {
+func (blk *genericBlock) UnmarshalBinary(buf *bytes.Buffer) error {
 	var err error
 	err = bread(buf, blk.rv.Interface())
 	return err
