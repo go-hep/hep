@@ -70,24 +70,25 @@ func (blk *genericBlock) UnmarshalBinary(buf *bytes.Buffer) error {
 	return err
 }
 
-type mBlockImpl struct {
+// userBlock adapts a user-provided BinaryCodec implementation into a Block one.
+type userBlock struct {
 	version uint32
 	name    string
 	blk     BinaryCodec
 }
 
-func (blk *mBlockImpl) Name() string {
+func (blk *userBlock) Name() string {
 	return blk.name
 }
 
-func (blk *mBlockImpl) Version() uint32 {
+func (blk *userBlock) Version() uint32 {
 	return blk.version
 }
 
-func (blk *mBlockImpl) MarshalBinary(buf *bytes.Buffer) error {
+func (blk *userBlock) MarshalBinary(buf *bytes.Buffer) error {
 	return blk.blk.MarshalBinary(buf)
 }
 
-func (blk *mBlockImpl) UnmarshalBinary(buf *bytes.Buffer) error {
+func (blk *userBlock) UnmarshalBinary(buf *bytes.Buffer) error {
 	return blk.blk.UnmarshalBinary(buf)
 }

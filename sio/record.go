@@ -81,7 +81,7 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 		block = ptr
 	case BinaryCodec:
 		rt := reflect.TypeOf(ptr)
-		block = &mBlockImpl{
+		block = &userBlock{
 			blk:     ptr,
 			version: 0,
 			name:    rt.Name(),
