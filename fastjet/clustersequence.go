@@ -69,6 +69,10 @@ func NewClusterSequence(jets []Jet, def JetDefinition) (*ClusterSequence, error)
 	return cs, err
 }
 
+func (cs *ClusterSequence) ExclusiveJets(dcut float64) ([]Jet, error) {
+	panic("not implemented")
+}
+
 func (cs *ClusterSequence) InclusiveJets(ptmin float64) ([]Jet, error) {
 	var err error
 	dcut := ptmin * ptmin

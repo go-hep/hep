@@ -20,7 +20,7 @@ import (
 	"go-hep.org/x/hep/fastjet"
 )
 
-func TestJetAlgorithms(t *testing.T) {
+func TestInclusiveJetAlgorithms(t *testing.T) {
 	const tol = 1e-6
 
 	for _, test := range []struct {
@@ -262,6 +262,75 @@ func TestJetAlgorithms(t *testing.T) {
 			}
 
 			jets, err := cs.InclusiveJets(test.ptmin)
+			if err != nil {
+				t.Fatalf("incl-jets error: %v", err)
+			}
+
+			sort.Sort(fastjet.ByPt(jets))
+
+			want, err := loadRef("testdata/" + test.name + ".ref")
+			if err != nil {
+				t.Fatalf("error reading reference file: %v", err)
+			}
+
+			if len(want) != len(jets) {
+				t.Fatalf("got %d jets, want %d", len(jets), len(want))
+			}
+
+			n := len(jets)
+			if len(want) < n {
+				n = len(want)
+			}
+			for i := 0; i < n; i++ {
+				ref := want[i][:]
+				jet := jets[i]
+				rap := jet.Rapidity()
+				phi := angle0to2Pi(jet.Phi())
+				pt := jet.Pt()
+
+				got := []float64{rap, phi, pt}
+				if !floats.EqualApprox(got, ref, tol) {
+					t.Errorf("#%d\ngot= %v\nwant=%v", i, got, ref)
+				}
+			}
+		})
+	}
+}
+
+func TestExclusiveJetAlgorithms(t *testing.T) {
+	const tol = 1e-6
+
+	for _, test := range []struct {
+		input string
+		name  string
+		def   fastjet.JetDefinition
+		dcut  float64
+		want  []fastjet.Jet
+	}{
+		{
+			input: "testdata/single-ee-event.dat",
+			name:  "eekt_excld+2.0_r0.4_escheme_best",
+			def: fastjet.NewJetDefinitionExtra(
+				fastjet.EeKtAlgorithm, 0.4, fastjet.EScheme, fastjet.BestStrategy, 1,
+			),
+			dcut: 2.0,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			// FIXME(sbinet): implement exclusive jets
+			t.Skipf("exclusive jets not implemented")
+			test := test
+			particles, err := loadParticles(test.input)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			cs, err := fastjet.NewClusterSequence(particles, test.def)
+			if err != nil {
+				t.Fatalf("error for jet definition: %v", err)
+			}
+
+			jets, err := cs.ExclusiveJets(test.dcut)
 			if err != nil {
 				t.Fatalf("incl-jets error: %v", err)
 			}
