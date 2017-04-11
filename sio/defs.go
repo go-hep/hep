@@ -4,6 +4,10 @@
 
 package sio
 
+import (
+	"errors"
+)
+
 type Operation int
 
 const (
@@ -21,6 +25,8 @@ const (
 const (
 	recMarker      uint32 = 0xabadcafe
 	blkMarker             = 0xdeadbeef
+	ptagMarker            = 0xffffffff
+	pntrMarker            = 0x00000000
 	optCompress           = 0x00000001
 	optNotCompress        = 0xfffffffe
 	alignLen              = 0x00000003
@@ -28,4 +34,8 @@ const (
 
 var (
 	blkMarkerBeg = []byte{222, 173, 190, 239}
+)
+
+var (
+	errPointerIDOverflow = errors.New("sio: pointer id overflow")
 )

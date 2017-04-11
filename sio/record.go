@@ -104,14 +104,14 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 }
 
 // read reads a record
-func (rec *Record) read(buf *bytes.Buffer) error {
+func (rec *Record) read(r *reader) error {
 	var err error
-	//fmt.Printf("::: reading record [%s]... [%d]\n", rec.name, buf.Len())
+	// fmt.Printf("::: reading record [%s]... [%d]\n", rec.name, buf.Len())
 	// loop until data has been depleted
-	for buf.Len() > 0 {
+	for r.Len() > 0 {
 		// read block header
 		var hdr blockHeader
-		err = bread(buf, &hdr)
+		err = bread(r, &hdr)
 		if err != nil {
 			return err
 		}
@@ -121,14 +121,15 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 		}
 
 		var data blockData
-		err = bread(buf, &data)
+		err = bread(r, &data)
 		if err != nil {
 			return err
 		}
+		r.ver = data.Version
 
 		var cbuf bytes.Buffer
 		nlen := align4U32(data.NameLen)
-		n, err := io.CopyN(&cbuf, buf, int64(nlen))
+		n, err := io.CopyN(&cbuf, r, int64(nlen))
 		if err != nil {
 			// fmt.Printf(">>> err:%v\n", err)
 			return err
@@ -140,32 +141,34 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 		blk, ok := rec.blocks[name]
 		if ok {
 			// fmt.Printf("### %q\n", string(buf.Bytes()))
-			err = blk.UnmarshalSio(buf)
+			err = blk.UnmarshalSio(r)
 			if err != nil {
 				// fmt.Printf("*** error unmarshaling record=%q block=%q: %v\n", rec.name, name, err)
 				return err
 			}
-			//fmt.Printf(">>> read record=%q block=%q (buf=%d)\n", rec.name, name, buf.Len())
+			// fmt.Printf(">>> read record=%q block=%q (buf=%d)\n", rec.name, name, buf.Len())
 		}
 
 		// check whether there is still something to be read.
 		// if there is, check whether there is a block-marker
-		if buf.Len() > 0 {
-			next := bytes.Index(buf.Bytes(), blkMarkerBeg)
+		if r.Len() > 0 {
+			next := bytes.Index(r.Bytes(), blkMarkerBeg)
 			if next > 0 {
 				pos := next - 4 // sizeof mark-block
-				buf.Next(pos)   // drain the buffer until next block
+				r.Next(pos)     // drain the buffer until next block
 			} else {
 				// drain the whole buffer
-				buf.Next(buf.Len())
+				r.Next(r.Len())
 			}
 		}
 	}
+	r.relocate()
+
 	//fmt.Printf("::: reading record [%s]... [done]\n", rec.name)
 	return err
 }
 
-func (rec *Record) write(buf *bytes.Buffer) error {
+func (rec *Record) write(w *writer) error {
 	var err error
 	for k, blk := range rec.blocks {
 
@@ -178,45 +181,50 @@ func (rec *Record) write(buf *bytes.Buffer) error {
 			NameLen: uint32(len(k)),
 		}
 
-		var b bytes.Buffer
-		err = blk.MarshalSio(&b)
+		wblk := newWriterFrom(w)
+		wblk.ver = bdata.Version
+
+		err = blk.MarshalSio(wblk)
 		if err != nil {
 			return err
 		}
 
 		bhdr.Len = uint32(unsafe.Sizeof(bhdr)) +
 			uint32(unsafe.Sizeof(bdata)) +
-			align4U32(bdata.NameLen) + uint32(b.Len())
+			align4U32(bdata.NameLen) + uint32(wblk.Len())
 
 		// fmt.Printf("blockHeader: %v\n", bhdr)
 		// fmt.Printf("blockData:   %v (%s)\n", bdata, k)
 
-		err = bwrite(buf, &bhdr)
+		err = bwrite(w, &bhdr)
 		if err != nil {
 			return err
 		}
 
-		err = bwrite(buf, &bdata)
+		err = bwrite(w, &bdata)
 		if err != nil {
 			return err
 		}
 
-		_, err = buf.Write([]byte(k))
+		_, err = w.Write([]byte(k))
 		if err != nil {
 			return err
 		}
 		padlen := align4U32(bdata.NameLen) - bdata.NameLen
 		if padlen > 0 {
-			_, err = buf.Write(make([]byte, int(padlen)))
+			_, err = w.Write(make([]byte, int(padlen)))
 			if err != nil {
 				return err
 			}
 		}
 
-		_, err := io.Copy(buf, &b)
+		_, err := io.Copy(w, wblk.buf)
 		if err != nil {
 			return err
 		}
+		w.ids = wblk.ids
+		w.tag = wblk.tag
+		w.ptr = wblk.ptr
 	}
 	return err
 }
