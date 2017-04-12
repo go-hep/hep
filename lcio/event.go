@@ -5,9 +5,6 @@
 package lcio
 
 import (
-	"encoding/binary"
-	"log"
-
 	"go-hep.org/x/hep/sio"
 )
 
@@ -41,74 +38,35 @@ func (idx *Index) MarshalSio(w sio.Writer) error {
 }
 
 func (idx *Index) UnmarshalSio(r sio.Reader) error {
-	var err error
-	err = sio.Unmarshal(r, &idx.ControlWord)
-	if err != nil {
-		return err
-	}
-
-	err = sio.Unmarshal(r, &idx.RunMin)
-	if err != nil {
-		return err
-	}
-
-	err = sio.Unmarshal(r, &idx.BaseOffset)
-	if err != nil {
-		return err
-	}
-
+	dec := sio.NewDecoder(r)
+	dec.Decode(&idx.ControlWord)
+	dec.Decode(&idx.RunMin)
+	dec.Decode(&idx.BaseOffset)
 	var n int32
-	err = sio.Unmarshal(r, &n)
-	if err != nil {
-		return err
-	}
-
+	dec.Decode(&n)
 	idx.Offsets = make([]Offset, int(n))
 	for i := range idx.Offsets {
 		v := &idx.Offsets[i]
 		if idx.ControlWord&1 == 0 {
-			err = sio.Unmarshal(r, &v.RunOffset)
-			if err != nil {
-				return err
-			}
+			dec.Decode(&v.RunOffset)
 		}
 
-		err = sio.Unmarshal(r, &v.EventNumber)
-		if err != nil {
-			return err
-		}
-
+		dec.Decode(&v.EventNumber)
 		switch {
 		case idx.ControlWord&2 == 1:
-			err = sio.Unmarshal(r, &v.Location)
+			dec.Decode(&v.Location)
 		default:
 			var loc int32
-			err = sio.Unmarshal(r, &loc)
+			dec.Decode(&loc)
 			v.Location = int64(loc)
 		}
-		if err != nil {
-			return err
-		}
-
 		if idx.ControlWord&4 == 1 {
-			err = sio.Unmarshal(r, &v.Ints)
-			if err != nil {
-				return err
-			}
-
-			err = sio.Unmarshal(r, &v.Floats)
-			if err != nil {
-				return err
-			}
-
-			err = sio.Unmarshal(r, &v.Strings)
-			if err != nil {
-				return err
-			}
+			dec.Decode(&v.Ints)
+			dec.Decode(&v.Floats)
+			dec.Decode(&v.Strings)
 		}
 	}
-
-	return err
+	return dec.Err()
 }
 
 type Offset struct {
@@ -169,24 +127,11 @@ func (mc *McParticles) MarshalSio(w sio.Writer) error {
 }
 
 func (mc *McParticles) UnmarshalSio(r sio.Reader) error {
-	var err error
-
-	err = sio.Unmarshal(r, &mc.Flags)
-	if err != nil {
-		return err
-	}
-
-	err = sio.Unmarshal(r, &mc.Params)
-	if err != nil {
-		return err
-	}
-
-	err = sio.Unmarshal(r, &mc.Particles)
-	if err != nil {
-		return err
-	}
-
-	return err
+	dec := sio.NewDecoder(r)
+	dec.Decode(&mc.Flags)
+	dec.Decode(&mc.Params)
+	dec.Decode(&mc.Particles)
+	return dec.Err()
 }
 
 func (mc *McParticles) LinkSio(vers uint32) error {
@@ -238,87 +183,43 @@ func (mc *McParticle) MarshalSio(w sio.Writer) error {
 }
 
 func (mc *McParticle) UnmarshalSio(r sio.Reader) error {
-	var err error
-
-	err = r.Tag(mc)
-	if err != nil {
-		return err
-	}
+	dec := sio.NewDecoder(r)
+	dec.Tag(mc)
 
 	var n int32
-	err = sio.Unmarshal(r, &n)
-	if err != nil {
-		return err
-	}
+	dec.Decode(&n)
 	if n > 0 {
 		mc.Parents = make([]*McParticle, int(n))
 		for ii := range mc.Parents {
-			err = r.Pointer(&mc.Parents[ii])
-			if err != nil {
-				return err
-			}
+			dec.Pointer(&mc.Parents[ii])
 		}
 	}
 
-	err = sio.Unmarshal(r, &mc.PDG)
-	if err != nil {
-		return err
-	}
-
-	err = sio.Unmarshal(r, &mc.GenStatus)
-	if err != nil {
-		return err
-	}
-
-	err = sio.Unmarshal(r, &mc.SimStatus)
-	if err != nil {
-		return err
-	}
-
-	err = sio.Unmarshal(r, &mc.Vertex)
-	if err != nil {
-		return err
-	}
-
+	dec.Decode(&mc.PDG)
+	dec.Decode(&mc.GenStatus)
+	dec.Decode(&mc.SimStatus)
+	dec.Decode(&mc.Vertex)
 	if r.Version() > 1002 {
-		err = sio.Unmarshal(r, &mc.Time)
-		if err != nil {
-			return err
-		}
+		dec.Decode(&mc.Time)
 	}
 
 	var mom [3]float32
-	err = sio.Unmarshal(r, &mom)
-	if err != nil {
-		return err
-	}
+	dec.Decode(&mom)
 	mc.Momentum[0] = float64(mom[0])
 	mc.Momentum[1] = float64(mom[1])
 	mc.Momentum[2] = float64(mom[2])
 
 	var mass float32
-	err = sio.Unmarshal(r, &mass)
-	if err != nil {
-		return err
-	}
+	dec.Decode(&mass)
 	mc.Mass = float64(mass)
 
-	err = sio.Unmarshal(r, &mc.Charge)
-	if err != nil {
-		return err
-	}
+	dec.Decode(&mc.Charge)
 
 	if mc.SimStatus&uint32(1<<31) != 0 {
-		err = sio.Unmarshal(r, &mc.EndPoint)
-		if err != nil {
-			return err
-		}
+		dec.Decode(&mc.EndPoint)
 		if r.Version() > 2006 {
 			var mom [3]float32
-			err = sio.Unmarshal(r, &mom)
-			if err != nil {
-				return err
-			}
+			dec.Decode(&mom)
 			mc.PEndPoint[0] = float64(mom[0])
 			mc.PEndPoint[1] = float64(mom[1])
 			mc.PEndPoint[2] = float64(mom[2])
@@ -326,17 +227,10 @@ func (mc *McParticle) UnmarshalSio(r sio.Reader) error {
 	}
 
 	if r.Version() > 1051 {
-		err = sio.Unmarshal(r, &mc.Spin)
-		if err != nil {
-			return err
-		}
-
-		err = sio.Unmarshal(r, &mc.ColorFlow)
-		if err != nil {
-			return err
-		}
+		dec.Decode(&mc.Spin)
+		dec.Decode(&mc.ColorFlow)
 	}
-	return err
+	return dec.Err()
 }
 
 type SimTrackerHits struct {
@@ -350,67 +244,31 @@ func (hits *SimTrackerHits) MarshalSio(w sio.Writer) error {
 }
 
 func (hits *SimTrackerHits) UnmarshalSio(r sio.Reader) error {
-	var err error
-	err = sio.Unmarshal(r, &hits.Flags)
-	if err != nil {
-		return err
-	}
-	err = sio.Unmarshal(r, &hits.Params)
-	if err != nil {
-		return err
-	}
+	dec := sio.NewDecoder(r)
+	dec.Decode(&hits.Flags)
+	dec.Decode(&hits.Params)
 	var n int32
-	err = sio.Unmarshal(r, &n)
-	if err != nil {
-		return err
-	}
+	dec.Decode(&n)
 	hits.Hits = make([]SimTrackerHit, int(n))
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
-		err = sio.Unmarshal(r, &hit.CellID0)
-		if err != nil {
-			return err
-		}
+		dec.Decode(&hit.CellID0)
 		if r.Version() > 1051 && hits.Flags.Test(ThBitID1) {
-			err = sio.Unmarshal(r, &hit.CellID1)
-			if err != nil {
-				return err
-			}
+			dec.Decode(&hit.CellID1)
 		}
-		err = sio.Unmarshal(r, &hit.Pos)
-		if err != nil {
-			return err
-		}
-		err = sio.Unmarshal(r, &hit.EDep)
-		if err != nil {
-			return err
-		}
-		err = sio.Unmarshal(r, &hit.Time)
-		if err != nil {
-			return err
-		}
-		err = r.Pointer(&hit.Mc)
-		if err != nil {
-			return err
-		}
+		dec.Decode(&hit.Pos)
+		dec.Decode(&hit.EDep)
+		dec.Decode(&hit.Time)
+		dec.Pointer(&hit.Mc)
 		if hits.Flags.Test(ThBitMomentum) {
-			err = sio.Unmarshal(r, &hit.Momentum)
-			if err != nil {
-				return err
-			}
-			err = sio.Unmarshal(r, &hit.PathLength)
-			if err != nil {
-				return err
-			}
+			dec.Decode(&hit.Momentum)
+			dec.Decode(&hit.PathLength)
 		}
 		if r.Version() > 1000 {
-			err = r.Tag(hit)
-			if err != nil {
-				return err
-			}
+			dec.Tag(hit)
 		}
 	}
-	return err
+	return dec.Err()
 }
 
 type SimTrackerHit struct {
@@ -435,84 +293,42 @@ func (hits *SimCalorimeterHits) MarshalSio(w sio.Writer) error {
 }
 
 func (hits *SimCalorimeterHits) UnmarshalSio(r sio.Reader) error {
-	var err error
-	err = sio.Unmarshal(r, &hits.Flags)
-	if err != nil {
-		return err
-	}
-	err = sio.Unmarshal(r, &hits.Params)
-	if err != nil {
-		return err
-	}
+	dec := sio.NewDecoder(r)
+	dec.Decode(&hits.Flags)
+	dec.Decode(&hits.Params)
 	var n int32
-	err = sio.Unmarshal(r, &n)
-	if err != nil {
-		return err
-	}
+	dec.Decode(&n)
 	hits.Hits = make([]SimCalorimeterHit, int(n))
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
-		err = sio.Unmarshal(r, &hit.CellID0)
-		if err != nil {
-			return err
-		}
+		dec.Decode(&hit.CellID0)
 		if r.Version() < 9 || hits.Flags.Test(ChBitID1) {
-			err = sio.Unmarshal(r, &hit.CellID1)
-			if err != nil {
-				return err
-			}
+			dec.Decode(&hit.CellID1)
 		}
-		err = sio.Unmarshal(r, &hit.Energy)
-		if err != nil {
-			return err
-		}
+		dec.Decode(&hit.Energy)
 		if hits.Flags.Test(ChBitLong) {
-			err = sio.Unmarshal(r, &hit.Pos)
-			if err != nil {
-				return err
-			}
+			dec.Decode(&hit.Pos)
 		}
 		var n int32
-		err = sio.Unmarshal(r, &n)
-		if err != nil {
-			return err
-		}
+		dec.Decode(&n)
 		hit.Contributions = make([]Contrib, int(n))
 		for i := range hit.Contributions {
 			c := &hit.Contributions[i]
-			err = r.Pointer(&c.Mc)
-			if err != nil {
-				return err
-			}
-			err = sio.Unmarshal(r, &c.Energy)
-			if err != nil {
-				return err
-			}
-			err = sio.Unmarshal(r, &c.Time)
-			if err != nil {
-				return err
-			}
+			dec.Pointer(&c.Mc)
+			dec.Decode(&c.Energy)
+			dec.Decode(&c.Time)
 			if hits.Flags.Test(ChBitStep) {
-				err = sio.Unmarshal(r, &c.PDG)
-				if err != nil {
-					return err
-				}
+				dec.Decode(&c.PDG)
 				if r.Version() > 1051 {
-					err = sio.Unmarshal(r, &c.StepPos)
-					if err != nil {
-						return err
-					}
+					dec.Decode(&c.StepPos)
 				}
 			}
 		}
 		if r.Version() > 1000 {
-			err = r.Tag(hit)
-			if err != nil {
-				return err
-			}
+			dec.Tag(hit)
 		}
 	}
-	return err
+	return dec.Err()
 }
 
 type SimCalorimeterHit struct {
@@ -561,52 +377,27 @@ func (hits *RawCalorimeterHits) MarshalSio(w sio.Writer) error {
 }
 
 func (hits *RawCalorimeterHits) UnmarshalSio(r sio.Reader) error {
-	var err error
-	err = sio.Unmarshal(r, &hits.Flags)
-	if err != nil {
-		return err
-	}
-
-	err = sio.Unmarshal(r, &hits.Params)
-	if err != nil {
-		return err
-	}
+	dec := sio.NewDecoder(r)
+	dec.Decode(&hits.Flags)
+	dec.Decode(&hits.Params)
 	var n int32
-	err = sio.Unmarshal(r, &n)
-	if err != nil {
-		return err
-	}
+	dec.Decode(&n)
 	hits.Hits = make([]RawCalorimeterHit, int(n))
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
-		err = binary.Read(r, binary.BigEndian, &hit.CellID0)
-		if err != nil {
-			return err
-		}
+		dec.Decode(&hit.CellID0)
 		if r.Version() == 8 || hits.Flags.Test(RChBitID1) {
-			err = binary.Read(r, binary.BigEndian, &hit.CellID1)
-			if err != nil {
-				return err
-			}
+			dec.Decode(&hit.CellID1)
 		}
-		err = binary.Read(r, binary.BigEndian, &hit.Amplitude)
-		if err != nil {
-			return err
-		}
+		dec.Decode(&hit.Amplitude)
 		if hits.Flags.Test(RChBitTime) {
-			err = binary.Read(r, binary.BigEndian, &hit.TimeStamp)
-			if err != nil {
-				return err
-			}
+			dec.Decode(&hit.TimeStamp)
 		}
 		if !hits.Flags.Test(RChBitNoPtr) {
-			err = r.Tag(hit)
-			if err != nil {
-				return err
-			}
+			dec.Tag(hit)
 		}
 	}
-	return err
+	return dec.Err()
 }
 
 type RawCalorimeterHit struct {
@@ -627,89 +418,42 @@ func (hits *CalorimeterHits) MarshalSio(w sio.Writer) error {
 }
 
 func (hits *CalorimeterHits) UnmarshalSio(r sio.Reader) error {
-	var err error
-	err = sio.Unmarshal(r, &hits.Flags)
-	if err != nil {
-		return err
-	}
-	err = sio.Unmarshal(r, &hits.Params)
-	if err != nil {
-		return err
-	}
+	dec := sio.NewDecoder(r)
+	dec.Decode(&hits.Flags)
+	dec.Decode(&hits.Params)
 	var n int32
-	err = sio.Unmarshal(r, &n)
-	if err != nil {
-		return err
-	}
-
+	dec.Decode(&n)
 	hits.Hits = make([]CalorimeterHit, int(n))
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
-		err = sio.Unmarshal(r, &hit.CellID0)
-		if err != nil {
-			log.Panic(err)
-			return err
-		}
-		err = sio.Unmarshal(r, &hit.CellID1)
-		if err != nil {
-			log.Panic(err)
-			return err
-		}
-		err = sio.Unmarshal(r, &hit.Energy)
-		if err != nil {
-			log.Panic(err)
-			return err
-		}
+		dec.Decode(&hit.CellID0)
+		dec.Decode(&hit.CellID1)
+		dec.Decode(&hit.Energy)
 		if r.Version() > 1009 && hits.Flags.Test(RChBitEnergyError) {
-			err = sio.Unmarshal(r, &hit.EnergyErr)
-			if err != nil {
-				log.Panic(err)
-				return err
-			}
+			dec.Decode(&hit.EnergyErr)
 		}
 		if r.Version() > 1002 && hits.Flags.Test(RChBitTime) {
-			sio.Unmarshal(r, &hit.Time)
-			if err != nil {
-				return err
-			}
+			dec.Decode(&hit.Time)
 		}
 		if hits.Flags.Test(RChBitBarrel) {
-			err = sio.Unmarshal(r, &hit.Pos)
-			if err != nil {
-				log.Panic(err)
-				return err
-			}
+			dec.Decode(&hit.Pos)
 		}
 		if r.Version() > 1002 {
-			err = sio.Unmarshal(r, &hit.Type)
-			if err != nil {
-				log.Panic(err)
-				return err
-			}
-
-			err = r.Pointer(&hit.Raw)
-			if err != nil {
-				return err
-			}
+			dec.Decode(&hit.Type)
+			dec.Pointer(&hit.Raw)
 		}
 		if r.Version() > 1002 {
 			// the logic of the pointer bit has been inverted in v1.3
 			if hits.Flags.Test(RChBitNoPtr) {
-				err = r.Tag(hit)
-				if err != nil {
-					return err
-				}
+				dec.Tag(hit)
 			}
 		} else {
 			if !hits.Flags.Test(RChBitNoPtr) {
-				err = r.Tag(hit)
-				if err != nil {
-					return err
-				}
+				dec.Tag(hit)
 			}
 		}
 	}
-	return err
+	return dec.Err()
 }
 
 type CalorimeterHit struct {
@@ -740,16 +484,9 @@ func (obj *GenericObject) MarshalSio(w sio.Writer) error {
 }
 
 func (obj *GenericObject) UnmarshalSio(r sio.Reader) error {
-	var err error
-	err = sio.Unmarshal(r, &obj.Flag)
-	if err != nil {
-		return err
-	}
-
-	err = sio.Unmarshal(r, &obj.Params)
-	if err != nil {
-		return err
-	}
+	dec := sio.NewDecoder(r)
+	dec.Decode(&obj.Flag)
+	dec.Decode(&obj.Params)
 
 	var (
 		ni32  int32
@@ -759,70 +496,36 @@ func (obj *GenericObject) UnmarshalSio(r sio.Reader) error {
 	)
 
 	if obj.Flag.Test(GOBitFixed) {
-		err = sio.Unmarshal(r, &ni32)
-		if err != nil {
-			return err
-		}
-		err = sio.Unmarshal(r, &nf32)
-		if err != nil {
-			return err
-		}
-		err = sio.Unmarshal(r, &nf64)
-		if err != nil {
-			return err
-		}
+		dec.Decode(&ni32)
+		dec.Decode(&nf32)
+		dec.Decode(&nf64)
 	}
-	err = sio.Unmarshal(r, &nobjs)
-	if err != nil {
-		return err
-	}
+	dec.Decode(&nobjs)
 	obj.Data = make([]GenericObjectData, int(nobjs))
 	for iobj := range obj.Data {
 		data := &obj.Data[iobj]
 		if !obj.Flag.Test(GOBitFixed) {
-
-			err = sio.Unmarshal(r, &ni32)
-			if err != nil {
-				return err
-			}
-			err = sio.Unmarshal(r, &nf32)
-			if err != nil {
-				return err
-			}
-			err = sio.Unmarshal(r, &nf64)
-			if err != nil {
-				return err
-			}
+			dec.Decode(&ni32)
+			dec.Decode(&nf32)
+			dec.Decode(&nf64)
 		}
 		data.I32s = make([]int32, int(ni32))
 		for i := range data.I32s {
-			err = sio.Unmarshal(r, &data.I32s[i])
-			if err != nil {
-				return err
-			}
+			dec.Decode(&data.I32s[i])
 		}
 		data.F32s = make([]float32, int(nf32))
 		for i := range data.F32s {
-			err = sio.Unmarshal(r, &data.F32s[i])
-			if err != nil {
-				return err
-			}
+			dec.Decode(&data.F32s[i])
 		}
 		data.F64s = make([]float64, int(nf64))
 		for i := range data.F64s {
-			err = sio.Unmarshal(r, &data.F64s[i])
-			if err != nil {
-				return err
-			}
+			dec.Decode(&data.F64s[i])
 		}
 
-		err = r.Tag(data)
-		if err != nil {
-			return err
-		}
+		dec.Tag(data)
 	}
 
-	return err
+	return dec.Err()
 }
 
 var _ sio.Codec = (*Index)(nil)
