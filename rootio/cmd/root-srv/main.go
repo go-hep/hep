@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-//	"crypto/tls"
+	"crypto/tls"
 	"os"
 
 	"golang.org/x/crypto/acme/autocert"
@@ -33,6 +33,8 @@ import (
 
 var (
 	addrFlag = flag.String("addr", ":8080", "server address:port")
+	servFlag = flag.String("serv", "http" , "server protocol")
+	hostFlag = flag.String("host", "" , "server domain name for TLS ")
 )
 
 func main() {
@@ -54,34 +56,24 @@ options:
 
 	flag.Parse()
 	server.Init()
-
-//	certManager := autocert.Manager{
-//		Prompt:     autocert.AcceptTOS,
-//		HostPolicy: autocert.HostWhitelist("example.com"), //your domain here
-//		Cache:      autocert.DirCache("certs"), //folder for storing certificates
-//	}
-//	
-//
-//	// piqué sur sx
-//	server := &http.Server{
-//		Addr: ":443",
-//		TLSConfig: &tls.Config{
-//			GetCertificate: certManager.GetCertificate,
-//		},
-//	}
-//
-//	server.ListenAndServeTLS("", "")
 	
-	log.Printf("Http server listening on %s", *addrFlag)
-//	log.Fatal(http.ListenAndServe(*addrFlag, nil))
-	//	log.Fatal(http.Serve(autocert.NewListener("localhost"),nil ))
+	log.Printf("%s server listening on %s", *servFlag, *addrFlag)
 
-	m := autocert.Manager{
-		Prompt: autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist("127.0.0.1"),
-		Cache:      autocert.DirCache("certs"), //folder for storing certificates
+	if *servFlag == "http" {
+		log.Fatal(http.ListenAndServe(*addrFlag, nil))
+	} else
+	if *servFlag == "https" {
+		m := autocert.Manager{
+			Prompt: autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(*hostFlag),
+			Cache:      autocert.DirCache("certs"), //folder for storing certificates
+		}
+		server := &http.Server{
+			Addr: *addrFlag,
+			TLSConfig: &tls.Config{
+				GetCertificate: m.GetCertificate,
+			},
+		}
+		log.Fatal(server.ListenAndServeTLS("", ""))
 	}
-
-	log.Fatal(http.Serve(m.Listener(),nil ))
-	
 }
