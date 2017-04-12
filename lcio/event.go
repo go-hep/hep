@@ -26,12 +26,98 @@ type RandomAccess struct {
 	RecordSize     int32
 }
 
-type IOIndex struct {
-	ControlWord int32
+type Index struct {
+	// Bit 0 = single run.
+	// Bit 1 = int64 offset required
+	// Bit 2 = Params included (not yet implemented)
+	ControlWord uint32
 	RunMin      int32
 	BaseOffset  int64
-	Size        int32
-	// TODO: [Size]struct{RunOffset int32; EventNumber int32; LocOffset int32/64; ...}
+	Offsets     []Offset
+}
+
+func (idx *Index) MarshalSio(w sio.Writer) error {
+	panic("not implemented")
+}
+
+func (idx *Index) UnmarshalSio(r sio.Reader) error {
+	var err error
+	err = sio.Unmarshal(r, &idx.ControlWord)
+	if err != nil {
+		return err
+	}
+
+	err = sio.Unmarshal(r, &idx.RunMin)
+	if err != nil {
+		return err
+	}
+
+	err = sio.Unmarshal(r, &idx.BaseOffset)
+	if err != nil {
+		return err
+	}
+
+	var n int32
+	err = sio.Unmarshal(r, &n)
+	if err != nil {
+		return err
+	}
+
+	idx.Offsets = make([]Offset, int(n))
+	for i := range idx.Offsets {
+		v := &idx.Offsets[i]
+		if idx.ControlWord&1 == 0 {
+			err = sio.Unmarshal(r, &v.RunOffset)
+			if err != nil {
+				return err
+			}
+		}
+
+		err = sio.Unmarshal(r, &v.EventNumber)
+		if err != nil {
+			return err
+		}
+
+		switch {
+		case idx.ControlWord&2 == 1:
+			err = sio.Unmarshal(r, &v.Location)
+		default:
+			var loc int32
+			err = sio.Unmarshal(r, &loc)
+			v.Location = int64(loc)
+		}
+		if err != nil {
+			return err
+		}
+
+		if idx.ControlWord&4 == 1 {
+			err = sio.Unmarshal(r, &v.Ints)
+			if err != nil {
+				return err
+			}
+
+			err = sio.Unmarshal(r, &v.Floats)
+			if err != nil {
+				return err
+			}
+
+			err = sio.Unmarshal(r, &v.Strings)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return err
+}
+
+type Offset struct {
+	RunOffset   int32 // run offset relative to Index.RunMin
+	EventNumber int32 // event number or -1 for run header records
+	Location    int64 // location offset relative to Index.BaseOffset
+	Ints        []int32
+	Floats      []float32
+	Strings     []string
 }
 
 type RunHeader struct {
@@ -576,6 +662,7 @@ func (obj *GenericObject) UnmarshalSio(r sio.Reader) error {
 	return err
 }
 
+var _ sio.Codec = (*Index)(nil)
 var _ sio.Codec = (*GenericObject)(nil)
 var _ sio.Codec = (*SimTrackerHits)(nil)
 var _ sio.Codec = (*SimCalorimeterHits)(nil)

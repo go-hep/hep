@@ -24,7 +24,7 @@ func Open(fname string) (*Reader, error) {
 
 type Reader struct {
 	f    *sio.Stream
-	idx  IOIndex
+	idx  Index
 	rnd  RandomAccess
 	rhdr RunHeader
 	ehdr EventHeader
@@ -42,11 +42,19 @@ func (r *Reader) init() error {
 		rec *sio.Record
 	)
 
-	//r.f.Record("LCIOIndex", &r.idx) // FIXME(sbinet)
+	rec = r.f.Record("LCIOIndex")
+	if rec != nil {
+		rec.SetUnpack(true)
+		err = rec.Connect("LCIOIndex", &r.idx)
+		if err != nil {
+			return err
+		}
+	}
+
 	rec = r.f.Record("LCIORandomAccess")
 	if rec != nil {
 		rec.SetUnpack(true)
-		err = rec.Connect("RandomAccess", &r.rnd)
+		err = rec.Connect("LCIORandomAccess", &r.rnd)
 		if err != nil {
 			return err
 		}
@@ -89,6 +97,20 @@ func (r *Reader) Next() bool {
 	}
 	// log.Printf(">>> %q", rec.Name())
 	switch rec.Name() {
+	case "LCIOIndex":
+		if !rec.Unpack() {
+			r.err = fmt.Errorf("lcio: expected record %q to unpack", rec.Name())
+			return false
+		}
+		return r.Next()
+
+	case "LCIORandomAccess":
+		if !rec.Unpack() {
+			r.err = fmt.Errorf("lcio: expected record %q to unpack", rec.Name())
+			return false
+		}
+		return r.Next()
+
 	case "LCRunHeader":
 		if !rec.Unpack() {
 			r.err = fmt.Errorf("lcio: expected record %q to unpack", rec.Name())
