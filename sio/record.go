@@ -51,14 +51,14 @@ func (rec *Record) SetUnpack(unpack bool) {
 
 // Compress returns the compression flag
 func (rec *Record) Compress() bool {
-	return rec.options&g_opt_compress != 0
+	return rec.options&optCompress != 0
 }
 
 // SetCompress sets or resets the compression flag
 func (rec *Record) SetCompress(compress bool) {
-	rec.options &= g_opt_not_compress
+	rec.options &= optNotCompress
 	if compress {
-		rec.options |= g_opt_compress
+		rec.options |= optCompress
 	}
 }
 
@@ -79,9 +79,9 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 	switch ptr := ptr.(type) {
 	case Block:
 		block = ptr
-	case BinaryCodec:
+	case Codec:
 		rt := reflect.TypeOf(ptr)
-		block = &mBlockImpl{
+		block = &userBlock{
 			blk:     ptr,
 			version: 0,
 			name:    rt.Name(),
@@ -92,7 +92,7 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 		if rt.Kind() != reflect.Ptr {
 			return fmt.Errorf("sio: Connect needs a pointer to a block of data")
 		}
-		block = &blockImpl{
+		block = &genericBlock{
 			rt:      rt,
 			rv:      reflect.ValueOf(ptr),
 			version: 0,
@@ -104,31 +104,32 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 }
 
 // read reads a record
-func (rec *Record) read(buf *bytes.Buffer) error {
+func (rec *Record) read(r *reader) error {
 	var err error
-	//fmt.Printf("::: reading record [%s]... [%d]\n", rec.name, buf.Len())
+	// fmt.Printf("::: reading record [%s]... [%d]\n", rec.name, buf.Len())
 	// loop until data has been depleted
-	for buf.Len() > 0 {
+	for r.Len() > 0 {
 		// read block header
 		var hdr blockHeader
-		err = bread(buf, &hdr)
+		err = bread(r, &hdr)
 		if err != nil {
 			return err
 		}
-		if hdr.Typ != g_mark_block {
+		if hdr.Typ != blkMarker {
 			// fmt.Printf("*** err record[%s]: noblockmarker\n", rec.name)
 			return ErrRecordNoBlockMarker
 		}
 
 		var data blockData
-		err = bread(buf, &data)
+		err = bread(r, &data)
 		if err != nil {
 			return err
 		}
+		r.ver = data.Version
 
 		var cbuf bytes.Buffer
 		nlen := align4U32(data.NameLen)
-		n, err := io.CopyN(&cbuf, buf, int64(nlen))
+		n, err := io.CopyN(&cbuf, r, int64(nlen))
 		if err != nil {
 			// fmt.Printf(">>> err:%v\n", err)
 			return err
@@ -140,37 +141,39 @@ func (rec *Record) read(buf *bytes.Buffer) error {
 		blk, ok := rec.blocks[name]
 		if ok {
 			// fmt.Printf("### %q\n", string(buf.Bytes()))
-			err = blk.UnmarshalBinary(buf)
+			err = blk.UnmarshalSio(r)
 			if err != nil {
 				// fmt.Printf("*** error unmarshaling record=%q block=%q: %v\n", rec.name, name, err)
 				return err
 			}
-			//fmt.Printf(">>> read record=%q block=%q (buf=%d)\n", rec.name, name, buf.Len())
+			// fmt.Printf(">>> read record=%q block=%q (buf=%d)\n", rec.name, name, buf.Len())
 		}
 
 		// check whether there is still something to be read.
 		// if there is, check whether there is a block-marker
-		if buf.Len() > 0 {
-			next := bytes.Index(buf.Bytes(), g_mark_block_b)
+		if r.Len() > 0 {
+			next := bytes.Index(r.Bytes(), blkMarkerBeg)
 			if next > 0 {
 				pos := next - 4 // sizeof mark-block
-				buf.Next(pos)   // drain the buffer until next block
+				r.Next(pos)     // drain the buffer until next block
 			} else {
 				// drain the whole buffer
-				buf.Next(buf.Len())
+				r.Next(r.Len())
 			}
 		}
 	}
+	r.relocate()
+
 	//fmt.Printf("::: reading record [%s]... [done]\n", rec.name)
 	return err
 }
 
-func (rec *Record) write(buf *bytes.Buffer) error {
+func (rec *Record) write(w *writer) error {
 	var err error
 	for k, blk := range rec.blocks {
 
 		bhdr := blockHeader{
-			Typ: g_mark_block,
+			Typ: blkMarker,
 		}
 
 		bdata := blockData{
@@ -178,45 +181,50 @@ func (rec *Record) write(buf *bytes.Buffer) error {
 			NameLen: uint32(len(k)),
 		}
 
-		var b bytes.Buffer
-		err = blk.MarshalBinary(&b)
+		wblk := newWriterFrom(w)
+		wblk.ver = bdata.Version
+
+		err = blk.MarshalSio(wblk)
 		if err != nil {
 			return err
 		}
 
 		bhdr.Len = uint32(unsafe.Sizeof(bhdr)) +
 			uint32(unsafe.Sizeof(bdata)) +
-			align4U32(bdata.NameLen) + uint32(b.Len())
+			align4U32(bdata.NameLen) + uint32(wblk.Len())
 
 		// fmt.Printf("blockHeader: %v\n", bhdr)
 		// fmt.Printf("blockData:   %v (%s)\n", bdata, k)
 
-		err = bwrite(buf, &bhdr)
+		err = bwrite(w, &bhdr)
 		if err != nil {
 			return err
 		}
 
-		err = bwrite(buf, &bdata)
+		err = bwrite(w, &bdata)
 		if err != nil {
 			return err
 		}
 
-		_, err = buf.Write([]byte(k))
+		_, err = w.Write([]byte(k))
 		if err != nil {
 			return err
 		}
 		padlen := align4U32(bdata.NameLen) - bdata.NameLen
 		if padlen > 0 {
-			_, err = buf.Write(make([]byte, int(padlen)))
+			_, err = w.Write(make([]byte, int(padlen)))
 			if err != nil {
 				return err
 			}
 		}
 
-		_, err := io.Copy(buf, &b)
+		_, err := io.Copy(w, wblk.buf)
 		if err != nil {
 			return err
 		}
+		w.ids = wblk.ids
+		w.tag = wblk.tag
+		w.ptr = wblk.ptr
 	}
 	return err
 }

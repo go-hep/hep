@@ -5,28 +5,15 @@
 package sio
 
 import (
-	"bytes"
 	"reflect"
 )
 
-type BinaryMarshaler interface {
-	MarshalBinary(buf *bytes.Buffer) error
-}
-
-type BinaryUnmarshaler interface {
-	UnmarshalBinary(buf *bytes.Buffer) error
-}
-
-type BinaryCodec interface {
-	BinaryMarshaler
-	BinaryUnmarshaler
-}
-
+// Block is the interface implemented by an object that can be
+// stored to (and loaded from) an SIO stream.
 type Block interface {
-	BinaryCodec
+	Codec
 
 	Name() string
-	// Xfer(stream *Stream, op Operation, version int) error
 	Version() uint32
 }
 
@@ -42,51 +29,53 @@ type blockData struct {
 	NameLen uint32 // length of the block name
 }
 
-type blockImpl struct {
+// genericBlock provides a generic, reflect-based Block implementation
+type genericBlock struct {
 	rv      reflect.Value
 	rt      reflect.Type
 	version uint32
 	name    string
 }
 
-func (blk *blockImpl) Name() string {
+func (blk *genericBlock) Name() string {
 	return blk.name
 }
 
-func (blk *blockImpl) Version() uint32 {
+func (blk *genericBlock) Version() uint32 {
 	return blk.version
 }
 
-func (blk *blockImpl) MarshalBinary(buf *bytes.Buffer) error {
+func (blk *genericBlock) MarshalSio(w Writer) error {
 	var err error
-	err = bwrite(buf, blk.rv.Interface())
+	err = bwrite(w, blk.rv.Interface())
 	return err
 }
 
-func (blk *blockImpl) UnmarshalBinary(buf *bytes.Buffer) error {
+func (blk *genericBlock) UnmarshalSio(r Reader) error {
 	var err error
-	err = bread(buf, blk.rv.Interface())
+	err = bread(r, blk.rv.Interface())
 	return err
 }
 
-type mBlockImpl struct {
+// userBlock adapts a user-provided Codec implementation into a Block one.
+type userBlock struct {
 	version uint32
 	name    string
-	blk     BinaryCodec
+	blk     Codec
 }
 
-func (blk *mBlockImpl) Name() string {
+func (blk *userBlock) Name() string {
 	return blk.name
 }
 
-func (blk *mBlockImpl) Version() uint32 {
+func (blk *userBlock) Version() uint32 {
 	return blk.version
 }
 
-func (blk *mBlockImpl) MarshalBinary(buf *bytes.Buffer) error {
-	return blk.blk.MarshalBinary(buf)
+func (blk *userBlock) MarshalSio(w Writer) error {
+	return blk.blk.MarshalSio(w)
 }
 
-func (blk *mBlockImpl) UnmarshalBinary(buf *bytes.Buffer) error {
-	return blk.blk.UnmarshalBinary(buf)
+func (blk *userBlock) UnmarshalSio(r Reader) error {
+	return blk.blk.UnmarshalSio(r)
 }

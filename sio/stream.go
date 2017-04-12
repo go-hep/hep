@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"compress/flate"
 	"compress/zlib"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"os"
@@ -207,7 +208,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		//fmt.Printf(">>> buf=%v\n", buf[:])
 		//fmt.Printf(">>> rechdr=%v\n", rechdr)
 
-		if rechdr.Typ != g_mark_record {
+		if rechdr.Typ != recMarker {
 			return nil, ErrStreamNoRecMarker
 		}
 
@@ -290,7 +291,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 			}
 			//stream.recpos = recstart
 		}
-		recbuf := bytes.NewBuffer(buf)
+		recbuf := newReader(buf)
 		//fmt.Printf("::: recbuf: %d buf:%d\n", recbuf.Len(), len(buf))
 		err = record.read(recbuf)
 		if err != nil {
@@ -307,7 +308,7 @@ func (stream *Stream) WriteRecord(record *Record) error {
 
 	rechdr := recordHeader{
 		Len: 0,
-		Typ: g_mark_record,
+		Typ: recMarker,
 	}
 	recdata := recordData{
 		Options: record.options,
@@ -319,8 +320,8 @@ func (stream *Stream) WriteRecord(record *Record) error {
 	rechdr.Len = uint32(unsafe.Sizeof(rechdr)) + uint32(unsafe.Sizeof(recdata)) +
 		align4U32(uint32(recdata.NameLen))
 
-	var buf bytes.Buffer
-	err = record.write(&buf)
+	buf := newWriter()
+	err = record.write(buf)
 	if err != nil {
 		return err
 	}
@@ -345,7 +346,7 @@ func (stream *Stream) WriteRecord(record *Record) error {
 		}
 		recdata.DataLen = align4U32(uint32(b.Len()))
 
-		buf = b
+		buf.buf = &b
 	}
 
 	err = stream.write(&rechdr)
@@ -372,7 +373,7 @@ func (stream *Stream) WriteRecord(record *Record) error {
 	}
 
 	n := int64(buf.Len())
-	w, err := io.Copy(stream.f, &buf)
+	w, err := io.Copy(stream.f, buf.buf)
 	if err != nil {
 		return err
 	}
@@ -385,9 +386,9 @@ func (stream *Stream) WriteRecord(record *Record) error {
 }
 
 func (stream *Stream) read(data interface{}) error {
-	return bread(stream.f, data)
+	return binary.Read(stream.f, binary.BigEndian, data)
 }
 
 func (stream *Stream) write(data interface{}) error {
-	return bwrite(stream.f, data)
+	return binary.Write(stream.f, binary.BigEndian, data)
 }
