@@ -285,48 +285,16 @@ type T1 struct {
 }
 
 func (t1 *T1) MarshalSio(w sio.Writer) error {
-	var err error
-	err = sio.Marshal(w, t1.Name)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&t1.T2)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&t1.T3)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&t1.T4)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&t1.T5)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&t1.T6)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&t1.T7)
-	if err != nil {
-		return err
-	}
-
-	err = w.Tag(t1)
-	if err != nil {
-		return err
-	}
-
-	return err
+	enc := sio.NewEncoder(w)
+	enc.Encode(t1.Name)
+	enc.Pointer(&t1.T2)
+	enc.Pointer(&t1.T3)
+	enc.Pointer(&t1.T4)
+	enc.Pointer(&t1.T5)
+	enc.Pointer(&t1.T6)
+	enc.Pointer(&t1.T7)
+	enc.Tag(t1)
+	return enc.Err()
 }
 
 func (t1 *T1) UnmarshalSio(r sio.Reader) error {
@@ -347,18 +315,10 @@ type T2 struct {
 }
 
 func (t2 *T2) MarshalSio(w sio.Writer) error {
-	var err error
-	err = sio.Marshal(w, t2.Name)
-	if err != nil {
-		return err
-	}
-
-	err = w.Tag(t2)
-	if err != nil {
-		return err
-	}
-
-	return err
+	enc := sio.NewEncoder(w)
+	enc.Encode(t2.Name)
+	enc.Tag(t2)
+	return enc.Err()
 }
 
 func (t2 *T2) UnmarshalSio(r sio.Reader) error {
@@ -373,13 +333,10 @@ type T5 struct {
 }
 
 func (t2 *T5) MarshalSio(w sio.Writer) error {
-	var err error
-	err = sio.Marshal(w, t2.Name)
-	if err != nil {
-		return err
-	}
+	enc := sio.NewEncoder(w)
+	enc.Encode(t2.Name)
 	// no ptag
-	return err
+	return enc.Err()
 }
 
 func (t2 *T5) UnmarshalSio(r sio.Reader) error {
@@ -552,23 +509,11 @@ type C1 struct {
 }
 
 func (c1 *C1) MarshalSio(w sio.Writer) error {
-	var err error
-	err = sio.Marshal(w, c1.Name)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&c1.C2)
-	if err != nil {
-		return err
-	}
-
-	err = w.Tag(c1)
-	if err != nil {
-		return err
-	}
-
-	return err
+	enc := sio.NewEncoder(w)
+	enc.Encode(c1.Name)
+	enc.Pointer(&c1.C2)
+	enc.Tag(c1)
+	return enc.Err()
 }
 
 func (c1 *C1) UnmarshalSio(r sio.Reader) error {
@@ -585,23 +530,11 @@ type C2 struct {
 }
 
 func (c2 *C2) MarshalSio(w sio.Writer) error {
-	var err error
-	err = sio.Marshal(w, c2.Name)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&c2.C3)
-	if err != nil {
-		return err
-	}
-
-	err = w.Tag(c2)
-	if err != nil {
-		return err
-	}
-
-	return err
+	enc := sio.NewEncoder(w)
+	enc.Encode(c2.Name)
+	enc.Pointer(&c2.C3)
+	enc.Tag(c2)
+	return enc.Err()
 }
 
 func (c2 *C2) UnmarshalSio(r sio.Reader) error {
@@ -618,23 +551,11 @@ type C3 struct {
 }
 
 func (c3 *C3) MarshalSio(w sio.Writer) error {
-	var err error
-	err = sio.Marshal(w, c3.Name)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&c3.C1)
-	if err != nil {
-		return err
-	}
-
-	err = w.Tag(c3)
-	if err != nil {
-		return err
-	}
-
-	return err
+	enc := sio.NewEncoder(w)
+	enc.Encode(c3.Name)
+	enc.Pointer(&c3.C1)
+	enc.Tag(c3)
+	return enc.Err()
 }
 
 func (c3 *C3) UnmarshalSio(r sio.Reader) error {
