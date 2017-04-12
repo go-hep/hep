@@ -317,8 +317,6 @@ func TestExclusiveJetAlgorithms(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			// FIXME(sbinet): implement exclusive jets
-			t.Skipf("exclusive jets not implemented")
 			test := test
 			particles, err := loadParticles(test.input)
 			if err != nil {
