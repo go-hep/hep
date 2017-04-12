@@ -52,6 +52,13 @@ type Codec interface {
 	Unmarshaler
 }
 
+// Linker is the interface implemented by an object that
+// needs to recompute (internal) pointers, after the sio layer
+// had performed pointer tagging/chasing relocation.
+type Linker interface {
+	LinkSio(v uint32) error
+}
+
 type reader struct {
 	buf *bytes.Buffer
 	ver uint32

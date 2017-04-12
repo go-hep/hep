@@ -9,7 +9,6 @@ import "log"
 func typeFrom(name string) interface{} {
 	switch name {
 	case "MCParticle":
-		return nil // FIXME(sbinet)
 		return new(McParticles)
 	case "SimTrackerHit":
 		return new(SimTrackerHits)

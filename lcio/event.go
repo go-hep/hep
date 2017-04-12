@@ -159,21 +159,184 @@ type Event struct {
 }
 
 type McParticles struct {
-	Flags       Flags
-	Params      Params
-	McParticles []McParticle
+	Flags     Flags
+	Params    Params
+	Particles []McParticle
+}
+
+func (mc *McParticles) MarshalSio(w sio.Writer) error {
+	panic("not implemented")
+}
+
+func (mc *McParticles) UnmarshalSio(r sio.Reader) error {
+	var err error
+
+	err = sio.Unmarshal(r, &mc.Flags)
+	if err != nil {
+		return err
+	}
+
+	err = sio.Unmarshal(r, &mc.Params)
+	if err != nil {
+		return err
+	}
+
+	err = sio.Unmarshal(r, &mc.Particles)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (mc *McParticles) LinkSio(vers uint32) error {
+	var err error
+	switch {
+	case vers <= 8:
+		for i := range mc.Particles {
+			p := &mc.Particles[i]
+			for _, c := range p.Children {
+				if c != nil {
+					c.Parents = append(c.Parents, p)
+				}
+			}
+		}
+
+	default:
+		for i := range mc.Particles {
+			p := &mc.Particles[i]
+			for _, mom := range p.Parents {
+				if mom != nil {
+					mom.Children = append(mom.Children, p)
+				}
+			}
+		}
+	}
+
+	return err
 }
 
 type McParticle struct {
-	// Parent []pointer
+	Parents   []*McParticle
+	Children  []*McParticle
 	PDG       int32
 	GenStatus int32
-	SimStatus int32
+	SimStatus uint32
 	Vertex    [3]float64
 	Time      float32    // creation time of the particle in ns
-	Momentum  [3]float32 // Momentum at production vertex
-	Mass      float32
+	Momentum  [3]float64 // Momentum at production vertex
+	Mass      float64
 	Charge    float32
+	EndPoint  [3]float64
+	PEndPoint [3]float64
+	Spin      [3]float32
+	ColorFlow [2]int32
+}
+
+func (mc *McParticle) MarshalSio(w sio.Writer) error {
+	panic("not implemented")
+}
+
+func (mc *McParticle) UnmarshalSio(r sio.Reader) error {
+	var err error
+
+	err = r.Tag(mc)
+	if err != nil {
+		return err
+	}
+
+	var n int32
+	err = sio.Unmarshal(r, &n)
+	if err != nil {
+		return err
+	}
+	if n > 0 {
+		mc.Parents = make([]*McParticle, int(n))
+		for ii := range mc.Parents {
+			err = r.Pointer(&mc.Parents[ii])
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	err = sio.Unmarshal(r, &mc.PDG)
+	if err != nil {
+		return err
+	}
+
+	err = sio.Unmarshal(r, &mc.GenStatus)
+	if err != nil {
+		return err
+	}
+
+	err = sio.Unmarshal(r, &mc.SimStatus)
+	if err != nil {
+		return err
+	}
+
+	err = sio.Unmarshal(r, &mc.Vertex)
+	if err != nil {
+		return err
+	}
+
+	if r.Version() > 1002 {
+		err = sio.Unmarshal(r, &mc.Time)
+		if err != nil {
+			return err
+		}
+	}
+
+	var mom [3]float32
+	err = sio.Unmarshal(r, &mom)
+	if err != nil {
+		return err
+	}
+	mc.Momentum[0] = float64(mom[0])
+	mc.Momentum[1] = float64(mom[1])
+	mc.Momentum[2] = float64(mom[2])
+
+	var mass float32
+	err = sio.Unmarshal(r, &mass)
+	if err != nil {
+		return err
+	}
+	mc.Mass = float64(mass)
+
+	err = sio.Unmarshal(r, &mc.Charge)
+	if err != nil {
+		return err
+	}
+
+	if mc.SimStatus&uint32(1<<31) != 0 {
+		err = sio.Unmarshal(r, &mc.EndPoint)
+		if err != nil {
+			return err
+		}
+		if r.Version() > 2006 {
+			var mom [3]float32
+			err = sio.Unmarshal(r, &mom)
+			if err != nil {
+				return err
+			}
+			mc.PEndPoint[0] = float64(mom[0])
+			mc.PEndPoint[1] = float64(mom[1])
+			mc.PEndPoint[2] = float64(mom[2])
+		}
+	}
+
+	if r.Version() > 1051 {
+		err = sio.Unmarshal(r, &mc.Spin)
+		if err != nil {
+			return err
+		}
+
+		err = sio.Unmarshal(r, &mc.ColorFlow)
+		if err != nil {
+			return err
+		}
+	}
+	return err
 }
 
 type SimTrackerHits struct {
@@ -663,6 +826,8 @@ func (obj *GenericObject) UnmarshalSio(r sio.Reader) error {
 }
 
 var _ sio.Codec = (*Index)(nil)
+var _ sio.Codec = (*McParticle)(nil)
+var _ sio.Codec = (*McParticles)(nil)
 var _ sio.Codec = (*GenericObject)(nil)
 var _ sio.Codec = (*SimTrackerHits)(nil)
 var _ sio.Codec = (*SimCalorimeterHits)(nil)

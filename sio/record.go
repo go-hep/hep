@@ -107,6 +107,11 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 func (rec *Record) read(r *reader) error {
 	var err error
 	// fmt.Printf("::: reading record [%s]... [%d]\n", rec.name, buf.Len())
+	type fixlink struct {
+		link Linker
+		vers uint32
+	}
+	var linkers []fixlink
 	// loop until data has been depleted
 	for r.Len() > 0 {
 		// read block header
@@ -147,6 +152,11 @@ func (rec *Record) read(r *reader) error {
 				return err
 			}
 			// fmt.Printf(">>> read record=%q block=%q (buf=%d)\n", rec.name, name, buf.Len())
+			if ublk, ok := blk.(*userBlock); ok {
+				if link, ok := ublk.blk.(Linker); ok {
+					linkers = append(linkers, fixlink{link, data.Version})
+				}
+			}
 		}
 
 		// check whether there is still something to be read.
@@ -163,6 +173,12 @@ func (rec *Record) read(r *reader) error {
 		}
 	}
 	r.relocate()
+	for _, fix := range linkers {
+		err = fix.link.LinkSio(fix.vers)
+		if err != nil {
+			return err
+		}
+	}
 
 	//fmt.Printf("::: reading record [%s]... [done]\n", rec.name)
 	return err
