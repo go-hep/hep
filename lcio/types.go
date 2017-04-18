@@ -24,6 +24,8 @@ func typeFrom(name string) interface{} {
 		return new(RawCalorimeterHits)
 	case "CalorimeterHit":
 		return new(CalorimeterHits)
+	case "TrackerHit":
+		return new(TrackerHits)
 
 	case "LCGenericObject":
 		return new(GenericObject)
