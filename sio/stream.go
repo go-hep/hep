@@ -145,7 +145,7 @@ func (stream *Stream) Record(name string) *Record {
 	rec = &Record{
 		name:   name,
 		unpack: false,
-		blocks: make(map[string]Block),
+		bindex: make(map[string]int),
 	}
 	stream.recs[name] = rec
 	return stream.recs[name]

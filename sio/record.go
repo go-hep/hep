@@ -28,10 +28,12 @@ type recordData struct {
 
 // Record manages blocks of data
 type Record struct {
-	name    string           // record name
-	unpack  bool             // whether to unpack incoming records
-	options uint32           // options (flag word)
-	blocks  map[string]Block // connected blocks
+	name    string         // record name
+	unpack  bool           // whether to unpack incoming records
+	options uint32         // options (flag word)
+	bindex  map[string]int // index of connected blocks
+	bnames  []string       // connected blocks names
+	blocks  []Block        // connected blocks
 }
 
 // Name returns the name of this record
@@ -70,8 +72,12 @@ func (rec *Record) Options() uint32 {
 // Connect connects a Block to this Record (for reading or writing)
 func (rec *Record) Connect(name string, ptr interface{}) error {
 	var err error
-	_, dup := rec.blocks[name]
-	if dup {
+	iblk, ok := rec.bindex[name]
+	if !ok {
+		iblk = len(rec.blocks)
+		rec.bnames = append(rec.bnames, name)
+		rec.blocks = append(rec.blocks, nil)
+		rec.bindex[name] = iblk
 		//return fmt.Errorf("sio.Record: Block name [%s] already connected", name)
 		//return ErrBlockConnected
 	}
@@ -107,7 +113,7 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 			name:    rt.Name(),
 		}
 	}
-	rec.blocks[name] = block
+	rec.blocks[iblk] = block
 	return err
 }
 
@@ -151,8 +157,9 @@ func (rec *Record) read(r *reader) error {
 			return fmt.Errorf("sio: read too few bytes (got=%d. expected=%d)", n, nlen)
 		}
 		name := string(cbuf.Bytes()[:data.NameLen])
-		blk, ok := rec.blocks[name]
+		iblk, ok := rec.bindex[name]
 		if ok {
+			blk := rec.blocks[iblk]
 			// fmt.Printf("### %q\n", string(buf.Bytes()))
 			err = blk.UnmarshalSio(r)
 			if err != nil {
@@ -194,8 +201,8 @@ func (rec *Record) read(r *reader) error {
 
 func (rec *Record) write(w *writer) error {
 	var err error
-	for k, blk := range rec.blocks {
-
+	for i, k := range rec.bnames {
+		blk := rec.blocks[i]
 		bhdr := blockHeader{
 			Typ: blkMarker,
 		}
