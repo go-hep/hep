@@ -57,7 +57,33 @@ func (*CalorimeterHits) VersionSio() uint32 {
 }
 
 func (hits *CalorimeterHits) MarshalSio(w sio.Writer) error {
-	panic("not implemented")
+	enc := sio.NewEncoder(w)
+	enc.Encode(&hits.Flags)
+	enc.Encode(&hits.Params)
+	enc.Encode(int32(len(hits.Hits)))
+	for i := range hits.Hits {
+		hit := &hits.Hits[i]
+		enc.Encode(&hit.CellID0)
+		if hits.Flags.Test(RChBitID1) {
+			enc.Encode(&hit.CellID1)
+		}
+		enc.Encode(&hit.Energy)
+		if hits.Flags.Test(RChBitEnergyError) {
+			enc.Encode(&hit.EnergyErr)
+		}
+		if hits.Flags.Test(RChBitTime) {
+			enc.Encode(&hit.Time)
+		}
+		if hits.Flags.Test(RChBitLong) {
+			enc.Encode(&hit.Pos)
+		}
+		enc.Encode(&hit.Type)
+		enc.Pointer(&hit.Raw)
+		if !hits.Flags.Test(RChBitNoPtr) {
+			enc.Tag(hit)
+		}
+	}
+	return enc.Err()
 }
 
 func (hits *CalorimeterHits) UnmarshalSio(r sio.Reader) error {

@@ -101,7 +101,7 @@ func (evt *Event) String() string {
 		evt.EventNumber, evt.RunNumber, evt.TimeStamp, evt.Weight(),
 	)
 	fmt.Fprintf(o, "%s\n", strings.Repeat("=", 80))
-	fmt.Fprintf(o, " date       %v\n", time.Unix(0, evt.TimeStamp).UTC().Format("02.01.2006 03:04:05.999999999"))
+	fmt.Fprintf(o, " date       %v\n", time.Unix(0, evt.TimeStamp).UTC().Format("02.01.2006 15:04:05.999999999"))
 	fmt.Fprintf(o, " detector : %s\n", evt.Detector)
 	fmt.Fprintf(o, " event parameters:\n%v\n", evt.Params)
 
