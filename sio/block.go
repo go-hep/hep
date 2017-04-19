@@ -12,9 +12,9 @@ import (
 // stored to (and loaded from) an SIO stream.
 type Block interface {
 	Codec
+	Versioner
 
 	Name() string
-	Version() uint32
 }
 
 // blockHeader describes the on-disk block data (header part)
@@ -41,7 +41,7 @@ func (blk *genericBlock) Name() string {
 	return blk.name
 }
 
-func (blk *genericBlock) Version() uint32 {
+func (blk *genericBlock) VersionSio() uint32 {
 	return blk.version
 }
 
@@ -68,7 +68,7 @@ func (blk *userBlock) Name() string {
 	return blk.name
 }
 
-func (blk *userBlock) Version() uint32 {
+func (blk *userBlock) VersionSio() uint32 {
 	return blk.version
 }
 

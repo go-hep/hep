@@ -8,6 +8,12 @@ import (
 	"go-hep.org/x/hep/sio"
 )
 
+const (
+	VersionMajor uint32 = 2
+	VersionMinor uint32 = 8
+	Version      uint32 = (VersionMajor << 16) + VersionMinor
+)
+
 type RandomAccess struct {
 	RunMin         int32
 	EventMin       int32
@@ -86,6 +92,10 @@ type RunHeader struct {
 	Params       Params
 }
 
+func (*RunHeader) VersionSio() uint32 {
+	return Version
+}
+
 type EventHeader struct {
 	RunNumber   int32
 	EventNumber int32
@@ -93,6 +103,10 @@ type EventHeader struct {
 	Detector    string
 	Blocks      []Block
 	Params      Params
+}
+
+func (*EventHeader) VersionSio() uint32 {
+	return Version
 }
 
 type Block struct {
@@ -120,6 +134,10 @@ type McParticles struct {
 	Flags     Flags
 	Params    Params
 	Particles []McParticle
+}
+
+func (*McParticles) VersionSio() uint32 {
+	return Version
 }
 
 func (mc *McParticles) MarshalSio(w sio.Writer) error {
@@ -178,6 +196,10 @@ type McParticle struct {
 	ColorFlow [2]int32
 }
 
+func (mc *McParticle) VersionSio() uint32 {
+	return Version
+}
+
 func (mc *McParticle) MarshalSio(w sio.Writer) error {
 	panic("not implemented")
 }
@@ -199,7 +221,7 @@ func (mc *McParticle) UnmarshalSio(r sio.Reader) error {
 	dec.Decode(&mc.GenStatus)
 	dec.Decode(&mc.SimStatus)
 	dec.Decode(&mc.Vertex)
-	if r.Version() > 1002 {
+	if r.VersionSio() > 1002 {
 		dec.Decode(&mc.Time)
 	}
 
@@ -217,7 +239,7 @@ func (mc *McParticle) UnmarshalSio(r sio.Reader) error {
 
 	if mc.SimStatus&uint32(1<<31) != 0 {
 		dec.Decode(&mc.EndPoint)
-		if r.Version() > 2006 {
+		if r.VersionSio() > 2006 {
 			var mom [3]float32
 			dec.Decode(&mom)
 			mc.PEndPoint[0] = float64(mom[0])
@@ -226,7 +248,7 @@ func (mc *McParticle) UnmarshalSio(r sio.Reader) error {
 		}
 	}
 
-	if r.Version() > 1051 {
+	if r.VersionSio() > 1051 {
 		dec.Decode(&mc.Spin)
 		dec.Decode(&mc.ColorFlow)
 	}
@@ -253,7 +275,7 @@ func (hits *SimTrackerHits) UnmarshalSio(r sio.Reader) error {
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
 		dec.Decode(&hit.CellID0)
-		if r.Version() > 1051 && hits.Flags.Test(ThBitID1) {
+		if r.VersionSio() > 1051 && hits.Flags.Test(ThBitID1) {
 			dec.Decode(&hit.CellID1)
 		}
 		dec.Decode(&hit.Pos)
@@ -262,9 +284,14 @@ func (hits *SimTrackerHits) UnmarshalSio(r sio.Reader) error {
 		dec.Pointer(&hit.Mc)
 		if hits.Flags.Test(ThBitMomentum) {
 			dec.Decode(&hit.Momentum)
-			dec.Decode(&hit.PathLength)
+			if r.VersionSio() > 1006 {
+				dec.Decode(&hit.PathLength)
+			}
 		}
-		if r.Version() > 1000 {
+		if r.VersionSio() > 2007 {
+			dec.Decode(&hit.Quality)
+		}
+		if r.VersionSio() > 1000 {
 			dec.Tag(hit)
 		}
 	}
@@ -280,12 +307,17 @@ type SimTrackerHit struct {
 	Mc         *McParticle
 	Momentum   [3]float32
 	PathLength float32
+	Quality    int32
 }
 
 type SimCalorimeterHits struct {
 	Flags  Flags
 	Params Params
 	Hits   []SimCalorimeterHit
+}
+
+func (*SimCalorimeterHits) VersionSio() uint32 {
+	return Version
 }
 
 func (hits *SimCalorimeterHits) MarshalSio(w sio.Writer) error {
@@ -302,7 +334,7 @@ func (hits *SimCalorimeterHits) UnmarshalSio(r sio.Reader) error {
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
 		dec.Decode(&hit.CellID0)
-		if r.Version() < 9 || hits.Flags.Test(ChBitID1) {
+		if r.VersionSio() < 9 || hits.Flags.Test(ChBitID1) {
 			dec.Decode(&hit.CellID1)
 		}
 		dec.Decode(&hit.Energy)
@@ -319,12 +351,12 @@ func (hits *SimCalorimeterHits) UnmarshalSio(r sio.Reader) error {
 			dec.Decode(&c.Time)
 			if hits.Flags.Test(ChBitStep) {
 				dec.Decode(&c.PDG)
-				if r.Version() > 1051 {
+				if r.VersionSio() > 1051 {
 					dec.Decode(&c.StepPos)
 				}
 			}
 		}
-		if r.Version() > 1000 {
+		if r.VersionSio() > 1000 {
 			dec.Tag(hit)
 		}
 	}
@@ -386,7 +418,7 @@ func (hits *RawCalorimeterHits) UnmarshalSio(r sio.Reader) error {
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
 		dec.Decode(&hit.CellID0)
-		if r.Version() == 8 || hits.Flags.Test(RChBitID1) {
+		if r.VersionSio() == 8 || hits.Flags.Test(RChBitID1) {
 			dec.Decode(&hit.CellID1)
 		}
 		dec.Decode(&hit.Amplitude)
@@ -429,20 +461,20 @@ func (hits *CalorimeterHits) UnmarshalSio(r sio.Reader) error {
 		dec.Decode(&hit.CellID0)
 		dec.Decode(&hit.CellID1)
 		dec.Decode(&hit.Energy)
-		if r.Version() > 1009 && hits.Flags.Test(RChBitEnergyError) {
+		if r.VersionSio() > 1009 && hits.Flags.Test(RChBitEnergyError) {
 			dec.Decode(&hit.EnergyErr)
 		}
-		if r.Version() > 1002 && hits.Flags.Test(RChBitTime) {
+		if r.VersionSio() > 1002 && hits.Flags.Test(RChBitTime) {
 			dec.Decode(&hit.Time)
 		}
 		if hits.Flags.Test(RChBitBarrel) {
 			dec.Decode(&hit.Pos)
 		}
-		if r.Version() > 1002 {
+		if r.VersionSio() > 1002 {
 			dec.Decode(&hit.Type)
 			dec.Pointer(&hit.Raw)
 		}
-		if r.Version() > 1002 {
+		if r.VersionSio() > 1002 {
 			// the logic of the pointer bit has been inverted in v1.3
 			if hits.Flags.Test(RChBitNoPtr) {
 				dec.Tag(hit)
@@ -486,13 +518,13 @@ func (hits *TrackerHits) UnmarshalSio(r sio.Reader) error {
 	hits.Hits = make([]TrackerHit, int(n))
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
-		if r.Version() > 1051 {
+		if r.VersionSio() > 1051 {
 			dec.Decode(&hit.CellID0)
 			if hits.Flags.Test(ThBitID1) {
 				dec.Decode(&hit.CellID1)
 			}
 		}
-		if r.Version() > 1002 {
+		if r.VersionSio() > 1002 {
 			dec.Decode(&hit.Type)
 		}
 		dec.Decode(&hit.Pos)
@@ -506,16 +538,16 @@ func (hits *TrackerHits) UnmarshalSio(r sio.Reader) error {
 		hit.Cov[5] = float64(cov[5])
 
 		dec.Decode(&hit.EDep)
-		if r.Version() > 1012 {
+		if r.VersionSio() > 1012 {
 			dec.Decode(&hit.EDepErr)
 		}
 		dec.Decode(&hit.Time)
-		if r.Version() > 1011 {
+		if r.VersionSio() > 1011 {
 			dec.Decode(&hit.Quality)
 		}
 
 		var n int32 = 1
-		if r.Version() > 1002 {
+		if r.VersionSio() > 1002 {
 			dec.Decode(&n)
 		}
 		hit.RawHits = make([]*RawCalorimeterHit, int(n))

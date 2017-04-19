@@ -18,7 +18,7 @@ import (
 type Reader interface {
 	io.Reader
 
-	Version() uint32
+	Versioner
 	Tag(ptr interface{}) error
 	Pointer(ptr interface{}) error
 }
@@ -28,7 +28,7 @@ type Reader interface {
 type Writer interface {
 	io.Writer
 
-	Version() uint32
+	Versioner
 	Tag(ptr interface{}) error
 	Pointer(ptr interface{}) error
 }
@@ -57,6 +57,12 @@ type Codec interface {
 // had performed pointer tagging/chasing relocation.
 type Linker interface {
 	LinkSio(v uint32) error
+}
+
+// Versioner is the interface implemented by an object that
+// tells which version of SIO serialization/deserialization it supports.
+type Versioner interface {
+	VersionSio() uint32
 }
 
 type reader struct {
@@ -90,7 +96,7 @@ func (r *reader) Next(n int) []byte {
 	return r.buf.Next(n)
 }
 
-func (r *reader) Version() uint32 {
+func (r *reader) VersionSio() uint32 {
 	min := r.ver & uint32(0x0000ffff)
 	maj := (r.ver & uint32(0xffff0000)) >> 16
 	return maj*1000 + min
@@ -180,7 +186,7 @@ func (w *writer) Len() int {
 	return w.buf.Len()
 }
 
-func (w *writer) Version() uint32 {
+func (w *writer) VersionSio() uint32 {
 	min := w.ver & uint32(0x0000ffff)
 	maj := (w.ver & uint32(0xffff0000)) >> 16
 	return maj*1000 + min

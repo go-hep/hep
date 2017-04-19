@@ -81,9 +81,13 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 		block = ptr
 	case Codec:
 		rt := reflect.TypeOf(ptr)
+		var vers uint32
+		if ptr, ok := ptr.(Versioner); ok {
+			vers = ptr.VersionSio()
+		}
 		block = &userBlock{
 			blk:     ptr,
-			version: 0,
+			version: vers,
 			name:    rt.Name(),
 		}
 
@@ -92,10 +96,14 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 		if rt.Kind() != reflect.Ptr {
 			return fmt.Errorf("sio: Connect needs a pointer to a block of data")
 		}
+		var vers uint32
+		if ptr, ok := ptr.(Versioner); ok {
+			vers = ptr.VersionSio()
+		}
 		block = &genericBlock{
 			rt:      rt,
 			rv:      reflect.ValueOf(ptr),
-			version: 0,
+			version: vers,
 			name:    rt.Name(),
 		}
 	}
@@ -193,7 +201,7 @@ func (rec *Record) write(w *writer) error {
 		}
 
 		bdata := blockData{
-			Version: blk.Version(),
+			Version: blk.VersionSio(),
 			NameLen: uint32(len(k)),
 		}
 
