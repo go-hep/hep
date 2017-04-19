@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/kr/pretty"
 	"go-hep.org/x/hep/lcio"
 )
 
@@ -42,7 +41,7 @@ func main() {
 
 	for ievt := int64(0); r.Next() && (*nevts < 0 || ievt < *nevts); ievt++ {
 		evt := r.Event()
-		log.Printf("%s", pretty.Sprintf("ievt[%d]: % #v\n", ievt, evt))
+		log.Printf("--- ievt[%d] ---\n%v", ievt, &evt)
 	}
 	err = r.Err()
 	if err != nil {
