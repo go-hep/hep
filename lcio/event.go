@@ -438,19 +438,148 @@ type Contrib struct {
 type FloatVec struct {
 	Flags    Flags
 	Params   Params
-	Elements []float32
+	Elements [][]float32
+}
+
+func (*FloatVec) VersionSio() uint32 {
+	return Version
+}
+
+func (vec *FloatVec) MarshalSio(w sio.Writer) error {
+	enc := sio.NewEncoder(w)
+	enc.Encode(&vec.Flags)
+	enc.Encode(&vec.Params)
+	enc.Encode(vec.Elements)
+	enc.Encode(int32(len(vec.Elements)))
+	for i := range vec.Elements {
+		enc.Encode(int32(len(vec.Elements[i])))
+		for _, v := range vec.Elements[i] {
+			enc.Encode(v)
+		}
+		if w.VersionSio() > 1002 {
+			enc.Tag(&vec.Elements[i])
+		}
+	}
+	return enc.Err()
+}
+
+func (vec *FloatVec) UnmarshalSio(r sio.Reader) error {
+	dec := sio.NewDecoder(r)
+	dec.Decode(&vec.Flags)
+	dec.Decode(&vec.Params)
+	var nvecs int32
+	dec.Decode(&nvecs)
+	vec.Elements = make([][]float32, int(nvecs))
+	for i := range vec.Elements {
+		var n int32
+		dec.Decode(&n)
+		vec.Elements[i] = make([]float32, int(n))
+		for j := range vec.Elements[i] {
+			dec.Decode(&vec.Elements[i][j])
+		}
+		if r.VersionSio() > 1002 {
+			dec.Tag(&vec.Elements[i])
+		}
+	}
+	return dec.Err()
 }
 
 type IntVec struct {
 	Flags    Flags
 	Params   Params
-	Elements []int32
+	Elements [][]int32
+}
+
+func (*IntVec) VersionSio() uint32 {
+	return Version
+}
+
+func (vec *IntVec) MarshalSio(w sio.Writer) error {
+	enc := sio.NewEncoder(w)
+	enc.Encode(&vec.Flags)
+	enc.Encode(&vec.Params)
+	enc.Encode(vec.Elements)
+	enc.Encode(int32(len(vec.Elements)))
+	for i := range vec.Elements {
+		enc.Encode(int32(len(vec.Elements[i])))
+		for _, v := range vec.Elements[i] {
+			enc.Encode(v)
+		}
+		if w.VersionSio() > 1002 {
+			enc.Tag(&vec.Elements[i])
+		}
+	}
+	return enc.Err()
+}
+
+func (vec *IntVec) UnmarshalSio(r sio.Reader) error {
+	dec := sio.NewDecoder(r)
+	dec.Decode(&vec.Flags)
+	dec.Decode(&vec.Params)
+	var nvecs int32
+	dec.Decode(&nvecs)
+	vec.Elements = make([][]int32, int(nvecs))
+	for i := range vec.Elements {
+		var n int32
+		dec.Decode(&n)
+		vec.Elements[i] = make([]int32, int(n))
+		for j := range vec.Elements[i] {
+			dec.Decode(&vec.Elements[i][j])
+		}
+		if r.VersionSio() > 1002 {
+			dec.Tag(&vec.Elements[i])
+		}
+	}
+	return dec.Err()
 }
 
 type StrVec struct {
 	Flags    Flags
 	Params   Params
-	Elements []string
+	Elements [][]string
+}
+
+func (*StrVec) VersionSio() uint32 {
+	return Version
+}
+
+func (vec *StrVec) MarshalSio(w sio.Writer) error {
+	enc := sio.NewEncoder(w)
+	enc.Encode(&vec.Flags)
+	enc.Encode(&vec.Params)
+	enc.Encode(vec.Elements)
+	enc.Encode(int32(len(vec.Elements)))
+	for i := range vec.Elements {
+		enc.Encode(int32(len(vec.Elements[i])))
+		for _, v := range vec.Elements[i] {
+			enc.Encode(v)
+		}
+		if w.VersionSio() > 1002 {
+			enc.Tag(&vec.Elements[i])
+		}
+	}
+	return enc.Err()
+}
+
+func (vec *StrVec) UnmarshalSio(r sio.Reader) error {
+	dec := sio.NewDecoder(r)
+	dec.Decode(&vec.Flags)
+	dec.Decode(&vec.Params)
+	var nvecs int32
+	dec.Decode(&nvecs)
+	vec.Elements = make([][]string, int(nvecs))
+	for i := range vec.Elements {
+		var n int32
+		dec.Decode(&n)
+		vec.Elements[i] = make([]string, int(n))
+		for j := range vec.Elements[i] {
+			dec.Decode(&vec.Elements[i][j])
+		}
+		if r.VersionSio() > 1002 {
+			dec.Tag(&vec.Elements[i])
+		}
+	}
+	return dec.Err()
 }
 
 type RawCalorimeterHits struct {
@@ -765,6 +894,9 @@ var _ sio.Codec = (*McParticles)(nil)
 var _ sio.Codec = (*GenericObject)(nil)
 var _ sio.Codec = (*SimTrackerHits)(nil)
 var _ sio.Codec = (*SimCalorimeterHits)(nil)
+var _ sio.Codec = (*FloatVec)(nil)
+var _ sio.Codec = (*IntVec)(nil)
+var _ sio.Codec = (*StrVec)(nil)
 var _ sio.Codec = (*RawCalorimeterHits)(nil)
 var _ sio.Codec = (*CalorimeterHits)(nil)
 var _ sio.Codec = (*TrackerHits)(nil)
