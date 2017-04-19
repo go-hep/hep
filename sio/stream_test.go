@@ -691,3 +691,81 @@ func TestPointerCycleStream(t *testing.T) {
 		}
 	}()
 }
+
+type ShortBlock struct {
+	Name  string
+	Value int32
+}
+
+func (blk *ShortBlock) MarshalSio(w sio.Writer) error {
+	enc := sio.NewEncoder(w)
+	enc.Encode(blk.Name)
+	enc.Encode(blk.Value)
+	return enc.Err()
+}
+
+func (blk *ShortBlock) UnmarshalSio(r sio.Reader) error {
+	dec := sio.NewDecoder(r)
+	dec.Decode(&blk.Name)
+	// drop reading of blk.Value
+	//dec.Decode(&blk.Value)
+	return dec.Err()
+}
+
+var _ sio.Codec = (*ShortBlock)(nil)
+
+func TestShortBlockRead(t *testing.T) {
+	const fname = "testdata/short-read.sio"
+	func() {
+		f, err := sio.Create(fname)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+
+		v := ShortBlock{"block", 42}
+		rec := f.Record("Data")
+		rec.SetUnpack(true)
+
+		err = rec.Connect("my-block", &v)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = f.WriteRecord(rec)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = f.Sync()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = f.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	func() {
+		f, err := sio.Open(fname)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+
+		var v ShortBlock
+		rec := f.Record("Data")
+		rec.SetUnpack(true)
+		err = rec.Connect("my-block", &v)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, err = f.ReadRecord()
+		if err == nil {
+			t.Fatalf("expected error reading record")
+		}
+	}()
+}

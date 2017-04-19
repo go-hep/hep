@@ -8,6 +8,11 @@ import (
 	"reflect"
 )
 
+var (
+	blockHeaderSize = uint32(reflect.TypeOf((*blockHeader)(nil)).Elem().Size())
+	blockDataSize   = uint32(reflect.TypeOf((*blockData)(nil)).Elem().Size())
+)
+
 // Block is the interface implemented by an object that can be
 // stored to (and loaded from) an SIO stream.
 type Block interface {

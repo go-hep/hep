@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"reflect"
-	"unsafe"
 )
 
 // recordHeader describes the on-disk record (header part)
@@ -128,6 +127,7 @@ func (rec *Record) read(r *reader) error {
 	var linkers []fixlink
 	// loop until data has been depleted
 	for r.Len() > 0 {
+		beg := r.Len()
 		// read block header
 		var hdr blockHeader
 		err = bread(r, &hdr)
@@ -154,7 +154,7 @@ func (rec *Record) read(r *reader) error {
 			return err
 		}
 		if n != int64(nlen) {
-			return fmt.Errorf("sio: read too few bytes (got=%d. expected=%d)", n, nlen)
+			return ErrBlockShortRead
 		}
 		name := string(cbuf.Bytes()[:data.NameLen])
 		iblk, ok := rec.bindex[name]
@@ -162,9 +162,25 @@ func (rec *Record) read(r *reader) error {
 			blk := rec.blocks[iblk]
 			// fmt.Printf("### %q\n", string(buf.Bytes()))
 			err = blk.UnmarshalSio(r)
+			end := r.Len()
 			if err != nil {
 				// fmt.Printf("*** error unmarshaling record=%q block=%q: %v\n", rec.name, name, err)
 				return err
+			}
+			if beg-end != int(hdr.Len) {
+				/*
+					if true {
+						var typ interface{}
+						switch blk := blk.(type) {
+						case *userBlock:
+							typ = blk.blk
+						case *genericBlock:
+							typ = blk.rv.Interface()
+						}
+						log.Printf("record %q block %q (%T) (beg-end=%d-%d=%d != %d)", rec.Name(), name, typ, beg, end, beg-end, int(hdr.Len))
+					} else {
+				*/
+				return ErrBlockShortRead
 			}
 			// fmt.Printf(">>> read record=%q block=%q (buf=%d)\n", rec.name, name, buf.Len())
 			if ublk, ok := blk.(*userBlock); ok {
@@ -220,8 +236,7 @@ func (rec *Record) write(w *writer) error {
 			return err
 		}
 
-		bhdr.Len = uint32(unsafe.Sizeof(bhdr)) +
-			uint32(unsafe.Sizeof(bdata)) +
+		bhdr.Len = uint32(blockHeaderSize) + uint32(blockDataSize) +
 			align4U32(bdata.NameLen) + uint32(wblk.Len())
 
 		// fmt.Printf("blockHeader: %v\n", bhdr)

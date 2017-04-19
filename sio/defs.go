@@ -4,10 +4,6 @@
 
 package sio
 
-import (
-	"errors"
-)
-
 type Operation int
 
 const (
@@ -34,10 +30,6 @@ const (
 
 var (
 	blkMarkerBeg = []byte{222, 173, 190, 239}
-)
-
-var (
-	errPointerIDOverflow = errors.New("sio: pointer id overflow")
 )
 
 // align4U32 returns sz adjusted to align at 4-byte boundaries
