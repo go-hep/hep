@@ -68,14 +68,14 @@ type Versioner interface {
 type reader struct {
 	buf *bytes.Buffer
 	ver uint32
-	ptr map[uint32]interface{}
+	ptr map[interface{}]uint32
 	tag map[interface{}]uint32
 }
 
 func newReader(data []byte) *reader {
 	return &reader{
 		buf: bytes.NewBuffer(data),
-		ptr: make(map[uint32]interface{}),
+		ptr: make(map[interface{}]uint32),
 		tag: make(map[interface{}]uint32),
 	}
 }
@@ -103,15 +103,15 @@ func (r *reader) VersionSio() uint32 {
 }
 
 func (r *reader) Tag(ptr interface{}) error {
-	var id uint32
-	err := binary.Read(r.buf, binary.BigEndian, &id)
+	var pid uint32
+	err := binary.Read(r.buf, binary.BigEndian, &pid)
 	if err != nil {
 		return err
 	}
-	if id == ptagMarker {
+	if pid == ptagMarker {
 		return nil
 	}
-	r.tag[ptr] = id
+	r.tag[ptr] = pid
 	return nil
 }
 
@@ -130,13 +130,13 @@ func (r *reader) Pointer(ptr interface{}) error {
 		return nil
 	}
 
-	r.ptr[pid] = ptr
+	r.ptr[ptr] = pid
 	return nil
 }
 
 func (r *reader) relocate() {
 ptrloop:
-	for pid, ptr := range r.ptr {
+	for ptr, pid := range r.ptr {
 		rptr := reflect.ValueOf(ptr)
 		for tag, tid := range r.tag {
 			if tid == pid {
