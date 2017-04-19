@@ -141,7 +141,11 @@ func (*McParticles) VersionSio() uint32 {
 }
 
 func (mc *McParticles) MarshalSio(w sio.Writer) error {
-	panic("not implemented")
+	enc := sio.NewEncoder(w)
+	enc.Encode(&mc.Flags)
+	enc.Encode(&mc.Params)
+	enc.Encode(&mc.Particles)
+	return enc.Err()
 }
 
 func (mc *McParticles) UnmarshalSio(r sio.Reader) error {
@@ -168,7 +172,8 @@ func (mc *McParticles) LinkSio(vers uint32) error {
 	default:
 		for i := range mc.Particles {
 			p := &mc.Particles[i]
-			for _, mom := range p.Parents {
+			for i := range p.Parents {
+				mom := p.Parents[i]
 				if mom != nil {
 					mom.Children = append(mom.Children, p)
 				}
@@ -201,7 +206,30 @@ func (mc *McParticle) VersionSio() uint32 {
 }
 
 func (mc *McParticle) MarshalSio(w sio.Writer) error {
-	panic("not implemented")
+	enc := sio.NewEncoder(w)
+	enc.Tag(mc)
+	enc.Encode(int32(len(mc.Parents)))
+	for ii := range mc.Parents {
+		enc.Pointer(&mc.Parents[ii])
+	}
+	enc.Encode(&mc.PDG)
+	enc.Encode(&mc.GenStatus)
+	enc.Encode(&mc.SimStatus)
+	enc.Encode(&mc.Vertex)
+	enc.Encode(&mc.Time)
+	mom := [3]float32{float32(mc.Momentum[0]), float32(mc.Momentum[1]), float32(mc.Momentum[2])}
+	enc.Encode(&mom)
+	mass := float32(mc.Mass)
+	enc.Encode(&mass)
+	enc.Encode(&mc.Charge)
+	if mc.SimStatus&uint32(1<<31) != 0 {
+		enc.Encode(&mc.EndPoint)
+		pend := [3]float32{float32(mc.PEndPoint[0]), float32(mc.PEndPoint[1]), float32(mc.PEndPoint[2])}
+		enc.Encode(&pend)
+	}
+	enc.Encode(&mc.Spin)
+	enc.Encode(&mc.ColorFlow)
+	return enc.Err()
 }
 
 func (mc *McParticle) UnmarshalSio(r sio.Reader) error {
