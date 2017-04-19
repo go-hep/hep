@@ -13,28 +13,28 @@
 //  $> root-srv -addr=:8080 &
 //  2017/04/06 15:13:59 server listening on :8080
 //
+
 //  $> open localhost:8080
 //
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
-	"crypto/tls"
 	"os"
 
 	"golang.org/x/crypto/acme/autocert"
-	
+
 	"go-hep.org/x/hep/rootio/cmd/root-srv/server"
-	
 )
 
 var (
 	addrFlag = flag.String("addr", ":8080", "server address:port")
-	servFlag = flag.String("serv", "http" , "server protocol")
-	hostFlag = flag.String("host", "" , "server domain name for TLS ")
+	servFlag = flag.String("serv", "http", "server protocol")
+	hostFlag = flag.String("host", "", "server domain name for TLS ")
 )
 
 func main() {
@@ -45,8 +45,9 @@ func main() {
 
 ex:
 
- $> root-srv -addr=:8080
- 2017/04/06 15:13:59 server listening on :8080
+
+ $> root-srv -addr :8080 -serv https -host example.com
+ 2017/04/06 15:13:59 https server listening on :8080 at example.com
 
 options:
 `,
@@ -56,15 +57,14 @@ options:
 
 	flag.Parse()
 	server.Init()
-	
+
 	log.Printf("%s server listening on %s", *servFlag, *addrFlag)
 
 	if *servFlag == "http" {
 		log.Fatal(http.ListenAndServe(*addrFlag, nil))
-	} else
-	if *servFlag == "https" {
+	} else if *servFlag == "https" {
 		m := autocert.Manager{
-			Prompt: autocert.AcceptTOS,
+			Prompt:     autocert.AcceptTOS,
 			HostPolicy: autocert.HostWhitelist(*hostFlag),
 			Cache:      autocert.DirCache("certs"), //folder for storing certificates
 		}
