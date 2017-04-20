@@ -111,6 +111,9 @@ func bread(r Reader, data interface{}) error {
 		if err != nil {
 			return err
 		}
+		if sz == 0 {
+			return err
+		}
 		//fmt.Printf("<<< slice: %d [%v]\n", sz, rv.Type())
 		slice := reflect.MakeSlice(rv.Type(), int(sz), int(sz))
 		for i := 0; i < int(sz); i++ {
@@ -128,6 +131,9 @@ func bread(r Reader, data interface{}) error {
 		sz := uint32(0)
 		err := bread(r, &sz)
 		if err != nil {
+			return err
+		}
+		if sz == 0 {
 			return err
 		}
 		//fmt.Printf(">>> map: %d [%v]\n", sz, rv.Type())
