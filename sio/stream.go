@@ -345,6 +345,10 @@ func (stream *Stream) WriteRecord(record *Record) error {
 			return err
 		}
 		recdata.DataLen = align4U32(uint32(b.Len()))
+		if n := int(recdata.DataLen - uint32(b.Len())); n > 0 {
+			var tmp [4]byte
+			b.Write(tmp[:n])
+		}
 
 		buf.buf = &b
 	}
