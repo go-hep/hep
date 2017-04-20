@@ -7,6 +7,7 @@ package lcio
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -89,9 +90,36 @@ type Event struct {
 	EventNumber int32
 	TimeStamp   int64
 	Detector    string
-	Collections map[string]interface{}
-	Names       []string
 	Params      Params
+	colls       map[string]interface{}
+	names       []string
+}
+
+func (evt *Event) Names() []string {
+	return evt.names
+}
+
+func (evt *Event) Get(name string) interface{} {
+	return evt.colls[name]
+}
+
+func (evt *Event) Has(name string) bool {
+	_, ok := evt.colls[name]
+	return ok
+}
+
+func (evt *Event) Add(name string, ptr interface{}) {
+	if _, dup := evt.colls[name]; dup {
+		panic(fmt.Errorf("lcio: duplicate key %q", name))
+	}
+	evt.names = append(evt.names, name)
+	if evt.colls == nil {
+		evt.colls = make(map[string]interface{})
+	}
+	if rv := reflect.ValueOf(ptr); rv.Type().Kind() != reflect.Ptr {
+		panic("lcio: expects a pointer to a value")
+	}
+	evt.colls[name] = ptr
 }
 
 func (evt *Event) String() string {
@@ -105,8 +133,8 @@ func (evt *Event) String() string {
 	fmt.Fprintf(o, " detector : %s\n", evt.Detector)
 	fmt.Fprintf(o, " event parameters:\n%v\n", evt.Params)
 
-	for _, name := range evt.Names {
-		coll := evt.Collections[name]
+	for _, name := range evt.names {
+		coll := evt.colls[name]
 		fmt.Fprintf(o, " collection name : %s\n parameters: \n%v\n", name, coll)
 	}
 	return string(o.Bytes())

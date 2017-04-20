@@ -4,7 +4,10 @@
 
 package lcio
 
-import "log"
+import (
+	"fmt"
+	"log"
+)
 
 func typeFrom(name string) interface{} {
 	switch name {
@@ -34,4 +37,33 @@ func typeFrom(name string) interface{} {
 	}
 	log.Printf("unhandled type %q", name)
 	return nil
+}
+
+func typeName(t interface{}) string {
+	switch t.(type) {
+	case *McParticles:
+		return "MCParticle"
+	case *SimTrackerHits:
+		return "SimTrackerHit"
+	case *SimCalorimeterHits:
+		return "SimCalorimeterHit"
+	case *FloatVec:
+		return "LCFloatVec"
+	case *IntVec:
+		return "LCIntVec"
+	case *StrVec:
+		return "LCStrVec"
+	case *RawCalorimeterHits:
+		return "RawCalorimeterHit"
+	case *CalorimeterHits:
+		return "CalorimeterHit"
+	case *TrackerHits:
+		return "TrackerHit"
+	case *TrackerHitPlanes:
+		return "TrackerHitPlane"
+
+	case *GenericObject, GenericObject:
+		return "LCGenericObject"
+	}
+	panic(fmt.Errorf("lcio: unhandled type %T", t))
 }

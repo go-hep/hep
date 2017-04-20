@@ -140,21 +140,25 @@ func (r *Reader) Next() bool {
 
 func (r *Reader) remap() error {
 	var err error
-	rec := r.f.Record("LCEvent")
-	r.evt.Collections = make(map[string]interface{}, len(r.ehdr.Blocks))
-	r.evt.Names = make([]string, 0, len(r.ehdr.Blocks))
-	for _, blk := range r.ehdr.Blocks {
-		ptr := typeFrom(blk.Type)
-		if ptr == nil {
-			continue
+	rec := r.f.Record(Records.Event)
+	r.evt.colls = nil
+	r.evt.names = nil
+	if len(r.ehdr.Blocks) > 0 {
+		r.evt.colls = make(map[string]interface{}, len(r.ehdr.Blocks))
+		r.evt.names = make([]string, 0, len(r.ehdr.Blocks))
+		for _, blk := range r.ehdr.Blocks {
+			ptr := typeFrom(blk.Type)
+			if ptr == nil {
+				continue
+			}
+			err = rec.Connect(blk.Name, ptr)
+			if err != nil {
+				r.err = err
+				return err
+			}
+			r.evt.colls[blk.Name] = ptr
+			r.evt.names = append(r.evt.names, blk.Name)
 		}
-		err = rec.Connect(blk.Name, ptr)
-		if err != nil {
-			r.err = err
-			return err
-		}
-		r.evt.Collections[blk.Name] = ptr
-		r.evt.Names = append(r.evt.Names, blk.Name)
 	}
 	r.evt.RunNumber = r.ehdr.RunNumber
 	r.evt.EventNumber = r.ehdr.EventNumber
@@ -162,6 +166,14 @@ func (r *Reader) remap() error {
 	r.evt.Detector = r.ehdr.Detector
 	r.evt.Params = r.ehdr.Params
 	return err
+}
+
+func (r *Reader) RunHeader() RunHeader {
+	return r.rhdr
+}
+
+func (r *Reader) EventHeader() EventHeader {
+	return r.ehdr
 }
 
 func (r *Reader) Event() Event {
