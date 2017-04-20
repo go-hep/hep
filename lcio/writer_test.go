@@ -5,14 +5,118 @@
 package lcio_test
 
 import (
+	"compress/flate"
+	"io/ioutil"
+	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"go-hep.org/x/hep/lcio"
 )
 
+func TestCreateRunHeader(t *testing.T) {
+	const fname = "testdata/run-header.slcio"
+	w, err := lcio.Create(fname)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer w.Close()
+
+	w.SetCompressionLevel(flate.NoCompression)
+
+	rhdr := lcio.RunHeader{
+		RunNbr:       42,
+		Descr:        "a simple run header",
+		Detector:     "my detector",
+		SubDetectors: []string{"det-1", "det-2"},
+		Params: lcio.Params{
+			Floats: map[string][]float32{
+				"floats-1": {1, 2, 3},
+				"floats-2": {4, 5, 6},
+			},
+		},
+	}
+
+	err = w.WriteRunHeader(&rhdr)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = w.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	chk, err := ioutil.ReadFile(fname)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ref, err := ioutil.ReadFile(strings.Replace(fname, ".slcio", "_golden.slcio", -1))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(ref, chk) {
+		t.Fatalf("%s: differ with golden", fname)
+	}
+
+	os.Remove(fname)
+}
+
+func TestCreateCompressedRunHeader(t *testing.T) {
+	const fname = "testdata/run-header-compressed.slcio"
+	w, err := lcio.Create(fname)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer w.Close()
+
+	w.SetCompressionLevel(flate.BestCompression)
+
+	rhdr := lcio.RunHeader{
+		RunNbr:       42,
+		Descr:        "a simple run header",
+		Detector:     "my detector",
+		SubDetectors: []string{"det-1", "det-2"},
+		Params: lcio.Params{
+			Floats: map[string][]float32{
+				"floats-1": {1, 2, 3},
+				"floats-2": {4, 5, 6},
+			},
+		},
+	}
+
+	err = w.WriteRunHeader(&rhdr)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = w.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	chk, err := ioutil.ReadFile(fname)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ref, err := ioutil.ReadFile(strings.Replace(fname, ".slcio", "_golden.slcio", -1))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(ref, chk) {
+		t.Fatalf("%s: differ with golden", fname)
+	}
+
+	os.Remove(fname)
+}
+
 func TestCreate(t *testing.T) {
-	const fname = "./testdata/w-simple.slcio"
+	const fname = "testdata/test.slcio"
 	w, err := lcio.Create(fname)
 	if err != nil {
 		t.Fatal(err)
@@ -151,10 +255,12 @@ func TestCreate(t *testing.T) {
 	}
 
 	if got, want := r.RunHeader(), rhdr; !reflect.DeepEqual(got, want) {
-		t.Errorf("run-headers differ.\ngot= %#v\nwant=%#v\n", got, want)
+		t.Fatalf("run-headers differ.\ngot= %#v\nwant=%#v\n", got, want)
 	}
 
 	if got, want := r.Event(), evt; !reflect.DeepEqual(got, want) {
-		t.Errorf("evts differ.\ngot:\n%v\nwant:\n%v\n", &got, &want)
+		t.Fatalf("evts differ.\ngot:\n%v\nwant:\n%v\n", &got, &want)
 	}
+
+	os.Remove(fname)
 }
