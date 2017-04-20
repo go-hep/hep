@@ -10,6 +10,7 @@ import (
 	"go-hep.org/x/hep/sio"
 )
 
+// Create creates a new LCIO writer, saving data in file fname.
 func Create(fname string) (*Writer, error) {
 	f, err := sio.Create(fname)
 	if err != nil {
@@ -23,6 +24,8 @@ func Create(fname string) (*Writer, error) {
 	return w, w.err
 }
 
+// Writer provides a way to write LCIO RunHeaders and Events to an
+// output SIO stream.
 type Writer struct {
 	f    *sio.Stream
 	clvl int
@@ -43,6 +46,10 @@ type Writer struct {
 	err    error
 }
 
+// Close closes the underlying output stream and makes it unavailable for
+// further I/O operations.
+// Close will synchronize and commit to disk any lingering data before closing
+// the output stream.
 func (w *Writer) Close() error {
 	if w.closed {
 		return w.err
@@ -62,15 +69,8 @@ func (w *Writer) init() error {
 		rec *sio.Record
 	)
 
-	compress := w.clvl != flate.NoCompression
-	if compress {
-		w.f.SetCompressionLevel(w.clvl)
-	}
-
 	rec = w.f.Record(Records.Index)
 	if rec != nil {
-		rec.SetUnpack(true)
-		rec.SetCompress(compress)
 		err = rec.Connect(Blocks.Index, &w.data.idx)
 		if err != nil {
 			return err
@@ -80,8 +80,6 @@ func (w *Writer) init() error {
 
 	rec = w.f.Record(Records.RandomAccess)
 	if rec != nil {
-		rec.SetUnpack(true)
-		rec.SetCompress(compress)
 		err = rec.Connect(Blocks.RandomAccess, &w.data.rnd)
 		if err != nil {
 			return err
@@ -91,8 +89,6 @@ func (w *Writer) init() error {
 
 	rec = w.f.Record(Records.RunHeader)
 	if rec != nil {
-		rec.SetUnpack(true)
-		rec.SetCompress(compress)
 		err = rec.Connect(Blocks.RunHeader, &w.data.rhdr)
 		if err != nil {
 			return err
@@ -102,8 +98,6 @@ func (w *Writer) init() error {
 
 	rec = w.f.Record(Records.EventHeader)
 	if rec != nil {
-		rec.SetUnpack(true)
-		rec.SetCompress(compress)
 		err = rec.Connect(Blocks.EventHeader, &w.data.ehdr)
 		if err != nil {
 			return err
@@ -112,17 +106,31 @@ func (w *Writer) init() error {
 	w.recs.ehdr = rec
 
 	rec = w.f.Record(Records.Event)
-	if rec != nil {
-		rec.SetUnpack(true)
-	}
 	w.recs.evt = rec
 
+	w.SetCompressionLevel(w.clvl)
 	return nil
 }
 
+// SetCompressionLevel sets the compression level to lvl.
+// lvl must be a compress/flate compression value.
+// SetCompressionLevel must be called before WriteRunHeader or WriteEvent.
 func (w *Writer) SetCompressionLevel(lvl int) {
 	w.clvl = lvl
+	compress := w.clvl != flate.NoCompression
 	w.f.SetCompressionLevel(lvl)
+	for _, rec := range []*sio.Record{
+		w.recs.idx,
+		w.recs.rnd,
+		w.recs.rhdr,
+		w.recs.ehdr,
+		w.recs.evt,
+	} {
+		if rec == nil {
+			continue
+		}
+		rec.SetCompress(compress)
+	}
 }
 
 func (w *Writer) WriteRunHeader(run *RunHeader) error {
@@ -145,9 +153,9 @@ func (w *Writer) WriteEvent(evt *Event) error {
 	w.data.ehdr.EventNumber = evt.EventNumber
 	w.data.ehdr.TimeStamp = evt.TimeStamp
 	w.data.ehdr.Detector = evt.Detector
-	w.data.ehdr.Blocks = make([]Block, len(evt.names))
+	w.data.ehdr.Blocks = make([]BlockDescr, len(evt.names))
 	for i, n := range evt.names {
-		w.data.ehdr.Blocks[i] = Block{Name: n, Type: typeName(evt.colls[n])}
+		w.data.ehdr.Blocks[i] = BlockDescr{Name: n, Type: typeName(evt.colls[n])}
 	}
 	w.data.ehdr.Params = evt.Params
 
