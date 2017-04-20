@@ -32,7 +32,7 @@ func TestOpen(t *testing.T) {
 	} {
 		r, err := lcio.Open(fname)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatalf("%s: error opening file: %v", fname, err)
 		}
 		defer r.Close()
 
@@ -42,8 +42,12 @@ func TestOpen(t *testing.T) {
 		}
 
 		if got, want := r.RunHeader(), rhdr; !reflect.DeepEqual(got, want) {
-			t.Fatalf("run-headers differ.\ngot= %#v\nwant=%#v\n", got, want)
+			t.Fatalf("%s: run-headers differ.\ngot= %#v\nwant=%#v\n", fname, got, want)
 		}
 
+		err = r.Close()
+		if err != nil {
+			t.Fatalf("%s: error closing file: %v", fname, err)
+		}
 	}
 }
