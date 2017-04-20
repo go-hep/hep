@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"text/tabwriter"
 	"time"
 
 	"go-hep.org/x/hep/sio"
@@ -29,7 +30,7 @@ func (hdr *RunHeader) String() string {
 	fmt.Fprintf(o, "%s\n", strings.Repeat("=", 80))
 	fmt.Fprintf(o, "        Run:   %d\n", hdr.RunNumber)
 	fmt.Fprintf(o, "%s\n", strings.Repeat("=", 80))
-	fmt.Fprintf(o, " descrption : %s\n", hdr.Descr)
+	fmt.Fprintf(o, " description: %s\n", hdr.Descr)
 	fmt.Fprintf(o, " detector   : %s\n", hdr.Detector)
 	fmt.Fprintf(o, " sub-dets   : %v\n", hdr.SubDetectors)
 	fmt.Fprintf(o, " parameters :\n%v\n", hdr.Params)
@@ -70,6 +71,26 @@ type EventHeader struct {
 	Params      Params
 }
 
+func (hdr *EventHeader) String() string {
+	o := new(bytes.Buffer)
+	fmt.Fprintf(o, "%s\n", strings.Repeat("=", 80))
+	fmt.Fprintf(o, "        Event  : %d - run:   %d - timestamp %v - weight %v\n",
+		hdr.EventNumber, hdr.RunNumber, hdr.TimeStamp, hdr.Weight(),
+	)
+	fmt.Fprintf(o, "%s\n", strings.Repeat("=", 80))
+	fmt.Fprintf(o, " date       %v\n", time.Unix(0, hdr.TimeStamp).UTC().Format("02.01.2006 15:04:05.999999999"))
+	fmt.Fprintf(o, " detector : %s\n", hdr.Detector)
+	fmt.Fprintf(o, " event parameters:\n%v", hdr.Params)
+
+	w := tabwriter.NewWriter(o, 8, 4, 1, ' ', 0)
+	for _, blk := range hdr.Blocks {
+		fmt.Fprintf(w, " collection name : %s\t(%s)\n", blk.Name, blk.Type)
+	}
+	w.Flush()
+
+	return string(o.Bytes())
+}
+
 func (*EventHeader) VersionSio() uint32 {
 	return Version
 }
@@ -94,6 +115,13 @@ func (hdr *EventHeader) UnmarshalSio(r sio.Reader) error {
 	dec.Decode(&hdr.Blocks)
 	dec.Decode(&hdr.Params)
 	return dec.Err()
+}
+
+func (hdr *EventHeader) Weight() float64 {
+	if v, ok := hdr.Params.Floats["_weight"]; ok {
+		return float64(v[0])
+	}
+	return 1.0
 }
 
 // BlockDescr describes a SIO block.

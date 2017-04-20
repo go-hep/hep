@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"reflect"
@@ -47,6 +48,7 @@ func main() {
 	rhdr := r.RunHeader()
 	ehdr := r.EventHeader()
 
+	evts := 0
 	for ievt := int64(0); r.Next() && (*nevts < 0 || ievt < *nevts); ievt++ {
 		evt := r.Event()
 		if hdr := r.RunHeader(); !reflect.DeepEqual(hdr, rhdr) {
@@ -70,9 +72,18 @@ func main() {
 		for sc.Scan() {
 			log.Printf("%s\n", sc.Text())
 		}
+		evts++
 	}
 	err = r.Err()
-	if err != nil {
+	if err == io.EOF && evts == 0 {
+		if hdr := r.RunHeader(); !reflect.DeepEqual(hdr, rhdr) {
+			log.Printf("=== run header ===\n%v", &hdr)
+		}
+		if hdr := r.EventHeader(); !reflect.DeepEqual(hdr, ehdr) {
+			log.Printf("=== evt header ===\n%v", &hdr)
+		}
+	}
+	if err != nil && err != io.EOF {
 		log.Fatal(err)
 	}
 }
