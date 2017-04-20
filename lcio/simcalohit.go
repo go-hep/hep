@@ -22,10 +22,10 @@ func (hits SimCalorimeterHits) String() string {
 	o := new(bytes.Buffer)
 	fmt.Fprintf(o, "%[1]s print out of SimCalorimeterHit collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", hits.Flags, hits.Params)
-	fmt.Fprintf(o, "  -> LCIO::CHBIT_LONG   : %v\n", hits.Flags.Test(ChBitLong))
-	fmt.Fprintf(o, "     LCIO::CHBIT_BARREL : %v\n", hits.Flags.Test(ChBitBarrel))
-	fmt.Fprintf(o, "     LCIO::CHBIT_ID1    : %v\n", hits.Flags.Test(ChBitID1))
-	fmt.Fprintf(o, "     LCIO::CHBIT_STEP   : %v\n", hits.Flags.Test(ChBitStep))
+	fmt.Fprintf(o, "  -> LCIO::CHBIT_LONG   : %v\n", hits.Flags.Test(BitsChLong))
+	fmt.Fprintf(o, "     LCIO::CHBIT_BARREL : %v\n", hits.Flags.Test(BitsChBarrel))
+	fmt.Fprintf(o, "     LCIO::CHBIT_ID1    : %v\n", hits.Flags.Test(BitsChID1))
+	fmt.Fprintf(o, "     LCIO::CHBIT_STEP   : %v\n", hits.Flags.Test(BitsChStep))
 
 	// FIXME(sbinet): CellIDDecoder
 
@@ -38,7 +38,7 @@ func (hits SimCalorimeterHits) String() string {
 	fmt.Fprintf(o, tail)
 	for _, hit := range hits.Hits {
 		fmt.Fprintf(o, " [%08d] |%08d|%08d|%+.3e|", 0, hit.CellID0, hit.CellID1, hit.Energy)
-		if hits.Flags.Test(ChBitLong) {
+		if hits.Flags.Test(BitsChLong) {
 			fmt.Fprintf(o, "+%.3e, %+.3e, %+.3e", hit.Pos[0], hit.Pos[1], hit.Pos[2])
 		} else {
 			fmt.Fprintf(o, "    no position available         ")
@@ -52,7 +52,7 @@ func (hits SimCalorimeterHits) String() string {
 				pdg = c.Mc.PDG
 			}
 			fmt.Fprintf(o, "\n           ->                  %+10d|%+1.3e|%+1.3e|", pdg, c.Energy, c.Time)
-			if hits.Flags.Test(ChBitStep) {
+			if hits.Flags.Test(BitsChStep) {
 				fmt.Fprintf(o, "%+d| (%+1.3e, %+1.3e, %+1.3e)", c.PDG, c.StepPos[0], c.StepPos[1], c.StepPos[2])
 			} else {
 				fmt.Fprintf(o, " no PDG")
@@ -76,11 +76,11 @@ func (hits *SimCalorimeterHits) MarshalSio(w sio.Writer) error {
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
 		enc.Encode(&hit.CellID0)
-		if hits.Flags.Test(ChBitID1) {
+		if hits.Flags.Test(BitsChID1) {
 			enc.Encode(&hit.CellID1)
 		}
 		enc.Encode(&hit.Energy)
-		if hits.Flags.Test(ChBitLong) {
+		if hits.Flags.Test(BitsChLong) {
 			enc.Encode(&hit.Pos)
 		}
 		enc.Encode(int32(len(hit.Contributions)))
@@ -89,7 +89,7 @@ func (hits *SimCalorimeterHits) MarshalSio(w sio.Writer) error {
 			enc.Pointer(&c.Mc)
 			enc.Encode(&c.Energy)
 			enc.Encode(&c.Time)
-			if hits.Flags.Test(ChBitStep) {
+			if hits.Flags.Test(BitsChStep) {
 				enc.Encode(&c.PDG)
 				enc.Encode(&c.StepPos)
 			}
@@ -109,11 +109,11 @@ func (hits *SimCalorimeterHits) UnmarshalSio(r sio.Reader) error {
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
 		dec.Decode(&hit.CellID0)
-		if r.VersionSio() < 9 || hits.Flags.Test(ChBitID1) {
+		if r.VersionSio() < 9 || hits.Flags.Test(BitsChID1) {
 			dec.Decode(&hit.CellID1)
 		}
 		dec.Decode(&hit.Energy)
-		if hits.Flags.Test(ChBitLong) {
+		if hits.Flags.Test(BitsChLong) {
 			dec.Decode(&hit.Pos)
 		}
 		var n int32
@@ -124,7 +124,7 @@ func (hits *SimCalorimeterHits) UnmarshalSio(r sio.Reader) error {
 			dec.Pointer(&c.Mc)
 			dec.Decode(&c.Energy)
 			dec.Decode(&c.Time)
-			if hits.Flags.Test(ChBitStep) {
+			if hits.Flags.Test(BitsChStep) {
 				dec.Decode(&c.PDG)
 				if r.VersionSio() > 1051 {
 					dec.Decode(&c.StepPos)

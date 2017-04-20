@@ -285,7 +285,7 @@ func (obj GenericObject) String() string {
 		fmt.Fprintf(o,
 			"%s - isFixedSize: %v\n",
 			descr,
-			obj.Flag.Test(GOBitFixed),
+			obj.Flag.Test(BitsGOFixed),
 		)
 	} else {
 		fmt.Fprintf(o, " Data.... \n")
@@ -338,7 +338,7 @@ func (obj *GenericObject) UnmarshalSio(r sio.Reader) error {
 		nobjs int32
 	)
 
-	if obj.Flag.Test(GOBitFixed) {
+	if obj.Flag.Test(BitsGOFixed) {
 		dec.Decode(&ni32)
 		dec.Decode(&nf32)
 		dec.Decode(&nf64)
@@ -347,7 +347,7 @@ func (obj *GenericObject) UnmarshalSio(r sio.Reader) error {
 	obj.Data = make([]GenericObjectData, int(nobjs))
 	for iobj := range obj.Data {
 		data := &obj.Data[iobj]
-		if !obj.Flag.Test(GOBitFixed) {
+		if !obj.Flag.Test(BitsGOFixed) {
 			dec.Decode(&ni32)
 			dec.Decode(&nf32)
 			dec.Decode(&nf64)

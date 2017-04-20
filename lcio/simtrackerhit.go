@@ -32,14 +32,14 @@ func (hits *SimTrackerHits) UnmarshalSio(r sio.Reader) error {
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
 		dec.Decode(&hit.CellID0)
-		if r.VersionSio() > 1051 && hits.Flags.Test(ThBitID1) {
+		if r.VersionSio() > 1051 && hits.Flags.Test(BitsThID1) {
 			dec.Decode(&hit.CellID1)
 		}
 		dec.Decode(&hit.Pos)
 		dec.Decode(&hit.EDep)
 		dec.Decode(&hit.Time)
 		dec.Pointer(&hit.Mc)
-		if hits.Flags.Test(ThBitMomentum) {
+		if hits.Flags.Test(BitsThMomentum) {
 			dec.Decode(&hit.Momentum)
 			if r.VersionSio() > 1006 {
 				dec.Decode(&hit.PathLength)

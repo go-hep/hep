@@ -33,7 +33,7 @@ func (hits *TrackerHits) UnmarshalSio(r sio.Reader) error {
 		hit := &hits.Hits[i]
 		if r.VersionSio() > 1051 {
 			dec.Decode(&hit.CellID0)
-			if hits.Flags.Test(ThBitID1) {
+			if hits.Flags.Test(BitsThID1) {
 				dec.Decode(&hit.CellID1)
 			}
 		}

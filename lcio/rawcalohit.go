@@ -22,9 +22,9 @@ func (hits RawCalorimeterHits) String() string {
 	o := new(bytes.Buffer)
 	fmt.Fprintf(o, "%[1]s print out of RawCalorimeterHit collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", hits.Flags, hits.Params)
-	fmt.Fprintf(o, "     LCIO::RCHBIT_ID1    : %v\n", hits.Flags.Test(RChBitID1))
-	fmt.Fprintf(o, "     LCIO::RCHBIT_TIME   : %v\n", hits.Flags.Test(RChBitTime))
-	fmt.Fprintf(o, "     LCIO::RCHBIT_NO_PTR : %v\n", hits.Flags.Test(RChBitNoPtr))
+	fmt.Fprintf(o, "     LCIO::RCHBIT_ID1    : %v\n", hits.Flags.Test(BitsRChID1))
+	fmt.Fprintf(o, "     LCIO::RCHBIT_TIME   : %v\n", hits.Flags.Test(BitsRChTime))
+	fmt.Fprintf(o, "     LCIO::RCHBIT_NO_PTR : %v\n", hits.Flags.Test(BitsRChNoPtr))
 
 	// FIXME(sbinet): CellIDDecoder
 
@@ -62,14 +62,14 @@ func (hits *RawCalorimeterHits) UnmarshalSio(r sio.Reader) error {
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
 		dec.Decode(&hit.CellID0)
-		if r.VersionSio() == 8 || hits.Flags.Test(RChBitID1) {
+		if r.VersionSio() == 8 || hits.Flags.Test(BitsRChID1) {
 			dec.Decode(&hit.CellID1)
 		}
 		dec.Decode(&hit.Amplitude)
-		if hits.Flags.Test(RChBitTime) {
+		if hits.Flags.Test(BitsRChTime) {
 			dec.Decode(&hit.TimeStamp)
 		}
-		if !hits.Flags.Test(RChBitNoPtr) {
+		if !hits.Flags.Test(BitsRChNoPtr) {
 			dec.Tag(hit)
 		}
 	}

@@ -22,12 +22,12 @@ func (hits CalorimeterHits) String() string {
 	o := new(bytes.Buffer)
 	fmt.Fprintf(o, "%[1]s print out of CalorimeterHit collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", hits.Flags, hits.Params)
-	fmt.Fprintf(o, "  -> LCIO::RCHBIT_LONG   : %v\n", hits.Flags.Test(RChBitLong))
-	fmt.Fprintf(o, "     LCIO::RCHBIT_BARREL : %v\n", hits.Flags.Test(RChBitBarrel))
-	fmt.Fprintf(o, "     LCIO::RCHBIT_ID1    : %v\n", hits.Flags.Test(RChBitID1))
-	fmt.Fprintf(o, "     LCIO::RCHBIT_TIME   : %v\n", hits.Flags.Test(RChBitTime))
-	fmt.Fprintf(o, "     LCIO::RCHBIT_NO_PTR : %v\n", hits.Flags.Test(RChBitNoPtr))
-	fmt.Fprintf(o, "     LCIO::RCHBIT_ENERGY_ERROR  : %v\n", hits.Flags.Test(RChBitEnergyError))
+	fmt.Fprintf(o, "  -> LCIO::RCHBIT_LONG   : %v\n", hits.Flags.Test(BitsRChLong))
+	fmt.Fprintf(o, "     LCIO::RCHBIT_BARREL : %v\n", hits.Flags.Test(BitsRChBarrel))
+	fmt.Fprintf(o, "     LCIO::RCHBIT_ID1    : %v\n", hits.Flags.Test(BitsRChID1))
+	fmt.Fprintf(o, "     LCIO::RCHBIT_TIME   : %v\n", hits.Flags.Test(BitsRChTime))
+	fmt.Fprintf(o, "     LCIO::RCHBIT_NO_PTR : %v\n", hits.Flags.Test(BitsRChNoPtr))
+	fmt.Fprintf(o, "     LCIO::RCHBIT_ENERGY_ERROR  : %v\n", hits.Flags.Test(BitsRChEnergyError))
 
 	// FIXME(sbinet): CellIDDecoder
 
@@ -39,7 +39,7 @@ func (hits CalorimeterHits) String() string {
 	fmt.Fprintf(o, tail)
 	for _, hit := range hits.Hits {
 		fmt.Fprintf(o, " [%08d] |%08d|%08d|%+.3e|%+.3e|", 0, hit.CellID0, hit.CellID1, hit.Energy, hit.EnergyErr)
-		if hits.Flags.Test(ChBitLong) {
+		if hits.Flags.Test(BitsChLong) {
 			fmt.Fprintf(o, "+%.3e, %+.3e, %+.3e", hit.Pos[0], hit.Pos[1], hit.Pos[2])
 		} else {
 			fmt.Fprintf(o, "    no position available         ")
@@ -64,22 +64,22 @@ func (hits *CalorimeterHits) MarshalSio(w sio.Writer) error {
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
 		enc.Encode(&hit.CellID0)
-		if hits.Flags.Test(RChBitID1) {
+		if hits.Flags.Test(BitsRChID1) {
 			enc.Encode(&hit.CellID1)
 		}
 		enc.Encode(&hit.Energy)
-		if hits.Flags.Test(RChBitEnergyError) {
+		if hits.Flags.Test(BitsRChEnergyError) {
 			enc.Encode(&hit.EnergyErr)
 		}
-		if hits.Flags.Test(RChBitTime) {
+		if hits.Flags.Test(BitsRChTime) {
 			enc.Encode(&hit.Time)
 		}
-		if hits.Flags.Test(RChBitLong) {
+		if hits.Flags.Test(BitsRChLong) {
 			enc.Encode(&hit.Pos)
 		}
 		enc.Encode(&hit.Type)
 		enc.Pointer(&hit.Raw)
-		if !hits.Flags.Test(RChBitNoPtr) {
+		if !hits.Flags.Test(BitsRChNoPtr) {
 			enc.Tag(hit)
 		}
 	}
@@ -96,17 +96,17 @@ func (hits *CalorimeterHits) UnmarshalSio(r sio.Reader) error {
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
 		dec.Decode(&hit.CellID0)
-		if r.VersionSio() == 8 || hits.Flags.Test(RChBitID1) {
+		if r.VersionSio() == 8 || hits.Flags.Test(BitsRChID1) {
 			dec.Decode(&hit.CellID1)
 		}
 		dec.Decode(&hit.Energy)
-		if r.VersionSio() > 1009 && hits.Flags.Test(RChBitEnergyError) {
+		if r.VersionSio() > 1009 && hits.Flags.Test(BitsRChEnergyError) {
 			dec.Decode(&hit.EnergyErr)
 		}
-		if r.VersionSio() > 1002 && hits.Flags.Test(RChBitTime) {
+		if r.VersionSio() > 1002 && hits.Flags.Test(BitsRChTime) {
 			dec.Decode(&hit.Time)
 		}
-		if hits.Flags.Test(RChBitLong) {
+		if hits.Flags.Test(BitsRChLong) {
 			dec.Decode(&hit.Pos)
 		}
 		if r.VersionSio() > 1002 {
@@ -115,11 +115,11 @@ func (hits *CalorimeterHits) UnmarshalSio(r sio.Reader) error {
 		}
 		if r.VersionSio() > 1002 {
 			// the logic of the pointer bit has been inverted in v1.3
-			if !hits.Flags.Test(RChBitNoPtr) {
+			if !hits.Flags.Test(BitsRChNoPtr) {
 				dec.Tag(hit)
 			}
 		} else {
-			if hits.Flags.Test(RChBitNoPtr) {
+			if hits.Flags.Test(BitsRChNoPtr) {
 				dec.Tag(hit)
 			}
 		}
