@@ -42,43 +42,43 @@ func (r *Reader) init() error {
 		rec *sio.Record
 	)
 
-	rec = r.f.Record("LCIOIndex")
+	rec = r.f.Record(Records.Index)
 	if rec != nil {
 		rec.SetUnpack(true)
-		err = rec.Connect("LCIOIndex", &r.idx)
+		err = rec.Connect(Blocks.Index, &r.idx)
 		if err != nil {
 			return err
 		}
 	}
 
-	rec = r.f.Record("LCIORandomAccess")
+	rec = r.f.Record(Records.RandomAccess)
 	if rec != nil {
 		rec.SetUnpack(true)
-		err = rec.Connect("LCIORandomAccess", &r.rnd)
+		err = rec.Connect(Blocks.RandomAccess, &r.rnd)
 		if err != nil {
 			return err
 		}
 	}
 
-	rec = r.f.Record("LCRunHeader")
+	rec = r.f.Record(Records.RunHeader)
 	if rec != nil {
 		rec.SetUnpack(true)
-		err = rec.Connect("RunHeader", &r.rhdr)
+		err = rec.Connect(Blocks.RunHeader, &r.rhdr)
 		if err != nil {
 			return err
 		}
 	}
 
-	rec = r.f.Record("LCEventHeader")
+	rec = r.f.Record(Records.EventHeader)
 	if rec != nil {
 		rec.SetUnpack(true)
-		err = rec.Connect("EventHeader", &r.ehdr)
+		err = rec.Connect(Blocks.EventHeader, &r.ehdr)
 		if err != nil {
 			return err
 		}
 	}
 
-	rec = r.f.Record("LCEvent")
+	rec = r.f.Record(Records.Event)
 	if rec != nil {
 		rec.SetUnpack(true)
 	}
@@ -97,28 +97,28 @@ func (r *Reader) Next() bool {
 	}
 	// log.Printf(">>> %q", rec.Name())
 	switch rec.Name() {
-	case "LCIOIndex":
+	case Records.Index:
 		if !rec.Unpack() {
 			r.err = fmt.Errorf("lcio: expected record %q to unpack", rec.Name())
 			return false
 		}
 		return r.Next()
 
-	case "LCIORandomAccess":
+	case Records.RandomAccess:
 		if !rec.Unpack() {
 			r.err = fmt.Errorf("lcio: expected record %q to unpack", rec.Name())
 			return false
 		}
 		return r.Next()
 
-	case "LCRunHeader":
+	case Records.RunHeader:
 		if !rec.Unpack() {
 			r.err = fmt.Errorf("lcio: expected record %q to unpack", rec.Name())
 			return false
 		}
 		return r.Next()
 
-	case "LCEventHeader":
+	case Records.EventHeader:
 		if !rec.Unpack() {
 			r.err = fmt.Errorf("lcio: expected record %q to unpack", rec.Name())
 			return false
@@ -130,7 +130,7 @@ func (r *Reader) Next() bool {
 		}
 		return r.Next()
 
-	case "LCEvent":
+	case Records.Event:
 		if !rec.Unpack() {
 			r.err = fmt.Errorf("lcio: expected record %q to unpack", rec.Name())
 		}

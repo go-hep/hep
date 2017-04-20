@@ -14,6 +14,32 @@ const (
 	Version      uint32 = (MajorVersion << 16) + MinorVersion
 )
 
+var Records = struct {
+	Index        string
+	RandomAccess string
+	RunHeader    string
+	EventHeader  string
+	Event        string
+}{
+	Index:        "LCIOIndex",
+	RandomAccess: "LCIORandomAccess",
+	RunHeader:    "LCRunHeader",
+	EventHeader:  "LCEventHeader",
+	Event:        "LCEvent",
+}
+
+var Blocks = struct {
+	Index        string
+	RandomAccess string
+	RunHeader    string
+	EventHeader  string
+}{
+	Index:        "LCIOndex",
+	RandomAccess: "LCIORandomAccess",
+	RunHeader:    "RunHeader",
+	EventHeader:  "EventHeader",
+}
+
 type RandomAccess struct {
 	RunMin         int32
 	EventMin       int32
