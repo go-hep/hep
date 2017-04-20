@@ -8,21 +8,56 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"time"
+
+	"go-hep.org/x/hep/sio"
 )
 
 // RunHeader provides metadata about a Run.
 type RunHeader struct {
-	RunNbr       int32
+	RunNumber    int32
 	Detector     string
 	Descr        string
 	SubDetectors []string
 	Params       Params
 }
 
+func (hdr *RunHeader) String() string {
+	o := new(bytes.Buffer)
+	fmt.Fprintf(o, "%s\n", strings.Repeat("=", 80))
+	fmt.Fprintf(o, "        Run:   %d\n", hdr.RunNumber)
+	fmt.Fprintf(o, "%s\n", strings.Repeat("=", 80))
+	fmt.Fprintf(o, " descrption : %s\n", hdr.Descr)
+	fmt.Fprintf(o, " detector   : %s\n", hdr.Detector)
+	fmt.Fprintf(o, " sub-dets   : %v\n", hdr.SubDetectors)
+	fmt.Fprintf(o, " parameters :\n%v\n", hdr.Params)
+	return string(o.Bytes())
+}
+
 func (*RunHeader) VersionSio() uint32 {
 	return Version
+}
+
+func (hdr *RunHeader) MarshalSio(w sio.Writer) error {
+	enc := sio.NewEncoder(w)
+	enc.Encode(&hdr.RunNumber)
+	enc.Encode(&hdr.Detector)
+	enc.Encode(&hdr.Descr)
+	enc.Encode(&hdr.SubDetectors)
+	enc.Encode(&hdr.Params)
+	return enc.Err()
+}
+
+func (hdr *RunHeader) UnmarshalSio(r sio.Reader) error {
+	dec := sio.NewDecoder(r)
+	dec.Decode(&hdr.RunNumber)
+	dec.Decode(&hdr.Detector)
+	dec.Decode(&hdr.Descr)
+	dec.Decode(&hdr.SubDetectors)
+	dec.Decode(&hdr.Params)
+	return dec.Err()
 }
 
 // EventHeader provides metadata about an Event.
@@ -37,6 +72,28 @@ type EventHeader struct {
 
 func (*EventHeader) VersionSio() uint32 {
 	return Version
+}
+
+func (hdr *EventHeader) MarshalSio(w sio.Writer) error {
+	enc := sio.NewEncoder(w)
+	enc.Encode(&hdr.RunNumber)
+	enc.Encode(&hdr.EventNumber)
+	enc.Encode(&hdr.TimeStamp)
+	enc.Encode(&hdr.Detector)
+	enc.Encode(&hdr.Blocks)
+	enc.Encode(&hdr.Params)
+	return enc.Err()
+}
+
+func (hdr *EventHeader) UnmarshalSio(r sio.Reader) error {
+	dec := sio.NewDecoder(r)
+	dec.Decode(&hdr.RunNumber)
+	dec.Decode(&hdr.EventNumber)
+	dec.Decode(&hdr.TimeStamp)
+	dec.Decode(&hdr.Detector)
+	dec.Decode(&hdr.Blocks)
+	dec.Decode(&hdr.Params)
+	return dec.Err()
 }
 
 // BlockDescr describes a SIO block.
@@ -86,6 +143,71 @@ func (p Params) String() string {
 		fmt.Fprintf(o, "\n")
 	}
 	return string(o.Bytes())
+}
+
+func (*Params) VersionSio() uint32 {
+	return Version
+}
+
+func (p *Params) MarshalSio(w sio.Writer) error {
+	enc := sio.NewEncoder(w)
+	{
+		data := p.Ints
+		enc.Encode(int32(len(data)))
+		if n := len(data); n > 0 {
+			keys := make([]string, 0, n)
+			for k := range data {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			for _, k := range keys {
+				enc.Encode(&k)
+				v := data[k]
+				enc.Encode(&v)
+			}
+		}
+	}
+	{
+		data := p.Floats
+		enc.Encode(int32(len(data)))
+		if n := len(data); n > 0 {
+			keys := make([]string, 0, n)
+			for k := range data {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			for _, k := range keys {
+				enc.Encode(&k)
+				v := data[k]
+				enc.Encode(&v)
+			}
+		}
+	}
+	{
+		data := p.Strings
+		enc.Encode(int32(len(data)))
+		if n := len(data); n > 0 {
+			keys := make([]string, 0, n)
+			for k := range data {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			for _, k := range keys {
+				enc.Encode(&k)
+				v := data[k]
+				enc.Encode(&v)
+			}
+		}
+	}
+	return enc.Err()
+}
+
+func (p *Params) UnmarshalSio(r sio.Reader) error {
+	dec := sio.NewDecoder(r)
+	dec.Decode(&p.Ints)
+	dec.Decode(&p.Floats)
+	dec.Decode(&p.Strings)
+	return dec.Err()
 }
 
 // Event holds informations about an LCIO event.
@@ -158,3 +280,12 @@ func (evt *Event) Weight() float64 {
 	}
 	return 1.0
 }
+
+var (
+	_ sio.Versioner = (*RunHeader)(nil)
+	_ sio.Codec     = (*RunHeader)(nil)
+	_ sio.Versioner = (*EventHeader)(nil)
+	_ sio.Codec     = (*EventHeader)(nil)
+	_ sio.Versioner = (*Params)(nil)
+	_ sio.Codec     = (*Params)(nil)
+)

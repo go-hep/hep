@@ -14,7 +14,7 @@ import (
 
 func TestOpen(t *testing.T) {
 	rhdr := lcio.RunHeader{
-		RunNbr:       42,
+		RunNumber:    42,
 		Descr:        "a simple run header",
 		Detector:     "my detector",
 		SubDetectors: []string{"det-1", "det-2"},

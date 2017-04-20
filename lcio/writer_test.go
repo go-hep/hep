@@ -6,6 +6,7 @@ package lcio_test
 
 import (
 	"compress/flate"
+	"encoding/hex"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -26,7 +27,7 @@ func TestCreateRunHeader(t *testing.T) {
 	w.SetCompressionLevel(flate.NoCompression)
 
 	rhdr := lcio.RunHeader{
-		RunNbr:       42,
+		RunNumber:    42,
 		Descr:        "a simple run header",
 		Detector:     "my detector",
 		SubDetectors: []string{"det-1", "det-2"},
@@ -59,6 +60,8 @@ func TestCreateRunHeader(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(ref, chk) {
+		t.Errorf("%s: --- ref ---\n%s\n", fname, hex.Dump(ref))
+		t.Errorf("%s: --- chk ---\n%s\n", fname, hex.Dump(chk))
 		t.Fatalf("%s: differ with golden", fname)
 	}
 
@@ -74,7 +77,7 @@ func TestCreate(t *testing.T) {
 	defer w.Close()
 
 	rhdr := lcio.RunHeader{
-		RunNbr:       42,
+		RunNumber:    42,
 		Descr:        "a simple run header",
 		Detector:     "my detector",
 		SubDetectors: []string{"det-1", "det-2"},
@@ -92,7 +95,7 @@ func TestCreate(t *testing.T) {
 	}
 
 	evt := lcio.Event{
-		RunNumber:   rhdr.RunNbr,
+		RunNumber:   rhdr.RunNumber,
 		Detector:    rhdr.Detector,
 		EventNumber: 52,
 		TimeStamp:   1234567890,

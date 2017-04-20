@@ -8,6 +8,7 @@ package lcio_test
 
 import (
 	"compress/flate"
+	"encoding/hex"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -28,7 +29,7 @@ func TestCreateCompressedRunHeader(t *testing.T) {
 	w.SetCompressionLevel(flate.BestCompression)
 
 	rhdr := lcio.RunHeader{
-		RunNbr:       42,
+		RunNumber:    42,
 		Descr:        "a simple run header",
 		Detector:     "my detector",
 		SubDetectors: []string{"det-1", "det-2"},
@@ -61,6 +62,8 @@ func TestCreateCompressedRunHeader(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(ref, chk) {
+		t.Errorf("%s: --- ref ---\n%s\n", fname, hex.Dump(ref))
+		t.Errorf("%s: --- chk ---\n%s\n", fname, hex.Dump(chk))
 		t.Fatalf("%s: differ with golden", fname)
 	}
 
