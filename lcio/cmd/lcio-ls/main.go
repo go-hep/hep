@@ -45,11 +45,17 @@ func main() {
 	defer r.Close()
 
 	rhdr := r.RunHeader()
+	ehdr := r.EventHeader()
+
 	for ievt := int64(0); r.Next() && (*nevts < 0 || ievt < *nevts); ievt++ {
 		evt := r.Event()
 		if hdr := r.RunHeader(); !reflect.DeepEqual(hdr, rhdr) {
-			log.Printf("=== run-header ===\n%v", hdr)
+			log.Printf("=== run header ===\n%v", &hdr)
 			rhdr = hdr
+		}
+		if hdr := r.EventHeader(); !reflect.DeepEqual(hdr, ehdr) {
+			log.Printf("=== evt header ===\n%v", &hdr)
+			ehdr = hdr
 		}
 		log.Printf("ievt[%d]", ievt)
 		out := new(bytes.Buffer)
