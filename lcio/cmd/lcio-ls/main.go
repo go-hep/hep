@@ -5,15 +5,12 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"reflect"
-	"text/tabwriter"
 
 	"go-hep.org/x/hep/lcio"
 )
@@ -50,37 +47,23 @@ func main() {
 
 	evts := 0
 	for ievt := int64(0); r.Next() && (*nevts < 0 || ievt < *nevts); ievt++ {
-		evt := r.Event()
 		if hdr := r.RunHeader(); !reflect.DeepEqual(hdr, rhdr) {
-			log.Printf("=== run header ===\n%v", &hdr)
+			fmt.Printf("%v\n", &hdr)
 			rhdr = hdr
 		}
 		if hdr := r.EventHeader(); !reflect.DeepEqual(hdr, ehdr) {
-			log.Printf("=== evt header ===\n%v", &hdr)
+			fmt.Printf("%v\n", &hdr)
 			ehdr = hdr
-		}
-		log.Printf("ievt[%d]", ievt)
-		out := new(bytes.Buffer)
-		w := tabwriter.NewWriter(out, 8, 4, 1, ' ', 0)
-
-		for _, n := range evt.Names() {
-			v := evt.Get(n)
-			fmt.Fprintf(w, " %s\t%T\n", n, v)
-		}
-		w.Flush()
-		sc := bufio.NewScanner(out)
-		for sc.Scan() {
-			log.Printf("%s\n", sc.Text())
 		}
 		evts++
 	}
 	err = r.Err()
 	if err == io.EOF && evts == 0 {
 		if hdr := r.RunHeader(); !reflect.DeepEqual(hdr, rhdr) {
-			log.Printf("=== run header ===\n%v", &hdr)
+			fmt.Printf("%v\n", &hdr)
 		}
 		if hdr := r.EventHeader(); !reflect.DeepEqual(hdr, ehdr) {
-			log.Printf("=== evt header ===\n%v", &hdr)
+			fmt.Printf("%v\n", &hdr)
 		}
 	}
 	if err != nil && err != io.EOF {
