@@ -68,6 +68,14 @@ func (rec *Record) Options() uint32 {
 	return rec.options
 }
 
+// Disconnect disconnects all blocks previously connected to this
+// Record (for reading or writing.)
+func (rec *Record) Disconnect() {
+	rec.bnames = rec.bnames[:0]
+	rec.bindex = make(map[string]int)
+	rec.blocks = rec.blocks[:0]
+}
+
 // Connect connects a Block to this Record (for reading or writing)
 func (rec *Record) Connect(name string, ptr interface{}) error {
 	var err error
@@ -119,7 +127,7 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 // read reads a record
 func (rec *Record) read(r *reader) error {
 	var err error
-	// fmt.Printf("::: reading record [%s]... [%d]\n", rec.name, buf.Len())
+	// fmt.Printf("::: reading record [%s]... [%d]\n", rec.name, r.Len())
 	type fixlink struct {
 		link Linker
 		vers uint32
@@ -211,7 +219,7 @@ func (rec *Record) read(r *reader) error {
 		}
 	}
 
-	//fmt.Printf("::: reading record [%s]... [done]\n", rec.name)
+	// fmt.Printf("::: reading record [%s]... [done]\n", rec.name)
 	return err
 }
 
