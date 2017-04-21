@@ -18,6 +18,37 @@ type FloatVec struct {
 	Elements [][]float32
 }
 
+func (vec FloatVec) String() string {
+	o := new(bytes.Buffer)
+	fmt.Fprintf(o, "%[1]s print out of LCFloatVec collection %[1]s\n\n", strings.Repeat("-", 15))
+	fmt.Fprintf(o, "  flag:  0x%x\n%v", vec.Flags, vec.Params)
+	fmt.Fprintf(o, "\n")
+
+	const (
+		head = " [   id   ] | val0, val1, ...\n"
+		tail = "------------|----------------\n"
+	)
+	fmt.Fprintf(o, head)
+	fmt.Fprintf(o, tail)
+	for _, slice := range vec.Elements {
+		fmt.Fprintf(o, " [%08d] |",
+			0, //id
+		)
+		for i, v := range slice {
+			if i > 0 {
+				fmt.Fprintf(o, ", ")
+			}
+			if i+1%10 == 0 {
+				fmt.Fprintf(o, "\n     ")
+			}
+			fmt.Fprintf(o, "%8f", v)
+		}
+		fmt.Fprintf(o, "\n")
+	}
+	fmt.Fprintf(o, tail)
+	return string(o.Bytes())
+}
+
 func (*FloatVec) VersionSio() uint32 {
 	return Version
 }
@@ -67,6 +98,37 @@ type IntVec struct {
 	Elements [][]int32
 }
 
+func (vec IntVec) String() string {
+	o := new(bytes.Buffer)
+	fmt.Fprintf(o, "%[1]s print out of LCIntVec collection %[1]s\n\n", strings.Repeat("-", 15))
+	fmt.Fprintf(o, "  flag:  0x%x\n%v", vec.Flags, vec.Params)
+	fmt.Fprintf(o, "\n")
+
+	const (
+		head = " [   id   ] | val0, val1, ...\n"
+		tail = "------------|----------------\n"
+	)
+	fmt.Fprintf(o, head)
+	fmt.Fprintf(o, tail)
+	for _, slice := range vec.Elements {
+		fmt.Fprintf(o, " [%08d] |",
+			0, //id
+		)
+		for i, v := range slice {
+			if i > 0 {
+				fmt.Fprintf(o, ", ")
+			}
+			if i+1%10 == 0 {
+				fmt.Fprintf(o, "\n     ")
+			}
+			fmt.Fprintf(o, "%8d", v)
+		}
+		fmt.Fprintf(o, "\n")
+	}
+	fmt.Fprintf(o, tail)
+	return string(o.Bytes())
+}
+
 func (*IntVec) VersionSio() uint32 {
 	return Version
 }
@@ -114,6 +176,37 @@ type StrVec struct {
 	Flags    Flags
 	Params   Params
 	Elements [][]string
+}
+
+func (vec StrVec) String() string {
+	o := new(bytes.Buffer)
+	fmt.Fprintf(o, "%[1]s print out of LCStrVec collection %[1]s\n\n", strings.Repeat("-", 15))
+	fmt.Fprintf(o, "  flag:  0x%x\n%v", vec.Flags, vec.Params)
+	fmt.Fprintf(o, "\n")
+
+	const (
+		head = " [   id   ] | val0, val1, ...\n"
+		tail = "------------|----------------\n"
+	)
+	fmt.Fprintf(o, head)
+	fmt.Fprintf(o, tail)
+	for _, slice := range vec.Elements {
+		fmt.Fprintf(o, " [%08d] |",
+			0, //id
+		)
+		for i, v := range slice {
+			if i > 0 {
+				fmt.Fprintf(o, ", ")
+			}
+			if i+1%10 == 0 {
+				fmt.Fprintf(o, "\n     ")
+			}
+			fmt.Fprintf(o, "%s", v)
+		}
+		fmt.Fprintf(o, "\n")
+	}
+	fmt.Fprintf(o, tail)
+	return string(o.Bytes())
 }
 
 func (*StrVec) VersionSio() uint32 {
