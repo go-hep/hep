@@ -49,7 +49,25 @@ func (*RawCalorimeterHits) VersionSio() uint32 {
 }
 
 func (hits *RawCalorimeterHits) MarshalSio(w sio.Writer) error {
-	panic("not implemented")
+	enc := sio.NewEncoder(w)
+	enc.Encode(&hits.Flags)
+	enc.Encode(&hits.Params)
+	enc.Encode(int32(len(hits.Hits)))
+	for i := range hits.Hits {
+		hit := &hits.Hits[i]
+		enc.Encode(&hit.CellID0)
+		if hits.Flags.Test(BitsRChID1) {
+			enc.Encode(&hit.CellID1)
+		}
+		enc.Encode(&hit.Amplitude)
+		if hits.Flags.Test(BitsRChTime) {
+			enc.Encode(&hit.TimeStamp)
+		}
+		if !hits.Flags.Test(BitsRChNoPtr) {
+			enc.Tag(hit)
+		}
+	}
+	return enc.Err()
 }
 
 func (hits *RawCalorimeterHits) UnmarshalSio(r sio.Reader) error {
@@ -83,4 +101,7 @@ type RawCalorimeterHit struct {
 	TimeStamp int32
 }
 
-var _ sio.Codec = (*RawCalorimeterHits)(nil)
+var (
+	_ sio.Versioner = (*RawCalorimeterHits)(nil)
+	_ sio.Codec     = (*RawCalorimeterHits)(nil)
+)
