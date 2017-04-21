@@ -12,13 +12,14 @@ import (
 	"go-hep.org/x/hep/sio"
 )
 
-type SimCalorimeterHits struct {
+// SimCalorimeterHitContainer is a collection of simulation calorimter hits.
+type SimCalorimeterHitContainer struct {
 	Flags  Flags
 	Params Params
 	Hits   []SimCalorimeterHit
 }
 
-func (hits SimCalorimeterHits) String() string {
+func (hits SimCalorimeterHitContainer) String() string {
 	o := new(bytes.Buffer)
 	fmt.Fprintf(o, "%[1]s print out of SimCalorimeterHit collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", hits.Flags, hits.Params)
@@ -64,11 +65,11 @@ func (hits SimCalorimeterHits) String() string {
 	return string(o.Bytes())
 }
 
-func (*SimCalorimeterHits) VersionSio() uint32 {
+func (*SimCalorimeterHitContainer) VersionSio() uint32 {
 	return Version
 }
 
-func (hits *SimCalorimeterHits) MarshalSio(w sio.Writer) error {
+func (hits *SimCalorimeterHitContainer) MarshalSio(w sio.Writer) error {
 	enc := sio.NewEncoder(w)
 	enc.Encode(&hits.Flags)
 	enc.Encode(&hits.Params)
@@ -99,7 +100,7 @@ func (hits *SimCalorimeterHits) MarshalSio(w sio.Writer) error {
 	return enc.Err()
 }
 
-func (hits *SimCalorimeterHits) UnmarshalSio(r sio.Reader) error {
+func (hits *SimCalorimeterHitContainer) UnmarshalSio(r sio.Reader) error {
 	dec := sio.NewDecoder(r)
 	dec.Decode(&hits.Flags)
 	dec.Decode(&hits.Params)
@@ -155,4 +156,7 @@ type Contrib struct {
 	StepPos [3]float32
 }
 
-var _ sio.Codec = (*SimCalorimeterHits)(nil)
+var (
+	_ sio.Versioner = (*SimCalorimeterHitContainer)(nil)
+	_ sio.Codec     = (*SimCalorimeterHitContainer)(nil)
+)

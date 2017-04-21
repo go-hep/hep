@@ -154,7 +154,7 @@ func testCreateEvent(t *testing.T, compLevel int, fname string) {
 		t.Errorf("got an unexpected collection")
 	}
 
-	mcparts := lcio.McParticles{
+	mcparts := lcio.McParticleContainer{
 		Flags: 0x1234,
 	}
 	for i := 0; i < 3; i++ {
@@ -178,7 +178,7 @@ func testCreateEvent(t *testing.T, compLevel int, fname string) {
 	mcparts.Particles[0].Children = []*lcio.McParticle{&mcparts.Particles[1]}
 	mcparts.Particles[2].Children = []*lcio.McParticle{&mcparts.Particles[1]}
 
-	simhits := lcio.SimCalorimeterHits{
+	simhits := lcio.SimCalorimeterHitContainer{
 		Flags: lcio.BitsChLong | lcio.BitsChID1 | lcio.BitsChStep | lcio.BitsChPDG,
 		Params: lcio.Params{
 			Strings: map[string][]string{
@@ -204,7 +204,7 @@ func testCreateEvent(t *testing.T, compLevel int, fname string) {
 		},
 	}
 
-	calhits := lcio.CalorimeterHits{
+	calhits := lcio.CalorimeterHitContainer{
 		Flags: lcio.BitsRChLong | lcio.BitsRChID1 | lcio.BitsRChTime | lcio.BitsRChNoPtr | lcio.BitsRChEnergyError,
 		Params: lcio.Params{
 			Floats:  map[string][]float32{"f32": {1, 2, 3}},

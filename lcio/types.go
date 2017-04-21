@@ -12,11 +12,11 @@ import (
 func typeFrom(name string) interface{} {
 	switch name {
 	case "MCParticle":
-		return new(McParticles)
+		return new(McParticleContainer)
 	case "SimTrackerHit":
-		return new(SimTrackerHits)
+		return new(SimTrackerHitContainer)
 	case "SimCalorimeterHit":
-		return new(SimCalorimeterHits)
+		return new(SimCalorimeterHitContainer)
 	case "LCFloatVec":
 		return new(FloatVec)
 	case "LCIntVec":
@@ -24,13 +24,13 @@ func typeFrom(name string) interface{} {
 	case "LCStrVec":
 		return new(StrVec)
 	case "RawCalorimeterHit":
-		return new(RawCalorimeterHits)
+		return new(RawCalorimeterHitContainer)
 	case "CalorimeterHit":
-		return new(CalorimeterHits)
+		return new(CalorimeterHitContainer)
 	case "TrackerHit":
-		return new(TrackerHits)
+		return new(TrackerHitContainer)
 	case "TrackerHitPlane":
-		return new(TrackerHitPlanes)
+		return new(TrackerHitPlaneContainer)
 
 	case "LCGenericObject":
 		return new(GenericObject)
@@ -41,11 +41,11 @@ func typeFrom(name string) interface{} {
 
 func typeName(t interface{}) string {
 	switch t.(type) {
-	case *McParticles:
+	case *McParticleContainer:
 		return "MCParticle"
-	case *SimTrackerHits:
+	case *SimTrackerHitContainer:
 		return "SimTrackerHit"
-	case *SimCalorimeterHits:
+	case *SimCalorimeterHitContainer:
 		return "SimCalorimeterHit"
 	case *FloatVec:
 		return "LCFloatVec"
@@ -53,13 +53,13 @@ func typeName(t interface{}) string {
 		return "LCIntVec"
 	case *StrVec:
 		return "LCStrVec"
-	case *RawCalorimeterHits:
+	case *RawCalorimeterHitContainer:
 		return "RawCalorimeterHit"
-	case *CalorimeterHits:
+	case *CalorimeterHitContainer:
 		return "CalorimeterHit"
-	case *TrackerHits:
+	case *TrackerHitContainer:
 		return "TrackerHit"
-	case *TrackerHitPlanes:
+	case *TrackerHitPlaneContainer:
 		return "TrackerHitPlane"
 
 	case *GenericObject, GenericObject:

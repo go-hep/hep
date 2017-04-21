@@ -51,8 +51,8 @@ func testRWCalo(t *testing.T, compLevel int, fname string) {
 		}
 
 		var (
-			calhits    = lcio.CalorimeterHits{Flags: lcio.BitsRChLong}
-			calhitsErr = lcio.CalorimeterHits{Flags: lcio.BitsRChLong | lcio.BitsRChEnergyError}
+			calhits    = lcio.CalorimeterHitContainer{Flags: lcio.BitsRChLong}
+			calhitsErr = lcio.CalorimeterHitContainer{Flags: lcio.BitsRChLong | lcio.BitsRChEnergyError}
 		)
 		for j := 0; j < nhits; j++ {
 			hit := lcio.CalorimeterHit{
@@ -115,8 +115,8 @@ func testRWCalo(t *testing.T, compLevel int, fname string) {
 			return
 		}
 
-		calhits := evt.Get(CALHITS).(*lcio.CalorimeterHits)
-		calhitsErr := evt.Get(CALHITSERR).(*lcio.CalorimeterHits)
+		calhits := evt.Get(CALHITS).(*lcio.CalorimeterHitContainer)
+		calhitsErr := evt.Get(CALHITSERR).(*lcio.CalorimeterHitContainer)
 
 		for j := 0; j < nhits; j++ {
 			got := calhits.Hits[j]

@@ -8,21 +8,22 @@ import (
 	"go-hep.org/x/hep/sio"
 )
 
-type TrackerHits struct {
+// TrackerHitContainer is a collection of tracker hits.
+type TrackerHitContainer struct {
 	Flags  Flags
 	Params Params
 	Hits   []TrackerHit
 }
 
-func (*TrackerHits) VersionSio() uint32 {
+func (*TrackerHitContainer) VersionSio() uint32 {
 	return Version
 }
 
-func (hits *TrackerHits) MarshalSio(w sio.Writer) error {
+func (hits *TrackerHitContainer) MarshalSio(w sio.Writer) error {
 	panic("not implemented")
 }
 
-func (hits *TrackerHits) UnmarshalSio(r sio.Reader) error {
+func (hits *TrackerHitContainer) UnmarshalSio(r sio.Reader) error {
 	dec := sio.NewDecoder(r)
 	dec.Decode(&hits.Flags)
 	dec.Decode(&hits.Params)
@@ -86,4 +87,7 @@ type TrackerHit struct {
 	RawHits []*RawCalorimeterHit
 }
 
-var _ sio.Codec = (*TrackerHits)(nil)
+var (
+	_ sio.Versioner = (*TrackerHitContainer)(nil)
+	_ sio.Codec     = (*TrackerHitContainer)(nil)
+)

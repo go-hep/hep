@@ -8,21 +8,22 @@ import (
 	"go-hep.org/x/hep/sio"
 )
 
-type SimTrackerHits struct {
+// SimTrackerHitContainer is a collection of simulated tracker hits.
+type SimTrackerHitContainer struct {
 	Flags  Flags
 	Params Params
 	Hits   []SimTrackerHit
 }
 
-func (*SimTrackerHits) VersionSio() uint32 {
+func (*SimTrackerHitContainer) VersionSio() uint32 {
 	return Version
 }
 
-func (hits *SimTrackerHits) MarshalSio(w sio.Writer) error {
+func (hits *SimTrackerHitContainer) MarshalSio(w sio.Writer) error {
 	panic("not implemented")
 }
 
-func (hits *SimTrackerHits) UnmarshalSio(r sio.Reader) error {
+func (hits *SimTrackerHitContainer) UnmarshalSio(r sio.Reader) error {
 	dec := sio.NewDecoder(r)
 	dec.Decode(&hits.Flags)
 	dec.Decode(&hits.Params)
@@ -67,4 +68,7 @@ type SimTrackerHit struct {
 	Quality    int32
 }
 
-var _ sio.Codec = (*SimTrackerHits)(nil)
+var (
+	_ sio.Versioner = (*SimTrackerHitContainer)(nil)
+	_ sio.Codec     = (*SimTrackerHitContainer)(nil)
+)

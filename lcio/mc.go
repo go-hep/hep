@@ -13,13 +13,14 @@ import (
 	"go-hep.org/x/hep/sio"
 )
 
-type McParticles struct {
+// McParticleContainer is a collection of monte-carlo particles.
+type McParticleContainer struct {
 	Flags     Flags
 	Params    Params
 	Particles []McParticle
 }
 
-func (mcs McParticles) String() string {
+func (mcs McParticleContainer) String() string {
 	o := new(bytes.Buffer)
 	fmt.Fprintf(o, "%[1]s print out of MCParticle collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", mcs.Flags, mcs.Params)
@@ -101,11 +102,11 @@ func (mcs McParticles) String() string {
 	return string(o.Bytes())
 }
 
-func (*McParticles) VersionSio() uint32 {
+func (*McParticleContainer) VersionSio() uint32 {
 	return Version
 }
 
-func (mc *McParticles) MarshalSio(w sio.Writer) error {
+func (mc *McParticleContainer) MarshalSio(w sio.Writer) error {
 	enc := sio.NewEncoder(w)
 	enc.Encode(&mc.Flags)
 	enc.Encode(&mc.Params)
@@ -113,7 +114,7 @@ func (mc *McParticles) MarshalSio(w sio.Writer) error {
 	return enc.Err()
 }
 
-func (mc *McParticles) UnmarshalSio(r sio.Reader) error {
+func (mc *McParticleContainer) UnmarshalSio(r sio.Reader) error {
 	dec := sio.NewDecoder(r)
 	dec.Decode(&mc.Flags)
 	dec.Decode(&mc.Params)
@@ -121,7 +122,7 @@ func (mc *McParticles) UnmarshalSio(r sio.Reader) error {
 	return dec.Err()
 }
 
-func (mc *McParticles) LinkSio(vers uint32) error {
+func (mc *McParticleContainer) LinkSio(vers uint32) error {
 	var err error
 	switch {
 	case vers <= 8:
@@ -335,5 +336,9 @@ func (mc *McParticle) UnmarshalSio(r sio.Reader) error {
 	return dec.Err()
 }
 
-var _ sio.Codec = (*McParticle)(nil)
-var _ sio.Codec = (*McParticles)(nil)
+var (
+	_ sio.Versioner = (*McParticle)(nil)
+	_ sio.Codec     = (*McParticle)(nil)
+	_ sio.Versioner = (*McParticleContainer)(nil)
+	_ sio.Codec     = (*McParticleContainer)(nil)
+)
