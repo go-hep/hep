@@ -258,6 +258,12 @@ type GenericObject struct {
 	Data   []GenericObjectData
 }
 
+type GenericObjectData struct {
+	I32s []int32
+	F32s []float32
+	F64s []float64
+}
+
 func (obj GenericObject) String() string {
 	o := new(bytes.Buffer)
 	fmt.Fprintf(o, "%[1]s print out of LCGenericObject collection %[1]s\n\n", strings.Repeat("-", 15))
@@ -287,12 +293,6 @@ func (obj GenericObject) String() string {
 	return string(o.Bytes())
 }
 
-type GenericObjectData struct {
-	I32s []int32
-	F32s []float32
-	F64s []float64
-}
-
 func (obj GenericObjectData) String() string {
 	o := new(bytes.Buffer)
 	fmt.Fprintf(o, " [%08d] ", 0)
@@ -308,8 +308,53 @@ func (obj GenericObjectData) String() string {
 	return string(o.Bytes())
 }
 
+func (*GenericObject) VersionSio() uint32 {
+	return Version
+}
+
 func (obj *GenericObject) MarshalSio(w sio.Writer) error {
-	panic("not implemented")
+	enc := sio.NewEncoder(w)
+	enc.Encode(&obj.Flag)
+	enc.Encode(&obj.Params)
+
+	if obj.Flag.Test(BitsGOFixed) {
+		var (
+			ni32 int32
+			nf32 int32
+			nf64 int32
+		)
+
+		if len(obj.Data) > 0 {
+			data := obj.Data[0]
+			ni32 = int32(len(data.I32s))
+			nf32 = int32(len(data.F32s))
+			nf64 = int32(len(data.F64s))
+		}
+		enc.Encode(&ni32)
+		enc.Encode(&nf32)
+		enc.Encode(&nf64)
+	}
+	enc.Encode(int32(len(obj.Data)))
+	for iobj := range obj.Data {
+		data := &obj.Data[iobj]
+		if !obj.Flag.Test(BitsGOFixed) {
+			enc.Encode(int32(len(data.I32s)))
+			enc.Encode(int32(len(data.F32s)))
+			enc.Encode(int32(len(data.F64s)))
+		}
+		for i := range data.I32s {
+			enc.Encode(&data.I32s[i])
+		}
+		for i := range data.F32s {
+			enc.Encode(&data.F32s[i])
+		}
+		for i := range data.F64s {
+			enc.Encode(&data.F64s[i])
+		}
+		enc.Tag(data)
+	}
+
+	return enc.Err()
 }
 
 func (obj *GenericObject) UnmarshalSio(r sio.Reader) error {
@@ -357,7 +402,13 @@ func (obj *GenericObject) UnmarshalSio(r sio.Reader) error {
 	return dec.Err()
 }
 
-var _ sio.Codec = (*FloatVec)(nil)
-var _ sio.Codec = (*IntVec)(nil)
-var _ sio.Codec = (*StrVec)(nil)
-var _ sio.Codec = (*GenericObject)(nil)
+var (
+	_ sio.Versioner = (*FloatVec)(nil)
+	_ sio.Codec     = (*FloatVec)(nil)
+	_ sio.Versioner = (*IntVec)(nil)
+	_ sio.Codec     = (*IntVec)(nil)
+	_ sio.Versioner = (*StrVec)(nil)
+	_ sio.Codec     = (*StrVec)(nil)
+	_ sio.Versioner = (*GenericObject)(nil)
+	_ sio.Codec     = (*GenericObject)(nil)
+)
