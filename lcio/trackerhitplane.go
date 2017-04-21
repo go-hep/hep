@@ -5,6 +5,10 @@
 package lcio
 
 import (
+	"bytes"
+	"fmt"
+	"strings"
+
 	"go-hep.org/x/hep/sio"
 )
 
@@ -15,12 +19,91 @@ type TrackerHitPlaneContainer struct {
 	Hits   []TrackerHitPlane
 }
 
+type TrackerHitPlane struct {
+	CellID0 int32
+	CellID1 int32
+	Type    int32 // type of Track; encoded in parameters TrackerHitTypeName+TrackerHit TypeValue
+	Pos     [3]float64
+	U       [2]float32
+	V       [2]float32
+	DU      float32 // measurement error along u
+	DV      float32 // measurement error along v
+	EDep    float32 // energy deposit on the hit
+	EDepErr float32 // error measured on EDep
+	Time    float32
+	Quality int32 // quality flag word
+	RawHits []*RawCalorimeterHit
+}
+
+func (hits TrackerHitPlaneContainer) String() string {
+	o := new(bytes.Buffer)
+	fmt.Fprintf(o, "%[1]s print out of TrackerHitPlane collection %[1]s\n\n", strings.Repeat("-", 15))
+	fmt.Fprintf(o, "  flag:  0x%x\n%v", hits.Flags, hits.Params)
+	fmt.Fprintf(o, "     LCIO::THBIT_BARREL   : %v\n", hits.Flags.Test(BitsThBarrel))
+
+	// FIXME(sbinet): quality-bits
+
+	// FIXME(sbinet): CellIDDecoder
+
+	fmt.Fprintf(o, "\n")
+
+	const (
+		head = " [   id   ] |cellId0 |cellId1 | position (x,y,z)            | time    |[type]|[qual]| EDep    |EDepError|   du    |   dv    |  u (theta, phi)   |  v (theta, phi)\n"
+		tail = "------------|--------|--------|-----------------------------|---------|------|------|---------|---------|---------|---------|-------------------|-------------------|\n"
+	)
+	fmt.Fprintf(o, head)
+	fmt.Fprintf(o, tail)
+	for i := range hits.Hits {
+		hit := &hits.Hits[i]
+		fmt.Fprintf(o,
+			" [%08d] |%08d|%08d|%+.2e,%+.2e,%+.2e|%+.2e|[%04d]|[%04d]|%+.2e|%+.2e|%+.2e|%+.2e|%+.2e,%+.2e|%+.2e,%+.2e|\n",
+			0, // id
+			hit.CellID0, hit.CellID1,
+			hit.Pos[0], hit.Pos[1], hit.Pos[2],
+			hit.Time, hit.Type, hit.Quality,
+			hit.EDep, hit.EDepErr,
+			hit.DU, hit.DV,
+			hit.U[0], hit.U[1],
+			hit.V[0], hit.V[1],
+		)
+	}
+	fmt.Fprintf(o, tail)
+	return string(o.Bytes())
+}
+
 func (*TrackerHitPlaneContainer) VersionSio() uint32 {
 	return Version
 }
 
 func (hits *TrackerHitPlaneContainer) MarshalSio(w sio.Writer) error {
-	panic("not implemented")
+	enc := sio.NewEncoder(w)
+	enc.Encode(&hits.Flags)
+	enc.Encode(&hits.Params)
+	enc.Encode(int32(len(hits.Hits)))
+	for i := range hits.Hits {
+		hit := &hits.Hits[i]
+		enc.Encode(&hit.CellID0)
+		if hits.Flags.Test(BitsThID1) {
+			enc.Encode(&hit.CellID1)
+		}
+		enc.Encode(&hit.Type)
+		enc.Encode(&hit.Pos)
+		enc.Encode(&hit.U)
+		enc.Encode(&hit.V)
+		enc.Encode(&hit.DU)
+		enc.Encode(&hit.DV)
+		enc.Encode(&hit.EDep)
+		enc.Encode(&hit.EDepErr)
+		enc.Encode(&hit.Time)
+		enc.Encode(&hit.Quality)
+
+		enc.Encode(int32(len(hit.RawHits)))
+		for ii := range hit.RawHits {
+			enc.Pointer(&hit.RawHits[ii])
+		}
+		enc.Tag(hit)
+	}
+	return enc.Err()
 }
 
 func (hits *TrackerHitPlaneContainer) UnmarshalSio(r sio.Reader) error {
@@ -65,22 +148,6 @@ func (hits *TrackerHitPlaneContainer) UnmarshalSio(r sio.Reader) error {
 	}
 
 	return dec.Err()
-}
-
-type TrackerHitPlane struct {
-	CellID0 int32
-	CellID1 int32
-	Type    int32 // type of Track; encoded in parameters TrackerHitTypeName+TrackerHit TypeValue
-	Pos     [3]float64
-	U       [2]float32
-	V       [2]float32
-	DU      float32 // measurement error along u
-	DV      float32 // measurement error along v
-	EDep    float32 // energy deposit on the hit
-	EDepErr float32 // error measured on EDep
-	Time    float32
-	Quality int32 // quality flag word
-	RawHits []*RawCalorimeterHit
 }
 
 var (
