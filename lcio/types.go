@@ -37,6 +37,8 @@ func typeFrom(name string) interface{} {
 		return new(ClusterContainer)
 	case "Vertex":
 		return new(VertexContainer)
+	case "ReconstructedParticle":
+		return new(RecParticleContainer)
 
 	case "LCGenericObject":
 		return new(GenericObject)
@@ -73,8 +75,10 @@ func typeName(t interface{}) string {
 		return "Cluster"
 	case *VertexContainer:
 		return "Vertex"
+	case *RecParticleContainer:
+		return "ReconstructedParticle"
 
-	case *GenericObject, GenericObject:
+	case *GenericObject:
 		return "LCGenericObject"
 	}
 	panic(fmt.Errorf("lcio: unhandled type %T", t))
