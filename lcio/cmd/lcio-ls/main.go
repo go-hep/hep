@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// lcio-ls displays the content of a LCIO file.
+//
+// The default behaviour is to only display RunHeaders and EventHeaders.
+// Events' contents can be printed out with the --print-event flag.
 package main
 
 import (
@@ -20,8 +24,9 @@ func main() {
 	log.SetFlags(0)
 
 	var (
-		fname = ""
-		nevts = flag.Int64("n", -1, "number of events to inspect")
+		fname      = ""
+		nevts      = flag.Int64("n", -1, "number of events to inspect")
+		printEvent = flag.Bool("print-event", false, "enable event(s) printout")
 	)
 
 	flag.Parse()
@@ -54,6 +59,10 @@ func main() {
 		if hdr := r.EventHeader(); !reflect.DeepEqual(hdr, ehdr) {
 			fmt.Printf("%v\n", &hdr)
 			ehdr = hdr
+		}
+		if *printEvent {
+			evt := r.Event()
+			fmt.Printf("%v\n", &evt)
 		}
 		evts++
 	}
