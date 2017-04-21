@@ -7,6 +7,7 @@ package lcio_test
 import (
 	"compress/flate"
 	"encoding/hex"
+	"go/build"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -17,14 +18,50 @@ import (
 )
 
 func TestCreateRunHeader(t *testing.T) {
-	const fname = "testdata/run-header.slcio"
+	testCreateRunHeader(t, flate.NoCompression, "testdata/run-header.slcio")
+}
+
+func TestCreateCompressedRunHeader(t *testing.T) {
+	testCreateRunHeader(t, flate.BestCompression, "testdata/run-header-compressed.slcio")
+}
+
+func TestCreateEvent(t *testing.T) {
+	testCreateEvent(t, flate.NoCompression, "testdata/event.slcio")
+}
+
+func TestCreateCompressedEvent(t *testing.T) {
+	testCreateEvent(t, flate.BestCompression, "testdata/event-compressed.slcio")
+}
+
+// stableCompression returns whether we can run the test
+// for the current Go release and the compression level.
+// The reference compressed LCIO files were created with go1.8.
+// The compressed output doesn't match the compressed output one would
+// get with Go<=1.6 releases.
+func stableCompression(t *testing.T, compLevel int) bool {
+	if compLevel == flate.NoCompression {
+		return true
+	}
+	for _, rel := range build.Default.ReleaseTags {
+		if rel == "go1.7" {
+			return true
+		}
+	}
+	return false
+}
+
+func testCreateRunHeader(t *testing.T, compLevel int, fname string) {
+	if !stableCompression(t, compLevel) {
+		t.Skipf("no stable compression - skipping %s", fname)
+	}
+
 	w, err := lcio.Create(fname)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer w.Close()
 
-	w.SetCompressionLevel(flate.NoCompression)
+	w.SetCompressionLevel(compLevel)
 
 	rhdr := lcio.RunHeader{
 		RunNumber:    42,
@@ -68,13 +105,17 @@ func TestCreateRunHeader(t *testing.T) {
 	os.Remove(fname)
 }
 
-func TestCreate(t *testing.T) {
-	const fname = "testdata/test.slcio"
+func testCreateEvent(t *testing.T, compLevel int, fname string) {
+	if !stableCompression(t, compLevel) {
+		t.Skipf("no stable compression - skipping %s", fname)
+	}
+
 	w, err := lcio.Create(fname)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer w.Close()
+	w.SetCompressionLevel(compLevel)
 
 	rhdr := lcio.RunHeader{
 		RunNumber:    42,
@@ -114,7 +155,7 @@ func TestCreate(t *testing.T) {
 	}
 
 	mcparts := lcio.McParticles{
-		Flags: 0x1234ffff,
+		Flags: 0x1234,
 	}
 	for i := 0; i < 3; i++ {
 		i32 := int32(i+1) * 10
@@ -139,6 +180,11 @@ func TestCreate(t *testing.T) {
 
 	simhits := lcio.SimCalorimeterHits{
 		Flags: lcio.BitsChLong | lcio.BitsChID1 | lcio.BitsChStep | lcio.BitsChPDG,
+		Params: lcio.Params{
+			Strings: map[string][]string{
+				"CellIDEncoding": {"M:3,S-1:3,I:9,J:9,K-1:6"},
+			},
+		},
 		Hits: []lcio.SimCalorimeterHit{
 			{
 				CellID0: 1024, CellID1: 256, Energy: 42.666, Pos: [3]float32{1, 2, 3},
@@ -213,6 +259,22 @@ func TestCreate(t *testing.T) {
 
 	if got, want := r.Event(), evt; !reflect.DeepEqual(got, want) {
 		t.Fatalf("evts differ.\ngot:\n%v\nwant:\n%v\n", &got, &want)
+	}
+
+	chk, err := ioutil.ReadFile(fname)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ref, err := ioutil.ReadFile(strings.Replace(fname, ".slcio", "_golden.slcio", -1))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(ref, chk) {
+		t.Errorf("%s: --- ref ---\n%s\n", fname, hex.Dump(ref))
+		t.Errorf("%s: --- chk ---\n%s\n", fname, hex.Dump(chk))
+		t.Fatalf("%s: differ with golden", fname)
 	}
 
 	os.Remove(fname)
