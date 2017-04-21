@@ -42,8 +42,10 @@ func (vtxs VertexContainer) String() string {
 
 	fmt.Fprintf(o, "\n")
 
-	head := " [   id   ] |pri|     alg. type     |    chi2   |    prob.  |       position ( x, y, z)       | [par] |  [idRecP]  \n"
-	tail := "------------|---|-------------------|-----------|-----------|---------------------------------|-------|------------\n"
+	const (
+		head = " [   id   ] |pri|     alg. type     |    chi2   |    prob.  |       position ( x, y, z)       | [par] |  [idRecP]  \n"
+		tail = "------------|---|-------------------|-----------|-----------|---------------------------------|-------|------------\n"
+	)
 	fmt.Fprintf(o, head)
 	fmt.Fprintf(o, tail)
 

@@ -34,8 +34,10 @@ func (hits CalorimeterHitContainer) String() string {
 
 	fmt.Fprintf(o, "\n")
 
-	head := " [   id   ] |cellId0 |cellId1 |  energy  |energyerr |        position (x,y,z)           \n"
-	tail := "------------|--------|--------|----------|----------|-----------------------------------\n"
+	const (
+		head = " [   id   ] |cellId0 |cellId1 |  energy  |energyerr |        position (x,y,z)           \n"
+		tail = "------------|--------|--------|----------|----------|-----------------------------------\n"
+	)
 	fmt.Fprintf(o, head)
 	fmt.Fprintf(o, tail)
 	for _, hit := range hits.Hits {

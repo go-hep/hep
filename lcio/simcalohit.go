@@ -32,9 +32,11 @@ func (hits SimCalorimeterHitContainer) String() string {
 
 	fmt.Fprintf(o, "\n")
 
-	head := " [   id   ] |cellId0 |cellId1 |  energy  |        position (x,y,z)          | nMCParticles \n" +
-		"           -> MC contribution: prim. PDG |  energy  |   time   | sec. PDG | stepPosition (x,y,z) \n"
-	tail := "------------|--------|--------|----------|----------------------------------|--------------\n"
+	const (
+		head = " [   id   ] |cellId0 |cellId1 |  energy  |        position (x,y,z)          | nMCParticles \n" +
+			"           -> MC contribution: prim. PDG |  energy  |   time   | sec. PDG | stepPosition (x,y,z) \n"
+		tail = "------------|--------|--------|----------|----------------------------------|--------------\n"
+	)
 	fmt.Fprintf(o, head)
 	fmt.Fprintf(o, tail)
 	for _, hit := range hits.Hits {

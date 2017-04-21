@@ -47,8 +47,10 @@ func (clus ClusterContainer) String() string {
 
 	fmt.Fprintf(o, "\n")
 
-	head := " [   id   ] |type|  energy  |energyerr |      position ( x,y,z)           |  itheta  |   iphi   \n"
-	tail := "------------|----|----------|----------|----------------------------------|----------|----------\n"
+	const (
+		head = " [   id   ] |type|  energy  |energyerr |      position ( x,y,z)           |  itheta  |   iphi   \n"
+		tail = "------------|----|----------|----------|----------------------------------|----------|----------\n"
+	)
 	fmt.Fprintf(o, head)
 	fmt.Fprintf(o, tail)
 	for i := range clus.Clusters {

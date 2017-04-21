@@ -86,8 +86,10 @@ func (trks *TrackContainer) String() string {
 
 	fmt.Fprintf(o, "\n")
 
-	head := " [   id   ] |   type   |    d0    |  phi     | omega    |    z0     | tan lambda|   reference point(x,y,z)        |    dEdx  |  dEdxErr |   chi2   |  ndf   \n"
-	tail := "------------|----------|----------|----------|----------|-----------|-----------|---------------------------------|----------|----------|-------- \n"
+	const (
+		head = " [   id   ] |   type   |    d0    |  phi     | omega    |    z0     | tan lambda|   reference point(x,y,z)        |    dEdx  |  dEdxErr |   chi2   |  ndf   \n"
+		tail = "------------|----------|----------|----------|----------|-----------|-----------|---------------------------------|----------|----------|-------- \n"
+	)
 	fmt.Fprintf(o, head)
 	fmt.Fprintf(o, tail)
 	for i := range trks.Tracks {
