@@ -117,7 +117,7 @@ func (r *reader) Tag(ptr interface{}) error {
 
 func (r *reader) Pointer(ptr interface{}) error {
 	rptr := reflect.ValueOf(ptr)
-	if rptr.Kind() != reflect.Ptr || rptr.Elem().Kind() != reflect.Ptr {
+	if !(rptr.Kind() == reflect.Ptr && (rptr.Elem().Kind() == reflect.Ptr || rptr.Elem().Kind() == reflect.Interface)) {
 		panic(fmt.Errorf("sio: Reader.Pointer expects a pointer to pointer"))
 	}
 
