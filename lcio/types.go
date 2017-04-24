@@ -33,6 +33,8 @@ func typeFrom(name string) interface{} {
 		return new(TrackerHitContainer)
 	case "TrackerHitPlane":
 		return new(TrackerHitPlaneContainer)
+	case "TrackerHitZCylinder":
+		return new(TrackerHitZCylinderContainer)
 	case "TrackerPulse":
 		return new(TrackerPulseContainer)
 	case "TrackerRawData":
@@ -79,6 +81,8 @@ func typeName(t interface{}) string {
 		return "TrackerHit"
 	case *TrackerHitPlaneContainer:
 		return "TrackerHitPlane"
+	case *TrackerHitZCylinderContainer:
+		return "TrackerHitZCylinder"
 	case *TrackerPulseContainer:
 		return "TrackerPulse"
 	case *TrackerRawDataContainer:
