@@ -7,8 +7,10 @@ package lcio_test
 import (
 	"compress/flate"
 	"encoding/hex"
+	"fmt"
 	"go/build"
 	"io/ioutil"
+	"log"
 	"os"
 	"reflect"
 	"strings"
@@ -16,6 +18,87 @@ import (
 
 	"go-hep.org/x/hep/lcio"
 )
+
+func ExampleWriter() {
+	w, err := lcio.Create("out.slcio")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer w.Close()
+
+	run := lcio.RunHeader{
+		RunNumber:    42,
+		Descr:        "a simple run header",
+		Detector:     "my detector",
+		SubDetectors: []string{"det-1", "det-2"},
+		Params: lcio.Params{
+			Floats: map[string][]float32{
+				"floats-1": {1, 2, 3},
+				"floats-2": {4, 5, 6},
+			},
+		},
+	}
+
+	err = w.WriteRunHeader(&run)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	const NEVENTS = 1
+	for ievt := 0; ievt < NEVENTS; ievt++ {
+		evt := lcio.Event{
+			RunNumber:   run.RunNumber,
+			Detector:    run.Detector,
+			EventNumber: 52 + int32(ievt),
+			TimeStamp:   1234567890 + int64(ievt),
+			Params: lcio.Params{
+				Floats: map[string][]float32{
+					"_weight": {42},
+				},
+				Strings: map[string][]string{
+					"Descr": {"a description"},
+				},
+			},
+		}
+
+		calhits := lcio.CalorimeterHitContainer{
+			Flags: lcio.BitsRChLong | lcio.BitsRChID1 | lcio.BitsRChTime | lcio.BitsRChNoPtr | lcio.BitsRChEnergyError,
+			Params: lcio.Params{
+				Floats:  map[string][]float32{"f32": {1, 2, 3}},
+				Ints:    map[string][]int32{"i32": {1, 2, 3}},
+				Strings: map[string][]string{"str": {"1", "2", "3"}},
+			},
+			Hits: []lcio.CalorimeterHit{
+				{
+					CellID0:   1024,
+					CellID1:   2048,
+					Energy:    1000,
+					EnergyErr: 0.1,
+					Time:      1234,
+					Pos:       [3]float32{11, 22, 33},
+					Type:      42,
+				},
+			},
+		}
+
+		evt.Add("CaloHits", &calhits)
+
+		fmt.Printf("evt has key %q: %v\n", "CaloHits", evt.Has("CaloHits"))
+
+		err = w.WriteEvent(&evt)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	err = w.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Output:
+	// evt has key "CaloHits": true
+}
 
 func TestCreateRunHeader(t *testing.T) {
 	testCreateRunHeader(t, flate.NoCompression, "testdata/run-header.slcio")

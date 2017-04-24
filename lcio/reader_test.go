@@ -5,12 +5,54 @@
 package lcio_test
 
 import (
+	"fmt"
 	"io"
+	"log"
 	"reflect"
 	"testing"
 
 	"go-hep.org/x/hep/lcio"
 )
+
+func ExampleReader() {
+	r, err := lcio.Open("testdata/event_golden.slcio")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer r.Close()
+
+	for r.Next() {
+		evt := r.Event()
+		fmt.Printf("event number = %d (weight=%+e)\n", evt.EventNumber, evt.Weight())
+		fmt.Printf("run   number = %d\n", evt.RunNumber)
+		fmt.Printf("detector     = %q\n", evt.Detector)
+		fmt.Printf("collections  = %v\n", evt.Names())
+		calohits := evt.Get("CaloHits").(*lcio.CalorimeterHitContainer)
+		fmt.Printf("calohits: %d\n", len(calohits.Hits))
+		for i, hit := range calohits.Hits {
+			fmt.Printf(" calohit[%d]: cell-id0=%d cell-id1=%d ene=%+e ene-err=%+e\n",
+				i, hit.CellID0, hit.CellID1, hit.Energy, hit.EnergyErr,
+			)
+		}
+	}
+
+	err = r.Err()
+	if err == io.EOF {
+		err = nil
+	}
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Output:
+	// event number = 52 (weight=+4.200000e+01)
+	// run   number = 42
+	// detector     = "my detector"
+	// collections  = [McParticles SimCaloHits CaloHits]
+	// calohits: 1
+	//  calohit[0]: cell-id0=1024 cell-id1=2048 ene=+1.000000e+03 ene-err=+1.000000e-01
+}
 
 func TestOpen(t *testing.T) {
 	rhdr := lcio.RunHeader{
