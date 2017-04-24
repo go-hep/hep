@@ -42,6 +42,8 @@ func typeFrom(name string) interface{} {
 
 	case "LCGenericObject":
 		return new(GenericObject)
+	case "LCRelation":
+		return new(RelationContainer)
 	}
 	log.Printf("unhandled type %q", name)
 	return nil
@@ -80,6 +82,8 @@ func typeName(t interface{}) string {
 
 	case *GenericObject:
 		return "LCGenericObject"
+	case *RelationContainer:
+		return "LCRelation"
 	}
 	panic(fmt.Errorf("lcio: unhandled type %T", t))
 }

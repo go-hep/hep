@@ -414,6 +414,79 @@ func (obj *GenericObject) UnmarshalSio(r sio.Reader) error {
 	return dec.Err()
 }
 
+type RelationContainer struct {
+	Flags  Flags
+	Params Params
+	Rels   []Relation
+}
+
+type Relation struct {
+	From   interface{}
+	To     interface{}
+	Weight float32
+}
+
+func (rc RelationContainer) String() string {
+	o := new(bytes.Buffer)
+	fmt.Fprintf(o, "%[1]s print out of LCRelation collection %[1]s\n\n", strings.Repeat("-", 15))
+	fmt.Fprintf(o, "  flag:  0x%x\n%v\n", rc.Flags, rc.Params)
+
+	const (
+		header = " [from_id ]  | [ to_id  ]  | Weight  \n"
+		tail   = "-------------|-------------|---------\n"
+	)
+
+	fmt.Fprintf(o, "%s", header)
+	fmt.Fprintf(o, "%s", tail)
+	for _, rel := range rc.Rels {
+		fmt.Fprintf(o,
+			" [%09d] | [%09d] | %.2e\n",
+			ID(rel.From),
+			ID(rel.To),
+			rel.Weight,
+		)
+	}
+	return string(o.Bytes())
+}
+
+func (*RelationContainer) VersionSio() uint32 {
+	return Version
+}
+
+func (rc *RelationContainer) MarshalSio(w sio.Writer) error {
+	enc := sio.NewEncoder(w)
+	enc.Encode(&rc.Flags)
+	enc.Encode(&rc.Params)
+	enc.Encode(int32(len(rc.Rels)))
+	for i := range rc.Rels {
+		rel := &rc.Rels[i]
+		enc.Pointer(&rel.From)
+		enc.Pointer(&rel.To)
+		if rc.Flags.Test(BitsRelWeighted) {
+			enc.Encode(&rel.Weight)
+		}
+	}
+	return enc.Err()
+}
+
+func (rc *RelationContainer) UnmarshalSio(r sio.Reader) error {
+	dec := sio.NewDecoder(r)
+	dec.Decode(&rc.Flags)
+	dec.Decode(&rc.Params)
+	var n int32
+	dec.Decode(&n)
+	rc.Rels = make([]Relation, int(n))
+	for i := range rc.Rels {
+		rel := &rc.Rels[i]
+		dec.Pointer(&rel.From)
+		dec.Pointer(&rel.To)
+		if rc.Flags.Test(BitsRelWeighted) {
+			dec.Decode(&rel.Weight)
+		}
+	}
+	return dec.Err()
+}
+
 var (
 	_ sio.Versioner = (*FloatVec)(nil)
 	_ sio.Codec     = (*FloatVec)(nil)
@@ -423,4 +496,6 @@ var (
 	_ sio.Codec     = (*StrVec)(nil)
 	_ sio.Versioner = (*GenericObject)(nil)
 	_ sio.Codec     = (*GenericObject)(nil)
+	_ sio.Versioner = (*RelationContainer)(nil)
+	_ sio.Codec     = (*RelationContainer)(nil)
 )
