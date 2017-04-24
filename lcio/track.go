@@ -99,8 +99,8 @@ func (trks *TrackContainer) String() string {
 			ref = trk.States[0].Ref
 		}
 		fmt.Fprintf(o,
-			" [%08d] | %08d |%+.2e |%+.2e |%+.2e |%+.3e |%+.3e |(%+.2e, %+.2e, %+.2e)|%+.2e |%+.2e |%+.2e |%5d\n",
-			0, // id
+			"[%09d] | %08d |%+.2e |%+.2e |%+.2e |%+.3e |%+.3e |(%+.2e, %+.2e, %+.2e)|%+.2e |%+.2e |%+.2e |%5d\n",
+			ID(trk),
 			trk.Type, trk.D0(), trk.Phi(), trk.Omega(), trk.Z0(), trk.TanL(),
 			ref[0], ref[1], ref[2],
 			trk.DEdx, trk.DEdxErr, trk.Chi2, trk.NdF,

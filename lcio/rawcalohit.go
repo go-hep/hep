@@ -37,8 +37,9 @@ func (hits RawCalorimeterHitContainer) String() string {
 	)
 	fmt.Fprintf(o, head)
 	fmt.Fprintf(o, tail)
-	for _, hit := range hits.Hits {
-		fmt.Fprintf(o, " [%08d] |%08d%19s|%08d|%10d |%8d", 0, hit.CellID0, "", hit.CellID1, hit.Amplitude, hit.TimeStamp)
+	for i := range hits.Hits {
+		hit := &hits.Hits[i]
+		fmt.Fprintf(o, "[%09d] |%08d%19s|%08d|%10d |%8d", ID(hit), hit.CellID0, "", hit.CellID1, hit.Amplitude, hit.TimeStamp)
 		// FIXME(sbinet): CellIDDecoder
 		fmt.Fprintf(o, "\n        id-fields: --- unknown/default ----   ")
 		fmt.Fprintf(o, "\n")

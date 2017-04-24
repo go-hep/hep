@@ -40,8 +40,9 @@ func (hits CalorimeterHitContainer) String() string {
 	)
 	fmt.Fprintf(o, head)
 	fmt.Fprintf(o, tail)
-	for _, hit := range hits.Hits {
-		fmt.Fprintf(o, " [%08d] |%08d|%08d|%+.3e|%+.3e|", 0, hit.CellID0, hit.CellID1, hit.Energy, hit.EnergyErr)
+	for i := range hits.Hits {
+		hit := &hits.Hits[i]
+		fmt.Fprintf(o, "[%09d] |%08d|%08d|%+.3e|%+.3e|", ID(hit), hit.CellID0, hit.CellID1, hit.Energy, hit.EnergyErr)
 		if hits.Flags.Test(BitsChLong) {
 			fmt.Fprintf(o, "+%.3e, %+.3e, %+.3e", hit.Pos[0], hit.Pos[1], hit.Pos[2])
 		} else {

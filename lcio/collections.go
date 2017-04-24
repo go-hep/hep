@@ -41,9 +41,9 @@ func (vec FloatVec) String() string {
 	)
 	fmt.Fprintf(o, head)
 	fmt.Fprintf(o, tail)
-	for _, slice := range vec.Elements {
-		fmt.Fprintf(o, " [%08d] |",
-			0, //id
+	for i, slice := range vec.Elements {
+		fmt.Fprintf(o, "[%09d] |",
+			ID(&vec.Elements[i]),
 		)
 		for i, v := range slice {
 			if i > 0 {
@@ -121,9 +121,9 @@ func (vec IntVec) String() string {
 	)
 	fmt.Fprintf(o, head)
 	fmt.Fprintf(o, tail)
-	for _, slice := range vec.Elements {
-		fmt.Fprintf(o, " [%08d] |",
-			0, //id
+	for i, slice := range vec.Elements {
+		fmt.Fprintf(o, "[%09d] |",
+			ID(&vec.Elements[i]),
 		)
 		for i, v := range slice {
 			if i > 0 {
@@ -201,9 +201,9 @@ func (vec StrVec) String() string {
 	)
 	fmt.Fprintf(o, head)
 	fmt.Fprintf(o, tail)
-	for _, slice := range vec.Elements {
-		fmt.Fprintf(o, " [%08d] |",
-			0, //id
+	for i, slice := range vec.Elements {
+		fmt.Fprintf(o, "[%09d] |",
+			ID(&vec.Elements[i]),
 		)
 		for i, v := range slice {
 			if i > 0 {
@@ -297,16 +297,17 @@ func (obj GenericObject) String() string {
 	tail := fmt.Sprintf(" %s", strings.Repeat("-", 55))
 
 	fmt.Fprintf(o, "%s\n", tail)
-	for _, iobj := range obj.Data {
-		fmt.Fprintf(o, "%v\n", iobj)
+	for i := range obj.Data {
+		data := &obj.Data[i]
+		fmt.Fprintf(o, "%v\n", data)
 		fmt.Fprintf(o, "%s\n", tail)
 	}
 	return string(o.Bytes())
 }
 
-func (obj GenericObjectData) String() string {
+func (obj *GenericObjectData) String() string {
 	o := new(bytes.Buffer)
-	fmt.Fprintf(o, " [%08d] ", 0)
+	fmt.Fprintf(o, "[%09d] ", ID(obj))
 	for _, v := range obj.I32s {
 		fmt.Fprintf(o, "i:%d; ", v)
 	}

@@ -57,8 +57,8 @@ func (hits SimTrackerHitContainer) String() string {
 			pdg = hit.Mc.PDG
 		}
 		fmt.Fprintf(o,
-			" [%08d] |%08d|%08d|(%+.2e, %+.2e, %+.2e)| %.2e | %.2e | %05d |(%+.2e,%+.2e,%+.2e)|%+.3e|%5d\n",
-			0, //id
+			"[%09d] |%08d|%08d|(%+.2e, %+.2e, %+.2e)| %.2e | %.2e | %05d |(%+.2e,%+.2e,%+.2e)|%+.3e|%5d\n",
+			ID(hit),
 			hit.CellID0, hit.CellID1,
 			hit.Pos[0], hit.Pos[1], hit.Pos[2],
 			hit.EDep, hit.Time,

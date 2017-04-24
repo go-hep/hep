@@ -56,8 +56,8 @@ func (clus ClusterContainer) String() string {
 	for i := range clus.Clusters {
 		clu := &clus.Clusters[i]
 		fmt.Fprintf(o,
-			" [%08d] |%4d|%+.3e|%+.3e|%+.3e, %+.3e, %+.3e|%+.3e|%+.3e\n",
-			0, // id
+			"[%09d] |%4d|%+.3e|%+.3e|%+.3e, %+.3e, %+.3e|%+.3e|%+.3e\n",
+			ID(clu),
 			clu.Type, clu.Energy, clu.EnergyErr,
 			clu.Pos[0], clu.Pos[1], clu.Pos[2],
 			clu.Theta,

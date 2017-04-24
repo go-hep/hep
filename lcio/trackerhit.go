@@ -53,8 +53,8 @@ func (hits TrackerHitContainer) String() string {
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
 		fmt.Fprintf(o,
-			" [%08d] |%08d|%08d|%+.2e,%+.2e,%+.2e|%+.2e|[%04d]|[%04d]|%+.2e|%+.2e|%+.2e, %+.2e, %+.2e, %+.2e, %+.2e, %+.2e\n",
-			0, // id
+			"[%09d] |%08d|%08d|%+.2e,%+.2e,%+.2e|%+.2e|[%04d]|[%04d]|%+.2e|%+.2e|%+.2e, %+.2e, %+.2e, %+.2e, %+.2e, %+.2e\n",
+			ID(hit),
 			hit.CellID0, hit.CellID1,
 			hit.Pos[0], hit.Pos[1], hit.Pos[2],
 			hit.Time, hit.Type, hit.Quality,

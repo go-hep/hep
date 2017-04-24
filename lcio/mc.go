@@ -43,7 +43,7 @@ func (mcs McParticleContainer) String() string {
 	}
 
 	fmt.Fprintf(o,
-		"[   id   ]"+
+		"[   id    ]"+
 			"index|      PDG |    px,     py,        pz    | "+
 			"px_ep,   py_ep , pz_ep      | "+
 			"energy  |gen|[simstat ]| "+
@@ -68,7 +68,7 @@ func (mcs McParticleContainer) String() string {
 		p := &mcs.Particles[i]
 		ep := p.EndPoint()
 		fmt.Fprintf(o, pfmt,
-			0,
+			ID(p),
 			i, p.PDG,
 			p.P[0], p.P[1], p.P[2],
 			p.PEndPoint[0], p.PEndPoint[1], p.PEndPoint[2],

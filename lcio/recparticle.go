@@ -52,8 +52,8 @@ func (recs *RecParticleContainer) String() string {
 	fmt.Fprintf(o, "\n")
 
 	const (
-		head = " [   id   ] |com|type|     momentum( px,py,pz)       | energy | mass   | charge  |        position ( x,y,z)      |pidUsed|GoodnessOfPID|\n"
-		tail = "------------|---|----|-------------------------------|--------|--------|---------|-------------------------------|-------|-------------|\n"
+		head = " [   id   ] |com|type|     momentum( px,py,pz)       | energy | mass   | charge  |        position ( x,y,z)      | pidUsed |GoodnessOfPID|\n"
+		tail = "------------|---|----|-------------------------------|--------|--------|---------|-------------------------------|---------|-------------|\n"
 	)
 	fmt.Fprintf(o, head)
 	fmt.Fprintf(o, tail)
@@ -64,12 +64,12 @@ func (recs *RecParticleContainer) String() string {
 			compound = 1
 		}
 		fmt.Fprintf(o,
-			" [%08d] |%3d|%4d|%+.2e, %+.2e, %+.2e|%.2e|%.2e|%.2e|%+.2e, %+.2e, %+.2e|%07d|%+.2e| \n",
-			0, // id
+			"[%09d] |%3d|%4d|%+.2e, %+.2e, %+.2e|%.2e|%.2e|%+.2e|%+.2e, %+.2e, %+.2e|%09d|%+.2e| \n",
+			ID(rec),
 			compound, rec.Type,
 			rec.P[0], rec.P[1], rec.P[2], rec.Energy, rec.Mass, rec.Charge,
 			rec.Ref[0], rec.Ref[1], rec.Ref[2],
-			0, // id of pid-used
+			ID(rec.PIDUsed),
 			rec.GoodnessOfPID,
 		)
 	}
