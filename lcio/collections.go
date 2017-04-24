@@ -7,10 +7,21 @@ package lcio
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"go-hep.org/x/hep/sio"
 )
+
+// ID returns a unique identifier for ptr.
+func ID(ptr interface{}) uint32 {
+	rptr := reflect.ValueOf(ptr)
+	if !rptr.IsValid() || rptr.IsNil() {
+		return 0
+	}
+	rv := rptr.Elem()
+	return uint32(rv.UnsafeAddr())
+}
 
 type FloatVec struct {
 	Flags    Flags
