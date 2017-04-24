@@ -487,6 +487,42 @@ func (rc *RelationContainer) UnmarshalSio(r sio.Reader) error {
 	return dec.Err()
 }
 
+type References struct {
+	Flags  Flags
+	Params Params
+	Refs   []interface{}
+}
+
+func (*References) VersionSio() uint32 {
+	return Version
+}
+
+func (refs *References) MarshalSio(w sio.Writer) error {
+	enc := sio.NewEncoder(w)
+	enc.Encode(&refs.Flags)
+	enc.Encode(&refs.Params)
+	enc.Encode(int32(len(refs.Refs)))
+	for i := range refs.Refs {
+		ref := &refs.Refs[i]
+		enc.Pointer(ref)
+	}
+	return enc.Err()
+}
+
+func (refs *References) UnmarshalSio(r sio.Reader) error {
+	dec := sio.NewDecoder(r)
+	dec.Decode(&refs.Flags)
+	dec.Decode(&refs.Params)
+	var n int32
+	dec.Decode(&n)
+	refs.Refs = make([]interface{}, int(n))
+	for i := range refs.Refs {
+		ref := &refs.Refs[i]
+		dec.Pointer(ref)
+	}
+	return dec.Err()
+}
+
 var (
 	_ sio.Versioner = (*FloatVec)(nil)
 	_ sio.Codec     = (*FloatVec)(nil)
@@ -498,4 +534,6 @@ var (
 	_ sio.Codec     = (*GenericObject)(nil)
 	_ sio.Versioner = (*RelationContainer)(nil)
 	_ sio.Codec     = (*RelationContainer)(nil)
+	_ sio.Versioner = (*References)(nil)
+	_ sio.Codec     = (*References)(nil)
 )

@@ -6,7 +6,7 @@ package lcio
 
 import (
 	"fmt"
-	"log"
+	"strings"
 )
 
 func typeFrom(name string) interface{} {
@@ -53,7 +53,10 @@ func typeFrom(name string) interface{} {
 	case "LCRelation":
 		return new(RelationContainer)
 	}
-	log.Printf("unhandled type %q", name)
+	if strings.HasSuffix(name, "_References") {
+		return new(References)
+	}
+	panic(fmt.Errorf("unhandled type %q", name))
 	return nil
 }
 
