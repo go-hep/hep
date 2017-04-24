@@ -105,7 +105,11 @@ type RawCalorimeterHit struct {
 	TimeStamp int32
 }
 
+func (hit *RawCalorimeterHit) GetCellID0() int32 { return hit.CellID0 }
+func (hit *RawCalorimeterHit) GetCellID1() int32 { return hit.CellID1 }
+
 var (
 	_ sio.Versioner = (*RawCalorimeterHitContainer)(nil)
 	_ sio.Codec     = (*RawCalorimeterHitContainer)(nil)
+	_ Hit           = (*RawCalorimeterHit)(nil)
 )

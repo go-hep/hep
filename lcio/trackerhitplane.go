@@ -35,6 +35,9 @@ type TrackerHitPlane struct {
 	RawHits []*RawCalorimeterHit
 }
 
+func (hit *TrackerHitPlane) GetCellID0() int32 { return hit.CellID0 }
+func (hit *TrackerHitPlane) GetCellID1() int32 { return hit.CellID1 }
+
 func (hits TrackerHitPlaneContainer) String() string {
 	o := new(bytes.Buffer)
 	fmt.Fprintf(o, "%[1]s print out of TrackerHitPlane collection %[1]s\n\n", strings.Repeat("-", 15))
@@ -153,4 +156,5 @@ func (hits *TrackerHitPlaneContainer) UnmarshalSio(r sio.Reader) error {
 var (
 	_ sio.Versioner = (*TrackerHitPlaneContainer)(nil)
 	_ sio.Codec     = (*TrackerHitPlaneContainer)(nil)
+	_ Hit           = (*TrackerHitPlane)(nil)
 )

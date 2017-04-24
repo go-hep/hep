@@ -25,6 +25,9 @@ type TrackerRawData struct {
 	ADCs    []uint16
 }
 
+func (data *TrackerRawData) GetCellID0() int32 { return data.CellID0 }
+func (data *TrackerRawData) GetCellID1() int32 { return data.CellID1 }
+
 func (tds *TrackerRawDataContainer) String() string {
 	o := new(bytes.Buffer)
 	fmt.Fprintf(o, "%[1]s print out of TrackerData collection %[1]s\n\n", strings.Repeat("-", 15))

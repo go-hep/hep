@@ -28,6 +28,9 @@ type TrackerPulse struct {
 	TPC     *TrackerData // TPC corrected data: spectrum used to create this pulse
 }
 
+func (hit *TrackerPulse) GetCellID0() int32 { return hit.CellID0 }
+func (hit *TrackerPulse) GetCellID1() int32 { return hit.CellID1 }
+
 func (ps *TrackerPulseContainer) String() string {
 	o := new(bytes.Buffer)
 	fmt.Fprintf(o, "%[1]s print out of TrackerPulse collection %[1]s\n\n", strings.Repeat("-", 15))
@@ -113,4 +116,5 @@ func (ps *TrackerPulseContainer) UnmarshalSio(r sio.Reader) error {
 var (
 	_ sio.Versioner = (*TrackerPulseContainer)(nil)
 	_ sio.Codec     = (*TrackerPulseContainer)(nil)
+	_ Hit           = (*TrackerPulse)(nil)
 )

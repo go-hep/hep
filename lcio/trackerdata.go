@@ -25,6 +25,9 @@ type TrackerData struct {
 	Charges []float32
 }
 
+func (data *TrackerData) GetCellID0() int32 { return data.CellID0 }
+func (data *TrackerData) GetCellID1() int32 { return data.CellID1 }
+
 func (tds *TrackerDataContainer) String() string {
 	o := new(bytes.Buffer)
 	fmt.Fprintf(o, "%[1]s print out of TrackerData collection %[1]s\n\n", strings.Repeat("-", 15))
@@ -97,4 +100,5 @@ func (tds *TrackerDataContainer) UnmarshalSio(r sio.Reader) error {
 var (
 	_ sio.Versioner = (*TrackerDataContainer)(nil)
 	_ sio.Codec     = (*TrackerDataContainer)(nil)
+	_ Hit           = (*TrackerData)(nil)
 )

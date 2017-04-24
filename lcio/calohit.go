@@ -139,10 +139,14 @@ type CalorimeterHit struct {
 	Time      float32
 	Pos       [3]float32
 	Type      int32
-	Raw       *RawCalorimeterHit
+	Raw       Hit
 }
+
+func (hit *CalorimeterHit) GetCellID0() int32 { return hit.CellID0 }
+func (hit *CalorimeterHit) GetCellID1() int32 { return hit.CellID1 }
 
 var (
 	_ sio.Versioner = (*CalorimeterHitContainer)(nil)
 	_ sio.Codec     = (*CalorimeterHitContainer)(nil)
+	_ Hit           = (*CalorimeterHit)(nil)
 )

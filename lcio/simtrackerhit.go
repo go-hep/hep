@@ -31,6 +31,9 @@ type SimTrackerHit struct {
 	Quality    int32
 }
 
+func (hit *SimTrackerHit) GetCellID0() int32 { return hit.CellID0 }
+func (hit *SimTrackerHit) GetCellID1() int32 { return hit.CellID1 }
+
 func (hits SimTrackerHitContainer) String() string {
 	o := new(bytes.Buffer)
 	fmt.Fprintf(o, "%[1]s print out of SimTrackerHit collection %[1]s\n\n", strings.Repeat("-", 15))
@@ -138,4 +141,5 @@ func (hits *SimTrackerHitContainer) UnmarshalSio(r sio.Reader) error {
 var (
 	_ sio.Versioner = (*SimTrackerHitContainer)(nil)
 	_ sio.Codec     = (*SimTrackerHitContainer)(nil)
+	_ Hit           = (*SimTrackerHit)(nil)
 )

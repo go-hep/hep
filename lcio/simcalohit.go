@@ -151,6 +151,9 @@ type SimCalorimeterHit struct {
 	Contributions []Contrib
 }
 
+func (hit *SimCalorimeterHit) GetCellID0() int32 { return hit.CellID0 }
+func (hit *SimCalorimeterHit) GetCellID1() int32 { return hit.CellID1 }
+
 type Contrib struct {
 	Mc      *McParticle
 	Energy  float32
@@ -162,4 +165,5 @@ type Contrib struct {
 var (
 	_ sio.Versioner = (*SimCalorimeterHitContainer)(nil)
 	_ sio.Codec     = (*SimCalorimeterHitContainer)(nil)
+	_ Hit           = (*SimCalorimeterHit)(nil)
 )

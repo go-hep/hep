@@ -29,8 +29,11 @@ type TrackerHit struct {
 	EDepErr float32    // error measured on EDep
 	Time    float32
 	Quality int32 // quality flag word
-	RawHits []*RawCalorimeterHit
+	RawHits []Hit
 }
+
+func (hit *TrackerHit) GetCellID0() int32 { return hit.CellID0 }
+func (hit *TrackerHit) GetCellID1() int32 { return hit.CellID1 }
 
 func (hits TrackerHitContainer) String() string {
 	o := new(bytes.Buffer)
@@ -146,7 +149,7 @@ func (hits *TrackerHitContainer) UnmarshalSio(r sio.Reader) error {
 		if r.VersionSio() > 1002 {
 			dec.Decode(&n)
 		}
-		hit.RawHits = make([]*RawCalorimeterHit, int(n))
+		hit.RawHits = make([]Hit, int(n))
 		for ii := range hit.RawHits {
 			dec.Pointer(&hit.RawHits[ii])
 		}
@@ -159,4 +162,5 @@ func (hits *TrackerHitContainer) UnmarshalSio(r sio.Reader) error {
 var (
 	_ sio.Versioner = (*TrackerHitContainer)(nil)
 	_ sio.Codec     = (*TrackerHitContainer)(nil)
+	_ Hit           = (*TrackerHit)(nil)
 )
