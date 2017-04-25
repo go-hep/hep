@@ -21,7 +21,7 @@ $ go get go-hep.org/x/hep/fwk/...
 
 The documentation is available on `godoc`:
 
- http://godoc.org/go-hep.org/x/hep/fwk
+ https://godoc.org/go-hep.org/x/hep/fwk
 
 
 ## Examples

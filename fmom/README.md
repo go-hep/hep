@@ -17,5 +17,5 @@ $ go get go-hep.org/x/hep/fmom
 
 Is provided via `godoc`:
 
-  http://godoc.org/go-hep.org/x/hep/fmom
+  https://godoc.org/go-hep.org/x/hep/fmom
 

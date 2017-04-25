@@ -15,5 +15,5 @@ $ go get go-hep.org/x/hep/hepevt
 
 ## Documentation
 
-Documentation is available on [godoc](http://godoc.org/go-hep.org/x/hep/hepevt)
+Documentation is available on [godoc](https://godoc.org/go-hep.org/x/hep/hepevt)
 

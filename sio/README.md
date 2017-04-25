@@ -14,7 +14,7 @@ $ go get go-hep.org/x/hep/sio
 ## Documentation
 
 The documentation is browsable at godoc.org:
- http://godoc.org/go-hep.org/x/hep/sio
+ https://godoc.org/go-hep.org/x/hep/sio
 
 ## Example
 
