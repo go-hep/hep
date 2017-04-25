@@ -70,12 +70,7 @@ func TestEventTree(t *testing.T) {
 		t.Fatalf("could not retrieve tree [tree]")
 	}
 
-	key := obj.(*Key)
-	if got, want := key.Name(), "tree"; got != want {
-		t.Fatalf("key.Name: got=%q. want=%q", got, want)
-	}
-
-	tree := key.Value().(Tree)
+	tree := obj.(Tree)
 	if got, want := tree.Name(), "tree"; got != want {
 		t.Fatalf("tree.Name: got=%q. want=%q", got, want)
 	}
