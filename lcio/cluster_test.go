@@ -12,19 +12,19 @@ import (
 	"go-hep.org/x/hep/lcio"
 )
 
-func TestRWCalo(t *testing.T) {
+func TestRWCluster(t *testing.T) {
 	for _, test := range []struct {
 		fname   string
 		complvl int
 	}{
-		{"testdata/calohit.slcio", flate.NoCompression},
-		{"testdata/calohit-compressed.slcio", flate.BestCompression},
+		{"testdata/cluster.slcio", flate.NoCompression},
+		{"testdata/cluster-compressed.slcio", flate.BestCompression},
 	} {
-		testRWCalo(t, test.complvl, test.fname)
+		testRWCluster(t, test.complvl, test.fname)
 	}
 }
 
-func testRWCalo(t *testing.T, compLevel int, fname string) {
+func testRWCluster(t *testing.T, compLevel int, fname string) {
 	if !stableCompression(t, compLevel) {
 		t.Skipf("no stable compression - skipping %s", fname)
 	}
@@ -38,10 +38,10 @@ func testRWCalo(t *testing.T, compLevel int, fname string) {
 	w.SetCompressionLevel(compLevel)
 
 	const (
-		nevents    = 10
-		nhits      = 100
-		CALHITS    = "CalorimeterHits"
-		CALHITSERR = "CalorimeterHitsWithEnergyError"
+		nevents = 10
+		N       = 100
+		CLUS    = "Clusters"
+		CLUSERR = "ClustersWithEnergyError"
 	)
 
 	for i := 0; i < nevents; i++ {
@@ -51,24 +51,22 @@ func testRWCalo(t *testing.T, compLevel int, fname string) {
 		}
 
 		var (
-			calhits    = lcio.CalorimeterHitContainer{Flags: lcio.BitsRChLong}
-			calhitsErr = lcio.CalorimeterHitContainer{Flags: lcio.BitsRChLong | lcio.BitsRChEnergyError}
+			clus    = lcio.ClusterContainer{Flags: lcio.BitsRChLong}
+			clusErr = lcio.ClusterContainer{Flags: lcio.BitsRChLong | lcio.BitsRChEnergyError}
 		)
-		for j := 0; j < nhits; j++ {
-			hit := lcio.CalorimeterHit{
-				CellID0:   int32(i*100000 + j),
-				Energy:    float32(i*j) + 117,
-				EnergyErr: float32(i*j) * 0.117,
-				Pos:       [3]float32{float32(i), float32(j), float32(i * j)},
+		for j := 0; j < N; j++ {
+			clu := lcio.Cluster{
+				Energy: float32(i*j) + 117,
+				Pos:    [3]float32{float32(i), float32(j), float32(i * j)},
 			}
-			calhits.Hits = append(calhits.Hits, hit)
+			clus.Clusters = append(clus.Clusters, clu)
 
-			hit.EnergyErr = float32(i*j) * 0.117
-			calhitsErr.Hits = append(calhitsErr.Hits, hit)
+			clu.EnergyErr = float32(i*j) * 0.117
+			clusErr.Clusters = append(clusErr.Clusters, clu)
 		}
 
-		evt.Add(CALHITS, &calhits)
-		evt.Add(CALHITSERR, &calhitsErr)
+		evt.Add(CLUS, &clus)
+		evt.Add(CLUSERR, &clusErr)
 
 		err = w.WriteEvent(&evt)
 		if err != nil {
@@ -105,29 +103,34 @@ func testRWCalo(t *testing.T, compLevel int, fname string) {
 			return
 		}
 
-		if !evt.Has(CALHITS) {
-			t.Errorf("%s: no %s collection", fname, CALHITS)
+		if !evt.Has(CLUS) {
+			t.Errorf("%s: no %s collection", fname, CLUS)
 			return
 		}
 
-		if !evt.Has(CALHITSERR) {
-			t.Errorf("%s: no %s collection", fname, CALHITSERR)
+		if !evt.Has(CLUSERR) {
+			t.Errorf("%s: no %s collection", fname, CLUSERR)
 			return
 		}
 
-		calhits := evt.Get(CALHITS).(*lcio.CalorimeterHitContainer)
-		calhitsErr := evt.Get(CALHITSERR).(*lcio.CalorimeterHitContainer)
+		clus := evt.Get(CLUS).(*lcio.ClusterContainer)
+		clusErr := evt.Get(CLUSERR).(*lcio.ClusterContainer)
 
-		for j := 0; j < nhits; j++ {
-			got := calhits.Hits[j]
-			want := lcio.CalorimeterHit{
-				CellID0: int32(i*100000 + j),
-				Energy:  float32(i*j) + 117,
-				Pos:     [3]float32{float32(i), float32(j), float32(i * j)},
+		for j := 0; j < N; j++ {
+			got := clus.Clusters[j]
+			want := lcio.Cluster{
+				Clusters:   []*lcio.Cluster{},
+				Hits:       []*lcio.CalorimeterHit{},
+				PIDs:       []lcio.ParticleID{},
+				Shape:      []float32{},
+				SubDetEnes: []float32{},
+				Weights:    []float32{},
+				Energy:     float32(i*j) + 117,
+				Pos:        [3]float32{float32(i), float32(j), float32(i * j)},
 			}
 
 			if !reflect.DeepEqual(got, want) {
-				t.Errorf("%s: event %d hit[%d]\ngot= %#v\nwant=%#v\n",
+				t.Errorf("%s: event %d clu[%d]\ngot= %#v\nwant=%#v\n",
 					fname, i, j,
 					got, want,
 				)
@@ -135,9 +138,9 @@ func testRWCalo(t *testing.T, compLevel int, fname string) {
 			}
 
 			want.EnergyErr = float32(i*j) * 0.117
-			got = calhitsErr.Hits[j]
+			got = clusErr.Clusters[j]
 			if !reflect.DeepEqual(got, want) {
-				t.Errorf("%s: event %d hit[%d]\ngot= %#v\nwant=%#v\n",
+				t.Errorf("%s: event %d clu[%d]\ngot= %#v\nwant=%#v\n",
 					fname, i, j,
 					got, want,
 				)
@@ -151,4 +154,5 @@ func testRWCalo(t *testing.T, compLevel int, fname string) {
 		t.Errorf("%s: error closing file: %v", fname, err)
 		return
 	}
+
 }

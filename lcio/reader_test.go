@@ -65,6 +65,13 @@ func TestOpen(t *testing.T) {
 				"floats-1": {1, 2, 3},
 				"floats-2": {4, 5, 6},
 			},
+			Ints: map[string][]int32{
+				"ints-1": {1, 2, 3},
+				"ints-2": {4, 5, 6},
+			},
+			Strings: map[string][]string{
+				"strs-1": {"1", "2", "3"},
+			},
 		},
 	}
 

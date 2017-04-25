@@ -156,33 +156,45 @@ func testCreateRunHeader(t *testing.T, compLevel int, fname string) {
 				"floats-1": {1, 2, 3},
 				"floats-2": {4, 5, 6},
 			},
+			Ints: map[string][]int32{
+				"ints-1": {1, 2, 3},
+				"ints-2": {4, 5, 6},
+			},
+			Strings: map[string][]string{
+				"strs-1": {"1", "2", "3"},
+			},
 		},
 	}
 
 	err = w.WriteRunHeader(&rhdr)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
+		return
 	}
 
 	err = w.Close()
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
+		return
 	}
 
 	chk, err := ioutil.ReadFile(fname)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
+		return
 	}
 
 	ref, err := ioutil.ReadFile(strings.Replace(fname, ".slcio", "_golden.slcio", -1))
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
+		return
 	}
 
 	if !reflect.DeepEqual(ref, chk) {
 		t.Errorf("%s: --- ref ---\n%s\n", fname, hex.Dump(ref))
 		t.Errorf("%s: --- chk ---\n%s\n", fname, hex.Dump(chk))
-		t.Fatalf("%s: differ with golden", fname)
+		t.Errorf("%s: differ with golden", fname)
+		return
 	}
 
 	os.Remove(fname)
@@ -210,6 +222,12 @@ func testCreateEvent(t *testing.T, compLevel int, fname string) {
 				"floats-1": {1, 2, 3},
 				"floats-2": {4, 5, 6},
 			},
+			Strings: map[string][]string{
+				"strings-1": {"1", "2", "3"},
+			},
+			Ints: map[string][]int32{
+				"ints-1": {1, 2, 3},
+			},
 		},
 	}
 
@@ -230,6 +248,9 @@ func testCreateEvent(t *testing.T, compLevel int, fname string) {
 			Strings: map[string][]string{
 				"Descr": {"a description"},
 			},
+			Ints: map[string][]int32{
+				"ints": {10, 20, 30},
+			},
 		},
 	}
 
@@ -239,6 +260,11 @@ func testCreateEvent(t *testing.T, compLevel int, fname string) {
 
 	mcparts := lcio.McParticleContainer{
 		Flags: 0x1234,
+		Params: lcio.Params{
+			Floats:  map[string][]float32{},
+			Strings: map[string][]string{},
+			Ints:    map[string][]int32{},
+		},
 	}
 	for i := 0; i < 3; i++ {
 		i32 := int32(i+1) * 10
@@ -267,6 +293,8 @@ func testCreateEvent(t *testing.T, compLevel int, fname string) {
 			Strings: map[string][]string{
 				"CellIDEncoding": {"M:3,S-1:3,I:9,J:9,K-1:6"},
 			},
+			Floats: map[string][]float32{},
+			Ints:   map[string][]int32{},
 		},
 		Hits: []lcio.SimCalorimeterHit{
 			{
@@ -337,11 +365,11 @@ func testCreateEvent(t *testing.T, compLevel int, fname string) {
 	}
 
 	if got, want := r.RunHeader(), rhdr; !reflect.DeepEqual(got, want) {
-		t.Fatalf("run-headers differ.\ngot= %#v\nwant=%#v\n", got, want)
+		t.Fatalf("%s: run-headers differ.\ngot= %#v\nwant=%#v\n", fname, got, want)
 	}
 
 	if got, want := r.Event(), evt; !reflect.DeepEqual(got, want) {
-		t.Fatalf("evts differ.\ngot:\n%v\nwant:\n%v\n", &got, &want)
+		t.Fatalf("%s: evts differ.\ngot:\n%v\nwant:\n%v\n", fname, &got, &want)
 	}
 
 	chk, err := ioutil.ReadFile(fname)
