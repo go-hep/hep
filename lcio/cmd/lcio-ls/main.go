@@ -57,7 +57,9 @@ func main() {
 			rhdr = hdr
 		}
 		if hdr := r.EventHeader(); !reflect.DeepEqual(hdr, ehdr) {
-			fmt.Printf("%v\n", &hdr)
+			if !*printEvent {
+				fmt.Printf("%v\n", &hdr)
+			}
 			ehdr = hdr
 		}
 		if *printEvent {
