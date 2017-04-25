@@ -27,11 +27,9 @@ func (hits SimCalorimeterHitContainer) String() string {
 	fmt.Fprintf(o, "     LCIO::CHBIT_BARREL : %v\n", hits.Flags.Test(BitsChBarrel))
 	fmt.Fprintf(o, "     LCIO::CHBIT_ID1    : %v\n", hits.Flags.Test(BitsChID1))
 	fmt.Fprintf(o, "     LCIO::CHBIT_STEP   : %v\n", hits.Flags.Test(BitsChStep))
-
-	// FIXME(sbinet): CellIDDecoder
-
 	fmt.Fprintf(o, "\n")
 
+	dec := NewCellIDDecoderFrom(hits.Params)
 	const (
 		head = " [   id   ] |cellId0 |cellId1 |  energy  |        position (x,y,z)          | nMCParticles \n" +
 			"           -> MC contribution: prim. PDG |  energy  |   time   | sec. PDG | stepPosition (x,y,z) \n"
@@ -48,8 +46,11 @@ func (hits SimCalorimeterHitContainer) String() string {
 			fmt.Fprintf(o, "    no position available         ")
 		}
 		fmt.Fprintf(o, "|%+12d\n", len(hit.Contributions))
-		// FIXME(sbinet): CellIDDecoder
-		fmt.Fprintf(o, "        id-fields: --- unknown/default ----   ")
+		if dec != nil {
+			fmt.Fprintf(o, "        id-fields: (%s)", dec.ValueString(hit))
+		} else {
+			fmt.Fprintf(o, "        id-fields: --- unknown/default ----   ")
+		}
 		for _, c := range hit.Contributions {
 			var pdg int32
 			if c.Mc != nil {

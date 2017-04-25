@@ -30,7 +30,7 @@ func (hits CalorimeterHitContainer) String() string {
 	fmt.Fprintf(o, "     LCIO::RCHBIT_NO_PTR : %v\n", hits.Flags.Test(BitsRChNoPtr))
 	fmt.Fprintf(o, "     LCIO::RCHBIT_ENERGY_ERROR  : %v\n", hits.Flags.Test(BitsRChEnergyError))
 
-	// FIXME(sbinet): CellIDDecoder
+	dec := NewCellIDDecoderFrom(hits.Params)
 
 	fmt.Fprintf(o, "\n")
 
@@ -48,8 +48,11 @@ func (hits CalorimeterHitContainer) String() string {
 		} else {
 			fmt.Fprintf(o, "    no position available         ")
 		}
-		// FIXME(sbinet): CellIDDecoder
-		fmt.Fprintf(o, "\n        id-fields: --- unknown/default ----   ")
+		if dec != nil {
+			fmt.Fprintf(o, "        id-fields: (%s)", dec.ValueString(hit))
+		} else {
+			fmt.Fprintf(o, "        id-fields: --- unknown/default ----   ")
+		}
 		fmt.Fprintf(o, "\n")
 	}
 	fmt.Fprintf(o, tail)

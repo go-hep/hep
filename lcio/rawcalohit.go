@@ -26,11 +26,9 @@ func (hits RawCalorimeterHitContainer) String() string {
 	fmt.Fprintf(o, "     LCIO::RCHBIT_ID1    : %v\n", hits.Flags.Test(BitsRChID1))
 	fmt.Fprintf(o, "     LCIO::RCHBIT_TIME   : %v\n", hits.Flags.Test(BitsRChTime))
 	fmt.Fprintf(o, "     LCIO::RCHBIT_NO_PTR : %v\n", hits.Flags.Test(BitsRChNoPtr))
-
-	// FIXME(sbinet): CellIDDecoder
-
 	fmt.Fprintf(o, "\n")
 
+	dec := NewCellIDDecoderFrom(hits.Params)
 	const (
 		head = " [   id   ] |  cellId0 ( M, S, I, J, K) |cellId1 | amplitude |  time  \n"
 		tail = "------------|---------------------------|--------|-----------|---------\n"
@@ -39,9 +37,12 @@ func (hits RawCalorimeterHitContainer) String() string {
 	fmt.Fprintf(o, tail)
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
-		fmt.Fprintf(o, "[%09d] |%08d%19s|%08d|%10d |%8d", ID(hit), hit.CellID0, "", hit.CellID1, hit.Amplitude, hit.TimeStamp)
-		// FIXME(sbinet): CellIDDecoder
-		fmt.Fprintf(o, "\n        id-fields: --- unknown/default ----   ")
+		fmt.Fprintf(o, "[%09d] |%08d%19s|%08d|%10d |%8d\n", ID(hit), hit.CellID0, "", hit.CellID1, hit.Amplitude, hit.TimeStamp)
+		if dec != nil {
+			fmt.Fprintf(o, "        id-fields: (%s)", dec.ValueString(hit))
+		} else {
+			fmt.Fprintf(o, "        id-fields: --- unknown/default ----   ")
+		}
 		fmt.Fprintf(o, "\n")
 	}
 	fmt.Fprintf(o, tail)

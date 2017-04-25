@@ -43,10 +43,9 @@ func (hits SimTrackerHitContainer) String() string {
 
 	// FIXME(sbinet): quality-bits
 
-	// FIXME(sbinet): CellIDDecoder
-
 	fmt.Fprintf(o, "\n")
 
+	dec := NewCellIDDecoderFrom(hits.Params)
 	const (
 		head = " [   id   ] |cellId0 |cellId1 |  position (x,y,z)               |   EDep   |   time   |  PDG  |        (px,  py, pz)          | path-len | Quality \n"
 		tail = "------------|--------|--------|---------------------------------|----------|----------|-------|-------------------------------|----------|---------\n"
@@ -70,7 +69,9 @@ func (hits SimTrackerHitContainer) String() string {
 			hit.PathLength,
 			hit.Quality,
 		)
-		// FIXME(sbinet): CellIDDecoder
+		if dec != nil {
+			fmt.Fprintf(o, "        id-fields: (%s)\n", dec.ValueString(hit))
+		}
 	}
 	fmt.Fprintf(o, tail)
 	return string(o.Bytes())

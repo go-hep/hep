@@ -46,10 +46,9 @@ func (hits TrackerHitPlaneContainer) String() string {
 
 	// FIXME(sbinet): quality-bits
 
-	// FIXME(sbinet): CellIDDecoder
-
 	fmt.Fprintf(o, "\n")
 
+	dec := NewCellIDDecoderFrom(hits.Params)
 	const (
 		head = " [   id   ] |cellId0 |cellId1 | position (x,y,z)            | time    |[type]|[qual]| EDep    |EDepError|   du    |   dv    |  u (theta, phi)   |  v (theta, phi)\n"
 		tail = "------------|--------|--------|-----------------------------|---------|------|------|---------|---------|---------|---------|-------------------|-------------------|\n"
@@ -69,6 +68,9 @@ func (hits TrackerHitPlaneContainer) String() string {
 			hit.U[0], hit.U[1],
 			hit.V[0], hit.V[1],
 		)
+		if dec != nil {
+			fmt.Fprintf(o, "        id-fields: (%s)\n", dec.ValueString(hit))
+		}
 	}
 	fmt.Fprintf(o, tail)
 	return string(o.Bytes())

@@ -43,10 +43,9 @@ func (hits TrackerHitContainer) String() string {
 
 	// FIXME(sbinet): quality-bits
 
-	// FIXME(sbinet): CellIDDecoder
-
 	fmt.Fprintf(o, "\n")
 
+	dec := NewCellIDDecoderFrom(hits.Params)
 	const (
 		head = " [   id   ] |cellId0 |cellId1 | position (x,y,z)            | time    |[type]|[qual]| EDep    |EDepError|  cov(x,x),  cov(y,x),  cov(y,y),  cov(z,x),  cov(z,y),  cov(z,z)\n"
 		tail = "------------|--------|--------|-----------------------------|---------|------|------|---------|---------|-----------------------------------------------------------------\n"
@@ -64,6 +63,9 @@ func (hits TrackerHitContainer) String() string {
 			hit.EDep, hit.EDepErr,
 			hit.Cov[0], hit.Cov[1], hit.Cov[2], hit.Cov[3], hit.Cov[4], hit.Cov[5],
 		)
+		if dec != nil {
+			fmt.Fprintf(o, "        id-fields: (%s)\n", dec.ValueString(hit))
+		}
 	}
 	fmt.Fprintf(o, tail)
 	return string(o.Bytes())
