@@ -28,7 +28,6 @@ func TestInclusiveJetAlgorithms(t *testing.T) {
 		name  string
 		def   fastjet.JetDefinition
 		ptmin float64
-		want  []fastjet.Jet
 	}{
 		{
 			input: "testdata/single-pp-event.dat",
@@ -305,7 +304,6 @@ func TestExclusiveJetAlgorithms(t *testing.T) {
 		name  string
 		def   fastjet.JetDefinition
 		dcut  float64
-		want  []fastjet.Jet
 	}{
 		{
 			input: "testdata/single-ee-event.dat",
