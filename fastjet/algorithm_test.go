@@ -28,7 +28,6 @@ func TestInclusiveJetAlgorithms(t *testing.T) {
 		name  string
 		def   fastjet.JetDefinition
 		ptmin float64
-		want  []fastjet.Jet
 	}{
 		{
 			input: "testdata/single-pp-event.dat",
@@ -305,7 +304,6 @@ func TestExclusiveJetAlgorithms(t *testing.T) {
 		name  string
 		def   fastjet.JetDefinition
 		dcut  float64
-		want  []fastjet.Jet
 	}{
 		{
 			input: "testdata/single-ee-event.dat",
@@ -317,8 +315,6 @@ func TestExclusiveJetAlgorithms(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			// FIXME(sbinet): implement exclusive jets
-			t.Skipf("exclusive jets not implemented")
 			test := test
 			particles, err := loadParticles(test.input)
 			if err != nil {

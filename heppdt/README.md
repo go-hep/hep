@@ -15,7 +15,7 @@ $ go get go-hep.org/x/hep/heppdt
 
 ## Documentation
 
-Documentation is available on http://godoc.org/go-hep.org/x/hep/heppdt
+Documentation is available on https://godoc.org/go-hep.org/x/hep/heppdt
 
 
 ## References

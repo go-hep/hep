@@ -14,7 +14,7 @@ $ go get go-hep.org/x/hep/hepmc
 
 ## Documentation
 
-Doc is on [godoc](http://godoc.org/go-hep.org/x/hep/hepmc)
+Doc is on [godoc](https://godoc.org/go-hep.org/x/hep/hepmc)
 
 ## Example
 

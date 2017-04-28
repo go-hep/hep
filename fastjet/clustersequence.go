@@ -5,6 +5,7 @@
 package fastjet
 
 import (
+	"errors"
 	"fmt"
 	"math"
 
@@ -35,6 +36,7 @@ type ClusterSequence struct {
 	r2       float64
 	invR2    float64
 	qtot     float64
+	initn    int
 
 	jets      []Jet
 	history   []history
@@ -69,8 +71,63 @@ func NewClusterSequence(jets []Jet, def JetDefinition) (*ClusterSequence, error)
 	return cs, err
 }
 
+// NumExclusiveJets returns the number of exclusive jets that would have been obtained
+// running the algorithm in exclusive mode with the given dcut
+func (cs *ClusterSequence) NumExclusiveJets(dcut float64) int {
+	// first locate where clustering would have stopped
+	i := len(cs.history) - 1 // last jet
+	for ; 0 <= i; i-- {
+		if cs.history[i].maxdij <= dcut {
+			break
+		}
+	}
+	stoppt := i + 1
+	njets := 2*cs.initn - stoppt
+	return njets
+}
+
 func (cs *ClusterSequence) ExclusiveJets(dcut float64) ([]Jet, error) {
-	panic("not implemented")
+	njets := cs.NumExclusiveJets(dcut)
+	return cs.ExclusiveJetsUpTo(njets)
+}
+
+func (cs *ClusterSequence) ExclusiveJetsUpTo(njets int) ([]Jet, error) {
+	var err error
+	if njets > cs.initn {
+		err = errors.New("fastjet: requested too many exclusive jets")
+		return nil, err
+	}
+	// calculate the point where we have to stop the clustering
+	// relation between stoppt, njets assumes one extra jet disappears
+	// at each clustering
+	stoppt := 2*cs.initn - njets
+	// make sure it's safe when more jets are requested than there are particles
+	if stoppt < cs.initn {
+		stoppt = cs.initn
+	}
+	// additional checking
+	if 2*cs.initn != len(cs.history) {
+		err = errors.New("fastjet: too few initial jets")
+		return nil, err
+	}
+
+	// now go forwards and reconstitute the jets that we have --
+	// basically for any history element, see if the parent jets to
+	// which it refers were created before the stopping point -- if they
+	// were then add them to the list, otherwise they are subsequent
+	// recombinations of the jets that we are looking for
+	ljets := make([]Jet, 0, imin(njets, cs.initn))
+	for i := stoppt; i < len(cs.history); i++ {
+		parent1 := cs.history[i].parent1
+		if parent1 < stoppt {
+			ljets = append(ljets, cs.jets[cs.history[parent1].jet])
+		}
+		parent2 := cs.history[i].parent2
+		if 0 < parent2 && parent2 < stoppt {
+			ljets = append(ljets, cs.jets[cs.history[parent2].jet])
+		}
+	}
+	return ljets, err
 }
 
 func (cs *ClusterSequence) InclusiveJets(ptmin float64) ([]Jet, error) {
@@ -156,6 +213,10 @@ func (cs *ClusterSequence) init() error {
 
 		cs.qtot += jet.E()
 	}
+	// store the initial number of particles.
+	// this is used by the ClusterSequence to compute the number of exclusive jets
+	// (in the ExclusiveJets method).
+	cs.initn = len(cs.jets)
 	return err
 }
 
@@ -192,7 +253,7 @@ func (cs *ClusterSequence) addConstituents(jet *Jet) ([]Jet, error) {
 		// It is an original particle (labelled by its parent having value
 		// inexistentParent), therefore add it on to the subjet vector
 		// Note: we add the initial particle and not simply 'jet' so that
-		//       calling addCconstituents with a subtracted jet containing
+		//       calling addConstituents with a subtracted jet containing
 		//       only one particle will work.
 		subjets = append(subjets, cs.jets[i])
 		return subjets, err
@@ -259,6 +320,13 @@ func (cs *ClusterSequence) jetScaleForAlgorithm(jet *Jet) float64 {
 			kt2 = 1e-300
 		}
 		return math.Pow(kt2, 2*p)
+
+	case EeKtAlgorithm:
+		e := jet.E()
+		if e < 1e-300 {
+			e = 1e-300
+		}
+		return e * e
 
 	default:
 		panic(fmt.Errorf("fastjet: unrecognised jet algorithm (%v)", cs.alg))
@@ -384,6 +452,10 @@ func (cs *ClusterSequence) runN3Dumb() error {
 					if den != 0 {
 						y = jetscale * (1 - fmom.CosTheta(&ijet.PxPyPzE, &jjet.PxPyPzE)) / den
 					}
+
+				case EeKtAlgorithm:
+					y = 2 * jetscale * (1 - fmom.CosTheta(&ijet.PxPyPzE, &jjet.PxPyPzE))
+
 				default:
 					y = jetscale * Distance(ijet, jjet) * cs.invR2
 				}

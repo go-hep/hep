@@ -15,7 +15,7 @@ $ go get go-hep.org/x/hep/fads/...
 
 ## Documentation
 
-Is available on `godoc`: http://godoc.org/go-hep.org/x/hep/fads
+Is available on `godoc`: https://godoc.org/go-hep.org/x/hep/fads
 
 ## Example
 

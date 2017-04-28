@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"reflect"
-	"unsafe"
 )
 
 // recordHeader describes the on-disk record (header part)
@@ -28,10 +27,12 @@ type recordData struct {
 
 // Record manages blocks of data
 type Record struct {
-	name    string           // record name
-	unpack  bool             // whether to unpack incoming records
-	options uint32           // options (flag word)
-	blocks  map[string]Block // connected blocks
+	name    string         // record name
+	unpack  bool           // whether to unpack incoming records
+	options uint32         // options (flag word)
+	bindex  map[string]int // index of connected blocks
+	bnames  []string       // connected blocks names
+	blocks  []Block        // connected blocks
 }
 
 // Name returns the name of this record
@@ -67,11 +68,23 @@ func (rec *Record) Options() uint32 {
 	return rec.options
 }
 
+// Disconnect disconnects all blocks previously connected to this
+// Record (for reading or writing.)
+func (rec *Record) Disconnect() {
+	rec.bnames = rec.bnames[:0]
+	rec.bindex = make(map[string]int)
+	rec.blocks = rec.blocks[:0]
+}
+
 // Connect connects a Block to this Record (for reading or writing)
 func (rec *Record) Connect(name string, ptr interface{}) error {
 	var err error
-	_, dup := rec.blocks[name]
-	if dup {
+	iblk, ok := rec.bindex[name]
+	if !ok {
+		iblk = len(rec.blocks)
+		rec.bnames = append(rec.bnames, name)
+		rec.blocks = append(rec.blocks, nil)
+		rec.bindex[name] = iblk
 		//return fmt.Errorf("sio.Record: Block name [%s] already connected", name)
 		//return ErrBlockConnected
 	}
@@ -81,9 +94,13 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 		block = ptr
 	case Codec:
 		rt := reflect.TypeOf(ptr)
+		var vers uint32
+		if ptr, ok := ptr.(Versioner); ok {
+			vers = ptr.VersionSio()
+		}
 		block = &userBlock{
 			blk:     ptr,
-			version: 0,
+			version: vers,
 			name:    rt.Name(),
 		}
 
@@ -92,23 +109,33 @@ func (rec *Record) Connect(name string, ptr interface{}) error {
 		if rt.Kind() != reflect.Ptr {
 			return fmt.Errorf("sio: Connect needs a pointer to a block of data")
 		}
+		var vers uint32
+		if ptr, ok := ptr.(Versioner); ok {
+			vers = ptr.VersionSio()
+		}
 		block = &genericBlock{
 			rt:      rt,
 			rv:      reflect.ValueOf(ptr),
-			version: 0,
+			version: vers,
 			name:    rt.Name(),
 		}
 	}
-	rec.blocks[name] = block
+	rec.blocks[iblk] = block
 	return err
 }
 
 // read reads a record
 func (rec *Record) read(r *reader) error {
 	var err error
-	// fmt.Printf("::: reading record [%s]... [%d]\n", rec.name, buf.Len())
+	// fmt.Printf("::: reading record [%s]... [%d]\n", rec.name, r.Len())
+	type fixlink struct {
+		link Linker
+		vers uint32
+	}
+	var linkers []fixlink
 	// loop until data has been depleted
 	for r.Len() > 0 {
+		beg := r.Len()
 		// read block header
 		var hdr blockHeader
 		err = bread(r, &hdr)
@@ -135,18 +162,40 @@ func (rec *Record) read(r *reader) error {
 			return err
 		}
 		if n != int64(nlen) {
-			return fmt.Errorf("sio: read too few bytes (got=%d. expected=%d)", n, nlen)
+			return ErrBlockShortRead
 		}
 		name := string(cbuf.Bytes()[:data.NameLen])
-		blk, ok := rec.blocks[name]
+		iblk, ok := rec.bindex[name]
 		if ok {
+			blk := rec.blocks[iblk]
 			// fmt.Printf("### %q\n", string(buf.Bytes()))
 			err = blk.UnmarshalSio(r)
+			end := r.Len()
 			if err != nil {
 				// fmt.Printf("*** error unmarshaling record=%q block=%q: %v\n", rec.name, name, err)
 				return err
 			}
+			if beg-end != int(hdr.Len) {
+				/*
+					if true {
+						var typ interface{}
+						switch blk := blk.(type) {
+						case *userBlock:
+							typ = blk.blk
+						case *genericBlock:
+							typ = blk.rv.Interface()
+						}
+						log.Printf("record %q block %q (%T) (beg-end=%d-%d=%d != %d)", rec.Name(), name, typ, beg, end, beg-end, int(hdr.Len))
+					} else {
+				*/
+				return ErrBlockShortRead
+			}
 			// fmt.Printf(">>> read record=%q block=%q (buf=%d)\n", rec.name, name, buf.Len())
+			if ublk, ok := blk.(*userBlock); ok {
+				if link, ok := ublk.blk.(Linker); ok {
+					linkers = append(linkers, fixlink{link, data.Version})
+				}
+			}
 		}
 
 		// check whether there is still something to be read.
@@ -163,21 +212,27 @@ func (rec *Record) read(r *reader) error {
 		}
 	}
 	r.relocate()
+	for _, fix := range linkers {
+		err = fix.link.LinkSio(fix.vers)
+		if err != nil {
+			return err
+		}
+	}
 
-	//fmt.Printf("::: reading record [%s]... [done]\n", rec.name)
+	// fmt.Printf("::: reading record [%s]... [done]\n", rec.name)
 	return err
 }
 
 func (rec *Record) write(w *writer) error {
 	var err error
-	for k, blk := range rec.blocks {
-
+	for i, k := range rec.bnames {
+		blk := rec.blocks[i]
 		bhdr := blockHeader{
 			Typ: blkMarker,
 		}
 
 		bdata := blockData{
-			Version: blk.Version(),
+			Version: blk.VersionSio(),
 			NameLen: uint32(len(k)),
 		}
 
@@ -189,8 +244,7 @@ func (rec *Record) write(w *writer) error {
 			return err
 		}
 
-		bhdr.Len = uint32(unsafe.Sizeof(bhdr)) +
-			uint32(unsafe.Sizeof(bdata)) +
+		bhdr.Len = uint32(blockHeaderSize) + uint32(blockDataSize) +
 			align4U32(bdata.NameLen) + uint32(wblk.Len())
 
 		// fmt.Printf("blockHeader: %v\n", bhdr)

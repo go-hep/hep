@@ -14,7 +14,7 @@ $ go get go-hep.org/x/hep/rio
 ## Documentation
 
 The documentation is browsable at godoc.org:
- http://godoc.org/go-hep.org/x/hep/rio
+ https://godoc.org/go-hep.org/x/hep/rio
 
 ## Example
 

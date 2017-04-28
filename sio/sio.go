@@ -18,7 +18,7 @@ import (
 type Reader interface {
 	io.Reader
 
-	Version() uint32
+	Versioner
 	Tag(ptr interface{}) error
 	Pointer(ptr interface{}) error
 }
@@ -28,7 +28,7 @@ type Reader interface {
 type Writer interface {
 	io.Writer
 
-	Version() uint32
+	Versioner
 	Tag(ptr interface{}) error
 	Pointer(ptr interface{}) error
 }
@@ -52,17 +52,30 @@ type Codec interface {
 	Unmarshaler
 }
 
+// Linker is the interface implemented by an object that
+// needs to recompute (internal) pointers, after the sio layer
+// had performed pointer tagging/chasing relocation.
+type Linker interface {
+	LinkSio(v uint32) error
+}
+
+// Versioner is the interface implemented by an object that
+// tells which version of SIO serialization/deserialization it supports.
+type Versioner interface {
+	VersionSio() uint32
+}
+
 type reader struct {
 	buf *bytes.Buffer
 	ver uint32
-	ptr map[uint32]interface{}
+	ptr map[interface{}]uint32
 	tag map[interface{}]uint32
 }
 
 func newReader(data []byte) *reader {
 	return &reader{
 		buf: bytes.NewBuffer(data),
-		ptr: make(map[uint32]interface{}),
+		ptr: make(map[interface{}]uint32),
 		tag: make(map[interface{}]uint32),
 	}
 }
@@ -83,28 +96,28 @@ func (r *reader) Next(n int) []byte {
 	return r.buf.Next(n)
 }
 
-func (r *reader) Version() uint32 {
+func (r *reader) VersionSio() uint32 {
 	min := r.ver & uint32(0x0000ffff)
 	maj := (r.ver & uint32(0xffff0000)) >> 16
 	return maj*1000 + min
 }
 
 func (r *reader) Tag(ptr interface{}) error {
-	var id uint32
-	err := binary.Read(r.buf, binary.BigEndian, &id)
+	var pid uint32
+	err := binary.Read(r.buf, binary.BigEndian, &pid)
 	if err != nil {
 		return err
 	}
-	if id == ptagMarker {
+	if pid == ptagMarker {
 		return nil
 	}
-	r.tag[ptr] = id
+	r.tag[ptr] = pid
 	return nil
 }
 
 func (r *reader) Pointer(ptr interface{}) error {
 	rptr := reflect.ValueOf(ptr)
-	if rptr.Kind() != reflect.Ptr || rptr.Elem().Kind() != reflect.Ptr {
+	if !(rptr.Kind() == reflect.Ptr && (rptr.Elem().Kind() == reflect.Ptr || rptr.Elem().Kind() == reflect.Interface)) {
 		panic(fmt.Errorf("sio: Reader.Pointer expects a pointer to pointer"))
 	}
 
@@ -117,13 +130,13 @@ func (r *reader) Pointer(ptr interface{}) error {
 		return nil
 	}
 
-	r.ptr[pid] = ptr
+	r.ptr[ptr] = pid
 	return nil
 }
 
 func (r *reader) relocate() {
 ptrloop:
-	for pid, ptr := range r.ptr {
+	for ptr, pid := range r.ptr {
 		rptr := reflect.ValueOf(ptr)
 		for tag, tid := range r.tag {
 			if tid == pid {
@@ -173,7 +186,7 @@ func (w *writer) Len() int {
 	return w.buf.Len()
 }
 
-func (w *writer) Version() uint32 {
+func (w *writer) VersionSio() uint32 {
 	min := w.ver & uint32(0x0000ffff)
 	maj := (w.ver & uint32(0xffff0000)) >> 16
 	return maj*1000 + min

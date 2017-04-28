@@ -15,6 +15,6 @@ go get go-hep.org/x/hep/rootio
 
 ``rootio`` documentation can be found over there:
 
-http://godoc.org/go-hep.org/x/hep/rootio
+https://godoc.org/go-hep.org/x/hep/rootio
 
 

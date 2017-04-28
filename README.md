@@ -3,7 +3,7 @@ hep
 
 [![Build Status](https://secure.travis-ci.org/go-hep/hep.png)](http://travis-ci.org/go-hep/hep)
 [![GoDoc](https://godoc.org/go-hep.org/x/hep?status.svg)](https://godoc.org/go-hep.org/x/hep)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.495433.svg)](https://doi.org/10.5281/zenodo.495433)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.556591.svg)](https://doi.org/10.5281/zenodo.556591)
 
 `hep` is a set of libraries and tools to perform High Energy Physics analyses with ease and [Go](https://golang.org)
 
@@ -37,10 +37,11 @@ Guidelines for contributing to [go-hep](https://go-hep.org) are available here:
 - [go-hep.org/x/hep/hepmc](https://go-hep.org/x/hep/hepmc): `HepMC` in pure [Go](https://golang.org) (EDM + I/O)
 - [go-hep.org/x/hep/hepevt](https://go-hep.org/x/hep/hepevt): `HEPEVT` bindings
 - [go-hep.org/x/hep/heppdt](https://go-hep.org/x/hep/heppdt): `HEP` particle data table
+- [go-hep.org/x/hep/lcio](https://go-hep.org/x/hep/lcio): read/write support for `LCIO` event data model
 - [go-hep.org/x/hep/lhef](https://go-hep.org/x/hep/lhef): Les Houches Event File format
 - [go-hep.org/x/hep/rio](https://go-hep.org/x/hep/rio): `go-hep` record oriented I/O
 - [go-hep.org/x/hep/rootio](https://go-hep.org/x/hep/rootio): a pure [Go](https://golang.org) package to for [ROOT](https://root.cern.ch) I/O (WIP) 
-- [go-hep.org/x/hep/sio](https://go-hep.org/x/hep/sio): `LCIO` I/O
+- [go-hep.org/x/hep/sio](https://go-hep.org/x/hep/sio): basic, low-level, serial I/O used by `LCIO`
 - [go-hep.org/x/hep/slha](https://go-hep.org/x/hep/slha): `SUSY` Les Houches Accord I/O
 
 ## Installation

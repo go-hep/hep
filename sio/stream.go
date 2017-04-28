@@ -145,7 +145,7 @@ func (stream *Stream) Record(name string) *Record {
 	rec = &Record{
 		name:   name,
 		unpack: false,
-		blocks: make(map[string]Block),
+		bindex: make(map[string]int),
 	}
 	stream.recs[name] = rec
 	return stream.recs[name]
@@ -345,6 +345,10 @@ func (stream *Stream) WriteRecord(record *Record) error {
 			return err
 		}
 		recdata.DataLen = align4U32(uint32(b.Len()))
+		if n := int(recdata.DataLen - uint32(b.Len())); n > 0 {
+			var tmp [4]byte
+			b.Write(tmp[:n])
+		}
 
 		buf.buf = &b
 	}

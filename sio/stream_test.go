@@ -285,93 +285,29 @@ type T1 struct {
 }
 
 func (t1 *T1) MarshalSio(w sio.Writer) error {
-	var err error
-	err = sio.Marshal(w, t1.Name)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&t1.T2)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&t1.T3)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&t1.T4)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&t1.T5)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&t1.T6)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&t1.T7)
-	if err != nil {
-		return err
-	}
-
-	err = w.Tag(t1)
-	if err != nil {
-		return err
-	}
-
-	return err
+	enc := sio.NewEncoder(w)
+	enc.Encode(t1.Name)
+	enc.Pointer(&t1.T2)
+	enc.Pointer(&t1.T3)
+	enc.Pointer(&t1.T4)
+	enc.Pointer(&t1.T5)
+	enc.Pointer(&t1.T6)
+	enc.Pointer(&t1.T7)
+	enc.Tag(t1)
+	return enc.Err()
 }
 
 func (t1 *T1) UnmarshalSio(r sio.Reader) error {
-	var err error
-	err = sio.Unmarshal(r, &t1.Name)
-	if err != nil {
-		return err
-	}
-
-	err = r.Pointer(&t1.T2)
-	if err != nil {
-		return err
-	}
-
-	err = r.Pointer(&t1.T3)
-	if err != nil {
-		return err
-	}
-
-	err = r.Pointer(&t1.T4)
-	if err != nil {
-		return err
-	}
-
-	err = r.Pointer(&t1.T5)
-	if err != nil {
-		return err
-	}
-
-	err = r.Pointer(&t1.T6)
-	if err != nil {
-		return err
-	}
-
-	err = r.Pointer(&t1.T7)
-	if err != nil {
-		return err
-	}
-
-	err = r.Tag(t1)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	dec := sio.NewDecoder(r)
+	dec.Decode(&t1.Name)
+	dec.Pointer(&t1.T2)
+	dec.Pointer(&t1.T3)
+	dec.Pointer(&t1.T4)
+	dec.Pointer(&t1.T5)
+	dec.Pointer(&t1.T6)
+	dec.Pointer(&t1.T7)
+	dec.Tag(t1)
+	return dec.Err()
 }
 
 type T2 struct {
@@ -379,33 +315,17 @@ type T2 struct {
 }
 
 func (t2 *T2) MarshalSio(w sio.Writer) error {
-	var err error
-	err = sio.Marshal(w, t2.Name)
-	if err != nil {
-		return err
-	}
-
-	err = w.Tag(t2)
-	if err != nil {
-		return err
-	}
-
-	return err
+	enc := sio.NewEncoder(w)
+	enc.Encode(t2.Name)
+	enc.Tag(t2)
+	return enc.Err()
 }
 
 func (t2 *T2) UnmarshalSio(r sio.Reader) error {
-	var err error
-	err = sio.Unmarshal(r, &t2.Name)
-	if err != nil {
-		return err
-	}
-
-	err = r.Tag(t2)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	dec := sio.NewDecoder(r)
+	dec.Decode(&t2.Name)
+	dec.Tag(t2)
+	return dec.Err()
 }
 
 type T5 struct {
@@ -413,23 +333,17 @@ type T5 struct {
 }
 
 func (t2 *T5) MarshalSio(w sio.Writer) error {
-	var err error
-	err = sio.Marshal(w, t2.Name)
-	if err != nil {
-		return err
-	}
+	enc := sio.NewEncoder(w)
+	enc.Encode(t2.Name)
 	// no ptag
-	return err
+	return enc.Err()
 }
 
 func (t2 *T5) UnmarshalSio(r sio.Reader) error {
-	var err error
-	err = sio.Unmarshal(r, &t2.Name)
-	if err != nil {
-		return err
-	}
+	dec := sio.NewDecoder(r)
+	dec.Decode(&t2.Name)
 	// no ptag
-	return nil
+	return dec.Err()
 }
 
 var (
@@ -595,43 +509,19 @@ type C1 struct {
 }
 
 func (c1 *C1) MarshalSio(w sio.Writer) error {
-	var err error
-	err = sio.Marshal(w, c1.Name)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&c1.C2)
-	if err != nil {
-		return err
-	}
-
-	err = w.Tag(c1)
-	if err != nil {
-		return err
-	}
-
-	return err
+	enc := sio.NewEncoder(w)
+	enc.Encode(c1.Name)
+	enc.Pointer(&c1.C2)
+	enc.Tag(c1)
+	return enc.Err()
 }
 
 func (c1 *C1) UnmarshalSio(r sio.Reader) error {
-	var err error
-	err = sio.Unmarshal(r, &c1.Name)
-	if err != nil {
-		return err
-	}
-
-	err = r.Pointer(&c1.C2)
-	if err != nil {
-		return err
-	}
-
-	err = r.Tag(c1)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	dec := sio.NewDecoder(r)
+	dec.Decode(&c1.Name)
+	dec.Pointer(&c1.C2)
+	dec.Tag(c1)
+	return dec.Err()
 }
 
 type C2 struct {
@@ -640,43 +530,19 @@ type C2 struct {
 }
 
 func (c2 *C2) MarshalSio(w sio.Writer) error {
-	var err error
-	err = sio.Marshal(w, c2.Name)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&c2.C3)
-	if err != nil {
-		return err
-	}
-
-	err = w.Tag(c2)
-	if err != nil {
-		return err
-	}
-
-	return err
+	enc := sio.NewEncoder(w)
+	enc.Encode(c2.Name)
+	enc.Pointer(&c2.C3)
+	enc.Tag(c2)
+	return enc.Err()
 }
 
 func (c2 *C2) UnmarshalSio(r sio.Reader) error {
-	var err error
-	err = sio.Unmarshal(r, &c2.Name)
-	if err != nil {
-		return err
-	}
-
-	err = r.Pointer(&c2.C3)
-	if err != nil {
-		return err
-	}
-
-	err = r.Tag(c2)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	dec := sio.NewDecoder(r)
+	dec.Decode(&c2.Name)
+	dec.Pointer(&c2.C3)
+	dec.Tag(c2)
+	return dec.Err()
 }
 
 type C3 struct {
@@ -685,43 +551,19 @@ type C3 struct {
 }
 
 func (c3 *C3) MarshalSio(w sio.Writer) error {
-	var err error
-	err = sio.Marshal(w, c3.Name)
-	if err != nil {
-		return err
-	}
-
-	err = w.Pointer(&c3.C1)
-	if err != nil {
-		return err
-	}
-
-	err = w.Tag(c3)
-	if err != nil {
-		return err
-	}
-
-	return err
+	enc := sio.NewEncoder(w)
+	enc.Encode(c3.Name)
+	enc.Pointer(&c3.C1)
+	enc.Tag(c3)
+	return enc.Err()
 }
 
 func (c3 *C3) UnmarshalSio(r sio.Reader) error {
-	var err error
-	err = sio.Unmarshal(r, &c3.Name)
-	if err != nil {
-		return err
-	}
-
-	err = r.Pointer(&c3.C1)
-	if err != nil {
-		return err
-	}
-
-	err = r.Tag(c3)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	dec := sio.NewDecoder(r)
+	dec.Decode(&c3.Name)
+	dec.Pointer(&c3.C1)
+	dec.Tag(c3)
+	return dec.Err()
 }
 
 var (
@@ -846,6 +688,84 @@ func TestPointerCycleStream(t *testing.T) {
 			t.Errorf("c3.C1.Name = %q", c3.C1.Name)
 		case c3.C1 != &c1:
 			t.Errorf("c3.C1 = %v", c3.C1)
+		}
+	}()
+}
+
+type ShortBlock struct {
+	Name  string
+	Value int32
+}
+
+func (blk *ShortBlock) MarshalSio(w sio.Writer) error {
+	enc := sio.NewEncoder(w)
+	enc.Encode(blk.Name)
+	enc.Encode(blk.Value)
+	return enc.Err()
+}
+
+func (blk *ShortBlock) UnmarshalSio(r sio.Reader) error {
+	dec := sio.NewDecoder(r)
+	dec.Decode(&blk.Name)
+	// drop reading of blk.Value
+	//dec.Decode(&blk.Value)
+	return dec.Err()
+}
+
+var _ sio.Codec = (*ShortBlock)(nil)
+
+func TestShortBlockRead(t *testing.T) {
+	const fname = "testdata/short-read.sio"
+	func() {
+		f, err := sio.Create(fname)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+
+		v := ShortBlock{"block", 42}
+		rec := f.Record("Data")
+		rec.SetUnpack(true)
+
+		err = rec.Connect("my-block", &v)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = f.WriteRecord(rec)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = f.Sync()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = f.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	func() {
+		f, err := sio.Open(fname)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+
+		var v ShortBlock
+		rec := f.Record("Data")
+		rec.SetUnpack(true)
+		err = rec.Connect("my-block", &v)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, err = f.ReadRecord()
+		if err == nil {
+			t.Fatalf("expected error reading record")
 		}
 	}()
 }

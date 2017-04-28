@@ -15,7 +15,7 @@ $ go get go-hep.org/x/hep/lhef
 
 ## Documentation
 
-Is available on [godoc.org](http://godoc.org/go-hep.org/x/hep/lhef)
+Is available on [godoc.org](https://godoc.org/go-hep.org/x/hep/lhef)
 
 
 ## TODO

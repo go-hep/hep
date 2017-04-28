@@ -16,7 +16,7 @@ $ go get go-hep.org/x/hep/hplot
 
 Is available on ``godoc``:
 
-http://godoc.org/go-hep.org/x/hep/hplot
+https://godoc.org/go-hep.org/x/hep/hplot
 
 
 ## Examples

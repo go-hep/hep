@@ -18,7 +18,7 @@ $ go get go-hep.org/x/hep/hbook
 
 Documentation is available on godoc:
 
- http://godoc.org/go-hep.org/x/hep/hbook
+ https://godoc.org/go-hep.org/x/hep/hbook
 
 ## Example
 
