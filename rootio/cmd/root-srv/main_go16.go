@@ -1,4 +1,4 @@
-// +build go1.7
+// +build !go1.7
 // Copyright 2017 The go-hep Authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -20,14 +20,11 @@
 package main
 
 import (
-	"crypto/tls"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-
-	"golang.org/x/crypto/acme/autocert"
 
 	"go-hep.org/x/hep/rootio/cmd/root-srv/server"
 )
@@ -64,17 +61,17 @@ options:
 	if *servFlag == "http" {
 		log.Fatal(http.ListenAndServe(*addrFlag, nil))
 	} else if *servFlag == "https" {
-		m := autocert.Manager{
-			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist(*hostFlag),
-			Cache:      autocert.DirCache("certs"), //folder for storing certificates
-		}
-		server := &http.Server{
-			Addr: *addrFlag,
-			TLSConfig: &tls.Config{
-				GetCertificate: m.GetCertificate,
-			},
-		}
+		//		m := autocert.Manager{
+		//			Prompt:     autocert.AcceptTOS,
+		//			HostPolicy: autocert.HostWhitelist(*hostFlag),
+		//			Cache:      autocert.DirCache("certs"), //folder for storing certificates
+		//		}
+		//		server := &http.Server{
+		//			Addr: *addrFlag,
+		//			TLSConfig: &tls.Config{
+		//				GetCertificate: m.GetCertificate,
+		//			},
+		//		}
 		log.Fatal(server.ListenAndServeTLS("", ""))
 	}
 }
