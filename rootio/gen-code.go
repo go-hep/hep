@@ -500,8 +500,8 @@ func (h *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
-	if vers < 2 {
-		return errorf("rootio: T{{.Name}} version too old (%d<2)", vers)
+	if vers < 1 {
+		return errorf("rootio: T{{.Name}} version too old (%d<1)", vers)
 	}
 
 	for _, v := range []ROOTUnmarshaler{
@@ -944,8 +944,8 @@ func (h *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
-	if vers < 2 {
-		return errorf("rootio: T{{.Name}} version too old (%d<2)", vers)
+	if vers < 1 {
+		return errorf("rootio: T{{.Name}} version too old (%d<1)", vers)
 	}
 
 	for _, v := range []ROOTUnmarshaler{
