@@ -242,6 +242,34 @@ func (tsb *tstreamerBasicPointer) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
+type tstreamerLoop struct {
+	tstreamerElement
+	cvers  int32  // version number of the class with the counter
+	cname  string // name of data member holding the array count
+	cclass string // name of the class with the counter
+}
+
+func (*tstreamerLoop) Class() string {
+	return "TStreamerLoop"
+}
+
+func (tsl *tstreamerLoop) UnmarshalROOT(r *RBuffer) error {
+	beg := r.Pos()
+
+	_ /*vers*/, pos, bcnt := r.ReadVersion()
+
+	if err := tsl.tstreamerElement.UnmarshalROOT(r); err != nil {
+		return err
+	}
+
+	tsl.cvers = r.ReadI32()
+	tsl.cname = r.ReadString()
+	tsl.cclass = r.ReadString()
+
+	r.CheckByteCount(pos, bcnt, beg, "TStreamerLoop")
+	return r.Err()
+}
+
 type tstreamerObject struct {
 	tstreamerElement
 }
@@ -473,6 +501,14 @@ func init() {
 	}
 	{
 		f := func() reflect.Value {
+			o := &tstreamerLoop{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TStreamerLoop", f)
+		Factory.add("*rootio.tstreamerLoop", f)
+	}
+	{
+		f := func() reflect.Value {
 			o := &tstreamerObject{}
 			return reflect.ValueOf(o)
 		}
@@ -566,6 +602,11 @@ var _ Object = (*tstreamerBasicPointer)(nil)
 var _ Named = (*tstreamerBasicPointer)(nil)
 var _ StreamerElement = (*tstreamerBasicPointer)(nil)
 var _ ROOTUnmarshaler = (*tstreamerBasicPointer)(nil)
+
+var _ Object = (*tstreamerLoop)(nil)
+var _ Named = (*tstreamerLoop)(nil)
+var _ StreamerElement = (*tstreamerLoop)(nil)
+var _ ROOTUnmarshaler = (*tstreamerLoop)(nil)
 
 var _ Object = (*tstreamerObject)(nil)
 var _ Named = (*tstreamerObject)(nil)
