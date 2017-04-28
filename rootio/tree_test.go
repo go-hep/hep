@@ -5,6 +5,7 @@
 package rootio
 
 import (
+	"fmt"
 	"io"
 	"reflect"
 	"testing"
@@ -17,7 +18,6 @@ func TestFlatTree(t *testing.T) {
 	}
 	defer f.Close()
 
-	myprintf(">>> f.Get(tree)...\n")
 	obj, ok := f.Get("tree")
 	if !ok {
 		t.Fatalf("could not retrieve tree [tree]")
@@ -27,7 +27,6 @@ func TestFlatTree(t *testing.T) {
 	if got, want := tree.Name(), "tree"; got != want {
 		t.Fatalf("tree.Name: got=%q. want=%q", got, want)
 	}
-	myprintf(">>> f.Get(tree)... [done]\n")
 
 	for _, table := range []struct {
 		test  string
@@ -48,11 +47,11 @@ func TestFlatTree(t *testing.T) {
 		t.Fatalf("tree.Entries: got=%v. want=%v", got, want)
 	}
 
-	if got, want := tree.TotBytes(), int64(60090); got != want {
+	if got, want := tree.TotBytes(), int64(61368); got != want {
 		t.Fatalf("tree.totbytes: got=%v. want=%v", got, want)
 	}
 
-	if got, want := tree.ZipBytes(), int64(8080); got != want {
+	if got, want := tree.ZipBytes(), int64(8544); got != want {
 		t.Fatalf("tree.zipbytes: got=%v. want=%v", got, want)
 	}
 }
@@ -74,7 +73,6 @@ func TestEventTree(t *testing.T) {
 	if got, want := tree.Name(), "tree"; got != want {
 		t.Fatalf("tree.Name: got=%q. want=%q", got, want)
 	}
-	myprintf(">>> f.Get(tree)... [done]\n")
 
 	for _, table := range []struct {
 		test  string
@@ -95,11 +93,11 @@ func TestEventTree(t *testing.T) {
 		t.Fatalf("tree.Entries: got=%v. want=%v", got, want)
 	}
 
-	if got, want := tree.TotBytes(), int64(57356); got != want {
+	if got, want := tree.TotBytes(), int64(59556); got != want {
 		t.Fatalf("tree.totbytes: got=%v. want=%v", got, want)
 	}
 
-	if got, want := tree.ZipBytes(), int64(7248); got != want {
+	if got, want := tree.ZipBytes(), int64(8315); got != want {
 		t.Fatalf("tree.zipbytes: got=%v. want=%v", got, want)
 	}
 
@@ -111,6 +109,7 @@ func TestEventTree(t *testing.T) {
 			U64    uint64      `rootio:"UInt64"`
 			F32    float32     `rootio:"Float32"`
 			F64    float64     `rootio:"Float64"`
+			Str    string      `rootio:"Str"`
 			ArrI32 [10]int32   `rootio:"ArrayInt32"`
 			ArrI64 [10]int64   `rootio:"ArrayInt64"`
 			ArrU32 [10]uint32  `rootio:"ArrayUInt32"`
@@ -134,6 +133,7 @@ func TestEventTree(t *testing.T) {
 		data.evt.U64 = uint64(i)
 		data.evt.F32 = float32(i)
 		data.evt.F64 = float64(i)
+		data.evt.Str = fmt.Sprintf("evt-%03d", i)
 		for ii := range data.evt.ArrI32 {
 			data.evt.ArrI32[ii] = int32(i)
 			data.evt.ArrI64[ii] = int64(i)

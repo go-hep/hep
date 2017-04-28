@@ -464,6 +464,25 @@ func (r *RBuffer) ReadFastArrayF64(n int) []float64 {
 	return arr
 }
 
+func (r *RBuffer) ReadFastArrayString(n int) []string {
+	if r.err != nil {
+		return nil
+	}
+	if n <= 0 || int64(n) > r.Len() {
+		return nil
+	}
+
+	arr := make([]string, n)
+	for i := range arr {
+		arr[i] = r.ReadString()
+	}
+
+	if r.err != nil {
+		return nil
+	}
+	return arr
+}
+
 func (r *RBuffer) ReadVersion() (vers int16, pos, n int32) {
 	if r.err != nil {
 		return

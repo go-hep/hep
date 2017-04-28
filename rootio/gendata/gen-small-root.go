@@ -17,6 +17,7 @@ type Event struct {
 	U64 uint64
 	F32 float32
 	F64 float64
+	Str string
 
 	ArrayI32 [ARRAYSZ]int32
 	ArrayI64 [ARRAYSZ]int64
@@ -69,6 +70,7 @@ func main() {
 		e.U64 = uint64(iev)
 		e.F32 = float32(iev)
 		e.F64 = float64(iev)
+		e.Str = fmt.Sprintf("evt-%03d", iev)
 
 		for ii := 0; ii < ARRAYSZ; ii++ {
 			e.ArrayI32[ii] = int32(iev)

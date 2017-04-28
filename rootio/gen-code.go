@@ -64,6 +64,8 @@ func genLeaves() {
 		DoUnsigned bool
 		Func       string
 		FuncArray  string
+		RangeType  string
+		RangeFunc  string
 		Count      bool
 	}{
 		{
@@ -79,12 +81,6 @@ func genLeaves() {
 			Func:       "r.ReadI16()",
 			FuncArray:  "r.ReadFastArrayI16",
 			Count:      true,
-		},
-		{
-			Name:      "LeafC",
-			Type:      "int32",
-			Func:      "r.ReadI32()",
-			FuncArray: "r.ReadFastArrayI32",
 		},
 		{
 			Name:       "LeafI",
@@ -114,9 +110,21 @@ func genLeaves() {
 			Func:      "r.ReadF64()",
 			FuncArray: "r.ReadFastArrayF64",
 		},
+		{
+			Name:      "LeafC",
+			Type:      "string",
+			Func:      "r.ReadString()",
+			FuncArray: "r.ReadFastArrayString",
+			RangeType: "int32",
+			RangeFunc: "r.ReadI32()",
+		},
 	} {
 		if i > 0 {
 			fmt.Fprintf(f, "\n")
+		}
+		if typ.RangeType == "" {
+			typ.RangeType = typ.Type
+			typ.RangeFunc = typ.Func
 		}
 		tmpl := template.Must(template.New(typ.Name).Parse(leafTmpl))
 		err = tmpl.Execute(f, typ)
@@ -286,8 +294,8 @@ const leafTmpl = `// {{.Name}} implements ROOT T{{.Name}}
 type {{.Name}} struct {
 	tleaf
 	val []{{.Type}}
-	min {{.Type}}
-	max {{.Type}}
+	min {{.RangeType}}
+	max {{.RangeType}}
 }
 
 // Class returns the ROOT class name.
@@ -296,12 +304,12 @@ func (leaf *{{.Name}}) Class() string {
 }
 
 // Minimum returns the minimum value of the leaf.
-func (leaf *{{.Name}}) Minimum() {{.Type}} {
+func (leaf *{{.Name}}) Minimum() {{.RangeType}} {
 	return leaf.min
 }
 
 // Maximum returns the maximum value of the leaf.
-func (leaf *{{.Name}}) Maximum() {{.Type}} {
+func (leaf *{{.Name}}) Maximum() {{.RangeType}} {
 	return leaf.max
 }
 
@@ -341,8 +349,8 @@ func (leaf *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	leaf.min = {{.Func}}
-	leaf.max = {{.Func}}
+	leaf.min = {{.RangeFunc}}
+	leaf.max = {{.RangeFunc}}
 
 	r.CheckByteCount(pos, bcnt, start, "T{{.Name}}")
 	return r.Err()
