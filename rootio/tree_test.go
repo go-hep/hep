@@ -56,49 +56,53 @@ func TestFlatTree(t *testing.T) {
 	}
 }
 
-type EventDataType struct {
-	Evt struct {
-		Beg    string      `rootio:"Beg"`
-		I16    int16       `rootio:"Int16"`
-		I32    int32       `rootio:"Int32"`
-		I64    int64       `rootio:"Int64"`
-		U16    uint16      `rootio:"UInt16"`
-		U32    uint32      `rootio:"UInt32"`
-		U64    uint64      `rootio:"UInt64"`
-		F32    float32     `rootio:"Float32"`
-		F64    float64     `rootio:"Float64"`
-		Str    string      `rootio:"Str"`
-		ArrI16 [10]int16   `rootio:"ArrayI16"`
-		ArrI32 [10]int32   `rootio:"ArrayI32"`
-		ArrI64 [10]int64   `rootio:"ArrayI64"`
-		ArrU16 [10]uint16  `rootio:"ArrayU16"`
-		ArrU32 [10]uint32  `rootio:"ArrayU32"`
-		ArrU64 [10]uint64  `rootio:"ArrayU64"`
-		ArrF32 [10]float32 `rootio:"ArrayF32"`
-		ArrF64 [10]float64 `rootio:"ArrayF64"`
-		N      int32       `rootio:"N"`
-		SliI16 []int16     `rootio:"SliceI16"`
-		SliI32 []int32     `rootio:"SliceI32"`
-		SliI64 []int64     `rootio:"SliceI64"`
-		SliU16 []uint16    `rootio:"SliceU16"`
-		SliU32 []uint32    `rootio:"SliceU32"`
-		SliU64 []uint64    `rootio:"SliceU64"`
-		SliF32 []float32   `rootio:"SliceF32"`
-		SliF64 []float64   `rootio:"SliceF64"`
-		VecI16 []int16     `rootio:"StlVecI16"`
-		VecI32 []int32     `rootio:"StlVecI32"`
-		VecI64 []int64     `rootio:"StlVecI64"`
-		VecU16 []uint16    `rootio:"StlVecU16"`
-		VecU32 []uint32    `rootio:"StlVecU32"`
-		VecU64 []uint64    `rootio:"StlVecU64"`
-		VecF32 []float32   `rootio:"StlVecF32"`
-		VecF64 []float64   `rootio:"StlVecF64"`
-		End    string      `rootio:"End"`
-	} `rootio:"evt"`
+type EventType struct {
+	Evt EventData `rootio:"evt"`
 }
 
-func (EventDataType) want(i int64) EventDataType {
-	var data EventDataType
+type EventData struct {
+	Beg    string      `rootio:"Beg"`
+	I16    int16       `rootio:"Int16"`
+	I32    int32       `rootio:"Int32"`
+	I64    int64       `rootio:"Int64"`
+	U16    uint16      `rootio:"UInt16"`
+	U32    uint32      `rootio:"UInt32"`
+	U64    uint64      `rootio:"UInt64"`
+	F32    float32     `rootio:"Float32"`
+	F64    float64     `rootio:"Float64"`
+	Str    string      `rootio:"Str"`
+	ArrI16 [10]int16   `rootio:"ArrayI16"`
+	ArrI32 [10]int32   `rootio:"ArrayI32"`
+	ArrI64 [10]int64   `rootio:"ArrayI64"`
+	ArrU16 [10]uint16  `rootio:"ArrayU16"`
+	ArrU32 [10]uint32  `rootio:"ArrayU32"`
+	ArrU64 [10]uint64  `rootio:"ArrayU64"`
+	ArrF32 [10]float32 `rootio:"ArrayF32"`
+	ArrF64 [10]float64 `rootio:"ArrayF64"`
+	N      int32       `rootio:"N"`
+	SliI16 []int16     `rootio:"SliceI16"`
+	SliI32 []int32     `rootio:"SliceI32"`
+	SliI64 []int64     `rootio:"SliceI64"`
+	SliU16 []uint16    `rootio:"SliceU16"`
+	SliU32 []uint32    `rootio:"SliceU32"`
+	SliU64 []uint64    `rootio:"SliceU64"`
+	SliF32 []float32   `rootio:"SliceF32"`
+	SliF64 []float64   `rootio:"SliceF64"`
+	StdStr string      `rootio:"StdStr"`
+	VecI16 []int16     `rootio:"StlVecI16"`
+	VecI32 []int32     `rootio:"StlVecI32"`
+	VecI64 []int64     `rootio:"StlVecI64"`
+	VecU16 []uint16    `rootio:"StlVecU16"`
+	VecU32 []uint32    `rootio:"StlVecU32"`
+	VecU64 []uint64    `rootio:"StlVecU64"`
+	VecF32 []float32   `rootio:"StlVecF32"`
+	VecF64 []float64   `rootio:"StlVecF64"`
+	VecStr []string    `rootio:"StlVecStr"`
+	End    string      `rootio:"End"`
+}
+
+func (EventType) want(i int64) EventType {
+	var data EventType
 	data.Evt.I16 = int16(i)
 	data.Evt.I32 = int32(i)
 	data.Evt.I64 = int64(i)
@@ -108,6 +112,7 @@ func (EventDataType) want(i int64) EventDataType {
 	data.Evt.F32 = float32(i)
 	data.Evt.F64 = float64(i)
 	data.Evt.Str = fmt.Sprintf("evt-%03d", i)
+	data.Evt.StdStr = fmt.Sprintf("std-%03d", i)
 	for ii := range data.Evt.ArrI32 {
 		data.Evt.ArrI16[ii] = int16(i)
 		data.Evt.ArrI32[ii] = int32(i)
@@ -147,6 +152,7 @@ func (EventDataType) want(i int64) EventDataType {
 	data.Evt.VecU64 = make([]uint64, int(data.Evt.N))
 	data.Evt.VecF32 = make([]float32, int(data.Evt.N))
 	data.Evt.VecF64 = make([]float64, int(data.Evt.N))
+	data.Evt.VecStr = make([]string, int(data.Evt.N))
 	for ii := 0; ii < int(data.Evt.N); ii++ {
 		data.Evt.VecI16[ii] = int16(i)
 		data.Evt.VecI32[ii] = int32(i)
@@ -156,6 +162,7 @@ func (EventDataType) want(i int64) EventDataType {
 		data.Evt.VecU64[ii] = uint64(i)
 		data.Evt.VecF32[ii] = float32(i)
 		data.Evt.VecF64[ii] = float64(i)
+		data.Evt.VecStr[ii] = fmt.Sprintf("vec-%03d", i)
 	}
 	data.Evt.End = fmt.Sprintf("end-%03d", i)
 	return data
@@ -220,14 +227,14 @@ func testEventTree(t *testing.T, name, fname string) {
 		return
 	}
 
-	want := EventDataType{}.want
+	want := EventType{}.want
 
-	sc, err := NewScanner(tree, &EventDataType{})
+	sc, err := NewScanner(tree, &EventType{})
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer sc.Close()
-	var d1 EventDataType
+	var d1 EventType
 	ievt := 0
 	for sc.Next() {
 		err := sc.Scan(&d1)
@@ -241,7 +248,7 @@ func testEventTree(t *testing.T, name, fname string) {
 			return
 		}
 
-		var d2 EventDataType
+		var d2 EventType
 		err = sc.Scan(&d2)
 		if err != nil {
 			t.Errorf("%s: %v", name, err)

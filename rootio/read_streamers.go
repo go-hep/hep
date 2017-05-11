@@ -60,6 +60,9 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 	}
 
 	switch se := se.(type) {
+	default:
+		panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
+
 	case *tstreamerBasicType:
 		switch se.etype {
 		case kCounter:
@@ -500,6 +503,21 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 			panic(fmt.Errorf("rootio: invalid element type value %d for %#v", se.etype, se))
 		}
 
+	case *tstreamerSTLstring:
+		switch se.ctype {
+		case kSTLstring:
+			fptr := rf.Addr().Interface().(*string)
+			return func(r *RBuffer) error {
+				start := r.Pos()
+				_, pos, bcnt := r.ReadVersion()
+				*fptr = r.ReadString()
+				r.CheckByteCount(pos, bcnt, start, "std::string")
+				return r.err
+			}
+		default:
+			panic(fmt.Errorf("rootio: invalid element type value %d for %#v", se.ctype, se))
+		}
+
 	case *tstreamerSTL:
 		switch se.vtype {
 		case kSTLvector:
@@ -615,11 +633,31 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 					}
 					return r.err
 				}
+
+			case kObject:
+				switch se.ename {
+				case "vector<string>":
+					fptr := rf.Addr().Interface().(*[]string)
+					return func(r *RBuffer) error {
+						start := r.Pos()
+						_, pos, bcnt := r.ReadVersion()
+						n := int(r.ReadI32())
+						*fptr = make([]string, n)
+						for i := 0; i < n; i++ {
+							(*fptr)[i] = r.ReadString()
+						}
+						r.CheckByteCount(pos, bcnt, start, "std::vector<std::string>")
+						return r.err
+
+					}
+				default:
+				}
 			}
 		default:
 			panic(fmt.Errorf("rootio: invalid STL type %d for %#v", se.vtype, se))
 		}
 
 	}
+	panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
 	return nil
 }

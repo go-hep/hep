@@ -38,6 +38,7 @@ func main() {
 
 const script = `
 #include <vector>
+#include <string>
 
 const int ARRAYSZ = 10;
 
@@ -72,6 +73,8 @@ struct Event {
 	float    *SliceF32;  //[N]
 	double   *SliceF64;  //[N]
 
+	std::string StdStr;
+
 	std::vector<int16_t> StlVecI16;
 	std::vector<int32_t> StlVecI32;
 	std::vector<int64_t> StlVecI64;
@@ -80,6 +83,8 @@ struct Event {
 	std::vector<uint64_t> StlVecU64;
 	std::vector<float> StlVecF32;
 	std::vector<double> StlVecF64;
+	std::vector<std::string> StlVecStr;
+
 	TString End;
 };
 
@@ -95,6 +100,7 @@ void gentree(const char* fname, int splitlvl = 99) {
 	t->Branch("evt", &e, bufsize, splitlvl);
 
 	for (int i = 0; i != evtmax; i++) {
+		e.Beg = TString::Format("beg-%03d", i);
 		e.I16 = i;
 		e.I32 = i;
 		e.I64 = i;
@@ -137,7 +143,7 @@ void gentree(const char* fname, int splitlvl = 99) {
 			e.SliceF64[ii] = double(i);
 		}
 
-		e.Beg = TString::Format("beg-%03d", i);
+		e.StdStr = std::string(TString::Format("std-%03d", i));
 		e.StlVecI16.resize(e.N);
 		e.StlVecI32.resize(e.N);
 		e.StlVecI64.resize(e.N);
@@ -146,6 +152,7 @@ void gentree(const char* fname, int splitlvl = 99) {
 		e.StlVecU64.resize(e.N);
 		e.StlVecF32.resize(e.N);
 		e.StlVecF64.resize(e.N);
+		e.StlVecStr.resize(e.N);
 		for (int ii =0; ii != e.N; ii++) {
 			e.StlVecI16[ii] = i;
 			e.StlVecI32[ii] = i;
@@ -155,6 +162,7 @@ void gentree(const char* fname, int splitlvl = 99) {
 			e.StlVecU64[ii] = i;
 			e.StlVecF32[ii] = float(i);
 			e.StlVecF64[ii] = double(i);
+			e.StlVecStr[ii] = std::string(TString::Format("vec-%03d", i));
 		}
 		e.End = TString::Format("end-%03d", i);
 		t->Fill();
