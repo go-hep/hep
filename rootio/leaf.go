@@ -140,6 +140,11 @@ type tleafElement struct {
 	tleaf
 	id    int32 // element serial number in fInfo
 	ltype int32 // leaf type
+
+	ptr       interface{}
+	src       reflect.Value
+	rstreamer RStreamer
+	streamers []StreamerElement
 }
 
 func (leaf *tleafElement) Class() string {
@@ -147,7 +152,7 @@ func (leaf *tleafElement) Class() string {
 }
 
 func (leaf *tleafElement) ivalue() int {
-	panic("not implemented")
+	return int(leaf.src.Int())
 }
 
 func (leaf *tleafElement) imax() int {
@@ -179,11 +184,58 @@ func (leaf *tleafElement) UnmarshalROOT(r *RBuffer) error {
 }
 
 func (leaf *tleafElement) readBasket(r *RBuffer) error {
-	panic("not implemented")
+	if r.err != nil {
+		return r.err
+	}
+
+	if leaf.rstreamer == nil {
+		panic("rootio: nil streamer")
+	}
+
+	err := leaf.rstreamer.RStream(r)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (leaf *tleafElement) scan(r *RBuffer, ptr interface{}) error {
-	panic("not implemented")
+	if r.err != nil {
+		return r.err
+	}
+
+	rv := reflect.Indirect(reflect.ValueOf(ptr))
+	switch rv.Kind() {
+	case reflect.Struct:
+		for i := 0; i < rv.Type().NumField(); i++ {
+			f := rv.Field(i)
+			ft := rv.Type().Field(i)
+			f.Set(leaf.src.FieldByName(ft.Name))
+		}
+	case reflect.Array:
+		reflect.Copy(rv, leaf.src)
+	case reflect.Slice:
+		sli := leaf.src
+		rv.Set(reflect.MakeSlice(sli.Type(), sli.Len(), sli.Cap()))
+		reflect.Copy(rv, sli)
+	default:
+		rv.Set(leaf.src)
+	}
+	return r.err
+}
+
+func (leaf *tleafElement) setAddress(ptr interface{}) error {
+	var err error
+	leaf.ptr = ptr
+	leaf.src = reflect.ValueOf(leaf.ptr).Elem()
+
+	var impl rstreamerImpl
+	for _, elt := range leaf.streamers {
+		impl.funcs = append(impl.funcs, rstreamerFrom(elt, ptr, leaf.count))
+	}
+	leaf.rstreamer = &impl
+	return err
 }
 
 func init() {

@@ -40,10 +40,10 @@ type tbranch struct {
 	nextbasket  int64   // next entry that will require us to go to the next basket
 	basket      *Basket // pointer to the current basket
 
-	tree   Tree        // tree header
-	mother *tbranch    // top-level parent branch in the tree
-	parent *tbranch    // parent branch
-	dir    *tdirectory // directory where this branch's buffers are stored
+	tree Tree        // tree header
+	btop Branch      // top-level parent branch in the tree
+	bup  Branch      // parent branch
+	dir  *tdirectory // directory where this branch's buffers are stored
 }
 
 func (b *tbranch) Name() string {
@@ -58,8 +58,15 @@ func (b *tbranch) Class() string {
 	return "TBranch"
 }
 
+func (b *tbranch) getTree() Tree {
+	return b.tree
+}
+
 func (b *tbranch) setTree(t Tree) {
 	b.tree = t
+	for _, sub := range b.branches {
+		sub.setTree(t)
+	}
 }
 
 func (b *tbranch) Branches() []Branch {
@@ -193,6 +200,11 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 func (b *tbranch) loadEntry(ientry int64) error {
 	var err error
 	b.readentry = ientry
+
+	if len(b.basketBytes) == 0 {
+		return nil
+	}
+
 	err = b.loadBasket(ientry)
 	if err != nil {
 		return err
@@ -289,6 +301,11 @@ func (b *tbranch) scan(ptr interface{}) error {
 	return b.basket.rbuf.err
 }
 
+func (b *tbranch) setAddress(ptr interface{}) error {
+	var err error
+	return err
+}
+
 // tbranchElement is a Branch for objects.
 type tbranchElement struct {
 	tbranch
@@ -301,8 +318,13 @@ type tbranchElement struct {
 	btype   int32           // branch type
 	stype   int32           // branch streamer type
 	max     int32           // maximum entries for a TClonesArray or variable array
+	stltyp  int32           // STL container type
 	bcount1 *tbranchElement // pointer to primary branchcount branch
 	bcount2 *tbranchElement // pointer to secondary branchcount branch
+
+	streamer  StreamerInfo
+	estreamer StreamerElement
+	scanfct   func(b *tbranchElement, ptr interface{}) error
 }
 
 func (b *tbranchElement) Class() string {
@@ -354,6 +376,145 @@ func (b *tbranchElement) UnmarshalROOT(r *RBuffer) error {
 
 	r.CheckByteCount(pos, bcnt, beg, "TBranchElement")
 	return r.err
+}
+
+func (b *tbranchElement) loadEntry(ientry int64) error {
+	var err error
+	if len(b.branches) > 0 {
+		for _, sub := range b.branches {
+			err := sub.loadEntry(ientry)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return b.tbranch.loadEntry(ientry)
+
+	if len(b.basketBytes) == 0 {
+		return nil
+	}
+
+	b.readentry = ientry
+	err = b.loadBasket(ientry)
+	if err != nil {
+		return err
+	}
+
+	err = b.basket.loadEntry(ientry - b.firstEntry)
+	if err != nil {
+		return err
+	}
+
+	for _, leaf := range b.leaves {
+		err = b.basket.readLeaf(ientry-b.firstEntry, leaf)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
+func (b *tbranchElement) setAddress(ptr interface{}) error {
+	var err error
+	err = b.setupReadStreamer()
+	if err != nil {
+		return err
+	}
+
+	b.scanfct = func(b *tbranchElement, ptr interface{}) error {
+		return b.tbranch.scan(ptr)
+	}
+	if len(b.branches) > 0 {
+		var ids []int
+		rv := reflect.ValueOf(ptr).Elem()
+		for _, sub := range b.branches {
+			i := int(sub.(*tbranchElement).id)
+			ids = append(ids, i)
+			fptr := rv.Field(i).Addr().Interface()
+			err = sub.setAddress(fptr)
+			if err != nil {
+				return err
+			}
+		}
+		b.scanfct = func(b *tbranchElement, ptr interface{}) error {
+			rv := reflect.ValueOf(ptr).Elem()
+			for i, sub := range b.branches {
+				id := ids[i]
+				fptr := rv.Field(id).Addr().Interface()
+				err := sub.scan(fptr)
+				if err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}
+	if b.id < 0 {
+		for _, leaf := range b.tbranch.leaves {
+			leaf, ok := leaf.(*tleafElement)
+			if !ok {
+				continue
+			}
+			err = leaf.setAddress(ptr)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		elts := b.streamer.Elements()
+		for _, leaf := range b.tbranch.leaves {
+			leaf, ok := leaf.(*tleafElement)
+			if !ok {
+				continue
+			}
+			var elt StreamerElement
+			for _, ee := range elts {
+				if ee.Name() == leaf.Name() {
+					elt = ee
+					break
+				}
+			}
+			leaf.streamers = []StreamerElement{elt}
+			err = leaf.setAddress(ptr)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return err
+}
+
+func (b *tbranchElement) scan(ptr interface{}) error {
+	return b.scanfct(b, ptr)
+}
+
+func (b *tbranchElement) setupReadStreamer() error {
+	streamer, ok := streamers.get(b.class, int(b.clsver), int(b.chksum))
+	if !ok {
+		return fmt.Errorf("rootio: no StreamerInfo for class=%q version=%d checksum=%d", b.class, b.clsver, b.chksum)
+	}
+	b.streamer = streamer
+
+	for _, leaf := range b.tbranch.leaves {
+		leaf, ok := leaf.(*tleafElement)
+		if !ok {
+			continue
+		}
+		leaf.streamers = b.streamer.Elements()
+	}
+
+	for _, sub := range b.branches {
+		sub, ok := sub.(*tbranchElement)
+		if !ok {
+			continue
+		}
+		err := sub.setupReadStreamer()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func init() {

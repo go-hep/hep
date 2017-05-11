@@ -5,8 +5,10 @@
 package rootio
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 )
 
 type tstreamerInfo struct {
@@ -576,6 +578,60 @@ func init() {
 		Factory.add("TStreamerArtificial", f)
 		Factory.add("*rootio.tstreamerArtificial", f)
 	}
+}
+
+var streamers = streamerDb{
+	db: make(map[streamerDbKey]StreamerInfo),
+}
+
+type streamerDbKey struct {
+	class    string
+	version  int
+	checksum int
+}
+
+type streamerDb struct {
+	sync.RWMutex
+	db map[streamerDbKey]StreamerInfo
+}
+
+func (db *streamerDb) get(class string, vers int, chksum int) (StreamerInfo, bool) {
+	db.RLock()
+	defer db.RUnlock()
+	key := streamerDbKey{
+		class:    class,
+		version:  vers,
+		checksum: chksum,
+	}
+
+	streamer, ok := db.db[key]
+	if !ok {
+		return nil, false
+	}
+	return streamer, true
+}
+
+func (db *streamerDb) add(streamer StreamerInfo) {
+	db.Lock()
+	defer db.Unlock()
+
+	key := streamerDbKey{
+		class:    streamer.Name(),
+		version:  streamer.ClassVersion(),
+		checksum: streamer.CheckSum(),
+	}
+
+	old, dup := db.db[key]
+	if dup {
+		if old.CheckSum() != streamer.CheckSum() {
+			panic(fmt.Errorf("rootio: StreamerInfo class=%q version=%d with checksum=%d (got checksum=%d)",
+				streamer.Name(), streamer.ClassVersion(), streamer.CheckSum(), old.CheckSum(),
+			))
+		}
+		return
+	}
+
+	db.db[key] = streamer
 }
 
 var _ Object = (*tstreamerInfo)(nil)

@@ -169,10 +169,12 @@ type Branch interface {
 	Leaves() []Leaf
 
 	setTree(Tree)
+	getTree() Tree
 	loadEntry(i int64) error
 	getReadEntry() int64
 	getEntry(i int64)
 	scan(ptr interface{}) error
+	setAddress(ptr interface{}) error
 }
 
 // Leaf describes branches data types

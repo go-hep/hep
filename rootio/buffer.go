@@ -369,6 +369,25 @@ func (r *RBuffer) ReadFastArrayBool(n int) []bool {
 	return arr
 }
 
+func (r *RBuffer) ReadFastArrayI8(n int) []int8 {
+	if r.err != nil {
+		return nil
+	}
+	if n <= 0 || int64(n) > r.Len() {
+		return nil
+	}
+
+	arr := make([]int8, n)
+	for i := range arr {
+		arr[i] = r.ReadI8()
+	}
+
+	if r.err != nil {
+		return nil
+	}
+	return arr
+}
+
 func (r *RBuffer) ReadFastArrayI16(n int) []int16 {
 	if r.err != nil {
 		return nil
@@ -418,6 +437,82 @@ func (r *RBuffer) ReadFastArrayI64(n int) []int64 {
 	arr := make([]int64, n)
 	for i := range arr {
 		arr[i] = r.ReadI64()
+	}
+
+	if r.err != nil {
+		return nil
+	}
+	return arr
+}
+
+func (r *RBuffer) ReadFastArrayU8(n int) []uint8 {
+	if r.err != nil {
+		return nil
+	}
+	if n <= 0 || int64(n) > r.Len() {
+		return nil
+	}
+
+	arr := make([]uint8, n)
+	for i := range arr {
+		arr[i] = r.ReadU8()
+	}
+
+	if r.err != nil {
+		return nil
+	}
+	return arr
+}
+
+func (r *RBuffer) ReadFastArrayU16(n int) []uint16 {
+	if r.err != nil {
+		return nil
+	}
+	if n <= 0 || int64(n) > r.Len() {
+		return nil
+	}
+
+	arr := make([]uint16, n)
+	for i := range arr {
+		arr[i] = r.ReadU16()
+	}
+
+	if r.err != nil {
+		return nil
+	}
+	return arr
+}
+
+func (r *RBuffer) ReadFastArrayU32(n int) []uint32 {
+	if r.err != nil {
+		return nil
+	}
+	if n <= 0 || int64(n) > r.Len() {
+		return nil
+	}
+
+	arr := make([]uint32, n)
+	for i := range arr {
+		arr[i] = r.ReadU32()
+	}
+
+	if r.err != nil {
+		return nil
+	}
+	return arr
+}
+
+func (r *RBuffer) ReadFastArrayU64(n int) []uint64 {
+	if r.err != nil {
+		return nil
+	}
+	if n <= 0 || int64(n) > r.Len() {
+		return nil
+	}
+
+	arr := make([]uint64, n)
+	for i := range arr {
+		arr[i] = r.ReadU64()
 	}
 
 	if r.err != nil {

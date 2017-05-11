@@ -10,8 +10,6 @@ import (
 	"os"
 )
 
-const LargeFileBoundary = 0x7FFFFFFF
-
 type Reader interface {
 	io.Reader
 	io.ReaderAt
@@ -76,8 +74,9 @@ type File struct {
 	nbytesinfo  int32 // sizeof(TStreamerInfo)
 	uuid        [18]byte
 
-	dir   tdirectory // root directory of this file
-	siKey Key
+	dir    tdirectory // root directory of this file
+	siKey  Key
+	sinfos []StreamerInfo
 }
 
 // Open opens the named ROOT file for reading. If successful, methods on the
@@ -259,21 +258,26 @@ func (f *File) readStreamerInfo() error {
 
 	err = f.siKey.UnmarshalROOT(NewRBuffer(buf, nil, 0))
 	f.siKey.f = f
-	return err
-}
+	if err != nil {
+		return err
+	}
 
-// StreamerInfo returns the list of StreamerInfos of this file.
-func (f *File) StreamerInfo() []StreamerInfo {
 	objs := f.siKey.Value().(List)
-	infos := make([]StreamerInfo, 0, objs.Len())
+	f.sinfos = make([]StreamerInfo, 0, objs.Len())
 	for i := 0; i < objs.Len(); i++ {
 		obj, ok := objs.At(i).(StreamerInfo)
 		if !ok {
 			continue
 		}
-		infos = append(infos, obj)
+		f.sinfos = append(f.sinfos, obj)
+		streamers.add(obj)
 	}
-	return infos
+	return nil
+}
+
+// StreamerInfo returns the list of StreamerInfos of this file.
+func (f *File) StreamerInfo() []StreamerInfo {
+	return f.sinfos
 }
 
 // Get returns the object identified by namecycle
