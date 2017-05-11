@@ -595,6 +595,17 @@ type streamerDb struct {
 	db map[streamerDbKey]StreamerInfo
 }
 
+func (db *streamerDb) getAny(class string) (StreamerInfo, bool) {
+	db.RLock()
+	defer db.RUnlock()
+	for k, v := range db.db {
+		if k.class == class {
+			return v, true
+		}
+	}
+	return nil, false
+}
+
 func (db *streamerDb) get(class string, vers int, chksum int) (StreamerInfo, bool) {
 	db.RLock()
 	defer db.RUnlock()

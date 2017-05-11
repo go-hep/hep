@@ -60,6 +60,12 @@ type EventType struct {
 	Evt EventData `rootio:"evt"`
 }
 
+type Vec3 struct {
+	X int32   `rootio:"Px"`
+	Y float64 `rootio:"Py"`
+	Z int32   `rootio:"Pz"`
+}
+
 type EventData struct {
 	Beg    string      `rootio:"Beg"`
 	I16    int16       `rootio:"Int16"`
@@ -71,6 +77,7 @@ type EventData struct {
 	F32    float32     `rootio:"Float32"`
 	F64    float64     `rootio:"Float64"`
 	Str    string      `rootio:"Str"`
+	Vec    Vec3        `rootio:"P3"`
 	ArrI16 [10]int16   `rootio:"ArrayI16"`
 	ArrI32 [10]int32   `rootio:"ArrayI32"`
 	ArrI64 [10]int64   `rootio:"ArrayI64"`
@@ -112,6 +119,11 @@ func (EventType) want(i int64) EventType {
 	data.Evt.F32 = float32(i)
 	data.Evt.F64 = float64(i)
 	data.Evt.Str = fmt.Sprintf("evt-%03d", i)
+	data.Evt.Vec = Vec3{
+		X: int32(i - 1),
+		Y: float64(i),
+		Z: int32(i - 1),
+	}
 	data.Evt.StdStr = fmt.Sprintf("std-%03d", i)
 	for ii := range data.Evt.ArrI32 {
 		data.Evt.ArrI16[ii] = int16(i)

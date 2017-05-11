@@ -42,6 +42,12 @@ const script = `
 
 const int ARRAYSZ = 10;
 
+struct P3 {
+	int32_t Px;
+	double  Py;
+	int32_t Pz;
+};
+
 struct Event {
 	TString  Beg;
 	int16_t  I16;
@@ -53,6 +59,7 @@ struct Event {
 	float    F32;
 	double   F64;
 	TString  Str;
+	P3       P3;
 
 	int16_t  ArrayI16[ARRAYSZ];
 	int32_t  ArrayI32[ARRAYSZ];
@@ -110,6 +117,9 @@ void gentree(const char* fname, int splitlvl = 99) {
 		e.F32 = float(i);
 		e.F64 = double(i);
 		e.Str = TString::Format("evt-%03d", i);
+		e.P3.Px = i-1;
+		e.P3.Py = double(i);
+		e.P3.Pz = i-1;
 
 		for (int ii = 0; ii != ARRAYSZ; ii++) {
 			e.ArrayI16[ii] = i;

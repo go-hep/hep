@@ -657,6 +657,33 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 			panic(fmt.Errorf("rootio: invalid STL type %d for %#v", se.vtype, se))
 		}
 
+	case *tstreamerObjectAny:
+		sinfo, ok := streamers.getAny(se.ename)
+		if !ok {
+			panic(fmt.Errorf("no streamer-info for %q", se.ename))
+		}
+		var funcs []func(r *RBuffer) error
+		for i, elt := range sinfo.Elements() {
+			fptr := rf.Field(i).Addr().Interface()
+			funcs = append(funcs, rstreamerFrom(elt, fptr, lcnt))
+		}
+		return func(r *RBuffer) error {
+			start := r.Pos()
+			_, pos, bcnt := r.ReadVersion()
+			chksum := int(r.ReadI32())
+			if sinfo.CheckSum() != chksum {
+				return fmt.Errorf("rootio: on-disk checksum=%d, streamer=%d (type=%q)", chksum, sinfo.CheckSum(), se.ename)
+			}
+			for _, fct := range funcs {
+				err := fct(r)
+				if err != nil {
+					return err
+				}
+			}
+			r.CheckByteCount(pos, bcnt, start, se.ename)
+			return nil
+		}
+
 	}
 	panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
 	return nil

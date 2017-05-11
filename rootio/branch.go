@@ -7,6 +7,7 @@ package rootio
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 type tbranch struct {
@@ -468,11 +469,19 @@ func (b *tbranchElement) setAddress(ptr interface{}) error {
 				continue
 			}
 			var elt StreamerElement
+			leafName := leaf.Name()
+			if strings.Contains(leafName, ".") {
+				idx := strings.LastIndex(leafName, ".")
+				leafName = string(leafName[idx+1:])
+			}
 			for _, ee := range elts {
-				if ee.Name() == leaf.Name() {
+				if ee.Name() == leafName {
 					elt = ee
 					break
 				}
+			}
+			if elt == nil {
+				return fmt.Errorf("rootio: failed to find StreamerElement for leaf %q", leaf.Name())
 			}
 			leaf.streamers = []StreamerElement{elt}
 			err = leaf.setAddress(ptr)
