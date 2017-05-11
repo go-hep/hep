@@ -443,7 +443,7 @@ type tstreamerArtificial struct {
 }
 
 func (tss *tstreamerArtificial) Class() string {
-	return "TStreamerSTLstring"
+	return "TStreamerArtificial"
 }
 
 func (tsa *tstreamerArtificial) UnmarshalROOT(r *RBuffer) error {
