@@ -651,6 +651,70 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 
 					}
 				default:
+					ename := string(se.ename[len("vector<") : len(se.ename)-1])
+					sinfo, ok := streamers.getAny(ename)
+					if !ok {
+						panic(fmt.Errorf("rootio: no streamer-info for std::vector element %q", ename))
+					}
+
+					var ielmt reflect.Value
+					var efuncs []func(r *RBuffer) error
+					elmt := func(r *RBuffer) error {
+						start := r.Pos()
+						_, pos, bcnt := r.ReadVersion()
+						chksum := int(r.ReadI32())
+						if sinfo.CheckSum() != chksum {
+							return fmt.Errorf("rootio: on-disk checksum=%d, streamer=%d (type=%q)", chksum, sinfo.CheckSum(), ename)
+						}
+						for _, fct := range efuncs {
+							err := fct(r)
+							if err != nil {
+								return err
+							}
+						}
+						r.CheckByteCount(pos, bcnt, start, ename)
+						return nil
+					}
+
+					return func(r *RBuffer) error {
+						start := r.Pos()
+						fmt.Printf("=== dump\n")
+						r.dumpHex(128)
+
+						vers, pos, bcnt := r.ReadVersion()
+						fmt.Printf(">>> vers=%d, pos=%d, bcnt=%d\n", vers, pos, bcnt)
+						r.dumpHex(128)
+						r.read(make([]byte, 6))
+						n := int(r.ReadI32())
+						fmt.Printf("r-streamer [%s,vers=%d]... n=%d\n", se.ename, vers, n)
+
+						if true {
+							r.setPos(start + int64(bcnt) + 4)
+							r.CheckByteCount(pos, bcnt, start, se.ename)
+							return nil
+						}
+
+						if n > 0 {
+							rf.SetLen(n)
+							if efuncs == nil {
+								for i, elt := range sinfo.Elements() {
+									fptr := ielmt.Field(i).Addr().Interface()
+									efuncs = append(efuncs, rstreamerFrom(elt, fptr, lcnt))
+								}
+							}
+							for i := 0; i < n; i++ {
+								ielmt = rf.Index(i).Addr()
+								err := elmt(r)
+								if err != nil {
+									return err
+								}
+							}
+						}
+						r.CheckByteCount(pos, bcnt, start, se.ename)
+						return nil
+					}
+
+					panic(fmt.Errorf("rootio: invalid STL type %q for %#v (elt=%q, sinfos=%#v)", se.ename, se, ename, sinfo))
 				}
 			}
 		default:

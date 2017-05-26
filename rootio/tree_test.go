@@ -105,6 +105,7 @@ type EventData struct {
 	VecF32 []float32   `rootio:"StlVecF32"`
 	VecF64 []float64   `rootio:"StlVecF64"`
 	VecStr []string    `rootio:"StlVecStr"`
+	VecP3  []Vec3      `rootio:"StlVecP3"`
 	End    string      `rootio:"End"`
 }
 
@@ -165,6 +166,7 @@ func (EventType) want(i int64) EventType {
 	data.Evt.VecF32 = make([]float32, int(data.Evt.N))
 	data.Evt.VecF64 = make([]float64, int(data.Evt.N))
 	data.Evt.VecStr = make([]string, int(data.Evt.N))
+	data.Evt.VecP3 = make([]Vec3, int(data.Evt.N))
 	for ii := 0; ii < int(data.Evt.N); ii++ {
 		data.Evt.VecI16[ii] = int16(i)
 		data.Evt.VecI32[ii] = int32(i)
@@ -175,6 +177,11 @@ func (EventType) want(i int64) EventType {
 		data.Evt.VecF32[ii] = float32(i)
 		data.Evt.VecF64[ii] = float64(i)
 		data.Evt.VecStr[ii] = fmt.Sprintf("vec-%03d", i)
+		data.Evt.VecP3[ii] = Vec3{
+			X: int32(i - 1),
+			Y: float64(i),
+			Z: int32(i - 1),
+		}
 	}
 	data.Evt.End = fmt.Sprintf("end-%03d", i)
 	return data

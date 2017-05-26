@@ -91,6 +91,7 @@ struct Event {
 	std::vector<float> StlVecF32;
 	std::vector<double> StlVecF64;
 	std::vector<std::string> StlVecStr;
+	std::vector< ::P3> StlVecP3;
 
 	TString End;
 };
@@ -163,6 +164,7 @@ void gentree(const char* fname, int splitlvl = 99) {
 		e.StlVecF32.resize(e.N);
 		e.StlVecF64.resize(e.N);
 		e.StlVecStr.resize(e.N);
+		e.StlVecP3.resize(e.N);
 		for (int ii =0; ii != e.N; ii++) {
 			e.StlVecI16[ii] = i;
 			e.StlVecI32[ii] = i;
@@ -173,6 +175,9 @@ void gentree(const char* fname, int splitlvl = 99) {
 			e.StlVecF32[ii] = float(i);
 			e.StlVecF64[ii] = double(i);
 			e.StlVecStr[ii] = std::string(TString::Format("vec-%03d", i));
+			e.StlVecP3[ii].Px = i -1;
+			e.StlVecP3[ii].Py = double(i);
+			e.StlVecP3[ii].Pz = i-1;
 		}
 		e.End = TString::Format("end-%03d", i);
 		t->Fill();
