@@ -14,9 +14,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/gonum/matrix/mat64"
-	"github.com/gonum/stat/distmv"
 	"go-hep.org/x/hep/hbook"
+	"gonum.org/v1/gonum/mat"
+	"gonum.org/v1/gonum/stat/distmv"
 )
 
 func TestP1D(t *testing.T) {
@@ -101,7 +101,7 @@ func ExampleP1D() {
 	p := hbook.NewP1D(100, -10, 10)
 	dist, ok := distmv.NewNormal(
 		[]float64{0, 1},
-		mat64.NewSymDense(2, []float64{4, 0, 0, 2}),
+		mat.NewSymDense(2, []float64{4, 0, 0, 2}),
 		rand.New(rand.NewSource(1234)),
 	)
 	if !ok {

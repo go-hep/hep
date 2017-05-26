@@ -11,8 +11,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/gonum/stat/distuv"
 	"go-hep.org/x/hep/fwk"
+	"gonum.org/v1/gonum/stat/distuv"
 )
 
 type etaphiBin struct {

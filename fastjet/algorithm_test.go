@@ -16,8 +16,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gonum/floats"
 	"go-hep.org/x/hep/fastjet"
+	"gonum.org/v1/gonum/floats"
 )
 
 func TestInclusiveJetAlgorithms(t *testing.T) {

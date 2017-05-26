@@ -10,14 +10,14 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/gonum/floats"
-	"github.com/gonum/optimize"
 	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/vg"
-	"github.com/gonum/stat/distuv"
 	"go-hep.org/x/hep/fit"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
+	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/optimize"
+	"gonum.org/v1/gonum/stat/distuv"
 )
 
 func TestH1D(t *testing.T) {

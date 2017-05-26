@@ -12,8 +12,8 @@ import (
 	"math/rand"
 	"os"
 
-	"github.com/gonum/matrix/mat64"
-	"github.com/gonum/stat/distmv"
+	"gonum.org/v1/gonum/mat"
+	"gonum.org/v1/gonum/stat/distmv"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 
 	dist, ok := distmv.NewNormal(
 		[]float64{0, 1},
-		mat64.NewSymDense(2, []float64{4, 0, 0, 2}),
+		mat.NewSymDense(2, []float64{4, 0, 0, 2}),
 		rand.New(rand.NewSource(1234)),
 	)
 	if !ok {

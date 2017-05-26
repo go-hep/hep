@@ -5,7 +5,7 @@
 package fit
 
 import (
-	"github.com/gonum/optimize"
+	"gonum.org/v1/gonum/optimize"
 )
 
 // Curve1D returns the result of a non-linear least squares to fit
