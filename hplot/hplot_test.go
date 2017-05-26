@@ -19,10 +19,10 @@ import (
 	"github.com/gonum/plot/vg/draw"
 	"github.com/gonum/plot/vg/vgimg"
 	"github.com/gonum/plot/vg/vgtex"
-	"github.com/gonum/stat/distuv"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
 	"go-hep.org/x/hep/hplot/internal/cmpimg"
+	"gonum.org/v1/gonum/stat/distuv"
 )
 
 func checkPlot(t *testing.T, ref string) {

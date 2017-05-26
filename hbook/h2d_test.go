@@ -12,10 +12,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/gonum/matrix/mat64"
 	"github.com/gonum/plot/plotter"
-	"github.com/gonum/stat/distmv"
 	"go-hep.org/x/hep/hbook"
+	"gonum.org/v1/gonum/mat"
+	"gonum.org/v1/gonum/stat/distmv"
 )
 
 func TestH2D(t *testing.T) {
@@ -292,7 +292,7 @@ func ExampleH2D() {
 
 	dist, ok := distmv.NewNormal(
 		[]float64{0, 1},
-		mat64.NewSymDense(2, []float64{4, 0, 0, 2}),
+		mat.NewSymDense(2, []float64{4, 0, 0, 2}),
 		rand.New(rand.NewSource(1234)),
 	)
 	if !ok {

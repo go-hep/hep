@@ -6,7 +6,7 @@
 package fit // import "go-hep.org/x/hep/fit"
 
 import (
-	"github.com/gonum/diff/fd"
+	"gonum.org/v1/gonum/diff/fd"
 )
 
 // Func1D describes a 1D function to fit some data.

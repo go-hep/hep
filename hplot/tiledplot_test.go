@@ -11,9 +11,9 @@ import (
 
 	"github.com/gonum/plot/vg"
 	"github.com/gonum/plot/vg/draw"
-	"github.com/gonum/stat/distuv"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
+	"gonum.org/v1/gonum/stat/distuv"
 )
 
 // An example of making a tile-plot
