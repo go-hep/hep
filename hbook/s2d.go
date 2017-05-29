@@ -35,9 +35,29 @@ func NewS2D(pts ...Point2D) *S2D {
 // NewS2DFrom creates a new 2-dim scatter with x,y data slices.
 //
 // It panics if the lengths of the 2 slices don't match.
-func NewS2DFrom(x, y []float64) *S2D {
+// Two first options are used to get eventual errors (with panic if sizes don't match)
+// Supports only symmetric errors
+func NewS2DFrom(x, y []float64, opts... []float64) *S2D {
 	if len(x) != len(y) {
 		panic("hbook: len differ")
+	}
+
+	var xerr, yerr []float64
+	
+	if len(opts) > 0 {
+		if len(opts[0]) != len(opts[1]) {
+			panic("hbook: errors len differ")
+		}
+
+		if len(opts[0]) != len(x) {
+			panic("hbook: errors len mismatch data len")
+		}
+
+		xerr = opts[0]
+		yerr = opts[1]
+		
+		fmt.Println(xerr)
+		fmt.Println(yerr)
 	}
 
 	s := &S2D{
@@ -48,6 +68,10 @@ func NewS2DFrom(x, y []float64) *S2D {
 		pt := &s.pts[i]
 		pt.X = x[i]
 		pt.Y = y[i]
+		if len(opts) > 0 {
+			pt.ErrX = Range{xerr[i], xerr[i]}
+			pt.ErrY = Range{yerr[i], yerr[i]}
+		}
 	}
 	return s
 }
