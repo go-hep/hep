@@ -201,6 +201,26 @@ func (h *H1D) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
 // 	}
 // }
 
+// Thumbnail draws a rectangle in the given style of the histogram.
+func (h *H1D) Thumbnail(c *draw.Canvas) {
+	ymin := c.Min.Y
+	ymax := c.Max.Y
+	xmin := c.Min.X
+	xmax := c.Max.X
+
+	pts := []vg.Point{
+		{xmin, ymin},
+		{xmax, ymin},
+		{xmax, ymax},
+		{xmin, ymax},
+	}
+	if h.FillColor != nil {
+		c.FillPolygon(h.FillColor, c.ClipPolygonXY(pts))
+	}
+	pts = append(pts, vg.Point{X: xmin, Y: ymin})
+	c.StrokeLines(h.LineStyle, c.ClipLinesXY(pts)...)
+}
+
 func newHistFromXYer(xys plotter.XYer, n int) *hbook.H1D {
 	xmin, xmax := plotter.Range(plotter.XValues{xys})
 	h := hbook.NewH1D(n, xmin, xmax)
