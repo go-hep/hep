@@ -71,7 +71,15 @@ func (trs *TrackerRawDataContainer) MarshalSio(w sio.Writer) error {
 			enc.Encode(&data.CellID1)
 		}
 		enc.Encode(&data.Time)
-		enc.Encode(&data.ADCs)
+		nADCs := int32(len(data.ADCs))
+		enc.Encode(&nADCs)
+		for _, value := range data.ADCs {
+			enc.Encode(&value)
+		}
+		if nADCs%2 == 1 {
+			pad := uint16(0)
+			enc.Encode(&pad)
+		}
 		enc.Tag(data)
 	}
 	return enc.Err()
@@ -91,7 +99,16 @@ func (trs *TrackerRawDataContainer) UnmarshalSio(r sio.Reader) error {
 			dec.Decode(&data.CellID1)
 		}
 		dec.Decode(&data.Time)
-		dec.Decode(&data.ADCs)
+		var nADCs int32
+		dec.Decode(&nADCs)
+		data.ADCs = make([]uint16, nADCs)
+		for j := range data.ADCs {
+			dec.Decode(&data.ADCs[j])
+		}
+		if nADCs%2 == 1 {
+			var pad uint16
+			dec.Decode(&pad)
+		}
 		dec.Tag(data)
 	}
 	return dec.Err()
