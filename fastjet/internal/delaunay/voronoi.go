@@ -16,10 +16,10 @@ type Voronoi struct {
 
 // FIXME can't do any delaunay operation after calling NewVoronoi
 func NewVoronoi(d *Delaunay) *Voronoi {
-	border := make(triangles, len(d.root.A.adjacentTriangles), len(d.root.A.adjacentTriangles)+len(d.root.B.adjacentTriangles)+len(d.root.C.adjacentTriangles))
-	copy(border, d.root.A.adjacentTriangles)
-	border = append(border, d.root.B.adjacentTriangles...)
-	border = append(border, d.root.C.adjacentTriangles...)
+	border := make(triangles, len(d.root.A.adjacentTriangles)+len(d.root.B.adjacentTriangles)+len(d.root.C.adjacentTriangles))
+	n := copy(border, d.root.A.adjacentTriangles)
+	n += copy(border[n:], d.root.B.adjacentTriangles)
+	copy(border[n:], d.root.C.adjacentTriangles)
 	for _, t := range d.triangles {
 		if len(t.children) != 0 {
 			continue
@@ -66,7 +66,7 @@ func (v *Voronoi) VoronoiCell(p *Point) (area float64, centers []*Point) {
 			case p.Equals(t1.C):
 				pt = t1.B
 			default:
-				panic(fmt.Errorf("voronoi: internal error with adjacent triangles for point P%s", p))
+				panic(fmt.Errorf("delaunay: point %v not in adjacent triangle %v", p, t))
 			}
 			border := true
 			for _, t2 := range p.adjacentTriangles {
@@ -84,7 +84,7 @@ func (v *Voronoi) VoronoiCell(p *Point) (area float64, centers []*Point) {
 		}
 		first = t
 		if t == nil {
-			panic(fmt.Errorf("voronoi: invalid point P%s", p))
+			panic(fmt.Errorf("voronoi: invalid point P%v", p))
 		}
 	} else {
 		t = p.adjacentTriangles[0]
@@ -121,7 +121,7 @@ func (v *Voronoi) VoronoiCell(p *Point) (area float64, centers []*Point) {
 		pt = last.A
 		pt2 = last.B
 	default:
-		panic(fmt.Errorf("voronoi: internal error with adjacent triangles for point P%s", p))
+		panic(fmt.Errorf("delaunay: point %v not in adjacent triangle %v", p, t))
 	}
 	var x1, y1, x2, y2 float64
 	// check if circumcenter is outside the polygon
@@ -139,7 +139,7 @@ func (v *Voronoi) VoronoiCell(p *Point) (area float64, centers []*Point) {
 	m := (y2 - y1) / (x2 - x1)
 	if math.IsNaN(m) {
 		// FIXME circumcenter is exactly on midpoint of border edge. Need to get line by using angles.
-		panic(fmt.Errorf("delaunay: not implemented for the constellation in triangle T%s", last))
+		panic(fmt.Errorf("delaunay: not implemented for the constellation in triangle T%v", last))
 	}
 	var side int
 	const (
@@ -198,7 +198,7 @@ func (v *Voronoi) VoronoiCell(p *Point) (area float64, centers []*Point) {
 		}
 	}
 	if side == 0 {
-		panic(fmt.Errorf("delaunay: internal error calculating voronoi cell for border point P%s", p))
+		panic(fmt.Errorf("delaunay: internal error calculating voronoi cell for border point P%v", p))
 	}
 	// find second border point
 	switch {
@@ -212,7 +212,7 @@ func (v *Voronoi) VoronoiCell(p *Point) (area float64, centers []*Point) {
 		pt = first.B
 		pt2 = first.A
 	default:
-		panic(fmt.Errorf("voronoi: internal error with adjacent triangles for point P%s", p))
+		panic(fmt.Errorf("delaunay: point %v not in adjacent triangle %v", p, t))
 	}
 	if aboveLine(p, pt, centers[0]) == aboveLine(p, pt, pt2) {
 		x1 = centers[0].X
@@ -228,7 +228,7 @@ func (v *Voronoi) VoronoiCell(p *Point) (area float64, centers []*Point) {
 	m = (y2 - y1) / (x2 - x1)
 	if math.IsNaN(m) {
 		// FIXME Circumcenter is exactly on midpoint of border edge. Need to get line by using angles.
-		panic(fmt.Errorf("delaunay: not implemented for the constellation in triangle T%s", first))
+		panic(fmt.Errorf("delaunay: not implemented for the constellation in triangle T%v", first))
 	}
 	if x2 > x1 { // right
 		cy := m*v.maxX - m*x1 + y1
@@ -335,7 +335,7 @@ func findClockTri(p *Point, t *Triangle) *Triangle {
 	case p.Equals(t.C):
 		p2 = t.A
 	default:
-		panic(fmt.Errorf("delaunay: can't find point P%s in Triangle T%s", p, t))
+		panic(fmt.Errorf("delaunay: can't find point P%v in Triangle T%v", p, t))
 	}
 	for _, t1 := range p.adjacentTriangles {
 		for _, t2 := range p2.adjacentTriangles {

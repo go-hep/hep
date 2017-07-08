@@ -43,10 +43,10 @@ func NewDelaunay(points []*Point, maxX float64, minX float64, maxY float64, minY
 // Triangle returns all delaunay Triangles
 func (d *Delaunay) Triangles() []*Triangle {
 	// remove triangles that contain the root points
-	rt := make(triangles, len(d.root.A.adjacentTriangles), len(d.root.A.adjacentTriangles)+len(d.root.B.adjacentTriangles)+len(d.root.C.adjacentTriangles))
-	copy(rt, d.root.A.adjacentTriangles)
-	rt = append(rt, d.root.B.adjacentTriangles...)
-	rt = append(rt, d.root.C.adjacentTriangles...)
+	rt := make(triangles, len(d.root.A.adjacentTriangles)+len(d.root.B.adjacentTriangles)+len(d.root.C.adjacentTriangles))
+	n := copy(rt, d.root.A.adjacentTriangles)
+	n += copy(rt[n:], d.root.B.adjacentTriangles)
+	copy(rt[n:], d.root.C.adjacentTriangles)
 	return d.triangles.finalize(rt...)
 }
 
@@ -55,7 +55,7 @@ func (d *Delaunay) InsertPoint(p *Point) {
 	t, onE := findTriangle(d.root, p)
 	if t == nil {
 		// should only happen when user gives wrong max and min values
-		panic(fmt.Errorf("delaunay: no triangle which contains P%s", p))
+		panic(fmt.Errorf("delaunay: no triangle which contains P%v", p))
 	}
 	if onE {
 		d.insertPonE(t, p)
@@ -66,7 +66,7 @@ func (d *Delaunay) InsertPoint(p *Point) {
 
 func (d *Delaunay) RemovePoint(p *Point) {
 	if len(p.adjacentTriangles) < 3 {
-		panic(fmt.Errorf("delaunay: can't remove point P%s not enough adjacent triangles", p))
+		panic(fmt.Errorf("delaunay: can't remove point P%v not enough adjacent triangles", p))
 	}
 	// remove triangles adjacent to p
 	for _, t := range p.adjacentTriangles {
@@ -81,7 +81,7 @@ func (d *Delaunay) RemovePoint(p *Point) {
 			t.A.adjacentTriangles = t.A.adjacentTriangles.remove(t)
 			t.B.adjacentTriangles = t.B.adjacentTriangles.remove(t)
 		default:
-			panic(fmt.Errorf("delaunay: internal error with adjacent triangles for P%s and T%s", p, t))
+			panic(fmt.Errorf("delaunay: point %v not in adjacent triangle %v", p, t))
 		}
 	}
 	// find points on polygon around the point in counterclockwise order
@@ -100,11 +100,11 @@ func (d *Delaunay) RemovePoint(p *Point) {
 		points[0] = t.A
 		points[1] = t.B
 	default:
-		panic(fmt.Errorf("delaunay: internal error with adjacent triangles for P%s and T%s", p, t))
+		panic(fmt.Errorf("delaunay: point %v not in adjacent triangle %v", p, t))
 	}
 	for i := 0; j < len(points)-1; {
 		if i >= len(p.adjacentTriangles) {
-			panic(fmt.Errorf("delaunay: internal error with adjacent triangles for P%s. Can't find counterclockwise neighbor of P%s", p, points[j]))
+			panic(fmt.Errorf("delaunay: internal error with adjacent triangles for P%v. Can't find counterclockwise neighbor of P%v", p, points[j]))
 		}
 		// k is the index of the previous triangle
 		// it needs to find the triangle next to k and not k again
@@ -534,7 +534,7 @@ func (d *Delaunay) insertPonE(t1 *Triangle, p *Point) {
 		pO1 = t1.B
 		pO2 = t1.A
 	default:
-		panic(fmt.Errorf("delaunay: triangle T1%s doesn't have points not in T2%s", t1, t2))
+		panic(fmt.Errorf("delaunay: triangle T1%v doesn't have points not in T2%v", t1, t2))
 	}
 	switch {
 	case !t2.A.Equals(t1.A) && !t2.A.Equals(t1.B) && !t2.A.Equals(t1.C):
@@ -544,7 +544,7 @@ func (d *Delaunay) insertPonE(t1 *Triangle, p *Point) {
 	case !t2.C.Equals(t1.A) && !t2.C.Equals(t1.B) && !t2.C.Equals(t1.C):
 		p2 = t2.C
 	default:
-		panic(fmt.Errorf("delaunay: triangle T2%s doesn't have points not in T1%s", t2, t1))
+		panic(fmt.Errorf("delaunay: triangle T2%v doesn't have points not in T1%v", t2, t1))
 	}
 	// form four new triangles
 	nt1 := NewTriangle(p1, p, pO1)
@@ -586,7 +586,7 @@ func (d *Delaunay) validateEdge(t *Triangle, p *Point) {
 		p2 = t.A
 		p3 = t.B
 	default:
-		panic(fmt.Errorf("fastjet: delaunay can't find point P%s in Triangle T%s", p, t))
+		panic(fmt.Errorf("fastjet: delaunay can't find point P%v in Triangle T%v", p, t))
 	}
 	// find triangle opposite to p
 	var ta *Triangle
@@ -624,7 +624,7 @@ func (d *Delaunay) flip(t1 *Triangle, t2 *Triangle) (*Triangle, *Triangle) {
 		pO1 = t1.B
 		pO2 = t1.A
 	default:
-		panic(fmt.Errorf("delaunay: triangle T1%s doesn't have points not in T2%s", t1, t2))
+		panic(fmt.Errorf("delaunay: triangle T1%v doesn't have points not in T2%v", t1, t2))
 	}
 	switch {
 	case !t2.A.Equals(t1.A) && !t2.A.Equals(t1.B) && !t2.A.Equals(t1.C):
@@ -634,7 +634,7 @@ func (d *Delaunay) flip(t1 *Triangle, t2 *Triangle) (*Triangle, *Triangle) {
 	case !t2.C.Equals(t1.A) && !t2.C.Equals(t1.B) && !t2.C.Equals(t1.C):
 		p2 = t2.C
 	default:
-		panic(fmt.Errorf("delaunay: triangle T2%s doesn't have points not in T1%s", t2, t1))
+		panic(fmt.Errorf("delaunay: triangle T2%v doesn't have points not in T1%v", t2, t1))
 	}
 	// create two new triangles
 	nt1 := NewTriangle(p1, p2, pO1)
