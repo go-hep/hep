@@ -29,7 +29,7 @@ func TestSimple(t *testing.T) {
 	}
 	del := NewDelaunay(points, 4, 0, 4, 0)
 	del.RemovePoint(ep)
-	tri := del.GetTriangles()
+	tri := del.Triangles()
 	exp := []*Triangle{
 		NewTriangle(a, b, c),
 		NewTriangle(b, c, d),
@@ -110,7 +110,7 @@ func TestMedium(t *testing.T) {
 	d.InsertPoint(p7)
 	d.InsertPoint(p8)
 	d.RemovePoint(pE2)
-	ts := d.GetTriangles()
+	ts := d.Triangles()
 	exp := []*Triangle{
 		NewTriangle(p1, p3, p4),
 		NewTriangle(p1, p4, p5),
@@ -289,6 +289,7 @@ func benchmarkDelaunay(i int, b *testing.B) {
 		y := rand.Float64() * 1000
 		points[j] = NewPoint(x, y, j)
 	}
+	b.ReportAllocs()
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		d := NewDelaunay(points, 1000, 0, 1000, 0)

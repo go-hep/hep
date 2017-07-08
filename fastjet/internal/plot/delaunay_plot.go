@@ -14,9 +14,9 @@ import (
 	"go-hep.org/x/hep/fastjet/internal/delaunay"
 )
 
-// plots the delaunay triangulation
+// Plot plots the delaunay triangulation
 func Plot(path string, d *delaunay.Delaunay) error {
-	ts := d.GetTriangles()
+	ts := d.Triangles()
 	p, err := plot.New()
 	if err != nil {
 		return err
@@ -36,10 +36,10 @@ func Plot(path string, d *delaunay.Delaunay) error {
 	return err
 }
 
-// plots the delaunay triangulation for all points and the voronoi diagram for the given points
+// PlotVoronoiAndDelaunay plots the delaunay triangulation for all points and the voronoi diagram for the given points
 // delaunay is black and voronoi is red
 func PlotVoronoiAndDelaunay(path string, d *delaunay.Delaunay, points []*delaunay.Point) error {
-	ts := d.GetTriangles()
+	ts := d.Triangles()
 	p, err := plot.New()
 	if err != nil {
 		return err
