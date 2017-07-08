@@ -43,6 +43,9 @@ func TestSimple(t *testing.T) {
 		for j := range exp {
 			if tri[i].Equals(exp[j]) {
 				ok = true
+				// remove triangles that have been matched from slice
+				// in case there are duplicate triangles. So that it
+				// wouldn't pass the test when it shouldn't
 				exp = append(exp[:j], exp[j+1:]...)
 				break
 			}
@@ -140,6 +143,9 @@ func TestMedium(t *testing.T) {
 		for j := range exp {
 			if ts[i].Equals(exp[j]) {
 				ok = true
+				// remove triangles that have been matched from slice
+				// in case there are duplicate triangles. So that it
+				// wouldn't pass the test when it shouldn't
 				exp = append(exp[:j], exp[j+1:]...)
 				break
 			}
@@ -163,6 +169,9 @@ func TestMedium(t *testing.T) {
 		for j := range expv {
 			if points[i].EqualsApprox(expv[j], tol) {
 				ok = true
+				// remove points that have been matched from slice
+				// in case there are duplicate points. So that it
+				// wouldn't pass the test when it shouldn't
 				expv = append(expv[:j], expv[j+1:]...)
 				break
 			}

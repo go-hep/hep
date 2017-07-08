@@ -11,8 +11,12 @@ import (
 
 // Triangle is a set of three points that make up a triangle, with hierarchical information to find triangles.
 type Triangle struct {
-	children triangles // children are triangles that lead to the removal of this triangle
-	A, B, C  *Point
+	// children are triangles that lead to the removal of this triangle.
+	// When a point is inserted the triangle that contains the point is found by going down the hierarchical tree.
+	// The tree's root is the root triangle and the children slice contains the children triangles.
+	children triangles
+	// A,B,C are the points that make up the triangle
+	A, B, C *Point
 }
 
 // NewTriangle returns a triangle formed out of the three given points
@@ -28,7 +32,7 @@ func NewTriangle(a, b, c *Point) *Triangle {
 	}
 }
 
-// isClockwise check whether three points are in clockwise order
+// isClockwise checks whether three points are in clockwise order
 func isClockwise(a, b, c *Point) bool {
 	return (b.Y-a.Y)*(c.X-b.X)-(c.Y-b.Y)*(b.X-a.X) > 0
 }
@@ -42,7 +46,7 @@ func (t *Triangle) inCircumcircle(p *Point) bool {
 	return (p.X-x)*(p.X-x)+(p.Y-y)*(p.Y-y) < r
 }
 
-// centerOfCircumcircle returns the center of the triangle's circum circle.
+// centerOfCircumcircle returns the center of the triangle's circumcircle.
 func (t *Triangle) centerOfCircumcircle() (x, y float64) {
 	m1 := (t.A.X - t.B.X) / (t.B.Y - t.A.Y)
 	m2 := (t.A.X - t.C.X) / (t.C.Y - t.A.Y)
@@ -90,7 +94,8 @@ type triangles []*Triangle
 // appendT appends to a slice of triangles and updates the nearest neighbor
 // it is used when the adjacent triangles of a point change
 func (triangles triangles) appendT(elems ...*Triangle) []*Triangle {
-	// check if nearest neighbor changes
+	// check if nearest neighbor changes by going through each triangles points
+	// and checking if the distance to that point is less. It is done both ways.
 	for _, t := range elems {
 		d := t.A.distance(t.B)
 		if d < t.A.dist {
@@ -125,7 +130,8 @@ func (triangles triangles) appendT(elems ...*Triangle) []*Triangle {
 
 // remove removes given triangles from a slice of triangles
 func (triangles triangles) remove(elems ...*Triangle) []*Triangle {
-	// check if nearest neighbor of any point is removed
+	// check if nearest neighbor of any point is removed and if so
+	// put that point in the update slice
 	var update []*Point
 	for _, t := range elems {
 		if t.A.nearest != nil && (t.A.nearest.Equals(t.B) || t.A.nearest.Equals(t.C)) {
@@ -147,7 +153,7 @@ func (triangles triangles) remove(elems ...*Triangle) []*Triangle {
 			}
 		}
 	}
-	// find the new nearest neighbor
+	// find the new nearest neighbor for the points who's nearest neighbor was removed
 	for _, p := range update {
 		p.findNearest()
 	}

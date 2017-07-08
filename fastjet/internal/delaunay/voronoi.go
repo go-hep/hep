@@ -16,6 +16,7 @@ type Voronoi struct {
 
 // FIXME can't do any delaunay operation after calling NewVoronoi
 func NewVoronoi(d *Delaunay) *Voronoi {
+	// remove all triangles that have a root point
 	border := make(triangles, len(d.root.A.adjacentTriangles)+len(d.root.B.adjacentTriangles)+len(d.root.C.adjacentTriangles))
 	n := copy(border, d.root.A.adjacentTriangles)
 	n += copy(border[n:], d.root.B.adjacentTriangles)

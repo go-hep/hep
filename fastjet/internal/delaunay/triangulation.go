@@ -11,8 +11,12 @@ import (
 // Delaunay holds necessary information for the
 // delaunay triangulation
 type Delaunay struct {
-	triangles              triangles // all triangles created
-	root                   *Triangle // triangle that contains all points. Used to find a triangle
+	// triangles is a slice of all triangles that have been created. It is used to get the final
+	// list of triangles in the delaunay triangulation
+	triangles triangles
+	// root is a triangle that contains all points. It is used as the starting point in the hierarchy
+	// to find the triangle that contains a point
+	root                   *Triangle
 	maxX, minX, maxY, minY float64
 }
 
@@ -54,8 +58,7 @@ func (d *Delaunay) InsertPoint(p *Point) {
 	p.adjacentTriangles = make(triangles, 0)
 	t, onE := findTriangle(d.root, p)
 	if t == nil {
-		// should only happen when user gives wrong max and min values
-		panic(fmt.Errorf("delaunay: no triangle which contains P%v", p))
+		panic(fmt.Errorf("delaunay: no triangle which contains P%v. Min and Max values must be wrong.", p))
 	}
 	if onE {
 		d.insertPonE(t, p)
@@ -87,7 +90,9 @@ func (d *Delaunay) RemovePoint(p *Point) {
 	// find points on polygon around the point in counterclockwise order
 	points := make([]*Point, len(p.adjacentTriangles))
 	t := p.adjacentTriangles[0]
+	// j is the index of the previous point
 	j := 1
+	// k is the index of the previous triangle
 	k := 0
 	switch {
 	case p.Equals(t.A):
@@ -106,7 +111,6 @@ func (d *Delaunay) RemovePoint(p *Point) {
 		if i >= len(p.adjacentTriangles) {
 			panic(fmt.Errorf("delaunay: internal error with adjacent triangles for P%v. Can't find counterclockwise neighbor of P%v", p, points[j]))
 		}
-		// k is the index of the previous triangle
 		// it needs to find the triangle next to k and not k again
 		if p.adjacentTriangles[i].Equals(p.adjacentTriangles[k]) {
 			i++
@@ -141,7 +145,7 @@ func (d *Delaunay) RemovePoint(p *Point) {
 	d.removeP(points, p.adjacentTriangles)
 }
 
-// forms a new triangulation inside the points, which form a polygon
+// removeP forms a new triangulation inside the points, which form a polygon
 func (d *Delaunay) removeP(points []*Point, parents []*Triangle) {
 	// for performance improvement handle points with few adjacent points differently
 	if len(points) == 3 {
@@ -429,7 +433,7 @@ func (d *Delaunay) removeP(points []*Point, parents []*Triangle) {
 		for i, p := range points {
 			copies[i] = NewPoint(p.X, p.Y, i)
 		}
-		// change limits in case root points are part of the polygon
+		// change limits to create a root triangle that's far outside of the origial root triangle
 		dx := d.maxX - d.minX
 		dy := d.maxY - d.minY
 		dn := NewDelaunay(copies, d.maxX+6*dx, d.minX-6*dx, d.maxY+10, d.minY-6*dy)
@@ -441,7 +445,7 @@ func (d *Delaunay) removeP(points []*Point, parents []*Triangle) {
 			c := t.C.ID
 			// only keep triangles that are inside the polygon
 			// points are inside the triangle if the order of the indices inside the triangle
-			// is counter clockwise
+			// is counterclockwise
 			if areCounterclockwise(a, b, c) {
 				tr := NewTriangle(points[a], points[b], points[c])
 				points[a].adjacentTriangles = points[a].adjacentTriangles.appendT(tr)
@@ -450,16 +454,17 @@ func (d *Delaunay) removeP(points []*Point, parents []*Triangle) {
 				triangles = append(triangles, tr)
 			}
 		}
-		d.triangles = append(d.triangles, triangles[:]...)
+		d.triangles = append(d.triangles, triangles...)
 		for i := range parents {
-			parents[i].children = append(parents[i].children, triangles[:]...)
+			parents[i].children = append(parents[i].children, triangles...)
 		}
 	}
 }
 
-// since the points in triangle are ordered counterclockwise
-// and the indices around the polygon are ordered counterclockwise
-// checking if the indices of A,B,C are counter clockwise
+// areCounterclockwise return whether three points are in counterclockwise order.
+// Since the points in triangle are ordered counterclockwise and the indices around
+// the polygon are ordered counterclockwise checking if the indices of A,B,C
+// are counter clockwise
 func areCounterclockwise(a, b, c int) bool {
 	if b < c {
 		return a < b || c < a
@@ -468,17 +473,20 @@ func areCounterclockwise(a, b, c int) bool {
 }
 
 // findTriangle goes down the hierarchy to find the triangle in which the point is located.
-// it returns true if the point is on an edge
+// It returns the triangle and whether a point is on an edge.
 func findTriangle(t *Triangle, p *Point) (*Triangle, bool) {
+	// get information about the point in respect to its position to the triangle.
 	inside, edge := p.inTriangle(t)
 	if !inside {
 		return nil, false
 	}
+	// leaf triangle
 	if len(t.children) == 0 {
 		return t, edge
 	}
 	for _, tc := range t.children {
 		tt, oe := findTriangle(tc, p)
+		// if tt is nil then look at other children. Otherwise return the tt.
 		if tt != nil {
 			return tt, oe
 		}
@@ -598,7 +606,7 @@ func (d *Delaunay) validateEdge(t *Triangle, p *Point) {
 		}
 
 	}
-	// flip edges if ta is inside circumcircle of t
+	// flip edges if p is inside circumcircle of ta
 	if ta != nil && ta.inCircumcircle(p) {
 		nt1, nt2 := d.flip(t, ta)
 		d.validateEdge(nt1, p)

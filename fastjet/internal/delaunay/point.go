@@ -14,13 +14,22 @@ import (
 // Point in the X-Y Plane, that holds dynamic information about the
 // adjacent triangles, the nearest neighbor and the distance to that neighbor
 type Point struct {
-	X, Y              float64 // X and Y are the coordinates of the point.
+	// X and Y are the coordinates of the point.
+	X, Y float64
+	// adjacentTriangles is used for the triangulation, to find the nearest neighbor and
+	// to find the Voronoi Cell.
 	adjacentTriangles triangles
-	isOutside         bool // Indicates whether the point is outside the triangulation.
-	ID                int  // user defined identifier. There are no restrictions on how the user uses it.
-	// . The field is used when points are removed
+	// isOutside indicates whether the point is outside the triangulation.
+	isOutside bool
+	// ID is a user defined identifier. There are no restrictions on how the user uses it.
+	// The field is used when points are removed. Copies of the points around the point to
+	// be removed are made. The ID is set incremental in counterclockwise order. It identifies
+	// the original. It is also used to determine if a Triangle is inside or outside the
+	// polygon formed by all those points.
+	ID      int
 	nearest *Point
-	dist    float64 // squared distance to the nearest neighbor
+	// squared distance to the nearest neighbor
+	dist float64
 }
 
 // NewPoint returns Point for the given x,y coordinates and id
