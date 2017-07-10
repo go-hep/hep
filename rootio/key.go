@@ -45,6 +45,7 @@ type Key struct {
 	name  string // name of the object
 	title string // title of the object
 
+	buf []byte // TKey payload
 	obj Object
 }
 
@@ -130,6 +131,10 @@ func (k *Key) Bytes() ([]byte, error) {
 }
 
 func (k *Key) load() ([]byte, error) {
+	if k.buf != nil {
+		return k.buf, nil
+	}
+
 	var buf bytes.Buffer
 	if k.isCompressed() {
 		// Note: this contains ZL[src][dst] where src and dst are 3 bytes each.

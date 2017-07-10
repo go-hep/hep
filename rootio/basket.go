@@ -7,6 +7,7 @@ package rootio
 import (
 	"fmt"
 	"io"
+	"log"
 	"reflect"
 )
 
@@ -89,15 +90,23 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 		if b.vers <= 1 {
 			sz = r.ReadI32()
 		}
-		if sz > b.Key.keylen {
-			// FIXME(sbinet) load buffer TKey data
-			//
-			panic("not implemented")
-		}
+		/*
+			if sz > b.Key.keylen {
+				// FIXME(sbinet) load buffer TKey data
+				//
+				panic("not implemented")
+			}
+		*/
 
-		_, err := io.ReadFull(r.r, make([]byte, int(sz)))
+		rbuf := make([]byte, int(sz))
+		n, err := io.ReadFull(r.r, rbuf)
 		if err != nil {
 			r.err = err
+		}
+		if sz > b.Key.keylen {
+			log.Printf(">>>>>>>>>>>>>>>>>> %q [compr=%v]", b.Name(), b.Key.isCompressed())
+			b.Key.buf = make([]byte, int(n))
+			copy(b.Key.buf, rbuf)
 		}
 	}
 
@@ -111,6 +120,9 @@ func (b *Basket) loadEntry(entry int64) error {
 		offset = int64(b.offsets[int(entry)])
 	}
 	pos := entry*int64(b.nevsize) + offset
+	if b.rbuf == nil {
+		log.Panicf("rbuf nil for %q", b.Name())
+	}
 	err = b.rbuf.setPos(pos)
 	return err
 }

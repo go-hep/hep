@@ -6,6 +6,7 @@ package rootio
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 )
@@ -227,6 +228,7 @@ func (b *tbranch) loadEntry(ientry int64) error {
 
 func (b *tbranch) loadBasket(entry int64) error {
 	var err error
+	log.Printf("==== loading basket(%d) [%s]...", entry, b.Name())
 
 	ib := b.findBasketIndex(entry)
 	if ib < 0 {
@@ -235,6 +237,9 @@ func (b *tbranch) loadBasket(entry int64) error {
 	if ib < len(b.baskets) {
 		b.basket = &b.baskets[ib]
 		b.firstEntry = b.basketEntry[ib]
+		log.Printf("ib=%d n-baskets=%d", ib, len(b.baskets))
+		log.Printf("basket-entries: %#v", b.basketEntry)
+		log.Printf("b.basket: %#v", b.basket)
 		return nil
 	}
 
