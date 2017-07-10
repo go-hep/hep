@@ -62,19 +62,19 @@ func main() {
 	var nt = ntuple{n: tree.Entries()}
 	log.Printf("scanning leaves...")
 	for _, leaf := range tree.Leaves() {
-		if leaf.Type().Kind() == reflect.String {
-			nt.add(leaf.Name(), leaf.Type())
+		if leaf.Kind() == reflect.String {
+			nt.add(leaf.Name(), leaf)
+			continue
+		}
+		if leaf.Class() == "TLeafElement" { // FIXME(sbinet): find a better, type-safe way
+			log.Printf(">>> %q %v not supported", leaf.Name(), leaf.Class())
 			continue
 		}
 		if leaf.LeafCount() != nil {
 			log.Printf(">>> %q []%v not supported", leaf.Name(), leaf.TypeName())
 			continue
 		}
-		if leaf.Len() > 1 {
-			log.Printf(">>> %q [%d]%v not supported", leaf.Name(), leaf.Len(), leaf.TypeName())
-			continue
-		}
-		nt.add(leaf.Name(), leaf.Type())
+		nt.add(leaf.Name(), leaf)
 	}
 	log.Printf("scanning leaves... [done]")
 
@@ -142,11 +142,12 @@ type ntuple struct {
 	vars []interface{}
 }
 
-func (nt *ntuple) add(name string, rt reflect.Type) {
+func (nt *ntuple) add(name string, leaf rootio.Leaf) {
 	n := len(nt.cols)
-	nt.cols = append(nt.cols, newColumn(name, rt, nt.n))
-	nt.args = append(nt.args, rootio.ScanVar{Name: name, Type: rt})
-	nt.vars = append(nt.vars, nt.cols[n].data.Addr().Interface())
+	nt.cols = append(nt.cols, newColumn(name, leaf, nt.n))
+	col := &nt.cols[n]
+	nt.args = append(nt.args, rootio.ScanVar{Name: name, Type: col.etype})
+	nt.vars = append(nt.vars, col.data.Addr().Interface())
 }
 
 func (nt *ntuple) fill() {
@@ -159,16 +160,28 @@ func (nt *ntuple) fill() {
 type column struct {
 	name  string
 	i     int64
+	leaf  rootio.Leaf
+	etype reflect.Type
+	shape []int
 	data  reflect.Value
 	slice reflect.Value
 }
 
-func newColumn(name string, rt reflect.Type, n int64) column {
-	rtype := reflect.SliceOf(rt)
+func newColumn(name string, leaf rootio.Leaf, n int64) column {
+	etype := leaf.Type()
+	shape := []int{int(n)}
+	if leaf.Len() > 1 && leaf.Kind() != reflect.String {
+		etype = reflect.ArrayOf(leaf.Len(), etype)
+		shape = append(shape, leaf.Len())
+	}
+	rtype := reflect.SliceOf(etype)
 	return column{
 		name:  name,
 		i:     0,
-		data:  reflect.New(rt).Elem(),
+		leaf:  leaf,
+		etype: etype,
+		shape: shape,
+		data:  reflect.New(etype).Elem(),
 		slice: reflect.MakeSlice(rtype, int(n), int(n)),
 	}
 }
