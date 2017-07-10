@@ -191,6 +191,8 @@ type Leaf interface {
 	LenType() int    // LenType returns the number of bytes for this data type
 	MaxIndex() []int
 	Offset() int
+	Kind() reflect.Kind
+	Type() reflect.Type
 	Value(int) interface{}
 	TypeName() string
 

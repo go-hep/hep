@@ -82,6 +82,14 @@ func (leaf *tleaf) Offset() int {
 	return leaf.offset
 }
 
+func (leaf *tleaf) Kind() reflect.Kind {
+	panic("not implemented")
+}
+
+func (leaf *tleaf) Type() reflect.Type {
+	panic("not implemented")
+}
+
 func (leaf *tleaf) Value(i int) interface{} {
 	panic("not implemented")
 }
@@ -157,6 +165,14 @@ func (leaf *tleafElement) ivalue() int {
 
 func (leaf *tleafElement) imax() int {
 	panic("not implemented")
+}
+
+func (leaf *tleafElement) Kind() reflect.Kind {
+	return leaf.src.Kind()
+}
+
+func (leaf *tleafElement) Type() reflect.Type {
+	return leaf.src.Type()
 }
 
 func (leaf *tleafElement) TypeName() string {

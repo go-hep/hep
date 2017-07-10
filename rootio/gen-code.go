@@ -61,6 +61,7 @@ func genLeaves() {
 	for i, typ := range []struct {
 		Name       string
 		Type       string
+		Kind       string
 		DoUnsigned bool
 		Func       string
 		FuncArray  string
@@ -71,12 +72,14 @@ func genLeaves() {
 		{
 			Name:      "LeafO",
 			Type:      "bool",
+			Kind:      "reflect.Bool",
 			Func:      "r.ReadBool()",
 			FuncArray: "r.ReadFastArrayBool",
 		},
 		{
 			Name:       "LeafS",
 			Type:       "int16",
+			Kind:       "reflect.Int16",
 			DoUnsigned: true,
 			Func:       "r.ReadI16()",
 			FuncArray:  "r.ReadFastArrayI16",
@@ -85,6 +88,7 @@ func genLeaves() {
 		{
 			Name:       "LeafI",
 			Type:       "int32",
+			Kind:       "reflect.Int32",
 			DoUnsigned: true,
 			Func:       "r.ReadI32()",
 			FuncArray:  "r.ReadFastArrayI32",
@@ -93,6 +97,7 @@ func genLeaves() {
 		{
 			Name:       "LeafL",
 			Type:       "int64",
+			Kind:       "reflect.Int64",
 			DoUnsigned: true,
 			Func:       "r.ReadI64()",
 			FuncArray:  "r.ReadFastArrayI64",
@@ -101,18 +106,21 @@ func genLeaves() {
 		{
 			Name:      "LeafF",
 			Type:      "float32",
+			Kind:      "reflect.Float32",
 			Func:      "r.ReadF32()",
 			FuncArray: "r.ReadFastArrayF32",
 		},
 		{
 			Name:      "LeafD",
 			Type:      "float64",
+			Kind:      "reflect.Float64",
 			Func:      "r.ReadF64()",
 			FuncArray: "r.ReadFastArrayF64",
 		},
 		{
 			Name:      "LeafC",
 			Type:      "string",
+			Kind:      "reflect.String",
 			Func:      "r.ReadString()",
 			FuncArray: "r.ReadFastArrayString",
 			RangeType: "int32",
@@ -311,6 +319,17 @@ func (leaf *{{.Name}}) Minimum() {{.RangeType}} {
 // Maximum returns the maximum value of the leaf.
 func (leaf *{{.Name}}) Maximum() {{.RangeType}} {
 	return leaf.max
+}
+
+// Kind returns the leaf's kind.
+func (*{{.Name}}) Kind() reflect.Kind {
+	return {{.Kind}}
+}
+
+// Type returns the leaf's type.
+func (*{{.Name}}) Type() reflect.Type {
+	var v {{.Type}}
+	return reflect.TypeOf(v)
 }
 
 // Value returns the leaf value at index i.

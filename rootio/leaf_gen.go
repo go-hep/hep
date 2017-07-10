@@ -33,6 +33,17 @@ func (leaf *LeafO) Maximum() bool {
 	return leaf.max
 }
 
+// Kind returns the leaf's kind.
+func (*LeafO) Kind() reflect.Kind {
+	return reflect.Bool
+}
+
+// Type returns the leaf's type.
+func (*LeafO) Type() reflect.Type {
+	var v bool
+	return reflect.TypeOf(v)
+}
+
 // Value returns the leaf value at index i.
 func (leaf *LeafO) Value(i int) interface{} {
 	return leaf.val[i]
@@ -153,6 +164,17 @@ func (leaf *LeafS) Minimum() int16 {
 // Maximum returns the maximum value of the leaf.
 func (leaf *LeafS) Maximum() int16 {
 	return leaf.max
+}
+
+// Kind returns the leaf's kind.
+func (*LeafS) Kind() reflect.Kind {
+	return reflect.Int16
+}
+
+// Type returns the leaf's type.
+func (*LeafS) Type() reflect.Type {
+	var v int16
+	return reflect.TypeOf(v)
 }
 
 // Value returns the leaf value at index i.
@@ -302,6 +324,17 @@ func (leaf *LeafI) Maximum() int32 {
 	return leaf.max
 }
 
+// Kind returns the leaf's kind.
+func (*LeafI) Kind() reflect.Kind {
+	return reflect.Int32
+}
+
+// Type returns the leaf's type.
+func (*LeafI) Type() reflect.Type {
+	var v int32
+	return reflect.TypeOf(v)
+}
+
 // Value returns the leaf value at index i.
 func (leaf *LeafI) Value(i int) interface{} {
 	return leaf.val[i]
@@ -447,6 +480,17 @@ func (leaf *LeafL) Minimum() int64 {
 // Maximum returns the maximum value of the leaf.
 func (leaf *LeafL) Maximum() int64 {
 	return leaf.max
+}
+
+// Kind returns the leaf's kind.
+func (*LeafL) Kind() reflect.Kind {
+	return reflect.Int64
+}
+
+// Type returns the leaf's type.
+func (*LeafL) Type() reflect.Type {
+	var v int64
+	return reflect.TypeOf(v)
 }
 
 // Value returns the leaf value at index i.
@@ -596,6 +640,17 @@ func (leaf *LeafF) Maximum() float32 {
 	return leaf.max
 }
 
+// Kind returns the leaf's kind.
+func (*LeafF) Kind() reflect.Kind {
+	return reflect.Float32
+}
+
+// Type returns the leaf's type.
+func (*LeafF) Type() reflect.Type {
+	var v float32
+	return reflect.TypeOf(v)
+}
+
 // Value returns the leaf value at index i.
 func (leaf *LeafF) Value(i int) interface{} {
 	return leaf.val[i]
@@ -718,6 +773,17 @@ func (leaf *LeafD) Maximum() float64 {
 	return leaf.max
 }
 
+// Kind returns the leaf's kind.
+func (*LeafD) Kind() reflect.Kind {
+	return reflect.Float64
+}
+
+// Type returns the leaf's type.
+func (*LeafD) Type() reflect.Type {
+	var v float64
+	return reflect.TypeOf(v)
+}
+
 // Value returns the leaf value at index i.
 func (leaf *LeafD) Value(i int) interface{} {
 	return leaf.val[i]
@@ -838,6 +904,17 @@ func (leaf *LeafC) Minimum() int32 {
 // Maximum returns the maximum value of the leaf.
 func (leaf *LeafC) Maximum() int32 {
 	return leaf.max
+}
+
+// Kind returns the leaf's kind.
+func (*LeafC) Kind() reflect.Kind {
+	return reflect.String
+}
+
+// Type returns the leaf's type.
+func (*LeafC) Type() reflect.Type {
+	var v string
+	return reflect.TypeOf(v)
 }
 
 // Value returns the leaf value at index i.
