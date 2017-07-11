@@ -7,6 +7,7 @@ package delaunay
 import (
 	"fmt"
 	"math"
+	"math/big"
 )
 
 // Triangle is a set of three points that make up a triangle, with hierarchical information to find triangles.
@@ -40,10 +41,13 @@ func isClockwise(a, b, c *Point) bool {
 // inCircumcircle returns whether the point is inside the circumcircle of the triangle
 func (t *Triangle) inCircumcircle(p *Point) bool {
 	x, y := t.centerOfCircumcircle()
+	// use the math/big package to handle the geometric predicates
 	// r is the squared radius of the circumcircle
-	r := (x-t.A.X)*(x-t.A.X) + (y-t.A.Y)*(y-t.A.Y)
+	r := big.NewFloat((x-t.A.X)*(x-t.A.X) + (y-t.A.Y)*(y-t.A.Y))
+	// d is the squared distance from the point to the circumcenter
+	d := big.NewFloat((p.X-x)*(p.X-x) + (p.Y-y)*(p.Y-y))
 	// point is in circumcircle if squared distance to center is less than squared radius
-	return (p.X-x)*(p.X-x)+(p.Y-y)*(p.Y-y) < r
+	return d.Cmp(r) < 0
 }
 
 // centerOfCircumcircle returns the center of the triangle's circumcircle.

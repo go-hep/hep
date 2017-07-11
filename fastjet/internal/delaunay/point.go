@@ -7,6 +7,7 @@ package delaunay
 import (
 	"fmt"
 	"math"
+	"math/big"
 
 	"github.com/gonum/floats"
 )
@@ -50,13 +51,21 @@ func (p *Point) inTriangle(t *Triangle) (inside, edge bool) {
 	barcen2 := ((t.C.Y-t.A.Y)*(p.X-t.C.X) + (t.A.X-t.C.X)*(p.Y-t.C.Y)) / det(t)
 	barcen3 := 1 - barcen1 - barcen2
 
-	// inside triangle
-	if barcen1 > 0 && barcen1 < 1 && barcen2 > 0 && barcen2 < 1 && barcen3 > 0 && barcen3 < 1 {
+	// use the math/big package to handle the geometric predicates
+	b1 := big.NewFloat(barcen1)
+	b2 := big.NewFloat(barcen2)
+	b3 := big.NewFloat(barcen3)
+	zero := big.NewFloat(0.0)
+	one := big.NewFloat(1.0)
+	// inside triangle if all barycentric coordinates are between 0 and 1
+	if b1.Cmp(zero) > 0 && b1.Cmp(one) < 0 && b2.Cmp(zero) > 0 && b2.Cmp(one) < 0 && b3.Cmp(zero) > 0 && b3.Cmp(one) < 0 {
 		return true, false
 	}
 	// either outside triangle or on edge
-	in := barcen1 < 0 || barcen2 < 0 || barcen3 < 0
-	return !in, !in
+	// it is outside if one of the coordinates is less than 0
+	// it is on the edge if one or more of the coordinates is one and the rest greater 0
+	in := b1.Cmp(zero) > 0 && b2.Cmp(zero) > 0 && b3.Cmp(zero) > 0
+	return in, in
 }
 
 func det(t *Triangle) float64 {
