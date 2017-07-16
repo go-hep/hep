@@ -72,6 +72,14 @@ func det(t *Triangle) float64 {
 	return (t.B.Y-t.C.Y)*(t.A.X-t.C.X) + (t.C.X-t.B.X)*(t.A.Y-t.C.Y)
 }
 
+// orientation returns the orientation between the two points forming a line and p
+// if b is counterclockwise of a then orientation returns
+// >0 if p is inside the edge, <0 if p is on the other side of the edge
+// and 0 if p is on the edge
+func (p *Point) orientation(a, b *Point) float64 {
+	return (b.X-a.X)*(p.Y-a.Y) - (p.X-a.X)*(b.Y-a.Y)
+}
+
 // NearestNeighbor returns the nearest Neighbor and the distance to that neighbor
 func (p *Point) NearestNeighbor() (*Point, float64) {
 	return p.nearest, math.Sqrt(p.dist)

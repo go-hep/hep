@@ -27,9 +27,77 @@ func TestSimple(t *testing.T) {
 		ep,
 		d,
 	}
-	del := NewDelaunay(points, 4, 0, 4, 0)
+	del := HierarchicalDelaunay(points, 4, 0, 4, 0)
 	del.RemovePoint(ep)
 	tri := del.Triangles()
+	exp := []*Triangle{
+		NewTriangle(a, b, c),
+		NewTriangle(b, c, d),
+	}
+	got, want := len(tri), len(exp)
+	if got != want {
+		t.Fatalf("got=%d delaunay triangles, want=%d", got, want)
+	}
+	for i := range tri {
+		ok := false
+		for j := range exp {
+			if tri[i].Equals(exp[j]) {
+				ok = true
+				// remove triangles that have been matched from slice
+				// in case there are duplicate triangles. So that it
+				// wouldn't pass the test when it shouldn't
+				exp = append(exp[:j], exp[j+1:]...)
+				break
+			}
+		}
+		if !ok {
+			t.Fatalf("Triangle T%s not as expected", tri[i])
+		}
+	}
+	nn := make([]*Point, 0, len(points)-1)
+	nd := make([]float64, 0, len(points)-1)
+	for i, p := range points {
+		if i == 3 { // skip the removed point
+			continue
+		}
+		n, d := p.NearestNeighbor()
+		nn = append(nn, n)
+		nd = append(nd, d)
+	}
+	expN := []*Point{c, a, a, b}
+	expD := []float64{1.0, 2.0, 1.0, 4.4721}
+	got, want = len(nn), len(expN)
+	if got != want {
+		t.Fatalf("got=%d nearest neighbors, want=%d", got, want)
+	}
+	for i := range nn {
+		if !nn[i].Equals(expN[i]) {
+			t.Fatalf("got=N%s nearest neighbor, want=N%s", nn[i], expN[i])
+		}
+		if math.Abs(nd[i]-expD[i]) > tol {
+			t.Fatalf("got=%f distance, want=%f for point P%s with neighbour N%s", nn[i].dist, expD[i], points[i], nn[i])
+		}
+	}
+}
+
+func TestWalkSimple(t *testing.T) {
+	// NewPoint(x, y, id)
+	a := NewPoint(0, 0, 0)
+	b := NewPoint(0, 2, 1)
+	c := NewPoint(1, 0, 2)
+	d := NewPoint(4, 4, 3)
+	ep := NewPoint(3, 2, -1)
+	points := []*Point{
+		a,
+		b,
+		c,
+		ep,
+		d,
+	}
+	del := WalkDelaunay(points)
+	tri := del.Triangles()
+	del.RemovePoint(ep)
+	tri = del.Triangles()
 	exp := []*Triangle{
 		NewTriangle(a, b, c),
 		NewTriangle(b, c, d),
@@ -103,7 +171,7 @@ func TestMedium(t *testing.T) {
 	pE4 := NewPoint(-2.8, -0.5, -1)
 	ps := []*Point{p1, p2, p3, p4, p5, p6, pE3, pE4,
 		p9, p10, p11, p12, p13, p14}
-	d := NewDelaunay(ps, 4, -4, 4, -4)
+	d := HierarchicalDelaunay(ps, 4, -4, 4, -4)
 	d.RemovePoint(pE4)
 	d.InsertPoint(pE1)
 	d.RemovePoint(pE3)
@@ -183,6 +251,90 @@ func TestMedium(t *testing.T) {
 
 	if math.Abs(area-exparea) > tol {
 		t.Fatalf("got=%f voronoi area, want=%f", got, want)
+	}
+	nn, dist := p11.NearestNeighbor()
+	if !nn.Equals(p15) {
+		t.Fatalf("got=N%s nearest neighbor, want=N%s", nn, p15)
+	}
+	expdist := 1.463
+	if math.Abs(dist-expdist) > tol {
+		t.Fatalf("got=%d distance, want=%d", dist, expdist)
+	}
+}
+
+func TestWalkMedium(t *testing.T) {
+	// NewPoint(x, y, id)
+	p1 := NewPoint(-1.5, 3.2, 1)
+	p2 := NewPoint(1.8, 3.3, 2)
+	p3 := NewPoint(-3.7, 1.5, 3)
+	p4 := NewPoint(-1.5, 1.3, 4)
+	p5 := NewPoint(0.8, 1.2, 5)
+	p6 := NewPoint(3.3, 1.5, 6)
+	p7 := NewPoint(-4, -1, 7)
+	p8 := NewPoint(-2.3, -0.7, 8)
+	p9 := NewPoint(0, -0.5, 9)
+	p10 := NewPoint(2, -1.5, 10)
+	p11 := NewPoint(3.7, -0.8, 11)
+	p12 := NewPoint(-3.5, -2.9, 12)
+	p13 := NewPoint(-0.9, -3.9, 13)
+	p14 := NewPoint(2, -3.5, 14)
+	p15 := NewPoint(3.5, -2.25, 15)
+	pE1 := NewPoint(0, 0, -1)
+	pE2 := NewPoint(-2.3, -0.6, -2)
+	pE3 := NewPoint(2, 1.2, -3)
+	pE4 := NewPoint(-2.8, -0.5, -4)
+	ps := []*Point{p1, p2, p3, p4, p5, p6, pE3, pE4,
+		p9, p10, p11, p12, p13, p14}
+	d := WalkDelaunay(ps)
+	d.RemovePoint(pE4)
+	d.InsertPoint(pE1)
+	d.RemovePoint(pE3)
+	d.InsertPoint(p15)
+	d.InsertPoint(pE2)
+	d.RemovePoint(pE1)
+	d.InsertPoint(p7)
+	d.InsertPoint(p8)
+	d.RemovePoint(pE2)
+	ts := d.Triangles()
+	exp := []*Triangle{
+		NewTriangle(p1, p3, p4),
+		NewTriangle(p1, p4, p5),
+		NewTriangle(p1, p5, p2),
+		NewTriangle(p2, p5, p6),
+		NewTriangle(p3, p4, p8),
+		NewTriangle(p3, p8, p7),
+		NewTriangle(p4, p8, p9),
+		NewTriangle(p4, p9, p5),
+		NewTriangle(p5, p9, p10),
+		NewTriangle(p5, p10, p6),
+		NewTriangle(p6, p10, p11),
+		NewTriangle(p7, p8, p12),
+		NewTriangle(p8, p12, p13),
+		NewTriangle(p8, p13, p9),
+		NewTriangle(p9, p13, p10),
+		NewTriangle(p10, p13, p14),
+		NewTriangle(p10, p14, p15),
+		NewTriangle(p10, p15, p11),
+	}
+	got, want := len(ts), len(exp)
+	if got != want {
+		t.Fatalf("got=%d delaunay triangles, want=%d", got, want)
+	}
+	for i := range ts {
+		ok := false
+		for j := range exp {
+			if ts[i].Equals(exp[j]) {
+				ok = true
+				// remove triangles that have been matched from slice
+				// in case there are duplicate triangles. So that it
+				// wouldn't pass the test when it shouldn't
+				exp = append(exp[:j], exp[j+1:]...)
+				break
+			}
+		}
+		if !ok {
+			t.Fatalf("Triangle T%s not as expected", ts[i])
+		}
 	}
 	nn, dist := p11.NearestNeighbor()
 	if !nn.Equals(p15) {
@@ -282,7 +434,7 @@ func BenchmarkDelaunay_VoronoiArea(b *testing.B) {
 		y := rand.Float64() * 1000
 		points[j] = NewPoint(x, y, j)
 	}
-	d := NewDelaunay(points, 1000, 0, 1000, 0)
+	d := HierarchicalDelaunay(points, 1000, 0, 1000, 0)
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		v := NewVoronoi(d)
@@ -301,7 +453,7 @@ func benchmarkDelaunay(i int, b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		d := NewDelaunay(points, 1000, 0, 1000, 0)
+		d := HierarchicalDelaunay(points, 1000, 0, 1000, 0)
 		for _, p := range points {
 			d.RemovePoint(p)
 		}

@@ -16,6 +16,10 @@ type Voronoi struct {
 
 // FIXME can't do any delaunay operation after calling NewVoronoi
 func NewVoronoi(d *Delaunay) *Voronoi {
+	if !d.hierarchy {
+		// FIXME
+		panic(fmt.Errorf("delaunay: vornoi for delaunay walk has not been implemented"))
+	}
 	// remove all triangles that have a root point
 	border := make(triangles, len(d.root.A.adjacentTriangles)+len(d.root.B.adjacentTriangles)+len(d.root.C.adjacentTriangles))
 	n := copy(border, d.root.A.adjacentTriangles)

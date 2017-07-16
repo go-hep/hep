@@ -18,6 +18,8 @@ type Triangle struct {
 	children triangles
 	// A,B,C are the points that make up the triangle
 	A, B, C *Point
+	// inD holds whether a triangle is part of the triangulation
+	inD bool
 }
 
 // NewTriangle returns a triangle formed out of the three given points
@@ -169,8 +171,8 @@ func (triangles triangles) remove(elems ...*Triangle) []*Triangle {
 // removes given triangles
 func (triangles triangles) finalize(elems ...*Triangle) []*Triangle {
 	ft := make([]*Triangle, 0, len(triangles))
-	for i, t := range triangles {
-		if len(triangles[i].children) == 0 {
+	for _, t := range triangles {
+		if t.inD {
 			keep := true
 			for j, tri := range elems {
 				if tri.Equals(t) {
