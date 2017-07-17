@@ -99,62 +99,62 @@ type triangles []*Triangle
 
 // appendT appends to a slice of triangles and updates the nearest neighbor
 // it is used when the adjacent triangles of a point change
-func (triangles triangles) append(elems ...*Triangle) []*Triangle {
+func (t triangles) append(triangles ...*Triangle) []*Triangle {
 	// check if nearest neighbor changes by going through each triangles points
 	// and checking if the distance to that point is less. It is done both ways.
-	for _, e := range elems {
-		d := e.A.distance(e.B)
-		if d < e.A.dist {
-			e.A.dist = d
-			e.A.nearest = e.B
+	for _, tri := range triangles {
+		d := tri.A.distance(tri.B)
+		if d < tri.A.dist {
+			tri.A.dist = d
+			tri.A.nearest = tri.B
 		}
-		if d < e.B.dist {
-			e.B.dist = d
-			e.B.nearest = e.A
+		if d < tri.B.dist {
+			tri.B.dist = d
+			tri.B.nearest = tri.A
 		}
-		d = e.B.distance(e.C)
-		if d < e.B.dist {
-			e.B.dist = d
-			e.B.nearest = e.C
+		d = tri.B.distance(tri.C)
+		if d < tri.B.dist {
+			tri.B.dist = d
+			tri.B.nearest = tri.C
 		}
-		if d < e.C.dist {
-			e.C.dist = d
-			e.C.nearest = e.B
+		if d < tri.C.dist {
+			tri.C.dist = d
+			tri.C.nearest = tri.B
 		}
-		d = e.A.distance(e.C)
-		if d < e.A.dist {
-			e.A.dist = d
-			e.A.nearest = e.C
+		d = tri.A.distance(tri.C)
+		if d < tri.A.dist {
+			tri.A.dist = d
+			tri.A.nearest = tri.C
 		}
-		if d < e.C.dist {
-			e.C.dist = d
-			e.C.nearest = e.A
+		if d < tri.C.dist {
+			tri.C.dist = d
+			tri.C.nearest = tri.A
 		}
 	}
-	return append(triangles, triangles...)
+	return append(t, triangles...)
 }
 
 // remove removes given triangles from a slice of triangles
-func (triangles triangles) remove(elems ...*Triangle) []*Triangle {
+func (t triangles) remove(triangles ...*Triangle) []*Triangle {
 	// check if nearest neighbor of any point is removed and if so
 	// put that point in the update slice
 	var update []*Point
-	for _, t := range triangles {
-		if t.A.nearest != nil && (t.A.nearest.Equals(t.B) || t.A.nearest.Equals(t.C)) {
-			update = append(update, t.A)
+	for _, tri := range triangles {
+		if tri.A.nearest != nil && (tri.A.nearest.Equals(tri.B) || tri.A.nearest.Equals(tri.C)) {
+			update = append(update, tri.A)
 		}
-		if t.B.nearest != nil && (t.B.nearest.Equals(t.A) || t.B.nearest.Equals(t.C)) {
-			update = append(update, t.B)
+		if tri.B.nearest != nil && (tri.B.nearest.Equals(tri.A) || tri.B.nearest.Equals(tri.C)) {
+			update = append(update, tri.B)
 		}
-		if t.C.nearest != nil && (t.C.nearest.Equals(t.A) || t.C.nearest.Equals(t.B)) {
-			update = append(update, t.C)
+		if tri.C.nearest != nil && (tri.C.nearest.Equals(tri.A) || tri.C.nearest.Equals(tri.B)) {
+			update = append(update, tri.C)
 		}
 	}
-	for i := len(triangles) - 1; i >= 0; i-- {
-		for j, e := range elems {
-			if e.Equals(triangles[i]) {
-				triangles = append(triangles[:i], triangles[i+1:]...)
-				elems = append(elems[:j], elems[j+1:]...)
+	for i := len(t) - 1; i >= 0; i-- {
+		for j, tri := range triangles {
+			if tri.Equals(t[i]) {
+				t = append(t[:i], t[i+1:]...)
+				triangles = append(triangles[:j], triangles[j+1:]...)
 				break
 			}
 		}
@@ -163,26 +163,26 @@ func (triangles triangles) remove(elems ...*Triangle) []*Triangle {
 	for _, p := range update {
 		p.findNearest()
 	}
-	return triangles
+	return t
 }
 
 // finalize returns the final delaunay triangles
 // only keeps leaf elements from the hierarchy
 // removes given triangles
-func (triangles triangles) finalize(elems ...*Triangle) []*Triangle {
-	ft := make([]*Triangle, 0, len(triangles))
-	for _, t := range triangles {
-		if t.isInTriangulation {
+func (t triangles) finalize(triangles ...*Triangle) []*Triangle {
+	ft := make([]*Triangle, 0, len(t))
+	for _, a := range t {
+		if a.isInTriangulation {
 			keep := true
-			for j, e := range elems {
-				if e.Equals(t) {
+			for j, b := range triangles {
+				if b.Equals(a) {
 					keep = false
 					triangles = append(triangles[:j], triangles[j+1:]...)
 					break
 				}
 			}
 			if keep {
-				ft = append(ft, t)
+				ft = append(ft, a)
 			}
 		}
 	}
