@@ -99,43 +99,43 @@ type triangles []*Triangle
 
 // appendT appends to a slice of triangles and updates the nearest neighbor
 // it is used when the adjacent triangles of a point change
-func (triangles triangles) append(triangles ...*Triangle) []*Triangle {
+func (triangles triangles) append(elems ...*Triangle) []*Triangle {
 	// check if nearest neighbor changes by going through each triangles points
 	// and checking if the distance to that point is less. It is done both ways.
-	for _, t := range triangles {
-		d := t.A.distance(t.B)
-		if d < t.A.dist {
-			t.A.dist = d
-			t.A.nearest = t.B
+	for _, e := range elems {
+		d := e.A.distance(e.B)
+		if d < e.A.dist {
+			e.A.dist = d
+			e.A.nearest = e.B
 		}
-		if d < t.B.dist {
-			t.B.dist = d
-			t.B.nearest = t.A
+		if d < e.B.dist {
+			e.B.dist = d
+			e.B.nearest = e.A
 		}
-		d = t.B.distance(t.C)
-		if d < t.B.dist {
-			t.B.dist = d
-			t.B.nearest = t.C
+		d = e.B.distance(e.C)
+		if d < e.B.dist {
+			e.B.dist = d
+			e.B.nearest = e.C
 		}
-		if d < t.C.dist {
-			t.C.dist = d
-			t.C.nearest = t.B
+		if d < e.C.dist {
+			e.C.dist = d
+			e.C.nearest = e.B
 		}
-		d = t.A.distance(t.C)
-		if d < t.A.dist {
-			t.A.dist = d
-			t.A.nearest = t.C
+		d = e.A.distance(e.C)
+		if d < e.A.dist {
+			e.A.dist = d
+			e.A.nearest = e.C
 		}
-		if d < t.C.dist {
-			t.C.dist = d
-			t.C.nearest = t.A
+		if d < e.C.dist {
+			e.C.dist = d
+			e.C.nearest = e.A
 		}
 	}
 	return append(triangles, triangles...)
 }
 
 // remove removes given triangles from a slice of triangles
-func (triangles triangles) remove(triangles ...*Triangle) []*Triangle {
+func (triangles triangles) remove(elems ...*Triangle) []*Triangle {
 	// check if nearest neighbor of any point is removed and if so
 	// put that point in the update slice
 	var update []*Point
@@ -151,10 +151,10 @@ func (triangles triangles) remove(triangles ...*Triangle) []*Triangle {
 		}
 	}
 	for i := len(triangles) - 1; i >= 0; i-- {
-		for j, t := range triangles {
-			if t.Equals(triangles[i]) {
+		for j, e := range elems {
+			if e.Equals(triangles[i]) {
 				triangles = append(triangles[:i], triangles[i+1:]...)
-				triangles = append(triangles[:j], triangles[j+1:]...)
+				elems = append(elems[:j], elems[j+1:]...)
 				break
 			}
 		}
@@ -169,13 +169,13 @@ func (triangles triangles) remove(triangles ...*Triangle) []*Triangle {
 // finalize returns the final delaunay triangles
 // only keeps leaf elements from the hierarchy
 // removes given triangles
-func (triangles triangles) finalize(triangles ...*Triangle) []*Triangle {
+func (triangles triangles) finalize(elems ...*Triangle) []*Triangle {
 	ft := make([]*Triangle, 0, len(triangles))
 	for _, t := range triangles {
 		if t.isInTriangulation {
 			keep := true
-			for j, tri := range triangles {
-				if tri.Equals(t) {
+			for j, e := range elems {
+				if e.Equals(t) {
 					keep = false
 					triangles = append(triangles[:j], triangles[j+1:]...)
 					break
