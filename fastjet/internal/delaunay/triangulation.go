@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
-	"time"
 )
 
 var (
@@ -31,7 +30,7 @@ type Delaunay struct {
 	r               *rand.Rand
 }
 
-// HierarchicalDelaunay creates a delaunay triangulation with the given points
+// NewDelaunay creates a delaunay triangulation with the given points
 // all points have to be inside the user defined bounds
 // uses a hierarchy to find the triangle which contains a point
 // has a worst time complexity of O(nln(n))
@@ -39,9 +38,9 @@ func NewDelaunay(pts []*Point, maxX, minX, maxY, minY float64) *Delaunay {
 	// root Triangle is a triangle that contains all points
 	dx := maxX - minX
 	dy := maxY - minY
-	a := NewPoint(minX-8*dx, maxY+10, -1)
-	b := NewPoint(maxX+8*dx, maxY+10, -1)
-	c := NewPoint(minX+dx/2, minY-8*dy, -1)
+	a := NewPoint(minX-8*dx, maxY+10)
+	b := NewPoint(maxX+8*dx, maxY+10)
+	c := NewPoint(minX+dx/2, minY-8*dy)
 	root := NewTriangle(a, b, c)
 	d := &Delaunay{
 		root:            root,
@@ -58,7 +57,7 @@ func NewDelaunay(pts []*Point, maxX, minX, maxY, minY float64) *Delaunay {
 	return d
 }
 
-// WalkDelaunay creates a delaunay triangulation with the given points
+// NewUnboundedDelaunay creates a delaunay triangulation with the given points
 // it uses the remembering stochastic walk method to find the triangle in which p is inserted
 // it has a worst time complexity of O(n^5/3) but it doesn't need bounds
 func NewUnboundedDelaunay(pts []*Point, r *rand.Rand) *Delaunay {
@@ -66,7 +65,6 @@ func NewUnboundedDelaunay(pts []*Point, r *rand.Rand) *Delaunay {
 	if len(pts) < 3 {
 		panic(fmt.Errorf("delaunay: not enough points"))
 	}
-	rand.Seed(time.Now().UnixNano())
 	d := &Delaunay{
 		useHierarchical: false,
 		r:               r,
@@ -395,7 +393,8 @@ func (d *Delaunay) Remove(p *Point) {
 			// an outer point has one more adjacent points than triangles
 			outerpoints := make([]*Point, len(points)+1)
 			copy(outerpoints, points)
-			d.removeOuter(p, outerpoints, j)
+			pts := p.removeOuter(outerpoints, j)
+			d.removePoints(pts, nil)
 			return
 		}
 		// it needs to find the triangle next to k and not k again
@@ -452,7 +451,8 @@ func (d *Delaunay) Remove(p *Point) {
 			for i := 0; ; {
 				if i >= len(p.adjacentTriangles) {
 					// the bound was reached, now the rest of the points are found by going clockwise from the starting point
-					d.removeOuter(p, outerpoints, j)
+					pts := p.removeOuter(outerpoints, j)
+					d.removePoints(pts, nil)
 					return
 				}
 				// it needs to find the triangle next to k and not k again
@@ -477,72 +477,12 @@ func (d *Delaunay) Remove(p *Point) {
 				}
 				i++
 			}
-			d.removeOuter(p, outerpoints, len(outerpoints)-1)
+			pts := p.removeOuter(outerpoints, len(outerpoints)-1)
+			d.removePoints(pts, nil)
 			return
 		}
 	}
 	d.removePoints(points, p.adjacentTriangles)
-}
-
-// removeOuter finds the point around a point to be removed in clockwise order.
-// it is only used by the walk method
-// last is the index of the last point found in the points slice
-func (d *Delaunay) removeOuter(p *Point, points []*Point, last int) {
-	if len(points)-1 > last {
-		// need to find remaining points
-		// here it needs to find the points in clockwise order from the starting point,
-		// because going counterclockwise stopped when the border was reached
-		t := p.adjacentTriangles[0]
-		// j is the index of the previous point
-		j := 0
-		// k is the index of the previous triangle
-		k := 0
-		for i := 0; j > last+1 || j == 0; {
-			if i >= len(p.adjacentTriangles) {
-				panic(fmt.Errorf("delaunay: internal error with adjacent triangles for P%v. Can't find clockwise neighbor of P%v", p, points[j]))
-			}
-			// it needs to find the triangle next to k and not k again
-			if p.adjacentTriangles[i].Equals(p.adjacentTriangles[k]) {
-				i++
-				continue
-			}
-			t = p.adjacentTriangles[i]
-			switch {
-			case points[j].Equals(t.A):
-				if j == 0 {
-					j = len(points)
-				}
-				j--
-				points[j] = t.C
-				k = i
-				// start the loop over
-				i = 0
-				continue
-			case points[j].Equals(t.B):
-				if j == 0 {
-					j = len(points)
-				}
-				j--
-				points[j] = t.A
-				k = i
-				// start the loop over
-				i = 0
-				continue
-			case points[j].Equals(t.C):
-				if j == 0 {
-					j = len(points)
-				}
-				j--
-				points[j] = t.B
-				k = i
-				// start the loop over
-				i = 0
-				continue
-			}
-			i++
-		}
-	}
-	d.removePoints(points, nil)
 }
 
 // removePoints forms a new triangulation inside the points, which form a polygon
@@ -832,7 +772,8 @@ func (d *Delaunay) removePoints(points []*Point, parents []*Triangle) {
 	// areCounterclockwise it can be determined if a point is inside or outside the polygon
 	copies := make([]*Point, len(points))
 	for i, p := range points {
-		copies[i] = NewPoint(p.X, p.Y, i)
+		copies[i] = NewPoint(p.X, p.Y)
+		copies[i].id = i
 	}
 	var dn *Delaunay
 	if d.useHierarchical {
@@ -846,9 +787,9 @@ func (d *Delaunay) removePoints(points []*Point, parents []*Triangle) {
 	ts := dn.Triangles()
 	triangles := make([]*Triangle, 0, len(ts))
 	for _, t := range ts {
-		a := t.A.ID
-		b := t.B.ID
-		c := t.C.ID
+		a := t.A.id
+		b := t.B.id
+		c := t.C.id
 		// only keep triangles that are inside the polygon
 		// points are inside the polygon if the order of the indices inside the triangle
 		// is counterclockwise

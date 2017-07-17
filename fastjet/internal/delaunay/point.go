@@ -21,24 +21,22 @@ type Point struct {
 	adjacentTriangles triangles
 	// isOutside indicates whether the point is outside the triangulation.
 	isOutside bool
-	// ID is a user defined identifier. There are no restrictions on how the user uses it.
-	// The field is used when points are removed. Copies of the points around the point to
+	// id is used when points are removed. Copies of the points around the point to
 	// be removed are made. The ID is set incremental in counterclockwise order. It identifies
 	// the original. It is also used to determine if a Triangle is inside or outside the
 	// polygon formed by all those points.
-	ID      int
+	id      int
 	nearest *Point
 	// dist is the squared distance to the nearest neighbor.
 	dist float64
 }
 
 // NewPoint returns Point for the given x,y coordinates and id
-func NewPoint(x float64, y float64, id int) *Point {
+func NewPoint(x float64, y float64) *Point {
 	return &Point{
 		X:         x,
 		Y:         y,
 		isOutside: false,
-		ID:        id,
 		dist:      math.Inf(1),
 	}
 }
@@ -93,7 +91,7 @@ func (p *Point) EqualsApprox(v *Point, tol float64) bool {
 }
 
 func (p *Point) String() string {
-	return fmt.Sprintf("(%f, %f ID:%d)", p.X, p.Y, p.ID)
+	return fmt.Sprintf("(%f, %f ID:%d)", p.X, p.Y, p.id)
 }
 
 // distance returns the squared distance between two points
@@ -148,4 +146,65 @@ func (p *Point) findNearest() {
 	}
 	p.dist = min
 	p.nearest = np
+}
+
+// removeOuter finds the point around a point to be removed in clockwise order.
+// it is only used by the walk method
+// last is the index of the last point found in the points slice
+func (p *Point) removeOuter(outer []*Point, last int) []*Point {
+	if len(outer)-1 > last {
+		// need to find remaining points
+		// here it needs to find the points in clockwise order from the starting point,
+		// because going counterclockwise stopped when the border was reached
+		t := p.adjacentTriangles[0]
+		// j is the index of the previous point
+		j := 0
+		// k is the index of the previous triangle
+		k := 0
+		for i := 0; j > last+1 || j == 0; {
+			if i >= len(p.adjacentTriangles) {
+				panic(fmt.Errorf("delaunay: internal error with adjacent triangles for P%v. Can't find clockwise neighbor of P%v", p, outer[j]))
+			}
+			// it needs to find the triangle next to k and not k again
+			if p.adjacentTriangles[i].Equals(p.adjacentTriangles[k]) {
+				i++
+				continue
+			}
+			t = p.adjacentTriangles[i]
+			switch {
+			case outer[j].Equals(t.A):
+				if j == 0 {
+					j = len(outer)
+				}
+				j--
+				outer[j] = t.C
+				k = i
+				// start the loop over
+				i = 0
+				continue
+			case outer[j].Equals(t.B):
+				if j == 0 {
+					j = len(outer)
+				}
+				j--
+				outer[j] = t.A
+				k = i
+				// start the loop over
+				i = 0
+				continue
+			case outer[j].Equals(t.C):
+				if j == 0 {
+					j = len(outer)
+				}
+				j--
+				outer[j] = t.B
+				k = i
+				// start the loop over
+				i = 0
+				continue
+			}
+			i++
+		}
+	}
+	return outer
 }

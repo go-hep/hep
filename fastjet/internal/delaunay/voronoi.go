@@ -95,14 +95,14 @@ func (v *Voronoi) VoronoiCell(p *Point) (area float64, centers []*Point) {
 		t = p.adjacentTriangles[0]
 	}
 	x, y := t.centerOfCircumcircle()
-	c := NewPoint(x, y, -1)
+	c := NewPoint(x, y)
 	centers[0] = c
 	// if p has only one adjacent triangle last is first
 	last := first
 	for i := 1; i < len(p.adjacentTriangles); i++ {
 		t = findClockTri(p, t)
 		x, y = t.centerOfCircumcircle()
-		c = NewPoint(x, y, -1)
+		c = NewPoint(x, y)
 		centers[i] = c
 		if i == len(p.adjacentTriangles)-1 {
 			last = t
@@ -158,48 +158,48 @@ func (v *Voronoi) VoronoiCell(p *Point) (area float64, centers []*Point) {
 		if y2 > y1 { // top
 			if cy < v.maxY {
 				side = right
-				centers = append(centers, NewPoint(v.maxX, cy, -1))
+				centers = append(centers, NewPoint(v.maxX, cy))
 			} else {
 				side = top
 				cx := v.maxY/m + x1 - y1/m
-				centers = append(centers, NewPoint(cx, v.maxY, -1))
+				centers = append(centers, NewPoint(cx, v.maxY))
 			}
 		} else if y2 < y1 { // bottom
 			if cy >= v.minY {
 				side = right
-				centers = append(centers, NewPoint(v.maxX, cy, -1))
+				centers = append(centers, NewPoint(v.maxX, cy))
 			} else {
 				side = bottom
 				cx := v.minY/m + x1 - y1/m
-				centers = append(centers, NewPoint(cx, v.minY, -1))
+				centers = append(centers, NewPoint(cx, v.minY))
 			}
 		} else { // horizontal
 			side = right
-			centers = append(centers, NewPoint(v.maxX, cy, -1))
+			centers = append(centers, NewPoint(v.maxX, cy))
 		}
 	} else if x2 < x1 { // left
 		cy := m*v.minX - m*x1 + y1
 		if y2 > y1 { // top
 			if cy <= v.maxY {
 				side = left
-				centers = append(centers, NewPoint(v.minX, cy, -1))
+				centers = append(centers, NewPoint(v.minX, cy))
 			} else {
 				side = top
 				cx := v.maxY/m + x1 - y1/m
-				centers = append(centers, NewPoint(cx, v.maxY, -1))
+				centers = append(centers, NewPoint(cx, v.maxY))
 			}
 		} else if y2 < y1 { // bottom
 			if cy > v.minY {
 				side = left
-				centers = append(centers, NewPoint(v.minX, cy, -1))
+				centers = append(centers, NewPoint(v.minX, cy))
 			} else {
 				side = bottom
 				cx := v.minY/m + x1 - y1/m
-				centers = append(centers, NewPoint(cx, v.minY, -1))
+				centers = append(centers, NewPoint(cx, v.minY))
 			}
 		} else { // horizontal
 			side = left
-			centers = append(centers, NewPoint(v.minX, cy, -1))
+			centers = append(centers, NewPoint(v.minX, cy))
 		}
 	}
 	if side == 0 {
@@ -240,68 +240,68 @@ func (v *Voronoi) VoronoiCell(p *Point) (area float64, centers []*Point) {
 		if y2 > y1 { // top
 			if cy < v.maxY {
 				if side == top {
-					centers = append(centers, NewPoint(v.maxX, v.maxY, -1))
+					centers = append(centers, NewPoint(v.maxX, v.maxY))
 				}
-				centers = append(centers, NewPoint(v.maxX, cy, -1))
+				centers = append(centers, NewPoint(v.maxX, cy))
 			} else {
 				if side == left {
-					centers = append(centers, NewPoint(v.minX, v.maxY, -1))
+					centers = append(centers, NewPoint(v.minX, v.maxY))
 				}
 				cx := v.maxY/m + x1 - y1/m
-				centers = append(centers, NewPoint(cx, v.maxY, -1))
+				centers = append(centers, NewPoint(cx, v.maxY))
 			}
 		} else if y2 < y1 { // bottom
 			if cy >= v.minY {
 				if side == top {
-					centers = append(centers, NewPoint(v.maxX, v.maxY, -1))
+					centers = append(centers, NewPoint(v.maxX, v.maxY))
 				}
-				centers = append(centers, NewPoint(v.maxX, cy, -1))
+				centers = append(centers, NewPoint(v.maxX, cy))
 			} else {
 				if side == right {
-					centers = append(centers, NewPoint(v.maxX, v.minY, -1))
+					centers = append(centers, NewPoint(v.maxX, v.minY))
 				}
 				cx := v.minY/m + x1 - y1/m
-				centers = append(centers, NewPoint(cx, v.minY, -1))
+				centers = append(centers, NewPoint(cx, v.minY))
 			}
 		} else { // horizontal
 			if side == top {
-				centers = append(centers, NewPoint(v.maxX, v.maxY, -1))
+				centers = append(centers, NewPoint(v.maxX, v.maxY))
 			}
-			centers = append(centers, NewPoint(v.maxX, cy, -1))
+			centers = append(centers, NewPoint(v.maxX, cy))
 		}
 	} else if x2 < x1 { // left
 		cy := m*v.minX - m*x1 + y1
 		if y2 > y1 { // top
 			if cy <= v.maxY {
 				if side == bottom {
-					centers = append(centers, NewPoint(v.minX, v.minY, -1))
+					centers = append(centers, NewPoint(v.minX, v.minY))
 				}
-				centers = append(centers, NewPoint(v.minX, cy, -1))
+				centers = append(centers, NewPoint(v.minX, cy))
 			} else {
 				if side == left {
-					centers = append(centers, NewPoint(v.minX, v.maxY, -1))
+					centers = append(centers, NewPoint(v.minX, v.maxY))
 				}
 				cx := v.maxY/m + x1 - y1/m
-				centers = append(centers, NewPoint(cx, v.maxY, -1))
+				centers = append(centers, NewPoint(cx, v.maxY))
 			}
 		} else if y2 < y1 { // bottom
 			if cy > v.minY {
 				if side == bottom {
-					centers = append(centers, NewPoint(v.minX, v.minY, -1))
+					centers = append(centers, NewPoint(v.minX, v.minY))
 				}
-				centers = append(centers, NewPoint(v.minX, cy, -1))
+				centers = append(centers, NewPoint(v.minX, cy))
 			} else {
 				if side == right {
-					centers = append(centers, NewPoint(v.maxX, v.minY, -1))
+					centers = append(centers, NewPoint(v.maxX, v.minY))
 				}
 				cx := v.minY/m + x1 - y1/m
-				centers = append(centers, NewPoint(cx, v.minY, -1))
+				centers = append(centers, NewPoint(cx, v.minY))
 			}
 		} else { // horizontal
 			if side == bottom {
-				centers = append(centers, NewPoint(v.minX, v.minY, -1))
+				centers = append(centers, NewPoint(v.minX, v.minY))
 			}
-			centers = append(centers, NewPoint(v.minX, cy, -1))
+			centers = append(centers, NewPoint(v.minX, cy))
 		}
 	}
 	return math.Inf(1), centers
