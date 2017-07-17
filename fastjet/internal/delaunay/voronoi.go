@@ -9,14 +9,14 @@ import (
 	"math"
 )
 
-// Voronoi holds the border information
+// Voronoi needs a Delaunay triangulation to calculate the voronoi area and cell
 type Voronoi struct {
 	maxX, minX, maxY, minY float64
 }
 
 // FIXME can't do any delaunay operation after calling NewVoronoi
 func NewVoronoi(d *Delaunay) *Voronoi {
-	if !d.hierarchy {
+	if !d.useHierarchical {
 		// FIXME
 		panic(fmt.Errorf("delaunay: vornoi for delaunay walk has not been implemented"))
 	}

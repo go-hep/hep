@@ -17,8 +17,7 @@ import (
 type Point struct {
 	// X and Y are the coordinates of the point.
 	X, Y float64
-	// adjacentTriangles is used for the triangulation, to find the nearest neighbor and
-	// to find the Voronoi Cell.
+	// adjacentTriangles is a list of triangles containing the point.
 	adjacentTriangles triangles
 	// isOutside indicates whether the point is outside the triangulation.
 	isOutside bool
@@ -29,7 +28,7 @@ type Point struct {
 	// polygon formed by all those points.
 	ID      int
 	nearest *Point
-	// squared distance to the nearest neighbor
+	// dist is the squared distance to the nearest neighbor.
 	dist float64
 }
 
@@ -55,16 +54,14 @@ func (p *Point) inTriangle(t *Triangle) (inside, edge bool) {
 	b1 := big.NewFloat(barcen1)
 	b2 := big.NewFloat(barcen2)
 	b3 := big.NewFloat(barcen3)
-	zero := big.NewFloat(0.0)
-	one := big.NewFloat(1.0)
 	// inside triangle if all barycentric coordinates are between 0 and 1
-	if b1.Cmp(zero) > 0 && b1.Cmp(one) < 0 && b2.Cmp(zero) > 0 && b2.Cmp(one) < 0 && b3.Cmp(zero) > 0 && b3.Cmp(one) < 0 {
+	if b1.Cmp(Zero) > 0 && b1.Cmp(One) < 0 && b2.Cmp(Zero) > 0 && b2.Cmp(One) < 0 && b3.Cmp(Zero) > 0 && b3.Cmp(One) < 0 {
 		return true, false
 	}
 	// either outside triangle or on edge
 	// it is outside if one of the coordinates is less than 0
 	// it is on the edge if one or more of the coordinates is one and the rest greater 0
-	in := b1.Cmp(zero) > 0 && b2.Cmp(zero) > 0 && b3.Cmp(zero) > 0
+	in := b1.Cmp(Zero) > 0 && b2.Cmp(Zero) > 0 && b3.Cmp(Zero) > 0
 	return in, in
 }
 

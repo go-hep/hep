@@ -19,7 +19,7 @@ type Triangle struct {
 	// A,B,C are the points that make up the triangle
 	A, B, C *Point
 	// inD holds whether a triangle is part of the triangulation
-	inD bool
+	isInTriangulation bool
 }
 
 // NewTriangle returns a triangle formed out of the three given points
@@ -76,7 +76,7 @@ func (t *Triangle) centerOfCircumcircle() (x, y float64) {
 			x = (b2 - b1) / (m1 - m2)
 			y = m1*x + b1
 			if math.IsNaN(y) {
-				panic(fmt.Errorf("delaunay: error caluclating the circumcenter of triangle " + t.String("T")))
+				panic(fmt.Errorf("delaunay: error caluclating the circumcenter of triangle %v", t))
 			}
 		}
 	}
@@ -91,7 +91,7 @@ func (t *Triangle) Equals(s *Triangle) bool {
 			(t.C.Equals(s.A) || t.C.Equals(s.B) || t.C.Equals(s.C))
 }
 
-func (t *Triangle) String(name string) string {
+func (t *Triangle) String() string {
 	return fmt.Sprintf("{A%s, B%s, C%s}", t.A, t.B, t.C)
 }
 
@@ -99,10 +99,10 @@ type triangles []*Triangle
 
 // appendT appends to a slice of triangles and updates the nearest neighbor
 // it is used when the adjacent triangles of a point change
-func (triangles triangles) appendT(elems ...*Triangle) []*Triangle {
+func (triangles triangles) append(triangles ...*Triangle) []*Triangle {
 	// check if nearest neighbor changes by going through each triangles points
 	// and checking if the distance to that point is less. It is done both ways.
-	for _, t := range elems {
+	for _, t := range triangles {
 		d := t.A.distance(t.B)
 		if d < t.A.dist {
 			t.A.dist = d
@@ -131,15 +131,15 @@ func (triangles triangles) appendT(elems ...*Triangle) []*Triangle {
 			t.C.nearest = t.A
 		}
 	}
-	return append(triangles, elems...)
+	return append(triangles, triangles...)
 }
 
 // remove removes given triangles from a slice of triangles
-func (triangles triangles) remove(elems ...*Triangle) []*Triangle {
+func (triangles triangles) remove(triangles ...*Triangle) []*Triangle {
 	// check if nearest neighbor of any point is removed and if so
 	// put that point in the update slice
 	var update []*Point
-	for _, t := range elems {
+	for _, t := range triangles {
 		if t.A.nearest != nil && (t.A.nearest.Equals(t.B) || t.A.nearest.Equals(t.C)) {
 			update = append(update, t.A)
 		}
@@ -151,10 +151,10 @@ func (triangles triangles) remove(elems ...*Triangle) []*Triangle {
 		}
 	}
 	for i := len(triangles) - 1; i >= 0; i-- {
-		for j, tri := range elems {
-			if tri.Equals(triangles[i]) {
+		for j, t := range triangles {
+			if t.Equals(triangles[i]) {
 				triangles = append(triangles[:i], triangles[i+1:]...)
-				elems = append(elems[:j], elems[j+1:]...)
+				triangles = append(triangles[:j], triangles[j+1:]...)
 				break
 			}
 		}
@@ -169,15 +169,15 @@ func (triangles triangles) remove(elems ...*Triangle) []*Triangle {
 // finalize returns the final delaunay triangles
 // only keeps leaf elements from the hierarchy
 // removes given triangles
-func (triangles triangles) finalize(elems ...*Triangle) []*Triangle {
+func (triangles triangles) finalize(triangles ...*Triangle) []*Triangle {
 	ft := make([]*Triangle, 0, len(triangles))
 	for _, t := range triangles {
-		if t.inD {
+		if t.isInTriangulation {
 			keep := true
-			for j, tri := range elems {
+			for j, tri := range triangles {
 				if tri.Equals(t) {
 					keep = false
-					elems = append(elems[:j], elems[j+1:]...)
+					triangles = append(triangles[:j], triangles[j+1:]...)
 					break
 				}
 			}

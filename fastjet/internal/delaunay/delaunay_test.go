@@ -13,7 +13,7 @@ import (
 
 const tol = 1e-3
 
-func TestSimple(t *testing.T) {
+func TestSimpleTriangulation(t *testing.T) {
 	// NewPoint(x, y, id)
 	a := NewPoint(0, 0, 0)
 	b := NewPoint(0, 2, 1)
@@ -27,8 +27,8 @@ func TestSimple(t *testing.T) {
 		ep,
 		d,
 	}
-	del := HierarchicalDelaunay(points, 4, 0, 4, 0)
-	del.RemovePoint(ep)
+	del := NewDelaunay(points, 4, 0, 4, 0)
+	del.Remove(ep)
 	tri := del.Triangles()
 	exp := []*Triangle{
 		NewTriangle(a, b, c),
@@ -54,8 +54,10 @@ func TestSimple(t *testing.T) {
 			t.Fatalf("Triangle T%s not as expected", tri[i])
 		}
 	}
-	nn := make([]*Point, 0, len(points)-1)
-	nd := make([]float64, 0, len(points)-1)
+	var (
+		nn []*Point
+		nd []float64
+	)
 	for i, p := range points {
 		if i == 3 { // skip the removed point
 			continue
@@ -94,9 +96,9 @@ func TestWalkSimple(t *testing.T) {
 		ep,
 		d,
 	}
-	del := WalkDelaunay(points)
+	del := NewUnboundedDelaunay(points, nil)
 	tri := del.Triangles()
-	del.RemovePoint(ep)
+	del.Remove(ep)
 	tri = del.Triangles()
 	exp := []*Triangle{
 		NewTriangle(a, b, c),
@@ -122,8 +124,10 @@ func TestWalkSimple(t *testing.T) {
 			t.Fatalf("Triangle T%s not as expected", tri[i])
 		}
 	}
-	nn := make([]*Point, 0, len(points)-1)
-	nd := make([]float64, 0, len(points)-1)
+	var (
+		nn []*Point
+		nd []float64
+	)
 	for i, p := range points {
 		if i == 3 { // skip the removed point
 			continue
@@ -171,16 +175,16 @@ func TestMedium(t *testing.T) {
 	pE4 := NewPoint(-2.8, -0.5, -1)
 	ps := []*Point{p1, p2, p3, p4, p5, p6, pE3, pE4,
 		p9, p10, p11, p12, p13, p14}
-	d := HierarchicalDelaunay(ps, 4, -4, 4, -4)
-	d.RemovePoint(pE4)
-	d.InsertPoint(pE1)
-	d.RemovePoint(pE3)
-	d.InsertPoint(p15)
-	d.InsertPoint(pE2)
-	d.RemovePoint(pE1)
-	d.InsertPoint(p7)
-	d.InsertPoint(p8)
-	d.RemovePoint(pE2)
+	d := NewDelaunay(ps, 4, -4, 4, -4)
+	d.Remove(pE4)
+	d.Insert(pE1)
+	d.Remove(pE3)
+	d.Insert(p15)
+	d.Insert(pE2)
+	d.Remove(pE1)
+	d.Insert(p7)
+	d.Insert(p8)
+	d.Remove(pE2)
 	ts := d.Triangles()
 	exp := []*Triangle{
 		NewTriangle(p1, p3, p4),
@@ -222,9 +226,13 @@ func TestMedium(t *testing.T) {
 			t.Fatalf("Triangle T%s not as expected", ts[i])
 		}
 	}
-	expv := []*Point{NewPoint(-2.523, 2.25, -1),
-		NewPoint(-0.307, 2.25, -1), NewPoint(-0.373, 0.714, -1),
-		NewPoint(-1.204, 0.022, -1), NewPoint(-2.672, 0.609, -1)}
+	expv := []*Point{
+		NewPoint(-2.523, 2.25, -1),
+		NewPoint(-0.307, 2.25, -1),
+		NewPoint(-0.373, 0.714, -1),
+		NewPoint(-1.204, 0.022, -1),
+		NewPoint(-2.672, 0.609, -1),
+	}
 	exparea := 4.3322215
 	v := NewVoronoi(d)
 	area, points := v.VoronoiCell(p4)
@@ -285,16 +293,16 @@ func TestWalkMedium(t *testing.T) {
 	pE4 := NewPoint(-2.8, -0.5, -4)
 	ps := []*Point{p1, p2, p3, p4, p5, p6, pE3, pE4,
 		p9, p10, p11, p12, p13, p14}
-	d := WalkDelaunay(ps)
-	d.RemovePoint(pE4)
-	d.InsertPoint(pE1)
-	d.RemovePoint(pE3)
-	d.InsertPoint(p15)
-	d.InsertPoint(pE2)
-	d.RemovePoint(pE1)
-	d.InsertPoint(p7)
-	d.InsertPoint(p8)
-	d.RemovePoint(pE2)
+	d := NewUnboundedDelaunay(ps, nil)
+	d.Remove(pE4)
+	d.Insert(pE1)
+	d.Remove(pE3)
+	d.Insert(p15)
+	d.Insert(pE2)
+	d.Remove(pE1)
+	d.Insert(p7)
+	d.Insert(p8)
+	d.Remove(pE2)
 	ts := d.Triangles()
 	exp := []*Triangle{
 		NewTriangle(p1, p3, p4),
@@ -434,7 +442,7 @@ func BenchmarkDelaunay_VoronoiArea(b *testing.B) {
 		y := rand.Float64() * 1000
 		points[j] = NewPoint(x, y, j)
 	}
-	d := HierarchicalDelaunay(points, 1000, 0, 1000, 0)
+	d := NewDelaunay(points, 1000, 0, 1000, 0)
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		v := NewVoronoi(d)
@@ -453,9 +461,9 @@ func benchmarkDelaunay(i int, b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		d := HierarchicalDelaunay(points, 1000, 0, 1000, 0)
+		d := NewDelaunay(points, 1000, 0, 1000, 0)
 		for _, p := range points {
-			d.RemovePoint(p)
+			d.Remove(p)
 		}
 	}
 }

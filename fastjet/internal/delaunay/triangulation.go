@@ -11,6 +11,11 @@ import (
 	"time"
 )
 
+var (
+	Zero = big.NewFloat(0)
+	One  = big.NewFloat(1)
+)
+
 // Delaunay holds necessary information for the
 // delaunay triangulation
 type Delaunay struct {
@@ -22,14 +27,15 @@ type Delaunay struct {
 	root                   *Triangle
 	maxX, minX, maxY, minY float64
 	// hierarchy indicates which method to use to find the triangle that contains the point
-	hierarchy bool
+	useHierarchical bool
+	r               *rand.Rand
 }
 
 // HierarchicalDelaunay creates a delaunay triangulation with the given points
 // all points have to be inside the user defined bounds
 // uses a hierarchy to find the triangle which contains a point
 // has a worst time complexity of O(nln(n))
-func HierarchicalDelaunay(points []*Point, maxX float64, minX float64, maxY float64, minY float64) *Delaunay {
+func NewDelaunay(pts []*Point, maxX, minX, maxY, minY float64) *Delaunay {
 	// root Triangle is a triangle that contains all points
 	dx := maxX - minX
 	dy := maxY - minY
@@ -38,16 +44,16 @@ func HierarchicalDelaunay(points []*Point, maxX float64, minX float64, maxY floa
 	c := NewPoint(minX+dx/2, minY-8*dy, -1)
 	root := NewTriangle(a, b, c)
 	d := &Delaunay{
-		root:      root,
-		maxX:      maxX,
-		minX:      minX,
-		maxY:      maxY,
-		minY:      minY,
-		hierarchy: true,
+		root:            root,
+		maxX:            maxX,
+		minX:            minX,
+		maxY:            maxY,
+		minY:            minY,
+		useHierarchical: true,
 	}
 	d.triangles = make([]*Triangle, 0)
-	for _, p := range points {
-		d.InsertPoint(p)
+	for _, p := range pts {
+		d.Insert(p)
 	}
 	return d
 }
@@ -55,59 +61,60 @@ func HierarchicalDelaunay(points []*Point, maxX float64, minX float64, maxY floa
 // WalkDelaunay creates a delaunay triangulation with the given points
 // it uses the remembering stochastic walk method to find the triangle in which p is inserted
 // it has a worst time complexity of O(n^5/3) but it doesn't need bounds
-func WalkDelaunay(points []*Point) *Delaunay {
+func NewUnboundedDelaunay(pts []*Point, r *rand.Rand) *Delaunay {
 	// it needs at least one triangle to start with
-	if len(points) < 3 {
+	if len(pts) < 3 {
 		panic(fmt.Errorf("delaunay: not enough points"))
 	}
 	rand.Seed(time.Now().UnixNano())
 	d := &Delaunay{
-		hierarchy: false,
+		useHierarchical: false,
+		r:               r,
 	}
 	d.triangles = make([]*Triangle, 1)
 	// create first triangle
-	d.triangles[0] = NewTriangle(points[0], points[1], points[2])
-	d.triangles[0].inD = true
-	points[0].adjacentTriangles = points[0].adjacentTriangles.appendT(d.triangles[0])
-	points[1].adjacentTriangles = points[1].adjacentTriangles.appendT(d.triangles[0])
-	points[2].adjacentTriangles = points[2].adjacentTriangles.appendT(d.triangles[0])
-	for i := 3; i < len(points); i++ {
-		d.InsertPoint(points[i])
+	d.triangles[0] = NewTriangle(pts[0], pts[1], pts[2])
+	d.triangles[0].isInTriangulation = true
+	pts[0].adjacentTriangles = pts[0].adjacentTriangles.append(d.triangles[0])
+	pts[1].adjacentTriangles = pts[1].adjacentTriangles.append(d.triangles[0])
+	pts[2].adjacentTriangles = pts[2].adjacentTriangles.append(d.triangles[0])
+	for i := 3; i < len(pts); i++ {
+		d.Insert(pts[i])
 	}
 	return d
 }
 
 // Triangle returns all delaunay Triangles
 func (d *Delaunay) Triangles() []*Triangle {
-	if d.hierarchy {
-		// remove triangles that contain the root points
-		rt := make(triangles, len(d.root.A.adjacentTriangles)+len(d.root.B.adjacentTriangles)+len(d.root.C.adjacentTriangles))
-		n := copy(rt, d.root.A.adjacentTriangles)
-		n += copy(rt[n:], d.root.B.adjacentTriangles)
-		copy(rt[n:], d.root.C.adjacentTriangles)
-		return d.triangles.finalize(rt...)
+	if !d.useHierarchical {
+		return d.triangles.finalize()
 	}
-	return d.triangles.finalize()
+	// remove triangles that contain the root points
+	rt := make(triangles, len(d.root.A.adjacentTriangles)+len(d.root.B.adjacentTriangles)+len(d.root.C.adjacentTriangles))
+	n := copy(rt, d.root.A.adjacentTriangles)
+	n += copy(rt[n:], d.root.B.adjacentTriangles)
+	copy(rt[n:], d.root.C.adjacentTriangles)
+	return d.triangles.finalize(rt...)
 }
 
-func (d *Delaunay) InsertPoint(p *Point) {
+func (d *Delaunay) Insert(p *Point) {
 	p.adjacentTriangles = make(triangles, 0)
 	var t *Triangle
-	var onE bool
-	if d.hierarchy {
-		t, onE = findTriangle(d.root, p)
+	var isOnEdge bool
+	if d.useHierarchical {
+		t, isOnEdge = findTriangle(d.root, p)
 	} else {
 		var l, r *Point
 		var start *Triangle
 		// find a triangle to start the walk
 		// use the last changed triangle to start from
 		for i := len(d.triangles) - 1; ; i-- {
-			if d.triangles[i].inD {
+			if d.triangles[i].isInTriangulation {
 				start = d.triangles[i]
 				break
 			}
 		}
-		t, onE, l, r = walkTriangle(start, p)
+		t, isOnEdge, l, r = d.walkTriangle(start, p)
 		if l != nil || r != nil {
 			// point is on the outside
 			d.addPoint(p, l, r, t)
@@ -117,7 +124,7 @@ func (d *Delaunay) InsertPoint(p *Point) {
 	if t == nil {
 		panic(fmt.Errorf("delaunay: no triangle which contains P%v. Min and Max values must be wrong.", p))
 	}
-	if onE {
+	if isOnEdge {
 		d.insertPonE(t, p)
 	} else {
 		d.insertP(t, p)
@@ -176,7 +183,7 @@ func (d *Delaunay) addPoint(p, l, r *Point, t *Triangle) {
 			previous1 = l
 		}
 	}
-	found1, found2 := true, true
+	found1 := true
 	// l's clockwise neighbor needs to be checked
 	for i := len(outer1) - 1; found1; i++ {
 	outerloop1:
@@ -237,6 +244,7 @@ func (d *Delaunay) addPoint(p, l, r *Point, t *Triangle) {
 			break
 		}
 	}
+	found2 := true
 	for i := len(outer2) - 1; found2; i++ {
 		// r's counterclockwise neighbor needs to be checked
 	outerloop2:
@@ -300,43 +308,43 @@ func (d *Delaunay) addPoint(p, l, r *Point, t *Triangle) {
 	// create triangles with all the points that can connect to p
 	nts := make(triangles, 1)
 	nts[0] = NewTriangle(l, r, p)
-	l.adjacentTriangles = l.adjacentTriangles.appendT(nts[0])
-	r.adjacentTriangles = r.adjacentTriangles.appendT(nts[0])
+	l.adjacentTriangles = l.adjacentTriangles.append(nts[0])
+	r.adjacentTriangles = r.adjacentTriangles.append(nts[0])
 	for i := 0; i < len(outer1)-1; i++ {
 		nt := NewTriangle(outer1[i+1], p, outer1[i])
 		nts = append(nts, nt)
-		outer1[i].adjacentTriangles = outer1[i].adjacentTriangles.appendT(nt)
-		outer1[i+1].adjacentTriangles = outer1[i+1].adjacentTriangles.appendT(nt)
+		outer1[i].adjacentTriangles = outer1[i].adjacentTriangles.append(nt)
+		outer1[i+1].adjacentTriangles = outer1[i+1].adjacentTriangles.append(nt)
 	}
 	for i := 0; i < len(outer2)-1; i++ {
 		nt := NewTriangle(outer2[i+1], outer2[i], p)
 		nts = append(nts, nt)
-		outer2[i].adjacentTriangles = outer2[i].adjacentTriangles.appendT(nt)
-		outer2[i+1].adjacentTriangles = outer2[i+1].adjacentTriangles.appendT(nt)
+		outer2[i].adjacentTriangles = outer2[i].adjacentTriangles.append(nt)
+		outer2[i+1].adjacentTriangles = outer2[i+1].adjacentTriangles.append(nt)
 	}
-	p.adjacentTriangles = p.adjacentTriangles.appendT(nts...)
+	p.adjacentTriangles = p.adjacentTriangles.append(nts...)
 	d.triangles = append(d.triangles, nts...)
 	for _, t := range nts {
-		t.inD = true
+		t.isInTriangulation = true
 	}
 	// validate the edges
 	for _, t := range nts {
-		if t.inD {
+		if t.isInTriangulation {
 			d.validateEdge(t, p)
 		}
 	}
 }
 
-func (d *Delaunay) RemovePoint(p *Point) {
+func (d *Delaunay) Remove(p *Point) {
 	// in hierarchical delaunay points on the outside are never removed. The root points stay.
 	// in walk delaunay points on the outside are removed and therefore can have less than 3
 	// adjacent triangles
-	if len(p.adjacentTriangles) < 3 && d.hierarchy {
+	if len(p.adjacentTriangles) < 3 && d.useHierarchical {
 		panic(fmt.Errorf("delaunay: can't remove point P%v not enough adjacent triangles", p))
 	}
 	// remove triangles adjacent to p
 	for _, t := range p.adjacentTriangles {
-		t.inD = false
+		t.isInTriangulation = false
 		switch {
 		case p.Equals(t.A):
 			t.B.adjacentTriangles = t.B.adjacentTriangles.remove(t)
@@ -380,7 +388,7 @@ func (d *Delaunay) RemovePoint(p *Point) {
 	}
 	for i := 0; j < len(points)-1; {
 		if i >= len(p.adjacentTriangles) {
-			if d.hierarchy {
+			if d.useHierarchical {
 				panic(fmt.Errorf("delaunay: internal error with adjacent triangles for P%v. Can't find counterclockwise neighbor of P%v", p, points[j]))
 			}
 			// the bound was reached, now the rest of the points are found by going clockwise from the starting point
@@ -421,7 +429,7 @@ func (d *Delaunay) RemovePoint(p *Point) {
 		}
 		i++
 	}
-	if !d.hierarchy {
+	if !d.useHierarchical {
 		// check if point is on the outside by checking if there is a triangle that contains
 		// the last and the first point found
 		found := false
@@ -473,14 +481,14 @@ func (d *Delaunay) RemovePoint(p *Point) {
 			return
 		}
 	}
-	d.removeP(points, p.adjacentTriangles)
+	d.removePoints(points, p.adjacentTriangles)
 }
 
 // removeOuter finds the point around a point to be removed in clockwise order.
 // it is only used by the walk method
-// ind is the index of the last point found in the points slice
-func (d *Delaunay) removeOuter(p *Point, points []*Point, ind int) {
-	if len(points)-1 > ind {
+// last is the index of the last point found in the points slice
+func (d *Delaunay) removeOuter(p *Point, points []*Point, last int) {
+	if len(points)-1 > last {
 		// need to find remaining points
 		// here it needs to find the points in clockwise order from the starting point,
 		// because going counterclockwise stopped when the border was reached
@@ -489,7 +497,7 @@ func (d *Delaunay) removeOuter(p *Point, points []*Point, ind int) {
 		j := 0
 		// k is the index of the previous triangle
 		k := 0
-		for i := 0; j > ind+1 || j == 0; {
+		for i := 0; j > last+1 || j == 0; {
 			if i >= len(p.adjacentTriangles) {
 				panic(fmt.Errorf("delaunay: internal error with adjacent triangles for P%v. Can't find clockwise neighbor of P%v", p, points[j]))
 			}
@@ -534,12 +542,11 @@ func (d *Delaunay) removeOuter(p *Point, points []*Point, ind int) {
 			i++
 		}
 	}
-	// call removeP with the new found polygon
-	d.removeP(points, nil)
+	d.removePoints(points, nil)
 }
 
-// removeP forms a new triangulation inside the points, which form a polygon
-func (d *Delaunay) removeP(points []*Point, parents []*Triangle) {
+// removePoints forms a new triangulation inside the points, which form a polygon
+func (d *Delaunay) removePoints(points []*Point, parents []*Triangle) {
 	// for performance improvement handle points with few adjacent points differently
 	/*FIXME make the low degree optimization work
 	new changes have been added since attempting to implement this
@@ -828,13 +835,13 @@ func (d *Delaunay) removeP(points []*Point, parents []*Triangle) {
 		copies[i] = NewPoint(p.X, p.Y, i)
 	}
 	var dn *Delaunay
-	if d.hierarchy {
+	if d.useHierarchical {
 		// change limits to create a root triangle that's far outside of the origial root triangle
 		dx := d.maxX - d.minX
 		dy := d.maxY - d.minY
-		dn = HierarchicalDelaunay(copies, d.maxX+6*dx, d.minX-6*dx, d.maxY+10, d.minY-6*dy)
+		dn = NewDelaunay(copies, d.maxX+6*dx, d.minX-6*dx, d.maxY+10, d.minY-6*dy)
 	} else {
-		dn = WalkDelaunay(copies)
+		dn = NewUnboundedDelaunay(copies, d.r)
 	}
 	ts := dn.Triangles()
 	triangles := make([]*Triangle, 0, len(ts))
@@ -847,15 +854,15 @@ func (d *Delaunay) removeP(points []*Point, parents []*Triangle) {
 		// is counterclockwise
 		if areCounterclockwise(a, b, c) {
 			tr := NewTriangle(points[a], points[b], points[c])
-			tr.inD = true
-			points[a].adjacentTriangles = points[a].adjacentTriangles.appendT(tr)
-			points[b].adjacentTriangles = points[b].adjacentTriangles.appendT(tr)
-			points[c].adjacentTriangles = points[c].adjacentTriangles.appendT(tr)
+			tr.isInTriangulation = true
+			points[a].adjacentTriangles = points[a].adjacentTriangles.append(tr)
+			points[b].adjacentTriangles = points[b].adjacentTriangles.append(tr)
+			points[c].adjacentTriangles = points[c].adjacentTriangles.append(tr)
 			triangles = append(triangles, tr)
 		}
 	}
 	d.triangles = append(d.triangles, triangles...)
-	if d.hierarchy {
+	if d.useHierarchical {
 		for i := range parents {
 			parents[i].children = append(parents[i].children, triangles...)
 		}
@@ -875,7 +882,7 @@ func areCounterclockwise(a, b, c int) bool {
 }
 
 // walkTriangle finds the triangle which contains p by using a remembering stochastic walk
-func walkTriangle(t *Triangle, p *Point) (*Triangle, bool, *Point, *Point) {
+func (d *Delaunay) walkTriangle(t *Triangle, p *Point) (*Triangle, bool, *Point, *Point) {
 	found := false
 	var l, r *Point
 	for !found {
@@ -884,7 +891,12 @@ func walkTriangle(t *Triangle, p *Point) (*Triangle, bool, *Point, *Point) {
 		// k is a random int {0,1,2}
 		// it is used to pick a random edge
 		// the randomness prevents loops in walks
-		k := rand.Intn(3)
+		var k int
+		if d.r == nil {
+			k = rand.Intn(3)
+		} else {
+			k = d.r.Intn(3)
+		}
 		for i := k; i <= k+2; i++ {
 			c := i % 3
 			switch c {
@@ -915,8 +927,7 @@ func walkTriangle(t *Triangle, p *Point) (*Triangle, bool, *Point, *Point) {
 			if inc < 3 {
 				o := p.orientation(l, r)
 				orient := big.NewFloat(o)
-				zero := big.NewFloat(0)
-				if orient.Cmp(zero) < 0 {
+				if orient.Cmp(Zero) < 0 {
 					// p is on the other side of the line formed by the two points
 					// therefore cross the edge
 					previous = t
@@ -935,13 +946,13 @@ func walkTriangle(t *Triangle, p *Point) (*Triangle, bool, *Point, *Point) {
 					}
 					found = false
 					break
-				} else if orient.Cmp(zero) == 0 {
+				} else if orient.Cmp(Zero) == 0 {
 					ab := big.NewFloat(p.orientation(t.A, t.B))
 					bc := big.NewFloat(p.orientation(t.B, t.C))
 					ca := big.NewFloat(p.orientation(t.C, t.A))
 					// p is on the edge if it is on the line formed by the points and if it is in between the 2 other edges
 					// in that triangle
-					if ab.Cmp(zero) >= 0 && bc.Cmp(zero) >= 0 && ca.Cmp(zero) >= 0 {
+					if ab.Cmp(Zero) >= 0 && bc.Cmp(Zero) >= 0 && ca.Cmp(Zero) >= 0 {
 						return t, true, nil, nil
 					}
 				}
@@ -977,21 +988,21 @@ func findTriangle(t *Triangle, p *Point) (*Triangle, bool) {
 func (d *Delaunay) insertP(t *Triangle, p *Point) {
 	// form three new triangles
 	t1 := NewTriangle(t.A, t.B, p)
-	t1.inD = true
+	t1.isInTriangulation = true
 	t2 := NewTriangle(t.B, t.C, p)
-	t2.inD = true
+	t2.isInTriangulation = true
 	t3 := NewTriangle(t.A, p, t.C)
-	t3.inD = true
+	t3.isInTriangulation = true
 	// adjust the adjacent triangles for all points involved
-	p.adjacentTriangles = p.adjacentTriangles.appendT(t1, t2, t3)
-	t.inD = false
+	p.adjacentTriangles = p.adjacentTriangles.append(t1, t2, t3)
+	t.isInTriangulation = false
 	t.A.adjacentTriangles = t.A.adjacentTriangles.remove(t)
 	t.B.adjacentTriangles = t.B.adjacentTriangles.remove(t)
 	t.C.adjacentTriangles = t.C.adjacentTriangles.remove(t)
-	t.A.adjacentTriangles = t.A.adjacentTriangles.appendT(t1, t3)
-	t.B.adjacentTriangles = t.B.adjacentTriangles.appendT(t1, t2)
-	t.C.adjacentTriangles = t.C.adjacentTriangles.appendT(t2, t3)
-	if d.hierarchy {
+	t.A.adjacentTriangles = t.A.adjacentTriangles.append(t1, t3)
+	t.B.adjacentTriangles = t.B.adjacentTriangles.append(t1, t2)
+	t.C.adjacentTriangles = t.C.adjacentTriangles.append(t2, t3)
+	if d.useHierarchical {
 		t.children = append(t.children, t1, t2, t3)
 	}
 	d.triangles = append(d.triangles, t1, t2, t3)
@@ -1026,16 +1037,16 @@ func (d *Delaunay) insertPonBorderE(t *Triangle, p *Point) {
 	// form two new triangles
 	nt1 := NewTriangle(op, adj1, p)
 	nt2 := NewTriangle(op, adj2, p)
-	t.inD = false
-	nt1.inD = true
-	nt2.inD = true
+	t.isInTriangulation = false
+	nt1.isInTriangulation = true
+	nt2.isInTriangulation = true
 	op.adjacentTriangles = op.adjacentTriangles.remove(t)
 	adj1.adjacentTriangles = adj1.adjacentTriangles.remove(t)
 	adj2.adjacentTriangles = adj2.adjacentTriangles.remove(t)
-	op.adjacentTriangles = op.adjacentTriangles.appendT(nt1, nt2)
-	adj1.adjacentTriangles = adj1.adjacentTriangles.appendT(nt1)
-	adj2.adjacentTriangles = adj2.adjacentTriangles.appendT(nt2)
-	p.adjacentTriangles = p.adjacentTriangles.appendT(nt1, nt2)
+	op.adjacentTriangles = op.adjacentTriangles.append(nt1, nt2)
+	adj1.adjacentTriangles = adj1.adjacentTriangles.append(nt1)
+	adj2.adjacentTriangles = adj2.adjacentTriangles.append(nt2)
+	p.adjacentTriangles = p.adjacentTriangles.append(nt1, nt2)
 	d.triangles = append(d.triangles, nt1, nt2)
 	d.validateEdge(nt1, p)
 	d.validateEdge(nt2, p)
@@ -1048,7 +1059,7 @@ func (d *Delaunay) insertPonE(t1 *Triangle, p *Point) {
 	found := false
 	for _, t2 = range d.triangles {
 		_, edge := p.inTriangle(t2)
-		if edge && t2.inD && !t2.Equals(t1) {
+		if edge && t2.isInTriangulation && !t2.Equals(t1) {
 			found = true
 			break
 		}
@@ -1087,26 +1098,26 @@ func (d *Delaunay) insertPonE(t1 *Triangle, p *Point) {
 	}
 	// form four new triangles
 	nt1 := NewTriangle(p1, p, pO1)
-	nt1.inD = true
+	nt1.isInTriangulation = true
 	nt2 := NewTriangle(p, p2, pO1)
-	nt2.inD = true
+	nt2.isInTriangulation = true
 	nt3 := NewTriangle(p1, p, pO2)
-	nt3.inD = true
+	nt3.isInTriangulation = true
 	nt4 := NewTriangle(p, p2, pO2)
-	nt4.inD = true
+	nt4.isInTriangulation = true
 	// adjust the adjacent triangles for all points involved
-	p.adjacentTriangles = p.adjacentTriangles.appendT(nt1, nt2, nt3, nt4)
-	t1.inD = false
-	t2.inD = false
+	p.adjacentTriangles = p.adjacentTriangles.append(nt1, nt2, nt3, nt4)
+	t1.isInTriangulation = false
+	t2.isInTriangulation = false
 	p1.adjacentTriangles = p1.adjacentTriangles.remove(t1)
 	p2.adjacentTriangles = p2.adjacentTriangles.remove(t2)
 	pO1.adjacentTriangles = pO1.adjacentTriangles.remove(t1, t2)
 	pO2.adjacentTriangles = pO2.adjacentTriangles.remove(t1, t2)
-	p1.adjacentTriangles = p1.adjacentTriangles.appendT(nt1, nt3)
-	p2.adjacentTriangles = p2.adjacentTriangles.appendT(nt2, nt4)
-	pO1.adjacentTriangles = pO1.adjacentTriangles.appendT(nt1, nt2)
-	pO2.adjacentTriangles = pO2.adjacentTriangles.appendT(nt3, nt4)
-	if d.hierarchy {
+	p1.adjacentTriangles = p1.adjacentTriangles.append(nt1, nt3)
+	p2.adjacentTriangles = p2.adjacentTriangles.append(nt2, nt4)
+	pO1.adjacentTriangles = pO1.adjacentTriangles.append(nt1, nt2)
+	pO2.adjacentTriangles = pO2.adjacentTriangles.append(nt3, nt4)
+	if d.useHierarchical {
 		t1.children = append(t1.children, nt1, nt3)
 		t2.children = append(t2.children, nt2, nt4)
 	}
@@ -1133,7 +1144,7 @@ func (d *Delaunay) validateEdge(t *Triangle, p *Point) {
 		p2 = t.A
 		p3 = t.B
 	default:
-		panic(fmt.Errorf("fastjet: delaunay can't find point P%v in Triangle T%v", p, t))
+		panic(fmt.Errorf("delaunay: can't find point P%v in Triangle T%v", p, t))
 	}
 	// find triangle opposite to p
 	var ta *Triangle
@@ -1153,53 +1164,55 @@ func (d *Delaunay) validateEdge(t *Triangle, p *Point) {
 	}
 }
 
-// flip flips edge between two triangles
-func (d *Delaunay) flip(t1 *Triangle, t2 *Triangle) (*Triangle, *Triangle) {
+// flip flips edge between two triangles.
+// The edge in the middle of the two triangles is removed and
+// an edge between the two opposite points is added
+func (d *Delaunay) flip(t1, t2 *Triangle) (nt1, nt2 *Triangle) {
 	// find points adjacent and opposite to edge
-	var p1, p2, pO1, pO2 *Point
+	var adj1, adj2, opp1, opp2 *Point
 	switch {
 	case !t1.A.Equals(t2.A) && !t1.A.Equals(t2.B) && !t1.A.Equals(t2.C):
-		p1 = t1.A
-		pO1 = t1.B
-		pO2 = t1.C
+		adj1 = t1.A
+		opp1 = t1.B
+		opp2 = t1.C
 	case !t1.B.Equals(t2.A) && !t1.B.Equals(t2.B) && !t1.B.Equals(t2.C):
-		p1 = t1.B
-		pO1 = t1.A
-		pO2 = t1.C
+		adj1 = t1.B
+		opp1 = t1.A
+		opp2 = t1.C
 	case !t1.C.Equals(t2.A) && !t1.C.Equals(t2.B) && !t1.C.Equals(t2.C):
-		p1 = t1.C
-		pO1 = t1.B
-		pO2 = t1.A
+		adj1 = t1.C
+		opp1 = t1.B
+		opp2 = t1.A
 	default:
-		panic(fmt.Errorf("delaunay: triangle T1%v doesn't have points not in T2%v", t1, t2))
+		panic(fmt.Errorf("delaunay: triangle T1%v is equal to T2%v", t1, t2))
 	}
 	switch {
 	case !t2.A.Equals(t1.A) && !t2.A.Equals(t1.B) && !t2.A.Equals(t1.C):
-		p2 = t2.A
+		adj2 = t2.A
 	case !t2.B.Equals(t1.A) && !t2.B.Equals(t1.B) && !t2.B.Equals(t1.C):
-		p2 = t2.B
+		adj2 = t2.B
 	case !t2.C.Equals(t1.A) && !t2.C.Equals(t1.B) && !t2.C.Equals(t1.C):
-		p2 = t2.C
+		adj2 = t2.C
 	default:
-		panic(fmt.Errorf("delaunay: triangle T2%v doesn't have points not in T1%v", t2, t1))
+		panic(fmt.Errorf("delaunay: triangle T2%v is equal to T1%v", t2, t1))
 	}
 	// create two new triangles
-	nt1 := NewTriangle(p1, p2, pO1)
-	nt1.inD = true
-	nt2 := NewTriangle(p1, p2, pO2)
-	nt2.inD = true
-	t1.inD = false
-	t2.inD = false
+	nt1 = NewTriangle(adj1, adj2, opp1)
+	nt1.isInTriangulation = true
+	nt2 = NewTriangle(adj1, adj2, opp2)
+	nt2.isInTriangulation = true
+	t1.isInTriangulation = false
+	t2.isInTriangulation = false
 	// update adjacent lists
-	p1.adjacentTriangles = p1.adjacentTriangles.remove(t1)
-	p2.adjacentTriangles = p2.adjacentTriangles.remove(t2)
-	pO1.adjacentTriangles = pO1.adjacentTriangles.remove(t1, t2)
-	pO2.adjacentTriangles = pO2.adjacentTriangles.remove(t1, t2)
-	p1.adjacentTriangles = p1.adjacentTriangles.appendT(nt1, nt2)
-	p2.adjacentTriangles = p2.adjacentTriangles.appendT(nt1, nt2)
-	pO1.adjacentTriangles = pO1.adjacentTriangles.appendT(nt1)
-	pO2.adjacentTriangles = pO2.adjacentTriangles.appendT(nt2)
-	if d.hierarchy {
+	adj1.adjacentTriangles = adj1.adjacentTriangles.remove(t1)
+	adj2.adjacentTriangles = adj2.adjacentTriangles.remove(t2)
+	opp1.adjacentTriangles = opp1.adjacentTriangles.remove(t1, t2)
+	opp2.adjacentTriangles = opp2.adjacentTriangles.remove(t1, t2)
+	adj1.adjacentTriangles = adj1.adjacentTriangles.append(nt1, nt2)
+	adj2.adjacentTriangles = adj2.adjacentTriangles.append(nt1, nt2)
+	opp1.adjacentTriangles = opp1.adjacentTriangles.append(nt1)
+	opp2.adjacentTriangles = opp2.adjacentTriangles.append(nt2)
+	if d.useHierarchical {
 		t1.children = append(t1.children, nt1, nt2)
 		t2.children = append(t2.children, nt1, nt2)
 	}
