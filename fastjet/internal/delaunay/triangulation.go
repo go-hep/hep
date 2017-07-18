@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	Zero = big.NewFloat(0)
-	One  = big.NewFloat(1)
+	zero = big.NewFloat(0)
+	one  = big.NewFloat(1)
 )
 
 // Delaunay holds necessary information for the
@@ -123,9 +123,9 @@ func (d *Delaunay) Insert(p *Point) {
 		panic(fmt.Errorf("delaunay: no triangle which contains P%v. Min and Max values must be wrong.", p))
 	}
 	if isOnEdge {
-		d.insertPonE(t, p)
+		d.insertAtEdge(p, t)
 	} else {
-		d.insertP(t, p)
+		d.insertPoint(p, t)
 	}
 }
 
@@ -328,7 +328,7 @@ func (d *Delaunay) addPoint(p, l, r *Point, t *Triangle) {
 	// validate the edges
 	for _, t := range nts {
 		if t.isInTriangulation {
-			d.validateEdge(t, p)
+			d.legalizeEdge(t, p)
 		}
 	}
 }
@@ -823,9 +823,8 @@ func areCounterclockwise(a, b, c int) bool {
 }
 
 // walkTriangle finds the triangle which contains p by using a remembering stochastic walk
-func (d *Delaunay) walkTriangle(t *Triangle, p *Point) (*Triangle, bool, *Point, *Point) {
+func (d *Delaunay) walkTriangle(start *Triangle, p *Point) (t *Triangle, onEdge bool, l *Point, r *Point) {
 	found := false
-	var l, r *Point
 	for !found {
 		var previous *Triangle
 		found = true
@@ -842,14 +841,14 @@ func (d *Delaunay) walkTriangle(t *Triangle, p *Point) (*Triangle, bool, *Point,
 			c := i % 3
 			switch c {
 			case 0:
-				l = t.A
-				r = t.B
+				l = start.A
+				r = start.B
 			case 1:
-				l = t.B
-				r = t.C
+				l = start.B
+				r = start.C
 			case 2:
-				l = t.C
-				r = t.A
+				l = start.C
+				r = start.A
 			}
 			// remembering improvement
 			// skip edge if it goes to previous
@@ -868,39 +867,39 @@ func (d *Delaunay) walkTriangle(t *Triangle, p *Point) (*Triangle, bool, *Point,
 			if inc < 3 {
 				o := p.orientation(l, r)
 				orient := big.NewFloat(o)
-				if orient.Cmp(Zero) < 0 {
+				if orient.Cmp(zero) < 0 {
 					// p is on the other side of the line formed by the two points
 					// therefore cross the edge
-					previous = t
-					t = nil
+					previous = start
+					start = nil
 					for _, t1 := range l.adjacentTriangles {
 						for _, t2 := range r.adjacentTriangles {
 							if t1.Equals(t2) && !t1.Equals(previous) {
-								t = t1
+								start = t1
 								break
 							}
 						}
 					}
-					if t == nil {
+					if start == nil {
 						// if t is nil the point is outside the current triangulation
 						return previous, false, l, r
 					}
 					found = false
 					break
-				} else if orient.Cmp(Zero) == 0 {
-					ab := big.NewFloat(p.orientation(t.A, t.B))
-					bc := big.NewFloat(p.orientation(t.B, t.C))
-					ca := big.NewFloat(p.orientation(t.C, t.A))
+				} else if orient.Cmp(zero) == 0 {
+					ab := big.NewFloat(p.orientation(start.A, start.B))
+					bc := big.NewFloat(p.orientation(start.B, start.C))
+					ca := big.NewFloat(p.orientation(start.C, start.A))
 					// p is on the edge if it is on the line formed by the points and if it is in between the 2 other edges
 					// in that triangle
-					if ab.Cmp(Zero) >= 0 && bc.Cmp(Zero) >= 0 && ca.Cmp(Zero) >= 0 {
-						return t, true, nil, nil
+					if ab.Cmp(zero) >= 0 && bc.Cmp(zero) >= 0 && ca.Cmp(zero) >= 0 {
+						return start, true, nil, nil
 					}
 				}
 			}
 		}
 	}
-	return t, false, nil, nil
+	return start, false, nil, nil
 }
 
 // findTriangle goes down the hierarchy to find the triangle in which the point is located.
@@ -925,17 +924,17 @@ func findTriangle(t *Triangle, p *Point) (*Triangle, bool) {
 	return nil, false
 }
 
-// insertP inserts a point inside a triangle
-func (d *Delaunay) insertP(t *Triangle, p *Point) {
+// insertPoint inserts a point inside a triangle
+func (d *Delaunay) insertPoint(new *Point, t *Triangle) {
 	// form three new triangles
-	t1 := NewTriangle(t.A, t.B, p)
+	t1 := NewTriangle(t.A, t.B, new)
 	t1.isInTriangulation = true
-	t2 := NewTriangle(t.B, t.C, p)
+	t2 := NewTriangle(t.B, t.C, new)
 	t2.isInTriangulation = true
-	t3 := NewTriangle(t.A, p, t.C)
+	t3 := NewTriangle(t.A, new, t.C)
 	t3.isInTriangulation = true
 	// adjust the adjacent triangles for all points involved
-	p.adjacentTriangles = p.adjacentTriangles.append(t1, t2, t3)
+	new.adjacentTriangles = new.adjacentTriangles.append(t1, t2, t3)
 	t.isInTriangulation = false
 	t.A.adjacentTriangles = t.A.adjacentTriangles.remove(t)
 	t.B.adjacentTriangles = t.B.adjacentTriangles.remove(t)
@@ -948,16 +947,17 @@ func (d *Delaunay) insertP(t *Triangle, p *Point) {
 	}
 	d.triangles = append(d.triangles, t1, t2, t3)
 	// change the edges so it is a valid delaunay triangulation
-	d.validateEdge(t1, p)
-	d.validateEdge(t2, p)
-	d.validateEdge(t3, p)
+	d.legalizeEdge(t1, new)
+	d.legalizeEdge(t2, new)
+	d.legalizeEdge(t3, new)
 }
 
-func (d *Delaunay) insertPonBorderE(t *Triangle, p *Point) {
-	ab := big.NewFloat(p.orientation(t.A, t.B))
-	bc := big.NewFloat(p.orientation(t.B, t.C))
-	ca := big.NewFloat(p.orientation(t.C, t.A))
-	zero := big.NewFloat(0)
+// insertAtBorderEdge inserts a point on an edge that part of the border.
+// This method is only used by the walk method.
+func (d *Delaunay) insertAtBorderEdge(new *Point, t *Triangle) {
+	ab := big.NewFloat(new.orientation(t.A, t.B))
+	bc := big.NewFloat(new.orientation(t.B, t.C))
+	ca := big.NewFloat(new.orientation(t.C, t.A))
 	var op, adj1, adj2 *Point
 	switch {
 	case ab.Cmp(zero) == 0:
@@ -973,11 +973,11 @@ func (d *Delaunay) insertPonBorderE(t *Triangle, p *Point) {
 		adj1 = t.C
 		adj2 = t.A
 	default:
-		panic(fmt.Errorf("delaunay: %v is not on edge of %t", p, t))
+		panic(fmt.Errorf("delaunay: %v is not on edge of %t", new, t))
 	}
 	// form two new triangles
-	nt1 := NewTriangle(op, adj1, p)
-	nt2 := NewTriangle(op, adj2, p)
+	nt1 := NewTriangle(op, adj1, new)
+	nt2 := NewTriangle(op, adj2, new)
 	t.isInTriangulation = false
 	nt1.isInTriangulation = true
 	nt2.isInTriangulation = true
@@ -987,91 +987,93 @@ func (d *Delaunay) insertPonBorderE(t *Triangle, p *Point) {
 	op.adjacentTriangles = op.adjacentTriangles.append(nt1, nt2)
 	adj1.adjacentTriangles = adj1.adjacentTriangles.append(nt1)
 	adj2.adjacentTriangles = adj2.adjacentTriangles.append(nt2)
-	p.adjacentTriangles = p.adjacentTriangles.append(nt1, nt2)
+	new.adjacentTriangles = new.adjacentTriangles.append(nt1, nt2)
 	d.triangles = append(d.triangles, nt1, nt2)
-	d.validateEdge(nt1, p)
-	d.validateEdge(nt2, p)
+	d.legalizeEdge(nt1, new)
+	d.legalizeEdge(nt2, new)
 }
 
-// insertPonE inserts a point on an edge
-func (d *Delaunay) insertPonE(t1 *Triangle, p *Point) {
+// insertAtEdge inserts a point on an edge between two triangles
+func (d *Delaunay) insertAtEdge(new *Point, t *Triangle) {
 	// find second triangle adjacent to edge
 	var t2 *Triangle
 	found := false
 	for _, t2 = range d.triangles {
-		_, edge := p.inTriangle(t2)
-		if edge && t2.isInTriangulation && !t2.Equals(t1) {
+		_, edge := new.inTriangle(t2)
+		if edge && t2.isInTriangulation && !t2.Equals(t) {
 			found = true
 			break
 		}
 	}
 	if !found {
 		// point is on a border edge
-		d.insertPonBorderE(t1, p)
+		d.insertAtBorderEdge(new, t)
 	}
 	// find points opposite and adjacent to the edge
 	var p1, p2, pO1, pO2 *Point
 	switch {
-	case !t1.A.Equals(t2.A) && !t1.A.Equals(t2.B) && !t1.A.Equals(t2.C):
-		p1 = t1.A
-		pO1 = t1.B
-		pO2 = t1.C
-	case !t1.B.Equals(t2.A) && !t1.B.Equals(t2.B) && !t1.B.Equals(t2.C):
-		p1 = t1.B
-		pO1 = t1.A
-		pO2 = t1.C
-	case !t1.C.Equals(t2.A) && !t1.C.Equals(t2.B) && !t1.C.Equals(t2.C):
-		p1 = t1.C
-		pO1 = t1.B
-		pO2 = t1.A
+	case !t.A.Equals(t2.A) && !t.A.Equals(t2.B) && !t.A.Equals(t2.C):
+		p1 = t.A
+		pO1 = t.B
+		pO2 = t.C
+	case !t.B.Equals(t2.A) && !t.B.Equals(t2.B) && !t.B.Equals(t2.C):
+		p1 = t.B
+		pO1 = t.A
+		pO2 = t.C
+	case !t.C.Equals(t2.A) && !t.C.Equals(t2.B) && !t.C.Equals(t2.C):
+		p1 = t.C
+		pO1 = t.B
+		pO2 = t.A
 	default:
-		panic(fmt.Errorf("delaunay: triangle T1%v doesn't have points not in T2%v", t1, t2))
+		panic(fmt.Errorf("delaunay: triangle T1%v doesn't have points not in T2%v", t, t2))
 	}
 	switch {
-	case !t2.A.Equals(t1.A) && !t2.A.Equals(t1.B) && !t2.A.Equals(t1.C):
+	case !t2.A.Equals(t.A) && !t2.A.Equals(t.B) && !t2.A.Equals(t.C):
 		p2 = t2.A
-	case !t2.B.Equals(t1.A) && !t2.B.Equals(t1.B) && !t2.B.Equals(t1.C):
+	case !t2.B.Equals(t.A) && !t2.B.Equals(t.B) && !t2.B.Equals(t.C):
 		p2 = t2.B
-	case !t2.C.Equals(t1.A) && !t2.C.Equals(t1.B) && !t2.C.Equals(t1.C):
+	case !t2.C.Equals(t.A) && !t2.C.Equals(t.B) && !t2.C.Equals(t.C):
 		p2 = t2.C
 	default:
-		panic(fmt.Errorf("delaunay: triangle T2%v doesn't have points not in T1%v", t2, t1))
+		panic(fmt.Errorf("delaunay: triangle T2%v doesn't have points not in T1%v", t2, t))
 	}
 	// form four new triangles
-	nt1 := NewTriangle(p1, p, pO1)
+	nt1 := NewTriangle(p1, new, pO1)
 	nt1.isInTriangulation = true
-	nt2 := NewTriangle(p, p2, pO1)
+	nt2 := NewTriangle(new, p2, pO1)
 	nt2.isInTriangulation = true
-	nt3 := NewTriangle(p1, p, pO2)
+	nt3 := NewTriangle(p1, new, pO2)
 	nt3.isInTriangulation = true
-	nt4 := NewTriangle(p, p2, pO2)
+	nt4 := NewTriangle(new, p2, pO2)
 	nt4.isInTriangulation = true
 	// adjust the adjacent triangles for all points involved
-	p.adjacentTriangles = p.adjacentTriangles.append(nt1, nt2, nt3, nt4)
-	t1.isInTriangulation = false
+	new.adjacentTriangles = new.adjacentTriangles.append(nt1, nt2, nt3, nt4)
+	t.isInTriangulation = false
 	t2.isInTriangulation = false
-	p1.adjacentTriangles = p1.adjacentTriangles.remove(t1)
+	p1.adjacentTriangles = p1.adjacentTriangles.remove(t)
 	p2.adjacentTriangles = p2.adjacentTriangles.remove(t2)
-	pO1.adjacentTriangles = pO1.adjacentTriangles.remove(t1, t2)
-	pO2.adjacentTriangles = pO2.adjacentTriangles.remove(t1, t2)
+	pO1.adjacentTriangles = pO1.adjacentTriangles.remove(t, t2)
+	pO2.adjacentTriangles = pO2.adjacentTriangles.remove(t, t2)
 	p1.adjacentTriangles = p1.adjacentTriangles.append(nt1, nt3)
 	p2.adjacentTriangles = p2.adjacentTriangles.append(nt2, nt4)
 	pO1.adjacentTriangles = pO1.adjacentTriangles.append(nt1, nt2)
 	pO2.adjacentTriangles = pO2.adjacentTriangles.append(nt3, nt4)
 	if d.useHierarchical {
-		t1.children = append(t1.children, nt1, nt3)
+		t.children = append(t.children, nt1, nt3)
 		t2.children = append(t2.children, nt2, nt4)
 	}
 	d.triangles = append(d.triangles, nt1, nt2, nt3, nt4)
 	// change the edges so it is a valid delaunay triangulation
-	d.validateEdge(nt1, p)
-	d.validateEdge(nt2, p)
-	d.validateEdge(nt3, p)
-	d.validateEdge(nt4, p)
+	d.legalizeEdge(nt1, new)
+	d.legalizeEdge(nt2, new)
+	d.legalizeEdge(nt3, new)
+	d.legalizeEdge(nt4, new)
 }
 
-// validateEdge turns triangle into a valid delaunay triangle
-func (d *Delaunay) validateEdge(t *Triangle, p *Point) {
+// legalizeEdge turns triangle into a valid delaunay triangle.
+// It flips the edge opposite to the point if it is not a valid triangle
+// and then validates the newly created triangles.
+func (d *Delaunay) legalizeEdge(t *Triangle, p *Point) {
 	// find points in the triangle that are not p
 	var p2, p3 *Point
 	switch {
@@ -1100,8 +1102,8 @@ func (d *Delaunay) validateEdge(t *Triangle, p *Point) {
 	// flip edges if p is inside circumcircle of ta
 	if ta != nil && ta.inCircumcircle(p) {
 		nt1, nt2 := d.flip(t, ta)
-		d.validateEdge(nt1, p)
-		d.validateEdge(nt2, p)
+		d.legalizeEdge(nt1, p)
+		d.legalizeEdge(nt2, p)
 	}
 }
 
