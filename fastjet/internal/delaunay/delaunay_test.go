@@ -13,6 +13,29 @@ import (
 
 const tol = 1e-3
 
+func grid(nx, ny int, angle float64) []*Point {
+	s := math.Sin(angle)
+	c := math.Cos(angle)
+	var points []*Point
+	for xi := 0; xi < nx; xi++ {
+		tx := float64(xi)
+		for yi := 0; yi < ny; yi++ {
+			ty := float64(yi)
+			x := tx*c - ty*s
+			y := tx*s + ty*c
+			points = append(points, NewPoint(x, y))
+		}
+	}
+	return points
+}
+
+func TestDelaunayGrid(t *testing.T) {
+	const degrees = math.Pi / 180
+	const n = 5
+	p := grid(n, n, 10*degrees)
+	NewUnboundedDelaunay(p, nil)
+}
+
 func TestSimpleTriangulationRemoval(t *testing.T) {
 	// NewPoint(x, y)
 	a := NewPoint(0, 0)

@@ -12,7 +12,6 @@ import (
 
 var (
 	zero = big.NewFloat(0)
-	one  = big.NewFloat(1)
 )
 
 // Delaunay holds necessary information for the delaunay triangulation
@@ -657,8 +656,8 @@ func areCounterclockwise(a, b, c int) bool {
 // walkTriangle finds the triangle which contains p by using a remembering stochastic walk
 func (d *Delaunay) walkTriangle(start *Triangle, p *Point) (t *Triangle, onEdge bool, l *Point, r *Point) {
 	found := false
+	var previous *Triangle
 	for !found {
-		var previous *Triangle
 		found = true
 		// k is a random int {0,1,2}
 		// it is used to pick a random edge
@@ -697,8 +696,7 @@ func (d *Delaunay) walkTriangle(start *Triangle, p *Point) (t *Triangle, onEdge 
 				}
 			}
 			if inc < 2 {
-				o := p.orientation(l, r)
-				orient := big.NewFloat(o)
+				orient := p.orientation(l, r)
 				if orient.Cmp(zero) < 0 {
 					// p is on the other side of the line formed by the two points
 					// therefore cross the edge
@@ -719,9 +717,9 @@ func (d *Delaunay) walkTriangle(start *Triangle, p *Point) (t *Triangle, onEdge 
 					found = false
 					break
 				} else if orient.Cmp(zero) == 0 {
-					ab := big.NewFloat(p.orientation(start.A, start.B))
-					bc := big.NewFloat(p.orientation(start.B, start.C))
-					ca := big.NewFloat(p.orientation(start.C, start.A))
+					ab := p.orientation(start.A, start.B)
+					bc := p.orientation(start.B, start.C)
+					ca := p.orientation(start.C, start.A)
 					// p is on the edge if it is on the line formed by the points and if it is in between the 2 other edges
 					// in that triangle
 					if ab.Cmp(zero) >= 0 && bc.Cmp(zero) >= 0 && ca.Cmp(zero) >= 0 {
@@ -787,9 +785,9 @@ func (d *Delaunay) insertPoint(new *Point, t *Triangle) {
 // insertAtBorderEdge inserts a point on an edge that part of the border.
 // This method is only used by the walk method.
 func (d *Delaunay) insertAtBorderEdge(new *Point, t *Triangle) {
-	ab := big.NewFloat(new.orientation(t.A, t.B))
-	bc := big.NewFloat(new.orientation(t.B, t.C))
-	ca := big.NewFloat(new.orientation(t.C, t.A))
+	ab := new.orientation(t.A, t.B)
+	bc := new.orientation(t.B, t.C)
+	ca := new.orientation(t.C, t.A)
 	var op, adj1, adj2 *Point
 	switch {
 	case ab.Cmp(zero) == 0:
