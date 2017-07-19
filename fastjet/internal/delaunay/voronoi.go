@@ -153,6 +153,7 @@ func (v *Voronoi) VoronoiCell(p *Point) (area float64, centers []*Point) {
 		bottom
 		left
 	)
+	// find where the cell crosses the border
 	if x2 > x1 { // right
 		cy := m*v.maxX - m*x1 + y1
 		if y2 > y1 { // top

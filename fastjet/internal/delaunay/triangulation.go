@@ -15,8 +15,7 @@ var (
 	one  = big.NewFloat(1)
 )
 
-// Delaunay holds necessary information for the
-// delaunay triangulation
+// Delaunay holds necessary information for the delaunay triangulation
 type Delaunay struct {
 	// triangles is a slice of all triangles that have been created. It is used to get the final
 	// list of triangles in the delaunay triangulation
@@ -31,9 +30,9 @@ type Delaunay struct {
 }
 
 // NewDelaunay creates a delaunay triangulation with the given points
-// all points have to be inside the user defined bounds
-// uses a hierarchy to find the triangle which contains a point
-// has a worst time complexity of O(nln(n))
+// all points have to be inside the user defined bounds.
+// It uses a hierarchy to find the triangle which contains a point.
+// It has a worst time complexity of O(nln(n)).
 func NewDelaunay(pts []*Point, maxX, minX, maxY, minY float64) *Delaunay {
 	// root Triangle is a triangle that contains all points
 	dx := maxX - minX
@@ -57,9 +56,9 @@ func NewDelaunay(pts []*Point, maxX, minX, maxY, minY float64) *Delaunay {
 	return d
 }
 
-// NewUnboundedDelaunay creates a delaunay triangulation with the given points
-// it uses the remembering stochastic walk method to find the triangle in which p is inserted
-// it has a worst time complexity of O(n^5/3) but it doesn't need bounds
+// NewUnboundedDelaunay creates a delaunay triangulation with the given points.
+// It uses the remembering stochastic walk method to find the triangle in which p is inserted.
+// It has a worst time complexity of O(n^5/3).
 func NewUnboundedDelaunay(pts []*Point, r *rand.Rand) *Delaunay {
 	// it needs at least one triangle to start with
 	if len(pts) < 3 {
@@ -82,7 +81,7 @@ func NewUnboundedDelaunay(pts []*Point, r *rand.Rand) *Delaunay {
 	return d
 }
 
-// Triangle returns all delaunay Triangles
+// Triangles returns all delaunay Triangles
 func (d *Delaunay) Triangles() []*Triangle {
 	if !d.useHierarchical {
 		return d.triangles.finalize()
@@ -114,7 +113,7 @@ func (d *Delaunay) Insert(p *Point) {
 		}
 		t, isOnEdge, l, r = d.walkTriangle(start, p)
 		if l != nil || r != nil {
-			// point is on the outside
+			// point is on the outside of the current triangulation
 			d.addPoint(p, l, r, t)
 			return
 		}
@@ -132,193 +131,24 @@ func (d *Delaunay) Insert(p *Point) {
 // addPoint adds point on the outside. It checks the neighbors of l and r and creates
 // triangles between p,l,r and the neighbors if they can reach p without crossing any lines
 func (d *Delaunay) addPoint(p, l, r *Point, t *Triangle) {
-	// need to find points next to l and r on the outside and check if there orientation<0 add triangles with all of those points and l and r
-	// r is counterclockwise of l
-	var outer1, outer2 []*Point
-	previous1, previous2 := r, l
-	outer1 = append(outer1, l)
-	outer2 = append(outer2, r)
-	var s *Point
-	switch {
-	case r.Equals(t.A):
-		s = t.B
-	case r.Equals(t.B):
-		s = t.C
-	case r.Equals(t.C):
-		s = t.A
-	default:
-		panic(fmt.Errorf("delaunay: point %v not in adjacent triangle %v", r, t))
-	}
-	// check if the third point can connect to p
-	if p.orientation(r, s) < 0 {
-		border := true
-	loop1:
-		for _, t1 := range s.adjacentTriangles {
-			for _, t2 := range r.adjacentTriangles {
-				if t1.Equals(t2) && !t1.Equals(t) {
-					border = false
-					break loop1
-				}
-			}
-		}
-		if border {
-			outer2 = append(outer2, s)
-			previous2 = r
-		}
-	} else if p.orientation(s, l) < 0 {
-		border := true
-	loop2:
-		for _, t1 := range s.adjacentTriangles {
-			for _, t2 := range l.adjacentTriangles {
-				if t1.Equals(t2) && !t1.Equals(t) {
-					border = false
-					break loop2
-				}
-			}
-		}
-		if border {
-			outer1 = append(outer1, s)
-			previous1 = l
-		}
-	}
-	found1 := true
-	// l's clockwise neighbor needs to be checked
-	for i := len(outer1) - 1; found1; i++ {
-	outerloop1:
-		for _, t1 := range outer1[i].adjacentTriangles {
-			found1 = true
-			if t1.A.Equals(previous1) || t1.B.Equals(previous1) || t1.C.Equals(previous1) {
-				found1 = false
-				continue
-			}
-			// potential new point
-			var np *Point
-			var p3 *Point
-			switch {
-			case outer1[i].Equals(t1.A):
-				np = t1.C
-				p3 = t1.B
-			case outer1[i].Equals(t1.B):
-				np = t1.A
-				p3 = t1.C
-			case outer1[i].Equals(t1.C):
-				np = t1.B
-				p3 = t1.A
-			default:
-				panic(fmt.Errorf("delaunay: point %v not in adjacent triangle %v", outer1[i], t1))
-			}
-			// find point that is on the outside
-			// point is on the outside if it only has one triangle in common with l
-			for _, t2 := range np.adjacentTriangles {
-				if !t1.Equals(t2) && (t2.A.Equals(outer1[i]) || t2.B.Equals(outer1[i]) || t2.C.Equals(outer1[i])) {
-					found1 = false
-					continue outerloop1
-				}
-			}
-			// check if it would cross a line when connecting to p
-			if p.orientation(np, outer1[i]) >= 0 {
-				found1 = false
-				break
-			}
-			previous1 = outer1[i]
-			outer1 = append(outer1, np)
-			if p.orientation(p3, np) < 0 {
-				border := true
-			outloop1:
-				for _, tr1 := range p3.adjacentTriangles {
-					for _, tr2 := range np.adjacentTriangles {
-						if tr1.Equals(tr2) && !tr1.Equals(t1) {
-							border = false
-							break outloop1
-						}
-					}
-				}
-				if border {
-					i++
-					previous1 = outer1[i]
-					outer1 = append(outer1, p3)
-				}
-			}
-			break
-		}
-	}
-	found2 := true
-	for i := len(outer2) - 1; found2; i++ {
-		// r's counterclockwise neighbor needs to be checked
-	outerloop2:
-		for _, t1 := range outer2[i].adjacentTriangles {
-			found2 = true
-			if t1.A.Equals(previous2) || t1.B.Equals(previous2) || t1.C.Equals(previous2) {
-				found2 = false
-				continue
-			}
-			// potential new point
-			var np *Point
-			var p3 *Point
-			switch {
-			case outer2[i].Equals(t1.A):
-				np = t1.B
-				p3 = t1.C
-			case outer2[i].Equals(t1.B):
-				np = t1.C
-				p3 = t1.A
-			case outer2[i].Equals(t1.C):
-				np = t1.A
-				p3 = t1.B
-			default:
-				panic(fmt.Errorf("delaunay: point %v not in adjacent triangle %v", outer2[i], t1))
-			}
-			// find point that is on the outside
-			// point is on the outside if it only has one triangle in common with l
-			for _, t2 := range np.adjacentTriangles {
-				if !t1.Equals(t2) && (t2.A.Equals(outer2[i]) || t2.B.Equals(outer2[i]) || t2.C.Equals(outer2[i])) {
-					found2 = false
-					continue outerloop2
-				}
-			}
-			// check if it would cross a line when connecting to p
-			if p.orientation(outer2[i], np) >= 0 {
-				found2 = false
-				break
-			}
-			outer2 = append(outer2, np)
-			previous2 = outer2[i]
-			if p.orientation(np, p3) < 0 {
-				border := true
-			outloop2:
-				for _, tr1 := range p3.adjacentTriangles {
-					for _, tr2 := range np.adjacentTriangles {
-						if tr1.Equals(tr2) && !tr1.Equals(t1) {
-							border = false
-							break outloop2
-						}
-					}
-				}
-				if border {
-					i++
-					previous2 = outer2[i]
-					outer2 = append(outer2, p3)
-				}
-			}
-			break
-		}
-	}
+	// need to find points next to l and r on the border and check if there orientation is less than 0
+	outerL, outerR := p.findBorderConnectors(l, r, t)
 	// create triangles with all the points that can connect to p
 	nts := make(triangles, 1)
 	nts[0] = NewTriangle(l, r, p)
 	l.adjacentTriangles = l.adjacentTriangles.append(nts[0])
 	r.adjacentTriangles = r.adjacentTriangles.append(nts[0])
-	for i := 0; i < len(outer1)-1; i++ {
-		nt := NewTriangle(outer1[i+1], p, outer1[i])
+	for i := 0; i < len(outerL)-1; i++ {
+		nt := NewTriangle(outerL[i+1], p, outerL[i])
 		nts = append(nts, nt)
-		outer1[i].adjacentTriangles = outer1[i].adjacentTriangles.append(nt)
-		outer1[i+1].adjacentTriangles = outer1[i+1].adjacentTriangles.append(nt)
+		outerL[i].adjacentTriangles = outerL[i].adjacentTriangles.append(nt)
+		outerL[i+1].adjacentTriangles = outerL[i+1].adjacentTriangles.append(nt)
 	}
-	for i := 0; i < len(outer2)-1; i++ {
-		nt := NewTriangle(outer2[i+1], outer2[i], p)
+	for i := 0; i < len(outerR)-1; i++ {
+		nt := NewTriangle(outerR[i+1], outerR[i], p)
 		nts = append(nts, nt)
-		outer2[i].adjacentTriangles = outer2[i].adjacentTriangles.append(nt)
-		outer2[i+1].adjacentTriangles = outer2[i+1].adjacentTriangles.append(nt)
+		outerR[i].adjacentTriangles = outerR[i].adjacentTriangles.append(nt)
+		outerR[i+1].adjacentTriangles = outerR[i+1].adjacentTriangles.append(nt)
 	}
 	p.adjacentTriangles = p.adjacentTriangles.append(nts...)
 	d.triangles = append(d.triangles, nts...)
@@ -328,7 +158,7 @@ func (d *Delaunay) addPoint(p, l, r *Point, t *Triangle) {
 	// validate the edges
 	for _, t := range nts {
 		if t.isInTriangulation {
-			d.legalizeEdge(t, p)
+			d.findTriangleOpposite(t, p)
 		}
 	}
 }
@@ -393,7 +223,7 @@ func (d *Delaunay) Remove(p *Point) {
 			// an outer point has one more adjacent points than triangles
 			outerpoints := make([]*Point, len(points)+1)
 			copy(outerpoints, points)
-			pts := p.removeOuter(outerpoints, j)
+			pts := p.findRemainingSurrounding(outerpoints, j)
 			d.removePoints(pts, nil)
 			return
 		}
@@ -451,7 +281,7 @@ func (d *Delaunay) Remove(p *Point) {
 			for i := 0; ; {
 				if i >= len(p.adjacentTriangles) {
 					// the bound was reached, now the rest of the points are found by going clockwise from the starting point
-					pts := p.removeOuter(outerpoints, j)
+					pts := p.findRemainingSurrounding(outerpoints, j)
 					d.removePoints(pts, nil)
 					return
 				}
@@ -477,7 +307,7 @@ func (d *Delaunay) Remove(p *Point) {
 				}
 				i++
 			}
-			pts := p.removeOuter(outerpoints, len(outerpoints)-1)
+			pts := p.findRemainingSurrounding(outerpoints, len(outerpoints)-1)
 			d.removePoints(pts, nil)
 			return
 		}
@@ -769,7 +599,9 @@ func (d *Delaunay) removePoints(points []*Point, parents []*Triangle) {
 	} else {*/
 	// make copies of points on polygon and run a delaunay triangulation with them
 	// indices of copies are in counter clockwise order, so that with the help of
-	// areCounterclockwise it can be determined if a point is inside or outside the polygon
+	// areCounterclockwise it can be determined if a point is inside or outside the polygon.
+	// A,B,C are ordered counterclockwise, so if the numbers in A,B,C are counterclockwise it is
+	// inside the polygon.
 	copies := make([]*Point, len(points))
 	for i, p := range points {
 		copies[i] = NewPoint(p.X, p.Y)
@@ -777,7 +609,7 @@ func (d *Delaunay) removePoints(points []*Point, parents []*Triangle) {
 	}
 	var dn *Delaunay
 	if d.useHierarchical {
-		// change limits to create a root triangle that's far outside of the origial root triangle
+		// change limits to create a root triangle that's far outside of the original root triangle
 		dx := d.maxX - d.minX
 		dy := d.maxY - d.minY
 		dn = NewDelaunay(copies, d.maxX+6*dx, d.minX-6*dx, d.maxY+10, d.minY-6*dy)
@@ -864,7 +696,7 @@ func (d *Delaunay) walkTriangle(start *Triangle, p *Point) (t *Triangle, onEdge 
 					inc++
 				}
 			}
-			if inc < 3 {
+			if inc < 2 {
 				o := p.orientation(l, r)
 				orient := big.NewFloat(o)
 				if orient.Cmp(zero) < 0 {
@@ -947,9 +779,9 @@ func (d *Delaunay) insertPoint(new *Point, t *Triangle) {
 	}
 	d.triangles = append(d.triangles, t1, t2, t3)
 	// change the edges so it is a valid delaunay triangulation
-	d.legalizeEdge(t1, new)
-	d.legalizeEdge(t2, new)
-	d.legalizeEdge(t3, new)
+	d.findTriangleOpposite(t1, new)
+	d.findTriangleOpposite(t2, new)
+	d.findTriangleOpposite(t3, new)
 }
 
 // insertAtBorderEdge inserts a point on an edge that part of the border.
@@ -989,8 +821,8 @@ func (d *Delaunay) insertAtBorderEdge(new *Point, t *Triangle) {
 	adj2.adjacentTriangles = adj2.adjacentTriangles.append(nt2)
 	new.adjacentTriangles = new.adjacentTriangles.append(nt1, nt2)
 	d.triangles = append(d.triangles, nt1, nt2)
-	d.legalizeEdge(nt1, new)
-	d.legalizeEdge(nt2, new)
+	d.findTriangleOpposite(nt1, new)
+	d.findTriangleOpposite(nt2, new)
 }
 
 // insertAtEdge inserts a point on an edge between two triangles
@@ -1064,16 +896,18 @@ func (d *Delaunay) insertAtEdge(new *Point, t *Triangle) {
 	}
 	d.triangles = append(d.triangles, nt1, nt2, nt3, nt4)
 	// change the edges so it is a valid delaunay triangulation
-	d.legalizeEdge(nt1, new)
-	d.legalizeEdge(nt2, new)
-	d.legalizeEdge(nt3, new)
-	d.legalizeEdge(nt4, new)
+	d.findTriangleOpposite(nt1, new)
+	d.findTriangleOpposite(nt2, new)
+	d.findTriangleOpposite(nt3, new)
+	d.findTriangleOpposite(nt4, new)
 }
 
-// legalizeEdge turns triangle into a valid delaunay triangle.
-// It flips the edge opposite to the point if it is not a valid triangle
-// and then validates the newly created triangles.
-func (d *Delaunay) legalizeEdge(t *Triangle, p *Point) {
+// findTriangleOpposite finds the triangle adjacent to t and opposite to p.
+// Then it checks whether p is in the circumcircle. If p is in the circumcircle
+// that means that the triangle is not a valid delaunay triangle.
+// Therefore the edge in between the two triangles is flipped, creating
+// two new triangles that need to be checked.
+func (d *Delaunay) findTriangleOpposite(t *Triangle, p *Point) {
 	// find points in the triangle that are not p
 	var p2, p3 *Point
 	switch {
@@ -1102,8 +936,8 @@ func (d *Delaunay) legalizeEdge(t *Triangle, p *Point) {
 	// flip edges if p is inside circumcircle of ta
 	if ta != nil && ta.inCircumcircle(p) {
 		nt1, nt2 := d.flip(t, ta)
-		d.legalizeEdge(nt1, p)
-		d.legalizeEdge(nt2, p)
+		d.findTriangleOpposite(nt1, p)
+		d.findTriangleOpposite(nt2, p)
 	}
 }
 

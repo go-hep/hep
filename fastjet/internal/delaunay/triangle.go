@@ -18,7 +18,7 @@ type Triangle struct {
 	children triangles
 	// A,B,C are the points that make up the triangle
 	A, B, C *Point
-	// inD holds whether a triangle is part of the triangulation
+	// isInTriangulation holds whether a triangle is part of the triangulation
 	isInTriangulation bool
 }
 
@@ -97,7 +97,7 @@ func (t *Triangle) String() string {
 
 type triangles []*Triangle
 
-// appendT appends to a slice of triangles and updates the nearest neighbor
+// append appends to a slice of triangles and updates the nearest neighbor
 // it is used when the adjacent triangles of a point change
 func (t triangles) append(triangles ...*Triangle) []*Triangle {
 	// check if nearest neighbor changes by going through each triangles points
