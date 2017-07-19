@@ -76,7 +76,7 @@ func (p *Point) orientation(a, b *Point) *big.Float {
 	prod1.Mul(&sum1, &sum2)
 	prod2.Mul(&sum3, &sum4)
 	nprod2.Neg(&prod2)
-	return &result.Add(&prod1, &nprod2)
+	return result.Add(&prod1, &nprod2)
 }
 
 // NearestNeighbor returns the nearest Neighbor and the distance to that neighbor
