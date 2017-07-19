@@ -158,7 +158,7 @@ func (d *Delaunay) addPoint(p, l, r *Point, t *Triangle) {
 	// validate the edges
 	for _, t := range nts {
 		if t.isInTriangulation {
-			d.findTriangleOpposite(t, p)
+			d.swapDelaunay(t, p)
 		}
 	}
 }
@@ -779,9 +779,9 @@ func (d *Delaunay) insertPoint(new *Point, t *Triangle) {
 	}
 	d.triangles = append(d.triangles, t1, t2, t3)
 	// change the edges so it is a valid delaunay triangulation
-	d.findTriangleOpposite(t1, new)
-	d.findTriangleOpposite(t2, new)
-	d.findTriangleOpposite(t3, new)
+	d.swapDelaunay(t1, new)
+	d.swapDelaunay(t2, new)
+	d.swapDelaunay(t3, new)
 }
 
 // insertAtBorderEdge inserts a point on an edge that part of the border.
@@ -821,8 +821,8 @@ func (d *Delaunay) insertAtBorderEdge(new *Point, t *Triangle) {
 	adj2.adjacentTriangles = adj2.adjacentTriangles.append(nt2)
 	new.adjacentTriangles = new.adjacentTriangles.append(nt1, nt2)
 	d.triangles = append(d.triangles, nt1, nt2)
-	d.findTriangleOpposite(nt1, new)
-	d.findTriangleOpposite(nt2, new)
+	d.swapDelaunay(nt1, new)
+	d.swapDelaunay(nt2, new)
 }
 
 // insertAtEdge inserts a point on an edge between two triangles
@@ -896,18 +896,18 @@ func (d *Delaunay) insertAtEdge(new *Point, t *Triangle) {
 	}
 	d.triangles = append(d.triangles, nt1, nt2, nt3, nt4)
 	// change the edges so it is a valid delaunay triangulation
-	d.findTriangleOpposite(nt1, new)
-	d.findTriangleOpposite(nt2, new)
-	d.findTriangleOpposite(nt3, new)
-	d.findTriangleOpposite(nt4, new)
+	d.swapDelaunay(nt1, new)
+	d.swapDelaunay(nt2, new)
+	d.swapDelaunay(nt3, new)
+	d.swapDelaunay(nt4, new)
 }
 
-// findTriangleOpposite finds the triangle adjacent to t and opposite to p.
+// swapDelaunay finds the triangle adjacent to t and opposite to p.
 // Then it checks whether p is in the circumcircle. If p is in the circumcircle
 // that means that the triangle is not a valid delaunay triangle.
 // Therefore the edge in between the two triangles is flipped, creating
 // two new triangles that need to be checked.
-func (d *Delaunay) findTriangleOpposite(t *Triangle, p *Point) {
+func (d *Delaunay) swapDelaunay(t *Triangle, p *Point) {
 	// find points in the triangle that are not p
 	var p2, p3 *Point
 	switch {
@@ -935,16 +935,16 @@ func (d *Delaunay) findTriangleOpposite(t *Triangle, p *Point) {
 	}
 	// flip edges if p is inside circumcircle of ta
 	if ta != nil && ta.inCircumcircle(p) {
-		nt1, nt2 := d.flip(t, ta)
-		d.findTriangleOpposite(nt1, p)
-		d.findTriangleOpposite(nt2, p)
+		nt1, nt2 := d.swapEdge(t, ta)
+		d.swapDelaunay(nt1, p)
+		d.swapDelaunay(nt2, p)
 	}
 }
 
-// flip flips edge between two triangles.
+// swapEdge flips edge between two triangles.
 // The edge in the middle of the two triangles is removed and
 // an edge between the two opposite points is added
-func (d *Delaunay) flip(t1, t2 *Triangle) (nt1, nt2 *Triangle) {
+func (d *Delaunay) swapEdge(t1, t2 *Triangle) (nt1, nt2 *Triangle) {
 	// find points adjacent and opposite to edge
 	var adj1, adj2, opp1, opp2 *Point
 	switch {
