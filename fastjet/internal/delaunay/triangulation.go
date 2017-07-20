@@ -63,18 +63,31 @@ func NewUnboundedDelaunay(pts []*Point, r *rand.Rand) *Delaunay {
 	if len(pts) < 3 {
 		panic(fmt.Errorf("delaunay: not enough points"))
 	}
+	j := 2
+	for ; ; j++ {
+		if j >= len(pts) {
+			panic(fmt.Errorf("delaunay: all points are in a line"))
+		}
+		if pts[j].orientation(pts[0], pts[1]).Cmp(zero) != 0 {
+			break
+		}
+	}
 	d := &Delaunay{
 		useHierarchical: false,
 		r:               r,
 	}
 	d.triangles = make([]*Triangle, 1)
 	// create first triangle
-	d.triangles[0] = NewTriangle(pts[0], pts[1], pts[2])
+	d.triangles[0] = NewTriangle(pts[0], pts[1], pts[j])
 	d.triangles[0].isInTriangulation = true
 	pts[0].adjacentTriangles = pts[0].adjacentTriangles.append(d.triangles[0])
 	pts[1].adjacentTriangles = pts[1].adjacentTriangles.append(d.triangles[0])
-	pts[2].adjacentTriangles = pts[2].adjacentTriangles.append(d.triangles[0])
-	for i := 3; i < len(pts); i++ {
+	pts[j].adjacentTriangles = pts[j].adjacentTriangles.append(d.triangles[0])
+	for i := 2; i < len(pts); i++ {
+		if i == j {
+			// point was inserted with first triangle
+			continue
+		}
 		d.Insert(pts[i])
 	}
 	return d

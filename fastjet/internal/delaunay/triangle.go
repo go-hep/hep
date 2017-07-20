@@ -37,7 +37,7 @@ func NewTriangle(a, b, c *Point) *Triangle {
 
 // isClockwise checks whether three points are in clockwise order
 func isClockwise(a, b, c *Point) bool {
-	return (b.Y-a.Y)*(c.X-b.X)-(c.Y-b.Y)*(b.X-a.X) > 0
+	return c.orientation(a, b).Cmp(zero) < 0
 }
 
 // inCircumcircle returns whether the point is inside the circumcircle of the triangle
