@@ -9,18 +9,19 @@ import (
 )
 
 const (
-	// FIXME
-	epsilonI = 1e-13
+	// macheps is the machine epsilon aka unit roundoff
+	// it is the upper bound on relative error due to rounding
+	macheps = 2.22e-16
 )
 
 // Incircle determines whether the point (x,y) lies inside the circle formed
 // by the three points (x1,y1),(x2,y2) and (x3,y3)
 func Incircle(x1, y1, x2, y2, x3, y3, x, y float64) bool {
-	det := simpleIncircle(x1, y1, x2, y2, x3, y3, x, y)
-	if det > epsilonI {
+	det, e := simpleIncircle(x1, y1, x2, y2, x3, y3, x, y)
+	if det > e {
 		return false
 	}
-	if det < -epsilonI {
+	if det < -e {
 		return true
 	}
 	return robustIncircle(setBig(x1), setBig(y1), setBig(x2), setBig(y2), setBig(x3), setBig(y3), setBig(x), setBig(y))
@@ -31,14 +32,14 @@ func Incircle(x1, y1, x2, y2, x3, y3, x, y float64) bool {
 // |1 x2 y2 x2^2+y2^2|
 // |1 x3 y3 x3^2+y3^2|
 // |1 x  y  x^2 +y^2 |
-func simpleIncircle(x1, y1, x2, y2, x3, y3, x, y float64) (det float64) {
+func simpleIncircle(x1, y1, x2, y2, x3, y3, x, y float64) (det, e float64) {
 	m := [][]float64{
 		{1, x1, y1, x1*x1 + y1*y1},
 		{1, x2, y2, x2*x2 + y2*y2},
 		{1, x3, y3, x3*x3 + y3*y3},
 		{1, x, y, x*x + y*y},
 	}
-	return m[0][3]*m[1][2]*m[2][1]*m[3][0] - m[0][2]*m[1][3]*m[2][1]*m[3][0] -
+	det = m[0][3]*m[1][2]*m[2][1]*m[3][0] - m[0][2]*m[1][3]*m[2][1]*m[3][0] -
 		m[0][3]*m[1][1]*m[2][2]*m[3][0] + m[0][1]*m[1][3]*m[2][2]*m[3][0] +
 		m[0][2]*m[1][1]*m[2][3]*m[3][0] - m[0][1]*m[1][2]*m[2][3]*m[3][0] -
 		m[0][3]*m[1][2]*m[2][0]*m[3][1] + m[0][2]*m[1][3]*m[2][0]*m[3][1] +
@@ -50,6 +51,13 @@ func simpleIncircle(x1, y1, x2, y2, x3, y3, x, y float64) (det float64) {
 		m[0][2]*m[1][1]*m[2][0]*m[3][3] + m[0][1]*m[1][2]*m[2][0]*m[3][3] +
 		m[0][2]*m[1][0]*m[2][1]*m[3][3] - m[0][0]*m[1][2]*m[2][1]*m[3][3] -
 		m[0][1]*m[1][0]*m[2][2]*m[3][3] + m[0][0]*m[1][1]*m[2][2]*m[3][3]
+	// e is the maximum possible error due to rounding for the result of the determinant.
+	// mul(mul(a,b),c) = mul(a*b+macheps,c) = a*b*c + macheps*c + macheps
+	// sum(mul(a,b),c) = sum(a*b+macheps,c) = a*b+c + macheps + macheps
+	// Therefore, when multiplications are chained, the error also depends on the value
+	// of the number, but this does not apply to sums or subtractions.
+	e = macheps*m[3][0]*6 + macheps*m[3][1]*6 + macheps*m[3][2]*6 + macheps*m[3][3]*6 + macheps*47
+	return det, e
 }
 
 // robustIncircle finds the determinant of the matrix using the accurate big/Rat type

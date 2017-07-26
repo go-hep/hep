@@ -18,8 +18,9 @@ const (
 	Colinear
 	Indeterminate
 
-	// FIXME find a good breakpoint value. Or calculate epsilon dynamically
-	epsilonO = 8e-15
+	// epsilon determines when the determinant in orientation is too close to 0 to rely on floating point operations
+	// it is 11 * machine epsilon, because there are 11 operations in orientation, with no chained multiplications
+	epsilon = 2.442e-15
 )
 
 func (o OrientationKind) String() string {
@@ -60,10 +61,10 @@ func simpleOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 	//  | x2 y2 1 |
 	//  | x3 y3 1 |
 	det := x1*y2 + x2*y + x*y1 - x1*y - x2*y1 - x*y2
-	if det > epsilonO {
+	if det > epsilon {
 		return CCW
 	}
-	if det < -epsilonO {
+	if det < -epsilon {
 		return CW
 	}
 	return Indeterminate
