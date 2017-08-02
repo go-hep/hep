@@ -4,7 +4,9 @@
 
 package predicates
 
-import "math"
+import (
+	"math"
+)
 
 const (
 	// macheps is the machine epsilon aka unit roundoff
@@ -18,6 +20,19 @@ const (
 )
 
 // float64Pred dynamically updates the potential error
+//
+// If y is the machine representation of x then |(x-y)/x| <= macheps and |x-y| = e.
+// Since we want the max possible error we assume |(x-y)/x| = macheps
+// macheps*|x| = |x - y|
+// if (x-y)>=0 then macheps*|x| = x - y  ->  y = x- macheps*|x|
+// else macheps*|x| = -(x - y)  ->  macheps*|x|+x = y
+// Each one of these has two cases again. x can be positive or negative, resulting in the same two possible equations:
+// y/(1-macheps)=x or y/(1+macheps)=x.
+// Since x is unknown, we will use the larger number as factor, to avoid having an error greater than
+// the maxError value we have.
+// |y-x| = macheps*|x| -> e = macheps*|x| -> e = macheps* |y|/(1-macheps)
+// A Special case is when y = 0. Then we use the smallest nonzero float, because that is the max
+// possible error in this case.
 type float64Pred struct {
 	// n is the number
 	n float64
@@ -34,12 +49,13 @@ func newFloat64Pred(n float64) float64Pred {
 }
 
 // addFloat64 adds f to p and updates the potential error
-//
-// If y is the machine representation of x then |(x-y)/x| <= macheps and |x-y| = e, therefore
-// e = macheps*|x|.
 func (p float64Pred) addFloat64(f float64) float64Pred {
 	p.n += f
-	p.e += macheps * math.Abs(p.n)
+	if p.n == 0 {
+		p.e += math.SmallestNonzeroFloat64
+	} else {
+		p.e += macheps * math.Abs(p.n) / (1 - macheps)
+	}
 	return p
 }
 
@@ -49,34 +65,37 @@ func (p float64Pred) addFloat64(f float64) float64Pred {
 // e = macheps*|x|.
 func (a float64Pred) addFloat64Pred(b float64Pred) float64Pred {
 	a.n += b.n
-	a.e += macheps*math.Abs(a.n) + b.e
+	if a.n == 0 {
+		a.e += math.SmallestNonzeroFloat64 + b.e
+	} else {
+		a.e += macheps*math.Abs(a.n)/(1-macheps) + b.e
+	}
 	return a
 }
 
 // subFloat64 subtracts f from p and updates the potential error
-//
-// If y is the machine representation of x then |(x-y)/x| <= macheps and |x-y| = e, therefore
-// e = macheps*|x|.
 func (p float64Pred) subFloat64(f float64) float64Pred {
 	p.n -= f
-	p.e += macheps * math.Abs(p.n)
+	if p.n == 0 {
+		p.e += math.SmallestNonzeroFloat64
+	} else {
+		p.e += macheps * math.Abs(p.n) / (1 - macheps)
+	}
 	return p
 }
 
 // subFloat64Pred subtracts f from p and updates the potential error
-//
-// If y is the machine representation of x then |(x-y)/x| <= macheps and |x-y| = e, therefore
-// e = macheps*|x|.
 func (a float64Pred) subFloat64Pred(b float64Pred) float64Pred {
 	a.n -= b.n
-	a.e += macheps*math.Abs(a.n) + b.e
+	if a.n == 0 {
+		a.e += math.SmallestNonzeroFloat64 + b.e
+	} else {
+		a.e += macheps*math.Abs(a.n)/(1-macheps) + b.e
+	}
 	return a
 }
 
 // mulFloat64 multiplies p with f and updates the potential error.
-//
-// If y is the machine representation of x then |(x-y)/x| <= macheps and |x-y| = e, therefore
-// e = macheps*|x|.
 //
 // mul(mul(a,b),c) = mul(a*b+error,c) = a*b*c + error*c + newError
 // sum(mul(a,b),c) = sum(a*b+error,c) = a*b+c + error + newError
@@ -86,6 +105,10 @@ func (a float64Pred) subFloat64Pred(b float64Pred) float64Pred {
 //If this is not a chained multiplication p.e will be 0, making that part irrelevant.
 func (p float64Pred) mulFloat64(f float64) float64Pred {
 	p.n *= f
-	p.e += macheps*math.Abs(p.n) + p.e*math.Abs(f)
+	if p.n == 0 {
+		p.e += math.SmallestNonzeroFloat64 + p.e*math.Abs(f)
+	} else {
+		p.e += macheps*math.Abs(p.n)/(1-macheps) + p.e*math.Abs(f)
+	}
 	return p
 }
