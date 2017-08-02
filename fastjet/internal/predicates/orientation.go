@@ -5,9 +5,15 @@
 package predicates
 
 import (
+	"fmt"
 	"math/big"
+
+	"math"
+
+	"gonum.org/v1/gonum/mat"
 )
 
+// OrientationKind indicates how three points are located in respect to each other.
 type OrientationKind int
 
 const (
@@ -16,11 +22,7 @@ const (
 	// Clockwise
 	CW
 	Colinear
-	Indeterminate
-
-	// epsilon determines when the determinant in orientation is too close to 0 to rely on floating point operations
-	// it is 11 * machine epsilon, because there are 11 operations in orientation, with no chained multiplications
-	epsilon = 2.442e-15
+	IndeterminateO
 )
 
 func (o OrientationKind) String() string {
@@ -31,15 +33,19 @@ func (o OrientationKind) String() string {
 		return "Clockwise"
 	case Colinear:
 		return "Colinear"
+	case IndeterminateO:
+		return "Indeterminate"
+	default:
+		panic(fmt.Errorf("predicates: unknown OrientationKind %d", int(o)))
 	}
-	return "Indeterminate"
+	panic("unreachable")
 }
 
 // Orientation returns how the point (x,y) is oriented with respect to
 // the line defined by the points (x1,y1) and (x2,y2).
 func Orientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 	o := simpleOrientation(x1, y1, x2, y2, x, y)
-	if o == Indeterminate {
+	if o == IndeterminateO {
 		// too close to 0 to give a definite answer.
 		// Therefore check with more expansive tests.
 		o = robustOrientation(setBig(x1), setBig(y1), setBig(x2), setBig(y2), setBig(x), setBig(y))
@@ -48,7 +54,7 @@ func Orientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 }
 
 // simpleOrientation finds the orientation using the float64 type.
-// It's accuracy can't be guaranteed, therefore close decisions
+// Its accuracy can't be guaranteed, therefore close decisions
 // return Indeterminate which signals Orientation that further
 // testing is necessary
 func simpleOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
@@ -59,15 +65,23 @@ func simpleOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 	// Compute the determinant of the matrix
 	//  | x1 y1 1 |
 	//  | x2 y2 1 |
-	//  | x3 y3 1 |
+	//  | x  y  1 |
 	det := x1*y2 + x2*y + x*y1 - x1*y - x2*y1 - x*y2
-	if det > epsilon {
+	// e determines when the determinant in orientation is too close to 0 to rely on floating point operations.
+	// Each intermediate result can have a potential absolute relative rounding error of macheps.
+	// If y is the machine representation of x then |(x-y)/x| <= macheps and |x-y| = e, therefore
+	// e = macheps*|x|. Since there are no chained multiplications the intermediate results can be add up.
+	e := macheps*math.Abs(x1*y2) + macheps*math.Abs(x2*y) + macheps*math.Abs(x*y1) + macheps*math.Abs(x1*y) + macheps*math.Abs(x2*y1) +
+		macheps*math.Abs(x*y2) + macheps*math.Abs(x1*y2+x2*y) + macheps*math.Abs(x1*y2+x2*y+x*y1) +
+		macheps*math.Abs(x1*y2+x2*y+x*y1-x1*y) + macheps*math.Abs(x1*y2+x2*y+x*y1-x1*y-x2*y1) +
+		macheps*math.Abs(det)
+	if det > e {
 		return CCW
 	}
-	if det < -epsilon {
+	if det < -e {
 		return CW
 	}
-	return Indeterminate
+	return IndeterminateO
 }
 
 // robustOrientation finds the orientation using the accurate big/Rat type.
@@ -75,7 +89,7 @@ func robustOrientation(x1, y1, x2, y2, x, y *big.Rat) OrientationKind {
 	// Compute the determinant of the matrix
 	//  | x1 y1 1 |
 	//  | x2 y2 1 |
-	//  | x3 y3 1 |
+	//  | x  y  1 |
 	// det := x1*y2 + x2*y + x*y1 - x1*y - x2*y1 - x*y2
 	det := bigSub(
 		bigAdd(bigAdd(bigMul(x1, y2), bigMul(x2, y)), bigMul(x, y1)),
@@ -90,4 +104,27 @@ func robustOrientation(x1, y1, x2, y2, x, y *big.Rat) OrientationKind {
 	default:
 		return Colinear
 	}
+}
+
+func matOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
+	if (x1 == x2 && x2 == x) || (y1 == y2 && y2 == y) {
+		// points are horizontally or vertically aligned
+		return Colinear
+	}
+	m := mat.NewDense(3, 3, []float64{x1, y1, 1, x2, y2, 1, x, y, 1})
+	logDet, sign := mat.LogDet(m)
+	// FIXME determine maxErrorLog
+	// maxErrorLog is the highest possible number that could lead to a wrong sign due to rounding error
+	maxErrorLog := -10.0
+	if logDet < maxErrorLog {
+		// logDet is too small and therefore Determinant is too close to 0 to give a definite answer on the position
+		return IndeterminateO
+	}
+	switch sign {
+	case 1:
+		return CCW
+	case -1:
+		return CW
+	}
+	return IndeterminateO
 }
