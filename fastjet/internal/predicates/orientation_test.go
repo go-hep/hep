@@ -41,6 +41,7 @@ func TestSimpleVsRobustOrientation(t *testing.T) {
 	}{
 		{2.1, 2.1, 1.1, 1.1, 0.1, 0.1, IndeterminateO, Colinear},
 		{2.1, 2.1, 1.1, 1.1, 100.1, 100.1, IndeterminateO, Colinear},
+		{2.1, 2.1, 1.1, 1.1, 1000.1, 1000.1, IndeterminateO, Colinear},
 	}
 	for _, test := range tests {
 		o := simpleOrientation(test.x1, test.y1, test.x2, test.y2, test.x, test.y)

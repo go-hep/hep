@@ -86,6 +86,6 @@ func (a float64Pred) subFloat64Pred(b float64Pred) float64Pred {
 //If this is not a chained multiplication p.e will be 0, making that part irrelevant.
 func (p float64Pred) mulFloat64(f float64) float64Pred {
 	p.n *= f
-	p.e += macheps*math.Abs(p.n) + p.e*f
+	p.e += macheps*math.Abs(p.n) + p.e*math.Abs(f)
 	return p
 }
