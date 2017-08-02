@@ -6,21 +6,9 @@ package predicates
 
 import (
 	"fmt"
-	"math"
 	"math/big"
 
 	"gonum.org/v1/gonum/mat"
-)
-
-const (
-	// macheps is the machine epsilon aka unit roundoff
-	// The machine epsilon is an upper bound on the absolute relative true error in
-	// representing a number.
-	// If y is the machine representation of x then |(x-y)/x| <= macheps
-	// https://en.wikipedia.org/wiki/Machine_epsilon
-	// Golangs float64 type has a 52-bit fractional mantissa,
-	// therefore the value 2^-52
-	macheps = 1.0 / (1 << 52)
 )
 
 // RelativePosition is the position of a point relative to a circle
@@ -75,18 +63,25 @@ func simpleIncircle(x1, y1, x2, y2, x3, y3, x, y float64) RelativePosition {
 		1, x3, y3, x3*x3 + y3*y3,
 		1, x, y, x*x + y*y,
 	}
-	det := m[3]*m[6]*m[9]*m[12] - m[2]*m[7]*m[9]*m[12] -
-		m[3]*m[5]*m[10]*m[12] + m[1]*m[7]*m[10]*m[12] +
-		m[2]*m[5]*m[11]*m[12] - m[1]*m[6]*m[11]*m[12] -
-		m[3]*m[6]*m[8]*m[13] + m[2]*m[7]*m[8]*m[13] +
-		m[3]*m[4]*m[10]*m[13] - m[0]*m[7]*m[10]*m[13] -
-		m[2]*m[4]*m[11]*m[13] + m[0]*m[6]*m[11]*m[13] +
-		m[3]*m[5]*m[8]*m[14] - m[1]*m[7]*m[8]*m[14] -
-		m[3]*m[4]*m[9]*m[14] + m[0]*m[7]*m[9]*m[14] +
-		m[1]*m[4]*m[11]*m[14] - m[0]*m[5]*m[11]*m[14] -
-		m[2]*m[5]*m[8]*m[15] + m[1]*m[6]*m[8]*m[15] +
-		m[2]*m[4]*m[9]*m[15] - m[0]*m[6]*m[9]*m[15] -
-		m[1]*m[4]*m[10]*m[15] + m[0]*m[5]*m[10]*m[15]
+	p := rowFloat(3, 2, 1, 0, false, m).addFloat64Pred(rowFloat(3, 1, 2, 0, true, m)).addFloat64Pred(
+		rowFloat(2, 1, 3, 0, false, m)).addFloat64Pred(rowFloat(3, 2, 0, 1, true, m)).addFloat64Pred(
+		rowFloat(3, 0, 2, 1, false, m)).addFloat64Pred(rowFloat(2, 0, 3, 1, true, m)).addFloat64Pred(
+		rowFloat(3, 1, 0, 2, false, m)).addFloat64Pred(rowFloat(3, 0, 1, 2, true, m)).addFloat64Pred(
+		rowFloat(1, 0, 3, 2, false, m)).addFloat64Pred(rowFloat(2, 1, 0, 3, true, m)).addFloat64Pred(
+		rowFloat(2, 0, 1, 3, false, m)).addFloat64Pred(rowFloat(1, 0, 2, 3, true, m))
+	/* det := m[3]*m[6]*m[9]*m[12] - m[2]*m[7]*m[9]*m[12] -
+	m[3]*m[5]*m[10]*m[12] + m[1]*m[7]*m[10]*m[12] +
+	m[2]*m[5]*m[11]*m[12] - m[1]*m[6]*m[11]*m[12] -
+	m[3]*m[6]*m[8]*m[13] + m[2]*m[7]*m[8]*m[13] +
+	m[3]*m[4]*m[10]*m[13] - m[0]*m[7]*m[10]*m[13] -
+	m[2]*m[4]*m[11]*m[13] + m[0]*m[6]*m[11]*m[13] +
+	m[3]*m[5]*m[8]*m[14] - m[1]*m[7]*m[8]*m[14] -
+	m[3]*m[4]*m[9]*m[14] + m[0]*m[7]*m[9]*m[14] +
+	m[1]*m[4]*m[11]*m[14] - m[0]*m[5]*m[11]*m[14] -
+	m[2]*m[5]*m[8]*m[15] + m[1]*m[6]*m[8]*m[15] +
+	m[2]*m[4]*m[9]*m[15] - m[0]*m[6]*m[9]*m[15] -
+	m[1]*m[4]*m[10]*m[15] + m[0]*m[5]*m[10]*m[15] */
+	det := p.n
 	// e determines when the determinant in orientation is too close to 0 to rely on floating point operations.
 	// Each intermediate result can have a potential absolute relative rounding error of macheps.
 	// If y is the machine representation of x then |(x-y)/x| <= macheps and |x-y| = e, therefore
@@ -95,8 +90,7 @@ func simpleIncircle(x1, y1, x2, y2, x3, y3, x, y float64) RelativePosition {
 	// sum(mul(a,b),c) = sum(a*b+macheps,c) = a*b+c + macheps + macheps
 	// Conclusively, when multiplications are chained, the error also depends on the value
 	// of the number, but this does not apply to sums or subtractions.
-	// FIXME fix error calculation
-	e := macheps*math.Abs(m[0])*6 + macheps*math.Abs(m[4])*6 + macheps*math.Abs(m[8])*6 + macheps*math.Abs(m[15])*6 + macheps*47
+	e := p.e
 	if det < -e {
 		return Inside
 	}
@@ -104,6 +98,19 @@ func simpleIncircle(x1, y1, x2, y2, x3, y3, x, y float64) RelativePosition {
 		return Outside
 	}
 	return IndeterminateP
+}
+
+// rowFloat is a helper function for robustIncircle
+// If m[row][col] then each row in the determinant calculation is either
+// m[0][a]*m[1][b]*m[2][c]*m[3][d] - m[0][b]*m[1][a]*m[2][c]*m[3][d] or
+// - m[0][a]*m[1][b]*m[2][c]*m[3][d] + m[0][b]*m[1][a]*m[2][c]*m[3][d]
+func rowFloat(a, b, c, d int, plus bool, m []float64) float64Pred {
+	if plus {
+		return newFloat64Pred(m[b]).mulFloat64(m[a+4]).mulFloat64(m[c+8]).mulFloat64(m[d+12]).subFloat64Pred(
+			newFloat64Pred(m[a]).mulFloat64(m[b+4]).mulFloat64(m[c+8]).mulFloat64(m[d+12]))
+	}
+	return newFloat64Pred(m[a]).mulFloat64(m[b+4]).mulFloat64(m[c+8]).mulFloat64(m[d+12]).subFloat64Pred(
+		newFloat64Pred(m[b]).mulFloat64(m[a+4]).mulFloat64(m[c+8]).mulFloat64(m[d+12]))
 }
 
 // robustIncircle computes the determinant of the matrix using the accurate big/Rat type.
@@ -122,22 +129,22 @@ func robustIncircle(x1, y1, x2, y2, x3, y3, x, y *big.Rat) RelativePosition {
 	det := bigAdd(
 		bigAdd(
 			bigAdd(
-				bigAdd(row(3, 2, 1, 0, false, m), row(3, 1, 2, 0, true, m)),
-				row(2, 1, 3, 0, false, m),
+				bigAdd(rowBig(3, 2, 1, 0, false, m), rowBig(3, 1, 2, 0, true, m)),
+				rowBig(2, 1, 3, 0, false, m),
 			),
 			bigAdd(
-				bigAdd(row(3, 2, 0, 1, true, m), row(3, 0, 2, 1, false, m)),
-				row(2, 0, 3, 1, true, m),
+				bigAdd(rowBig(3, 2, 0, 1, true, m), rowBig(3, 0, 2, 1, false, m)),
+				rowBig(2, 0, 3, 1, true, m),
 			),
 		),
 		bigAdd(
 			bigAdd(
-				bigAdd(row(3, 1, 0, 2, false, m), row(3, 0, 1, 2, true, m)),
-				row(1, 0, 3, 2, false, m),
+				bigAdd(rowBig(3, 1, 0, 2, false, m), rowBig(3, 0, 1, 2, true, m)),
+				rowBig(1, 0, 3, 2, false, m),
 			),
 			bigAdd(
-				bigAdd(row(2, 1, 0, 3, true, m), row(2, 0, 1, 3, false, m)),
-				row(1, 0, 2, 3, true, m),
+				bigAdd(rowBig(2, 1, 0, 3, true, m), rowBig(2, 0, 1, 3, false, m)),
+				rowBig(1, 0, 2, 3, true, m),
 			),
 		),
 	)
@@ -150,11 +157,11 @@ func robustIncircle(x1, y1, x2, y2, x3, y3, x, y *big.Rat) RelativePosition {
 	return Outside
 }
 
-// row is a helper function for robustIncircle
+// rowBig is a helper function for robustIncircle
 // If m[row][col] then each row in the determinant calculation is either
 // m[0][a]*m[1][b]*m[2][c]*m[3][d] - m[0][b]*m[1][a]*m[2][c]*m[3][d] or
 // - m[0][a]*m[1][b]*m[2][c]*m[3][d] + m[0][b]*m[1][a]*m[2][c]*m[3][d]
-func row(a, b, c, d int, plus bool, m []*big.Rat) *big.Rat {
+func rowBig(a, b, c, d int, plus bool, m []*big.Rat) *big.Rat {
 	if plus {
 		return bigSub(
 			bigMul(bigMul(m[b], m[a+4]), bigMul(m[c+8], m[d+12])),

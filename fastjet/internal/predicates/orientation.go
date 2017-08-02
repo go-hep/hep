@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"math/big"
 
-	"math"
-
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -66,15 +64,16 @@ func simpleOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 	//  | x1 y1 1 |
 	//  | x2 y2 1 |
 	//  | x  y  1 |
-	det := x1*y2 + x2*y + x*y1 - x1*y - x2*y1 - x*y2
+	p := newFloat64Pred(x1).mulFloat64(y2).addFloat64Pred(newFloat64Pred(x2).mulFloat64(y)).
+		addFloat64Pred(newFloat64Pred(x).mulFloat64(y1)).subFloat64Pred(newFloat64Pred(x1).mulFloat64(y)).
+		subFloat64Pred(newFloat64Pred(x2).mulFloat64(y1)).subFloat64Pred(newFloat64Pred(x).mulFloat64(y2))
+	// det := x1*y2 + x2*y + x*y1 - x1*y - x2*y1 - x*y2
+	det := p.n
 	// e determines when the determinant in orientation is too close to 0 to rely on floating point operations.
 	// Each intermediate result can have a potential absolute relative rounding error of macheps.
 	// If y is the machine representation of x then |(x-y)/x| <= macheps and |x-y| = e, therefore
 	// e = macheps*|x|. Since there are no chained multiplications the intermediate results can be add up.
-	e := macheps*math.Abs(x1*y2) + macheps*math.Abs(x2*y) + macheps*math.Abs(x*y1) + macheps*math.Abs(x1*y) + macheps*math.Abs(x2*y1) +
-		macheps*math.Abs(x*y2) + macheps*math.Abs(x1*y2+x2*y) + macheps*math.Abs(x1*y2+x2*y+x*y1) +
-		macheps*math.Abs(x1*y2+x2*y+x*y1-x1*y) + macheps*math.Abs(x1*y2+x2*y+x*y1-x1*y-x2*y1) +
-		macheps*math.Abs(det)
+	e := p.e
 	if det > e {
 		return CCW
 	}
