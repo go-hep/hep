@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"math"
+
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -20,7 +22,7 @@ const (
 	// Clockwise
 	CW
 	Colinear
-	IndeterminateO
+	IndeterminateOrientation
 )
 
 func (o OrientationKind) String() string {
@@ -31,7 +33,7 @@ func (o OrientationKind) String() string {
 		return "Clockwise"
 	case Colinear:
 		return "Colinear"
-	case IndeterminateO:
+	case IndeterminateOrientation:
 		return "Indeterminate"
 	default:
 		panic(fmt.Errorf("predicates: unknown OrientationKind %d", int(o)))
@@ -43,7 +45,7 @@ func (o OrientationKind) String() string {
 // the line defined by the points (x1,y1) and (x2,y2).
 func Orientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 	o := simpleOrientation(x1, y1, x2, y2, x, y)
-	if o == IndeterminateO {
+	if o == IndeterminateOrientation {
 		// too close to 0 to give a definite answer.
 		// Therefore check with more expansive tests.
 		o = robustOrientation(setBig(x1), setBig(y1), setBig(x2), setBig(y2), setBig(x), setBig(y))
@@ -80,7 +82,7 @@ func simpleOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 	if det < -e {
 		return CW
 	}
-	return IndeterminateO
+	return IndeterminateOrientation
 }
 
 // robustOrientation finds the orientation using the accurate big/Rat type.
@@ -112,12 +114,9 @@ func matOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 	}
 	m := mat.NewDense(3, 3, []float64{x1, y1, 1, x2, y2, 1, x, y, 1})
 	logDet, sign := mat.LogDet(m)
-	// FIXME determine maxErrorLog
-	// maxErrorLog is the highest possible number that could lead to a wrong sign due to rounding error
-	maxErrorLog := -10.0
-	if logDet < maxErrorLog {
-		// logDet is too small and therefore Determinant is too close to 0 to give a definite answer on the position
-		return IndeterminateO
+	if math.IsInf(logDet, -1) {
+		// logDet is negative infinite and therefore the determinant is 0
+		return Colinear
 	}
 	switch sign {
 	case 1:
@@ -125,5 +124,5 @@ func matOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 	case -1:
 		return CW
 	}
-	return IndeterminateO
+	return IndeterminateOrientation
 }

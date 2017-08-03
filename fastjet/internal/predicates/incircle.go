@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"math"
+
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -21,7 +23,7 @@ const (
 	On
 	// Outside the circle
 	Outside
-	IndeterminateP
+	IndeterminatePosition
 )
 
 func (p RelativePosition) String() string {
@@ -32,7 +34,7 @@ func (p RelativePosition) String() string {
 		return "On Circle"
 	case Outside:
 		return "Outside Circle"
-	case IndeterminateP:
+	case IndeterminatePosition:
 		return "Indeterminate"
 	default:
 		panic(fmt.Errorf("predicates: unknown RelativePosition %d", int(p)))
@@ -44,7 +46,7 @@ func (p RelativePosition) String() string {
 // by the three points (x1,y1),(x2,y2) and (x3,y3)
 func Incircle(x1, y1, x2, y2, x3, y3, x, y float64) RelativePosition {
 	pos := simpleIncircle(x1, y1, x2, y2, x3, y3, x, y)
-	if pos == IndeterminateP {
+	if pos == IndeterminatePosition {
 		pos = robustIncircle(setBig(x1), setBig(y1), setBig(x2), setBig(y2), setBig(x3), setBig(y3), setBig(x), setBig(y))
 	}
 	return pos
@@ -97,7 +99,7 @@ func simpleIncircle(x1, y1, x2, y2, x3, y3, x, y float64) RelativePosition {
 	if det > e {
 		return Outside
 	}
-	return IndeterminateP
+	return IndeterminatePosition
 }
 
 // rowFloat is a helper function for robustIncircle
@@ -183,12 +185,9 @@ func rowBig(a, b, c, d int, plus bool, m []*big.Rat) *big.Rat {
 func matIncircle(x1, y1, x2, y2, x3, y3, x, y float64) RelativePosition {
 	m := mat.NewDense(4, 4, []float64{1, x1, y1, x1*x1 + y1*y1, 1, x2, y2, x2*x2 + y2*y2, 1, x3, y3, x3*x3 + y3*y3, 1, x, y, x*x + y*y})
 	logDet, sign := mat.LogDet(m)
-	// FIXME determine maxErrorLog
-	// maxErrorLog is the highest possible number that could lead to a wrong sign due to rounding error
-	maxErrorLog := -10.0
-	if logDet < maxErrorLog {
-		// logDet is too small and therefore Determinant is too close to 0 to give a definite answer on the position
-		return IndeterminateP
+	if math.IsInf(logDet, -1) {
+		// logDet is negative infinite and therefore the determinant is 0
+		return On
 	}
 	switch sign {
 	case 1:
@@ -196,5 +195,5 @@ func matIncircle(x1, y1, x2, y2, x3, y3, x, y float64) RelativePosition {
 	case -1:
 		return Inside
 	}
-	return IndeterminateP
+	return IndeterminatePosition
 }

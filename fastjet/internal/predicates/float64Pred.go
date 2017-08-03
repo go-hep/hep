@@ -14,12 +14,12 @@ const (
 	// representing a number.
 	// If y is the machine representation of x then |(x-y)/x| <= macheps
 	// https://en.wikipedia.org/wiki/Machine_epsilon
-	// Golangs float64 type has a 52-bit fractional mantissa,
+	// Go's float64 type has a 52-bit fractional mantissa,
 	// therefore the value 2^-52
 	macheps = 1.0 / (1 << 52)
 )
 
-// float64Pred dynamically updates the potential error
+// float64Pred dynamically updates the potential error.
 //
 // If y is the machine representation of x then |(x-y)/x| <= macheps and |x-y| = e.
 // Since we want the max possible error we assume |(x-y)/x| = macheps
