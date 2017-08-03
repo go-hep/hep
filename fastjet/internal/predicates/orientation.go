@@ -7,10 +7,6 @@ package predicates
 import (
 	"fmt"
 	"math/big"
-
-	"math"
-
-	"gonum.org/v1/gonum/mat"
 )
 
 // OrientationKind indicates how three points are located in respect to each other.
@@ -105,24 +101,4 @@ func robustOrientation(x1, y1, x2, y2, x, y *big.Rat) OrientationKind {
 	default:
 		return Colinear
 	}
-}
-
-func matOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
-	if (x1 == x2 && x2 == x) || (y1 == y2 && y2 == y) {
-		// points are horizontally or vertically aligned
-		return Colinear
-	}
-	m := mat.NewDense(3, 3, []float64{x1, y1, 1, x2, y2, 1, x, y, 1})
-	logDet, sign := mat.LogDet(m)
-	if math.IsInf(logDet, -1) {
-		// logDet is negative infinite and therefore the determinant is 0
-		return Colinear
-	}
-	switch sign {
-	case 1:
-		return CCW
-	case -1:
-		return CW
-	}
-	return IndeterminateOrientation
 }

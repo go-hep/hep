@@ -5,7 +5,10 @@
 package predicates
 
 import (
+	"math"
 	"testing"
+
+	"gonum.org/v1/gonum/mat"
 )
 
 func TestOrientation(t *testing.T) {
@@ -132,4 +135,24 @@ func BenchmarkRobustOrientation(b *testing.B) {
 			robustOrientation(setBig(test.x1), setBig(test.y1), setBig(test.x2), setBig(test.y2), setBig(test.x), setBig(test.y))
 		}
 	}
+}
+
+func matOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
+	if (x1 == x2 && x2 == x) || (y1 == y2 && y2 == y) {
+		// points are horizontally or vertically aligned
+		return Colinear
+	}
+	m := mat.NewDense(3, 3, []float64{x1, y1, 1, x2, y2, 1, x, y, 1})
+	logDet, sign := mat.LogDet(m)
+	if math.IsInf(logDet, -1) {
+		// logDet is negative infinite and therefore the determinant is 0
+		return Colinear
+	}
+	switch sign {
+	case 1:
+		return CCW
+	case -1:
+		return CW
+	}
+	return IndeterminateOrientation
 }
