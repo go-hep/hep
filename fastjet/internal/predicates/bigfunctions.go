@@ -9,8 +9,7 @@ import (
 )
 
 var (
-	zero = new(big.Rat).SetInt64(0)
-	one  = new(big.Rat).SetInt64(1)
+	one = new(big.Rat).SetInt64(1)
 )
 
 func setBig(f float64) *big.Rat {

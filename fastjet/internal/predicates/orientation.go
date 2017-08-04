@@ -49,28 +49,28 @@ func Orientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 	return o
 }
 
-// simpleOrientation finds the orientation using the float64 type.
+// simpleOrientation finds the orientation using the simple float64 type.
 // Its accuracy can't be guaranteed, therefore close decisions
-// return Indeterminate which signals Orientation that further
-// testing is necessary
+// return IndeterminateOrientation which signals Orientation that further
+// testing is necessary.
+//
+// It computes the determinant of the matrix and returns the orientation based
+// on the value of the determinant.
+//  | x1 y1 1 |
+//  | x2 y2 1 |
+//  | x  y  1 |
 func simpleOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 	if (x1 == x2 && x2 == x) || (y1 == y2 && y2 == y) {
 		// points are horizontally or vertically aligned
 		return Colinear
 	}
 	// Compute the determinant of the matrix
-	//  | x1 y1 1 |
-	//  | x2 y2 1 |
-	//  | x  y  1 |
 	p := newFloat64Pred(x1).mulFloat64(y2).addFloat64Pred(newFloat64Pred(x2).mulFloat64(y)).
 		addFloat64Pred(newFloat64Pred(x).mulFloat64(y1)).subFloat64Pred(newFloat64Pred(x1).mulFloat64(y)).
 		subFloat64Pred(newFloat64Pred(x2).mulFloat64(y1)).subFloat64Pred(newFloat64Pred(x).mulFloat64(y2))
 	// det := x1*y2 + x2*y + x*y1 - x1*y - x2*y1 - x*y2
 	det := p.n
-	// e determines when the determinant in orientation is too close to 0 to rely on floating point operations.
-	// Each intermediate result can have a potential absolute relative rounding error of macheps.
-	// If y is the machine representation of x then |(x-y)/x| <= macheps and |x-y| = e, therefore
-	// e = macheps*|x|. Since there are no chained multiplications the intermediate results can be add up.
+	// e determines when the determinant in simpleOrientation is too close to 0 to rely on floating point operations.
 	e := p.e
 	if det > e {
 		return CCW
@@ -82,11 +82,14 @@ func simpleOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 }
 
 // robustOrientation finds the orientation using the accurate big/Rat type.
+//
+// It computes the determinant of the matrix and returns the orientation based
+// on the value of the determinant.
+//  | x1 y1 1 |
+//  | x2 y2 1 |
+//  | x  y  1 |
 func robustOrientation(x1, y1, x2, y2, x, y *big.Rat) OrientationKind {
 	// Compute the determinant of the matrix
-	//  | x1 y1 1 |
-	//  | x2 y2 1 |
-	//  | x  y  1 |
 	// det := x1*y2 + x2*y + x*y1 - x1*y - x2*y1 - x*y2
 	det := bigSub(
 		bigAdd(bigAdd(bigMul(x1, y2), bigMul(x2, y)), bigMul(x, y1)),
@@ -98,7 +101,8 @@ func robustOrientation(x1, y1, x2, y2, x, y *big.Rat) OrientationKind {
 		return CCW
 	case -1:
 		return CW
-	default:
+	case 0:
 		return Colinear
 	}
+	return IndeterminateOrientation
 }

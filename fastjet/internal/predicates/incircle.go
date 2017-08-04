@@ -39,7 +39,8 @@ func (p RelativePosition) String() string {
 }
 
 // Incircle determines the relative position of the point (x,y) in relation to the circle formed
-// by the three points (x1,y1),(x2,y2) and (x3,y3)
+// by the three points (x1,y1),(x2,y2) and (x3,y3). The three points have to be ordered counterclockwise or
+// Outside and Inside will be reversed.
 func Incircle(x1, y1, x2, y2, x3, y3, x, y float64) RelativePosition {
 	pos := simpleIncircle(x1, y1, x2, y2, x3, y3, x, y)
 	if pos == IndeterminatePosition {
@@ -48,18 +49,23 @@ func Incircle(x1, y1, x2, y2, x3, y3, x, y float64) RelativePosition {
 	return pos
 }
 
-// simpleIncircle finds the determinant of the matrix using the simple float64 type.
-// Then it returns the relative position based on the value of the determinant.
-// |1 x1 y1 x1^2+y1^2|
-// |1 x2 y2 x2^2+y2^2|
-// |1 x3 y3 x3^2+y3^2|
-// |1 x  y  x^2 +y^2 |
+// simpleIncircle determines the relative position using the simple float64 type.
+// Its accuracy can't be guaranteed, therefore close decisions
+// return IndeterminatePosition which signals Incircle that further
+// testing is necessary.
+//
+// It computes the determinant of the matrix and returns the relative position
+// based on the value of the determinant.
+// |x1 y1 x1^2+y1^2 1|
+// |x2 y2 x2^2+y2^2 1|
+// |x3 y3 x3^2+y3^2 1|
+// |x  y  x^2 +y^2  1|
 func simpleIncircle(x1, y1, x2, y2, x3, y3, x, y float64) RelativePosition {
 	m := []float64{
-		1, x1, y1, x1*x1 + y1*y1,
-		1, x2, y2, x2*x2 + y2*y2,
-		1, x3, y3, x3*x3 + y3*y3,
-		1, x, y, x*x + y*y,
+		x1, y1, x1*x1 + y1*y1, 1,
+		x2, y2, x2*x2 + y2*y2, 1,
+		x3, y3, x3*x3 + y3*y3, 1,
+		x, y, x*x + y*y, 1,
 	}
 	p := rowFloat(3, 2, 1, 0, false, m).addFloat64Pred(rowFloat(3, 1, 2, 0, true, m)).addFloat64Pred(
 		rowFloat(2, 1, 3, 0, false, m)).addFloat64Pred(rowFloat(3, 2, 0, 1, true, m)).addFloat64Pred(
@@ -67,33 +73,26 @@ func simpleIncircle(x1, y1, x2, y2, x3, y3, x, y float64) RelativePosition {
 		rowFloat(3, 1, 0, 2, false, m)).addFloat64Pred(rowFloat(3, 0, 1, 2, true, m)).addFloat64Pred(
 		rowFloat(1, 0, 3, 2, false, m)).addFloat64Pred(rowFloat(2, 1, 0, 3, true, m)).addFloat64Pred(
 		rowFloat(2, 0, 1, 3, false, m)).addFloat64Pred(rowFloat(1, 0, 2, 3, true, m))
-	/* det := m[3]*m[6]*m[9]*m[12] - m[2]*m[7]*m[9]*m[12] -
-	m[3]*m[5]*m[10]*m[12] + m[1]*m[7]*m[10]*m[12] +
-	m[2]*m[5]*m[11]*m[12] - m[1]*m[6]*m[11]*m[12] -
-	m[3]*m[6]*m[8]*m[13] + m[2]*m[7]*m[8]*m[13] +
-	m[3]*m[4]*m[10]*m[13] - m[0]*m[7]*m[10]*m[13] -
-	m[2]*m[4]*m[11]*m[13] + m[0]*m[6]*m[11]*m[13] +
-	m[3]*m[5]*m[8]*m[14] - m[1]*m[7]*m[8]*m[14] -
-	m[3]*m[4]*m[9]*m[14] + m[0]*m[7]*m[9]*m[14] +
-	m[1]*m[4]*m[11]*m[14] - m[0]*m[5]*m[11]*m[14] -
-	m[2]*m[5]*m[8]*m[15] + m[1]*m[6]*m[8]*m[15] +
-	m[2]*m[4]*m[9]*m[15] - m[0]*m[6]*m[9]*m[15] -
-	m[1]*m[4]*m[10]*m[15] + m[0]*m[5]*m[10]*m[15] */
+	// det := m[0][3]*m[1][2]*m[2][1]*m[3][0] - m[0][2]*m[1][3]*m[2][1]*m[3][0] -
+	//	m[0][3]*m[1][1]*m[2][2]*m[3][0] + m[0][1]*m[1][3]*m[2][2]*m[3][0] +
+	//	m[0][2]*m[1][1]*m[2][3]*m[3][0] - m[0][1]*m[1][2]*m[2][3]*m[3][0] -
+	//	m[0][3]*m[1][2]*m[2][0]*m[3][1] + m[0][2]*m[1][3]*m[2][0]*m[3][1] +
+	//	m[0][3]*m[1][0]*m[2][2]*m[3][1] - m[0][0]*m[1][3]*m[2][2]*m[3][1] -
+	//	m[0][2]*m[1][0]*m[2][3]*m[3][1] + m[0][0]*m[1][2]*m[2][3]*m[3][1] +
+	//	m[0][3]*m[1][1]*m[2][0]*m[3][2] - m[0][1]*m[1][3]*m[2][0]*m[3][2] -
+	//	m[0][3]*m[1][0]*m[2][1]*m[3][2] + m[0][0]*m[1][3]*m[2][1]*m[3][2] +
+	//	m[0][1]*m[1][0]*m[2][3]*m[3][2] - m[0][0]*m[1][1]*m[2][3]*m[3][2] -
+	//	m[0][2]*m[1][1]*m[2][0]*m[3][3] + m[0][1]*m[1][2]*m[2][0]*m[3][3] +
+	//	m[0][2]*m[1][0]*m[2][1]*m[3][3] - m[0][0]*m[1][2]*m[2][1]*m[3][3] -
+	//	m[0][1]*m[1][0]*m[2][2]*m[3][3] + m[0][0]*m[1][1]*m[2][2]*m[3][3]
 	det := p.n
-	// e determines when the determinant in orientation is too close to 0 to rely on floating point operations.
-	// Each intermediate result can have a potential absolute relative rounding error of macheps.
-	// If y is the machine representation of x then |(x-y)/x| <= macheps and |x-y| = e, therefore
-	// e = macheps*|x|.
-	// mul(mul(a,b),c) = mul(a*b+macheps,c) = a*b*c + macheps*c + macheps
-	// sum(mul(a,b),c) = sum(a*b+macheps,c) = a*b+c + macheps + macheps
-	// Conclusively, when multiplications are chained, the error also depends on the value
-	// of the number, but this does not apply to sums or subtractions.
+	// e determines when the determinant in simpleIncircle is too close to 0 to rely on floating point operations.
 	e := p.e
 	if det < -e {
-		return Inside
+		return Outside
 	}
 	if det > e {
-		return Outside
+		return Inside
 	}
 	return IndeterminatePosition
 }
@@ -111,19 +110,33 @@ func rowFloat(a, b, c, d int, plus bool, m []float64) float64Pred {
 		newFloat64Pred(m[b]).mulFloat64(m[a+4]).mulFloat64(m[c+8]).mulFloat64(m[d+12]))
 }
 
-// robustIncircle computes the determinant of the matrix using the accurate big/Rat type.
-// Then it returns the relative position based on the value of the determinant
-// |1 x1 y1 x1^2+y1^2|
-// |1 x2 y2 x2^2+y2^2|
-// |1 x3 y3 x3^2+y3^2|
-// |1 x  y  x^2 +y^2 |
+// robustIncircle determines the relative position using the accurate big/Rat type.
+//
+// It computes the determinant of the matrix and returns the relative position
+// based on the value of the determinant.
+// |x1 y1 x1^2+y1^2 1|
+// |x2 y2 x2^2+y2^2 1|
+// |x3 y3 x3^2+y3^2 1|
+// |x  y  x^2 +y^2  1|
 func robustIncircle(x1, y1, x2, y2, x3, y3, x, y *big.Rat) RelativePosition {
 	m := []*big.Rat{
-		one, x1, y1, bigAdd(bigMul(x1, x1), bigMul(y1, y1)),
-		one, x2, y2, bigAdd(bigMul(x2, x2), bigMul(y2, y2)),
-		one, x3, y3, bigAdd(bigMul(x3, x3), bigMul(y3, y3)),
-		one, x, y, bigAdd(bigMul(x, x), bigMul(y, y)),
+		x1, y1, bigAdd(bigMul(x1, x1), bigMul(y1, y1)), one,
+		x2, y2, bigAdd(bigMul(x2, x2), bigMul(y2, y2)), one,
+		x3, y3, bigAdd(bigMul(x3, x3), bigMul(y3, y3)), one,
+		x, y, bigAdd(bigMul(x, x), bigMul(y, y)), one,
 	}
+	// det := m[0][3]*m[1][2]*m[2][1]*m[3][0] - m[0][2]*m[1][3]*m[2][1]*m[3][0] -
+	//	m[0][3]*m[1][1]*m[2][2]*m[3][0] + m[0][1]*m[1][3]*m[2][2]*m[3][0] +
+	//	m[0][2]*m[1][1]*m[2][3]*m[3][0] - m[0][1]*m[1][2]*m[2][3]*m[3][0] -
+	//	m[0][3]*m[1][2]*m[2][0]*m[3][1] + m[0][2]*m[1][3]*m[2][0]*m[3][1] +
+	//	m[0][3]*m[1][0]*m[2][2]*m[3][1] - m[0][0]*m[1][3]*m[2][2]*m[3][1] -
+	//	m[0][2]*m[1][0]*m[2][3]*m[3][1] + m[0][0]*m[1][2]*m[2][3]*m[3][1] +
+	//	m[0][3]*m[1][1]*m[2][0]*m[3][2] - m[0][1]*m[1][3]*m[2][0]*m[3][2] -
+	//	m[0][3]*m[1][0]*m[2][1]*m[3][2] + m[0][0]*m[1][3]*m[2][1]*m[3][2] +
+	//	m[0][1]*m[1][0]*m[2][3]*m[3][2] - m[0][0]*m[1][1]*m[2][3]*m[3][2] -
+	//	m[0][2]*m[1][1]*m[2][0]*m[3][3] + m[0][1]*m[1][2]*m[2][0]*m[3][3] +
+	//	m[0][2]*m[1][0]*m[2][1]*m[3][3] - m[0][0]*m[1][2]*m[2][1]*m[3][3] -
+	//	m[0][1]*m[1][0]*m[2][2]*m[3][3] + m[0][0]*m[1][1]*m[2][2]*m[3][3]
 	det := bigAdd(
 		bigAdd(
 			bigAdd(
@@ -146,13 +159,16 @@ func robustIncircle(x1, y1, x2, y2, x3, y3, x, y *big.Rat) RelativePosition {
 			),
 		),
 	)
-	if det.Cmp(zero) < 0 {
+	sign := det.Sign()
+	switch sign {
+	case 1:
 		return Inside
-	}
-	if det.Cmp(zero) == 0 {
+	case -1:
+		return Outside
+	case 0:
 		return On
 	}
-	return Outside
+	return IndeterminatePosition
 }
 
 // rowBig is a helper function for robustIncircle
