@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"fmt"
 	"math"
-	"net/url"
 	"strings"
 	"sync"
 
@@ -189,7 +188,7 @@ func iconFor(obj rootio.Object) string {
 }
 
 func attrFor(obj rootio.Object, id string) jsAttr {
-	id = url.PathEscape(id)
+	id = urlPathEscape(id)
 	cls := obj.Class()
 	switch {
 	case strings.HasPrefix(cls, "TH1"):
