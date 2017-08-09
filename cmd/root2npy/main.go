@@ -12,6 +12,10 @@
 //   -t string
 //     	name of the tree to convert (default "tree")
 //
+// The NumPy data file format is described here:
+//
+//  https://docs.scipy.org/doc/numpy/neps/npy-format.html
+//
 // Example:
 //
 //  $> root2npy -f $GOPATH/src/go-hep.org/x/hep/rootio/testdata/simple.root -t tree -o output.npz
