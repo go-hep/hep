@@ -4,7 +4,11 @@ go:
   - 1.6.x
   - 1.7.x
   - 1.8.x
-  - tip
+  - master
+
+matrix:
+ allow_failures:
+   - go: master
 
 sudo: false
 
