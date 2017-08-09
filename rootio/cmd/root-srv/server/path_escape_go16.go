@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build !go18
+// +build !go1.8
 
 package server
+
+import "strconv"
 
 // PathEscape escapes the string so it can be safely placed
 // inside a URL path segment.
@@ -49,6 +51,30 @@ func escape(s string, mode encoding) string {
 	return string(t)
 }
 
+func ishex(c byte) bool {
+	switch {
+	case '0' <= c && c <= '9':
+		return true
+	case 'a' <= c && c <= 'f':
+		return true
+	case 'A' <= c && c <= 'F':
+		return true
+	}
+	return false
+}
+
+func unhex(c byte) byte {
+	switch {
+	case '0' <= c && c <= '9':
+		return c - '0'
+	case 'a' <= c && c <= 'f':
+		return c - 'a' + 10
+	case 'A' <= c && c <= 'F':
+		return c - 'A' + 10
+	}
+	return 0
+}
+
 type encoding int
 
 const (
@@ -60,6 +86,18 @@ const (
 	encodeQueryComponent
 	encodeFragment
 )
+
+type EscapeError string
+
+func (e EscapeError) Error() string {
+	return "invalid URL escape " + strconv.Quote(string(e))
+}
+
+type InvalidHostError string
+
+func (e InvalidHostError) Error() string {
+	return "invalid character " + strconv.Quote(string(e)) + " in host name"
+}
 
 // Return true if the specified character should be escaped when
 // appearing in a URL string, according to RFC 3986.
@@ -128,4 +166,93 @@ func shouldEscape(c byte, mode encoding) bool {
 
 	// Everything else must be escaped.
 	return true
+}
+
+// PathUnescape does the inverse transformation of PathEscape, converting
+// %AB into the byte 0xAB. It returns an error if any % is not followed by
+// two hexadecimal digits.
+//
+// PathUnescape is identical to QueryUnescape except that it does not unescape '+' to ' ' (space).
+func urlPathUnescape(s string) (string, error) {
+	return unescape(s, encodePathSegment)
+}
+
+// unescape unescapes a string; the mode specifies
+// which section of the URL string is being unescaped.
+func unescape(s string, mode encoding) (string, error) {
+	// Count %, check that they're well-formed.
+	n := 0
+	hasPlus := false
+	for i := 0; i < len(s); {
+		switch s[i] {
+		case '%':
+			n++
+			if i+2 >= len(s) || !ishex(s[i+1]) || !ishex(s[i+2]) {
+				s = s[i:]
+				if len(s) > 3 {
+					s = s[:3]
+				}
+				return "", EscapeError(s)
+			}
+			// Per https://tools.ietf.org/html/rfc3986#page-21
+			// in the host component %-encoding can only be used
+			// for non-ASCII bytes.
+			// But https://tools.ietf.org/html/rfc6874#section-2
+			// introduces %25 being allowed to escape a percent sign
+			// in IPv6 scoped-address literals. Yay.
+			if mode == encodeHost && unhex(s[i+1]) < 8 && s[i:i+3] != "%25" {
+				return "", EscapeError(s[i : i+3])
+			}
+			if mode == encodeZone {
+				// RFC 6874 says basically "anything goes" for zone identifiers
+				// and that even non-ASCII can be redundantly escaped,
+				// but it seems prudent to restrict %-escaped bytes here to those
+				// that are valid host name bytes in their unescaped form.
+				// That is, you can use escaping in the zone identifier but not
+				// to introduce bytes you couldn't just write directly.
+				// But Windows puts spaces here! Yay.
+				v := unhex(s[i+1])<<4 | unhex(s[i+2])
+				if s[i:i+3] != "%25" && v != ' ' && shouldEscape(v, encodeHost) {
+					return "", EscapeError(s[i : i+3])
+				}
+			}
+			i += 3
+		case '+':
+			hasPlus = mode == encodeQueryComponent
+			i++
+		default:
+			if (mode == encodeHost || mode == encodeZone) && s[i] < 0x80 && shouldEscape(s[i], mode) {
+				return "", InvalidHostError(s[i : i+1])
+			}
+			i++
+		}
+	}
+
+	if n == 0 && !hasPlus {
+		return s, nil
+	}
+
+	t := make([]byte, len(s)-2*n)
+	j := 0
+	for i := 0; i < len(s); {
+		switch s[i] {
+		case '%':
+			t[j] = unhex(s[i+1])<<4 | unhex(s[i+2])
+			j++
+			i += 3
+		case '+':
+			if mode == encodeQueryComponent {
+				t[j] = ' '
+			} else {
+				t[j] = '+'
+			}
+			j++
+			i++
+		default:
+			t[j] = s[i]
+			j++
+			i++
+		}
+	}
+	return string(t), nil
 }
