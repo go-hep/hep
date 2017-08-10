@@ -780,5 +780,4 @@ func (r *RBuffer) ReadObjectAny() (obj Object) {
 		}
 		return obj
 	}
-	panic("unreachable")
 }

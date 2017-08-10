@@ -144,6 +144,4 @@ func bwrite(w Writer, data interface{}) error {
 		//fmt.Printf(">>> binary - [%v]... [done]\n", rv.Type())
 		return err
 	}
-	panic("not reachable")
-
 }

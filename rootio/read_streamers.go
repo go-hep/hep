@@ -686,5 +686,4 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 
 	}
 	panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
-	return nil
 }

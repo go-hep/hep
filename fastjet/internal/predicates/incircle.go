@@ -35,7 +35,6 @@ func (p RelativePosition) String() string {
 	default:
 		panic(fmt.Errorf("predicates: unknown RelativePosition %d", int(p)))
 	}
-	panic("unreachable")
 }
 
 // Incircle determines the relative position of the point (x,y) in relation to the circle formed

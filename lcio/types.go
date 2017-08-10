@@ -57,7 +57,6 @@ func typeFrom(name string) interface{} {
 		return new(References)
 	}
 	panic(fmt.Errorf("unhandled type %q", name))
-	return nil
 }
 
 func typeName(t interface{}) string {

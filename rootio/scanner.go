@@ -143,8 +143,8 @@ func (s *Scanner) Entry() int64 {
 	return s.cur
 }
 
-// Seek points the scanner to the i-th entry, ready to call Next.
-func (s *Scanner) Seek(i int64) error {
+// SeekEntry points the scanner to the i-th entry, ready to call Next.
+func (s *Scanner) SeekEntry(i int64) error {
 	if s.err != nil {
 		return s.err
 	}

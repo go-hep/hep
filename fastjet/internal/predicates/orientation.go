@@ -34,7 +34,6 @@ func (o OrientationKind) String() string {
 	default:
 		panic(fmt.Errorf("predicates: unknown OrientationKind %d", int(o)))
 	}
-	panic("unreachable")
 }
 
 // Orientation returns how the point (x,y) is oriented with respect to
