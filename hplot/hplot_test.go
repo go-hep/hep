@@ -115,14 +115,14 @@ func Example_subplot() {
 		height = width / math.Phi
 	)
 
-	c := vgimg.PngCanvas{vgimg.New(width, height)}
+	c := vgimg.PngCanvas{Canvas: vgimg.New(width, height)}
 	dc := draw.New(c)
 	p1.Draw(dc)
 	sub := draw.Canvas{
 		Canvas: dc,
 		Rectangle: vg.Rectangle{
-			Min: vg.Point{0.70 * width, 0.50 * height},
-			Max: vg.Point{1.00 * width, 1.00 * height},
+			Min: vg.Point{X: 0.70 * width, Y: 0.50 * height},
+			Max: vg.Point{X: 1.00 * width, Y: 1.00 * height},
 		},
 	}
 	p2.Draw(sub)
@@ -227,13 +227,13 @@ func Example_diffplot() {
 		height = width / math.Phi
 	)
 
-	c := vgimg.PngCanvas{vgimg.New(width, height)}
+	c := vgimg.PngCanvas{Canvas: vgimg.New(width, height)}
 	dc := draw.New(c)
 	top := draw.Canvas{
 		Canvas: dc,
 		Rectangle: vg.Rectangle{
-			Min: vg.Point{0, 0.3 * height},
-			Max: vg.Point{width, height},
+			Min: vg.Point{X: 0, Y: 0.3 * height},
+			Max: vg.Point{X: width, Y: height},
 		},
 	}
 	p1.Draw(top)
@@ -241,8 +241,8 @@ func Example_diffplot() {
 	bottom := draw.Canvas{
 		Canvas: dc,
 		Rectangle: vg.Rectangle{
-			Min: vg.Point{0, 0},
-			Max: vg.Point{width, 0.3 * height},
+			Min: vg.Point{X: 0, Y: 0},
+			Max: vg.Point{X: width, Y: 0.3 * height},
 		},
 	}
 	p2.Draw(bottom)

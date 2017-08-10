@@ -209,10 +209,10 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 	xmax := c.Max.X
 
 	pts := []vg.Point{
-		{xmin, ymin},
-		{xmax, ymin},
-		{xmax, ymax},
-		{xmin, ymax},
+		{X: xmin, Y: ymin},
+		{X: xmax, Y: ymin},
+		{X: xmax, Y: ymax},
+		{X: xmin, Y: ymax},
 	}
 	if h.FillColor != nil {
 		c.FillPolygon(h.FillColor, c.ClipPolygonXY(pts))
@@ -222,7 +222,7 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 }
 
 func newHistFromXYer(xys plotter.XYer, n int) *hbook.H1D {
-	xmin, xmax := plotter.Range(plotter.XValues{xys})
+	xmin, xmax := plotter.Range(plotter.XValues{XYer: xys})
 	h := hbook.NewH1D(n, xmin, xmax)
 
 	for i := 0; i < xys.Len(); i++ {
@@ -303,17 +303,17 @@ func (l *histLegend) draw(c draw.Canvas) {
 	colx := &draw.Canvas{
 		Canvas: c.Canvas,
 		Rectangle: vg.Rectangle{
-			Min: vg.Point{c.Min.X, y},
-			Max: vg.Point{2 * l.ColWidth, enth},
+			Min: vg.Point{X: c.Min.X, Y: y},
+			Max: vg.Point{X: 2 * l.ColWidth, Y: enth},
 		},
 	}
 	for _, e := range l.entries {
 		yoffs := (enth - l.TextStyle.Height(e.text)) / 2
 		txt := l.TextStyle
 		txt.XAlign = draw.XLeft
-		c.FillText(txt, vg.Point{textx - hdr, colx.Min.Y + yoffs}, e.text)
+		c.FillText(txt, vg.Point{X: textx - hdr, Y: colx.Min.Y + yoffs}, e.text)
 		txt.XAlign = draw.XRight
-		c.FillText(txt, vg.Point{textx + hdr, colx.Min.Y + yoffs}, e.value)
+		c.FillText(txt, vg.Point{X: textx + hdr, Y: colx.Min.Y + yoffs}, e.value)
 		colx.Min.Y -= enth + l.Padding
 	}
 
@@ -322,11 +322,11 @@ func (l *histLegend) draw(c draw.Canvas) {
 	bboxYmin := colx.Min.Y + enth
 	bboxYmax := c.Max.Y
 	bbox := []vg.Point{
-		{bboxXmin, bboxYmax},
-		{bboxXmin, bboxYmin},
-		{bboxXmax, bboxYmin},
-		{bboxXmax, bboxYmax},
-		{bboxXmin, bboxYmax},
+		{X: bboxXmin, Y: bboxYmax},
+		{X: bboxXmin, Y: bboxYmin},
+		{X: bboxXmax, Y: bboxYmin},
+		{X: bboxXmax, Y: bboxYmax},
+		{X: bboxXmin, Y: bboxYmax},
 	}
 	c.StrokeLines(plotter.DefaultLineStyle, bbox)
 }

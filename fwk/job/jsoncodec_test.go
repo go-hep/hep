@@ -43,7 +43,7 @@ func TestJSONEncode(t *testing.T) {
 		Name: "svc1",
 		Props: P{
 			"Int":    testdata.MyInt(12),
-			"Struct": testdata.MyStruct{12},
+			"Struct": testdata.MyStruct{I: 12},
 		},
 	}
 

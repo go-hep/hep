@@ -99,8 +99,6 @@ func (e *Encoder) init() error {
 		return err
 	}
 
-	panic("not implemented")
-
 	return err
 }
 

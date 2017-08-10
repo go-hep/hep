@@ -24,7 +24,7 @@ func ExampleScanner() {
 
 	obj, ok := f.Get("tree")
 	if !ok {
-		log.Fatal("no object %q in file %q", "tree", f.Name())
+		log.Fatalf("no object %q in file %q", "tree", f.Name())
 	}
 
 	tree := obj.(rootio.Tree)
@@ -86,7 +86,7 @@ func ExampleScanner_withVars() {
 
 	obj, ok := f.Get("tree")
 	if !ok {
-		log.Fatal("no object %q in file %q", "tree", f.Name())
+		log.Fatalf("no object %q in file %q", "tree", f.Name())
 	}
 
 	tree := obj.(rootio.Tree)

@@ -130,7 +130,6 @@ func (c *Cmd) Run() error {
 		}
 		c.rl.AppendHistory(o)
 	}
-	panic("unreachable")
 }
 
 func (c *Cmd) RunScript(r io.Reader) error {

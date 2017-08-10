@@ -145,5 +145,4 @@ func (l location) String() string {
 	default:
 		panic(fmt.Errorf("delaunay: unknown location %d", int(l)))
 	}
-	panic("unreachable")
 }

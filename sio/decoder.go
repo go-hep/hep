@@ -157,5 +157,4 @@ func bread(r Reader, data interface{}) error {
 		//fmt.Printf(">>> binary - [%v]... [done]\n", rv.Type())
 		return err
 	}
-	panic("not reachable")
 }

@@ -64,7 +64,7 @@ func (li *tlist) UnmarshalROOT(r *RBuffer) error {
 		// obj := r.ReadObjectRef()
 		if obj == nil {
 			panic(fmt.Errorf("nil obj ref: %v\n", r.Err())) // FIXME(sbinet)
-			return r.Err()
+			// return r.Err()
 		}
 		li.objs[i] = obj
 
