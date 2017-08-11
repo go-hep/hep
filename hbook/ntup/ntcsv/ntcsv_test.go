@@ -94,7 +94,7 @@ func testCSV(t *testing.T, name, query string, opts ...ntcsv.Option) {
 
 	var got []dataType
 	err = nt.Scan(
-		query,
+		query, "",
 		func(i int64, f float64, s string) error {
 			got = append(got, dataType{i, f, s})
 			return nil
@@ -138,7 +138,7 @@ func ExampleOpen() {
 
 	defer nt.DB().Close()
 
-	err = nt.Scan("v1, v2, v3", func(i int64, f float64, s string) error {
+	err = nt.Scan("v1, v2, v3", "", func(i int64, f float64, s string) error {
 		fmt.Printf("%d %f %q\n", i, f, s)
 		return nil
 	})
@@ -173,7 +173,7 @@ func ExampleOpen_withDefaultVarNames() {
 
 	defer nt.DB().Close()
 
-	err = nt.Scan("var1, var2, var3", func(i int64, f float64, s string) error {
+	err = nt.Scan("var1, var2, var3", "", func(i int64, f float64, s string) error {
 		fmt.Printf("%d %f %q\n", i, f, s)
 		return nil
 	})
@@ -211,7 +211,7 @@ func ExampleOpen_withHeader() {
 
 	defer nt.DB().Close()
 
-	err = nt.Scan("v1, v2, v3", func(i int64, f float64, s string) error {
+	err = nt.Scan("v1, v2, v3", "", func(i int64, f float64, s string) error {
 		fmt.Printf("%d %f %q\n", i, f, s)
 		return nil
 	})
@@ -248,7 +248,7 @@ func ExampleOpen_withHeaderAndImplicitColumns() {
 
 	defer nt.DB().Close()
 
-	err = nt.Scan("i, f, str", func(i int64, f float64, s string) error {
+	err = nt.Scan("i, f, str", "", func(i int64, f float64, s string) error {
 		fmt.Printf("%d %f %q\n", i, f, s)
 		return nil
 	})
@@ -286,7 +286,7 @@ func ExampleOpen_withHeaderAndExlicitColumns() {
 
 	defer nt.DB().Close()
 
-	err = nt.Scan("v1, v2, v3", func(i int64, f float64, s string) error {
+	err = nt.Scan("v1, v2, v3", "", func(i int64, f float64, s string) error {
 		fmt.Printf("%d %f %q\n", i, f, s)
 		return nil
 	})

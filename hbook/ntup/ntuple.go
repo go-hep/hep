@@ -196,12 +196,12 @@ func getTag(tag reflect.StructTag, keys ...string) string {
 // Scan executes a query against the ntuple and runs the function f against that context.
 //
 // e.g.
-//  err = nt.Scan("x,y where z>10", func(x,y float64) error {
+//  err = nt.Scan("x,y", "z>10", func(x,y float64) error {
 //    h1.Fill(x, 1)
 //    h2.Fill(y, 1)
 //    return nil
 //  })
-func (nt *Ntuple) Scan(query string, f interface{}) error {
+func (nt *Ntuple) Scan(vars, cuts string, f interface{}) error {
 	rv := reflect.ValueOf(f)
 	rt := rv.Type()
 	if rt.Kind() != reflect.Func {
@@ -218,7 +218,7 @@ func (nt *Ntuple) Scan(query string, f interface{}) error {
 		vargs[i] = ptr.Elem()
 	}
 
-	query, err := nt.massageQuery(query)
+	query, err := nt.massageQuery(vars, cuts)
 	if err != nil {
 		return err
 	}
@@ -252,7 +252,7 @@ func (nt *Ntuple) Scan(query string, f interface{}) error {
 // the results of the query.
 // If h is nil, a (100-bins, xmin, xmax) histogram is created,
 // where xmin and xmax are inferred from the content of the underlying database.
-func (nt *Ntuple) ScanH1D(query string, h *hbook.H1D) (*hbook.H1D, error) {
+func (nt *Ntuple) ScanH1D(vars, cuts string, h *hbook.H1D) (*hbook.H1D, error) {
 	if h == nil {
 		var (
 			xmin = +math.MaxFloat64
@@ -260,7 +260,7 @@ func (nt *Ntuple) ScanH1D(query string, h *hbook.H1D) (*hbook.H1D, error) {
 		)
 		// FIXME(sbinet) leverage the underlying db min/max functions,
 		// instead of crawling through the whole data set.
-		err := nt.Scan(query, func(x float64) error {
+		err := nt.Scan(vars, cuts, func(x float64) error {
 			xmin = math.Min(xmin, x)
 			xmax = math.Max(xmax, x)
 			return nil
@@ -272,7 +272,7 @@ func (nt *Ntuple) ScanH1D(query string, h *hbook.H1D) (*hbook.H1D, error) {
 		h = hbook.NewH1D(100, xmin, xmax)
 	}
 
-	err := nt.Scan(query, func(x float64) error {
+	err := nt.Scan(vars, cuts, func(x float64) error {
 		h.Fill(x, 1)
 		return nil
 	})
@@ -286,7 +286,7 @@ func (nt *Ntuple) ScanH1D(query string, h *hbook.H1D) (*hbook.H1D, error) {
 // is created,
 // where xmin, xmax and ymin,ymax are inferred from the content of the
 // underlying database.
-func (nt *Ntuple) ScanH2D(query string, h *hbook.H2D) (*hbook.H2D, error) {
+func (nt *Ntuple) ScanH2D(vars, cuts string, h *hbook.H2D) (*hbook.H2D, error) {
 	if h == nil {
 		var (
 			xmin = +math.MaxFloat64
@@ -296,7 +296,7 @@ func (nt *Ntuple) ScanH2D(query string, h *hbook.H2D) (*hbook.H2D, error) {
 		)
 		// FIXME(sbinet) leverage the underlying db min/max functions,
 		// instead of crawling through the whole data set.
-		err := nt.Scan(query, func(x, y float64) error {
+		err := nt.Scan(vars, cuts, func(x, y float64) error {
 			xmin = math.Min(xmin, x)
 			xmax = math.Max(xmax, x)
 			ymin = math.Min(ymin, y)
@@ -310,7 +310,7 @@ func (nt *Ntuple) ScanH2D(query string, h *hbook.H2D) (*hbook.H2D, error) {
 		h = hbook.NewH2D(100, xmin, xmax, 100, ymin, ymax)
 	}
 
-	err := nt.Scan(query, func(x, y float64) error {
+	err := nt.Scan(vars, cuts, func(x, y float64) error {
 		h.Fill(x, y, 1)
 		return nil
 	})
@@ -318,34 +318,22 @@ func (nt *Ntuple) ScanH2D(query string, h *hbook.H2D) (*hbook.H2D, error) {
 	return h, err
 }
 
-func (nt *Ntuple) massageQuery(q string) (string, error) {
+func (nt *Ntuple) massageQuery(vars, cuts string) (string, error) {
 	const (
-		tokWHERE = " WHERE "
-		tokWhere = " where "
 		tokORDER = " ORDER "
 		tokOrder = " order "
 	)
-	vars := q
-	where := ""
-	switch {
-	case strings.Contains(q, tokWHERE):
-		toks := strings.Split(q, tokWHERE)
-		vars = toks[0]
-		where = " where " + toks[1]
-	case strings.Contains(q, tokWhere):
-		toks := strings.Split(q, tokWhere)
-		vars = toks[0]
-		where = " where " + toks[1]
-	}
-
 	order := ""
 	switch {
-	case strings.Contains(q, tokORDER):
-	case strings.Contains(q, tokOrder):
+	case strings.Contains(cuts, tokORDER):
+	case strings.Contains(cuts, tokOrder):
 	default:
 		order = " order by id()"
 	}
+	if cuts != "" {
+		cuts = " where " + cuts
+	}
 
 	// FIXME(sbinet) this is vulnerable to SQL injections...
-	return "select " + vars + " from " + nt.name + where + order, nil
+	return "select " + vars + " from " + nt.name + cuts + order, nil
 }

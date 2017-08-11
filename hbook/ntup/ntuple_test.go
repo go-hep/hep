@@ -20,7 +20,7 @@ var (
 
 func TestScanH1D(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
-	h, err := nt.ScanH1D("x", h)
+	h, err := nt.ScanH1D("x", "", h)
 	if err != nil {
 		t.Errorf("error running query: %v\n", err)
 	}
@@ -60,7 +60,7 @@ func TestScanH1D(t *testing.T) {
 
 func TestScanH1DWhere(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
-	h, err := nt.ScanH1D("x where (id > 4 && id < 10)", h)
+	h, err := nt.ScanH1D("x", "(id > 4 && id < 10)", h)
 	if err != nil {
 		t.Errorf("error running query: %v\n", err)
 	}
@@ -105,7 +105,7 @@ func TestScanH1DWhere(t *testing.T) {
 
 func TestScanH1DInt(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
-	h, err := nt.ScanH1D("id", h)
+	h, err := nt.ScanH1D("id", "", h)
 	if err != nil {
 		t.Errorf("error running query: %v\n", err)
 	}
@@ -145,7 +145,7 @@ func TestScanH1DInt(t *testing.T) {
 
 func TestScan(t *testing.T) {
 	h := hbook.NewH1D(10, 0, 10)
-	err := nt.Scan("id, x", func(id int64, x float64) error {
+	err := nt.Scan("id, x", "", func(id int64, x float64) error {
 		h.Fill(x, 1)
 		return nil
 	})
@@ -199,7 +199,7 @@ func TestScanH1DFromCSVWithCommas(t *testing.T) {
 	}
 
 	h := hbook.NewH1D(10, 0, 10)
-	h, err = nt.ScanH1D("var2", h)
+	h, err = nt.ScanH1D("var2", "", h)
 	if err != nil {
 		t.Errorf("error running query: %v\n", err)
 	}
@@ -254,7 +254,7 @@ func TestScanH1DFromCSV(t *testing.T) {
 	}
 
 	h := hbook.NewH1D(10, 0, 10)
-	h, err = nt.ScanH1D("var2", h)
+	h, err = nt.ScanH1D("var2", "", h)
 	if err != nil {
 		t.Errorf("error running query: %v\n", err)
 	}

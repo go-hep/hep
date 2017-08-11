@@ -135,14 +135,14 @@ func main() {
 		panic(err)
 	}
 
-	h1, err := nt.ScanH1D("px where pt>100", nil)
+	h1, err := nt.ScanH1D("px", "pt>100", nil)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("h1: %v\n", h1)
 
 	h2 := hbook.NewH1D(100, -10, 10)
-	h2, err = nt.ScanH1D("px where pt>100 && pt < 1000", h2)
+	h2, err = nt.ScanH1D("px", "pt>100 && pt < 1000", h2)
 	if err != nil {
 		panic(err)
 	}
@@ -150,7 +150,7 @@ func main() {
 
 	h11 := hbook.NewH1D(100, -10, 10)
 	h22 := hbook.NewH1D(100, -10, 10)
-	err = nt.Scan("px, py where pt>100", func(px, py float64) error {
+	err = nt.Scan("px, py", "pt>100", func(px, py float64) error {
 		h11.Fill(px, 1)
 		h22.Fill(py, 1)
 		return nil
