@@ -96,6 +96,11 @@ func Create(db *sql.DB, name string, cols ...interface{}) (*Ntuple, error) {
 	return nt, err
 }
 
+// DB returns the underlying db this n-tuple is connected to.
+func (nt *Ntuple) DB() *sql.DB {
+	return nt.db
+}
+
 // Name returns the name of this n-tuple.
 func (nt *Ntuple) Name() string {
 	return nt.name
@@ -317,6 +322,8 @@ func (nt *Ntuple) massageQuery(q string) (string, error) {
 	const (
 		tokWHERE = " WHERE "
 		tokWhere = " where "
+		tokORDER = " ORDER "
+		tokOrder = " order "
 	)
 	vars := q
 	where := ""
@@ -331,6 +338,14 @@ func (nt *Ntuple) massageQuery(q string) (string, error) {
 		where = " where " + toks[1]
 	}
 
+	order := ""
+	switch {
+	case strings.Contains(q, tokORDER):
+	case strings.Contains(q, tokOrder):
+	default:
+		order = " order by id()"
+	}
+
 	// FIXME(sbinet) this is vulnerable to SQL injections...
-	return "select " + vars + " from " + nt.name + where, nil
+	return "select " + vars + " from " + nt.name + where + order, nil
 }
