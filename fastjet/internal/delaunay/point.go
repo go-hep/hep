@@ -89,13 +89,13 @@ func (p *Point) findNearest() {
 			}
 		case p.Equals(t.C):
 			distA := p.distance(t.A)
-			distC := p.distance(t.C)
-			if distA <= distC {
+			distB := p.distance(t.B)
+			if distA <= distB {
 				dist = distA
 				np = t.A
 			} else {
-				dist = distC
-				np = t.C
+				dist = distB
+				np = t.B
 			}
 		default:
 			panic(fmt.Errorf("delaunay: point P%s not found in T%s", p, t))
