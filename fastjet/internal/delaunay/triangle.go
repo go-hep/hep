@@ -159,3 +159,14 @@ func (ts triangles) remove(triangles ...*Triangle) triangles {
 	}
 	return ts
 }
+
+// keepCurrentTriangles returns all triangles that are in the current triangulation.
+func (ts triangles) keepCurrentTriangles() triangles {
+	triangles := make(triangles, 0, len(ts))
+	for _, t := range ts {
+		if t.isInTriangulation {
+			triangles = append(triangles, t)
+		}
+	}
+	return triangles
+}
