@@ -27,11 +27,13 @@ var (
 
 // Conn describes how a connection to the CSV-driver should be established.
 type Conn struct {
-	File    string      // name of the file to be open
-	Mode    int         // r/w mode (default: read-only)
-	Perm    os.FileMode // file permissions
-	Comma   rune        // field delimiter (default: ',')
-	Comment rune        // comment character for start of line (default: '#')
+	File    string      `json:"file"`    // name of the file to be open
+	Mode    int         `json:"mode"`    // r/w mode (default: read-only)
+	Perm    os.FileMode `json:"perm"`    // file permissions
+	Comma   rune        `json:"comma"`   // field delimiter (default: ',')
+	Comment rune        `json:"comment"` // comment character for start of line (default: '#')
+	Header  bool        `json:"header"`  // whether the CSV-file has a column header
+	Names   []string    `json:"names"`   // column names
 }
 
 func (c *Conn) setDefaults() {
