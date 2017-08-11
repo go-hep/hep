@@ -12,11 +12,90 @@ import (
 )
 
 func TestOpen(t *testing.T) {
+	for _, test := range []struct {
+		name  string
+		query string
+		opts  []ntcsv.Option
+	}{
+		{"testdata/simple.csv", `var1, var2, var3`,
+			[]ntcsv.Option{
+				ntcsv.Comma(';'),
+				ntcsv.Comment('#'),
+			},
+		},
+		{"testdata/simple.csv", `var1, var2, var3`,
+			[]ntcsv.Option{
+				ntcsv.Comma(';'),
+				ntcsv.Comment('#'),
+				ntcsv.Columns("var1", "var2", "var3"),
+			},
+		},
+		{"testdata/simple.csv", `v1, v2, v3`,
+			[]ntcsv.Option{
+				ntcsv.Comma(';'),
+				ntcsv.Comment('#'),
+				ntcsv.Columns("v1", "v2", "v3"),
+			},
+		},
+		{"testdata/simple-comma.csv", `var1, var2, var3`,
+			[]ntcsv.Option{
+				ntcsv.Comma(','),
+				ntcsv.Comment('#'),
+			},
+		},
+		{"testdata/simple-with-comment.csv", `var1, var2, var3`,
+			[]ntcsv.Option{
+				ntcsv.Comma(';'),
+				ntcsv.Comment('#'),
+			},
+		},
+		{"testdata/simple-with-header.csv", `i, f, str`,
+			[]ntcsv.Option{
+				ntcsv.Header(),
+				ntcsv.Comma(';'),
+				ntcsv.Comment('#'),
+			},
+		},
+		{"testdata/simple-with-header.csv", `i64, f64, str`,
+			[]ntcsv.Option{
+				ntcsv.Header(),
+				ntcsv.Columns("i64", "f64", "str"),
+				ntcsv.Comma(';'),
+				ntcsv.Comment('#'),
+			},
+		},
+	} {
+		testCSV(t, test.name, test.query, test.opts...)
+	}
+}
+
+func testCSV(t *testing.T, name, query string, opts ...ntcsv.Option) {
+	nt, err := ntcsv.Open(name, opts...)
+	if err != nil {
+		t.Errorf("%s: error opening n-tuple: %v", name, err)
+		return
+	}
+	defer nt.DB().Close()
+
 	type dataType struct {
 		i int64
 		f float64
 		s string
 	}
+
+	var got []dataType
+	err = nt.Scan(
+		query,
+		func(i int64, f float64, s string) error {
+			got = append(got, dataType{i, f, s})
+			return nil
+		},
+	)
+	if err != nil {
+		t.Errorf("%s: error scanning: %v", name, err)
+		return
+	}
+
 	want := []dataType{
 		{0, 0, "str-0"},
 		{1, 1, "str-1"},
@@ -29,41 +108,8 @@ func TestOpen(t *testing.T) {
 		{8, 8, "str-8"},
 		{9, 9, "str-9"},
 	}
-	for _, test := range []struct {
-		name    string
-		comma   rune
-		comment rune
-		query   string
-	}{
-		{"testdata/simple.csv", ';', '#', `var1, var2, var3`},
-		{"testdata/simple-comma.csv", ',', '#', `var1, var2, var3`},
-		// FIXME(sbinet): the name of the variables should be taken from the header
-		// {"testdata/simple-with-header.csv", ';', '#', `i, f, str`},
-		{"testdata/simple-with-header.csv", ';', '#', `var1, var2, var3`},
-	} {
-		nt, err := ntcsv.Open(test.name, ntcsv.Comma(test.comma))
-		if err != nil {
-			t.Errorf("%s: error opening n-tuple: %v", test.name, err)
-			continue
-		}
-		defer nt.DB().Close()
-
-		var got []dataType
-		err = nt.Scan(
-			test.query,
-			func(i int64, f float64, s string) error {
-				got = append(got, dataType{i, f, s})
-				return nil
-			},
-		)
-		if err != nil {
-			t.Errorf("%s: error scanning: %v", test.name, err)
-			continue
-		}
-
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("%s: got=\n%v\nwant=\n%v\n", test.name, got, want)
-			continue
-		}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("%s: got=\n%v\nwant=\n%v\n", name, got, want)
+		return
 	}
 }

@@ -1,5 +1,5 @@
-# the following line is a header, naming the columns.
-i;f;str
+# this is a comment
+# with multiple lines.
 0;0;str-0
 1;1;str-1
 2;2;str-2
