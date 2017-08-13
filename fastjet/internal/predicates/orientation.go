@@ -7,6 +7,8 @@ package predicates
 import (
 	"fmt"
 	"math/big"
+
+	"gonum.org/v1/gonum/mat"
 )
 
 // OrientationKind indicates how three points are located in respect to each other.
@@ -43,7 +45,7 @@ func Orientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 	if o == IndeterminateOrientation {
 		// too close to 0 to give a definite answer.
 		// Therefore check with more expansive tests.
-		o = robustOrientation(setBig(x1), setBig(y1), setBig(x2), setBig(y2), setBig(x), setBig(y))
+		o = matOrientation(x1, y1, x2, y2, x, y)
 	}
 	return o
 }
@@ -102,6 +104,37 @@ func robustOrientation(x1, y1, x2, y2, x, y *big.Rat) OrientationKind {
 		return CW
 	case 0:
 		return Colinear
+	}
+	return IndeterminateOrientation
+}
+
+// matOrientation determines the orientation using the mat package.
+//
+// It first computes the conditional number of the matrix. When the condition number
+// is higher than the Condition Tolerance, then we assume the matrix is singular and
+// the determinant is 0. If the determinant is not 0 the sign of the determinant is computed.
+//  | x1 y1 1 |
+//  | x2 y2 1 |
+//  | x  y  1 |
+func matOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
+	if (x1 == x2 && x2 == x) || (y1 == y2 && y2 == y) {
+		// points are horizontally or vertically aligned
+		return Colinear
+	}
+	m := mat.NewDense(3, 3, []float64{x1, y1, 1, x2, y2, 1, x, y, 1})
+	var lu mat.LU
+	lu.Factorize(m)
+	cond := lu.Cond()
+	if cond > mat.ConditionTolerance {
+		return Colinear
+	}
+	// Since only the sign is needed LogDet achieves the result in faster time.
+	_, sign := lu.LogDet()
+	switch sign {
+	case 1:
+		return CCW
+	case -1:
+		return CW
 	}
 	return IndeterminateOrientation
 }
