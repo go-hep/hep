@@ -7,6 +7,8 @@ package predicates
 import (
 	"fmt"
 	"math/big"
+
+	"gonum.org/v1/gonum/mat"
 )
 
 // RelativePosition is the position of a point relative to a circle
@@ -43,7 +45,7 @@ func (p RelativePosition) String() string {
 func Incircle(x1, y1, x2, y2, x3, y3, x, y float64) RelativePosition {
 	pos := simpleIncircle(x1, y1, x2, y2, x3, y3, x, y)
 	if pos == IndeterminatePosition {
-		pos = robustIncircle(setBig(x1), setBig(y1), setBig(x2), setBig(y2), setBig(x3), setBig(y3), setBig(x), setBig(y))
+		pos = matIncircle(x1, y1, x2, y2, x3, y3, x, y)
 	}
 	return pos
 }
@@ -185,4 +187,32 @@ func rowBig(a, b, c, d int, plus bool, m []*big.Rat) *big.Rat {
 		bigMul(bigMul(m[a], m[b+4]), bigMul(m[c+8], m[d+12])),
 		bigMul(bigMul(m[b], m[a+4]), bigMul(m[c+8], m[d+12])),
 	)
+}
+
+// matIncircle determines the relative position using the mat package.
+//
+// It first computes the conditional number of the matrix. When the condition number
+// is higher than the Condition Tolerance, then we assume the matrix is singular and
+// the determinant is 0. If the determinant is not 0 the sign of the determinant is computed.
+// |x1 y1 x1^2+y1^2 1|
+// |x2 y2 x2^2+y2^2 1|
+// |x3 y3 x3^2+y3^2 1|
+// |x  y  x^2 +y^2  1|
+func matIncircle(x1, y1, x2, y2, x3, y3, x, y float64) RelativePosition {
+	m := mat.NewDense(4, 4, []float64{x1, y1, x1*x1 + y1*y1, 1, x2, y2, x2*x2 + y2*y2, 1, x3, y3, x3*x3 + y3*y3, 1, x, y, x*x + y*y, 1})
+	var lu mat.LU
+	lu.Factorize(m)
+	cond := lu.Cond()
+	if cond > mat.ConditionTolerance {
+		return On
+	}
+	// Since only the sign is needed LogDet achieves the result in faster time.
+	_, sign := lu.LogDet()
+	switch sign {
+	case 1:
+		return Inside
+	case -1:
+		return Outside
+	}
+	return IndeterminatePosition
 }
