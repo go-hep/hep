@@ -77,6 +77,15 @@ func genLeaves() {
 			FuncArray: "r.ReadFastArrayBool",
 		},
 		{
+			Name:       "LeafB",
+			Type:       "int8",
+			Kind:       "reflect.Int8",
+			DoUnsigned: true,
+			Func:       "r.ReadI8()",
+			FuncArray:  "r.ReadFastArrayI8",
+			Count:      true,
+		},
+		{
 			Name:       "LeafS",
 			Type:       "int16",
 			Kind:       "reflect.Int16",
