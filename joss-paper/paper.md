@@ -11,6 +11,7 @@ authors:
     affiliation: 1
   - name: Bastian Wieck
   - name: David Blyth
+    orcid: 0000-0001-8452-516X
     affiliation: 2
   - name: Emmanuel Busato
     affiliation: 1
