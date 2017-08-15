@@ -17,6 +17,13 @@ type Reader interface {
 	io.Closer
 }
 
+type Writer interface {
+	io.Writer
+	io.WriterAt
+	io.Seeker
+	io.Closer
+}
+
 // A ROOT file is a suite of consecutive data records (TKey's) with
 // the following format (see also the TKey class). If the key is
 // located past the 32 bit file limit (> 2 GB) then some fields will
