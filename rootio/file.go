@@ -58,7 +58,6 @@ type File struct {
 	Reader
 	id string //non-root, identifies filename, etc.
 
-	magic   [4]byte
 	version int32
 	begin   int64
 
@@ -134,7 +133,8 @@ func (f *File) readHeader() error {
 
 	// Header
 
-	if _, err := io.ReadFull(r.r, f.magic[:]); err != nil || string(f.magic[:]) != "root" {
+	var magic [4]byte
+	if _, err := io.ReadFull(r.r, magic[:]); err != nil || string(magic[:]) != "root" {
 		if err != nil {
 			return fmt.Errorf("rootio: failed to read ROOT file magic header: %v", err)
 		}
