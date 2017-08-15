@@ -10,6 +10,8 @@ authors:
     orcid: 0000-0003-4913-6104
     affiliation: 1
   - name: Bastian Wieck
+    orcid: 0000-0001-6658-6807
+    affiliation: 3
   - name: David Blyth
     affiliation: 2
   - name: Emmanuel Busato
@@ -21,6 +23,8 @@ affiliations:
     index: 1
   - name: Argonne National Laboratory
     index: 2
+  - name: Georgia Southern University
+    index: 3
 date: 15 August 2017
 bibliography: paper.bib
 ---
