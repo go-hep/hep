@@ -4,6 +4,7 @@ hep
 [![Build Status](https://secure.travis-ci.org/go-hep/hep.png)](http://travis-ci.org/go-hep/hep)
 [![GoDoc](https://godoc.org/go-hep.org/x/hep?status.svg)](https://godoc.org/go-hep.org/x/hep)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.597940.svg)](https://doi.org/10.5281/zenodo.597940)
+[![JOSS Paper](http://joss.theoj.org/papers/0b007c81073186f7c61f95ea26ad7971/status.svg)](http://joss.theoj.org/papers/0b007c81073186f7c61f95ea26ad7971)
 
 `hep` is a set of libraries and tools to perform High Energy Physics analyses with ease and [Go](https://golang.org)
 
@@ -22,9 +23,23 @@ Documentation for `hep` is served by [GoDoc](https://godoc.org/go-hep.org/x/hep)
 Guidelines for contributing to [go-hep](https://go-hep.org) are available here:
  [go-hep.org/contributing](https://go-hep.org/contributing)
 
+# Motivations
+
+Writing analyses in HEP involves many steps and one needs a few tools to
+successfully carry out such an endeavour.
+But - at minima - one needs to be able to read (and possibly write) ROOT files
+to be able to interoperate with the rest of the HEP community or to insert
+one's work into an already existing analysis pipeline.
+
+Go-HEP provides this necessary interoperability layer, in the Go programming
+language.
+This allows physicists to leverage the great concurrency primitives of Go,
+together with the surrounding tooling and software engineering ecosystem of Go,
+to implement physics analyses.
+
 ## Content
 
-`go-hep` currently sports the following packages:
+Go-HEP currently sports the following packages:
 
 - [go-hep.org/x/hep/brio](https://go-hep.org/x/hep/brio): a toolkit to generate serialization code
 - [go-hep.org/x/hep/fads](https://go-hep.org/x/hep/fads): a fast detector simulation toolkit
@@ -46,7 +61,7 @@ Guidelines for contributing to [go-hep](https://go-hep.org) are available here:
 
 ## Installation
 
-`go-hep` packages are installable via the `go get` command:
+Go-HEP packages are installable via the `go get` command:
 
 ```sh
 $ go get go-hep.org/x/hep/fads
@@ -56,7 +71,7 @@ Just select the package you are interested in and `go get` will take care of fet
 
 ## Contact
 
-If you need help with `go-hep` or want to contribute to `go-hep`, feel free to join the `go-hep` mailing list:
+If you need help with Go-HEP or want to contribute to Go-HEP, feel free to join the `go-hep` mailing list:
 
 - `go-hep@googlegroups.com`
 - https://groups.google.com/forum/#!forum/go-hep
