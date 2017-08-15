@@ -62,7 +62,11 @@ type Writer interface {
 //    42->45 [54->57] fNbytesInfo = Number of bytes in TStreamerInfo record
 //    46->63 [58->75] fUUID       = Universal Unique ID
 type File struct {
-	Reader
+	r      Reader
+	w      Writer
+	seeker io.Seeker
+	closer io.Closer
+
 	id string //non-root, identifies filename, etc.
 
 	version int32
@@ -95,7 +99,9 @@ func Open(path string) (*File, error) {
 	}
 
 	f := &File{
-		Reader: fd,
+		r:      fd,
+		seeker: fd,
+		closer: fd,
 		id:     path,
 	}
 	f.dir = tdirectory{file: f}
@@ -111,7 +117,9 @@ func Open(path string) (*File, error) {
 // NewReader creates a new ROOT file reader.
 func NewReader(r Reader, name string) (*File, error) {
 	f := &File{
-		Reader: r,
+		r:      r,
+		seeker: r,
+		closer: r,
 		id:     name,
 	}
 	f.dir = tdirectory{file: f}
@@ -122,6 +130,21 @@ func NewReader(r Reader, name string) (*File, error) {
 	}
 
 	return f, nil
+}
+
+// Read implements io.Reader
+func (f *File) Read(p []byte) (int, error) {
+	return f.r.Read(p)
+}
+
+// ReadAt implements io.ReaderAt
+func (f *File) ReadAt(p []byte, off int64) (int, error) {
+	return f.r.ReadAt(p, off)
+}
+
+// Seek implements io.Seeker
+func (f *File) Seek(offset int64, whence int) (int64, error) {
+	return f.seeker.Seek(offset, whence)
 }
 
 // Version returns the ROOT version this file was created with.
@@ -228,7 +251,7 @@ func (f *File) Close() error {
 	}
 	f.dir.keys = nil
 	f.dir.file = nil
-	return f.Reader.Close()
+	return f.closer.Close()
 }
 
 // Keys returns the list of keys this File contains
