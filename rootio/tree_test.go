@@ -241,7 +241,7 @@ func testEventTree(t *testing.T, name, fname string) {
 
 	want := EventType{}.want
 
-	sc, err := NewScanner(tree, &EventType{})
+	sc, err := NewTreeScanner(tree, &EventType{})
 	if err != nil {
 		t.Fatal(err)
 	}
