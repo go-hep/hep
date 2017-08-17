@@ -8,7 +8,6 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"math"
 	"sort"
 )
@@ -66,27 +65,17 @@ func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32) *RBuffer
 }
 
 func (r *RBuffer) Pos() int64 {
-	pos, _ := r.r.Seek(0, ioSeekCurrent)
-	return pos + int64(r.offset)
+	return int64(r.r.c) + int64(r.offset)
 }
 
 func (r *RBuffer) setPos(pos int64) error {
 	pos -= int64(r.offset)
-	got, err := r.r.Seek(pos, ioSeekStart)
-	if err != nil {
-		return err
-	}
-	if got != pos {
-		return errorf("rootio: RBuffer too short (got=%v want=%v)", got, pos)
-	}
+	r.r.c = int(pos)
 	return nil
 }
 
 func (r *RBuffer) Len() int64 {
-	pos, _ := r.r.Seek(0, ioSeekCurrent)
-	end, _ := r.r.Seek(0, ioSeekEnd)
-	r.r.Seek(pos, ioSeekStart)
-	return end - pos
+	return int64(len(r.r.p) - r.r.c)
 }
 
 func (r *RBuffer) Err() error {
@@ -97,15 +86,12 @@ func (r *RBuffer) read(data []byte) {
 	if r.err != nil {
 		return
 	}
-	_, r.err = io.ReadFull(r.r, data)
+	n := copy(data, r.r.p[r.r.c:])
+	r.r.c += n
 }
 
 func (r *RBuffer) bytes() []byte {
-	pos, _ := r.r.Seek(0, ioSeekCurrent)
-	out := make([]byte, int(r.Len()))
-	io.ReadFull(r.r, out)
-	r.r.Seek(pos, ioSeekStart)
-	return out
+	return r.r.p[r.r.c:]
 }
 
 func (r *RBuffer) dumpRefs() {
@@ -210,8 +196,9 @@ func (r *RBuffer) ReadI16() int16 {
 		return 0
 	}
 
-	v := int16(binary.BigEndian.Uint16(r.r.p[r.r.c : r.r.c+2]))
+	beg := r.r.c
 	r.r.c += 2
+	v := int16(binary.BigEndian.Uint16(r.r.p[beg:r.r.c]))
 	return v
 }
 
@@ -220,8 +207,9 @@ func (r *RBuffer) ReadI32() int32 {
 		return 0
 	}
 
-	v := int32(binary.BigEndian.Uint32(r.r.p[r.r.c : r.r.c+4]))
+	beg := r.r.c
 	r.r.c += 4
+	v := int32(binary.BigEndian.Uint32(r.r.p[beg:r.r.c]))
 	return v
 }
 
@@ -230,8 +218,9 @@ func (r *RBuffer) ReadI64() int64 {
 		return 0
 	}
 
-	v := int64(binary.BigEndian.Uint64(r.r.p[r.r.c : r.r.c+8]))
+	beg := r.r.c
 	r.r.c += 8
+	v := int64(binary.BigEndian.Uint64(r.r.p[beg:r.r.c]))
 	return v
 }
 
@@ -253,8 +242,9 @@ func (r *RBuffer) ReadU16() uint16 {
 		return 0
 	}
 
-	v := binary.BigEndian.Uint16(r.r.p[r.r.c : r.r.c+2])
+	beg := r.r.c
 	r.r.c += 2
+	v := binary.BigEndian.Uint16(r.r.p[beg:r.r.c])
 	return v
 }
 
@@ -263,8 +253,9 @@ func (r *RBuffer) ReadU32() uint32 {
 		return 0
 	}
 
-	v := binary.BigEndian.Uint32(r.r.p[r.r.c : r.r.c+4])
+	beg := r.r.c
 	r.r.c += 4
+	v := binary.BigEndian.Uint32(r.r.p[beg:r.r.c])
 	return v
 }
 
@@ -273,8 +264,9 @@ func (r *RBuffer) ReadU64() uint64 {
 		return 0
 	}
 
-	v := binary.BigEndian.Uint64(r.r.p[r.r.c : r.r.c+8])
+	beg := r.r.c
 	r.r.c += 8
+	v := binary.BigEndian.Uint64(r.r.p[beg:r.r.c])
 	return v
 }
 
@@ -283,8 +275,9 @@ func (r *RBuffer) ReadF32() float32 {
 		return 0
 	}
 
-	v := binary.BigEndian.Uint32(r.r.p[r.r.c : r.r.c+4])
+	beg := r.r.c
 	r.r.c += 4
+	v := binary.BigEndian.Uint32(r.r.p[beg:r.r.c])
 	return math.Float32frombits(v)
 }
 
@@ -293,8 +286,9 @@ func (r *RBuffer) ReadF64() float64 {
 		return 0
 	}
 
-	v := binary.BigEndian.Uint64(r.r.p[r.r.c : r.r.c+8])
+	beg := r.r.c
 	r.r.c += 8
+	v := binary.BigEndian.Uint64(r.r.p[beg:r.r.c])
 	return math.Float64frombits(v)
 }
 
