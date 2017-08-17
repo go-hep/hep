@@ -18,6 +18,8 @@ authors:
   - name: Emmanuel Busato
     affiliation: 1
   - name: Michaël Ughetto
+    orcid: 0000-0002-3814-454X
+    affiliation: 4
   - name: Peter Waller
 affiliations:
   - name: IN2P3
@@ -26,6 +28,8 @@ affiliations:
     index: 2
   - name: Georgia Southern University
     index: 3
+  - name: Stockholm University
+    index: 4
 date: 15 August 2017
 bibliography: paper.bib
 ---
