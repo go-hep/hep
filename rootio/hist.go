@@ -5,7 +5,6 @@
 package rootio
 
 import (
-	"fmt"
 	"reflect"
 )
 
@@ -78,10 +77,6 @@ func (h *th1) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
-	if vers < 7 {
-		return fmt.Errorf("rootio: TH1 version too old (%d<7)", vers)
-	}
-
 	for _, v := range []ROOTUnmarshaler{
 		&h.tnamed,
 		&h.attline,
@@ -114,18 +109,25 @@ func (h *th1) UnmarshalROOT(r *RBuffer) error {
 	h.tsumw2 = r.ReadF64()
 	h.tsumwx = r.ReadF64()
 	h.tsumwx2 = r.ReadF64()
-	h.max = r.ReadF64()
-	h.min = r.ReadF64()
-	h.norm = r.ReadF64()
-
-	for _, v := range []ROOTUnmarshaler{
-		&h.contour,
-		&h.sumw2,
-	} {
-		if err := v.UnmarshalROOT(r); err != nil {
+	if vers < 2 {
+		h.max = float64(r.ReadF32())
+		h.min = float64(r.ReadF32())
+		h.norm = float64(r.ReadF32())
+		n := int(r.ReadI32())
+		h.contour.Data = r.ReadFastArrayF64(n)
+	} else {
+		h.max = r.ReadF64()
+		h.min = r.ReadF64()
+		h.norm = r.ReadF64()
+		if err := h.contour.UnmarshalROOT(r); err != nil {
 			r.err = err
 			return r.err
 		}
+	}
+
+	if err := h.sumw2.UnmarshalROOT(r); err != nil {
+		r.err = err
+		return r.err
 	}
 
 	h.opt = r.ReadString()

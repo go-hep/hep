@@ -8,90 +8,152 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 
 	"go-hep.org/x/hep/csvutil/csvdriver"
 )
 
-func TestOpen(t *testing.T) {
-	db, err := csvdriver.Conn{
-		File:    "testdata/simple.csv",
-		Comment: '#',
-		Comma:   ';',
-	}.Open()
-
+func testDB(t *testing.T, conn csvdriver.Conn, vars string) {
+	db, err := conn.Open()
 	if err != nil {
-		t.Errorf("error opening CSV file: %v\n", err)
+		t.Errorf("%s: error opening CSV file", conn.File)
 		return
 	}
 	defer db.Close()
 
 	tx, err := db.Begin()
 	if err != nil {
-		t.Errorf("error starting tx: %v\n", err)
+		t.Errorf("%s: error starting tx: %v", conn.File, err)
 		return
 	}
 	defer tx.Commit()
 
-	var done = make(chan error)
+	done := make(chan error)
 	go func() {
 		done <- db.Ping()
 	}()
 
 	select {
 	case <-time.After(2 * time.Second):
-		t.Fatalf("ping timeout")
+		t.Errorf("%s: ping timeout", conn.File)
+		return
 	case err := <-done:
 		if err != nil {
-			t.Fatalf("error pinging db: %v\n", err)
+			t.Errorf("%s: error pinging db: %v\n", conn.File, err)
+			return
 		}
 	}
 
-	rows, err := tx.Query("select var1, var2, var3 from csv order by id();")
+	rows, err := tx.Query("select " + vars + " from csv order by id();")
 	if err != nil {
-		t.Errorf("error querying db: %v\n", err)
+		t.Errorf("%s: error querying db: %v\n", conn.File, err)
 		return
 	}
 	defer rows.Close()
 
+	type dataType struct {
+		i int64
+		f float64
+		s string
+	}
+
+	var got []dataType
 	for rows.Next() {
-		var (
-			i int64
-			f float64
-			s string
-		)
-		err = rows.Scan(&i, &f, &s)
+		var data dataType
+		err = rows.Scan(&data.i, &data.f, &data.s)
 		if err != nil {
-			t.Errorf("error scanning db: %v\n", err)
+			t.Errorf("%s: error scanning db: %v\n", conn.File, err)
 			return
 		}
-		fmt.Printf("i=%v f=%v s=%q\n", i, f, s)
+		got = append(got, data)
 	}
 
 	err = rows.Close()
 	if err != nil {
-		t.Errorf("error closing rows: %v\n", err)
+		t.Errorf("%s: error closing rows: %v\n", conn.File, err)
 		return
 	}
 
 	err = db.Close()
 	if err != nil {
-		t.Errorf("error closing db: %v\n", err)
+		t.Errorf("%s: error closing db: %v\n", conn.File, err)
+		return
+	}
+
+	want := []dataType{
+		{0, 0, "str-0"},
+		{1, 1, "str-1"},
+		{2, 2, "str-2"},
+		{3, 3, "str-3"},
+		{4, 4, "str-4"},
+		{5, 5, "str-5"},
+		{6, 6, "str-6"},
+		{7, 7, "str-7"},
+		{8, 8, "str-8"},
+		{9, 9, "str-9"},
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("%s: got=\n%v\nwant=\n%v\n", conn.File, got, want)
 		return
 	}
 }
 
-func TestOpenName(t *testing.T) {
-	db, err := sql.Open("csv", "testdata/simple-noheaders.csv")
-	if err != nil {
-		t.Errorf("error opening CSV file: %v\n", err)
-	}
-	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		t.Errorf("error pinging db: %v\n", err)
+func TestOpen(t *testing.T) {
+	for _, test := range []struct {
+		c csvdriver.Conn
+		q string
+	}{
+		{
+			c: csvdriver.Conn{
+				File:    "testdata/simple.csv",
+				Comment: '#', Comma: ';',
+			},
+			q: "var1, var2, var3",
+		},
+		{
+			c: csvdriver.Conn{
+				File:    "testdata/simple.csv",
+				Comment: '#', Comma: ';',
+				Names: []string{"v1", "v2", "v3"},
+			},
+			q: "v1, v2, v3",
+		},
+		{
+			c: csvdriver.Conn{
+				File:    "testdata/simple-with-comment.csv",
+				Comment: '#', Comma: ';',
+			},
+			q: "var1, var2, var3",
+		},
+		{
+			c: csvdriver.Conn{
+				File:    "testdata/simple-with-comment.csv",
+				Comment: '#', Comma: ';',
+				Names: []string{"v1", "v2", "v3"},
+			},
+			q: "v1, v2, v3",
+		},
+		{
+			c: csvdriver.Conn{
+				File:    "testdata/simple-with-header.csv",
+				Comment: '#', Comma: ';',
+				Header: true,
+			},
+			q: "i64, f64, str",
+		},
+		{
+			c: csvdriver.Conn{
+				File: "testdata/simple-with-header.csv", Comment: '#', Comma: ';',
+				Header: true,
+				Names:  []string{"var1", "var2", "var3"},
+			},
+			q: "var1, var2, var3",
+		},
+	} {
+		testDB(t, test.c, test.q)
 	}
 }
 

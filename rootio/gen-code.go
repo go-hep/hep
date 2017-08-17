@@ -61,34 +61,43 @@ func genLeaves() {
 	for i, typ := range []struct {
 		Name       string
 		Type       string
+		Kind       string
 		DoUnsigned bool
 		Func       string
 		FuncArray  string
+		RangeType  string
+		RangeFunc  string
 		Count      bool
 	}{
 		{
 			Name:      "LeafO",
 			Type:      "bool",
+			Kind:      "reflect.Bool",
 			Func:      "r.ReadBool()",
 			FuncArray: "r.ReadFastArrayBool",
 		},
 		{
+			Name:       "LeafB",
+			Type:       "int8",
+			Kind:       "reflect.Int8",
+			DoUnsigned: true,
+			Func:       "r.ReadI8()",
+			FuncArray:  "r.ReadFastArrayI8",
+			Count:      true,
+		},
+		{
 			Name:       "LeafS",
 			Type:       "int16",
+			Kind:       "reflect.Int16",
 			DoUnsigned: true,
 			Func:       "r.ReadI16()",
 			FuncArray:  "r.ReadFastArrayI16",
 			Count:      true,
 		},
 		{
-			Name:      "LeafC",
-			Type:      "int32",
-			Func:      "r.ReadI32()",
-			FuncArray: "r.ReadFastArrayI32",
-		},
-		{
 			Name:       "LeafI",
 			Type:       "int32",
+			Kind:       "reflect.Int32",
 			DoUnsigned: true,
 			Func:       "r.ReadI32()",
 			FuncArray:  "r.ReadFastArrayI32",
@@ -97,6 +106,7 @@ func genLeaves() {
 		{
 			Name:       "LeafL",
 			Type:       "int64",
+			Kind:       "reflect.Int64",
 			DoUnsigned: true,
 			Func:       "r.ReadI64()",
 			FuncArray:  "r.ReadFastArrayI64",
@@ -105,18 +115,33 @@ func genLeaves() {
 		{
 			Name:      "LeafF",
 			Type:      "float32",
+			Kind:      "reflect.Float32",
 			Func:      "r.ReadF32()",
 			FuncArray: "r.ReadFastArrayF32",
 		},
 		{
 			Name:      "LeafD",
 			Type:      "float64",
+			Kind:      "reflect.Float64",
 			Func:      "r.ReadF64()",
 			FuncArray: "r.ReadFastArrayF64",
+		},
+		{
+			Name:      "LeafC",
+			Type:      "string",
+			Kind:      "reflect.String",
+			Func:      "r.ReadString()",
+			FuncArray: "r.ReadFastArrayString",
+			RangeType: "int32",
+			RangeFunc: "r.ReadI32()",
 		},
 	} {
 		if i > 0 {
 			fmt.Fprintf(f, "\n")
+		}
+		if typ.RangeType == "" {
+			typ.RangeType = typ.Type
+			typ.RangeFunc = typ.Func
 		}
 		tmpl := template.Must(template.New(typ.Name).Parse(leafTmpl))
 		err = tmpl.Execute(f, typ)
@@ -286,8 +311,8 @@ const leafTmpl = `// {{.Name}} implements ROOT T{{.Name}}
 type {{.Name}} struct {
 	tleaf
 	val []{{.Type}}
-	min {{.Type}}
-	max {{.Type}}
+	min {{.RangeType}}
+	max {{.RangeType}}
 }
 
 // Class returns the ROOT class name.
@@ -296,13 +321,24 @@ func (leaf *{{.Name}}) Class() string {
 }
 
 // Minimum returns the minimum value of the leaf.
-func (leaf *{{.Name}}) Minimum() {{.Type}} {
+func (leaf *{{.Name}}) Minimum() {{.RangeType}} {
 	return leaf.min
 }
 
 // Maximum returns the maximum value of the leaf.
-func (leaf *{{.Name}}) Maximum() {{.Type}} {
+func (leaf *{{.Name}}) Maximum() {{.RangeType}} {
 	return leaf.max
+}
+
+// Kind returns the leaf's kind.
+func (*{{.Name}}) Kind() reflect.Kind {
+	return {{.Kind}}
+}
+
+// Type returns the leaf's type.
+func (*{{.Name}}) Type() reflect.Type {
+	var v {{.Type}}
+	return reflect.TypeOf(v)
 }
 
 // Value returns the leaf value at index i.
@@ -341,8 +377,8 @@ func (leaf *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	leaf.min = {{.Func}}
-	leaf.max = {{.Func}}
+	leaf.min = {{.RangeFunc}}
+	leaf.max = {{.RangeFunc}}
 
 	r.CheckByteCount(pos, bcnt, start, "T{{.Name}}")
 	return r.Err()
@@ -500,8 +536,8 @@ func (h *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
-	if vers < 2 {
-		return errorf("rootio: T{{.Name}} version too old (%d<2)", vers)
+	if vers < 1 {
+		return errorf("rootio: T{{.Name}} version too old (%d<1)", vers)
 	}
 
 	for _, v := range []ROOTUnmarshaler{
@@ -944,8 +980,8 @@ func (h *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
-	if vers < 2 {
-		return errorf("rootio: T{{.Name}} version too old (%d<2)", vers)
+	if vers < 1 {
+		return errorf("rootio: T{{.Name}} version too old (%d<1)", vers)
 	}
 
 	for _, v := range []ROOTUnmarshaler{

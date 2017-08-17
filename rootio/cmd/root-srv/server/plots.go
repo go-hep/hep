@@ -37,8 +37,13 @@ func walk(f rootio.Directory, path []string) (rootio.Object, error) {
 }
 
 func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
-	url := r.URL.Path[len("/plot-h1/"):]
-	toks := strings.Split(url, "/")
+	uri := r.URL.Path[len("/plot-h1/"):]
+	var err error
+	uri, err = urlPathUnescape(uri)
+	if err != nil {
+		return err
+	}
+	toks := strings.Split(uri, "/")
 	fname := toks[0]
 
 	db, err := srv.db(r)

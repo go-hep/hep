@@ -188,6 +188,7 @@ func iconFor(obj rootio.Object) string {
 }
 
 func attrFor(obj rootio.Object, id string) jsAttr {
+	id = urlPathEscape(id)
 	cls := obj.Class()
 	switch {
 	case strings.HasPrefix(cls, "TH1"):

@@ -68,7 +68,7 @@ func ExampleH2D() {
 
 	dist, ok := distmv.NewNormal(
 		[]float64{0, 1},
-		mat64.NewSymDense(2, []float64{4, 0, 0, 2}),
+		mat.NewSymDense(2, []float64{4, 0, 0, 2}),
 		rand.New(rand.NewSource(1234)),
 	)
 	if !ok {

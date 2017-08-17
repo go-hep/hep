@@ -25,6 +25,7 @@ def main():
     u64 = carray("L", [0])
     f32 = carray("f", [0.])
     f64 = carray("d", [0.])
+    s06 = carray("b", [0]*7)
 
     arr_i32 = carray("i", [0]*ARRAYSZ)
     arr_i64 = carray("l", [0]*ARRAYSZ)
@@ -47,6 +48,7 @@ def main():
     t.Branch("UInt64", u64, "UInt64/l")
     t.Branch("Float32", f32, "Float32/F")
     t.Branch("Float64", f64, "Float64/D")
+    t.Branch("Str", s06, "Str/C")
 
     t.Branch("ArrayInt32", arr_i32, "ArrayInt32[10]/I")
     t.Branch("ArrayInt64", arr_i64, "ArrayInt64[10]/L")
@@ -73,6 +75,9 @@ def main():
 
         f32[0] = i
         f64[0] = i
+        for ii,vv in enumerate(bytes("evt-%03d" % i,"ascii")):
+            s06[ii]=vv
+            pass
         
         for jj in range(ARRAYSZ):
             arr_i32[jj] = i

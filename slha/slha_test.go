@@ -168,8 +168,8 @@ func compareSLHA(a, b slha.SLHA) (bool, string) {
 
 			if len(ablock.Data) != len(bblock.Data) {
 				str = append(str,
-					fmt.Sprintf("ref - block[%d] n=%q #entries=%d\n", len(ablock.Data)),
-					fmt.Sprintf("chk - block[%d] n=%q #entries=%d\n", len(bblock.Data)),
+					fmt.Sprintf("ref - block[%d] n=%q #entries=%d\n", i, ablock.Name, len(ablock.Data)),
+					fmt.Sprintf("chk - block[%d] n=%q #entries=%d\n", i, bblock.Name, len(bblock.Data)),
 				)
 				ok = false
 			} else {

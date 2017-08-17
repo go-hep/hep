@@ -21,7 +21,8 @@ type Scanner struct {
 	cbr []Branch    // branches activated because holding slice index
 	ibr []scanField // indices of activated branches
 
-	typ reflect.Type // type bound to this scanner (a struct, a map, a slice of types)
+	typ reflect.Type  // type bound to this scanner (a struct, a map, a slice of types)
+	ptr reflect.Value // pointer to value bound to this scanner
 
 	closed bool
 }
@@ -41,6 +42,7 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 	if rt.Kind() != reflect.Struct {
 		return nil, errorf("rootio: NewScanner expects a pointer to a struct (got: %T)", ptr)
 	}
+	rv := reflect.New(rt).Elem()
 	for i := 0; i < rt.NumField(); i++ {
 		f := rt.Field(i)
 		name := f.Tag.Get("rootio")
@@ -50,6 +52,11 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 		br := t.Branch(name)
 		if br == nil {
 			return nil, errorf("rootio: Tree %q has no branch named %q", t.Name(), name)
+		}
+		fptr := rv.Field(i).Addr().Interface()
+		err := br.setAddress(fptr)
+		if err != nil {
+			return nil, err
 		}
 		mbr = append(mbr, br)
 		ibr = append(ibr, scanField{br: br, i: i})
@@ -62,7 +69,8 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 		err:  nil,
 		ibr:  ibr,
 		mbr:  mbr,
-		typ:  reflect.TypeOf(ptr).Elem(),
+		typ:  rt,
+		ptr:  rv.Addr(),
 	}, nil
 }
 
@@ -135,8 +143,8 @@ func (s *Scanner) Entry() int64 {
 	return s.cur
 }
 
-// Seek points the scanner to the i-th entry, ready to call Next.
-func (s *Scanner) Seek(i int64) error {
+// SeekEntry points the scanner to the i-th entry, ready to call Next.
+func (s *Scanner) SeekEntry(i int64) error {
 	if s.err != nil {
 		return s.err
 	}

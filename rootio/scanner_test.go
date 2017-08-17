@@ -5,6 +5,7 @@
 package rootio
 
 import (
+	"fmt"
 	"io"
 	"reflect"
 	"testing"
@@ -30,6 +31,7 @@ func TestScannerStruct(t *testing.T) {
 		U64    uint64      `rootio:"UInt64"`
 		F32    float32     `rootio:"Float32"`
 		F64    float64     `rootio:"Float64"`
+		Str    string      `rootio:"Str"`
 		ArrI32 [10]int32   `rootio:"ArrayInt32"`
 		ArrI64 [10]int64   `rootio:"ArrayInt64"`
 		ArrU32 [10]uint32  `rootio:"ArrayUInt32"`
@@ -52,6 +54,7 @@ func TestScannerStruct(t *testing.T) {
 		data.U64 = uint64(i)
 		data.F32 = float32(i)
 		data.F64 = float64(i)
+		data.Str = fmt.Sprintf("evt-%03d", i)
 		for ii := range data.ArrI32 {
 			data.ArrI32[ii] = int32(i)
 			data.ArrI64[ii] = int64(i)
@@ -128,6 +131,7 @@ func TestScannerVars(t *testing.T) {
 		U64    uint64      `rootio:"UInt64"`
 		F32    float32     `rootio:"Float32"`
 		F64    float64     `rootio:"Float64"`
+		Str    string      `rootio:"Str"`
 		ArrI32 [10]int32   `rootio:"ArrayInt32"`
 		ArrI64 [10]int64   `rootio:"ArrayInt64"`
 		ArrU32 [10]uint32  `rootio:"ArrayUInt32"`
@@ -150,6 +154,7 @@ func TestScannerVars(t *testing.T) {
 		data.U64 = uint64(i)
 		data.F32 = float32(i)
 		data.F64 = float64(i)
+		data.Str = fmt.Sprintf("evt-%03d", i)
 		for ii := range data.ArrI32 {
 			data.ArrI32[ii] = int32(i)
 			data.ArrI64[ii] = int64(i)
@@ -183,6 +188,7 @@ func TestScannerVars(t *testing.T) {
 		{Name: "UInt64"},
 		{Name: "Float32"},
 		{Name: "Float64"},
+		{Name: "Str"},
 		{Name: "ArrayInt32"},
 		{Name: "ArrayInt64"},
 		{Name: "ArrayUInt32"},
@@ -206,6 +212,7 @@ func TestScannerVars(t *testing.T) {
 	for sc.Next() {
 		err := sc.Scan(
 			&d1.I32, &d1.I64, &d1.U32, &d1.U64, &d1.F32, &d1.F64,
+			&d1.Str,
 			&d1.ArrI32, &d1.ArrI64, &d1.ArrU32, &d1.ArrU64, &d1.ArrF32, &d1.ArrF64,
 			&d1.N,
 			&d1.SliI32, &d1.SliI64, &d1.SliU32, &d1.SliU64, &d1.SliF32, &d1.SliF64,
@@ -221,6 +228,7 @@ func TestScannerVars(t *testing.T) {
 		var d2 dataType
 		err = sc.Scan(
 			&d2.I32, &d2.I64, &d2.U32, &d2.U64, &d2.F32, &d2.F64,
+			&d2.Str,
 			&d2.ArrI32, &d2.ArrI64, &d2.ArrU32, &d2.ArrU64, &d2.ArrF32, &d2.ArrF64,
 			&d2.N,
 			&d2.SliI32, &d2.SliI64, &d2.SliU32, &d2.SliU64, &d2.SliF32, &d2.SliF64,

@@ -117,8 +117,6 @@ func (s *Scanner) Scan() bool {
 			panic(fmt.Errorf("unknown frame %v", hdr.Frame))
 		}
 	}
-
-	return true
 }
 
 // seek sets the offset for the next Read or Write on file to offset,

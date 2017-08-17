@@ -103,6 +103,7 @@ options:
 			fmt.Fprintf(os.Stderr, "rootio: failed to open [%s]: %v\n", fname, err)
 			os.Exit(1)
 		}
+		defer f.Close()
 		fmt.Printf("version: %v\n", f.Version())
 		if *doSI {
 			fmt.Printf("streamer-infos:\n")

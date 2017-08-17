@@ -269,8 +269,8 @@ func (h *H2F) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
-	if vers < 2 {
-		return errorf("rootio: TH2F version too old (%d<2)", vers)
+	if vers < 1 {
+		return errorf("rootio: TH2F version too old (%d<1)", vers)
 	}
 
 	for _, v := range []ROOTUnmarshaler{
@@ -556,8 +556,8 @@ func (h *H2D) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
-	if vers < 2 {
-		return errorf("rootio: TH2D version too old (%d<2)", vers)
+	if vers < 1 {
+		return errorf("rootio: TH2D version too old (%d<1)", vers)
 	}
 
 	for _, v := range []ROOTUnmarshaler{
@@ -843,8 +843,8 @@ func (h *H2I) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
-	if vers < 2 {
-		return errorf("rootio: TH2I version too old (%d<2)", vers)
+	if vers < 1 {
+		return errorf("rootio: TH2I version too old (%d<1)", vers)
 	}
 
 	for _, v := range []ROOTUnmarshaler{

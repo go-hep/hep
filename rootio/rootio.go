@@ -2,16 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package rootio provides a pure-go read-access to ROOT files.
-// rootio might, with time, provide write-access too.
-//
-// A typical usage is as follow:
-//
-//   f, err := rootio.Open("ntup.root")
-//   obj, err := f.Get("tree")
-//   tree := obj.(*rootio.Tree)
-//   fmt.Printf("entries= %v\n", t.Entries())
-package rootio // import "go-hep.org/x/hep/rootio"
+package rootio
 
 import (
 	"bytes"
@@ -19,6 +10,8 @@ import (
 )
 
 //go:generate go run ./gen-code.go
+//go:generate go run ./gendata/gen-evnt-tree.go -f ./testdata/small-evnt-tree-nosplit.root
+//go:generate go run ./gendata/gen-evnt-tree.go -f ./testdata/small-evnt-tree-fullsplit.root -split=99
 
 // Class represents a ROOT class.
 // Class instances are created by a ClassFactory.
@@ -169,10 +162,12 @@ type Branch interface {
 	Leaves() []Leaf
 
 	setTree(Tree)
+	getTree() Tree
 	loadEntry(i int64) error
 	getReadEntry() int64
 	getEntry(i int64)
 	scan(ptr interface{}) error
+	setAddress(ptr interface{}) error
 }
 
 // Leaf describes branches data types
@@ -187,6 +182,8 @@ type Leaf interface {
 	LenType() int    // LenType returns the number of bytes for this data type
 	MaxIndex() []int
 	Offset() int
+	Kind() reflect.Kind
+	Type() reflect.Type
 	Value(int) interface{}
 	TypeName() string
 

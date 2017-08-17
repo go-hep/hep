@@ -5,8 +5,10 @@
 package rootio
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 )
 
 type tstreamerInfo struct {
@@ -242,6 +244,34 @@ func (tsb *tstreamerBasicPointer) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
+type tstreamerLoop struct {
+	tstreamerElement
+	cvers  int32  // version number of the class with the counter
+	cname  string // name of data member holding the array count
+	cclass string // name of the class with the counter
+}
+
+func (*tstreamerLoop) Class() string {
+	return "TStreamerLoop"
+}
+
+func (tsl *tstreamerLoop) UnmarshalROOT(r *RBuffer) error {
+	beg := r.Pos()
+
+	_ /*vers*/, pos, bcnt := r.ReadVersion()
+
+	if err := tsl.tstreamerElement.UnmarshalROOT(r); err != nil {
+		return err
+	}
+
+	tsl.cvers = r.ReadI32()
+	tsl.cname = r.ReadString()
+	tsl.cclass = r.ReadString()
+
+	r.CheckByteCount(pos, bcnt, beg, "TStreamerLoop")
+	return r.Err()
+}
+
 type tstreamerObject struct {
 	tstreamerElement
 }
@@ -413,7 +443,7 @@ type tstreamerArtificial struct {
 }
 
 func (tss *tstreamerArtificial) Class() string {
-	return "TStreamerSTLstring"
+	return "TStreamerArtificial"
 }
 
 func (tsa *tstreamerArtificial) UnmarshalROOT(r *RBuffer) error {
@@ -470,6 +500,14 @@ func init() {
 		}
 		Factory.add("TStreamerBasicPointer", f)
 		Factory.add("*rootio.tstreamerBasicPointer", f)
+	}
+	{
+		f := func() reflect.Value {
+			o := &tstreamerLoop{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TStreamerLoop", f)
+		Factory.add("*rootio.tstreamerLoop", f)
 	}
 	{
 		f := func() reflect.Value {
@@ -542,6 +580,71 @@ func init() {
 	}
 }
 
+var streamers = streamerDb{
+	db: make(map[streamerDbKey]StreamerInfo),
+}
+
+type streamerDbKey struct {
+	class    string
+	version  int
+	checksum int
+}
+
+type streamerDb struct {
+	sync.RWMutex
+	db map[streamerDbKey]StreamerInfo
+}
+
+func (db *streamerDb) getAny(class string) (StreamerInfo, bool) {
+	db.RLock()
+	defer db.RUnlock()
+	for k, v := range db.db {
+		if k.class == class {
+			return v, true
+		}
+	}
+	return nil, false
+}
+
+func (db *streamerDb) get(class string, vers int, chksum int) (StreamerInfo, bool) {
+	db.RLock()
+	defer db.RUnlock()
+	key := streamerDbKey{
+		class:    class,
+		version:  vers,
+		checksum: chksum,
+	}
+
+	streamer, ok := db.db[key]
+	if !ok {
+		return nil, false
+	}
+	return streamer, true
+}
+
+func (db *streamerDb) add(streamer StreamerInfo) {
+	db.Lock()
+	defer db.Unlock()
+
+	key := streamerDbKey{
+		class:    streamer.Name(),
+		version:  streamer.ClassVersion(),
+		checksum: streamer.CheckSum(),
+	}
+
+	old, dup := db.db[key]
+	if dup {
+		if old.CheckSum() != streamer.CheckSum() {
+			panic(fmt.Errorf("rootio: StreamerInfo class=%q version=%d with checksum=%d (got checksum=%d)",
+				streamer.Name(), streamer.ClassVersion(), streamer.CheckSum(), old.CheckSum(),
+			))
+		}
+		return
+	}
+
+	db.db[key] = streamer
+}
+
 var _ Object = (*tstreamerInfo)(nil)
 var _ Named = (*tstreamerInfo)(nil)
 var _ StreamerInfo = (*tstreamerInfo)(nil)
@@ -566,6 +669,11 @@ var _ Object = (*tstreamerBasicPointer)(nil)
 var _ Named = (*tstreamerBasicPointer)(nil)
 var _ StreamerElement = (*tstreamerBasicPointer)(nil)
 var _ ROOTUnmarshaler = (*tstreamerBasicPointer)(nil)
+
+var _ Object = (*tstreamerLoop)(nil)
+var _ Named = (*tstreamerLoop)(nil)
+var _ StreamerElement = (*tstreamerLoop)(nil)
+var _ ROOTUnmarshaler = (*tstreamerLoop)(nil)
 
 var _ Object = (*tstreamerObject)(nil)
 var _ Named = (*tstreamerObject)(nil)

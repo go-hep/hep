@@ -71,6 +71,11 @@ func (h *H2D) EffEntries() float64 {
 	return h.bng.effEntries()
 }
 
+// Binning returns the binning of this histogram
+func (h *H2D) Binning() *binning2D {
+	return &h.bng
+}
+
 // SumW returns the sum of weights in this histogram.
 // Overflows are included in the computation.
 func (h *H2D) SumW() float64 {
