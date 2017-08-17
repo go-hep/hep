@@ -5,7 +5,6 @@
 package rootio
 
 import (
-	"bytes"
 	"compress/zlib"
 	"fmt"
 	"io"
@@ -122,15 +121,17 @@ func (k *Key) Object() (Object, error) {
 
 // Bytes returns the buffer of bytes corresponding to the Key's value
 func (k *Key) Bytes() ([]byte, error) {
-	data, err := k.load()
+	data, err := k.load(nil)
 	if err != nil {
 		return nil, err
 	}
 	return data, nil
 }
 
-func (k *Key) load() ([]byte, error) {
-	var buf bytes.Buffer
+func (k *Key) load(buf []byte) ([]byte, error) {
+	if len(buf) < int(k.objlen) {
+		buf = make([]byte, k.objlen)
+	}
 	if k.isCompressed() {
 		// Note: this contains ZL[src][dst] where src and dst are 3 bytes each.
 		// Won't bother with this for the moment, since we can cross-check against
@@ -143,20 +144,19 @@ func (k *Key) load() ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		_, err = io.Copy(&buf, rc)
+		_, err = io.ReadFull(rc, buf)
 		if err != nil {
 			return nil, err
 		}
-		return buf.Bytes(), nil
+		return buf, nil
 	}
 	start := k.seekkey + int64(k.keylen)
 	r := io.NewSectionReader(k.f, start, int64(k.bytes))
-	_, err := io.Copy(&buf, r)
+	_, err := io.ReadFull(r, buf)
 	if err != nil {
 		return nil, err
 	}
-	return buf.Bytes(), nil
+	return buf, nil
 }
 
 func (k *Key) isCompressed() bool {

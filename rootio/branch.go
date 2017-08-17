@@ -40,6 +40,7 @@ type tbranch struct {
 	firstbasket int64   // first entry in the current basket
 	nextbasket  int64   // next entry that will require us to go to the next basket
 	basket      *Basket // pointer to the current basket
+	basketBuf   []byte  // scratch space for the current basket
 
 	tree Tree        // tree header
 	btop Branch      // top-level parent branch in the tree
@@ -200,7 +201,6 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 
 func (b *tbranch) loadEntry(ientry int64) error {
 	var err error
-	b.readentry = ientry
 
 	if len(b.basketBytes) == 0 {
 		return nil
@@ -232,13 +232,20 @@ func (b *tbranch) loadBasket(entry int64) error {
 	if ib < 0 {
 		return errorf("rootio: no basket for entry %d", entry)
 	}
+	b.readentry = entry
+	b.readbasket = ib
+	b.nextbasket = b.basketEntry[ib+1]
+	b.firstbasket = b.basketEntry[ib]
 	if ib < len(b.baskets) {
 		b.basket = &b.baskets[ib]
 		b.firstEntry = b.basketEntry[ib]
 		return nil
 	}
 
-	buf := make([]byte, int(b.basketBytes[ib]))
+	if len(b.basketBuf) < int(b.basketBytes[ib]) {
+		b.basketBuf = make([]byte, int(b.basketBytes[ib]))
+	}
+	buf := b.basketBuf[:int(b.basketBytes[ib])]
 	f := b.tree.getFile()
 	_, err = f.ReadAt(buf, b.basketSeek[ib])
 	if err != nil {
@@ -254,7 +261,11 @@ func (b *tbranch) loadBasket(entry int64) error {
 	b.basket.f = f
 	b.firstEntry = entry
 
-	buf, err = b.basket.Bytes()
+	if len(b.basketBuf) < int(b.basket.objlen) {
+		b.basketBuf = make([]byte, b.basket.objlen)
+	}
+	buf = b.basketBuf[:int(b.basket.objlen)]
+	_, err = b.basket.load(buf)
 	if err != nil {
 		return err
 	}
