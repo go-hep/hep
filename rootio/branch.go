@@ -294,10 +294,27 @@ func (b *tbranch) loadBasket(entry int64) error {
 }
 
 func (b *tbranch) findBasketIndex(entry int64) int {
-	// FIXME(sbinet): use sort.SearchInts ?
-	for i, v := range b.basketEntry[1:] {
-		if v > entry && v > 0 {
+	switch {
+	case entry == 0:
+		return 0
+	case b.firstbasket <= entry && entry < b.nextbasket:
+		return b.readbasket
+	}
+	/*
+		    // binary search is not efficient for small slices (like basketEntry)
+			// TODO(sbinet): test at which length of basketEntry it starts to be efficient.
+			entries := b.basketEntry[1:]
+			i := sort.Search(len(entries), func(i int) bool { return entries[i] >= entry })
+			if b.basketEntry[i+1] == entry {
+				return i + 1
+			}
 			return i
+	*/
+
+	for i := b.readbasket; i < len(b.basketEntry); i++ {
+		v := b.basketEntry[i]
+		if v > entry && v > 0 {
+			return i - 1
 		}
 	}
 	return -1
