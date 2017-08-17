@@ -802,7 +802,75 @@ func BenchmarkScannerVars(b *testing.B) {
 	}
 }
 
-func BenchmarkTreeScannerVarsBigFile(b *testing.B) {
+func BenchmarkTreeScannerVarsBigFileScalar(b *testing.B) {
+	f, err := Open("testdata/mc_105986.ZZ.root")
+	if err != nil {
+		b.Skip(err)
+	}
+
+	obj, ok := f.Get("mini")
+	if !ok {
+		b.Fatalf("no mini")
+	}
+	tree := obj.(Tree)
+
+	sc, err := NewTreeScannerVars(tree, ScanVar{Name: "mcWeight"})
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer sc.Close()
+
+	var sum float32
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		sc.SeekEntry(0)
+		for sc.Next() {
+			var data float32
+			err := sc.Scan(&data)
+			if err != nil {
+				b.Error(err)
+			}
+			sum += data
+		}
+	}
+}
+func BenchmarkScannerVarsBigFileScalar(b *testing.B) {
+	f, err := Open("testdata/mc_105986.ZZ.root")
+	if err != nil {
+		b.Skip(err)
+	}
+
+	obj, ok := f.Get("mini")
+	if !ok {
+		b.Fatalf("no mini")
+	}
+	tree := obj.(Tree)
+
+	var mc float32
+	sc, err := NewScannerVars(tree, ScanVar{Name: "mcWeight", Value: &mc})
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer sc.Close()
+
+	var sum float32
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		sc.SeekEntry(0)
+		for sc.Next() {
+			err := sc.Scan()
+			if err != nil {
+				b.Error(err)
+			}
+			sum += mc
+		}
+	}
+}
+func BenchmarkTreeScannerVarsBigFileSlice(b *testing.B) {
 	f, err := Open("testdata/mc_105986.ZZ.root")
 	if err != nil {
 		b.Skip(err)
@@ -836,7 +904,7 @@ func BenchmarkTreeScannerVarsBigFile(b *testing.B) {
 		}
 	}
 }
-func BenchmarkScannerVarsBigFile(b *testing.B) {
+func BenchmarkScannerVarsBigFileSlice(b *testing.B) {
 	f, err := Open("testdata/mc_105986.ZZ.root")
 	if err != nil {
 		b.Skip(err)
