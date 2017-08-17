@@ -7,23 +7,31 @@ package rootio
 import (
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"io"
 	"math"
 	"sort"
 )
 
 type rbuff struct {
-	p []byte
-	c int
+	p []byte // buffer of data to read from
+	c int    // current position in buffer of data
 }
 
 func (r *rbuff) Read(p []byte) (int, error) {
+	if r.c >= len(r.p) {
+		return 0, io.EOF
+	}
 	n := copy(p, r.p[r.c:])
 	r.c += n
 	return n, nil
 }
 
 func (r *rbuff) ReadByte() (byte, error) {
+	if r.c >= len(r.p) {
+		return 0, io.EOF
+	}
 	v := r.p[r.c]
 	r.c++
 	return v, nil
@@ -33,15 +41,17 @@ func (r *rbuff) Seek(offset int64, whence int) (int64, error) {
 	switch whence {
 	case ioSeekStart:
 		r.c = int(offset)
-		return int64(r.c), nil
 	case ioSeekCurrent:
 		r.c += int(offset)
-		return int64(r.c), nil
 	case ioSeekEnd:
 		r.c = len(r.p) - int(offset)
-		return int64(r.c), nil
+	default:
+		return 0, errors.New("rootio.rbuff.Seek: invalid whence")
 	}
-	panic("unreachable")
+	if r.c < 0 {
+		return 0, errors.New("rootio.rbuff.Seek: negative position")
+	}
+	return int64(r.c), nil
 }
 
 // RBuffer is a read-only ROOT buffer for streaming.
