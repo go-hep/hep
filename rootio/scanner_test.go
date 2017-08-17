@@ -11,6 +11,29 @@ import (
 	"testing"
 )
 
+type ScannerData struct {
+	I32    int32       `rootio:"Int32"`
+	I64    int64       `rootio:"Int64"`
+	U32    uint32      `rootio:"UInt32"`
+	U64    uint64      `rootio:"UInt64"`
+	F32    float32     `rootio:"Float32"`
+	F64    float64     `rootio:"Float64"`
+	Str    string      `rootio:"Str"`
+	ArrI32 [10]int32   `rootio:"ArrayInt32"`
+	ArrI64 [10]int64   `rootio:"ArrayInt64"`
+	ArrU32 [10]uint32  `rootio:"ArrayUInt32"`
+	ArrU64 [10]uint64  `rootio:"ArrayUInt64"`
+	ArrF32 [10]float32 `rootio:"ArrayFloat32"`
+	ArrF64 [10]float64 `rootio:"ArrayFloat64"`
+	N      int32       `rootio:"N"`
+	SliI32 []int32     `rootio:"SliceInt32"`
+	SliI64 []int64     `rootio:"SliceInt64"`
+	SliU32 []uint32    `rootio:"SliceUInt32"`
+	SliU64 []uint64    `rootio:"SliceUInt64"`
+	SliF32 []float32   `rootio:"SliceFloat32"`
+	SliF64 []float64   `rootio:"SliceFloat64"`
+}
+
 func TestScannerStruct(t *testing.T) {
 	f, err := Open("testdata/small-flat-tree.root")
 	if err != nil {
@@ -24,30 +47,7 @@ func TestScannerStruct(t *testing.T) {
 	}
 	tree := obj.(Tree)
 
-	type dataType struct {
-		I32    int32       `rootio:"Int32"`
-		I64    int64       `rootio:"Int64"`
-		U32    uint32      `rootio:"UInt32"`
-		U64    uint64      `rootio:"UInt64"`
-		F32    float32     `rootio:"Float32"`
-		F64    float64     `rootio:"Float64"`
-		Str    string      `rootio:"Str"`
-		ArrI32 [10]int32   `rootio:"ArrayInt32"`
-		ArrI64 [10]int64   `rootio:"ArrayInt64"`
-		ArrU32 [10]uint32  `rootio:"ArrayUInt32"`
-		ArrU64 [10]uint64  `rootio:"ArrayUInt64"`
-		ArrF32 [10]float32 `rootio:"ArrayFloat32"`
-		ArrF64 [10]float64 `rootio:"ArrayFloat64"`
-		N      int32       `rootio:"N"`
-		SliI32 []int32     `rootio:"SliceInt32"`
-		SliI64 []int64     `rootio:"SliceInt64"`
-		SliU32 []uint32    `rootio:"SliceUInt32"`
-		SliU64 []uint64    `rootio:"SliceUInt64"`
-		SliF32 []float32   `rootio:"SliceFloat32"`
-		SliF64 []float64   `rootio:"SliceFloat64"`
-	}
-
-	want := func(i int64) (data dataType) {
+	want := func(i int64) (data ScannerData) {
 		data.I32 = int32(i)
 		data.I64 = int64(i)
 		data.U32 = uint32(i)
@@ -81,12 +81,12 @@ func TestScannerStruct(t *testing.T) {
 		return data
 	}
 
-	sc, err := NewScanner(tree, &dataType{})
+	sc, err := NewScanner(tree, &ScannerData{})
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer sc.Close()
-	var d1 dataType
+	var d1 ScannerData
 	for sc.Next() {
 		err := sc.Scan(&d1)
 		if err != nil {
@@ -97,7 +97,7 @@ func TestScannerStruct(t *testing.T) {
 			t.Fatalf("entry[%d]:\ngot= %#v.\nwant=%#v\n", i, d1, want(i))
 		}
 
-		var d2 dataType
+		var d2 ScannerData
 		err = sc.Scan(&d2)
 		if err != nil {
 			t.Fatal(err)
@@ -124,30 +124,8 @@ func TestScannerVars(t *testing.T) {
 	}
 
 	tree := obj.(Tree)
-	type dataType struct {
-		I32    int32       `rootio:"Int32"`
-		I64    int64       `rootio:"Int64"`
-		U32    uint32      `rootio:"UInt32"`
-		U64    uint64      `rootio:"UInt64"`
-		F32    float32     `rootio:"Float32"`
-		F64    float64     `rootio:"Float64"`
-		Str    string      `rootio:"Str"`
-		ArrI32 [10]int32   `rootio:"ArrayInt32"`
-		ArrI64 [10]int64   `rootio:"ArrayInt64"`
-		ArrU32 [10]uint32  `rootio:"ArrayUInt32"`
-		ArrU64 [10]uint64  `rootio:"ArrayUInt64"`
-		ArrF32 [10]float32 `rootio:"ArrayFloat32"`
-		ArrF64 [10]float64 `rootio:"ArrayFloat64"`
-		N      int32       `rootio:"N"`
-		SliI32 []int32     `rootio:"SliceInt32"`
-		SliI64 []int64     `rootio:"SliceInt64"`
-		SliU32 []uint32    `rootio:"SliceUInt32"`
-		SliU64 []uint64    `rootio:"SliceUInt64"`
-		SliF32 []float32   `rootio:"SliceFloat32"`
-		SliF64 []float64   `rootio:"SliceFloat64"`
-	}
 
-	want := func(i int64) (data dataType) {
+	want := func(i int64) (data ScannerData) {
 		data.I32 = int32(i)
 		data.I64 = int64(i)
 		data.U32 = uint32(i)
@@ -208,7 +186,7 @@ func TestScannerVars(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer sc.Close()
-	var d1 dataType
+	var d1 ScannerData
 	for sc.Next() {
 		err := sc.Scan(
 			&d1.I32, &d1.I64, &d1.U32, &d1.U64, &d1.F32, &d1.F64,
@@ -225,7 +203,7 @@ func TestScannerVars(t *testing.T) {
 			t.Fatalf("entry[%d]:\ngot= %#v.\nwant=%#v\n", i, d1, want(i))
 		}
 
-		var d2 dataType
+		var d2 ScannerData
 		err = sc.Scan(
 			&d2.I32, &d2.I64, &d2.U32, &d2.U64, &d2.F32, &d2.F64,
 			&d2.Str,
