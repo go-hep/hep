@@ -5,37 +5,49 @@
 package rootio
 
 import (
-	"bytes"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"io"
 	"math"
-	"reflect"
 	"sort"
 )
 
-func (k *Key) decodeVector(in *bytes.Buffer, dst interface{}) (int, error) {
-	// Discard three int16s (like 40 00 00 0e 00 09)
-	x := in.Next(6)
-	_ = x // sometimes we want to look at this.
+type rbuff struct {
+	p []byte
+	c int
+}
 
-	var n int32
-	err := binary.Read(in, binary.BigEndian, &n)
-	if err != nil {
-		return -1, err
-	}
+func (r *rbuff) Read(p []byte) (int, error) {
+	n := copy(p, r.p[r.c:])
+	r.c += n
+	return n, nil
+}
 
-	err = binary.Read(in, binary.BigEndian, reflect.ValueOf(dst).Slice(0, int(n)).Interface())
-	if err != nil {
-		return -1, err
+func (r *rbuff) ReadByte() (byte, error) {
+	v := r.p[r.c]
+	r.c++
+	return v, nil
+}
+
+func (r *rbuff) Seek(offset int64, whence int) (int64, error) {
+	switch whence {
+	case ioSeekStart:
+		r.c = int(offset)
+		return int64(r.c), nil
+	case ioSeekCurrent:
+		r.c += int(offset)
+		return int64(r.c), nil
+	case ioSeekEnd:
+		r.c = len(r.p) - int(offset)
+		return int64(r.c), nil
 	}
-	return int(n), nil
+	panic("unreachable")
 }
 
 // RBuffer is a read-only ROOT buffer for streaming.
 type RBuffer struct {
-	r      *bytes.Reader
+	r      *rbuff
 	err    error
 	offset uint32
 	refs   map[int64]interface{}
@@ -47,7 +59,7 @@ func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32) *RBuffer
 	}
 
 	return &RBuffer{
-		r:      bytes.NewReader(data),
+		r:      &rbuff{p: data, c: 0},
 		refs:   refs,
 		offset: offset,
 	}
@@ -185,12 +197,12 @@ func (r *RBuffer) ReadI8() int8 {
 		return 0
 	}
 
-	var buf [1]byte
-	_, r.err = io.ReadFull(r.r, buf[:])
+	var v byte
+	v, r.err = r.r.ReadByte()
 	if r.err != nil {
 		return 0
 	}
-	return int8(buf[0])
+	return int8(v)
 }
 
 func (r *RBuffer) ReadI16() int16 {
@@ -198,12 +210,9 @@ func (r *RBuffer) ReadI16() int16 {
 		return 0
 	}
 
-	var buf [2]byte
-	_, r.err = io.ReadFull(r.r, buf[:])
-	if r.err != nil {
-		return 0
-	}
-	return int16(binary.BigEndian.Uint16(buf[:]))
+	v := int16(binary.BigEndian.Uint16(r.r.p[r.r.c : r.r.c+2]))
+	r.r.c += 2
+	return v
 }
 
 func (r *RBuffer) ReadI32() int32 {
@@ -211,12 +220,9 @@ func (r *RBuffer) ReadI32() int32 {
 		return 0
 	}
 
-	var buf [4]byte
-	_, r.err = io.ReadFull(r.r, buf[:])
-	if r.err != nil {
-		return 0
-	}
-	return int32(binary.BigEndian.Uint32(buf[:]))
+	v := int32(binary.BigEndian.Uint32(r.r.p[r.r.c : r.r.c+4]))
+	r.r.c += 4
+	return v
 }
 
 func (r *RBuffer) ReadI64() int64 {
@@ -224,12 +230,9 @@ func (r *RBuffer) ReadI64() int64 {
 		return 0
 	}
 
-	var buf [8]byte
-	_, r.err = io.ReadFull(r.r, buf[:])
-	if r.err != nil {
-		return 0
-	}
-	return int64(binary.BigEndian.Uint64(buf[:]))
+	v := int64(binary.BigEndian.Uint64(r.r.p[r.r.c : r.r.c+8]))
+	r.r.c += 8
+	return v
 }
 
 func (r *RBuffer) ReadU8() uint8 {
@@ -237,12 +240,12 @@ func (r *RBuffer) ReadU8() uint8 {
 		return 0
 	}
 
-	var buf [1]byte
-	_, r.err = io.ReadFull(r.r, buf[:])
+	var v byte
+	v, r.err = r.r.ReadByte()
 	if r.err != nil {
 		return 0
 	}
-	return uint8(buf[0])
+	return uint8(v)
 }
 
 func (r *RBuffer) ReadU16() uint16 {
@@ -250,12 +253,9 @@ func (r *RBuffer) ReadU16() uint16 {
 		return 0
 	}
 
-	var buf [2]byte
-	_, r.err = io.ReadFull(r.r, buf[:])
-	if r.err != nil {
-		return 0
-	}
-	return binary.BigEndian.Uint16(buf[:])
+	v := binary.BigEndian.Uint16(r.r.p[r.r.c : r.r.c+2])
+	r.r.c += 2
+	return v
 }
 
 func (r *RBuffer) ReadU32() uint32 {
@@ -263,12 +263,9 @@ func (r *RBuffer) ReadU32() uint32 {
 		return 0
 	}
 
-	var buf [4]byte
-	_, r.err = io.ReadFull(r.r, buf[:])
-	if r.err != nil {
-		return 0
-	}
-	return binary.BigEndian.Uint32(buf[:])
+	v := binary.BigEndian.Uint32(r.r.p[r.r.c : r.r.c+4])
+	r.r.c += 4
+	return v
 }
 
 func (r *RBuffer) ReadU64() uint64 {
@@ -276,12 +273,9 @@ func (r *RBuffer) ReadU64() uint64 {
 		return 0
 	}
 
-	var buf [8]byte
-	_, r.err = io.ReadFull(r.r, buf[:])
-	if r.err != nil {
-		return 0
-	}
-	return binary.BigEndian.Uint64(buf[:])
+	v := binary.BigEndian.Uint64(r.r.p[r.r.c : r.r.c+8])
+	r.r.c += 8
+	return v
 }
 
 func (r *RBuffer) ReadF32() float32 {
@@ -289,12 +283,9 @@ func (r *RBuffer) ReadF32() float32 {
 		return 0
 	}
 
-	var buf [4]byte
-	_, r.err = io.ReadFull(r.r, buf[:])
-	if r.err != nil {
-		return 0
-	}
-	return math.Float32frombits(binary.BigEndian.Uint32(buf[:]))
+	v := binary.BigEndian.Uint32(r.r.p[r.r.c : r.r.c+4])
+	r.r.c += 4
+	return math.Float32frombits(v)
 }
 
 func (r *RBuffer) ReadF64() float64 {
@@ -302,12 +293,9 @@ func (r *RBuffer) ReadF64() float64 {
 		return 0
 	}
 
-	var buf [8]byte
-	_, r.err = io.ReadFull(r.r, buf[:])
-	if r.err != nil {
-		return 0
-	}
-	return math.Float64frombits(binary.BigEndian.Uint64(buf[:]))
+	v := binary.BigEndian.Uint64(r.r.p[r.r.c : r.r.c+8])
+	r.r.c += 8
+	return math.Float64frombits(v)
 }
 
 func (r *RBuffer) ReadStaticArrayI32() []int32 {
