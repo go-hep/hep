@@ -255,3 +255,116 @@ func TestScannerVarsMultipleTimes(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkScanStruct(b *testing.B) {
+	f, err := Open("testdata/small-flat-tree.root")
+	if err != nil {
+		b.Fatal(err.Error())
+	}
+	defer f.Close()
+
+	obj, ok := f.Get("tree")
+	if !ok {
+		b.Fatalf("could not retrieve tree [tree]")
+	}
+	tree := obj.(Tree)
+
+	type Data struct {
+		F64 float64 `rootio:"Float64"`
+	}
+
+	var data Data
+	s, err := NewScanner(tree, &data)
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer s.Close()
+
+	var sum float64
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		s.SeekEntry(0)
+		for s.Next() {
+			err = s.Scan(&data)
+			if err != nil {
+				b.Fatal(err)
+			}
+			sum += data.F64
+		}
+	}
+}
+
+func BenchmarkScanVars(b *testing.B) {
+	f, err := Open("testdata/small-flat-tree.root")
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer f.Close()
+
+	obj, ok := f.Get("tree")
+	if !ok {
+		b.Fatalf("could not retrieve tree [tree]")
+	}
+
+	tree := obj.(Tree)
+
+	scanVars := []ScanVar{
+		{Name: "Float64"},
+	}
+	s, err := NewScannerVars(tree, scanVars...)
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer s.Close()
+
+	var data ScannerData
+	var sum float64
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		s.SeekEntry(0)
+		for s.Next() {
+			err := s.Scan(&data.F64)
+			if err != nil {
+				b.Fatal(err)
+			}
+			sum += data.F64
+		}
+	}
+}
+
+func BenchmarkScanVarsBigFile(b *testing.B) {
+	f, err := Open("testdata/mc_105986.ZZ.root")
+	if err != nil {
+		b.Skip(err)
+	}
+
+	obj, ok := f.Get("mini")
+	if !ok {
+		b.Fatalf("no mini")
+	}
+	tree := obj.(Tree)
+
+	sc, err := NewScannerVars(tree, ScanVar{Name: "lep_pt"})
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer sc.Close()
+
+	var sum float32
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		sc.SeekEntry(0)
+		for sc.Next() {
+			var data []float32
+			err := sc.Scan(&data)
+			if err != nil {
+				b.Error(err)
+			}
+			sum += data[0]
+		}
+	}
+}
