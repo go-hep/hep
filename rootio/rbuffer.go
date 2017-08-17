@@ -33,30 +33,12 @@ func (k *Key) decodeVector(in *bytes.Buffer, dst interface{}) (int, error) {
 	return int(n), nil
 }
 
-type rbuff interface {
-	io.Reader
-	io.Seeker
-	io.ReaderAt
-}
-
 // RBuffer is a read-only ROOT buffer for streaming.
 type RBuffer struct {
-	r      rbuff
+	r      *bytes.Reader
 	err    error
 	offset uint32
 	refs   map[int64]interface{}
-}
-
-func NewRBufferFrom(r rbuff, refs map[int64]interface{}, offset uint32) *RBuffer {
-	if refs == nil {
-		refs = make(map[int64]interface{})
-	}
-
-	return &RBuffer{
-		r:      r,
-		refs:   refs,
-		offset: offset,
-	}
 }
 
 func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32) *RBuffer {

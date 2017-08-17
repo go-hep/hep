@@ -111,23 +111,25 @@ func (dir *tdirectory) readKeys() error {
 		return nil
 	}
 
-	_, err = dir.file.Seek(dir.seekkeys, ioSeekStart)
+	buf := make([]byte, int(dir.nbyteskeys))
+	_, err = dir.file.ReadAt(buf, dir.seekkeys)
 	if err != nil {
 		return err
 	}
 
 	hdr := Key{f: dir.file}
-	err = hdr.UnmarshalROOT(NewRBufferFrom(dir.file, nil, 0))
+	err = hdr.UnmarshalROOT(NewRBuffer(buf, nil, 0))
 	if err != nil {
 		return err
 	}
 
-	_, err = dir.file.Seek(dir.seekkeys+int64(hdr.keylen), ioSeekStart)
+	buf = make([]byte, hdr.objlen)
+	_, err = dir.file.ReadAt(buf, dir.seekkeys+int64(hdr.keylen))
 	if err != nil {
 		return err
 	}
 
-	r := NewRBufferFrom(dir.file, nil, 0)
+	r := NewRBuffer(buf, nil, 0)
 	nkeys := r.ReadI32()
 	if r.Err() != nil {
 		return r.err
