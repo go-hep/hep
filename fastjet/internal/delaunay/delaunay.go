@@ -26,19 +26,19 @@ type Delaunay struct {
 //
 // The worst case time complexity is O(n*log(n)).
 //
-// The three root points (-2^100,-2^100), (2^100,-2^100) and (0,2^100) can't be in the circumcircle of any three non-collinear points in the
+// The three root points (-2^30,-2^30), (2^30,-2^30) and (0,2^30) can't be in the circumcircle of any three non-collinear points in the
 // triangulation. Additionally all points have to be inside the Triangle formed by these three points.
 // If any of these conditions doesn't apply use the WalkDelaunay function instead.
-// 2^100 = 1.27e30
+// 2^30 = 1,073,741,824
 //
 // To locate a point this algorithm uses a Directed Acyclic Graph with a single root.
 // All triangles in the current triangulation are leaf triangles.
 // To find the triangle which contains the point, the algorithm follows the graph until
 // a leaf is reached.
 func HierarchicalDelaunay() *Delaunay {
-	a := NewPoint(-1<<100, -1<<100)
-	b := NewPoint(1<<100, -1<<100)
-	c := NewPoint(0, 1<<100)
+	a := NewPoint(-1<<30, -1<<30)
+	b := NewPoint(1<<30, -1<<30)
+	c := NewPoint(0, 1<<30)
 	root := NewTriangle(a, b, c)
 	return &Delaunay{
 		root: root,
@@ -87,7 +87,18 @@ func (d *Delaunay) Insert(p *Point) (updatedNearestNeighbor []*Point) {
 // whose nearest neighbor changed due to the removal. The slice may contain
 // duplicates.
 func (d *Delaunay) Remove(p *Point) (updatedNearestNeighbor []*Point) {
-	panic(fmt.Errorf("delaunay: Remove not implemented"))
+	if len(p.adjacentTriangles) < 3 {
+		panic(fmt.Errorf("delaunay: can't remove point %v, not enough adjacent triangles", p))
+	}
+	points := p.surroundingPoints()
+	ts := make([]*Triangle, len(p.adjacentTriangles))
+	copy(ts, p.adjacentTriangles)
+	for _, t := range ts {
+		updtemp := t.remove()
+		updatedNearestNeighbor = append(updatedNearestNeighbor, updtemp...)
+	}
+	updtemp := d.retriangulateAndSew(points, ts)
+	return append(updatedNearestNeighbor, updtemp...)
 }
 
 // locatePointHierarchy locates the point using the delaunay hierarchy.
@@ -360,4 +371,61 @@ func (d *Delaunay) swapEdge(t1, t2 *Triangle) (nt1, nt2 *Triangle, updated []*Po
 	t2.children = append(t2.children, nt1, nt2)
 	d.triangles = append(d.triangles, nt1, nt2)
 	return nt1, nt2, updated
+}
+
+// retriangulateAndSew uses the re-triangulate and sew method to find the delaunay triangles
+// inside the polygon formed by the CCW-ordered points. If k = len(points) then it has a
+// worst-time complexity of O(k*log(k)).
+func (d *Delaunay) retriangulateAndSew(points []*Point, parents []*Triangle) (updated []*Point) {
+	nd := HierarchicalDelaunay()
+	// change limits to create a root triangle that's far outside of the original root triangle
+	nd.root.A.x = -1 << 35
+	nd.root.A.y = -1 << 35
+	nd.root.B.x = 1 << 35
+	nd.root.B.y = -1 << 35
+	nd.root.C.y = 1 << 35
+	// make copies of points on polygon and run a delaunay triangulation with them
+	// indices of copies are in counter clockwise order, so that with the help of
+	// areCounterclockwise it can be determined if a point is inside or outside the polygon.
+	// A,B,C are ordered counterclockwise, so if the numbers in A,B,C are counterclockwise it is
+	// inside the polygon.
+	copies := make([]*Point, len(points))
+	for i, p := range points {
+		copies[i] = NewPoint(p.x, p.y)
+		copies[i].id = i
+		nd.Insert(copies[i])
+	}
+	ts := nd.Triangles()
+	triangles := make([]*Triangle, 0, len(ts))
+	for _, t := range ts {
+		a := t.A.id
+		b := t.B.id
+		c := t.C.id
+		// only keep triangles that are inside the polygon
+		// points are inside the polygon if the order of the indices inside the triangle
+		// is counterclockwise
+		if areCounterclockwise(a, b, c) {
+			tr := NewTriangle(points[a], points[b], points[c])
+			updtemp := tr.add()
+			updated = append(updated, updtemp...)
+			triangles = append(triangles, tr)
+		}
+	}
+	d.triangles = append(d.triangles, triangles...)
+	for i := range parents {
+		parents[i].children = append(parents[i].children, triangles...)
+	}
+	return updated
+}
+
+// areCounterclockwise is a helper function for retriangulateAndSew. It returns
+// whether three points are in counterclockwise order.
+// Since the points in triangle are ordered counterclockwise and the indices around
+// the polygon are ordered counterclockwise checking if the indices of A,B,C
+// are counter clockwise is enough.
+func areCounterclockwise(a, b, c int) bool {
+	if b < c {
+		return a < b || c < a
+	}
+	return a < b && c < a
 }

@@ -20,6 +20,11 @@ type Point struct {
 	adjacentTriangles triangles // adjacentTriangles is a list of triangles containing the point.
 	nearest           *Point
 	dist2             float64 // dist2 is the squared distance to the nearest neighbor.
+	// id is used when points are removed. Copies of the points around the point to
+	// be removed are made. The ID is set incremental in counterclockwise order. It identifies
+	// the original. It is also used to determine whether a Triangle is inside or outside the
+	// polygon formed by all those points.
+	id int
 }
 
 // NewPoint returns Point for the given x,y coordinates
@@ -109,6 +114,65 @@ func (p *Point) findNearest() {
 	// update p's nearest Neighbor
 	p.dist2 = min
 	p.nearest = newNearest
+}
+
+// surroundingPoints returns the points that surround p in counterclockwise order.
+func (p *Point) surroundingPoints() []*Point {
+	points := make([]*Point, len(p.adjacentTriangles))
+	t := p.adjacentTriangles[0]
+	// j is the index of the previous point
+	j := 1
+	// k is the index of the previous triangle
+	k := 0
+	switch {
+	case p.Equals(t.A):
+		points[0] = t.B
+		points[1] = t.C
+	case p.Equals(t.B):
+		points[0] = t.C
+		points[1] = t.A
+	case p.Equals(t.C):
+		points[0] = t.A
+		points[1] = t.B
+	default:
+		panic(fmt.Errorf("delaunay: point %v not in adjacent triangle %v", p, t))
+	}
+	for i := 0; j < len(points)-1; {
+		if i >= len(p.adjacentTriangles) {
+			panic(fmt.Errorf("delaunay: internal error with adjacent triangles for %v. Can't find counterclockwise neighbor of %v", p, points[j]))
+		}
+		// it needs to find the triangle next to k and not k again
+		if p.adjacentTriangles[i].Equals(p.adjacentTriangles[k]) {
+			i++
+			continue
+		}
+		t = p.adjacentTriangles[i]
+		switch {
+		case points[j].Equals(t.A):
+			j++
+			points[j] = t.B
+			k = i
+			// start the loop over
+			i = 0
+			continue
+		case points[j].Equals(t.B):
+			j++
+			points[j] = t.C
+			k = i
+			// start the loop over
+			i = 0
+			continue
+		case points[j].Equals(t.C):
+			j++
+			points[j] = t.A
+			k = i
+			// start the loop over
+			i = 0
+			continue
+		}
+		i++
+	}
+	return points
 }
 
 // inTriangle checks whether the point is in the triangle and whether it is on an edge.
