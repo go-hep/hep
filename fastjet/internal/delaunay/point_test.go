@@ -77,6 +77,23 @@ func TestFindNearest(t *testing.T) {
 	}
 }
 
+func TestSurroundingPoints(t *testing.T) {
+	p := NewPoint(0, 0)
+	points := []*Point{NewPoint(1, 0), NewPoint(0, 1), NewPoint(-1, 0), NewPoint(0, -1)}
+	triangles := []*Triangle{NewTriangle(p, points[0], points[1]), NewTriangle(p, points[1], points[2]), NewTriangle(p, points[2], points[3]), NewTriangle(p, points[3], points[0])}
+	p.adjacentTriangles = triangles
+	want := points
+	got := p.surroundingPoints()
+	if len(got) != len(want) {
+		t.Errorf("SurroundingPoints for %v, got = %d, want = %d", p, len(got), len(want))
+	}
+	for i := range got {
+		if got[i] != want[i] {
+			t.Errorf("SurroundingPoints for %v, got[%d] = %v, want[%d] = %v", p, i, got, i, want)
+		}
+	}
+}
+
 func TestInTriangle(t *testing.T) {
 	tests := []struct {
 		x1, y1, x2, y2, x3, y3, x, y float64
