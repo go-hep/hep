@@ -277,8 +277,8 @@ func (s *S2D) DataRange() (xmin, xmax, ymin, ymax float64) {
 	return
 }
 
-// annYODA creates a new Annotation with fields compatible with YODA
-func (s *S2D) annYODA() Annotation {
+// annToYODA creates a new Annotation with fields compatible with YODA
+func (s *S2D) annToYODA() Annotation {
 	ann := make(Annotation, len(s.ann))
 	ann["Type"] = "Scatter2D"
 	ann["Path"] = "/" + s.Name()
@@ -292,7 +292,7 @@ func (s *S2D) annYODA() Annotation {
 // MarshalYODA implements the YODAMarshaler interface.
 func (s *S2D) MarshalYODA() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	ann := s.annYODA()
+	ann := s.annToYODA()
 	fmt.Fprintf(buf, "BEGIN YODA_SCATTER2D %s\n", ann["Path"])
 	data, err := ann.MarshalYODA()
 	if err != nil {

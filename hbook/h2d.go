@@ -212,8 +212,8 @@ func (g h2dGridXYZ) Y(r int) float64 {
 var _ Object = (*H2D)(nil)
 var _ Histogram = (*H2D)(nil)
 
-// annYODA creates a new Annotation with fields compatible with YODA
-func (h *H2D) annYODA() Annotation {
+// annToYODA creates a new Annotation with fields compatible with YODA
+func (h *H2D) annToYODA() Annotation {
 	ann := make(Annotation, len(h.ann))
 	ann["Type"] = "Histo2D"
 	ann["Path"] = "/" + h.Name()
@@ -227,7 +227,7 @@ func (h *H2D) annYODA() Annotation {
 // MarshalYODA implements the YODAMarshaler interface.
 func (h *H2D) MarshalYODA() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	ann := h.annYODA()
+	ann := h.annToYODA()
 	fmt.Fprintf(buf, "BEGIN YODA_HISTO2D %s\n", ann["Path"])
 	data, err := ann.MarshalYODA()
 	if err != nil {

@@ -281,8 +281,8 @@ func (h *H1D) RioVersion() rio.Version {
 	return 0
 }
 
-// annYODA creates a new Annotation with fields compatible with YODA
-func (h *H1D) annYODA() Annotation {
+// annToYODA creates a new Annotation with fields compatible with YODA
+func (h *H1D) annToYODA() Annotation {
 	ann := make(Annotation, len(h.ann))
 	ann["Type"] = "Histo1D"
 	ann["Path"] = "/" + h.Name()
@@ -296,7 +296,7 @@ func (h *H1D) annYODA() Annotation {
 // MarshalYODA implements the YODAMarshaler interface.
 func (h *H1D) MarshalYODA() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	ann := h.annYODA()
+	ann := h.annToYODA()
 	fmt.Fprintf(buf, "BEGIN YODA_HISTO1D %s\n", ann["Path"])
 	data, err := ann.MarshalYODA()
 	if err != nil {

@@ -149,8 +149,8 @@ func (p *P1D) Scale(factor float64) {
 var _ Object = (*P1D)(nil)
 var _ Histogram = (*P1D)(nil)
 
-// annYODA creates a new Annotation with fields compatible with YODA
-func (p *P1D) annYODA() Annotation {
+// annToYODA creates a new Annotation with fields compatible with YODA
+func (p *P1D) annToYODA() Annotation {
 	ann := make(Annotation, len(p.ann))
 	ann["Type"] = "Profile1D"
 	ann["Path"] = "/" + p.Name()
@@ -164,7 +164,7 @@ func (p *P1D) annYODA() Annotation {
 // MarshalYODA implements the YODAMarshaler interface.
 func (p *P1D) MarshalYODA() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	ann := p.annYODA()
+	ann := p.annToYODA()
 	fmt.Fprintf(buf, "BEGIN YODA_PROFILE1D %s\n", ann["Path"])
 	data, err := ann.MarshalYODA()
 	if err != nil {
