@@ -293,6 +293,23 @@ func (h *H1D) annToYODA() Annotation {
 	return ann
 }
 
+// annFromYODA creates a new Annotation from YODA compatible fields
+func (h *H1D) annFromYODA(ann Annotation) {
+	if len(h.ann) == 0 {
+		h.ann = make(Annotation, len(ann))
+	}
+	for k, v := range ann {
+		switch k {
+		case "Type":
+			// noop
+		case "Path":
+			h.ann["name"] = string(v.(string)[1:]) // skip leading '/'
+		default:
+			h.ann[k] = v
+		}
+	}
+}
+
 // MarshalYODA implements the YODAMarshaler interface.
 func (h *H1D) MarshalYODA() ([]byte, error) {
 	buf := new(bytes.Buffer)
@@ -363,7 +380,7 @@ func (h *H1D) UnmarshalYODA(data []byte) error {
 	if err != nil {
 		return fmt.Errorf("hbook: %v\nhbook: %q", err, string(r.Bytes()[:pos+1]))
 	}
-	h.ann = ann
+	h.annFromYODA(ann)
 	r.Next(pos)
 
 	var ctx struct {

@@ -289,6 +289,23 @@ func (s *S2D) annToYODA() Annotation {
 	return ann
 }
 
+// annFromYODA creates a new Annotation from YODA compatible fields
+func (s *S2D) annFromYODA(ann Annotation) {
+	if len(s.ann) == 0 {
+		s.ann = make(Annotation, len(ann))
+	}
+	for k, v := range ann {
+		switch k {
+		case "Type":
+			// noop
+		case "Path":
+			s.ann["name"] = string(v.(string)[1:]) // skip leading '/'
+		default:
+			s.ann[k] = v
+		}
+	}
+}
+
 // MarshalYODA implements the YODAMarshaler interface.
 func (s *S2D) MarshalYODA() ([]byte, error) {
 	buf := new(bytes.Buffer)
@@ -334,7 +351,7 @@ func (s *S2D) UnmarshalYODA(data []byte) error {
 	if err != nil {
 		return fmt.Errorf("hbook: %v\nhbook: %q", err, string(r.Bytes()[:pos+1]))
 	}
-	s.ann = ann
+	s.annFromYODA(ann)
 	r.Next(pos)
 
 	sc := bufio.NewScanner(r)
