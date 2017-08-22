@@ -284,6 +284,9 @@ func (s *S2D) annToYODA() Annotation {
 	ann["Path"] = "/" + s.Name()
 	ann["Title"] = ""
 	for k, v := range s.ann {
+		if k == "name" {
+			continue
+		}
 		ann[k] = v
 	}
 	return ann

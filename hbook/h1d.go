@@ -288,6 +288,9 @@ func (h *H1D) annToYODA() Annotation {
 	ann["Path"] = "/" + h.Name()
 	ann["Title"] = ""
 	for k, v := range h.ann {
+		if k == "name" {
+			continue
+		}
 		ann[k] = v
 	}
 	return ann
