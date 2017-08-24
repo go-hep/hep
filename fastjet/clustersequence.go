@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math"
 
+	"go-hep.org/x/hep/fastjet/internal/heap"
 	"go-hep.org/x/hep/fmom"
 )
 
@@ -497,4 +498,45 @@ func (cs *ClusterSequence) runN3Dumb() error {
 		}
 	}
 	return err
+}
+
+// runNlnN runs the clustering using a Hierarchical Delaunay triangulation
+// and a min-heap to achieve O(N*ln N) behaviour.
+//
+// There are internally asserted assumptions about absence of points
+// with coincident eta-phi coordinates.
+func (cs *ClusterSequence) runNlnN() error {
+	panic(fmt.Errorf("fastjet: runNlnN not implemented"))
+}
+
+// addKtDistance adds the current kt distance for particle jeti to the heap
+// using information about the nearest neighbor in the eta-phi plane.
+// Work as follows:
+//
+// . if the kt is zero then its nearest neighbour is taken to be
+//   the beam jet and the distance is zero.
+//
+// . if cylinder distance to nearest neighbour > r^2 then it is
+//   yiB that is smallest and this is added to the heap.
+//
+// . otherwise if the nearest neighbour jj has a larger kt then add
+//   dij to the heap.
+//
+// . otherwise do nothing
+//
+func (cs *ClusterSequence) addKtDistance(h *heap.Heap, jeti, jetj int, dist float64) {
+	yiB := cs.jetScaleForAlgorithm(&cs.jets[jeti])
+	if yiB == 0 {
+		h.Push(jeti, beamJetIndex, yiB)
+		return
+	}
+	deltaR2 := dist * cs.invR2
+	if deltaR2 > 1 {
+		h.Push(jeti, beamJetIndex, yiB)
+		return
+	}
+	if yiB <= cs.jetScaleForAlgorithm(&cs.jets[jetj]) {
+		dij := deltaR2 * yiB
+		h.Push(jeti, jetj, dij)
+	}
 }
