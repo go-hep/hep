@@ -115,3 +115,17 @@ func TestInTriangle(t *testing.T) {
 		}
 	}
 }
+
+func TestPointsRemove(t *testing.T) {
+	pts := points{NewPoint(0, 0), NewPoint(1, 1), NewPoint(2, 2), NewPoint(0, 0), NewPoint(3, 3)}
+	want := points{pts[1], pts[2], pts[4]}
+	got := pts.remove(NewPoint(0, 0))
+	if len(got) != len(want) {
+		t.Errorf("got %d points, want %d", len(got), len(want))
+	}
+	for i := range got {
+		if !want[i].Equals(got[i]) {
+			t.Errorf("got[%d] = %v, want[%d] = %v", i, got[i], i, want[i])
+		}
+	}
+}
