@@ -15,15 +15,17 @@ import (
 //
 // It holds dynamic information about the
 // adjacent triangles, the nearest neighbor and the distance to that neighbor.
+//
+// One should use the Equal method of Point to test whether 2 points are equal.
 type Point struct {
 	x, y              float64   // x and y are the coordinates of the point.
 	adjacentTriangles triangles // adjacentTriangles is a list of triangles containing the point.
 	nearest           *Point
 	dist2             float64 // dist2 is the squared distance to the nearest neighbor.
-	// id is used when points are removed. Copies of the points around the point to
-	// be removed are made. The ID is set incremental in counterclockwise order. It identifies
-	// the original. It is also used to determine whether a Triangle is inside or outside the
-	// polygon formed by all those points.
+	// id is a unique identifier, that is assigned incrementally to a point on insertion.
+	// It is used when points are removed. Copies of the points around the point to be removed are made.
+	// The ID is set incremental in counterclockwise order. It identifies the original. It is also used
+	// to determine whether a Triangle is inside or outside the polygon formed by all those points.
 	id int
 }
 
@@ -44,6 +46,12 @@ func (p *Point) NearestNeighbor() (*Point, float64) {
 // Coordinates returns the x,y coordinates of a Point.
 func (p *Point) Coordinates() (x, y float64) {
 	return p.x, p.y
+}
+
+// ID returns the ID of the point. It is a unique identifier that is incrementally assigned
+// to a point on insertion.
+func (p *Point) ID() int {
+	return p.id
 }
 
 func (p *Point) String() string {
@@ -209,4 +217,27 @@ func (l location) String() string {
 	default:
 		panic(fmt.Errorf("delaunay: unknown location %d", int(l)))
 	}
+}
+
+type points []*Point
+
+// remove removes given points from a slice of points.
+//
+// remove will remove all occurrences of the points.
+func (ps points) remove(pts ...*Point) points {
+	out := make(points, 0, len(ps))
+	for _, p := range ps {
+		keep := true
+		for _, pt := range pts {
+			if p.Equals(pt) {
+				keep = false
+				break
+			}
+		}
+		if keep {
+			out = append(out, p)
+		}
+
+	}
+	return out
 }
