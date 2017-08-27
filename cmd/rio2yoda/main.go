@@ -4,13 +4,22 @@
 
 // rio2yoda converts rio files containing hbook values (H1D, H2D, P1D, ...)
 // into YODA files.
+//
+// Example:
+//
+//  $> rio2yoda file1.rio file2.rio > out.yoda
+//  $> rio2yoda -o out.yoda file1.rio file2.rio
+//  $> rio2yoda -o out.yoda.gz file1.rio file2.rio
 package main
 
 import (
+	"compress/gzip"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"reflect"
 
 	"go-hep.org/x/hep/hbook"
@@ -28,9 +37,13 @@ func main() {
 			`Usage: rio2yoda [options] <file.rio> [<file2.rio> [...]]
 	
 ex:
- $ rio2yoda rivet.rio >| rivet.yoda
+ $> rio2yoda file1.rio > out.yoda
+ $> rio2yoda -o out.yoda file1.rio file2.rio
+ $> rio2yoda -o out.yoda.gz file1.rio file2.rio
  `)
 	}
+
+	oname := flag.String("o", "", "path to YODA output file")
 
 	flag.Parse()
 
@@ -40,12 +53,39 @@ ex:
 		flag.PrintDefaults()
 	}
 
+	var out io.WriteCloser = os.Stdout
+	if *oname != "" {
+		f, err := os.Create(*oname)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer func() {
+			err = f.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+		out = f
+		if filepath.Ext(*oname) == ".gz" {
+			wz := gzip.NewWriter(f)
+			defer func() {
+				err = wz.Close()
+				if err != nil {
+					log.Fatal(err)
+				}
+			}()
+			out = wz
+		}
+	} else {
+		defer out.Close()
+	}
+
 	for _, fname := range flag.Args() {
-		convert(fname)
+		convert(out, fname)
 	}
 }
 
-func convert(fname string) {
+func convert(out io.Writer, fname string) {
 	f, err := os.Open(fname)
 	if err != nil {
 		log.Fatal(err)
@@ -80,14 +120,13 @@ func convert(fname string) {
 			)
 		}
 
-		_, err = os.Stdout.Write(yoda)
+		_, err = out.Write(yoda)
 		if err != nil {
 			log.Fatalf(
 				"error streaming out YODA format for block %q from file %q: %v\n",
 				key.Name, fname, err,
 			)
 		}
-
 	}
 }
 
