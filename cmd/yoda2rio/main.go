@@ -8,13 +8,17 @@
 // Example:
 //
 //  $> yoda2rio rivet.yoda >| rivet.rio
+//  $> yoda2rio rivet.yoda.gz >| rivet.rio
 package main
 
 import (
+	"compress/gzip"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"path/filepath"
 
 	"go-hep.org/x/hep/hbook/yodacnv"
 	"go-hep.org/x/hep/rio"
@@ -31,7 +35,8 @@ func main() {
 			`Usage: yoda2rio [options] <file1.yoda> [<file2.yoda> [...]]
 
 ex:
- $ yoda2rio rivet.yoda >| rivet.rio
+ $> yoda2rio rivet.yoda    >| rivet.rio
+ $> yoda2rio rivet.yoda.gz >| rivet.rio
 `)
 	}
 
@@ -55,11 +60,21 @@ ex:
 }
 
 func convert(w *rio.Writer, fname string) {
+	var r io.ReadCloser
 	r, err := os.Open(fname)
 	if err != nil {
 		log.Fatalf("error opening file [%s]: %v\n", fname, err)
 	}
 	defer r.Close()
+
+	if filepath.Ext(fname) == ".gz" {
+		rz, err := gzip.NewReader(r)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer rz.Close()
+		r = rz
+	}
 
 	vs, err := yodacnv.Read(r)
 	if err != nil {

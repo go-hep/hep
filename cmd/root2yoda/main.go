@@ -8,23 +8,24 @@
 // Example:
 //
 //  $> root2yoda file1.root file2.root > out.yoda
+//  $> root2yoda -o out.yoda file1.root file2.root
+//  $> root2yoda -o out.yoda.gz file1.root file2.root
 package main // import "go-hep.org/x/hep/cmd/root2yoda"
 
 import (
+	"compress/gzip"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 
 	"go-hep.org/x/hep/hbook/yodacnv"
 	"go-hep.org/x/hep/rootio"
 )
 
 func main() {
-	var out io.WriteCloser = os.Stdout
-	defer out.Close()
-
 	log.SetFlags(0)
 	log.SetPrefix("root2yoda: ")
 
@@ -35,6 +36,8 @@ func main() {
 
 ex:
  $> root2yoda file1.root file2.root > out.yoda
+ $> root2yoda -o out.yoda file1.root file2.root
+ $> root2yoda -o out.yoda.gz file1.root file2.root
 
 options:
 `,
@@ -42,7 +45,42 @@ options:
 		flag.PrintDefaults()
 	}
 
+	oname := flag.String("o", "", "path to YODA output file")
+
 	flag.Parse()
+
+	if flag.NArg() < 1 {
+		log.Printf("missing input ROOT file name(s)")
+		flag.Usage()
+		flag.PrintDefaults()
+	}
+
+	var out io.WriteCloser = os.Stdout
+	if *oname != "" {
+		f, err := os.Create(*oname)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer func() {
+			err = f.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+		out = f
+		if filepath.Ext(*oname) == ".gz" {
+			wz := gzip.NewWriter(f)
+			defer func() {
+				err = wz.Close()
+				if err != nil {
+					log.Fatal(err)
+				}
+			}()
+			out = wz
+		}
+	} else {
+		defer out.Close()
+	}
 
 	for _, fname := range flag.Args() {
 		log.Printf("processing %s\n", fname)
