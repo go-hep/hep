@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math"
 
+	"go-hep.org/x/hep/fastjet/internal/delaunay"
 	"go-hep.org/x/hep/fastjet/internal/heap"
 	"go-hep.org/x/hep/fmom"
 )
@@ -229,7 +230,7 @@ func (cs *ClusterSequence) run() error {
 	}
 
 	// FIXME
-	err = cs.runN3Dumb()
+	err = cs.runNlnN()
 	if err != nil {
 		return err
 	}
@@ -506,7 +507,164 @@ func (cs *ClusterSequence) runN3Dumb() error {
 // There are internally asserted assumptions about absence of points
 // with coincident eta-phi coordinates.
 func (cs *ClusterSequence) runNlnN() error {
-	panic(fmt.Errorf("fastjet: runNlnN not implemented"))
+	d := delaunay.HierarchicalDelaunay()
+	points := make([]pointInfo, len(cs.jets), 2*len(cs.jets))
+	// create points
+	for i := 0; i < len(cs.jets); i++ {
+		rap := cs.jets[i].Rapidity()
+		phi := cs.jets[i].Phi()
+		for phi < 0 {
+			phi += math.Pi * 2
+		}
+		for phi >= math.Pi*2 {
+			phi -= math.Pi * 2
+		}
+		p := delaunay.NewPoint(rap, phi)
+		d.Insert(p)
+		points[i] = pointInfo{p: p, jet: i, mirror: -1}
+	}
+	for i := range points {
+		_, dij := points[i].p.NearestNeighbor()
+		x, y := points[i].p.Coordinates()
+		// when a nearest neighbor is farther than the border a mirror point is inserted.
+		if dij > y {
+			y += 2 * math.Pi
+			p := delaunay.NewPoint(x, y)
+			points = append(points, pointInfo{p: p, jet: points[i].jet, mirror: i, clustered: false})
+			d.Insert(p)
+			points[i].mirror = len(points) - 1
+		} else if dij > 2*math.Pi-y {
+			y -= 2 * math.Pi
+			p := delaunay.NewPoint(x, y)
+			points = append(points, pointInfo{p: p, jet: points[i].jet, mirror: i, clustered: false})
+			d.Insert(p)
+			points[i].mirror = len(points) - 1
+		}
+	}
+	h := heap.New()
+	// insert the nearest neighbors of the initial points into the heap.
+	for i := range points {
+		n, dij := points[i].p.NearestNeighbor()
+		j := n.ID()
+		cs.addKtDistance(h, points, i, j, dij)
+		if mirror := points[i].mirror; mirror != -1 {
+			n, dij = points[mirror].p.NearestNeighbor()
+			j = n.ID()
+			cs.addKtDistance(h, points, mirror, j, dij)
+		}
+	}
+	n := len(cs.jets)
+	for i := 0; i < n; i++ {
+		var jeti, jetj int
+		var dij float64
+		var recombineWithBeam bool
+		clusteredi, clusteredj := true, true
+		// find a pair that hasn't recombined yet.
+		for clusteredi || clusteredj {
+			jeti, jetj, dij = h.Pop()
+			if jeti == -1 {
+				panic(fmt.Errorf("fastjet: heap is empty at index %d", i))
+			}
+			clusteredi = points[jeti].clustered
+			recombineWithBeam = (jetj == beamJetIndex)
+			if recombineWithBeam {
+				clusteredj = false
+			} else {
+				clusteredj = points[jetj].clustered
+			}
+		}
+		var updated []*delaunay.Point
+		if recombineWithBeam {
+			points[jeti].clustered = true
+			if mirror := points[jeti].mirror; mirror != -1 {
+				points[mirror].clustered = true
+			}
+			err := cs.ibRecombinationStep(points[jeti].jet, dij)
+			if err != nil {
+				return err
+			}
+			if i == n-1 {
+				break
+			}
+			updated = d.Remove(points[jeti].p)
+			if mirror := points[jeti].mirror; mirror != -1 {
+				updtemp := d.Remove(points[mirror].p)
+				updated = append(updated, updtemp...)
+			}
+		} else { // recombine with jet
+			points[jeti].clustered = true
+			if mirror := points[jeti].mirror; mirror != -1 {
+				points[mirror].clustered = true
+			}
+			points[jetj].clustered = true
+			if mirror := points[jetj].mirror; mirror != -1 {
+				points[mirror].clustered = true
+			}
+			nn, err := cs.ijRecombinationStep(points[jeti].jet, points[jetj].jet, dij)
+			if err != nil {
+				return err
+			}
+			if i == n-1 {
+				break
+			}
+			// create new point from resulting jet.
+			rap := cs.jets[nn].Rapidity()
+			phi := cs.jets[nn].Phi()
+			for phi < 0 {
+				phi += math.Pi * 2
+			}
+			for phi >= math.Pi*2 {
+				phi -= math.Pi * 2
+			}
+			p := delaunay.NewPoint(rap, phi)
+			points = append(points, pointInfo{p: p, jet: nn, mirror: -1, clustered: false})
+			// ToDo: could improve time complexity here by handling this case different, since the point inserted is in the middle of the two old points. Delaunay.RemoveAndAdd()
+			updated = d.Remove(points[jeti].p)
+			if mirror := points[jeti].mirror; mirror != -1 {
+				updtemp := d.Remove(points[mirror].p)
+				updated = append(updated, updtemp...)
+			}
+			updtemp := d.Remove(points[jetj].p)
+			updated = append(updated, updtemp...)
+			if mirror := points[jetj].mirror; mirror != -1 {
+				updtemp := d.Remove(points[mirror].p)
+				updated = append(updated, updtemp...)
+			}
+			updtemp = d.Insert(points[len(points)-1].p)
+			updated = append(updated, updtemp...)
+		}
+		// updated2 holds the points whose nearest neighbor updated on insertion of the mirror points
+		var updated2 []*delaunay.Point
+		// insert points whose nearest neighbor updated into the heap.
+		for _, p := range updated {
+			nn, dist := p.NearestNeighbor()
+			if nn != nil {
+				x, y := p.Coordinates()
+				// when a nearest neighbor is farther than the border a mirror point is inserted.
+				if dij > y && points[p.ID()].mirror == -1 {
+					y += 2 * math.Pi
+					np := delaunay.NewPoint(x, y)
+					points = append(points, pointInfo{p: np, jet: points[p.ID()].jet, mirror: p.ID(), clustered: false})
+					updated2 = d.Insert(np)
+					points[p.ID()].mirror = len(points) - 1
+				} else if dij > math.Pi*2-y && points[p.ID()].mirror == -1 {
+					y -= 2 * math.Pi
+					np := delaunay.NewPoint(x, y)
+					points = append(points, pointInfo{p: np, jet: points[p.ID()].jet, mirror: p.ID(), clustered: false})
+					updated2 = d.Insert(np)
+					points[p.ID()].mirror = len(points) - 1
+				}
+				cs.addKtDistance(h, points, p.ID(), nn.ID(), dist)
+			}
+		}
+		for _, p := range updated2 {
+			i := p.ID()
+			n, dist := p.NearestNeighbor()
+			j := n.ID()
+			cs.addKtDistance(h, points, i, j, dist)
+		}
+	}
+	return nil
 }
 
 // addKtDistance adds the current kt distance for particle jeti to the heap
@@ -524,8 +682,8 @@ func (cs *ClusterSequence) runNlnN() error {
 //
 // . otherwise do nothing
 //
-func (cs *ClusterSequence) addKtDistance(h *heap.Heap, jeti, jetj int, dist float64) {
-	yiB := cs.jetScaleForAlgorithm(&cs.jets[jeti])
+func (cs *ClusterSequence) addKtDistance(h *heap.Heap, points []pointInfo, jeti, jetj int, dist float64) {
+	yiB := cs.jetScaleForAlgorithm(&cs.jets[points[jeti].jet])
 	if yiB == 0 {
 		h.Push(jeti, beamJetIndex, yiB)
 		return
@@ -535,8 +693,21 @@ func (cs *ClusterSequence) addKtDistance(h *heap.Heap, jeti, jetj int, dist floa
 		h.Push(jeti, beamJetIndex, yiB)
 		return
 	}
-	if yiB <= cs.jetScaleForAlgorithm(&cs.jets[jetj]) {
+	if yiB <= cs.jetScaleForAlgorithm(&cs.jets[points[jetj].jet]) {
 		dij := deltaR2 * yiB
 		h.Push(jeti, jetj, dij)
 	}
+}
+
+// pointInfo holds information about a point, including a delaunay point, the corresponding jet, the mirror point and
+// whether it has been used to recombine.
+type pointInfo struct {
+	// p is the point in the Eta-Phi plane.
+	p *delaunay.Point
+	// jet holds the index of the jet that belongs to the Eta-Phi Point.
+	jet int
+	// mirror is the index of the mirror point. It is -1 if there is no mirror.
+	mirror int
+	// clustered indicates whether a jet has been clustered.
+	clustered bool
 }
