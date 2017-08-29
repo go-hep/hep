@@ -36,6 +36,9 @@ type Delaunay struct {
 // All triangles in the current triangulation are leaf triangles.
 // To find the triangle which contains the point, the algorithm follows the graph until
 // a leaf is reached.
+//
+// Duplicate points don't get inserted, but the nearest neighbor is set to the corresponding point.
+// When a duplicate point is removed nothing happens.
 func HierarchicalDelaunay() *Delaunay {
 	a := NewPoint(-1<<30, -1<<30)
 	b := NewPoint(1<<30, -1<<30)
@@ -95,6 +98,10 @@ func (d *Delaunay) Insert(p *Point) (updatedNearestNeighbor []*Point) {
 // duplicates.
 func (d *Delaunay) Remove(p *Point) (updatedNearestNeighbor []*Point) {
 	if len(p.adjacentTriangles) < 3 {
+		if p.dist2 == 0 {
+			// must be a duplicate point, therefore don't panic
+			return updatedNearestNeighbor
+		}
 		panic(fmt.Errorf("delaunay: can't remove point %v, not enough adjacent triangles", p))
 	}
 	var updated points
@@ -162,6 +169,36 @@ func (d *Delaunay) insertInside(p *Point, t *Triangle) []*Point {
 // insertOnEdge inserts a point on an Edge between two triangles. It returns the points
 // whose nearest neighbor changed.
 func (d *Delaunay) insertOnEdge(p *Point, t *Triangle) []*Point {
+	// Check if p is a duplicate
+	switch {
+	case p.Equals(t.A):
+		if p.id == t.A.id {
+			panic(fmt.Errorf("delaunay: Point %v was previously inserted", p))
+		}
+		p.nearest = t.A
+		p.dist2 = 0
+		t.A.nearest = p
+		t.A.dist2 = 0
+		return []*Point{p, t.A}
+	case p.Equals(t.B):
+		if p.id == t.B.id {
+			panic(fmt.Errorf("delaunay: Point %v was previously inserted", p))
+		}
+		p.nearest = t.B
+		p.dist2 = 0
+		t.B.nearest = p
+		t.B.dist2 = 0
+		return []*Point{p, t.B}
+	case p.Equals(t.C):
+		if p.id == t.C.id {
+			panic(fmt.Errorf("delaunay: Point %v was previously inserted", p))
+		}
+		p.nearest = t.C
+		p.dist2 = 0
+		t.C.nearest = p
+		t.C.dist2 = 0
+		return []*Point{p, t.C}
+	}
 	// To increase performance find the points in t, where p1 has the least adjacent triangles and
 	// p2 the second least.
 	var p1, p2, p3 *Point
