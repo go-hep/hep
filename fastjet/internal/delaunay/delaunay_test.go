@@ -12,6 +12,73 @@ import (
 
 const tol = 1e-3
 
+func TestHierarchicalDelaunayDuplicates(t *testing.T) {
+	// NewPoint(x, y)
+	p1 := NewPoint(0, 0)
+	p2 := NewPoint(0, 2)
+	p3 := NewPoint(1, 0)
+	p4 := NewPoint(4, 4)
+	p5 := NewPoint(1, 0) // p5 is a duplicate
+	ps := []*Point{
+		p1,
+		p2,
+		p3,
+		p4,
+		p5,
+	}
+	d := HierarchicalDelaunay()
+	for _, p := range ps {
+		d.Insert(p)
+	}
+	exp := []*Triangle{
+		NewTriangle(p1, p2, p3),
+		NewTriangle(p2, p3, p4),
+	}
+	ts := d.Triangles()
+	got, want := len(ts), len(exp)
+	if got != want {
+		t.Errorf("got=%d delaunay triangles, want=%d", got, want)
+	}
+	for i := range ts {
+		ok := false
+		for j := range exp {
+			if ts[i].Equals(exp[j]) {
+				ok = true
+				// remove triangles that have been matched from slice,
+				// in case there are duplicate triangles.
+				exp = append(exp[:j], exp[j+1:]...)
+				break
+			}
+		}
+		if !ok {
+			t.Errorf("Triangle T%s not as expected", ts[i])
+		}
+	}
+	var (
+		nn []*Point
+		nd []float64
+	)
+	for _, p := range ps {
+		n, d := p.NearestNeighbor()
+		nn = append(nn, n)
+		nd = append(nd, d)
+	}
+	expN := []*Point{p3, p1, p5, p2, p3}
+	expD := []float64{1.0, 2.0, 0, 4.4721, 0}
+	got, want = len(nn), len(expN)
+	if got != want {
+		t.Errorf("got=%d nearest neighbors, want=%d", got, want)
+	}
+	for i := range nn {
+		if !nn[i].Equals(expN[i]) {
+			t.Errorf("got=N%s nearest neighbor, want=N%s", nn[i], expN[i])
+		}
+		if math.Abs(nd[i]-expD[i]) > tol {
+			t.Errorf("got=%f distance, want=%f for point P%s with neighbour N%s", nd[i], expD[i], ps[i], nn[i])
+		}
+	}
+}
+
 func TestHierarchicalDelaunayInsertSmall(t *testing.T) {
 	// NewPoint(x, y)
 	p1 := NewPoint(0, 0)
