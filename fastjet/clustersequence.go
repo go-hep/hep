@@ -229,8 +229,16 @@ func (cs *ClusterSequence) run() error {
 		return err
 	}
 
-	// FIXME
-	err = cs.runNlnN()
+	switch cs.strategy {
+	case N3DumbStrategy:
+		err = cs.runN3Dumb()
+	case NlnNStrategy:
+		err = cs.runNlnN()
+	case BestStrategy:
+		err = cs.runN3Dumb() // FIXME(sbinet): really use the best strategy.
+	default:
+		err = cs.runN3Dumb()
+	}
 	if err != nil {
 		return err
 	}
@@ -511,14 +519,9 @@ func (cs *ClusterSequence) runNlnN() error {
 	points := make([]pointInfo, len(cs.jets), 2*len(cs.jets))
 	// create points
 	for i := 0; i < len(cs.jets); i++ {
-		rap := cs.jets[i].Rapidity()
-		phi := cs.jets[i].Phi()
-		for phi < 0 {
-			phi += math.Pi * 2
-		}
-		for phi >= math.Pi*2 {
-			phi -= math.Pi * 2
-		}
+		jet := &cs.jets[i]
+		rap := jet.Rapidity()
+		phi := angle0to2Pi(jet.Phi())
 		p := delaunay.NewPoint(rap, phi)
 		d.Insert(p)
 		points[i] = pointInfo{p: p, jet: i, mirror: -1}
@@ -710,4 +713,20 @@ type pointInfo struct {
 	mirror int
 	// clustered indicates whether a jet has been clustered.
 	clustered bool
+}
+
+const twoPi = 2 * math.Pi
+
+func angle0to2Pi(v float64) float64 {
+	v = math.Mod(v, twoPi)
+	if v == 0 {
+		return 0
+	}
+	if v < 0 {
+		v += twoPi
+	}
+	if v == twoPi {
+		v = 0
+	}
+	return v
 }
