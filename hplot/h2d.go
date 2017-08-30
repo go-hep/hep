@@ -5,10 +5,10 @@
 package hplot
 
 import (
-	"gonum.org/v1/plot/palette"
-	"gonum.org/v1/plot/palette/brewer"
 	"go-hep.org/x/hep/hbook"
 	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/palette"
+	"gonum.org/v1/plot/palette/brewer"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg/draw"
 )
