@@ -16,6 +16,7 @@ func Curve1D(f Func1D, settings *optimize.Settings, m optimize.Method) (*optimiz
 	p := optimize.Problem{
 		Func: f.fct,
 		Grad: f.grad,
+		Hess: f.hess,
 	}
 
 	if m == nil {

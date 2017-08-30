@@ -7,6 +7,7 @@ package fit // import "go-hep.org/x/hep/fit"
 
 import (
 	"gonum.org/v1/gonum/diff/fd"
+	"gonum.org/v1/gonum/mat"
 )
 
 // Func1D describes a 1D function to fit some data.
@@ -32,6 +33,7 @@ type Func1D struct {
 
 	fct  func(ps []float64) float64 // cost function (objective function)
 	grad func(grad, ps []float64)
+	hess func(hess mat.MutableSymmetric, x []float64)
 }
 
 func (f *Func1D) init() {
@@ -75,5 +77,9 @@ func (f *Func1D) init() {
 
 	f.grad = func(grad, ps []float64) {
 		fd.Gradient(grad, f.fct, ps, nil)
+	}
+
+	f.hess = func(hess mat.MutableSymmetric, x []float64) {
+		fd.Hessian(hess.(*mat.SymDense), f.fct, x, nil)
 	}
 }
