@@ -15,14 +15,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gonum/plot/vg"
-	"github.com/gonum/plot/vg/draw"
-	"github.com/gonum/plot/vg/vgimg"
-	"github.com/gonum/plot/vg/vgtex"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
 	"go-hep.org/x/hep/hplot/internal/cmpimg"
 	"gonum.org/v1/gonum/stat/distuv"
+	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/vg/draw"
+	"gonum.org/v1/plot/vg/vgimg"
+	"gonum.org/v1/plot/vg/vgtex"
 )
 
 func checkPlot(t *testing.T, ref string) {

@@ -10,12 +10,12 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/gonum/plot/plotter"
-	"github.com/gonum/plot/vg"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/distmv"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
 )
 
 // ExampleS2D draws some scatter points.

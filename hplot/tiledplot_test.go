@@ -9,11 +9,11 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/gonum/plot/vg"
-	"github.com/gonum/plot/vg/draw"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
 	"gonum.org/v1/gonum/stat/distuv"
+	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/vg/draw"
 )
 
 // An example of making a tile-plot
