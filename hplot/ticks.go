@@ -8,8 +8,8 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/gonum/plot"
 	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/plot"
 )
 
 const (

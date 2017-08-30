@@ -5,7 +5,7 @@
 package hplot
 
 import (
-	"github.com/gonum/plot/plotter"
+	"gonum.org/v1/plot/plotter"
 )
 
 // NewFunction returns a Function that plots F using

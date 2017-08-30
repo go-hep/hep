@@ -6,9 +6,6 @@ import (
 	"log"
 	"math/rand"
 
-	"github.com/gonum/plot/plotter"
-	"github.com/gonum/plot/vg"
-	vgdraw "github.com/gonum/plot/vg/draw"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
 	"go-hep.org/x/hep/hplot/vgshiny"
@@ -16,6 +13,9 @@ import (
 	"golang.org/x/exp/shiny/screen"
 	"golang.org/x/mobile/event/key"
 	"golang.org/x/mobile/event/paint"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
+	vgdraw "gonum.org/v1/plot/vg/draw"
 )
 
 const (

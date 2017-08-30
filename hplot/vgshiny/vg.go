@@ -10,11 +10,11 @@ import (
 	"image/color"
 	"image/draw"
 
-	"github.com/gonum/plot/vg"
-	"github.com/gonum/plot/vg/vgimg"
 	"golang.org/x/exp/shiny/screen"
 	"golang.org/x/mobile/event/key"
 	"golang.org/x/mobile/event/paint"
+	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/vg/vgimg"
 )
 
 // Canvas implements the vg.Canvas interface,

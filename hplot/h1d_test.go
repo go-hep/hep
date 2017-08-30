@@ -9,10 +9,10 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/gonum/plot/vg"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
 	"gonum.org/v1/gonum/stat/distuv"
+	"gonum.org/v1/plot/vg"
 )
 
 // An example of making a 1D-histogram.

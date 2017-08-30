@@ -3,10 +3,10 @@ package main
 import (
 	"math"
 
-	"github.com/gonum/plot/vg"
-	"github.com/gonum/plot/vg/draw"
 	"go-hep.org/x/hep/hplot"
 	"go-hep.org/x/hep/hplot/vgshiny"
+	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/vg/draw"
 
 	"golang.org/x/exp/shiny/screen"
 )

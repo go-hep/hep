@@ -7,8 +7,8 @@
 package hplot
 
 import (
-	"github.com/gonum/plot"
-	"github.com/gonum/plot/vg/draw"
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/vg/draw"
 )
 
 // GnuplotStyle implements a plot style not much different from the Gnuplot-one.

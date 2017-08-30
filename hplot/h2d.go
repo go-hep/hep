@@ -5,12 +5,12 @@
 package hplot
 
 import (
-	"github.com/gonum/plot"
-	"github.com/gonum/plot/palette"
-	"github.com/gonum/plot/palette/brewer"
-	"github.com/gonum/plot/plotter"
-	"github.com/gonum/plot/vg/draw"
+	"gonum.org/v1/plot/palette"
+	"gonum.org/v1/plot/palette/brewer"
 	"go-hep.org/x/hep/hbook"
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg/draw"
 )
 
 // H2D implements the plotter.Plotter interface,

@@ -12,10 +12,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/gonum/plot/plotter"
 	"go-hep.org/x/hep/hbook"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/distmv"
+	"gonum.org/v1/plot/plotter"
 )
 
 func TestH2D(t *testing.T) {

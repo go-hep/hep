@@ -14,13 +14,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gonum/plot/plotter"
-	"github.com/gonum/plot/vg"
 	"go-hep.org/x/hep/fit"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/optimize"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
 )
 
 func TestCurve1D(t *testing.T) {
