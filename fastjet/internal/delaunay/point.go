@@ -63,6 +63,64 @@ func (p *Point) Equals(v *Point) bool {
 	return p == v || (p.x == v.x && p.y == v.y)
 }
 
+// SecondNearestNeighbor looks at all adjacent points of p and returns the second nearest one
+// and the distance to that point.
+func (p *Point) SecondNearestNeighbor() (*Point, float64) {
+	var nearest, secondNearest *Point
+	min, secondMin := math.Inf(1), math.Inf(1)
+	if p.dist2 == 0 {
+		// p has a duplicate
+		nearest = p.nearest
+		min = 0
+	}
+	for _, t := range p.adjacentTriangles {
+		var p2, p3 *Point
+		// find the point in t that is not p
+		switch {
+		case p.Equals(t.A):
+			p2 = t.B
+			p3 = t.C
+		case p.Equals(t.B):
+			p2 = t.A
+			p3 = t.C
+		case p.Equals(t.C):
+			p2 = t.A
+			p3 = t.B
+		default:
+			panic(fmt.Errorf("delaunay: point %v not found in %v", p, t))
+		}
+		dist := p.distance(p2)
+		switch {
+		case dist < min:
+			min, secondMin = dist, min
+			nearest, secondNearest = p2, nearest
+			if p2.dist2 == 0 {
+				// p2 has a duplicate
+				secondNearest = p2.nearest
+				secondMin = dist
+			}
+		case dist < secondMin:
+			secondMin = dist
+			secondNearest = p2
+		}
+		dist = p.distance(p3)
+		switch {
+		case dist < min:
+			min, secondMin = dist, min
+			nearest, secondNearest = p3, nearest
+			if p3.dist2 == 0 {
+				// p3 has a duplicate
+				secondNearest = p3.nearest
+				secondMin = dist
+			}
+		case dist < secondMin:
+			secondMin = dist
+			secondNearest = p3
+		}
+	}
+	return secondNearest, math.Sqrt(secondMin)
+}
+
 // distance returns the squared distance between two points.
 func (p *Point) distance(v *Point) float64 {
 	dx := p.x - v.x

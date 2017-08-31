@@ -5,6 +5,7 @@
 package delaunay
 
 import (
+	"math"
 	"testing"
 
 	"gonum.org/v1/gonum/floats"
@@ -72,6 +73,72 @@ func TestFindNearest(t *testing.T) {
 		gotNeighbor, gotDistance := test.p.NearestNeighbor()
 		if !floats.EqualWithinAbs(gotDistance, test.wantDist, tol) || !test.wantNeighbor.Equals(gotNeighbor) {
 			t.Errorf("Nearest Neighbor for P%v with adjacent triangles %v, \n gotDist = %v, wantDist = %v, gotNeighbor = %v, wantNeighbor = %v",
+				test.p, test.adjacentTriangles, gotDistance, test.wantDist, gotNeighbor, test.wantNeighbor)
+		}
+	}
+}
+
+func TestFindSecondNearest(t *testing.T) {
+	tests := []struct {
+		p                 *Point
+		adjacentTriangles []*Triangle
+		wantDist          float64
+		wantNeighbor      *Point
+	}{
+		{
+			NewPoint(0, 0),
+			[]*Triangle{
+				NewTriangle(NewPoint(0, 0), NewPoint(2, 0), NewPoint(0, 5)),
+				NewTriangle(NewPoint(3, 3), NewPoint(0, 0), NewPoint(0, 5)),
+			},
+			math.Sqrt(18),
+			NewPoint(3, 3),
+		},
+		{
+			// with a duplicate point for (0,0)
+			NewPoint(0, 0),
+			[]*Triangle{
+				NewTriangle(NewPoint(0, 0), NewPoint(2, 0), NewPoint(0, 5)),
+				NewTriangle(NewPoint(3, 3), NewPoint(0, 0), NewPoint(0, 5)),
+			},
+			2,
+			NewPoint(2, 0),
+		},
+		{
+			// with a duplicate point for (2,0)
+			NewPoint(0, 0),
+			[]*Triangle{
+				NewTriangle(NewPoint(0, 0), NewPoint(2, 0), NewPoint(0, 5)),
+				NewTriangle(NewPoint(3, 3), NewPoint(0, 0), NewPoint(0, 5)),
+			},
+			2,
+			NewPoint(2, 0),
+		},
+		{
+			// with a duplicate point for (2,0)
+			NewPoint(0, 0),
+			[]*Triangle{
+				NewTriangle(NewPoint(0, 5), NewPoint(0, 0), NewPoint(2, 0)),
+				NewTriangle(NewPoint(3, 3), NewPoint(0, 0), NewPoint(0, 5)),
+			},
+			2,
+			NewPoint(2, 0),
+		},
+	}
+	// set up the duplicate for (0,0) in test[1]
+	tests[1].p.dist2 = 0
+	tests[1].p.nearest = NewPoint(0, 0)
+	// set up a duplicate for (2,0) in test[2]
+	tests[2].adjacentTriangles[0].B.dist2 = 0
+	tests[2].adjacentTriangles[0].B.nearest = NewPoint(2, 0)
+	// set up a duplicate for (2,0) in test[3]
+	tests[3].adjacentTriangles[0].C.dist2 = 0
+	tests[3].adjacentTriangles[0].C.nearest = NewPoint(2, 0)
+	for _, test := range tests {
+		test.p.adjacentTriangles = test.adjacentTriangles
+		gotNeighbor, gotDistance := test.p.SecondNearestNeighbor()
+		if !floats.EqualWithinAbs(gotDistance, test.wantDist, tol) || !test.wantNeighbor.Equals(gotNeighbor) {
+			t.Errorf("Second Nearest Neighbor for P%v with adjacent triangles %v, \n gotDist = %v, wantDist = %v, gotNeighbor = %v, wantNeighbor = %v",
 				test.p, test.adjacentTriangles, gotDistance, test.wantDist, gotNeighbor, test.wantNeighbor)
 		}
 	}
