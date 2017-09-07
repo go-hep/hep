@@ -9,6 +9,7 @@
 //
 //  $> rio2yoda file1.rio file2.rio > out.yoda
 //  $> rio2yoda -o out.yoda file1.rio file2.rio
+//  $> rio2yoda -o out.yodz file1.rio file2.rio
 //  $> rio2yoda -o out.yoda.gz file1.rio file2.rio
 package main
 
@@ -39,6 +40,7 @@ func main() {
 ex:
  $> rio2yoda file1.rio > out.yoda
  $> rio2yoda -o out.yoda file1.rio file2.rio
+ $> rio2yoda -o out.yodz file1.rio file2.rio
  $> rio2yoda -o out.yoda.gz file1.rio file2.rio
  `)
 	}
@@ -66,7 +68,7 @@ ex:
 			}
 		}()
 		out = f
-		if filepath.Ext(*oname) == ".gz" {
+		if ext := filepath.Ext(*oname); ext == ".yodz" || ext == ".gz" {
 			wz := gzip.NewWriter(f)
 			defer func() {
 				err = wz.Close()

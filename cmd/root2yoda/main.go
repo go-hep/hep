@@ -9,6 +9,7 @@
 //
 //  $> root2yoda file1.root file2.root > out.yoda
 //  $> root2yoda -o out.yoda file1.root file2.root
+//  $> root2yoda -o out.yodz file1.root file2.root
 //  $> root2yoda -o out.yoda.gz file1.root file2.root
 package main // import "go-hep.org/x/hep/cmd/root2yoda"
 
@@ -37,6 +38,7 @@ func main() {
 ex:
  $> root2yoda file1.root file2.root > out.yoda
  $> root2yoda -o out.yoda file1.root file2.root
+ $> root2yoda -o out.yodz file1.root file2.root
  $> root2yoda -o out.yoda.gz file1.root file2.root
 
 options:
@@ -68,7 +70,7 @@ options:
 			}
 		}()
 		out = f
-		if filepath.Ext(*oname) == ".gz" {
+		if ext := filepath.Ext(*oname); ext == ".yodz" || ext == ".gz" {
 			wz := gzip.NewWriter(f)
 			defer func() {
 				err = wz.Close()

@@ -8,6 +8,7 @@
 // Example:
 //
 //  $> yoda2rio rivet.yoda >| rivet.rio
+//  $> yoda2rio rivet.yodz >| rivet.rio
 //  $> yoda2rio rivet.yoda.gz >| rivet.rio
 package main
 
@@ -35,7 +36,8 @@ func main() {
 			`Usage: yoda2rio [options] <file1.yoda> [<file2.yoda> [...]]
 
 ex:
- $> yoda2rio rivet.yoda    >| rivet.rio
+ $> yoda2rio rivet.yoda >| rivet.rio
+ $> yoda2rio rivet.yodz >| rivet.rio
  $> yoda2rio rivet.yoda.gz >| rivet.rio
 `)
 	}
@@ -67,7 +69,7 @@ func convert(w *rio.Writer, fname string) {
 	}
 	defer r.Close()
 
-	if filepath.Ext(fname) == ".gz" {
+	if ext := filepath.Ext(fname); ext == ".yodz" || ext == ".gz" {
 		rz, err := gzip.NewReader(r)
 		if err != nil {
 			log.Fatal(err)
