@@ -1,3 +1,7 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 // In this example we will place the following event into HepMC "by hand"
 //
 //     name status pdg_id  parent Px       Py    Pz       Energy      Mass

@@ -1,3 +1,7 @@
+// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package fwk
 
 import (
@@ -71,5 +75,3 @@ func (msg msgstream) Msg(lvl Level, format string, a ...interface{}) (int, error
 func (msg msgstream) flush() error {
 	return msg.w.Sync()
 }
-
-// EOF
