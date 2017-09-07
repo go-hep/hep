@@ -2,6 +2,45 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// fads-app is a command that runs a simple ATLAS-like detector simulation,
+// modelled after the C++ Delphes ATLAS data-card.
+//
+// Example:
+//
+//  $> fads-app -help
+//  Usage: fads-app [options] <hepmc-input-file>
+//
+//  ex:
+//   $ fads-app -l=INFO -evtmax=-1 ./testdata/hepmc.data
+//
+//  options:
+//    -cpu-prof
+//      	enable CPU profiling
+//    -evtmax int
+//      	number of events to process (default -1)
+//    -l string
+//      	log level (DEBUG|INFO|WARN|ERROR) (default "INFO")
+//    -nprocs int
+//      	number of concurrent events to process (default -1)
+//    -o string
+//      	name of output events file (default "data.rio")
+//    -trace string
+//      	path to file where to store traces
+//
+//  $> fads-app ./testdata/hepmc.data
+//  ::: fads-app...
+//  app                  INFO workers done: 1/4
+//  app                  INFO workers done: 2/4
+//  app                  INFO workers done: 3/4
+//  app                  INFO workers done: 4/4
+//  app                  INFO cpu: 340.092148ms
+//  app                  INFO mem: alloc:          17963 kB
+//  app                  INFO mem: tot-alloc:      35590 kB
+//  app                  INFO mem: n-mallocs:      55399
+//  app                  INFO mem: n-frees:        54777
+//  app                  INFO mem: gc-pauses:          2 ms
+//  ::: fads-app... [done] (time=343.533436ms)
+//
 package main
 
 import (
