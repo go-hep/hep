@@ -241,6 +241,31 @@ func (p *Point) surroundingPoints() []*Point {
 	return points
 }
 
+// findClockwiseTriangle finds the next triangle in clockwise order.
+func (p *Point) findClockwiseTriangle(t *Triangle) *Triangle {
+	// points in a triangle are ordered counter clockwise
+	var p2 *Point
+	// find point counterclockwise of p
+	switch {
+	case p.Equals(t.A):
+		p2 = t.B
+	case p.Equals(t.B):
+		p2 = t.C
+	case p.Equals(t.C):
+		p2 = t.A
+	default:
+		panic(fmt.Errorf("delaunay: can't find Point %v in Triangle %v", p, t))
+	}
+	for _, t1 := range p.adjacentTriangles {
+		for _, t2 := range p2.adjacentTriangles {
+			if !t1.Equals(t) && t1.Equals(t2) {
+				return t1
+			}
+		}
+	}
+	panic(fmt.Errorf("delaunay: no clockwise neighbor of Triangle %v around Point %v", t, p))
+}
+
 // inTriangle checks whether the point is in the triangle and whether it is on an edge.
 func (p *Point) inTriangle(t *Triangle) location {
 	o1 := predicates.Orientation(t.A.x, t.A.y, t.B.x, t.B.y, p.x, p.y)
@@ -298,4 +323,16 @@ func (ps points) remove(pts ...*Point) points {
 
 	}
 	return out
+}
+
+// polyArea finds the area of an irregular polygon.
+// The points need to be in clockwise order.
+func (points points) polyArea() float64 {
+	var area float64
+	j := len(points) - 1
+	for i := 0; i < len(points); i++ {
+		area += (points[j].x + points[i].x) * (points[j].y - points[i].y)
+		j = i
+	}
+	return area * 0.5
 }

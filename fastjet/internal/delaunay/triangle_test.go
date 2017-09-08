@@ -6,6 +6,8 @@ package delaunay
 
 import (
 	"testing"
+
+	"gonum.org/v1/gonum/floats"
 )
 
 func TestTriangleEquals(t *testing.T) {
@@ -100,6 +102,25 @@ func TestTriangleRemove(t *testing.T) {
 	for i := range got {
 		if !got[i].Equals(want[i]) {
 			t.Errorf("After removing triangle nearest neighbor of points[%d]=%v, got = %v, want = %v", i, points[i], got[i], want[i])
+		}
+	}
+}
+
+func TestTriangleCircumcenter(t *testing.T) {
+	tests := []struct {
+		t     *Triangle
+		wantX float64
+		wantY float64
+	}{
+		{NewTriangle(NewPoint(0, 0), NewPoint(2, 0), NewPoint(0, 2)), 1, 1},
+		{NewTriangle(NewPoint(-1, 4), NewPoint(3, 8), NewPoint(4, 12)), -5.1667, 12.1667},
+		{NewTriangle(NewPoint(6, 9), NewPoint(8, 3), NewPoint(5, 15)), 44.5, 18.5},
+		{NewTriangle(NewPoint(2, 8), NewPoint(3, 7), NewPoint(3, 8)), 2.5, 7.5},
+	}
+	for _, test := range tests {
+		gotX, gotY := test.t.circumcenter()
+		if !floats.EqualWithinAbs(gotX, test.wantX, tol) || !floats.EqualWithinAbs(gotY, test.wantY, tol) {
+			t.Errorf("Circumcenter of %v, got = (%f,%f), want = (%f,%f)", test.t, gotX, gotY, test.wantX, test.wantY)
 		}
 	}
 }

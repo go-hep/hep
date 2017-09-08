@@ -196,3 +196,52 @@ func TestPointsRemove(t *testing.T) {
 		}
 	}
 }
+
+func TestPolyArea(t *testing.T) {
+	tests := []struct {
+		points points
+		want   float64
+	}{
+		{points{NewPoint(0, 0), NewPoint(0, 1), NewPoint(1, 1), NewPoint(1, 0)}, 1},
+		{points{NewPoint(0, 2), NewPoint(-1, 4), NewPoint(4, 5), NewPoint(5, -1), NewPoint(-2, 0)}, 27},
+	}
+	for i, test := range tests {
+		got := test.points.polyArea()
+		if !floats.EqualWithinAbs(got, test.want, tol) {
+			t.Errorf("test %d: got = %f, want = %f", i, got, test.want)
+		}
+	}
+}
+
+func TestFindClockwiseTriangle(t *testing.T) {
+	p := NewPoint(0, 0)
+	p1 := NewPoint(2, 0)
+	p2 := NewPoint(0, 3)
+	p3 := NewPoint(-2, 0)
+	p4 := NewPoint(0, -2)
+	t1 := NewTriangle(p, p1, p2)
+	t2 := NewTriangle(NewPoint(-4, 1), NewPoint(-4, 0), p3)
+	t3 := NewTriangle(p, p2, p3)
+	t4 := NewTriangle(p3, p4, p)
+	t5 := NewTriangle(p4, p1, p)
+	t6 := NewTriangle(p1, p2, NewPoint(5, 5))
+	p.adjacentTriangles = triangles{t1, t3, t4, t5}
+	p1.adjacentTriangles = triangles{t1, t5, t6}
+	p2.adjacentTriangles = triangles{t1, t3, t6}
+	p3.adjacentTriangles = triangles{t2, t3}
+	p4.adjacentTriangles = triangles{t4, t5}
+	want := []*Triangle{t1, t5, t4, t3}
+	got := make([]*Triangle, len(p.adjacentTriangles))
+	got[0] = p.adjacentTriangles[0]
+	for i := 1; i < len(got); i++ {
+		got[i] = p.findClockwiseTriangle(got[i-1])
+	}
+	if len(got) != len(want) {
+		t.Fatalf("got = %d triangles, want = %d", len(got), len(want))
+	}
+	for i := range got {
+		if !got[i].Equals(want[i]) {
+			t.Errorf("got[%d] = %v, want[%d] = %v", i, got[i], i, want[i])
+		}
+	}
+}

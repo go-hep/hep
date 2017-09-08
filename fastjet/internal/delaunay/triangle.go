@@ -6,6 +6,7 @@ package delaunay
 
 import (
 	"fmt"
+	"math"
 
 	"go-hep.org/x/hep/fastjet/internal/predicates"
 )
@@ -119,6 +120,43 @@ func (t *Triangle) remove() []*Point {
 		updated = append(updated, t.C)
 	}
 	return updated
+}
+
+// circumcenter returns the x,y coordinates of the circumcenter of the triangle
+func (t *Triangle) circumcenter() (x, y float64) {
+	// TODO: there are few divisions by the same value, store the inverse of these delta values and use that instead
+	m1 := (t.A.x - t.B.x) / (t.B.y - t.A.y)
+	m2 := (t.A.x - t.C.x) / (t.C.y - t.A.y)
+	b1 := (t.A.y+t.B.y)*0.5 - m1*(t.A.x+t.B.x)*0.5
+	b2 := (t.A.y+t.C.y)*0.5 - m2*(t.A.x+t.C.x)*0.5
+	x = (b2 - b1) / (m1 - m2)
+	y = m1*x + b1
+	if math.IsNaN(y) {
+		m1 = (t.B.x - t.A.x) / (t.A.y - t.B.y)
+		m2 = (t.B.x - t.C.x) / (t.C.y - t.B.y)
+		b1 = (t.B.y+t.A.y)*0.5 - m1*(t.B.x+t.A.x)*0.5
+		b2 = (t.B.y+t.C.y)*0.5 - m2*(t.B.x+t.C.x)*0.5
+		x = (b2 - b1) / (m1 - m2)
+		y = m1*x + b1
+		if math.IsNaN(y) {
+			m1 = (t.C.x - t.A.x) / (t.A.y - t.C.y)
+			m2 = (t.C.x - t.B.x) / (t.B.y - t.C.y)
+			b1 = (t.C.y+t.A.y)*0.5 - m1*(t.C.x+t.A.x)*0.5
+			b2 = (t.C.y+t.B.y)*0.5 - m2*(t.C.x+t.B.x)*0.5
+			x = (b2 - b1) / (m1 - m2)
+			y = m1*x + b1
+			if math.IsNaN(y) {
+				// Should never reach this point. To reach this point either all three y or x coordinates
+				// would have to be the same, which is impossible since there are no collinear triangles.
+				// Or two y variables and two x variables would have to be the same. That is impossible,
+				// because of the way this is set up. The variables with the same x coordinates would have to
+				// be the same as the variables with the same y coordinates and triangles are not made up
+				// of duplicates.
+				panic(fmt.Errorf("delaunay: error calculating the circumcenter of %v", t))
+			}
+		}
+	}
+	return x, y
 }
 
 // Equals checks whether two triangles are the same.
