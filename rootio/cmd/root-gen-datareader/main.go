@@ -94,9 +94,9 @@ func main() {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get(*treeName)
-	if !ok {
-		log.Fatalf("no tree %q", *treeName)
+	obj, err := f.Get(*treeName)
+	if err != nil {
+		log.Fatal(err)
 	}
 	tree := obj.(rootio.Tree)
 	printf("entries: %v\n", tree.Entries())

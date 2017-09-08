@@ -19,9 +19,9 @@ func ExampleGraph() {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tg")
-	if !ok {
-		log.Fatalf("could not get 'tg'")
+	obj, err := f.Get("tg")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	g := obj.(rootio.Graph)
@@ -50,9 +50,9 @@ func ExampleGraphErrors() {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tge")
-	if !ok {
-		log.Fatalf("could not get 'tge'")
+	obj, err := f.Get("tge")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	g := obj.(rootio.GraphErrors)
@@ -83,9 +83,9 @@ func ExampleGraphErrors_asymmErrors() {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tgae")
-	if !ok {
-		log.Fatalf("could not get 'tgae'")
+	obj, err := f.Get("tgae")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	g := obj.(rootio.GraphErrors)
@@ -116,9 +116,9 @@ func TestGraph(t *testing.T) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tg")
-	if !ok {
-		t.Fatalf("could not get 'tg'")
+	obj, err := f.Get("tg")
+	if err != nil {
+		t.Fatal(err)
 	}
 	g, ok := obj.(rootio.Graph)
 	if !ok {
@@ -147,9 +147,9 @@ func TestGraphErrors(t *testing.T) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tge")
-	if !ok {
-		t.Fatalf("could not get 'tge'")
+	obj, err := f.Get("tge")
+	if err != nil {
+		t.Fatal(err)
 	}
 	g, ok := obj.(rootio.GraphErrors)
 	if !ok {
@@ -192,9 +192,9 @@ func TestGraphAsymmErrors(t *testing.T) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tgae")
-	if !ok {
-		t.Fatalf("could not get 'tgae'")
+	obj, err := f.Get("tgae")
+	if err != nil {
+		t.Fatal(err)
 	}
 	g, ok := obj.(rootio.GraphErrors)
 	if !ok {

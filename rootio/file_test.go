@@ -42,9 +42,9 @@ func TestFileDirectory(t *testing.T) {
 		{"tree_nope;1", false},
 		{"tree_nope;9999", false},
 	} {
-		_, ok := f.Get(table.name)
-		if ok != table.want {
-			t.Fatalf("%s: got key (%v). want=%v", table.name, ok, table.want)
+		_, err := f.Get(table.name)
+		if (err == nil) != table.want {
+			t.Fatalf("%s: got key (err=%v). want=%v", table.name, err, table.want)
 		}
 	}
 
@@ -55,9 +55,9 @@ func TestFileDirectory(t *testing.T) {
 		{"tree", "TTree"},
 		{"tree;1", "TTree"},
 	} {
-		k, ok := f.Get(table.name)
-		if !ok {
-			t.Fatalf("%s: expected key to exist! (got %v)", table.name, ok)
+		k, err := f.Get(table.name)
+		if err != nil {
+			t.Fatalf("%s: expected key to exist! (got %v)", table.name, err)
 		}
 
 		if k.Class() != table.want {
@@ -72,9 +72,9 @@ func TestFileDirectory(t *testing.T) {
 		{"tree", "tree"},
 		{"tree;1", "tree"},
 	} {
-		o, ok := f.Get(table.name)
-		if !ok {
-			t.Fatalf("%s: expected key to exist! (got %v)", table.name, ok)
+		o, err := f.Get(table.name)
+		if err != nil {
+			t.Fatalf("%s: expected key to exist! (got %v)", table.name, err)
 		}
 
 		k := o.(Named)
@@ -90,9 +90,9 @@ func TestFileDirectory(t *testing.T) {
 		{"tree", "my tree title"},
 		{"tree;1", "my tree title"},
 	} {
-		o, ok := f.Get(table.name)
-		if !ok {
-			t.Fatalf("%s: expected key to exist! (got %v)", table.name, ok)
+		o, err := f.Get(table.name)
+		if err != nil {
+			t.Fatalf("%s: expected key to exist! (got %v)", table.name, err)
 		}
 
 		k := o.(Named)

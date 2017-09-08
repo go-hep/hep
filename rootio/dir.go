@@ -167,21 +167,21 @@ func (dir *tdirectory) Title() string {
 //     foo   : get object named foo in memory
 //             if object is not in memory, try with highest cycle from file
 //     foo;1 : get cycle 1 of foo on file
-func (dir *tdirectory) Get(namecycle string) (Object, bool) {
+func (dir *tdirectory) Get(namecycle string) (Object, error) {
 	name, cycle := decodeNameCycle(namecycle)
 	for i := range dir.keys {
 		k := &dir.keys[i]
 		if k.Name() == name {
 			if cycle != 9999 {
 				if k.cycle == cycle {
-					return k.Value().(Object), true
+					return k.Value().(Object), nil
 				}
 				continue
 			}
-			return k.Value().(Object), true
+			return k.Value().(Object), nil
 		}
 	}
-	return nil, false
+	return nil, noKeyError{key: namecycle, obj: dir}
 }
 
 func (dir *tdirectory) Keys() []Key {

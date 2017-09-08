@@ -113,7 +113,7 @@ type Directory interface {
 	//     foo   : get object named foo in memory
 	//             if object is not in memory, try with highest cycle from file
 	//     foo;1 : get cycle 1 of foo on file
-	Get(namecycle string) (Object, bool)
+	Get(namecycle string) (Object, error)
 	Keys() []Key
 }
 

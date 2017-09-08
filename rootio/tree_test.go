@@ -18,9 +18,9 @@ func TestFlatTree(t *testing.T) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		t.Fatalf("could not retrieve tree [tree]")
+	obj, err := f.Get("tree")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	tree := obj.(Tree)
@@ -206,9 +206,9 @@ func testEventTree(t *testing.T, name, fname string) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		t.Errorf("%s: could not retrieve tree [tree]", name)
+	obj, err := f.Get("tree")
+	if err != nil {
+		t.Errorf("%s: %v", name, err)
 		return
 	}
 
@@ -289,9 +289,9 @@ func TestSimpleTree(t *testing.T) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		t.Fatalf("could not retrieve tree [tree]")
+	obj, err := f.Get("tree")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	tree := obj.(Tree)

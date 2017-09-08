@@ -159,9 +159,9 @@ func main() {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get(*tname)
-	if !ok {
-		log.Fatalf("no object named %q in file %q", *tname, *fname)
+	obj, err := f.Get(*tname)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	tree, ok := obj.(rootio.Tree)

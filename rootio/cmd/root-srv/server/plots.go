@@ -6,7 +6,6 @@ package server
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"image/color"
 	"log"
@@ -23,12 +22,10 @@ import (
 	"go-hep.org/x/hep/rootio"
 )
 
-var errNotExist = errors.New("server: object does not exist")
-
 func walk(f rootio.Directory, path []string) (rootio.Object, error) {
-	o, ok := f.Get(path[0])
-	if !ok {
-		return nil, errNotExist
+	o, err := f.Get(path[0])
+	if err != nil {
+		return nil, err
 	}
 	if dir, ok := o.(rootio.Directory); ok {
 		return walk(dir, path[1:])

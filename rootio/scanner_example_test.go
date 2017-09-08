@@ -22,9 +22,9 @@ func ExampleTreeScanner() {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		log.Fatalf("no object %q in file %q", "tree", f.Name())
+	obj, err := f.Get("tree")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	tree := obj.(rootio.Tree)
@@ -84,9 +84,9 @@ func ExampleTreeScanner_withVars() {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		log.Fatalf("no object %q in file %q", "tree", f.Name())
+	obj, err := f.Get("tree")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	tree := obj.(rootio.Tree)
@@ -156,9 +156,9 @@ func ExampleScanner_withStruct() {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		log.Fatalf("no object %q in file %q", "tree", f.Name())
+	obj, err := f.Get("tree")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	tree := obj.(rootio.Tree)
@@ -218,9 +218,9 @@ func ExampleScanner_withVars() {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		log.Fatalf("no object %q in file %q", "tree", f.Name())
+	obj, err := f.Get("tree")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	tree := obj.(rootio.Tree)

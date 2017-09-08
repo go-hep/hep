@@ -41,9 +41,9 @@ func TestTreeScannerStruct(t *testing.T) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		t.Fatalf("could not retrieve tree [tree]")
+	obj, err := f.Get("tree")
+	if err != nil {
+		t.Fatal(err)
 	}
 	tree := obj.(Tree)
 
@@ -118,9 +118,9 @@ func TestScannerStruct(t *testing.T) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		t.Fatalf("could not retrieve tree [tree]")
+	obj, err := f.Get("tree")
+	if err != nil {
+		t.Fatal(err)
 	}
 	tree := obj.(Tree)
 
@@ -196,9 +196,9 @@ func TestScannerVars(t *testing.T) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		t.Fatalf("could not retrieve tree [tree]")
+	obj, err := f.Get("tree")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	tree := obj.(Tree)
@@ -286,9 +286,9 @@ func TestTreeScannerVarsMultipleTimes(t *testing.T) {
 		t.Skip(err)
 	}
 
-	obj, ok := f.Get("mini")
-	if !ok {
-		t.Fatalf("no mini")
+	obj, err := f.Get("mini")
+	if err != nil {
+		t.Fatal(err)
 	}
 	tree := obj.(Tree)
 
@@ -320,9 +320,9 @@ func TestTreeScannerVars(t *testing.T) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		t.Fatalf("could not retrieve tree [tree]")
+	obj, err := f.Get("tree")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	tree := obj.(Tree)
@@ -431,9 +431,9 @@ func TestScannerVarsMultipleTimes(t *testing.T) {
 		t.Skip(err)
 	}
 
-	obj, ok := f.Get("mini")
-	if !ok {
-		t.Fatalf("no mini")
+	obj, err := f.Get("mini")
+	if err != nil {
+		t.Fatal(err)
 	}
 	tree := obj.(Tree)
 
@@ -465,9 +465,9 @@ func TestTreeScannerStructWithCounterLeaf(t *testing.T) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		t.Fatalf("could not retrieve tree [tree]")
+	obj, err := f.Get("tree")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	tree := obj.(Tree)
@@ -514,9 +514,9 @@ func TestScannerStructWithCounterLeaf(t *testing.T) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		t.Fatalf("could not retrieve tree [tree]")
+	obj, err := f.Get("tree")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	tree := obj.(Tree)
@@ -563,9 +563,9 @@ func TestTreeScannerVarsWithCounterLeaf(t *testing.T) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		t.Fatalf("could not retrieve tree [tree]")
+	obj, err := f.Get("tree")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	tree := obj.(Tree)
@@ -608,9 +608,9 @@ func TestScannerVarsWithCounterLeaf(t *testing.T) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		t.Fatalf("could not retrieve tree [tree]")
+	obj, err := f.Get("tree")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	tree := obj.(Tree)
@@ -653,9 +653,9 @@ func BenchmarkTreeScannerStruct(b *testing.B) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		b.Fatalf("could not retrieve tree [tree]")
+	obj, err := f.Get("tree")
+	if err != nil {
+		b.Fatal(err)
 	}
 	tree := obj.(Tree)
 
@@ -691,9 +691,9 @@ func BenchmarkScannerStruct(b *testing.B) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		b.Fatalf("could not retrieve tree [tree]")
+	obj, err := f.Get("tree")
+	if err != nil {
+		b.Fatal(err)
 	}
 	tree := obj.(Tree)
 
@@ -729,9 +729,9 @@ func BenchmarkTreeScannerVars(b *testing.B) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		b.Fatalf("could not retrieve tree [tree]")
+	obj, err := f.Get("tree")
+	if err != nil {
+		b.Fatal(err)
 	}
 
 	tree := obj.(Tree)
@@ -769,9 +769,9 @@ func BenchmarkScannerVars(b *testing.B) {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tree")
-	if !ok {
-		b.Fatalf("could not retrieve tree [tree]")
+	obj, err := f.Get("tree")
+	if err != nil {
+		b.Fatal(err)
 	}
 
 	tree := obj.(Tree)
@@ -808,9 +808,9 @@ func BenchmarkTreeScannerVarsBigFileScalar(b *testing.B) {
 		b.Skip(err)
 	}
 
-	obj, ok := f.Get("mini")
-	if !ok {
-		b.Fatalf("no mini")
+	obj, err := f.Get("mini")
+	if err != nil {
+		b.Fatal(err)
 	}
 	tree := obj.(Tree)
 
@@ -842,9 +842,9 @@ func BenchmarkScannerVarsBigFileScalar(b *testing.B) {
 		b.Skip(err)
 	}
 
-	obj, ok := f.Get("mini")
-	if !ok {
-		b.Fatalf("no mini")
+	obj, err := f.Get("mini")
+	if err != nil {
+		b.Fatal(err)
 	}
 	tree := obj.(Tree)
 
@@ -876,9 +876,9 @@ func BenchmarkTreeScannerVarsBigFileSlice(b *testing.B) {
 		b.Skip(err)
 	}
 
-	obj, ok := f.Get("mini")
-	if !ok {
-		b.Fatalf("no mini")
+	obj, err := f.Get("mini")
+	if err != nil {
+		b.Fatal(err)
 	}
 	tree := obj.(Tree)
 
@@ -910,9 +910,9 @@ func BenchmarkScannerVarsBigFileSlice(b *testing.B) {
 		b.Skip(err)
 	}
 
-	obj, ok := f.Get("mini")
-	if !ok {
-		b.Fatalf("no mini")
+	obj, err := f.Get("mini")
+	if err != nil {
+		b.Fatal(err)
 	}
 	tree := obj.(Tree)
 

@@ -319,7 +319,7 @@ func (f *File) StreamerInfo() []StreamerInfo {
 //     foo   : get object named foo in memory
 //             if object is not in memory, try with highest cycle from file
 //     foo;1 : get cycle 1 of foo on file
-func (f *File) Get(namecycle string) (Object, bool) {
+func (f *File) Get(namecycle string) (Object, error) {
 	return f.dir.Get(namecycle)
 }
 

@@ -23,9 +23,9 @@ func ExampleH1D() {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("h1d")
-	if !ok {
-		log.Fatalf("no such histo %q\n", "h1d")
+	obj, err := f.Get("h1d")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	root := obj.(*rootio.H1D)
@@ -53,9 +53,9 @@ func ExampleH2D() {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("h2d")
-	if !ok {
-		log.Fatalf("no such histo %q\n", "h2d")
+	obj, err := f.Get("h2d")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	root := obj.(*rootio.H2D)
@@ -89,9 +89,9 @@ func ExampleS2D() {
 	}
 	defer f.Close()
 
-	obj, ok := f.Get("tgae")
-	if !ok {
-		log.Fatalf("no such graph %q\n", "tgae")
+	obj, err := f.Get("tgae")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	root := obj.(rootio.GraphErrors)
@@ -243,9 +243,9 @@ END YODA_HISTO1D
 `),
 		},
 	} {
-		obj, ok := f.Get(test.name)
-		if !ok {
-			t.Errorf("%s: no key %q", test.name, test.name)
+		obj, err := f.Get(test.name)
+		if err != nil {
+			t.Errorf("%s: error: %v", test.name, err)
 			continue
 		}
 		rhisto := obj.(yodacnv.Marshaler)
@@ -336,9 +336,9 @@ END YODA_HISTO2D
 `),
 		},
 	} {
-		obj, ok := f.Get(test.name)
-		if !ok {
-			t.Errorf("%s: no key %q", test.name, test.name)
+		obj, err := f.Get(test.name)
+		if err != nil {
+			t.Errorf("%s: error: %v", test.name, err)
 			continue
 		}
 		rhisto := obj.(yodacnv.Marshaler)

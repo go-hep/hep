@@ -13,9 +13,9 @@
 //   }
 //   defer f.Close()
 //
-//   obj, ok := f.Get("tree")
-//   if !ok {
-//       log.Fatalf("no object called %q in file %s", "tree", f.Name())
+//   obj, err := f.Get("tree")
+//   if err != nil {
+//       log.Fatal(err)
 //   }
 //   tree := obj.(rootio.Tree)
 //   fmt.Printf("entries= %v\n", tree.Entries())

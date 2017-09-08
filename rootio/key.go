@@ -12,6 +12,16 @@ import (
 	"time"
 )
 
+// noKeyError is the error returned when a rootio.Key could not be found.
+type noKeyError struct {
+	key string
+	obj Named
+}
+
+func (err noKeyError) Error() string {
+	return fmt.Sprintf("rootio: %s: could not find key %q", err.obj.Name(), err.key)
+}
+
 // Key is a key (a label) in a ROOT file
 //
 //  The Key class includes functions to book space on a file,
