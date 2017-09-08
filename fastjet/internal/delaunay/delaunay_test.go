@@ -639,3 +639,71 @@ func BenchmarkHierarchicalDelaunayInsertionAndRemoval950(b *testing.B) {
 func BenchmarkHierarchicalDelaunayInsertionAndRemoval1000(b *testing.B) {
 	benchmarkHierarchicalDelaunayRemoval(1000, b)
 }
+
+func TestVoronoiCell(t *testing.T) {
+	p := NewPoint(0, 0)
+	p1 := NewPoint(2, 0)
+	p2 := NewPoint(0, 3)
+	p3 := NewPoint(-2, 0)
+	p4 := NewPoint(0, -2)
+	t1 := NewTriangle(p, p1, p2)
+	t2 := NewTriangle(NewPoint(-4, 1), NewPoint(-4, 0), p3)
+	t3 := NewTriangle(p, p2, p3)
+	t4 := NewTriangle(p3, p4, p)
+	t5 := NewTriangle(p4, p1, p)
+	t6 := NewTriangle(p1, p2, NewPoint(5, 5))
+	p.adjacentTriangles = triangles{t1, t3, t4, t5}
+	p1.adjacentTriangles = triangles{t1, t5, t6}
+	p2.adjacentTriangles = triangles{t1, t3, t6}
+	p3.adjacentTriangles = triangles{t2, t3}
+	p4.adjacentTriangles = triangles{t4, t5}
+	d := &Delaunay{root: NewTriangle(NewPoint(-100, -100), NewPoint(100, -100), NewPoint(0, 100))}
+	wantPoints := []*Point{NewPoint(1, 1.5), NewPoint(1, -1), NewPoint(-1, -1), NewPoint(-1, 1.5)}
+	wantArea := 5.0
+	gotPoints, gotArea := d.VoronoiCell(p)
+	if wantArea != gotArea {
+		t.Errorf("area got = %f, want = %f", gotArea, wantArea)
+	}
+	if len(wantPoints) != len(gotPoints) {
+		t.Fatalf("got = %d points, want = %d", len(gotPoints), len(wantPoints))
+	}
+	for i, got := range gotPoints {
+		if !got.Equals(wantPoints[i]) {
+			t.Errorf("vornoi point got = %v, want = %v", got, wantPoints[i])
+		}
+	}
+}
+
+func TestVoronoiCellBorder(t *testing.T) {
+	p := NewPoint(0, 0)
+	p1 := NewPoint(2, 0)
+	p2 := NewPoint(0, 3)
+	p3 := NewPoint(-2, 0)
+	p4 := NewPoint(0, -2)
+	t1 := NewTriangle(p, p1, p2)
+	t2 := NewTriangle(NewPoint(-4, 1), NewPoint(-4, 0), p3)
+	t3 := NewTriangle(p, p2, p3)
+	t4 := NewTriangle(p3, p4, p)
+	t5 := NewTriangle(p4, p1, p)
+	t6 := NewTriangle(p1, p2, NewPoint(5, 5))
+	p.adjacentTriangles = triangles{t1, t3, t4, t5}
+	p1.adjacentTriangles = triangles{t1, t5, t6}
+	p2.adjacentTriangles = triangles{t1, t3, t6}
+	p3.adjacentTriangles = triangles{t2, t3}
+	p4.adjacentTriangles = triangles{t4, t5}
+	d := &Delaunay{root: NewTriangle(NewPoint(-100, 100), NewPoint(100, 100), p4)}
+	wantPoints := []*Point{NewPoint(-1, -1), NewPoint(-1, 1.5), NewPoint(1, 1.5), NewPoint(1, -1)}
+	wantArea := math.Inf(1)
+	gotPoints, gotArea := d.VoronoiCell(p)
+	if wantArea != gotArea {
+		t.Errorf("area got = %f, want = %f", gotArea, wantArea)
+	}
+	if len(wantPoints) != len(gotPoints) {
+		t.Fatalf("got = %d points, want = %d", len(gotPoints), len(wantPoints))
+	}
+	for i, got := range gotPoints {
+		if !got.Equals(wantPoints[i]) {
+			t.Errorf("vornoi point got = %v, want = %v", got, wantPoints[i])
+		}
+	}
+}

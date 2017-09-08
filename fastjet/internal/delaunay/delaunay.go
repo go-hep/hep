@@ -6,6 +6,7 @@ package delaunay
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 
 	"go-hep.org/x/hep/fastjet/internal/predicates"
@@ -472,4 +473,61 @@ func areCounterclockwise(a, b, c int) bool {
 		return a < b || c < a
 	}
 	return a < b && c < a
+}
+
+// VoronoiCell returns the Vornoi points of a point in clockwise order
+// and the area those points enclose.
+//
+// If a point is on the border of the Delaunay triangulation the area will be Infinity
+// and the first and last point of the cell will be part of a root triangle.
+// The function will panic if the number of adjacent triangles is < 3.
+func (d *Delaunay) VoronoiCell(p *Point) ([]*Point, float64) {
+	if len(p.adjacentTriangles) < 3 {
+		panic(fmt.Errorf("delaunay: point %v doesn't have enough adjacent triangles", p))
+	}
+	// border1 is set to the index of the first voronoi point that is part of a root triangle
+	border1 := -1
+	// border2 is set to the index of the first voronoi point that is part of a root triangle
+	border2 := -1
+	voronoi := make(points, len(p.adjacentTriangles))
+	t := p.adjacentTriangles[0]
+	// check whether the triangle contains any root points
+	if t.A.Equals(d.root.A) || t.A.Equals(d.root.B) || t.A.Equals(d.root.C) ||
+		t.B.Equals(d.root.A) || t.B.Equals(d.root.B) || t.B.Equals(d.root.C) ||
+		t.C.Equals(d.root.A) || t.C.Equals(d.root.B) || t.C.Equals(d.root.C) {
+		border1 = 0
+	}
+	x, y := t.circumcenter()
+	voronoi[0] = NewPoint(x, y)
+	for i := 1; i < len(p.adjacentTriangles); i++ {
+		t = p.findClockwiseTriangle(t)
+		// check whether the triangle contains any root points
+		if t.A.Equals(d.root.A) || t.A.Equals(d.root.B) || t.A.Equals(d.root.C) ||
+			t.B.Equals(d.root.A) || t.B.Equals(d.root.B) || t.B.Equals(d.root.C) ||
+			t.C.Equals(d.root.A) || t.C.Equals(d.root.B) || t.C.Equals(d.root.C) {
+			if border1 == -1 {
+				border1 = i
+			} else {
+				border2 = i
+			}
+		}
+		x, y = t.circumcenter()
+		voronoi[i] = NewPoint(x, y)
+	}
+	if border1 == -1 {
+		area := voronoi.polyArea()
+		return voronoi, area
+	}
+	if border2 == -1 {
+		panic(fmt.Errorf("delaunay: point %v has exactly one adjacent root triangle", p))
+	}
+	// at this point border1 is either 0 or >= 1.
+	// If necessary reposition the points, so that the border points are the first and last points
+	if border1 != 0 || border2 != len(voronoi)-1 {
+		if border2 != border1+1 {
+			panic(fmt.Errorf("delaunay: point %v has adjacent root triangles at index %d and %d in the voronoi slice", p, border1, border2))
+		}
+		voronoi = append(voronoi[border2:], voronoi[:border2]...)
+	}
+	return voronoi, math.Inf(1)
 }
