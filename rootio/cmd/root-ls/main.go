@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// root-ls dumps the content of a ROOT file.
+// root-ls lists the content of a ROOT file.
 //
 // Usage: root-ls [options] file1.root [file2.root [...]]
 //
