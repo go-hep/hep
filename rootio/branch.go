@@ -260,18 +260,18 @@ func (b *tbranch) loadBasket(entry int64) error {
 	if err != nil {
 		return err
 	}
-	b.basket.f = f
+	b.basket.key.f = f
 	b.firstEntry = entry
 
-	if len(b.basketBuf) < int(b.basket.objlen) {
-		b.basketBuf = make([]byte, b.basket.objlen)
+	if len(b.basketBuf) < int(b.basket.key.objlen) {
+		b.basketBuf = make([]byte, b.basket.key.objlen)
 	}
-	buf = b.basketBuf[:int(b.basket.objlen)]
-	_, err = b.basket.load(buf)
+	buf = b.basketBuf[:int(b.basket.key.objlen)]
+	_, err = b.basket.key.load(buf)
 	if err != nil {
 		return err
 	}
-	b.basket.rbuf = NewRBuffer(buf, nil, uint32(b.basket.keylen))
+	b.basket.rbuf = NewRBuffer(buf, nil, uint32(b.basket.key.keylen))
 
 	for _, leaf := range b.leaves {
 		err = leaf.readBasket(b.basket.rbuf)

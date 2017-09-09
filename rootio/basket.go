@@ -11,7 +11,7 @@ import (
 )
 
 type Basket struct {
-	Key
+	key Key
 
 	vers    uint16
 	bufsize int // length in bytes
@@ -27,6 +27,14 @@ type Basket struct {
 	rbuf *RBuffer
 }
 
+func (b *Basket) Name() string {
+	return b.key.Name()
+}
+
+func (b *Basket) Title() string {
+	return b.key.Title()
+}
+
 func (b *Basket) Class() string {
 	return "TBasket"
 }
@@ -36,7 +44,7 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	if err := b.Key.UnmarshalROOT(r); err != nil {
+	if err := b.key.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
@@ -95,7 +103,7 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 			r.err = err
 			return r.err
 		}
-		b.Key.buf = buf
+		b.key.buf = buf
 	}
 
 	return r.err
@@ -103,7 +111,7 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 
 func (b *Basket) loadEntry(entry int64) error {
 	var err error
-	var offset = int64(b.keylen)
+	var offset = int64(b.key.keylen)
 	if n := int64(len(b.offsets)); n > 0 {
 		offset = int64(b.offsets[int(entry)])
 	}
@@ -115,7 +123,7 @@ func (b *Basket) loadEntry(entry int64) error {
 func (b *Basket) readLeaf(entry int64, leaf Leaf) error {
 	var offset int64
 	if len(b.offsets) == 0 {
-		offset = entry*int64(b.nevsize) + int64(leaf.Offset()) + int64(b.keylen)
+		offset = entry*int64(b.nevsize) + int64(leaf.Offset()) + int64(b.key.keylen)
 	} else {
 		offset = int64(b.offsets[int(entry)]) + int64(leaf.Offset())
 	}
