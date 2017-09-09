@@ -162,13 +162,15 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 			r.err = err
 			return r.err
 		}
-		b.baskets = make([]Basket, baskets.last+1)
-		for i := range b.baskets {
-			bk := baskets.At(i)
+		b.baskets = make([]Basket, 0, baskets.last+1)
+		for i := 0; i < baskets.last+1; i++ {
+			bkt := baskets.At(i)
 			// FIXME(sbinet) check why some are nil
-			if bk != nil {
-				b.baskets[i] = *(bk.(*Basket))
+			if bkt == nil {
+				continue
 			}
+			bk := bkt.(*Basket)
+			b.baskets = append(b.baskets, *bk)
 		}
 	}
 
@@ -316,6 +318,9 @@ func (b *tbranch) findBasketIndex(entry int64) int {
 		if v > entry && v > 0 {
 			return i - 1
 		}
+	}
+	if entry == b.basketEntry[len(b.basketEntry)-1] {
+		return -2 // len(b.basketEntry) - 1
 	}
 	return -1
 }

@@ -54,7 +54,8 @@ type Key struct {
 	name  string // name of the object
 	title string // title of the object
 
-	obj Object
+	buf []byte // buffer of the Key's value
+	obj Object // Key's value
 }
 
 func (k *Key) Class() string {
@@ -141,6 +142,10 @@ func (k *Key) Bytes() ([]byte, error) {
 func (k *Key) load(buf []byte) ([]byte, error) {
 	if len(buf) < int(k.objlen) {
 		buf = make([]byte, k.objlen)
+	}
+	if len(k.buf) > 0 {
+		copy(buf, k.buf)
+		return buf, nil
 	}
 	if k.isCompressed() {
 		// Note: this contains ZL[src][dst] where src and dst are 3 bytes each.

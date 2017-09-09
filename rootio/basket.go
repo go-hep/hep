@@ -89,16 +89,13 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 		if b.vers <= 1 {
 			sz = r.ReadI32()
 		}
-		if sz > b.Key.keylen {
-			// FIXME(sbinet) load buffer TKey data
-			//
-			panic("not implemented")
-		}
-
-		_, err := io.ReadFull(r.r, make([]byte, int(sz)))
+		buf := make([]byte, int(sz))
+		_, err := io.ReadFull(r.r, buf)
 		if err != nil {
 			r.err = err
+			return r.err
 		}
+		b.Key.buf = buf
 	}
 
 	return r.err
