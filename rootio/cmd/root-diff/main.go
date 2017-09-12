@@ -4,6 +4,22 @@
 
 // root-diff compares the content of 2 ROOT files, including the content of
 // their Trees (for all entries), if any.
+//
+// Example:
+//
+//  $> root-diff ./ref.root ./chk.root
+//  $> root-diff -k=key1,tree,my-tree ./ref.root ./chk.root
+//
+//  $> root-diff -h
+//  Usage: root-diff [options] a.root b.root
+//
+//  ex:
+//   $> root-diff ./testdata/small-flat-tree.root ./testdata/small-flat-tree.root
+//
+//  options:
+//    -k string
+//      	comma-separated list of keys to inspect and compare (default=all common keys)
+//
 package main // import "go-hep.org/x/hep/rootio/cmd/root-diff"
 import (
 	"flag"
