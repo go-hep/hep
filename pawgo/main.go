@@ -2,6 +2,33 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// pawgo is a simple interactive shell to quickly plot hbook histograms from
+// rio files.
+//
+// Example:
+//
+//  $> pawgo
+//  paw> /file/open f testdata/issue-120.rio
+//  paw> /file/ls f
+//  /file/id/f name=testdata/issue-120.rio
+//   	- MonoH_Truth/jets	(type="*go-hep.org/x/hep/hbook.H1D")
+//
+//  paw> /hist/open h /file/id/f/MonoH_Truth/jets
+//  paw> /hist/plot h
+//  == h1d: name="MonoH_Truth/jets"
+//  entries=20000
+//  mean=  +2.554
+//  RMS=   +2.891
+//  paw> /?
+//  /! 		-- run a shell command
+//  /? 		-- print help
+//  /file/close 	-- close a file
+//  /file/create 	-- create file for write access
+//  /file/list 	-- list a file's content
+//  /file/open 	-- open file for read access
+//  /hist/open 	-- open a histogram
+//  /hist/plot 	-- plot a histogram
+//  /quit 		-- quit PAW-Go
 package main // import "go-hep.org/x/hep/pawgo"
 
 import (
@@ -43,6 +70,7 @@ Type /? for help.
 
 	icmd := newCmd(scr)
 	defer icmd.Close()
+	defer fmt.Printf("bye.\n")
 
 	if flag.NArg() > 0 {
 		for _, fname := range flag.Args() {

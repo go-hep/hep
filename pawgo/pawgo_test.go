@@ -22,7 +22,7 @@ func run(bin string, args ...string) error {
 	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf(
-			"error running %v:%s\nerr=%v",
+			"error running %q:\n%s\nerr=%v",
 			strings.Join(cmd.Args, " "),
 			string(buf.Bytes()),
 			err,
