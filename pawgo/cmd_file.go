@@ -130,14 +130,14 @@ func (cmd *cmdFileList) Name() string {
 }
 
 func (cmd *cmdFileList) Run(args []string) error {
-	var err error
-	if len(args) != 1 {
-		return fmt.Errorf("%s: need a file id", cmd.Name())
+	switch len(args) {
+	case 0:
+		return cmd.ctx.fmgr.ls("")
+	case 1:
+		return cmd.ctx.fmgr.ls(args[0])
+	default:
+		return fmt.Errorf("%s: need at most 1 file id", cmd.Name())
 	}
-
-	id := args[0]
-	err = cmd.ctx.fmgr.ls(id)
-	return err
 }
 
 func (cmd *cmdFileList) Help(w io.Writer) {

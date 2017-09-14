@@ -172,6 +172,17 @@ func (mgr *fileMgr) close(id string) error {
 }
 
 func (mgr *fileMgr) ls(id string) error {
+	if id == "" {
+		// list all
+		for id := range mgr.rfds {
+			err := mgr.ls(id)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
 	r, ok := mgr.rfds[id]
 	if !ok {
 		return fmt.Errorf("paw: unknown file [id=%s]", id)
