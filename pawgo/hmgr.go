@@ -14,15 +14,17 @@ import (
 
 type histMgr struct {
 	h1ds map[string]*hbook.H1D
+	h2ds map[string]*hbook.H2D
 }
 
 func newHistMgr() *histMgr {
 	return &histMgr{
 		h1ds: make(map[string]*hbook.H1D),
+		h2ds: make(map[string]*hbook.H2D),
 	}
 }
 
-func (mgr *histMgr) openH1D(fmgr *fileMgr, hid, path string) error {
+func (mgr *histMgr) open(fmgr *fileMgr, hid, path string) error {
 	var err error
 	const prefix = "/file/id/"
 	if !strings.HasPrefix(path, prefix) {
@@ -51,23 +53,43 @@ func (mgr *histMgr) openH1D(fmgr *fileMgr, hid, path string) error {
 
 	hname := strings.Join(toks[1:], "/")
 
-	var h1d hbook.H1D
-	err = r.read(hname, &h1d)
-	if err != nil {
-		return err
+	switch r.typ(hname) {
+	case "*go-hep.org/x/hep/hbook.H1D":
+		var h1 hbook.H1D
+		err = r.read(hname, &h1)
+		if err != nil {
+			return err
+		}
+		mgr.h1ds[hid] = &h1
+
+	case "*go-hep.org/x/hep/hbook.H2D":
+		var h2 hbook.H2D
+		err = r.read(hname, &h2)
+		if err != nil {
+			return err
+		}
+		mgr.h2ds[hid] = &h2
+
+	default:
+		return fmt.Errorf("%q not an histogram", path)
 	}
 
-	mgr.h1ds[hid] = &h1d
 	return err
 }
 
-func (mgr *histMgr) plotH1D(wmgr *winMgr, hid string) error {
-	var err error
-	h, ok := mgr.h1ds[hid]
-	if !ok {
-		return fmt.Errorf("unknown H1D [id=%s]", hid)
+func (mgr *histMgr) plot(wmgr *winMgr, hid string) error {
+	if h, ok := mgr.h1ds[hid]; ok {
+		return mgr.plotH1D(wmgr, h)
 	}
 
+	if h, ok := mgr.h2ds[hid]; ok {
+		return mgr.plotH2D(wmgr, h)
+	}
+
+	return fmt.Errorf("unknown histogram [id=%s]", hid)
+}
+
+func (mgr *histMgr) plotH1D(wmgr *winMgr, h *hbook.H1D) error {
 	fmt.Printf("== h1d: name=%q\nentries=%d\nmean=%+8.3f\nRMS= %+8.3f\n",
 		h.Name(), h.Entries(), h.XMean(), h.XRMS(),
 	)
@@ -87,6 +109,37 @@ func (mgr *histMgr) plotH1D(wmgr *winMgr, hid string) error {
 	hh.Infos.Style = hplot.HInfoSummary
 
 	p.Add(hh)
+	p.Add(hplot.NewGrid())
+
+	err = wmgr.newPlot(p)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (mgr *histMgr) plotH2D(wmgr *winMgr, h *hbook.H2D) error {
+	fmt.Printf(
+		"== h2d: name=%q\nentries=%d\nxmean=%+8.3f\nxRMS= %+8.3f\nymean=%+8.3f\nyRMS= %+8.3f\n",
+		h.Name(), h.Entries(),
+		h.XMean(), h.XRMS(),
+		h.YMean(), h.YRMS(),
+	)
+
+	p, err := hplot.New()
+	if err != nil {
+		return err
+	}
+	p.Title.Text = h.Name()
+	p.X.Label.Text = "x"
+	p.Y.Label.Text = "y"
+
+	hh := hplot.NewH2D(h, nil)
+	hh.Infos.Style = hplot.HInfoNone
+
+	p.Add(hh)
+	p.Add(hplot.NewGrid())
 
 	err = wmgr.newPlot(p)
 	if err != nil {

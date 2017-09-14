@@ -10,16 +10,16 @@ import (
 	"strings"
 )
 
-// cmdH1DOpen opens a histogram
-type cmdH1DOpen struct {
+// cmdHistOpen opens a histogram
+type cmdHistOpen struct {
 	ctx *Cmd
 }
 
-func (cmd *cmdH1DOpen) Name() string {
+func (cmd *cmdHistOpen) Name() string {
 	return "/hist/open"
 }
 
-func (cmd *cmdH1DOpen) Run(args []string) error {
+func (cmd *cmdHistOpen) Run(args []string) error {
 	var err error
 	if len(args) < 2 {
 		return fmt.Errorf("%s: need histo-id and histo-name (got=%v)", cmd.Name(), args)
@@ -30,15 +30,15 @@ func (cmd *cmdH1DOpen) Run(args []string) error {
 	// e.g: /file/id/1/my-histo
 	hname := args[1]
 
-	err = cmd.ctx.hmgr.openH1D(cmd.ctx.fmgr, hid, hname)
+	err = cmd.ctx.hmgr.open(cmd.ctx.fmgr, hid, hname)
 	return err
 }
 
-func (cmd *cmdH1DOpen) Help(w io.Writer) {
+func (cmd *cmdHistOpen) Help(w io.Writer) {
 	fmt.Fprintf(w, "%s \t-- open a histogram\n", cmd.Name())
 }
 
-func (cmd *cmdH1DOpen) Complete(line string) []string {
+func (cmd *cmdHistOpen) Complete(line string) []string {
 	var o []string
 	args := strings.Split(line, " ")
 	switch len(args) {
@@ -68,31 +68,31 @@ func (cmd *cmdH1DOpen) Complete(line string) []string {
 	return o
 }
 
-// cmdH1DPlot plots a histogram
-type cmdH1DPlot struct {
+// cmdHistPlot plots a histogram
+type cmdHistPlot struct {
 	ctx *Cmd
 }
 
-func (cmd *cmdH1DPlot) Name() string {
+func (cmd *cmdHistPlot) Name() string {
 	return "/hist/plot"
 }
 
-func (cmd *cmdH1DPlot) Run(args []string) error {
+func (cmd *cmdHistPlot) Run(args []string) error {
 	var err error
 	if len(args) < 1 {
 		return fmt.Errorf("%s: need a histo-id to plot", cmd.Name())
 	}
 
 	hid := args[0]
-	err = cmd.ctx.hmgr.plotH1D(cmd.ctx.wmgr, hid)
+	err = cmd.ctx.hmgr.plot(cmd.ctx.wmgr, hid)
 	return err
 }
 
-func (cmd *cmdH1DPlot) Help(w io.Writer) {
+func (cmd *cmdHistPlot) Help(w io.Writer) {
 	fmt.Fprintf(w, "%s \t-- plot a histogram\n", cmd.Name())
 }
 
-func (cmd *cmdH1DPlot) Complete(line string) []string {
+func (cmd *cmdHistPlot) Complete(line string) []string {
 	var o []string
 	return o
 }

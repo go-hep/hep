@@ -57,6 +57,16 @@ func (r *rfile) ls() error {
 	return err
 }
 
+func (r *rfile) typ(name string) string {
+	for _, k := range r.rio.Keys() {
+		if k.Name == name {
+			return k.Blocks[0].Type
+		}
+	}
+
+	return ""
+}
+
 func (r *rfile) read(name string, ptr interface{}) error {
 	var err error
 

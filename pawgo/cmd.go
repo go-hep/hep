@@ -51,8 +51,8 @@ func newCmd(scr screen.Screen) *Cmd {
 		"/file/create": &cmdFileCreate{&c},
 		"/file/ls":     &cmdFileList{&c},
 
-		"/hist/open": &cmdH1DOpen{&c},
-		"/hist/plot": &cmdH1DPlot{&c},
+		"/hist/open": &cmdHistOpen{&c},
+		"/hist/plot": &cmdHistPlot{&c},
 
 		"/quit": &cmdQuit{&c},
 	}
