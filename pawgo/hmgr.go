@@ -49,7 +49,7 @@ func (mgr *histMgr) openH1D(fmgr *fileMgr, hid, path string) error {
 		return fmt.Errorf("unknown file-id [%s]", fid)
 	}
 
-	hname := toks[1]
+	hname := strings.Join(toks[1:], "/")
 
 	var h1d hbook.H1D
 	err = r.read(hname, &h1d)

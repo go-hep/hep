@@ -1,0 +1,3 @@
+/file/open f ./testdata/issue-120.rio
+/hist/open h /file/id/f/MonoH_Truth/jets
+

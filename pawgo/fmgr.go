@@ -60,6 +60,8 @@ func (r *rfile) ls() error {
 func (r *rfile) read(name string, ptr interface{}) error {
 	var err error
 
+	// FIXME(sbinet): when/if "rio" gets the concept of directories,
+	// handle this there.
 	if !r.rio.Has(name) {
 		return fmt.Errorf("no record [%s] in file [id=%s name=%s]", name, r.id, r.n)
 	}
