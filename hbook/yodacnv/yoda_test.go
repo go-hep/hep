@@ -41,6 +41,46 @@ func TestReadWrite(t *testing.T) {
 	}
 }
 
+func TestReadCounter(t *testing.T) {
+	r := bytes.NewReader([]byte(`BEGIN YODA_COUNTER /_EVTCOUNT
+Path=/_EVTCOUNT
+Title=
+Type=Counter
+# sumW	 sumW2	 numEntries
+3.255092e+09	1.059749e+15	10000
+END YODA_COUNTER
+`))
+
+	objs, err := yodacnv.Read(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(objs) != 0 {
+		t.Fatalf("got %d values. want 0 (COUNTER not implemented)", len(objs), 0)
+	}
+}
+
+func TestReadScatter1D(t *testing.T) {
+	r := bytes.NewReader([]byte(`BEGIN YODA_SCATTER1D /_XSEC
+Path=/_XSEC
+Title=
+Type=Scatter1D
+# xval	 xerr-	 xerr+
+2.966429e+04	2.828319e+02	2.828319e+02
+END YODA_SCATTER1D
+`))
+
+	objs, err := yodacnv.Read(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(objs) != 0 {
+		t.Fatalf("got %d values. want 0 (SCATTER1D not implemented)", len(objs), 0)
+	}
+}
+
 func init() {
 
 	add := func(o yodacnv.Marshaler) {

@@ -8,6 +8,7 @@ package yodacnv
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"reflect"
@@ -20,14 +21,19 @@ var (
 	endYoda = []byte("END YODA_")
 )
 
+var (
+	errIgnore = errors.New("yodacnv: ignore value (not implemented)")
+)
+
 // Read reads a YODA stream and converts the YODA values into their
 // go-hep/hbook equivalents.
 func Read(r io.Reader) ([]hbook.Object, error) {
 	var (
-		err   error
-		o     []hbook.Object
-		block = make([]byte, 0, 1024)
-		rt    reflect.Type
+		err    error
+		o      []hbook.Object
+		block  = make([]byte, 0, 1024)
+		rt     reflect.Type
+		ignore bool
 	)
 	scan := bufio.NewScanner(r)
 	for scan.Scan() {
@@ -35,6 +41,10 @@ func Read(r io.Reader) ([]hbook.Object, error) {
 		switch {
 		case bytes.HasPrefix(raw, begYoda):
 			rt, err = splitHeader(raw)
+			if err == errIgnore {
+				err = nil
+				ignore = true
+			}
 			if err != nil {
 				return nil, fmt.Errorf("yoda: error parsing YODA header (%v)", err)
 			}
@@ -49,6 +59,11 @@ func Read(r io.Reader) ([]hbook.Object, error) {
 		case bytes.HasPrefix(raw, endYoda):
 			block = append(block, raw...)
 			block = append(block, '\n')
+
+			if ignore {
+				ignore = false
+				continue
+			}
 
 			v := reflect.New(rt).Elem()
 			err = v.Addr().Interface().(Unmarshaler).UnmarshalYODA(block)
@@ -99,8 +114,16 @@ func splitHeader(raw []byte) (reflect.Type, error) {
 		rt = reflect.TypeOf((*hbook.H2D)(nil)).Elem()
 	case "PROFILE1D":
 		rt = reflect.TypeOf((*hbook.P1D)(nil)).Elem()
+	case "PROFILE2D":
+		return nil, errIgnore
+	case "SCATTER1D":
+		return nil, errIgnore
 	case "SCATTER2D":
 		rt = reflect.TypeOf((*hbook.S2D)(nil)).Elem()
+	case "SCATTER3D":
+		return nil, errIgnore
+	case "COUNTER":
+		return nil, errIgnore
 	default:
 		return nil, fmt.Errorf("unhandled YODA object type %q", string(raw[:i]))
 	}
