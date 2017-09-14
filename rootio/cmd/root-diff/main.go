@@ -170,8 +170,10 @@ func diffObject(key string, ref, chk rootio.Object) error {
 	case rootio.Tree:
 		return diffTree(key, ref, chk.(rootio.Tree))
 	default:
-		return fmt.Errorf("unhandled type %T (key=%v)", ref, key)
-
+		if !reflect.DeepEqual(ref, chk) {
+			fmt.Printf("key[%s] --\nref: %#v\nchk: %#v\n", key, ref, chk)
+			return fmt.Errorf("keys %s differ", key)
+		}
 	}
 	return nil
 }
