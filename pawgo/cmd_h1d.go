@@ -84,7 +84,7 @@ func (cmd *cmdHistPlot) Run(args []string) error {
 	}
 
 	hid := args[0]
-	err = cmd.ctx.hmgr.plot(cmd.ctx.wmgr, hid)
+	err = cmd.ctx.hmgr.plot(cmd.ctx.fmgr, cmd.ctx.wmgr, hid)
 	return err
 }
 
@@ -94,5 +94,33 @@ func (cmd *cmdHistPlot) Help(w io.Writer) {
 
 func (cmd *cmdHistPlot) Complete(line string) []string {
 	var o []string
+	args := strings.Split(line, " ")
+	switch len(args) {
+	case 0, 1:
+		return o
+	case 2:
+		if strings.HasPrefix(args[1], "/") {
+			for id, r := range cmd.ctx.fmgr.rfds {
+				for _, k := range r.rio.Keys() {
+					name := "/file/id/" + id + "/" + k.Name
+					if strings.HasPrefix(name, args[1]) {
+						o = append(o, args[0]+" "+name)
+					}
+				}
+			}
+			return o
+		}
+		for k := range cmd.ctx.hmgr.h1ds {
+			if strings.HasPrefix(k, args[1]) {
+				o = append(o, args[0]+" "+k)
+			}
+		}
+		for k := range cmd.ctx.hmgr.h2ds {
+			if strings.HasPrefix(k, args[1]) {
+				o = append(o, args[0]+" "+k)
+			}
+		}
+		return o
+	}
 	return o
 }

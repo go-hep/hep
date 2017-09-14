@@ -24,11 +24,11 @@ func newHistMgr() *histMgr {
 	}
 }
 
-func (mgr *histMgr) open(fmgr *fileMgr, hid, path string) error {
+func (mgr *histMgr) find(fmgr *fileMgr, path string) (hbook.Object, error) {
 	var err error
 	const prefix = "/file/id/"
 	if !strings.HasPrefix(path, prefix) {
-		return fmt.Errorf("invalid path [%s] (missing prefix [%s])", path, prefix)
+		return nil, fmt.Errorf("invalid path [%s] (missing prefix [%s])", path, prefix)
 	}
 
 	var toks []string
@@ -41,14 +41,14 @@ func (mgr *histMgr) open(fmgr *fileMgr, hid, path string) error {
 	}
 
 	if len(toks) < 2 {
-		return fmt.Errorf("invalid path [%s] (missing file-id and histo-name)", path)
+		return nil, fmt.Errorf("invalid path [%s] (missing file-id and histo-name)", path)
 	}
 
 	fid := toks[0]
 
 	r, ok := fmgr.rfds[fid]
 	if !ok {
-		return fmt.Errorf("unknown file-id [%s]", fid)
+		return nil, fmt.Errorf("unknown file-id [%s]", fid)
 	}
 
 	hname := strings.Join(toks[1:], "/")
@@ -58,17 +58,35 @@ func (mgr *histMgr) open(fmgr *fileMgr, hid, path string) error {
 		var h1 hbook.H1D
 		err = r.read(hname, &h1)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		mgr.h1ds[hid] = &h1
+		return &h1, nil
 
 	case "*go-hep.org/x/hep/hbook.H2D":
 		var h2 hbook.H2D
 		err = r.read(hname, &h2)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		mgr.h2ds[hid] = &h2
+		return &h2, nil
+
+	default:
+		return nil, fmt.Errorf("%q not an histogram", path)
+	}
+}
+
+func (mgr *histMgr) open(fmgr *fileMgr, hid, path string) error {
+	h, err := mgr.find(fmgr, path)
+	if err != nil {
+		return err
+	}
+
+	switch h := h.(type) {
+	case *hbook.H1D:
+		mgr.h1ds[hid] = h
+
+	case *hbook.H2D:
+		mgr.h2ds[hid] = h
 
 	default:
 		return fmt.Errorf("%q not an histogram", path)
@@ -77,7 +95,23 @@ func (mgr *histMgr) open(fmgr *fileMgr, hid, path string) error {
 	return err
 }
 
-func (mgr *histMgr) plot(wmgr *winMgr, hid string) error {
+func (mgr *histMgr) plot(fmgr *fileMgr, wmgr *winMgr, hid string) error {
+	if strings.HasPrefix(hid, "/file/id/") {
+		// directly plot from file
+		h, err := mgr.find(fmgr, hid)
+		if err != nil {
+			return err
+		}
+		switch h := h.(type) {
+		case *hbook.H1D:
+			return mgr.plotH1D(wmgr, h)
+		case *hbook.H2D:
+			return mgr.plotH2D(wmgr, h)
+		default:
+			return fmt.Errorf("unknown histogram [id=%s]", hid)
+		}
+	}
+
 	if h, ok := mgr.h1ds[hid]; ok {
 		return mgr.plotH1D(wmgr, h)
 	}
