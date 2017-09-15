@@ -110,12 +110,7 @@ func (cmd *cmdHistPlot) Complete(line string) []string {
 			}
 			return o
 		}
-		for k := range cmd.ctx.hmgr.h1ds {
-			if strings.HasPrefix(k, args[1]) {
-				o = append(o, args[0]+" "+k)
-			}
-		}
-		for k := range cmd.ctx.hmgr.h2ds {
+		for k := range cmd.ctx.hmgr.hmap {
 			if strings.HasPrefix(k, args[1]) {
 				o = append(o, args[0]+" "+k)
 			}

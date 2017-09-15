@@ -13,18 +13,16 @@ import (
 )
 
 type histMgr struct {
-	h1ds map[string]*hbook.H1D
-	h2ds map[string]*hbook.H2D
+	hmap map[string]hbook.Histogram
 }
 
 func newHistMgr() *histMgr {
 	return &histMgr{
-		h1ds: make(map[string]*hbook.H1D),
-		h2ds: make(map[string]*hbook.H2D),
+		hmap: make(map[string]hbook.Histogram),
 	}
 }
 
-func (mgr *histMgr) find(fmgr *fileMgr, path string) (hbook.Object, error) {
+func (mgr *histMgr) find(fmgr *fileMgr, path string) (hbook.Histogram, error) {
 	var err error
 	const prefix = "/file/id/"
 	if !strings.HasPrefix(path, prefix) {
@@ -80,47 +78,37 @@ func (mgr *histMgr) open(fmgr *fileMgr, hid, path string) error {
 	if err != nil {
 		return err
 	}
-
-	switch h := h.(type) {
-	case *hbook.H1D:
-		mgr.h1ds[hid] = h
-
-	case *hbook.H2D:
-		mgr.h2ds[hid] = h
-
-	default:
-		return fmt.Errorf("%q not an histogram", path)
-	}
-
-	return err
+	mgr.hmap[hid] = h
+	return nil
 }
 
 func (mgr *histMgr) plot(fmgr *fileMgr, wmgr *winMgr, hid string) error {
+	var (
+		h   hbook.Histogram
+		err error
+	)
 	if strings.HasPrefix(hid, "/file/id/") {
 		// directly plot from file
-		h, err := mgr.find(fmgr, hid)
+		h, err = mgr.find(fmgr, hid)
 		if err != nil {
 			return err
 		}
-		switch h := h.(type) {
-		case *hbook.H1D:
-			return mgr.plotH1D(wmgr, h)
-		case *hbook.H2D:
-			return mgr.plotH2D(wmgr, h)
-		default:
+	} else {
+		var ok bool
+		h, ok = mgr.hmap[hid]
+		if !ok {
 			return fmt.Errorf("unknown histogram [id=%s]", hid)
 		}
 	}
 
-	if h, ok := mgr.h1ds[hid]; ok {
+	switch h := h.(type) {
+	case *hbook.H1D:
 		return mgr.plotH1D(wmgr, h)
-	}
-
-	if h, ok := mgr.h2ds[hid]; ok {
+	case *hbook.H2D:
 		return mgr.plotH2D(wmgr, h)
 	}
 
-	return fmt.Errorf("unknown histogram [id=%s]", hid)
+	return fmt.Errorf("unknown histogram type %T [id=%s]", h, hid)
 }
 
 func (mgr *histMgr) plotH1D(wmgr *winMgr, h *hbook.H1D) error {
