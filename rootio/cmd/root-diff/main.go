@@ -21,6 +21,7 @@
 //      	comma-separated list of keys to inspect and compare (default=all common keys)
 //
 package main // import "go-hep.org/x/hep/rootio/cmd/root-diff"
+
 import (
 	"flag"
 	"fmt"
