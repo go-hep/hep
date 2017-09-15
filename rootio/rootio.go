@@ -219,6 +219,52 @@ type Axis interface {
 	BinWidth(int) float64
 }
 
+// H1 is a 1-dim ROOT histogram
+type H1 interface {
+	Named
+
+	isH1()
+
+	// Entries returns the number of entries for this histogram.
+	Entries() float64
+	// SumW returns the total sum of weights
+	SumW() float64
+	// SumW2 returns the total sum of squares of weights
+	SumW2() float64
+	// SumWX returns the total sum of weights*x
+	SumWX() float64
+	// SumWX2 returns the total sum of weights*x*x
+	SumWX2() float64
+	// SumW2s returns the array of sum of squares of weights
+	SumW2s() []float64
+}
+
+// H2 is a 2-dim ROOT histogram
+type H2 interface {
+	Named
+
+	isH2()
+
+	// Entries returns the number of entries for this histogram.
+	Entries() float64
+	// SumW returns the total sum of weights
+	SumW() float64
+	// SumW2 returns the total sum of squares of weights
+	SumW2() float64
+	// SumWX returns the total sum of weights*x
+	SumWX() float64
+	// SumWX2 returns the total sum of weights*x*x
+	SumWX2() float64
+	// SumW2s returns the array of sum of squares of weights
+	SumW2s() []float64
+	// SumWY returns the total sum of weights*y
+	SumWY() float64
+	// SumWY2 returns the total sum of weights*y*y
+	SumWY2() float64
+	// SumWXY returns the total sum of weights*x*y
+	SumWXY() float64
+}
+
 // Graph describes a ROOT TGraph
 type Graph interface {
 	Named

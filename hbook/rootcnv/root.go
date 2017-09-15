@@ -12,8 +12,8 @@ import (
 )
 
 // H1D creates a new H1D from a TH1x.
-func H1D(r yodacnv.Marshaler) (*hbook.H1D, error) {
-	raw, err := r.MarshalYODA()
+func H1D(h1 rootio.H1) (*hbook.H1D, error) {
+	raw, err := h1.(yodacnv.Marshaler).MarshalYODA()
 	if err != nil {
 		return nil, err
 	}
@@ -26,8 +26,8 @@ func H1D(r yodacnv.Marshaler) (*hbook.H1D, error) {
 }
 
 // H2D creates a new H2D from a TH2x.
-func H2D(r yodacnv.Marshaler) (*hbook.H2D, error) {
-	raw, err := r.MarshalYODA()
+func H2D(h2 rootio.H2) (*hbook.H2D, error) {
+	raw, err := h2.(yodacnv.Marshaler).MarshalYODA()
 	if err != nil {
 		return nil, err
 	}

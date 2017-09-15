@@ -17,7 +17,6 @@ import (
 
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hbook/rootcnv"
-	"go-hep.org/x/hep/hbook/yodacnv"
 	"go-hep.org/x/hep/hplot"
 	"go-hep.org/x/hep/rootio"
 )
@@ -56,7 +55,7 @@ func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("could not find %q in file %q: %v", filepath.Join(toks[1:]...), fname, err)
 	}
 
-	robj, ok := obj.(yodacnv.Marshaler)
+	robj, ok := obj.(rootio.H1)
 	if !ok {
 		return fmt.Errorf("object %q could not be converted to hbook.H1D", toks[1])
 	}
@@ -69,7 +68,7 @@ func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	plot.Title.Text = obj.(rootio.Named).Title()
+	plot.Title.Text = robj.Title()
 
 	h, err := hplot.NewH1D(h1d)
 	if err != nil {
@@ -106,7 +105,7 @@ func (srv *server) plotH2Handle(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("could not find %q in file %q: %v", filepath.Join(toks[1:]...), fname, err)
 	}
 
-	robj, ok := obj.(yodacnv.Marshaler)
+	robj, ok := obj.(rootio.H2)
 	if !ok {
 		return fmt.Errorf("object %q could not be converted to hbook.H1D", toks[1])
 	}
@@ -119,7 +118,7 @@ func (srv *server) plotH2Handle(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	plot.Title.Text = obj.(rootio.Named).Title()
+	plot.Title.Text = robj.Title()
 
 	h := hplot.NewH2D(h2d, nil)
 	h.Infos.Style = hplot.HInfoSummary

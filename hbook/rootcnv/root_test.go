@@ -248,7 +248,7 @@ END YODA_HISTO1D
 			t.Errorf("%s: error: %v", test.name, err)
 			continue
 		}
-		rhisto := obj.(yodacnv.Marshaler)
+		rhisto := obj.(rootio.H1)
 
 		h, err := rootcnv.H1D(rhisto)
 		if err != nil {
@@ -341,7 +341,7 @@ END YODA_HISTO2D
 			t.Errorf("%s: error: %v", test.name, err)
 			continue
 		}
-		rhisto := obj.(yodacnv.Marshaler)
+		rhisto := obj.(rootio.H2)
 
 		h, err := rootcnv.H2D(rhisto)
 		if err != nil {

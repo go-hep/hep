@@ -524,6 +524,8 @@ type {{.Name}} struct {
 	arr {{.Type}}
 }
 
+func (*{{.Name}}) isH1() {}
+
 // Class returns the ROOT class name.
 func (*{{.Name}}) Class() string {
 	return "T{{.Name}}"
@@ -719,9 +721,12 @@ func init() {
 	Factory.add("*rootio.{{.Name}}", f)
 }
 
-var _ Object = (*{{.Name}})(nil)
-var _ Named = (*{{.Name}})(nil)
-var _ ROOTUnmarshaler = (*{{.Name}})(nil)
+var (
+	_ Object          = (*{{.Name}})(nil)
+	_ Named           = (*{{.Name}})(nil)
+	_ H1              = (*{{.Name}})(nil)
+	_ ROOTUnmarshaler = (*{{.Name}})(nil)
+)
 `
 
 const h2Tmpl = `// {{.Name}} implements ROOT T{{.Name}}
@@ -729,6 +734,8 @@ type {{.Name}} struct {
 	th2
 	arr {{.Type}}
 }
+
+func (*{{.Name}}) isH2() {}
 
 // Class returns the ROOT class name.
 func (*{{.Name}}) Class() string {
@@ -1007,7 +1014,10 @@ func init() {
 	Factory.add("*rootio.{{.Name}}", f)
 }
 
-var _ Object = (*{{.Name}})(nil)
-var _ Named = (*{{.Name}})(nil)
-var _ ROOTUnmarshaler = (*{{.Name}})(nil)
+var (
+	_ Object          = (*{{.Name}})(nil)
+	_ Named           = (*{{.Name}})(nil)
+	_ H2              = (*{{.Name}})(nil)
+	_ ROOTUnmarshaler = (*{{.Name}})(nil)
+)
 `

@@ -33,7 +33,6 @@ import (
 	"strings"
 
 	"go-hep.org/x/hep/hbook/rootcnv"
-	"go-hep.org/x/hep/hbook/yodacnv"
 	"go-hep.org/x/hep/hplot"
 	"go-hep.org/x/hep/rootio"
 	"gonum.org/v1/plot/plotutil"
@@ -163,8 +162,8 @@ func printObject(f *rootio.File, obj rootio.Object) error {
 	}
 
 	switch o := obj.(type) {
-	case *rootio.H1D, *rootio.H1F, *rootio.H1I:
-		h, err := rootcnv.H1D(o.(yodacnv.Marshaler))
+	case rootio.H1:
+		h, err := rootcnv.H1D(o)
 		if err != nil {
 			return err
 		}
@@ -179,8 +178,8 @@ func printObject(f *rootio.File, obj rootio.Object) error {
 
 		p.Add(hh)
 
-	case *rootio.H2D, *rootio.H2F, *rootio.H2I:
-		h, err := rootcnv.H2D(o.(yodacnv.Marshaler))
+	case rootio.H2:
+		h, err := rootcnv.H2D(o)
 		if err != nil {
 			return err
 		}
@@ -231,10 +230,10 @@ func printObject(f *rootio.File, obj rootio.Object) error {
 
 func filter(obj rootio.Object) bool {
 	switch obj.(type) {
-	case *rootio.H1D, *rootio.H1F, *rootio.H1I:
+	case rootio.H1:
 		return true
 
-	case *rootio.H2D, *rootio.H2F, *rootio.H2I:
+	case rootio.H2:
 		return true
 
 	case rootio.Graph, rootio.GraphErrors:

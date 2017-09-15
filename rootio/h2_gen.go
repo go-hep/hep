@@ -19,6 +19,8 @@ type H2F struct {
 	arr ArrayF
 }
 
+func (*H2F) isH2() {}
+
 // Class returns the ROOT class name.
 func (*H2F) Class() string {
 	return "TH2F"
@@ -296,15 +298,20 @@ func init() {
 	Factory.add("*rootio.H2F", f)
 }
 
-var _ Object = (*H2F)(nil)
-var _ Named = (*H2F)(nil)
-var _ ROOTUnmarshaler = (*H2F)(nil)
+var (
+	_ Object          = (*H2F)(nil)
+	_ Named           = (*H2F)(nil)
+	_ H2              = (*H2F)(nil)
+	_ ROOTUnmarshaler = (*H2F)(nil)
+)
 
 // H2D implements ROOT TH2D
 type H2D struct {
 	th2
 	arr ArrayD
 }
+
+func (*H2D) isH2() {}
 
 // Class returns the ROOT class name.
 func (*H2D) Class() string {
@@ -583,15 +590,20 @@ func init() {
 	Factory.add("*rootio.H2D", f)
 }
 
-var _ Object = (*H2D)(nil)
-var _ Named = (*H2D)(nil)
-var _ ROOTUnmarshaler = (*H2D)(nil)
+var (
+	_ Object          = (*H2D)(nil)
+	_ Named           = (*H2D)(nil)
+	_ H2              = (*H2D)(nil)
+	_ ROOTUnmarshaler = (*H2D)(nil)
+)
 
 // H2I implements ROOT TH2I
 type H2I struct {
 	th2
 	arr ArrayI
 }
+
+func (*H2I) isH2() {}
 
 // Class returns the ROOT class name.
 func (*H2I) Class() string {
@@ -870,6 +882,9 @@ func init() {
 	Factory.add("*rootio.H2I", f)
 }
 
-var _ Object = (*H2I)(nil)
-var _ Named = (*H2I)(nil)
-var _ ROOTUnmarshaler = (*H2I)(nil)
+var (
+	_ Object          = (*H2I)(nil)
+	_ Named           = (*H2I)(nil)
+	_ H2              = (*H2I)(nil)
+	_ ROOTUnmarshaler = (*H2I)(nil)
+)
