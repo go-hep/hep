@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"go-hep.org/x/hep/rootio/internal/bio"
 )
 
 type Reader interface {
@@ -110,6 +112,10 @@ func Open(path string) (*File, error) {
 	if err != nil {
 		return nil, fmt.Errorf("rootio: failed to read header %q: %v", path, err)
 	}
+	fd.Seek(0, 0)
+	br := bio.NewReader(fd)
+	f.r = br
+	f.seeker = br
 
 	return f, nil
 }
@@ -128,6 +134,10 @@ func NewReader(r Reader, name string) (*File, error) {
 	if err != nil {
 		return nil, fmt.Errorf("rootio: failed to read header: %v", err)
 	}
+	r.Seek(0, 0)
+	br := bio.NewReader(r)
+	f.r = br
+	f.seeker = br
 
 	return f, nil
 }
