@@ -42,7 +42,6 @@ func (li *tlist) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
 	vers, pos, bcnt := r.ReadVersion()
-	myprintf("tlist-vers=%v\n", vers)
 
 	if vers <= 3 {
 		return fmt.Errorf("rootio: TList version too old (%d <= 3)", vers)

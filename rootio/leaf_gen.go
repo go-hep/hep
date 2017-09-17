@@ -60,8 +60,7 @@ func (leaf *LeafO) TypeName() string {
 
 func (leaf *LeafO) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("LeafO: %v %v %v\n", vers, pos, bcnt)
+	_, pos, bcnt := r.ReadVersion()
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -203,8 +202,7 @@ func (leaf *LeafB) TypeName() string {
 
 func (leaf *LeafB) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("LeafB: %v %v %v\n", vers, pos, bcnt)
+	_, pos, bcnt := r.ReadVersion()
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -361,8 +359,7 @@ func (leaf *LeafS) TypeName() string {
 
 func (leaf *LeafS) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("LeafS: %v %v %v\n", vers, pos, bcnt)
+	_, pos, bcnt := r.ReadVersion()
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -519,8 +516,7 @@ func (leaf *LeafI) TypeName() string {
 
 func (leaf *LeafI) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("LeafI: %v %v %v\n", vers, pos, bcnt)
+	_, pos, bcnt := r.ReadVersion()
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -677,8 +673,7 @@ func (leaf *LeafL) TypeName() string {
 
 func (leaf *LeafL) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("LeafL: %v %v %v\n", vers, pos, bcnt)
+	_, pos, bcnt := r.ReadVersion()
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -825,8 +820,7 @@ func (leaf *LeafF) TypeName() string {
 
 func (leaf *LeafF) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("LeafF: %v %v %v\n", vers, pos, bcnt)
+	_, pos, bcnt := r.ReadVersion()
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -958,8 +952,7 @@ func (leaf *LeafD) TypeName() string {
 
 func (leaf *LeafD) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("LeafD: %v %v %v\n", vers, pos, bcnt)
+	_, pos, bcnt := r.ReadVersion()
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -1091,8 +1084,7 @@ func (leaf *LeafC) TypeName() string {
 
 func (leaf *LeafC) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("LeafC: %v %v %v\n", vers, pos, bcnt)
+	_, pos, bcnt := r.ReadVersion()
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err

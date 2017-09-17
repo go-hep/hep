@@ -19,6 +19,8 @@ type tdirectory struct {
 	seekparent int64     // location of parent directory on file
 	seekkeys   int64     // location of Keys record on file
 
+	classname string
+
 	named tnamed // name+title of this directory
 	file  *File  // pointer to current file in memory
 	keys  []Key
@@ -89,14 +91,10 @@ func (dir *tdirectory) readDirInfo() error {
 	}
 
 	r = NewRBuffer(data[nk:], nil, 0)
-	classname := r.ReadString()
+	dir.classname = r.ReadString()
 
 	dir.named.name = r.ReadString()
 	dir.named.title = r.ReadString()
-
-	myprintf("class: [%v]\n", classname)
-	myprintf("cname: [%v]\n", dir.named.name)
-	myprintf("title: [%v]\n", dir.named.title)
 
 	if dir.nbytesname < 10 || dir.nbytesname > 1000 {
 		return fmt.Errorf("rootio: can't read directory info.")
@@ -194,9 +192,6 @@ func (dir *tdirectory) UnmarshalROOT(r *RBuffer) error {
 		ctime   = r.ReadU32()
 		mtime   = r.ReadU32()
 	)
-	myprintf("dir-version: %v\n", version)
-	myprintf("dir-ctime: %v\n", dir.ctime)
-	myprintf("dir-mtime: %v\n", dir.mtime)
 
 	dir.mtime = datime2time(mtime)
 	dir.ctime = datime2time(ctime)

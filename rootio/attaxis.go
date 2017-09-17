@@ -34,7 +34,6 @@ func (a *attaxis) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
-	myprintf("attaxis-vers=%v\n", vers)
 	if vers < 4 {
 		return fmt.Errorf("rootio: TAttAxis version too old (%d < 4)", vers)
 	}

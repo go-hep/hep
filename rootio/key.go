@@ -208,18 +208,6 @@ func (k *Key) UnmarshalROOT(r *RBuffer) error {
 	k.name = r.ReadString()
 	k.title = r.ReadString()
 
-	myprintf("key-version: %v\n", k.version)
-	myprintf("key-objlen:  %v\n", k.objlen)
-	myprintf("key-cdate:   %v\n", k.datetime)
-	myprintf("key-keylen:  %v\n", k.keylen)
-	myprintf("key-cycle:   %v\n", k.cycle)
-	myprintf("key-seekkey: %v\n", k.seekkey)
-	myprintf("key-seekpdir:%v\n", k.seekpdir)
-	myprintf("key-compress: %v %v %v %v %v\n", k.isCompressed(), k.objlen, k.bytes-k.keylen, k.bytes, k.keylen)
-	myprintf("key-class: [%v]\n", k.class)
-	myprintf("key-name:  [%v]\n", k.name)
-	myprintf("key-title: [%v]\n", k.title)
-
 	//k.pdat = data
 
 	return r.Err()

@@ -369,8 +369,7 @@ func (leaf *{{.Name}}) TypeName() string {
 
 func (leaf *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("{{.Name}}: %v %v %v\n", vers, pos, bcnt)
+	_, pos, bcnt := r.ReadVersion()
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err

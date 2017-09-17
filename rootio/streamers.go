@@ -44,8 +44,7 @@ func (tsi *tstreamerInfo) Elements() []StreamerElement {
 
 func (tsi *tstreamerInfo) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("tstreamerinfo-vers=%v\n", vers)
+	_, pos, bcnt := r.ReadVersion()
 
 	if err := tsi.named.UnmarshalROOT(r); err != nil {
 		return err

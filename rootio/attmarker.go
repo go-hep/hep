@@ -18,8 +18,7 @@ func (a *attmarker) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("attmarker-vers=%v\n", vers)
+	_, pos, bcnt := r.ReadVersion()
 	a.color = r.ReadI16()
 	a.style = r.ReadI16()
 	a.width = r.ReadF32()

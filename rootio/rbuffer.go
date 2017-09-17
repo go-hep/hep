@@ -560,7 +560,6 @@ func (r *RBuffer) ReadVersion() (vers int16, pos, n int32) {
 	pos = int32(r.Pos())
 
 	bcnt := r.ReadU32()
-	myprintf("readVersion - bytecount=%v\n", bcnt)
 	if (int64(bcnt) & ^kByteCountMask) != 0 {
 		n = int32(int64(bcnt) & ^kByteCountMask)
 	} else {
@@ -569,7 +568,6 @@ func (r *RBuffer) ReadVersion() (vers int16, pos, n int32) {
 	}
 
 	vers = int16(r.ReadU16())
-	myprintf("readVersion => [%v] [%v] [%v]\n", pos, vers, n)
 	return vers, pos, n
 }
 

@@ -27,8 +27,7 @@ func (obj *tobjString) Title() string {
 // unmarshal itself from a ROOT buffer
 func (obj *tobjString) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("tobjString-vers=%v\n", vers)
+	_, pos, bcnt := r.ReadVersion()
 	if err := obj.obj.UnmarshalROOT(r); err != nil {
 		return err
 	}

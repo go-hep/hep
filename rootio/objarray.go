@@ -51,7 +51,6 @@ func (arr *objarray) LowerBound() int {
 func (arr *objarray) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
-	myprintf("objarray-vers=%v\n", vers)
 
 	if vers > 2 {
 		if err := arr.obj.UnmarshalROOT(r); err != nil {

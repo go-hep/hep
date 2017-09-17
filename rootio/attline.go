@@ -18,8 +18,7 @@ func (a *attline) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	myprintf("attline-vers=%v\n", vers)
+	_, pos, bcnt := r.ReadVersion()
 
 	a.color = r.ReadI16()
 	a.style = r.ReadI16()
