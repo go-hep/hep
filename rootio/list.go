@@ -53,8 +53,9 @@ func (li *tlist) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	li.name = r.ReadString()
-	size := int(r.ReadI32())
+	r.ReadString(&li.name)
+	var size int32
+	r.ReadI32(&size)
 
 	li.objs = make([]Object, size)
 
@@ -67,7 +68,8 @@ func (li *tlist) UnmarshalROOT(r *RBuffer) error {
 		}
 		li.objs[i] = obj
 
-		n := int(r.ReadU8())
+		var n uint8
+		r.ReadU8(&n)
 		if n > 0 {
 			opt := make([]byte, n)
 			io.ReadFull(r.r, opt)

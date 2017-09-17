@@ -58,11 +58,12 @@ func (arr *objarray) UnmarshalROOT(r *RBuffer) error {
 		}
 	}
 	if vers > 1 {
-		arr.name = r.ReadString()
+		r.ReadString(&arr.name)
 	}
 
-	nobjs := int(r.ReadI32())
-	arr.low = r.ReadI32()
+	var nobjs int32
+	r.ReadI32(&nobjs)
+	r.ReadI32(&arr.low)
 
 	arr.arr = make([]Object, nobjs)
 	arr.last = -1

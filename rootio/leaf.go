@@ -123,11 +123,15 @@ func (leaf *tleaf) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	leaf.len = int(r.ReadI32())
-	leaf.etype = int(r.ReadI32())
-	leaf.offset = int(r.ReadI32())
-	leaf.hasrange = r.ReadBool()
-	leaf.unsigned = r.ReadBool()
+	var i32 int32
+	r.ReadI32(&i32)
+	leaf.len = int(i32)
+	r.ReadI32(&i32)
+	leaf.etype = int(i32)
+	r.ReadI32(&i32)
+	leaf.offset = int(i32)
+	r.ReadBool(&leaf.hasrange)
+	r.ReadBool(&leaf.unsigned)
 
 	leaf.count = nil
 	ptr := r.ReadObjectAny()
@@ -192,8 +196,8 @@ func (leaf *tleafElement) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	leaf.id = r.ReadI32()
-	leaf.ltype = r.ReadI32()
+	r.ReadI32(&leaf.id)
+	r.ReadI32(&leaf.ltype)
 
 	r.CheckByteCount(pos, bcnt, beg, "TLeafElement")
 	return r.err

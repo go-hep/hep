@@ -44,8 +44,8 @@ func (n *tnamed) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	n.name = r.ReadString()
-	n.title = r.ReadString()
+	r.ReadString(&n.name)
+	r.ReadString(&n.title)
 
 	r.CheckByteCount(pos, bcnt, beg, "TNamed")
 	return r.Err()

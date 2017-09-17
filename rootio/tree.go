@@ -115,45 +115,53 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 		)
 	}
 
-	tree.entries = r.ReadI64()
-	tree.totbytes = r.ReadI64()
-	tree.zipbytes = r.ReadI64()
+	r.ReadI64(&tree.entries)
+	r.ReadI64(&tree.totbytes)
+	r.ReadI64(&tree.zipbytes)
 	if vers >= 19 { // FIXME
-		_ = r.ReadI64() // fSavedBytes
+		var savedBytes int64
+		r.ReadI64(&savedBytes) // fSavedBytes
 	}
 	if vers >= 18 {
-		_ = r.ReadI64() // flushed bytes
+		var flushedBytes int64
+		r.ReadI64(&flushedBytes) // flushed bytes
 	}
 
-	_ = r.ReadF64() // fWeight
-	_ = r.ReadI32() // fTimerInterval
-	_ = r.ReadI32() // fScanField
-	_ = r.ReadI32() // fUpdate
+	var f64 float64
+	r.ReadF64(&f64) // fWeight
+	var i32 int32
+	r.ReadI32(&i32) // fTimerInterval
+	r.ReadI32(&i32) // fScanField
+	r.ReadI32(&i32) // fUpdate
 
 	if vers >= 18 {
-		_ = r.ReadI32() // fDefaultEntryOffsetLen
+		r.ReadI32(&i32) // fDefaultEntryOffsetLen
 	}
 	nclus := 0
 	if vers >= 19 { // FIXME
-		nclus = int(r.ReadI32()) // fNClusterRange
+		r.ReadI32(&i32)
+		nclus = int(i32) // fNClusterRange
 	}
 
-	_ = r.ReadI64() // fMaxEntries
-	_ = r.ReadI64() // fMaxEntryLoop
-	_ = r.ReadI64() // fMaxVirtualSize
-	_ = r.ReadI64() // fAutoSave
+	var i64 int64
+	r.ReadI64(&i64) // fMaxEntries
+	r.ReadI64(&i64) // fMaxEntryLoop
+	r.ReadI64(&i64) // fMaxVirtualSize
+	r.ReadI64(&i64) // fAutoSave
 
 	if vers >= 18 {
-		_ = r.ReadI64() // fAutoFlush
+		r.ReadI64(&i64) // fAutoFlush
 	}
 
-	_ = r.ReadI64() // fEstimate
+	r.ReadI64(&i64) // fEstimate
 
 	if vers >= 19 { // FIXME
-		_ = r.ReadI8()
-		_ = r.ReadFastArrayI64(nclus) // fClusterRangeEnd
-		_ = r.ReadI8()
-		_ = r.ReadFastArrayI64(nclus) // fClusterSize
+		var i8 int8
+		i64s := make([]int64, nclus)
+		r.ReadI8(&i8)
+		r.ReadFastArrayI64(i64s) // fClusterRangeEnd
+		r.ReadI8(&i8)
+		r.ReadFastArrayI64(i64s) // fClusterSize
 	}
 
 	var branches objarray
@@ -210,7 +218,9 @@ func (nt *tntuple) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	nt.nvars = int(r.ReadI32())
+	var i32 int32
+	r.ReadI32(&i32)
+	nt.nvars = int(i32)
 
 	r.CheckByteCount(pos, bcnt, beg, "TNtuple")
 	return r.err

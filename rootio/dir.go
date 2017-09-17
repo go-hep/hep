@@ -72,7 +72,8 @@ func (dir *tdirectory) readDirInfo() error {
 
 	nk := 4 // Key::fNumberOfBytes
 	r = NewRBuffer(data[nk:], nil, 0)
-	keyversion := r.ReadI16()
+	var keyversion int16
+	r.ReadI16(&keyversion)
 	if r.Err() != nil {
 		return r.Err()
 	}
@@ -91,10 +92,10 @@ func (dir *tdirectory) readDirInfo() error {
 	}
 
 	r = NewRBuffer(data[nk:], nil, 0)
-	dir.classname = r.ReadString()
+	r.ReadString(&dir.classname)
 
-	dir.named.name = r.ReadString()
-	dir.named.title = r.ReadString()
+	r.ReadString(&dir.named.name)
+	r.ReadString(&dir.named.title)
 
 	if dir.nbytesname < 10 || dir.nbytesname > 1000 {
 		return fmt.Errorf("rootio: can't read directory info.")
@@ -128,7 +129,8 @@ func (dir *tdirectory) readKeys() error {
 	}
 
 	r := NewRBuffer(buf, nil, 0)
-	nkeys := r.ReadI32()
+	var nkeys int32
+	r.ReadI32(&nkeys)
 	if r.Err() != nil {
 		return r.err
 	}
@@ -188,24 +190,33 @@ func (dir *tdirectory) Keys() []Key {
 
 func (dir *tdirectory) UnmarshalROOT(r *RBuffer) error {
 	var (
-		version = r.ReadI16()
-		ctime   = r.ReadU32()
-		mtime   = r.ReadU32()
+		version int16
+		ctime   uint32
+		mtime   uint32
 	)
+	r.ReadI16(&version)
+	r.ReadU32(&ctime)
+	r.ReadU32(&mtime)
 
 	dir.mtime = datime2time(mtime)
 	dir.ctime = datime2time(ctime)
 
-	dir.nbyteskeys = r.ReadI32()
-	dir.nbytesname = r.ReadI32()
+	r.ReadI32(&dir.nbyteskeys)
+	r.ReadI32(&dir.nbytesname)
 
-	readptr := r.ReadI64
 	if version <= 1000 {
-		readptr = func() int64 { return int64(r.ReadI32()) }
+		var i32 int32
+		r.ReadI32(&i32)
+		dir.seekdir = int64(i32)
+		r.ReadI32(&i32)
+		dir.seekparent = int64(i32)
+		r.ReadI32(&i32)
+		dir.seekkeys = int64(i32)
+	} else {
+		r.ReadI64(&dir.seekdir)
+		r.ReadI64(&dir.seekparent)
+		r.ReadI64(&dir.seekkeys)
 	}
-	dir.seekdir = readptr()
-	dir.seekparent = readptr()
-	dir.seekkeys = readptr()
 	return r.Err()
 }
 

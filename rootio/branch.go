@@ -117,18 +117,26 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 		return err
 	}
 
-	b.compress = int(r.ReadI32())
-	b.basketSize = int(r.ReadI32())
-	b.entryOffsetLen = int(r.ReadI32())
-	b.writeBasket = int(r.ReadI32())
-	b.entryNumber = r.ReadI64()
-	b.offset = int(r.ReadI32())
-	b.maxBaskets = int(r.ReadI32())
-	b.splitLevel = int(r.ReadI32())
-	b.entries = r.ReadI64()
-	b.firstEntry = r.ReadI64()
-	b.totBytes = r.ReadI64()
-	b.zipBytes = r.ReadI64()
+	var i32 int32
+	r.ReadI32(&i32)
+	b.compress = int(i32)
+	r.ReadI32(&i32)
+	b.basketSize = int(i32)
+	r.ReadI32(&i32)
+	b.entryOffsetLen = int(i32)
+	r.ReadI32(&i32)
+	b.writeBasket = int(i32)
+	r.ReadI64(&b.entryNumber)
+	r.ReadI32(&i32)
+	b.offset = int(i32)
+	r.ReadI32(&i32)
+	b.maxBaskets = int(i32)
+	r.ReadI32(&i32)
+	b.splitLevel = int(i32)
+	r.ReadI64(&b.entries)
+	r.ReadI64(&b.firstEntry)
+	r.ReadI64(&b.totBytes)
+	r.ReadI64(&b.zipBytes)
 
 	{
 		var branches objarray
@@ -178,19 +186,23 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 	b.basketEntry = nil
 	b.basketSeek = nil
 
-	/*isArray*/
-	_ = r.ReadI8()
-	b.basketBytes = r.ReadFastArrayI32(b.maxBaskets)[:b.writeBasket:b.writeBasket]
+	var isArray int8
+	r.ReadI8(&isArray)
+	b.basketBytes = make([]int32, b.maxBaskets)
+	r.ReadFastArrayI32(b.basketBytes)
+	b.basketBytes = b.basketBytes[:b.writeBasket:b.writeBasket]
 
-	/*isArray*/
-	_ = r.ReadI8()
-	b.basketEntry = r.ReadFastArrayI64(b.maxBaskets)[:b.writeBasket+1 : b.writeBasket+1]
+	r.ReadI8(&isArray)
+	b.basketEntry = make([]int64, b.maxBaskets)
+	r.ReadFastArrayI64(b.basketEntry)
+	b.basketEntry = b.basketEntry[:b.writeBasket+1 : b.writeBasket+1]
 
-	/*isArray*/
-	_ = r.ReadI8()
-	b.basketSeek = r.ReadFastArrayI64(b.maxBaskets)[:b.writeBasket:b.writeBasket]
+	r.ReadI8(&isArray)
+	b.basketSeek = make([]int64, b.maxBaskets)
+	r.ReadFastArrayI64(b.basketSeek)
+	b.basketSeek = b.basketSeek[:b.writeBasket:b.writeBasket]
 
-	b.fname = r.ReadString()
+	r.ReadString(&b.fname)
 
 	r.CheckByteCount(pos, bcnt, beg, "TBranch")
 
@@ -286,8 +298,10 @@ func (b *tbranch) loadBasket(entry int64) error {
 		if err != nil {
 			return err
 		}
-		n := b.basket.rbuf.ReadI32()
-		b.basket.offsets = b.basket.rbuf.ReadFastArrayI32(int(n))
+		var n int32
+		b.basket.rbuf.ReadI32(&n)
+		b.basket.offsets = make([]int32, n)
+		b.basket.rbuf.ReadFastArrayI32(b.basket.offsets)
 		if b.basket.rbuf.err != nil {
 			return b.basket.rbuf.err
 		}
@@ -384,19 +398,21 @@ func (b *tbranchElement) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	b.class = r.ReadString()
-	b.parent = r.ReadString()
-	b.clones = r.ReadString()
-	b.chksum = r.ReadU32()
+	r.ReadString(&b.class)
+	r.ReadString(&b.parent)
+	r.ReadString(&b.clones)
+	r.ReadU32(&b.chksum)
 	if vers >= 10 {
-		b.clsver = r.ReadU16()
+		r.ReadU16(&b.clsver)
 	} else {
-		b.clsver = uint16(r.ReadU32())
+		var u32 uint32
+		r.ReadU32(&u32)
+		b.clsver = uint16(u32)
 	}
-	b.id = r.ReadI32()
-	b.btype = r.ReadI32()
-	b.stype = r.ReadI32()
-	b.max = r.ReadI32()
+	r.ReadI32(&b.id)
+	r.ReadI32(&b.btype)
+	r.ReadI32(&b.stype)
+	r.ReadI32(&b.max)
 
 	bcount1 := r.ReadObjectAny()
 	if bcount1 != nil {

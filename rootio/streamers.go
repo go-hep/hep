@@ -50,8 +50,8 @@ func (tsi *tstreamerInfo) UnmarshalROOT(r *RBuffer) error {
 		return err
 	}
 
-	tsi.chksum = r.ReadU32()
-	tsi.clsver = r.ReadI32()
+	r.ReadU32(&tsi.chksum)
+	r.ReadI32(&tsi.clsver)
 	objs := r.ReadObjectAny()
 	if r.err != nil {
 		return r.err
@@ -79,6 +79,9 @@ type tstreamerElement struct {
 	arrdim int32    // number of array dimensions
 	maxidx [5]int32 // maximum array index for array dimension "dim"
 	ename  string   // data type name of data member
+	xmin   float64  // minimum of data member if a range is specified [xmin.xmax,nbits]
+	xmax   float64  // maximum of data member if a range is specified [xmin,xmax,nbits]
+	fact   float64  // conversion factor if a range is specified (fact = (1<<nbits/(xmax-xmin)))
 }
 
 func (tse *tstreamerElement) Class() string {
@@ -124,19 +127,25 @@ func (tse *tstreamerElement) UnmarshalROOT(r *RBuffer) error {
 		return err
 	}
 
-	tse.etype = r.ReadI32()
-	tse.esize = r.ReadI32()
-	tse.arrlen = r.ReadI32()
-	tse.arrdim = r.ReadI32()
+	r.ReadI32(&tse.etype)
+	r.ReadI32(&tse.esize)
+	r.ReadI32(&tse.arrlen)
+	r.ReadI32(&tse.arrdim)
 	if vers == 1 {
 		copy(tse.maxidx[:], r.ReadStaticArrayI32())
 	} else {
-		copy(tse.maxidx[:], r.ReadFastArrayI32(len(tse.maxidx)))
+		r.ReadFastArrayI32(tse.maxidx[:])
 	}
-	tse.ename = r.ReadString()
+	r.ReadString(&tse.ename)
 
 	if tse.etype == 11 && (tse.ename == "Bool_t" || tse.ename == "bool") {
 		tse.etype = 18
+	}
+
+	if vers == 3 {
+		r.ReadF64(&tse.xmin)
+		r.ReadF64(&tse.xmax)
+		r.ReadF64(&tse.fact)
 	}
 
 	r.CheckByteCount(pos, bcnt, beg, "TStreamerElement")
@@ -161,7 +170,7 @@ func (tsb *tstreamerBase) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	if vers > 2 {
-		tsb.vbase = r.ReadI32()
+		r.ReadI32(&tsb.vbase)
 	}
 
 	r.CheckByteCount(pos, bcnt, beg, "TStreamerBase")
@@ -235,9 +244,9 @@ func (tsb *tstreamerBasicPointer) UnmarshalROOT(r *RBuffer) error {
 		return err
 	}
 
-	tsb.cvers = r.ReadI32()
-	tsb.cname = r.ReadString()
-	tsb.ccls = r.ReadString()
+	r.ReadI32(&tsb.cvers)
+	r.ReadString(&tsb.cname)
+	r.ReadString(&tsb.ccls)
 
 	r.CheckByteCount(pos, bcnt, beg, "TStreamerBasicPointer")
 	return r.Err()
@@ -263,9 +272,9 @@ func (tsl *tstreamerLoop) UnmarshalROOT(r *RBuffer) error {
 		return err
 	}
 
-	tsl.cvers = r.ReadI32()
-	tsl.cname = r.ReadString()
-	tsl.cclass = r.ReadString()
+	r.ReadI32(&tsl.cvers)
+	r.ReadString(&tsl.cname)
+	r.ReadString(&tsl.cclass)
 
 	r.CheckByteCount(pos, bcnt, beg, "TStreamerLoop")
 	return r.Err()
@@ -395,8 +404,8 @@ func (tss *tstreamerSTL) UnmarshalROOT(r *RBuffer) error {
 		return err
 	}
 
-	tss.vtype = r.ReadI32()
-	tss.ctype = r.ReadI32()
+	r.ReadI32(&tss.vtype)
+	r.ReadI32(&tss.ctype)
 
 	if tss.vtype == kSTLmultimap || tss.vtype == kSTLset {
 		switch {

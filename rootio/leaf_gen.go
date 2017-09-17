@@ -67,8 +67,8 @@ func (leaf *LeafO) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	leaf.min = r.ReadBool()
-	leaf.max = r.ReadBool()
+	r.ReadBool(&leaf.min)
+	r.ReadBool(&leaf.max)
 
 	r.CheckByteCount(pos, bcnt, start, "TLeafO")
 	return r.Err()
@@ -80,7 +80,7 @@ func (leaf *LeafO) readBasket(r *RBuffer) error {
 	}
 
 	if leaf.count == nil && len(leaf.val) == 1 {
-		leaf.val[0] = r.ReadBool()
+		r.ReadBool(&leaf.val[0])
 	} else {
 		if leaf.count != nil {
 			entry := leaf.Branch().getReadEntry()
@@ -92,12 +92,22 @@ func (leaf *LeafO) readBasket(r *RBuffer) error {
 			if n > max {
 				n = max
 			}
-			leaf.val = r.ReadFastArrayBool(leaf.tleaf.len * n)
+			leaf.resize(leaf.tleaf.len * n)
+			r.ReadFastArrayBool(leaf.val)
 		} else {
-			leaf.val = r.ReadFastArrayBool(leaf.tleaf.len)
+			leaf.resize(leaf.tleaf.len)
+			r.ReadFastArrayBool(leaf.val)
 		}
 	}
 	return r.err
+}
+
+func (leaf *LeafO) resize(n int) {
+	if len(leaf.val) > n {
+		leaf.val = leaf.val[:n]
+		return
+	}
+	leaf.val = make([]bool, n)
 }
 
 func (leaf *LeafO) scan(r *RBuffer, ptr interface{}) error {
@@ -209,8 +219,8 @@ func (leaf *LeafB) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	leaf.min = r.ReadI8()
-	leaf.max = r.ReadI8()
+	r.ReadI8(&leaf.min)
+	r.ReadI8(&leaf.max)
 
 	r.CheckByteCount(pos, bcnt, start, "TLeafB")
 	return r.Err()
@@ -222,7 +232,7 @@ func (leaf *LeafB) readBasket(r *RBuffer) error {
 	}
 
 	if leaf.count == nil && len(leaf.val) == 1 {
-		leaf.val[0] = r.ReadI8()
+		r.ReadI8(&leaf.val[0])
 	} else {
 		if leaf.count != nil {
 			entry := leaf.Branch().getReadEntry()
@@ -234,12 +244,22 @@ func (leaf *LeafB) readBasket(r *RBuffer) error {
 			if n > max {
 				n = max
 			}
-			leaf.val = r.ReadFastArrayI8(leaf.tleaf.len * n)
+			leaf.resize(leaf.tleaf.len * n)
+			r.ReadFastArrayI8(leaf.val)
 		} else {
-			leaf.val = r.ReadFastArrayI8(leaf.tleaf.len)
+			leaf.resize(leaf.tleaf.len)
+			r.ReadFastArrayI8(leaf.val)
 		}
 	}
 	return r.err
+}
+
+func (leaf *LeafB) resize(n int) {
+	if len(leaf.val) > n {
+		leaf.val = leaf.val[:n]
+		return
+	}
+	leaf.val = make([]int8, n)
 }
 
 func (leaf *LeafB) scan(r *RBuffer, ptr interface{}) error {
@@ -366,8 +386,8 @@ func (leaf *LeafS) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	leaf.min = r.ReadI16()
-	leaf.max = r.ReadI16()
+	r.ReadI16(&leaf.min)
+	r.ReadI16(&leaf.max)
 
 	r.CheckByteCount(pos, bcnt, start, "TLeafS")
 	return r.Err()
@@ -379,7 +399,7 @@ func (leaf *LeafS) readBasket(r *RBuffer) error {
 	}
 
 	if leaf.count == nil && len(leaf.val) == 1 {
-		leaf.val[0] = r.ReadI16()
+		r.ReadI16(&leaf.val[0])
 	} else {
 		if leaf.count != nil {
 			entry := leaf.Branch().getReadEntry()
@@ -391,12 +411,22 @@ func (leaf *LeafS) readBasket(r *RBuffer) error {
 			if n > max {
 				n = max
 			}
-			leaf.val = r.ReadFastArrayI16(leaf.tleaf.len * n)
+			leaf.resize(leaf.tleaf.len * n)
+			r.ReadFastArrayI16(leaf.val)
 		} else {
-			leaf.val = r.ReadFastArrayI16(leaf.tleaf.len)
+			leaf.resize(leaf.tleaf.len)
+			r.ReadFastArrayI16(leaf.val)
 		}
 	}
 	return r.err
+}
+
+func (leaf *LeafS) resize(n int) {
+	if len(leaf.val) > n {
+		leaf.val = leaf.val[:n]
+		return
+	}
+	leaf.val = make([]int16, n)
 }
 
 func (leaf *LeafS) scan(r *RBuffer, ptr interface{}) error {
@@ -523,8 +553,8 @@ func (leaf *LeafI) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	leaf.min = r.ReadI32()
-	leaf.max = r.ReadI32()
+	r.ReadI32(&leaf.min)
+	r.ReadI32(&leaf.max)
 
 	r.CheckByteCount(pos, bcnt, start, "TLeafI")
 	return r.Err()
@@ -536,7 +566,7 @@ func (leaf *LeafI) readBasket(r *RBuffer) error {
 	}
 
 	if leaf.count == nil && len(leaf.val) == 1 {
-		leaf.val[0] = r.ReadI32()
+		r.ReadI32(&leaf.val[0])
 	} else {
 		if leaf.count != nil {
 			entry := leaf.Branch().getReadEntry()
@@ -548,12 +578,22 @@ func (leaf *LeafI) readBasket(r *RBuffer) error {
 			if n > max {
 				n = max
 			}
-			leaf.val = r.ReadFastArrayI32(leaf.tleaf.len * n)
+			leaf.resize(leaf.tleaf.len * n)
+			r.ReadFastArrayI32(leaf.val)
 		} else {
-			leaf.val = r.ReadFastArrayI32(leaf.tleaf.len)
+			leaf.resize(leaf.tleaf.len)
+			r.ReadFastArrayI32(leaf.val)
 		}
 	}
 	return r.err
+}
+
+func (leaf *LeafI) resize(n int) {
+	if len(leaf.val) > n {
+		leaf.val = leaf.val[:n]
+		return
+	}
+	leaf.val = make([]int32, n)
 }
 
 func (leaf *LeafI) scan(r *RBuffer, ptr interface{}) error {
@@ -680,8 +720,8 @@ func (leaf *LeafL) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	leaf.min = r.ReadI64()
-	leaf.max = r.ReadI64()
+	r.ReadI64(&leaf.min)
+	r.ReadI64(&leaf.max)
 
 	r.CheckByteCount(pos, bcnt, start, "TLeafL")
 	return r.Err()
@@ -693,7 +733,7 @@ func (leaf *LeafL) readBasket(r *RBuffer) error {
 	}
 
 	if leaf.count == nil && len(leaf.val) == 1 {
-		leaf.val[0] = r.ReadI64()
+		r.ReadI64(&leaf.val[0])
 	} else {
 		if leaf.count != nil {
 			entry := leaf.Branch().getReadEntry()
@@ -705,12 +745,22 @@ func (leaf *LeafL) readBasket(r *RBuffer) error {
 			if n > max {
 				n = max
 			}
-			leaf.val = r.ReadFastArrayI64(leaf.tleaf.len * n)
+			leaf.resize(leaf.tleaf.len * n)
+			r.ReadFastArrayI64(leaf.val)
 		} else {
-			leaf.val = r.ReadFastArrayI64(leaf.tleaf.len)
+			leaf.resize(leaf.tleaf.len)
+			r.ReadFastArrayI64(leaf.val)
 		}
 	}
 	return r.err
+}
+
+func (leaf *LeafL) resize(n int) {
+	if len(leaf.val) > n {
+		leaf.val = leaf.val[:n]
+		return
+	}
+	leaf.val = make([]int64, n)
 }
 
 func (leaf *LeafL) scan(r *RBuffer, ptr interface{}) error {
@@ -827,8 +877,8 @@ func (leaf *LeafF) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	leaf.min = r.ReadF32()
-	leaf.max = r.ReadF32()
+	r.ReadF32(&leaf.min)
+	r.ReadF32(&leaf.max)
 
 	r.CheckByteCount(pos, bcnt, start, "TLeafF")
 	return r.Err()
@@ -840,7 +890,7 @@ func (leaf *LeafF) readBasket(r *RBuffer) error {
 	}
 
 	if leaf.count == nil && len(leaf.val) == 1 {
-		leaf.val[0] = r.ReadF32()
+		r.ReadF32(&leaf.val[0])
 	} else {
 		if leaf.count != nil {
 			entry := leaf.Branch().getReadEntry()
@@ -852,12 +902,22 @@ func (leaf *LeafF) readBasket(r *RBuffer) error {
 			if n > max {
 				n = max
 			}
-			leaf.val = r.ReadFastArrayF32(leaf.tleaf.len * n)
+			leaf.resize(leaf.tleaf.len * n)
+			r.ReadFastArrayF32(leaf.val)
 		} else {
-			leaf.val = r.ReadFastArrayF32(leaf.tleaf.len)
+			leaf.resize(leaf.tleaf.len)
+			r.ReadFastArrayF32(leaf.val)
 		}
 	}
 	return r.err
+}
+
+func (leaf *LeafF) resize(n int) {
+	if len(leaf.val) > n {
+		leaf.val = leaf.val[:n]
+		return
+	}
+	leaf.val = make([]float32, n)
 }
 
 func (leaf *LeafF) scan(r *RBuffer, ptr interface{}) error {
@@ -959,8 +1019,8 @@ func (leaf *LeafD) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	leaf.min = r.ReadF64()
-	leaf.max = r.ReadF64()
+	r.ReadF64(&leaf.min)
+	r.ReadF64(&leaf.max)
 
 	r.CheckByteCount(pos, bcnt, start, "TLeafD")
 	return r.Err()
@@ -972,7 +1032,7 @@ func (leaf *LeafD) readBasket(r *RBuffer) error {
 	}
 
 	if leaf.count == nil && len(leaf.val) == 1 {
-		leaf.val[0] = r.ReadF64()
+		r.ReadF64(&leaf.val[0])
 	} else {
 		if leaf.count != nil {
 			entry := leaf.Branch().getReadEntry()
@@ -984,12 +1044,22 @@ func (leaf *LeafD) readBasket(r *RBuffer) error {
 			if n > max {
 				n = max
 			}
-			leaf.val = r.ReadFastArrayF64(leaf.tleaf.len * n)
+			leaf.resize(leaf.tleaf.len * n)
+			r.ReadFastArrayF64(leaf.val)
 		} else {
-			leaf.val = r.ReadFastArrayF64(leaf.tleaf.len)
+			leaf.resize(leaf.tleaf.len)
+			r.ReadFastArrayF64(leaf.val)
 		}
 	}
 	return r.err
+}
+
+func (leaf *LeafD) resize(n int) {
+	if len(leaf.val) > n {
+		leaf.val = leaf.val[:n]
+		return
+	}
+	leaf.val = make([]float64, n)
 }
 
 func (leaf *LeafD) scan(r *RBuffer, ptr interface{}) error {
@@ -1091,8 +1161,8 @@ func (leaf *LeafC) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	leaf.min = r.ReadI32()
-	leaf.max = r.ReadI32()
+	r.ReadI32(&leaf.min)
+	r.ReadI32(&leaf.max)
 
 	r.CheckByteCount(pos, bcnt, start, "TLeafC")
 	return r.Err()
@@ -1104,7 +1174,7 @@ func (leaf *LeafC) readBasket(r *RBuffer) error {
 	}
 
 	if leaf.count == nil && len(leaf.val) == 1 {
-		leaf.val[0] = r.ReadString()
+		r.ReadString(&leaf.val[0])
 	} else {
 		if leaf.count != nil {
 			entry := leaf.Branch().getReadEntry()
@@ -1116,12 +1186,22 @@ func (leaf *LeafC) readBasket(r *RBuffer) error {
 			if n > max {
 				n = max
 			}
-			leaf.val = r.ReadFastArrayString(leaf.tleaf.len * n)
+			leaf.resize(leaf.tleaf.len * n)
+			r.ReadFastArrayString(leaf.val)
 		} else {
-			leaf.val = r.ReadFastArrayString(leaf.tleaf.len)
+			leaf.resize(leaf.tleaf.len)
+			r.ReadFastArrayString(leaf.val)
 		}
 	}
 	return r.err
+}
+
+func (leaf *LeafC) resize(n int) {
+	if len(leaf.val) > n {
+		leaf.val = leaf.val[:n]
+		return
+	}
+	leaf.val = make([]string, n)
 }
 
 func (leaf *LeafC) scan(r *RBuffer, ptr interface{}) error {

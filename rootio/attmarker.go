@@ -19,9 +19,9 @@ func (a *attmarker) UnmarshalROOT(r *RBuffer) error {
 
 	start := r.Pos()
 	_, pos, bcnt := r.ReadVersion()
-	a.color = r.ReadI16()
-	a.style = r.ReadI16()
-	a.width = r.ReadF32()
+	r.ReadI16(&a.color)
+	r.ReadI16(&a.style)
+	r.ReadF32(&a.width)
 	r.CheckByteCount(pos, bcnt, start, "TAttMarker")
 
 	return r.Err()
@@ -36,4 +36,6 @@ func init() {
 	Factory.add("*rootio.attmarker", f)
 }
 
-var _ ROOTUnmarshaler = (*attmarker)(nil)
+var (
+	_ ROOTUnmarshaler = (*attmarker)(nil)
+)

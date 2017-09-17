@@ -31,7 +31,7 @@ func (obj *tobjString) UnmarshalROOT(r *RBuffer) error {
 	if err := obj.obj.UnmarshalROOT(r); err != nil {
 		return err
 	}
-	obj.str = r.ReadString()
+	r.ReadString(&obj.str)
 
 	r.CheckByteCount(pos, bcnt, start, "TObjString")
 	return r.Err()

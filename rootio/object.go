@@ -17,11 +17,12 @@ func (obj *tobject) Class() string {
 
 func (obj *tobject) UnmarshalROOT(r *RBuffer) error {
 	r.SkipVersion("")
-	obj.id = r.ReadU32()
-	obj.bits = r.ReadU32()
+	r.ReadU32(&obj.id)
+	r.ReadU32(&obj.bits)
 	obj.bits |= kIsOnHeap
 	if obj.bits&kIsReferenced != 0 {
-		_ = r.ReadU16()
+		var u16 uint16
+		r.ReadU16(&u16)
 	}
 	return r.Err()
 }

@@ -89,7 +89,9 @@ func (h *th1) UnmarshalROOT(r *RBuffer) error {
 		}
 	}
 
-	h.ncells = int(r.ReadI32())
+	var i32 int32
+	r.ReadI32(&i32)
+	h.ncells = int(i32)
 
 	for _, v := range []ROOTUnmarshaler{
 		&h.xaxis,
@@ -102,23 +104,28 @@ func (h *th1) UnmarshalROOT(r *RBuffer) error {
 		}
 	}
 
-	h.boffset = r.ReadI16()
-	h.bwidth = r.ReadI16()
-	h.entries = r.ReadF64()
-	h.tsumw = r.ReadF64()
-	h.tsumw2 = r.ReadF64()
-	h.tsumwx = r.ReadF64()
-	h.tsumwx2 = r.ReadF64()
+	r.ReadI16(&h.boffset)
+	r.ReadI16(&h.bwidth)
+	r.ReadF64(&h.entries)
+	r.ReadF64(&h.tsumw)
+	r.ReadF64(&h.tsumw2)
+	r.ReadF64(&h.tsumwx)
+	r.ReadF64(&h.tsumwx2)
 	if vers < 2 {
-		h.max = float64(r.ReadF32())
-		h.min = float64(r.ReadF32())
-		h.norm = float64(r.ReadF32())
-		n := int(r.ReadI32())
-		h.contour.Data = r.ReadFastArrayF64(n)
+		var f32 float32
+		r.ReadF32(&f32)
+		h.max = float64(f32)
+		r.ReadF32(&f32)
+		h.min = float64(f32)
+		r.ReadF32(&f32)
+		h.norm = float64(f32)
+		r.ReadI32(&i32)
+		h.contour.Data = make([]float64, i32)
+		r.ReadFastArrayF64(h.contour.Data)
 	} else {
-		h.max = r.ReadF64()
-		h.min = r.ReadF64()
-		h.norm = r.ReadF64()
+		r.ReadF64(&h.max)
+		r.ReadF64(&h.min)
+		r.ReadF64(&h.norm)
 		if err := h.contour.UnmarshalROOT(r); err != nil {
 			r.err = err
 			return r.err
@@ -130,16 +137,18 @@ func (h *th1) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	h.opt = r.ReadString()
+	r.ReadString(&h.opt)
 	if err := h.funcs.UnmarshalROOT(r); err != nil {
 		r.err = err
 		return r.err
 	}
 
-	n := int(r.ReadI32())
-	_ = r.ReadI8()
-	h.buffer = r.ReadFastArrayF64(n)
-	h.erropt = r.ReadI32()
+	r.ReadI32(&i32)
+	h.buffer = make([]float64, i32)
+	var i8 int8
+	r.ReadI8(&i8)
+	r.ReadFastArrayF64(h.buffer)
+	r.ReadI32(&h.erropt)
 
 	r.CheckByteCount(pos, bcnt, beg, "TH1")
 	return r.err
@@ -173,10 +182,10 @@ func (h *th2) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	h.scale = r.ReadF64()
-	h.tsumwy = r.ReadF64()
-	h.tsumwy2 = r.ReadF64()
-	h.tsumwxy = r.ReadF64()
+	r.ReadF64(&h.scale)
+	r.ReadF64(&h.tsumwy)
+	r.ReadF64(&h.tsumwy2)
+	r.ReadF64(&h.tsumwxy)
 
 	r.CheckByteCount(pos, bcnt, beg, "TH2")
 	return r.err

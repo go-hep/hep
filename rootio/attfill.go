@@ -19,8 +19,8 @@ func (a *attfill) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	_, pos, bcnt := r.ReadVersion()
 
-	a.color = r.ReadI16()
-	a.style = r.ReadI16()
+	r.ReadI16(&a.color)
+	r.ReadI16(&a.style)
 	r.CheckByteCount(pos, bcnt, start, "TAttFill")
 
 	return r.Err()
@@ -35,4 +35,6 @@ func init() {
 	Factory.add("*rootio.attfill", f)
 }
 
-var _ ROOTUnmarshaler = (*attfill)(nil)
+var (
+	_ ROOTUnmarshaler = (*attfill)(nil)
+)

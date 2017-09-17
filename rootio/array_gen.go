@@ -41,8 +41,10 @@ func (arr *ArrayI) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	n := int(r.ReadI32())
-	arr.Data = r.ReadFastArrayI32(n)
+	var n int32
+	r.ReadI32(&n)
+	arr.Data = make([]int32, n)
+	r.ReadFastArrayI32(arr.Data)
 
 	return r.Err()
 }
@@ -90,8 +92,10 @@ func (arr *ArrayL64) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	n := int(r.ReadI32())
-	arr.Data = r.ReadFastArrayI64(n)
+	var n int32
+	r.ReadI32(&n)
+	arr.Data = make([]int64, n)
+	r.ReadFastArrayI64(arr.Data)
 
 	return r.Err()
 }
@@ -139,8 +143,10 @@ func (arr *ArrayF) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	n := int(r.ReadI32())
-	arr.Data = r.ReadFastArrayF32(n)
+	var n int32
+	r.ReadI32(&n)
+	arr.Data = make([]float32, n)
+	r.ReadFastArrayF32(arr.Data)
 
 	return r.Err()
 }
@@ -188,8 +194,10 @@ func (arr *ArrayD) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	n := int(r.ReadI32())
-	arr.Data = r.ReadFastArrayF64(n)
+	var n int32
+	r.ReadI32(&n)
+	arr.Data = make([]float64, n)
+	r.ReadFastArrayF64(arr.Data)
 
 	return r.Err()
 }

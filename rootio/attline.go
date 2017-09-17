@@ -20,12 +20,12 @@ func (a *attline) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	_, pos, bcnt := r.ReadVersion()
 
-	a.color = r.ReadI16()
-	a.style = r.ReadI16()
-	a.width = r.ReadI16()
+	r.ReadI16(&a.color)
+	r.ReadI16(&a.style)
+	r.ReadI16(&a.width)
 	r.CheckByteCount(pos, bcnt, start, "TAttLine")
 
-	return r.Err()
+	return r.err
 }
 
 func init() {
@@ -37,4 +37,6 @@ func init() {
 	Factory.add("*rootio.attline", f)
 }
 
-var _ ROOTUnmarshaler = (*attline)(nil)
+var (
+	_ ROOTUnmarshaler = (*attline)(nil)
+)

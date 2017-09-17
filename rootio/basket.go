@@ -52,9 +52,12 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 		return fmt.Errorf("rootio.Basket: Key is not a Basket")
 	}
 
-	b.vers = r.ReadU16()
-	b.bufsize = int(r.ReadI32())
-	b.nevsize = int(r.ReadI32())
+	r.ReadU16(&b.vers)
+	var i32 int32
+	r.ReadI32(&i32)
+	b.bufsize = int(i32)
+	r.ReadI32(&i32)
+	b.nevsize = int(i32)
 
 	if b.nevsize < 0 {
 		r.err = fmt.Errorf("rootio.Basket: incorrect event buffer size [%v]", b.nevsize)
@@ -62,9 +65,11 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	b.nevbuf = int(r.ReadI32())
-	b.last = int(r.ReadI32())
-	b.flag = r.ReadU8()
+	r.ReadI32(&i32)
+	b.nevbuf = int(i32)
+	r.ReadI32(&i32)
+	b.last = int(i32)
+	r.ReadU8(&b.flag)
 
 	if b.last > b.bufsize {
 		b.bufsize = b.last
@@ -76,8 +81,9 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 
 	if b.flag%10 != 2 {
 		if b.nevbuf > 0 {
-			n := int(r.ReadI32())
-			b.offsets = r.ReadFastArrayI32(n)
+			r.ReadI32(&i32)
+			b.offsets = make([]int32, i32)
+			r.ReadFastArrayI32(b.offsets)
 			if 20 < b.flag && b.flag < 40 {
 				const displacement uint32 = 0xFF000000
 				for i, v := range b.offsets {
@@ -86,8 +92,9 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 			}
 		}
 		if b.flag > 40 {
-			n := int(r.ReadI32())
-			b.offsets = r.ReadFastArrayI32(n)
+			r.ReadI32(&i32)
+			b.offsets = make([]int32, i32)
+			r.ReadFastArrayI32(b.offsets)
 		}
 	}
 
@@ -95,7 +102,7 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 		// reading raw data
 		var sz = int32(b.last)
 		if b.vers <= 1 {
-			sz = r.ReadI32()
+			r.ReadI32(&sz)
 		}
 		buf := make([]byte, int(sz))
 		_, err := io.ReadFull(r.r, buf)

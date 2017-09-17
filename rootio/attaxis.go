@@ -38,17 +38,17 @@ func (a *attaxis) UnmarshalROOT(r *RBuffer) error {
 		return fmt.Errorf("rootio: TAttAxis version too old (%d < 4)", vers)
 	}
 
-	a.ndivs = r.ReadI32()
-	a.acolor = r.ReadI16()
-	a.lcolor = r.ReadI16()
-	a.lfont = r.ReadI16()
-	a.loffset = r.ReadF32()
-	a.lsize = r.ReadF32()
-	a.ticks = r.ReadF32()
-	a.toffset = r.ReadF32()
-	a.tsize = r.ReadF32()
-	a.tcolor = r.ReadI16()
-	a.tfont = r.ReadI16()
+	r.ReadI32(&a.ndivs)
+	r.ReadI16(&a.acolor)
+	r.ReadI16(&a.lcolor)
+	r.ReadI16(&a.lfont)
+	r.ReadF32(&a.loffset)
+	r.ReadF32(&a.lsize)
+	r.ReadF32(&a.ticks)
+	r.ReadF32(&a.toffset)
+	r.ReadF32(&a.tsize)
+	r.ReadI16(&a.tcolor)
+	r.ReadI16(&a.tfont)
 
 	r.CheckByteCount(pos, bcnt, beg, "TAttAxis")
 
@@ -64,5 +64,7 @@ func init() {
 	Factory.add("*rootio.attaxis", f)
 }
 
-var _ Object = (*attaxis)(nil)
-var _ ROOTUnmarshaler = (*attaxis)(nil)
+var (
+	_ Object          = (*attaxis)(nil)
+	_ ROOTUnmarshaler = (*attaxis)(nil)
+)

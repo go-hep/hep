@@ -5,12 +5,10 @@
 package rootio
 
 import (
-	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"sort"
 )
 
@@ -130,39 +128,47 @@ func (r *RBuffer) dumpHex(n int) {
 	fmt.Printf("--- hex --- (pos=%d len=%d end=%d)\n%s\n", r.Pos(), n, r.Len(), string(hex.Dump(buf)))
 }
 
-func (r *RBuffer) ReadString() string {
+func (r *RBuffer) ReadString(s *string) {
 	if r.err != nil {
-		return ""
+		return
 	}
 
-	u8 := r.ReadU8()
+	var u8 uint8
+	r.ReadU8(&u8)
 	n := int(u8)
 	if u8 == 255 {
 		// large string
-		n = int(r.ReadU32())
+		var u32 uint32
+		r.ReadU32(&u32)
+		n = int(u32)
 	}
 	if n == 0 {
-		return ""
+		*s = ""
+		return
 	}
-	v := r.ReadU8()
-	if v == 0 {
-		return ""
+	r.ReadU8(&u8)
+	if u8 == 0 {
+		*s = ""
+		return
 	}
 	buf := make([]byte, n)
-	buf[0] = v
+	buf[0] = u8
 	if n != 0 {
 		r.read(buf[1:])
 		if r.err != nil {
-			return ""
+			*s = ""
+			return
 		}
-		return string(buf)
+		*s = string(buf)
+		return
 	}
-	return ""
+	*s = ""
+	return
 }
 
-func (r *RBuffer) ReadCString(n int) string {
+func (r *RBuffer) ReadCString(n int, s *string) {
 	if r.err != nil {
-		return ""
+		return
 	}
 
 	buf := make([]byte, n)
@@ -173,133 +179,21 @@ func (r *RBuffer) ReadCString(n int) string {
 			break
 		}
 	}
-	return string(buf)
+	*s = string(buf)
 }
 
-func (r *RBuffer) ReadBool() bool {
+func (r *RBuffer) ReadBool(v *bool) {
 	if r.err != nil {
-		return false
+		return
 	}
 
-	v := r.ReadI8()
-	if v != 0 {
-		return true
+	var i8 int8
+	r.ReadI8(&i8)
+	if i8 != 0 {
+		*v = true
+		return
 	}
-	return false
-}
-
-func (r *RBuffer) ReadI8() int8 {
-	if r.err != nil {
-		return 0
-	}
-
-	var v byte
-	v, r.err = r.r.ReadByte()
-	if r.err != nil {
-		return 0
-	}
-	return int8(v)
-}
-
-func (r *RBuffer) ReadI16() int16 {
-	if r.err != nil {
-		return 0
-	}
-
-	beg := r.r.c
-	r.r.c += 2
-	v := int16(binary.BigEndian.Uint16(r.r.p[beg:r.r.c]))
-	return v
-}
-
-func (r *RBuffer) ReadI32() int32 {
-	if r.err != nil {
-		return 0
-	}
-
-	beg := r.r.c
-	r.r.c += 4
-	v := int32(binary.BigEndian.Uint32(r.r.p[beg:r.r.c]))
-	return v
-}
-
-func (r *RBuffer) ReadI64() int64 {
-	if r.err != nil {
-		return 0
-	}
-
-	beg := r.r.c
-	r.r.c += 8
-	v := int64(binary.BigEndian.Uint64(r.r.p[beg:r.r.c]))
-	return v
-}
-
-func (r *RBuffer) ReadU8() uint8 {
-	if r.err != nil {
-		return 0
-	}
-
-	var v byte
-	v, r.err = r.r.ReadByte()
-	if r.err != nil {
-		return 0
-	}
-	return uint8(v)
-}
-
-func (r *RBuffer) ReadU16() uint16 {
-	if r.err != nil {
-		return 0
-	}
-
-	beg := r.r.c
-	r.r.c += 2
-	v := binary.BigEndian.Uint16(r.r.p[beg:r.r.c])
-	return v
-}
-
-func (r *RBuffer) ReadU32() uint32 {
-	if r.err != nil {
-		return 0
-	}
-
-	beg := r.r.c
-	r.r.c += 4
-	v := binary.BigEndian.Uint32(r.r.p[beg:r.r.c])
-	return v
-}
-
-func (r *RBuffer) ReadU64() uint64 {
-	if r.err != nil {
-		return 0
-	}
-
-	beg := r.r.c
-	r.r.c += 8
-	v := binary.BigEndian.Uint64(r.r.p[beg:r.r.c])
-	return v
-}
-
-func (r *RBuffer) ReadF32() float32 {
-	if r.err != nil {
-		return 0
-	}
-
-	beg := r.r.c
-	r.r.c += 4
-	v := binary.BigEndian.Uint32(r.r.p[beg:r.r.c])
-	return math.Float32frombits(v)
-}
-
-func (r *RBuffer) ReadF64() float64 {
-	if r.err != nil {
-		return 0
-	}
-
-	beg := r.r.c
-	r.r.c += 8
-	v := binary.BigEndian.Uint64(r.r.p[beg:r.r.c])
-	return math.Float64frombits(v)
+	*v = false
 }
 
 func (r *RBuffer) ReadStaticArrayI32() []int32 {
@@ -307,14 +201,15 @@ func (r *RBuffer) ReadStaticArrayI32() []int32 {
 		return nil
 	}
 
-	n := int(r.ReadI32())
+	var n int32
+	r.ReadI32(&n)
 	if n <= 0 || int64(n) > r.Len() {
 		return nil
 	}
 
 	arr := make([]int32, n)
 	for i := range arr {
-		arr[i] = r.ReadI32()
+		r.ReadI32(&arr[i])
 	}
 
 	if r.err != nil {
@@ -324,232 +219,30 @@ func (r *RBuffer) ReadStaticArrayI32() []int32 {
 	return arr
 }
 
-func (r *RBuffer) ReadFastArrayBool(n int) []bool {
+func (r *RBuffer) ReadFastArrayBool(v []bool) {
 	if r.err != nil {
-		return nil
+		return
 	}
-	if n <= 0 || int64(n) > r.Len() {
-		return nil
+	if n := len(v); n == 0 || int64(n) > r.Len() {
+		return
 	}
 
-	arr := make([]bool, n)
-	for i := range arr {
-		arr[i] = r.ReadBool()
+	for i := range v {
+		r.ReadBool(&v[i])
 	}
-
-	if r.err != nil {
-		return nil
-	}
-	return arr
 }
 
-func (r *RBuffer) ReadFastArrayI8(n int) []int8 {
+func (r *RBuffer) ReadFastArrayString(v []string) {
 	if r.err != nil {
-		return nil
+		return
 	}
-	if n <= 0 || int64(n) > r.Len() {
-		return nil
-	}
-
-	arr := make([]int8, n)
-	for i := range arr {
-		arr[i] = r.ReadI8()
+	if n := len(v); n == 0 || int64(n) > r.Len() {
+		return
 	}
 
-	if r.err != nil {
-		return nil
+	for i := range v {
+		r.ReadString(&v[i])
 	}
-	return arr
-}
-
-func (r *RBuffer) ReadFastArrayI16(n int) []int16 {
-	if r.err != nil {
-		return nil
-	}
-	if n <= 0 || int64(n) > r.Len() {
-		return nil
-	}
-
-	arr := make([]int16, n)
-	for i := range arr {
-		arr[i] = r.ReadI16()
-	}
-
-	if r.err != nil {
-		return nil
-	}
-	return arr
-}
-
-func (r *RBuffer) ReadFastArrayI32(n int) []int32 {
-	if r.err != nil {
-		return nil
-	}
-	if n <= 0 || int64(n) > r.Len() {
-		return nil
-	}
-
-	arr := make([]int32, n)
-	for i := range arr {
-		arr[i] = r.ReadI32()
-	}
-
-	if r.err != nil {
-		return nil
-	}
-	return arr
-}
-
-func (r *RBuffer) ReadFastArrayI64(n int) []int64 {
-	if r.err != nil {
-		return nil
-	}
-	if n <= 0 || int64(n) > r.Len() {
-		return nil
-	}
-
-	arr := make([]int64, n)
-	for i := range arr {
-		arr[i] = r.ReadI64()
-	}
-
-	if r.err != nil {
-		return nil
-	}
-	return arr
-}
-
-func (r *RBuffer) ReadFastArrayU8(n int) []uint8 {
-	if r.err != nil {
-		return nil
-	}
-	if n <= 0 || int64(n) > r.Len() {
-		return nil
-	}
-
-	arr := make([]uint8, n)
-	for i := range arr {
-		arr[i] = r.ReadU8()
-	}
-
-	if r.err != nil {
-		return nil
-	}
-	return arr
-}
-
-func (r *RBuffer) ReadFastArrayU16(n int) []uint16 {
-	if r.err != nil {
-		return nil
-	}
-	if n <= 0 || int64(n) > r.Len() {
-		return nil
-	}
-
-	arr := make([]uint16, n)
-	for i := range arr {
-		arr[i] = r.ReadU16()
-	}
-
-	if r.err != nil {
-		return nil
-	}
-	return arr
-}
-
-func (r *RBuffer) ReadFastArrayU32(n int) []uint32 {
-	if r.err != nil {
-		return nil
-	}
-	if n <= 0 || int64(n) > r.Len() {
-		return nil
-	}
-
-	arr := make([]uint32, n)
-	for i := range arr {
-		arr[i] = r.ReadU32()
-	}
-
-	if r.err != nil {
-		return nil
-	}
-	return arr
-}
-
-func (r *RBuffer) ReadFastArrayU64(n int) []uint64 {
-	if r.err != nil {
-		return nil
-	}
-	if n <= 0 || int64(n) > r.Len() {
-		return nil
-	}
-
-	arr := make([]uint64, n)
-	for i := range arr {
-		arr[i] = r.ReadU64()
-	}
-
-	if r.err != nil {
-		return nil
-	}
-	return arr
-}
-
-func (r *RBuffer) ReadFastArrayF32(n int) []float32 {
-	if r.err != nil {
-		return nil
-	}
-	if n <= 0 || int64(n) > r.Len() {
-		return nil
-	}
-
-	arr := make([]float32, n)
-	for i := range arr {
-		arr[i] = r.ReadF32()
-	}
-
-	if r.err != nil {
-		return nil
-	}
-	return arr
-}
-
-func (r *RBuffer) ReadFastArrayF64(n int) []float64 {
-	if r.err != nil {
-		return nil
-	}
-	if n <= 0 || int64(n) > r.Len() {
-		return nil
-	}
-
-	arr := make([]float64, n)
-	for i := range arr {
-		arr[i] = r.ReadF64()
-	}
-
-	if r.err != nil {
-		return nil
-	}
-	return arr
-}
-
-func (r *RBuffer) ReadFastArrayString(n int) []string {
-	if r.err != nil {
-		return nil
-	}
-	if n <= 0 || int64(n) > r.Len() {
-		return nil
-	}
-
-	arr := make([]string, n)
-	for i := range arr {
-		arr[i] = r.ReadString()
-	}
-
-	if r.err != nil {
-		return nil
-	}
-	return arr
 }
 
 func (r *RBuffer) ReadVersion() (vers int16, pos, n int32) {
@@ -559,7 +252,8 @@ func (r *RBuffer) ReadVersion() (vers int16, pos, n int32) {
 
 	pos = int32(r.Pos())
 
-	bcnt := r.ReadU32()
+	var bcnt uint32
+	r.ReadU32(&bcnt)
 	if (int64(bcnt) & ^kByteCountMask) != 0 {
 		n = int32(int64(bcnt) & ^kByteCountMask)
 	} else {
@@ -567,7 +261,7 @@ func (r *RBuffer) ReadVersion() (vers int16, pos, n int32) {
 		return
 	}
 
-	vers = int16(r.ReadU16())
+	r.ReadI16(&vers)
 	return vers, pos, n
 }
 
@@ -576,11 +270,13 @@ func (r *RBuffer) SkipVersion(class string) {
 		return
 	}
 
-	version := r.ReadI16()
+	var version int16
+	r.ReadI16(&version)
 
 	if int64(version)&kByteCountVMask != 0 {
-		_ = r.ReadI16()
-		_ = r.ReadI16()
+		var i16 int16
+		r.ReadI16(&i16)
+		r.ReadI16(&i16)
 	}
 
 	if class != "" && version <= 1 {
@@ -666,8 +362,9 @@ func (r *RBuffer) ReadObjectAny() (obj Object) {
 		tag   uint32
 		vers  int32
 		start int64
-		bcnt  = r.ReadU32()
+		bcnt  uint32
 	)
+	r.ReadU32(&bcnt)
 
 	if int64(bcnt)&kByteCountMask == 0 || int64(bcnt) == kNewClassTag {
 		tag = bcnt
@@ -675,7 +372,7 @@ func (r *RBuffer) ReadObjectAny() (obj Object) {
 	} else {
 		vers = 1
 		start = r.Pos()
-		tag = r.ReadU32()
+		r.ReadU32(&tag)
 	}
 
 	tag64 := int64(tag)
@@ -703,7 +400,8 @@ func (r *RBuffer) ReadObjectAny() (obj Object) {
 		return obj
 
 	case tag64 == kNewClassTag:
-		cname := r.ReadCString(80)
+		var cname string
+		r.ReadCString(80, &cname)
 		fct := Factory.get(cname)
 
 		if vers > 0 {

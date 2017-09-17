@@ -99,20 +99,24 @@ func (a *taxis) UnmarshalROOT(r *RBuffer) error {
 		}
 	}
 
-	a.nbins = int(r.ReadI32())
-	a.xmin = r.ReadF64()
-	a.xmax = r.ReadF64()
+	var i32 int32
+	r.ReadI32(&i32)
+	a.nbins = int(i32)
+	r.ReadF64(&a.xmin)
+	r.ReadF64(&a.xmax)
 
 	if err := a.xbins.UnmarshalROOT(r); err != nil {
 		r.err = err
 		return r.err
 	}
 
-	a.first = int(r.ReadI32())
-	a.last = int(r.ReadI32())
-	a.bits2 = r.ReadU16()
-	a.time = r.ReadBool()
-	a.tfmt = r.ReadString()
+	r.ReadI32(&i32)
+	a.first = int(i32)
+	r.ReadI32(&i32)
+	a.last = int(i32)
+	r.ReadU16(&a.bits2)
+	r.ReadBool(&a.time)
+	r.ReadString(&a.tfmt)
 
 	a.labels = nil
 	labels := r.ReadObjectAny()

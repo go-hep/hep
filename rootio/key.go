@@ -184,29 +184,36 @@ func (k *Key) UnmarshalROOT(r *RBuffer) error {
 		return r.Err()
 	}
 
-	k.bytes = r.ReadI32()
+	r.ReadI32(&k.bytes)
 	if k.bytes < 0 {
 		k.class = "[GAP]"
 		return nil
 	}
 
-	k.version = r.ReadI16()
-	k.objlen = r.ReadI32()
-	k.datetime = datime2time(r.ReadU32())
-	k.keylen = int32(r.ReadI16())
-	k.cycle = r.ReadI16()
+	r.ReadI16(&k.version)
+	r.ReadI32(&k.objlen)
+	var u32 uint32
+	r.ReadU32(&u32)
+	k.datetime = datime2time(u32)
+	var i16 int16
+	r.ReadI16(&i16)
+	k.keylen = int32(i16)
+	r.ReadI16(&k.cycle)
 
 	if k.version > 1000 {
-		k.seekkey = r.ReadI64()
-		k.seekpdir = r.ReadI64()
+		r.ReadI64(&k.seekkey)
+		r.ReadI64(&k.seekpdir)
 	} else {
-		k.seekkey = int64(r.ReadI32())
-		k.seekpdir = int64(r.ReadI32())
+		var i32 int32
+		r.ReadI32(&i32)
+		k.seekkey = int64(i32)
+		r.ReadI32(&i32)
+		k.seekpdir = int64(i32)
 	}
 
-	k.class = r.ReadString()
-	k.name = r.ReadString()
-	k.title = r.ReadString()
+	r.ReadString(&k.class)
+	r.ReadString(&k.name)
+	r.ReadString(&k.title)
 
 	//k.pdat = data
 

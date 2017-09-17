@@ -22,6 +22,7 @@ func main() {
 	genArrays()
 	genH1()
 	genH2()
+	genRBuffer()
 }
 
 func gofmt(f *os.File) {
@@ -56,7 +57,7 @@ func genLeaves() {
 	}
 	defer f.Close()
 
-	genImports(f)
+	genImports(f, "reflect")
 
 	for i, typ := range []struct {
 		Name       string
@@ -73,7 +74,7 @@ func genLeaves() {
 			Name:      "LeafO",
 			Type:      "bool",
 			Kind:      "reflect.Bool",
-			Func:      "r.ReadBool()",
+			Func:      "r.ReadBool",
 			FuncArray: "r.ReadFastArrayBool",
 		},
 		{
@@ -81,7 +82,7 @@ func genLeaves() {
 			Type:       "int8",
 			Kind:       "reflect.Int8",
 			DoUnsigned: true,
-			Func:       "r.ReadI8()",
+			Func:       "r.ReadI8",
 			FuncArray:  "r.ReadFastArrayI8",
 			Count:      true,
 		},
@@ -90,7 +91,7 @@ func genLeaves() {
 			Type:       "int16",
 			Kind:       "reflect.Int16",
 			DoUnsigned: true,
-			Func:       "r.ReadI16()",
+			Func:       "r.ReadI16",
 			FuncArray:  "r.ReadFastArrayI16",
 			Count:      true,
 		},
@@ -99,7 +100,7 @@ func genLeaves() {
 			Type:       "int32",
 			Kind:       "reflect.Int32",
 			DoUnsigned: true,
-			Func:       "r.ReadI32()",
+			Func:       "r.ReadI32",
 			FuncArray:  "r.ReadFastArrayI32",
 			Count:      true,
 		},
@@ -108,7 +109,7 @@ func genLeaves() {
 			Type:       "int64",
 			Kind:       "reflect.Int64",
 			DoUnsigned: true,
-			Func:       "r.ReadI64()",
+			Func:       "r.ReadI64",
 			FuncArray:  "r.ReadFastArrayI64",
 			Count:      true,
 		},
@@ -116,24 +117,24 @@ func genLeaves() {
 			Name:      "LeafF",
 			Type:      "float32",
 			Kind:      "reflect.Float32",
-			Func:      "r.ReadF32()",
+			Func:      "r.ReadF32",
 			FuncArray: "r.ReadFastArrayF32",
 		},
 		{
 			Name:      "LeafD",
 			Type:      "float64",
 			Kind:      "reflect.Float64",
-			Func:      "r.ReadF64()",
+			Func:      "r.ReadF64",
 			FuncArray: "r.ReadFastArrayF64",
 		},
 		{
 			Name:      "LeafC",
 			Type:      "string",
 			Kind:      "reflect.String",
-			Func:      "r.ReadString()",
+			Func:      "r.ReadString",
 			FuncArray: "r.ReadFastArrayString",
 			RangeType: "int32",
-			RangeFunc: "r.ReadI32()",
+			RangeFunc: "r.ReadI32",
 		},
 	} {
 		if i > 0 {
@@ -164,7 +165,7 @@ func genArrays() {
 	}
 	defer f.Close()
 
-	genImports(f)
+	genImports(f, "reflect")
 
 	for i, typ := range []struct {
 		Name string
@@ -216,7 +217,7 @@ func genH1() {
 	}
 	defer f.Close()
 
-	genImports(f, "bytes", "fmt", "math")
+	genImports(f, "bytes", "fmt", "math", "reflect")
 
 	for i, typ := range []struct {
 		Name string
@@ -259,7 +260,7 @@ func genH2() {
 	}
 	defer f.Close()
 
-	genImports(f, "bytes", "fmt", "math")
+	genImports(f, "bytes", "fmt", "math", "reflect")
 
 	for i, typ := range []struct {
 		Name string
@@ -295,6 +296,107 @@ func genH2() {
 	gofmt(f)
 }
 
+func genRBuffer() {
+	f, err := os.Create("rbuffer_gen.go")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	genImports(f, "encoding/binary", "math")
+
+	for i, typ := range []struct {
+		Name   string
+		Type   string
+		Binary string
+		Size   int
+		Signed bool
+		Float  string
+	}{
+		{
+			Name:   "I8",
+			Type:   "int8",
+			Binary: "",
+			Size:   1,
+			Signed: true,
+		},
+		{
+			Name:   "I16",
+			Type:   "int16",
+			Binary: "binary.BigEndian.Uint16",
+			Size:   2,
+			Signed: true,
+		},
+		{
+			Name:   "I32",
+			Type:   "int32",
+			Binary: "binary.BigEndian.Uint32",
+			Size:   4,
+			Signed: true,
+		},
+		{
+			Name:   "I64",
+			Type:   "int64",
+			Binary: "binary.BigEndian.Uint64",
+			Size:   8,
+			Signed: true,
+		},
+		{
+			Name:   "U8",
+			Type:   "uint8",
+			Binary: "uint8",
+			Size:   1,
+		},
+		{
+			Name:   "U16",
+			Type:   "uint16",
+			Binary: "binary.BigEndian.Uint16",
+			Size:   2,
+		},
+		{
+			Name:   "U32",
+			Type:   "uint32",
+			Binary: "binary.BigEndian.Uint32",
+			Size:   4,
+		},
+		{
+			Name:   "U64",
+			Type:   "uint64",
+			Binary: "binary.BigEndian.Uint64",
+			Size:   8,
+		},
+		{
+			Name:   "F32",
+			Type:   "float32",
+			Binary: "binary.BigEndian.Uint32",
+			Float:  "math.Float32frombits",
+			Size:   4,
+		},
+		{
+			Name:   "F64",
+			Type:   "float64",
+			Binary: "binary.BigEndian.Uint64",
+			Float:  "math.Float64frombits",
+			Size:   8,
+		},
+	} {
+		if i > 0 {
+			fmt.Fprintf(f, "\n")
+		}
+		tmpl := template.Must(template.New(typ.Name).Parse(rbufferTmpl))
+		err = tmpl.Execute(f, typ)
+		if err != nil {
+			log.Fatalf("error executing template for %q: %v\n", typ.Name, err)
+		}
+	}
+
+	err = f.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	gofmt(f)
+}
+
 const srcHeader = `// Copyright 2017 The go-hep Authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -304,7 +406,6 @@ const srcHeader = `// Copyright 2017 The go-hep Authors.  All rights reserved.
 package rootio
 
 import (
-	"reflect"
 `
 
 const leafTmpl = `// {{.Name}} implements ROOT T{{.Name}}
@@ -376,8 +477,8 @@ func (leaf *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	leaf.min = {{.RangeFunc}}
-	leaf.max = {{.RangeFunc}}
+	{{.RangeFunc}}(&leaf.min)
+	{{.RangeFunc}}(&leaf.max)
 
 	r.CheckByteCount(pos, bcnt, start, "T{{.Name}}")
 	return r.Err()
@@ -389,7 +490,7 @@ func (leaf *{{.Name}}) readBasket(r *RBuffer) error {
 	}
 
 	if leaf.count == nil && len(leaf.val) == 1 {
-		leaf.val[0] = {{.Func}}
+		 {{.Func}}(&leaf.val[0])
 	} else {
 		if leaf.count != nil {
 			entry := leaf.Branch().getReadEntry()
@@ -401,12 +502,22 @@ func (leaf *{{.Name}}) readBasket(r *RBuffer) error {
 			if n > max {
 				n = max
 			}
-			leaf.val = {{.FuncArray}}(leaf.tleaf.len * n)
+			leaf.resize(leaf.tleaf.len * n)
+			{{.FuncArray}}(leaf.val)
 		} else {
-			leaf.val = {{.FuncArray}}(leaf.tleaf.len)
+			leaf.resize(leaf.tleaf.len)
+			{{.FuncArray}}(leaf.val)
 		}
 	}
 	return r.err
+}
+
+func (leaf *{{.Name}}) resize(n int) {
+	if len(leaf.val) > n {
+		leaf.val = leaf.val[:n]
+		return
+	}
+	leaf.val = make([]{{.Type}}, n)
 }
 
 func (leaf *{{.Name}}) scan(r *RBuffer, ptr interface{}) error {
@@ -498,8 +609,10 @@ func (arr *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	n := int(r.ReadI32())
-	arr.Data = {{.Func}}(n)
+	var n int32
+	r.ReadI32(&n)
+	arr.Data = make([]{{.Type}}, n)
+	{{.Func}}(arr.Data)
 
 	return r.Err()
 }
@@ -1019,4 +1132,44 @@ var (
 	_ H2              = (*{{.Name}})(nil)
 	_ ROOTUnmarshaler = (*{{.Name}})(nil)
 )
+`
+
+const rbufferTmpl = `
+// Read{{.Name}} reads a {{.Type}} from a ROOT buffer.
+func (r *RBuffer) Read{{.Name}}(v *{{.Type}}) {
+	if r.err != nil {
+		return
+	}
+
+	beg := r.r.c
+	r.r.c += {{.Size}}
+	{{- if .Signed}}
+	*v = {{.Type}}({{.Binary}}(r.r.p[beg:r.r.c]{{if .Size | eq 1}}[0]{{end}}))
+	{{- else if .Float | eq "" }}
+	*v = {{.Binary}}(r.r.p[beg:r.r.c]{{if .Size | eq 1}}[0]{{end}})
+	{{- else}}
+	*v = {{.Float}}({{.Binary}}(r.r.p[beg:r.r.c]))
+	{{- end}}
+}
+
+// ReadFastArray{{.Name}} reads a slice of {{.Type}} from a ROOT buffer.
+func (r *RBuffer) ReadFastArray{{.Name}}(v []{{.Type}}) {
+	if r.err != nil {
+		return
+	}
+	if n := len(v); n == 0 || int64(n) > r.Len() {
+		return
+	}
+	for i := range v {
+		beg := r.r.c
+		r.r.c += {{.Size}}
+		{{- if .Signed}}
+		v[i] = {{.Type}}({{.Binary}}(r.r.p[beg:r.r.c]{{if .Size | eq 1}}[0]{{end}}))
+		{{- else if .Float | eq "" }}
+		v[i] = {{.Binary}}(r.r.p[beg:r.r.c]{{if .Size | eq 1}}[0]{{end}})
+		{{- else}}
+		v[i] = {{.Float}}({{.Binary}}(r.r.p[beg:r.r.c]))
+		{{- end}}
+	}
+}
 `

@@ -25,7 +25,8 @@ func TestRBuffer(t *testing.T) {
 		t.Fatalf("got start=%v. want=%v", start, 0)
 	}
 
-	_ = r.ReadI16()
+	var i16 int16
+	r.ReadI16(&i16)
 	if r.Err() != nil {
 		t.Fatalf("error reading int16: %v", r.Err())
 	}
@@ -45,14 +46,20 @@ func TestRBuffer(t *testing.T) {
 		}
 		switch n {
 		case 2:
-			_ = r.ReadI16()
-			_ = r.ReadU16()
+			var i16 int16
+			r.ReadI16(&i16)
+			var u16 uint16
+			r.ReadU16(&u16)
 		case 4:
-			_ = r.ReadI32()
-			_ = r.ReadU32()
+			var i32 int32
+			r.ReadI32(&i32)
+			var u32 uint32
+			r.ReadU32(&u32)
 		case 8:
-			_ = r.ReadI64()
-			_ = r.ReadU64()
+			var i64 int64
+			r.ReadI64(&i64)
+			var u64 uint64
+			r.ReadU64(&u64)
 		}
 		end := r.Pos()
 		pos += int64(2 * n)
@@ -1446,7 +1453,7 @@ func TestReadRBuffer(t *testing.T) {
 							ndivs: 510, acolor: 1, lcolor: 1, lfont: 42, loffset: 0.005, lsize: 0.035, ticks: 0.03, toffset: 1, tsize: 0.035, tcolor: 1, tfont: 42,
 						},
 						nbins: 100, xmin: 0, xmax: 100,
-						xbins: ArrayD{Data: nil},
+						xbins: ArrayD{Data: []float64{}},
 						first: 0, last: 0, bits2: 0x0, time: false, tfmt: "",
 						labels:  nil,
 						modlabs: nil,
@@ -1457,7 +1464,7 @@ func TestReadRBuffer(t *testing.T) {
 							ndivs: 510, acolor: 1, lcolor: 1, lfont: 42, loffset: 0.005, lsize: 0.035, ticks: 0.03, toffset: 1, tsize: 0.035, tcolor: 1, tfont: 42,
 						},
 						nbins: 1, xmin: 0, xmax: 1,
-						xbins: ArrayD{Data: nil},
+						xbins: ArrayD{Data: []float64{}},
 						first: 0, last: 0, bits2: 0x0, time: false, tfmt: "",
 						labels:  nil,
 						modlabs: nil,
@@ -1468,7 +1475,7 @@ func TestReadRBuffer(t *testing.T) {
 							ndivs: 510, acolor: 1, lcolor: 1, lfont: 42, loffset: 0.005, lsize: 0.035, ticks: 0.03, toffset: 1, tsize: 0.035, tcolor: 1, tfont: 42,
 						},
 						nbins: 1, xmin: 0, xmax: 1,
-						xbins: ArrayD{Data: nil},
+						xbins: ArrayD{Data: []float64{}},
 						first: 0, last: 0, bits2: 0x0, time: false, tfmt: "",
 						labels:  nil,
 						modlabs: nil,
@@ -1478,7 +1485,7 @@ func TestReadRBuffer(t *testing.T) {
 					tsumw:   10, tsumw2: 16, tsumwx: 278, tsumwx2: 9286,
 					max: -1111, min: -1111,
 					norm:    0,
-					contour: ArrayD{Data: nil},
+					contour: ArrayD{Data: []float64{}},
 					sumw2: ArrayD{
 						Data: []float64{
 							1,
@@ -1492,7 +1499,7 @@ func TestReadRBuffer(t *testing.T) {
 					},
 					opt:    "",
 					funcs:  tlist{name: "", objs: []Object{}},
-					buffer: nil,
+					buffer: []float64{},
 					erropt: 0,
 				},
 				arr: ArrayF{
@@ -1536,7 +1543,7 @@ func TestReadRBuffer(t *testing.T) {
 							nbins:   10,
 							xmin:    0,
 							xmax:    10,
-							xbins:   ArrayD{},
+							xbins:   ArrayD{Data: []float64{}},
 							first:   0,
 							last:    0,
 							bits2:   0x0,
@@ -1558,7 +1565,7 @@ func TestReadRBuffer(t *testing.T) {
 							nbins:   10,
 							xmin:    0,
 							xmax:    10,
-							xbins:   ArrayD{},
+							xbins:   ArrayD{Data: []float64{}},
 							first:   0,
 							last:    0,
 							bits2:   0x0,
@@ -1580,7 +1587,7 @@ func TestReadRBuffer(t *testing.T) {
 							nbins:   1,
 							xmin:    0,
 							xmax:    1,
-							xbins:   ArrayD{},
+							xbins:   ArrayD{Data: []float64{}},
 							first:   0,
 							last:    0,
 							bits2:   0x0,
@@ -1599,7 +1606,7 @@ func TestReadRBuffer(t *testing.T) {
 						max:     -1111,
 						min:     -1111,
 						norm:    0,
-						contour: ArrayD{},
+						contour: ArrayD{Data: []float64{}},
 						sumw2: ArrayD{
 							Data: []float64{
 								1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1616,7 +1623,7 @@ func TestReadRBuffer(t *testing.T) {
 							name: "",
 							objs: []Object{},
 						},
-						buffer: nil,
+						buffer: []float64{},
 						erropt: 0,
 					},
 					scale:   1,
