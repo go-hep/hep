@@ -112,7 +112,7 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 func (b *Basket) loadEntry(entry int64) error {
 	var err error
 	var offset = int64(b.key.keylen)
-	if n := int64(len(b.offsets)); n > 0 {
+	if len(b.offsets) > 0 {
 		offset = int64(b.offsets[int(entry)])
 	}
 	pos := entry*int64(b.nevsize) + offset
