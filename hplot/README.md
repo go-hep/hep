@@ -188,7 +188,7 @@ func ExampleH2D(t *testing.T) {
 		h.Fill(v[0], v[1], 1)
 	}
 
-	p, err := plot.New()
+	p, err := hplot.New()
 	if err != nil {
 		t.Fatalf("error: %v\n", err)
 	}

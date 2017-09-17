@@ -12,7 +12,6 @@ import (
 	"go-hep.org/x/hep/hplot"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/distmv"
-	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 )
@@ -44,7 +43,7 @@ func ExampleH2D(t *testing.T) {
 		h.Fill(v[0], v[1], 1)
 	}
 
-	p, err := plot.New()
+	p, err := hplot.New()
 	if err != nil {
 		t.Fatalf("error: %v\n", err)
 	}
@@ -67,7 +66,7 @@ func TestH2DABCD(t *testing.T) {
 	h.Fill(0, 1, 3)
 	h.Fill(1, 1, 4)
 
-	p, err := plot.New()
+	p, err := hplot.New()
 	if err != nil {
 		t.Fatalf("error: %v\n", err)
 	}
