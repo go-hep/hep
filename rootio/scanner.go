@@ -168,6 +168,10 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 			}
 			cbr = append(cbr, lbr)
 		}
+		err := leaf.setAddress(sv.Value)
+		if err != nil {
+			return nil, errorf("rootio: Tree %q error setting leaf address: %v", t.Name(), err)
+		}
 	}
 	return &TreeScanner{
 		scan: baseScanner{
@@ -346,6 +350,10 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 		if rv := reflect.ValueOf(arg); rv.Kind() != reflect.Ptr {
 			return nil, errorf("rootio: ScanVar %d (name=%v) has non pointer Value", i, sv.Name)
 		}
+		err := leaf.setAddress(arg)
+		if err != nil {
+			return nil, errorf("rootio: Tree %q error setting leaf address: %v", t.Name(), err)
+		}
 		args[i] = arg
 	}
 
@@ -397,6 +405,10 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 		fptr := rv.Field(i).Addr().Interface()
 		mbr = append(mbr, br)
 		ibr = append(ibr, scanField{br: br, i: i})
+		err := leaf.setAddress(fptr)
+		if err != nil {
+			return nil, errorf("rootio: Tree %q error setting leaf address: %v", t.Name(), err)
+		}
 		args = append(args, fptr)
 	}
 

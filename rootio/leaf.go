@@ -102,6 +102,10 @@ func (leaf *tleaf) readBasket(r *RBuffer) error {
 	panic("not implemented")
 }
 
+func (leaf *tleaf) setAddress(ptr interface{}) error {
+	panic("not implemented")
+}
+
 func (leaf *tleaf) scan(r *RBuffer, ptr interface{}) error {
 	panic("not implemented")
 }

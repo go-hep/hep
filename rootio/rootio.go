@@ -188,6 +188,7 @@ type Leaf interface {
 	TypeName() string
 
 	setBranch(Branch)
+	setAddress(ptr interface{}) error
 	readBasket(r *RBuffer) error
 	value() interface{}
 	scan(r *RBuffer, ptr interface{}) error
