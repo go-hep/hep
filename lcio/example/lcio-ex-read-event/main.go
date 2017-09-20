@@ -77,10 +77,7 @@ func main() {
 	p.Title.Text = "LCIO -- McParticles"
 	p.X.Label.Text = "E (GeV)"
 
-	hh, err := hplot.NewH1D(h)
-	if err != nil {
-		log.Fatal(err)
-	}
+	hh := hplot.NewH1D(h)
 	hh.Color = color.RGBA{R: 255, A: 255}
 	hh.Infos.Style = hplot.HInfoSummary
 

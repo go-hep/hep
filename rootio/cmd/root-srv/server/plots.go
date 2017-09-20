@@ -67,10 +67,7 @@ func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 	plot := hplot.New()
 	plot.Title.Text = robj.Title()
 
-	h, err := hplot.NewH1D(h1d)
-	if err != nil {
-		return err
-	}
+	h := hplot.NewH1D(h1d)
 	h.Infos.Style = hplot.HInfoSummary
 	h.Color = color.RGBA{255, 0, 0, 255}
 
@@ -263,10 +260,7 @@ func (srv *server) plotBranchHandle(w http.ResponseWriter, r *http.Request) erro
 	plot := hplot.New()
 	plot.Title.Text = leaf.Name()
 
-	hh, err := hplot.NewH1D(h)
-	if err != nil {
-		return err
-	}
+	hh := hplot.NewH1D(h)
 	hh.Infos.Style = hplot.HInfoSummary
 	hh.Color = color.RGBA{255, 0, 0, 255}
 

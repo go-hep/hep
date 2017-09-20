@@ -84,10 +84,7 @@ func Example_subplot() {
 
 	// Create a histogram of our values drawn
 	// from the standard normal.
-	h, err := hplot.NewH1D(hist)
-	if err != nil {
-		panic(err)
-	}
+	h := hplot.NewH1D(hist)
 	p1.Add(h)
 
 	// The normal distribution function
@@ -172,18 +169,12 @@ func Example_diffplot() {
 
 	// Create a histogram of our values drawn
 	// from the standard normal.
-	h1, err := hplot.NewH1D(hist1)
-	if err != nil {
-		panic(err)
-	}
+	h1 := hplot.NewH1D(hist1)
 	h1.LineStyle.Color = color.RGBA{R: 255, A: 255}
 	h1.FillColor = nil
 	p1.Add(h1)
 
-	h2, err := hplot.NewH1D(hist2)
-	if err != nil {
-		panic(err)
-	}
+	h2 := hplot.NewH1D(hist2)
 	h2.LineStyle.Color = color.RGBA{B: 255, A: 255}
 	h2.FillColor = nil
 	p1.Add(h2)
@@ -201,10 +192,7 @@ func Example_diffplot() {
 		hist3.Fill(x1, v1-v2)
 	}
 
-	hdiff, err := hplot.NewH1D(hist3)
-	if err != nil {
-		log.Fatal(err)
-	}
+	hdiff := hplot.NewH1D(hist3)
 
 	p2 := hplot.New()
 	p2.X.Label.Text = "X"
@@ -282,10 +270,7 @@ func Example_latexplot() {
 
 	// Create a histogram of our values drawn
 	// from the standard normal.
-	h, err := hplot.NewH1D(hist)
-	if err != nil {
-		panic(err)
-	}
+	h := hplot.NewH1D(hist)
 	h.LineStyle.Color = color.RGBA{R: 255, A: 255}
 	h.FillColor = nil
 	h.Infos.Style = hplot.HInfoSummary

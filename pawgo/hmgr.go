@@ -121,16 +121,13 @@ func (mgr *histMgr) plotH1D(wmgr *winMgr, h *hbook.H1D) error {
 	p.X.Label.Text = "x"
 	p.Y.Label.Text = "y"
 
-	hh, err := hplot.NewH1D(h)
-	if err != nil {
-		return err
-	}
+	hh := hplot.NewH1D(h)
 	hh.Infos.Style = hplot.HInfoSummary
 
 	p.Add(hh)
 	p.Add(hplot.NewGrid())
 
-	err = wmgr.newPlot(p)
+	err := wmgr.newPlot(p)
 	if err != nil {
 		return err
 	}

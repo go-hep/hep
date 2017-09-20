@@ -60,10 +60,7 @@ func ExampleH1D(t *testing.T) {
 
 	// Create a histogram of our values drawn
 	// from the standard normal.
-	h, err := hplot.NewH1D(hist)
-	if err != nil {
-		t.Fatal(err)
-	}
+	h := hplot.NewH1D(hist)
 	h.Infos.Style = hplot.HInfoSummary
 	p.Add(h)
 
@@ -91,6 +88,7 @@ func ExampleH1D(t *testing.T) {
 ```go
 func ExampleTiledPlot(t *testing.T) {
 	tp := hplot.NewTiledPlot(draw.Tiles{Cols: 3, Rows: 2})
+
 	// Create a normal distribution.
 	dist := distuv.Normal{
 		Mu:     0,
@@ -98,7 +96,7 @@ func ExampleTiledPlot(t *testing.T) {
 		Source: rand.New(rand.NewSource(0)),
 	}
 
-	newHist := func(p *hplot.Plot) error {
+	newHist := func(p *hplot.Plot) {
 		const npoints = 10000
 		hist := hbook.NewH1D(20, -4, +4)
 		for i := 0; i < npoints; i++ {
@@ -106,12 +104,8 @@ func ExampleTiledPlot(t *testing.T) {
 			hist.Fill(v, 1)
 		}
 
-		h, err := hplot.NewH1D(hist)
-		if err != nil {
-			return err
-		}
+		h := hplot.NewH1D(hist)
 		p.Add(h)
-		return nil
 	}
 
 	for i := 0; i < tp.Tiles.Rows; i++ {
@@ -119,10 +113,7 @@ func ExampleTiledPlot(t *testing.T) {
 			p := tp.Plot(i, j)
 			p.X.Min = -5
 			p.X.Max = +5
-			err := newHist(p)
-			if err != nil {
-				t.Fatalf("error creating histogram (%d,%d): %v\n", i, j, err)
-			}
+			newHist(p)
 			p.Title.Text = fmt.Sprintf("hist - (%02d, %02d)", i, j)
 		}
 	}

@@ -80,10 +80,7 @@ func ExampleH1D_gaussian(t *testing.T) {
 		p.Y.Label.Text = "y-data"
 		p.Y.Min = 0
 
-		h, err := hplot.NewH1D(hist)
-		if err != nil {
-			t.Fatal(err)
-		}
+		h := hplot.NewH1D(hist)
 		h.Color = color.RGBA{0, 0, 255, 255}
 		p.Add(h)
 
@@ -96,7 +93,7 @@ func ExampleH1D_gaussian(t *testing.T) {
 
 		p.Add(plotter.NewGrid())
 
-		err = p.Save(20*vg.Centimeter, -1, "testdata/h1d-gauss-plot.png")
+		err := p.Save(20*vg.Centimeter, -1, "testdata/h1d-gauss-plot.png")
 		if err != nil {
 			t.Fatal(err)
 		}

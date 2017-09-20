@@ -163,10 +163,7 @@ func printObject(f *rootio.File, obj rootio.Object) error {
 		if err != nil {
 			return err
 		}
-		hh, err := hplot.NewH1D(h)
-		if err != nil {
-			return err
-		}
+		hh := hplot.NewH1D(h)
 		hh.Color = colors[2]
 		hh.LineStyle.Color = colors[2]
 		hh.LineStyle.Width = vg.Points(1.5)

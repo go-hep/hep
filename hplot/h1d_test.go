@@ -49,10 +49,7 @@ func ExampleH1D(t *testing.T) {
 
 	// Create a histogram of our values drawn
 	// from the standard normal.
-	h, err := hplot.NewH1D(hist)
-	if err != nil {
-		t.Fatal(err)
-	}
+	h := hplot.NewH1D(hist)
 	h.Infos.Style = hplot.HInfoSummary
 	p.Add(h)
 
@@ -110,10 +107,7 @@ func ExampleH1D_toPDF(t *testing.T) {
 
 	// Create a histogram of our values drawn
 	// from the standard normal.
-	h, err := hplot.NewH1D(hist)
-	if err != nil {
-		t.Fatal(err)
-	}
+	h := hplot.NewH1D(hist)
 	h.Infos.Style = hplot.HInfoSummary
 	p.Add(h)
 

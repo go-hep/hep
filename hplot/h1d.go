@@ -57,11 +57,10 @@ type HInfos struct {
 // Each y value is assumed to be the frequency
 // count for the corresponding x.
 //
-// If the number of bins is non-positive than
-// a reasonable default is used.
-func NewH1FromXYer(xy plotter.XYer, n int) (*H1D, error) {
+// It panics if the number of bins is non-positive.
+func NewH1FromXYer(xy plotter.XYer, n int) *H1D {
 	if n <= 0 {
-		return nil, errors.New("Histogram with non-positive number of bins")
+		panic(errors.New("hplot: histogram with non-positive number of bins"))
 	}
 	h := newHistFromXYer(xy, n)
 	return NewH1D(h)
@@ -70,7 +69,7 @@ func NewH1FromXYer(xy plotter.XYer, n int) (*H1D, error) {
 // NewH1FromValuer returns a new histogram, as in
 // NewH1FromXYer, except that it accepts a plotter.Valuer
 // instead of an XYer.
-func NewH1FromValuer(vs plotter.Valuer, n int) (*H1D, error) {
+func NewH1FromValuer(vs plotter.Valuer, n int) *H1D {
 	return NewH1FromXYer(unitYs{vs}, n)
 }
 
@@ -85,12 +84,12 @@ func (u unitYs) XY(i int) (float64, float64) {
 // NewH1D returns a new histogram, as in
 // NewH1DFromXYer, except that it accepts a hbook.H1D
 // instead of a plotter.XYer
-func NewH1D(h *hbook.H1D) (*H1D, error) {
+func NewH1D(h *hbook.H1D) *H1D {
 	return &H1D{
 		Hist:      h,
 		FillColor: color.White,
 		LineStyle: plotter.DefaultLineStyle,
-	}, nil
+	}
 }
 
 // DataRange returns the minimum and maximum X and Y values

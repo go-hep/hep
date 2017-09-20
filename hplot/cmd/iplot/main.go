@@ -32,7 +32,7 @@ var (
 	bkgCol = color.Black
 )
 
-func newPlot() (*hplot.Plot, error) {
+func newPlot() *hplot.Plot {
 	// Draw some random values from the standard
 	// normal distribution.
 	hist1 := hbook.NewH1D(100, -5, +5)
@@ -52,37 +52,26 @@ func newPlot() (*hplot.Plot, error) {
 
 	// Create a histogram of our values drawn
 	// from the standard normal.
-	h1, err := hplot.NewH1D(hist1)
-	if err != nil {
-		return nil, err
-	}
-
-	h2, err := hplot.NewH1D(hist2)
-	if err != nil {
-		return nil, err
-	}
-
+	h1 := hplot.NewH1D(hist1)
 	h1.Infos.Style = hplot.HInfoSummary
-	h2.Infos.Style = hplot.HInfoNone
-
 	h1.Color = color.Black
 	h1.FillColor = nil
+
+	h2 := hplot.NewH1D(hist2)
+	h2.Infos.Style = hplot.HInfoNone
 	h2.Color = color.RGBA{255, 0, 0, 255}
 	h2.FillColor = nil
 
 	p.Add(h1, h2)
 
 	p.Add(plotter.NewGrid())
-	return p, err
+	return p
 }
 
 func main() {
 	driver.Main(func(scr screen.Screen) {
 		{
-			p, err := newPlot()
-			if err != nil {
-				log.Fatal(err)
-			}
+			p := newPlot()
 			c, err := p.Show(-1, -1, scr)
 			if err != nil {
 				log.Fatal(err)
@@ -114,10 +103,7 @@ func main() {
 
 				case key.CodeN, key.CodeSpacebar:
 					if e.Direction == key.DirPress {
-						p, err := newPlot()
-						if err != nil {
-							log.Fatal(err)
-						}
+						p := newPlot()
 						p.Draw(vgdraw.New(w.canvas))
 						repaint = true
 					}
