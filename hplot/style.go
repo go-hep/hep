@@ -75,7 +75,7 @@ func (sty *Style) init(name string, ft *truetype.Font) error {
 }
 
 func init() {
-	vgfonts, err := fonts.Asset("LiberationSerif-Regular.ttf")
+	vgfonts, err := fonts.Asset("LiberationSans-Regular.ttf")
 	if err != nil {
 		panic(err)
 	}
@@ -85,7 +85,7 @@ func init() {
 		panic(err)
 	}
 
-	err = DefaultStyle.init(plot.DefaultFont, ft)
+	err = DefaultStyle.init("Helvetica", ft)
 	if err != nil {
 		panic(err)
 	}
