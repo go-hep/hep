@@ -13,8 +13,10 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"reflect"
+	"strings"
 
 	_ "golang.org/x/image/tiff"
+	"rsc.io/pdf"
 )
 
 // Equal takes the raw representation of two images, raw1 and raw2,
@@ -24,11 +26,38 @@ import (
 // Equal may return an error if the decoding of the raw image somehow failed.
 func Equal(typ string, raw1, raw2 []byte) (bool, error) {
 	switch typ {
-	case "svg":
+	case "svg", "tex":
 		return bytes.Equal(raw1, raw2), nil
 
 	case "eps":
-		return bytes.Equal(raw1, raw2), nil
+		lines1, lines2 := strings.Split(string(raw1), "\n"), strings.Split(string(raw2), "\n")
+		if len(lines1) != len(lines2) {
+			return false, nil
+		}
+		for i, line1 := range lines1 {
+			if strings.Contains(line1, "CreationDate") {
+				continue
+			}
+			if line1 != lines2[i] {
+				return false, nil
+			}
+		}
+		return true, nil
+
+	case "pdf":
+		r1 := bytes.NewReader(raw1)
+		pdf1, err := pdf.NewReader(r1, r1.Size())
+		if err != nil {
+			return false, err
+		}
+
+		r2 := bytes.NewReader(raw2)
+		pdf2, err := pdf.NewReader(r2, r2.Size())
+		if err != nil {
+			return false, err
+		}
+
+		return cmpPdf(pdf1, pdf2), nil
 
 	case "jpeg", "jpg", "png", "tiff":
 		v1, _, err := image.Decode(bytes.NewReader(raw1))
@@ -44,4 +73,24 @@ func Equal(typ string, raw1, raw2 []byte) (bool, error) {
 	default:
 		return false, fmt.Errorf("cmpimg: unknown image type %q", typ)
 	}
+}
+
+func cmpPdf(pdf1, pdf2 *pdf.Reader) bool {
+	n1 := pdf1.NumPage()
+	n2 := pdf2.NumPage()
+	if n1 != n2 {
+		return false
+	}
+
+	for i := 1; i <= n1; i++ {
+		p1 := pdf1.Page(i).Content()
+		p2 := pdf2.Page(i).Content()
+		if !reflect.DeepEqual(p1, p2) {
+			return false
+		}
+	}
+
+	t1 := pdf1.Trailer().String()
+	t2 := pdf2.Trailer().String()
+	return t1 == t2
 }
