@@ -13,6 +13,7 @@ import (
 
 	"go-hep.org/x/hep/hplot"
 	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
 )
 
 var g_persist = flag.Bool("p", false, "lets plot windows survive after hplot exists")
@@ -66,7 +67,7 @@ func main() {
 	p.Add(hplot.NewGrid())
 
 	// Save the plot to a PDF file.
-	if err := p.Save(6, 4, "hist.pdf"); err != nil {
+	if err := p.Save(-1, 10*vg.Centimeter, "hist.pdf"); err != nil {
 		fmt.Fprintf(os.Stderr, "**error** saving plot: %v\n", err)
 		os.Exit(1)
 	}
