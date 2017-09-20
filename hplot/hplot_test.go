@@ -11,6 +11,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -38,7 +39,8 @@ func checkPlot(t *testing.T, ref string) {
 		t.Fatal(err)
 	}
 
-	if ok, err := cmpimg.Equal("png", got, want); !ok || err != nil {
+	ext := filepath.Ext(ref)[1:]
+	if ok, err := cmpimg.Equal(ext, got, want); !ok || err != nil {
 		if err != nil {
 			t.Fatalf("error: comparing %q with reference file: %v\n", fname, err)
 		} else {
