@@ -134,11 +134,11 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 	c.StrokeLines(h.LineStyle, c.ClipLinesXY(pts)...)
 
 	if h.Infos.Style != HInfoNone {
-		fnt, err := vg.MakeFont(plotter.DefaultFont, plotter.DefaultFontSize)
+		fnt, err := vg.MakeFont(DefaultStyle.Fonts.Name, DefaultStyle.Fonts.Tick.Size)
 		if err == nil {
 			sty := draw.TextStyle{Font: fnt}
 			legend := histLegend{
-				ColWidth:  plotter.DefaultFontSize,
+				ColWidth:  DefaultStyle.Fonts.Tick.Size,
 				TextStyle: sty,
 			}
 

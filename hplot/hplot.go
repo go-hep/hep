@@ -23,20 +23,30 @@ import (
 
 // Plot is the basic type representing a plot.
 type Plot struct {
-	plot.Plot
+	*plot.Plot
+	Style Style
 }
 
 // New returns a new plot with some reasonable
 // default settings.
 func New() (*Plot, error) {
+	style := DefaultStyle
+	defer style.reset(plot.DefaultFont)
+	plot.DefaultFont = style.Fonts.Name
+
 	p, err := plot.New()
 	if err != nil {
 		return nil, err
 	}
+	pp := &Plot{
+		Plot:  p,
+		Style: style,
+	}
+	pp.Style.Apply(pp)
 	// p.X.Padding = 0
 	// p.Y.Padding = 0
 	// p.Style = GnuplotStyle{}
-	return &Plot{*p}, nil
+	return pp, nil
 }
 
 // Add adds a Plotters to the plot.
