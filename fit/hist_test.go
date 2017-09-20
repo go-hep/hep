@@ -75,10 +75,7 @@ func ExampleH1D_gaussian(t *testing.T) {
 	}
 
 	{
-		p, err := hplot.New()
-		if err != nil {
-			t.Fatal(err)
-		}
+		p := hplot.New()
 		p.X.Label.Text = "f(x) = cst * exp(-0.5 * ((x-mu)/sigma)^2)"
 		p.Y.Label.Text = "y-data"
 		p.Y.Min = 0

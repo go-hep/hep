@@ -75,10 +75,7 @@ func Example_subplot() {
 	hist.Scale(1 / area)
 
 	// Make a plot and set its title.
-	p1, err := hplot.New()
-	if err != nil {
-		log.Fatalf("error: %v\n", err)
-	}
+	p1 := hplot.New()
 	p1.Title.Text = "Histogram"
 	p1.X.Label.Text = "X"
 	p1.Y.Label.Text = "Y"
@@ -102,10 +99,7 @@ func Example_subplot() {
 
 	// make a second plot which will be diplayed in the upper-right
 	// of the previous one
-	p2, err := hplot.New()
-	if err != nil {
-		log.Fatalf("error: %v\n", err)
-	}
+	p2 := hplot.New()
 	p2.Title.Text = "Sub plot"
 	p2.Add(h)
 	p2.Add(hplot.NewGrid())
@@ -170,10 +164,7 @@ func Example_diffplot() {
 	}
 
 	// Make a plot and set its title.
-	p1, err := hplot.New()
-	if err != nil {
-		log.Fatalf("error: %v\n", err)
-	}
+	p1 := hplot.New()
 	p1.Title.Text = "Histos"
 	p1.Y.Label.Text = "Y"
 
@@ -213,10 +204,7 @@ func Example_diffplot() {
 		log.Fatal(err)
 	}
 
-	p2, err := hplot.New()
-	if err != nil {
-		log.Fatalf("error: %v\n", err)
-	}
+	p2 := hplot.New()
 	p2.X.Label.Text = "X"
 	p2.Y.Label.Text = "Delta-Y"
 	p2.Add(hdiff)
@@ -285,10 +273,7 @@ func Example_latexplot() {
 	}
 
 	// Make a plot and set its title.
-	p, err := hplot.New()
-	if err != nil {
-		log.Fatalf("error: %v\n", err)
-	}
+	p := hplot.New()
 	p.Title.Text = `Gaussian distribution: $f(x) = \frac{e^{-(x - \mu)^{2}/(2\sigma^{2}) }} {\sigma\sqrt{2\pi}}$`
 	p.Y.Label.Text = `$f(x)$`
 	p.X.Label.Text = `$x$`

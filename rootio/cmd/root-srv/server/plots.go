@@ -64,10 +64,7 @@ func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	plot, err := hplot.New()
-	if err != nil {
-		return err
-	}
+	plot := hplot.New()
 	plot.Title.Text = robj.Title()
 
 	h, err := hplot.NewH1D(h1d)
@@ -114,10 +111,7 @@ func (srv *server) plotH2Handle(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	plot, err := hplot.New()
-	if err != nil {
-		return err
-	}
+	plot := hplot.New()
 	plot.Title.Text = robj.Title()
 
 	h := hplot.NewH2D(h2d, nil)
@@ -160,10 +154,7 @@ func (srv *server) plotS2Handle(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	plot, err := hplot.New()
-	if err != nil {
-		return err
-	}
+	plot := hplot.New()
 	plot.Title.Text = robj.Title()
 
 	var opts hplot.Options
@@ -269,10 +260,7 @@ func (srv *server) plotBranchHandle(w http.ResponseWriter, r *http.Request) erro
 		h.Fill(v, 1)
 	}
 
-	plot, err := hplot.New()
-	if err != nil {
-		return err
-	}
+	plot := hplot.New()
 	plot.Title.Text = leaf.Name()
 
 	hh, err := hplot.NewH1D(h)

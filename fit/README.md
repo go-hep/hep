@@ -63,10 +63,7 @@ func ExampleH1D_gaussian(t *testing.T) {
 	}
 
 	{
-		p, err := hplot.New()
-		if err != nil {
-			t.Fatal(err)
-		}
+		p := hplot.New()
 		p.X.Label.Text = "f(x) = cst * exp(-0.5 * ((x-mu)/sigma)^2)"
 		p.Y.Label.Text = "y-data"
 		p.Y.Min = 0
@@ -141,10 +138,7 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 	}
 
 	{
-		p, err := hplot.New()
-		if err != nil {
-			t.Fatal(err)
-		}
+		p := hplot.New()
 		p.X.Label.Text = "Gauss"
 		p.Y.Label.Text = "y-data"
 
@@ -161,7 +155,7 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 
 		p.Add(plotter.NewGrid())
 
-		err = p.Save(20*vg.Centimeter, -1, "testdata/gauss-plot.png")
+		err := p.Save(20*vg.Centimeter, -1, "testdata/gauss-plot.png")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -212,10 +206,7 @@ func ExampleCurve1D_powerlaw(t *testing.T) {
 	}
 
 	{
-		p, err := hplot.New()
-		if err != nil {
-			t.Fatal(err)
-		}
+		p := hplot.New()
 		p.X.Label.Text = "f(x) = a * x^b"
 		p.Y.Label.Text = "y-data"
 		p.X.Min = 0
@@ -244,7 +235,7 @@ func ExampleCurve1D_powerlaw(t *testing.T) {
 
 		p.Add(plotter.NewGrid())
 
-		err = p.Save(20*vg.Centimeter, -1, "testdata/powerlaw-plot.png")
+		err := p.Save(20*vg.Centimeter, -1, "testdata/powerlaw-plot.png")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -294,10 +285,7 @@ func ExampleCurve1D_exponential(t *testing.T) {
 	}
 
 	{
-		p, err := hplot.New()
-		if err != nil {
-			t.Fatal(err)
-		}
+		p := hplot.New()
 		p.X.Label.Text = "exp(a*x+b)"
 		p.Y.Label.Text = "y-data"
 		p.Y.Min = 0
@@ -318,7 +306,7 @@ func ExampleCurve1D_exponential(t *testing.T) {
 
 		p.Add(plotter.NewGrid())
 
-		err = p.Save(20*vg.Centimeter, -1, "testdata/exp-plot.png")
+		err := p.Save(20*vg.Centimeter, -1, "testdata/exp-plot.png")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -368,10 +356,7 @@ func ExampleCurve1D_poly(t *testing.T) {
 	}
 
 	{
-		p, err := hplot.New()
-		if err != nil {
-			t.Fatal(err)
-		}
+		p := hplot.New()
 		p.X.Label.Text = "f(x) = a + b*x*x"
 		p.Y.Label.Text = "y-data"
 		p.X.Min = -10
@@ -392,7 +377,7 @@ func ExampleCurve1D_poly(t *testing.T) {
 
 		p.Add(plotter.NewGrid())
 
-		err = p.Save(20*vg.Centimeter, -1, "testdata/poly-plot.png")
+		err := p.Save(20*vg.Centimeter, -1, "testdata/poly-plot.png")
 		if err != nil {
 			t.Fatal(err)
 		}

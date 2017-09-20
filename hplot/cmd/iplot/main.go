@@ -45,10 +45,7 @@ func newPlot() (*hplot.Plot, error) {
 	}
 
 	// Make a plot and set its title.
-	p, err := hplot.New()
-	if err != nil {
-		return nil, err
-	}
+	p := hplot.New()
 	p.Title.Text = "Histogram"
 	p.X.Label.Text = "X"
 	p.Y.Label.Text = "Y"

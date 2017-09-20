@@ -11,9 +11,8 @@ package hplot // import "go-hep.org/x/hep/hplot"
 import (
 	"math"
 
-	"golang.org/x/exp/shiny/screen"
-
 	"go-hep.org/x/hep/hplot/vgshiny"
+	"golang.org/x/exp/shiny/screen"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
@@ -29,14 +28,15 @@ type Plot struct {
 
 // New returns a new plot with some reasonable
 // default settings.
-func New() (*Plot, error) {
+func New() *Plot {
 	style := DefaultStyle
 	defer style.reset(plot.DefaultFont)
 	plot.DefaultFont = style.Fonts.Name
 
 	p, err := plot.New()
 	if err != nil {
-		return nil, err
+		// can not happen.
+		panic(err)
 	}
 	pp := &Plot{
 		Plot:  p,
@@ -46,7 +46,7 @@ func New() (*Plot, error) {
 	// p.X.Padding = 0
 	// p.Y.Padding = 0
 	// p.Style = GnuplotStyle{}
-	return pp, nil
+	return pp
 }
 
 // Add adds a Plotters to the plot.

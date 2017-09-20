@@ -18,10 +18,7 @@ import (
 
 // An example of making a tile-plot
 func ExampleTiledPlot(t *testing.T) {
-	tp, err := hplot.NewTiledPlot(draw.Tiles{Cols: 3, Rows: 2})
-	if err != nil {
-		t.Fatalf("error: %v\n", err)
-	}
+	tp := hplot.NewTiledPlot(draw.Tiles{Cols: 3, Rows: 2})
 
 	// Create a normal distribution.
 	dist := distuv.Normal{
@@ -62,7 +59,7 @@ func ExampleTiledPlot(t *testing.T) {
 	// remove plot at (0,1)
 	tp.Plots[1] = nil
 
-	err = tp.Save(15*vg.Centimeter, -1, "testdata/tiled_plot_histogram.png")
+	err := tp.Save(15*vg.Centimeter, -1, "testdata/tiled_plot_histogram.png")
 	if err != nil {
 		t.Fatalf("error: %v\n", err)
 	}

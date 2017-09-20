@@ -116,10 +116,7 @@ func (mgr *histMgr) plotH1D(wmgr *winMgr, h *hbook.H1D) error {
 		h.Name(), h.Entries(), h.XMean(), h.XRMS(),
 	)
 
-	p, err := hplot.New()
-	if err != nil {
-		return err
-	}
+	p := hplot.New()
 	p.Title.Text = h.Name()
 	p.X.Label.Text = "x"
 	p.Y.Label.Text = "y"
@@ -149,10 +146,7 @@ func (mgr *histMgr) plotH2D(wmgr *winMgr, h *hbook.H2D) error {
 		h.YMean(), h.YRMS(),
 	)
 
-	p, err := hplot.New()
-	if err != nil {
-		return err
-	}
+	p := hplot.New()
 	p.Title.Text = h.Name()
 	p.X.Label.Text = "x"
 	p.Y.Label.Text = "y"
@@ -163,7 +157,7 @@ func (mgr *histMgr) plotH2D(wmgr *winMgr, h *hbook.H2D) error {
 	p.Add(hh)
 	p.Add(hplot.NewGrid())
 
-	err = wmgr.newPlot(p)
+	err := wmgr.newPlot(p)
 	if err != nil {
 		return err
 	}

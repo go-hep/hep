@@ -43,17 +43,14 @@ func ExampleH2D(t *testing.T) {
 		h.Fill(v[0], v[1], 1)
 	}
 
-	p, err := hplot.New()
-	if err != nil {
-		t.Fatalf("error: %v\n", err)
-	}
+	p := hplot.New()
 	p.Title.Text = "Hist-2D"
 	p.X.Label.Text = "x"
 	p.Y.Label.Text = "y"
 
 	p.Add(hplot.NewH2D(h, nil))
 	p.Add(plotter.NewGrid())
-	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/h2d_plot.png")
+	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/h2d_plot.png")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,10 +63,7 @@ func TestH2DABCD(t *testing.T) {
 	h.Fill(0, 1, 3)
 	h.Fill(1, 1, 4)
 
-	p, err := hplot.New()
-	if err != nil {
-		t.Fatalf("error: %v\n", err)
-	}
+	p := hplot.New()
 	p.Title.Text = "Hist-2D"
 	p.X.Label.Text = "x"
 	p.X.Min = -1
@@ -81,7 +75,7 @@ func TestH2DABCD(t *testing.T) {
 	p.Add(hplot.NewH2D(h, nil))
 	p.Add(plotter.NewGrid())
 
-	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/h2d_plot_abcd.png")
+	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/h2d_plot_abcd.png")
 	if err != nil {
 		t.Fatal(err)
 	}

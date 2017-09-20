@@ -27,7 +27,7 @@ type TiledPlot struct {
 
 // NewTiledPlot creates a new set of plots aranged as tiles.
 // By default, NewTiledPlot will put a 1 vg.Length space between each plot.
-func NewTiledPlot(tiles draw.Tiles) (*TiledPlot, error) {
+func NewTiledPlot(tiles draw.Tiles) *TiledPlot {
 	const pad = 1
 	for _, v := range []*vg.Length{
 		&tiles.PadTop, &tiles.PadBottom, &tiles.PadRight, &tiles.PadLeft,
@@ -45,15 +45,11 @@ func NewTiledPlot(tiles draw.Tiles) (*TiledPlot, error) {
 
 	for i := 0; i < tiles.Rows; i++ {
 		for j := 0; j < tiles.Cols; j++ {
-			p, err := New()
-			if err != nil {
-				return nil, err
-			}
-			plot.Plots[i*tiles.Cols+j] = p
+			plot.Plots[i*tiles.Cols+j] = New()
 		}
 	}
 
-	return plot, nil
+	return plot
 }
 
 // Plot returns the plot at the i-th column and j-th row in the set of

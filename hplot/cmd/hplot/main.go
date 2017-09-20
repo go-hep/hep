@@ -35,11 +35,7 @@ func main() {
 	}
 	defer f.Close()
 
-	p, err := hplot.New()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "**error** creating plotter: %v\n", err)
-		os.Exit(1)
-	}
+	p := hplot.New()
 
 	values := make(plotter.Values, 0, 10)
 	for err == nil {

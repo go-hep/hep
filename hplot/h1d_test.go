@@ -42,10 +42,7 @@ func ExampleH1D(t *testing.T) {
 	hist.Scale(1 / area)
 
 	// Make a plot and set its title.
-	p, err := hplot.New()
-	if err != nil {
-		t.Fatalf("error: %v\n", err)
-	}
+	p := hplot.New()
 	p.Title.Text = "Histogram"
 	p.X.Label.Text = "X"
 	p.Y.Label.Text = "Y"

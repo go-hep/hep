@@ -6,7 +6,6 @@ package hplot_test
 
 import (
 	"image/color"
-	"log"
 	"math/rand"
 	"testing"
 
@@ -41,10 +40,7 @@ func ExampleS2D(t *testing.T) {
 		s2d.Fill(hbook.Point2D{X: v[0], Y: v[1]})
 	}
 
-	p, err := hplot.New()
-	if err != nil {
-		log.Panic(err)
-	}
+	p := hplot.New()
 	p.Title.Text = "Scatter-2D"
 	p.X.Label.Text = "X"
 	p.Y.Label.Text = "Y"
@@ -56,7 +52,7 @@ func ExampleS2D(t *testing.T) {
 
 	p.Add(s)
 
-	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d.png")
+	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d.png")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,10 +72,7 @@ func ExampleS2D_withErrorBars(t *testing.T) {
 	}
 	s2d := hbook.NewS2D(pts...)
 
-	p, err := hplot.New()
-	if err != nil {
-		log.Panic(err)
-	}
+	p := hplot.New()
 	p.Title.Text = "Scatter-2D (with error bars)"
 	p.X.Label.Text = "X"
 	p.Y.Label.Text = "Y"
@@ -91,7 +84,7 @@ func ExampleS2D_withErrorBars(t *testing.T) {
 
 	p.Add(s)
 
-	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d_errbars.png")
+	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d_errbars.png")
 	if err != nil {
 		t.Fatal(err)
 	}

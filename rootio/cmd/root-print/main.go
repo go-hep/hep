@@ -144,11 +144,7 @@ func process(name string) error {
 }
 
 func printObject(f *rootio.File, obj rootio.Object) error {
-	p, err := hplot.New()
-	if err != nil {
-		return err
-	}
-
+	p := hplot.New()
 	name := obj.(rootio.Named).Name()
 	title := obj.(rootio.Named).Title()
 	if title == "" {
@@ -220,7 +216,7 @@ func printObject(f *rootio.File, obj rootio.Object) error {
 		ext = ext[1:]
 	}
 
-	err = p.Save(20*vg.Centimeter, -1, oname)
+	err := p.Save(20*vg.Centimeter, -1, oname)
 	if err != nil {
 		return err
 	}

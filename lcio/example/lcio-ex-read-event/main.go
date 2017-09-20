@@ -73,10 +73,7 @@ func main() {
 	}
 	log.Printf("read %d events from file %q", nevts, fname)
 
-	p, err := hplot.New()
-	if err != nil {
-		log.Fatal(err)
-	}
+	p := hplot.New()
 	p.Title.Text = "LCIO -- McParticles"
 	p.X.Label.Text = "E (GeV)"
 

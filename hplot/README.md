@@ -53,10 +53,7 @@ func ExampleH1D(t *testing.T) {
 	hist.Scale(1 / area)
 
 	// Make a plot and set its title.
-	p, err := hplot.New()
-	if err != nil {
-		t.Fatalf("error: %v\n", err)
-	}
+	p := hplot.New()
 	p.Title.Text = "Histogram"
 	p.X.Label.Text = "X"
 	p.Y.Label.Text = "Y"
@@ -93,11 +90,7 @@ func ExampleH1D(t *testing.T) {
 [embedmd]:# (tiledplot_test.go go /func ExampleTiledPlot/ /\n}/)
 ```go
 func ExampleTiledPlot(t *testing.T) {
-	tp, err := hplot.NewTiledPlot(draw.Tiles{Cols: 3, Rows: 2})
-	if err != nil {
-		t.Fatalf("error: %v\n", err)
-	}
-
+	tp := hplot.NewTiledPlot(draw.Tiles{Cols: 3, Rows: 2})
 	// Create a normal distribution.
 	dist := distuv.Normal{
 		Mu:     0,
@@ -137,7 +130,7 @@ func ExampleTiledPlot(t *testing.T) {
 	// remove plot at (0,1)
 	tp.Plots[1] = nil
 
-	err = tp.Save(15*vg.Centimeter, -1, "testdata/tiled_plot_histogram.png")
+	err := tp.Save(15*vg.Centimeter, -1, "testdata/tiled_plot_histogram.png")
 	if err != nil {
 		t.Fatalf("error: %v\n", err)
 	}
@@ -188,17 +181,14 @@ func ExampleH2D(t *testing.T) {
 		h.Fill(v[0], v[1], 1)
 	}
 
-	p, err := hplot.New()
-	if err != nil {
-		t.Fatalf("error: %v\n", err)
-	}
+	p := hplot.New()
 	p.Title.Text = "Hist-2D"
 	p.X.Label.Text = "x"
 	p.Y.Label.Text = "y"
 
 	p.Add(hplot.NewH2D(h, nil))
 	p.Add(plotter.NewGrid())
-	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/h2d_plot.png")
+	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/h2d_plot.png")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -232,10 +222,7 @@ func ExampleS2D(t *testing.T) {
 		s2d.Fill(hbook.Point2D{X: v[0], Y: v[1]})
 	}
 
-	p, err := hplot.New()
-	if err != nil {
-		log.Panic(err)
-	}
+	p := hplot.New()
 	p.Title.Text = "Scatter-2D"
 	p.X.Label.Text = "X"
 	p.Y.Label.Text = "Y"
@@ -247,7 +234,7 @@ func ExampleS2D(t *testing.T) {
 
 	p.Add(s)
 
-	err = p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d.png")
+	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d.png")
 	if err != nil {
 		t.Fatal(err)
 	}
