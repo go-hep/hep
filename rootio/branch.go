@@ -105,8 +105,8 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 	b.firstbasket = -1
 	b.nextbasket = -1
 
-	if vers < 12 {
-		panic(fmt.Errorf("rootio: too old TBanch version (%d<12)", vers))
+	if vers < 11 {
+		panic(fmt.Errorf("rootio: too old TBanch version (%d<11)", vers))
 	}
 
 	if err := b.named.UnmarshalROOT(r); err != nil {
