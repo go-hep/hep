@@ -118,7 +118,7 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 	tree.entries = r.ReadI64()
 	tree.totbytes = r.ReadI64()
 	tree.zipbytes = r.ReadI64()
-	if vers >= 19 { // FIXME
+	if vers >= 16 {
 		_ = r.ReadI64() // fSavedBytes
 	}
 	if vers >= 18 {
