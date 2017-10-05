@@ -36,14 +36,15 @@ type H1D struct {
 	Infos HInfos
 }
 
-type HInfoStyle int
+type HInfoStyle uint32
 
 const (
 	HInfoNone    HInfoStyle = 0
-	HInfoEntries HInfoStyle = iota << 1
+	HInfoEntries HInfoStyle = 1 << iota
 	HInfoMean
 	HInfoRMS
-	HInfoSummary // HInfoEntries | HInfoMean | HInfoRMS
+	HInfoStdDev
+	HInfoSummary HInfoStyle = HInfoEntries | HInfoMean | HInfoStdDev
 )
 
 type HInfos struct {
@@ -141,18 +142,18 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 				TextStyle: sty,
 			}
 
-			switch h.Infos.Style {
-			case HInfoSummary:
-				legend.Add("Entries", hist.Entries())
-				legend.Add("Mean", hist.XMean())
-				legend.Add("RMS", hist.XRMS())
-			case HInfoEntries:
-				legend.Add("Entries", hist.Entries())
-			case HInfoMean:
-				legend.Add("Mean", hist.XMean())
-			case HInfoRMS:
-				legend.Add("RMS", hist.XRMS())
-			default:
+			for i := uint32(0); i < 32; i++ {
+				switch h.Infos.Style & (1 << i) {
+				case HInfoEntries:
+					legend.Add("Entries", hist.Entries())
+				case HInfoMean:
+					legend.Add("Mean", hist.XMean())
+				case HInfoRMS:
+					legend.Add("RMS", hist.XRMS())
+				case HInfoStdDev:
+					legend.Add("Std Dev", hist.XStdDev())
+				default:
+				}
 			}
 			legend.Top = true
 
