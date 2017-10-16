@@ -414,10 +414,6 @@ func (leaf *{{.Name}}) scan(r *RBuffer, ptr interface{}) error {
 		return r.err
 	}
 
-	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
-	}
-
 	switch v := ptr.(type) {
 	case *{{.Type}}:
 		*v = leaf.val[0]
@@ -446,7 +442,11 @@ func (leaf *{{.Name}}) scan(r *RBuffer, ptr interface{}) error {
 		}
 {{end}}
 	default:
-		panic(errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
+			return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
+		} else {
+			panic(errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
+		}
 	}
 
 	return r.err
