@@ -10,11 +10,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"reflect"
 	"testing"
 
 	"go-hep.org/x/hep/hbook"
+	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/distmv"
 )
@@ -122,10 +122,10 @@ func ExampleP1D() {
 	fmt.Printf("std-err: %v\n", p.XStdErr())
 
 	// Output:
-	// mean:    -0.04449868272082065
-	// rms:     2.1327992781495637
-	// std-dev: 2.1334019855956714
-	// std-err: 0.06746409439208055
+	// mean:    0.11198383683853215
+	// rms:     2.0240892891977125
+	// std-dev: 2.0220003848882695
+	// std-err: 0.06394126645984038
 }
 
 func TestP1DWriteYODA(t *testing.T) {

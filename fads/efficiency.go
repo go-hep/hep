@@ -5,11 +5,11 @@
 package fads
 
 import (
-	"math/rand"
 	"reflect"
 	"sync"
 
 	"go-hep.org/x/hep/fwk"
+	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
@@ -20,7 +20,7 @@ type Efficiency struct {
 	output string
 
 	eff  func(pt, eta float64) float64
-	seed int64
+	seed uint64
 	dist distuv.Uniform
 	dmu  sync.Mutex
 }

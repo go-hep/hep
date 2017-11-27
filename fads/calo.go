@@ -6,12 +6,12 @@ package fads
 
 import (
 	"math"
-	"math/rand"
 	"reflect"
 	"sort"
 	"sync"
 
 	"go-hep.org/x/hep/fwk"
+	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
@@ -170,7 +170,7 @@ type Calorimeter struct {
 	eflowtracks string
 	eflowtowers string
 
-	seed int64
+	seed uint64
 	src  *rand.Rand
 
 	gauss distuv.Normal

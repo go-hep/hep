@@ -5,11 +5,11 @@
 package hplot_test
 
 import (
-	"math/rand"
 	"testing"
 
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
+	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/distmv"
 	"gonum.org/v1/plot/plotter"

@@ -6,12 +6,12 @@ package fads
 
 import (
 	"math"
-	"math/rand"
 	"reflect"
 	"sync"
 
 	"go-hep.org/x/hep/fmom"
 	"go-hep.org/x/hep/fwk"
+	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
@@ -49,7 +49,7 @@ type BTagging struct {
 	btag btagclassifier
 	eff  map[int]func(pt, eta float64) float64
 
-	seed int64
+	seed uint64
 	src  *rand.Rand
 
 	flat   distuv.Uniform

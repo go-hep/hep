@@ -7,12 +7,12 @@ package fit_test
 import (
 	"image/color"
 	"math"
-	"math/rand"
 	"testing"
 
 	"go-hep.org/x/hep/fit"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
+	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/optimize"
 	"gonum.org/v1/gonum/stat/distuv"
@@ -28,7 +28,10 @@ func ExampleH1D_gaussian(t *testing.T) {
 	var (
 		mean  = 2.0
 		sigma = 4.0
-		want  = []float64{4.53720e+02, 1.93218e+00, 3.93188e+00} // from ROOT
+		// Values from gonum/optimize:
+		want = []float64{447.0483517081991, 2.02127773281178, 3.9965893891862687}
+		// Values from ROOT:
+		// want  = []float64{4.53720e+02, 1.93218e+00, 3.93188e+00}
 	)
 
 	const npoints = 10000

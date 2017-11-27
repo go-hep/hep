@@ -6,11 +6,11 @@ package hplot_test
 
 import (
 	"image/color"
-	"math/rand"
 	"testing"
 
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
+	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 	"gonum.org/v1/plot/vg"
 )
