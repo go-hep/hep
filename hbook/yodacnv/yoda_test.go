@@ -57,7 +57,7 @@ END YODA_COUNTER
 	}
 
 	if len(objs) != 0 {
-		t.Fatalf("got %d values. want 0 (COUNTER not implemented)", len(objs), 0)
+		t.Fatalf("got %d values. want %d (COUNTER not implemented)", len(objs), 0)
 	}
 }
 
@@ -77,7 +77,7 @@ END YODA_SCATTER1D
 	}
 
 	if len(objs) != 0 {
-		t.Fatalf("got %d values. want 0 (SCATTER1D not implemented)", len(objs), 0)
+		t.Fatalf("got %d values. want %d (SCATTER1D not implemented)", len(objs), 0)
 	}
 }
 
