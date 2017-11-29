@@ -160,3 +160,9 @@ func Scale(a float64, p P4) P4 {
 
 	return out
 }
+
+// InvMass computes the invariant mass of two incoming 4-vectors p1 and p2.
+func InvMass(p1, p2 P4) float64 {
+	p := Add(p1, p2)
+	return p.M()
+}
