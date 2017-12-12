@@ -96,7 +96,11 @@ func dump(w io.Writer, fname string, deep bool) error {
 	}
 	defer f.Close()
 
-	for i, key := range f.Keys() {
+	return dumpDir(w, f, deep)
+}
+
+func dumpDir(w io.Writer, dir rootio.Directory, deep bool) error {
+	for i, key := range dir.Keys() {
 		obj, err := key.Object()
 		if err != nil {
 			return err
@@ -106,6 +110,8 @@ func dump(w io.Writer, fname string, deep bool) error {
 			switch obj := obj.(type) {
 			case rootio.Tree:
 				err = dumpTree(w, obj)
+			case rootio.Directory:
+				err = dumpDir(w, obj, deep)
 			default:
 				err = fmt.Errorf("unhandled type %T", obj)
 			}
@@ -114,7 +120,6 @@ func dump(w io.Writer, fname string, deep bool) error {
 			return err
 		}
 	}
-
 	return nil
 }
 
