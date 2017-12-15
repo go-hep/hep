@@ -9,6 +9,7 @@
 package hplot // import "go-hep.org/x/hep/hplot"
 
 import (
+	"bytes"
 	"math"
 
 	"go-hep.org/x/hep/hplot/vgshiny"
@@ -117,6 +118,41 @@ func (p *Plot) Show(w, h vg.Length, scr screen.Screen) (*vgshiny.Canvas, error) 
 	p.Draw(draw.New(c))
 	c.Paint()
 	return c, err
+}
+
+// Show displays the plot according to format, returning the raw bytes and
+// an error, if any.
+//
+// If format is the empty string, then "png" is selected.
+// The list of accepted format strings is the same one than from
+// the gonum.org/v1/plot/vg/draw.NewFormattedCanvas function.
+func Show(p *Plot, w, h vg.Length, format string) ([]byte, error) {
+	switch {
+	case w <= 0 && h <= 0:
+		w = vgimg.DefaultWidth
+		h = vgimg.DefaultWidth / math.Phi
+	case w <= 0:
+		w = h * math.Phi
+	case h <= 0:
+		h = w / math.Phi
+	}
+
+	if format == "" {
+		format = "png"
+	}
+
+	c, err := draw.NewFormattedCanvas(w, h, format)
+	if err != nil {
+		return nil, err
+	}
+
+	p.Draw(draw.New(c))
+	out := new(bytes.Buffer)
+	_, err = c.WriteTo(out)
+	if err != nil {
+		return nil, err
+	}
+	return out.Bytes(), nil
 }
 
 // zip zips together 2 slices and implements the plotter.XYer interface.
