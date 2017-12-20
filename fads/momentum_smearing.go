@@ -81,7 +81,7 @@ func (tsk *MomentumSmearing) Process(ctx fwk.Context) error {
 
 		// apply smearing
 		tsk.srcmu.Lock()
-		smearPt := distuv.Normal{Mu: pt, Sigma: tsk.smear(pt, eta) * pt, Source: tsk.src}
+		smearPt := distuv.Normal{Mu: pt, Sigma: tsk.smear(pt, eta) * pt, Src: tsk.src}
 		pt = smearPt.Rand()
 		tsk.srcmu.Unlock()
 

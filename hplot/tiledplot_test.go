@@ -22,9 +22,9 @@ func ExampleTiledPlot(t *testing.T) {
 
 	// Create a normal distribution.
 	dist := distuv.Normal{
-		Mu:     0,
-		Sigma:  1,
-		Source: rand.New(rand.NewSource(0)),
+		Mu:    0,
+		Sigma: 1,
+		Src:   rand.New(rand.NewSource(0)),
 	}
 
 	newHist := func(p *hplot.Plot) {

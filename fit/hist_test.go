@@ -38,9 +38,9 @@ func ExampleH1D_gaussian(t *testing.T) {
 
 	// Create a normal distribution.
 	dist := distuv.Normal{
-		Mu:     mean,
-		Sigma:  sigma,
-		Source: rand.New(rand.NewSource(0)),
+		Mu:    mean,
+		Sigma: sigma,
+		Src:   rand.New(rand.NewSource(0)),
 	}
 
 	// Draw some random values from the standard

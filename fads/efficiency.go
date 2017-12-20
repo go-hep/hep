@@ -43,7 +43,7 @@ func (tsk *Efficiency) Configure(ctx fwk.Context) error {
 func (tsk *Efficiency) StartTask(ctx fwk.Context) error {
 	var err error
 	src := rand.New(rand.NewSource(tsk.seed))
-	tsk.dist = distuv.Uniform{Min: 0, Max: 1, Source: src}
+	tsk.dist = distuv.Uniform{Min: 0, Max: 1, Src: src}
 	return err
 }
 

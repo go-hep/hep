@@ -31,9 +31,9 @@ func ExampleH1D() {
 
 	// Create a normal distribution.
 	dist := distuv.Normal{
-		Mu:     0,
-		Sigma:  1,
-		Source: rand.New(rand.NewSource(0)),
+		Mu:    0,
+		Sigma: 1,
+		Src:   rand.New(rand.NewSource(0)),
 	}
 
 	// Draw some random values from the standard

@@ -211,7 +211,7 @@ func (tsk *Calorimeter) Configure(ctx fwk.Context) error {
 	}
 
 	tsk.src = rand.New(rand.NewSource(tsk.seed))
-	tsk.gauss = distuv.Normal{Mu: 0, Sigma: 1, Source: tsk.src}
+	tsk.gauss = distuv.Normal{Mu: 0, Sigma: 1, Src: tsk.src}
 	return err
 }
 

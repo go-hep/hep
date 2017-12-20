@@ -81,7 +81,7 @@ func (tsk *EnergySmearing) Process(ctx fwk.Context) error {
 
 		// apply smearing
 		tsk.srcmu.Lock()
-		smearEne := distuv.Normal{Mu: ene, Sigma: tsk.smear(eta, ene), Source: tsk.src}
+		smearEne := distuv.Normal{Mu: ene, Sigma: tsk.smear(eta, ene), Src: tsk.src}
 		ene = smearEne.Rand()
 		tsk.srcmu.Unlock()
 

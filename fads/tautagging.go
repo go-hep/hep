@@ -91,7 +91,7 @@ func (tsk *TauTagging) Configure(ctx fwk.Context) error {
 	}
 
 	tsk.src = rand.New(rand.NewSource(tsk.seed))
-	tsk.flat = distuv.Uniform{Min: 0, Max: 1, Source: tsk.src}
+	tsk.flat = distuv.Uniform{Min: 0, Max: 1, Src: tsk.src}
 	return err
 }
 
