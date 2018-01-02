@@ -142,7 +142,7 @@ https://godoc.org/go-hep.org/x/hep/hplot#example-package--Diffplot
 
 ### LaTeX-plots
 
-[latex-plot (PDF)](https://go-hep.org/x/hep/hplot/blob/master/testdata/latex_plot_golden.pdf)
+[latex-plot (PDF)](https://github.com/go-hep/hep/raw/master/hplot/testdata/latex_plot_golden.pdf)
 
 https://godoc.org/go-hep.org/x/hep/hplot#example-package--Latexplot
 
