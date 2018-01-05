@@ -110,9 +110,13 @@ func (srv *server) setCookie(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 
+	id, err := uuid.NewV4()
+	if err != nil {
+		return err
+	}
 	cookie = &http.Cookie{
 		Name:    cookieName,
-		Value:   uuid.NewV4().String(),
+		Value:   id.String(),
 		Expires: time.Now().Add(24 * time.Hour),
 	}
 	srv.sessions[cookie.Value] = newDbFiles()
