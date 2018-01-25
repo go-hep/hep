@@ -81,7 +81,11 @@ type tstreamerElement struct {
 	arrlen int32    // cumulative size of all array dims
 	arrdim int32    // number of array dimensions
 	maxidx [5]int32 // maximum array index for array dimension "dim"
+	offset int32    // element offset in class
 	ename  string   // data type name of data member
+	xmin   float64  // minimum of data member if a range is specified [xmin.xmax.nbits]
+	xmax   float64  // maximum of data member if a range is specified [xmin.xmax.nbits]
+	factor float64  // conversion factor if a range is specified. factor = (1<<nbits/(xmax-xmin))
 }
 
 func (tse *tstreamerElement) Class() string {
@@ -141,6 +145,24 @@ func (tse *tstreamerElement) UnmarshalROOT(r *RBuffer) error {
 
 	if tse.etype == 11 && (tse.ename == "Bool_t" || tse.ename == "bool") {
 		tse.etype = 18
+	}
+
+	if tse.rvers <= 2 {
+		// FIXME(sbinet)
+		// tse.esize = tse.arrlen * gROOT->GetType(GetTypeName())->Size()
+	}
+	switch {
+	default:
+		tse.xmin = 0
+		tse.xmax = 0
+		tse.factor = 0
+	case tse.rvers == 3:
+		tse.xmin = r.ReadF64()
+		tse.xmax = r.ReadF64()
+		tse.factor = r.ReadF64()
+	case tse.rvers > 3:
+		// FIXME(sbinet)
+		// if (TestBit(kHasRange)) GetRange(GetTitle(),fXmin,fXmax,fFactor)
 	}
 
 	r.CheckByteCount(pos, bcnt, beg, "TStreamerElement")
