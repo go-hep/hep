@@ -9,6 +9,7 @@ import (
 )
 
 type tgraph struct {
+	rvers int16
 	named tnamed
 
 	maxsize int32
@@ -47,6 +48,7 @@ func (g *tgraph) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
 	vers, pos, bcnt := r.ReadVersion()
+	g.rvers = vers
 
 	for _, a := range []ROOTUnmarshaler{
 		&g.named,
@@ -104,6 +106,7 @@ func (g *tgraph) UnmarshalROOT(r *RBuffer) error {
 }
 
 type tgrapherrs struct {
+	rvers int16
 	tgraph
 
 	xerr []float64
@@ -128,6 +131,7 @@ func (g *tgrapherrs) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
 	vers, pos, bcnt := r.ReadVersion()
+	g.rvers = vers
 
 	err := g.tgraph.UnmarshalROOT(r)
 	if err != nil {
@@ -157,6 +161,7 @@ func (g *tgrapherrs) UnmarshalROOT(r *RBuffer) error {
 }
 
 type tgraphasymmerrs struct {
+	rvers int16
 	tgraph
 
 	xerrlo []float64
@@ -183,6 +188,7 @@ func (g *tgraphasymmerrs) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
 	vers, pos, bcnt := r.ReadVersion()
+	g.rvers = vers
 
 	err := g.tgraph.UnmarshalROOT(r)
 	if err != nil {

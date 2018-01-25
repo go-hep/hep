@@ -12,6 +12,7 @@ import (
 
 // LeafO implements ROOT TLeafO
 type LeafO struct {
+	rvers int16
 	tleaf
 	val []bool
 	min bool
@@ -60,7 +61,8 @@ func (leaf *LeafO) TypeName() string {
 
 func (leaf *LeafO) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	_, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -144,6 +146,7 @@ var _ ROOTUnmarshaler = (*LeafO)(nil)
 
 // LeafB implements ROOT TLeafB
 type LeafB struct {
+	rvers int16
 	tleaf
 	val []int8
 	min int8
@@ -202,7 +205,8 @@ func (leaf *LeafB) TypeName() string {
 
 func (leaf *LeafB) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	_, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -301,6 +305,7 @@ var _ ROOTUnmarshaler = (*LeafB)(nil)
 
 // LeafS implements ROOT TLeafS
 type LeafS struct {
+	rvers int16
 	tleaf
 	val []int16
 	min int16
@@ -359,7 +364,8 @@ func (leaf *LeafS) TypeName() string {
 
 func (leaf *LeafS) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	_, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -458,6 +464,7 @@ var _ ROOTUnmarshaler = (*LeafS)(nil)
 
 // LeafI implements ROOT TLeafI
 type LeafI struct {
+	rvers int16
 	tleaf
 	val []int32
 	min int32
@@ -516,7 +523,8 @@ func (leaf *LeafI) TypeName() string {
 
 func (leaf *LeafI) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	_, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -615,6 +623,7 @@ var _ ROOTUnmarshaler = (*LeafI)(nil)
 
 // LeafL implements ROOT TLeafL
 type LeafL struct {
+	rvers int16
 	tleaf
 	val []int64
 	min int64
@@ -673,7 +682,8 @@ func (leaf *LeafL) TypeName() string {
 
 func (leaf *LeafL) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	_, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -772,6 +782,7 @@ var _ ROOTUnmarshaler = (*LeafL)(nil)
 
 // LeafF implements ROOT TLeafF
 type LeafF struct {
+	rvers int16
 	tleaf
 	val []float32
 	min float32
@@ -820,7 +831,8 @@ func (leaf *LeafF) TypeName() string {
 
 func (leaf *LeafF) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	_, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -904,6 +916,7 @@ var _ ROOTUnmarshaler = (*LeafF)(nil)
 
 // LeafD implements ROOT TLeafD
 type LeafD struct {
+	rvers int16
 	tleaf
 	val []float64
 	min float64
@@ -952,7 +965,8 @@ func (leaf *LeafD) TypeName() string {
 
 func (leaf *LeafD) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	_, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -1036,6 +1050,7 @@ var _ ROOTUnmarshaler = (*LeafD)(nil)
 
 // LeafC implements ROOT TLeafC
 type LeafC struct {
+	rvers int16
 	tleaf
 	val []string
 	min int32
@@ -1084,7 +1099,8 @@ func (leaf *LeafC) TypeName() string {
 
 func (leaf *LeafC) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	_, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err

@@ -7,6 +7,7 @@ package rootio
 import "reflect"
 
 type attline struct {
+	rvers int16
 	color int16
 	style int16
 	width int16
@@ -18,7 +19,8 @@ func (a *attline) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	start := r.Pos()
-	_, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	a.rvers = vers
 
 	a.color = r.ReadI16()
 	a.style = r.ReadI16()

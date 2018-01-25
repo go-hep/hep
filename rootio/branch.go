@@ -11,6 +11,7 @@ import (
 )
 
 type tbranch struct {
+	rvers          int16
 	named          tnamed
 	attfill        attfill
 	compress       int      // compression level and algorithm
@@ -99,6 +100,7 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
+	b.rvers = vers
 
 	b.tree = nil
 	b.basket = nil
@@ -342,6 +344,7 @@ func (b *tbranch) setAddress(ptr interface{}) error {
 
 // tbranchElement is a Branch for objects.
 type tbranchElement struct {
+	rvers int16
 	tbranch
 	class   string          // class name of referenced object
 	parent  string          // name of parent class
@@ -374,6 +377,7 @@ func (b *tbranchElement) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
+	b.rvers = vers
 	if vers < 9 {
 		r.err = fmt.Errorf("rootio: TBranchElement version too old (%d < 9)", vers)
 		return r.err

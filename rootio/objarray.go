@@ -7,11 +7,12 @@ package rootio
 import "reflect"
 
 type objarray struct {
-	obj  tobject
-	name string
-	last int
-	arr  []Object
-	low  int32
+	rvers int16
+	obj   tobject
+	name  string
+	last  int
+	arr   []Object
+	low   int32
 }
 
 func (arr *objarray) Class() string {
@@ -51,6 +52,7 @@ func (arr *objarray) LowerBound() int {
 func (arr *objarray) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
+	arr.rvers = vers
 
 	if vers > 2 {
 		if err := arr.obj.UnmarshalROOT(r); err != nil {

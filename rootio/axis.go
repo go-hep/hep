@@ -10,6 +10,7 @@ import (
 )
 
 type taxis struct {
+	rvers int16
 	tnamed
 	attaxis attaxis
 	nbins   int        // number of bins
@@ -85,6 +86,7 @@ func (a *taxis) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
+	a.rvers = vers
 	if vers < 9 {
 		return fmt.Errorf("rootio: TAxis version too old (%d<9)", vers)
 	}

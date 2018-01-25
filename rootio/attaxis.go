@@ -10,6 +10,7 @@ import (
 )
 
 type attaxis struct {
+	rvers   int16
 	ndivs   int32   // number of divisions (10000*n3 + 100*n2 + n1)
 	acolor  int16   // color of the line axis
 	lcolor  int16   // color of labels
@@ -34,6 +35,7 @@ func (a *attaxis) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
+	a.rvers = vers
 	if vers < 4 {
 		return fmt.Errorf("rootio: TAttAxis version too old (%d < 4)", vers)
 	}

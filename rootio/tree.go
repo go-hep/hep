@@ -19,6 +19,7 @@ import (
 type ttree struct {
 	f *File // underlying file
 
+	rvers int16
 	named tnamed
 
 	entries  int64 // Number of entries
@@ -94,6 +95,7 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
 	vers, pos, bcnt := r.ReadVersion()
+	tree.rvers = vers
 
 	for _, a := range []ROOTUnmarshaler{
 		&tree.named,

@@ -7,8 +7,9 @@ package rootio
 import "reflect"
 
 type tobjString struct {
-	obj tobject
-	str string
+	rvers int16
+	obj   tobject
+	str   string
 }
 
 func (*tobjString) Class() string {
@@ -27,7 +28,8 @@ func (obj *tobjString) Title() string {
 // unmarshal itself from a ROOT buffer
 func (obj *tobjString) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	_, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	obj.rvers = vers
 	if err := obj.obj.UnmarshalROOT(r); err != nil {
 		return err
 	}

@@ -309,6 +309,7 @@ import (
 
 const leafTmpl = `// {{.Name}} implements ROOT T{{.Name}}
 type {{.Name}} struct {
+	rvers int16
 	tleaf
 	val []{{.Type}}
 	min {{.RangeType}}
@@ -369,7 +370,8 @@ func (leaf *{{.Name}}) TypeName() string {
 
 func (leaf *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	_, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -519,6 +521,7 @@ var _ ROOTUnmarshaler = (*{{.Name}})(nil)
 
 const h1Tmpl = `// {{.Name}} implements ROOT T{{.Name}}
 type {{.Name}} struct {
+	rvers int16
 	th1
 	arr {{.Type}}
 }
@@ -537,6 +540,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
+	h.rvers = vers
 	if vers < 1 {
 		return errorf("rootio: T{{.Name}} version too old (%d<1)", vers)
 	}
@@ -730,6 +734,7 @@ var (
 
 const h2Tmpl = `// {{.Name}} implements ROOT T{{.Name}}
 type {{.Name}} struct {
+	rvers int16
 	th2
 	arr {{.Type}}
 }
@@ -986,6 +991,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
+	h.rvers = vers
 	if vers < 1 {
 		return errorf("rootio: T{{.Name}} version too old (%d<1)", vers)
 	}

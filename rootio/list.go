@@ -11,8 +11,9 @@ import (
 )
 
 type tlist struct {
-	name string
-	objs []Object
+	rvers int16
+	name  string
+	objs  []Object
 }
 
 func (li *tlist) Class() string {
@@ -42,6 +43,7 @@ func (li *tlist) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
 	vers, pos, bcnt := r.ReadVersion()
+	li.rvers = vers
 
 	if vers <= 3 {
 		return fmt.Errorf("rootio: TList version too old (%d <= 3)", vers)
@@ -80,6 +82,7 @@ func (li *tlist) UnmarshalROOT(r *RBuffer) error {
 }
 
 type thashList struct {
+	rvers int16
 	tlist
 }
 
@@ -93,7 +96,8 @@ func (li *thashList) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	beg := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	li.rvers = vers
 
 	if err := li.tlist.UnmarshalROOT(r); err != nil {
 		r.err = err

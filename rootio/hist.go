@@ -9,6 +9,7 @@ import (
 )
 
 type th1 struct {
+	rvers int16
 	tnamed
 	attline   attline
 	attfill   attfill
@@ -77,6 +78,7 @@ func (h *th1) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
+	h.rvers = vers
 	for _, v := range []ROOTUnmarshaler{
 		&h.tnamed,
 		&h.attline,
@@ -146,6 +148,7 @@ func (h *th1) UnmarshalROOT(r *RBuffer) error {
 }
 
 type th2 struct {
+	rvers int16
 	th1
 	scale   float64 // scale factor
 	tsumwy  float64 // total sum of weight*y
@@ -164,6 +167,7 @@ func (h *th2) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
+	h.rvers = vers
 	if vers < 3 {
 		return errorf("rootio: TH2 version too old (%d<3)", vers)
 	}

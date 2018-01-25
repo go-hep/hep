@@ -9,6 +9,7 @@ import (
 )
 
 type tleaf struct {
+	rvers    int16
 	named    tnamed
 	len      int
 	etype    int
@@ -116,7 +117,8 @@ func (leaf *tleaf) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	start := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	leaf.rvers = vers
 
 	if err := leaf.named.UnmarshalROOT(r); err != nil {
 		r.err = err
@@ -145,6 +147,7 @@ func (leaf *tleaf) UnmarshalROOT(r *RBuffer) error {
 
 // tleafElement is a Leaf for a general object derived from Object.
 type tleafElement struct {
+	rvers int16
 	tleaf
 	id    int32 // element serial number in fInfo
 	ltype int32 // leaf type
@@ -185,7 +188,8 @@ func (leaf *tleafElement) UnmarshalROOT(r *RBuffer) error {
 	}
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
 		r.err = err

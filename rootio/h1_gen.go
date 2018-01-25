@@ -15,6 +15,7 @@ import (
 
 // H1F implements ROOT TH1F
 type H1F struct {
+	rvers int16
 	th1
 	arr ArrayF
 }
@@ -33,6 +34,7 @@ func (h *H1F) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
+	h.rvers = vers
 	if vers < 1 {
 		return errorf("rootio: TH1F version too old (%d<1)", vers)
 	}
@@ -225,6 +227,7 @@ var (
 
 // H1D implements ROOT TH1D
 type H1D struct {
+	rvers int16
 	th1
 	arr ArrayD
 }
@@ -243,6 +246,7 @@ func (h *H1D) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
+	h.rvers = vers
 	if vers < 1 {
 		return errorf("rootio: TH1D version too old (%d<1)", vers)
 	}
@@ -435,6 +439,7 @@ var (
 
 // H1I implements ROOT TH1I
 type H1I struct {
+	rvers int16
 	th1
 	arr ArrayI
 }
@@ -453,6 +458,7 @@ func (h *H1I) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
+	h.rvers = vers
 	if vers < 1 {
 		return errorf("rootio: TH1I version too old (%d<1)", vers)
 	}

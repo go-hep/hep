@@ -12,6 +12,7 @@ import "reflect"
 // Most member functions defined in this base class are in general
 // overridden by the derived classes.
 type tnamed struct {
+	rvers int16
 	obj   tobject
 	name  string
 	title string
@@ -37,7 +38,8 @@ func (n *tnamed) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	beg := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	n.rvers = vers
 
 	if err := n.obj.UnmarshalROOT(r); err != nil {
 		r.err = err

@@ -6,7 +6,7 @@ package rootio
 
 // dobject is a dummy placeholder object
 type dobject struct {
-	vers  int16
+	rvers int16
 	size  int32
 	class string
 }
@@ -22,7 +22,7 @@ func (d *dobject) UnmarshalROOT(r *RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
-	d.vers = vers
+	d.rvers = vers
 	d.size = bcnt
 	r.setPos(beg + int64(bcnt) + 4)
 	r.CheckByteCount(pos, bcnt, beg, d.class)

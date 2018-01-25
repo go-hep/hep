@@ -12,6 +12,7 @@ import (
 )
 
 type tstreamerInfo struct {
+	rvers  int16
 	named  tnamed
 	chksum uint32
 	clsver int32
@@ -44,7 +45,8 @@ func (tsi *tstreamerInfo) Elements() []StreamerElement {
 
 func (tsi *tstreamerInfo) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
-	_, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	tsi.rvers = vers
 
 	if err := tsi.named.UnmarshalROOT(r); err != nil {
 		return err
@@ -72,6 +74,7 @@ func (tsi *tstreamerInfo) UnmarshalROOT(r *RBuffer) error {
 }
 
 type tstreamerElement struct {
+	rvers  int16
 	named  tnamed
 	etype  int32    // element type
 	esize  int32    // size of element
@@ -120,6 +123,7 @@ func (tse *tstreamerElement) TypeName() string {
 func (tse *tstreamerElement) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
+	tse.rvers = vers
 	if err := tse.named.UnmarshalROOT(r); err != nil {
 		return err
 	}
@@ -145,6 +149,7 @@ func (tse *tstreamerElement) UnmarshalROOT(r *RBuffer) error {
 
 type tstreamerBase struct {
 	tstreamerElement
+	rvers int16
 	vbase int32 // version number of the base class
 }
 
@@ -155,6 +160,7 @@ func (tsb *tstreamerBase) Class() string {
 func (tsb *tstreamerBase) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
+	tsb.rvers = vers
 
 	if err := tsb.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -170,6 +176,7 @@ func (tsb *tstreamerBase) UnmarshalROOT(r *RBuffer) error {
 
 type tstreamerBasicType struct {
 	tstreamerElement
+	rvers int16
 }
 
 func (tsb *tstreamerBasicType) Class() string {
@@ -178,7 +185,8 @@ func (tsb *tstreamerBasicType) Class() string {
 
 func (tsb *tstreamerBasicType) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	tsb.rvers = vers
 
 	if err := tsb.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -217,6 +225,7 @@ func (tsb *tstreamerBasicType) UnmarshalROOT(r *RBuffer) error {
 
 type tstreamerBasicPointer struct {
 	tstreamerElement
+	rvers int16
 	cvers int32  // version number of the class with the counter
 	cname string // name of data member holding the array count
 	ccls  string // name of the class with the counter
@@ -229,7 +238,8 @@ func (tsb *tstreamerBasicPointer) Class() string {
 func (tsb *tstreamerBasicPointer) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	tsb.rvers = vers
 
 	if err := tsb.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -245,6 +255,7 @@ func (tsb *tstreamerBasicPointer) UnmarshalROOT(r *RBuffer) error {
 
 type tstreamerLoop struct {
 	tstreamerElement
+	rvers  int16
 	cvers  int32  // version number of the class with the counter
 	cname  string // name of data member holding the array count
 	cclass string // name of the class with the counter
@@ -257,7 +268,8 @@ func (*tstreamerLoop) Class() string {
 func (tsl *tstreamerLoop) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	tsl.rvers = vers
 
 	if err := tsl.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -273,6 +285,7 @@ func (tsl *tstreamerLoop) UnmarshalROOT(r *RBuffer) error {
 
 type tstreamerObject struct {
 	tstreamerElement
+	rvers int16
 }
 
 func (tso *tstreamerObject) Class() string {
@@ -282,7 +295,8 @@ func (tso *tstreamerObject) Class() string {
 func (tso *tstreamerObject) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	tso.rvers = vers
 
 	if err := tso.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -294,6 +308,7 @@ func (tso *tstreamerObject) UnmarshalROOT(r *RBuffer) error {
 
 type tstreamerObjectPointer struct {
 	tstreamerElement
+	rvers int16
 }
 
 func (tso *tstreamerObjectPointer) Class() string {
@@ -303,7 +318,8 @@ func (tso *tstreamerObjectPointer) Class() string {
 func (tso *tstreamerObjectPointer) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	tso.rvers = vers
 
 	if err := tso.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -315,6 +331,7 @@ func (tso *tstreamerObjectPointer) UnmarshalROOT(r *RBuffer) error {
 
 type tstreamerObjectAny struct {
 	tstreamerElement
+	rvers int16
 }
 
 func (tso *tstreamerObjectAny) Class() string {
@@ -324,7 +341,8 @@ func (tso *tstreamerObjectAny) Class() string {
 func (tso *tstreamerObjectAny) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	tso.rvers = vers
 
 	if err := tso.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -336,6 +354,7 @@ func (tso *tstreamerObjectAny) UnmarshalROOT(r *RBuffer) error {
 
 type tstreamerObjectAnyPointer struct {
 	tstreamerElement
+	rvers int16
 }
 
 func (tso *tstreamerObjectAnyPointer) Class() string {
@@ -345,7 +364,8 @@ func (tso *tstreamerObjectAnyPointer) Class() string {
 func (tso *tstreamerObjectAnyPointer) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	tso.rvers = vers
 
 	if err := tso.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -357,6 +377,7 @@ func (tso *tstreamerObjectAnyPointer) UnmarshalROOT(r *RBuffer) error {
 
 type tstreamerString struct {
 	tstreamerElement
+	rvers int16
 }
 
 func (tss *tstreamerString) Class() string {
@@ -366,7 +387,8 @@ func (tss *tstreamerString) Class() string {
 func (tss *tstreamerString) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	tss.rvers = vers
 
 	if err := tss.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -378,6 +400,7 @@ func (tss *tstreamerString) UnmarshalROOT(r *RBuffer) error {
 
 type tstreamerSTL struct {
 	tstreamerElement
+	rvers int16
 	vtype int32 // type of STL vector
 	ctype int32 // STL contained type
 }
@@ -389,7 +412,8 @@ func (tss *tstreamerSTL) Class() string {
 func (tss *tstreamerSTL) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	tss.rvers = vers
 
 	if err := tss.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -418,6 +442,7 @@ func (tss *tstreamerSTL) isaPointer() bool {
 
 type tstreamerSTLstring struct {
 	tstreamerSTL
+	rvers int16
 }
 
 func (tss *tstreamerSTLstring) Class() string {
@@ -427,7 +452,8 @@ func (tss *tstreamerSTLstring) Class() string {
 func (tss *tstreamerSTLstring) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	tss.rvers = vers
 
 	if err := tss.tstreamerSTL.UnmarshalROOT(r); err != nil {
 		return err
@@ -439,6 +465,7 @@ func (tss *tstreamerSTLstring) UnmarshalROOT(r *RBuffer) error {
 
 type tstreamerArtificial struct {
 	tstreamerElement
+	rvers int16
 }
 
 func (tss *tstreamerArtificial) Class() string {
@@ -448,7 +475,8 @@ func (tss *tstreamerArtificial) Class() string {
 func (tsa *tstreamerArtificial) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	tsa.rvers = vers
 
 	if err := tsa.tstreamerElement.UnmarshalROOT(r); err != nil {
 		return err

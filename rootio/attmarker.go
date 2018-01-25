@@ -7,6 +7,7 @@ package rootio
 import "reflect"
 
 type attmarker struct {
+	rvers int16
 	color int16
 	style int16
 	width float32
@@ -18,7 +19,8 @@ func (a *attmarker) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	start := r.Pos()
-	_, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion()
+	a.rvers = vers
 	a.color = r.ReadI16()
 	a.style = r.ReadI16()
 	a.width = r.ReadF32()
