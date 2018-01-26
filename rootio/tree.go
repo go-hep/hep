@@ -132,7 +132,7 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 	_ = r.ReadI32() // fScanField
 	_ = r.ReadI32() // fUpdate
 
-	if vers >= 18 {
+	if vers >= 17 {
 		_ = r.ReadI32() // fDefaultEntryOffsetLen
 	}
 	nclus := 0
