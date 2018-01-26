@@ -82,7 +82,6 @@ func (li *tlist) UnmarshalROOT(r *RBuffer) error {
 }
 
 type thashList struct {
-	rvers int16
 	tlist
 }
 
@@ -91,21 +90,7 @@ func (*thashList) Class() string {
 }
 
 func (li *thashList) UnmarshalROOT(r *RBuffer) error {
-	if r.err != nil {
-		return r.err
-	}
-
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
-	li.rvers = vers
-
-	if err := li.tlist.UnmarshalROOT(r); err != nil {
-		r.err = err
-		return r.err
-	}
-
-	r.CheckByteCount(pos, bcnt, beg, "THashList")
-	return r.err
+	return li.tlist.UnmarshalROOT(r)
 }
 
 func init() {
