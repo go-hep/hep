@@ -161,7 +161,7 @@ func (nt *ntuple) add(name string, leaf rootio.Leaf) {
 	n := len(nt.cols)
 	nt.cols = append(nt.cols, newColumn(name, leaf, nt.n))
 	col := &nt.cols[n]
-	nt.args = append(nt.args, rootio.ScanVar{Name: name})
+	nt.args = append(nt.args, rootio.ScanVar{Name: name, Leaf: leaf.Name()})
 	nt.vars = append(nt.vars, col.data.Addr().Interface())
 }
 

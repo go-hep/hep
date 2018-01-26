@@ -160,6 +160,8 @@ type Branch interface {
 	Named
 	Branches() []Branch
 	Leaves() []Leaf
+	Branch(name string) Branch
+	Leaf(name string) Leaf
 
 	setTree(Tree)
 	getTree() Tree

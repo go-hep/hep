@@ -248,7 +248,7 @@ func treeVars(t rootio.Tree) ([]rootio.ScanVar, error) {
 			if leaf.LeafCount() != nil && false {
 				continue
 			}
-			vars = append(vars, rootio.ScanVar{Name: leaf.Name(), Value: ptr})
+			vars = append(vars, rootio.ScanVar{Name: b.Name(), Leaf: leaf.Name(), Value: ptr})
 		}
 	}
 

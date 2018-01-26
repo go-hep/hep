@@ -139,6 +139,7 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 // ScanVar describes a variable to be read out of a tree during a scan.
 type ScanVar struct {
 	Name  string      // name of the branch to read
+	Leaf  string      // name of the leaf to read
 	Value interface{} // pointer to the value to fill
 }
 
@@ -331,7 +332,11 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 		}
 		mbr[i] = br
 		ibr[i] = scanField{br: br, i: 0}
+
 		leaf := br.Leaves()[0]
+		if sv.Leaf != "" {
+			leaf = br.Leaf(sv.Leaf)
+		}
 		if lcnt := leaf.LeafCount(); lcnt != nil {
 			lbr := t.Branch(lcnt.Name())
 			if lbr == nil {

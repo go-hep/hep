@@ -80,6 +80,24 @@ func (b *tbranch) Leaves() []Leaf {
 	return b.leaves
 }
 
+func (b *tbranch) Branch(name string) Branch {
+	for _, bb := range b.Branches() {
+		if bb.Name() == name {
+			return bb
+		}
+	}
+	return nil
+}
+
+func (b *tbranch) Leaf(name string) Leaf {
+	for _, lf := range b.Leaves() {
+		if lf.Name() == name {
+			return lf
+		}
+	}
+	return nil
+}
+
 func (b *tbranch) getReadEntry() int64 {
 	return b.readentry
 }

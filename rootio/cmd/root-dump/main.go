@@ -135,7 +135,7 @@ func dumpTree(w io.Writer, t rootio.Tree) error {
 			if leaf.LeafCount() != nil && false {
 				continue
 			}
-			vars = append(vars, rootio.ScanVar{Name: leaf.Name(), Value: ptr})
+			vars = append(vars, rootio.ScanVar{Name: b.Name(), Leaf: leaf.Name(), Value: ptr})
 		}
 	}
 
