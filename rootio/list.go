@@ -49,11 +49,7 @@ func (li *tlist) UnmarshalROOT(r *RBuffer) error {
 		return fmt.Errorf("rootio: TList version too old (%d <= 3)", vers)
 	}
 
-	var obj tobject
-	if err := obj.UnmarshalROOT(r); err != nil {
-		r.err = err
-		return r.err
-	}
+	r.SkipObject()
 
 	li.name = r.ReadString()
 	size := int(r.ReadI32())

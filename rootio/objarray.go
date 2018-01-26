@@ -53,15 +53,8 @@ func (arr *objarray) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
 	arr.rvers = vers
-
-	if vers > 2 {
-		if err := arr.obj.UnmarshalROOT(r); err != nil {
-			return err
-		}
-	}
-	if vers > 1 {
-		arr.name = r.ReadString()
-	}
+	r.SkipObject()
+	arr.name = r.ReadString()
 
 	nobjs := int(r.ReadI32())
 	arr.low = r.ReadI32()

@@ -41,11 +41,7 @@ func (n *tnamed) UnmarshalROOT(r *RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion()
 	n.rvers = vers
 
-	if err := n.obj.UnmarshalROOT(r); err != nil {
-		r.err = err
-		return r.err
-	}
-
+	r.SkipObject()
 	n.name = r.ReadString()
 	n.title = r.ReadString()
 
