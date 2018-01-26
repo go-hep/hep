@@ -639,10 +639,23 @@ func (r *RBuffer) SkipObject() {
 	if r.err != nil {
 		return
 	}
-	//v, pos, n := r.ReadVersion()
-	//fmt.Printf("--- skip-object: v=%d pos=%d n=%d\n", v, pos, n)
-	r.r.Seek(10, ioSeekCurrent)
-	//_, r.err = r.r.Seek(int64(n), io.SeekCurrent)
+	vers := r.ReadI16()
+	if vers&kByteCountVMask != 0 {
+		_, r.err = r.r.Seek(4, ioSeekCurrent)
+		if r.err != nil {
+			return
+		}
+	}
+	_ = r.ReadU32() // fUniqueID
+	fbits := r.ReadU32() | kIsOnHeap
+
+	if fbits&kIsReferenced != 0 {
+		_, r.err = r.r.Seek(2, ioSeekCurrent)
+		if r.err != nil {
+			return
+		}
+	}
+	return
 }
 
 func (r *RBuffer) ReadObject(class string) Object {
