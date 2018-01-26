@@ -686,6 +686,7 @@ func (r *RBuffer) ReadObjectAny() (obj Object) {
 		}
 		// FIXME(sbinet): tag==1 means "self". not implemented yet.
 		if tag == 1 {
+			r.err = fmt.Errorf("rootio: tag == 1 means 'self'. not implemented yet")
 			return nil
 		}
 
