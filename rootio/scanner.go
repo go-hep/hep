@@ -402,6 +402,10 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 		fptr := rv.Field(i).Addr().Interface()
 		mbr = append(mbr, br)
 		ibr = append(ibr, scanField{br: br, i: i})
+		err := br.setAddress(fptr)
+		if err != nil {
+			panic(err)
+		}
 		args = append(args, fptr)
 	}
 

@@ -4,7 +4,9 @@
 
 package rootio
 
-import "reflect"
+import (
+	"reflect"
+)
 
 type objarray struct {
 	rvers int16

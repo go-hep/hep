@@ -189,6 +189,16 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 				return r.err
 			}
 
+		case kBool:
+			fptr := rf.Addr().Interface().(*bool)
+			return func(r *RBuffer) error {
+				if r.err != nil {
+					return r.err
+				}
+				*fptr = r.ReadI8() != 0
+				return r.err
+			}
+
 		case kOffsetL + kChar:
 			n := rf.Len()
 			fptr := rf.Slice(0, n).Interface().([]int8)
@@ -296,6 +306,17 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 					return r.err
 				}
 				copy(fptr[:], r.ReadFastArrayU64(n))
+				return r.err
+			}
+
+		case kOffsetL + kBool:
+			n := rf.Len()
+			fptr := rf.Slice(0, n).Interface().([]bool)
+			return func(r *RBuffer) error {
+				if r.err != nil {
+					return r.err
+				}
+				copy(fptr[:], r.ReadFastArrayBool(n))
 				return r.err
 			}
 
@@ -499,6 +520,22 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 				return r.err
 			}
 
+		case kOffsetP + kBool:
+			fptr := rf.Addr().Interface().(*[]bool)
+			return func(r *RBuffer) error {
+				if r.err != nil {
+					return r.err
+				}
+				n := flen()
+				_ = r.ReadU8()
+				if n > 0 {
+					*fptr = r.ReadFastArrayBool(n)
+				} else {
+					*fptr = []bool{}
+				}
+				return r.err
+			}
+
 		default:
 			panic(fmt.Errorf("rootio: invalid element type value %d for %#v", se.etype, se))
 		}
@@ -630,6 +667,20 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 						*fptr = r.ReadFastArrayU64(n)
 					} else {
 						*fptr = []uint64{}
+					}
+					return r.err
+				}
+
+			case kBool:
+				fptr := rf.Addr().Interface().(*[]bool)
+				return func(r *RBuffer) error {
+					var hdr [6]byte
+					r.read(hdr[:])
+					n := int(r.ReadI32())
+					if n > 0 {
+						*fptr = r.ReadFastArrayBool(n)
+					} else {
+						*fptr = []bool{}
 					}
 					return r.err
 				}

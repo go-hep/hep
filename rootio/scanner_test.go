@@ -7,7 +7,9 @@ package rootio
 import (
 	"fmt"
 	"io"
+	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -643,6 +645,91 @@ func TestScannerVarsWithCounterLeaf(t *testing.T) {
 	}
 	if err := sc.Err(); err != nil && err != io.EOF {
 		t.Fatal(err)
+	}
+}
+
+func TestScannerStructWithStdVectorBool(t *testing.T) {
+	files, err := filepath.Glob("testdata/stdvec-bool-*-6.10.08.root")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, fname := range files {
+		t.Run(fname, func(t *testing.T) {
+			if strings.Contains(fname, "-fullsplit-") {
+				// FIXME(sbinet)
+				t.Skipf("skipping %q (full split not supported yet)", fname)
+				return
+			}
+			f, err := Open(fname)
+			if err != nil {
+				t.Fatal(err.Error())
+			}
+			defer f.Close()
+
+			obj, err := f.Get("tree")
+			if err != nil {
+				t.Fatal(err)
+			}
+			tree := obj.(Tree)
+
+			type Data struct {
+				Bool    bool     `rootio:"Bool"`
+				ArrBool [10]bool `rootio:"ArrayBool"`
+				N       int32    `rootio:"N"`
+				SliBool []bool   `rootio:"SliceBool"`
+				StlBool []bool   `rootio:"StlVecBool"`
+			}
+			type Event struct {
+				Data Data `rootio:"evt"`
+			}
+
+			want := func(i int64) Event {
+				var data Data
+				data.Bool = i%2 == 0
+				for ii := range data.ArrBool {
+					data.ArrBool[ii] = i%2 == 0
+				}
+				data.N = int32(i) % 10
+				data.SliBool = make([]bool, int(data.N))
+				data.StlBool = make([]bool, int(data.N))
+				for ii := 0; ii < int(data.N); ii++ {
+					data.SliBool[ii] = i%2 == 0
+					data.StlBool[ii] = i%2 == 0
+				}
+				return Event{data}
+			}
+
+			var data Event
+			sc, err := NewScanner(tree, &data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer sc.Close()
+			for sc.Next() {
+				err := sc.Scan()
+				if err != nil {
+					t.Fatal(err)
+				}
+				i := sc.Entry()
+				if !reflect.DeepEqual(data, want(i)) {
+					t.Fatalf("entry[%d]:\ngot= %#v.\nwant=%#v\n", i, data, want(i))
+				}
+
+				// test a second time
+				err = sc.Scan()
+				if err != nil {
+					t.Fatal(err)
+				}
+				i = sc.Entry()
+				if !reflect.DeepEqual(data, want(i)) {
+					t.Fatalf("entry[%d]:\ngot= %#v.\nwant=%#v\n", i, data, want(i))
+				}
+			}
+			if err := sc.Err(); err != nil && err != io.EOF {
+				t.Fatal(err)
+			}
+		})
 	}
 }
 

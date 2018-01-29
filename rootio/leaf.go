@@ -209,7 +209,7 @@ func (leaf *tleafElement) readBasket(r *RBuffer) error {
 	}
 
 	if leaf.rstreamer == nil {
-		panic("rootio: nil streamer")
+		panic("rootio: nil streamer (leaf: " + leaf.Name() + ")")
 	}
 
 	err := leaf.rstreamer.RStream(r)
