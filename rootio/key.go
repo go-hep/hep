@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/pierrec/lz4"
+	"github.com/ulikunitz/xz"
 )
 
 // noKeyError is the error returned when a rootio.Key could not be found.
@@ -159,7 +160,7 @@ func (k *Key) load(buf []byte) ([]byte, error) {
 		sr := io.NewSectionReader(k.f, start, int64(k.bytes)-int64(k.keylen))
 		switch rootCompressAlg(hdrbuf) {
 		case kZLIB:
-			sr.Seek(rootHDRSIZE, 0)
+			sr.Seek(rootHDRSIZE, ioSeekStart)
 			rc, err := zlib.NewReader(sr)
 			if err != nil {
 				return nil, err
@@ -178,6 +179,16 @@ func (k *Key) load(buf []byte) ([]byte, error) {
 			const chksum = 8
 			// FIXME: we skip the 32b checksum. use it!
 			_, err = lz4.UncompressBlock(src[rootHDRSIZE+chksum:], buf, 0)
+			if err != nil {
+				return nil, err
+			}
+		case kLZMA:
+			sr.Seek(rootHDRSIZE, ioSeekStart)
+			rc, err := xz.NewReader(sr)
+			if err != nil {
+				return nil, err
+			}
+			_, err = io.ReadFull(rc, buf)
 			if err != nil {
 				return nil, err
 			}
