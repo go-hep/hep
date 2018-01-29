@@ -10,6 +10,8 @@ import (
 	"io"
 	"reflect"
 	"time"
+
+	"github.com/pierrec/lz4"
 )
 
 // noKeyError is the error returned when a rootio.Key could not be found.
@@ -148,20 +150,39 @@ func (k *Key) load(buf []byte) ([]byte, error) {
 		return buf, nil
 	}
 	if k.isCompressed() {
-		// Note: this contains ZL[src][dst] where src and dst are 3 bytes each.
-		// Won't bother with this for the moment, since we can cross-check against
-		// objlen.
-		const rootHDRSIZE = 9
-
-		start := k.seekkey + int64(k.keylen) + rootHDRSIZE
-		r := io.NewSectionReader(k.f, start, int64(k.bytes)-int64(k.keylen))
-		rc, err := zlib.NewReader(r)
+		start := k.seekkey + int64(k.keylen)
+		var hdrbuf [rootHDRSIZE]byte
+		_, err := k.f.ReadAt(hdrbuf[:], start)
 		if err != nil {
 			return nil, err
 		}
-		_, err = io.ReadFull(rc, buf)
-		if err != nil {
-			return nil, err
+		sr := io.NewSectionReader(k.f, start, int64(k.bytes)-int64(k.keylen))
+		switch rootCompressAlg(hdrbuf) {
+		case kZLIB:
+			sr.Seek(rootHDRSIZE, 0)
+			rc, err := zlib.NewReader(sr)
+			if err != nil {
+				return nil, err
+			}
+			defer rc.Close()
+			_, err = io.ReadFull(rc, buf)
+			if err != nil {
+				return nil, err
+			}
+		case kLZ4:
+			src := make([]byte, sr.Size())
+			_, err = io.ReadFull(sr, src)
+			if err != nil {
+				return nil, err
+			}
+			const chksum = 8
+			// FIXME: we skip the 32b checksum. use it!
+			_, err = lz4.UncompressBlock(src[rootHDRSIZE+chksum:], buf, 0)
+			if err != nil {
+				return nil, err
+			}
+		default:
+			panic("rootio: unknown compression algorithm")
 		}
 		return buf, nil
 	}
