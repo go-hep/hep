@@ -126,8 +126,8 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 	b.firstbasket = -1
 	b.nextbasket = -1
 
-	if vers < 11 {
-		panic(fmt.Errorf("rootio: too old TBanch version (%d<11)", vers))
+	if vers < 10 {
+		panic(fmt.Errorf("rootio: too old TBanch version (%d<10)", vers))
 	}
 
 	if err := b.named.UnmarshalROOT(r); err != nil {
@@ -152,7 +152,9 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 	b.maxBaskets = int(r.ReadI32())
 	b.splitLevel = int(r.ReadI32())
 	b.entries = r.ReadI64()
-	b.firstEntry = r.ReadI64()
+	if vers >= 11 {
+		b.firstEntry = r.ReadI64()
+	}
 	b.totBytes = r.ReadI64()
 	b.zipBytes = r.ReadI64()
 
@@ -402,8 +404,8 @@ func (b *tbranchElement) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
 	b.rvers = vers
-	if vers < 9 {
-		r.err = fmt.Errorf("rootio: TBranchElement version too old (%d < 9)", vers)
+	if vers < 8 {
+		r.err = fmt.Errorf("rootio: TBranchElement version too old (%d < 8)", vers)
 		return r.err
 	}
 
