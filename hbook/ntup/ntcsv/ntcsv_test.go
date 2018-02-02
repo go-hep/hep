@@ -74,15 +74,16 @@ func TestOpen(t *testing.T) {
 			},
 		},
 	} {
-		testCSV(t, test.name, test.query, test.opts...)
+		t.Run(test.name, func(t *testing.T) {
+			testCSV(t, test.name, test.query, test.opts...)
+		})
 	}
 }
 
 func testCSV(t *testing.T, name, query string, opts ...ntcsv.Option) {
 	nt, err := ntcsv.Open(name, opts...)
 	if err != nil {
-		t.Errorf("%s: error opening n-tuple: %v", name, err)
-		return
+		t.Fatalf("%s: error opening n-tuple: %v", name, err)
 	}
 	defer nt.DB().Close()
 
@@ -101,8 +102,7 @@ func testCSV(t *testing.T, name, query string, opts ...ntcsv.Option) {
 		},
 	)
 	if err != nil {
-		t.Errorf("%s: error scanning: %v", name, err)
-		return
+		t.Fatalf("%s: error scanning: %v", name, err)
 	}
 
 	want := []dataType{
@@ -118,8 +118,7 @@ func testCSV(t *testing.T, name, query string, opts ...ntcsv.Option) {
 		{9, 9, "str-9"},
 	}
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("%s: got=\n%v\nwant=\n%v\n", name, got, want)
-		return
+		t.Fatalf("%s: got=\n%v\nwant=\n%v\n", name, got, want)
 	}
 }
 
