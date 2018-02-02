@@ -73,6 +73,21 @@ func TestOpen(t *testing.T) {
 				ntcsv.Comment('#'),
 			},
 		},
+		{"http://github.com/go-hep/hep/raw/master/hbook/ntup/ntcsv/testdata/simple-with-comment.csv", `v1, v2, v3`,
+			[]ntcsv.Option{
+				ntcsv.Comma(';'),
+				ntcsv.Comment('#'),
+				ntcsv.Columns("v1", "v2", "v3"),
+			},
+		},
+		{"https://github.com/go-hep/hep/raw/master/hbook/ntup/ntcsv/testdata/simple-with-header.csv", `i64, f64, str`,
+			[]ntcsv.Option{
+				ntcsv.Header(),
+				ntcsv.Columns("i64", "f64", "str"),
+				ntcsv.Comma(';'),
+				ntcsv.Comment('#'),
+			},
+		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			testCSV(t, test.name, test.query, test.opts...)
@@ -128,6 +143,43 @@ func ExampleOpen() {
 	// We rename the columns v1, v2 and v3.
 	nt, err := ntcsv.Open(
 		"testdata/simple.csv",
+		ntcsv.Comma(';'),
+		ntcsv.Columns("v1", "v2", "v3"),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer nt.DB().Close()
+
+	err = nt.Scan("v1, v2, v3", func(i int64, f float64, s string) error {
+		fmt.Printf("%d %f %q\n", i, f, s)
+		return nil
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Output:
+	// 0 0.000000 "str-0"
+	// 1 1.000000 "str-1"
+	// 2 2.000000 "str-2"
+	// 3 3.000000 "str-3"
+	// 4 4.000000 "str-4"
+	// 5 5.000000 "str-5"
+	// 6 6.000000 "str-6"
+	// 7 7.000000 "str-7"
+	// 8 8.000000 "str-8"
+	// 9 9.000000 "str-9"
+}
+
+func ExampleOpen_fromRemote() {
+	// Open a new n-tuple pointing at a remote CSV file
+	// "https://github.com/go-hep/hep/raw/master/hbook/ntup/ntcsv/testdata/simple.csv"
+	// whose field separator is ';'.
+	// We rename the columns v1, v2 and v3.
+	nt, err := ntcsv.Open(
+		"https://github.com/go-hep/hep/raw/master/hbook/ntup/ntcsv/testdata/simple.csv",
 		ntcsv.Comma(';'),
 		ntcsv.Columns("v1", "v2", "v3"),
 	)
