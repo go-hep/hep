@@ -14,21 +14,22 @@ type tbranch struct {
 	rvers          int16
 	named          tnamed
 	attfill        attfill
-	compress       int      // compression level and algorithm
-	basketSize     int      // initial size of Basket buffer
-	entryOffsetLen int      // initial length of entryOffset table in the basket buffers
-	writeBasket    int      // last basket number written
-	entryNumber    int64    // current entry number (last one filled in this branch)
-	offset         int      // offset of this branch
-	maxBaskets     int      // maximum number of baskets so far
-	splitLevel     int      // branch split level
-	entries        int64    // number of entries
-	firstEntry     int64    // number of the first entry in this branch
-	totBytes       int64    // total number of bytes in all leaves before compression
-	zipBytes       int64    // total number of bytes in all leaves after compression
-	branches       []Branch // list of branches of this branch
-	leaves         []Leaf   // list of leaves of this branch
-	baskets        []Basket // list of baskets of this branch
+	compress       int         // compression level and algorithm
+	basketSize     int         // initial size of Basket buffer
+	entryOffsetLen int         // initial length of entryOffset table in the basket buffers
+	writeBasket    int         // last basket number written
+	entryNumber    int64       // current entry number (last one filled in this branch)
+	iofeats        tioFeatures // IO features for newly-created baskets
+	offset         int         // offset of this branch
+	maxBaskets     int         // maximum number of baskets so far
+	splitLevel     int         // branch split level
+	entries        int64       // number of entries
+	firstEntry     int64       // number of the first entry in this branch
+	totBytes       int64       // total number of bytes in all leaves before compression
+	zipBytes       int64       // total number of bytes in all leaves after compression
+	branches       []Branch    // list of branches of this branch
+	leaves         []Leaf      // list of leaves of this branch
+	baskets        []Basket    // list of baskets of this branch
 
 	basketBytes []int32 // length of baskets on file
 	basketEntry []int64 // table of first entry in each basket
@@ -142,6 +143,11 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 	b.entryOffsetLen = int(r.ReadI32())
 	b.writeBasket = int(r.ReadI32())
 	b.entryNumber = r.ReadI64()
+	if b.rvers >= 13 {
+		if err := b.iofeats.UnmarshalROOT(r); err != nil {
+			return err
+		}
+	}
 	b.offset = int(r.ReadI32())
 	b.maxBaskets = int(r.ReadI32())
 	b.splitLevel = int(r.ReadI32())

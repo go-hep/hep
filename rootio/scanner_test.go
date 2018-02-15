@@ -649,7 +649,7 @@ func TestScannerVarsWithCounterLeaf(t *testing.T) {
 }
 
 func TestScannerStructWithStdVectorBool(t *testing.T) {
-	files, err := filepath.Glob("testdata/stdvec-bool-*-6.10.08.root")
+	files, err := filepath.Glob("testdata/stdvec-bool-*.root")
 	if err != nil {
 		t.Fatal(err)
 	}

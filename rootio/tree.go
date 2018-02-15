@@ -26,6 +26,8 @@ type ttree struct {
 	totbytes int64 // Total number of bytes in all branches before compression
 	zipbytes int64 // Total number of bytes in all branches after  compression
 
+	iofeats tioFeatures // IO features to define for newly-written baskets and branches
+
 	branches []Branch // list of branches
 	leaves   []Leaf   // direct pointers to individual branch leaves
 }
@@ -158,6 +160,12 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 		_ = r.ReadFastArrayI64(nclus) // fClusterSize
 	}
 
+	if vers >= 20 {
+		if err := tree.iofeats.UnmarshalROOT(r); err != nil {
+			return err
+		}
+	}
+
 	var branches objarray
 	if err := branches.UnmarshalROOT(r); err != nil {
 		return err
@@ -215,6 +223,25 @@ func (nt *tntuple) UnmarshalROOT(r *RBuffer) error {
 	nt.nvars = int(r.ReadI32())
 
 	r.CheckByteCount(pos, bcnt, beg, "TNtuple")
+	return r.err
+}
+
+type tioFeatures uint8
+
+func (tio *tioFeatures) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
+	}
+
+	beg := r.Pos()
+	_ /*vers*/, pos, bcnt := r.ReadVersion()
+
+	var buf [4]byte // FIXME(sbinet) where do these 4 bytes come from ?
+	r.read(buf[:])
+
+	*tio = tioFeatures(r.ReadU8())
+
+	r.CheckByteCount(pos, bcnt, beg, "TIOFeatures")
 	return r.err
 }
 
