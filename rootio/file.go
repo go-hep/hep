@@ -7,7 +7,6 @@ package rootio
 import (
 	"fmt"
 	"io"
-	"os"
 )
 
 type Reader interface {
@@ -93,7 +92,7 @@ type File struct {
 // returned file can be used for reading; the associated file descriptor
 // has mode os.O_RDONLY.
 func Open(path string) (*File, error) {
-	fd, err := os.Open(path)
+	fd, err := openFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("rootio: unable to open %q (%q)", path, err.Error())
 	}
@@ -323,6 +322,8 @@ func (f *File) Get(namecycle string) (Object, error) {
 	return f.dir.Get(namecycle)
 }
 
-var _ Object = (*File)(nil)
-var _ Named = (*File)(nil)
-var _ Directory = (*File)(nil)
+var (
+	_ Object    = (*File)(nil)
+	_ Named     = (*File)(nil)
+	_ Directory = (*File)(nil)
+)

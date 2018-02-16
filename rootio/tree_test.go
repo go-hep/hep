@@ -328,6 +328,51 @@ func TestSimpleTree(t *testing.T) {
 	}
 }
 
+func TestSimpleTreeOverHTTP(t *testing.T) {
+	f, err := Open("https://github.com/go-hep/hep/raw/master/rootio/testdata/simple.root")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	obj, err := f.Get("tree")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tree := obj.(Tree)
+	if got, want := tree.Name(), "tree"; got != want {
+		t.Fatalf("tree.Name: got=%q. want=%q", got, want)
+	}
+
+	for _, table := range []struct {
+		test  string
+		value string
+		want  string
+	}{
+		{"Name", tree.Name(), "tree"}, // name when created
+		{"Title", tree.Title(), "fake data"},
+		{"Class", tree.Class(), "TTree"},
+	} {
+		if table.value != table.want {
+			t.Fatalf("%v: got=[%v]. want=[%v]", table.test, table.value, table.want)
+		}
+	}
+
+	entries := tree.Entries()
+	if got, want := entries, int64(4); got != want {
+		t.Fatalf("tree.Entries: got=%v. want=%v", got, want)
+	}
+
+	if got, want := tree.TotBytes(), int64(288); got != want {
+		t.Fatalf("tree.totbytes: got=%v. want=%v", got, want)
+	}
+
+	if got, want := tree.ZipBytes(), int64(288); got != want {
+		t.Fatalf("tree.zipbytes: got=%v. want=%v", got, want)
+	}
+}
+
 func TestTreeWithBasketWithTKeyData(t *testing.T) {
 	f, err := Open("testdata/PhaseSpaceSimulation.root")
 	if err != nil {
