@@ -212,7 +212,10 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 
 	/*isArray*/
 	_ = r.ReadI8()
-	b.basketEntry = r.ReadFastArrayI64(b.maxBaskets)[:b.writeBasket+1 : b.writeBasket+1]
+	// FIXME(sbinet) drop when go-1.9 isn't supported anymore.
+	// workaround different gofmt rules.
+	end := b.writeBasket + 1
+	b.basketEntry = r.ReadFastArrayI64(b.maxBaskets)[:end:end]
 
 	/*isArray*/
 	_ = r.ReadI8()
