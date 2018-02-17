@@ -3,7 +3,7 @@ go_import_path: go-hep.org/x/hep
 go:
   - 1.8.x
   - 1.9.x
-  - "1.10"
+  - 1.10.x
   - master
 os:
   - linux
