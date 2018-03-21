@@ -5,16 +5,15 @@
 package fwk
 
 import (
+	"context"
 	"fmt"
-
-	nctx "golang.org/x/net/context"
 )
 
 type workercontrol struct {
 	evts   chan ctxType
 	done   chan struct{}
 	errc   chan error
-	runctx nctx.Context
+	runctx context.Context
 }
 
 type worker struct {
@@ -27,7 +26,7 @@ type worker struct {
 	evts   <-chan ctxType
 	done   chan<- struct{}
 	errc   chan<- error
-	runctx nctx.Context
+	runctx context.Context
 }
 
 func newWorker(i int, app *appmgr, ctrl *workercontrol) *worker {
@@ -69,7 +68,7 @@ func (wrk *worker) run(tsks []Task) {
 			wrk.msg.Debugf(">>> running evt=%d...\n", ievt.ID())
 
 			evtstore := ievt.store.(*datastore)
-			evtctx, evtCancel := nctx.WithCancel(wrk.runctx)
+			evtctx, evtCancel := context.WithCancel(wrk.runctx)
 			evt := taskrunner{
 				ievt:   ievt.ID(),
 				errc:   make(chan error, len(tsks)),
@@ -124,7 +123,7 @@ func (wrk *worker) run(tsks []Task) {
 
 type taskrunner struct {
 	errc   chan error
-	evtctx nctx.Context
+	evtctx context.Context
 
 	ievt int64
 }

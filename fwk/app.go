@@ -5,6 +5,7 @@
 package fwk
 
 import (
+	"context"
 	"io"
 	"math"
 	"reflect"
@@ -13,7 +14,6 @@ import (
 	"time"
 
 	"go-hep.org/x/hep/fwk/fsm"
-	nctx "golang.org/x/net/context"
 )
 
 type appmgr struct {
@@ -530,7 +530,7 @@ func (app *appmgr) run(ctx Context) error {
 func (app *appmgr) runSequential(ctx Context) error {
 	var err error
 
-	runctx, runCancel := nctx.WithCancel(nctx.Background())
+	runctx, runCancel := context.WithCancel(context.Background())
 	defer runCancel()
 
 	keys := app.dflow.keys()
@@ -560,7 +560,7 @@ func (app *appmgr) runSequential(ctx Context) error {
 	defer close(octrl.Quit)
 
 	for ievt := int64(0); ievt < app.evtmax; ievt++ {
-		evtctx, evtCancel := nctx.WithCancel(runctx)
+		evtctx, evtCancel := context.WithCancel(runctx)
 
 		app.msg.Infof(">>> running evt=%d...\n", ievt)
 		err = store.reset(keys)
@@ -605,7 +605,7 @@ func (app *appmgr) runSequential(ctx Context) error {
 func (app *appmgr) runConcurrent(ctx Context) error {
 	var err error
 
-	runctx, runCancel := nctx.WithCancel(nctx.Background())
+	runctx, runCancel := context.WithCancel(context.Background())
 	defer runCancel()
 
 	ctrl := workercontrol{
@@ -636,7 +636,7 @@ func (app *appmgr) runConcurrent(ctx Context) error {
 		keys := app.dflow.keys()
 		msg := newMsgStream(app.istream.Name(), app.msg.lvl, nil)
 		for ievt := int64(0); ievt < app.evtmax; ievt++ {
-			evtctx, evtCancel := nctx.WithCancel(runctx)
+			evtctx, evtCancel := context.WithCancel(runctx)
 			store := *app.store
 			store.store = make(map[string]achan, len(keys))
 			err := store.reset(keys)

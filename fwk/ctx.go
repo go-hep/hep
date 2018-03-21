@@ -5,7 +5,7 @@
 package fwk
 
 import (
-	nctx "golang.org/x/net/context"
+	"context"
 )
 
 type ctxType struct {
@@ -15,7 +15,7 @@ type ctxType struct {
 	msg   msgstream
 	mgr   App
 
-	ctx nctx.Context
+	ctx context.Context
 }
 
 func (ctx ctxType) ID() int64 {
