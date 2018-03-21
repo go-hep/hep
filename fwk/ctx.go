@@ -8,7 +8,7 @@ import (
 	nctx "golang.org/x/net/context"
 )
 
-type context struct {
+type ctxType struct {
 	id    int64
 	slot  int
 	store Store
@@ -18,23 +18,23 @@ type context struct {
 	ctx nctx.Context
 }
 
-func (ctx context) ID() int64 {
+func (ctx ctxType) ID() int64 {
 	return ctx.id
 }
 
-func (ctx context) Slot() int {
+func (ctx ctxType) Slot() int {
 	return ctx.slot
 }
 
-func (ctx context) Store() Store {
+func (ctx ctxType) Store() Store {
 	return ctx.store
 }
 
-func (ctx context) Msg() MsgStream {
+func (ctx ctxType) Msg() MsgStream {
 	return ctx.msg
 }
 
-func (ctx context) Svc(n string) (Svc, error) {
+func (ctx ctxType) Svc(n string) (Svc, error) {
 	if ctx.mgr == nil {
 		return nil, Errorf("fwk: no fwk.App available to this Context")
 	}

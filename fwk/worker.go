@@ -11,7 +11,7 @@ import (
 )
 
 type workercontrol struct {
-	evts   chan context
+	evts   chan ctxType
 	done   chan struct{}
 	errc   chan error
 	runctx nctx.Context
@@ -21,10 +21,10 @@ type worker struct {
 	slot int
 	keys []string
 	//store datastore
-	ctxs []context
+	ctxs []ctxType
 	msg  msgstream
 
-	evts   <-chan context
+	evts   <-chan ctxType
 	done   chan<- struct{}
 	errc   chan<- error
 	runctx nctx.Context
@@ -34,7 +34,7 @@ func newWorker(i int, app *appmgr, ctrl *workercontrol) *worker {
 	wrk := &worker{
 		slot:   i,
 		keys:   app.dflow.keys(),
-		ctxs:   make([]context, len(app.tsks)),
+		ctxs:   make([]ctxType, len(app.tsks)),
 		msg:    newMsgStream(fmt.Sprintf("%s-worker-%03d", app.name, i), app.msg.lvl, nil),
 		evts:   ctrl.evts,
 		done:   ctrl.done,
@@ -42,7 +42,7 @@ func newWorker(i int, app *appmgr, ctrl *workercontrol) *worker {
 		runctx: ctrl.runctx,
 	}
 	for j, tsk := range app.tsks {
-		wrk.ctxs[j] = context{
+		wrk.ctxs[j] = ctxType{
 			id:   -1,
 			slot: i,
 			msg:  newMsgStream(tsk.Name(), app.msg.lvl, nil),
@@ -129,7 +129,7 @@ type taskrunner struct {
 	ievt int64
 }
 
-func (run taskrunner) run(i int, ctx context, tsk Task) {
+func (run taskrunner) run(i int, ctx ctxType, tsk Task) {
 	ctx.id = run.ievt
 	select {
 	case run.errc <- tsk.Process(ctx):

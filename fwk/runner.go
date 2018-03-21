@@ -25,7 +25,7 @@ func (ui irunner) state() fsm.State {
 
 func (ui *irunner) Configure() error {
 	var err error
-	ctx := context{
+	ctx := ctxType{
 		id:    0,
 		slot:  0,
 		store: nil,
@@ -42,7 +42,7 @@ func (ui *irunner) Configure() error {
 
 func (ui *irunner) Start() error {
 	var err error
-	ctx := context{
+	ctx := ctxType{
 		id:    0,
 		slot:  0,
 		store: nil,
@@ -63,7 +63,7 @@ func (ui *irunner) Start() error {
 
 func (ui *irunner) Run(evtmax int64) error {
 	var err error
-	ctx := context{
+	ctx := ctxType{
 		id:    0,
 		slot:  0,
 		store: nil,
@@ -84,7 +84,7 @@ func (ui *irunner) Run(evtmax int64) error {
 
 func (ui *irunner) Stop() error {
 	var err error
-	ctx := context{
+	ctx := ctxType{
 		id:    0,
 		slot:  0,
 		store: nil,
@@ -105,7 +105,7 @@ func (ui *irunner) Stop() error {
 
 func (ui *irunner) Shutdown() error {
 	var err error
-	ctx := context{
+	ctx := ctxType{
 		id:    0,
 		slot:  0,
 		store: nil,

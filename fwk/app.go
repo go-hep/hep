@@ -32,7 +32,7 @@ type appmgr struct {
 	tsks    []Task
 	svcs    []Svc
 	istream Task
-	ctxs    [2][]context
+	ctxs    [2][]ctxType
 }
 
 // NewApp creates a (default) fwk application with (default and) sensible options.
@@ -341,7 +341,7 @@ func (app *appmgr) FSMState() fsm.State {
 
 func (app *appmgr) Run() error {
 	var err error
-	ctx := context{
+	ctx := ctxType{
 		id:    0,
 		slot:  0,
 		store: nil,
@@ -426,9 +426,9 @@ func (app *appmgr) configure(ctx Context) error {
 		app.nprocs = runtime.NumCPU()
 	}
 
-	tsks := make([]context, len(app.tsks))
+	tsks := make([]ctxType, len(app.tsks))
 	for j, tsk := range app.tsks {
-		tsks[j] = context{
+		tsks[j] = ctxType{
 			id:    -1,
 			slot:  0,
 			store: app.store,
@@ -437,9 +437,9 @@ func (app *appmgr) configure(ctx Context) error {
 		}
 	}
 
-	svcs := make([]context, len(app.svcs))
+	svcs := make([]ctxType, len(app.svcs))
 	for j, svc := range app.svcs {
-		svcs[j] = context{
+		svcs[j] = ctxType{
 			id:    -1,
 			slot:  0,
 			store: app.store,
@@ -534,10 +534,10 @@ func (app *appmgr) runSequential(ctx Context) error {
 	defer runCancel()
 
 	keys := app.dflow.keys()
-	ctxs := make([]context, len(app.tsks))
+	ctxs := make([]ctxType, len(app.tsks))
 	store := *app.store
 	for j, tsk := range app.tsks {
-		ctxs[j] = context{
+		ctxs[j] = ctxType{
 			id:    -1,
 			slot:  0,
 			store: &store,
@@ -609,7 +609,7 @@ func (app *appmgr) runConcurrent(ctx Context) error {
 	defer runCancel()
 
 	ctrl := workercontrol{
-		evts:   make(chan context, 2*app.nprocs),
+		evts:   make(chan ctxType, 2*app.nprocs),
 		done:   make(chan struct{}),
 		errc:   make(chan error),
 		runctx: runctx,
@@ -646,7 +646,7 @@ func (app *appmgr) runConcurrent(ctx Context) error {
 				ctrl.errc <- err
 				return
 			}
-			ctx := context{
+			ctx := ctxType{
 				id:    ievt,
 				slot:  0,
 				store: &store,
