@@ -158,7 +158,7 @@ func (f *File) readHeader() error {
 		return err
 	}
 
-	r := NewRBuffer(buf, nil, 0)
+	r := NewRBuffer(buf, nil, 0, nil)
 
 	// Header
 
@@ -285,7 +285,7 @@ func (f *File) readStreamerInfo() error {
 		return fmt.Errorf("rootio: requested [%v] bytes. read [%v] bytes from file", f.nbytesinfo, nbytes)
 	}
 
-	err = f.siKey.UnmarshalROOT(NewRBuffer(buf, nil, 0))
+	err = f.siKey.UnmarshalROOT(NewRBuffer(buf, nil, 0, nil))
 	f.siKey.f = f
 	if err != nil {
 		return err

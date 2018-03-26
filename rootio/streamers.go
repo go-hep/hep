@@ -11,6 +11,10 @@ import (
 	"sync"
 )
 
+type StreamerInfoContext interface {
+	StreamerInfo(name string) StreamerInfo
+}
+
 type tstreamerInfo struct {
 	rvers  int16
 	named  tnamed

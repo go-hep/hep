@@ -65,13 +65,13 @@ func (dir *tdirectory) readDirInfo() error {
 		return err
 	}
 
-	r := NewRBuffer(data[f.nbytesname:], nil, 0)
+	r := NewRBuffer(data[f.nbytesname:], nil, 0, nil)
 	if err := dir.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
 	nk := 4 // Key::fNumberOfBytes
-	r = NewRBuffer(data[nk:], nil, 0)
+	r = NewRBuffer(data[nk:], nil, 0, nil)
 	keyversion := r.ReadI16()
 	if r.Err() != nil {
 		return r.Err()
@@ -90,7 +90,7 @@ func (dir *tdirectory) readDirInfo() error {
 		nk += 2 * 4 // Key::fSeekKey, fSeekParentDirectory
 	}
 
-	r = NewRBuffer(data[nk:], nil, 0)
+	r = NewRBuffer(data[nk:], nil, 0, nil)
 	dir.classname = r.ReadString()
 
 	dir.named.name = r.ReadString()
@@ -116,7 +116,7 @@ func (dir *tdirectory) readKeys() error {
 	}
 
 	hdr := Key{f: dir.file}
-	err = hdr.UnmarshalROOT(NewRBuffer(buf, nil, 0))
+	err = hdr.UnmarshalROOT(NewRBuffer(buf, nil, 0, dir))
 	if err != nil {
 		return err
 	}
@@ -127,7 +127,7 @@ func (dir *tdirectory) readKeys() error {
 		return err
 	}
 
-	r := NewRBuffer(buf, nil, 0)
+	r := NewRBuffer(buf, nil, 0, dir)
 	nkeys := r.ReadI32()
 	if r.Err() != nil {
 		return r.err

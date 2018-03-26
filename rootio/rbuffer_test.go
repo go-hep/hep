@@ -15,7 +15,7 @@ import (
 
 func TestRBuffer(t *testing.T) {
 	data := make([]byte, 32)
-	r := NewRBuffer(data, nil, 0)
+	r := NewRBuffer(data, nil, 0, nil)
 
 	if got, want := r.Len(), int64(32); got != want {
 		t.Fatalf("got len=%v. want=%v", got, want)
@@ -37,7 +37,7 @@ func TestRBuffer(t *testing.T) {
 
 	pos = 0
 	data = make([]byte, 2*(2+4+8))
-	r = NewRBuffer(data, nil, 0)
+	r = NewRBuffer(data, nil, 0, nil)
 	for _, n := range []int{2, 4, 8} {
 		beg := r.Pos()
 		if beg != pos {
@@ -2902,7 +2902,7 @@ func testReadRBuffer(t *testing.T, name, file string, want interface{}) {
 		t.Fatal(err)
 	}
 
-	r := NewRBuffer(data, nil, 0)
+	r := NewRBuffer(data, nil, 0, nil)
 	obj := Factory.get(name)().Interface().(ROOTUnmarshaler)
 	err = obj.UnmarshalROOT(r)
 	if err != nil {

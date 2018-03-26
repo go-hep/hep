@@ -60,9 +60,10 @@ type RBuffer struct {
 	err    error
 	offset uint32
 	refs   map[int64]interface{}
+	sictx  StreamerInfoContext
 }
 
-func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32) *RBuffer {
+func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32, ctx StreamerInfoContext) *RBuffer {
 	if refs == nil {
 		refs = make(map[int64]interface{})
 	}
@@ -71,7 +72,15 @@ func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32) *RBuffer
 		r:      &rbuff{p: data, c: 0},
 		refs:   refs,
 		offset: offset,
+		sictx:  ctx,
 	}
+}
+
+func (r *RBuffer) StreamerInfo(name string) StreamerInfo {
+	if r.sictx == nil {
+		return nil
+	}
+	return r.sictx.StreamerInfo(name)
 }
 
 func (r *RBuffer) Pos() int64 {

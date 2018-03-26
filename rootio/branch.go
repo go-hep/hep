@@ -99,6 +99,26 @@ func (b *tbranch) Leaf(name string) Leaf {
 	return nil
 }
 
+func (b *tbranch) GoType() reflect.Type {
+	if len(b.Leaves()) == 1 {
+		return b.leaves[0].Type()
+	}
+	fields := make([]reflect.StructField, len(b.leaves))
+	for i, leaf := range b.leaves {
+		ft := &fields[i]
+		ft.Name = "ROOT_" + leaf.Name()
+		etype := leaf.Type()
+		switch {
+		case leaf.LeafCount() != nil:
+			etype = reflect.SliceOf(etype)
+		case leaf.Len() > 1 && leaf.Kind() != reflect.String:
+			etype = reflect.ArrayOf(leaf.Len(), etype)
+		}
+		ft.Type = etype
+	}
+	return reflect.StructOf(fields)
+}
+
 func (b *tbranch) getReadEntry() int64 {
 	return b.readentry
 }
@@ -287,7 +307,8 @@ func (b *tbranch) loadBasket(entry int64) error {
 
 	b.baskets = append(b.baskets, Basket{})
 	b.basket = &b.baskets[len(b.baskets)-1]
-	err = b.basket.UnmarshalROOT(NewRBuffer(buf, nil, 0))
+	sictx := b.tree.getFile()
+	err = b.basket.UnmarshalROOT(NewRBuffer(buf, nil, 0, sictx))
 	if err != nil {
 		return err
 	}
@@ -302,7 +323,7 @@ func (b *tbranch) loadBasket(entry int64) error {
 	if err != nil {
 		return err
 	}
-	b.basket.rbuf = NewRBuffer(buf, nil, uint32(b.basket.key.keylen))
+	b.basket.rbuf = NewRBuffer(buf, nil, uint32(b.basket.key.keylen), sictx)
 
 	for _, leaf := range b.leaves {
 		err = leaf.readBasket(b.basket.rbuf)
@@ -369,6 +390,14 @@ func (b *tbranch) scan(ptr interface{}) error {
 func (b *tbranch) setAddress(ptr interface{}) error {
 	var err error
 	return err
+}
+
+func (b *tbranch) setStreamer(s StreamerInfo, ctx StreamerInfoContext) {
+	// no op
+}
+
+func (b *tbranch) setStreamerElement(s StreamerElement, ctx StreamerInfoContext) {
+	// no op
 }
 
 // tbranchElement is a Branch for objects.
@@ -590,6 +619,36 @@ func (b *tbranchElement) setupReadStreamer() error {
 	}
 
 	return nil
+}
+
+func (b *tbranchElement) GoType() reflect.Type {
+	return gotypeFromSI(b.streamer, b.tree.getFile())
+}
+
+func (b *tbranchElement) setStreamer(s StreamerInfo, ctx StreamerInfoContext) {
+	b.streamer = s
+	if len(b.tbranch.leaves) == 1 {
+		tle := b.tbranch.leaves[0].(*tleafElement)
+		tle.streamers = s.Elements()
+		tle.src = reflect.New(gotypeFromSI(s, ctx)).Elem()
+	}
+	err := b.setupReadStreamer()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (b *tbranchElement) setStreamerElement(se StreamerElement, ctx StreamerInfoContext) {
+	b.estreamer = se
+	if len(b.Leaves()) == 1 {
+		tle := b.Leaves()[0].(*tleafElement)
+		tle.streamers = []StreamerElement{se}
+		tle.src = reflect.New(gotypeFromSE(se, tle.LeafCount(), ctx)).Elem()
+	}
+	err := b.setupReadStreamer()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func init() {

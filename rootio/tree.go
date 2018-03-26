@@ -7,6 +7,7 @@ package rootio
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 // A ttree object is a list of Branch.
@@ -195,7 +196,140 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	r.CheckByteCount(pos, bcnt, beg, "TTree")
+
+	// attach streamers to branches
+	for i := range tree.branches {
+		br := tree.branches[i]
+		cls := ""
+		if bre, ok := br.(*tbranchElement); ok {
+			cls = bre.class
+		}
+		si := r.StreamerInfo(cls)
+		// tree.attachStreamer(br, rstreamer, rstreamerCtx)
+		tree.attachStreamer(br, si, r)
+	}
+
 	return r.Err()
+}
+
+func (tree *ttree) attachStreamer(br Branch, info StreamerInfo, ctx StreamerInfoContext) {
+	if info == nil {
+		return
+	}
+
+	if len(info.Elements()) == 1 {
+		switch elem := info.Elements()[0].(type) {
+		case *tstreamerBase:
+			if elem.Name() == "TObjArray" {
+				switch info.Name() {
+				case "TClonesArray":
+					cls := ""
+					if bre, ok := br.(*tbranchElement); ok {
+						cls = bre.clones
+					}
+					tree.attachStreamer(br, ctx.StreamerInfo(cls), ctx)
+					return
+				default:
+					// FIXME(sbinet): can only determine streamer by reading some value?
+					return
+				}
+			}
+		case *tstreamerSTL:
+			if elem.Name() == "This" {
+				tree.attachStreamerElement(br, elem, ctx)
+				return
+			}
+		}
+	}
+
+	br.setStreamer(info, ctx)
+
+	for _, sub := range br.Branches() {
+		name := sub.Name()
+		if strings.HasPrefix(name, br.Name()+".") {
+			name = name[len(br.Name())+1:]
+		}
+
+		if strings.Contains(name, "[") {
+			idx := strings.Index(name, "[")
+			name = name[:idx]
+		}
+		var se StreamerElement
+		for _, elmt := range info.Elements() {
+			if elmt.Name() == name {
+				se = elmt
+				break
+			}
+		}
+		tree.attachStreamerElement(sub, se, ctx)
+	}
+}
+
+func (tree *ttree) attachStreamerElement(br Branch, se StreamerElement, ctx StreamerInfoContext) {
+	if se == nil {
+		return
+	}
+
+	br.setStreamerElement(se, ctx)
+	var members []StreamerElement
+	switch se.(type) {
+	case *tstreamerObject, *tstreamerObjectAny, *tstreamerObjectPointer, *tstreamerObjectAnyPointer:
+		typename := strings.TrimRight(se.TypeName(), "*")
+		info := ctx.StreamerInfo(typename)
+		if info != nil {
+			members = info.Elements()
+		}
+	case *tstreamerSTL:
+		typename := se.TypeName()
+		// FIXME(sbinet): this string manipulation only works for one-parameter templates
+		if strings.Contains(typename, "<") {
+			typename = typename[strings.Index(typename, "<")+1 : strings.LastIndex(typename, ">")]
+			typename = strings.TrimRight(typename, "*")
+		}
+		info := ctx.StreamerInfo(typename)
+		if info != nil {
+			members = info.Elements()
+		}
+	}
+
+	if members == nil {
+		return
+	}
+
+	for _, sub := range br.Branches() {
+		name := sub.Name()
+		if strings.HasPrefix(name, br.Name()+".") { // drop parent branch's name
+			name = name[len(br.Name())+1:]
+		}
+		submembers := members
+		for strings.Contains(name, ".") { // drop nested struct names, one at a time
+			dot := strings.Index(name, ".")
+			base := name[:dot]
+			name = name[dot+1:]
+			for _, subse := range submembers {
+				if subse.Name() == base {
+					switch subse.(type) {
+					case *tstreamerObject, *tstreamerObjectAny, *tstreamerObjectPointer, *tstreamerObjectAnyPointer:
+						subinfo := ctx.StreamerInfo(strings.TrimRight(subse.TypeName(), "*"))
+						submembers = subinfo.Elements()
+					}
+				}
+			}
+		}
+
+		if strings.Contains(name, "[") {
+			idx := strings.Index(name, "[")
+			name = name[:idx]
+		}
+		var subse StreamerElement
+		for _, elmt := range members {
+			if elmt.Name() == name {
+				subse = elmt
+				break
+			}
+		}
+		tree.attachStreamerElement(sub, subse, ctx)
+	}
 }
 
 type tntuple struct {

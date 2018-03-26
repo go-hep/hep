@@ -113,7 +113,7 @@ func (k *Key) Object() (Object, error) {
 		return nil, fmt.Errorf("rootio: class %q does not implement rootio.ROOTUnmarshaler (key=%q)", k.Class(), k.Name())
 	}
 
-	err = vv.UnmarshalROOT(NewRBuffer(buf, nil, uint32(k.keylen)))
+	err = vv.UnmarshalROOT(NewRBuffer(buf, nil, uint32(k.keylen), k.f))
 	if err != nil {
 		return nil, err
 	}

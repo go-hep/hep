@@ -738,3 +738,213 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 	}
 	panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
 }
+
+func gotypeFromSI(sinfo StreamerInfo, ctx StreamerInfoContext) reflect.Type {
+	elts := sinfo.Elements()
+	fields := make([]reflect.StructField, len(elts))
+	for i := range fields {
+		ft := &fields[i]
+		elt := elts[i]
+		ft.Name = "ROOT_" + elt.Name()
+		var lcount Leaf
+		if elt.Title() != "" {
+			lcount = &tleaf{}
+		}
+		ft.Type = gotypeFromSE(elt, lcount, ctx)
+		ft.Tag = reflect.StructTag("rootio:\"" + elt.Name() + "\"")
+	}
+	return reflect.StructOf(fields)
+}
+
+func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) reflect.Type {
+	switch se := se.(type) {
+	default:
+		panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
+
+	case *tstreamerBasicType:
+		switch se.etype {
+		case kCounter:
+			switch se.esize {
+			case 4:
+				return reflect.TypeOf(int32(0))
+			case 8:
+				return reflect.TypeOf(int64(0))
+			default:
+				panic(fmt.Errorf("rootio: invalid kCounter size %d", se.esize))
+			}
+
+		case kChar:
+			return reflect.TypeOf(int8(0))
+		case kShort:
+			return reflect.TypeOf(int16(0))
+		case kInt:
+			return reflect.TypeOf(int32(0))
+		case kLong:
+			return reflect.TypeOf(int64(0))
+		case kFloat:
+			return reflect.TypeOf(float32(0))
+		case kDouble:
+			return reflect.TypeOf(float64(0))
+		case kUChar:
+			return reflect.TypeOf(uint8(0))
+		case kUShort:
+			return reflect.TypeOf(uint16(0))
+		case kUInt:
+			return reflect.TypeOf(uint32(0))
+		case kULong:
+			return reflect.TypeOf(uint64(0))
+		case kBool:
+			return reflect.TypeOf(false)
+		case kOffsetL + kChar:
+			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(int8(0)))
+		case kOffsetL + kShort:
+			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(int16(0)))
+		case kOffsetL + kInt:
+			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(int32(0)))
+		case kOffsetL + kLong:
+			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(int64(0)))
+		case kOffsetL + kFloat:
+			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(float32(0)))
+		case kOffsetL + kDouble:
+			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(float64(0)))
+		case kOffsetL + kUChar:
+			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(uint8(0)))
+		case kOffsetL + kUShort:
+			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(uint16(0)))
+		case kOffsetL + kUInt:
+			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(uint32(0)))
+		case kOffsetL + kULong:
+			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(uint64(0)))
+		case kOffsetL + kBool:
+			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(false))
+		default:
+			panic(fmt.Errorf("rootio: invalid element type value %d for %#v", se.etype, se))
+		}
+
+	case *tstreamerString:
+		return reflect.TypeOf("")
+
+	case *tstreamerBasicPointer:
+		switch se.etype {
+		case kOffsetP + kChar:
+			tp := reflect.TypeOf(int8(0))
+			if lcount != nil {
+				return reflect.SliceOf(tp)
+			}
+			return reflect.PtrTo(tp)
+		case kOffsetP + kShort:
+			tp := reflect.TypeOf(int16(0))
+			if lcount != nil {
+				return reflect.SliceOf(tp)
+			}
+			return reflect.PtrTo(tp)
+		case kOffsetP + kInt:
+			tp := reflect.TypeOf(int32(0))
+			if lcount != nil {
+				return reflect.SliceOf(tp)
+			}
+			return reflect.PtrTo(tp)
+		case kOffsetP + kLong:
+			tp := reflect.TypeOf(int64(0))
+			if lcount != nil {
+				return reflect.SliceOf(tp)
+			}
+			return reflect.PtrTo(tp)
+		case kOffsetP + kFloat:
+			tp := reflect.TypeOf(float32(0))
+			if lcount != nil {
+				return reflect.SliceOf(tp)
+			}
+			return reflect.PtrTo(tp)
+		case kOffsetP + kDouble:
+			tp := reflect.TypeOf(float64(0))
+			if lcount != nil {
+				return reflect.SliceOf(tp)
+			}
+			return reflect.PtrTo(tp)
+		case kOffsetP + kUChar:
+			tp := reflect.TypeOf(uint8(0))
+			if lcount != nil {
+				return reflect.SliceOf(tp)
+			}
+			return reflect.PtrTo(tp)
+		case kOffsetP + kUShort:
+			tp := reflect.TypeOf(uint16(0))
+			if lcount != nil {
+				return reflect.SliceOf(tp)
+			}
+			return reflect.PtrTo(tp)
+		case kOffsetP + kUInt:
+			tp := reflect.TypeOf(uint32(0))
+			if lcount != nil {
+				return reflect.SliceOf(tp)
+			}
+			return reflect.PtrTo(tp)
+		case kOffsetP + kULong:
+			tp := reflect.TypeOf(uint64(0))
+			if lcount != nil {
+				return reflect.SliceOf(tp)
+			}
+			return reflect.PtrTo(tp)
+		case kOffsetP + kBool:
+			tp := reflect.TypeOf(false)
+			if lcount != nil {
+				return reflect.SliceOf(tp)
+			}
+			return reflect.PtrTo(tp)
+		default:
+			panic(fmt.Errorf("rootio: invalid element type value %d for %#v", se.etype, se))
+		}
+
+	case *tstreamerSTLstring:
+		switch se.ctype {
+		case kSTLstring:
+			return reflect.TypeOf("")
+		default:
+			panic(fmt.Errorf("rootio: invalid element type value %d for %#v", se.ctype, se))
+		}
+
+	case *tstreamerSTL:
+		switch se.vtype {
+		case kSTLvector:
+			switch se.ctype {
+			case kChar:
+				return reflect.SliceOf(reflect.TypeOf(int8(0)))
+			case kShort:
+				return reflect.SliceOf(reflect.TypeOf(int16(0)))
+			case kInt:
+				return reflect.SliceOf(reflect.TypeOf(int32(0)))
+			case kLong:
+				return reflect.SliceOf(reflect.TypeOf(int64(0)))
+			case kFloat:
+				return reflect.SliceOf(reflect.TypeOf(float32(0)))
+			case kDouble:
+				return reflect.SliceOf(reflect.TypeOf(float64(0)))
+			case kUChar:
+				return reflect.SliceOf(reflect.TypeOf(uint8(0)))
+			case kUShort:
+				return reflect.SliceOf(reflect.TypeOf(uint16(0)))
+			case kUInt:
+				return reflect.SliceOf(reflect.TypeOf(uint32(0)))
+			case kULong:
+				return reflect.SliceOf(reflect.TypeOf(uint64(0)))
+			case kBool:
+				return reflect.SliceOf(reflect.TypeOf(false))
+			case kObject:
+				switch se.ename {
+				case "vector<string>", "std::vector<std::string>":
+					return reflect.TypeOf([]string{})
+				default:
+					panic(fmt.Errorf("rootio: invalid std::vector<kObject>: ename=%q", se.ename))
+				}
+			}
+		default:
+			panic(fmt.Errorf("rootio: invalid STL type %d for %#v", se.vtype, se))
+		}
+
+	case *tstreamerObjectAny:
+		si := ctx.StreamerInfo(se.ename)
+		return gotypeFromSI(si, ctx)
+	}
+	panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
+}

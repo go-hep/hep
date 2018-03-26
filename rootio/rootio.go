@@ -170,6 +170,9 @@ type Branch interface {
 	getEntry(i int64)
 	scan(ptr interface{}) error
 	setAddress(ptr interface{}) error
+	setStreamer(s StreamerInfo, ctx StreamerInfoContext)
+	setStreamerElement(s StreamerElement, ctx StreamerInfoContext)
+	GoType() reflect.Type
 }
 
 // Leaf describes branches data types

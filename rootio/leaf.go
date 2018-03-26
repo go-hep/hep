@@ -236,9 +236,11 @@ func (leaf *tleafElement) scan(r *RBuffer, ptr interface{}) error {
 	case reflect.Array:
 		reflect.Copy(rv, leaf.src)
 	case reflect.Slice:
-		sli := leaf.src
-		rv.Set(reflect.MakeSlice(sli.Type(), sli.Len(), sli.Cap()))
-		reflect.Copy(rv, sli)
+		if rv.UnsafeAddr() != leaf.src.UnsafeAddr() {
+			sli := leaf.src
+			rv.Set(reflect.MakeSlice(sli.Type(), sli.Len(), sli.Cap()))
+			reflect.Copy(rv, sli)
+		}
 	default:
 		rv.Set(leaf.src)
 	}
