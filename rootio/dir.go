@@ -209,16 +209,66 @@ func (dir *tdirectory) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
-func init() {
-	f := func() reflect.Value {
-		o := &tdirectory{}
-		return reflect.ValueOf(o)
-	}
-	Factory.add("TDirectory", f)
-	Factory.add("*rootio.tdirectory", f)
+type tdirectoryFile struct {
+	dir tdirectory
 }
 
-var _ Object = (*tdirectory)(nil)
-var _ Named = (*tdirectory)(nil)
-var _ Directory = (*tdirectory)(nil)
-var _ ROOTUnmarshaler = (*tdirectory)(nil)
+func (dir *tdirectoryFile) Get(namecycle string) (Object, error) {
+	return dir.dir.Get(namecycle)
+}
+
+func (dir *tdirectoryFile) Keys() []Key {
+	return dir.dir.Keys()
+}
+
+func (dir *tdirectoryFile) Class() string {
+	return "TDirectoryFile"
+}
+
+func (dir *tdirectoryFile) Name() string {
+	return dir.dir.named.Name()
+}
+
+func (dir *tdirectoryFile) Title() string {
+	return dir.dir.named.Title()
+}
+
+func (dir *tdirectoryFile) UnmarshalROOT(r *RBuffer) error {
+	err := dir.dir.UnmarshalROOT(r)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func init() {
+	{
+		f := func() reflect.Value {
+			o := &tdirectory{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TDirectory", f)
+		Factory.add("*rootio.tdirectory", f)
+	}
+	{
+		f := func() reflect.Value {
+			o := &tdirectoryFile{}
+			return reflect.ValueOf(o)
+		}
+		Factory.add("TDirectoryFile", f)
+		Factory.add("*rootio.tdirectoryFile", f)
+	}
+}
+
+var (
+	_ Object          = (*tdirectory)(nil)
+	_ Named           = (*tdirectory)(nil)
+	_ Directory       = (*tdirectory)(nil)
+	_ ROOTUnmarshaler = (*tdirectory)(nil)
+
+	_ Object          = (*tdirectoryFile)(nil)
+	_ Named           = (*tdirectoryFile)(nil)
+	_ Directory       = (*tdirectoryFile)(nil)
+	_ ROOTUnmarshaler = (*tdirectoryFile)(nil)
+)
