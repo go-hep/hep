@@ -141,7 +141,7 @@ func (h *th1) UnmarshalROOT(r *RBuffer) error {
 	n := int(r.ReadI32())
 	_ = r.ReadI8()
 	h.buffer = r.ReadFastArrayF64(n)
-	if vers > 5 {
+	if vers > 6 {
 		h.erropt = r.ReadI32()
 	}
 
