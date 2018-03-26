@@ -475,7 +475,6 @@ func (b *tbranchElement) UnmarshalROOT(r *RBuffer) error {
 }
 
 func (b *tbranchElement) loadEntry(ientry int64) error {
-	var err error
 	if len(b.branches) > 0 {
 		for _, sub := range b.branches {
 			err := sub.loadEntry(ientry)
@@ -485,29 +484,6 @@ func (b *tbranchElement) loadEntry(ientry int64) error {
 		}
 	}
 	return b.tbranch.loadEntry(ientry)
-
-	if len(b.basketBytes) == 0 {
-		return nil
-	}
-
-	b.readentry = ientry
-	err = b.loadBasket(ientry)
-	if err != nil {
-		return err
-	}
-
-	err = b.basket.loadEntry(ientry - b.firstEntry)
-	if err != nil {
-		return err
-	}
-
-	for _, leaf := range b.leaves {
-		err = b.basket.readLeaf(ientry-b.firstEntry, leaf)
-		if err != nil {
-			return err
-		}
-	}
-	return err
 }
 
 func (b *tbranchElement) setAddress(ptr interface{}) error {
