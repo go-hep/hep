@@ -351,6 +351,10 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 		if rv := reflect.ValueOf(arg); rv.Kind() != reflect.Ptr {
 			return nil, errorf("rootio: ScanVar %d (name=%v) has non pointer Value", i, sv.Name)
 		}
+		err := br.setAddress(arg)
+		if err != nil {
+			panic(err)
+		}
 		args[i] = arg
 	}
 

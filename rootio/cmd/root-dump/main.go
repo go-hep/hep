@@ -128,13 +128,7 @@ func dumpTree(w io.Writer, t rootio.Tree) error {
 	var vars []rootio.ScanVar
 	for _, b := range t.Branches() {
 		for _, leaf := range b.Leaves() {
-			if cls := leaf.Class(); cls == "TLeafElement" {
-				return fmt.Errorf("trees with TLeafElement(s) not handled (leaf=%q)", leaf.Name())
-			}
 			ptr := newValue(leaf)
-			if leaf.LeafCount() != nil && false {
-				continue
-			}
 			vars = append(vars, rootio.ScanVar{Name: b.Name(), Leaf: leaf.Name(), Value: ptr})
 		}
 	}
