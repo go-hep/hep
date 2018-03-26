@@ -304,9 +304,24 @@ func (f *File) readStreamerInfo() error {
 	return nil
 }
 
-// StreamerInfo returns the list of StreamerInfos of this file.
-func (f *File) StreamerInfo() []StreamerInfo {
+// StreamerInfos returns the list of StreamerInfos of this file.
+func (f *File) StreamerInfos() []StreamerInfo {
 	return f.sinfos
+}
+
+// StreamerInfo returns the StreamerInfo with name of this file, or nil otherwise.
+func (f *File) StreamerInfo(name string) StreamerInfo {
+	if len(f.sinfos) == 0 {
+		return nil
+	}
+
+	for _, si := range f.sinfos {
+		if si.Name() == name {
+			return si
+		}
+	}
+
+	return nil
 }
 
 // Get returns the object identified by namecycle

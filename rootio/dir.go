@@ -209,6 +209,14 @@ func (dir *tdirectory) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
+// StreamerInfo returns the StreamerInfo with name of this directory, or nil otherwise.
+func (dir *tdirectory) StreamerInfo(name string) StreamerInfo {
+	if dir.file == nil {
+		return nil
+	}
+	return dir.file.StreamerInfo(name)
+}
+
 type tdirectoryFile struct {
 	dir tdirectory
 }
@@ -231,6 +239,10 @@ func (dir *tdirectoryFile) Name() string {
 
 func (dir *tdirectoryFile) Title() string {
 	return dir.dir.named.Title()
+}
+
+func (dir *tdirectoryFile) StreamerInfo(name string) StreamerInfo {
+	return dir.dir.StreamerInfo(name)
 }
 
 func (dir *tdirectoryFile) UnmarshalROOT(r *RBuffer) error {
@@ -262,13 +274,15 @@ func init() {
 }
 
 var (
-	_ Object          = (*tdirectory)(nil)
-	_ Named           = (*tdirectory)(nil)
-	_ Directory       = (*tdirectory)(nil)
-	_ ROOTUnmarshaler = (*tdirectory)(nil)
+	_ Object              = (*tdirectory)(nil)
+	_ Named               = (*tdirectory)(nil)
+	_ Directory           = (*tdirectory)(nil)
+	_ StreamerInfoContext = (*tdirectory)(nil)
+	_ ROOTUnmarshaler     = (*tdirectory)(nil)
 
-	_ Object          = (*tdirectoryFile)(nil)
-	_ Named           = (*tdirectoryFile)(nil)
-	_ Directory       = (*tdirectoryFile)(nil)
-	_ ROOTUnmarshaler = (*tdirectoryFile)(nil)
+	_ Object              = (*tdirectoryFile)(nil)
+	_ Named               = (*tdirectoryFile)(nil)
+	_ Directory           = (*tdirectoryFile)(nil)
+	_ StreamerInfoContext = (*tdirectoryFile)(nil)
+	_ ROOTUnmarshaler     = (*tdirectoryFile)(nil)
 )

@@ -114,6 +114,6 @@ func TestFileOpenStreamerInfo(t *testing.T) {
 		}
 		defer f.Close()
 
-		_ = f.StreamerInfo()
+		_ = f.StreamerInfos()
 	}
 }

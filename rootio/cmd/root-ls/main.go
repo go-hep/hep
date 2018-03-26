@@ -107,7 +107,7 @@ options:
 		fmt.Printf("version: %v\n", f.Version())
 		if *doSI {
 			fmt.Printf("streamer-infos:\n")
-			sinfos := f.StreamerInfo()
+			sinfos := f.StreamerInfos()
 			for _, v := range sinfos {
 				name := v.Name()
 				fmt.Printf(" StreamerInfo for %q version=%d title=%q\n", name, v.ClassVersion(), v.Title())
