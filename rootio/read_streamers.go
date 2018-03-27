@@ -779,19 +779,23 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 			return reflect.TypeOf(int16(0))
 		case kInt:
 			return reflect.TypeOf(int32(0))
-		case kLong:
+		case kLong, kLong64:
 			return reflect.TypeOf(int64(0))
 		case kFloat:
 			return reflect.TypeOf(float32(0))
+		case kFloat16:
+			return reflect.TypeOf(Float16(0))
+		case kDouble32:
+			return reflect.TypeOf(Double32(0))
 		case kDouble:
 			return reflect.TypeOf(float64(0))
-		case kUChar:
+		case kUChar, kCharStar:
 			return reflect.TypeOf(uint8(0))
 		case kUShort:
 			return reflect.TypeOf(uint16(0))
-		case kUInt:
+		case kUInt, kBits:
 			return reflect.TypeOf(uint32(0))
-		case kULong:
+		case kULong, kULong64:
 			return reflect.TypeOf(uint64(0))
 		case kBool:
 			return reflect.TypeOf(false)
@@ -801,19 +805,23 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(int16(0)))
 		case kOffsetL + kInt:
 			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(int32(0)))
-		case kOffsetL + kLong:
+		case kOffsetL + kLong, kOffsetL + kLong64:
 			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(int64(0)))
 		case kOffsetL + kFloat:
 			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(float32(0)))
+		case kOffsetL + kFloat16:
+			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(Float16(0)))
+		case kOffsetL + kDouble32:
+			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(Double32(0)))
 		case kOffsetL + kDouble:
 			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(float64(0)))
-		case kOffsetL + kUChar:
+		case kOffsetL + kUChar, kOffsetL + kCharStar:
 			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(uint8(0)))
 		case kOffsetL + kUShort:
 			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(uint16(0)))
-		case kOffsetL + kUInt:
+		case kOffsetL + kUInt, kOffsetL + kBits:
 			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(uint32(0)))
-		case kOffsetL + kULong:
+		case kOffsetL + kULong, kOffsetL + kULong64:
 			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(uint64(0)))
 		case kOffsetL + kBool:
 			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(false))
@@ -844,7 +852,7 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 				return reflect.SliceOf(tp)
 			}
 			return reflect.PtrTo(tp)
-		case kOffsetP + kLong:
+		case kOffsetP + kLong, kOffsetP + kLong64:
 			tp := reflect.TypeOf(int64(0))
 			if lcount != nil {
 				return reflect.SliceOf(tp)
@@ -856,13 +864,25 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 				return reflect.SliceOf(tp)
 			}
 			return reflect.PtrTo(tp)
+		case kOffsetP + kFloat16:
+			tp := reflect.TypeOf(Float16(0))
+			if lcount != nil {
+				return reflect.SliceOf(tp)
+			}
+			return reflect.PtrTo(tp)
+		case kOffsetP + kDouble32:
+			tp := reflect.TypeOf(Double32(0))
+			if lcount != nil {
+				return reflect.SliceOf(tp)
+			}
+			return reflect.PtrTo(tp)
 		case kOffsetP + kDouble:
 			tp := reflect.TypeOf(float64(0))
 			if lcount != nil {
 				return reflect.SliceOf(tp)
 			}
 			return reflect.PtrTo(tp)
-		case kOffsetP + kUChar:
+		case kOffsetP + kUChar, kOffsetP + kCharStar:
 			tp := reflect.TypeOf(uint8(0))
 			if lcount != nil {
 				return reflect.SliceOf(tp)
@@ -874,13 +894,13 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 				return reflect.SliceOf(tp)
 			}
 			return reflect.PtrTo(tp)
-		case kOffsetP + kUInt:
+		case kOffsetP + kUInt, kOffsetP + kBits:
 			tp := reflect.TypeOf(uint32(0))
 			if lcount != nil {
 				return reflect.SliceOf(tp)
 			}
 			return reflect.PtrTo(tp)
-		case kOffsetP + kULong:
+		case kOffsetP + kULong, kOffsetP + kULong64:
 			tp := reflect.TypeOf(uint64(0))
 			if lcount != nil {
 				return reflect.SliceOf(tp)
@@ -945,6 +965,45 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 	case *tstreamerObjectAny:
 		si := ctx.StreamerInfo(se.ename)
 		return gotypeFromSI(si, ctx)
+
+	case *tstreamerBase:
+		switch se.ename {
+		case "BASE":
+			si := ctx.StreamerInfo(se.Name())
+			if si == nil {
+				panic(fmt.Errorf("rootio: unknown base class %q", se.Name()))
+			}
+			return gotypeFromSI(si, ctx)
+
+		default:
+			panic(fmt.Errorf("rootio: unknown base class %q in StreamerElement %q: %#v", se.ename, se.Name(), se))
+		}
+
+	case *tstreamerObject:
+		si := ctx.StreamerInfo(se.ename)
+		if si == nil {
+			panic(fmt.Errorf("rootio: unknown object class %q", se.ename))
+		}
+		return gotypeFromSI(si, ctx)
+
+	case *tstreamerObjectPointer:
+		ename := se.ename[:len(se.ename)-1] // drop final '*'
+		si := ctx.StreamerInfo(ename)
+		if si == nil {
+			panic(fmt.Errorf("rootio: unknown pointee class %q", ename))
+		}
+		typ := gotypeFromSI(si, ctx)
+		return reflect.PtrTo(typ)
+
+	case *tstreamerObjectAnyPointer:
+		ename := se.ename[:len(se.ename)-1] // drop final '*'
+		si := ctx.StreamerInfo(ename)
+		if si == nil {
+			panic(fmt.Errorf("rootio: unknown pointee class %q", ename))
+		}
+		typ := gotypeFromSI(si, ctx)
+		return reflect.PtrTo(typ)
 	}
+
 	panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
 }
