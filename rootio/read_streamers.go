@@ -119,7 +119,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 				return r.err
 			}
 
-		case kLong:
+		case kLong, kLong64:
 			fptr := rf.Addr().Interface().(*int64)
 			return func(r *RBuffer) error {
 				if r.err != nil {
@@ -149,7 +149,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 				return r.err
 			}
 
-		case kUChar:
+		case kUChar, kCharStar:
 			fptr := rf.Addr().Interface().(*uint8)
 			return func(r *RBuffer) error {
 				if r.err != nil {
@@ -169,7 +169,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 				return r.err
 			}
 
-		case kUInt:
+		case kUInt, kBits:
 			fptr := rf.Addr().Interface().(*uint32)
 			return func(r *RBuffer) error {
 				if r.err != nil {
@@ -179,7 +179,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 				return r.err
 			}
 
-		case kULong:
+		case kULong, kULong64:
 			fptr := rf.Addr().Interface().(*uint64)
 			return func(r *RBuffer) error {
 				if r.err != nil {
@@ -232,7 +232,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 				return r.err
 			}
 
-		case kOffsetL + kLong:
+		case kOffsetL + kLong, kOffsetL + kLong64:
 			n := rf.Len()
 			fptr := rf.Slice(0, n).Interface().([]int64)
 			return func(r *RBuffer) error {
@@ -265,7 +265,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 				return r.err
 			}
 
-		case kOffsetL + kUChar:
+		case kOffsetL + kUChar, kOffsetL + kCharStar:
 			n := rf.Len()
 			fptr := rf.Slice(0, n).Interface().([]uint8)
 			return func(r *RBuffer) error {
@@ -287,7 +287,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 				return r.err
 			}
 
-		case kOffsetL + kUInt:
+		case kOffsetL + kUInt, kOffsetL + kBits:
 			n := rf.Len()
 			fptr := rf.Slice(0, n).Interface().([]uint32)
 			return func(r *RBuffer) error {
@@ -298,7 +298,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 				return r.err
 			}
 
-		case kOffsetL + kULong:
+		case kOffsetL + kULong, kOffsetL + kULong64:
 			n := rf.Len()
 			fptr := rf.Slice(0, n).Interface().([]uint64)
 			return func(r *RBuffer) error {
@@ -408,7 +408,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 				return r.err
 			}
 
-		case kOffsetP + kLong:
+		case kOffsetP + kLong, kOffsetP + kLong64:
 			fptr := rf.Addr().Interface().(*[]int64)
 			return func(r *RBuffer) error {
 				if r.err != nil {
@@ -456,7 +456,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 				return r.err
 			}
 
-		case kOffsetP + kUChar:
+		case kOffsetP + kUChar, kOffsetP + kCharStar:
 			fptr := rf.Addr().Interface().(*[]uint8)
 			return func(r *RBuffer) error {
 				if r.err != nil {
@@ -488,7 +488,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 				return r.err
 			}
 
-		case kOffsetP + kUInt:
+		case kOffsetP + kUInt, kOffsetP + kBits:
 			fptr := rf.Addr().Interface().(*[]uint32)
 			return func(r *RBuffer) error {
 				if r.err != nil {
@@ -504,7 +504,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 				return r.err
 			}
 
-		case kOffsetP + kULong:
+		case kOffsetP + kULong, kOffsetP + kULong64:
 			fptr := rf.Addr().Interface().(*[]uint64)
 			return func(r *RBuffer) error {
 				if r.err != nil {
@@ -587,7 +587,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 					return r.err
 				}
 
-			case kLong:
+			case kLong, kLong64:
 				fptr := rf.Addr().Interface().(*[]int64)
 				return func(r *RBuffer) error {
 					var hdr [6]byte
@@ -643,7 +643,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 					return r.err
 				}
 
-			case kUInt:
+			case kUInt, kBits:
 				fptr := rf.Addr().Interface().(*[]uint32)
 				return func(r *RBuffer) error {
 					var hdr [6]byte
@@ -657,7 +657,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 					return r.err
 				}
 
-			case kULong:
+			case kULong, kULong64:
 				fptr := rf.Addr().Interface().(*[]uint64)
 				return func(r *RBuffer) error {
 					var hdr [6]byte
