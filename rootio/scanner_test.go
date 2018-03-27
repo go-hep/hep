@@ -9,7 +9,6 @@ import (
 	"io"
 	"path/filepath"
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -656,11 +655,6 @@ func TestScannerStructWithStdVectorBool(t *testing.T) {
 
 	for _, fname := range files {
 		t.Run(fname, func(t *testing.T) {
-			if strings.Contains(fname, "-fullsplit-") {
-				// FIXME(sbinet)
-				t.Skipf("skipping %q (full split not supported yet)", fname)
-				return
-			}
 			f, err := Open(fname)
 			if err != nil {
 				t.Fatal(err.Error())
