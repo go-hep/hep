@@ -289,10 +289,8 @@ func (h *H2D) MarshalYODA() ([]byte, error) {
 
 // UnmarshalYODA implements the YODAUnmarshaler interface.
 func (h *H2D) UnmarshalYODA(data []byte) error {
-	var err error
-	var path string
 	r := bytes.NewBuffer(data)
-	_, err = fmt.Fscanf(r, "BEGIN YODA_HISTO2D %s\n", &path)
+	_, err := readYODAHeader(r, "BEGIN YODA_HISTO2D")
 	if err != nil {
 		return err
 	}

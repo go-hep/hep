@@ -336,10 +336,8 @@ func (s *S2D) MarshalYODA() ([]byte, error) {
 
 // UnmarshalYODA implements the YODAUnmarshaler interface.
 func (s *S2D) UnmarshalYODA(data []byte) error {
-	var err error
-	var path string
 	r := bytes.NewBuffer(data)
-	_, err = fmt.Fscanf(r, "BEGIN YODA_SCATTER2D %s\n", &path)
+	_, err := readYODAHeader(r, "BEGIN YODA_SCATTER2D")
 	if err != nil {
 		return err
 	}

@@ -231,10 +231,8 @@ func (p *P1D) MarshalYODA() ([]byte, error) {
 
 // UnmarshalYODA implements the YODAUnmarshaler interface.
 func (p *P1D) UnmarshalYODA(data []byte) error {
-	var err error
-	var path string
 	r := bytes.NewBuffer(data)
-	_, err = fmt.Fscanf(r, "BEGIN YODA_PROFILE1D %s\n", &path)
+	_, err := readYODAHeader(r, "BEGIN YODA_PROFILE1D")
 	if err != nil {
 		return err
 	}
