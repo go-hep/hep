@@ -113,7 +113,8 @@ func dumpDir(w io.Writer, dir rootio.Directory, deep bool) error {
 			case rootio.Directory:
 				err = dumpDir(w, obj, deep)
 			default:
-				err = fmt.Errorf("unhandled type %T", obj)
+				fmt.Fprintf(w, "ignoring key=%s;%d of type %T\n", key.Name(), key.Cycle(), obj)
+				continue
 			}
 		}
 		if err != nil {
