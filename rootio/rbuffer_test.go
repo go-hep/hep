@@ -2620,12 +2620,12 @@ func TestReadRBuffer(t *testing.T) {
 						rvers: 5,
 						name:  "listOfRules",
 						objs: []Object{
-							&tobjString{
+							&tobjstring{
 								rvers: 1,
 								obj:   tobject{id: 0x0, bits: 0x3000000},
 								str:   "type=read sourceClass=\"TTree\" targetClass=\"TTree\" version=\"[-16]\" source=\"\" target=\"fDefaultEntryOffsetLen\" code=\"{ fDefaultEntryOffsetLen = 1000; }\" ",
 							},
-							&tobjString{
+							&tobjstring{
 								rvers: 1,
 								obj:   tobject{id: 0x0, bits: 0x3000000},
 								str:   "type=read sourceClass=\"TTree\" targetClass=\"TTree\" version=\"[-18]\" source=\"\" target=\"fNClusterRange\" code=\"{ fNClusterRange = 0; }\" ",

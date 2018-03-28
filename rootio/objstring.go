@@ -6,27 +6,27 @@ package rootio
 
 import "reflect"
 
-type tobjString struct {
+type tobjstring struct {
 	rvers int16
 	obj   tobject
 	str   string
 }
 
-func (*tobjString) Class() string {
+func (*tobjstring) Class() string {
 	return "TObjString"
 }
 
-func (obj *tobjString) Name() string {
+func (obj *tobjstring) Name() string {
 	return obj.str
 }
 
-func (obj *tobjString) Title() string {
+func (obj *tobjstring) Title() string {
 	return "Collectable string class"
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
-func (obj *tobjString) UnmarshalROOT(r *RBuffer) error {
+func (obj *tobjstring) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
 	obj.rvers = vers
@@ -41,13 +41,15 @@ func (obj *tobjString) UnmarshalROOT(r *RBuffer) error {
 
 func init() {
 	f := func() reflect.Value {
-		o := &tobjString{}
+		o := &tobjstring{}
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TObjString", f)
 	Factory.add("*rootio.tobjString", f)
 }
 
-var _ Object = (*tobjString)(nil)
-var _ Named = (*tobjString)(nil)
-var _ ROOTUnmarshaler = (*tobjString)(nil)
+var (
+	_ Object          = (*tobjstring)(nil)
+	_ Named           = (*tobjstring)(nil)
+	_ ROOTUnmarshaler = (*tobjstring)(nil)
+)
