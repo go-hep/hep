@@ -179,7 +179,7 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 	b.zipBytes = r.ReadI64()
 
 	{
-		var branches objarray
+		var branches tobjarray
 		if err := branches.UnmarshalROOT(r); err != nil {
 			r.err = err
 			return r.err
@@ -192,7 +192,7 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	{
-		var leaves objarray
+		var leaves tobjarray
 		if err := leaves.UnmarshalROOT(r); err != nil {
 			r.err = err
 			return r.err
@@ -205,7 +205,7 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 		}
 	}
 	{
-		var baskets objarray
+		var baskets tobjarray
 		if err := baskets.UnmarshalROOT(r); err != nil {
 			r.err = err
 			return r.err

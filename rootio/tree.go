@@ -167,7 +167,7 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 		}
 	}
 
-	var branches objarray
+	var branches tobjarray
 	if err := branches.UnmarshalROOT(r); err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 		tree.branches[i].setTree(tree)
 	}
 
-	var leaves objarray
+	var leaves tobjarray
 	if err := leaves.UnmarshalROOT(r); err != nil {
 		return err
 	}

@@ -8,7 +8,7 @@ import (
 	"reflect"
 )
 
-type objarray struct {
+type tobjarray struct {
 	rvers int16
 	obj   tobject
 	name  string
@@ -17,11 +17,11 @@ type objarray struct {
 	low   int32
 }
 
-func (arr *objarray) Class() string {
+func (arr *tobjarray) Class() string {
 	return "TObjArray"
 }
 
-func (arr *objarray) Name() string {
+func (arr *tobjarray) Name() string {
 	n := arr.name
 	if n == "" {
 		return "TObjArray"
@@ -29,29 +29,29 @@ func (arr *objarray) Name() string {
 	return n
 }
 
-func (arr *objarray) Title() string {
+func (arr *tobjarray) Title() string {
 	return "An array of objects"
 }
 
-func (arr *objarray) At(i int) Object {
+func (arr *tobjarray) At(i int) Object {
 	return arr.arr[i]
 }
 
-func (arr *objarray) Last() int {
+func (arr *tobjarray) Last() int {
 	return arr.last
 }
 
-func (arr *objarray) Len() int {
+func (arr *tobjarray) Len() int {
 	return len(arr.arr)
 }
 
-func (arr *objarray) LowerBound() int {
+func (arr *tobjarray) LowerBound() int {
 	return int(arr.low)
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
-func (arr *objarray) UnmarshalROOT(r *RBuffer) error {
+func (arr *tobjarray) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
 	arr.rvers = vers
@@ -87,16 +87,18 @@ func (arr *objarray) UnmarshalROOT(r *RBuffer) error {
 
 func init() {
 	f := func() reflect.Value {
-		o := &objarray{
+		o := &tobjarray{
 			arr: make([]Object, 0),
 		}
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TObjArray", f)
-	Factory.add("*rootio.objarray", f)
+	Factory.add("*rootio.tobjarray", f)
 }
 
-var _ Object = (*objarray)(nil)
-var _ Named = (*objarray)(nil)
-var _ ObjArray = (*objarray)(nil)
-var _ ROOTUnmarshaler = (*objarray)(nil)
+var (
+	_ Object          = (*tobjarray)(nil)
+	_ Named           = (*tobjarray)(nil)
+	_ ObjArray        = (*tobjarray)(nil)
+	_ ROOTUnmarshaler = (*tobjarray)(nil)
+)
