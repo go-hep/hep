@@ -12,7 +12,7 @@ import (
 )
 
 type StreamerInfoContext interface {
-	StreamerInfo(name string) StreamerInfo
+	StreamerInfo(name string) (StreamerInfo, error)
 }
 
 type tstreamerInfo struct {

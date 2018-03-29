@@ -963,15 +963,18 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 		}
 
 	case *tstreamerObjectAny:
-		si := ctx.StreamerInfo(se.ename)
+		si, err := ctx.StreamerInfo(se.ename)
+		if err != nil {
+			panic(err)
+		}
 		return gotypeFromSI(si, ctx)
 
 	case *tstreamerBase:
 		switch se.ename {
 		case "BASE":
-			si := ctx.StreamerInfo(se.Name())
-			if si == nil {
-				panic(fmt.Errorf("rootio: unknown base class %q", se.Name()))
+			si, err := ctx.StreamerInfo(se.Name())
+			if err != nil {
+				panic(err)
 			}
 			return gotypeFromSI(si, ctx)
 
@@ -980,26 +983,26 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 		}
 
 	case *tstreamerObject:
-		si := ctx.StreamerInfo(se.ename)
-		if si == nil {
-			panic(fmt.Errorf("rootio: unknown object class %q", se.ename))
+		si, err := ctx.StreamerInfo(se.ename)
+		if err != nil {
+			panic(err)
 		}
 		return gotypeFromSI(si, ctx)
 
 	case *tstreamerObjectPointer:
 		ename := se.ename[:len(se.ename)-1] // drop final '*'
-		si := ctx.StreamerInfo(ename)
-		if si == nil {
-			panic(fmt.Errorf("rootio: unknown pointee class %q", ename))
+		si, err := ctx.StreamerInfo(ename)
+		if err != nil {
+			panic(err)
 		}
 		typ := gotypeFromSI(si, ctx)
 		return reflect.PtrTo(typ)
 
 	case *tstreamerObjectAnyPointer:
 		ename := se.ename[:len(se.ename)-1] // drop final '*'
-		si := ctx.StreamerInfo(ename)
-		if si == nil {
-			panic(fmt.Errorf("rootio: unknown pointee class %q", ename))
+		si, err := ctx.StreamerInfo(ename)
+		if err != nil {
+			panic(err)
 		}
 		typ := gotypeFromSI(si, ctx)
 		return reflect.PtrTo(typ)

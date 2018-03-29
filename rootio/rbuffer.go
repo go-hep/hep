@@ -76,9 +76,9 @@ func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32, ctx Stre
 	}
 }
 
-func (r *RBuffer) StreamerInfo(name string) StreamerInfo {
+func (r *RBuffer) StreamerInfo(name string) (StreamerInfo, error) {
 	if r.sictx == nil {
-		return nil
+		return nil, fmt.Errorf("rootio: no streamers")
 	}
 	return r.sictx.StreamerInfo(name)
 }

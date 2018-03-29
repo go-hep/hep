@@ -342,19 +342,19 @@ func (f *File) StreamerInfos() []StreamerInfo {
 	return f.sinfos
 }
 
-// StreamerInfo returns the StreamerInfo with name of this file, or nil otherwise.
-func (f *File) StreamerInfo(name string) StreamerInfo {
+// StreamerInfo returns the StreamerInfo with name of this file and an error if any.
+func (f *File) StreamerInfo(name string) (StreamerInfo, error) {
 	if len(f.sinfos) == 0 {
-		return nil
+		return nil, fmt.Errorf("rootio: no streamer for %q", name)
 	}
 
 	for _, si := range f.sinfos {
 		if si.Name() == name {
-			return si
+			return si, nil
 		}
 	}
 
-	return nil
+	return nil, fmt.Errorf("rootio: no streamer for %q", name)
 }
 
 // Get returns the object identified by namecycle

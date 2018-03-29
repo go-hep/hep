@@ -200,11 +200,15 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 	// attach streamers to branches
 	for i := range tree.branches {
 		br := tree.branches[i]
-		cls := ""
-		if bre, ok := br.(*tbranchElement); ok {
-			cls = bre.class
+		bre, ok := br.(*tbranchElement)
+		if !ok {
+			continue
 		}
-		si := r.StreamerInfo(cls)
+		cls := bre.class
+		si, err := r.StreamerInfo(cls)
+		if err != nil {
+			panic(fmt.Errorf("rootio: could not find streamer for branch %q: %v", br.Name(), err))
+		}
 		// tree.attachStreamer(br, rstreamer, rstreamerCtx)
 		tree.attachStreamer(br, si, r)
 	}
@@ -227,7 +231,11 @@ func (tree *ttree) attachStreamer(br Branch, info StreamerInfo, ctx StreamerInfo
 					if bre, ok := br.(*tbranchElement); ok {
 						cls = bre.clones
 					}
-					tree.attachStreamer(br, ctx.StreamerInfo(cls), ctx)
+					si, err := ctx.StreamerInfo(cls)
+					if err != nil {
+						panic(err)
+					}
+					tree.attachStreamer(br, si, ctx)
 					return
 				default:
 					// FIXME(sbinet): can only determine streamer by reading some value?
@@ -275,10 +283,11 @@ func (tree *ttree) attachStreamerElement(br Branch, se StreamerElement, ctx Stre
 	switch se.(type) {
 	case *tstreamerObject, *tstreamerObjectAny, *tstreamerObjectPointer, *tstreamerObjectAnyPointer:
 		typename := strings.TrimRight(se.TypeName(), "*")
-		info := ctx.StreamerInfo(typename)
-		if info != nil {
-			members = info.Elements()
+		info, err := ctx.StreamerInfo(typename)
+		if err != nil {
+			panic(err)
 		}
+		members = info.Elements()
 	case *tstreamerSTL:
 		typename := se.TypeName()
 		// FIXME(sbinet): this string manipulation only works for one-parameter templates
@@ -286,8 +295,13 @@ func (tree *ttree) attachStreamerElement(br Branch, se StreamerElement, ctx Stre
 			typename = typename[strings.Index(typename, "<")+1 : strings.LastIndex(typename, ">")]
 			typename = strings.TrimRight(typename, "*")
 		}
-		info := ctx.StreamerInfo(typename)
-		if info != nil {
+		info, err := ctx.StreamerInfo(typename)
+		if err != nil {
+			if _, ok := cxxbuiltins[typename]; !ok {
+				panic(err)
+			}
+		}
+		if err == nil {
 			members = info.Elements()
 		}
 	}
@@ -310,7 +324,10 @@ func (tree *ttree) attachStreamerElement(br Branch, se StreamerElement, ctx Stre
 				if subse.Name() == base {
 					switch subse.(type) {
 					case *tstreamerObject, *tstreamerObjectAny, *tstreamerObjectPointer, *tstreamerObjectAnyPointer:
-						subinfo := ctx.StreamerInfo(strings.TrimRight(subse.TypeName(), "*"))
+						subinfo, err := ctx.StreamerInfo(strings.TrimRight(subse.TypeName(), "*"))
+						if err != nil {
+							panic(err)
+						}
 						submembers = subinfo.Elements()
 					}
 				}
