@@ -117,3 +117,15 @@ func TestFileOpenStreamerInfo(t *testing.T) {
 		_ = f.StreamerInfos()
 	}
 }
+
+func TestOpenEmptyFile(t *testing.T) {
+	f, err := Open("testdata/uproot/issue70.root")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	si := f.StreamerInfos()
+	if si != nil {
+		t.Fatalf("expected no StreamerInfos in empty file")
+	}
+}

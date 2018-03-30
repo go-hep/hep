@@ -209,9 +209,11 @@ func (f *File) readHeader() error {
 		return fmt.Errorf("rootio: failed to read ROOT directory infos: %v", err)
 	}
 
-	err = f.readStreamerInfo()
-	if err != nil {
-		return fmt.Errorf("rootio: failed to read ROOT streamer infos: %v", err)
+	if f.seekinfo > 0 {
+		err = f.readStreamerInfo()
+		if err != nil {
+			return fmt.Errorf("rootio: failed to read ROOT streamer infos: %v", err)
+		}
 	}
 
 	err = f.dir.readKeys()
