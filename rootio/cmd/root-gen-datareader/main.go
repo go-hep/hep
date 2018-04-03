@@ -43,7 +43,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strings"
 	"text/template"
 
 	"go-hep.org/x/hep/rootio"
@@ -106,12 +105,12 @@ func main() {
 	printf("branches: %d\n", len(branches))
 	for i, br := range branches {
 		bname := goName(br.Name())
-		printf("branch[%3d]=%s (=> %s)\n", i, br.Name(), bname)
+		printf("branch[%3d]=%s (=> %s title=%q)\n", i, br.Name(), bname, br.Title())
 		leaves := br.Leaves()
 		printf("leaves: %d\n", len(leaves))
 		brStruct := StructDef{Name: bname, Fields: nil}
 		for j, leaf := range leaves {
-			printf("  [%03d] leaf: %v\n", j, leaf.Name())
+			printf("  [%03d] leaf: %v (title=%q)\n", j, leaf.Name(), leaf.Title())
 			lname := goName(leaf.Name())
 			tname := leaf.TypeName()
 			switch {
@@ -167,7 +166,9 @@ func main() {
 	}
 }
 
-var goName = strings.Title
+func goName(s string) string {
+	return "ROOT_" + s
+}
 
 // StructDef models a TTree content as a Go struct, where each TBranch
 // of the tree is translated as a field of the struct.
