@@ -7,8 +7,8 @@ package rootio
 import "reflect"
 
 type tobject struct {
-	id   uint32
-	bits uint32
+	id   uint32 `rootio:"fUniqueID"`
+	bits uint32 `rootio:"fBits"`
 }
 
 func (obj *tobject) Class() string {
