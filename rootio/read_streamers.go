@@ -46,7 +46,7 @@ func fieldOf(rt reflect.Type, field string) int {
 	return -1
 }
 
-func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreamerFunc {
+func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx StreamerInfoContext) rstreamerFunc {
 	rt := reflect.TypeOf(ptr).Elem()
 	rv := reflect.ValueOf(ptr).Elem()
 	rf := rv
@@ -687,7 +687,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 
 			case kObject:
 				switch se.ename {
-				case "vector<string>":
+				case "vector<string>", "std::vector<std::string>":
 					fptr := rf.Addr().Interface().(*[]string)
 					return func(r *RBuffer) error {
 						start := r.Pos()
@@ -716,7 +716,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 		var funcs []func(r *RBuffer) error
 		for i, elt := range sinfo.Elements() {
 			fptr := rf.Field(i).Addr().Interface()
-			funcs = append(funcs, rstreamerFrom(elt, fptr, lcnt))
+			funcs = append(funcs, rstreamerFrom(elt, fptr, lcnt, sictx))
 		}
 		return func(r *RBuffer) error {
 			start := r.Pos()
@@ -740,6 +740,9 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 }
 
 func gotypeFromSI(sinfo StreamerInfo, ctx StreamerInfoContext) reflect.Type {
+	if typ, ok := builtins[sinfo.Name()]; ok {
+		return typ
+	}
 	elts := sinfo.Elements()
 	fields := make([]reflect.StructField, len(elts))
 	for i := range fields {
@@ -757,6 +760,9 @@ func gotypeFromSI(sinfo StreamerInfo, ctx StreamerInfoContext) reflect.Type {
 }
 
 func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) reflect.Type {
+	if typ, ok := builtins[se.TypeName()]; ok {
+		return typ
+	}
 	switch se := se.(type) {
 	default:
 		panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))

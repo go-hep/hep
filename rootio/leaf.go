@@ -253,8 +253,9 @@ func (leaf *tleafElement) setAddress(ptr interface{}) error {
 	leaf.src = reflect.ValueOf(leaf.ptr).Elem()
 
 	var impl rstreamerImpl
+	sictx := leaf.branch.getTree().getFile()
 	for _, elt := range leaf.streamers {
-		impl.funcs = append(impl.funcs, rstreamerFrom(elt, ptr, leaf.count))
+		impl.funcs = append(impl.funcs, rstreamerFrom(elt, ptr, leaf.count, sictx))
 	}
 	leaf.rstreamer = &impl
 	return err
