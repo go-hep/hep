@@ -215,6 +215,7 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 			bkt := baskets.At(i)
 			// FIXME(sbinet) check why some are nil
 			if bkt == nil {
+				b.baskets = append(b.baskets, Basket{})
 				continue
 			}
 			bk := bkt.(*Basket)
@@ -279,8 +280,6 @@ func (b *tbranch) loadEntry(ientry int64) error {
 }
 
 func (b *tbranch) loadBasket(entry int64) error {
-	var err error
-
 	ib := b.findBasketIndex(entry)
 	if ib < 0 {
 		return errorf("rootio: no basket for entry %d", entry)
@@ -292,9 +291,49 @@ func (b *tbranch) loadBasket(entry int64) error {
 	if ib < len(b.baskets) {
 		b.basket = &b.baskets[ib]
 		b.firstEntry = b.basketEntry[ib]
+		if b.basket.rbuf == nil {
+			return b.setupBasket(b.basket, ib, entry)
+		}
 		return nil
 	}
 
+	b.baskets = append(b.baskets, Basket{})
+	b.basket = &b.baskets[len(b.baskets)-1]
+	return b.setupBasket(b.basket, ib, entry)
+}
+
+func (b *tbranch) findBasketIndex(entry int64) int {
+	switch {
+	case entry == 0:
+		return 0
+	case b.firstbasket <= entry && entry < b.nextbasket:
+		return b.readbasket
+	}
+	/*
+		    // binary search is not efficient for small slices (like basketEntry)
+			// TODO(sbinet): test at which length of basketEntry it starts to be efficient.
+			entries := b.basketEntry[1:]
+			i := sort.Search(len(entries), func(i int) bool { return entries[i] >= entry })
+			if b.basketEntry[i+1] == entry {
+				return i + 1
+			}
+			return i
+	*/
+
+	for i := b.readbasket; i < len(b.basketEntry); i++ {
+		v := b.basketEntry[i]
+		if v > entry && v > 0 {
+			return i - 1
+		}
+	}
+	if entry == b.basketEntry[len(b.basketEntry)-1] {
+		return -2 // len(b.basketEntry) - 1
+	}
+	return -1
+}
+
+func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
+	var err error
 	if len(b.basketBuf) < int(b.basketBytes[ib]) {
 		b.basketBuf = make([]byte, int(b.basketBytes[ib]))
 	}
@@ -305,8 +344,6 @@ func (b *tbranch) loadBasket(entry int64) error {
 		return err
 	}
 
-	b.baskets = append(b.baskets, Basket{})
-	b.basket = &b.baskets[len(b.baskets)-1]
 	sictx := b.tree.getFile()
 	err = b.basket.UnmarshalROOT(NewRBuffer(buf, nil, 0, sictx))
 	if err != nil {
@@ -345,36 +382,6 @@ func (b *tbranch) loadBasket(entry int64) error {
 		}
 	}
 	return err
-}
-
-func (b *tbranch) findBasketIndex(entry int64) int {
-	switch {
-	case entry == 0:
-		return 0
-	case b.firstbasket <= entry && entry < b.nextbasket:
-		return b.readbasket
-	}
-	/*
-		    // binary search is not efficient for small slices (like basketEntry)
-			// TODO(sbinet): test at which length of basketEntry it starts to be efficient.
-			entries := b.basketEntry[1:]
-			i := sort.Search(len(entries), func(i int) bool { return entries[i] >= entry })
-			if b.basketEntry[i+1] == entry {
-				return i + 1
-			}
-			return i
-	*/
-
-	for i := b.readbasket; i < len(b.basketEntry); i++ {
-		v := b.basketEntry[i]
-		if v > entry && v > 0 {
-			return i - 1
-		}
-	}
-	if entry == b.basketEntry[len(b.basketEntry)-1] {
-		return -2 // len(b.basketEntry) - 1
-	}
-	return -1
 }
 
 func (b *tbranch) scan(ptr interface{}) error {
