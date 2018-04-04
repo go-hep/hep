@@ -105,17 +105,21 @@ func dumpDir(w io.Writer, dir rootio.Directory, deep bool) error {
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(w, "key[%03d]: %s;%d %q (%s)\n", i, key.Name(), key.Cycle(), key.Title(), obj.Class())
+		fmt.Fprintf(w, "key[%03d]: %s;%d %q (%s)", i, key.Name(), key.Cycle(), key.Title(), obj.Class())
 		if deep {
 			switch obj := obj.(type) {
 			case rootio.Tree:
+				fmt.Fprintf(w, "\n")
 				err = dumpTree(w, obj)
 			case rootio.Directory:
+				fmt.Fprintf(w, "\n")
 				err = dumpDir(w, obj, deep)
 			default:
-				fmt.Fprintf(w, "ignoring key=%s;%d of type %T\n", key.Name(), key.Cycle(), obj)
+				fmt.Fprintf(w, " => ignoring key of type %T\n", obj)
 				continue
 			}
+		} else {
+			fmt.Fprintf(w, "\n")
 		}
 		if err != nil {
 			return err
