@@ -49,6 +49,8 @@ import (
 	"os"
 	"reflect"
 
+	"go-hep.org/x/hep/hbook/rootcnv"
+	"go-hep.org/x/hep/hbook/yodacnv"
 	"go-hep.org/x/hep/rootio"
 )
 
@@ -114,6 +116,17 @@ func dumpDir(w io.Writer, dir rootio.Directory, deep bool) error {
 			case rootio.Directory:
 				fmt.Fprintf(w, "\n")
 				err = dumpDir(w, obj, deep)
+			case rootio.H1:
+				fmt.Fprintf(w, "\n")
+				err = dumpH1(w, obj)
+			case rootio.H2:
+				fmt.Fprintf(w, "\n")
+				err = dumpH2(w, obj)
+			case rootio.Graph:
+				fmt.Fprintf(w, "\n")
+				err = dumpGraph(w, obj)
+			case fmt.Stringer:
+				fmt.Fprintf(w, " => %q\n", obj.String())
 			default:
 				fmt.Fprintf(w, " => ignoring key of type %T\n", obj)
 				continue
@@ -155,6 +168,30 @@ func dumpTree(w io.Writer, t rootio.Tree) error {
 		}
 	}
 	return nil
+}
+
+func dumpH1(w io.Writer, h1 rootio.H1) error {
+	h, err := rootcnv.H1D(h1)
+	if err != nil {
+		return err
+	}
+	return yodacnv.Write(w, h)
+}
+
+func dumpH2(w io.Writer, h2 rootio.H2) error {
+	h, err := rootcnv.H2D(h2)
+	if err != nil {
+		return err
+	}
+	return yodacnv.Write(w, h)
+}
+
+func dumpGraph(w io.Writer, gr rootio.Graph) error {
+	g, err := rootcnv.S2D(gr)
+	if err != nil {
+		return err
+	}
+	return yodacnv.Write(w, g)
 }
 
 func newValue(leaf rootio.Leaf) interface{} {
