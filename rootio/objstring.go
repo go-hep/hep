@@ -24,6 +24,10 @@ func (obj *tobjstring) Title() string {
 	return "Collectable string class"
 }
 
+func (obj *tobjstring) String() string {
+	return obj.str
+}
+
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (obj *tobjstring) UnmarshalROOT(r *RBuffer) error {
