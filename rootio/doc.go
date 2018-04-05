@@ -111,7 +111,16 @@
 //         ...
 //
 //  |               |
-//  +===============+ -- fEND offset
+//  +===============+ -- fSeekInfo
+//  |               |
+//  | Record Header | -->-+
+//  |               |     |
+//  +===============+     |
+//  |               |     |
+//  |  Record Data  |     | Reference to next Record
+//  |    Payload    |     |
+//  |               |     |
+//  +===============+ <---+ -- fEND offset
 //
 // Data records payloads and how to deserialize them are described by a TStreamerInfo.
 // The list of all TStreamerInfos that are used to interpret the content of
@@ -145,7 +154,8 @@
 // written on disk.
 // In C++/ROOT, a streamer is represented as a TStreamerInfo class that can
 // give metadata about the type it's describing (version, name).
-// When reading a file, all the streamer infos are read back in memory.
+// When reading a file, all the streamer infos are read back in memory, from
+// disk, by reading the data record at offset fSeekInfo.
 // A streamer info is actually a list of streamer elements, one for each field
 // and, in C++, base class (in Go, this is emulated as an embedded field.)
 //
