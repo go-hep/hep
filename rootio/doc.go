@@ -92,7 +92,7 @@
 //  |               |
 //  | Record Header | -->-+
 //  |               |     |
-//  +===============+     |
+//  +---------------+     |
 //  |               |     |
 //  |  Record Data  |     | Reference to next Record
 //  |    Payload    |     |
@@ -101,7 +101,7 @@
 //  |               |
 //  | Record Header | -->-+
 //  |               |     |
-//  +===============+     |
+//  +---------------+     |
 //  |               |     |
 //  |  Record Data  |     | Reference to next Record
 //  |    Payload    |     |
@@ -115,7 +115,7 @@
 //  |               |
 //  | Record Header | -->-+
 //  |               |     |
-//  +===============+     |
+//  +---------------+     |
 //  |               |     |
 //  |  Record Data  |     | Reference to next Record
 //  |    Payload    |     |
@@ -136,7 +136,8 @@
 // If they differ after having subtracted the record header length, then
 // the payload has been compressed.
 //
-// A record data payload is itself split into multiple chunks of 16*1024*1024 bytes.
+// A record data payload is itself split into multiple chunks of maximum
+// size 16*1024*1024 bytes.
 // Each chunk consists of:
 //
 //  - the chunk header,
