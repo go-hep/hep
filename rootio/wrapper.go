@@ -5,7 +5,6 @@
 package rootio
 
 import (
-	"bytes"
 	"reflect"
 )
 
@@ -18,19 +17,19 @@ type wobject struct {
 	v         interface{}
 	class     func(recv interface{}) string
 	unmarshal func(recv interface{}, r *RBuffer) error
-	marshal   func(recv interface{}) (data *bytes.Buffer, err error)
+	marshal   func(recv interface{}, w *WBuffer) (int, error)
 }
 
-func (w *wobject) Class() string {
-	return w.class(w.v)
+func (obj *wobject) Class() string {
+	return obj.class(obj.v)
 }
 
-func (w *wobject) UnmarshalROOT(r *RBuffer) error {
-	return w.unmarshal(w.v, r)
+func (obj *wobject) UnmarshalROOT(r *RBuffer) error {
+	return obj.unmarshal(obj.v, r)
 }
 
-func (w *wobject) MarshalROOT() (*bytes.Buffer, error) {
-	return w.marshal(w.v)
+func (obj *wobject) MarshalROOT(w *WBuffer) (int, error) {
+	return obj.marshal(obj.v, w)
 }
 
 var (

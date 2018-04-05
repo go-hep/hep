@@ -26,6 +26,10 @@ func (obj *tobject) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
+func (obj *tobject) MarshalROOT(w *WBuffer) (int, error) {
+	panic("not implemented")
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := &tobject{}
@@ -35,5 +39,8 @@ func init() {
 	Factory.add("*rootio.tobject", f)
 }
 
-var _ Object = (*tobject)(nil)
-var _ ROOTUnmarshaler = (*tobject)(nil)
+var (
+	_ Object          = (*tobject)(nil)
+	_ ROOTMarshaler   = (*tobject)(nil)
+	_ ROOTUnmarshaler = (*tobject)(nil)
+)

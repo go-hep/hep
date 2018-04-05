@@ -5,7 +5,6 @@
 package rootio
 
 import (
-	"bytes"
 	"reflect"
 )
 
@@ -299,5 +298,5 @@ type ROOTUnmarshaler interface {
 // ROOTMarshaler is the interface implemented by an object that can
 // marshal itself into a ROOT buffer
 type ROOTMarshaler interface {
-	MarshalROOT() (data *bytes.Buffer, err error)
+	MarshalROOT(w *WBuffer) (int, error)
 }
