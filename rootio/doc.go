@@ -90,7 +90,7 @@
 //  |               |
 //  +===============+ -- fBEGIN offset
 //  |               |
-//  | Record Header | ----+
+//  | Record Header | -->-+
 //  |               |     |
 //  +===============+     |
 //  |               |     |
@@ -99,7 +99,7 @@
 //  |               |     |
 //  +===============+ <---+
 //  |               |
-//  | Record Header | ----+
+//  | Record Header | -->-+
 //  |               |     |
 //  +===============+     |
 //  |               |     |
@@ -116,4 +116,37 @@
 // Data records payloads and how to deserialize them are described by a TStreamerInfo.
 // The list of all TStreamerInfos that are used to interpret the content of
 // a ROOT file is stored at the end of that ROOT file, at offset fSeekInfo.
+//
+//
+// Data records
+//
+// Data records' payloads may be compressed.
+// Detecting whether a payload is compressed is usually done by comparing
+// the object length (ObjLen) field of the record header with the length
+// of the compressed object (Nbytes) field.
+// If they differ after having subtracted the record header length, then
+// the payload has been compressed.
+//
+// A record data payload is itself split into multiple chunks of 16*1024*1024 bytes.
+// Each chunk consists of:
+//
+//  - the chunk header,
+//  - the chunk compressed payload.
+//
+// The chunk header:
+//
+//  - 3 bytes to identify the compression algorithm and version,
+//  - 3 bytes to identify the deflated buffer size,
+//  - 3 bytes to identify the inflated buffer size.
+//
+// Streamer informations
+//
+// Streamers describe how a given type, for a given version of that type, is
+// written on disk.
+// In C++/ROOT, a streamer is represented as a TStreamerInfo class that can
+// give metadata about the type it's describing (version, name).
+// When reading a file, all the streamer infos are read back in memory.
+// A streamer info is actually a list of streamer elements, one for each field
+// and, in C++, base class (in Go, this is emulated as an embedded field.)
+//
 package rootio // import "go-hep.org/x/hep/rootio"
