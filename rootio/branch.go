@@ -494,8 +494,9 @@ func (b *tbranchElement) loadEntry(ientry int64) error {
 }
 
 func (b *tbranchElement) setAddress(ptr interface{}) error {
+	var sictx StreamerInfoContext = b.getTree().getFile()
 	var err error
-	err = b.setupReadStreamer()
+	err = b.setupReadStreamer(sictx)
 	if err != nil {
 		return err
 	}
@@ -575,7 +576,7 @@ func (b *tbranchElement) scan(ptr interface{}) error {
 	return b.scanfct(b, ptr)
 }
 
-func (b *tbranchElement) setupReadStreamer() error {
+func (b *tbranchElement) setupReadStreamer(sictx StreamerInfoContext) error {
 	streamer, ok := streamers.get(b.class, int(b.clsver), int(b.chksum))
 	if !ok {
 		return fmt.Errorf("rootio: no StreamerInfo for class=%q version=%d checksum=%d", b.class, b.clsver, b.chksum)
@@ -595,7 +596,7 @@ func (b *tbranchElement) setupReadStreamer() error {
 		if !ok {
 			continue
 		}
-		err := sub.setupReadStreamer()
+		err := sub.setupReadStreamer(sictx)
 		if err != nil {
 			return err
 		}
@@ -615,7 +616,7 @@ func (b *tbranchElement) setStreamer(s StreamerInfo, ctx StreamerInfoContext) {
 		tle.streamers = s.Elements()
 		tle.src = reflect.New(gotypeFromSI(s, ctx)).Elem()
 	}
-	err := b.setupReadStreamer()
+	err := b.setupReadStreamer(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -628,7 +629,7 @@ func (b *tbranchElement) setStreamerElement(se StreamerElement, ctx StreamerInfo
 		tle.streamers = []StreamerElement{se}
 		tle.src = reflect.New(gotypeFromSE(se, tle.LeafCount(), ctx)).Elem()
 	}
-	err := b.setupReadStreamer()
+	err := b.setupReadStreamer(ctx)
 	if err != nil {
 		panic(err)
 	}
