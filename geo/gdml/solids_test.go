@@ -333,8 +333,8 @@ func TestReadSolids(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			var v = reflect.New(reflect.TypeOf(tc.want)).Elem()
-			err := xml.NewDecoder(bytes.NewReader([]byte(tc.raw))).Decode(v.Addr().Interface())
+			var v1 = reflect.New(reflect.TypeOf(tc.want)).Elem()
+			err := xml.NewDecoder(bytes.NewReader([]byte(tc.raw))).Decode(v1.Addr().Interface())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -343,10 +343,27 @@ func TestReadSolids(t *testing.T) {
 			want.Set(reflect.ValueOf(tc.want))
 			field := want.FieldByName("XMLName")
 			if field != (reflect.Value{}) {
-				field.Set(v.FieldByName("XMLName"))
+				field.Set(v1.FieldByName("XMLName"))
 			}
-			if !reflect.DeepEqual(v.Interface(), want.Interface()) {
-				t.Fatalf("error:\ngot = %#v\nwant= %#v", v.Interface(), want.Interface())
+			if !reflect.DeepEqual(v1.Interface(), want.Interface()) {
+				t.Fatalf("error:\ngot = %#v\nwant= %#v", v1.Interface(), want.Interface())
+			}
+
+			out := new(bytes.Buffer)
+			err = xml.NewEncoder(out).Encode(v1.Interface())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			raw := out.String()
+			var v2 = reflect.New(reflect.TypeOf(tc.want)).Elem()
+			err = xml.NewDecoder(bytes.NewReader([]byte(raw))).Decode(v2.Addr().Interface())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !reflect.DeepEqual(v2.Interface(), want.Interface()) {
+				t.Fatalf("error:\ngot = %#v\nwant= %#v", v2.Interface(), want.Interface())
 			}
 		})
 	}
