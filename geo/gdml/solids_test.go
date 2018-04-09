@@ -319,6 +319,18 @@ func TestReadSolids(t *testing.T) {
 				Vtx1: "v1", Vtx2: "v2", Vtx3: "v3", Vtx4: "v4",
 			},
 		},
+		{
+			name: "scaled-tube",
+			raw: `<scaledSolid name="scaled-tube">
+				<solidref ref="my-tube"/>
+				<scale name="tube_scale" x="1" y="2" z="3"/>
+			</scaledSolid>`,
+			want: ScaledSolid{
+				Name:  "scaled-tube",
+				Ref:   SolidRef{XMLName: xml.Name{Local: "solidref"}, Ref: "my-tube"},
+				Scale: Scale{Name: "tube_scale", X: "1", Y: "2", Z: "3"},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var v = reflect.New(reflect.TypeOf(tc.want)).Elem()

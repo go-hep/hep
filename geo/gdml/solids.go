@@ -377,3 +377,15 @@ type TetraHedron struct {
 	Vtx3    string   `xml:"vertex3,attr"`
 	Vtx4    string   `xml:"vertex4,attr"`
 }
+
+type ScaledSolid struct {
+	XMLName xml.Name `xml:"scaledSolid"`
+	Name    string   `xml:"name,attr"`
+	Ref     SolidRef `xml:"solidref"`
+	Scale   Scale    `xml:"scale"`
+}
+
+type SolidRef struct {
+	XMLName xml.Name `xml:"solidref"`
+	Ref     string   `xml:"ref,attr"`
+}
