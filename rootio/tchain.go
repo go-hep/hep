@@ -24,8 +24,7 @@ func (t tchain) Entries() int64 {
 
 }
 
-//Total number of bytes before compression
-
+// TotBytes return the total number of bytes before compression
 func (t tchain) TotBytes() int64 {
 	var v int64 = 0
 	for i := range t.trees {
