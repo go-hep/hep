@@ -20,12 +20,18 @@ func (tchain) Class() string {
 
 //Name returns the name of the ROOT objet in the argument.
 func (t tchain) Name() string {
+	if len(t.trees) == 0 {
+		return "Slice of trees empty"
+	}	
 	return t.trees[0].Name()
 }
 
 
 //Title returns the title of the ROOT object in the argument
 func (t tchain) Title() string {
+	if len(t.trees) == 0 {
+		return "Slice of trees empty"
+	}	
 	return t.trees[0].Title()
 }
 
