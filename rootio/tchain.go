@@ -1,9 +1,14 @@
+//An update of go-hep/hep#44
+
+
 package rootio
+
 
 type tchain struct {
 	trees []Tree
 }
 
+//Class returns the ROOT class of the argument.
 func (tchain) Class() string {
 	return "TChain"
 }
@@ -15,6 +20,8 @@ func Chain(trees ...Tree) tchain {
 	return t
 }
 
+
+//Entries returns the total number of entries 
 func (t tchain) Entries() int64 {
 	var v int64 = 0
 	for i := range t.trees {
@@ -23,8 +30,9 @@ func (t tchain) Entries() int64 {
 	return v
 
 }
+	
 
-// TotBytes return the total number of bytes before compression
+// TotBytes return the total number of bytes before compression.
 func (t tchain) TotBytes() int64 {
 	var v int64 = 0
 	for i := range t.trees {
@@ -34,8 +42,7 @@ func (t tchain) TotBytes() int64 {
 
 }
 
-//Total number of bytes after compression
-
+//ZipBytes returns the total number of bytes after compression.
 func (t tchain) ZipBytes() int64 {
 	var v int64 = 0
 	for i := range t.trees {
@@ -45,19 +52,16 @@ func (t tchain) ZipBytes() int64 {
 
 }
 
+
+//Branches returns the list of branches.
 func (t tchain) Branches() []Branch {
 
 	return t.trees[0].Branches()
-	/*var branch []Branch
-	for i := range t.trees {
-	branch= append(branch,t.trees[i].Branches())
-	}
-
-
-	return branch
-	*/
+	
 }
 
+
+//Branch returns the branch whose name is the argument.
 func (t tchain) Branch(name string) Branch {
 
 	for _, br := range t.trees[0].Branches() {
@@ -66,34 +70,28 @@ func (t tchain) Branch(name string) Branch {
 		}
 	}
 	return nil
-
-	/*	var branch Branch
-		for i := range t.trees {
-			for _, br := range t.trees[i].Branches() {
-				if br.Name() == name {
-					branch = append(branch, br)
-				}
-			}
-			branch = append(branch, nil)
-		}
-		return branch
-	*/
 }
 
 var (
 	_ Tree = (*tchain)(nil)
 )
 
+
+//Leaves returns direct pointers to individual branch leaves.
 func (t tchain) Leaves() []Leaf {
 
 	return t.trees[0].Leaves()
 }
 
+
+//getFile returns the underlying file.
 func (t tchain) getFile() *File {
 
 	return t.trees[0].getFile()
 }
 
+
+//loadEntry returns an error if there is a problem during the loading
 func (t tchain) loadEntry(i int64) error {
 	for _, b := range t.trees[0].Branches() {
 		err := b.loadEntry(i)
@@ -104,12 +102,13 @@ func (t tchain) loadEntry(i int64) error {
 	return nil
 }
 
-//Methods of Named interface :
-
+//Name returns the name of the ROOT objet in the argument.
 func (t tchain) Name() string {
 	return t.trees[0].Name()
 }
 
+
+//Title returns the title of the ROOT object in the argument
 func (t tchain) Title() string {
 	return t.trees[0].Title()
 }
