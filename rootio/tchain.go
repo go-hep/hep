@@ -27,7 +27,7 @@ func (t tchain) Name() string {
 }
 
 
-//Title returns the title of the ROOT object in the argument
+//Title returns the title of the ROOT object in the argument.
 func (t tchain) Title() string {
 	if len(t.trees) == 0 {
 		return "Slice of trees empty"
@@ -72,56 +72,51 @@ func (t tchain) ZipBytes() int64 {
 
 //Branches returns the list of branches.
 func (t tchain) Branches() []Branch {
-	branch := t.trees[0].Branches()
-	if branch != nil {
-		return branch
-	}
-	return nil	
+	if len(t.trees) == 0 {
+		return nil
+	}	
+	return t.trees[0].Branches()	
 }
 
 //Branch returns the branch whose name is the argument.
 func (t tchain) Branch(name string) Branch {
-	branch := t.trees[0].Branches()
-	if branch != nil {	
-		for _, br := range t.trees[0].Branches() {
-			if br.Name() == name {
-				return br
-			}
-		}
+	if len(t.trees) == 0 {
 		return nil
+	}	
+	for _, br := range t.trees[0].Branches() {
+		if br.Name() == name {
+			return br
+		}
 	}
 	return nil
 }
 
 //Leaves returns direct pointers to individual branch leaves.
 func (t tchain) Leaves() []Leaf {
-	leaf := t.trees[0].Leaves()
-	if leaf != nil {
-		return leaf
-	}
-	return nil
+	if len(t.trees) == 0 {
+		return nil
+	}	
+	return t.trees[0].Leaves()	
 }
 
 //getFile returns the underlying file.
 func (t tchain) getFile() *File {
-	f := t.trees[0].getFile()
-	if f != nil {
-		return f
-	}
-	return nil
+	if len(t.trees) == 0 {
+		return nil
+	}	
+	return t.trees[0].getFile()
 }
 
 //loadEntry returns an error if there is a problem during the loading
 func (t tchain) loadEntry(i int64) error {
-	branch := t.trees[0].Branches()
-	if branch != nil {
-		for _, b := range t.trees[0].Branches() {
-			err := b.loadEntry(i)
-			if err != nil {
-				return err
-			}
-		}
+	if len(t.trees) == 0 {
 		return nil
+	}	
+	for _, b := range t.trees[0].Branches() {
+		err := b.loadEntry(i)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
