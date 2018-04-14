@@ -77,7 +77,7 @@ func (k *Key) Cycle() int {
 func (k *Key) Value() interface{} {
 	v, err := k.Object()
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("error loading payload for %q: %v", k.Name(), err))
 	}
 	return v
 }
