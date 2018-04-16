@@ -31,8 +31,12 @@ func (t tchain) Title() string {
 
 // Chain returns a tchain that is the concatenation of all the input Trees.
 func Chain(trees ...Tree) tchain {
+	if len(trees) == 0 {
+		return tchain{}
+	}
 	var t tchain
-	t.trees = append(t.trees, trees...)
+	t.trees = make([]Tree, len(trees))
+	copy(t.trees, trees)
 	return t
 }
 
