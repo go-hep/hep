@@ -11,73 +11,70 @@ import (
 )
 
 func TestChain(t *testing.T) {
-	f, err := rootio.Open("testdata/chain.1.root")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer f.Close()
+	for _, tc := range []struct {
+		fnames  []string
+		entries int64
+		name    string
+		title   string
+	}{
+		{
+			fnames:  nil,
+			entries: 0,
+			name:    "",
+			title:   "",
+		},
+		{
+			fnames:  []string{"testdata/chain.1.root"},
+			entries: 10,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
+			// twice the same tree
+			fnames:  []string{"testdata/chain.1.root", "testdata/chain.1.root"},
+			entries: 20,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
+			// two different trees (with the same schema)
+			fnames:  []string{"testdata/chain.1.root", "testdata/chain.2.root"},
+			entries: 20,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		// TODO(sbinet): add a test with 2 trees with different schemas)
+	} {
+		t.Run("", func(t *testing.T) {
+			files := make([]*rootio.File, len(tc.fnames))
+			trees := make([]rootio.Tree, len(tc.fnames))
+			for i, fname := range tc.fnames {
+				f, err := rootio.Open(fname)
+				if err != nil {
+					t.Fatalf("could not open ROOT file %q: %v", fname, err)
+				}
+				defer f.Close()
+				files[i] = f
 
-	obj, err := f.Get("tree")
-	if err != nil {
-		t.Fatal(err)
-	}
-	tree := obj.(rootio.Tree)
-	chain := rootio.Chain(tree)
+				obj, err := f.Get(tc.name)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-	if entry_tree, entry_chain := tree.Entries(), chain.Entries(); entry_tree != entry_chain {
-		t.Fatalf("entries differ: got=%v, want=%v\n", entry_chain, entry_tree)
-	}
-	if name_tree, name_chain := tree.Name(), chain.Name(); name_tree != name_chain {
-		t.Fatalf("names differ : got=%v, want=%v\n", name_chain, name_tree)
-	}
-	if title_tree, title_chain := tree.Title(), chain.Title(); title_tree != title_chain {
-		t.Fatalf("titles differ : got=%v, want=%v\n", title_chain, title_tree)
-	}
-}
+				trees[i] = obj.(rootio.Tree)
+			}
 
-func TestChainEmpty(t *testing.T) {
-	chain := rootio.Chain()
-	if chain.Entries() != 0 {
-		t.Fatalf("unexpected entry : got=%v,want=0\n", chain.Entries())
-	}
-	if chain.Name() != "" {
-		t.Fatalf("unexpected name : got=%v, want empty string\n", chain.Name())
-	}
-	if chain.Title() != "" {
-		t.Fatalf("unexpected Title : got=%v, want empty string\n", chain.Title())
-	}
-}
+			chain := rootio.Chain(trees...)
 
-func TestTwoChains(t *testing.T) {
-	f1, err := rootio.Open("testdata/chain.1.root")
-	if err != nil {
-		t.Fatal(err)
+			if got, want := chain.Name(), tc.name; got != want {
+				t.Fatalf("names differ\ngot = %q, want= %q", got, want)
+			}
+			if got, want := chain.Title(), tc.title; got != want {
+				t.Fatalf("titles differ\ngot = %q, want= %q", got, want)
+			}
+			if got, want := chain.Entries(), tc.entries; got != want {
+				t.Fatalf("titles differ\ngot = %v, want= %v", got, want)
+			}
+		})
 	}
-	defer f1.Close()
-	f2, err := rootio.Open("testdata/chain.2.root")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer f2.Close()
-
-	obj1, err1 := f1.Get("tree")
-	if err != nil {
-		t.Fatal(err1)
-	}
-	obj2, err2 := f2.Get("tree")
-	if err != nil {
-		t.Fatal(err2)
-	}
-
-	tree1 := obj1.(rootio.Tree)
-	tree2 := obj2.(rootio.Tree)
-	chain := rootio.Chain(tree1, tree2)
-
-	if entry_tree1, entry_tree2, entry_chain := tree1.Entries(), tree2.Entries(), chain.Entries(); entry_tree1+entry_tree2 != entry_chain {
-		t.Fatalf("entries differ: got=%v, want=%v\n", entry_chain, entry_tree1+entry_tree2)
-	}
-	if name_tree1, name_chain := tree1.Name(), chain.Name(); name_tree1 != name_chain {
-		t.Fatalf("names differ : got=%v, want=%v\n", name_chain, name_tree1)
-	}
-
 }
