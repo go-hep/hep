@@ -63,6 +63,7 @@ func (s *baseScanner) Next() bool {
 	if s.closed {
 		return false
 	}
+
 	next := s.i < s.n
 	s.cur++
 	s.i++
@@ -146,7 +147,7 @@ type ScanVar struct {
 // NewTreeScannerVars creates a new Scanner from a list of branches.
 // It will return an error if the provided type does not match the
 // type stored in the corresponding branch.
-func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
+func NewTreeScannerVars(c Tree, vars ...ScanVar) (*TreeScanner, error) {
 	if len(vars) <= 0 {
 		return nil, errorf("rootio: NewTreeScannerVars expects at least one branch name")
 	}
@@ -155,26 +156,26 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 	ibr := make([]scanField, cap(mbr))
 	cbr := make([]Branch, 0)
 	for i, sv := range vars {
-		br := t.Branch(sv.Name)
+		br := c.Branch(sv.Name)
 		if br == nil {
-			return nil, errorf("rootio: Tree %q has no branch named %q", t.Name(), sv.Name)
+			return nil, errorf("rootio: Tree %q has no branch named %q", c.Name(), sv.Name)
 		}
 		mbr[i] = br
 		ibr[i] = scanField{br: br, i: 0}
 		leaf := br.Leaves()[0]
 		if lcnt := leaf.LeafCount(); lcnt != nil {
-			lbr := t.Branch(lcnt.Name())
+			lbr := c.Branch(lcnt.Name())
 			if lbr == nil {
-				return nil, errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
+				return nil, errorf("rootio: Tree %q has no (count) branch named %q", c.Name(), lcnt.Name())
 			}
 			cbr = append(cbr, lbr)
 		}
 	}
 	return &TreeScanner{
 		scan: baseScanner{
-			tree: t,
+			tree: c,
 			i:    0,
-			n:    t.Entries(),
+			n:    c.Entries(),
 			cur:  -1,
 			err:  nil,
 			ibr:  ibr,
@@ -217,6 +218,7 @@ func (s *TreeScanner) Next() bool {
 func (s *TreeScanner) Scan(args ...interface{}) (err error) {
 	defer func(err error) {
 		if err != nil && s.scan.err == nil {
+			fmt.Printf("wayli ")
 			s.scan.err = err
 		}
 	}(err)
@@ -248,10 +250,10 @@ func (s *TreeScanner) scanMap(data map[string]interface{}) error {
 
 func (s *TreeScanner) scanArgs(args ...interface{}) error {
 	var err error
-
+	totalEntries := int(s.scan.n)
 	// load leaf count data
 	for _, br := range s.scan.cbr {
-		err = br.loadEntry(s.scan.cur)
+		err = br.loadEntry(s.scan.cur, totalEntries)
 		if err != nil {
 			// FIXME(sbinet): properly decorate error
 			return err
@@ -261,7 +263,7 @@ func (s *TreeScanner) scanArgs(args ...interface{}) error {
 	for i, ptr := range args {
 		fv := reflect.ValueOf(ptr).Elem()
 		br := s.scan.ibr[i]
-		err = br.br.loadEntry(s.scan.cur)
+		err = br.br.loadEntry(s.scan.cur, totalEntries)
 		if err != nil {
 			// FIXME(sbinet): properly decorate error
 			return err
@@ -276,10 +278,10 @@ func (s *TreeScanner) scanArgs(args ...interface{}) error {
 
 func (s *TreeScanner) scanStruct(data interface{}) error {
 	var err error
-
+	totalEntries := int(s.scan.n)
 	// load leaf count data
 	for _, br := range s.scan.cbr {
-		s.scan.err = br.loadEntry(s.scan.cur)
+		s.scan.err = br.loadEntry(s.scan.cur, totalEntries)
 		if s.scan.err != nil {
 			// FIXME(sbinet): properly decorate error
 			return s.scan.err
@@ -293,7 +295,7 @@ func (s *TreeScanner) scanStruct(data interface{}) error {
 	}
 	for _, br := range s.scan.ibr {
 		fv := rv.Field(br.i)
-		err = br.br.loadEntry(s.scan.cur)
+		err = br.br.loadEntry(s.scan.cur, totalEntries)
 		if err != nil {
 			// FIXME(sbinet): properly decorate error
 			return err
@@ -459,13 +461,14 @@ func (s *Scanner) Next() bool {
 // Scan copies data loaded from the underlying Tree into the values the Scanner is bound to.
 // The values bound to the Scanner are valid until the next call to Scan.
 func (s *Scanner) Scan() error {
+	totalEntries := int(s.scan.n)
 	if s.scan.err != nil {
 		return s.scan.err
 	}
 
 	// load leaf count data
 	for _, br := range s.scan.cbr {
-		s.scan.err = br.loadEntry(s.scan.cur)
+		s.scan.err = br.loadEntry(s.scan.cur, totalEntries)
 		if s.scan.err != nil {
 			// FIXME(sbinet): properly decorate error
 			return s.scan.err
@@ -474,7 +477,7 @@ func (s *Scanner) Scan() error {
 
 	for i, ptr := range s.args {
 		br := s.scan.ibr[i]
-		s.scan.err = br.br.loadEntry(s.scan.cur)
+		s.scan.err = br.br.loadEntry(s.scan.cur, totalEntries)
 		if s.scan.err != nil {
 			// FIXME(sbinet): properly decorate error
 			return s.scan.err
