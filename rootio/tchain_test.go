@@ -86,6 +86,7 @@ func TestChainScan(t *testing.T) {
 	files := []string{
 		"testdata/chain.1.root",
 		"testdata/chain.2.root", // FIXME(sbinet): implement for >1 tree
+		//"testdata/chain.1.root",
 	}
 	trees := make([]rootio.Tree, len(files))
 	for i, fname := range files {
