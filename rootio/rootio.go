@@ -165,7 +165,7 @@ type Branch interface {
 
 	setTree(Tree)
 	getTree() Tree
-	loadEntry(i int64, totalEntries int) error
+	loadEntry(i int64) error
 	getReadEntry() int64
 	getEntry(i int64)
 	scan(ptr interface{}) error

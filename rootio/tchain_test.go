@@ -85,7 +85,7 @@ func TestChain(t *testing.T) {
 func TestChainScan(t *testing.T) {
 	files := []string{
 		"testdata/chain.1.root",
-		//	"testdata/chain.2.root", // FIXME(sbinet): implement for >1 tree
+		"testdata/chain.2.root", // FIXME(sbinet): implement for >1 tree
 	}
 	trees := make([]rootio.Tree, len(files))
 	for i, fname := range files {
@@ -102,7 +102,6 @@ func TestChainScan(t *testing.T) {
 
 		trees[i] = obj.(rootio.Tree)
 	}
-
 	chain := rootio.Chain(trees...)
 
 	type Data struct {
@@ -140,7 +139,7 @@ func TestChainScan(t *testing.T) {
 
 		return data
 	}
-
+	
 	sc, err := rootio.NewTreeScanner(chain, &Data{})
 	if err != nil {
 		t.Fatal(err)
@@ -149,7 +148,7 @@ func TestChainScan(t *testing.T) {
 
 	for sc.Next() {
 		var d1 Data
-		err := sc.Scan(&d1)
+		err := sc.Scan(&d1)		
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -170,4 +169,7 @@ func TestChainScan(t *testing.T) {
 	if err := sc.Err(); err != nil && err != io.EOF {
 		t.Fatal(err)
 	}
+
 }
+
+

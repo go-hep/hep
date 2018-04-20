@@ -109,10 +109,9 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 	return r.err
 }
 
-func (b *Basket) loadEntry(entry int64, totalEntries int) error {
+func (b *Basket) loadEntry(entry int64) error {
 	var err error
 	var offset = int64(b.key.keylen)
-	b.nevbuf = totalEntries
 	if len(b.offsets) > 0 {
 		offset = int64(b.offsets[int(entry)])
 	}
