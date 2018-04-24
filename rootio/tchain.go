@@ -5,14 +5,9 @@
 package rootio
 
 type tchain struct {
-	Trees   []Tree
-	Curtree Tree
-	Icur    int
-}
-
-func (t tchain) Init() {
-	t.Curtree = t.Trees[0]
-	t.Icur = 0
+	trees []Tree
+	cur   Tree
+	icur  int
 }
 
 // Class returns the ROOT class of the argument.
@@ -22,18 +17,18 @@ func (tchain) Class() string {
 
 // Name returns the name of the ROOT objet in the argument.
 func (t tchain) Name() string {
-	if len(t.Trees) == 0 {
+	if len(t.trees) == 0 {
 		return ""
 	}
-	return t.Trees[0].Name()
+	return t.trees[0].Name()
 }
 
 // Title returns the title of the ROOT object in the argument.
 func (t tchain) Title() string {
-	if len(t.Trees) == 0 {
+	if len(t.trees) == 0 {
 		return ""
 	}
-	return t.Trees[0].Title()
+	return t.trees[0].Title()
 }
 
 // Chain returns a tchain that is the concatenation of all the input Trees.
@@ -42,15 +37,17 @@ func Chain(trees ...Tree) tchain {
 		return tchain{}
 	}
 	var t tchain
-	t.Trees = make([]Tree, len(trees))
-	copy(t.Trees, trees)
+	t.trees = make([]Tree, len(trees))
+	copy(t.trees, trees)
+	t.cur = trees[0]
+	t.icur = 0
 	return t
 }
 
 // Entries returns the total number of entries.
 func (t tchain) Entries() int64 {
 	var v int64
-	for _, tree := range t.Trees {
+	for _, tree := range t.trees {
 		v += tree.Entries()
 	}
 	return v
@@ -59,7 +56,7 @@ func (t tchain) Entries() int64 {
 // TotBytes return the total number of bytes before compression.
 func (t tchain) TotBytes() int64 {
 	var v int64
-	for _, tree := range t.Trees {
+	for _, tree := range t.trees {
 		v += tree.TotBytes()
 	}
 	return v
@@ -68,7 +65,7 @@ func (t tchain) TotBytes() int64 {
 // ZipBytes returns the total number of bytes after compression.
 func (t tchain) ZipBytes() int64 {
 	var v int64
-	for _, tree := range t.Trees {
+	for _, tree := range t.trees {
 		v += tree.ZipBytes()
 	}
 	return v
@@ -77,42 +74,42 @@ func (t tchain) ZipBytes() int64 {
 
 // Branches returns the list of branches.
 func (t tchain) Branches() []Branch {
-	if len(t.Trees) == 0 {
+	if len(t.trees) == 0 {
 		return nil
 	}
-	return t.Trees[0].Branches()
+	return t.trees[0].Branches()
 }
 
 // Branch returns the branch whose name is the argument.
 func (t tchain) Branch(name string) Branch {
-	if len(t.Trees) == 0 {
+	if len(t.trees) == 0 {
 		return nil
 	}
-	return t.Trees[0].Branch(name)
+	return t.trees[0].Branch(name)
 }
 
 // Leaves returns direct pointers to individual branch leaves.
 func (t tchain) Leaves() []Leaf {
-	if len(t.Trees) == 0 {
+	if len(t.trees) == 0 {
 		return nil
 	}
-	return t.Trees[0].Leaves()
+	return t.trees[0].Leaves()
 }
 
 // getFile returns the underlying file.
 func (t tchain) getFile() *File {
-	if len(t.Trees) == 0 {
+	if len(t.trees) == 0 {
 		return nil
 	}
-	return t.Trees[0].getFile()
+	return t.trees[0].getFile()
 }
 
 // loadEntry returns an error if there is a problem during the loading.
 func (t tchain) loadEntry(i int64) error {
-	if len(t.Trees) == 0 {
+	if len(t.trees) == 0 {
 		return nil
 	}
-	return t.Trees[0].loadEntry(i)
+	return t.trees[0].loadEntry(i)
 }
 
 var (
