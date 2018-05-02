@@ -119,15 +119,15 @@ func Unmarshal(data []byte, x interface{}) (err error) {
 			field.SetUint(uint64(data[pos]))
 		case reflect.Uint16:
 			fieldSize = 2
-			var value = binary.BigEndian.Uint16(data[pos: pos+fieldSize])
+			var value = binary.BigEndian.Uint16(data[pos : pos+fieldSize])
 			field.SetUint(uint64(value))
 		case reflect.Int32:
 			fieldSize = 4
-			var value = int32(binary.BigEndian.Uint32(data[pos: pos+fieldSize]))
+			var value = int32(binary.BigEndian.Uint32(data[pos : pos+fieldSize]))
 			field.SetInt(int64(value))
 		case reflect.Int64:
 			fieldSize = 8
-			var value = int64(binary.BigEndian.Uint64(data[pos: pos+fieldSize]))
+			var value = int64(binary.BigEndian.Uint64(data[pos : pos+fieldSize]))
 			field.SetInt(value)
 		case reflect.Slice:
 			elementKind := field.Type().Elem().Kind()
