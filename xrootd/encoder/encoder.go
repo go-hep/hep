@@ -27,7 +27,11 @@ func MarshalRequest(requestID uint16, streamID protocol.StreamID, requestBody in
 	return append(requestHeader, b...), nil
 }
 
-// Marshal encodes structure to the bytes
+// Marshal encodes structure to the bytes following the XRootd protocol specification.
+// Fields are encoded in the same order as they are specified in the struct definition.
+// Each field is encoded in network byte order (BigEndian) without any alignment or padding.
+// Slices and arrays are binary copied without further encoding.
+// Supported types are: uint8, uint16, int32, int64, slices and arrays.
 func Marshal(x interface{}) ([]byte, error) {
 	v := reflect.ValueOf(x)
 	if v.Kind() == reflect.Ptr {
@@ -81,7 +85,12 @@ func Marshal(x interface{}) ([]byte, error) {
 	return data, nil
 }
 
-// Unmarshal decodes data from byte slice
+// Unmarshal decodes data from byte slice following the XRootd protocol specification.
+// Fields are decoded in the same order as they are specified in the struct definition.
+// Each field is decoded from network byte order (BigEndian) without any alignment or padding.
+// Arrays and slices are binary copied without further decoding.
+// Since the length of the slice is unknown, all bytes to the end of data is copied to it.
+// Supported types are: uint8, uint16, int32, int64, slices and arrays.
 func Unmarshal(data []byte, x interface{}) (err error) {
 	v := reflect.ValueOf(x)
 
