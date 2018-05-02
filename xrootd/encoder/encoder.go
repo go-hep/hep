@@ -34,6 +34,10 @@ func Marshal(x interface{}) ([]byte, error) {
 		v = v.Elem()
 	}
 
+	if v.Kind() != reflect.Struct {
+		return nil, errors.Errorf("Cannot marshal %s, struct is expected", v.Kind())
+	}
+
 	dataSize, err := calculateSizeForMarshaling(v)
 	if err != nil {
 		return nil, err
@@ -65,7 +69,7 @@ func Marshal(x interface{}) ([]byte, error) {
 			reflect.Copy(reflect.ValueOf(data[pos:pos+fieldSize]), field)
 
 		default:
-			err = errors.Errorf("Cannot encode kind %s", field.Kind())
+			err = errors.Errorf("Cannot marshal kind %s", field.Kind())
 		}
 		pos += fieldSize
 	}
@@ -84,6 +88,11 @@ func Unmarshal(data []byte, x interface{}) (err error) {
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
+
+	if v.Kind() != reflect.Struct {
+		return errors.Errorf("Cannot unmarshal %s, struct is expected", v.Kind())
+	}
+
 	pos := 0
 
 	for i := 0; i < v.NumField() && err == nil; i++ {
@@ -113,7 +122,7 @@ func Unmarshal(data []byte, x interface{}) (err error) {
 			fieldSize = field.Len()
 			reflect.Copy(field, reflect.ValueOf(data[pos:pos+fieldSize]))
 		default:
-			err = errors.Errorf("Cannot decode kind %s", field.Kind())
+			err = errors.Errorf("Cannot unmarshal kind %s", field.Kind())
 		}
 		pos += fieldSize
 	}
@@ -137,7 +146,7 @@ func calculateSizeForMarshaling(v reflect.Value) (size int, err error) {
 		case reflect.Slice:
 			size += field.Len()
 		default:
-			err = errors.Errorf("Cannot decode kind %s", field.Kind())
+			err = errors.Errorf("Cannot marshal kind %s", field.Kind())
 		}
 	}
 	return
