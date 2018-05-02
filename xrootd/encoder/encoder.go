@@ -30,8 +30,8 @@ func MarshalRequest(requestID uint16, streamID protocol.StreamID, requestBody in
 // Marshal encodes structure to the bytes following the XRootd protocol specification.
 // Fields are encoded in the same order as they are specified in the struct definition.
 // Each field is encoded in network byte order (BigEndian) without any alignment or padding.
-// Slices and arrays are binary copied without further encoding.
-// Supported types are: uint8, uint16, int32, int64, slices and arrays.
+// Slices and arrays of uint8 are binary copied without further encoding.
+// Supported types are: uint8, uint16, int32, int64, slices and arrays of uint8.
 func Marshal(x interface{}) ([]byte, error) {
 	v := reflect.ValueOf(x)
 	if v.Kind() == reflect.Ptr {
@@ -49,7 +49,7 @@ func Marshal(x interface{}) ([]byte, error) {
 
 	data := make([]byte, dataSize)
 	pos := 0
-	for i := 0; i < v.NumField() && err == nil; i++ {
+	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)
 		fieldSize := 0
 		switch field.Kind() {
@@ -66,20 +66,26 @@ func Marshal(x interface{}) ([]byte, error) {
 			fieldSize = 8
 			binary.BigEndian.PutUint64(data[pos:pos+fieldSize], uint64(field.Int()))
 		case reflect.Slice:
+			elementKind := field.Type().Elem().Kind()
+			if elementKind != reflect.Uint8 {
+				return nil, errors.Errorf("Cannot marshal slice of %s, only slices of uint8 are supported", elementKind)
+			}
+
 			fieldSize = field.Len()
 			reflect.Copy(reflect.ValueOf(data[pos:pos+fieldSize]), field)
 		case reflect.Array:
+			elementKind := field.Type().Elem().Kind()
+			if elementKind != reflect.Uint8 {
+				return nil, errors.Errorf("Cannot marshal array of %s, only arrays of uint8 are supported", elementKind)
+			}
+
 			fieldSize = field.Len()
 			reflect.Copy(reflect.ValueOf(data[pos:pos+fieldSize]), field)
 
 		default:
-			err = errors.Errorf("Cannot marshal kind %s", field.Kind())
+			return nil, errors.Errorf("Cannot marshal kind %s", field.Kind())
 		}
 		pos += fieldSize
-	}
-
-	if err != nil {
-		return nil, err
 	}
 
 	return data, nil
@@ -88,9 +94,9 @@ func Marshal(x interface{}) ([]byte, error) {
 // Unmarshal decodes data from byte slice following the XRootd protocol specification.
 // Fields are decoded in the same order as they are specified in the struct definition.
 // Each field is decoded from network byte order (BigEndian) without any alignment or padding.
-// Arrays and slices are binary copied without further decoding.
+// Slices and arrays of uint8 are binary copied without further decoding.
 // Since the length of the slice is unknown, all bytes to the end of data is copied to it.
-// Supported types are: uint8, uint16, int32, int64, slices and arrays.
+// Supported types are: uint8, uint16, int32, int64, slices and arrays of uint8.
 func Unmarshal(data []byte, x interface{}) (err error) {
 	v := reflect.ValueOf(x)
 
@@ -113,21 +119,31 @@ func Unmarshal(data []byte, x interface{}) (err error) {
 			field.SetUint(uint64(data[pos]))
 		case reflect.Uint16:
 			fieldSize = 2
-			var value = binary.BigEndian.Uint16(data[pos : pos+fieldSize])
+			var value = binary.BigEndian.Uint16(data[pos: pos+fieldSize])
 			field.SetUint(uint64(value))
 		case reflect.Int32:
 			fieldSize = 4
-			var value = int32(binary.BigEndian.Uint32(data[pos : pos+fieldSize]))
+			var value = int32(binary.BigEndian.Uint32(data[pos: pos+fieldSize]))
 			field.SetInt(int64(value))
 		case reflect.Int64:
 			fieldSize = 8
-			var value = int64(binary.BigEndian.Uint64(data[pos : pos+fieldSize]))
+			var value = int64(binary.BigEndian.Uint64(data[pos: pos+fieldSize]))
 			field.SetInt(value)
 		case reflect.Slice:
+			elementKind := field.Type().Elem().Kind()
+			if elementKind != reflect.Uint8 {
+				return errors.Errorf("Cannot unmarshal slice of %s, only slices of uint8 are supported", elementKind)
+			}
+
 			bytes := data[pos:]
 			fieldSize = len(bytes)
 			field.SetBytes(bytes)
 		case reflect.Array:
+			elementKind := field.Type().Elem().Kind()
+			if elementKind != reflect.Uint8 {
+				return errors.Errorf("Cannot unmarshal array of %s, only arrays of uint8 are supported", elementKind)
+			}
+
 			fieldSize = field.Len()
 			reflect.Copy(field, reflect.ValueOf(data[pos:pos+fieldSize]))
 		default:
