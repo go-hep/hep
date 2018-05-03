@@ -86,7 +86,8 @@ func TestChainScan(t *testing.T) {
 	files := []string{
 		"testdata/chain.1.root",
 		"testdata/chain.2.root", // FIXME(sbinet): implement for >1 tree
-		// "testdata/chain.1.root",
+		"testdata/chain.1.root",
+		"testdata/chain.2.root",
 	}
 	trees := make([]rootio.Tree, len(files))
 	for i, fname := range files {
@@ -104,7 +105,6 @@ func TestChainScan(t *testing.T) {
 		trees[i] = obj.(rootio.Tree)
 	}
 	chain := rootio.Chain(trees...)
-
 	type Data struct {
 		Event struct {
 			Beg       string      `rootio:"Beg"`
