@@ -13,16 +13,16 @@ import (
 
 // Login initializes a server connection using username
 func (client *Client) Login(ctx context.Context, username string) (*login.Response, error) {
-	serverResponse, err := client.call(ctx, login.RequestID, login.NewRequest(username))
+	resp, err := client.call(ctx, login.RequestID, login.NewRequest(username))
 	if err != nil {
 		return nil, err
 	}
 
-	var response = &login.Response{}
-	err = encoder.Unmarshal(serverResponse, response)
-	if err != nil {
+	var result login.Response
+
+	if err = encoder.Unmarshal(resp, &result); err != nil {
 		return nil, err
 	}
 
-	return response, nil
+	return &result, nil
 }

@@ -14,13 +14,13 @@ import (
 
 // Dirlist returns contents of a directory
 func (client *Client) Dirlist(ctx context.Context, path string) ([]string, error) {
-	serverResponse, err := client.call(ctx, dirlist.RequestID, dirlist.NewRequest(path))
+	resp, err := client.call(ctx, dirlist.RequestID, dirlist.NewRequest(path))
 	if err != nil {
 		return nil, err
 	}
 
-	var result = &dirlist.Response{}
-	err = encoder.Unmarshal(serverResponse, result)
+	var result dirlist.Response
+	err = encoder.Unmarshal(resp, &result)
 	if err != nil {
 		return nil, err
 	}

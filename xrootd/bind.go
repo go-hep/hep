@@ -11,15 +11,15 @@ import (
 	"go-hep.org/x/hep/xrootd/requests/bind"
 )
 
-// Bind a socket to pre-existing session
+// Bind binds the client's socket to a pre-existing session ID.
 func (client *Client) Bind(ctx context.Context, sessionID [16]byte) (byte, error) {
-	serverResponse, err := client.call(ctx, bind.RequestID, bind.NewRequest(sessionID))
+	resp, err := client.call(ctx, bind.RequestID, bind.NewRequest(sessionID))
 	if err != nil {
 		return 0, err
 	}
 
-	var result = &bind.Response{}
-	err = encoder.Unmarshal(serverResponse, result)
+	var result bind.Response
+	err = encoder.Unmarshal(resp, &result)
 	if err != nil {
 		return 0, err
 	}

@@ -10,7 +10,7 @@ import (
 	"go-hep.org/x/hep/xrootd/requests/close"
 )
 
-// Close a previously opened file by handle
+// Close closes the previously opened file by a handle
 func (client *Client) Close(ctx context.Context, fileHandle [4]byte, fileSize int64) error {
 	_, err := client.call(ctx, close.RequestID, close.NewRequest(fileHandle, fileSize))
 	return err

@@ -14,6 +14,7 @@ import (
 	"os"
 
 	"go-hep.org/x/hep/xrootd/encoder"
+	"go-hep.org/x/hep/xrootd/protocol"
 	"go-hep.org/x/hep/xrootd/streammanager"
 )
 
@@ -21,8 +22,8 @@ var logger = log.New(os.Stderr, "xrootd: ", log.LstdFlags)
 
 // A Client to xrootd server
 type Client struct {
-	connection      *net.TCPConn
-	sm              *streammanager.StreamManager
+	conn            net.Conn
+	smgr            *streammanager.StreamManager
 	protocolVersion int32
 }
 
@@ -45,68 +46,60 @@ type responseHeader struct {
 
 // New creates a client to xrootd server at address
 func New(ctx context.Context, address string) (*Client, error) {
-	conn, err := createTCPConnection(address)
+	conn, err := net.Dial("tcp", address)
 	if err != nil {
 		return nil, err
 	}
 
 	client := &Client{conn, streammanager.New(), 0}
 
-	go client.consume()
+	go client.consume(ctx)
 
-	err = client.handshake(ctx)
-	if err != nil {
+	if err := client.handshake(ctx); err != nil {
 		return nil, err
 	}
 
 	return client, nil
 }
 
-func createTCPConnection(address string) (connection *net.TCPConn, err error) {
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", address)
-	if err != nil {
-		return
-	}
+func (client *Client) consume(ctx context.Context) {
+	var header = &responseHeader{}
+	var headerBytes = make([]byte, responseHeaderSize)
 
-	connection, err = net.DialTCP("tcp", nil, tcpAddr)
-	return
-}
-
-func (client *Client) consume() {
 	for {
-		var header = &responseHeader{}
-
-		var headerBytes = make([]byte, responseHeaderSize)
-		if _, err := io.ReadFull(client.connection, headerBytes); err != nil {
-			logger.Panic(err)
+		if _, err := io.ReadFull(client.conn, headerBytes); err != nil {
+			// TODO: handle EOF by redirection as specified at http://xrootd.org/doc/dev45/XRdv310.pdf, page 11
 		}
 
 		if err := encoder.Unmarshal(headerBytes, header); err != nil {
-			logger.Panic(err)
+			// TODO: should redirect in case if is not possible to decode a header as well?
 		}
 
-		data := make([]byte, header.DataLength)
-		if _, err := io.ReadFull(client.connection, data); err != nil {
-			logger.Panic(err)
+		resp := &streammanager.ServerResponse{make([]byte, header.DataLength), nil}
+		if _, err := io.ReadFull(client.conn, resp.Data); err != nil {
+			resp.Error = err
+		} else if header.Status != 0 {
+			resp.Error = extractError(header, resp.Data)
 		}
 
-		response := &streammanager.ServerResponse{data, nil}
-		if header.Status != 0 {
-			response.Error = extractError(header, data)
+		if err := client.smgr.SendData(header.StreamID, resp); err != nil {
+			// TODO: should we just ignore responses to unclaimed stream IDs?
 		}
 
-		if err := client.sm.SendData(header.StreamID, response); err != nil {
-			logger.Panic(err)
+		if header.Status != protocol.OkSoFar {
+			client.smgr.Unclaim(header.StreamID)
 		}
 
-		if header.Status != 4000 { // oksofar
-			client.sm.Unclaim(header.StreamID)
+		select {
+		case <-ctx.Done():
+			return
+		default:
 		}
 	}
 }
 
 func extractError(header *responseHeader, data []byte) error {
-	if header.Status == 4003 {
+	if header.Status == protocol.Error {
 		code := int32(binary.BigEndian.Uint32(data[0:4]))
 		message := string(data[4 : len(data)-1]) // Skip \0 character at the end
 
@@ -115,8 +108,8 @@ func extractError(header *responseHeader, data []byte) error {
 	return nil
 }
 
-func (client *Client) callWithBytesAndResponseChannel(ctx context.Context, responseChannel streammanager.DataReceiveChannel, requestData []byte) (responseBytes []byte, err error) {
-	if _, err = client.connection.Write(requestData); err != nil {
+func (client *Client) callWithBytesAndResponseChannel(ctx context.Context, responseChannel streammanager.DataReceiveChannel, requestData []byte) (data []byte, err error) {
+	if _, err = client.conn.Write(requestData); err != nil {
 		return nil, err
 	}
 
@@ -126,7 +119,7 @@ func (client *Client) callWithBytesAndResponseChannel(ctx context.Context, respo
 		select {
 		case serverResponse, more = <-responseChannel:
 			if serverResponse != nil {
-				responseBytes = append(responseBytes, serverResponse.Data...)
+				data = append(data, serverResponse.Data...)
 				err = serverResponse.Error
 				if err != nil {
 					return
@@ -141,7 +134,7 @@ func (client *Client) callWithBytesAndResponseChannel(ctx context.Context, respo
 }
 
 func (client *Client) call(ctx context.Context, requestID uint16, request interface{}) (responseBytes []byte, err error) {
-	streamID, responseChannel, err := client.sm.Claim()
+	streamID, responseChannel, err := client.smgr.Claim()
 	if err != nil {
 		return nil, err
 	}

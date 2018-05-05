@@ -13,7 +13,7 @@ import (
 )
 
 func (client *Client) handshake(ctx context.Context) error {
-	responseChannel, err := client.sm.ClaimWithID(streammanager.StreamID{0, 0})
+	responseChannel, err := client.smgr.ClaimWithID(streammanager.StreamID{0, 0})
 	if err != nil {
 		return err
 	}
@@ -23,18 +23,18 @@ func (client *Client) handshake(ctx context.Context) error {
 		return err
 	}
 
-	responseBytes, err := client.callWithBytesAndResponseChannel(ctx, responseChannel, requestBytes)
+	resp, err := client.callWithBytesAndResponseChannel(ctx, responseChannel, requestBytes)
 	if err != nil {
 		return err
 	}
 
-	var handshakeResult handshake.Response
-	if encoder.Unmarshal(responseBytes, &handshakeResult) != nil {
+	var result handshake.Response
+	if err = encoder.Unmarshal(resp, &result); err != nil {
 		return err
 	}
 
-	client.protocolVersion = handshakeResult.ProtocolVersion
-	logger.Printf("Connected! Protocol version is %d. Server type is %s.", handshakeResult.ProtocolVersion, handshakeResult.ServerType)
+	client.protocolVersion = result.ProtocolVersion
+	logger.Printf("Connected! Protocol version is %d. Server type is %s.", result.ProtocolVersion, result.ServerType)
 
 	return nil
 }

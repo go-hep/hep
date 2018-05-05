@@ -13,14 +13,14 @@ import (
 
 // Open returns file handle for a file.
 func (client *Client) Open(ctx context.Context, path string, mode open.Mode, options open.Options) ([4]byte, error) {
-	serverResponse, err := client.call(ctx, open.RequestID, open.NewRequest(path, mode, options))
+	resp, err := client.call(ctx, open.RequestID, open.NewRequest(path, mode, options))
 	if err != nil {
 		return [4]byte{}, err
 	}
 
-	var result = &open.Response{}
-	err = encoder.Unmarshal(serverResponse, result)
-	if err != nil {
+	var result open.Response
+
+	if err = encoder.Unmarshal(resp, &result); err != nil {
 		return [4]byte{}, err
 	}
 
