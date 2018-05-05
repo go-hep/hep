@@ -9,15 +9,14 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
-	"go-hep.org/x/hep/xrootd/streammanager"
+	"go-hep.org/x/hep/xrootd/protocol"
 )
 
-// MarshalRequest marshals request body together with request and stream ids
-func MarshalRequest(requestID uint16, streamID streammanager.StreamID, requestBody interface{}) ([]byte, error) {
+// MarshalRequest encodes request body alongside with request and stream ids
+func MarshalRequest(requestID uint16, streamID protocol.StreamID, requestBody interface{}) ([]byte, error) {
 	requestHeader := make([]byte, 4)
-	requestHeader[0] = streamID[0]
-	requestHeader[1] = streamID[1]
 
+	copy(requestHeader, streamID[:])
 	binary.BigEndian.PutUint16(requestHeader[2:], requestID)
 
 	b, err := Marshal(requestBody)
@@ -28,11 +27,19 @@ func MarshalRequest(requestID uint16, streamID streammanager.StreamID, requestBo
 	return append(requestHeader, b...), nil
 }
 
-// Marshal marshals structure to the bytes
+// Marshal encodes structure to the bytes following the XRootd protocol specification.
+// Fields are encoded in the same order as they are specified in the struct definition.
+// Each field is encoded in network byte order (BigEndian) without any alignment or padding.
+// Slices and arrays of uint8 are binary copied without further encoding.
+// Supported types are: uint8, uint16, int32, int64, slices and arrays of uint8.
 func Marshal(x interface{}) ([]byte, error) {
 	v := reflect.ValueOf(x)
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
+	}
+
+	if v.Kind() != reflect.Struct {
+		return nil, errors.Errorf("Cannot marshal %s, struct is expected", v.Kind())
 	}
 
 	dataSize, err := calculateSizeForMarshaling(v)
@@ -42,7 +49,7 @@ func Marshal(x interface{}) ([]byte, error) {
 
 	data := make([]byte, dataSize)
 	pos := 0
-	for i := 0; i < v.NumField() && err == nil; i++ {
+	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)
 		fieldSize := 0
 		switch field.Kind() {
@@ -59,32 +66,48 @@ func Marshal(x interface{}) ([]byte, error) {
 			fieldSize = 8
 			binary.BigEndian.PutUint64(data[pos:pos+fieldSize], uint64(field.Int()))
 		case reflect.Slice:
+			elementKind := field.Type().Elem().Kind()
+			if elementKind != reflect.Uint8 {
+				return nil, errors.Errorf("Cannot marshal slice of %s, only slices of uint8 are supported", elementKind)
+			}
+
 			fieldSize = field.Len()
 			reflect.Copy(reflect.ValueOf(data[pos:pos+fieldSize]), field)
 		case reflect.Array:
+			elementKind := field.Type().Elem().Kind()
+			if elementKind != reflect.Uint8 {
+				return nil, errors.Errorf("Cannot marshal array of %s, only arrays of uint8 are supported", elementKind)
+			}
+
 			fieldSize = field.Len()
 			reflect.Copy(reflect.ValueOf(data[pos:pos+fieldSize]), field)
 
 		default:
-			err = errors.Errorf("Cannot encode kind %s", field.Kind())
+			return nil, errors.Errorf("Cannot marshal kind %s", field.Kind())
 		}
 		pos += fieldSize
-	}
-
-	if err != nil {
-		return nil, err
 	}
 
 	return data, nil
 }
 
-// Unmarshal unmarshals data from byte slice
+// Unmarshal decodes data from byte slice following the XRootd protocol specification.
+// Fields are decoded in the same order as they are specified in the struct definition.
+// Each field is decoded from network byte order (BigEndian) without any alignment or padding.
+// Slices and arrays of uint8 are binary copied without further decoding.
+// Since the length of the slice is unknown, all bytes to the end of data is copied to it.
+// Supported types are: uint8, uint16, int32, int64, slices and arrays of uint8.
 func Unmarshal(data []byte, x interface{}) (err error) {
 	v := reflect.ValueOf(x)
 
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
+
+	if v.Kind() != reflect.Struct {
+		return errors.Errorf("Cannot unmarshal %s, struct is expected", v.Kind())
+	}
+
 	pos := 0
 
 	for i := 0; i < v.NumField() && err == nil; i++ {
@@ -107,14 +130,24 @@ func Unmarshal(data []byte, x interface{}) (err error) {
 			var value = int64(binary.BigEndian.Uint64(data[pos : pos+fieldSize]))
 			field.SetInt(value)
 		case reflect.Slice:
+			elementKind := field.Type().Elem().Kind()
+			if elementKind != reflect.Uint8 {
+				return errors.Errorf("Cannot unmarshal slice of %s, only slices of uint8 are supported", elementKind)
+			}
+
 			bytes := data[pos:]
 			fieldSize = len(bytes)
 			field.SetBytes(bytes)
 		case reflect.Array:
+			elementKind := field.Type().Elem().Kind()
+			if elementKind != reflect.Uint8 {
+				return errors.Errorf("Cannot unmarshal array of %s, only arrays of uint8 are supported", elementKind)
+			}
+
 			fieldSize = field.Len()
 			reflect.Copy(field, reflect.ValueOf(data[pos:pos+fieldSize]))
 		default:
-			err = errors.Errorf("Cannot decode kind %s", field.Kind())
+			err = errors.Errorf("Cannot unmarshal kind %s", field.Kind())
 		}
 		pos += fieldSize
 	}
@@ -138,7 +171,7 @@ func calculateSizeForMarshaling(v reflect.Value) (size int, err error) {
 		case reflect.Slice:
 			size += field.Len()
 		default:
-			err = errors.Errorf("Cannot decode kind %s", field.Kind())
+			err = errors.Errorf("Cannot marshal kind %s", field.Kind())
 		}
 	}
 	return
