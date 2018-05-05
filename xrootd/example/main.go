@@ -21,7 +21,7 @@ var addr = flag.String("addr", "0.0.0.0:9001", "address of xrootd server")
 func main() {
 	flag.Parse()
 
-	client, err := xrootd.New(context.Background(), *addr)
+	client, err := xrootd.NewClient(context.Background(), *addr)
 	checkError(err)
 
 	response, securityInfo, err := client.Protocol(context.Background())

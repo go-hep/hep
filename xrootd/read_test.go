@@ -16,7 +16,7 @@ import (
 )
 
 func TestClient_Read(t *testing.T) {
-	client, err := New(context.Background(), *Addr)
+	client, err := NewClient(context.Background(), *Addr)
 	assert.NoError(t, err)
 
 	_, err = client.Login(context.Background(), "gopher")
@@ -49,7 +49,7 @@ func TestClient_Read(t *testing.T) {
 }
 
 func ExampleClient_Read() {
-	client, _ := New(context.Background(), *Addr)
+	client, _ := NewClient(context.Background(), *Addr)
 	client.Login(context.Background(), "gopher")
 	handle, _ := client.Open(context.Background(), "/tmp/testFiles/read_example", open.ModeOwnerWrite, open.OptionsMkPath|open.OptionsDelete)
 	message := []byte("Hello")

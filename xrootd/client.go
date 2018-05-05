@@ -20,7 +20,9 @@ import (
 
 var logger = log.New(os.Stderr, "xrootd: ", log.LstdFlags)
 
-// A Client to xrootd server
+// A Client to xrootd server which allows to send requests and receive responses.
+// Concurrent requests are supported.
+// Zero value is invalid, Client should be instantiated using NewClient.
 type Client struct {
 	conn            net.Conn
 	smgr            *streammanager.StreamManager
@@ -44,8 +46,9 @@ type responseHeader struct {
 	DataLength int32
 }
 
-// New creates a client to xrootd server at address
-func New(ctx context.Context, address string) (*Client, error) {
+// NewClient creates a client to xrootd server at address.
+// ctx defines a lifetime of the client, once it is done response handling is stopped.
+func NewClient(ctx context.Context, address string) (*Client, error) {
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
 		return nil, err

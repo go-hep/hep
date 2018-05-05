@@ -21,7 +21,7 @@ func checkPing(t *testing.T, client *Client, done chan<- bool) {
 }
 
 func TestClient_Ping_100(t *testing.T) {
-	client, err := New(context.Background(), *Addr)
+	client, err := NewClient(context.Background(), *Addr)
 	assert.NoError(t, err)
 	_, err = client.Login(context.Background(), "gopher")
 	assert.NoError(t, err)
@@ -39,7 +39,7 @@ func TestClient_Ping_100(t *testing.T) {
 }
 
 func BenchmarkHundredPings(b *testing.B) {
-	client, err := New(context.Background(), *Addr)
+	client, err := NewClient(context.Background(), *Addr)
 	assert.NoError(b, err)
 	_, err = client.Login(context.Background(), "gopher")
 	assert.NoError(b, err)
@@ -53,7 +53,7 @@ func BenchmarkHundredPings(b *testing.B) {
 }
 
 func ExampleClient_Ping() {
-	client, _ := New(context.Background(), *Addr)
+	client, _ := NewClient(context.Background(), *Addr)
 
 	client.Login(context.Background(), "gopher")
 	client.Ping(context.Background())

@@ -14,6 +14,6 @@ import (
 )
 
 func TestHandshake(t *testing.T) {
-	_, err := New(context.Background(), *Addr)
+	_, err := NewClient(context.Background(), *Addr)
 	assert.NoError(t, err)
 }

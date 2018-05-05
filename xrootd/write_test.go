@@ -15,7 +15,7 @@ import (
 )
 
 func TestClient_Write(t *testing.T) {
-	client, err := New(context.Background(), *Addr)
+	client, err := NewClient(context.Background(), *Addr)
 	assert.NoError(t, err)
 
 	_, err = client.Login(context.Background(), "gopher")
