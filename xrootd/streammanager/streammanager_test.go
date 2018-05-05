@@ -8,11 +8,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go-hep.org/x/hep/xrootd/protocol"
 )
 
 func TestClaim(t *testing.T) {
 	sm := New()
-	set := map[StreamID]bool{}
+	set := map[protocol.StreamID]bool{}
 	for i := 0; i < 256*256; i++ {
 		id, channel, err := sm.Claim()
 		assert.NoError(t, err)
@@ -26,7 +27,7 @@ func TestClaim(t *testing.T) {
 
 func TestClaim_AfterUnclaim(t *testing.T) {
 	sm := New()
-	set := map[StreamID]bool{}
+	set := map[protocol.StreamID]bool{}
 	for i := 0; i < 256*256; i++ {
 		id, channel, err := sm.Claim()
 		assert.NoError(t, err)
@@ -34,7 +35,7 @@ func TestClaim_AfterUnclaim(t *testing.T) {
 		assert.False(t, set[id], "Id %s was already taken", id)
 		set[id] = true
 	}
-	expectedID := StreamID{13, 14}
+	expectedID := protocol.StreamID{13, 14}
 	sm.Unclaim(expectedID)
 
 	actualID, channel, err := sm.Claim()
@@ -46,7 +47,7 @@ func TestClaim_AfterUnclaim(t *testing.T) {
 func TestClaimWithID_WhenIDIsFree(t *testing.T) {
 	sm := New()
 
-	channel, err := sm.ClaimWithID(StreamID{13, 14})
+	channel, err := sm.ClaimWithID(protocol.StreamID{13, 14})
 
 	assert.NoError(t, err)
 	assert.NotNil(t, channel)
@@ -54,9 +55,9 @@ func TestClaimWithID_WhenIDIsFree(t *testing.T) {
 
 func TestClaimWithID_WhenIDIsTakenByClaimWithID(t *testing.T) {
 	sm := New()
-	sm.ClaimWithID(StreamID{13, 14})
+	sm.ClaimWithID(protocol.StreamID{13, 14})
 
-	_, err := sm.ClaimWithID(StreamID{13, 14})
+	_, err := sm.ClaimWithID(protocol.StreamID{13, 14})
 
 	assert.Error(t, err)
 }
@@ -72,7 +73,7 @@ func TestClaimWithID_WhenIDIsTakenByClaim(t *testing.T) {
 
 func TestClaim_WhenIDIsTakenByClaimWithID(t *testing.T) {
 	sm := New()
-	takenID := StreamID{0, 0}
+	takenID := protocol.StreamID{0, 0}
 	sm.ClaimWithID(takenID)
 
 	id, channel, err := sm.Claim()
@@ -84,7 +85,7 @@ func TestClaim_WhenIDIsTakenByClaimWithID(t *testing.T) {
 
 func TestSendData_WhenIDIsTaken(t *testing.T) {
 	sm := New()
-	takenID := StreamID{0, 0}
+	takenID := protocol.StreamID{0, 0}
 	passedValue := &ServerResponse{}
 
 	channel, _ := sm.ClaimWithID(takenID)
@@ -96,7 +97,7 @@ func TestSendData_WhenIDIsTaken(t *testing.T) {
 
 func TestSendData_WhenIDIsNotTaken(t *testing.T) {
 	sm := New()
-	notTakenID := StreamID{0, 0}
+	notTakenID := protocol.StreamID{0, 0}
 
 	err := sm.SendData(notTakenID, &ServerResponse{})
 

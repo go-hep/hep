@@ -39,7 +39,7 @@ func (err serverError) Error() string {
 const responseHeaderSize = 2 + 2 + 4
 
 type responseHeader struct {
-	StreamID   streammanager.StreamID
+	StreamID   protocol.StreamID
 	Status     uint16
 	DataLength int32
 }

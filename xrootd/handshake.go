@@ -8,12 +8,12 @@ import (
 	"context"
 
 	"go-hep.org/x/hep/xrootd/encoder"
+	"go-hep.org/x/hep/xrootd/protocol"
 	"go-hep.org/x/hep/xrootd/requests/handshake"
-	"go-hep.org/x/hep/xrootd/streammanager"
 )
 
 func (client *Client) handshake(ctx context.Context) error {
-	responseChannel, err := client.smgr.ClaimWithID(streammanager.StreamID{0, 0})
+	responseChannel, err := client.smgr.ClaimWithID(protocol.StreamID{0, 0})
 	if err != nil {
 		return err
 	}

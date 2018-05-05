@@ -8,9 +8,8 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
+	"go-hep.org/x/hep/xrootd/protocol"
 )
-
-type StreamID [2]byte
 
 type ServerResponse struct {
 	Data  []byte
@@ -23,18 +22,18 @@ type DataReceiveChannel <-chan *ServerResponse
 // StreamManager manages channels by their ids. Basically, it's a map[StreamID] chan<-*ServerResponse with methods
 // to claim, free and pass data to some channel by id.
 type StreamManager struct {
-	dataWaiters map[StreamID]dataSendChannel
+	dataWaiters map[protocol.StreamID]dataSendChannel
 	mutex       sync.Mutex
-	freeIds     chan StreamID
+	freeIds     chan protocol.StreamID
 }
 
 // New creates new StreamManager
 func New() *StreamManager {
-	sm := StreamManager{make(map[StreamID]dataSendChannel), sync.Mutex{}, make(chan StreamID, 256*256)}
+	sm := StreamManager{make(map[protocol.StreamID]dataSendChannel), sync.Mutex{}, make(chan protocol.StreamID, 256*256)}
 
 	for firstByte := uint16(0); firstByte < 256; firstByte++ {
 		for secondByte := uint16(0); secondByte < 256; secondByte++ {
-			sm.freeIds <- StreamID{byte(firstByte), byte(secondByte)}
+			sm.freeIds <- protocol.StreamID{byte(firstByte), byte(secondByte)}
 		}
 	}
 
@@ -42,7 +41,7 @@ func New() *StreamManager {
 }
 
 // Claim searches for unclaimed id and returns corresponding channel
-func (sm *StreamManager) Claim() (id StreamID, channel DataReceiveChannel, err error) {
+func (sm *StreamManager) Claim() (id protocol.StreamID, channel DataReceiveChannel, err error) {
 	bidirectionalChannel := make(chan *ServerResponse, 1)
 	sm.mutex.Lock()
 	defer sm.mutex.Unlock()
@@ -64,7 +63,7 @@ func (sm *StreamManager) Claim() (id StreamID, channel DataReceiveChannel, err e
 }
 
 // ClaimWithID checks if id is unclaimed and returns corresponding channel in case of success
-func (sm *StreamManager) ClaimWithID(id StreamID) (channel DataReceiveChannel, err error) {
+func (sm *StreamManager) ClaimWithID(id protocol.StreamID) (channel DataReceiveChannel, err error) {
 	bidirectionalChannel := make(chan *ServerResponse, 1)
 	sm.mutex.Lock()
 	defer sm.mutex.Unlock()
@@ -78,7 +77,7 @@ func (sm *StreamManager) ClaimWithID(id StreamID) (channel DataReceiveChannel, e
 }
 
 // Unclaim marks channel with specified id as unclaimed
-func (sm *StreamManager) Unclaim(id StreamID) {
+func (sm *StreamManager) Unclaim(id protocol.StreamID) {
 	sm.mutex.Lock()
 	close(sm.dataWaiters[id])
 	delete(sm.dataWaiters, id)
@@ -87,7 +86,7 @@ func (sm *StreamManager) Unclaim(id StreamID) {
 }
 
 // SendData sends data to channel with specific id
-func (sm *StreamManager) SendData(id StreamID, data *ServerResponse) error {
+func (sm *StreamManager) SendData(id protocol.StreamID, data *ServerResponse) error {
 	sm.mutex.Lock()
 	defer sm.mutex.Unlock()
 
