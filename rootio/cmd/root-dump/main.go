@@ -135,7 +135,7 @@ func dumpDir(w io.Writer, dir rootio.Directory, deep bool) error {
 			fmt.Fprintf(w, "\n")
 		}
 		if err != nil {
-			return err
+			return fmt.Errorf("error dumping key %q: %v", key.Name(), err)
 		}
 	}
 	return nil
