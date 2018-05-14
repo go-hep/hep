@@ -6,9 +6,9 @@ package hplot
 
 import (
 	"github.com/golang/freetype/truetype"
+	"golang.org/x/image/font/gofont/goregular"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
-	"gonum.org/v1/plot/vg/fonts"
 )
 
 var (
@@ -75,17 +75,12 @@ func (sty *Style) init(name string, ft *truetype.Font) error {
 }
 
 func init() {
-	vgfonts, err := fonts.Asset("LiberationSans-Regular.ttf")
+	ft, err := truetype.Parse(goregular.TTF)
 	if err != nil {
 		panic(err)
 	}
 
-	ft, err := truetype.Parse(vgfonts)
-	if err != nil {
-		panic(err)
-	}
-
-	err = DefaultStyle.init("Helvetica", ft)
+	err = DefaultStyle.init("hplot-go-regular", ft)
 	if err != nil {
 		panic(err)
 	}
