@@ -67,7 +67,7 @@ func TestChain(t *testing.T) {
 				trees[i] = obj.(rootio.Tree)
 			}
 
-			chain,err1 := rootio.Chain(trees...)
+			chain, err1 := rootio.Chain(trees...)
 			if err1 != nil {
 				t.Fatalf("different layouts")
 			}
@@ -108,7 +108,7 @@ func TestChainScan(t *testing.T) {
 
 		trees[i] = obj.(rootio.Tree)
 	}
-	chain,err2 := rootio.Chain(trees...)
+	chain, err2 := rootio.Chain(trees...)
 	if err2 != nil {
 		t.Fatalf("different layouts")
 	}
