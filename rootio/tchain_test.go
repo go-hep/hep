@@ -67,7 +67,10 @@ func TestChain(t *testing.T) {
 				trees[i] = obj.(rootio.Tree)
 			}
 
-			chain := rootio.Chain(trees...)
+			chain,err1 := rootio.Chain(trees...)
+			if err1 != nil {
+				t.Fatalf("different layouts")
+			}
 
 			if got, want := chain.Name(), tc.name; got != want {
 				t.Fatalf("names differ\ngot = %q, want= %q", got, want)
@@ -86,6 +89,7 @@ func TestChainScan(t *testing.T) {
 	files := []string{
 		"testdata/chain.1.root",
 		"testdata/chain.2.root", // FIXME(sbinet): implement for >1 tree
+		"testdata/chain.2.root",
 		"testdata/chain.1.root",
 		"testdata/chain.2.root",
 	}
@@ -104,7 +108,10 @@ func TestChainScan(t *testing.T) {
 
 		trees[i] = obj.(rootio.Tree)
 	}
-	chain := rootio.Chain(trees...)
+	chain,err2 := rootio.Chain(trees...)
+	if err2 != nil {
+		t.Fatalf("different layouts")
+	}
 	type Data struct {
 		Event struct {
 			Beg       string      `rootio:"Beg"`

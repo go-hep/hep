@@ -32,14 +32,17 @@ func (t tchain) Title() string {
 }
 
 // Chain returns a tchain that is the concatenation of all the input Trees.
-func Chain(trees ...Tree) *tchain {
+func Chain(trees ...Tree) (*tchain, error) {
 	ch := &tchain{
 		trees: make([]itree, len(trees)),
 		icur:  -1,
 	}
 	var sum int64
 	var offset int64
-	for i := range trees {
+	for i, ttree := range trees {
+		if len(ttree.Branches()) != len(trees[0].Branches()) {
+			return nil, errorf("Trees with different layouts")
+		}
 		t := trees[i]
 		n := t.Entries()
 		sum += n
@@ -50,7 +53,7 @@ func Chain(trees ...Tree) *tchain {
 		ch.icur = 0
 		ch.cur = &ch.trees[ch.icur]
 	}
-	return ch
+	return ch, nil
 }
 
 // Entries returns the total number of entries.
