@@ -87,6 +87,7 @@ func TestChainScan(t *testing.T) {
 		"testdata/chain.1.root",
 		//	"testdata/chain.2.root", // FIXME(sbinet): implement for >1 tree
 	}
+
 	trees := make([]rootio.Tree, len(files))
 	for i, fname := range files {
 		f, err := rootio.Open(fname)
@@ -169,5 +170,26 @@ func TestChainScan(t *testing.T) {
 	}
 	if err := sc.Err(); err != nil && err != io.EOF {
 		t.Fatal(err)
+	}
+}
+
+func BenchmarkReadBranch(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		f, err := rootio.Open("testdata/chain.1.root")
+		if err != nil {
+			panic(err)
+		}
+
+		b := make([]byte, 1)
+
+		_, err = f.Read(b)
+		for err == nil {
+			_, err = f.Read(b)
+		}
+		if err != io.EOF {
+			panic(err)
+		}
+
+		f.Close()
 	}
 }
