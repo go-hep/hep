@@ -38,6 +38,8 @@
 //  options:
 //    -deep
 //      	enable deep dumping of values (including Trees' entries) (default true)
+//    -name string
+//      	regex of object names to dump
 //
 package main // import "go-hep.org/x/hep/rootio/cmd/root-dump"
 
@@ -48,6 +50,7 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"regexp"
 
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hbook/yodacnv"
@@ -56,6 +59,7 @@ import (
 
 var (
 	deepFlag = flag.Bool("deep", true, "enable deep dumping of values (including Trees' entries)")
+	nameFlag = flag.String("name", "", "regex of object names to dump")
 )
 
 func main() {
@@ -76,6 +80,10 @@ options:
 	}
 
 	flag.Parse()
+
+	if *nameFlag != "" {
+		reName = regexp.MustCompile(*nameFlag)
+	}
 
 	if flag.NArg() == 0 {
 		flag.Usage()
@@ -108,7 +116,7 @@ func dumpDir(w io.Writer, dir rootio.Directory, deep bool) error {
 			return err
 		}
 		fmt.Fprintf(w, "key[%03d]: %s;%d %q (%s)", i, key.Name(), key.Cycle(), key.Title(), obj.Class())
-		if deep {
+		if deep && match(key.Name()) {
 			switch obj := obj.(type) {
 			case rootio.Tree:
 				fmt.Fprintf(w, "\n")
@@ -135,10 +143,19 @@ func dumpDir(w io.Writer, dir rootio.Directory, deep bool) error {
 			fmt.Fprintf(w, "\n")
 		}
 		if err != nil {
-			return err
+			return fmt.Errorf("error dumping key %q: %v", key.Name(), err)
 		}
 	}
 	return nil
+}
+
+var reName *regexp.Regexp
+
+func match(name string) bool {
+	if reName == nil {
+		return true
+	}
+	return reName.MatchString(name)
 }
 
 func dumpTree(w io.Writer, t rootio.Tree) error {
