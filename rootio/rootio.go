@@ -9,6 +9,10 @@ import (
 	"reflect"
 )
 
+const (
+	rootVersion = 61206 // ROOT version the Go-HEP/rootio library implements
+)
+
 //go:generate go run ./gen-code.go
 //go:generate go run ./gendata/gen-evnt-tree.go -f ./testdata/small-evnt-tree-nosplit.root
 //go:generate go run ./gendata/gen-evnt-tree.go -f ./testdata/small-evnt-tree-fullsplit.root -split=99
