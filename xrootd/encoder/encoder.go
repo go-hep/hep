@@ -12,7 +12,7 @@ import (
 	"go-hep.org/x/hep/xrootd/protocol"
 )
 
-// MarshalRequest encodes request body alongside with request and stream ids
+// MarshalRequest encodes request body alongside with request and stream ids.
 func MarshalRequest(requestID uint16, streamID protocol.StreamID, requestBody interface{}) ([]byte, error) {
 	requestHeader := make([]byte, 4)
 

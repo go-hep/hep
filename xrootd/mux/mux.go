@@ -2,6 +2,38 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+/*
+Package mux implements the multiplexer that manages access to and writes data to the channels
+by corresponding StreamID from xrootd protocol specification.
+
+Example of usage:
+
+	mux := New()
+	defer m.Close()
+
+	// Claim channel for response retrieving.
+	id, channel, err := m.Claim()
+	if err != nil {
+		// handle error.
+	}
+
+	// Send a request to the server using id as a streamID.
+
+	go func() {
+		// Read response from the server.
+		// ...
+
+		// Send response to the awaiting caller using streamID from the server.
+		err := m.SendData(streamID, want)
+		if err != nil {
+			// handle error.
+		}
+	}
+
+
+	// Fetch response.
+	response := <-channel
+*/
 package mux // import "go-hep.org/x/hep/xrootd/mux"
 
 import (
@@ -37,7 +69,7 @@ type Mux struct {
 	quit        chan struct{}
 }
 
-// New creates a new Mux
+// New creates a new Mux.
 func New() *Mux {
 	const freeIDsBufferSize = 32 // 32 is completely arbitrary ATM and should be refined based on real use cases.
 
@@ -62,12 +94,12 @@ func New() *Mux {
 	return &m
 }
 
-// Close closes the Mux
+// Close closes the Mux.
 func (m *Mux) Close() {
 	close(m.quit)
 }
 
-// Claim searches for unclaimed id and returns corresponding channel
+// Claim searches for unclaimed id and returns corresponding channel.
 func (m *Mux) Claim() (protocol.StreamID, DataRecvChan, error) {
 	ch := make(chan ServerResponse)
 
@@ -87,7 +119,7 @@ func (m *Mux) Claim() (protocol.StreamID, DataRecvChan, error) {
 	}
 }
 
-// ClaimWithID checks if id is unclaimed and returns the corresponding channel in case of success
+// ClaimWithID checks if id is unclaimed and returns the corresponding channel in case of success.
 func (m *Mux) ClaimWithID(id protocol.StreamID) (DataRecvChan, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -102,7 +134,7 @@ func (m *Mux) ClaimWithID(id protocol.StreamID) (DataRecvChan, error) {
 	return ch, nil
 }
 
-// Unclaim marks channel with specified id as unclaimed
+// Unclaim marks channel with specified id as unclaimed.
 func (m *Mux) Unclaim(id protocol.StreamID) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -111,7 +143,7 @@ func (m *Mux) Unclaim(id protocol.StreamID) {
 	delete(m.dataWaiters, id)
 }
 
-// SendData sends data to channel with specific id
+// SendData sends data to channel with specific id.
 func (m *Mux) SendData(id protocol.StreamID, data ServerResponse) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
