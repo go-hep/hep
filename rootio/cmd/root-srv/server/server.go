@@ -18,7 +18,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/satori/go.uuid"
+	"github.com/pborman/uuid"
 	"go-hep.org/x/hep/rootio"
 )
 
@@ -110,13 +110,9 @@ func (srv *server) setCookie(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 
-	id, err := uuid.NewV4()
-	if err != nil {
-		return err
-	}
 	cookie = &http.Cookie{
 		Name:    cookieName,
-		Value:   id.String(),
+		Value:   uuid.NewRandom().String(),
 		Expires: time.Now().Add(24 * time.Hour),
 	}
 	srv.sessions[cookie.Value] = newDbFiles()
