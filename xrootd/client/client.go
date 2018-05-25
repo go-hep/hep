@@ -139,25 +139,27 @@ func (client *Client) send(ctx context.Context, responseChannel mux.DataRecvChan
 		return nil, err
 	}
 
-	more := true
-	var resp mux.ServerResponse
 	var data []byte
 
-	for more {
+	for {
 		select {
-		case resp, more = <-responseChannel:
-			data = append(data, resp.Data...)
+		case resp, more := <-responseChannel:
+			if !more {
+				return data, nil
+			}
+
 			if resp.Err != nil {
 				return nil, resp.Err
 			}
+
+			data = append(data, resp.Data...)
 		case <-ctx.Done():
 			if err := ctx.Err(); err != nil {
 				return nil, err
 			}
 		}
 	}
-
-	return data, nil
+	panic("unreachable")
 }
 
 func (client *Client) call(ctx context.Context, requestID uint16, request interface{}) ([]byte, error) {
