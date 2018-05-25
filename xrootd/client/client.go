@@ -28,7 +28,7 @@ import (
 	"net"
 
 	"go-hep.org/x/hep/xrootd/encoder"
-	"go-hep.org/x/hep/xrootd/mux"
+	"go-hep.org/x/hep/xrootd/internal/mux"
 	"go-hep.org/x/hep/xrootd/protocol"
 )
 

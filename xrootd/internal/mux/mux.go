@@ -34,7 +34,7 @@ Example of usage:
 	// Fetch response.
 	response := <-channel
 */
-package mux // import "go-hep.org/x/hep/xrootd/mux"
+package mux // import "go-hep.org/x/hep/xrootd/internal/mux"
 
 import (
 	"math"

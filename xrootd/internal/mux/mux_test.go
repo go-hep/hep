@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package mux // import "go-hep.org/x/hep/xrootd/mux"
+package mux // import "go-hep.org/x/hep/xrootd/internal/mux"
 
 import (
 	"reflect"
