@@ -50,6 +50,16 @@ type ResponseHeader struct {
 	DataLength int32
 }
 
+// RequestHeaderLength is the length of the RequestHeader in bytes.
+const RequestHeaderLength = 2 + 2
+
+// ResponseHeader is the header that precedes all requests (we are interested in StreamID and RequestID, actual request
+// parameters are a part of specific request).
+type RequestHeader struct {
+	StreamID  StreamID
+	RequestID uint16
+}
+
 // Error returns an error received from the server or nil if request hasn't failed.
 func (hdr ResponseHeader) Error(data []byte) error {
 	if hdr.Status == Error {
@@ -64,3 +74,14 @@ func (hdr ResponseHeader) Error(data []byte) error {
 	}
 	return nil
 }
+
+// ServerType is the general server type kept for compatibility
+// with 2.0 protocol version (see xrootd protocol specification v3.1.0, p. 5).
+type ServerType int32
+
+const (
+	// LoadBalancingServer indicates whether this is a load-balancing server.
+	LoadBalancingServer ServerType = iota
+	// DataServer indicates whether this is a data server.
+	DataServer
+)
