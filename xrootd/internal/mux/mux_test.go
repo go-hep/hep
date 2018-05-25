@@ -33,6 +33,10 @@ func TestMux_Claim(t *testing.T) {
 
 		claimedIds[id] = true
 	}
+
+	for id := range claimedIds {
+		m.Unclaim(id)
+	}
 }
 
 func TestMux_Claim_AfterUnclaim(t *testing.T) {
@@ -61,13 +65,18 @@ func TestMux_Claim_AfterUnclaim(t *testing.T) {
 	if !reflect.DeepEqual(gotID, wantID) {
 		t.Fatalf("invalid claim\ngot = %v\nwant = %v", gotID, wantID)
 	}
+
+	for id := range claimedIds {
+		m.Unclaim(id)
+	}
 }
 
 func TestMux_ClaimWithID_WhenIDIsFree(t *testing.T) {
 	m := New()
 	defer m.Close()
 
-	channel, err := m.ClaimWithID(protocol.StreamID{13, 14})
+	streamID := protocol.StreamID{13, 14}
+	channel, err := m.ClaimWithID(streamID)
 
 	if err != nil {
 		t.Fatalf("could not Claim streamID: %v", err)
@@ -76,18 +85,23 @@ func TestMux_ClaimWithID_WhenIDIsFree(t *testing.T) {
 	if channel == nil {
 		t.Fatal("channel should not be nil")
 	}
+
+	m.Unclaim(streamID)
 }
 
 func TestMux_ClaimWithID_WhenIDIsTakenByClaimWithID(t *testing.T) {
 	m := New()
 	defer m.Close()
-	m.ClaimWithID(protocol.StreamID{13, 14})
+	streamID := protocol.StreamID{13, 14}
+	m.ClaimWithID(streamID)
 
-	_, err := m.ClaimWithID(protocol.StreamID{13, 14})
+	_, err := m.ClaimWithID(streamID)
 
 	if err == nil {
 		t.Fatal("should not be able to ClaimWithID when that id is already claimed")
 	}
+
+	m.Unclaim(streamID)
 }
 
 func TestMux_ClaimWithID_WhenIDIsTakenByClaim(t *testing.T) {
@@ -100,6 +114,8 @@ func TestMux_ClaimWithID_WhenIDIsTakenByClaim(t *testing.T) {
 	if err == nil {
 		t.Fatal("should not be able to ClaimWithID when that id is already claimed")
 	}
+
+	m.Unclaim(id)
 }
 
 func TestMux_Claim_WhenIDIsTakenByClaimWithID(t *testing.T) {
@@ -121,6 +137,9 @@ func TestMux_Claim_WhenIDIsTakenByClaimWithID(t *testing.T) {
 	if reflect.DeepEqual(id, takenID) {
 		t.Fatalf("invalid claim: id %v was already taken", takenID)
 	}
+
+	m.Unclaim(takenID)
+	m.Unclaim(id)
 }
 
 func TestMux_SendData_WhenIDIsTaken(t *testing.T) {
@@ -128,18 +147,22 @@ func TestMux_SendData_WhenIDIsTaken(t *testing.T) {
 	defer m.Close()
 	takenID := protocol.StreamID{0, 0}
 	want := ServerResponse{}
+	var got ServerResponse
 
 	channel, _ := m.ClaimWithID(takenID)
-	err := m.SendData(takenID, want)
+	go func() {
+		err := m.SendData(takenID, want)
+		if err != nil {
+			t.Fatalf("could not SendData: %v", err)
+		}
+	}()
 
-	if err != nil {
-		t.Fatalf("could not SendData: %v", err)
-	}
-
-	got := <-channel
+	got = <-channel
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid data\ngot = %v\nwant = %v", got, want)
 	}
+
+	m.Unclaim(takenID)
 }
 
 func TestMux_SendData_WhenIDIsNotTaken(t *testing.T) {
@@ -158,6 +181,30 @@ func TestMux_Close_WhenAlreadyClosed(t *testing.T) {
 	m := New()
 	m.Close()
 	m.Close()
+}
+
+func TestMux_Unclaim_WhenNotClaimed(t *testing.T) {
+	m := New()
+	defer m.Close()
+	m.Unclaim(protocol.StreamID{0, 0})
+}
+
+func TestMux_Claim_WhenClosed(t *testing.T) {
+	m := New()
+	m.Close()
+	_, _, err := m.Claim()
+	if err == nil {
+		t.Fatal("should not be able to Claim when mux is closed")
+	}
+}
+
+func TestMux_ClaimWithID_WhenClosed(t *testing.T) {
+	m := New()
+	m.Close()
+	_, err := m.ClaimWithID(protocol.StreamID{0, 0})
+	if err == nil {
+		t.Fatal("should not be able to ClaimWithID when mux is closed")
+	}
 }
 
 func BenchmarkMux_Claim(b *testing.B) {

@@ -87,6 +87,7 @@ func New() *Mux {
 			case m.freeIDs <- i:
 				i = (i + 1) % streamIDPoolSize
 			case <-m.quit:
+				close(m.freeIDs)
 				return
 			}
 		}
@@ -105,6 +106,12 @@ func (m *Mux) Close() {
 	m.closed = true
 	m.mu.Unlock()
 	close(m.quit)
+
+	response := ServerResponse{Err: errors.New("xrootd: close was called before response was fully received")}
+	for streamID := range m.dataWaiters {
+		m.SendData(streamID, response)
+		m.Unclaim(streamID)
+	}
 }
 
 // Claim searches for unclaimed id and returns corresponding channel.
@@ -116,6 +123,10 @@ func (m *Mux) Claim() (protocol.StreamID, DataRecvChan, error) {
 		streamId := protocol.StreamID{byte(id >> 8), byte(id)}
 
 		m.mu.Lock()
+		if m.closed {
+			m.mu.Unlock()
+			return protocol.StreamID{}, nil, errors.New("mux: Claim was called on closed Mux")
+		}
 		if _, claimed := m.dataWaiters[streamId]; claimed { // Skip id if it was already claimed manually via ClaimWithID
 			m.mu.Unlock()
 			continue
@@ -131,6 +142,9 @@ func (m *Mux) Claim() (protocol.StreamID, DataRecvChan, error) {
 func (m *Mux) ClaimWithID(id protocol.StreamID) (DataRecvChan, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	if m.closed {
+		return nil, errors.New("mux: ClaimWithID was called on closed Mux")
+	}
 	ch := make(chan ServerResponse, 1)
 
 	if _, claimed := m.dataWaiters[id]; claimed {
@@ -147,8 +161,10 @@ func (m *Mux) Unclaim(id protocol.StreamID) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	close(m.dataWaiters[id])
-	delete(m.dataWaiters, id)
+	if _, ok := m.dataWaiters[id]; ok {
+		close(m.dataWaiters[id])
+		delete(m.dataWaiters, id)
+	}
 }
 
 // SendData sends data to channel with specific id.
