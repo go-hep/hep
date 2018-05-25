@@ -6,22 +6,13 @@
 // for handshake request (see XRootD specification).
 package handshake // import "go-hep.org/x/hep/xrootd/protocol/handshake"
 
-// ServerType is the general server type kept for compatibility
-// with 2.0 protocol version (see xrootd protocol specification v3.1.0, p. 5).
-type ServerType int32
-
-const (
-	// LoadBalancingServer indicates whether this is a load-balancing server.
-	LoadBalancingServer ServerType = iota
-	// DataServer indicates whether this is a data server.
-	DataServer ServerType = iota
-)
+import "go-hep.org/x/hep/xrootd/protocol"
 
 // Response is a response for the handshake request,
 // which contains protocol version and server type.
 type Response struct {
 	ProtocolVersion int32
-	ServerType      ServerType
+	ServerType      protocol.ServerType
 }
 
 // Request holds the handshake request parameters.

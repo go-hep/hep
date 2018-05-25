@@ -35,10 +35,11 @@ import (
 // Concurrent requests are supported.
 // Zero value is invalid, Client should be instantiated using NewClient.
 type Client struct {
-	cancel          context.CancelFunc
-	conn            net.Conn
-	mux             *mux.Mux
-	protocolVersion int32
+	cancel           context.CancelFunc
+	conn             net.Conn
+	mux              *mux.Mux
+	protocolVersion  int32
+	signRequirements protocol.SignRequirements
 }
 
 // NewClient creates a new xrootd client that connects to the given address.
@@ -54,7 +55,7 @@ func NewClient(ctx context.Context, address string) (*Client, error) {
 		return nil, err
 	}
 
-	client := &Client{cancel, conn, mux.New(), 0}
+	client := &Client{cancel: cancel, conn: conn, mux: mux.New()}
 
 	go client.consume(ctx)
 
@@ -62,6 +63,14 @@ func NewClient(ctx context.Context, address string) (*Client, error) {
 		client.Close()
 		return nil, err
 	}
+
+	protocolInfo, err := client.Protocol(ctx)
+	if err != nil {
+		client.Close()
+		return nil, err
+	}
+
+	client.signRequirements = protocol.NewSignRequirements(protocolInfo.SecurityLevel, protocolInfo.SecurityOverrides)
 
 	return client, nil
 }
