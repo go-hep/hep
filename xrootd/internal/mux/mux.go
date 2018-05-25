@@ -145,7 +145,7 @@ func (m *Mux) ClaimWithID(id protocol.StreamID) (DataRecvChan, error) {
 	if m.closed {
 		return nil, errors.New("mux: ClaimWithID was called on closed Mux")
 	}
-	ch := make(chan ServerResponse, 1)
+	ch := make(chan ServerResponse)
 
 	if _, claimed := m.dataWaiters[id]; claimed {
 		return nil, errors.Errorf("mux: channel with id %s is already claimed", id)
