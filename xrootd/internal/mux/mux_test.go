@@ -154,6 +154,12 @@ func TestMux_SendData_WhenIDIsNotTaken(t *testing.T) {
 	}
 }
 
+func TestMux_Close_WhenAlreadyClosed(t *testing.T) {
+	m := New()
+	m.Close()
+	m.Close()
+}
+
 func BenchmarkMux_Claim(b *testing.B) {
 	m := New()
 	defer m.Close()
