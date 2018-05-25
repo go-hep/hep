@@ -67,6 +67,7 @@ type Mux struct {
 	dataWaiters map[protocol.StreamID]dataSendChan
 	freeIDs     chan uint16
 	quit        chan struct{}
+	closed      bool
 }
 
 // New creates a new Mux.
@@ -96,6 +97,13 @@ func New() *Mux {
 
 // Close closes the Mux.
 func (m *Mux) Close() {
+	m.mu.Lock()
+	if m.closed {
+		m.mu.Unlock()
+		return
+	}
+	m.closed = true
+	m.mu.Unlock()
 	close(m.quit)
 }
 
