@@ -7,7 +7,6 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 import (
 	"context"
 
-	"go-hep.org/x/hep/xrootd/encoder"
 	"go-hep.org/x/hep/xrootd/protocol"
 	"go-hep.org/x/hep/xrootd/protocol/handshake"
 )
@@ -18,7 +17,7 @@ func (client *Client) handshake(ctx context.Context) error {
 		return err
 	}
 
-	requestBytes, err := encoder.Marshal(handshake.NewRequest())
+	requestBytes, err := protocol.Marshal(handshake.NewRequest())
 	if err != nil {
 		return err
 	}
@@ -29,7 +28,7 @@ func (client *Client) handshake(ctx context.Context) error {
 	}
 
 	var result handshake.Response
-	if err = encoder.Unmarshal(resp, &result); err != nil {
+	if err = protocol.Unmarshal(resp, &result); err != nil {
 		return err
 	}
 

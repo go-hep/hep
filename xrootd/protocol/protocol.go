@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package protocol contains the XRootD protocol specific types.
+// Package protocol contains the XRootD protocol specific types
+// and methods to handle them, such as marshalling and unmarshalling requests.
 package protocol // import "go-hep.org/x/hep/xrootd/protocol"
 
 import (

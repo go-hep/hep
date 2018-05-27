@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package encoder // import "go-hep.org/x/hep/xrootd/encoder"
+package protocol // import "go-hep.org/x/hep/xrootd/protocol"
 
 import (
 	"reflect"
 	"testing"
-
-	"go-hep.org/x/hep/xrootd/protocol"
 )
 
 type request struct {
@@ -49,7 +47,7 @@ type undecodable struct {
 
 func TestMarshalRequest(t *testing.T) {
 	var requestID uint16 = 1337
-	var streamID = protocol.StreamID{42, 37}
+	var streamID = StreamID{42, 37}
 	want := []byte{42, 37, 5, 57, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 1, 2, 0, 3, 6, 7, 11, 13}
 
 	got, err := MarshalRequest(requestID, streamID, request{7, 1, 2, 3, [2]byte{6, 7}, []byte{11, 13}})
@@ -80,7 +78,7 @@ func TestUnmarshal(t *testing.T) {
 
 func TestMarshalRequest_Undecodable(t *testing.T) {
 	var requestID uint16 = 1337
-	var streamID = protocol.StreamID{42, 37}
+	var streamID = StreamID{42, 37}
 
 	_, err := MarshalRequest(requestID, streamID, undecodable{1})
 
