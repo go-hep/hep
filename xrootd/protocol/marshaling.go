@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package encoder // import "go-hep.org/x/hep/xrootd/encoder"
+package protocol // import "go-hep.org/x/hep/xrootd/protocol"
 
 import (
 	"encoding/binary"
 	"reflect"
 
 	"github.com/pkg/errors"
-	"go-hep.org/x/hep/xrootd/protocol"
 )
 
 // MarshalRequest encodes request body alongside with request and stream ids.
-func MarshalRequest(requestID uint16, streamID protocol.StreamID, requestBody interface{}) ([]byte, error) {
+func MarshalRequest(requestID uint16, streamID StreamID, requestBody interface{}) ([]byte, error) {
 	requestHeader := make([]byte, 4)
 
 	copy(requestHeader, streamID[:])

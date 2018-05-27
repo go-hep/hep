@@ -27,7 +27,6 @@ import (
 	"io"
 	"net"
 
-	"go-hep.org/x/hep/xrootd/encoder"
 	"go-hep.org/x/hep/xrootd/internal/mux"
 	"go-hep.org/x/hep/xrootd/protocol"
 )
@@ -95,7 +94,7 @@ func (client *Client) consume(ctx context.Context) {
 				// TODO: handle EOF by redirection as specified at http://xrootd.org/doc/dev45/XRdv310.pdf, page 11
 			}
 
-			if err := encoder.Unmarshal(headerBytes, &header); err != nil {
+			if err := protocol.Unmarshal(headerBytes, &header); err != nil {
 				if ctx.Err() != nil {
 					// something happened to the context.
 					// ignore this error.
@@ -168,7 +167,7 @@ func (client *Client) call(ctx context.Context, requestID uint16, request interf
 		return nil, err
 	}
 
-	data, err := encoder.MarshalRequest(requestID, streamID, request)
+	data, err := protocol.MarshalRequest(requestID, streamID, request)
 	if err != nil {
 		return nil, err
 	}
