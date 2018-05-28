@@ -9,7 +9,7 @@ The NewClient function connects to a server:
 
 	ctx := context.Background()
 
-	client, err := NewClient(ctx, *Addr)
+	client, err := NewClient(ctx, addr, username)
 	if err != nil {
 		// handle error
 	}
@@ -42,10 +42,10 @@ type Client struct {
 	signRequirements protocol.SignRequirements
 }
 
-// NewClient creates a new xrootd client that connects to the given address.
+// NewClient creates a new xrootd client that connects to the given address using username.
 // When the context expires, a response handling is stopped, however, it is
 // necessary to call Cancel to correctly free resources.
-func NewClient(ctx context.Context, address string) (*Client, error) {
+func NewClient(ctx context.Context, address string, username string) (*Client, error) {
 	ctx, cancel := context.WithCancel(ctx)
 
 	var d net.Dialer
@@ -60,6 +60,13 @@ func NewClient(ctx context.Context, address string) (*Client, error) {
 	go client.consume(ctx)
 
 	if err := client.handshake(ctx); err != nil {
+		client.Close()
+		return nil, err
+	}
+
+	// TODO: parse security information from Login request and perform an Auth request if needed.
+	_, err = client.Login(ctx, username, "")
+	if err != nil {
 		client.Close()
 		return nil, err
 	}

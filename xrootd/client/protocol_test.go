@@ -21,7 +21,7 @@ func testClient_Protocol(t *testing.T, addr string) {
 		IsServer:              true,
 	}
 
-	client, err := NewClient(context.Background(), addr)
+	client, err := NewClient(context.Background(), addr, "gopher")
 	if err != nil {
 		t.Fatalf("could not create client: %v", err)
 	}
