@@ -26,7 +26,7 @@ func testNewClient(t *testing.T, addr string) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	client, err := NewClient(ctx, addr)
+	client, err := NewClient(ctx, addr, "gopher")
 	if err != nil {
 		t.Fatalf("could not create client: %v", err)
 	}
@@ -46,7 +46,7 @@ func BenchmarkNewClient(b *testing.B) {
 
 func benchmarkNewClient(b *testing.B, addr string) {
 	for i := 0; i < b.N; i++ {
-		client, err := NewClient(context.Background(), addr)
+		client, err := NewClient(context.Background(), addr, "gopher")
 		if err != nil {
 			b.Fatalf("could not create client: %v", err)
 		}
