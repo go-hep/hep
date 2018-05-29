@@ -24,10 +24,12 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 
 import (
 	"context"
+	"encoding/binary"
 	"io"
 	"net"
 
 	"go-hep.org/x/hep/xrootd/internal/mux"
+	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/protocol"
 )
 
@@ -149,6 +151,16 @@ func (client *Client) consume(ctx context.Context) {
 	}
 }
 
+// Send sends the request to the server and stores the response inside the resp.
+func (client *Client) Send(ctx context.Context, resp protocol.Response, req protocol.Request) error {
+	data, err := client.call(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	return resp.UnmarshalXrd(xrdenc.NewRBuffer(data))
+}
+
 func (client *Client) send(ctx context.Context, responseChannel mux.DataRecvChan, request []byte) ([]byte, error) {
 	if _, err := client.conn.Write(request); err != nil {
 		return nil, err
@@ -177,16 +189,20 @@ func (client *Client) send(ctx context.Context, responseChannel mux.DataRecvChan
 	panic("unreachable")
 }
 
-func (client *Client) call(ctx context.Context, requestID uint16, request interface{}) ([]byte, error) {
+func (client *Client) call(ctx context.Context, req protocol.Request) ([]byte, error) {
 	streamID, responseChannel, err := client.mux.Claim()
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := protocol.MarshalRequest(requestID, streamID, request)
-	if err != nil {
+	var wBuffer xrdenc.WBuffer
+	if err = req.MarshalXrd(&wBuffer); err != nil {
 		return nil, err
 	}
 
-	return client.send(ctx, responseChannel, data)
+	var hdr [4]byte
+	copy(hdr[:2], streamID[:])
+	binary.BigEndian.PutUint16(hdr[2:], req.ReqID())
+
+	return client.send(ctx, responseChannel, append(hdr[:], wBuffer.Bytes()...))
 }

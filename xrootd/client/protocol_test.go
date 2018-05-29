@@ -11,14 +11,13 @@ import (
 	"reflect"
 	"testing"
 
-	"go-hep.org/x/hep/xrootd/protocol"
+	"go-hep.org/x/hep/xrootd/protocol/protocol"
 )
 
 func testClient_Protocol(t *testing.T, addr string) {
-	var want = ProtocolInfo{
+	var want = protocol.Response{
 		BinaryProtocolVersion: 784,
-		ServerType:            protocol.DataServer,
-		IsServer:              true,
+		Flags: protocol.IsServer,
 	}
 
 	client, err := NewClient(context.Background(), addr, "gopher")

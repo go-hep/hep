@@ -17,6 +17,14 @@ import (
 func TestClient_Protocol_WithSecurityInfo(t *testing.T) {
 	var protocolVersion int32 = 0x310
 
+	var want = protocol.Response{
+		BinaryProtocolVersion: protocolVersion,
+		HasSecurityInfo:       true,
+		SecurityLevel:         xrdproto.Pedantic,
+		SecurityOverrides:     []xrdproto.SecurityOverride{{1, xrdproto.SignNeeded}},
+		Flags:                 protocol.IsServer | protocol.IsManager | protocol.IsMeta | protocol.IsProxy | protocol.IsSupervisor,
+	}
+
 	serverFunc := func(cancel func(), conn net.Conn) {
 		data, err := readRequest(conn)
 		if err != nil {
@@ -41,24 +49,12 @@ func TestClient_Protocol_WithSecurityInfo(t *testing.T) {
 			t.Fatalf("invalid client protocol version was specified:\nwant = %d\ngot = %d\n", protocolVersion, gotRequest.ClientProtocolVersion)
 		}
 
-		flags := protocol.IsManager | protocol.IsServer | protocol.IsMeta | protocol.IsProxy | protocol.IsSupervisor
-
 		responseHeader := xrdproto.ResponseHeader{
 			StreamID:   gotHeader.StreamID,
-			DataLength: protocol.GeneralResponseLength + protocol.SecurityInfoLength + protocol.SecurityOverrideLength,
+			DataLength: 14 + xrdproto.SecurityOverrideLength,
 		}
 
-		protocolResponse := protocol.GeneralResponse{protocolVersion, flags}
-
-		protocolSecurityInfo := protocol.SecurityInfo{
-			SecurityOptions:       protocol.None,
-			SecurityLevel:         protocol.Pedantic,
-			SecurityOverridesSize: 1,
-		}
-
-		securityOverride := protocol.SecurityOverride{1, protocol.SignNeeded}
-
-		response, err := marshalResponse(responseHeader, protocolResponse, protocolSecurityInfo, securityOverride)
+		response, err := marshalResponse(responseHeader, want)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not marshal response: %v", err)
@@ -68,18 +64,6 @@ func TestClient_Protocol_WithSecurityInfo(t *testing.T) {
 			cancel()
 			t.Fatalf("invalid write: %s", err)
 		}
-	}
-
-	var want = ProtocolInfo{
-		BinaryProtocolVersion: protocolVersion,
-		ServerType:            xrdproto.DataServer,
-		IsManager:             true,
-		IsServer:              true,
-		IsMeta:                true,
-		IsProxy:               true,
-		IsSupervisor:          true,
-		SecurityLevel:         protocol.Pedantic,
-		SecurityOverrides:     []protocol.SecurityOverride{{1, protocol.SignNeeded}},
 	}
 
 	clientFunc := func(cancel func(), client *Client) {
