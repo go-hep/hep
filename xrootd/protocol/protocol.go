@@ -9,6 +9,8 @@ package protocol // import "go-hep.org/x/hep/xrootd/protocol"
 import (
 	"encoding/binary"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -85,3 +87,63 @@ const (
 	// DataServer indicates whether this is a data server.
 	DataServer
 )
+
+// EntryStat holds the entry name and the entry stat information.
+type EntryStat struct {
+	Name          string // Name is the name of entry.
+	HasStatInfo   bool   // HasStatInfo indicates if the following stat information is valid.
+	Id            int64  // Id is the OS-dependent identifier assigned to this entry.
+	Size          uint64 // Size is the decimal size of the entry.
+	IsExecutable  bool   // IsExecutable indicates that entry is either an executable file or a searchable directory.
+	IsDir         bool   // IsDir indicates that entry is a directory.
+	IsOther       bool   // IsOther indicates that entry is neither a file nor a directory.
+	IsOffline     bool   // IsOffline indicates that the file is not online (i. e., on disk).
+	IsReadable    bool   // IsReadable indicates that read access to that entry is allowed.
+	IsWritable    bool   // IsWritable indicates that write access to that entry is allowed.
+	IsPoscPending bool   // IsPoscPending indicates that the file was created with kXR_posc and has not yet been successfully closed.
+	Mtime         int64  // Mtime is the last modification time in Unix time units.
+}
+
+// NewEntryStat creates a new EntryStat according to the name of the entry
+// and statinfo following XRootD protocol specification (see page 114).
+func NewEntryStat(name, statinfo string) (EntryStat, error) {
+	stats := strings.Split(statinfo, " ")
+
+	if len(stats) < 4 {
+		return EntryStat{}, errors.Errorf("xrootd: statinfo \"%s\" doesn't have enough fields, expected format is: \"id size flags modtime\"", statinfo)
+	}
+
+	id, err := strconv.Atoi(stats[0])
+	if err != nil {
+		return EntryStat{}, err
+	}
+	size, err := strconv.Atoi(stats[1])
+	if err != nil {
+		return EntryStat{}, err
+	}
+	flags, err := strconv.Atoi(stats[2])
+	if err != nil {
+		return EntryStat{}, err
+	}
+	mtime, err := strconv.Atoi(stats[3])
+	if err != nil {
+		return EntryStat{}, err
+	}
+
+	result := EntryStat{
+		Name:          name,
+		HasStatInfo:   true,
+		Id:            int64(id),
+		Size:          uint64(size),
+		Mtime:         int64(mtime),
+		IsExecutable:  flags&1 > 0,
+		IsDir:         flags&2 > 0,
+		IsOther:       flags&4 > 0,
+		IsOffline:     flags&8 > 0,
+		IsReadable:    flags&16 > 0,
+		IsWritable:    flags&32 > 0,
+		IsPoscPending: flags&64 > 0,
+	}
+
+	return result, nil
+}
