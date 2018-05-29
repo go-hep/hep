@@ -18,24 +18,26 @@ func TestClient_Protocol_WithSecurityInfo(t *testing.T) {
 	var protocolVersion int32 = 0x310
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		defer cancel()
-
 		data, err := readRequest(conn)
 		if err != nil {
+			cancel()
 			t.Fatalf("could not read request: %v", err)
 		}
 
 		var gotRequest protocol.Request
 		gotHeader, err := unmarshalRequest(data, &gotRequest)
 		if err != nil {
+			cancel()
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
 		if gotHeader.RequestID != protocol.RequestID {
+			cancel()
 			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", protocol.RequestID, gotHeader.RequestID)
 		}
 
 		if gotRequest.ClientProtocolVersion != protocolVersion {
+			cancel()
 			t.Fatalf("invalid client protocol version was specified:\nwant = %d\ngot = %d\n", protocolVersion, gotRequest.ClientProtocolVersion)
 		}
 
@@ -58,10 +60,12 @@ func TestClient_Protocol_WithSecurityInfo(t *testing.T) {
 
 		response, err := marshalResponse(responseHeader, protocolResponse, protocolSecurityInfo, securityOverride)
 		if err != nil {
+			cancel()
 			t.Fatalf("could not marshal response: %v", err)
 		}
 
 		if err := writeResponse(conn, response); err != nil {
+			cancel()
 			t.Fatalf("invalid write: %s", err)
 		}
 	}
