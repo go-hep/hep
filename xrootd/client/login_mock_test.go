@@ -31,30 +31,31 @@ func TestClient_Login_Mock(t *testing.T) {
 		Pid:          int32(os.Getpid()),
 		Username:     usernameBytes,
 		Capabilities: 4,
-		TokenLength:  int32(len(token)),
 		Token:        []byte(token),
 	}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		defer cancel()
-
 		data, err := readRequest(conn)
 		if err != nil {
+			cancel()
 			t.Fatalf("could not read request: %v", err)
 		}
 
 		var gotRequest login.Request
 		gotHeader, err := unmarshalRequest(data, &gotRequest)
 		if err != nil {
+			cancel()
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
 		if gotHeader.RequestID != login.RequestID {
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", login.RequestID, gotHeader.RequestID)
+			cancel()
+			t.Fatalf("invalid request id was specified:\ngot = %d\nwant = %d\n", gotHeader.RequestID, login.RequestID)
 		}
 
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
-			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
+			cancel()
+			t.Fatalf("request info does not match:\ngot = %v\nwant= %v", gotRequest, wantRequest)
 		}
 
 		responseHeader := protocol.ResponseHeader{
@@ -64,10 +65,12 @@ func TestClient_Login_Mock(t *testing.T) {
 
 		response, err := marshalResponse(responseHeader, want)
 		if err != nil {
+			cancel()
 			t.Fatalf("could not marshal response: %v", err)
 		}
 
 		if err := writeResponse(conn, response); err != nil {
+			cancel()
 			t.Fatalf("invalid write: %s", err)
 		}
 	}

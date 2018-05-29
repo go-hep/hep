@@ -7,9 +7,9 @@
 //
 // A response consists of 3 parts:
 //
-// 1) GeneralResponse - general response that is always returned and specifies protocol version and flags describing server type.
+// 1) A general response that is always returned and specifies protocol version and flags describing server type.
 //
-// 2) SecurityInfo - a response part that is added to the general response
+// 2) A response part that is added to the general response
 // if `ReturnSecurityRequirements` is provided and server supports it.
 // It contains the security version, the security options, the security level,
 // and the number of following security overrides, if any.
@@ -17,21 +17,16 @@
 // 3) A list of SecurityOverride - alterations needed to the specified predefined security level.
 package protocol // import "go-hep.org/x/hep/xrootd/protocol/protocol"
 
+import (
+	"go-hep.org/x/hep/xrootd/internal/xrdenc"
+	"go-hep.org/x/hep/xrootd/protocol"
+)
+
 // RequestID is the id of the request, it is sent as part of message.
 // See xrootd protocol specification for details: http://xrootd.org/doc/dev45/XRdv310.pdf, 2.3 Client Request Format.
 const RequestID uint16 = 3006
 
-// GeneralResponseLength is the length of GeneralResponse in bytes.
-const GeneralResponseLength = 8
-
-// General response is the response that is always returned from xrootd server.
-// It contains protocol version and flags that describe server type.
-type GeneralResponse struct {
-	BinaryProtocolVersion int32
-	Flags                 Flags
-}
-
-// Flags are the flags that define xrootd server type. See xrootd protocol specification for further info.
+// Flags are the Flags that define xrootd server type. See xrootd protocol specification for further info.
 type Flags int32
 
 const (
@@ -47,68 +42,10 @@ const (
 type SecurityOptions byte
 
 const (
-	// None specifies that no security options are provided.
-	None SecurityOptions = 0
 	// ForceSecurity specifies that signing is required even if the authentication
 	// protocol does not support generic encryption.
 	ForceSecurity SecurityOptions = 0x02
 )
-
-// SecurityInfoLength is the length of SecurityInfo in bytes.
-const SecurityInfoLength = 6
-
-// SecurityInfo is a response part that is provided when required (if server supports that).
-// It contains the security version, the security options, the security level,
-// and the number of following security overrides, if any.
-type SecurityInfo struct {
-	// FIXME: Rename Reserved* fields to _ when automatically generated (un)marshalling will be available.
-	Reserved1             byte
-	Reserved2             byte
-	SecurityVersion       byte
-	SecurityOptions       SecurityOptions
-	SecurityLevel         SecurityLevel
-	SecurityOverridesSize byte
-}
-
-// SecurityLevel is the predefined security level that specifies which requests should be signed.
-// See specification for details: http://xrootd.org/doc/dev45/XRdv310.pdf, p. 75.
-type SecurityLevel byte
-
-const (
-	// NoneLevel indicates that no request needs to be signed.
-	NoneLevel SecurityLevel = 0
-	// Compatible indicates that only potentially destructive requests need to be signed.
-	Compatible SecurityLevel = 1
-	// Standard indicates that potentially destructive requests
-	// as well as certain non-destructive requests need to be signed.
-	Standard SecurityLevel = 2
-	// Intense indicates that request that may reveal metadata or modify data need to be signed.
-	Intense SecurityLevel = 3
-	// Pedantic indicates that all requests need to be signed.
-	Pedantic SecurityLevel = 4
-)
-
-// RequestLevel is the security requirement that the associated request is to have.
-type RequestLevel byte
-
-const (
-	SignNone   RequestLevel = 0 // SignNone indicates that the request need not to be signed.
-	SignLikely RequestLevel = 1 // SignLikely indicates that the request must be signed if it modifies data.
-	SignNeeded RequestLevel = 2 // SignNeeded indicates that the request mush be signed.
-)
-
-// SecurityOverrideLength is the length of SecurityOverride in bytes.
-const SecurityOverrideLength = 2
-
-// SecurityOverride is an alteration needed to the specified predefined security level.
-// It consists of the request index and the security requirement the associated request should have.
-// Request index is calculated as:
-//     (request code) - (request code of Auth request)
-// according to xrootd protocol specification.
-type SecurityOverride struct {
-	RequestIndex byte
-	RequestLevel RequestLevel
-}
 
 // RequestOptions specifies what should be returned as part of response.
 type RequestOptions byte
@@ -125,16 +62,126 @@ const (
 type Request struct {
 	ClientProtocolVersion int32
 	Options               RequestOptions
-	// FIXME: Rename Reserved* fields to _ when automatically generated (un)marshalling will be available.
-	Reserved1 [11]byte
-	Reserved2 int32
+	_                     [11]byte
+	_                     int32
 }
 
 // NewRequest forms a Request according to provided parameters.
-func NewRequest(protocolVersion int32, withSecurityRequirements bool) Request {
+func NewRequest(protocolVersion int32, withSecurityRequirements bool) *Request {
 	var options = RequestOptionsNone
 	if withSecurityRequirements {
 		options |= ReturnSecurityRequirements
 	}
-	return Request{ClientProtocolVersion: protocolVersion, Options: options}
+	return &Request{ClientProtocolVersion: protocolVersion, Options: options}
 }
+
+// ReqID implements protocol.Request.ReqID
+func (req *Request) ReqID() uint16 { return RequestID }
+
+// MarshalXrd implements xrootd/protocol.Marshaler
+func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
+	wBuffer.WriteI32(o.ClientProtocolVersion)
+	wBuffer.WriteU8(byte(o.Options))
+	wBuffer.Next(15)
+	return nil
+}
+
+// UnmarshalXrd implements xrootd/protocol.Unmarshaler
+func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
+	o.ClientProtocolVersion = rBuffer.ReadI32()
+	o.Options = RequestOptions(rBuffer.ReadU8())
+	rBuffer.Skip(15)
+	return nil
+}
+
+// Response is a response for the `Protocol` request. See details in the xrootd protocol specification.
+type Response struct {
+	BinaryProtocolVersion int32
+	Flags                 Flags
+	HasSecurityInfo       bool
+	_                     byte
+	_                     byte
+	SecurityVersion       byte
+	SecurityOptions       SecurityOptions
+	SecurityLevel         protocol.SecurityLevel
+	SecurityOverrides     []protocol.SecurityOverride
+}
+
+// IsManager indicates whether this server has manager role.
+func (resp *Response) IsManager() bool {
+	return resp.Flags&IsManager != 0
+}
+
+// IsServer indicates whether this server has server role.
+func (resp *Response) IsServer() bool {
+	return resp.Flags&IsServer != 0
+}
+
+// IsMeta indicates whether this server has meta attribute.
+func (resp *Response) IsMeta() bool {
+	return resp.Flags&IsMeta != 0
+}
+
+// IsProxy indicates whether this server has proxy attribute.
+func (resp *Response) IsProxy() bool {
+	return resp.Flags&IsProxy != 0
+}
+
+// IsSupervisor indicates whether this server has supervisor attribute.
+func (resp *Response) IsSupervisor() bool {
+	return resp.Flags&IsSupervisor != 0
+}
+
+// ForceSecurity indicates whether signing is required even if the authentication
+// protocol does not support generic encryption.
+func (resp *Response) ForceSecurity() bool {
+	return resp.SecurityOptions&ForceSecurity != 0
+}
+
+// MarshalXrd implements xrootd/protocol.Marshaler
+func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
+	wBuffer.WriteI32(o.BinaryProtocolVersion)
+	wBuffer.WriteI32(int32(o.Flags))
+	if !o.HasSecurityInfo {
+		return nil
+	}
+	wBuffer.WriteU8('S')
+	wBuffer.Next(1)
+	wBuffer.WriteU8(o.SecurityVersion)
+	wBuffer.WriteU8(byte(o.SecurityOptions))
+	wBuffer.WriteU8(byte(o.SecurityLevel))
+	wBuffer.WriteU8(uint8(len(o.SecurityOverrides)))
+	for _, x := range o.SecurityOverrides {
+		err := x.MarshalXrd(wBuffer)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// UnmarshalXrd implements xrootd/protocol.Unmarshaler
+func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
+	o.BinaryProtocolVersion = rBuffer.ReadI32()
+	o.Flags = Flags(rBuffer.ReadI32())
+	if rBuffer.Len() == 0 {
+		return nil
+	}
+	o.HasSecurityInfo = true
+	rBuffer.Skip(1)
+	rBuffer.Skip(1)
+	o.SecurityVersion = rBuffer.ReadU8()
+	o.SecurityOptions = SecurityOptions(rBuffer.ReadU8())
+	o.SecurityLevel = protocol.SecurityLevel(rBuffer.ReadU8())
+	o.SecurityOverrides = make([]protocol.SecurityOverride, rBuffer.ReadU8())
+	for i := 0; i < len(o.SecurityOverrides); i++ {
+		err := o.SecurityOverrides[i].UnmarshalXrd(rBuffer)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// RespID implements protocol.Response.RespID
+func (resp *Response) RespID() uint16 { return RequestID }

@@ -11,6 +11,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
+	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 )
 
 // ResponseStatus is the status code indicating how the request completed.
@@ -48,6 +49,22 @@ type ResponseHeader struct {
 	StreamID   StreamID
 	Status     ResponseStatus
 	DataLength int32
+}
+
+// MarshalXrd implements xrootd/protocol.Marshaler
+func (o ResponseHeader) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
+	wBuffer.WriteBytes(o.StreamID[:])
+	wBuffer.WriteU16(uint16(o.Status))
+	wBuffer.WriteI32(o.DataLength)
+	return nil
+}
+
+// UnmarshalXrd implements xrootd/protocol.Unmarshaler
+func (o *ResponseHeader) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
+	rBuffer.ReadBytes(o.StreamID[:])
+	o.Status = ResponseStatus(rBuffer.ReadU16())
+	o.DataLength = rBuffer.ReadI32()
+	return nil
 }
 
 // RequestHeaderLength is the length of the RequestHeader in bytes.

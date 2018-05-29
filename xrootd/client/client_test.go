@@ -11,7 +11,9 @@ import (
 	"testing"
 )
 
-var testClientAddrs = []string{"0.0.0.0:9001"}
+func init() {
+	testClientAddrs = append(testClientAddrs, "0.0.0.0:9001")
+}
 
 func TestNewClient(t *testing.T) {
 	for _, addr := range testClientAddrs {
