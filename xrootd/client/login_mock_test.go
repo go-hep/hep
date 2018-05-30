@@ -7,12 +7,12 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 import (
 	"context"
 	"net"
+	"os"
 	"reflect"
 	"testing"
 
 	"go-hep.org/x/hep/xrootd/protocol"
 	"go-hep.org/x/hep/xrootd/protocol/login"
-	"os"
 )
 
 func TestClient_Login_Mock(t *testing.T) {
