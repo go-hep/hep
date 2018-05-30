@@ -11,13 +11,15 @@ import (
 	"github.com/pkg/errors"
 )
 
+type RequestID uint16
+
 type Marshaler interface {
-	ID() uint16
+	ID() RequestID
 	MarshalXrd() ([]byte, error)
 }
 
 type Unmarshaler interface {
-	ID() uint16
+	ID() RequestID
 	UnmarshalXrd(data []byte) error
 }
 
