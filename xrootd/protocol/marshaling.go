@@ -11,6 +11,16 @@ import (
 	"github.com/pkg/errors"
 )
 
+type Marshaler interface {
+	ID() uint16
+	MarshalXrd() ([]byte, error)
+}
+
+type Unmarshaler interface {
+	ID() uint16
+	UnmarshalXrd(data []byte) error
+}
+
 // MarshalRequest encodes request body alongside with request and stream ids.
 func MarshalRequest(requestID uint16, streamID StreamID, requestBody interface{}) ([]byte, error) {
 	requestHeader := make([]byte, 4)
@@ -32,6 +42,10 @@ func MarshalRequest(requestID uint16, streamID StreamID, requestBody interface{}
 // Slices and arrays of uint8 are binary copied without further encoding.
 // Supported types are: uint8, uint16, int32, int64, slices and arrays of uint8.
 func Marshal(x interface{}) ([]byte, error) {
+	if x, ok := x.(Marshaler); ok {
+		return x.MarshalXrd()
+	}
+
 	v := reflect.ValueOf(x)
 
 	v = reflect.Indirect(v)
@@ -87,6 +101,10 @@ func Marshal(x interface{}) ([]byte, error) {
 // Since the length of the slice is unknown, all bytes to the end of data is copied to it.
 // Supported types are: uint8, uint16, int32, int64, slices and arrays of uint8.
 func Unmarshal(data []byte, x interface{}) (err error) {
+	if x, ok := x.(Unmarshaler); ok {
+		return x.UnmarshalXrd(data)
+	}
+
 	v := reflect.ValueOf(x)
 
 	if v.Kind() != reflect.Ptr {
