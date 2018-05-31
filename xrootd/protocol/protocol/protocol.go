@@ -18,7 +18,7 @@
 package protocol // import "go-hep.org/x/hep/xrootd/protocol/protocol"
 
 import (
-	"encoding/binary"
+	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 )
 
 // RequestID is the id of the request, it is sent as part of message.
@@ -129,9 +129,8 @@ const (
 type Request struct {
 	ClientProtocolVersion int32
 	Options               RequestOptions
-	// FIXME: Rename Reserved* fields to _ when automatically generated (un)marshalling will be available.
-	Reserved1 [11]byte
-	Reserved2 int32
+	_                     [11]byte
+	_                     int32
 }
 
 // NewRequest forms a Request according to provided parameters.
@@ -147,26 +146,19 @@ func NewRequest(protocolVersion int32, withSecurityRequirements bool) *Request {
 func (req *Request) ReqID() uint16 { return RequestID }
 
 // MarshalXrd implements xrootd/protocol.Marshaler
-func (o *Request) MarshalXrd() (data []byte, err error) {
-	var buf [8]byte
-	binary.BigEndian.PutUint32(buf[:4], uint32(o.ClientProtocolVersion))
-	data = append(data, buf[:4]...)
-	data = append(data, byte(o.Options))
-	data = append(data, o.Reserved1[:]...)
-	binary.BigEndian.PutUint32(buf[:4], uint32(o.Reserved2))
-	data = append(data, buf[:4]...)
-	return data, err
+func (o *Request) MarshalXrd() ([]byte, error) {
+	var enc xrdenc.Encoder
+	enc.WriteI32(o.ClientProtocolVersion)
+	enc.WriteU8(byte(o.Options))
+	enc.WriteReserved(15)
+	return enc.Bytes(), nil
 }
 
 // UnmarshalXrd implements xrootd/protocol.Unmarshaler
-func (o *Request) UnmarshalXrd(data []byte) (err error) {
-	o.ClientProtocolVersion = int32(binary.BigEndian.Uint32(data[:4]))
-	data = data[4:]
-	o.Options = RequestOptions(data[0])
-	data = data[1:]
-	copy(o.Reserved1[:], data[:11])
-	data = data[11:]
-	o.Reserved2 = int32(binary.BigEndian.Uint32(data[:4]))
-	data = data[4:]
-	return err
+func (o *Request) UnmarshalXrd(data []byte) error {
+	dec := xrdenc.NewDecoder(data)
+	o.ClientProtocolVersion = dec.ReadI32()
+	o.Options = RequestOptions(dec.ReadU8())
+	dec.Skip(15)
+	return nil
 }

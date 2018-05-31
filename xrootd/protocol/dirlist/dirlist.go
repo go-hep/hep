@@ -6,6 +6,10 @@
 // for dirlist request used to obtain the contents of a directory.
 package dirlist // import "go-hep.org/x/hep/xrootd/protocol/dirlist"
 
+import (
+	"go-hep.org/x/hep/xrootd/internal/xrdenc"
+)
+
 // RequestID is the id of the request, it is sent as part of message.
 // See xrootd protocol specification for details: http://xrootd.org/doc/dev45/XRdv310.pdf, 2.3 Client Request Format.
 const RequestID uint16 = 3004
@@ -30,11 +34,9 @@ type Response struct {
 
 // Request holds the dirlist request parameters.
 type Request struct {
-	// FIXME: Rename Reserved field to _ when automatically generated (un)marshalling will be available.
-	Reserved   [15]byte
-	Options    RequestOptions
-	PathLength int32
-	Path       []byte
+	_       [15]byte
+	Options RequestOptions
+	Path    string
 }
 
 // RequestOptions specifies what should be returned as part of response.
@@ -46,9 +48,24 @@ const (
 )
 
 // NewRequest forms a Request according to provided path.
-func NewRequest(path string) Request {
-	var pathBytes = make([]byte, len(path))
-	copy(pathBytes, path)
+func NewRequest(path string) *Request {
+	return &Request{Options: WithStatInfo, Path: path}
+}
 
-	return Request{Options: WithStatInfo, PathLength: int32(len(path)), Path: pathBytes}
+func (req *Request) ReqID() uint16 { return RequestID }
+
+func (req *Request) MarshalXrd() ([]byte, error) {
+	var enc xrdenc.Encoder
+	enc.WriteReserved(15)
+	enc.WriteU8(byte(req.Options))
+	enc.WriteStr(req.Path)
+	return enc.Bytes(), nil
+}
+
+func (req *Request) UnmarshalXrd(data []byte) error {
+	dec := xrdenc.NewDecoder(data)
+	dec.Skip(15)
+	req.Options = RequestOptions(dec.ReadU8())
+	req.Path = dec.ReadStr()
+	return nil
 }

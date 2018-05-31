@@ -20,7 +20,7 @@ type Filesystem struct {
 
 // Dirlist returns the contents of a directory together with the stat information.
 func (fs *Filesystem) Dirlist(ctx context.Context, path string) ([]protocol.EntryStat, error) {
-	serverResponse, err := fs.c.call(ctx, dirlist.RequestID, dirlist.NewRequest(path))
+	serverResponse, err := fs.c.call(ctx, dirlist.NewRequest(path))
 	if err != nil {
 		return nil, err
 	}

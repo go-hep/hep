@@ -35,9 +35,8 @@ func TestFilesystem_Dirlist_Mock(t *testing.T) {
 	}
 
 	var wantRequest = dirlist.Request{
-		Options:    dirlist.WithStatInfo,
-		PathLength: int32(len(path)),
-		Path:       []byte(path),
+		Options: dirlist.WithStatInfo,
+		Path:    path,
 	}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
@@ -109,9 +108,8 @@ func TestFilesystem_Dirlist_Mock_WithoutStatInfo(t *testing.T) {
 	}
 
 	var wantRequest = dirlist.Request{
-		Options:    dirlist.WithStatInfo,
-		PathLength: int32(len(path)),
-		Path:       []byte(path),
+		Options: dirlist.WithStatInfo,
+		Path:    path,
 	}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
