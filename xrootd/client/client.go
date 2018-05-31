@@ -177,13 +177,13 @@ func (client *Client) send(ctx context.Context, responseChannel mux.DataRecvChan
 	panic("unreachable")
 }
 
-func (client *Client) call(ctx context.Context, requestID uint16, request interface{}) ([]byte, error) {
+func (client *Client) call(ctx context.Context, req protocol.Request) ([]byte, error) {
 	streamID, responseChannel, err := client.mux.Claim()
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := protocol.MarshalRequest(requestID, streamID, request)
+	data, err := protocol.MarshalRequest(req.ReqID(), streamID, req)
 	if err != nil {
 		return nil, err
 	}

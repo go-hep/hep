@@ -30,7 +30,7 @@ type ProtocolInfo struct {
 // the security version, the security options, the security level, and the list of alterations
 // needed to the specified predefined security level.
 func (client *Client) Protocol(ctx context.Context) (ProtocolInfo, error) {
-	resp, err := client.call(ctx, protocol.RequestID, protocol.NewRequest(client.protocolVersion, true))
+	resp, err := client.call(ctx, protocol.NewRequest(client.protocolVersion, true))
 	if err != nil {
 		return ProtocolInfo{}, err
 	}

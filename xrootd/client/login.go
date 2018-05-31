@@ -14,7 +14,7 @@ import (
 // Login initializes a server connection using username
 // and token which can be supplied by the previous redirection response.
 func (client *Client) Login(ctx context.Context, username string, token string) (login.Response, error) {
-	serverResponse, err := client.call(ctx, login.RequestID, login.NewRequest(username, token))
+	serverResponse, err := client.call(ctx, login.NewRequest(username, token))
 	if err != nil {
 		return login.Response{}, err
 	}

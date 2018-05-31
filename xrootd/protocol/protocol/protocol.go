@@ -131,10 +131,21 @@ type Request struct {
 }
 
 // NewRequest forms a Request according to provided parameters.
-func NewRequest(protocolVersion int32, withSecurityRequirements bool) Request {
+func NewRequest(protocolVersion int32, withSecurityRequirements bool) *Request {
 	var options = RequestOptionsNone
 	if withSecurityRequirements {
 		options |= ReturnSecurityRequirements
 	}
-	return Request{ClientProtocolVersion: protocolVersion, Options: options}
+	return &Request{ClientProtocolVersion: protocolVersion, Options: options}
+}
+
+// ReqID implements protocol.Request.ReqID
+func (req *Request) ReqID() uint16 { return RequestID }
+
+func (req *Request) MarshalXrd() ([]byte, error) {
+	panic("not implemented")
+}
+
+func (req *Request) UnmarshalXrd(data []byte) error {
+	panic("not implemented")
 }

@@ -45,15 +45,28 @@ type Request struct {
 const clientCapabilities byte = 4
 
 // NewRequest forms a Request according to provided parameters.
-func NewRequest(username, token string) Request {
+func NewRequest(username, token string) *Request {
 	var usernameBytes [8]byte
 	copy(usernameBytes[:], username)
 
-	return Request{
+	return &Request{
 		Pid:          int32(os.Getpid()),
 		Username:     usernameBytes,
 		Capabilities: clientCapabilities,
 		TokenLength:  int32(len(token)),
 		Token:        []byte(token),
 	}
+}
+
+// ReqID implements protocol.Request.ReqID
+func (req *Request) ReqID() uint16 { return RequestID }
+
+// MarshalXrd implements protocol.Marshaler
+func (req *Request) MarshalXrd() ([]byte, error) {
+	panic("not implemented")
+}
+
+// UnmarshalXrd implements protocol.Unmarshaler
+func (req *Request) UnmarshalXrd(data []byte) error {
+	panic("not implemented")
 }
