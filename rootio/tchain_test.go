@@ -82,10 +82,13 @@ func TestChain(t *testing.T) {
 	}
 }
 
-func TestChainScan(t *testing.T) {
+func TestChainScanStruct(t *testing.T) {
 	files := []string{
 		"testdata/chain.1.root",
-		//	"testdata/chain.2.root", // FIXME(sbinet): implement for >1 tree
+		"testdata/chain.2.root",
+	}
+	var total struct {
+		got, want int64
 	}
 	trees := make([]rootio.Tree, len(files))
 	for i, fname := range files {
@@ -101,6 +104,7 @@ func TestChainScan(t *testing.T) {
 		}
 
 		trees[i] = obj.(rootio.Tree)
+		total.want += trees[i].Entries()
 	}
 
 	chain := rootio.Chain(trees...)
@@ -166,8 +170,14 @@ func TestChainScan(t *testing.T) {
 		if !reflect.DeepEqual(d2, want(i)) {
 			t.Fatalf("entry[%d]:\ngot= %#v\nwant=%#v\n", i, d2, want(i))
 		}
+		total.got++
 	}
+
 	if err := sc.Err(); err != nil && err != io.EOF {
 		t.Fatal(err)
+	}
+
+	if total.got != total.want {
+		t.Fatalf("entries scanned differ: got=%d want=%d", total.got, total.want)
 	}
 }
