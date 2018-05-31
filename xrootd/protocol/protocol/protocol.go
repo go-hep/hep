@@ -17,6 +17,10 @@
 // 3) A list of SecurityOverride - alterations needed to the specified predefined security level.
 package protocol // import "go-hep.org/x/hep/xrootd/protocol/protocol"
 
+import (
+	"encoding/binary"
+)
+
 // RequestID is the id of the request, it is sent as part of message.
 // See xrootd protocol specification for details: http://xrootd.org/doc/dev45/XRdv310.pdf, 2.3 Client Request Format.
 const RequestID uint16 = 3006
@@ -142,10 +146,27 @@ func NewRequest(protocolVersion int32, withSecurityRequirements bool) *Request {
 // ReqID implements protocol.Request.ReqID
 func (req *Request) ReqID() uint16 { return RequestID }
 
-func (req *Request) MarshalXrd() ([]byte, error) {
-	panic("not implemented")
+// MarshalXrd implements xrootd/protocol.Marshaler
+func (o *Request) MarshalXrd() (data []byte, err error) {
+	var buf [8]byte
+	binary.BigEndian.PutUint32(buf[:4], uint32(o.ClientProtocolVersion))
+	data = append(data, buf[:4]...)
+	data = append(data, byte(o.Options))
+	data = append(data, o.Reserved1[:]...)
+	binary.BigEndian.PutUint32(buf[:4], uint32(o.Reserved2))
+	data = append(data, buf[:4]...)
+	return data, err
 }
 
-func (req *Request) UnmarshalXrd(data []byte) error {
-	panic("not implemented")
+// UnmarshalXrd implements xrootd/protocol.Unmarshaler
+func (o *Request) UnmarshalXrd(data []byte) (err error) {
+	o.ClientProtocolVersion = int32(binary.BigEndian.Uint32(data[:4]))
+	data = data[4:]
+	o.Options = RequestOptions(data[0])
+	data = data[1:]
+	copy(o.Reserved1[:], data[:11])
+	data = data[11:]
+	o.Reserved2 = int32(binary.BigEndian.Uint32(data[:4]))
+	data = data[4:]
+	return err
 }
