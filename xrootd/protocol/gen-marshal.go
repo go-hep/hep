@@ -195,54 +195,29 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 		}
 
 	case *types.Struct:
-		g.printf("{\nsub, err := %s.MarshalBinary()\n", n)
+		g.printf("{\nsub, err := %s.MarshalXrd()\n", n)
 		g.printf("if err != nil {\nreturn nil, err\n}\n")
-		g.printf("binary.BigEndian.PutUint64(buf[:8], uint64(len(sub)))\n")
-		g.printf("data = append(data, buf[:8]...)\n")
+		g.printf("binary.BigEndian.PutUint32(buf[:4], uint32(len(sub)))\n")
+		g.printf("data = append(data, buf[:4]...)\n")
 		g.printf("data = append(data, sub...)\n")
 		g.printf("}\n")
 
 	case *types.Array:
-		if isByteType(ut.Elem()) {
-			g.printf("data = append(data, %s[:]...)\n", n)
-		} else {
-			g.printf("for i := range %s {\n", n)
-			if _, ok := ut.Elem().(*types.Pointer); ok {
-				g.printf("o := %s[i]\n", n)
-			} else {
-				g.printf("o := &%s[i]\n", n)
-			}
-			g.genMarshalType(ut.Elem(), "o")
-			g.printf("}\n")
+		if !isByteType(ut.Elem()) {
+			log.Fatalf("marshal array of type %v not supported", ut)
 		}
+		g.printf("data = append(data, %s[:]...)\n", n)
 
 	case *types.Slice:
+		if !isByteType(ut.Elem()) {
+			log.Fatalf("marshal slice of type %v not supported", ut)
+		}
 		g.printf(
-			"binary.BigEndian.PutUint64(buf[:8], uint64(len(%s)))\n",
+			"binary.BigEndian.PutUint32(buf[:4], uint32(len(%s)))\n",
 			n,
 		)
-		g.printf("data = append(data, buf[:8]...)\n")
-		if isByteType(ut.Elem()) {
-			g.printf("data = append(data, %s...)\n", n)
-		} else {
-			g.printf("for i := range %s {\n", n)
-			if _, ok := ut.Elem().(*types.Pointer); ok {
-				g.printf("o := %s[i]\n", n)
-			} else {
-				g.printf("o := &%s[i]\n", n)
-			}
-			g.genMarshalType(ut.Elem(), "o")
-			g.printf("}\n")
-		}
-
-	case *types.Pointer:
-		g.printf("{\n")
-		g.printf("v := *%s\n", n)
-		g.genUnmarshalXrd(ut.Elem(), "v")
-		g.printf("}\n")
-
-	case *types.Interface:
-		log.Fatalf("marshal interface not supported (type=%v)\n", t)
+		g.printf("data = append(data, buf[:4]...)\n")
+		g.printf("data = append(data, %s...)\n", n)
 
 	default:
 		log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
@@ -334,64 +309,23 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 		g.printf("}\n")
 
 	case *types.Array:
-		if isByteType(ut.Elem()) {
-			g.printf("copy(%s[:], data[:%d])\n", n, ut.Len())
-			g.printf("data = data[%d:]\n", ut.Len())
-		} else {
-			g.printf("for i := range %s {\n", n)
-			nn := n + "[i]"
-			if pt, ok := ut.Elem().(*types.Pointer); ok {
-				g.printf("var oi %s\n", qualTypeName(pt.Elem(), g.pkg))
-				nn = "oi"
-			}
-			if _, ok := ut.Elem().Underlying().(*types.Struct); ok {
-				g.printf("oi := &%s[i]\n", n)
-				nn = "oi"
-			}
-			g.genUnmarshalType(ut.Elem(), nn)
-			if _, ok := ut.Elem().(*types.Pointer); ok {
-				g.printf("%s[i] = oi\n", n)
-			}
-			g.printf("}\n")
+		if !isByteType(ut.Elem()) {
+			log.Fatalf("unmarshal array of type %v not supported", ut)
 		}
+		g.printf("copy(%s[:], data[:%d])\n", n, ut.Len())
+		g.printf("data = data[%d:]\n", ut.Len())
 
 	case *types.Slice:
+		if !isByteType(ut.Elem()) {
+			log.Fatalf("unmarshal slice of type %v not supported", ut)
+		}
 		g.printf("{\n")
 		g.printf("n := int(binary.BigEndian.Uint32(data[:4]))\n")
 		g.printf("%[1]s = make([]%[2]s, n)\n", n, qualTypeName(ut.Elem(), g.pkg))
 		g.printf("data = data[4:]\n")
-		if isByteType(ut.Elem()) {
-			g.printf("%[1]s = append(%[1]s, data[:n]...)\n", n)
-			g.printf("data = data[n:]\n")
-		} else {
-			g.printf("for i := range %s {\n", n)
-			nn := n + "[i]"
-			if pt, ok := ut.Elem().(*types.Pointer); ok {
-				g.printf("var oi %s\n", qualTypeName(pt.Elem(), g.pkg))
-				nn = "oi"
-			}
-			if _, ok := ut.Elem().Underlying().(*types.Struct); ok {
-				g.printf("oi := &%s[i]\n", n)
-				nn = "oi"
-			}
-			g.genUnmarshalType(ut.Elem(), nn)
-			if _, ok := ut.Elem().(*types.Pointer); ok {
-				g.printf("%s[i] = oi\n", n)
-			}
-			g.printf("}\n")
-		}
+		g.printf("copy(%[1]s, data[:n])\n", n)
+		g.printf("data = data[n:]\n")
 		g.printf("}\n")
-
-	case *types.Pointer:
-		g.printf("{\n")
-		elt := ut.Elem()
-		g.printf("var v %s\n", qualTypeName(elt, g.pkg))
-		g.genUnmarshalXrd(elt, "v")
-		g.printf("%s = &v\n\n", n)
-		g.printf("}\n")
-
-	case *types.Interface:
-		log.Fatalf("marshal interface not supported (type=%v)\n", t)
 
 	default:
 		log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
