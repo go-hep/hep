@@ -7,7 +7,6 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 import (
 	"context"
 
-	"go-hep.org/x/hep/xrootd/protocol"
 	"go-hep.org/x/hep/xrootd/protocol/login"
 )
 
@@ -19,11 +18,11 @@ func (client *Client) Login(ctx context.Context, username string, token string) 
 		return login.Response{}, err
 	}
 
-	var response login.Response
-	err = protocol.Unmarshal(serverResponse, &response)
+	var resp login.Response
+	err = resp.UnmarshalXrd(serverResponse)
 	if err != nil {
 		return login.Response{}, err
 	}
 
-	return response, nil
+	return resp, nil
 }
