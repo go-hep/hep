@@ -5,7 +5,9 @@
 package rootio
 
 type tchain struct {
-	trees []Tree
+	trees []itree
+	cur   *itree
+	icur  int
 }
 
 // Class returns the ROOT class of the argument.
@@ -18,7 +20,7 @@ func (t tchain) Name() string {
 	if len(t.trees) == 0 {
 		return ""
 	}
-	return t.trees[0].Name()
+	return t.trees[0].tree.Name()
 }
 
 // Title returns the title of the ROOT object in the argument.
@@ -26,18 +28,32 @@ func (t tchain) Title() string {
 	if len(t.trees) == 0 {
 		return ""
 	}
-	return t.trees[0].Title()
+	return t.trees[0].tree.Title()
 }
 
 // Chain returns a tchain that is the concatenation of all the input Trees.
-func Chain(trees ...Tree) tchain {
-	if len(trees) == 0 {
-		return tchain{}
+func Chain(trees ...Tree) (*tchain, error) {
+	ch := &tchain{
+		trees: make([]itree, len(trees)),
+		icur:  -1,
 	}
-	var t tchain
-	t.trees = make([]Tree, len(trees))
-	copy(t.trees, trees)
-	return t
+	var sum int64
+	var offset int64
+	for i, ttree := range trees {
+		if len(ttree.Branches()) != len(trees[0].Branches()) {
+			return nil, errorf("Trees with different layouts")
+		}
+		t := trees[i]
+		n := t.Entries()
+		sum += n
+		ch.trees[i] = itree{tree: t, offset: offset, total: sum}
+		offset += n
+	}
+	if len(trees) > 0 {
+		ch.icur = 0
+		ch.cur = &ch.trees[ch.icur]
+	}
+	return ch, nil
 }
 
 // Entries returns the total number of entries.
@@ -53,7 +69,7 @@ func (t tchain) Entries() int64 {
 func (t tchain) TotBytes() int64 {
 	var v int64
 	for _, tree := range t.trees {
-		v += tree.TotBytes()
+		v += tree.tree.TotBytes()
 	}
 	return v
 }
@@ -62,7 +78,7 @@ func (t tchain) TotBytes() int64 {
 func (t tchain) ZipBytes() int64 {
 	var v int64
 	for _, tree := range t.trees {
-		v += tree.ZipBytes()
+		v += tree.tree.ZipBytes()
 	}
 	return v
 
@@ -73,7 +89,7 @@ func (t tchain) Branches() []Branch {
 	if len(t.trees) == 0 {
 		return nil
 	}
-	return t.trees[0].Branches()
+	return t.trees[0].tree.Branches()
 }
 
 // Branch returns the branch whose name is the argument.
@@ -81,7 +97,7 @@ func (t tchain) Branch(name string) Branch {
 	if len(t.trees) == 0 {
 		return nil
 	}
-	return t.trees[0].Branch(name)
+	return t.trees[0].tree.Branch(name)
 }
 
 // Leaves returns direct pointers to individual branch leaves.
@@ -89,7 +105,7 @@ func (t tchain) Leaves() []Leaf {
 	if len(t.trees) == 0 {
 		return nil
 	}
-	return t.trees[0].Leaves()
+	return t.trees[0].tree.Leaves()
 }
 
 // getFile returns the underlying file.
@@ -97,7 +113,7 @@ func (t tchain) getFile() *File {
 	if len(t.trees) == 0 {
 		return nil
 	}
-	return t.trees[0].getFile()
+	return t.trees[0].tree.getFile()
 }
 
 // loadEntry returns an error if there is a problem during the loading.
@@ -105,7 +121,27 @@ func (t tchain) loadEntry(i int64) error {
 	if len(t.trees) == 0 {
 		return nil
 	}
-	return t.trees[0].loadEntry(i)
+	//return t.trees[0].loadEntry(i)
+	if i >= t.cur.Entries() {
+		t.icur++
+		t.cur = &t.trees[t.icur]
+	}
+	return t.cur.loadEntry(i)
+}
+
+type itree struct {
+	tree   Tree
+	offset int64
+	total  int64
+}
+
+func (t itree) Entries() int64 {
+	return t.tree.Entries()
+}
+
+func (t *itree) loadEntry(i int64) error {
+	j := i - t.offset
+	return t.tree.loadEntry(j)
 }
 
 var (

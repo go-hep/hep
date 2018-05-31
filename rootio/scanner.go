@@ -10,7 +10,7 @@ import (
 )
 
 type baseScanner struct {
-	tree Tree
+	tree itree
 	i    int64 // number of entries iterated over
 	n    int64 // number of entries to iterate over
 	cur  int64 // current entry index
@@ -30,9 +30,6 @@ func (s *baseScanner) Close() error {
 		return nil
 	}
 	s.closed = true
-	s.tree = nil
-	s.mbr = nil
-	s.ibr = nil
 	return nil
 }
 
@@ -77,10 +74,11 @@ type scanField struct {
 
 // TreeScanner scans, selects and iterates over Tree entries.
 type TreeScanner struct {
-	scan baseScanner
-
-	typ reflect.Type  // type bound to this scanner (a struct, a map, a slice of types)
-	ptr reflect.Value // pointer to value bound to this scanner
+	scan []baseScanner
+	cur  baseScanner
+	typ  reflect.Type  // type bound to this scanner (a struct, a map, a slice of types)
+	ptr  reflect.Value // pointer to value bound to this scanner
+	i    int64         // index of current baseScanner
 }
 
 // NewTreeScanner creates a new Scanner connecting the pointer to some
@@ -94,6 +92,9 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 		return nil, errorf("rootio: NewTreeScanner expects a pointer to a struct (got: %T)", ptr)
 	}
 	rv := reflect.New(rt).Elem()
+	if len(t.Branches()) == 0 {
+		return nil, errorf("rootio: no trees\n")
+	}
 	for i := 0; i < rt.NumField(); i++ {
 		f := rt.Field(i)
 		name := f.Tag.Get("rootio")
@@ -120,19 +121,41 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 		mbr = append(mbr, br)
 		ibr = append(ibr, scanField{br: br, i: i})
 	}
+	switch tt := t.(type) {
+	case *tchain:
+		m := len(tt.trees)
+		bs := make([]baseScanner, m)
+		for j := range bs {
+			bs[j].tree = tt.trees[j]
+			bs[j].i = 0
+			bs[j].n = tt.trees[j].Entries()
+			bs[j].cur = -1
+			bs[j].err = nil
+			bs[j].ibr = ibr
+			bs[j].mbr = mbr
+			bs[j].cbr = cbr
+		}
+		return &TreeScanner{
+			scan: bs,
+			cur:  bs[0],
+			typ:  rt,
+			ptr:  rv.Addr(),
+		}, nil
+	}
+	bs := make([]baseScanner, 1)
+	bs[0].tree.tree = t
+	bs[0].i = 0
+	bs[0].n = t.Entries()
+	bs[0].cur = -1
+	bs[0].err = nil
+	bs[0].ibr = ibr
+	bs[0].mbr = mbr
+	bs[0].cbr = cbr
 	return &TreeScanner{
-		scan: baseScanner{
-			tree: t,
-			i:    0,
-			n:    t.Entries(),
-			cur:  -1,
-			err:  nil,
-			ibr:  ibr,
-			mbr:  mbr,
-			cbr:  cbr,
-		},
-		typ: rt,
-		ptr: rv.Addr(),
+		scan: bs,
+		cur:  bs[0],
+		typ:  rt,
+		ptr:  rv.Addr(),
 	}, nil
 }
 
@@ -150,7 +173,6 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 	if len(vars) <= 0 {
 		return nil, errorf("rootio: NewTreeScannerVars expects at least one branch name")
 	}
-
 	mbr := make([]Branch, len(vars))
 	ibr := make([]scanField, cap(mbr))
 	cbr := make([]Branch, 0)
@@ -170,54 +192,75 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 			cbr = append(cbr, lbr)
 		}
 	}
+	switch tt := t.(type) {
+	case *tchain:
+		m := len(tt.trees)
+		bs := make([]baseScanner, m)
+		for j := range bs {
+			bs[j].tree = tt.trees[j]
+			bs[j].i = 0
+			bs[j].n = tt.trees[j].Entries()
+			bs[j].cur = -1
+			bs[j].err = nil
+			bs[j].ibr = ibr
+			bs[j].mbr = mbr
+			bs[j].cbr = cbr
+		}
+		return &TreeScanner{
+			scan: bs,
+			cur:  bs[0],
+			typ:  nil,
+		}, nil
+	}
+	bs := make([]baseScanner, 1)
+	bs[0].tree.tree = t
+	bs[0].i = 0
+	bs[0].n = t.Entries()
+	bs[0].cur = -1
+	bs[0].err = nil
+	bs[0].ibr = ibr
+	bs[0].mbr = mbr
+	bs[0].cbr = cbr
 	return &TreeScanner{
-		scan: baseScanner{
-			tree: t,
-			i:    0,
-			n:    t.Entries(),
-			cur:  -1,
-			err:  nil,
-			ibr:  ibr,
-			mbr:  mbr,
-			cbr:  cbr,
-		},
-		typ: nil,
+		scan: bs,
+		cur:  bs[0],
+		typ:  nil,
 	}, nil
 }
 
 // Close closes the TreeScanner, preventing further iteration.
 // Close is idempotent and does not affect the result of Err.
 func (s *TreeScanner) Close() error {
-	return s.scan.Close()
+	return s.cur.Close()
 }
 
 // Err returns the error, if any, that was encountered during iteration.
 func (s *TreeScanner) Err() error {
-	return s.scan.Err()
+	return s.cur.Err()
 }
 
 // Entry returns the entry number of the last read row.
 func (s *TreeScanner) Entry() int64 {
-	return s.scan.Entry()
+	return s.cur.Entry()
 }
 
 // SeekEntry points the scanner to the i-th entry, ready to call Next.
 func (s *TreeScanner) SeekEntry(i int64) error {
-	return s.scan.SeekEntry(i)
+	return s.cur.SeekEntry(i)
 }
 
 // Next prepares the next result row for reading with the Scan method.
 // It returns true on success, false if there is no next result row.
 // Every call to Scan, even the first one, must be preceded by a call to Next.
 func (s *TreeScanner) Next() bool {
-	return s.scan.Next()
+	return s.cur.Next()
 }
 
 // Scan copies data loaded from the underlying Tree into the values pointed at by args.
 func (s *TreeScanner) Scan(args ...interface{}) (err error) {
 	defer func(err error) {
-		if err != nil && s.scan.err == nil {
-			s.scan.err = err
+		if err != nil && s.cur.err == nil {
+			s.cur.err = err
 		}
 	}(err)
 
@@ -248,10 +291,9 @@ func (s *TreeScanner) scanMap(data map[string]interface{}) error {
 
 func (s *TreeScanner) scanArgs(args ...interface{}) error {
 	var err error
-
 	// load leaf count data
-	for _, br := range s.scan.cbr {
-		err = br.loadEntry(s.scan.cur)
+	for _, br := range s.cur.cbr {
+		err = br.loadEntry(s.cur.cur - s.cur.tree.offset)
 		if err != nil {
 			// FIXME(sbinet): properly decorate error
 			return err
@@ -260,8 +302,8 @@ func (s *TreeScanner) scanArgs(args ...interface{}) error {
 
 	for i, ptr := range args {
 		fv := reflect.ValueOf(ptr).Elem()
-		br := s.scan.ibr[i]
-		err = br.br.loadEntry(s.scan.cur)
+		br := s.cur.ibr[i]
+		err = br.br.loadEntry(s.cur.cur - s.cur.tree.offset)
 		if err != nil {
 			// FIXME(sbinet): properly decorate error
 			return err
@@ -276,13 +318,12 @@ func (s *TreeScanner) scanArgs(args ...interface{}) error {
 
 func (s *TreeScanner) scanStruct(data interface{}) error {
 	var err error
-
 	// load leaf count data
-	for _, br := range s.scan.cbr {
-		s.scan.err = br.loadEntry(s.scan.cur)
-		if s.scan.err != nil {
+	for _, br := range s.cur.cbr {
+		s.cur.err = br.loadEntry(s.cur.cur - s.cur.tree.offset)
+		if s.cur.err != nil {
 			// FIXME(sbinet): properly decorate error
-			return s.scan.err
+			return s.cur.err
 		}
 	}
 
@@ -291,9 +332,10 @@ func (s *TreeScanner) scanStruct(data interface{}) error {
 	if rt != s.typ {
 		return errorf("rootio: Scanner.Scan: types do not match (got: %T, want: %T)", rv.Interface(), reflect.New(s.typ).Elem().Interface())
 	}
-	for _, br := range s.scan.ibr {
+
+	for _, br := range s.cur.ibr {
 		fv := rv.Field(br.i)
-		err = br.br.loadEntry(s.scan.cur)
+		err = br.br.loadEntry(s.cur.cur - s.cur.tree.offset)
 		if err != nil {
 			// FIXME(sbinet): properly decorate error
 			return err
@@ -310,7 +352,8 @@ func (s *TreeScanner) scanStruct(data interface{}) error {
 // Scanner is bound to values the user provides, Scanner will
 // then read data into these values during the tree scan.
 type Scanner struct {
-	scan baseScanner
+	scan []baseScanner
+	cur  *baseScanner
 	args []interface{} // a slice of pointers to read data into
 }
 
@@ -320,7 +363,6 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 	if len(vars) <= 0 {
 		return nil, errorf("rootio: NewScannerVars expects at least one branch name")
 	}
-
 	mbr := make([]Branch, len(vars))
 	ibr := make([]scanField, cap(mbr))
 	cbr := make([]Branch, 0)
@@ -357,18 +399,38 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 		}
 		args[i] = arg
 	}
-
+	switch tt := t.(type) {
+	case *tchain:
+		m := len(tt.trees)
+		bs := make([]baseScanner, m)
+		for j := range bs {
+			bs[j].tree = tt.trees[j]
+			bs[j].i = 0
+			bs[j].n = tt.trees[j].Entries()
+			bs[j].cur = -1
+			bs[j].err = nil
+			bs[j].ibr = ibr
+			bs[j].mbr = mbr
+			bs[j].cbr = cbr
+		}
+		return &Scanner{
+			scan: bs,
+			cur:  &bs[0],
+			args: args,
+		}, nil
+	}
+	bs := make([]baseScanner, 1)
+	bs[0].tree.tree = t
+	bs[0].i = 0
+	bs[0].n = t.Entries()
+	bs[0].cur = -1
+	bs[0].err = nil
+	bs[0].ibr = ibr
+	bs[0].mbr = mbr
+	bs[0].cbr = cbr
 	return &Scanner{
-		scan: baseScanner{
-			tree: t,
-			i:    0,
-			n:    t.Entries(),
-			cur:  -1,
-			err:  nil,
-			ibr:  ibr,
-			mbr:  mbr,
-			cbr:  cbr,
-		},
+		scan: bs,
+		cur:  &bs[0],
 		args: args,
 	}, nil
 }
@@ -412,18 +474,38 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 		}
 		args = append(args, fptr)
 	}
-
+	switch tt := t.(type) {
+	case *tchain:
+		m := len(tt.trees)
+		bs := make([]baseScanner, m)
+		for j := range bs {
+			bs[j].tree = tt.trees[j]
+			bs[j].i = 0
+			bs[j].n = tt.trees[j].Entries()
+			bs[j].cur = -1
+			bs[j].err = nil
+			bs[j].ibr = ibr
+			bs[j].mbr = mbr
+			bs[j].cbr = cbr
+		}
+		return &Scanner{
+			scan: bs,
+			cur:  &bs[0],
+			args: args,
+		}, nil
+	}
+	bs := make([]baseScanner, 1)
+	bs[0].tree.tree = t
+	bs[0].i = 0
+	bs[0].n = t.Entries()
+	bs[0].cur = -1
+	bs[0].err = nil
+	bs[0].ibr = ibr
+	bs[0].mbr = mbr
+	bs[0].cbr = cbr
 	return &Scanner{
-		scan: baseScanner{
-			tree: t,
-			i:    0,
-			n:    t.Entries(),
-			cur:  -1,
-			err:  nil,
-			ibr:  ibr,
-			mbr:  mbr,
-			cbr:  cbr,
-		},
+		scan: bs,
+		cur:  &bs[0],
 		args: args,
 	}, nil
 }
@@ -431,58 +513,58 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 // Close closes the Scanner, preventing further iteration.
 // Close is idempotent and does not affect the result of Err.
 func (s *Scanner) Close() error {
-	return s.scan.Close()
+	return s.cur.Close()
 }
 
 // Err returns the error, if any, that was encountered during iteration.
 func (s *Scanner) Err() error {
-	return s.scan.Err()
+	return s.cur.Err()
 }
 
 // Entry returns the entry number of the last read row.
 func (s *Scanner) Entry() int64 {
-	return s.scan.Entry()
+	return s.cur.Entry()
 }
 
 // SeekEntry points the scanner to the i-th entry, ready to call Next.
 func (s *Scanner) SeekEntry(i int64) error {
-	return s.scan.SeekEntry(i)
+	return s.cur.SeekEntry(i)
 }
 
 // Next prepares the next result row for reading with the Scan method.
 // It returns true on success, false if there is no next result row.
 // Every call to Scan, even the first one, must be preceded by a call to Next.
 func (s *Scanner) Next() bool {
-	return s.scan.Next()
+	return s.cur.Next()
 }
 
 // Scan copies data loaded from the underlying Tree into the values the Scanner is bound to.
 // The values bound to the Scanner are valid until the next call to Scan.
 func (s *Scanner) Scan() error {
-	if s.scan.err != nil {
-		return s.scan.err
+	if s.cur.err != nil {
+		return s.cur.err
 	}
 
 	// load leaf count data
-	for _, br := range s.scan.cbr {
-		s.scan.err = br.loadEntry(s.scan.cur)
-		if s.scan.err != nil {
+	for _, br := range s.cur.cbr {
+		s.cur.err = br.loadEntry(s.cur.cur - s.cur.tree.offset)
+		if s.cur.err != nil {
 			// FIXME(sbinet): properly decorate error
-			return s.scan.err
+			return s.cur.err
 		}
 	}
 
 	for i, ptr := range s.args {
-		br := s.scan.ibr[i]
-		s.scan.err = br.br.loadEntry(s.scan.cur)
-		if s.scan.err != nil {
+		br := s.cur.ibr[i]
+		s.cur.err = br.br.loadEntry(s.cur.cur - s.cur.tree.offset)
+		if s.cur.err != nil {
 			// FIXME(sbinet): properly decorate error
-			return s.scan.err
+			return s.cur.err
 		}
-		s.scan.err = br.br.scan(ptr)
-		if s.scan.err != nil {
-			return s.scan.err
+		s.cur.err = br.br.scan(ptr)
+		if s.cur.err != nil {
+			return s.cur.err
 		}
 	}
-	return s.scan.err
+	return s.cur.err
 }
