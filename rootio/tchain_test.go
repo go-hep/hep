@@ -85,7 +85,7 @@ func TestChain(t *testing.T) {
 func TestChainScan(t *testing.T) {
 	files := []string{
 		"testdata/chain.1.root",
-		//	"testdata/chain.2.root", // FIXME(sbinet): implement for >1 tree
+		"testdata/chain.2.root", // FIXME(sbinet): implement for >1 tree
 	}
 
 	trees := make([]rootio.Tree, len(files))
@@ -173,23 +173,70 @@ func TestChainScan(t *testing.T) {
 	}
 }
 
-func BenchmarkReadBranch(b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		f, err := rootio.Open("testdata/chain.1.root")
+var SumF64 float64 // global variable to prevent unwanted compiler optimization
+
+func BenchmarkChainTreeScannerStruct(b *testing.B) {
+	files := []string{
+		"testdata/chain.1.root",
+		"testdata/chain.2.root",
+		"testdata/chain.1.root",
+		"testdata/chain.2.root",
+	}
+
+	trees := make([]rootio.Tree, len(files))
+	for i, fname := range files {
+		f, err := rootio.Open(fname)
 		if err != nil {
-			panic(err)
+			b.Fatalf("could not open ROOT file %q: %v", fname, err)
+		}
+		defer f.Close()
+
+		obj, err := f.Get("tree")
+		if err != nil {
+			b.Fatal(err)
 		}
 
-		b := make([]byte, 1)
+		trees[i] = obj.(rootio.Tree)
+	}
+	chain := rootio.Chain(trees...)
 
-		_, err = f.Read(b)
-		for err == nil {
-			_, err = f.Read(b)
-		}
-		if err != io.EOF {
-			panic(err)
-		}
+	type Data struct {
+		Event struct {
+			Beg       string      `rootio:"Beg"`
+			F64       float64     `rootio:"F64"`
+			ArrF64    [10]float64 `rootio:"ArrayF64"`
+			N         int32       `rootio:"N"`
+			SliF64    []float64   `rootio:"SliceF64"`
+			StdStr    string      `rootio:"StdStr"`
+			StlVecF64 []float64   `rootio:"StlVecF64"`
+			StlVecStr []string    `rootio:"StlVecStr"`
+			End       string      `rootio:"End"`
+		} `rootio:"evt"`
+	}
 
-		f.Close()
+	sc, err := rootio.NewTreeScanner(chain, &Data{})
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer sc.Close()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		err := sc.SeekEntry(0)
+		if err != nil {
+			b.Fatal(err)
+		}
+		for sc.Next() {
+			var data Data
+			err := sc.Scan(&data)
+			if err != nil {
+				b.Fatal(err)
+			}
+			SumF64 += data.Event.F64
+		}
+	}
+
+	if err := sc.Err(); err != nil && err != io.EOF {
+		b.Fatal(err)
 	}
 }
