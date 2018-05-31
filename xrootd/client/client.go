@@ -24,6 +24,7 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 
 import (
 	"context"
+	"encoding/binary"
 	"io"
 	"net"
 
@@ -183,10 +184,14 @@ func (client *Client) call(ctx context.Context, req protocol.Request) ([]byte, e
 		return nil, err
 	}
 
-	data, err := protocol.MarshalRequest(req.ReqID(), streamID, req)
+	raw, err := req.MarshalXrd()
 	if err != nil {
 		return nil, err
 	}
 
-	return client.send(ctx, responseChannel, data)
+	var hdr [4]byte
+	copy(hdr[:2], streamID[:])
+	binary.BigEndian.PutUint16(hdr[2:], req.ReqID())
+
+	return client.send(ctx, responseChannel, append(hdr[:], raw...))
 }
