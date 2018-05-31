@@ -116,3 +116,7 @@ func (dec *Decoder) ReadStr() string {
 func (dec *Decoder) Skip(n int) {
 	dec.pos += n
 }
+
+func (dec *Decoder) Bytes() []byte {
+	return dec.buf[dec.pos:]
+}
