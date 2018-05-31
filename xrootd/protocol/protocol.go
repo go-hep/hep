@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 )
 
 // ResponseStatus is the status code indicating how the request completed.
@@ -50,6 +51,14 @@ type ResponseHeader struct {
 	StreamID   StreamID
 	Status     ResponseStatus
 	DataLength int32
+}
+
+func (hdr ResponseHeader) MarshalXrd() ([]byte, error) {
+	var enc xrdenc.Encoder
+	enc.WriteBytes(hdr.StreamID[:])
+	enc.WriteU16(uint16(hdr.Status))
+	enc.WriteI32(hdr.DataLength)
+	return enc.Bytes(), nil
 }
 
 // RequestHeaderLength is the length of the RequestHeader in bytes.

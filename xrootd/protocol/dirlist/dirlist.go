@@ -32,6 +32,10 @@ type Response struct {
 	Data []byte
 }
 
+func (resp Response) MarshalXrd() ([]byte, error) {
+	return resp.Data, nil
+}
+
 // Request holds the dirlist request parameters.
 type Request struct {
 	_       [15]byte

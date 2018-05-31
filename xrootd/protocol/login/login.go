@@ -31,6 +31,20 @@ type Response struct {
 	SecurityInformation []byte
 }
 
+func (resp *Response) MarshalXrd() ([]byte, error) {
+	var enc xrdenc.Encoder
+	enc.WriteBytes(resp.SessionID[:])
+	enc.WriteBytes(resp.SecurityInformation)
+	return enc.Bytes(), nil
+}
+
+func (resp *Response) UnmarshalXrd(data []byte) error {
+	dec := xrdenc.NewDecoder(data)
+	dec.ReadBytes(resp.SessionID[:])
+	resp.SecurityInformation = append(resp.SecurityInformation, dec.Bytes()...)
+	return nil
+}
+
 // Request holds the login request parameters.
 type Request struct {
 	Pid          int32   // Pid is the process number associated with this connection.
