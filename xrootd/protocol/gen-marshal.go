@@ -335,8 +335,8 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 
 	case *types.Array:
 		if isByteType(ut.Elem()) {
-			g.printf("copy(%s[:], data[:n])\n", n)
-			g.printf("data = data[n:]\n")
+			g.printf("copy(%s[:], data[:%d])\n", n, ut.Len())
+			g.printf("data = data[%d:]\n", ut.Len())
 		} else {
 			g.printf("for i := range %s {\n", n)
 			nn := n + "[i]"
