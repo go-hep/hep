@@ -31,7 +31,6 @@ func TestClient_Login_Mock(t *testing.T) {
 		Pid:          int32(os.Getpid()),
 		Username:     usernameBytes,
 		Capabilities: 4,
-		TokenLength:  int32(len(token)),
 		Token:        []byte(token),
 	}
 
@@ -50,11 +49,11 @@ func TestClient_Login_Mock(t *testing.T) {
 		}
 
 		if gotHeader.RequestID != login.RequestID {
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", login.RequestID, gotHeader.RequestID)
+			t.Fatalf("invalid request id was specified:\ngot = %d\nwant = %d\n", gotHeader.RequestID, login.RequestID)
 		}
 
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
-			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
+			t.Fatalf("request info does not match:\ngot = %v\nwant= %v", gotRequest, wantRequest)
 		}
 
 		responseHeader := protocol.ResponseHeader{

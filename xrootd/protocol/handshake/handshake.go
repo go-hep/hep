@@ -6,7 +6,10 @@
 // for handshake request (see XRootD specification).
 package handshake // import "go-hep.org/x/hep/xrootd/protocol/handshake"
 
-import "go-hep.org/x/hep/xrootd/protocol"
+import (
+	"go-hep.org/x/hep/xrootd/internal/xrdenc"
+	"go-hep.org/x/hep/xrootd/protocol"
+)
 
 // Response is a response for the handshake request,
 // which contains protocol version and server type.
@@ -27,4 +30,14 @@ type Request struct {
 // NewRequest forms a Request that comply with the XRootD protocol v3.1.0.
 func NewRequest() Request {
 	return Request{0, 0, 0, 4, 2012}
+}
+
+func (req *Request) MarshalXrd() ([]byte, error) {
+	var enc xrdenc.Encoder
+	enc.WriteI32(req.Reserved1)
+	enc.WriteI32(req.Reserved2)
+	enc.WriteI32(req.Reserved3)
+	enc.WriteI32(req.Reserved4)
+	enc.WriteI32(req.Reserved5)
+	return enc.Bytes(), nil
 }

@@ -5,6 +5,7 @@
 package protocol // import "go-hep.org/x/hep/xrootd/protocol"
 
 import (
+	"go-hep.org/x/hep/xrootd/protocol/dirlist"
 	"go-hep.org/x/hep/xrootd/protocol/protocol"
 )
 
@@ -50,6 +51,7 @@ func NewSignRequirements(level protocol.SecurityLevel, overrides []protocol.Secu
 	}
 	if level >= protocol.Pedantic {
 		// TODO: set requirements
+		sr.requirements[dirlist.RequestID] = protocol.SignNeeded
 	}
 
 	for _, override := range overrides {

@@ -17,6 +17,10 @@
 // 3) A list of SecurityOverride - alterations needed to the specified predefined security level.
 package protocol // import "go-hep.org/x/hep/xrootd/protocol/protocol"
 
+import (
+	"go-hep.org/x/hep/xrootd/internal/xrdenc"
+)
+
 // RequestID is the id of the request, it is sent as part of message.
 // See xrootd protocol specification for details: http://xrootd.org/doc/dev45/XRdv310.pdf, 2.3 Client Request Format.
 const RequestID uint16 = 3006
@@ -125,16 +129,36 @@ const (
 type Request struct {
 	ClientProtocolVersion int32
 	Options               RequestOptions
-	// FIXME: Rename Reserved* fields to _ when automatically generated (un)marshalling will be available.
-	Reserved1 [11]byte
-	Reserved2 int32
+	_                     [11]byte
+	_                     int32
 }
 
 // NewRequest forms a Request according to provided parameters.
-func NewRequest(protocolVersion int32, withSecurityRequirements bool) Request {
+func NewRequest(protocolVersion int32, withSecurityRequirements bool) *Request {
 	var options = RequestOptionsNone
 	if withSecurityRequirements {
 		options |= ReturnSecurityRequirements
 	}
-	return Request{ClientProtocolVersion: protocolVersion, Options: options}
+	return &Request{ClientProtocolVersion: protocolVersion, Options: options}
+}
+
+// ReqID implements protocol.Request.ReqID
+func (req *Request) ReqID() uint16 { return RequestID }
+
+// MarshalXrd implements xrootd/protocol.Marshaler
+func (o *Request) MarshalXrd() ([]byte, error) {
+	var enc xrdenc.Encoder
+	enc.WriteI32(o.ClientProtocolVersion)
+	enc.WriteU8(byte(o.Options))
+	enc.WriteReserved(15)
+	return enc.Bytes(), nil
+}
+
+// UnmarshalXrd implements xrootd/protocol.Unmarshaler
+func (o *Request) UnmarshalXrd(data []byte) error {
+	dec := xrdenc.NewDecoder(data)
+	o.ClientProtocolVersion = dec.ReadI32()
+	o.Options = RequestOptions(dec.ReadU8())
+	dec.Skip(15)
+	return nil
 }

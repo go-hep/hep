@@ -15,6 +15,8 @@ import (
 	"go-hep.org/x/hep/xrootd/protocol"
 )
 
+var testClientAddrs []string
+
 func testClientWithMockServer(serverFunc func(cancel func(), conn net.Conn), clientFunc func(cancel func(), client *Client)) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

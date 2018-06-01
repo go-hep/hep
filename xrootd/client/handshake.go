@@ -17,12 +17,13 @@ func (client *Client) handshake(ctx context.Context) error {
 		return err
 	}
 
-	requestBytes, err := protocol.Marshal(handshake.NewRequest())
+	req := handshake.NewRequest()
+	raw, err := req.MarshalXrd()
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.send(ctx, responseChannel, requestBytes)
+	resp, err := client.send(ctx, responseChannel, raw)
 	if err != nil {
 		return err
 	}
