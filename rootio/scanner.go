@@ -64,8 +64,20 @@ func (s *baseScanner) Next() bool {
 		return false
 	}
 	next := s.i < s.n
+	fmt.Printf("%v ; %v ; %v ; %v\n", s.i, s.cur, next, s.n)
 	s.cur++
 	s.i++
+
+	switch t := s.tree.(type) {
+	case *tchain:
+
+		if s.cur >= t.tree.total {
+			t.cur++
+			t.tree = &t.trees[t.cur]
+			s.tree = t.trees[t.cur].tree
+		}
+		fmt.Printf("t.cur=%d total=%v offset=%v (s.cur=%d)\n", t.cur, t.tree.total, t.tree.offset, s.cur)
+	}
 	return next
 }
 
@@ -134,6 +146,7 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 		typ: rt,
 		ptr: rv.Addr(),
 	}, nil
+
 }
 
 // ScanVar describes a variable to be read out of a tree during a scan.
