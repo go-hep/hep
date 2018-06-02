@@ -7,7 +7,7 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 import (
 	"context"
 
-	"go-hep.org/x/hep/xrootd/protocol/protocol"
+	"go-hep.org/x/hep/xrootd/xrdproto/protocol"
 )
 
 // Protocol obtains the protocol version number, type of the server and security information, such as:

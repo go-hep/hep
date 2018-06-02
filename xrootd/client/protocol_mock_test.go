@@ -10,8 +10,8 @@ import (
 	"reflect"
 	"testing"
 
-	xrdproto "go-hep.org/x/hep/xrootd/protocol"
-	"go-hep.org/x/hep/xrootd/protocol/protocol"
+	"go-hep.org/x/hep/xrootd/xrdproto"
+	"go-hep.org/x/hep/xrootd/xrdproto/protocol"
 )
 
 func TestClient_Protocol_WithSecurityInfo(t *testing.T) {

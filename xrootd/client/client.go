@@ -30,7 +30,7 @@ import (
 
 	"go-hep.org/x/hep/xrootd/internal/mux"
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
-	"go-hep.org/x/hep/xrootd/protocol"
+	"go-hep.org/x/hep/xrootd/xrdproto"
 )
 
 // A Client to xrootd server which allows to send requests and receive responses.
@@ -41,7 +41,7 @@ type Client struct {
 	conn             net.Conn
 	mux              *mux.Mux
 	protocolVersion  int32
-	signRequirements protocol.SignRequirements
+	signRequirements xrdproto.SignRequirements
 }
 
 // NewClient creates a new xrootd client that connects to the given address using username.
@@ -79,7 +79,7 @@ func NewClient(ctx context.Context, address string, username string) (*Client, e
 		return nil, err
 	}
 
-	client.signRequirements = protocol.NewSignRequirements(protocolInfo.SecurityLevel, protocolInfo.SecurityOverrides)
+	client.signRequirements = xrdproto.NewSignRequirements(protocolInfo.SecurityLevel, protocolInfo.SecurityOverrides)
 
 	return client, nil
 }
@@ -93,8 +93,8 @@ func (client *Client) Close() error {
 }
 
 func (client *Client) consume(ctx context.Context) {
-	var header protocol.ResponseHeader
-	var headerBytes = make([]byte, protocol.ResponseHeaderLength)
+	var header xrdproto.ResponseHeader
+	var headerBytes = make([]byte, xrdproto.ResponseHeaderLength)
 
 	for {
 		select {
@@ -112,7 +112,7 @@ func (client *Client) consume(ctx context.Context) {
 				// TODO: handle EOF by redirection as specified at http://xrootd.org/doc/dev45/XRdv310.pdf, page 11
 			}
 
-			if err := protocol.Unmarshal(headerBytes, &header); err != nil {
+			if err := xrdproto.Unmarshal(headerBytes, &header); err != nil {
 				if ctx.Err() != nil {
 					// something happened to the context.
 					// ignore this error.
@@ -130,7 +130,7 @@ func (client *Client) consume(ctx context.Context) {
 					continue
 				}
 				resp.Err = err
-			} else if header.Status != protocol.Ok {
+			} else if header.Status != xrdproto.Ok {
 				resp.Err = header.Error(resp.Data)
 			}
 
@@ -144,7 +144,7 @@ func (client *Client) consume(ctx context.Context) {
 				// TODO: should we just ignore responses to unclaimed stream IDs?
 			}
 
-			if header.Status != protocol.OkSoFar {
+			if header.Status != xrdproto.OkSoFar {
 				client.mux.Unclaim(header.StreamID)
 			}
 		}
@@ -152,7 +152,7 @@ func (client *Client) consume(ctx context.Context) {
 }
 
 // Send sends the request to the server and stores the response inside the resp.
-func (client *Client) Send(ctx context.Context, resp protocol.Response, req protocol.Request) error {
+func (client *Client) Send(ctx context.Context, resp xrdproto.Response, req xrdproto.Request) error {
 	data, err := client.call(ctx, req)
 	if err != nil {
 		return err
@@ -189,7 +189,7 @@ func (client *Client) send(ctx context.Context, responseChannel mux.DataRecvChan
 	panic("unreachable")
 }
 
-func (client *Client) call(ctx context.Context, req protocol.Request) ([]byte, error) {
+func (client *Client) call(ctx context.Context, req xrdproto.Request) ([]byte, error) {
 	streamID, responseChannel, err := client.mux.Claim()
 	if err != nil {
 		return nil, err

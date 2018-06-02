@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd/internal/mux"
-	"go-hep.org/x/hep/xrootd/protocol"
+	"go-hep.org/x/hep/xrootd/xrdproto"
 )
 
 var testClientAddrs []string
@@ -25,7 +25,7 @@ func testClientWithMockServer(serverFunc func(cancel func(), conn net.Conn), cli
 	defer server.Close()
 	defer conn.Close()
 
-	client := &Client{cancel: cancel, conn: conn, mux: mux.New(), signRequirements: protocol.DefaultSignRequirements()}
+	client := &Client{cancel: cancel, conn: conn, mux: mux.New(), signRequirements: xrdproto.DefaultSignRequirements()}
 	defer client.Close()
 
 	go serverFunc(func() { client.Close() }, server)
@@ -36,13 +36,13 @@ func testClientWithMockServer(serverFunc func(cancel func(), conn net.Conn), cli
 
 func readRequest(conn net.Conn) ([]byte, error) {
 	// 16 is for the request options and 4 is for the data length
-	const requestSize = protocol.RequestHeaderLength + 16 + 4
+	const requestSize = xrdproto.RequestHeaderLength + 16 + 4
 	var request = make([]byte, requestSize)
 	if _, err := io.ReadFull(conn, request); err != nil {
 		return nil, err
 	}
 
-	dataLength := binary.BigEndian.Uint32(request[protocol.RequestHeaderLength+16:])
+	dataLength := binary.BigEndian.Uint32(request[xrdproto.RequestHeaderLength+16:])
 	if dataLength == 0 {
 		return request, nil
 	}
@@ -70,7 +70,7 @@ func writeResponse(conn net.Conn, data []byte) error {
 func marshalResponse(responseParts ...interface{}) ([]byte, error) {
 	var data []byte
 	for _, p := range responseParts {
-		pData, err := protocol.Marshal(p)
+		pData, err := xrdproto.Marshal(p)
 		if err != nil {
 			return nil, err
 		}
@@ -80,13 +80,13 @@ func marshalResponse(responseParts ...interface{}) ([]byte, error) {
 }
 
 // TODO: move unmarshalRequest outside of main_mock_test.go and use it for server implementation.
-func unmarshalRequest(data []byte, request interface{}) (protocol.RequestHeader, error) {
-	var header protocol.RequestHeader
-	if err := protocol.Unmarshal(data[:protocol.RequestHeaderLength], &header); err != nil {
-		return protocol.RequestHeader{}, err
+func unmarshalRequest(data []byte, request interface{}) (xrdproto.RequestHeader, error) {
+	var header xrdproto.RequestHeader
+	if err := xrdproto.Unmarshal(data[:xrdproto.RequestHeaderLength], &header); err != nil {
+		return xrdproto.RequestHeader{}, err
 	}
-	if err := protocol.Unmarshal(data[protocol.RequestHeaderLength:], request); err != nil {
-		return protocol.RequestHeader{}, err
+	if err := xrdproto.Unmarshal(data[xrdproto.RequestHeaderLength:], request); err != nil {
+		return xrdproto.RequestHeader{}, err
 	}
 
 	return header, nil

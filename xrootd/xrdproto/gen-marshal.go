@@ -107,7 +107,7 @@ func (g *Generator) Generate(typeName string) {
 }
 
 func (g *Generator) genMarshalXrd(t types.Type, typeName string) {
-	g.printf(`// MarshalXrd implements xrootd/protocol.Marshaler
+	g.printf(`// MarshalXrd implements xrdproto.Marshaler
 func (o %[1]s) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 `,
 		typeName,
@@ -204,7 +204,7 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 }
 
 func (g *Generator) genUnmarshalXrd(t types.Type, typeName string) {
-	g.printf(`// UnmarshalXrd implements xrootd/protocol.Unmarshaler
+	g.printf(`// UnmarshalXrd implements xrdproto.Unmarshaler
 func (o *%[1]s) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 `,
 		typeName,

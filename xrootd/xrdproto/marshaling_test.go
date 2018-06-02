@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package protocol // import "go-hep.org/x/hep/xrootd/protocol"
+package xrdproto // import "go-hep.org/x/hep/xrootd/xrdproto"
 
 import (
 	"reflect"

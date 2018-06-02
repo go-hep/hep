@@ -41,7 +41,7 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
-	"go-hep.org/x/hep/xrootd/protocol"
+	"go-hep.org/x/hep/xrootd/xrdproto"
 )
 
 // ServerResponse contains slice of bytes Data representing data from
@@ -64,7 +64,7 @@ const streamIDPoolSize = streamIDPartSize * streamIDPartSize
 // with methods to claim, free and pass data to a specific channel by id.
 type Mux struct {
 	mu          sync.Mutex
-	dataWaiters map[protocol.StreamID]dataSendChan
+	dataWaiters map[xrdproto.StreamID]dataSendChan
 	freeIDs     chan uint16
 	quit        chan struct{}
 	closed      bool
@@ -75,7 +75,7 @@ func New() *Mux {
 	const freeIDsBufferSize = 32 // 32 is completely arbitrary ATM and should be refined based on real use cases.
 
 	m := Mux{
-		dataWaiters: make(map[protocol.StreamID]dataSendChan),
+		dataWaiters: make(map[xrdproto.StreamID]dataSendChan),
 		freeIDs:     make(chan uint16, freeIDsBufferSize),
 		quit:        make(chan struct{}),
 	}
@@ -115,17 +115,17 @@ func (m *Mux) Close() {
 }
 
 // Claim searches for unclaimed id and returns corresponding channel.
-func (m *Mux) Claim() (protocol.StreamID, DataRecvChan, error) {
+func (m *Mux) Claim() (xrdproto.StreamID, DataRecvChan, error) {
 	ch := make(chan ServerResponse)
 
 	for {
 		id := <-m.freeIDs
-		streamId := protocol.StreamID{byte(id >> 8), byte(id)}
+		streamId := xrdproto.StreamID{byte(id >> 8), byte(id)}
 
 		m.mu.Lock()
 		if m.closed {
 			m.mu.Unlock()
-			return protocol.StreamID{}, nil, errors.New("mux: Claim was called on closed Mux")
+			return xrdproto.StreamID{}, nil, errors.New("mux: Claim was called on closed Mux")
 		}
 		if _, claimed := m.dataWaiters[streamId]; claimed { // Skip id if it was already claimed manually via ClaimWithID
 			m.mu.Unlock()
@@ -139,7 +139,7 @@ func (m *Mux) Claim() (protocol.StreamID, DataRecvChan, error) {
 }
 
 // ClaimWithID checks if id is unclaimed and returns the corresponding channel in case of success.
-func (m *Mux) ClaimWithID(id protocol.StreamID) (DataRecvChan, error) {
+func (m *Mux) ClaimWithID(id xrdproto.StreamID) (DataRecvChan, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if m.closed {
@@ -157,7 +157,7 @@ func (m *Mux) ClaimWithID(id protocol.StreamID) (DataRecvChan, error) {
 }
 
 // Unclaim marks channel with specified id as unclaimed.
-func (m *Mux) Unclaim(id protocol.StreamID) {
+func (m *Mux) Unclaim(id xrdproto.StreamID) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -168,7 +168,7 @@ func (m *Mux) Unclaim(id protocol.StreamID) {
 }
 
 // SendData sends data to channel with specific id.
-func (m *Mux) SendData(id protocol.StreamID, data ServerResponse) error {
+func (m *Mux) SendData(id xrdproto.StreamID, data ServerResponse) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 

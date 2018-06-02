@@ -4,7 +4,7 @@
 
 // Package protocol contains the XRootD protocol specific types
 // and methods to handle them, such as marshalling and unmarshalling requests.
-package protocol // import "go-hep.org/x/hep/xrootd/protocol"
+package xrdproto // import "go-hep.org/x/hep/xrootd/xrdproto"
 
 import (
 	"encoding/binary"
@@ -51,7 +51,7 @@ type ResponseHeader struct {
 	DataLength int32
 }
 
-// MarshalXrd implements xrootd/protocol.Marshaler
+// MarshalXrd implements xrdproto.Marshaler
 func (o ResponseHeader) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteBytes(o.StreamID[:])
 	wBuffer.WriteU16(uint16(o.Status))
@@ -59,7 +59,7 @@ func (o ResponseHeader) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return nil
 }
 
-// UnmarshalXrd implements xrootd/protocol.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler
 func (o *ResponseHeader) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	rBuffer.ReadBytes(o.StreamID[:])
 	o.Status = ResponseStatus(rBuffer.ReadU16())

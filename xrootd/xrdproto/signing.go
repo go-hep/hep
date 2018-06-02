@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package protocol // import "go-hep.org/x/hep/xrootd/protocol"
+package xrdproto // import "go-hep.org/x/hep/xrootd/xrdproto"
 
 import "go-hep.org/x/hep/xrootd/internal/xrdenc"
 
@@ -46,14 +46,14 @@ type SecurityOverride struct {
 	RequestLevel RequestLevel
 }
 
-// MarshalXrd implements xrootd/protocol.Marshaler
+// MarshalXrd implements xrdproto.Marshaler
 func (o SecurityOverride) MarshalXrd(enc *xrdenc.WBuffer) error {
 	enc.WriteU8(o.RequestIndex)
 	enc.WriteU8(byte(o.RequestLevel))
 	return nil
 }
 
-// UnmarshalXrd implements xrootd/protocol.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler
 func (o *SecurityOverride) UnmarshalXrd(dec *xrdenc.RBuffer) error {
 	o.RequestIndex = dec.ReadU8()
 	o.RequestLevel = RequestLevel(dec.ReadU8())

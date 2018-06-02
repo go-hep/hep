@@ -7,7 +7,7 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 import (
 	"context"
 
-	"go-hep.org/x/hep/xrootd/protocol/login"
+	"go-hep.org/x/hep/xrootd/xrdproto/login"
 )
 
 // Login initializes a server connection using username

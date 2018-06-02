@@ -11,7 +11,7 @@ import (
 	"reflect"
 	"testing"
 
-	"go-hep.org/x/hep/xrootd/protocol/protocol"
+	"go-hep.org/x/hep/xrootd/xrdproto/protocol"
 )
 
 func testClient_Protocol(t *testing.T, addr string) {

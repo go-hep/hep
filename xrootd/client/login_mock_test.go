@@ -11,8 +11,8 @@ import (
 	"reflect"
 	"testing"
 
-	"go-hep.org/x/hep/xrootd/protocol"
-	"go-hep.org/x/hep/xrootd/protocol/login"
+	"go-hep.org/x/hep/xrootd/xrdproto"
+	"go-hep.org/x/hep/xrootd/xrdproto/login"
 )
 
 func TestClient_Login_Mock(t *testing.T) {
@@ -58,7 +58,7 @@ func TestClient_Login_Mock(t *testing.T) {
 			t.Fatalf("request info does not match:\ngot = %v\nwant= %v", gotRequest, wantRequest)
 		}
 
-		responseHeader := protocol.ResponseHeader{
+		responseHeader := xrdproto.ResponseHeader{
 			StreamID:   gotHeader.StreamID,
 			DataLength: login.ResponseLength + int32(len(want.SecurityInformation)),
 		}

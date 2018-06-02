@@ -8,12 +8,12 @@ import (
 	"context"
 
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
-	"go-hep.org/x/hep/xrootd/protocol"
-	"go-hep.org/x/hep/xrootd/protocol/handshake"
+	"go-hep.org/x/hep/xrootd/xrdproto"
+	"go-hep.org/x/hep/xrootd/xrdproto/handshake"
 )
 
 func (client *Client) handshake(ctx context.Context) error {
-	responseChannel, err := client.mux.ClaimWithID(protocol.StreamID{0, 0})
+	responseChannel, err := client.mux.ClaimWithID(xrdproto.StreamID{0, 0})
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func (client *Client) handshake(ctx context.Context) error {
 	}
 
 	var result handshake.Response
-	if err = protocol.Unmarshal(resp, &result); err != nil {
+	if err = xrdproto.Unmarshal(resp, &result); err != nil {
 		return err
 	}
 

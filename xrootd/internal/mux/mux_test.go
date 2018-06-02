@@ -8,13 +8,13 @@ import (
 	"reflect"
 	"testing"
 
-	"go-hep.org/x/hep/xrootd/protocol"
+	"go-hep.org/x/hep/xrootd/xrdproto"
 )
 
 func TestMux_Claim(t *testing.T) {
 	m := New()
 	defer m.Close()
-	claimedIds := map[protocol.StreamID]bool{}
+	claimedIds := map[xrdproto.StreamID]bool{}
 
 	for i := 0; i < streamIDPoolSize; i++ {
 		id, channel, err := m.Claim()
@@ -42,14 +42,14 @@ func TestMux_Claim(t *testing.T) {
 func TestMux_Claim_AfterUnclaim(t *testing.T) {
 	m := New()
 	defer m.Close()
-	claimedIds := map[protocol.StreamID]bool{}
+	claimedIds := map[xrdproto.StreamID]bool{}
 
 	for i := 0; i < streamIDPoolSize; i++ {
 		id, _, _ := m.Claim()
 		claimedIds[id] = true
 	}
 
-	wantID := protocol.StreamID{13, 14}
+	wantID := xrdproto.StreamID{13, 14}
 	m.Unclaim(wantID)
 
 	gotID, channel, err := m.Claim()
@@ -75,7 +75,7 @@ func TestMux_ClaimWithID_WhenIDIsFree(t *testing.T) {
 	m := New()
 	defer m.Close()
 
-	streamID := protocol.StreamID{13, 14}
+	streamID := xrdproto.StreamID{13, 14}
 	channel, err := m.ClaimWithID(streamID)
 
 	if err != nil {
@@ -92,7 +92,7 @@ func TestMux_ClaimWithID_WhenIDIsFree(t *testing.T) {
 func TestMux_ClaimWithID_WhenIDIsTakenByClaimWithID(t *testing.T) {
 	m := New()
 	defer m.Close()
-	streamID := protocol.StreamID{13, 14}
+	streamID := xrdproto.StreamID{13, 14}
 	m.ClaimWithID(streamID)
 
 	_, err := m.ClaimWithID(streamID)
@@ -121,7 +121,7 @@ func TestMux_ClaimWithID_WhenIDIsTakenByClaim(t *testing.T) {
 func TestMux_Claim_WhenIDIsTakenByClaimWithID(t *testing.T) {
 	m := New()
 	defer m.Close()
-	takenID := protocol.StreamID{0, 0}
+	takenID := xrdproto.StreamID{0, 0}
 	m.ClaimWithID(takenID)
 
 	id, channel, err := m.Claim()
@@ -145,7 +145,7 @@ func TestMux_Claim_WhenIDIsTakenByClaimWithID(t *testing.T) {
 func TestMux_SendData_WhenIDIsTaken(t *testing.T) {
 	m := New()
 	defer m.Close()
-	takenID := protocol.StreamID{0, 0}
+	takenID := xrdproto.StreamID{0, 0}
 	want := ServerResponse{}
 	var got ServerResponse
 
@@ -168,7 +168,7 @@ func TestMux_SendData_WhenIDIsTaken(t *testing.T) {
 func TestMux_SendData_WhenIDIsNotTaken(t *testing.T) {
 	m := New()
 	defer m.Close()
-	notTakenID := protocol.StreamID{0, 0}
+	notTakenID := xrdproto.StreamID{0, 0}
 
 	err := m.SendData(notTakenID, ServerResponse{})
 
@@ -186,7 +186,7 @@ func TestMux_Close_WhenAlreadyClosed(t *testing.T) {
 func TestMux_Unclaim_WhenNotClaimed(t *testing.T) {
 	m := New()
 	defer m.Close()
-	m.Unclaim(protocol.StreamID{0, 0})
+	m.Unclaim(xrdproto.StreamID{0, 0})
 }
 
 func TestMux_Claim_WhenClosed(t *testing.T) {
@@ -201,7 +201,7 @@ func TestMux_Claim_WhenClosed(t *testing.T) {
 func TestMux_ClaimWithID_WhenClosed(t *testing.T) {
 	m := New()
 	m.Close()
-	_, err := m.ClaimWithID(protocol.StreamID{0, 0})
+	_, err := m.ClaimWithID(xrdproto.StreamID{0, 0})
 	if err == nil {
 		t.Fatal("should not be able to ClaimWithID when mux is closed")
 	}

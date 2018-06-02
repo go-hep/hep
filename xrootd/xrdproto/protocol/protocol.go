@@ -15,11 +15,11 @@
 // and the number of following security overrides, if any.
 //
 // 3) A list of SecurityOverride - alterations needed to the specified predefined security level.
-package protocol // import "go-hep.org/x/hep/xrootd/protocol/protocol"
+package protocol // import "go-hep.org/x/hep/xrootd/xrdproto/protocol"
 
 import (
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
-	"go-hep.org/x/hep/xrootd/protocol"
+	"go-hep.org/x/hep/xrootd/xrdproto"
 )
 
 // RequestID is the id of the request, it is sent as part of message.
@@ -75,10 +75,10 @@ func NewRequest(protocolVersion int32, withSecurityRequirements bool) *Request {
 	return &Request{ClientProtocolVersion: protocolVersion, Options: options}
 }
 
-// ReqID implements protocol.Request.ReqID
+// ReqID implements xrdproto.Request.ReqID
 func (req *Request) ReqID() uint16 { return RequestID }
 
-// MarshalXrd implements xrootd/protocol.Marshaler
+// MarshalXrd implements xrdproto.Marshaler
 func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteI32(o.ClientProtocolVersion)
 	wBuffer.WriteU8(byte(o.Options))
@@ -86,7 +86,7 @@ func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return nil
 }
 
-// UnmarshalXrd implements xrootd/protocol.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler
 func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	o.ClientProtocolVersion = rBuffer.ReadI32()
 	o.Options = RequestOptions(rBuffer.ReadU8())
@@ -103,8 +103,8 @@ type Response struct {
 	_                     byte
 	SecurityVersion       byte
 	SecurityOptions       SecurityOptions
-	SecurityLevel         protocol.SecurityLevel
-	SecurityOverrides     []protocol.SecurityOverride
+	SecurityLevel         xrdproto.SecurityLevel
+	SecurityOverrides     []xrdproto.SecurityOverride
 }
 
 // IsManager indicates whether this server has manager role.
@@ -138,7 +138,7 @@ func (resp *Response) ForceSecurity() bool {
 	return resp.SecurityOptions&ForceSecurity != 0
 }
 
-// MarshalXrd implements xrootd/protocol.Marshaler
+// MarshalXrd implements xrdproto.Marshaler
 func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteI32(o.BinaryProtocolVersion)
 	wBuffer.WriteI32(int32(o.Flags))
@@ -160,7 +160,7 @@ func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return nil
 }
 
-// UnmarshalXrd implements xrootd/protocol.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler
 func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	o.BinaryProtocolVersion = rBuffer.ReadI32()
 	o.Flags = Flags(rBuffer.ReadI32())
@@ -172,8 +172,8 @@ func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	rBuffer.Skip(1)
 	o.SecurityVersion = rBuffer.ReadU8()
 	o.SecurityOptions = SecurityOptions(rBuffer.ReadU8())
-	o.SecurityLevel = protocol.SecurityLevel(rBuffer.ReadU8())
-	o.SecurityOverrides = make([]protocol.SecurityOverride, rBuffer.ReadU8())
+	o.SecurityLevel = xrdproto.SecurityLevel(rBuffer.ReadU8())
+	o.SecurityOverrides = make([]xrdproto.SecurityOverride, rBuffer.ReadU8())
 	for i := 0; i < len(o.SecurityOverrides); i++ {
 		err := o.SecurityOverrides[i].UnmarshalXrd(rBuffer)
 		if err != nil {
@@ -183,5 +183,5 @@ func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	return nil
 }
 
-// RespID implements protocol.Response.RespID
+// RespID implements xrdproto.Response.RespID
 func (resp *Response) RespID() uint16 { return RequestID }
