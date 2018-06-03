@@ -48,3 +48,64 @@ func TestFileSystem_Dirlist(t *testing.T) {
 		})
 	}
 }
+
+func testFileSystem_Open(t *testing.T, addr string, options xrdfs.OpenOptions, wantFileHandle xrdfs.FileHandle, wantFileCompression *xrdfs.FileCompression, wantFileInfo *xrdfs.EntryStat) {
+	client, err := NewClient(context.Background(), addr, "gopher")
+	if err != nil {
+		t.Fatalf("could not create client: %v", err)
+	}
+	defer client.Close()
+
+	fs := client.FS()
+
+	gotFile, err := fs.Open(context.Background(), "/tmp/dir1/file1.txt", xrdfs.OpenModeOtherRead, options)
+	if err != nil {
+		t.Fatalf("invalid open call: %v", err)
+	}
+
+	if !reflect.DeepEqual(gotFile.Handle(), wantFileHandle) {
+		t.Errorf("Filesystem.Open()\ngotFile.Handle() = %v\nwantFileHandle = %v", gotFile.Handle(), wantFileHandle)
+	}
+
+	if !reflect.DeepEqual(gotFile.Compression(), wantFileCompression) {
+		// TODO: Remove this workaround when fix for https://github.com/xrootd/xrootd/issues/721 will be released.
+		skippedDefaultCompressionValue := reflect.DeepEqual(wantFileCompression, &xrdfs.FileCompression{}) && gotFile.Compression() == nil
+		if !skippedDefaultCompressionValue {
+			t.Errorf("Filesystem.Open()\ngotFile.Compression() = %v\nwantFileCompression = %v", gotFile.Compression(), wantFileCompression)
+		}
+	}
+
+	if !reflect.DeepEqual(gotFile.Info(), wantFileInfo) {
+		t.Errorf("Filesystem.Open()\ngotFile.Info() = %v\nwantFileInfo = %v", gotFile.Info(), wantFileInfo)
+	}
+}
+
+func TestFileSystem_Open(t *testing.T) {
+	emptyCompression := xrdfs.FileCompression{}
+	entryStat := &xrdfs.EntryStat{
+		HasStatInfo: true,
+		ID:          60129606914,
+		Mtime:       1528218208,
+		Flags:       xrdfs.StatIsWritable | xrdfs.StatIsReadable,
+	}
+
+	testCases := []struct {
+		name        string
+		options     xrdfs.OpenOptions
+		handle      xrdfs.FileHandle
+		compression *xrdfs.FileCompression
+		info        *xrdfs.EntryStat
+	}{
+		{"WithoutCompressionAndStat", xrdfs.OpenOptionsOpenRead, xrdfs.FileHandle{0, 0, 0, 0}, nil, nil},
+		{"WithCompression", xrdfs.OpenOptionsOpenRead | xrdfs.OpenOptionsCompress, xrdfs.FileHandle{0, 0, 0, 0}, &emptyCompression, nil},
+		{"WithStat", xrdfs.OpenOptionsOpenRead | xrdfs.OpenOptionsReturnStatus, xrdfs.FileHandle{0, 0, 0, 0}, &emptyCompression, entryStat},
+	}
+
+	for _, addr := range testClientAddrs {
+		for _, tc := range testCases {
+			t.Run(addr+"/"+tc.name, func(t *testing.T) {
+				testFileSystem_Open(t, addr, tc.options, tc.handle, tc.compression, tc.info)
+			})
+		}
+	}
+}

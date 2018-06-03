@@ -9,6 +9,7 @@ import (
 
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
+	"go-hep.org/x/hep/xrootd/xrdproto/open"
 )
 
 // FS returns a xrdfs.FileSystem which uses this client to make requests.
@@ -29,6 +30,16 @@ func (fs *fileSystem) Dirlist(ctx context.Context, path string) ([]xrdfs.EntrySt
 		return nil, err
 	}
 	return resp.Entries, err
+}
+
+// Open returns the file handle for a file together with the compression and the stat info.
+func (fs *fileSystem) Open(ctx context.Context, path string, mode xrdfs.OpenMode, options xrdfs.OpenOptions) (xrdfs.File, error) {
+	var resp open.Response
+	err := fs.c.Send(ctx, &resp, open.NewRequest(path, mode, options))
+	if err != nil {
+		return nil, err
+	}
+	return &file{fs, resp.FileHandle, resp.Compression, resp.Stat}, nil
 }
 
 var (
