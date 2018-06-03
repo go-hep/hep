@@ -5,6 +5,8 @@
 package xrdfs
 
 import (
+	"context"
+
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 )
 
@@ -17,6 +19,11 @@ type File interface {
 	Info() *EntryStat
 	// Handle returns the file handle.
 	Handle() FileHandle
+	// Close closes the file.
+	Close(ctx context.Context) error
+	// CloseVerify closes the file and checks whether the file has the provided size.
+	// A zero size suppresses the verification.
+	CloseVerify(ctx context.Context, size int64) error
 }
 
 // FileHandle is the file handle, which should be treated as opaque data.

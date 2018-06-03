@@ -4,7 +4,12 @@
 
 package client // import "go-hep.org/x/hep/xrootd/client"
 
-import "go-hep.org/x/hep/xrootd/xrdfs"
+import (
+	"context"
+
+	"go-hep.org/x/hep/xrootd/xrdfs"
+	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
+)
 
 // File implements access to a content and meta information of file over XRootD.
 type file struct {
@@ -28,6 +33,19 @@ func (f file) Info() *xrdfs.EntryStat {
 // Handle returns the file handle.
 func (f file) Handle() xrdfs.FileHandle {
 	return f.handle
+}
+
+// Close closes the file.
+func (f file) Close(ctx context.Context) error {
+	_, err := f.fs.c.call(ctx, &xrdclose.Request{Handle: f.handle})
+	return err
+}
+
+// CloseVerify closes the file and checks whether the file has the provided size.
+// A zero size suppresses the verification.
+func (f file) CloseVerify(ctx context.Context, size int64) error {
+	_, err := f.fs.c.call(ctx, &xrdclose.Request{Handle: f.handle, Size: size})
+	return err
 }
 
 var (

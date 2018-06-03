@@ -242,8 +242,9 @@ func testFileSystem_Open_Mock(t *testing.T, wantFileHandle xrdfs.FileHandle, wan
 		fs := client.FS()
 		gotFile, err := fs.Open(context.Background(), path, xrdfs.OpenModeOtherRead, xrdfs.OpenOptionsOpenRead)
 		if err != nil {
-			t.Fatalf("invalid dirlist call: %v", err)
+			t.Fatalf("invalid open call: %v", err)
 		}
+		// FIXME: consider calling defer gotFile.Close(context.Background()).
 
 		if !reflect.DeepEqual(gotFile.Handle(), wantFileHandle) {
 			t.Errorf("Filesystem.Open()\ngotFile.Handle() = %v\nwantFileHandle = %v", gotFile.Handle(), wantFileHandle)
