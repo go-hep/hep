@@ -235,3 +235,87 @@ func TestFile_Truncate(t *testing.T) {
 		})
 	}
 }
+
+func testFile_Stat(t *testing.T, addr string) {
+	want := &xrdfs.EntryStat{
+		HasStatInfo: true,
+		ID:          60129606914,
+		EntrySize:   0,
+		Mtime:       1528218208,
+		Flags:       xrdfs.StatIsWritable | xrdfs.StatIsReadable,
+	}
+
+	client, err := NewClient(context.Background(), addr, "gopher")
+	if err != nil {
+		t.Fatalf("could not create client: %v", err)
+	}
+	defer client.Close()
+
+	fs := client.FS()
+	file, err := fs.Open(context.Background(), "/tmp/dir1/file1.txt", xrdfs.OpenModeOwnerRead, xrdfs.OpenOptionsNone)
+	if err != nil {
+		t.Fatalf("invalid open call: %v", err)
+	}
+	defer file.Close(context.Background())
+
+	got, err := file.Stat(context.Background())
+	if err != nil {
+		t.Fatalf("invalid stat call: %v", err)
+	}
+
+	if !reflect.DeepEqual(&got, want) {
+		t.Fatalf("stat info does not match:\ngot = %v\nwant = %v", &got, want)
+	}
+	if !reflect.DeepEqual(file.Info(), want) {
+		t.Fatalf("stat info does not match:\nfile.Info = %v\nwant = %v", file.Info(), want)
+	}
+}
+
+func TestFile_Stat(t *testing.T) {
+	for _, addr := range testClientAddrs {
+		t.Run(addr, func(t *testing.T) {
+			testFile_Stat(t, addr)
+		})
+	}
+}
+
+func testFile_StatVirtualFS(t *testing.T, addr string) {
+	want := xrdfs.VirtualFSStat{
+		NumberRW:      1,
+		FreeRW:        444,
+		UtilizationRW: 6,
+	}
+
+	client, err := NewClient(context.Background(), addr, "gopher")
+	if err != nil {
+		t.Fatalf("could not create client: %v", err)
+	}
+	defer client.Close()
+
+	fs := client.FS()
+	file, err := fs.Open(context.Background(), "/tmp/dir1/file1.txt", xrdfs.OpenModeOwnerRead, xrdfs.OpenOptionsNone)
+	if err != nil {
+		t.Fatalf("invalid open call: %v", err)
+	}
+	defer file.Close(context.Background())
+
+	// FIXME: Investigate whether this request is allowed by the protocol: https://github.com/xrootd/xrootd/issues/728
+	t.Skip("Skipping this test because XRootD server probably doesn't support such requests.")
+
+	got, err := file.StatVirtualFS(context.Background())
+	if err != nil {
+		t.Fatalf("invalid stat call: %v", err)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("File.FetchVirtualStatInfo()\ngot = %v\nwant = %v", got, want)
+	}
+}
+
+func TestFile_StatVirtualFS(t *testing.T) {
+	for _, addr := range testClientAddrs {
+		t.Run(addr, func(t *testing.T) {
+			testFile_StatVirtualFS(t, addr)
+		})
+	}
+}

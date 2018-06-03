@@ -9,6 +9,7 @@ import (
 
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
+	"go-hep.org/x/hep/xrootd/xrdproto/stat"
 	"go-hep.org/x/hep/xrootd/xrdproto/sync"
 	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
 	"go-hep.org/x/hep/xrootd/xrdproto/write"
@@ -92,6 +93,31 @@ func (f file) WriteAt(p []byte, off int64) (n int, err error) {
 func (f file) Truncate(ctx context.Context, size int64) error {
 	_, err := f.fs.c.call(ctx, &truncate.Request{Handle: f.handle, Size: size})
 	return err
+}
+
+// StatVirtualFS fetches the virtual fs stat info from the XRootD server.
+// TODO: note that calling stat with vfs and handle may be invalid.
+// See https://github.com/xrootd/xrootd/issues/728 for the details.
+func (f file) StatVirtualFS(ctx context.Context) (xrdfs.VirtualFSStat, error) {
+	var resp stat.VirtualFSResponse
+	err := f.fs.c.Send(ctx, &resp, &stat.Request{FileHandle: f.handle, Options: stat.OptionsVFS})
+	if err != nil {
+		return xrdfs.VirtualFSStat{}, err
+	}
+	return resp.VirtualFSStat, nil
+}
+
+// Stat fetches the stat info of this file from the XRootD server.
+// Note that Stat re-fetches value returned by the Info, so after the call to Stat
+// calls to Info may return different value than before.
+func (f *file) Stat(ctx context.Context) (xrdfs.EntryStat, error) {
+	var resp stat.DefaultResponse
+	err := f.fs.c.Send(ctx, &resp, &stat.Request{FileHandle: f.handle})
+	if err != nil {
+		return xrdfs.EntryStat{}, err
+	}
+	f.info = &resp.EntryStat
+	return resp.EntryStat, nil
 }
 
 var (

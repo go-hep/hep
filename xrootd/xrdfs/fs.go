@@ -15,6 +15,8 @@ type FileSystem interface {
 	Open(ctx context.Context, path string, mode OpenMode, options OpenOptions) (File, error)
 	RemoveFile(ctx context.Context, path string) error
 	Truncate(ctx context.Context, path string, size int64) error
+	Stat(ctx context.Context, path string) (EntryStat, error)
+	VirtualStat(ctx context.Context, path string) (VirtualFSStat, error)
 }
 
 // OpenMode is the mode in which path is to be opened.

@@ -11,6 +11,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
 	"go-hep.org/x/hep/xrootd/xrdproto/rm"
+	"go-hep.org/x/hep/xrootd/xrdproto/stat"
 	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
 )
 
@@ -54,6 +55,29 @@ func (fs *fileSystem) RemoveFile(ctx context.Context, path string) error {
 func (fs *fileSystem) Truncate(ctx context.Context, path string, size int64) error {
 	_, err := fs.c.call(ctx, &truncate.Request{Path: path, Size: size})
 	return err
+}
+
+// Stat returns the entry stat info for the given path.
+func (fs *fileSystem) Stat(ctx context.Context, path string) (xrdfs.EntryStat, error) {
+	var resp stat.DefaultResponse
+	err := fs.c.Send(ctx, &resp, &stat.Request{Path: path})
+	if err != nil {
+		return xrdfs.EntryStat{}, err
+	}
+	return resp.EntryStat, nil
+}
+
+// VirtualStat returns the virtual filesystem stat info for the given path.
+// Note that path needs not to be an existing filesystem object, it is used as a path prefix in order to
+// filter out servers and partitions that could not be used to hold objects whose path starts
+// with the specified path prefix.
+func (fs *fileSystem) VirtualStat(ctx context.Context, path string) (xrdfs.VirtualFSStat, error) {
+	var resp stat.VirtualFSResponse
+	err := fs.c.Send(ctx, &resp, &stat.Request{Path: path, Options: stat.OptionsVFS})
+	if err != nil {
+		return xrdfs.VirtualFSStat{}, err
+	}
+	return resp.VirtualFSStat, nil
 }
 
 var (
