@@ -24,6 +24,8 @@ type File interface {
 	// CloseVerify closes the file and checks whether the file has the provided size.
 	// A zero size suppresses the verification.
 	CloseVerify(ctx context.Context, size int64) error
+	// Sync commits all pending writes to an open file.
+	Sync(ctx context.Context) error
 }
 
 // FileHandle is the file handle, which should be treated as opaque data.
