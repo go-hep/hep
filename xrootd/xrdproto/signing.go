@@ -8,6 +8,7 @@ import (
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
+	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
 
 // RequestLevel is the security requirement that the associated request is to have.
@@ -105,10 +106,12 @@ func NewSignRequirements(level SecurityLevel, overrides []SecurityOverride) Sign
 	}
 	if level >= Intense {
 		// TODO: set requirements
+		sr.requirements[xrdclose.RequestID] = SignNeeded
 		sr.requirements[open.RequestID] = SignNeeded
 	}
 	if level >= Pedantic {
 		// TODO: set requirements
+		sr.requirements[xrdclose.RequestID] = SignNeeded
 		sr.requirements[dirlist.RequestID] = SignNeeded
 		sr.requirements[open.RequestID] = SignNeeded
 	}

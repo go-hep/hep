@@ -62,6 +62,7 @@ func testFileSystem_Open(t *testing.T, addr string, options xrdfs.OpenOptions, w
 	if err != nil {
 		t.Fatalf("invalid open call: %v", err)
 	}
+	defer gotFile.Close(context.Background())
 
 	if !reflect.DeepEqual(gotFile.Handle(), wantFileHandle) {
 		t.Errorf("Filesystem.Open()\ngotFile.Handle() = %v\nwantFileHandle = %v", gotFile.Handle(), wantFileHandle)
