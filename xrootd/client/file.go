@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"go-hep.org/x/hep/xrootd/xrdfs"
+	"go-hep.org/x/hep/xrootd/xrdproto/sync"
 	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
 
@@ -45,6 +46,12 @@ func (f file) Close(ctx context.Context) error {
 // A zero size suppresses the verification.
 func (f file) CloseVerify(ctx context.Context, size int64) error {
 	_, err := f.fs.c.call(ctx, &xrdclose.Request{Handle: f.handle, Size: size})
+	return err
+}
+
+// Sync commits all pending writes to an open file.
+func (f file) Sync(ctx context.Context) error {
+	_, err := f.fs.c.call(ctx, &sync.Request{Handle: f.handle})
 	return err
 }
 
