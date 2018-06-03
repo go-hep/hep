@@ -18,8 +18,8 @@ func testFileSystem_Dirlist(t *testing.T, addr string) {
 			EntryName:   "file1.txt",
 			HasStatInfo: true,
 			ID:          60129606914,
-			EntrySize:   17,
-			Mtime:       1527753618,
+			EntrySize:   0,
+			Mtime:       1528218208,
 			Flags:       xrdfs.StatIsReadable | xrdfs.StatIsWritable,
 		},
 	}
