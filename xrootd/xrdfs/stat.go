@@ -175,6 +175,79 @@ func (o *EntryStat) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	return nil
 }
 
+// VirtualFSStat holds the virtual file system information.
+type VirtualFSStat struct {
+	NumberRW           int // NumberRW is the number of nodes that can provide read/write space.
+	FreeRW             int // FreeRW is the size, in megabytes, of the largest contiguous area of read/write free space.
+	UtilizationRW      int // UtilizationRW is the percent utilization of the partition represented by FreeRW.
+	NumberStaging      int // NumberStaging is the number of nodes that can provide staging space.
+	FreeStaging        int // FreeStaging is the size, in megabytes, of the largest contiguous area of staging free space.
+	UtilizationStaging int // UtilizationStaging is the percent utilization of the partition represented by FreeStaging.
+}
+
+// MarshalXrd implements xrdproto.Marshaler
+func (o VirtualFSStat) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
+	nrw := strconv.Itoa(o.NumberRW)
+	frw := strconv.Itoa(o.FreeRW)
+	urw := strconv.Itoa(o.UtilizationRW)
+	nstg := strconv.Itoa(o.NumberStaging)
+	fstg := strconv.Itoa(o.FreeStaging)
+	ustg := strconv.Itoa(o.UtilizationStaging)
+	wBuffer.WriteBytes([]byte(nrw + " " + frw + " " + urw + " " + nstg + " " + fstg + " " + ustg))
+	return nil
+}
+
+// UnmarshalXrd implements xrdproto.Unmarshaler
+func (o *VirtualFSStat) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
+	var buf []byte
+	for rBuffer.Len() != 0 {
+		b := rBuffer.ReadU8()
+		if b == '\x00' || b == '\n' {
+			break
+		}
+		buf = append(buf, b)
+	}
+
+	stats := bytes.Split(buf, []byte{' '})
+	if len(stats) < 6 {
+		return errors.Errorf("xrootd: virtual statinfo \"%s\" doesn't have enough fields, expected format is: \"nrw frw urw nstg fstg ustg\"", buf)
+	}
+
+	nrw, err := strconv.Atoi(string(stats[0]))
+	if err != nil {
+		return err
+	}
+	frw, err := strconv.Atoi(string(stats[1]))
+	if err != nil {
+		return err
+	}
+	urw, err := strconv.Atoi(string(stats[2]))
+	if err != nil {
+		return err
+	}
+	nstg, err := strconv.Atoi(string(stats[3]))
+	if err != nil {
+		return err
+	}
+	fstg, err := strconv.Atoi(string(stats[4]))
+	if err != nil {
+		return err
+	}
+	ustg, err := strconv.Atoi(string(stats[5]))
+	if err != nil {
+		return err
+	}
+
+	o.NumberRW = nrw
+	o.FreeRW = frw
+	o.UtilizationRW = urw
+	o.NumberStaging = nstg
+	o.FreeStaging = fstg
+	o.UtilizationStaging = ustg
+
+	return nil
+}
+
 var (
 	_ os.FileInfo = (*EntryStat)(nil)
 )

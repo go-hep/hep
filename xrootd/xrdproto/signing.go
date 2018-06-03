@@ -10,6 +10,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
 	"go-hep.org/x/hep/xrootd/xrdproto/rm"
+	"go-hep.org/x/hep/xrootd/xrdproto/stat"
 	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
 	"go-hep.org/x/hep/xrootd/xrdproto/write"
 	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
@@ -129,6 +130,7 @@ func NewSignRequirements(level SecurityLevel, overrides []SecurityOverride) Sign
 		sr.requirements[truncate.RequestID] = SignNeeded
 		sr.requirements[write.RequestID] = SignNeeded
 		sr.requirements[rm.RequestID] = SignNeeded
+		sr.requirements[stat.RequestID] = SignNeeded
 	}
 
 	for _, override := range overrides {

@@ -228,3 +228,71 @@ func TestFileSystem_Truncate(t *testing.T) {
 		})
 	}
 }
+
+func testFileSystem_Stat(t *testing.T, addr string) {
+	want := xrdfs.EntryStat{
+		HasStatInfo: true,
+		ID:          60129606914,
+		EntrySize:   0,
+		Mtime:       1528218208,
+		Flags:       xrdfs.StatIsWritable | xrdfs.StatIsReadable,
+	}
+
+	client, err := NewClient(context.Background(), addr, "gopher")
+	if err != nil {
+		t.Fatalf("could not create client: %v", err)
+	}
+	defer client.Close()
+
+	fs := client.FS()
+
+	got, err := fs.Stat(context.Background(), "/tmp/dir1/file1.txt")
+	if err != nil {
+		t.Fatalf("invalid stat call: %v", err)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Filesystem.Open()\ngot = %v\nwant = %v", got, want)
+	}
+}
+
+func TestFileSystem_Stat(t *testing.T) {
+	for _, addr := range testClientAddrs {
+		t.Run(addr, func(t *testing.T) {
+			testFileSystem_Stat(t, addr)
+		})
+	}
+}
+
+func testFileSystem_VirtualStat(t *testing.T, addr string) {
+	want := xrdfs.VirtualFSStat{
+		NumberRW:      1,
+		FreeRW:        365,
+		UtilizationRW: 23,
+	}
+
+	client, err := NewClient(context.Background(), addr, "gopher")
+	if err != nil {
+		t.Fatalf("could not create client: %v", err)
+	}
+	defer client.Close()
+
+	fs := client.FS()
+
+	got, err := fs.VirtualStat(context.Background(), "/tmp/dir1/file1.txt")
+	if err != nil {
+		t.Fatalf("invalid stat call: %v", err)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Filesystem.Open()\ngot = %v\nwant = %v", got, want)
+	}
+}
+
+func TestFileSystem_VirtualStat(t *testing.T) {
+	for _, addr := range testClientAddrs {
+		t.Run(addr, func(t *testing.T) {
+			testFileSystem_VirtualStat(t, addr)
+		})
+	}
+}

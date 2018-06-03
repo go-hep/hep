@@ -35,6 +35,12 @@ type File interface {
 	io.WriterAt
 	// Truncate changes the size of the file.
 	Truncate(ctx context.Context, size int64) error
+	// Stat fetches the stat info of this file from the XRootD server.
+	// Note that Stat re-fetches value returned by the Info, so after the call to Stat
+	// calls to Info may return different value than before.
+	Stat(ctx context.Context) (EntryStat, error)
+	// StatVirtualFS fetches the virtual stat info of this file from the XRootD server.
+	StatVirtualFS(ctx context.Context) (VirtualFSStat, error)
 }
 
 // FileHandle is the file handle, which should be treated as opaque data.

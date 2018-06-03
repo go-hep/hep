@@ -10,9 +10,11 @@ import (
 	"reflect"
 	"testing"
 
+	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
+	"go-hep.org/x/hep/xrootd/xrdproto/stat"
 	"go-hep.org/x/hep/xrootd/xrdproto/sync"
 	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
 	"go-hep.org/x/hep/xrootd/xrdproto/write"
@@ -337,6 +339,85 @@ func TestFile_Truncate_Mock(t *testing.T) {
 		err := file.Truncate(context.Background(), wantSize)
 		if err != nil {
 			t.Fatalf("invalid truncate call: %v", err)
+		}
+	}
+
+	testClientWithMockServer(serverFunc, clientFunc)
+}
+
+func TestFile_Stat_Mock(t *testing.T) {
+	handle := xrdfs.FileHandle{0, 1, 2, 3}
+
+	var want = &xrdfs.EntryStat{
+		EntrySize:   20,
+		Mtime:       10,
+		HasStatInfo: true,
+	}
+
+	var wantRequest = stat.Request{FileHandle: handle}
+
+	serverFunc := func(cancel func(), conn net.Conn) {
+		data, err := readRequest(conn)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not read request: %v", err)
+		}
+
+		var gotRequest stat.Request
+		gotHeader, err := unmarshalRequest(data, &gotRequest)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not unmarshal request: %v", err)
+		}
+
+		if gotHeader.RequestID != gotRequest.ReqID() {
+			cancel()
+			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
+		}
+
+		if !reflect.DeepEqual(gotRequest, wantRequest) {
+			cancel()
+			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
+		}
+
+		response := stat.DefaultResponse{EntryStat: *want}
+		var wBuffer xrdenc.WBuffer
+		err = response.MarshalXrd(&wBuffer)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not marshal response: %v", err)
+		}
+
+		responseHeader := xrdproto.ResponseHeader{
+			StreamID:   gotHeader.StreamID,
+			DataLength: int32(len(wBuffer.Bytes())),
+		}
+
+		responseData, err := marshalResponse(responseHeader)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not marshal response: %v", err)
+		}
+		responseData = append(responseData, wBuffer.Bytes()...)
+
+		if err := writeResponse(conn, responseData); err != nil {
+			cancel()
+			t.Fatalf("invalid write: %s", err)
+		}
+	}
+
+	clientFunc := func(cancel func(), client *Client) {
+		var fs = client.FS().(*fileSystem)
+		file := file{fs: fs, handle: handle}
+		got, err := file.Stat(context.Background())
+		if err != nil {
+			t.Fatalf("invalid stat call: %v", err)
+		}
+		if !reflect.DeepEqual(&got, want) {
+			t.Fatalf("stat info does not match:\ngot = %v\nwant = %v", &got, want)
+		}
+		if !reflect.DeepEqual(file.Info(), want) {
+			t.Fatalf("stat info does not match:\nfile.Info() = %v\nwant = %v", file.Info(), want)
 		}
 	}
 
