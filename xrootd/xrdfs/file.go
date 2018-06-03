@@ -6,6 +6,7 @@ package xrdfs
 
 import (
 	"context"
+	"io"
 
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 )
@@ -26,6 +27,9 @@ type File interface {
 	CloseVerify(ctx context.Context, size int64) error
 	// Sync commits all pending writes to an open file.
 	Sync(ctx context.Context) error
+	// ReadAtContext reads len(p) bytes into p starting at offset off.
+	ReadAtContext(ctx context.Context, p []byte, off int64) (n int, err error)
+	io.ReaderAt
 }
 
 // FileHandle is the file handle, which should be treated as opaque data.
