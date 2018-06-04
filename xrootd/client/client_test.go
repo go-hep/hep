@@ -2,18 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build xrootd_test_with_server
-
 package client // import "go-hep.org/x/hep/xrootd/client"
 
 import (
 	"context"
 	"testing"
 )
-
-func init() {
-	testClientAddrs = append(testClientAddrs, "0.0.0.0:9001")
-}
 
 func TestNewClient(t *testing.T) {
 	for _, addr := range testClientAddrs {

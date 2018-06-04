@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build xrootd_test_with_server
-
 package client
 
 import (
@@ -15,7 +13,7 @@ import (
 )
 
 func testClient_Protocol(t *testing.T, addr string) {
-	var want = protocol.Response{
+	want := protocol.Response{
 		BinaryProtocolVersion: 784,
 		Flags: protocol.IsServer,
 	}
@@ -24,6 +22,7 @@ func testClient_Protocol(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatalf("could not create client: %v", err)
 	}
+	defer client.Close()
 
 	got, err := client.Protocol(context.Background())
 	if err != nil {
@@ -32,8 +31,6 @@ func testClient_Protocol(t *testing.T, addr string) {
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Client.Protocol()\ngot = %v\nwant = %v", got, want)
 	}
-
-	client.Close()
 }
 
 func TestClient_Protocol(t *testing.T) {
