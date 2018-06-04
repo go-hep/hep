@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build xrootd_test_with_cxx_server
-
 package client // import "go-hep.org/x/hep/xrootd/client"
 
 func init() {
