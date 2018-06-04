@@ -4,7 +4,10 @@
 
 package xrdproto // import "go-hep.org/x/hep/xrootd/xrdproto"
 
-import "go-hep.org/x/hep/xrootd/internal/xrdenc"
+import (
+	"go-hep.org/x/hep/xrootd/internal/xrdenc"
+	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
+)
 
 // RequestLevel is the security requirement that the associated request is to have.
 type RequestLevel byte
@@ -102,6 +105,7 @@ func NewSignRequirements(level SecurityLevel, overrides []SecurityOverride) Sign
 	}
 	if level >= Pedantic {
 		// TODO: set requirements
+		sr.requirements[dirlist.RequestID] = SignNeeded
 	}
 
 	for _, override := range overrides {
