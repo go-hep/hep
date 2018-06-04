@@ -13,10 +13,7 @@ import (
 )
 
 func testClient_Protocol(t *testing.T, addr string) {
-	want := protocol.Response{
-		BinaryProtocolVersion: 784,
-		Flags: protocol.IsServer,
-	}
+	want := protocol.Response{BinaryProtocolVersion: 784, Flags: protocol.IsServer}
 
 	client, err := NewClient(context.Background(), addr, "gopher")
 	if err != nil {
