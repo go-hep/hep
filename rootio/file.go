@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 type Reader interface {
@@ -156,6 +158,24 @@ func Create(name string) (*File, error) {
 	}
 
 	return f, nil
+}
+
+// Stat returns the os.FileInfo structure describing this file.
+func (f *File) Stat() (os.FileInfo, error) {
+	type stater interface {
+		Stat() (os.FileInfo, error)
+	}
+	if f.r != nil {
+		if st, ok := f.r.(stater); ok {
+			return st.Stat()
+		}
+	}
+	if f.w != nil {
+		if st, ok := f.w.(stater); ok {
+			return st.Stat()
+		}
+	}
+	return nil, errors.Errorf("rootio: underlying file w/o os.FileInfo")
 }
 
 // Read implements io.Reader

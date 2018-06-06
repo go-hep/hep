@@ -19,6 +19,7 @@ require (
 	github.com/gonuts/commander v0.1.0
 	github.com/google/go-cmp v0.2.0
 	github.com/google/shlex v0.0.0-20150127133951-6f45313302b9
+	github.com/hanwen/go-fuse v0.0.0-20180522155540-291273cb8ce0
 	github.com/hashicorp/go-uuid v0.0.0-20180228145832-27454136f036
 	github.com/jcmturner/gofork v0.0.0-20180107083740-2aebee971930
 	github.com/jung-kurt/gofpdf v1.0.0
