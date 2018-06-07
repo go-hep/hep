@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"sync"
 	"testing"
 
 	"go-hep.org/x/hep/hepmc"
@@ -16,6 +17,7 @@ import (
 
 func TestEventRW(t *testing.T) {
 
+	var mu sync.Mutex
 	for _, table := range []struct {
 		fname    string
 		outfname string
@@ -26,7 +28,9 @@ func TestEventRW(t *testing.T) {
 		{"out.hepmc", "rb.out.hepmc", 6},
 	} {
 		t.Run(table.fname, func(t *testing.T) {
+			mu.Lock()
 			testEventRW(t, table.fname, table.outfname, table.nevts)
+			mu.Unlock()
 		})
 	}
 
@@ -85,6 +89,11 @@ func testEventRW(t *testing.T, fname, outfname string, nevts int) {
 	err = enc.Close()
 	if err != nil {
 		t.Fatalf("file: %s. err=%v\n", fname, err)
+	}
+
+	err = o.Close()
+	if err != nil {
+		t.Fatalf("error closing output file %q: %v", outfname, err)
 	}
 
 	// test output files
