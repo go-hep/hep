@@ -7,6 +7,7 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 import (
 	"context"
 	"math/rand"
+	"path"
 	"reflect"
 	"testing"
 
@@ -42,6 +43,7 @@ func TestFile_Close(t *testing.T) {
 }
 
 func testFile_CloseVerify(t *testing.T, addr string) {
+	fileName := "close-verify.txt"
 	client, err := NewClient(context.Background(), addr, "gopher")
 	if err != nil {
 		t.Fatalf("could not create client: %v", err)
@@ -50,7 +52,14 @@ func testFile_CloseVerify(t *testing.T, addr string) {
 
 	fs := client.FS()
 
-	file, err := fs.Open(context.Background(), "/tmp/test.txt", xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsOpenUpdate|xrdfs.OpenOptionsOpenAppend)
+	dir, err := tempdir(client, "/tmp/", "xrd-test-close-verify")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer fs.RemoveDir(context.Background(), dir)
+	filePath := path.Join(dir, fileName)
+
+	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsNew)
 	if err != nil {
 		t.Fatalf("invalid open call: %v", err)
 	}
@@ -114,7 +123,7 @@ func TestFile_ReadAt(t *testing.T) {
 }
 
 func testFile_WriteAt(t *testing.T, addr string) {
-	filePath := "/tmp/test_rw.txt"
+	fileName := "test_rw.txt"
 	want := make([]byte, 8*1024)
 	rand.Read(want)
 
@@ -123,9 +132,16 @@ func testFile_WriteAt(t *testing.T, addr string) {
 		t.Fatalf("could not create client: %v", err)
 	}
 	defer client.Close()
-
 	fs := client.FS()
-	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsOpenUpdate|xrdfs.OpenOptionsOpenAppend)
+
+	dir, err := tempdir(client, "/tmp/", "xrd-test-close-verify")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer fs.RemoveDir(context.Background(), dir)
+	filePath := path.Join(dir, fileName)
+
+	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsNew)
 	if err != nil {
 		t.Fatalf("invalid open call: %v", err)
 	}
@@ -170,7 +186,7 @@ func TestFile_WriteAt(t *testing.T) {
 }
 
 func testFile_Truncate(t *testing.T, addr string) {
-	filePath := "/tmp/test_truncate.txt"
+	fileName := "test_truncate.txt"
 	write := []uint8{1, 2, 3, 4, 5, 6, 7, 8}
 	want := write[:4]
 
@@ -181,7 +197,15 @@ func testFile_Truncate(t *testing.T, addr string) {
 	defer client.Close()
 
 	fs := client.FS()
-	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsOpenUpdate)
+
+	dir, err := tempdir(client, "/tmp/", "xrd-test-truncate")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer fs.RemoveDir(context.Background(), dir)
+	filePath := path.Join(dir, fileName)
+
+	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsNew)
 	if err != nil {
 		t.Fatalf("invalid open call: %v", err)
 	}
