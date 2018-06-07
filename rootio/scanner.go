@@ -54,9 +54,31 @@ func (s *baseScanner) SeekEntry(i int64) error {
 	if s.err != nil {
 		return s.err
 	}
+	if s.chain {
+		ch := s.tree.(*tchain)
+		if i >= ch.off+ch.tree.Entries() || i < ch.off {
+			itree := s.findTree(i)
+			if itree == -1 {
+				s.err = fmt.Errorf("rootio: could not find Tree containing entry %d", i)
+				return s.err
+			}
+			s.loadTree(itree)
+		}
+	}
 	s.i = i
 	s.cur = i - 1
 	return s.err
+}
+
+// findTree finds the tree number in the chain that contains entry i
+func (s *baseScanner) findTree(i int64) int {
+	ch := s.tree.(*tchain)
+	for j := range ch.trees {
+		if i <= ch.tots[j] {
+			return j
+		}
+	}
+	return -1
 }
 
 // Next prepares the next result row for reading with the Scan method.
@@ -72,23 +94,24 @@ func (s *baseScanner) Next() bool {
 
 	if s.chain {
 		if s.cur >= s.tot {
-			s.nextTree()
+			ch := s.tree.(*tchain)
+			s.loadTree(ch.cur + 1)
+
 		}
 	}
 
 	return next
 }
 
-func (s *baseScanner) nextTree() {
+func (s *baseScanner) loadTree(i int) {
 	ch := s.tree.(*tchain)
-	ch.nextTree()
+	ch.loadTree(i)
 	s.off = ch.off
 	s.tot = ch.tot
 	if ch.tree == nil {
 		// tchain exhausted.
 		return
 	}
-
 	// reconnect branches
 	for i, v := range s.ibr {
 		name := v.br.Name()

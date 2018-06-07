@@ -9,7 +9,7 @@ type tchain struct {
 	offs  []int64 // number of entries before this tree
 	tots  []int64 // total number of entries up to this tree
 
-	cur  int   // current tree
+	cur  int   // index of current tree
 	tree Tree  // current tree
 	off  int64 // current offset
 	tot  int64 // current number of entries
@@ -40,12 +40,13 @@ func Chain(trees ...Tree) Tree {
 		ch.tots[i] = sum
 		off += n
 	}
-	ch.nextTree()
+
+	ch.loadTree(ch.cur + 1)
 	return ch
 }
 
-func (ch *tchain) nextTree() {
-	ch.cur++
+func (ch *tchain) loadTree(i int) {
+	ch.cur = i
 	if ch.cur >= len(ch.trees) {
 		ch.tree = nil
 		return
