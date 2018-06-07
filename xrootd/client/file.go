@@ -10,6 +10,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
 	"go-hep.org/x/hep/xrootd/xrdproto/sync"
+	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
 	"go-hep.org/x/hep/xrootd/xrdproto/write"
 	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
@@ -85,6 +86,12 @@ func (f file) WriteAt(p []byte, off int64) (n int, err error) {
 		return 0, err
 	}
 	return len(p), nil
+}
+
+// Truncate changes the size of the named file.
+func (f file) Truncate(ctx context.Context, size int64) error {
+	_, err := f.fs.c.call(ctx, &truncate.Request{Handle: f.handle, Size: size})
+	return err
 }
 
 var (

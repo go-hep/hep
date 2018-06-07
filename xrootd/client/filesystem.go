@@ -11,6 +11,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
 	"go-hep.org/x/hep/xrootd/xrdproto/rm"
+	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
 )
 
 // FS returns a xrdfs.FileSystem which uses this client to make requests.
@@ -46,6 +47,12 @@ func (fs *fileSystem) Open(ctx context.Context, path string, mode xrdfs.OpenMode
 // RemoveFile removes a file.
 func (fs *fileSystem) RemoveFile(ctx context.Context, path string) error {
 	_, err := fs.c.call(ctx, &rm.Request{Path: path})
+	return err
+}
+
+// Truncate changes the size of the named file.
+func (fs *fileSystem) Truncate(ctx context.Context, path string, size int64) error {
+	_, err := fs.c.call(ctx, &truncate.Request{Path: path, Size: size})
 	return err
 }
 

@@ -168,3 +168,70 @@ func TestFile_WriteAt(t *testing.T) {
 		})
 	}
 }
+
+func testFile_Truncate(t *testing.T, addr string) {
+	filePath := "/tmp/test_truncate.txt"
+	write := []uint8{1, 2, 3, 4, 5, 6, 7, 8}
+	want := write[:4]
+
+	client, err := NewClient(context.Background(), addr, "gopher")
+	if err != nil {
+		t.Fatalf("could not create client: %v", err)
+	}
+	defer client.Close()
+
+	fs := client.FS()
+	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsOpenUpdate)
+	if err != nil {
+		t.Fatalf("invalid open call: %v", err)
+	}
+	defer file.Close(context.Background())
+
+	_, err = file.WriteAt(write, 0)
+	if err != nil {
+		t.Fatalf("invalid write call: %v", err)
+	}
+
+	err = file.Truncate(context.Background(), int64(len(want)))
+	if err != nil {
+		t.Fatalf("invalid truncate call: %v", err)
+	}
+
+	err = file.Sync(context.Background())
+	if err != nil {
+		t.Fatalf("invalid sync call: %v", err)
+	}
+
+	err = file.Close(context.Background())
+	if err != nil {
+		t.Fatalf("invalid close call: %v", err)
+	}
+	file, err = fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerRead, xrdfs.OpenOptionsOpenRead)
+	if err != nil {
+		t.Fatalf("invalid open call: %v", err)
+	}
+	defer file.Close(context.Background())
+
+	got := make([]uint8, len(want)+10)
+	n, err := file.ReadAt(got, 0)
+	if err != nil {
+		t.Fatalf("invalid read call: %v", err)
+	}
+
+	if n != len(want) {
+		t.Fatalf("read count does not match:\ngot = %v\nwant = %v", n, len(want))
+	}
+
+	if !reflect.DeepEqual(got[:n], want) {
+		t.Fatalf("read data does not match:\ngot = %v\nwant = %v", got[:n], want)
+	}
+
+}
+
+func TestFile_Truncate(t *testing.T) {
+	for _, addr := range testClientAddrs {
+		t.Run(addr, func(t *testing.T) {
+			testFile_Truncate(t, addr)
+		})
+	}
+}

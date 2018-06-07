@@ -14,6 +14,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
 	"go-hep.org/x/hep/xrootd/xrdproto/sync"
+	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
 	"go-hep.org/x/hep/xrootd/xrdproto/write"
 	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
@@ -275,6 +276,67 @@ func TestFile_WriteAt_Mock(t *testing.T) {
 		}
 		if n != len(want) {
 			t.Fatalf("write count does not match:\ngot = %v\nwant = %v", n, len(want))
+		}
+	}
+
+	testClientWithMockServer(serverFunc, clientFunc)
+}
+
+func TestFile_Truncate_Mock(t *testing.T) {
+	var (
+		handle         = xrdfs.FileHandle{1, 2, 3, 4}
+		wantSize int64 = 10
+	)
+
+	wantRequest := truncate.Request{Handle: handle, Size: wantSize}
+
+	serverFunc := func(cancel func(), conn net.Conn) {
+		data, err := readRequest(conn)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not read request: %v", err)
+		}
+
+		var gotRequest truncate.Request
+		gotHeader, err := unmarshalRequest(data, &gotRequest)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not unmarshal request: %v", err)
+		}
+
+		if gotHeader.RequestID != wantRequest.ReqID() {
+			cancel()
+			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", wantRequest.ReqID(), gotHeader.RequestID)
+		}
+
+		if !reflect.DeepEqual(gotRequest, wantRequest) {
+			cancel()
+			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
+		}
+
+		responseHeader := xrdproto.ResponseHeader{
+			StreamID: gotHeader.StreamID,
+			Status:   xrdproto.Ok,
+		}
+
+		responseData, err := marshalResponse(responseHeader)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not marshal response header: %v", err)
+		}
+
+		if err := writeResponse(conn, responseData); err != nil {
+			cancel()
+			t.Fatalf("invalid write: %s", err)
+		}
+	}
+
+	clientFunc := func(cancel func(), client *Client) {
+		file := file{fs: client.FS().(*fileSystem), handle: handle}
+
+		err := file.Truncate(context.Background(), wantSize)
+		if err != nil {
+			t.Fatalf("invalid truncate call: %v", err)
 		}
 	}
 

@@ -33,6 +33,8 @@ type File interface {
 	// WriteAtContext writes len(p) bytes from p to the file at offset off.
 	WriteAtContext(ctx context.Context, p []byte, off int64) error
 	io.WriterAt
+	// Truncate changes the size of the file.
+	Truncate(ctx context.Context, size int64) error
 }
 
 // FileHandle is the file handle, which should be treated as opaque data.
