@@ -59,12 +59,11 @@ func (f file) Sync(ctx context.Context) error {
 
 // ReadAtContext reads len(p) bytes into p starting at offset off.
 func (f file) ReadAtContext(ctx context.Context, p []byte, off int64) (n int, err error) {
-	var resp read.Response
+	resp := read.Response{Data: p}
 	err = f.fs.c.Send(ctx, &resp, &read.Request{Handle: f.handle, Offset: off, Length: int32(len(p))})
 	if err != nil {
 		return 0, err
 	}
-	copy(p, resp.Data)
 	return len(resp.Data), nil
 }
 

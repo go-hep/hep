@@ -29,7 +29,13 @@ func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 
 // UnmarshalXrd implements xrdproto.Unmarshaler
 func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
-	o.Data = append(o.Data, rBuffer.Bytes()...)
+	src := rBuffer.Len()
+	dst := len(o.Data)
+	if src > dst {
+		o.Data = make([]byte, src)
+	}
+	n := copy(o.Data, rBuffer.Bytes())
+	o.Data = o.Data[:n]
 	return nil
 }
 
