@@ -9,6 +9,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
+	"go-hep.org/x/hep/xrootd/xrdproto/write"
 	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
 
@@ -109,6 +110,7 @@ func NewSignRequirements(level SecurityLevel, overrides []SecurityOverride) Sign
 		// TODO: set requirements
 		sr.requirements[xrdclose.RequestID] = SignNeeded
 		sr.requirements[open.RequestID] = SignNeeded
+		sr.requirements[write.RequestID] = SignNeeded
 	}
 	if level >= Pedantic {
 		// TODO: set requirements
@@ -116,6 +118,7 @@ func NewSignRequirements(level SecurityLevel, overrides []SecurityOverride) Sign
 		sr.requirements[dirlist.RequestID] = SignNeeded
 		sr.requirements[open.RequestID] = SignNeeded
 		sr.requirements[read.RequestID] = SignNeeded
+		sr.requirements[write.RequestID] = SignNeeded
 	}
 
 	for _, override := range overrides {

@@ -10,6 +10,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
 	"go-hep.org/x/hep/xrootd/xrdproto/sync"
+	"go-hep.org/x/hep/xrootd/xrdproto/write"
 	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
 
@@ -70,6 +71,21 @@ func (f file) ReadAtContext(ctx context.Context, p []byte, off int64) (n int, er
 // ReadAt reads len(p) bytes into p starting at offset off.
 func (f file) ReadAt(p []byte, off int64) (n int, err error) {
 	return f.ReadAtContext(context.Background(), p, off)
+}
+
+// WriteAtContext writes len(p) bytes from p to the file at offset off.
+func (f file) WriteAtContext(ctx context.Context, p []byte, off int64) error {
+	_, err := f.fs.c.call(ctx, &write.Request{Handle: f.handle, Offset: off, Data: p})
+	return err
+}
+
+// WriteAt writes len(p) bytes from p to the file at offset off.
+func (f file) WriteAt(p []byte, off int64) (n int, err error) {
+	err = f.WriteAtContext(context.Background(), p, off)
+	if err != nil {
+		return 0, err
+	}
+	return len(p), nil
 }
 
 var (

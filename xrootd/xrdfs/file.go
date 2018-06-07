@@ -30,6 +30,9 @@ type File interface {
 	// ReadAtContext reads len(p) bytes into p starting at offset off.
 	ReadAtContext(ctx context.Context, p []byte, off int64) (n int, err error)
 	io.ReaderAt
+	// WriteAtContext writes len(p) bytes from p to the file at offset off.
+	WriteAtContext(ctx context.Context, p []byte, off int64) error
+	io.WriterAt
 }
 
 // FileHandle is the file handle, which should be treated as opaque data.

@@ -14,6 +14,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
 	"go-hep.org/x/hep/xrootd/xrdproto/sync"
+	"go-hep.org/x/hep/xrootd/xrdproto/write"
 	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
 
@@ -215,6 +216,65 @@ func TestFile_ReadAt_Mock(t *testing.T) {
 
 		if !reflect.DeepEqual(got[:n], want) {
 			t.Fatalf("read data does not match:\ngot = %v\nwant = %v", got[:n], want)
+		}
+	}
+
+	testClientWithMockServer(serverFunc, clientFunc)
+}
+
+func TestFile_WriteAt_Mock(t *testing.T) {
+	handle := xrdfs.FileHandle{1, 2, 3, 4}
+	want := []byte("Hello XRootD.\n")
+
+	wantRequest := write.Request{Handle: handle, Offset: 1, Data: want}
+
+	serverFunc := func(cancel func(), conn net.Conn) {
+		data, err := readRequest(conn)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not read request: %v", err)
+		}
+
+		var gotRequest write.Request
+		gotHeader, err := unmarshalRequest(data, &gotRequest)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not unmarshal request: %v", err)
+		}
+
+		if gotHeader.RequestID != wantRequest.ReqID() {
+			cancel()
+			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", wantRequest.ReqID(), gotHeader.RequestID)
+		}
+
+		if !reflect.DeepEqual(gotRequest, wantRequest) {
+			cancel()
+			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
+		}
+
+		responseHeader := xrdproto.ResponseHeader{StreamID: gotHeader.StreamID}
+
+		responseData, err := marshalResponse(responseHeader)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not marshal response header: %v", err)
+		}
+
+		if err := writeResponse(conn, responseData); err != nil {
+			cancel()
+			t.Fatalf("invalid write: %s", err)
+		}
+	}
+
+	clientFunc := func(cancel func(), client *Client) {
+		file := file{fs: client.FS().(*fileSystem), handle: handle}
+
+		n, err := file.WriteAt(want, 1)
+		if err != nil {
+			t.Fatalf("invalid write call: %v", err)
+		}
+		if n != len(want) {
+			t.Fatalf("write count does not match:\ngot = %v\nwant = %v", n, len(want))
 		}
 	}
 
