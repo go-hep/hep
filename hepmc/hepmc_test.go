@@ -25,7 +25,9 @@ func TestEventRW(t *testing.T) {
 		{"testdata/test.hepmc", "out.hepmc", 6},
 		{"out.hepmc", "rb.out.hepmc", 6},
 	} {
-		testEventRW(t, table.fname, table.outfname, table.nevts)
+		t.Run(table.fname, func(t *testing.T) {
+			testEventRW(t, table.fname, table.outfname, table.nevts)
+		})
 	}
 
 	// clean-up
