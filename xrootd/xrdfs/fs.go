@@ -17,6 +17,8 @@ type FileSystem interface {
 	Truncate(ctx context.Context, path string, size int64) error
 	Stat(ctx context.Context, path string) (EntryStat, error)
 	VirtualStat(ctx context.Context, path string) (VirtualFSStat, error)
+	Mkdir(ctx context.Context, path string, perm OpenMode) error
+	MkdirAll(ctx context.Context, path string, perm OpenMode) error
 }
 
 // OpenMode is the mode in which path is to be opened.
