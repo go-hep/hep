@@ -12,6 +12,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/mkdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
 	"go-hep.org/x/hep/xrootd/xrdproto/rm"
+	"go-hep.org/x/hep/xrootd/xrdproto/rmdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/stat"
 	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
 )
@@ -88,6 +89,13 @@ func (fs *fileSystem) Mkdir(ctx context.Context, path string, perm xrdfs.OpenMod
 
 func (fs *fileSystem) MkdirAll(ctx context.Context, path string, perm xrdfs.OpenMode) error {
 	_, err := fs.c.call(ctx, &mkdir.Request{Path: path, Mode: perm, Options: mkdir.OptionsMakePath})
+	return err
+}
+
+// RemoveFile removes a directory.
+// The directory to be removed must be empty.
+func (fs *fileSystem) RemoveDir(ctx context.Context, path string) error {
+	_, err := fs.c.call(ctx, &rmdir.Request{Path: path})
 	return err
 }
 

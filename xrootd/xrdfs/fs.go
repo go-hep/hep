@@ -19,6 +19,7 @@ type FileSystem interface {
 	VirtualStat(ctx context.Context, path string) (VirtualFSStat, error)
 	Mkdir(ctx context.Context, path string, perm OpenMode) error
 	MkdirAll(ctx context.Context, path string, perm OpenMode) error
+	RemoveDir(ctx context.Context, path string) error
 }
 
 // OpenMode is the mode in which path is to be opened.
