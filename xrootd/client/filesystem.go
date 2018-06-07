@@ -10,6 +10,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
+	"go-hep.org/x/hep/xrootd/xrdproto/rm"
 )
 
 // FS returns a xrdfs.FileSystem which uses this client to make requests.
@@ -40,6 +41,12 @@ func (fs *fileSystem) Open(ctx context.Context, path string, mode xrdfs.OpenMode
 		return nil, err
 	}
 	return &file{fs, resp.FileHandle, resp.Compression, resp.Stat}, nil
+}
+
+// RemoveFile removes a file.
+func (fs *fileSystem) RemoveFile(ctx context.Context, path string) error {
+	_, err := fs.c.call(ctx, &rm.Request{Path: path})
+	return err
 }
 
 var (

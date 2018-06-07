@@ -15,6 +15,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
+	"go-hep.org/x/hep/xrootd/xrdproto/rm"
 )
 
 func TestFileSystem_Dirlist_Mock(t *testing.T) {
@@ -279,4 +280,59 @@ func TestFileSystem_Open_Mock(t *testing.T) {
 			testFileSystem_Open_Mock(t, tc.handle, tc.compression, tc.stat)
 		})
 	}
+}
+
+func TestFileSystem_RemoveFile_Mock(t *testing.T) {
+	var (
+		path        = "/tmp/test"
+		wantRequest = rm.Request{Path: path}
+	)
+
+	serverFunc := func(cancel func(), conn net.Conn) {
+		data, err := readRequest(conn)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not read request: %v", err)
+		}
+
+		var gotRequest rm.Request
+		gotHeader, err := unmarshalRequest(data, &gotRequest)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not unmarshal request: %v", err)
+		}
+
+		if gotHeader.RequestID != gotRequest.ReqID() {
+			cancel()
+			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
+		}
+
+		if !reflect.DeepEqual(gotRequest, wantRequest) {
+			cancel()
+			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
+		}
+
+		responseHeader := xrdproto.ResponseHeader{StreamID: gotHeader.StreamID}
+
+		responseData, err := marshalResponse(responseHeader)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not marshal response: %v", err)
+		}
+
+		if err := writeResponse(conn, responseData); err != nil {
+			cancel()
+			t.Fatalf("invalid write: %s", err)
+		}
+	}
+
+	clientFunc := func(cancel func(), client *Client) {
+		fs := fileSystem{client}
+		err := fs.RemoveFile(context.Background(), path)
+		if err != nil {
+			t.Fatalf("invalid rm call: %v", err)
+		}
+	}
+
+	testClientWithMockServer(serverFunc, clientFunc)
 }

@@ -13,6 +13,7 @@ import (
 type FileSystem interface {
 	Dirlist(ctx context.Context, path string) ([]EntryStat, error)
 	Open(ctx context.Context, path string, mode OpenMode, options OpenOptions) (File, error)
+	RemoveFile(ctx context.Context, path string) error
 }
 
 // OpenMode is the mode in which path is to be opened.

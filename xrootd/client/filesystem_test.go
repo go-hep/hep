@@ -110,3 +110,53 @@ func TestFileSystem_Open(t *testing.T) {
 		}
 	}
 }
+
+func testFileSystem_RemoveFile(t *testing.T, addr string) {
+	fileName := "rm_test.txt"
+	fileParent := "/tmp"
+	filePath := fileParent + "/" + fileName
+
+	client, err := NewClient(context.Background(), addr, "gopher")
+	if err != nil {
+		t.Fatalf("could not create client: %v", err)
+	}
+	defer client.Close()
+
+	fs := client.FS()
+
+	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsDelete)
+	if err != nil {
+		t.Fatalf("invalid open call: %v", err)
+	}
+
+	file.Close(context.Background())
+
+	err = fs.RemoveFile(context.Background(), filePath)
+	if err != nil {
+		t.Fatalf("invalid rm call: %v", err)
+	}
+
+	got, err := fs.Dirlist(context.Background(), fileParent)
+	if err != nil {
+		t.Fatalf("invalid dirlist call: %v", err)
+	}
+
+	found := false
+	for _, entry := range got {
+		if entry.Name() == fileName {
+			found = true
+		}
+	}
+
+	if found {
+		t.Errorf("file '%s' is still present after fs.RemoveFile()", filePath)
+	}
+}
+
+func TestFileSystem_RemoveFile(t *testing.T) {
+	for _, addr := range testClientAddrs {
+		t.Run(addr, func(t *testing.T) {
+			testFileSystem_RemoveFile(t, addr)
+		})
+	}
+}
