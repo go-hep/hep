@@ -207,3 +207,142 @@ func TestChainScanStruct(t *testing.T) {
 		t.Fatalf("entries scanned differ: got=%d want=%d", total.got, total.want)
 	}
 }
+
+var SumF64 float64 // global variable to prevent unwanted compiler optimization
+
+func BenchmarkChainTreeScannerStruct(b *testing.B) {
+	files := []string{
+		"testdata/chain.1.root",
+		"testdata/chain.2.root",
+	}
+
+	trees := make([]rootio.Tree, len(files))
+	for i, fname := range files {
+		f, err := rootio.Open(fname)
+		if err != nil {
+			b.Fatalf("could not open ROOT file %q: %v", fname, err)
+		}
+		defer f.Close()
+
+		obj, err := f.Get("tree")
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		trees[i] = obj.(rootio.Tree)
+	}
+	chain := rootio.Chain(trees...)
+
+	type Data struct {
+		Event struct {
+			Beg       string      `rootio:"Beg"`
+			F64       float64     `rootio:"F64"`
+			ArrF64    [10]float64 `rootio:"ArrayF64"`
+			N         int32       `rootio:"N"`
+			SliF64    []float64   `rootio:"SliceF64"`
+			StdStr    string      `rootio:"StdStr"`
+			StlVecF64 []float64   `rootio:"StlVecF64"`
+			StlVecStr []string    `rootio:"StlVecStr"`
+			End       string      `rootio:"End"`
+		} `rootio:"evt"`
+	}
+
+	sc, err := rootio.NewTreeScanner(chain, &Data{})
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer sc.Close()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		err := sc.SeekEntry(0)
+		if err != nil {
+			b.Fatal(err)
+		}
+		for sc.Next() {
+			var data Data
+			err := sc.Scan(&data)
+			if err != nil {
+				b.Fatal(err)
+			}
+			SumF64 += data.Event.F64
+		}
+	}
+	if err := sc.Err(); err != nil && err != io.EOF {
+		b.Fatal(err)
+	}
+}
+
+func TestSeekEntry(t *testing.T) {
+	files := []string{
+		"testdata/chain.1.root",
+		"testdata/chain.2.root",
+	}
+
+	trees := make([]rootio.Tree, len(files))
+	for i, fname := range files {
+		f, err := rootio.Open(fname)
+		if err != nil {
+			t.Fatalf("could not open ROOT file %q: %v", fname, err)
+		}
+		defer f.Close()
+
+		obj, err := f.Get("tree")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		trees[i] = obj.(rootio.Tree)
+	}
+	chain := rootio.Chain(trees...)
+
+	type Data struct {
+		Event struct {
+			Beg       string      `rootio:"Beg"`
+			F64       float64     `rootio:"F64"`
+			ArrF64    [10]float64 `rootio:"ArrayF64"`
+			N         int32       `rootio:"N"`
+			SliF64    []float64   `rootio:"SliceF64"`
+			StdStr    string      `rootio:"StdStr"`
+			StlVecF64 []float64   `rootio:"StlVecF64"`
+			StlVecStr []string    `rootio:"StlVecStr"`
+			End       string      `rootio:"End"`
+		} `rootio:"evt"`
+	}
+
+	sc, err := rootio.NewTreeScanner(chain, &Data{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sc.Close()
+
+	var entries = []int64{0, 1, 9, 2, 5, 11, 15, 2, 14, 3, 0}
+	for _, entry := range entries {
+		err := sc.SeekEntry(entry)
+		if err != nil {
+			t.Fatalf("Could not seek to entry %d: %v", entry, err)
+		}
+
+		if !sc.Next() {
+			t.Fatalf("Could not read entry %d", entry)
+		}
+
+		var data Data
+
+		err = sc.Scan(&data)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		i := sc.Entry()
+
+		if i != entry {
+			t.Fatalf("did not seek to entry %d. got=%d, want=%d", entry, i, entry)
+		}
+		if data.Event.F64 != float64(i) {
+			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.Event.F64, float64(i))
+		}
+
+	}
+}
