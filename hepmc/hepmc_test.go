@@ -16,6 +16,7 @@ import (
 
 func TestEventRW(t *testing.T) {
 
+	// FIXME(sbinet): remove when we drop support for Go-1.8
 	if race && go18 {
 		t.Skip()
 	}
