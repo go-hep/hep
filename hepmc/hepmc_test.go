@@ -48,7 +48,7 @@ func testEventRW(t *testing.T, fname, outfname string, nevts int) {
 
 	dec := hepmc.NewDecoder(f)
 	if dec == nil {
-		t.Fatal(fmt.Errorf("hepmc.decoder: nil decoder"))
+		t.Fatalf("hepmc.decoder: nil decoder")
 	}
 
 	const NEVTS = 10
@@ -95,7 +95,6 @@ func testEventRW(t *testing.T, fname, outfname string, nevts int) {
 	if err != nil {
 		t.Fatalf("file: %s. err=%v\n", fname, err)
 	}
-
 }
 
 type reader struct {
@@ -199,7 +198,7 @@ func BenchmarkDecode(b *testing.B) {
 	r := newReader()
 	dec := hepmc.NewDecoder(r)
 	if dec == nil {
-		b.Fatal(fmt.Errorf("hepmc.decoder: nil decoder"))
+		b.Fatalf("hepmc.decoder: nil decoder")
 	}
 
 	const fname = "small.hepmc"
