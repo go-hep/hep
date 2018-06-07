@@ -9,7 +9,6 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"sync"
 	"testing"
 
 	"go-hep.org/x/hep/hepmc"
@@ -17,7 +16,10 @@ import (
 
 func TestEventRW(t *testing.T) {
 
-	var mu sync.Mutex
+	if race && go18 {
+		t.Skip()
+	}
+
 	for _, table := range []struct {
 		fname    string
 		outfname string
@@ -28,9 +30,7 @@ func TestEventRW(t *testing.T) {
 		{"out.hepmc", "rb.out.hepmc", 6},
 	} {
 		t.Run(table.fname, func(t *testing.T) {
-			mu.Lock()
 			testEventRW(t, table.fname, table.outfname, table.nevts)
-			mu.Unlock()
 		})
 	}
 
