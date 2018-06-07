@@ -9,6 +9,7 @@ import (
 
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
+	"go-hep.org/x/hep/xrootd/xrdproto/mkdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
 	"go-hep.org/x/hep/xrootd/xrdproto/rm"
 	"go-hep.org/x/hep/xrootd/xrdproto/stat"
@@ -78,6 +79,16 @@ func (fs *fileSystem) VirtualStat(ctx context.Context, path string) (xrdfs.Virtu
 		return xrdfs.VirtualFSStat{}, err
 	}
 	return resp.VirtualFSStat, nil
+}
+
+func (fs *fileSystem) Mkdir(ctx context.Context, path string, perm xrdfs.OpenMode) error {
+	_, err := fs.c.call(ctx, &mkdir.Request{Path: path, Mode: perm})
+	return err
+}
+
+func (fs *fileSystem) MkdirAll(ctx context.Context, path string, perm xrdfs.OpenMode) error {
+	_, err := fs.c.call(ctx, &mkdir.Request{Path: path, Mode: perm, Options: mkdir.OptionsMakePath})
+	return err
 }
 
 var (
