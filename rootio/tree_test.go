@@ -194,6 +194,14 @@ func TestEventTree(t *testing.T) {
 			name:  "fullsplit",
 			fname: "testdata/small-evnt-tree-fullsplit.root",
 		},
+		{
+			name:  "nosplit-xrootd",
+			fname: XrdRemote("testdata/small-evnt-tree-nosplit.root"),
+		},
+		{
+			name:  "fullsplit-xrootd",
+			fname: XrdRemote("testdata/small-evnt-tree-fullsplit.root"),
+		},
 	} {
 		testEventTree(t, test.name, test.fname)
 	}
@@ -374,25 +382,32 @@ func TestSimpleTreeOverHTTP(t *testing.T) {
 }
 
 func TestTreeWithBasketWithTKeyData(t *testing.T) {
-	f, err := Open("testdata/PhaseSpaceSimulation.root")
-	if err != nil {
-		t.Skipf("error: %v", err)
-	}
-	defer f.Close()
+	for _, fname := range []string{
+		"testdata/PhaseSpaceSimulation.root",
+		XrdRemote("testdata/PhaseSpaceSimulation.root"),
+	} {
+		t.Run(fname, func(t *testing.T) {
+			f, err := Open(fname)
+			if err != nil {
+				t.Skipf("error: %v", err)
+			}
+			defer f.Close()
 
-	obj, err := f.Get("PhaseSpaceTree")
-	if err != nil {
-		t.Fatal(err)
-	}
+			obj, err := f.Get("PhaseSpaceTree")
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	tree := obj.(Tree)
-	if got, want := tree.Name(), "PhaseSpaceTree"; got != want {
-		t.Fatalf("tree.Name: got=%q. want=%q", got, want)
-	}
+			tree := obj.(Tree)
+			if got, want := tree.Name(), "PhaseSpaceTree"; got != want {
+				t.Fatalf("tree.Name: got=%q. want=%q", got, want)
+			}
 
-	entries := tree.Entries()
-	if got, want := entries, int64(50000); got != want {
-		t.Fatalf("tree.Entries: got=%v. want=%v", got, want)
+			entries := tree.Entries()
+			if got, want := entries, int64(50000); got != want {
+				t.Fatalf("tree.Entries: got=%v. want=%v", got, want)
+			}
+		})
 	}
 }
 
