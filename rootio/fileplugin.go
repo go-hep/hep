@@ -101,7 +101,7 @@ func xrdOpen(name string) (*xrdFile, error) {
 		return nil, errors.Errorf("rootio: could not open %q: %v", name, err)
 	}
 
-	return &xrdFile{cli: xrd, fs: fs, f: f}, nil
+	return &xrdFile{cli: xrd, fs: fs, f: f, name: name}, nil
 }
 
 type xrdFile struct {
@@ -109,7 +109,13 @@ type xrdFile struct {
 	fs  xrdfs.FileSystem
 	f   xrdfs.File
 
-	pos int64
+	name string
+	pos  int64
+}
+
+// Name returns the name of the file.
+func (f *xrdFile) Name() string {
+	return f.name
 }
 
 func (f *xrdFile) Close() error {
@@ -150,20 +156,20 @@ func (f *xrdFile) Seek(offset int64, whence int) (int64, error) {
 	case io.SeekStart:
 		f.pos = offset
 	case io.SeekEnd:
-		st := f.f.Info()
-		if st == nil {
-			// FIXME(sbinet): we need kXR_stat to be implemented...
-			//	st, err = f.f.Stat(context.Background())
-			//	if err != nil {
-			//		return 0, errors.Errorf("rootio: could not xrootd-stat %q: %v", f.f.Name(), err)
-			//	}
-			panic(errors.Errorf("rootio: no FileInfo for xrdfile"))
+		st, err := f.Stat()
+		if err != nil {
+			return 0, errors.Errorf("rootio: could not xrootd-stat %q: %v", f.Name(), err)
 		}
 		f.pos = st.Size() - offset
 	case io.SeekCurrent:
 		f.pos += offset
 	}
 	return f.pos, err
+}
+
+func (f *xrdFile) Stat() (os.FileInfo, error) {
+	v, err := f.f.Stat(context.Background())
+	return v, err
 }
 
 var (
