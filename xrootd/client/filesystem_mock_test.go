@@ -13,6 +13,7 @@ import (
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto"
+	"go-hep.org/x/hep/xrootd/xrdproto/chmod"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/mkdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/mv"
@@ -766,6 +767,62 @@ func TestFileSystem_Rename_Mock(t *testing.T) {
 		err := fs.Rename(context.Background(), oldpath, newpath)
 		if err != nil {
 			t.Fatalf("invalid mv call: %v", err)
+		}
+	}
+
+	testClientWithMockServer(serverFunc, clientFunc)
+}
+
+func TestFileSystem_Chmod_Mock(t *testing.T) {
+	var (
+		path        = "/tmp/test2"
+		perm        = xrdfs.OpenModeOwnerRead | xrdfs.OpenModeOwnerWrite
+		wantRequest = chmod.Request{Path: path, Mode: perm}
+	)
+
+	serverFunc := func(cancel func(), conn net.Conn) {
+		data, err := readRequest(conn)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not read request: %v", err)
+		}
+
+		var gotRequest chmod.Request
+		gotHeader, err := unmarshalRequest(data, &gotRequest)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not unmarshal request: %v", err)
+		}
+
+		if gotHeader.RequestID != gotRequest.ReqID() {
+			cancel()
+			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
+		}
+
+		if !reflect.DeepEqual(gotRequest, wantRequest) {
+			cancel()
+			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
+		}
+
+		responseHeader := xrdproto.ResponseHeader{StreamID: gotHeader.StreamID}
+
+		responseData, err := marshalResponse(responseHeader)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not marshal response: %v", err)
+		}
+
+		if err := writeResponse(conn, responseData); err != nil {
+			cancel()
+			t.Fatalf("invalid write: %s", err)
+		}
+	}
+
+	clientFunc := func(cancel func(), client *Client) {
+		fs := fileSystem{client}
+		err := fs.Chmod(context.Background(), path, perm)
+		if err != nil {
+			t.Fatalf("invalid chmod call: %v", err)
 		}
 	}
 

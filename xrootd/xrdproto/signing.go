@@ -6,6 +6,7 @@ package xrdproto // import "go-hep.org/x/hep/xrootd/xrdproto"
 
 import (
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
+	"go-hep.org/x/hep/xrootd/xrdproto/chmod"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/mkdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/mv"
@@ -106,6 +107,7 @@ func NewSignRequirements(level SecurityLevel, overrides []SecurityOverride) Sign
 
 	if level >= Compatible {
 		// TODO: set requirements
+		sr.requirements[chmod.RequestID] = SignNeeded
 		sr.requirements[mv.RequestID] = SignNeeded
 		sr.requirements[open.RequestID] = SignLikely
 		sr.requirements[rm.RequestID] = SignNeeded
@@ -114,6 +116,7 @@ func NewSignRequirements(level SecurityLevel, overrides []SecurityOverride) Sign
 	}
 	if level >= Standard {
 		// TODO: set requirements
+		sr.requirements[chmod.RequestID] = SignNeeded
 		sr.requirements[mkdir.RequestID] = SignNeeded
 		sr.requirements[mv.RequestID] = SignNeeded
 		sr.requirements[open.RequestID] = SignNeeded
@@ -123,6 +126,7 @@ func NewSignRequirements(level SecurityLevel, overrides []SecurityOverride) Sign
 	}
 	if level >= Intense {
 		// TODO: set requirements
+		sr.requirements[chmod.RequestID] = SignNeeded
 		sr.requirements[xrdclose.RequestID] = SignNeeded
 		sr.requirements[mkdir.RequestID] = SignNeeded
 		sr.requirements[mv.RequestID] = SignNeeded
@@ -134,6 +138,7 @@ func NewSignRequirements(level SecurityLevel, overrides []SecurityOverride) Sign
 	}
 	if level >= Pedantic {
 		// TODO: set requirements
+		sr.requirements[chmod.RequestID] = SignNeeded
 		sr.requirements[xrdclose.RequestID] = SignNeeded
 		sr.requirements[dirlist.RequestID] = SignNeeded
 		sr.requirements[mkdir.RequestID] = SignNeeded

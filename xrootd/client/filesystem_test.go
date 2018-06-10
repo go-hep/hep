@@ -491,3 +491,72 @@ func TestFileSystem_Rename(t *testing.T) {
 		})
 	}
 }
+
+func testFileSystem_Chmod(t *testing.T, addr string) {
+	name := "test_chmod"
+	oldPerm := xrdfs.OpenModeOwnerWrite | xrdfs.OpenModeOwnerRead
+	newPerm := xrdfs.OpenModeOwnerRead
+
+	client, err := NewClient(context.Background(), addr, "gopher")
+	if err != nil {
+		t.Fatalf("could not create client: %v", err)
+	}
+	defer client.Close()
+	fs := client.FS()
+
+	parent, err := tempdir(client, "/tmp/", "xrd-test-chmod")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer fs.RemoveDir(context.Background(), parent)
+	file := path.Join(parent, name)
+
+	f, err := fs.Open(context.Background(), file, oldPerm, xrdfs.OpenOptionsNew)
+	if err != nil {
+		t.Fatalf("could not open file: %v", err)
+	}
+	err = f.Close(context.Background())
+	if err != nil {
+		t.Fatalf("could not close file: %v", err)
+	}
+	defer fs.RemoveFile(context.Background(), file)
+
+	s, err := fs.Stat(context.Background(), file)
+	if err != nil {
+		t.Fatalf("invalid stat call: %v", err)
+	}
+
+	if s.Flags&xrdfs.StatIsWritable == 0 {
+		t.Fatalf("invalid mode: file should be writable")
+	}
+
+	err = fs.Chmod(context.Background(), file, newPerm)
+
+	s, err = fs.Stat(context.Background(), file)
+	if err != nil {
+		t.Fatalf("invalid stat call: %v", err)
+	}
+
+	if s.Flags&xrdfs.StatIsWritable != 0 {
+		t.Fatalf("invalid mode: file should not be writable")
+	}
+
+	err = fs.Chmod(context.Background(), file, oldPerm)
+
+	s, err = fs.Stat(context.Background(), file)
+	if err != nil {
+		t.Fatalf("invalid stat call: %v", err)
+	}
+
+	if s.Flags&xrdfs.StatIsWritable == 0 {
+		t.Fatalf("invalid mode: file should be writable")
+	}
+}
+
+func TestFileSystem_Chmod(t *testing.T) {
+	for _, addr := range testClientAddrs {
+		t.Run(addr, func(t *testing.T) {
+			testFileSystem_Chmod(t, addr)
+		})
+	}
+}

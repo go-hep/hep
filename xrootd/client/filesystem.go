@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"go-hep.org/x/hep/xrootd/xrdfs"
+	"go-hep.org/x/hep/xrootd/xrdproto/chmod"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/mkdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/mv"
@@ -103,6 +104,12 @@ func (fs *fileSystem) RemoveDir(ctx context.Context, path string) error {
 // Rename renames (moves) oldpath to newpath.
 func (fs *fileSystem) Rename(ctx context.Context, oldpath, newpath string) error {
 	_, err := fs.c.call(ctx, &mv.Request{OldPath: oldpath, NewPath: newpath})
+	return err
+}
+
+// Chmod changes the permissions of the named file to perm.
+func (fs *fileSystem) Chmod(ctx context.Context, path string, perm xrdfs.OpenMode) error {
+	_, err := fs.c.call(ctx, &chmod.Request{Path: path, Mode: perm})
 	return err
 }
 
