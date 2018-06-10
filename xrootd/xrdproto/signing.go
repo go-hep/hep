@@ -6,6 +6,7 @@ package xrdproto // import "go-hep.org/x/hep/xrootd/xrdproto"
 
 import (
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
+	"go-hep.org/x/hep/xrootd/xrdproto/auth"
 	"go-hep.org/x/hep/xrootd/xrdproto/chmod"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/mkdir"
@@ -158,8 +159,7 @@ func NewSignRequirements(level SecurityLevel, overrides []SecurityOverride) Sign
 	}
 
 	for _, override := range overrides {
-		// TODO: use auth.RequestID instead of 3000.
-		requestID := 3000 + uint16(override.RequestIndex)
+		requestID := auth.RequestID + uint16(override.RequestIndex)
 		sr.requirements[requestID] = override.RequestLevel
 	}
 
