@@ -414,3 +414,80 @@ func TestFileSystem_RemoveDir(t *testing.T) {
 		})
 	}
 }
+
+func testFileSystem_Rename(t *testing.T, addr string) {
+	oldName := "test_rename_before"
+	newName := "test_rename_after"
+
+	client, err := NewClient(context.Background(), addr, "gopher")
+	if err != nil {
+		t.Fatalf("could not create client: %v", err)
+	}
+	defer client.Close()
+	fs := client.FS()
+
+	parent, err := tempdir(client, "/tmp/", "xrd-test-rename")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer fs.RemoveDir(context.Background(), parent)
+	oldpath := path.Join(parent, oldName)
+	newpath := path.Join(parent, newName)
+
+	defer fs.RemoveDir(context.Background(), oldpath)
+	defer fs.RemoveDir(context.Background(), newpath)
+
+	err = fs.Mkdir(context.Background(), oldpath, xrdfs.OpenModeOwnerRead|xrdfs.OpenModeOwnerWrite)
+	if err != nil {
+		t.Fatalf("invalid mkdir call: %v", err)
+	}
+
+	dirs, err := fs.Dirlist(context.Background(), parent)
+	if err != nil {
+		t.Fatalf("invalid dirlist call: %v", err)
+	}
+
+	found := false
+	for _, d := range dirs {
+		if d.EntryName == oldName {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		t.Fatalf("dir %q has not been created", oldpath)
+	}
+
+	err = fs.Rename(context.Background(), oldpath, newpath)
+	if err != nil {
+		t.Fatalf("invalid rmdir call: %v", err)
+	}
+
+	dirs, err = fs.Dirlist(context.Background(), parent)
+	if err != nil {
+		t.Fatalf("invalid dirlist call: %v", err)
+	}
+
+	found = false
+	for _, d := range dirs {
+		if d.EntryName == oldName {
+			t.Fatalf("dir %q has not been renamed", oldpath)
+		}
+		if d.EntryName == newName {
+			found = true
+		}
+	}
+
+	if !found {
+		t.Fatalf("dir %q has not been renamed to %q", oldpath, newpath)
+	}
+}
+
+func TestFileSystem_Rename(t *testing.T) {
+	for _, addr := range testClientAddrs {
+		t.Run(addr, func(t *testing.T) {
+			testFileSystem_Rename(t, addr)
+		})
+	}
+}

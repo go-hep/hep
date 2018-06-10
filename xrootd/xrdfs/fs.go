@@ -20,6 +20,7 @@ type FileSystem interface {
 	Mkdir(ctx context.Context, path string, perm OpenMode) error
 	MkdirAll(ctx context.Context, path string, perm OpenMode) error
 	RemoveDir(ctx context.Context, path string) error
+	Rename(ctx context.Context, oldpath, newpath string) error
 }
 
 // OpenMode is the mode in which path is to be opened.
