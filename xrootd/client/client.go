@@ -66,11 +66,18 @@ func NewClient(ctx context.Context, address string, username string) (*Client, e
 		return nil, err
 	}
 
-	// TODO: parse security information from Login request and perform an Auth request if needed.
-	_, err = client.Login(ctx, username, "")
+	securityInfo, err := client.Login(ctx, username, "")
 	if err != nil {
 		client.Close()
 		return nil, err
+	}
+
+	if len(securityInfo.SecurityInformation) > 0 {
+		err = client.auth(ctx, securityInfo.SecurityInformation)
+		if err != nil {
+			client.Close()
+			return nil, err
+		}
 	}
 
 	protocolInfo, err := client.Protocol(ctx)
