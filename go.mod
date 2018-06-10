@@ -25,7 +25,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.2
 	github.com/pborman/uuid v0.0.0-20180122190007-c65b2f87fee3
 	github.com/peterh/liner v0.0.0-20180504030148-80ce870644db
-	github.com/pierrec/lz4 v1.0.1
+	github.com/pierrec/lz4 v2.0.2
 	github.com/pierrec/xxHash v0.1.1
 	github.com/pkg/errors v0.8.0
 	github.com/sbinet/npyio v0.1.0
