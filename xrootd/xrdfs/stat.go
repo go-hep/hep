@@ -18,6 +18,8 @@ import (
 type StatFlags int32
 
 const (
+	// StatIsFile indicates that entry is a regular file if no other flag is specified.
+	StatIsFile StatFlags = 0
 	// StatIsExecutable indicates that entry is either an executable file or a searchable directory.
 	StatIsExecutable StatFlags = 1
 	// StatIsDir indicates that entry is a directory.

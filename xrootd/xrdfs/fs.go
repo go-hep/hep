@@ -22,6 +22,7 @@ type FileSystem interface {
 	RemoveDir(ctx context.Context, path string) error
 	Rename(ctx context.Context, oldpath, newpath string) error
 	Chmod(ctx context.Context, path string, mode OpenMode) error
+	Statx(ctx context.Context, paths []string) ([]StatFlags, error)
 }
 
 // OpenMode is the mode in which path is to be opened.

@@ -21,6 +21,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/rm"
 	"go-hep.org/x/hep/xrootd/xrdproto/rmdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/stat"
+	"go-hep.org/x/hep/xrootd/xrdproto/statx"
 	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
 )
 
@@ -823,6 +824,75 @@ func TestFileSystem_Chmod_Mock(t *testing.T) {
 		err := fs.Chmod(context.Background(), path, perm)
 		if err != nil {
 			t.Fatalf("invalid chmod call: %v", err)
+		}
+	}
+
+	testClientWithMockServer(serverFunc, clientFunc)
+}
+
+func TestFileSystem_Statx_Mock(t *testing.T) {
+	paths := []string{"/tmp/test", "/tmp/test2"}
+	want := []xrdfs.StatFlags{xrdfs.StatIsDir, xrdfs.StatIsOffline}
+	wantRequest := statx.Request{Paths: "/tmp/test\n/tmp/test2"}
+
+	serverFunc := func(cancel func(), conn net.Conn) {
+		data, err := readRequest(conn)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not read request: %v", err)
+		}
+
+		var gotRequest statx.Request
+		gotHeader, err := unmarshalRequest(data, &gotRequest)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not unmarshal request: %v", err)
+		}
+
+		if gotHeader.RequestID != gotRequest.ReqID() {
+			cancel()
+			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
+		}
+
+		if !reflect.DeepEqual(gotRequest, wantRequest) {
+			cancel()
+			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
+		}
+
+		response := statx.Response{StatFlags: want}
+		var wBuffer xrdenc.WBuffer
+		err = response.MarshalXrd(&wBuffer)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not marshal response: %v", err)
+		}
+
+		responseHeader := xrdproto.ResponseHeader{
+			StreamID:   gotHeader.StreamID,
+			DataLength: int32(len(wBuffer.Bytes())),
+		}
+
+		responseData, err := marshalResponse(responseHeader)
+		if err != nil {
+			cancel()
+			t.Fatalf("could not marshal response: %v", err)
+		}
+		responseData = append(responseData, wBuffer.Bytes()...)
+
+		if err := writeResponse(conn, responseData); err != nil {
+			cancel()
+			t.Fatalf("invalid write: %s", err)
+		}
+	}
+
+	clientFunc := func(cancel func(), client *Client) {
+		fs := client.FS()
+		got, err := fs.Statx(context.Background(), paths)
+		if err != nil {
+			t.Fatalf("invalid statx call: %v", err)
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Fatalf("statx info does not match:\ngot = %v\nwant = %v", got, want)
 		}
 	}
 

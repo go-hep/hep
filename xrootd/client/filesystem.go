@@ -16,6 +16,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/rm"
 	"go-hep.org/x/hep/xrootd/xrdproto/rmdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/stat"
+	"go-hep.org/x/hep/xrootd/xrdproto/statx"
 	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
 )
 
@@ -111,6 +112,17 @@ func (fs *fileSystem) Rename(ctx context.Context, oldpath, newpath string) error
 func (fs *fileSystem) Chmod(ctx context.Context, path string, perm xrdfs.OpenMode) error {
 	_, err := fs.c.call(ctx, &chmod.Request{Path: path, Mode: perm})
 	return err
+}
+
+// Statx obtains type information for one or more paths.
+// Only a limited number of flags is meaningful such as StatIsExecutable, StatIsDir, StatIsOther, StatIsOffline.
+func (fs *fileSystem) Statx(ctx context.Context, paths []string) ([]xrdfs.StatFlags, error) {
+	var resp statx.Response
+	err := fs.c.Send(ctx, &resp, statx.NewRequest(paths))
+	if err != nil {
+		return nil, err
+	}
+	return resp.StatFlags, nil
 }
 
 var (

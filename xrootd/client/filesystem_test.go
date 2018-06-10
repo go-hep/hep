@@ -560,3 +560,32 @@ func TestFileSystem_Chmod(t *testing.T) {
 		})
 	}
 }
+
+func testFileSystem_Statx(t *testing.T, addr string) {
+	want := []xrdfs.StatFlags{xrdfs.StatIsFile, xrdfs.StatIsDir}
+
+	client, err := NewClient(context.Background(), addr, "gopher")
+	if err != nil {
+		t.Fatalf("could not create client: %v", err)
+	}
+	defer client.Close()
+
+	fs := client.FS()
+
+	got, err := fs.Statx(context.Background(), []string{"/tmp/dir1/file1.txt", "/tmp/dir1"})
+	if err != nil {
+		t.Fatalf("invalid statx call: %v", err)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Filesystem.Statx()\ngot = %v\nwant = %v", got, want)
+	}
+}
+
+func TestFileSystem_Statx(t *testing.T) {
+	for _, addr := range testClientAddrs {
+		t.Run(addr, func(t *testing.T) {
+			testFileSystem_Statx(t, addr)
+		})
+	}
+}
