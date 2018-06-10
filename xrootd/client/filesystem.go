@@ -92,7 +92,7 @@ func (fs *fileSystem) MkdirAll(ctx context.Context, path string, perm xrdfs.Open
 	return err
 }
 
-// RemoveFile removes a directory.
+// RemoveDir removes a directory.
 // The directory to be removed must be empty.
 func (fs *fileSystem) RemoveDir(ctx context.Context, path string) error {
 	_, err := fs.c.call(ctx, &rmdir.Request{Path: path})
