@@ -284,8 +284,26 @@ func testFileSystem_VirtualStat(t *testing.T, addr string) {
 		t.Fatalf("invalid stat call: %v", err)
 	}
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Filesystem.Open()\ngot = %v\nwant = %v", got, want)
+	if got.NumberRW != want.NumberRW {
+		t.Errorf("wrong NumberRW:\ngot = %v\nwant = %v", got.NumberRW, want.NumberRW)
+	}
+
+	if got.FreeRW <= 0 || got.FreeRW > 500 {
+		t.Errorf("wrong FreeRW:\ngot = %v\nwant to be between 0 and 500", got.FreeRW)
+	}
+
+	if got.UtilizationRW <= 0 || got.UtilizationRW > 100 {
+		t.Errorf("wrong UtilizationRW:\ngot = %v\nwant to be between 0 and 100", got.UtilizationRW)
+	}
+
+	if got.NumberStaging != want.NumberStaging {
+		t.Errorf("wrong NumberStaging:\ngot = %v\nwant = %v", got.NumberStaging, want.NumberStaging)
+	}
+	if got.FreeStaging != want.FreeStaging {
+		t.Errorf("wrong FreeStaging:\ngot = %v\nwant = %v", got.FreeStaging, want.FreeStaging)
+	}
+	if got.UtilizationStaging != want.UtilizationStaging {
+		t.Errorf("wrong UtilizationStaging:\ngot = %v\nwant = %v", got.UtilizationStaging, want.UtilizationStaging)
 	}
 }
 
