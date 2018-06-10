@@ -12,6 +12,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/stat"
 	"go-hep.org/x/hep/xrootd/xrdproto/sync"
 	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
+	"go-hep.org/x/hep/xrootd/xrdproto/verifyw"
 	"go-hep.org/x/hep/xrootd/xrdproto/write"
 	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
@@ -118,6 +119,15 @@ func (f *file) Stat(ctx context.Context) (xrdfs.EntryStat, error) {
 	}
 	f.info = &resp.EntryStat
 	return resp.EntryStat, nil
+}
+
+// VerifyWriteAt writes len(p) bytes from p to the file at offset off using crc32 verification.
+//
+// TODO: note that verifyw is not supported by the XRootD server.
+// See https://github.com/xrootd/xrootd/issues/738 for the details.
+func (f file) VerifyWriteAt(ctx context.Context, p []byte, off int64) error {
+	_, err := f.fs.c.call(ctx, verifyw.NewRequestCRC32(f.handle, off, p))
+	return err
 }
 
 var (

@@ -52,6 +52,12 @@ type File interface {
 
 	// StatVirtualFS fetches the virtual stat info of this file from the XRootD server.
 	StatVirtualFS(ctx context.Context) (VirtualFSStat, error)
+
+	// VerifyWriteAt writes len(p) bytes from p to the file at offset off using crc32 verification.
+	//
+	// TODO: note that verifyw is not supported by the XRootD server.
+	// See https://github.com/xrootd/xrootd/issues/738 for the details.
+	VerifyWriteAt(ctx context.Context, p []byte, off int64) error
 }
 
 // FileHandle is the file handle, which should be treated as opaque data.
