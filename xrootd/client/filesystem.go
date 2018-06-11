@@ -6,6 +6,7 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 
 import (
 	"context"
+	stdpath "path"
 
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto/chmod"
@@ -104,6 +105,33 @@ func (fs *fileSystem) MkdirAll(ctx context.Context, path string, perm xrdfs.Open
 func (fs *fileSystem) RemoveDir(ctx context.Context, path string) error {
 	_, err := fs.c.call(ctx, &rmdir.Request{Path: path})
 	return err
+}
+
+// RemoveAll removes path and any children it contains.
+// It removes everything it can but returns the first error it encounters.
+// If the path does not exist, RemoveAll returns nil (no error.)
+func (fs *fileSystem) RemoveAll(ctx context.Context, path string) error {
+	st, err := fs.Stat(ctx, path)
+	if err != nil {
+		return err
+	}
+	switch {
+	case st.IsDir():
+		dirs, err := fs.Dirlist(ctx, path)
+		if err != nil {
+			return err
+		}
+		for _, dir := range dirs {
+			name := stdpath.Join(path, dir.Name())
+			err := fs.RemoveAll(ctx, name)
+			if err != nil {
+				return err
+			}
+		}
+		return fs.RemoveDir(ctx, path)
+	default:
+		return fs.RemoveFile(ctx, path)
+	}
 }
 
 // Rename renames (moves) oldpath to newpath.

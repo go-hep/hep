@@ -415,6 +415,64 @@ func TestFileSystem_RemoveDir(t *testing.T) {
 	}
 }
 
+func TestFileSystem_RemoveAll(t *testing.T) {
+	for _, addr := range testClientAddrs {
+		t.Run(addr, func(t *testing.T) {
+			dirName := "test_remove_all"
+
+			client, err := NewClient(context.Background(), addr, "gopher")
+			if err != nil {
+				t.Fatalf("could not create client: %v", err)
+			}
+			defer client.Close()
+			fs := client.FS()
+
+			parent, err := tempdir(client, "/tmp/", "xrd-test-remove-all")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer fs.RemoveAll(context.Background(), parent)
+			dir := path.Join(parent, dirName)
+
+			err = fs.Mkdir(context.Background(), dir, xrdfs.OpenModeOwnerRead|xrdfs.OpenModeOwnerWrite)
+			if err != nil {
+				t.Fatalf("invalid mkdir call: %v", err)
+			}
+
+			dirs, err := fs.Dirlist(context.Background(), parent)
+			if err != nil {
+				t.Fatalf("invalid dirlist call: %v", err)
+			}
+
+			found := false
+			for _, d := range dirs {
+				if d.EntryName == dirName {
+					found = true
+				}
+			}
+
+			if !found {
+				t.Fatalf("dir '%s' has not been created", dir)
+			}
+
+			err = fs.RemoveAll(context.Background(), parent)
+			if err != nil {
+				t.Fatalf("invalid rmdir call: %v", err)
+			}
+
+			dirs, err = fs.Dirlist(context.Background(), "/tmp")
+			if err != nil {
+				t.Fatalf("invalid dirlist call: %v", err)
+			}
+			for _, d := range dirs {
+				if d.EntryName == path.Base(parent) {
+					t.Fatalf("dir '%s' has not been deleted", dir)
+				}
+			}
+		})
+	}
+}
+
 func testFileSystem_Rename(t *testing.T, addr string) {
 	oldName := "test_rename_before"
 	newName := "test_rename_after"

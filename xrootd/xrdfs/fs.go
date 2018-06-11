@@ -44,6 +44,11 @@ type FileSystem interface {
 	// The directory to be removed must be empty.
 	RemoveDir(ctx context.Context, path string) error
 
+	// RemoveAll removes path and any children it contains.
+	// It removes everything it can but returns the first error it encounters.
+	// If the path does not exist, RemoveAll returns nil (no error.)
+	RemoveAll(ctx context.Context, path string) error
+
 	// Rename renames (moves) oldpath to newpath.
 	Rename(ctx context.Context, oldpath, newpath string) error
 
