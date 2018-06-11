@@ -77,6 +77,20 @@ type RequestHeader struct {
 	RequestID uint16
 }
 
+// MarshalXrd implements Marshaler.
+func (o RequestHeader) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
+	wBuffer.WriteBytes(o.StreamID[:])
+	wBuffer.WriteU16(o.RequestID)
+	return nil
+}
+
+// UnmarshalXrd implements Unmarshaler.
+func (o *RequestHeader) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
+	rBuffer.ReadBytes(o.StreamID[:])
+	o.RequestID = rBuffer.ReadU16()
+	return nil
+}
+
 // Error returns an error received from the server or nil if request hasn't failed.
 func (hdr ResponseHeader) Error(data []byte) error {
 	if hdr.Status == Error {

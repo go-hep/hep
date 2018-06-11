@@ -24,10 +24,10 @@ type Response struct {
 	Entries []xrdfs.EntryStat
 }
 
-// RespID implements xrdproto.Response.RespID
+// RespID implements xrdproto.Response.RespID.
 func (resp *Response) RespID() uint16 { return RequestID }
 
-// MarshalXrd implements xrdproto.Marshaler
+// MarshalXrd implements xrdproto.Marshaler.
 func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	// TODO: implement
 	panic(errors.New("xrootd: MarshalXrd is not implemented"))
@@ -106,10 +106,13 @@ func NewRequest(path string) *Request {
 	return &Request{Options: WithStatInfo, Path: path}
 }
 
-// ReqID implements xrdproto.Request.ReqID
+// ReqID implements xrdproto.Request.ReqID.
 func (req *Request) ReqID() uint16 { return RequestID }
 
-// MarshalXrd implements xrdproto.Marshaler
+// ShouldSign implements xrdproto.Request.ShouldSign.
+func (req *Request) ShouldSign() bool { return false }
+
+// MarshalXrd implements xrdproto.Marshaler.
 func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.Next(15)
 	wBuffer.WriteU8(byte(o.Options))
@@ -117,7 +120,7 @@ func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return nil
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	rBuffer.Skip(15)
 	o.Options = RequestOptions(rBuffer.ReadU8())

@@ -40,3 +40,6 @@ func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 
 // ReqID implements xrdproto.Request.ReqID.
 func (req *Request) ReqID() uint16 { return RequestID }
+
+// ShouldSign implements xrdproto.Request.ShouldSign.
+func (req *Request) ShouldSign() bool { return false }

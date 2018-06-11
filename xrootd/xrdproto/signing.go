@@ -17,6 +17,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/rmdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/stat"
 	"go-hep.org/x/hep/xrootd/xrdproto/statx"
+	"go-hep.org/x/hep/xrootd/xrdproto/sync"
 	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
 	"go-hep.org/x/hep/xrootd/xrdproto/verifyw"
 	"go-hep.org/x/hep/xrootd/xrdproto/write"
@@ -84,16 +85,13 @@ type SignRequirements struct {
 }
 
 // Needed return whether the request should be signed.
-// "Modifies" indicates that request modifies data or metadata
-// and is used to handle the "signLikely" level which specifies that
-// request should be signed only if it modifies data.
 // For the list of actual examples see XRootD protocol specification v. 3.1.0, p.76.
-func (sr *SignRequirements) Needed(requestID uint16, modifies bool) bool {
-	v, exist := sr.requirements[requestID]
+func (sr *SignRequirements) Needed(request Request) bool {
+	v, exist := sr.requirements[request.ReqID()]
 	if !exist || v == SignNone {
 		return false
 	}
-	if v == SignLikely && !modifies {
+	if v == SignLikely && !request.ShouldSign() {
 		return false
 	}
 	return true
@@ -119,43 +117,22 @@ func NewSignRequirements(level SecurityLevel, overrides []SecurityOverride) Sign
 	}
 	if level >= Standard {
 		// TODO: set requirements
-		sr.requirements[chmod.RequestID] = SignNeeded
 		sr.requirements[mkdir.RequestID] = SignNeeded
-		sr.requirements[mv.RequestID] = SignNeeded
 		sr.requirements[open.RequestID] = SignNeeded
-		sr.requirements[rm.RequestID] = SignNeeded
-		sr.requirements[rmdir.RequestID] = SignNeeded
-		sr.requirements[truncate.RequestID] = SignNeeded
 	}
 	if level >= Intense {
 		// TODO: set requirements
-		sr.requirements[chmod.RequestID] = SignNeeded
 		sr.requirements[xrdclose.RequestID] = SignNeeded
-		sr.requirements[mkdir.RequestID] = SignNeeded
-		sr.requirements[mv.RequestID] = SignNeeded
-		sr.requirements[open.RequestID] = SignNeeded
-		sr.requirements[truncate.RequestID] = SignNeeded
-		sr.requirements[write.RequestID] = SignNeeded
-		sr.requirements[rm.RequestID] = SignNeeded
-		sr.requirements[rmdir.RequestID] = SignNeeded
 		sr.requirements[verifyw.RequestID] = SignNeeded
+		sr.requirements[write.RequestID] = SignNeeded
 	}
 	if level >= Pedantic {
 		// TODO: set requirements
-		sr.requirements[chmod.RequestID] = SignNeeded
-		sr.requirements[xrdclose.RequestID] = SignNeeded
 		sr.requirements[dirlist.RequestID] = SignNeeded
-		sr.requirements[mkdir.RequestID] = SignNeeded
-		sr.requirements[mv.RequestID] = SignNeeded
-		sr.requirements[open.RequestID] = SignNeeded
 		sr.requirements[read.RequestID] = SignNeeded
-		sr.requirements[truncate.RequestID] = SignNeeded
-		sr.requirements[write.RequestID] = SignNeeded
-		sr.requirements[rm.RequestID] = SignNeeded
-		sr.requirements[rmdir.RequestID] = SignNeeded
 		sr.requirements[stat.RequestID] = SignNeeded
 		sr.requirements[statx.RequestID] = SignNeeded
-		sr.requirements[verifyw.RequestID] = SignNeeded
+		sr.requirements[sync.RequestID] = SignNeeded
 	}
 
 	for _, override := range overrides {

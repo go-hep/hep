@@ -24,13 +24,14 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 
 import (
 	"context"
-	"encoding/binary"
 	"io"
 	"net"
+	"sync/atomic"
 
 	"go-hep.org/x/hep/xrootd/internal/mux"
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdproto"
+	"go-hep.org/x/hep/xrootd/xrdproto/sigver"
 )
 
 // A Client to xrootd server which allows to send requests and receive responses.
@@ -42,6 +43,7 @@ type Client struct {
 	mux              *mux.Mux
 	protocolVersion  int32
 	signRequirements xrdproto.SignRequirements
+	seqID            int64
 }
 
 // NewClient creates a new xrootd client that connects to the given address using username.
@@ -203,13 +205,38 @@ func (client *Client) call(ctx context.Context, req xrdproto.Request) ([]byte, e
 	}
 
 	var wBuffer xrdenc.WBuffer
+	header := xrdproto.RequestHeader{streamID, req.ReqID()}
+	if err = header.MarshalXrd(&wBuffer); err != nil {
+		return nil, err
+	}
 	if err = req.MarshalXrd(&wBuffer); err != nil {
 		return nil, err
 	}
+	data := wBuffer.Bytes()
 
-	var hdr [4]byte
-	copy(hdr[:2], streamID[:])
-	binary.BigEndian.PutUint16(hdr[2:], req.ReqID())
+	if client.signRequirements.Needed(req) {
+		data, err = client.sign(streamID, req.ReqID(), data)
+		if err != nil {
+			return nil, err
+		}
+	}
 
-	return client.send(ctx, responseChannel, append(hdr[:], wBuffer.Bytes()...))
+	return client.send(ctx, responseChannel, data)
+}
+
+func (client *Client) sign(streamID xrdproto.StreamID, requestID uint16, data []byte) ([]byte, error) {
+	seqID := atomic.AddInt64(&client.seqID, 1)
+	signRequest := sigver.NewRequest(requestID, seqID, data)
+	header := xrdproto.RequestHeader{streamID, signRequest.ReqID()}
+
+	var wBuffer xrdenc.WBuffer
+	if err := header.MarshalXrd(&wBuffer); err != nil {
+		return nil, err
+	}
+	if err := signRequest.MarshalXrd(&wBuffer); err != nil {
+		return nil, err
+	}
+	wBuffer.WriteBytes(data)
+
+	return wBuffer.Bytes(), nil
 }

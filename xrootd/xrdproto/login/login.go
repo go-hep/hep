@@ -31,17 +31,17 @@ type Response struct {
 	SecurityInformation []byte
 }
 
-// RespID implements xrdproto.Response.RespID
+// RespID implements xrdproto.Response.RespID.
 func (resp *Response) RespID() uint16 { return RequestID }
 
-// MarshalXrd implements xrdproto.Marshaler
+// MarshalXrd implements xrdproto.Marshaler.
 func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteBytes(o.SessionID[:])
 	wBuffer.WriteBytes(o.SecurityInformation)
 	return nil
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	rBuffer.ReadBytes(o.SessionID[:])
 	o.SecurityInformation = append(o.SecurityInformation, rBuffer.Bytes()...)
@@ -75,10 +75,13 @@ func NewRequest(username, token string) *Request {
 	}
 }
 
-// ReqID implements xrdproto.Request.ReqID
+// ReqID implements xrdproto.Request.ReqID.
 func (req *Request) ReqID() uint16 { return RequestID }
 
-// MarshalXrd implements xrdproto.Marshaler
+// ShouldSign implements xrdproto.Request.ShouldSign.
+func (req *Request) ShouldSign() bool { return false }
+
+// MarshalXrd implements xrdproto.Marshaler.
 func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteI32(o.Pid)
 	wBuffer.WriteBytes(o.Username[:])
@@ -91,7 +94,7 @@ func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return nil
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	o.Pid = rBuffer.ReadI32()
 	rBuffer.ReadBytes(o.Username[:])

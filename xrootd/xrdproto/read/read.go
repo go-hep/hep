@@ -21,13 +21,13 @@ type Response struct {
 	Data []uint8
 }
 
-// MarshalXrd implements xrdproto.Marshaler
+// MarshalXrd implements xrdproto.Marshaler.
 func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteBytes(o.Data)
 	return nil
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	src := rBuffer.Len()
 	dst := len(o.Data)
@@ -39,7 +39,7 @@ func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	return nil
 }
 
-// RespID implements xrdproto.Response.RespID
+// RespID implements xrdproto.Response.RespID.
 func (resp *Response) RespID() uint16 { return RequestID }
 
 // Request holds read request parameters.
@@ -60,7 +60,7 @@ type OptionalArgs struct {
 	ReadAheads []ReadAhead
 }
 
-// MarshalXrd implements xrdproto.Marshaler
+// MarshalXrd implements xrdproto.Marshaler.
 func (o OptionalArgs) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	alen := len(o.ReadAheads)*16 + 8
 	wBuffer.WriteLen(alen)
@@ -75,7 +75,7 @@ func (o OptionalArgs) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return nil
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *OptionalArgs) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	alen := rBuffer.ReadLen()
 	o.PathID = rBuffer.ReadU8()
@@ -103,7 +103,7 @@ type ReadAhead struct {
 	Offset int64
 }
 
-// MarshalXrd implements xrdproto.Marshaler
+// MarshalXrd implements xrdproto.Marshaler.
 func (o ReadAhead) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteBytes(o.Handle[:])
 	wBuffer.WriteI32(o.Length)
@@ -111,7 +111,7 @@ func (o ReadAhead) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return nil
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *ReadAhead) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	rBuffer.ReadBytes(o.Handle[:])
 	o.Length = rBuffer.ReadI32()
@@ -119,10 +119,13 @@ func (o *ReadAhead) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	return nil
 }
 
-// ReqID implements xrdproto.Request.ReqID
+// ReqID implements xrdproto.Request.ReqID.
 func (req *Request) ReqID() uint16 { return RequestID }
 
-// MarshalXrd implements xrdproto.Marshaler
+// ShouldSign implements xrdproto.Request.ShouldSign.
+func (req *Request) ShouldSign() bool { return false }
+
+// MarshalXrd implements xrdproto.Marshaler.
 func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteBytes(o.Handle[:])
 	wBuffer.WriteI64(o.Offset)
@@ -134,7 +137,7 @@ func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return o.OptionalArgs.MarshalXrd(wBuffer)
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	rBuffer.ReadBytes(o.Handle[:])
 	o.Offset = rBuffer.ReadI64()
