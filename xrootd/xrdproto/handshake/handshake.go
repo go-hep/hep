@@ -33,35 +33,29 @@ func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 }
 
 // Request holds the handshake request parameters.
-type Request struct {
-	Reserved1 int32
-	Reserved2 int32
-	Reserved3 int32
-	Reserved4 int32
-	Reserved5 int32
-}
+type Request [5]int32
 
-// NewRequest forms a Request that comply with the XRootD protocol v3.1.0.
+// NewRequest forms a Request that complies with the XRootD protocol v3.1.0.
 func NewRequest() Request {
 	return Request{0, 0, 0, 4, 2012}
 }
 
 // MarshalXrd implements xrdproto.Marshaler
 func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
-	wBuffer.WriteI32(o.Reserved1)
-	wBuffer.WriteI32(o.Reserved2)
-	wBuffer.WriteI32(o.Reserved3)
-	wBuffer.WriteI32(o.Reserved4)
-	wBuffer.WriteI32(o.Reserved5)
+	wBuffer.WriteI32(o[0])
+	wBuffer.WriteI32(o[1])
+	wBuffer.WriteI32(o[2])
+	wBuffer.WriteI32(o[3])
+	wBuffer.WriteI32(o[4])
 	return nil
 }
 
 // UnmarshalXrd implements xrdproto.Unmarshaler
 func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
-	o.Reserved1 = rBuffer.ReadI32()
-	o.Reserved2 = rBuffer.ReadI32()
-	o.Reserved3 = rBuffer.ReadI32()
-	o.Reserved4 = rBuffer.ReadI32()
-	o.Reserved5 = rBuffer.ReadI32()
+	o[0] = rBuffer.ReadI32()
+	o[1] = rBuffer.ReadI32()
+	o[2] = rBuffer.ReadI32()
+	o[3] = rBuffer.ReadI32()
+	o[4] = rBuffer.ReadI32()
 	return nil
 }
