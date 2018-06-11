@@ -55,7 +55,10 @@ func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	data := bytes.TrimRight(rBuffer.Bytes(), "\x00")
 	lines := bytes.Split(data, []byte{'\n'})
 
-	if !bytes.HasPrefix(data, []byte(".\n0 0 0 0\n")) {
+	// FIXME(sbinet): drop the extra call to bytes.Equal when
+	//  https://github.com/xrootd/xrootd/issues/739
+	// is fixed or clarified.
+	if !(bytes.HasPrefix(data, []byte(".\n0 0 0 0\n")) || bytes.Equal(data, []byte(".\n0 0 0 0"))) {
 		// That means that the server doesn't support returning stat information.
 		o.Entries = make([]xrdfs.EntryStat, len(lines))
 		for i, v := range lines {
