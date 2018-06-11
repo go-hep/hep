@@ -85,11 +85,15 @@ func (fs *fileSystem) VirtualStat(ctx context.Context, path string) (xrdfs.Virtu
 	return resp.VirtualFSStat, nil
 }
 
+// Mkdir creates a new directory with the specified name and permission bits.
 func (fs *fileSystem) Mkdir(ctx context.Context, path string, perm xrdfs.OpenMode) error {
 	_, err := fs.c.call(ctx, &mkdir.Request{Path: path, Mode: perm})
 	return err
 }
 
+// MkdirAll creates a directory named path, along with any necessary parents,
+// and returns nil, or else returns an error.
+// The permission bits perm are used for all directories that MkdirAll creates.
 func (fs *fileSystem) MkdirAll(ctx context.Context, path string, perm xrdfs.OpenMode) error {
 	_, err := fs.c.call(ctx, &mkdir.Request{Path: path, Mode: perm, Options: mkdir.OptionsMakePath})
 	return err
