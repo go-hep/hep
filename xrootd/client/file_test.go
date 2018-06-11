@@ -56,7 +56,7 @@ func testFile_CloseVerify(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveDir(context.Background(), dir)
+	defer fs.RemoveAll(context.Background(), dir)
 	filePath := path.Join(dir, fileName)
 
 	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsNew)
@@ -134,11 +134,11 @@ func testFile_WriteAt(t *testing.T, addr string) {
 	defer client.Close()
 	fs := client.FS()
 
-	dir, err := tempdir(client, "/tmp/", "xrd-test-close-verify")
+	dir, err := tempdir(client, "/tmp/", "xrd-test-file-write-at-")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveDir(context.Background(), dir)
+	defer fs.RemoveAll(context.Background(), dir)
 	filePath := path.Join(dir, fileName)
 
 	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsNew)
@@ -202,7 +202,7 @@ func testFile_Truncate(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveDir(context.Background(), dir)
+	defer fs.RemoveAll(context.Background(), dir)
 	filePath := path.Join(dir, fileName)
 
 	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsNew)
@@ -363,7 +363,7 @@ func testFile_VerifyWriteAt(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveDir(context.Background(), dir)
+	defer fs.RemoveAll(context.Background(), dir)
 	filePath := path.Join(dir, fileName)
 
 	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsNew)

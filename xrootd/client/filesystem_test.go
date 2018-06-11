@@ -151,7 +151,7 @@ func testFileSystem_RemoveFile(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveDir(context.Background(), dir)
+	defer fs.RemoveAll(context.Background(), dir)
 	filePath := path.Join(dir, fileName)
 
 	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsDelete)
@@ -207,7 +207,7 @@ func testFileSystem_Truncate(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveDir(context.Background(), dir)
+	defer fs.RemoveAll(context.Background(), dir)
 	filePath := path.Join(dir, fileName)
 
 	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsNew)
@@ -362,7 +362,7 @@ func testFileSystem_RemoveDir(t *testing.T, addr string) {
 	defer client.Close()
 	fs := client.FS()
 
-	parent, err := tempdir(client, "/tmp/", "xrd-test-truncate")
+	parent, err := tempdir(client, "/tmp/", "xrd-test-removedir")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -488,7 +488,7 @@ func testFileSystem_Rename(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveDir(context.Background(), parent)
+	defer fs.RemoveAll(context.Background(), parent)
 	oldpath := path.Join(parent, oldName)
 	newpath := path.Join(parent, newName)
 
@@ -566,7 +566,7 @@ func testFileSystem_Chmod(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveDir(context.Background(), parent)
+	defer fs.RemoveAll(context.Background(), parent)
 	file := path.Join(parent, name)
 
 	f, err := fs.Open(context.Background(), file, oldPerm, xrdfs.OpenOptionsNew)

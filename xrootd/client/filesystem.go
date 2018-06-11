@@ -117,12 +117,12 @@ func (fs *fileSystem) RemoveAll(ctx context.Context, path string) error {
 	}
 	switch {
 	case st.IsDir():
-		dirs, err := fs.Dirlist(ctx, path)
+		entries, err := fs.Dirlist(ctx, path)
 		if err != nil {
 			return err
 		}
-		for _, dir := range dirs {
-			name := stdpath.Join(path, dir.Name())
+		for _, e := range entries {
+			name := stdpath.Join(path, e.Name())
 			err := fs.RemoveAll(ctx, name)
 			if err != nil {
 				return err
