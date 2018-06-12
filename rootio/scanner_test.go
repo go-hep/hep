@@ -987,6 +987,7 @@ func BenchmarkTreeScannerVarsBigFileScalar(b *testing.B) {
 		}
 	}
 }
+
 func BenchmarkScannerVarsBigFileScalar(b *testing.B) {
 	f, err := Open("testdata/mc_105986.ZZ.root")
 	if err != nil {
@@ -1021,6 +1022,7 @@ func BenchmarkScannerVarsBigFileScalar(b *testing.B) {
 		}
 	}
 }
+
 func BenchmarkTreeScannerVarsBigFileSlice(b *testing.B) {
 	f, err := Open("testdata/mc_105986.ZZ.root")
 	if err != nil {
@@ -1055,6 +1057,7 @@ func BenchmarkTreeScannerVarsBigFileSlice(b *testing.B) {
 		}
 	}
 }
+
 func BenchmarkScannerVarsBigFileSlice(b *testing.B) {
 	f, err := Open("testdata/mc_105986.ZZ.root")
 	if err != nil {
