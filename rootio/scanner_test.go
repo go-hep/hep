@@ -1089,3 +1089,65 @@ func BenchmarkScannerVarsBigFileSlice(b *testing.B) {
 		}
 	}
 }
+
+func TestTreeScannerSeekEntry(t *testing.T) {
+	fname := "testdata/chain.1.root"
+	f, err := Open(fname)
+	if err != nil {
+		t.Fatalf("could not open ROOT file %q: %v", fname, err)
+	}
+	defer f.Close()
+
+	obj, err := f.Get("tree")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tree := obj.(Tree)
+
+	type Data struct {
+		Event struct {
+			Beg       string      `rootio:"Beg"`
+			F64       float64     `rootio:"F64"`
+			ArrF64    [10]float64 `rootio:"ArrayF64"`
+			N         int32       `rootio:"N"`
+			SliF64    []float64   `rootio:"SliceF64"`
+			StdStr    string      `rootio:"StdStr"`
+			StlVecF64 []float64   `rootio:"StlVecF64"`
+			StlVecStr []string    `rootio:"StlVecStr"`
+			End       string      `rootio:"End"`
+		} `rootio:"evt"`
+	}
+
+	sc, err := NewTreeScanner(tree, &Data{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sc.Close()
+
+	for _, entry := range []int64{0, 1, 2, 0, 1, 2, 9, 0, 9, 1} {
+		err := sc.SeekEntry(entry)
+		if err != nil {
+			t.Fatalf("could not seek to entry %d: %v", entry, err)
+		}
+		if !sc.Next() {
+			t.Fatalf("could not read entry %d", entry)
+		}
+		var d Data
+		err = sc.Scan(&d)
+		if err != nil {
+			t.Fatal(err)
+		}
+		i := sc.Entry()
+		if i != entry {
+			t.Fatalf("did not seek to entry %d. got=%d, want=%d", entry, i, entry)
+		}
+		if d.Event.F64 != float64(i) {
+			t.Fatalf("entry[%d]:\ngot= %#v\nwant=%#v\n", i, d.Event.F64, float64(i))
+		}
+	}
+
+	if err := sc.Err(); err != nil && err != io.EOF {
+		t.Fatal(err)
+	}
+}
