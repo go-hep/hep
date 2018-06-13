@@ -350,7 +350,7 @@ func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
 		return err
 	}
 	b.basket.key.f = f
-	b.firstEntry = entry
+	b.firstEntry = b.basketEntry[ib]
 
 	if len(b.basketBuf) < int(b.basket.key.objlen) {
 		b.basketBuf = make([]byte, b.basket.key.objlen)
