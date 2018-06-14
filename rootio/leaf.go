@@ -5,6 +5,7 @@
 package rootio
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -179,7 +180,11 @@ func (leaf *tleafElement) Type() reflect.Type {
 }
 
 func (leaf *tleafElement) TypeName() string {
-	panic("not implemented")
+	name := leaf.src.Type().Name()
+	if name == "" {
+		panic(fmt.Errorf("rootio: invalid typename for leaf %q", leaf.Name()))
+	}
+	return name
 }
 
 func (leaf *tleafElement) UnmarshalROOT(r *RBuffer) error {

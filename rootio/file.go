@@ -345,11 +345,24 @@ func (f *File) StreamerInfos() []StreamerInfo {
 // StreamerInfo returns the StreamerInfo with name of this file and an error if any.
 func (f *File) StreamerInfo(name string) (StreamerInfo, error) {
 	if len(f.sinfos) == 0 {
-		return nil, fmt.Errorf("rootio: no streamer for %q", name)
+		return nil, fmt.Errorf("rootio: no streamer for %q (no streamerinfo list)", name)
 	}
 
 	for _, si := range f.sinfos {
 		if si.Name() == name {
+			return si, nil
+		}
+	}
+
+	// no streamer for "name" in that file.
+	// try whether "name" isn't actually std::vector<T> and a streamer
+	// for T is in that file.
+	o := reStdVector.FindStringSubmatch(name)
+	if o != nil {
+		si := stdvecSIFrom(name, o[1], f)
+		if si != nil {
+			f.sinfos = append(f.sinfos, si)
+			streamers.add(si)
 			return si, nil
 		}
 	}

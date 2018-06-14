@@ -579,7 +579,10 @@ func (b *tbranchElement) scan(ptr interface{}) error {
 func (b *tbranchElement) setupReadStreamer(sictx StreamerInfoContext) error {
 	streamer, ok := streamers.get(b.class, int(b.clsver), int(b.chksum))
 	if !ok {
-		return fmt.Errorf("rootio: no StreamerInfo for class=%q version=%d checksum=%d", b.class, b.clsver, b.chksum)
+		streamer, ok = streamers.getAny(b.class)
+		if !ok {
+			return fmt.Errorf("rootio: no StreamerInfo for class=%q version=%d checksum=%d", b.class, b.clsver, b.chksum)
+		}
 	}
 	b.streamer = streamer
 

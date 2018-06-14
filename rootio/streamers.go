@@ -7,8 +7,21 @@ package rootio
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
+)
+
+var (
+	cxxNameSanitizer = strings.NewReplacer(
+		"<", "_",
+		">", "_",
+		":", "_",
+		",", "_",
+		" ", "_",
+	)
+
+	reStdVector = regexp.MustCompile("^vector<(.+)>$")
 )
 
 type StreamerInfoContext interface {
@@ -433,6 +446,14 @@ type tstreamerSTL struct {
 
 func (tss *tstreamerSTL) Class() string {
 	return "TStreamerSTL"
+}
+
+func (tss *tstreamerSTL) elemTypeName() string {
+	o := reStdVector.FindStringSubmatch(tss.ename)
+	if o == nil {
+		return ""
+	}
+	return strings.TrimSpace(o[1])
 }
 
 func (tss *tstreamerSTL) UnmarshalROOT(r *RBuffer) error {

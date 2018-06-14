@@ -7,6 +7,7 @@ package rootio
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 type RStreamer interface {
@@ -699,9 +700,33 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 						}
 						r.CheckByteCount(pos, bcnt, start, "std::vector<std::string>")
 						return r.err
-
 					}
 				default:
+					subsi, err := sictx.StreamerInfo(se.elemTypeName())
+					if err != nil {
+						panic(fmt.Errorf("rootio: could not retrieve streamer for %q: %v", se.elemTypeName(), err))
+					}
+					eptr := reflect.New(rf.Type().Elem())
+					felt := rstreamerFrom(subsi.Elements()[0], eptr.Interface(), lcnt, sictx)
+					fptr := rf.Addr()
+					return func(r *RBuffer) error {
+						start := r.Pos()
+						_, pos, bcnt := r.ReadVersion()
+						n := int(r.ReadI32())
+						if fptr.Elem().Len() < n {
+							fptr.Elem().Set(reflect.MakeSlice(rf.Type(), n, n))
+						}
+						sli := fptr.Elem()
+						for i := 0; i < n; i++ {
+							felt(r)
+							sli.Index(i).Set(eptr.Elem())
+						}
+
+						r.CheckByteCount(pos, bcnt, start, se.TypeName())
+						return r.err
+					}
+
+					panic(fmt.Errorf("rootio: read-streamer for %T not implemented", rf.Interface()))
 				}
 			}
 		default:
@@ -739,6 +764,36 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 	panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
 }
 
+func stdvecSIFrom(name, ename string, ctx StreamerInfoContext) StreamerInfo {
+	ename = strings.TrimSpace(ename)
+	esi, err := ctx.StreamerInfo(ename)
+	if esi == nil || err != nil {
+		return nil
+	}
+
+	si := &tstreamerInfo{
+		named: tnamed{
+			name:  name,
+			title: name,
+		},
+		elems: []StreamerElement{
+			&tstreamerSTL{
+				tstreamerElement: tstreamerElement{
+					named: tnamed{
+						name:  name,
+						title: name,
+					},
+					ename: name,
+				},
+				rvers: 0,
+				vtype: kSTLvector,
+				ctype: kObject,
+			},
+		},
+	}
+	return si
+}
+
 func gotypeFromSI(sinfo StreamerInfo, ctx StreamerInfoContext) reflect.Type {
 	if typ, ok := builtins[sinfo.Name()]; ok {
 		return typ
@@ -748,14 +803,21 @@ func gotypeFromSI(sinfo StreamerInfo, ctx StreamerInfoContext) reflect.Type {
 	for i := range fields {
 		ft := &fields[i]
 		elt := elts[i]
+		ename := elt.Name()
+		if ename == "" {
+			panic(fmt.Errorf("elt[%d]: %q for si=%v", i, elt.Class(), sinfo))
+		}
 		ft.Name = "ROOT_" + elt.Name()
+		ft.Name = cxxNameSanitizer.Replace(ft.Name)
+
 		var lcount Leaf
 		if elt.Title() != "" {
 			lcount = &tleaf{}
 		}
 		ft.Type = gotypeFromSE(elt, lcount, ctx)
-		ft.Tag = reflect.StructTag("rootio:\"" + elt.Name() + "\"")
+		ft.Tag = reflect.StructTag(`rootio:"` + elt.Name() + `"`)
 	}
+
 	return reflect.StructOf(fields)
 }
 
@@ -961,7 +1023,19 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 				case "vector<string>", "std::vector<std::string>":
 					return reflect.TypeOf([]string{})
 				default:
-					panic(fmt.Errorf("rootio: invalid std::vector<kObject>: ename=%q", se.ename))
+					eltname := se.elemTypeName()
+					if eltname == "" {
+						panic(fmt.Errorf("rootio: could not find element name for %q", se.ename))
+					}
+					sielt, err := ctx.StreamerInfo(se.elemTypeName())
+					if err != nil {
+						panic(err)
+					}
+					o := gotypeFromSI(sielt, ctx)
+					if o == nil {
+						panic(fmt.Errorf("rootio: invalid std::vector<kObject>: ename=%q", se.ename))
+					}
+					return reflect.SliceOf(o)
 				}
 			}
 		default:
