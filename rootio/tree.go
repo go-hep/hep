@@ -66,7 +66,27 @@ func (tree *ttree) Branch(name string) Branch {
 		if br.Name() == name {
 			return br
 		}
+		for _, b1 := range br.Branches() {
+			if b1.Name() == name {
+				return b1
+			}
+
+			for _, b2 := range b1.Branches() {
+				if b2.Name() == name {
+					return b2
+				}
+			}
+		}
 	}
+
+	// search using leaves.
+	for _, leaf := range tree.leaves {
+		b := leaf.Branch()
+		if b.Name() == name {
+			return b
+		}
+	}
+
 	return nil
 }
 
