@@ -74,6 +74,15 @@ func (tree *ttree) Leaves() []Leaf {
 	return tree.leaves
 }
 
+func (tree *ttree) Leaf(name string) Leaf {
+	for _, leaf := range tree.leaves {
+		if leaf.Name() == name {
+			return leaf
+		}
+	}
+	return nil
+}
+
 func (tree *ttree) SetFile(f *File) {
 	tree.f = f
 }

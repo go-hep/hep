@@ -129,6 +129,14 @@ func (t *tchain) Leaves() []Leaf {
 	return t.tree.Leaves()
 }
 
+// Leaf returns the leaf whose name is the argument.
+func (t *tchain) Leaf(name string) Leaf {
+	if t.tree == nil {
+		return nil
+	}
+	return t.tree.Leaf(name)
+}
+
 // getFile returns the underlying file.
 func (t *tchain) getFile() *File {
 	if t.tree == nil {

@@ -152,6 +152,7 @@ type Tree interface {
 	ZipBytes() int64
 	Branch(name string) Branch
 	Branches() []Branch
+	Leaf(name string) Leaf
 	Leaves() []Leaf
 
 	getFile() *File
