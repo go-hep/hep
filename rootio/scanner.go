@@ -149,12 +149,12 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 		leaf := br.Leaves()[0]
 		lidx := -1
 		if lcnt := leaf.LeafCount(); lcnt != nil {
-			lbr := t.Branch(lcnt.Name())
+			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
 				return nil, errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
 			lidx = len(cbr)
-			cbr = append(cbr, lbr)
+			cbr = append(cbr, lbr.Branch())
 		}
 		fptr := rv.Field(i).Addr().Interface()
 		err := br.setAddress(fptr)
@@ -213,12 +213,18 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 		mbr[i] = br
 		ibr[i] = scanField{br: br, i: 0}
 		leaf := br.Leaves()[0]
+		if sv.Leaf != "" {
+			leaf = br.Leaf(sv.Leaf)
+		}
+		if leaf == nil {
+			return nil, errorf("rootio: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
+		}
 		if lcnt := leaf.LeafCount(); lcnt != nil {
-			lbr := t.Branch(lcnt.Name())
+			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
 				return nil, errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
-			cbr = append(cbr, lbr)
+			cbr = append(cbr, lbr.Branch())
 		}
 	}
 	return &TreeScanner{
@@ -388,12 +394,15 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 		if sv.Leaf != "" {
 			leaf = br.Leaf(sv.Leaf)
 		}
+		if leaf == nil {
+			return nil, errorf("rootio: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
+		}
 		if lcnt := leaf.LeafCount(); lcnt != nil {
-			lbr := t.Branch(lcnt.Name())
+			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
 				return nil, errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
-			cbr = append(cbr, lbr)
+			cbr = append(cbr, lbr.Branch())
 		}
 		arg := sv.Value
 		if arg == nil {
@@ -448,11 +457,11 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 		}
 		leaf := br.Leaves()[0]
 		if lcnt := leaf.LeafCount(); lcnt != nil {
-			lbr := t.Branch(lcnt.Name())
+			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
 				return nil, errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
-			cbr = append(cbr, lbr)
+			cbr = append(cbr, lbr.Branch())
 		}
 		fptr := rv.Field(i).Addr().Interface()
 		mbr = append(mbr, br)
