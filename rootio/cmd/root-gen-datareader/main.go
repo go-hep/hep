@@ -64,7 +64,7 @@ func printf(format string, args ...interface{}) {
 
 func main() {
 
-	log.SetPrefix("root-gen-datareader ")
+	log.SetPrefix("root-gen-datareader: ")
 	log.SetFlags(0)
 
 	flag.Parse()
