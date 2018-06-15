@@ -4,7 +4,7 @@
 
 //+build windows
 
-package client // import "go-hep.org/x/hep/xrootd/client"
+package unix // import "go-hep.org/x/hep/xrootd/xrdproto/auth/unix"
 
 import (
 	"os/user"

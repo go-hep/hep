@@ -20,14 +20,6 @@ type Request struct {
 	Credentials string
 }
 
-// UnixType indicates that unix authentication protocol is used.
-var UnixType = [4]byte{'u', 'n', 'i', 'x'}
-
-// NewUnixRequest forms a Request according to provided parameters using unix authentication.
-func NewUnixRequest(username, groupname string) *Request {
-	return &Request{Type: UnixType, Credentials: "unix\000" + username + " " + groupname + "\000"}
-}
-
 // ReqID implements xrdproto.Request.ReqID.
 func (req *Request) ReqID() uint16 { return RequestID }
 
@@ -48,4 +40,10 @@ func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	rBuffer.ReadBytes(o.Type[:])
 	o.Credentials = rBuffer.ReadStr()
 	return nil
+}
+
+// Auther is the interface that must be implemented by a security provider.
+type Auther interface {
+	Provider() string                          // Provider returns the name of the security provider.
+	Request(params []string) (*Request, error) // Request forms an authorization Request according to passed parameters.
 }

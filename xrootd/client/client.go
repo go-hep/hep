@@ -31,6 +31,9 @@ import (
 	"go-hep.org/x/hep/xrootd/internal/mux"
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdproto"
+	"go-hep.org/x/hep/xrootd/xrdproto/auth"
+	"go-hep.org/x/hep/xrootd/xrdproto/auth/krb5"
+	"go-hep.org/x/hep/xrootd/xrdproto/auth/unix"
 	"go-hep.org/x/hep/xrootd/xrdproto/sigver"
 )
 
@@ -44,12 +47,41 @@ type Client struct {
 	protocolVersion  int32
 	signRequirements xrdproto.SignRequirements
 	seqID            int64
+	auths            map[string]auth.Auther
+}
+
+// Option configures an XRootD client.
+type Option func(*Client) error
+
+// WithAuth adds an authentication mechanism to the XRootD client.
+// If an authentication mechanism was already registered for that provider,
+// it will be silently replaced.
+func WithAuth(a auth.Auther) Option {
+	return func(client *Client) error {
+		return client.addAuth(a)
+	}
+}
+
+func (client *Client) addAuth(auth auth.Auther) error {
+	client.auths[auth.Provider()] = auth
+	return nil
+}
+
+func (client *Client) initSecurityProviders() {
+	providers := []auth.Auther{krb5.Default, unix.Default}
+	for _, provider := range providers {
+		if provider == nil {
+			continue
+		}
+		client.auths[provider.Provider()] = provider
+	}
 }
 
 // NewClient creates a new xrootd client that connects to the given address using username.
+// Options opts configure the client and are applied in the order they were specified.
 // When the context expires, a response handling is stopped, however, it is
 // necessary to call Cancel to correctly free resources.
-func NewClient(ctx context.Context, address string, username string) (*Client, error) {
+func NewClient(ctx context.Context, address string, username string, opts ...Option) (*Client, error) {
 	ctx, cancel := context.WithCancel(ctx)
 
 	var d net.Dialer
@@ -59,7 +91,18 @@ func NewClient(ctx context.Context, address string, username string) (*Client, e
 		return nil, err
 	}
 
-	client := &Client{cancel: cancel, conn: conn, mux: mux.New()}
+	client := &Client{cancel: cancel, conn: conn, mux: mux.New(), auths: make(map[string]auth.Auther)}
+	client.initSecurityProviders()
+
+	for _, opt := range opts {
+		if opt == nil {
+			continue
+		}
+		if err := opt(client); err != nil {
+			client.Close()
+			return nil, err
+		}
+	}
 
 	go client.consume(ctx)
 
