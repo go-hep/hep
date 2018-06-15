@@ -7,39 +7,41 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 import (
 	"bytes"
 	"context"
-	"os/user"
 
 	"github.com/pkg/errors"
-	"go-hep.org/x/hep/xrootd/xrdproto/auth"
 )
 
 func (client *Client) auth(ctx context.Context, securityInformation []byte) error {
 	securityInformation = bytes.TrimLeft(securityInformation, "&")
-	securityProviders := bytes.Split(securityInformation, []byte{'&'})
+	providerInfos := bytes.Split(securityInformation, []byte{'&'})
 
 	var errs []error
-	for _, securityProvider := range securityProviders {
-		securityProvider = bytes.TrimLeft(securityProvider, "P=")
-		if bytes.Equal(securityProvider, auth.UnixType[:]) {
-			u, err := user.Current()
-			if err != nil {
-				errs = append(errs, errors.WithMessage(err, "xrootd: could not authorize using unix"))
-				continue
-			}
-			g, err := lookupGroupID(u)
-			if err != nil {
-				errs = append(errs, errors.WithMessage(err, "xrootd: could not authorize using unix"))
-				continue
-			}
-
-			_, err = client.call(ctx, auth.NewUnixRequest(u.Username, g))
-			if err != nil {
-				errs = append(errs, errors.WithMessage(err, "xrootd: could not authorize using unix"))
-				continue
-			} else {
-				return nil
-			}
+	for _, providerInfo := range providerInfos {
+		providerInfo = bytes.TrimLeft(providerInfo, "P=")[:]
+		paramsData := bytes.Split(providerInfo, []byte{','})
+		params := make([]string, len(paramsData))
+		for i := range paramsData {
+			params[i] = string(paramsData[i])
 		}
+		provider := params[0]
+		params = params[1:]
+
+		auther, ok := client.auths[provider]
+		if !ok {
+			errs = append(errs, errors.Errorf("xrootd: could not authorize using %s: provider was not found", provider))
+			continue
+		}
+		r, err := auther.Request(params)
+		if err != nil {
+			errs = append(errs, errors.Errorf("xrootd: could not authorize using %s: %v", provider, err))
+			continue
+		}
+		_, err = client.call(ctx, r)
+		if err != nil {
+			errs = append(errs, errors.Errorf("xrootd: could not authorize using %s: %v", provider, err))
+			continue
+		}
+		return nil
 	}
 
 	return errors.Errorf("xrootd: could not authorize:\n%v", errs)
