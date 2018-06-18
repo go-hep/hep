@@ -131,6 +131,8 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 	mbr := make([]Branch, 0, len(t.Branches()))
 	ibr := make([]scanField, 0, cap(mbr))
 	cbr := make([]Branch, 0)
+	cbrset := make(map[string]bool)
+
 	rt := reflect.TypeOf(ptr).Elem()
 	if rt.Kind() != reflect.Struct {
 		return nil, errorf("rootio: NewTreeScanner expects a pointer to a struct (got: %T)", ptr)
@@ -154,7 +156,11 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 				return nil, errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
 			lidx = len(cbr)
-			cbr = append(cbr, lbr.Branch())
+			bbr := lbr.Branch()
+			if !cbrset[bbr.Name()] {
+				cbr = append(cbr, bbr)
+				cbrset[bbr.Name()] = true
+			}
 		}
 		fptr := rv.Field(i).Addr().Interface()
 		err := br.setAddress(fptr)
@@ -205,6 +211,8 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 	mbr := make([]Branch, len(vars))
 	ibr := make([]scanField, cap(mbr))
 	cbr := make([]Branch, 0)
+	cbrset := make(map[string]bool)
+
 	for i, sv := range vars {
 		br := t.Branch(sv.Name)
 		if br == nil {
@@ -224,7 +232,11 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 			if lbr == nil {
 				return nil, errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
-			cbr = append(cbr, lbr.Branch())
+			bbr := lbr.Branch()
+			if !cbrset[bbr.Name()] {
+				cbr = append(cbr, bbr)
+				cbrset[bbr.Name()] = true
+			}
 		}
 	}
 	return &TreeScanner{
@@ -381,6 +393,8 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 	mbr := make([]Branch, len(vars))
 	ibr := make([]scanField, cap(mbr))
 	cbr := make([]Branch, 0)
+	cbrset := make(map[string]bool)
+
 	args := make([]interface{}, len(vars))
 	for i, sv := range vars {
 		br := t.Branch(sv.Name)
@@ -402,7 +416,11 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 			if lbr == nil {
 				return nil, errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
-			cbr = append(cbr, lbr.Branch())
+			bbr := lbr.Branch()
+			if !cbrset[bbr.Name()] {
+				cbr = append(cbr, bbr)
+				cbrset[bbr.Name()] = true
+			}
 		}
 		arg := sv.Value
 		if arg == nil {
@@ -439,6 +457,8 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 	mbr := make([]Branch, 0, len(t.Branches()))
 	ibr := make([]scanField, 0, cap(mbr))
 	cbr := make([]Branch, 0)
+	cbrset := make(map[string]bool)
+
 	args := make([]interface{}, 0, cap(mbr))
 	rt := reflect.TypeOf(ptr).Elem()
 	if rt.Kind() != reflect.Struct {
@@ -461,7 +481,11 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 			if lbr == nil {
 				return nil, errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
-			cbr = append(cbr, lbr.Branch())
+			bbr := lbr.Branch()
+			if !cbrset[bbr.Name()] {
+				cbr = append(cbr, bbr)
+				cbrset[bbr.Name()] = true
+			}
 		}
 		fptr := rv.Field(i).Addr().Interface()
 		mbr = append(mbr, br)
