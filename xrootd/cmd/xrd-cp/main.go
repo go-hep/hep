@@ -27,7 +27,7 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"path/filepath"
+	stdpath "path"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -116,7 +116,7 @@ func xrdcopy(dst, srcPath string, recursive, verbose bool) error {
 			if !recursive {
 				return errors.Errorf("xrd-cp: -r not specified; omitting directory %q", src)
 			}
-			dst := filepath.Join(root, filepath.Base(src))
+			dst := stdpath.Join(root, stdpath.Base(src))
 			err = os.MkdirAll(dst, 0755)
 			if err != nil {
 				return errors.WithMessage(err, "could not create output directory")
@@ -127,7 +127,7 @@ func xrdcopy(dst, srcPath string, recursive, verbose bool) error {
 				return errors.WithMessage(err, "could not list directory")
 			}
 			for _, e := range ents {
-				err = addDir(dst, filepath.Join(src, e.Name()))
+				err = addDir(dst, stdpath.Join(src, e.Name()))
 				if err != nil {
 					return err
 				}
@@ -136,7 +136,7 @@ func xrdcopy(dst, srcPath string, recursive, verbose bool) error {
 			jobs.add(job{
 				fs:  fs,
 				src: src,
-				dst: filepath.Join(root, filepath.Base(src)),
+				dst: stdpath.Join(root, stdpath.Base(src)),
 			})
 		}
 		return nil
@@ -161,7 +161,7 @@ func xrdcopy(dst, srcPath string, recursive, verbose bool) error {
 				return errors.WithMessage(err, "could not list directory")
 			}
 			for _, e := range ents {
-				err = addDir(dst, filepath.Join(src, e.Name()))
+				err = addDir(dst, stdpath.Join(src, e.Name()))
 				if err != nil {
 					return err
 				}
@@ -183,7 +183,7 @@ func xrdcopy(dst, srcPath string, recursive, verbose bool) error {
 		case errDst != nil:
 			return errors.WithMessage(errDst, "could not stat local dst")
 		case fiDst.IsDir():
-			dst = filepath.Join(dst, filepath.Base(src))
+			dst = stdpath.Join(dst, stdpath.Base(src))
 		}
 
 		jobs.add(job{
@@ -243,7 +243,7 @@ func (j job) run(ctx context.Context) (int, error) {
 	case "-", "":
 		o = os.Stdout
 	case ".":
-		j.dst = filepath.Base(j.src)
+		j.dst = stdpath.Base(j.src)
 		fallthrough
 	default:
 		o, err = os.Create(j.dst)
