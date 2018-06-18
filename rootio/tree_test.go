@@ -13,6 +13,8 @@ import (
 )
 
 func TestFlatTree(t *testing.T) {
+	t.Parallel()
+
 	f, err := Open("testdata/small-flat-tree.root")
 	if err != nil {
 		t.Fatal(err.Error())
@@ -182,6 +184,8 @@ func (EventType) want(i int64) EventType {
 }
 
 func TestEventTree(t *testing.T) {
+	t.Parallel()
+
 	for _, test := range []struct {
 		name  string
 		fname string
@@ -292,6 +296,8 @@ func testEventTree(t *testing.T, name, fname string) {
 }
 
 func TestSimpleTree(t *testing.T) {
+	t.Parallel()
+
 	f, err := Open("testdata/simple.root")
 	if err != nil {
 		t.Fatal(err.Error())
@@ -337,6 +343,8 @@ func TestSimpleTree(t *testing.T) {
 }
 
 func TestSimpleTreeOverHTTP(t *testing.T) {
+	t.Parallel()
+
 	f, err := Open("https://github.com/go-hep/hep/raw/master/rootio/testdata/simple.root")
 	if err != nil {
 		t.Fatal(err)
@@ -387,6 +395,8 @@ func TestTreeWithBasketWithTKeyData(t *testing.T) {
 		XrdRemote("testdata/PhaseSpaceSimulation.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
+
 			f, err := Open(fname)
 			if err != nil {
 				t.Skipf("error: %v", err)
@@ -1570,6 +1580,8 @@ func TestUprootTrees(t *testing.T) {
 
 	for _, fname := range files {
 		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
+
 			var d Data
 			f, err := Open(fname)
 			if err != nil {

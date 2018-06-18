@@ -18,6 +18,8 @@ func TestNewClient(t *testing.T) {
 }
 
 func testNewClient(t *testing.T, addr string) {
+	t.Parallel()
+
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()

@@ -26,6 +26,8 @@ import (
 )
 
 func TestFileSystem_Dirlist_Mock(t *testing.T) {
+	t.Parallel()
+
 	path := "/tmp/test"
 	response := ".\n0 0 0 0\ntestfile\n0 20 0 10\ntestfile2\n0 21 2 12\x00"
 
@@ -107,6 +109,8 @@ func TestFileSystem_Dirlist_Mock(t *testing.T) {
 }
 
 func TestFileSystem_Dirlist_Mock_WithoutStatInfo(t *testing.T) {
+	t.Parallel()
+
 	path := "/tmp/test"
 	response := "testfile\ntestfile2\x00"
 
@@ -284,12 +288,16 @@ func TestFileSystem_Open_Mock(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			testFileSystem_Open_Mock(t, tc.handle, tc.compression, tc.stat)
 		})
 	}
 }
 
 func TestFileSystem_RemoveFile_Mock(t *testing.T) {
+	t.Parallel()
+
 	var (
 		path        = "/tmp/test"
 		wantRequest = rm.Request{Path: path}
@@ -345,6 +353,8 @@ func TestFileSystem_RemoveFile_Mock(t *testing.T) {
 }
 
 func TestFileSystem_Truncate_Mock(t *testing.T) {
+	t.Parallel()
+
 	var (
 		path              = "/tmp/test"
 		wantSize    int64 = 10
@@ -401,6 +411,8 @@ func TestFileSystem_Truncate_Mock(t *testing.T) {
 }
 
 func TestFileSystem_Stat_Mock(t *testing.T) {
+	t.Parallel()
+
 	path := "/tmp/test"
 
 	var want = xrdfs.EntryStat{
@@ -476,6 +488,8 @@ func TestFileSystem_Stat_Mock(t *testing.T) {
 }
 
 func TestFileSystem_VirtualStat_Mock(t *testing.T) {
+	t.Parallel()
+
 	path := "/tmp/test"
 
 	var want = xrdfs.VirtualFSStat{
@@ -554,6 +568,8 @@ func TestFileSystem_VirtualStat_Mock(t *testing.T) {
 }
 
 func TestFileSystem_Mkdir_Mock(t *testing.T) {
+	t.Parallel()
+
 	path := "/tmp/test"
 	wantRequest := mkdir.Request{Path: path, Mode: xrdfs.OpenModeOwnerRead | xrdfs.OpenModeOwnerWrite}
 
@@ -607,6 +623,8 @@ func TestFileSystem_Mkdir_Mock(t *testing.T) {
 }
 
 func TestFileSystem_MkdirAll_Mock(t *testing.T) {
+	t.Parallel()
+
 	path := "/tmp/test"
 	wantRequest := mkdir.Request{
 		Path:    path,
@@ -664,6 +682,8 @@ func TestFileSystem_MkdirAll_Mock(t *testing.T) {
 }
 
 func TestFileSystem_RemoveDir_Mock(t *testing.T) {
+	t.Parallel()
+
 	var (
 		path        = "/tmp/test"
 		wantRequest = rmdir.Request{Path: path}
@@ -719,6 +739,8 @@ func TestFileSystem_RemoveDir_Mock(t *testing.T) {
 }
 
 func TestFileSystem_Rename_Mock(t *testing.T) {
+	t.Parallel()
+
 	var (
 		oldpath     = "/tmp/test1"
 		newpath     = "/tmp/test2"
@@ -775,6 +797,8 @@ func TestFileSystem_Rename_Mock(t *testing.T) {
 }
 
 func TestFileSystem_Chmod_Mock(t *testing.T) {
+	t.Parallel()
+
 	var (
 		path        = "/tmp/test2"
 		perm        = xrdfs.OpenModeOwnerRead | xrdfs.OpenModeOwnerWrite

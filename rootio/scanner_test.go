@@ -41,6 +41,8 @@ func TestTreeScannerStruct(t *testing.T) {
 		XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
+
 			f, err := Open(fname)
 			if err != nil {
 				t.Fatal(err.Error())
@@ -125,6 +127,8 @@ func TestScannerStruct(t *testing.T) {
 		XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
+
 			f, err := Open(fname)
 			if err != nil {
 				t.Fatal(err.Error())
@@ -210,6 +214,8 @@ func TestScannerVars(t *testing.T) {
 		XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
+
 			f, err := Open(fname)
 			if err != nil {
 				t.Fatal(err.Error())
@@ -308,6 +314,8 @@ func TestTreeScannerVarsMultipleTimes(t *testing.T) {
 		XrdRemote("testdata/mc_105986.ZZ.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
+
 			f, err := Open(fname)
 			if err != nil {
 				t.Skip(err)
@@ -348,6 +356,8 @@ func TestTreeScannerVars(t *testing.T) {
 		XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
+
 			f, err := Open(fname)
 			if err != nil {
 				t.Fatal(err.Error())
@@ -467,6 +477,8 @@ func TestScannerVarsMultipleTimes(t *testing.T) {
 		XrdRemote("testdata/mc_105986.ZZ.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
+
 			f, err := Open(fname)
 			if err != nil {
 				t.Skip(err)
@@ -507,6 +519,8 @@ func TestTreeScannerStructWithCounterLeaf(t *testing.T) {
 		XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
+
 			f, err := Open(fname)
 			if err != nil {
 				t.Fatal(err.Error())
@@ -563,6 +577,8 @@ func TestScannerStructWithCounterLeaf(t *testing.T) {
 		XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
+
 			f, err := Open(fname)
 			if err != nil {
 				t.Fatal(err.Error())
@@ -619,6 +635,8 @@ func TestTreeScannerVarsWithCounterLeaf(t *testing.T) {
 		XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
+
 			f, err := Open(fname)
 			if err != nil {
 				t.Fatal(err.Error())
@@ -671,6 +689,8 @@ func TestScannerVarsWithCounterLeaf(t *testing.T) {
 		XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
+
 			f, err := Open(fname)
 			if err != nil {
 				t.Fatal(err.Error())
@@ -725,6 +745,8 @@ func TestScannerStructWithStdVectorBool(t *testing.T) {
 
 	for _, fname := range files {
 		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
+
 			f, err := Open(fname)
 			if err != nil {
 				t.Fatal(err.Error())
@@ -1094,6 +1116,8 @@ func BenchmarkScannerVarsBigFileSlice(b *testing.B) {
 }
 
 func TestTreeScannerSeekEntry(t *testing.T) {
+	t.Parallel()
+
 	fname := "testdata/chain.1.root"
 	f, err := Open(fname)
 	if err != nil {

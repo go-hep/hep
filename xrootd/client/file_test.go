@@ -15,6 +15,8 @@ import (
 )
 
 func testFile_Close(t *testing.T, addr string) {
+	t.Parallel()
+
 	client, err := NewClient(context.Background(), addr, "gopher")
 	if err != nil {
 		t.Fatalf("could not create client: %v", err)
@@ -43,6 +45,8 @@ func TestFile_Close(t *testing.T) {
 }
 
 func testFile_CloseVerify(t *testing.T, addr string) {
+	t.Parallel()
+
 	fileName := "close-verify.txt"
 	client, err := NewClient(context.Background(), addr, "gopher")
 	if err != nil {
@@ -84,6 +88,8 @@ func TestFile_CloseVerify(t *testing.T) {
 }
 
 func testFile_ReadAt(t *testing.T, addr string) {
+	t.Parallel()
+
 	client, err := NewClient(context.Background(), addr, "gopher")
 	if err != nil {
 		t.Fatalf("could not create client: %v", err)
@@ -123,6 +129,8 @@ func TestFile_ReadAt(t *testing.T) {
 }
 
 func testFile_WriteAt(t *testing.T, addr string) {
+	t.Parallel()
+
 	fileName := "test_rw.txt"
 	want := make([]byte, 8*1024)
 	rand.Read(want)
@@ -186,6 +194,8 @@ func TestFile_WriteAt(t *testing.T) {
 }
 
 func testFile_Truncate(t *testing.T, addr string) {
+	t.Parallel()
+
 	fileName := "test_truncate.txt"
 	write := []uint8{1, 2, 3, 4, 5, 6, 7, 8}
 	want := write[:4]
@@ -261,6 +271,8 @@ func TestFile_Truncate(t *testing.T) {
 }
 
 func testFile_Stat(t *testing.T, addr string) {
+	t.Parallel()
+
 	want := &xrdfs.EntryStat{
 		HasStatInfo: true,
 		ID:          60129606914,
@@ -304,6 +316,8 @@ func TestFile_Stat(t *testing.T) {
 }
 
 func testFile_StatVirtualFS(t *testing.T, addr string) {
+	t.Parallel()
+
 	want := xrdfs.VirtualFSStat{
 		NumberRW:      1,
 		FreeRW:        444,
@@ -345,6 +359,8 @@ func TestFile_StatVirtualFS(t *testing.T) {
 }
 
 func testFile_VerifyWriteAt(t *testing.T, addr string) {
+	t.Parallel()
+
 	// TODO: Enable this test once XRootD server starts to support kXR_verifyw request: https://github.com/xrootd/xrootd/issues/738.
 	t.Skipf("Skipping this test because XRootD server doesn't support such request.")
 

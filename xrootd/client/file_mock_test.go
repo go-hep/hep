@@ -25,6 +25,8 @@ import (
 )
 
 func TestFile_Close_Mock(t *testing.T) {
+	t.Parallel()
+
 	handle := xrdfs.FileHandle{1, 2, 3, 4}
 	wantRequest := xrdclose.Request{Handle: handle}
 
@@ -82,6 +84,8 @@ func TestFile_Close_Mock(t *testing.T) {
 }
 
 func TestFile_Sync_Mock(t *testing.T) {
+	t.Parallel()
+
 	handle := xrdfs.FileHandle{1, 2, 3, 4}
 	wantRequest := sync.Request{Handle: handle}
 
@@ -139,6 +143,8 @@ func TestFile_Sync_Mock(t *testing.T) {
 }
 
 func TestFile_ReadAt_Mock(t *testing.T) {
+	t.Parallel()
+
 	handle := xrdfs.FileHandle{1, 2, 3, 4}
 	want := []byte("Hello XRootD.\n")
 	askLength := int32(len(want) + 4)
@@ -229,6 +235,8 @@ func TestFile_ReadAt_Mock(t *testing.T) {
 }
 
 func TestFile_WriteAt_Mock(t *testing.T) {
+	t.Parallel()
+
 	handle := xrdfs.FileHandle{1, 2, 3, 4}
 	want := []byte("Hello XRootD.\n")
 
@@ -288,6 +296,8 @@ func TestFile_WriteAt_Mock(t *testing.T) {
 }
 
 func TestFile_Truncate_Mock(t *testing.T) {
+	t.Parallel()
+
 	var (
 		handle         = xrdfs.FileHandle{1, 2, 3, 4}
 		wantSize int64 = 10
@@ -349,6 +359,8 @@ func TestFile_Truncate_Mock(t *testing.T) {
 }
 
 func TestFile_Stat_Mock(t *testing.T) {
+	t.Parallel()
+
 	handle := xrdfs.FileHandle{0, 1, 2, 3}
 
 	var want = &xrdfs.EntryStat{
@@ -428,6 +440,8 @@ func TestFile_Stat_Mock(t *testing.T) {
 }
 
 func TestFile_VerifyWriteAt_Mock(t *testing.T) {
+	t.Parallel()
+
 	handle := xrdfs.FileHandle{1, 2, 3, 4}
 	data := []byte("Hello XRootD.\n")
 	crc := crc32.ChecksumIEEE(data)

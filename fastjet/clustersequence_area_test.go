@@ -66,6 +66,8 @@ func TestClusterSequenceArea(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			// TODO
 			if strings.Contains(test.name, "passive") {
 				t.Skipf("passive area: not implemented")
