@@ -318,9 +318,11 @@ func (s *TreeScanner) scanMap(data map[string]interface{}) error {
 func (s *TreeScanner) scanArgs(args ...interface{}) error {
 	var err error
 
+	ientry := s.scan.icur()
+
 	// load leaf count data
 	for _, br := range s.scan.cbr {
-		err = br.loadEntry(s.scan.cur)
+		err = br.loadEntry(ientry)
 		if err != nil {
 			// FIXME(sbinet): properly decorate error
 			return err
@@ -330,7 +332,7 @@ func (s *TreeScanner) scanArgs(args ...interface{}) error {
 	for i, ptr := range args {
 		fv := reflect.ValueOf(ptr).Elem()
 		br := s.scan.ibr[i]
-		err = br.br.loadEntry(s.scan.icur())
+		err = br.br.loadEntry(ientry)
 		if err != nil {
 			// FIXME(sbinet): properly decorate error
 			return err
@@ -346,9 +348,11 @@ func (s *TreeScanner) scanArgs(args ...interface{}) error {
 func (s *TreeScanner) scanStruct(data interface{}) error {
 	var err error
 
+	ientry := s.scan.icur()
+
 	// load leaf count data
 	for _, br := range s.scan.cbr {
-		s.scan.err = br.loadEntry(s.scan.icur())
+		s.scan.err = br.loadEntry(ientry)
 		if s.scan.err != nil {
 			// FIXME(sbinet): properly decorate error
 			return s.scan.err
@@ -362,7 +366,7 @@ func (s *TreeScanner) scanStruct(data interface{}) error {
 	}
 	for _, br := range s.scan.ibr {
 		fv := rv.Field(br.i)
-		err = br.br.loadEntry(s.scan.icur())
+		err = br.br.loadEntry(ientry)
 		if err != nil {
 			// FIXME(sbinet): properly decorate error
 			return err
@@ -547,9 +551,11 @@ func (s *Scanner) Scan() error {
 		return s.scan.err
 	}
 
+	ientry := s.scan.icur()
+
 	// load leaf count data
 	for _, br := range s.scan.cbr {
-		s.scan.err = br.loadEntry(s.scan.cur)
+		s.scan.err = br.loadEntry(ientry)
 		if s.scan.err != nil {
 			// FIXME(sbinet): properly decorate error
 			return s.scan.err
@@ -558,7 +564,7 @@ func (s *Scanner) Scan() error {
 
 	for i, ptr := range s.args {
 		br := s.scan.ibr[i]
-		s.scan.err = br.br.loadEntry(s.scan.cur)
+		s.scan.err = br.br.loadEntry(ientry)
 		if s.scan.err != nil {
 			// FIXME(sbinet): properly decorate error
 			return s.scan.err
