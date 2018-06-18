@@ -25,10 +25,8 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net/url"
 	"os"
 	stdpath "path"
-	"strings"
 
 	"github.com/pkg/errors"
 	xrdclient "go-hep.org/x/hep/xrootd/client"
@@ -201,30 +199,13 @@ func xrdcopy(dst, srcPath string, recursive, verbose bool) error {
 }
 
 func xrdremote(name string) (client *xrdclient.Client, path string, err error) {
-	urn, err := url.Parse(name)
+	url, err := xrdio.Parse(name)
 	if err != nil {
 		return nil, "", errors.WithStack(err)
 	}
 
-	host := urn.Hostname()
-	port := urn.Port()
-
-	path = urn.Path
-	if strings.HasPrefix(path, "//") {
-		path = path[1:]
-	}
-
-	user := ""
-	if urn.User != nil {
-		user = urn.User.Username()
-	}
-
-	addr := host
-	if port != "" {
-		addr += ":" + port
-	}
-
-	client, err = xrdclient.NewClient(context.Background(), addr, user)
+	path = url.Path
+	client, err = xrdclient.NewClient(context.Background(), url.Addr, url.User)
 	return client, path, err
 }
 
