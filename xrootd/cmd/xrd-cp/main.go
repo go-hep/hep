@@ -17,6 +17,10 @@
 //  $> xrd-cp root://server.example.com/some/file1.txt - > foo.txt
 //  $> xrd-cp -r root://server.example.com/some/dir .
 //  $> xrd-cp -r root://server.example.com/some/dir outdir
+//
+// Options:
+//   -r	copy directories recursively
+//   -v	enable verbose mode
 package main
 
 import (
