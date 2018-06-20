@@ -15,11 +15,12 @@ require (
 	github.com/cznic/zappy v0.0.0-20160723133515-2533cb5b45cc
 	github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
-	github.com/gonuts/binary v0.0.0-20141005214301-21c37b530bec
-	github.com/gonuts/commander v0.0.0-20140205141049-f8ba4e959ca9
-	github.com/gonuts/flag v0.0.0-20130524081338-741a6cbd37a3
+	github.com/gonuts/binary v0.1.0
+	github.com/gonuts/commander v0.1.0
 	github.com/google/go-cmp v0.2.0
 	github.com/google/shlex v0.0.0-20150127133951-6f45313302b9
+	github.com/hashicorp/go-uuid v0.0.0-20180228145832-27454136f036
+	github.com/jcmturner/gofork v0.0.0-20180107083740-2aebee971930
 	github.com/jung-kurt/gofpdf v1.0.0
 	github.com/llgcode/draw2d v0.0.0-20180124133339-274031cf2abe
 	github.com/mattn/go-runewidth v0.0.2
@@ -30,12 +31,15 @@ require (
 	github.com/pkg/errors v0.8.0
 	github.com/sbinet/npyio v0.1.0
 	github.com/ulikunitz/xz v0.5.4
-	golang.org/x/crypto v0.0.0-20180617042118-027cca12c2d6
+	golang.org/x/crypto v0.0.0-20180619200235-7f39a6fea4fe
 	golang.org/x/exp v0.0.0-20180604040759-f5f346835693
 	golang.org/x/image v0.0.0-20180601115456-af66defab954
 	golang.org/x/mobile v0.0.0-20180618222554-6621de06e1e9
-	golang.org/x/tools v0.0.0-20180618171013-53440098a4ee
-	gonum.org/v1/gonum v0.0.0-20180617212200-5530c0a23a8e
+	golang.org/x/tools v0.0.0-20180620140053-25b95b48224c
+	gonum.org/v1/gonum v0.0.0-20180620084523-8b277688f554
 	gonum.org/v1/plot v0.0.0-20180613020117-3f55ce2422a7
+	gopkg.in/jcmturner/aescts.v1 v1.0.1
+	gopkg.in/jcmturner/dnsutils.v1 v1.0.1
+	gopkg.in/jcmturner/gokrb5.v5 v5.2.0
 	rsc.io/pdf v0.1.1
 )
