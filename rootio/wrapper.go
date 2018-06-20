@@ -129,3 +129,21 @@ var cxxbuiltins = map[string]reflect.Type{
 	"Angle_t":  reflect.TypeOf(float32(0)),
 	"Size_t":   reflect.TypeOf(float32(0)),
 }
+
+var gotype2ROOTEnum = map[reflect.Type]int32{
+	reflect.TypeOf(int8(0)):  kChar,
+	reflect.TypeOf(int16(0)): kShort,
+	reflect.TypeOf(int32(0)): kInt,
+	reflect.TypeOf(int64(0)): kLong,
+	//	reflect.TypeOf(int64(0)): kLong64,
+	reflect.TypeOf(float32(0)): kFloat,
+	reflect.TypeOf(float64(0)): kDouble,
+	reflect.TypeOf(uint8(0)):   kUChar,
+	//	reflect.TypeOf(uint8(0)): kCharStar,
+	reflect.TypeOf(uint16(0)): kUShort,
+	reflect.TypeOf(uint32(0)): kUInt,
+	reflect.TypeOf(uint64(0)): kULong,
+	//	reflect.TypeOf(uint64(0)): kULong64,
+	reflect.TypeOf(false):       kBool,
+	reflect.TypeOf(Double32(0)): kDouble32,
+}
