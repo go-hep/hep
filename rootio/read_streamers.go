@@ -766,6 +766,29 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 
 func stdvecSIFrom(name, ename string, ctx StreamerInfoContext) StreamerInfo {
 	ename = strings.TrimSpace(ename)
+	if etyp, ok := cxxbuiltins[ename]; ok {
+		si := &tstreamerInfo{
+			named: tnamed{
+				name:  name,
+				title: name,
+			},
+			elems: []StreamerElement{
+				&tstreamerSTL{
+					tstreamerElement: tstreamerElement{
+						named: tnamed{
+							name:  name,
+							title: name,
+						},
+						ename: name,
+					},
+					rvers: 0,
+					vtype: kSTLvector,
+					ctype: gotype2ROOTEnum[etyp],
+				},
+			},
+		}
+		return si
+	}
 	esi, err := ctx.StreamerInfo(ename)
 	if esi == nil || err != nil {
 		return nil
@@ -1026,6 +1049,9 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 					eltname := se.elemTypeName()
 					if eltname == "" {
 						panic(fmt.Errorf("rootio: could not find element name for %q", se.ename))
+					}
+					if et, ok := cxxbuiltins[eltname]; ok {
+						return reflect.TypeOf(et)
 					}
 					sielt, err := ctx.StreamerInfo(se.elemTypeName())
 					if err != nil {

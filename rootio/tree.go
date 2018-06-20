@@ -318,12 +318,13 @@ func (tree *ttree) attachStreamerElement(br Branch, se StreamerElement, ctx Stre
 		}
 		members = info.Elements()
 	case *tstreamerSTL:
-		typename := se.TypeName()
+		typename := strings.TrimSpace(se.TypeName())
 		// FIXME(sbinet): this string manipulation only works for one-parameter templates
 		if strings.Contains(typename, "<") {
 			typename = typename[strings.Index(typename, "<")+1 : strings.LastIndex(typename, ">")]
 			typename = strings.TrimRight(typename, "*")
 		}
+		typename = strings.TrimSpace(se.TypeName())
 		info, err := ctx.StreamerInfo(typename)
 		if err != nil {
 			if _, ok := cxxbuiltins[typename]; !ok {
