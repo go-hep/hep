@@ -108,6 +108,87 @@ func TestChain(t *testing.T) {
 	}
 }
 
+func TestChainOf(t *testing.T) {
+	for _, tc := range []struct {
+		fnames  []string
+		entries int64
+		name    string
+		title   string
+	}{
+		{
+			fnames:  nil,
+			entries: 0,
+			name:    "",
+			title:   "",
+		},
+		{
+			fnames:  []string{"testdata/chain.1.root"},
+			entries: 10,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
+			fnames:  []string{rootio.XrdRemote("testdata/chain.1.root")},
+			entries: 10,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
+			// twice the same tree
+			fnames:  []string{"testdata/chain.1.root", "testdata/chain.1.root"},
+			entries: 20,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
+			// twice the same tree
+			fnames: []string{
+				rootio.XrdRemote("testdata/chain.1.root"),
+				rootio.XrdRemote("testdata/chain.1.root"),
+			},
+			entries: 20,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
+			// two different trees (with the same schema)
+			fnames:  []string{"testdata/chain.1.root", "testdata/chain.2.root"},
+			entries: 20,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
+			// two different trees (with the same schema)
+			fnames: []string{
+				rootio.XrdRemote("testdata/chain.1.root"),
+				rootio.XrdRemote("testdata/chain.2.root"),
+			},
+			entries: 20,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		// TODO(sbinet): add a test with 2 trees with different schemas)
+	} {
+		t.Run("", func(t *testing.T) {
+			chain, closer, err := rootio.ChainOf(tc.name, tc.fnames...)
+			if err != nil {
+				t.Fatalf("could not create chain: %v", err)
+			}
+			defer closer()
+
+			if got, want := chain.Name(), tc.name; got != want {
+				t.Fatalf("names differ\ngot = %q, want= %q", got, want)
+			}
+			if got, want := chain.Title(), tc.title; got != want {
+				t.Fatalf("titles differ\ngot = %q, want= %q", got, want)
+			}
+			if got, want := chain.Entries(), tc.entries; got != want {
+				t.Fatalf("titles differ\ngot = %v, want= %v", got, want)
+			}
+		})
+	}
+}
+
 func TestChainScanStruct(t *testing.T) {
 	files := []string{
 		"testdata/chain.1.root",

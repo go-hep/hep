@@ -4,6 +4,8 @@
 
 package rootio
 
+import "github.com/pkg/errors"
+
 type tchain struct {
 	trees []Tree
 	offs  []int64 // number of entries before this tree
@@ -43,6 +45,61 @@ func Chain(trees ...Tree) Tree {
 
 	ch.loadTree(ch.cur + 1)
 	return ch
+}
+
+// ChainOf returns a Tree, a close function and an error if any.
+// The tree is the logical concatenation of all the name trees
+// located in the input named files.
+// The close function allows to close all the open named files.
+func ChainOf(name string, files ...string) (Tree, func() error, error) {
+	var (
+		trees = make([]Tree, len(files))
+		fs    = make([]*File, len(files))
+	)
+
+	closef := func(fs []*File) {
+		for _, f := range fs {
+			if f == nil {
+				continue
+			}
+			f.Close()
+		}
+	}
+
+	for i, n := range files {
+		f, err := Open(n)
+		if err != nil {
+			closef(fs)
+			return nil, nil, err
+		}
+		fs[i] = f
+		obj, err := f.Get(name)
+		if err != nil {
+			closef(fs)
+			return nil, nil, err
+		}
+		t, ok := obj.(Tree)
+		if !ok {
+			closef(fs)
+			return nil, nil, errors.Errorf("rootio: object %q in file %q is not a Tree", name, n)
+		}
+
+		trees[i] = t
+	}
+
+	ch := Chain(trees...)
+	close := func() error {
+		var err error
+		for _, f := range fs {
+			e := f.Close()
+			if e != nil && err == nil {
+				err = e
+			}
+		}
+		return err
+	}
+
+	return ch, close, nil
 }
 
 func (ch *tchain) loadTree(i int) {
