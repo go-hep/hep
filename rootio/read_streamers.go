@@ -1044,16 +1044,40 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 			case kObject:
 				switch se.ename {
 				case "vector<string>", "std::vector<std::string>":
-					return reflect.TypeOf([]string{})
+					return reflect.TypeOf([]string(nil))
+				case "vector<vector<char> >":
+					return reflect.TypeOf([][]int8(nil))
+				case "vector<vector<short> >":
+					return reflect.TypeOf([][]uint16(nil))
+				case "vector<vector<int> >":
+					return reflect.TypeOf([][]int32(nil))
+				case "vector<vector<long int> >", "vector<vector<long> >":
+					return reflect.TypeOf([][]int64(nil))
+				case "vector<vector<float> >":
+					return reflect.TypeOf([][]float32(nil))
+				case "vector<vector<double> >":
+					return reflect.TypeOf([][]float64(nil))
+				case "vector<vector<unsigned char> >":
+					return reflect.TypeOf([][]uint8(nil))
+				case "vector<vector<unsigned short> >":
+					return reflect.TypeOf([][]uint16(nil))
+				case "vector<vector<unsigned int> >", "vector<vector<unsigned> >":
+					return reflect.TypeOf([][]uint32(nil))
+				case "vector<vector<unsigned long int> >", "vector<vector<unsigned long> >":
+					return reflect.TypeOf([][]uint64(nil))
+				case "vector<vector<bool> >":
+					return reflect.TypeOf([][]bool(nil))
+				case "vector<vector<string> >":
+					return reflect.TypeOf([][]string(nil))
 				default:
 					eltname := se.elemTypeName()
 					if eltname == "" {
 						panic(fmt.Errorf("rootio: could not find element name for %q", se.ename))
 					}
 					if et, ok := cxxbuiltins[eltname]; ok {
-						return reflect.TypeOf(et)
+						return reflect.SliceOf(et)
 					}
-					sielt, err := ctx.StreamerInfo(se.elemTypeName())
+					sielt, err := ctx.StreamerInfo(eltname)
 					if err != nil {
 						panic(err)
 					}
