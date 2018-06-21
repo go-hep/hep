@@ -14,7 +14,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/protocol"
 )
 
-func TestClient_Protocol_WithSecurityInfo(t *testing.T) {
+func TestSession_Protocol_WithSecurityInfo(t *testing.T) {
 	var protocolVersion int32 = 0x310
 
 	var want = protocol.Response{
@@ -67,8 +67,8 @@ func TestClient_Protocol_WithSecurityInfo(t *testing.T) {
 	}
 
 	clientFunc := func(cancel func(), client *Client) {
-		client.protocolVersion = protocolVersion
-		got, err := client.Protocol(context.Background())
+		client.sessions[client.initialSessionID].protocolVersion = protocolVersion
+		got, err := client.sessions[client.initialSessionID].Protocol(context.Background())
 		if err != nil {
 			t.Fatalf("invalid protocol call: %v", err)
 		}

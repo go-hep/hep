@@ -72,7 +72,7 @@ func TestFile_Close_Mock(t *testing.T) {
 	}
 
 	clientFunc := func(cancel func(), client *Client) {
-		file := file{fs: client.FS().(*fileSystem), handle: handle}
+		file := file{fs: client.FS().(*fileSystem), handle: handle, sessionID: client.initialSessionID}
 
 		err := file.Close(context.Background())
 		if err != nil {
@@ -131,7 +131,7 @@ func TestFile_Sync_Mock(t *testing.T) {
 	}
 
 	clientFunc := func(cancel func(), client *Client) {
-		file := file{fs: client.FS().(*fileSystem), handle: handle}
+		file := file{fs: client.FS().(*fileSystem), handle: handle, sessionID: client.initialSessionID}
 
 		err := file.Sync(context.Background())
 		if err != nil {
@@ -215,7 +215,7 @@ func TestFile_ReadAt_Mock(t *testing.T) {
 	}
 
 	clientFunc := func(cancel func(), client *Client) {
-		file := file{fs: client.FS().(*fileSystem), handle: handle}
+		file := file{fs: client.FS().(*fileSystem), handle: handle, sessionID: client.initialSessionID}
 		got := make([]uint8, askLength)
 
 		n, err := file.ReadAt(got, 1)
@@ -281,7 +281,7 @@ func TestFile_WriteAt_Mock(t *testing.T) {
 	}
 
 	clientFunc := func(cancel func(), client *Client) {
-		file := file{fs: client.FS().(*fileSystem), handle: handle}
+		file := file{fs: client.FS().(*fileSystem), handle: handle, sessionID: client.initialSessionID}
 
 		n, err := file.WriteAt(want, 1)
 		if err != nil {
@@ -347,7 +347,7 @@ func TestFile_Truncate_Mock(t *testing.T) {
 	}
 
 	clientFunc := func(cancel func(), client *Client) {
-		file := file{fs: client.FS().(*fileSystem), handle: handle}
+		file := file{fs: client.FS().(*fileSystem), handle: handle, sessionID: client.initialSessionID}
 
 		err := file.Truncate(context.Background(), wantSize)
 		if err != nil {
@@ -423,7 +423,7 @@ func TestFile_Stat_Mock(t *testing.T) {
 
 	clientFunc := func(cancel func(), client *Client) {
 		var fs = client.FS().(*fileSystem)
-		file := file{fs: fs, handle: handle}
+		file := file{fs: fs, handle: handle, sessionID: client.initialSessionID}
 		got, err := file.Stat(context.Background())
 		if err != nil {
 			t.Fatalf("invalid stat call: %v", err)
@@ -490,7 +490,7 @@ func TestFile_VerifyWriteAt_Mock(t *testing.T) {
 	}
 
 	clientFunc := func(cancel func(), client *Client) {
-		file := file{fs: client.FS().(*fileSystem), handle: handle}
+		file := file{fs: client.FS().(*fileSystem), handle: handle, sessionID: client.initialSessionID}
 
 		err := file.VerifyWriteAt(context.Background(), data, 1)
 		if err != nil {

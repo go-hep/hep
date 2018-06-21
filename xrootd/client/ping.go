@@ -11,7 +11,8 @@ import (
 )
 
 // Ping determines whether the server is still alive.
-func (client *Client) Ping(ctx context.Context) error {
-	_, err := client.call(ctx, &ping.Request{})
+func (sess *session) Ping(ctx context.Context) error {
+	_, err := sess.Send(ctx, nil, &ping.Request{})
+	// TODO: should we react somehow to redirection?
 	return err
 }

@@ -12,8 +12,9 @@ import (
 
 // Login initializes a server connection using username
 // and token which can be supplied by the previous redirection response.
-func (client *Client) Login(ctx context.Context, username, token string) (login.Response, error) {
+func (sess *session) Login(ctx context.Context, username, token string) (login.Response, error) {
 	var resp login.Response
-	err := client.Send(ctx, &resp, login.NewRequest(username, token))
+	_, err := sess.Send(ctx, &resp, login.NewRequest(username, token))
+	// TODO: should we react somehow to redirection?
 	return resp, err
 }

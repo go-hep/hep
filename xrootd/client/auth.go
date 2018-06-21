@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (client *Client) auth(ctx context.Context, securityInformation []byte) error {
+func (sess *session) auth(ctx context.Context, securityInformation []byte) error {
 	securityInformation = bytes.TrimLeft(securityInformation, "&")
 	providerInfos := bytes.Split(securityInformation, []byte{'&'})
 
@@ -26,7 +26,7 @@ func (client *Client) auth(ctx context.Context, securityInformation []byte) erro
 		provider := params[0]
 		params = params[1:]
 
-		auther, ok := client.auths[provider]
+		auther, ok := sess.client.auths[provider]
 		if !ok {
 			errs = append(errs, errors.Errorf("xrootd: could not authorize using %s: provider was not found", provider))
 			continue
@@ -36,7 +36,8 @@ func (client *Client) auth(ctx context.Context, securityInformation []byte) erro
 			errs = append(errs, errors.Errorf("xrootd: could not authorize using %s: %v", provider, err))
 			continue
 		}
-		_, err = client.call(ctx, r)
+		_, err = sess.Send(ctx, nil, r)
+		// TODO: should we react somehow to redirection?
 		if err != nil {
 			errs = append(errs, errors.Errorf("xrootd: could not authorize using %s: %v", provider, err))
 			continue

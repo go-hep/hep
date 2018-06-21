@@ -24,30 +24,31 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 
 import (
 	"context"
-	"io"
-	"net"
-	"sync/atomic"
+	"sync"
 
-	"go-hep.org/x/hep/xrootd/internal/mux"
-	"go-hep.org/x/hep/xrootd/internal/xrdenc"
+	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/auth"
 	"go-hep.org/x/hep/xrootd/xrdproto/auth/krb5"
 	"go-hep.org/x/hep/xrootd/xrdproto/auth/unix"
-	"go-hep.org/x/hep/xrootd/xrdproto/sigver"
 )
 
 // A Client to xrootd server which allows to send requests and receive responses.
 // Concurrent requests are supported.
 // Zero value is invalid, Client should be instantiated using NewClient.
 type Client struct {
-	cancel           context.CancelFunc
-	conn             net.Conn
-	mux              *mux.Mux
-	protocolVersion  int32
-	signRequirements xrdproto.SignRequirements
-	seqID            int64
-	auths            map[string]auth.Auther
+	cancel   context.CancelFunc
+	auths    map[string]auth.Auther
+	username string
+	// initialSessionID is the sessionID of the server which is used as default
+	// for all requests that don't specify sessionID explicitly.
+	// Any failed request with another sessionID should be redirected to the initialSessionID.
+	// See http://xrootd.org/doc/dev45/XRdv310.pdf, page 11 for details.
+	initialSessionID string
+	mu               sync.RWMutex
+	sessions         map[string]*session
+
+	maxRedirections int
 }
 
 // Option configures an XRootD client.
@@ -84,14 +85,14 @@ func (client *Client) initSecurityProviders() {
 func NewClient(ctx context.Context, address string, username string, opts ...Option) (*Client, error) {
 	ctx, cancel := context.WithCancel(ctx)
 
-	var d net.Dialer
-	conn, err := d.DialContext(ctx, "tcp", address)
-	if err != nil {
-		cancel()
-		return nil, err
+	client := &Client{
+		cancel:          cancel,
+		auths:           make(map[string]auth.Auther),
+		username:        username,
+		sessions:        make(map[string]*session),
+		maxRedirections: 10,
 	}
 
-	client := &Client{cancel: cancel, conn: conn, mux: mux.New(), auths: make(map[string]auth.Auther)}
 	client.initSecurityProviders()
 
 	for _, opt := range opts {
@@ -104,182 +105,97 @@ func NewClient(ctx context.Context, address string, username string, opts ...Opt
 		}
 	}
 
-	go client.consume(ctx)
-
-	if err := client.handshake(ctx); err != nil {
-		client.Close()
-		return nil, err
-	}
-
-	securityInfo, err := client.Login(ctx, username, "")
+	_, err := client.getSession(ctx, address)
 	if err != nil {
 		client.Close()
 		return nil, err
 	}
-
-	if len(securityInfo.SecurityInformation) > 0 {
-		err = client.auth(ctx, securityInfo.SecurityInformation)
-		if err != nil {
-			client.Close()
-			return nil, err
-		}
-	}
-
-	protocolInfo, err := client.Protocol(ctx)
-	if err != nil {
-		client.Close()
-		return nil, err
-	}
-
-	client.signRequirements = xrdproto.NewSignRequirements(protocolInfo.SecurityLevel, protocolInfo.SecurityOverrides)
 
 	return client, nil
 }
 
 // Close closes the connection. Any blocked operation will be unblocked and return error.
 func (client *Client) Close() error {
-	client.cancel()
-
-	client.mux.Close()
-	return client.conn.Close()
-}
-
-func (client *Client) consume(ctx context.Context) {
-	var header xrdproto.ResponseHeader
-	var headerBytes = make([]byte, xrdproto.ResponseHeaderLength)
-
-	for {
-		select {
-		case <-ctx.Done():
-			// TODO: Should wait for active requests to be completed?
-			return
-		default:
-			if _, err := io.ReadFull(client.conn, headerBytes); err != nil {
-				if ctx.Err() != nil {
-					// something happened to the context.
-					// ignore this error.
-					continue
-				}
-				panic(err)
-				// TODO: handle EOF by redirection as specified at http://xrootd.org/doc/dev45/XRdv310.pdf, page 11
-			}
-
-			if err := xrdproto.Unmarshal(headerBytes, &header); err != nil {
-				if ctx.Err() != nil {
-					// something happened to the context.
-					// ignore this error.
-					continue
-				}
-				panic(err)
-				// TODO: should redirect in case if is not possible to decode a header as well?
-			}
-
-			resp := mux.ServerResponse{Data: make([]byte, header.DataLength)}
-			if _, err := io.ReadFull(client.conn, resp.Data); err != nil {
-				if ctx.Err() != nil {
-					// something happened to the context.
-					// ignore this error.
-					continue
-				}
-				resp.Err = err
-			} else if header.Status != xrdproto.Ok {
-				resp.Err = header.Error(resp.Data)
-			}
-
-			if err := client.mux.SendData(header.StreamID, resp); err != nil {
-				if ctx.Err() != nil {
-					// something happened to the context.
-					// ignore this error.
-					continue
-				}
-				panic(err)
-				// TODO: should we just ignore responses to unclaimed stream IDs?
-			}
-
-			if header.Status != xrdproto.OkSoFar {
-				client.mux.Unclaim(header.StreamID)
-			}
+	defer client.cancel()
+	client.mu.Lock()
+	defer client.mu.Unlock()
+	var errs []error
+	for _, session := range client.sessions {
+		err := session.Close()
+		if err != nil {
+			errs = append(errs, err)
 		}
 	}
+	if errs != nil {
+		return errors.Errorf("xrootd: could not close client: %v", errs)
+	}
+	return nil
 }
 
 // Send sends the request to the server and stores the response inside the resp.
-func (client *Client) Send(ctx context.Context, resp xrdproto.Response, req xrdproto.Request) error {
-	data, err := client.call(ctx, req)
-	if err != nil {
-		return err
-	}
-
-	return resp.UnmarshalXrd(xrdenc.NewRBuffer(data))
+// If the resp is nil, then no response is stored.
+// Send returns a session id which identifies the server that provided response.
+func (client *Client) Send(ctx context.Context, resp xrdproto.Response, req xrdproto.Request) (string, error) {
+	return client.sendSession(ctx, client.initialSessionID, resp, req)
 }
 
-func (client *Client) send(ctx context.Context, responseChannel mux.DataRecvChan, request []byte) ([]byte, error) {
-	if _, err := client.conn.Write(request); err != nil {
-		return nil, err
+func (client *Client) sendSession(ctx context.Context, sessionID string, resp xrdproto.Response, req xrdproto.Request) (string, error) {
+	client.mu.RLock()
+	session, ok := client.sessions[sessionID]
+	client.mu.RUnlock()
+	if !ok {
+		return "", errors.Errorf("xrootd: session with id = %q was not found", sessionID)
 	}
 
-	var data []byte
-
-	for {
-		select {
-		case resp, more := <-responseChannel:
-			if !more {
-				return data, nil
-			}
-
-			if resp.Err != nil {
-				return nil, resp.Err
-			}
-
-			data = append(data, resp.Data...)
-		case <-ctx.Done():
-			if err := ctx.Err(); err != nil {
-				return nil, err
-			}
-		}
-	}
-	panic("unreachable")
-}
-
-func (client *Client) call(ctx context.Context, req xrdproto.Request) ([]byte, error) {
-	streamID, responseChannel, err := client.mux.Claim()
+	redirection, err := session.Send(ctx, resp, req)
 	if err != nil {
-		return nil, err
+		return sessionID, err
 	}
 
-	var wBuffer xrdenc.WBuffer
-	header := xrdproto.RequestHeader{streamID, req.ReqID()}
-	if err = header.MarshalXrd(&wBuffer); err != nil {
-		return nil, err
-	}
-	if err = req.MarshalXrd(&wBuffer); err != nil {
-		return nil, err
-	}
-	data := wBuffer.Bytes()
-
-	if client.signRequirements.Needed(req) {
-		data, err = client.sign(streamID, req.ReqID(), data)
+	for cnt := client.maxRedirections; redirection != nil && cnt > 0; cnt-- {
+		sessionID = redirection.Addr
+		// TODO: pass token to the session.Login()
+		session, err = client.getSession(ctx, sessionID)
 		if err != nil {
-			return nil, err
+			return sessionID, err
+		}
+		if fp, ok := req.(xrdproto.FilepathRequest); ok {
+			fp.SetOpaque(redirection.Opaque)
+		}
+		// TODO: we should check if the request contains file handle and re-issue open request in that case.
+		redirection, err = session.Send(ctx, resp, req)
+		if err != nil {
+			return sessionID, err
 		}
 	}
 
-	return client.send(ctx, responseChannel, data)
+	if redirection != nil {
+		err = errors.Errorf("xrootd: received %d redirections in a row, aborting request", client.maxRedirections)
+	}
+
+	return sessionID, err
 }
 
-func (client *Client) sign(streamID xrdproto.StreamID, requestID uint16, data []byte) ([]byte, error) {
-	seqID := atomic.AddInt64(&client.seqID, 1)
-	signRequest := sigver.NewRequest(requestID, seqID, data)
-	header := xrdproto.RequestHeader{streamID, signRequest.ReqID()}
-
-	var wBuffer xrdenc.WBuffer
-	if err := header.MarshalXrd(&wBuffer); err != nil {
+func (client *Client) getSession(ctx context.Context, address string) (*session, error) {
+	client.mu.RLock()
+	v, ok := client.sessions[address]
+	client.mu.RUnlock()
+	if ok {
+		return v, nil
+	}
+	client.mu.Lock()
+	defer client.mu.Unlock()
+	session, err := newSession(ctx, address, client.username, client)
+	if err != nil {
 		return nil, err
 	}
-	if err := signRequest.MarshalXrd(&wBuffer); err != nil {
-		return nil, err
-	}
-	wBuffer.WriteBytes(data)
+	client.sessions[address] = session
 
-	return wBuffer.Bytes(), nil
+	if len(client.initialSessionID) == 0 {
+		client.initialSessionID = address
+	}
+	// TODO: check if initial sessionID should be changed.
+	// See http://xrootd.org/doc/dev45/XRdv310.pdf, p. 11 for details.
+
+	return session, nil
 }

@@ -23,6 +23,7 @@ type file struct {
 	handle      xrdfs.FileHandle
 	compression *xrdfs.FileCompression
 	info        *xrdfs.EntryStat
+	sessionID   string
 }
 
 // Compression returns the compression info.
@@ -43,30 +44,44 @@ func (f file) Handle() xrdfs.FileHandle {
 
 // Close closes the file.
 func (f file) Close(ctx context.Context) error {
-	_, err := f.fs.c.call(ctx, &xrdclose.Request{Handle: f.handle})
-	return err
+	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, nil, &xrdclose.Request{Handle: f.handle})
+	if err != nil {
+		return err
+	}
+	f.sessionID = newSessionID
+	return nil
 }
 
 // CloseVerify closes the file and checks whether the file has the provided size.
 // A zero size suppresses the verification.
 func (f file) CloseVerify(ctx context.Context, size int64) error {
-	_, err := f.fs.c.call(ctx, &xrdclose.Request{Handle: f.handle, Size: size})
-	return err
+	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, nil, &xrdclose.Request{Handle: f.handle, Size: size})
+	if err != nil {
+		return err
+	}
+	f.sessionID = newSessionID
+	return nil
 }
 
 // Sync commits all pending writes to an open file.
 func (f file) Sync(ctx context.Context) error {
-	_, err := f.fs.c.call(ctx, &sync.Request{Handle: f.handle})
-	return err
+	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, nil, &sync.Request{Handle: f.handle})
+	if err != nil {
+		return err
+	}
+	f.sessionID = newSessionID
+	return nil
 }
 
 // ReadAtContext reads len(p) bytes into p starting at offset off.
 func (f file) ReadAtContext(ctx context.Context, p []byte, off int64) (n int, err error) {
 	resp := read.Response{Data: p}
-	err = f.fs.c.Send(ctx, &resp, &read.Request{Handle: f.handle, Offset: off, Length: int32(len(p))})
+	req := &read.Request{Handle: f.handle, Offset: off, Length: int32(len(p))}
+	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, &resp, req)
 	if err != nil {
 		return 0, err
 	}
+	f.sessionID = newSessionID
 	return len(resp.Data), nil
 }
 
@@ -77,8 +92,12 @@ func (f file) ReadAt(p []byte, off int64) (n int, err error) {
 
 // WriteAtContext writes len(p) bytes from p to the file at offset off.
 func (f file) WriteAtContext(ctx context.Context, p []byte, off int64) error {
-	_, err := f.fs.c.call(ctx, &write.Request{Handle: f.handle, Offset: off, Data: p})
-	return err
+	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, nil, &write.Request{Handle: f.handle, Offset: off, Data: p})
+	if err != nil {
+		return err
+	}
+	f.sessionID = newSessionID
+	return nil
 }
 
 // WriteAt writes len(p) bytes from p to the file at offset off.
@@ -92,8 +111,12 @@ func (f file) WriteAt(p []byte, off int64) (n int, err error) {
 
 // Truncate changes the size of the named file.
 func (f file) Truncate(ctx context.Context, size int64) error {
-	_, err := f.fs.c.call(ctx, &truncate.Request{Handle: f.handle, Size: size})
-	return err
+	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, nil, &truncate.Request{Handle: f.handle, Size: size})
+	if err != nil {
+		return err
+	}
+	f.sessionID = newSessionID
+	return nil
 }
 
 // StatVirtualFS fetches the virtual fs stat info from the XRootD server.
@@ -101,10 +124,11 @@ func (f file) Truncate(ctx context.Context, size int64) error {
 // See https://github.com/xrootd/xrootd/issues/728 for the details.
 func (f file) StatVirtualFS(ctx context.Context) (xrdfs.VirtualFSStat, error) {
 	var resp stat.VirtualFSResponse
-	err := f.fs.c.Send(ctx, &resp, &stat.Request{FileHandle: f.handle, Options: stat.OptionsVFS})
+	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, &resp, &stat.Request{FileHandle: f.handle, Options: stat.OptionsVFS})
 	if err != nil {
 		return xrdfs.VirtualFSStat{}, err
 	}
+	f.sessionID = newSessionID
 	return resp.VirtualFSStat, nil
 }
 
@@ -113,11 +137,12 @@ func (f file) StatVirtualFS(ctx context.Context) (xrdfs.VirtualFSStat, error) {
 // calls to Info may return different value than before.
 func (f *file) Stat(ctx context.Context) (xrdfs.EntryStat, error) {
 	var resp stat.DefaultResponse
-	err := f.fs.c.Send(ctx, &resp, &stat.Request{FileHandle: f.handle})
+	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, &resp, &stat.Request{FileHandle: f.handle})
 	if err != nil {
 		return xrdfs.EntryStat{}, err
 	}
 	f.info = &resp.EntryStat
+	f.sessionID = newSessionID
 	return resp.EntryStat, nil
 }
 
@@ -126,8 +151,12 @@ func (f *file) Stat(ctx context.Context) (xrdfs.EntryStat, error) {
 // TODO: note that verifyw is not supported by the XRootD server.
 // See https://github.com/xrootd/xrootd/issues/738 for the details.
 func (f file) VerifyWriteAt(ctx context.Context, p []byte, off int64) error {
-	_, err := f.fs.c.call(ctx, verifyw.NewRequestCRC32(f.handle, off, p))
-	return err
+	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, nil, verifyw.NewRequestCRC32(f.handle, off, p))
+	if err != nil {
+		return err
+	}
+	f.sessionID = newSessionID
+	return nil
 }
 
 var (

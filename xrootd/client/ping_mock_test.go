@@ -13,7 +13,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/ping"
 )
 
-func TestClient_Ping_Mock(t *testing.T) {
+func TestSession_Ping_Mock(t *testing.T) {
 	serverFunc := func(cancel func(), conn net.Conn) {
 		data, err := readRequest(conn)
 		if err != nil {
@@ -51,7 +51,7 @@ func TestClient_Ping_Mock(t *testing.T) {
 	}
 
 	clientFunc := func(cancel func(), client *Client) {
-		err := client.Ping(context.Background())
+		err := client.sessions[client.initialSessionID].Ping(context.Background())
 		if err != nil {
 			t.Fatalf("invalid ping call: %v", err)
 		}

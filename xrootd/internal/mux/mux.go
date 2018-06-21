@@ -37,7 +37,10 @@ Example of usage:
 package mux // import "go-hep.org/x/hep/xrootd/internal/mux"
 
 import (
+	"encoding/binary"
 	"math"
+	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -49,8 +52,47 @@ import (
 // Err representing error received from server or occurred
 // during response decoding.
 type ServerResponse struct {
-	Data []byte
-	Err  error
+	Data        []byte
+	Err         error
+	Redirection *Redirection
+}
+
+// Redirection represents the redirection request from the server.
+// It contains address addr to which client must connect,
+// opaque data that must be delivered to the new server as
+// opaque information added to the file name, and token that
+// must be delivered to the new server as part of login request.
+type Redirection struct {
+	// Addr is the server address to which client must connect in the format "host:port".
+	Addr string
+
+	// Opaque is the data that must be delivered to the new server as
+	// opaque information added to the file name
+	Opaque string
+
+	// Token is the data that must be delivered to the new server as
+	// part of the login request.
+	Token string
+}
+
+// ParseRedirection parses the Redirection from the XRootD redirect response format.
+// See http://xrootd.org/doc/dev45/XRdv310.pdf, p. 33 for details.
+func ParseRedirection(raw []byte) (*Redirection, error) {
+	port := binary.BigEndian.Uint32(raw)
+	parts := strings.Split(string(raw[4:]), "?")
+	if len(parts) == 0 {
+		return nil, errors.Errorf("xrootd: could not parse redirect url %q", string(raw))
+	}
+
+	var opaque, token string
+	if len(parts) > 1 {
+		opaque = parts[1]
+	}
+	if len(parts) > 2 {
+		token = parts[2]
+	}
+	addr := parts[0] + ":" + strconv.Itoa(int(port))
+	return &Redirection{Addr: addr, Opaque: opaque, Token: token}, nil
 }
 
 type dataSendChan chan<- ServerResponse

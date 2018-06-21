@@ -7,8 +7,11 @@
 package open // import "go-hep.org/x/hep/xrootd/xrdproto/open"
 
 import (
+	"strings"
+
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdfs"
+	"go-hep.org/x/hep/xrootd/xrdproto"
 )
 
 // RequestID is the id of the request, it is sent as part of message.
@@ -74,6 +77,22 @@ type Request struct {
 	Path    string
 }
 
+// Opaque implements xrdproto.FilepathRequest.Opaque.
+func (req *Request) Opaque() string {
+	pos := strings.LastIndex(req.Path, "?")
+	return req.Path[pos+1:]
+}
+
+// SetOpaque implements xrdproto.FilepathRequest.SetOpaque.
+func (req *Request) SetOpaque(opaque string) {
+	path := req.Path
+	pos := strings.LastIndex(path, "?")
+	if pos != -1 {
+		path = path[:pos]
+	}
+	req.Path = path + "?" + opaque
+}
+
 // NewRequest forms a Request according to provided path, mode, and options.
 func NewRequest(path string, mode xrdfs.OpenMode, options xrdfs.OpenOptions) *Request {
 	return &Request{Mode: mode, Options: options, Path: path}
@@ -110,3 +129,7 @@ func (req *Request) ShouldSign() bool {
 		req.Options&xrdfs.OpenOptionsMkPath != 0 ||
 		req.Options&xrdfs.OpenOptionsOpenAppend != 0
 }
+
+var (
+	_ xrdproto.FilepathRequest = (*Request)(nil)
+)
