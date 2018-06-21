@@ -15,7 +15,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/login"
 )
 
-func TestClient_Login_Mock(t *testing.T) {
+func TestSession_Login_Mock(t *testing.T) {
 	username := "gopher"
 	token := "token"
 
@@ -76,7 +76,7 @@ func TestClient_Login_Mock(t *testing.T) {
 	}
 
 	clientFunc := func(cancel func(), client *Client) {
-		got, err := client.Login(context.Background(), username, token)
+		got, err := client.sessions[client.initialSessionID].Login(context.Background(), username, token)
 		if err != nil {
 			t.Fatalf("invalid login call: %v", err)
 		}

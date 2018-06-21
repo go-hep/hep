@@ -34,7 +34,7 @@ type fileSystem struct {
 // Dirlist returns the contents of a directory together with the stat information.
 func (fs *fileSystem) Dirlist(ctx context.Context, path string) ([]xrdfs.EntryStat, error) {
 	var resp dirlist.Response
-	err := fs.c.Send(ctx, &resp, dirlist.NewRequest(path))
+	_, err := fs.c.Send(ctx, &resp, dirlist.NewRequest(path))
 	if err != nil {
 		return nil, err
 	}
@@ -44,29 +44,29 @@ func (fs *fileSystem) Dirlist(ctx context.Context, path string) ([]xrdfs.EntrySt
 // Open returns the file handle for a file together with the compression and the stat info.
 func (fs *fileSystem) Open(ctx context.Context, path string, mode xrdfs.OpenMode, options xrdfs.OpenOptions) (xrdfs.File, error) {
 	var resp open.Response
-	err := fs.c.Send(ctx, &resp, open.NewRequest(path, mode, options))
+	server, err := fs.c.Send(ctx, &resp, open.NewRequest(path, mode, options))
 	if err != nil {
 		return nil, err
 	}
-	return &file{fs, resp.FileHandle, resp.Compression, resp.Stat}, nil
+	return &file{fs, resp.FileHandle, resp.Compression, resp.Stat, server}, nil
 }
 
 // RemoveFile removes a file.
 func (fs *fileSystem) RemoveFile(ctx context.Context, path string) error {
-	_, err := fs.c.call(ctx, &rm.Request{Path: path})
+	_, err := fs.c.Send(ctx, nil, &rm.Request{Path: path})
 	return err
 }
 
 // Truncate changes the size of the named file.
 func (fs *fileSystem) Truncate(ctx context.Context, path string, size int64) error {
-	_, err := fs.c.call(ctx, &truncate.Request{Path: path, Size: size})
+	_, err := fs.c.Send(ctx, nil, &truncate.Request{Path: path, Size: size})
 	return err
 }
 
 // Stat returns the entry stat info for the given path.
 func (fs *fileSystem) Stat(ctx context.Context, path string) (xrdfs.EntryStat, error) {
 	var resp stat.DefaultResponse
-	err := fs.c.Send(ctx, &resp, &stat.Request{Path: path})
+	_, err := fs.c.Send(ctx, &resp, &stat.Request{Path: path})
 	if err != nil {
 		return xrdfs.EntryStat{}, err
 	}
@@ -79,7 +79,7 @@ func (fs *fileSystem) Stat(ctx context.Context, path string) (xrdfs.EntryStat, e
 // with the specified path prefix.
 func (fs *fileSystem) VirtualStat(ctx context.Context, path string) (xrdfs.VirtualFSStat, error) {
 	var resp stat.VirtualFSResponse
-	err := fs.c.Send(ctx, &resp, &stat.Request{Path: path, Options: stat.OptionsVFS})
+	_, err := fs.c.Send(ctx, &resp, &stat.Request{Path: path, Options: stat.OptionsVFS})
 	if err != nil {
 		return xrdfs.VirtualFSStat{}, err
 	}
@@ -88,7 +88,7 @@ func (fs *fileSystem) VirtualStat(ctx context.Context, path string) (xrdfs.Virtu
 
 // Mkdir creates a new directory with the specified name and permission bits.
 func (fs *fileSystem) Mkdir(ctx context.Context, path string, perm xrdfs.OpenMode) error {
-	_, err := fs.c.call(ctx, &mkdir.Request{Path: path, Mode: perm})
+	_, err := fs.c.Send(ctx, nil, &mkdir.Request{Path: path, Mode: perm})
 	return err
 }
 
@@ -96,14 +96,14 @@ func (fs *fileSystem) Mkdir(ctx context.Context, path string, perm xrdfs.OpenMod
 // and returns nil, or else returns an error.
 // The permission bits perm are used for all directories that MkdirAll creates.
 func (fs *fileSystem) MkdirAll(ctx context.Context, path string, perm xrdfs.OpenMode) error {
-	_, err := fs.c.call(ctx, &mkdir.Request{Path: path, Mode: perm, Options: mkdir.OptionsMakePath})
+	_, err := fs.c.Send(ctx, nil, &mkdir.Request{Path: path, Mode: perm, Options: mkdir.OptionsMakePath})
 	return err
 }
 
 // RemoveDir removes a directory.
 // The directory to be removed must be empty.
 func (fs *fileSystem) RemoveDir(ctx context.Context, path string) error {
-	_, err := fs.c.call(ctx, &rmdir.Request{Path: path})
+	_, err := fs.c.Send(ctx, nil, &rmdir.Request{Path: path})
 	return err
 }
 
@@ -136,13 +136,13 @@ func (fs *fileSystem) RemoveAll(ctx context.Context, path string) error {
 
 // Rename renames (moves) oldpath to newpath.
 func (fs *fileSystem) Rename(ctx context.Context, oldpath, newpath string) error {
-	_, err := fs.c.call(ctx, &mv.Request{OldPath: oldpath, NewPath: newpath})
+	_, err := fs.c.Send(ctx, nil, &mv.Request{OldPath: oldpath, NewPath: newpath})
 	return err
 }
 
 // Chmod changes the permissions of the named file to perm.
 func (fs *fileSystem) Chmod(ctx context.Context, path string, perm xrdfs.OpenMode) error {
-	_, err := fs.c.call(ctx, &chmod.Request{Path: path, Mode: perm})
+	_, err := fs.c.Send(ctx, nil, &chmod.Request{Path: path, Mode: perm})
 	return err
 }
 
@@ -150,7 +150,7 @@ func (fs *fileSystem) Chmod(ctx context.Context, path string, perm xrdfs.OpenMod
 // Only a limited number of flags is meaningful such as StatIsExecutable, StatIsDir, StatIsOther, StatIsOffline.
 func (fs *fileSystem) Statx(ctx context.Context, paths []string) ([]xrdfs.StatFlags, error) {
 	var resp statx.Response
-	err := fs.c.Send(ctx, &resp, statx.NewRequest(paths))
+	_, err := fs.c.Send(ctx, &resp, statx.NewRequest(paths))
 	if err != nil {
 		return nil, err
 	}

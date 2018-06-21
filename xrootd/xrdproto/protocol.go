@@ -26,6 +26,10 @@ const (
 	// Error indicates that an error occurred during request handling.
 	// Error code and error message are sent as part of response (see xrootd protocol specification v3.1.0, p. 27).
 	Error ResponseStatus = 4003
+	// Redirect indicates that the client must re-issue the request to another server.
+	Redirect ResponseStatus = 4004
+	// Wait indicates that the client must wait the indicated number of seconds and retry the request.
+	Wait ResponseStatus = 4005
 )
 
 // ServerError is the error returned by the XRootD server as part of response to the request.
@@ -116,3 +120,65 @@ const (
 	// DataServer indicates whether this is a data server.
 	DataServer
 )
+
+// FilepathRequest is a request that contains file paths.
+// This interface is used to append opaque data to the request.
+// Opaque data is received as part of the redirect response.
+type FilepathRequest interface {
+	Opaque() string          // Opaque returns opaque data from this request.
+	SetOpaque(opaque string) // SetOpaque sets opaque data for this request.
+}
+
+// RequestLevel is the security requirement that the associated request is to have.
+type RequestLevel byte
+
+const (
+	SignNone   RequestLevel = 0 // SignNone indicates that the request need not to be signed.
+	SignLikely RequestLevel = 1 // SignLikely indicates that the request must be signed if it modifies data.
+	SignNeeded RequestLevel = 2 // SignNeeded indicates that the request mush be signed.
+)
+
+// SecurityLevel is the predefined security level that specifies which requests should be signed.
+// See specification for details: http://xrootd.org/doc/dev45/XRdv310.pdf, p. 75.
+type SecurityLevel byte
+
+const (
+	// NoneLevel indicates that no request needs to be signed.
+	NoneLevel SecurityLevel = 0
+	// Compatible indicates that only potentially destructive requests need to be signed.
+	Compatible SecurityLevel = 1
+	// Standard indicates that potentially destructive requests
+	// as well as certain non-destructive requests need to be signed.
+	Standard SecurityLevel = 2
+	// Intense indicates that request that may reveal metadata or modify data need to be signed.
+	Intense SecurityLevel = 3
+	// Pedantic indicates that all requests need to be signed.
+	Pedantic SecurityLevel = 4
+)
+
+// SecurityOverrideLength is the length of SecurityOverride in bytes.
+const SecurityOverrideLength = 2
+
+// SecurityOverride is an alteration needed to the specified predefined security level.
+// It consists of the request index and the security requirement the associated request should have.
+// Request index is calculated as:
+//     (request code) - (request code of Auth request)
+// according to xrootd protocol specification.
+type SecurityOverride struct {
+	RequestIndex byte
+	RequestLevel RequestLevel
+}
+
+// MarshalXrd implements xrdproto.Marshaler
+func (o SecurityOverride) MarshalXrd(enc *xrdenc.WBuffer) error {
+	enc.WriteU8(o.RequestIndex)
+	enc.WriteU8(byte(o.RequestLevel))
+	return nil
+}
+
+// UnmarshalXrd implements xrdproto.Unmarshaler
+func (o *SecurityOverride) UnmarshalXrd(dec *xrdenc.RBuffer) error {
+	o.RequestIndex = dec.ReadU8()
+	o.RequestLevel = RequestLevel(dec.ReadU8())
+	return nil
+}

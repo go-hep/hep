@@ -12,8 +12,9 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/handshake"
 )
 
-func (client *Client) handshake(ctx context.Context) error {
-	responseChannel, err := client.mux.ClaimWithID(xrdproto.StreamID{0, 0})
+func (sess *session) handshake(ctx context.Context) error {
+	streamID := xrdproto.StreamID{0, 0}
+	responseChannel, err := sess.mux.ClaimWithID(streamID)
 	if err != nil {
 		return err
 	}
@@ -25,7 +26,8 @@ func (client *Client) handshake(ctx context.Context) error {
 		return err
 	}
 
-	resp, err := client.send(ctx, responseChannel, wBuffer.Bytes())
+	resp, _, err := sess.send(ctx, streamID, responseChannel, wBuffer.Bytes())
+	// TODO: should we react somehow to redirection?
 	if err != nil {
 		return err
 	}
@@ -35,7 +37,7 @@ func (client *Client) handshake(ctx context.Context) error {
 		return err
 	}
 
-	client.protocolVersion = result.ProtocolVersion
+	sess.protocolVersion = result.ProtocolVersion
 
 	return nil
 }
