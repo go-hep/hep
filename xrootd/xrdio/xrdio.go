@@ -8,9 +8,7 @@ package xrdio // import "go-hep.org/x/hep/xrootd/xrdio"
 import (
 	"context"
 	"io"
-	"net/url"
 	"os"
-	"strings"
 
 	"github.com/pkg/errors"
 	xrdclient "go-hep.org/x/hep/xrootd/client"
@@ -41,42 +39,24 @@ type File struct {
 //
 //  f, err := xrdio.Open("root://server.example.com:1094//some/path/to/file")
 func Open(name string) (*File, error) {
-	urn, err := url.Parse(name)
+	urn, err := Parse(name)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	host := urn.Hostname()
-	port := urn.Port()
-
-	path := urn.Path
-	if strings.HasPrefix(path, "//") {
-		path = path[1:]
-	}
-
-	user := ""
-	if urn.User != nil {
-		user = urn.User.Username()
-	}
-
-	addr := host
-	if port != "" {
-		addr += ":" + port
-	}
-
-	xrd, err := xrdclient.NewClient(context.Background(), addr, user)
+	xrd, err := xrdclient.NewClient(context.Background(), urn.Addr, urn.User)
 	if err != nil {
-		return nil, errors.Errorf("xrdio: could not connect to xrootd server %q: %v", host, err)
+		return nil, errors.Errorf("xrdio: could not connect to xrootd server %q: %v", urn.Addr, err)
 	}
 
 	fs := xrd.FS()
-	f, err := fs.Open(context.Background(), path, xrdfs.OpenModeOwnerRead, xrdfs.OpenOptionsOpenRead)
+	f, err := fs.Open(context.Background(), urn.Path, xrdfs.OpenModeOwnerRead, xrdfs.OpenOptionsOpenRead)
 	if err != nil {
 		xrd.Close()
 		return nil, errors.Errorf("xrdio: could not open %q: %v", name, err)
 	}
 
-	xf := &File{cli: xrd, fs: fs, f: f, name: path}
+	xf := &File{cli: xrd, fs: fs, f: f, name: urn.Path}
 	fi, err := xf.Stat()
 	if err != nil {
 		xrd.Close()
