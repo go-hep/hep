@@ -51,7 +51,8 @@ func newSession(ctx context.Context, address string, username string, client *Cl
 	ctx, cancel := context.WithCancel(ctx)
 
 	var d net.Dialer
-	conn, err := d.DialContext(ctx, "tcp", address)
+	addr := parseAddr(address)
+	conn, err := d.DialContext(ctx, "tcp", addr)
 	if err != nil {
 		cancel()
 		return nil, err
@@ -63,7 +64,7 @@ func newSession(ctx context.Context, address string, username string, client *Cl
 		mux:       mux.New(),
 		requests:  make(map[xrdproto.StreamID][]byte),
 		client:    client,
-		sessionID: address,
+		sessionID: addr,
 	}
 
 	go sess.consume(ctx)
