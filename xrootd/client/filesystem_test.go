@@ -45,7 +45,7 @@ func testFileSystem_Dirlist(t *testing.T, addr string) {
 			HasStatInfo: true,
 			ID:          60129606914,
 			EntrySize:   0,
-			Mtime:       1528218208,
+			Mtime:       1529946481,
 			Flags:       xrdfs.StatIsReadable | xrdfs.StatIsWritable,
 		},
 	}
@@ -114,7 +114,7 @@ func TestFileSystem_Open(t *testing.T) {
 	entryStat := &xrdfs.EntryStat{
 		HasStatInfo: true,
 		ID:          60129606914,
-		Mtime:       1528218208,
+		Mtime:       1529946481,
 		Flags:       xrdfs.StatIsWritable | xrdfs.StatIsReadable,
 	}
 
@@ -279,7 +279,7 @@ func testFileSystem_Stat(t *testing.T, addr string) {
 		HasStatInfo: true,
 		ID:          60129606914,
 		EntrySize:   0,
-		Mtime:       1528218208,
+		Mtime:       1529946481,
 		Flags:       xrdfs.StatIsWritable | xrdfs.StatIsReadable,
 	}
 
