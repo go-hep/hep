@@ -105,7 +105,7 @@ func NewClient(ctx context.Context, address string, username string, opts ...Opt
 		}
 	}
 
-	_, err := client.getSession(ctx, address)
+	_, err := client.getSession(ctx, address, "")
 	if err != nil {
 		client.Close()
 		return nil, err
@@ -154,8 +154,7 @@ func (client *Client) sendSession(ctx context.Context, sessionID string, resp xr
 
 	for cnt := client.maxRedirections; redirection != nil && cnt > 0; cnt-- {
 		sessionID = redirection.Addr
-		// TODO: pass token to the session.Login()
-		session, err = client.getSession(ctx, sessionID)
+		session, err = client.getSession(ctx, sessionID, redirection.Token)
 		if err != nil {
 			return sessionID, err
 		}
@@ -176,7 +175,7 @@ func (client *Client) sendSession(ctx context.Context, sessionID string, resp xr
 	return sessionID, err
 }
 
-func (client *Client) getSession(ctx context.Context, address string) (*session, error) {
+func (client *Client) getSession(ctx context.Context, address, token string) (*session, error) {
 	client.mu.RLock()
 	v, ok := client.sessions[address]
 	client.mu.RUnlock()
@@ -185,7 +184,7 @@ func (client *Client) getSession(ctx context.Context, address string) (*session,
 	}
 	client.mu.Lock()
 	defer client.mu.Unlock()
-	session, err := newSession(ctx, address, client.username, client)
+	session, err := newSession(ctx, address, client.username, token, client)
 	if err != nil {
 		return nil, err
 	}

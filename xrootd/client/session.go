@@ -47,7 +47,7 @@ type session struct {
 	sessionID string
 }
 
-func newSession(ctx context.Context, address string, username string, client *Client) (*session, error) {
+func newSession(ctx context.Context, address, username, token string, client *Client) (*session, error) {
 	ctx, cancel := context.WithCancel(ctx)
 
 	var d net.Dialer
@@ -74,7 +74,7 @@ func newSession(ctx context.Context, address string, username string, client *Cl
 		return nil, err
 	}
 
-	securityInfo, err := sess.Login(ctx, username, "")
+	securityInfo, err := sess.Login(ctx, username, token)
 	if err != nil {
 		sess.Close()
 		return nil, err
