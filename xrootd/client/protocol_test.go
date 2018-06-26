@@ -15,7 +15,7 @@ import (
 func testSession_Protocol(t *testing.T, addr string) {
 	want := protocol.Response{BinaryProtocolVersion: 784, Flags: protocol.IsServer}
 
-	session, err := newSession(context.Background(), addr, "gopher", nil)
+	session, err := newSession(context.Background(), addr, "gopher", "", nil)
 	if err != nil {
 		t.Fatalf("could not create initialSession: %v", err)
 	}

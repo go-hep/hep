@@ -10,7 +10,7 @@ import (
 )
 
 func testSession_Ping(t *testing.T, addr string) {
-	client, err := newSession(context.Background(), addr, "gopher", nil)
+	client, err := newSession(context.Background(), addr, "gopher", "", nil)
 	if err != nil {
 		t.Fatalf("could not create client: %v", err)
 	}
