@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdfs"
+	"go-hep.org/x/hep/xrootd/xrdproto"
 )
 
 // RequestID is the id of the request, it is sent as part of message.
@@ -126,4 +127,14 @@ func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	o.Options = RequestOptions(rBuffer.ReadU8())
 	o.Path = rBuffer.ReadStr()
 	return nil
+}
+
+// Opaque implements xrdproto.FilepathRequest.Opaque.
+func (req *Request) Opaque() string {
+	return xrdproto.Opaque(req.Path)
+}
+
+// SetOpaque implements xrdproto.FilepathRequest.SetOpaque.
+func (req *Request) SetOpaque(opaque string) {
+	xrdproto.SetOpaque(&req.Path, opaque)
 }

@@ -7,8 +7,6 @@
 package open // import "go-hep.org/x/hep/xrootd/xrdproto/open"
 
 import (
-	"strings"
-
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto"
@@ -79,18 +77,12 @@ type Request struct {
 
 // Opaque implements xrdproto.FilepathRequest.Opaque.
 func (req *Request) Opaque() string {
-	pos := strings.LastIndex(req.Path, "?")
-	return req.Path[pos+1:]
+	return xrdproto.Opaque(req.Path)
 }
 
 // SetOpaque implements xrdproto.FilepathRequest.SetOpaque.
 func (req *Request) SetOpaque(opaque string) {
-	path := req.Path
-	pos := strings.LastIndex(path, "?")
-	if pos != -1 {
-		path = path[:pos]
-	}
-	req.Path = path + "?" + opaque
+	xrdproto.SetOpaque(&req.Path, opaque)
 }
 
 // NewRequest forms a Request according to provided path, mode, and options.
