@@ -9,6 +9,7 @@ package stat // import "go-hep.org/x/hep/xrootd/xrdproto/stat"
 import (
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdfs"
+	"go-hep.org/x/hep/xrootd/xrdproto"
 )
 
 // RequestID is the id of the request, it is sent as part of message.
@@ -77,3 +78,13 @@ func (req *Request) ReqID() uint16 { return RequestID }
 
 // ShouldSign implements xrdproto.Request.ShouldSign.
 func (req *Request) ShouldSign() bool { return false }
+
+// Opaque implements xrdproto.FilepathRequest.Opaque.
+func (req *Request) Opaque() string {
+	return xrdproto.Opaque(req.Path)
+}
+
+// SetOpaque implements xrdproto.FilepathRequest.SetOpaque.
+func (req *Request) SetOpaque(opaque string) {
+	xrdproto.SetOpaque(&req.Path, opaque)
+}

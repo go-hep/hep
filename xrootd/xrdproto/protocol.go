@@ -9,6 +9,7 @@ package xrdproto // import "go-hep.org/x/hep/xrootd/xrdproto"
 import (
 	"encoding/binary"
 	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
@@ -181,4 +182,19 @@ func (o *SecurityOverride) UnmarshalXrd(dec *xrdenc.RBuffer) error {
 	o.RequestIndex = dec.ReadU8()
 	o.RequestLevel = RequestLevel(dec.ReadU8())
 	return nil
+}
+
+// SetOpaque sets opaque data part in the provided path.
+func SetOpaque(path *string, opaque string) {
+	pos := strings.LastIndex(*path, "?")
+	if pos != -1 {
+		*path = (*path)[:pos]
+	}
+	*path = *path + "?" + opaque
+}
+
+// Opaque returns opaque data from provided path.
+func Opaque(path string) string {
+	pos := strings.LastIndex(path, "?")
+	return path[pos+1:]
 }
