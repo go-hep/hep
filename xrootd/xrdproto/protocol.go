@@ -35,9 +35,18 @@ const (
 
 // ServerError is the error returned by the XRootD server as part of response to the request.
 type ServerError struct {
-	Code    int32
+	Code    ServerErrorCode
 	Message string
 }
+
+// ServerErrorCode is the code of the error returned by the XRootD server as part of response to the request.
+type ServerErrorCode int32
+
+const (
+	InvalidRequestCode ServerErrorCode = 3006 // InvalidRequestCode indicates that request is invalid.
+	NotAuthorized      ServerErrorCode = 3010 // NotAuthorized indicates that user was not authorized for operation.
+	NotFoundCode       ServerErrorCode = 3011 // NotFoundCode indicates that path was not found on the remote server.
+)
 
 func (err ServerError) Error() string {
 	return fmt.Sprintf("xrootd: error %d: %s", err.Code, err.Message)
@@ -103,7 +112,7 @@ func (hdr ResponseHeader) Error(data []byte) error {
 		if len(data) < 5 {
 			return errors.New("xrootd: an server error occurred, but code and message were not provided")
 		}
-		code := int32(binary.BigEndian.Uint32(data[0:4]))
+		code := ServerErrorCode(binary.BigEndian.Uint32(data[0:4]))
 		message := string(data[4 : len(data)-1]) // Skip \0 character at the end
 
 		return ServerError{code, message}
