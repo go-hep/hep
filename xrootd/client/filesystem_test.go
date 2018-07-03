@@ -17,6 +17,16 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdfs"
 )
 
+var fstest = map[string]*xrdfs.EntryStat{
+	"/tmp/dir1/file1.txt": &xrdfs.EntryStat{
+		HasStatInfo: true,
+		ID:          139698106334466,
+		EntrySize:   0,
+		Mtime:       1530559859,
+		Flags:       xrdfs.StatIsReadable,
+	},
+}
+
 func tempdir(client *Client, dir, prefix string) (name string, err error) {
 	name, err = ioutil.TempDir("", prefix)
 	if err != nil {
@@ -40,15 +50,9 @@ func tempdir(client *Client, dir, prefix string) (name string, err error) {
 
 func testFileSystem_Dirlist(t *testing.T, addr string) {
 	var want = []xrdfs.EntryStat{
-		{
-			EntryName:   "file1.txt",
-			HasStatInfo: true,
-			ID:          60129606914,
-			EntrySize:   0,
-			Mtime:       1529946481,
-			Flags:       xrdfs.StatIsReadable | xrdfs.StatIsWritable,
-		},
+		*fstest["/tmp/dir1/file1.txt"],
 	}
+	want[0].EntryName = "file1.txt"
 
 	client, err := NewClient(context.Background(), addr, "gopher")
 	if err != nil {
@@ -111,12 +115,7 @@ func testFileSystem_Open(t *testing.T, addr string, options xrdfs.OpenOptions, w
 
 func TestFileSystem_Open(t *testing.T) {
 	emptyCompression := xrdfs.FileCompression{}
-	entryStat := &xrdfs.EntryStat{
-		HasStatInfo: true,
-		ID:          60129606914,
-		Mtime:       1529946481,
-		Flags:       xrdfs.StatIsWritable | xrdfs.StatIsReadable,
-	}
+	entryStat := fstest["/tmp/dir1/file1.txt"]
 
 	testCases := []struct {
 		name        string
@@ -275,13 +274,7 @@ func TestFileSystem_Truncate(t *testing.T) {
 }
 
 func testFileSystem_Stat(t *testing.T, addr string) {
-	want := xrdfs.EntryStat{
-		HasStatInfo: true,
-		ID:          60129606914,
-		EntrySize:   0,
-		Mtime:       1529946481,
-		Flags:       xrdfs.StatIsWritable | xrdfs.StatIsReadable,
-	}
+	want := *fstest["/tmp/dir1/file1.txt"]
 
 	client, err := NewClient(context.Background(), addr, "gopher")
 	if err != nil {

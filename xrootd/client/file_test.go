@@ -273,13 +273,7 @@ func TestFile_Truncate(t *testing.T) {
 func testFile_Stat(t *testing.T, addr string) {
 	t.Parallel()
 
-	want := &xrdfs.EntryStat{
-		HasStatInfo: true,
-		ID:          60129606914,
-		EntrySize:   0,
-		Mtime:       1529946481,
-		Flags:       xrdfs.StatIsWritable | xrdfs.StatIsReadable,
-	}
+	want := fstest["/tmp/dir1/file1.txt"]
 
 	client, err := NewClient(context.Background(), addr, "gopher")
 	if err != nil {
