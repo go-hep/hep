@@ -1,0 +1,45 @@
+before_script:
+ - apt-get update -y -qq
+ - apt-get install -qq pkg-config kmod fuse
+ ## - modprobe fuse
+ ## - chmod 666 /dev/fuse
+ ## - chown root:$USER /etc/fuse.conf
+ ## - export GOPATH=$(pwd)
+ ## - export PATH=${GOPATH}/bin:${PATH}
+ - export GOPATH=/go
+ - export PATH=${GOPATH}/bin:${PATH}
+ - cd $GOPATH
+ - mkdir -p $GOPATH/src/go-hep.org/x
+ - ln -s /builds/go-hep/hep $GOPATH/src/go-hep.org/x/hep
+ - cd $GOPATH/src/go-hep.org/x/hep
+
+stages:
+ - build
+
+go-1.8:
+ image: golang:1.8
+ stage: build
+ script:
+  - ./ci/build.sh
+  - ./ci/code-coverage.sh
+
+go-1.9:
+ image: golang:1.9
+ stage: build
+ script:
+  - ./ci/build.sh
+  - ./ci/code-coverage.sh
+
+go-1.10:
+ image: golang:1.10
+ stage: build
+ script:
+  - ./ci/build.sh
+  - ./ci/code-coverage.sh
+
+## go-master:
+##  image: golang:master
+##  stage: build
+##  script:
+##  - ./ci/build.sh
+##  - ./ci/code-coverage.sh
