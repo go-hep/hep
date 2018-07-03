@@ -1,0 +1,22 @@
+before_script:
+ - . /opt/root/setup-groot.sh
+ - export PATH=$HOME/go/bin:$PATH
+ - export CGO_ENABLED=1
+ - export GOPROXY="https://proxy.golang.org"
+ - export TAGS="-tags=ci"
+ - export COVERAGE="-coverpkg=go-hep.org/x/hep/..."
+
+stages:
+ - build
+
+go-1.24:
+ image: codeberg.org/go-hep/groot-docker:6.34.04
+ stage: build
+ script:
+  - root.exe --version
+  - GOARCH=amd64 go install -v $TAGS ./...
+  - go run ./ci/run-tests.go $TAGS -race $COVERAGE
+  - go vet $TAGS ./...
+  - go install honnef.co/go/tools/cmd/staticcheck@latest
+  - staticcheck ./...
+
