@@ -21,26 +21,16 @@ func TestWBuffer_WriteBool(t *testing.T) {
 	}
 }
 
-func TestWBuffer_WriteString_Long(t *testing.T) {
+func TestWBuffer_WriteString(t *testing.T) {
 	data := make([]byte, 520)
-	wbuf := NewWBuffer(data, nil, 0, nil)
-	want := strings.Repeat("=", 512)
-	wbuf.WriteString(want)
-	rbuf := NewRBuffer(wbuf.w.p, nil, 0, nil)
-	got := rbuf.ReadString()
-	if got != want {
-		t.Fatalf("Invalid value.\ngot: %q\nwant:%q", got, want)
-	}
-}
-
-func TestWBuffer_WriteString_Short(t *testing.T) {
-	data := make([]byte, 520)
-	wbuf := NewWBuffer(data, nil, 0, nil)
-	want := strings.Repeat("=", 254)
-	wbuf.WriteString(want)
-	rbuf := NewRBuffer(wbuf.w.p, nil, 0, nil)
-	got := rbuf.ReadString()
-	if got != want {
-		t.Fatalf("Invalid value.\ngot: %q\nwant:%q", got, want)
+	for i := 0; i < 512; i++ {
+		wbuf := NewWBuffer(data, nil, 0, nil)
+		want := strings.Repeat("=", i)
+		wbuf.WriteString(want)
+		rbuf := NewRBuffer(wbuf.w.p, nil, 0, nil)
+		got := rbuf.ReadString()
+		if got != want {
+			t.Fatalf("Invalid value.\ngot: %q\nwant:%q", got, want)
+		}
 	}
 }
