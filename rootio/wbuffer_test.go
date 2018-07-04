@@ -30,7 +30,7 @@ func TestWBuffer_WriteString(t *testing.T) {
 		rbuf := NewRBuffer(wbuf.w.p, nil, 0, nil)
 		got := rbuf.ReadString()
 		if got != want {
-			t.Fatalf("Invalid value.\ngot: %q\nwant:%q", got, want)
+			t.Fatalf("Invalid value for len=%d.\ngot: %q\nwant:%q", i, got, want)
 		}
 	}
 }
