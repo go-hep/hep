@@ -182,6 +182,34 @@ func TestWBuffer_Write(t *testing.T) {
 			},
 		},
 		{
+			buf:  make([]byte, 4),
+			name: "float32-inf",
+			want: float32(math.Inf(-1)),
+			wfct: func(w *WBuffer, v interface{}) {
+				w.WriteF32(v.(float32))
+			},
+			rfct: func(r *RBuffer) interface{} {
+				return r.ReadF32()
+			},
+			cmp: func(a, b interface{}) bool {
+				return math.IsInf(float64(a.(float32)), -1) && math.IsInf(float64(b.(float32)), -1)
+			},
+		},
+		{
+			buf:  make([]byte, 4),
+			name: "float32+inf",
+			want: float32(math.Inf(+1)),
+			wfct: func(w *WBuffer, v interface{}) {
+				w.WriteF32(v.(float32))
+			},
+			rfct: func(r *RBuffer) interface{} {
+				return r.ReadF32()
+			},
+			cmp: func(a, b interface{}) bool {
+				return math.IsInf(float64(a.(float32)), +1) && math.IsInf(float64(b.(float32)), +1)
+			},
+		},
+		{
 			buf:  make([]byte, 8),
 			name: "float64",
 			want: float64(42),
@@ -204,6 +232,34 @@ func TestWBuffer_Write(t *testing.T) {
 			},
 			cmp: func(a, b interface{}) bool {
 				return math.IsNaN(a.(float64)) && math.IsNaN(b.(float64))
+			},
+		},
+		{
+			buf:  make([]byte, 8),
+			name: "float64-inf",
+			want: math.Inf(-1),
+			wfct: func(w *WBuffer, v interface{}) {
+				w.WriteF64(v.(float64))
+			},
+			rfct: func(r *RBuffer) interface{} {
+				return r.ReadF64()
+			},
+			cmp: func(a, b interface{}) bool {
+				return math.IsInf(a.(float64), -1) && math.IsInf(b.(float64), -1)
+			},
+		},
+		{
+			buf:  make([]byte, 8),
+			name: "float64+inf",
+			want: math.Inf(+1),
+			wfct: func(w *WBuffer, v interface{}) {
+				w.WriteF64(v.(float64))
+			},
+			rfct: func(r *RBuffer) interface{} {
+				return r.ReadF64()
+			},
+			cmp: func(a, b interface{}) bool {
+				return math.IsInf(a.(float64), +1) && math.IsInf(b.(float64), +1)
 			},
 		},
 	} {
