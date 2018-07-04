@@ -5,6 +5,7 @@
 package rootio
 
 import (
+	"bytes"
 	"encoding/binary"
 	"io"
 	"math"
@@ -188,4 +189,20 @@ func (w *WBuffer) WriteString(v string) {
 	w.WriteU8(255)
 	w.WriteU32(uint32(l))
 	w.write([]byte(v))
+}
+
+func (w *WBuffer) WriteCString(v string) {
+	if w.err != nil {
+		return
+	}
+	b := []byte(v)
+	i := bytes.Index(b, []byte{0})
+	switch {
+	case i < 0:
+		b = append(b, 0)
+		w.write(b)
+	default:
+		b = b[:i+1]
+		w.write(b)
+	}
 }

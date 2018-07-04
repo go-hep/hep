@@ -262,6 +262,61 @@ func TestWBuffer_Write(t *testing.T) {
 				return math.IsInf(a.(float64), +1) && math.IsInf(b.(float64), +1)
 			},
 		},
+		{
+			buf:  make([]byte, len("hello world")+1),
+			name: "cstring-1",
+			want: "hello world",
+			wfct: func(w *WBuffer, v interface{}) {
+				w.WriteCString(v.(string))
+			},
+			rfct: func(r *RBuffer) interface{} {
+				return r.ReadCString(len("hello world"))
+			},
+		},
+		{
+			buf:  make([]byte, len("hello world")+1),
+			name: "cstring-2",
+			want: "hello world",
+			wfct: func(w *WBuffer, v interface{}) {
+				w.WriteCString(v.(string))
+			},
+			rfct: func(r *RBuffer) interface{} {
+				return r.ReadCString(len("hello world") + 1)
+			},
+		},
+		{
+			buf:  make([]byte, len("hello world")+1),
+			name: "cstring-3",
+			want: "hello world",
+			wfct: func(w *WBuffer, v interface{}) {
+				w.WriteCString(v.(string))
+			},
+			rfct: func(r *RBuffer) interface{} {
+				return r.ReadCString(len("hello world") + 10)
+			},
+		},
+		{
+			buf:  make([]byte, len("hello world")+1),
+			name: "cstring-4",
+			want: "hello",
+			wfct: func(w *WBuffer, v interface{}) {
+				w.WriteCString(v.(string))
+			},
+			rfct: func(r *RBuffer) interface{} {
+				return r.ReadCString(len("hello"))
+			},
+		},
+		{
+			buf:  make([]byte, len([]byte{1, 2, 3, 4, 0, 1})+1),
+			name: "cstring-5",
+			want: string([]byte{1, 2, 3, 4}),
+			wfct: func(w *WBuffer, v interface{}) {
+				w.WriteCString(v.(string))
+			},
+			rfct: func(r *RBuffer) interface{} {
+				return r.ReadCString(len([]byte{1, 2, 3, 4, 0, 1}))
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			wbuf := NewWBuffer(tc.buf, nil, 0, nil)
