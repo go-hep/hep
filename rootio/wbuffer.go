@@ -206,3 +206,112 @@ func (w *WBuffer) WriteCString(v string) {
 		w.write(b)
 	}
 }
+
+func (w *WBuffer) WriteStaticArrayI32(v []int32) {
+	if w.err != nil {
+		return
+	}
+	w.WriteI32(int32(len(v)))
+	for _, v := range v {
+		w.WriteI32(v)
+	}
+}
+
+func (w *WBuffer) WriteFastArrayBool(v []bool) {
+	if w.err != nil {
+		return
+	}
+	for _, v := range v {
+		w.WriteBool(v)
+	}
+}
+
+func (w *WBuffer) WriteFastArrayI8(v []int8) {
+	if w.err != nil {
+		return
+	}
+	for _, v := range v {
+		w.WriteI8(v)
+	}
+}
+
+func (w *WBuffer) WriteFastArrayI16(v []int16) {
+	if w.err != nil {
+		return
+	}
+	for _, v := range v {
+		w.WriteI16(v)
+	}
+}
+
+func (w *WBuffer) WriteFastArrayI32(v []int32) {
+	if w.err != nil {
+		return
+	}
+	for _, v := range v {
+		w.WriteI32(v)
+	}
+}
+
+func (w *WBuffer) WriteFastArrayI64(v []int64) {
+	if w.err != nil {
+		return
+	}
+	for _, v := range v {
+		w.WriteI64(v)
+	}
+}
+
+func (w *WBuffer) WriteFastArrayU8(v []uint8) {
+	if w.err != nil {
+		return
+	}
+	for _, v := range v {
+		w.WriteU8(v)
+	}
+}
+
+func (w *WBuffer) WriteFastArrayU16(v []uint16) {
+	if w.err != nil {
+		return
+	}
+	for _, v := range v {
+		w.WriteU16(v)
+	}
+}
+
+func (w *WBuffer) WriteFastArrayU32(v []uint32) {
+	if w.err != nil {
+		return
+	}
+	for _, v := range v {
+		w.WriteU32(v)
+	}
+}
+
+func (w *WBuffer) WriteFastArrayU64(v []uint64) {
+	if w.err != nil {
+		return
+	}
+	for _, v := range v {
+		w.WriteU64(v)
+	}
+}
+
+func (w *WBuffer) WriteFastArrayF32(v []float32) {
+	if w.err != nil {
+		return
+	}
+	for _, v := range v {
+		w.WriteF32(v)
+	}
+}
+
+func (w *WBuffer) WriteFastArrayF64(v []float64) {
+	if w.err != nil {
+		return
+	}
+	for _, v := range v {
+		w.WriteF64(v)
+	}
+}
