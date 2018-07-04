@@ -7,6 +7,7 @@ package rootio
 import (
 	"encoding/binary"
 	"io"
+	"math"
 )
 
 type wbuff struct {
@@ -65,90 +66,113 @@ func (w *WBuffer) WriteI8(v int8) {
 	if w.err != nil {
 		return
 	}
-	j := byte(v)
-	w.err = w.w.WriteByte(j)
+	w.err = w.w.WriteByte(byte(v))
 }
 
 func (w *WBuffer) WriteI16(v int16) {
 	if w.err != nil {
 		return
 	}
+	const sz = 2
 	beg := w.w.c
-	end := w.w.c + 2
+	end := w.w.c + sz
 	binary.BigEndian.PutUint16(w.w.p[beg:end], uint16(v))
-	w.w.c += 2
-
+	w.w.c += sz
 }
 
 func (w *WBuffer) WriteI32(v int32) {
 	if w.err != nil {
 		return
 	}
-	w.err = binary.Write(w.w, binary.BigEndian, v)
+	const sz = 4
+	beg := w.w.c
+	end := w.w.c + sz
+	binary.BigEndian.PutUint32(w.w.p[beg:end], uint32(v))
+	w.w.c += sz
 }
 
 func (w *WBuffer) WriteI64(v int64) {
 	if w.err != nil {
 		return
 	}
-	w.err = binary.Write(w.w, binary.BigEndian, v)
+	const sz = 8
+	beg := w.w.c
+	end := w.w.c + sz
+	binary.BigEndian.PutUint64(w.w.p[beg:end], uint64(v))
+	w.w.c += sz
 }
 
 func (w *WBuffer) WriteU8(v uint8) {
 	if w.err != nil {
 		return
 	}
-	j := byte(v)
-	w.err = w.w.WriteByte(j)
+	w.err = w.w.WriteByte(byte(v))
 }
 
 func (w *WBuffer) WriteU16(v uint16) {
 	if w.err != nil {
 		return
 	}
+	const sz = 2
 	beg := w.w.c
-	end := w.w.c + 2
-	binary.BigEndian.PutUint16(w.w.p[beg:end], v)
-	w.w.c += 2
+	end := w.w.c + sz
+	binary.BigEndian.PutUint16(w.w.p[beg:end], uint16(v))
+	w.w.c += sz
 }
 
 func (w *WBuffer) WriteU32(v uint32) {
 	if w.err != nil {
 		return
 	}
-	w.err = binary.Write(w.w, binary.BigEndian, v)
+	const sz = 4
+	beg := w.w.c
+	end := w.w.c + sz
+	binary.BigEndian.PutUint32(w.w.p[beg:end], v)
+	w.w.c += sz
 }
 
 func (w *WBuffer) WriteU64(v uint64) {
 	if w.err != nil {
 		return
 	}
-	w.err = binary.Write(w.w, binary.BigEndian, v)
+	const sz = 8
+	beg := w.w.c
+	end := w.w.c + sz
+	binary.BigEndian.PutUint64(w.w.p[beg:end], v)
+	w.w.c += sz
 }
 
 func (w *WBuffer) WriteF32(v float32) {
 	if w.err != nil {
 		return
 	}
-	w.err = binary.Write(w.w, binary.BigEndian, v)
+	const sz = 4
+	beg := w.w.c
+	end := w.w.c + sz
+	binary.BigEndian.PutUint32(w.w.p[beg:end], math.Float32bits(v))
+	w.w.c += sz
 }
 
 func (w *WBuffer) WriteF64(v float64) {
 	if w.err != nil {
 		return
 	}
-	w.err = binary.Write(w.w, binary.BigEndian, v)
+	const sz = 8
+	beg := w.w.c
+	end := w.w.c + sz
+	binary.BigEndian.PutUint64(w.w.p[beg:end], math.Float64bits(v))
+	w.w.c += sz
 }
 
 func (w *WBuffer) WriteBool(v bool) {
 	if w.err != nil {
 		return
 	}
-	var o byte = 0
+	var o uint8
 	if v {
 		o = 1
 	}
-	w.err = w.w.WriteByte(o)
+	w.WriteU8(o)
 }
 
 func (w *WBuffer) WriteString(v string) {
@@ -159,9 +183,9 @@ func (w *WBuffer) WriteString(v string) {
 	if l < 255 {
 		w.WriteU8(uint8(l))
 		w.write([]byte(v))
-	} else {
-		w.WriteU8(255)
-		w.WriteU32(uint32(l))
-		w.write([]byte(v))
+		return
 	}
+	w.WriteU8(255)
+	w.WriteU32(uint32(l))
+	w.write([]byte(v))
 }
