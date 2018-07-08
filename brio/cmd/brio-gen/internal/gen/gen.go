@@ -11,7 +11,6 @@ import (
 	"go/importer"
 	"go/types"
 	"log"
-	"os"
 	"strings"
 )
 
@@ -492,7 +491,7 @@ package %[2]s
 import (
 	"encoding/binary"
 `,
-		os.Args[0],
+		"brio-gen",
 		g.pkg.Name(),
 	))
 
