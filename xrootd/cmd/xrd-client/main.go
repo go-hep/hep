@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Command xrootd-client provides access to data hosted on XRootD clusters.
-package main // import "go-hep.org/x/hep/xrootd/cmd/xrootd-client"
+// Command xrd-client provides access to data hosted on XRootD clusters.
+package main // import "go-hep.org/x/hep/xrootd/cmd/xrd-client"
 
 func main() {}
