@@ -39,6 +39,9 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 	)
 
 	xdata, ydata, err := readXY("testdata/gauss-data.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	gauss := func(x, cst, mu, sigma float64) float64 {
 		v := (x - mu)
@@ -100,6 +103,9 @@ func ExampleCurve1D_exponential(t *testing.T) {
 	)
 
 	xdata, ydata, err := readXY("testdata/exp-data.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	exp := func(x, a, b float64) float64 {
 		return math.Exp(a*x + b)
@@ -228,6 +234,9 @@ func ExampleCurve1D_powerlaw(t *testing.T) {
 	)
 
 	xdata, ydata, yerrs, err := readXYerr("testdata/powerlaw-data.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	plaw := func(x, amp, index float64) float64 {
 		return amp * math.Pow(x, index)
