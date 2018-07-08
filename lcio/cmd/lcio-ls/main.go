@@ -39,7 +39,10 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
+	inspect(os.Stdout, fname, *nevts, *printEvent)
+}
 
+func inspect(w io.Writer, fname string, nevts int64, printEvent bool) {
 	log.Printf("inspecting file [%s]...", fname)
 	r, err := lcio.Open(fname)
 	if err != nil {
@@ -51,30 +54,30 @@ func main() {
 	ehdr := r.EventHeader()
 
 	evts := 0
-	for ievt := int64(0); r.Next() && (*nevts < 0 || ievt < *nevts); ievt++ {
+	for ievt := int64(0); r.Next() && (nevts < 0 || ievt < nevts); ievt++ {
 		if hdr := r.RunHeader(); !reflect.DeepEqual(hdr, rhdr) {
-			fmt.Printf("%v\n", &hdr)
+			fmt.Fprintf(w, "%v\n", &hdr)
 			rhdr = hdr
 		}
 		if hdr := r.EventHeader(); !reflect.DeepEqual(hdr, ehdr) {
-			if !*printEvent {
-				fmt.Printf("%v\n", &hdr)
+			if !printEvent {
+				fmt.Fprintf(w, "%v\n", &hdr)
 			}
 			ehdr = hdr
 		}
-		if *printEvent {
+		if printEvent {
 			evt := r.Event()
-			fmt.Printf("%v\n", &evt)
+			fmt.Fprintf(w, "%v\n", &evt)
 		}
 		evts++
 	}
 	err = r.Err()
 	if err == io.EOF && evts == 0 {
 		if hdr := r.RunHeader(); !reflect.DeepEqual(hdr, rhdr) {
-			fmt.Printf("%v\n", &hdr)
+			fmt.Fprintf(w, "%v\n", &hdr)
 		}
 		if hdr := r.EventHeader(); !reflect.DeepEqual(hdr, ehdr) {
-			fmt.Printf("%v\n", &hdr)
+			fmt.Fprintf(w, "%v\n", &hdr)
 		}
 	}
 	if err != nil && err != io.EOF {
