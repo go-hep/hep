@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Command xrootd-fuse mounts the directory contents of a remote xrootd server to a local directory.
+// Command xrd-fuse mounts the directory contents of a remote xrootd server to a local directory.
 //
 // Usage:
 //
-//  $> xrootd-fuse [OPTIONS] <remote-dir> <local-dir>
+//  $> xrd-fuse [OPTIONS] <remote-dir> <local-dir>
 //
 // Example:
 //
-//  $> xrootd-fuse root://server.example.com/some/dir /mnt
-//  $> xrootd-fuse -v root://server.example.com/some/dir /mnt
+//  $> xrd-fuse root://server.example.com/some/dir /mnt
+//  $> xrd-fuse -v root://server.example.com/some/dir /mnt
 //
 // Options:
 //   -v	enable verbose mode
@@ -34,16 +34,16 @@ import (
 
 func init() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, `xrootd-fuse mounts the directory contents of a remote xrootd server to a local directory.
+		fmt.Fprintf(os.Stderr, `xrd-fuse mounts the directory contents of a remote xrootd server to a local directory.
 
 Usage:
 
- $> xrootd-fuse [OPTIONS] <remote-dir> <local-dir>
+ $> xrd-fuse [OPTIONS] <remote-dir> <local-dir>
 
 Example:
 
- $> xrootd-fuse root://server.example.com/some/dir /mnt
- $> xrootd-fuse -v root://server.example.com/some/dir /mnt
+ $> xrd-fuse root://server.example.com/some/dir /mnt
+ $> xrd-fuse -v root://server.example.com/some/dir /mnt
 
 Options:
 `)
@@ -52,7 +52,7 @@ Options:
 }
 
 func main() {
-	log.SetPrefix("xrootd-fuse: ")
+	log.SetPrefix("xrd-fuse: ")
 	log.SetFlags(0)
 
 	verbose := flag.Bool("v", false, "enable verbose mode")
