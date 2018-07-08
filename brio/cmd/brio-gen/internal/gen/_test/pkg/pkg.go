@@ -18,15 +18,18 @@ type T1 struct {
 	i16  int16
 	i32  int32
 	i64  int64
+	f32  float32
 	f64  float64
 	c64  complex64
 	c128 complex128
 	str  string
 	bs   []byte
 
-	arri64 [10]int64
-	slii64 []int64
-	ptri64 *int64
+	arri64  [10]int64
+	arrTime [10]time.Time // implements encoding.Binary(Un)Marshaler
+	slii64  []int64
+	sliTime []time.Time // implements encoding.Binary(Un)Marshaler
+	ptri64  *int64
 
 	t2 T2
 }

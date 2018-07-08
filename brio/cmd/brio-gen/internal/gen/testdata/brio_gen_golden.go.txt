@@ -33,6 +33,8 @@ func (o *T1) MarshalBinary() (data []byte, err error) {
 	data = append(data, buf[:4]...)
 	binary.LittleEndian.PutUint64(buf[:8], uint64(o.i64))
 	data = append(data, buf[:8]...)
+	binary.LittleEndian.PutUint32(buf[:4], math.Float32bits(o.f32))
+	data = append(data, buf[:4]...)
 	binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(o.f64))
 	data = append(data, buf[:8]...)
 	binary.LittleEndian.PutUint64(buf[:4], math.Float32bits(real(o.c64)))
@@ -54,12 +56,38 @@ func (o *T1) MarshalBinary() (data []byte, err error) {
 		binary.LittleEndian.PutUint64(buf[:8], uint64(o))
 		data = append(data, buf[:8]...)
 	}
+	for i := range o.arrTime {
+		o := &o.arrTime[i]
+		{
+			sub, err := o.MarshalBinary()
+			if err != nil {
+				return nil, err
+			}
+			binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))
+			data = append(data, buf[:8]...)
+			data = append(data, sub...)
+		}
+	}
 	binary.LittleEndian.PutUint64(buf[:8], uint64(len(o.slii64)))
 	data = append(data, buf[:8]...)
 	for i := range o.slii64 {
 		o := &o.slii64[i]
 		binary.LittleEndian.PutUint64(buf[:8], uint64(o))
 		data = append(data, buf[:8]...)
+	}
+	binary.LittleEndian.PutUint64(buf[:8], uint64(len(o.sliTime)))
+	data = append(data, buf[:8]...)
+	for i := range o.sliTime {
+		o := &o.sliTime[i]
+		{
+			sub, err := o.MarshalBinary()
+			if err != nil {
+				return nil, err
+			}
+			binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))
+			data = append(data, buf[:8]...)
+			data = append(data, sub...)
+		}
 	}
 	{
 		v := *o.ptri64
@@ -106,6 +134,8 @@ func (o *T1) UnmarshalBinary(data []byte) (err error) {
 	data = data[4:]
 	o.i64 = int64(binary.LittleEndian.Uint64(data[:8]))
 	data = data[8:]
+	o.f32 = math.Float32frombits(binary.LittleEndian.Uint32(data[:4]))
+	data = data[4:]
 	o.f64 = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
 	data = data[8:]
 	o.c64 = complex(math.Float32frombits(binary.LittleEndian.Uint32(data[:4])), math.Float32frombits(binary.LittleEndian.Uint32(data[4:8])))
@@ -129,6 +159,18 @@ func (o *T1) UnmarshalBinary(data []byte) (err error) {
 		o.arri64[i] = int64(binary.LittleEndian.Uint64(data[:8]))
 		data = data[8:]
 	}
+	for i := range o.arrTime {
+		oi := &o.arrTime[i]
+		{
+			n := int(binary.LittleEndian.Uint64(data[:8]))
+			data = data[8:]
+			err = oi.UnmarshalBinary(data[:n])
+			if err != nil {
+				return err
+			}
+			data = data[n:]
+		}
+	}
 	{
 		n := int(binary.LittleEndian.Uint64(data[:8]))
 		o.slii64 = make([]int64, n)
@@ -136,6 +178,23 @@ func (o *T1) UnmarshalBinary(data []byte) (err error) {
 		for i := range o.slii64 {
 			o.slii64[i] = int64(binary.LittleEndian.Uint64(data[:8]))
 			data = data[8:]
+		}
+	}
+	{
+		n := int(binary.LittleEndian.Uint64(data[:8]))
+		o.sliTime = make([]time.Time, n)
+		data = data[8:]
+		for i := range o.sliTime {
+			oi := &o.sliTime[i]
+			{
+				n := int(binary.LittleEndian.Uint64(data[:8]))
+				data = data[8:]
+				err = oi.UnmarshalBinary(data[:n])
+				if err != nil {
+					return err
+				}
+				data = data[n:]
+			}
 		}
 	}
 	{
