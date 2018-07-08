@@ -3,6 +3,7 @@ hep
 
 [![Build Status](https://travis-ci.org/go-hep/hep.svg?branch=master)](https://travis-ci.org/go-hep/hep)
 [![codecov](https://codecov.io/gh/go-hep/hep/branch/master/graph/badge.svg)](https://codecov.io/gh/go-hep/hep)
+[![Go Report Card](https://goreportcard.com/badge/github.com/go-hep/hep)](https://goreportcard.com/report/github.com/go-hep/hep)
 [![GoDoc](https://godoc.org/go-hep.org/x/hep?status.svg)](https://godoc.org/go-hep.org/x/hep)
 [![License](https://img.shields.io/badge/License-BSD--3-blue.svg)](https://go-hep.org/license)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.597940.svg)](https://doi.org/10.5281/zenodo.597940)
