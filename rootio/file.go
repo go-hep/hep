@@ -288,7 +288,7 @@ func (f *File) Map() {
 }
 
 func (f *File) Tell() int64 {
-	where, err := f.Seek(0, ioSeekCurrent)
+	where, err := f.Seek(0, io.SeekCurrent)
 	if err != nil {
 		panic(err)
 	}

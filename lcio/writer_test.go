@@ -8,7 +8,6 @@ import (
 	"compress/flate"
 	"encoding/hex"
 	"fmt"
-	"go/build"
 	"io/ioutil"
 	"log"
 	"os"
@@ -116,28 +115,7 @@ func TestCreateCompressedEvent(t *testing.T) {
 	testCreateEvent(t, flate.BestCompression, "testdata/event-compressed.slcio")
 }
 
-// stableCompression returns whether we can run the test
-// for the current Go release and the compression level.
-// The reference compressed LCIO files were created with go1.8.
-// The compressed output doesn't match the compressed output one would
-// get with Go<=1.6 releases.
-func stableCompression(t *testing.T, compLevel int) bool {
-	if compLevel == flate.NoCompression {
-		return true
-	}
-	for _, rel := range build.Default.ReleaseTags {
-		if rel == "go1.7" {
-			return true
-		}
-	}
-	return false
-}
-
 func testCreateRunHeader(t *testing.T, compLevel int, fname string) {
-	if !stableCompression(t, compLevel) {
-		t.Skipf("no stable compression - skipping %s", fname)
-	}
-
 	w, err := lcio.Create(fname)
 	if err != nil {
 		t.Fatal(err)
@@ -201,10 +179,6 @@ func testCreateRunHeader(t *testing.T, compLevel int, fname string) {
 }
 
 func testCreateEvent(t *testing.T, compLevel int, fname string) {
-	if !stableCompression(t, compLevel) {
-		t.Skipf("no stable compression - skipping %s", fname)
-	}
-
 	w, err := lcio.Create(fname)
 	if err != nil {
 		t.Fatal(err)

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build go1.7
-
 // root-srv runs a web server that can inspect and browse ROOT files.
 // root-srv can also display ROOT objects (TH1x, TH2x, TGraphs, TGraphErrors,
 // TGraphAsymmErrors, TDirectories, TTrees, ...).

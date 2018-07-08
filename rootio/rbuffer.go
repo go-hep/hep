@@ -39,11 +39,11 @@ func (r *rbuff) ReadByte() (byte, error) {
 
 func (r *rbuff) Seek(offset int64, whence int) (int64, error) {
 	switch whence {
-	case ioSeekStart:
+	case io.SeekStart:
 		r.c = int(offset)
-	case ioSeekCurrent:
+	case io.SeekCurrent:
 		r.c += int(offset)
-	case ioSeekEnd:
+	case io.SeekEnd:
 		r.c = len(r.p) - int(offset)
 	default:
 		return 0, errors.New("rootio.rbuff.Seek: invalid whence")
@@ -650,7 +650,7 @@ func (r *RBuffer) SkipObject() {
 	}
 	vers := r.ReadI16()
 	if vers&kByteCountVMask != 0 {
-		_, r.err = r.r.Seek(4, ioSeekCurrent)
+		_, r.err = r.r.Seek(4, io.SeekCurrent)
 		if r.err != nil {
 			return
 		}
@@ -659,7 +659,7 @@ func (r *RBuffer) SkipObject() {
 	fbits := r.ReadU32() | kIsOnHeap
 
 	if fbits&kIsReferenced != 0 {
-		_, r.err = r.r.Seek(2, ioSeekCurrent)
+		_, r.err = r.r.Seek(2, io.SeekCurrent)
 		if r.err != nil {
 			return
 		}

@@ -11,6 +11,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -35,7 +36,7 @@ func walk(f rootio.Directory, path []string) (rootio.Object, error) {
 func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 	uri := r.URL.Path[len("/plot-h1/"):]
 	var err error
-	uri, err = urlPathUnescape(uri)
+	uri, err = url.PathUnescape(uri)
 	if err != nil {
 		return err
 	}

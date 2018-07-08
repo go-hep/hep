@@ -25,10 +25,6 @@ func TestRWCluster(t *testing.T) {
 }
 
 func testRWCluster(t *testing.T, compLevel int, fname string) {
-	if !stableCompression(t, compLevel) {
-		t.Skipf("no stable compression - skipping %s", fname)
-	}
-
 	w, err := lcio.Create(fname)
 	if err != nil {
 		t.Error(err)
