@@ -313,8 +313,8 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 		switch kind := ut.Kind(); kind {
 
 		case types.Bool:
-			g.printf("if data[i] == 1 { %s = true }\n", n)
-			g.printf("}else { %s = false }\n", n)
+			g.printf("if data[i] == 1 { %s = true\n", n)
+			g.printf("} else { %s = false }\n", n)
 			g.printf("data = data[1:]\n")
 
 		case types.Uint:
@@ -380,7 +380,7 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 		case types.String:
 			g.printf("{\n")
 			g.printf("n := int(binary.LittleEndian.Uint64(data[:8]))\n")
-			g.printf("data = data[8:])\n")
+			g.printf("data = data[8:]\n")
 			g.printf("%s = string(data[:n])\n", n)
 			g.printf("data = data[n:]\n")
 			g.printf("}\n")
