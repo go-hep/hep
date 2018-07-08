@@ -268,7 +268,7 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 	case *types.Pointer:
 		g.printf("{\n")
 		g.printf("v := *%s\n", n)
-		g.genUnmarshal(ut.Elem(), "v")
+		g.genMarshalType(ut.Elem(), "v")
 		g.printf("}\n")
 
 	case *types.Interface:
@@ -451,7 +451,7 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 		g.printf("{\n")
 		elt := ut.Elem()
 		g.printf("var v %s\n", qualTypeName(elt, g.pkg))
-		g.genUnmarshal(elt, "v")
+		g.genUnmarshalType(elt, "v")
 		g.printf("%s = &v\n\n", n)
 		g.printf("}\n")
 
