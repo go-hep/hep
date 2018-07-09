@@ -416,6 +416,9 @@ func init() {
 	}
 
 	tx, err := db.Begin()
+	if err != nil {
+		panic(err)
+	}
 	_, err = tx.Exec("create table data (id int, x float64);")
 	if err != nil {
 		panic(err)
