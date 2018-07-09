@@ -5,6 +5,7 @@
 package hplot_test
 
 import (
+	"log"
 	"testing"
 
 	"go-hep.org/x/hep/hbook"
@@ -17,11 +18,11 @@ import (
 )
 
 func TestH2D(t *testing.T) {
-	ExampleH2D(t)
+	ExampleH2D()
 	checkPlot(t, "testdata/h2d_plot_golden.png")
 }
 
-func ExampleH2D(t *testing.T) {
+func ExampleH2D() {
 	h := hbook.NewH2D(100, -10, 10, 100, -10, 10)
 
 	const npoints = 10000
@@ -32,7 +33,7 @@ func ExampleH2D(t *testing.T) {
 		rand.New(rand.NewSource(1234)),
 	)
 	if !ok {
-		t.Fatalf("error creating distmv.Normal")
+		log.Fatalf("error creating distmv.Normal")
 	}
 
 	v := make([]float64, 2)
@@ -52,7 +53,7 @@ func ExampleH2D(t *testing.T) {
 	p.Add(plotter.NewGrid())
 	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/h2d_plot.png")
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 }
 

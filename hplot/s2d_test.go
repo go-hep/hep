@@ -6,6 +6,7 @@ package hplot_test
 
 import (
 	"image/color"
+	"log"
 	"testing"
 
 	"go-hep.org/x/hep/hbook"
@@ -18,7 +19,7 @@ import (
 )
 
 // ExampleS2D draws some scatter points.
-func ExampleS2D(t *testing.T) {
+func ExampleS2D() {
 	const npoints = 1000
 
 	dist, ok := distmv.NewNormal(
@@ -27,7 +28,7 @@ func ExampleS2D(t *testing.T) {
 		rand.New(rand.NewSource(1234)),
 	)
 	if !ok {
-		t.Fatalf("error creating distmv.Normal")
+		log.Fatalf("error creating distmv.Normal")
 	}
 
 	s2d := hbook.NewS2D()
@@ -54,18 +55,18 @@ func ExampleS2D(t *testing.T) {
 
 	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d.png")
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 }
 
 func TestS2D(t *testing.T) {
-	ExampleS2D(t)
+	ExampleS2D()
 	checkPlot(t, "testdata/s2d_golden.png")
 }
 
 // ExampleS2D_withErrorBars draws some scatter points
 // with their error bars.
-func ExampleS2D_withErrorBars(t *testing.T) {
+func ExampleS2D_withErrorBars() {
 	pts := []hbook.Point2D{
 		{X: 1, Y: 1, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, ErrY: hbook.Range{Min: 2, Max: 3}},
 		{X: 2, Y: 2, ErrX: hbook.Range{Min: 0.5, Max: 1.5}, ErrY: hbook.Range{Min: 5, Max: 2}},
@@ -86,11 +87,11 @@ func ExampleS2D_withErrorBars(t *testing.T) {
 
 	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d_errbars.png")
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 }
 
 func TestScatter2DWithErrorBars(t *testing.T) {
-	ExampleS2D_withErrorBars(t)
+	ExampleS2D_withErrorBars()
 	checkPlot(t, "testdata/s2d_errbars_golden.png")
 }

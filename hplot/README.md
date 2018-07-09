@@ -27,7 +27,7 @@ https://godoc.org/go-hep.org/x/hep/hplot
 
 [embedmd]:# (h1d_test.go go /func ExampleH1D/ /\n}/)
 ```go
-func ExampleH1D(t *testing.T) {
+func ExampleH1D() {
 	const npoints = 10000
 
 	// Create a normal distribution.
@@ -75,7 +75,7 @@ func ExampleH1D(t *testing.T) {
 
 	// Save the plot to a PNG file.
 	if err := p.Save(6*vg.Inch, -1, "testdata/h1d_plot.png"); err != nil {
-		t.Fatalf("error saving plot: %v\n", err)
+		log.Fatalf("error saving plot: %v\n", err)
 	}
 }
 ```
@@ -150,7 +150,7 @@ https://godoc.org/go-hep.org/x/hep/hplot#example-package--Latexplot
 
 [embedmd]:# (h2d_test.go go /func ExampleH2D/ /\n}/)
 ```go
-func ExampleH2D(t *testing.T) {
+func ExampleH2D() {
 	h := hbook.NewH2D(100, -10, 10, 100, -10, 10)
 
 	const npoints = 10000
@@ -161,7 +161,7 @@ func ExampleH2D(t *testing.T) {
 		rand.New(rand.NewSource(1234)),
 	)
 	if !ok {
-		t.Fatalf("error creating distmv.Normal")
+		log.Fatalf("error creating distmv.Normal")
 	}
 
 	v := make([]float64, 2)
@@ -181,7 +181,7 @@ func ExampleH2D(t *testing.T) {
 	p.Add(plotter.NewGrid())
 	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/h2d_plot.png")
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 }
 ```
@@ -191,7 +191,7 @@ func ExampleH2D(t *testing.T) {
 
 [embedmd]:# (s2d_test.go go /func ExampleS2D/ /\n}/)
 ```go
-func ExampleS2D(t *testing.T) {
+func ExampleS2D() {
 	const npoints = 1000
 
 	dist, ok := distmv.NewNormal(
@@ -200,7 +200,7 @@ func ExampleS2D(t *testing.T) {
 		rand.New(rand.NewSource(1234)),
 	)
 	if !ok {
-		t.Fatalf("error creating distmv.Normal")
+		log.Fatalf("error creating distmv.Normal")
 	}
 
 	s2d := hbook.NewS2D()
@@ -227,7 +227,7 @@ func ExampleS2D(t *testing.T) {
 
 	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d.png")
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 }
 ```

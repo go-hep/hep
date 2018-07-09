@@ -6,6 +6,7 @@ package hplot_test
 
 import (
 	"image/color"
+	"log"
 	"testing"
 
 	"go-hep.org/x/hep/hbook"
@@ -16,7 +17,7 @@ import (
 )
 
 // An example of making a 1D-histogram.
-func ExampleH1D(t *testing.T) {
+func ExampleH1D() {
 	const npoints = 10000
 
 	// Create a normal distribution.
@@ -64,17 +65,17 @@ func ExampleH1D(t *testing.T) {
 
 	// Save the plot to a PNG file.
 	if err := p.Save(6*vg.Inch, -1, "testdata/h1d_plot.png"); err != nil {
-		t.Fatalf("error saving plot: %v\n", err)
+		log.Fatalf("error saving plot: %v\n", err)
 	}
 }
 
 func TestH1D(t *testing.T) {
-	ExampleH1D(t)
+	ExampleH1D()
 	checkPlot(t, "testdata/h1d_plot_golden.png")
 }
 
 // An example of making a 1D-histogram and saving to a PDF
-func ExampleH1D_toPDF(t *testing.T) {
+func ExampleH1D_toPDF() {
 	const npoints = 10000
 
 	// Create a normal distribution.
@@ -122,11 +123,11 @@ func ExampleH1D_toPDF(t *testing.T) {
 
 	// Save the plot to a PNG file.
 	if err := p.Save(6*vg.Inch, -1, "testdata/h1d_plot.pdf"); err != nil {
-		t.Fatalf("error saving plot: %v\n", err)
+		log.Fatalf("error saving plot: %v\n", err)
 	}
 }
 
 func TestH1DtoPDF(t *testing.T) {
-	ExampleH1D_toPDF(t)
+	ExampleH1D_toPDF()
 	checkPlot(t, "testdata/h1d_plot_golden.pdf")
 }
