@@ -86,6 +86,7 @@ func (wrk *worker) run(tsks []Task) {
 				select {
 				case err, ok := <-evt.errc:
 					if !ok {
+						evtCancel()
 						return
 					}
 					ndone++
@@ -112,6 +113,7 @@ func (wrk *worker) run(tsks []Task) {
 
 			if err != nil {
 				wrk.errc <- err
+				evtCancel()
 				return
 			}
 		case <-wrk.runctx.Done():

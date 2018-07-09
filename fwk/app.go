@@ -661,13 +661,14 @@ func (app *appmgr) runConcurrent(ctx Context) error {
 			err = app.istream.Process(ctx)
 			if err != nil {
 				if err != io.EOF {
-					evtCancel()
 					ctrl.errc <- err
 				}
 				close(ctrl.evts)
+				evtCancel()
 				return
 			}
 			ctrl.evts <- ctx
+			evtCancel()
 		}
 		close(ctrl.evts)
 	}()
