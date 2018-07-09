@@ -9,6 +9,8 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+
+	"github.com/pkg/errors"
 )
 
 // Decoder represents an LHEF parser reading a particular input stream.
@@ -134,8 +136,10 @@ Loop:
 			&d.Run.XMAXUP[i],
 			&d.Run.LPRUP[i],
 		)
+		if err != nil {
+			return nil, errors.Errorf("lhef: failed to decode NPRUP %d: %v", i, err)
+		}
 	}
-	//fmt.Printf(">>> data: %v\n", d.Run)
 
 	if d.Version >= 2 {
 		// do version-2 specific stuff
