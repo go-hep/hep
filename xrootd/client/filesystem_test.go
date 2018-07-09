@@ -18,7 +18,7 @@ import (
 )
 
 var fstest = map[string]*xrdfs.EntryStat{
-	"/tmp/dir1/file1.txt": &xrdfs.EntryStat{
+	"/tmp/dir1/file1.txt": {
 		HasStatInfo: true,
 		ID:          139698106334466,
 		EntrySize:   0,
