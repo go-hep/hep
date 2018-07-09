@@ -212,9 +212,10 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 			return nil, ErrStreamNoRecMarker
 		}
 
-		curpos := stream.CurPos()
-		// fmt.Printf(">>> pos --0: %d (%d)\n", curpos, rechdr.Len-8)
-		var recdata recordData
+		var (
+			curpos  int64
+			recdata recordData
+		)
 		err = stream.read(&recdata)
 		if err != nil {
 			return nil, err
@@ -270,7 +271,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 			// record header start on a 4-bytes boundary in the file.
 			padlen := align4U32(recdata.DataLen) - recdata.DataLen
 			if padlen > 0 {
-				curpos, err = stream.Seek(int64(padlen), 1)
+				_, err = stream.Seek(int64(padlen), 1)
 				if err != nil {
 					return nil, err
 				}
