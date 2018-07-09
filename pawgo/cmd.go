@@ -90,6 +90,9 @@ func (c *Cmd) Close() error {
 	var err error
 
 	err = c.fmgr.Close()
+	if err != nil {
+		return err
+	}
 
 	f, err := os.Create(".pawgo.history")
 	if err == nil {
