@@ -6,6 +6,7 @@ package fit_test
 
 import (
 	"image/color"
+	"log"
 	"math"
 	"testing"
 
@@ -21,10 +22,10 @@ import (
 )
 
 func TestH1D(t *testing.T) {
-	ExampleH1D_gaussian(t)
+	ExampleH1D_gaussian()
 }
 
-func ExampleH1D_gaussian(t *testing.T) {
+func ExampleH1D_gaussian() {
 	var (
 		mean  = 2.0
 		sigma = 4.0
@@ -67,14 +68,14 @@ func ExampleH1D_gaussian(t *testing.T) {
 		nil, &optimize.NelderMead{},
 	)
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if err := res.Status.Err(); err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 	if got := res.X; !floats.EqualApprox(got, want, 1e-3) {
-		t.Fatalf("got= %v\nwant=%v\n", got, want)
+		log.Fatalf("got= %v\nwant=%v\n", got, want)
 	}
 
 	{
@@ -98,7 +99,7 @@ func ExampleH1D_gaussian(t *testing.T) {
 
 		err := p.Save(20*vg.Centimeter, -1, "testdata/h1d-gauss-plot.png")
 		if err != nil {
-			t.Fatal(err)
+			log.Fatal(err)
 		}
 	}
 }
