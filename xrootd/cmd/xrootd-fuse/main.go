@@ -65,6 +65,9 @@ func main() {
 	}
 
 	url, err := xrdio.Parse(flag.Arg(0))
+	if err != nil {
+		log.Fatalf("could not parse remote address %q: %v", flag.Arg(0), err)
+	}
 
 	c, err := client.NewClient(context.Background(), url.Addr, url.User)
 	if err != nil {

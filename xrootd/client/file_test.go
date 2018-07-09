@@ -167,6 +167,9 @@ func testFile_WriteAt(t *testing.T, addr string) {
 
 	file.Close(context.Background())
 	file, err = fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerRead, xrdfs.OpenOptionsOpenRead)
+	if err != nil {
+		t.Fatalf("could not open %q: %v", filePath, err)
+	}
 	defer file.Close(context.Background())
 
 	got := make([]uint8, len(want)+10)

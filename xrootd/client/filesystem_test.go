@@ -600,6 +600,9 @@ func testFileSystem_Chmod(t *testing.T, addr string) {
 	}
 
 	err = fs.Chmod(context.Background(), file, newPerm)
+	if err != nil {
+		t.Fatalf("could not chmod %q: %v", file, err)
+	}
 
 	s, err = fs.Stat(context.Background(), file)
 	if err != nil {
@@ -611,6 +614,9 @@ func testFileSystem_Chmod(t *testing.T, addr string) {
 	}
 
 	err = fs.Chmod(context.Background(), file, oldPerm)
+	if err != nil {
+		t.Fatalf("could not chmod %q: %v", file, err)
+	}
 
 	s, err = fs.Stat(context.Background(), file)
 	if err != nil {
