@@ -203,14 +203,6 @@ func (srv *server) plotBranchHandle(w http.ResponseWriter, r *http.Request) erro
 
 	leaves := b.Leaves()
 	leaf := leaves[0]
-	tname := leaf.TypeName()
-	switch {
-	case leaf.LeafCount() != nil:
-		tname = "[]" + tname
-	case leaf.Len() > 1:
-		tname = fmt.Sprintf("[%d]%s", leaf.Len(), tname)
-	}
-
 	fv, err := newFloats(leaf)
 	if err != nil {
 		log.Printf("error creating float-val: %v\n", err)
