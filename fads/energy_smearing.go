@@ -76,7 +76,6 @@ func (tsk *EnergySmearing) Process(ctx fwk.Context) error {
 	for i := range input {
 		cand := &input[i]
 		eta := cand.Pos.Eta()
-		phi := cand.Pos.Phi()
 		ene := cand.Mom.E()
 
 		// apply smearing
@@ -92,7 +91,7 @@ func (tsk *EnergySmearing) Process(ctx fwk.Context) error {
 		mother := cand
 		c := cand.Clone()
 		eta = cand.Mom.Eta()
-		phi = cand.Mom.Phi()
+		phi := cand.Mom.Phi()
 		pt := ene / math.Cosh(eta)
 
 		pxs := pt * math.Cos(phi)

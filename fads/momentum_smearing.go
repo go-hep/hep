@@ -76,7 +76,6 @@ func (tsk *MomentumSmearing) Process(ctx fwk.Context) error {
 	for i := range input {
 		cand := &input[i]
 		eta := cand.Pos.Eta()
-		phi := cand.Pos.Phi()
 		pt := cand.Mom.Pt()
 
 		// apply smearing
@@ -92,7 +91,7 @@ func (tsk *MomentumSmearing) Process(ctx fwk.Context) error {
 		mother := cand
 		c := cand.Clone()
 		eta = cand.Mom.Eta()
-		phi = cand.Mom.Phi()
+		phi := cand.Mom.Phi()
 
 		pxs := pt * math.Cos(phi)
 		pys := pt * math.Sin(phi)
