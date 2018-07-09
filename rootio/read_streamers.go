@@ -725,8 +725,6 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 						r.CheckByteCount(pos, bcnt, start, se.TypeName())
 						return r.err
 					}
-
-					panic(fmt.Errorf("rootio: read-streamer for %T not implemented", rf.Interface()))
 				}
 			}
 		default:

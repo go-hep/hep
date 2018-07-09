@@ -174,7 +174,6 @@ func diffObject(key string, ref, chk rootio.Object) error {
 		return fmt.Errorf("unhandled type %T (key=%v)", ref, key)
 
 	}
-	return nil
 }
 
 func diffTree(key string, ref, chk rootio.Tree) error {

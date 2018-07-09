@@ -32,7 +32,6 @@ func (resp *Response) RespID() uint16 { return RequestID }
 func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	// TODO: implement
 	panic(errors.New("xrootd: MarshalXrd is not implemented"))
-	return nil
 }
 
 // UnmarshalXrd implements xrdproto.Unmarshaler
