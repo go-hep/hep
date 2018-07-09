@@ -565,10 +565,12 @@ func (app *appmgr) runSequential(ctx Context) error {
 		app.msg.Infof(">>> running evt=%d...\n", ievt)
 		err = store.reset(keys)
 		if err != nil {
+			evtCancel()
 			return err
 		}
 		err = app.istream.Process(ctxs[0])
 		if err != nil {
+			evtCancel()
 			store.close()
 			app.msg.flush()
 			return err
@@ -595,6 +597,7 @@ func (app *appmgr) runSequential(ctx Context) error {
 				break errloop
 			}
 		}
+		evtCancel()
 		store.close()
 		app.msg.flush()
 	}
