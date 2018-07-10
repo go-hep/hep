@@ -139,6 +139,40 @@ type FilepathRequest interface {
 	SetOpaque(opaque string) // SetOpaque sets opaque data for this request.
 }
 
+// PathID is the socket identifier. It may be used in read and write requests to indicate
+// which socket should be used for a response or as a source of data.
+type PathID byte
+
+// DataRequest is the request that operate over 2 sockets.
+// One socket is used for sending the request and other is used to
+// send or receive data.
+type DataRequest interface {
+	// PathID returns an identifier of the socket which should be used to read or write a data.
+	PathID() PathID
+
+	// SePathID sets the identifier of the socket which should be used to read or write a data.
+	SetPathID(pathID PathID)
+
+	// Direction returns the direction of the request: either reading or writing.
+	Direction() DataRequestDirection
+
+	// PathData returns the data which should be send to the data socket.
+	PathData() []byte
+}
+
+// DataRequestDirection is the direction of the request: either reading or writing.
+type DataRequestDirection int
+
+const (
+	// DataRequestRead indicates that request has reading direction.
+	// In other words, the request obtains a data from the server.
+	DataRequestRead DataRequestDirection = iota
+
+	// DataRequestWrite indicates that request has writing direction.
+	// In other words, the request sends a data to the server.
+	DataRequestWrite
+)
+
 // RequestLevel is the security requirement that the associated request is to have.
 type RequestLevel byte
 

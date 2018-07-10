@@ -149,7 +149,7 @@ func TestFile_ReadAt_Mock(t *testing.T) {
 	want := []byte("Hello XRootD.\n")
 	askLength := int32(len(want) + 4)
 
-	wantRequest := read.Request{Handle: handle, Offset: 1, Length: askLength}
+	wantRequest := read.Request{Handle: handle, Offset: 1, Length: askLength, OptionalArgs: &read.OptionalArgs{PathID: 0}}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
 		data, err := readRequest(conn)
@@ -169,6 +169,14 @@ func TestFile_ReadAt_Mock(t *testing.T) {
 			cancel()
 			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", wantRequest.ReqID(), gotHeader.RequestID)
 		}
+
+		if !reflect.DeepEqual(*gotRequest.OptionalArgs, *wantRequest.OptionalArgs) {
+			cancel()
+			t.Fatalf("optional args do not match:\ngot = %v\nwant = %v", *gotRequest.OptionalArgs, *wantRequest.OptionalArgs)
+		}
+
+		gotRequest.OptionalArgs = nil
+		wantRequest.OptionalArgs = nil
 
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
 			cancel()

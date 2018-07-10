@@ -33,7 +33,13 @@ import (
 // re-issues the request. Stream ID may be different during these 2 requests
 // because it is used to identify requests among one particular server
 // and is not shared between servers in any way.
+//
+// If the request that supports sending data over a separate socket is issued,
+// the session tries to obtain a sub-session to the same server using a `bind` request.
+// If the connection is successful, the request is sent specifying that socket for the data exchange.
+// Otherwise, a default socket connected to the server is used.
 type session struct {
+	ctx              context.Context
 	cancel           context.CancelFunc
 	conn             net.Conn
 	mux              *mux.Mux
@@ -41,10 +47,34 @@ type session struct {
 	signRequirements signing.Requirements
 	seqID            int64
 	mu               sync.RWMutex
-	requests         map[xrdproto.StreamID][]byte
+	requests         map[xrdproto.StreamID]pendingRequest
 
+	subCreateMu sync.Mutex   // subCreateMu is used to serialize the creation of sub-sessions.
+	subsMu      sync.RWMutex // subsMu is used to serialize the access to the subs map.
+	subs        map[xrdproto.PathID]*session
+
+	maxSubs   int
+	freeSubs  chan xrdproto.PathID
+	isSub     bool // indicates whether this session is a sub-session.
 	client    *Client
 	sessionID string
+	addr      string
+	loginID   [16]byte
+	pathID    xrdproto.PathID
+}
+
+// pendingRequest is a request that has been sent to the remote server.
+type pendingRequest struct {
+	// Header is the header part of the request.
+	// It may contain all of the request content if there is no data that is
+	// intended to be sent over a separate socket.
+	Header []byte
+
+	// Data is the data part of the request that is intended to be sent over a separate socket.
+	Data []byte
+
+	// PathID is the identifier of the socket which should be used to read or write a data.
+	PathID xrdproto.PathID
 }
 
 func newSession(ctx context.Context, address, username, token string, client *Client) (*session, error) {
@@ -59,15 +89,20 @@ func newSession(ctx context.Context, address, username, token string, client *Cl
 	}
 
 	sess := &session{
+		ctx:       ctx,
 		cancel:    cancel,
 		conn:      conn,
 		mux:       mux.New(),
-		requests:  make(map[xrdproto.StreamID][]byte),
+		subs:      make(map[xrdproto.PathID]*session),
+		freeSubs:  make(chan xrdproto.PathID),
+		requests:  make(map[xrdproto.StreamID]pendingRequest),
 		client:    client,
 		sessionID: addr,
+		addr:      addr,
+		maxSubs:   8, // TODO: The value of 8 is just a guess. Change it?
 	}
 
-	go sess.consume(ctx)
+	go sess.consume()
 
 	if err := sess.handshake(ctx); err != nil {
 		sess.Close()
@@ -79,6 +114,8 @@ func newSession(ctx context.Context, address, username, token string, client *Cl
 		sess.Close()
 		return nil, err
 	}
+
+	sess.loginID = securityInfo.SessionID
 
 	if len(securityInfo.SecurityInformation) > 0 {
 		err = sess.auth(ctx, securityInfo.SecurityInformation)
@@ -103,23 +140,41 @@ func newSession(ctx context.Context, address, username, token string, client *Cl
 func (sess *session) Close() error {
 	sess.cancel()
 
-	sess.mux.Close()
+	var errs []error
+	for _, child := range sess.subs {
+		err := child.Close()
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if !sess.isSub {
+		sess.mux.Close()
+	}
+
 	// TODO: should we remove session here somehow?
-	return sess.conn.Close()
+	err := sess.conn.Close()
+	if err != nil {
+		errs = append(errs, err)
+	}
+	if errs != nil {
+		return errors.Errorf("xrootd: errors occured during closing of the session: %v", errs)
+	}
+	return nil
 }
 
-func (sess *session) consume(ctx context.Context) {
+func (sess *session) consume() {
 	var header xrdproto.ResponseHeader
 	var headerBytes = make([]byte, xrdproto.ResponseHeaderLength)
 
 	for {
 		select {
-		case <-ctx.Done():
+		case <-sess.ctx.Done():
 			// TODO: Should wait for active requests to be completed?
 			return
 		default:
 			if _, err := io.ReadFull(sess.conn, headerBytes); err != nil {
-				if ctx.Err() != nil {
+				if sess.ctx.Err() != nil {
 					// something happened to the context.
 					// ignore this error.
 					continue
@@ -142,7 +197,7 @@ func (sess *session) consume(ctx context.Context) {
 			}
 
 			if err := xrdproto.Unmarshal(headerBytes, &header); err != nil {
-				if ctx.Err() != nil {
+				if sess.ctx.Err() != nil {
 					// something happened to the context.
 					// ignore this error.
 					continue
@@ -153,7 +208,7 @@ func (sess *session) consume(ctx context.Context) {
 
 			resp := mux.ServerResponse{Data: make([]byte, header.DataLength)}
 			if _, err := io.ReadFull(sess.conn, resp.Data); err != nil {
-				if ctx.Err() != nil {
+				if sess.ctx.Err() != nil {
 					// something happened to the context.
 					// ignore this error.
 					continue
@@ -172,9 +227,9 @@ func (sess *session) consume(ctx context.Context) {
 				sess.mu.RLock()
 				req := sess.requests[header.StreamID]
 				sess.mu.RUnlock()
-				go func(req []byte) {
+				go func(req pendingRequest) {
 					time.Sleep(duration)
-					if _, err := sess.conn.Write(req); err != nil {
+					if err := sess.writeRequest(req); err != nil {
 						resp := mux.ServerResponse{Err: errors.WithMessage(err, "xrootd: could not send data to the server")}
 						err := sess.mux.SendData(header.StreamID, resp)
 						// TODO: should we log error somehow? We have nowhere to send it.
@@ -193,7 +248,7 @@ func (sess *session) consume(ctx context.Context) {
 			}
 
 			if err := sess.mux.SendData(header.StreamID, resp); err != nil {
-				if ctx.Err() != nil {
+				if sess.ctx.Err() != nil {
 					// something happened to the context.
 					// ignore this error.
 					continue
@@ -216,11 +271,39 @@ func (sess *session) cleanupRequest(streamID xrdproto.StreamID) {
 	sess.mu.Unlock()
 }
 
-func (sess *session) send(ctx context.Context, streamID xrdproto.StreamID, responseChannel mux.DataRecvChan, request []byte) ([]byte, *mux.Redirection, error) {
+func (sess *session) writeRequest(request pendingRequest) error {
+	if request.PathID == 0 {
+		request.Header = append(request.Header, request.Data...)
+	}
+
+	if _, err := sess.conn.Write(request.Header); err != nil {
+		return err
+	}
+
+	if request.PathID != 0 && len(request.Data) > 0 {
+		sess.subsMu.RLock()
+		conn, ok := sess.subs[request.PathID]
+		sess.subsMu.RUnlock()
+		if !ok {
+			return errors.Errorf("xrootd: connection with wrong pathID = %v was requested", request.PathID)
+		}
+		if _, err := conn.conn.Write(request.Data); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (sess *session) send(ctx context.Context, streamID xrdproto.StreamID, responseChannel mux.DataRecvChan, header, body []byte, pathID xrdproto.PathID) ([]byte, *mux.Redirection, error) {
+	if pathID == 0 {
+		header = append(header, body...)
+	}
+	request := pendingRequest{Header: header, Data: body, PathID: pathID}
 	sess.mu.Lock()
 	sess.requests[streamID] = request
 	sess.mu.Unlock()
-	if _, err := sess.conn.Write(request); err != nil {
+
+	if err := sess.writeRequest(request); err != nil {
 		return nil, nil, err
 	}
 
@@ -263,6 +346,22 @@ func (sess *session) Send(ctx context.Context, resp xrdproto.Response, req xrdpr
 	if err = header.MarshalXrd(&wBuffer); err != nil {
 		return nil, err
 	}
+
+	var pathID xrdproto.PathID = 0
+	var pathData []byte
+	if dr, ok := req.(xrdproto.DataRequest); ok {
+		var err error
+		pathID, err = sess.claimPathID(ctx)
+		if err != nil {
+			// Should we log error somehow?
+			// Fallback to sending the data over a single connection.
+			pathID = 0
+		}
+		defer sess.unclaimPathID(pathID)
+		dr.SetPathID(pathID)
+		pathData = dr.PathData()
+	}
+
 	if err = req.MarshalXrd(&wBuffer); err != nil {
 		return nil, err
 	}
@@ -275,12 +374,52 @@ func (sess *session) Send(ctx context.Context, resp xrdproto.Response, req xrdpr
 		}
 	}
 
-	data, redirection, err := sess.send(ctx, streamID, responseChannel, data)
+	data, redirection, err := sess.send(ctx, streamID, responseChannel, data, pathData, pathID)
 	if err != nil || redirection != nil || resp == nil {
 		return redirection, err
 	}
 
 	return nil, resp.UnmarshalXrd(xrdenc.NewRBuffer(data))
+}
+
+func (sess *session) claimPathID(ctx context.Context) (xrdproto.PathID, error) {
+	select {
+	case child := <-sess.freeSubs:
+		return child, nil
+	default:
+		sess.subCreateMu.Lock()
+		defer sess.subCreateMu.Unlock()
+
+		sess.subsMu.RLock()
+		if len(sess.subs) >= sess.maxSubs {
+			sess.subsMu.RUnlock()
+			return 0, errors.Errorf("xrootd: could not claimPathID: all of %d connections are taken", sess.maxSubs)
+		}
+		sess.subsMu.RUnlock()
+
+		ds, err := newSubSession(ctx, sess)
+		if err != nil {
+			return 0, err
+		}
+		sess.subsMu.Lock()
+		sess.subs[ds.pathID] = ds
+		sess.subsMu.Unlock()
+
+		return ds.pathID, nil
+	}
+}
+
+func (sess *session) unclaimPathID(pathID xrdproto.PathID) {
+	if pathID == 0 {
+		return
+	}
+	go func() {
+		select {
+		case <-sess.ctx.Done():
+			return
+		case sess.freeSubs <- pathID:
+		}
+	}()
 }
 
 func (sess *session) sign(streamID xrdproto.StreamID, requestID uint16, data []byte) ([]byte, error) {
@@ -298,4 +437,44 @@ func (sess *session) sign(streamID xrdproto.StreamID, requestID uint16, data []b
 	wBuffer.WriteBytes(data)
 
 	return wBuffer.Bytes(), nil
+}
+
+func newSubSession(ctx context.Context, parent *session) (*session, error) {
+	ctx, cancel := context.WithCancel(ctx)
+
+	var d net.Dialer
+	conn, err := d.DialContext(ctx, "tcp", parent.addr)
+	if err != nil {
+		cancel()
+		return nil, err
+	}
+
+	sess := &session{
+		ctx:       ctx,
+		cancel:    cancel,
+		conn:      conn,
+		mux:       parent.mux,
+		subs:      make(map[xrdproto.PathID]*session),
+		requests:  make(map[xrdproto.StreamID]pendingRequest),
+		client:    parent.client,
+		sessionID: parent.addr,
+		addr:      parent.addr,
+		isSub:     true,
+	}
+
+	go sess.consume()
+
+	if err := sess.handshake(ctx); err != nil {
+		sess.Close()
+		return nil, err
+	}
+
+	pathID, err := sess.bind(ctx, parent.loginID)
+	if err != nil {
+		sess.Close()
+		return nil, err
+	}
+
+	sess.pathID = pathID
+	return sess, nil
 }
