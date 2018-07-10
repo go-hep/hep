@@ -26,7 +26,7 @@ func (sess *session) handshake(ctx context.Context) error {
 		return err
 	}
 
-	resp, _, err := sess.send(ctx, streamID, responseChannel, wBuffer.Bytes())
+	resp, _, err := sess.send(ctx, streamID, responseChannel, wBuffer.Bytes(), nil, 0)
 	// TODO: should we react somehow to redirection?
 	if err != nil {
 		return err

@@ -13,7 +13,7 @@ matrix:
    - go: master
 
 env:
- - TAGS=""
+ - TAGS="-tags travis"
 
 sudo: required
 
