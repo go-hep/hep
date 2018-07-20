@@ -32,6 +32,9 @@ func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	return nil
 }
 
+// RequestLength is the length of the Request in bytes.
+const RequestLength = 20
+
 // Request holds the handshake request parameters.
 type Request [5]int32
 

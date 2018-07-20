@@ -48,6 +48,25 @@ type EntryStat struct {
 	Mtime       int64     // Mtime is the last modification time in Unix time units.
 }
 
+// EntryStatFrom creates an EntryStat that represents same information as the provided info.
+func EntryStatFrom(info os.FileInfo) EntryStat {
+	es := EntryStat{
+		EntryName: info.Name(),
+		EntrySize: info.Size(),
+		Mtime:     info.ModTime().Unix(),
+	}
+	if info.IsDir() {
+		es.Flags |= StatIsDir
+	}
+	if info.Mode()&0400 != 0 {
+		es.Flags |= StatIsReadable
+	}
+	if info.Mode()&0200 != 0 {
+		es.Flags |= StatIsWritable
+	}
+	return es
+}
+
 // Name implements os.FileInfo.
 func (es EntryStat) Name() string {
 	return es.EntryName
