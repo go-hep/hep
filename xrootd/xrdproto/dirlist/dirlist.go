@@ -20,9 +20,11 @@ import (
 const RequestID uint16 = 3004
 
 // Response is a response for the dirlist request,
-// which contains a slice of entries containing the entry name and the entry stat info.
+// which contains a slice of entries containing the entry name and the entry stat info,
+// and a WithStatInfo flag indicating whether a request asked for a stat info.
 type Response struct {
-	Entries []xrdfs.EntryStat
+	Entries      []xrdfs.EntryStat
+	WithStatInfo bool
 }
 
 // RespID implements xrdproto.Response.RespID.
@@ -30,8 +32,50 @@ func (resp *Response) RespID() uint16 { return RequestID }
 
 // MarshalXrd implements xrdproto.Marshaler.
 func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
-	// TODO: implement
-	panic(errors.New("xrootd: MarshalXrd is not implemented"))
+	entries := o.Entries
+	if o.WithStatInfo {
+		firstEntry := []xrdfs.EntryStat{
+			{EntryName: ".", HasStatInfo: true},
+		}
+		entries = append(firstEntry, entries...)
+	}
+
+	consistent := true
+	for i := range entries {
+		if entries[i].HasStatInfo != o.WithStatInfo {
+			consistent = false
+		}
+	}
+
+	if !consistent {
+		// TODO: keep this error or remove it?
+		return errors.New("xrootd: all entries of dirlist.Response should either have stat info or not")
+	}
+
+	for i := range entries {
+		nameSeparator := "\n"
+		statInfoSeparator := "\n"
+		if i == len(entries)-1 {
+			if o.WithStatInfo {
+				statInfoSeparator = "\x00"
+			} else {
+				nameSeparator = "\x00"
+			}
+		}
+
+		wBuffer.WriteBytes([]byte(entries[i].EntryName + nameSeparator))
+		if !o.WithStatInfo {
+			continue
+		}
+
+		if err := entries[i].MarshalXrd(wBuffer); err != nil {
+			return err
+		}
+
+		wBuffer.WriteBytes([]byte(statInfoSeparator))
+	}
+
+	return nil
 }
 
 // UnmarshalXrd implements xrdproto.Unmarshaler
@@ -61,6 +105,7 @@ func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	if !(bytes.HasPrefix(data, []byte(".\n0 0 0 0\n")) || bytes.Equal(data, []byte(".\n0 0 0 0"))) {
 		// That means that the server doesn't support returning stat information.
 		o.Entries = make([]xrdfs.EntryStat, len(lines))
+		o.WithStatInfo = false
 		for i, v := range lines {
 			o.Entries[i] = xrdfs.EntryStat{EntryName: string(v)}
 		}
@@ -73,6 +118,7 @@ func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 
 	lines = lines[2:]
 	o.Entries = make([]xrdfs.EntryStat, len(lines)/2)
+	o.WithStatInfo = true
 
 	for i := 0; i < len(lines); i += 2 {
 		var rbuf = xrdenc.NewRBuffer(lines[i+1])

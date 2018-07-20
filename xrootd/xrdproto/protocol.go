@@ -7,7 +7,6 @@
 package xrdproto // import "go-hep.org/x/hep/xrootd/xrdproto"
 
 import (
-	"encoding/binary"
 	"fmt"
 	"strings"
 
@@ -44,12 +43,32 @@ type ServerErrorCode int32
 
 const (
 	InvalidRequestCode ServerErrorCode = 3006 // InvalidRequestCode indicates that request is invalid.
+	IOErrorCode        ServerErrorCode = 3007 // IOErrorCode indicates that an IO error has occurred on the server side.
 	NotAuthorized      ServerErrorCode = 3010 // NotAuthorized indicates that user was not authorized for operation.
 	NotFoundCode       ServerErrorCode = 3011 // NotFoundCode indicates that path was not found on the remote server.
 )
 
 func (err ServerError) Error() string {
 	return fmt.Sprintf("xrootd: error %d: %s", err.Code, err.Message)
+}
+
+// MarshalXrd implements Marshaler.
+func (o ServerError) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
+	wBuffer.WriteI32(int32(o.Code))
+	wBuffer.WriteBytes([]byte(o.Message))
+	wBuffer.WriteBytes([]byte("\x00"))
+	return nil
+}
+
+// UnmarshalXrd implements Unmarshaler.
+func (o *ServerError) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
+	o.Code = ServerErrorCode(rBuffer.ReadI32())
+	data := rBuffer.Bytes()
+	if len(data) == 0 {
+		return errors.New("xrootd: missing error message in server response")
+	}
+	o.Message = string(data[:len(data)-1])
+	return nil
 }
 
 // StreamID is the binary identifier associated with a request stream.
@@ -108,14 +127,14 @@ func (o *RequestHeader) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 // Error returns an error received from the server or nil if request hasn't failed.
 func (hdr ResponseHeader) Error(data []byte) error {
 	if hdr.Status == Error {
-		// 4 bytes for error code and at least 1 byte for message (in case it is null-terminated empty string)
-		if len(data) < 5 {
-			return errors.New("xrootd: an server error occurred, but code and message were not provided")
+		var serverError ServerError
+		rBuffer := xrdenc.NewRBuffer(data)
+		err := serverError.UnmarshalXrd(rBuffer)
+		if err != nil {
+			return errors.Errorf("xrootd: error occurred during unmarshaling of a server error: %v", err)
 		}
-		code := ServerErrorCode(binary.BigEndian.Uint32(data[0:4]))
-		message := string(data[4 : len(data)-1]) // Skip \0 character at the end
 
-		return ServerError{code, message}
+		return serverError
 	}
 	return nil
 }
