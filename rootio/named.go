@@ -68,9 +68,7 @@ func (n *tnamed) MarshalROOT(w *WBuffer) (int, error) {
 	w.WriteString(n.name)
 	w.WriteString(n.title)
 
-	bcnt := int(w.Pos() - pos)
-	w.CheckByteCount(pos, "TNamed")
-	return bcnt, w.err
+	return w.SetByteCount(pos, "TNamed")
 }
 
 func init() {

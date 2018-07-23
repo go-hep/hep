@@ -60,9 +60,9 @@ func (w *WBuffer) Pos() int64 {
 	return int64(w.w.c)
 }
 
-func (w *WBuffer) CheckByteCount(beg int64, class string) {
+func (w *WBuffer) SetByteCount(beg int64, class string) (int, error) {
 	if w.err != nil {
-		return
+		return 0, w.err
 	}
 
 	cur := w.w.c
@@ -70,6 +70,8 @@ func (w *WBuffer) CheckByteCount(beg int64, class string) {
 	w.w.c = int(beg)
 	w.WriteU32(uint32(bcnt | kByteCountMask))
 	w.w.c = cur
+
+	return int(bcnt + 4), w.err
 }
 
 func (w *WBuffer) WriteVersion(vers int16) {
