@@ -68,7 +68,13 @@ func TestReadRBuffer(t *testing.T) {
 		want ROOTUnmarshaler
 	}{
 		{
+			name: "TObject",
+			file: "testdata/tobject.dat",
+			want: &tobject{id: 0x0, bits: 0x3000000},
+		},
+		{
 			name: "TNamed",
+			file: "testdata/tnamed.dat",
 			want: &tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "my-name", title: "my-title"},
 		},
 		{
