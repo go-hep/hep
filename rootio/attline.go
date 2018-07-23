@@ -13,6 +13,20 @@ type attline struct {
 	width int16
 }
 
+func (a *attline) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(a.rvers)
+	w.WriteI16(a.color)
+	w.WriteI16(a.style)
+	w.WriteI16(a.width)
+	return w.SetByteCount(pos, "TAttLine")
+
+}
+
 func (a *attline) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -39,4 +53,7 @@ func init() {
 	Factory.add("*rootio.attline", f)
 }
 
-var _ ROOTUnmarshaler = (*attline)(nil)
+var (
+	_ ROOTMarshaler   = (*attline)(nil)
+	_ ROOTUnmarshaler = (*attline)(nil)
+)
