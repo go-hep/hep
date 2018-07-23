@@ -553,6 +553,27 @@ func (*{{.Name}}) Class() string {
 	return "T{{.Name}}"
 }
 
+func (h *{{.Name}}) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(h.rvers)
+
+	for _, v := range []ROOTMarshaler{
+		&h.th1,
+		&h.arr,
+	} {
+		if _, err := v.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+	}
+
+	return w.SetByteCount(pos, "T{{.Name}}")
+}
+
 func (h *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -748,6 +769,7 @@ var (
 	_ Object          = (*{{.Name}})(nil)
 	_ Named           = (*{{.Name}})(nil)
 	_ H1              = (*{{.Name}})(nil)
+	_ ROOTMarshaler   = (*{{.Name}})(nil)
 	_ ROOTUnmarshaler = (*{{.Name}})(nil)
 )
 `
