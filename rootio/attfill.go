@@ -12,6 +12,19 @@ type attfill struct {
 	style int16
 }
 
+func (a *attfill) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(a.rvers)
+	w.WriteI16(a.color)
+	w.WriteI16(a.style)
+	return w.SetByteCount(pos, "TAttFill")
+
+}
+
 func (a *attfill) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -37,4 +50,7 @@ func init() {
 	Factory.add("*rootio.attfill", f)
 }
 
-var _ ROOTUnmarshaler = (*attfill)(nil)
+var (
+	_ ROOTMarshaler   = (*attfill)(nil)
+	_ ROOTUnmarshaler = (*attfill)(nil)
+)
