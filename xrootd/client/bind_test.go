@@ -26,6 +26,8 @@ func testNewSubSession(t *testing.T, addr string) {
 	if subSession.pathID == 0 {
 		t.Fatalf("incorrect subSession.pathID value of 0 was received")
 	}
+
+	session.subs[subSession.pathID] = subSession
 }
 
 func TestNewSubSession(t *testing.T) {
