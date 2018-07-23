@@ -27,21 +27,20 @@ require (
 	github.com/mattn/go-runewidth v0.0.2 // indirect
 	github.com/pborman/uuid v0.0.0-20180122190007-c65b2f87fee3
 	github.com/peterh/liner v0.0.0-20180619022028-8c1271fcf47f
-	github.com/pierrec/lz4 v2.0.2
-	github.com/pierrec/xxHash v0.1.1 // indirect
+	github.com/pierrec/lz4 v2.0.3+incompatible
 	github.com/pkg/errors v0.8.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sbinet/npyio v0.1.0
 	github.com/stretchr/testify v1.2.2 // indirect
 	github.com/stretchrcom/testify v1.2.2 // indirect
 	github.com/ulikunitz/xz v0.5.4
-	golang.org/x/crypto v0.0.0-20180621125126-a49355c7e3f8
+	golang.org/x/crypto v0.0.0-20180718160520-a2144134853f
 	golang.org/x/exp v0.0.0-20180710024300-14dda7b62fcd
 	golang.org/x/image v0.0.0-20180708004352-c73c2afc3b81
-	golang.org/x/mobile v0.0.0-20180618222554-6621de06e1e9
-	golang.org/x/sys v0.0.0-20180709060233-1b2967e3c290 // indirect
-	gonum.org/v1/gonum v0.0.0-20180710080948-ff99a9821f0f
-	gonum.org/v1/plot v0.0.0-20180710090811-aabf5879ffdb
+	golang.org/x/mobile v0.0.0-20180719123216-371a4e8cb797
+	golang.org/x/sys v0.0.0-20180715085529-ac767d655b30 // indirect
+	gonum.org/v1/gonum v0.0.0-20180722074715-72e79ca98526
+	gonum.org/v1/plot v0.0.0-20180721215604-39ccdfa2a491
 	gopkg.in/jcmturner/aescts.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/dnsutils.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/goidentity.v2 v2.0.0 // indirect
