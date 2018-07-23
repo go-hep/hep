@@ -56,6 +56,27 @@ func NewWBuffer(data []byte, refs map[int64]interface{}, offset uint32, ctx Stre
 	}
 }
 
+func (w *WBuffer) Pos() int64 {
+	return int64(w.w.c)
+}
+
+func (w *WBuffer) CheckByteCount(beg int64, class string) {
+	if w.err != nil {
+		return
+	}
+
+	cur := w.w.c
+	bcnt := int64(cur) - beg - 4
+	w.w.c = int(beg)
+	w.WriteU32(uint32(bcnt | kByteCountMask))
+	w.w.c = cur
+}
+
+func (w *WBuffer) WriteVersion(vers int16) {
+	w.WriteU32(0) // byte-count placeholder
+	w.WriteU16(uint16(vers))
+}
+
 func (w *WBuffer) write(v []byte) {
 	if w.err != nil {
 		return

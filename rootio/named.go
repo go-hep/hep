@@ -53,6 +53,26 @@ func (n *tnamed) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
+func (n *tnamed) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(n.rvers)
+	if _, err := n.obj.MarshalROOT(w); err != nil {
+		w.err = err
+		return 0, w.err
+	}
+
+	w.WriteString(n.name)
+	w.WriteString(n.title)
+
+	bcnt := int(w.Pos() - pos)
+	w.CheckByteCount(pos, "TNamed")
+	return bcnt, w.err
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := &tnamed{}
@@ -62,6 +82,9 @@ func init() {
 	Factory.add("*rootio.tnamed", f)
 }
 
-var _ Object = (*tnamed)(nil)
-var _ Named = (*tnamed)(nil)
-var _ ROOTUnmarshaler = (*tnamed)(nil)
+var (
+	_ Object          = (*tnamed)(nil)
+	_ Named           = (*tnamed)(nil)
+	_ ROOTMarshaler   = (*tnamed)(nil)
+	_ ROOTUnmarshaler = (*tnamed)(nil)
+)

@@ -587,6 +587,39 @@ func TestWriteWBuffer(t *testing.T) {
 			file: "testdata/tobject.dat",
 			want: &tobject{id: 0x0, bits: 0x3000000},
 		},
+		{
+			name: "TNamed",
+			file: "testdata/tnamed.dat",
+			want: &tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "my-name", title: "my-title"},
+		},
+		{
+			name: "TNamed",
+			file: "testdata/tnamed-cmssw.dat",
+			want: &tnamed{
+				rvers: 1,
+				obj:   tobject{id: 0x0, bits: 0x3000000},
+				name:  "edmTriggerResults_TriggerResults__HLT.present", title: "edmTriggerResults_TriggerResults__HLT.present",
+			},
+		},
+		{
+			name: "TNamed",
+			file: "testdata/tnamed-cmssw-2.dat",
+			want: &tnamed{
+				rvers: 1,
+				obj:   tobject{id: 0x0, bits: 0x3500000},
+				name:  "edmTriggerResults_TriggerResults__HLT.present", title: "edmTriggerResults_TriggerResults__HLT.present",
+			},
+		},
+		{
+			name: "TNamed",
+			file: "testdata/tnamed-long-string.dat",
+			want: &tnamed{
+				rvers: 1,
+				obj:   tobject{id: 0x0, bits: 0x3000000},
+				name:  strings.Repeat("*", 256),
+				title: "my-title",
+			},
+		},
 	} {
 		t.Run("write-buffer="+test.file, func(t *testing.T) {
 			testWriteWBuffer(t, test.name, test.file, test.want)
