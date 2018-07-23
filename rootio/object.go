@@ -11,8 +11,12 @@ type tobject struct {
 	bits uint32 `rootio:"fBits"`
 }
 
-func (obj *tobject) Class() string {
+func (*tobject) Class() string {
 	return "TObject"
+}
+
+func (*tobject) Version() int {
+	return 1
 }
 
 func (obj *tobject) UnmarshalROOT(r *RBuffer) error {
@@ -27,7 +31,16 @@ func (obj *tobject) UnmarshalROOT(r *RBuffer) error {
 }
 
 func (obj *tobject) MarshalROOT(w *WBuffer) (int, error) {
-	panic("not implemented")
+	n := w.w.c
+	w.WriteU16(uint16(obj.Version()))
+	w.WriteU32(obj.id)
+	w.WriteU32(obj.bits)
+	if obj.bits&kIsReferenced != 0 {
+		w.WriteU16(0) // FIXME(sbinet): implement referenced objects.
+		panic("rootio: writing referenced objects are not supported")
+	}
+
+	return w.w.c - n, w.err
 }
 
 func init() {

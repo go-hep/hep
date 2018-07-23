@@ -5,7 +5,9 @@
 package rootio
 
 import (
+	"io/ioutil"
 	"math"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -572,4 +574,54 @@ func TestWBuffer_Write(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestWriteWBuffer(t *testing.T) {
+	for _, test := range []struct {
+		name string
+		file string
+		want ROOTMarshaler
+	}{
+		{
+			name: "TObject",
+			file: "testdata/tobject.dat",
+			want: &tobject{id: 0x0, bits: 0x3000000},
+		},
+	} {
+		t.Run("write-buffer="+test.file, func(t *testing.T) {
+			testWriteWBuffer(t, test.name, test.file, test.want)
+		})
+	}
+}
+
+func testWriteWBuffer(t *testing.T, name, file string, want interface{}) {
+	rdata, err := ioutil.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wdata := make([]byte, len(rdata))
+	err = ioutil.WriteFile(file+".new", wdata, 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w := NewWBuffer(wdata, nil, 0, nil)
+	_, err = want.(ROOTMarshaler).MarshalROOT(w)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	r := NewRBuffer(wdata, nil, 0, nil)
+	obj := Factory.get(name)().Interface().(ROOTUnmarshaler)
+	err = obj.UnmarshalROOT(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(obj, want) {
+		t.Fatalf("error: %q\ngot= %+v\nwant=%+v\ngot= %+v\nwant=%+v", file, wdata, rdata, obj, want)
+	}
+
+	os.Remove(file + ".new")
 }
