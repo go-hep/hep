@@ -79,6 +79,49 @@ func (a *taxis) BinWidth(i int) float64 {
 	return a.xbins.Data[i] - a.xbins.Data[i-1]
 }
 
+func (a *taxis) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(a.rvers)
+
+	for _, v := range []ROOTMarshaler{
+		&a.tnamed,
+		&a.attaxis,
+	} {
+		if _, err := v.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+	}
+
+	w.WriteI32(int32(a.nbins))
+	w.WriteF64(a.xmin)
+	w.WriteF64(a.xmax)
+
+	if _, err := a.xbins.MarshalROOT(w); err != nil {
+		w.err = err
+		return 0, w.err
+	}
+
+	w.WriteI32(int32(a.first))
+	w.WriteI32(int32(a.last))
+	w.WriteU16(a.bits2)
+	w.WriteBool(a.time)
+	w.WriteString(a.tfmt)
+
+	for _, obj := range []Object{a.labels, a.modlabs} {
+		if err := w.WriteObjectAny(obj); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+	}
+
+	return w.SetByteCount(pos, "TAxis")
+}
+
 func (a *taxis) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -145,7 +188,10 @@ func init() {
 	}
 }
 
-var _ Object = (*taxis)(nil)
-var _ Named = (*taxis)(nil)
-var _ Axis = (*taxis)(nil)
-var _ ROOTUnmarshaler = (*taxis)(nil)
+var (
+	_ Object          = (*taxis)(nil)
+	_ Named           = (*taxis)(nil)
+	_ Axis            = (*taxis)(nil)
+	_ ROOTMarshaler   = (*taxis)(nil)
+	_ ROOTUnmarshaler = (*taxis)(nil)
+)
