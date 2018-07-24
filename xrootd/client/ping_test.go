@@ -29,3 +29,28 @@ func TestSession_Ping(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkSession_Ping(b *testing.B) {
+	for _, addr := range testClientAddrs {
+		b.Run(addr, func(b *testing.B) {
+			benchmarkSession_Ping(b, addr)
+		})
+	}
+}
+
+func benchmarkSession_Ping(b *testing.B, addr string) {
+	client, err := NewClient(context.Background(), addr, "gopher")
+	if err != nil {
+		b.Fatalf("could not create client: %v", err)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		err := client.sessions[client.initialSessionID].Ping(context.Background())
+		if err != nil {
+			b.Errorf("could not ping: %v", err)
+		}
+	}
+	if err := client.Close(); err != nil {
+		b.Fatalf("could not close client: %v", err)
+	}
+}
