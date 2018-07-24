@@ -640,6 +640,15 @@ func TestWriteWBuffer(t *testing.T) {
 			file: "testdata/tarrayd.dat",
 			want: &ArrayD{Data: []float64{0, 1, 2, 3, 4}},
 		},
+		{
+			name: "TObjString",
+			file: "testdata/tobjstring.dat",
+			want: &tobjstring{
+				rvers: 1,
+				obj:   tobject{id: 0x0, bits: 0x3000008},
+				str:   "tobjstring-string",
+			},
+		},
 	} {
 		t.Run("write-buffer="+test.file, func(t *testing.T) {
 			testWriteWBuffer(t, test.name, test.file, test.want)

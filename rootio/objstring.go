@@ -4,9 +4,7 @@
 
 package rootio
 
-import (
-	"reflect"
-)
+import "reflect"
 
 type tobjstring struct {
 	rvers int16
@@ -45,6 +43,22 @@ func (obj *tobjstring) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
+func (obj *tobjstring) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+	w.WriteVersion(obj.rvers)
+	if _, err := obj.obj.MarshalROOT(w); err != nil {
+		w.err = err
+		return 0, w.err
+	}
+
+	w.WriteString(obj.str)
+
+	return w.SetByteCount(pos, "TObjString")
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := &tobjstring{}
@@ -57,5 +71,6 @@ func init() {
 var (
 	_ Object          = (*tobjstring)(nil)
 	_ Named           = (*tobjstring)(nil)
+	_ ROOTMarshaler   = (*tobjstring)(nil)
 	_ ROOTUnmarshaler = (*tobjstring)(nil)
 )
