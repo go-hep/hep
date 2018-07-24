@@ -283,7 +283,7 @@ func TestServe_Dirlist(t *testing.T) {
 			t.Errorf("wrong response header:\ngot = %v\nwant = %v", respHeader, wantHeader)
 		}
 
-		want := xrdproto.ServerError{Code: xrdproto.InvalidRequestCode, Message: "Dirlist request is not implemented"}
+		want := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "Dirlist request is not implemented"}
 		if !reflect.DeepEqual(want, errorResp) {
 			t.Errorf("wrong response:\ngot = %v\nwant = %v", errorResp, want)
 		}

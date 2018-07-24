@@ -223,7 +223,7 @@ func (s *Server) handleHandshake(conn net.Conn) error {
 
 func newUnmarshalingErrorResponse(err error) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	response := xrdproto.ServerError{
-		Code:    xrdproto.InvalidRequestCode,
+		Code:    xrdproto.InvalidRequest,
 		Message: fmt.Sprintf("An error occurred while parsing the request: %v", err),
 	}
 	return response, xrdproto.Error
@@ -254,7 +254,7 @@ func (s *Server) handleRequest(sessionID [16]byte, requestID uint16, rBuffer *xr
 		return s.handler.Dirlist(sessionID, &request)
 	default:
 		response := xrdproto.ServerError{
-			Code:    xrdproto.InvalidRequestCode,
+			Code:    xrdproto.InvalidRequest,
 			Message: fmt.Sprintf("Unknown request id: %d", requestID),
 		}
 		return response, xrdproto.Error

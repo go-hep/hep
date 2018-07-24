@@ -129,7 +129,7 @@ func (fs *FS) Open(name string, flags uint32, ctx *fuse.Context) (file nodefs.Fi
 	options := convertFlagsToOptions(flags)
 	f, err := fs.xrdfs.Open(context.Background(), path.Join(fs.root, name), mode, options)
 	if serverError, ok := err.(xrdproto.ServerError); ok {
-		if serverError.Code == xrdproto.InvalidRequestCode {
+		if serverError.Code == xrdproto.InvalidRequest {
 			// It is possible the request is invalid because the file already exists.
 			// O_CREAT flag can be passed to the fuse API despite the fact that file
 			// is already created. Open should correctly handle this situation, as far
@@ -244,7 +244,7 @@ func errorToStatus(err error) fuse.Status {
 	}
 	if serverError, ok := err.(xrdproto.ServerError); ok {
 		switch serverError.Code {
-		case xrdproto.NotFoundCode:
+		case xrdproto.NotFound:
 			// File does not exists.
 			return fuse.ENOENT
 		case xrdproto.NotAuthorized:
