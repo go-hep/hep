@@ -203,6 +203,28 @@ func (k *Key) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
+func (k *Key) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	start := w.Pos()
+	w.WriteVersion(k.version)
+
+	w.WriteI32(k.objlen)
+	w.WriteU32(time2datime(k.datetime))
+	w.WriteI32(k.keylen)
+	w.WriteI16(k.cycle)
+
+	w.WriteI64(k.seekkey)
+	w.WriteI64(k.seekpdir)
+
+	w.WriteString(k.class)
+	w.WriteString(k.name)
+	w.WriteString(k.title)
+
+	return w.SetByteCount(start, "TKey")
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := &Key{}
@@ -214,4 +236,5 @@ func init() {
 
 var _ Object = (*Key)(nil)
 var _ Named = (*Key)(nil)
+var _ ROOTMarshaler = (*Key)(nil)
 var _ ROOTUnmarshaler = (*Key)(nil)

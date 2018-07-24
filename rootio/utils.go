@@ -52,6 +52,11 @@ func datime2time(d uint32) time.Time {
 		int(hour), int(min), int(sec), nsec, time.UTC)
 }
 
+// time2datime converts a time.Time into a uint32
+func time2datime(t time.Time) uint32 {
+	panic("not implemented yet")
+}
+
 func errorf(format string, args ...interface{}) error {
 	return fmt.Errorf(format, args...)
 }
