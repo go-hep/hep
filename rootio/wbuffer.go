@@ -79,6 +79,76 @@ func (w *WBuffer) WriteVersion(vers int16) {
 	w.WriteU16(uint16(vers))
 }
 
+func (w *WBuffer) WriteObjectAny(obj Object) error {
+	if w.err != nil {
+		return w.err
+	}
+
+	if obj == nil {
+		w.WriteU32(0) // NULL pointer
+		return w.err
+	}
+
+	pos := w.Pos()
+	w.WriteU32(0) // placeholder for bytecount.
+
+	bcnt, err := w.WriteClass(pos, obj)
+	if err != nil {
+		w.err = err
+		return w.err
+	}
+	end := w.w.c
+	w.w.c = int(pos)
+	w.WriteU32(bcnt)
+	w.w.c = end
+
+	return w.err
+}
+
+func (w *WBuffer) WriteClass(beg int64, obj Object) (uint32, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	start := w.Pos()
+	if ref64, dup := w.refs[obj]; dup {
+		// we've already seen this value.
+		w.WriteU32(uint32(ref64) | kClassMask)
+		bcnt := w.Pos() - start
+		return uint32(bcnt | kByteCountMask), w.err
+	}
+
+	class := obj.Class()
+	ref64, ok := w.refs[class]
+	if !ok {
+		w.WriteU32(uint32(kNewClassTag))
+		// first time we see this type
+		w.WriteCString(class)
+		w.refs[class] = (start + kMapOffset) | kClassMask
+
+		mobj := obj.(ROOTMarshaler)
+		if _, err := mobj.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+
+		w.refs[obj] = beg + kMapOffset
+		bcnt := w.Pos() - start
+		return uint32(bcnt | kByteCountMask), w.err
+	}
+
+	// first time we see this value
+	w.WriteU32(uint32(ref64) | kClassMask)
+	if _, err := obj.(ROOTMarshaler).MarshalROOT(w); err != nil {
+		w.err = err
+		return 0, w.err
+	}
+
+	w.refs[obj] = beg + kMapOffset
+	bcnt := w.Pos() - start
+	return uint32(bcnt | kByteCountMask), w.err
+}
+
 func (w *WBuffer) write(v []byte) {
 	if w.err != nil {
 		return
