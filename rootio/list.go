@@ -39,6 +39,36 @@ func (li *tlist) Len() int {
 	return len(li.objs)
 }
 
+func (li *tlist) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(li.rvers)
+	{
+		var obj tobject
+		if _, err := obj.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+	}
+
+	w.WriteString(li.name)
+	w.WriteI32(int32(len(li.objs)))
+	for _, obj := range li.objs {
+		err := w.WriteObjectAny(obj)
+		if err != nil {
+			w.err = err
+			return 0, w.err
+		}
+
+		w.WriteU8(0) // FIXME(sbinet): properly serialize the 'OPTION'.
+	}
+
+	return w.SetByteCount(pos, "TList")
+}
+
 func (li *tlist) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -112,11 +142,14 @@ func init() {
 	}
 }
 
-var _ Object = (*tlist)(nil)
-var _ Collection = (*tlist)(nil)
-var _ SeqCollection = (*tlist)(nil)
-var _ List = (*tlist)(nil)
-var _ ROOTUnmarshaler = (*tlist)(nil)
+var (
+	_ Object          = (*tlist)(nil)
+	_ Collection      = (*tlist)(nil)
+	_ SeqCollection   = (*tlist)(nil)
+	_ List            = (*tlist)(nil)
+	_ ROOTMarshaler   = (*tlist)(nil)
+	_ ROOTUnmarshaler = (*tlist)(nil)
+)
 
 var _ Object = (*thashList)(nil)
 var _ Collection = (*thashList)(nil)
