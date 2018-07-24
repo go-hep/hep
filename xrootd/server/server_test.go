@@ -6,7 +6,6 @@ package server // import "go-hep.org/x/hep/xrootd/server"
 
 import (
 	"context"
-	"io"
 	"net"
 	"reflect"
 	"testing"
@@ -54,32 +53,6 @@ func (closedError) Error() string {
 	return "xrootd: pipe listener closed"
 }
 
-func readResponse(r io.Reader) ([]byte, error) {
-	const responseSize = xrdproto.ResponseHeaderLength
-	var responseData = make([]byte, responseSize)
-	if _, err := io.ReadFull(r, responseData); err != nil {
-		return nil, err
-	}
-
-	rBuffer := xrdenc.NewRBuffer(responseData)
-	var responseHdr xrdproto.ResponseHeader
-
-	if err := responseHdr.UnmarshalXrd(rBuffer); err != nil {
-		return nil, err
-	}
-
-	if responseHdr.DataLength == 0 {
-		return responseData, nil
-	}
-
-	var data = make([]byte, responseHdr.DataLength)
-	if _, err := io.ReadFull(r, data); err != nil {
-		return nil, err
-	}
-
-	return append(responseData, data...), nil
-}
-
 func TestServe_Handshake(t *testing.T) {
 	connsCh := make(chan net.Conn, 1)
 	p1, p2 := net.Pipe()
@@ -100,20 +73,16 @@ func TestServe_Handshake(t *testing.T) {
 		var wBuffer xrdenc.WBuffer
 		req.MarshalXrd(&wBuffer)
 		p2.Write(wBuffer.Bytes())
-		resp, err := readResponse(p2)
+		respHeader, respData, err := xrdproto.ReadResponse(p2)
 		if err != nil {
 			t.Errorf("unexpected read error: %v", err)
 		}
 
 		var (
-			respHeader    xrdproto.ResponseHeader
 			handshakeResp handshake.Response
-			rBuffer       = xrdenc.NewRBuffer(resp)
+			rBuffer       = xrdenc.NewRBuffer(respData)
 		)
 
-		if err := respHeader.UnmarshalXrd(rBuffer); err != nil {
-			t.Errorf("could not unmarshal header: %v", err)
-		}
 		if err := handshakeResp.UnmarshalXrd(rBuffer); err != nil {
 			t.Errorf("could not unmarshal: %v", err)
 		}
@@ -156,7 +125,7 @@ func TestServe_Login(t *testing.T) {
 		var wBuffer xrdenc.WBuffer
 		handshakeReq.MarshalXrd(&wBuffer)
 		p2.Write(wBuffer.Bytes())
-		_, err := readResponse(p2)
+		_, _, err := xrdproto.ReadResponse(p2)
 		if err != nil {
 			t.Errorf("unexpected read error: %v", err)
 		}
@@ -168,20 +137,16 @@ func TestServe_Login(t *testing.T) {
 		reqHeader.MarshalXrd(&wBuffer)
 		req.MarshalXrd(&wBuffer)
 		p2.Write(wBuffer.Bytes())
-		resp, err := readResponse(p2)
+		respHeader, respData, err := xrdproto.ReadResponse(p2)
 		if err != nil {
 			t.Errorf("unexpected read error: %v", err)
 		}
 
 		var (
-			respHeader xrdproto.ResponseHeader
-			loginResp  login.Response
-			rBuffer    = xrdenc.NewRBuffer(resp)
+			loginResp login.Response
+			rBuffer   = xrdenc.NewRBuffer(respData)
 		)
 
-		if err := respHeader.UnmarshalXrd(rBuffer); err != nil {
-			t.Errorf("could not unmarshal header: %v", err)
-		}
 		if err := loginResp.UnmarshalXrd(rBuffer); err != nil {
 			t.Errorf("could not unmarshal: %v", err)
 		}
@@ -221,7 +186,7 @@ func TestServe_Protocol(t *testing.T) {
 		var wBuffer xrdenc.WBuffer
 		handshakeReq.MarshalXrd(&wBuffer)
 		p2.Write(wBuffer.Bytes())
-		_, err := readResponse(p2)
+		_, _, err := xrdproto.ReadResponse(p2)
 		if err != nil {
 			t.Errorf("unexpected read error: %v", err)
 		}
@@ -234,20 +199,16 @@ func TestServe_Protocol(t *testing.T) {
 		req.MarshalXrd(&wBuffer)
 		p2.Write(wBuffer.Bytes())
 
-		resp, err := readResponse(p2)
+		respHeader, respData, err := xrdproto.ReadResponse(p2)
 		if err != nil {
 			t.Errorf("unexpected read error: %v", err)
 		}
 
 		var (
-			respHeader   xrdproto.ResponseHeader
 			protocolResp protocol.Response
-			rBuffer      = xrdenc.NewRBuffer(resp)
+			rBuffer      = xrdenc.NewRBuffer(respData)
 		)
 
-		if err := respHeader.UnmarshalXrd(rBuffer); err != nil {
-			t.Errorf("could not unmarshal header: %v", err)
-		}
 		if err := protocolResp.UnmarshalXrd(rBuffer); err != nil {
 			t.Errorf("could not unmarshal: %v", err)
 		}
@@ -290,7 +251,7 @@ func TestServe_Dirlist(t *testing.T) {
 		var wBuffer xrdenc.WBuffer
 		handshakeReq.MarshalXrd(&wBuffer)
 		p2.Write(wBuffer.Bytes())
-		_, err := readResponse(p2)
+		_, _, err := xrdproto.ReadResponse(p2)
 		if err != nil {
 			t.Errorf("unexpected read error: %v", err)
 		}
@@ -303,20 +264,16 @@ func TestServe_Dirlist(t *testing.T) {
 		req.MarshalXrd(&wBuffer)
 		p2.Write(wBuffer.Bytes())
 
-		resp, err := readResponse(p2)
+		respHeader, respData, err := xrdproto.ReadResponse(p2)
 		if err != nil {
 			t.Errorf("unexpected read error: %v", err)
 		}
 
 		var (
-			respHeader xrdproto.ResponseHeader
-			errorResp  xrdproto.ServerError
-			rBuffer    = xrdenc.NewRBuffer(resp)
+			errorResp xrdproto.ServerError
+			rBuffer   = xrdenc.NewRBuffer(respData)
 		)
 
-		if err := respHeader.UnmarshalXrd(rBuffer); err != nil {
-			t.Errorf("could not unmarshal header: %v", err)
-		}
 		if err := errorResp.UnmarshalXrd(rBuffer); err != nil {
 			t.Errorf("could not unmarshal: %v", err)
 		}
