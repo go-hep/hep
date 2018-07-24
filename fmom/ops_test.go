@@ -7,6 +7,8 @@ package fmom
 import (
 	"reflect"
 	"testing"
+
+	"gonum.org/v1/gonum/floats"
 )
 
 func newPxPyPzE(p4 PxPyPzE) P4 {
@@ -267,6 +269,56 @@ func TestScale(t *testing.T) {
 		}
 		if !reflect.DeepEqual(p, table.p) {
 			t.Fatalf("add modified p:\np=%#v (ref)\np=%#v (new)", table.p, p)
+		}
+	}
+}
+
+func TestInvMass(t *testing.T) {
+	for _, table := range []struct {
+		p1  P4
+		p2  P4
+		exp float64
+	}{
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			exp: newPxPyPzE(NewPxPyPzE(20, 20, 20, 40)).M(),
+		},
+		{
+			p1:  newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			exp: newEEtaPhiM(NewPxPyPzE(20, 20, 20, 40)).M(),
+		},
+		{
+			p1:  newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			exp: newEtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)).M(),
+		},
+		{
+			p1:  newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			exp: newPtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)).M(),
+		},
+		{
+			p1:  newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			exp: newIPtCotThPhiM(NewPxPyPzE(20, 20, 20, 40)).M(),
+		},
+	} {
+		p1 := table.p1.Clone()
+		p2 := table.p2.Clone()
+
+		mass := InvMass(p1, p2)
+
+		if !floats.EqualWithinULP(mass, table.exp, 2) {
+			t.Fatalf("exp: %#v\ngot: %#v", table.exp, mass)
+		}
+
+		if !reflect.DeepEqual(table.p1, p1) {
+			t.Fatalf("fmom.InvMass modified p1 in-place:\ngot: %#v\nwant:%#v", p1, table.p1)
+		}
+		if !reflect.DeepEqual(table.p2, p2) {
+			t.Fatalf("fmom.InvMass modified p2 in-place:\ngot: %#v\nwant:%#v", p2, table.p2)
 		}
 	}
 }
