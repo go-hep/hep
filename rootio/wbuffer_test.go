@@ -621,6 +621,18 @@ func TestWriteWBuffer(t *testing.T) {
 			},
 		},
 		{
+			name: "TList",
+			file: "testdata/tlist.dat",
+			want: &tlist{
+				rvers: 5,
+				name:  "list-name",
+				objs: []Object{
+					&tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "n0", title: "t0"},
+					&tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "n1", title: "t1"},
+				},
+			},
+		},
+		{
 			name: "TArrayI",
 			file: "testdata/tarrayi.dat",
 			want: &ArrayI{Data: []int32{0, 1, 2, 3, 4}},

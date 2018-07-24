@@ -107,6 +107,7 @@ func TestReadRBuffer(t *testing.T) {
 		},
 		{
 			name: "TList",
+			file: "testdata/tlist.dat",
 			want: &tlist{
 				rvers: 5,
 				name:  "list-name",
