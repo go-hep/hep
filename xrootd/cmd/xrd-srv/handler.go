@@ -30,7 +30,7 @@ func (h *handler) Dirlist(sessionID [16]byte, request *dirlist.Request) (xrdprot
 	files, err := ioutil.ReadDir(path.Join(h.basePath, request.Path))
 	if err != nil {
 		return xrdproto.ServerError{
-			Code:    xrdproto.IOErrorCode,
+			Code:    xrdproto.IOError,
 			Message: fmt.Sprintf("An IO error occurred: %v", err),
 		}, xrdproto.Error
 	}

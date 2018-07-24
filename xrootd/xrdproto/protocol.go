@@ -44,10 +44,10 @@ type ServerError struct {
 type ServerErrorCode int32
 
 const (
-	InvalidRequestCode ServerErrorCode = 3006 // InvalidRequestCode indicates that request is invalid.
-	IOErrorCode        ServerErrorCode = 3007 // IOErrorCode indicates that an IO error has occurred on the server side.
-	NotAuthorized      ServerErrorCode = 3010 // NotAuthorized indicates that user was not authorized for operation.
-	NotFoundCode       ServerErrorCode = 3011 // NotFoundCode indicates that path was not found on the remote server.
+	InvalidRequest ServerErrorCode = 3006 // InvalidRequest indicates that request is invalid.
+	IOError        ServerErrorCode = 3007 // IOError indicates that an IO error has occurred on the server side.
+	NotAuthorized  ServerErrorCode = 3010 // NotAuthorized indicates that user was not authorized for operation.
+	NotFound       ServerErrorCode = 3011 // NotFound indicates that path was not found on the remote server.
 )
 
 func (err ServerError) Error() string {

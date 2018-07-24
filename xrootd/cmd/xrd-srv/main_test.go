@@ -133,8 +133,8 @@ func TestHandler_Dirlist_WhenPathIsInvalid(t *testing.T) {
 	if !ok {
 		t.Fatalf("could not cast err to ServerError: %v", err)
 	}
-	if serverError.Code != xrdproto.IOErrorCode {
-		t.Fatalf("wrong error code:\ngot = %v\nwant = %v", serverError.Code, xrdproto.IOErrorCode)
+	if serverError.Code != xrdproto.IOError {
+		t.Fatalf("wrong error code:\ngot = %v\nwant = %v", serverError.Code, xrdproto.IOError)
 	}
 }
 

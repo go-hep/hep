@@ -36,7 +36,7 @@ func (h *defaultHandler) Protocol(sessionID [16]byte, request *protocol.Request)
 
 // Dirlist implements Handler.Dirlist.
 func (h *defaultHandler) Dirlist(sessionID [16]byte, request *dirlist.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
-	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequestCode, Message: "Dirlist request is not implemented"}
+	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "Dirlist request is not implemented"}
 	return resp, xrdproto.Error
 }
 
