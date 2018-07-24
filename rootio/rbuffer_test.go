@@ -117,6 +117,15 @@ func TestReadRBuffer(t *testing.T) {
 			},
 		},
 		{
+			name: "TObjString",
+			file: "testdata/tobjstring.dat",
+			want: &tobjstring{
+				rvers: 1,
+				obj:   tobject{id: 0x0, bits: 0x3000008},
+				str:   "tobjstring-string",
+			},
+		},
+		{
 			name: "TObjArray",
 			want: &tobjarray{
 				rvers: 3,
@@ -2914,6 +2923,6 @@ func testReadRBuffer(t *testing.T, name, file string, want interface{}) {
 	}
 
 	if !reflect.DeepEqual(obj, want) {
-		t.Fatalf("error: %q\ngot= %+v\nwant=%+v\n", file, obj, want)
+		t.Fatalf("error: %q\ngot= %#v\nwant=%#v\n", file, obj, want)
 	}
 }
