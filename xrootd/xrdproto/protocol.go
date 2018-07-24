@@ -7,7 +7,9 @@
 package xrdproto // import "go-hep.org/x/hep/xrootd/xrdproto"
 
 import (
+	"encoding/binary"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -259,4 +261,87 @@ func SetOpaque(path *string, opaque string) {
 func Opaque(path string) string {
 	pos := strings.LastIndex(path, "?")
 	return path[pos+1:]
+}
+
+// ReadRequest reads a XRootD request from r.
+// ReadRequest returns entire payload of the request including header.
+// ReadRequest requires serialization since multiple ReadFull calls are made.
+func ReadRequest(r io.Reader) ([]byte, error) {
+	// 16 is for the request options and 4 is for the data length
+	const requestSize = RequestHeaderLength + 16 + 4
+	request := make([]byte, requestSize)
+	if _, err := io.ReadFull(r, request); err != nil {
+		return nil, err
+	}
+
+	dataLength := binary.BigEndian.Uint32(request[RequestHeaderLength+16:])
+	if dataLength == 0 {
+		return request, nil
+	}
+
+	data := make([]byte, dataLength)
+	if _, err := io.ReadFull(r, data); err != nil {
+		return nil, err
+	}
+
+	return append(request, data...), nil
+}
+
+// WriteResponse writes a XRootD response resp to the w.
+// The response is directed to the stream with id equal to the streamID.
+// The status is sent as part of response header.
+// WriteResponse writes all data to the w as single Write call, so no
+// serialization is required.
+func WriteResponse(w io.Writer, streamID StreamID, status ResponseStatus, resp Marshaler) error {
+	var respWBuffer xrdenc.WBuffer
+	if resp != nil {
+		if err := resp.MarshalXrd(&respWBuffer); err != nil {
+			return err
+		}
+	}
+
+	header := ResponseHeader{
+		StreamID:   streamID,
+		Status:     status,
+		DataLength: int32(len(respWBuffer.Bytes())),
+	}
+
+	var headerWBuffer xrdenc.WBuffer
+	if err := header.MarshalXrd(&headerWBuffer); err != nil {
+		return err
+	}
+
+	response := append(headerWBuffer.Bytes(), respWBuffer.Bytes()...)
+	if _, err := w.Write(response); err != nil {
+		return err
+	}
+	return nil
+}
+
+// ReadResponse reads a XRootD response from r.
+// ReadResponse returns the response header and the response body.
+// ReadResponse requires serialization since multiple ReadFull calls are made.
+func ReadResponse(r io.Reader) (ResponseHeader, []byte, error) {
+	var responseHdr ResponseHeader
+	headerBytes := make([]byte, ResponseHeaderLength)
+	if _, err := io.ReadFull(r, headerBytes); err != nil {
+		return ResponseHeader{}, nil, err
+	}
+
+	rBuffer := xrdenc.NewRBuffer(headerBytes)
+
+	if err := responseHdr.UnmarshalXrd(rBuffer); err != nil {
+		return ResponseHeader{}, nil, err
+	}
+
+	if responseHdr.DataLength == 0 {
+		return responseHdr, nil, nil
+	}
+
+	var data = make([]byte, responseHdr.DataLength)
+	if _, err := io.ReadFull(r, data); err != nil {
+		return ResponseHeader{}, nil, err
+	}
+
+	return responseHdr, data, nil
 }

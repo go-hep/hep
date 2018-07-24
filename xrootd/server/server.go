@@ -13,7 +13,6 @@ package server // import "go-hep.org/x/hep/xrootd/server"
 import (
 	"context"
 	"crypto/rand"
-	"encoding/binary"
 	"fmt"
 	"io"
 	"net"
@@ -150,7 +149,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		// We are using conn for read access only in that place
 		// and only once at time for each conn, so no additional
 		// serialization is needed.
-		reqData, err := ReadRequest(conn)
+		reqData, err := xrdproto.ReadRequest(conn)
 		if err == io.EOF || err == io.ErrClosedPipe {
 			// Client closed the connection.
 			return
@@ -185,7 +184,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 				resp, status = s.handleRequest(sessionID, reqHeader.RequestID, rBuffer)
 			}
 
-			if err := WriteResponse(conn, reqHeader.StreamID, status, resp); err != nil {
+			if err := xrdproto.WriteResponse(conn, reqHeader.StreamID, status, resp); err != nil {
 				s.closedMu.RLock()
 				defer s.closedMu.RUnlock()
 				// TODO: wait for active requests to be processed while closing.
@@ -219,7 +218,7 @@ func (s *Server) handleHandshake(conn net.Conn) error {
 	}
 
 	resp, status := s.handler.Handshake()
-	return WriteResponse(conn, xrdproto.StreamID{0, 0}, status, resp)
+	return xrdproto.WriteResponse(conn, xrdproto.StreamID{0, 0}, status, resp)
 }
 
 func newUnmarshalingErrorResponse(err error) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
@@ -260,59 +259,4 @@ func (s *Server) handleRequest(sessionID [16]byte, requestID uint16, rBuffer *xr
 		}
 		return response, xrdproto.Error
 	}
-}
-
-// ReadRequest reads a XRootD request from r.
-// ReadRequest returns entire payload of the request including header.
-// ReadRequest requires serialization since multiple ReadFull calls are made.
-func ReadRequest(r io.Reader) ([]byte, error) {
-	// 16 is for the request options and 4 is for the data length
-	const requestSize = xrdproto.RequestHeaderLength + 16 + 4
-	request := make([]byte, requestSize)
-	if _, err := io.ReadFull(r, request); err != nil {
-		return nil, err
-	}
-
-	dataLength := binary.BigEndian.Uint32(request[xrdproto.RequestHeaderLength+16:])
-	if dataLength == 0 {
-		return request, nil
-	}
-
-	data := make([]byte, dataLength)
-	if _, err := io.ReadFull(r, data); err != nil {
-		return nil, err
-	}
-
-	return append(request, data...), nil
-}
-
-// WriteResponse writes a XRootD response resp to the w.
-// The response is directed to the stream with id equal to the streamID.
-// The status is sent as part of response header.
-// WriteResponse writes all data to the w as single Write call, so no
-// serialization is required.
-func WriteResponse(w io.Writer, streamID xrdproto.StreamID, status xrdproto.ResponseStatus, resp xrdproto.Marshaler) error {
-	var respWBuffer xrdenc.WBuffer
-	if resp != nil {
-		if err := resp.MarshalXrd(&respWBuffer); err != nil {
-			return err
-		}
-	}
-
-	header := xrdproto.ResponseHeader{
-		StreamID:   streamID,
-		Status:     status,
-		DataLength: int32(len(respWBuffer.Bytes())),
-	}
-
-	var headerWBuffer xrdenc.WBuffer
-	if err := header.MarshalXrd(&headerWBuffer); err != nil {
-		return err
-	}
-
-	response := append(headerWBuffer.Bytes(), respWBuffer.Bytes()...)
-	if _, err := w.Write(response); err != nil {
-		return err
-	}
-	return nil
 }

@@ -26,7 +26,7 @@ func TestSession_Protocol_WithSecurityInfo(t *testing.T) {
 	}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -39,30 +39,15 @@ func TestSession_Protocol_WithSecurityInfo(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != protocol.RequestID {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", protocol.RequestID, gotHeader.RequestID)
-		}
-
 		if gotRequest.ClientProtocolVersion != protocolVersion {
 			cancel()
 			t.Fatalf("invalid client protocol version was specified:\nwant = %d\ngot = %d\n", protocolVersion, gotRequest.ClientProtocolVersion)
 		}
 
-		responseHeader := xrdproto.ResponseHeader{
-			StreamID:   gotHeader.StreamID,
-			DataLength: 14 + xrdproto.SecurityOverrideLength,
-		}
-
-		response, err := marshalResponse(responseHeader, want)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, want)
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		if err := writeResponse(conn, response); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 

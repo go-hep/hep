@@ -35,7 +35,7 @@ func TestSession_Login_Mock(t *testing.T) {
 	}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -48,30 +48,15 @@ func TestSession_Login_Mock(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != login.RequestID {
-			cancel()
-			t.Fatalf("invalid request id was specified:\ngot = %d\nwant = %d\n", gotHeader.RequestID, login.RequestID)
-		}
-
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
 			cancel()
 			t.Fatalf("request info does not match:\ngot = %v\nwant= %v", gotRequest, wantRequest)
 		}
 
-		responseHeader := xrdproto.ResponseHeader{
-			StreamID:   gotHeader.StreamID,
-			DataLength: login.ResponseLength + int32(len(want.SecurityInformation)),
-		}
-
-		response, err := marshalResponse(responseHeader, want)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, want)
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		if err := writeResponse(conn, response); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 

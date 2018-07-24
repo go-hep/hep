@@ -15,7 +15,7 @@ import (
 
 func TestSession_Ping_Mock(t *testing.T) {
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -28,25 +28,10 @@ func TestSession_Ping_Mock(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != gotRequest.ReqID() {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
-		}
-
-		responseHeader := xrdproto.ResponseHeader{
-			StreamID:   gotHeader.StreamID,
-			DataLength: 0,
-		}
-
-		response, err := marshalResponse(responseHeader)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, nil)
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		if err := writeResponse(conn, response); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 

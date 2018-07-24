@@ -10,7 +10,6 @@ import (
 	"reflect"
 	"testing"
 
-	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/chmod"
@@ -29,9 +28,7 @@ func TestFileSystem_Dirlist_Mock(t *testing.T) {
 	t.Parallel()
 
 	path := "/tmp/test"
-	response := ".\n0 0 0 0\ntestfile\n0 20 0 10\ntestfile2\n0 21 2 12\x00"
-
-	var want = []xrdfs.EntryStat{
+	want := []xrdfs.EntryStat{
 		{
 			EntryName:   "testfile",
 			EntrySize:   20,
@@ -46,14 +43,13 @@ func TestFileSystem_Dirlist_Mock(t *testing.T) {
 			Flags:       xrdfs.StatIsDir,
 		},
 	}
-
-	var wantRequest = dirlist.Request{
+	wantRequest := dirlist.Request{
 		Options: dirlist.WithStatInfo,
 		Path:    path,
 	}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -66,31 +62,15 @@ func TestFileSystem_Dirlist_Mock(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != dirlist.RequestID {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", dirlist.RequestID, gotHeader.RequestID)
-		}
-
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
 			cancel()
 			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
 		}
 
-		responseHeader := xrdproto.ResponseHeader{
-			StreamID:   gotHeader.StreamID,
-			DataLength: int32(len(response)),
-		}
-
-		responseData, err := marshalResponse(responseHeader)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, dirlist.Response{Entries: want, WithStatInfo: true})
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-		responseData = append(responseData, []byte(response)...)
-
-		if err := writeResponse(conn, responseData); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 
@@ -112,7 +92,6 @@ func TestFileSystem_Dirlist_Mock_WithoutStatInfo(t *testing.T) {
 	t.Parallel()
 
 	path := "/tmp/test"
-	response := "testfile\ntestfile2\x00"
 
 	var want = []xrdfs.EntryStat{
 		{
@@ -131,7 +110,7 @@ func TestFileSystem_Dirlist_Mock_WithoutStatInfo(t *testing.T) {
 	}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -144,31 +123,15 @@ func TestFileSystem_Dirlist_Mock_WithoutStatInfo(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != dirlist.RequestID {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", dirlist.RequestID, gotHeader.RequestID)
-		}
-
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
 			cancel()
 			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
 		}
 
-		responseHeader := xrdproto.ResponseHeader{
-			StreamID:   gotHeader.StreamID,
-			DataLength: int32(len(response)),
-		}
-
-		responseData, err := marshalResponse(responseHeader)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, dirlist.Response{Entries: want, WithStatInfo: false})
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-		responseData = append(responseData, []byte(response)...)
-
-		if err := writeResponse(conn, responseData); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 
@@ -196,7 +159,7 @@ func testFileSystem_Open_Mock(t *testing.T, wantFileHandle xrdfs.FileHandle, wan
 	}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -207,11 +170,6 @@ func testFileSystem_Open_Mock(t *testing.T, wantFileHandle xrdfs.FileHandle, wan
 		if err != nil {
 			cancel()
 			t.Fatalf("could not unmarshal request: %v", err)
-		}
-
-		if gotHeader.RequestID != wantRequest.ReqID() {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", wantRequest.ReqID(), gotHeader.RequestID)
 		}
 
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
@@ -225,28 +183,10 @@ func testFileSystem_Open_Mock(t *testing.T, wantFileHandle xrdfs.FileHandle, wan
 			Stat:        wantFileInfo,
 		}
 
-		var wBuffer xrdenc.WBuffer
-		err = response.MarshalXrd(&wBuffer)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, response)
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		responseHeader := xrdproto.ResponseHeader{
-			StreamID:   gotHeader.StreamID,
-			DataLength: int32(len(wBuffer.Bytes())),
-		}
-
-		responseData, err := marshalResponse(responseHeader)
-		if err != nil {
-			cancel()
-			t.Fatalf("could not marshal response header: %v", err)
-		}
-		responseData = append(responseData, wBuffer.Bytes()...)
-
-		if err := writeResponse(conn, responseData); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 
@@ -259,14 +199,14 @@ func testFileSystem_Open_Mock(t *testing.T, wantFileHandle xrdfs.FileHandle, wan
 		// FIXME: consider calling defer gotFile.Close(context.Background()).
 
 		if !reflect.DeepEqual(gotFile.Handle(), wantFileHandle) {
-			t.Errorf("Filesystem.Open()\ngotFile.Handle() = %v\nwantFileHandle = %v", gotFile.Handle(), wantFileHandle)
+			t.Errorf("FileSystem.Open()\ngotFile.Handle() = %v\nwantFileHandle = %v", gotFile.Handle(), wantFileHandle)
 		}
 
 		if !reflect.DeepEqual(gotFile.Compression(), wantFileCompression) {
-			t.Errorf("Filesystem.Open()\ngotFile.Compression() = %v\nwantFileCompression = %v", gotFile.Compression(), wantFileCompression)
+			t.Errorf("FileSystem.Open()\ngotFile.Compression() = %v\nwantFileCompression = %v", gotFile.Compression(), wantFileCompression)
 		}
 		if !reflect.DeepEqual(gotFile.Info(), wantFileInfo) {
-			t.Errorf("Filesystem.Open()\ngotFile.Info() = %v\nwantFileInfo = %v", gotFile.Info(), wantFileInfo)
+			t.Errorf("FileSystem.Open()\ngotFile.Info() = %v\nwantFileInfo = %v", gotFile.Info(), wantFileInfo)
 		}
 	}
 
@@ -304,7 +244,7 @@ func TestFileSystem_RemoveFile_Mock(t *testing.T) {
 	)
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -317,27 +257,15 @@ func TestFileSystem_RemoveFile_Mock(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != gotRequest.ReqID() {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
-		}
-
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
 			cancel()
 			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
 		}
 
-		responseHeader := xrdproto.ResponseHeader{StreamID: gotHeader.StreamID}
-
-		responseData, err := marshalResponse(responseHeader)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, nil)
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		if err := writeResponse(conn, responseData); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 
@@ -362,7 +290,7 @@ func TestFileSystem_Truncate_Mock(t *testing.T) {
 	)
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -375,27 +303,15 @@ func TestFileSystem_Truncate_Mock(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != gotRequest.ReqID() {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
-		}
-
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
 			cancel()
 			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
 		}
 
-		responseHeader := xrdproto.ResponseHeader{StreamID: gotHeader.StreamID}
-
-		responseData, err := marshalResponse(responseHeader)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, nil)
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		if err := writeResponse(conn, responseData); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 
@@ -424,7 +340,7 @@ func TestFileSystem_Stat_Mock(t *testing.T) {
 	var wantRequest = stat.Request{Path: path}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -437,39 +353,15 @@ func TestFileSystem_Stat_Mock(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != gotRequest.ReqID() {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
-		}
-
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
 			cancel()
 			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
 		}
 
-		response := stat.DefaultResponse{EntryStat: want}
-		var wBuffer xrdenc.WBuffer
-		err = response.MarshalXrd(&wBuffer)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, stat.DefaultResponse{EntryStat: want})
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		responseHeader := xrdproto.ResponseHeader{
-			StreamID:   gotHeader.StreamID,
-			DataLength: int32(len(wBuffer.Bytes())),
-		}
-
-		responseData, err := marshalResponse(responseHeader)
-		if err != nil {
-			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-		responseData = append(responseData, wBuffer.Bytes()...)
-
-		if err := writeResponse(conn, responseData); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 
@@ -504,7 +396,7 @@ func TestFileSystem_VirtualStat_Mock(t *testing.T) {
 	var wantRequest = stat.Request{Path: path, Options: stat.OptionsVFS}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -517,39 +409,15 @@ func TestFileSystem_VirtualStat_Mock(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != gotRequest.ReqID() {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
-		}
-
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
 			cancel()
 			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
 		}
 
-		response := stat.VirtualFSResponse{VirtualFSStat: want}
-		var wBuffer xrdenc.WBuffer
-		err = response.MarshalXrd(&wBuffer)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, stat.VirtualFSResponse{VirtualFSStat: want})
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		responseHeader := xrdproto.ResponseHeader{
-			StreamID:   gotHeader.StreamID,
-			DataLength: int32(len(wBuffer.Bytes())),
-		}
-
-		responseData, err := marshalResponse(responseHeader)
-		if err != nil {
-			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-		responseData = append(responseData, wBuffer.Bytes()...)
-
-		if err := writeResponse(conn, responseData); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 
@@ -574,7 +442,7 @@ func TestFileSystem_Mkdir_Mock(t *testing.T) {
 	wantRequest := mkdir.Request{Path: path, Mode: xrdfs.OpenModeOwnerRead | xrdfs.OpenModeOwnerWrite}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -587,27 +455,15 @@ func TestFileSystem_Mkdir_Mock(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != gotRequest.ReqID() {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
-		}
-
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
 			cancel()
 			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
 		}
 
-		responseHeader := xrdproto.ResponseHeader{StreamID: gotHeader.StreamID}
-
-		responseData, err := marshalResponse(responseHeader)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, nil)
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		if err := writeResponse(conn, responseData); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 
@@ -633,7 +489,7 @@ func TestFileSystem_MkdirAll_Mock(t *testing.T) {
 	}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -646,27 +502,15 @@ func TestFileSystem_MkdirAll_Mock(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != gotRequest.ReqID() {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
-		}
-
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
 			cancel()
 			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
 		}
 
-		responseHeader := xrdproto.ResponseHeader{StreamID: gotHeader.StreamID}
-
-		responseData, err := marshalResponse(responseHeader)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, nil)
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		if err := writeResponse(conn, responseData); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 
@@ -690,7 +534,7 @@ func TestFileSystem_RemoveDir_Mock(t *testing.T) {
 	)
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -703,27 +547,15 @@ func TestFileSystem_RemoveDir_Mock(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != gotRequest.ReqID() {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
-		}
-
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
 			cancel()
 			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
 		}
 
-		responseHeader := xrdproto.ResponseHeader{StreamID: gotHeader.StreamID}
-
-		responseData, err := marshalResponse(responseHeader)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, nil)
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		if err := writeResponse(conn, responseData); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 
@@ -748,7 +580,7 @@ func TestFileSystem_Rename_Mock(t *testing.T) {
 	)
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -761,27 +593,15 @@ func TestFileSystem_Rename_Mock(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != gotRequest.ReqID() {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
-		}
-
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
 			cancel()
 			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
 		}
 
-		responseHeader := xrdproto.ResponseHeader{StreamID: gotHeader.StreamID}
-
-		responseData, err := marshalResponse(responseHeader)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, nil)
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		if err := writeResponse(conn, responseData); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 
@@ -806,7 +626,7 @@ func TestFileSystem_Chmod_Mock(t *testing.T) {
 	)
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -819,27 +639,15 @@ func TestFileSystem_Chmod_Mock(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != gotRequest.ReqID() {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
-		}
-
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
 			cancel()
 			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
 		}
 
-		responseHeader := xrdproto.ResponseHeader{StreamID: gotHeader.StreamID}
-
-		responseData, err := marshalResponse(responseHeader)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, nil)
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		if err := writeResponse(conn, responseData); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 
@@ -860,7 +668,7 @@ func TestFileSystem_Statx_Mock(t *testing.T) {
 	wantRequest := statx.Request{Paths: "/tmp/test\n/tmp/test2"}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -873,39 +681,15 @@ func TestFileSystem_Statx_Mock(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != gotRequest.ReqID() {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", gotRequest.ReqID(), gotHeader.RequestID)
-		}
-
 		if !reflect.DeepEqual(gotRequest, wantRequest) {
 			cancel()
 			t.Fatalf("request info does not match:\ngot = %v\nwant = %v", gotRequest, wantRequest)
 		}
 
-		response := statx.Response{StatFlags: want}
-		var wBuffer xrdenc.WBuffer
-		err = response.MarshalXrd(&wBuffer)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, statx.Response{StatFlags: want})
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		responseHeader := xrdproto.ResponseHeader{
-			StreamID:   gotHeader.StreamID,
-			DataLength: int32(len(wBuffer.Bytes())),
-		}
-
-		responseData, err := marshalResponse(responseHeader)
-		if err != nil {
-			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-		responseData = append(responseData, wBuffer.Bytes()...)
-
-		if err := writeResponse(conn, responseData); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 

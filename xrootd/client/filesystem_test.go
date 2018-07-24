@@ -97,19 +97,19 @@ func testFileSystem_Open(t *testing.T, addr string, options xrdfs.OpenOptions, w
 	defer gotFile.Close(context.Background())
 
 	if !reflect.DeepEqual(gotFile.Handle(), wantFileHandle) {
-		t.Errorf("Filesystem.Open()\ngotFile.Handle() = %v\nwantFileHandle = %v", gotFile.Handle(), wantFileHandle)
+		t.Errorf("FileSystem.Open()\ngotFile.Handle() = %v\nwantFileHandle = %v", gotFile.Handle(), wantFileHandle)
 	}
 
 	if !reflect.DeepEqual(gotFile.Compression(), wantFileCompression) {
 		// TODO: Remove this workaround when fix for https://github.com/xrootd/xrootd/issues/721 will be released.
 		skippedDefaultCompressionValue := reflect.DeepEqual(wantFileCompression, &xrdfs.FileCompression{}) && gotFile.Compression() == nil
 		if !skippedDefaultCompressionValue {
-			t.Errorf("Filesystem.Open()\ngotFile.Compression() = %v\nwantFileCompression = %v", gotFile.Compression(), wantFileCompression)
+			t.Errorf("FileSystem.Open()\ngotFile.Compression() = %v\nwantFileCompression = %v", gotFile.Compression(), wantFileCompression)
 		}
 	}
 
 	if !reflect.DeepEqual(gotFile.Info(), wantFileInfo) {
-		t.Errorf("Filesystem.Open()\ngotFile.Info() = %v\nwantFileInfo = %v", gotFile.Info(), wantFileInfo)
+		t.Errorf("FileSystem.Open()\ngotFile.Info() = %v\nwantFileInfo = %v", gotFile.Info(), wantFileInfo)
 	}
 }
 
@@ -290,7 +290,7 @@ func testFileSystem_Stat(t *testing.T, addr string) {
 	}
 
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Filesystem.Open()\ngot = %v\nwant = %v", got, want)
+		t.Errorf("FileSystem.Stat()\ngot = %v\nwant = %v", got, want)
 	}
 }
 
@@ -655,7 +655,7 @@ func testFileSystem_Statx(t *testing.T, addr string) {
 	}
 
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Filesystem.Statx()\ngot = %v\nwant = %v", got, want)
+		t.Errorf("FileSystem.Statx()\ngot = %v\nwant = %v", got, want)
 	}
 }
 
