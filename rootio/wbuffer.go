@@ -79,6 +79,38 @@ func (w *WBuffer) WriteVersion(vers int16) {
 	w.WriteU16(uint16(vers))
 }
 
+func (w *WBuffer) WriteObjectAny(obj Object) error {
+	if w.err != nil {
+		return w.err
+	}
+
+	if obj == nil {
+		w.WriteU32(0) // NULL pointer
+		return w.err
+	}
+
+	if idx, ok := w.refs[obj]; ok {
+		w.WriteU32(uint32(idx)) // save index of already stored object
+		return w.err
+	}
+
+	//	pos := w.Pos()
+	//	w.WriteU32(0) // placeholder for bytecount.
+	//
+	//	mapsize := len(w.refs)
+	//	w.WriteClass(obj)
+
+	return w.err
+}
+
+func (w *WBuffer) WriteClass(obj Object) error {
+	if w.err != nil {
+		return w.err
+	}
+	//	class := obj.Class()
+	return w.err
+}
+
 func (w *WBuffer) write(v []byte) {
 	if w.err != nil {
 		return
