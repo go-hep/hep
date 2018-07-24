@@ -7,7 +7,6 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 import (
 	"context"
 	"encoding/binary"
-	"io"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -163,9 +162,61 @@ func (sess *session) Close() error {
 	return nil
 }
 
+// handleReadError handles an error encountered while reading and parsing a response.
+// If the current session is equal to the initial, the error is considered critical and handleReadError panics.
+// Otherwise, the current session is closed and all requests are redirected to the initial session.
+// See http://xrootd.org/doc/dev45/XRdv310.pdf, p. 11 for details.
+func (sess *session) handleReadError(err error) {
+	if sess.sessionID == sess.client.initialSessionID {
+		// TODO: what should we do in case initial session is aborted?
+		// Should we try to reconnect to the server and re-issue all requests?
+		panic(err)
+	}
+	sess.mu.RLock()
+	resp := mux.ServerResponse{Redirection: &mux.Redirection{Addr: sess.client.initialSessionID}}
+	for streamID := range sess.requests {
+		err := sess.mux.SendData(streamID, resp)
+		// TODO: should we log error somehow? We have nowhere to send it.
+		_ = err
+	}
+	sess.mu.RUnlock()
+	sess.Close()
+}
+
+// handleWaitResponse handles a "kXR_wait" response by re-issuing the request with streamID
+// after the number of seconds encoded in data.
+// See http://xrootd.org/doc/dev45/XRdv310.pdf, p. 35 for the specification of the response.
+func (sess *session) handleWaitResponse(streamID xrdproto.StreamID, data []byte) error {
+	if len(data) < 4 {
+		return errors.Errorf("xrootd: error decoding wait duration, want 4 bytes, got: %v", data)
+	}
+	duration := time.Duration(binary.BigEndian.Uint32(data)) * time.Second
+
+	sess.mu.RLock()
+	req, ok := sess.requests[streamID]
+	sess.mu.RUnlock()
+	if !ok {
+		return errors.Errorf("xrootd: could not find a request with stream id equal to %v", streamID)
+	}
+
+	go func(req pendingRequest) {
+		time.Sleep(duration)
+		if err := sess.writeRequest(req); err != nil {
+			resp := mux.ServerResponse{Err: errors.WithMessage(err, "xrootd: could not send data to the server")}
+			err := sess.mux.SendData(streamID, resp)
+			// TODO: should we log error somehow? We have nowhere to send it.
+			_ = err
+			sess.cleanupRequest(streamID)
+		}
+	}(req)
+
+	return nil
+}
+
 func (sess *session) consume() {
 	var header xrdproto.ResponseHeader
 	var headerBytes = make([]byte, xrdproto.ResponseHeaderLength)
+	var resp mux.ServerResponse
 
 	for {
 		select {
@@ -173,78 +224,29 @@ func (sess *session) consume() {
 			// TODO: Should wait for active requests to be completed?
 			return
 		default:
-			if _, err := io.ReadFull(sess.conn, headerBytes); err != nil {
+			var err error
+			resp.Data, err = xrdproto.ReadResponseWithReuse(sess.conn, headerBytes, &header)
+			if err != nil {
 				if sess.ctx.Err() != nil {
 					// something happened to the context.
 					// ignore this error.
-					continue
+					return
 				}
-				if sess.sessionID == sess.client.initialSessionID {
-					// TODO: what should we do in case initial session is aborted?
-					// Should we try to reconnect to the server and re-issue all requests?
-					panic(err)
-				}
-				sess.mu.RLock()
-				resp := mux.ServerResponse{Redirection: &mux.Redirection{Addr: sess.client.initialSessionID}}
-				for streamID := range sess.requests {
-					err := sess.mux.SendData(streamID, resp)
-					// TODO: should we log error somehow? We have nowhere to send it.
-					_ = err
-				}
-				sess.mu.RUnlock()
-				sess.Close()
-				return
+				sess.handleReadError(err)
 			}
-
-			if err := xrdproto.Unmarshal(headerBytes, &header); err != nil {
-				if sess.ctx.Err() != nil {
-					// something happened to the context.
-					// ignore this error.
-					continue
-				}
-				panic(err)
-				// TODO: should redirect in case if is not possible to decode a header as well?
-			}
-
-			resp := mux.ServerResponse{Data: make([]byte, header.DataLength)}
-			if _, err := io.ReadFull(sess.conn, resp.Data); err != nil {
-				if sess.ctx.Err() != nil {
-					// something happened to the context.
-					// ignore this error.
-					continue
-				}
-				resp.Err = err
-			}
+			resp.Err = nil
+			resp.Redirection = nil
 
 			switch header.Status {
 			case xrdproto.Error:
 				resp.Err = header.Error(resp.Data)
 			case xrdproto.Wait:
-				if len(resp.Data) < 4 {
-					resp.Err = errors.Errorf("xrootd: error decoding wait duration, want 4 bytes, got: %v", resp.Data)
+				resp.Err = sess.handleWaitResponse(header.StreamID, resp.Data)
+				if resp.Err == nil {
+					continue
 				}
-				duration := time.Duration(binary.BigEndian.Uint32(resp.Data)) * time.Second
-				sess.mu.RLock()
-				req := sess.requests[header.StreamID]
-				sess.mu.RUnlock()
-				go func(req pendingRequest) {
-					time.Sleep(duration)
-					if err := sess.writeRequest(req); err != nil {
-						resp := mux.ServerResponse{Err: errors.WithMessage(err, "xrootd: could not send data to the server")}
-						err := sess.mux.SendData(header.StreamID, resp)
-						// TODO: should we log error somehow? We have nowhere to send it.
-						_ = err
-						sess.cleanupRequest(header.StreamID)
-					}
-				}(req)
-				continue
 			case xrdproto.Redirect:
-				redirection, err := mux.ParseRedirection(resp.Data)
-				if err != nil {
-					resp.Err = err
-				} else {
-					resp.Redirection = redirection
-				}
+				resp.Redirection, resp.Err = mux.ParseRedirection(resp.Data)
 			}
 
 			if err := sess.mux.SendData(header.StreamID, resp); err != nil {

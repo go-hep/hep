@@ -322,26 +322,29 @@ func WriteResponse(w io.Writer, streamID StreamID, status ResponseStatus, resp M
 // ReadResponse returns the response header and the response body.
 // ReadResponse requires serialization since multiple ReadFull calls are made.
 func ReadResponse(r io.Reader) (ResponseHeader, []byte, error) {
-	var responseHdr ResponseHeader
-	headerBytes := make([]byte, ResponseHeaderLength)
+	var header ResponseHeader
+	data, err := ReadResponseWithReuse(r, make([]byte, ResponseHeaderLength), &header)
+	return header, data, err
+}
+
+// ReadResponseWithReuse reads a XRootD response from r. A response header is read into headerBytes and
+// unmarshaled to header for the reusing reasons.
+// ReadResponseWithReuse returns the response body.
+// ReadResponseWithReuse requires serialization since multiple ReadFull calls are made.
+func ReadResponseWithReuse(r io.Reader, headerBytes []byte, header *ResponseHeader) ([]byte, error) {
 	if _, err := io.ReadFull(r, headerBytes); err != nil {
-		return ResponseHeader{}, nil, err
+		return nil, err
 	}
-
 	rBuffer := xrdenc.NewRBuffer(headerBytes)
-
-	if err := responseHdr.UnmarshalXrd(rBuffer); err != nil {
-		return ResponseHeader{}, nil, err
+	if err := header.UnmarshalXrd(rBuffer); err != nil {
+		return nil, err
 	}
-
-	if responseHdr.DataLength == 0 {
-		return responseHdr, nil, nil
+	if header.DataLength == 0 {
+		return nil, nil
 	}
-
-	var data = make([]byte, responseHdr.DataLength)
+	var data = make([]byte, header.DataLength)
 	if _, err := io.ReadFull(r, data); err != nil {
-		return ResponseHeader{}, nil, err
+		return nil, err
 	}
-
-	return responseHdr, data, nil
+	return data, nil
 }
