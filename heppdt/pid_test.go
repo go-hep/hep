@@ -5,6 +5,8 @@
 package heppdt_test
 
 import (
+	"fmt"
+	"reflect"
 	"testing"
 
 	"go-hep.org/x/hep/heppdt"
@@ -208,5 +210,133 @@ func TestPID(t *testing.T) {
 		if table.hastop != pid.HasTop() {
 			t.Fatalf("expected pid=%d hastop=%v. got=%v", int(pid), table.hastop, pid.HasTop())
 		}
+	}
+}
+
+func TestQuarks(t *testing.T) {
+	for _, tc := range []struct {
+		pid  int
+		want heppdt.Quarks
+	}{
+		{
+			pid:  1,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 0, Nq3: 0},
+		},
+		{
+			pid:  2,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 0, Nq3: 0},
+		},
+		{
+			pid:  3,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 0, Nq3: 0},
+		},
+		{
+			pid:  4,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 0, Nq3: 0},
+		},
+		{
+			pid:  5,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 0, Nq3: 0},
+		},
+		{
+			pid:  6,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 0, Nq3: 0},
+		},
+		{
+			pid:  +2212,
+			want: heppdt.Quarks{Nq1: 2, Nq2: 2, Nq3: 1},
+		},
+		{
+			pid:  -2212,
+			want: heppdt.Quarks{Nq1: 2, Nq2: 2, Nq3: 1},
+		},
+		{
+			pid:  +111,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 1, Nq3: 1},
+		},
+		{
+			pid:  +113,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 1, Nq3: 1},
+		},
+		{
+			pid:  +115,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 1, Nq3: 1},
+		},
+		{
+			pid:  +211,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 2, Nq3: 1},
+		},
+		{
+			pid:  +311,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 3, Nq3: 1},
+		},
+		{
+			pid:  +411,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 4, Nq3: 1},
+		},
+		{
+			pid:  +413,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 4, Nq3: 1},
+		},
+		{
+			pid:  +415,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 4, Nq3: 1},
+		},
+		{
+			pid:  +421,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 4, Nq3: 2},
+		},
+		{
+			pid:  +423,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 4, Nq3: 2},
+		},
+		{
+			pid:  +425,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 4, Nq3: 2},
+		},
+		{
+			pid:  +431,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 4, Nq3: 3},
+		},
+		{
+			pid:  +433,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 4, Nq3: 3},
+		},
+		{
+			pid:  +435,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 4, Nq3: 3},
+		},
+		{
+			pid:  +441,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 4, Nq3: 4},
+		},
+		{
+			pid:  +443,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 4, Nq3: 4},
+		},
+		{
+			pid:  +445,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 4, Nq3: 4},
+		},
+		{
+			pid:  +511,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 5, Nq3: 1},
+		},
+		{
+			pid:  -511,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 5, Nq3: 1},
+		},
+		{
+			pid:  1000010020,
+			want: heppdt.Quarks{Nq1: 0, Nq2: 0, Nq3: 2},
+		},
+	} {
+		t.Run(fmt.Sprintf("pid=%d", tc.pid), func(t *testing.T) {
+			pid := heppdt.PID(tc.pid)
+			qrks := pid.Quarks()
+			if !reflect.DeepEqual(qrks, tc.want) {
+				t.Fatalf("got=%#v, want=%#v", qrks, tc.want)
+			}
+		})
 	}
 }
