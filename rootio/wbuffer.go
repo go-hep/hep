@@ -39,13 +39,13 @@ type WBuffer struct {
 	w      *wbuff
 	err    error
 	offset uint32
-	refs   map[int64]interface{}
+	refs   map[interface{}]int64
 	sictx  StreamerInfoContext
 }
 
-func NewWBuffer(data []byte, refs map[int64]interface{}, offset uint32, ctx StreamerInfoContext) *WBuffer {
+func NewWBuffer(data []byte, refs map[interface{}]int64, offset uint32, ctx StreamerInfoContext) *WBuffer {
 	if refs == nil {
-		refs = make(map[int64]interface{})
+		refs = make(map[interface{}]int64)
 	}
 
 	return &WBuffer{
