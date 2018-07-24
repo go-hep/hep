@@ -152,7 +152,6 @@ var rwBufferCases = []struct {
 	{
 		name: "TObjString",
 		file: "testdata/tobjstring.dat",
-		skip: true,
 		want: &tobjstring{
 			rvers: 1,
 			obj:   tobject{id: 0x0, bits: 0x3000008},
