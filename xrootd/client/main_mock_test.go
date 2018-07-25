@@ -25,7 +25,7 @@ func testClientWithMockServer(serverFunc func(cancel func(), conn net.Conn), cli
 	defer server.Close()
 	defer conn.Close()
 
-	client := &Client{cancel: cancel, sessions: make(map[string]*session)}
+	client := &Client{cancel: cancel, sessions: make(map[string]*session), maxRedirections: 8}
 	session := &session{cancel: cancel, ctx: ctx, conn: conn, mux: mux.New(), requests: make(map[xrdproto.StreamID]pendingRequest), client: client, signRequirements: signing.Default()}
 	client.initialSessionID = "test.org:1234"
 	client.sessions[client.initialSessionID] = session
