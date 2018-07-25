@@ -21,6 +21,8 @@ type Event struct {
 	Vhep   [][4]float64 // vertex 4-vector (x,y,z,t)
 }
 
+// Particle holds informations about a MC-truth particle, in the
+// HEPEVT format.
 type Particle struct {
 	Status    int32      // status code (see hepevt doc)
 	Id        int32      // barcode
