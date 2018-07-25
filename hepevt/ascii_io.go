@@ -7,6 +7,8 @@ package hepevt
 import (
 	"fmt"
 	"io"
+
+	"github.com/pkg/errors"
 )
 
 type AsciiEncoder struct {
@@ -21,7 +23,7 @@ func (enc *AsciiEncoder) Encode(evt *Event) error {
 	var err error
 	_, err = fmt.Fprintf(enc.w, "%d %d\n", evt.Nevhep, evt.Nhep)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	for i := 0; i < evt.Nhep; i++ {
@@ -39,10 +41,10 @@ func (enc *AsciiEncoder) Encode(evt *Event) error {
 			evt.Vhep[i][0], evt.Vhep[i][1], evt.Vhep[i][2], evt.Vhep[i][3],
 		)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 	}
-	return err
+	return errors.WithStack(err)
 }
 
 type AsciiDecoder struct {
@@ -58,7 +60,7 @@ func (dec *AsciiDecoder) Decode(evt *Event) error {
 
 	_, err = fmt.Fscanf(dec.r, "%d %d\n", &evt.Nevhep, &evt.Nhep)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	// resize
@@ -92,7 +94,7 @@ func (dec *AsciiDecoder) Decode(evt *Event) error {
 			&evt.Vhep[i][0], &evt.Vhep[i][1], &evt.Vhep[i][2], &evt.Vhep[i][3],
 		)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		// convert 0-based indices to 1-based ones
 		evt.Jmohep[i][0] -= 1
@@ -100,5 +102,5 @@ func (dec *AsciiDecoder) Decode(evt *Event) error {
 		evt.Jdahep[i][0] -= 1
 		evt.Jdahep[i][1] -= 1
 	}
-	return err
+	return errors.WithStack(err)
 }
