@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
@@ -33,6 +34,24 @@ const (
 	// Wait indicates that the client must wait the indicated number of seconds and retry the request.
 	Wait ResponseStatus = 4005
 )
+
+// WaitResponse is the response indicating that the client must wait and retry the request.
+// See http://xrootd.org/doc/dev45/XRdv310.pdf, p. 35 for details.
+type WaitResponse struct {
+	Duration time.Duration
+}
+
+// MarshalXrd implements Marshaler.
+func (o WaitResponse) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
+	wBuffer.WriteI32(int32(o.Duration.Seconds()))
+	return nil
+}
+
+// UnmarshalXrd implements Unmarshaler.
+func (o *WaitResponse) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
+	o.Duration = time.Second * time.Duration(rBuffer.ReadI32())
+	return nil
+}
 
 // ServerError is the error returned by the XRootD server as part of response to the request.
 type ServerError struct {

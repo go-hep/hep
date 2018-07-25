@@ -6,7 +6,6 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 
 import (
 	"context"
-	"encoding/binary"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -187,10 +186,11 @@ func (sess *session) handleReadError(err error) {
 // after the number of seconds encoded in data.
 // See http://xrootd.org/doc/dev45/XRdv310.pdf, p. 35 for the specification of the response.
 func (sess *session) handleWaitResponse(streamID xrdproto.StreamID, data []byte) error {
-	if len(data) < 4 {
-		return errors.Errorf("xrootd: error decoding wait duration, want 4 bytes, got: %v", data)
+	var resp xrdproto.WaitResponse
+	rBuffer := xrdenc.NewRBuffer(data)
+	if err := resp.UnmarshalXrd(rBuffer); err != nil {
+		return err
 	}
-	duration := time.Duration(binary.BigEndian.Uint32(data)) * time.Second
 
 	sess.mu.RLock()
 	req, ok := sess.requests[streamID]
@@ -200,7 +200,7 @@ func (sess *session) handleWaitResponse(streamID xrdproto.StreamID, data []byte)
 	}
 
 	go func(req pendingRequest) {
-		time.Sleep(duration)
+		time.Sleep(resp.Duration)
 		if err := sess.writeRequest(req); err != nil {
 			resp := mux.ServerResponse{Err: errors.WithMessage(err, "xrootd: could not send data to the server")}
 			err := sess.mux.SendData(streamID, resp)
