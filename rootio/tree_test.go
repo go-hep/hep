@@ -392,7 +392,6 @@ func TestSimpleTreeOverHTTP(t *testing.T) {
 func TestTreeWithBasketWithTKeyData(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/PhaseSpaceSimulation.root",
-		XrdRemote("testdata/PhaseSpaceSimulation.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()

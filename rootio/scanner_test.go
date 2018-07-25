@@ -327,7 +327,7 @@ func TestTreeScannerVarsMultipleTimes(t *testing.T) {
 			}
 			tree := obj.(Tree)
 
-			for i := 0; i < 10; i++ {
+			for i := 0; i < 3; i++ {
 				sc, err := NewTreeScannerVars(tree, ScanVar{Name: "lep_pt"})
 				if err != nil {
 					t.Fatal(err)
@@ -491,7 +491,7 @@ func TestScannerVarsMultipleTimes(t *testing.T) {
 			tree := obj.(Tree)
 
 			var pt []float32
-			for i := 0; i < 10; i++ {
+			for i := 0; i < 3; i++ {
 				sc, err := NewScannerVars(tree, ScanVar{Name: "lep_pt", Value: &pt})
 				if err != nil {
 					t.Fatal(err)
@@ -516,7 +516,6 @@ func TestScannerVarsMultipleTimes(t *testing.T) {
 func TestTreeScannerStructWithCounterLeaf(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/small-flat-tree.root",
-		XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -574,7 +573,6 @@ func TestTreeScannerStructWithCounterLeaf(t *testing.T) {
 func TestScannerStructWithCounterLeaf(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/small-flat-tree.root",
-		XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -632,7 +630,6 @@ func TestScannerStructWithCounterLeaf(t *testing.T) {
 func TestTreeScannerVarsWithCounterLeaf(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/small-flat-tree.root",
-		XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -686,7 +683,6 @@ func TestTreeScannerVarsWithCounterLeaf(t *testing.T) {
 func TestScannerVarsWithCounterLeaf(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/small-flat-tree.root",
-		XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
