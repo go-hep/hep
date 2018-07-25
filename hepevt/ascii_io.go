@@ -47,15 +47,18 @@ func (enc *AsciiEncoder) Encode(evt *Event) error {
 	return errors.WithStack(err)
 }
 
-type AsciiDecoder struct {
+// Decoder decodes ASCII files in the HEPEVT format.
+type Decoder struct {
 	r io.Reader
 }
 
-func NewAsciiDecoder(r io.Reader) *AsciiDecoder {
-	return &AsciiDecoder{r: r}
+// NewDecoder creates a new Decoder, reading from the provided io.Reader.
+func NewDecoder(r io.Reader) *Decoder {
+	return &Decoder{r: r}
 }
 
-func (dec *AsciiDecoder) Decode(evt *Event) error {
+// Decode decodes a full HEPEVT event from the underlying reader.
+func (dec *Decoder) Decode(evt *Event) error {
 	var err error
 
 	_, err = fmt.Fscanf(dec.r, "%d %d\n", &evt.Nevhep, &evt.Nhep)

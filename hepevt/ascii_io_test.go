@@ -54,7 +54,7 @@ func TestDecoder(t *testing.T) {
 
 	var evt hepevt.Event
 
-	dec := hepevt.NewAsciiDecoder(f)
+	dec := hepevt.NewDecoder(f)
 	err = dec.Decode(&evt)
 	if err != nil {
 		t.Fatal(err)
