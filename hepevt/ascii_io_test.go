@@ -6,11 +6,13 @@ package hepevt_test
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
 
+	"github.com/pkg/errors"
 	"go-hep.org/x/hep/hepevt"
 )
 
@@ -97,4 +99,87 @@ func TestEncoder(t *testing.T) {
 	if !bytes.Equal(got, want) {
 		t.Fatalf("files differ.\ngot:\n%s\nwant:\n%s\n", got, want)
 	}
+}
+
+func TestDecoderFail(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		input string
+		want  error
+	}{
+		{
+			name:  "empty",
+			input: "",
+			want:  io.EOF,
+		},
+		{
+			name:  "unexpected newline",
+			input: "\n",
+		},
+		{
+			name:  "expected integer",
+			input: "1 t\n",
+		},
+		{
+			name:  "newline in format does not match format",
+			input: "1.1 1\n",
+		},
+		{
+			name:  "newline in format does not match input",
+			input: "1 1.1\n",
+		},
+		{
+			name:  "newline in format does not match format",
+			input: "1 1\n1\n",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := bytes.NewReader([]byte(tc.input))
+			dec := hepevt.NewDecoder(r)
+			var evt hepevt.Event
+			err := dec.Decode(&evt)
+			if err == nil {
+				t.Fatalf("expected a failure")
+			}
+			if tc.want != nil && errors.Cause(err) != tc.want {
+				t.Fatalf("unexpected error.\ngot = %v\nwant= %v", err, tc.want)
+			}
+			if tc.want == nil {
+				t.Logf("%s: %q", tc.name, err.Error())
+			}
+		})
+	}
+}
+
+func TestEncoderFail(t *testing.T) {
+	for i := 0; i < 256; i++ {
+		nbytes := i
+		t.Run("", func(t *testing.T) {
+			w := newWriter(nbytes)
+			enc := hepevt.NewEncoder(w)
+			err := enc.Encode(&small)
+			if err == nil {
+				t.Fatalf("expected a failure")
+			}
+		})
+	}
+}
+
+type failWriter struct {
+	n int
+	c int
+}
+
+func newWriter(n int) *failWriter {
+	return &failWriter{n: n, c: 0}
+}
+
+func (w *failWriter) Write(data []byte) (int, error) {
+	for range data {
+		w.c++
+		if w.c >= w.n {
+			return 0, io.ErrUnexpectedEOF
+		}
+	}
+	return len(data), nil
 }
