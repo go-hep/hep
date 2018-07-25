@@ -94,12 +94,12 @@ func (w *WBuffer) WriteObjectAny(obj Object) error {
 		return w.err
 	}
 
-	//	pos := w.Pos()
-	//	w.WriteU32(0) // placeholder for bytecount.
-	//
-	//	mapsize := len(w.refs)
-	//	w.WriteClass(obj)
+	//pos := w.Pos()
+	w.WriteU32(0) // placeholder for bytecount.
 
+	mapsize := len(w.refs)
+	w.WriteClass(obj)
+	w.w.c += mapsize
 	return w.err
 }
 
@@ -107,7 +107,9 @@ func (w *WBuffer) WriteClass(obj Object) error {
 	if w.err != nil {
 		return w.err
 	}
-	//	class := obj.Class()
+	class := obj.Class()
+	w.WriteString(class)
+	w.w.c += len(class)
 	return w.err
 }
 
