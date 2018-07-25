@@ -22,6 +22,9 @@ func newtokens(toks []string) tokens {
 }
 
 func (t *tokens) next() string {
+	if t.pos >= len(t.toks) {
+		return ""
+	}
 	str := t.toks[t.pos]
 	t.pos++
 	return str

@@ -248,6 +248,9 @@ func (dec *Decoder) findFileType() error {
 	for {
 		tokens, err := dec.readline()
 		if err != nil {
+			if err == io.EOF {
+				err = io.ErrUnexpectedEOF
+			}
 			return err
 		}
 		if len(tokens.toks) <= 0 {
