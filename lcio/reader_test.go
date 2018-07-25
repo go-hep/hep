@@ -55,7 +55,7 @@ func ExampleReader() {
 }
 
 func TestOpen(t *testing.T) {
-	rhdr := lcio.RunHeader{
+	ref := lcio.RunHeader{
 		RunNumber:    42,
 		Descr:        "a simple run header",
 		Detector:     "my detector",
@@ -79,24 +79,31 @@ func TestOpen(t *testing.T) {
 		"testdata/run-header_golden.slcio",
 		"testdata/run-header-compressed_golden.slcio",
 	} {
-		r, err := lcio.Open(fname)
-		if err != nil {
-			t.Fatalf("%s: error opening file: %v", fname, err)
-		}
-		defer r.Close()
+		t.Run(fname, func(t *testing.T) {
+			r, err := lcio.Open(fname)
+			if err != nil {
+				t.Fatalf("%s: error opening file: %v", fname, err)
+			}
+			defer r.Close()
 
-		r.Next()
-		if err := r.Err(); err != nil && err != io.EOF {
-			t.Fatalf("%s: %v", fname, err)
-		}
+			r.Next()
+			if err := r.Err(); err != nil && err != io.EOF {
+				t.Fatalf("%s: %v", fname, err)
+			}
 
-		if got, want := r.RunHeader(), rhdr; !reflect.DeepEqual(got, want) {
-			t.Fatalf("%s: run-headers differ.\ngot= %#v\nwant=%#v\n", fname, got, want)
-		}
+			rhdr := r.RunHeader()
+			if got, want := rhdr, ref; !reflect.DeepEqual(got, want) {
+				t.Fatalf("%s: run-headers differ.\ngot= %#v\nwant=%#v\n", fname, got, want)
+			}
 
-		err = r.Close()
-		if err != nil {
-			t.Fatalf("%s: error closing file: %v", fname, err)
-		}
+			if got, want := rhdr.String(), ref.String(); got != want {
+				t.Fatalf("%s: run-headers differ.\ngot= %q\nwant=%q\n", fname, got, want)
+			}
+
+			err = r.Close()
+			if err != nil {
+				t.Fatalf("%s: error closing file: %v", fname, err)
+			}
+		})
 	}
 }
