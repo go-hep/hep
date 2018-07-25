@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -29,5 +29,3 @@ type Particle struct {
 	P         [5]float64 // (px,py,pz,e,m)
 	V         [4]float64 // vertex position (x,y,z,t)
 }
-
-// EOF
