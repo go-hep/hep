@@ -75,7 +75,7 @@ func TestEncoder(t *testing.T) {
 	defer f.Close()
 	defer os.Remove(f.Name())
 
-	enc := hepevt.NewAsciiEncoder(f)
+	enc := hepevt.NewEncoder(f)
 	if err := enc.Encode(&small); err != nil {
 		t.Fatal(err)
 	}

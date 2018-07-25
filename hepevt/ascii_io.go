@@ -11,15 +11,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-type AsciiEncoder struct {
+// Encoder encodes ASCII files in the HEPEVT format.
+type Encoder struct {
 	w io.Writer
 }
 
-func NewAsciiEncoder(w io.Writer) *AsciiEncoder {
-	return &AsciiEncoder{w: w}
+// NewEncoder create a new Encoder, writing to the provided io.Writer.
+func NewEncoder(w io.Writer) *Encoder {
+	return &Encoder{w: w}
 }
 
-func (enc *AsciiEncoder) Encode(evt *Event) error {
+// Encode encodes a full HEPEVT event to the underlying writer.
+func (enc *Encoder) Encode(evt *Event) error {
 	var err error
 	_, err = fmt.Fprintf(enc.w, "%d %d\n", evt.Nevhep, evt.Nhep)
 	if err != nil {
