@@ -52,9 +52,22 @@ func datime2time(d uint32) time.Time {
 		int(hour), int(min), int(sec), nsec, time.UTC)
 }
 
-// time2datime converts a time.Time into a uint32
-func time2datime(t time.Time) uint32{
-	panic("not implemented yet")
+// time2datime converts a time.Time to a uint32 representing a ROOT's TDatime.
+func time2datime(t time.Time) uint32 {
+	var (
+		year  = uint32(t.Year())
+		month = uint32(t.Month())
+		day   = uint32(t.Day())
+		hour  = uint32(t.Hour())
+		min   = uint32(t.Minute())
+		sec   = uint32(t.Second())
+	)
+
+	if year < 1995 {
+		panic("rootio: TDatime year must be >= 1995")
+	}
+
+	return (year-1995)<<26 | month<<22 | day<<17 | hour<<12 | min<<6 | sec
 }
 
 func errorf(format string, args ...interface{}) error {
