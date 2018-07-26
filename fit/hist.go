@@ -12,9 +12,9 @@ import (
 // H1D returns the fit of histogram h with function f and optimization method m.
 //
 // Only bins with at least an entry are considered for the fit.
-// In case settings is nil, the optimize.DefaultSettings is used.
+// In case settings is nil, the optimize.DefaultSettingsLocal is used.
 // In case m is nil, the same default optimization method than for Curve1D is used.
-func H1D(h *hbook.H1D, f Func1D, settings *optimize.Settings, m optimize.GlobalMethod) (*optimize.Result, error) {
+func H1D(h *hbook.H1D, f Func1D, settings *optimize.Settings, m optimize.Method) (*optimize.Result, error) {
 	var (
 		n     = h.Len()
 		xdata = make([]float64, 0, n)

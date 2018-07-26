@@ -10,7 +10,7 @@ import (
 
 // Curve1D returns the result of a non-linear least squares to fit
 // a function f to the underlying data with method m.
-func Curve1D(f Func1D, settings *optimize.Settings, m optimize.GlobalMethod) (*optimize.Result, error) {
+func Curve1D(f Func1D, settings *optimize.Settings, m optimize.Method) (*optimize.Result, error) {
 	f.init()
 
 	p := optimize.Problem{
@@ -25,9 +25,5 @@ func Curve1D(f Func1D, settings *optimize.Settings, m optimize.GlobalMethod) (*o
 
 	p0 := make([]float64, len(f.Ps))
 	copy(p0, f.Ps)
-	if settings == nil {
-		settings = optimize.DefaultSettings()
-	}
-	settings.InitX = p0
-	return optimize.Global(p, len(p0), settings, m)
+	return optimize.Minimize(p, p0, settings, m)
 }
