@@ -27,6 +27,27 @@ func (*H1F) Class() string {
 	return "TH1F"
 }
 
+func (h *H1F) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(h.rvers)
+
+	for _, v := range []ROOTMarshaler{
+		&h.th1,
+		&h.arr,
+	} {
+		if _, err := v.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+	}
+
+	return w.SetByteCount(pos, "TH1F")
+}
+
 func (h *H1F) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -222,6 +243,7 @@ var (
 	_ Object          = (*H1F)(nil)
 	_ Named           = (*H1F)(nil)
 	_ H1              = (*H1F)(nil)
+	_ ROOTMarshaler   = (*H1F)(nil)
 	_ ROOTUnmarshaler = (*H1F)(nil)
 )
 
@@ -237,6 +259,27 @@ func (*H1D) isH1() {}
 // Class returns the ROOT class name.
 func (*H1D) Class() string {
 	return "TH1D"
+}
+
+func (h *H1D) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(h.rvers)
+
+	for _, v := range []ROOTMarshaler{
+		&h.th1,
+		&h.arr,
+	} {
+		if _, err := v.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+	}
+
+	return w.SetByteCount(pos, "TH1D")
 }
 
 func (h *H1D) UnmarshalROOT(r *RBuffer) error {
@@ -434,6 +477,7 @@ var (
 	_ Object          = (*H1D)(nil)
 	_ Named           = (*H1D)(nil)
 	_ H1              = (*H1D)(nil)
+	_ ROOTMarshaler   = (*H1D)(nil)
 	_ ROOTUnmarshaler = (*H1D)(nil)
 )
 
@@ -449,6 +493,27 @@ func (*H1I) isH1() {}
 // Class returns the ROOT class name.
 func (*H1I) Class() string {
 	return "TH1I"
+}
+
+func (h *H1I) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(h.rvers)
+
+	for _, v := range []ROOTMarshaler{
+		&h.th1,
+		&h.arr,
+	} {
+		if _, err := v.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+	}
+
+	return w.SetByteCount(pos, "TH1I")
 }
 
 func (h *H1I) UnmarshalROOT(r *RBuffer) error {
@@ -646,5 +711,6 @@ var (
 	_ Object          = (*H1I)(nil)
 	_ Named           = (*H1I)(nil)
 	_ H1              = (*H1I)(nil)
+	_ ROOTMarshaler   = (*H1I)(nil)
 	_ ROOTUnmarshaler = (*H1I)(nil)
 )

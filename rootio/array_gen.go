@@ -36,6 +36,18 @@ func (arr *ArrayI) Set(i int, v interface{}) {
 	arr.Data[i] = v.(int32)
 }
 
+func (arr *ArrayI) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteI32(int32(len(arr.Data)))
+	w.WriteFastArrayI32(arr.Data)
+
+	return int(w.Pos() - pos), w.err
+}
+
 func (arr *ArrayI) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -56,8 +68,11 @@ func init() {
 	Factory.add("*rootio.ArrayI", f)
 }
 
-var _ Array = (*ArrayI)(nil)
-var _ ROOTUnmarshaler = (*ArrayI)(nil)
+var (
+	_ Array           = (*ArrayI)(nil)
+	_ ROOTMarshaler   = (*ArrayI)(nil)
+	_ ROOTUnmarshaler = (*ArrayI)(nil)
+)
 
 // ArrayL64 implements ROOT TArrayL64
 type ArrayL64 struct {
@@ -85,6 +100,18 @@ func (arr *ArrayL64) Set(i int, v interface{}) {
 	arr.Data[i] = v.(int64)
 }
 
+func (arr *ArrayL64) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteI32(int32(len(arr.Data)))
+	w.WriteFastArrayI64(arr.Data)
+
+	return int(w.Pos() - pos), w.err
+}
+
 func (arr *ArrayL64) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -105,8 +132,11 @@ func init() {
 	Factory.add("*rootio.ArrayL64", f)
 }
 
-var _ Array = (*ArrayL64)(nil)
-var _ ROOTUnmarshaler = (*ArrayL64)(nil)
+var (
+	_ Array           = (*ArrayL64)(nil)
+	_ ROOTMarshaler   = (*ArrayL64)(nil)
+	_ ROOTUnmarshaler = (*ArrayL64)(nil)
+)
 
 // ArrayF implements ROOT TArrayF
 type ArrayF struct {
@@ -134,6 +164,18 @@ func (arr *ArrayF) Set(i int, v interface{}) {
 	arr.Data[i] = v.(float32)
 }
 
+func (arr *ArrayF) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteI32(int32(len(arr.Data)))
+	w.WriteFastArrayF32(arr.Data)
+
+	return int(w.Pos() - pos), w.err
+}
+
 func (arr *ArrayF) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -154,8 +196,11 @@ func init() {
 	Factory.add("*rootio.ArrayF", f)
 }
 
-var _ Array = (*ArrayF)(nil)
-var _ ROOTUnmarshaler = (*ArrayF)(nil)
+var (
+	_ Array           = (*ArrayF)(nil)
+	_ ROOTMarshaler   = (*ArrayF)(nil)
+	_ ROOTUnmarshaler = (*ArrayF)(nil)
+)
 
 // ArrayD implements ROOT TArrayD
 type ArrayD struct {
@@ -183,6 +228,18 @@ func (arr *ArrayD) Set(i int, v interface{}) {
 	arr.Data[i] = v.(float64)
 }
 
+func (arr *ArrayD) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteI32(int32(len(arr.Data)))
+	w.WriteFastArrayF64(arr.Data)
+
+	return int(w.Pos() - pos), w.err
+}
+
 func (arr *ArrayD) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -203,5 +260,8 @@ func init() {
 	Factory.add("*rootio.ArrayD", f)
 }
 
-var _ Array = (*ArrayD)(nil)
-var _ ROOTUnmarshaler = (*ArrayD)(nil)
+var (
+	_ Array           = (*ArrayD)(nil)
+	_ ROOTMarshaler   = (*ArrayD)(nil)
+	_ ROOTUnmarshaler = (*ArrayD)(nil)
+)

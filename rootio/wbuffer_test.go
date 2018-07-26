@@ -620,6 +620,26 @@ func TestWriteWBuffer(t *testing.T) {
 				title: "my-title",
 			},
 		},
+		{
+			name: "TArrayI",
+			file: "testdata/tarrayi.dat",
+			want: &ArrayI{Data: []int32{0, 1, 2, 3, 4}},
+		},
+		{
+			name: "TArrayL64",
+			file: "testdata/tarrayl64.dat",
+			want: &ArrayL64{Data: []int64{0, 1, 2, 3, 4}},
+		},
+		{
+			name: "TArrayF",
+			file: "testdata/tarrayf.dat",
+			want: &ArrayF{Data: []float32{0, 1, 2, 3, 4}},
+		},
+		{
+			name: "TArrayD",
+			file: "testdata/tarrayd.dat",
+			want: &ArrayD{Data: []float64{0, 1, 2, 3, 4}},
+		},
 	} {
 		t.Run("write-buffer="+test.file, func(t *testing.T) {
 			testWriteWBuffer(t, test.name, test.file, test.want)

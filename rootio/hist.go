@@ -71,6 +71,75 @@ func (h *th1) SumW2s() []float64 {
 	return h.sumw2.Data
 }
 
+func (h *th1) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+
+	w.WriteVersion(h.rvers)
+	for _, v := range []ROOTMarshaler{
+		&h.tnamed,
+		&h.attline,
+		&h.attfill,
+		&h.attmarker,
+	} {
+		if _, err := v.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+	}
+
+	w.WriteI32(int32(h.ncells))
+
+	for _, v := range []ROOTMarshaler{
+		&h.xaxis,
+		&h.yaxis,
+		&h.zaxis,
+	} {
+		if _, err := v.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+	}
+
+	w.WriteI16(h.boffset)
+	w.WriteI16(h.bwidth)
+	w.WriteF64(h.entries)
+	w.WriteF64(h.tsumw)
+	w.WriteF64(h.tsumw2)
+	w.WriteF64(h.tsumwx)
+	w.WriteF64(h.tsumwx2)
+	w.WriteF64(h.max)
+	w.WriteF64(h.min)
+	w.WriteF64(h.norm)
+	if _, err := h.contour.MarshalROOT(w); err != nil {
+		w.err = err
+		return 0, w.err
+	}
+
+	if _, err := h.sumw2.MarshalROOT(w); err != nil {
+		w.err = err
+		return 0, w.err
+	}
+
+	w.WriteString(h.opt)
+	//	FIXME(sbinet): implement TList
+	//	if _, err := h.funcs.MarshalROOT(w); err != nil {
+	//		w.err = err
+	//		return 0, w.err
+	//	}
+
+	w.WriteI32(int32(len(h.buffer)))
+	w.WriteI8(0) // FIXME(sbinet)
+	w.WriteFastArrayF64(h.buffer)
+	w.WriteI32(h.erropt)
+	w.WriteI32(h.oflow)
+
+	return w.SetByteCount(pos, "TH1")
+}
+
 func (h *th1) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err

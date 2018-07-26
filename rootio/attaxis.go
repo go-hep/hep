@@ -28,6 +28,28 @@ func (*attaxis) Class() string {
 	return "TAttAxis"
 }
 
+func (a *attaxis) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(a.rvers)
+	w.WriteI32(a.ndivs)
+	w.WriteI16(a.acolor)
+	w.WriteI16(a.lcolor)
+	w.WriteI16(a.lfont)
+	w.WriteF32(a.loffset)
+	w.WriteF32(a.lsize)
+	w.WriteF32(a.ticks)
+	w.WriteF32(a.toffset)
+	w.WriteF32(a.tsize)
+	w.WriteI16(a.tcolor)
+	w.WriteI16(a.tfont)
+
+	return w.SetByteCount(pos, "TAttAxis")
+}
+
 func (a *attaxis) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -66,5 +88,8 @@ func init() {
 	Factory.add("*rootio.attaxis", f)
 }
 
-var _ Object = (*attaxis)(nil)
-var _ ROOTUnmarshaler = (*attaxis)(nil)
+var (
+	_ Object          = (*attaxis)(nil)
+	_ ROOTMarshaler   = (*attaxis)(nil)
+	_ ROOTUnmarshaler = (*attaxis)(nil)
+)
