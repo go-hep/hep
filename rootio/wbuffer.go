@@ -9,6 +9,7 @@ import (
 	"encoding/binary"
 	"io"
 	"math"
+	"fmt"
 )
 
 type wbuff struct {
@@ -60,6 +61,12 @@ func (w *WBuffer) Pos() int64 {
 	return int64(w.w.c)
 }
 
+func (w *WBuffer) setPos(pos int64) error {
+	pos -= int64(w.offset)
+	w.w.c = int(pos)
+	return nil
+}
+
 func (w *WBuffer) SetByteCount(beg int64, class string) (int, error) {
 	if w.err != nil {
 		return 0, w.err
@@ -94,12 +101,20 @@ func (w *WBuffer) WriteObjectAny(obj Object) error {
 		return w.err
 	}
 
-	//pos := w.Pos()
+	pos := w.Pos()
 	w.WriteU32(0) // placeholder for bytecount.
 
+	class := obj.Class()
+	_, ok := w.refs[class]
 	mapsize := len(w.refs)
-	w.WriteClass(obj)
-	w.w.c += mapsize
+	
+	if !ok {
+		w.setPos(pos + int64(mapsize) + 4)
+		w.err = fmt.Errorf("rootio: already tagged [%v]", class)
+		return w.err
+	}
+	w.setPos(pos)
+	w.err = w.WriteClass(obj)
 	return w.err
 }
 
@@ -107,9 +122,12 @@ func (w *WBuffer) WriteClass(obj Object) error {
 	if w.err != nil {
 		return w.err
 	}
+	if _,err := obj.(ROOTMarshaler).MarshalROOT(w); err != nil {
+		w.err = err
+		return w.err
+	}
 	class := obj.Class()
 	w.WriteString(class)
-	w.w.c += len(class)
 	return w.err
 }
 

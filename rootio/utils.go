@@ -53,7 +53,7 @@ func datime2time(d uint32) time.Time {
 }
 
 // time2datime converts a time.Time into a uint32
-func time2datime(t time.Time) uint32 {
+func time2datime(t time.Time) uint32{
 	panic("not implemented yet")
 }
 
