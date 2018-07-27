@@ -13,15 +13,6 @@ import (
 	"testing"
 )
 
-/*func TestTime_time2datime(t *testing.T) {
-	var want uint32 = 65000
-	time := datime2time(want)
-	got := time2datime(time)
-	if want != got {
-		t.Fatalf("Invalid time value. got:%v, want:%v", got, want)
-	}
-}*/
-
 func TestWBuffer_WriteBool(t *testing.T) {
 	data := make([]byte, 20)
 	wbuf := NewWBuffer(data, nil, 0, nil)
