@@ -292,7 +292,7 @@ func TestCreateRollback(t *testing.T) {
 
 func TestOpenDriver(t *testing.T) {
 	for _, fname := range []string{
-		//		"https://github.com/go-hep/hep/raw/master/csvutil/csvdriver/testdata/types.csv",
+		"https://github.com/go-hep/hep/raw/master/csvutil/csvdriver/testdata/types.csv",
 		"testdata/types.csv",
 	} {
 		t.Run(fname, func(t *testing.T) {
