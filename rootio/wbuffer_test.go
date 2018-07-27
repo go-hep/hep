@@ -42,12 +42,13 @@ func TestWBuffer_WriteString(t *testing.T) {
 func TestWBuffer_WriteObjectAny(t *testing.T) {
 	data := make([]byte, 500)
 	wbuf := NewWBuffer(data, nil, 0, nil)
-	want := &ArrayF{Data: []float32{0, 1, 2, 3, 4}}
-	wbuf.WriteObjectAny(want)
+	want := &tobject{id: 0x0, bits: 0x3000000}
+	wbuf.err = wbuf.WriteObjectAny(want)
 	rbuf := NewRBuffer(wbuf.w.p, nil, 0, nil)
 	got := rbuf.ReadObjectAny()
-	if got != want {
+	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("Invalid value. got:%v, want:%v", got, want)
+
 	}
 }
 func TestWBuffer_Write(t *testing.T) {

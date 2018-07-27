@@ -119,6 +119,10 @@ func (*thashList) Class() string {
 	return "THashList"
 }
 
+func (li *thashList) MarshalROOT(w *WBuffer) (int, error) {
+	return li.tlist.MarshalROOT(w)
+}
+
 func (li *thashList) UnmarshalROOT(r *RBuffer) error {
 	return li.tlist.UnmarshalROOT(r)
 }
@@ -150,9 +154,11 @@ var (
 	_ ROOTMarshaler   = (*tlist)(nil)
 	_ ROOTUnmarshaler = (*tlist)(nil)
 )
-
-var _ Object = (*thashList)(nil)
-var _ Collection = (*thashList)(nil)
-var _ SeqCollection = (*thashList)(nil)
-var _ List = (*thashList)(nil)
-var _ ROOTUnmarshaler = (*thashList)(nil)
+var (
+	_ Object          = (*thashList)(nil)
+	_ Collection      = (*thashList)(nil)
+	_ SeqCollection   = (*thashList)(nil)
+	_ List            = (*thashList)(nil)
+	_ ROOTMarshaler   = (*thashList)(nil)
+	_ ROOTUnmarshaler = (*thashList)(nil)
+)

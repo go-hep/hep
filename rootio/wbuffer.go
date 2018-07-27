@@ -7,7 +7,6 @@ package rootio
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"io"
 	"math"
 )
@@ -90,45 +89,63 @@ func (w *WBuffer) WriteObjectAny(obj Object) error {
 	if w.err != nil {
 		return w.err
 	}
-
 	if obj == nil {
 		w.WriteU32(0) // NULL pointer
 		return w.err
 	}
-
 	if idx, ok := w.refs[obj]; ok {
 		w.WriteU32(uint32(idx)) // save index of already stored object
 		return w.err
 	}
-
 	pos := w.Pos()
 	w.WriteU32(0) // placeholder for bytecount.
-
-	class := obj.Class()
-	_, ok := w.refs[class]
-	mapsize := len(w.refs)
-
-	if !ok {
-		w.setPos(pos + int64(mapsize) + 4)
-		w.err = fmt.Errorf("rootio: already tagged [%v]", class)
-		return w.err
-	}
-	w.setPos(pos)
-	w.err = w.WriteClass(obj)
-	return w.err
-}
-
-func (w *WBuffer) WriteClass(obj Object) error {
-	if w.err != nil {
-		return w.err
-	}
-	if _, err := obj.(ROOTMarshaler).MarshalROOT(w); err != nil {
+	bcnt, err := w.WriteClass(pos, obj)
+	if err != nil {
 		w.err = err
 		return w.err
 	}
-	class := obj.Class()
-	w.WriteString(class)
+	end := w.w.c
+	w.w.c = int(pos)
+	w.WriteU32(bcnt)
+	w.w.c = end
 	return w.err
+}
+func (w *WBuffer) WriteClass(beg int64, obj Object) (uint32, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	start := w.Pos()
+	if ref64, dup := w.refs[obj]; dup {
+		// we've already seen this value.
+		w.WriteU32(uint32(ref64) | kClassMask)
+		bcnt := w.Pos() - start
+		return uint32(bcnt | kByteCountMask), w.err
+	}
+	class := obj.Class()
+	ref64, ok := w.refs[class]
+	if !ok {
+		w.WriteU32(uint32(kNewClassTag))
+		// first time we see this type
+		w.WriteCString(class)
+		w.refs[class] = (start + kMapOffset) | kClassMask
+		mobj := obj.(ROOTMarshaler)
+		if _, err := mobj.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+		w.refs[obj] = beg + kMapOffset
+		bcnt := w.Pos() - start
+		return uint32(bcnt | kByteCountMask), w.err
+	}
+	// first time we see this value
+	w.WriteU32(uint32(ref64) | kClassMask)
+	if _, err := obj.(ROOTMarshaler).MarshalROOT(w); err != nil {
+		w.err = err
+		return 0, w.err
+	}
+	w.refs[obj] = beg + kMapOffset
+	bcnt := w.Pos() - start
+	return uint32(bcnt | kByteCountMask), w.err
 }
 
 func (w *WBuffer) write(v []byte) {
