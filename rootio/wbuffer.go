@@ -7,9 +7,9 @@ package rootio
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"math"
-	"fmt"
 )
 
 type wbuff struct {
@@ -107,7 +107,7 @@ func (w *WBuffer) WriteObjectAny(obj Object) error {
 	class := obj.Class()
 	_, ok := w.refs[class]
 	mapsize := len(w.refs)
-	
+
 	if !ok {
 		w.setPos(pos + int64(mapsize) + 4)
 		w.err = fmt.Errorf("rootio: already tagged [%v]", class)
@@ -122,7 +122,7 @@ func (w *WBuffer) WriteClass(obj Object) error {
 	if w.err != nil {
 		return w.err
 	}
-	if _,err := obj.(ROOTMarshaler).MarshalROOT(w); err != nil {
+	if _, err := obj.(ROOTMarshaler).MarshalROOT(w); err != nil {
 		w.err = err
 		return w.err
 	}
