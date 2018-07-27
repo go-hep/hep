@@ -85,6 +85,11 @@ func (w *WBuffer) WriteObjectAny(obj Object) error {
 		return w.err
 	}
 
+	if reflect.ValueOf(obj).IsNil() {
+		w.WriteU32(0) // NULL pointer
+		return w.err
+	}
+
 	pos := w.Pos()
 	w.WriteU32(0) // placeholder for bytecount.
 
@@ -107,12 +112,6 @@ func (w *WBuffer) WriteClass(beg int64, obj Object) (uint32, error) {
 	}
 
 	start := w.Pos()
-	isNil := reflect.ValueOf(obj).IsNil()
-	if isNil {
-		bcnt := w.Pos() - start
-		return uint32(bcnt), w.err
-	}
-
 	if ref64, dup := w.refs[obj]; dup {
 		// we've already seen this value.
 		w.WriteU32(uint32(ref64) | kClassMask)
@@ -129,11 +128,9 @@ func (w *WBuffer) WriteClass(beg int64, obj Object) (uint32, error) {
 		w.refs[class] = (start + kMapOffset) | kClassMask
 
 		mobj := obj.(ROOTMarshaler)
-		if !isNil {
-			if _, err := mobj.MarshalROOT(w); err != nil {
-				w.err = err
-				return 0, w.err
-			}
+		if _, err := mobj.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
 		}
 
 		w.refs[obj] = beg + kMapOffset
