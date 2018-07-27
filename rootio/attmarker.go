@@ -13,6 +13,19 @@ type attmarker struct {
 	width float32
 }
 
+func (a *attmarker) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(a.rvers)
+	w.WriteI16(a.color)
+	w.WriteI16(a.style)
+	w.WriteF32(a.width)
+	return w.SetByteCount(pos, "TAttMarker")
+}
+
 func (a *attmarker) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -38,4 +51,7 @@ func init() {
 	Factory.add("*rootio.attmarker", f)
 }
 
-var _ ROOTUnmarshaler = (*attmarker)(nil)
+var (
+	_ ROOTMarshaler   = (*attmarker)(nil)
+	_ ROOTUnmarshaler = (*attmarker)(nil)
+)

@@ -39,6 +39,18 @@ func TestWBuffer_WriteString(t *testing.T) {
 	}
 }
 
+func TestWBuffer_WriteObjectAny(t *testing.T) {
+	data := make([]byte, 500)
+	wbuf := NewWBuffer(data, nil, 0, nil)
+	want := &tobject{id: 0x0, bits: 0x3000000}
+	wbuf.err = wbuf.WriteObjectAny(want)
+	rbuf := NewRBuffer(wbuf.w.p, nil, 0, nil)
+	got := rbuf.ReadObjectAny()
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("Invalid value. got:%v, want:%v", got, want)
+
+	}
+}
 func TestWBuffer_Write(t *testing.T) {
 	for _, tc := range []struct {
 		buf  []byte
@@ -639,6 +651,15 @@ func TestWriteWBuffer(t *testing.T) {
 			name: "TArrayD",
 			file: "testdata/tarrayd.dat",
 			want: &ArrayD{Data: []float64{0, 1, 2, 3, 4}},
+		},
+		{
+			name: "TObjString",
+			file: "testdata/tobjstring.dat",
+			want: &tobjstring{
+				rvers: 1,
+				obj:   tobject{id: 0x0, bits: 0x3000008},
+				str:   "tobjstring-string",
+			},
 		},
 	} {
 		t.Run("write-buffer="+test.file, func(t *testing.T) {
