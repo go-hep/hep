@@ -235,6 +235,27 @@ func (*th2) Class() string {
 	return "TH2"
 }
 
+func (h *th2) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(h.rvers)
+
+	if _, err := h.th1.MarshalROOT(w); err != nil {
+		w.err = err
+		return 0, w.err
+	}
+
+	w.WriteF64(h.scale)
+	w.WriteF64(h.tsumwy)
+	w.WriteF64(h.tsumwy2)
+	w.WriteF64(h.tsumwxy)
+
+	return w.SetByteCount(pos, "TH2")
+}
+
 func (h *th2) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -365,10 +386,14 @@ func init() {
 	}
 }
 
-var _ Object = (*th1)(nil)
-var _ Named = (*th1)(nil)
-var _ ROOTUnmarshaler = (*th1)(nil)
+var (
+	_ Object          = (*th1)(nil)
+	_ Named           = (*th1)(nil)
+	_ ROOTMarshaler   = (*th1)(nil)
+	_ ROOTUnmarshaler = (*th1)(nil)
 
-var _ Object = (*th2)(nil)
-var _ Named = (*th2)(nil)
-var _ ROOTUnmarshaler = (*th2)(nil)
+	_ Object          = (*th2)(nil)
+	_ Named           = (*th2)(nil)
+	_ ROOTMarshaler   = (*th2)(nil)
+	_ ROOTUnmarshaler = (*th2)(nil)
+)

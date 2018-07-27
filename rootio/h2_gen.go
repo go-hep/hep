@@ -265,6 +265,27 @@ func (h *H2F) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func (h *H2F) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(h.rvers)
+
+	for _, v := range []ROOTMarshaler{
+		&h.th2,
+		&h.arr,
+	} {
+		if _, err := v.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+	}
+
+	return w.SetByteCount(pos, "TH2F")
+}
+
 func (h *H2F) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -304,6 +325,7 @@ var (
 	_ Object          = (*H2F)(nil)
 	_ Named           = (*H2F)(nil)
 	_ H2              = (*H2F)(nil)
+	_ ROOTMarshaler   = (*H2F)(nil)
 	_ ROOTUnmarshaler = (*H2F)(nil)
 )
 
@@ -559,6 +581,27 @@ func (h *H2D) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func (h *H2D) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(h.rvers)
+
+	for _, v := range []ROOTMarshaler{
+		&h.th2,
+		&h.arr,
+	} {
+		if _, err := v.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+	}
+
+	return w.SetByteCount(pos, "TH2D")
+}
+
 func (h *H2D) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -598,6 +641,7 @@ var (
 	_ Object          = (*H2D)(nil)
 	_ Named           = (*H2D)(nil)
 	_ H2              = (*H2D)(nil)
+	_ ROOTMarshaler   = (*H2D)(nil)
 	_ ROOTUnmarshaler = (*H2D)(nil)
 )
 
@@ -853,6 +897,27 @@ func (h *H2I) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func (h *H2I) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(h.rvers)
+
+	for _, v := range []ROOTMarshaler{
+		&h.th2,
+		&h.arr,
+	} {
+		if _, err := v.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+	}
+
+	return w.SetByteCount(pos, "TH2I")
+}
+
 func (h *H2I) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -892,5 +957,6 @@ var (
 	_ Object          = (*H2I)(nil)
 	_ Named           = (*H2I)(nil)
 	_ H2              = (*H2I)(nil)
+	_ ROOTMarshaler   = (*H2I)(nil)
 	_ ROOTUnmarshaler = (*H2I)(nil)
 )
