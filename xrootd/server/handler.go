@@ -8,7 +8,10 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/login"
+	"go-hep.org/x/hep/xrootd/xrdproto/open"
 	"go-hep.org/x/hep/xrootd/xrdproto/protocol"
+	"go-hep.org/x/hep/xrootd/xrdproto/read"
+	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
 
 // Handler provides a high-level API for the XRootD server.
@@ -28,5 +31,14 @@ type Handler interface {
 	Dirlist(sessionID [16]byte, request *dirlist.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus)
 
 	// CloseSession handles the aborting of user session. This can be used to free some user-related data.
-	CloseSession(sessionID [16]byte)
+	CloseSession(sessionID [16]byte) error
+
+	// Open handles the XRootD open request: http://xrootd.org/doc/dev45/XRdv310.htm#_Toc464248823.
+	Open(sessionID [16]byte, request *open.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus)
+
+	// Close handles the XRootD close request: http://xrootd.org/doc/dev45/XRdv310.htm#_Toc464248813.
+	Close(sessionID [16]byte, request *xrdclose.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus)
+
+	// Read handles the XRootD read request: http://xrootd.org/doc/dev45/XRdv310.htm#_Toc464248841.
+	Read(sessionID [16]byte, request *read.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus)
 }

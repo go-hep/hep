@@ -25,7 +25,10 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/handshake"
 	"go-hep.org/x/hep/xrootd/xrdproto/login"
+	"go-hep.org/x/hep/xrootd/xrdproto/open"
 	"go-hep.org/x/hep/xrootd/xrdproto/protocol"
+	"go-hep.org/x/hep/xrootd/xrdproto/read"
+	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
 
 // ErrServerClosed is returned by the Server's Serve method after a call to Shutdown.
@@ -137,7 +140,11 @@ func (s *Server) handleConnection(conn net.Conn) {
 	if _, err := rand.Read(sessionID[:]); err != nil {
 		s.errorHandler(errors.WithStack(err))
 	}
-	defer s.handler.CloseSession(sessionID)
+	defer func() {
+		if err := s.handler.CloseSession(sessionID); err != nil {
+			s.errorHandler(errors.WithStack(err))
+		}
+	}()
 
 	if err := s.handleHandshake(conn); err != nil {
 		s.errorHandler(errors.WithStack(err))
@@ -252,6 +259,27 @@ func (s *Server) handleRequest(sessionID [16]byte, requestID uint16, rBuffer *xr
 			return newUnmarshalingErrorResponse(err)
 		}
 		return s.handler.Dirlist(sessionID, &request)
+	case open.RequestID:
+		var request open.Request
+		err := request.UnmarshalXrd(rBuffer)
+		if err != nil {
+			return newUnmarshalingErrorResponse(err)
+		}
+		return s.handler.Open(sessionID, &request)
+	case xrdclose.RequestID:
+		var request xrdclose.Request
+		err := request.UnmarshalXrd(rBuffer)
+		if err != nil {
+			return newUnmarshalingErrorResponse(err)
+		}
+		return s.handler.Close(sessionID, &request)
+	case read.RequestID:
+		var request read.Request
+		err := request.UnmarshalXrd(rBuffer)
+		if err != nil {
+			return newUnmarshalingErrorResponse(err)
+		}
+		return s.handler.Read(sessionID, &request)
 	default:
 		response := xrdproto.ServerError{
 			Code:    xrdproto.InvalidRequest,

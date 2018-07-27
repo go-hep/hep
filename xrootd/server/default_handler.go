@@ -9,7 +9,10 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/handshake"
 	"go-hep.org/x/hep/xrootd/xrdproto/login"
+	"go-hep.org/x/hep/xrootd/xrdproto/open"
 	"go-hep.org/x/hep/xrootd/xrdproto/protocol"
+	"go-hep.org/x/hep/xrootd/xrdproto/read"
+	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
 
 // defaultHandler implements Handler with some general functionality added.
@@ -47,4 +50,22 @@ func (*defaultHandler) Handshake() (xrdproto.Marshaler, xrdproto.ResponseStatus)
 }
 
 // CloseSession implements Handler.CloseSession.
-func (h *defaultHandler) CloseSession(sessionID [16]byte) {}
+func (h *defaultHandler) CloseSession(sessionID [16]byte) error { return nil }
+
+// Open implements Handler.Open.
+func (h *defaultHandler) Open(sessionID [16]byte, request *open.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "Open request is not implemented"}
+	return resp, xrdproto.Error
+}
+
+// Close implements Handler.Close.
+func (h *defaultHandler) Close(sessionID [16]byte, request *xrdclose.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "Close request is not implemented"}
+	return resp, xrdproto.Error
+}
+
+// Read implements Handler.Read.
+func (h *defaultHandler) Read(sessionID [16]byte, request *read.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "Read request is not implemented"}
+	return resp, xrdproto.Error
+}
