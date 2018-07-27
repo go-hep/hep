@@ -12,6 +12,7 @@ import (
 
 type tlist struct {
 	rvers int16
+	obj   tobject
 	name  string
 	objs  []Object
 }
@@ -46,12 +47,9 @@ func (li *tlist) MarshalROOT(w *WBuffer) (int, error) {
 
 	pos := w.Pos()
 	w.WriteVersion(li.rvers)
-	{
-		var obj tobject
-		if _, err := obj.MarshalROOT(w); err != nil {
-			w.err = err
-			return 0, w.err
-		}
+	if _, err := li.obj.MarshalROOT(w); err != nil {
+		w.err = err
+		return 0, w.err
 	}
 
 	w.WriteString(li.name)
@@ -79,8 +77,7 @@ func (li *tlist) UnmarshalROOT(r *RBuffer) error {
 		return fmt.Errorf("rootio: TList version too old (%d <= 3)", vers)
 	}
 
-	var obj tobject
-	if err := obj.UnmarshalROOT(r); err != nil {
+	if err := li.obj.UnmarshalROOT(r); err != nil {
 		r.err = err
 		return r.err
 	}

@@ -110,6 +110,7 @@ func TestReadRBuffer(t *testing.T) {
 			file: "testdata/tlist.dat",
 			want: &tlist{
 				rvers: 5,
+				obj:   tobject{id: 0x0, bits: 0x3000000},
 				name:  "list-name",
 				objs: []Object{
 					&tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "n0", title: "t0"},
@@ -145,6 +146,7 @@ func TestReadRBuffer(t *testing.T) {
 			file: "testdata/tlist-tsi.dat",
 			want: &tlist{
 				rvers: 5,
+				obj:   tobject{id: 0x0, bits: 0x3004000},
 				name:  "",
 				objs: []Object{
 					&tstreamerInfo{
@@ -2632,6 +2634,7 @@ func TestReadRBuffer(t *testing.T) {
 					},
 					&tlist{
 						rvers: 5,
+						obj:   tobject{id: 0x0, bits: 0x3004000},
 						name:  "listOfRules",
 						objs: []Object{
 							&tobjstring{
@@ -2737,8 +2740,12 @@ func TestReadRBuffer(t *testing.T) {
 							1,
 						},
 					},
-					opt:    "",
-					funcs:  tlist{rvers: 5, name: "", objs: []Object{}},
+					opt: "",
+					funcs: tlist{
+						rvers: 5,
+						obj:   tobject{id: 0x0, bits: 0x3000000},
+						name:  "", objs: []Object{},
+					},
 					buffer: nil,
 					erropt: 0,
 				},
@@ -2874,6 +2881,7 @@ func TestReadRBuffer(t *testing.T) {
 						opt: "",
 						funcs: tlist{
 							rvers: 5,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
 							name:  "",
 							objs:  []Object{},
 						},

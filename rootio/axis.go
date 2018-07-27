@@ -112,8 +112,13 @@ func (a *taxis) MarshalROOT(w *WBuffer) (int, error) {
 	w.WriteBool(a.time)
 	w.WriteString(a.tfmt)
 
-	for _, obj := range []Object{a.labels, a.modlabs} {
-		if err := w.WriteObjectAny(obj); err != nil {
+	if err := w.WriteObjectAny(a.labels); err != nil {
+		w.err = err
+		return 0, w.err
+	}
+
+	if a.rvers >= 10 {
+		if err := w.WriteObjectAny(a.modlabs); err != nil {
 			w.err = err
 			return 0, w.err
 		}

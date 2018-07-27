@@ -134,7 +134,9 @@ func (h *th1) MarshalROOT(w *WBuffer) (int, error) {
 	w.WriteI8(0) // FIXME(sbinet)
 	w.WriteFastArrayF64(h.buffer)
 	w.WriteI32(h.erropt)
-	w.WriteI32(h.oflow)
+	if h.rvers > 7 {
+		w.WriteI32(h.oflow)
+	}
 
 	return w.SetByteCount(pos, "TH1")
 }
