@@ -7,6 +7,7 @@ package csvdriver_test
 import (
 	"database/sql"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
@@ -231,5 +232,108 @@ func TestCreate(t *testing.T) {
 	err = tx.Commit()
 	if err != nil {
 		t.Fatalf("error committing transaction: %v\n", err)
+	}
+}
+
+func TestCreateRollback(t *testing.T) {
+	const fname = "testdata/out-create-rollback.csv"
+	defer os.Remove(fname)
+
+	db, err := csvdriver.Create(fname)
+	if err != nil {
+		t.Fatalf("error creating CSV file: %v\n", err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		t.Fatalf("error pinging db: %v\n", err)
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatalf("error starting transaction: %v\n", err)
+	}
+	defer tx.Commit()
+
+	_, err = tx.Exec("create table csv (var1 int64, var2 float64, var3 string);")
+	if err != nil {
+		t.Fatalf("error creating table: %v\n", err)
+	}
+
+	for i := 0; i < 10; i++ {
+		f := float64(i)
+		s := fmt.Sprintf("str-%d", i)
+		_, err = tx.Exec("insert into csv values($1,$2,$3);", i, f, s)
+		if err != nil {
+			t.Fatalf("error inserting row %d: %v\n", i+1, err)
+		}
+	}
+
+	err = tx.Rollback()
+	if err != nil {
+		t.Fatalf("error committing transaction: %v\n", err)
+	}
+
+	err = db.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := ioutil.ReadFile(fname)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(got) != 0 {
+		t.Fatalf("non-empty file:\n%q\n", string(got))
+	}
+}
+
+func TestOpenDriver(t *testing.T) {
+	for _, fname := range []string{
+		//		"https://github.com/go-hep/hep/raw/master/csvutil/csvdriver/testdata/types.csv",
+		"testdata/types.csv",
+	} {
+		t.Run(fname, func(t *testing.T) {
+
+			c, err := csvdriver.Open(fname)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			stmt, err := c.Prepare("select var1 from csv;")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer stmt.Close()
+
+			rows, err := stmt.Query()
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer rows.Close()
+
+			v, err := rows.Columns()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got, want := v, []string{"var1"}; !reflect.DeepEqual(got, want) {
+				t.Fatalf("got=%v, want=%v", got, want)
+			}
+
+			types, err := rows.ColumnTypes()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got, want := types[0].Name(), "var1"; got != want {
+				t.Fatalf("got=%q, want=%q", got, want)
+			}
+
+			err = rows.Close()
+			if err != nil {
+				t.Fatalf("error closing rows: %v\n", err)
+			}
+		})
 	}
 }
