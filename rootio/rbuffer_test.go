@@ -95,6 +95,7 @@ func testReadRBuffer(t *testing.T, name, file string, want interface{}) {
 var rwBufferCases = []struct {
 	name string
 	file string
+	skip bool
 	want ROOTUnmarshaler
 }{
 	{
@@ -151,6 +152,7 @@ var rwBufferCases = []struct {
 	{
 		name: "TObjString",
 		file: "testdata/tobjstring.dat",
+		skip: true,
 		want: &tobjstring{
 			rvers: 1,
 			obj:   tobject{id: 0x0, bits: 0x3000008},
@@ -159,6 +161,7 @@ var rwBufferCases = []struct {
 	},
 	{
 		name: "TObjArray",
+		file: "testdata/tobjarray.dat",
 		want: &tobjarray{
 			rvers: 3,
 			obj:   tobject{id: 0x0, bits: 0x3000000},
@@ -174,6 +177,7 @@ var rwBufferCases = []struct {
 	{
 		name: "TList",
 		file: "testdata/tlist-tsi.dat",
+		skip: true,
 		want: &tlist{
 			rvers: 5,
 			obj:   tobject{id: 0x0, bits: 0x3004000},
