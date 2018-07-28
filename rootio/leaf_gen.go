@@ -59,6 +59,20 @@ func (leaf *LeafO) TypeName() string {
 	return "bool"
 }
 
+func (leaf *LeafO) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(leaf.rvers)
+	leaf.tleaf.MarshalROOT(w)
+	w.WriteBool(leaf.min)
+	w.WriteBool(leaf.max)
+
+	return w.SetByteCount(pos, "TLeafO")
+}
+
 func (leaf *LeafO) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
@@ -139,10 +153,13 @@ func init() {
 	Factory.add("*rootio.LeafO", f)
 }
 
-var _ Object = (*LeafO)(nil)
-var _ Named = (*LeafO)(nil)
-var _ Leaf = (*LeafO)(nil)
-var _ ROOTUnmarshaler = (*LeafO)(nil)
+var (
+	_ Object          = (*LeafO)(nil)
+	_ Named           = (*LeafO)(nil)
+	_ Leaf            = (*LeafO)(nil)
+	_ ROOTMarshaler   = (*LeafO)(nil)
+	_ ROOTUnmarshaler = (*LeafO)(nil)
+)
 
 // LeafB implements ROOT TLeafB
 type LeafB struct {
@@ -201,6 +218,20 @@ func (leaf *LeafB) imax() int {
 
 func (leaf *LeafB) TypeName() string {
 	return "int8"
+}
+
+func (leaf *LeafB) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(leaf.rvers)
+	leaf.tleaf.MarshalROOT(w)
+	w.WriteI8(leaf.min)
+	w.WriteI8(leaf.max)
+
+	return w.SetByteCount(pos, "TLeafB")
 }
 
 func (leaf *LeafB) UnmarshalROOT(r *RBuffer) error {
@@ -298,10 +329,13 @@ func init() {
 	Factory.add("*rootio.LeafB", f)
 }
 
-var _ Object = (*LeafB)(nil)
-var _ Named = (*LeafB)(nil)
-var _ Leaf = (*LeafB)(nil)
-var _ ROOTUnmarshaler = (*LeafB)(nil)
+var (
+	_ Object          = (*LeafB)(nil)
+	_ Named           = (*LeafB)(nil)
+	_ Leaf            = (*LeafB)(nil)
+	_ ROOTMarshaler   = (*LeafB)(nil)
+	_ ROOTUnmarshaler = (*LeafB)(nil)
+)
 
 // LeafS implements ROOT TLeafS
 type LeafS struct {
@@ -360,6 +394,20 @@ func (leaf *LeafS) imax() int {
 
 func (leaf *LeafS) TypeName() string {
 	return "int16"
+}
+
+func (leaf *LeafS) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(leaf.rvers)
+	leaf.tleaf.MarshalROOT(w)
+	w.WriteI16(leaf.min)
+	w.WriteI16(leaf.max)
+
+	return w.SetByteCount(pos, "TLeafS")
 }
 
 func (leaf *LeafS) UnmarshalROOT(r *RBuffer) error {
@@ -457,10 +505,13 @@ func init() {
 	Factory.add("*rootio.LeafS", f)
 }
 
-var _ Object = (*LeafS)(nil)
-var _ Named = (*LeafS)(nil)
-var _ Leaf = (*LeafS)(nil)
-var _ ROOTUnmarshaler = (*LeafS)(nil)
+var (
+	_ Object          = (*LeafS)(nil)
+	_ Named           = (*LeafS)(nil)
+	_ Leaf            = (*LeafS)(nil)
+	_ ROOTMarshaler   = (*LeafS)(nil)
+	_ ROOTUnmarshaler = (*LeafS)(nil)
+)
 
 // LeafI implements ROOT TLeafI
 type LeafI struct {
@@ -519,6 +570,20 @@ func (leaf *LeafI) imax() int {
 
 func (leaf *LeafI) TypeName() string {
 	return "int32"
+}
+
+func (leaf *LeafI) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(leaf.rvers)
+	leaf.tleaf.MarshalROOT(w)
+	w.WriteI32(leaf.min)
+	w.WriteI32(leaf.max)
+
+	return w.SetByteCount(pos, "TLeafI")
 }
 
 func (leaf *LeafI) UnmarshalROOT(r *RBuffer) error {
@@ -616,10 +681,13 @@ func init() {
 	Factory.add("*rootio.LeafI", f)
 }
 
-var _ Object = (*LeafI)(nil)
-var _ Named = (*LeafI)(nil)
-var _ Leaf = (*LeafI)(nil)
-var _ ROOTUnmarshaler = (*LeafI)(nil)
+var (
+	_ Object          = (*LeafI)(nil)
+	_ Named           = (*LeafI)(nil)
+	_ Leaf            = (*LeafI)(nil)
+	_ ROOTMarshaler   = (*LeafI)(nil)
+	_ ROOTUnmarshaler = (*LeafI)(nil)
+)
 
 // LeafL implements ROOT TLeafL
 type LeafL struct {
@@ -678,6 +746,20 @@ func (leaf *LeafL) imax() int {
 
 func (leaf *LeafL) TypeName() string {
 	return "int64"
+}
+
+func (leaf *LeafL) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(leaf.rvers)
+	leaf.tleaf.MarshalROOT(w)
+	w.WriteI64(leaf.min)
+	w.WriteI64(leaf.max)
+
+	return w.SetByteCount(pos, "TLeafL")
 }
 
 func (leaf *LeafL) UnmarshalROOT(r *RBuffer) error {
@@ -775,10 +857,13 @@ func init() {
 	Factory.add("*rootio.LeafL", f)
 }
 
-var _ Object = (*LeafL)(nil)
-var _ Named = (*LeafL)(nil)
-var _ Leaf = (*LeafL)(nil)
-var _ ROOTUnmarshaler = (*LeafL)(nil)
+var (
+	_ Object          = (*LeafL)(nil)
+	_ Named           = (*LeafL)(nil)
+	_ Leaf            = (*LeafL)(nil)
+	_ ROOTMarshaler   = (*LeafL)(nil)
+	_ ROOTUnmarshaler = (*LeafL)(nil)
+)
 
 // LeafF implements ROOT TLeafF
 type LeafF struct {
@@ -827,6 +912,20 @@ func (leaf *LeafF) value() interface{} {
 
 func (leaf *LeafF) TypeName() string {
 	return "float32"
+}
+
+func (leaf *LeafF) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(leaf.rvers)
+	leaf.tleaf.MarshalROOT(w)
+	w.WriteF32(leaf.min)
+	w.WriteF32(leaf.max)
+
+	return w.SetByteCount(pos, "TLeafF")
 }
 
 func (leaf *LeafF) UnmarshalROOT(r *RBuffer) error {
@@ -909,10 +1008,13 @@ func init() {
 	Factory.add("*rootio.LeafF", f)
 }
 
-var _ Object = (*LeafF)(nil)
-var _ Named = (*LeafF)(nil)
-var _ Leaf = (*LeafF)(nil)
-var _ ROOTUnmarshaler = (*LeafF)(nil)
+var (
+	_ Object          = (*LeafF)(nil)
+	_ Named           = (*LeafF)(nil)
+	_ Leaf            = (*LeafF)(nil)
+	_ ROOTMarshaler   = (*LeafF)(nil)
+	_ ROOTUnmarshaler = (*LeafF)(nil)
+)
 
 // LeafD implements ROOT TLeafD
 type LeafD struct {
@@ -961,6 +1063,20 @@ func (leaf *LeafD) value() interface{} {
 
 func (leaf *LeafD) TypeName() string {
 	return "float64"
+}
+
+func (leaf *LeafD) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(leaf.rvers)
+	leaf.tleaf.MarshalROOT(w)
+	w.WriteF64(leaf.min)
+	w.WriteF64(leaf.max)
+
+	return w.SetByteCount(pos, "TLeafD")
 }
 
 func (leaf *LeafD) UnmarshalROOT(r *RBuffer) error {
@@ -1043,10 +1159,13 @@ func init() {
 	Factory.add("*rootio.LeafD", f)
 }
 
-var _ Object = (*LeafD)(nil)
-var _ Named = (*LeafD)(nil)
-var _ Leaf = (*LeafD)(nil)
-var _ ROOTUnmarshaler = (*LeafD)(nil)
+var (
+	_ Object          = (*LeafD)(nil)
+	_ Named           = (*LeafD)(nil)
+	_ Leaf            = (*LeafD)(nil)
+	_ ROOTMarshaler   = (*LeafD)(nil)
+	_ ROOTUnmarshaler = (*LeafD)(nil)
+)
 
 // LeafC implements ROOT TLeafC
 type LeafC struct {
@@ -1095,6 +1214,20 @@ func (leaf *LeafC) value() interface{} {
 
 func (leaf *LeafC) TypeName() string {
 	return "string"
+}
+
+func (leaf *LeafC) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(leaf.rvers)
+	leaf.tleaf.MarshalROOT(w)
+	w.WriteI32(leaf.min)
+	w.WriteI32(leaf.max)
+
+	return w.SetByteCount(pos, "TLeafC")
 }
 
 func (leaf *LeafC) UnmarshalROOT(r *RBuffer) error {
@@ -1177,7 +1310,10 @@ func init() {
 	Factory.add("*rootio.LeafC", f)
 }
 
-var _ Object = (*LeafC)(nil)
-var _ Named = (*LeafC)(nil)
-var _ Leaf = (*LeafC)(nil)
-var _ ROOTUnmarshaler = (*LeafC)(nil)
+var (
+	_ Object          = (*LeafC)(nil)
+	_ Named           = (*LeafC)(nil)
+	_ Leaf            = (*LeafC)(nil)
+	_ ROOTMarshaler   = (*LeafC)(nil)
+	_ ROOTUnmarshaler = (*LeafC)(nil)
+)

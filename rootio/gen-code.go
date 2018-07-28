@@ -63,26 +63,33 @@ func genLeaves() {
 		Type       string
 		Kind       string
 		DoUnsigned bool
-		Func       string
-		FuncArray  string
+		RFunc      string
+		RFuncArray string
+		WFunc      string
+		WFuncArray string
 		RangeType  string
-		RangeFunc  string
+		RRangeFunc string
+		WRangeFunc string
 		Count      bool
 	}{
 		{
-			Name:      "LeafO",
-			Type:      "bool",
-			Kind:      "reflect.Bool",
-			Func:      "r.ReadBool()",
-			FuncArray: "r.ReadFastArrayBool",
+			Name:       "LeafO",
+			Type:       "bool",
+			Kind:       "reflect.Bool",
+			RFunc:      "r.ReadBool()",
+			RFuncArray: "r.ReadFastArrayBool",
+			WFunc:      "w.WriteBool",
+			WFuncArray: "w.WriteFastArrayBool",
 		},
 		{
 			Name:       "LeafB",
 			Type:       "int8",
 			Kind:       "reflect.Int8",
 			DoUnsigned: true,
-			Func:       "r.ReadI8()",
-			FuncArray:  "r.ReadFastArrayI8",
+			RFunc:      "r.ReadI8()",
+			RFuncArray: "r.ReadFastArrayI8",
+			WFunc:      "w.WriteI8",
+			WFuncArray: "w.WriteFastArrayI8",
 			Count:      true,
 		},
 		{
@@ -90,8 +97,10 @@ func genLeaves() {
 			Type:       "int16",
 			Kind:       "reflect.Int16",
 			DoUnsigned: true,
-			Func:       "r.ReadI16()",
-			FuncArray:  "r.ReadFastArrayI16",
+			RFunc:      "r.ReadI16()",
+			RFuncArray: "r.ReadFastArrayI16",
+			WFunc:      "w.WriteI16",
+			WFuncArray: "w.WriteFastArrayI16",
 			Count:      true,
 		},
 		{
@@ -99,8 +108,10 @@ func genLeaves() {
 			Type:       "int32",
 			Kind:       "reflect.Int32",
 			DoUnsigned: true,
-			Func:       "r.ReadI32()",
-			FuncArray:  "r.ReadFastArrayI32",
+			RFunc:      "r.ReadI32()",
+			RFuncArray: "r.ReadFastArrayI32",
+			WFunc:      "w.WriteI32",
+			WFuncArray: "w.WriteFastArrayI32",
 			Count:      true,
 		},
 		{
@@ -108,32 +119,41 @@ func genLeaves() {
 			Type:       "int64",
 			Kind:       "reflect.Int64",
 			DoUnsigned: true,
-			Func:       "r.ReadI64()",
-			FuncArray:  "r.ReadFastArrayI64",
+			RFunc:      "r.ReadI64()",
+			RFuncArray: "r.ReadFastArrayI64",
+			WFunc:      "w.WriteI64",
+			WFuncArray: "w.WriteFastArrayI64",
 			Count:      true,
 		},
 		{
-			Name:      "LeafF",
-			Type:      "float32",
-			Kind:      "reflect.Float32",
-			Func:      "r.ReadF32()",
-			FuncArray: "r.ReadFastArrayF32",
+			Name:       "LeafF",
+			Type:       "float32",
+			Kind:       "reflect.Float32",
+			RFunc:      "r.ReadF32()",
+			RFuncArray: "r.ReadFastArrayF32",
+			WFunc:      "w.WriteF32",
+			WFuncArray: "w.WriteFastArrayF32",
 		},
 		{
-			Name:      "LeafD",
-			Type:      "float64",
-			Kind:      "reflect.Float64",
-			Func:      "r.ReadF64()",
-			FuncArray: "r.ReadFastArrayF64",
+			Name:       "LeafD",
+			Type:       "float64",
+			Kind:       "reflect.Float64",
+			RFunc:      "r.ReadF64()",
+			RFuncArray: "r.ReadFastArrayF64",
+			WFunc:      "w.WriteF64",
+			WFuncArray: "w.WriteFastArrayF64",
 		},
 		{
-			Name:      "LeafC",
-			Type:      "string",
-			Kind:      "reflect.String",
-			Func:      "r.ReadString()",
-			FuncArray: "r.ReadFastArrayString",
-			RangeType: "int32",
-			RangeFunc: "r.ReadI32()",
+			Name:       "LeafC",
+			Type:       "string",
+			Kind:       "reflect.String",
+			RFunc:      "r.ReadString()",
+			RFuncArray: "r.ReadFastArrayString",
+			WFunc:      "w.WriteString()",
+			WFuncArray: "w.WriteFastArrayString",
+			RangeType:  "int32",
+			RRangeFunc: "r.ReadI32()",
+			WRangeFunc: "w.WriteI32",
 		},
 	} {
 		if i > 0 {
@@ -141,7 +161,8 @@ func genLeaves() {
 		}
 		if typ.RangeType == "" {
 			typ.RangeType = typ.Type
-			typ.RangeFunc = typ.Func
+			typ.RRangeFunc = typ.RFunc
+			typ.WRangeFunc = typ.WFunc
 		}
 		tmpl := template.Must(template.New(typ.Name).Parse(leafTmpl))
 		err = tmpl.Execute(f, typ)
@@ -373,6 +394,20 @@ func (leaf *{{.Name}}) TypeName() string {
 	return "{{.Type}}"
 }
 
+func (leaf *{{.Name}}) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(leaf.rvers)
+	leaf.tleaf.MarshalROOT(w)
+	{{.WRangeFunc}}(leaf.min)
+	{{.WRangeFunc}}(leaf.max)
+
+	return w.SetByteCount(pos, "T{{.Name}}")
+}
+
 func (leaf *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
@@ -383,8 +418,8 @@ func (leaf *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	leaf.min = {{.RangeFunc}}
-	leaf.max = {{.RangeFunc}}
+	leaf.min = {{.RRangeFunc}}
+	leaf.max = {{.RRangeFunc}}
 
 	r.CheckByteCount(pos, bcnt, start, "T{{.Name}}")
 	return r.Err()
@@ -396,7 +431,7 @@ func (leaf *{{.Name}}) readBasket(r *RBuffer) error {
 	}
 
 	if leaf.count == nil && len(leaf.val) == 1 {
-		leaf.val[0] = {{.Func}}
+		leaf.val[0] = {{.RFunc}}
 	} else {
 		if leaf.count != nil {
 			entry := leaf.Branch().getReadEntry()
@@ -408,9 +443,9 @@ func (leaf *{{.Name}}) readBasket(r *RBuffer) error {
 			if n > max {
 				n = max
 			}
-			leaf.val = {{.FuncArray}}(leaf.tleaf.len * n)
+			leaf.val = {{.RFuncArray}}(leaf.tleaf.len * n)
 		} else {
-			leaf.val = {{.FuncArray}}(leaf.tleaf.len)
+			leaf.val = {{.RFuncArray}}(leaf.tleaf.len)
 		}
 	}
 	return r.err
@@ -468,10 +503,13 @@ func init() {
 	Factory.add("*rootio.{{.Name}}", f)
 }
 
-var _ Object = (*{{.Name}})(nil)
-var _ Named = (*{{.Name}})(nil)
-var _ Leaf = (*{{.Name}})(nil)
-var _ ROOTUnmarshaler = (*{{.Name}})(nil)
+var (
+	_ Object          = (*{{.Name}})(nil)
+	_ Named           = (*{{.Name}})(nil)
+	_ Leaf            = (*{{.Name}})(nil)
+	_ ROOTMarshaler   = (*{{.Name}})(nil)
+	_ ROOTUnmarshaler = (*{{.Name}})(nil)
+)
 `
 
 const arrayTmpl = `// {{.Name}} implements ROOT T{{.Name}}
