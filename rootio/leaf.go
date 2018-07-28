@@ -205,6 +205,20 @@ func (leaf *tleafElement) TypeName() string {
 	return name
 }
 
+func (leaf *tleafElement) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(leaf.rvers)
+	leaf.tleaf.MarshalROOT(w)
+	w.WriteI32(leaf.id)
+	w.WriteI32(leaf.ltype)
+
+	return w.SetByteCount(pos, "TLeafElement")
+}
+
 func (leaf *tleafElement) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -309,9 +323,10 @@ var (
 	_ Leaf            = (*tleaf)(nil)
 	_ ROOTMarshaler   = (*tleaf)(nil)
 	_ ROOTUnmarshaler = (*tleaf)(nil)
-)
 
-var _ Object = (*tleafElement)(nil)
-var _ Named = (*tleafElement)(nil)
-var _ Leaf = (*tleafElement)(nil)
-var _ ROOTUnmarshaler = (*tleafElement)(nil)
+	_ Object          = (*tleafElement)(nil)
+	_ Named           = (*tleafElement)(nil)
+	_ Leaf            = (*tleafElement)(nil)
+	_ ROOTMarshaler   = (*tleafElement)(nil)
+	_ ROOTUnmarshaler = (*tleafElement)(nil)
+)
