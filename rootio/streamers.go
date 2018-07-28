@@ -33,6 +33,7 @@ type tstreamerInfo struct {
 	named  tnamed
 	chksum uint32
 	clsver int32
+	objarr *tobjarray
 	elems  []StreamerElement
 }
 
@@ -76,15 +77,16 @@ func (tsi *tstreamerInfo) UnmarshalROOT(r *RBuffer) error {
 		return r.err
 	}
 
-	elems := objs.(ObjArray)
+	tsi.objarr = objs.(*tobjarray)
 	tsi.elems = nil
-	if elems.Len() > 0 {
-		tsi.elems = make([]StreamerElement, elems.Len())
+	if tsi.objarr.Len() > 0 {
+		tsi.elems = make([]StreamerElement, tsi.objarr.Len())
 		for i := range tsi.elems {
-			elem := elems.At(i)
+			elem := tsi.objarr.At(i)
 			tsi.elems[i] = elem.(StreamerElement)
 		}
 	}
+	tsi.objarr.arr = nil
 
 	r.CheckByteCount(pos, bcnt, start, "TStreamerInfo")
 	return r.Err()

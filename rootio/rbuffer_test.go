@@ -159,6 +159,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0xa2a28f2,
 						clsver: 19,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  31,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
@@ -886,6 +894,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0xfbe93f79,
 						clsver: 1,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  2,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
@@ -966,6 +982,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0x52d96731,
 						clsver: 1,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  1,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
@@ -1023,6 +1047,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0x51a23e92,
 						clsver: 1,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  2,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
@@ -1102,6 +1134,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0x47c56358,
 						clsver: 1,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  1,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
@@ -1159,6 +1199,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0xfacd2184,
 						clsver: 2,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  2,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBasicType{
 								tstreamerElement: tstreamerElement{
@@ -1238,6 +1286,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0x911cc38e,
 						clsver: 12,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  20,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
@@ -1726,6 +1782,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0xd0548a75,
 						clsver: 1,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  2,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
@@ -1806,6 +1870,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0x2b643927,
 						clsver: 2,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  6,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
@@ -1974,6 +2046,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0x74651570,
 						clsver: 1,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  2,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
@@ -2054,6 +2134,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0x51705bd0,
 						clsver: 1,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  2,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
@@ -2134,6 +2222,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0x9716fde,
 						clsver: 1,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  2,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
@@ -2214,6 +2310,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0x79c882a7,
 						clsver: 5,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  0,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
@@ -2250,6 +2354,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0xd79a0d4d,
 						clsver: 0,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  0,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
@@ -2286,6 +2398,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0x8fd14d5e,
 						clsver: 3,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  2,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
@@ -2366,7 +2486,15 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0x17419,
 						clsver: 2,
-						elems:  nil,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  -1,
+							arr:   nil,
+							low:   0,
+						},
+						elems: nil,
 					},
 					&tstreamerInfo{
 						rvers: 9,
@@ -2378,6 +2506,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0xae295353,
 						clsver: 1,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  1,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
@@ -2436,6 +2572,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0xac58de3a,
 						clsver: 3,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  4,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
@@ -2562,6 +2706,14 @@ func TestReadRBuffer(t *testing.T) {
 						},
 						chksum: 0xf6eac680,
 						clsver: 3,
+						objarr: &tobjarray{
+							rvers: 3,
+							obj:   tobject{id: 0x0, bits: 0x3000000},
+							name:  "",
+							last:  2,
+							arr:   nil,
+							low:   0,
+						},
 						elems: []StreamerElement{
 							&tstreamerBase{
 								tstreamerElement: tstreamerElement{
