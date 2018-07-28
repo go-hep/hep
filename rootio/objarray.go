@@ -49,6 +49,28 @@ func (arr *tobjarray) LowerBound() int {
 	return int(arr.low)
 }
 
+// ROOTMarshaler is the interface implemented by an object that can
+// marshal itself to a ROOT buffer
+func (arr *tobjarray) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(arr.rvers)
+	arr.obj.MarshalROOT(w)
+	w.WriteString(arr.name)
+
+	w.WriteI32(int32(len(arr.arr)))
+	w.WriteI32(arr.low)
+
+	for _, obj := range arr.arr {
+		w.WriteObjectAny(obj)
+	}
+
+	return w.SetByteCount(pos, "TObjArray")
+}
+
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (arr *tobjarray) UnmarshalROOT(r *RBuffer) error {
@@ -100,5 +122,6 @@ var (
 	_ Object          = (*tobjarray)(nil)
 	_ Named           = (*tobjarray)(nil)
 	_ ObjArray        = (*tobjarray)(nil)
+	_ ROOTMarshaler   = (*tobjarray)(nil)
 	_ ROOTUnmarshaler = (*tobjarray)(nil)
 )
