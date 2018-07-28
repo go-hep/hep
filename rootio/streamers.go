@@ -61,6 +61,29 @@ func (tsi *tstreamerInfo) Elements() []StreamerElement {
 	return tsi.elems
 }
 
+func (tsi *tstreamerInfo) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(tsi.rvers)
+	tsi.named.MarshalROOT(w)
+	w.WriteU32(tsi.chksum)
+	w.WriteI32(tsi.clsver)
+
+	if len(tsi.elems) > 0 {
+		tsi.objarr.arr = make([]Object, len(tsi.elems))
+		for i, v := range tsi.elems {
+			tsi.objarr.arr[i] = v
+		}
+	}
+	w.WriteObjectAny(tsi.objarr)
+	tsi.objarr.arr = nil
+
+	return w.SetByteCount(pos, "TStreamerInfo")
+}
+
 func (tsi *tstreamerInfo) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
@@ -132,7 +155,7 @@ func (tse *tstreamerElement) Type() int {
 }
 
 func (tse *tstreamerElement) Offset() uintptr {
-	return 0
+	return uintptr(tse.offset)
 }
 
 func (tse *tstreamerElement) Size() uintptr {
@@ -141,6 +164,38 @@ func (tse *tstreamerElement) Size() uintptr {
 
 func (tse *tstreamerElement) TypeName() string {
 	return tse.ename
+}
+
+func (tse *tstreamerElement) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(tse.rvers)
+	tse.named.MarshalROOT(w)
+	w.WriteI32(tse.etype)
+	w.WriteI32(tse.esize)
+	w.WriteI32(tse.arrlen)
+	w.WriteI32(tse.arrdim)
+	if tse.rvers == 1 {
+		w.WriteStaticArrayI32(tse.maxidx[:])
+	} else {
+		w.WriteFastArrayI32(tse.maxidx[:])
+	}
+	w.WriteString(tse.ename)
+
+	switch {
+	case tse.rvers == 3:
+		w.WriteF64(tse.xmin)
+		w.WriteF64(tse.xmax)
+		w.WriteF64(tse.factor)
+	case tse.rvers > 3:
+		// FIXME(sbinet)
+		// if (TestBit(kHasRange)) GetRange(GetTitle(),fXmin,fXmax,fFactor)
+	}
+
+	return w.SetByteCount(pos, "TStreamerElement")
 }
 
 func (tse *tstreamerElement) UnmarshalROOT(r *RBuffer) error {
@@ -198,6 +253,22 @@ func (tsb *tstreamerBase) Class() string {
 	return "TStreamerBase"
 }
 
+func (tsb *tstreamerBase) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(tsb.rvers)
+	tsb.tstreamerElement.MarshalROOT(w)
+
+	if tsb.rvers > 2 {
+		w.WriteI32(tsb.vbase)
+	}
+
+	return w.SetByteCount(pos, "TStreamerBase")
+}
+
 func (tsb *tstreamerBase) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
@@ -222,6 +293,18 @@ type tstreamerBasicType struct {
 
 func (tsb *tstreamerBasicType) Class() string {
 	return "TStreamerBasicType"
+}
+
+func (tsb *tstreamerBasicType) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(tsb.rvers)
+	tsb.tstreamerElement.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerBasicType")
 }
 
 func (tsb *tstreamerBasicType) UnmarshalROOT(r *RBuffer) error {
@@ -276,6 +359,21 @@ func (tsb *tstreamerBasicPointer) Class() string {
 	return "TStreamerBasicPointer"
 }
 
+func (tsb *tstreamerBasicPointer) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(tsb.rvers)
+	tsb.tstreamerElement.MarshalROOT(w)
+	w.WriteI32(tsb.cvers)
+	w.WriteString(tsb.cname)
+	w.WriteString(tsb.ccls)
+
+	return w.SetByteCount(pos, "TStreamerBasicPointer")
+}
+
 func (tsb *tstreamerBasicPointer) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -306,6 +404,21 @@ func (*tstreamerLoop) Class() string {
 	return "TStreamerLoop"
 }
 
+func (tsl *tstreamerLoop) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(tsl.rvers)
+	tsl.tstreamerElement.MarshalROOT(w)
+	w.WriteI32(tsl.cvers)
+	w.WriteString(tsl.cname)
+	w.WriteString(tsl.cclass)
+
+	return w.SetByteCount(pos, "TStreamerLoop")
+}
+
 func (tsl *tstreamerLoop) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -333,6 +446,17 @@ func (tso *tstreamerObject) Class() string {
 	return "TStreamerObject"
 }
 
+func (tso *tstreamerObject) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(tso.rvers)
+	tso.tstreamerElement.MarshalROOT(w)
+	return w.SetByteCount(pos, "TStreamerObject")
+}
+
 func (tso *tstreamerObject) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -354,6 +478,17 @@ type tstreamerObjectPointer struct {
 
 func (tso *tstreamerObjectPointer) Class() string {
 	return "TStreamerObjectPointer"
+}
+
+func (tso *tstreamerObjectPointer) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(tso.rvers)
+	tso.tstreamerElement.MarshalROOT(w)
+	return w.SetByteCount(pos, "TStreamerObjectPointer")
 }
 
 func (tso *tstreamerObjectPointer) UnmarshalROOT(r *RBuffer) error {
@@ -379,6 +514,18 @@ func (tso *tstreamerObjectAny) Class() string {
 	return "TStreamerObjectAny"
 }
 
+func (tso *tstreamerObjectAny) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(tso.rvers)
+	tso.tstreamerElement.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerObjectAny")
+}
+
 func (tso *tstreamerObjectAny) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -402,6 +549,18 @@ func (tso *tstreamerObjectAnyPointer) Class() string {
 	return "TStreamerObjectAnyPointer"
 }
 
+func (tso *tstreamerObjectAnyPointer) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(tso.rvers)
+	tso.tstreamerElement.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerObjectAnyPointer")
+}
+
 func (tso *tstreamerObjectAnyPointer) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -423,6 +582,18 @@ type tstreamerString struct {
 
 func (tss *tstreamerString) Class() string {
 	return "TStreamerString"
+}
+
+func (tss *tstreamerString) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(tss.rvers)
+	tss.tstreamerElement.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerString")
 }
 
 func (tss *tstreamerString) UnmarshalROOT(r *RBuffer) error {
@@ -456,6 +627,20 @@ func (tss *tstreamerSTL) elemTypeName() string {
 		return ""
 	}
 	return strings.TrimSpace(o[1])
+}
+
+func (tss *tstreamerSTL) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(tss.rvers)
+	tss.tstreamerElement.MarshalROOT(w)
+	w.WriteI32(tss.vtype)
+	w.WriteI32(tss.ctype)
+
+	return w.SetByteCount(pos, "TStreamerSTL")
 }
 
 func (tss *tstreamerSTL) UnmarshalROOT(r *RBuffer) error {
@@ -498,6 +683,18 @@ func (tss *tstreamerSTLstring) Class() string {
 	return "TStreamerSTLstring"
 }
 
+func (tss *tstreamerSTLstring) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(tss.rvers)
+	tss.tstreamerSTL.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerSTLstring")
+}
+
 func (tss *tstreamerSTLstring) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -519,6 +716,18 @@ type tstreamerArtificial struct {
 
 func (tss *tstreamerArtificial) Class() string {
 	return "TStreamerArtificial"
+}
+
+func (tsa *tstreamerArtificial) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(tsa.rvers)
+	tsa.tstreamerElement.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerArtificial")
 }
 
 func (tsa *tstreamerArtificial) UnmarshalROOT(r *RBuffer) error {
@@ -721,67 +930,82 @@ func (db *streamerDb) add(streamer StreamerInfo) {
 	db.db[key] = streamer
 }
 
-var _ Object = (*tstreamerInfo)(nil)
-var _ Named = (*tstreamerInfo)(nil)
-var _ StreamerInfo = (*tstreamerInfo)(nil)
-var _ ROOTUnmarshaler = (*tstreamerInfo)(nil)
+var (
+	_ Object          = (*tstreamerInfo)(nil)
+	_ Named           = (*tstreamerInfo)(nil)
+	_ StreamerInfo    = (*tstreamerInfo)(nil)
+	_ ROOTMarshaler   = (*tstreamerInfo)(nil)
+	_ ROOTUnmarshaler = (*tstreamerInfo)(nil)
 
-var _ Object = (*tstreamerElement)(nil)
-var _ Named = (*tstreamerElement)(nil)
-var _ StreamerElement = (*tstreamerElement)(nil)
-var _ ROOTUnmarshaler = (*tstreamerElement)(nil)
+	_ Object          = (*tstreamerElement)(nil)
+	_ Named           = (*tstreamerElement)(nil)
+	_ StreamerElement = (*tstreamerElement)(nil)
+	_ ROOTMarshaler   = (*tstreamerElement)(nil)
+	_ ROOTUnmarshaler = (*tstreamerElement)(nil)
 
-var _ Object = (*tstreamerBase)(nil)
-var _ Named = (*tstreamerBase)(nil)
-var _ StreamerElement = (*tstreamerBase)(nil)
-var _ ROOTUnmarshaler = (*tstreamerBase)(nil)
+	_ Object          = (*tstreamerBase)(nil)
+	_ Named           = (*tstreamerBase)(nil)
+	_ StreamerElement = (*tstreamerBase)(nil)
+	_ ROOTMarshaler   = (*tstreamerBase)(nil)
+	_ ROOTUnmarshaler = (*tstreamerBase)(nil)
 
-var _ Object = (*tstreamerBasicType)(nil)
-var _ Named = (*tstreamerBasicType)(nil)
-var _ StreamerElement = (*tstreamerBasicType)(nil)
-var _ ROOTUnmarshaler = (*tstreamerBasicType)(nil)
+	_ Object          = (*tstreamerBasicType)(nil)
+	_ Named           = (*tstreamerBasicType)(nil)
+	_ StreamerElement = (*tstreamerBasicType)(nil)
+	_ ROOTMarshaler   = (*tstreamerBasicType)(nil)
+	_ ROOTUnmarshaler = (*tstreamerBasicType)(nil)
 
-var _ Object = (*tstreamerBasicPointer)(nil)
-var _ Named = (*tstreamerBasicPointer)(nil)
-var _ StreamerElement = (*tstreamerBasicPointer)(nil)
-var _ ROOTUnmarshaler = (*tstreamerBasicPointer)(nil)
+	_ Object          = (*tstreamerBasicPointer)(nil)
+	_ Named           = (*tstreamerBasicPointer)(nil)
+	_ StreamerElement = (*tstreamerBasicPointer)(nil)
+	_ ROOTMarshaler   = (*tstreamerBasicPointer)(nil)
+	_ ROOTUnmarshaler = (*tstreamerBasicPointer)(nil)
 
-var _ Object = (*tstreamerLoop)(nil)
-var _ Named = (*tstreamerLoop)(nil)
-var _ StreamerElement = (*tstreamerLoop)(nil)
-var _ ROOTUnmarshaler = (*tstreamerLoop)(nil)
+	_ Object          = (*tstreamerLoop)(nil)
+	_ Named           = (*tstreamerLoop)(nil)
+	_ StreamerElement = (*tstreamerLoop)(nil)
+	_ ROOTMarshaler   = (*tstreamerLoop)(nil)
+	_ ROOTUnmarshaler = (*tstreamerLoop)(nil)
 
-var _ Object = (*tstreamerObject)(nil)
-var _ Named = (*tstreamerObject)(nil)
-var _ StreamerElement = (*tstreamerObject)(nil)
-var _ ROOTUnmarshaler = (*tstreamerObject)(nil)
+	_ Object          = (*tstreamerObject)(nil)
+	_ Named           = (*tstreamerObject)(nil)
+	_ StreamerElement = (*tstreamerObject)(nil)
+	_ ROOTMarshaler   = (*tstreamerObject)(nil)
+	_ ROOTUnmarshaler = (*tstreamerObject)(nil)
 
-var _ Object = (*tstreamerObjectPointer)(nil)
-var _ Named = (*tstreamerObjectPointer)(nil)
-var _ StreamerElement = (*tstreamerObjectPointer)(nil)
-var _ ROOTUnmarshaler = (*tstreamerObjectPointer)(nil)
+	_ Object          = (*tstreamerObjectPointer)(nil)
+	_ Named           = (*tstreamerObjectPointer)(nil)
+	_ StreamerElement = (*tstreamerObjectPointer)(nil)
+	_ ROOTMarshaler   = (*tstreamerObjectPointer)(nil)
+	_ ROOTUnmarshaler = (*tstreamerObjectPointer)(nil)
 
-var _ Object = (*tstreamerObjectAny)(nil)
-var _ Named = (*tstreamerObjectAny)(nil)
-var _ StreamerElement = (*tstreamerObjectAny)(nil)
-var _ ROOTUnmarshaler = (*tstreamerObjectAny)(nil)
+	_ Object          = (*tstreamerObjectAny)(nil)
+	_ Named           = (*tstreamerObjectAny)(nil)
+	_ StreamerElement = (*tstreamerObjectAny)(nil)
+	_ ROOTMarshaler   = (*tstreamerObjectAny)(nil)
+	_ ROOTUnmarshaler = (*tstreamerObjectAny)(nil)
 
-var _ Object = (*tstreamerString)(nil)
-var _ Named = (*tstreamerString)(nil)
-var _ StreamerElement = (*tstreamerString)(nil)
-var _ ROOTUnmarshaler = (*tstreamerString)(nil)
+	_ Object          = (*tstreamerString)(nil)
+	_ Named           = (*tstreamerString)(nil)
+	_ StreamerElement = (*tstreamerString)(nil)
+	_ ROOTMarshaler   = (*tstreamerString)(nil)
+	_ ROOTUnmarshaler = (*tstreamerString)(nil)
 
-var _ Object = (*tstreamerSTL)(nil)
-var _ Named = (*tstreamerSTL)(nil)
-var _ StreamerElement = (*tstreamerSTL)(nil)
-var _ ROOTUnmarshaler = (*tstreamerSTL)(nil)
+	_ Object          = (*tstreamerSTL)(nil)
+	_ Named           = (*tstreamerSTL)(nil)
+	_ StreamerElement = (*tstreamerSTL)(nil)
+	_ ROOTMarshaler   = (*tstreamerSTL)(nil)
+	_ ROOTUnmarshaler = (*tstreamerSTL)(nil)
 
-var _ Object = (*tstreamerSTLstring)(nil)
-var _ Named = (*tstreamerSTLstring)(nil)
-var _ StreamerElement = (*tstreamerSTLstring)(nil)
-var _ ROOTUnmarshaler = (*tstreamerSTLstring)(nil)
+	_ Object          = (*tstreamerSTLstring)(nil)
+	_ Named           = (*tstreamerSTLstring)(nil)
+	_ StreamerElement = (*tstreamerSTLstring)(nil)
+	_ ROOTMarshaler   = (*tstreamerSTLstring)(nil)
+	_ ROOTUnmarshaler = (*tstreamerSTLstring)(nil)
 
-var _ Object = (*tstreamerArtificial)(nil)
-var _ Named = (*tstreamerArtificial)(nil)
-var _ StreamerElement = (*tstreamerArtificial)(nil)
-var _ ROOTUnmarshaler = (*tstreamerArtificial)(nil)
+	_ Object          = (*tstreamerArtificial)(nil)
+	_ Named           = (*tstreamerArtificial)(nil)
+	_ StreamerElement = (*tstreamerArtificial)(nil)
+	_ ROOTMarshaler   = (*tstreamerArtificial)(nil)
+	_ ROOTUnmarshaler = (*tstreamerArtificial)(nil)
+)

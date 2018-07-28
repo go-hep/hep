@@ -95,7 +95,6 @@ func testReadRBuffer(t *testing.T, name, file string, want interface{}) {
 var rwBufferCases = []struct {
 	name string
 	file string
-	skip bool
 	want ROOTUnmarshaler
 }{
 	{
@@ -176,7 +175,6 @@ var rwBufferCases = []struct {
 	{
 		name: "TList",
 		file: "testdata/tlist-tsi.dat",
-		skip: true,
 		want: &tlist{
 			rvers: 5,
 			obj:   tobject{id: 0x0, bits: 0x3004000},
