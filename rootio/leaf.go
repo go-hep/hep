@@ -112,6 +112,24 @@ func (leaf *tleaf) TypeName() string {
 	panic("not implemented")
 }
 
+func (leaf *tleaf) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(leaf.rvers)
+	leaf.named.MarshalROOT(w)
+
+	w.WriteI32(int32(leaf.len))
+	w.WriteI32(int32(leaf.etype))
+	w.WriteI32(int32(leaf.offset))
+	w.WriteBool(leaf.hasrange)
+	w.WriteBool(leaf.unsigned)
+	w.WriteObjectAny(leaf.count)
+	return w.SetByteCount(pos, "TLeaf")
+}
+
 func (leaf *tleaf) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
@@ -285,10 +303,13 @@ func init() {
 	}
 }
 
-var _ Object = (*tleaf)(nil)
-var _ Named = (*tleaf)(nil)
-var _ Leaf = (*tleaf)(nil)
-var _ ROOTUnmarshaler = (*tleaf)(nil)
+var (
+	_ Object          = (*tleaf)(nil)
+	_ Named           = (*tleaf)(nil)
+	_ Leaf            = (*tleaf)(nil)
+	_ ROOTMarshaler   = (*tleaf)(nil)
+	_ ROOTUnmarshaler = (*tleaf)(nil)
+)
 
 var _ Object = (*tleafElement)(nil)
 var _ Named = (*tleafElement)(nil)
