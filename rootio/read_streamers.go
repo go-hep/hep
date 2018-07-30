@@ -541,6 +541,22 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 			panic(fmt.Errorf("rootio: invalid element type value %d for %#v", se.etype, se))
 		}
 
+	case *tstreamerBase:
+		switch se.tstreamerElement.ename {
+		case "BASE":
+			// FIXME(sbinet): get the StreamerInfo with the right version (se.vbase)
+			sibase, err := sictx.StreamerInfo(se.tstreamerElement.Name())
+			if err != nil {
+				panic(err)
+			}
+			base := sibase.Elements()[0]
+			bptr := rf.Field(0).Addr().Interface()
+			return rstreamerFrom(base, bptr, lcnt, sictx)
+
+		default:
+			panic(fmt.Errorf("rootio: invalid streamer base name %q: %#v", se.ename, se))
+		}
+
 	case *tstreamerSTLstring:
 		switch se.ctype {
 		case kSTLstring:
@@ -730,6 +746,17 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 		default:
 			panic(fmt.Errorf("rootio: invalid STL type %d for %#v", se.vtype, se))
 		}
+
+	case *tstreamerObject:
+		// FIXME(sbinet): get the StreamerInfo with the right version (se.rvers)
+		//		sinfo, err := sictx.StreamerInfo(se.ename)
+		//		if err != nil {
+		//			panic(fmt.Errorf("rootio: no streamer info for %q: %v", se.ename, err))
+		//		}
+		rptr := ptr.(ROOTUnmarshaler)
+		return rptr.UnmarshalROOT
+
+		panic(fmt.Errorf("boo: %#v", se))
 
 	case *tstreamerObjectAny:
 		sinfo, ok := streamers.getAny(se.ename)
