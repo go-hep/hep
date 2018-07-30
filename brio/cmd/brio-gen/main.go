@@ -1,4 +1,4 @@
-// Copyright 2016 The go-hep Authors.  All rights reserved.
+// Copyright 2016 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,7 +7,7 @@ package main
 
 import (
 	"flag"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -33,9 +33,27 @@ func main() {
 	}
 
 	types := strings.Split(*typeNames, ",")
-	g, err := gen.NewGenerator(*pkgPath)
+	out, err := os.Create(*output)
 	if err != nil {
 		log.Fatal(err)
+	}
+	defer out.Close()
+
+	err = generate(out, *pkgPath, types)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = out.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func generate(w io.Writer, pkg string, types []string) error {
+	g, err := gen.NewGenerator(pkg)
+	if err != nil {
+		return err
 	}
 
 	for _, t := range types {
@@ -44,11 +62,13 @@ func main() {
 
 	buf, err := g.Format()
 	if err != nil {
-		log.Fatalf("gofmt: %v\n", err)
+		return err
 	}
 
-	err = ioutil.WriteFile(*output, buf, 0644)
+	_, err = w.Write(buf)
 	if err != nil {
-		log.Fatalf("error writing file [%s]: %v\n", *output, err)
+		return err
 	}
+
+	return nil
 }

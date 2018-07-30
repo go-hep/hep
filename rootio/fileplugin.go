@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"go-hep.org/x/hep/xrootd/xrdio"
 )
 
 func openFile(path string) (Reader, error) {
@@ -36,8 +38,13 @@ func openFile(path string) (Reader, error) {
 			return nil, err
 		}
 		return &tmpFile{f}, nil
+
 	case strings.HasPrefix(path, "file://"):
 		return os.Open(path)
+
+	case strings.HasPrefix(path, "xroot://"), strings.HasPrefix(path, "root://"):
+		return xrdio.Open(path)
+
 	default:
 		return os.Open(path)
 	}
@@ -56,4 +63,7 @@ func (f *tmpFile) Close() error {
 var (
 	_ Reader = (*tmpFile)(nil)
 	_ Writer = (*tmpFile)(nil)
+
+	_ Reader = (*xrdio.File)(nil)
+	_ Writer = (*xrdio.File)(nil)
 )

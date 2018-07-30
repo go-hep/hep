@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -75,10 +75,10 @@ func NewRequest(protocolVersion int32, withSecurityRequirements bool) *Request {
 	return &Request{ClientProtocolVersion: protocolVersion, Options: options}
 }
 
-// ReqID implements xrdproto.Request.ReqID
+// ReqID implements xrdproto.Request.ReqID.
 func (req *Request) ReqID() uint16 { return RequestID }
 
-// MarshalXrd implements xrdproto.Marshaler
+// MarshalXrd implements xrdproto.Marshaler.
 func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteI32(o.ClientProtocolVersion)
 	wBuffer.WriteU8(byte(o.Options))
@@ -86,7 +86,7 @@ func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return nil
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	o.ClientProtocolVersion = rBuffer.ReadI32()
 	o.Options = RequestOptions(rBuffer.ReadU8())
@@ -138,7 +138,7 @@ func (resp *Response) ForceSecurity() bool {
 	return resp.SecurityOptions&ForceSecurity != 0
 }
 
-// MarshalXrd implements xrdproto.Marshaler
+// MarshalXrd implements xrdproto.Marshaler.
 func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteI32(o.BinaryProtocolVersion)
 	wBuffer.WriteI32(int32(o.Flags))
@@ -160,7 +160,7 @@ func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return nil
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	o.BinaryProtocolVersion = rBuffer.ReadI32()
 	o.Flags = Flags(rBuffer.ReadI32())
@@ -183,5 +183,8 @@ func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	return nil
 }
 
-// RespID implements xrdproto.Response.RespID
+// RespID implements xrdproto.Response.RespID.
 func (resp *Response) RespID() uint16 { return RequestID }
+
+// ShouldSign implements xrdproto.Request.ShouldSign.
+func (req *Request) ShouldSign() bool { return false }

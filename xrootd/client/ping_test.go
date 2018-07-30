@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -9,8 +9,8 @@ import (
 	"testing"
 )
 
-func testClient_Ping(t *testing.T, addr string) {
-	client, err := NewClient(context.Background(), addr, "gopher")
+func testSession_Ping(t *testing.T, addr string) {
+	client, err := newSession(context.Background(), addr, "gopher", "", nil)
 	if err != nil {
 		t.Fatalf("could not create client: %v", err)
 	}
@@ -22,10 +22,35 @@ func testClient_Ping(t *testing.T, addr string) {
 	}
 }
 
-func TestClient_Ping(t *testing.T) {
+func TestSession_Ping(t *testing.T) {
 	for _, addr := range testClientAddrs {
 		t.Run(addr, func(t *testing.T) {
-			testClient_Ping(t, addr)
+			testSession_Ping(t, addr)
 		})
+	}
+}
+
+func BenchmarkSession_Ping(b *testing.B) {
+	for _, addr := range testClientAddrs {
+		b.Run(addr, func(b *testing.B) {
+			benchmarkSession_Ping(b, addr)
+		})
+	}
+}
+
+func benchmarkSession_Ping(b *testing.B, addr string) {
+	client, err := NewClient(context.Background(), addr, "gopher")
+	if err != nil {
+		b.Fatalf("could not create client: %v", err)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		err := client.sessions[client.initialSessionID].Ping(context.Background())
+		if err != nil {
+			b.Errorf("could not ping: %v", err)
+		}
+	}
+	if err := client.Close(); err != nil {
+		b.Fatalf("could not close client: %v", err)
 	}
 }

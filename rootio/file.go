@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 type Reader interface {
@@ -158,6 +160,24 @@ func Create(name string) (*File, error) {
 	return f, nil
 }
 
+// Stat returns the os.FileInfo structure describing this file.
+func (f *File) Stat() (os.FileInfo, error) {
+	type stater interface {
+		Stat() (os.FileInfo, error)
+	}
+	if f.r != nil {
+		if st, ok := f.r.(stater); ok {
+			return st.Stat()
+		}
+	}
+	if f.w != nil {
+		if st, ok := f.w.(stater); ok {
+			return st.Stat()
+		}
+	}
+	return nil, errors.Errorf("rootio: underlying file w/o os.FileInfo")
+}
+
 // Read implements io.Reader
 func (f *File) Read(p []byte) (int, error) {
 	return f.r.Read(p)
@@ -268,7 +288,7 @@ func (f *File) Map() {
 }
 
 func (f *File) Tell() int64 {
-	where, err := f.Seek(0, ioSeekCurrent)
+	where, err := f.Seek(0, io.SeekCurrent)
 	if err != nil {
 		panic(err)
 	}
@@ -342,19 +362,32 @@ func (f *File) StreamerInfos() []StreamerInfo {
 	return f.sinfos
 }
 
-// StreamerInfo returns the StreamerInfo with name of this file, or nil otherwise.
-func (f *File) StreamerInfo(name string) StreamerInfo {
+// StreamerInfo returns the StreamerInfo with name of this file and an error if any.
+func (f *File) StreamerInfo(name string) (StreamerInfo, error) {
 	if len(f.sinfos) == 0 {
-		return nil
+		return nil, fmt.Errorf("rootio: no streamer for %q (no streamerinfo list)", name)
 	}
 
 	for _, si := range f.sinfos {
 		if si.Name() == name {
-			return si
+			return si, nil
 		}
 	}
 
-	return nil
+	// no streamer for "name" in that file.
+	// try whether "name" isn't actually std::vector<T> and a streamer
+	// for T is in that file.
+	o := reStdVector.FindStringSubmatch(name)
+	if o != nil {
+		si := stdvecSIFrom(name, o[1], f)
+		if si != nil {
+			f.sinfos = append(f.sinfos, si)
+			streamers.add(si)
+			return si, nil
+		}
+	}
+
+	return nil, fmt.Errorf("rootio: no streamer for %q", name)
 }
 
 // Get returns the object identified by namecycle

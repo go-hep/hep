@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -43,6 +43,22 @@ func (obj *tobjstring) UnmarshalROOT(r *RBuffer) error {
 	return r.Err()
 }
 
+func (obj *tobjstring) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+	w.WriteVersion(obj.rvers)
+	if _, err := obj.obj.MarshalROOT(w); err != nil {
+		w.err = err
+		return 0, w.err
+	}
+
+	w.WriteString(obj.str)
+
+	return w.SetByteCount(pos, "TObjString")
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := &tobjstring{}
@@ -55,5 +71,6 @@ func init() {
 var (
 	_ Object          = (*tobjstring)(nil)
 	_ Named           = (*tobjstring)(nil)
+	_ ROOTMarshaler   = (*tobjstring)(nil)
 	_ ROOTUnmarshaler = (*tobjstring)(nil)
 )

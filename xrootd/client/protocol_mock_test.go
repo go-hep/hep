@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -14,7 +14,7 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/protocol"
 )
 
-func TestClient_Protocol_WithSecurityInfo(t *testing.T) {
+func TestSession_Protocol_WithSecurityInfo(t *testing.T) {
 	var protocolVersion int32 = 0x310
 
 	var want = protocol.Response{
@@ -26,7 +26,7 @@ func TestClient_Protocol_WithSecurityInfo(t *testing.T) {
 	}
 
 	serverFunc := func(cancel func(), conn net.Conn) {
-		data, err := readRequest(conn)
+		data, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
 			t.Fatalf("could not read request: %v", err)
@@ -39,36 +39,21 @@ func TestClient_Protocol_WithSecurityInfo(t *testing.T) {
 			t.Fatalf("could not unmarshal request: %v", err)
 		}
 
-		if gotHeader.RequestID != protocol.RequestID {
-			cancel()
-			t.Fatalf("invalid request id was specified:\nwant = %d\ngot = %d\n", protocol.RequestID, gotHeader.RequestID)
-		}
-
 		if gotRequest.ClientProtocolVersion != protocolVersion {
 			cancel()
 			t.Fatalf("invalid client protocol version was specified:\nwant = %d\ngot = %d\n", protocolVersion, gotRequest.ClientProtocolVersion)
 		}
 
-		responseHeader := xrdproto.ResponseHeader{
-			StreamID:   gotHeader.StreamID,
-			DataLength: 14 + xrdproto.SecurityOverrideLength,
-		}
-
-		response, err := marshalResponse(responseHeader, want)
+		err = xrdproto.WriteResponse(conn, gotHeader.StreamID, xrdproto.Ok, want)
 		if err != nil {
 			cancel()
-			t.Fatalf("could not marshal response: %v", err)
-		}
-
-		if err := writeResponse(conn, response); err != nil {
-			cancel()
-			t.Fatalf("invalid write: %s", err)
+			t.Fatalf("could not write response: %v", err)
 		}
 	}
 
 	clientFunc := func(cancel func(), client *Client) {
-		client.protocolVersion = protocolVersion
-		got, err := client.Protocol(context.Background())
+		client.sessions[client.initialSessionID].protocolVersion = protocolVersion
+		got, err := client.sessions[client.initialSessionID].Protocol(context.Background())
 		if err != nil {
 			t.Fatalf("invalid protocol call: %v", err)
 		}

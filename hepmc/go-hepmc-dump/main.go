@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -29,17 +29,23 @@
 package main
 
 import (
-	"fmt"
 	"io"
+	"log"
 	"os"
 
+	"github.com/pkg/errors"
 	"go-hep.org/x/hep/hepmc"
 )
 
 func main() {
-	var err error
-	var r io.ReadCloser
-	var w io.Writer = os.Stdout
+	log.SetPrefix("hepmc-dump: ")
+	log.SetFlags(0)
+
+	var (
+		err error
+		r   io.ReadCloser
+		w   io.Writer = os.Stdout
+	)
 
 	switch len(os.Args) {
 	case 1:
@@ -47,41 +53,39 @@ func main() {
 	case 2:
 		r, err = os.Open(os.Args[1])
 		if err != nil {
-			fmt.Printf("**error: %v\n", err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 		defer r.Close()
 	default:
 	}
 
-	dec := hepmc.NewDecoder(r)
-	if dec == nil {
-		fmt.Printf("**error: nil decoder\n")
-		os.Exit(1)
+	err = dump(w, r)
+	if err != nil {
+		log.Fatal(err)
 	}
+}
 
+func dump(w io.Writer, r io.Reader) error {
+	var err error
+	dec := hepmc.NewDecoder(r)
 	for {
 		var evt hepmc.Event
 		err = dec.Decode(&evt)
 		if err == io.EOF {
-			break
+			return nil
 		}
 		if err != nil {
-			fmt.Printf("**error: %v\n", err)
-			os.Exit(1)
+			return errors.Errorf("error decoding event: %v", err)
 		}
 		err = evt.Print(w)
 		if err != nil {
-			fmt.Printf("**error: %v\n", err)
-			os.Exit(1)
+			return errors.Errorf("error printing event: %v", err)
 		}
 
 		err = hepmc.Delete(&evt)
 		if err != nil {
-			fmt.Printf("**error: %v\n", err)
-			os.Exit(1)
+			return errors.Errorf("error deleting event: %v", err)
 		}
 	}
+	panic("unreachable")
 }
-
-// EOF

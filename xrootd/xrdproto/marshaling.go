@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -16,6 +16,11 @@ import (
 type Request interface {
 	// ReqID uniquely identifies the type of a request.
 	ReqID() uint16
+
+	// ShouldSign indicates whether this request should be signed if security level is SignLikely.
+	// For the list of actual examples see XRootD protocol specification v. 3.1.0, p.76.
+	ShouldSign() bool
+
 	Marshaler
 	Unmarshaler
 }

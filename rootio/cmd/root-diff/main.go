@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -174,7 +174,6 @@ func diffObject(key string, ref, chk rootio.Object) error {
 		return fmt.Errorf("unhandled type %T (key=%v)", ref, key)
 
 	}
-	return nil
 }
 
 func diffTree(key string, ref, chk rootio.Tree) error {

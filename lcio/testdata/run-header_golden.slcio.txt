@@ -1,0 +1,19 @@
+================================================================================
+        Run:   42
+================================================================================
+ description: a simple run header
+ detector   : my detector
+ sub-dets   : [det-1 det-2]
+ parameters :
+ parameter ints-1 [int]: 1, 2, 3, 
+ parameter ints-2 [int]: 4, 5, 6, 
+ parameter floats-1 [float]:  [empty] 
+
+ parameter floats-2 [float]:  [empty] 
+
+ parameter floats-1 [string]:  [empty] 
+
+ parameter floats-2 [string]:  [empty] 
+
+
+

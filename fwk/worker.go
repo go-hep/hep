@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -86,6 +86,7 @@ func (wrk *worker) run(tsks []Task) {
 				select {
 				case err, ok := <-evt.errc:
 					if !ok {
+						evtCancel()
 						return
 					}
 					ndone++
@@ -112,6 +113,7 @@ func (wrk *worker) run(tsks []Task) {
 
 			if err != nil {
 				wrk.errc <- err
+				evtCancel()
 				return
 			}
 		case <-wrk.runctx.Done():

@@ -1,15 +1,17 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 package rootio
+
+import "github.com/pkg/errors"
 
 type tchain struct {
 	trees []Tree
 	offs  []int64 // number of entries before this tree
 	tots  []int64 // total number of entries up to this tree
 
-	cur  int   // current tree
+	cur  int   // index of current tree
 	tree Tree  // current tree
 	off  int64 // current offset
 	tot  int64 // current number of entries
@@ -40,12 +42,68 @@ func Chain(trees ...Tree) Tree {
 		ch.tots[i] = sum
 		off += n
 	}
-	ch.nextTree()
+
+	ch.loadTree(ch.cur + 1)
 	return ch
 }
 
-func (ch *tchain) nextTree() {
-	ch.cur++
+// ChainOf returns a Tree, a close function and an error if any.
+// The tree is the logical concatenation of all the name trees
+// located in the input named files.
+// The close function allows to close all the open named files.
+func ChainOf(name string, files ...string) (Tree, func() error, error) {
+	var (
+		trees = make([]Tree, len(files))
+		fs    = make([]*File, len(files))
+	)
+
+	closef := func(fs []*File) {
+		for _, f := range fs {
+			if f == nil {
+				continue
+			}
+			f.Close()
+		}
+	}
+
+	for i, n := range files {
+		f, err := Open(n)
+		if err != nil {
+			closef(fs)
+			return nil, nil, err
+		}
+		fs[i] = f
+		obj, err := f.Get(name)
+		if err != nil {
+			closef(fs)
+			return nil, nil, err
+		}
+		t, ok := obj.(Tree)
+		if !ok {
+			closef(fs)
+			return nil, nil, errors.Errorf("rootio: object %q in file %q is not a Tree", name, n)
+		}
+
+		trees[i] = t
+	}
+
+	ch := Chain(trees...)
+	close := func() error {
+		var err error
+		for _, f := range fs {
+			e := f.Close()
+			if e != nil && err == nil {
+				err = e
+			}
+		}
+		return err
+	}
+
+	return ch, close, nil
+}
+
+func (ch *tchain) loadTree(i int) {
+	ch.cur = i
 	if ch.cur >= len(ch.trees) {
 		ch.tree = nil
 		return
@@ -127,6 +185,14 @@ func (t *tchain) Leaves() []Leaf {
 		return nil
 	}
 	return t.tree.Leaves()
+}
+
+// Leaf returns the leaf whose name is the argument.
+func (t *tchain) Leaf(name string) Leaf {
+	if t.tree == nil {
+		return nil
+	}
+	return t.tree.Leaf(name)
 }
 
 // getFile returns the underlying file.

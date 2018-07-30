@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -13,6 +13,8 @@ import (
 )
 
 func TestSimple(t *testing.T) {
+	t.Parallel()
+
 	particles := []fastjet.Jet{
 		fastjet.NewJet(+99.0, +0.1, 0, 100.0),
 		fastjet.NewJet(+04.0, -0.1, 0, 005.0),

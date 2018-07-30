@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,7 @@ package fit_test
 import (
 	"bufio"
 	"image/color"
+	"log"
 	"math"
 	"math/rand"
 	"os"
@@ -24,13 +25,13 @@ import (
 )
 
 func TestCurve1D(t *testing.T) {
-	ExampleCurve1D_gaussian(t)
-	ExampleCurve1D_exponential(t)
-	ExampleCurve1D_poly(t)
-	ExampleCurve1D_powerlaw(t)
+	ExampleCurve1D_gaussian()
+	ExampleCurve1D_exponential()
+	ExampleCurve1D_poly()
+	ExampleCurve1D_powerlaw()
 }
 
-func ExampleCurve1D_gaussian(t *testing.T) {
+func ExampleCurve1D_gaussian() {
 	var (
 		cst   = 3.0
 		mean  = 30.0
@@ -39,6 +40,9 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 	)
 
 	xdata, ydata, err := readXY("testdata/gauss-data.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	gauss := func(x, cst, mu, sigma float64) float64 {
 		v := (x - mu)
@@ -57,14 +61,14 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 		nil, &optimize.NelderMead{},
 	)
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if err := res.Status.Err(); err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 	if got := res.X; !floats.EqualApprox(got, want, 1e-3) {
-		t.Fatalf("got= %v\nwant=%v\n", got, want)
+		log.Fatalf("got= %v\nwant=%v\n", got, want)
 	}
 
 	{
@@ -87,12 +91,12 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 
 		err := p.Save(20*vg.Centimeter, -1, "testdata/gauss-plot.png")
 		if err != nil {
-			t.Fatal(err)
+			log.Fatal(err)
 		}
 	}
 }
 
-func ExampleCurve1D_exponential(t *testing.T) {
+func ExampleCurve1D_exponential() {
 	const (
 		a   = 0.3
 		b   = 0.1
@@ -100,6 +104,9 @@ func ExampleCurve1D_exponential(t *testing.T) {
 	)
 
 	xdata, ydata, err := readXY("testdata/exp-data.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	exp := func(x, a, b float64) float64 {
 		return math.Exp(a*x + b)
@@ -117,14 +124,14 @@ func ExampleCurve1D_exponential(t *testing.T) {
 		nil, &optimize.NelderMead{},
 	)
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if err := res.Status.Err(); err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 	if got, want := res.X, []float64{a, b}; !floats.EqualApprox(got, want, 0.1) {
-		t.Fatalf("got= %v\nwant=%v\n", got, want)
+		log.Fatalf("got= %v\nwant=%v\n", got, want)
 	}
 
 	{
@@ -151,12 +158,12 @@ func ExampleCurve1D_exponential(t *testing.T) {
 
 		err := p.Save(20*vg.Centimeter, -1, "testdata/exp-plot.png")
 		if err != nil {
-			t.Fatal(err)
+			log.Fatal(err)
 		}
 	}
 }
 
-func ExampleCurve1D_poly(t *testing.T) {
+func ExampleCurve1D_poly() {
 	var (
 		a    = 1.0
 		b    = 2.0
@@ -180,15 +187,15 @@ func ExampleCurve1D_poly(t *testing.T) {
 		nil, &optimize.NelderMead{},
 	)
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if err := res.Status.Err(); err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if got := res.X; !floats.EqualApprox(got, want, 1e-6) {
-		t.Fatalf("got= %v\nwant=%v\n", got, want)
+		log.Fatalf("got= %v\nwant=%v\n", got, want)
 	}
 
 	{
@@ -215,12 +222,12 @@ func ExampleCurve1D_poly(t *testing.T) {
 
 		err := p.Save(20*vg.Centimeter, -1, "testdata/poly-plot.png")
 		if err != nil {
-			t.Fatal(err)
+			log.Fatal(err)
 		}
 	}
 }
 
-func ExampleCurve1D_powerlaw(t *testing.T) {
+func ExampleCurve1D_powerlaw() {
 	var (
 		amp   = 11.021171432949746
 		index = -2.027389113217428
@@ -228,6 +235,9 @@ func ExampleCurve1D_powerlaw(t *testing.T) {
 	)
 
 	xdata, ydata, yerrs, err := readXYerr("testdata/powerlaw-data.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	plaw := func(x, amp, index float64) float64 {
 		return amp * math.Pow(x, index)
@@ -246,14 +256,14 @@ func ExampleCurve1D_powerlaw(t *testing.T) {
 		nil, &optimize.NelderMead{},
 	)
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if err := res.Status.Err(); err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 	if got := res.X; !floats.EqualApprox(got, want, 1e-3) {
-		t.Fatalf("got= %v\nwant=%v\n", got, want)
+		log.Fatalf("got= %v\nwant=%v\n", got, want)
 	}
 
 	{
@@ -287,6 +297,71 @@ func ExampleCurve1D_powerlaw(t *testing.T) {
 		p.Add(plotter.NewGrid())
 
 		err := p.Save(20*vg.Centimeter, -1, "testdata/powerlaw-plot.png")
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func TestCurve1DGaussianDefaultOpt(t *testing.T) {
+	var (
+		cst   = 3.0
+		mean  = 30.0
+		sigma = 20.0
+		want  = []float64{cst, mean, sigma}
+	)
+
+	xdata, ydata, err := readXY("testdata/gauss-data.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	gauss := func(x, cst, mu, sigma float64) float64 {
+		v := (x - mu)
+		return cst * math.Exp(-v*v/sigma)
+	}
+
+	res, err := fit.Curve1D(
+		fit.Func1D{
+			F: func(x float64, ps []float64) float64 {
+				return gauss(x, ps[0], ps[1], ps[2])
+			},
+			X:  xdata,
+			Y:  ydata,
+			Ps: []float64{10, 10, 10},
+		},
+		nil, nil,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := res.Status.Err(); err != nil {
+		t.Fatal(err)
+	}
+	if got := res.X; !floats.EqualApprox(got, want, 1e-3) {
+		t.Fatalf("got= %v\nwant=%v\n", got, want)
+	}
+
+	{
+		p := hplot.New()
+		p.X.Label.Text = "Gauss"
+		p.Y.Label.Text = "y-data"
+
+		s := hplot.NewS2D(hplot.ZipXY(xdata, ydata))
+		s.Color = color.RGBA{0, 0, 255, 255}
+		p.Add(s)
+
+		f := plotter.NewFunction(func(x float64) float64 {
+			return gauss(x, res.X[0], res.X[1], res.X[2])
+		})
+		f.Color = color.RGBA{255, 0, 0, 255}
+		f.Samples = 1000
+		p.Add(f)
+
+		p.Add(plotter.NewGrid())
+
+		err := p.Save(20*vg.Centimeter, -1, "testdata/gauss-plot-default-opt.png")
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -1,8 +1,6 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-
-// +build go1.7
 
 package fastjet_test
 
@@ -249,6 +247,8 @@ func TestInclusiveJetAlgorithms(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			test := test
 			particles, err := loadParticles(test.input)
 			if err != nil {
@@ -315,6 +315,8 @@ func TestExclusiveJetAlgorithms(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			test := test
 			particles, err := loadParticles(test.input)
 			if err != nil {

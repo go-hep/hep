@@ -1,10 +1,11 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 package rootio
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -179,7 +180,11 @@ func (leaf *tleafElement) Type() reflect.Type {
 }
 
 func (leaf *tleafElement) TypeName() string {
-	panic("not implemented")
+	name := leaf.src.Type().Name()
+	if name == "" {
+		panic(fmt.Errorf("rootio: invalid typename for leaf %q", leaf.Name()))
+	}
+	return name
 }
 
 func (leaf *tleafElement) UnmarshalROOT(r *RBuffer) error {
@@ -253,8 +258,9 @@ func (leaf *tleafElement) setAddress(ptr interface{}) error {
 	leaf.src = reflect.ValueOf(leaf.ptr).Elem()
 
 	var impl rstreamerImpl
+	sictx := leaf.branch.getTree().getFile()
 	for _, elt := range leaf.streamers {
-		impl.funcs = append(impl.funcs, rstreamerFrom(elt, ptr, leaf.count))
+		impl.funcs = append(impl.funcs, rstreamerFrom(elt, ptr, leaf.count, sictx))
 	}
 	leaf.rstreamer = &impl
 	return err

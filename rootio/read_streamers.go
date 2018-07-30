@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,7 @@ package rootio
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 type RStreamer interface {
@@ -46,7 +47,7 @@ func fieldOf(rt reflect.Type, field string) int {
 	return -1
 }
 
-func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreamerFunc {
+func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx StreamerInfoContext) rstreamerFunc {
 	rt := reflect.TypeOf(ptr).Elem()
 	rv := reflect.ValueOf(ptr).Elem()
 	rf := rv
@@ -687,7 +688,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 
 			case kObject:
 				switch se.ename {
-				case "vector<string>":
+				case "vector<string>", "std::vector<std::string>":
 					fptr := rf.Addr().Interface().(*[]string)
 					return func(r *RBuffer) error {
 						start := r.Pos()
@@ -699,9 +700,31 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 						}
 						r.CheckByteCount(pos, bcnt, start, "std::vector<std::string>")
 						return r.err
-
 					}
 				default:
+					subsi, err := sictx.StreamerInfo(se.elemTypeName())
+					if err != nil {
+						panic(fmt.Errorf("rootio: could not retrieve streamer for %q: %v", se.elemTypeName(), err))
+					}
+					eptr := reflect.New(rf.Type().Elem())
+					felt := rstreamerFrom(subsi.Elements()[0], eptr.Interface(), lcnt, sictx)
+					fptr := rf.Addr()
+					return func(r *RBuffer) error {
+						start := r.Pos()
+						_, pos, bcnt := r.ReadVersion()
+						n := int(r.ReadI32())
+						if fptr.Elem().Len() < n {
+							fptr.Elem().Set(reflect.MakeSlice(rf.Type(), n, n))
+						}
+						sli := fptr.Elem()
+						for i := 0; i < n; i++ {
+							felt(r)
+							sli.Index(i).Set(eptr.Elem())
+						}
+
+						r.CheckByteCount(pos, bcnt, start, se.TypeName())
+						return r.err
+					}
 				}
 			}
 		default:
@@ -716,7 +739,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 		var funcs []func(r *RBuffer) error
 		for i, elt := range sinfo.Elements() {
 			fptr := rf.Field(i).Addr().Interface()
-			funcs = append(funcs, rstreamerFrom(elt, fptr, lcnt))
+			funcs = append(funcs, rstreamerFrom(elt, fptr, lcnt, sictx))
 		}
 		return func(r *RBuffer) error {
 			start := r.Pos()
@@ -739,24 +762,90 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount) rstreame
 	panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
 }
 
+func stdvecSIFrom(name, ename string, ctx StreamerInfoContext) StreamerInfo {
+	ename = strings.TrimSpace(ename)
+	if etyp, ok := cxxbuiltins[ename]; ok {
+		si := &tstreamerInfo{
+			named: tnamed{
+				name:  name,
+				title: name,
+			},
+			elems: []StreamerElement{
+				&tstreamerSTL{
+					tstreamerElement: tstreamerElement{
+						named: tnamed{
+							name:  name,
+							title: name,
+						},
+						ename: name,
+					},
+					rvers: 0,
+					vtype: kSTLvector,
+					ctype: gotype2ROOTEnum[etyp],
+				},
+			},
+		}
+		return si
+	}
+	esi, err := ctx.StreamerInfo(ename)
+	if esi == nil || err != nil {
+		return nil
+	}
+
+	si := &tstreamerInfo{
+		named: tnamed{
+			name:  name,
+			title: name,
+		},
+		elems: []StreamerElement{
+			&tstreamerSTL{
+				tstreamerElement: tstreamerElement{
+					named: tnamed{
+						name:  name,
+						title: name,
+					},
+					ename: name,
+				},
+				rvers: 0,
+				vtype: kSTLvector,
+				ctype: kObject,
+			},
+		},
+	}
+	return si
+}
+
 func gotypeFromSI(sinfo StreamerInfo, ctx StreamerInfoContext) reflect.Type {
+	if typ, ok := builtins[sinfo.Name()]; ok {
+		return typ
+	}
 	elts := sinfo.Elements()
 	fields := make([]reflect.StructField, len(elts))
 	for i := range fields {
 		ft := &fields[i]
 		elt := elts[i]
+		ename := elt.Name()
+		if ename == "" {
+			panic(fmt.Errorf("elt[%d]: %q for si=%v", i, elt.Class(), sinfo))
+		}
 		ft.Name = "ROOT_" + elt.Name()
+		ft.Name = cxxNameSanitizer.Replace(ft.Name)
+
 		var lcount Leaf
 		if elt.Title() != "" {
 			lcount = &tleaf{}
 		}
 		ft.Type = gotypeFromSE(elt, lcount, ctx)
-		ft.Tag = reflect.StructTag("rootio:\"" + elt.Name() + "\"")
+		ft.Tag = reflect.StructTag(`rootio:"` + elt.Name() + `"`)
 	}
+
 	return reflect.StructOf(fields)
 }
 
 func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) reflect.Type {
+	if typ, ok := builtins[se.TypeName()]; ok {
+		return typ
+	}
 	switch se := se.(type) {
 	default:
 		panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
@@ -953,9 +1042,48 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 			case kObject:
 				switch se.ename {
 				case "vector<string>", "std::vector<std::string>":
-					return reflect.TypeOf([]string{})
+					return reflect.TypeOf([]string(nil))
+				case "vector<vector<char> >":
+					return reflect.TypeOf([][]int8(nil))
+				case "vector<vector<short> >":
+					return reflect.TypeOf([][]uint16(nil))
+				case "vector<vector<int> >":
+					return reflect.TypeOf([][]int32(nil))
+				case "vector<vector<long int> >", "vector<vector<long> >":
+					return reflect.TypeOf([][]int64(nil))
+				case "vector<vector<float> >":
+					return reflect.TypeOf([][]float32(nil))
+				case "vector<vector<double> >":
+					return reflect.TypeOf([][]float64(nil))
+				case "vector<vector<unsigned char> >":
+					return reflect.TypeOf([][]uint8(nil))
+				case "vector<vector<unsigned short> >":
+					return reflect.TypeOf([][]uint16(nil))
+				case "vector<vector<unsigned int> >", "vector<vector<unsigned> >":
+					return reflect.TypeOf([][]uint32(nil))
+				case "vector<vector<unsigned long int> >", "vector<vector<unsigned long> >":
+					return reflect.TypeOf([][]uint64(nil))
+				case "vector<vector<bool> >":
+					return reflect.TypeOf([][]bool(nil))
+				case "vector<vector<string> >":
+					return reflect.TypeOf([][]string(nil))
 				default:
-					panic(fmt.Errorf("rootio: invalid std::vector<kObject>: ename=%q", se.ename))
+					eltname := se.elemTypeName()
+					if eltname == "" {
+						panic(fmt.Errorf("rootio: could not find element name for %q", se.ename))
+					}
+					if et, ok := cxxbuiltins[eltname]; ok {
+						return reflect.SliceOf(et)
+					}
+					sielt, err := ctx.StreamerInfo(eltname)
+					if err != nil {
+						panic(err)
+					}
+					o := gotypeFromSI(sielt, ctx)
+					if o == nil {
+						panic(fmt.Errorf("rootio: invalid std::vector<kObject>: ename=%q", se.ename))
+					}
+					return reflect.SliceOf(o)
 				}
 			}
 		default:
@@ -963,15 +1091,18 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 		}
 
 	case *tstreamerObjectAny:
-		si := ctx.StreamerInfo(se.ename)
+		si, err := ctx.StreamerInfo(se.ename)
+		if err != nil {
+			panic(err)
+		}
 		return gotypeFromSI(si, ctx)
 
 	case *tstreamerBase:
 		switch se.ename {
 		case "BASE":
-			si := ctx.StreamerInfo(se.Name())
-			if si == nil {
-				panic(fmt.Errorf("rootio: unknown base class %q", se.Name()))
+			si, err := ctx.StreamerInfo(se.Name())
+			if err != nil {
+				panic(err)
 			}
 			return gotypeFromSI(si, ctx)
 
@@ -980,26 +1111,26 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 		}
 
 	case *tstreamerObject:
-		si := ctx.StreamerInfo(se.ename)
-		if si == nil {
-			panic(fmt.Errorf("rootio: unknown object class %q", se.ename))
+		si, err := ctx.StreamerInfo(se.ename)
+		if err != nil {
+			panic(err)
 		}
 		return gotypeFromSI(si, ctx)
 
 	case *tstreamerObjectPointer:
 		ename := se.ename[:len(se.ename)-1] // drop final '*'
-		si := ctx.StreamerInfo(ename)
-		if si == nil {
-			panic(fmt.Errorf("rootio: unknown pointee class %q", ename))
+		si, err := ctx.StreamerInfo(ename)
+		if err != nil {
+			panic(err)
 		}
 		typ := gotypeFromSI(si, ctx)
 		return reflect.PtrTo(typ)
 
 	case *tstreamerObjectAnyPointer:
 		ename := se.ename[:len(se.ename)-1] // drop final '*'
-		si := ctx.StreamerInfo(ename)
-		if si == nil {
-			panic(fmt.Errorf("rootio: unknown pointee class %q", ename))
+		si, err := ctx.StreamerInfo(ename)
+		if err != nil {
+			panic(err)
 		}
 		typ := gotypeFromSI(si, ctx)
 		return reflect.PtrTo(typ)

@@ -285,12 +285,9 @@ func (l *histLegend) draw(c draw.Canvas) {
 	textx := c.Min.X
 	hdr := l.entryWidth() //+ l.TextStyle.Width(" ")
 	l.ColWidth = hdr
-	valx := textx + l.ColWidth + l.TextStyle.Width(" ")
 	if !l.Left {
 		textx = c.Max.X - l.ColWidth
-		valx = textx - l.TextStyle.Width(" ")
 	}
-	valx += l.XOffs
 	textx += l.XOffs
 
 	enth := l.entryHeight()

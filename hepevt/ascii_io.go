@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,21 +7,26 @@ package hepevt
 import (
 	"fmt"
 	"io"
+
+	"github.com/pkg/errors"
 )
 
-type AsciiEncoder struct {
+// Encoder encodes ASCII files in the HEPEVT format.
+type Encoder struct {
 	w io.Writer
 }
 
-func NewAsciiEncoder(w io.Writer) *AsciiEncoder {
-	return &AsciiEncoder{w: w}
+// NewEncoder create a new Encoder, writing to the provided io.Writer.
+func NewEncoder(w io.Writer) *Encoder {
+	return &Encoder{w: w}
 }
 
-func (enc *AsciiEncoder) Encode(evt *Event) error {
+// Encode encodes a full HEPEVT event to the underlying writer.
+func (enc *Encoder) Encode(evt *Event) error {
 	var err error
 	_, err = fmt.Fprintf(enc.w, "%d %d\n", evt.Nevhep, evt.Nhep)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	for i := 0; i < evt.Nhep; i++ {
@@ -39,26 +44,29 @@ func (enc *AsciiEncoder) Encode(evt *Event) error {
 			evt.Vhep[i][0], evt.Vhep[i][1], evt.Vhep[i][2], evt.Vhep[i][3],
 		)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 	}
-	return err
+	return errors.WithStack(err)
 }
 
-type AsciiDecoder struct {
+// Decoder decodes ASCII files in the HEPEVT format.
+type Decoder struct {
 	r io.Reader
 }
 
-func NewAsciiDecoder(r io.Reader) *AsciiDecoder {
-	return &AsciiDecoder{r: r}
+// NewDecoder creates a new Decoder, reading from the provided io.Reader.
+func NewDecoder(r io.Reader) *Decoder {
+	return &Decoder{r: r}
 }
 
-func (dec *AsciiDecoder) Decode(evt *Event) error {
+// Decode decodes a full HEPEVT event from the underlying reader.
+func (dec *Decoder) Decode(evt *Event) error {
 	var err error
 
 	_, err = fmt.Fscanf(dec.r, "%d %d\n", &evt.Nevhep, &evt.Nhep)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	// resize
@@ -92,7 +100,7 @@ func (dec *AsciiDecoder) Decode(evt *Event) error {
 			&evt.Vhep[i][0], &evt.Vhep[i][1], &evt.Vhep[i][2], &evt.Vhep[i][3],
 		)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		// convert 0-based indices to 1-based ones
 		evt.Jmohep[i][0] -= 1
@@ -100,5 +108,5 @@ func (dec *AsciiDecoder) Decode(evt *Event) error {
 		evt.Jdahep[i][0] -= 1
 		evt.Jdahep[i][1] -= 1
 	}
-	return err
+	return errors.WithStack(err)
 }

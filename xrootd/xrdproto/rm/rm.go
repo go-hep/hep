@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,6 +8,7 @@ package rm // import "go-hep.org/x/hep/xrootd/xrdproto/rm"
 
 import (
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
+	"go-hep.org/x/hep/xrootd/xrdproto"
 )
 
 // RequestID is the id of the request, it is sent as part of message.
@@ -36,3 +37,16 @@ func (req *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 
 // ReqID implements xrdproto.Request.ReqID.
 func (req *Request) ReqID() uint16 { return RequestID }
+
+// ShouldSign implements xrdproto.Request.ShouldSign.
+func (req *Request) ShouldSign() bool { return false }
+
+// Opaque implements xrdproto.FilepathRequest.Opaque.
+func (req *Request) Opaque() string {
+	return xrdproto.Opaque(req.Path)
+}
+
+// SetOpaque implements xrdproto.FilepathRequest.SetOpaque.
+func (req *Request) SetOpaque(opaque string) {
+	xrdproto.SetOpaque(&req.Path, opaque)
+}

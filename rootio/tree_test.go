@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -13,6 +13,8 @@ import (
 )
 
 func TestFlatTree(t *testing.T) {
+	t.Parallel()
+
 	f, err := Open("testdata/small-flat-tree.root")
 	if err != nil {
 		t.Fatal(err.Error())
@@ -182,6 +184,8 @@ func (EventType) want(i int64) EventType {
 }
 
 func TestEventTree(t *testing.T) {
+	t.Parallel()
+
 	for _, test := range []struct {
 		name  string
 		fname string
@@ -193,6 +197,14 @@ func TestEventTree(t *testing.T) {
 		{
 			name:  "fullsplit",
 			fname: "testdata/small-evnt-tree-fullsplit.root",
+		},
+		{
+			name:  "nosplit-xrootd",
+			fname: XrdRemote("testdata/small-evnt-tree-nosplit.root"),
+		},
+		{
+			name:  "fullsplit-xrootd",
+			fname: XrdRemote("testdata/small-evnt-tree-fullsplit.root"),
 		},
 	} {
 		testEventTree(t, test.name, test.fname)
@@ -284,6 +296,8 @@ func testEventTree(t *testing.T, name, fname string) {
 }
 
 func TestSimpleTree(t *testing.T) {
+	t.Parallel()
+
 	f, err := Open("testdata/simple.root")
 	if err != nil {
 		t.Fatal(err.Error())
@@ -329,6 +343,8 @@ func TestSimpleTree(t *testing.T) {
 }
 
 func TestSimpleTreeOverHTTP(t *testing.T) {
+	t.Parallel()
+
 	f, err := Open("https://github.com/go-hep/hep/raw/master/rootio/testdata/simple.root")
 	if err != nil {
 		t.Fatal(err)
@@ -374,25 +390,34 @@ func TestSimpleTreeOverHTTP(t *testing.T) {
 }
 
 func TestTreeWithBasketWithTKeyData(t *testing.T) {
-	f, err := Open("testdata/PhaseSpaceSimulation.root")
-	if err != nil {
-		t.Skipf("error: %v", err)
-	}
-	defer f.Close()
+	for _, fname := range []string{
+		"testdata/PhaseSpaceSimulation.root",
+		XrdRemote("testdata/PhaseSpaceSimulation.root"),
+	} {
+		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
 
-	obj, err := f.Get("PhaseSpaceTree")
-	if err != nil {
-		t.Fatal(err)
-	}
+			f, err := Open(fname)
+			if err != nil {
+				t.Skipf("error: %v", err)
+			}
+			defer f.Close()
 
-	tree := obj.(Tree)
-	if got, want := tree.Name(), "PhaseSpaceTree"; got != want {
-		t.Fatalf("tree.Name: got=%q. want=%q", got, want)
-	}
+			obj, err := f.Get("PhaseSpaceTree")
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	entries := tree.Entries()
-	if got, want := entries, int64(50000); got != want {
-		t.Fatalf("tree.Entries: got=%v. want=%v", got, want)
+			tree := obj.(Tree)
+			if got, want := tree.Name(), "PhaseSpaceTree"; got != want {
+				t.Fatalf("tree.Name: got=%q. want=%q", got, want)
+			}
+
+			entries := tree.Entries()
+			if got, want := entries, int64(50000); got != want {
+				t.Fatalf("tree.Entries: got=%v. want=%v", got, want)
+			}
+		})
 	}
 }
 
@@ -1555,6 +1580,8 @@ func TestUprootTrees(t *testing.T) {
 
 	for _, fname := range files {
 		t.Run(fname, func(t *testing.T) {
+			t.Parallel()
+
 			var d Data
 			f, err := Open(fname)
 			if err != nil {

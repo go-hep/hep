@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -63,7 +63,7 @@ func decompress(r io.Reader, buf []byte) error {
 			}
 			const chksum = 8
 			// FIXME: we skip the 32b checksum. use it!
-			_, err = lz4.UncompressBlock(src[chksum:], buf[beg:end], 0)
+			_, err = lz4.UncompressBlock(src[chksum:], buf[beg:end])
 			if err != nil {
 				return err
 			}

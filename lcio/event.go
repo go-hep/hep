@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -140,35 +140,59 @@ type Params struct {
 
 func (p Params) String() string {
 	o := new(bytes.Buffer)
-	for k, vec := range p.Ints {
-		fmt.Fprintf(o, " parameter %s [int]: ", k)
-		if len(vec) == 0 {
-			fmt.Fprintf(o, " [empty] \n")
+	{
+		keys := make([]string, 0, len(p.Ints))
+		for k := range p.Ints {
+			keys = append(keys, k)
 		}
-		for _, v := range vec {
-			fmt.Fprintf(o, "%v, ", v)
+		sort.Strings(keys)
+		for _, k := range keys {
+			vec := p.Ints[k]
+			fmt.Fprintf(o, " parameter %s [int]: ", k)
+			if len(vec) == 0 {
+				fmt.Fprintf(o, " [empty] \n")
+			}
+			for _, v := range vec {
+				fmt.Fprintf(o, "%v, ", v)
+			}
+			fmt.Fprintf(o, "\n")
 		}
-		fmt.Fprintf(o, "\n")
 	}
-	for k, vec := range p.Floats {
-		fmt.Fprintf(o, " parameter %s [float]: ", k)
-		if len(vec) == 0 {
-			fmt.Fprintf(o, " [empty] \n")
+	{
+		keys := make([]string, 0, len(p.Floats))
+		for k := range p.Floats {
+			keys = append(keys, k)
 		}
-		for _, v := range vec {
-			fmt.Fprintf(o, "%v, ", v)
+		sort.Strings(keys)
+		for _, k := range keys {
+			vec := p.Strings[k]
+			fmt.Fprintf(o, " parameter %s [float]: ", k)
+			if len(vec) == 0 {
+				fmt.Fprintf(o, " [empty] \n")
+			}
+			for _, v := range vec {
+				fmt.Fprintf(o, "%v, ", v)
+			}
+			fmt.Fprintf(o, "\n")
 		}
-		fmt.Fprintf(o, "\n")
 	}
-	for k, vec := range p.Strings {
-		fmt.Fprintf(o, " parameter %s [string]: ", k)
-		if len(vec) == 0 {
-			fmt.Fprintf(o, " [empty] \n")
+	{
+		keys := make([]string, 0, len(p.Strings))
+		for k := range p.Floats {
+			keys = append(keys, k)
 		}
-		for _, v := range vec {
-			fmt.Fprintf(o, "%v, ", v)
+		sort.Strings(keys)
+		for _, k := range keys {
+			vec := p.Strings[k]
+			fmt.Fprintf(o, " parameter %s [string]: ", k)
+			if len(vec) == 0 {
+				fmt.Fprintf(o, " [empty] \n")
+			}
+			for _, v := range vec {
+				fmt.Fprintf(o, "%v, ", v)
+			}
+			fmt.Fprintf(o, "\n")
 		}
-		fmt.Fprintf(o, "\n")
 	}
 	return string(o.Bytes())
 }

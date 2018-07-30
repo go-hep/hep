@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -248,6 +248,9 @@ func (dec *Decoder) findFileType() error {
 	for {
 		tokens, err := dec.readline()
 		if err != nil {
+			if err == io.EOF {
+				err = io.ErrUnexpectedEOF
+			}
 			return err
 		}
 		if len(tokens.toks) <= 0 {

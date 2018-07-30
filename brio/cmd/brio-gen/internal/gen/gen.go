@@ -1,4 +1,4 @@
-// Copyright 2016 The go-hep Authors.  All rights reserved.
+// Copyright 2016 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -11,7 +11,6 @@ import (
 	"go/importer"
 	"go/types"
 	"log"
-	"os"
 	"strings"
 )
 
@@ -269,7 +268,7 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 	case *types.Pointer:
 		g.printf("{\n")
 		g.printf("v := *%s\n", n)
-		g.genUnmarshal(ut.Elem(), "v")
+		g.genMarshalType(ut.Elem(), "v")
 		g.printf("}\n")
 
 	case *types.Interface:
@@ -314,8 +313,8 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 		switch kind := ut.Kind(); kind {
 
 		case types.Bool:
-			g.printf("if data[i] == 1 { %s = true }\n", n)
-			g.printf("}else { %s = false }\n", n)
+			g.printf("if data[i] == 1 { %s = true\n", n)
+			g.printf("} else { %s = false }\n", n)
 			g.printf("data = data[1:]\n")
 
 		case types.Uint:
@@ -381,7 +380,7 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 		case types.String:
 			g.printf("{\n")
 			g.printf("n := int(binary.LittleEndian.Uint64(data[:8]))\n")
-			g.printf("data = data[8:])\n")
+			g.printf("data = data[8:]\n")
 			g.printf("%s = string(data[:n])\n", n)
 			g.printf("data = data[n:]\n")
 			g.printf("}\n")
@@ -452,7 +451,7 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 		g.printf("{\n")
 		elt := ut.Elem()
 		g.printf("var v %s\n", qualTypeName(elt, g.pkg))
-		g.genUnmarshal(elt, "v")
+		g.genUnmarshalType(elt, "v")
 		g.printf("%s = &v\n\n", n)
 		g.printf("}\n")
 
@@ -492,7 +491,7 @@ package %[2]s
 import (
 	"encoding/binary"
 `,
-		os.Args[0],
+		"brio-gen",
 		g.pkg.Name(),
 	))
 

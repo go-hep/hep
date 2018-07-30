@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -66,12 +66,41 @@ func (tree *ttree) Branch(name string) Branch {
 		if br.Name() == name {
 			return br
 		}
+		for _, b1 := range br.Branches() {
+			if b1.Name() == name {
+				return b1
+			}
+
+			for _, b2 := range b1.Branches() {
+				if b2.Name() == name {
+					return b2
+				}
+			}
+		}
 	}
+
+	// search using leaves.
+	for _, leaf := range tree.leaves {
+		b := leaf.Branch()
+		if b.Name() == name {
+			return b
+		}
+	}
+
 	return nil
 }
 
 func (tree *ttree) Leaves() []Leaf {
 	return tree.leaves
+}
+
+func (tree *ttree) Leaf(name string) Leaf {
+	for _, leaf := range tree.leaves {
+		if leaf.Name() == name {
+			return leaf
+		}
+	}
+	return nil
 }
 
 func (tree *ttree) SetFile(f *File) {
@@ -200,11 +229,15 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 	// attach streamers to branches
 	for i := range tree.branches {
 		br := tree.branches[i]
-		cls := ""
-		if bre, ok := br.(*tbranchElement); ok {
-			cls = bre.class
+		bre, ok := br.(*tbranchElement)
+		if !ok {
+			continue
 		}
-		si := r.StreamerInfo(cls)
+		cls := bre.class
+		si, err := r.StreamerInfo(cls)
+		if err != nil {
+			panic(fmt.Errorf("rootio: could not find streamer for branch %q: %v", br.Name(), err))
+		}
 		// tree.attachStreamer(br, rstreamer, rstreamerCtx)
 		tree.attachStreamer(br, si, r)
 	}
@@ -227,7 +260,11 @@ func (tree *ttree) attachStreamer(br Branch, info StreamerInfo, ctx StreamerInfo
 					if bre, ok := br.(*tbranchElement); ok {
 						cls = bre.clones
 					}
-					tree.attachStreamer(br, ctx.StreamerInfo(cls), ctx)
+					si, err := ctx.StreamerInfo(cls)
+					if err != nil {
+						panic(err)
+					}
+					tree.attachStreamer(br, si, ctx)
 					return
 				default:
 					// FIXME(sbinet): can only determine streamer by reading some value?
@@ -275,19 +312,26 @@ func (tree *ttree) attachStreamerElement(br Branch, se StreamerElement, ctx Stre
 	switch se.(type) {
 	case *tstreamerObject, *tstreamerObjectAny, *tstreamerObjectPointer, *tstreamerObjectAnyPointer:
 		typename := strings.TrimRight(se.TypeName(), "*")
-		info := ctx.StreamerInfo(typename)
-		if info != nil {
-			members = info.Elements()
+		info, err := ctx.StreamerInfo(typename)
+		if err != nil {
+			panic(err)
 		}
+		members = info.Elements()
 	case *tstreamerSTL:
-		typename := se.TypeName()
+		typename := strings.TrimSpace(se.TypeName())
 		// FIXME(sbinet): this string manipulation only works for one-parameter templates
 		if strings.Contains(typename, "<") {
 			typename = typename[strings.Index(typename, "<")+1 : strings.LastIndex(typename, ">")]
 			typename = strings.TrimRight(typename, "*")
 		}
-		info := ctx.StreamerInfo(typename)
-		if info != nil {
+		typename = strings.TrimSpace(se.TypeName())
+		info, err := ctx.StreamerInfo(typename)
+		if err != nil {
+			if _, ok := cxxbuiltins[typename]; !ok {
+				panic(err)
+			}
+		}
+		if err == nil {
 			members = info.Elements()
 		}
 	}
@@ -310,7 +354,10 @@ func (tree *ttree) attachStreamerElement(br Branch, se StreamerElement, ctx Stre
 				if subse.Name() == base {
 					switch subse.(type) {
 					case *tstreamerObject, *tstreamerObjectAny, *tstreamerObjectPointer, *tstreamerObjectAnyPointer:
-						subinfo := ctx.StreamerInfo(strings.TrimRight(subse.TypeName(), "*"))
+						subinfo, err := ctx.StreamerInfo(strings.TrimRight(subse.TypeName(), "*"))
+						if err != nil {
+							panic(err)
+						}
 						submembers = subinfo.Elements()
 					}
 				}

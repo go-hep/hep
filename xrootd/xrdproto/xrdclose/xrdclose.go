@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -27,7 +27,7 @@ type Request struct {
 	_      int32
 }
 
-// MarshalXrd implements xrdproto.Marshaler
+// MarshalXrd implements xrdproto.Marshaler.
 func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteBytes(o.Handle[:])
 	wBuffer.WriteI64(o.Size)
@@ -35,7 +35,7 @@ func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return nil
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	rBuffer.ReadBytes(o.Handle[:])
 	o.Size = rBuffer.ReadI64()
@@ -43,5 +43,8 @@ func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	return nil
 }
 
-// ReqID implements xrdproto.Request.ReqID
+// ReqID implements xrdproto.Request.ReqID.
 func (req *Request) ReqID() uint16 { return RequestID }
+
+// ShouldSign implements xrdproto.Request.ShouldSign.
+func (req *Request) ShouldSign() bool { return false }

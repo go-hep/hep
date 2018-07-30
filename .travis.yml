@@ -1,7 +1,6 @@
 language: go
 go_import_path: go-hep.org/x/hep
 go:
-  - 1.8.x
   - 1.9.x
   - 1.10.x
   - master
@@ -13,9 +12,9 @@ matrix:
    - go: master
 
 env:
- - TAGS=""
+ - TAGS="-tags travis"
 
-sudo: false
+sudo: required
 
 notifications:
   email:
@@ -24,8 +23,16 @@ notifications:
     on_success: always
     on_failure: always
 
+before_script:
+ - sudo apt-get install -qq pkg-config fuse
+ - sudo modprobe fuse
+ - sudo chmod 666 /dev/fuse
+ - sudo chown root:$USER /etc/fuse.conf
+
 script:
  - go get -d -t -v ./...
  - go install -v $TAGS ./...
- - go test $TAGS ./...
- - go test $TAGS -race ./...
+ - ./ci/code-coverage.sh
+
+after_success:
+ - bash <(curl -s https://codecov.io/bash)

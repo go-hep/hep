@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -226,7 +226,7 @@ func BenchmarkMux_SendData(b *testing.B) {
 	defer m.Close()
 	id, ch, _ := m.Claim()
 	done := make(chan struct{})
-	response := ServerResponse{[]byte{0, 1, 2, 3, 4, 5}, nil}
+	response := ServerResponse{Data: []byte{0, 1, 2, 3, 4, 5}}
 
 	go func() {
 		for {

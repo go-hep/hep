@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -76,7 +76,6 @@ func (tsk *EnergySmearing) Process(ctx fwk.Context) error {
 	for i := range input {
 		cand := &input[i]
 		eta := cand.Pos.Eta()
-		phi := cand.Pos.Phi()
 		ene := cand.Mom.E()
 
 		// apply smearing
@@ -92,7 +91,7 @@ func (tsk *EnergySmearing) Process(ctx fwk.Context) error {
 		mother := cand
 		c := cand.Clone()
 		eta = cand.Mom.Eta()
-		phi = cand.Mom.Phi()
+		phi := cand.Mom.Phi()
 		pt := ene / math.Cosh(eta)
 
 		pxs := pt * math.Cos(phi)

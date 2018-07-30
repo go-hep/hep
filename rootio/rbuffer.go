@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -39,11 +39,11 @@ func (r *rbuff) ReadByte() (byte, error) {
 
 func (r *rbuff) Seek(offset int64, whence int) (int64, error) {
 	switch whence {
-	case ioSeekStart:
+	case io.SeekStart:
 		r.c = int(offset)
-	case ioSeekCurrent:
+	case io.SeekCurrent:
 		r.c += int(offset)
-	case ioSeekEnd:
+	case io.SeekEnd:
 		r.c = len(r.p) - int(offset)
 	default:
 		return 0, errors.New("rootio.rbuff.Seek: invalid whence")
@@ -76,9 +76,9 @@ func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32, ctx Stre
 	}
 }
 
-func (r *RBuffer) StreamerInfo(name string) StreamerInfo {
+func (r *RBuffer) StreamerInfo(name string) (StreamerInfo, error) {
 	if r.sictx == nil {
-		return nil
+		return nil, fmt.Errorf("rootio: no streamers")
 	}
 	return r.sictx.StreamerInfo(name)
 }
@@ -650,7 +650,7 @@ func (r *RBuffer) SkipObject() {
 	}
 	vers := r.ReadI16()
 	if vers&kByteCountVMask != 0 {
-		_, r.err = r.r.Seek(4, ioSeekCurrent)
+		_, r.err = r.r.Seek(4, io.SeekCurrent)
 		if r.err != nil {
 			return
 		}
@@ -659,7 +659,7 @@ func (r *RBuffer) SkipObject() {
 	fbits := r.ReadU32() | kIsOnHeap
 
 	if fbits&kIsReferenced != 0 {
-		_, r.err = r.r.Seek(2, ioSeekCurrent)
+		_, r.err = r.r.Seek(2, io.SeekCurrent)
 		if r.err != nil {
 			return
 		}

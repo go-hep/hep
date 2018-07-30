@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -54,9 +54,31 @@ func (s *baseScanner) SeekEntry(i int64) error {
 	if s.err != nil {
 		return s.err
 	}
+	if s.chain {
+		ch := s.tree.(*tchain)
+		if i >= ch.off+ch.tree.Entries() || i < ch.off {
+			itree := s.findTree(i)
+			if itree == -1 {
+				s.err = fmt.Errorf("rootio: could not find Tree containing entry %d", i)
+				return s.err
+			}
+			s.loadTree(itree)
+		}
+	}
 	s.i = i
 	s.cur = i - 1
 	return s.err
+}
+
+// findTree finds the tree number in the chain that contains entry i
+func (s *baseScanner) findTree(i int64) int {
+	ch := s.tree.(*tchain)
+	for j := range ch.trees {
+		if i <= ch.tots[j] {
+			return j
+		}
+	}
+	return -1
 }
 
 // Next prepares the next result row for reading with the Scan method.
@@ -72,23 +94,24 @@ func (s *baseScanner) Next() bool {
 
 	if s.chain {
 		if s.cur >= s.tot {
-			s.nextTree()
+			ch := s.tree.(*tchain)
+			s.loadTree(ch.cur + 1)
+
 		}
 	}
 
 	return next
 }
 
-func (s *baseScanner) nextTree() {
+func (s *baseScanner) loadTree(i int) {
 	ch := s.tree.(*tchain)
-	ch.nextTree()
+	ch.loadTree(i)
 	s.off = ch.off
 	s.tot = ch.tot
 	if ch.tree == nil {
 		// tchain exhausted.
 		return
 	}
-
 	// reconnect branches
 	for i, v := range s.ibr {
 		name := v.br.Name()
@@ -131,6 +154,8 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 	mbr := make([]Branch, 0, len(t.Branches()))
 	ibr := make([]scanField, 0, cap(mbr))
 	cbr := make([]Branch, 0)
+	cbrset := make(map[string]bool)
+
 	rt := reflect.TypeOf(ptr).Elem()
 	if rt.Kind() != reflect.Struct {
 		return nil, errorf("rootio: NewTreeScanner expects a pointer to a struct (got: %T)", ptr)
@@ -149,12 +174,16 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 		leaf := br.Leaves()[0]
 		lidx := -1
 		if lcnt := leaf.LeafCount(); lcnt != nil {
-			lbr := t.Branch(lcnt.Name())
+			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
 				return nil, errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
 			lidx = len(cbr)
-			cbr = append(cbr, lbr)
+			bbr := lbr.Branch()
+			if !cbrset[bbr.Name()] {
+				cbr = append(cbr, bbr)
+				cbrset[bbr.Name()] = true
+			}
 		}
 		fptr := rv.Field(i).Addr().Interface()
 		err := br.setAddress(fptr)
@@ -205,6 +234,8 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 	mbr := make([]Branch, len(vars))
 	ibr := make([]scanField, cap(mbr))
 	cbr := make([]Branch, 0)
+	cbrset := make(map[string]bool)
+
 	for i, sv := range vars {
 		br := t.Branch(sv.Name)
 		if br == nil {
@@ -213,12 +244,22 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 		mbr[i] = br
 		ibr[i] = scanField{br: br, i: 0}
 		leaf := br.Leaves()[0]
+		if sv.Leaf != "" {
+			leaf = br.Leaf(sv.Leaf)
+		}
+		if leaf == nil {
+			return nil, errorf("rootio: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
+		}
 		if lcnt := leaf.LeafCount(); lcnt != nil {
-			lbr := t.Branch(lcnt.Name())
+			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
 				return nil, errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
-			cbr = append(cbr, lbr)
+			bbr := lbr.Branch()
+			if !cbrset[bbr.Name()] {
+				cbr = append(cbr, bbr)
+				cbrset[bbr.Name()] = true
+			}
 		}
 	}
 	return &TreeScanner{
@@ -300,9 +341,11 @@ func (s *TreeScanner) scanMap(data map[string]interface{}) error {
 func (s *TreeScanner) scanArgs(args ...interface{}) error {
 	var err error
 
+	ientry := s.scan.icur()
+
 	// load leaf count data
 	for _, br := range s.scan.cbr {
-		err = br.loadEntry(s.scan.cur)
+		err = br.loadEntry(ientry)
 		if err != nil {
 			// FIXME(sbinet): properly decorate error
 			return err
@@ -312,7 +355,7 @@ func (s *TreeScanner) scanArgs(args ...interface{}) error {
 	for i, ptr := range args {
 		fv := reflect.ValueOf(ptr).Elem()
 		br := s.scan.ibr[i]
-		err = br.br.loadEntry(s.scan.icur())
+		err = br.br.loadEntry(ientry)
 		if err != nil {
 			// FIXME(sbinet): properly decorate error
 			return err
@@ -328,9 +371,11 @@ func (s *TreeScanner) scanArgs(args ...interface{}) error {
 func (s *TreeScanner) scanStruct(data interface{}) error {
 	var err error
 
+	ientry := s.scan.icur()
+
 	// load leaf count data
 	for _, br := range s.scan.cbr {
-		s.scan.err = br.loadEntry(s.scan.icur())
+		s.scan.err = br.loadEntry(ientry)
 		if s.scan.err != nil {
 			// FIXME(sbinet): properly decorate error
 			return s.scan.err
@@ -344,7 +389,7 @@ func (s *TreeScanner) scanStruct(data interface{}) error {
 	}
 	for _, br := range s.scan.ibr {
 		fv := rv.Field(br.i)
-		err = br.br.loadEntry(s.scan.icur())
+		err = br.br.loadEntry(ientry)
 		if err != nil {
 			// FIXME(sbinet): properly decorate error
 			return err
@@ -375,6 +420,8 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 	mbr := make([]Branch, len(vars))
 	ibr := make([]scanField, cap(mbr))
 	cbr := make([]Branch, 0)
+	cbrset := make(map[string]bool)
+
 	args := make([]interface{}, len(vars))
 	for i, sv := range vars {
 		br := t.Branch(sv.Name)
@@ -388,12 +435,19 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 		if sv.Leaf != "" {
 			leaf = br.Leaf(sv.Leaf)
 		}
+		if leaf == nil {
+			return nil, errorf("rootio: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
+		}
 		if lcnt := leaf.LeafCount(); lcnt != nil {
-			lbr := t.Branch(lcnt.Name())
+			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
 				return nil, errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
-			cbr = append(cbr, lbr)
+			bbr := lbr.Branch()
+			if !cbrset[bbr.Name()] {
+				cbr = append(cbr, bbr)
+				cbrset[bbr.Name()] = true
+			}
 		}
 		arg := sv.Value
 		if arg == nil {
@@ -430,6 +484,8 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 	mbr := make([]Branch, 0, len(t.Branches()))
 	ibr := make([]scanField, 0, cap(mbr))
 	cbr := make([]Branch, 0)
+	cbrset := make(map[string]bool)
+
 	args := make([]interface{}, 0, cap(mbr))
 	rt := reflect.TypeOf(ptr).Elem()
 	if rt.Kind() != reflect.Struct {
@@ -448,11 +504,15 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 		}
 		leaf := br.Leaves()[0]
 		if lcnt := leaf.LeafCount(); lcnt != nil {
-			lbr := t.Branch(lcnt.Name())
+			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
 				return nil, errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
-			cbr = append(cbr, lbr)
+			bbr := lbr.Branch()
+			if !cbrset[bbr.Name()] {
+				cbr = append(cbr, bbr)
+				cbrset[bbr.Name()] = true
+			}
 		}
 		fptr := rv.Field(i).Addr().Interface()
 		mbr = append(mbr, br)
@@ -514,9 +574,11 @@ func (s *Scanner) Scan() error {
 		return s.scan.err
 	}
 
+	ientry := s.scan.icur()
+
 	// load leaf count data
 	for _, br := range s.scan.cbr {
-		s.scan.err = br.loadEntry(s.scan.cur)
+		s.scan.err = br.loadEntry(ientry)
 		if s.scan.err != nil {
 			// FIXME(sbinet): properly decorate error
 			return s.scan.err
@@ -525,7 +587,7 @@ func (s *Scanner) Scan() error {
 
 	for i, ptr := range s.args {
 		br := s.scan.ibr[i]
-		s.scan.err = br.br.loadEntry(s.scan.cur)
+		s.scan.err = br.br.loadEntry(ientry)
 		if s.scan.err != nil {
 			// FIXME(sbinet): properly decorate error
 			return s.scan.err

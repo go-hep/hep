@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,12 +7,25 @@ package rootio
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 )
 
+var (
+	cxxNameSanitizer = strings.NewReplacer(
+		"<", "_",
+		">", "_",
+		":", "_",
+		",", "_",
+		" ", "_",
+	)
+
+	reStdVector = regexp.MustCompile("^vector<(.+)>$")
+)
+
 type StreamerInfoContext interface {
-	StreamerInfo(name string) StreamerInfo
+	StreamerInfo(name string) (StreamerInfo, error)
 }
 
 type tstreamerInfo struct {
@@ -433,6 +446,14 @@ type tstreamerSTL struct {
 
 func (tss *tstreamerSTL) Class() string {
 	return "TStreamerSTL"
+}
+
+func (tss *tstreamerSTL) elemTypeName() string {
+	o := reStdVector.FindStringSubmatch(tss.ename)
+	if o == nil {
+		return ""
+	}
+	return strings.TrimSpace(o[1])
 }
 
 func (tss *tstreamerSTL) UnmarshalROOT(r *RBuffer) error {

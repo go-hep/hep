@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -50,6 +50,24 @@ func datime2time(d uint32) time.Time {
 	nsec := 0
 	return time.Date(int(year), time.Month(month), int(day),
 		int(hour), int(min), int(sec), nsec, time.UTC)
+}
+
+// time2datime converts a time.Time to a uint32 representing a ROOT's TDatime.
+func time2datime(t time.Time) uint32 {
+	var (
+		year  = uint32(t.Year())
+		month = uint32(t.Month())
+		day   = uint32(t.Day())
+		hour  = uint32(t.Hour())
+		min   = uint32(t.Minute())
+		sec   = uint32(t.Second())
+	)
+
+	if year < 1995 {
+		panic("rootio: TDatime year must be >= 1995")
+	}
+
+	return (year-1995)<<26 | month<<22 | day<<17 | hour<<12 | min<<6 | sec
 }
 
 func errorf(format string, args ...interface{}) error {

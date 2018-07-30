@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -565,10 +565,12 @@ func (app *appmgr) runSequential(ctx Context) error {
 		app.msg.Infof(">>> running evt=%d...\n", ievt)
 		err = store.reset(keys)
 		if err != nil {
+			evtCancel()
 			return err
 		}
 		err = app.istream.Process(ctxs[0])
 		if err != nil {
+			evtCancel()
 			store.close()
 			app.msg.flush()
 			return err
@@ -595,6 +597,7 @@ func (app *appmgr) runSequential(ctx Context) error {
 				break errloop
 			}
 		}
+		evtCancel()
 		store.close()
 		app.msg.flush()
 	}
@@ -658,13 +661,14 @@ func (app *appmgr) runConcurrent(ctx Context) error {
 			err = app.istream.Process(ctx)
 			if err != nil {
 				if err != io.EOF {
-					evtCancel()
 					ctrl.errc <- err
 				}
 				close(ctrl.evts)
+				evtCancel()
 				return
 			}
 			ctrl.evts <- ctx
+			evtCancel()
 		}
 		close(ctrl.evts)
 	}()

@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -18,6 +18,8 @@ import (
 type StatFlags int32
 
 const (
+	// StatIsFile indicates that entry is a regular file if no other flag is specified.
+	StatIsFile StatFlags = 0
 	// StatIsExecutable indicates that entry is either an executable file or a searchable directory.
 	StatIsExecutable StatFlags = 1
 	// StatIsDir indicates that entry is a directory.
@@ -44,6 +46,25 @@ type EntryStat struct {
 	EntrySize   int64     // EntrySize is the decimal size of the entry.
 	Flags       StatFlags // Flags identifies the entry's attributes.
 	Mtime       int64     // Mtime is the last modification time in Unix time units.
+}
+
+// EntryStatFrom creates an EntryStat that represents same information as the provided info.
+func EntryStatFrom(info os.FileInfo) EntryStat {
+	es := EntryStat{
+		EntryName: info.Name(),
+		EntrySize: info.Size(),
+		Mtime:     info.ModTime().Unix(),
+	}
+	if info.IsDir() {
+		es.Flags |= StatIsDir
+	}
+	if info.Mode()&0400 != 0 {
+		es.Flags |= StatIsReadable
+	}
+	if info.Mode()&0200 != 0 {
+		es.Flags |= StatIsWritable
+	}
+	return es
 }
 
 // Name implements os.FileInfo.
@@ -171,6 +192,79 @@ func (o *EntryStat) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	o.EntrySize = int64(size)
 	o.Mtime = int64(mtime)
 	o.Flags = StatFlags(flags)
+
+	return nil
+}
+
+// VirtualFSStat holds the virtual file system information.
+type VirtualFSStat struct {
+	NumberRW           int // NumberRW is the number of nodes that can provide read/write space.
+	FreeRW             int // FreeRW is the size, in megabytes, of the largest contiguous area of read/write free space.
+	UtilizationRW      int // UtilizationRW is the percent utilization of the partition represented by FreeRW.
+	NumberStaging      int // NumberStaging is the number of nodes that can provide staging space.
+	FreeStaging        int // FreeStaging is the size, in megabytes, of the largest contiguous area of staging free space.
+	UtilizationStaging int // UtilizationStaging is the percent utilization of the partition represented by FreeStaging.
+}
+
+// MarshalXrd implements xrdproto.Marshaler
+func (o VirtualFSStat) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
+	nrw := strconv.Itoa(o.NumberRW)
+	frw := strconv.Itoa(o.FreeRW)
+	urw := strconv.Itoa(o.UtilizationRW)
+	nstg := strconv.Itoa(o.NumberStaging)
+	fstg := strconv.Itoa(o.FreeStaging)
+	ustg := strconv.Itoa(o.UtilizationStaging)
+	wBuffer.WriteBytes([]byte(nrw + " " + frw + " " + urw + " " + nstg + " " + fstg + " " + ustg))
+	return nil
+}
+
+// UnmarshalXrd implements xrdproto.Unmarshaler
+func (o *VirtualFSStat) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
+	var buf []byte
+	for rBuffer.Len() != 0 {
+		b := rBuffer.ReadU8()
+		if b == '\x00' || b == '\n' {
+			break
+		}
+		buf = append(buf, b)
+	}
+
+	stats := bytes.Split(buf, []byte{' '})
+	if len(stats) < 6 {
+		return errors.Errorf("xrootd: virtual statinfo \"%s\" doesn't have enough fields, expected format is: \"nrw frw urw nstg fstg ustg\"", buf)
+	}
+
+	nrw, err := strconv.Atoi(string(stats[0]))
+	if err != nil {
+		return err
+	}
+	frw, err := strconv.Atoi(string(stats[1]))
+	if err != nil {
+		return err
+	}
+	urw, err := strconv.Atoi(string(stats[2]))
+	if err != nil {
+		return err
+	}
+	nstg, err := strconv.Atoi(string(stats[3]))
+	if err != nil {
+		return err
+	}
+	fstg, err := strconv.Atoi(string(stats[4]))
+	if err != nil {
+		return err
+	}
+	ustg, err := strconv.Atoi(string(stats[5]))
+	if err != nil {
+		return err
+	}
+
+	o.NumberRW = nrw
+	o.FreeRW = frw
+	o.UtilizationRW = urw
+	o.NumberStaging = nstg
+	o.FreeStaging = fstg
+	o.UtilizationStaging = ustg
 
 	return nil
 }

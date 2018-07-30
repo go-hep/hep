@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -22,6 +22,9 @@ func newtokens(toks []string) tokens {
 }
 
 func (t *tokens) next() string {
+	if t.pos >= len(t.toks) {
+		return ""
+	}
 	str := t.toks[t.pos]
 	t.pos++
 	return str

@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -11,9 +11,53 @@ import (
 
 // FileSystem implements access to a collection of named files over XRootD.
 type FileSystem interface {
+	// Dirlist returns the contents of a directory together with the stat information.
 	Dirlist(ctx context.Context, path string) ([]EntryStat, error)
+
+	// Open returns the file handle for a file together with the compression and the stat info.
 	Open(ctx context.Context, path string, mode OpenMode, options OpenOptions) (File, error)
+
+	// RemoveFile removes the file at path.
 	RemoveFile(ctx context.Context, path string) error
+
+	// Truncate changes the size of the named file.
+	Truncate(ctx context.Context, path string, size int64) error
+
+	// Stat returns the entry stat info for the given path.
+	Stat(ctx context.Context, path string) (EntryStat, error)
+
+	// VirtualStat returns the virtual filesystem stat info for the given path.
+	// Note that path needs not to be an existing filesystem object, it is used as a path prefix in order to
+	// filter out servers and partitions that could not be used to hold objects whose path starts
+	// with the specified path prefix.
+	VirtualStat(ctx context.Context, path string) (VirtualFSStat, error)
+
+	// Mkdir creates a new directory with the specified name and permission bits.
+	Mkdir(ctx context.Context, path string, perm OpenMode) error
+
+	// MkdirAll creates a directory named path, along with any necessary parents,
+	// and returns nil, or else returns an error.
+	// The permission bits perm are used for all directories that MkdirAll creates.
+	MkdirAll(ctx context.Context, path string, perm OpenMode) error
+
+	// RemoveDir removes a directory.
+	// The directory to be removed must be empty.
+	RemoveDir(ctx context.Context, path string) error
+
+	// RemoveAll removes path and any children it contains.
+	// It removes everything it can but returns the first error it encounters.
+	// If the path does not exist, RemoveAll returns nil (no error.)
+	RemoveAll(ctx context.Context, path string) error
+
+	// Rename renames (moves) oldpath to newpath.
+	Rename(ctx context.Context, oldpath, newpath string) error
+
+	// Chmod changes the permissions of the named file to perm.
+	Chmod(ctx context.Context, path string, mode OpenMode) error
+
+	// Statx obtains type information for one or more paths.
+	// Only a limited number of flags is meaningful such as StatIsExecutable, StatIsDir, StatIsOther, StatIsOffline.
+	Statx(ctx context.Context, paths []string) ([]StatFlags, error)
 }
 
 // OpenMode is the mode in which path is to be opened.

@@ -1,11 +1,10 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 package rootio
 
 import (
-	"bytes"
 	"reflect"
 )
 
@@ -153,6 +152,7 @@ type Tree interface {
 	ZipBytes() int64
 	Branch(name string) Branch
 	Branches() []Branch
+	Leaf(name string) Leaf
 	Leaves() []Leaf
 
 	getFile() *File
@@ -299,5 +299,5 @@ type ROOTUnmarshaler interface {
 // ROOTMarshaler is the interface implemented by an object that can
 // marshal itself into a ROOT buffer
 type ROOTMarshaler interface {
-	MarshalROOT() (data *bytes.Buffer, err error)
+	MarshalROOT(w *WBuffer) (int, error)
 }

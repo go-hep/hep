@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -167,29 +167,34 @@ func genArrays() {
 	genImports(f)
 
 	for i, typ := range []struct {
-		Name string
-		Type string
-		Func string
+		Name  string
+		Type  string
+		RFunc string
+		WFunc string
 	}{
 		{
-			Name: "ArrayI",
-			Type: "int32",
-			Func: "r.ReadFastArrayI32",
+			Name:  "ArrayI",
+			Type:  "int32",
+			RFunc: "r.ReadFastArrayI32",
+			WFunc: "w.WriteFastArrayI32",
 		},
 		{
-			Name: "ArrayL64",
-			Type: "int64",
-			Func: "r.ReadFastArrayI64",
+			Name:  "ArrayL64",
+			Type:  "int64",
+			RFunc: "r.ReadFastArrayI64",
+			WFunc: "w.WriteFastArrayI64",
 		},
 		{
-			Name: "ArrayF",
-			Type: "float32",
-			Func: "r.ReadFastArrayF32",
+			Name:  "ArrayF",
+			Type:  "float32",
+			RFunc: "r.ReadFastArrayF32",
+			WFunc: "w.WriteFastArrayF32",
 		},
 		{
-			Name: "ArrayD",
-			Type: "float64",
-			Func: "r.ReadFastArrayF64",
+			Name:  "ArrayD",
+			Type:  "float64",
+			RFunc: "r.ReadFastArrayF64",
+			WFunc: "w.WriteFastArrayF64",
 		},
 	} {
 		if i > 0 {
@@ -295,7 +300,7 @@ func genH2() {
 	gofmt(f)
 }
 
-const srcHeader = `// Copyright 2017 The go-hep Authors.  All rights reserved.
+const srcHeader = `// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -495,13 +500,25 @@ func (arr *{{.Name}}) Set(i int, v interface{}) {
 	arr.Data[i] = v.({{.Type}})
 }
 
+func (arr *{{.Name}}) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteI32(int32(len(arr.Data)))
+	{{.WFunc}}(arr.Data)
+
+	return int(w.Pos()-pos), w.err
+}
+
 func (arr *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 	if r.err != nil {
 		return r.err
 	}
 
 	n := int(r.ReadI32())
-	arr.Data = {{.Func}}(n)
+	arr.Data = {{.RFunc}}(n)
 
 	return r.Err()
 }
@@ -515,8 +532,11 @@ func init() {
 	Factory.add("*rootio.{{.Name}}", f)
 }
 
-var _ Array = (*{{.Name}})(nil)
-var _ ROOTUnmarshaler = (*{{.Name}})(nil)
+var (
+	_ Array = (*{{.Name}})(nil)
+	_ ROOTMarshaler = (*{{.Name}})(nil)
+	_ ROOTUnmarshaler = (*{{.Name}})(nil)
+)
 `
 
 const h1Tmpl = `// {{.Name}} implements ROOT T{{.Name}}

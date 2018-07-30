@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -25,5 +25,5 @@ func Curve1D(f Func1D, settings *optimize.Settings, m optimize.Method) (*optimiz
 
 	p0 := make([]float64, len(f.Ps))
 	copy(p0, f.Ps)
-	return optimize.Local(p, p0, settings, m)
+	return optimize.Minimize(p, p0, settings, m)
 }

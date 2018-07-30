@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -25,10 +25,6 @@ func TestRWCalo(t *testing.T) {
 }
 
 func testRWCalo(t *testing.T, compLevel int, fname string) {
-	if !stableCompression(t, compLevel) {
-		t.Skipf("no stable compression - skipping %s", fname)
-	}
-
 	w, err := lcio.Create(fname)
 	if err != nil {
 		t.Error(err)

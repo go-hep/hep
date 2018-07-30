@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -11,6 +11,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -35,7 +36,7 @@ func walk(f rootio.Directory, path []string) (rootio.Object, error) {
 func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 	uri := r.URL.Path[len("/plot-h1/"):]
 	var err error
-	uri, err = urlPathUnescape(uri)
+	uri, err = url.PathUnescape(uri)
 	if err != nil {
 		return err
 	}
@@ -202,14 +203,6 @@ func (srv *server) plotBranchHandle(w http.ResponseWriter, r *http.Request) erro
 
 	leaves := b.Leaves()
 	leaf := leaves[0]
-	tname := leaf.TypeName()
-	switch {
-	case leaf.LeafCount() != nil:
-		tname = "[]" + tname
-	case leaf.Len() > 1:
-		tname = fmt.Sprintf("[%d]%s", leaf.Len(), tname)
-	}
-
 	fv, err := newFloats(leaf)
 	if err != nil {
 		log.Printf("error creating float-val: %v\n", err)

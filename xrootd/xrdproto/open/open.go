@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -9,6 +9,7 @@ package open // import "go-hep.org/x/hep/xrootd/xrdproto/open"
 import (
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdfs"
+	"go-hep.org/x/hep/xrootd/xrdproto"
 )
 
 // RequestID is the id of the request, it is sent as part of message.
@@ -24,7 +25,7 @@ type Response struct {
 	Stat        *xrdfs.EntryStat
 }
 
-// MarshalXrd implements xrdproto.Marshaler
+// MarshalXrd implements xrdproto.Marshaler.
 func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteBytes(o.FileHandle[:])
 	if o.Compression == nil {
@@ -43,7 +44,7 @@ func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return nil
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	rBuffer.ReadBytes(o.FileHandle[:])
 	if rBuffer.Len() == 0 {
@@ -63,7 +64,7 @@ func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	return nil
 }
 
-// RespID implements xrdproto.Response.RespID
+// RespID implements xrdproto.Response.RespID.
 func (resp *Response) RespID() uint16 { return RequestID }
 
 // Request holds open request parameters.
@@ -74,12 +75,22 @@ type Request struct {
 	Path    string
 }
 
+// Opaque implements xrdproto.FilepathRequest.Opaque.
+func (req *Request) Opaque() string {
+	return xrdproto.Opaque(req.Path)
+}
+
+// SetOpaque implements xrdproto.FilepathRequest.SetOpaque.
+func (req *Request) SetOpaque(opaque string) {
+	xrdproto.SetOpaque(&req.Path, opaque)
+}
+
 // NewRequest forms a Request according to provided path, mode, and options.
 func NewRequest(path string, mode xrdfs.OpenMode, options xrdfs.OpenOptions) *Request {
 	return &Request{Mode: mode, Options: options, Path: path}
 }
 
-// MarshalXrd implements xrdproto.Marshaler
+// MarshalXrd implements xrdproto.Marshaler.
 func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteU16(uint16(o.Mode))
 	wBuffer.WriteU16(uint16(o.Options))
@@ -88,7 +99,7 @@ func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return nil
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	o.Mode = xrdfs.OpenMode(rBuffer.ReadU16())
 	o.Options = xrdfs.OpenOptions(rBuffer.ReadU16())
@@ -97,5 +108,20 @@ func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	return nil
 }
 
-// ReqID implements xrdproto.Request.ReqID
+// ReqID implements xrdproto.Request.ReqID.
 func (req *Request) ReqID() uint16 { return RequestID }
+
+// ShouldSign implements xrdproto.Request.ShouldSign.
+func (req *Request) ShouldSign() bool {
+	// According to specification, the open request needs to be signed
+	// if any of the following options has been specified.
+	return req.Options&xrdfs.OpenOptionsDelete != 0 ||
+		req.Options&xrdfs.OpenOptionsNew != 0 ||
+		req.Options&xrdfs.OpenOptionsOpenUpdate != 0 ||
+		req.Options&xrdfs.OpenOptionsMkPath != 0 ||
+		req.Options&xrdfs.OpenOptionsOpenAppend != 0
+}
+
+var (
+	_ xrdproto.FilepathRequest = (*Request)(nil)
+)

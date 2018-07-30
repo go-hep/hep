@@ -1,4 +1,4 @@
-// Copyright 2016 The go-hep Authors.  All rights reserved.
+// Copyright 2016 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -202,6 +202,9 @@ func getTag(tag reflect.StructTag, keys ...string) string {
 //    return nil
 //  })
 func (nt *Ntuple) Scan(query string, f interface{}) error {
+	if f == nil {
+		return fmt.Errorf("hbook/ntup: nil func")
+	}
 	rv := reflect.ValueOf(f)
 	rt := rv.Type()
 	if rt.Kind() != reflect.Func {
@@ -250,7 +253,7 @@ func (nt *Ntuple) Scan(query string, f interface{}) error {
 
 // ScanH1D executes a query against the ntuple and fills the histogram with
 // the results of the query.
-// If h is nil, a (100-bins, xmin, xmax) histogram is created,
+// If h is nil, a (100-bins, xmin, xmax+ULP) histogram is created,
 // where xmin and xmax are inferred from the content of the underlying database.
 func (nt *Ntuple) ScanH1D(query string, h *hbook.H1D) (*hbook.H1D, error) {
 	if h == nil {
@@ -269,7 +272,7 @@ func (nt *Ntuple) ScanH1D(query string, h *hbook.H1D) (*hbook.H1D, error) {
 			return nil, err
 		}
 
-		h = hbook.NewH1D(100, xmin, xmax)
+		h = hbook.NewH1D(100, xmin, nextULP(xmax))
 	}
 
 	err := nt.Scan(query, func(x float64) error {
@@ -282,7 +285,7 @@ func (nt *Ntuple) ScanH1D(query string, h *hbook.H1D) (*hbook.H1D, error) {
 
 // ScanH2D executes a query against the ntuple and fills the histogram with
 // the results of the query.
-// If h is nil, a (100-bins, xmin, xmax) (100-bins, ymin, ymax) 2d-histogram
+// If h is nil, a (100-bins, xmin, xmax+ULP) (100-bins, ymin, ymax+ULP) 2d-histogram
 // is created,
 // where xmin, xmax and ymin,ymax are inferred from the content of the
 // underlying database.
@@ -307,7 +310,7 @@ func (nt *Ntuple) ScanH2D(query string, h *hbook.H2D) (*hbook.H2D, error) {
 			return nil, err
 		}
 
-		h = hbook.NewH2D(100, xmin, xmax, 100, ymin, ymax)
+		h = hbook.NewH2D(100, xmin, nextULP(xmax), 100, ymin, nextULP(ymax))
 	}
 
 	err := nt.Scan(query, func(x, y float64) error {
@@ -348,4 +351,8 @@ func (nt *Ntuple) massageQuery(q string) (string, error) {
 
 	// FIXME(sbinet) this is vulnerable to SQL injections...
 	return "select " + vars + " from " + nt.name + where + order, nil
+}
+
+func nextULP(v float64) float64 {
+	return math.Nextafter(v, v+1)
 }

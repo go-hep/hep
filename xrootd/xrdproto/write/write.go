@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -9,6 +9,7 @@ package write // import "go-hep.org/x/hep/xrootd/xrdproto/write"
 import (
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdfs"
+	"go-hep.org/x/hep/xrootd/xrdproto"
 )
 
 // RequestID is the id of the request, it is sent as part of message.
@@ -19,7 +20,7 @@ const RequestID uint16 = 3019
 type Request struct {
 	Handle xrdfs.FileHandle
 	Offset int64
-	PathID uint8
+	pathID xrdproto.PathID
 	_      [3]uint8
 	Data   []uint8
 }
@@ -28,10 +29,15 @@ type Request struct {
 func (req Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteBytes(req.Handle[:])
 	wBuffer.WriteI64(req.Offset)
-	wBuffer.WriteU8(req.PathID)
+	wBuffer.WriteU8(uint8(req.pathID))
 	wBuffer.Next(3)
 	wBuffer.WriteLen(len(req.Data))
-	wBuffer.WriteBytes(req.Data)
+
+	// If we are using a non-zero path ID, then data goes to the other connection.
+	// Otherwise, marshal it.
+	if req.pathID == 0 {
+		wBuffer.WriteBytes(req.Data)
+	}
 	return nil
 }
 
@@ -39,7 +45,7 @@ func (req Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 func (req *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	rBuffer.ReadBytes(req.Handle[:])
 	req.Offset = rBuffer.ReadI64()
-	req.PathID = rBuffer.ReadU8()
+	req.pathID = xrdproto.PathID(rBuffer.ReadU8())
 	rBuffer.Skip(3)
 	req.Data = make([]uint8, rBuffer.ReadLen())
 	rBuffer.ReadBytes(req.Data)
@@ -48,3 +54,33 @@ func (req *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 
 // ReqID implements xrdproto.Request.ReqID.
 func (req *Request) ReqID() uint16 { return RequestID }
+
+// ShouldSign implements xrdproto.Request.ShouldSign.
+func (req *Request) ShouldSign() bool { return false }
+
+// PathID implements xrdproto.DataRequest.PathID.
+func (o *Request) PathID() xrdproto.PathID {
+	return o.pathID
+}
+
+// PathID implements xrdproto.DataRequest.SetPathID.
+func (o *Request) SetPathID(pathID xrdproto.PathID) {
+	o.pathID = pathID
+}
+
+// PathID implements xrdproto.DataRequest.Direction.
+func (o *Request) Direction() xrdproto.DataRequestDirection {
+	return xrdproto.DataRequestWrite
+}
+
+// PathID implements xrdproto.DataRequest.PathData.
+func (o *Request) PathData() []byte {
+	if o.pathID != 0 {
+		return o.Data
+	}
+	return nil
+}
+
+var (
+	_ xrdproto.DataRequest = (*Request)(nil)
+)

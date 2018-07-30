@@ -1,8 +1,6 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-
-//+build go1.7
 
 package rootio
 
@@ -70,7 +68,13 @@ func TestReadRBuffer(t *testing.T) {
 		want ROOTUnmarshaler
 	}{
 		{
+			name: "TObject",
+			file: "testdata/tobject.dat",
+			want: &tobject{id: 0x0, bits: 0x3000000},
+		},
+		{
 			name: "TNamed",
+			file: "testdata/tnamed.dat",
 			want: &tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "my-name", title: "my-title"},
 		},
 		{
@@ -103,6 +107,7 @@ func TestReadRBuffer(t *testing.T) {
 		},
 		{
 			name: "TList",
+			file: "testdata/tlist.dat",
 			want: &tlist{
 				rvers: 5,
 				name:  "list-name",
@@ -110,6 +115,15 @@ func TestReadRBuffer(t *testing.T) {
 					&tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "n0", title: "t0"},
 					&tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "n1", title: "t1"},
 				},
+			},
+		},
+		{
+			name: "TObjString",
+			file: "testdata/tobjstring.dat",
+			want: &tobjstring{
+				rvers: 1,
+				obj:   tobject{id: 0x0, bits: 0x3000008},
+				str:   "tobjstring-string",
 			},
 		},
 		{
@@ -2910,6 +2924,6 @@ func testReadRBuffer(t *testing.T, name, file string, want interface{}) {
 	}
 
 	if !reflect.DeepEqual(obj, want) {
-		t.Fatalf("error: %q\ngot= %+v\nwant=%+v\n", file, obj, want)
+		t.Fatalf("error: %q\ngot= %#v\nwant=%#v\n", file, obj, want)
 	}
 }

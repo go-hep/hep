@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdfs"
+	"go-hep.org/x/hep/xrootd/xrdproto"
 )
 
 // RequestID is the id of the request, it is sent as part of message.
@@ -21,13 +22,13 @@ type Response struct {
 	Data []uint8
 }
 
-// MarshalXrd implements xrdproto.Marshaler
+// MarshalXrd implements xrdproto.Marshaler.
 func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteBytes(o.Data)
 	return nil
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	src := rBuffer.Len()
 	dst := len(o.Data)
@@ -39,7 +40,7 @@ func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	return nil
 }
 
-// RespID implements xrdproto.Response.RespID
+// RespID implements xrdproto.Response.RespID.
 func (resp *Response) RespID() uint16 { return RequestID }
 
 // Request holds read request parameters.
@@ -54,17 +55,17 @@ type Request struct {
 type OptionalArgs struct {
 	// PathID is the path id returned by bind request.
 	// The response data is sent to this path, if possible.
-	PathID uint8
+	PathID xrdproto.PathID
 	_      [7]uint8
 	// ReadAhead is the slice of the pre-read requests.
 	ReadAheads []ReadAhead
 }
 
-// MarshalXrd implements xrdproto.Marshaler
+// MarshalXrd implements xrdproto.Marshaler.
 func (o OptionalArgs) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	alen := len(o.ReadAheads)*16 + 8
 	wBuffer.WriteLen(alen)
-	wBuffer.WriteU8(o.PathID)
+	wBuffer.WriteU8(uint8(o.PathID))
 	wBuffer.Next(7)
 	for _, x := range o.ReadAheads {
 		err := x.MarshalXrd(wBuffer)
@@ -75,14 +76,17 @@ func (o OptionalArgs) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return nil
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *OptionalArgs) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	alen := rBuffer.ReadLen()
-	o.PathID = rBuffer.ReadU8()
+	o.PathID = xrdproto.PathID(rBuffer.ReadU8())
 	rBuffer.Skip(7)
 	if alen < 8 || (alen-8)%16 != 0 {
 		return errors.Errorf("xrootd: invalid alen is specified: should be greater or equal to 8"+
 			"and (alen - 8) should be dividable by 16, got: %v", alen)
+	}
+	if alen <= 8 {
+		return nil
 	}
 	o.ReadAheads = make([]ReadAhead, (alen-8)/16)
 	for i := 0; i < len(o.ReadAheads); i++ {
@@ -103,7 +107,7 @@ type ReadAhead struct {
 	Offset int64
 }
 
-// MarshalXrd implements xrdproto.Marshaler
+// MarshalXrd implements xrdproto.Marshaler.
 func (o ReadAhead) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteBytes(o.Handle[:])
 	wBuffer.WriteI32(o.Length)
@@ -111,7 +115,7 @@ func (o ReadAhead) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return nil
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *ReadAhead) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	rBuffer.ReadBytes(o.Handle[:])
 	o.Length = rBuffer.ReadI32()
@@ -119,10 +123,13 @@ func (o *ReadAhead) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	return nil
 }
 
-// ReqID implements xrdproto.Request.ReqID
+// ReqID implements xrdproto.Request.ReqID.
 func (req *Request) ReqID() uint16 { return RequestID }
 
-// MarshalXrd implements xrdproto.Marshaler
+// ShouldSign implements xrdproto.Request.ShouldSign.
+func (req *Request) ShouldSign() bool { return false }
+
+// MarshalXrd implements xrdproto.Marshaler.
 func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	wBuffer.WriteBytes(o.Handle[:])
 	wBuffer.WriteI64(o.Offset)
@@ -134,14 +141,49 @@ func (o Request) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 	return o.OptionalArgs.MarshalXrd(wBuffer)
 }
 
-// UnmarshalXrd implements xrdproto.Unmarshaler
+// UnmarshalXrd implements xrdproto.Unmarshaler.
 func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	rBuffer.ReadBytes(o.Handle[:])
 	o.Offset = rBuffer.ReadI64()
 	o.Length = rBuffer.ReadI32()
+	if rBuffer.Len() > 4 {
+		o.OptionalArgs = &OptionalArgs{}
+		return o.OptionalArgs.UnmarshalXrd(rBuffer)
+	}
 	alen := rBuffer.ReadLen()
 	if alen == 0 {
 		return nil
 	}
-	return o.OptionalArgs.UnmarshalXrd(rBuffer)
+	return errors.Errorf("xrootd: no data is passed after alen of %d", alen)
 }
+
+// PathID implements xrdproto.DataRequest.PathID.
+func (o *Request) PathID() xrdproto.PathID {
+	if o.OptionalArgs == nil {
+		return 0
+	}
+	return o.OptionalArgs.PathID
+}
+
+// PathID implements xrdproto.DataRequest.SetPathID.
+func (o *Request) SetPathID(pathID xrdproto.PathID) {
+	if o.OptionalArgs == nil {
+		o.OptionalArgs = &OptionalArgs{PathID: pathID}
+		return
+	}
+	o.OptionalArgs.PathID = pathID
+}
+
+// PathID implements xrdproto.DataRequest.Direction.
+func (o *Request) Direction() xrdproto.DataRequestDirection {
+	return xrdproto.DataRequestRead
+}
+
+// PathID implements xrdproto.DataRequest.PathData.
+func (o *Request) PathData() []byte {
+	return nil
+}
+
+var (
+	_ xrdproto.DataRequest = (*Request)(nil)
+)

@@ -1,4 +1,4 @@
-// Copyright 2016 The go-hep Authors.  All rights reserved.
+// Copyright 2016 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -140,6 +140,37 @@ func TestCSVReaderScanSmallRead(t *testing.T) {
 	err = rows.Err()
 	if err != nil {
 		t.Errorf("error iterating over rows: %v\n", err)
+	}
+}
+
+func TestCSVReaderInvalidScan(t *testing.T) {
+	fname := "testdata/simple.csv"
+	tbl, err := csvutil.Open(fname)
+	if err != nil {
+		t.Errorf("could not open %s: %v\n", fname, err)
+	}
+	defer tbl.Close()
+	tbl.Reader.Comma = ';'
+	tbl.Reader.Comment = '#'
+
+	rows, err := tbl.ReadRows(0, -1)
+	if err != nil {
+		t.Errorf("could read rows [0, -1): %v\n", err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		t.Fatalf("could not get data")
+	}
+
+	err = rows.Scan()
+	if err == nil {
+		t.Errorf("expected an error")
+	}
+
+	err = rows.Err()
+	if err == nil {
+		t.Fatalf("expected a sticky error")
 	}
 }
 
@@ -435,6 +466,149 @@ func TestCSVAppend(t *testing.T) {
 	}
 
 	err = diff("testdata/append.csv", fname)
+	if err != nil {
+		t.Errorf("files differ: %v\n", err)
+	}
+}
+
+func TestCSVReaderTypes(t *testing.T) {
+	fname := "testdata/types.csv"
+	tbl, err := csvutil.Open(fname)
+	if err != nil {
+		t.Errorf("could not open %s: %v\n", fname, err)
+	}
+	defer tbl.Close()
+	tbl.Reader.Comma = ';'
+	tbl.Reader.Comment = '#'
+
+	rows, err := tbl.ReadRows(0, 2)
+	if err != nil {
+		t.Errorf("could read rows [0, 2): %v\n", err)
+	}
+	defer rows.Close()
+
+	const nfields = 14
+	type Data struct {
+		Bool   bool
+		Int    int
+		Int8   int8
+		Int16  int16
+		Int32  int32
+		Int64  int64
+		UInt   uint
+		UInt8  uint8
+		UInt16 uint16
+		UInt32 uint32
+		UInt64 uint64
+		F32    float32
+		F64    float64
+		Str    string
+	}
+
+	wants := []Data{
+		{true, +1, -1, -1, -1, -1, +1, +1, +1, +1, +1, 1.1, 1.1, "str-1"},
+		{false, -2, -2, -2, -2, -2, +2, +2, +2, +2, +2, 2.2, 2.2, "str-2"},
+	}
+	irow := 0
+	for rows.Next() {
+		want := wants[irow]
+		{
+			var got Data
+			err = rows.Scan(&got.Bool, &got.Int, &got.Int8, &got.Int16, &got.Int32, &got.Int64, &got.UInt, &got.UInt8, &got.UInt16, &got.UInt32, &got.UInt64, &got.F32, &got.F64, &got.Str)
+			if err != nil {
+				t.Errorf("error reading row %d: %v\n", irow, err)
+			}
+			if want != got {
+				t.Errorf("error reading row %d\ngot= %#v\nwant=%#v\n",
+					irow, got, want,
+				)
+			}
+			if got, want := rows.NumFields(), nfields; got != want {
+				t.Errorf("invalid number of fields. got=%d. want=%d", got, want)
+
+			}
+			if got, want := len(rows.Fields()), nfields; got != want {
+				t.Errorf("invalid number of fields. got=%d. want=%d", got, want)
+
+			}
+		}
+		{
+			var got Data
+			err = rows.Scan(&got)
+			if err != nil {
+				t.Errorf("error reading row %d: %v\n", irow, err)
+			}
+			if want != got {
+				t.Errorf("error reading row %d\ngot= %#v\nwant=%#v\n",
+					irow, got, want,
+				)
+			}
+			if got, want := rows.NumFields(), nfields; got != want {
+				t.Errorf("invalid number of fields. got=%d. want=%d", got, want)
+			}
+			if got, want := len(rows.Fields()), nfields; got != want {
+				t.Errorf("invalid number of fields. got=%d. want=%d", got, want)
+			}
+		}
+		irow++
+	}
+
+	err = rows.Err()
+	if err != nil {
+		t.Errorf("error iterating over rows: %v\n", err)
+	}
+}
+
+func TestCSVWriterTypes(t *testing.T) {
+	fname := "testdata/out-types.csv"
+	tbl, err := csvutil.Create(fname)
+	if err != nil {
+		t.Errorf("could not create %s: %v\n", fname, err)
+	}
+	defer tbl.Close()
+	tbl.Writer.Comma = ';'
+
+	// test WriteHeader w/o a trailing newline
+	err = tbl.WriteHeader("## supported types: bool;int;int8;int16;int32;int64;uint;uint8;uint16;uint32;uint64;float32;float64;string")
+	if err != nil {
+		t.Errorf("error writing header: %v\n", err)
+	}
+
+	type Data struct {
+		Bool   bool
+		Int    int
+		Int8   int8
+		Int16  int16
+		Int32  int32
+		Int64  int64
+		UInt   uint
+		UInt8  uint8
+		UInt16 uint16
+		UInt32 uint32
+		UInt64 uint64
+		F32    float32
+		F64    float64
+		Str    string
+	}
+
+	wants := []Data{
+		{true, +1, -1, -1, -1, -1, +1, +1, +1, +1, +1, 1.1, 1.1, "str-1"},
+		{false, -2, -2, -2, -2, -2, +2, +2, +2, +2, +2, 2.2, 2.2, "str-2"},
+	}
+	for i := range wants {
+		err = tbl.WriteRow(wants[i])
+		if err != nil {
+			t.Errorf("error writing row %d: %v\n", i, err)
+			break
+		}
+	}
+
+	err = tbl.Close()
+	if err != nil {
+		t.Errorf("error closing table: %v\n", err)
+	}
+
+	err = diff("testdata/types.csv.ref", fname)
 	if err != nil {
 		t.Errorf("files differ: %v\n", err)
 	}

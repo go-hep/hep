@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -210,9 +210,9 @@ func (dir *tdirectory) UnmarshalROOT(r *RBuffer) error {
 }
 
 // StreamerInfo returns the StreamerInfo with name of this directory, or nil otherwise.
-func (dir *tdirectory) StreamerInfo(name string) StreamerInfo {
+func (dir *tdirectory) StreamerInfo(name string) (StreamerInfo, error) {
 	if dir.file == nil {
-		return nil
+		return nil, fmt.Errorf("rootio: no streamers")
 	}
 	return dir.file.StreamerInfo(name)
 }
@@ -241,7 +241,7 @@ func (dir *tdirectoryFile) Title() string {
 	return dir.dir.named.Title()
 }
 
-func (dir *tdirectoryFile) StreamerInfo(name string) StreamerInfo {
+func (dir *tdirectoryFile) StreamerInfo(name string) (StreamerInfo, error) {
 	return dir.dir.StreamerInfo(name)
 }
 

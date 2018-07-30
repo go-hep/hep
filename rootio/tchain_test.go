@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors.  All rights reserved.
+// Copyright 2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -33,6 +33,12 @@ func TestChain(t *testing.T) {
 			title:   "my tree title",
 		},
 		{
+			fnames:  []string{rootio.XrdRemote("testdata/chain.1.root")},
+			entries: 10,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
 			// twice the same tree
 			fnames:  []string{"testdata/chain.1.root", "testdata/chain.1.root"},
 			entries: 20,
@@ -40,8 +46,28 @@ func TestChain(t *testing.T) {
 			title:   "my tree title",
 		},
 		{
+			// twice the same tree
+			fnames: []string{
+				rootio.XrdRemote("testdata/chain.1.root"),
+				rootio.XrdRemote("testdata/chain.1.root"),
+			},
+			entries: 20,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
 			// two different trees (with the same schema)
 			fnames:  []string{"testdata/chain.1.root", "testdata/chain.2.root"},
+			entries: 20,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
+			// two different trees (with the same schema)
+			fnames: []string{
+				rootio.XrdRemote("testdata/chain.1.root"),
+				rootio.XrdRemote("testdata/chain.2.root"),
+			},
 			entries: 20,
 			name:    "tree",
 			title:   "my tree title",
@@ -68,6 +94,87 @@ func TestChain(t *testing.T) {
 			}
 
 			chain := rootio.Chain(trees...)
+
+			if got, want := chain.Name(), tc.name; got != want {
+				t.Fatalf("names differ\ngot = %q, want= %q", got, want)
+			}
+			if got, want := chain.Title(), tc.title; got != want {
+				t.Fatalf("titles differ\ngot = %q, want= %q", got, want)
+			}
+			if got, want := chain.Entries(), tc.entries; got != want {
+				t.Fatalf("titles differ\ngot = %v, want= %v", got, want)
+			}
+		})
+	}
+}
+
+func TestChainOf(t *testing.T) {
+	for _, tc := range []struct {
+		fnames  []string
+		entries int64
+		name    string
+		title   string
+	}{
+		{
+			fnames:  nil,
+			entries: 0,
+			name:    "",
+			title:   "",
+		},
+		{
+			fnames:  []string{"testdata/chain.1.root"},
+			entries: 10,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
+			fnames:  []string{rootio.XrdRemote("testdata/chain.1.root")},
+			entries: 10,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
+			// twice the same tree
+			fnames:  []string{"testdata/chain.1.root", "testdata/chain.1.root"},
+			entries: 20,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
+			// twice the same tree
+			fnames: []string{
+				rootio.XrdRemote("testdata/chain.1.root"),
+				rootio.XrdRemote("testdata/chain.1.root"),
+			},
+			entries: 20,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
+			// two different trees (with the same schema)
+			fnames:  []string{"testdata/chain.1.root", "testdata/chain.2.root"},
+			entries: 20,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		{
+			// two different trees (with the same schema)
+			fnames: []string{
+				rootio.XrdRemote("testdata/chain.1.root"),
+				rootio.XrdRemote("testdata/chain.2.root"),
+			},
+			entries: 20,
+			name:    "tree",
+			title:   "my tree title",
+		},
+		// TODO(sbinet): add a test with 2 trees with different schemas)
+	} {
+		t.Run("", func(t *testing.T) {
+			chain, closer, err := rootio.ChainOf(tc.name, tc.fnames...)
+			if err != nil {
+				t.Fatalf("could not create chain: %v", err)
+			}
+			defer closer()
 
 			if got, want := chain.Name(), tc.name; got != want {
 				t.Fatalf("names differ\ngot = %q, want= %q", got, want)
@@ -179,5 +286,144 @@ func TestChainScanStruct(t *testing.T) {
 
 	if total.got != total.want {
 		t.Fatalf("entries scanned differ: got=%d want=%d", total.got, total.want)
+	}
+}
+
+var SumF64 float64 // global variable to prevent unwanted compiler optimization
+
+func BenchmarkChainTreeScannerStruct(b *testing.B) {
+	files := []string{
+		"testdata/chain.1.root",
+		"testdata/chain.2.root",
+	}
+
+	trees := make([]rootio.Tree, len(files))
+	for i, fname := range files {
+		f, err := rootio.Open(fname)
+		if err != nil {
+			b.Fatalf("could not open ROOT file %q: %v", fname, err)
+		}
+		defer f.Close()
+
+		obj, err := f.Get("tree")
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		trees[i] = obj.(rootio.Tree)
+	}
+	chain := rootio.Chain(trees...)
+
+	type Data struct {
+		Event struct {
+			Beg       string      `rootio:"Beg"`
+			F64       float64     `rootio:"F64"`
+			ArrF64    [10]float64 `rootio:"ArrayF64"`
+			N         int32       `rootio:"N"`
+			SliF64    []float64   `rootio:"SliceF64"`
+			StdStr    string      `rootio:"StdStr"`
+			StlVecF64 []float64   `rootio:"StlVecF64"`
+			StlVecStr []string    `rootio:"StlVecStr"`
+			End       string      `rootio:"End"`
+		} `rootio:"evt"`
+	}
+
+	sc, err := rootio.NewTreeScanner(chain, &Data{})
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer sc.Close()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		err := sc.SeekEntry(0)
+		if err != nil {
+			b.Fatal(err)
+		}
+		for sc.Next() {
+			var data Data
+			err := sc.Scan(&data)
+			if err != nil {
+				b.Fatal(err)
+			}
+			SumF64 += data.Event.F64
+		}
+	}
+	if err := sc.Err(); err != nil && err != io.EOF {
+		b.Fatal(err)
+	}
+}
+
+func TestSeekEntry(t *testing.T) {
+	files := []string{
+		"testdata/chain.1.root",
+		"testdata/chain.2.root",
+	}
+
+	trees := make([]rootio.Tree, len(files))
+	for i, fname := range files {
+		f, err := rootio.Open(fname)
+		if err != nil {
+			t.Fatalf("could not open ROOT file %q: %v", fname, err)
+		}
+		defer f.Close()
+
+		obj, err := f.Get("tree")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		trees[i] = obj.(rootio.Tree)
+	}
+	chain := rootio.Chain(trees...)
+
+	type Data struct {
+		Event struct {
+			Beg       string      `rootio:"Beg"`
+			F64       float64     `rootio:"F64"`
+			ArrF64    [10]float64 `rootio:"ArrayF64"`
+			N         int32       `rootio:"N"`
+			SliF64    []float64   `rootio:"SliceF64"`
+			StdStr    string      `rootio:"StdStr"`
+			StlVecF64 []float64   `rootio:"StlVecF64"`
+			StlVecStr []string    `rootio:"StlVecStr"`
+			End       string      `rootio:"End"`
+		} `rootio:"evt"`
+	}
+
+	sc, err := rootio.NewTreeScanner(chain, &Data{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sc.Close()
+
+	var entries = []int64{0, 1, 9, 2, 5, 11, 15, 2, 14, 3, 0}
+	for _, entry := range entries {
+		err := sc.SeekEntry(entry)
+		if err != nil {
+			t.Fatalf("Could not seek to entry %d: %v", entry, err)
+		}
+
+		if !sc.Next() {
+			t.Fatalf("Could not read entry %d", entry)
+		}
+
+		var data Data
+
+		err = sc.Scan(&data)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		i := sc.Entry()
+
+		if i != entry {
+			t.Fatalf("did not seek to entry %d. got=%d, want=%d", entry, i, entry)
+		}
+		if data.Event.F64 != float64(i) {
+			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.Event.F64, float64(i))
+		}
+
 	}
 }

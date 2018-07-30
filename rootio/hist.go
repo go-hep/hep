@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -34,7 +34,7 @@ type th1 struct {
 	funcs     tlist     // list of functions (fits and user)
 	buffer    []float64 // entry buffer
 	erropt    int32     // option for bin statistical errors
-
+	oflow     int32     // per object flag to use under/overflows in statistics
 }
 
 func (h *th1) Class() string {
@@ -143,6 +143,9 @@ func (h *th1) UnmarshalROOT(r *RBuffer) error {
 	h.buffer = r.ReadFastArrayF64(n)
 	if vers > 6 {
 		h.erropt = r.ReadI32()
+	}
+	if vers > 7 {
+		h.oflow = r.ReadI32()
 	}
 
 	r.CheckByteCount(pos, bcnt, beg, "TH1")

@@ -1,4 +1,4 @@
-// Copyright 2015 The go-hep Authors.  All rights reserved.
+// Copyright 2015 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -90,6 +90,9 @@ func (c *Cmd) Close() error {
 	var err error
 
 	err = c.fmgr.Close()
+	if err != nil {
+		return err
+	}
 
 	f, err := os.Create(".pawgo.history")
 	if err == nil {

@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -188,7 +189,7 @@ func iconFor(obj rootio.Object) string {
 }
 
 func attrFor(obj rootio.Object, id string) jsAttr {
-	id = urlPathEscape(id)
+	id = url.PathEscape(id)
 	cls := obj.Class()
 	switch {
 	case strings.HasPrefix(cls, "TH1"):

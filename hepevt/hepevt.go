@@ -1,4 +1,4 @@
-// Copyright 2017 The go-hep Authors.  All rights reserved.
+// Copyright 2017 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -21,6 +21,8 @@ type Event struct {
 	Vhep   [][4]float64 // vertex 4-vector (x,y,z,t)
 }
 
+// Particle holds informations about a MC-truth particle, in the
+// HEPEVT format.
 type Particle struct {
 	Status    int32      // status code (see hepevt doc)
 	Id        int32      // barcode
@@ -29,5 +31,3 @@ type Particle struct {
 	P         [5]float64 // (px,py,pz,e,m)
 	V         [4]float64 // vertex position (x,y,z,t)
 }
-
-// EOF
