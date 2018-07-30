@@ -198,6 +198,20 @@ func (tsb *tstreamerBase) Class() string {
 	return "TStreamerBase"
 }
 
+func (tsi *tstreamerInfo) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+	w.WriteVersion(tsi.rvers)
+	tsi.named.MarshalROOT(w)
+	w.WriteU32(tsi.chksum)
+	w.WriteU32(tsi.clsver)
+	w.WriteObjectAny(tsi.objarr)
+
+	return w.SetByteCount(pos, "TStreamerInfo")
+}
+
 func (tsb *tstreamerBase) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()

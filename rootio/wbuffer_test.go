@@ -577,7 +577,91 @@ func TestWBuffer_Write(t *testing.T) {
 }
 
 func TestWriteWBuffer(t *testing.T) {
-	for _, test := range rwBufferCases {
+	for _, test := range []struct {
+		name string
+		file string
+		want ROOTMarshaler
+	}{
+		{
+			name: "TObject",
+			file: "testdata/tobject.dat",
+			want: &tobject{id: 0x0, bits: 0x3000000},
+		},
+		{
+			name: "TNamed",
+			file: "testdata/tnamed.dat",
+			want: &tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "my-name", title: "my-title"},
+		},
+		{
+			name: "TNamed",
+			file: "testdata/tnamed-cmssw.dat",
+			want: &tnamed{
+				rvers: 1,
+				obj:   tobject{id: 0x0, bits: 0x3000000},
+				name:  "edmTriggerResults_TriggerResults__HLT.present", title: "edmTriggerResults_TriggerResults__HLT.present",
+			},
+		},
+		{
+			name: "TNamed",
+			file: "testdata/tnamed-cmssw-2.dat",
+			want: &tnamed{
+				rvers: 1,
+				obj:   tobject{id: 0x0, bits: 0x3500000},
+				name:  "edmTriggerResults_TriggerResults__HLT.present", title: "edmTriggerResults_TriggerResults__HLT.present",
+			},
+		},
+		{
+			name: "TNamed",
+			file: "testdata/tnamed-long-string.dat",
+			want: &tnamed{
+				rvers: 1,
+				obj:   tobject{id: 0x0, bits: 0x3000000},
+				name:  strings.Repeat("*", 256),
+				title: "my-title",
+			},
+		},
+		{
+			name: "TList",
+			file: "testdata/tlist.dat",
+			want: &tlist{
+				rvers: 5,
+				name:  "list-name",
+				objs: []Object{
+					&tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "n0", title: "t0"},
+					&tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "n1", title: "t1"},
+				},
+			},
+		},
+		{
+			name: "TArrayI",
+			file: "testdata/tarrayi.dat",
+			want: &ArrayI{Data: []int32{0, 1, 2, 3, 4}},
+		},
+		{
+			name: "TArrayL64",
+			file: "testdata/tarrayl64.dat",
+			want: &ArrayL64{Data: []int64{0, 1, 2, 3, 4}},
+		},
+		{
+			name: "TArrayF",
+			file: "testdata/tarrayf.dat",
+			want: &ArrayF{Data: []float32{0, 1, 2, 3, 4}},
+		},
+		{
+			name: "TArrayD",
+			file: "testdata/tarrayd.dat",
+			want: &ArrayD{Data: []float64{0, 1, 2, 3, 4}},
+		},
+		{
+			name: "TObjString",
+			file: "testdata/tobjstring.dat",
+			want: &tobjstring{
+				rvers: 1,
+				obj:   tobject{id: 0x0, bits: 0x3000008},
+				str:   "tobjstring-string",
+			},
+		},
+	} {
 		t.Run("write-buffer="+test.file, func(t *testing.T) {
 			if test.skip {
 				t.Skipf("ROOTMarshaler not implemented")
