@@ -66,11 +66,16 @@ func (tsi *tstreamerInfo) MarshalROOT(w *WBuffer) (int, error) {
 		return 0, w.err
 	}
 	pos := w.Pos()
+
 	w.WriteVersion(tsi.rvers)
 	tsi.named.MarshalROOT(w)
 	w.WriteU32(tsi.chksum)
 	w.WriteI32(tsi.clsver)
-	w.WriteObjectAny(tsi.objarr)
+
+	tsi.objarr.arr = make([]Object, tsi.objarr.Len())
+	for _, obj := range tsi.objarr.arr {
+		w.WriteObjectAny(obj)
+	}
 
 	return w.SetByteCount(pos, "TStreamerInfo")
 }
@@ -740,7 +745,6 @@ var _ Named = (*tstreamerInfo)(nil)
 var _ StreamerInfo = (*tstreamerInfo)(nil)
 var _ ROOTMarshaler = (*tstreamerInfo)(nil)
 var _ ROOTUnmarshaler = (*tstreamerInfo)(nil)
-
 
 var _ Object = (*tstreamerElement)(nil)
 var _ Named = (*tstreamerElement)(nil)
