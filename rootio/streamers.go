@@ -72,10 +72,8 @@ func (tsi *tstreamerInfo) MarshalROOT(w *WBuffer) (int, error) {
 	w.WriteU32(tsi.chksum)
 	w.WriteI32(tsi.clsver)
 
-	tsi.objarr.arr = make([]Object, tsi.objarr.Len())
-	for _, obj := range tsi.objarr.arr {
-		w.WriteObjectAny(obj)
-	}
+	tsi.objarr.arr = make([]Object, len(tsi.elems))
+	w.WriteObjectAny(tsi.objarr)
 
 	return w.SetByteCount(pos, "TStreamerInfo")
 }
