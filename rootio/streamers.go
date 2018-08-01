@@ -75,11 +75,11 @@ func (tsi *tstreamerInfo) MarshalROOT(w *WBuffer) (int, error) {
 	if len(tsi.elems) > 0 {
 		tsi.objarr.arr = make([]Object, len(tsi.elems))
 		for i, v := range tsi.elems {
-				tsi.objarr.arr[i] = v
+			tsi.objarr.arr[i] = v
 		}
 	}
 	w.WriteObjectAny(tsi.objarr)
-	tsi.objarr.arr = nil 
+	tsi.objarr.arr = nil
 
 	return w.SetByteCount(pos, "TStreamerInfo")
 }
