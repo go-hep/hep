@@ -51,9 +51,10 @@ type EntryStat struct {
 // EntryStatFrom creates an EntryStat that represents same information as the provided info.
 func EntryStatFrom(info os.FileInfo) EntryStat {
 	es := EntryStat{
-		EntryName: info.Name(),
-		EntrySize: info.Size(),
-		Mtime:     info.ModTime().Unix(),
+		EntryName:   info.Name(),
+		EntrySize:   info.Size(),
+		Mtime:       info.ModTime().Unix(),
+		HasStatInfo: true,
 	}
 	if info.IsDir() {
 		es.Flags |= StatIsDir

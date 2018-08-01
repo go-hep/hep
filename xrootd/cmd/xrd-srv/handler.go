@@ -17,8 +17,13 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
+	"go-hep.org/x/hep/xrootd/xrdproto/mv"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
+	"go-hep.org/x/hep/xrootd/xrdproto/stat"
+	xrdsync "go-hep.org/x/hep/xrootd/xrdproto/sync"
+	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
+	"go-hep.org/x/hep/xrootd/xrdproto/write"
 	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
 
@@ -135,9 +140,25 @@ func (h *handler) Open(sessionID [16]byte, request *open.Request) (xrdproto.Mars
 		// TODO: use crypto/rand under Windows (4 times faster than math/rand) if handle generation is on the hot path.
 		rand.Read(handle[:])
 		if _, dup := sess.handles[handle]; !dup {
+			resp := open.Response{FileHandle: handle}
+			if request.Options&xrdfs.OpenOptionsReturnStatus != 0 {
+				st, err := file.Stat()
+				if err != nil {
+					return xrdproto.ServerError{
+						Code:    xrdproto.IOError,
+						Message: fmt.Sprintf("An IO error occurred: %v", err),
+					}, xrdproto.Error
+				}
+				es := xrdfs.EntryStatFrom(st)
+				resp.Stat = &es
+				if request.Options&xrdfs.OpenOptionsCompress == 0 {
+					resp.Compression = &xrdfs.FileCompression{}
+				}
+			}
+			// TODO: return compression info if requested.
 			sess.handles[handle] = file
-			// TODO: return stat info if requested.
-			return open.Response{FileHandle: handle}, xrdproto.Ok
+
+			return resp, xrdproto.Ok
 		}
 	}
 
@@ -181,20 +202,8 @@ func (h *handler) Close(sessionID [16]byte, request *xrdclose.Request) (xrdproto
 
 // Read implements server.Handler.Read.
 func (h *handler) Read(sessionID [16]byte, request *read.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
-	h.mu.RLock()
-	sess, ok := h.sessions[sessionID]
-	h.mu.RUnlock()
-	if !ok {
-		// This situation can appear if user tries to read without opening any file at all.
-		return xrdproto.ServerError{
-			Code:    xrdproto.InvalidRequest,
-			Message: fmt.Sprintf("Invalid file handle: %v", request.Handle),
-		}, xrdproto.Error
-	}
-	sess.mu.Lock()
-	defer sess.mu.Unlock()
-	file, ok := sess.handles[request.Handle]
-	if !ok {
+	file := h.getFile(sessionID, request.Handle)
+	if file == nil {
 		return xrdproto.ServerError{
 			Code:    xrdproto.InvalidRequest,
 			Message: fmt.Sprintf("Invalid file handle: %v", request.Handle),
@@ -211,6 +220,136 @@ func (h *handler) Read(sessionID [16]byte, request *read.Request) (xrdproto.Mars
 	}
 
 	return read.Response{Data: buf}, xrdproto.Ok
+}
+
+// Write implements server.Handler.Write.
+func (h *handler) Write(sessionID [16]byte, request *write.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	file := h.getFile(sessionID, request.Handle)
+	if file == nil {
+		return xrdproto.ServerError{
+			Code:    xrdproto.InvalidRequest,
+			Message: fmt.Sprintf("Invalid file handle: %v", request.Handle),
+		}, xrdproto.Error
+	}
+
+	_, err := file.WriteAt(request.Data, request.Offset)
+	if err != nil {
+		return xrdproto.ServerError{
+			Code:    xrdproto.IOError,
+			Message: fmt.Sprintf("An IO error occurred: %v", err),
+		}, xrdproto.Error
+	}
+
+	return nil, xrdproto.Ok
+}
+
+func (h *handler) getFile(sessionID [16]byte, handle xrdfs.FileHandle) *os.File {
+	h.mu.RLock()
+	sess, ok := h.sessions[sessionID]
+	h.mu.RUnlock()
+	if !ok {
+		return nil
+	}
+	sess.mu.Lock()
+	defer sess.mu.Unlock()
+	file, ok := sess.handles[handle]
+	if !ok {
+		return nil
+	}
+	return file
+}
+
+// Stat implements server.Handler.Stat.
+func (h *handler) Stat(sessionID [16]byte, request *stat.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	if request.Options&stat.OptionsVFS != 0 {
+		// TODO: handle virtual stat info.
+		return xrdproto.ServerError{
+			Code:    xrdproto.InvalidRequest,
+			Message: "Stat request with OptionsVFS is not implemented",
+		}, xrdproto.Error
+	}
+
+	var fi os.FileInfo
+	var err error
+	if len(request.Path) == 0 {
+		file := h.getFile(sessionID, request.FileHandle)
+		if file == nil {
+			return xrdproto.ServerError{
+				Code:    xrdproto.InvalidRequest,
+				Message: fmt.Sprintf("Invalid file handle: %v", request.FileHandle),
+			}, xrdproto.Error
+		}
+		fi, err = file.Stat()
+	} else {
+		fi, err = os.Stat(path.Join(h.basePath, request.Path))
+	}
+
+	if err != nil {
+		return xrdproto.ServerError{
+			Code:    xrdproto.IOError,
+			Message: fmt.Sprintf("An IO error occurred: %v", err),
+		}, xrdproto.Error
+	}
+
+	return stat.DefaultResponse{EntryStat: xrdfs.EntryStatFrom(fi)}, xrdproto.Ok
+}
+
+// Truncate implements server.Handler.Truncate.
+func (h *handler) Truncate(sessionID [16]byte, request *truncate.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	var err error
+	if len(request.Path) == 0 {
+		file := h.getFile(sessionID, request.Handle)
+		if file == nil {
+			return xrdproto.ServerError{
+				Code:    xrdproto.InvalidRequest,
+				Message: fmt.Sprintf("Invalid file handle: %v", request.Handle),
+			}, xrdproto.Error
+		}
+		err = file.Truncate(request.Size)
+	} else {
+		err = os.Truncate(path.Join(h.basePath, request.Path), request.Size)
+	}
+
+	if err != nil {
+		return xrdproto.ServerError{
+			Code:    xrdproto.IOError,
+			Message: fmt.Sprintf("An IO error occurred: %v", err),
+		}, xrdproto.Error
+	}
+
+	return nil, xrdproto.Ok
+}
+
+// Sync implements server.Handler.Sync.
+func (h *handler) Sync(sessionID [16]byte, request *xrdsync.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	file := h.getFile(sessionID, request.Handle)
+	if file == nil {
+		return xrdproto.ServerError{
+			Code:    xrdproto.InvalidRequest,
+			Message: fmt.Sprintf("Invalid file handle: %v", request.Handle),
+		}, xrdproto.Error
+	}
+
+	if err := file.Sync(); err != nil {
+		return xrdproto.ServerError{
+			Code:    xrdproto.IOError,
+			Message: fmt.Sprintf("An IO error occurred: %v", err),
+		}, xrdproto.Error
+	}
+
+	return nil, xrdproto.Ok
+}
+
+// Rename implements server.Handler.Rename.
+func (h *handler) Rename(sessionID [16]byte, request *mv.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	if err := os.Rename(path.Join(h.basePath, request.OldPath), path.Join(h.basePath, request.NewPath)); err != nil {
+		return xrdproto.ServerError{
+			Code:    xrdproto.IOError,
+			Message: fmt.Sprintf("An IO error occurred: %v", err),
+		}, xrdproto.Error
+	}
+
+	return nil, xrdproto.Ok
 }
 
 // CloseSession implements server.Handler.CloseSession.

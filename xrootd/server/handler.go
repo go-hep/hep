@@ -8,9 +8,14 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/login"
+	"go-hep.org/x/hep/xrootd/xrdproto/mv"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
 	"go-hep.org/x/hep/xrootd/xrdproto/protocol"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
+	"go-hep.org/x/hep/xrootd/xrdproto/stat"
+	"go-hep.org/x/hep/xrootd/xrdproto/sync"
+	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
+	"go-hep.org/x/hep/xrootd/xrdproto/write"
 	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
 
@@ -41,4 +46,19 @@ type Handler interface {
 
 	// Read handles the XRootD read request: http://xrootd.org/doc/dev45/XRdv310.htm#_Toc464248841.
 	Read(sessionID [16]byte, request *read.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus)
+
+	// Write handles the XRootD write request: http://xrootd.org/doc/dev45/XRdv310.htm#_Toc464248855.
+	Write(sessionID [16]byte, request *write.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus)
+
+	// Stat handles the XRootD stat request: http://xrootd.org/doc/dev45/XRdv310.htm#_Toc464248850.
+	Stat(sessionID [16]byte, request *stat.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus)
+
+	// Sync handles the XRootD sync request: http://xrootd.org/doc/dev45/XRdv310.htm#_Toc464248852.
+	Sync(sessionID [16]byte, request *sync.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus)
+
+	// Truncate handles the XRootD truncate request: http://xrootd.org/doc/dev45/XRdv310.htm#_Toc464248853.
+	Truncate(sessionID [16]byte, request *truncate.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus)
+
+	// Rename handles the XRootD mv request: http://xrootd.org/doc/dev45/XRdv310.htm#_Toc464248822.
+	Rename(sessionID [16]byte, request *mv.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus)
 }

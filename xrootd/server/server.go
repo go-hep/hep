@@ -25,9 +25,14 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/handshake"
 	"go-hep.org/x/hep/xrootd/xrdproto/login"
+	"go-hep.org/x/hep/xrootd/xrdproto/mv"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
 	"go-hep.org/x/hep/xrootd/xrdproto/protocol"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
+	"go-hep.org/x/hep/xrootd/xrdproto/stat"
+	xrdsync "go-hep.org/x/hep/xrootd/xrdproto/sync"
+	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
+	"go-hep.org/x/hep/xrootd/xrdproto/write"
 	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
 
@@ -280,6 +285,41 @@ func (s *Server) handleRequest(sessionID [16]byte, requestID uint16, rBuffer *xr
 			return newUnmarshalingErrorResponse(err)
 		}
 		return s.handler.Read(sessionID, &request)
+	case write.RequestID:
+		var request write.Request
+		err := request.UnmarshalXrd(rBuffer)
+		if err != nil {
+			return newUnmarshalingErrorResponse(err)
+		}
+		return s.handler.Write(sessionID, &request)
+	case stat.RequestID:
+		var request stat.Request
+		err := request.UnmarshalXrd(rBuffer)
+		if err != nil {
+			return newUnmarshalingErrorResponse(err)
+		}
+		return s.handler.Stat(sessionID, &request)
+	case xrdsync.RequestID:
+		var request xrdsync.Request
+		err := request.UnmarshalXrd(rBuffer)
+		if err != nil {
+			return newUnmarshalingErrorResponse(err)
+		}
+		return s.handler.Sync(sessionID, &request)
+	case truncate.RequestID:
+		var request truncate.Request
+		err := request.UnmarshalXrd(rBuffer)
+		if err != nil {
+			return newUnmarshalingErrorResponse(err)
+		}
+		return s.handler.Truncate(sessionID, &request)
+	case mv.RequestID:
+		var request mv.Request
+		err := request.UnmarshalXrd(rBuffer)
+		if err != nil {
+			return newUnmarshalingErrorResponse(err)
+		}
+		return s.handler.Rename(sessionID, &request)
 	default:
 		response := xrdproto.ServerError{
 			Code:    xrdproto.InvalidRequest,
