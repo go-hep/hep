@@ -61,6 +61,20 @@ func (tsi *tstreamerInfo) Elements() []StreamerElement {
 	return tsi.elems
 }
 
+func (tsi *tstreamerInfo) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+	w.WriteVersion(tsi.rvers)
+	tsi.named.MarshalROOT(w)
+	w.WriteU32(tsi.chksum)
+	w.WriteI32(tsi.clsver)
+	w.WriteObjectAny(tsi.objarr)
+
+	return w.SetByteCount(pos, "TStreamerInfo")
+}
+
 func (tsi *tstreamerInfo) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
@@ -724,7 +738,9 @@ func (db *streamerDb) add(streamer StreamerInfo) {
 var _ Object = (*tstreamerInfo)(nil)
 var _ Named = (*tstreamerInfo)(nil)
 var _ StreamerInfo = (*tstreamerInfo)(nil)
+var _ ROOTMarshaler = (*tstreamerInfo)(nil)
 var _ ROOTUnmarshaler = (*tstreamerInfo)(nil)
+
 
 var _ Object = (*tstreamerElement)(nil)
 var _ Named = (*tstreamerElement)(nil)
