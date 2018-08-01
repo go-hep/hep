@@ -9,9 +9,14 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/handshake"
 	"go-hep.org/x/hep/xrootd/xrdproto/login"
+	"go-hep.org/x/hep/xrootd/xrdproto/mv"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
 	"go-hep.org/x/hep/xrootd/xrdproto/protocol"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
+	"go-hep.org/x/hep/xrootd/xrdproto/stat"
+	"go-hep.org/x/hep/xrootd/xrdproto/sync"
+	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
+	"go-hep.org/x/hep/xrootd/xrdproto/write"
 	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
 
@@ -67,5 +72,35 @@ func (h *defaultHandler) Close(sessionID [16]byte, request *xrdclose.Request) (x
 // Read implements Handler.Read.
 func (h *defaultHandler) Read(sessionID [16]byte, request *read.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "Read request is not implemented"}
+	return resp, xrdproto.Error
+}
+
+// Write implements Handler.Write.
+func (h *defaultHandler) Write(sessionID [16]byte, request *write.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "Write request is not implemented"}
+	return resp, xrdproto.Error
+}
+
+// Stat implements Handler.Stat.
+func (h *defaultHandler) Stat(sessionID [16]byte, request *stat.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "Stat request is not implemented"}
+	return resp, xrdproto.Error
+}
+
+// Sync implements Handler.Sync.
+func (h *defaultHandler) Sync(sessionID [16]byte, request *sync.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "Sync request is not implemented"}
+	return resp, xrdproto.Error
+}
+
+// Truncate implements Handler.Truncate.
+func (h *defaultHandler) Truncate(sessionID [16]byte, request *truncate.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "Truncate request is not implemented"}
+	return resp, xrdproto.Error
+}
+
+// Rename implements Handler.Rename.
+func (h *defaultHandler) Rename(sessionID [16]byte, request *mv.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "Rename request is not implemented"}
 	return resp, xrdproto.Error
 }
