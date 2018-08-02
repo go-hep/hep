@@ -12,7 +12,7 @@ import (
 	"bytes"
 	"math"
 
-	"go-hep.org/x/hep/hplot/vgshiny"
+	"go-hep.org/x/exp/vgshiny"
 	"golang.org/x/exp/shiny/screen"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"

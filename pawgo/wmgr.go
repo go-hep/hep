@@ -7,12 +7,11 @@ package main
 import (
 	"math"
 
+	"go-hep.org/x/exp/vgshiny"
 	"go-hep.org/x/hep/hplot"
-	"go-hep.org/x/hep/hplot/vgshiny"
+	"golang.org/x/exp/shiny/screen"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"golang.org/x/exp/shiny/screen"
 )
 
 const (

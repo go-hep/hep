@@ -24,6 +24,7 @@ require (
 	github.com/stretchr/testify v1.2.2 // indirect
 	github.com/stretchrcom/testify v1.2.2 // indirect
 	github.com/ulikunitz/xz v0.5.4
+	go-hep.org/x/exp v0.0.0-20180802154217-6d993ac81a11
 	golang.org/x/crypto v0.0.0-20180723164146-c126467f60eb
 	golang.org/x/exp v0.0.0-20180710024300-14dda7b62fcd
 	golang.org/x/image v0.0.0-20180708004352-c73c2afc3b81

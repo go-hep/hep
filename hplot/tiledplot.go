@@ -11,9 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"go-hep.org/x/exp/vgshiny"
 	"golang.org/x/exp/shiny/screen"
-
-	"go-hep.org/x/hep/hplot/vgshiny"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 	"gonum.org/v1/plot/vg/vgimg"
