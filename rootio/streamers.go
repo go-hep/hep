@@ -303,6 +303,33 @@ func (tsb *tstreamerBasicType) Class() string {
 	return "TStreamerBasicType"
 }
 
+func (tsb *tstreamerBasicType) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tsb.rvers)
+	tsb.tstreamerElement.MarshalROOT(w)
+
+	etype := tsb.tstreamerElement.etype
+	if etype < kOffsetL && etype > 0 {
+		etype += kOffsetL
+	}
+
+	basic := true
+	esize := tsb.tstreamerElement.esize
+	if (esize != 1) && (esize != 2) && (esize != 4) && (esize != 8) && (esize != int32(ptrSize)) {
+		basic = false
+	}
+
+	if basic && tsb.tstreamerElement.arrlen > 0 {
+		tsb.tstreamerElement.esize /= tsb.tstreamerElement.arrlen
+	}
+
+	return w.SetByteCount(pos, "TStreamerBasicType")
+}
+
 func (tsb *tstreamerBasicType) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
