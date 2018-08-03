@@ -166,6 +166,46 @@ func (tse *tstreamerElement) TypeName() string {
 	return tse.ename
 }
 
+func (tse *tstreamerElement) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tse.rvers)
+	tse.named.MarshalROOT(w)
+
+	w.WriteI32(tse.etype)
+	w.WriteI32(tse.esize)
+	w.WriteI32(tse.arrlen)
+	w.WriteI32(tse.arrdim)
+
+	if tse.rvers == 1 {
+		w.WriteStaticArrayI32(tse.maxidx[:])
+	} else {
+		w.WriteFastArrayI32(tse.maxidx[:])
+	}
+	w.WriteString(tse.ename)
+
+	if tse.etype == 18 {
+		tse.etype = 11
+	}
+
+	switch {
+	default:
+		tse.xmin = 0
+		tse.xmax = 0
+		tse.factor = 0
+	case tse.rvers == 3:
+		w.WriteF64(tse.xmin)
+		w.WriteF64(tse.xmax)
+		w.WriteF64(tse.factor)
+	case tse.rvers > 3:
+		//FIXME
+	}
+	return w.SetByteCount(pos, "TStreamerElement")
+}
+
 func (tse *tstreamerElement) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
