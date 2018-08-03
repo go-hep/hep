@@ -175,7 +175,11 @@ func (tse *tstreamerElement) MarshalROOT(w *WBuffer) (int, error) {
 	w.WriteVersion(tse.rvers)
 	tse.named.MarshalROOT(w)
 
-	w.WriteI32(tse.etype)
+	etype := tse.etype
+	if etype == kBool && (tse.ename == "Bool_t" || tse.ename == "bool") {
+		etype = kUChar
+	}
+	w.WriteI32(etype)
 	w.WriteI32(tse.esize)
 	w.WriteI32(tse.arrlen)
 	w.WriteI32(tse.arrdim)
@@ -186,10 +190,6 @@ func (tse *tstreamerElement) MarshalROOT(w *WBuffer) (int, error) {
 		w.WriteFastArrayI32(tse.maxidx[:])
 	}
 	w.WriteString(tse.ename)
-
-	if tse.etype == 18 {
-		tse.etype = 11
-	}
 
 	switch {
 	default:
