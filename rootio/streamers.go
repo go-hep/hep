@@ -428,6 +428,22 @@ func (*tstreamerLoop) Class() string {
 	return "TStreamerLoop"
 }
 
+func (tsb *tstreamerLoop) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tsb.rvers)
+	tsb.tstreamerElement.MarshalROOT(w)
+
+	w.WriteI32(tsb.cvers)
+	w.WriteString(tsb.cname)
+	w.WriteString(tsb.cclass)
+
+	return w.SetByteCount(pos, "TStreamerLoop")
+}
+
 func (tsl *tstreamerLoop) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
