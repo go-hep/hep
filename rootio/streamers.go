@@ -541,6 +541,18 @@ func (tso *tstreamerObjectAny) Class() string {
 	return "TStreamerObjectAny"
 }
 
+func (tso *tstreamerObjectAny) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tso.rvers)
+	tso.tstreamerElement.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerObjectAny")
+}
+
 func (tso *tstreamerObjectAny) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
