@@ -382,6 +382,22 @@ func (tsb *tstreamerBasicPointer) Class() string {
 	return "TStreamerBasicPointer"
 }
 
+func (tsb *tstreamerBasicPointer) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tsb.rvers)
+	tsb.tstreamerElement.MarshalROOT(w)
+
+	w.WriteI32(tsb.cvers)
+	w.WriteString(tsb.cname)
+	w.WriteString(tsb.ccls)
+
+	return w.SetByteCount(pos, "TStreamerBasicPointer")
+}
+
 func (tsb *tstreamerBasicPointer) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
