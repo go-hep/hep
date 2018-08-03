@@ -261,6 +261,22 @@ func (tsb *tstreamerBase) Class() string {
 	return "TStreamerBase"
 }
 
+func (tsb *tstreamerBase) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tsb.rvers)
+	tsb.tstreamerElement.MarshalROOT(w)
+
+	if tsb.rvers > 2 {
+		w.WriteI32(tsb.vbase)
+	}
+
+	return w.SetByteCount(pos, "TStreamerBase")
+}
+
 func (tsb *tstreamerBase) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
