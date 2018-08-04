@@ -656,6 +656,29 @@ func (tss *tstreamerSTL) elemTypeName() string {
 	return strings.TrimSpace(o[1])
 }
 
+func (tss *tstreamerSTL) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tss.rvers)
+	tss.tstreamerElement.MarshalROOT(w)
+
+	if tss.vtype == kSTLmultimap || tss.vtype == kSTLset {
+		switch {
+		case strings.HasPrefix(tss.tstreamerElement.ename, "std::set") || strings.HasPrefix(tss.tstreamerElement.ename, "set"):
+			tss.vtype = kSTLset
+		case strings.HasPrefix(tss.tstreamerElement.ename, "std::multimap") || strings.HasPrefix(tss.tstreamerElement.ename, "multimap"):
+			tss.vtype = kSTLmultimap
+		}
+	}
+	w.WriteI32(tss.vtype)
+	w.WriteI32(tss.ctype)
+
+	return w.SetByteCount(pos, "TStreamerSTL")
+}
+
 func (tss *tstreamerSTL) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
