@@ -754,6 +754,18 @@ func (tss *tstreamerArtificial) Class() string {
 	return "TStreamerArtificial"
 }
 
+func (tsa *tstreamerArtificial) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tsa.rvers)
+	tsa.tstreamerElement.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerArtificial")
+}
+
 func (tsa *tstreamerArtificial) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
