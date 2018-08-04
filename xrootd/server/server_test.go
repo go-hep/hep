@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package server // import "go-hep.org/x/hep/xrootd/server"
+package server_test // import "go-hep.org/x/hep/xrootd/server"
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
+	"go-hep.org/x/hep/xrootd/server"
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/handshake"
@@ -63,10 +64,10 @@ func TestServe_Handshake(t *testing.T) {
 	listener := &pipeListener{conns: connsCh, close: make(chan struct{})}
 	defer listener.Close()
 
-	server := New(Default(), func(err error) {
+	srv := server.New(server.Default(), func(err error) {
 		t.Error(err)
 	})
-	defer server.Shutdown(context.Background())
+	defer srv.Shutdown(context.Background())
 
 	go func() {
 		req := handshake.NewRequest()
@@ -97,10 +98,10 @@ func TestServe_Handshake(t *testing.T) {
 			t.Errorf("wrong handshake response:\ngot = %v\nwant = %v", handshakeResp, want)
 		}
 
-		server.Shutdown(context.Background())
+		srv.Shutdown(context.Background())
 	}()
 
-	if err := server.Serve(listener); err != nil && err != ErrServerClosed {
+	if err := srv.Serve(listener); err != nil && err != server.ErrServerClosed {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
@@ -115,10 +116,10 @@ func TestServe_Login(t *testing.T) {
 	listener := &pipeListener{conns: connsCh, close: make(chan struct{})}
 	defer listener.Close()
 
-	server := New(Default(), func(err error) {
+	srv := server.New(server.Default(), func(err error) {
 		t.Error(err)
 	})
-	defer server.Shutdown(context.Background())
+	defer srv.Shutdown(context.Background())
 
 	go func() {
 		handshakeReq := handshake.NewRequest()
@@ -158,10 +159,10 @@ func TestServe_Login(t *testing.T) {
 
 		// TODO: validate loginResp.
 
-		server.Shutdown(context.Background())
+		srv.Shutdown(context.Background())
 	}()
 
-	if err := server.Serve(listener); err != nil && err != ErrServerClosed {
+	if err := srv.Serve(listener); err != nil && err != server.ErrServerClosed {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
@@ -176,10 +177,10 @@ func TestServe_Protocol(t *testing.T) {
 	listener := &pipeListener{conns: connsCh, close: make(chan struct{})}
 	defer listener.Close()
 
-	server := New(Default(), func(err error) {
+	srv := server.New(server.Default(), func(err error) {
 		t.Error(err)
 	})
-	defer server.Shutdown(context.Background())
+	defer srv.Shutdown(context.Background())
 
 	go func() {
 		handshakeReq := handshake.NewRequest()
@@ -223,10 +224,10 @@ func TestServe_Protocol(t *testing.T) {
 			t.Errorf("wrong response:\ngot = %v\nwant = %v", protocolResp, want)
 		}
 
-		server.Shutdown(context.Background())
+		srv.Shutdown(context.Background())
 	}()
 
-	if err := server.Serve(listener); err != nil && err != ErrServerClosed {
+	if err := srv.Serve(listener); err != nil && err != server.ErrServerClosed {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
@@ -241,10 +242,10 @@ func TestServe_Dirlist(t *testing.T) {
 	listener := &pipeListener{conns: connsCh, close: make(chan struct{})}
 	defer listener.Close()
 
-	server := New(Default(), func(err error) {
+	srv := server.New(server.Default(), func(err error) {
 		t.Error(err)
 	})
-	defer server.Shutdown(context.Background())
+	defer srv.Shutdown(context.Background())
 
 	go func() {
 		handshakeReq := handshake.NewRequest()
@@ -288,10 +289,10 @@ func TestServe_Dirlist(t *testing.T) {
 			t.Errorf("wrong response:\ngot = %v\nwant = %v", errorResp, want)
 		}
 
-		server.Shutdown(context.Background())
+		srv.Shutdown(context.Background())
 	}()
 
-	if err := server.Serve(listener); err != nil && err != ErrServerClosed {
+	if err := srv.Serve(listener); err != nil && err != server.ErrServerClosed {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
