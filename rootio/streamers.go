@@ -719,6 +719,18 @@ func (tss *tstreamerSTLstring) Class() string {
 	return "TStreamerSTLstring"
 }
 
+func (tss *tstreamerSTLstring) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tss.rvers)
+	tss.tstreamerSTL.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerSTLstring")
+}
+
 func (tss *tstreamerSTLstring) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
