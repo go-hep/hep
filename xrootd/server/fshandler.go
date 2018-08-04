@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main // import "go-hep.org/x/hep/xrootd/cmd/xrd-srv"
+package server // import "go-hep.org/x/hep/xrootd/server"
 
 import (
 	"fmt"
@@ -13,7 +13,6 @@ import (
 	"path"
 	"sync"
 
-	"go-hep.org/x/hep/xrootd/server"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
@@ -27,9 +26,9 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
 )
 
-// handler implements server.Handler API by making request to the backing filesystem at basePath.
-type handler struct {
-	server.Handler
+// fshandler implements server.Handler API by making request to the backing filesystem at basePath.
+type fshandler struct {
+	Handler
 	basePath string
 
 	// map + RWMutex works a bit faster and with significant lower memory usage under Linux
@@ -43,16 +42,17 @@ type session struct {
 	handles map[xrdfs.FileHandle]*os.File
 }
 
-func newHandler(basePath string) server.Handler {
-	return &handler{
-		Handler:  server.Default(),
+// NewFSHandler creates a Handler that passes requests to the backing filesystem at basePath.
+func NewFSHandler(basePath string) Handler {
+	return &fshandler{
+		Handler:  Default(),
 		basePath: basePath,
 		sessions: make(map[[16]byte]*session),
 	}
 }
 
 // Dirlist implements server.Handler.Dirlist.
-func (h *handler) Dirlist(sessionID [16]byte, request *dirlist.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+func (h *fshandler) Dirlist(sessionID [16]byte, request *dirlist.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	files, err := ioutil.ReadDir(path.Join(h.basePath, request.Path))
 	if err != nil {
 		return xrdproto.ServerError{
@@ -76,7 +76,7 @@ func (h *handler) Dirlist(sessionID [16]byte, request *dirlist.Request) (xrdprot
 }
 
 // Open implements server.Handler.Open.
-func (h *handler) Open(sessionID [16]byte, request *open.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+func (h *fshandler) Open(sessionID [16]byte, request *open.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	var flag int
 	if request.Options&xrdfs.OpenOptionsOpenRead != 0 {
 		flag |= os.O_RDONLY
@@ -169,7 +169,7 @@ func (h *handler) Open(sessionID [16]byte, request *open.Request) (xrdproto.Mars
 }
 
 // Close implements server.Handler.Close.
-func (h *handler) Close(sessionID [16]byte, request *xrdclose.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+func (h *fshandler) Close(sessionID [16]byte, request *xrdclose.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	h.mu.RLock()
 	sess, ok := h.sessions[sessionID]
 	h.mu.RUnlock()
@@ -201,7 +201,7 @@ func (h *handler) Close(sessionID [16]byte, request *xrdclose.Request) (xrdproto
 }
 
 // Read implements server.Handler.Read.
-func (h *handler) Read(sessionID [16]byte, request *read.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+func (h *fshandler) Read(sessionID [16]byte, request *read.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	file := h.getFile(sessionID, request.Handle)
 	if file == nil {
 		return xrdproto.ServerError{
@@ -223,7 +223,7 @@ func (h *handler) Read(sessionID [16]byte, request *read.Request) (xrdproto.Mars
 }
 
 // Write implements server.Handler.Write.
-func (h *handler) Write(sessionID [16]byte, request *write.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+func (h *fshandler) Write(sessionID [16]byte, request *write.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	file := h.getFile(sessionID, request.Handle)
 	if file == nil {
 		return xrdproto.ServerError{
@@ -243,7 +243,7 @@ func (h *handler) Write(sessionID [16]byte, request *write.Request) (xrdproto.Ma
 	return nil, xrdproto.Ok
 }
 
-func (h *handler) getFile(sessionID [16]byte, handle xrdfs.FileHandle) *os.File {
+func (h *fshandler) getFile(sessionID [16]byte, handle xrdfs.FileHandle) *os.File {
 	h.mu.RLock()
 	sess, ok := h.sessions[sessionID]
 	h.mu.RUnlock()
@@ -260,7 +260,7 @@ func (h *handler) getFile(sessionID [16]byte, handle xrdfs.FileHandle) *os.File 
 }
 
 // Stat implements server.Handler.Stat.
-func (h *handler) Stat(sessionID [16]byte, request *stat.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+func (h *fshandler) Stat(sessionID [16]byte, request *stat.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	if request.Options&stat.OptionsVFS != 0 {
 		// TODO: handle virtual stat info.
 		return xrdproto.ServerError{
@@ -295,7 +295,7 @@ func (h *handler) Stat(sessionID [16]byte, request *stat.Request) (xrdproto.Mars
 }
 
 // Truncate implements server.Handler.Truncate.
-func (h *handler) Truncate(sessionID [16]byte, request *truncate.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+func (h *fshandler) Truncate(sessionID [16]byte, request *truncate.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	var err error
 	if len(request.Path) == 0 {
 		file := h.getFile(sessionID, request.Handle)
@@ -321,7 +321,7 @@ func (h *handler) Truncate(sessionID [16]byte, request *truncate.Request) (xrdpr
 }
 
 // Sync implements server.Handler.Sync.
-func (h *handler) Sync(sessionID [16]byte, request *xrdsync.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+func (h *fshandler) Sync(sessionID [16]byte, request *xrdsync.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	file := h.getFile(sessionID, request.Handle)
 	if file == nil {
 		return xrdproto.ServerError{
@@ -341,7 +341,7 @@ func (h *handler) Sync(sessionID [16]byte, request *xrdsync.Request) (xrdproto.M
 }
 
 // Rename implements server.Handler.Rename.
-func (h *handler) Rename(sessionID [16]byte, request *mv.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+func (h *fshandler) Rename(sessionID [16]byte, request *mv.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	if err := os.Rename(path.Join(h.basePath, request.OldPath), path.Join(h.basePath, request.NewPath)); err != nil {
 		return xrdproto.ServerError{
 			Code:    xrdproto.IOError,
@@ -353,7 +353,7 @@ func (h *handler) Rename(sessionID [16]byte, request *mv.Request) (xrdproto.Mars
 }
 
 // CloseSession implements server.Handler.CloseSession.
-func (h *handler) CloseSession(sessionID [16]byte) error {
+func (h *fshandler) CloseSession(sessionID [16]byte) error {
 	h.mu.Lock()
 	sess, ok := h.sessions[sessionID]
 	if !ok {

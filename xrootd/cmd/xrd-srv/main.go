@@ -56,7 +56,7 @@ func main() {
 		log.Fatalf("could not listen on %q: %v", *addr, err)
 	}
 
-	srv := server.New(newHandler(baseDir), func(err error) {
+	srv := server.New(server.NewFSHandler(baseDir), func(err error) {
 		log.Printf("an error occured: %v", err)
 	})
 

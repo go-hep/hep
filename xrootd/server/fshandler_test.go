@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main // import "go-hep.org/x/hep/xrootd/cmd/xrd-srv"
+package server_test // import "go-hep.org/x/hep/xrootd/server"
 
 import (
 	"context"
@@ -51,7 +51,7 @@ func createServer(errorHandler func(err error)) (srv *server.Server, addr, baseD
 		return nil, "", "", errors.Errorf("xrd-srv: could not listen on %q: %v", addr, err)
 	}
 
-	srv = server.New(newHandler(baseDir), func(err error) {
+	srv = server.New(server.NewFSHandler(baseDir), func(err error) {
 		errorHandler(errors.Wrap(err, "xrd-srv: an error occured"))
 	})
 
