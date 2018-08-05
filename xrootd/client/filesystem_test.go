@@ -6,7 +6,9 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -666,5 +668,239 @@ func TestFileSystem_Statx(t *testing.T) {
 
 			testFileSystem_Statx(t, addr)
 		})
+	}
+}
+
+func ExampleClient_dirlist() {
+	ctx := context.Background()
+	const username = "gopher"
+	client, err := NewClient(ctx, "ccxrootdgotest.in2p3.fr:9001", username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	entries, err := client.FS().Dirlist(ctx, "/tmp/dir1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, entry := range entries {
+		fmt.Printf("Name: %s, size: %d\n", entry.Name(), entry.Size())
+	}
+
+	if err := client.Close(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Output:
+	// Name: file1.txt, size: 0
+}
+
+func ExampleClient_open() {
+	ctx := context.Background()
+	const username = "gopher"
+	client, err := NewClient(ctx, "ccxrootdgotest.in2p3.fr:9001", username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	file, err := client.FS().Open(ctx, "/tmp/test.txt", xrdfs.OpenModeOwnerRead, xrdfs.OpenOptionsOpenRead)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := file.Close(ctx); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := client.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleClient_removeFile() {
+	ctx := context.Background()
+	const username = "gopher"
+	client, err := NewClient(ctx, "ccxrootdgotest.in2p3.fr:9001", username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	if err := client.FS().RemoveFile(ctx, "/tmp/test.txt"); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := client.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleClient_truncate() {
+	ctx := context.Background()
+	const username = "gopher"
+	client, err := NewClient(ctx, "ccxrootdgotest.in2p3.fr:9001", username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	if err := client.FS().Truncate(ctx, "/tmp/test.txt", 10); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := client.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleClient_stat() {
+	ctx := context.Background()
+	const username = "gopher"
+	client, err := NewClient(ctx, "ccxrootdgotest.in2p3.fr:9001", username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	info, err := client.FS().Stat(ctx, "/tmp/test.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Name: %s, size: %d", info.Name(), info.Size())
+
+	if err := client.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleClient_virtualStat() {
+	ctx := context.Background()
+	const username = "gopher"
+	client, err := NewClient(ctx, "ccxrootdgotest.in2p3.fr:9001", username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	info, err := client.FS().VirtualStat(ctx, "/tmp/")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("RW: %d%% is free", info.FreeRW)
+
+	if err := client.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleClient_mkdir() {
+	ctx := context.Background()
+	const username = "gopher"
+	client, err := NewClient(ctx, "ccxrootdgotest.in2p3.fr:9001", username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	if err := client.FS().Mkdir(ctx, "/tmp/testdir", xrdfs.OpenModeOwnerRead|xrdfs.OpenModeOwnerWrite); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := client.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleClient_mkdirAll() {
+	ctx := context.Background()
+	const username = "gopher"
+	client, err := NewClient(ctx, "ccxrootdgotest.in2p3.fr:9001", username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	if err := client.FS().MkdirAll(ctx, "/tmp/testdir/subdir", xrdfs.OpenModeOwnerRead|xrdfs.OpenModeOwnerWrite); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := client.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleClient_removeDir() {
+	ctx := context.Background()
+	const username = "gopher"
+	client, err := NewClient(ctx, "ccxrootdgotest.in2p3.fr:9001", username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	if err := client.FS().RemoveDir(ctx, "/tmp/testdir"); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := client.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleClient_removeAll() {
+	ctx := context.Background()
+	const username = "gopher"
+	client, err := NewClient(ctx, "ccxrootdgotest.in2p3.fr:9001", username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	if err := client.FS().RemoveAll(ctx, "/tmp/testdir"); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := client.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleClient_rename() {
+	ctx := context.Background()
+	const username = "gopher"
+	client, err := NewClient(ctx, "ccxrootdgotest.in2p3.fr:9001", username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	if err := client.FS().Rename(ctx, "/tmp/old.txt", "/tmp/new.txt"); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := client.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleClient_chmod() {
+	ctx := context.Background()
+	const username = "gopher"
+	client, err := NewClient(ctx, "ccxrootdgotest.in2p3.fr:9001", username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	if err := client.FS().Chmod(ctx, "/tmp/test.txt", xrdfs.OpenModeOwnerRead|xrdfs.OpenModeOwnerWrite); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := client.Close(); err != nil {
+		log.Fatal(err)
 	}
 }
