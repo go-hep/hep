@@ -6,6 +6,8 @@ package client // import "go-hep.org/x/hep/xrootd/client"
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"math/rand"
 	"path"
 	"reflect"
@@ -427,4 +429,72 @@ func TestFile_VerifyWriteAt(t *testing.T) {
 			testFile_VerifyWriteAt(t, addr)
 		})
 	}
+}
+
+func ExampleClient_write() {
+	ctx := context.Background()
+	const username = "gopher"
+	client, err := NewClient(ctx, "ccxrootdgotest.in2p3.fr:9001", username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	file, err := client.FS().Open(ctx, "/tmp/test.txt", xrdfs.OpenModeOwnerRead|xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsOpenUpdate|xrdfs.OpenOptionsNew)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close(ctx)
+
+	if _, err := file.WriteAt([]byte("test"), 0); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := file.Sync(ctx); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := file.Close(ctx); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := client.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleClient_read() {
+	ctx := context.Background()
+	const username = "gopher"
+	client, err := NewClient(ctx, "ccxrootdgotest.in2p3.fr:9001", username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	file, err := client.FS().Open(ctx, "/tmp/test.txt", xrdfs.OpenModeOwnerRead, xrdfs.OpenOptionsOpenRead)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close(ctx)
+
+	data := make([]byte, 10)
+	n, err := file.ReadAt(data, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	data = data[:n]
+	fmt.Printf("%s\n", data)
+
+	if err := file.Close(ctx); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := client.Close(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Output:
+	// test
 }
