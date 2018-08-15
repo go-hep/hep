@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build !windows
+
 // Package xrdfuse contains the implementation of the FUSE API
 // accessing a remote filesystem served over the XRootD protocol.
 package xrdfuse // import "go-hep.org/x/hep/xrootd/xrdfuse"
