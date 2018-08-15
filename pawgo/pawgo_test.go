@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -33,7 +34,11 @@ func run(bin string, args ...string) error {
 }
 
 func TestIssue120(t *testing.T) {
-	err := run("pawgo", "./testdata/issue-120.paw")
+	cmd := "pawgo"
+	if runtime.GOOS == "windows" {
+		cmd = "pawgo.exe"
+	}
+	err := run(cmd, "./testdata/issue-120.paw")
 	if err != nil {
 		t.Fatal(err)
 	}
