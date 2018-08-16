@@ -34,6 +34,9 @@ func (w *wbuff) grow(n int) {
 	if n < 0 {
 		panic("rootio: negative count")
 	}
+	if n == 0 {
+		return
+	}
 	plen := len(w.p)
 	pcap := cap(w.p)
 	if plen+n < pcap {

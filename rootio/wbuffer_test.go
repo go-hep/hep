@@ -13,6 +13,42 @@ import (
 	"testing"
 )
 
+func TestWBufferGrow(t *testing.T) {
+	buf := new(WBuffer)
+	if len(buf.w.p) != 0 {
+		t.Fatalf("got=%d, want 0-size buffer", len(buf.w.p))
+	}
+
+	buf.w.grow(8)
+	if got, want := len(buf.w.p), 8; got != want {
+		t.Fatalf("got=%d, want=%d buffer size", got, want)
+	}
+
+	buf.w.grow(8)
+	if got, want := len(buf.w.p), 2*8+8; got != want {
+		t.Fatalf("got=%d, want=%d buffer size", got, want)
+	}
+
+	buf.w.grow(1)
+	if got, want := len(buf.w.p), 3*8+1; got != want {
+		t.Fatalf("got=%d, want=%d buffer size", got, want)
+	}
+
+	buf.w.grow(0)
+	if got, want := len(buf.w.p), 3*8+1; got != want {
+		t.Fatalf("got=%d, want=%d buffer size", got, want)
+	}
+
+	defer func() {
+		e := recover()
+		if e == nil {
+			t.Fatalf("expected a panic")
+		}
+	}()
+
+	buf.w.grow(-1)
+}
+
 func TestWBuffer_WriteBool(t *testing.T) {
 	wbuf := NewWBuffer(nil, nil, 0, nil)
 	want := true
