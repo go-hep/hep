@@ -35,9 +35,26 @@ func (w *wbuff) WriteByte(p byte) error {
 	return nil
 }
 
+// grow grows the buffer's capacity, if necessary, to guarantee space foranother n bytes.
+// After grow(n), at least n bytes can be written to the buffer without
+// another allocation.
+// If n is negative, grow will panic.
+func (w *wbuff) grow(n int) {
+	if n < 0 {
+		panic("rootio: negative count")
+	}
+	plen := len(w.p)
+	pcap := cap(w.p)
+	if plen+n < pcap {
+		w.p = w.p[:plen+n]
+		return
+	}
+	w.p = append(w.p, make([]byte, pcap+n)...)
+}
+
 // WBuffer is a write-only ROOT buffer for streaming.
 type WBuffer struct {
-	w      *wbuff
+	w      wbuff
 	err    error
 	offset uint32
 	refs   map[interface{}]int64
@@ -50,7 +67,7 @@ func NewWBuffer(data []byte, refs map[interface{}]int64, offset uint32, ctx Stre
 	}
 
 	return &WBuffer{
-		w:      &wbuff{p: data, c: 0},
+		w:      wbuff{p: data, c: 0},
 		refs:   refs,
 		offset: offset,
 		sictx:  ctx,
@@ -154,6 +171,7 @@ func (w *WBuffer) write(v []byte) {
 	if w.err != nil {
 		return
 	}
+	w.w.grow(len(v))
 	_, w.err = w.w.Write(v)
 }
 
@@ -161,6 +179,7 @@ func (w *WBuffer) WriteI8(v int8) {
 	if w.err != nil {
 		return
 	}
+	w.w.grow(1)
 	w.err = w.w.WriteByte(byte(v))
 }
 
@@ -171,6 +190,7 @@ func (w *WBuffer) WriteI16(v int16) {
 	const sz = 2
 	beg := w.w.c
 	end := w.w.c + sz
+	w.w.grow(sz)
 	binary.BigEndian.PutUint16(w.w.p[beg:end], uint16(v))
 	w.w.c += sz
 }
@@ -182,6 +202,7 @@ func (w *WBuffer) WriteI32(v int32) {
 	const sz = 4
 	beg := w.w.c
 	end := w.w.c + sz
+	w.w.grow(sz)
 	binary.BigEndian.PutUint32(w.w.p[beg:end], uint32(v))
 	w.w.c += sz
 }
@@ -193,6 +214,7 @@ func (w *WBuffer) WriteI64(v int64) {
 	const sz = 8
 	beg := w.w.c
 	end := w.w.c + sz
+	w.w.grow(sz)
 	binary.BigEndian.PutUint64(w.w.p[beg:end], uint64(v))
 	w.w.c += sz
 }
@@ -201,6 +223,7 @@ func (w *WBuffer) WriteU8(v uint8) {
 	if w.err != nil {
 		return
 	}
+	w.w.grow(1)
 	w.err = w.w.WriteByte(byte(v))
 }
 
@@ -211,6 +234,7 @@ func (w *WBuffer) WriteU16(v uint16) {
 	const sz = 2
 	beg := w.w.c
 	end := w.w.c + sz
+	w.w.grow(sz)
 	binary.BigEndian.PutUint16(w.w.p[beg:end], uint16(v))
 	w.w.c += sz
 }
@@ -222,6 +246,7 @@ func (w *WBuffer) WriteU32(v uint32) {
 	const sz = 4
 	beg := w.w.c
 	end := w.w.c + sz
+	w.w.grow(sz)
 	binary.BigEndian.PutUint32(w.w.p[beg:end], v)
 	w.w.c += sz
 }
@@ -233,6 +258,7 @@ func (w *WBuffer) WriteU64(v uint64) {
 	const sz = 8
 	beg := w.w.c
 	end := w.w.c + sz
+	w.w.grow(sz)
 	binary.BigEndian.PutUint64(w.w.p[beg:end], v)
 	w.w.c += sz
 }
@@ -244,6 +270,7 @@ func (w *WBuffer) WriteF32(v float32) {
 	const sz = 4
 	beg := w.w.c
 	end := w.w.c + sz
+	w.w.grow(sz)
 	binary.BigEndian.PutUint32(w.w.p[beg:end], math.Float32bits(v))
 	w.w.c += sz
 }
@@ -255,6 +282,7 @@ func (w *WBuffer) WriteF64(v float64) {
 	const sz = 8
 	beg := w.w.c
 	end := w.w.c + sz
+	w.w.grow(sz)
 	binary.BigEndian.PutUint64(w.w.p[beg:end], math.Float64bits(v))
 	w.w.c += sz
 }
@@ -315,6 +343,7 @@ func (w *WBuffer) WriteFastArrayBool(v []bool) {
 	if w.err != nil {
 		return
 	}
+	w.w.grow(len(v))
 	for _, v := range v {
 		w.WriteBool(v)
 	}
@@ -324,6 +353,7 @@ func (w *WBuffer) WriteFastArrayI8(v []int8) {
 	if w.err != nil {
 		return
 	}
+	w.w.grow(len(v))
 	for _, v := range v {
 		w.WriteI8(v)
 	}
@@ -333,6 +363,7 @@ func (w *WBuffer) WriteFastArrayI16(v []int16) {
 	if w.err != nil {
 		return
 	}
+	w.w.grow(len(v) * 2)
 	for _, v := range v {
 		w.WriteI16(v)
 	}
@@ -342,6 +373,7 @@ func (w *WBuffer) WriteFastArrayI32(v []int32) {
 	if w.err != nil {
 		return
 	}
+	w.w.grow(len(v) * 4)
 	for _, v := range v {
 		w.WriteI32(v)
 	}
@@ -351,6 +383,7 @@ func (w *WBuffer) WriteFastArrayI64(v []int64) {
 	if w.err != nil {
 		return
 	}
+	w.w.grow(len(v) * 8)
 	for _, v := range v {
 		w.WriteI64(v)
 	}
@@ -360,6 +393,7 @@ func (w *WBuffer) WriteFastArrayU8(v []uint8) {
 	if w.err != nil {
 		return
 	}
+	w.w.grow(len(v))
 	for _, v := range v {
 		w.WriteU8(v)
 	}
@@ -369,6 +403,7 @@ func (w *WBuffer) WriteFastArrayU16(v []uint16) {
 	if w.err != nil {
 		return
 	}
+	w.w.grow(len(v) * 2)
 	for _, v := range v {
 		w.WriteU16(v)
 	}
@@ -378,6 +413,7 @@ func (w *WBuffer) WriteFastArrayU32(v []uint32) {
 	if w.err != nil {
 		return
 	}
+	w.w.grow(len(v) * 4)
 	for _, v := range v {
 		w.WriteU32(v)
 	}
@@ -387,6 +423,7 @@ func (w *WBuffer) WriteFastArrayU64(v []uint64) {
 	if w.err != nil {
 		return
 	}
+	w.w.grow(len(v) * 8)
 	for _, v := range v {
 		w.WriteU64(v)
 	}
@@ -396,6 +433,7 @@ func (w *WBuffer) WriteFastArrayF32(v []float32) {
 	if w.err != nil {
 		return
 	}
+	w.w.grow(len(v) * 4)
 	for _, v := range v {
 		w.WriteF32(v)
 	}
@@ -405,6 +443,7 @@ func (w *WBuffer) WriteFastArrayF64(v []float64) {
 	if w.err != nil {
 		return
 	}
+	w.w.grow(len(v) * 8)
 	for _, v := range v {
 		w.WriteF64(v)
 	}
