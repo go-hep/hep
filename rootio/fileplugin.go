@@ -56,8 +56,12 @@ type tmpFile struct {
 }
 
 func (f *tmpFile) Close() error {
-	os.Remove(f.File.Name())
-	return f.File.Close()
+	err1 := f.File.Close()
+	err2 := os.Remove(f.File.Name())
+	if err1 != nil {
+		return err1
+	}
+	return err2
 }
 
 var (
