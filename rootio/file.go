@@ -272,7 +272,23 @@ func (f *File) readHeader() error {
 }
 
 func (f *File) writeHeader() error {
-	panic("not implemented")
+	buf := make([]byte, 64)
+	w := NewWBuffer(buf, nil, 0, nil)
+
+	w.WriteI32(f.version)
+	w.WriteI64(f.begin)
+
+	w.WriteI64(f.end)
+	w.WriteI64(f.seekfree)
+	w.WriteI32(f.nbytesfree)
+	w.WriteI32(f.nfree)
+	w.WriteI32(f.nbytesname)
+	w.WriteU8(f.units)
+	w.WriteI32(f.compression)
+	w.WriteI64(f.seekinfo)
+	w.WriteI32(f.nbytesinfo)
+
+	return w.err
 }
 
 func (f *File) Map() {
