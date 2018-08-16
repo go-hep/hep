@@ -61,6 +61,29 @@ func (tsi *tstreamerInfo) Elements() []StreamerElement {
 	return tsi.elems
 }
 
+func (tsi *tstreamerInfo) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tsi.rvers)
+	tsi.named.MarshalROOT(w)
+	w.WriteU32(tsi.chksum)
+	w.WriteI32(tsi.clsver)
+
+	if len(tsi.elems) > 0 {
+		tsi.objarr.arr = make([]Object, len(tsi.elems))
+		for i, v := range tsi.elems {
+			tsi.objarr.arr[i] = v
+		}
+	}
+	w.WriteObjectAny(tsi.objarr)
+	tsi.objarr.arr = nil
+
+	return w.SetByteCount(pos, "TStreamerInfo")
+}
+
 func (tsi *tstreamerInfo) UnmarshalROOT(r *RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
@@ -143,6 +166,46 @@ func (tse *tstreamerElement) TypeName() string {
 	return tse.ename
 }
 
+func (tse *tstreamerElement) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tse.rvers)
+	tse.named.MarshalROOT(w)
+
+	etype := tse.etype
+	if etype == kBool && (tse.ename == "Bool_t" || tse.ename == "bool") {
+		etype = kUChar
+	}
+	w.WriteI32(etype)
+	w.WriteI32(tse.esize)
+	w.WriteI32(tse.arrlen)
+	w.WriteI32(tse.arrdim)
+
+	if tse.rvers == 1 {
+		w.WriteStaticArrayI32(tse.maxidx[:])
+	} else {
+		w.WriteFastArrayI32(tse.maxidx[:])
+	}
+	w.WriteString(tse.ename)
+
+	switch {
+	default:
+		tse.xmin = 0
+		tse.xmax = 0
+		tse.factor = 0
+	case tse.rvers == 3:
+		w.WriteF64(tse.xmin)
+		w.WriteF64(tse.xmax)
+		w.WriteF64(tse.factor)
+	case tse.rvers > 3:
+		//FIXME
+	}
+	return w.SetByteCount(pos, "TStreamerElement")
+}
+
 func (tse *tstreamerElement) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
@@ -198,6 +261,22 @@ func (tsb *tstreamerBase) Class() string {
 	return "TStreamerBase"
 }
 
+func (tsb *tstreamerBase) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tsb.rvers)
+	tsb.tstreamerElement.MarshalROOT(w)
+
+	if tsb.rvers > 2 {
+		w.WriteI32(tsb.vbase)
+	}
+
+	return w.SetByteCount(pos, "TStreamerBase")
+}
+
 func (tsb *tstreamerBase) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
@@ -222,6 +301,33 @@ type tstreamerBasicType struct {
 
 func (tsb *tstreamerBasicType) Class() string {
 	return "TStreamerBasicType"
+}
+
+func (tsb *tstreamerBasicType) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tsb.rvers)
+	tsb.tstreamerElement.MarshalROOT(w)
+
+	etype := tsb.tstreamerElement.etype
+	if etype < kOffsetL && etype > 0 {
+		etype += kOffsetL
+	}
+
+	basic := true
+	esize := tsb.tstreamerElement.esize
+	if (esize != 1) && (esize != 2) && (esize != 4) && (esize != 8) && (esize != int32(ptrSize)) {
+		basic = false
+	}
+
+	if basic && tsb.tstreamerElement.arrlen > 0 {
+		tsb.tstreamerElement.esize /= tsb.tstreamerElement.arrlen
+	}
+
+	return w.SetByteCount(pos, "TStreamerBasicType")
 }
 
 func (tsb *tstreamerBasicType) UnmarshalROOT(r *RBuffer) error {
@@ -276,6 +382,22 @@ func (tsb *tstreamerBasicPointer) Class() string {
 	return "TStreamerBasicPointer"
 }
 
+func (tsb *tstreamerBasicPointer) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tsb.rvers)
+	tsb.tstreamerElement.MarshalROOT(w)
+
+	w.WriteI32(tsb.cvers)
+	w.WriteString(tsb.cname)
+	w.WriteString(tsb.ccls)
+
+	return w.SetByteCount(pos, "TStreamerBasicPointer")
+}
+
 func (tsb *tstreamerBasicPointer) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -306,6 +428,22 @@ func (*tstreamerLoop) Class() string {
 	return "TStreamerLoop"
 }
 
+func (tsl *tstreamerLoop) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tsl.rvers)
+	tsl.tstreamerElement.MarshalROOT(w)
+
+	w.WriteI32(tsl.cvers)
+	w.WriteString(tsl.cname)
+	w.WriteString(tsl.cclass)
+
+	return w.SetByteCount(pos, "TStreamerLoop")
+}
+
 func (tsl *tstreamerLoop) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -333,6 +471,18 @@ func (tso *tstreamerObject) Class() string {
 	return "TStreamerObject"
 }
 
+func (tso *tstreamerObject) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tso.rvers)
+	tso.tstreamerElement.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerObject")
+}
+
 func (tso *tstreamerObject) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -354,6 +504,18 @@ type tstreamerObjectPointer struct {
 
 func (tso *tstreamerObjectPointer) Class() string {
 	return "TStreamerObjectPointer"
+}
+
+func (tso *tstreamerObjectPointer) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tso.rvers)
+	tso.tstreamerElement.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerObjectPointer")
 }
 
 func (tso *tstreamerObjectPointer) UnmarshalROOT(r *RBuffer) error {
@@ -379,6 +541,18 @@ func (tso *tstreamerObjectAny) Class() string {
 	return "TStreamerObjectAny"
 }
 
+func (tso *tstreamerObjectAny) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tso.rvers)
+	tso.tstreamerElement.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerObjectAny")
+}
+
 func (tso *tstreamerObjectAny) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -402,6 +576,18 @@ func (tso *tstreamerObjectAnyPointer) Class() string {
 	return "TStreamerObjectAnyPointer"
 }
 
+func (tso *tstreamerObjectAnyPointer) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tso.rvers)
+	tso.tstreamerElement.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerObjectAnyPointer")
+}
+
 func (tso *tstreamerObjectAnyPointer) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -423,6 +609,18 @@ type tstreamerString struct {
 
 func (tss *tstreamerString) Class() string {
 	return "TStreamerString"
+}
+
+func (tss *tstreamerString) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tss.rvers)
+	tss.tstreamerElement.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerString")
 }
 
 func (tss *tstreamerString) UnmarshalROOT(r *RBuffer) error {
@@ -456,6 +654,29 @@ func (tss *tstreamerSTL) elemTypeName() string {
 		return ""
 	}
 	return strings.TrimSpace(o[1])
+}
+
+func (tss *tstreamerSTL) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tss.rvers)
+	tss.tstreamerElement.MarshalROOT(w)
+
+	if tss.vtype == kSTLmultimap || tss.vtype == kSTLset {
+		switch {
+		case strings.HasPrefix(tss.tstreamerElement.ename, "std::set") || strings.HasPrefix(tss.tstreamerElement.ename, "set"):
+			tss.vtype = kSTLset
+		case strings.HasPrefix(tss.tstreamerElement.ename, "std::multimap") || strings.HasPrefix(tss.tstreamerElement.ename, "multimap"):
+			tss.vtype = kSTLmultimap
+		}
+	}
+	w.WriteI32(tss.vtype)
+	w.WriteI32(tss.ctype)
+
+	return w.SetByteCount(pos, "TStreamerSTL")
 }
 
 func (tss *tstreamerSTL) UnmarshalROOT(r *RBuffer) error {
@@ -498,6 +719,18 @@ func (tss *tstreamerSTLstring) Class() string {
 	return "TStreamerSTLstring"
 }
 
+func (tss *tstreamerSTLstring) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tss.rvers)
+	tss.tstreamerSTL.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerSTLstring")
+}
+
 func (tss *tstreamerSTLstring) UnmarshalROOT(r *RBuffer) error {
 	beg := r.Pos()
 
@@ -519,6 +752,18 @@ type tstreamerArtificial struct {
 
 func (tss *tstreamerArtificial) Class() string {
 	return "TStreamerArtificial"
+}
+
+func (tsa *tstreamerArtificial) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	pos := w.Pos()
+
+	w.WriteVersion(tsa.rvers)
+	tsa.tstreamerElement.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TStreamerArtificial")
 }
 
 func (tsa *tstreamerArtificial) UnmarshalROOT(r *RBuffer) error {
@@ -724,6 +969,7 @@ func (db *streamerDb) add(streamer StreamerInfo) {
 var _ Object = (*tstreamerInfo)(nil)
 var _ Named = (*tstreamerInfo)(nil)
 var _ StreamerInfo = (*tstreamerInfo)(nil)
+var _ ROOTMarshaler = (*tstreamerInfo)(nil)
 var _ ROOTUnmarshaler = (*tstreamerInfo)(nil)
 
 var _ Object = (*tstreamerElement)(nil)

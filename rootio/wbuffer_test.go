@@ -579,9 +579,6 @@ func TestWBuffer_Write(t *testing.T) {
 func TestWriteWBuffer(t *testing.T) {
 	for _, test := range rwBufferCases {
 		t.Run("write-buffer="+test.file, func(t *testing.T) {
-			if test.skip {
-				t.Skipf("ROOTMarshaler not implemented")
-			}
 			testWriteWBuffer(t, test.name, test.file, test.want)
 		})
 	}
