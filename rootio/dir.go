@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"reflect"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type tdirectory struct {
@@ -182,6 +184,42 @@ func (dir *tdirectory) Get(namecycle string) (Object, error) {
 	return nil, noKeyError{key: namecycle, obj: dir}
 }
 
+func (dir *tdirectory) Put(name string, obj Object) error {
+	var (
+		cycle int16
+		title = ""
+	)
+	if name == "" {
+		if v, ok := obj.(Named); ok {
+			name = v.Name()
+			title = v.Title()
+		}
+	}
+	if name == "" {
+		return errors.Errorf("rootio: empty key name")
+	}
+
+	// FIXME(sbinet): implement a fast look-up ?
+	for i := range dir.keys {
+		key := &dir.keys[i]
+		if key.name != name {
+			continue
+		}
+		cycle = key.cycle
+	}
+	cycle++
+
+	dir.keys = append(dir.keys, Key{
+		f:     dir.file,
+		cycle: cycle,
+		class: obj.Class(),
+		name:  name,
+		title: title,
+		obj:   obj,
+	})
+	panic("not implemented")
+}
+
 func (dir *tdirectory) Keys() []Key {
 	return dir.keys
 }
@@ -223,6 +261,10 @@ type tdirectoryFile struct {
 
 func (dir *tdirectoryFile) Get(namecycle string) (Object, error) {
 	return dir.dir.Get(namecycle)
+}
+
+func (dir *tdirectoryFile) Put(name string, v Object) error {
+	return dir.dir.Put(name, v)
 }
 
 func (dir *tdirectoryFile) Keys() []Key {

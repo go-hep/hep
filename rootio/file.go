@@ -391,6 +391,11 @@ func (f *File) Get(namecycle string) (Object, error) {
 	return f.dir.Get(namecycle)
 }
 
+// Put puts the object v under the key with the given name.
+func (f *File) Put(name string, v Object) error {
+	return f.dir.Put(name, v)
+}
+
 var (
 	_ Object    = (*File)(nil)
 	_ Named     = (*File)(nil)
