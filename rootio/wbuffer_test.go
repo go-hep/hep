@@ -924,6 +924,38 @@ func TestWRBuffer(t *testing.T) {
 				rvers: 2,
 			},
 		},
+		{
+			name: "TKey",
+			want: &Key{
+				bytes:    1024,
+				version:  4, // small file
+				objlen:   10,
+				datetime: datime2time(1576331001),
+				keylen:   12,
+				cycle:    2,
+				seekkey:  1024,
+				seekpdir: 2048,
+				class:    "MyClass",
+				name:     "my-key",
+				title:    "my key title",
+			},
+		},
+		{
+			name: "TKey",
+			want: &Key{
+				bytes:    1024,
+				version:  1004, // big file
+				objlen:   10,
+				datetime: datime2time(1576331001),
+				keylen:   12,
+				cycle:    2,
+				seekkey:  1024,
+				seekpdir: 2048,
+				class:    "MyClass",
+				name:     "my-key",
+				title:    "my key title",
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			wbuf := NewWBuffer(nil, nil, 0, nil)

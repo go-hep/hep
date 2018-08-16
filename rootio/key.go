@@ -168,6 +168,43 @@ func (k *Key) isCompressed() bool {
 	return k.objlen != k.bytes-k.keylen
 }
 
+func (k *Key) isBigFile() bool {
+	return k.version > 1000
+}
+
+// MarshalROOT encodes the key to the provided buffer.
+func (k *Key) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+
+	w.WriteI32(k.bytes)
+	if k.bytes < 0 {
+		return int(int64(w.w.c) - pos), nil
+	}
+
+	w.WriteI16(k.version)
+	w.WriteI32(k.objlen)
+	w.WriteU32(time2datime(k.datetime))
+	w.WriteI16(int16(k.keylen))
+	w.WriteI16(k.cycle)
+	switch {
+	case k.isBigFile():
+		w.WriteI64(k.seekkey)
+		w.WriteI64(k.seekpdir)
+	default:
+		w.WriteI32(int32(k.seekkey))
+		w.WriteI32(int32(k.seekpdir))
+	}
+	w.WriteString(k.class)
+	w.WriteString(k.name)
+	w.WriteString(k.title)
+
+	return int(int64(w.w.c) - pos), nil
+}
+
 // UnmarshalROOT decodes the content of data into the Key
 func (k *Key) UnmarshalROOT(r *RBuffer) error {
 	if r.Err() != nil {
@@ -186,10 +223,11 @@ func (k *Key) UnmarshalROOT(r *RBuffer) error {
 	k.keylen = int32(r.ReadI16())
 	k.cycle = r.ReadI16()
 
-	if k.version > 1000 {
+	switch {
+	case k.isBigFile():
 		k.seekkey = r.ReadI64()
 		k.seekpdir = r.ReadI64()
-	} else {
+	default:
 		k.seekkey = int64(r.ReadI32())
 		k.seekpdir = int64(r.ReadI32())
 	}
@@ -197,8 +235,6 @@ func (k *Key) UnmarshalROOT(r *RBuffer) error {
 	k.class = r.ReadString()
 	k.name = r.ReadString()
 	k.title = r.ReadString()
-
-	//k.pdat = data
 
 	return r.Err()
 }
@@ -212,6 +248,9 @@ func init() {
 	Factory.add("*rootio.Key", f)
 }
 
-var _ Object = (*Key)(nil)
-var _ Named = (*Key)(nil)
-var _ ROOTUnmarshaler = (*Key)(nil)
+var (
+	_ Object          = (*Key)(nil)
+	_ Named           = (*Key)(nil)
+	_ ROOTMarshaler   = (*Key)(nil)
+	_ ROOTUnmarshaler = (*Key)(nil)
+)
