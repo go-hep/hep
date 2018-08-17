@@ -298,6 +298,53 @@ type tdirectoryFile struct {
 	dir tdirectory
 }
 
+func (dir *tdirectoryFile) readKeys() error {
+	return dir.dir.readKeys()
+}
+
+func (dir *tdirectoryFile) readDirInfo() error {
+	return dir.dir.readDirInfo()
+}
+
+func (dir *tdirectoryFile) Close() error {
+	if len(dir.dir.keys) == 0 || dir.dir.seekdir == 0 {
+		return nil
+	}
+
+	err := dir.save()
+	if err != nil {
+		return err
+	}
+
+	// FIXME(sbinet): save sub-directories.
+	//	for _, k := range dir.keys {
+	//		obj, err := k.Object()
+	//		if err != nil {
+	//		}
+	//	}
+
+	return nil
+}
+
+func (dir *tdirectoryFile) save() error {
+	if dir.dir.file.w == nil {
+		return nil
+	}
+
+	var err error
+	err = dir.writeKeys()
+	if err != nil {
+		return err
+	}
+
+	err = dir.writeDirHeader()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (dir *tdirectoryFile) Get(namecycle string) (Object, error) {
 	return dir.dir.Get(namecycle)
 }
@@ -332,6 +379,17 @@ func (dir *tdirectoryFile) MarshalROOT(w *WBuffer) (int, error) {
 
 func (dir *tdirectoryFile) UnmarshalROOT(r *RBuffer) error {
 	return dir.dir.UnmarshalROOT(r)
+}
+
+// writeKeys writes the list of keys to the file.
+// The list of keys is written out as a single data record.
+func (dir *tdirectoryFile) writeKeys() error {
+	panic("not implemented")
+}
+
+// writeDirHeader overwirtes the Directory header record.
+func (dir *tdirectoryFile) writeDirHeader() error {
+	panic("not implemented")
 }
 
 func init() {

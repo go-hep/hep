@@ -86,7 +86,7 @@ type File struct {
 	nbytesinfo  int32 // sizeof(TStreamerInfo)
 	uuid        [18]byte
 
-	dir    tdirectory // root directory of this file
+	dir    tdirectoryFile // root directory of this file
 	siKey  Key
 	sinfos []StreamerInfo
 }
@@ -106,7 +106,7 @@ func Open(path string) (*File, error) {
 		closer: fd,
 		id:     path,
 	}
-	f.dir = tdirectory{file: f}
+	f.dir = tdirectoryFile{tdirectory{file: f}}
 
 	err = f.readHeader()
 	if err != nil {
@@ -124,7 +124,7 @@ func NewReader(r Reader, name string) (*File, error) {
 		closer: r,
 		id:     name,
 	}
-	f.dir = tdirectory{file: f}
+	f.dir = tdirectoryFile{tdirectory{file: f}}
 
 	err := f.readHeader()
 	if err != nil {
@@ -148,7 +148,7 @@ func Create(name string) (*File, error) {
 		id:      name,
 		version: rootVersion,
 	}
-	f.dir = tdirectory{named: tnamed{name: name}, file: f}
+	f.dir = tdirectoryFile{tdirectory{named: tnamed{name: name}, file: f}}
 
 	err = f.writeHeader()
 	if err != nil {
@@ -286,17 +286,29 @@ func (f *File) Tell() int64 {
 // Close closes the File, rendering it unusable for I/O.
 // It returns an error, if any.
 func (f *File) Close() error {
-	for _, k := range f.dir.keys {
+	if f.w != nil {
+		err := f.writeStreamerInfo()
+		if err != nil {
+			return err
+		}
+	}
+
+	err := f.dir.Close()
+	if err != nil {
+		return err
+	}
+
+	for _, k := range f.dir.dir.keys {
 		k.f = nil
 	}
-	f.dir.keys = nil
-	f.dir.file = nil
+	f.dir.dir.keys = nil
+	f.dir.dir.file = nil
 	return f.closer.Close()
 }
 
 // Keys returns the list of keys this File contains
 func (f *File) Keys() []Key {
-	return f.dir.keys
+	return f.dir.Keys()
 }
 
 func (f *File) Name() string {
@@ -343,6 +355,11 @@ func (f *File) readStreamerInfo() error {
 		streamers.add(obj)
 	}
 	return nil
+}
+
+// writeStreamerInfo rites the list of StreamerInfos used in this file.
+func (f *File) writeStreamerInfo() error {
+	panic("not implemented")
 }
 
 // StreamerInfos returns the list of StreamerInfos of this file.
