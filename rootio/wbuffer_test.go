@@ -956,6 +956,62 @@ func TestWRBuffer(t *testing.T) {
 				title:    "my key title",
 			},
 		},
+		{
+			name: "TDirectory",
+			want: &tdirectory{
+				rvers:      4, // small file
+				ctime:      datime2time(1576331001),
+				mtime:      datime2time(1576331010),
+				nbyteskeys: 1,
+				nbytesname: 2,
+				seekdir:    3,
+				seekparent: 4,
+				seekkeys:   5,
+			},
+		},
+		{
+			name: "TDirectory",
+			want: &tdirectory{
+				rvers:      1004, // big file
+				ctime:      datime2time(1576331001),
+				mtime:      datime2time(1576331010),
+				nbyteskeys: 1,
+				nbytesname: 2,
+				seekdir:    3,
+				seekparent: 4,
+				seekkeys:   5,
+			},
+		},
+		{
+			name: "TDirectoryFile",
+			want: &tdirectoryFile{
+				dir: tdirectory{
+					rvers:      4, // small file
+					ctime:      datime2time(1576331001),
+					mtime:      datime2time(1576331010),
+					nbyteskeys: 1,
+					nbytesname: 2,
+					seekdir:    3,
+					seekparent: 4,
+					seekkeys:   5,
+				},
+			},
+		},
+		{
+			name: "TDirectoryFile",
+			want: &tdirectoryFile{
+				dir: tdirectory{
+					rvers:      1004, // big file
+					ctime:      datime2time(1576331001),
+					mtime:      datime2time(1576331010),
+					nbyteskeys: 1,
+					nbytesname: 2,
+					seekdir:    3,
+					seekparent: 4,
+					seekkeys:   5,
+				},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			wbuf := NewWBuffer(nil, nil, 0, nil)

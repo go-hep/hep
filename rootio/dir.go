@@ -13,6 +13,7 @@ import (
 )
 
 type tdirectory struct {
+	rvers      int16
 	ctime      time.Time // time of directory's creation
 	mtime      time.Time // time of directory's last modification
 	nbyteskeys int32     // number of bytes for the keys
@@ -224,6 +225,39 @@ func (dir *tdirectory) Keys() []Key {
 	return dir.keys
 }
 
+func (dir *tdirectory) isBigFile() bool {
+	return dir.rvers > 1000
+}
+
+func (dir *tdirectory) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	beg := w.Pos()
+
+	w.WriteI16(dir.rvers)
+	w.WriteU32(time2datime(dir.ctime))
+	w.WriteU32(time2datime(dir.mtime))
+	w.WriteI32(dir.nbyteskeys)
+	w.WriteI32(dir.nbytesname)
+
+	switch {
+	case dir.isBigFile():
+		w.WriteI64(dir.seekdir)
+		w.WriteI64(dir.seekparent)
+		w.WriteI64(dir.seekkeys)
+	default:
+		w.WriteI32(int32(dir.seekdir))
+		w.WriteI32(int32(dir.seekparent))
+		w.WriteI32(int32(dir.seekkeys))
+	}
+
+	end := w.Pos()
+
+	return int(end - beg), w.err
+}
+
 func (dir *tdirectory) UnmarshalROOT(r *RBuffer) error {
 	var (
 		version = r.ReadI16()
@@ -231,19 +265,24 @@ func (dir *tdirectory) UnmarshalROOT(r *RBuffer) error {
 		mtime   = r.ReadU32()
 	)
 
-	dir.mtime = datime2time(mtime)
+	dir.rvers = version
 	dir.ctime = datime2time(ctime)
+	dir.mtime = datime2time(mtime)
 
 	dir.nbyteskeys = r.ReadI32()
 	dir.nbytesname = r.ReadI32()
 
-	readptr := r.ReadI64
-	if version <= 1000 {
-		readptr = func() int64 { return int64(r.ReadI32()) }
+	switch {
+	case dir.isBigFile():
+		dir.seekdir = r.ReadI64()
+		dir.seekparent = r.ReadI64()
+		dir.seekkeys = r.ReadI64()
+	default:
+		dir.seekdir = int64(r.ReadI32())
+		dir.seekparent = int64(r.ReadI32())
+		dir.seekkeys = int64(r.ReadI32())
 	}
-	dir.seekdir = readptr()
-	dir.seekparent = readptr()
-	dir.seekkeys = readptr()
+
 	return r.Err()
 }
 
@@ -287,13 +326,12 @@ func (dir *tdirectoryFile) StreamerInfo(name string) (StreamerInfo, error) {
 	return dir.dir.StreamerInfo(name)
 }
 
-func (dir *tdirectoryFile) UnmarshalROOT(r *RBuffer) error {
-	err := dir.dir.UnmarshalROOT(r)
-	if err != nil {
-		return err
-	}
+func (dir *tdirectoryFile) MarshalROOT(w *WBuffer) (int, error) {
+	return dir.dir.MarshalROOT(w)
+}
 
-	return nil
+func (dir *tdirectoryFile) UnmarshalROOT(r *RBuffer) error {
+	return dir.dir.UnmarshalROOT(r)
 }
 
 func init() {
@@ -320,11 +358,13 @@ var (
 	_ Named               = (*tdirectory)(nil)
 	_ Directory           = (*tdirectory)(nil)
 	_ StreamerInfoContext = (*tdirectory)(nil)
+	_ ROOTMarshaler       = (*tdirectory)(nil)
 	_ ROOTUnmarshaler     = (*tdirectory)(nil)
 
 	_ Object              = (*tdirectoryFile)(nil)
 	_ Named               = (*tdirectoryFile)(nil)
 	_ Directory           = (*tdirectoryFile)(nil)
 	_ StreamerInfoContext = (*tdirectoryFile)(nil)
+	_ ROOTMarshaler       = (*tdirectoryFile)(nil)
 	_ ROOTUnmarshaler     = (*tdirectoryFile)(nil)
 )
