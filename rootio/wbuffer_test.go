@@ -5,6 +5,7 @@
 package rootio
 
 import (
+	"io"
 	"io/ioutil"
 	"math"
 	"os"
@@ -609,6 +610,18 @@ func testWriteWBuffer(t *testing.T, name, file string, want interface{}) {
 		t.Fatal(err)
 	}
 
+	{
+		wbuf := NewWBuffer(nil, nil, 0, nil)
+		wbuf.err = io.EOF
+		_, err := want.(ROOTMarshaler).MarshalROOT(wbuf)
+		if err == nil {
+			t.Fatalf("expected an error")
+		}
+		if err != io.EOF {
+			t.Fatalf("got=%v, want=%v", err, io.EOF)
+		}
+	}
+
 	w := NewWBuffer(nil, nil, 0, nil)
 	_, err = want.(ROOTMarshaler).MarshalROOT(w)
 	if err != nil {
@@ -618,6 +631,17 @@ func testWriteWBuffer(t *testing.T, name, file string, want interface{}) {
 
 	r := NewRBuffer(wdata, nil, 0, nil)
 	obj := Factory.get(name)().Interface().(ROOTUnmarshaler)
+	{
+		r.err = io.EOF
+		err = obj.UnmarshalROOT(r)
+		if err == nil {
+			t.Fatalf("expected an error")
+		}
+		if err != io.EOF {
+			t.Fatalf("got=%v, want=%v", err, io.EOF)
+		}
+		r.err = nil
+	}
 	err = obj.UnmarshalROOT(r)
 	if err != nil {
 		t.Fatal(err)
@@ -1014,6 +1038,17 @@ func TestWRBuffer(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			{
+				wbuf := NewWBuffer(nil, nil, 0, nil)
+				wbuf.err = io.EOF
+				_, err := tc.want.MarshalROOT(wbuf)
+				if err == nil {
+					t.Fatalf("expected an error")
+				}
+				if err != io.EOF {
+					t.Fatalf("got=%v, want=%v", err, io.EOF)
+				}
+			}
 			wbuf := NewWBuffer(nil, nil, 0, nil)
 			_, err := tc.want.MarshalROOT(wbuf)
 			if err != nil {
@@ -1022,6 +1057,17 @@ func TestWRBuffer(t *testing.T) {
 
 			rbuf := NewRBuffer(wbuf.w.p, nil, 0, nil)
 			obj := Factory.get(tc.name)().Interface().(ROOTUnmarshaler)
+			{
+				rbuf.err = io.EOF
+				err = obj.UnmarshalROOT(rbuf)
+				if err == nil {
+					t.Fatalf("expected an error")
+				}
+				if err != io.EOF {
+					t.Fatalf("got=%v, want=%v", err, io.EOF)
+				}
+				rbuf.err = nil
+			}
 			err = obj.UnmarshalROOT(rbuf)
 			if err != nil {
 				t.Fatalf("could not unmarshal ROOT: %v", err)

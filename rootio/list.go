@@ -68,6 +68,10 @@ func (li *tlist) MarshalROOT(w *WBuffer) (int, error) {
 }
 
 func (li *tlist) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
+	}
+
 	beg := r.Pos()
 
 	vers, pos, bcnt := r.ReadVersion()
