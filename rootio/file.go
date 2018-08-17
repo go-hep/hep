@@ -275,18 +275,6 @@ func (f *File) writeHeader() error {
 	panic("not implemented")
 }
 
-func (f *File) Map() {
-	for _, k := range f.dir.keys {
-		if k.class == "TBasket" {
-			//b := k.AsBasket()
-			fmt.Printf("%8s %60s %6v %6v %f\n", k.class, k.name, k.bytes-k.keylen, k.objlen, float64(k.objlen)/float64(k.bytes-k.keylen))
-		} else {
-			//println(k.classname, k.name, k.title)
-			fmt.Printf("%8s %60s %6v %6v %f\n", k.class, k.name, k.bytes-k.keylen, k.objlen, float64(k.objlen)/float64(k.bytes-k.keylen))
-		}
-	}
-}
-
 func (f *File) Tell() int64 {
 	where, err := f.Seek(0, io.SeekCurrent)
 	if err != nil {
