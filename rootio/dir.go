@@ -12,6 +12,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+// FIXME(sbinet): reorganize tdirectory/tdirectoryFile fields
+// to closer match that of ROOT's.
+
 type tdirectory struct {
 	rvers      int16
 	ctime      time.Time // time of directory's creation
@@ -389,12 +392,71 @@ func (dir *tdirectoryFile) UnmarshalROOT(r *RBuffer) error {
 // writeKeys writes the list of keys to the file.
 // The list of keys is written out as a single data record.
 func (dir *tdirectoryFile) writeKeys() error {
-	panic("not implemented")
+	var (
+		err    error
+		nbytes = int32(4) // space for n-keys
+	)
+
+	if dir.dir.file.end > kStartBigFile {
+		nbytes += 8
+	}
+	for i := range dir.Keys() {
+		key := &dir.dir.keys[i]
+		nbytes += key.sizeof()
+	}
+
+	hdr := createKey(dir.Name(), dir.Title(), dir.Class(), nbytes, dir.dir.file)
+
+	buf := NewWBuffer(make([]byte, nbytes), nil, 0, nil)
+	buf.writeI32(int32(len(dir.Keys())))
+	for _, k := range dir.Keys() {
+		_, err = k.MarshalROOT(buf)
+		if err != nil {
+			return errors.Errorf("rootio: could not write key: %v", err)
+		}
+	}
+	hdr.buf = buf.buffer()
+
+	dir.dir.seekkeys = hdr.seekkey
+	dir.dir.nbyteskeys = hdr.bytes
+
+	_, err = hdr.writeFile(dir.dir.file)
+	if err != nil {
+		return errors.Errorf("rootio: could not write header key: %v", err)
+	}
+	return nil
 }
 
-// writeDirHeader overwirtes the Directory header record.
+// writeDirHeader overwrites the Directory header record.
 func (dir *tdirectoryFile) writeDirHeader() error {
-	panic("not implemented")
+	var (
+		err    error
+		nbytes = dir.sizeof()
+	)
+	dir.dir.mtime = time.Now() // FIXME(sbinet): fake-now-time
+	buf := NewWBuffer(make([]byte, nbytes), nil, 0, nil)
+	_, err = dir.MarshalROOT(buf)
+	if err != nil {
+		return errors.Errorf("rootio: could not write dir-header: %v", err)
+	}
+
+	pos := dir.dir.seekdir + int64(dir.dir.nbytesname) // do not overwrite the name+title part
+	_, err = dir.dir.file.w.WriteAt(buf.buffer(), pos)
+	if err != nil {
+		return errors.Wrapf(err, "rootio: could not write dir-header payload")
+	}
+
+	return nil
+}
+
+func (dir *tdirectoryFile) sizeof() int32 {
+	nbytes := int32(33)
+
+	nbytes += datimeSizeof() // ctime
+	nbytes += datimeSizeof() // mtime
+	nbytes += dir.dir.uuid.sizeof()
+	nbytes += 12 // files with >= 2Gb
+	return nbytes
 }
 
 func init() {
