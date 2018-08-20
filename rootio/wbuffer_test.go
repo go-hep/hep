@@ -683,6 +683,20 @@ func TestWRBuffer(t *testing.T) {
 			},
 		},
 		{
+			name: "TFree",
+			want: &freeSegment{
+				first: 21,
+				last:  24,
+			},
+		},
+		{
+			name: "TFree",
+			want: &freeSegment{
+				first: 21,
+				last:  kStartBigFile + 24,
+			},
+		},
+		{
 			name: "TNamed",
 			want: &tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "my-name", title: "my-title"},
 		},
