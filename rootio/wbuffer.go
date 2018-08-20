@@ -68,6 +68,8 @@ func NewWBuffer(data []byte, refs map[interface{}]int64, offset uint32, ctx Stre
 	}
 }
 
+func (w *WBuffer) buffer() []byte { return w.w.p[:w.w.c] }
+
 func (w *WBuffer) Pos() int64 {
 	return int64(w.w.c)
 }
