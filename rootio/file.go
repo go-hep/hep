@@ -26,6 +26,16 @@ type Writer interface {
 	io.Closer
 }
 
+type syncer interface {
+	// Sync commits the current contents of the file to stable storage.
+	Sync() error
+}
+
+type stater interface {
+	// Stat returns a FileInfo describing the file.
+	Stat() (os.FileInfo, error)
+}
+
 // A ROOT file is a suite of consecutive data records (TKey's) with
 // the following format (see also the TKey class). If the key is
 // located past the 32 bit file limit (> 2 GB) then some fields will
@@ -162,9 +172,6 @@ func Create(name string) (*File, error) {
 
 // Stat returns the os.FileInfo structure describing this file.
 func (f *File) Stat() (os.FileInfo, error) {
-	type stater interface {
-		Stat() (os.FileInfo, error)
-	}
 	if f.r != nil {
 		if st, ok := f.r.(stater); ok {
 			return st.Stat()
