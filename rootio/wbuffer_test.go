@@ -676,6 +676,13 @@ func TestWRBuffer(t *testing.T) {
 			want: &tobject{id: 0x1, bits: 0x3000001},
 		},
 		{
+			name: "TUUID",
+			want: &tuuid{
+				0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+				10, 11, 12, 13, 14, 15,
+			},
+		},
+		{
 			name: "TNamed",
 			want: &tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "my-name", title: "my-title"},
 		},
@@ -991,6 +998,10 @@ func TestWRBuffer(t *testing.T) {
 				seekdir:    3,
 				seekparent: 4,
 				seekkeys:   5,
+				uuid: tuuid{
+					0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+					10, 11, 12, 13, 14, 15,
+				},
 			},
 		},
 		{
@@ -1004,6 +1015,10 @@ func TestWRBuffer(t *testing.T) {
 				seekdir:    3,
 				seekparent: 4,
 				seekkeys:   5,
+				uuid: tuuid{
+					0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+					10, 11, 12, 13, 14, 15,
+				},
 			},
 		},
 		{
@@ -1018,6 +1033,10 @@ func TestWRBuffer(t *testing.T) {
 					seekdir:    3,
 					seekparent: 4,
 					seekkeys:   5,
+					uuid: tuuid{
+						0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+						10, 11, 12, 13, 14, 15,
+					},
 				},
 			},
 		},
@@ -1033,6 +1052,10 @@ func TestWRBuffer(t *testing.T) {
 					seekdir:    3,
 					seekparent: 4,
 					seekkeys:   5,
+					uuid: tuuid{
+						0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+						10, 11, 12, 13, 14, 15,
+					},
 				},
 			},
 		},

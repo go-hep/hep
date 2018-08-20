@@ -27,6 +27,7 @@ type tdirectory struct {
 	named tnamed // name+title of this directory
 	file  *File  // pointer to current file in memory
 	keys  []Key
+	uuid  tuuid
 }
 
 // recordSize returns the size of the directory header in bytes
@@ -253,6 +254,8 @@ func (dir *tdirectory) MarshalROOT(w *WBuffer) (int, error) {
 		w.WriteI32(int32(dir.seekkeys))
 	}
 
+	dir.uuid.MarshalROOT(w)
+
 	end := w.Pos()
 
 	return int(end - beg), w.err
@@ -282,6 +285,8 @@ func (dir *tdirectory) UnmarshalROOT(r *RBuffer) error {
 		dir.seekparent = int64(r.ReadI32())
 		dir.seekkeys = int64(r.ReadI32())
 	}
+
+	dir.uuid.UnmarshalROOT(r)
 
 	return r.Err()
 }
