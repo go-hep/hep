@@ -53,8 +53,26 @@ type Key struct {
 	name  string // name of the object
 	title string // title of the object
 
+	left int32 // number of bytes left in current segment.
+
 	buf []byte // buffer of the Key's value
 	obj Object // Key's value
+}
+
+// createKey creates a new key of the specified size.
+func createKey(name, title, class string, nbytes int32, f *File) Key {
+	k := Key{
+		f:      f,
+		objlen: nbytes,
+		class:  class,
+		name:   name,
+		title:  title,
+	}
+	k.keylen = k.sizeof()
+
+	// FIXME(sbinet): TKey::Create(nbytes);
+
+	return k
 }
 
 func (k *Key) Class() string {
@@ -172,6 +190,19 @@ func (k *Key) isBigFile() bool {
 	return k.version > 1000
 }
 
+// sizeof returns the size in bytes of the key header structure.
+func (k *Key) sizeof() int32 {
+	nbytes := int32(22)
+	if k.isBigFile() {
+		nbytes += 8
+	}
+	nbytes += datimeSizeof()
+	nbytes += tstringSizeof(k.class)
+	nbytes += tstringSizeof(k.name)
+	nbytes += tstringSizeof(k.title)
+	return nbytes
+}
+
 // MarshalROOT encodes the key to the provided buffer.
 func (k *Key) MarshalROOT(w *WBuffer) (int, error) {
 	if w.err != nil {
@@ -237,6 +268,25 @@ func (k *Key) UnmarshalROOT(r *RBuffer) error {
 	k.title = r.ReadString()
 
 	return r.Err()
+}
+
+// writeFile writes the key's payload to the file
+func (k *Key) writeFile(f *File) (int, error) {
+	//	var (
+	//		n   = int(k.bytes)
+	//		err error
+	//	)
+	//	if k.left > 0 {
+	//		n += 4 // sizeof int32
+	//	}
+
+	n, err := f.w.WriteAt(k.buf, k.seekkey)
+	if err != nil {
+		return n, err
+	}
+
+	k.buf = nil
+	return n, nil
 }
 
 func init() {
