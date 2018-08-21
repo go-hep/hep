@@ -75,7 +75,11 @@ func createKey(name, title, class string, nbytes int32, f *File) Key {
 	return k
 }
 
-func (k *Key) Class() string {
+func (*Key) Class() string {
+	return "TKey"
+}
+
+func (k *Key) ClassName() string {
 	return k.class
 }
 
@@ -111,20 +115,20 @@ func (k *Key) Object() (Object, error) {
 		return nil, err
 	}
 
-	fct := Factory.Get(k.Class())
+	fct := Factory.Get(k.class)
 	if fct == nil {
-		return nil, fmt.Errorf("rootio: no registered factory for class %q (key=%q)", k.Class(), k.Name())
+		return nil, fmt.Errorf("rootio: no registered factory for class %q (key=%q)", k.class, k.Name())
 	}
 
 	v := fct()
 	obj, ok := v.Interface().(Object)
 	if !ok {
-		return nil, fmt.Errorf("rootio: class %q does not implement rootio.Object (key=%q)", k.Class(), k.Name())
+		return nil, fmt.Errorf("rootio: class %q does not implement rootio.Object (key=%q)", k.class, k.Name())
 	}
 
 	vv, ok := obj.(ROOTUnmarshaler)
 	if !ok {
-		return nil, fmt.Errorf("rootio: class %q does not implement rootio.ROOTUnmarshaler (key=%q)", k.Class(), k.Name())
+		return nil, fmt.Errorf("rootio: class %q does not implement rootio.ROOTUnmarshaler (key=%q)", k.class, k.Name())
 	}
 
 	err = vv.UnmarshalROOT(NewRBuffer(buf, nil, uint32(k.keylen), k.f))

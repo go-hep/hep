@@ -663,6 +663,7 @@ func TestWRBuffer(t *testing.T) {
 	for _, tc := range []struct {
 		name string
 		want interface {
+			Object
 			ROOTMarshaler
 			ROOTUnmarshaler
 		}
@@ -1093,7 +1094,8 @@ func TestWRBuffer(t *testing.T) {
 			}
 
 			rbuf := NewRBuffer(wbuf.w.p, nil, 0, nil)
-			obj := Factory.get(tc.name)().Interface().(ROOTUnmarshaler)
+			class := tc.want.Class()
+			obj := Factory.get(class)().Interface().(ROOTUnmarshaler)
 			{
 				rbuf.err = io.EOF
 				err = obj.UnmarshalROOT(rbuf)
