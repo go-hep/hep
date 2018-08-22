@@ -17,6 +17,14 @@ type tlist struct {
 	objs  []Object
 }
 
+func newList(name string) *tlist {
+	return &tlist{
+		rvers: 5, // FIXME(sbinet): harmonize versions
+		obj:   tobject{id: 0x0, bits: 0x3000000},
+		name:  name,
+	}
+}
+
 func (li *tlist) Class() string {
 	return "TList"
 }
@@ -26,6 +34,10 @@ func (li *tlist) Name() string {
 		return "TList"
 	}
 	return li.name
+}
+
+func (*tlist) Title() string {
+	return "Doubly linked list"
 }
 
 func (li *tlist) At(i int) Object {
@@ -131,7 +143,7 @@ func (li *thashList) UnmarshalROOT(r *RBuffer) error {
 func init() {
 	{
 		f := func() reflect.Value {
-			o := &tlist{}
+			o := newList("")
 			return reflect.ValueOf(o)
 		}
 		Factory.add("TList", f)
