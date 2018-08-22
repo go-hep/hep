@@ -44,6 +44,10 @@ func (f *factory) HasKey(n string) bool {
 }
 
 func (f *factory) Get(n string) FactoryFct {
+	if n == "" {
+		panic("rootio: invalid classname")
+	}
+
 	f.mu.RLock()
 	fct, ok := f.db[n]
 	f.mu.RUnlock()
