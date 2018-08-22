@@ -5,7 +5,12 @@
 package rootio
 
 import (
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"reflect"
+	"runtime"
 	"testing"
 )
 
@@ -141,16 +146,56 @@ func TestOpenEmptyFile(t *testing.T) {
 }
 
 func TestCreateEmptyFile(t *testing.T) {
-	t.Skipf("rootio.Create not implemented yet")
 
-	f, err := Create("testdata/empty.root")
+	dir, err := ioutil.TempDir("", "rootio-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+
+	fname := filepath.Join(dir, "empty.root")
+
+	w, err := Create(fname)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = f.Close()
+	err = w.Close()
 	if err != nil {
 		t.Fatalf("error closing empty file: %v", err)
+	}
+
+	r, err := Open(fname)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Close()
+
+	si := r.StreamerInfos()
+	if len(si) != 0 {
+		t.Fatalf("did not expect any streamer info")
+	}
+
+	err = r.Close()
+	if err != nil {
+		t.Fatalf("error closing empty file: %v", err)
+	}
+
+	rootls := "rootls"
+	if runtime.GOOS == "windows" {
+		rootls = "rootls.exe"
+	}
+
+	rootls, err = exec.LookPath(rootls)
+	if err != nil {
+		t.Logf("skip test with ROOT/C++")
+		return
+	}
+
+	cmd := exec.Command(rootls, fname)
+	err = cmd.Run()
+	if err != nil {
+		t.Fatalf("ROOT/C++ could not open file %q", fname)
 	}
 }
 

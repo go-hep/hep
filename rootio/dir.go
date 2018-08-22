@@ -326,9 +326,14 @@ func (dir *tdirectoryFile) readDirInfo() error {
 }
 
 func (dir *tdirectoryFile) Close() error {
-	if len(dir.dir.keys) == 0 || dir.dir.seekdir == 0 {
+	if dir.dir.file.w == nil {
 		return nil
 	}
+
+	// FIXME(sbinet): ROOT applies this optimization. should we ?
+	//	if len(dir.dir.keys) == 0 || dir.dir.seekdir == 0 {
+	//		return nil
+	//	}
 
 	err := dir.save()
 	if err != nil {
@@ -441,32 +446,41 @@ func (dir *tdirectoryFile) writeKeys() error {
 // writeDirHeader overwrites the Directory header record.
 func (dir *tdirectoryFile) writeDirHeader() error {
 	var (
-		err    error
-		nbytes = dir.sizeof()
+		err error
 	)
-	dir.dir.mtime = time.Now() // FIXME(sbinet): fake-now-time
+	dir.dir.mtime = nowUTC()
+
+	nbytes := dir.sizeof() + int32(dir.dir.file.nbytesname)
+	key := newKey(dir.Name(), dir.Title(), "TFile", nbytes, dir.dir.file)
+	key.seekkey = dir.dir.file.begin
+	key.seekpdir = dir.dir.seekdir
+
 	buf := NewWBuffer(make([]byte, nbytes), nil, 0, nil)
+	buf.WriteString(dir.Name())
+	buf.WriteString(dir.Title())
 	_, err = dir.MarshalROOT(buf)
 	if err != nil {
-		return errors.Errorf("rootio: could not write dir-header: %v", err)
+		return errors.Wrapf(err, "rootio: could not marshal dir-info")
 	}
 
-	pos := dir.dir.seekdir + int64(dir.dir.nbytesname) // do not overwrite the name+title part
-	_, err = dir.dir.file.w.WriteAt(buf.buffer(), pos)
+	key.buf = buf.buffer()
+	_, err = key.writeFile(dir.dir.file)
 	if err != nil {
-		return errors.Wrapf(err, "rootio: could not write dir-header payload")
+		return errors.Wrapf(err, "rootio: could not write dir-info to file")
 	}
 
 	return nil
 }
 
 func (dir *tdirectoryFile) sizeof() int32 {
-	nbytes := int32(33)
+	nbytes := int32(22)
 
 	nbytes += datimeSizeof() // ctime
 	nbytes += datimeSizeof() // mtime
 	nbytes += dir.dir.uuid.sizeof()
-	nbytes += 12 // files with >= 2Gb
+	if dir.dir.file.version >= 40000 {
+		nbytes += 12 // files with >= 2Gb
+	}
 	return nbytes
 }
 

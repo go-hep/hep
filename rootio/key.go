@@ -59,19 +59,63 @@ type Key struct {
 	obj Object // Key's value
 }
 
-// createKey creates a new key of the specified size.
-func createKey(name, title, class string, nbytes int32, f *File) Key {
+func newKey(name, title, class string, nbytes int32, f *File) Key {
 	k := Key{
-		f:      f,
-		objlen: nbytes,
-		class:  class,
-		name:   name,
-		title:  title,
+		f:        f,
+		version:  4, // FIXME(sbinet): harmonize versions
+		objlen:   nbytes,
+		datetime: nowUTC(),
+		class:    class,
+		name:     name,
+		title:    title,
 	}
 	k.keylen = k.sizeof()
+	k.bytes = nbytes + k.keylen
 
-	// FIXME(sbinet): TKey::Create(nbytes);
+	return k
+}
 
+// createKey creates a new key of the specified size.
+func createKey(name, title, class string, nbytes int32, f *File) Key {
+	k := newKey(name, title, class, nbytes, f)
+	if f.end > kStartBigFile {
+		k.version += 1000
+	}
+
+	nsize := nbytes + k.keylen
+	best := f.spans.best(int64(nsize))
+
+	if best == nil {
+		panic("rootio: could not find free segment")
+	}
+
+	k.seekkey = best.first
+	switch {
+	case k.seekkey >= f.end:
+		// segment at the end of the file.
+		f.end = k.seekkey + int64(nsize)
+		best.first = f.end
+		if f.end > best.last {
+			best.last += 1000000000
+		}
+		k.left = -1
+	default:
+		k.left = int32(best.last - k.seekkey - int64(nsize) + 1)
+	}
+
+	k.bytes = nsize
+
+	switch {
+	case k.left == 0:
+		// key's payload fills exactly a deleted gap.
+		panic("not implemented -- k.left==0")
+
+	case k.left > 0:
+		// key's payload placed in a deleted gap larger than strictly needed.
+		panic("not implemented -- k.left >0")
+	}
+
+	k.seekpdir = f.dir.dir.seekdir
 	return k
 }
 
@@ -276,15 +320,24 @@ func (k *Key) UnmarshalROOT(r *RBuffer) error {
 
 // writeFile writes the key's payload to the file
 func (k *Key) writeFile(f *File) (int, error) {
-	//	var (
-	//		n   = int(k.bytes)
-	//		err error
-	//	)
-	//	if k.left > 0 {
-	//		n += 4 // sizeof int32
-	//	}
+	if k.left > 0 {
+		w := NewWBuffer(nil, nil, 0, nil)
+		w.WriteI32(int32(-k.left))
+		k.buf = append(k.buf, w.buffer()...)
+	}
 
-	n, err := f.w.WriteAt(k.buf, k.seekkey)
+	buf := NewWBuffer(make([]byte, k.bytes), nil, 0, f)
+	_, err := k.MarshalROOT(buf)
+	if err != nil {
+		return 0, err
+	}
+
+	n, err := f.w.WriteAt(buf.buffer(), k.seekkey)
+	if err != nil {
+		return n, err
+	}
+	nn, err := f.w.WriteAt(k.buf, k.seekkey+int64(k.keylen))
+	n += nn
 	if err != nil {
 		return n, err
 	}

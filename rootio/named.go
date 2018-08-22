@@ -28,8 +28,12 @@ func (n *tnamed) Title() string {
 	return n.title
 }
 
-func (n *tnamed) Class() string {
+func (*tnamed) Class() string {
 	return "TNamed"
+}
+
+func (n *tnamed) sizeof() int32 {
+	return tstringSizeof(n.name) + tstringSizeof(n.title)
 }
 
 func (n *tnamed) UnmarshalROOT(r *RBuffer) error {

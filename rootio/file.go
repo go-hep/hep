@@ -101,6 +101,8 @@ type File struct {
 	dir    tdirectoryFile // root directory of this file
 	siKey  Key
 	sinfos []StreamerInfo
+
+	spans freeList // list of free spans on file
 }
 
 // Open opens the named ROOT file for reading. If successful, methods on the
@@ -154,19 +156,47 @@ func Create(name string) (*File, error) {
 	}
 
 	f := &File{
-		w:       fd,
-		seeker:  fd,
-		closer:  fd,
-		id:      name,
-		version: rootVersion,
+		w:           fd,
+		seeker:      fd,
+		closer:      fd,
+		id:          name,
+		version:     rootVersion,
+		begin:       kBEGIN,
+		end:         kBEGIN,
+		units:       4,
+		compression: 1,
+		sinfos:      []StreamerInfo{},
 	}
-	f.dir = tdirectoryFile{tdirectory{named: tnamed{name: name}, file: f}}
+	f.dir = *newDirectoryFile(name, f)
+	f.spans.add(kBEGIN, kStartBigFile)
+
+	// write directory info
+	namelen := f.dir.dir.named.sizeof()
+	nbytes := namelen + f.dir.sizeof()
+	key := createKey(f.dir.Name(), f.dir.Title(), "TFile", nbytes, f)
+	f.nbytesname = key.keylen + namelen
+	f.dir.dir.nbytesname = key.keylen + namelen
+	f.dir.dir.seekdir = key.seekkey
+	f.seekfree = 0
+	f.nbytesfree = 0
 
 	err = f.writeHeader()
 	if err != nil {
 		_ = fd.Close()
 		_ = os.RemoveAll(name)
 		return nil, fmt.Errorf("rootio: failed to write header %q: %v", name, err)
+	}
+	buf := NewWBuffer(make([]byte, key.bytes), nil, 0, f)
+	_, err = f.dir.MarshalROOT(buf)
+	if err != nil {
+		return nil, errors.Wrapf(err, "rootio: failed to write header")
+	}
+	key.bytes = int32(len(buf.buffer()))
+	key.buf = buf.buffer()
+
+	_, err = key.writeFile(f)
+	if err != nil {
+		return nil, errors.Wrapf(err, "rootio: failed to write key header")
 	}
 
 	return f, nil
@@ -265,6 +295,13 @@ func (f *File) readHeader() error {
 		return fmt.Errorf("rootio: failed to read ROOT directory infos: %v", err)
 	}
 
+	if f.seekfree > 0 {
+		err = f.readFreeSegments()
+		if err != nil {
+			return errors.Wrapf(err, "rootio: failed to read ROOT file free segments")
+		}
+	}
+
 	if f.seekinfo > 0 {
 		err = f.readStreamerInfo()
 		if err != nil {
@@ -281,7 +318,61 @@ func (f *File) readHeader() error {
 }
 
 func (f *File) writeHeader() error {
-	panic("not implemented")
+	var (
+		err   error
+		span  = f.spans.last()
+		nfree = int32(len(f.spans))
+	)
+
+	if span != nil {
+		f.end = span.first
+	}
+
+	buf := NewWBuffer(make([]byte, f.begin), nil, 0, f)
+	buf.write([]byte("root"))
+
+	version := f.version
+	if version < 1000000 && f.end > kStartBigFile {
+		version += 1000000
+		f.units = 8
+	}
+	buf.WriteI32(version)
+	buf.WriteI32(int32(f.begin))
+	switch {
+	case version < 1000000:
+		buf.WriteI32(int32(f.end))
+		buf.WriteI32(int32(f.seekfree))
+		buf.WriteI32(f.nbytesfree)
+		buf.WriteI32(nfree)
+		buf.WriteI32(f.nbytesname)
+		buf.WriteU8(f.units)
+		buf.WriteI32(f.compression)
+		buf.WriteI32(int32(f.seekinfo))
+		buf.WriteI32(f.nbytesinfo)
+	default:
+		buf.WriteI64(f.end)
+		buf.WriteI64(f.seekfree)
+		buf.WriteI32(f.nbytesfree)
+		buf.WriteI32(nfree)
+		buf.WriteI32(f.nbytesname)
+		buf.WriteU8(f.units)
+		buf.WriteI32(f.compression)
+		buf.WriteI64(f.seekinfo)
+		buf.WriteI32(f.nbytesinfo)
+	}
+	buf.write(f.uuid[:])
+
+	_, _ = f.w.WriteAt(make([]byte, f.begin), 0)
+	_, err = f.w.WriteAt(buf.buffer(), 0)
+	if err != nil {
+		return errors.Wrapf(err, "rootio: could not write file header")
+	}
+
+	if w, ok := f.w.(syncer); ok {
+		err = w.Sync()
+	}
+
+	return err
 }
 
 func (f *File) Tell() int64 {
@@ -295,16 +386,34 @@ func (f *File) Tell() int64 {
 // Close closes the File, rendering it unusable for I/O.
 // It returns an error, if any.
 func (f *File) Close() error {
+	if f.closer == nil {
+		return nil
+	}
+
+	var err error
+
 	if f.w != nil {
-		err := f.writeStreamerInfo()
+		err = f.writeStreamerInfo()
 		if err != nil {
 			return err
 		}
 	}
 
-	err := f.dir.Close()
+	err = f.dir.Close()
 	if err != nil {
 		return err
+	}
+
+	if f.w != nil {
+		err = f.writeFreeSegments()
+		if err != nil {
+			return err
+		}
+
+		err = f.writeHeader()
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, k := range f.dir.dir.keys {
@@ -312,7 +421,10 @@ func (f *File) Close() error {
 	}
 	f.dir.dir.keys = nil
 	f.dir.dir.file = nil
-	return f.closer.Close()
+
+	err = f.closer.Close()
+	f.closer = nil
+	return err
 }
 
 // Keys returns the list of keys this File contains
@@ -368,7 +480,177 @@ func (f *File) readStreamerInfo() error {
 
 // writeStreamerInfo rites the list of StreamerInfos used in this file.
 func (f *File) writeStreamerInfo() error {
-	panic("not implemented")
+	if f.w == nil {
+		return nil
+	}
+
+	var (
+		err    error
+		sinfos = newList("")
+		rules  = newList("listOfRules")
+	)
+
+	for _, si := range f.sinfos {
+		sinfos.objs = append(sinfos.objs, si)
+	}
+
+	if len(rules.objs) > 0 {
+		sinfos.objs = append(sinfos.objs, rules)
+	}
+
+	if f.seekinfo != 0 {
+		f.markFree(f.seekinfo, f.seekinfo+int64(f.nbytesinfo)-1)
+	}
+
+	buf := NewWBuffer(nil, nil, 0, f)
+	_, err = sinfos.MarshalROOT(buf)
+	if err != nil {
+		return errors.Wrapf(err, "rootio: could not write StreamerInfo list")
+	}
+
+	key := createKey("StreamerInfo", sinfos.Title(), sinfos.Class(), int32(len(buf.buffer())), f)
+	key.buf = buf.buffer()
+	f.seekinfo = key.seekkey
+	f.nbytesinfo = key.bytes
+
+	_, err = key.writeFile(f)
+	if err != nil {
+		return errors.Wrapf(err, "rootio: could not write StreamerInfo list key")
+	}
+
+	return nil
+}
+
+// markFree marks unused bytes on the file.
+// it's the equivalent of slice[beg:end] = nil.
+func (f *File) markFree(beg, end int64) {
+	if len(f.spans) == 0 {
+		return
+	}
+
+	span := f.spans.add(beg, end)
+	if span == nil {
+		return
+	}
+	nbytes := span.free()
+	if nbytes > 2000000000 {
+		nbytes = 2000000000
+	}
+	buf := NewWBuffer(make([]byte, 4), nil, 0, f)
+	buf.writeI32(-int32(nbytes))
+	if end == f.end-1 {
+		f.end = span.first
+	}
+	_, err := f.w.WriteAt(buf.buffer(), span.first)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (f *File) readFreeSegments() error {
+	var err error
+	buf := make([]byte, f.nbytesfree)
+	nbytes, err := f.ReadAt(buf, f.seekfree)
+	if err == io.EOF {
+		err = nil
+	}
+	if err != nil {
+		return err
+	}
+	if nbytes != len(buf) {
+		return errors.Errorf("rootio: requested [%v] bytes, read [%v] bytes from file", f.nbytesfree, nbytes)
+	}
+
+	var key = Key{f: f}
+	err = key.UnmarshalROOT(NewRBuffer(buf, nil, 0, nil))
+	if err != nil {
+		panic(err)
+		return err
+	}
+	buf, err = key.Bytes()
+	if err != nil {
+		return errors.Wrapf(err, "rootio: could not read key payload")
+	}
+	rbuf := NewRBuffer(buf, nil, 0, nil)
+	for rbuf.Len() > 0 {
+		var span freeSegment
+		err = span.UnmarshalROOT(rbuf)
+		if err != nil {
+			if err == io.EOF {
+				err = nil
+			}
+			break
+		}
+		f.spans = append(f.spans, span)
+	}
+
+	return err
+}
+
+func (f *File) writeFreeSegments() error {
+	var err error
+
+	if f.seekfree != 0 {
+		f.markFree(f.seekfree, f.seekfree+int64(f.nbytesfree)-1)
+	}
+
+	key := func() *Key {
+		var nbytes int32
+		for _, span := range f.spans {
+			nbytes += span.sizeof()
+		}
+		if nbytes == 0 {
+			return nil
+		}
+		key := createKey(f.Name(), f.Title(), "TFile", nbytes, f)
+		if key.seekkey == 0 {
+			return nil
+		}
+		return &key
+	}()
+
+	if key == nil {
+		return nil
+	}
+
+	isBigFile := f.end > kStartBigFile
+	if !isBigFile && f.end > kStartBigFile {
+		// the free block list is large enough to bring the file over the
+		// 2Gb limit.
+		// The references and offsets are now 64b, so we need to redo the
+		// calculation since the list of free blocks will not fit in the
+		// original size.
+		panic("not implemented")
+	}
+
+	nbytes := key.objlen
+	buf := NewWBuffer(make([]byte, nbytes), nil, 0, f)
+	for _, span := range f.spans {
+		_, err := span.MarshalROOT(buf)
+		if err != nil {
+			return errors.Wrapf(err, "rootio: could not marshal free-block")
+		}
+	}
+	if abytes := buf.Pos(); abytes != int64(nbytes) {
+		switch {
+		case abytes < int64(nbytes):
+			// most likely one of the 'free' segments was used
+			// to store this key.
+			// we thus have one less free-block to store than planned.
+			copy(buf.buffer()[abytes:], make([]byte, int64(nbytes)-abytes))
+		default:
+			panic("rootio: free block list larger than expected")
+		}
+	}
+
+	f.nbytesfree = key.bytes
+	f.seekfree = key.seekkey
+	key.buf = buf.buffer()
+	_, err = key.writeFile(f)
+	if err != nil {
+		return errors.Wrapf(err, "rootio: could not write free-block list")
+	}
+	return nil
 }
 
 // StreamerInfos returns the list of StreamerInfos of this file.
