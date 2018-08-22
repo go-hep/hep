@@ -306,6 +306,17 @@ type tdirectoryFile struct {
 	dir tdirectory
 }
 
+func newDirectoryFile(name string, f *File) *tdirectoryFile {
+	now := nowUTC()
+	return &tdirectoryFile{tdirectory{
+		rvers: 5, // FIXME(sbinet)
+		ctime: now,
+		mtime: now,
+		named: tnamed{name: name},
+		file:  f,
+	}}
+}
+
 func (dir *tdirectoryFile) readKeys() error {
 	return dir.dir.readKeys()
 }
@@ -470,7 +481,7 @@ func init() {
 	}
 	{
 		f := func() reflect.Value {
-			o := &tdirectoryFile{}
+			o := newDirectoryFile("", nil)
 			return reflect.ValueOf(o)
 		}
 		Factory.add("TDirectoryFile", f)

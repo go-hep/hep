@@ -118,7 +118,7 @@ func Open(path string) (*File, error) {
 		closer: fd,
 		id:     path,
 	}
-	f.dir = tdirectoryFile{tdirectory{file: f}}
+	f.dir.dir.file = f
 
 	err = f.readHeader()
 	if err != nil {
@@ -136,7 +136,7 @@ func NewReader(r Reader, name string) (*File, error) {
 		closer: r,
 		id:     name,
 	}
-	f.dir = tdirectoryFile{tdirectory{file: f}}
+	f.dir.dir.file = f
 
 	err := f.readHeader()
 	if err != nil {
