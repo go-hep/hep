@@ -119,6 +119,38 @@ func createKey(name, title, class string, nbytes int32, f *File) Key {
 	return k
 }
 
+func newKeyFrom(obj Object, wbuf *WBuffer) (Key, error) {
+	if wbuf == nil {
+		wbuf = NewWBuffer(nil, nil, 0, nil)
+	}
+	beg := int(wbuf.Pos())
+	n, err := obj.(ROOTMarshaler).MarshalROOT(wbuf)
+	if err != nil {
+		return Key{}, err
+	}
+	end := beg + n
+	data := wbuf.w.p[beg:end]
+
+	name := ""
+	title := ""
+	if obj, ok := obj.(Named); ok {
+		name = obj.Name()
+		title = obj.Title()
+	}
+
+	k := Key{
+		version:  4, // FIXME(sbinet): harmonize versions
+		objlen:   int32(n),
+		datetime: nowUTC(),
+		class:    obj.Class(),
+		name:     name,
+		title:    title,
+		buf:      data,
+		obj:      obj,
+	}
+	return k, nil
+}
+
 func (*Key) Class() string {
 	return "TKey"
 }

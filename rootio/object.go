@@ -11,6 +11,10 @@ type tobject struct {
 	bits uint32 `rootio:"fBits"`
 }
 
+func newObject() *tobject {
+	return &tobject{id: 0x0, bits: 0x3000000}
+}
+
 func (*tobject) Class() string {
 	return "TObject"
 }

@@ -14,6 +14,14 @@ type tobjstring struct {
 	str   string
 }
 
+func newObjString(s string) *tobjstring {
+	return &tobjstring{
+		rvers: 1, // FIXME(sbinet): harmonize versions
+		obj:   *newObject(),
+		str:   s,
+	}
+}
+
 func (*tobjstring) Class() string {
 	return "TObjString"
 }
@@ -22,7 +30,7 @@ func (obj *tobjstring) Name() string {
 	return obj.str
 }
 
-func (obj *tobjstring) Title() string {
+func (*tobjstring) Title() string {
 	return "Collectable string class"
 }
 
