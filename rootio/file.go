@@ -686,6 +686,25 @@ func (f *File) StreamerInfo(name string) (StreamerInfo, error) {
 	return nil, fmt.Errorf("rootio: no streamer for %q", name)
 }
 
+func (f *File) addStreamer(streamer StreamerInfo) {
+	var (
+		idx  = -1
+		name = streamer.Name()
+	)
+
+	for i, si := range f.sinfos {
+		if si.Name() == name {
+			idx = i
+			break
+		}
+	}
+	if idx != -1 {
+		return
+	}
+
+	f.sinfos = append(f.sinfos, streamer)
+}
+
 // Get returns the object identified by namecycle
 //   namecycle has the format name;cycle
 //   name  = * is illegal, cycle = * is illegal
@@ -705,9 +724,11 @@ func (f *File) Put(name string, v Object) error {
 }
 
 var (
-	_ Object    = (*File)(nil)
-	_ Named     = (*File)(nil)
-	_ Directory = (*File)(nil)
+	_ Object              = (*File)(nil)
+	_ Named               = (*File)(nil)
+	_ Directory           = (*File)(nil)
+	_ StreamerInfoContext = (*File)(nil)
+	_ streamerInfoStore   = (*File)(nil)
 )
 
 type freeSegment struct {

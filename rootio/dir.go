@@ -302,6 +302,10 @@ func (dir *tdirectory) StreamerInfo(name string) (StreamerInfo, error) {
 	return dir.file.StreamerInfo(name)
 }
 
+func (dir *tdirectory) addStreamer(streamer StreamerInfo) {
+	dir.file.addStreamer(streamer)
+}
+
 type tdirectoryFile struct {
 	dir tdirectory
 }
@@ -395,6 +399,10 @@ func (dir *tdirectoryFile) Title() string {
 
 func (dir *tdirectoryFile) StreamerInfo(name string) (StreamerInfo, error) {
 	return dir.dir.StreamerInfo(name)
+}
+
+func (dir *tdirectoryFile) addStreamer(streamer StreamerInfo) {
+	dir.dir.addStreamer(streamer)
 }
 
 func (dir *tdirectoryFile) MarshalROOT(w *WBuffer) (int, error) {
@@ -508,6 +516,7 @@ var (
 	_ Named               = (*tdirectory)(nil)
 	_ Directory           = (*tdirectory)(nil)
 	_ StreamerInfoContext = (*tdirectory)(nil)
+	_ streamerInfoStore   = (*tdirectory)(nil)
 	_ ROOTMarshaler       = (*tdirectory)(nil)
 	_ ROOTUnmarshaler     = (*tdirectory)(nil)
 
@@ -515,6 +524,7 @@ var (
 	_ Named               = (*tdirectoryFile)(nil)
 	_ Directory           = (*tdirectoryFile)(nil)
 	_ StreamerInfoContext = (*tdirectoryFile)(nil)
+	_ streamerInfoStore   = (*tdirectoryFile)(nil)
 	_ ROOTMarshaler       = (*tdirectoryFile)(nil)
 	_ ROOTUnmarshaler     = (*tdirectoryFile)(nil)
 )

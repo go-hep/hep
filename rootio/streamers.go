@@ -5,11 +5,14 @@
 package rootio
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
 	"sync"
+
+	rstreamerspkg "go-hep.org/x/hep/rootio/internal/rstreamers"
 )
 
 var (
@@ -26,6 +29,10 @@ var (
 
 type StreamerInfoContext interface {
 	StreamerInfo(name string) (StreamerInfo, error)
+}
+
+type streamerInfoStore interface {
+	addStreamer(si StreamerInfo)
 }
 
 type tstreamerInfo struct {
@@ -928,6 +935,23 @@ func (db *streamerDb) add(streamer StreamerInfo) {
 	}
 
 	db.db[key] = streamer
+}
+
+func streamerInfoFrom(obj Object, sictx streamerInfoStore) (StreamerInfo, error) {
+	r := &memFile{bytes.NewReader(rstreamerspkg.Data)}
+	f, err := NewReader(r, "streamers_db.root")
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	si, err := f.StreamerInfo(obj.Class())
+	if err != nil {
+		return nil, err
+	}
+	streamers.add(si)
+	sictx.addStreamer(si)
+	return si, nil
 }
 
 var (
