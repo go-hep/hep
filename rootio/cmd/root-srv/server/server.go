@@ -182,7 +182,7 @@ func (srv *server) uploadHandle(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	rfile, err := rootio.NewReader(f, handler.Filename)
+	rfile, err := rootio.NewReader(f)
 	if err != nil {
 		return err
 	}

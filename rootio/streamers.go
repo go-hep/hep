@@ -939,7 +939,7 @@ func (db *streamerDb) add(streamer StreamerInfo) {
 
 func streamerInfoFrom(obj Object, sictx streamerInfoStore) (StreamerInfo, error) {
 	r := &memFile{bytes.NewReader(rstreamerspkg.Data)}
-	f, err := NewReader(r, "streamers_db.root")
+	f, err := NewReader(r)
 	if err != nil {
 		return nil, err
 	}

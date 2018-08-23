@@ -131,12 +131,11 @@ func Open(path string) (*File, error) {
 }
 
 // NewReader creates a new ROOT file reader.
-func NewReader(r Reader, name string) (*File, error) {
+func NewReader(r Reader) (*File, error) {
 	f := &File{
 		r:      r,
 		seeker: r,
 		closer: r,
-		id:     name,
 	}
 	f.dir.dir.file = f
 
@@ -144,6 +143,7 @@ func NewReader(r Reader, name string) (*File, error) {
 	if err != nil {
 		return nil, fmt.Errorf("rootio: failed to read header: %v", err)
 	}
+	f.id = f.dir.dir.Name()
 
 	return f, nil
 }
