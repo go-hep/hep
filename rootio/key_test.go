@@ -22,11 +22,11 @@ func TestKeyNewKeyFrom(t *testing.T) {
 		err  error
 	}{
 		{
-			want: newObjString("hello"),
+			want: NewObjString("hello"),
 			wbuf: nil,
 		},
 		{
-			want: newObjString("hello"),
+			want: NewObjString("hello"),
 			wbuf: func() *WBuffer {
 				wbuf := NewWBuffer(nil, nil, 0, nil)
 				wbuf.WriteString(strings.Repeat("=+=", 80))
@@ -34,7 +34,7 @@ func TestKeyNewKeyFrom(t *testing.T) {
 			}(),
 		},
 		{
-			want: newObjString("hello"),
+			want: NewObjString("hello"),
 			wbuf: func() *WBuffer {
 				wbuf := NewWBuffer(nil, nil, 0, nil)
 				wbuf.WriteString(strings.Repeat("=+=", 80))
@@ -44,11 +44,11 @@ func TestKeyNewKeyFrom(t *testing.T) {
 			err: werr,
 		},
 		{
-			want: newObjString(strings.Repeat("+", 512) + "hello"),
+			want: NewObjString(strings.Repeat("+", 512) + "hello"),
 			wbuf: nil,
 		},
 		{
-			want: newObjString(strings.Repeat("+", 512) + "hello"),
+			want: NewObjString(strings.Repeat("+", 512) + "hello"),
 			wbuf: func() *WBuffer {
 				wbuf := NewWBuffer(nil, nil, 0, nil)
 				wbuf.WriteString(strings.Repeat("=+=", 80))
@@ -56,7 +56,7 @@ func TestKeyNewKeyFrom(t *testing.T) {
 			}(),
 		},
 		{
-			want: newObjString(strings.Repeat("+", 512) + "hello"),
+			want: NewObjString(strings.Repeat("+", 512) + "hello"),
 			wbuf: func() *WBuffer {
 				wbuf := NewWBuffer(nil, nil, 0, nil)
 				wbuf.WriteString(strings.Repeat("=+=", 80))

@@ -105,6 +105,13 @@ type ObjArray interface {
 	LowerBound() int
 }
 
+// ObjString is a ROOT string that implements ROOT TObject.
+type ObjString interface {
+	Name() string
+	String() string
+	isTObjString()
+}
+
 // Directory describes a ROOT directory structure in memory.
 type Directory interface {
 	// Get returns the object identified by namecycle

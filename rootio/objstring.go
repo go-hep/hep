@@ -14,7 +14,8 @@ type tobjstring struct {
 	str   string
 }
 
-func newObjString(s string) *tobjstring {
+// NewObjString creates a new ObjString.
+func NewObjString(s string) *tobjstring {
 	return &tobjstring{
 		rvers: 1, // FIXME(sbinet): harmonize versions
 		obj:   *newObject(),
@@ -37,6 +38,8 @@ func (*tobjstring) Title() string {
 func (obj *tobjstring) String() string {
 	return obj.str
 }
+
+func (*tobjstring) isTObjString() {}
 
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
@@ -81,6 +84,7 @@ func init() {
 var (
 	_ Object          = (*tobjstring)(nil)
 	_ Named           = (*tobjstring)(nil)
+	_ ObjString       = (*tobjstring)(nil)
 	_ ROOTMarshaler   = (*tobjstring)(nil)
 	_ ROOTUnmarshaler = (*tobjstring)(nil)
 )
