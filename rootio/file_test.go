@@ -192,7 +192,88 @@ func TestCreateEmptyFile(t *testing.T) {
 		return
 	}
 
-	cmd := exec.Command(rootls, fname)
+	cmd := exec.Command(rootls, "-l", fname)
+	err = cmd.Run()
+	if err != nil {
+		t.Fatalf("ROOT/C++ could not open file %q", fname)
+	}
+}
+
+func TestCreateFileWithObjString(t *testing.T) {
+
+	dir, err := ioutil.TempDir("", "rootio-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+
+	fname := filepath.Join(dir, "objstring.root")
+
+	w, err := Create(fname)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var (
+		kname = "my-key"
+		want  = NewObjString("Hello World from Go-HEP!")
+	)
+
+	err = w.Put(kname, want)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := len(w.Keys()), 1; got != want {
+		t.Fatalf("invalid number of keys. got=%d, want=%d", got, want)
+	}
+
+	err = w.Close()
+	if err != nil {
+		t.Fatalf("error closing file: %v", err)
+	}
+
+	r, err := Open(fname)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Close()
+
+	si := r.StreamerInfos()
+	if len(si) == 0 {
+		t.Fatalf("empty list of streamers")
+	}
+
+	if got, want := len(r.Keys()), 1; got != want {
+		t.Fatalf("invalid number of keys. got=%d, want=%d", got, want)
+	}
+
+	rgot, err := r.Get(kname)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got := rgot.(ObjString); !reflect.DeepEqual(got, want) {
+		t.Fatalf("error reading back objstring.\ngot = %#v\nwant = %#v", got, want)
+	}
+
+	err = r.Close()
+	if err != nil {
+		t.Fatalf("error closing file: %v", err)
+	}
+
+	rootls := "rootls"
+	if runtime.GOOS == "windows" {
+		rootls = "rootls.exe"
+	}
+
+	rootls, err = exec.LookPath(rootls)
+	if err != nil {
+		t.Logf("skip test with ROOT/C++")
+		return
+	}
+
+	cmd := exec.Command(rootls, "-l", fname)
 	err = cmd.Run()
 	if err != nil {
 		t.Fatalf("ROOT/C++ could not open file %q", fname)

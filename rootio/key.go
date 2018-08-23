@@ -9,6 +9,8 @@ import (
 	"io"
 	"reflect"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 // noKeyError is the error returned when a rootio.Key could not be found.
@@ -65,6 +67,7 @@ func newKey(name, title, class string, nbytes int32, f *File) Key {
 		version:  4, // FIXME(sbinet): harmonize versions
 		objlen:   nbytes,
 		datetime: nowUTC(),
+		cycle:    1,
 		class:    class,
 		name:     name,
 		title:    title,
@@ -83,36 +86,9 @@ func createKey(name, title, class string, nbytes int32, f *File) Key {
 	}
 
 	nsize := nbytes + k.keylen
-	best := f.spans.best(int64(nsize))
-
-	if best == nil {
-		panic("rootio: could not find free segment")
-	}
-
-	k.seekkey = best.first
-	switch {
-	case k.seekkey >= f.end:
-		// segment at the end of the file.
-		f.end = k.seekkey + int64(nsize)
-		best.first = f.end
-		if f.end > best.last {
-			best.last += 1000000000
-		}
-		k.left = -1
-	default:
-		k.left = int32(best.last - k.seekkey - int64(nsize) + 1)
-	}
-
-	k.bytes = nsize
-
-	switch {
-	case k.left == 0:
-		// key's payload fills exactly a deleted gap.
-		panic("not implemented -- k.left==0")
-
-	case k.left > 0:
-		// key's payload placed in a deleted gap larger than strictly needed.
-		panic("not implemented -- k.left >0")
+	err := k.adjust(nsize)
+	if err != nil {
+		panic(err)
 	}
 
 	k.seekpdir = f.dir.dir.seekdir
@@ -129,7 +105,7 @@ func newKeyFrom(obj Object, wbuf *WBuffer) (Key, error) {
 		return Key{}, err
 	}
 	end := beg + n
-	data := wbuf.w.p[beg:end]
+	data := wbuf.buffer()[beg:end]
 
 	name := ""
 	title := ""
@@ -260,6 +236,69 @@ func (k *Key) load(buf []byte) ([]byte, error) {
 		return nil, err
 	}
 	return buf, nil
+}
+
+func (k *Key) store() error {
+	if k.buf != nil {
+		return nil
+	}
+
+	buf := NewWBuffer(make([]byte, k.bytes), nil, 0, k.f)
+	_, err := k.obj.(ROOTMarshaler).MarshalROOT(buf)
+	if err != nil {
+		return err
+	}
+	k.buf = buf.buffer()         // FIXME(sbinet): handle compression
+	k.objlen = int32(len(k.buf)) // FIXME(sbinet): handle compression
+	nbytes := k.objlen
+	k.keylen = k.sizeof()
+	k.bytes = k.keylen + nbytes
+
+	if k.seekkey == 0 {
+		// find a place on file where to store that key.
+		err = k.adjust(k.bytes)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *Key) adjust(nsize int32) error {
+	best := k.f.spans.best(int64(nsize))
+	if best == nil {
+		return errors.Errorf("rootio: could not find a suitable free segment")
+	}
+
+	k.seekkey = best.first
+
+	switch {
+	case k.seekkey >= k.f.end:
+		// segment at the end of the file.
+		k.f.end = k.seekkey + int64(nsize)
+		best.first = k.f.end
+		if k.f.end > best.last {
+			best.last += 1000000000
+		}
+		k.left = -1
+	default:
+		k.left = int32(best.last - k.seekkey - int64(nsize) + 1)
+	}
+
+	k.bytes = nsize
+
+	switch {
+	case k.left == 0:
+		// key's payload fills exactly a deleted gap.
+		panic("not implemented -- k.left==0")
+
+	case k.left > 0:
+		// key's payload placed in a deleted gap larger than strictly needed.
+		panic("not implemented -- k.left >0")
+	}
+
+	return nil
 }
 
 func (k *Key) isCompressed() bool {

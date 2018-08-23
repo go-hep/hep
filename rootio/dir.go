@@ -214,15 +214,31 @@ func (dir *tdirectory) Put(name string, obj Object) error {
 	}
 	cycle++
 
+	// make sure we have a streamer for this type.
+	if _, err := dir.StreamerInfo(obj.Class()); err != nil {
+		_, err = streamerInfoFrom(obj, dir)
+		if err != nil {
+			return errors.Wrapf(err, "rootio: could not generate streamer for key")
+		}
+		_, err = dir.StreamerInfo(obj.Class())
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	dir.keys = append(dir.keys, Key{
-		f:     dir.file,
-		cycle: cycle,
-		class: obj.Class(),
-		name:  name,
-		title: title,
-		obj:   obj,
+		f:        dir.file,
+		version:  4, // FIXME(sbinet): harmonize versions
+		datetime: nowUTC(),
+		cycle:    cycle,
+		class:    obj.Class(),
+		name:     name,
+		title:    title,
+		obj:      obj,
+		seekpdir: dir.seekdir,
 	})
-	panic("not implemented")
+
+	return nil
 }
 
 func (dir *tdirectory) Keys() []Key {
@@ -344,17 +360,38 @@ func (dir *tdirectoryFile) Close() error {
 		return err
 	}
 
-	// FIXME(sbinet): save sub-directories.
-	//	for _, k := range dir.keys {
-	//		obj, err := k.Object()
-	//		if err != nil {
-	//		}
-	//	}
-
 	return nil
 }
 
 func (dir *tdirectoryFile) save() error {
+	var err error
+	if dir.dir.file.w == nil {
+		return err
+	}
+
+	for i := range dir.dir.keys {
+		k := &dir.dir.keys[i]
+		err = k.store()
+		if err != nil {
+			return err
+		}
+		_, err = k.writeFile(dir.dir.file)
+		if err != nil {
+			return errors.Wrapf(err, "rootio: could not write key for directory %q", dir.Name())
+		}
+	}
+
+	err = dir.saveSelf()
+	if err != nil {
+		return errors.Wrapf(err, "rootio: could not save directory")
+	}
+
+	// FIXME(sbinet): recursively save sub-directories.
+
+	return nil
+}
+
+func (dir *tdirectoryFile) saveSelf() error {
 	if dir.dir.file.w == nil {
 		return nil
 	}
