@@ -35,7 +35,7 @@ func (obj *tobject) UnmarshalROOT(r *RBuffer) error {
 }
 
 func (obj *tobject) MarshalROOT(w *WBuffer) (int, error) {
-	n := w.w.c
+	n := w.Pos()
 	w.WriteU16(uint16(obj.Version()))
 	w.WriteU32(obj.id)
 	w.WriteU32(obj.bits)
@@ -44,7 +44,7 @@ func (obj *tobject) MarshalROOT(w *WBuffer) (int, error) {
 		panic("rootio: writing referenced objects are not supported")
 	}
 
-	return w.w.c - n, w.err
+	return int(w.Pos() - n), w.err
 }
 
 func init() {

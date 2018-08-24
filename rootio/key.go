@@ -243,7 +243,9 @@ func (k *Key) store() error {
 		return nil
 	}
 
-	buf := NewWBuffer(make([]byte, k.bytes), nil, 0, k.f)
+	k.keylen = k.sizeof()
+
+	buf := NewWBuffer(make([]byte, k.bytes), nil, uint32(k.keylen), k.f)
 	_, err := k.obj.(ROOTMarshaler).MarshalROOT(buf)
 	if err != nil {
 		return err
@@ -251,7 +253,6 @@ func (k *Key) store() error {
 	k.buf = buf.buffer()         // FIXME(sbinet): handle compression
 	k.objlen = int32(len(k.buf)) // FIXME(sbinet): handle compression
 	nbytes := k.objlen
-	k.keylen = k.sizeof()
 	k.bytes = k.keylen + nbytes
 
 	if k.seekkey == 0 {
@@ -332,7 +333,7 @@ func (k *Key) MarshalROOT(w *WBuffer) (int, error) {
 
 	w.WriteI32(k.bytes)
 	if k.bytes < 0 {
-		return int(int64(w.w.c) - pos), nil
+		return int(w.Pos() - pos), nil
 	}
 
 	w.WriteI16(k.version)
@@ -352,7 +353,7 @@ func (k *Key) MarshalROOT(w *WBuffer) (int, error) {
 	w.WriteString(k.name)
 	w.WriteString(k.title)
 
-	return int(int64(w.w.c) - pos), nil
+	return int(w.Pos() - pos), nil
 }
 
 // UnmarshalROOT decodes the content of data into the Key

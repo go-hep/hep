@@ -502,13 +502,15 @@ func (f *File) writeStreamerInfo() error {
 		f.markFree(f.seekinfo, f.seekinfo+int64(f.nbytesinfo)-1)
 	}
 
-	buf := NewWBuffer(nil, nil, 0, f)
+	key := newKey("StreamerInfo", sinfos.Title(), sinfos.Class(), 0, f)
+	offset := uint32(key.keylen)
+	buf := NewWBuffer(nil, nil, offset, f)
 	_, err = sinfos.MarshalROOT(buf)
 	if err != nil {
 		return errors.Wrapf(err, "rootio: could not write StreamerInfo list")
 	}
 
-	key := createKey("StreamerInfo", sinfos.Title(), sinfos.Class(), int32(len(buf.buffer())), f)
+	key = createKey("StreamerInfo", sinfos.Title(), sinfos.Class(), int32(len(buf.buffer())), f)
 	key.buf = buf.buffer()
 	f.seekinfo = key.seekkey
 	f.nbytesinfo = key.bytes

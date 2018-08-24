@@ -71,7 +71,12 @@ func NewWBuffer(data []byte, refs map[interface{}]int64, offset uint32, ctx Stre
 func (w *WBuffer) buffer() []byte { return w.w.p[:w.w.c] }
 
 func (w *WBuffer) Pos() int64 {
-	return int64(w.w.c)
+	return int64(w.w.c) + int64(w.offset)
+}
+
+func (w *WBuffer) setPos(pos int64) {
+	pos -= int64(w.offset)
+	w.w.c = int(pos)
 }
 
 func (w *WBuffer) SetByteCount(beg int64, class string) (int, error) {
@@ -79,11 +84,11 @@ func (w *WBuffer) SetByteCount(beg int64, class string) (int, error) {
 		return 0, w.err
 	}
 
-	cur := w.w.c
-	bcnt := int64(cur) - beg - 4
-	w.w.c = int(beg)
+	cur := w.Pos()
+	bcnt := cur - beg - 4
+	w.setPos(beg)
 	w.WriteU32(uint32(bcnt | kByteCountMask))
-	w.w.c = cur
+	w.setPos(cur)
 
 	return int(bcnt + 4), w.err
 }
@@ -115,10 +120,10 @@ func (w *WBuffer) WriteObjectAny(obj Object) error {
 		w.err = err
 		return w.err
 	}
-	end := w.w.c
-	w.w.c = int(pos)
+	end := w.Pos()
+	w.setPos(pos)
 	w.writeU32(bcnt)
-	w.w.c = end
+	w.setPos(end)
 
 	return w.err
 }
@@ -144,13 +149,15 @@ func (w *WBuffer) WriteClass(beg int64, obj Object) (uint32, error) {
 		w.WriteCString(class)
 		w.refs[class] = (start + kMapOffset) | kClassMask
 
+		// add to refs before writing value, to handle self reference
+		w.refs[obj] = beg + kMapOffset
+
 		mobj := obj.(ROOTMarshaler)
 		if _, err := mobj.MarshalROOT(w); err != nil {
 			w.err = err
 			return 0, w.err
 		}
 
-		w.refs[obj] = beg + kMapOffset
 		bcnt := w.Pos() - start
 		return uint32(bcnt | kByteCountMask), w.err
 	}
