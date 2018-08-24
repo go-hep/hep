@@ -692,10 +692,11 @@ func (f *File) addStreamer(streamer StreamerInfo) {
 	var (
 		idx  = -1
 		name = streamer.Name()
+		chk  = streamer.CheckSum()
 	)
 
 	for i, si := range f.sinfos {
-		if si.Name() == name {
+		if si.Name() == name && si.CheckSum() == chk {
 			idx = i
 			break
 		}

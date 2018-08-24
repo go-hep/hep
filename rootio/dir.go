@@ -214,13 +214,15 @@ func (dir *tdirectory) Put(name string, obj Object) error {
 	}
 	cycle++
 
+	typename := obj.Class()
+
 	// make sure we have a streamer for this type.
-	if _, err := dir.StreamerInfo(obj.Class()); err != nil {
+	if _, err := dir.StreamerInfo(typename); err != nil {
 		_, err = streamerInfoFrom(obj, dir)
 		if err != nil {
 			return errors.Wrapf(err, "rootio: could not generate streamer for key")
 		}
-		_, err = dir.StreamerInfo(obj.Class())
+		_, err = dir.StreamerInfo(typename)
 		if err != nil {
 			panic(err)
 		}
@@ -231,7 +233,7 @@ func (dir *tdirectory) Put(name string, obj Object) error {
 		version:  4, // FIXME(sbinet): harmonize versions
 		datetime: nowUTC(),
 		cycle:    cycle,
-		class:    obj.Class(),
+		class:    typename,
 		name:     name,
 		title:    title,
 		obj:      obj,

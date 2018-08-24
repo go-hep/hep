@@ -5,12 +5,14 @@
 package rootio
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -145,7 +147,15 @@ func TestOpenEmptyFile(t *testing.T) {
 	}
 }
 
-func TestCreateEmptyFile(t *testing.T) {
+func TestCreate(t *testing.T) {
+
+	rootls := "rootls"
+	if runtime.GOOS == "windows" {
+		rootls = "rootls.exe"
+	}
+
+	rootls, err := exec.LookPath(rootls)
+	withROOTCxx := err == nil
 
 	dir, err := ioutil.TempDir("", "rootio-")
 	if err != nil {
@@ -153,130 +163,172 @@ func TestCreateEmptyFile(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 
-	fname := filepath.Join(dir, "empty.root")
-
-	w, err := Create(fname)
-	if err != nil {
-		t.Fatal(err)
+	type rooter interface {
+		Object
+		ROOTMarshaler
+		ROOTUnmarshaler
 	}
 
-	err = w.Close()
-	if err != nil {
-		t.Fatalf("error closing empty file: %v", err)
-	}
+	for i, tc := range []struct {
+		name string
+		skip bool
+		want []rooter
+	}{
+		{name: "", want: nil},
+		{
+			name: "TObjString",
+			want: []rooter{NewObjString("hello")},
+		},
+		{
+			name: "TObjString",
+			want: []rooter{NewObjString("hello"), NewObjString("world")},
+		},
+		{
+			name: "TObjString",
+			want: func() []rooter {
+				var out []rooter
+				for _, i := range []int{0, 1, 253, 254, 255, 256, 512, 1024} {
+					str := strings.Repeat("=", i)
+					out = append(out, NewObjString(str))
+				}
+				return out
+			}(),
+		},
+		{
+			name: "TObject",
+			want: []rooter{newObject()},
+		},
+		{
+			name: "TNamed",
+			want: []rooter{
+				&tnamed{rvers: 1, obj: *newObject(), name: "n0", title: "t0"},
+				&tnamed{rvers: 1, obj: *newObject(), name: "n1", title: "t1"},
+				&tnamed{rvers: 1, obj: *newObject(), name: "n2", title: "t2"},
+			},
+		},
+		{
+			name: "TList",
+			want: []rooter{&tlist{
+				rvers: 5,
+				obj:   tobject{id: 0x0, bits: 0x3000000},
+				name:  "list-name",
+				objs: []Object{
+					&tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "n0", title: "t0"},
+					&tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "n1", title: "t1"},
+					&tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "n2", title: "t2"},
+				},
+			}},
+		},
+		{
+			name: "TArrayF",
+			want: []rooter{
+				&ArrayF{Data: []float32{1, 2, 3, 4, 5, 6}},
+			},
+		},
+		{
+			name: "TArrayD",
+			want: []rooter{
+				&ArrayD{Data: []float64{1, 2, 3, 4, 5, 6}},
+			},
+		},
+		{
+			name: "TArrays",
+			want: []rooter{
+				&ArrayF{Data: []float32{1, 2, 3, 4, 5, 6}},
+				&ArrayD{Data: []float64{1, 2, 3, 4, 5, 6}},
+			},
+		},
+		{
+			name: "TAxis",
+			want: []rooter{&taxis{
+				rvers:  10,
+				tnamed: tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "xaxis", title: ""},
+				attaxis: attaxis{
+					rvers: 4,
+					ndivs: 510, acolor: 1, lcolor: 1, lfont: 42, loffset: 0.005, lsize: 0.035, ticks: 0.03, toffset: 1, tsize: 0.035, tcolor: 1, tfont: 42,
+				},
+				nbins: 100, xmin: 0, xmax: 100,
+				xbins: ArrayD{Data: nil},
+				first: 0, last: 0, bits2: 0x0, time: false, tfmt: "",
+				labels:  nil,
+				modlabs: nil,
+			}},
+		},
+	} {
+		fname := filepath.Join(dir, fmt.Sprintf("out-%d.root", i))
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.skip {
+				t.Skip()
+			}
 
-	r, err := Open(fname)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer r.Close()
+			w, err := Create(fname)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	si := r.StreamerInfos()
-	if len(si) != 0 {
-		t.Fatalf("did not expect any streamer info")
-	}
+			for i := range tc.want {
+				var (
+					kname = fmt.Sprintf("key-%s-%02d", tc.name, i)
+					want  = tc.want[i]
+				)
 
-	err = r.Close()
-	if err != nil {
-		t.Fatalf("error closing empty file: %v", err)
-	}
+				err = w.Put(kname, want)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
 
-	rootls := "rootls"
-	if runtime.GOOS == "windows" {
-		rootls = "rootls.exe"
-	}
+			if got, want := len(w.Keys()), len(tc.want); got != want {
+				t.Fatalf("invalid number of keys. got=%d, want=%d", got, want)
+			}
 
-	rootls, err = exec.LookPath(rootls)
-	if err != nil {
-		t.Logf("skip test with ROOT/C++")
-		return
-	}
+			err = w.Close()
+			if err != nil {
+				t.Fatalf("error closing file: %v", err)
+			}
 
-	cmd := exec.Command(rootls, "-l", fname)
-	err = cmd.Run()
-	if err != nil {
-		t.Fatalf("ROOT/C++ could not open file %q", fname)
-	}
-}
+			r, err := Open(fname)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer r.Close()
 
-func TestCreateFileWithObjString(t *testing.T) {
+			if got, want := len(r.Keys()), len(tc.want); got != want {
+				t.Fatalf("invalid number of keys. got=%d, want=%d", got, want)
+			}
 
-	dir, err := ioutil.TempDir("", "rootio-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
+			for i := range tc.want {
+				var (
+					kname = fmt.Sprintf("key-%s-%02d", tc.name, i)
+					want  = tc.want[i]
+				)
 
-	fname := filepath.Join(dir, "objstring.root")
+				rgot, err := r.Get(kname)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-	w, err := Create(fname)
-	if err != nil {
-		t.Fatal(err)
-	}
+				if got := rgot.(rooter); !reflect.DeepEqual(got, want) {
+					t.Fatalf("error reading back value[%d].\ngot = %#v\nwant = %#v", i, got, want)
+				}
+			}
 
-	var (
-		kname = "my-key"
-		want  = NewObjString("Hello World from Go-HEP!")
-	)
+			err = r.Close()
+			if err != nil {
+				t.Fatalf("error closing file: %v", err)
+			}
 
-	err = w.Put(kname, want)
-	if err != nil {
-		t.Fatal(err)
-	}
+			if !withROOTCxx {
+				t.Logf("skip test with ROOT/C++")
+				return
+			}
 
-	if got, want := len(w.Keys()), 1; got != want {
-		t.Fatalf("invalid number of keys. got=%d, want=%d", got, want)
-	}
-
-	err = w.Close()
-	if err != nil {
-		t.Fatalf("error closing file: %v", err)
-	}
-
-	r, err := Open(fname)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer r.Close()
-
-	si := r.StreamerInfos()
-	if len(si) == 0 {
-		t.Fatalf("empty list of streamers")
-	}
-
-	if got, want := len(r.Keys()), 1; got != want {
-		t.Fatalf("invalid number of keys. got=%d, want=%d", got, want)
-	}
-
-	rgot, err := r.Get(kname)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if got := rgot.(ObjString); !reflect.DeepEqual(got, want) {
-		t.Fatalf("error reading back objstring.\ngot = %#v\nwant = %#v", got, want)
-	}
-
-	err = r.Close()
-	if err != nil {
-		t.Fatalf("error closing file: %v", err)
-	}
-
-	rootls := "rootls"
-	if runtime.GOOS == "windows" {
-		rootls = "rootls.exe"
-	}
-
-	rootls, err = exec.LookPath(rootls)
-	if err != nil {
-		t.Logf("skip test with ROOT/C++")
-		return
-	}
-
-	cmd := exec.Command(rootls, "-l", fname)
-	err = cmd.Run()
-	if err != nil {
-		t.Fatalf("ROOT/C++ could not open file %q", fname)
+			cmd := exec.Command(rootls, "-l", fname)
+			err = cmd.Run()
+			if err != nil {
+				t.Fatalf("ROOT/C++ could not open file %q", fname)
+			}
+		})
 	}
 }
 
