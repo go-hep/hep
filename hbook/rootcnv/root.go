@@ -62,3 +62,8 @@ func S2D(g rootio.Graph) (*hbook.S2D, error) {
 	s2d.Annotation()["title"] = g.Title()
 	return s2d, nil
 }
+
+// FromH1D creates a new ROOT TH1D from a 1-dim hbook histogram.
+func FromH1D(h1 *hbook.H1D) (*rootio.H1D, error) {
+	return rootio.NewH1DFrom(h1), nil
+}
