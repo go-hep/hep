@@ -17,6 +17,9 @@ matrix:
    - go: 1.10.x
      env:
        - TAGS="-tags travis"
+   - go: 1.11.x
+     env:
+       - TAGS="-tags travis"
        - COVERAGE="-cover"
    - go: master
      env:
