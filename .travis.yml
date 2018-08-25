@@ -24,6 +24,7 @@ matrix:
    - go: master
      env:
        - TAGS="-tags travis"
+       - GO111MODULE="on"
 
 sudo: required
 
