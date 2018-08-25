@@ -165,3 +165,11 @@ func (bng *binning1D) scaleW(f float64) {
 func (bng *binning1D) Bins() []Bin1D {
 	return bng.bins
 }
+
+func (bng *binning1D) Underflow() *dist1D {
+	return &bng.outflows[0]
+}
+
+func (bng *binning1D) Overflow() *dist1D {
+	return &bng.outflows[1]
+}

@@ -102,6 +102,16 @@ func (h *H1D) SumW2() float64 {
 	return h.bng.dist.SumW2()
 }
 
+// SumWX returns the 1st order weighted x moment
+func (h *H1D) SumWX() float64 {
+	return h.bng.dist.SumWX()
+}
+
+// SumWX2 returns the 2nd order weighted x moment
+func (h *H1D) SumWX2() float64 {
+	return h.bng.dist.SumWX2()
+}
+
 // XMean returns the mean X.
 // Overflows are included in the computation.
 func (h *H1D) XMean() float64 {
