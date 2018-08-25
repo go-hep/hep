@@ -26,6 +26,14 @@ type taxis struct {
 	modlabs *tlist     // list of modified labels
 }
 
+func newAxis(name string) *taxis {
+	return &taxis{
+		rvers:   10, // FIXME(sbinet): harmonize versions
+		tnamed:  *newNamed(name, ""),
+		attaxis: *newAttAxis(),
+	}
+}
+
 func (a *taxis) Class() string {
 	return "TAxis"
 }
@@ -185,7 +193,7 @@ func (a *taxis) UnmarshalROOT(r *RBuffer) error {
 func init() {
 	{
 		f := func() reflect.Value {
-			o := &taxis{}
+			o := newAxis("")
 			return reflect.ValueOf(o)
 		}
 		Factory.add("TAxis", f)

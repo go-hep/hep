@@ -24,6 +24,23 @@ type attaxis struct {
 	tfont   int16   // font for axis title
 }
 
+func newAttAxis() *attaxis {
+	return &attaxis{
+		rvers:   4,   // FIXME(sbinet): harmonize versions
+		ndivs:   510, // FIXME(sbinet)
+		acolor:  1,
+		lcolor:  1,
+		lfont:   42,
+		loffset: 0.005,
+		lsize:   0.035,
+		ticks:   0.03,
+		toffset: 1,
+		tsize:   0.035,
+		tcolor:  1,
+		tfont:   42,
+	}
+}
+
 func (*attaxis) Class() string {
 	return "TAttAxis"
 }
@@ -81,7 +98,7 @@ func (a *attaxis) UnmarshalROOT(r *RBuffer) error {
 
 func init() {
 	f := func() reflect.Value {
-		o := &attaxis{}
+		o := newAttAxis()
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TAttAxis", f)

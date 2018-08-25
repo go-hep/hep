@@ -18,6 +18,15 @@ type tnamed struct {
 	title string
 }
 
+func newNamed(name, title string) *tnamed {
+	return &tnamed{
+		rvers: 1, // FIXME(sbinet): harmonize versions
+		obj:   *newObject(),
+		name:  name,
+		title: title,
+	}
+}
+
 // Name returns the name of the instance
 func (n *tnamed) Name() string {
 	return n.name
@@ -77,7 +86,7 @@ func (n *tnamed) MarshalROOT(w *WBuffer) (int, error) {
 
 func init() {
 	f := func() reflect.Value {
-		o := &tnamed{}
+		o := newNamed("", "")
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TNamed", f)

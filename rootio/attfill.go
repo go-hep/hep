@@ -12,6 +12,14 @@ type attfill struct {
 	style int16
 }
 
+func newAttFill() *attfill {
+	return &attfill{
+		rvers: 2, // FIXME(sbinet): harmonize versions
+		color: 0,
+		style: 1001, // FIXME(sbinet)
+	}
+}
+
 func (a *attfill) MarshalROOT(w *WBuffer) (int, error) {
 	if w.err != nil {
 		return 0, w.err
@@ -43,7 +51,7 @@ func (a *attfill) UnmarshalROOT(r *RBuffer) error {
 
 func init() {
 	f := func() reflect.Value {
-		o := &attfill{}
+		o := newAttFill()
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TAttFill", f)

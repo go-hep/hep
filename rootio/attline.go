@@ -13,6 +13,15 @@ type attline struct {
 	width int16
 }
 
+func newAttLine() *attline {
+	return &attline{
+		rvers: 2, // FIXME(sbinet): harmonize versions
+		color: 1, // FIXME(sbinet)
+		style: 1,
+		width: 1,
+	}
+}
+
 func (a *attline) MarshalROOT(w *WBuffer) (int, error) {
 	if w.err != nil {
 		return 0, w.err
@@ -46,7 +55,7 @@ func (a *attline) UnmarshalROOT(r *RBuffer) error {
 
 func init() {
 	f := func() reflect.Value {
-		o := &attline{}
+		o := newAttLine()
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TAttLine", f)

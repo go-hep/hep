@@ -13,6 +13,15 @@ type attmarker struct {
 	width float32
 }
 
+func newAttMarker() *attmarker {
+	return &attmarker{
+		rvers: 2, // FIXME(sbinet): harmonize versions
+		color: 1,
+		style: 1,
+		width: 1,
+	}
+}
+
 func (a *attmarker) MarshalROOT(w *WBuffer) (int, error) {
 	if w.err != nil {
 		return 0, w.err
@@ -44,7 +53,7 @@ func (a *attmarker) UnmarshalROOT(r *RBuffer) error {
 
 func init() {
 	f := func() reflect.Value {
-		o := &attmarker{}
+		o := newAttMarker()
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TAttMarker", f)
