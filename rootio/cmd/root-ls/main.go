@@ -132,14 +132,14 @@ func walk(w io.Writer, k rootio.Key) {
 	if *doTree {
 		tree, ok := obj.(rootio.Tree)
 		if ok {
-			w := tabwriter.NewWriter(w, 8, 4, 1, ' ', 0)
-			fmt.Fprintf(w, "%s\t%s\t%s\t(entries=%d)\n", k.Class(), k.Name(), k.Title(), tree.Entries())
+			w := newWindent(2, w)
+			fmt.Fprintf(w, "%s\t%s\t%s\t(entries=%d)\n", k.ClassName(), k.Name(), k.Title(), tree.Entries())
 			displayBranches(w, tree, 2)
 			w.Flush()
 			return
 		}
 	}
-	fmt.Fprintf(w, "%s\t%s\t%s\t(cycle=%d)\n", k.Class(), k.Name(), k.Title(), k.Cycle())
+	fmt.Fprintf(w, "%s\t%s\t%s\t(cycle=%d)\n", k.ClassName(), k.Name(), k.Title(), k.Cycle())
 	if dir, ok := obj.(rootio.Directory); ok {
 		w := newWindent(2, w)
 		for _, k := range dir.Keys() {
