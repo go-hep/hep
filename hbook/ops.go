@@ -14,8 +14,8 @@ import (
 func DivideH1D(num, den *H1D) (*S2D, error) {
 	var s2d S2D
 
-	bins1 := num.Binning().Bins()
-	bins2 := den.Binning().Bins()
+	bins1 := num.Binning.Bins
+	bins2 := den.Binning.Bins
 
 	for i := range bins1 {
 		b1 := bins1[i]

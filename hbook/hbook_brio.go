@@ -10,7 +10,7 @@ import (
 func (o *H1D) MarshalBinary() (data []byte, err error) {
 	var buf [8]byte
 	{
-		sub, err := o.bng.MarshalBinary()
+		sub, err := o.Binning.MarshalBinary()
 		if err != nil {
 			return nil, err
 		}
@@ -19,7 +19,7 @@ func (o *H1D) MarshalBinary() (data []byte, err error) {
 		data = append(data, sub...)
 	}
 	{
-		sub, err := o.ann.MarshalBinary()
+		sub, err := o.Ann.MarshalBinary()
 		if err != nil {
 			return nil, err
 		}
@@ -35,7 +35,7 @@ func (o *H1D) UnmarshalBinary(data []byte) (err error) {
 	{
 		n := int(binary.LittleEndian.Uint64(data[:8]))
 		data = data[8:]
-		err = o.bng.UnmarshalBinary(data[:n])
+		err = o.Binning.UnmarshalBinary(data[:n])
 		if err != nil {
 			return err
 		}
@@ -44,7 +44,7 @@ func (o *H1D) UnmarshalBinary(data []byte) (err error) {
 	{
 		n := int(binary.LittleEndian.Uint64(data[:8]))
 		data = data[8:]
-		err = o.ann.UnmarshalBinary(data[:n])
+		err = o.Ann.UnmarshalBinary(data[:n])
 		if err != nil {
 			return err
 		}
@@ -57,7 +57,7 @@ func (o *H1D) UnmarshalBinary(data []byte) (err error) {
 func (o *H2D) MarshalBinary() (data []byte, err error) {
 	var buf [8]byte
 	{
-		sub, err := o.bng.MarshalBinary()
+		sub, err := o.Binning.MarshalBinary()
 		if err != nil {
 			return nil, err
 		}
@@ -66,7 +66,7 @@ func (o *H2D) MarshalBinary() (data []byte, err error) {
 		data = append(data, sub...)
 	}
 	{
-		sub, err := o.ann.MarshalBinary()
+		sub, err := o.Ann.MarshalBinary()
 		if err != nil {
 			return nil, err
 		}
@@ -82,7 +82,7 @@ func (o *H2D) UnmarshalBinary(data []byte) (err error) {
 	{
 		n := int(binary.LittleEndian.Uint64(data[:8]))
 		data = data[8:]
-		err = o.bng.UnmarshalBinary(data[:n])
+		err = o.Binning.UnmarshalBinary(data[:n])
 		if err != nil {
 			return err
 		}
@@ -91,7 +91,7 @@ func (o *H2D) UnmarshalBinary(data []byte) (err error) {
 	{
 		n := int(binary.LittleEndian.Uint64(data[:8]))
 		data = data[8:]
-		err = o.ann.UnmarshalBinary(data[:n])
+		err = o.Ann.UnmarshalBinary(data[:n])
 		if err != nil {
 			return err
 		}

@@ -63,7 +63,7 @@ type S2DOpts struct {
 // only the first element is considered.
 func NewS2DFromH1D(h *H1D, opts ...S2DOpts) *S2D {
 	s := NewS2D()
-	for k, v := range h.ann {
+	for k, v := range h.Ann {
 		s.ann[k] = v
 	}
 	var opt S2DOpts
@@ -74,7 +74,7 @@ func NewS2DFromH1D(h *H1D, opts ...S2DOpts) *S2D {
 	if _, ok := s.ann["Type"]; ok {
 		s.ann["Type"] = "Scatter2D"
 	}
-	for _, bin := range h.bng.bins {
+	for _, bin := range h.Binning.Bins {
 		var x float64
 		if opt.UseFocus {
 			x = bin.XFocus()

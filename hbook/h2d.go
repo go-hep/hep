@@ -13,15 +13,15 @@ import (
 
 // H2D is a 2-dim histogram with weighted entries.
 type H2D struct {
-	bng binning2D
-	ann Annotation
+	Binning Binning2D
+	Ann     Annotation
 }
 
 // NewH2D creates a new 2-dim histogram.
 func NewH2D(nx int, xlow, xhigh float64, ny int, ylow, yhigh float64) *H2D {
 	return &H2D{
-		bng: newBinning2D(nx, xlow, xhigh, ny, ylow, yhigh),
-		ann: make(Annotation),
+		Binning: newBinning2D(nx, xlow, xhigh, ny, ylow, yhigh),
+		Ann:     make(Annotation),
 	}
 }
 
@@ -33,14 +33,14 @@ func NewH2D(nx int, xlow, xhigh float64, ny int, ylow, yhigh float64) *H2D {
 // It panics if there are duplicate edge values (in any dimension.)
 func NewH2DFromEdges(xedges []float64, yedges []float64) *H2D {
 	return &H2D{
-		bng: newBinning2DFromEdges(xedges, yedges),
-		ann: make(Annotation),
+		Binning: newBinning2DFromEdges(xedges, yedges),
+		Ann:     make(Annotation),
 	}
 }
 
 // Name returns the name of this histogram, if any
 func (h *H2D) Name() string {
-	v, ok := h.ann["name"]
+	v, ok := h.Ann["name"]
 	if !ok {
 		return ""
 	}
@@ -53,7 +53,7 @@ func (h *H2D) Name() string {
 
 // Annotation returns the annotations attached to this histogram
 func (h *H2D) Annotation() Annotation {
-	return h.ann
+	return h.Ann
 }
 
 // Rank returns the number of dimensions for this histogram
@@ -63,114 +63,139 @@ func (h *H2D) Rank() int {
 
 // Entries returns the number of entries in this histogram
 func (h *H2D) Entries() int64 {
-	return h.bng.entries()
+	return h.Binning.entries()
 }
 
 // EffEntries returns the number of effective entries in this histogram
 func (h *H2D) EffEntries() float64 {
-	return h.bng.effEntries()
-}
-
-// Binning returns the binning of this histogram
-func (h *H2D) Binning() *binning2D {
-	return &h.bng
+	return h.Binning.effEntries()
 }
 
 // SumW returns the sum of weights in this histogram.
 // Overflows are included in the computation.
 func (h *H2D) SumW() float64 {
-	return h.bng.dist.SumW()
+	return h.Binning.Dist.SumW()
 }
 
 // SumW2 returns the sum of squared weights in this histogram.
 // Overflows are included in the computation.
 func (h *H2D) SumW2() float64 {
-	return h.bng.dist.SumW2()
+	return h.Binning.Dist.SumW2()
+}
+
+// SumWX returns the 1st order weighted x moment
+// Overflows are included in the computation.
+func (h *H2D) SumWX() float64 {
+	return h.Binning.Dist.SumWX()
+}
+
+// SumWX2 returns the 2nd order weighted x moment
+// Overflows are included in the computation.
+func (h *H2D) SumWX2() float64 {
+	return h.Binning.Dist.SumWX2()
+}
+
+// SumWY returns the 1st order weighted y moment
+// Overflows are included in the computation.
+func (h *H2D) SumWY() float64 {
+	return h.Binning.Dist.SumWY()
+}
+
+// SumWY2 returns the 2nd order weighted y moment
+// Overflows are included in the computation.
+func (h *H2D) SumWY2() float64 {
+	return h.Binning.Dist.SumWY2()
+}
+
+// SumWXY returns the 1st order weighted x*y moment
+// Overflows are included in the computation.
+func (h *H2D) SumWXY() float64 {
+	return h.Binning.Dist.SumWXY
 }
 
 // XMean returns the mean X.
 // Overflows are included in the computation.
 func (h *H2D) XMean() float64 {
-	return h.bng.dist.xMean()
+	return h.Binning.Dist.xMean()
 }
 
 // YMean returns the mean Y.
 // Overflows are included in the computation.
 func (h *H2D) YMean() float64 {
-	return h.bng.dist.yMean()
+	return h.Binning.Dist.yMean()
 }
 
 // XVariance returns the variance in X.
 // Overflows are included in the computation.
 func (h *H2D) XVariance() float64 {
-	return h.bng.dist.xVariance()
+	return h.Binning.Dist.xVariance()
 }
 
 // YVariance returns the variance in Y.
 // Overflows are included in the computation.
 func (h *H2D) YVariance() float64 {
-	return h.bng.dist.yVariance()
+	return h.Binning.Dist.yVariance()
 }
 
 // XStdDev returns the standard deviation in X.
 // Overflows are included in the computation.
 func (h *H2D) XStdDev() float64 {
-	return h.bng.dist.xStdDev()
+	return h.Binning.Dist.xStdDev()
 }
 
 // YStdDev returns the standard deviation in Y.
 // Overflows are included in the computation.
 func (h *H2D) YStdDev() float64 {
-	return h.bng.dist.yStdDev()
+	return h.Binning.Dist.yStdDev()
 }
 
 // XStdErr returns the standard error in X.
 // Overflows are included in the computation.
 func (h *H2D) XStdErr() float64 {
-	return h.bng.dist.xStdErr()
+	return h.Binning.Dist.xStdErr()
 }
 
 // YStdErr returns the standard error in Y.
 // Overflows are included in the computation.
 func (h *H2D) YStdErr() float64 {
-	return h.bng.dist.yStdErr()
+	return h.Binning.Dist.yStdErr()
 }
 
 // XRMS returns the RMS in X.
 // Overflows are included in the computation.
 func (h *H2D) XRMS() float64 {
-	return h.bng.dist.xRMS()
+	return h.Binning.Dist.xRMS()
 }
 
 // YRMS returns the RMS in Y.
 // Overflows are included in the computation.
 func (h *H2D) YRMS() float64 {
-	return h.bng.dist.yRMS()
+	return h.Binning.Dist.yRMS()
 }
 
 // Fill fills this histogram with (x,y) and weight w.
 func (h *H2D) Fill(x, y, w float64) {
-	h.bng.fill(x, y, w)
+	h.Binning.fill(x, y, w)
 }
 
 // XMin returns the low edge of the X-axis of this histogram.
 func (h *H2D) XMin() float64 {
-	return h.bng.xMin()
+	return h.Binning.xMin()
 }
 
 // XMax returns the high edge of the X-axis of this histogram.
 func (h *H2D) XMax() float64 {
-	return h.bng.xMax()
+	return h.Binning.xMax()
 }
 
 // YMin returns the low edge of the Y-axis of this histogram.
 func (h *H2D) YMin() float64 {
-	return h.bng.yMin()
+	return h.Binning.yMin()
 }
 
 // YMax returns the high edge of the Y-axis of this histogram.
 func (h *H2D) YMax() float64 {
-	return h.bng.yMax()
+	return h.Binning.yMax()
 }
 
 // Integral computes the integral of the histogram.
@@ -191,21 +216,21 @@ type h2dGridXYZ struct {
 }
 
 func (g h2dGridXYZ) Dims() (c, r int) {
-	return g.h.bng.nx, g.h.bng.ny
+	return g.h.Binning.Nx, g.h.Binning.Ny
 }
 
 func (g h2dGridXYZ) Z(c, r int) float64 {
-	idx := r*g.h.bng.nx + c
-	return g.h.bng.bins[idx].SumW()
+	idx := r*g.h.Binning.Nx + c
+	return g.h.Binning.Bins[idx].SumW()
 }
 
 func (g h2dGridXYZ) X(c int) float64 {
-	return g.h.bng.bins[c].XMid()
+	return g.h.Binning.Bins[c].XMid()
 }
 
 func (g h2dGridXYZ) Y(r int) float64 {
-	idx := r * g.h.bng.nx
-	return g.h.bng.bins[idx].YMid()
+	idx := r * g.h.Binning.Nx
+	return g.h.Binning.Bins[idx].YMid()
 }
 
 // check various interfaces
@@ -214,11 +239,11 @@ var _ Histogram = (*H2D)(nil)
 
 // annToYODA creates a new Annotation with fields compatible with YODA
 func (h *H2D) annToYODA() Annotation {
-	ann := make(Annotation, len(h.ann))
+	ann := make(Annotation, len(h.Ann))
 	ann["Type"] = "Histo2D"
 	ann["Path"] = "/" + h.Name()
 	ann["Title"] = ""
-	for k, v := range h.ann {
+	for k, v := range h.Ann {
 		if k == "name" {
 			continue
 		}
@@ -229,17 +254,17 @@ func (h *H2D) annToYODA() Annotation {
 
 // annFromYODA creates a new Annotation from YODA compatible fields
 func (h *H2D) annFromYODA(ann Annotation) {
-	if len(h.ann) == 0 {
-		h.ann = make(Annotation, len(ann))
+	if len(h.Ann) == 0 {
+		h.Ann = make(Annotation, len(ann))
 	}
 	for k, v := range ann {
 		switch k {
 		case "Type":
 			// noop
 		case "Path":
-			h.ann["name"] = string(v.(string)[1:]) // skip leading '/'
+			h.Ann["name"] = string(v.(string)[1:]) // skip leading '/'
 		default:
-			h.ann[k] = v
+			h.Ann[k] = v
 		}
 	}
 }
@@ -259,11 +284,11 @@ func (h *H2D) MarshalYODA() ([]byte, error) {
 	fmt.Fprintf(buf, "# Volume: %e\n", h.Integral())
 
 	fmt.Fprintf(buf, "# ID\t ID\t sumw\t sumw2\t sumwx\t sumwx2\t sumwy\t sumwy2\t sumwxy\t numEntries\n")
-	d := h.bng.dist
+	d := h.Binning.Dist
 	fmt.Fprintf(
 		buf,
 		"Total   \tTotal   \t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
-		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.sumWXY, d.Entries(),
+		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
 	)
 
 	// outflows
@@ -271,15 +296,15 @@ func (h *H2D) MarshalYODA() ([]byte, error) {
 
 	// bins
 	fmt.Fprintf(buf, "# xlow\t xhigh\t ylow\t yhigh\t sumw\t sumw2\t sumwx\t sumwx2\t sumwy\t sumwy2\t sumwxy\t numEntries\n")
-	for ix := 0; ix < h.bng.nx; ix++ {
-		for iy := 0; iy < h.bng.ny; iy++ {
-			bin := h.bng.bins[iy*h.bng.nx+ix]
-			d := bin.dist
+	for ix := 0; ix < h.Binning.Nx; ix++ {
+		for iy := 0; iy < h.Binning.Ny; iy++ {
+			bin := h.Binning.Bins[iy*h.Binning.Nx+ix]
+			d := bin.Dist
 			fmt.Fprintf(
 				buf,
 				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
-				bin.xrange.Min, bin.xrange.Max, bin.yrange.Min, bin.yrange.Max,
-				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.sumWXY, d.Entries(),
+				bin.XRange.Min, bin.XRange.Max, bin.YRange.Min, bin.YRange.Max,
+				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
 			)
 		}
 	}
@@ -318,7 +343,7 @@ func (h *H2D) UnmarshalYODA(data []byte) error {
 	yset := make(map[float64]int)
 
 	var (
-		dist dist2D
+		dist Dist2D
 		bins []Bin2D
 		xmin = math.Inf(+1)
 		xmax = math.Inf(-1)
@@ -342,50 +367,50 @@ scanLoop:
 			_, err = fmt.Fscanf(
 				rbuf,
 				"Total   \tTotal   \t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
-				&d.x.dist.sumW, &d.x.dist.sumW2,
-				&d.x.sumWX, &d.x.sumWX2,
-				&d.y.sumWX, &d.y.sumWX2,
-				&d.sumWXY, &d.x.dist.n,
+				&d.X.Dist.SumW, &d.X.Dist.SumW2,
+				&d.X.SumWX, &d.X.SumWX2,
+				&d.Y.SumWX, &d.Y.SumWX2,
+				&d.SumWXY, &d.X.Dist.N,
 			)
 			if err != nil {
 				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
 			}
-			d.y.dist = d.x.dist
+			d.Y.Dist = d.X.Dist
 			ctx.bins = true
 		case ctx.bins:
 			var bin Bin2D
-			d := &bin.dist
+			d := &bin.Dist
 			_, err = fmt.Fscanf(
 				rbuf,
 				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
-				&bin.xrange.Min, &bin.xrange.Max, &bin.yrange.Min, &bin.yrange.Max,
-				&d.x.dist.sumW, &d.x.dist.sumW2,
-				&d.x.sumWX, &d.x.sumWX2,
-				&d.y.sumWX, &d.y.sumWX2,
-				&d.sumWXY, &d.x.dist.n,
+				&bin.XRange.Min, &bin.XRange.Max, &bin.YRange.Min, &bin.YRange.Max,
+				&d.X.Dist.SumW, &d.X.Dist.SumW2,
+				&d.X.SumWX, &d.X.SumWX2,
+				&d.Y.SumWX, &d.Y.SumWX2,
+				&d.SumWXY, &d.X.Dist.N,
 			)
 			if err != nil {
 				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
 			}
-			d.y.dist = d.x.dist
-			xset[bin.xrange.Min] = 1
-			yset[bin.yrange.Min] = 1
-			xmin = math.Min(xmin, bin.xrange.Min)
-			xmax = math.Max(xmax, bin.xrange.Max)
-			ymin = math.Min(ymin, bin.yrange.Min)
-			ymax = math.Max(ymax, bin.yrange.Max)
+			d.Y.Dist = d.X.Dist
+			xset[bin.XRange.Min] = 1
+			yset[bin.YRange.Min] = 1
+			xmin = math.Min(xmin, bin.XRange.Min)
+			xmax = math.Max(xmax, bin.XRange.Max)
+			ymin = math.Min(ymin, bin.YRange.Min)
+			ymax = math.Max(ymax, bin.YRange.Max)
 			bins = append(bins, bin)
 
 		default:
 			return fmt.Errorf("hbook: invalid H2D-YODA data: %q", string(buf))
 		}
 	}
-	h.bng = newBinning2D(len(xset), xmin, xmax, len(yset), ymin, ymax)
-	h.bng.dist = dist
+	h.Binning = newBinning2D(len(xset), xmin, xmax, len(yset), ymin, ymax)
+	h.Binning.Dist = dist
 	// YODA bins are transposed wrt ours
-	for ix := 0; ix < h.bng.nx; ix++ {
-		for iy := 0; iy < h.bng.ny; iy++ {
-			h.bng.bins[iy*h.bng.nx+ix] = bins[ix*h.bng.ny+iy]
+	for ix := 0; ix < h.Binning.Nx; ix++ {
+		for iy := 0; iy < h.Binning.Ny; iy++ {
+			h.Binning.Bins[iy*h.Binning.Nx+ix] = bins[ix*h.Binning.Ny+iy]
 		}
 	}
 	return err

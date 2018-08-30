@@ -8,10 +8,10 @@ import "testing"
 
 func TestAxis2DCoords(t *testing.T) {
 	bng := newBinning2D(10, -1, 1, 40, -2, +2)
-	if nx, want := bng.nx, 10; nx != want {
+	if nx, want := bng.Nx, 10; nx != want {
 		t.Errorf("got nx=%d. want=%d\n", nx, want)
 	}
-	if ny, want := bng.ny, 40; ny != want {
+	if ny, want := bng.Ny, 40; ny != want {
 		t.Errorf("got ny=%d. want=%d\n", ny, want)
 	}
 	for i, test := range []struct {
@@ -35,26 +35,26 @@ func TestAxis2DCoords(t *testing.T) {
 		{x: +0.9, y: +1.0, want: 309},
 		{x: -1.0, y: +1.9001, want: 390},
 		{x: +0.0, y: +1.9001, want: 395},
-		{x: +0.9, y: +1.9001, want: bng.nx*bng.ny - 1},
-		{x: +0.0, y: +2.0, want: -bngN},
-		{x: +0.0, y: -2.1, want: -bngS},
-		{x: +1.0, y: +2.0, want: -bngNE},
-		{x: +1.0, y: -2.0, want: -bngE},
-		{x: +1.0, y: -2.1, want: -bngSE},
-		{x: -1.1, y: -2.1, want: -bngSW},
-		{x: -1.1, y: -2.0, want: -bngW},
-		{x: -1.1, y: +2.0, want: -bngNW},
+		{x: +0.9, y: +1.9001, want: bng.Nx*bng.Ny - 1},
+		{x: +0.0, y: +2.0, want: -BngN},
+		{x: +0.0, y: -2.1, want: -BngS},
+		{x: +1.0, y: +2.0, want: -BngNE},
+		{x: +1.0, y: -2.0, want: -BngE},
+		{x: +1.0, y: -2.1, want: -BngSE},
+		{x: -1.1, y: -2.1, want: -BngSW},
+		{x: -1.1, y: -2.0, want: -BngW},
+		{x: -1.1, y: +2.0, want: -BngNW},
 	} {
 		got := bng.coordToIndex(test.x, test.y)
 		if got != test.want {
 			t.Errorf("error: coords[%d](%v, %v). got=%d, want=%d\n", i, test.x, test.y, got, test.want)
 			if got >= 0 && test.want >= 0 {
-				gbin := bng.bins[got]
-				wbin := bng.bins[test.want]
-				t.Errorf("got.bin.x= %+v\n", gbin.xrange)
-				t.Errorf("got.bin.y= %+v\n", gbin.yrange)
-				t.Errorf("wnt.bin.x= %+v\n", wbin.xrange)
-				t.Errorf("wnt.bin.y= %+v\n", wbin.yrange)
+				gbin := bng.Bins[got]
+				wbin := bng.Bins[test.want]
+				t.Errorf("got.bin.x= %+v\n", gbin.XRange)
+				t.Errorf("got.bin.y= %+v\n", gbin.YRange)
+				t.Errorf("wnt.bin.x= %+v\n", wbin.XRange)
+				t.Errorf("wnt.bin.y= %+v\n", wbin.YRange)
 			}
 		}
 	}
@@ -71,10 +71,10 @@ func TestAxis2DCoordsFromEdges(t *testing.T) {
 			+2.0,
 		},
 	)
-	if nx, want := bng.nx, 10; nx != want {
+	if nx, want := bng.Nx, 10; nx != want {
 		t.Errorf("got nx=%d. want=%d\n", nx, want)
 	}
-	if ny, want := bng.ny, 40; ny != want {
+	if ny, want := bng.Ny, 40; ny != want {
 		t.Errorf("got ny=%d. want=%d\n", ny, want)
 	}
 	for i, test := range []struct {
@@ -98,15 +98,15 @@ func TestAxis2DCoordsFromEdges(t *testing.T) {
 		{x: +0.9, y: +1.0, want: 309},
 		{x: -1.0, y: +1.9, want: 390},
 		{x: +0.0, y: +1.9, want: 395},
-		{x: +0.9, y: +1.9, want: bng.nx*bng.ny - 1},
-		{x: +0.0, y: +2.0, want: -bngN},
-		{x: +0.0, y: -2.1, want: -bngS},
-		{x: +1.0, y: +2.0, want: -bngNE},
-		{x: +1.0, y: -2.0, want: -bngE},
-		{x: +1.0, y: -2.1, want: -bngSE},
-		{x: -1.1, y: -2.1, want: -bngSW},
-		{x: -1.1, y: -2.0, want: -bngW},
-		{x: -1.1, y: +2.0, want: -bngNW},
+		{x: +0.9, y: +1.9, want: bng.Nx*bng.Ny - 1},
+		{x: +0.0, y: +2.0, want: -BngN},
+		{x: +0.0, y: -2.1, want: -BngS},
+		{x: +1.0, y: +2.0, want: -BngNE},
+		{x: +1.0, y: -2.0, want: -BngE},
+		{x: +1.0, y: -2.1, want: -BngSE},
+		{x: -1.1, y: -2.1, want: -BngSW},
+		{x: -1.1, y: -2.0, want: -BngW},
+		{x: -1.1, y: +2.0, want: -BngNW},
 	} {
 		if got := bng.coordToIndex(test.x, test.y); got != test.want {
 			t.Errorf("error: coords[%d](%v, %v). got=%d, want=%d\n", i, test.x, test.y, got, test.want)

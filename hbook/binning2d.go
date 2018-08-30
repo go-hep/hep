@@ -8,29 +8,29 @@ import "sort"
 
 // indices for the 2D-binning overflows
 const (
-	bngNW int = 1 + iota
-	bngN
-	bngNE
-	bngE
-	bngSE
-	bngS
-	bngSW
-	bngW
+	BngNW int = 1 + iota
+	BngN
+	BngNE
+	BngE
+	BngSE
+	BngS
+	BngSW
+	BngW
 )
 
-type binning2D struct {
-	bins     []Bin2D
-	dist     dist2D
-	outflows [8]dist2D
-	xrange   Range
-	yrange   Range
-	nx       int
-	ny       int
-	xedges   []Bin1D
-	yedges   []Bin1D
+type Binning2D struct {
+	Bins     []Bin2D
+	Dist     Dist2D
+	Outflows [8]Dist2D
+	XRange   Range
+	YRange   Range
+	Nx       int
+	Ny       int
+	XEdges   []Bin1D
+	YEdges   []Bin1D
 }
 
-func newBinning2D(nx int, xlow, xhigh float64, ny int, ylow, yhigh float64) binning2D {
+func newBinning2D(nx int, xlow, xhigh float64, ny int, ylow, yhigh float64) Binning2D {
 	if xlow >= xhigh {
 		panic(errInvalidXAxis)
 	}
@@ -43,39 +43,39 @@ func newBinning2D(nx int, xlow, xhigh float64, ny int, ylow, yhigh float64) binn
 	if ny <= 0 {
 		panic(errEmptyYAxis)
 	}
-	bng := binning2D{
-		bins:   make([]Bin2D, nx*ny),
-		xrange: Range{Min: xlow, Max: xhigh},
-		yrange: Range{Min: ylow, Max: yhigh},
-		nx:     nx,
-		ny:     ny,
-		xedges: make([]Bin1D, nx),
-		yedges: make([]Bin1D, ny),
+	bng := Binning2D{
+		Bins:   make([]Bin2D, nx*ny),
+		XRange: Range{Min: xlow, Max: xhigh},
+		YRange: Range{Min: ylow, Max: yhigh},
+		Nx:     nx,
+		Ny:     ny,
+		XEdges: make([]Bin1D, nx),
+		YEdges: make([]Bin1D, ny),
 	}
-	xwidth := bng.xrange.Width() / float64(bng.nx)
-	ywidth := bng.yrange.Width() / float64(bng.ny)
-	xmin := bng.xrange.Min
-	ymin := bng.yrange.Min
-	for ix := range bng.xedges {
-		xbin := &bng.xedges[ix]
-		xbin.xrange.Min = xmin + float64(ix)*xwidth
-		xbin.xrange.Max = xmin + float64(ix+1)*xwidth
-		for iy := range bng.yedges {
-			ybin := &bng.yedges[iy]
-			ybin.xrange.Min = ymin + float64(iy)*ywidth
-			ybin.xrange.Max = ymin + float64(iy+1)*ywidth
+	xwidth := bng.XRange.Width() / float64(bng.Nx)
+	ywidth := bng.YRange.Width() / float64(bng.Ny)
+	xmin := bng.XRange.Min
+	ymin := bng.YRange.Min
+	for ix := range bng.XEdges {
+		xbin := &bng.XEdges[ix]
+		xbin.Range.Min = xmin + float64(ix)*xwidth
+		xbin.Range.Max = xmin + float64(ix+1)*xwidth
+		for iy := range bng.YEdges {
+			ybin := &bng.YEdges[iy]
+			ybin.Range.Min = ymin + float64(iy)*ywidth
+			ybin.Range.Max = ymin + float64(iy+1)*ywidth
 			i := iy*nx + ix
-			bin := &bng.bins[i]
-			bin.xrange.Min = xbin.xrange.Min
-			bin.xrange.Max = xbin.xrange.Max
-			bin.yrange.Min = ybin.xrange.Min
-			bin.yrange.Max = ybin.xrange.Max
+			bin := &bng.Bins[i]
+			bin.XRange.Min = xbin.Range.Min
+			bin.XRange.Max = xbin.Range.Max
+			bin.YRange.Min = ybin.Range.Min
+			bin.YRange.Max = ybin.Range.Max
 		}
 	}
 	return bng
 }
 
-func newBinning2DFromEdges(xedges, yedges []float64) binning2D {
+func newBinning2DFromEdges(xedges, yedges []float64) Binning2D {
 	if len(xedges) <= 1 {
 		panic(errShortXAxis)
 	}
@@ -96,113 +96,108 @@ func newBinning2DFromEdges(xedges, yedges []float64) binning2D {
 		ylow  = yedges[0]
 		yhigh = yedges[ny]
 	)
-	bng := binning2D{
-		bins:   make([]Bin2D, nx*ny),
-		xrange: Range{Min: xlow, Max: xhigh},
-		yrange: Range{Min: ylow, Max: yhigh},
-		nx:     nx,
-		ny:     ny,
-		xedges: make([]Bin1D, nx),
-		yedges: make([]Bin1D, ny),
+	bng := Binning2D{
+		Bins:   make([]Bin2D, nx*ny),
+		XRange: Range{Min: xlow, Max: xhigh},
+		YRange: Range{Min: ylow, Max: yhigh},
+		Nx:     nx,
+		Ny:     ny,
+		XEdges: make([]Bin1D, nx),
+		YEdges: make([]Bin1D, ny),
 	}
 	for ix, xmin := range xedges[:nx] {
 		xmax := xedges[ix+1]
 		if xmin == xmax {
 			panic(errDupEdgesXAxis)
 		}
-		bng.xedges[ix].xrange.Min = xmin
-		bng.xedges[ix].xrange.Max = xmax
+		bng.XEdges[ix].Range.Min = xmin
+		bng.XEdges[ix].Range.Max = xmax
 		for iy, ymin := range yedges[:ny] {
 			ymax := yedges[iy+1]
 			if ymin == ymax {
 				panic(errDupEdgesYAxis)
 			}
 			i := iy*nx + ix
-			bin := &bng.bins[i]
-			bin.xrange.Min = xmin
-			bin.xrange.Max = xmax
-			bin.yrange.Min = ymin
-			bin.yrange.Max = ymax
+			bin := &bng.Bins[i]
+			bin.XRange.Min = xmin
+			bin.XRange.Max = xmax
+			bin.YRange.Min = ymin
+			bin.YRange.Max = ymax
 		}
 	}
 	for iy, ymin := range yedges[:ny] {
 		ymax := yedges[iy+1]
-		bng.yedges[iy].xrange.Min = ymin
-		bng.yedges[iy].xrange.Max = ymax
+		bng.YEdges[iy].Range.Min = ymin
+		bng.YEdges[iy].Range.Max = ymax
 	}
 	return bng
 }
 
-func (bng *binning2D) entries() int64 {
-	return bng.dist.Entries()
+func (bng *Binning2D) entries() int64 {
+	return bng.Dist.Entries()
 }
 
-func (bng *binning2D) effEntries() float64 {
-	return bng.dist.EffEntries()
+func (bng *Binning2D) effEntries() float64 {
+	return bng.Dist.EffEntries()
 }
 
 // xMin returns the low edge of the X-axis
-func (bng *binning2D) xMin() float64 {
-	return bng.xrange.Min
+func (bng *Binning2D) xMin() float64 {
+	return bng.XRange.Min
 }
 
 // xMax returns the high edge of the X-axis
-func (bng *binning2D) xMax() float64 {
-	return bng.xrange.Max
+func (bng *Binning2D) xMax() float64 {
+	return bng.XRange.Max
 }
 
 // yMin returns the low edge of the Y-axis
-func (bng *binning2D) yMin() float64 {
-	return bng.yrange.Min
+func (bng *Binning2D) yMin() float64 {
+	return bng.YRange.Min
 }
 
 // yMax returns the high edge of the Y-axis
-func (bng *binning2D) yMax() float64 {
-	return bng.yrange.Max
+func (bng *Binning2D) yMax() float64 {
+	return bng.YRange.Max
 }
 
-func (bng *binning2D) fill(x, y, w float64) {
+func (bng *Binning2D) fill(x, y, w float64) {
 	idx := bng.coordToIndex(x, y)
-	bng.dist.fill(x, y, w)
-	if idx == len(bng.bins) {
+	bng.Dist.fill(x, y, w)
+	if idx == len(bng.Bins) {
 		// GAP bin
 		return
 	}
 	if idx < 0 {
-		bng.outflows[-idx-1].fill(x, y, w)
+		bng.Outflows[-idx-1].fill(x, y, w)
 		return
 	}
-	bng.bins[idx].fill(x, y, w)
+	bng.Bins[idx].fill(x, y, w)
 }
 
-func (bng *binning2D) coordToIndex(x, y float64) int {
-	ix := Bin1Ds(bng.xedges).IndexOf(x)
-	iy := Bin1Ds(bng.yedges).IndexOf(y)
+func (bng *Binning2D) coordToIndex(x, y float64) int {
+	ix := Bin1Ds(bng.XEdges).IndexOf(x)
+	iy := Bin1Ds(bng.YEdges).IndexOf(y)
 
 	switch {
-	case ix == bng.nx && iy == bng.ny: // GAP
-		return len(bng.bins)
-	case ix == OverflowBin && iy == OverflowBin:
-		return -bngNE
-	case ix == OverflowBin && iy == UnderflowBin:
-		return -bngSE
-	case ix == UnderflowBin && iy == UnderflowBin:
-		return -bngSW
-	case ix == UnderflowBin && iy == OverflowBin:
-		return -bngNW
-	case ix == OverflowBin:
-		return -bngE
-	case ix == UnderflowBin:
-		return -bngW
-	case iy == OverflowBin:
-		return -bngN
-	case iy == UnderflowBin:
-		return -bngS
+	case ix == bng.Nx && iy == bng.Ny: // GAP
+		return len(bng.Bins)
+	case ix == OverflowBin1D && iy == OverflowBin1D:
+		return -BngNE
+	case ix == OverflowBin1D && iy == UnderflowBin1D:
+		return -BngSE
+	case ix == UnderflowBin1D && iy == UnderflowBin1D:
+		return -BngSW
+	case ix == UnderflowBin1D && iy == OverflowBin1D:
+		return -BngNW
+	case ix == OverflowBin1D:
+		return -BngE
+	case ix == UnderflowBin1D:
+		return -BngW
+	case iy == OverflowBin1D:
+		return -BngN
+	case iy == UnderflowBin1D:
+		return -BngS
 	}
-	return iy*bng.nx + ix
-}
-
-// Bins returns the slice of bins for this binning.
-func (bng *binning2D) Bins() []Bin2D {
-	return bng.bins
+	return iy*bng.Nx + ix
 }

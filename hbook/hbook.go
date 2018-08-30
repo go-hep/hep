@@ -15,8 +15,8 @@ import (
 	"strings"
 )
 
-//go:generate brio-gen -p go-hep.org/x/hep/hbook -t dist0D,dist1D,dist2D -o dist_brio.go
-//go:generate brio-gen -p go-hep.org/x/hep/hbook -t Range,binning1D,binningP1D,Bin1D,BinP1D,binning2D,Bin2D -o binning_brio.go
+//go:generate brio-gen -p go-hep.org/x/hep/hbook -t Dist0D,Dist1D,Dist2D -o dist_brio.go
+//go:generate brio-gen -p go-hep.org/x/hep/hbook -t Range,Binning1D,BinningP1D,Bin1D,BinP1D,Binning2D,Bin2D -o binning_brio.go
 //go:generate brio-gen -p go-hep.org/x/hep/hbook -t Point2D -o points_brio.go
 //go:generate brio-gen -p go-hep.org/x/hep/hbook -t H1D,H2D,P1D,S2D -o hbook_brio.go
 

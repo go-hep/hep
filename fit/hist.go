@@ -20,7 +20,7 @@ func H1D(h *hbook.H1D, f Func1D, settings *optimize.Settings, m optimize.Method)
 		xdata = make([]float64, 0, n)
 		ydata = make([]float64, 0, n)
 		yerrs = make([]float64, 0, n)
-		bins  = h.Binning().Bins()
+		bins  = h.Binning.Bins
 	)
 
 	for _, bin := range bins {

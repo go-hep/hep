@@ -36,14 +36,14 @@ func NewH1DFrom(h *hbook.H1D) *H1D {
 		edges = make([]float64, 0, nbins+1)
 		sumw  = make([]float64, 0, nbins+2)
 		sumw2 = make([]float64, 0, nbins+2)
-		uflow = h.Binning().Underflow()
-		oflow = h.Binning().Overflow()
+		uflow = h.Binning.Underflow()
+		oflow = h.Binning.Overflow()
 	)
 
 	sumw = append(sumw, uflow.SumW())
 	sumw2 = append(sumw2, uflow.SumW2())
 
-	for i, bin := range h.Binning().Bins() {
+	for i, bin := range h.Binning.Bins {
 		if i == 0 {
 			edges = append(edges, bin.XMin())
 		}

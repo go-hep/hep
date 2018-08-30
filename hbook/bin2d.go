@@ -6,82 +6,82 @@ package hbook
 
 // Bin2D models a bin in a 2-dim space.
 type Bin2D struct {
-	xrange Range
-	yrange Range
-	dist   dist2D
+	XRange Range
+	YRange Range
+	Dist   Dist2D
 }
 
 // Rank returns the number of dimensions for this bin.
 func (Bin2D) Rank() int { return 2 }
 
 func (b *Bin2D) scaleW(f float64) {
-	b.dist.scaleW(f)
+	b.Dist.scaleW(f)
 }
 
 func (b *Bin2D) fill(x, y, w float64) {
-	b.dist.fill(x, y, w)
+	b.Dist.fill(x, y, w)
 }
 
 // Entries returns the number of entries in this bin.
 func (b *Bin2D) Entries() int64 {
-	return b.dist.Entries()
+	return b.Dist.Entries()
 }
 
 // EffEntries returns the effective number of entries \f$ = (\sum w)^2 / \sum w^2 \f$
 func (b *Bin2D) EffEntries() float64 {
-	return b.dist.EffEntries()
+	return b.Dist.EffEntries()
 }
 
 // SumW returns the sum of weights in this bin.
 func (b *Bin2D) SumW() float64 {
-	return b.dist.SumW()
+	return b.Dist.SumW()
 }
 
 // SumW2 returns the sum of squared weights in this bin.
 func (b *Bin2D) SumW2() float64 {
-	return b.dist.SumW2()
+	return b.Dist.SumW2()
 }
 
 // XEdges returns the [low,high] edges of this bin.
 func (b *Bin2D) XEdges() Range {
-	return b.xrange
+	return b.XRange
 }
 
 // YEdges returns the [low,high] edges of this bin.
 func (b *Bin2D) YEdges() Range {
-	return b.yrange
+	return b.YRange
 }
 
 // XMin returns the lower limit of the bin (inclusive).
 func (b *Bin2D) XMin() float64 {
-	return b.xrange.Min
+	return b.XRange.Min
 }
 
 // YMin returns the lower limit of the bin (inclusive).
 func (b *Bin2D) YMin() float64 {
-	return b.yrange.Min
+	return b.YRange.Min
 }
 
 // XMax returns the upper limit of the bin (exclusive).
 func (b *Bin2D) XMax() float64 {
-	return b.xrange.Max
+	return b.XRange.Max
 }
 
 // YMax returns the upper limit of the bin (exclusive).
 func (b *Bin2D) YMax() float64 {
-	return b.yrange.Max
+	return b.YRange.Max
 }
 
 // XMid returns the geometric center of the bin.
 // i.e.: 0.5*(high+low)
 func (b *Bin2D) XMid() float64 {
-	return 0.5 * (b.xrange.Min + b.xrange.Max)
+	return 0.5 * (b.XRange.Min + b.XRange.Max)
 }
 
 // YMid returns the geometric center of the bin.
 // i.e.: 0.5*(high+low)
 func (b *Bin2D) YMid() float64 {
-	return 0.5 * (b.yrange.Min + b.yrange.Max)
+	return 0.5 * (b.YRange.Min + b.YRange.Max)
 }
 
 // XYMid returns the (x,y) coordinates of the geometric center of the bin.
@@ -92,12 +92,12 @@ func (b *Bin2D) XYMid() (float64, float64) {
 
 // XWidth returns the (signed) width of the bin
 func (b *Bin2D) XWidth() float64 {
-	return b.xrange.Max - b.xrange.Min
+	return b.XRange.Max - b.XRange.Min
 }
 
 // YWidth returns the (signed) width of the bin
 func (b *Bin2D) YWidth() float64 {
-	return b.yrange.Max - b.yrange.Min
+	return b.YRange.Max - b.YRange.Min
 }
 
 // XYWidth returns the (signed) (x,y) widths of the bin
@@ -134,52 +134,52 @@ func (b *Bin2D) XYFocus() (float64, float64) {
 
 // XMean returns the mean X.
 func (b *Bin2D) XMean() float64 {
-	return b.dist.xMean()
+	return b.Dist.xMean()
 }
 
 // YMean returns the mean Y.
 func (b *Bin2D) YMean() float64 {
-	return b.dist.yMean()
+	return b.Dist.yMean()
 }
 
 // XVariance returns the variance in X.
 func (b *Bin2D) XVariance() float64 {
-	return b.dist.xVariance()
+	return b.Dist.xVariance()
 }
 
 // YVariance returns the variance in Y.
 func (b *Bin2D) YVariance() float64 {
-	return b.dist.yVariance()
+	return b.Dist.yVariance()
 }
 
 // XStdDev returns the standard deviation in X.
 func (b *Bin2D) XStdDev() float64 {
-	return b.dist.xStdDev()
+	return b.Dist.xStdDev()
 }
 
 // YStdDev returns the standard deviation in Y.
 func (b *Bin2D) YStdDev() float64 {
-	return b.dist.yStdDev()
+	return b.Dist.yStdDev()
 }
 
 // XStdErr returns the standard error in X.
 func (b *Bin2D) XStdErr() float64 {
-	return b.dist.xStdErr()
+	return b.Dist.xStdErr()
 }
 
 // YStdErr returns the standard error in Y.
 func (b *Bin2D) YStdErr() float64 {
-	return b.dist.yStdErr()
+	return b.Dist.yStdErr()
 }
 
 // XRMS returns the RMS in X.
 func (b *Bin2D) XRMS() float64 {
-	return b.dist.xRMS()
+	return b.Dist.xRMS()
 }
 
 // YRMS returns the RMS in Y.
 func (b *Bin2D) YRMS() float64 {
-	return b.dist.yRMS()
+	return b.Dist.yRMS()
 }
 
 // check Bin2D implements interfaces

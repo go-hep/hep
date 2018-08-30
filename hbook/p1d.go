@@ -40,7 +40,7 @@ func NewP1DFromH1D(s*S2D) *P1D {
 // NewP1DFromH1D creates a 1-dim profile histogram from a 1-dim histogram's binning.
 func NewP1DFromH1D(h *H1D) *P1D {
 	return &P1D{
-		bng: newBinningP1D(len(h.Binning().Bins()), h.XMin(), h.XMax()),
+		bng: newBinningP1D(len(h.Binning.Bins), h.XMin(), h.XMax()),
 		ann: make(Annotation),
 	}
 }
@@ -261,8 +261,8 @@ func (p *P1D) UnmarshalYODA(data []byte) error {
 	xset := make(map[float64]int)
 
 	var (
-		dist   dist2D
-		oflows [2]dist2D
+		dist   Dist2D
+		oflows [2]Dist2D
 		bins   []BinP1D
 		xmin   = math.Inf(+1)
 		xmax   = math.Inf(-1)
@@ -284,45 +284,45 @@ scanLoop:
 			_, err = fmt.Fscanf(
 				rbuf,
 				"Total   \tTotal   \t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
-				&d.x.dist.sumW, &d.x.dist.sumW2,
-				&d.x.sumWX, &d.x.sumWX2,
-				&d.y.sumWX, &d.y.sumWX2,
-				&d.x.dist.n,
+				&d.X.Dist.SumW, &d.X.Dist.SumW2,
+				&d.X.SumWX, &d.X.SumWX2,
+				&d.Y.SumWX, &d.Y.SumWX2,
+				&d.X.Dist.N,
 			)
 			if err != nil {
 				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
 			}
-			d.y.dist.n = d.x.dist.n
+			d.Y.Dist.N = d.X.Dist.N
 		case !ctx.under && bytes.HasPrefix(buf, []byte("Underflow\t")):
 			ctx.under = true
 			d := &oflows[0]
 			_, err = fmt.Fscanf(
 				rbuf,
 				"Underflow\tUnderflow\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
-				&d.x.dist.sumW, &d.x.dist.sumW2,
-				&d.x.sumWX, &d.x.sumWX2,
-				&d.y.sumWX, &d.y.sumWX2,
-				&d.x.dist.n,
+				&d.X.Dist.SumW, &d.X.Dist.SumW2,
+				&d.X.SumWX, &d.X.SumWX2,
+				&d.Y.SumWX, &d.Y.SumWX2,
+				&d.X.Dist.N,
 			)
 			if err != nil {
 				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
 			}
-			d.y.dist.n = d.x.dist.n
+			d.Y.Dist.N = d.X.Dist.N
 		case !ctx.over && bytes.HasPrefix(buf, []byte("Overflow\t")):
 			ctx.over = true
 			d := &oflows[1]
 			_, err = fmt.Fscanf(
 				rbuf,
 				"Overflow\tOverflow\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
-				&d.x.dist.sumW, &d.x.dist.sumW2,
-				&d.x.sumWX, &d.x.sumWX2,
-				&d.y.sumWX, &d.y.sumWX2,
-				&d.x.dist.n,
+				&d.X.Dist.SumW, &d.X.Dist.SumW2,
+				&d.X.SumWX, &d.X.SumWX2,
+				&d.Y.SumWX, &d.Y.SumWX2,
+				&d.X.Dist.N,
 			)
 			if err != nil {
 				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
 			}
-			d.y.dist.n = d.x.dist.n
+			d.Y.Dist.N = d.X.Dist.N
 			ctx.bins = true
 		case ctx.bins:
 			var bin BinP1D
@@ -331,15 +331,15 @@ scanLoop:
 				rbuf,
 				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				&bin.xrange.Min, &bin.xrange.Max,
-				&d.x.dist.sumW, &d.x.dist.sumW2,
-				&d.x.sumWX, &d.x.sumWX2,
-				&d.y.sumWX, &d.y.sumWX2,
-				&d.x.dist.n,
+				&d.X.Dist.SumW, &d.X.Dist.SumW2,
+				&d.X.SumWX, &d.X.SumWX2,
+				&d.Y.SumWX, &d.Y.SumWX2,
+				&d.X.Dist.N,
 			)
 			if err != nil {
 				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
 			}
-			d.y.dist.n = d.x.dist.n
+			d.Y.Dist.N = d.X.Dist.N
 			xset[bin.xrange.Min] = 1
 			xmin = math.Min(xmin, bin.xrange.Min)
 			xmax = math.Max(xmax, bin.xrange.Max)
@@ -359,8 +359,8 @@ scanLoop:
 // binningP1D is a 1-dim binning for 1-dim profile histograms.
 type binningP1D struct {
 	bins     []BinP1D
-	dist     dist2D
-	outflows [2]dist2D
+	dist     Dist2D
+	outflows [2]Dist2D
 	xrange   Range
 	xstep    float64
 }
@@ -422,9 +422,9 @@ func (bng *binningP1D) coordToIndex(x float64) int {
 		i := int((x - bng.xrange.Min) * bng.xstep)
 		return i
 	case x < bng.xrange.Min:
-		return UnderflowBin
+		return UnderflowBin1D
 	case x >= bng.xrange.Max:
-		return OverflowBin
+		return OverflowBin1D
 	}
 }
 
@@ -446,7 +446,7 @@ func (bng *binningP1D) Bins() []BinP1D {
 // BinP1D models a bin in a 1-dim space.
 type BinP1D struct {
 	xrange Range
-	dist   dist2D
+	dist   Dist2D
 }
 
 // Rank returns the number of dimensions for this bin.

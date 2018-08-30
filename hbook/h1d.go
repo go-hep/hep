@@ -18,15 +18,15 @@ import (
 
 // H1D is a 1-dim histogram with weighted entries.
 type H1D struct {
-	bng binning1D
-	ann Annotation
+	Binning Binning1D
+	Ann     Annotation
 }
 
 // NewH1D returns a 1-dim histogram with n bins between xmin and xmax.
 func NewH1D(n int, xmin, xmax float64) *H1D {
 	return &H1D{
-		bng: newBinning1D(n, xmin, xmax),
-		ann: make(Annotation),
+		Binning: newBinning1D(n, xmin, xmax),
+		Ann:     make(Annotation),
 	}
 }
 
@@ -37,8 +37,8 @@ func NewH1D(n int, xmin, xmax float64) *H1D {
 // It panics if there are duplicate edge values.
 func NewH1DFromEdges(edges []float64) *H1D {
 	return &H1D{
-		bng: newBinning1DFromEdges(edges),
-		ann: make(Annotation),
+		Binning: newBinning1DFromEdges(edges),
+		Ann:     make(Annotation),
 	}
 }
 
@@ -47,14 +47,14 @@ func NewH1DFromEdges(edges []float64) *H1D {
 // It panics if the bins overlap.
 func NewH1DFromBins(bins ...Range) *H1D {
 	return &H1D{
-		bng: newBinning1DFromBins(bins),
-		ann: make(Annotation),
+		Binning: newBinning1DFromBins(bins),
+		Ann:     make(Annotation),
 	}
 }
 
 // Name returns the name of this histogram, if any
 func (h *H1D) Name() string {
-	v, ok := h.ann["name"]
+	v, ok := h.Ann["name"]
 	if !ok {
 		return ""
 	}
@@ -67,7 +67,7 @@ func (h *H1D) Name() string {
 
 // Annotation returns the annotations attached to this histogram
 func (h *H1D) Annotation() Annotation {
-	return h.ann
+	return h.Ann
 }
 
 // Rank returns the number of dimensions for this histogram
@@ -77,89 +77,84 @@ func (h *H1D) Rank() int {
 
 // Entries returns the number of entries in this histogram
 func (h *H1D) Entries() int64 {
-	return h.bng.entries()
+	return h.Binning.entries()
 }
 
 // EffEntries returns the number of effective entries in this histogram
 func (h *H1D) EffEntries() float64 {
-	return h.bng.effEntries()
-}
-
-// Binning returns the binning of this histogram
-func (h *H1D) Binning() *binning1D {
-	return &h.bng
+	return h.Binning.effEntries()
 }
 
 // SumW returns the sum of weights in this histogram.
 // Overflows are included in the computation.
 func (h *H1D) SumW() float64 {
-	return h.bng.dist.SumW()
+	return h.Binning.Dist.SumW()
 }
 
 // SumW2 returns the sum of squared weights in this histogram.
 // Overflows are included in the computation.
 func (h *H1D) SumW2() float64 {
-	return h.bng.dist.SumW2()
+	return h.Binning.Dist.SumW2()
 }
 
 // SumWX returns the 1st order weighted x moment
 func (h *H1D) SumWX() float64 {
-	return h.bng.dist.SumWX()
+	return h.Binning.Dist.SumWX
 }
 
 // SumWX2 returns the 2nd order weighted x moment
 func (h *H1D) SumWX2() float64 {
-	return h.bng.dist.SumWX2()
+	return h.Binning.Dist.SumWX2
 }
 
 // XMean returns the mean X.
 // Overflows are included in the computation.
 func (h *H1D) XMean() float64 {
-	return h.bng.dist.mean()
+	return h.Binning.Dist.mean()
 }
 
 // XVariance returns the variance in X.
 // Overflows are included in the computation.
 func (h *H1D) XVariance() float64 {
-	return h.bng.dist.variance()
+	return h.Binning.Dist.variance()
 }
 
 // XStdDev returns the standard deviation in X.
 // Overflows are included in the computation.
 func (h *H1D) XStdDev() float64 {
-	return h.bng.dist.stdDev()
+	return h.Binning.Dist.stdDev()
 }
 
 // XStdErr returns the standard error in X.
 // Overflows are included in the computation.
 func (h *H1D) XStdErr() float64 {
-	return h.bng.dist.stdErr()
+	return h.Binning.Dist.stdErr()
 }
 
 // XRMS returns the XRMS in X.
 // Overflows are included in the computation.
 func (h *H1D) XRMS() float64 {
-	return h.bng.dist.rms()
+	return h.Binning.Dist.rms()
 }
 
 // Fill fills this histogram with x and weight w.
 func (h *H1D) Fill(x, w float64) {
-	h.bng.fill(x, w)
+	h.Binning.fill(x, w)
 }
 
 // XMin returns the low edge of the X-axis of this histogram.
 func (h *H1D) XMin() float64 {
-	return h.bng.xMin()
+	return h.Binning.xMin()
 }
 
 // XMax returns the high edge of the X-axis of this histogram.
 func (h *H1D) XMax() float64 {
-	return h.bng.xMax()
+	return h.Binning.xMax()
 }
 
 // Scale scales the content of each bin by the given factor.
 func (h *H1D) Scale(factor float64) {
-	h.bng.scaleW(factor)
+	h.Binning.scaleW(factor)
 }
 
 // Integral computes the integral of the histogram.
@@ -201,17 +196,17 @@ func (h *H1D) Integral(args ...float64) float64 {
 	}
 
 	integral := 0.0
-	for _, bin := range h.bng.bins {
-		v := bin.xrange.Min
+	for _, bin := range h.Binning.Bins {
+		v := bin.Range.Min
 		if min <= v && v < max {
 			integral += bin.SumW()
 		}
 	}
 	if math.IsInf(min, -1) {
-		integral += h.bng.outflows[0].SumW()
+		integral += h.Binning.Outflows[0].SumW()
 	}
 	if math.IsInf(max, +1) {
-		integral += h.bng.outflows[1].SumW()
+		integral += h.Binning.Outflows[1].SumW()
 	}
 	return integral
 }
@@ -220,22 +215,22 @@ func (h *H1D) Integral(args ...float64) float64 {
 //
 // Value implements gonum/plot/plotter.Valuer
 func (h *H1D) Value(i int) float64 {
-	return h.bng.bins[i].SumW()
+	return h.Binning.Bins[i].SumW()
 }
 
 // Len returns the number of bins for this histogram
 //
 // Len implements gonum/plot/plotter.Valuer
 func (h *H1D) Len() int {
-	return len(h.bng.bins)
+	return len(h.Binning.Bins)
 }
 
 // XY returns the x,y values for the i-th bin
 //
 // XY implements gonum/plot/plotter.XYer
 func (h *H1D) XY(i int) (float64, float64) {
-	bin := h.bng.bins[i]
-	x := bin.xrange.Min
+	bin := h.Binning.Bins[i]
+	x := bin.Range.Min
 	y := bin.SumW()
 	return x, y
 }
@@ -246,7 +241,7 @@ func (h *H1D) DataRange() (xmin, xmax, ymin, ymax float64) {
 	xmax = h.XMax()
 	ymin = +math.MaxFloat64
 	ymax = -math.MaxFloat64
-	for _, b := range h.bng.bins {
+	for _, b := range h.Binning.Bins {
 		v := b.SumW()
 		ymax = math.Max(ymax, v)
 		ymin = math.Min(ymin, v)
@@ -293,11 +288,11 @@ func (h *H1D) RioVersion() rio.Version {
 
 // annToYODA creates a new Annotation with fields compatible with YODA
 func (h *H1D) annToYODA() Annotation {
-	ann := make(Annotation, len(h.ann))
+	ann := make(Annotation, len(h.Ann))
 	ann["Type"] = "Histo1D"
 	ann["Path"] = "/" + h.Name()
 	ann["Title"] = ""
-	for k, v := range h.ann {
+	for k, v := range h.Ann {
 		if k == "name" {
 			continue
 		}
@@ -308,17 +303,17 @@ func (h *H1D) annToYODA() Annotation {
 
 // annFromYODA creates a new Annotation from YODA compatible fields
 func (h *H1D) annFromYODA(ann Annotation) {
-	if len(h.ann) == 0 {
-		h.ann = make(Annotation, len(ann))
+	if len(h.Ann) == 0 {
+		h.Ann = make(Annotation, len(ann))
 	}
 	for k, v := range ann {
 		switch k {
 		case "Type":
 			// noop
 		case "Path":
-			h.ann["name"] = string(v.(string)[1:]) // skip leading '/'
+			h.Ann["name"] = string(v.(string)[1:]) // skip leading '/'
 		default:
-			h.ann[k] = v
+			h.Ann[k] = v
 		}
 	}
 }
@@ -338,35 +333,35 @@ func (h *H1D) MarshalYODA() ([]byte, error) {
 	fmt.Fprintf(buf, "# Area: %e\n", h.Integral())
 
 	fmt.Fprintf(buf, "# ID\t ID\t sumw\t sumw2\t sumwx\t sumwx2\t numEntries\n")
-	d := h.bng.dist
+	d := h.Binning.Dist
 	fmt.Fprintf(
 		buf,
 		"Total   \tTotal   \t%e\t%e\t%e\t%e\t%d\n",
-		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.Entries(),
+		d.SumW(), d.SumW2(), d.SumWX, d.SumWX2, d.Entries(),
 	)
-	d = h.bng.outflows[0]
+	d = h.Binning.Outflows[0]
 	fmt.Fprintf(
 		buf,
 		"Underflow\tUnderflow\t%e\t%e\t%e\t%e\t%d\n",
-		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.Entries(),
+		d.SumW(), d.SumW2(), d.SumWX, d.SumWX2, d.Entries(),
 	)
 
-	d = h.bng.outflows[1]
+	d = h.Binning.Outflows[1]
 	fmt.Fprintf(
 		buf,
 		"Overflow\tOverflow\t%e\t%e\t%e\t%e\t%d\n",
-		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.Entries(),
+		d.SumW(), d.SumW2(), d.SumWX, d.SumWX2, d.Entries(),
 	)
 
 	// bins
 	fmt.Fprintf(buf, "# xlow\t xhigh\t sumw\t sumw2\t sumwx\t sumwx2\t numEntries\n")
-	for _, bin := range h.bng.bins {
-		d := bin.dist
+	for _, bin := range h.Binning.Bins {
+		d := bin.Dist
 		fmt.Fprintf(
 			buf,
 			"%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
-			bin.xrange.Min, bin.xrange.Max,
-			d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.Entries(),
+			bin.Range.Min, bin.Range.Max,
+			d.SumW(), d.SumW2(), d.SumWX, d.SumWX2, d.Entries(),
 		)
 	}
 	fmt.Fprintf(buf, "END YODA_HISTO1D\n\n")
@@ -405,8 +400,8 @@ func (h *H1D) UnmarshalYODA(data []byte) error {
 	xset := make(map[float64]int)
 
 	var (
-		dist   dist1D
-		oflows [2]dist1D
+		dist   Dist1D
+		oflows [2]Dist1D
 		bins   []Bin1D
 		xmin   = math.Inf(+1)
 		xmax   = math.Inf(-1)
@@ -428,9 +423,9 @@ scanLoop:
 			_, err = fmt.Fscanf(
 				rbuf,
 				"Total   \tTotal   \t%e\t%e\t%e\t%e\t%d\n",
-				&d.dist.sumW, &d.dist.sumW2,
-				&d.sumWX, &d.sumWX2,
-				&d.dist.n,
+				&d.Dist.SumW, &d.Dist.SumW2,
+				&d.SumWX, &d.SumWX2,
+				&d.Dist.N,
 			)
 			if err != nil {
 				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
@@ -441,9 +436,9 @@ scanLoop:
 			_, err = fmt.Fscanf(
 				rbuf,
 				"Underflow\tUnderflow\t%e\t%e\t%e\t%e\t%d\n",
-				&d.dist.sumW, &d.dist.sumW2,
-				&d.sumWX, &d.sumWX2,
-				&d.dist.n,
+				&d.Dist.SumW, &d.Dist.SumW2,
+				&d.SumWX, &d.SumWX2,
+				&d.Dist.N,
 			)
 			if err != nil {
 				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
@@ -454,9 +449,9 @@ scanLoop:
 			_, err = fmt.Fscanf(
 				rbuf,
 				"Overflow\tOverflow\t%e\t%e\t%e\t%e\t%d\n",
-				&d.dist.sumW, &d.dist.sumW2,
-				&d.sumWX, &d.sumWX2,
-				&d.dist.n,
+				&d.Dist.SumW, &d.Dist.SumW2,
+				&d.SumWX, &d.SumWX2,
+				&d.Dist.N,
 			)
 			if err != nil {
 				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
@@ -464,32 +459,32 @@ scanLoop:
 			ctx.bins = true
 		case ctx.bins:
 			var bin Bin1D
-			d := &bin.dist
+			d := &bin.Dist
 			_, err = fmt.Fscanf(
 				rbuf,
 				"%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
-				&bin.xrange.Min, &bin.xrange.Max,
-				&d.dist.sumW, &d.dist.sumW2,
-				&d.sumWX, &d.sumWX2,
-				&d.dist.n,
+				&bin.Range.Min, &bin.Range.Max,
+				&d.Dist.SumW, &d.Dist.SumW2,
+				&d.SumWX, &d.SumWX2,
+				&d.Dist.N,
 			)
 			if err != nil {
 				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
 			}
-			xset[bin.xrange.Min] = 1
-			xmin = math.Min(xmin, bin.xrange.Min)
-			xmax = math.Max(xmax, bin.xrange.Max)
+			xset[bin.Range.Min] = 1
+			xmin = math.Min(xmin, bin.Range.Min)
+			xmax = math.Max(xmax, bin.Range.Max)
 			bins = append(bins, bin)
 
 		default:
 			return fmt.Errorf("hbook: invalid H1D-YODA data: %q", string(buf))
 		}
 	}
-	h.bng = binning1D{
-		bins:     bins,
-		dist:     dist,
-		outflows: oflows,
-		xrange:   Range{xmin, xmax},
+	h.Binning = Binning1D{
+		Bins:     bins,
+		Dist:     dist,
+		Outflows: oflows,
+		XRange:   Range{xmin, xmax},
 	}
 	return err
 }

@@ -103,12 +103,12 @@ func TestH1DEdges(t *testing.T) {
 		t.Errorf("got xmax=%v. want=%v", got, want)
 	}
 
-	bins := hbook.Bin1Ds(h.Binning().Bins())
+	bins := hbook.Bin1Ds(h.Binning.Bins)
 	for _, test := range []struct {
 		v    float64
 		want int
 	}{
-		{v: -4.1, want: hbook.UnderflowBin},
+		{v: -4.1, want: hbook.UnderflowBin1D},
 		{v: -4.0, want: 0},
 		{v: -3.6, want: 1},
 		{v: -3.2, want: 2},
@@ -129,7 +129,7 @@ func TestH1DEdges(t *testing.T) {
 		{v: +2.8, want: 17},
 		{v: +3.2, want: 18},
 		{v: +3.6, want: 19},
-		{v: +4.0, want: hbook.OverflowBin},
+		{v: +4.0, want: hbook.OverflowBin1D},
 	} {
 		idx := bins.IndexOf(test.v)
 		if idx != test.want {
@@ -151,12 +151,12 @@ func TestH1DBins(t *testing.T) {
 	if got, want := h.XMax(), +4.0; got != want {
 		t.Errorf("got xmax=%v. want=%v", got, want)
 	}
-	bins := hbook.Bin1Ds(h.Binning().Bins())
+	bins := hbook.Bin1Ds(h.Binning.Bins)
 	for _, test := range []struct {
 		v    float64
 		want int
 	}{
-		{v: -4.1, want: hbook.UnderflowBin},
+		{v: -4.1, want: hbook.UnderflowBin1D},
 		{v: -4.0, want: 0},
 		{v: -3.6, want: 1},
 		{v: -3.2, want: 2},
@@ -177,7 +177,7 @@ func TestH1DBins(t *testing.T) {
 		{v: +2.8, want: 17},
 		{v: +3.2, want: 18},
 		{v: +3.6, want: 19},
-		{v: +4.0, want: hbook.OverflowBin},
+		{v: +4.0, want: hbook.OverflowBin1D},
 	} {
 		idx := bins.IndexOf(test.v)
 		if idx != test.want {
@@ -198,12 +198,12 @@ func TestH1DBinsWithGaps(t *testing.T) {
 		t.Errorf("got xmax=%v. want=%v", got, want)
 	}
 
-	bins := hbook.Bin1Ds(h1.Binning().Bins())
+	bins := hbook.Bin1Ds(h1.Binning.Bins)
 	for _, test := range []struct {
 		v    float64
 		want int
 	}{
-		{v: -20, want: hbook.UnderflowBin},
+		{v: -20, want: hbook.UnderflowBin1D},
 		{v: -10, want: 0},
 		{v: -9, want: 0},
 		{v: -5, want: 1},
@@ -211,7 +211,7 @@ func TestH1DBinsWithGaps(t *testing.T) {
 		{v: 4.5, want: len(bins)},
 		{v: 5, want: 3},
 		{v: 6, want: 3},
-		{v: 10, want: hbook.OverflowBin},
+		{v: 10, want: hbook.OverflowBin1D},
 	} {
 		idx := bins.IndexOf(test.v)
 		if idx != test.want {
