@@ -72,3 +72,8 @@ func FromH1D(h1 *hbook.H1D) *rootio.H1D {
 func FromH2D(h2 *hbook.H2D) *rootio.H2D {
 	return rootio.NewH2DFrom(h2)
 }
+
+// FromS2D creates a new ROOT TGraphAsymmErrors from 2-dim hbook data points.
+func FromS2D(s2 *hbook.S2D) rootio.GraphErrors {
+	return rootio.NewGraphAsymmErrorsFrom(s2)
+}

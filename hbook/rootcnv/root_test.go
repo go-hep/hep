@@ -549,3 +549,32 @@ func TestFromH2D(t *testing.T) {
 		})
 	}
 }
+
+func TestFromS2D(t *testing.T) {
+	hg := hbook.NewS2D(
+		hbook.Point2D{X: 1, Y: 1, ErrX: hbook.Range{Min: 1, Max: 2}, ErrY: hbook.Range{Min: 3, Max: 4}},
+		hbook.Point2D{X: 2, Y: 1.5, ErrX: hbook.Range{Min: 1, Max: 2}, ErrY: hbook.Range{Min: 3, Max: 4}},
+		hbook.Point2D{X: -1, Y: +2, ErrX: hbook.Range{Min: 1, Max: 2}, ErrY: hbook.Range{Min: 3, Max: 4}},
+	)
+
+	rg := rootcnv.FromS2D(hg)
+
+	hr, err := rootcnv.S2D(rg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want, err := hg.MarshalYODA()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := hr.MarshalYODA()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(got, want) {
+		t.Fatalf("got:\n%s\nwant:\n%s\n", got, want)
+	}
+}
