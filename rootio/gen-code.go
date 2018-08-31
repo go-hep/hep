@@ -257,18 +257,22 @@ func genH1() {
 	for i, typ := range []struct {
 		Name string
 		Type string
+		Elem string
 	}{
 		{
 			Name: "H1F",
 			Type: "ArrayF",
+			Elem: "float32",
 		},
 		{
 			Name: "H1D",
 			Type: "ArrayD",
+			Elem: "float64",
 		},
 		{
 			Name: "H1I",
 			Type: "ArrayI",
+			Elem: "int32",
 		},
 	} {
 		if i > 0 {
@@ -300,18 +304,22 @@ func genH2() {
 	for i, typ := range []struct {
 		Name string
 		Type string
+		Elem string
 	}{
 		{
 			Name: "H2F",
 			Type: "ArrayF",
+			Elem: "float32",
 		},
 		{
 			Name: "H2D",
 			Type: "ArrayD",
+			Elem: "float64",
 		},
 		{
 			Name: "H2I",
 			Type: "ArrayI",
+			Elem: "int32",
 		},
 	} {
 		if i > 0 {
@@ -706,6 +714,57 @@ type {{.Name}} struct {
 	arr {{.Type}}
 }
 
+func new{{.Name}}() *{{.Name}} {
+	return &{{.Name}}{
+		rvers: 2, // FIXME(sbinet): harmonize versions
+		th1:   *newH1(),
+	}
+}
+
+// New{{.Name}}From creates a new 1-dim histogram from hbook.
+func New{{.Name}}From(h *hbook.H1D) *{{.Name}} {
+	var (
+		hroot = new{{.Name}}()
+		bins  = h.Binning.Bins
+		nbins = len(bins)
+		edges = make([]float64, 0, nbins+1)
+		uflow = h.Binning.Underflow()
+		oflow = h.Binning.Overflow()
+	)
+
+	hroot.th1.entries = float64(h.Entries())
+	hroot.th1.tsumw = h.SumW()
+	hroot.th1.tsumw2 = h.SumW2()
+	hroot.th1.tsumwx = h.SumWX()
+	hroot.th1.tsumwx2 = h.SumWX2()
+	hroot.th1.ncells = nbins+2
+
+	hroot.th1.xaxis.nbins = nbins
+	hroot.th1.xaxis.xmin = h.XMin()
+	hroot.th1.xaxis.xmax = h.XMax()
+
+	hroot.arr.Data = make([]{{.Elem}}, nbins+2)
+	hroot.th1.sumw2.Data = make([]float64, nbins+2)
+
+	for i, bin := range bins {
+		if i == 0 {
+			edges = append(edges, bin.XMin())
+		}
+		edges = append(edges, bin.XMax())
+		hroot.setDist1D(i+1, bin.Dist.SumW(), bin.Dist.SumW2())
+	}
+	hroot.setDist1D(0, uflow.SumW(), uflow.SumW2())
+	hroot.setDist1D(nbins+1, oflow.SumW(), oflow.SumW2())
+
+	hroot.th1.name = h.Name()
+	if v, ok := h.Annotation()["title"]; ok {
+		hroot.th1.title = v.(string)
+	}
+	hroot.th1.xaxis.xbins.Data = edges
+	return hroot
+}
+
+
 func (*{{.Name}}) isH1() {}
 
 // Class returns the ROOT class name.
@@ -839,6 +898,11 @@ func (h *{{.Name}}) dist1D(i int) hbook.Dist1D {
 	}
 }
 
+func (h *{{.Name}}) setDist1D(i int, sumw, sumw2 float64) {
+	h.arr.Data[i] = {{.Elem}}(sumw)
+	h.th1.sumw2.Data[i] = sumw2
+}
+
 func (h *{{.Name}}) entries(height, err float64) int64 {
 	if height <= 0 {
 		return 0
@@ -920,9 +984,21 @@ func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalYODA implements the YODAUnmarshaler interface.
+func (h *{{.Name}}) UnmarshalYODA(raw []byte) error {
+	var hh hbook.H1D
+	err := hh.UnmarshalYODA(raw)
+	if err != nil {
+		return err
+	}
+
+	*h = *New{{.Name}}From(&hh)
+	return nil
+}
+
 func init() {
 	f := func() reflect.Value {
-		o := &{{.Name}}{}
+		o := new{{.Name}}()
 		return reflect.ValueOf(o)
 	}
 	Factory.add("T{{.Name}}", f)
@@ -943,6 +1019,90 @@ type {{.Name}} struct {
 	rvers int16
 	th2
 	arr {{.Type}}
+}
+
+func new{{.Name}}() *{{.Name}} {
+	return &{{.Name}}{
+		rvers: 3, // FIXME(sbinet): harmonize versions
+		th2:   *newH2(),
+	}
+}
+
+// New{{.Name}}From creates a new {{.Name}} from hbook 2-dim histogram.
+func New{{.Name}}From(h *hbook.H2D) *{{.Name}} {
+	var (
+		hroot  = new{{.Name}}()
+		bins   = h.Binning.Bins
+		nxbins = h.Binning.Nx
+		nybins = h.Binning.Ny
+		xedges = make([]float64, 0, nxbins+1)
+		yedges = make([]float64, 0, nybins+1)
+	)
+
+	hroot.th2.th1.entries = float64(h.Entries())
+	hroot.th2.th1.tsumw = h.SumW()
+	hroot.th2.th1.tsumw2 = h.SumW2()
+	hroot.th2.th1.tsumwx = h.SumWX()
+	hroot.th2.th1.tsumwx2 = h.SumWX2()
+	hroot.th2.tsumwy = h.SumWY()
+	hroot.th2.tsumwy2 = h.SumWY2()
+	hroot.th2.tsumwxy = h.SumWXY()
+
+	ncells := (nxbins + 2) * (nybins + 2)
+	hroot.th2.th1.ncells = ncells
+
+	hroot.th2.th1.xaxis.nbins = nxbins
+	hroot.th2.th1.xaxis.xmin = h.XMin()
+	hroot.th2.th1.xaxis.xmax = h.XMax()
+
+	hroot.th2.th1.yaxis.nbins = nybins
+	hroot.th2.th1.yaxis.xmin = h.YMin()
+	hroot.th2.th1.yaxis.xmax = h.YMax()
+
+	hroot.arr.Data = make([]{{.Elem}}, ncells)
+	hroot.th2.th1.sumw2.Data = make([]float64, ncells)
+
+	ibin := func(ix, iy int) int { return iy*nxbins + ix }
+
+	for ix := 0; ix < h.Binning.Nx; ix++ {
+		for iy := 0; iy < h.Binning.Ny; iy++ {
+			i := ibin(ix, iy)
+			bin := bins[i]
+			if ix == 0 {
+				yedges = append(yedges, bin.YMin())
+			}
+			if iy == 0 {
+				xedges = append(xedges, bin.XMin())
+			}
+			hroot.setDist2D(ix+1, iy+1, bin.Dist.SumW(), bin.Dist.SumW2())
+		}
+	}
+
+	oflows := h.Binning.Outflows[:]
+	for i, v := range []struct{ix,iy int}{
+		{0, 0},
+		{0, 1},
+		{0, nybins+1},
+		{nxbins + 1, 0},
+		{nxbins + 1, 1},
+		{nxbins + 1, nybins + 1},
+		{1, 0},
+		{1, nybins + 1},
+	}{
+		hroot.setDist2D(v.ix, v.iy, oflows[i].SumW(), oflows[i].SumW2())
+	}
+
+	xedges = append(xedges, bins[ibin(h.Binning.Nx-1, 0)].XMax())
+	yedges = append(yedges, bins[ibin(0, h.Binning.Ny-1)].YMax())
+
+	hroot.th2.th1.name = h.Name()
+	if v, ok := h.Annotation()["title"]; ok {
+		hroot.th2.th1.title = v.(string)
+	}
+	hroot.th2.th1.xaxis.xbins.Data = xedges
+	hroot.th2.th1.yaxis.xbins.Data = yedges
+
+	return hroot
 }
 
 func (*{{.Name}}) isH2() {}
@@ -1088,6 +1248,12 @@ func (h *{{.Name}}) dist2D(ix, iy int) hbook.Dist2D {
 	}
 }
 
+func (h *{{.Name}}) setDist2D(ix, iy int, sumw, sumw2 float64) {
+	i := h.bin(ix, iy)
+	h.arr.Data[i] = {{.Elem}}(sumw)
+	h.th1.sumw2.Data[i] = sumw2
+}
+
 func (h *{{.Name}}) entries(height, err float64) int64 {
 	if height <= 0 {
 		return 0
@@ -1096,6 +1262,7 @@ func (h *{{.Name}}) entries(height, err float64) int64 {
 	return int64(v*v + 0.5)
 }
 
+// MarshalYODA implements the YODAMarshaler interface.
 func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
 	var (
 		nx       = h.NbinsX()
@@ -1198,6 +1365,18 @@ func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalYODA implements the YODAUnmarshaler interface.
+func (h *{{.Name}}) UnmarshalYODA(raw []byte) error {
+	var hh hbook.H2D
+	err := hh.UnmarshalYODA(raw)
+	if err != nil {
+		return err
+	}
+
+	*h = *New{{.Name}}From(&hh)
+	return nil
+}
+
 func (h *{{.Name}}) MarshalROOT(w *WBuffer) (int, error) {
 	if w.err != nil {
 		return 0, w.err
@@ -1247,7 +1426,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *RBuffer) error {
 
 func init() {
 	f := func() reflect.Value {
-		o := &{{.Name}}{}
+		o := new{{.Name}}()
 		return reflect.ValueOf(o)
 	}
 	Factory.add("T{{.Name}}", f)

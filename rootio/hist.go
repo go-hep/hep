@@ -37,6 +37,20 @@ type th1 struct {
 	oflow     int32     // per object flag to use under/overflows in statistics
 }
 
+func newH1() *th1 {
+	return &th1{
+		rvers:     7, // FIXME(sbinet): harmonize versions
+		tnamed:    *newNamed("", ""),
+		attline:   *newAttLine(),
+		attfill:   *newAttFill(),
+		attmarker: *newAttMarker(),
+		xaxis:     *newAxis("xaxis"),
+		yaxis:     *newAxis("yaxis"),
+		zaxis:     *newAxis("zaxis"),
+		funcs:     *newList(""),
+	}
+}
+
 func (h *th1) Class() string {
 	return "TH1"
 }
@@ -231,6 +245,13 @@ type th2 struct {
 	tsumwxy float64 // total sum of weight*x*y
 }
 
+func newH2() *th2 {
+	return &th2{
+		rvers: 4, // FIXME(sbinet): harmonize versions
+		th1:   *newH1(),
+	}
+}
+
 func (*th2) Class() string {
 	return "TH2"
 }
@@ -300,7 +321,7 @@ func (h *th2) SumWXY() float64 {
 func init() {
 	{
 		f := func() reflect.Value {
-			o := &th1{}
+			o := newH1()
 			return reflect.ValueOf(o)
 		}
 		Factory.add("TH1", f)
@@ -308,7 +329,7 @@ func init() {
 	}
 	{
 		f := func() reflect.Value {
-			o := &th2{}
+			o := newH2()
 			return reflect.ValueOf(o)
 		}
 		Factory.add("TH2", f)

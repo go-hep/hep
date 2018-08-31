@@ -22,6 +22,90 @@ type H2F struct {
 	arr ArrayF
 }
 
+func newH2F() *H2F {
+	return &H2F{
+		rvers: 3, // FIXME(sbinet): harmonize versions
+		th2:   *newH2(),
+	}
+}
+
+// NewH2FFrom creates a new H2F from hbook 2-dim histogram.
+func NewH2FFrom(h *hbook.H2D) *H2F {
+	var (
+		hroot  = newH2F()
+		bins   = h.Binning.Bins
+		nxbins = h.Binning.Nx
+		nybins = h.Binning.Ny
+		xedges = make([]float64, 0, nxbins+1)
+		yedges = make([]float64, 0, nybins+1)
+	)
+
+	hroot.th2.th1.entries = float64(h.Entries())
+	hroot.th2.th1.tsumw = h.SumW()
+	hroot.th2.th1.tsumw2 = h.SumW2()
+	hroot.th2.th1.tsumwx = h.SumWX()
+	hroot.th2.th1.tsumwx2 = h.SumWX2()
+	hroot.th2.tsumwy = h.SumWY()
+	hroot.th2.tsumwy2 = h.SumWY2()
+	hroot.th2.tsumwxy = h.SumWXY()
+
+	ncells := (nxbins + 2) * (nybins + 2)
+	hroot.th2.th1.ncells = ncells
+
+	hroot.th2.th1.xaxis.nbins = nxbins
+	hroot.th2.th1.xaxis.xmin = h.XMin()
+	hroot.th2.th1.xaxis.xmax = h.XMax()
+
+	hroot.th2.th1.yaxis.nbins = nybins
+	hroot.th2.th1.yaxis.xmin = h.YMin()
+	hroot.th2.th1.yaxis.xmax = h.YMax()
+
+	hroot.arr.Data = make([]float32, ncells)
+	hroot.th2.th1.sumw2.Data = make([]float64, ncells)
+
+	ibin := func(ix, iy int) int { return iy*nxbins + ix }
+
+	for ix := 0; ix < h.Binning.Nx; ix++ {
+		for iy := 0; iy < h.Binning.Ny; iy++ {
+			i := ibin(ix, iy)
+			bin := bins[i]
+			if ix == 0 {
+				yedges = append(yedges, bin.YMin())
+			}
+			if iy == 0 {
+				xedges = append(xedges, bin.XMin())
+			}
+			hroot.setDist2D(ix+1, iy+1, bin.Dist.SumW(), bin.Dist.SumW2())
+		}
+	}
+
+	oflows := h.Binning.Outflows[:]
+	for i, v := range []struct{ ix, iy int }{
+		{0, 0},
+		{0, 1},
+		{0, nybins + 1},
+		{nxbins + 1, 0},
+		{nxbins + 1, 1},
+		{nxbins + 1, nybins + 1},
+		{1, 0},
+		{1, nybins + 1},
+	} {
+		hroot.setDist2D(v.ix, v.iy, oflows[i].SumW(), oflows[i].SumW2())
+	}
+
+	xedges = append(xedges, bins[ibin(h.Binning.Nx-1, 0)].XMax())
+	yedges = append(yedges, bins[ibin(0, h.Binning.Ny-1)].YMax())
+
+	hroot.th2.th1.name = h.Name()
+	if v, ok := h.Annotation()["title"]; ok {
+		hroot.th2.th1.title = v.(string)
+	}
+	hroot.th2.th1.xaxis.xbins.Data = xedges
+	hroot.th2.th1.yaxis.xbins.Data = yedges
+
+	return hroot
+}
+
 func (*H2F) isH2() {}
 
 // Class returns the ROOT class name.
@@ -165,6 +249,12 @@ func (h *H2F) dist2D(ix, iy int) hbook.Dist2D {
 	}
 }
 
+func (h *H2F) setDist2D(ix, iy int, sumw, sumw2 float64) {
+	i := h.bin(ix, iy)
+	h.arr.Data[i] = float32(sumw)
+	h.th1.sumw2.Data[i] = sumw2
+}
+
 func (h *H2F) entries(height, err float64) int64 {
 	if height <= 0 {
 		return 0
@@ -173,6 +263,7 @@ func (h *H2F) entries(height, err float64) int64 {
 	return int64(v*v + 0.5)
 }
 
+// MarshalYODA implements the YODAMarshaler interface.
 func (h *H2F) MarshalYODA() ([]byte, error) {
 	var (
 		nx       = h.NbinsX()
@@ -275,6 +366,18 @@ func (h *H2F) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalYODA implements the YODAUnmarshaler interface.
+func (h *H2F) UnmarshalYODA(raw []byte) error {
+	var hh hbook.H2D
+	err := hh.UnmarshalYODA(raw)
+	if err != nil {
+		return err
+	}
+
+	*h = *NewH2FFrom(&hh)
+	return nil
+}
+
 func (h *H2F) MarshalROOT(w *WBuffer) (int, error) {
 	if w.err != nil {
 		return 0, w.err
@@ -324,7 +427,7 @@ func (h *H2F) UnmarshalROOT(r *RBuffer) error {
 
 func init() {
 	f := func() reflect.Value {
-		o := &H2F{}
+		o := newH2F()
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TH2F", f)
@@ -344,6 +447,90 @@ type H2D struct {
 	rvers int16
 	th2
 	arr ArrayD
+}
+
+func newH2D() *H2D {
+	return &H2D{
+		rvers: 3, // FIXME(sbinet): harmonize versions
+		th2:   *newH2(),
+	}
+}
+
+// NewH2DFrom creates a new H2D from hbook 2-dim histogram.
+func NewH2DFrom(h *hbook.H2D) *H2D {
+	var (
+		hroot  = newH2D()
+		bins   = h.Binning.Bins
+		nxbins = h.Binning.Nx
+		nybins = h.Binning.Ny
+		xedges = make([]float64, 0, nxbins+1)
+		yedges = make([]float64, 0, nybins+1)
+	)
+
+	hroot.th2.th1.entries = float64(h.Entries())
+	hroot.th2.th1.tsumw = h.SumW()
+	hroot.th2.th1.tsumw2 = h.SumW2()
+	hroot.th2.th1.tsumwx = h.SumWX()
+	hroot.th2.th1.tsumwx2 = h.SumWX2()
+	hroot.th2.tsumwy = h.SumWY()
+	hroot.th2.tsumwy2 = h.SumWY2()
+	hroot.th2.tsumwxy = h.SumWXY()
+
+	ncells := (nxbins + 2) * (nybins + 2)
+	hroot.th2.th1.ncells = ncells
+
+	hroot.th2.th1.xaxis.nbins = nxbins
+	hroot.th2.th1.xaxis.xmin = h.XMin()
+	hroot.th2.th1.xaxis.xmax = h.XMax()
+
+	hroot.th2.th1.yaxis.nbins = nybins
+	hroot.th2.th1.yaxis.xmin = h.YMin()
+	hroot.th2.th1.yaxis.xmax = h.YMax()
+
+	hroot.arr.Data = make([]float64, ncells)
+	hroot.th2.th1.sumw2.Data = make([]float64, ncells)
+
+	ibin := func(ix, iy int) int { return iy*nxbins + ix }
+
+	for ix := 0; ix < h.Binning.Nx; ix++ {
+		for iy := 0; iy < h.Binning.Ny; iy++ {
+			i := ibin(ix, iy)
+			bin := bins[i]
+			if ix == 0 {
+				yedges = append(yedges, bin.YMin())
+			}
+			if iy == 0 {
+				xedges = append(xedges, bin.XMin())
+			}
+			hroot.setDist2D(ix+1, iy+1, bin.Dist.SumW(), bin.Dist.SumW2())
+		}
+	}
+
+	oflows := h.Binning.Outflows[:]
+	for i, v := range []struct{ ix, iy int }{
+		{0, 0},
+		{0, 1},
+		{0, nybins + 1},
+		{nxbins + 1, 0},
+		{nxbins + 1, 1},
+		{nxbins + 1, nybins + 1},
+		{1, 0},
+		{1, nybins + 1},
+	} {
+		hroot.setDist2D(v.ix, v.iy, oflows[i].SumW(), oflows[i].SumW2())
+	}
+
+	xedges = append(xedges, bins[ibin(h.Binning.Nx-1, 0)].XMax())
+	yedges = append(yedges, bins[ibin(0, h.Binning.Ny-1)].YMax())
+
+	hroot.th2.th1.name = h.Name()
+	if v, ok := h.Annotation()["title"]; ok {
+		hroot.th2.th1.title = v.(string)
+	}
+	hroot.th2.th1.xaxis.xbins.Data = xedges
+	hroot.th2.th1.yaxis.xbins.Data = yedges
+
+	return hroot
 }
 
 func (*H2D) isH2() {}
@@ -489,6 +676,12 @@ func (h *H2D) dist2D(ix, iy int) hbook.Dist2D {
 	}
 }
 
+func (h *H2D) setDist2D(ix, iy int, sumw, sumw2 float64) {
+	i := h.bin(ix, iy)
+	h.arr.Data[i] = float64(sumw)
+	h.th1.sumw2.Data[i] = sumw2
+}
+
 func (h *H2D) entries(height, err float64) int64 {
 	if height <= 0 {
 		return 0
@@ -497,6 +690,7 @@ func (h *H2D) entries(height, err float64) int64 {
 	return int64(v*v + 0.5)
 }
 
+// MarshalYODA implements the YODAMarshaler interface.
 func (h *H2D) MarshalYODA() ([]byte, error) {
 	var (
 		nx       = h.NbinsX()
@@ -599,6 +793,18 @@ func (h *H2D) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalYODA implements the YODAUnmarshaler interface.
+func (h *H2D) UnmarshalYODA(raw []byte) error {
+	var hh hbook.H2D
+	err := hh.UnmarshalYODA(raw)
+	if err != nil {
+		return err
+	}
+
+	*h = *NewH2DFrom(&hh)
+	return nil
+}
+
 func (h *H2D) MarshalROOT(w *WBuffer) (int, error) {
 	if w.err != nil {
 		return 0, w.err
@@ -648,7 +854,7 @@ func (h *H2D) UnmarshalROOT(r *RBuffer) error {
 
 func init() {
 	f := func() reflect.Value {
-		o := &H2D{}
+		o := newH2D()
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TH2D", f)
@@ -668,6 +874,90 @@ type H2I struct {
 	rvers int16
 	th2
 	arr ArrayI
+}
+
+func newH2I() *H2I {
+	return &H2I{
+		rvers: 3, // FIXME(sbinet): harmonize versions
+		th2:   *newH2(),
+	}
+}
+
+// NewH2IFrom creates a new H2I from hbook 2-dim histogram.
+func NewH2IFrom(h *hbook.H2D) *H2I {
+	var (
+		hroot  = newH2I()
+		bins   = h.Binning.Bins
+		nxbins = h.Binning.Nx
+		nybins = h.Binning.Ny
+		xedges = make([]float64, 0, nxbins+1)
+		yedges = make([]float64, 0, nybins+1)
+	)
+
+	hroot.th2.th1.entries = float64(h.Entries())
+	hroot.th2.th1.tsumw = h.SumW()
+	hroot.th2.th1.tsumw2 = h.SumW2()
+	hroot.th2.th1.tsumwx = h.SumWX()
+	hroot.th2.th1.tsumwx2 = h.SumWX2()
+	hroot.th2.tsumwy = h.SumWY()
+	hroot.th2.tsumwy2 = h.SumWY2()
+	hroot.th2.tsumwxy = h.SumWXY()
+
+	ncells := (nxbins + 2) * (nybins + 2)
+	hroot.th2.th1.ncells = ncells
+
+	hroot.th2.th1.xaxis.nbins = nxbins
+	hroot.th2.th1.xaxis.xmin = h.XMin()
+	hroot.th2.th1.xaxis.xmax = h.XMax()
+
+	hroot.th2.th1.yaxis.nbins = nybins
+	hroot.th2.th1.yaxis.xmin = h.YMin()
+	hroot.th2.th1.yaxis.xmax = h.YMax()
+
+	hroot.arr.Data = make([]int32, ncells)
+	hroot.th2.th1.sumw2.Data = make([]float64, ncells)
+
+	ibin := func(ix, iy int) int { return iy*nxbins + ix }
+
+	for ix := 0; ix < h.Binning.Nx; ix++ {
+		for iy := 0; iy < h.Binning.Ny; iy++ {
+			i := ibin(ix, iy)
+			bin := bins[i]
+			if ix == 0 {
+				yedges = append(yedges, bin.YMin())
+			}
+			if iy == 0 {
+				xedges = append(xedges, bin.XMin())
+			}
+			hroot.setDist2D(ix+1, iy+1, bin.Dist.SumW(), bin.Dist.SumW2())
+		}
+	}
+
+	oflows := h.Binning.Outflows[:]
+	for i, v := range []struct{ ix, iy int }{
+		{0, 0},
+		{0, 1},
+		{0, nybins + 1},
+		{nxbins + 1, 0},
+		{nxbins + 1, 1},
+		{nxbins + 1, nybins + 1},
+		{1, 0},
+		{1, nybins + 1},
+	} {
+		hroot.setDist2D(v.ix, v.iy, oflows[i].SumW(), oflows[i].SumW2())
+	}
+
+	xedges = append(xedges, bins[ibin(h.Binning.Nx-1, 0)].XMax())
+	yedges = append(yedges, bins[ibin(0, h.Binning.Ny-1)].YMax())
+
+	hroot.th2.th1.name = h.Name()
+	if v, ok := h.Annotation()["title"]; ok {
+		hroot.th2.th1.title = v.(string)
+	}
+	hroot.th2.th1.xaxis.xbins.Data = xedges
+	hroot.th2.th1.yaxis.xbins.Data = yedges
+
+	return hroot
 }
 
 func (*H2I) isH2() {}
@@ -813,6 +1103,12 @@ func (h *H2I) dist2D(ix, iy int) hbook.Dist2D {
 	}
 }
 
+func (h *H2I) setDist2D(ix, iy int, sumw, sumw2 float64) {
+	i := h.bin(ix, iy)
+	h.arr.Data[i] = int32(sumw)
+	h.th1.sumw2.Data[i] = sumw2
+}
+
 func (h *H2I) entries(height, err float64) int64 {
 	if height <= 0 {
 		return 0
@@ -821,6 +1117,7 @@ func (h *H2I) entries(height, err float64) int64 {
 	return int64(v*v + 0.5)
 }
 
+// MarshalYODA implements the YODAMarshaler interface.
 func (h *H2I) MarshalYODA() ([]byte, error) {
 	var (
 		nx       = h.NbinsX()
@@ -923,6 +1220,18 @@ func (h *H2I) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalYODA implements the YODAUnmarshaler interface.
+func (h *H2I) UnmarshalYODA(raw []byte) error {
+	var hh hbook.H2D
+	err := hh.UnmarshalYODA(raw)
+	if err != nil {
+		return err
+	}
+
+	*h = *NewH2IFrom(&hh)
+	return nil
+}
+
 func (h *H2I) MarshalROOT(w *WBuffer) (int, error) {
 	if w.err != nil {
 		return 0, w.err
@@ -972,7 +1281,7 @@ func (h *H2I) UnmarshalROOT(r *RBuffer) error {
 
 func init() {
 	f := func() reflect.Value {
-		o := &H2I{}
+		o := newH2I()
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TH2I", f)

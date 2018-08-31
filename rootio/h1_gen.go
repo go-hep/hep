@@ -22,6 +22,56 @@ type H1F struct {
 	arr ArrayF
 }
 
+func newH1F() *H1F {
+	return &H1F{
+		rvers: 2, // FIXME(sbinet): harmonize versions
+		th1:   *newH1(),
+	}
+}
+
+// NewH1FFrom creates a new 1-dim histogram from hbook.
+func NewH1FFrom(h *hbook.H1D) *H1F {
+	var (
+		hroot = newH1F()
+		bins  = h.Binning.Bins
+		nbins = len(bins)
+		edges = make([]float64, 0, nbins+1)
+		uflow = h.Binning.Underflow()
+		oflow = h.Binning.Overflow()
+	)
+
+	hroot.th1.entries = float64(h.Entries())
+	hroot.th1.tsumw = h.SumW()
+	hroot.th1.tsumw2 = h.SumW2()
+	hroot.th1.tsumwx = h.SumWX()
+	hroot.th1.tsumwx2 = h.SumWX2()
+	hroot.th1.ncells = nbins + 2
+
+	hroot.th1.xaxis.nbins = nbins
+	hroot.th1.xaxis.xmin = h.XMin()
+	hroot.th1.xaxis.xmax = h.XMax()
+
+	hroot.arr.Data = make([]float32, nbins+2)
+	hroot.th1.sumw2.Data = make([]float64, nbins+2)
+
+	for i, bin := range bins {
+		if i == 0 {
+			edges = append(edges, bin.XMin())
+		}
+		edges = append(edges, bin.XMax())
+		hroot.setDist1D(i+1, bin.Dist.SumW(), bin.Dist.SumW2())
+	}
+	hroot.setDist1D(0, uflow.SumW(), uflow.SumW2())
+	hroot.setDist1D(nbins+1, oflow.SumW(), oflow.SumW2())
+
+	hroot.th1.name = h.Name()
+	if v, ok := h.Annotation()["title"]; ok {
+		hroot.th1.title = v.(string)
+	}
+	hroot.th1.xaxis.xbins.Data = edges
+	return hroot
+}
+
 func (*H1F) isH1() {}
 
 // Class returns the ROOT class name.
@@ -155,6 +205,11 @@ func (h *H1F) dist1D(i int) hbook.Dist1D {
 	}
 }
 
+func (h *H1F) setDist1D(i int, sumw, sumw2 float64) {
+	h.arr.Data[i] = float32(sumw)
+	h.th1.sumw2.Data[i] = sumw2
+}
+
 func (h *H1F) entries(height, err float64) int64 {
 	if height <= 0 {
 		return 0
@@ -236,9 +291,21 @@ func (h *H1F) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalYODA implements the YODAUnmarshaler interface.
+func (h *H1F) UnmarshalYODA(raw []byte) error {
+	var hh hbook.H1D
+	err := hh.UnmarshalYODA(raw)
+	if err != nil {
+		return err
+	}
+
+	*h = *NewH1FFrom(&hh)
+	return nil
+}
+
 func init() {
 	f := func() reflect.Value {
-		o := &H1F{}
+		o := newH1F()
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TH1F", f)
@@ -258,6 +325,56 @@ type H1D struct {
 	rvers int16
 	th1
 	arr ArrayD
+}
+
+func newH1D() *H1D {
+	return &H1D{
+		rvers: 2, // FIXME(sbinet): harmonize versions
+		th1:   *newH1(),
+	}
+}
+
+// NewH1DFrom creates a new 1-dim histogram from hbook.
+func NewH1DFrom(h *hbook.H1D) *H1D {
+	var (
+		hroot = newH1D()
+		bins  = h.Binning.Bins
+		nbins = len(bins)
+		edges = make([]float64, 0, nbins+1)
+		uflow = h.Binning.Underflow()
+		oflow = h.Binning.Overflow()
+	)
+
+	hroot.th1.entries = float64(h.Entries())
+	hroot.th1.tsumw = h.SumW()
+	hroot.th1.tsumw2 = h.SumW2()
+	hroot.th1.tsumwx = h.SumWX()
+	hroot.th1.tsumwx2 = h.SumWX2()
+	hroot.th1.ncells = nbins + 2
+
+	hroot.th1.xaxis.nbins = nbins
+	hroot.th1.xaxis.xmin = h.XMin()
+	hroot.th1.xaxis.xmax = h.XMax()
+
+	hroot.arr.Data = make([]float64, nbins+2)
+	hroot.th1.sumw2.Data = make([]float64, nbins+2)
+
+	for i, bin := range bins {
+		if i == 0 {
+			edges = append(edges, bin.XMin())
+		}
+		edges = append(edges, bin.XMax())
+		hroot.setDist1D(i+1, bin.Dist.SumW(), bin.Dist.SumW2())
+	}
+	hroot.setDist1D(0, uflow.SumW(), uflow.SumW2())
+	hroot.setDist1D(nbins+1, oflow.SumW(), oflow.SumW2())
+
+	hroot.th1.name = h.Name()
+	if v, ok := h.Annotation()["title"]; ok {
+		hroot.th1.title = v.(string)
+	}
+	hroot.th1.xaxis.xbins.Data = edges
+	return hroot
 }
 
 func (*H1D) isH1() {}
@@ -393,6 +510,11 @@ func (h *H1D) dist1D(i int) hbook.Dist1D {
 	}
 }
 
+func (h *H1D) setDist1D(i int, sumw, sumw2 float64) {
+	h.arr.Data[i] = float64(sumw)
+	h.th1.sumw2.Data[i] = sumw2
+}
+
 func (h *H1D) entries(height, err float64) int64 {
 	if height <= 0 {
 		return 0
@@ -474,9 +596,21 @@ func (h *H1D) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalYODA implements the YODAUnmarshaler interface.
+func (h *H1D) UnmarshalYODA(raw []byte) error {
+	var hh hbook.H1D
+	err := hh.UnmarshalYODA(raw)
+	if err != nil {
+		return err
+	}
+
+	*h = *NewH1DFrom(&hh)
+	return nil
+}
+
 func init() {
 	f := func() reflect.Value {
-		o := &H1D{}
+		o := newH1D()
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TH1D", f)
@@ -496,6 +630,56 @@ type H1I struct {
 	rvers int16
 	th1
 	arr ArrayI
+}
+
+func newH1I() *H1I {
+	return &H1I{
+		rvers: 2, // FIXME(sbinet): harmonize versions
+		th1:   *newH1(),
+	}
+}
+
+// NewH1IFrom creates a new 1-dim histogram from hbook.
+func NewH1IFrom(h *hbook.H1D) *H1I {
+	var (
+		hroot = newH1I()
+		bins  = h.Binning.Bins
+		nbins = len(bins)
+		edges = make([]float64, 0, nbins+1)
+		uflow = h.Binning.Underflow()
+		oflow = h.Binning.Overflow()
+	)
+
+	hroot.th1.entries = float64(h.Entries())
+	hroot.th1.tsumw = h.SumW()
+	hroot.th1.tsumw2 = h.SumW2()
+	hroot.th1.tsumwx = h.SumWX()
+	hroot.th1.tsumwx2 = h.SumWX2()
+	hroot.th1.ncells = nbins + 2
+
+	hroot.th1.xaxis.nbins = nbins
+	hroot.th1.xaxis.xmin = h.XMin()
+	hroot.th1.xaxis.xmax = h.XMax()
+
+	hroot.arr.Data = make([]int32, nbins+2)
+	hroot.th1.sumw2.Data = make([]float64, nbins+2)
+
+	for i, bin := range bins {
+		if i == 0 {
+			edges = append(edges, bin.XMin())
+		}
+		edges = append(edges, bin.XMax())
+		hroot.setDist1D(i+1, bin.Dist.SumW(), bin.Dist.SumW2())
+	}
+	hroot.setDist1D(0, uflow.SumW(), uflow.SumW2())
+	hroot.setDist1D(nbins+1, oflow.SumW(), oflow.SumW2())
+
+	hroot.th1.name = h.Name()
+	if v, ok := h.Annotation()["title"]; ok {
+		hroot.th1.title = v.(string)
+	}
+	hroot.th1.xaxis.xbins.Data = edges
+	return hroot
 }
 
 func (*H1I) isH1() {}
@@ -631,6 +815,11 @@ func (h *H1I) dist1D(i int) hbook.Dist1D {
 	}
 }
 
+func (h *H1I) setDist1D(i int, sumw, sumw2 float64) {
+	h.arr.Data[i] = int32(sumw)
+	h.th1.sumw2.Data[i] = sumw2
+}
+
 func (h *H1I) entries(height, err float64) int64 {
 	if height <= 0 {
 		return 0
@@ -712,9 +901,21 @@ func (h *H1I) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalYODA implements the YODAUnmarshaler interface.
+func (h *H1I) UnmarshalYODA(raw []byte) error {
+	var hh hbook.H1D
+	err := hh.UnmarshalYODA(raw)
+	if err != nil {
+		return err
+	}
+
+	*h = *NewH1IFrom(&hh)
+	return nil
+}
+
 func init() {
 	f := func() reflect.Value {
-		o := &H1I{}
+		o := newH1I()
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TH1I", f)
