@@ -287,6 +287,10 @@ func (s *S2D) annToYODA() Annotation {
 		if k == "name" {
 			continue
 		}
+		if k == "title" {
+			ann["Title"] = v
+			continue
+		}
 		ann[k] = v
 	}
 	return ann
@@ -303,6 +307,8 @@ func (s *S2D) annFromYODA(ann Annotation) {
 			// noop
 		case "Path":
 			s.ann["name"] = string(v.(string)[1:]) // skip leading '/'
+		case "Title":
+			s.ann["title"] = v.(string)
 		default:
 			s.ann[k] = v
 		}
