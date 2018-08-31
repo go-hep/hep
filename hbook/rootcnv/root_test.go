@@ -11,9 +11,12 @@ import (
 	"reflect"
 	"testing"
 
+	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hbook/yodacnv"
 	"go-hep.org/x/hep/rootio"
+	"golang.org/x/exp/rand"
+	"gonum.org/v1/gonum/stat/distuv"
 )
 
 func ExampleH1D() {
@@ -364,5 +367,185 @@ END YODA_HISTO2D
 			)
 			continue
 		}
+	}
+}
+
+func TestFromH1D(t *testing.T) {
+	const npoints = 10000
+
+	// Create a normal distribution.
+	dist := distuv.Normal{
+		Mu:    0,
+		Sigma: 1,
+		Src:   rand.New(rand.NewSource(0)),
+	}
+
+	// Draw some random values from the standard
+	// normal distribution.
+	h := hbook.NewH1D(20, -4, +4)
+	for i := 0; i < npoints; i++ {
+		v := dist.Rand()
+		h.Fill(v, 1)
+	}
+	h.Fill(-10, 1) // fill underflow
+	h.Fill(-20, 2)
+	h.Fill(+10, 1) // fill overflow
+	h.Fill(+10, 2)
+	h.Annotation()["name"] = "my-name"
+	h.Annotation()["title"] = "my-title"
+
+	for _, tc := range []struct {
+		name   string
+		h1     rootio.H1
+		sumw   float64
+		sumw2  float64
+		sumwx  float64
+		sumwx2 float64
+	}{
+		{
+			name:   "TH1D",
+			h1:     rootcnv.FromH1D(h),
+			sumw:   h.SumW(),
+			sumw2:  h.SumW2(),
+			sumwx:  h.SumWX(),
+			sumwx2: h.SumWX2(),
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if got, want := tc.h1.SumW(), h.SumW(); got != want {
+				t.Fatalf("sumw: got=%v, want=%v", got, want)
+			}
+			if got, want := tc.h1.SumW2(), h.SumW2(); got != want {
+				t.Fatalf("sumw2: got=%v, want=%v", got, want)
+			}
+			if got, want := tc.h1.SumWX(), h.SumWX(); got != want {
+				t.Fatalf("sumwx: got=%v, want=%v", got, want)
+			}
+			if got, want := tc.h1.SumWX2(), h.SumWX2(); got != want {
+				t.Fatalf("sumwx2: got=%v, want=%v", got, want)
+			}
+
+			rraw, err := tc.h1.(yodacnv.Marshaler).MarshalYODA()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			hh, err := rootcnv.H1D(tc.h1)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			hraw, err := hh.MarshalYODA()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var hr = rootio.Factory.Get(tc.name)().Interface().(rootio.H1)
+			if err := hr.(yodacnv.Unmarshaler).UnmarshalYODA(hraw); err != nil {
+				t.Fatal(err)
+			}
+
+			rgot, err := hr.(yodacnv.Marshaler).MarshalYODA()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !bytes.Equal(rgot, rraw) {
+				t.Fatalf("round trip error:\nraw:\n%s\ngot:\n%s\n", rraw, rgot)
+			}
+		})
+	}
+}
+
+func TestFromH2D(t *testing.T) {
+	const npoints = 10000
+
+	// Create a normal distribution.
+	dist := distuv.Normal{
+		Mu:    0,
+		Sigma: 1,
+		Src:   rand.New(rand.NewSource(0)),
+	}
+
+	// Draw some random values from the standard
+	// normal distribution.
+	h := hbook.NewH2D(5, -4, +4, 6, -4, +4)
+	for i := 0; i < npoints; i++ {
+		x := dist.Rand()
+		y := dist.Rand()
+		h.Fill(x, y, 1)
+	}
+	h.Fill(+0, +5, 1) // N
+	h.Fill(-5, +5, 2) // N-W
+	h.Fill(-5, +0, 3) // W
+	h.Fill(-5, -5, 4) // S-W
+	h.Fill(+0, -5, 5) // S
+	h.Fill(+5, -5, 6) // S-E
+	h.Fill(+5, +0, 7) // E
+	h.Fill(+5, +5, 8) // N-E
+
+	h.Annotation()["name"] = "my-name"
+	h.Annotation()["title"] = "my-title"
+
+	for _, tc := range []struct {
+		name   string
+		h2     rootio.H2
+		sumw   float64
+		sumw2  float64
+		sumwx  float64
+		sumwx2 float64
+	}{
+		{
+			name:   "TH2D",
+			h2:     rootcnv.FromH2D(h),
+			sumw:   h.SumW(),
+			sumw2:  h.SumW2(),
+			sumwx:  h.SumWX(),
+			sumwx2: h.SumWX2(),
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if got, want := tc.h2.SumW(), h.SumW(); got != want {
+				t.Fatalf("sumw: got=%v, want=%v", got, want)
+			}
+			if got, want := tc.h2.SumW2(), h.SumW2(); got != want {
+				t.Fatalf("sumw2: got=%v, want=%v", got, want)
+			}
+			if got, want := tc.h2.SumWX(), h.SumWX(); got != want {
+				t.Fatalf("sumwx: got=%v, want=%v", got, want)
+			}
+			if got, want := tc.h2.SumWX2(), h.SumWX2(); got != want {
+				t.Fatalf("sumwx2: got=%v, want=%v", got, want)
+			}
+
+			rraw, err := tc.h2.(yodacnv.Marshaler).MarshalYODA()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			hh, err := rootcnv.H2D(tc.h2)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			hraw, err := hh.MarshalYODA()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var hr = rootio.Factory.Get(tc.name)().Interface().(rootio.H2)
+			if err := hr.(yodacnv.Unmarshaler).UnmarshalYODA(hraw); err != nil {
+				t.Fatal(err)
+			}
+
+			rgot, err := hr.(yodacnv.Marshaler).MarshalYODA()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !bytes.Equal(rgot, rraw) {
+				t.Fatalf("round trip error:\nraw:\n%s\ngot:\n%s\n", rraw, rgot)
+			}
+		})
 	}
 }

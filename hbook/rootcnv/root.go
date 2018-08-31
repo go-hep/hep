@@ -64,6 +64,11 @@ func S2D(g rootio.Graph) (*hbook.S2D, error) {
 }
 
 // FromH1D creates a new ROOT TH1D from a 1-dim hbook histogram.
-func FromH1D(h1 *hbook.H1D) (*rootio.H1D, error) {
-	return rootio.NewH1DFrom(h1), nil
+func FromH1D(h1 *hbook.H1D) *rootio.H1D {
+	return rootio.NewH1DFrom(h1)
+}
+
+// FromH2D creates a new ROOT TH2D from a 2-dim hbook histogram.
+func FromH2D(h2 *hbook.H2D) *rootio.H2D {
+	return rootio.NewH2DFrom(h2)
 }
