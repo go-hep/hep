@@ -42,6 +42,47 @@ func (g *tgraph) XY(i int) (float64, float64) {
 	return g.x[i], g.y[i]
 }
 
+// ROOTMarshaler is the interface implemented by an object that can
+// marshal itself to a ROOT buffer
+func (g *tgraph) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+
+	w.WriteVersion(g.rvers)
+
+	for _, a := range []ROOTMarshaler{
+		&g.named,
+		&attline{},
+		&attfill{},
+		&attmarker{},
+	} {
+		if _, err := a.MarshalROOT(w); err != nil {
+			w.err = err
+			return 0, w.err
+		}
+	}
+
+	w.WriteI32(g.npoints)
+	{
+		w.WriteI8(0)
+		w.WriteFastArrayF64(g.x)
+		w.WriteI8(0)
+		w.WriteFastArrayF64(g.y)
+	}
+
+	w.WriteObjectAny(g.funcs)
+	w.WriteObjectAny(g.histo)
+	{
+		w.WriteF64(g.min)
+		w.WriteF64(g.max)
+	}
+
+	return w.SetByteCount(pos, "TGraph")
+}
+
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (g *tgraph) UnmarshalROOT(r *RBuffer) error {
@@ -125,6 +166,31 @@ func (g *tgrapherrs) YError(i int) (float64, float64) {
 	return g.yerr[i], g.yerr[i]
 }
 
+// ROOTMarshaler is the interface implemented by an object that can
+// marshal itself to a ROOT buffer
+func (g *tgrapherrs) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, nil
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(g.rvers)
+
+	if n, err := g.tgraph.MarshalROOT(w); err != nil {
+		w.err = err
+		return n, w.err
+	}
+
+	{
+		w.WriteI8(0)
+		w.WriteFastArrayF64(g.xerr)
+		w.WriteI8(0)
+		w.WriteFastArrayF64(g.yerr)
+	}
+
+	return w.SetByteCount(pos, "TGraphErrors")
+}
+
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (g *tgrapherrs) UnmarshalROOT(r *RBuffer) error {
@@ -180,6 +246,35 @@ func (g *tgraphasymmerrs) XError(i int) (float64, float64) {
 
 func (g *tgraphasymmerrs) YError(i int) (float64, float64) {
 	return g.yerrlo[i], g.yerrhi[i]
+}
+
+// ROOTMarshaler is the interface implemented by an object that can
+// marshal itself to a ROOT buffer
+func (g *tgraphasymmerrs) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(g.rvers)
+
+	if n, err := g.tgraph.MarshalROOT(w); err != nil {
+		w.err = err
+		return n, w.err
+	}
+
+	{
+		w.WriteI8(0)
+		w.WriteFastArrayF64(g.xerrlo)
+		w.WriteI8(0)
+		w.WriteFastArrayF64(g.xerrhi)
+		w.WriteI8(0)
+		w.WriteFastArrayF64(g.yerrlo)
+		w.WriteI8(0)
+		w.WriteFastArrayF64(g.yerrhi)
+	}
+
+	return w.SetByteCount(pos, "TGraphAsymmErrors")
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -270,19 +365,24 @@ func init() {
 	}
 }
 
-var _ Object = (*tgraph)(nil)
-var _ Named = (*tgraph)(nil)
-var _ Graph = (*tgraph)(nil)
-var _ ROOTUnmarshaler = (*tgraph)(nil)
+var (
+	_ Object          = (*tgraph)(nil)
+	_ Named           = (*tgraph)(nil)
+	_ Graph           = (*tgraph)(nil)
+	_ ROOTMarshaler   = (*tgraph)(nil)
+	_ ROOTUnmarshaler = (*tgraph)(nil)
 
-var _ Object = (*tgrapherrs)(nil)
-var _ Named = (*tgrapherrs)(nil)
-var _ Graph = (*tgrapherrs)(nil)
-var _ GraphErrors = (*tgrapherrs)(nil)
-var _ ROOTUnmarshaler = (*tgrapherrs)(nil)
+	_ Object          = (*tgrapherrs)(nil)
+	_ Named           = (*tgrapherrs)(nil)
+	_ Graph           = (*tgrapherrs)(nil)
+	_ GraphErrors     = (*tgrapherrs)(nil)
+	_ ROOTMarshaler   = (*tgrapherrs)(nil)
+	_ ROOTUnmarshaler = (*tgrapherrs)(nil)
 
-var _ Object = (*tgraphasymmerrs)(nil)
-var _ Named = (*tgraphasymmerrs)(nil)
-var _ Graph = (*tgraphasymmerrs)(nil)
-var _ GraphErrors = (*tgraphasymmerrs)(nil)
-var _ ROOTUnmarshaler = (*tgraphasymmerrs)(nil)
+	_ Object          = (*tgraphasymmerrs)(nil)
+	_ Named           = (*tgraphasymmerrs)(nil)
+	_ Graph           = (*tgraphasymmerrs)(nil)
+	_ GraphErrors     = (*tgraphasymmerrs)(nil)
+	_ ROOTMarshaler   = (*tgraphasymmerrs)(nil)
+	_ ROOTUnmarshaler = (*tgraphasymmerrs)(nil)
+)
