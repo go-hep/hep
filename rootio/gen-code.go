@@ -50,6 +50,10 @@ func gofmt(f *os.File) {
 func genImports(w io.Writer, imports ...string) {
 	fmt.Fprintf(w, srcHeader)
 	for _, imp := range imports {
+		if imp == "" {
+			fmt.Fprintf(w, "\n")
+			continue
+		}
 		fmt.Fprintf(w, "\t%q\n", imp)
 	}
 	fmt.Fprintf(w, ")\n\n")
@@ -248,7 +252,7 @@ func genH1() {
 	}
 	defer f.Close()
 
-	genImports(f, "bytes", "fmt", "math")
+	genImports(f, "bytes", "fmt", "math", "", "go-hep.org/x/hep/hbook")
 
 	for i, typ := range []struct {
 		Name string
@@ -291,7 +295,7 @@ func genH2() {
 	}
 	defer f.Close()
 
-	genImports(f, "bytes", "fmt", "math")
+	genImports(f, "bytes", "fmt", "math", "", "go-hep.org/x/hep/hbook")
 
 	for i, typ := range []struct {
 		Name string
@@ -817,7 +821,7 @@ func (h *{{.Name}}) XBinWidth(i int) float64 {
 	return h.th1.xaxis.BinWidth(i)
 }
 
-func (h *{{.Name}}) dist0D(i int) dist0D {
+func (h *{{.Name}}) dist1D(i int) hbook.Dist1D {
 	v := h.XBinContent(i)
 	err := h.XBinError(i)
 	n := h.entries(v, err)
@@ -826,10 +830,12 @@ func (h *{{.Name}}) dist0D(i int) dist0D {
 	if len(h.th1.sumw2.Data) > 0 {
 		sumw2 = h.th1.sumw2.Data[i]
 	}
-	return dist0D{
-		n:     n,
-		sumw:  float64(sumw),
-		sumw2: float64(sumw2),
+	return hbook.Dist1D{
+		Dist: hbook.Dist0D{
+			N:     n,
+			SumW:  float64(sumw),
+			SumW2: float64(sumw2),
+		},
 	}
 }
 
@@ -845,22 +851,24 @@ func (h *{{.Name}}) entries(height, err float64) int64 {
 func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
 	var (
 		nx    = h.NbinsX()
-		dflow = [2]dist0D{
-			h.dist0D(0),    // underflow
-			h.dist0D(nx+1), // overflow
+		dflow = [2]hbook.Dist1D{
+			h.dist1D(0),    // underflow
+			h.dist1D(nx+1), // overflow
 		}
-		dtot = dist0D{
-			n:      int64(h.Entries()),
-			sumw:   float64(h.SumW()),
-			sumw2:  float64(h.SumW2()),
-			sumwx:  float64(h.SumWX()),
-			sumwx2: float64(h.SumWX2()),
+		dtot = hbook.Dist1D{
+			Dist: hbook.Dist0D{
+				N:      int64(h.Entries()),
+				SumW:   float64(h.SumW()),
+				SumW2:  float64(h.SumW2()),
+			},
+			SumWX:  float64(h.SumWX()),
+			SumWX2: float64(h.SumWX2()),
 		}
-		dists = make([]dist0D, int(nx))
+		dists = make([]hbook.Dist1D, int(nx))
 	)
 
 	for i := 0; i < nx; i++ {
-		dists[i] = h.dist0D(i+1)
+		dists[i] = h.dist1D(i+1)
 	}
 
 	buf := new(bytes.Buffer)
@@ -878,7 +886,7 @@ func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
 		buf,
 		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
 		name, name,
-		dtot.SumW(), dtot.SumW2(), dtot.SumWX(), dtot.SumWX2(), dtot.Entries(),
+		dtot.SumW(), dtot.SumW2(), dtot.SumWX, dtot.SumWX2, dtot.Entries(),
 	)
 
 	name = "Underflow"
@@ -886,7 +894,7 @@ func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
 		buf,
 		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
 		name, name,
-		dflow[0].SumW(), dflow[0].SumW2(), dflow[0].SumWX(), dflow[0].SumWX2(), dflow[0].Entries(),
+		dflow[0].SumW(), dflow[0].SumW2(), dflow[0].SumWX, dflow[0].SumWX2, dflow[0].Entries(),
 	)
 
 	name = "Overflow"
@@ -894,7 +902,7 @@ func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
 		buf,
 		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
 		name, name,
-		dflow[1].SumW(), dflow[1].SumW2(), dflow[1].SumWX(), dflow[1].SumWX2(), dflow[1].Entries(),
+		dflow[1].SumW(), dflow[1].SumW2(), dflow[1].SumWX, dflow[1].SumWX2, dflow[1].Entries(),
 	)
 	fmt.Fprintf(buf, "# xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries\n")
 	for i, d := range dists {
@@ -904,7 +912,7 @@ func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
 			buf,
 			"%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 			xmin, xmax,
-			d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.Entries(),
+			d.SumW(), d.SumW2(), d.SumWX, d.SumWX2, d.Entries(),
 		)
 	}
 	fmt.Fprintf(buf, "END YODA_HISTO1D\n\n")
@@ -1048,7 +1056,7 @@ func (h *{{.Name}}) bin(ix, iy int) int {
 	return ix + (nx+1)*iy
 }
 
-func (h *{{.Name}}) dist2D(ix, iy int) dist2D {
+func (h *{{.Name}}) dist2D(ix, iy int) hbook.Dist2D {
 	i := h.bin(ix, iy)
 	vx := h.XBinContent(i)
 	xerr := h.XBinError(i)
@@ -1062,16 +1070,20 @@ func (h *{{.Name}}) dist2D(ix, iy int) dist2D {
 	if len(h.th1.sumw2.Data) > 0 {
 		sumw2 = h.th1.sumw2.Data[i]
 	}
-	return dist2D{
-		x: dist0D{
-			n:     nx,
-			sumw:  float64(sumw),
-			sumw2: float64(sumw2),
+	return hbook.Dist2D{
+		X: hbook.Dist1D{
+			Dist: hbook.Dist0D{
+				N:     nx,
+				SumW:  float64(sumw),
+				SumW2: float64(sumw2),
+			},
 		},
-		y: dist0D{
-			n:     ny,
-			sumw:  float64(sumw),
-			sumw2: float64(sumw2),
+		Y: hbook.Dist1D{
+			Dist: hbook.Dist0D{
+				N:     ny,
+				SumW:  float64(sumw),
+				SumW2: float64(sumw2),
+			},
 		},
 	}
 }
@@ -1090,7 +1102,7 @@ func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
 		ny       = h.NbinsY()
 		xinrange = 1
 		yinrange = 1
-		dflow    = [8]dist2D{
+		dflow    = [8]hbook.Dist2D{
 			h.dist2D(0, 0),
 			h.dist2D(0, yinrange),
 			h.dist2D(0, ny+1),
@@ -1100,24 +1112,28 @@ func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
 			h.dist2D(xinrange, 0),
 			h.dist2D(xinrange, ny+1),
 		}
-		dtot = dist2D{
-			x: dist0D{
-				n:      int64(h.Entries()),
-				sumw:   float64(h.SumW()),
-				sumw2:  float64(h.SumW2()),
-				sumwx:  float64(h.SumWX()),
-				sumwx2: float64(h.SumWX2()),
+		dtot = hbook.Dist2D{
+			X: hbook.Dist1D{
+				Dist: hbook.Dist0D {
+					N:      int64(h.Entries()),
+					SumW:   float64(h.SumW()),
+					SumW2:  float64(h.SumW2()),
+				},
+				SumWX:  float64(h.SumWX()),
+				SumWX2: float64(h.SumWX2()),
 			},
-			y: dist0D{
-				n:      int64(h.Entries()),
-				sumw:   float64(h.SumW()),
-				sumw2:  float64(h.SumW2()),
-				sumwx:  float64(h.SumWY()),
-				sumwx2: float64(h.SumWY2()),
+			Y: hbook.Dist1D{
+				Dist: hbook.Dist0D{
+					N:      int64(h.Entries()),
+					SumW:   float64(h.SumW()),
+					SumW2:  float64(h.SumW2()),
+				},
+				SumWX:  float64(h.SumWY()),
+				SumWX2: float64(h.SumWY2()),
 			},
-			sumWXY: h.SumWXY(),
+			SumWXY: h.SumWXY(),
 		}
-		dists = make([]dist2D, int(nx*ny))
+		dists = make([]hbook.Dist2D, int(nx*ny))
 	)
 	for ix := 0; ix < nx; ix++ {
 		for iy := 0; iy < ny; iy++ {
@@ -1142,7 +1158,7 @@ func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
 		buf,
 		"%s\t%s\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 		name, name,
-		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.sumWXY, d.Entries(),
+		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
 	)
 
 	if false { // FIXME(sbinet)
@@ -1151,7 +1167,7 @@ func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
 				buf,
 				"%s\t%s\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				name, name,
-				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.sumWXY, d.Entries(),
+				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
 			)
 
 		}
@@ -1174,7 +1190,7 @@ func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
 				buf,
 				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				xmin, xmax, ymin, ymax,
-				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.sumWXY, d.Entries(),
+				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
 			)
 		}
 	}
