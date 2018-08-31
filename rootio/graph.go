@@ -5,7 +5,10 @@
 package rootio
 
 import (
+	"math"
 	"reflect"
+
+	"go-hep.org/x/hep/hbook"
 )
 
 type tgraph struct {
@@ -20,6 +23,46 @@ type tgraph struct {
 	histo   *H1F
 	min     float64
 	max     float64
+}
+
+func newGraph(n int) *tgraph {
+	return &tgraph{
+		rvers:   4, // FIXME(sbinet): harmonize versions
+		named:   *newNamed("", ""),
+		maxsize: int32(n),
+		npoints: int32(n),
+		x:       make([]float64, n),
+		y:       make([]float64, n),
+		funcs:   newList(""),
+	}
+}
+
+// NewGraphFrom creates a new Graph from 2-dim hbook data points.
+func NewGraphFrom(s2 *hbook.S2D) Graph {
+	var (
+		n     = s2.Len()
+		groot = newGraphErrs(n)
+		ymin  = +math.MaxFloat64
+		ymax  = -math.MaxFloat64
+	)
+
+	for i, pt := range s2.Points() {
+		groot.x[i] = pt.X
+		groot.y[i] = pt.Y
+
+		ymax = math.Max(ymax, pt.Y)
+		ymin = math.Min(ymin, pt.Y)
+	}
+
+	groot.tgraph.named.name = s2.Name()
+	if v, ok := s2.Annotation()["title"]; ok {
+		groot.tgraph.named.title = v.(string)
+	}
+
+	groot.min = ymin
+	groot.max = ymax
+
+	return groot
 }
 
 func (g *tgraph) Class() string {
@@ -154,6 +197,45 @@ type tgrapherrs struct {
 	yerr []float64
 }
 
+func newGraphErrs(n int) *tgrapherrs {
+	return &tgrapherrs{
+		rvers:  3, // FIXME(sbinet): harmonize versions
+		tgraph: *newGraph(n),
+		xerr:   make([]float64, n),
+		yerr:   make([]float64, n),
+	}
+}
+
+// NewGraphErrorsFrom creates a new GraphErrors from 2-dim hbook data points.
+func NewGraphErrorsFrom(s2 *hbook.S2D) GraphErrors {
+	var (
+		n     = s2.Len()
+		groot = newGraphErrs(n)
+		ymin  = +math.MaxFloat64
+		ymax  = -math.MaxFloat64
+	)
+
+	for i, pt := range s2.Points() {
+		groot.x[i] = pt.X
+		groot.xerr[i] = pt.ErrX.Min
+		groot.y[i] = pt.Y
+		groot.yerr[i] = pt.ErrY.Min
+
+		ymax = math.Max(ymax, pt.Y)
+		ymin = math.Min(ymin, pt.Y)
+	}
+
+	groot.tgraph.named.name = s2.Name()
+	if v, ok := s2.Annotation()["title"]; ok {
+		groot.tgraph.named.title = v.(string)
+	}
+
+	groot.min = ymin
+	groot.max = ymax
+
+	return groot
+}
+
 func (g *tgrapherrs) Class() string {
 	return "TGraphErrors"
 }
@@ -234,6 +316,49 @@ type tgraphasymmerrs struct {
 	xerrhi []float64
 	yerrlo []float64
 	yerrhi []float64
+}
+
+func newGraphAsymmErrs(n int) *tgraphasymmerrs {
+	return &tgraphasymmerrs{
+		rvers:  3, // FIXME(sbinet): harmonize versions
+		tgraph: *newGraph(n),
+		xerrlo: make([]float64, n),
+		xerrhi: make([]float64, n),
+		yerrlo: make([]float64, n),
+		yerrhi: make([]float64, n),
+	}
+}
+
+// NewGraphAsymmErrorsFrom creates a new GraphAsymErrors from 2-dim hbook data points.
+func NewGraphAsymmErrorsFrom(s2 *hbook.S2D) GraphErrors {
+	var (
+		n     = s2.Len()
+		groot = newGraphAsymmErrs(n)
+		ymin  = +math.MaxFloat64
+		ymax  = -math.MaxFloat64
+	)
+
+	for i, pt := range s2.Points() {
+		groot.x[i] = pt.X
+		groot.xerrlo[i] = pt.ErrX.Min
+		groot.xerrhi[i] = pt.ErrX.Max
+		groot.y[i] = pt.Y
+		groot.yerrlo[i] = pt.ErrY.Min
+		groot.yerrhi[i] = pt.ErrY.Max
+
+		ymax = math.Max(ymax, pt.Y)
+		ymin = math.Min(ymin, pt.Y)
+	}
+
+	groot.tgraph.named.name = s2.Name()
+	if v, ok := s2.Annotation()["title"]; ok {
+		groot.tgraph.named.title = v.(string)
+	}
+
+	groot.min = ymin
+	groot.max = ymax
+
+	return groot
 }
 
 func (g *tgraphasymmerrs) Class() string {
@@ -341,7 +466,7 @@ func (g *tgraphasymmerrs) UnmarshalROOT(r *RBuffer) error {
 func init() {
 	{
 		f := func() reflect.Value {
-			o := &tgraph{}
+			o := newGraph(0)
 			return reflect.ValueOf(o)
 		}
 		Factory.add("TGraph", f)
@@ -349,7 +474,7 @@ func init() {
 	}
 	{
 		f := func() reflect.Value {
-			o := &tgrapherrs{}
+			o := newGraphErrs(0)
 			return reflect.ValueOf(o)
 		}
 		Factory.add("TGraphErrors", f)
@@ -357,7 +482,7 @@ func init() {
 	}
 	{
 		f := func() reflect.Value {
-			o := &tgraphasymmerrs{}
+			o := newGraphAsymmErrs(0)
 			return reflect.ValueOf(o)
 		}
 		Factory.add("TGraphAsymmErrors", f)

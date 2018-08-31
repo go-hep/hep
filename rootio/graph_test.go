@@ -7,8 +7,11 @@ package rootio_test
 import (
 	"fmt"
 	"log"
+	"os"
 	"testing"
 
+	"go-hep.org/x/hep/hbook"
+	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/rootio"
 )
 
@@ -228,4 +231,198 @@ func TestGraphAsymmErrors(t *testing.T) {
 			t.Errorf("yerr[%d].high=%v want=%v", i, yhi, want)
 		}
 	}
+}
+
+func ExampleCreate_graph() {
+	const fname = "graph_example.root"
+	defer os.Remove(fname)
+
+	f, err := rootio.Create(fname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	hg := hbook.NewS2D(hbook.Point2D{X: 1, Y: 1}, hbook.Point2D{X: 2, Y: 1.5}, hbook.Point2D{X: -1, Y: +2})
+
+	fmt.Printf("original graph:\n")
+	for i, pt := range hg.Points() {
+		fmt.Printf("pt[%d]=%+v\n", i, pt)
+	}
+
+	rg := rootio.NewGraphFrom(hg)
+
+	err = f.Put("gr", rg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = f.Close()
+	if err != nil {
+		log.Fatalf("error closing ROOT file: %v", err)
+	}
+
+	r, err := rootio.Open(fname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer r.Close()
+
+	robj, err := r.Get("gr")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hr, err := rootcnv.S2D(robj.(rootio.Graph))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("\ngraph read back:\n")
+	for i, pt := range hr.Points() {
+		fmt.Printf("pt[%d]=%+v\n", i, pt)
+	}
+
+	// Output:
+	// original graph:
+	// pt[0]={X:1 Y:1 ErrX:{Min:0 Max:0} ErrY:{Min:0 Max:0}}
+	// pt[1]={X:2 Y:1.5 ErrX:{Min:0 Max:0} ErrY:{Min:0 Max:0}}
+	// pt[2]={X:-1 Y:2 ErrX:{Min:0 Max:0} ErrY:{Min:0 Max:0}}
+	//
+	// graph read back:
+	// pt[0]={X:1 Y:1 ErrX:{Min:0 Max:0} ErrY:{Min:0 Max:0}}
+	// pt[1]={X:2 Y:1.5 ErrX:{Min:0 Max:0} ErrY:{Min:0 Max:0}}
+	// pt[2]={X:-1 Y:2 ErrX:{Min:0 Max:0} ErrY:{Min:0 Max:0}}
+}
+
+func ExampleCreate_graphErrors() {
+	const fname = "grapherr_example.root"
+	defer os.Remove(fname)
+
+	f, err := rootio.Create(fname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	hg := hbook.NewS2D(
+		hbook.Point2D{X: 1, Y: 1, ErrX: hbook.Range{Min: 2, Max: 2}, ErrY: hbook.Range{Min: 3, Max: 3}},
+		hbook.Point2D{X: 2, Y: 1.5, ErrX: hbook.Range{Min: 2, Max: 2}, ErrY: hbook.Range{Min: 3, Max: 3}},
+		hbook.Point2D{X: -1, Y: +2, ErrX: hbook.Range{Min: 2, Max: 2}, ErrY: hbook.Range{Min: 3, Max: 3}},
+	)
+
+	fmt.Printf("original graph:\n")
+	for i, pt := range hg.Points() {
+		fmt.Printf("pt[%d]=%+v\n", i, pt)
+	}
+
+	rg := rootio.NewGraphErrorsFrom(hg)
+
+	err = f.Put("gr", rg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = f.Close()
+	if err != nil {
+		log.Fatalf("error closing ROOT file: %v", err)
+	}
+
+	r, err := rootio.Open(fname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer r.Close()
+
+	robj, err := r.Get("gr")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hr, err := rootcnv.S2D(robj.(rootio.GraphErrors))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("\ngraph read back:\n")
+	for i, pt := range hr.Points() {
+		fmt.Printf("pt[%d]=%+v\n", i, pt)
+	}
+
+	// Output:
+	// original graph:
+	// pt[0]={X:1 Y:1 ErrX:{Min:2 Max:2} ErrY:{Min:3 Max:3}}
+	// pt[1]={X:2 Y:1.5 ErrX:{Min:2 Max:2} ErrY:{Min:3 Max:3}}
+	// pt[2]={X:-1 Y:2 ErrX:{Min:2 Max:2} ErrY:{Min:3 Max:3}}
+	//
+	// graph read back:
+	// pt[0]={X:1 Y:1 ErrX:{Min:2 Max:2} ErrY:{Min:3 Max:3}}
+	// pt[1]={X:2 Y:1.5 ErrX:{Min:2 Max:2} ErrY:{Min:3 Max:3}}
+	// pt[2]={X:-1 Y:2 ErrX:{Min:2 Max:2} ErrY:{Min:3 Max:3}}
+}
+
+func ExampleCreate_graphAsymmErrors() {
+	const fname = "graphasymmerr_example.root"
+	defer os.Remove(fname)
+
+	f, err := rootio.Create(fname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	hg := hbook.NewS2D(
+		hbook.Point2D{X: 1, Y: 1, ErrX: hbook.Range{Min: 1, Max: 2}, ErrY: hbook.Range{Min: 3, Max: 4}},
+		hbook.Point2D{X: 2, Y: 1.5, ErrX: hbook.Range{Min: 1, Max: 2}, ErrY: hbook.Range{Min: 3, Max: 4}},
+		hbook.Point2D{X: -1, Y: +2, ErrX: hbook.Range{Min: 1, Max: 2}, ErrY: hbook.Range{Min: 3, Max: 4}},
+	)
+
+	fmt.Printf("original graph:\n")
+	for i, pt := range hg.Points() {
+		fmt.Printf("pt[%d]=%+v\n", i, pt)
+	}
+
+	rg := rootio.NewGraphAsymmErrorsFrom(hg)
+
+	err = f.Put("gr", rg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = f.Close()
+	if err != nil {
+		log.Fatalf("error closing ROOT file: %v", err)
+	}
+
+	r, err := rootio.Open(fname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer r.Close()
+
+	robj, err := r.Get("gr")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hr, err := rootcnv.S2D(robj.(rootio.GraphErrors))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("\ngraph read back:\n")
+	for i, pt := range hr.Points() {
+		fmt.Printf("pt[%d]=%+v\n", i, pt)
+	}
+
+	// Output:
+	// original graph:
+	// pt[0]={X:1 Y:1 ErrX:{Min:1 Max:2} ErrY:{Min:3 Max:4}}
+	// pt[1]={X:2 Y:1.5 ErrX:{Min:1 Max:2} ErrY:{Min:3 Max:4}}
+	// pt[2]={X:-1 Y:2 ErrX:{Min:1 Max:2} ErrY:{Min:3 Max:4}}
+	//
+	// graph read back:
+	// pt[0]={X:1 Y:1 ErrX:{Min:1 Max:2} ErrY:{Min:3 Max:4}}
+	// pt[1]={X:2 Y:1.5 ErrX:{Min:1 Max:2} ErrY:{Min:3 Max:4}}
+	// pt[2]={X:-1 Y:2 ErrX:{Min:1 Max:2} ErrY:{Min:3 Max:4}}
 }
