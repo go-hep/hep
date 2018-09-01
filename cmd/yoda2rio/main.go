@@ -46,6 +46,7 @@ ex:
 		log.Printf("missing input file name")
 		flag.Usage()
 		flag.PrintDefaults()
+		os.Exit(1)
 	}
 
 	o, err := rio.NewWriter(os.Stdout)
