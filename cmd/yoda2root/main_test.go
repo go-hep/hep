@@ -44,12 +44,12 @@ func TestYODA2ROOT(t *testing.T) {
 		rfname string
 	}{
 		{
-			yfname: "f.yoda",
-			rfname: "f.root",
+			yfname: "f1.yoda",
+			rfname: "f1.root",
 		},
 		{
-			yfname: "f.yoda.gz",
-			rfname: "f.root",
+			yfname: "f2.yoda.gz",
+			rfname: "f2.root",
 		},
 	} {
 		t.Run(tc.yfname, func(t *testing.T) {
@@ -79,6 +79,13 @@ func TestYODA2ROOT(t *testing.T) {
 			err = yf.Close()
 			if err != nil {
 				t.Fatal(err)
+			}
+
+			if strings.HasSuffix(yfname, ".gz") {
+				err = f.Close()
+				if err != nil {
+					t.Fatal(err)
+				}
 			}
 
 			o, err := rootio.Create(rfname)
