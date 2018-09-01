@@ -194,11 +194,11 @@ func (dir *tdirectory) Put(name string, obj Object) error {
 		cycle int16
 		title = ""
 	)
-	if name == "" {
-		if v, ok := obj.(Named); ok {
+	if v, ok := obj.(Named); ok {
+		if name == "" {
 			name = v.Name()
-			title = v.Title()
 		}
+		title = v.Title()
 	}
 	if name == "" {
 		return errors.Errorf("rootio: empty key name")
