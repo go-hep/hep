@@ -9,7 +9,7 @@
 //
 //  $> yoda2root rivet.yoda rivet.root
 //  $> yoda2root rivet.yoda.gz rivet.root
-package main
+package main // import "go-hep.org/x/hep/cmd/yoda2root"
 
 import (
 	"compress/gzip"
