@@ -6,6 +6,11 @@ os:
 env:
  - TAGS="-tags travis"
 
+cache:
+ directories:
+   - $HOME/.cache/go-build
+   - $HOME/gopath/pkg/mod
+
 matrix:
  fast_finish: true
  allow_failures:

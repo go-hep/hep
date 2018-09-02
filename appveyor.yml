@@ -2,6 +2,9 @@ build: off
 
 clone_folder: c:\gopath\src\go-hep.org\x\hep
 
+cache:
+  - '%LocalAppData%\go-build'
+
 branches:
   only:
     - master
