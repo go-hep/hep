@@ -250,9 +250,12 @@ func (k *Key) store() error {
 	if err != nil {
 		return err
 	}
-	k.buf = buf.buffer()         // FIXME(sbinet): handle compression
-	k.objlen = int32(len(k.buf)) // FIXME(sbinet): handle compression
-	nbytes := k.objlen
+	k.objlen = int32(len(buf.buffer()))
+	k.buf, err = compress(k.f.compression, buf.buffer())
+	if err != nil {
+		return err
+	}
+	nbytes := int32(len(k.buf))
 	k.bytes = k.keylen + nbytes
 
 	if k.seekkey == 0 {

@@ -5,6 +5,7 @@
 package rootio
 
 import (
+	"compress/flate"
 	"fmt"
 	"io"
 	"os"
@@ -37,6 +38,9 @@ type stater interface {
 	// Stat returns a FileInfo describing the file.
 	Stat() (os.FileInfo, error)
 }
+
+// FileOption configures internal states of a ROOT file.
+type FileOption func(f *File) error
 
 // A ROOT file is a suite of consecutive data records (TKey's) with
 // the following format (see also the TKey class). If the key is
@@ -149,7 +153,7 @@ func NewReader(r Reader) (*File, error) {
 }
 
 // Create creates the named ROOT file for writing.
-func Create(name string) (*File, error) {
+func Create(name string, opts ...FileOption) (*File, error) {
 	fd, err := os.Create(name)
 	if err != nil {
 		return nil, fmt.Errorf("rootio: unable to create %q (%q)", name, err.Error())
@@ -169,6 +173,18 @@ func Create(name string) (*File, error) {
 	}
 	f.dir = *newDirectoryFile(name, f)
 	f.spans.add(kBEGIN, kStartBigFile)
+
+	f.setCompression(kZLIB, flate.BestCompression)
+
+	for _, opt := range opts {
+		if opt == nil {
+			continue
+		}
+		err := opt(f)
+		if err != nil {
+			return nil, errors.Wrapf(err, "rootio: could not apply option to ROOT file")
+		}
+	}
 
 	// write directory info
 	namelen := f.dir.dir.named.sizeof()

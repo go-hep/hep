@@ -5,6 +5,7 @@
 package rootio_test
 
 import (
+	"compress/flate"
 	"fmt"
 	"log"
 	"os"
@@ -94,6 +95,53 @@ func ExampleCreate() {
 	// Output:
 	// wkeys: 1
 	// rkeys: 1
+	// key: name="my-objstring", type="TObjString"
+	// objstring="Hello World from Go-HEP!"
+}
+
+func ExampleCreate_withZlib() {
+	const fname = "objstring-zlib.root"
+	defer os.Remove(fname)
+
+	w, err := rootio.Create(fname, rootio.WithZlib(flate.BestCompression))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer w.Close()
+
+	var (
+		k = "my-objstring"
+		v = rootio.NewObjString("Hello World from Go-HEP!")
+	)
+
+	err = w.Put(k, v)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = w.Close()
+	if err != nil {
+		log.Fatalf("could not close writable file: %v", err)
+	}
+
+	r, err := rootio.Open(fname)
+	if err != nil {
+		log.Fatalf("could not open file: %v", err)
+	}
+	defer r.Close()
+
+	for _, k := range r.Keys() {
+		fmt.Printf("key: name=%q, type=%q\n", k.Name(), k.ClassName())
+	}
+
+	obj, err := r.Get(k)
+	if err != nil {
+		log.Fatalf("could not get key %q: %v", k, err)
+	}
+	rv := obj.(rootio.ObjString)
+	fmt.Printf("objstring=%q\n", rv)
+
+	// Output:
 	// key: name="my-objstring", type="TObjString"
 	// objstring="Hello World from Go-HEP!"
 }

@@ -17,6 +17,7 @@ require (
 	github.com/pborman/uuid v0.0.0-20180827223501-4c1ecd6722e8
 	github.com/peterh/liner v1.1.0
 	github.com/pierrec/lz4 v2.0.4-0.20180826165652-dbe9298ce099+incompatible
+	github.com/pierrec/xxHash v0.1.1
 	github.com/pkg/errors v0.8.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sbinet/npyio v0.2.0
