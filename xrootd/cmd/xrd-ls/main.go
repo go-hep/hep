@@ -102,6 +102,7 @@ func xrdls(name string, long, recursive bool) error {
 	fs := c.FS()
 
 	fi, err := fs.Stat(ctx, url.Path)
+	// TODO fi.Name() here is an empty string (see handling in format() below)
 	if err != nil {
 		return errors.Errorf("could not stat %q: %v", url.Path, err)
 	}
@@ -115,6 +116,7 @@ func xrdls(name string, long, recursive bool) error {
 
 func display(ctx context.Context, fs xrdfs.FileSystem, root string, fi os.FileInfo, long, recursive bool) error {
 	if !fi.IsDir() {
+		// TODO fi.Name() here is an empty string (see handling in format() below)
 		format(os.Stdout, root, fi, long)
 		return nil
 	}
@@ -161,5 +163,9 @@ func format(o io.Writer, root string, fi os.FileInfo, long bool) {
 		return
 	}
 
-	fmt.Fprintf(o, "%v\t %d\t %s\t %s\n", fi.Mode(), fi.Size(), fi.ModTime().Format("Jan 02 15:04"), fi.Name())
+	name := fi.Name()
+	if name == "" {
+		name = root
+	}
+	fmt.Fprintf(o, "%v\t %d\t %s\t %s\n", fi.Mode(), fi.Size(), fi.ModTime().Format("Jan 02 15:04"), name)
 }
