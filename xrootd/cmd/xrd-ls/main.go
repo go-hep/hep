@@ -163,11 +163,9 @@ func format(o io.Writer, root string, fi os.FileInfo, long bool) {
 		return
 	}
 
-	var name string
-	if fi.Name() == "" {
+	name := fi.Name()
+	if name == "" {
 		name = root
-	} else {
-		name = fi.Name()
 	}
 	fmt.Fprintf(o, "%v\t %d\t %s\t %s\n", fi.Mode(), fi.Size(), fi.ModTime().Format("Jan 02 15:04"), name)
 }
