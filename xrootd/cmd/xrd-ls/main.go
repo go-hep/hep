@@ -73,7 +73,11 @@ func main() {
 		log.Fatalf("missing directory operand")
 	}
 
-	for _, dir := range flag.Args() {
+	for i, dir := range flag.Args() {
+		if i > 0 {
+			// separate consecutive files by an empty line
+			fmt.Printf("\n")
+		}
 		err := xrdls(dir, *longFlag, *recFlag)
 		if err != nil {
 			log.Fatalf("could not list %q content: %v", dir, err)
@@ -134,12 +138,13 @@ func display(ctx context.Context, fs xrdfs.FileSystem, root string, fi os.FileIn
 		format(o, root, e, long)
 	}
 	o.Flush()
-	fmt.Printf("\n")
 	if recursive {
 		for _, e := range ents {
 			if !e.IsDir() {
 				continue
 			}
+			// make an empty line before going into a subdirectory.
+			fmt.Printf("\n")
 			err := display(ctx, fs, dir, e, long, recursive)
 			if err != nil {
 				return err
