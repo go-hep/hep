@@ -372,6 +372,8 @@ func genStreamers() {
 	tmpl := template.Must(template.New("genstreamers").Parse(`
 void genstreamers(const char* fname) {
 	auto f = TFile::Open(fname, "RECREATE");
+	f->SetCompressionAlgorithm(1);
+	f->SetCompressionLevel(9);
 
 {{range .}}
 	(({{.}}*)(TClass::GetClass("{{.}}")->New()))->Write("type-{{.}}");
