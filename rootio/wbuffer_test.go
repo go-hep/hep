@@ -5,6 +5,7 @@
 package rootio
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"math"
@@ -62,8 +63,8 @@ func TestWBuffer_WriteBool(t *testing.T) {
 }
 
 func TestWBuffer_WriteString(t *testing.T) {
-	for i := 0; i < 512; i++ {
-		t.Run("", func(t *testing.T) {
+	for _, i := range []int{0, 1, 2, 8, 16, 32, 64, 128, 253, 254, 255, 256, 512} {
+		t.Run(fmt.Sprintf("str-%03d", i), func(t *testing.T) {
 			wbuf := NewWBuffer(nil, nil, 0, nil)
 			want := strings.Repeat("=", i)
 			wbuf.WriteString(want)
