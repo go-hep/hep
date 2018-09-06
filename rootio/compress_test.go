@@ -54,7 +54,6 @@ void testcompress(const char *fname, int size) {
 		{name: "default", opt: func(*File) error { return nil }},
 		{name: "default-nil", opt: nil},
 		{name: "no-compr", opt: WithoutCompression()},
-		{name: "default-nil", opt: nil},
 		{name: "lz4-default", opt: WithLZ4(flate.DefaultCompression)},
 		{name: "lz4-0", opt: WithLZ4(0)},
 		{name: "lz4-1", opt: WithLZ4(1)},
