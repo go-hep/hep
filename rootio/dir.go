@@ -179,11 +179,11 @@ func (dir *tdirectory) Get(namecycle string) (Object, error) {
 		if k.Name() == name {
 			if cycle != 9999 {
 				if k.cycle == cycle {
-					return k.Value().(Object), nil
+					return k.Object()
 				}
 				continue
 			}
-			return k.Value().(Object), nil
+			return k.Object()
 		}
 	}
 	return nil, noKeyError{key: namecycle, obj: dir}
