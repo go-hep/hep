@@ -151,7 +151,7 @@ func (k *Key) Cycle() int {
 func (k *Key) Value() interface{} {
 	v, err := k.Object()
 	if err != nil {
-		panic(fmt.Errorf("error loading payload for %q: %v", k.Name(), err))
+		panic(fmt.Errorf("error loading payload for %q: %+v", k.Name(), err))
 	}
 	return v
 }
@@ -164,7 +164,7 @@ func (k *Key) Object() (Object, error) {
 
 	buf, err := k.Bytes()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "rootio: could not load key payload")
 	}
 
 	fct := Factory.Get(k.class)
@@ -185,7 +185,7 @@ func (k *Key) Object() (Object, error) {
 
 	err = vv.UnmarshalROOT(NewRBuffer(buf, nil, uint32(k.keylen), k.f))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "rootio: could not unmarshal key payload")
 	}
 
 	if vv, ok := obj.(SetFiler); ok {
@@ -225,7 +225,7 @@ func (k *Key) load(buf []byte) ([]byte, error) {
 		sr := io.NewSectionReader(k.f, start, int64(k.bytes)-int64(k.keylen))
 		err := decompress(sr, buf)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "rootio: could not decompress key payload")
 		}
 		return buf, nil
 	}
