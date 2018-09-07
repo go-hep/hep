@@ -46,7 +46,7 @@ func main() {
 	}
 	defer f.Close()
 
-	args := []string{"test"}
+	args := []string{"test", "-v"}
 
 	if *cover {
 		args = append(args, "-coverprofile=profile.out", "-covermode=atomic")
