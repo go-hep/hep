@@ -78,7 +78,7 @@ func init() {
 		return reflect.ValueOf(o)
 	}
 	Factory.add("TObjString", f)
-	Factory.add("*rootio.tobjString", f)
+	Factory.add("*rootio.tobjstring", f)
 }
 
 var (

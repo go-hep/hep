@@ -59,6 +59,8 @@ type Key struct {
 
 	buf []byte // buffer of the Key's value
 	obj Object // Key's value
+
+	otyp reflect.Type // Go type of the Key's payload.
 }
 
 func newKey(name, title, class string, nbytes int32, f *File) Key {
@@ -123,6 +125,7 @@ func newKeyFrom(obj Object, wbuf *WBuffer) (Key, error) {
 		title:    title,
 		buf:      data,
 		obj:      obj,
+		otyp:     reflect.TypeOf(obj),
 	}
 	return k, nil
 }
@@ -145,6 +148,21 @@ func (k *Key) Title() string {
 
 func (k *Key) Cycle() int {
 	return int(k.cycle)
+}
+
+// ObjectType returns the Key's payload type.
+//
+// ObjectType returns nil if the Key's payload type is not known
+// to the registry of rootio.
+func (k *Key) ObjectType() reflect.Type {
+	if k.otyp != nil {
+		return k.otyp
+	}
+	if !Factory.HasKey(k.class) {
+		return nil
+	}
+	k.otyp = Factory.Get(k.class)().Type()
+	return k.otyp
 }
 
 // Value returns the data corresponding to the Key's value
