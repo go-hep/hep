@@ -105,20 +105,4 @@ const (
 	kDisplacementMask = 0xFF000000
 )
 
-type compressAlgType int
-
-// constants for compression/decompression
-const (
-	kZLIB                          compressAlgType = 1
-	kLZMA                          compressAlgType = 2
-	kOldCompressionAlgo            compressAlgType = 3
-	kLZ4                           compressAlgType = 4
-	kUndefinedCompressionAlgorithm compressAlgType = 5
-)
-
-// Note: this contains ZL[src][dst] where src and dst are 3 bytes each.
-// Won't bother with this for the moment, since we can cross-check against
-// objlen.
-const rootHDRSIZE = 9
-
 var ptrSize = 4 << (^uintptr(0) >> 63)

@@ -24,8 +24,9 @@ func TestCompress(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	wants := map[string]Object{
-		"big":   NewObjString(strings.Repeat("*", 512)),
 		"small": NewObjString("hello"),
+		"10mb":  NewObjString(strings.Repeat("-+", 10*1024*1024)),
+		"16mb":  NewObjString(strings.Repeat("-+", 16*1024*1024)),
 	}
 
 	cxxROOT, err := exec.LookPath("root.exe")
@@ -74,6 +75,11 @@ void testcompress(const char *fname, int size) {
 		{name: "zlib-best-compr", opt: WithZlib(flate.BestCompression)},
 	} {
 		for k, want := range wants {
+			if (k == "16mb" || k == "10mb") &&
+				!strings.HasSuffix(tc.name, "best-compr") &&
+				!strings.HasSuffix(tc.name, "-1") {
+				continue
+			}
 			tname := fmt.Sprintf("%s-%s", k, tc.name)
 			t.Run(tname, func(t *testing.T) {
 				fname := filepath.Join(dir, "test-"+tname+".root")
