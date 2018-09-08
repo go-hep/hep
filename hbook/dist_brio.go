@@ -42,9 +42,9 @@ func (o *Dist1D) MarshalBinary() (data []byte, err error) {
 		data = append(data, buf[:8]...)
 		data = append(data, sub...)
 	}
-	binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(o.SumWX))
+	binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(o.Stats.SumWX))
 	data = append(data, buf[:8]...)
-	binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(o.SumWX2))
+	binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(o.Stats.SumWX2))
 	data = append(data, buf[:8]...)
 	return data, err
 }
@@ -60,9 +60,9 @@ func (o *Dist1D) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
-	o.SumWX = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+	o.Stats.SumWX = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
 	data = data[8:]
-	o.SumWX2 = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+	o.Stats.SumWX2 = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
 	data = data[8:]
 	return err
 }
@@ -88,7 +88,7 @@ func (o *Dist2D) MarshalBinary() (data []byte, err error) {
 		data = append(data, buf[:8]...)
 		data = append(data, sub...)
 	}
-	binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(o.SumWXY))
+	binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(o.Stats.SumWXY))
 	data = append(data, buf[:8]...)
 	return data, err
 }
@@ -113,7 +113,7 @@ func (o *Dist2D) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
-	o.SumWXY = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+	o.Stats.SumWXY = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
 	data = data[8:]
 	return err
 }

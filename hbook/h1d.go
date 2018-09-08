@@ -99,12 +99,12 @@ func (h *H1D) SumW2() float64 {
 
 // SumWX returns the 1st order weighted x moment
 func (h *H1D) SumWX() float64 {
-	return h.Binning.Dist.SumWX
+	return h.Binning.Dist.SumWX()
 }
 
 // SumWX2 returns the 2nd order weighted x moment
 func (h *H1D) SumWX2() float64 {
-	return h.Binning.Dist.SumWX2
+	return h.Binning.Dist.SumWX2()
 }
 
 // XMean returns the mean X.
@@ -343,20 +343,20 @@ func (h *H1D) MarshalYODA() ([]byte, error) {
 	fmt.Fprintf(
 		buf,
 		"Total   \tTotal   \t%e\t%e\t%e\t%e\t%d\n",
-		d.SumW(), d.SumW2(), d.SumWX, d.SumWX2, d.Entries(),
+		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.Entries(),
 	)
 	d = h.Binning.Outflows[0]
 	fmt.Fprintf(
 		buf,
 		"Underflow\tUnderflow\t%e\t%e\t%e\t%e\t%d\n",
-		d.SumW(), d.SumW2(), d.SumWX, d.SumWX2, d.Entries(),
+		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.Entries(),
 	)
 
 	d = h.Binning.Outflows[1]
 	fmt.Fprintf(
 		buf,
 		"Overflow\tOverflow\t%e\t%e\t%e\t%e\t%d\n",
-		d.SumW(), d.SumW2(), d.SumWX, d.SumWX2, d.Entries(),
+		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.Entries(),
 	)
 
 	// bins
@@ -367,7 +367,7 @@ func (h *H1D) MarshalYODA() ([]byte, error) {
 			buf,
 			"%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 			bin.Range.Min, bin.Range.Max,
-			d.SumW(), d.SumW2(), d.SumWX, d.SumWX2, d.Entries(),
+			d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.Entries(),
 		)
 	}
 	fmt.Fprintf(buf, "END YODA_HISTO1D\n\n")
@@ -430,7 +430,7 @@ scanLoop:
 				rbuf,
 				"Total   \tTotal   \t%e\t%e\t%e\t%e\t%d\n",
 				&d.Dist.SumW, &d.Dist.SumW2,
-				&d.SumWX, &d.SumWX2,
+				&d.Stats.SumWX, &d.Stats.SumWX2,
 				&d.Dist.N,
 			)
 			if err != nil {
@@ -443,7 +443,7 @@ scanLoop:
 				rbuf,
 				"Underflow\tUnderflow\t%e\t%e\t%e\t%e\t%d\n",
 				&d.Dist.SumW, &d.Dist.SumW2,
-				&d.SumWX, &d.SumWX2,
+				&d.Stats.SumWX, &d.Stats.SumWX2,
 				&d.Dist.N,
 			)
 			if err != nil {
@@ -456,7 +456,7 @@ scanLoop:
 				rbuf,
 				"Overflow\tOverflow\t%e\t%e\t%e\t%e\t%d\n",
 				&d.Dist.SumW, &d.Dist.SumW2,
-				&d.SumWX, &d.SumWX2,
+				&d.Stats.SumWX, &d.Stats.SumWX2,
 				&d.Dist.N,
 			)
 			if err != nil {
@@ -471,7 +471,7 @@ scanLoop:
 				"%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				&bin.Range.Min, &bin.Range.Max,
 				&d.Dist.SumW, &d.Dist.SumW2,
-				&d.SumWX, &d.SumWX2,
+				&d.Stats.SumWX, &d.Stats.SumWX2,
 				&d.Dist.N,
 			)
 			if err != nil {

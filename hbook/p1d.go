@@ -285,8 +285,8 @@ scanLoop:
 				rbuf,
 				"Total   \tTotal   \t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				&d.X.Dist.SumW, &d.X.Dist.SumW2,
-				&d.X.SumWX, &d.X.SumWX2,
-				&d.Y.SumWX, &d.Y.SumWX2,
+				&d.X.Stats.SumWX, &d.X.Stats.SumWX2,
+				&d.Y.Stats.SumWX, &d.Y.Stats.SumWX2,
 				&d.X.Dist.N,
 			)
 			if err != nil {
@@ -300,8 +300,8 @@ scanLoop:
 				rbuf,
 				"Underflow\tUnderflow\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				&d.X.Dist.SumW, &d.X.Dist.SumW2,
-				&d.X.SumWX, &d.X.SumWX2,
-				&d.Y.SumWX, &d.Y.SumWX2,
+				&d.X.Stats.SumWX, &d.X.Stats.SumWX2,
+				&d.Y.Stats.SumWX, &d.Y.Stats.SumWX2,
 				&d.X.Dist.N,
 			)
 			if err != nil {
@@ -315,8 +315,8 @@ scanLoop:
 				rbuf,
 				"Overflow\tOverflow\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				&d.X.Dist.SumW, &d.X.Dist.SumW2,
-				&d.X.SumWX, &d.X.SumWX2,
-				&d.Y.SumWX, &d.Y.SumWX2,
+				&d.X.Stats.SumWX, &d.X.Stats.SumWX2,
+				&d.Y.Stats.SumWX, &d.Y.Stats.SumWX2,
 				&d.X.Dist.N,
 			)
 			if err != nil {
@@ -332,8 +332,8 @@ scanLoop:
 				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				&bin.xrange.Min, &bin.xrange.Max,
 				&d.X.Dist.SumW, &d.X.Dist.SumW2,
-				&d.X.SumWX, &d.X.SumWX2,
-				&d.Y.SumWX, &d.Y.SumWX2,
+				&d.X.Stats.SumWX, &d.X.Stats.SumWX2,
+				&d.Y.Stats.SumWX, &d.Y.Stats.SumWX2,
 				&d.X.Dist.N,
 			)
 			if err != nil {

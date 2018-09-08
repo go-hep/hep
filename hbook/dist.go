@@ -56,9 +56,11 @@ func (d *Dist0D) scaleW(f float64) {
 
 // Dist1D is a 1-dim distribution.
 type Dist1D struct {
-	Dist   Dist0D  // weight moments
-	SumWX  float64 // 1st order weighted x moment
-	SumWX2 float64 // 2nd order weighted x moment
+	Dist  Dist0D // weight moments
+	Stats struct {
+		SumWX  float64 // 1st order weighted x moment
+		SumWX2 float64 // 2nd order weighted x moment
+	}
 }
 
 // Rank returns the number of dimensions of the distribution.
@@ -86,6 +88,16 @@ func (d *Dist1D) SumW2() float64 {
 	return d.Dist.SumW2
 }
 
+// SumWX returns the 1st order weighted x moment.
+func (d *Dist1D) SumWX() float64 {
+	return d.Stats.SumWX
+}
+
+// SumWX2 returns the 2nd order weighted x moment.
+func (d *Dist1D) SumWX2() float64 {
+	return d.Stats.SumWX2
+}
+
 // errW returns the absolute error on sumW()
 func (d *Dist1D) errW() float64 {
 	return d.Dist.errW()
@@ -99,7 +111,7 @@ func (d *Dist1D) relErrW() float64 {
 // mean returns the weighted mean of the distribution
 func (d *Dist1D) mean() float64 {
 	// FIXME(sbinet): check for low stats?
-	return d.SumWX / d.SumW()
+	return d.SumWX() / d.SumW()
 }
 
 // variance returns the weighted variance of the distribution, defined as:
@@ -108,7 +120,7 @@ func (d *Dist1D) mean() float64 {
 func (d *Dist1D) variance() float64 {
 	// FIXME(sbinet): check for low stats?
 	sumw := d.SumW()
-	num := d.SumWX2*sumw - d.SumWX*d.SumWX
+	num := d.SumWX2()*sumw - d.SumWX()*d.SumWX()
 	den := sumw*sumw - d.SumW2()
 	v := num / den
 	return math.Abs(v)
@@ -130,32 +142,34 @@ func (d *Dist1D) stdErr() float64 {
 //  rms = \sqrt{\sum{w . x^2} / \sum{w}}
 func (d *Dist1D) rms() float64 {
 	// FIXME(sbinet): check for low stats?
-	meansq := d.SumWX2 / d.SumW()
+	meansq := d.SumWX2() / d.SumW()
 	return math.Sqrt(meansq)
 }
 
 func (d *Dist1D) fill(x, w float64) {
 	d.Dist.fill(w)
-	d.SumWX += w * x
-	d.SumWX2 += w * x * x
+	d.Stats.SumWX += w * x
+	d.Stats.SumWX2 += w * x * x
 }
 
 func (d *Dist1D) scaleW(f float64) {
 	d.Dist.scaleW(f)
-	d.SumWX *= f
-	d.SumWX2 *= f
+	d.Stats.SumWX *= f
+	d.Stats.SumWX2 *= f
 }
 
 func (d *Dist1D) scaleX(f float64) {
-	d.SumWX *= f
-	d.SumWX2 *= f * f
+	d.Stats.SumWX *= f
+	d.Stats.SumWX2 *= f * f
 }
 
 // Dist2D is a 2-dim distribution.
 type Dist2D struct {
-	X      Dist1D  // x moments
-	Y      Dist1D  // y moments
-	SumWXY float64 // 2nd-order cross-term
+	X     Dist1D // x moments
+	Y     Dist1D // y moments
+	Stats struct {
+		SumWXY float64 // 2nd-order cross-term
+	}
 }
 
 // Rank returns the number of dimensions of the distribution.
@@ -185,22 +199,27 @@ func (d *Dist2D) SumW2() float64 {
 
 // SumWX returns the 1st order weighted x moment
 func (d *Dist2D) SumWX() float64 {
-	return d.X.SumWX
+	return d.X.SumWX()
 }
 
 // SumWX2 returns the 2nd order weighted x moment
 func (d *Dist2D) SumWX2() float64 {
-	return d.X.SumWX2
+	return d.X.SumWX2()
 }
 
 // SumWY returns the 1st order weighted y moment
 func (d *Dist2D) SumWY() float64 {
-	return d.Y.SumWX
+	return d.Y.SumWX()
 }
 
 // SumWY2 returns the 2nd order weighted y moment
 func (d *Dist2D) SumWY2() float64 {
-	return d.Y.SumWX2
+	return d.Y.SumWX2()
+}
+
+// SumWXY returns the 2nd-order cross-term.
+func (d *Dist2D) SumWXY() float64 {
+	return d.Stats.SumWXY
 }
 
 // errW returns the absolute error on sumW()
@@ -266,23 +285,23 @@ func (d *Dist2D) yRMS() float64 {
 func (d *Dist2D) fill(x, y, w float64) {
 	d.X.fill(x, w)
 	d.Y.fill(y, w)
-	d.SumWXY += w * x * y
+	d.Stats.SumWXY += w * x * y
 }
 
 func (d *Dist2D) scaleW(f float64) {
 	d.X.scaleW(f)
 	d.Y.scaleW(f)
-	d.SumWXY *= f
+	d.Stats.SumWXY *= f
 }
 
 func (d *Dist2D) scaleX(f float64) {
 	d.X.scaleX(f)
-	d.SumWXY *= f
+	d.Stats.SumWXY *= f
 }
 
 func (d *Dist2D) scaleY(f float64) {
 	d.Y.scaleX(f)
-	d.SumWXY *= f
+	d.Stats.SumWXY *= f
 }
 
 func (d *Dist2D) scaleXY(fx, fy float64) {

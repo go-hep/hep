@@ -110,7 +110,7 @@ func (h *H2D) SumWY2() float64 {
 // SumWXY returns the 1st order weighted x*y moment
 // Overflows are included in the computation.
 func (h *H2D) SumWXY() float64 {
-	return h.Binning.Dist.SumWXY
+	return h.Binning.Dist.SumWXY()
 }
 
 // XMean returns the mean X.
@@ -294,7 +294,7 @@ func (h *H2D) MarshalYODA() ([]byte, error) {
 	fmt.Fprintf(
 		buf,
 		"Total   \tTotal   \t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
-		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
+		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), d.Entries(),
 	)
 
 	// outflows
@@ -310,7 +310,7 @@ func (h *H2D) MarshalYODA() ([]byte, error) {
 				buf,
 				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				bin.XRange.Min, bin.XRange.Max, bin.YRange.Min, bin.YRange.Max,
-				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
+				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), d.Entries(),
 			)
 		}
 	}
@@ -374,9 +374,9 @@ scanLoop:
 				rbuf,
 				"Total   \tTotal   \t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				&d.X.Dist.SumW, &d.X.Dist.SumW2,
-				&d.X.SumWX, &d.X.SumWX2,
-				&d.Y.SumWX, &d.Y.SumWX2,
-				&d.SumWXY, &d.X.Dist.N,
+				&d.X.Stats.SumWX, &d.X.Stats.SumWX2,
+				&d.Y.Stats.SumWX, &d.Y.Stats.SumWX2,
+				&d.Stats.SumWXY, &d.X.Dist.N,
 			)
 			if err != nil {
 				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
@@ -391,9 +391,9 @@ scanLoop:
 				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				&bin.XRange.Min, &bin.XRange.Max, &bin.YRange.Min, &bin.YRange.Max,
 				&d.X.Dist.SumW, &d.X.Dist.SumW2,
-				&d.X.SumWX, &d.X.SumWX2,
-				&d.Y.SumWX, &d.Y.SumWX2,
-				&d.SumWXY, &d.X.Dist.N,
+				&d.X.Stats.SumWX, &d.X.Stats.SumWX2,
+				&d.Y.Stats.SumWX, &d.Y.Stats.SumWX2,
+				&d.Stats.SumWXY, &d.X.Dist.N,
 			)
 			if err != nil {
 				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))

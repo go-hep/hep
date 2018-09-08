@@ -287,8 +287,6 @@ func (h *H2F) MarshalYODA() ([]byte, error) {
 					SumW:  float64(h.SumW()),
 					SumW2: float64(h.SumW2()),
 				},
-				SumWX:  float64(h.SumWX()),
-				SumWX2: float64(h.SumWX2()),
 			},
 			Y: hbook.Dist1D{
 				Dist: hbook.Dist0D{
@@ -296,13 +294,16 @@ func (h *H2F) MarshalYODA() ([]byte, error) {
 					SumW:  float64(h.SumW()),
 					SumW2: float64(h.SumW2()),
 				},
-				SumWX:  float64(h.SumWY()),
-				SumWX2: float64(h.SumWY2()),
 			},
-			SumWXY: h.SumWXY(),
 		}
 		dists = make([]hbook.Dist2D, int(nx*ny))
 	)
+	dtot.X.Stats.SumWX = float64(h.SumWX())
+	dtot.X.Stats.SumWX2 = float64(h.SumWX2())
+	dtot.Y.Stats.SumWX = float64(h.SumWY())
+	dtot.Y.Stats.SumWX2 = float64(h.SumWY2())
+	dtot.Stats.SumWXY = h.SumWXY()
+
 	for ix := 0; ix < nx; ix++ {
 		for iy := 0; iy < ny; iy++ {
 			i := iy*nx + ix
@@ -326,7 +327,7 @@ func (h *H2F) MarshalYODA() ([]byte, error) {
 		buf,
 		"%s\t%s\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 		name, name,
-		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
+		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), d.Entries(),
 	)
 
 	if false { // FIXME(sbinet)
@@ -335,7 +336,7 @@ func (h *H2F) MarshalYODA() ([]byte, error) {
 				buf,
 				"%s\t%s\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				name, name,
-				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
+				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), d.Entries(),
 			)
 
 		}
@@ -358,7 +359,7 @@ func (h *H2F) MarshalYODA() ([]byte, error) {
 				buf,
 				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				xmin, xmax, ymin, ymax,
-				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
+				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), d.Entries(),
 			)
 		}
 	}
@@ -714,8 +715,6 @@ func (h *H2D) MarshalYODA() ([]byte, error) {
 					SumW:  float64(h.SumW()),
 					SumW2: float64(h.SumW2()),
 				},
-				SumWX:  float64(h.SumWX()),
-				SumWX2: float64(h.SumWX2()),
 			},
 			Y: hbook.Dist1D{
 				Dist: hbook.Dist0D{
@@ -723,13 +722,16 @@ func (h *H2D) MarshalYODA() ([]byte, error) {
 					SumW:  float64(h.SumW()),
 					SumW2: float64(h.SumW2()),
 				},
-				SumWX:  float64(h.SumWY()),
-				SumWX2: float64(h.SumWY2()),
 			},
-			SumWXY: h.SumWXY(),
 		}
 		dists = make([]hbook.Dist2D, int(nx*ny))
 	)
+	dtot.X.Stats.SumWX = float64(h.SumWX())
+	dtot.X.Stats.SumWX2 = float64(h.SumWX2())
+	dtot.Y.Stats.SumWX = float64(h.SumWY())
+	dtot.Y.Stats.SumWX2 = float64(h.SumWY2())
+	dtot.Stats.SumWXY = h.SumWXY()
+
 	for ix := 0; ix < nx; ix++ {
 		for iy := 0; iy < ny; iy++ {
 			i := iy*nx + ix
@@ -753,7 +755,7 @@ func (h *H2D) MarshalYODA() ([]byte, error) {
 		buf,
 		"%s\t%s\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 		name, name,
-		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
+		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), d.Entries(),
 	)
 
 	if false { // FIXME(sbinet)
@@ -762,7 +764,7 @@ func (h *H2D) MarshalYODA() ([]byte, error) {
 				buf,
 				"%s\t%s\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				name, name,
-				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
+				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), d.Entries(),
 			)
 
 		}
@@ -785,7 +787,7 @@ func (h *H2D) MarshalYODA() ([]byte, error) {
 				buf,
 				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				xmin, xmax, ymin, ymax,
-				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
+				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), d.Entries(),
 			)
 		}
 	}
@@ -1141,8 +1143,6 @@ func (h *H2I) MarshalYODA() ([]byte, error) {
 					SumW:  float64(h.SumW()),
 					SumW2: float64(h.SumW2()),
 				},
-				SumWX:  float64(h.SumWX()),
-				SumWX2: float64(h.SumWX2()),
 			},
 			Y: hbook.Dist1D{
 				Dist: hbook.Dist0D{
@@ -1150,13 +1150,16 @@ func (h *H2I) MarshalYODA() ([]byte, error) {
 					SumW:  float64(h.SumW()),
 					SumW2: float64(h.SumW2()),
 				},
-				SumWX:  float64(h.SumWY()),
-				SumWX2: float64(h.SumWY2()),
 			},
-			SumWXY: h.SumWXY(),
 		}
 		dists = make([]hbook.Dist2D, int(nx*ny))
 	)
+	dtot.X.Stats.SumWX = float64(h.SumWX())
+	dtot.X.Stats.SumWX2 = float64(h.SumWX2())
+	dtot.Y.Stats.SumWX = float64(h.SumWY())
+	dtot.Y.Stats.SumWX2 = float64(h.SumWY2())
+	dtot.Stats.SumWXY = h.SumWXY()
+
 	for ix := 0; ix < nx; ix++ {
 		for iy := 0; iy < ny; iy++ {
 			i := iy*nx + ix
@@ -1180,7 +1183,7 @@ func (h *H2I) MarshalYODA() ([]byte, error) {
 		buf,
 		"%s\t%s\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 		name, name,
-		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
+		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), d.Entries(),
 	)
 
 	if false { // FIXME(sbinet)
@@ -1189,7 +1192,7 @@ func (h *H2I) MarshalYODA() ([]byte, error) {
 				buf,
 				"%s\t%s\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				name, name,
-				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
+				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), d.Entries(),
 			)
 
 		}
@@ -1212,7 +1215,7 @@ func (h *H2I) MarshalYODA() ([]byte, error) {
 				buf,
 				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
 				xmin, xmax, ymin, ymax,
-				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY, d.Entries(),
+				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), d.Entries(),
 			)
 		}
 	}
