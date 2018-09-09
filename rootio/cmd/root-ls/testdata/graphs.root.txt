@@ -1,0 +1,121 @@
+=== [../../testdata/graphs.root] ===
+version: 60806
+streamer-infos:
+ StreamerInfo for "TGraph" version=4 title=""
+  BASE    TNamed     offset=  0 type= 67 size=  0  The basis for a named object (name, title)
+  BASE    TAttLine   offset=  0 type=  0 size=  0  Line attributes
+  BASE    TAttFill   offset=  0 type=  0 size=  0  Fill area attributes
+  BASE    TAttMarker offset=  0 type=  0 size=  0  Marker attributes
+  int     fNpoints   offset=  0 type=  6 size=  4  Number of points <= fMaxSize
+  double* fX         offset=  0 type= 48 size=  8  [fNpoints] array of X points
+  double* fY         offset=  0 type= 48 size=  8  [fNpoints] array of Y points
+  TList*  fFunctions offset=  0 type= 64 size=  8  Pointer to list of functions (fits and user)
+  TH1F*   fHistogram offset=  0 type= 64 size=  8  Pointer to histogram used for drawing axis
+  double  fMinimum   offset=  0 type=  8 size=  8  Minimum value for plotting along y
+  double  fMaximum   offset=  0 type=  8 size=  8  Maximum value for plotting along y
+ StreamerInfo for "TNamed" version=1 title=""
+  BASE    TObject offset=  0 type= 66 size=  0  Basic ROOT object
+  TString fName   offset=  0 type= 65 size= 24  object identifier
+  TString fTitle  offset=  0 type= 65 size= 24  object title
+ StreamerInfo for "TObject" version=1 title=""
+  unsigned int fUniqueID offset=  0 type= 13 size=  4  object unique identifier
+  unsigned int fBits     offset=  0 type= 15 size=  4  bit field status word
+ StreamerInfo for "TAttLine" version=2 title=""
+  short fLineColor offset=  0 type=  2 size=  2  Line color
+  short fLineStyle offset=  0 type=  2 size=  2  Line style
+  short fLineWidth offset=  0 type=  2 size=  2  Line width
+ StreamerInfo for "TAttFill" version=2 title=""
+  short fFillColor offset=  0 type=  2 size=  2  Fill area color
+  short fFillStyle offset=  0 type=  2 size=  2  Fill area style
+ StreamerInfo for "TAttMarker" version=2 title=""
+  short fMarkerColor offset=  0 type=  2 size=  2  Marker color
+  short fMarkerStyle offset=  0 type=  2 size=  2  Marker style
+  float fMarkerSize  offset=  0 type=  5 size=  4  Marker size
+ StreamerInfo for "TH1F" version=2 title=""
+  BASE  TH1     offset=  0 type=  0 size=  0  1-Dim histogram base class
+  BASE  TArrayF offset=  0 type=  0 size=  0  Array of floats
+ StreamerInfo for "TH1" version=7 title=""
+  BASE              TNamed         offset=  0 type= 67 size=  0  The basis for a named object (name, title)
+  BASE              TAttLine       offset=  0 type=  0 size=  0  Line attributes
+  BASE              TAttFill       offset=  0 type=  0 size=  0  Fill area attributes
+  BASE              TAttMarker     offset=  0 type=  0 size=  0  Marker attributes
+  int               fNcells        offset=  0 type=  3 size=  4  number of bins(1D), cells (2D) +U/Overflows
+  TAxis             fXaxis         offset=  0 type= 61 size=216  X axis descriptor
+  TAxis             fYaxis         offset=  0 type= 61 size=216  Y axis descriptor
+  TAxis             fZaxis         offset=  0 type= 61 size=216  Z axis descriptor
+  short             fBarOffset     offset=  0 type=  2 size=  2  (1000*offset) for bar charts or legos
+  short             fBarWidth      offset=  0 type=  2 size=  2  (1000*width) for bar charts or legos
+  double            fEntries       offset=  0 type=  8 size=  8  Number of entries
+  double            fTsumw         offset=  0 type=  8 size=  8  Total Sum of weights
+  double            fTsumw2        offset=  0 type=  8 size=  8  Total Sum of squares of weights
+  double            fTsumwx        offset=  0 type=  8 size=  8  Total Sum of weight*X
+  double            fTsumwx2       offset=  0 type=  8 size=  8  Total Sum of weight*X*X
+  double            fMaximum       offset=  0 type=  8 size=  8  Maximum value for plotting
+  double            fMinimum       offset=  0 type=  8 size=  8  Minimum value for plotting
+  double            fNormFactor    offset=  0 type=  8 size=  8  Normalization factor
+  TArrayD           fContour       offset=  0 type= 62 size= 24  Array to display contour levels
+  TArrayD           fSumw2         offset=  0 type= 62 size= 24  Array of sum of squares of weights
+  TString           fOption        offset=  0 type= 65 size= 24  histogram options
+  TList*            fFunctions     offset=  0 type= 63 size=  8  ->Pointer to list of functions (fits and user)
+  int               fBufferSize    offset=  0 type=  6 size=  4  fBuffer size
+  double*           fBuffer        offset=  0 type= 48 size=  8  [fBufferSize] entry buffer
+  TH1::EBinErrorOpt fBinStatErrOpt offset=  0 type=  3 size=  4  option for bin statistical errors
+ StreamerInfo for "TArrayF" version=1 title=""
+  BASE   TArray  offset=  0 type=  0 size=  0  Abstract array base class
+  float* fArray  offset=  0 type= 45 size=  4  [fN] Array of fN floats
+ StreamerInfo for "TArray" version=1 title=""
+  int   fN      offset=  0 type=  6 size=  4  Number of array elements
+ StreamerInfo for "TAxis" version=10 title=""
+  BASE           TNamed       offset=  0 type= 67 size=  0  The basis for a named object (name, title)
+  BASE           TAttAxis     offset=  0 type=  0 size=  0  Axis attributes
+  int            fNbins       offset=  0 type=  3 size=  4  Number of bins
+  double         fXmin        offset=  0 type=  8 size=  8  low edge of first bin
+  double         fXmax        offset=  0 type=  8 size=  8  upper edge of last bin
+  TArrayD        fXbins       offset=  0 type= 62 size= 24  Bin edges array in X
+  int            fFirst       offset=  0 type=  3 size=  4  first bin to display
+  int            fLast        offset=  0 type=  3 size=  4  last bin to display
+  unsigned short fBits2       offset=  0 type= 12 size=  2  second bit status word
+  bool           fTimeDisplay offset=  0 type= 18 size=  1  on/off displaying time values instead of numerics
+  TString        fTimeFormat  offset=  0 type= 65 size= 24  Date&time format, ex: 09/12/99 12:34:00
+  THashList*     fLabels      offset=  0 type= 64 size=  8  List of labels
+  TList*         fModLabs     offset=  0 type= 64 size=  8  List of modified labels
+ StreamerInfo for "TAttAxis" version=4 title=""
+  int   fNdivisions  offset=  0 type=  3 size=  4  Number of divisions(10000*n3 + 100*n2 + n1)
+  short fAxisColor   offset=  0 type=  2 size=  2  Color of the line axis
+  short fLabelColor  offset=  0 type=  2 size=  2  Color of labels
+  short fLabelFont   offset=  0 type=  2 size=  2  Font for labels
+  float fLabelOffset offset=  0 type=  5 size=  4  Offset of labels
+  float fLabelSize   offset=  0 type=  5 size=  4  Size of labels
+  float fTickLength  offset=  0 type=  5 size=  4  Length of tick marks
+  float fTitleOffset offset=  0 type=  5 size=  4  Offset of axis title
+  float fTitleSize   offset=  0 type=  5 size=  4  Size of axis title
+  short fTitleColor  offset=  0 type=  2 size=  2  Color of axis title
+  short fTitleFont   offset=  0 type=  2 size=  2  Font for axis title
+ StreamerInfo for "TArrayD" version=1 title=""
+  BASE    TArray  offset=  0 type=  0 size=  0  Abstract array base class
+  double* fArray  offset=  0 type= 48 size=  8  [fN] Array of fN doubles
+ StreamerInfo for "TString" version=2 title=""
+ StreamerInfo for "THashList" version=0 title=""
+  BASE  TList   offset=  0 type=  0 size=  0  Doubly linked list
+ StreamerInfo for "TList" version=5 title=""
+  BASE  TSeqCollection offset=  0 type=  0 size=  0  Sequenceable collection ABC
+ StreamerInfo for "TSeqCollection" version=0 title=""
+  BASE  TCollection offset=  0 type=  0 size=  0  Collection abstract base class
+ StreamerInfo for "TCollection" version=3 title=""
+  BASE    TObject offset=  0 type= 66 size=  0  Basic ROOT object
+  TString fName   offset=  0 type= 65 size= 24  name of the collection
+  int     fSize   offset=  0 type=  3 size=  4  number of elements in collection
+ StreamerInfo for "TGraphErrors" version=3 title=""
+  BASE    TGraph  offset=  0 type=  0 size=  0  Graph graphics class
+  double* fEX     offset=  0 type= 48 size=  8  [fNpoints] array of X errors
+  double* fEY     offset=  0 type= 48 size=  8  [fNpoints] array of Y errors
+ StreamerInfo for "TGraphAsymmErrors" version=3 title=""
+  BASE    TGraph  offset=  0 type=  0 size=  0  Graph graphics class
+  double* fEXlow  offset=  0 type= 48 size=  8  [fNpoints] array of X low errors
+  double* fEXhigh offset=  0 type= 48 size=  8  [fNpoints] array of X high errors
+  double* fEYlow  offset=  0 type= 48 size=  8  [fNpoints] array of Y low errors
+  double* fEYhigh offset=  0 type= 48 size=  8  [fNpoints] array of Y high errors
+---
+TGraph            tg      graph without errors         (cycle=1)
+TGraphErrors      tge     graph with errors            (cycle=1)
+TGraphAsymmErrors tgae    graph with asymmetric errors (cycle=1)

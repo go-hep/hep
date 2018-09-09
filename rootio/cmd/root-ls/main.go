@@ -50,6 +50,7 @@ import (
 	"runtime/pprof"
 	"text/tabwriter"
 
+	"github.com/pkg/errors"
 	"go-hep.org/x/hep/rootio"
 )
 
@@ -91,45 +92,66 @@ options:
 		os.Exit(1)
 	}
 
+	cmd := rootls{
+		stdout:    os.Stdout,
+		streamers: *doSI,
+		trees:     *doTree,
+	}
+
 	for ii, fname := range flag.Args() {
 
 		if ii > 0 {
-			fmt.Printf("\n")
+			fmt.Fprintf(cmd.stdout, "\n")
 		}
-
-		fmt.Printf("=== [%s] ===\n", fname)
-		f, err := rootio.Open(fname)
+		err := cmd.ls(fname)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "rootio: failed to open [%s]: %v\n", fname, err)
+			log.Printf("%+v", err)
 			os.Exit(1)
 		}
-		defer f.Close()
-		fmt.Printf("version: %v\n", f.Version())
-		if *doSI {
-			fmt.Printf("streamer-infos:\n")
-			sinfos := f.StreamerInfos()
-			for _, v := range sinfos {
-				name := v.Name()
-				fmt.Printf(" StreamerInfo for %q version=%d title=%q\n", name, v.ClassVersion(), v.Title())
-				w := tabwriter.NewWriter(os.Stdout, 8, 4, 1, ' ', 0)
-				for _, elm := range v.Elements() {
-					fmt.Fprintf(w, "  %s\t%s\toffset=%3d\ttype=%3d\tsize=%3d\t %s\n", elm.TypeName(), elm.Name(), elm.Offset(), elm.Type(), elm.Size(), elm.Title())
-				}
-				w.Flush()
-			}
-		}
-
-		w := tabwriter.NewWriter(os.Stdout, 8, 4, 1, ' ', 0)
-		for _, k := range f.Keys() {
-			walk(w, k)
-		}
-		w.Flush()
 	}
 }
 
-func walk(w io.Writer, k rootio.Key) {
+type rootls struct {
+	stdout    io.Writer
+	streamers bool
+	trees     bool
+}
+
+func (ls rootls) ls(fname string) error {
+	fmt.Fprintf(ls.stdout, "=== [%s] ===\n", fname)
+	f, err := rootio.Open(fname)
+	if err != nil {
+		return errors.Wrapf(err, "could not open file")
+	}
+	defer f.Close()
+	fmt.Fprintf(ls.stdout, "version: %v\n", f.Version())
+	if ls.streamers {
+		fmt.Fprintf(ls.stdout, "streamer-infos:\n")
+		sinfos := f.StreamerInfos()
+		for _, v := range sinfos {
+			name := v.Name()
+			fmt.Fprintf(ls.stdout, " StreamerInfo for %q version=%d title=%q\n", name, v.ClassVersion(), v.Title())
+			w := tabwriter.NewWriter(ls.stdout, 8, 4, 1, ' ', 0)
+			for _, elm := range v.Elements() {
+				fmt.Fprintf(w, "  %s\t%s\toffset=%3d\ttype=%3d\tsize=%3d\t %s\n", elm.TypeName(), elm.Name(), elm.Offset(), elm.Type(), elm.Size(), elm.Title())
+			}
+			w.Flush()
+		}
+		fmt.Fprintf(ls.stdout, "---\n")
+	}
+
+	w := tabwriter.NewWriter(ls.stdout, 8, 4, 1, ' ', 0)
+	for _, k := range f.Keys() {
+		ls.walk(w, k)
+	}
+	w.Flush()
+
+	return nil
+}
+
+func (ls rootls) walk(w io.Writer, k rootio.Key) {
 	obj := k.Value()
-	if *doTree {
+	if ls.trees {
 		tree, ok := obj.(rootio.Tree)
 		if ok {
 			w := newWindent(2, w)
@@ -143,7 +165,7 @@ func walk(w io.Writer, k rootio.Key) {
 	if dir, ok := obj.(rootio.Directory); ok {
 		w := newWindent(2, w)
 		for _, k := range dir.Keys() {
-			walk(w, k)
+			ls.walk(w, k)
 		}
 		w.Flush()
 	}
