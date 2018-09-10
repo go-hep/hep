@@ -34,8 +34,8 @@ require (
 	gonum.org/v1/plot v0.0.0-20180905080458-5f3c436ce602
 	gopkg.in/jcmturner/aescts.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/dnsutils.v1 v1.0.1 // indirect
-	gopkg.in/jcmturner/goidentity.v2 v2.0.0 // indirect
-	gopkg.in/jcmturner/gokrb5.v5 v5.3.0
-	gopkg.in/jcmturner/rpc.v0 v0.0.2 // indirect
+	gopkg.in/jcmturner/goidentity.v3 v3.0.0 // indirect
+	gopkg.in/jcmturner/gokrb5.v6 v6.0.1
+	gopkg.in/jcmturner/rpc.v1 v1.1.0 // indirect
 	rsc.io/pdf v0.1.1
 )
