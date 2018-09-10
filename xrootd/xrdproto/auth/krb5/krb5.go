@@ -67,7 +67,12 @@ func WithCredCache() (*Auth, error) {
 
 	cfg, err := config.Load(configPath)
 	if err != nil {
-		return nil, errors.WithMessage(err, "auth/krb5: could not load kerberos-5 configuration")
+		switch err.(type) {
+		case config.UnsupportedDirective:
+			// ok. just ignore it.
+		default:
+			return nil, errors.WithMessage(err, "auth/krb5: could not load kerberos-5 configuration")
+		}
 	}
 
 	krb.WithConfig(cfg)
