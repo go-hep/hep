@@ -4,13 +4,13 @@
 
 // root-cp selects and copies keys from a ROOT file to another ROOT file.
 //
-// Usage: root-cp [options] file1.root [file2.root [...]] out.root
+// Usage: root-cp [options] file1.root[:REGEXP] [file2.root[:REGEXP] [...]] out.root
 //
 // ex:
 //
 //  $> root-cp f.root out.root
 //  $> root-cp f1.root f2.root f3.root out.root
-//  $> root-cp f1.root:h1 f2.root:h2 out.root
+//  $> root-cp f1.root:hist.* f2.root:h2 out.root
 //
 package main // import "go-hep.org/x/hep/rootio/cmd/root-cp"
 
@@ -35,12 +35,12 @@ func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(
 			os.Stderr,
-			`Usage: root-cp [options] file1.root [file2.root [...]] out.root
+			`Usage: root-cp [options] file1.root[:REGEXP] [file2.root[:REGEXP] [...]] out.root
 
 ex:
  $> root-cp f.root out.root
  $> root-cp f1.root f2.root f3.root out.root
- $> root-cp f1.root:hist* f2.root:h2 out.root
+ $> root-cp f1.root:hist.* f2.root:h2 out.root
 
 options:
 `,
