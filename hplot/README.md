@@ -47,7 +47,7 @@ func ExampleH1D() {
 
 	// normalize histogram
 	area := 0.0
-	for _, bin := range hist.Binning().Bins() {
+	for _, bin := range hist.Binning.Bins {
 		area += bin.SumW() * bin.XWidth()
 	}
 	hist.Scale(1 / area)

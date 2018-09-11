@@ -21,6 +21,8 @@ import (
 	"gonum.org/v1/plot/vg/vgimg"
 )
 
+//go:generate embedmd -w README.md
+
 // Plot is the basic type representing a plot.
 type Plot struct {
 	*plot.Plot
