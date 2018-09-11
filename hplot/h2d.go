@@ -19,16 +19,13 @@ type H2D struct {
 	// H is the histogramming data
 	H *hbook.H2D
 
-	// Palette is the color palette used to render
-	// the heat map. Palette must not be nil or
-	// return a zero length []color.Color.
-	Palette palette.Palette
-
 	// InfoStyle is the style of infos displayed for
 	// the histogram (entries, mean, rms)
 	Infos HInfos
 
-	p *plotter.HeatMap
+	// HeatMap implements the Plotter interface, drawing
+	// a heat map of the values in the 2-d histogram.
+	HeatMap *plotter.HeatMap
 }
 
 // NewH2D returns a new 2-dim histogram from a hbook.H2D.
@@ -38,34 +35,27 @@ func NewH2D(h *hbook.H2D, p palette.Palette) *H2D {
 	}
 	return &H2D{
 		H:       h,
-		Palette: p,
+		HeatMap: plotter.NewHeatMap(h.GridXYZ(), p),
 	}
-}
-
-func (h *H2D) pltr() *plotter.HeatMap {
-	if h.p == nil {
-		h.p = plotter.NewHeatMap(h.H.GridXYZ(), h.Palette)
-	}
-	return h.p
 }
 
 // Plot implements the Plotter interface, drawing a line
 // that connects each point in the Line.
 func (h *H2D) Plot(c draw.Canvas, p *plot.Plot) {
-	h.pltr().Plot(c, p)
+	h.HeatMap.Plot(c, p)
 }
 
 // DataRange implements the DataRange method
 // of the plot.DataRanger interface.
 func (h *H2D) DataRange() (xmin, xmax, ymin, ymax float64) {
-	return h.pltr().DataRange()
+	return h.HeatMap.DataRange()
 }
 
 // GlyphBoxes returns a slice of GlyphBoxes,
 // one for each of the bins, implementing the
 // plot.GlyphBoxer interface.
 func (h *H2D) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
-	return h.pltr().GlyphBoxes(p)
+	return h.HeatMap.GlyphBoxes(p)
 }
 
 // check interfaces

@@ -5,6 +5,7 @@
 package hplot_test
 
 import (
+	"image/color"
 	"log"
 	"testing"
 
@@ -82,4 +83,59 @@ func TestH2DABCD(t *testing.T) {
 	}
 
 	checkPlot(t, "testdata/h2d_plot_abcd_golden.png")
+}
+
+func TestH2MinMax(t *testing.T) {
+	type pair struct{ i, j int }
+
+	const n = 3
+	h2 := hbook.NewH2D(n, 0, n, n, 0, n)
+	ws := map[pair]float64{
+		pair{0, 0}: 0,
+		pair{0, 1}: 1,
+		pair{0, 2}: 2,
+		pair{1, 0}: 0,
+		pair{1, 1}: 1,
+		pair{1, 2}: 2,
+		pair{2, 0}: 0,
+		pair{2, 1}: 1,
+		pair{2, 2}: 2,
+	}
+	for i := 0; i < n; i++ {
+		ix := float64(i)
+		for j := 0; j < n; j++ {
+			iy := float64(j)
+			p := pair{i, j}
+			v := ws[p]
+			h2.Fill(ix, iy, v)
+		}
+	}
+
+	pl := hplot.New()
+	pl.X.Min = 0
+	pl.X.Max = 3
+	pl.Y.Min = 0
+	pl.Y.Max = 3
+	hh := hplot.NewH2D(h2, labels{})
+	hh.HeatMap.Min = 0
+	hh.HeatMap.Max = 3
+	pl.Add(hh)
+
+	err := pl.Save(5*vg.Centimeter, 5*vg.Centimeter, "testdata/h2d_plot_minmax.png")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checkPlot(t, "testdata/h2d_plot_minmax_golden.png")
+}
+
+type labels struct{}
+
+func (labels) Colors() []color.Color {
+	return []color.Color{
+		color.RGBA{255, 0, 0, 255},
+		color.RGBA{0, 255, 0, 255},
+		color.RGBA{0, 0, 255, 255},
+		color.Black,
+	}
 }
