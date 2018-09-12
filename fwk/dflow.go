@@ -11,8 +11,10 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/awalterschulze/gographviz"
 	"go-hep.org/x/hep/fwk/utils/tarjan"
+	"gonum.org/v1/gonum/graph/encoding"
+	"gonum.org/v1/gonum/graph/encoding/dot"
+	"gonum.org/v1/gonum/graph/simple"
 )
 
 type node struct {
@@ -126,7 +128,7 @@ func (svc *dflowsvc) StartSvc(ctx Context) error {
 	}
 
 	if svc.dotfile != "" {
-		err = svc.dumpgraph()
+		err = svc.dumpGraph()
 		if err != nil {
 			return err
 		}
@@ -267,43 +269,94 @@ func (svc *dflowsvc) addOutNode(tsk string, name string, t reflect.Type) error {
 	return nil
 }
 
-func (svc *dflowsvc) dumpgraph() error {
+type nodeFlow struct {
+	simple.Node
+	attrs []encoding.Attribute
+}
+
+func (n *nodeFlow) Attributes() []encoding.Attribute {
+	return n.attrs
+}
+
+func (svc *dflowsvc) dumpGraph() error {
 	var err error
-	g := gographviz.NewGraph()
-	gname := "dataflow"
-	g.SetName(gname)
-	g.SetDir(true)
+	gr := simple.NewDirectedGraph()
 
 	quote := func(s string) string {
 		return fmt.Sprintf("%q", s)
 	}
 
-	for name, typ := range svc.edges {
-		typename := typ.String()
-		attrdata := map[string]string{
-			`"node"`: `"data"`,
-			`"type"`: quote(typename),
+	id := int64(0)
+	ids := make(map[string]*nodeFlow, len(svc.edges)+len(svc.nodes))
+
+	{
+		keys := make([]string, 0, len(svc.edges))
+		for edge := range svc.edges {
+			keys = append(keys, edge)
 		}
-		g.AddNode(gname, quote(name), attrdata)
+		sort.Strings(keys)
+
+		for _, edge := range keys {
+			id++
+			node := &nodeFlow{
+				simple.Node(id),
+				[]encoding.Attribute{
+					{Key: `"node"`, Value: `"data"`},
+					{Key: `"label"`, Value: quote(edge)},
+				},
+			}
+			ids["data-"+edge] = node
+			gr.AddNode(node)
+		}
+
+		keys = keys[:0]
+		for name := range svc.nodes {
+			keys = append(keys, name)
+		}
+		sort.Strings(keys)
+
+		for _, name := range keys {
+			id++
+			node := &nodeFlow{
+				simple.Node(id),
+				[]encoding.Attribute{
+					{Key: `"node"`, Value: `"task"`},
+					{Key: `"shape"`, Value: `"component"`},
+					{Key: `"label"`, Value: quote(name)},
+				},
+			}
+			ids["task-"+name] = node
+			gr.AddNode(node)
+		}
 	}
 
-	attrtask := map[string]string{
-		`"node"`:  `"task"`,
-		`"shape"`: `"component"`,
-	}
 	for name, node := range svc.nodes {
-		g.AddNode(gname, quote(name), attrtask)
-
 		for in := range node.in {
-			g.AddEdge(quote(in), quote(name), true, nil)
+			from := ids["data-"+in]
+			to := ids["task-"+name]
+			gr.SetEdge(simple.Edge{
+				F: from,
+				T: to,
+			})
 		}
 
 		for out := range node.out {
-			g.AddEdge(quote(name), quote(out), true, nil)
+			from := ids["task-"+name]
+			to := ids["data-"+out]
+			gr.SetEdge(simple.Edge{
+				F: from,
+				T: to,
+			})
 		}
 	}
 
-	err = ioutil.WriteFile(svc.dotfile, []byte(g.String()), 0644)
+	out, err := dot.Marshal(gr, "dataflow", "", "  ", true)
+	if err != nil {
+		return Error(err)
+	}
+	out = append(out, '\n')
+
+	err = ioutil.WriteFile(svc.dotfile, out, 0644)
 	if err != nil {
 		return Error(err)
 	}

@@ -1,0 +1,46 @@
+strict digraph dataflow {
+  // Node definitions.
+  1 [
+    "node"="data"
+    "label"="t0-ints1"
+  ];
+  2 [
+    "node"="data"
+    "label"="t0-ints2"
+  ];
+  3 [
+    "node"="data"
+    "label"="t1-ints1"
+  ];
+  4 [
+    "node"="data"
+    "label"="t1-ints1-massaged"
+  ];
+  5 [
+    "node"="data"
+    "label"="t2-ints2"
+  ];
+  6 [
+    "node"="task"
+    "shape"="component"
+    "label"="t0"
+  ];
+  7 [
+    "node"="task"
+    "shape"="component"
+    "label"="t1"
+  ];
+  8 [
+    "node"="task"
+    "shape"="component"
+    "label"="t2"
+  ];
+
+  // Edge definitions.
+  3 -> 8;
+  6 -> 1;
+  6 -> 2;
+  7 -> 3;
+  7 -> 5;
+  8 -> 4;
+}
