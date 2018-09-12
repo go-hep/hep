@@ -124,7 +124,7 @@ func Open(path string) (*File, error) {
 		closer: fd,
 		id:     path,
 	}
-	f.dir.dir.file = f
+	f.dir.file = f
 
 	err = f.readHeader()
 	if err != nil {
@@ -141,13 +141,13 @@ func NewReader(r Reader) (*File, error) {
 		seeker: r,
 		closer: r,
 	}
-	f.dir.dir.file = f
+	f.dir.file = f
 
 	err := f.readHeader()
 	if err != nil {
 		return nil, fmt.Errorf("rootio: failed to read header: %v", err)
 	}
-	f.id = f.dir.dir.Name()
+	f.id = f.dir.Name()
 
 	return f, nil
 }
@@ -191,8 +191,8 @@ func Create(name string, opts ...FileOption) (*File, error) {
 	nbytes := namelen + f.dir.sizeof()
 	key := createKey(f.dir.Name(), f.dir.Title(), "TFile", nbytes, f)
 	f.nbytesname = key.keylen + namelen
-	f.dir.dir.nbytesname = key.keylen + namelen
-	f.dir.dir.seekdir = key.seekkey
+	f.dir.nbytesname = key.keylen + namelen
+	f.dir.seekdir = key.seekkey
 	f.seekfree = 0
 	f.nbytesfree = 0
 
@@ -432,11 +432,11 @@ func (f *File) Close() error {
 		}
 	}
 
-	for _, k := range f.dir.dir.keys {
+	for _, k := range f.dir.keys {
 		k.f = nil
 	}
-	f.dir.dir.keys = nil
-	f.dir.dir.file = nil
+	f.dir.keys = nil
+	f.dir.file = nil
 
 	err = f.closer.Close()
 	f.closer = nil

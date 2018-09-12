@@ -87,8 +87,8 @@ streamer-infos:
   int     fSize   offset=  0 type=  3 size=  4  number of elements in collection
  StreamerInfo for "TString" version=2 title=""
 ---
-TDirectory   dir1    dir1    (cycle=1)
-  TDirectory dir11   dir11   (cycle=1)
-    TH1F     h1      h1      (cycle=1)
-TDirectory dir2    dir2    (cycle=1)
-TDirectory dir3    dir3    (cycle=1)
+TDirectoryFile   dir1    dir1    (cycle=1)
+  TDirectoryFile dir11   dir11   (cycle=1)
+    TH1F         h1      h1      (cycle=1)
+TDirectoryFile dir2    dir2    (cycle=1)
+TDirectoryFile dir3    dir3    (cycle=1)

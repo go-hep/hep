@@ -93,7 +93,7 @@ func createKey(name, title, class string, nbytes int32, f *File) Key {
 		panic(err)
 	}
 
-	k.seekpdir = f.dir.dir.seekdir
+	k.seekpdir = f.dir.seekdir
 	return k
 }
 
@@ -209,7 +209,7 @@ func (k *Key) Object() (Object, error) {
 	if vv, ok := obj.(SetFiler); ok {
 		vv.SetFile(k.f)
 	}
-	if dir, ok := obj.(*tdirectory); ok {
+	if dir, ok := obj.(*tdirectoryFile); ok {
 		dir.file = k.f
 		err = dir.readKeys()
 		if err != nil {

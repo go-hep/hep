@@ -16,7 +16,61 @@ import (
 // to closer match that of ROOT's.
 
 type tdirectory struct {
-	rvers      int16
+	rvers int16
+	named tnamed // name+title of this directory
+	uuid  tuuid
+}
+
+func (dir *tdirectory) Class() string {
+	return "TDirectory"
+}
+
+func (dir *tdirectory) Name() string {
+	return dir.named.Name()
+}
+
+func (dir *tdirectory) Title() string {
+	return dir.named.Title()
+}
+
+func (dir *tdirectory) MarshalROOT(w *WBuffer) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	pos := w.Pos()
+	w.WriteVersion(dir.rvers)
+
+	dir.named.MarshalROOT(w)
+	// FIXME(sbinet): stream parent
+	// FIXME(sbinet): stream list
+	dir.uuid.MarshalROOT(w)
+
+	return w.SetByteCount(pos, "TDirectory")
+}
+
+func (dir *tdirectory) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
+	}
+
+	start := r.Pos()
+	vers, pos, bcnt := r.ReadVersion()
+
+	dir.rvers = vers
+
+	dir.named.UnmarshalROOT(r)
+	// FIXME(sbinet): stream parent
+	// FIXME(sbinet): stream list
+	dir.uuid.UnmarshalROOT(r)
+
+	r.CheckByteCount(pos, bcnt, start, "TDirectory")
+	return r.Err()
+}
+
+type tdirectoryFile struct {
+	dir tdirectory
+
 	ctime      time.Time // time of directory's creation
 	mtime      time.Time // time of directory's last modification
 	nbyteskeys int32     // number of bytes for the keys
@@ -27,14 +81,29 @@ type tdirectory struct {
 
 	classname string
 
-	named tnamed // name+title of this directory
-	file  *File  // pointer to current file in memory
-	keys  []Key
-	uuid  tuuid
+	file *File // pointer to current file in memory
+	keys []Key
+}
+
+func newDirectoryFile(name string, f *File) *tdirectoryFile {
+	now := nowUTC()
+	return &tdirectoryFile{
+		dir: tdirectory{
+			rvers: 5, // FIXME(sbinet)
+			named: tnamed{name: name},
+		},
+		ctime: now,
+		mtime: now,
+		file:  f,
+	}
+}
+
+func (dir *tdirectoryFile) isBigFile() bool {
+	return dir.dir.rvers > 1000
 }
 
 // recordSize returns the size of the directory header in bytes
-func (dir *tdirectory) recordSize(version int32) int64 {
+func (dir *tdirectoryFile) recordSize(version int32) int64 {
 	var nbytes int64
 	nbytes += 2 // fVersion
 	nbytes += 4 // ctime
@@ -54,7 +123,7 @@ func (dir *tdirectory) recordSize(version int32) int64 {
 	return nbytes
 }
 
-func (dir *tdirectory) readDirInfo() error {
+func (dir *tdirectoryFile) readDirInfo() error {
 	f := dir.file
 	nbytes := int64(f.nbytesname) + dir.recordSize(f.version)
 
@@ -100,8 +169,8 @@ func (dir *tdirectory) readDirInfo() error {
 	r = NewRBuffer(data[nk:], nil, 0, nil)
 	dir.classname = r.ReadString()
 
-	dir.named.name = r.ReadString()
-	dir.named.title = r.ReadString()
+	dir.dir.named.name = r.ReadString()
+	dir.dir.named.title = r.ReadString()
 
 	if dir.nbytesname < 10 || dir.nbytesname > 1000 {
 		return fmt.Errorf("rootio: can't read directory info.")
@@ -110,7 +179,7 @@ func (dir *tdirectory) readDirInfo() error {
 	return r.Err()
 }
 
-func (dir *tdirectory) readKeys() error {
+func (dir *tdirectoryFile) readKeys() error {
 	var err error
 	if dir.seekkeys <= 0 {
 		return nil
@@ -147,20 +216,77 @@ func (dir *tdirectory) readKeys() error {
 		if err != nil {
 			return err
 		}
+		// support old ROOT versions.
+		if k.class == "TDirectory" {
+			k.class = "TDirectoryFile"
+		}
 	}
 	return nil
 }
 
-func (dir *tdirectory) Class() string {
-	return "TDirectory"
+func (dir *tdirectoryFile) Close() error {
+	if dir.file.w == nil {
+		return nil
+	}
+
+	// FIXME(sbinet): ROOT applies this optimization. should we ?
+	//	if len(dir.dir.keys) == 0 || dir.dir.seekdir == 0 {
+	//		return nil
+	//	}
+
+	err := dir.save()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (dir *tdirectory) Name() string {
-	return dir.named.Name()
+func (dir *tdirectoryFile) save() error {
+	var err error
+	if dir.file.w == nil {
+		return err
+	}
+
+	for i := range dir.keys {
+		k := &dir.keys[i]
+		err = k.store()
+		if err != nil {
+			return err
+		}
+		_, err = k.writeFile(dir.file)
+		if err != nil {
+			return errors.Wrapf(err, "rootio: could not write key for directory %q", dir.Name())
+		}
+	}
+
+	err = dir.saveSelf()
+	if err != nil {
+		return errors.Wrapf(err, "rootio: could not save directory")
+	}
+
+	// FIXME(sbinet): recursively save sub-directories.
+
+	return nil
 }
 
-func (dir *tdirectory) Title() string {
-	return dir.named.Title()
+func (dir *tdirectoryFile) saveSelf() error {
+	if dir.file.w == nil {
+		return nil
+	}
+
+	var err error
+	err = dir.writeKeys()
+	if err != nil {
+		return err
+	}
+
+	err = dir.writeDirHeader()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Get returns the object identified by namecycle
@@ -172,7 +298,7 @@ func (dir *tdirectory) Title() string {
 //     foo   : get object named foo in memory
 //             if object is not in memory, try with highest cycle from file
 //     foo;1 : get cycle 1 of foo on file
-func (dir *tdirectory) Get(namecycle string) (Object, error) {
+func (dir *tdirectoryFile) Get(namecycle string) (Object, error) {
 	name, cycle := decodeNameCycle(namecycle)
 	for i := range dir.keys {
 		k := &dir.keys[i]
@@ -189,7 +315,7 @@ func (dir *tdirectory) Get(namecycle string) (Object, error) {
 	return nil, noKeyError{key: namecycle, obj: dir}
 }
 
-func (dir *tdirectory) Put(name string, obj Object) error {
+func (dir *tdirectoryFile) Put(name string, obj Object) error {
 	var (
 		cycle int16
 		title = ""
@@ -243,22 +369,30 @@ func (dir *tdirectory) Put(name string, obj Object) error {
 	return nil
 }
 
-func (dir *tdirectory) Keys() []Key {
+func (dir *tdirectoryFile) Keys() []Key {
 	return dir.keys
 }
 
-func (dir *tdirectory) isBigFile() bool {
-	return dir.rvers > 1000
+func (dir *tdirectoryFile) Class() string {
+	return "TDirectoryFile"
 }
 
-func (dir *tdirectory) MarshalROOT(w *WBuffer) (int, error) {
+func (dir *tdirectoryFile) Name() string {
+	return dir.dir.named.Name()
+}
+
+func (dir *tdirectoryFile) Title() string {
+	return dir.dir.named.Title()
+}
+
+func (dir *tdirectoryFile) MarshalROOT(w *WBuffer) (int, error) {
 	if w.err != nil {
 		return 0, w.err
 	}
 
 	beg := w.Pos()
 
-	w.WriteI16(dir.rvers)
+	w.WriteI16(dir.dir.rvers)
 	w.WriteU32(time2datime(dir.ctime))
 	w.WriteU32(time2datime(dir.mtime))
 	w.WriteI32(dir.nbyteskeys)
@@ -275,21 +409,21 @@ func (dir *tdirectory) MarshalROOT(w *WBuffer) (int, error) {
 		w.WriteI32(int32(dir.seekkeys))
 	}
 
-	dir.uuid.MarshalROOT(w)
+	dir.dir.uuid.MarshalROOT(w)
 
 	end := w.Pos()
 
 	return int(end - beg), w.err
 }
 
-func (dir *tdirectory) UnmarshalROOT(r *RBuffer) error {
+func (dir *tdirectoryFile) UnmarshalROOT(r *RBuffer) error {
 	var (
 		version = r.ReadI16()
 		ctime   = r.ReadU32()
 		mtime   = r.ReadU32()
 	)
 
-	dir.rvers = version
+	dir.dir.rvers = version
 	dir.ctime = datime2time(ctime)
 	dir.mtime = datime2time(mtime)
 
@@ -307,149 +441,21 @@ func (dir *tdirectory) UnmarshalROOT(r *RBuffer) error {
 		dir.seekkeys = int64(r.ReadI32())
 	}
 
-	dir.uuid.UnmarshalROOT(r)
+	dir.dir.uuid.UnmarshalROOT(r)
 
 	return r.Err()
 }
 
 // StreamerInfo returns the StreamerInfo with name of this directory, or nil otherwise.
-func (dir *tdirectory) StreamerInfo(name string) (StreamerInfo, error) {
+func (dir *tdirectoryFile) StreamerInfo(name string) (StreamerInfo, error) {
 	if dir.file == nil {
 		return nil, fmt.Errorf("rootio: no streamers")
 	}
 	return dir.file.StreamerInfo(name)
 }
 
-func (dir *tdirectory) addStreamer(streamer StreamerInfo) {
-	dir.file.addStreamer(streamer)
-}
-
-type tdirectoryFile struct {
-	dir tdirectory
-}
-
-func newDirectoryFile(name string, f *File) *tdirectoryFile {
-	now := nowUTC()
-	return &tdirectoryFile{tdirectory{
-		rvers: 5, // FIXME(sbinet)
-		ctime: now,
-		mtime: now,
-		named: tnamed{name: name},
-		file:  f,
-	}}
-}
-
-func (dir *tdirectoryFile) readKeys() error {
-	return dir.dir.readKeys()
-}
-
-func (dir *tdirectoryFile) readDirInfo() error {
-	return dir.dir.readDirInfo()
-}
-
-func (dir *tdirectoryFile) Close() error {
-	if dir.dir.file.w == nil {
-		return nil
-	}
-
-	// FIXME(sbinet): ROOT applies this optimization. should we ?
-	//	if len(dir.dir.keys) == 0 || dir.dir.seekdir == 0 {
-	//		return nil
-	//	}
-
-	err := dir.save()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (dir *tdirectoryFile) save() error {
-	var err error
-	if dir.dir.file.w == nil {
-		return err
-	}
-
-	for i := range dir.dir.keys {
-		k := &dir.dir.keys[i]
-		err = k.store()
-		if err != nil {
-			return err
-		}
-		_, err = k.writeFile(dir.dir.file)
-		if err != nil {
-			return errors.Wrapf(err, "rootio: could not write key for directory %q", dir.Name())
-		}
-	}
-
-	err = dir.saveSelf()
-	if err != nil {
-		return errors.Wrapf(err, "rootio: could not save directory")
-	}
-
-	// FIXME(sbinet): recursively save sub-directories.
-
-	return nil
-}
-
-func (dir *tdirectoryFile) saveSelf() error {
-	if dir.dir.file.w == nil {
-		return nil
-	}
-
-	var err error
-	err = dir.writeKeys()
-	if err != nil {
-		return err
-	}
-
-	err = dir.writeDirHeader()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (dir *tdirectoryFile) Get(namecycle string) (Object, error) {
-	return dir.dir.Get(namecycle)
-}
-
-func (dir *tdirectoryFile) Put(name string, v Object) error {
-	return dir.dir.Put(name, v)
-}
-
-func (dir *tdirectoryFile) Keys() []Key {
-	return dir.dir.Keys()
-}
-
-func (dir *tdirectoryFile) Class() string {
-	return "TDirectoryFile"
-}
-
-func (dir *tdirectoryFile) Name() string {
-	return dir.dir.named.Name()
-}
-
-func (dir *tdirectoryFile) Title() string {
-	return dir.dir.named.Title()
-}
-
-func (dir *tdirectoryFile) StreamerInfo(name string) (StreamerInfo, error) {
-	return dir.dir.StreamerInfo(name)
-}
-
 func (dir *tdirectoryFile) addStreamer(streamer StreamerInfo) {
-	dir.dir.addStreamer(streamer)
-}
-
-func (dir *tdirectoryFile) MarshalROOT(w *WBuffer) (int, error) {
-	return dir.dir.MarshalROOT(w)
-}
-
-func (dir *tdirectoryFile) UnmarshalROOT(r *RBuffer) error {
-	return dir.dir.UnmarshalROOT(r)
+	dir.file.addStreamer(streamer)
 }
 
 // writeKeys writes the list of keys to the file.
@@ -460,15 +466,15 @@ func (dir *tdirectoryFile) writeKeys() error {
 		nbytes = int32(4) // space for n-keys
 	)
 
-	if dir.dir.file.end > kStartBigFile {
+	if dir.file.end > kStartBigFile {
 		nbytes += 8
 	}
 	for i := range dir.Keys() {
-		key := &dir.dir.keys[i]
+		key := &dir.keys[i]
 		nbytes += key.sizeof()
 	}
 
-	hdr := createKey(dir.Name(), dir.Title(), dir.Class(), nbytes, dir.dir.file)
+	hdr := createKey(dir.Name(), dir.Title(), dir.Class(), nbytes, dir.file)
 
 	buf := NewWBuffer(make([]byte, nbytes), nil, 0, nil)
 	buf.writeI32(int32(len(dir.Keys())))
@@ -480,10 +486,10 @@ func (dir *tdirectoryFile) writeKeys() error {
 	}
 	hdr.buf = buf.buffer()
 
-	dir.dir.seekkeys = hdr.seekkey
-	dir.dir.nbyteskeys = hdr.bytes
+	dir.seekkeys = hdr.seekkey
+	dir.nbyteskeys = hdr.bytes
 
-	_, err = hdr.writeFile(dir.dir.file)
+	_, err = hdr.writeFile(dir.file)
 	if err != nil {
 		return errors.Errorf("rootio: could not write header key: %v", err)
 	}
@@ -495,12 +501,12 @@ func (dir *tdirectoryFile) writeDirHeader() error {
 	var (
 		err error
 	)
-	dir.dir.mtime = nowUTC()
+	dir.mtime = nowUTC()
 
-	nbytes := dir.sizeof() + int32(dir.dir.file.nbytesname)
-	key := newKey(dir.Name(), dir.Title(), "TFile", nbytes, dir.dir.file)
-	key.seekkey = dir.dir.file.begin
-	key.seekpdir = dir.dir.seekdir
+	nbytes := dir.sizeof() + int32(dir.file.nbytesname)
+	key := newKey(dir.Name(), dir.Title(), "TFile", nbytes, dir.file)
+	key.seekkey = dir.file.begin
+	key.seekpdir = dir.seekdir
 
 	buf := NewWBuffer(make([]byte, nbytes), nil, 0, nil)
 	buf.WriteString(dir.Name())
@@ -511,7 +517,7 @@ func (dir *tdirectoryFile) writeDirHeader() error {
 	}
 
 	key.buf = buf.buffer()
-	_, err = key.writeFile(dir.dir.file)
+	_, err = key.writeFile(dir.file)
 	if err != nil {
 		return errors.Wrapf(err, "rootio: could not write dir-info to file")
 	}
@@ -525,7 +531,7 @@ func (dir *tdirectoryFile) sizeof() int32 {
 	nbytes += datimeSizeof() // ctime
 	nbytes += datimeSizeof() // mtime
 	nbytes += dir.dir.uuid.sizeof()
-	if dir.dir.file.version >= 40000 {
+	if dir.file.version >= 40000 {
 		nbytes += 12 // files with >= 2Gb
 	}
 	return nbytes
@@ -551,13 +557,10 @@ func init() {
 }
 
 var (
-	_ Object              = (*tdirectory)(nil)
-	_ Named               = (*tdirectory)(nil)
-	_ Directory           = (*tdirectory)(nil)
-	_ StreamerInfoContext = (*tdirectory)(nil)
-	_ streamerInfoStore   = (*tdirectory)(nil)
-	_ ROOTMarshaler       = (*tdirectory)(nil)
-	_ ROOTUnmarshaler     = (*tdirectory)(nil)
+	_ Object          = (*tdirectory)(nil)
+	_ Named           = (*tdirectory)(nil)
+	_ ROOTMarshaler   = (*tdirectory)(nil)
+	_ ROOTUnmarshaler = (*tdirectory)(nil)
 
 	_ Object              = (*tdirectoryFile)(nil)
 	_ Named               = (*tdirectoryFile)(nil)

@@ -1006,14 +1006,8 @@ func TestWRBuffer(t *testing.T) {
 		{
 			name: "TDirectory",
 			want: &tdirectory{
-				rvers:      4, // small file
-				ctime:      datime2time(1576331001),
-				mtime:      datime2time(1576331010),
-				nbyteskeys: 1,
-				nbytesname: 2,
-				seekdir:    3,
-				seekparent: 4,
-				seekkeys:   5,
+				rvers: 4, // small file
+				named: tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "my-name", title: "my-title"},
 				uuid: tuuid{
 					0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
 					10, 11, 12, 13, 14, 15,
@@ -1023,14 +1017,8 @@ func TestWRBuffer(t *testing.T) {
 		{
 			name: "TDirectory",
 			want: &tdirectory{
-				rvers:      1004, // big file
-				ctime:      datime2time(1576331001),
-				mtime:      datime2time(1576331010),
-				nbyteskeys: 1,
-				nbytesname: 2,
-				seekdir:    3,
-				seekparent: 4,
-				seekkeys:   5,
+				rvers: 1004, // big file
+				named: tnamed{rvers: 1, obj: tobject{id: 0x0, bits: 0x3000000}, name: "my-name", title: "my-title"},
 				uuid: tuuid{
 					0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
 					10, 11, 12, 13, 14, 15,
@@ -1041,38 +1029,38 @@ func TestWRBuffer(t *testing.T) {
 			name: "TDirectoryFile",
 			want: &tdirectoryFile{
 				dir: tdirectory{
-					rvers:      4, // small file
-					ctime:      datime2time(1576331001),
-					mtime:      datime2time(1576331010),
-					nbyteskeys: 1,
-					nbytesname: 2,
-					seekdir:    3,
-					seekparent: 4,
-					seekkeys:   5,
+					rvers: 4, // small file
 					uuid: tuuid{
 						0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
 						10, 11, 12, 13, 14, 15,
 					},
 				},
+				ctime:      datime2time(1576331001),
+				mtime:      datime2time(1576331010),
+				nbyteskeys: 1,
+				nbytesname: 2,
+				seekdir:    3,
+				seekparent: 4,
+				seekkeys:   5,
 			},
 		},
 		{
 			name: "TDirectoryFile",
 			want: &tdirectoryFile{
 				dir: tdirectory{
-					rvers:      1004, // big file
-					ctime:      datime2time(1576331001),
-					mtime:      datime2time(1576331010),
-					nbyteskeys: 1,
-					nbytesname: 2,
-					seekdir:    3,
-					seekparent: 4,
-					seekkeys:   5,
+					rvers: 1004, // big file
 					uuid: tuuid{
 						0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
 						10, 11, 12, 13, 14, 15,
 					},
 				},
+				ctime:      datime2time(1576331001),
+				mtime:      datime2time(1576331010),
+				nbyteskeys: 1,
+				nbytesname: 2,
+				seekdir:    3,
+				seekparent: 4,
+				seekkeys:   5,
 			},
 		},
 		{
