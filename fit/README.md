@@ -12,7 +12,7 @@
 
 [embedmd]:# (hist_test.go go /func ExampleH1D_gaussian/ /\n}/)
 ```go
-func ExampleH1D_gaussian(t *testing.T) {
+func ExampleH1D_gaussian() {
 	var (
 		mean  = 2.0
 		sigma = 4.0
@@ -55,14 +55,14 @@ func ExampleH1D_gaussian(t *testing.T) {
 		nil, &optimize.NelderMead{},
 	)
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if err := res.Status.Err(); err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 	if got := res.X; !floats.EqualApprox(got, want, 1e-3) {
-		t.Fatalf("got= %v\nwant=%v\n", got, want)
+		log.Fatalf("got= %v\nwant=%v\n", got, want)
 	}
 
 	{
@@ -86,7 +86,7 @@ func ExampleH1D_gaussian(t *testing.T) {
 
 		err := p.Save(20*vg.Centimeter, -1, "testdata/h1d-gauss-plot.png")
 		if err != nil {
-			t.Fatal(err)
+			log.Fatal(err)
 		}
 	}
 }
@@ -100,7 +100,7 @@ func ExampleH1D_gaussian(t *testing.T) {
 
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_gaussian/ /\n}/)
 ```go
-func ExampleCurve1D_gaussian(t *testing.T) {
+func ExampleCurve1D_gaussian() {
 	var (
 		cst   = 3.0
 		mean  = 30.0
@@ -109,6 +109,9 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 	)
 
 	xdata, ydata, err := readXY("testdata/gauss-data.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	gauss := func(x, cst, mu, sigma float64) float64 {
 		v := (x - mu)
@@ -127,14 +130,14 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 		nil, &optimize.NelderMead{},
 	)
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if err := res.Status.Err(); err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 	if got := res.X; !floats.EqualApprox(got, want, 1e-3) {
-		t.Fatalf("got= %v\nwant=%v\n", got, want)
+		log.Fatalf("got= %v\nwant=%v\n", got, want)
 	}
 
 	{
@@ -157,7 +160,7 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 
 		err := p.Save(20*vg.Centimeter, -1, "testdata/gauss-plot.png")
 		if err != nil {
-			t.Fatal(err)
+			log.Fatal(err)
 		}
 	}
 }
@@ -169,7 +172,7 @@ func ExampleCurve1D_gaussian(t *testing.T) {
 
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_powerlaw/ /\n}/)
 ```go
-func ExampleCurve1D_powerlaw(t *testing.T) {
+func ExampleCurve1D_powerlaw() {
 	var (
 		amp   = 11.021171432949746
 		index = -2.027389113217428
@@ -177,6 +180,9 @@ func ExampleCurve1D_powerlaw(t *testing.T) {
 	)
 
 	xdata, ydata, yerrs, err := readXYerr("testdata/powerlaw-data.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	plaw := func(x, amp, index float64) float64 {
 		return amp * math.Pow(x, index)
@@ -195,14 +201,14 @@ func ExampleCurve1D_powerlaw(t *testing.T) {
 		nil, &optimize.NelderMead{},
 	)
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if err := res.Status.Err(); err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 	if got := res.X; !floats.EqualApprox(got, want, 1e-3) {
-		t.Fatalf("got= %v\nwant=%v\n", got, want)
+		log.Fatalf("got= %v\nwant=%v\n", got, want)
 	}
 
 	{
@@ -237,7 +243,7 @@ func ExampleCurve1D_powerlaw(t *testing.T) {
 
 		err := p.Save(20*vg.Centimeter, -1, "testdata/powerlaw-plot.png")
 		if err != nil {
-			t.Fatal(err)
+			log.Fatal(err)
 		}
 	}
 }
@@ -249,7 +255,7 @@ func ExampleCurve1D_powerlaw(t *testing.T) {
 
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_exponential/ /\n}/)
 ```go
-func ExampleCurve1D_exponential(t *testing.T) {
+func ExampleCurve1D_exponential() {
 	const (
 		a   = 0.3
 		b   = 0.1
@@ -257,6 +263,9 @@ func ExampleCurve1D_exponential(t *testing.T) {
 	)
 
 	xdata, ydata, err := readXY("testdata/exp-data.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	exp := func(x, a, b float64) float64 {
 		return math.Exp(a*x + b)
@@ -274,14 +283,14 @@ func ExampleCurve1D_exponential(t *testing.T) {
 		nil, &optimize.NelderMead{},
 	)
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if err := res.Status.Err(); err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 	if got, want := res.X, []float64{a, b}; !floats.EqualApprox(got, want, 0.1) {
-		t.Fatalf("got= %v\nwant=%v\n", got, want)
+		log.Fatalf("got= %v\nwant=%v\n", got, want)
 	}
 
 	{
@@ -308,7 +317,7 @@ func ExampleCurve1D_exponential(t *testing.T) {
 
 		err := p.Save(20*vg.Centimeter, -1, "testdata/exp-plot.png")
 		if err != nil {
-			t.Fatal(err)
+			log.Fatal(err)
 		}
 	}
 }
@@ -320,7 +329,7 @@ func ExampleCurve1D_exponential(t *testing.T) {
 
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_poly/ /\n}/)
 ```go
-func ExampleCurve1D_poly(t *testing.T) {
+func ExampleCurve1D_poly() {
 	var (
 		a    = 1.0
 		b    = 2.0
@@ -344,15 +353,15 @@ func ExampleCurve1D_poly(t *testing.T) {
 		nil, &optimize.NelderMead{},
 	)
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if err := res.Status.Err(); err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if got := res.X; !floats.EqualApprox(got, want, 1e-6) {
-		t.Fatalf("got= %v\nwant=%v\n", got, want)
+		log.Fatalf("got= %v\nwant=%v\n", got, want)
 	}
 
 	{
@@ -379,7 +388,7 @@ func ExampleCurve1D_poly(t *testing.T) {
 
 		err := p.Save(20*vg.Centimeter, -1, "testdata/poly-plot.png")
 		if err != nil {
-			t.Fatal(err)
+			log.Fatal(err)
 		}
 	}
 }

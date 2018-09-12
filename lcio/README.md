@@ -209,17 +209,11 @@ func main() {
 	}
 	log.Printf("read %d events from file %q", nevts, fname)
 
-	p, err := hplot.New()
-	if err != nil {
-		log.Fatal(err)
-	}
+	p := hplot.New()
 	p.Title.Text = "LCIO -- McParticles"
 	p.X.Label.Text = "E (GeV)"
 
-	hh, err := hplot.NewH1D(h)
-	if err != nil {
-		log.Fatal(err)
-	}
+	hh := hplot.NewH1D(h)
 	hh.Color = color.RGBA{R: 255, A: 255}
 	hh.Infos.Style = hplot.HInfoSummary
 
