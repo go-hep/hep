@@ -14,7 +14,10 @@ import (
 )
 
 func TestGenerator(t *testing.T) {
-	const pkg = "go-hep.org/x/hep/brio/cmd/brio-gen/internal/gen/_test/pkg"
+	const (
+		pkg    = "go-hep.org/x/hep/brio/cmd/brio-gen/internal/gen/_test/pkg"
+		golden = "testdata/brio_gen_golden.go.txt"
+	)
 	err := exec.Command("go", "get", pkg).Run()
 	if err != nil {
 		t.Fatalf("could not build test package: %v", err)
@@ -34,12 +37,25 @@ func TestGenerator(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want, err := ioutil.ReadFile("testdata/brio_gen_golden.go.txt")
+	want, err := ioutil.ReadFile(golden)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if !bytes.Equal(got, want) {
-		t.Fatalf("files differ.\ngot = %q\nwant= %q\n", string(got), string(want))
+		diff, err := exec.LookPath("diff")
+		hasDiff := err == nil
+		if hasDiff {
+			err = ioutil.WriteFile(golden+"_got", got, 0644)
+			if err == nil {
+				out := new(bytes.Buffer)
+				cmd := exec.Command(diff, "-urN", golden+"_got", golden)
+				cmd.Stdout = out
+				cmd.Stderr = out
+				err = cmd.Run()
+				t.Fatalf("files differ. err=%v\n%v\n", err, out.String())
+			}
+		}
+		t.Fatalf("files differ.\ngot = %s\nwant= %s\n", string(got), string(want))
 	}
 }

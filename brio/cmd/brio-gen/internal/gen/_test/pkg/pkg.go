@@ -23,6 +23,7 @@ type T1 struct {
 	c64  complex64
 	c128 complex128
 	str  string
+	rune rune
 	bs   []byte
 
 	arri64  [10]int64
@@ -31,7 +32,13 @@ type T1 struct {
 	sliTime []time.Time // implements encoding.Binary(Un)Marshaler
 	ptri64  *int64
 
-	t2 T2
+	t2     T2
+	t2s    []T2
+	t2ptrs []*T2
+
+	data struct {
+		f64 float64
+	}
 }
 
 type T2 struct {

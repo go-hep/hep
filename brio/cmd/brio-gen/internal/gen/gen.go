@@ -108,8 +108,8 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 		switch kind := ut.Kind(); kind {
 
 		case types.Bool:
-			g.printf("if %s { data = append(data, uint8(1))\n", n)
-			g.printf("}else { data = append(data, uint8(0)) }\n")
+			g.printf("switch %s {\ncase false:\n data = append(data, uint8(0))\n", n)
+			g.printf("default:\ndata = append(data, uint8(1))\n}\n")
 
 		case types.Uint:
 			g.printf("binary.LittleEndian.PutUint64(buf[:8], uint64(%s))\n", n)
@@ -225,12 +225,21 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 		}
 
 	case *types.Struct:
-		g.printf("{\nsub, err := %s.MarshalBinary()\n", n)
-		g.printf("if err != nil {\nreturn nil, err\n}\n")
-		g.printf("binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))\n")
-		g.printf("data = append(data, buf[:8]...)\n")
-		g.printf("data = append(data, sub...)\n")
-		g.printf("}\n")
+		switch t.(type) {
+		case *types.Named:
+			g.printf("{\nsub, err := %s.MarshalBinary()\n", n)
+			g.printf("if err != nil {\nreturn nil, err\n}\n")
+			g.printf("binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))\n")
+			g.printf("data = append(data, buf[:8]...)\n")
+			g.printf("data = append(data, sub...)\n")
+			g.printf("}\n")
+		default:
+			// un-named
+			for i := 0; i < ut.NumFields(); i++ {
+				elem := ut.Field(i)
+				g.genMarshalType(elem.Type(), n+"."+elem.Name())
+			}
+		}
 
 	case *types.Array:
 		if isByteType(ut.Elem()) {
@@ -313,8 +322,8 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 		switch kind := ut.Kind(); kind {
 
 		case types.Bool:
-			g.printf("if data[i] == 1 { %s = true\n", n)
-			g.printf("} else { %s = false }\n", n)
+			g.printf("switch data[i] {\ncase 0:\n%s = false\n", n)
+			g.printf("default:\n%s = true\n}\n", n)
 			g.printf("data = data[1:]\n")
 
 		case types.Uint:
@@ -390,13 +399,22 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 		}
 
 	case *types.Struct:
-		g.printf("{\n")
-		g.printf("n := int(binary.LittleEndian.Uint64(data[:8]))\n")
-		g.printf("data = data[8:]\n")
-		g.printf("err = %s.UnmarshalBinary(data[:n])\n", n)
-		g.printf("if err != nil {\nreturn err\n}\n")
-		g.printf("data = data[n:]\n")
-		g.printf("}\n")
+		switch t.(type) {
+		case *types.Named:
+			g.printf("{\n")
+			g.printf("n := int(binary.LittleEndian.Uint64(data[:8]))\n")
+			g.printf("data = data[8:]\n")
+			g.printf("err = %s.UnmarshalBinary(data[:n])\n", n)
+			g.printf("if err != nil {\nreturn err\n}\n")
+			g.printf("data = data[n:]\n")
+			g.printf("}\n")
+		default:
+			// un-named.
+			for i := 0; i < ut.NumFields(); i++ {
+				elem := ut.Field(i)
+				g.genUnmarshalType(elem.Type(), n+"."+elem.Name())
+			}
+		}
 
 	case *types.Array:
 		if isByteType(ut.Elem()) {

@@ -10,10 +10,11 @@ import (
 // MarshalBinary implements encoding.BinaryMarshaler
 func (o *T1) MarshalBinary() (data []byte, err error) {
 	var buf [8]byte
-	if o.b {
-		data = append(data, uint8(1))
-	} else {
+	switch o.b {
+	case false:
 		data = append(data, uint8(0))
+	default:
+		data = append(data, uint8(1))
 	}
 	binary.LittleEndian.PutUint64(buf[:8], uint64(o.u))
 	data = append(data, buf[:8]...)
@@ -48,6 +49,8 @@ func (o *T1) MarshalBinary() (data []byte, err error) {
 	binary.LittleEndian.PutUint64(buf[:8], uint64(len(o.str)))
 	data = append(data, buf[:8]...)
 	data = append(data, []byte(o.str)...)
+	binary.LittleEndian.PutUint32(buf[:4], uint32(o.rune))
+	data = append(data, buf[:4]...)
 	binary.LittleEndian.PutUint64(buf[:8], uint64(len(o.bs)))
 	data = append(data, buf[:8]...)
 	data = append(data, o.bs...)
@@ -103,15 +106,49 @@ func (o *T1) MarshalBinary() (data []byte, err error) {
 		data = append(data, buf[:8]...)
 		data = append(data, sub...)
 	}
+	binary.LittleEndian.PutUint64(buf[:8], uint64(len(o.t2s)))
+	data = append(data, buf[:8]...)
+	for i := range o.t2s {
+		o := &o.t2s[i]
+		{
+			sub, err := o.MarshalBinary()
+			if err != nil {
+				return nil, err
+			}
+			binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))
+			data = append(data, buf[:8]...)
+			data = append(data, sub...)
+		}
+	}
+	binary.LittleEndian.PutUint64(buf[:8], uint64(len(o.t2ptrs)))
+	data = append(data, buf[:8]...)
+	for i := range o.t2ptrs {
+		o := o.t2ptrs[i]
+		{
+			v := *o
+			{
+				sub, err := v.MarshalBinary()
+				if err != nil {
+					return nil, err
+				}
+				binary.LittleEndian.PutUint64(buf[:8], uint64(len(sub)))
+				data = append(data, buf[:8]...)
+				data = append(data, sub...)
+			}
+		}
+	}
+	binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(o.data.f64))
+	data = append(data, buf[:8]...)
 	return data, err
 }
 
 // UnmarshalBinary implements encoding.BinaryUnmarshaler
 func (o *T1) UnmarshalBinary(data []byte) (err error) {
-	if data[i] == 1 {
-		o.b = true
-	} else {
+	switch data[i] {
+	case 0:
 		o.b = false
+	default:
+		o.b = true
 	}
 	data = data[1:]
 	o.u = uint(binary.LittleEndian.Uint64(data[:8]))
@@ -148,6 +185,8 @@ func (o *T1) UnmarshalBinary(data []byte) (err error) {
 		o.str = string(data[:n])
 		data = data[n:]
 	}
+	o.rune = int32(binary.LittleEndian.Uint32(data[:4]))
+	data = data[4:]
 	{
 		n := int(binary.LittleEndian.Uint64(data[:8]))
 		o.bs = make([]byte, n)
@@ -213,6 +252,48 @@ func (o *T1) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
+	{
+		n := int(binary.LittleEndian.Uint64(data[:8]))
+		o.t2s = make([]T2, n)
+		data = data[8:]
+		for i := range o.t2s {
+			oi := &o.t2s[i]
+			{
+				n := int(binary.LittleEndian.Uint64(data[:8]))
+				data = data[8:]
+				err = oi.UnmarshalBinary(data[:n])
+				if err != nil {
+					return err
+				}
+				data = data[n:]
+			}
+		}
+	}
+	{
+		n := int(binary.LittleEndian.Uint64(data[:8]))
+		o.t2ptrs = make([]*T2, n)
+		data = data[8:]
+		for i := range o.t2ptrs {
+			var oi T2
+			{
+				var v T2
+				{
+					n := int(binary.LittleEndian.Uint64(data[:8]))
+					data = data[8:]
+					err = v.UnmarshalBinary(data[:n])
+					if err != nil {
+						return err
+					}
+					data = data[n:]
+				}
+				oi = &v
+
+			}
+			o.t2ptrs[i] = oi
+		}
+	}
+	o.data.f64 = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+	data = data[8:]
 	return err
 }
 
