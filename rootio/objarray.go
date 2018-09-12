@@ -74,6 +74,10 @@ func (arr *tobjarray) MarshalROOT(w *WBuffer) (int, error) {
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (arr *tobjarray) UnmarshalROOT(r *RBuffer) error {
+	if r.err != nil {
+		return r.err
+	}
+
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion()
 	arr.rvers = vers
