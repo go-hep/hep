@@ -21,6 +21,7 @@ import (
 	"gonum.org/v1/plot/vg/vgimg"
 )
 
+//go:generate go get github.com/campoy/embedmd
 //go:generate embedmd -w README.md
 
 // Plot is the basic type representing a plot.

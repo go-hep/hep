@@ -10,6 +10,9 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
+//go:generate go get github.com/campoy/embedmd
+//go:generate embedmd -w README.md
+
 // Func1D describes a 1D function to fit some data.
 type Func1D struct {
 	// F is the function to minimize.
