@@ -121,6 +121,25 @@ func (o *ResponseHeader) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	return nil
 }
 
+// Error returns an error received from the server or nil if request hasn't failed.
+func (hdr ResponseHeader) Error(data []byte) error {
+	if hdr.Status != Error {
+		return nil
+	}
+	if len(data) < 4 {
+		return errors.Wrapf(io.ErrShortBuffer, "xrootd: invalid ResponseHeader error")
+	}
+
+	var serverError ServerError
+	rBuffer := xrdenc.NewRBuffer(data)
+	err := serverError.UnmarshalXrd(rBuffer)
+	if err != nil {
+		return errors.Errorf("xrootd: error occurred during unmarshaling of a server error: %v", err)
+	}
+
+	return serverError
+}
+
 // RequestHeaderLength is the length of the RequestHeader in bytes.
 const RequestHeaderLength = 2 + 2
 
@@ -142,21 +161,6 @@ func (o RequestHeader) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 func (o *RequestHeader) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	rBuffer.ReadBytes(o.StreamID[:])
 	o.RequestID = rBuffer.ReadU16()
-	return nil
-}
-
-// Error returns an error received from the server or nil if request hasn't failed.
-func (hdr ResponseHeader) Error(data []byte) error {
-	if hdr.Status == Error {
-		var serverError ServerError
-		rBuffer := xrdenc.NewRBuffer(data)
-		err := serverError.UnmarshalXrd(rBuffer)
-		if err != nil {
-			return errors.Errorf("xrootd: error occurred during unmarshaling of a server error: %v", err)
-		}
-
-		return serverError
-	}
 	return nil
 }
 

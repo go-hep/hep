@@ -11,6 +11,10 @@ import (
 	"io"
 	"reflect"
 	"testing"
+	"time"
+
+	"github.com/pkg/errors"
+	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 )
 
 func TestReadRequest(t *testing.T) {
@@ -154,6 +158,231 @@ func TestWriteResponse(t *testing.T) {
 			}
 			if !reflect.DeepEqual(writer.Bytes(), tc.wantData) {
 				t.Errorf("data doesn't match:\ngot = %v\nwant = %v", writer.Bytes(), tc.wantData)
+			}
+		})
+	}
+}
+
+func TestWaitResponse(t *testing.T) {
+	for _, want := range []WaitResponse{
+		{Duration: 0},
+		{Duration: 42 * time.Second},
+		{Duration: 42 * time.Hour},
+	} {
+		t.Run("", func(t *testing.T) {
+			var (
+				err error
+				w   = new(xrdenc.WBuffer)
+				got WaitResponse
+			)
+
+			err = want.MarshalXrd(w)
+			if err != nil {
+				t.Fatalf("could not marshal response: %v", err)
+			}
+
+			r := xrdenc.NewRBuffer(w.Bytes())
+			err = got.UnmarshalXrd(r)
+			if err != nil {
+				t.Fatalf("could not unmarshal response: %v", err)
+			}
+
+			if !reflect.DeepEqual(got, want) {
+				t.Fatalf("round trip failed\ngot = %#v\nwant= %#v\n", got, want)
+			}
+		})
+	}
+}
+
+func TestServerError(t *testing.T) {
+	for _, want := range []ServerError{
+		{Code: IOError, Message: ""},
+		{Code: NotAuthorized, Message: "not authorized"},
+		{Code: NotFound, Message: "not\nfound"},
+	} {
+		t.Run("", func(t *testing.T) {
+			var (
+				err error
+				w   = new(xrdenc.WBuffer)
+				got ServerError
+			)
+
+			err = want.MarshalXrd(w)
+			if err != nil {
+				t.Fatalf("could not marshal server error: %v", err)
+			}
+
+			r := xrdenc.NewRBuffer(w.Bytes())
+			err = got.UnmarshalXrd(r)
+			if err != nil {
+				t.Fatalf("could not unmarshal server error: %v", err)
+			}
+
+			if !reflect.DeepEqual(got, want) {
+				t.Fatalf("round trip failed\ngot = %#v\nwant= %#v\n", got, want)
+			}
+
+			if got, want := got.Error(), want.Error(); got != want {
+				t.Fatalf("error messages differ: got=%q, want=%q", got, want)
+			}
+		})
+	}
+}
+
+func TestRequestHeader(t *testing.T) {
+	for _, want := range []RequestHeader{
+		{StreamID: StreamID{1, 2}, RequestID: 2},
+	} {
+		t.Run("", func(t *testing.T) {
+			var (
+				err error
+				w   = new(xrdenc.WBuffer)
+				got RequestHeader
+			)
+
+			err = want.MarshalXrd(w)
+			if err != nil {
+				t.Fatalf("could not marshal: %v", err)
+			}
+
+			r := xrdenc.NewRBuffer(w.Bytes())
+			err = got.UnmarshalXrd(r)
+			if err != nil {
+				t.Fatalf("could not unmarshal: %v", err)
+			}
+
+			if !reflect.DeepEqual(got, want) {
+				t.Fatalf("round trip failed\ngot = %#v\nwant= %#v\n", got, want)
+			}
+		})
+	}
+}
+
+func TestResponseHeaderError(t *testing.T) {
+	get := func(err error) string {
+		if err != nil {
+			return err.Error()
+		}
+		return ""
+	}
+
+	for _, tc := range []struct {
+		hdr  ResponseHeader
+		data []byte
+		err  error
+	}{
+		{
+			hdr:  ResponseHeader{Status: Ok},
+			data: nil,
+			err:  nil,
+		},
+		{
+			hdr:  ResponseHeader{Status: OkSoFar},
+			data: nil,
+			err:  nil,
+		},
+		{
+			hdr: ResponseHeader{Status: Error},
+			data: func() []byte {
+				w := new(xrdenc.WBuffer)
+				err := ServerError{Code: IOError, Message: "boo"}.MarshalXrd(w)
+				if err != nil {
+					t.Fatal(err)
+				}
+				return w.Bytes()
+			}(),
+			err: ServerError{Code: IOError, Message: "boo"},
+		},
+		{
+			hdr:  ResponseHeader{Status: Error},
+			data: []byte{1, 2, 3},
+			err:  errors.Wrapf(io.ErrShortBuffer, "xrootd: invalid ResponseHeader error"),
+		},
+		{
+			hdr:  ResponseHeader{Status: Error},
+			data: []byte{1, 2, 3, 4},
+			err:  errors.Errorf("xrootd: error occurred during unmarshaling of a server error: xrootd: missing error message in server response"),
+		},
+	} {
+		t.Run("", func(t *testing.T) {
+			err := tc.hdr.Error(tc.data)
+			if get(err) != get(tc.err) {
+				t.Fatalf("got=%#v, want=%#v", err, tc.err)
+			}
+		})
+	}
+}
+
+func TestSecurityOverride(t *testing.T) {
+	for _, want := range []SecurityOverride{
+		{RequestIndex: 1, RequestLevel: SignNone},
+		{RequestIndex: 2, RequestLevel: SignLikely},
+		{RequestIndex: 3, RequestLevel: SignNeeded},
+	} {
+		t.Run("", func(t *testing.T) {
+			var (
+				err error
+				w   = new(xrdenc.WBuffer)
+				got SecurityOverride
+			)
+
+			err = want.MarshalXrd(w)
+			if err != nil {
+				t.Fatalf("could not marshal: %v", err)
+			}
+
+			r := xrdenc.NewRBuffer(w.Bytes())
+			err = got.UnmarshalXrd(r)
+			if err != nil {
+				t.Fatalf("could not unmarshal: %v", err)
+			}
+
+			if !reflect.DeepEqual(got, want) {
+				t.Fatalf("round trip failed\ngot = %#v\nwant= %#v\n", got, want)
+			}
+		})
+	}
+}
+
+func TestOpaque(t *testing.T) {
+	for _, tc := range []struct {
+		path string
+		want string
+	}{
+		{"hello", "hello"},
+		{"hello?", ""},
+		{"hello?boo", "boo"},
+		{"?boo", "boo"},
+	} {
+		t.Run(tc.path, func(t *testing.T) {
+			got := Opaque(tc.path)
+			if got != tc.want {
+				t.Fatalf("got=%q, want=%q", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestSetOpaque(t *testing.T) {
+	for _, tc := range []struct {
+		path string
+		opaq string
+		want string
+	}{
+		{"", "v", "?v"},
+		{"hello", "v", "hello?v"},
+		{"hello?", "v", "hello?v"},
+		{"hello?boo", "v", "hello?v"},
+		{"?boo", "v", "?v"},
+		{"hello?boo?", "v", "hello?boo?v"},
+		{"hello?boo?bar", "v", "hello?boo?v"},
+		{"hello?boo=value?bar=33", "v", "hello?boo=value?v"},
+	} {
+		t.Run(tc.path, func(t *testing.T) {
+			got := tc.path
+			SetOpaque(&got, tc.opaq)
+			if got != tc.want {
+				t.Fatalf("got=%q, want=%q", got, tc.want)
 			}
 		})
 	}
