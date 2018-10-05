@@ -33,7 +33,7 @@ func (sess *session) handshake(ctx context.Context) error {
 	}
 
 	var result handshake.Response
-	if err = xrdproto.Unmarshal(resp, &result); err != nil {
+	if err = result.UnmarshalXrd(xrdenc.NewRBuffer(resp)); err != nil {
 		return err
 	}
 
