@@ -14,7 +14,7 @@ import (
 // Query parameters.
 const (
 	Stats          = 1  // Query server statistics
-	Prep           = 2  // Query prepare status
+	Prepare        = 2  // Query prepare status
 	Checksum       = 3  // Query file checksum
 	XAttr          = 4  // Query file extended attributes
 	Space          = 5  // Query server logical space statistics
