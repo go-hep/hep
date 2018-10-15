@@ -29,6 +29,7 @@ import (
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/auth"
+	"go-hep.org/x/hep/xrootd/xrdproto/auth/host"
 	"go-hep.org/x/hep/xrootd/xrdproto/auth/krb5"
 	"go-hep.org/x/hep/xrootd/xrdproto/auth/unix"
 )
@@ -69,7 +70,7 @@ func (client *Client) addAuth(auth auth.Auther) error {
 }
 
 func (client *Client) initSecurityProviders() {
-	providers := []auth.Auther{krb5.Default, unix.Default}
+	providers := []auth.Auther{krb5.Default, unix.Default, host.Default}
 	for _, provider := range providers {
 		if provider == nil {
 			continue
