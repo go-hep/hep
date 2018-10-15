@@ -9,7 +9,18 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
+	"go-hep.org/x/hep/xrootd/xrdproto/auth"
+	"go-hep.org/x/hep/xrootd/xrdproto/auth/host"
+	"go-hep.org/x/hep/xrootd/xrdproto/auth/krb5"
+	"go-hep.org/x/hep/xrootd/xrdproto/auth/unix"
 )
+
+// defaultProviders is the list of authentification providers a xrootd client will use by default.
+var defaultProviders = []auth.Auther{
+	krb5.Default,
+	unix.Default,
+	host.Default,
+}
 
 func (sess *session) auth(ctx context.Context, securityInformation []byte) error {
 	securityInformation = bytes.TrimLeft(securityInformation, "&")
