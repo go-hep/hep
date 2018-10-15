@@ -25,10 +25,11 @@ matrix:
    - go: 1.11.x
      env:
        - TAGS="-tags travis"
-       - COVERAGE="-cover"
+       - COVERAGE="-cover -race"
    - go: master
      env:
        - TAGS="-tags travis"
+       - COVERAGE="-race"
        - GO111MODULE="on"
 
 sudo: required
@@ -49,7 +50,7 @@ before_script:
 script:
  - go get -d -t -v ./...
  - go install -v $TAGS ./...
- - go run ./ci/run-tests.go -race $TAGS $COVERAGE
+ - go run ./ci/run-tests.go $TAGS $COVERAGE
 
 after_success:
  - bash <(curl -s https://codecov.io/bash)
