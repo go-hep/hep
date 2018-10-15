@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package krb5 contains the implementation of krb5 (Kerberos) security provider.
-package krb5
+package krb5 // import "go-hep.org/x/hep/xrootd/xrdproto/auth/krb5"
 
 import (
 	"strings"
