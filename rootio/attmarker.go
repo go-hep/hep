@@ -22,6 +22,10 @@ func newAttMarker() *attmarker {
 	}
 }
 
+func (*attmarker) Class() string {
+	return "TAttMarker"
+}
+
 func (a *attmarker) MarshalROOT(w *WBuffer) (int, error) {
 	if w.err != nil {
 		return 0, w.err
@@ -61,6 +65,7 @@ func init() {
 }
 
 var (
+	_ Object          = (*attmarker)(nil)
 	_ ROOTMarshaler   = (*attmarker)(nil)
 	_ ROOTUnmarshaler = (*attmarker)(nil)
 )

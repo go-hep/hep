@@ -20,6 +20,10 @@ func newAttFill() *attfill {
 	}
 }
 
+func (*attfill) Class() string {
+	return "TAttFill"
+}
+
 func (a *attfill) MarshalROOT(w *WBuffer) (int, error) {
 	if w.err != nil {
 		return 0, w.err
@@ -59,6 +63,7 @@ func init() {
 }
 
 var (
+	_ Object          = (*attfill)(nil)
 	_ ROOTMarshaler   = (*attfill)(nil)
 	_ ROOTUnmarshaler = (*attfill)(nil)
 )

@@ -21,6 +21,9 @@ func newAttLine() *attline {
 		width: 1,
 	}
 }
+func (*attline) Class() string {
+	return "TAttLine"
+}
 
 func (a *attline) MarshalROOT(w *WBuffer) (int, error) {
 	if w.err != nil {
@@ -63,6 +66,7 @@ func init() {
 }
 
 var (
+	_ Object          = (*attline)(nil)
 	_ ROOTMarshaler   = (*attline)(nil)
 	_ ROOTUnmarshaler = (*attline)(nil)
 )
