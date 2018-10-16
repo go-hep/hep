@@ -108,3 +108,32 @@ func TestFile(t *testing.T) {
 		t.Fatalf("evt2 differ.\ngot= %v\nwant=%v\n", revt2, evt2)
 	}
 }
+
+func TestInvalidFile(t *testing.T) {
+	for _, tc := range []struct {
+		r   []byte
+		err error
+	}{
+		{
+			r:   nil,
+			err: errorf("rio: error reading magic-header: EOF"),
+		},
+		{
+			r:   []byte{'s', 'i', 'o', '\x00'},
+			err: errorf("rio: not a rio-stream. magic-header=\"sio\\x00\". want=\"rio\\x00\""),
+		},
+		{
+			r:   []byte{'r', 'i', 'o', '\x00'},
+			err: errorf("rio: error seeking footer (err=bytes.Reader.Seek: negative position)"),
+		},
+	} {
+		t.Run("", func(t *testing.T) {
+			r := bytes.NewReader(tc.r)
+			f, err := Open(r)
+			if !reflect.DeepEqual(err, tc.err) {
+				t.Fatalf("got=%#v, want=%#v", err, tc.err)
+			}
+			defer f.Close()
+		})
+	}
+}

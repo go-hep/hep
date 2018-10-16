@@ -36,7 +36,7 @@ func Open(r io.ReadSeeker) (*File, error) {
 	}
 
 	// a seek-able rio streams sports a rioFooter at the end.
-	_, err = f.r.Seek(-int64(ftrSize), 2)
+	_, err = f.r.Seek(-int64(ftrSize), io.SeekEnd)
 	if err != nil {
 		return nil, errorf("rio: error seeking footer (err=%v)", err)
 	}
@@ -56,7 +56,7 @@ func Open(r io.ReadSeeker) (*File, error) {
 		return nil, err
 	}
 
-	_, err = f.r.Seek(ftr.Meta, 0)
+	_, err = f.r.Seek(ftr.Meta, io.SeekStart)
 	if err != nil {
 		return nil, errorf("rio: error seeking metadata (err=%v)", err)
 	}
