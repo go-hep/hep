@@ -79,31 +79,6 @@ func (rec *Record) Block(name string) *Block {
 	return block
 }
 
-// compress compresses r into w
-func (rec *Record) compress(w io.Writer, r io.Reader) error {
-	_, err := io.Copy(rec.cw, r)
-	if err != nil {
-		_ = rec.cw.Close()
-		return err
-	}
-
-	err = rec.cw.Close()
-	return err
-}
-
-// decompress decompresses r into w
-func (rec *Record) decompress(w io.Writer, r io.Reader) error {
-	rec.xr.Reset(r)
-	_, err := io.Copy(w, rec.xr)
-	if err != nil {
-		_ = rec.xr.Close()
-		return err
-	}
-
-	//err = rec.xr.Close()
-	return err
-}
-
 // Write writes data to the Writer, in the rio format
 func (rec *Record) Write() error {
 	var err error
