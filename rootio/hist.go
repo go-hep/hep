@@ -39,7 +39,7 @@ type th1 struct {
 
 func newH1() *th1 {
 	return &th1{
-		rvers:     7, // FIXME(sbinet): harmonize versions
+		rvers:     8, // FIXME(sbinet): harmonize versions
 		tnamed:    *newNamed("", ""),
 		attline:   *newAttLine(),
 		attfill:   *newAttFill(),
