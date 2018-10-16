@@ -169,7 +169,7 @@ func Create(name string, opts ...FileOption) (*File, error) {
 		end:         kBEGIN,
 		units:       4,
 		compression: 1,
-		sinfos:      []StreamerInfo{},
+		sinfos:      defaultStreamerInfos, // FIXME(sbinet): drop default streamers
 	}
 	f.dir = *newDirectoryFile(name, f)
 	f.spans.add(kBEGIN, kStartBigFile)

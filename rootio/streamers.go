@@ -954,6 +954,19 @@ func streamerInfoFrom(obj Object, sictx streamerInfoStore) (StreamerInfo, error)
 	return si, nil
 }
 
+var defaultStreamerInfos []StreamerInfo
+
+func init() {
+	r := &memFile{bytes.NewReader(rstreamerspkg.Data)}
+	f, err := NewReader(r)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	defaultStreamerInfos = f.StreamerInfos()
+}
+
 var (
 	_ Object          = (*tstreamerInfo)(nil)
 	_ Named           = (*tstreamerInfo)(nil)

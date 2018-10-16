@@ -38,12 +38,8 @@ func ExampleCreate_empty() {
 
 	fmt.Printf("file: %q\n", r.Name())
 
-	sinfos := r.StreamerInfos()
-	fmt.Printf("streamer infos: %d\n", len(sinfos))
-
 	// Output:
 	// file: "empty.root"
-	// streamer infos: 0
 }
 
 func ExampleCreate() {
