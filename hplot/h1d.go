@@ -88,7 +88,6 @@ func (u unitYs) XY(i int) (float64, float64) {
 func NewH1D(h *hbook.H1D) *H1D {
 	return &H1D{
 		Hist:      h,
-		FillColor: color.White,
 		LineStyle: plotter.DefaultLineStyle,
 	}
 }
