@@ -350,7 +350,7 @@ func (svc *dflowsvc) dumpGraph() error {
 		}
 	}
 
-	out, err := dot.Marshal(gr, "dataflow", "", "  ", true)
+	out, err := dot.Marshal(gr, "dataflow", "", "  ")
 	if err != nil {
 		return Error(err)
 	}
