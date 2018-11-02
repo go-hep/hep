@@ -21,10 +21,12 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
+	"go-hep.org/x/hep/groot"
+	"go-hep.org/x/hep/groot/riofs"
+	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hbook/yodacnv"
-	"go-hep.org/x/hep/rootio"
 )
 
 func main() {
@@ -53,7 +55,7 @@ ex:
 	}
 
 	oname := flag.Arg(flag.NArg() - 1)
-	f, err := rootio.Create(oname)
+	f, err := groot.Create(oname)
 	if err != nil {
 		log.Fatalf("could not create output ROOT file: %v", err)
 	}
@@ -72,7 +74,7 @@ ex:
 	}
 }
 
-func convert(w *rootio.File, fname string) error {
+func convert(w *riofs.File, fname string) error {
 	var r io.ReadCloser
 	r, err := os.Open(fname)
 	if err != nil {
@@ -96,7 +98,7 @@ func convert(w *rootio.File, fname string) error {
 
 	for i, v := range vs {
 		var (
-			obj rootio.Object
+			obj root.Object
 			key string
 		)
 		switch v := v.(type) {

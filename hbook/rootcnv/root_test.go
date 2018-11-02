@@ -11,16 +11,18 @@ import (
 	"reflect"
 	"testing"
 
+	"go-hep.org/x/hep/groot"
+	"go-hep.org/x/hep/groot/rhist"
+	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hbook/yodacnv"
-	"go-hep.org/x/hep/rootio"
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
 func ExampleH1D() {
-	f, err := rootio.Open("testdata/gauss-h1.root")
+	f, err := groot.Open("testdata/gauss-h1.root")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,7 +33,7 @@ func ExampleH1D() {
 		log.Fatal(err)
 	}
 
-	root := obj.(*rootio.H1D)
+	root := obj.(*rhist.H1D)
 	h, err := rootcnv.H1D(root)
 	if err != nil {
 		log.Fatalf("error converting TH1D: %v\n", err)
@@ -50,7 +52,7 @@ func ExampleH1D() {
 }
 
 func ExampleH2D() {
-	f, err := rootio.Open("testdata/gauss-h2.root")
+	f, err := groot.Open("testdata/gauss-h2.root")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,7 +63,7 @@ func ExampleH2D() {
 		log.Fatal(err)
 	}
 
-	root := obj.(*rootio.H2D)
+	root := obj.(*rhist.H2D)
 	h, err := rootcnv.H2D(root)
 	if err != nil {
 		log.Fatalf("error converting TH2D: %v\n", err)
@@ -86,7 +88,7 @@ func ExampleH2D() {
 }
 
 func ExampleS2D() {
-	f, err := rootio.Open("../../rootio/testdata/graphs.root")
+	f, err := groot.Open("../../groot/testdata/graphs.root")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -97,7 +99,7 @@ func ExampleS2D() {
 		log.Fatal(err)
 	}
 
-	root := obj.(rootio.GraphErrors)
+	root := obj.(rhist.GraphErrors)
 	g, err := rootcnv.S2D(root)
 	if err != nil {
 		log.Fatalf("error converting TGraphErrors: %v\n", err)
@@ -127,7 +129,7 @@ func ExampleS2D() {
 }
 
 func TestH1D(t *testing.T) {
-	f, err := rootio.Open("testdata/gauss-h1.root")
+	f, err := groot.Open("testdata/gauss-h1.root")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -251,7 +253,7 @@ END YODA_HISTO1D
 			t.Errorf("%s: error: %v", test.name, err)
 			continue
 		}
-		rhisto := obj.(rootio.H1)
+		rhisto := obj.(rhist.H1)
 
 		h, err := rootcnv.H1D(rhisto)
 		if err != nil {
@@ -278,7 +280,7 @@ END YODA_HISTO1D
 }
 
 func TestH2D(t *testing.T) {
-	f, err := rootio.Open("testdata/gauss-h2.root")
+	f, err := groot.Open("testdata/gauss-h2.root")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -344,7 +346,7 @@ END YODA_HISTO2D
 			t.Errorf("%s: error: %v", test.name, err)
 			continue
 		}
-		rhisto := obj.(rootio.H2)
+		rhisto := obj.(rhist.H2)
 
 		h, err := rootcnv.H2D(rhisto)
 		if err != nil {
@@ -396,7 +398,7 @@ func TestFromH1D(t *testing.T) {
 
 	for _, tc := range []struct {
 		name   string
-		h1     rootio.H1
+		h1     rhist.H1
 		sumw   float64
 		sumw2  float64
 		sumwx  float64
@@ -440,7 +442,7 @@ func TestFromH1D(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			var hr = rootio.Factory.Get(tc.name)().Interface().(rootio.H1)
+			var hr = rtypes.Factory.Get(tc.name)().Interface().(rhist.H1)
 			if err := hr.(yodacnv.Unmarshaler).UnmarshalYODA(hraw); err != nil {
 				t.Fatal(err)
 			}
@@ -489,7 +491,7 @@ func TestFromH2D(t *testing.T) {
 
 	for _, tc := range []struct {
 		name   string
-		h2     rootio.H2
+		h2     rhist.H2
 		sumw   float64
 		sumw2  float64
 		sumwx  float64
@@ -533,7 +535,7 @@ func TestFromH2D(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			var hr = rootio.Factory.Get(tc.name)().Interface().(rootio.H2)
+			var hr = rtypes.Factory.Get(tc.name)().Interface().(rhist.H2)
 			if err := hr.(yodacnv.Unmarshaler).UnmarshalYODA(hraw); err != nil {
 				t.Fatal(err)
 			}

@@ -40,7 +40,8 @@ import (
 	"strings"
 
 	"go-hep.org/x/hep/csvutil"
-	"go-hep.org/x/hep/rootio"
+	"go-hep.org/x/hep/groot"
+	"go-hep.org/x/hep/groot/rtree"
 )
 
 func main() {
@@ -58,7 +59,7 @@ func main() {
 		log.Fatalf("missing input ROOT filename argument")
 	}
 
-	f, err := rootio.Open(*fname)
+	f, err := groot.Open(*fname)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,9 +70,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	tree, ok := obj.(rootio.Tree)
+	tree, ok := obj.(rtree.Tree)
 	if !ok {
-		log.Fatalf("object %q in file %q is not a rootio.Tree", *tname, *fname)
+		log.Fatalf("object %q in file %q is not a rtree.Tree", *tname, *fname)
 	}
 
 	var nt = ntuple{n: tree.Entries()}
@@ -97,7 +98,7 @@ func main() {
 	}
 	log.Printf("scanning leaves... [done]")
 
-	sc, err := rootio.NewTreeScannerVars(tree, nt.args...)
+	sc, err := rtree.NewTreeScannerVars(tree, nt.args...)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -153,15 +154,15 @@ func main() {
 type ntuple struct {
 	n    int64
 	cols []column
-	args []rootio.ScanVar
+	args []rtree.ScanVar
 	vars []interface{}
 }
 
-func (nt *ntuple) add(name string, leaf rootio.Leaf) {
+func (nt *ntuple) add(name string, leaf rtree.Leaf) {
 	n := len(nt.cols)
 	nt.cols = append(nt.cols, newColumn(name, leaf, nt.n))
 	col := &nt.cols[n]
-	nt.args = append(nt.args, rootio.ScanVar{Name: name, Leaf: leaf.Name()})
+	nt.args = append(nt.args, rtree.ScanVar{Name: name, Leaf: leaf.Name()})
 	nt.vars = append(nt.vars, col.data.Addr().Interface())
 }
 
@@ -175,14 +176,14 @@ func (nt *ntuple) fill() {
 type column struct {
 	name  string
 	i     int64
-	leaf  rootio.Leaf
+	leaf  rtree.Leaf
 	etype reflect.Type
 	shape []int
 	data  reflect.Value
 	slice reflect.Value
 }
 
-func newColumn(name string, leaf rootio.Leaf, n int64) column {
+func newColumn(name string, leaf rtree.Leaf, n int64) column {
 	etype := leaf.Type()
 	shape := []int{int(n)}
 	if leaf.Len() > 1 && leaf.Kind() != reflect.String {

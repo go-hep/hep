@@ -21,8 +21,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"go-hep.org/x/hep/groot"
+	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/hbook/yodacnv"
-	"go-hep.org/x/hep/rootio"
 )
 
 func main() {
@@ -84,7 +85,7 @@ options:
 
 	for _, fname := range flag.Args() {
 		log.Printf("processing %s\n", fname)
-		f, err := rootio.Open(fname)
+		f, err := groot.Open(fname)
 		if err != nil {
 			log.Fatalf("failed to open [%s]: %v\n", fname, err)
 			os.Exit(1)
@@ -101,10 +102,10 @@ options:
 	}
 }
 
-func walk(w io.Writer, k rootio.Key) {
+func walk(w io.Writer, k riofs.Key) {
 	obj := k.Value()
 	switch obj := obj.(type) {
-	case rootio.Directory:
+	case riofs.Directory:
 		for _, k := range uniq(obj.Keys()) {
 			walk(w, k)
 		}
@@ -120,8 +121,8 @@ func walk(w io.Writer, k rootio.Key) {
 	}
 }
 
-func uniq(keys []rootio.Key) []rootio.Key {
-	set := make(map[string]rootio.Key, len(keys))
+func uniq(keys []riofs.Key) []riofs.Key {
+	set := make(map[string]riofs.Key, len(keys))
 	for _, k := range keys {
 		kk, dup := set[k.Name()]
 		if dup && kk.Cycle() > k.Cycle() {
@@ -129,7 +130,7 @@ func uniq(keys []rootio.Key) []rootio.Key {
 		}
 		set[k.Name()] = k
 	}
-	out := make([]rootio.Key, 0, len(set))
+	out := make([]riofs.Key, 0, len(set))
 	for _, k := range set {
 		out = append(out, k)
 	}

@@ -71,23 +71,23 @@ to implement physics analyses.
 In this section, we list the packages that Go-HEP provides together with a
 short description.
 
-### `go-hep/rootio`
+### `go-hep/groot`
 
-`go-hep/rootio` provides read access to data stored in ROOT files.
-`rootio` is a pure-Go implementation of the ROOT file format, reimplementing
+`go-hep/groot` provides read access to data stored in ROOT files.
+`groot` is a pure-Go implementation of the ROOT file format, reimplementing
 from scratch the decoding and interpretation of ROOT's low-level file blocks
 (`TDirectory`, `TKey`, `TBuffer` and `TFile`) together with file metadata,
 such as `TStreamerInfo` and `TStreamerElement` that allow to serialize and
 deserialize C++ class' instances.
 1- and 2-dimensional histograms (`TH1x` and `TH2x`) can be extracted from
-ROOT files using `rootio`, as well as n-tuple data (`TTree`).
+ROOT files using `groot`, as well as n-tuple data (`TTree`).
 Go-HEP can also convert ROOT histograms into YODA's [@YODA] or Go-HEP's native
 format.
 
-`go-hep/rootio` is the gateway to the wealth of data generated, simulated and
+`go-hep/groot` is the gateway to the wealth of data generated, simulated and
 acquired by LHC experiments.
 
-Right now, `go-hep/rootio` can only read ROOT data.
+Right now, `go-hep/groot` can only read ROOT data.
 Work is in progress to also create ROOT-compatible data files.
 
 ### `go-hep/fmom`
@@ -196,7 +196,7 @@ Go-HEP also provides a few commands that use Go-HEP packages.
 
 ### `cmd/root2npy`
 
-The command `root2npy` uses the `go-hep/rootio` package to convert n-tuple data
+The command `root2npy` uses the `go-hep/groot` package to convert n-tuple data
 stored in ROOT files into NumPy [@NPyFormat] array data files.
 This command does not need any ROOT installation nor any NumPy installation:
 everything has been implemented in pure-Go from first principles.
@@ -208,7 +208,7 @@ pipelines that are mostly python based.
 The `root2yoda` command converts ROOT files containing histogram values into
 their YODA equivalent, saved in a YODA ASCII file.
 
-### `go-hep/rootio/cmd/root-ls` and `root-srv`
+### `go-hep/groot/cmd/root-ls` and `root-srv`
 
 The `root-ls` command allows to quickly inspect and display the content of a
 ROOT file from the shell.

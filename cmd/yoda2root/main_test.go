@@ -12,10 +12,11 @@ import (
 	"strings"
 	"testing"
 
+	"go-hep.org/x/hep/groot"
+	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hbook/yodacnv"
-	"go-hep.org/x/hep/rootio"
 )
 
 func TestYODA2ROOT(t *testing.T) {
@@ -88,7 +89,7 @@ func TestYODA2ROOT(t *testing.T) {
 				}
 			}
 
-			o, err := rootio.Create(rfname)
+			o, err := groot.Create(rfname)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -104,7 +105,7 @@ func TestYODA2ROOT(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			rf, err := rootio.Open(rfname)
+			rf, err := groot.Open(rfname)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -114,7 +115,7 @@ func TestYODA2ROOT(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			rh1, err := rootcnv.H1D(robj.(rootio.H1))
+			rh1, err := rootcnv.H1D(robj.(rhist.H1))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -128,7 +129,7 @@ func TestYODA2ROOT(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			rh2, err := rootcnv.H2D(robj.(rootio.H2))
+			rh2, err := rootcnv.H2D(robj.(rhist.H2))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -142,7 +143,7 @@ func TestYODA2ROOT(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			rs2, err := rootcnv.S2D(robj.(rootio.GraphErrors))
+			rs2, err := rootcnv.S2D(robj.(rhist.GraphErrors))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -156,7 +157,7 @@ func TestYODA2ROOT(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			ranon, err := rootcnv.S2D(robj.(rootio.GraphErrors))
+			ranon, err := rootcnv.S2D(robj.(rhist.GraphErrors))
 			if err != nil {
 				t.Fatal(err)
 			}

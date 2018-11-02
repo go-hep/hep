@@ -18,7 +18,7 @@
 //
 // Example:
 //
-//  $> root2npy -f $GOPATH/src/go-hep.org/x/hep/rootio/testdata/simple.root -t tree -o output.npz
+//  $> root2npy -f $GOPATH/src/go-hep.org/x/hep/groot/testdata/simple.root -t tree -o output.npz
 //  $> python2 -c 'import sys, numpy as np; print(dict(np.load(sys.argv[1])))' ./output.npz
 //  {'one':   array([1, 2, 3, 4], dtype=int32),
 //   'two':   array([ 1.10000002,  2.20000005,  3.29999995,  4.4000001 ], dtype=float32),
@@ -45,8 +45,8 @@
 //  npy-header: Header{Major:2, Minor:0, Descr:{Type:<U6, Fortran:false, Shape:[4]}}
 //  data = [uno dos tres quatro]
 //
-//  $> root-ls -t $GOPATH/src/go-hep.org/x/hep/rootio/testdata/simple.root
-//  === [$GOPATH/src/go-hep.org/x/hep/rootio/testdata/simple.root] ===
+//  $> root-ls -t $GOPATH/src/go-hep.org/x/hep/groot/testdata/simple.root
+//  === [$GOPATH/src/go-hep.org/x/hep/groot/testdata/simple.root] ===
 //  version: 60600
 //  TTree   tree      fake data (entries=4)
 //    one   "one/I"   TBranch
@@ -58,8 +58,8 @@
 //
 // Example:
 //
-//  $> root-ls -t $GOPATH/src/go-hep.org/x/hep/rootio/testdata/small-flat-tree.root
-//  === [$GOPATH/src/go-hep.org/x/hep/rootio/testdata/small-flat-tree.root] ===
+//  $> root-ls -t $GOPATH/src/go-hep.org/x/hep/groot/testdata/small-flat-tree.root
+//  === [$GOPATH/src/go-hep.org/x/hep/groot/testdata/small-flat-tree.root] ===
 //  version: 60806
 //  TTree          tree                 my tree title (entries=100)
 //    Int32        "Int32/I"            TBranch
@@ -83,7 +83,7 @@
 //    SliceFloat32 "SliceFloat32[N]/F"  TBranch
 //    SliceFloat64 "SliceFloat64[N]/D"  TBranch
 //
-//  $> root2npy $GOPATH/src/go-hep.org/x/hep/rootio/testdata/small-flat-tree.root
+//  $> root2npy $GOPATH/src/go-hep.org/x/hep/groot/testdata/small-flat-tree.root
 //  root2npy: scanning leaves...
 //  root2npy: >>> "SliceInt32" []int32 not supported
 //  root2npy: >>> "SliceInt64" []int64 not supported
@@ -135,7 +135,8 @@ import (
 
 	"github.com/sbinet/npyio"
 
-	"go-hep.org/x/hep/rootio"
+	"go-hep.org/x/hep/groot"
+	"go-hep.org/x/hep/groot/rtree"
 )
 
 func main() {
@@ -153,7 +154,7 @@ func main() {
 		log.Fatalf("missing input ROOT filename argument")
 	}
 
-	f, err := rootio.Open(*fname)
+	f, err := groot.Open(*fname)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -164,9 +165,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	tree, ok := obj.(rootio.Tree)
+	tree, ok := obj.(rtree.Tree)
 	if !ok {
-		log.Fatalf("object %q in file %q is not a rootio.Tree", *tname, *fname)
+		log.Fatalf("object %q in file %q is not a rtree.Tree", *tname, *fname)
 	}
 
 	var nt = ntuple{n: tree.Entries()}
@@ -188,7 +189,7 @@ func main() {
 	}
 	log.Printf("scanning leaves... [done]")
 
-	sc, err := rootio.NewTreeScannerVars(tree, nt.args...)
+	sc, err := rtree.NewTreeScannerVars(tree, nt.args...)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -248,15 +249,15 @@ func main() {
 type ntuple struct {
 	n    int64
 	cols []column
-	args []rootio.ScanVar
+	args []rtree.ScanVar
 	vars []interface{}
 }
 
-func (nt *ntuple) add(name string, leaf rootio.Leaf) {
+func (nt *ntuple) add(name string, leaf rtree.Leaf) {
 	n := len(nt.cols)
 	nt.cols = append(nt.cols, newColumn(name, leaf, nt.n))
 	col := &nt.cols[n]
-	nt.args = append(nt.args, rootio.ScanVar{Name: name, Leaf: leaf.Name()})
+	nt.args = append(nt.args, rtree.ScanVar{Name: name, Leaf: leaf.Name()})
 	nt.vars = append(nt.vars, col.data.Addr().Interface())
 }
 
@@ -270,14 +271,14 @@ func (nt *ntuple) fill() {
 type column struct {
 	name  string
 	i     int64
-	leaf  rootio.Leaf
+	leaf  rtree.Leaf
 	etype reflect.Type
 	shape []int
 	data  reflect.Value
 	slice reflect.Value
 }
 
-func newColumn(name string, leaf rootio.Leaf, n int64) column {
+func newColumn(name string, leaf rtree.Leaf, n int64) column {
 	etype := leaf.Type()
 	shape := []int{int(n)}
 	if leaf.Len() > 1 && leaf.Kind() != reflect.String {
