@@ -2,4 +2,5 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Package rbase contains the definitions of ROOT base classes.
 package rbase // import "go-hep.org/x/hep/groot/rbase"

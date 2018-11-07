@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Package rdict contains the definition of ROOT streamers and facilities
+// to generate new streamers meta data from user types.
 package rdict // import "go-hep.org/x/hep/groot/rdict"
 
 import (
@@ -37,8 +39,10 @@ type StreamerInfo struct {
 
 func NewStreamerInfo(name string, elems []rbytes.StreamerElement) *StreamerInfo {
 	return &StreamerInfo{
-		named: *rbase.NewNamed(name, name),
-		elems: elems,
+		named:  *rbase.NewNamed(name, name),
+		chksum: 0, // FIXME(sbinet): how to generate a stable and meaningful checksum?
+		clsver: 1, // FIXME(sbinet): how to properly handle class versions?
+		elems:  elems,
 	}
 }
 

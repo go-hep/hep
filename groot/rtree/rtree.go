@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Package rtree contains the interfaces and types to decode, read, concatenate
+// and iterate over ROOT Trees.
 package rtree // import "go-hep.org/x/hep/groot/rtree"
 
 import (

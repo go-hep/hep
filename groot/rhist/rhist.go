@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package rhist
+// Package rhist contains the interfaces and definitions of ROOT types related
+// to histograms and graphs.
+package rhist // import "go-hep.org/x/hep/groot/rhist"
 
 import (
 	"go-hep.org/x/hep/groot/root"

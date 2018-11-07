@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package riofs
+// Package riofs contains the types and low-level functions to deal with opening
+// and creating ROOT files, and decoding the internal structure of ROOT files.
+//
+// Users should prefer to use the groot package to open or create ROOT files instead of this one.
+package riofs // import "go-hep.org/x/hep/groot/riofs"
 
 import (
 	"go-hep.org/x/hep/groot/root"

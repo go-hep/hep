@@ -4,4 +4,4 @@
 
 // Package rvers contains the ROOT version and the classes' versions
 // groot is supporting and currently reading.
-package rvers
+package rvers // import "go-hep.org/x/hep/groot/rvers"

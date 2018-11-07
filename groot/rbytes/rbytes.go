@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Package rbytes contains the definitions of types useful for
+// serializing and deserializing ROOT data buffers.
+//
+// rbytes also defines the interfaces to interact with ROOT's metadata classes
+// such as StreamerInfo and StreamerElements.
 package rbytes // import "go-hep.org/x/hep/groot/rbytes"
 
 import (
@@ -11,6 +16,7 @@ import (
 // StreamerInfo describes a ROOT Streamer.
 type StreamerInfo interface {
 	root.Named
+
 	CheckSum() int
 	ClassVersion() int
 	Elements() []StreamerElement
@@ -19,6 +25,7 @@ type StreamerInfo interface {
 // StreamerElement describes a ROOT StreamerElement
 type StreamerElement interface {
 	root.Named
+
 	ArrayDim() int
 	ArrayLen() int
 	Type() int
@@ -27,6 +34,10 @@ type StreamerElement interface {
 	TypeName() string
 }
 
+// StreamerInfoContext defines the protocol to retrieve a ROOT StreamerInfo
+// metadata type by name.
+//
+// Implementations should make sure the protocol is goroutine safe.
 type StreamerInfoContext interface {
 	StreamerInfo(name string) (StreamerInfo, error)
 }
