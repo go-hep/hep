@@ -57,7 +57,7 @@ options:
 	}
 
 	flag.Parse()
-	server.Init()
+	server.Init(*hostFlag == "")
 
 	log.Printf("%s server listening on %s", *servFlag, *addrFlag)
 

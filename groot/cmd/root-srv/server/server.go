@@ -11,14 +11,18 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"sync"
 	"time"
 
 	"github.com/pborman/uuid"
+	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot"
 )
 
@@ -28,13 +32,16 @@ type server struct {
 	mu       sync.RWMutex
 	cookies  map[string]*http.Cookie
 	sessions map[string]*dbFiles
+	local    bool
+	dir      string
 }
 
 // Init initializes the web server handles.
-func Init() {
-	app := newServer()
+func Init(local bool) {
+	app := newServer(local)
 	http.Handle("/", app.wrap(app.rootHandle))
 	http.Handle("/root-file-upload", app.wrap(app.uploadHandle))
+	http.Handle("/root-file-open", app.wrap(app.openHandle))
 	http.Handle("/refresh", app.wrap(app.refreshHandle))
 	http.Handle("/plot-h1/", app.wrap(app.plotH1Handle))
 	http.Handle("/plot-h2/", app.wrap(app.plotH2Handle))
@@ -42,16 +49,29 @@ func Init() {
 	http.Handle("/plot-branch/", app.wrap(app.plotBranchHandle))
 }
 
-func newServer() *server {
+func newServer(local bool) *server {
+	dir, err := ioutil.TempDir("", "groot-srv-")
+	if err != nil {
+		dir = "/tmp/groot-srv-tmp"
+		log.Printf("could not create temporary directory: %v", err)
+		log.Printf("using: %q", dir)
+	}
+
 	srv := &server{
 		cookies:  make(map[string]*http.Cookie),
 		sessions: make(map[string]*dbFiles),
+		local:    local,
+		dir:      dir,
 	}
 	go srv.run()
 	return srv
 }
 
 func (srv *server) run() {
+	if srv.dir != "" {
+		defer os.RemoveAll(srv.dir)
+	}
+
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
 	for range ticker.C {
@@ -163,7 +183,10 @@ func (srv *server) rootHandle(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return t.Execute(w, struct{ Token string }{token})
+	return t.Execute(w, struct {
+		Token string
+		Local bool
+	}{token, srv.local})
 }
 
 func (srv *server) uploadHandle(w http.ResponseWriter, r *http.Request) error {
@@ -172,7 +195,11 @@ func (srv *server) uploadHandle(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("invalid request %q for /root-file-upload", r.Method)
 	}
 
-	r.ParseMultipartForm(500 << 20)
+	err := r.ParseMultipartForm(500 << 20)
+	if err != nil {
+		return errors.Wrapf(err, "could not parse multipart form")
+	}
+
 	f, handler, err := r.FormFile("upload-file")
 	if err != nil {
 		return err
@@ -182,7 +209,19 @@ func (srv *server) uploadHandle(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	rfile, err := groot.NewReader(f)
+	fname := filepath.Join(srv.dir, uuid.NewUUID().String()+".root")
+	o, err := os.Create(fname)
+	if err != nil {
+		return errors.Wrapf(err, "could not create temporary file")
+	}
+	_, err = io.Copy(o, f)
+	if err != nil {
+		return errors.Wrapf(err, "could not copy uploaded file")
+	}
+	o.Close()
+	f.Close()
+
+	rfile, err := groot.Open(o.Name())
 	if err != nil {
 		return err
 	}
@@ -192,6 +231,43 @@ func (srv *server) uploadHandle(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	db.set(handler.Filename, rfile)
+
+	var nodes []jsNode
+
+	db.RLock()
+	defer db.RUnlock()
+	for k, rfile := range db.files {
+		node, err := fileJsTree(rfile, k)
+		if err != nil {
+			return err
+		}
+		nodes = append(nodes, node...)
+	}
+	sort.Sort(jsNodes(nodes))
+	return json.NewEncoder(w).Encode(nodes)
+}
+
+func (srv *server) openHandle(w http.ResponseWriter, r *http.Request) error {
+	if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		return fmt.Errorf("invalid request %q for /root-file-open", r.Method)
+	}
+
+	err := r.ParseMultipartForm(500 << 20)
+	if err != nil {
+		return errors.Wrapf(err, "could not parse multipart form")
+	}
+
+	fname := r.FormValue("file-name")
+	rfile, err := groot.Open(fname)
+	if err != nil {
+		return err
+	}
+
+	db, err := srv.db(r)
+	if err != nil {
+		return err
+	}
+	db.set(fname, rfile)
 
 	var nodes []jsNode
 
@@ -275,14 +351,26 @@ const page = `<html>
 		<h2>go-hep/groot ROOT file inspector</h2>
 	</div>
 	<div class="w3-bar-item">
-	<form id="groot-form" enctype="multipart/form-data" action="/root-file-upload" method="post">
-		<label for="groot-file" class="groot-file-upload" style="font-size:16px">
-		<i class="fa fa-cloud-upload" aria-hidden="true" style="font-size:16px"></i> Upload
-		</label>
-		<input id="groot-file" type="file" name="upload-file"/>
+{{if .Local}}
+	<form id="groot-local-form" enctype="multipart/form-data" action="/root-file-open" method="get">
+		<input id="groot-file-name" type="text" name="file-name" value>
 		<input type="hidden" name="token" value="{{.Token}}"/>
 		<input type="hidden" value="upload" />
 	</form>
+{{- end}}
+	<form id="groot-upload-form" enctype="multipart/form-data" action="/root-file-upload" method="post">
+		<label for="groot-file-upload" class="groot-file-upload" style="font-size:16px">
+{{if .Local}}
+		<i class="fa fa-folder-open" aria-hidden="true" style="font-size:16px"></i> Open
+{{else}}
+		<i class="fa fa-cloud-upload" aria-hidden="true" style="font-size:16px"></i> Upload
+{{end}}
+		</label>
+		<input id="groot-file-upload" type="file" name="upload-file"/>
+		<input type="hidden" name="token" value="{{.Token}}"/>
+		<input type="hidden" value="upload" />
+	</form>
+
 	</div>
 	<div id="groot-file-tree" class="w3-bar-item">
 	</div>
@@ -295,8 +383,8 @@ const page = `<html>
 </div>
 
 <script type="text/javascript">
-	document.getElementById("groot-file").onchange = function() {
-		var data = new FormData($("#groot-form")[0]);
+	document.getElementById("groot-file-upload").onchange = function() {
+		var data = new FormData($("#groot-upload-form")[0]);
 		$.ajax({
 			url: "/root-file-upload",
 			method: "POST",
@@ -309,6 +397,22 @@ const page = `<html>
 			}
 		});
 	}
+{{if .Local}}
+	document.getElementById("groot-file-name").onchange = function() {
+		var data = new FormData($("#groot-local-form")[0]);
+		$.ajax({
+			url: "/root-file-open",
+			method: "POST",
+			data: data,
+			processData: false,
+			contentType: false,
+			success: displayFileTree,
+			error: function(er){
+				alert("open failed: "+er);
+			}
+		});
+	}
+{{- end}}
 	$(function () {
 		$('#groot-file-tree').jstree();
 		$("#groot-file-tree").on("select_node.jstree",

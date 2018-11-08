@@ -11,8 +11,6 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"net/url"
-	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -37,14 +35,11 @@ func walk(f riofs.Directory, path []string) (root.Object, error) {
 }
 
 func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
-	uri := r.URL.Path[len("/plot-h1/"):]
-	var err error
-	uri, err = url.PathUnescape(uri)
-	if err != nil {
-		return err
-	}
-	toks := strings.Split(uri, "/")
-	fname := toks[0]
+	query := r.URL.Query()
+
+	fname := query.Get("fname")
+	oname := query.Get("oname")
+	opath := strings.Split(oname[1:], "/")
 
 	db, err := srv.db(r)
 	if err != nil {
@@ -54,14 +49,14 @@ func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 	defer db.RUnlock()
 
 	f := db.get(fname)
-	obj, err := walk(f, toks[1:])
+	obj, err := walk(f, opath)
 	if err != nil {
-		return fmt.Errorf("could not find %q in file %q: %v", filepath.Join(toks[1:]...), fname, err)
+		return fmt.Errorf("could not find %q in file %q: %v", oname, fname, err)
 	}
 
 	robj, ok := obj.(rhist.H1)
 	if !ok {
-		return fmt.Errorf("object %q could not be converted to hbook.H1D", toks[1])
+		return fmt.Errorf("object %q could not be converted to hbook.H1D", oname)
 	}
 	h1d, err := rootcnv.H1D(robj)
 	if err != nil {
@@ -86,9 +81,11 @@ func (srv *server) plotH1Handle(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (srv *server) plotH2Handle(w http.ResponseWriter, r *http.Request) error {
-	url := r.URL.Path[len("/plot-h2/"):]
-	toks := strings.Split(url, "/")
-	fname := toks[0]
+	query := r.URL.Query()
+
+	fname := query.Get("fname")
+	oname := query.Get("oname")
+	opath := strings.Split(oname[1:], "/")
 
 	db, err := srv.db(r)
 	if err != nil {
@@ -98,14 +95,14 @@ func (srv *server) plotH2Handle(w http.ResponseWriter, r *http.Request) error {
 	defer db.RUnlock()
 
 	f := db.get(fname)
-	obj, err := walk(f, toks[1:])
+	obj, err := walk(f, opath)
 	if err != nil {
-		return fmt.Errorf("could not find %q in file %q: %v", filepath.Join(toks[1:]...), fname, err)
+		return fmt.Errorf("could not find %q in file %q: %v", oname, fname, err)
 	}
 
 	robj, ok := obj.(rhist.H2)
 	if !ok {
-		return fmt.Errorf("object %q could not be converted to hbook.H1D", toks[1])
+		return fmt.Errorf("object %q could not be converted to hbook.H1D", oname)
 	}
 	h2d, err := rootcnv.H2D(robj)
 	if err != nil {
@@ -129,9 +126,11 @@ func (srv *server) plotH2Handle(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (srv *server) plotS2Handle(w http.ResponseWriter, r *http.Request) error {
-	url := r.URL.Path[len("/plot-s2/"):]
-	toks := strings.Split(url, "/")
-	fname := toks[0]
+	query := r.URL.Query()
+
+	fname := query.Get("fname")
+	oname := query.Get("oname")
+	opath := strings.Split(oname[1:], "/")
 
 	db, err := srv.db(r)
 	if err != nil {
@@ -141,14 +140,14 @@ func (srv *server) plotS2Handle(w http.ResponseWriter, r *http.Request) error {
 	defer db.RUnlock()
 
 	f := db.get(fname)
-	obj, err := walk(f, toks[1:])
+	obj, err := walk(f, opath)
 	if err != nil {
-		return fmt.Errorf("could not find %q in file %q: %v", filepath.Join(toks[1:]...), fname, err)
+		return fmt.Errorf("could not find %q in file %q: %v", oname, fname, err)
 	}
 
 	robj, ok := obj.(rhist.Graph)
 	if !ok {
-		return fmt.Errorf("object %q could not be converted to rhist.Graph", toks[1])
+		return fmt.Errorf("object %q could not be converted to rhist.Graph", oname)
 	}
 	s2d, err := rootcnv.S2D(robj)
 	if err != nil {
@@ -179,9 +178,11 @@ func (srv *server) plotS2Handle(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (srv *server) plotBranchHandle(w http.ResponseWriter, r *http.Request) error {
-	url := r.URL.Path[len("/plot-branch/"):]
-	toks := strings.Split(url, "/")
-	fname := toks[0]
+	query := r.URL.Query()
+
+	fname := query.Get("fname")
+	oname := query.Get("oname")
+	opath := strings.Split(oname[1:], "/")
 
 	db, err := srv.db(r)
 	if err != nil {
@@ -191,14 +192,14 @@ func (srv *server) plotBranchHandle(w http.ResponseWriter, r *http.Request) erro
 	defer db.RUnlock()
 
 	f := db.get(fname)
-	obj, err := walk(f, toks[1:])
+	obj, err := walk(f, opath)
 	if err != nil {
-		return fmt.Errorf("could not find %q in file %q: %v", filepath.Join(toks[1:]...), fname, err)
+		return fmt.Errorf("could not find %q in file %q: %v", oname, fname, err)
 	}
 
 	tree := obj.(rtree.Tree)
 
-	bname := toks[len(toks)-1]
+	bname := opath[len(opath)-1]
 	b := tree.Branch(bname) // FIXME(sbinet): handle sub-branches
 	if b == nil {
 		return fmt.Errorf("could not find branch %q in tree %q of file %q", bname, tree.Name(), fname)

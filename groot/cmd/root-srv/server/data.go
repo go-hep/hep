@@ -70,10 +70,12 @@ func (db *dbFiles) del(name string) {
 }
 
 type jsNode struct {
-	ID    string `json:"id,omitempty"`
-	Text  string `json:"text,omitempty"`
-	Icon  string `json:"icon,omitempty"`
-	State struct {
+	ID       string `json:"id,omitempty"`
+	FilePath string `json:"fpath,omitempty"`
+	ObjPath  string `json:"opath,omitempty"`
+	Text     string `json:"text,omitempty"`
+	Icon     string `json:"icon,omitempty"`
+	State    struct {
 		Opened   bool `json:"opened,omitempty"`
 		Disabled bool `json:"disabled,omitempty"`
 		Selected bool `json:"selected,omitempty"`
@@ -95,7 +97,7 @@ func (p jsNodes) Len() int           { return len(p) }
 func (p jsNodes) Less(i, j int) bool { return p[i].ID < p[j].ID }
 func (p jsNodes) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
-func newJsNodes(bres brancher, id string) ([]jsNode, error) {
+func newJsNodes(bres brancher, parent jsNode) ([]jsNode, error) {
 	var err error
 	branches := bres.Branches()
 	if len(branches) <= 0 {
@@ -103,14 +105,18 @@ func newJsNodes(bres brancher, id string) ([]jsNode, error) {
 	}
 	var nodes []jsNode
 	for _, b := range branches {
-		id := strings.Join([]string{id, b.Name()}, "/")
+		id := parent.ID
+		bid := strings.Join([]string{id, b.Name()}, "/")
+		opath := strings.Join([]string{parent.ObjPath, b.Name()}, "/")
 		node := jsNode{
-			ID:   id,
-			Text: b.Name(),
-			Icon: "fa fa-leaf",
-			Attr: attrFor(b.(root.Object), id),
+			ID:       bid,
+			FilePath: parent.FilePath,
+			ObjPath:  opath,
+			Text:     b.Name(),
+			Icon:     "fa fa-leaf",
 		}
-		node.Children, err = newJsNodes(b, node.ID)
+		node.Attr = attrFor(b.(root.Object), node)
+		node.Children, err = newJsNodes(b, node)
 		if err != nil {
 			return nil, err
 		}
@@ -121,9 +127,10 @@ func newJsNodes(bres brancher, id string) ([]jsNode, error) {
 
 func fileJsTree(f *riofs.File, fname string) ([]jsNode, error) {
 	root := jsNode{
-		ID:   fname,
-		Text: fmt.Sprintf("%s (version=%v)", fname, f.Version()),
-		Icon: "fa fa-file",
+		ID:       f.Name(),
+		FilePath: fname,
+		Text:     fmt.Sprintf("%s (version=%v)", fname, f.Version()),
+		Icon:     "fa fa-file",
 	}
 	root.State.Opened = true
 	return dirTree(f, fname, root)
@@ -140,11 +147,13 @@ func dirTree(dir riofs.Directory, path string, root jsNode) ([]jsNode, error) {
 		case rtree.Tree:
 			tree := obj
 			node := jsNode{
-				ID:   strings.Join([]string{path, k.Name()}, "/"),
-				Text: fmt.Sprintf("%s (entries=%d)", k.Name(), tree.Entries()),
-				Icon: "fa fa-tree",
+				ID:       strings.Join([]string{path, k.Name()}, "/"),
+				FilePath: root.FilePath,
+				ObjPath:  strings.Join([]string{root.ObjPath, k.Name()}, "/"),
+				Text:     fmt.Sprintf("%s (entries=%d)", k.Name(), tree.Entries()),
+				Icon:     "fa fa-tree",
 			}
-			node.Children, err = newJsNodes(tree, node.ID)
+			node.Children, err = newJsNodes(tree, node)
 			if err != nil {
 				return nil, err
 			}
@@ -152,9 +161,11 @@ func dirTree(dir riofs.Directory, path string, root jsNode) ([]jsNode, error) {
 		case riofs.Directory:
 			dir := obj
 			node := jsNode{
-				ID:   strings.Join([]string{path, k.Name()}, "/"),
-				Text: k.Name(),
-				Icon: "fa fa-folder",
+				ID:       strings.Join([]string{path, k.Name()}, "/"),
+				FilePath: root.FilePath,
+				ObjPath:  strings.Join([]string{root.ObjPath, k.Name()}, "/"),
+				Text:     k.Name(),
+				Icon:     "fa fa-folder",
 			}
 			node.Children, err = dirTree(dir, path+"/"+k.Name(), node)
 			if err != nil {
@@ -164,12 +175,15 @@ func dirTree(dir riofs.Directory, path string, root jsNode) ([]jsNode, error) {
 			nodes = append(nodes, node)
 		default:
 			id := strings.Join([]string{path, k.Name() + fmt.Sprintf(";%d", k.Cycle())}, "/")
-			nodes = append(nodes, jsNode{
-				ID:   id,
-				Text: fmt.Sprintf("%s;%d", k.Name(), k.Cycle()),
-				Icon: iconFor(obj),
-				Attr: attrFor(obj, id),
-			})
+			node := jsNode{
+				ID:       id,
+				FilePath: root.FilePath,
+				ObjPath:  strings.Join([]string{root.ObjPath, k.Name()}, "/"),
+				Text:     fmt.Sprintf("%s;%d", k.Name(), k.Cycle()),
+				Icon:     iconFor(obj),
+			}
+			node.Attr = attrFor(obj, node)
+			nodes = append(nodes, node)
 
 		}
 	}
@@ -190,29 +204,33 @@ func iconFor(obj root.Object) string {
 	return "fa fa-cube"
 }
 
-func attrFor(obj root.Object, id string) jsAttr {
-	id = url.PathEscape(id)
+func attrFor(obj root.Object, node jsNode) jsAttr {
+	query := make(url.Values)
+	query.Add("fname", node.FilePath)
+	query.Add("oname", node.ObjPath)
+	id := query.Encode()
+
 	cls := obj.Class()
 	switch {
 	case strings.HasPrefix(cls, "TH1"):
 		return jsAttr{
 			"plot": true,
-			"href": "/plot-h1/" + id,
+			"href": "/plot-h1?" + id,
 		}
 	case strings.HasPrefix(cls, "TH2"):
 		return jsAttr{
 			"plot": true,
-			"href": "/plot-h2/" + id,
+			"href": "/plot-h2?" + id,
 		}
 	case strings.HasPrefix(cls, "TGraph"):
 		return jsAttr{
 			"plot": true,
-			"href": "/plot-s2/" + id,
+			"href": "/plot-s2?" + id,
 		}
 	case strings.HasPrefix(cls, "TBranch"):
 		return jsAttr{
 			"plot": true,
-			"href": "/plot-branch/" + id,
+			"href": "/plot-branch?" + id,
 		}
 	}
 	return nil
