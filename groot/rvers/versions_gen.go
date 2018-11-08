@@ -6,8 +6,6 @@
 
 package rvers
 
-import ()
-
 // ROOT version
 const ROOT = 61404
 

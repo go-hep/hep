@@ -32,6 +32,11 @@ func GoFmt(f *os.File) {
 
 func GenImports(pkg string, w io.Writer, imports ...string) {
 	fmt.Fprintf(w, srcHeader, pkg)
+	if len(imports) == 0 {
+		return
+	}
+
+	fmt.Fprintf(w, "import (\n")
 	for _, imp := range imports {
 		if imp == "" {
 			fmt.Fprintf(w, "\n")
@@ -50,5 +55,4 @@ const srcHeader = `// Copyright 2018 The go-hep Authors. All rights reserved.
 
 package %s
 
-import (
 `
