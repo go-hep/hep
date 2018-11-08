@@ -14,6 +14,7 @@ import (
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
+	"go-hep.org/x/hep/groot/rvers"
 )
 
 // noKeyError is the error returned when a riofs.Key could not be found.
@@ -69,7 +70,7 @@ type Key struct {
 func newKey(name, title, class string, nbytes int32, f *File) Key {
 	k := Key{
 		f:        f,
-		rvers:    4, // FIXME(sbinet): harmonize versions
+		rvers:    rvers.Key,
 		objlen:   nbytes,
 		datetime: nowUTC(),
 		cycle:    1,
@@ -120,7 +121,7 @@ func newKeyFrom(obj root.Object, wbuf *rbytes.WBuffer) (Key, error) {
 	}
 
 	k := Key{
-		rvers:    4, // FIXME(sbinet): harmonize versions
+		rvers:    rvers.Key,
 		objlen:   int32(n),
 		datetime: nowUTC(),
 		class:    obj.Class(),
@@ -132,6 +133,8 @@ func newKeyFrom(obj root.Object, wbuf *rbytes.WBuffer) (Key, error) {
 	}
 	return k, nil
 }
+
+func (k *Key) RVersion() int16 { return k.rvers }
 
 func (*Key) Class() string {
 	return "TKey"
@@ -370,7 +373,7 @@ func (k *Key) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return int(w.Pos() - pos), nil
 	}
 
-	w.WriteI16(k.rvers)
+	w.WriteI16(k.RVersion())
 	w.WriteI32(k.objlen)
 	w.WriteU32(time2datime(k.datetime))
 	w.WriteI16(int16(k.keylen))

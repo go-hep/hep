@@ -14,6 +14,7 @@ import (
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
+	"go-hep.org/x/hep/groot/rvers"
 )
 
 type tdirectory struct {
@@ -21,6 +22,8 @@ type tdirectory struct {
 	named rbase.Named // name+title of this directory
 	uuid  rbase.UUID
 }
+
+func (dir *tdirectory) RVersion() int16 { return dir.rvers }
 
 func (dir *tdirectory) Class() string {
 	return "TDirectory"
@@ -40,7 +43,7 @@ func (dir *tdirectory) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.Pos()
-	w.WriteVersion(dir.rvers)
+	w.WriteVersion(dir.RVersion())
 
 	dir.named.MarshalROOT(w)
 	// FIXME(sbinet): stream parent
@@ -90,7 +93,7 @@ func newDirectoryFile(name string, f *File) *tdirectoryFile {
 	now := nowUTC()
 	return &tdirectoryFile{
 		dir: tdirectory{
-			rvers: 5, // FIXME(sbinet)
+			rvers: rvers.DirectoryFile,
 			named: *rbase.NewNamed(name, ""),
 		},
 		ctime: now,
@@ -357,7 +360,7 @@ func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 
 	dir.keys = append(dir.keys, Key{
 		f:        dir.file,
-		rvers:    4, // FIXME(sbinet): harmonize versions
+		rvers:    rvers.Key,
 		datetime: nowUTC(),
 		cycle:    cycle,
 		class:    typename,
@@ -373,6 +376,8 @@ func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 func (dir *tdirectoryFile) Keys() []Key {
 	return dir.keys
 }
+
+func (dir *tdirectoryFile) RVersion() int16 { return dir.dir.rvers }
 
 func (dir *tdirectoryFile) Class() string {
 	return "TDirectoryFile"
@@ -393,7 +398,7 @@ func (dir *tdirectoryFile) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	beg := w.Pos()
 
-	w.WriteI16(dir.dir.rvers)
+	w.WriteI16(dir.RVersion())
 	w.WriteU32(time2datime(dir.ctime))
 	w.WriteU32(time2datime(dir.mtime))
 	w.WriteI32(dir.nbyteskeys)
