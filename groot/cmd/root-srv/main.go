@@ -23,13 +23,13 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 
 	"golang.org/x/crypto/acme/autocert"
-
-	"go-hep.org/x/hep/groot/cmd/root-srv/server"
 )
 
 var (
@@ -57,24 +57,49 @@ options:
 	}
 
 	flag.Parse()
-	server.Init(*hostFlag == "")
+
+	log.SetPrefix("root-srv: ")
+	log.SetFlags(0)
+
+	dir, err := ioutil.TempDir("", "groot-rsrv-")
+	if err != nil {
+		log.Panicf("could not create temporary directory: %v", err)
+	}
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	run(dir, c)
+}
+
+func run(dir string, c chan os.Signal) {
+	defer func() {
+		log.Printf("shutdown sequence...")
+		os.RemoveAll(dir)
+	}()
 
 	log.Printf("%s server listening on %s", *servFlag, *addrFlag)
 
-	if *servFlag == "http" {
-		log.Fatal(http.ListenAndServe(*addrFlag, nil))
-	} else if *servFlag == "https" {
-		m := autocert.Manager{
-			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist(*hostFlag),
-			Cache:      autocert.DirCache("certs"), //folder for storing certificates
+	srv := newServer(*hostFlag == "", dir, http.DefaultServeMux)
+	defer srv.Shutdown()
+
+	go func() {
+		if *servFlag == "http" {
+			log.Fatal(http.ListenAndServe(*addrFlag, nil))
+		} else if *servFlag == "https" {
+			m := autocert.Manager{
+				Prompt:     autocert.AcceptTOS,
+				HostPolicy: autocert.HostWhitelist(*hostFlag),
+				Cache:      autocert.DirCache("certs"), //folder for storing certificates
+			}
+			server := &http.Server{
+				Addr: *addrFlag,
+				TLSConfig: &tls.Config{
+					GetCertificate: m.GetCertificate,
+				},
+			}
+			log.Fatal(server.ListenAndServeTLS("", ""))
 		}
-		server := &http.Server{
-			Addr: *addrFlag,
-			TLSConfig: &tls.Config{
-				GetCertificate: m.GetCertificate,
-			},
-		}
-		log.Fatal(server.ListenAndServeTLS("", ""))
-	}
+	}()
+	<-c
 }

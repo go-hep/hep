@@ -40,7 +40,7 @@ func openFile(path string) (Reader, error) {
 		return &tmpFile{f}, nil
 
 	case strings.HasPrefix(path, "file://"):
-		return os.Open(path)
+		return os.Open(path[len("file://"):])
 
 	case strings.HasPrefix(path, "xroot://"), strings.HasPrefix(path, "root://"):
 		return xrdio.Open(path)

@@ -2,80 +2,32 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package server
+package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
-	"math"
-	"net/url"
+	stdpath "path"
 	"strings"
-	"sync"
 
+	"github.com/pkg/errors"
 	"gonum.org/v1/plot/vg"
-	"gonum.org/v1/plot/vg/draw"
-	"gonum.org/v1/plot/vg/vgsvg"
 
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
+	"go-hep.org/x/hep/groot/rsrv"
 	"go-hep.org/x/hep/groot/rtree"
-	"go-hep.org/x/hep/hplot"
 )
 
-type dbFiles struct {
-	sync.RWMutex
-	files map[string]*riofs.File
-}
-
-func newDbFiles() *dbFiles {
-	return &dbFiles{
-		files: make(map[string]*riofs.File),
-	}
-}
-
-func (db *dbFiles) close() {
-	db.Lock()
-	defer db.Unlock()
-	for _, f := range db.files {
-		f.Close()
-	}
-	db.files = nil
-}
-
-func (db *dbFiles) get(name string) *riofs.File {
-	db.RLock()
-	defer db.RUnlock()
-	f, _ := db.files[name]
-	return f
-}
-
-func (db *dbFiles) set(name string, f *riofs.File) {
-	db.Lock()
-	defer db.Unlock()
-	if old, dup := db.files[name]; dup {
-		old.Close()
-	}
-	db.files[name] = f
-}
-
-func (db *dbFiles) del(name string) {
-	db.Lock()
-	defer db.Unlock()
-	f, ok := db.files[name]
-	if !ok {
-		return
-	}
-	f.Close()
-	delete(db.files, name)
-}
-
 type jsNode struct {
-	ID       string `json:"id,omitempty"`
-	FilePath string `json:"fpath,omitempty"`
-	ObjPath  string `json:"opath,omitempty"`
-	Text     string `json:"text,omitempty"`
-	Icon     string `json:"icon,omitempty"`
-	State    struct {
+	ID    string `json:"id,omitempty"`
+	URI   string `json:"uri,omitempty"`
+	Dir   string `json:"dir,omitempty"`
+	Obj   string `json:"obj,omitempty"`
+	Text  string `json:"text,omitempty"`
+	Icon  string `json:"icon,omitempty"`
+	State struct {
 		Opened   bool `json:"opened,omitempty"`
 		Disabled bool `json:"disabled,omitempty"`
 		Selected bool `json:"selected,omitempty"`
@@ -107,15 +59,18 @@ func newJsNodes(bres brancher, parent jsNode) ([]jsNode, error) {
 	for _, b := range branches {
 		id := parent.ID
 		bid := strings.Join([]string{id, b.Name()}, "/")
-		opath := strings.Join([]string{parent.ObjPath, b.Name()}, "/")
 		node := jsNode{
-			ID:       bid,
-			FilePath: parent.FilePath,
-			ObjPath:  opath,
-			Text:     b.Name(),
-			Icon:     "fa fa-leaf",
+			ID:   bid,
+			URI:  parent.URI,
+			Dir:  stdpath.Join(parent.Dir, parent.Obj),
+			Obj:  b.Name(),
+			Text: b.Name(),
+			Icon: "fa fa-leaf",
 		}
-		node.Attr = attrFor(b.(root.Object), node)
+		node.Attr, err = attrFor(b.(root.Object), node)
+		if err != nil {
+			return nil, err
+		}
 		node.Children, err = newJsNodes(b, node)
 		if err != nil {
 			return nil, err
@@ -127,10 +82,11 @@ func newJsNodes(bres brancher, parent jsNode) ([]jsNode, error) {
 
 func fileJsTree(f *riofs.File, fname string) ([]jsNode, error) {
 	root := jsNode{
-		ID:       f.Name(),
-		FilePath: fname,
-		Text:     fmt.Sprintf("%s (version=%v)", fname, f.Version()),
-		Icon:     "fa fa-file",
+		ID:   f.Name(),
+		URI:  fname,
+		Dir:  "/",
+		Text: fmt.Sprintf("%s (version=%v)", fname, f.Version()),
+		Icon: "fa fa-file",
 	}
 	root.State.Opened = true
 	return dirTree(f, fname, root)
@@ -147,11 +103,12 @@ func dirTree(dir riofs.Directory, path string, root jsNode) ([]jsNode, error) {
 		case rtree.Tree:
 			tree := obj
 			node := jsNode{
-				ID:       strings.Join([]string{path, k.Name()}, "/"),
-				FilePath: root.FilePath,
-				ObjPath:  strings.Join([]string{root.ObjPath, k.Name()}, "/"),
-				Text:     fmt.Sprintf("%s (entries=%d)", k.Name(), tree.Entries()),
-				Icon:     "fa fa-tree",
+				ID:   strings.Join([]string{path, k.Name()}, "/"),
+				URI:  root.URI,
+				Dir:  stdpath.Join(root.Dir, root.Obj),
+				Obj:  k.Name(),
+				Text: fmt.Sprintf("%s (entries=%d)", k.Name(), tree.Entries()),
+				Icon: "fa fa-tree",
 			}
 			node.Children, err = newJsNodes(tree, node)
 			if err != nil {
@@ -161,11 +118,12 @@ func dirTree(dir riofs.Directory, path string, root jsNode) ([]jsNode, error) {
 		case riofs.Directory:
 			dir := obj
 			node := jsNode{
-				ID:       strings.Join([]string{path, k.Name()}, "/"),
-				FilePath: root.FilePath,
-				ObjPath:  strings.Join([]string{root.ObjPath, k.Name()}, "/"),
-				Text:     k.Name(),
-				Icon:     "fa fa-folder",
+				ID:   strings.Join([]string{path, k.Name()}, "/"),
+				URI:  root.URI,
+				Dir:  stdpath.Join(root.Dir, root.Obj),
+				Obj:  k.Name(),
+				Text: k.Name(),
+				Icon: "fa fa-folder",
 			}
 			node.Children, err = dirTree(dir, path+"/"+k.Name(), node)
 			if err != nil {
@@ -176,15 +134,18 @@ func dirTree(dir riofs.Directory, path string, root jsNode) ([]jsNode, error) {
 		default:
 			id := strings.Join([]string{path, k.Name() + fmt.Sprintf(";%d", k.Cycle())}, "/")
 			node := jsNode{
-				ID:       id,
-				FilePath: root.FilePath,
-				ObjPath:  strings.Join([]string{root.ObjPath, k.Name()}, "/"),
-				Text:     fmt.Sprintf("%s;%d", k.Name(), k.Cycle()),
-				Icon:     iconFor(obj),
+				ID:   id,
+				URI:  root.URI,
+				Dir:  stdpath.Join(root.Dir, root.Obj),
+				Obj:  k.Name(),
+				Text: fmt.Sprintf("%s;%d", k.Name(), k.Cycle()),
+				Icon: iconFor(obj),
 			}
-			node.Attr = attrFor(obj, node)
+			node.Attr, err = attrFor(obj, node)
+			if err != nil {
+				return nil, err
+			}
 			nodes = append(nodes, node)
-
 		}
 	}
 	root.Children = nodes
@@ -204,46 +165,95 @@ func iconFor(obj root.Object) string {
 	return "fa fa-cube"
 }
 
-func attrFor(obj root.Object, node jsNode) jsAttr {
-	query := make(url.Values)
-	query.Add("fname", node.FilePath)
-	query.Add("oname", node.ObjPath)
-	id := query.Encode()
-
+func attrFor(obj root.Object, node jsNode) (jsAttr, error) {
+	cmd := new(bytes.Buffer)
 	cls := obj.Class()
 	switch {
 	case strings.HasPrefix(cls, "TH1"):
+		req := rsrv.PlotH1Request{
+			URI: node.URI,
+			Dir: node.Dir,
+			Obj: node.Obj,
+			Options: rsrv.PlotOptions{
+				Title:  node.Obj,
+				Type:   "svg",
+				Height: -1,
+				Width:  20 * vg.Centimeter,
+			},
+		}
+		err := json.NewEncoder(cmd).Encode(req)
+		if err != nil {
+			return nil, err
+		}
 		return jsAttr{
 			"plot": true,
-			"href": "/plot-h1?" + id,
-		}
+			"href": "/plot-h1",
+			"cmd":  cmd.String(),
+		}, nil
 	case strings.HasPrefix(cls, "TH2"):
+		req := rsrv.PlotH2Request{
+			URI: node.URI,
+			Dir: node.Dir,
+			Obj: node.Obj,
+			Options: rsrv.PlotOptions{
+				Title:  node.Obj,
+				Type:   "svg",
+				Height: -1,
+				Width:  20 * vg.Centimeter,
+			},
+		}
+		err := json.NewEncoder(cmd).Encode(req)
+		if err != nil {
+			return nil, err
+		}
 		return jsAttr{
 			"plot": true,
-			"href": "/plot-h2?" + id,
-		}
+			"href": "/plot-h2",
+			"cmd":  cmd.String(),
+		}, nil
 	case strings.HasPrefix(cls, "TGraph"):
+		req := rsrv.PlotS2Request{
+			URI: node.URI,
+			Dir: node.Dir,
+			Obj: node.Obj,
+			Options: rsrv.PlotOptions{
+				Title:  node.Obj,
+				Type:   "svg",
+				Height: -1,
+				Width:  20 * vg.Centimeter,
+			},
+		}
+		err := json.NewEncoder(cmd).Encode(req)
+		if err != nil {
+			return nil, err
+		}
 		return jsAttr{
 			"plot": true,
-			"href": "/plot-s2?" + id,
-		}
+			"href": "/plot-s2",
+			"cmd":  cmd.String(),
+		}, nil
 	case strings.HasPrefix(cls, "TBranch"):
+		req := rsrv.PlotTreeRequest{
+			URI:  node.URI,
+			Dir:  stdpath.Dir(node.Dir),
+			Obj:  stdpath.Base(node.Dir),
+			Vars: []string{node.Obj},
+			Options: rsrv.PlotOptions{
+				Title:  node.Obj,
+				Type:   "svg",
+				Height: -1,
+				Width:  20 * vg.Centimeter,
+			},
+		}
+		err := json.NewEncoder(cmd).Encode(req)
+		if err != nil {
+			return nil, err
+		}
 		return jsAttr{
 			"plot": true,
-			"href": "/plot-branch?" + id,
-		}
+			"href": "/plot-branch",
+			"cmd":  cmd.String(),
+		}, nil
 	}
-	return nil
-}
-
-func renderSVG(p *hplot.Plot) ([]byte, error) {
-	size := 20 * vg.Centimeter
-	canvas := vgsvg.New(size, size/vg.Length(math.Phi))
-	p.Draw(draw.New(canvas))
-	out := new(bytes.Buffer)
-	_, err := canvas.WriteTo(out)
-	if err != nil {
-		return nil, err
-	}
-	return out.Bytes(), nil
+	return nil, errors.Errorf("unknown node type %q", cls)
 }

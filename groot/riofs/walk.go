@@ -89,7 +89,14 @@ func (dir *recDir) Put(name string, v root.Object) error      { return dir.dir.P
 func (dir *recDir) Keys() []Key                               { return dir.dir.Keys() }
 
 func (dir *recDir) get(namecycle string) (root.Object, error) {
+	switch namecycle {
+	case "", "/":
+		return dir.dir.(root.Object), nil
+	}
 	name, cycle := decodeNameCycle(namecycle)
+	if strings.HasPrefix(name, "/") {
+		name = name[1:]
+	}
 	path := strings.Split(name, "/")
 	return dir.walk(dir.dir, path, cycle)
 }

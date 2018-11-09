@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestRecDir(t *testing.T) {
+func TestDir(t *testing.T) {
 	f, err := Open("../testdata/dirs-6.14.00.root")
 	if err != nil {
 		t.Fatal(err)
@@ -24,12 +24,18 @@ func TestRecDir(t *testing.T) {
 		{"dir1/dir11/h1", "TH1F"},
 		{"dir1/dir11/h1;1", "TH1F"},
 		{"dir1/dir11/h1;9999", "TH1F"},
+		{"/dir1/dir11/h1", "TH1F"},
+		{"/dir1/dir11/h1;1", "TH1F"},
+		{"/dir1/dir11/h1;9999", "TH1F"},
 		{"dir1/dir11", "TDirectoryFile"},
 		{"dir1/dir11;1", "TDirectoryFile"},
 		{"dir1/dir11;9999", "TDirectoryFile"},
 		{"dir1", "TDirectoryFile"},
 		{"dir2", "TDirectoryFile"},
 		{"dir3", "TDirectoryFile"},
+		{"", "TFile"},
+		{"/", "TFile"},
+		{"/dir1", "TDirectoryFile"},
 	} {
 		t.Run(tc.path, func(t *testing.T) {
 			o, err := rd.Get(tc.path)

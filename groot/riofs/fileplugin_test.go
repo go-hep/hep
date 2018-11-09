@@ -7,8 +7,21 @@ package riofs
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 )
+
+func TestLocalFile(t *testing.T) {
+	local, err := filepath.Abs("../testdata/simple.root")
+	if err != nil {
+		t.Fatal(err)
+	}
+	f, err := openFile("file://" + local)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+}
 
 func TestTmpFile(t *testing.T) {
 	f, err := ioutil.TempFile("", "riofs-remote-")
