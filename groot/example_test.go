@@ -171,6 +171,30 @@ func ExampleOpen() {
 	// tree: "tree", entries=4
 }
 
+func ExampleOpen_overXRootD() {
+	f, err := groot.Open("root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/Run2012B_DoubleMuParked.root")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	for _, key := range f.Keys() {
+		fmt.Printf("key:  %q cycle=%d title=%q\n", key.Name(), key.Cycle(), key.Title())
+	}
+
+	obj, err := f.Get("Events")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tree := obj.(rtree.Tree)
+	fmt.Printf("tree: %q, entries=%d\n", tree.Name(), tree.Entries())
+
+	// Output:
+	// key:  "Events" cycle=1 title="Events"
+	// tree: "Events", entries=29308627
+}
+
 func ExampleOpen_graph() {
 	f, err := groot.Open("testdata/graphs.root")
 	if err != nil {

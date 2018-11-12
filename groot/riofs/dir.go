@@ -447,7 +447,9 @@ func (dir *tdirectoryFile) UnmarshalROOT(r *rbytes.RBuffer) error {
 		dir.seekkeys = int64(r.ReadI32())
 	}
 
-	dir.dir.uuid.UnmarshalROOT(r)
+	if r.Len() != 0 {
+		dir.dir.uuid.UnmarshalROOT(r)
+	}
 
 	return r.Err()
 }

@@ -14,12 +14,15 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/internal/rtests"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rcont"
+	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
+	"go-hep.org/x/hep/groot/rtree"
 )
 
 func TestFileDirectory(t *testing.T) {
@@ -308,5 +311,36 @@ func TestCreate(t *testing.T) {
 				t.Fatalf("ROOT/C++ could not open file %q", fname)
 			}
 		})
+	}
+}
+
+func TestOpenBigFile(t *testing.T) {
+	ch := make(chan int)
+	go func() {
+		f, err := riofs.Open("root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/SMHiggsToZZTo4L.root")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+
+		o, err := f.Get("Events")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		tree := o.(rtree.Tree)
+		if got, want := tree.Entries(), int64(299973); got != want {
+			t.Fatalf("invalid entries: got=%d, want=%d", got, want)
+		}
+		ch <- 1
+	}()
+
+	timeout := time.NewTimer(10 * time.Second)
+	defer timeout.Stop()
+	select {
+	case <-ch:
+		// ok
+	case <-timeout.C:
+		t.Fatalf("timeout")
 	}
 }

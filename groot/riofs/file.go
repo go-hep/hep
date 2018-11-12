@@ -255,7 +255,7 @@ func (f *File) Version() int {
 
 func (f *File) readHeader() error {
 
-	buf := make([]byte, 64)
+	buf := make([]byte, 64+12) // 64: small file + extra space for big file
 	if _, err := f.ReadAt(buf, 0); err != nil {
 		return err
 	}

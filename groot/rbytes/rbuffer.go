@@ -116,9 +116,9 @@ func (r *RBuffer) Read(p []byte) (int, error) {
 	if r.err != nil {
 		return 0, r.err
 	}
-	n := copy(p, r.r.p[r.r.c:])
-	r.r.c += n
-	return n, nil
+	n, err := r.r.Read(p)
+	r.err = err
+	return n, r.err
 }
 
 func (r *RBuffer) bytes() []byte {
