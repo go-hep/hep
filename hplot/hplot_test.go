@@ -17,7 +17,7 @@ import (
 
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
-	"go-hep.org/x/hep/hplot/internal/cmpimg"
+	"go-hep.org/x/hep/hplot/cmpimg"
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 	"gonum.org/v1/plot/vg"
