@@ -577,3 +577,51 @@ func TestH1DReadYODA(t *testing.T) {
 		)
 	}
 }
+
+func TestH1DBin(t *testing.T) {
+	h := hbook.NewH1DFromEdges([]float64{
+		-4.0, -3.6, -3.2, -2.8, -2.4, -2.0, -1.6, -1.2, -0.8, -0.4,
+		+0.0, +0.4, +0.8, +1.2, +1.6, +2.0, +2.4, +2.8, +3.2, +3.6,
+		+4.0,
+	})
+	if got, want := h.XMin(), -4.0; got != want {
+		t.Errorf("got xmin=%v. want=%v", got, want)
+	}
+	if got, want := h.XMax(), +4.0; got != want {
+		t.Errorf("got xmax=%v. want=%v", got, want)
+	}
+
+	h.Fill(-4.0, 1)
+	h.Fill(-3.6, 1)
+	h.Fill(-3.6, 1)
+	h.Fill(-3.1, 1)
+	h.Fill(-3.1, 1)
+	h.Fill(-3.1, 1)
+
+	for _, tc := range []struct {
+		x   float64
+		bin int
+	}{
+		{-4.0, 1},
+		{-3.9, 1},
+		{-3.6, 2},
+		{-3.1, 3},
+		{-10, -1},
+		{+4, -1},
+	} {
+		t.Run(fmt.Sprintf("x=%v", tc.x), func(t *testing.T) {
+			bin := h.Bin(tc.x)
+			if tc.bin < 0 && bin == nil {
+				// ok
+				return
+			}
+			if bin == nil {
+				t.Fatalf("unexpected nil bin")
+			}
+
+			if bin.EffEntries() != float64(tc.bin) {
+				t.Fatalf("x=%v got=%v %v, want=%d", tc.x, bin.EffEntries(), bin.Entries(), tc.bin)
+			}
+		})
+	}
+}

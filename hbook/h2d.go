@@ -178,6 +178,16 @@ func (h *H2D) Fill(x, y, w float64) {
 	h.Binning.fill(x, y, w)
 }
 
+// Bin returns the bin at coordinates (x,y) for this 2-dim histogram.
+// Bin returns nil for under/over flow bins.
+func (h *H2D) Bin(x, y float64) *Bin2D {
+	idx := h.Binning.coordToIndex(x, y)
+	if idx < 0 {
+		return nil
+	}
+	return &h.Binning.Bins[idx]
+}
+
 // XMin returns the low edge of the X-axis of this histogram.
 func (h *H2D) XMin() float64 {
 	return h.Binning.xMin()

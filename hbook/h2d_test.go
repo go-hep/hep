@@ -5,6 +5,7 @@
 package hbook_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math"
@@ -354,5 +355,59 @@ func TestH2DReadYODA(t *testing.T) {
 			string(chk),
 			string(ref),
 		)
+	}
+}
+
+func TestH2DBin(t *testing.T) {
+	h := hbook.NewH2DFromEdges(
+		[]float64{+0, +1, +2, +3},
+		[]float64{-3, -2, -1, +0},
+	)
+	if got, want := h.XMin(), +0.0; got != want {
+		t.Errorf("got xmin=%v. want=%v", got, want)
+	}
+	if got, want := h.YMin(), -3.0; got != want {
+		t.Errorf("got ymin=%v. want=%v", got, want)
+	}
+	if got, want := h.XMax(), +3.0; got != want {
+		t.Errorf("got xmax=%v. want=%v", got, want)
+	}
+	if got, want := h.YMax(), +0.0; got != want {
+		t.Errorf("got ymax=%v. want=%v", got, want)
+	}
+
+	h.Fill(0, -3, 1)
+
+	h.Fill(0, -2, 1)
+	h.Fill(0, -2, 1)
+
+	h.Fill(1, -2, 1)
+	h.Fill(1, -2, 1)
+	h.Fill(1, -2, 1)
+
+	for _, tc := range []struct {
+		x, y float64
+		bin  int
+	}{
+		{0, -3, 1},
+		{0, -2, 2},
+		{1, -2, 3},
+		{-1, -10, -1},
+		{0, -10, -1},
+	} {
+		t.Run(fmt.Sprintf("x,y=(%v,%v)", tc.x, tc.y), func(t *testing.T) {
+			bin := h.Bin(tc.x, tc.y)
+			if tc.bin < 0 && bin == nil {
+				// ok
+				return
+			}
+			if bin == nil {
+				t.Fatalf("unexpected nil bin")
+			}
+
+			if bin.EffEntries() != float64(tc.bin) {
+				t.Fatalf("x=%v,%v got=%v %v, want=%d", tc.x, tc.y, bin.EffEntries(), bin.Entries(), tc.bin)
+			}
+		})
 	}
 }

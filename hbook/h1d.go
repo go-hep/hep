@@ -142,6 +142,16 @@ func (h *H1D) Fill(x, w float64) {
 	h.Binning.fill(x, w)
 }
 
+// Bin returns the bin at coordinates (x) for this 1-dim histogram.
+// Bin returns nil for under/over flow bins.
+func (h *H1D) Bin(x float64) *Bin1D {
+	idx := h.Binning.coordToIndex(x)
+	if idx < 0 {
+		return nil
+	}
+	return &h.Binning.Bins[idx]
+}
+
 // XMin returns the low edge of the X-axis of this histogram.
 func (h *H1D) XMin() float64 {
 	return h.Binning.xMin()
