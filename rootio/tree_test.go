@@ -201,14 +201,14 @@ func TestEventTree(t *testing.T) {
 			name:  "fullsplit",
 			fname: "testdata/small-evnt-tree-fullsplit.root",
 		},
-		{
-			name:  "nosplit-xrootd",
-			fname: XrdRemote("testdata/small-evnt-tree-nosplit.root"),
-		},
-		{
-			name:  "fullsplit-xrootd",
-			fname: XrdRemote("testdata/small-evnt-tree-fullsplit.root"),
-		},
+		//		{
+		//			name:  "nosplit-xrootd",
+		//			fname: XrdRemote("testdata/small-evnt-tree-nosplit.root"),
+		//		},
+		//		{
+		//			name:  "fullsplit-xrootd",
+		//			fname: XrdRemote("testdata/small-evnt-tree-fullsplit.root"),
+		//		},
 	} {
 		testEventTree(t, test.name, test.fname)
 	}
@@ -395,7 +395,7 @@ func TestSimpleTreeOverHTTP(t *testing.T) {
 func TestTreeWithBasketWithTKeyData(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/PhaseSpaceSimulation.root",
-		XrdRemote("testdata/PhaseSpaceSimulation.root"),
+		//		XrdRemote("testdata/PhaseSpaceSimulation.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()

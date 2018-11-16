@@ -41,7 +41,7 @@ type ScannerData struct {
 func TestTreeScannerStruct(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/small-flat-tree.root",
-		XrdRemote("testdata/small-flat-tree.root"),
+		// XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -127,7 +127,7 @@ func TestTreeScannerStruct(t *testing.T) {
 func TestScannerStruct(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/small-flat-tree.root",
-		XrdRemote("testdata/small-flat-tree.root"),
+		//	XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -214,7 +214,7 @@ func TestScannerStruct(t *testing.T) {
 func TestScannerVars(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/small-flat-tree.root",
-		XrdRemote("testdata/small-flat-tree.root"),
+		//	XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -314,7 +314,7 @@ func TestScannerVars(t *testing.T) {
 func TestTreeScannerVarsMultipleTimes(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/mc_105986.ZZ.root",
-		XrdRemote("testdata/mc_105986.ZZ.root"),
+		// XrdRemote("testdata/mc_105986.ZZ.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -356,7 +356,7 @@ func TestTreeScannerVarsMultipleTimes(t *testing.T) {
 func TestTreeScannerVars(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/small-flat-tree.root",
-		XrdRemote("testdata/small-flat-tree.root"),
+		// XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -477,7 +477,7 @@ func TestTreeScannerVars(t *testing.T) {
 func TestScannerVarsMultipleTimes(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/mc_105986.ZZ.root",
-		XrdRemote("testdata/mc_105986.ZZ.root"),
+		// XrdRemote("testdata/mc_105986.ZZ.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -519,7 +519,7 @@ func TestScannerVarsMultipleTimes(t *testing.T) {
 func TestTreeScannerStructWithCounterLeaf(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/small-flat-tree.root",
-		XrdRemote("testdata/small-flat-tree.root"),
+		// XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -577,7 +577,7 @@ func TestTreeScannerStructWithCounterLeaf(t *testing.T) {
 func TestScannerStructWithCounterLeaf(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/small-flat-tree.root",
-		XrdRemote("testdata/small-flat-tree.root"),
+		// XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -635,7 +635,7 @@ func TestScannerStructWithCounterLeaf(t *testing.T) {
 func TestTreeScannerVarsWithCounterLeaf(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/small-flat-tree.root",
-		XrdRemote("testdata/small-flat-tree.root"),
+		// XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -689,7 +689,7 @@ func TestTreeScannerVarsWithCounterLeaf(t *testing.T) {
 func TestScannerVarsWithCounterLeaf(t *testing.T) {
 	for _, fname := range []string{
 		"testdata/small-flat-tree.root",
-		XrdRemote("testdata/small-flat-tree.root"),
+		// XrdRemote("testdata/small-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()

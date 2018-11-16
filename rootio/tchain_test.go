@@ -35,12 +35,12 @@ func TestChain(t *testing.T) {
 			name:    "tree",
 			title:   "my tree title",
 		},
-		{
-			fnames:  []string{rootio.XrdRemote("testdata/chain.1.root")},
-			entries: 10,
-			name:    "tree",
-			title:   "my tree title",
-		},
+		//		{
+		//			fnames:  []string{rootio.XrdRemote("testdata/chain.1.root")},
+		//			entries: 10,
+		//			name:    "tree",
+		//			title:   "my tree title",
+		//		},
 		{
 			// twice the same tree
 			fnames:  []string{"testdata/chain.1.root", "testdata/chain.1.root"},
@@ -48,16 +48,16 @@ func TestChain(t *testing.T) {
 			name:    "tree",
 			title:   "my tree title",
 		},
-		{
-			// twice the same tree
-			fnames: []string{
-				rootio.XrdRemote("testdata/chain.1.root"),
-				rootio.XrdRemote("testdata/chain.1.root"),
-			},
-			entries: 20,
-			name:    "tree",
-			title:   "my tree title",
-		},
+		//		{
+		//			// twice the same tree
+		//			fnames: []string{
+		//				rootio.XrdRemote("testdata/chain.1.root"),
+		//				rootio.XrdRemote("testdata/chain.1.root"),
+		//			},
+		//			entries: 20,
+		//			name:    "tree",
+		//			title:   "my tree title",
+		//		},
 		{
 			// two different trees (with the same schema)
 			fnames:  []string{"testdata/chain.1.root", "testdata/chain.2.root"},
@@ -65,16 +65,16 @@ func TestChain(t *testing.T) {
 			name:    "tree",
 			title:   "my tree title",
 		},
-		{
-			// two different trees (with the same schema)
-			fnames: []string{
-				rootio.XrdRemote("testdata/chain.1.root"),
-				rootio.XrdRemote("testdata/chain.2.root"),
-			},
-			entries: 20,
-			name:    "tree",
-			title:   "my tree title",
-		},
+		//		{
+		//			// two different trees (with the same schema)
+		//			fnames: []string{
+		//				rootio.XrdRemote("testdata/chain.1.root"),
+		//				rootio.XrdRemote("testdata/chain.2.root"),
+		//			},
+		//			entries: 20,
+		//			name:    "tree",
+		//			title:   "my tree title",
+		//		},
 		// TODO(sbinet): add a test with 2 trees with different schemas)
 	} {
 		t.Run("", func(t *testing.T) {
@@ -130,12 +130,12 @@ func TestChainOf(t *testing.T) {
 			name:    "tree",
 			title:   "my tree title",
 		},
-		{
-			fnames:  []string{rootio.XrdRemote("testdata/chain.1.root")},
-			entries: 10,
-			name:    "tree",
-			title:   "my tree title",
-		},
+		//		{
+		//			fnames:  []string{rootio.XrdRemote("testdata/chain.1.root")},
+		//			entries: 10,
+		//			name:    "tree",
+		//			title:   "my tree title",
+		//		},
 		{
 			// twice the same tree
 			fnames:  []string{"testdata/chain.1.root", "testdata/chain.1.root"},
@@ -143,16 +143,16 @@ func TestChainOf(t *testing.T) {
 			name:    "tree",
 			title:   "my tree title",
 		},
-		{
-			// twice the same tree
-			fnames: []string{
-				rootio.XrdRemote("testdata/chain.1.root"),
-				rootio.XrdRemote("testdata/chain.1.root"),
-			},
-			entries: 20,
-			name:    "tree",
-			title:   "my tree title",
-		},
+		//		{
+		//			// twice the same tree
+		//			fnames: []string{
+		//				rootio.XrdRemote("testdata/chain.1.root"),
+		//				rootio.XrdRemote("testdata/chain.1.root"),
+		//			},
+		//			entries: 20,
+		//			name:    "tree",
+		//			title:   "my tree title",
+		//		},
 		{
 			// two different trees (with the same schema)
 			fnames:  []string{"testdata/chain.1.root", "testdata/chain.2.root"},
@@ -160,16 +160,16 @@ func TestChainOf(t *testing.T) {
 			name:    "tree",
 			title:   "my tree title",
 		},
-		{
-			// two different trees (with the same schema)
-			fnames: []string{
-				rootio.XrdRemote("testdata/chain.1.root"),
-				rootio.XrdRemote("testdata/chain.2.root"),
-			},
-			entries: 20,
-			name:    "tree",
-			title:   "my tree title",
-		},
+		//		{
+		//			// two different trees (with the same schema)
+		//			fnames: []string{
+		//				rootio.XrdRemote("testdata/chain.1.root"),
+		//				rootio.XrdRemote("testdata/chain.2.root"),
+		//			},
+		//			entries: 20,
+		//			name:    "tree",
+		//			title:   "my tree title",
+		//		},
 		// TODO(sbinet): add a test with 2 trees with different schemas)
 	} {
 		t.Run("", func(t *testing.T) {
