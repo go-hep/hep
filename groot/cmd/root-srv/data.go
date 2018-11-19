@@ -11,7 +11,6 @@ import (
 	stdpath "path"
 	"strings"
 
-	"github.com/pkg/errors"
 	"gonum.org/v1/plot/vg"
 
 	"go-hep.org/x/hep/groot/riofs"
@@ -255,5 +254,6 @@ func attrFor(obj root.Object, node jsNode) (jsAttr, error) {
 			"cmd":  cmd.String(),
 		}, nil
 	}
-	return nil, errors.Errorf("unknown node type %q", cls)
+	// TODO(sbinet) do something clever with things we don't know how to handle?
+	return nil, nil
 }
