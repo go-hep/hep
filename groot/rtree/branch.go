@@ -349,25 +349,25 @@ func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
 	}
 
 	sictx := b.tree.getFile()
-	err = b.basket.UnmarshalROOT(rbytes.NewRBuffer(buf, nil, 0, sictx))
+	err = bk.UnmarshalROOT(rbytes.NewRBuffer(buf, nil, 0, sictx))
 	if err != nil {
 		return err
 	}
-	b.basket.key.SetFile(f)
+	bk.key.SetFile(f)
 	b.firstEntry = b.basketEntry[ib]
 
-	if len(b.basketBuf) < int(b.basket.key.ObjLen()) {
-		b.basketBuf = make([]byte, b.basket.key.ObjLen())
+	if len(b.basketBuf) < int(bk.key.ObjLen()) {
+		b.basketBuf = make([]byte, bk.key.ObjLen())
 	}
 	buf = b.basketBuf[:int(b.basket.key.ObjLen())]
-	_, err = b.basket.key.Load(buf)
+	_, err = bk.key.Load(buf)
 	if err != nil {
 		return err
 	}
-	b.basket.rbuf = rbytes.NewRBuffer(buf, nil, uint32(b.basket.key.KeyLen()), sictx)
+	bk.rbuf = rbytes.NewRBuffer(buf, nil, uint32(bk.key.KeyLen()), sictx)
 
 	for _, leaf := range b.leaves {
-		err = leaf.readBasket(b.basket.rbuf)
+		err = leaf.readBasket(bk.rbuf)
 		if err != nil {
 			return err
 		}
@@ -375,16 +375,17 @@ func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
 
 	if b.entryOffsetLen > 0 {
 		last := int64(b.basket.last)
-		err = b.basket.rbuf.SetPos(last)
+		err = bk.rbuf.SetPos(last)
 		if err != nil {
 			return err
 		}
-		n := b.basket.rbuf.ReadI32()
-		b.basket.offsets = b.basket.rbuf.ReadFastArrayI32(int(n))
-		if b.basket.rbuf.Err() != nil {
-			return b.basket.rbuf.Err()
+		n := bk.rbuf.ReadI32()
+		bk.offsets = bk.rbuf.ReadFastArrayI32(int(n))
+		if err := bk.rbuf.Err(); err != nil {
+			return err
 		}
 	}
+
 	return err
 }
 
