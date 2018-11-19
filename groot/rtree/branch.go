@@ -356,10 +356,7 @@ func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
 	bk.key.SetFile(f)
 	b.firstEntry = b.basketEntry[ib]
 
-	if len(b.basketBuf) < int(bk.key.ObjLen()) {
-		b.basketBuf = make([]byte, bk.key.ObjLen())
-	}
-	buf = b.basketBuf[:int(b.basket.key.ObjLen())]
+	buf = make([]byte, int(b.basket.key.ObjLen()))
 	_, err = bk.key.Load(buf)
 	if err != nil {
 		return err
