@@ -244,7 +244,9 @@ func (j job) run(ctx context.Context) (int, error) {
 	}
 	defer f.Close()
 
-	n, err := io.Copy(o, f)
+	// TODO(sbinet): make buffer a field of job to reduce memory pressure.
+	// TODO(sbinet): use clever heuristics for buffer size?
+	n, err := io.CopyBuffer(o, f, make([]byte, 16*1024*1024))
 	if err != nil {
 		return int(n), errors.WithMessage(err, "could not copy to output file")
 	}
