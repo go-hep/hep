@@ -23,7 +23,7 @@ func main() {
 
 	var (
 		race  = flag.Bool("race", false, "enable race detector")
-		cover = flag.Bool("cover", false, "enable code coverage")
+		cover = flag.String("coverpkg", "", "apply coverage analysis in each test to packages matching the patterns.")
 		tags  = flag.String("tags", "", "build tags")
 	)
 
@@ -48,8 +48,8 @@ func main() {
 
 	args := []string{"test", "-v"}
 
-	if *cover {
-		args = append(args, "-coverprofile=profile.out", "-covermode=atomic")
+	if *cover != "" {
+		args = append(args, "-coverprofile=profile.out", "-covermode=atomic", "-coverpkg="+*cover)
 	}
 	if *tags != "" {
 		args = append(args, "-tags="+*tags)
@@ -74,7 +74,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if *cover {
+		if *cover != "" {
 			profile, err := ioutil.ReadFile("profile.out")
 			if err != nil {
 				log.Fatal(err)
