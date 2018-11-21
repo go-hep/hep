@@ -11,7 +11,6 @@ const page = `<html>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
 	<link rel="stylesheet" href="https://www.w3schools.com/w3css/3/w3.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.7/themes/default/style.min.css" />
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.7/jstree.min.js"></script>
 	<style>
@@ -40,6 +39,29 @@ const page = `<html>
 		border:0 none;
 		cursor:pointer;
 		-webkit-border-radius: 5px;
+	}
+
+	.loader {
+		float: right;
+		border: 16px solid #f3f3f3;
+		border-radius: 50%;
+		border-top: 16px solid #3498db;
+		width: 120px;
+		height: 120px;
+		-webkit-animation: spin 2s linear infinite; /* Safari */
+		animation: spin 2s linear infinite;
+		margin-top: 95%;
+	}
+
+	/* Safari */
+	@-webkit-keyframes spin {
+		0% { -webkit-transform: rotate(0deg); }
+		100% { -webkit-transform: rotate(360deg); }
+	}
+
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
 	}
 	</style>
 </head>
@@ -79,7 +101,11 @@ const page = `<html>
 
 <!-- Page Content -->
 <div style="margin-left:25%; height:100%" class="w3-grey" id="groot-container">
-<div class="w3-container w3-content w3-cell w3-cell-middle w3-cell-row w3-center w3-justify w3-grey" style="width:100%" id="groot-display">
+	<div id="spinner-container" style="margin-left:25%; margin-right:50%">
+		<div id="spinner" class="loader" style="display: none">
+		</div>
+	</div>
+	<div class="w3-container w3-content w3-cell w3-cell-middle w3-cell-row w3-center w3-justify w3-grey" style="width:100%" id="groot-display">
 	</div>
 </div>
 
@@ -153,6 +179,14 @@ const page = `<html>
     });
 */
 {{- end}}
+	function startSpinner() {
+		var x = document.getElementById("spinner");
+		x.style.display = "block";
+	}
+	function stopSpinner() {
+		var x = document.getElementById("spinner");
+		x.style.display = "none";
+	}
 	$(function () {
 		$('#groot-file-tree').jstree();
 		$("#groot-file-tree").on("select_node.jstree",
@@ -160,6 +194,7 @@ const page = `<html>
 				data.instance.toggle_node(data.node);
 				if (data.node.a_attr.plot) {
 					data.instance.deselect_node(data.node);
+					startSpinner();
 					$.post({
 						type: 'POST',
 						url: data.node.a_attr.href,
@@ -167,6 +202,8 @@ const page = `<html>
 						success: plotCallback,
 						contentType: "application/json",
 						dataType: 'json',
+					}).always(function() {
+						stopSpinner();
 					});
 				//	$.get(data.node.a_attr.href, plotCallback);
 				}
