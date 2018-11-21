@@ -194,6 +194,7 @@ const page = `<html>
 				data.instance.toggle_node(data.node);
 				if (data.node.a_attr.plot) {
 					data.instance.deselect_node(data.node);
+					data.instance.disable_node(data.node);
 					startSpinner();
 					$.post({
 						type: 'POST',
@@ -204,8 +205,8 @@ const page = `<html>
 						dataType: 'json',
 					}).always(function() {
 						stopSpinner();
+						data.instance.enable_node(data.node);
 					});
-				//	$.get(data.node.a_attr.href, plotCallback);
 				}
 			}
 		);
