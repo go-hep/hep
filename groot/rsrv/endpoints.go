@@ -469,61 +469,66 @@ func (srv *Server) handlePlotH1(w http.ResponseWriter, r *http.Request) error {
 		return errors.Wrap(err, "could not open ROOT file database")
 	}
 
-	f := db.get(req.URI)
-	if f == nil {
-		return errors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
-	}
+	err = db.Tx(req.URI, func(f *riofs.File) error {
+		if f == nil {
+			return errors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
+		}
 
-	obj, err := riofs.Dir(f).Get(req.Dir)
+		obj, err := riofs.Dir(f).Get(req.Dir)
+		if err != nil {
+			return errors.Wrapf(err, "could not find directory %q in file %q", req.Dir, req.URI)
+		}
+		dir, ok := obj.(riofs.Directory)
+		if !ok {
+			return errors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
+		}
+
+		obj, err = dir.Get(req.Obj)
+		if err != nil {
+			return errors.Wrapf(err, "could not find object %q under directory %q in file %q", req.Obj, req.Dir, req.URI)
+		}
+
+		robj, ok := obj.(rhist.H1)
+		if !ok {
+			return errors.Errorf("rsrv: object %v:%s/%q is not a 1-dim histogram (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
+		}
+
+		h1, err := rootcnv.H1D(robj)
+		if err != nil {
+			return errors.Wrap(err, "could not convert TH1 to hbook")
+		}
+
+		req.Options.init()
+
+		pl := hplot.New()
+		pl.Title.Text = robj.Title()
+		if req.Options.Title != "" {
+			pl.Title.Text = req.Options.Title
+		}
+		pl.X.Label.Text = req.Options.X
+		pl.Y.Label.Text = req.Options.Y
+
+		h := hplot.NewH1D(h1)
+		h.Infos.Style = hplot.HInfoSummary
+		h.Color = req.Options.Line.Color
+		h.FillColor = req.Options.FillColor
+
+		pl.Add(h, hplot.NewGrid())
+
+		out, err := srv.render(pl, req.Options)
+		if err != nil {
+			return errors.Wrap(err, "could not render H1 plot")
+		}
+
+		resp.URI = req.URI
+		resp.Dir = req.Dir
+		resp.Obj = req.Obj
+		resp.Data = base64.StdEncoding.EncodeToString(out)
+		return nil
+	})
 	if err != nil {
-		return errors.Wrapf(err, "could not find directory %q in file %q", req.Dir, req.URI)
+		return err
 	}
-	dir, ok := obj.(riofs.Directory)
-	if !ok {
-		return errors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
-	}
-
-	obj, err = dir.Get(req.Obj)
-	if err != nil {
-		return errors.Wrapf(err, "could not find object %q under directory %q in file %q", req.Obj, req.Dir, req.URI)
-	}
-
-	robj, ok := obj.(rhist.H1)
-	if !ok {
-		return errors.Errorf("rsrv: object %v:%s/%q is not a 1-dim histogram (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
-	}
-
-	h1, err := rootcnv.H1D(robj)
-	if err != nil {
-		return errors.Wrap(err, "could not convert TH1 to hbook")
-	}
-
-	req.Options.init()
-
-	pl := hplot.New()
-	pl.Title.Text = robj.Title()
-	if req.Options.Title != "" {
-		pl.Title.Text = req.Options.Title
-	}
-	pl.X.Label.Text = req.Options.X
-	pl.Y.Label.Text = req.Options.Y
-
-	h := hplot.NewH1D(h1)
-	h.Infos.Style = hplot.HInfoSummary
-	h.Color = req.Options.Line.Color
-	h.FillColor = req.Options.FillColor
-
-	pl.Add(h, hplot.NewGrid())
-
-	out, err := srv.render(pl, req.Options)
-	if err != nil {
-		return errors.Wrap(err, "could not render H1 plot")
-	}
-
-	resp.URI = req.URI
-	resp.Dir = req.Dir
-	resp.Obj = req.Obj
-	resp.Data = base64.StdEncoding.EncodeToString(out)
 
 	w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(resp)
@@ -560,59 +565,64 @@ func (srv *Server) handlePlotH2(w http.ResponseWriter, r *http.Request) error {
 		return errors.Wrap(err, "could not open ROOT file database")
 	}
 
-	f := db.get(req.URI)
-	if f == nil {
-		return errors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
-	}
+	err = db.Tx(req.URI, func(f *riofs.File) error {
+		if f == nil {
+			return errors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
+		}
 
-	obj, err := riofs.Dir(f).Get(req.Dir)
+		obj, err := riofs.Dir(f).Get(req.Dir)
+		if err != nil {
+			return errors.Wrapf(err, "could not find directory %q in file %q", req.Dir, req.URI)
+		}
+		dir, ok := obj.(riofs.Directory)
+		if !ok {
+			return errors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
+		}
+
+		obj, err = dir.Get(req.Obj)
+		if err != nil {
+			return errors.Wrapf(err, "could not find object %q under directory %q in file %q", req.Obj, req.Dir, req.URI)
+		}
+
+		robj, ok := obj.(rhist.H2)
+		if !ok {
+			return errors.Errorf("rsrv: object %v:%s/%q is not a 2-dim histogram (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
+		}
+
+		h2, err := rootcnv.H2D(robj)
+		if err != nil {
+			return errors.Wrap(err, "could not convert TH2 to hbook")
+		}
+
+		req.Options.init()
+
+		pl := hplot.New()
+		pl.Title.Text = robj.Title()
+		if req.Options.Title != "" {
+			pl.Title.Text = req.Options.Title
+		}
+		pl.X.Label.Text = req.Options.X
+		pl.Y.Label.Text = req.Options.Y
+
+		h := hplot.NewH2D(h2, nil)
+		h.Infos.Style = hplot.HInfoSummary
+
+		pl.Add(h, hplot.NewGrid())
+
+		out, err := srv.render(pl, req.Options)
+		if err != nil {
+			return errors.Wrap(err, "could not render H2 plot")
+		}
+
+		resp.URI = req.URI
+		resp.Dir = req.Dir
+		resp.Obj = req.Obj
+		resp.Data = base64.StdEncoding.EncodeToString(out)
+		return nil
+	})
 	if err != nil {
-		return errors.Wrapf(err, "could not find directory %q in file %q", req.Dir, req.URI)
+		return err
 	}
-	dir, ok := obj.(riofs.Directory)
-	if !ok {
-		return errors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
-	}
-
-	obj, err = dir.Get(req.Obj)
-	if err != nil {
-		return errors.Wrapf(err, "could not find object %q under directory %q in file %q", req.Obj, req.Dir, req.URI)
-	}
-
-	robj, ok := obj.(rhist.H2)
-	if !ok {
-		return errors.Errorf("rsrv: object %v:%s/%q is not a 2-dim histogram (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
-	}
-
-	h2, err := rootcnv.H2D(robj)
-	if err != nil {
-		return errors.Wrap(err, "could not convert TH2 to hbook")
-	}
-
-	req.Options.init()
-
-	pl := hplot.New()
-	pl.Title.Text = robj.Title()
-	if req.Options.Title != "" {
-		pl.Title.Text = req.Options.Title
-	}
-	pl.X.Label.Text = req.Options.X
-	pl.Y.Label.Text = req.Options.Y
-
-	h := hplot.NewH2D(h2, nil)
-	h.Infos.Style = hplot.HInfoSummary
-
-	pl.Add(h, hplot.NewGrid())
-
-	out, err := srv.render(pl, req.Options)
-	if err != nil {
-		return errors.Wrap(err, "could not render H2 plot")
-	}
-
-	resp.URI = req.URI
-	resp.Dir = req.Dir
-	resp.Obj = req.Obj
-	resp.Data = base64.StdEncoding.EncodeToString(out)
 
 	w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(resp)
@@ -650,63 +660,68 @@ func (srv *Server) handlePlotS2(w http.ResponseWriter, r *http.Request) error {
 		return errors.Wrap(err, "could not open ROOT file database")
 	}
 
-	f := db.get(req.URI)
-	if f == nil {
-		return errors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
-	}
+	err = db.Tx(req.URI, func(f *riofs.File) error {
+		if f == nil {
+			return errors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
+		}
 
-	obj, err := riofs.Dir(f).Get(req.Dir)
+		obj, err := riofs.Dir(f).Get(req.Dir)
+		if err != nil {
+			return errors.Wrapf(err, "could not find directory %q in file %q", req.Dir, req.URI)
+		}
+		dir, ok := obj.(riofs.Directory)
+		if !ok {
+			return errors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
+		}
+
+		obj, err = dir.Get(req.Obj)
+		if err != nil {
+			return errors.Wrapf(err, "could not find object %q under directory %q in file %q", req.Obj, req.Dir, req.URI)
+		}
+
+		robj, ok := obj.(rhist.Graph)
+		if !ok {
+			return errors.Errorf("rsrv: object %v:%s/%q is not a 2-dim scatter (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
+		}
+
+		s2, err := rootcnv.S2D(robj)
+		if err != nil {
+			return errors.Wrap(err, "could not convert TGraph to hbook")
+		}
+
+		req.Options.init()
+
+		pl := hplot.New()
+		pl.Title.Text = robj.Title()
+		if req.Options.Title != "" {
+			pl.Title.Text = req.Options.Title
+		}
+		pl.X.Label.Text = req.Options.X
+		pl.Y.Label.Text = req.Options.Y
+
+		var opts hplot.Options
+		if _, ok := robj.(rhist.GraphErrors); ok {
+			opts = hplot.WithXErrBars | hplot.WithYErrBars
+		}
+		h := hplot.NewS2D(s2, opts)
+		h.Color = req.Options.Line.Color
+
+		pl.Add(h, hplot.NewGrid())
+
+		out, err := srv.render(pl, req.Options)
+		if err != nil {
+			return errors.Wrap(err, "could not render S2 plot")
+		}
+
+		resp.URI = req.URI
+		resp.Dir = req.Dir
+		resp.Obj = req.Obj
+		resp.Data = base64.StdEncoding.EncodeToString(out)
+		return nil
+	})
 	if err != nil {
-		return errors.Wrapf(err, "could not find directory %q in file %q", req.Dir, req.URI)
+		return err
 	}
-	dir, ok := obj.(riofs.Directory)
-	if !ok {
-		return errors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
-	}
-
-	obj, err = dir.Get(req.Obj)
-	if err != nil {
-		return errors.Wrapf(err, "could not find object %q under directory %q in file %q", req.Obj, req.Dir, req.URI)
-	}
-
-	robj, ok := obj.(rhist.Graph)
-	if !ok {
-		return errors.Errorf("rsrv: object %v:%s/%q is not a 2-dim scatter (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
-	}
-
-	s2, err := rootcnv.S2D(robj)
-	if err != nil {
-		return errors.Wrap(err, "could not convert TGraph to hbook")
-	}
-
-	req.Options.init()
-
-	pl := hplot.New()
-	pl.Title.Text = robj.Title()
-	if req.Options.Title != "" {
-		pl.Title.Text = req.Options.Title
-	}
-	pl.X.Label.Text = req.Options.X
-	pl.Y.Label.Text = req.Options.Y
-
-	var opts hplot.Options
-	if _, ok := robj.(rhist.GraphErrors); ok {
-		opts = hplot.WithXErrBars | hplot.WithYErrBars
-	}
-	h := hplot.NewS2D(s2, opts)
-	h.Color = req.Options.Line.Color
-
-	pl.Add(h, hplot.NewGrid())
-
-	out, err := srv.render(pl, req.Options)
-	if err != nil {
-		return errors.Wrap(err, "could not render S2 plot")
-	}
-
-	resp.URI = req.URI
-	resp.Dir = req.Dir
-	resp.Obj = req.Obj
-	resp.Data = base64.StdEncoding.EncodeToString(out)
 
 	w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(resp)
@@ -744,122 +759,134 @@ func (srv *Server) handlePlotTree(w http.ResponseWriter, r *http.Request) error 
 		return errors.Wrap(err, "could not open ROOT file database")
 	}
 
-	f := db.get(req.URI)
-	if f == nil {
-		return errors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
-	}
+	err = db.Tx(req.URI, func(f *riofs.File) error {
+		if f == nil {
+			return errors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
+		}
 
-	obj, err := riofs.Dir(f).Get(req.Dir)
-	if err != nil {
-		return errors.Wrapf(err, "could not find directory %q in file %q", req.Dir, req.URI)
-	}
-	dir, ok := obj.(riofs.Directory)
-	if !ok {
-		return errors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
-	}
+		obj, err := riofs.Dir(f).Get(req.Dir)
+		if err != nil {
+			return errors.Wrapf(err, "could not find directory %q in file %q", req.Dir, req.URI)
+		}
+		dir, ok := obj.(riofs.Directory)
+		if !ok {
+			return errors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
+		}
 
-	obj, err = dir.Get(req.Obj)
-	if err != nil {
-		return errors.Wrapf(err, "could not find object %q under directory %q in file %q", req.Obj, req.Dir, req.URI)
-	}
+		obj, err = dir.Get(req.Obj)
+		if err != nil {
+			return errors.Wrapf(err, "could not find object %q under directory %q in file %q", req.Obj, req.Dir, req.URI)
+		}
 
-	tree, ok := obj.(rtree.Tree)
-	if !ok {
-		return errors.Errorf("rsrv: object %v:%s/%q is not a tree (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
-	}
+		tree, ok := obj.(rtree.Tree)
+		if !ok {
+			return errors.Errorf("rsrv: object %v:%s/%q is not a tree (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
+		}
 
-	if len(req.Vars) != 1 {
-		return errors.Errorf("rsrv: tree-draw of %d variables not supported", len(req.Vars))
-	}
+		if len(req.Vars) != 1 {
+			return errors.Errorf("rsrv: tree-draw of %d variables not supported", len(req.Vars))
+		}
 
-	var (
-		bname = req.Vars[0]
-		br    = tree.Branch(bname)
-	)
-	if br == nil {
-		return errors.Errorf("rsrv: tree %v:%s/%s has no branch %q", req.URI, req.Dir, req.Obj, bname)
-	}
-
-	var (
-		leaves = br.Leaves()
-		leaf   = leaves[0] // FIXME(sbinet) handle sub-leaves
-	)
-
-	fv, err := newFloats(leaf)
-	if err != nil {
-		return errors.Wrap(err, "could not create float-leaf")
-	}
-
-	min := +math.MaxFloat64
-	max := -math.MaxFloat64
-	vals := make([]float64, 0, int(tree.Entries()))
-	sc, err := rtree.NewTreeScannerVars(tree, rtree.ScanVar{Name: bname, Leaf: leaf.Name()})
-	if err != nil {
-		return errors.Wrapf(err,
-			"could not create scanner for branch %q in tree %q of file %q",
-			bname, tree.Name(), req.URI,
+		var (
+			bname = req.Vars[0]
+			br    = tree.Branch(bname)
 		)
-	}
-	defer sc.Close()
+		if br == nil {
+			return errors.Errorf("rsrv: tree %v:%s/%s has no branch %q", req.URI, req.Dir, req.Obj, bname)
+		}
 
-	for sc.Next() {
-		err = sc.Scan(fv.ptr)
+		var (
+			leaves = br.Leaves()
+			leaf   = leaves[0] // FIXME(sbinet) handle sub-leaves
+		)
+
+		fv, err := newFloats(leaf)
+		if err != nil {
+			return errors.Wrap(err, "could not create float-leaf")
+		}
+
+		min := +math.MaxFloat64
+		max := -math.MaxFloat64
+		vals := make([]float64, 0, int(tree.Entries()))
+		sc, err := rtree.NewTreeScannerVars(tree, rtree.ScanVar{Name: bname, Leaf: leaf.Name()})
 		if err != nil {
 			return errors.Wrapf(err,
-				"could not scan entry %d of branch %q in tree %q of file %q",
-				sc.Entry(), bname, tree.Name(), req.URI,
+				"could not create scanner for branch %q in tree %q of file %q",
+				bname, tree.Name(), req.URI,
 			)
 		}
-		for _, v := range fv.vals() {
-			max = math.Max(max, v)
-			min = math.Min(min, v)
-			vals = append(vals, v)
+		defer sc.Close()
+
+		err = sc.SeekEntry(0)
+		if err != nil {
+			return errors.Wrapf(err, "could not seek to first entry for branch %q in tree %q of file %q",
+				bname, tree.Name(), req.URI,
+			)
 		}
-	}
 
-	err = sc.Err()
+		for sc.Next() {
+			err = sc.Scan(fv.ptr)
+			if err != nil {
+				return errors.Wrapf(err,
+					"could not scan entry %d of branch %q in tree %q of file %q",
+					sc.Entry(), bname, tree.Name(), req.URI,
+				)
+			}
+			for _, v := range fv.vals() {
+				max = math.Max(max, v)
+				min = math.Min(min, v)
+				vals = append(vals, v)
+			}
+		}
+
+		err = sc.Err()
+		if err != nil {
+			return errors.Wrap(err, "could not complete scan")
+		}
+
+		err = sc.Close()
+		if err != nil {
+			return errors.Wrap(err, "could not close scanner")
+		}
+
+		min = math.Nextafter(min, min-1)
+		max = math.Nextafter(max, max+1)
+		h1 := hbook.NewH1D(100, min, max)
+		for _, v := range vals {
+			h1.Fill(v, 1)
+		}
+
+		req.Options.init()
+
+		pl := hplot.New()
+		pl.Title.Text = leaf.Name()
+		if req.Options.Title != "" {
+			pl.Title.Text = req.Options.Title
+		}
+		pl.X.Label.Text = req.Options.X
+		pl.Y.Label.Text = req.Options.Y
+
+		h := hplot.NewH1D(h1)
+		h.Infos.Style = hplot.HInfoSummary
+		h.Color = req.Options.Line.Color
+		h.FillColor = req.Options.FillColor
+
+		pl.Add(h, hplot.NewGrid())
+
+		out, err := srv.render(pl, req.Options)
+		if err != nil {
+			return errors.Wrap(err, "could not render tree plot")
+		}
+
+		resp.URI = req.URI
+		resp.Dir = req.Dir
+		resp.Obj = req.Obj
+		resp.Data = base64.StdEncoding.EncodeToString(out)
+		return nil
+	})
 	if err != nil {
-		return errors.Wrap(err, "could not complete scan")
+		return err
 	}
-
-	err = sc.Close()
-	if err != nil {
-		return errors.Wrap(err, "could not close scanner")
-	}
-
-	min = math.Nextafter(min, min-1)
-	max = math.Nextafter(max, max+1)
-	h1 := hbook.NewH1D(100, min, max)
-	for _, v := range vals {
-		h1.Fill(v, 1)
-	}
-
-	req.Options.init()
-
-	pl := hplot.New()
-	pl.Title.Text = leaf.Name()
-	if req.Options.Title != "" {
-		pl.Title.Text = req.Options.Title
-	}
-	pl.X.Label.Text = req.Options.X
-	pl.Y.Label.Text = req.Options.Y
-
-	h := hplot.NewH1D(h1)
-	h.Infos.Style = hplot.HInfoSummary
-	h.Color = req.Options.Line.Color
-	h.FillColor = req.Options.FillColor
-
-	pl.Add(h, hplot.NewGrid())
-
-	out, err := srv.render(pl, req.Options)
-	if err != nil {
-		return errors.Wrap(err, "could not render tree plot")
-	}
-
-	resp.URI = req.URI
-	resp.Dir = req.Dir
-	resp.Obj = req.Obj
-	resp.Data = base64.StdEncoding.EncodeToString(out)
 
 	w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(resp)
