@@ -65,6 +65,26 @@ const page = `<html>
 <script type="text/javascript">
 	"use strict"
 
+{{if .Local}}
+	function openROOTFile() {
+		var uri = $("#groot-open-form-input").val();
+		$("#groot-open-form-input").val("");
+		var data = new FormData();
+		data.append("uri", uri);
+		$.ajax({
+			url: "/root-file-open",
+			method: "POST",
+			data: data,
+			processData: false,
+			contentType: false,
+			success: displayFileTree,
+			error: function(e){
+				alert("open failed: "+e);
+			}
+		});
+	}
+{{- end}}
+
 	function uuidv4() {
 		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 			var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -92,24 +112,6 @@ const page = `<html>
 		}
 
 {{if .Local}}
-		function openROOTFile() {
-			var uri = $("#groot-open-form-input").val();
-			$("#groot-open-form-input").val("");
-			var data = new FormData();
-			data.append("uri", uri);
-			$.ajax({
-				url: "/root-file-open",
-				method: "POST",
-				data: data,
-				processData: false,
-				contentType: false,
-				success: displayFileTree,
-				error: function(e){
-					alert("open failed: "+e);
-				}
-			});
-		}
-
 		$('#groot-open-form-input').keypress(function(event) {
 			if (event.keyCode == 13) {
 				openROOTFile();
