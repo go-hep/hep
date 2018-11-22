@@ -147,7 +147,7 @@ func (drv *csvDriver) Open(cfg string) (driver.Conn, error) {
 			if err != nil {
 				return nil, err
 			}
-			_, err = io.Copy(f, resp.Body)
+			_, err = io.CopyBuffer(f, resp.Body, make([]byte, 16*1024*1024))
 			if err != nil {
 				return nil, err
 			}

@@ -224,7 +224,10 @@ func (rec *Record) read(r *reader) error {
 }
 
 func (rec *Record) write(w *writer) error {
-	var err error
+	var (
+		err  error
+		work = make([]byte, 16*1024*1024)
+	)
 	for i, k := range rec.bnames {
 		blk := rec.blocks[i]
 		bhdr := blockHeader{
@@ -272,7 +275,7 @@ func (rec *Record) write(w *writer) error {
 			}
 		}
 
-		_, err := io.Copy(w, wblk.buf)
+		_, err := io.CopyBuffer(w, wblk.buf, work)
 		if err != nil {
 			return err
 		}

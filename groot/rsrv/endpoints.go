@@ -136,7 +136,7 @@ func (srv *Server) handleUpload(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return errors.Wrap(err, "could not create temporary file")
 	}
-	_, err = io.Copy(o, f)
+	_, err = io.CopyBuffer(o, f, make([]byte, 16*1024*1024))
 	if err != nil {
 		return errors.Wrap(err, "could not copy uploaded file")
 	}

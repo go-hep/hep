@@ -212,6 +212,7 @@ func main() {
 	npz := zip.NewWriter(out)
 	defer npz.Close()
 
+	work := make([]byte, 1*1024*1024)
 	for _, col := range nt.cols {
 		buf := new(bytes.Buffer)
 		err = npyio.Write(buf, col.slice.Interface())
@@ -224,7 +225,7 @@ func main() {
 			log.Fatalf("error creating %q: %v\n", col.name, err)
 		}
 
-		_, err = io.Copy(wz, buf)
+		_, err = io.CopyBuffer(wz, buf, work)
 		if err != nil {
 			log.Fatal(err)
 		}

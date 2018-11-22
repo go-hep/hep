@@ -112,7 +112,7 @@ func (rec *Record) Write() error {
 				return err
 			}
 		}
-		_, err = io.Copy(rec.cw, xbuf)
+		_, err = io.CopyBuffer(rec.cw, xbuf, make([]byte, 16*1024*1024))
 		if err != nil {
 			return errorf("rio: error compressing blocks: %v", err)
 		}

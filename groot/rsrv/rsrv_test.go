@@ -168,7 +168,7 @@ func testUploadFile(t *testing.T, c *http.Client, dst, src string, status int) {
 		}
 		defer f.Close()
 
-		_, err = io.Copy(w, f)
+		_, err = io.CopyBuffer(w, f, make([]byte, 16*1024*1024))
 		if err != nil {
 			t.Fatalf("could not copy file: %v", err)
 		}
