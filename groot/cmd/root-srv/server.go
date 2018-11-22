@@ -30,6 +30,7 @@ type server struct {
 	local bool
 	srv   *rsrv.Server
 	quit  chan int
+	cmds  chan plotRequest
 
 	mu      sync.RWMutex
 	cookies map[string]*http.Cookie
@@ -40,6 +41,7 @@ func newServer(local bool, dir string, mux *http.ServeMux) *server {
 		local:   local,
 		srv:     rsrv.New(dir),
 		quit:    make(chan int),
+		cmds:    make(chan plotRequest),
 		cookies: make(map[string]*http.Cookie),
 	}
 	go app.run()
@@ -49,6 +51,7 @@ func newServer(local bool, dir string, mux *http.ServeMux) *server {
 	mux.Handle("/root-file-upload", app.wrap(app.uploadHandle))
 	mux.Handle("/root-file-open", app.wrap(app.openHandle))
 	mux.Handle("/refresh", app.wrap(app.refreshHandle))
+	mux.Handle("/plot", app.wrap(app.plotHandle))
 	mux.HandleFunc("/plot-h1", app.srv.PlotH1)
 	mux.HandleFunc("/plot-h2", app.srv.PlotH2)
 	mux.HandleFunc("/plot-s2", app.srv.PlotS2)
@@ -67,6 +70,8 @@ func (srv *server) run() {
 		select {
 		case <-ticker.C:
 			srv.gc()
+		case cmd := <-srv.cmds:
+			srv.process(cmd)
 		case <-srv.quit:
 			return
 		}
@@ -243,6 +248,125 @@ func (srv *server) refreshHandle(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return json.NewEncoder(w).Encode(nodes)
+}
+
+func (srv *server) plotHandle(w http.ResponseWriter, r *http.Request) error {
+	cookie, err := r.Cookie(cookieName)
+	if err != nil {
+		return errors.Wrap(err, "could not retrieve cookie")
+	}
+
+	var req plot
+	defer r.Body.Close()
+
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return errors.Wrap(err, "could not decode plot request")
+	}
+
+	cmd := plotRequest{
+		cookie: cookie,
+		req:    req,
+		resp:   make(chan plotResponse),
+	}
+	go func() { srv.cmds <- cmd }()
+	timeout := time.NewTimer(30 * time.Minute)
+	defer timeout.Stop()
+
+	select {
+	case resp := <-cmd.resp:
+		if resp.err != nil {
+			return errors.Wrap(resp.err, "could not process plot request")
+		}
+		w.Header().Set("Content-Type", resp.ctype)
+		w.WriteHeader(resp.status)
+		_, err = w.Write(resp.body)
+		return err
+	case <-timeout.C:
+		return errors.Errorf("plot request timeout")
+	}
+}
+
+func (srv *server) process(preq plotRequest) {
+	log.Printf("processing %s uri=%q dir=%q obj=%q vars=%q...", preq.req.Type, preq.req.URI, preq.req.Dir, preq.req.Obj, preq.req.Vars)
+	defer log.Printf("processing %s uri=%q dir=%q obj=%q vars=%q... [done]", preq.req.Type, preq.req.URI, preq.req.Dir, preq.req.Obj, preq.req.Vars)
+
+	var (
+		h    http.HandlerFunc
+		hreq *http.Request
+		req  interface{}
+		ep   string
+		err  error
+		body = new(bytes.Buffer)
+	)
+	switch pl := preq.req; pl.Type {
+	case plotH1:
+		h = srv.srv.PlotH1
+		ep = "/plot-h1"
+		req = rsrv.PlotH1Request{
+			URI:     pl.URI,
+			Dir:     pl.Dir,
+			Obj:     pl.Obj,
+			Options: pl.Options,
+		}
+	case plotH2:
+		h = srv.srv.PlotH2
+		ep = "/plot-h2"
+		req = rsrv.PlotH2Request{
+			URI:     pl.URI,
+			Dir:     pl.Dir,
+			Obj:     pl.Obj,
+			Options: pl.Options,
+		}
+	case plotS2:
+		h = srv.srv.PlotS2
+		ep = "/plot-s2"
+		req = rsrv.PlotS2Request{
+			URI:     pl.URI,
+			Dir:     pl.Dir,
+			Obj:     pl.Obj,
+			Options: pl.Options,
+		}
+	case plotBranch:
+		h = srv.srv.PlotTree
+		ep = "/plot-branch"
+		req = rsrv.PlotTreeRequest{
+			URI:     pl.URI,
+			Dir:     pl.Dir,
+			Obj:     pl.Obj,
+			Vars:    pl.Vars,
+			Options: pl.Options,
+		}
+	default:
+		preq.resp <- plotResponse{err: errors.Errorf("root-srv: unknown plot request %q", pl.Type)}
+		return
+	}
+
+	err = json.NewEncoder(body).Encode(req)
+	if err != nil {
+		preq.resp <- plotResponse{err: errors.Wrapf(err, "could not encode %s request", ep)}
+		return
+	}
+
+	hreq, err = http.NewRequest(http.MethodPost, ep, body)
+	if err != nil {
+		preq.resp <- plotResponse{err: errors.Wrapf(err, "could not create %s request", ep)}
+		return
+	}
+	hreq.AddCookie(preq.cookie)
+
+	w := newResponseWriter()
+	w.code = http.StatusInternalServerError
+
+	h(w, hreq)
+
+	resp := plotResponse{
+		err:    nil,
+		body:   w.body.Bytes(),
+		ctype:  "application/json",
+		status: w.code,
+	}
+	preq.resp <- resp
 }
 
 func (srv *server) nodes(r *http.Request) ([]jsNode, error) {

@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	stdpath "path"
 	"strings"
 
@@ -18,6 +19,36 @@ import (
 	"go-hep.org/x/hep/groot/rsrv"
 	"go-hep.org/x/hep/groot/rtree"
 )
+
+const (
+	plotH1     = "h1"
+	plotH2     = "h2"
+	plotS2     = "s2"
+	plotBranch = "branch"
+)
+
+type plot struct {
+	Type string   `json:"type"`
+	URI  string   `json:"uri"`
+	Dir  string   `json:"dir"`
+	Obj  string   `json:"obj"`
+	Vars []string `json:"vars"`
+
+	Options rsrv.PlotOptions `json:"options"`
+}
+
+type plotRequest struct {
+	cookie *http.Cookie
+	req    plot
+	resp   chan plotResponse
+}
+
+type plotResponse struct {
+	err    error `json:"error"`
+	ctype  string
+	status int
+	body   []byte
+}
 
 type jsNode struct {
 	ID    string `json:"id,omitempty"`
@@ -169,10 +200,11 @@ func attrFor(obj root.Object, node jsNode) (jsAttr, error) {
 	cls := obj.Class()
 	switch {
 	case strings.HasPrefix(cls, "TH1"):
-		req := rsrv.PlotH1Request{
-			URI: node.URI,
-			Dir: node.Dir,
-			Obj: node.Obj,
+		req := plot{
+			Type: plotH1,
+			URI:  node.URI,
+			Dir:  node.Dir,
+			Obj:  node.Obj,
 			Options: rsrv.PlotOptions{
 				Title:  node.Obj,
 				Type:   "svg",
@@ -186,14 +218,15 @@ func attrFor(obj root.Object, node jsNode) (jsAttr, error) {
 		}
 		return jsAttr{
 			"plot": true,
-			"href": "/plot-h1",
+			"href": "/plot",
 			"cmd":  cmd.String(),
 		}, nil
 	case strings.HasPrefix(cls, "TH2"):
-		req := rsrv.PlotH2Request{
-			URI: node.URI,
-			Dir: node.Dir,
-			Obj: node.Obj,
+		req := plot{
+			Type: plotH2,
+			URI:  node.URI,
+			Dir:  node.Dir,
+			Obj:  node.Obj,
 			Options: rsrv.PlotOptions{
 				Title:  node.Obj,
 				Type:   "svg",
@@ -207,14 +240,15 @@ func attrFor(obj root.Object, node jsNode) (jsAttr, error) {
 		}
 		return jsAttr{
 			"plot": true,
-			"href": "/plot-h2",
+			"href": "/plot",
 			"cmd":  cmd.String(),
 		}, nil
 	case strings.HasPrefix(cls, "TGraph"):
-		req := rsrv.PlotS2Request{
-			URI: node.URI,
-			Dir: node.Dir,
-			Obj: node.Obj,
+		req := plot{
+			Type: plotS2,
+			URI:  node.URI,
+			Dir:  node.Dir,
+			Obj:  node.Obj,
 			Options: rsrv.PlotOptions{
 				Title:  node.Obj,
 				Type:   "svg",
@@ -228,11 +262,12 @@ func attrFor(obj root.Object, node jsNode) (jsAttr, error) {
 		}
 		return jsAttr{
 			"plot": true,
-			"href": "/plot-s2",
+			"href": "/plot",
 			"cmd":  cmd.String(),
 		}, nil
 	case strings.HasPrefix(cls, "TBranch"):
-		req := rsrv.PlotTreeRequest{
+		req := plot{
+			Type: plotBranch,
 			URI:  node.URI,
 			Dir:  stdpath.Dir(node.Dir),
 			Obj:  stdpath.Base(node.Dir),
@@ -250,7 +285,7 @@ func attrFor(obj root.Object, node jsNode) (jsAttr, error) {
 		}
 		return jsAttr{
 			"plot": true,
-			"href": "/plot-branch",
+			"href": "/plot",
 			"cmd":  cmd.String(),
 		}, nil
 	}

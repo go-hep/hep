@@ -42,7 +42,6 @@ const page = `<html>
 	}
 
 	.loader {
-		float: right;
 		border: 16px solid #f3f3f3;
 		border-radius: 50%;
 		border-top: 16px solid #3498db;
@@ -50,7 +49,6 @@ const page = `<html>
 		height: 120px;
 		-webkit-animation: spin 2s linear infinite; /* Safari */
 		animation: spin 2s linear infinite;
-		margin-top: 95%;
 	}
 
 	/* Safari */
@@ -64,6 +62,172 @@ const page = `<html>
 		100% { transform: rotate(360deg); }
 	}
 	</style>
+<script type="text/javascript">
+	"use strict"
+
+	function uuidv4() {
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+			var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+			return v.toString(16);
+		});
+	}
+
+	$(function () {
+		document.getElementById("groot-file-upload").onchange = function() {
+			var data = new FormData($("#groot-upload-form")[0]);
+			var dst = data.get("groot-file").name;
+			dst = "upload://"+dst.substring(dst.lastIndexOf('/')+1);
+			data.append("groot-dst", dst);
+			$.ajax({
+				url: "/root-file-upload",
+				method: "POST",
+				data: data,
+				processData: false,
+				contentType: false,
+				success: displayFileTree,
+				error: function(er){
+					alert("upload failed: "+er);
+				}
+			});
+		}
+
+{{if .Local}}
+		function openROOTFile() {
+			var uri = $("#groot-open-form-input").val();
+			$("#groot-open-form-input").val("");
+			var data = new FormData();
+			data.append("uri", uri);
+			$.ajax({
+				url: "/root-file-open",
+				method: "POST",
+				data: data,
+				processData: false,
+				contentType: false,
+				success: displayFileTree,
+				error: function(e){
+					alert("open failed: "+e);
+				}
+			});
+		}
+
+		$('#groot-open-form-input').keypress(function(event) {
+			if (event.keyCode == 13) {
+				openROOTFile();
+			}
+		});
+/*
+	$('#groot-test-form').dialog({
+        modal: true,
+		show: false,
+        buttons: {
+            'Open-1': function () {
+                var name = $('input[name="uri"]').val();
+                $.post({
+					url: "/file-open",
+					method: "POST",
+					data: {"uri": name},
+					processData: false,
+					contentType: "application/json",
+					dataType: "json",
+					success: displayFileTree,
+					error: function(er){
+						alert("open failed: "+JSON.stringify(er));
+					}
+				})
+                $(this).dialog('close');
+            },
+			'Cancel': function () {
+                $(this).dialog('close');
+            }
+        }
+    });
+*/
+{{- end}}
+
+		$('#groot-file-tree').jstree();
+		$("#groot-file-tree").on("select_node.jstree",
+			function(evt, data){
+				data.instance.toggle_node(data.node);
+				if (data.node.a_attr.plot) {
+					data.instance.deselect_node(data.node);
+					data.instance.disable_node(data.node);
+					var id = uuidv4();
+					plotPlaceholder(id);
+					$.post({
+						type: 'POST',
+						url: data.node.a_attr.href,
+						data: data.node.a_attr.cmd,
+						success: function(data, status) {
+							plotCallback(data, status, id);
+						},
+						contentType: "application/json",
+						dataType: 'json',
+					}).always(function() {
+						data.instance.enable_node(data.node);
+					});
+				}
+			}
+		);
+		$.ajax({
+			url: "/refresh",
+			method: "GET",
+			processData: false,
+			contentType: false,
+			success: displayFileTree,
+			error: function(er){
+				alert("refresh failed: "+er);
+			}
+		});
+	});
+
+	function displayFileTree(data) {
+		$('#groot-file-tree').jstree(true).settings.core.data = JSON.parse(data);
+		$("#groot-file-tree").jstree(true).refresh();
+	};
+
+	var spinner = function() {
+		var top = "<div class=\"w3-cell-row\">";
+		var left = "<div class=\"w3-container w3-white w3-cell\"></div>";
+		var right = "<div class=\"w3-container w3-white w3-cell\"></div>";
+		var middle = "<div class=\"w3-container w3-white w3-cell\" style=\"width: 20%\">"
+			+"<div class=\"loader w3-white\" style=\"display: block;\"><p></div></div>";
+		return top+left+middle+right+"</div>";
+	}();
+
+	function plotPlaceholder(id) {
+		var node = $("<div></div>");
+		node.attr("id", id);
+		node.addClass("w3-panel w3-white w3-card-2 w3-display-container w3-content w3-center");
+		node.css("width","100%");
+		node.html(spinner);
+
+		$("#groot-display").prepend(node);
+		updateHeight();
+	};
+
+	function plotCallback(data, status, id) {
+		var img = data;
+		var node = $("#"+id);
+		node.html(
+			""
+			+atob(img.data)
+			+"<span onclick=\"this.parentElement.style.display='none'; updateHeight();\" class=\"w3-button w3-display-topright w3-hover-red w3-tiny\">X</span>"
+		);
+		updateHeight();
+	};
+
+	function updateHeight() {
+		var hmenu = $("#groot-sidebar").height();
+		var hcont = $("#groot-container").height();
+		var hdisp = $("#groot-display").height();
+		if (hdisp > hcont) {
+			$("#groot-container").height(hdisp);
+		}
+		if (hdisp < hmenu && hcont > hmenu) {
+			$("#groot-container").height(hmenu);
+		}
+	};
+</script>
 </head>
 <body>
 
@@ -101,158 +265,10 @@ const page = `<html>
 
 <!-- Page Content -->
 <div style="margin-left:25%; height:100%" class="w3-grey" id="groot-container">
-	<div id="spinner-container" style="margin-left:25%; margin-right:50%">
-		<div id="spinner" class="loader" style="display: none">
-		</div>
-	</div>
 	<div class="w3-container w3-content w3-cell w3-cell-middle w3-cell-row w3-center w3-justify w3-grey" style="width:100%" id="groot-display">
 	</div>
 </div>
 
-<script type="text/javascript">
-	document.getElementById("groot-file-upload").onchange = function() {
-		var data = new FormData($("#groot-upload-form")[0]);
-		var dst = data.get("groot-file").name;
-		dst = "upload://"+dst.substring(dst.lastIndexOf('/')+1);
-		data.append("groot-dst", dst);
-		$.ajax({
-			url: "/root-file-upload",
-			method: "POST",
-			data: data,
-			processData: false,
-			contentType: false,
-			success: displayFileTree,
-			error: function(er){
-				alert("upload failed: "+er);
-			}
-		});
-	}
-{{if .Local}}
-	function openROOTFile() {
-		var uri = $("#groot-open-form-input").val();
-		$("#groot-open-form-input").val("");
-		var data = new FormData();
-		data.append("uri", uri);
-		$.ajax({
-			url: "/root-file-open",
-			method: "POST",
-			data: data,
-			processData: false,
-			contentType: false,
-			success: displayFileTree,
-			error: function(e){
-				alert("open failed: "+e);
-			}
-		});
-	}
-	$('#groot-open-form-input').keypress(function(event) {
-		if (event.keyCode == 13) {
-			openROOTFile();
-		}
-	});
-
-/*
-	$('#groot-test-form').dialog({
-        modal: true,
-		show: false,
-        buttons: {
-            'Open-1': function () {
-                var name = $('input[name="uri"]').val();
-                $.post({
-					url: "/file-open",
-					method: "POST",
-					data: {"uri": name},
-					processData: false,
-					contentType: "application/json",
-					dataType: "json",
-					success: displayFileTree,
-					error: function(er){
-						alert("open failed: "+JSON.stringify(er));
-					}
-				})
-                $(this).dialog('close');
-            },
-			'Cancel': function () {
-                $(this).dialog('close');
-            }
-        }
-    });
-*/
-{{- end}}
-	function startSpinner() {
-		var x = document.getElementById("spinner");
-		x.style.display = "block";
-	}
-	function stopSpinner() {
-		var x = document.getElementById("spinner");
-		x.style.display = "none";
-	}
-	$(function () {
-		$('#groot-file-tree').jstree();
-		$("#groot-file-tree").on("select_node.jstree",
-			function(evt, data){
-				data.instance.toggle_node(data.node);
-				if (data.node.a_attr.plot) {
-					data.instance.deselect_node(data.node);
-					data.instance.disable_node(data.node);
-					startSpinner();
-					$.post({
-						type: 'POST',
-						url: data.node.a_attr.href,
-						data: data.node.a_attr.cmd,
-						success: plotCallback,
-						contentType: "application/json",
-						dataType: 'json',
-					}).always(function() {
-						stopSpinner();
-						data.instance.enable_node(data.node);
-					});
-				}
-			}
-		);
-		$.ajax({
-			url: "/refresh",
-			method: "GET",
-			processData: false,
-			contentType: false,
-			success: displayFileTree,
-			error: function(er){
-				alert("refresh failed: "+er);
-			}
-		});
-	});
-
-	function displayFileTree(data) {
-		$('#groot-file-tree').jstree(true).settings.core.data = JSON.parse(data);
-		$("#groot-file-tree").jstree(true).refresh();
-	};
-
-	function plotCallback(data, status) {
-		var img = data;
-		var node = $("<div></div>");
-		node.addClass("w3-panel w3-white w3-card-2 w3-display-container w3-content w3-center");
-		node.css("width","100%");
-		node.html(
-			""
-			+atob(img.data)
-			+"<span onclick=\"this.parentElement.style.display='none'; updateHeight();\" class=\"w3-button w3-display-topright w3-hover-red w3-tiny\">X</span>"
-		);
-		$("#groot-display").prepend(node);
-		updateHeight();
-	};
-
-	function updateHeight() {
-		var hmenu = $("#groot-sidebar").height();
-		var hcont = $("#groot-container").height();
-		var hdisp = $("#groot-display").height();
-		if (hdisp > hcont) {
-			$("#groot-container").height(hdisp);
-		}
-		if (hdisp < hmenu && hcont > hmenu) {
-			$("#groot-container").height(hmenu);
-		}
-	};
-</script>
 </body>
 </html>
 `

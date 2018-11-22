@@ -531,6 +531,7 @@ func (srv *Server) handlePlotH1(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	return json.NewEncoder(w).Encode(resp)
 }
 
@@ -625,6 +626,7 @@ func (srv *Server) handlePlotH2(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	return json.NewEncoder(w).Encode(resp)
 }
 
@@ -724,6 +726,7 @@ func (srv *Server) handlePlotS2(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	return json.NewEncoder(w).Encode(resp)
 }
 
@@ -833,8 +836,10 @@ func (srv *Server) handlePlotTree(w http.ResponseWriter, r *http.Request) error 
 				)
 			}
 			for _, v := range fv.vals() {
-				max = math.Max(max, v)
-				min = math.Min(min, v)
+				if !math.IsNaN(v) && !math.IsInf(v, 0) {
+					max = math.Max(max, v)
+					min = math.Min(min, v)
+				}
 				vals = append(vals, v)
 			}
 		}
@@ -889,5 +894,6 @@ func (srv *Server) handlePlotTree(w http.ResponseWriter, r *http.Request) error 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	return json.NewEncoder(w).Encode(resp)
 }
