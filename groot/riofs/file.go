@@ -391,14 +391,6 @@ func (f *File) writeHeader() error {
 	return err
 }
 
-func (f *File) Tell() int64 {
-	where, err := f.Seek(0, io.SeekCurrent)
-	if err != nil {
-		panic(err)
-	}
-	return where
-}
-
 // Close closes the File, rendering it unusable for I/O.
 // It returns an error, if any.
 func (f *File) Close() error {
