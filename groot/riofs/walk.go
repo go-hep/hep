@@ -87,6 +87,7 @@ type recDir struct {
 func (dir *recDir) Get(namecycle string) (root.Object, error) { return dir.get(namecycle) }
 func (dir *recDir) Put(name string, v root.Object) error      { return dir.dir.Put(name, v) }
 func (dir *recDir) Keys() []Key                               { return dir.dir.Keys() }
+func (dir *recDir) Mkdir(name string) (Directory, error)      { return dir.dir.Mkdir(name) }
 
 func (dir *recDir) get(namecycle string) (root.Object, error) {
 	switch namecycle {

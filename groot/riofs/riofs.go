@@ -34,6 +34,9 @@ type Directory interface {
 
 	// Keys returns the list of keys being held by this directory.
 	Keys() []Key
+
+	// Mkdir creates a new subdirectory
+	Mkdir(name string) (Directory, error)
 }
 
 // SetFiler is a simple interface to establish File ownership.

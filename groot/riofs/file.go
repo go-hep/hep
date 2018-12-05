@@ -171,7 +171,7 @@ func Create(name string, opts ...FileOption) (*File, error) {
 		compression: 1,
 		sinfos:      defaultStreamerInfos, // FIXME(sbinet): drop default streamers
 	}
-	f.dir = *newDirectoryFile(name, f)
+	f.dir = *newDirectoryFile(name, f, nil)
 	f.spans.add(kBEGIN, kStartBigFile)
 
 	f.setCompression(kZLIB, flate.BestCompression)
@@ -740,6 +740,11 @@ func (f *File) Get(namecycle string) (root.Object, error) {
 // Put puts the object v under the key with the given name.
 func (f *File) Put(name string, v root.Object) error {
 	return f.dir.Put(name, v)
+}
+
+// Mkdir creates a new subdirectory
+func (f *File) Mkdir(name string) (Directory, error) {
+	return f.dir.Mkdir(name)
 }
 
 var (

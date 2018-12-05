@@ -292,7 +292,7 @@ func (k *Key) store() error {
 	nbytes := int32(len(k.buf))
 	k.nbytes = k.keylen + nbytes
 
-	if k.seekkey == 0 {
+	if k.seekkey <= 0 {
 		// find a place on file where to store that key.
 		err = k.adjust(k.nbytes)
 		if err != nil {

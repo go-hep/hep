@@ -18,9 +18,11 @@ import (
 )
 
 type tdirectory struct {
-	rvers int16
-	named rbase.Named // name+title of this directory
-	uuid  rbase.UUID
+	rvers  int16
+	named  rbase.Named // name+title of this directory
+	parent Directory
+	objs   []root.Object
+	uuid   rbase.UUID
 }
 
 func (dir *tdirectory) RVersion() int16 { return dir.rvers }
@@ -46,7 +48,12 @@ func (dir *tdirectory) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteVersion(dir.RVersion())
 
 	dir.named.MarshalROOT(w)
-	// FIXME(sbinet): stream parent
+	switch dir.parent {
+	case nil:
+		w.WriteObjectAny((*rbase.Object)(nil))
+	default:
+		w.WriteObjectAny(dir.parent.(root.Object))
+	}
 	// FIXME(sbinet): stream list
 	dir.uuid.MarshalROOT(w)
 
@@ -64,7 +71,10 @@ func (dir *tdirectory) UnmarshalROOT(r *rbytes.RBuffer) error {
 	dir.rvers = vers
 
 	dir.named.UnmarshalROOT(r)
-	// FIXME(sbinet): stream parent
+	obj := r.ReadObjectAny()
+	if obj != nil {
+		dir.parent = obj.(Directory)
+	}
 	// FIXME(sbinet): stream list
 	dir.uuid.UnmarshalROOT(r)
 
@@ -89,17 +99,21 @@ type tdirectoryFile struct {
 	keys []Key
 }
 
-func newDirectoryFile(name string, f *File) *tdirectoryFile {
+func newDirectoryFile(name string, f *File, parent *tdirectoryFile) *tdirectoryFile {
 	now := nowUTC()
-	return &tdirectoryFile{
+	dir := &tdirectoryFile{
 		dir: tdirectory{
 			rvers: rvers.DirectoryFile,
-			named: *rbase.NewNamed(name, ""),
+			named: *rbase.NewNamed(name, name),
 		},
 		ctime: now,
 		mtime: now,
 		file:  f,
 	}
+	if parent != nil {
+		dir.dir.parent = parent
+	}
+	return dir
 }
 
 func (dir *tdirectoryFile) isBigFile() bool {
@@ -258,9 +272,13 @@ func (dir *tdirectoryFile) save() error {
 		if err != nil {
 			return err
 		}
-		_, err = k.writeFile(dir.file)
-		if err != nil {
-			return errors.Wrapf(err, "riofs: could not write key for directory %q", dir.Name())
+
+		switch obj := k.obj.(type) {
+		case *tdirectoryFile:
+			err = obj.save()
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -268,8 +286,6 @@ func (dir *tdirectoryFile) save() error {
 	if err != nil {
 		return errors.Wrapf(err, "riofs: could not save directory")
 	}
-
-	// FIXME(sbinet): recursively save sub-directories.
 
 	return nil
 }
@@ -347,14 +363,16 @@ func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 	typename := obj.Class()
 
 	// make sure we have a streamer for this type.
-	if _, err := dir.StreamerInfo(typename); err != nil {
-		_, err = streamerInfoFrom(obj, dir)
-		if err != nil {
-			return errors.Wrapf(err, "riofs: could not generate streamer for key")
-		}
-		_, err = dir.StreamerInfo(typename)
-		if err != nil {
-			panic(err)
+	if !isCoreType(typename) {
+		if _, err := dir.StreamerInfo(typename); err != nil {
+			_, err = streamerInfoFrom(obj, dir)
+			if err != nil {
+				return errors.Wrapf(err, "riofs: could not generate streamer for key")
+			}
+			_, err = dir.StreamerInfo(typename)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 
@@ -373,8 +391,24 @@ func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 	return nil
 }
 
+// Keys returns the list of keys being held by this directory.
 func (dir *tdirectoryFile) Keys() []Key {
 	return dir.keys
+}
+
+// Mkdir creates a new subdirectory
+func (dir *tdirectoryFile) Mkdir(name string) (Directory, error) {
+	if _, err := dir.Get(name); err == nil {
+		return nil, errors.Errorf("rootio: %q already exist", name)
+	}
+
+	sub := newDirectoryFile(name, dir.file, dir)
+	err := dir.Put(name, sub)
+	if err != nil {
+		return nil, err
+	}
+
+	return sub, nil
 }
 
 func (dir *tdirectoryFile) RVersion() int16 { return dir.dir.rvers }
@@ -482,6 +516,12 @@ func (dir *tdirectoryFile) writeKeys() error {
 		nbytes += key.sizeof()
 	}
 
+	if dir.seekdir <= 0 {
+		nbytes := dir.sizeof() + int32(dir.file.nbytesname)
+		blk := dir.file.spans.best(int64(nbytes))
+		dir.seekdir = blk.first
+	}
+
 	hdr := createKey(dir.Name(), dir.Title(), dir.Class(), nbytes, dir.file)
 
 	buf := rbytes.NewWBuffer(make([]byte, nbytes), nil, 0, nil)
@@ -496,6 +536,22 @@ func (dir *tdirectoryFile) writeKeys() error {
 
 	dir.seekkeys = hdr.seekkey
 	dir.nbyteskeys = hdr.nbytes
+
+	for i := range dir.keys {
+		k := &dir.keys[i]
+		k.seekpdir = dir.seekdir
+
+		k.buf = nil // force re-computation of serialized key
+		err = k.store()
+		if err != nil {
+			return err
+		}
+
+		_, err = k.writeFile(dir.file)
+		if err != nil {
+			return errors.Wrapf(err, "riofs: could not write sub-key")
+		}
+	}
 
 	_, err = hdr.writeFile(dir.file)
 	if err != nil {
@@ -555,11 +611,24 @@ func init() {
 	}
 	{
 		f := func() reflect.Value {
-			o := newDirectoryFile("", nil)
+			o := newDirectoryFile("", nil, nil)
 			return reflect.ValueOf(o)
 		}
 		rtypes.Factory.Add("TDirectoryFile", f)
 	}
+}
+
+// coreTypes is the set of types that do not neet a streamer info.
+var coreTypes = map[string]struct{}{
+	"TObject":        struct{}{},
+	"TFile":          struct{}{},
+	"TDirectoryFile": struct{}{},
+	"TKey":           struct{}{},
+}
+
+func isCoreType(typename string) bool {
+	_, ok := coreTypes[typename]
+	return ok
 }
 
 var (
