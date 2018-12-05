@@ -22,9 +22,10 @@ func main() {
 	log.SetFlags(0)
 
 	var (
-		race  = flag.Bool("race", false, "enable race detector")
-		cover = flag.String("coverpkg", "", "apply coverage analysis in each test to packages matching the patterns.")
-		tags  = flag.String("tags", "", "build tags")
+		race    = flag.Bool("race", false, "enable race detector")
+		cover   = flag.String("coverpkg", "", "apply coverage analysis in each test to packages matching the patterns.")
+		tags    = flag.String("tags", "", "build tags")
+		verbose = flag.Bool("v", false, "enable verbose output")
 	)
 
 	flag.Parse()
@@ -46,8 +47,11 @@ func main() {
 	}
 	defer f.Close()
 
-	args := []string{"test", "-v"}
+	args := []string{"test"}
 
+	if *verbose {
+		args = append(args, "-v")
+	}
 	if *cover != "" {
 		args = append(args, "-coverprofile=profile.out", "-covermode=atomic", "-coverpkg="+*cover)
 	}
