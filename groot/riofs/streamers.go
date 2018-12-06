@@ -11,10 +11,10 @@ import (
 	"strings"
 	"sync"
 
-	"go-hep.org/x/hep/groot/internal/rmeta"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rdict"
 	rstreamerspkg "go-hep.org/x/hep/groot/riofs/internal/rstreamers"
+	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
 )
 

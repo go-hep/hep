@@ -14,10 +14,10 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"go-hep.org/x/hep/groot/internal/rmeta"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rcont"
+	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"

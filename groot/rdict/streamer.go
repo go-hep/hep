@@ -9,9 +9,9 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
-	"go-hep.org/x/hep/groot/internal/rmeta"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
+	"go-hep.org/x/hep/groot/rmeta"
 )
 
 // StreamerOf generates a StreamerInfo from a reflect.Type.

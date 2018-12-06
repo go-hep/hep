@@ -9,10 +9,10 @@ import (
 	"reflect"
 	"testing"
 
-	"go-hep.org/x/hep/groot/internal/rmeta"
 	"go-hep.org/x/hep/groot/internal/rtests"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
+	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/rtypes"
 )
 

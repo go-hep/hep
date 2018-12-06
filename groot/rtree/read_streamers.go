@@ -9,11 +9,11 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"go-hep.org/x/hep/groot/internal/rmeta"
 	"go-hep.org/x/hep/groot/internal/rtype"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/riofs"
+	"go-hep.org/x/hep/groot/rmeta"
 )
 
 var (
