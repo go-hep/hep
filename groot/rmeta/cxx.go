@@ -29,6 +29,8 @@ var GoType2ROOTEnum = map[reflect.Type]int32{
 }
 
 var GoType2Cxx = map[string]string{
+	"bool":    "bool",
+	"byte":    "unsigned char",
 	"uint":    "unsigned int",
 	"uint8":   "unsigned char",
 	"uint16":  "unsigned short",

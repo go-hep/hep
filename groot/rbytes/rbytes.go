@@ -53,3 +53,10 @@ type Unmarshaler interface {
 type Marshaler interface {
 	MarshalROOT(w *WBuffer) (int, error)
 }
+
+// Streamer is the interface implemented by types that can stream themselves
+// to and from a ROOT buffer.
+type Streamer interface {
+	WStream(*WBuffer) error
+	RStream(*RBuffer) error
+}

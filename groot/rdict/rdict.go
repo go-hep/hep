@@ -153,8 +153,8 @@ type Element struct {
 	Factor float64  // conversion factor if a range is specified. factor = (1<<nbits/(xmax-xmin))
 }
 
-func (e Element) New() *StreamerElement {
-	return &StreamerElement{
+func (e Element) New() StreamerElement {
+	return StreamerElement{
 		named:  e.Name,
 		etype:  e.Type,
 		esize:  e.Size,

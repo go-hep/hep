@@ -105,76 +105,155 @@ func (g *Generator) genStreamerType(t types.Type, n string) {
 	case *types.Basic:
 		switch kind := ut.Kind(); kind {
 		case types.Bool:
-			g.printf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Bool,\nSize: 1,\nEName:%[3]q,\n}.New(),\n",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
-			)
-		case types.Uint:
-			g.printf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.UInt,\nSize: 4,\nEName:%[3]q,\n}.New(),\n",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
-			)
+			g.printf("&rbytes.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
 		case types.Uint8:
-			g.printf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint8,\nSize: 1,\nEName:%[3]q,\n}.New(),\n",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
-			)
+			g.printf("&rbytes.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
 		case types.Uint16:
-			g.printf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint16,\nSize: 2,\nEName:%[3]q,\n}.New(),\n",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
-			)
-		case types.Uint32:
-			g.printf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint32,\nSize: 4,\nEName:%[3]q,\n}.New(),\n",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
-			)
+			g.printf("&rbytes.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
+		case types.Uint32, types.Uint:
+			g.printf("&rbytes.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
 		case types.Uint64:
-			g.printf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint64,\nSize: 8,\nEName:%[3]q,\n}.New(),\n",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
-			)
-		case types.Int:
-			g.printf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int,\nSize: 4,\nEName:%[3]q,\n}.New(),\n",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
-			)
+			g.printf("&rbytes.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
 		case types.Int8:
-			g.printf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int8,\nSize: 1,\nEName:%[3]q,\n}.New(),\n",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
-			)
+			g.printf("&rbytes.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
 		case types.Int16:
-			g.printf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int16,\nSize: 2,\nEName:%[3]q,\n}.New(),\n",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
-			)
-		case types.Int32:
-			g.printf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int32,\nSize: 4,\nEName:%[3]q,\n}.New(),\n",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
-			)
+			g.printf("&rbytes.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
+		case types.Int32, types.Int:
+			g.printf("&rbytes.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
 		case types.Int64:
-			g.printf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int64,\nSize: 8,\nEName:%[3]q,\n}.New(),\n",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
-			)
+			g.printf("&rbytes.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
 		case types.Float32:
-			g.printf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float,\nSize: 4,\nEName:%[3]q,\n}.New(),\n",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
-			)
+			g.printf("&rbytes.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
 		case types.Float64:
-			g.printf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Double,\nSize: 8,\nEName:%[3]q,\n}.New(),\n",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
-			)
+			g.printf("&rbytes.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
+		case types.Complex64:
+			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
+
+		case types.Complex128:
+			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
+
+		case types.String:
+			g.printf("%s,\n", g.se(ut, n, "", 1))
+
 		default:
 			log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
 		}
+
+	case *types.Array:
+		// FIXME(sbinet): collect+visit element type.
+		g.printf(
+			"&rbytes.StreamerBasicType{StreamerElement: %s},\n",
+			g.se(ut.Elem(), n, "+ rmeta.OffsetL", ut.Len()),
+		)
+	case *types.Slice:
+		// FIXME(sbinet): collect+visit element type.
+		g.printf(
+			"&rbytes.StreamerBasicType{StreamerElement: %s},\n",
+			g.se(ut.Elem(), n, "+ rmeta.OffsetL", -1),
+		)
 	default:
 		log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
 	}
+}
+
+func (g *Generator) se(t types.Type, n, rtype string, len int64) string {
+	ut := t.Underlying()
+	switch ut := ut.(type) {
+	case *types.Basic:
+		switch kind := ut.Kind(); kind {
+		case types.Bool:
+			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Bool %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+				rmeta.GoType2Cxx[ut.Name()], "",
+				n,
+				rtype,
+				1*len,
+			)
+		case types.Uint8:
+			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint8 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+				rmeta.GoType2Cxx[ut.Name()], "",
+				n,
+				rtype,
+				1*len,
+			)
+		case types.Uint16:
+			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint16 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+				rmeta.GoType2Cxx[ut.Name()], "",
+				n,
+				rtype,
+				2*len,
+			)
+		case types.Uint32, types.Uint:
+			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+				rmeta.GoType2Cxx[ut.Name()], "",
+				n,
+				rtype,
+				4*len,
+			)
+		case types.Uint64:
+			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+				rmeta.GoType2Cxx[ut.Name()], "",
+				n,
+				rtype,
+				8*len,
+			)
+		case types.Int8:
+			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int8 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+				rmeta.GoType2Cxx[ut.Name()], "",
+				n,
+				rtype,
+				1*len,
+			)
+		case types.Int16:
+			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int16 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+				rmeta.GoType2Cxx[ut.Name()], "",
+				n,
+				rtype,
+				2*len,
+			)
+		case types.Int32, types.Int:
+			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+				rmeta.GoType2Cxx[ut.Name()], "",
+				n,
+				rtype,
+				4*len,
+			)
+		case types.Int64:
+			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+				rmeta.GoType2Cxx[ut.Name()], "",
+				n,
+				rtype,
+				8*len,
+			)
+		case types.Float32:
+			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+				rmeta.GoType2Cxx[ut.Name()], "",
+				n,
+				rtype,
+				4*len,
+			)
+		case types.Float64:
+			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Double %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+				rmeta.GoType2Cxx[ut.Name()], "",
+				n,
+				rtype,
+				8*len,
+			)
+		case types.Complex64:
+			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
+
+		case types.Complex128:
+			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
+
+		case types.String:
+			return fmt.Sprintf("&rbytes.StreamerString{rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.TString %[4]s,\nSize: 24,\nEName:%[3]q,\n}.New()}",
+				"std::string", "",
+				n,
+				rtype,
+			)
+		}
+	}
+
+	return ""
 }
 
 func (g *Generator) genMarshal(t types.Type, typeName string) {
