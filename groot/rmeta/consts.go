@@ -55,6 +55,20 @@ const (
 	StreamLoop = 501
 )
 
+// aliases for Go
+const (
+	Int8    = Char
+	Int16   = Short
+	Int32   = Int
+	Int64   = Long
+	Uint8   = UChar
+	Uint16  = UShort
+	Uint32  = UInt
+	Uint64  = ULong
+	Float32 = Float
+	Float64 = Double
+)
+
 // constants from core/foundation/inc/ESTLType.h
 const (
 	NotSTL      = 0

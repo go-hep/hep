@@ -28,6 +28,20 @@ var GoType2ROOTEnum = map[reflect.Type]int32{
 	reflect.TypeOf(rtype.Double32(0)): Double32,
 }
 
+var GoType2Cxx = map[string]string{
+	"uint":    "unsigned int",
+	"uint8":   "unsigned char",
+	"uint16":  "unsigned short",
+	"uint32":  "unsigned int",
+	"uint64":  "unsigned long",
+	"int8":    "char",
+	"int16":   "short",
+	"int32":   "int",
+	"int64":   "long",
+	"float32": "float",
+	"float64": "double",
+}
+
 var CxxBuiltins = map[string]reflect.Type{
 	"bool": reflect.TypeOf(false),
 

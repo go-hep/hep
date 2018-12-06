@@ -38,12 +38,13 @@ type StreamerInfo struct {
 }
 
 func NewStreamerInfo(name string, elems []rbytes.StreamerElement) *StreamerInfo {
-	return &StreamerInfo{
+	sinfos := &StreamerInfo{
 		named:  *rbase.NewNamed(name, name),
 		chksum: 0, // FIXME(sbinet): how to generate a stable and meaningful checksum?
 		clsver: 1, // FIXME(sbinet): how to properly handle class versions?
 		elems:  elems,
 	}
+	return sinfos
 }
 
 func (*StreamerInfo) RVersion() int16 { return rvers.StreamerInfo }
@@ -136,6 +137,36 @@ func (si *StreamerInfo) String() string {
 	w.Flush()
 	return o.String()
 
+}
+
+type Element struct {
+	Name   rbase.Named
+	Type   int32    // element type
+	Size   int32    // size of element
+	ArrLen int32    // cumulative size of all array dims
+	ArrDim int32    // number of array dimensions
+	MaxIdx [5]int32 // maximum array index for array dimension "dim"
+	Offset int32    // element offset in class
+	EName  string   // data type name of data member
+	XMin   float64  // minimum of data member if a range is specified [xmin.xmax.nbits]
+	XMax   float64  // maximum of data member if a range is specified [xmin.xmax.nbits]
+	Factor float64  // conversion factor if a range is specified. factor = (1<<nbits/(xmax-xmin))
+}
+
+func (e Element) New() *StreamerElement {
+	return &StreamerElement{
+		named:  e.Name,
+		etype:  e.Type,
+		esize:  e.Size,
+		arrlen: e.ArrLen,
+		arrdim: e.ArrDim,
+		maxidx: e.MaxIdx,
+		offset: e.Offset,
+		ename:  e.EName,
+		xmin:   e.XMin,
+		xmax:   e.XMax,
+		factor: e.Factor,
+	}
 }
 
 type StreamerElement struct {
