@@ -718,7 +718,8 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 						return r.Err()
 					}
 				default:
-					subsi, err := sictx.StreamerInfo(se.ElemTypeName())
+					// FIXME(sbinet): always load latest version?
+					subsi, err := sictx.StreamerInfo(se.ElemTypeName(), -1)
 					if err != nil {
 						panic(errors.Errorf("rtree: could not retrieve streamer for %q: %v", se.ElemTypeName(), err))
 					}
@@ -1038,7 +1039,8 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 					if et, ok := rmeta.CxxBuiltins[eltname]; ok {
 						return reflect.SliceOf(et)
 					}
-					sielt, err := ctx.StreamerInfo(eltname)
+					// FIXME(sbinet): always load latest version?
+					sielt, err := ctx.StreamerInfo(eltname, -1)
 					if err != nil {
 						panic(err)
 					}
@@ -1054,7 +1056,8 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 		}
 
 	case *rdict.StreamerObjectAny:
-		si, err := ctx.StreamerInfo(se.TypeName())
+		// FIXME(sbinet): always load latest version?
+		si, err := ctx.StreamerInfo(se.TypeName(), -1)
 		if err != nil {
 			panic(err)
 		}
@@ -1063,7 +1066,8 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 	case *rdict.StreamerBase:
 		switch se.TypeName() {
 		case "BASE":
-			si, err := ctx.StreamerInfo(se.Name())
+			// FIXME(sbinet): always load latest version?
+			si, err := ctx.StreamerInfo(se.Name(), -1)
 			if err != nil {
 				panic(err)
 			}
@@ -1074,7 +1078,8 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 		}
 
 	case *rdict.StreamerObject:
-		si, err := ctx.StreamerInfo(se.TypeName())
+		// FIXME(sbinet): always load latest version?
+		si, err := ctx.StreamerInfo(se.TypeName(), -1)
 		if err != nil {
 			panic(err)
 		}
@@ -1082,7 +1087,8 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 
 	case *rdict.StreamerObjectPointer:
 		ename := se.TypeName()[:len(se.TypeName())-1] // drop final '*'
-		si, err := ctx.StreamerInfo(ename)
+		// FIXME(sbinet): always load latest version?
+		si, err := ctx.StreamerInfo(ename, -1)
 		if err != nil {
 			panic(err)
 		}
@@ -1091,7 +1097,8 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 
 	case *rdict.StreamerObjectAnyPointer:
 		ename := se.TypeName()[:len(se.TypeName())-1] // drop final '*'
-		si, err := ctx.StreamerInfo(ename)
+		// FIXME(sbinet): always load latest version?
+		si, err := ctx.StreamerInfo(ename, -1)
 		if err != nil {
 			panic(err)
 		}

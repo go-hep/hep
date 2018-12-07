@@ -477,8 +477,10 @@ func newStreamerStore(ctx rbytes.StreamerInfoContext) streamerStore {
 	}
 }
 
-func (store *streamerStoreImpl) StreamerInfo(name string) (rbytes.StreamerInfo, error) {
-	return store.ctx.StreamerInfo(name)
+// StreamerInfo returns the named StreamerInfo.
+// If version is negative, the latest version should be returned.
+func (store *streamerStoreImpl) StreamerInfo(name string, version int) (rbytes.StreamerInfo, error) {
+	return store.ctx.StreamerInfo(name, version)
 }
 
 func (store *streamerStoreImpl) addStreamer(si rbytes.StreamerInfo) {

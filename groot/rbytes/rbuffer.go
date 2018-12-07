@@ -79,11 +79,13 @@ func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32, ctx Stre
 	}
 }
 
-func (r *RBuffer) StreamerInfo(name string) (StreamerInfo, error) {
+// StreamerInfo returns the named StreamerInfo.
+// If version is negative, the latest version should be returned.
+func (r *RBuffer) StreamerInfo(name string, version int) (StreamerInfo, error) {
 	if r.sictx == nil {
 		return nil, errors.Errorf("rbytes: no streamers")
 	}
-	return r.sictx.StreamerInfo(name)
+	return r.sictx.StreamerInfo(name, version)
 }
 
 func (r *RBuffer) Pos() int64 {

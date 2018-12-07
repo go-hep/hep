@@ -40,7 +40,9 @@ type StreamerElement interface {
 //
 // Implementations should make sure the protocol is goroutine safe.
 type StreamerInfoContext interface {
-	StreamerInfo(name string) (StreamerInfo, error)
+	// StreamerInfo returns the named StreamerInfo.
+	// If version is negative, the latest version should be returned.
+	StreamerInfo(name string, version int) (StreamerInfo, error)
 }
 
 // Unmarshaler is the interface implemented by an object that can

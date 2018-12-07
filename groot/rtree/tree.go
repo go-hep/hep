@@ -243,7 +243,7 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 			continue
 		}
 		cls := bre.class
-		si, err := r.StreamerInfo(cls)
+		si, err := r.StreamerInfo(cls, int(bre.clsver))
 		if err != nil {
 			panic(errors.Errorf("rtree: could not find streamer for branch %q: %v", br.Name(), err))
 		}
@@ -266,10 +266,12 @@ func (tree *ttree) attachStreamer(br Branch, info rbytes.StreamerInfo, ctx rbyte
 				switch info.Name() {
 				case "TClonesArray":
 					cls := ""
+					version := -1
 					if bre, ok := br.(*tbranchElement); ok {
 						cls = bre.clones
+						version = int(bre.clsver)
 					}
-					si, err := ctx.StreamerInfo(cls)
+					si, err := ctx.StreamerInfo(cls, version)
 					if err != nil {
 						panic(err)
 					}
@@ -321,7 +323,9 @@ func (tree *ttree) attachStreamerElement(br Branch, se rbytes.StreamerElement, c
 	switch se.(type) {
 	case *rdict.StreamerObject, *rdict.StreamerObjectAny, *rdict.StreamerObjectPointer, *rdict.StreamerObjectAnyPointer:
 		typename := strings.TrimRight(se.TypeName(), "*")
-		info, err := ctx.StreamerInfo(typename)
+		typevers := -1
+		// FIXME(sbinet): always load latest version?
+		info, err := ctx.StreamerInfo(typename, typevers)
 		if err != nil {
 			panic(err)
 		}
@@ -334,7 +338,9 @@ func (tree *ttree) attachStreamerElement(br Branch, se rbytes.StreamerElement, c
 			typename = strings.TrimRight(typename, "*")
 		}
 		typename = strings.TrimSpace(se.TypeName())
-		info, err := ctx.StreamerInfo(typename)
+		typevers := -1
+		// FIXME(sbinet): always load latest version?
+		info, err := ctx.StreamerInfo(typename, typevers)
 		if err != nil {
 			if _, ok := rmeta.CxxBuiltins[typename]; !ok {
 				panic(err)
@@ -363,7 +369,8 @@ func (tree *ttree) attachStreamerElement(br Branch, se rbytes.StreamerElement, c
 				if subse.Name() == base {
 					switch subse.(type) {
 					case *rdict.StreamerObject, *rdict.StreamerObjectAny, *rdict.StreamerObjectPointer, *rdict.StreamerObjectAnyPointer:
-						subinfo, err := ctx.StreamerInfo(strings.TrimRight(subse.TypeName(), "*"))
+						// FIXME(sbinet): always load latest version?
+						subinfo, err := ctx.StreamerInfo(strings.TrimRight(subse.TypeName(), "*"), -1)
 						if err != nil {
 							panic(err)
 						}

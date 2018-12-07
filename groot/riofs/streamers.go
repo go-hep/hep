@@ -32,7 +32,7 @@ func stdvecSIFrom(name, ename string, ctx rbytes.StreamerInfoContext) rbytes.Str
 		})
 		return si
 	}
-	esi, err := ctx.StreamerInfo(ename)
+	esi, err := ctx.StreamerInfo(ename, -1)
 	if esi == nil || err != nil {
 		return nil
 	}
@@ -120,7 +120,9 @@ func streamerInfoFrom(obj root.Object, sictx streamerInfoStore) (rbytes.Streamer
 	}
 	defer f.Close()
 
-	si, err := f.StreamerInfo(obj.Class())
+	// FIXME(sbinet): should we make sure we load the correct version ?
+	// or is it okay to just always load the latest one?
+	si, err := f.StreamerInfo(obj.Class(), -1)
 	if err != nil {
 		return nil, err
 	}

@@ -668,8 +668,9 @@ func (f *File) StreamerInfos() []rbytes.StreamerInfo {
 	return f.sinfos
 }
 
-// StreamerInfo returns the StreamerInfo with name of this file and an error if any.
-func (f *File) StreamerInfo(name string) (rbytes.StreamerInfo, error) {
+// StreamerInfo returns the named StreamerInfo.
+// If version is negative, the latest version should be returned.
+func (f *File) StreamerInfo(name string, version int) (rbytes.StreamerInfo, error) {
 	if len(f.sinfos) == 0 {
 		return nil, errors.Errorf("riofs: no streamer for %q (no streamerinfo list)", name)
 	}
