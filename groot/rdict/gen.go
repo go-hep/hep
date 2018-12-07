@@ -239,14 +239,14 @@ func (g *Generator) se(t types.Type, n, rtype string, len int64) string {
 				8*len,
 			)
 		case types.Float32:
-			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
 				rmeta.GoType2Cxx[ut.Name()], "",
 				n,
 				rtype,
 				4*len,
 			)
 		case types.Float64:
-			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Double %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+			return fmt.Sprintf("rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
 				rmeta.GoType2Cxx[ut.Name()], "",
 				n,
 				rtype,
@@ -260,7 +260,7 @@ func (g *Generator) se(t types.Type, n, rtype string, len int64) string {
 
 		case types.String:
 			return fmt.Sprintf("&rbytes.StreamerString{rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.TString %[4]s,\nSize: 24,\nEName:%[3]q,\n}.New()}",
-				"std::string", "",
+				"TString", "",
 				n,
 				rtype,
 			)
