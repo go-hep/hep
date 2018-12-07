@@ -11,7 +11,7 @@ import (
 	"go-hep.org/x/hep/xrootd"
 )
 
-func Example_server() {
+func ExampleServer() {
 	addr := "0.0.0.0:1094"
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
