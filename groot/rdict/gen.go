@@ -11,6 +11,7 @@ import (
 	"go/importer"
 	"go/types"
 	"log"
+	"reflect"
 	"strings"
 
 	"go-hep.org/x/hep/groot/rmeta"
@@ -93,7 +94,14 @@ func init() {
 	typ := t.Underlying().(*types.Struct)
 	for i := 0; i < typ.NumFields(); i++ {
 		ft := typ.Field(i)
-		g.genStreamerType(ft.Type(), ft.Name())
+		n := ft.Name()
+		if tag := typ.Tag(i); tag != "" {
+			nn := reflect.StructTag(tag).Get("groot")
+			if nn != "" {
+				n = nn
+			}
+		}
+		g.genStreamerType(ft.Type(), n)
 	}
 
 	g.printf("})\n}\n\n")
