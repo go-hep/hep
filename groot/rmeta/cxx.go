@@ -39,6 +39,7 @@ var GoType2Cxx = map[string]string{
 	"uint16":  "unsigned short",
 	"uint32":  "unsigned int",
 	"uint64":  "unsigned long",
+	"int":     "int",
 	"int8":    "char",
 	"int16":   "short",
 	"int32":   "int",
