@@ -14,7 +14,7 @@ import (
 	"os"
 	"os/signal"
 
-	"go-hep.org/x/hep/xrootd/server"
+	"go-hep.org/x/hep/xrootd"
 )
 
 func init() {
@@ -56,7 +56,7 @@ func main() {
 		log.Fatalf("could not listen on %q: %v", *addr, err)
 	}
 
-	srv := server.New(server.NewFSHandler(baseDir), func(err error) {
+	srv := xrootd.NewServer(xrootd.NewFSHandler(baseDir), func(err error) {
 		log.Printf("an error occured: %v", err)
 	})
 

@@ -17,7 +17,7 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 	"github.com/hanwen/go-fuse/fuse/pathfs"
 	"github.com/pkg/errors"
-	"go-hep.org/x/hep/xrootd/client"
+	"go-hep.org/x/hep/xrootd"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto"
 )
@@ -25,7 +25,7 @@ import (
 // FS implements a pathfs.FileSystem that makes requests to the remote server over the XRootD protocol.
 type FS struct {
 	pathfs.FileSystem
-	client  *client.Client
+	client  *xrootd.Client
 	xrdfs   xrdfs.FileSystem
 	root    string
 	handler ErrorHandler
@@ -39,7 +39,7 @@ type ErrorHandler func(error)
 // root is the path to the remote directory to be used as a root directory.
 // handler is the function which handles occurred error (e.g. logs it). If the handler is nil,
 // then a default handler is used that does nothing.
-func NewFS(client *client.Client, root string, handler ErrorHandler) *FS {
+func NewFS(client *xrootd.Client, root string, handler ErrorHandler) *FS {
 	if handler == nil {
 		handler = func(error) {}
 	}

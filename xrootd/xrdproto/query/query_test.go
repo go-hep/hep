@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"go-hep.org/x/hep/xrootd/client"
+	"go-hep.org/x/hep/xrootd"
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto"
@@ -104,7 +104,7 @@ func TestResponse(t *testing.T) {
 func Example() {
 	bkg := context.Background()
 
-	cl, err := client.NewClient(bkg, "ccxrootdgotest.in2p3.fr:9001", "gopher")
+	cl, err := xrootd.NewClient(bkg, "ccxrootdgotest.in2p3.fr:9001", "gopher")
 	if err != nil {
 		log.Fatalf("could not create client: %v", err)
 	}

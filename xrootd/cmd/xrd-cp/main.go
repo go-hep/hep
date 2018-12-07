@@ -33,7 +33,7 @@ import (
 	stdpath "path"
 
 	"github.com/pkg/errors"
-	xrdclient "go-hep.org/x/hep/xrootd/client"
+	"go-hep.org/x/hep/xrootd"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdio"
 )
@@ -202,14 +202,14 @@ func xrdcopy(dst, srcPath string, recursive, verbose bool) error {
 	return err
 }
 
-func xrdremote(name string) (client *xrdclient.Client, path string, err error) {
+func xrdremote(name string) (client *xrootd.Client, path string, err error) {
 	url, err := xrdio.Parse(name)
 	if err != nil {
 		return nil, "", errors.WithStack(err)
 	}
 
 	path = url.Path
-	client, err = xrdclient.NewClient(context.Background(), url.Addr, url.User)
+	client, err = xrootd.NewClient(context.Background(), url.Addr, url.User)
 	return client, path, err
 }
 

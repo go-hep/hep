@@ -29,7 +29,7 @@ import (
 
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 	"github.com/hanwen/go-fuse/fuse/pathfs"
-	"go-hep.org/x/hep/xrootd/client"
+	"go-hep.org/x/hep/xrootd"
 	"go-hep.org/x/hep/xrootd/xrdfuse"
 	"go-hep.org/x/hep/xrootd/xrdio"
 )
@@ -71,7 +71,7 @@ func main() {
 		log.Fatalf("could not parse remote address %q: %v", flag.Arg(0), err)
 	}
 
-	c, err := client.NewClient(context.Background(), url.Addr, url.User)
+	c, err := xrootd.NewClient(context.Background(), url.Addr, url.User)
 	if err != nil {
 		log.Fatalf("could not create client: %v", err)
 	}

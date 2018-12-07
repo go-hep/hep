@@ -16,7 +16,7 @@ import (
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 	"github.com/hanwen/go-fuse/fuse/pathfs"
-	"go-hep.org/x/hep/xrootd/client"
+	"go-hep.org/x/hep/xrootd"
 )
 
 var testClientAddrs []string
@@ -27,7 +27,7 @@ func mount(t *testing.T, addr string) (mountPoint string, server *fuse.Server, e
 		return "", nil, err
 	}
 
-	c, err := client.NewClient(context.Background(), addr, "gopher")
+	c, err := xrootd.NewClient(context.Background(), addr, "gopher")
 	if err != nil {
 		err := os.RemoveAll(tmp)
 		if err != nil {

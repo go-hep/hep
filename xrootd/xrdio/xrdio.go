@@ -11,7 +11,7 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
-	xrdclient "go-hep.org/x/hep/xrootd/client"
+	"go-hep.org/x/hep/xrootd"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 )
 
@@ -23,7 +23,7 @@ import (
 //  - io.WriterAt
 //  - io.Seeker
 type File struct {
-	cli *xrdclient.Client
+	cli *xrootd.Client
 	fs  xrdfs.FileSystem
 	f   xrdfs.File
 
@@ -44,7 +44,7 @@ func Open(name string) (*File, error) {
 		return nil, errors.WithStack(err)
 	}
 
-	xrd, err := xrdclient.NewClient(context.Background(), urn.Addr, urn.User)
+	xrd, err := xrootd.NewClient(context.Background(), urn.Addr, urn.User)
 	if err != nil {
 		return nil, errors.Errorf("xrdio: could not connect to xrootd server %q: %v", urn.Addr, err)
 	}

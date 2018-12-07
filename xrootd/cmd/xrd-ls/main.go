@@ -31,7 +31,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/pkg/errors"
-	xrdclient "go-hep.org/x/hep/xrootd/client"
+	"go-hep.org/x/hep/xrootd"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdio"
 )
@@ -93,7 +93,7 @@ func xrdls(name string, long, recursive bool) error {
 
 	ctx := context.Background()
 
-	c, err := xrdclient.NewClient(ctx, url.Addr, url.User)
+	c, err := xrootd.NewClient(ctx, url.Addr, url.User)
 	if err != nil {
 		return errors.Errorf("could not create client: %v", err)
 	}
