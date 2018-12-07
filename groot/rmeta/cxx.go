@@ -12,7 +12,7 @@ import (
 	"go-hep.org/x/hep/groot/internal/rtype"
 )
 
-var GoType2ROOTEnum = map[reflect.Type]int32{
+var GoType2ROOTEnum = map[reflect.Type]Enum{
 	reflect.TypeOf(int8(0)):  Char,
 	reflect.TypeOf(int16(0)): Short,
 	reflect.TypeOf(int32(0)): Int,
@@ -129,7 +129,7 @@ var CxxBuiltins = map[string]reflect.Type{
 
 // STLNameFor creates a regular C++ STL container name given a STL enum type
 // and a ROOT enum value for the contained element.
-func STLNameFor(vtype, ctype int32) string {
+func STLNameFor(vtype ESTLType, ctype Enum) string {
 	ename := rmeta2Name(ctype)
 	if strings.HasSuffix(ename, ">") {
 		ename += " "
@@ -168,7 +168,7 @@ func STLNameFor(vtype, ctype int32) string {
 	return fmt.Sprintf(typfmt, ename)
 }
 
-func rmeta2Name(t int32) string {
+func rmeta2Name(t Enum) string {
 	switch t {
 	case Char:
 		return "char"

@@ -10,6 +10,7 @@
 package rbytes // import "go-hep.org/x/hep/groot/rbytes"
 
 import (
+	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
 )
 
@@ -28,7 +29,7 @@ type StreamerElement interface {
 
 	ArrayDim() int
 	ArrayLen() int
-	Type() int
+	Type() rmeta.Enum
 	Offset() uintptr
 	Size() uintptr
 	TypeName() string

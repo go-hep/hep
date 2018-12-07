@@ -198,7 +198,7 @@ func TestWRBuffer(t *testing.T) {
 					ename: "std::set<int>",
 				},
 				vtype: rmeta.STLset,
-				ctype: rmeta.STLset,
+				ctype: rmeta.Int,
 			},
 		},
 		{
@@ -210,7 +210,7 @@ func TestWRBuffer(t *testing.T) {
 					ename: "std::multimap<int,int>",
 				},
 				vtype: rmeta.STLmultimap,
-				ctype: rmeta.STLmultimap,
+				ctype: rmeta.Int,
 			},
 		},
 		{
@@ -222,7 +222,7 @@ func TestWRBuffer(t *testing.T) {
 						etype: rmeta.STL,
 						ename: "std::string",
 					},
-					vtype: rmeta.STLstring,
+					vtype: rmeta.STLany,
 					ctype: rmeta.STLstring,
 				},
 			},
@@ -284,8 +284,8 @@ func TestWRBuffer(t *testing.T) {
 func TestNewStreamerSTL(t *testing.T) {
 	for _, tc := range []struct {
 		name  string
-		vtype int32
-		ctype int32
+		vtype rmeta.ESTLType
+		ctype rmeta.Enum
 		want  *StreamerSTL
 	}{
 		{

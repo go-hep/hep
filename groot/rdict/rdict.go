@@ -141,16 +141,16 @@ func (si *StreamerInfo) String() string {
 
 type Element struct {
 	Name   rbase.Named
-	Type   int32    // element type
-	Size   int32    // size of element
-	ArrLen int32    // cumulative size of all array dims
-	ArrDim int32    // number of array dimensions
-	MaxIdx [5]int32 // maximum array index for array dimension "dim"
-	Offset int32    // element offset in class
-	EName  string   // data type name of data member
-	XMin   float64  // minimum of data member if a range is specified [xmin.xmax.nbits]
-	XMax   float64  // maximum of data member if a range is specified [xmin.xmax.nbits]
-	Factor float64  // conversion factor if a range is specified. factor = (1<<nbits/(xmax-xmin))
+	Type   rmeta.Enum // element type
+	Size   int32      // size of element
+	ArrLen int32      // cumulative size of all array dims
+	ArrDim int32      // number of array dimensions
+	MaxIdx [5]int32   // maximum array index for array dimension "dim"
+	Offset int32      // element offset in class
+	EName  string     // data type name of data member
+	XMin   float64    // minimum of data member if a range is specified [xmin.xmax.nbits]
+	XMax   float64    // maximum of data member if a range is specified [xmin.xmax.nbits]
+	Factor float64    // conversion factor if a range is specified. factor = (1<<nbits/(xmax-xmin))
 }
 
 func (e Element) New() StreamerElement {
@@ -171,16 +171,16 @@ func (e Element) New() StreamerElement {
 
 type StreamerElement struct {
 	named  rbase.Named
-	etype  int32    // element type
-	esize  int32    // size of element
-	arrlen int32    // cumulative size of all array dims
-	arrdim int32    // number of array dimensions
-	maxidx [5]int32 // maximum array index for array dimension "dim"
-	offset int32    // element offset in class
-	ename  string   // data type name of data member
-	xmin   float64  // minimum of data member if a range is specified [xmin.xmax.nbits]
-	xmax   float64  // maximum of data member if a range is specified [xmin.xmax.nbits]
-	factor float64  // conversion factor if a range is specified. factor = (1<<nbits/(xmax-xmin))
+	etype  rmeta.Enum // element type
+	esize  int32      // size of element
+	arrlen int32      // cumulative size of all array dims
+	arrdim int32      // number of array dimensions
+	maxidx [5]int32   // maximum array index for array dimension "dim"
+	offset int32      // element offset in class
+	ename  string     // data type name of data member
+	xmin   float64    // minimum of data member if a range is specified [xmin.xmax.nbits]
+	xmax   float64    // maximum of data member if a range is specified [xmin.xmax.nbits]
+	factor float64    // conversion factor if a range is specified. factor = (1<<nbits/(xmax-xmin))
 }
 
 func (*StreamerElement) RVersion() int16 { return rvers.StreamerElement }
@@ -205,8 +205,8 @@ func (tse *StreamerElement) ArrayLen() int {
 	return int(tse.arrlen)
 }
 
-func (tse *StreamerElement) Type() int {
-	return int(tse.etype)
+func (tse *StreamerElement) Type() rmeta.Enum {
+	return tse.etype
 }
 
 func (tse *StreamerElement) Offset() uintptr {
@@ -229,7 +229,7 @@ func (tse *StreamerElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	pos := w.Pos()
 	w.WriteVersion(tse.RVersion())
 	tse.named.MarshalROOT(w)
-	w.WriteI32(tse.etype)
+	w.WriteI32(int32(tse.etype))
 	w.WriteI32(tse.esize)
 	w.WriteI32(tse.arrlen)
 	w.WriteI32(tse.arrdim)
@@ -256,7 +256,7 @@ func (tse *StreamerElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return err
 	}
 
-	tse.etype = r.ReadI32()
+	tse.etype = rmeta.Enum(r.ReadI32())
 	tse.esize = r.ReadI32()
 	tse.arrlen = r.ReadI32()
 	tse.arrdim = r.ReadI32()
@@ -667,11 +667,11 @@ func (tss *StreamerString) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 type StreamerSTL struct {
 	StreamerElement
-	vtype int32 // type of STL vector
-	ctype int32 // STL contained type
+	vtype rmeta.ESTLType // type of STL vector
+	ctype rmeta.Enum     // STL contained type
 }
 
-func NewStreamerSTL(name string, vtype, ctype int32) *StreamerSTL {
+func NewStreamerSTL(name string, vtype rmeta.ESTLType, ctype rmeta.Enum) *StreamerSTL {
 	return &StreamerSTL{
 		StreamerElement: StreamerElement{
 			named: *rbase.NewNamed(name, ""),
@@ -697,11 +697,11 @@ func (tss *StreamerSTL) ElemTypeName() string {
 	return strings.TrimSpace(o[1])
 }
 
-func (tss *StreamerSTL) ContainedType() int32 {
+func (tss *StreamerSTL) ContainedType() rmeta.Enum {
 	return tss.ctype
 }
 
-func (tss *StreamerSTL) STLVectorType() int32 {
+func (tss *StreamerSTL) STLVectorType() rmeta.ESTLType {
 	return tss.vtype
 }
 
@@ -713,8 +713,8 @@ func (tss *StreamerSTL) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	pos := w.Pos()
 	w.WriteVersion(tss.RVersion())
 	tss.StreamerElement.MarshalROOT(w)
-	w.WriteI32(tss.vtype)
-	w.WriteI32(tss.ctype)
+	w.WriteI32(int32(tss.vtype))
+	w.WriteI32(int32(tss.ctype))
 
 	return w.SetByteCount(pos, "TStreamerSTL")
 }
@@ -728,8 +728,8 @@ func (tss *StreamerSTL) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return err
 	}
 
-	tss.vtype = r.ReadI32()
-	tss.ctype = r.ReadI32()
+	tss.vtype = rmeta.ESTLType(r.ReadI32())
+	tss.ctype = rmeta.Enum(r.ReadI32())
 
 	if tss.vtype == rmeta.STLmultimap || tss.vtype == rmeta.STLset {
 		switch {
@@ -909,7 +909,7 @@ func init() {
 		f := func() reflect.Value {
 			o := &StreamerSTLstring{
 				StreamerSTL: StreamerSTL{
-					vtype: rmeta.STLstring,
+					vtype: rmeta.STLany,
 					ctype: rmeta.STLstring,
 				},
 			}
