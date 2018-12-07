@@ -12,7 +12,6 @@ import (
 	"go-hep.org/x/hep/groot/internal/rtype"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rdict"
-	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/rmeta"
 )
 
@@ -749,8 +748,8 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 		}
 
 	case *rdict.StreamerObjectAny:
-		sinfo, ok := riofs.Streamers.GetAny(se.TypeName())
-		if !ok {
+		sinfo, err := sictx.StreamerInfo(se.TypeName(), -1)
+		if err != nil {
 			panic(errors.Errorf("no streamer-info for %q", se.TypeName()))
 		}
 		var funcs []func(r *rbytes.RBuffer) error

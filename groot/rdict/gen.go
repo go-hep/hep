@@ -277,11 +277,11 @@ func (o *%[1]s) MarshalROOT(w *rbytes.WBuffer) error {
 		typeName,
 	)
 
-	typ := t.Underlying().(*types.Struct)
-	for i := 0; i < typ.NumFields(); i++ {
-		ft := typ.Field(i)
-		g.genMarshalType(ft.Type(), "o."+ft.Name())
-	}
+	//	typ := t.Underlying().(*types.Struct)
+	//	for i := 0; i < typ.NumFields(); i++ {
+	//		ft := typ.Field(i)
+	//		g.genMarshalType(ft.Type(), "o."+ft.Name())
+	//	}
 
 	g.printf("return w.Err()\n}\n\n")
 }
@@ -491,11 +491,11 @@ func (o *%[1]s) UnmarshalROOT(r *rbytes.RBuffer) error {
 		typeName,
 	)
 
-	typ := t.Underlying().(*types.Struct)
-	for i := 0; i < typ.NumFields(); i++ {
-		ft := typ.Field(i)
-		g.genUnmarshalType(ft.Type(), "o."+ft.Name())
-	}
+	//	typ := t.Underlying().(*types.Struct)
+	//	for i := 0; i < typ.NumFields(); i++ {
+	//		ft := typ.Field(i)
+	//		g.genUnmarshalType(ft.Type(), "o."+ft.Name())
+	//	}
 
 	g.printf("return r.Err()\n}\n\n")
 }

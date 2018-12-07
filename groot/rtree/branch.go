@@ -578,10 +578,10 @@ func (b *tbranchElement) scan(ptr interface{}) error {
 }
 
 func (b *tbranchElement) setupReadStreamer(sictx rbytes.StreamerInfoContext) error {
-	streamer, ok := riofs.Streamers.Get(b.class, int(b.clsver), int(b.chksum))
-	if !ok {
-		streamer, ok = riofs.Streamers.GetAny(b.class)
-		if !ok {
+	streamer, err := sictx.StreamerInfo(b.class, int(b.clsver))
+	if err != nil {
+		streamer, err = sictx.StreamerInfo(b.class, -1)
+		if err != nil {
 			return errors.Errorf("rtree: no StreamerInfo for class=%q version=%d checksum=%d", b.class, b.clsver, b.chksum)
 		}
 	}

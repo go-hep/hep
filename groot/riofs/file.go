@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rcont"
+	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/root"
 )
 
@@ -481,7 +482,7 @@ func (f *File) readStreamerInfo() error {
 			continue
 		}
 		f.sinfos = append(f.sinfos, obj)
-		Streamers.add(obj)
+		rdict.Streamers.Add(obj)
 	}
 	return nil
 }
@@ -689,7 +690,7 @@ func (f *File) StreamerInfo(name string, version int) (rbytes.StreamerInfo, erro
 		si := stdvecSIFrom(name, o[1], f)
 		if si != nil {
 			f.sinfos = append(f.sinfos, si)
-			Streamers.add(si)
+			rdict.Streamers.Add(si)
 			return si, nil
 		}
 	}
