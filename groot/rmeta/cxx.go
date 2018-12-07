@@ -5,7 +5,9 @@
 package rmeta
 
 import (
+	"fmt"
 	"reflect"
+	"strings"
 
 	"go-hep.org/x/hep/groot/internal/rtype"
 )
@@ -26,6 +28,7 @@ var GoType2ROOTEnum = map[reflect.Type]int32{
 	//	reflect.TypeOf(uint64(0)): ULong64,
 	reflect.TypeOf(false):             Bool,
 	reflect.TypeOf(rtype.Double32(0)): Double32,
+	reflect.TypeOf(""):                TString,
 }
 
 var GoType2Cxx = map[string]string{
@@ -122,4 +125,97 @@ var CxxBuiltins = map[string]reflect.Type{
 	"Coord_t":  reflect.TypeOf(float64(0)),
 	"Angle_t":  reflect.TypeOf(float32(0)),
 	"Size_t":   reflect.TypeOf(float32(0)),
+}
+
+// STLNameFor creates a regular C++ STL container name given a STL enum type
+// and a ROOT enum value for the contained element.
+func STLNameFor(vtype, ctype int32) string {
+	ename := rmeta2Name(ctype)
+	if strings.HasSuffix(ename, ">") {
+		ename += " "
+	}
+
+	typfmt := "%s"
+	switch vtype {
+	case STLvector:
+		typfmt = "std::vector<%s>"
+	case STLlist:
+		typfmt = "std::list<%s>"
+	case STLdeque:
+		typfmt = "std::deque<%s>"
+	case STLmap:
+		typfmt = "std::map<%s>"
+	case STLmultimap:
+		typfmt = "std::multimap<%s>"
+	case STLset:
+		typfmt = "std::set<%s>"
+	case STLmultiset:
+		typfmt = "std::multiset<%s>"
+	case STLbitset:
+		typfmt = "std::bitset<%s>"
+	case STLforwardlist:
+		typfmt = "std::forward_list<%s>"
+	case STLunorderedset:
+		typfmt = "std::unordered_set<%s>"
+	case STLunorderedmultiset:
+		typfmt = "std::unordered_multiset<%s>"
+	case STLunorderedmap:
+		typfmt = "std::unordered_map<%s>"
+	case STLunorderedmultimap:
+		typfmt = "std::unordered_multimap<%s>"
+	}
+
+	return fmt.Sprintf(typfmt, ename)
+}
+
+func rmeta2Name(t int32) string {
+	switch t {
+	case Char:
+		return "char"
+	case Short:
+		return "short"
+	case Int:
+		return "int"
+	case Long:
+		return "long"
+	case Float:
+		return "float"
+	case Counter:
+		return "int"
+	case CharStar:
+		return "char*"
+	case Double:
+		return "double"
+	case Double32:
+		return "Double32_t"
+	case LegacyChar:
+		return "char" // FIXME(sbinet)
+	case UChar:
+		return "unsigned char"
+	case UShort:
+		return "unsigned short"
+	case UInt:
+		return "unsigned int"
+	case ULong:
+		return "unsigned long"
+	case Bits:
+		return "bits" // FIXME(sbinet)
+	case Long64:
+		return "Long64_t"
+	case ULong64:
+		return "ULong64_t"
+	case Bool:
+		return "bool"
+	case Float16:
+		return "Float16_t"
+	case TString:
+		return "TString"
+	case TObject:
+		return "TObject"
+	case TNamed:
+		return "TNamed"
+	case STLstring:
+		return "std::string"
+	}
+	panic(fmt.Errorf("not implemented: t=%d", t))
 }

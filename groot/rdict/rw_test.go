@@ -280,3 +280,174 @@ func TestWRBuffer(t *testing.T) {
 		})
 	}
 }
+
+func TestNewStreamerSTL(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		vtype int32
+		ctype int32
+		want  *StreamerSTL
+	}{
+		{
+			name:  "v",
+			vtype: rmeta.STLvector,
+			ctype: rmeta.Int,
+			want: &StreamerSTL{
+				StreamerElement: StreamerElement{
+					named: *rbase.NewNamed("v", ""),
+					ename: "std::vector<int>",
+					etype: rmeta.Streamer,
+				},
+				vtype: rmeta.STLvector,
+				ctype: rmeta.Int,
+			},
+		},
+		{
+			name:  "v",
+			vtype: rmeta.STLvector,
+			ctype: rmeta.Float64,
+			want: &StreamerSTL{
+				StreamerElement: StreamerElement{
+					named: *rbase.NewNamed("v", ""),
+					ename: "std::vector<double>",
+					etype: rmeta.Streamer,
+				},
+				vtype: rmeta.STLvector,
+				ctype: rmeta.Float64,
+			},
+		},
+		{
+			name:  "v",
+			vtype: rmeta.STLvector,
+			ctype: rmeta.TString,
+			want: &StreamerSTL{
+				StreamerElement: StreamerElement{
+					named: *rbase.NewNamed("v", ""),
+					ename: "std::vector<TString>",
+					etype: rmeta.Streamer,
+				},
+				vtype: rmeta.STLvector,
+				ctype: rmeta.TString,
+			},
+		},
+		{
+			name:  "v",
+			vtype: rmeta.STLvector,
+			ctype: rmeta.STLstring,
+			want: &StreamerSTL{
+				StreamerElement: StreamerElement{
+					named: *rbase.NewNamed("v", ""),
+					ename: "std::vector<std::string>",
+					etype: rmeta.Streamer,
+				},
+				vtype: rmeta.STLvector,
+				ctype: rmeta.STLstring,
+			},
+		},
+		{
+			name:  "v",
+			vtype: rmeta.STLlist,
+			ctype: rmeta.UInt,
+			want: &StreamerSTL{
+				StreamerElement: StreamerElement{
+					named: *rbase.NewNamed("v", ""),
+					ename: "std::list<unsigned int>",
+					etype: rmeta.Streamer,
+				},
+				vtype: rmeta.STLlist,
+				ctype: rmeta.UInt,
+			},
+		},
+		{
+			name:  "v",
+			vtype: rmeta.STLdeque,
+			ctype: rmeta.UInt,
+			want: &StreamerSTL{
+				StreamerElement: StreamerElement{
+					named: *rbase.NewNamed("v", ""),
+					ename: "std::deque<unsigned int>",
+					etype: rmeta.Streamer,
+				},
+				vtype: rmeta.STLdeque,
+				ctype: rmeta.UInt,
+			},
+		},
+		{
+			name:  "v",
+			vtype: rmeta.STLset,
+			ctype: rmeta.UInt,
+			want: &StreamerSTL{
+				StreamerElement: StreamerElement{
+					named: *rbase.NewNamed("v", ""),
+					ename: "std::set<unsigned int>",
+					etype: rmeta.Streamer,
+				},
+				vtype: rmeta.STLset,
+				ctype: rmeta.UInt,
+			},
+		},
+		{
+			name:  "v",
+			vtype: rmeta.STLmultiset,
+			ctype: rmeta.UInt,
+			want: &StreamerSTL{
+				StreamerElement: StreamerElement{
+					named: *rbase.NewNamed("v", ""),
+					ename: "std::multiset<unsigned int>",
+					etype: rmeta.Streamer,
+				},
+				vtype: rmeta.STLmultiset,
+				ctype: rmeta.UInt,
+			},
+		},
+		{
+			name:  "v",
+			vtype: rmeta.STLunorderedset,
+			ctype: rmeta.UInt,
+			want: &StreamerSTL{
+				StreamerElement: StreamerElement{
+					named: *rbase.NewNamed("v", ""),
+					ename: "std::unordered_set<unsigned int>",
+					etype: rmeta.Streamer,
+				},
+				vtype: rmeta.STLunorderedset,
+				ctype: rmeta.UInt,
+			},
+		},
+		{
+			name:  "v",
+			vtype: rmeta.STLunorderedmultiset,
+			ctype: rmeta.UInt,
+			want: &StreamerSTL{
+				StreamerElement: StreamerElement{
+					named: *rbase.NewNamed("v", ""),
+					ename: "std::unordered_multiset<unsigned int>",
+					etype: rmeta.Streamer,
+				},
+				vtype: rmeta.STLunorderedmultiset,
+				ctype: rmeta.UInt,
+			},
+		},
+		{
+			name:  "v",
+			vtype: rmeta.STLforwardlist,
+			ctype: rmeta.UInt,
+			want: &StreamerSTL{
+				StreamerElement: StreamerElement{
+					named: *rbase.NewNamed("v", ""),
+					ename: "std::forward_list<unsigned int>",
+					etype: rmeta.Streamer,
+				},
+				vtype: rmeta.STLforwardlist,
+				ctype: rmeta.UInt,
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got := NewStreamerSTL(tc.name, tc.vtype, tc.ctype)
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Fatalf("error:\ngot= %#v\nwant=%#v", *got, *tc.want)
+			}
+		})
+	}
+}

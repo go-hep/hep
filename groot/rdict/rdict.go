@@ -674,9 +674,9 @@ type StreamerSTL struct {
 func NewStreamerSTL(name string, vtype, ctype int32) *StreamerSTL {
 	return &StreamerSTL{
 		StreamerElement: StreamerElement{
-			named: *rbase.NewNamed(name, name),
-			ename: name,
-			etype: ctype,
+			named: *rbase.NewNamed(name, ""),
+			ename: rmeta.STLNameFor(vtype, ctype),
+			etype: rmeta.Streamer,
 		},
 		vtype: vtype,
 		ctype: ctype,
