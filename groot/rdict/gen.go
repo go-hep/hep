@@ -80,8 +80,36 @@ func (g *Generator) Generate(typeName string) {
 	}
 
 	g.genStreamer(typ, typeName)
-	//	g.genMarshal(typ, typeName)
-	//	g.genUnmarshal(typ, typeName)
+	// g.genMarshal(typ, typeName)
+	// g.genUnmarshal(typ, typeName)
+}
+
+func (g *Generator) genMarshal(t types.Type, typeName string) {
+	g.printf(`// MarshalROOT implements rbytes.Marshaler
+func (o *%[1]s) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	ws, err := w.WStreamer(o)
+	if err != nil {
+		return 0, err
+	}
+	return ws.WStream(w)
+}
+`,
+		typeName,
+	)
+}
+
+func (g *Generator) genUnmarshal(t types.Type, typeName string) {
+	g.printf(`// UnmarshalROOT implements rbytes.Unmarshaler
+func (o *%[1]s) UnmarshalROOT(r *rbytes.RBuffer) error {
+	rs, err := r.RStreamer(o)
+	if err != nil {
+		return err
+	}
+	return rs.RStream(r)
+}
+`,
+		typeName,
+	)
 }
 
 func (g *Generator) genStreamer(t types.Type, typeName string) {
@@ -165,6 +193,7 @@ func (g *Generator) genStreamerType(t types.Type, n string) {
 			t.String(), "",
 			n, gosizes.Sizeof(ut),
 		)
+
 	default:
 		log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
 	}

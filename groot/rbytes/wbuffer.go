@@ -70,6 +70,7 @@ func NewWBuffer(data []byte, refs map[interface{}]int64, offset uint32, ctx Stre
 		sictx:  ctx,
 	}
 }
+
 func (w *WBuffer) Grow(n int)     { w.w.grow(n) }
 func (w *WBuffer) buffer() []byte { return w.w.p[:w.w.c] }
 func (w *WBuffer) Bytes() []byte  { return w.w.p[:w.w.c] }
