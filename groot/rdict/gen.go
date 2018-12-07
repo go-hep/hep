@@ -20,6 +20,8 @@ import (
 var (
 	binMa *types.Interface // encoding.BinaryMarshaler
 	binUn *types.Interface // encoding.BinaryUnmarshaler
+
+	gosizes types.Sizes
 )
 
 // Generator holds the state of the ROOT streaemer generation.
@@ -155,9 +157,13 @@ func (g *Generator) genStreamerType(t types.Type, n string) {
 		)
 	case *types.Slice:
 		// FIXME(sbinet): collect+visit element type.
+		g.printf("rbytes.NewStreamerSTL(%q, rmeta.STLvector, %d),\n", n, gotype2RMeta(ut.Elem()))
+
+	case *types.Struct:
 		g.printf(
-			"&rbytes.StreamerBasicType{StreamerElement: %s},\n",
-			g.se(ut.Elem(), n, "+ rmeta.OffsetL", -1),
+			"&rbytes.StreamerObjectAny{StreamerElement:rbytes.Element{\nName: rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Any,\nSize: %[4]d,\nEName:%[3]q,\n}.New()},\n",
+			t.String(), "",
+			n, gosizes.Sizeof(ut),
 		)
 	default:
 		log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
@@ -559,4 +565,46 @@ func init() {
 		log.Fatalf("could not find interface encoding.BinaryUnmarshaler\n")
 	}
 	binUn = o.(*types.TypeName).Type().Underlying().(*types.Interface)
+
+	sz := int64(reflect.TypeOf(int(0)).Size())
+	gosizes = &types.StdSizes{WordSize: sz, MaxAlign: sz}
+}
+
+func gotype2RMeta(t types.Type) rmeta.Enum {
+	switch ut := t.Underlying().(type) {
+	case *types.Basic:
+		switch ut.Kind() {
+		case types.Bool:
+			return rmeta.Bool
+		case types.Uint8:
+			return rmeta.Uint8
+		case types.Uint16:
+			return rmeta.Uint16
+		case types.Uint32, types.Uint:
+			return rmeta.Uint32
+		case types.Uint64:
+			return rmeta.Uint64
+		case types.Int8:
+			return rmeta.Int8
+		case types.Int16:
+			return rmeta.Int16
+		case types.Int32, types.Int:
+			return rmeta.Int32
+		case types.Int64:
+			return rmeta.Int64
+		case types.Float32:
+			return rmeta.Float32
+		case types.Float64:
+			return rmeta.Float64
+		case types.String:
+			return rmeta.TString
+		}
+	case *types.Struct:
+		return rmeta.Any
+	case *types.Slice:
+		return rmeta.STL
+	case *types.Array:
+		return rmeta.OffsetL + gotype2RMeta(ut.Elem())
+	}
+	return -1
 }
