@@ -85,9 +85,9 @@ func (g *Generator) Generate(typeName string) {
 }
 
 func (g *Generator) genStreamer(t types.Type, typeName string) {
-	g.printf(`// Streamer for %[1]s.
-func init() {
-	var sinfo rbytes.StreamerInfo = rdict.NewStreamerInfo(%[2]q, []rbytes.StreamerElement{ 
+	g.printf(`func init() {
+	// Streamer for %[1]s.
+	rdict.Streamers.Add(rdict.NewStreamerInfo(%[2]q, []rbytes.StreamerElement{
 `,
 		typeName,
 		g.pkg.Path()+"."+typeName,
@@ -106,7 +106,7 @@ func init() {
 		g.genStreamerType(ft.Type(), n)
 	}
 
-	g.printf("})\n}\n\n")
+	g.printf("}))\n}\n\n")
 }
 
 func (g *Generator) genStreamerType(t types.Type, n string) {
