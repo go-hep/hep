@@ -25,10 +25,6 @@ var (
 	)
 )
 
-type RStreamer interface {
-	RStream(r *rbytes.RBuffer) error
-}
-
 type rstreamerFunc func(r *rbytes.RBuffer) error
 
 type rstreamerImpl struct {

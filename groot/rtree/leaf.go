@@ -177,7 +177,7 @@ type tleafElement struct {
 
 	ptr       interface{}
 	src       reflect.Value
-	rstreamer RStreamer
+	rstreamer rbytes.RStreamer
 	streamers []rbytes.StreamerElement
 }
 
