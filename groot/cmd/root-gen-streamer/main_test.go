@@ -26,11 +26,6 @@ func TestGenerate(t *testing.T) {
 		want  string
 	}{
 		{
-			pkg:   "image",
-			types: []string{"Point"},
-			want:  "testdata/image.txt",
-		},
-		{
 			pkg:   "go-hep.org/x/hep/groot/internal/rdatatest",
 			types: []string{"Particle", "HLV", "Event"},
 			want:  "testdata/rdatatest.txt",

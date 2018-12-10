@@ -59,6 +59,8 @@ type Event struct {
 	ArrF64 [10]float64 `groot:"ArrF64"`
 }
 
+func (Event) RVersion() int16 { return 1 }
+
 // Particle is a simple type to exercize streamers generation.
 type Particle struct {
 	name string
@@ -66,10 +68,14 @@ type Particle struct {
 	mom  HLV
 }
 
+func (Particle) RVersion() int16 { return 1 }
+
 // HLV is a simple type to exercize streamers generation.
 type HLV struct {
 	px, py, pz, e float64
 }
+
+func (HLV) RVersion() int16 { return 1 }
 
 // FIXME(sbinet)
 //  - support types that "inherit" from TObject

@@ -196,8 +196,8 @@ func (g *Generator) genStreamerType(t types.Type, n string) {
 	case *types.Struct:
 		g.printf(
 			"&rdict.StreamerObjectAny{StreamerElement:rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Any,\nSize: %[4]d,\nEName:%[3]q,\n}.New()},\n",
-			t.String(), "",
-			n, gosizes.Sizeof(ut),
+			n, "",
+			t.String(), gosizes.Sizeof(ut),
 		)
 
 	default:
@@ -212,78 +212,78 @@ func (g *Generator) se(t types.Type, n, rtype string, len int64) string {
 		switch kind := ut.Kind(); kind {
 		case types.Bool:
 			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Bool %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
+				n, "",
+				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				1*len,
 			)
 		case types.Uint8:
 			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint8 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
+				n, "",
+				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				1*len,
 			)
 		case types.Uint16:
 			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint16 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
+				n, "",
+				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				2*len,
 			)
 		case types.Uint32, types.Uint:
 			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
+				n, "",
+				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				4*len,
 			)
 		case types.Uint64:
 			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
+				n, "",
+				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				8*len,
 			)
 		case types.Int8:
 			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int8 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
+				n, "",
+				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				1*len,
 			)
 		case types.Int16:
 			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int16 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
+				n, "",
+				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				2*len,
 			)
 		case types.Int32, types.Int:
 			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
+				n, "",
+				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				4*len,
 			)
 		case types.Int64:
 			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
+				n, "",
+				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				8*len,
 			)
 		case types.Float32:
 			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
+				n, "",
+				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				4*len,
 			)
 		case types.Float64:
 			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
-				rmeta.GoType2Cxx[ut.Name()], "",
-				n,
+				n, "",
+				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				8*len,
 			)
@@ -295,8 +295,8 @@ func (g *Generator) se(t types.Type, n, rtype string, len int64) string {
 
 		case types.String:
 			return fmt.Sprintf("&rdict.StreamerString{rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.TString %[4]s,\nSize: 24,\nEName:%[3]q,\n}.New()}",
-				"TString", "",
-				n,
+				n, "",
+				"TString",
 				rtype,
 			)
 		}
