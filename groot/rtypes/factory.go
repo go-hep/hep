@@ -5,7 +5,6 @@
 package rtypes
 
 import (
-	"log"
 	"reflect"
 	"sync"
 
@@ -56,16 +55,16 @@ func (f *factory) Get(n string) FactoryFct {
 		return fct
 	}
 
+	f.mu.RLock()
+	obj := f.db["*rdict.Object"]
+	f.mu.RUnlock()
+
 	fct = func() reflect.Value {
-		f.mu.RLock()
-		fct := f.db["*groot.dobject"]
-		f.mu.RUnlock()
-		v := fct()
+		v := obj()
 		v.Interface().(setClasser).SetClass(n)
 		return v
 	}
 
-	log.Printf("rtypes: adding dummy factory for %q\n", n)
 	return fct
 }
 
@@ -87,6 +86,6 @@ type setClasser interface {
 	SetClass(name string)
 }
 
-var Factory = factory{
+var Factory = &factory{
 	db: make(map[string]FactoryFct),
 }

@@ -53,6 +53,7 @@ import (
 	"regexp"
 
 	"go-hep.org/x/hep/groot"
+	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/rtree"
@@ -136,6 +137,8 @@ func dumpDir(w io.Writer, dir riofs.Directory, deep bool) error {
 			case rhist.Graph:
 				fmt.Fprintf(w, "\n")
 				err = dumpGraph(w, obj)
+			case *rdict.Object:
+				fmt.Fprintf(w, " => %v\n", obj)
 			case fmt.Stringer:
 				fmt.Fprintf(w, " => %q\n", obj.String())
 			default:

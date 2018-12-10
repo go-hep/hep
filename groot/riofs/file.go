@@ -682,6 +682,11 @@ func (f *File) StreamerInfo(name string, version int) (rbytes.StreamerInfo, erro
 		}
 	}
 
+	si, ok := rdict.Streamers.Get(name, version)
+	if ok {
+		return si, nil
+	}
+
 	// no streamer for "name" in that file.
 	// try whether "name" isn't actually std::vector<T> and a streamer
 	// for T is in that file.

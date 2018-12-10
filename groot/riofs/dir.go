@@ -364,16 +364,18 @@ func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 
 	// make sure we have a streamer for this type.
 	if !isCoreType(typename) {
-		if _, err := dir.StreamerInfo(typename, -1); err != nil {
-			_, err = streamerInfoFrom(obj, dir)
+		si, err := dir.StreamerInfo(typename, -1)
+		if err != nil {
+			si, err = streamerInfoFrom(obj, dir)
 			if err != nil {
 				return errors.Wrapf(err, "riofs: could not generate streamer for key")
 			}
-			_, err = dir.StreamerInfo(typename, -1)
-			if err != nil {
-				panic(err)
-			}
+			si, err = dir.StreamerInfo(typename, -1)
 		}
+		if err != nil {
+			panic(err)
+		}
+		dir.addStreamer(si)
 	}
 
 	dir.keys = append(dir.keys, Key{
