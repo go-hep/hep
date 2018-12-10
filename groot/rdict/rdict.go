@@ -42,6 +42,7 @@ func NewStreamerInfo(name string, elems []rbytes.StreamerElement) *StreamerInfo 
 		named:  *rbase.NewNamed(name, name),
 		chksum: 0, // FIXME(sbinet): how to generate a stable and meaningful checksum?
 		clsver: 1, // FIXME(sbinet): how to properly handle class versions?
+		objarr: rcont.NewObjArray(),
 		elems:  elems,
 	}
 	return sinfos
