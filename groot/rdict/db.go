@@ -9,6 +9,7 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbytes"
 )
 
@@ -25,6 +26,14 @@ type streamerDbKey struct {
 type streamerDb struct {
 	sync.RWMutex
 	db map[streamerDbKey]rbytes.StreamerInfo
+}
+
+func (db *streamerDb) StreamerInfo(name string, vers int) (rbytes.StreamerInfo, error) {
+	si, ok := db.Get(name, vers)
+	if !ok {
+		return nil, errors.Errorf("rdict: no streamer for %q", name)
+	}
+	return si, nil
 }
 
 func (db *streamerDb) Get(class string, vers int) (rbytes.StreamerInfo, bool) {
@@ -87,3 +96,7 @@ func (db *streamerDb) Add(streamer rbytes.StreamerInfo) {
 
 	db.db[key] = streamer
 }
+
+var (
+	_ rbytes.StreamerInfoContext = (*streamerDb)(nil)
+)
