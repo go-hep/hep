@@ -79,8 +79,7 @@ func (tsi *StreamerInfo) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(tsi.RVersion())
+	pos := w.WriteVersion(tsi.RVersion())
 	tsi.named.MarshalROOT(w)
 	w.WriteU32(tsi.chksum)
 	w.WriteI32(tsi.clsver)
@@ -227,8 +226,7 @@ func (tse *StreamerElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(tse.RVersion())
+	pos := w.WriteVersion(tse.RVersion())
 	tse.named.MarshalROOT(w)
 	w.WriteI32(int32(tse.etype))
 	w.WriteI32(tse.esize)
@@ -310,8 +308,7 @@ func (tsb *StreamerBase) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(tsb.RVersion())
+	pos := w.WriteVersion(tsb.RVersion())
 	tsb.StreamerElement.MarshalROOT(w)
 	w.WriteI32(tsb.vbase)
 
@@ -349,8 +346,7 @@ func (tsb *StreamerBasicType) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(tsb.RVersion())
+	pos := w.WriteVersion(tsb.RVersion())
 	tsb.StreamerElement.MarshalROOT(w)
 
 	return w.SetByteCount(pos, "TStreamerBasicType")
@@ -417,8 +413,7 @@ func (tsb *StreamerBasicPointer) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(tsb.RVersion())
+	pos := w.WriteVersion(tsb.RVersion())
 	tsb.StreamerElement.MarshalROOT(w)
 	w.WriteI32(tsb.cvers)
 	w.WriteString(tsb.cname)
@@ -466,8 +461,7 @@ func (tsl *StreamerLoop) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(tsl.RVersion())
+	pos := w.WriteVersion(tsl.RVersion())
 	tsl.StreamerElement.MarshalROOT(w)
 	w.WriteI32(tsl.cvers)
 	w.WriteString(tsl.cname)
@@ -508,8 +502,7 @@ func (tso *StreamerObject) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(tso.RVersion())
+	pos := w.WriteVersion(tso.RVersion())
 	tso.StreamerElement.MarshalROOT(w)
 	return w.SetByteCount(pos, "TStreamerObject")
 }
@@ -542,8 +535,7 @@ func (tso *StreamerObjectPointer) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(tso.RVersion())
+	pos := w.WriteVersion(tso.RVersion())
 	tso.StreamerElement.MarshalROOT(w)
 	return w.SetByteCount(pos, "TStreamerObjectPointer")
 }
@@ -576,8 +568,7 @@ func (tso *StreamerObjectAny) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(tso.RVersion())
+	pos := w.WriteVersion(tso.RVersion())
 	tso.StreamerElement.MarshalROOT(w)
 
 	return w.SetByteCount(pos, "TStreamerObjectAny")
@@ -611,8 +602,7 @@ func (tso *StreamerObjectAnyPointer) MarshalROOT(w *rbytes.WBuffer) (int, error)
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(tso.RVersion())
+	pos := w.WriteVersion(tso.RVersion())
 	tso.StreamerElement.MarshalROOT(w)
 
 	return w.SetByteCount(pos, "TStreamerObjectAnyPointer")
@@ -646,8 +636,7 @@ func (tss *StreamerString) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(tss.RVersion())
+	pos := w.WriteVersion(tss.RVersion())
 	tss.StreamerElement.MarshalROOT(w)
 
 	return w.SetByteCount(pos, "TStreamerString")
@@ -711,8 +700,7 @@ func (tss *StreamerSTL) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(tss.RVersion())
+	pos := w.WriteVersion(tss.RVersion())
 	tss.StreamerElement.MarshalROOT(w)
 	w.WriteI32(int32(tss.vtype))
 	w.WriteI32(int32(tss.ctype))
@@ -765,8 +753,7 @@ func (tss *StreamerSTLstring) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(tss.RVersion())
+	pos := w.WriteVersion(tss.RVersion())
 	tss.StreamerSTL.MarshalROOT(w)
 
 	return w.SetByteCount(pos, "TStreamerSTLstring")
@@ -800,8 +787,7 @@ func (tsa *StreamerArtificial) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(tsa.RVersion())
+	pos := w.WriteVersion(tsa.RVersion())
 	tsa.StreamerElement.MarshalROOT(w)
 
 	return w.SetByteCount(pos, "TStreamerArtificial")

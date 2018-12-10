@@ -40,8 +40,7 @@ func (a *AttLine) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(a.RVersion())
+	pos := w.WriteVersion(a.RVersion())
 	w.WriteI16(a.Color)
 	w.WriteI16(a.Style)
 	w.WriteI16(a.Width)

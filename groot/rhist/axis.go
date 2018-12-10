@@ -101,8 +101,7 @@ func (a *taxis) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(a.RVersion())
+	pos := w.WriteVersion(a.RVersion())
 
 	for _, v := range []rbytes.Marshaler{
 		&a.Named,

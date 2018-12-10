@@ -44,8 +44,7 @@ func (dir *tdirectory) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(dir.RVersion())
+	pos := w.WriteVersion(dir.RVersion())
 
 	dir.named.MarshalROOT(w)
 	switch dir.parent {

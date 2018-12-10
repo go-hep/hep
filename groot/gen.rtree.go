@@ -222,8 +222,7 @@ func (leaf *{{.Name}}) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(leaf.rvers)
+	pos := w.WriteVersion(leaf.rvers)
 	leaf.tleaf.MarshalROOT(w)
 	{{.WRangeFunc}}(leaf.min)
 	{{.WRangeFunc}}(leaf.max)

@@ -64,8 +64,7 @@ func (obj *ObjString) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
 		return 0, w.Err()
 	}
-	pos := w.Pos()
-	w.WriteVersion(obj.RVersion())
+	pos := w.WriteVersion(obj.RVersion())
 	if _, err := obj.obj.MarshalROOT(w); err != nil {
 		return 0, err
 	}

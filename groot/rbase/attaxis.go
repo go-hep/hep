@@ -57,8 +57,7 @@ func (a *AttAxis) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(a.RVersion())
+	pos := w.WriteVersion(a.RVersion())
 	w.WriteI32(a.Ndivs)
 	w.WriteI16(a.AxisColor)
 	w.WriteI16(a.LabelColor)

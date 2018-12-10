@@ -90,8 +90,7 @@ func (n *Named) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(n.RVersion())
+	pos := w.WriteVersion(n.RVersion())
 	if _, err := n.obj.MarshalROOT(w); err != nil {
 		return 0, err
 	}

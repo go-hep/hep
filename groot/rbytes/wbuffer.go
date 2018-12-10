@@ -112,13 +112,15 @@ func (w *WBuffer) SetByteCount(beg int64, class string) (int, error) {
 	return int(bcnt + 4), w.err
 }
 
-func (w *WBuffer) WriteVersion(vers int16) {
+func (w *WBuffer) WriteVersion(vers int16) int64 {
+	pos := w.Pos()
 	if w.err != nil {
-		return
+		return pos
 	}
 	w.w.grow(6)
 	w.writeU32(0) // byte-count placeholder
 	w.writeU16(uint16(vers))
+	return pos
 }
 
 func (w *WBuffer) WriteObjectAny(obj root.Object) error {

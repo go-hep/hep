@@ -100,9 +100,7 @@ func (g *tgraph) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-
-	w.WriteVersion(g.RVersion())
+	pos := w.WriteVersion(g.RVersion())
 
 	for _, a := range []rbytes.Marshaler{
 		&g.named,
@@ -263,8 +261,7 @@ func (g *tgrapherrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, nil
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(g.RVersion())
+	pos := w.WriteVersion(g.RVersion())
 
 	if n, err := g.tgraph.MarshalROOT(w); err != nil {
 		return n, err
@@ -388,8 +385,7 @@ func (g *tgraphasymmerrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(g.RVersion())
+	pos := w.WriteVersion(g.RVersion())
 
 	if n, err := g.tgraph.MarshalROOT(w); err != nil {
 		return n, err

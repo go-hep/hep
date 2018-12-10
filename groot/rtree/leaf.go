@@ -122,8 +122,7 @@ func (leaf *tleaf) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(leaf.rvers)
+	pos := w.WriteVersion(leaf.rvers)
 	leaf.named.MarshalROOT(w)
 
 	w.WriteI32(int32(leaf.len))
@@ -214,8 +213,7 @@ func (leaf *tleafElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(leaf.rvers)
+	pos := w.WriteVersion(leaf.rvers)
 	leaf.tleaf.MarshalROOT(w)
 	w.WriteI32(leaf.id)
 	w.WriteI32(leaf.ltype)

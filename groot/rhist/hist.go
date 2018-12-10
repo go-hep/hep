@@ -100,9 +100,7 @@ func (h *th1) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-
-	w.WriteVersion(h.RVersion())
+	pos := w.WriteVersion(h.RVersion())
 	for _, v := range []rbytes.Marshaler{
 		&h.Named,
 		&h.attline,
@@ -262,8 +260,7 @@ func (h *th2) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(h.RVersion())
+	pos := w.WriteVersion(h.RVersion())
 
 	if _, err := h.th1.MarshalROOT(w); err != nil {
 		return 0, err

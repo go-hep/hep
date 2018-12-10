@@ -70,8 +70,7 @@ func (leaf *LeafO) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(leaf.rvers)
+	pos := w.WriteVersion(leaf.rvers)
 	leaf.tleaf.MarshalROOT(w)
 	w.WriteBool(leaf.min)
 	w.WriteBool(leaf.max)
@@ -229,8 +228,7 @@ func (leaf *LeafB) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(leaf.rvers)
+	pos := w.WriteVersion(leaf.rvers)
 	leaf.tleaf.MarshalROOT(w)
 	w.WriteI8(leaf.min)
 	w.WriteI8(leaf.max)
@@ -403,8 +401,7 @@ func (leaf *LeafS) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(leaf.rvers)
+	pos := w.WriteVersion(leaf.rvers)
 	leaf.tleaf.MarshalROOT(w)
 	w.WriteI16(leaf.min)
 	w.WriteI16(leaf.max)
@@ -577,8 +574,7 @@ func (leaf *LeafI) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(leaf.rvers)
+	pos := w.WriteVersion(leaf.rvers)
 	leaf.tleaf.MarshalROOT(w)
 	w.WriteI32(leaf.min)
 	w.WriteI32(leaf.max)
@@ -751,8 +747,7 @@ func (leaf *LeafL) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(leaf.rvers)
+	pos := w.WriteVersion(leaf.rvers)
 	leaf.tleaf.MarshalROOT(w)
 	w.WriteI64(leaf.min)
 	w.WriteI64(leaf.max)
@@ -915,8 +910,7 @@ func (leaf *LeafF) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(leaf.rvers)
+	pos := w.WriteVersion(leaf.rvers)
 	leaf.tleaf.MarshalROOT(w)
 	w.WriteF32(leaf.min)
 	w.WriteF32(leaf.max)
@@ -1064,8 +1058,7 @@ func (leaf *LeafD) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(leaf.rvers)
+	pos := w.WriteVersion(leaf.rvers)
 	leaf.tleaf.MarshalROOT(w)
 	w.WriteF64(leaf.min)
 	w.WriteF64(leaf.max)
@@ -1213,8 +1206,7 @@ func (leaf *LeafC) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(leaf.rvers)
+	pos := w.WriteVersion(leaf.rvers)
 	leaf.tleaf.MarshalROOT(w)
 	w.WriteI32(leaf.min)
 	w.WriteI32(leaf.max)

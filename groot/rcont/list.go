@@ -71,8 +71,7 @@ func (li *List) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.Pos()
-	w.WriteVersion(li.RVersion())
+	pos := w.WriteVersion(li.RVersion())
 	if _, err := li.obj.MarshalROOT(w); err != nil {
 		return 0, err
 	}
