@@ -20,6 +20,8 @@ var (
 	binMa *types.Interface // encoding.BinaryMarshaler
 	binUn *types.Interface // encoding.BinaryUnmarshaler
 
+	rootVers *types.Interface // rbytes.RVersioner
+
 	gosizes types.Sizes
 )
 
@@ -77,6 +79,10 @@ func (g *Generator) Generate(typeName string) {
 	}
 	if g.Verbose {
 		log.Printf("typ: %q: %+v\n", typeName, typ)
+	}
+
+	if !types.Implements(tn.Type(), rootVers) && !types.Implements(types.NewPointer(tn.Type()), rootVers) {
+		log.Fatalf("type %q does not implement %q.", tn.Pkg().Path()+"."+tn.Name(), "go-hep.org/x/hep/groot/rbytes.RVersioner")
 	}
 
 	g.genStreamer(typ, typeName)
@@ -345,6 +351,17 @@ func init() {
 		log.Fatalf("could not find interface encoding.BinaryUnmarshaler\n")
 	}
 	binUn = o.(*types.TypeName).Type().Underlying().(*types.Interface)
+
+	pkg, err = importer.Default().Import("go-hep.org/x/hep/groot/rbytes")
+	if err != nil {
+		log.Fatalf("could not find package %q: %v", "go-hep.org/x/hep/groot/rbytes", err)
+	}
+
+	o = pkg.Scope().Lookup("RVersioner")
+	if o == nil {
+		log.Fatalf("could not find interface rbytes.RVersioner")
+	}
+	rootVers = o.(*types.TypeName).Type().Underlying().(*types.Interface)
 
 	sz := int64(reflect.TypeOf(int(0)).Size())
 	gosizes = &types.StdSizes{WordSize: sz, MaxAlign: sz}
