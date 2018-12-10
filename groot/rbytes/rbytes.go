@@ -14,6 +14,12 @@ import (
 	"go-hep.org/x/hep/groot/root"
 )
 
+// RVersioner is the interface implemented by an object that
+// can tell the ROOT system what is its current version.
+type RVersioner interface {
+	RVersion() int16
+}
+
 // StreamerInfo describes a ROOT Streamer.
 type StreamerInfo interface {
 	root.Named
