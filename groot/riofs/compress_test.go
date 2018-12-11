@@ -20,6 +20,8 @@ import (
 )
 
 func TestCompress(t *testing.T) {
+	t.Parallel()
+
 	dir, err := ioutil.TempDir("", "riofs-compress-")
 	if err != nil {
 		t.Fatal(err)
