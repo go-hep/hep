@@ -15,11 +15,19 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
+
+	"github.com/pkg/errors"
 )
 
 func main() {
 	log.SetPrefix("ci: ")
 	log.SetFlags(0)
+
+	start := time.Now()
+	defer func() {
+		log.Printf("elapsed time: %v\n", time.Since(start))
+	}()
 
 	var (
 		race    = flag.Bool("race", false, "enable race detector")
@@ -30,13 +38,7 @@ func main() {
 
 	flag.Parse()
 
-	out := new(bytes.Buffer)
-	cmd := exec.Command("go", "list", "./...")
-	cmd.Stdout = out
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-
-	err := cmd.Run()
+	pkgs, err := pkgList()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,12 +65,7 @@ func main() {
 	}
 	args = append(args, "")
 
-	scan := bufio.NewScanner(out)
-	for scan.Scan() {
-		pkg := scan.Text()
-		if strings.Contains(pkg, "vendor") {
-			continue
-		}
+	for _, pkg := range pkgs {
 		args[len(args)-1] = pkg
 		cmd := exec.Command("go", args...)
 		cmd.Stdin = os.Stdin
@@ -95,4 +92,29 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func pkgList() ([]string, error) {
+	out := new(bytes.Buffer)
+	cmd := exec.Command("go", "list", "./...")
+	cmd.Stdout = out
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+
+	err := cmd.Run()
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get package list")
+	}
+
+	var pkgs []string
+	scan := bufio.NewScanner(out)
+	for scan.Scan() {
+		pkg := scan.Text()
+		if strings.Contains(pkg, "vendor") {
+			continue
+		}
+		pkgs = append(pkgs, pkg)
+	}
+
+	return pkgs, nil
 }
