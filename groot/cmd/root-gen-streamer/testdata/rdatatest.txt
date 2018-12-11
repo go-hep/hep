@@ -11,18 +11,22 @@ import (
 
 func init() {
 	// Streamer for Particle.
-	rdict.Streamers.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.Particle", []rbytes.StreamerElement{
+	rdict.Streamers.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.Particle", int(((*Particle)(nil)).RVersion()), []rbytes.StreamerElement{
 		&rdict.StreamerString{rdict.Element{
-			Name:  *rbase.NewNamed("name", ""),
-			Type:  rmeta.TString,
-			Size:  24,
-			EName: "TString",
+			Name:   *rbase.NewNamed("name", ""),
+			Type:   rmeta.TString,
+			Size:   24,
+			EName:  "TString",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("pid", ""),
-			Type:  rmeta.Int32,
-			Size:  4,
-			EName: "int",
+			Name:   *rbase.NewNamed("pid", ""),
+			Type:   rmeta.Int32,
+			Size:   4,
+			EName:  "int",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerObjectAny{StreamerElement: rdict.Element{
 			Name:  *rbase.NewNamed("mom", ""),
@@ -33,116 +37,181 @@ func init() {
 	}))
 }
 
+// MarshalROOT implements rbytes.Marshaler
+func (o *Particle) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	pos := w.WriteVersion(o.RVersion())
+
+	w.WriteString(o.name)
+	w.WriteI64(int64(o.pid))
+	o.mom.MarshalROOT(w)
+
+	return w.SetByteCount(pos, o.Class())
+}
+
 func init() {
 	// Streamer for HLV.
-	rdict.Streamers.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.HLV", []rbytes.StreamerElement{
+	rdict.Streamers.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.HLV", int(((*HLV)(nil)).RVersion()), []rbytes.StreamerElement{
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("px", ""),
-			Type:  rmeta.Float64,
-			Size:  8,
-			EName: "double",
+			Name:   *rbase.NewNamed("px", ""),
+			Type:   rmeta.Float64,
+			Size:   8,
+			EName:  "double",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("py", ""),
-			Type:  rmeta.Float64,
-			Size:  8,
-			EName: "double",
+			Name:   *rbase.NewNamed("py", ""),
+			Type:   rmeta.Float64,
+			Size:   8,
+			EName:  "double",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("pz", ""),
-			Type:  rmeta.Float64,
-			Size:  8,
-			EName: "double",
+			Name:   *rbase.NewNamed("pz", ""),
+			Type:   rmeta.Float64,
+			Size:   8,
+			EName:  "double",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("e", ""),
-			Type:  rmeta.Float64,
-			Size:  8,
-			EName: "double",
+			Name:   *rbase.NewNamed("e", ""),
+			Type:   rmeta.Float64,
+			Size:   8,
+			EName:  "double",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 	}))
 }
 
+// MarshalROOT implements rbytes.Marshaler
+func (o *HLV) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	pos := w.WriteVersion(o.RVersion())
+
+	w.WriteF64(o.px)
+	w.WriteF64(o.py)
+	w.WriteF64(o.pz)
+	w.WriteF64(o.e)
+
+	return w.SetByteCount(pos, o.Class())
+}
+
 func init() {
 	// Streamer for Event.
-	rdict.Streamers.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.Event", []rbytes.StreamerElement{
+	rdict.Streamers.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.Event", int(((*Event)(nil)).RVersion()), []rbytes.StreamerElement{
 		&rdict.StreamerString{rdict.Element{
-			Name:  *rbase.NewNamed("Name", ""),
-			Type:  rmeta.TString,
-			Size:  24,
-			EName: "TString",
+			Name:   *rbase.NewNamed("Name", ""),
+			Type:   rmeta.TString,
+			Size:   24,
+			EName:  "TString",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("u8", ""),
-			Type:  rmeta.Uint8,
-			Size:  1,
-			EName: "unsigned char",
+			Name:   *rbase.NewNamed("u8", ""),
+			Type:   rmeta.Uint8,
+			Size:   1,
+			EName:  "unsigned char",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("u16", ""),
-			Type:  rmeta.Uint16,
-			Size:  2,
-			EName: "unsigned short",
+			Name:   *rbase.NewNamed("u16", ""),
+			Type:   rmeta.Uint16,
+			Size:   2,
+			EName:  "unsigned short",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("u32", ""),
-			Type:  rmeta.Uint32,
-			Size:  4,
-			EName: "unsigned int",
+			Name:   *rbase.NewNamed("u32", ""),
+			Type:   rmeta.Uint32,
+			Size:   4,
+			EName:  "unsigned int",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("U64", ""),
-			Type:  rmeta.Uint64,
-			Size:  8,
-			EName: "unsigned long",
+			Name:   *rbase.NewNamed("U64", ""),
+			Type:   rmeta.Uint64,
+			Size:   8,
+			EName:  "unsigned long",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("i8", ""),
-			Type:  rmeta.Int8,
-			Size:  1,
-			EName: "char",
+			Name:   *rbase.NewNamed("i8", ""),
+			Type:   rmeta.Int8,
+			Size:   1,
+			EName:  "char",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("i16", ""),
-			Type:  rmeta.Int16,
-			Size:  2,
-			EName: "short",
+			Name:   *rbase.NewNamed("i16", ""),
+			Type:   rmeta.Int16,
+			Size:   2,
+			EName:  "short",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("i32", ""),
-			Type:  rmeta.Int32,
-			Size:  4,
-			EName: "int",
+			Name:   *rbase.NewNamed("i32", ""),
+			Type:   rmeta.Int32,
+			Size:   4,
+			EName:  "int",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("i64", ""),
-			Type:  rmeta.Int64,
-			Size:  8,
-			EName: "long",
+			Name:   *rbase.NewNamed("i64", ""),
+			Type:   rmeta.Int64,
+			Size:   8,
+			EName:  "long",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("f32", ""),
-			Type:  rmeta.Float32,
-			Size:  4,
-			EName: "float",
+			Name:   *rbase.NewNamed("f32", ""),
+			Type:   rmeta.Float32,
+			Size:   4,
+			EName:  "float",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("f64", ""),
-			Type:  rmeta.Float64,
-			Size:  8,
-			EName: "double",
+			Name:   *rbase.NewNamed("f64", ""),
+			Type:   rmeta.Float64,
+			Size:   8,
+			EName:  "double",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("b", ""),
-			Type:  rmeta.Bool,
-			Size:  1,
-			EName: "bool",
+			Name:   *rbase.NewNamed("b", ""),
+			Type:   rmeta.Bool,
+			Size:   1,
+			EName:  "bool",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("bb", ""),
-			Type:  rmeta.Uint8,
-			Size:  1,
-			EName: "unsigned char",
+			Name:   *rbase.NewNamed("bb", ""),
+			Type:   rmeta.Uint8,
+			Size:   1,
+			EName:  "unsigned char",
+			ArrLen: 0,
+			ArrDim: 0,
 		}.New()},
 		rdict.NewStreamerSTL("u8s", rmeta.STLvector, 11),
 		rdict.NewStreamerSTL("u16s", rmeta.STLvector, 12),
@@ -157,85 +226,164 @@ func init() {
 		rdict.NewStreamerSTL("bs", rmeta.STLvector, 18),
 		rdict.NewStreamerSTL("bbs", rmeta.STLvector, 11),
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("arru8s", ""),
-			Type:  rmeta.Uint8 + rmeta.OffsetL,
-			Size:  10,
-			EName: "unsigned char",
+			Name:   *rbase.NewNamed("arru8s", ""),
+			Type:   rmeta.Uint8 + rmeta.OffsetL,
+			Size:   10,
+			EName:  "unsigned char",
+			ArrLen: 10,
+			ArrDim: 1,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("arru16s", ""),
-			Type:  rmeta.Uint16 + rmeta.OffsetL,
-			Size:  20,
-			EName: "unsigned short",
+			Name:   *rbase.NewNamed("arru16s", ""),
+			Type:   rmeta.Uint16 + rmeta.OffsetL,
+			Size:   20,
+			EName:  "unsigned short",
+			ArrLen: 10,
+			ArrDim: 1,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("arru32s", ""),
-			Type:  rmeta.Uint32 + rmeta.OffsetL,
-			Size:  40,
-			EName: "unsigned int",
+			Name:   *rbase.NewNamed("arru32s", ""),
+			Type:   rmeta.Uint32 + rmeta.OffsetL,
+			Size:   40,
+			EName:  "unsigned int",
+			ArrLen: 10,
+			ArrDim: 1,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("arru64s", ""),
-			Type:  rmeta.Uint64 + rmeta.OffsetL,
-			Size:  80,
-			EName: "unsigned long",
+			Name:   *rbase.NewNamed("arru64s", ""),
+			Type:   rmeta.Uint64 + rmeta.OffsetL,
+			Size:   80,
+			EName:  "unsigned long",
+			ArrLen: 10,
+			ArrDim: 1,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("arri8s", ""),
-			Type:  rmeta.Int8 + rmeta.OffsetL,
-			Size:  10,
-			EName: "char",
+			Name:   *rbase.NewNamed("arri8s", ""),
+			Type:   rmeta.Int8 + rmeta.OffsetL,
+			Size:   10,
+			EName:  "char",
+			ArrLen: 10,
+			ArrDim: 1,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("arri16s", ""),
-			Type:  rmeta.Int16 + rmeta.OffsetL,
-			Size:  20,
-			EName: "short",
+			Name:   *rbase.NewNamed("arri16s", ""),
+			Type:   rmeta.Int16 + rmeta.OffsetL,
+			Size:   20,
+			EName:  "short",
+			ArrLen: 10,
+			ArrDim: 1,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("arri32s", ""),
-			Type:  rmeta.Int32 + rmeta.OffsetL,
-			Size:  40,
-			EName: "int",
+			Name:   *rbase.NewNamed("arri32s", ""),
+			Type:   rmeta.Int32 + rmeta.OffsetL,
+			Size:   40,
+			EName:  "int",
+			ArrLen: 10,
+			ArrDim: 1,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("arri64s", ""),
-			Type:  rmeta.Int64 + rmeta.OffsetL,
-			Size:  80,
-			EName: "long",
+			Name:   *rbase.NewNamed("arri64s", ""),
+			Type:   rmeta.Int64 + rmeta.OffsetL,
+			Size:   80,
+			EName:  "long",
+			ArrLen: 10,
+			ArrDim: 1,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("arrf32s", ""),
-			Type:  rmeta.Float32 + rmeta.OffsetL,
-			Size:  40,
-			EName: "float",
+			Name:   *rbase.NewNamed("arrf32s", ""),
+			Type:   rmeta.Float32 + rmeta.OffsetL,
+			Size:   40,
+			EName:  "float",
+			ArrLen: 10,
+			ArrDim: 1,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("arrf64s", ""),
-			Type:  rmeta.Float64 + rmeta.OffsetL,
-			Size:  80,
-			EName: "double",
+			Name:   *rbase.NewNamed("arrf64s", ""),
+			Type:   rmeta.Float64 + rmeta.OffsetL,
+			Size:   80,
+			EName:  "double",
+			ArrLen: 10,
+			ArrDim: 1,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("arrbs", ""),
-			Type:  rmeta.Bool + rmeta.OffsetL,
-			Size:  10,
-			EName: "bool",
+			Name:   *rbase.NewNamed("arrbs", ""),
+			Type:   rmeta.Bool + rmeta.OffsetL,
+			Size:   10,
+			EName:  "bool",
+			ArrLen: 10,
+			ArrDim: 1,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("arrbbs", ""),
-			Type:  rmeta.Uint8 + rmeta.OffsetL,
-			Size:  10,
-			EName: "unsigned char",
+			Name:   *rbase.NewNamed("arrbbs", ""),
+			Type:   rmeta.Uint8 + rmeta.OffsetL,
+			Size:   10,
+			EName:  "unsigned char",
+			ArrLen: 10,
+			ArrDim: 1,
 		}.New()},
 		rdict.NewStreamerSTL("SliceF64", rmeta.STLvector, 8),
 		rdict.NewStreamerSTL("SliceStr", rmeta.STLvector, 65),
 		rdict.NewStreamerSTL("SliceHLV", rmeta.STLvector, 62),
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("ArrF64", ""),
-			Type:  rmeta.Float64 + rmeta.OffsetL,
-			Size:  80,
-			EName: "double",
+			Name:   *rbase.NewNamed("ArrF64", ""),
+			Type:   rmeta.Float64 + rmeta.OffsetL,
+			Size:   80,
+			EName:  "double",
+			ArrLen: 10,
+			ArrDim: 1,
 		}.New()},
 	}))
+}
+
+// MarshalROOT implements rbytes.Marshaler
+func (o *Event) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	pos := w.WriteVersion(o.RVersion())
+
+	w.WriteString(o.Name)
+	w.WriteU8(o.u8)
+	w.WriteU16(o.u16)
+	w.WriteU32(o.u32)
+	w.WriteU64(o.u64)
+	w.WriteI8(o.i8)
+	w.WriteI16(o.i16)
+	w.WriteI32(o.i32)
+	w.WriteI64(o.i64)
+	w.WriteF32(o.f32)
+	w.WriteF64(o.f64)
+	w.WriteBool(o.b)
+	w.WriteU8(o.bb)
+	w.WriteFastArrayU8(o.u8s)
+	w.WriteFastArrayU16(o.u16s)
+	w.WriteFastArrayU32(o.u32s)
+	w.WriteFastArrayU64(o.u64s)
+	w.WriteFastArrayI8(o.i8s)
+	w.WriteFastArrayI16(o.i16s)
+	w.WriteFastArrayI32(o.i32s)
+	w.WriteFastArrayI64(o.i64s)
+	w.WriteFastArrayF32(o.f32s)
+	w.WriteFastArrayF64(o.f64s)
+	w.WriteFastArrayBool(o.bs)
+	w.WriteFastArrayU8(o.bbs)
+	w.WriteFastArrayU8(o.arru8s[:])
+	w.WriteFastArrayU16(o.arru16s[:])
+	w.WriteFastArrayU32(o.arru32s[:])
+	w.WriteFastArrayU64(o.arru64s[:])
+	w.WriteFastArrayI8(o.arri8s[:])
+	w.WriteFastArrayI16(o.arri16s[:])
+	w.WriteFastArrayI32(o.arri32s[:])
+	w.WriteFastArrayI64(o.arri64s[:])
+	w.WriteFastArrayF32(o.arrf32s[:])
+	w.WriteFastArrayF64(o.arrf64s[:])
+	w.WriteFastArrayBool(o.arrbs[:])
+	w.WriteFastArrayU8(o.arrbbs[:])
+	w.WriteFastArrayF64(o.SliF64)
+	w.WriteFastArrayString(o.SliStr)
+	o.SliHLV.MarshalROOT(w)
+	w.WriteFastArrayF64(o.ArrF64[:])
+
+	return w.SetByteCount(pos, o.Class())
 }

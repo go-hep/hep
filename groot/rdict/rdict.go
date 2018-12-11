@@ -37,11 +37,11 @@ type StreamerInfo struct {
 	elems  []rbytes.StreamerElement
 }
 
-func NewStreamerInfo(name string, elems []rbytes.StreamerElement) *StreamerInfo {
+func NewStreamerInfo(name string, version int, elems []rbytes.StreamerElement) *StreamerInfo {
 	sinfos := &StreamerInfo{
-		named:  *rbase.NewNamed(name, name),
+		named:  *rbase.NewNamed(GoName2Cxx(name), "Go;"+name),
 		chksum: 0, // FIXME(sbinet): how to generate a stable and meaningful checksum?
-		clsver: 1, // FIXME(sbinet): how to properly handle class versions?
+		clsver: int32(version),
 		objarr: rcont.NewObjArray(),
 		elems:  elems,
 	}

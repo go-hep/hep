@@ -391,6 +391,21 @@ func (w *WBuffer) WriteString(v string) {
 	w.write([]byte(v))
 }
 
+func (w *WBuffer) writeString(v string) {
+	if w.err != nil {
+		return
+	}
+	l := len(v)
+	if l < 255 {
+		w.writeU8(uint8(l))
+		w.write([]byte(v))
+		return
+	}
+	w.writeU8(255)
+	w.writeU32(uint32(l))
+	w.write([]byte(v))
+}
+
 func (w *WBuffer) WriteCString(v string) {
 	if w.err != nil {
 		return
@@ -529,5 +544,28 @@ func (w *WBuffer) WriteFastArrayF64(v []float64) {
 	w.w.grow(len(v) * 8)
 	for _, v := range v {
 		w.writeF64(v)
+	}
+}
+
+func (w *WBuffer) strlen(v string) int {
+	l := len(v)
+	if l < 255 {
+		return 1 + l
+	}
+	return 1 + 4 + l
+}
+
+func (w *WBuffer) WriteFastArrayString(v []string) {
+	if w.err != nil {
+		return
+	}
+	n := 0
+	for _, v := range v {
+		n += w.strlen(v)
+	}
+	w.w.grow(n)
+
+	for _, v := range v {
+		w.writeString(v)
 	}
 }

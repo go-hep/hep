@@ -84,7 +84,14 @@ func (obj *Object) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	rv := reflect.Indirect(reflect.ValueOf(obj.v))
 	for i, rfunc := range obj.rfuncs {
-		recv := rv.Field(i).Addr().Interface()
+		rf := rv.Field(i)
+		switch rf.Kind() {
+		case reflect.Array:
+			rf = rf.Slice(0, rf.Len())
+		default:
+			rf = rf.Addr()
+		}
+		recv := rf.Interface()
 		err := rfunc(recv, r)
 		if err != nil {
 			return err
@@ -175,6 +182,9 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 			*(recv.(*string)) = r.ReadString()
 			return r.Err()
 		}
+	case *StreamerBasicPointer:
+		return genRStreamer(sictx, se.Type(), -1, recv)
+
 	}
 	return nil
 }
@@ -284,6 +294,30 @@ func genRStreamer(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int, recv
 
 	case rmeta.Counter:
 		return readInt
+
+	case rmeta.OffsetL + rmeta.Bool:
+		return readBools
+	case rmeta.OffsetL + rmeta.Uint8:
+		return readU8s
+	case rmeta.OffsetL + rmeta.Uint16:
+		return readU16s
+	case rmeta.OffsetL + rmeta.Uint32:
+		return readU32s
+	case rmeta.OffsetL + rmeta.Uint64:
+		return readU64s
+	case rmeta.OffsetL + rmeta.Int8:
+		return readI8s
+	case rmeta.OffsetL + rmeta.Int16:
+		return readI16s
+	case rmeta.OffsetL + rmeta.Int32:
+		return readI32s
+	case rmeta.OffsetL + rmeta.Int64:
+		return readI64s
+	case rmeta.OffsetL + rmeta.Float32:
+		return readF32s
+	case rmeta.OffsetL + rmeta.Float64:
+		return readF64s
+
 	}
 	panic("not implemented")
 }
@@ -346,6 +380,72 @@ func readF64(recv interface{}, r *rbytes.RBuffer) error {
 func readInt(recv interface{}, r *rbytes.RBuffer) error {
 	panic("not implemented")
 	*(recv.(*int)) = int(r.ReadI64())
+	return r.Err()
+}
+
+func readBools(recv interface{}, r *rbytes.RBuffer) error {
+	slice := recv.([]bool)
+	copy(slice[:], r.ReadFastArrayBool(len(slice)))
+	return r.Err()
+}
+
+func readU8s(recv interface{}, r *rbytes.RBuffer) error {
+	slice := recv.([]uint8)
+	copy(slice[:], r.ReadFastArrayU8(len(slice)))
+	return r.Err()
+}
+
+func readU16s(recv interface{}, r *rbytes.RBuffer) error {
+	slice := recv.([]uint16)
+	copy(slice[:], r.ReadFastArrayU16(len(slice)))
+	return r.Err()
+}
+
+func readU32s(recv interface{}, r *rbytes.RBuffer) error {
+	slice := recv.([]uint32)
+	copy(slice[:], r.ReadFastArrayU32(len(slice)))
+	return r.Err()
+}
+
+func readU64s(recv interface{}, r *rbytes.RBuffer) error {
+	slice := recv.([]uint64)
+	copy(slice[:], r.ReadFastArrayU64(len(slice)))
+	return r.Err()
+}
+
+func readI8s(recv interface{}, r *rbytes.RBuffer) error {
+	slice := recv.([]int8)
+	copy(slice[:], r.ReadFastArrayI8(len(slice)))
+	return r.Err()
+}
+
+func readI16s(recv interface{}, r *rbytes.RBuffer) error {
+	slice := recv.([]int16)
+	copy(slice[:], r.ReadFastArrayI16(len(slice)))
+	return r.Err()
+}
+
+func readI32s(recv interface{}, r *rbytes.RBuffer) error {
+	slice := recv.([]int32)
+	copy(slice[:], r.ReadFastArrayI32(len(slice)))
+	return r.Err()
+}
+
+func readI64s(recv interface{}, r *rbytes.RBuffer) error {
+	slice := recv.([]int64)
+	copy(slice[:], r.ReadFastArrayI64(len(slice)))
+	return r.Err()
+}
+
+func readF32s(recv interface{}, r *rbytes.RBuffer) error {
+	slice := recv.([]float32)
+	copy(slice[:], r.ReadFastArrayF32(len(slice)))
+	return r.Err()
+}
+
+func readF64s(recv interface{}, r *rbytes.RBuffer) error {
+	slice := recv.([]float64)
+	copy(slice[:], r.ReadFastArrayF64(len(slice)))
 	return r.Err()
 }
 

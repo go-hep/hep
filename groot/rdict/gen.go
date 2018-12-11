@@ -87,22 +87,31 @@ func (g *Generator) Generate(typeName string) {
 	}
 
 	g.genStreamer(typ, typeName)
-	// g.genMarshal(typ, typeName)
+	g.genMarshal(typ, typeName)
 	// g.genUnmarshal(typ, typeName)
 }
 
 func (g *Generator) genMarshal(t types.Type, typeName string) {
 	g.printf(`// MarshalROOT implements rbytes.Marshaler
 func (o *%[1]s) MarshalROOT(w *rbytes.WBuffer) (int, error) {
-	ws, err := w.WStreamer(o)
-	if err != nil {
-		return 0, err
+	if w.Err() != nil {
+		return 0, w.Err()
 	}
-	return ws.WStream(w)
-}
+
+	pos := w.WriteVersion(o.RVersion())
+
 `,
 		typeName,
 	)
+
+	typ := t.Underlying().(*types.Struct)
+	for i := 0; i < typ.NumFields(); i++ {
+		ft := typ.Field(i)
+		n := ft.Name() // no `groot:"foo"` redirection.
+		g.genMarshalType(ft.Type(), n)
+	}
+
+	g.printf("\n\treturn w.SetByteCount(pos, o.Class())\n}\n\n")
 }
 
 func (g *Generator) genUnmarshal(t types.Type, typeName string) {
@@ -122,7 +131,7 @@ func (o *%[1]s) UnmarshalROOT(r *rbytes.RBuffer) error {
 func (g *Generator) genStreamer(t types.Type, typeName string) {
 	g.printf(`func init() {
 	// Streamer for %[1]s.
-	rdict.Streamers.Add(rdict.NewStreamerInfo(%[2]q, []rbytes.StreamerElement{
+	rdict.Streamers.Add(rdict.NewStreamerInfo(%[2]q, int(((*%[1]s)(nil)).RVersion()), []rbytes.StreamerElement{
 `,
 		typeName,
 		g.pkg.Path()+"."+typeName,
@@ -150,27 +159,27 @@ func (g *Generator) genStreamerType(t types.Type, n string) {
 	case *types.Basic:
 		switch kind := ut.Kind(); kind {
 		case types.Bool:
-			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
+			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 0))
 		case types.Uint8:
-			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
+			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 0))
 		case types.Uint16:
-			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
+			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 0))
 		case types.Uint32, types.Uint:
-			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
+			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 0))
 		case types.Uint64:
-			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
+			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 0))
 		case types.Int8:
-			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
+			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 0))
 		case types.Int16:
-			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
+			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 0))
 		case types.Int32, types.Int:
-			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
+			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 0))
 		case types.Int64:
-			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
+			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 0))
 		case types.Float32:
-			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
+			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 0))
 		case types.Float64:
-			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 1))
+			g.printf("&rdict.StreamerBasicType{StreamerElement: %s},\n", g.se(ut, n, "", 0))
 		case types.Complex64:
 			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
 
@@ -178,7 +187,7 @@ func (g *Generator) genStreamerType(t types.Type, n string) {
 			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
 
 		case types.String:
-			g.printf("%s,\n", g.se(ut, n, "", 1))
+			g.printf("%s,\n", g.se(ut, n, "", 0))
 
 		default:
 			log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
@@ -206,87 +215,171 @@ func (g *Generator) genStreamerType(t types.Type, n string) {
 	}
 }
 
-func (g *Generator) se(t types.Type, n, rtype string, len int64) string {
+func (g *Generator) wt(t types.Type, n, meth, arr string) {
 	ut := t.Underlying()
 	switch ut := ut.(type) {
 	case *types.Basic:
 		switch kind := ut.Kind(); kind {
 		case types.Bool:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Bool %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+			g.printf("w.Write%sBool(o.%s%s)\n", meth, n, arr)
+		case types.Uint8:
+			g.printf("w.Write%sU8(o.%s%s)\n", meth, n, arr)
+		case types.Uint16:
+			g.printf("w.Write%sU16(o.%s%s)\n", meth, n, arr)
+		case types.Uint32:
+			g.printf("w.Write%sU32(o.%s%s)\n", meth, n, arr)
+		case types.Uint64:
+			g.printf("w.Write%sU64(o.%s%s)\n", meth, n, arr)
+		case types.Int8:
+			g.printf("w.Write%sI8(o.%s%s)\n", meth, n, arr)
+		case types.Int16:
+			g.printf("w.Write%sI16(o.%s%s)\n", meth, n, arr)
+		case types.Int32:
+			g.printf("w.Write%sI32(o.%s%s)\n", meth, n, arr)
+		case types.Int64:
+			g.printf("w.Write%sI64(o.%s%s)\n", meth, n, arr)
+		case types.Float32:
+			g.printf("w.Write%sF32(o.%s%s)\n", meth, n, arr)
+		case types.Float64:
+			g.printf("w.Write%sF64(o.%s%s)\n", meth, n, arr)
+
+		case types.Uint:
+			g.printf("w.Write%sU64(uint64(o.%s%s))\n", meth, n, arr)
+		case types.Int:
+			g.printf("w.Write%sI64(int64(o.%s%s))\n", meth, n, arr)
+
+		case types.Complex64:
+			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
+		case types.Complex128:
+			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
+
+		case types.String:
+			g.printf("w.Write%sString(o.%s%s)\n", meth, n, arr)
+
+		default:
+			log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
+		}
+
+	case *types.Struct:
+		g.printf("o.%s.MarshalROOT(w)\n", n)
+
+	default:
+		log.Fatalf("unhandled marshal type: %v (underlying %v)", t, ut)
+	}
+}
+
+func (g *Generator) se(t types.Type, n, rtype string, arrlen int64) string {
+	elmt := Element{
+		Size: 1,
+	}
+	if arrlen > 0 {
+		elmt.Size = int32(arrlen)
+		elmt.ArrLen = int32(arrlen)
+		elmt.ArrDim = 1
+	}
+
+	ut := t.Underlying()
+	switch ut := ut.(type) {
+	case *types.Basic:
+		switch kind := ut.Kind(); kind {
+		case types.Bool:
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Bool %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
-				1*len,
+				1*elmt.Size,
+				elmt.ArrLen,
+				elmt.ArrDim,
 			)
 		case types.Uint8:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint8 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint8 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
-				1*len,
+				1*elmt.Size,
+				elmt.ArrLen,
+				elmt.ArrDim,
 			)
 		case types.Uint16:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint16 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint16 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
-				2*len,
+				2*elmt.Size,
+				elmt.ArrLen,
+				elmt.ArrDim,
 			)
 		case types.Uint32, types.Uint:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
-				4*len,
+				4*elmt.Size,
+				elmt.ArrLen,
+				elmt.ArrDim,
 			)
 		case types.Uint64:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
-				8*len,
+				8*elmt.Size,
+				elmt.ArrLen,
+				elmt.ArrDim,
 			)
 		case types.Int8:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int8 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int8 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
-				1*len,
+				1*elmt.Size,
+				elmt.ArrLen,
+				elmt.ArrDim,
 			)
 		case types.Int16:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int16 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int16 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
-				2*len,
+				2*elmt.Size,
+				elmt.ArrLen,
+				elmt.ArrDim,
 			)
 		case types.Int32, types.Int:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
-				4*len,
+				4*elmt.Size,
+				elmt.ArrLen,
+				elmt.ArrDim,
 			)
 		case types.Int64:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
-				8*len,
+				8*elmt.Size,
+				elmt.ArrLen,
+				elmt.ArrDim,
 			)
 		case types.Float32:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
-				4*len,
+				4*elmt.Size,
+				elmt.ArrLen,
+				elmt.ArrDim,
 			)
 		case types.Float64:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
-				8*len,
+				8*elmt.Size,
+				elmt.ArrLen,
+				elmt.ArrDim,
 			)
 		case types.Complex64:
 			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
@@ -295,15 +388,86 @@ func (g *Generator) se(t types.Type, n, rtype string, len int64) string {
 			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
 
 		case types.String:
-			return fmt.Sprintf("&rdict.StreamerString{rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.TString %[4]s,\nSize: 24,\nEName:%[3]q,\n}.New()}",
+			return fmt.Sprintf("&rdict.StreamerString{rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.TString %[4]s,\nSize: 24,\nEName:%[3]q,\nArrLen:%[5]d,\nArrDim:%[6]d,\n}.New()}",
 				n, "",
 				"TString",
 				rtype,
+				elmt.ArrLen,
+				elmt.ArrDim,
 			)
 		}
+	case *types.Struct:
+		// FIXME(sbinet): implement.
+		// FIXME(sbinet): prevent recursion.
+		old := g.buf
+		g.buf = new(bytes.Buffer)
+		g.genStreamerType(t, n)
+		str := g.buf.String()
+		g.buf = old
+		return str
 	}
 
+	log.Printf("gen-streamer: unhandled type: %v (underlying %v)", t, ut)
 	return ""
+}
+
+func (g *Generator) genMarshalType(t types.Type, n string) {
+	ut := t.Underlying()
+	switch ut := ut.(type) {
+	case *types.Basic:
+		switch kind := ut.Kind(); kind {
+		case types.Bool:
+			g.wt(ut, n, "", "")
+		case types.Uint8:
+			g.wt(ut, n, "", "")
+		case types.Uint16:
+			g.wt(ut, n, "", "")
+		case types.Uint32:
+			g.wt(ut, n, "", "")
+		case types.Uint64:
+			g.wt(ut, n, "", "")
+		case types.Int8:
+			g.wt(ut, n, "", "")
+		case types.Int16:
+			g.wt(ut, n, "", "")
+		case types.Int32:
+			g.wt(ut, n, "", "")
+		case types.Int64:
+			g.wt(ut, n, "", "")
+		case types.Float32:
+			g.wt(ut, n, "", "")
+		case types.Float64:
+			g.wt(ut, n, "", "")
+
+		case types.Uint:
+			g.wt(ut, n, "", "")
+		case types.Int:
+			g.wt(ut, n, "", "")
+
+		case types.Complex64:
+			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
+		case types.Complex128:
+			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
+
+		case types.String:
+			g.wt(ut, n, "", "")
+
+		default:
+			log.Fatalf("unhandled type: %v (underlying: %v)\n", t, ut)
+		}
+
+	case *types.Array:
+		g.wt(ut.Elem(), n, "FastArray", "[:]")
+
+	case *types.Slice:
+		g.wt(ut.Elem(), n, "FastArray", "")
+
+	case *types.Struct:
+		g.printf("o.%s.MarshalROOT(w)\n", n)
+
+	default:
+		log.Fatalf("gen-marshal-type: unhandled type: %v (underlying: %v)\n", t, ut)
+	}
 }
 
 func (g *Generator) Format() ([]byte, error) {
