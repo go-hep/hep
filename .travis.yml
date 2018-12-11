@@ -16,8 +16,6 @@ git:
 
 matrix:
  fast_finish: true
- allow_failures:
-   - go: master
  include:
    - go: 1.9.x
      env:
@@ -28,7 +26,7 @@ matrix:
    - go: 1.11.x
      env:
        - TAGS="-tags travis"
-       - COVERAGE="-coverpkg=go-hep.org/x/hep/... -race -v"
+       - COVERAGE="-coverpkg=go-hep.org/x/hep/... -v"
    - go: master
      env:
        - TAGS="-tags travis"
