@@ -1,0 +1,14 @@
+>>> file[../../testdata/simple.root]
+key[000]: tree;1 "fake data" (TTree)
+[000][one]: 1
+[000][two]: 1.1
+[000][three]: uno
+[001][one]: 2
+[001][two]: 2.2
+[001][three]: dos
+[002][one]: 3
+[002][two]: 3.3
+[002][three]: tres
+[003][one]: 4
+[003][two]: 4.4
+[003][three]: quatro
