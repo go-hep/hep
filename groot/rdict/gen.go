@@ -12,6 +12,7 @@ import (
 	"go/types"
 	"log"
 	"reflect"
+	"strings"
 
 	"go-hep.org/x/hep/groot/rmeta"
 )
@@ -404,4 +405,34 @@ func gotype2RMeta(t types.Type) rmeta.Enum {
 		return rmeta.OffsetL + gotype2RMeta(ut.Elem())
 	}
 	return -1
+}
+
+// GoName2Cxx translates a fully-qualified Go type name to a C++ one.
+// e.g.:
+//  - go-hep.org/x/hep/hbook.H1D -> go_hep_org::x::hep::hbook::H1D
+func GoName2Cxx(name string) string {
+	repl := strings.NewReplacer(
+		"-", "_",
+		"/", "::",
+		".", "_",
+	)
+	i := strings.LastIndex(name, ".")
+	if i > 0 {
+		name = name[:i] + "::" + name[i+1:]
+	}
+	return repl.Replace(name)
+}
+
+// Typename returns a language dependant typename, usually encoded inside a
+// StreamerInfo's title.
+func Typename(name, title string) (string, bool) {
+	if title == "" {
+		return name, false
+	}
+	i := strings.Index(title, ";")
+	if i <= 0 {
+		return name, false
+	}
+	title = strings.TrimSpace(title[i+1:])
+	return title, true
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
+	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
@@ -382,7 +383,7 @@ func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 		rvers:    rvers.Key,
 		datetime: nowUTC(),
 		cycle:    cycle,
-		class:    typename,
+		class:    rdict.GoName2Cxx(typename),
 		name:     name,
 		title:    title,
 		obj:      obj,

@@ -680,6 +680,9 @@ func (f *File) StreamerInfo(name string, version int) (rbytes.StreamerInfo, erro
 		if si.Name() == name {
 			return si, nil
 		}
+		if _, ok := rdict.Typename(name, si.Title()); ok {
+			return si, nil
+		}
 	}
 
 	si, ok := rdict.Streamers.Get(name, version)

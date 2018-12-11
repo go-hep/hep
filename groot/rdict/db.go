@@ -45,6 +45,10 @@ func (db *streamerDb) Get(class string, vers int) (rbytes.StreamerInfo, bool) {
 		for k, v := range db.db {
 			if k.class == class {
 				slice = append(slice, v)
+				continue
+			}
+			if _, ok := Typename(class, v.Title()); ok {
+				slice = append(slice, v)
 			}
 		}
 		if len(slice) == 0 {
