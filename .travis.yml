@@ -26,7 +26,7 @@ matrix:
    - go: 1.11.x
      env:
        - TAGS="-tags travis"
-       - COVERAGE="-coverpkg=go-hep.org/x/hep/... -v"
+       - COVERAGE="-coverpkg=go-hep.org/x/hep/..."
    - go: master
      env:
        - TAGS="-tags travis"
