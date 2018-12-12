@@ -64,15 +64,12 @@ func streamerInfoFrom(obj root.Object, sictx streamerInfoStore) (rbytes.Streamer
 	return si, nil
 }
 
-var defaultStreamerInfos []rbytes.StreamerInfo
-
 func init() {
+	// load bootstrap streamers (core ROOT types, such as TObject, TFile, ...)
 	r := &memFile{bytes.NewReader(rstreamerspkg.Data)}
 	f, err := NewReader(r)
 	if err != nil {
 		return
 	}
 	defer f.Close()
-
-	defaultStreamerInfos = f.StreamerInfos()
 }

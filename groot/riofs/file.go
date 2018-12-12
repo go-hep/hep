@@ -8,6 +8,7 @@ import (
 	"compress/flate"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbytes"
@@ -106,6 +107,7 @@ type File struct {
 	dir    tdirectoryFile // root directory of this file
 	siKey  Key
 	sinfos []rbytes.StreamerInfo
+	simap  map[rbytes.StreamerInfo]struct{} // local set of streamers, when writing
 
 	spans freeList // list of free spans on file
 }
@@ -170,7 +172,8 @@ func Create(name string, opts ...FileOption) (*File, error) {
 		end:         kBEGIN,
 		units:       4,
 		compression: 1,
-		sinfos:      defaultStreamerInfos, // FIXME(sbinet): drop default streamers
+		sinfos:      nil,
+		simap:       make(map[rbytes.StreamerInfo]struct{}),
 	}
 	f.dir = *newDirectoryFile(name, f, nil)
 	f.spans.add(kBEGIN, kStartBigFile)
@@ -499,6 +502,11 @@ func (f *File) writeStreamerInfo() error {
 		rules  = rcont.NewList("listOfRules", nil)
 	)
 
+	err = f.findDepStreamers()
+	if err != nil {
+		return errors.Wrap(err, "riofs: could not find dependent streamers")
+	}
+
 	for _, si := range f.sinfos {
 		sinfos.Append(si)
 	}
@@ -527,6 +535,51 @@ func (f *File) writeStreamerInfo() error {
 	_, err = key.writeFile(f)
 	if err != nil {
 		return errors.Wrapf(err, "riofs: could not write StreamerInfo list key")
+	}
+
+	return nil
+}
+
+// findDepStreamers finds all the needed streamers for proper persistency.
+func (f *File) findDepStreamers() error {
+	type depsType struct {
+		name string
+		vers int
+	}
+
+	var (
+		deps []depsType
+		err  error
+	)
+
+	for _, si := range f.sinfos {
+		err = rdict.Visit(rdict.Streamers, si, func(depth int, se rbytes.StreamerElement) error {
+			switch se := se.(type) {
+			case *rdict.StreamerBase:
+				deps = append(deps, depsType{se.Name(), se.Base()})
+			case *rdict.StreamerObject, *rdict.StreamerObjectAny:
+				deps = append(deps, depsType{se.TypeName(), -1})
+			case *rdict.StreamerObjectPointer, *rdict.StreamerObjectAnyPointer:
+				deps = append(deps, depsType{strings.TrimRight(se.TypeName(), "*"), -1})
+			case *rdict.StreamerString, *rdict.StreamerSTLstring:
+				deps = append(deps, depsType{se.TypeName(), -1})
+			}
+			return nil
+		})
+		if err != nil {
+			return errors.Wrapf(err, "riofs: could not visit all dependent streamers for %#v", si)
+		}
+	}
+
+	for _, dep := range deps {
+		if isCoreType(dep.name) {
+			continue
+		}
+		sub, err := rdict.Streamers.StreamerInfo(dep.name, dep.vers)
+		if err != nil {
+			return errors.Wrapf(err, "riofs: could not find streamer for %q and version=%d", dep.name, dep.vers)
+		}
+		f.addStreamer(sub)
 	}
 
 	return nil
@@ -707,22 +760,15 @@ func (f *File) StreamerInfo(name string, version int) (rbytes.StreamerInfo, erro
 }
 
 func (f *File) addStreamer(streamer rbytes.StreamerInfo) {
-	var (
-		idx  = -1
-		name = streamer.Name()
-		chk  = streamer.CheckSum()
-	)
-
-	for i, si := range f.sinfos {
-		if si.Name() == name && si.CheckSum() == chk {
-			idx = i
-			break
-		}
-	}
-	if idx != -1 {
+	if isCoreType(streamer.Name()) {
 		return
 	}
 
+	if _, dup := f.simap[streamer]; dup {
+		return
+	}
+
+	f.simap[streamer] = struct{}{}
 	f.sinfos = append(f.sinfos, streamer)
 }
 

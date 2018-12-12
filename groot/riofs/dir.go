@@ -368,12 +368,12 @@ func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 		if err != nil {
 			si, err = streamerInfoFrom(obj, dir)
 			if err != nil {
-				return errors.Wrapf(err, "riofs: could not generate streamer for key")
+				return errors.Wrapf(err, "riofs: could not generate streamer for key %q and type %T", name, obj)
 			}
 			si, err = dir.StreamerInfo(typename, -1)
 		}
 		if err != nil {
-			panic(err)
+			return errors.Wrapf(err, "riofs: could not find streamer for %T", obj)
 		}
 		dir.addStreamer(si)
 	}

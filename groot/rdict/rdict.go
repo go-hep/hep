@@ -303,6 +303,11 @@ func (tsb *StreamerBase) Class() string {
 	return "TStreamerBase"
 }
 
+// Base returns the base class' version.
+func (tsb *StreamerBase) Base() int {
+	return int(tsb.vbase)
+}
+
 func (tsb *StreamerBase) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
 		return 0, w.Err()
