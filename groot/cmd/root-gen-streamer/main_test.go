@@ -27,7 +27,7 @@ func TestGenerate(t *testing.T) {
 	}{
 		{
 			pkg:   "go-hep.org/x/hep/groot/internal/rdatatest",
-			types: []string{"Particle", "HLV", "Event"},
+			types: []string{"Event", "HLV", "Particle"},
 			want:  "testdata/rdatatest.txt",
 		},
 	} {

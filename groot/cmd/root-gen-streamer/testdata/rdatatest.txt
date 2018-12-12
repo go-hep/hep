@@ -10,103 +10,6 @@ import (
 )
 
 func init() {
-	// Streamer for Particle.
-	rdict.Streamers.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.Particle", int(((*Particle)(nil)).RVersion()), []rbytes.StreamerElement{
-		&rdict.StreamerString{rdict.Element{
-			Name:   *rbase.NewNamed("name", ""),
-			Type:   rmeta.TString,
-			Size:   24,
-			EName:  "TString",
-			ArrLen: 0,
-			ArrDim: 0,
-		}.New()},
-		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:   *rbase.NewNamed("pid", ""),
-			Type:   rmeta.Int32,
-			Size:   4,
-			EName:  "int",
-			ArrLen: 0,
-			ArrDim: 0,
-		}.New()},
-		&rdict.StreamerObjectAny{StreamerElement: rdict.Element{
-			Name:  *rbase.NewNamed("mom", ""),
-			Type:  rmeta.Any,
-			Size:  32,
-			EName: rdict.GoName2Cxx("go-hep.org/x/hep/groot/internal/rdatatest.HLV"),
-		}.New()},
-	}))
-}
-
-// MarshalROOT implements rbytes.Marshaler
-func (o *Particle) MarshalROOT(w *rbytes.WBuffer) (int, error) {
-	if w.Err() != nil {
-		return 0, w.Err()
-	}
-
-	pos := w.WriteVersion(o.RVersion())
-
-	w.WriteString(o.name)
-	w.WriteI64(int64(o.pid))
-	o.mom.MarshalROOT(w)
-
-	return w.SetByteCount(pos, o.Class())
-}
-
-func init() {
-	// Streamer for HLV.
-	rdict.Streamers.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.HLV", int(((*HLV)(nil)).RVersion()), []rbytes.StreamerElement{
-		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:   *rbase.NewNamed("px", ""),
-			Type:   rmeta.Float64,
-			Size:   8,
-			EName:  "double",
-			ArrLen: 0,
-			ArrDim: 0,
-		}.New()},
-		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:   *rbase.NewNamed("py", ""),
-			Type:   rmeta.Float64,
-			Size:   8,
-			EName:  "double",
-			ArrLen: 0,
-			ArrDim: 0,
-		}.New()},
-		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:   *rbase.NewNamed("pz", ""),
-			Type:   rmeta.Float64,
-			Size:   8,
-			EName:  "double",
-			ArrLen: 0,
-			ArrDim: 0,
-		}.New()},
-		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:   *rbase.NewNamed("e", ""),
-			Type:   rmeta.Float64,
-			Size:   8,
-			EName:  "double",
-			ArrLen: 0,
-			ArrDim: 0,
-		}.New()},
-	}))
-}
-
-// MarshalROOT implements rbytes.Marshaler
-func (o *HLV) MarshalROOT(w *rbytes.WBuffer) (int, error) {
-	if w.Err() != nil {
-		return 0, w.Err()
-	}
-
-	pos := w.WriteVersion(o.RVersion())
-
-	w.WriteF64(o.px)
-	w.WriteF64(o.py)
-	w.WriteF64(o.pz)
-	w.WriteF64(o.e)
-
-	return w.SetByteCount(pos, o.Class())
-}
-
-func init() {
 	// Streamer for Event.
 	rdict.Streamers.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.Event", int(((*Event)(nil)).RVersion()), []rbytes.StreamerElement{
 		&rdict.StreamerString{rdict.Element{
@@ -213,18 +116,18 @@ func init() {
 			ArrLen: 0,
 			ArrDim: 0,
 		}.New()},
-		rdict.NewStreamerSTL("u8s", rmeta.STLvector, 11),
-		rdict.NewStreamerSTL("u16s", rmeta.STLvector, 12),
-		rdict.NewStreamerSTL("u32s", rmeta.STLvector, 13),
-		rdict.NewStreamerSTL("u64s", rmeta.STLvector, 14),
-		rdict.NewStreamerSTL("i8s", rmeta.STLvector, 1),
-		rdict.NewStreamerSTL("i16s", rmeta.STLvector, 2),
-		rdict.NewStreamerSTL("i32s", rmeta.STLvector, 3),
-		rdict.NewStreamerSTL("i64s", rmeta.STLvector, 4),
-		rdict.NewStreamerSTL("f32s", rmeta.STLvector, 5),
-		rdict.NewStreamerSTL("f64s", rmeta.STLvector, 8),
-		rdict.NewStreamerSTL("bs", rmeta.STLvector, 18),
-		rdict.NewStreamerSTL("bbs", rmeta.STLvector, 11),
+		rdict.NewStreamerSTL("u8s", rmeta.STLvector, rmeta.UChar),
+		rdict.NewStreamerSTL("u16s", rmeta.STLvector, rmeta.UShort),
+		rdict.NewStreamerSTL("u32s", rmeta.STLvector, rmeta.UInt),
+		rdict.NewStreamerSTL("u64s", rmeta.STLvector, rmeta.ULong),
+		rdict.NewStreamerSTL("i8s", rmeta.STLvector, rmeta.Char),
+		rdict.NewStreamerSTL("i16s", rmeta.STLvector, rmeta.Short),
+		rdict.NewStreamerSTL("i32s", rmeta.STLvector, rmeta.Int),
+		rdict.NewStreamerSTL("i64s", rmeta.STLvector, rmeta.Long),
+		rdict.NewStreamerSTL("f32s", rmeta.STLvector, rmeta.Float),
+		rdict.NewStreamerSTL("f64s", rmeta.STLvector, rmeta.Double),
+		rdict.NewStreamerSTL("bs", rmeta.STLvector, rmeta.Bool),
+		rdict.NewStreamerSTL("bbs", rmeta.STLvector, rmeta.UChar),
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("arru8s", ""),
 			Type:   rmeta.Uint8 + rmeta.OffsetL,
@@ -321,9 +224,9 @@ func init() {
 			ArrLen: 10,
 			ArrDim: 1,
 		}.New()},
-		rdict.NewStreamerSTL("SliceF64", rmeta.STLvector, 8),
-		rdict.NewStreamerSTL("SliceStr", rmeta.STLvector, 65),
-		rdict.NewStreamerSTL("SliceHLV", rmeta.STLvector, 62),
+		rdict.NewStreamerSTL("SliceF64", rmeta.STLvector, rmeta.Double),
+		rdict.NewStreamerSTL("SliceStr", rmeta.STLvector, rmeta.TString),
+		rdict.NewStreamerSTL("SliceHLV", rmeta.STLvector, rmeta.Any),
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("ArrF64", ""),
 			Type:   rmeta.Float64 + rmeta.OffsetL,
@@ -384,6 +287,103 @@ func (o *Event) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteFastArrayString(o.SliStr)
 	o.SliHLV.MarshalROOT(w)
 	w.WriteFastArrayF64(o.ArrF64[:])
+
+	return w.SetByteCount(pos, o.Class())
+}
+
+func init() {
+	// Streamer for HLV.
+	rdict.Streamers.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.HLV", int(((*HLV)(nil)).RVersion()), []rbytes.StreamerElement{
+		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
+			Name:   *rbase.NewNamed("px", ""),
+			Type:   rmeta.Float64,
+			Size:   8,
+			EName:  "double",
+			ArrLen: 0,
+			ArrDim: 0,
+		}.New()},
+		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
+			Name:   *rbase.NewNamed("py", ""),
+			Type:   rmeta.Float64,
+			Size:   8,
+			EName:  "double",
+			ArrLen: 0,
+			ArrDim: 0,
+		}.New()},
+		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
+			Name:   *rbase.NewNamed("pz", ""),
+			Type:   rmeta.Float64,
+			Size:   8,
+			EName:  "double",
+			ArrLen: 0,
+			ArrDim: 0,
+		}.New()},
+		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
+			Name:   *rbase.NewNamed("e", ""),
+			Type:   rmeta.Float64,
+			Size:   8,
+			EName:  "double",
+			ArrLen: 0,
+			ArrDim: 0,
+		}.New()},
+	}))
+}
+
+// MarshalROOT implements rbytes.Marshaler
+func (o *HLV) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	pos := w.WriteVersion(o.RVersion())
+
+	w.WriteF64(o.px)
+	w.WriteF64(o.py)
+	w.WriteF64(o.pz)
+	w.WriteF64(o.e)
+
+	return w.SetByteCount(pos, o.Class())
+}
+
+func init() {
+	// Streamer for Particle.
+	rdict.Streamers.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.Particle", int(((*Particle)(nil)).RVersion()), []rbytes.StreamerElement{
+		&rdict.StreamerString{rdict.Element{
+			Name:   *rbase.NewNamed("name", ""),
+			Type:   rmeta.TString,
+			Size:   24,
+			EName:  "TString",
+			ArrLen: 0,
+			ArrDim: 0,
+		}.New()},
+		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
+			Name:   *rbase.NewNamed("pid", ""),
+			Type:   rmeta.Int32,
+			Size:   4,
+			EName:  "int",
+			ArrLen: 0,
+			ArrDim: 0,
+		}.New()},
+		&rdict.StreamerObjectAny{StreamerElement: rdict.Element{
+			Name:  *rbase.NewNamed("mom", ""),
+			Type:  rmeta.Any,
+			Size:  32,
+			EName: rdict.GoName2Cxx("go-hep.org/x/hep/groot/internal/rdatatest.HLV"),
+		}.New()},
+	}))
+}
+
+// MarshalROOT implements rbytes.Marshaler
+func (o *Particle) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	pos := w.WriteVersion(o.RVersion())
+
+	w.WriteString(o.name)
+	w.WriteI64(int64(o.pid))
+	o.mom.MarshalROOT(w)
 
 	return w.SetByteCount(pos, o.Class())
 }

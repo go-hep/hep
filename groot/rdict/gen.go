@@ -195,13 +195,21 @@ func (g *Generator) genStreamerType(t types.Type, n string) {
 
 	case *types.Array:
 		// FIXME(sbinet): collect+visit element type.
-		g.printf(
-			"&rdict.StreamerBasicType{StreamerElement: %s},\n",
-			g.se(ut.Elem(), n, "+ rmeta.OffsetL", ut.Len()),
-		)
+		switch ut.Elem().Underlying().(type) {
+		case *types.Basic:
+			g.printf(
+				"&rdict.StreamerBasicType{StreamerElement: %s},\n",
+				g.se(ut.Elem(), n, "+ rmeta.OffsetL", ut.Len()),
+			)
+		default:
+			g.printf(
+				"%s\n",
+				g.se(ut.Elem(), n, "+ rmeta.OffsetL", ut.Len()),
+			)
+		}
 	case *types.Slice:
 		// FIXME(sbinet): collect+visit element type.
-		g.printf("rdict.NewStreamerSTL(%q, rmeta.STLvector, %d),\n", n, gotype2RMeta(ut.Elem()))
+		g.printf("rdict.NewStreamerSTL(%q, rmeta.STLvector, rmeta.%v),\n", n, gotype2RMeta(ut.Elem()))
 
 	case *types.Struct:
 		g.printf(
@@ -457,7 +465,14 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 		}
 
 	case *types.Array:
-		g.wt(ut.Elem(), n, "FastArray", "[:]")
+		switch ut.Elem().Underlying().(type) {
+		case *types.Basic:
+			g.wt(ut.Elem(), n, "FastArray", "[:]")
+		default:
+			g.printf("for i := range o.%s {\n", n)
+			g.wt(ut.Elem(), n+"[i]", "", "")
+			g.printf("}\n")
+		}
 
 	case *types.Slice:
 		g.wt(ut.Elem(), n, "FastArray", "")
