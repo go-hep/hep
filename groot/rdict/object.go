@@ -125,6 +125,12 @@ type counter interface {
 }
 
 func genTypeFromSI(sictx rbytes.StreamerInfoContext, si rbytes.StreamerInfo) reflect.Type {
+	if rtypes.Factory.HasKey(si.Name()) {
+		fct := rtypes.Factory.Get(si.Name())
+		v := fct()
+		return v.Type().Elem()
+	}
+
 	var fields = make([]reflect.StructField, 0, len(si.Elements()))
 	for _, se := range si.Elements() {
 		rt := genTypeFromSE(sictx, se)
@@ -142,6 +148,12 @@ func genTypeFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement) 
 	switch se := se.(type) {
 	default:
 		panic(errors.Errorf("rdict: unknown streamer element: %#v (%T)", se, se))
+	case *StreamerBase:
+		si, err := sictx.StreamerInfo(se.Name(), -1)
+		if err != nil {
+			panic(err)
+		}
+		return genTypeFromSI(sictx, si)
 	case *StreamerBasicType:
 		return genType(sictx, se.Type(), se.ArrayLen())
 	case *StreamerString:
@@ -150,6 +162,12 @@ func genTypeFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement) 
 		return genType(sictx, se.Type(), -1)
 	case *StreamerSTLstring:
 		return gotypes[reflect.String]
+	case *StreamerObjectAny:
+		si, err := sictx.StreamerInfo(se.TypeName(), -1)
+		if err != nil {
+			panic(err)
+		}
+		return genTypeFromSI(sictx, si)
 	case *StreamerSTL:
 		switch se.STLVectorType() {
 		case rmeta.STLvector:
@@ -161,6 +179,14 @@ func genTypeFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement) 
 }
 
 func genRStreamerFromSI(sictx rbytes.StreamerInfoContext, si rbytes.StreamerInfo, recv reflect.Value) []rfunc {
+	if _, ok := recv.Interface().(rbytes.Unmarshaler); ok {
+		var funcs []rfunc
+		funcs = append(funcs, func(recv interface{}, r *rbytes.RBuffer) error {
+			return recv.(rbytes.Unmarshaler).UnmarshalROOT(r)
+		})
+		return funcs
+	}
+
 	var funcs = make([]rfunc, 0, len(si.Elements()))
 
 	for i, se := range si.Elements() {
@@ -172,9 +198,49 @@ func genRStreamerFromSI(sictx rbytes.StreamerInfoContext, si rbytes.StreamerInfo
 }
 
 func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement, recv reflect.Value) rfunc {
+	if _, ok := recv.Interface().(rbytes.Unmarshaler); ok {
+		return func(recv interface{}, r *rbytes.RBuffer) error {
+			return recv.(rbytes.Unmarshaler).UnmarshalROOT(r)
+		}
+	}
+
 	switch se := se.(type) {
 	default:
 		panic(errors.Errorf("rdict: unknown read-streamer element: %#v (%T)", se, se))
+	case *StreamerBase:
+		typename := se.Name()
+		si, err := sictx.StreamerInfo(typename, -1)
+		if err != nil {
+			panic(err)
+		}
+		typevers := int16(si.ClassVersion())
+		fs := genRStreamerFromSI(sictx, si, recv)
+		return func(recv interface{}, r *rbytes.RBuffer) error {
+			rv := reflect.Indirect(reflect.ValueOf(recv))
+			beg := r.Pos()
+			vers, pos, bcnt := r.ReadVersion()
+			if vers != typevers {
+				r.SetErr(errors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
+				return r.Err()
+			}
+
+			for i, ff := range fs {
+				rf := rv.Field(i)
+				switch rf.Kind() {
+				case reflect.Array:
+					rf = rf.Slice(0, rf.Len())
+				default:
+					rf = rf.Addr()
+				}
+				err := ff(rf.Interface(), r)
+				if err != nil {
+					return err
+				}
+			}
+
+			r.CheckByteCount(pos, bcnt, beg, typename)
+			return r.Err()
+		}
 	case *StreamerBasicType:
 		return genRStreamer(sictx, se.Type(), se.ArrayLen(), recv)
 	case *StreamerString:
@@ -185,6 +251,45 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 	case *StreamerBasicPointer:
 		return genRStreamer(sictx, se.Type(), -1, recv)
 
+	case *StreamerSTLstring:
+		return func(recv interface{}, r *rbytes.RBuffer) error {
+			*(recv.(*string)) = r.ReadString()
+			return r.Err()
+		}
+	case *StreamerObjectAny:
+		typename := se.TypeName()
+		si, err := sictx.StreamerInfo(typename, -1)
+		if err != nil {
+			panic(err)
+		}
+		typevers := int16(si.ClassVersion())
+		fs := genRStreamerFromSI(sictx, si, recv)
+		return func(recv interface{}, r *rbytes.RBuffer) error {
+			rv := reflect.Indirect(reflect.ValueOf(recv))
+			beg := r.Pos()
+			vers, pos, bcnt := r.ReadVersion()
+			if vers != typevers {
+				r.SetErr(errors.Errorf("rdict: inconsistent ROOT version (got=%d, want=%d)", vers, typevers))
+				return r.Err()
+			}
+
+			for i, ff := range fs {
+				rf := rv.Field(i)
+				switch rf.Kind() {
+				case reflect.Array:
+					rf = rf.Slice(0, rf.Len())
+				default:
+					rf = rf.Addr()
+				}
+				err := ff(rf.Interface(), r)
+				if err != nil {
+					return err
+				}
+			}
+
+			r.CheckByteCount(pos, bcnt, beg, typename)
+			return r.Err()
+		}
 	}
 	return nil
 }
@@ -197,7 +302,7 @@ func genType(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int) reflect.T
 		return gotypes[reflect.Uint8]
 	case rmeta.Uint16:
 		return gotypes[reflect.Uint16]
-	case rmeta.Uint32:
+	case rmeta.Uint32, rmeta.Bits:
 		return gotypes[reflect.Uint32]
 	case rmeta.Uint64:
 		return gotypes[reflect.Uint64]
@@ -264,7 +369,7 @@ func genType(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int) reflect.T
 		return reflect.SliceOf(gotypes[reflect.Float64])
 
 	}
-	panic("not implemented")
+	panic(errors.Errorf("rmeta=%d not implemented (n=%v)", enum, n))
 }
 
 func genRStreamer(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int, recv reflect.Value) rfunc {
@@ -275,7 +380,7 @@ func genRStreamer(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int, recv
 		return readU8
 	case rmeta.Uint16:
 		return readU16
-	case rmeta.Uint32:
+	case rmeta.Uint32, rmeta.Bits:
 		return readU32
 	case rmeta.Uint64:
 		return readU64
