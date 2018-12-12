@@ -32,7 +32,7 @@ func init() {
 			Name:  *rbase.NewNamed("mom", ""),
 			Type:  rmeta.Any,
 			Size:  32,
-			EName: "go-hep.org/x/hep/groot/internal/rdatatest.HLV",
+			EName: rdict.GoName2Cxx("go-hep.org/x/hep/groot/internal/rdatatest.HLV"),
 		}.New()},
 	}))
 }

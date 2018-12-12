@@ -53,9 +53,17 @@ func streamerInfoFrom(obj root.Object, sictx streamerInfoStore) (rbytes.Streamer
 	}
 	defer f.Close()
 
-	// FIXME(sbinet): should we make sure we load the correct version ?
-	// or is it okay to just always load the latest one?
-	si, err := f.StreamerInfo(obj.Class(), -1)
+	var (
+		typename = obj.Class()
+		cxxtype  = rdict.GoName2Cxx(typename)
+		vers     = -1
+	)
+
+	if o, ok := obj.(rbytes.RVersioner); ok {
+		vers = int(o.RVersion())
+	}
+
+	si, err := f.StreamerInfo(cxxtype, vers)
 	if err != nil {
 		return nil, err
 	}

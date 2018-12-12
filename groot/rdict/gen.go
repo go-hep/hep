@@ -205,7 +205,7 @@ func (g *Generator) genStreamerType(t types.Type, n string) {
 
 	case *types.Struct:
 		g.printf(
-			"&rdict.StreamerObjectAny{StreamerElement:rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Any,\nSize: %[4]d,\nEName:%[3]q,\n}.New()},\n",
+			"&rdict.StreamerObjectAny{StreamerElement:rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Any,\nSize: %[4]d,\nEName:rdict.GoName2Cxx(%[3]q),\n}.New()},\n",
 			n, "",
 			t.String(), gosizes.Sizeof(ut),
 		)
@@ -587,7 +587,7 @@ func GoName2Cxx(name string) string {
 	return repl.Replace(name)
 }
 
-// Typename returns a language dependant typename, usually encoded inside a
+// Typename returns a language dependent typename, usually encoded inside a
 // StreamerInfo's title.
 func Typename(name, title string) (string, bool) {
 	if title == "" {
@@ -597,6 +597,12 @@ func Typename(name, title string) (string, bool) {
 	if i <= 0 {
 		return name, false
 	}
+	lang := title[:i]
 	title = strings.TrimSpace(title[i+1:])
-	return title, true
+	switch lang {
+	case "Go":
+		return title, GoName2Cxx(title) == name
+	default:
+		return title, false
+	}
 }

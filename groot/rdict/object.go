@@ -59,7 +59,7 @@ func (obj *Object) SetClass(name string) {
 	if !ok {
 		panic(errors.Errorf("rdict: no streamer for %q", name))
 	}
-	*obj = *newObjectFrom(si, nil)
+	*obj = *newObjectFrom(si, Streamers)
 }
 
 func (obj *Object) String() string {

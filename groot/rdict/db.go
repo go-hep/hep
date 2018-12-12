@@ -47,7 +47,11 @@ func (db *streamerDb) Get(class string, vers int) (rbytes.StreamerInfo, bool) {
 				slice = append(slice, v)
 				continue
 			}
-			if _, ok := Typename(class, v.Title()); ok {
+			title := v.Title()
+			if title == "" {
+				continue
+			}
+			if name, ok := Typename(class, title); ok && name == class {
 				slice = append(slice, v)
 			}
 		}
