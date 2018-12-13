@@ -25,6 +25,7 @@ import (
 
 var (
 	ptrSize = 4 << (^uintptr(0) >> 63)
+	intSize = int(reflect.TypeOf(int(0)).Size())
 
 	reStdVector = regexp.MustCompile("^vector<(.+)>$")
 )
@@ -670,6 +671,7 @@ func NewStreamerSTL(name string, vtype rmeta.ESTLType, ctype rmeta.Enum) *Stream
 	return &StreamerSTL{
 		StreamerElement: StreamerElement{
 			named: *rbase.NewNamed(name, ""),
+			esize: int32(ptrSize + 2*intSize),
 			ename: rmeta.STLNameFor(vtype, ctype),
 			etype: rmeta.Streamer,
 		},

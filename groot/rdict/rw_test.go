@@ -195,7 +195,7 @@ func TestWRBuffer(t *testing.T) {
 				StreamerElement: StreamerElement{
 					named: *rbase.NewNamed("fStdSet", "A std::set<int>"),
 					etype: rmeta.STL,
-					ename: "std::set<int>",
+					ename: "set<int>",
 				},
 				vtype: rmeta.STLset,
 				ctype: rmeta.Int,
@@ -207,7 +207,7 @@ func TestWRBuffer(t *testing.T) {
 				StreamerElement: StreamerElement{
 					named: *rbase.NewNamed("fStdMultimap", "A std::multimap<int,int>"),
 					etype: rmeta.STL,
-					ename: "std::multimap<int,int>",
+					ename: "multimap<int,int>",
 				},
 				vtype: rmeta.STLmultimap,
 				ctype: rmeta.Int,
@@ -220,7 +220,7 @@ func TestWRBuffer(t *testing.T) {
 					StreamerElement: StreamerElement{
 						named: *rbase.NewNamed("fStdString", "A std::string"),
 						etype: rmeta.STL,
-						ename: "std::string",
+						ename: "string",
 					},
 					vtype: rmeta.STLany,
 					ctype: rmeta.STLstring,
@@ -295,7 +295,8 @@ func TestNewStreamerSTL(t *testing.T) {
 			want: &StreamerSTL{
 				StreamerElement: StreamerElement{
 					named: *rbase.NewNamed("v", ""),
-					ename: "std::vector<int>",
+					esize: int32(ptrSize + 2*intSize),
+					ename: "vector<int>",
 					etype: rmeta.Streamer,
 				},
 				vtype: rmeta.STLvector,
@@ -309,7 +310,8 @@ func TestNewStreamerSTL(t *testing.T) {
 			want: &StreamerSTL{
 				StreamerElement: StreamerElement{
 					named: *rbase.NewNamed("v", ""),
-					ename: "std::vector<double>",
+					esize: int32(ptrSize + 2*intSize),
+					ename: "vector<double>",
 					etype: rmeta.Streamer,
 				},
 				vtype: rmeta.STLvector,
@@ -323,7 +325,8 @@ func TestNewStreamerSTL(t *testing.T) {
 			want: &StreamerSTL{
 				StreamerElement: StreamerElement{
 					named: *rbase.NewNamed("v", ""),
-					ename: "std::vector<TString>",
+					esize: int32(ptrSize + 2*intSize),
+					ename: "vector<TString>",
 					etype: rmeta.Streamer,
 				},
 				vtype: rmeta.STLvector,
@@ -337,7 +340,8 @@ func TestNewStreamerSTL(t *testing.T) {
 			want: &StreamerSTL{
 				StreamerElement: StreamerElement{
 					named: *rbase.NewNamed("v", ""),
-					ename: "std::vector<std::string>",
+					esize: int32(ptrSize + 2*intSize),
+					ename: "vector<string>",
 					etype: rmeta.Streamer,
 				},
 				vtype: rmeta.STLvector,
@@ -351,7 +355,8 @@ func TestNewStreamerSTL(t *testing.T) {
 			want: &StreamerSTL{
 				StreamerElement: StreamerElement{
 					named: *rbase.NewNamed("v", ""),
-					ename: "std::list<unsigned int>",
+					esize: int32(ptrSize + 2*intSize),
+					ename: "list<unsigned int>",
 					etype: rmeta.Streamer,
 				},
 				vtype: rmeta.STLlist,
@@ -365,7 +370,8 @@ func TestNewStreamerSTL(t *testing.T) {
 			want: &StreamerSTL{
 				StreamerElement: StreamerElement{
 					named: *rbase.NewNamed("v", ""),
-					ename: "std::deque<unsigned int>",
+					esize: int32(ptrSize + 2*intSize),
+					ename: "deque<unsigned int>",
 					etype: rmeta.Streamer,
 				},
 				vtype: rmeta.STLdeque,
@@ -379,7 +385,8 @@ func TestNewStreamerSTL(t *testing.T) {
 			want: &StreamerSTL{
 				StreamerElement: StreamerElement{
 					named: *rbase.NewNamed("v", ""),
-					ename: "std::set<unsigned int>",
+					esize: int32(ptrSize + 2*intSize),
+					ename: "set<unsigned int>",
 					etype: rmeta.Streamer,
 				},
 				vtype: rmeta.STLset,
@@ -393,7 +400,8 @@ func TestNewStreamerSTL(t *testing.T) {
 			want: &StreamerSTL{
 				StreamerElement: StreamerElement{
 					named: *rbase.NewNamed("v", ""),
-					ename: "std::multiset<unsigned int>",
+					esize: int32(ptrSize + 2*intSize),
+					ename: "multiset<unsigned int>",
 					etype: rmeta.Streamer,
 				},
 				vtype: rmeta.STLmultiset,
@@ -407,7 +415,8 @@ func TestNewStreamerSTL(t *testing.T) {
 			want: &StreamerSTL{
 				StreamerElement: StreamerElement{
 					named: *rbase.NewNamed("v", ""),
-					ename: "std::unordered_set<unsigned int>",
+					esize: int32(ptrSize + 2*intSize),
+					ename: "unordered_set<unsigned int>",
 					etype: rmeta.Streamer,
 				},
 				vtype: rmeta.STLunorderedset,
@@ -421,7 +430,8 @@ func TestNewStreamerSTL(t *testing.T) {
 			want: &StreamerSTL{
 				StreamerElement: StreamerElement{
 					named: *rbase.NewNamed("v", ""),
-					ename: "std::unordered_multiset<unsigned int>",
+					esize: int32(ptrSize + 2*intSize),
+					ename: "unordered_multiset<unsigned int>",
 					etype: rmeta.Streamer,
 				},
 				vtype: rmeta.STLunorderedmultiset,
@@ -435,7 +445,8 @@ func TestNewStreamerSTL(t *testing.T) {
 			want: &StreamerSTL{
 				StreamerElement: StreamerElement{
 					named: *rbase.NewNamed("v", ""),
-					ename: "std::forward_list<unsigned int>",
+					esize: int32(ptrSize + 2*intSize),
+					ename: "forward_list<unsigned int>",
 					etype: rmeta.Streamer,
 				},
 				vtype: rmeta.STLforwardlist,

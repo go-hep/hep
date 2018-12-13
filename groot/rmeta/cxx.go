@@ -139,31 +139,31 @@ func STLNameFor(vtype ESTLType, ctype Enum) string {
 	typfmt := "%s"
 	switch vtype {
 	case STLvector:
-		typfmt = "std::vector<%s>"
+		typfmt = "vector<%s>"
 	case STLlist:
-		typfmt = "std::list<%s>"
+		typfmt = "list<%s>"
 	case STLdeque:
-		typfmt = "std::deque<%s>"
+		typfmt = "deque<%s>"
 	case STLmap:
-		typfmt = "std::map<%s>"
+		typfmt = "map<%s>"
 	case STLmultimap:
-		typfmt = "std::multimap<%s>"
+		typfmt = "multimap<%s>"
 	case STLset:
-		typfmt = "std::set<%s>"
+		typfmt = "set<%s>"
 	case STLmultiset:
-		typfmt = "std::multiset<%s>"
+		typfmt = "multiset<%s>"
 	case STLbitset:
-		typfmt = "std::bitset<%s>"
+		typfmt = "bitset<%s>"
 	case STLforwardlist:
-		typfmt = "std::forward_list<%s>"
+		typfmt = "forward_list<%s>"
 	case STLunorderedset:
-		typfmt = "std::unordered_set<%s>"
+		typfmt = "unordered_set<%s>"
 	case STLunorderedmultiset:
-		typfmt = "std::unordered_multiset<%s>"
+		typfmt = "unordered_multiset<%s>"
 	case STLunorderedmap:
-		typfmt = "std::unordered_map<%s>"
+		typfmt = "unordered_map<%s>"
 	case STLunorderedmultimap:
-		typfmt = "std::unordered_multimap<%s>"
+		typfmt = "unordered_multimap<%s>"
 	}
 
 	return fmt.Sprintf(typfmt, ename)
@@ -216,7 +216,7 @@ func rmeta2Name(t Enum) string {
 	case TNamed:
 		return "TNamed"
 	case STLstring:
-		return "std::string"
+		return "string"
 	}
 	panic(fmt.Errorf("not implemented: t=%d", t))
 }
