@@ -116,6 +116,10 @@ func (v *visitor) visitSE(depth int, se rbytes.StreamerElement) error {
 			rmeta.STLvector:
 
 			tname := strings.TrimRight(se.ElemTypeName(), "*")
+			if _, ok := rmeta.CxxBuiltins[tname]; ok {
+				// no-op: C++ builtin.
+				return nil
+			}
 			si, err := v.ctx.StreamerInfo(tname, -1)
 			if err != nil {
 				return errors.Wrapf(err, "could not find std::container<T> element %q", tname)

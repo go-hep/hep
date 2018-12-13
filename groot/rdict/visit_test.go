@@ -10,6 +10,7 @@ import (
 
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rdict"
+	"go-hep.org/x/hep/groot/rmeta"
 	_ "go-hep.org/x/hep/groot/ztypes"
 )
 
@@ -55,6 +56,13 @@ func TestVisit(t *testing.T) {
 		{
 			si:   loadSI(t, "VisitT2"),
 			want: []string{"VisitT1", "Name", "F64", "ArrF64", "ArrF64"},
+		},
+		{
+			si: rdict.NewStreamerInfo("struct_with_vectors_of_builtins", 1, []rbytes.StreamerElement{
+				rdict.NewStreamerSTL("F32s", rmeta.STLvector, rmeta.Float32),
+				rdict.NewStreamerSTL("F64s", rmeta.STLvector, rmeta.Float64),
+			}),
+			want: []string{"F32s", "F64s"},
 		},
 	} {
 		t.Run(tc.si.Name(), func(t *testing.T) {
