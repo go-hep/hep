@@ -50,7 +50,6 @@ func NewGenerator(p string) (*Generator, error) {
 		buf: new(bytes.Buffer),
 		pkg: pkg,
 		imps: map[string]int{
-			"go-hep.org/x/hep/groot/rbase":  1,
 			"go-hep.org/x/hep/groot/rbytes": 1,
 			"go-hep.org/x/hep/groot/rdict":  1,
 			"go-hep.org/x/hep/groot/rmeta":  1,
@@ -220,6 +219,7 @@ func (g *Generator) genStreamerType(t types.Type, n string) {
 		g.printf("rdict.NewStreamerSTL(%q, rmeta.STLvector, rmeta.%v),\n", n, gotype2RMeta(ut.Elem()))
 
 	case *types.Struct:
+		g.imps["go-hep.org/x/hep/groot/rbase"]++
 		g.printf(
 			"&rdict.StreamerObjectAny{StreamerElement:rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Any,\nSize: %[4]d,\nEName:rdict.GoName2Cxx(%[3]q),\n}.New()},\n",
 			n, "",
@@ -297,6 +297,7 @@ func (g *Generator) se(t types.Type, n, rtype string, arrlen int64) string {
 	ut := t.Underlying()
 	switch ut := ut.(type) {
 	case *types.Basic:
+		g.imps["go-hep.org/x/hep/groot/rbase"]++
 		switch kind := ut.Kind(); kind {
 		case types.Bool:
 			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Bool %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
