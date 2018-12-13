@@ -45,7 +45,7 @@ func init() {
 			ArrDim: 0,
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
-			Name:   *rbase.NewNamed("U64", ""),
+			Name:   *rbase.NewNamed("u64", ""),
 			Type:   rmeta.Uint64,
 			Size:   8,
 			EName:  "unsigned long",
@@ -246,7 +246,7 @@ func (o *Event) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(o.RVersion())
 
-	w.WriteString(o.Name)
+	w.WriteString(o.name)
 	w.WriteU8(o.u8)
 	w.WriteU16(o.u16)
 	w.WriteU32(o.u32)
