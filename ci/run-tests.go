@@ -61,7 +61,7 @@ func main() {
 		args = append(args, "-tags="+*tags)
 	}
 	if *race {
-		args = append(args, "-race")
+		args = append(args, "-race", "-timeout=20m")
 	}
 	args = append(args, "")
 
