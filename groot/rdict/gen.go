@@ -195,12 +195,20 @@ func (g *Generator) genStreamerType(t types.Type, n string) {
 
 	case *types.Array:
 		// FIXME(sbinet): collect+visit element type.
-		switch ut.Elem().Underlying().(type) {
+		switch eut := ut.Elem().Underlying().(type) {
 		case *types.Basic:
-			g.printf(
-				"&rdict.StreamerBasicType{StreamerElement: %s},\n",
-				g.se(ut.Elem(), n, "+ rmeta.OffsetL", ut.Len()),
-			)
+			switch kind := eut.Kind(); kind {
+			default:
+				g.printf(
+					"&rdict.StreamerBasicType{StreamerElement: %s},\n",
+					g.se(ut.Elem(), n, "+ rmeta.OffsetL", ut.Len()),
+				)
+			case types.String:
+				g.printf(
+					"%s,\n",
+					g.se(ut.Elem(), n, "+ rmeta.OffsetL", ut.Len()),
+				)
+			}
 		default:
 			g.printf(
 				"%s\n",
@@ -396,10 +404,11 @@ func (g *Generator) se(t types.Type, n, rtype string, arrlen int64) string {
 			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
 
 		case types.String:
-			return fmt.Sprintf("&rdict.StreamerString{rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.TString %[4]s,\nSize: 24,\nEName:%[3]q,\nArrLen:%[5]d,\nArrDim:%[6]d,\n}.New()}",
+			return fmt.Sprintf("&rdict.StreamerString{rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.TString %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()}",
 				n, "",
 				"TString",
 				rtype,
+				24*elmt.Size,
 				elmt.ArrLen,
 				elmt.ArrDim,
 			)

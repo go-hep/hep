@@ -151,7 +151,7 @@ type ArrBuiltins struct {
 	// c64  [2]complex64  // FIXME(sbinet)
 	// c128 [2]complex128 // FIXME(sbinet)
 
-	// name [2]string `groot:"Name"` // FIXME(sbinet)
+	name [2]string `groot:"Name"`
 }
 
 func (*ArrBuiltins) RVersion() int16 { return 1 }
@@ -177,7 +177,7 @@ func NewArrBuiltins() *ArrBuiltins {
 		// c64:  complex(float32(-1), float32(+2)), // FIXME(sbinet)
 		// c128: complex(-2, +3),                   // FIXME(sbinet)
 
-		// name: [2]string{"builtins", "arrays"}, // FIXME(sbinet)
+		name: [2]string{"builtins", "arrays"},
 	}
 }
 

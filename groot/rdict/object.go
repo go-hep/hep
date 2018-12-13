@@ -157,7 +157,7 @@ func genTypeFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement) 
 	case *StreamerBasicType:
 		return genType(sictx, se.Type(), se.ArrayLen())
 	case *StreamerString:
-		return gotypes[reflect.String]
+		return genType(sictx, se.Type(), se.ArrayLen())
 	case *StreamerBasicPointer:
 		return genType(sictx, se.Type(), -1)
 	case *StreamerSTLstring:
@@ -243,19 +243,11 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 		}
 	case *StreamerBasicType:
 		return genRStreamer(sictx, se.Type(), se.ArrayLen(), recv)
-	case *StreamerString:
-		return func(recv interface{}, r *rbytes.RBuffer) error {
-			*(recv.(*string)) = r.ReadString()
-			return r.Err()
-		}
+	case *StreamerString, *StreamerSTLstring:
+		return genRStreamer(sictx, se.Type(), se.ArrayLen(), recv)
 	case *StreamerBasicPointer:
 		return genRStreamer(sictx, se.Type(), -1, recv)
 
-	case *StreamerSTLstring:
-		return func(recv interface{}, r *rbytes.RBuffer) error {
-			*(recv.(*string)) = r.ReadString()
-			return r.Err()
-		}
 	case *StreamerObjectAny:
 		typename := se.TypeName()
 		si, err := sictx.StreamerInfo(typename, -1)
@@ -318,6 +310,8 @@ func genType(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int) reflect.T
 		return gotypes[reflect.Float32]
 	case rmeta.Float64:
 		return gotypes[reflect.Float64]
+	case rmeta.TString, rmeta.STLstring:
+		return gotypes[reflect.String]
 
 	case rmeta.Counter:
 		return gotypes[reflect.Int]
@@ -344,6 +338,8 @@ func genType(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int) reflect.T
 		return reflect.ArrayOf(n, gotypes[reflect.Float32])
 	case rmeta.OffsetL + rmeta.Float64:
 		return reflect.ArrayOf(n, gotypes[reflect.Float64])
+	case rmeta.OffsetL + rmeta.TString, rmeta.OffsetL + rmeta.STLstring:
+		return reflect.ArrayOf(n, gotypes[reflect.String])
 
 	case rmeta.OffsetP + rmeta.Bool:
 		return reflect.SliceOf(gotypes[reflect.Bool])
@@ -396,6 +392,8 @@ func genRStreamer(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int, recv
 		return readF32
 	case rmeta.Float64:
 		return readF64
+	case rmeta.TString, rmeta.STLstring:
+		return readStr
 
 	case rmeta.Counter:
 		return readInt
@@ -422,6 +420,8 @@ func genRStreamer(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int, recv
 		return readF32s
 	case rmeta.OffsetL + rmeta.Float64:
 		return readF64s
+	case rmeta.OffsetL + rmeta.TString, rmeta.OffsetL + rmeta.STLstring:
+		return readStrs
 
 	}
 	panic("not implemented")
@@ -479,6 +479,11 @@ func readF32(recv interface{}, r *rbytes.RBuffer) error {
 
 func readF64(recv interface{}, r *rbytes.RBuffer) error {
 	*(recv.(*float64)) = r.ReadF64()
+	return r.Err()
+}
+
+func readStr(recv interface{}, r *rbytes.RBuffer) error {
+	*(recv.(*string)) = r.ReadString()
 	return r.Err()
 }
 
@@ -551,6 +556,12 @@ func readF32s(recv interface{}, r *rbytes.RBuffer) error {
 func readF64s(recv interface{}, r *rbytes.RBuffer) error {
 	slice := recv.([]float64)
 	copy(slice[:], r.ReadFastArrayF64(len(slice)))
+	return r.Err()
+}
+
+func readStrs(recv interface{}, r *rbytes.RBuffer) error {
+	slice := recv.([]string)
+	copy(slice[:], r.ReadFastArrayString(len(slice)))
 	return r.Err()
 }
 

@@ -76,7 +76,7 @@ key[000]: data;1 "" (go_hep_org::x::hep::groot::internal::rdatatest::Builtins) =
 			out:   "../../internal/rdatatest/pkg_gen.go",
 			tmpl:  "NewArrBuiltins",
 			want: `>>> file[testdata/out.root]
-key[000]: data;1 "" (go_hep_org::x::hep::groot::internal::rdatatest::ArrBuiltins) => &{[true false] [8 88] [16 1616] [32 3232] [64 6464] [-8 -88] [-16 -1616] [-32 -3232] [-64 -6464] [32.32 -32.32] [64.64 64.64]}
+key[000]: data;1 "" (go_hep_org::x::hep::groot::internal::rdatatest::ArrBuiltins) => &{[true false] [8 88] [16 1616] [32 3232] [64 6464] [-8 -88] [-16 -1616] [-32 -3232] [-64 -6464] [32.32 -32.32] [64.64 64.64] [builtins arrays]}
 `,
 		},
 		{
