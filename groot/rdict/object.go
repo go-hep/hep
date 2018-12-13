@@ -173,7 +173,7 @@ func genTypeFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement) 
 		case rmeta.STLvector:
 			return genType(sictx, se.ContainedType(), -1)
 		}
-		panic("STL container not implemented")
+		panic(errors.Errorf("rdict: STL container not implemented: %#v", se))
 	}
 	return nil
 }
@@ -261,7 +261,7 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 			beg := r.Pos()
 			vers, pos, bcnt := r.ReadVersion()
 			if vers != typevers {
-				r.SetErr(errors.Errorf("rdict: inconsistent ROOT version (got=%d, want=%d)", vers, typevers))
+				r.SetErr(errors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
 				return r.Err()
 			}
 
@@ -424,7 +424,7 @@ func genRStreamer(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int, recv
 		return readStrs
 
 	}
-	panic("not implemented")
+	panic(errors.Errorf("rdict: gen-rstreamer not implemented for rmeta=%v,n=%d", enum, n))
 }
 
 func readBool(recv interface{}, r *rbytes.RBuffer) error {
