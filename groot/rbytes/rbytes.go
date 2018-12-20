@@ -81,3 +81,8 @@ type Streamer interface {
 	WStreamer
 	RStreamer
 }
+
+const (
+	BypassStreamer                  uint32 = 1 << 12
+	CannotHandleMemberWiseStreaming uint32 = 1 << 17
+)

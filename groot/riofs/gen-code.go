@@ -48,6 +48,7 @@ func genStreamers() {
 		"TDirectoryFile",
 		"TKey",
 		"TNamed",
+		"TClonesArray",
 		"TList",
 		"THashList",
 		"TMap",

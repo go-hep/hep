@@ -8,8 +8,10 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"text/template"
 
 	"go-hep.org/x/hep/groot/internal/genroot"
@@ -17,6 +19,7 @@ import (
 
 func main() {
 	genArrays()
+	genTClonesArrayData()
 }
 
 func genArrays() {
@@ -150,3 +153,50 @@ var (
 	_ rbytes.Unmarshaler = (*{{.Name}})(nil)
 )
 `
+
+func genTClonesArrayData() {
+	const (
+		macro = "gen-tclonesarray.C"
+	)
+
+	err := ioutil.WriteFile(macro, []byte(`
+void gen_tclonesarray(const char *fname, bool bypass) {
+	auto f = TFile::Open(fname, "RECREATE");
+	auto c = new TClonesArray("TObjString", 3);
+	(*c)[0] = new TObjString("Elem-0");
+	(*c)[1] = new TObjString("elem-1");
+	(*c)[2] = new TObjString("Elem-20");
+
+	c->BypassStreamer(bypass);
+	f->WriteObjectAny(c, "TClonesArray", "clones");
+	f->Write();
+	f->Close();
+}
+`), 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.Remove(macro)
+
+	for _, v := range []struct {
+		name   string
+		bypass bool
+	}{
+		{
+			name:   "testdata/tclonesarray-with-streamerbypass.root",
+			bypass: true,
+		},
+		{
+			name:   "testdata/tclonesarray-no-streamerbypass.root",
+			bypass: false,
+		},
+	} {
+		cmd := exec.Command("root.exe", "-b", "-q", fmt.Sprintf("./%s(%q, %v)", macro, v.name, v.bypass))
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
