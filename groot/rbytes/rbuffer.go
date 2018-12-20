@@ -145,7 +145,7 @@ func (p int64Slice) Len() int           { return len(p) }
 func (p int64Slice) Less(i, j int) bool { return p[i] < p[j] }
 func (p int64Slice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
-func (r *RBuffer) dumpHex(n int) {
+func (r *RBuffer) DumpHex(n int) {
 	buf := r.bytes()
 	if len(buf) > n {
 		buf = buf[:n]
