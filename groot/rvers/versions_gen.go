@@ -31,6 +31,7 @@ const (
 	List                     = 5  // ROOT version for TList
 	Map                      = 3  // ROOT version for TMap
 	ObjArray                 = 3  // ROOT version for TObjArray
+	ClonesArray              = 4  // ROOT version for TClonesArray
 	StreamerInfo             = 9  // ROOT version for TStreamerInfo
 	StreamerElement          = 4  // ROOT version for TStreamerElement
 	StreamerBase             = 3  // ROOT version for TStreamerBase

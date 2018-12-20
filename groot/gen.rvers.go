@@ -78,6 +78,7 @@ func genROOTTypes() ([]Type, error) {
 		"TList",
 		"TMap",
 		"TObjArray",
+		"TClonesArray",
 		// rdict
 		"TStreamerInfo",
 		"TStreamerElement",
