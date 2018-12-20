@@ -31,8 +31,11 @@ func (*Object) RVersion() int {
 	return rvers.Object
 }
 
-func (obj *Object) SetID(id uint32)     { obj.ID = id }
-func (obj *Object) SetBits(bits uint32) { obj.Bits = bits }
+func (obj *Object) SetID(id uint32)           { obj.ID = id }
+func (obj *Object) SetBit(bit uint32)         { obj.Bits |= bit & kBitMask }
+func (obj *Object) ResetBit(bit uint32)       { obj.Bits &= ^(bit & kBitMask) }
+func (obj *Object) SetBits(bits uint32)       { obj.Bits = bits }
+func (obj *Object) TestBits(bits uint32) bool { return obj.Bits&bits != 0 }
 
 func (obj *Object) UnmarshalROOT(r *rbytes.RBuffer) error {
 	r.SkipVersion("")

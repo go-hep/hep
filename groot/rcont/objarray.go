@@ -48,6 +48,10 @@ func (arr *ObjArray) Title() string {
 	return "An array of objects"
 }
 
+func (arr *ObjArray) TestBits(bits uint32) bool {
+	return arr.obj.TestBits(bits)
+}
+
 func (arr *ObjArray) At(i int) root.Object {
 	return arr.objs[i]
 }
