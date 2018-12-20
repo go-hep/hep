@@ -44,6 +44,7 @@
 package main // import "go-hep.org/x/hep/groot/cmd/root-dump"
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -56,6 +57,7 @@ import (
 	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/groot/riofs"
+	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtree"
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hbook/yodacnv"
@@ -121,28 +123,9 @@ func dumpDir(w io.Writer, dir riofs.Directory, deep bool) error {
 		}
 		fmt.Fprintf(w, "key[%03d]: %s;%d %q (%s)", i, key.Name(), key.Cycle(), key.Title(), obj.Class())
 		if deep && match(key.Name()) {
-			switch obj := obj.(type) {
-			case rtree.Tree:
-				fmt.Fprintf(w, "\n")
-				err = dumpTree(w, obj)
-			case riofs.Directory:
-				fmt.Fprintf(w, "\n")
-				err = dumpDir(w, obj, deep)
-			case rhist.H1:
-				fmt.Fprintf(w, "\n")
-				err = dumpH1(w, obj)
-			case rhist.H2:
-				fmt.Fprintf(w, "\n")
-				err = dumpH2(w, obj)
-			case rhist.Graph:
-				fmt.Fprintf(w, "\n")
-				err = dumpGraph(w, obj)
-			case *rdict.Object:
-				fmt.Fprintf(w, " => %v\n", obj)
-			case fmt.Stringer:
-				fmt.Fprintf(w, " => %q\n", obj.String())
-			default:
-				fmt.Fprintf(w, " => ignoring key of type %T\n", obj)
+			err = dumpObj(w, obj, deep)
+			if err == errIgnoreKey {
+				err = nil
 				continue
 			}
 		} else {
@@ -162,6 +145,51 @@ func match(name string) bool {
 		return true
 	}
 	return reName.MatchString(name)
+}
+
+var errIgnoreKey = errors.New("root-dump: ignore key")
+
+func dumpObj(w io.Writer, obj root.Object, deep bool) error {
+	var err error
+	switch obj := obj.(type) {
+	case rtree.Tree:
+		fmt.Fprintf(w, "\n")
+		err = dumpTree(w, obj)
+	case riofs.Directory:
+		fmt.Fprintf(w, "\n")
+		err = dumpDir(w, obj, deep)
+	case rhist.H1:
+		fmt.Fprintf(w, "\n")
+		err = dumpH1(w, obj)
+	case rhist.H2:
+		fmt.Fprintf(w, "\n")
+		err = dumpH2(w, obj)
+	case rhist.Graph:
+		fmt.Fprintf(w, "\n")
+		err = dumpGraph(w, obj)
+	case root.List:
+		fmt.Fprintf(w, "\n")
+		err = dumpList(w, obj, deep)
+	case *rdict.Object:
+		fmt.Fprintf(w, " => %v\n", obj)
+	case fmt.Stringer:
+		fmt.Fprintf(w, " => %q\n", obj.String())
+	default:
+		fmt.Fprintf(w, " => ignoring key of type %T\n", obj)
+		return errIgnoreKey
+	}
+	return err
+}
+
+func dumpList(w io.Writer, lst root.List, deep bool) error {
+	for i := 0; i < lst.Len(); i++ {
+		fmt.Fprintf(w, "lst[%s][%d]: ", lst.Name(), i)
+		err := dumpObj(w, lst.At(i), deep)
+		if err != nil && err != errIgnoreKey {
+			return err
+		}
+	}
+	return nil
 }
 
 func dumpTree(w io.Writer, t rtree.Tree) error {
