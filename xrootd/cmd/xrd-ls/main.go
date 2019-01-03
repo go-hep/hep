@@ -126,8 +126,8 @@ func display(ctx context.Context, fs xrdfs.FileSystem, root string, fi os.FileIn
 		end = ":"
 	}
 
-	fmt.Printf("%s%s\n", path.Join(root, fi.Name()), end)
 	dir := path.Join(root, fi.Name())
+	fmt.Printf("%s%s\n", dir, end)
 	if long {
 		fmt.Printf("total %d\n", fi.Size())
 	}
@@ -137,7 +137,7 @@ func display(ctx context.Context, fs xrdfs.FileSystem, root string, fi os.FileIn
 	}
 	o := tabwriter.NewWriter(os.Stdout, 8, 4, 0, ' ', tabwriter.AlignRight)
 	for _, e := range ents {
-		format(o, root, e, long)
+		format(o, dir, e, long)
 	}
 	o.Flush()
 	if recursive {
