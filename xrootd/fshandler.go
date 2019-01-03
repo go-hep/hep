@@ -211,7 +211,7 @@ func (h *fshandler) Read(sessionID [16]byte, request *read.Request) (xrdproto.Ma
 	}
 
 	buf := make([]byte, request.Length)
-	_, err := file.ReadAt(buf, request.Offset)
+	n, err := file.ReadAt(buf, request.Offset)
 	if err != nil && err != io.EOF {
 		return xrdproto.ServerError{
 			Code:    xrdproto.IOError,
@@ -219,7 +219,7 @@ func (h *fshandler) Read(sessionID [16]byte, request *read.Request) (xrdproto.Ma
 		}, xrdproto.Error
 	}
 
-	return read.Response{Data: buf}, xrdproto.Ok
+	return read.Response{Data: buf[:n]}, xrdproto.Ok
 }
 
 // Write implements server.Handler.Write.
