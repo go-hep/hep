@@ -16,9 +16,12 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
+	"go-hep.org/x/hep/xrootd/xrdproto/mkdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/mv"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
+	"go-hep.org/x/hep/xrootd/xrdproto/rm"
+	"go-hep.org/x/hep/xrootd/xrdproto/rmdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/stat"
 	xrdsync "go-hep.org/x/hep/xrootd/xrdproto/sync"
 	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
@@ -349,6 +352,44 @@ func (h *fshandler) Rename(sessionID [16]byte, request *mv.Request) (xrdproto.Ma
 		}, xrdproto.Error
 	}
 
+	return nil, xrdproto.Ok
+}
+
+// Mkdir implements server.Handler.Mkdir.
+func (h *fshandler) Mkdir(sessionID [16]byte, request *mkdir.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	mkdirFunc := os.Mkdir
+	if request.Options&mkdir.OptionsMakePath != 0 {
+		mkdirFunc = os.MkdirAll
+	}
+
+	if err := mkdirFunc(path.Join(h.basePath, request.Path), os.FileMode(request.Mode)); err != nil {
+		return xrdproto.ServerError{
+			Code:    xrdproto.IOError,
+			Message: fmt.Sprintf("An IO error occurred: %v", err),
+		}, xrdproto.Error
+	}
+	return nil, xrdproto.Ok
+}
+
+// Remove implements server.Handler.Remove.
+func (h *fshandler) Remove(sessionID [16]byte, request *rm.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	if err := os.Remove(path.Join(h.basePath, request.Path)); err != nil {
+		return xrdproto.ServerError{
+			Code:    xrdproto.IOError,
+			Message: fmt.Sprintf("An IO error occurred: %v", err),
+		}, xrdproto.Error
+	}
+	return nil, xrdproto.Ok
+}
+
+// RemoveDir implements server.Handler.RemoveDir.
+func (h *fshandler) RemoveDir(sessionID [16]byte, request *rmdir.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	if err := os.Remove(path.Join(h.basePath, request.Path)); err != nil {
+		return xrdproto.ServerError{
+			Code:    xrdproto.IOError,
+			Message: fmt.Sprintf("An IO error occurred: %v", err),
+		}, xrdproto.Error
+	}
 	return nil, xrdproto.Ok
 }
 

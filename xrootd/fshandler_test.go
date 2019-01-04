@@ -19,6 +19,7 @@ import (
 	"go-hep.org/x/hep/xrootd"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto"
+	"go-hep.org/x/hep/xrootd/xrdproto/ping"
 )
 
 func getTCPAddr() (string, error) {
@@ -303,6 +304,9 @@ func TestHandler_Open(t *testing.T) {
 					return
 				}
 				t.Fatalf("could not call Open: %v", err)
+			}
+			if err == nil && tc.errCode != 0 {
+				t.Fatalf("unexpected successfull call\nwant error code = %v", tc.errCode)
 			}
 
 			if tc.checkStatInfo {
@@ -765,5 +769,247 @@ func TestHandler_Rename(t *testing.T) {
 				t.Fatalf("new file was not created after rename")
 			}
 		})
+	}
+}
+
+func TestHandler_Mkdir(t *testing.T) {
+	for _, tc := range []struct {
+		testName   string
+		path       string
+		createFile bool
+		mkdirAll   bool
+		errCode    xrdproto.ServerErrorCode
+	}{
+		{
+			testName:   "existing dir",
+			createFile: true,
+			path:       "testdir",
+			errCode:    xrdproto.IOError,
+		},
+		{
+			testName:   "new dir",
+			createFile: false,
+			path:       "testdir",
+		},
+		{
+			testName:   "nested dir",
+			createFile: false,
+			path:       "nested/testdir",
+			errCode:    xrdproto.IOError,
+		},
+		{
+			testName:   "nested dir and MkdirAll",
+			createFile: false,
+			path:       "nested/testdir",
+			mkdirAll:   true,
+		},
+	} {
+		t.Run(tc.testName, func(t *testing.T) {
+			srv, addr, baseDir, err := createServer(func(err error) {
+				t.Error(err)
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer os.RemoveAll(baseDir)
+			defer srv.Shutdown(context.Background())
+
+			if tc.createFile {
+				err = os.MkdirAll(path.Join(baseDir, tc.path), os.FileMode(0777))
+				if err != nil {
+					t.Fatalf("could not create test dir: %v", err)
+				}
+			}
+
+			cli, err := createClient(addr)
+			if err != nil {
+				t.Fatalf("could not create client: %v", err)
+			}
+			defer cli.Close()
+
+			if tc.mkdirAll {
+				err = cli.FS().MkdirAll(context.Background(), tc.path, xrdfs.OpenModeOwnerRead|xrdfs.OpenModeOwnerWrite|xrdfs.OpenModeOwnerExecute)
+			} else {
+				err = cli.FS().Mkdir(context.Background(), tc.path, xrdfs.OpenModeOwnerRead|xrdfs.OpenModeOwnerWrite|xrdfs.OpenModeOwnerExecute)
+			}
+			if err != nil {
+				if serverError, ok := err.(xrdproto.ServerError); ok {
+					if serverError.Code != tc.errCode {
+						t.Fatalf("wrong error code:\ngot = %v\nwant = %v\nerror message = %q", serverError.Code, tc.errCode, serverError.Message)
+					}
+					return
+				}
+				t.Fatalf("could not call Mkdir: %v", err)
+			}
+			if err == nil && tc.errCode != 0 {
+				t.Fatalf("unexpected successfull call\nwant error code = %v", tc.errCode)
+			}
+		})
+	}
+}
+
+func TestHandler_Remove(t *testing.T) {
+	for _, tc := range []struct {
+		testName   string
+		path       string
+		createFile bool
+		errCode    xrdproto.ServerErrorCode
+	}{
+		{
+			testName:   "existing file",
+			createFile: true,
+			path:       "testfile",
+		},
+		{
+			testName:   "non-existing file",
+			createFile: false,
+			path:       "testfile",
+			errCode:    xrdproto.IOError,
+		},
+	} {
+		t.Run(tc.testName, func(t *testing.T) {
+			srv, addr, baseDir, err := createServer(func(err error) {
+				t.Error(err)
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer os.RemoveAll(baseDir)
+			defer srv.Shutdown(context.Background())
+
+			if tc.createFile {
+				f, err := os.Create(path.Join(baseDir, tc.path))
+				if err != nil {
+					t.Fatalf("could not create test file: %v", err)
+				}
+				err = f.Close()
+				if err != nil {
+					t.Fatalf("could not close test file: %v", err)
+				}
+			}
+
+			cli, err := createClient(addr)
+			if err != nil {
+				t.Fatalf("could not create client: %v", err)
+			}
+			defer cli.Close()
+
+			err = cli.FS().RemoveFile(context.Background(), tc.path)
+			if err != nil {
+				if serverError, ok := err.(xrdproto.ServerError); ok {
+					if serverError.Code != tc.errCode {
+						t.Fatalf("wrong error code:\ngot = %v\nwant = %v\nerror message = %q", serverError.Code, tc.errCode, serverError.Message)
+					}
+					return
+				}
+				t.Fatalf("could not call RemoveFile: %v", err)
+			}
+			if err == nil && tc.errCode != 0 {
+				t.Fatalf("unexpected successfull call\nwant error code = %v", tc.errCode)
+			}
+		})
+	}
+}
+
+func TestHandler_RemoveDir(t *testing.T) {
+	for _, tc := range []struct {
+		testName   string
+		path       string
+		createFile bool
+		createDir  bool
+		errCode    xrdproto.ServerErrorCode
+	}{
+		{
+			testName:   "empty existing dir",
+			createFile: false,
+			createDir:  true,
+			path:       "testdir",
+		},
+		{
+			testName:   "non-existing dir",
+			createFile: false,
+			createDir:  false,
+			path:       "testdir",
+			errCode:    xrdproto.IOError,
+		},
+		{
+			testName:   "non-empty existing dir",
+			createFile: true,
+			createDir:  true,
+			path:       "testdir",
+			errCode:    xrdproto.IOError,
+		},
+	} {
+		t.Run(tc.testName, func(t *testing.T) {
+			srv, addr, baseDir, err := createServer(func(err error) {
+				t.Error(err)
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer os.RemoveAll(baseDir)
+			defer srv.Shutdown(context.Background())
+
+			dirPath := path.Join(baseDir, tc.path)
+			if tc.createDir {
+				err := os.MkdirAll(dirPath, os.FileMode(0777))
+				if err != nil {
+					t.Fatalf("could not create test dir: %v", err)
+				}
+			}
+
+			if tc.createFile {
+				f, err := os.Create(path.Join(dirPath, "file.txt"))
+				if err != nil {
+					t.Fatalf("could not create test file: %v", err)
+				}
+				err = f.Close()
+				if err != nil {
+					t.Fatalf("could not close test file: %v", err)
+				}
+			}
+
+			cli, err := createClient(addr)
+			if err != nil {
+				t.Fatalf("could not create client: %v", err)
+			}
+			defer cli.Close()
+
+			err = cli.FS().RemoveDir(context.Background(), tc.path)
+			if err != nil {
+				if serverError, ok := err.(xrdproto.ServerError); ok {
+					if serverError.Code != tc.errCode {
+						t.Fatalf("wrong error code:\ngot = %v\nwant = %v\nerror message = %q", serverError.Code, tc.errCode, serverError.Message)
+					}
+					return
+				}
+				t.Fatalf("could not call RemoveDir: %v", err)
+			}
+			if err == nil && tc.errCode != 0 {
+				t.Fatalf("unexpected successfull call\nwant error code = %v", tc.errCode)
+			}
+		})
+	}
+}
+
+func TestHandler_Ping(t *testing.T) {
+	srv, addr, baseDir, err := createServer(func(err error) {
+		t.Error(err)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(baseDir)
+	defer srv.Shutdown(context.Background())
+
+	cli, err := createClient(addr)
+	if err != nil {
+		t.Fatalf("could not create client: %v", err)
+	}
+	defer cli.Close()
+
+	_, err = cli.Send(context.Background(), nil, &ping.Request{})
+	if err != nil {
+		t.Fatalf("could not call Ping: %v", err)
 	}
 }
