@@ -19,10 +19,14 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/handshake"
 	"go-hep.org/x/hep/xrootd/xrdproto/login"
+	"go-hep.org/x/hep/xrootd/xrdproto/mkdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/mv"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
+	"go-hep.org/x/hep/xrootd/xrdproto/ping"
 	"go-hep.org/x/hep/xrootd/xrdproto/protocol"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
+	"go-hep.org/x/hep/xrootd/xrdproto/rm"
+	"go-hep.org/x/hep/xrootd/xrdproto/rmdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/stat"
 	xrdsync "go-hep.org/x/hep/xrootd/xrdproto/sync"
 	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
@@ -314,6 +318,34 @@ func (s *Server) handleRequest(sessionID [16]byte, requestID uint16, rBuffer *xr
 			return newUnmarshalingErrorResponse(err)
 		}
 		return s.handler.Rename(sessionID, &request)
+	case mkdir.RequestID:
+		var request mkdir.Request
+		err := request.UnmarshalXrd(rBuffer)
+		if err != nil {
+			return newUnmarshalingErrorResponse(err)
+		}
+		return s.handler.Mkdir(sessionID, &request)
+	case ping.RequestID:
+		var request ping.Request
+		err := request.UnmarshalXrd(rBuffer)
+		if err != nil {
+			return newUnmarshalingErrorResponse(err)
+		}
+		return s.handler.Ping(sessionID, &request)
+	case rm.RequestID:
+		var request rm.Request
+		err := request.UnmarshalXrd(rBuffer)
+		if err != nil {
+			return newUnmarshalingErrorResponse(err)
+		}
+		return s.handler.Remove(sessionID, &request)
+	case rmdir.RequestID:
+		var request rmdir.Request
+		err := request.UnmarshalXrd(rBuffer)
+		if err != nil {
+			return newUnmarshalingErrorResponse(err)
+		}
+		return s.handler.RemoveDir(sessionID, &request)
 	default:
 		response := xrdproto.ServerError{
 			Code:    xrdproto.InvalidRequest,

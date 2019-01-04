@@ -9,10 +9,14 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 	"go-hep.org/x/hep/xrootd/xrdproto/handshake"
 	"go-hep.org/x/hep/xrootd/xrdproto/login"
+	"go-hep.org/x/hep/xrootd/xrdproto/mkdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/mv"
 	"go-hep.org/x/hep/xrootd/xrdproto/open"
+	"go-hep.org/x/hep/xrootd/xrdproto/ping"
 	"go-hep.org/x/hep/xrootd/xrdproto/protocol"
 	"go-hep.org/x/hep/xrootd/xrdproto/read"
+	"go-hep.org/x/hep/xrootd/xrdproto/rm"
+	"go-hep.org/x/hep/xrootd/xrdproto/rmdir"
 	"go-hep.org/x/hep/xrootd/xrdproto/stat"
 	"go-hep.org/x/hep/xrootd/xrdproto/sync"
 	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
@@ -40,6 +44,11 @@ func (h *defaultHandler) Login(sessionID [16]byte, request *login.Request) (xrdp
 func (h *defaultHandler) Protocol(sessionID [16]byte, request *protocol.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	resp := &protocol.Response{BinaryProtocolVersion: 0x310, Flags: protocol.IsServer}
 	return resp, xrdproto.Ok
+}
+
+// Ping implements Handler.Ping.
+func (h *defaultHandler) Ping(sessionID [16]byte, request *ping.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	return nil, xrdproto.Ok
 }
 
 // Dirlist implements Handler.Dirlist.
@@ -102,5 +111,23 @@ func (h *defaultHandler) Truncate(sessionID [16]byte, request *truncate.Request)
 // Rename implements Handler.Rename.
 func (h *defaultHandler) Rename(sessionID [16]byte, request *mv.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "Rename request is not implemented"}
+	return resp, xrdproto.Error
+}
+
+// Mkdir implements Handler.Mkdir.
+func (h *defaultHandler) Mkdir(sessionID [16]byte, request *mkdir.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "Mkdir request is not implemented"}
+	return resp, xrdproto.Error
+}
+
+// Remove implements Handler.Remove.
+func (h *defaultHandler) Remove(sessionID [16]byte, request *rm.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "Remove request is not implemented"}
+	return resp, xrdproto.Error
+}
+
+// RemoveDir implements Handler.RemoveDir.
+func (h *defaultHandler) RemoveDir(sessionID [16]byte, request *rmdir.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
+	resp := xrdproto.ServerError{Code: xrdproto.InvalidRequest, Message: "RemoveDir request is not implemented"}
 	return resp, xrdproto.Error
 }
