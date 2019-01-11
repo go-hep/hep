@@ -2,8 +2,9 @@ module go-hep.org/x/hep
 
 require (
 	github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802 // indirect
-	github.com/cznic/ql v1.2.0
+	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/gonuts/binary v0.2.0
 	github.com/gonuts/commander v0.1.0
 	github.com/gonuts/flag v0.1.0
@@ -16,6 +17,7 @@ require (
 	github.com/pierrec/lz4 v2.0.5+incompatible
 	github.com/pierrec/xxHash v0.1.1
 	github.com/pkg/errors v0.8.1
+	github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446 // indirect
 	github.com/sbinet/npyio v0.2.0
 	github.com/ulikunitz/xz v0.5.5
 	go-hep.org/x/exp v0.0.0-20180802154217-6d993ac81a11
@@ -31,5 +33,17 @@ require (
 	gopkg.in/jcmturner/goidentity.v3 v3.0.0 // indirect
 	gopkg.in/jcmturner/gokrb5.v6 v6.1.1
 	gopkg.in/jcmturner/rpc.v1 v1.1.0 // indirect
+	modernc.org/b v1.0.0 // indirect
+	modernc.org/db v1.0.0 // indirect
+	modernc.org/file v1.0.0 // indirect
+	modernc.org/fileutil v1.0.0 // indirect
+	modernc.org/golex v1.0.0 // indirect
+	modernc.org/internal v1.0.0 // indirect
+	modernc.org/lldb v1.0.0 // indirect
+	modernc.org/mathutil v1.0.0 // indirect
+	modernc.org/ql v1.0.0
+	modernc.org/sortutil v1.0.0 // indirect
+	modernc.org/strutil v1.0.0 // indirect
+	modernc.org/zappy v1.0.0 // indirect
 	rsc.io/pdf v0.1.1
 )

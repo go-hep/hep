@@ -17,7 +17,7 @@ import (
 	"strings"
 	"sync"
 
-	_ "github.com/cznic/ql/driver"
+	_ "modernc.org/ql/driver"
 )
 
 var (
