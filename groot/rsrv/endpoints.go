@@ -16,7 +16,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gofrs/uuid/v3"
+	uuid "github.com/hashicorp/go-uuid"
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/groot/riofs"
@@ -126,12 +126,12 @@ func (srv *Server) handleUpload(w http.ResponseWriter, r *http.Request) error {
 		return errors.Wrap(err, "could not retrieve ROOT file from multipart form")
 	}
 
-	fid, err := uuid.NewV4()
+	fid, err := uuid.GenerateUUID()
 	if err != nil {
 		return errors.Wrapf(err, "could not generate UUID for %q", handler.Filename)
 	}
 
-	fname := filepath.Join(srv.dir, fid.String()+".root")
+	fname := filepath.Join(srv.dir, fid+".root")
 	o, err := os.Create(fname)
 	if err != nil {
 		return errors.Wrap(err, "could not create temporary file")

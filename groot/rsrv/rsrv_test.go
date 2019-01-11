@@ -23,7 +23,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gofrs/uuid/v3"
+	uuid "github.com/hashicorp/go-uuid"
 	"go-hep.org/x/hep/hplot/cmpimg"
 )
 
@@ -1004,9 +1004,13 @@ func (srv *Server) addCookies(req *http.Request) {
 }
 
 func setupCookie(srv *Server) {
+	v, err := uuid.GenerateUUID()
+	if err != nil {
+		panic(err)
+	}
 	cookie := &http.Cookie{
 		Name:    cookieName,
-		Value:   uuid.Must(uuid.NewV4()).String(),
+		Value:   v,
 		Expires: time.Now().Add(24 * time.Hour),
 	}
 	srv.mu.Lock()

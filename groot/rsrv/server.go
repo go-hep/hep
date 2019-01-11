@@ -11,7 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gofrs/uuid/v3"
+	uuid "github.com/hashicorp/go-uuid"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -114,9 +115,14 @@ func (srv *Server) setCookie(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 
+	v, err := uuid.GenerateUUID()
+	if err != nil {
+		return errors.Wrapf(err, "could not generate UUID")
+	}
+
 	cookie = &http.Cookie{
 		Name:    cookieName,
-		Value:   uuid.Must(uuid.NewV4()).String(),
+		Value:   v,
 		Expires: time.Now().Add(24 * time.Hour),
 	}
 	srv.sessions[cookie.Value] = NewDB(filepath.Join(srv.dir, cookie.Value))
