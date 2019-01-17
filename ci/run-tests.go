@@ -60,8 +60,11 @@ func main() {
 	if *tags != "" {
 		args = append(args, "-tags="+*tags)
 	}
-	if *race {
+	switch {
+	case *race:
 		args = append(args, "-race", "-timeout=20m")
+	default:
+		args = append(args, "-timeout=5m")
 	}
 	args = append(args, "")
 
