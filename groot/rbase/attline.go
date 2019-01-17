@@ -8,6 +8,7 @@ import (
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbytes"
+	"go-hep.org/x/hep/groot/rcolors"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
@@ -21,7 +22,7 @@ type AttLine struct {
 
 func NewAttLine() *AttLine {
 	return &AttLine{
-		Color: 1, // FIXME(sbinet)
+		Color: rcolors.Blue + 2,
 		Style: 1,
 		Width: 1,
 	}

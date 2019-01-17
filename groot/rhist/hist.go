@@ -53,7 +53,11 @@ func newH1() *th1 {
 		xaxis:     *NewAxis("xaxis"),
 		yaxis:     *NewAxis("yaxis"),
 		zaxis:     *NewAxis("zaxis"),
+		bwidth:    1000,
+		max:       -1111,
+		min:       -1111,
 		funcs:     *rcont.NewList("", nil),
+		oflow:     2, // kNeutral
 	}
 }
 
