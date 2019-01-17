@@ -36,6 +36,9 @@ func NewAxis(name string) *taxis {
 	return &taxis{
 		Named:   *rbase.NewNamed(name, ""),
 		attaxis: *rbase.NewAttAxis(),
+		nbins:   1,
+		xmin:    0,
+		xmax:    1,
 	}
 }
 
