@@ -9,7 +9,7 @@ require (
 	github.com/gonuts/flag v0.1.0
 	github.com/google/go-cmp v0.2.0
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf
-	github.com/hanwen/go-fuse v0.0.0-20190111173210-425e8d5301f6
+	github.com/hanwen/go-fuse v0.0.0-20190123210100-dfd0ceb206ca
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/jcmturner/gofork v0.0.0-20180107083740-2aebee971930 // indirect
 	github.com/peterh/liner v1.1.0
@@ -20,12 +20,12 @@ require (
 	github.com/sbinet/npyio v0.2.0
 	github.com/ulikunitz/xz v0.5.5
 	go-hep.org/x/exp v0.0.0-20180802154217-6d993ac81a11
-	golang.org/x/crypto v0.0.0-20190103213133-ff983b9c42bc
-	golang.org/x/exp v0.0.0-20190104205336-ae74f88a12a8
+	golang.org/x/crypto v0.0.0-20190123085648-057139ce5d2b
+	golang.org/x/exp v0.0.0-20190123073158-f1c91bc264ca
 	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2
 	golang.org/x/mobile v0.0.0-20190107162257-dc0771356504
-	gonum.org/v1/gonum v0.0.0-20190119014124-d54847ab4dca
-	gonum.org/v1/plot v0.0.0-20190119085400-bdfd8f4b12d9
+	gonum.org/v1/gonum v0.0.0-20190123113241-dd4cc715c58a
+	gonum.org/v1/plot v0.0.0-20190124062938-5260e111b590
 	gopkg.in/jcmturner/aescts.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/dnsutils.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/gokrb5.v6 v6.1.1
