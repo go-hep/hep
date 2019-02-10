@@ -13,8 +13,8 @@ import (
 	"io/ioutil"
 	"log"
 	"mime/multipart"
-	"net"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -28,8 +28,7 @@ import (
 )
 
 var (
-	srv  *Server
-	addr string
+	srv *Server
 )
 
 const (
@@ -46,8 +45,10 @@ func TestMain(m *testing.M) {
 	srv = New(dir)
 	setupCookie(srv)
 
-	addr = findPort()
+	os.Exit(m.Run())
+}
 
+func newTestServer() *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/open-file", srv.OpenFile)
 	mux.HandleFunc("/upload-file", srv.UploadFile)
@@ -60,21 +61,18 @@ func TestMain(m *testing.M) {
 	mux.HandleFunc("/plot-s2", srv.PlotS2)
 	mux.HandleFunc("/plot-tree", srv.PlotTree)
 
-	s := http.Server{Addr: addr, Handler: mux}
-
-	go func() {
-		defer s.Close()
-		log.Fatal(s.ListenAndServe())
-	}()
-	os.Exit(m.Run())
+	return httptest.NewServer(mux)
 }
 
 func TestOpenFile(t *testing.T) {
+	ts := newTestServer()
+	defer ts.Close()
+
 	local, err := filepath.Abs("../testdata/simple.root")
 	if err != nil {
 		t.Fatal(err)
 	}
-	var c http.Client
+
 	for _, tc := range []struct {
 		uri    string
 		status int
@@ -84,19 +82,21 @@ func TestOpenFile(t *testing.T) {
 		{"file://" + local, http.StatusOK},
 	} {
 		t.Run(tc.uri, func(t *testing.T) {
-			testOpenFile(t, &c, tc.uri, tc.status)
-			defer testCloseFile(t, &c, tc.uri)
+			testOpenFile(t, ts, tc.uri, tc.status)
+			defer testCloseFile(t, ts, tc.uri)
 		})
 	}
 }
 
 func TestDoubleOpenFile(t *testing.T) {
-	var c http.Client
-	testOpenFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", 0)
-	testOpenFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", http.StatusConflict)
+	ts := newTestServer()
+	defer ts.Close()
+
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", 0)
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", http.StatusConflict)
 }
 
-func testOpenFile(t *testing.T, c *http.Client, uri string, status int) {
+func testOpenFile(t *testing.T, ts *httptest.Server, uri string, status int) {
 	t.Helper()
 
 	req := OpenFileRequest{URI: uri}
@@ -107,13 +107,13 @@ func testOpenFile(t *testing.T, c *http.Client, uri string, status int) {
 		t.Fatalf("could not encode request: %v", err)
 	}
 
-	hreq, err := http.NewRequest(http.MethodPost, "http://"+addr+"/open-file", body)
+	hreq, err := http.NewRequest(http.MethodPost, ts.URL+"/open-file", body)
 	if err != nil {
 		t.Fatalf("could not create http request: %v", err)
 	}
 	srv.addCookies(hreq)
 
-	hresp, err := c.Do(hreq)
+	hresp, err := ts.Client().Do(hreq)
 	if err != nil {
 		t.Fatalf("could not post http request: %v", err)
 	}
@@ -125,11 +125,14 @@ func testOpenFile(t *testing.T, c *http.Client, uri string, status int) {
 }
 
 func TestUploadFile(t *testing.T) {
+	ts := newTestServer()
+	defer ts.Close()
+
 	local, err := filepath.Abs("../testdata/simple.root")
 	if err != nil {
 		t.Fatal(err)
 	}
-	var c http.Client
+
 	for _, tc := range []struct {
 		dst, src string
 		status   int
@@ -137,13 +140,13 @@ func TestUploadFile(t *testing.T) {
 		{"foo.root", local, http.StatusOK},
 	} {
 		t.Run(tc.dst, func(t *testing.T) {
-			testUploadFile(t, &c, tc.dst, tc.src, tc.status)
-			defer testCloseFile(t, &c, tc.dst)
+			testUploadFile(t, ts, tc.dst, tc.src, tc.status)
+			defer testCloseFile(t, ts, tc.dst)
 		})
 	}
 }
 
-func testUploadFile(t *testing.T, c *http.Client, dst, src string, status int) {
+func testUploadFile(t *testing.T, ts *httptest.Server, dst, src string, status int) {
 	t.Helper()
 
 	body := new(bytes.Buffer)
@@ -178,14 +181,14 @@ func testUploadFile(t *testing.T, c *http.Client, dst, src string, status int) {
 		t.Fatalf("could not close multipart form data: %v", err)
 	}
 
-	hreq, err := http.NewRequest(http.MethodPost, "http://"+addr+"/upload-file", body)
+	hreq, err := http.NewRequest(http.MethodPost, ts.URL+"/upload-file", body)
 	if err != nil {
 		t.Fatalf("could not create http request: %v", err)
 	}
 	srv.addCookies(hreq)
 	hreq.Header.Set("Content-Type", mpart.FormDataContentType())
 
-	hresp, err := c.Do(hreq)
+	hresp, err := ts.Client().Do(hreq)
 	if err != nil {
 		t.Fatalf("could not post http request: %v", err)
 	}
@@ -197,14 +200,16 @@ func testUploadFile(t *testing.T, c *http.Client, dst, src string, status int) {
 }
 
 func TestCloseFile(t *testing.T) {
-	var c http.Client
-	testOpenFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", 0)
-	testCloseFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root")
-	testOpenFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", http.StatusOK)
-	testCloseFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root")
+	ts := newTestServer()
+	defer ts.Close()
+
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", 0)
+	testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root")
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", http.StatusOK)
+	testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root")
 }
 
-func testCloseFile(t *testing.T, c *http.Client, uri string) {
+func testCloseFile(t *testing.T, ts *httptest.Server, uri string) {
 	t.Helper()
 
 	req := CloseFileRequest{URI: uri}
@@ -214,13 +219,13 @@ func testCloseFile(t *testing.T, c *http.Client, uri string) {
 		t.Fatalf("could not encode request: %v", err)
 	}
 
-	hreq, err := http.NewRequest(http.MethodPost, "http://"+addr+"/close-file", body)
+	hreq, err := http.NewRequest(http.MethodPost, ts.URL+"/close-file", body)
 	if err != nil {
 		t.Fatalf("could not create http request: %v", err)
 	}
 	srv.addCookies(hreq)
 
-	hresp, err := c.Do(hreq)
+	hresp, err := ts.Client().Do(hreq)
 	if err != nil {
 		t.Fatalf("could not post http request: %v", err)
 	}
@@ -232,27 +237,29 @@ func testCloseFile(t *testing.T, c *http.Client, uri string) {
 }
 
 func TestListFiles(t *testing.T) {
-	var c http.Client
-	testOpenFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", 0)
-	testOpenFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root", http.StatusOK)
-	testListFiles(t, &c, []File{
+	ts := newTestServer()
+	defer ts.Close()
+
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", 0)
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root", http.StatusOK)
+	testListFiles(t, ts, []File{
 		{"https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", 60600},
 		{"https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root", 61400},
 	})
-	testCloseFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root")
-	testCloseFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root")
+	testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root")
+	testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root")
 }
 
-func testListFiles(t *testing.T, c *http.Client, want []File) {
+func testListFiles(t *testing.T, ts *httptest.Server, want []File) {
 	t.Helper()
 
-	hreq, err := http.NewRequest(http.MethodPost, "http://"+addr+"/list-files", nil)
+	hreq, err := http.NewRequest(http.MethodPost, ts.URL+"/list-files", nil)
 	if err != nil {
 		t.Fatalf("could not create http request: %v", err)
 	}
 	srv.addCookies(hreq)
 
-	hresp, err := c.Do(hreq)
+	hresp, err := ts.Client().Do(hreq)
 	if err != nil {
 		t.Fatalf("could not post http request: %v", err)
 	}
@@ -282,11 +289,13 @@ func testListFiles(t *testing.T, c *http.Client, want []File) {
 }
 
 func TestDirent(t *testing.T) {
-	var c http.Client
-	testOpenFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", http.StatusOK)
-	defer testCloseFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root")
+	ts := newTestServer()
+	defer ts.Close()
 
-	testDirent(t, &c, DirentRequest{
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", http.StatusOK)
+	defer testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root")
+
+	testDirent(t, ts, DirentRequest{
 		URI:       "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root",
 		Dir:       "/",
 		Recursive: false,
@@ -295,10 +304,10 @@ func TestDirent(t *testing.T) {
 		"/tree",
 	})
 
-	testOpenFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root", http.StatusOK)
-	defer testCloseFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root")
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root", http.StatusOK)
+	defer testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root")
 
-	testDirent(t, &c, DirentRequest{
+	testDirent(t, ts, DirentRequest{
 		URI:       "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root",
 		Dir:       "/",
 		Recursive: false,
@@ -308,7 +317,7 @@ func TestDirent(t *testing.T) {
 		"/dir2",
 		"/dir3",
 	})
-	testDirent(t, &c, DirentRequest{
+	testDirent(t, ts, DirentRequest{
 		URI:       "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root",
 		Dir:       "/",
 		Recursive: true,
@@ -320,7 +329,7 @@ func TestDirent(t *testing.T) {
 		"/dir2",
 		"/dir3",
 	})
-	testDirent(t, &c, DirentRequest{
+	testDirent(t, ts, DirentRequest{
 		URI:       "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root",
 		Dir:       "/dir1",
 		Recursive: false,
@@ -328,7 +337,7 @@ func TestDirent(t *testing.T) {
 		"/dir1",
 		"/dir1/dir11",
 	})
-	testDirent(t, &c, DirentRequest{
+	testDirent(t, ts, DirentRequest{
 		URI:       "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root",
 		Dir:       "/dir1",
 		Recursive: true,
@@ -339,7 +348,7 @@ func TestDirent(t *testing.T) {
 	})
 }
 
-func testDirent(t *testing.T, c *http.Client, req DirentRequest, content []string) {
+func testDirent(t *testing.T, ts *httptest.Server, req DirentRequest, content []string) {
 	t.Helper()
 
 	body := new(bytes.Buffer)
@@ -348,13 +357,13 @@ func testDirent(t *testing.T, c *http.Client, req DirentRequest, content []strin
 		t.Fatalf("could not encode request: %v", err)
 	}
 
-	hreq, err := http.NewRequest(http.MethodPost, "http://"+addr+"/list-dirs", body)
+	hreq, err := http.NewRequest(http.MethodPost, ts.URL+"/list-dirs", body)
 	if err != nil {
 		t.Fatalf("could not create http request: %v", err)
 	}
 	srv.addCookies(hreq)
 
-	hresp, err := c.Do(hreq)
+	hresp, err := ts.Client().Do(hreq)
 	if err != nil {
 		t.Fatalf("could not post http request: %v", err)
 	}
@@ -384,11 +393,12 @@ func testDirent(t *testing.T, c *http.Client, req DirentRequest, content []strin
 }
 
 func TestTree(t *testing.T) {
-	var c http.Client
+	ts := newTestServer()
+	defer ts.Close()
 
 	const uri = "https://github.com/go-hep/hep/raw/master/groot/testdata/small-flat-tree.root"
-	testOpenFile(t, &c, uri, http.StatusOK)
-	defer testCloseFile(t, &c, uri)
+	testOpenFile(t, ts, uri, http.StatusOK)
+	defer testCloseFile(t, ts, uri)
 
 	for _, tc := range []struct {
 		req  TreeRequest
@@ -453,7 +463,7 @@ func TestTree(t *testing.T) {
 	} {
 		t.Run(tc.want.Name, func(t *testing.T) {
 			var resp TreeResponse
-			testTree(t, &c, tc.req, &resp)
+			testTree(t, ts, tc.req, &resp)
 
 			if !reflect.DeepEqual(resp.Tree, tc.want) {
 				t.Fatalf("invalid tree:\ngot= %#v\nwant=%#v", resp.Tree, tc.want)
@@ -462,7 +472,7 @@ func TestTree(t *testing.T) {
 	}
 }
 
-func testTree(t *testing.T, c *http.Client, req TreeRequest, resp *TreeResponse) {
+func testTree(t *testing.T, ts *httptest.Server, req TreeRequest, resp *TreeResponse) {
 	t.Helper()
 
 	body := new(bytes.Buffer)
@@ -471,13 +481,13 @@ func testTree(t *testing.T, c *http.Client, req TreeRequest, resp *TreeResponse)
 		t.Fatalf("could not encode request: %v", err)
 	}
 
-	hreq, err := http.NewRequest(http.MethodPost, "http://"+addr+"/list-tree", body)
+	hreq, err := http.NewRequest(http.MethodPost, ts.URL+"/list-tree", body)
 	if err != nil {
 		t.Fatalf("could not create http request: %v", err)
 	}
 	srv.addCookies(hreq)
 
-	hresp, err := c.Do(hreq)
+	hresp, err := ts.Client().Do(hreq)
 	if err != nil {
 		t.Fatalf("could not post http request: %v", err)
 	}
@@ -494,14 +504,15 @@ func testTree(t *testing.T, c *http.Client, req TreeRequest, resp *TreeResponse)
 }
 
 func TestPlotH1(t *testing.T) {
-	var c http.Client
+	ts := newTestServer()
+	defer ts.Close()
 
-	testOpenFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root", http.StatusOK)
-	defer testCloseFile(t, &c, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root")
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root", http.StatusOK)
+	defer testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root")
 
 	const uri = "https://github.com/go-hep/hep/raw/master/hbook/rootcnv/testdata/gauss-h1.root"
-	testOpenFile(t, &c, uri, http.StatusOK)
-	defer testCloseFile(t, &c, uri)
+	testOpenFile(t, ts, uri, http.StatusOK)
+	defer testCloseFile(t, ts, uri)
 
 	for _, tc := range []struct {
 		req  PlotH1Request
@@ -564,7 +575,7 @@ func TestPlotH1(t *testing.T) {
 	} {
 		t.Run(tc.want, func(t *testing.T) {
 			var resp PlotResponse
-			testPlotH1(t, &c, tc.req, &resp)
+			testPlotH1(t, ts, tc.req, &resp)
 
 			raw, err := base64.StdEncoding.DecodeString(resp.Data)
 			if err != nil {
@@ -591,7 +602,7 @@ func TestPlotH1(t *testing.T) {
 	}
 }
 
-func testPlotH1(t *testing.T, c *http.Client, req PlotH1Request, resp *PlotResponse) {
+func testPlotH1(t *testing.T, ts *httptest.Server, req PlotH1Request, resp *PlotResponse) {
 	t.Helper()
 
 	body := new(bytes.Buffer)
@@ -600,13 +611,13 @@ func testPlotH1(t *testing.T, c *http.Client, req PlotH1Request, resp *PlotRespo
 		t.Fatalf("could not encode request: %v", err)
 	}
 
-	hreq, err := http.NewRequest(http.MethodPost, "http://"+addr+"/plot-h1", body)
+	hreq, err := http.NewRequest(http.MethodPost, ts.URL+"/plot-h1", body)
 	if err != nil {
 		t.Fatalf("could not create http request: %v", err)
 	}
 	srv.addCookies(hreq)
 
-	hresp, err := c.Do(hreq)
+	hresp, err := ts.Client().Do(hreq)
 	if err != nil {
 		t.Fatalf("could not post http request: %v", err)
 	}
@@ -623,11 +634,12 @@ func testPlotH1(t *testing.T, c *http.Client, req PlotH1Request, resp *PlotRespo
 }
 
 func TestPlotH2(t *testing.T) {
-	var c http.Client
+	ts := newTestServer()
+	defer ts.Close()
 
 	const uri = "https://github.com/go-hep/hep/raw/master/hbook/rootcnv/testdata/gauss-h2.root"
-	testOpenFile(t, &c, uri, http.StatusOK)
-	defer testCloseFile(t, &c, uri)
+	testOpenFile(t, ts, uri, http.StatusOK)
+	defer testCloseFile(t, ts, uri)
 
 	for _, tc := range []struct {
 		req  PlotH2Request
@@ -690,7 +702,7 @@ func TestPlotH2(t *testing.T) {
 	} {
 		t.Run(tc.want, func(t *testing.T) {
 			var resp PlotResponse
-			testPlotH2(t, &c, tc.req, &resp)
+			testPlotH2(t, ts, tc.req, &resp)
 
 			raw, err := base64.StdEncoding.DecodeString(resp.Data)
 			if err != nil {
@@ -717,7 +729,7 @@ func TestPlotH2(t *testing.T) {
 	}
 }
 
-func testPlotH2(t *testing.T, c *http.Client, req PlotH2Request, resp *PlotResponse) {
+func testPlotH2(t *testing.T, ts *httptest.Server, req PlotH2Request, resp *PlotResponse) {
 	t.Helper()
 
 	body := new(bytes.Buffer)
@@ -726,13 +738,13 @@ func testPlotH2(t *testing.T, c *http.Client, req PlotH2Request, resp *PlotRespo
 		t.Fatalf("could not encode request: %v", err)
 	}
 
-	hreq, err := http.NewRequest(http.MethodPost, "http://"+addr+"/plot-h2", body)
+	hreq, err := http.NewRequest(http.MethodPost, ts.URL+"/plot-h2", body)
 	if err != nil {
 		t.Fatalf("could not create http request: %v", err)
 	}
 	srv.addCookies(hreq)
 
-	hresp, err := c.Do(hreq)
+	hresp, err := ts.Client().Do(hreq)
 	if err != nil {
 		t.Fatalf("could not post http request: %v", err)
 	}
@@ -749,11 +761,12 @@ func testPlotH2(t *testing.T, c *http.Client, req PlotH2Request, resp *PlotRespo
 }
 
 func TestPlotS2(t *testing.T) {
-	var c http.Client
+	ts := newTestServer()
+	defer ts.Close()
 
 	const uri = "https://github.com/go-hep/hep/raw/master/groot/testdata/graphs.root"
-	testOpenFile(t, &c, uri, http.StatusOK)
-	defer testCloseFile(t, &c, uri)
+	testOpenFile(t, ts, uri, http.StatusOK)
+	defer testCloseFile(t, ts, uri)
 
 	for _, tc := range []struct {
 		req  PlotS2Request
@@ -819,7 +832,7 @@ func TestPlotS2(t *testing.T) {
 	} {
 		t.Run(tc.want, func(t *testing.T) {
 			var resp PlotResponse
-			testPlotS2(t, &c, tc.req, &resp)
+			testPlotS2(t, ts, tc.req, &resp)
 
 			raw, err := base64.StdEncoding.DecodeString(resp.Data)
 			if err != nil {
@@ -846,7 +859,7 @@ func TestPlotS2(t *testing.T) {
 	}
 }
 
-func testPlotS2(t *testing.T, c *http.Client, req PlotS2Request, resp *PlotResponse) {
+func testPlotS2(t *testing.T, ts *httptest.Server, req PlotS2Request, resp *PlotResponse) {
 	t.Helper()
 
 	body := new(bytes.Buffer)
@@ -855,13 +868,13 @@ func testPlotS2(t *testing.T, c *http.Client, req PlotS2Request, resp *PlotRespo
 		t.Fatalf("could not encode request: %v", err)
 	}
 
-	hreq, err := http.NewRequest(http.MethodPost, "http://"+addr+"/plot-s2", body)
+	hreq, err := http.NewRequest(http.MethodPost, ts.URL+"/plot-s2", body)
 	if err != nil {
 		t.Fatalf("could not create http request: %v", err)
 	}
 	srv.addCookies(hreq)
 
-	hresp, err := c.Do(hreq)
+	hresp, err := ts.Client().Do(hreq)
 	if err != nil {
 		t.Fatalf("could not post http request: %v", err)
 	}
@@ -878,11 +891,12 @@ func testPlotS2(t *testing.T, c *http.Client, req PlotS2Request, resp *PlotRespo
 }
 
 func TestPlotTree(t *testing.T) {
-	var c http.Client
+	ts := newTestServer()
+	defer ts.Close()
 
 	const uri = "https://github.com/go-hep/hep/raw/master/groot/testdata/small-flat-tree.root"
-	testOpenFile(t, &c, uri, http.StatusOK)
-	defer testCloseFile(t, &c, uri)
+	testOpenFile(t, ts, uri, http.StatusOK)
+	defer testCloseFile(t, ts, uri)
 
 	for _, tc := range []struct {
 		req  PlotTreeRequest
@@ -926,7 +940,7 @@ func TestPlotTree(t *testing.T) {
 	} {
 		t.Run(tc.want, func(t *testing.T) {
 			var resp PlotResponse
-			testPlotTree(t, &c, tc.req, &resp)
+			testPlotTree(t, ts, tc.req, &resp)
 
 			raw, err := base64.StdEncoding.DecodeString(resp.Data)
 			if err != nil {
@@ -953,7 +967,7 @@ func TestPlotTree(t *testing.T) {
 	}
 }
 
-func testPlotTree(t *testing.T, c *http.Client, req PlotTreeRequest, resp *PlotResponse) {
+func testPlotTree(t *testing.T, ts *httptest.Server, req PlotTreeRequest, resp *PlotResponse) {
 	t.Helper()
 
 	body := new(bytes.Buffer)
@@ -962,13 +976,13 @@ func testPlotTree(t *testing.T, c *http.Client, req PlotTreeRequest, resp *PlotR
 		t.Fatalf("could not encode request: %v", err)
 	}
 
-	hreq, err := http.NewRequest(http.MethodPost, "http://"+addr+"/plot-tree", body)
+	hreq, err := http.NewRequest(http.MethodPost, ts.URL+"/plot-tree", body)
 	if err != nil {
 		t.Fatalf("could not create http request: %v", err)
 	}
 	srv.addCookies(hreq)
 
-	hresp, err := c.Do(hreq)
+	hresp, err := ts.Client().Do(hreq)
 	if err != nil {
 		t.Fatalf("could not post http request: %v", err)
 	}
@@ -982,19 +996,6 @@ func testPlotTree(t *testing.T, c *http.Client, req PlotTreeRequest, resp *PlotR
 	if err != nil {
 		t.Fatalf("could not decode response: %v", err)
 	}
-}
-
-func findPort() string {
-	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
-	if err != nil {
-		log.Panic(err)
-	}
-	l, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		log.Panic(err)
-	}
-	defer l.Close()
-	return l.Addr().String()
 }
 
 func (srv *Server) addCookies(req *http.Request) {
