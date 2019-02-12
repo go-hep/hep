@@ -118,7 +118,7 @@ func (tsk *Propagator) Process(ctx fwk.Context) error {
 	}()
 
 	const (
-		cLight  = 2.99792458E8
+		cLight  = 2.99792458e8
 		cLight2 = cLight * cLight
 	)
 
@@ -267,22 +267,22 @@ func (tsk *Propagator) Process(ctx fwk.Context) error {
 				t6 := (delta - math.Pi + asinrho) / omega
 
 				if t1 < 0 {
-					t1 = 1.0E99
+					t1 = 1.0e99
 				}
 				if t2 < 0 {
-					t2 = 1.0E99
+					t2 = 1.0e99
 				}
 				if t3 < 0 {
-					t3 = 1.0E99
+					t3 = 1.0e99
 				}
 				if t4 < 0 {
-					t4 = 1.0E99
+					t4 = 1.0e99
 				}
 				if t5 < 0 {
-					t5 = 1.0E99
+					t5 = 1.0e99
 				}
 				if t6 < 0 {
-					t6 = 1.0E99
+					t6 = 1.0e99
 				}
 
 				tra := math.Min(t1, math.Min(t2, t3))
@@ -294,7 +294,7 @@ func (tsk *Propagator) Process(ctx fwk.Context) error {
 			// 4. position in terms of x(t), y(t), z(t)
 			xt := xc + r*math.Sin(omega*t-phi0)
 			yt := yc + r*math.Cos(omega*t-phi0)
-			zt := z + pz*1.0E9/cLight/gammam*t
+			zt := z + pz*1.0e9/cLight/gammam*t
 			rt := math.Hypot(xt, yt)
 
 			if rt > 0.0 {

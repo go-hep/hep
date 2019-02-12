@@ -91,15 +91,15 @@ func TestH2MinMax(t *testing.T) {
 	const n = 3
 	h2 := hbook.NewH2D(n, 0, n, n, 0, n)
 	ws := map[pair]float64{
-		pair{0, 0}: 0,
-		pair{0, 1}: 1,
-		pair{0, 2}: 2,
-		pair{1, 0}: 0,
-		pair{1, 1}: 1,
-		pair{1, 2}: 2,
-		pair{2, 0}: 0,
-		pair{2, 1}: 1,
-		pair{2, 2}: 2,
+		{0, 0}: 0,
+		{0, 1}: 1,
+		{0, 2}: 2,
+		{1, 0}: 0,
+		{1, 1}: 1,
+		{1, 2}: 2,
+		{2, 0}: 0,
+		{2, 1}: 1,
+		{2, 2}: 2,
 	}
 	for i := 0; i < n; i++ {
 		ix := float64(i)
