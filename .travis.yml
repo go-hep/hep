@@ -32,6 +32,7 @@ matrix:
        - TAGS="-tags travis"
        - COVERAGE="-race"
        - GO111MODULE="on"
+       - GOPROXY="https://athens.azurefd.net"
 
 sudo: required
 
