@@ -64,7 +64,7 @@ func main() {
 	case *race:
 		args = append(args, "-race", "-timeout=20m")
 	default:
-		args = append(args, "-timeout=5m")
+		args = append(args, "-timeout=10m")
 	}
 	args = append(args, "")
 
