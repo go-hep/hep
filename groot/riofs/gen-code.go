@@ -50,6 +50,7 @@ func genStreamers() {
 		"TNamed",
 		"TList",
 		"THashList",
+		"TMap",
 		"TObjArray",
 		"TObjString",
 		"TGraph", "TGraphErrors", "TGraphAsymmErrors",

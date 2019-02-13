@@ -76,6 +76,7 @@ func genROOTTypes() ([]Type, error) {
 		"TArray", "TArrayC", "TArrayD", "TArrayF", "TArrayI", "TArrayL", "TArrayL64", "TArrayS",
 		"THashList",
 		"TList",
+		"TMap",
 		"TObjArray",
 		// rdict
 		"TStreamerInfo",

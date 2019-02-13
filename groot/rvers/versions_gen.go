@@ -29,6 +29,7 @@ const (
 	ArrayS                   = 1  // ROOT version for TArrayS
 	HashList                 = 0  // ROOT version for THashList
 	List                     = 5  // ROOT version for TList
+	Map                      = 3  // ROOT version for TMap
 	ObjArray                 = 3  // ROOT version for TObjArray
 	StreamerInfo             = 9  // ROOT version for TStreamerInfo
 	StreamerElement          = 4  // ROOT version for TStreamerElement

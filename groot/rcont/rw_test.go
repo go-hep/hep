@@ -23,6 +23,7 @@ func TestWRBuffer(t *testing.T) {
 	for _, tc := range []struct {
 		name string
 		want rtests.ROOTer
+		cmp  func(a, b rtests.ROOTer) bool
 	}{
 		{
 			name: "TList",
@@ -46,6 +47,43 @@ func TestWRBuffer(t *testing.T) {
 					rbase.NewNamed("n2", "t2"),
 				},
 				last: 2,
+			},
+		},
+		{
+			name: "TMap",
+			want: &Map{
+				obj:   rbase.Object{ID: 0x0, Bits: 0x3000000},
+				named: *rbase.NewNamed("TMap", "A (key,value) map"),
+				tbl: map[root.Object]root.Object{
+					rbase.NewObjString("k1"): rbase.NewObjString("v1"),
+					rbase.NewObjString("k2"): rbase.NewObjString("v2"),
+					rbase.NewObjString("k3"): rbase.NewObjString("v3"),
+				},
+			},
+			cmp: func(a, b rtests.ROOTer) bool {
+				ma := a.(*Map)
+				mb := b.(*Map)
+				if ma.Name() != mb.Name() {
+					return false
+				}
+				if ma.Title() != mb.Title() {
+					return false
+				}
+				if len(ma.tbl) != len(mb.tbl) {
+					return false
+				}
+				var (
+					amap = make(map[string]string, len(ma.tbl))
+					bmap = make(map[string]string, len(mb.tbl))
+				)
+				for k, v := range ma.Table() {
+					amap[k.(*rbase.ObjString).String()] = v.(*rbase.ObjString).String()
+				}
+				for k, v := range mb.Table() {
+					bmap[k.(*rbase.ObjString).String()] = v.(*rbase.ObjString).String()
+				}
+
+				return reflect.DeepEqual(amap, bmap)
 			},
 		},
 	} {
@@ -86,8 +124,16 @@ func TestWRBuffer(t *testing.T) {
 				t.Fatalf("could not unmarshal ROOT: %v", err)
 			}
 
-			if !reflect.DeepEqual(obj, tc.want) {
-				t.Fatalf("error\ngot= %+v\nwant=%+v\n", obj, tc.want)
+			switch tc.cmp {
+			case nil:
+				if !reflect.DeepEqual(obj, tc.want) {
+					t.Fatalf("error\ngot= %+v\nwant=%+v\n", obj, tc.want)
+				}
+			default:
+				obj := obj.(rtests.ROOTer)
+				if !tc.cmp(obj, tc.want) {
+					t.Fatalf("error\ngot= %+v\nwant=%+v\n", obj, tc.want)
+				}
 			}
 		})
 	}
