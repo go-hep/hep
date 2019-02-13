@@ -177,7 +177,7 @@ func Example() {
 	// config: role="server"
 	// config: sitename=N/A
 	// config: tpc=N/A
-	// config: version="v4.8.4"
+	// config: version="v4.8.5"
 	// config: wan_port=N/A
 	// config: wan_window=N/A
 	// config: window="87380"
