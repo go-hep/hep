@@ -125,8 +125,8 @@ type counter interface {
 }
 
 func genTypeFromSI(sictx rbytes.StreamerInfoContext, si rbytes.StreamerInfo) reflect.Type {
-	if rtypes.Factory.HasKey(si.Name()) {
-		fct := rtypes.Factory.Get(si.Name())
+	if n := si.Name(); rtypes.Factory.HasKey(n) {
+		fct := rtypes.Factory.Get(n)
 		v := fct()
 		return v.Type().Elem()
 	}
@@ -145,6 +145,12 @@ func genTypeFromSI(sictx rbytes.StreamerInfoContext, si rbytes.StreamerInfo) ref
 }
 
 func genTypeFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement) reflect.Type {
+	if n := se.TypeName(); rtypes.Factory.HasKey(n) {
+		fct := rtypes.Factory.Get(se.TypeName())
+		v := fct()
+		return v.Elem().Type()
+	}
+
 	switch se := se.(type) {
 	default:
 		panic(errors.Errorf("rdict: unknown streamer element: %#v (%T)", se, se))
@@ -162,12 +168,26 @@ func genTypeFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement) 
 		return genType(sictx, se.Type(), -1)
 	case *StreamerSTLstring:
 		return gotypes[reflect.String]
+	case *StreamerObject:
+		si, err := sictx.StreamerInfo(se.TypeName(), -1)
+		if err != nil {
+			panic(err)
+		}
+		return genTypeFromSI(sictx, si)
 	case *StreamerObjectAny:
 		si, err := sictx.StreamerInfo(se.TypeName(), -1)
 		if err != nil {
 			panic(err)
 		}
 		return genTypeFromSI(sictx, si)
+	case *StreamerObjectPointer:
+		name := se.TypeName()
+		name = name[:len(name)-1] // drop final '*'
+		si, err := sictx.StreamerInfo(name, -1)
+		if err != nil {
+			panic(err)
+		}
+		return reflect.PtrTo(genTypeFromSI(sictx, si))
 	case *StreamerSTL:
 		switch se.STLVectorType() {
 		case rmeta.STLvector:
@@ -250,6 +270,80 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 
 	case *StreamerObjectAny:
 		typename := se.TypeName()
+		si, err := sictx.StreamerInfo(typename, -1)
+		if err != nil {
+			panic(err)
+		}
+		typevers := int16(si.ClassVersion())
+		fs := genRStreamerFromSI(sictx, si, recv)
+		return func(recv interface{}, r *rbytes.RBuffer) error {
+			rv := reflect.Indirect(reflect.ValueOf(recv))
+			beg := r.Pos()
+			vers, pos, bcnt := r.ReadVersion()
+			if vers != typevers {
+				r.SetErr(errors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
+				return r.Err()
+			}
+
+			for i, ff := range fs {
+				rf := rv.Field(i)
+				switch rf.Kind() {
+				case reflect.Array:
+					rf = rf.Slice(0, rf.Len())
+				default:
+					rf = rf.Addr()
+				}
+				err := ff(rf.Interface(), r)
+				if err != nil {
+					return err
+				}
+			}
+
+			r.CheckByteCount(pos, bcnt, beg, typename)
+			return r.Err()
+		}
+
+	case *StreamerObject:
+		typename := se.TypeName()
+		si, err := sictx.StreamerInfo(typename, -1)
+		if err != nil {
+			panic(err)
+		}
+		typevers := int16(si.ClassVersion())
+		fs := genRStreamerFromSI(sictx, si, recv)
+		return func(recv interface{}, r *rbytes.RBuffer) error {
+			rv := reflect.Indirect(reflect.ValueOf(recv))
+			beg := r.Pos()
+			vers, pos, bcnt := r.ReadVersion()
+			if vers != typevers {
+				r.SetErr(errors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
+				return r.Err()
+			}
+
+			for i, ff := range fs {
+				rf := rv.Field(i)
+				switch rf.Kind() {
+				case reflect.Array:
+					rf = rf.Slice(0, rf.Len())
+				default:
+					rf = rf.Addr()
+				}
+				err := ff(rf.Interface(), r)
+				if err != nil {
+					return err
+				}
+			}
+
+			r.CheckByteCount(pos, bcnt, beg, typename)
+			return r.Err()
+		}
+
+	case *StreamerObjectPointer:
+		// FIXME(sbinet): a TObject* or MyClass*, in C++/ROOT speak, usually means
+		// (or implies that) we are dealing with some amount of polymorphism.
+		// In Go this should be translated into some kind of interface.
+		typename := se.TypeName()
+		typename = typename[:len(typename)-1] // drop '*' suffix
 		si, err := sictx.StreamerInfo(typename, -1)
 		if err != nil {
 			panic(err)
