@@ -153,8 +153,8 @@ func (ls rootls) ls(fname string) error {
 }
 
 func (ls rootls) walk(w io.Writer, k riofs.Key) {
-	obj := k.Value()
-	if ls.trees {
+	if ls.trees && isTreelike(k.ClassName()) {
+		obj := k.Value()
 		tree, ok := obj.(rtree.Tree)
 		if ok {
 			w := newWindent(2, w)
@@ -165,13 +165,32 @@ func (ls rootls) walk(w io.Writer, k riofs.Key) {
 		}
 	}
 	fmt.Fprintf(w, "%s\t%s\t%s\t(cycle=%d)\n", k.ClassName(), k.Name(), k.Title(), k.Cycle())
-	if dir, ok := obj.(riofs.Directory); ok {
-		w := newWindent(2, w)
-		for _, k := range dir.Keys() {
-			ls.walk(w, k)
+	if isDirlike(k.ClassName()) {
+		obj := k.Value()
+		if dir, ok := obj.(riofs.Directory); ok {
+			w := newWindent(2, w)
+			for _, k := range dir.Keys() {
+				ls.walk(w, k)
+			}
+			w.Flush()
 		}
-		w.Flush()
 	}
+}
+
+func isDirlike(class string) bool {
+	switch class {
+	case "TDirectory", "TDirectoryFile":
+		return true
+	}
+	return false
+}
+
+func isTreelike(class string) bool {
+	switch class {
+	case "TTree", "TTreeSQL", "TChain", "TNtuple", "TNtupleD":
+		return true
+	}
+	return false
 }
 
 type windent struct {
