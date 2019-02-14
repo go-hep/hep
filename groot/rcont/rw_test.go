@@ -52,8 +52,8 @@ func TestWRBuffer(t *testing.T) {
 		{
 			name: "TMap",
 			want: &Map{
-				obj:   rbase.Object{ID: 0x0, Bits: 0x3000000},
-				named: *rbase.NewNamed("TMap", "A (key,value) map"),
+				obj:  rbase.Object{ID: 0x0, Bits: 0x3000000},
+				name: "my-map",
 				tbl: map[root.Object]root.Object{
 					rbase.NewObjString("k1"): rbase.NewObjString("v1"),
 					rbase.NewObjString("k2"): rbase.NewObjString("v2"),

@@ -17,26 +17,25 @@ import (
 // Map is a ROOT associative array of (key,value) pairs.
 // Keys and values must implement the root.Object interface.
 type Map struct {
-	obj   rbase.Object
-	named rbase.Named
-	tbl   map[root.Object]root.Object
+	obj  rbase.Object
+	name string
+	tbl  map[root.Object]root.Object
 }
 
 func NewMap() *Map {
 	return &Map{
-		obj:   *rbase.NewObject(),
-		named: *rbase.NewNamed("TMap", "A (key,value) map"),
-		tbl:   make(map[root.Object]root.Object),
+		obj:  *rbase.NewObject(),
+		name: "TMap",
+		tbl:  make(map[root.Object]root.Object),
 	}
 }
 
 func (*Map) RVersion() int16 { return rvers.Map }
 func (*Map) Class() string   { return "TMap" }
 
-func (m *Map) Name() string          { return m.named.Name() }
-func (m *Map) Title() string         { return m.named.Title() }
-func (m *Map) SetName(name string)   { m.named.SetName(name) }
-func (m *Map) SetTitle(title string) { m.named.SetTitle(title) }
+func (m *Map) Name() string        { return m.name }
+func (m *Map) Title() string       { return "A (key,value) map" }
+func (m *Map) SetName(name string) { m.name = name }
 
 // Table returns the underlying hash table.
 func (m *Map) Table() map[root.Object]root.Object { return m.tbl }
@@ -50,7 +49,7 @@ func (m *Map) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(m.RVersion())
 	m.obj.MarshalROOT(w)
-	m.named.MarshalROOT(w)
+	w.WriteString(m.name)
 
 	w.WriteI32(int32(len(m.tbl)))
 
@@ -78,9 +77,7 @@ func (m *Map) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 	if vers > 1 {
-		if err := m.named.UnmarshalROOT(r); err != nil {
-			return err
-		}
+		m.name = r.ReadString()
 	}
 
 	nobjs := int(r.ReadI32())
