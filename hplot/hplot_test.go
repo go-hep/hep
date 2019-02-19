@@ -5,6 +5,7 @@
 package hplot_test
 
 import (
+	"flag"
 	"image/color"
 	"io/ioutil"
 	"log"
@@ -26,8 +27,17 @@ import (
 	"gonum.org/v1/plot/vg/vgtex"
 )
 
+var (
+	regen = flag.Bool("regen", false, "regenerate reference files")
+)
+
 func checkPlot(t *testing.T, ref string) {
 	fname := strings.Replace(ref, "_golden", "", 1)
+
+	if *regen {
+		got, _ := ioutil.ReadFile(fname)
+		ioutil.WriteFile(ref, got, 0644)
+	}
 
 	want, err := ioutil.ReadFile(ref)
 	if err != nil {

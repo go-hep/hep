@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"image/color"
 	"io"
 	"io/ioutil"
@@ -31,8 +32,8 @@ var (
 	srv *Server
 )
 
-const (
-	regen = false
+var (
+	regen = flag.Bool("regen", false, "regenerate reference files")
 )
 
 func TestMain(m *testing.M) {
@@ -582,11 +583,12 @@ func TestPlotH1(t *testing.T) {
 				t.Fatal(err)
 			}
 
+			if *regen {
+				ioutil.WriteFile(tc.want, raw, 0644)
+			}
+
 			want, err := ioutil.ReadFile(tc.want)
 			if err != nil {
-				if regen {
-					ioutil.WriteFile(tc.want, raw, 0644)
-				}
 				t.Fatal(err)
 			}
 
@@ -709,11 +711,12 @@ func TestPlotH2(t *testing.T) {
 				t.Fatal(err)
 			}
 
+			if *regen {
+				ioutil.WriteFile(tc.want, raw, 0644)
+			}
+
 			want, err := ioutil.ReadFile(tc.want)
 			if err != nil {
-				if regen {
-					ioutil.WriteFile(tc.want, raw, 0644)
-				}
 				t.Fatal(err)
 			}
 
@@ -839,11 +842,12 @@ func TestPlotS2(t *testing.T) {
 				t.Fatal(err)
 			}
 
+			if *regen {
+				ioutil.WriteFile(tc.want, raw, 0644)
+			}
+
 			want, err := ioutil.ReadFile(tc.want)
 			if err != nil {
-				if regen {
-					ioutil.WriteFile(tc.want, raw, 0644)
-				}
 				t.Fatal(err)
 			}
 
@@ -947,11 +951,12 @@ func TestPlotTree(t *testing.T) {
 				t.Fatal(err)
 			}
 
+			if *regen {
+				ioutil.WriteFile(tc.want, raw, 0644)
+			}
+
 			want, err := ioutil.ReadFile(tc.want)
 			if err != nil {
-				if regen {
-					ioutil.WriteFile(tc.want, raw, 0644)
-				}
 				t.Fatal(err)
 			}
 
