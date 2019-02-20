@@ -81,6 +81,7 @@ void genstreamers(const char* fname) {
 
 {{range .}}
 	(({{.}}*)(TClass::GetClass("{{.}}")->New()))->Write("type-{{.}}");
+	TClass::GetClass("{{.}}")->GetStreamerInfo()->Write("streamer-info-{{.}}");
 {{end }}
 
 	f->Write();

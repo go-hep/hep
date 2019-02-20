@@ -6,6 +6,7 @@ package riofs
 
 import (
 	"bytes"
+	"log"
 	"regexp"
 	"strings"
 
@@ -78,6 +79,16 @@ func init() {
 	f, err := NewReader(r)
 	if err != nil {
 		return
+	}
+	for _, k := range f.Keys() {
+		if !strings.HasPrefix(k.Name(), "streamer-info-") {
+			continue
+		}
+		o, err := k.Object()
+		if err != nil {
+			log.Printf("riofs: could not load streamer info for %q: %v", k.Name(), err)
+		}
+		rdict.Streamers.Add(o.(rbytes.StreamerInfo))
 	}
 	defer f.Close()
 }
