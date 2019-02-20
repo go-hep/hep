@@ -803,3 +803,7 @@ func (r *RBuffer) ReadObjectAny() (obj root.Object) {
 		return obj
 	}
 }
+
+var (
+	_ StreamerInfoContext = (*RBuffer)(nil)
+)

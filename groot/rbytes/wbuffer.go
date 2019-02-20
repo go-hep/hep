@@ -71,6 +71,15 @@ func NewWBuffer(data []byte, refs map[interface{}]int64, offset uint32, ctx Stre
 	}
 }
 
+// StreamerInfo returns the named StreamerInfo.
+// If version is negative, the latest version should be returned.
+func (w *WBuffer) StreamerInfo(name string, version int) (StreamerInfo, error) {
+	if w.sictx == nil {
+		return nil, errors.Errorf("rbytes: no streamers")
+	}
+	return w.sictx.StreamerInfo(name, version)
+}
+
 func (w *WBuffer) Grow(n int)     { w.w.grow(n) }
 func (w *WBuffer) buffer() []byte { return w.w.p[:w.w.c] }
 func (w *WBuffer) Bytes() []byte  { return w.w.p[:w.w.c] }
@@ -569,3 +578,7 @@ func (w *WBuffer) WriteFastArrayString(v []string) {
 		w.writeString(v)
 	}
 }
+
+var (
+	_ StreamerInfoContext = (*WBuffer)(nil)
+)
