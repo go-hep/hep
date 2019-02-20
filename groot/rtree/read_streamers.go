@@ -758,10 +758,6 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 		return func(r *rbytes.RBuffer) error {
 			start := r.Pos()
 			_, pos, bcnt := r.ReadVersion(typename)
-			chksum := int(r.ReadI32())
-			if sinfo.CheckSum() != chksum {
-				return errors.Errorf("rtree: on-disk checksum=%d, streamer=%d (type=%q)", chksum, sinfo.CheckSum(), se.TypeName())
-			}
 			for _, fct := range funcs {
 				err := fct(r)
 				if err != nil {
