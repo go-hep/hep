@@ -75,12 +75,12 @@ func (leaf *LeafO) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteBool(leaf.min)
 	w.WriteBool(leaf.max)
 
-	return w.SetByteCount(pos, "TLeafO")
+	return w.SetByteCount(pos, leaf.Class())
 }
 
 func (leaf *LeafO) UnmarshalROOT(r *rbytes.RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
@@ -90,7 +90,7 @@ func (leaf *LeafO) UnmarshalROOT(r *rbytes.RBuffer) error {
 	leaf.min = r.ReadBool()
 	leaf.max = r.ReadBool()
 
-	r.CheckByteCount(pos, bcnt, start, "TLeafO")
+	r.CheckByteCount(pos, bcnt, start, leaf.Class())
 	return r.Err()
 }
 
@@ -233,12 +233,12 @@ func (leaf *LeafB) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI8(leaf.min)
 	w.WriteI8(leaf.max)
 
-	return w.SetByteCount(pos, "TLeafB")
+	return w.SetByteCount(pos, leaf.Class())
 }
 
 func (leaf *LeafB) UnmarshalROOT(r *rbytes.RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
@@ -248,7 +248,7 @@ func (leaf *LeafB) UnmarshalROOT(r *rbytes.RBuffer) error {
 	leaf.min = r.ReadI8()
 	leaf.max = r.ReadI8()
 
-	r.CheckByteCount(pos, bcnt, start, "TLeafB")
+	r.CheckByteCount(pos, bcnt, start, leaf.Class())
 	return r.Err()
 }
 
@@ -406,12 +406,12 @@ func (leaf *LeafS) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI16(leaf.min)
 	w.WriteI16(leaf.max)
 
-	return w.SetByteCount(pos, "TLeafS")
+	return w.SetByteCount(pos, leaf.Class())
 }
 
 func (leaf *LeafS) UnmarshalROOT(r *rbytes.RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
@@ -421,7 +421,7 @@ func (leaf *LeafS) UnmarshalROOT(r *rbytes.RBuffer) error {
 	leaf.min = r.ReadI16()
 	leaf.max = r.ReadI16()
 
-	r.CheckByteCount(pos, bcnt, start, "TLeafS")
+	r.CheckByteCount(pos, bcnt, start, leaf.Class())
 	return r.Err()
 }
 
@@ -579,12 +579,12 @@ func (leaf *LeafI) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI32(leaf.min)
 	w.WriteI32(leaf.max)
 
-	return w.SetByteCount(pos, "TLeafI")
+	return w.SetByteCount(pos, leaf.Class())
 }
 
 func (leaf *LeafI) UnmarshalROOT(r *rbytes.RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
@@ -594,7 +594,7 @@ func (leaf *LeafI) UnmarshalROOT(r *rbytes.RBuffer) error {
 	leaf.min = r.ReadI32()
 	leaf.max = r.ReadI32()
 
-	r.CheckByteCount(pos, bcnt, start, "TLeafI")
+	r.CheckByteCount(pos, bcnt, start, leaf.Class())
 	return r.Err()
 }
 
@@ -752,12 +752,12 @@ func (leaf *LeafL) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI64(leaf.min)
 	w.WriteI64(leaf.max)
 
-	return w.SetByteCount(pos, "TLeafL")
+	return w.SetByteCount(pos, leaf.Class())
 }
 
 func (leaf *LeafL) UnmarshalROOT(r *rbytes.RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
@@ -767,7 +767,7 @@ func (leaf *LeafL) UnmarshalROOT(r *rbytes.RBuffer) error {
 	leaf.min = r.ReadI64()
 	leaf.max = r.ReadI64()
 
-	r.CheckByteCount(pos, bcnt, start, "TLeafL")
+	r.CheckByteCount(pos, bcnt, start, leaf.Class())
 	return r.Err()
 }
 
@@ -915,12 +915,12 @@ func (leaf *LeafF) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteF32(leaf.min)
 	w.WriteF32(leaf.max)
 
-	return w.SetByteCount(pos, "TLeafF")
+	return w.SetByteCount(pos, leaf.Class())
 }
 
 func (leaf *LeafF) UnmarshalROOT(r *rbytes.RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
@@ -930,7 +930,7 @@ func (leaf *LeafF) UnmarshalROOT(r *rbytes.RBuffer) error {
 	leaf.min = r.ReadF32()
 	leaf.max = r.ReadF32()
 
-	r.CheckByteCount(pos, bcnt, start, "TLeafF")
+	r.CheckByteCount(pos, bcnt, start, leaf.Class())
 	return r.Err()
 }
 
@@ -1063,12 +1063,12 @@ func (leaf *LeafD) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteF64(leaf.min)
 	w.WriteF64(leaf.max)
 
-	return w.SetByteCount(pos, "TLeafD")
+	return w.SetByteCount(pos, leaf.Class())
 }
 
 func (leaf *LeafD) UnmarshalROOT(r *rbytes.RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
@@ -1078,7 +1078,7 @@ func (leaf *LeafD) UnmarshalROOT(r *rbytes.RBuffer) error {
 	leaf.min = r.ReadF64()
 	leaf.max = r.ReadF64()
 
-	r.CheckByteCount(pos, bcnt, start, "TLeafD")
+	r.CheckByteCount(pos, bcnt, start, leaf.Class())
 	return r.Err()
 }
 
@@ -1211,12 +1211,12 @@ func (leaf *LeafC) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI32(leaf.min)
 	w.WriteI32(leaf.max)
 
-	return w.SetByteCount(pos, "TLeafC")
+	return w.SetByteCount(pos, leaf.Class())
 }
 
 func (leaf *LeafC) UnmarshalROOT(r *rbytes.RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
@@ -1226,7 +1226,7 @@ func (leaf *LeafC) UnmarshalROOT(r *rbytes.RBuffer) error {
 	leaf.min = r.ReadI32()
 	leaf.max = r.ReadI32()
 
-	r.CheckByteCount(pos, bcnt, start, "TLeafC")
+	r.CheckByteCount(pos, bcnt, start, leaf.Class())
 	return r.Err()
 }
 

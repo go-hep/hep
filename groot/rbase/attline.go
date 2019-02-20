@@ -45,7 +45,7 @@ func (a *AttLine) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI16(a.Color)
 	w.WriteI16(a.Style)
 	w.WriteI16(a.Width)
-	return w.SetByteCount(pos, "TAttLine")
+	return w.SetByteCount(pos, a.Class())
 
 }
 
@@ -55,12 +55,12 @@ func (a *AttLine) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	start := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	/*vers*/ _, pos, bcnt := r.ReadVersion(a.Class())
 
 	a.Color = r.ReadI16()
 	a.Style = r.ReadI16()
 	a.Width = r.ReadI16()
-	r.CheckByteCount(pos, bcnt, start, "TAttLine")
+	r.CheckByteCount(pos, bcnt, start, a.Class())
 
 	return r.Err()
 }

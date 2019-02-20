@@ -135,7 +135,7 @@ func (tree *ttree) loadEntry(entry int64) error {
 func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(tree.Class())
 	tree.rvers = vers
 
 	for _, a := range []rbytes.Unmarshaler{
@@ -233,7 +233,7 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 		_ = r.ReadObjectAny()
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TTree")
+	r.CheckByteCount(pos, bcnt, beg, tree.Class())
 
 	// attach streamers to branches
 	for i := range tree.branches {
@@ -400,7 +400,7 @@ type tntuple struct {
 	nvars int
 }
 
-func (nt *tntuple) Class() string {
+func (*tntuple) Class() string {
 	return "TNtuple"
 }
 
@@ -410,7 +410,7 @@ func (nt *tntuple) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	/*vers*/ _, pos, bcnt := r.ReadVersion(nt.Class())
 
 	if err := nt.ttree.UnmarshalROOT(r); err != nil {
 		return err
@@ -418,7 +418,7 @@ func (nt *tntuple) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	nt.nvars = int(r.ReadI32())
 
-	r.CheckByteCount(pos, bcnt, beg, "TNtuple")
+	r.CheckByteCount(pos, bcnt, beg, nt.Class())
 	return r.Err()
 }
 
@@ -430,7 +430,7 @@ func (tio *tioFeatures) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion("TIOFeatures")
 
 	var buf [4]byte // FIXME(sbinet) where do these 4 bytes come from ?
 	r.Read(buf[:])

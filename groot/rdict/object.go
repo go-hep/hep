@@ -76,7 +76,7 @@ func (obj *Object) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(obj.Class())
 	if vers != obj.rvers {
 		r.SetErr(errors.Errorf("rdict: inconsistent ROOT version (got=%d, want=%d)", vers, obj.rvers))
 		return r.Err()
@@ -238,7 +238,7 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 		return func(recv interface{}, r *rbytes.RBuffer) error {
 			rv := reflect.Indirect(reflect.ValueOf(recv))
 			beg := r.Pos()
-			vers, pos, bcnt := r.ReadVersion()
+			vers, pos, bcnt := r.ReadVersion(typename)
 			if vers != typevers {
 				r.SetErr(errors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
 				return r.Err()
@@ -279,7 +279,7 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 		return func(recv interface{}, r *rbytes.RBuffer) error {
 			rv := reflect.Indirect(reflect.ValueOf(recv))
 			beg := r.Pos()
-			vers, pos, bcnt := r.ReadVersion()
+			vers, pos, bcnt := r.ReadVersion(typename)
 			if vers != typevers {
 				r.SetErr(errors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
 				return r.Err()
@@ -314,7 +314,7 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 		return func(recv interface{}, r *rbytes.RBuffer) error {
 			rv := reflect.Indirect(reflect.ValueOf(recv))
 			beg := r.Pos()
-			vers, pos, bcnt := r.ReadVersion()
+			vers, pos, bcnt := r.ReadVersion(typename)
 			if vers != typevers {
 				r.SetErr(errors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
 				return r.Err()
@@ -353,7 +353,7 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 		return func(recv interface{}, r *rbytes.RBuffer) error {
 			rv := reflect.Indirect(reflect.ValueOf(recv))
 			beg := r.Pos()
-			vers, pos, bcnt := r.ReadVersion()
+			vers, pos, bcnt := r.ReadVersion(typename)
 			if vers != typevers {
 				r.SetErr(errors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
 				return r.Err()

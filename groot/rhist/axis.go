@@ -139,7 +139,7 @@ func (a *taxis) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		}
 	}
 
-	return w.SetByteCount(pos, "TAxis")
+	return w.SetByteCount(pos, a.Class())
 }
 
 func (a *taxis) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -148,7 +148,7 @@ func (a *taxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(a.Class())
 	if vers < 9 {
 		return fmt.Errorf("rhist: TAxis version too old (%d<9)", vers)
 	}
@@ -190,7 +190,7 @@ func (a *taxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TAxis")
+	r.CheckByteCount(pos, bcnt, beg, a.Class())
 	return r.Err()
 }
 

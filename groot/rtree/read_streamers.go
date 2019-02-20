@@ -558,7 +558,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 			fptr := rf.Addr().Interface().(*string)
 			return func(r *rbytes.RBuffer) error {
 				start := r.Pos()
-				_, pos, bcnt := r.ReadVersion()
+				_, pos, bcnt := r.ReadVersion("string") // ROOT knows std::string as string.
 				*fptr = r.ReadString()
 				r.CheckByteCount(pos, bcnt, start, "std::string")
 				return r.Err()
@@ -703,7 +703,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					fptr := rf.Addr().Interface().(*[]string)
 					return func(r *rbytes.RBuffer) error {
 						start := r.Pos()
-						_, pos, bcnt := r.ReadVersion()
+						_, pos, bcnt := r.ReadVersion("vector<string>")
 						n := int(r.ReadI32())
 						*fptr = make([]string, n)
 						for i := 0; i < n; i++ {
@@ -721,9 +721,10 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					eptr := reflect.New(rf.Type().Elem())
 					felt := rstreamerFrom(subsi.Elements()[0], eptr.Interface(), lcnt, sictx)
 					fptr := rf.Addr()
+					typename := se.TypeName()
 					return func(r *rbytes.RBuffer) error {
 						start := r.Pos()
-						_, pos, bcnt := r.ReadVersion()
+						_, pos, bcnt := r.ReadVersion(typename)
 						n := int(r.ReadI32())
 						if fptr.Elem().Len() < n {
 							fptr.Elem().Set(reflect.MakeSlice(rf.Type(), n, n))
@@ -734,7 +735,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 							sli.Index(i).Set(eptr.Elem())
 						}
 
-						r.CheckByteCount(pos, bcnt, start, se.TypeName())
+						r.CheckByteCount(pos, bcnt, start, typename)
 						return r.Err()
 					}
 				}
@@ -753,9 +754,10 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 			fptr := rf.Field(i).Addr().Interface()
 			funcs = append(funcs, rstreamerFrom(elt, fptr, lcnt, sictx))
 		}
+		typename := se.TypeName()
 		return func(r *rbytes.RBuffer) error {
 			start := r.Pos()
-			_, pos, bcnt := r.ReadVersion()
+			_, pos, bcnt := r.ReadVersion(typename)
 			chksum := int(r.ReadI32())
 			if sinfo.CheckSum() != chksum {
 				return errors.Errorf("rtree: on-disk checksum=%d, streamer=%d (type=%q)", chksum, sinfo.CheckSum(), se.TypeName())
@@ -766,7 +768,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					return err
 				}
 			}
-			r.CheckByteCount(pos, bcnt, start, se.TypeName())
+			r.CheckByteCount(pos, bcnt, start, typename)
 			return nil
 		}
 

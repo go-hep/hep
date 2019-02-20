@@ -159,7 +159,7 @@ func (h *th1) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteI32(h.oflow)
 	}
 
-	return w.SetByteCount(pos, "TH1")
+	return w.SetByteCount(pos, h.Class())
 }
 
 func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -168,7 +168,7 @@ func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(h.Class())
 	for _, v := range []rbytes.Unmarshaler{
 		&h.Named,
 		&h.attline,
@@ -233,7 +233,7 @@ func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
 		h.oflow = r.ReadI32()
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TH1")
+	r.CheckByteCount(pos, bcnt, beg, h.Class())
 	return r.Err()
 }
 
@@ -275,7 +275,7 @@ func (h *th2) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteF64(h.tsumwy2)
 	w.WriteF64(h.tsumwxy)
 
-	return w.SetByteCount(pos, "TH2")
+	return w.SetByteCount(pos, h.Class())
 }
 
 func (h *th2) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -284,7 +284,7 @@ func (h *th2) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 3 {
 		return errors.Errorf("rhist: TH2 version too old (%d<3)", vers)
 	}
@@ -298,7 +298,7 @@ func (h *th2) UnmarshalROOT(r *rbytes.RBuffer) error {
 	h.tsumwy2 = r.ReadF64()
 	h.tsumwxy = r.ReadF64()
 
-	r.CheckByteCount(pos, bcnt, beg, "TH2")
+	r.CheckByteCount(pos, bcnt, beg, h.Class())
 	return r.Err()
 }
 

@@ -87,7 +87,7 @@ func (li *List) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteU8(0) // FIXME(sbinet): properly serialize the 'OPTION'.
 	}
 
-	return w.SetByteCount(pos, "TList")
+	return w.SetByteCount(pos, li.Class())
 }
 
 func (li *List) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -97,7 +97,7 @@ func (li *List) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	beg := r.Pos()
 
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(li.Class())
 
 	if vers <= 3 {
 		return fmt.Errorf("rcont: TList version too old (%d <= 3)", vers)
@@ -129,7 +129,7 @@ func (li *List) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TList")
+	r.CheckByteCount(pos, bcnt, beg, li.Class())
 	return r.Err()
 }
 

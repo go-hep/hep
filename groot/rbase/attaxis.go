@@ -70,7 +70,7 @@ func (a *AttAxis) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI16(a.TitleColor)
 	w.WriteI16(a.TitleFont)
 
-	return w.SetByteCount(pos, "TAttAxis")
+	return w.SetByteCount(pos, a.Class())
 }
 
 func (a *AttAxis) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -79,7 +79,7 @@ func (a *AttAxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(a.Class())
 	if vers < 4 {
 		return errors.Errorf("rbase: TAttAxis version too old (%d < 4)", vers)
 	}
@@ -96,7 +96,7 @@ func (a *AttAxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 	a.TitleColor = r.ReadI16()
 	a.TitleFont = r.ReadI16()
 
-	r.CheckByteCount(pos, bcnt, beg, "TAttAxis")
+	r.CheckByteCount(pos, bcnt, beg, a.Class())
 
 	return r.Err()
 }

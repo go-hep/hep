@@ -145,7 +145,7 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(b.Class())
 	b.rvers = vers
 
 	b.tree = nil
@@ -248,7 +248,7 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	b.fname = r.ReadString()
 
-	r.CheckByteCount(pos, bcnt, beg, "TBranch")
+	r.CheckByteCount(pos, bcnt, beg, b.Class())
 
 	if b.splitLevel == 0 && len(b.branches) > 0 {
 		b.splitLevel = 1
@@ -443,7 +443,7 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(b.Class())
 	b.rvers = vers
 	if vers < 8 {
 		r.SetErr(errors.Errorf("rtree: TBranchElement version too old (%d < 8)", vers))
@@ -478,7 +478,7 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 		b.bcount2 = bcount2.(*tbranchElement)
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TBranchElement")
+	r.CheckByteCount(pos, bcnt, beg, b.Class())
 	return r.Err()
 }
 

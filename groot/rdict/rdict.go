@@ -100,7 +100,7 @@ func (tsi *StreamerInfo) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 func (tsi *StreamerInfo) UnmarshalROOT(r *rbytes.RBuffer) error {
 	start := r.Pos()
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion(tsi.Class())
 
 	if err := tsi.named.UnmarshalROOT(r); err != nil {
 		return err
@@ -124,7 +124,7 @@ func (tsi *StreamerInfo) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 	tsi.objarr.SetElems(nil)
 
-	r.CheckByteCount(pos, bcnt, start, "TStreamerInfo")
+	r.CheckByteCount(pos, bcnt, start, tsi.Class())
 	return r.Err()
 }
 
@@ -246,12 +246,12 @@ func (tse *StreamerElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		// if (TestBit(kHasRange)) GetRange(GetTitle(),fXmin,fXmax,fFactor)
 	}
 
-	return w.SetByteCount(pos, "TStreamerElement")
+	return w.SetByteCount(pos, tse.Class())
 }
 
 func (tse *StreamerElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(tse.Class())
 	if err := tse.named.UnmarshalROOT(r); err != nil {
 		return err
 	}
@@ -289,7 +289,7 @@ func (tse *StreamerElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 		// if (TestBit(kHasRange)) GetRange(GetTitle(),fXmin,fXmax,fFactor)
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TStreamerElement")
+	r.CheckByteCount(pos, bcnt, beg, tse.Class())
 	return r.Err()
 }
 
@@ -318,12 +318,12 @@ func (tsb *StreamerBase) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	tsb.StreamerElement.MarshalROOT(w)
 	w.WriteI32(tsb.vbase)
 
-	return w.SetByteCount(pos, "TStreamerBase")
+	return w.SetByteCount(pos, tsb.Class())
 }
 
 func (tsb *StreamerBase) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(tsb.Class())
 
 	if err := tsb.StreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -333,7 +333,7 @@ func (tsb *StreamerBase) UnmarshalROOT(r *rbytes.RBuffer) error {
 		tsb.vbase = r.ReadI32()
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TStreamerBase")
+	r.CheckByteCount(pos, bcnt, beg, tsb.Class())
 	return r.Err()
 }
 
@@ -355,12 +355,12 @@ func (tsb *StreamerBasicType) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	pos := w.WriteVersion(tsb.RVersion())
 	tsb.StreamerElement.MarshalROOT(w)
 
-	return w.SetByteCount(pos, "TStreamerBasicType")
+	return w.SetByteCount(pos, tsb.Class())
 }
 
 func (tsb *StreamerBasicType) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion(tsb.Class())
 
 	if err := tsb.StreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -393,7 +393,7 @@ func (tsb *StreamerBasicType) UnmarshalROOT(r *rbytes.RBuffer) error {
 	if basic && tsb.StreamerElement.arrlen > 0 {
 		tsb.StreamerElement.esize *= tsb.StreamerElement.arrlen
 	}
-	r.CheckByteCount(pos, bcnt, beg, "TStreamerBasicType")
+	r.CheckByteCount(pos, bcnt, beg, tsb.Class())
 	return r.Err()
 }
 
@@ -425,13 +425,13 @@ func (tsb *StreamerBasicPointer) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteString(tsb.cname)
 	w.WriteString(tsb.ccls)
 
-	return w.SetByteCount(pos, "TStreamerBasicPointer")
+	return w.SetByteCount(pos, tsb.Class())
 }
 
 func (tsb *StreamerBasicPointer) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion(tsb.Class())
 
 	if err := tsb.StreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -441,7 +441,7 @@ func (tsb *StreamerBasicPointer) UnmarshalROOT(r *rbytes.RBuffer) error {
 	tsb.cname = r.ReadString()
 	tsb.ccls = r.ReadString()
 
-	r.CheckByteCount(pos, bcnt, beg, "TStreamerBasicPointer")
+	r.CheckByteCount(pos, bcnt, beg, tsb.Class())
 	return r.Err()
 }
 
@@ -473,13 +473,13 @@ func (tsl *StreamerLoop) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteString(tsl.cname)
 	w.WriteString(tsl.cclass)
 
-	return w.SetByteCount(pos, "TStreamerLoop")
+	return w.SetByteCount(pos, tsl.Class())
 }
 
 func (tsl *StreamerLoop) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion(tsl.Class())
 
 	if err := tsl.StreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -489,7 +489,7 @@ func (tsl *StreamerLoop) UnmarshalROOT(r *rbytes.RBuffer) error {
 	tsl.cname = r.ReadString()
 	tsl.cclass = r.ReadString()
 
-	r.CheckByteCount(pos, bcnt, beg, "TStreamerLoop")
+	r.CheckByteCount(pos, bcnt, beg, tsl.Class())
 	return r.Err()
 }
 
@@ -510,19 +510,19 @@ func (tso *StreamerObject) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(tso.RVersion())
 	tso.StreamerElement.MarshalROOT(w)
-	return w.SetByteCount(pos, "TStreamerObject")
+	return w.SetByteCount(pos, tso.Class())
 }
 
 func (tso *StreamerObject) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion(tso.Class())
 
 	if err := tso.StreamerElement.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TStreamerObject")
+	r.CheckByteCount(pos, bcnt, beg, tso.Class())
 	return r.Err()
 }
 
@@ -543,19 +543,19 @@ func (tso *StreamerObjectPointer) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(tso.RVersion())
 	tso.StreamerElement.MarshalROOT(w)
-	return w.SetByteCount(pos, "TStreamerObjectPointer")
+	return w.SetByteCount(pos, tso.Class())
 }
 
 func (tso *StreamerObjectPointer) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion(tso.Class())
 
 	if err := tso.StreamerElement.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TStreamerObjectPointer")
+	r.CheckByteCount(pos, bcnt, beg, tso.Class())
 	return r.Err()
 }
 
@@ -577,19 +577,19 @@ func (tso *StreamerObjectAny) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	pos := w.WriteVersion(tso.RVersion())
 	tso.StreamerElement.MarshalROOT(w)
 
-	return w.SetByteCount(pos, "TStreamerObjectAny")
+	return w.SetByteCount(pos, tso.Class())
 }
 
 func (tso *StreamerObjectAny) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion(tso.Class())
 
 	if err := tso.StreamerElement.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TStreamerObjectAny")
+	r.CheckByteCount(pos, bcnt, beg, tso.Class())
 	return r.Err()
 }
 
@@ -611,19 +611,19 @@ func (tso *StreamerObjectAnyPointer) MarshalROOT(w *rbytes.WBuffer) (int, error)
 	pos := w.WriteVersion(tso.RVersion())
 	tso.StreamerElement.MarshalROOT(w)
 
-	return w.SetByteCount(pos, "TStreamerObjectAnyPointer")
+	return w.SetByteCount(pos, tso.Class())
 }
 
 func (tso *StreamerObjectAnyPointer) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion(tso.Class())
 
 	if err := tso.StreamerElement.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TStreamerObjectAnyPointer")
+	r.CheckByteCount(pos, bcnt, beg, tso.Class())
 	return r.Err()
 }
 
@@ -645,19 +645,19 @@ func (tss *StreamerString) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	pos := w.WriteVersion(tss.RVersion())
 	tss.StreamerElement.MarshalROOT(w)
 
-	return w.SetByteCount(pos, "TStreamerString")
+	return w.SetByteCount(pos, tss.Class())
 }
 
 func (tss *StreamerString) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion(tss.Class())
 
 	if err := tss.StreamerElement.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TStreamerString")
+	r.CheckByteCount(pos, bcnt, beg, tss.Class())
 	return r.Err()
 }
 
@@ -712,13 +712,13 @@ func (tss *StreamerSTL) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI32(int32(tss.vtype))
 	w.WriteI32(int32(tss.ctype))
 
-	return w.SetByteCount(pos, "TStreamerSTL")
+	return w.SetByteCount(pos, tss.Class())
 }
 
 func (tss *StreamerSTL) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion(tss.Class())
 
 	if err := tss.StreamerElement.UnmarshalROOT(r); err != nil {
 		return err
@@ -736,7 +736,7 @@ func (tss *StreamerSTL) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TStreamerSTL")
+	r.CheckByteCount(pos, bcnt, beg, tss.Class())
 	return r.Err()
 }
 
@@ -763,19 +763,19 @@ func (tss *StreamerSTLstring) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	pos := w.WriteVersion(tss.RVersion())
 	tss.StreamerSTL.MarshalROOT(w)
 
-	return w.SetByteCount(pos, "TStreamerSTLstring")
+	return w.SetByteCount(pos, tss.Class())
 }
 
 func (tss *StreamerSTLstring) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion(tss.Class())
 
 	if err := tss.StreamerSTL.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TStreamerSTLstring")
+	r.CheckByteCount(pos, bcnt, beg, tss.Class())
 	return r.Err()
 }
 
@@ -797,19 +797,19 @@ func (tsa *StreamerArtificial) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	pos := w.WriteVersion(tsa.RVersion())
 	tsa.StreamerElement.MarshalROOT(w)
 
-	return w.SetByteCount(pos, "TStreamerArtificial")
+	return w.SetByteCount(pos, tsa.Class())
 }
 
 func (tsa *StreamerArtificial) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
-	_ /*vers*/, pos, bcnt := r.ReadVersion()
+	_ /*vers*/, pos, bcnt := r.ReadVersion(tsa.Class())
 
 	if err := tsa.StreamerElement.UnmarshalROOT(r); err != nil {
 		return err
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TStreamerArtificial")
+	r.CheckByteCount(pos, bcnt, beg, tsa.Class())
 	return r.Err()
 }
 

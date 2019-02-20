@@ -575,7 +575,7 @@ func (r *RBuffer) ReadFastArrayString(n int) []string {
 	return arr
 }
 
-func (r *RBuffer) ReadVersion() (vers int16, pos, n int32) {
+func (r *RBuffer) ReadVersion(class string) (vers int16, pos, n int32) {
 	if r.err != nil {
 		return
 	}
@@ -585,12 +585,25 @@ func (r *RBuffer) ReadVersion() (vers int16, pos, n int32) {
 	bcnt := r.ReadU32()
 	if (int64(bcnt) & ^kByteCountMask) != 0 {
 		n = int32(int64(bcnt) & ^kByteCountMask)
+		vers = int16(r.ReadU16())
 	} else {
-		r.err = errors.Errorf("rbytes: too old file")
-		return
+		// no byte count. rewind and read version
+		r.SetPos(int64(pos))
+		vers = int16(r.ReadU16())
 	}
 
-	vers = int16(r.ReadU16())
+	if vers <= 0 {
+		if class != "" && r.sictx != nil {
+			si, err := r.sictx.StreamerInfo(class, -1)
+			if err == nil {
+				chksum := r.ReadU32()
+				if si.CheckSum() == int(chksum) {
+					vers = int16(si.ClassVersion())
+				}
+			}
+		}
+	}
+
 	return vers, pos, n
 }
 

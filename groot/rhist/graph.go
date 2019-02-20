@@ -128,7 +128,7 @@ func (g *tgraph) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteF64(g.max)
 	}
 
-	return w.SetByteCount(pos, "TGraph")
+	return w.SetByteCount(pos, g.Class())
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -136,7 +136,7 @@ func (g *tgraph) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 func (g *tgraph) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(g.Class())
 
 	for _, a := range []rbytes.Unmarshaler{
 		&g.named,
@@ -189,7 +189,7 @@ func (g *tgraph) UnmarshalROOT(r *rbytes.RBuffer) error {
 		g.max = r.ReadF64()
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TGraph")
+	r.CheckByteCount(pos, bcnt, beg, g.Class())
 	return r.Err()
 }
 
@@ -274,7 +274,7 @@ func (g *tgrapherrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteFastArrayF64(g.yerr)
 	}
 
-	return w.SetByteCount(pos, "TGraphErrors")
+	return w.SetByteCount(pos, g.Class())
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -282,7 +282,7 @@ func (g *tgrapherrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 func (g *tgrapherrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(g.Class())
 
 	err := g.tgraph.UnmarshalROOT(r)
 	if err != nil {
@@ -307,7 +307,7 @@ func (g *tgrapherrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 		_ = r.ReadI8()
 		g.yerr = r.ReadFastArrayF64(int(g.tgraph.npoints))
 	}
-	r.CheckByteCount(pos, bcnt, beg, "TGraphErrors")
+	r.CheckByteCount(pos, bcnt, beg, g.Class())
 	return r.Err()
 }
 
@@ -402,7 +402,7 @@ func (g *tgraphasymmerrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteFastArrayF64(g.yerrhi)
 	}
 
-	return w.SetByteCount(pos, "TGraphAsymmErrors")
+	return w.SetByteCount(pos, g.Class())
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -410,7 +410,7 @@ func (g *tgraphasymmerrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 func (g *tgraphasymmerrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(g.Class())
 
 	err := g.tgraph.UnmarshalROOT(r)
 	if err != nil {
@@ -461,7 +461,7 @@ func (g *tgraphasymmerrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 		_ = r.ReadI8()
 		g.yerrhi = r.ReadFastArrayF64(n)
 	}
-	r.CheckByteCount(pos, bcnt, beg, "TGraphAsymmErrors")
+	r.CheckByteCount(pos, bcnt, beg, g.Class())
 	return r.Err()
 }
 

@@ -227,12 +227,12 @@ func (leaf *{{.Name}}) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	{{.WRangeFunc}}(leaf.min)
 	{{.WRangeFunc}}(leaf.max)
 
-	return w.SetByteCount(pos, "T{{.Name}}")
+	return w.SetByteCount(pos, leaf.Class())
 }
 
 func (leaf *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
 	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
@@ -242,7 +242,7 @@ func (leaf *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	leaf.min = {{.RRangeFunc}}
 	leaf.max = {{.RRangeFunc}}
 
-	r.CheckByteCount(pos, bcnt, start, "T{{.Name}}")
+	r.CheckByteCount(pos, bcnt, start, leaf.Class())
 	return r.Err()
 }
 

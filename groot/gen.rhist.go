@@ -216,7 +216,7 @@ func (h *{{.Name}}) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		}
 	}
 
-	return w.SetByteCount(pos, "T{{.Name}}")
+	return w.SetByteCount(pos, h.Class())
 }
 
 func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -225,7 +225,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 1 {
 		return errors.Errorf("rhist: T{{.Name}} version too old (%d<1)", vers)
 	}
@@ -239,7 +239,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "T{{.Name}}")
+	r.CheckByteCount(pos, bcnt, beg, h.Class())
 	return r.Err()
 }
 
@@ -819,7 +819,7 @@ func (h *{{.Name}}) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		}
 	}
 
-	return w.SetByteCount(pos, "T{{.Name}}")
+	return w.SetByteCount(pos, h.Class())
 }
 
 func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -828,7 +828,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 1 {
 		return errors.Errorf("rhist: T{{.Name}} version too old (%d<1)", vers)
 	}
@@ -842,7 +842,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "T{{.Name}}")
+	r.CheckByteCount(pos, bcnt, beg, h.Class())
 	return r.Err()
 }
 

@@ -44,7 +44,7 @@ func (a *AttMarker) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI16(a.Color)
 	w.WriteI16(a.Style)
 	w.WriteF32(a.Width)
-	return w.SetByteCount(pos, "TAttMarker")
+	return w.SetByteCount(pos, a.Class())
 }
 
 func (a *AttMarker) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -53,12 +53,12 @@ func (a *AttMarker) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	start := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	/*vers*/ _, pos, bcnt := r.ReadVersion(a.Class())
 
 	a.Color = r.ReadI16()
 	a.Style = r.ReadI16()
 	a.Width = r.ReadF32()
-	r.CheckByteCount(pos, bcnt, start, "TAttMarker")
+	r.CheckByteCount(pos, bcnt, start, a.Class())
 
 	return r.Err()
 }

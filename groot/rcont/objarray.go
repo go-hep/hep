@@ -87,7 +87,7 @@ func (arr *ObjArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteObjectAny(obj)
 	}
 
-	return w.SetByteCount(pos, "TObjArray")
+	return w.SetByteCount(pos, arr.Class())
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -98,7 +98,7 @@ func (arr *ObjArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(arr.Class())
 
 	if vers > 2 {
 		if err := arr.obj.UnmarshalROOT(r); err != nil {
@@ -125,7 +125,7 @@ func (arr *ObjArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, start, "TObjArray")
+	r.CheckByteCount(pos, bcnt, start, arr.Class())
 	return r.Err()
 }
 

@@ -31,7 +31,7 @@ func (d *dobject) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(d.class)
 	d.rvers = vers
 	d.size = bcnt
 	r.SetPos(beg + int64(bcnt) + 4)

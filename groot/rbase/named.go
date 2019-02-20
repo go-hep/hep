@@ -72,7 +72,7 @@ func (n *Named) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	/*vers*/ _, pos, bcnt := r.ReadVersion(n.Class())
 
 	if err := n.obj.UnmarshalROOT(r); err != nil {
 		return r.Err()
@@ -81,7 +81,7 @@ func (n *Named) UnmarshalROOT(r *rbytes.RBuffer) error {
 	n.name = r.ReadString()
 	n.title = r.ReadString()
 
-	r.CheckByteCount(pos, bcnt, beg, "TNamed")
+	r.CheckByteCount(pos, bcnt, beg, n.Class())
 	return r.Err()
 }
 
@@ -98,7 +98,7 @@ func (n *Named) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteString(n.name)
 	w.WriteString(n.title)
 
-	return w.SetByteCount(pos, "TNamed")
+	return w.SetByteCount(pos, n.Class())
 }
 
 func init() {

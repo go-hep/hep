@@ -50,13 +50,13 @@ func (obj *ObjString) String() string {
 // unmarshal itself from a ROOT buffer
 func (obj *ObjString) UnmarshalROOT(r *rbytes.RBuffer) error {
 	start := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion()
+	/*vers*/ _, pos, bcnt := r.ReadVersion(obj.Class())
 	if err := obj.obj.UnmarshalROOT(r); err != nil {
 		return err
 	}
 	obj.str = r.ReadString()
 
-	r.CheckByteCount(pos, bcnt, start, "TObjString")
+	r.CheckByteCount(pos, bcnt, start, obj.Class())
 	return r.Err()
 }
 
@@ -71,7 +71,7 @@ func (obj *ObjString) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	w.WriteString(obj.str)
 
-	return w.SetByteCount(pos, "TObjString")
+	return w.SetByteCount(pos, obj.Class())
 }
 
 func init() {

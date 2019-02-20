@@ -57,7 +57,7 @@ func (dir *tdirectory) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	// FIXME(sbinet): stream list
 	dir.uuid.MarshalROOT(w)
 
-	return w.SetByteCount(pos, "TDirectory")
+	return w.SetByteCount(pos, dir.Class())
 }
 
 func (dir *tdirectory) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -66,7 +66,7 @@ func (dir *tdirectory) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(dir.Class())
 
 	dir.rvers = vers
 
@@ -78,7 +78,7 @@ func (dir *tdirectory) UnmarshalROOT(r *rbytes.RBuffer) error {
 	// FIXME(sbinet): stream list
 	dir.uuid.UnmarshalROOT(r)
 
-	r.CheckByteCount(pos, bcnt, start, "TDirectory")
+	r.CheckByteCount(pos, bcnt, start, dir.Class())
 	return r.Err()
 }
 

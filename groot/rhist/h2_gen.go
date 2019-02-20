@@ -403,7 +403,7 @@ func (h *H2F) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		}
 	}
 
-	return w.SetByteCount(pos, "TH2F")
+	return w.SetByteCount(pos, h.Class())
 }
 
 func (h *H2F) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -412,7 +412,7 @@ func (h *H2F) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 1 {
 		return errors.Errorf("rhist: TH2F version too old (%d<1)", vers)
 	}
@@ -426,7 +426,7 @@ func (h *H2F) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TH2F")
+	r.CheckByteCount(pos, bcnt, beg, h.Class())
 	return r.Err()
 }
 
@@ -828,7 +828,7 @@ func (h *H2D) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		}
 	}
 
-	return w.SetByteCount(pos, "TH2D")
+	return w.SetByteCount(pos, h.Class())
 }
 
 func (h *H2D) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -837,7 +837,7 @@ func (h *H2D) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 1 {
 		return errors.Errorf("rhist: TH2D version too old (%d<1)", vers)
 	}
@@ -851,7 +851,7 @@ func (h *H2D) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TH2D")
+	r.CheckByteCount(pos, bcnt, beg, h.Class())
 	return r.Err()
 }
 
@@ -1253,7 +1253,7 @@ func (h *H2I) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		}
 	}
 
-	return w.SetByteCount(pos, "TH2I")
+	return w.SetByteCount(pos, h.Class())
 }
 
 func (h *H2I) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -1262,7 +1262,7 @@ func (h *H2I) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion()
+	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 1 {
 		return errors.Errorf("rhist: TH2I version too old (%d<1)", vers)
 	}
@@ -1276,7 +1276,7 @@ func (h *H2I) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, "TH2I")
+	r.CheckByteCount(pos, bcnt, beg, h.Class())
 	return r.Err()
 }
 
