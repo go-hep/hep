@@ -267,7 +267,7 @@ func (k *Key) load(buf []byte) ([]byte, error) {
 	r := io.NewSectionReader(k.f, start, int64(k.nbytes))
 	_, err := io.ReadFull(r, buf)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "riofs: could not read key payload")
 	}
 	return buf, nil
 }

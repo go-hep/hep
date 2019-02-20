@@ -44,7 +44,6 @@
 package main // import "go-hep.org/x/hep/groot/cmd/root-dump"
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -53,6 +52,7 @@ import (
 	"reflect"
 	"regexp"
 
+	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/rhist"
@@ -119,7 +119,7 @@ func dumpDir(w io.Writer, dir riofs.Directory, deep bool) error {
 	for i, key := range dir.Keys() {
 		obj, err := key.Object()
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "could not decode object %q from dir %q", key.Name(), dir.(root.Named).Name())
 		}
 		fmt.Fprintf(w, "key[%03d]: %s;%d %q (%s)", i, key.Name(), key.Cycle(), key.Title(), obj.Class())
 		if deep && match(key.Name()) {
