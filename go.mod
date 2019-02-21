@@ -18,14 +18,13 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446 // indirect
 	github.com/sbinet/npyio v0.2.0
-	github.com/ulikunitz/xz v0.5.5
+	github.com/ulikunitz/xz v0.5.6
 	go-hep.org/x/exp v0.0.0-20180802154217-6d993ac81a11
-	golang.org/x/crypto v0.0.0-20190211182817-74369b46fc67
+	golang.org/x/crypto v0.0.0-20190219172222-a4c6cb3142f2
 	golang.org/x/exp v0.0.0-20190212162250-21964bba6549
-	golang.org/x/image v0.0.0-20190209060608-ef4a1470e0dc
 	golang.org/x/mobile v0.0.0-20190127143845-a42111704963
-	gonum.org/v1/gonum v0.0.0-20190219114331-f3eaeb840775
-	gonum.org/v1/plot v0.0.0-20190219115023-af8bb8117de5
+	gonum.org/v1/gonum v0.0.0-20190220170532-48e517cc5e35
+	gonum.org/v1/plot v0.0.0-20190221115740-81bd881d6c80
 	gopkg.in/jcmturner/aescts.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/dnsutils.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/gokrb5.v6 v6.1.1
@@ -42,5 +41,4 @@ require (
 	modernc.org/sortutil v1.0.0 // indirect
 	modernc.org/strutil v1.0.0 // indirect
 	modernc.org/zappy v1.0.0 // indirect
-	rsc.io/pdf v0.1.1
 )

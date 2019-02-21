@@ -5,7 +5,6 @@
 package hplot_test
 
 import (
-	"flag"
 	"image/color"
 	"io/ioutil"
 	"log"
@@ -18,23 +17,19 @@ import (
 
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
-	"go-hep.org/x/hep/hplot/cmpimg"
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
+	"gonum.org/v1/plot/cmpimg"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 	"gonum.org/v1/plot/vg/vgimg"
 	"gonum.org/v1/plot/vg/vgtex"
 )
 
-var (
-	regen = flag.Bool("regen", false, "regenerate reference files")
-)
-
 func checkPlot(t *testing.T, ref string) {
 	fname := strings.Replace(ref, "_golden", "", 1)
 
-	if *regen {
+	if *cmpimg.GenerateTestData {
 		got, _ := ioutil.ReadFile(fname)
 		ioutil.WriteFile(ref, got, 0644)
 	}

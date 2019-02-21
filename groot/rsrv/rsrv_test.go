@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"flag"
 	"image/color"
 	"io"
 	"io/ioutil"
@@ -25,15 +24,11 @@ import (
 	"time"
 
 	uuid "github.com/hashicorp/go-uuid"
-	"go-hep.org/x/hep/hplot/cmpimg"
+	"gonum.org/v1/plot/cmpimg"
 )
 
 var (
 	srv *Server
-)
-
-var (
-	regen = flag.Bool("regen", false, "regenerate reference files")
 )
 
 func TestMain(m *testing.M) {
@@ -583,7 +578,7 @@ func TestPlotH1(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if *regen {
+			if *cmpimg.GenerateTestData {
 				ioutil.WriteFile(tc.want, raw, 0644)
 			}
 
@@ -711,7 +706,7 @@ func TestPlotH2(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if *regen {
+			if *cmpimg.GenerateTestData {
 				ioutil.WriteFile(tc.want, raw, 0644)
 			}
 
@@ -842,7 +837,7 @@ func TestPlotS2(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if *regen {
+			if *cmpimg.GenerateTestData {
 				ioutil.WriteFile(tc.want, raw, 0644)
 			}
 
@@ -951,7 +946,7 @@ func TestPlotTree(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if *regen {
+			if *cmpimg.GenerateTestData {
 				ioutil.WriteFile(tc.want, raw, 0644)
 			}
 
