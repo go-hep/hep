@@ -336,6 +336,10 @@ func (dir *tdirectoryFile) Get(namecycle string) (root.Object, error) {
 }
 
 func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
+	if dir.file.w == nil {
+		return errors.Wrapf(ErrReadOnly, "could not put %q into directory %q", name, dir.dir.Name())
+	}
+
 	var (
 		cycle int16
 		title = ""

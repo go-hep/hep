@@ -344,3 +344,38 @@ func TestOpenBigFile(t *testing.T) {
 		t.Fatalf("timeout")
 	}
 }
+
+func TestReadOnlyFile(t *testing.T) {
+	f, err := groot.Open("../testdata/dirs-6.14.00.root")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	err = f.Put("o1", rbase.NewObjString("v1"))
+	if err == nil {
+		t.Fatalf("expected an error. got nil")
+	}
+
+	o, err := f.Get("dir1")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dir1 := o.(riofs.Directory)
+	err = dir1.Put("o2", rbase.NewObjString("v2"))
+	if err == nil {
+		t.Fatalf("expected an error. got nil")
+	}
+
+	o, err = dir1.Get("dir11")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dir11 := o.(riofs.Directory)
+	err = dir11.Put("o3", rbase.NewObjString("v3"))
+	if err == nil {
+		t.Fatalf("expected an error. got nil")
+	}
+}

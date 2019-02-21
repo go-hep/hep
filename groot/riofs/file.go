@@ -17,6 +17,10 @@ import (
 	"go-hep.org/x/hep/groot/root"
 )
 
+var (
+	ErrReadOnly = errors.New("riofs: file read-only")
+)
+
 type Reader interface {
 	io.Reader
 	io.ReaderAt
@@ -787,11 +791,17 @@ func (f *File) Get(namecycle string) (root.Object, error) {
 
 // Put puts the object v under the key with the given name.
 func (f *File) Put(name string, v root.Object) error {
+	if f.w == nil {
+		return errors.Wrapf(ErrReadOnly, "could not put %q into file %q", name, f.Name())
+	}
 	return f.dir.Put(name, v)
 }
 
 // Mkdir creates a new subdirectory
 func (f *File) Mkdir(name string) (Directory, error) {
+	if f.w == nil {
+		return nil, errors.Wrapf(ErrReadOnly, "could not mkdir %q in file %q", name, f.Name())
+	}
 	return f.dir.Mkdir(name)
 }
 
