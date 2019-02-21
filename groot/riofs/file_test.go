@@ -335,7 +335,7 @@ func TestOpenBigFile(t *testing.T) {
 		ch <- 1
 	}()
 
-	timeout := time.NewTimer(10 * time.Second)
+	timeout := time.NewTimer(30 * time.Second)
 	defer timeout.Stop()
 	select {
 	case <-ch:
