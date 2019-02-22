@@ -136,6 +136,8 @@ import (
 	"github.com/sbinet/npyio"
 
 	"go-hep.org/x/hep/groot"
+	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
+	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 	"go-hep.org/x/hep/groot/rtree"
 )
 
