@@ -14,6 +14,8 @@ import (
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
+
+	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 )
 
 func TestDirs(t *testing.T) {

@@ -26,6 +26,8 @@ import (
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/riofs"
+	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
+	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 )
 
 func main() {

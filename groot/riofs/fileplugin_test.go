@@ -5,9 +5,9 @@
 package riofs
 
 import (
-	"io/ioutil"
-	"os"
 	"path/filepath"
+	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -23,41 +23,43 @@ func TestLocalFile(t *testing.T) {
 	defer f.Close()
 }
 
-func TestTmpFile(t *testing.T) {
-	f, err := ioutil.TempFile("", "riofs-remote-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	tmp := tmpFile{f}
-	defer tmp.Close()
+func TestRegister(t *testing.T) {
+	func() {
+		defer func() {
+			e := recover()
+			if e == nil {
+				t.Fatalf("expected a panic")
+			}
+		}()
+		Register("file1", nil)
+	}()
 
-	const want = "foo\n"
-	_, err = tmp.WriteString(want)
-	if err != nil {
-		t.Fatal(err)
-	}
+	func() {
+		defer func() {
+			e := recover()
+			if e == nil {
+				t.Fatalf("expected a panic")
+			}
+		}()
+		Register("test-register", openLocalFile)
+		Register("test-register", openLocalFile)
+	}()
+}
 
-	err = tmp.Sync()
-	if err != nil {
-		t.Fatal(err)
-	}
+func TestDrivers(t *testing.T) {
+	list := Drivers()
+	const name = "test-drivers"
+	defer func() {
+		drivers.Lock()
+		defer drivers.Unlock()
+		delete(drivers.db, name)
+	}()
 
-	raw, err := ioutil.ReadFile(tmp.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
-	str := string(raw)
-	if str != want {
-		t.Fatalf("got=%q. want=%q", str, want)
-	}
+	Register(name, openLocalFile)
+	list = append(list, name)
+	sort.Strings(list)
 
-	err = tmp.Close()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	_, err = os.Stat(tmp.Name())
-	if err == nil {
-		t.Fatalf("file %q should have been removed", tmp.Name())
+	if got, want := Drivers(), list; !reflect.DeepEqual(got, want) {
+		t.Fatalf("got=%v, want=%v", got, want)
 	}
 }

@@ -24,6 +24,8 @@ import (
 	"time"
 
 	uuid "github.com/hashicorp/go-uuid"
+	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
+	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 	"gonum.org/v1/plot/cmpimg"
 )
 

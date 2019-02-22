@@ -5,69 +5,76 @@
 package riofs
 
 import (
-	"io"
-	"io/ioutil"
-	"net/http"
+	"net/url"
 	"os"
+	"sort"
 	"strings"
+	"sync"
 
-	"go-hep.org/x/hep/xrootd/xrdio"
+	"github.com/pkg/errors"
 )
+
+var drivers = struct {
+	sync.RWMutex
+	db map[string]func(path string) (Reader, error)
+}{
+	db: make(map[string]func(path string) (Reader, error)),
+}
+
+// Register registers a plugin to open ROOT files.
+// Register panics if it is called twice with the same name of if the plugin
+// function is nil.
+func Register(name string, f func(path string) (Reader, error)) {
+	drivers.Lock()
+	defer drivers.Unlock()
+	if f == nil {
+		panic("riofs: plugin function is nil")
+	}
+	if _, dup := drivers.db[name]; dup {
+		panic(errors.Errorf("riofs: Register called twice for plugin %q", name))
+	}
+	drivers.db[name] = f
+}
+
+// Drivers returns a sorted list of the names of the registered plugins
+// to open ROOT files.
+func Drivers() []string {
+	drivers.RLock()
+	defer drivers.RUnlock()
+	names := make([]string, 0, len(drivers.db))
+	for name := range drivers.db {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
+}
 
 func openFile(path string) (Reader, error) {
-	switch {
-	case strings.HasPrefix(path, "http://"), strings.HasPrefix(path, "https://"):
-		resp, err := http.Get(path)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
+	drivers.RLock()
+	defer drivers.RUnlock()
 
-		f, err := ioutil.TempFile("", "riofs-remote-")
-		if err != nil {
-			return nil, err
-		}
-		_, err = io.CopyBuffer(f, resp.Body, make([]byte, 16*1024*1024))
-		if err != nil {
-			f.Close()
-			return nil, err
-		}
-		_, err = f.Seek(0, 0)
-		if err != nil {
-			f.Close()
-			return nil, err
-		}
-		return &tmpFile{f}, nil
+	if f, err := os.Open(path); err == nil {
+		return f, nil
+	}
 
-	case strings.HasPrefix(path, "file://"):
+	scheme := "file"
+	if u, err := url.Parse(path); err == nil {
+		scheme = u.Scheme
+	}
+	if open, ok := drivers.db[scheme]; ok {
+		return open(path)
+	}
+
+	return nil, errors.Errorf("riofs: no ROOT plugin to open [%s] (scheme=%s)", path, scheme)
+}
+
+func openLocalFile(path string) (Reader, error) {
+	if strings.HasPrefix(path, "file://") {
 		return os.Open(path[len("file://"):])
-
-	case strings.HasPrefix(path, "xroot://"), strings.HasPrefix(path, "root://"):
-		return xrdio.Open(path)
-
-	default:
-		return os.Open(path)
 	}
+	return os.Open(path)
 }
 
-// tmpFile wraps a regular os.File to automatically remove it when closed.
-type tmpFile struct {
-	*os.File
+func init() {
+	Register("file", openLocalFile)
 }
-
-func (f *tmpFile) Close() error {
-	err1 := f.File.Close()
-	err2 := os.Remove(f.File.Name())
-	if err1 != nil {
-		return err1
-	}
-	return err2
-}
-
-var (
-	_ Reader = (*tmpFile)(nil)
-	_ Writer = (*tmpFile)(nil)
-
-	_ Reader = (*xrdio.File)(nil)
-	_ Writer = (*xrdio.File)(nil)
-)

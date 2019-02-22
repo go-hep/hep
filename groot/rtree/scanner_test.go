@@ -13,6 +13,7 @@ import (
 
 	"go-hep.org/x/hep/groot/internal/rtests"
 	"go-hep.org/x/hep/groot/riofs"
+	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 )
 
 type ScannerData struct {

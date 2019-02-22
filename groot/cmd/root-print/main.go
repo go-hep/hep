@@ -35,6 +35,8 @@ import (
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/groot/riofs"
+	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
+	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hplot"
