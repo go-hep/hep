@@ -14,16 +14,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rmeta"
-)
-
-var (
-	binMa *types.Interface // encoding.BinaryMarshaler
-	binUn *types.Interface // encoding.BinaryUnmarshaler
-
-	rootVers *types.Interface // rbytes.RVersioner
-
-	gosizes types.Sizes
 )
 
 // Generator holds the state of the ROOT streaemer generation.
@@ -36,6 +28,12 @@ type Generator struct {
 	imps map[string]int
 
 	Verbose bool // enable verbose mode
+
+	binMa *types.Interface // encoding.BinaryMarshaler
+	binUn *types.Interface // encoding.BinaryUnmarshaler
+	rvers *types.Interface // rbytes.RVersioner
+
+	gosizes types.Sizes
 }
 
 // NewGenerator returns a new code generator for package p,
@@ -46,7 +44,7 @@ func NewGenerator(p string) (*Generator, error) {
 		return nil, err
 	}
 
-	return &Generator{
+	g := &Generator{
 		buf: new(bytes.Buffer),
 		pkg: pkg,
 		imps: map[string]int{
@@ -54,7 +52,48 @@ func NewGenerator(p string) (*Generator, error) {
 			"go-hep.org/x/hep/groot/rdict":  1,
 			"go-hep.org/x/hep/groot/rmeta":  1,
 		},
-	}, nil
+	}
+
+	err = g.init()
+	if err != nil {
+		return nil, err
+	}
+
+	return g, nil
+}
+
+func (g *Generator) init() error {
+	pkg, err := importer.Default().Import("encoding")
+	if err != nil {
+		return errors.Wrapf(err, "rdict: could not find package \"encoding\"")
+	}
+
+	o := pkg.Scope().Lookup("BinaryMarshaler")
+	if o == nil {
+		return errors.Errorf("rdict: could not find interface encoding.BinaryMarshaler")
+	}
+	g.binMa = o.(*types.TypeName).Type().Underlying().(*types.Interface)
+
+	o = pkg.Scope().Lookup("BinaryUnmarshaler")
+	if o == nil {
+		return errors.Errorf("rdict: could not find interface encoding.BinaryUnmarshaler")
+	}
+	g.binUn = o.(*types.TypeName).Type().Underlying().(*types.Interface)
+
+	pkg, err = importer.Default().Import("go-hep.org/x/hep/groot/rbytes")
+	if err != nil {
+		return errors.Wrapf(err, "rdict: could not find package %q", "go-hep.org/x/hep/groot/rbytes")
+	}
+
+	o = pkg.Scope().Lookup("RVersioner")
+	if o == nil {
+		return errors.Errorf("rdict: could not find interface rbytes.RVersioner")
+	}
+	g.rvers = o.(*types.TypeName).Type().Underlying().(*types.Interface)
+
+	sz := int64(reflect.TypeOf(int(0)).Size())
+	g.gosizes = &types.StdSizes{WordSize: sz, MaxAlign: sz}
+	return nil
 }
 
 func (g *Generator) printf(format string, args ...interface{}) {
@@ -81,7 +120,7 @@ func (g *Generator) Generate(typeName string) {
 		log.Printf("typ: %q: %+v\n", typeName, typ)
 	}
 
-	if !types.Implements(tn.Type(), rootVers) && !types.Implements(types.NewPointer(tn.Type()), rootVers) {
+	if !types.Implements(tn.Type(), g.rvers) && !types.Implements(types.NewPointer(tn.Type()), g.rvers) {
 		log.Fatalf("type %q does not implement %q.", tn.Pkg().Path()+"."+tn.Name(), "go-hep.org/x/hep/groot/rbytes.RVersioner")
 	}
 
@@ -223,7 +262,7 @@ func (g *Generator) genStreamerType(t types.Type, n string) {
 		g.printf(
 			"&rdict.StreamerObjectAny{StreamerElement:rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Any,\nSize: %[4]d,\nEName:rdict.GoName2Cxx(%[3]q),\n}.New()},\n",
 			n, "",
-			t.String(), gosizes.Sizeof(ut),
+			t.String(), g.gosizes.Sizeof(ut),
 		)
 
 	default:
@@ -522,39 +561,6 @@ import (
 		log.Printf("=== error ===\n%s\n", buf.Bytes())
 	}
 	return src, err
-}
-
-func init() {
-	pkg, err := importer.Default().Import("encoding")
-	if err != nil {
-		log.Fatalf("error finding package \"encoding\": %v\n", err)
-	}
-
-	o := pkg.Scope().Lookup("BinaryMarshaler")
-	if o == nil {
-		log.Fatalf("could not find interface encoding.BinaryMarshaler\n")
-	}
-	binMa = o.(*types.TypeName).Type().Underlying().(*types.Interface)
-
-	o = pkg.Scope().Lookup("BinaryUnmarshaler")
-	if o == nil {
-		log.Fatalf("could not find interface encoding.BinaryUnmarshaler\n")
-	}
-	binUn = o.(*types.TypeName).Type().Underlying().(*types.Interface)
-
-	pkg, err = importer.Default().Import("go-hep.org/x/hep/groot/rbytes")
-	if err != nil {
-		log.Fatalf("could not find package %q: %v", "go-hep.org/x/hep/groot/rbytes", err)
-	}
-
-	o = pkg.Scope().Lookup("RVersioner")
-	if o == nil {
-		log.Fatalf("could not find interface rbytes.RVersioner")
-	}
-	rootVers = o.(*types.TypeName).Type().Underlying().(*types.Interface)
-
-	sz := int64(reflect.TypeOf(int(0)).Size())
-	gosizes = &types.StdSizes{WordSize: sz, MaxAlign: sz}
 }
 
 func gotype2RMeta(t types.Type) rmeta.Enum {
