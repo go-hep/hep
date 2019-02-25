@@ -7,6 +7,7 @@ package ntup_test
 import (
 	"fmt"
 	"log"
+	"math"
 
 	"go-hep.org/x/hep/hbook/ntup/ntcsv"
 )
@@ -46,4 +47,39 @@ func ExampleNtuple_scanH2D() {
 	// YStdDev:    3.027650
 	// XStdErr:    0.957427
 	// YStdErr:    0.957427
+}
+
+func ExampleNtuple_scanH() {
+	nt, err := ntcsv.Open(
+		"ntcsv/testdata/simple-with-header.csv",
+		ntcsv.Comma(';'),
+		ntcsv.Header(),
+		ntcsv.Columns("v1", "v2", "v3"),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer nt.DB().Close()
+	var (
+		xmin = +math.MaxFloat64
+		xmax = -math.MaxFloat64
+		ymin = +math.MaxFloat64
+		ymax = -math.MaxFloat64
+	)
+	query := "v1, v2"
+	error_ := nt.Scan(query, func(x, y float64) error {
+		xmin = math.Min(xmin, x)
+		xmax = math.Max(xmax, x)
+		ymin = math.Min(ymin, y)
+		ymax = math.Max(ymax, y)
+		return nil
+	})
+	if error_ != nil {
+		log.Fatal(error_)
+	}
+
+	fmt.Printf("Result  %v", error_)
+
+	//Output:
+	//Result  <nil>
 }
