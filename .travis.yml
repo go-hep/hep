@@ -17,14 +17,14 @@ git:
 matrix:
  fast_finish: true
  include:
-   - go: 1.11.x
+   - go: 1.12.x
      env:
        - TAGS="-tags travis"
        - COVERAGE="-coverpkg=go-hep.org/x/hep/..."
-   - go: 1.10.x
+   - go: 1.11.x
      env:
        - TAGS="-tags travis"
-   - go: 1.9.x
+   - go: 1.10.x
      env:
        - TAGS="-tags travis"
    - go: master

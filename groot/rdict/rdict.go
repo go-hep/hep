@@ -7,7 +7,6 @@
 package rdict // import "go-hep.org/x/hep/groot/rdict"
 
 import (
-	"bytes"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -129,7 +128,7 @@ func (tsi *StreamerInfo) UnmarshalROOT(r *rbytes.RBuffer) error {
 }
 
 func (si *StreamerInfo) String() string {
-	o := new(bytes.Buffer) // FIXME(sbinet): use strings.Builder when go-1.9 support is dropped.
+	o := new(strings.Builder)
 	fmt.Fprintf(o, " StreamerInfo for %q version=%d title=%q\n", si.Name(), si.ClassVersion(), si.Title())
 	w := tabwriter.NewWriter(o, 8, 4, 1, ' ', 0)
 	for _, elm := range si.Elements() {
