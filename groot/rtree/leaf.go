@@ -250,7 +250,7 @@ func (leaf *tleafElement) readBasket(r *rbytes.RBuffer) error {
 		panic(errors.Errorf("rtree: nil streamer (leaf: %s)", leaf.Name()))
 	}
 
-	err := leaf.rstreamer.RStream(r)
+	err := leaf.rstreamer.RStreamROOT(r)
 	if err != nil {
 		return err
 	}

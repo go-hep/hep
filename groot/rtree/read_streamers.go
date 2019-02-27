@@ -31,7 +31,7 @@ type rstreamerImpl struct {
 	funcs []rstreamerFunc
 }
 
-func (rs *rstreamerImpl) RStream(r *rbytes.RBuffer) error {
+func (rs *rstreamerImpl) RStreamROOT(r *rbytes.RBuffer) error {
 	for _, rfunc := range rs.funcs {
 		err := rfunc(r)
 		if err != nil {

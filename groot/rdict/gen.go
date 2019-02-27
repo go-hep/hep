@@ -155,11 +155,11 @@ func (o *%[1]s) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 func (g *Generator) genUnmarshal(t types.Type, typeName string) {
 	g.printf(`// UnmarshalROOT implements rbytes.Unmarshaler
 func (o *%[1]s) UnmarshalROOT(r *rbytes.RBuffer) error {
-	rs, err := r.RStreamer(o)
+	rs, err := rdict.RStreamer(r, o)
 	if err != nil {
 		return err
 	}
-	return rs.RStream(r)
+	return rs.RStreamROOT(r)
 }
 `,
 		typeName,

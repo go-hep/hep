@@ -66,13 +66,13 @@ type Marshaler interface {
 // WStreamer is the interface implemented by types that can stream themselves
 // to a ROOT buffer.
 type WStreamer interface {
-	WStream(*WBuffer) error
+	WStreamROOT(*WBuffer) error
 }
 
 // RStreamer is the interface implemented by types that can stream themselves
 // from a ROOT buffer.
 type RStreamer interface {
-	RStream(*RBuffer) error
+	RStreamROOT(*RBuffer) error
 }
 
 // Streamer is the interface implemented by types that can stream themselves
