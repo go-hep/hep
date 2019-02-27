@@ -7,6 +7,7 @@ package ntup_test
 import (
 	"fmt"
 	"log"
+	"math"
 
 	"go-hep.org/x/hep/hbook/ntup/ntcsv"
 )
@@ -46,4 +47,73 @@ func ExampleNtuple_scanH2D() {
 	// YStdDev:    3.027650
 	// XStdErr:    0.957427
 	// YStdErr:    0.957427
+}
+
+func ExampleNtuple_scan() {
+	nt, err := ntcsv.Open(
+		"ntcsv/testdata/simple-with-header.csv",
+		ntcsv.Comma(';'),
+		ntcsv.Header(),
+		ntcsv.Columns("v1", "v2", "v3"),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer nt.DB().Close()
+	var (
+		v1min = +math.MaxFloat64
+		v1max = -math.MaxFloat64
+		v2min = +math.MaxFloat64
+		v2max = -math.MaxFloat64
+	)
+	err = nt.Scan("v1, v2", func(v1, v2 float64) error {
+		v1min = math.Min(v1min, v1)
+		v1max = math.Max(v1max, v1)
+		v2min = math.Min(v2min, v2)
+		v2max = math.Max(v2max, v2)
+		return nil
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("V1Min  %v\n", v1min)
+	fmt.Printf("V1Max  %v\n", v1max)
+	fmt.Printf("V2Min  %v\n", v2min)
+	fmt.Printf("V2Max  %v\n", v2max)
+
+	//Output:
+	// V1Min  0
+	// V1Max  9
+	// V2Min  0
+	// V2Max  9
+
+}
+
+func ExampleNtuple_scanH1D() {
+	nt, err := ntcsv.Open(
+		"ntcsv/testdata/simple-with-header.csv",
+		ntcsv.Comma(';'),
+		ntcsv.Header(),
+		ntcsv.Columns("v1", "v2", "v3"),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer nt.DB().Close()
+
+	h, err := nt.ScanH1D("v1", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("V1Mean:      %f\n", h.XMean())
+	fmt.Printf("V1RMS:       %f\n", h.XRMS())
+	fmt.Printf("V1StdDev:    %f\n", h.XStdDev())
+	fmt.Printf("V1StdErr:    %f\n", h.XStdErr())
+
+	// Output:
+	// V1Mean:      4.500000
+	// V1RMS:       5.338539
+	// V1StdDev:    3.027650
+	// V1StdErr:    0.957427
 }
