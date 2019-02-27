@@ -11,17 +11,17 @@ type Enum int32
 
 // constants for the streamers
 const (
-	Base       Enum = 0
+	Base       Enum = 0 // Base class
 	Char       Enum = 1
 	Short      Enum = 2
 	Int        Enum = 3
 	Long       Enum = 4
 	Float      Enum = 5
-	Counter    Enum = 6
-	CharStar   Enum = 7
+	Counter    Enum = 6 // Counter for array size
+	CharStar   Enum = 7 // Pointer to array of char
 	Double     Enum = 8
 	Double32   Enum = 9
-	LegacyChar Enum = 10
+	LegacyChar Enum = 10 // Equal to TDataType's kchar
 	UChar      Enum = 11
 	UShort     Enum = 12
 	UInt       Enum = 13
@@ -31,19 +31,19 @@ const (
 	ULong64    Enum = 17
 	Bool       Enum = 18
 	Float16    Enum = 19
-	OffsetL    Enum = 20
-	OffsetP    Enum = 40
-	Object     Enum = 61
-	Any        Enum = 62
-	Objectp    Enum = 63
-	ObjectP    Enum = 64
-	TString    Enum = 65
-	TObject    Enum = 66
-	TNamed     Enum = 67
-	Anyp       Enum = 68
-	AnyP       Enum = 69
-	AnyPnoVT   Enum = 70
-	STLp       Enum = 71
+	OffsetL    Enum = 20 // Fixed size array
+	OffsetP    Enum = 40 // Pointer to object
+	Object     Enum = 61 // Class  derived from TObject, or for TStreamerSTL::fCtype non-pointer elements
+	Any        Enum = 62 // Class  not derived from TObject
+	Objectp    Enum = 63 // Class* derived from TObject and with    comment field //->Class, or for TStreamerSTL::fCtype: pointer elements
+	ObjectP    Enum = 64 // Class* derived from TObject and with NO comment field //->Class
+	TString    Enum = 65 // TString, special case
+	TObject    Enum = 66 // TObject, special case
+	TNamed     Enum = 67 // TNamed,  special case
+	Anyp       Enum = 68 // Class* not derived from TObject with    comment field //->Class
+	AnyP       Enum = 69 // Class* not derived from TObject with NO comment field //->Class
+	AnyPnoVT   Enum = 70 // Class* not derived from TObject with NO comment field //->Class and Class has NO virtual table
+	STLp       Enum = 71 // Pointer to STL container
 
 	Skip  Enum = 100
 	SkipL Enum = 120
@@ -58,6 +58,14 @@ const (
 
 	Streamer   Enum = 500
 	StreamLoop Enum = 501
+
+	Cache       Enum = 600 /// Cache the value in memory than is not part of the object but is accessible via a SchemaRule
+	Artificial  Enum = 1000
+	CacheNew    Enum = 1001
+	CacheDelete Enum = 1002
+
+	NeedObjectForVirtualBaseClass Enum = 99997
+	Missing                       Enum = 99999
 )
 
 // aliases for Go
