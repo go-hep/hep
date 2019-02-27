@@ -595,7 +595,7 @@ func (r *RBuffer) ReadVersion(class string) (vers int16, pos, n int32) {
 	if vers <= 0 {
 		if class != "" && r.sictx != nil {
 			si, err := r.sictx.StreamerInfo(class, -1)
-			if err == nil {
+			if err == nil && si.ClassVersion() != int(vers) {
 				chksum := r.ReadU32()
 				if si.CheckSum() == int(chksum) {
 					vers = int16(si.ClassVersion())
