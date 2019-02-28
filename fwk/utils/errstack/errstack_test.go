@@ -30,7 +30,7 @@ func TestNew(t *testing.T) {
 	if err, ok := err.(*errstack.Error); !ok {
 		t.Fatalf("expected an *errstack.Error. got=%T\n", err)
 	} else {
-		if !reflect.DeepEqual(err.Err, exp) {
+		if !reflect.DeepEqual(err.Err.Error(), exp.Error()) { // FIXME(sbinet): use proper error comparison w/ Go1.13
 			t.Fatalf("expected err.Err=%v.\ngot=%v\n", exp, err.Err)
 		}
 	}
@@ -87,7 +87,7 @@ func TestNewf(t *testing.T) {
 		t.Fatalf("expected an *errstack.Error. got=%T\n", err)
 	} else {
 		exp := fmt.Errorf("my bad %d", 42)
-		if !reflect.DeepEqual(err.Err, exp) {
+		if !reflect.DeepEqual(err.Err.Error(), exp.Error()) { // FIXME(sbinet): use proper error comparison w/ Go1.13
 			t.Fatalf("expected err.Err=%v.\ngot=%v\n", exp, err.Err)
 		}
 	}

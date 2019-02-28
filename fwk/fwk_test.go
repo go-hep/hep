@@ -125,7 +125,7 @@ func TestDuplicateOutputPort(t *testing.T) {
 	exp := fmt.Errorf(`fwk.DeclOutPort: component [t0] already declared out-port with name [t0-ints1 (type=int64)].
 fwk.DeclOutPort: component [t1] is trying to add a duplicate out-port [t0-ints1 (type=int64)]`)
 	errs := err.(*errstack.Error)
-	if !reflect.DeepEqual(errs.Err, exp) {
+	if !reflect.DeepEqual(errs.Err.Error(), exp.Error()) { // FIXME(sbinet): use proper error comparison w/ Go1.13
 		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, errs.Err)
 	}
 }
@@ -156,7 +156,7 @@ func TestMissingInputPort(t *testing.T) {
 	}
 	exp := fmt.Errorf("dataflow: component [%s] declared port [t1-ints1--NOT-THERE] as input but NO KNOWN producer", "t2")
 	errs := err.(*errstack.Error)
-	if !reflect.DeepEqual(errs.Err, exp) {
+	if !reflect.DeepEqual(errs.Err.Error(), exp.Error()) { // FIXME(sbinet): use proper error comparison w/ Go1.13
 		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, errs.Err)
 	}
 }
@@ -202,7 +202,7 @@ func TestMismatchPortTypes(t *testing.T) {
 		"t4",
 	)
 	errs := err.(*errstack.Error)
-	if !reflect.DeepEqual(errs.Err, exp) {
+	if !reflect.DeepEqual(errs.Err.Error(), exp.Error()) { // FIXME(sbinet): use proper error comparison w/ Go1.13
 		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, errs.Err)
 	}
 }
@@ -242,7 +242,7 @@ func TestPortsCycles(t *testing.T) {
 	}
 	exp := fmt.Errorf("dataflow: cycle detected: 1")
 	errs := err.(*errstack.Error)
-	if !reflect.DeepEqual(errs.Err, exp) {
+	if !reflect.DeepEqual(errs.Err.Error(), exp.Error()) { // FIXME(sbinet): use proper error comparison w/ Go1.13
 		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, errs.Err)
 	}
 }

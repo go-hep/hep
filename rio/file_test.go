@@ -132,7 +132,7 @@ func TestInvalidFile(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			r := bytes.NewReader(tc.r)
 			f, err := Open(r)
-			if !reflect.DeepEqual(err, tc.err) {
+			if !reflect.DeepEqual(err.Error(), tc.err.Error()) { // FIXME(sbinet): use proper error comparison w/ Go1.13
 				t.Fatalf("got=%#v, want=%#v", err, tc.err)
 			}
 			defer f.Close()

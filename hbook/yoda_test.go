@@ -50,8 +50,16 @@ func TestReadYODAHeader(t *testing.T) {
 	} {
 		t.Run(tc.want, func(t *testing.T) {
 			v, err := readYODAHeader(bytes.NewBuffer([]byte(tc.str)), mark)
-			if !reflect.DeepEqual(err, tc.err) {
-				t.Fatalf("got error=%v, want=%v", err, tc.err)
+			if err == nil && tc.err != nil {
+				t.Fatalf("got err=nil, want=%v", tc.err.Error())
+			}
+			if err != nil && tc.err == nil {
+				t.Fatalf("got=%v, want=nil", err.Error())
+			}
+			if err != nil && tc.err != nil {
+				if !reflect.DeepEqual(err.Error(), tc.err.Error()) { // FIXME(sbinet): use proper error comparison w/ Go1.13
+					t.Fatalf("got error=%v, want=%v", err, tc.err)
+				}
 			}
 			if v != tc.want {
 				t.Fatalf("got: %q, want: %q", v, tc.want)
