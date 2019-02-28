@@ -8,6 +8,8 @@ import (
 	"bytes"
 	"reflect"
 	"testing"
+
+	"github.com/pkg/errors"
 )
 
 func TestFile(t *testing.T) {
@@ -116,15 +118,15 @@ func TestInvalidFile(t *testing.T) {
 	}{
 		{
 			r:   nil,
-			err: errorf("rio: error reading magic-header: EOF"),
+			err: errors.Errorf("rio: error reading magic-header: EOF"),
 		},
 		{
 			r:   []byte{'s', 'i', 'o', '\x00'},
-			err: errorf("rio: not a rio-stream. magic-header=\"sio\\x00\". want=\"rio\\x00\""),
+			err: errors.Errorf("rio: not a rio-stream. magic-header=\"sio\\x00\". want=\"rio\\x00\""),
 		},
 		{
 			r:   []byte{'r', 'i', 'o', '\x00'},
-			err: errorf("rio: error seeking footer (err=bytes.Reader.Seek: negative position)"),
+			err: errors.Errorf("rio: error seeking footer (err=bytes.Reader.Seek: negative position)"),
 		},
 	} {
 		t.Run("", func(t *testing.T) {

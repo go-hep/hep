@@ -5,14 +5,8 @@
 package rio
 
 import (
-	"fmt"
 	"reflect"
 )
-
-// errorf returns a new formated error
-func errorf(format string, args ...interface{}) error {
-	return fmt.Errorf(format, args...)
-}
 
 // rioAlignU32 returns sz adjusted to align at 4-byte boundaries
 func rioAlignU32(sz uint32) uint32 {

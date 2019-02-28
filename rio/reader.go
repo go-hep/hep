@@ -9,6 +9,7 @@ import (
 	"io"
 
 	riobin "github.com/gonuts/binary"
+	"github.com/pkg/errors"
 )
 
 // Reader is a rio read-only stream
@@ -44,10 +45,10 @@ func NewReader(r io.Reader) (*Reader, error) {
 	hdr := [4]byte{}
 	_, err := r.Read(hdr[:])
 	if err != nil {
-		return nil, errorf("rio: error reading magic-header: %v", err)
+		return nil, errors.Errorf("rio: error reading magic-header: %v", err)
 	}
 	if hdr != rioMagic {
-		return nil, errorf("rio: not a rio-stream. magic-header=%q. want=%q",
+		return nil, errors.Errorf("rio: not a rio-stream. magic-header=%q. want=%q",
 			string(hdr[:]),
 			string(rioMagic[:]),
 		)
