@@ -15,6 +15,7 @@ import (
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
+	"go-hep.org/x/hep/groot/rvers"
 )
 
 type rbuff struct {
@@ -151,6 +152,24 @@ func (r *RBuffer) DumpHex(n int) {
 		buf = buf[:n]
 	}
 	fmt.Printf("--- hex --- (pos=%d len=%d end=%d)\n%s\n", r.Pos(), n, r.Len(), string(hex.Dump(buf)))
+}
+
+func (r *RBuffer) ReadSTLString() string {
+	if r.Err() != nil {
+		return ""
+	}
+
+	start := r.Pos()
+	vers, pos, bcnt := r.ReadVersion("string") // FIXME(sbinet): streamline with RStreamROOT
+	if vers != rvers.StreamerInfo {
+		r.SetErr(errors.Errorf("rbytes: invalid version for std::string. got=%v, want=%v", vers, rvers.StreamerInfo))
+		return ""
+	}
+
+	o := r.ReadString()
+	r.CheckByteCount(pos, bcnt, start, "string")
+
+	return o
 }
 
 func (r *RBuffer) ReadString() string {

@@ -560,8 +560,11 @@ func (g *Generator) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 		// FIXME(sbinet): check semantics
 		g.printf("w.WriteObjectAny(o.%s) // obj-ptr \n", se.Name())
 
-	case *rdict.StreamerString, *rdict.StreamerSTLstring:
+	case *rdict.StreamerString:
 		g.printf("w.WriteString(o.%s)\n", se.Name())
+
+	case *rdict.StreamerSTLstring:
+		g.printf("w.WriteSTLString(o.%s)\n", se.Name())
 
 	case *rdict.StreamerSTL:
 		switch se.STLVectorType() {
@@ -773,8 +776,11 @@ func (g *Generator) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 		g.printf("o.%s = oo.(%s)\n", se.Name(), g.typename(se))
 		g.printf("}\n}\n")
 
-	case *rdict.StreamerString, *rdict.StreamerSTLstring:
+	case *rdict.StreamerString:
 		g.printf("o.%s = r.ReadString()\n", se.Name())
+
+	case *rdict.StreamerSTLstring:
+		g.printf("o.%s = r.ReadSTLString()\n", se.Name())
 
 	case *rdict.StreamerSTL:
 		switch se.STLVectorType() {

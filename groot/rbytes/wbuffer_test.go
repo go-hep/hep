@@ -352,6 +352,26 @@ func TestWBuffer_Write(t *testing.T) {
 			},
 		},
 		{
+			name: "std::string-1",
+			want: "hello",
+			wfct: func(w *WBuffer, v interface{}) {
+				w.WriteSTLString(v.(string))
+			},
+			rfct: func(r *RBuffer) interface{} {
+				return r.ReadSTLString()
+			},
+		},
+		{
+			name: "std::string-2",
+			want: strings.Repeat("hello", 256),
+			wfct: func(w *WBuffer, v interface{}) {
+				w.WriteSTLString(v.(string))
+			},
+			rfct: func(r *RBuffer) interface{} {
+				return r.ReadSTLString()
+			},
+		},
+		{
 			name: "static-arr-i32",
 			want: []int32{1, 2, 0, 2, 1},
 			wfct: func(w *WBuffer, v interface{}) {
@@ -569,6 +589,16 @@ func TestWBuffer_Write(t *testing.T) {
 					}
 				}
 				return true
+			},
+		},
+		{
+			name: "fast-arr-str",
+			want: []string{"hello", "world"},
+			wfct: func(w *WBuffer, v interface{}) {
+				w.WriteFastArrayString(v.([]string))
+			},
+			rfct: func(r *RBuffer) interface{} {
+				return r.ReadFastArrayString(2)
 			},
 		},
 	} {
