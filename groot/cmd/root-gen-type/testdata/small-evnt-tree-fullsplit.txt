@@ -5,9 +5,11 @@ package main
 import (
 	"reflect"
 
+	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
+	"go-hep.org/x/hep/groot/rvers"
 )
 
 type Event struct {
@@ -100,24 +102,87 @@ func (o *Event) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI8(1) // is-array
 	w.WriteFastArrayF64(o.SliceF64[:o.N])
 	w.WriteSTLString(o.StdStr)
-	w.WriteI32(int32(len(o.StlVecI16)))
-	w.WriteFastArrayI16(o.StlVecI16)
-	w.WriteI32(int32(len(o.StlVecI32)))
-	w.WriteFastArrayI32(o.StlVecI32)
-	w.WriteI32(int32(len(o.StlVecI64)))
-	w.WriteFastArrayI64(o.StlVecI64)
-	w.WriteI32(int32(len(o.StlVecU16)))
-	w.WriteFastArrayU16(o.StlVecU16)
-	w.WriteI32(int32(len(o.StlVecU32)))
-	w.WriteFastArrayU32(o.StlVecU32)
-	w.WriteI32(int32(len(o.StlVecU64)))
-	w.WriteFastArrayU64(o.StlVecU64)
-	w.WriteI32(int32(len(o.StlVecF32)))
-	w.WriteFastArrayF32(o.StlVecF32)
-	w.WriteI32(int32(len(o.StlVecF64)))
-	w.WriteFastArrayF64(o.StlVecF64)
-	w.WriteI32(int32(len(o.StlVecStr)))
-	w.WriteFastArrayString(o.StlVecStr)
+	{
+		pos := w.WriteVersion(rvers.StreamerInfo)
+		w.WriteI32(int32(len(o.StlVecI16)))
+		w.WriteFastArrayI16(o.StlVecI16)
+		if _, err := w.SetByteCount(pos, "vector<short>"); err != nil {
+			w.SetErr(err)
+			return 0, w.Err()
+		}
+	}
+	{
+		pos := w.WriteVersion(rvers.StreamerInfo)
+		w.WriteI32(int32(len(o.StlVecI32)))
+		w.WriteFastArrayI32(o.StlVecI32)
+		if _, err := w.SetByteCount(pos, "vector<int>"); err != nil {
+			w.SetErr(err)
+			return 0, w.Err()
+		}
+	}
+	{
+		pos := w.WriteVersion(rvers.StreamerInfo)
+		w.WriteI32(int32(len(o.StlVecI64)))
+		w.WriteFastArrayI64(o.StlVecI64)
+		if _, err := w.SetByteCount(pos, "vector<long>"); err != nil {
+			w.SetErr(err)
+			return 0, w.Err()
+		}
+	}
+	{
+		pos := w.WriteVersion(rvers.StreamerInfo)
+		w.WriteI32(int32(len(o.StlVecU16)))
+		w.WriteFastArrayU16(o.StlVecU16)
+		if _, err := w.SetByteCount(pos, "vector<unsigned short>"); err != nil {
+			w.SetErr(err)
+			return 0, w.Err()
+		}
+	}
+	{
+		pos := w.WriteVersion(rvers.StreamerInfo)
+		w.WriteI32(int32(len(o.StlVecU32)))
+		w.WriteFastArrayU32(o.StlVecU32)
+		if _, err := w.SetByteCount(pos, "vector<unsigned int>"); err != nil {
+			w.SetErr(err)
+			return 0, w.Err()
+		}
+	}
+	{
+		pos := w.WriteVersion(rvers.StreamerInfo)
+		w.WriteI32(int32(len(o.StlVecU64)))
+		w.WriteFastArrayU64(o.StlVecU64)
+		if _, err := w.SetByteCount(pos, "vector<unsigned long>"); err != nil {
+			w.SetErr(err)
+			return 0, w.Err()
+		}
+	}
+	{
+		pos := w.WriteVersion(rvers.StreamerInfo)
+		w.WriteI32(int32(len(o.StlVecF32)))
+		w.WriteFastArrayF32(o.StlVecF32)
+		if _, err := w.SetByteCount(pos, "vector<float>"); err != nil {
+			w.SetErr(err)
+			return 0, w.Err()
+		}
+	}
+	{
+		pos := w.WriteVersion(rvers.StreamerInfo)
+		w.WriteI32(int32(len(o.StlVecF64)))
+		w.WriteFastArrayF64(o.StlVecF64)
+		if _, err := w.SetByteCount(pos, "vector<double>"); err != nil {
+			w.SetErr(err)
+			return 0, w.Err()
+		}
+	}
+	{
+		pos := w.WriteVersion(rvers.StreamerInfo)
+		w.WriteI32(int32(len(o.StlVecStr)))
+		w.WriteFastArrayString(o.StlVecStr)
+		if _, err := w.SetByteCount(pos, "vector<string>"); err != nil {
+			w.SetErr(err)
+			return 0, w.Err()
+		}
+	}
 	w.WriteString(o.End)
 
 	return w.SetByteCount(pos, o.Class())
@@ -169,15 +234,87 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 	_ = r.ReadI8() // is-array
 	o.SliceF64 = r.ReadFastArrayF64(int(o.N))
 	o.StdStr = r.ReadSTLString()
-	o.StlVecI16 = r.ReadFastArrayI16(int(r.ReadI32()))
-	o.StlVecI32 = r.ReadFastArrayI32(int(r.ReadI32()))
-	o.StlVecI64 = r.ReadFastArrayI64(int(r.ReadI32()))
-	o.StlVecU16 = r.ReadFastArrayU16(int(r.ReadI32()))
-	o.StlVecU32 = r.ReadFastArrayU32(int(r.ReadI32()))
-	o.StlVecU64 = r.ReadFastArrayU64(int(r.ReadI32()))
-	o.StlVecF32 = r.ReadFastArrayF32(int(r.ReadI32()))
-	o.StlVecF64 = r.ReadFastArrayF64(int(r.ReadI32()))
-	o.StlVecStr = r.ReadFastArrayString(int(r.ReadI32()))
+	{
+		vers, pos, bcnt := r.ReadVersion("vector<short>")
+		if vers != rvers.StreamerInfo {
+			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<short>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			return r.Err()
+		}
+		o.StlVecI16 = r.ReadFastArrayI16(int(r.ReadI32()))
+		r.CheckByteCount(pos, bcnt, start, "vector<short>")
+	}
+	{
+		vers, pos, bcnt := r.ReadVersion("vector<int>")
+		if vers != rvers.StreamerInfo {
+			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<int>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			return r.Err()
+		}
+		o.StlVecI32 = r.ReadFastArrayI32(int(r.ReadI32()))
+		r.CheckByteCount(pos, bcnt, start, "vector<int>")
+	}
+	{
+		vers, pos, bcnt := r.ReadVersion("vector<long>")
+		if vers != rvers.StreamerInfo {
+			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<long>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			return r.Err()
+		}
+		o.StlVecI64 = r.ReadFastArrayI64(int(r.ReadI32()))
+		r.CheckByteCount(pos, bcnt, start, "vector<long>")
+	}
+	{
+		vers, pos, bcnt := r.ReadVersion("vector<unsigned short>")
+		if vers != rvers.StreamerInfo {
+			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<unsigned short>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			return r.Err()
+		}
+		o.StlVecU16 = r.ReadFastArrayU16(int(r.ReadI32()))
+		r.CheckByteCount(pos, bcnt, start, "vector<unsigned short>")
+	}
+	{
+		vers, pos, bcnt := r.ReadVersion("vector<unsigned int>")
+		if vers != rvers.StreamerInfo {
+			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<unsigned int>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			return r.Err()
+		}
+		o.StlVecU32 = r.ReadFastArrayU32(int(r.ReadI32()))
+		r.CheckByteCount(pos, bcnt, start, "vector<unsigned int>")
+	}
+	{
+		vers, pos, bcnt := r.ReadVersion("vector<unsigned long>")
+		if vers != rvers.StreamerInfo {
+			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<unsigned long>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			return r.Err()
+		}
+		o.StlVecU64 = r.ReadFastArrayU64(int(r.ReadI32()))
+		r.CheckByteCount(pos, bcnt, start, "vector<unsigned long>")
+	}
+	{
+		vers, pos, bcnt := r.ReadVersion("vector<float>")
+		if vers != rvers.StreamerInfo {
+			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<float>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			return r.Err()
+		}
+		o.StlVecF32 = r.ReadFastArrayF32(int(r.ReadI32()))
+		r.CheckByteCount(pos, bcnt, start, "vector<float>")
+	}
+	{
+		vers, pos, bcnt := r.ReadVersion("vector<double>")
+		if vers != rvers.StreamerInfo {
+			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<double>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			return r.Err()
+		}
+		o.StlVecF64 = r.ReadFastArrayF64(int(r.ReadI32()))
+		r.CheckByteCount(pos, bcnt, start, "vector<double>")
+	}
+	{
+		vers, pos, bcnt := r.ReadVersion("vector<string>")
+		if vers != rvers.StreamerInfo {
+			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<string>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			return r.Err()
+		}
+		o.StlVecStr = r.ReadFastArrayString(int(r.ReadI32()))
+		r.CheckByteCount(pos, bcnt, start, "vector<string>")
+	}
 	o.End = r.ReadString()
 
 	r.CheckByteCount(pos, bcnt, start, o.Class())

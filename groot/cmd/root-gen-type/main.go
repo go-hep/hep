@@ -346,11 +346,12 @@ func (g *Generator) typename(se rbytes.StreamerElement) string {
 			case rmeta.Float64, rmeta.Double32:
 				return "[]float64"
 			case rmeta.Object:
-				switch se.TypeName() {
-				case "vector<string>":
+				switch se.ElemTypeName() {
+				case "string":
 					return "[]string"
 				default:
-					panic(errors.Errorf("invalid stl-vector element type: %v -- %#v", se.ContainedType(), se))
+					// FIXME(sbinet): recurse on g.typename(se-elem) ?
+					return "[]" + se.ElemTypeName()
 				}
 			default:
 				panic(errors.Errorf("invalid stl-vector element type: %v -- %#v", se.ContainedType(), se))
@@ -569,7 +570,6 @@ func (g *Generator) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 	case *rdict.StreamerSTL:
 		switch se.STLVectorType() {
 		case rmeta.STLvector:
-			g.printf("w.WriteI32(int32(len(o.%s)))\n", se.Name())
 			wfunc := ""
 			switch se.ContainedType() {
 			case rmeta.Bool:
@@ -595,8 +595,8 @@ func (g *Generator) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 			case rmeta.Float64:
 				wfunc = "WriteFastArrayF64"
 			case rmeta.Object:
-				switch se.TypeName() {
-				case "vector<string>":
+				switch se.ElemTypeName() {
+				case "string":
 					wfunc = "WriteFastArrayString"
 				default:
 					panic(errors.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
@@ -604,7 +604,18 @@ func (g *Generator) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 			default:
 				panic(errors.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
 			}
+			g.imps["github.com/pkg/errors"] = 1
+			g.imps["go-hep.org/x/hep/groot/rvers"] = 1
+			g.printf("{\n")
+			g.printf("pos := w.WriteVersion(rvers.StreamerInfo)\n")
+			g.printf("w.WriteI32(int32(len(o.%s)))\n", se.Name())
 			g.printf("w.%s(o.%s)\n", wfunc, se.Name())
+			g.printf("if _, err := w.SetByteCount(pos, %q); err != nil {\n", se.TypeName())
+			g.printf("w.SetErr(err)\n")
+			g.printf("return 0, w.Err()\n")
+			g.printf("}\n")
+			g.printf("}\n")
+
 		default:
 			panic(errors.Errorf("STL-type not implemented %#v", se))
 		}
@@ -810,8 +821,8 @@ func (g *Generator) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 			case rmeta.Float64:
 				rfunc = "ReadFastArrayF64"
 			case rmeta.Object:
-				switch se.TypeName() {
-				case "vector<string>":
+				switch se.ElemTypeName() {
+				case "string":
 					rfunc = "ReadFastArrayString"
 				default:
 					panic(errors.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
@@ -819,7 +830,17 @@ func (g *Generator) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 			default:
 				panic(errors.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
 			}
+			g.imps["github.com/pkg/errors"] = 1
+			g.imps["go-hep.org/x/hep/groot/rvers"] = 1
+			g.printf("{\n")
+			g.printf("vers, pos, bcnt := r.ReadVersion(%q)\n", se.TypeName())
+			g.printf("if vers != rvers.StreamerInfo {\n")
+			g.printf("r.SetErr(errors.Errorf(\"rbytes: invalid version for \\\"%s\\\". got=%%v, want=%%v\", vers, rvers.StreamerInfo))\n", se.TypeName())
+			g.printf("return r.Err()\n")
+			g.printf("}\n")
 			g.printf("o.%s = r.%s(int(r.ReadI32()))\n", se.Name(), rfunc)
+			g.printf("r.CheckByteCount(pos, bcnt, start, %q)\n", se.TypeName())
+			g.printf("}\n")
 		default:
 			panic(errors.Errorf("STL-type not implemented %#v", se))
 		}
