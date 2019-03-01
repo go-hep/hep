@@ -22,3 +22,7 @@ const (
 	//baskets
 	kDisplacementMask = 0xFF000000
 )
+
+const (
+	StreamedMemberWise = 0x4000
+)
