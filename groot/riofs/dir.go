@@ -13,6 +13,7 @@ import (
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rdict"
+	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
@@ -632,10 +633,16 @@ var coreTypes = map[string]struct{}{
 	"TFile":          {},
 	"TDirectoryFile": {},
 	"TKey":           {},
+	"TString":        {},
 }
 
 func isCoreType(typename string) bool {
 	_, ok := coreTypes[typename]
+	return ok
+}
+
+func isCxxBuiltin(typename string) bool {
+	_, ok := rmeta.CxxBuiltins[typename]
 	return ok
 }
 

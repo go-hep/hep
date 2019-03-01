@@ -567,6 +567,9 @@ func (f *File) findDepStreamers() error {
 				deps = append(deps, depsType{strings.TrimRight(se.TypeName(), "*"), -1})
 			case *rdict.StreamerString, *rdict.StreamerSTLstring:
 				deps = append(deps, depsType{se.TypeName(), -1})
+
+			case *rdict.StreamerSTL:
+				deps = append(deps, depsType{se.ElemTypeName(), -1})
 			}
 			return nil
 		})
@@ -576,7 +579,7 @@ func (f *File) findDepStreamers() error {
 	}
 
 	for _, dep := range deps {
-		if isCoreType(dep.name) {
+		if isCoreType(dep.name) || isCxxBuiltin(dep.name) {
 			continue
 		}
 		sub, err := rdict.Streamers.StreamerInfo(dep.name, dep.vers)
