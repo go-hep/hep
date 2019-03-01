@@ -13,6 +13,7 @@ import (
 
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/root"
+	"go-hep.org/x/hep/groot/rvers"
 )
 
 type wbuff struct {
@@ -381,6 +382,18 @@ func (w *WBuffer) WriteBool(v bool) {
 	}
 	w.w.grow(1)
 	w.writeU8(o)
+}
+
+func (w *WBuffer) WriteSTLString(v string) {
+	if w.err != nil {
+		return
+	}
+	pos := w.WriteVersion(rvers.StreamerInfo)
+	w.WriteString(v)
+	_, err := w.SetByteCount(pos, "string")
+	if err != nil {
+		w.SetErr(err)
+	}
 }
 
 func (w *WBuffer) WriteString(v string) {

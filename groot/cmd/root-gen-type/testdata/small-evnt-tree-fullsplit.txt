@@ -99,7 +99,7 @@ func (o *Event) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteFastArrayF32(o.SliceF32[:o.N])
 	w.WriteI8(1) // is-array
 	w.WriteFastArrayF64(o.SliceF64[:o.N])
-	w.WriteString(o.StdStr)
+	w.WriteSTLString(o.StdStr)
 	w.WriteI32(int32(len(o.StlVecI16)))
 	w.WriteFastArrayI16(o.StlVecI16)
 	w.WriteI32(int32(len(o.StlVecI32)))
@@ -168,7 +168,7 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 	o.SliceF32 = r.ReadFastArrayF32(int(o.N))
 	_ = r.ReadI8() // is-array
 	o.SliceF64 = r.ReadFastArrayF64(int(o.N))
-	o.StdStr = r.ReadString()
+	o.StdStr = r.ReadSTLString()
 	o.StlVecI16 = r.ReadFastArrayI16(int(r.ReadI32()))
 	o.StlVecI32 = r.ReadFastArrayI32(int(r.ReadI32()))
 	o.StlVecI64 = r.ReadFastArrayI64(int(r.ReadI32()))
