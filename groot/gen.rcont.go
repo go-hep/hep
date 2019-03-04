@@ -45,10 +45,28 @@ func genArrays() {
 		WFunc string
 	}{
 		{
+			Name:  "ArrayC",
+			Type:  "int8",
+			RFunc: "r.ReadFastArrayI8",
+			WFunc: "w.WriteFastArrayI8",
+		},
+		{
+			Name:  "ArrayS",
+			Type:  "int16",
+			RFunc: "r.ReadFastArrayI16",
+			WFunc: "w.WriteFastArrayI16",
+		},
+		{
 			Name:  "ArrayI",
 			Type:  "int32",
 			RFunc: "r.ReadFastArrayI32",
 			WFunc: "w.WriteFastArrayI32",
+		},
+		{
+			Name:  "ArrayL",
+			Type:  "int64",
+			RFunc: "r.ReadFastArrayI64",
+			WFunc: "w.WriteFastArrayI64",
 		},
 		{
 			Name:  "ArrayL64",

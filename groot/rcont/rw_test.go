@@ -26,6 +26,34 @@ func TestWRBuffer(t *testing.T) {
 		cmp  func(a, b rtests.ROOTer) bool
 	}{
 		{
+			name: "TArrayC",
+			want: &ArrayC{Data: []int8{1, 2, 3, 4, 5, 6, 7, 8, 9}},
+		},
+		{
+			name: "TArrayS",
+			want: &ArrayS{Data: []int16{1, 2, 3, 4, 5, 6, 7, 8, 9}},
+		},
+		{
+			name: "TArrayI",
+			want: &ArrayI{Data: []int32{1, 2, 3, 4, 5, 6, 7, 8, 9}},
+		},
+		{
+			name: "TArrayL",
+			want: &ArrayL{Data: []int64{1, 2, 3, 4, 5, 6, 7, 8, 9}},
+		},
+		{
+			name: "TArrayL64",
+			want: &ArrayL64{Data: []int64{1, 2, 3, 4, 5, 6, 7, 8, 9}},
+		},
+		{
+			name: "TArrayF",
+			want: &ArrayF{Data: []float32{1, 2, 3, 4, 5, 6, 7, 8, 9}},
+		},
+		{
+			name: "TArrayD",
+			want: &ArrayD{Data: []float64{1, 2, 3, 4, 5, 6, 7, 8, 9}},
+		},
+		{
 			name: "TList",
 			want: &List{
 				obj:  rbase.Object{ID: 0x0, Bits: 0x3000000},

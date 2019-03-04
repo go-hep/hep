@@ -12,14 +12,11 @@ import (
 	"io"
 	"log"
 	"os"
-	"reflect"
 	"regexp"
 	"strings"
 
 	"go-hep.org/x/hep/groot"
-	"go-hep.org/x/hep/groot/rcont"
 	"go-hep.org/x/hep/groot/rdict"
-	"go-hep.org/x/hep/groot/rtypes"
 	_ "go-hep.org/x/hep/groot/ztypes"
 )
 
@@ -133,12 +130,4 @@ func generate(w io.Writer, pkg string, types []string, fname string, verbose boo
 	}
 
 	return nil
-}
-
-func init() {
-	f := func() reflect.Value {
-		o := &rcont.ArrayL64{}
-		return reflect.ValueOf(o)
-	}
-	rtypes.Factory.Add("TArrayL", f)
 }
