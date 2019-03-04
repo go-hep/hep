@@ -88,6 +88,8 @@ func (g *genGoType) genType(si rbytes.StreamerInfo) error {
 		name, name,
 	)
 
+	g.genStreamerInfo(si)
+
 	ifaces := []string{"root.Object", "rbytes.RVersioner", "rbytes.Marshaler", "rbytes.Unmarshaler"}
 	g.printf("var (\n")
 	for _, n := range ifaces {
@@ -725,6 +727,352 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 
 	default:
 		g.printf("// %s -- %T\n", se.Name(), se)
+	}
+}
+
+func (g *genGoType) genStreamerInfo(si rbytes.StreamerInfo) {
+	g.printf(`func init() {
+		// Streamer for %[1]s.
+		rdict.Streamers.Add(rdict.NewCxxStreamerInfo(%[1]q, %[2]d, 0x%[3]x, []rbytes.StreamerElement{
+`,
+		si.Name(), si.ClassVersion(), si.CheckSum(),
+	)
+
+	for i, se := range si.Elements() {
+		g.genStreamerType(si, i, se)
+	}
+
+	g.printf("}))\n}\n\n")
+}
+
+func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.StreamerElement) {
+	maxidx := func(v [5]int32) string {
+		return fmt.Sprintf("[5]int32{%d, %d, %d, %d, %d}", v[0], v[1], v[2], v[3], v[4])
+	}
+
+	g.imps["go-hep.org/x/hep/groot/rbase"] = 1
+	g.imps["go-hep.org/x/hep/groot/rdict"] = 1
+	g.imps["go-hep.org/x/hep/groot/rmeta"] = 1
+
+	switch se := se.(type) {
+	case *StreamerBase:
+		g.printf(`rdict.NewStreamerBase(rdict.Element{
+			Name:   *rbase.NewNamed(%[1]q, %[2]q),
+			Type:   rmeta.Base,
+			Size:   %[3]d,
+			ArrLen: %[4]d,
+			ArrDim: %[5]d,
+			MaxIdx: %[6]s,
+			Offset: %[7]d,
+			EName:  %[8]q,
+			XMin:   %[9]f,
+			XMax:   %[10]f,
+			Factor: %[11]f,
+		}.New(), %[12]d),
+		`,
+			se.Name(), se.Title(),
+			se.esize,
+			se.arrlen,
+			se.arrdim,
+			maxidx(se.maxidx),
+			se.offset,
+			se.ename,
+			se.xmin, se.xmax, se.factor,
+			se.vbase,
+		)
+
+	case *StreamerBasicType:
+		g.printf(`&rdict.StreamerBasicType{StreamerElement: rdict.Element{
+			Name:   *rbase.NewNamed(%[1]q, %[2]q),
+			Type:   rmeta.%[3]v,
+			Size:   %[4]d,
+			ArrLen: %[5]d,
+			ArrDim: %[6]d,
+			MaxIdx: %[7]s,
+			Offset: %[8]d,
+			EName:  %[9]q,
+			XMin:   %[10]f,
+			XMax:   %[11]f,
+			Factor: %[12]f,
+		}.New()},
+		`,
+			se.Name(), se.Title(),
+			se.etype,
+			se.esize,
+			se.arrlen,
+			se.arrdim,
+			maxidx(se.maxidx),
+			se.offset,
+			se.ename,
+			se.xmin, se.xmax, se.factor,
+		)
+
+	case *StreamerBasicPointer:
+		g.printf(`rdict.NewStreamerBasicPointer(rdict.Element{
+			Name:   *rbase.NewNamed(%[1]q, %[2]q),
+			Type:   %[3]d,
+			Size:   %[4]d,
+			ArrLen: %[5]d,
+			ArrDim: %[6]d,
+			MaxIdx: %[7]s,
+			Offset: %[8]d,
+			EName:  %[9]q,
+			XMin:   %[10]f,
+			XMax:   %[11]f,
+			Factor: %[12]f,
+		}.New(), %[13]d, %[14]q, %[15]q),
+		`,
+			se.Name(), se.Title(),
+			se.etype,
+			se.esize,
+			se.arrlen,
+			se.arrdim,
+			maxidx(se.maxidx),
+			se.offset,
+			se.ename,
+			se.xmin, se.xmax, se.factor,
+			se.cvers, se.cname, se.ccls,
+		)
+
+	case *StreamerLoop:
+		g.printf(`rdict.NewStreamerLoop(rdict.Element{
+			Name:   *rbase.NewNamed(%[1]q, %[2]q),
+			Type:   rmeta.StreamerLoop,
+			Size:   %[3]d,
+			ArrLen: %[4]d,
+			ArrDim: %[5]d,
+			MaxIdx: %[6]s,
+			Offset: %[7]d,
+			EName:  %[8]q,
+			XMin:   %[9]f,
+			XMax:   %[10]f,
+			Factor: %[11]f,
+		}.New(), %[12]d, %[13]q, %[14]q),
+		`,
+			se.Name(), se.Title(),
+			se.esize,
+			se.arrlen,
+			se.arrdim,
+			maxidx(se.maxidx),
+			se.offset,
+			se.ename,
+			se.xmin, se.xmax, se.factor,
+			se.cvers, se.cname, se.cclass,
+		)
+
+	case *StreamerObject:
+		g.printf(`&rdict.StreamerObject{StreamerElement: rdict.Element{
+			Name:   *rbase.NewNamed(%[1]q, %[2]q),
+			Type:   rmeta.%[3]v,
+			Size:   %[4]d,
+			ArrLen: %[5]d,
+			ArrDim: %[6]d,
+			MaxIdx: %[7]s,
+			Offset: %[8]d,
+			EName:  %[9]q,
+			XMin:   %[10]f,
+			XMax:   %[11]f,
+			Factor: %[12]f,
+		}.New()},
+		`,
+			se.Name(), se.Title(),
+			se.etype,
+			se.esize,
+			se.arrlen,
+			se.arrdim,
+			maxidx(se.maxidx),
+			se.offset,
+			se.ename,
+			se.xmin, se.xmax, se.factor,
+		)
+
+	case *StreamerObjectPointer:
+		g.printf(`&rdict.StreamerObjectPointer{StreamerElement: rdict.Element{
+			Name:   *rbase.NewNamed(%[1]q, %[2]q),
+			Type:   rmeta.%[3]v,
+			Size:   %[4]d,
+			ArrLen: %[5]d,
+			ArrDim: %[6]d,
+			MaxIdx: %[7]s,
+			Offset: %[8]d,
+			EName:  %[9]q,
+			XMin:   %[10]f,
+			XMax:   %[11]f,
+			Factor: %[12]f,
+		}.New()},
+		`,
+			se.Name(), se.Title(),
+			se.etype,
+			se.esize,
+			se.arrlen,
+			se.arrdim,
+			maxidx(se.maxidx),
+			se.offset,
+			se.ename,
+			se.xmin, se.xmax, se.factor,
+		)
+
+	case *StreamerObjectAny:
+		g.printf(`&rdict.StreamerObjectAny{StreamerElement: rdict.Element{
+			Name:   *rbase.NewNamed(%[1]q, %[2]q),
+			Type:   rmeta.%[3]v,
+			Size:   %[4]d,
+			ArrLen: %[5]d,
+			ArrDim: %[6]d,
+			MaxIdx: %[7]s,
+			Offset: %[8]d,
+			EName:  %[9]q,
+			XMin:   %[10]f,
+			XMax:   %[11]f,
+			Factor: %[12]f,
+		}.New()},
+		`,
+			se.Name(), se.Title(),
+			se.etype,
+			se.esize,
+			se.arrlen,
+			se.arrdim,
+			maxidx(se.maxidx),
+			se.offset,
+			se.ename,
+			se.xmin, se.xmax, se.factor,
+		)
+
+	case *StreamerObjectAnyPointer:
+		g.printf(`&rdict.StreamerObjectAnyPointer{StreamerElement: rdict.Element{
+			Name:   *rbase.NewNamed(%[1]q, %[2]q),
+			Type:   rmeta.%[3]v,
+			Size:   %[4]d,
+			ArrLen: %[5]d,
+			ArrDim: %[6]d,
+			MaxIdx: %[7]s,
+			Offset: %[8]d,
+			EName:  %[9]q,
+			XMin:   %[10]f,
+			XMax:   %[11]f,
+			Factor: %[12]f,
+		}.New()},
+		`,
+			se.Name(), se.Title(),
+			se.etype,
+			se.esize,
+			se.arrlen,
+			se.arrdim,
+			maxidx(se.maxidx),
+			se.offset,
+			se.ename,
+			se.xmin, se.xmax, se.factor,
+		)
+
+	case *StreamerString:
+		g.printf(`&rdict.StreamerString{StreamerElement: rdict.Element{
+			Name:   *rbase.NewNamed(%[1]q, %[2]q),
+			Type:   rmeta.%[3]v,
+			Size:   %[4]d,
+			ArrLen: %[5]d,
+			ArrDim: %[6]d,
+			MaxIdx: %[7]s,
+			Offset: %[8]d,
+			EName:  %[9]q,
+			XMin:   %[10]f,
+			XMax:   %[11]f,
+			Factor: %[12]f,
+		}.New()},
+		`,
+			se.Name(), se.Title(),
+			se.etype,
+			se.esize,
+			se.arrlen,
+			se.arrdim,
+			maxidx(se.maxidx),
+			se.offset,
+			se.ename,
+			se.xmin, se.xmax, se.factor,
+		)
+
+	case *StreamerSTL:
+		g.printf(`rdict.NewCxxStreamerSTL(rdict.Element{
+			Name:   *rbase.NewNamed(%[1]q, %[2]q),
+			Type:   rmeta.%[3]v,
+			Size:   %[4]d,
+			ArrLen: %[5]d,
+			ArrDim: %[6]d,
+			MaxIdx: %[7]s,
+			Offset: %[8]d,
+			EName:  %[9]q,
+			XMin:   %[10]f,
+			XMax:   %[11]f,
+			Factor: %[12]f,
+		}.New(), %[13]d, %[14]d),
+		`,
+			se.Name(), se.Title(),
+			se.etype,
+			se.esize,
+			se.arrlen,
+			se.arrdim,
+			maxidx(se.maxidx),
+			se.offset,
+			se.ename,
+			se.xmin, se.xmax, se.factor,
+			se.vtype, se.ctype,
+		)
+
+	case *StreamerSTLstring:
+		g.printf(`&rdict.StreamerSTLstring{*rdict.NewCxxStreamerSTL(rdict.Element{
+			Name:   *rbase.NewNamed(%[1]q, %[2]q),
+			Type:   rmeta.%[3]v,
+			Size:   %[4]d,
+			ArrLen: %[5]d,
+			ArrDim: %[6]d,
+			MaxIdx: %[7]s,
+			Offset: %[8]d,
+			EName:  %[9]q,
+			XMin:   %[10]f,
+			XMax:   %[11]f,
+			Factor: %[12]f,
+		}.New(), %[13]d, %[14]d)},
+		`,
+			se.Name(), se.Title(),
+			se.etype,
+			se.esize,
+			se.arrlen,
+			se.arrdim,
+			maxidx(se.maxidx),
+			se.offset,
+			se.ename,
+			se.xmin, se.xmax, se.factor,
+			se.vtype, se.ctype,
+		)
+
+	case *StreamerArtificial:
+		g.printf(`&rdict.StreamerArtificial{StreamerElement: rdict.Element{
+			Name:   *rbase.NewNamed(%[1]q, %[2]q),
+			Type:   rmeta.%[3]v,
+			Size:   %[4]d,
+			ArrLen: %[5]d,
+			ArrDim: %[6]d,
+			MaxIdx: %[7]s,
+			Offset: %[8]d,
+			EName:  %[9]q,
+			XMin:   %[10]f,
+			XMax:   %[11]f,
+			Factor: %[12]f,
+		}.New()},
+		`,
+			se.Name(), se.Title(),
+			se.etype,
+			se.esize,
+			se.arrlen,
+			se.arrdim,
+			maxidx(se.maxidx),
+			se.offset,
+			se.ename,
+			se.xmin, se.xmax, se.factor,
+		)
+
+	default:
+		g.printf("// %s -- %T\n", se.Name(), se)
+		panic(errors.Errorf("rdict: unknown streamer type %T (%#v)", se, se))
 	}
 }
 

@@ -100,7 +100,6 @@ func TestRW(t *testing.T) {
 package main
 
 import (
-	"flag"
 	"log"
 	"reflect"
 
@@ -108,15 +107,6 @@ import (
 )
 
 func main() {
-	{ // FIXME(sbinet): this shouldn't be necessary => bundle streamerinfo
-		fname := flag.String("f", "", "file")
-		flag.Parse()
-		f, err := groot.Open(*fname)
-		if err != nil {
-			log.Fatal(err)
-		}
-		f.Close()
-	}
 	w, err := groot.Create("out.root")
 	if err != nil {
 		log.Fatal(err)
