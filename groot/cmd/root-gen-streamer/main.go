@@ -79,14 +79,16 @@ options:
 }
 
 func generate(w io.Writer, pkg string, types []string) error {
-	g, err := rdict.NewGenerator(pkg)
+	g, err := rdict.NewGenStreamer(pkg, *verbose)
 	if err != nil {
 		return err
 	}
-	g.Verbose = *verbose
 
 	for _, t := range types {
-		g.Generate(t)
+		err := g.Generate(t)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	buf, err := g.Format()
