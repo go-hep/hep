@@ -124,6 +124,10 @@ func (g *genGoType) genField(si rbytes.StreamerInfo, i int, se rbytes.StreamerEl
 		}
 		g.printf(docFmt, se.Name(), tname, doc)
 
+	case *StreamerLoop:
+		tname := g.typename(se)
+		g.printf(docFmt, se.Name(), tname, doc)
+
 	case *StreamerObject:
 		tname := g.typename(se)
 		g.printf(docFmt, se.Name(), tname, doc)
@@ -182,6 +186,12 @@ func (g *genGoType) typename(se rbytes.StreamerElement) string {
 		}
 		return t.Name()
 
+	case *StreamerLoop:
+		if strings.HasSuffix(tname, "*") {
+			tname = tname[:len(tname)-1]
+		}
+		return "[]" + g.cxx2go(tname, qualNone)
+
 	case *StreamerObject:
 		return g.cxx2go(tname, qualNone)
 
@@ -230,8 +240,8 @@ func (g *genGoType) typename(se rbytes.StreamerElement) string {
 				case "string":
 					return "[]string"
 				default:
-					// FIXME(sbinet): recurse on g.typename(se-elem) ?
-					return "[]" + se.ElemTypeName()
+					etname := g.cxx2go(se.ElemTypeName(), qualNone)
+					return "[]" + etname
 				}
 			default:
 				panic(errors.Errorf("invalid stl-vector element type: %v -- %#v", se.ContainedType(), se))
@@ -284,7 +294,15 @@ func (g *genGoType) cxx2go(name string, qual qualKind) string {
 
 		return prefix + filepath.Base(pkg) + "." + t.Name()
 	}
-	return prefix + name
+	var f func(name string) string
+	f = func(name string) string {
+		switch {
+		case strings.HasSuffix(name, "*"):
+			return "*" + f(name[:len(name)-1])
+		}
+		return name
+	}
+	return prefix + f(name)
 }
 
 func (g *genGoType) genMarshal(si rbytes.StreamerInfo) {
@@ -427,6 +445,10 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 			}
 			g.printf("w.%s(o.%s[:%d])\n", wfunc, se.Name(), n)
 		}
+
+	case *StreamerLoop:
+		// FIXME(sbinet): implement. handle mbr-wise
+		g.printf("panic(\"o.%s: not implemented (TStreamerLoop)\")\n", se.Name())
 
 	case *StreamerObject:
 		// FIXME(sbinet): check semantics
@@ -649,6 +671,10 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 			g.printf("copy(o.%s[:], r.%s(len(o.%s)))\n", se.Name(), rfunc, se.Name())
 		}
 
+	case *StreamerLoop:
+		// FIXME(sbinet): implement. handle mbr-wise
+		g.printf("panic(\"o.%s: not implemented (TStreamerLoop)\")\n", se.Name())
+
 	case *StreamerObject:
 		// FIXME(sbinet): check semantics
 		g.printf("o.%s.UnmarshalROOT(r) // obj\n", se.Name())
@@ -843,7 +869,7 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 	case *StreamerLoop:
 		g.printf(`rdict.NewStreamerLoop(rdict.Element{
 			Name:   *rbase.NewNamed(%[1]q, %[2]q),
-			Type:   rmeta.StreamerLoop,
+			Type:   rmeta.StreamLoop,
 			Size:   %[3]d,
 			ArrLen: %[4]d,
 			ArrDim: %[5]d,
