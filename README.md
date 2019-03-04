@@ -1,7 +1,7 @@
 hep
 ===
 
-[![Backers on Open Collective](https://opencollective.com/hep/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/hep/sponsors/badge.svg)](#sponsors) [![GitHub release](https://img.shields.io/github/release/go-hep/hep.svg)](https://github.com/go-hep/hep/releases)
+[![GitHub release](https://img.shields.io/github/release/go-hep/hep.svg)](https://github.com/go-hep/hep/releases)
 [![Build Status](https://travis-ci.org/go-hep/hep.svg?branch=master)](https://travis-ci.org/go-hep/hep)
 [![Build status](https://ci.appveyor.com/api/projects/status/qnnp26vv2c71f560?svg=true)](https://ci.appveyor.com/project/sbinet/hep)
 [![codecov](https://codecov.io/gh/go-hep/hep/branch/master/graph/badge.svg)](https://codecov.io/gh/go-hep/hep)
@@ -12,6 +12,7 @@ hep
 [![JOSS Paper](http://joss.theoj.org/papers/0b007c81073186f7c61f95ea26ad7971/status.svg)](http://joss.theoj.org/papers/0b007c81073186f7c61f95ea26ad7971)
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/go-hep/binder/master)
 
+[![Backers on Open Collective](https://opencollective.com/hep/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/hep/sponsors/badge.svg)](#sponsors) 
 
 `hep` is a set of libraries and tools to perform High Energy Physics analyses with ease and [Go](https://golang.org)
 
