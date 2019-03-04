@@ -93,8 +93,8 @@ func TestRW(t *testing.T) {
 		main    string
 	}{
 		{
-			fname: "../../testdata/small-evnt-tree-fullsplit.root",
-			want:  "testdata/small-evnt-tree-fullsplit.txt",
+			fname: "../../testdata/streamers.root",
+			want:  "testdata/streamers.txt",
 			types: []string{"Event", "P3"},
 			main: `
 package main
@@ -104,6 +104,7 @@ import (
 	"reflect"
 
 	"go-hep.org/x/hep/groot"
+	"go-hep.org/x/hep/groot/rbase"
 )
 
 func main() {
@@ -125,6 +126,9 @@ func main() {
 		F64:       +64,
 		Str:       "my-string",
 		P3:        P3{1, 2, 3},
+		P3Ptr:     &P3{4, 5, 6},
+		ObjStr:    *rbase.NewObjString("obj-str"),
+		ObjStrPtr: rbase.NewObjString("obj-str-ptr"),
 		ArrayI16:  [10]int16{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},
 		ArrayI32:  [10]int32{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},
 		ArrayI64:  [10]int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},
@@ -133,6 +137,19 @@ func main() {
 		ArrayU64:  [10]uint64{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},
 		ArrayF32:  [10]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},
 		ArrayF64:  [10]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},
+		ArrayP3s:  [10]P3{{1,1,1},{2,2,2},{3,3,3},{4,4,4},{5,5,5},{6,6,6},{7,7,7},{8,8,8},{9,9,9},{0,0,0}},
+		ArrayObjStr: [10]rbase.ObjString{
+			*rbase.NewObjString("obj-str-1"),
+			*rbase.NewObjString("obj-str-2"),
+			*rbase.NewObjString("obj-str-3"),
+			*rbase.NewObjString("obj-str-4"),
+			*rbase.NewObjString("obj-str-5"),
+			*rbase.NewObjString("obj-str-6"),
+			*rbase.NewObjString("obj-str-7"),
+			*rbase.NewObjString("obj-str-8"),
+			*rbase.NewObjString("obj-str-9"),
+			*rbase.NewObjString("obj-str-0"),
+		},
 		N:         10,
 		SliceI16:  []int16{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},
 		SliceI32:  []int32{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},
