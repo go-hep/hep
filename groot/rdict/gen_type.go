@@ -367,6 +367,9 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 					panic(errors.Errorf("invalid counter size %d for %s.%s", se.Size(), si.Name(), se.Name()))
 				}
 
+			case rmeta.Bits:
+				g.printf("w.WriteI32(int32(o.%s))\n", se.Name())
+
 			case rmeta.Int8:
 				g.printf("w.WriteI8(o.%s)\n", se.Name())
 			case rmeta.Int16:
@@ -585,6 +588,9 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 				default:
 					panic(errors.Errorf("invalid counter size %d for %s.%s", se.Size(), si.Name(), se.Name()))
 				}
+
+			case rmeta.Bits:
+				g.printf("o.%s = r.ReadI32()\n", se.Name())
 
 			case rmeta.Int8:
 				g.printf("o.%s = r.ReadI8()\n", se.Name())
