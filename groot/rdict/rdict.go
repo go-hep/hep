@@ -37,11 +37,24 @@ type StreamerInfo struct {
 	elems  []rbytes.StreamerElement
 }
 
+// NewStreamerInfo creates a new StreamerInfo from Go provided informations.
 func NewStreamerInfo(name string, version int, elems []rbytes.StreamerElement) *StreamerInfo {
 	sinfos := &StreamerInfo{
 		named:  *rbase.NewNamed(GoName2Cxx(name), "Go;"+name),
 		chksum: 0, // FIXME(sbinet): how to generate a stable and meaningful checksum?
 		clsver: int32(version),
+		objarr: rcont.NewObjArray(),
+		elems:  elems,
+	}
+	return sinfos
+}
+
+// NewCxxStreamerInfo creates a new StreamerInfo from C++ provided informations.
+func NewCxxStreamerInfo(name string, version int32, chksum uint32, elems []rbytes.StreamerElement) *StreamerInfo {
+	sinfos := &StreamerInfo{
+		named:  *rbase.NewNamed(name, ""),
+		chksum: chksum,
+		clsver: version,
 		objarr: rcont.NewObjArray(),
 		elems:  elems,
 	}
@@ -297,6 +310,10 @@ type StreamerBase struct {
 	vbase int32 // version number of the base class
 }
 
+func NewStreamerBase(se StreamerElement, vbase int32) *StreamerBase {
+	return &StreamerBase{StreamerElement: se, vbase: vbase}
+}
+
 func (*StreamerBase) RVersion() int16 { return rvers.StreamerBase }
 
 func (tsb *StreamerBase) Class() string {
@@ -403,6 +420,15 @@ type StreamerBasicPointer struct {
 	ccls  string // name of the class with the counter
 }
 
+func NewStreamerBasicPointer(se StreamerElement, cvers int32, cname, ccls string) *StreamerBasicPointer {
+	return &StreamerBasicPointer{
+		StreamerElement: se,
+		cvers:           cvers,
+		cname:           cname,
+		ccls:            ccls,
+	}
+}
+
 func (*StreamerBasicPointer) RVersion() int16 { return rvers.StreamerBasicPointer }
 
 func (tsb *StreamerBasicPointer) Class() string {
@@ -449,6 +475,15 @@ type StreamerLoop struct {
 	cvers  int32  // version number of the class with the counter
 	cname  string // name of data member holding the array count
 	cclass string // name of the class with the counter
+}
+
+func NewStreamerLoop(se StreamerElement, cvers int32, cname, cclass string) *StreamerLoop {
+	return &StreamerLoop{
+		StreamerElement: se,
+		cvers:           cvers,
+		cname:           cname,
+		cclass:          cclass,
+	}
 }
 
 func (*StreamerLoop) RVersion() int16 { return rvers.StreamerLoop }
@@ -676,6 +711,15 @@ func NewStreamerSTL(name string, vtype rmeta.ESTLType, ctype rmeta.Enum) *Stream
 		},
 		vtype: vtype,
 		ctype: ctype,
+	}
+}
+
+// NewCxxStreamerSTL creates a new StreamerSTL from C++ informations.
+func NewCxxStreamerSTL(se StreamerElement, vtype rmeta.ESTLType, ctype rmeta.Enum) *StreamerSTL {
+	return &StreamerSTL{
+		StreamerElement: se,
+		vtype:           vtype,
+		ctype:           ctype,
 	}
 }
 
