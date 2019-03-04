@@ -130,10 +130,20 @@ func (g *genGoType) genField(si rbytes.StreamerInfo, i int, se rbytes.StreamerEl
 
 	case *StreamerObject:
 		tname := g.typename(se)
+		switch se.ArrayLen() {
+		case 0:
+		default:
+			tname = fmt.Sprintf("[%d]%s", se.ArrayLen(), tname)
+		}
 		g.printf(docFmt, se.Name(), tname, doc)
 
 	case *StreamerObjectAny:
 		tname := g.typename(se)
+		switch se.ArrayLen() {
+		case 0:
+		default:
+			tname = fmt.Sprintf("[%d]%s", se.ArrayLen(), tname)
+		}
 		g.printf(docFmt, se.Name(), tname, doc)
 
 	case *StreamerObjectAnyPointer:
@@ -452,11 +462,25 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 
 	case *StreamerObject:
 		// FIXME(sbinet): check semantics
-		g.printf("o.%s.MarshalROOT(w) // obj\n", se.Name())
+		switch se.ArrayLen() {
+		case 0:
+			g.printf("o.%s.MarshalROOT(w) // obj\n", se.Name())
+		default:
+			g.printf("for i := range o.%s {\n", se.Name())
+			g.printf("o.%s[i].MarshalROOT(w) // obj\n", se.Name())
+			g.printf("}\n")
+		}
 
 	case *StreamerObjectAny:
 		// FIXME(sbinet): check semantics
-		g.printf("o.%s.MarshalROOT(w) // obj-any\n", se.Name())
+		switch se.ArrayLen() {
+		case 0:
+			g.printf("o.%s.MarshalROOT(w) // obj-any\n", se.Name())
+		default:
+			g.printf("for i := range o.%s {\n", se.Name())
+			g.printf("o.%s[i].MarshalROOT(w) // obj-any\n", se.Name())
+			g.printf("}\n")
+		}
 
 	case *StreamerObjectAnyPointer:
 		// FIXME(sbinet): check semantics
@@ -677,11 +701,25 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 
 	case *StreamerObject:
 		// FIXME(sbinet): check semantics
-		g.printf("o.%s.UnmarshalROOT(r) // obj\n", se.Name())
+		switch se.ArrayLen() {
+		case 0:
+			g.printf("o.%s.UnmarshalROOT(r) // obj\n", se.Name())
+		default:
+			g.printf("for i := range o.%s {\n", se.Name())
+			g.printf("o.%s[i].UnmarshalROOT(r) // obj\n", se.Name())
+			g.printf("}\n")
+		}
 
 	case *StreamerObjectAny:
 		// FIXME(sbinet): check semantics
-		g.printf("o.%s.UnmarshalROOT(r) // obj-any\n", se.Name())
+		switch se.ArrayLen() {
+		case 0:
+			g.printf("o.%s.UnmarshalROOT(r) // obj-any\n", se.Name())
+		default:
+			g.printf("for i := range o.%s {\n", se.Name())
+			g.printf("o.%s[i].UnmarshalROOT(r) // obj-any\n", se.Name())
+			g.printf("}\n")
+		}
 
 	case *StreamerObjectAnyPointer:
 		// FIXME(sbinet): check semantics
