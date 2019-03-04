@@ -28,17 +28,15 @@ func TestGenerate(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	for _, tc := range []struct {
-		fname     string
-		want      string
-		types     []string
-		verbose   bool
-		streamers bool
+		fname   string
+		want    string
+		types   []string
+		verbose bool
 	}{
 		{
-			fname:     "../../testdata/small-evnt-tree-fullsplit.root",
-			want:      "testdata/small-evnt-tree-fullsplit.txt",
-			types:     []string{"Event", "P3"},
-			streamers: true,
+			fname: "../../testdata/small-evnt-tree-fullsplit.root",
+			want:  "testdata/small-evnt-tree-fullsplit.txt",
+			types: []string{"Event", "P3"},
 		},
 	} {
 		t.Run(tc.fname, func(t *testing.T) {
@@ -49,7 +47,7 @@ func TestGenerate(t *testing.T) {
 			}
 			defer o.Close()
 
-			err = generate(o, "main", tc.types, tc.fname, tc.verbose, tc.streamers)
+			err = generate(o, "main", tc.types, tc.fname, tc.verbose)
 			if err != nil {
 				t.Fatalf("could not generate types: %v", err)
 			}
@@ -88,18 +86,16 @@ func TestRW(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	for _, tc := range []struct {
-		fname     string
-		want      string
-		types     []string
-		verbose   bool
-		streamers bool
-		main      string
+		fname   string
+		want    string
+		types   []string
+		verbose bool
+		main    string
 	}{
 		{
-			fname:     "../../testdata/small-evnt-tree-fullsplit.root",
-			want:      "testdata/small-evnt-tree-fullsplit.txt",
-			types:     []string{"Event", "P3"},
-			streamers: true,
+			fname: "../../testdata/small-evnt-tree-fullsplit.root",
+			want:  "testdata/small-evnt-tree-fullsplit.txt",
+			types: []string{"Event", "P3"},
 			main: `
 package main
 
@@ -206,7 +202,7 @@ func main() {
 			}
 			defer o.Close()
 
-			err = generate(o, "main", tc.types, tc.fname, tc.verbose, tc.streamers)
+			err = generate(o, "main", tc.types, tc.fname, tc.verbose)
 			if err != nil {
 				t.Fatalf("could not generate types: %v", err)
 			}
