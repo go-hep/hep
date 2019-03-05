@@ -675,6 +675,20 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					return r.Err()
 				}
 
+			case rmeta.UChar:
+				fptr := rf.Addr().Interface().(*[]uint8)
+				return func(r *rbytes.RBuffer) error {
+					var hdr [6]byte
+					r.Read(hdr[:])
+					n := int(r.ReadI32())
+					if n > 0 {
+						*fptr = r.ReadFastArrayU8(n)
+					} else {
+						*fptr = []uint8{}
+					}
+					return r.Err()
+				}
+
 			case rmeta.UShort:
 				fptr := rf.Addr().Interface().(*[]uint16)
 				return func(r *rbytes.RBuffer) error {
@@ -735,8 +749,40 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					return r.Err()
 				}
 
+			case rmeta.TString:
+				fptr := rf.Addr().Interface().(*[]string)
+				return func(r *rbytes.RBuffer) error {
+					start := r.Pos()
+					_, pos, bcnt := r.ReadVersion("vector<string>")
+					n := int(r.ReadI32())
+					*fptr = make([]string, n)
+					for i := 0; i < n; i++ {
+						(*fptr)[i] = r.ReadString()
+					}
+					r.CheckByteCount(pos, bcnt, start, "vector<string>")
+					return r.Err()
+				}
+
 			case rmeta.Object:
 				switch se.TypeName() {
+				case "vector<vector<float> >":
+					fptr := rf.Addr().Interface().(*[][]float32)
+					return func(r *rbytes.RBuffer) error {
+						start := r.Pos()
+						_, pos, bcnt := r.ReadVersion("vector<vector<float> >")
+						n := int(r.ReadI32())
+						*fptr = make([][]float32, n)
+						for i := 0; i < n; i++ {
+							nn := int(r.ReadI32())
+							(*fptr)[i] = make([]float32, nn)
+							for j := 0; j < nn; j++ {
+								(*fptr)[i][j] = r.ReadF32()
+							}
+						}
+						r.CheckByteCount(pos, bcnt, start, "vector<vector<float> >")
+						return r.Err()
+					}
+
 				case "vector<string>", "std::vector<std::string>":
 					fptr := rf.Addr().Interface().(*[]string)
 					*fptr = make([]string, 0, 8)
@@ -1047,6 +1093,8 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 				return reflect.SliceOf(reflect.TypeOf(uint64(0)))
 			case rmeta.Bool:
 				return reflect.SliceOf(reflect.TypeOf(false))
+			case rmeta.TString:
+				return reflect.SliceOf(reflect.TypeOf(""))
 			case rmeta.Object:
 				switch se.TypeName() {
 				case "vector<string>", "std::vector<std::string>":
