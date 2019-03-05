@@ -506,5 +506,6 @@ func typenameOf(typ reflect.Type) string {
 }
 
 var (
-	_ streamerStore = (*streamerStoreImpl)(nil)
+	_ streamerStore              = (*streamerStoreImpl)(nil)
+	_ rbytes.StreamerInfoContext = (*streamerStoreImpl)(nil)
 )
