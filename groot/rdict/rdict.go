@@ -234,6 +234,18 @@ func (tse *StreamerElement) TypeName() string {
 	return tse.ename
 }
 
+func (tse *StreamerElement) XMin() float64 {
+	return tse.xmin
+}
+
+func (tse *StreamerElement) XMax() float64 {
+	return tse.xmax
+}
+
+func (tse *StreamerElement) Factor() float64 {
+	return tse.factor
+}
+
 func (tse *StreamerElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
 		return 0, w.Err()

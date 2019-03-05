@@ -39,6 +39,9 @@ type StreamerElement interface {
 	Offset() uintptr
 	Size() uintptr
 	TypeName() string
+	XMin() float64
+	XMax() float64
+	Factor() float64
 }
 
 // StreamerInfoContext defines the protocol to retrieve a ROOT StreamerInfo
