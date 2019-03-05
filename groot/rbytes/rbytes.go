@@ -27,6 +27,9 @@ type StreamerInfo interface {
 	CheckSum() int
 	ClassVersion() int
 	Elements() []StreamerElement
+
+	// BuildStreamers builds the r/w streamers.
+	BuildStreamers() error
 }
 
 // StreamerElement describes a ROOT StreamerElement

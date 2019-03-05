@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 	"text/tabwriter"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -34,6 +35,13 @@ type StreamerInfo struct {
 	clsver int32
 	objarr *rcont.ObjArray
 	elems  []rbytes.StreamerElement
+
+	mu       sync.Mutex
+	init     bool
+	robjwise interface{}
+	wobjwise interface{}
+	rmbrwise interface{}
+	wmbrwise interface{}
 }
 
 // NewStreamerInfo creates a new StreamerInfo from Go provided informations.
@@ -149,6 +157,28 @@ func (si *StreamerInfo) String() string {
 	w.Flush()
 	return o.String()
 
+}
+
+// BuildStreamers builds the r/w streamers.
+func (si *StreamerInfo) BuildStreamers() error {
+	si.mu.Lock()
+	defer si.mu.Unlock()
+	if si.init {
+		return nil
+	}
+	return si.build()
+}
+
+func (si *StreamerInfo) build() (err error) {
+	panic("not implemented")
+
+	defer func() {
+		if err == nil {
+			si.init = true
+		}
+	}()
+
+	return err
 }
 
 type Element struct {
@@ -825,7 +855,7 @@ func NewStreamerSTL(name string, vtype rmeta.ESTLType, ctype rmeta.Enum) *Stream
 		StreamerElement: StreamerElement{
 			named: *rbase.NewNamed(name, ""),
 			esize: int32(ptrSize + 2*intSize),
-			ename: rmeta.STLNameFor(vtype, ctype),
+			ename: rmeta.STLNameFrom(name, vtype, ctype),
 			etype: rmeta.Streamer,
 		},
 		vtype: vtype,

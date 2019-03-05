@@ -129,6 +129,13 @@ var CxxBuiltins = map[string]reflect.Type{
 	"Size_t":   reflect.TypeOf(float32(0)),
 }
 
+func STLNameFrom(name string, vtype ESTLType, ctype Enum) string {
+	if ctype == Object {
+		return name
+	}
+	return STLNameFor(vtype, ctype)
+}
+
 // STLNameFor creates a regular C++ STL container name given a STL enum type
 // and a ROOT enum value for the contained element.
 func STLNameFor(vtype ESTLType, ctype Enum) string {
@@ -222,5 +229,5 @@ func rmeta2Name(t Enum) string {
 	case STLstring:
 		return "string"
 	}
-	panic(fmt.Errorf("not implemented: t=%d (%v)", t, t))
+	panic(fmt.Errorf("not implemented: t=%v (%d)", t, t))
 }
