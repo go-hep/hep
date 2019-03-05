@@ -867,7 +867,7 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 func (g *genGoType) genStreamerInfo(si rbytes.StreamerInfo) {
 	g.printf(`func init() {
 		// Streamer for %[1]s.
-		rdict.Streamers.Add(rdict.NewCxxStreamerInfo(%[1]q, %[2]d, 0x%[3]x, []rbytes.StreamerElement{
+		rdict.StreamerInfos.Add(rdict.NewCxxStreamerInfo(%[1]q, %[2]d, 0x%[3]x, []rbytes.StreamerElement{
 `,
 		si.Name(), si.ClassVersion(), si.CheckSum(),
 	)

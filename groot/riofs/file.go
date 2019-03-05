@@ -489,7 +489,7 @@ func (f *File) readStreamerInfo() error {
 			continue
 		}
 		f.sinfos = append(f.sinfos, obj)
-		rdict.Streamers.Add(obj)
+		rdict.StreamerInfos.Add(obj)
 	}
 	return nil
 }
@@ -557,7 +557,7 @@ func (f *File) findDepStreamers() error {
 	)
 
 	for _, si := range f.sinfos {
-		err = rdict.Visit(rdict.Streamers, si, func(depth int, se rbytes.StreamerElement) error {
+		err = rdict.Visit(rdict.StreamerInfos, si, func(depth int, se rbytes.StreamerElement) error {
 			switch se := se.(type) {
 			case *rdict.StreamerBase:
 				deps = append(deps, depsType{se.Name(), se.Base()})
@@ -582,7 +582,7 @@ func (f *File) findDepStreamers() error {
 		if isCoreType(dep.name) || isCxxBuiltin(dep.name) {
 			continue
 		}
-		sub, err := rdict.Streamers.StreamerInfo(dep.name, dep.vers)
+		sub, err := rdict.StreamerInfos.StreamerInfo(dep.name, dep.vers)
 		if err != nil {
 			return errors.Wrapf(err, "riofs: could not find streamer for %q and version=%d", dep.name, dep.vers)
 		}
@@ -745,7 +745,7 @@ func (f *File) StreamerInfo(name string, version int) (rbytes.StreamerInfo, erro
 		}
 	}
 
-	si, ok := rdict.Streamers.Get(name, version)
+	si, ok := rdict.StreamerInfos.Get(name, version)
 	if ok {
 		return si, nil
 	}
@@ -758,7 +758,7 @@ func (f *File) StreamerInfo(name string, version int) (rbytes.StreamerInfo, erro
 		si := stdvecSIFrom(name, o[1], f)
 		if si != nil {
 			f.sinfos = append(f.sinfos, si)
-			rdict.Streamers.Add(si)
+			rdict.StreamerInfos.Add(si)
 			return si, nil
 		}
 	}

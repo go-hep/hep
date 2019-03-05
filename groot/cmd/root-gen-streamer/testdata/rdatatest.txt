@@ -11,7 +11,7 @@ import (
 
 func init() {
 	// Streamer for Event.
-	rdict.Streamers.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.Event", int(((*Event)(nil)).RVersion()), []rbytes.StreamerElement{
+	rdict.StreamerInfos.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.Event", int(((*Event)(nil)).RVersion()), []rbytes.StreamerElement{
 		&rdict.StreamerString{rdict.Element{
 			Name:   *rbase.NewNamed("Name", ""),
 			Type:   rmeta.TString,
@@ -293,7 +293,7 @@ func (o *Event) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 func init() {
 	// Streamer for HLV.
-	rdict.Streamers.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.HLV", int(((*HLV)(nil)).RVersion()), []rbytes.StreamerElement{
+	rdict.StreamerInfos.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.HLV", int(((*HLV)(nil)).RVersion()), []rbytes.StreamerElement{
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("px", ""),
 			Type:   rmeta.Float64,
@@ -347,7 +347,7 @@ func (o *HLV) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 func init() {
 	// Streamer for Particle.
-	rdict.Streamers.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.Particle", int(((*Particle)(nil)).RVersion()), []rbytes.StreamerElement{
+	rdict.StreamerInfos.Add(rdict.NewStreamerInfo("go-hep.org/x/hep/groot/internal/rdatatest.Particle", int(((*Particle)(nil)).RVersion()), []rbytes.StreamerElement{
 		&rdict.StreamerString{rdict.Element{
 			Name:   *rbase.NewNamed("name", ""),
 			Type:   rmeta.TString,

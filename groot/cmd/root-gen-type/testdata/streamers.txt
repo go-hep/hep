@@ -378,7 +378,7 @@ func init() {
 
 func init() {
 	// Streamer for Event.
-	rdict.Streamers.Add(rdict.NewCxxStreamerInfo("Event", 1, 0xf0ca53bd, []rbytes.StreamerElement{
+	rdict.StreamerInfos.Add(rdict.NewCxxStreamerInfo("Event", 1, 0xf0ca53bd, []rbytes.StreamerElement{
 		&rdict.StreamerString{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("Beg", ""),
 			Type:   rmeta.TString,
@@ -1043,7 +1043,7 @@ func init() {
 
 func init() {
 	// Streamer for P3.
-	rdict.Streamers.Add(rdict.NewCxxStreamerInfo("P3", 1, 0x64044917, []rbytes.StreamerElement{
+	rdict.StreamerInfos.Add(rdict.NewCxxStreamerInfo("P3", 1, 0x64044917, []rbytes.StreamerElement{
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("Px", ""),
 			Type:   rmeta.Int,

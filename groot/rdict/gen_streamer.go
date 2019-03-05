@@ -172,7 +172,7 @@ func (o *%[1]s) UnmarshalROOT(r *rbytes.RBuffer) error {
 func (g *genStreamer) genStreamer(t types.Type, typeName string) {
 	g.printf(`func init() {
 	// Streamer for %[1]s.
-	rdict.Streamers.Add(rdict.NewStreamerInfo(%[2]q, int(((*%[1]s)(nil)).RVersion()), []rbytes.StreamerElement{
+	rdict.StreamerInfos.Add(rdict.NewStreamerInfo(%[2]q, int(((*%[1]s)(nil)).RVersion()), []rbytes.StreamerElement{
 `,
 		typeName,
 		g.pkg.Path()+"."+typeName,

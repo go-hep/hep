@@ -27,11 +27,11 @@ type VisitT2 struct {
 }
 
 func TestVisit(t *testing.T) {
-	rdict.Streamers.Add(rdict.StreamerOf(rdict.Streamers, reflect.TypeOf([2]float64{})))
-	rdict.Streamers.Add(rdict.StreamerOf(rdict.Streamers, reflect.TypeOf([]float64{})))
+	rdict.StreamerInfos.Add(rdict.StreamerOf(rdict.StreamerInfos, reflect.TypeOf([2]float64{})))
+	rdict.StreamerInfos.Add(rdict.StreamerOf(rdict.StreamerInfos, reflect.TypeOf([]float64{})))
 
-	rdict.Streamers.Add(rdict.StreamerOf(rdict.Streamers, reflect.TypeOf((*VisitT1)(nil)).Elem()))
-	rdict.Streamers.Add(rdict.StreamerOf(rdict.Streamers, reflect.TypeOf((*VisitT2)(nil)).Elem()))
+	rdict.StreamerInfos.Add(rdict.StreamerOf(rdict.StreamerInfos, reflect.TypeOf((*VisitT1)(nil)).Elem()))
+	rdict.StreamerInfos.Add(rdict.StreamerOf(rdict.StreamerInfos, reflect.TypeOf((*VisitT2)(nil)).Elem()))
 
 	for _, tc := range []struct {
 		si   rbytes.StreamerInfo
@@ -85,7 +85,7 @@ func TestVisit(t *testing.T) {
 func loadSI(t *testing.T, name string) rbytes.StreamerInfo {
 	t.Helper()
 
-	si, err := rdict.Streamers.StreamerInfo(name, -1)
+	si, err := rdict.StreamerInfos.StreamerInfo(name, -1)
 	if err != nil {
 		t.Fatal(err)
 	}

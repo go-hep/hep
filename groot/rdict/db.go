@@ -13,8 +13,8 @@ import (
 	"go-hep.org/x/hep/groot/rbytes"
 )
 
-// Streamers stores all the streamers available at runtime.
-var Streamers = &streamerDb{
+// StreamerInfos stores all the streamers available at runtime.
+var StreamerInfos = &streamerDb{
 	db: make(map[streamerDbKey]rbytes.StreamerInfo),
 }
 

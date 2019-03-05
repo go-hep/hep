@@ -68,7 +68,7 @@ func streamerInfoFrom(obj root.Object, sictx streamerInfoStore) (rbytes.Streamer
 	if err != nil {
 		return nil, err
 	}
-	rdict.Streamers.Add(si)
+	rdict.StreamerInfos.Add(si)
 	sictx.addStreamer(si)
 	return si, nil
 }
@@ -88,7 +88,7 @@ func init() {
 		if err != nil {
 			log.Printf("riofs: could not load streamer info for %q: %v", k.Name(), err)
 		}
-		rdict.Streamers.Add(o.(rbytes.StreamerInfo))
+		rdict.StreamerInfos.Add(o.(rbytes.StreamerInfo))
 	}
 	defer f.Close()
 }

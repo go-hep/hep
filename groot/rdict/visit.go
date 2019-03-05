@@ -26,7 +26,7 @@ type visitor struct {
 
 func newVisitor(ctx rbytes.StreamerInfoContext, f func(depth int, se rbytes.StreamerElement) error) *visitor {
 	if ctx == nil {
-		ctx = Streamers
+		ctx = StreamerInfos
 	}
 	return &visitor{
 		ctx: ctx,
