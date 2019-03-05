@@ -20,9 +20,10 @@ var (
 )
 
 func stdvecSIFrom(name, ename string, ctx rbytes.StreamerInfoContext) rbytes.StreamerInfo {
+	const vers = 1
 	ename = strings.TrimSpace(ename)
 	if etyp, ok := rmeta.CxxBuiltins[ename]; ok {
-		si := rdict.NewStreamerInfo(name, 1, []rbytes.StreamerElement{
+		si := rdict.NewStreamerInfo(name, vers, []rbytes.StreamerElement{
 			rdict.NewStreamerSTL(
 				name, rmeta.STLvector, rmeta.GoType2ROOTEnum[etyp],
 			),
@@ -34,7 +35,7 @@ func stdvecSIFrom(name, ename string, ctx rbytes.StreamerInfoContext) rbytes.Str
 		return nil
 	}
 
-	si := rdict.NewStreamerInfo(name, 1, []rbytes.StreamerElement{
+	si := rdict.NewStreamerInfo(name, vers, []rbytes.StreamerElement{
 		rdict.NewStreamerSTL(name, rmeta.STLvector, rmeta.Object),
 	})
 	return si
