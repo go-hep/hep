@@ -9,10 +9,10 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"go-hep.org/x/hep/groot/internal/rtype"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/rmeta"
+	"go-hep.org/x/hep/groot/root"
 )
 
 var (
@@ -830,9 +830,9 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 		case rmeta.Float:
 			return reflect.TypeOf(float32(0))
 		case rmeta.Float16:
-			return reflect.TypeOf(rtype.Float16(0))
+			return reflect.TypeOf(root.Float16(0))
 		case rmeta.Double32:
-			return reflect.TypeOf(rtype.Double32(0))
+			return reflect.TypeOf(root.Double32(0))
 		case rmeta.Double:
 			return reflect.TypeOf(float64(0))
 		case rmeta.UChar, rmeta.CharStar:
@@ -856,9 +856,9 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 		case rmeta.OffsetL + rmeta.Float:
 			return reflect.ArrayOf(se.ArrayLen(), reflect.TypeOf(float32(0)))
 		case rmeta.OffsetL + rmeta.Float16:
-			return reflect.ArrayOf(se.ArrayLen(), reflect.TypeOf(rtype.Float16(0)))
+			return reflect.ArrayOf(se.ArrayLen(), reflect.TypeOf(root.Float16(0)))
 		case rmeta.OffsetL + rmeta.Double32:
-			return reflect.ArrayOf(se.ArrayLen(), reflect.TypeOf(rtype.Double32(0)))
+			return reflect.ArrayOf(se.ArrayLen(), reflect.TypeOf(root.Double32(0)))
 		case rmeta.OffsetL + rmeta.Double:
 			return reflect.ArrayOf(se.ArrayLen(), reflect.TypeOf(float64(0)))
 		case rmeta.OffsetL + rmeta.UChar, rmeta.OffsetL + rmeta.CharStar:
@@ -911,13 +911,13 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 			}
 			return reflect.PtrTo(tp)
 		case rmeta.OffsetP + rmeta.Float16:
-			tp := reflect.TypeOf(rtype.Float16(0))
+			tp := reflect.TypeOf(root.Float16(0))
 			if lcount != nil {
 				return reflect.SliceOf(tp)
 			}
 			return reflect.PtrTo(tp)
 		case rmeta.OffsetP + rmeta.Double32:
-			tp := reflect.TypeOf(rtype.Double32(0))
+			tp := reflect.TypeOf(root.Double32(0))
 			if lcount != nil {
 				return reflect.SliceOf(tp)
 			}

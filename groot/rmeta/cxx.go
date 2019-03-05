@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strings"
 
-	"go-hep.org/x/hep/groot/internal/rtype"
+	"go-hep.org/x/hep/groot/root"
 )
 
 var GoType2ROOTEnum = map[reflect.Type]Enum{
@@ -26,9 +26,10 @@ var GoType2ROOTEnum = map[reflect.Type]Enum{
 	reflect.TypeOf(uint32(0)): UInt,
 	reflect.TypeOf(uint64(0)): ULong,
 	//	reflect.TypeOf(uint64(0)): ULong64,
-	reflect.TypeOf(false):             Bool,
-	reflect.TypeOf(rtype.Double32(0)): Double32,
-	reflect.TypeOf(""):                TString,
+	reflect.TypeOf(false):            Bool,
+	reflect.TypeOf(root.Float16(0)):  Float16,
+	reflect.TypeOf(root.Double32(0)): Double32,
+	reflect.TypeOf(""):               TString,
 }
 
 var GoType2Cxx = map[string]string{
@@ -105,9 +106,9 @@ var CxxBuiltins = map[string]reflect.Type{
 	"ULong64_t": reflect.TypeOf(uint64(0)),
 
 	"Float_t":    reflect.TypeOf(float32(0)),
-	"Float16_t":  reflect.TypeOf(rtype.Float16(0)),
+	"Float16_t":  reflect.TypeOf(root.Float16(0)),
 	"Double_t":   reflect.TypeOf(float64(0)),
-	"Double32_t": reflect.TypeOf(rtype.Double32(0)),
+	"Double32_t": reflect.TypeOf(root.Double32(0)),
 
 	"Version_t": reflect.TypeOf(int16(0)),
 	"Option_t":  reflect.TypeOf(""),

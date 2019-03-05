@@ -190,6 +190,14 @@ func (g *genGoType) typename(se rbytes.StreamerElement) string {
 		}
 
 	case *StreamerBasicType:
+		switch se.Type() {
+		case rmeta.Float16:
+			g.imps["go-hep.org/x/hep/groot/root"] = 1
+			return "root.Float16"
+		case rmeta.Double32:
+			g.imps["go-hep.org/x/hep/groot/root"] = 1
+			return "root.Double32"
+		}
 		t, ok := rmeta.CxxBuiltins[tname]
 		if !ok {
 			panic(errors.Errorf("gen-type: unknown C++ builtin %q", tname))
@@ -420,6 +428,11 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 				g.printf("w.WriteF32(o.%s)\n", se.Name())
 			case rmeta.Float64:
 				g.printf("w.WriteF64(o.%s)\n", se.Name())
+
+			case rmeta.Float16:
+				g.printf("w.WriteF32(float32(o.%s)) // FIXME(sbinet)\n", se.Name()) // FIXME(sbinet): handle compression
+			case rmeta.Double32:
+				g.printf("w.WriteF32(float32(o.%s)) // FIXME(sbinet)\n", se.Name()) // FIXME(sbinet): handle compression
 
 			default:
 				panic(errors.Errorf("invalid basic type %v (%d) for %s.%s", se.Type(), se.Type(), si.Name(), se.Name()))
@@ -660,6 +673,11 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 				g.printf("o.%s = r.ReadF32()\n", se.Name())
 			case rmeta.Float64:
 				g.printf("o.%s = r.ReadF64()\n", se.Name())
+
+			case rmeta.Float16:
+				g.printf("o.%s = root.Float16(r.ReadF32()) // FIXME(sbinet)\n", se.Name()) // FIXME(sbinet): handle compression,factor
+			case rmeta.Double32:
+				g.printf("o.%s = root.Double32(r.ReadF32()) // FIXME(sbinet)\n", se.Name()) // FIXME(sbinet): handle compression,factor
 
 			default:
 				panic(errors.Errorf("invalid basic type %v (%d) for %s.%s", se.Type(), se.Type(), si.Name(), se.Name()))

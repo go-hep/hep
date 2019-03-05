@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:generate go run ./gen-data.go -f ../../testdata/streamers.root
+//go:generate root-gen-type -p main -t Event,P3 -o ./testdata/streamers.txt ../../testdata/streamers.root
+
 // Command root-gen-type generates a Go type from the StreamerInfo contained
 // in a ROOT file.
 package main // import "go-hep.org/x/hep/groot/cmd/root-gen-type"

@@ -73,6 +73,8 @@ struct Event {
 	uint64_t U64;
 	float    F32;
 	double   F64;
+	Float16_t  D16;
+	Double32_t D32;
 	TString  Str;
 
 	::P3       P3;
@@ -134,6 +136,8 @@ void streamers(const char* fname) {
 		e.U64 = i;
 		e.F32 = float(i);
 		e.F64 = double(i);
+		e.D16 = Float16_t(i);
+		e.D32 = Double32_t(i);
 		e.Str = TString::Format("evt-%03d", i);
 
 		e.P3  = {i-1, double(i), i-1};

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package rtype // import "go-hep.org/x/hep/groot/internal/rtype"
+package root // import "go-hep.org/x/hep/groot/root"
 
 // FIXME(sbinet): implement a real ROOT float16
 // FIXME(sbinet): implement a real ROOT double32

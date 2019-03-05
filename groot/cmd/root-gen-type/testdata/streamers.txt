@@ -25,6 +25,8 @@ type Event struct {
 	U64         uint64
 	F32         float32
 	F64         float64
+	D16         root.Float16
+	D32         root.Double32
 	Str         string
 	P3          P3
 	P3Ptr       *P3
@@ -82,6 +84,8 @@ func (o *Event) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteU64(o.U64)
 	w.WriteF32(o.F32)
 	w.WriteF64(o.F64)
+	w.WriteF32(float32(o.D16)) // FIXME(sbinet)
+	w.WriteF32(float32(o.D32)) // FIXME(sbinet)
 	w.WriteString(o.Str)
 	o.P3.MarshalROOT(w)           // obj-any
 	w.WriteObjectAny(o.P3Ptr)     // obj-any-ptr
@@ -223,6 +227,8 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 	o.U64 = r.ReadU64()
 	o.F32 = r.ReadF32()
 	o.F64 = r.ReadF64()
+	o.D16 = root.Float16(r.ReadF32())  // FIXME(sbinet)
+	o.D32 = root.Double32(r.ReadF32()) // FIXME(sbinet)
 	o.Str = r.ReadString()
 	o.P3.UnmarshalROOT(r) // obj-any
 	{
@@ -367,7 +373,7 @@ func init() {
 
 func init() {
 	// Streamer for Event.
-	rdict.Streamers.Add(rdict.NewCxxStreamerInfo("Event", 1, 0xe706e476, []rbytes.StreamerElement{
+	rdict.Streamers.Add(rdict.NewCxxStreamerInfo("Event", 1, 0xf0ca53bd, []rbytes.StreamerElement{
 		&rdict.StreamerString{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("Beg", ""),
 			Type:   rmeta.TString,
@@ -481,6 +487,32 @@ func init() {
 			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 			Offset: 0,
 			EName:  "double",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New()},
+		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
+			Name:   *rbase.NewNamed("D16", ""),
+			Type:   rmeta.Float16,
+			Size:   4,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
+			Offset: 0,
+			EName:  "Float16_t",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New()},
+		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
+			Name:   *rbase.NewNamed("D32", ""),
+			Type:   rmeta.Double32,
+			Size:   8,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
+			Offset: 0,
+			EName:  "Double32_t",
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
