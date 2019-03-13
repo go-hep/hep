@@ -11,6 +11,7 @@ hep
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.597940.svg)](https://doi.org/10.5281/zenodo.597940)
 [![JOSS Paper](http://joss.theoj.org/papers/0b007c81073186f7c61f95ea26ad7971/status.svg)](http://joss.theoj.org/papers/0b007c81073186f7c61f95ea26ad7971)
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/go-hep/binder/master)
+[![Twitter Follow](https://img.shields.io/twitter/follow/go_hep.svg?style=social&label=Follow)](https://twitter.com/go_hep)
 
 [![Backers on Open Collective](https://opencollective.com/hep/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/hep/sponsors/badge.svg)](#sponsors) 
 
