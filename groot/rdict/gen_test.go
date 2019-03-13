@@ -88,3 +88,58 @@ func TestTypename(t *testing.T) {
 		t.Fatalf("typename did not fail!")
 	}
 }
+
+func TestROOTComment(t *testing.T) {
+	var g genGoType
+	for _, tc := range []struct {
+		title string
+		meta  string
+		doc   string
+	}{
+		{
+			title: "A comment",
+			meta:  "",
+			doc:   "A comment",
+		},
+		{
+			title: " A comment ",
+			meta:  "",
+			doc:   "A comment",
+		},
+		{
+			title: "[N]",
+			meta:  "[N]",
+			doc:   "",
+		},
+		{
+			title: "[N] this is an array. ",
+			meta:  "[N]",
+			doc:   "this is an array.",
+		},
+		{
+			title: "[-1,1,2]",
+			meta:  "[-1,1,2]",
+			doc:   "",
+		},
+		{
+			title: "[-1,1,2] a Double32 with min,max,factor",
+			meta:  "[-1,1,2]",
+			doc:   "a Double32 with min,max,factor",
+		},
+		{
+			title: "[fN][-1,1,2] an array of Double32-s with min,max,factor",
+			meta:  "[fN][-1,1,2]",
+			doc:   "an array of Double32-s with min,max,factor",
+		},
+	} {
+		t.Run(tc.title, func(t *testing.T) {
+			meta, doc := g.rcomment(tc.title)
+			if meta != tc.meta {
+				t.Fatalf("meta: got=%q, want=%q", meta, tc.meta)
+			}
+			if doc != tc.doc {
+				t.Fatalf("doc: got=%q, want=%q", doc, tc.doc)
+			}
+		})
+	}
+}

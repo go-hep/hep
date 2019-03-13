@@ -102,18 +102,18 @@ func (g *genGoType) genType(si rbytes.StreamerInfo) error {
 
 func (g *genGoType) genField(si rbytes.StreamerInfo, i int, se rbytes.StreamerElement) {
 	const (
-		docFmt = "\t%s\t%s\t%s\n"
+		docFmt = "\t%s\t%s\t%s\t%s\n"
 	)
-	doc := se.Title()
+	doc := g.doc(se.Title())
 	if doc != "" {
 		doc = "// " + doc
 	}
 	switch se := se.(type) {
 	case *StreamerBase:
-		g.printf(docFmt, fmt.Sprintf("base%d", i), g.typename(se), "// base class")
+		g.printf(docFmt, fmt.Sprintf("base%d", i), g.typename(se), g.stag(i, se), "// base class")
 
 	case *StreamerBasicPointer:
-		g.printf(docFmt, se.Name(), g.typename(se), doc)
+		g.printf(docFmt, se.Name(), g.typename(se), g.stag(i, se), doc)
 
 	case *StreamerBasicType:
 		tname := g.typename(se)
@@ -122,11 +122,11 @@ func (g *genGoType) genField(si rbytes.StreamerInfo, i int, se rbytes.StreamerEl
 		default:
 			tname = fmt.Sprintf("[%d]%s", se.ArrayLen(), tname)
 		}
-		g.printf(docFmt, se.Name(), tname, doc)
+		g.printf(docFmt, se.Name(), tname, g.stag(i, se), doc)
 
 	case *StreamerLoop:
 		tname := g.typename(se)
-		g.printf(docFmt, se.Name(), tname, doc)
+		g.printf(docFmt, se.Name(), tname, g.stag(i, se), doc)
 
 	case *StreamerObject:
 		tname := g.typename(se)
@@ -135,7 +135,7 @@ func (g *genGoType) genField(si rbytes.StreamerInfo, i int, se rbytes.StreamerEl
 		default:
 			tname = fmt.Sprintf("[%d]%s", se.ArrayLen(), tname)
 		}
-		g.printf(docFmt, se.Name(), tname, doc)
+		g.printf(docFmt, se.Name(), tname, g.stag(i, se), doc)
 
 	case *StreamerObjectAny:
 		tname := g.typename(se)
@@ -144,30 +144,61 @@ func (g *genGoType) genField(si rbytes.StreamerInfo, i int, se rbytes.StreamerEl
 		default:
 			tname = fmt.Sprintf("[%d]%s", se.ArrayLen(), tname)
 		}
-		g.printf(docFmt, se.Name(), tname, doc)
+		g.printf(docFmt, se.Name(), tname, g.stag(i, se), doc)
 
 	case *StreamerObjectAnyPointer:
 		tname := g.typename(se)
-		g.printf(docFmt, se.Name(), tname, doc)
+		g.printf(docFmt, se.Name(), tname, g.stag(i, se), doc)
 
 	case *StreamerObjectPointer:
 		tname := g.typename(se)
-		g.printf(docFmt, se.Name(), tname, doc)
+		g.printf(docFmt, se.Name(), tname, g.stag(i, se), doc)
 
 	case *StreamerString, *StreamerSTLstring:
-		g.printf(docFmt, se.Name(), "string", doc)
+		g.printf(docFmt, se.Name(), "string", g.stag(i, se), doc)
 
 	case *StreamerSTL:
 		switch se.STLVectorType() {
 		case rmeta.STLvector:
 			tname := g.typename(se)
-			g.printf(docFmt, se.Name(), tname, doc)
+			g.printf(docFmt, se.Name(), tname, g.stag(i, se), doc)
 		default:
 			panic(errors.Errorf("STL-type not implemented %#v", se))
 		}
 	default:
 		g.printf("\t%s\t%s // %T -- %s\n", se.Name(), g.typename(se), se, doc)
 	}
+}
+
+func (g *genGoType) stag(i int, se rbytes.StreamerElement) string {
+	switch se := se.(type) {
+	case *StreamerBase:
+		return fmt.Sprintf("`groot:\"BASE-%s\"`", se.Name())
+	}
+	meta, _ := g.rcomment(se.Title())
+	if meta != "" {
+		return fmt.Sprintf("`groot:\"%s,meta=%s\"`", se.Name(), meta)
+	}
+	return fmt.Sprintf("`groot:%q`", se.Name())
+}
+
+func (g *genGoType) doc(title string) string {
+	_, doc := g.rcomment(title)
+	return doc
+}
+
+func (g *genGoType) rcomment(s string) (meta, comment string) {
+	comment = s
+	for strings.HasPrefix(comment, "[") {
+		beg := strings.Index(comment, "[")
+		end := strings.Index(comment, "]")
+		meta += comment[beg : end+1]
+		comment = comment[end+1:]
+	}
+	if strings.HasPrefix(comment, " ") {
+		comment = strings.TrimSpace(comment)
+	}
+	return meta, comment
 }
 
 func (g *genGoType) typename(se rbytes.StreamerElement) string {

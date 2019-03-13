@@ -16,45 +16,45 @@ import (
 )
 
 type Event struct {
-	Beg       string
-	I16       int16
-	I32       int32
-	I64       int64
-	U16       uint16
-	U32       uint32
-	U64       uint64
-	F32       float32
-	F64       float64
-	Str       string
-	P3        P3
-	ArrayI16  [10]int16
-	ArrayI32  [10]int32
-	ArrayI64  [10]int64
-	ArrayU16  [10]uint16
-	ArrayU32  [10]uint32
-	ArrayU64  [10]uint64
-	ArrayF32  [10]float32
-	ArrayF64  [10]float64
-	N         int32
-	SliceI16  []int16   // [N]
-	SliceI32  []int32   // [N]
-	SliceI64  []int64   // [N]
-	SliceU16  []uint16  // [N]
-	SliceU32  []uint32  // [N]
-	SliceU64  []uint64  // [N]
-	SliceF32  []float32 // [N]
-	SliceF64  []float64 // [N]
-	StdStr    string
-	StlVecI16 []int16
-	StlVecI32 []int32
-	StlVecI64 []int64
-	StlVecU16 []uint16
-	StlVecU32 []uint32
-	StlVecU64 []uint64
-	StlVecF32 []float32
-	StlVecF64 []float64
-	StlVecStr []string
-	End       string
+	Beg       string      `groot:"Beg"`
+	I16       int16       `groot:"I16"`
+	I32       int32       `groot:"I32"`
+	I64       int64       `groot:"I64"`
+	U16       uint16      `groot:"U16"`
+	U32       uint32      `groot:"U32"`
+	U64       uint64      `groot:"U64"`
+	F32       float32     `groot:"F32"`
+	F64       float64     `groot:"F64"`
+	Str       string      `groot:"Str"`
+	P3        P3          `groot:"P3"`
+	ArrayI16  [10]int16   `groot:"ArrayI16"`
+	ArrayI32  [10]int32   `groot:"ArrayI32"`
+	ArrayI64  [10]int64   `groot:"ArrayI64"`
+	ArrayU16  [10]uint16  `groot:"ArrayU16"`
+	ArrayU32  [10]uint32  `groot:"ArrayU32"`
+	ArrayU64  [10]uint64  `groot:"ArrayU64"`
+	ArrayF32  [10]float32 `groot:"ArrayF32"`
+	ArrayF64  [10]float64 `groot:"ArrayF64"`
+	N         int32       `groot:"N"`
+	SliceI16  []int16     `groot:"SliceI16,meta=[N]"`
+	SliceI32  []int32     `groot:"SliceI32,meta=[N]"`
+	SliceI64  []int64     `groot:"SliceI64,meta=[N]"`
+	SliceU16  []uint16    `groot:"SliceU16,meta=[N]"`
+	SliceU32  []uint32    `groot:"SliceU32,meta=[N]"`
+	SliceU64  []uint64    `groot:"SliceU64,meta=[N]"`
+	SliceF32  []float32   `groot:"SliceF32,meta=[N]"`
+	SliceF64  []float64   `groot:"SliceF64,meta=[N]"`
+	StdStr    string      `groot:"StdStr"`
+	StlVecI16 []int16     `groot:"StlVecI16"`
+	StlVecI32 []int32     `groot:"StlVecI32"`
+	StlVecI64 []int64     `groot:"StlVecI64"`
+	StlVecU16 []uint16    `groot:"StlVecU16"`
+	StlVecU32 []uint32    `groot:"StlVecU32"`
+	StlVecU64 []uint64    `groot:"StlVecU64"`
+	StlVecF32 []float32   `groot:"StlVecF32"`
+	StlVecF64 []float64   `groot:"StlVecF64"`
+	StlVecStr []string    `groot:"StlVecStr"`
+	End       string      `groot:"End"`
 }
 
 func (*Event) Class() string   { return "Event" }
@@ -853,9 +853,9 @@ var (
 )
 
 type P3 struct {
-	Px int32
-	Py float64
-	Pz int32
+	Px int32   `groot:"Px"`
+	Py float64 `groot:"Py"`
+	Pz int32   `groot:"Pz"`
 }
 
 func (*P3) Class() string   { return "P3" }
