@@ -5,6 +5,7 @@
 package rmeta // import "go-hep.org/x/hep/groot/rmeta"
 
 //go:generate stringer -type Enum consts.go
+//go:generate stringer -type ESTLType consts.go
 
 // Enum is the set of ROOT streamer enums
 type Enum int32
