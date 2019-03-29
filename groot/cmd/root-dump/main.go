@@ -119,19 +119,19 @@ func dump(w io.Writer, fname string, deep bool) error {
 
 func dumpDir(w io.Writer, dir riofs.Directory, deep bool) error {
 	for i, key := range dir.Keys() {
+		fmt.Fprintf(w, "key[%03d]: %s;%d %q (%s)", i, key.Name(), key.Cycle(), key.Title(), key.ClassName())
+		if !(deep && match(key.Name())) {
+			fmt.Fprint(w, "\n")
+			continue
+		}
 		obj, err := key.Object()
 		if err != nil {
 			return errors.Wrapf(err, "could not decode object %q from dir %q", key.Name(), dir.(root.Named).Name())
 		}
-		fmt.Fprintf(w, "key[%03d]: %s;%d %q (%s)", i, key.Name(), key.Cycle(), key.Title(), obj.Class())
-		if deep && match(key.Name()) {
-			err = dumpObj(w, obj, deep)
-			if err == errIgnoreKey {
-				err = nil
-				continue
-			}
-		} else {
-			fmt.Fprintf(w, "\n")
+		err = dumpObj(w, obj, deep)
+		if err == errIgnoreKey {
+			err = nil
+			continue
 		}
 		if err != nil {
 			return fmt.Errorf("error dumping key %q: %v", key.Name(), err)
