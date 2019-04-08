@@ -1,3 +1,5 @@
+dist: xenial
+
 language: go
 go_import_path: go-hep.org/x/hep
 os:
