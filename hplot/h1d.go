@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
+	"math"
 
 	"go-hep.org/x/hep/hbook"
 	"gonum.org/v1/plot"
@@ -30,6 +31,14 @@ type H1D struct {
 	// LineStyle is the style of the outline of each
 	// bar of the histogram.
 	draw.LineStyle
+
+	// LogY allows rendering with a log-scaled Y axis.
+	// When enabled, histogram bins with no entries will be discarded from
+	// the histogram's DataRange.
+	// The lowest Y value for the DataRange will be corrected to leave an
+	// arbitrary amount of height for the smallest bin entry so it is visible
+	// on the final plot.
+	LogY bool
 
 	// InfoStyle is the style of infos displayed for
 	// the histogram (entries, mean, rms)
@@ -94,7 +103,39 @@ func NewH1D(h *hbook.H1D) *H1D {
 
 // DataRange returns the minimum and maximum X and Y values
 func (h *H1D) DataRange() (xmin, xmax, ymin, ymax float64) {
-	return h.Hist.DataRange()
+	if !h.LogY {
+		return h.Hist.DataRange()
+	}
+
+	xmin = math.Inf(+1)
+	xmax = math.Inf(-1)
+	ymin = math.Inf(+1)
+	ymax = math.Inf(-1)
+	ylow := math.Inf(+1) // ylow will hold the smallest non-zero y value.
+	for _, bin := range h.Hist.Binning.Bins {
+		if bin.XMax() > xmax {
+			xmax = bin.XMax()
+		}
+		if bin.XMin() < xmin {
+			xmin = bin.XMin()
+		}
+		if bin.SumW() > ymax {
+			ymax = bin.SumW()
+		}
+		if bin.SumW() < ymin {
+			ymin = bin.SumW()
+		}
+		if bin.SumW() != 0 && bin.SumW() < ylow {
+			ylow = bin.SumW()
+		}
+	}
+
+	if ymin == 0 && !math.IsInf(ylow, +1) {
+		// Reserve a bit of space for the smallest bin to be displayed still.
+		ymin = ylow * 0.5
+	}
+
+	return
 }
 
 // Plot implements the Plotter interface, drawing a line
@@ -105,25 +146,48 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 	hist := h.Hist
 	bins := h.Hist.Binning.Bins
 	nbins := len(bins)
+
+	yfct := func(sumw float64) (ymin, ymax vg.Length) {
+		return trY(0), trY(sumw)
+	}
+	if h.LogY {
+		yfct = func(sumw float64) (ymin, ymax vg.Length) {
+			ymin = c.Min.Y
+			ymax = c.Min.Y
+			if 0 != sumw {
+				ymax = trY(sumw)
+			}
+			return ymin, ymax
+		}
+	}
+
 	for i, bin := range bins {
+		xmin := trX(bin.XMin())
+		xmax := trX(bin.XMax())
+		sumw := bin.SumW()
+		ymin, ymax := yfct(sumw)
 		switch i {
 		case 0:
-			pts = append(pts, vg.Point{X: trX(bin.XMin()), Y: trY(0)})
-			pts = append(pts, vg.Point{X: trX(bin.XMin()), Y: trY(bin.SumW())})
-			pts = append(pts, vg.Point{X: trX(bin.XMax()), Y: trY(bin.SumW())})
+			pts = append(pts, vg.Point{X: xmin, Y: ymin})
+			pts = append(pts, vg.Point{X: xmin, Y: ymax})
+			pts = append(pts, vg.Point{X: xmax, Y: ymax})
 
 		case nbins - 1:
 			lft := bins[i-1]
-			pts = append(pts, vg.Point{X: trX(lft.XMax()), Y: trY(lft.SumW())})
-			pts = append(pts, vg.Point{X: trX(bin.XMin()), Y: trY(bin.SumW())})
-			pts = append(pts, vg.Point{X: trX(bin.XMax()), Y: trY(bin.SumW())})
-			pts = append(pts, vg.Point{X: trX(bin.XMax()), Y: trY(0.)})
+			xlft := trX(lft.XMax())
+			_, ylft := yfct(lft.SumW())
+			pts = append(pts, vg.Point{X: xlft, Y: ylft})
+			pts = append(pts, vg.Point{X: xmin, Y: ymax})
+			pts = append(pts, vg.Point{X: xmax, Y: ymax})
+			pts = append(pts, vg.Point{X: xmax, Y: ymin})
 
 		default:
 			lft := bins[i-1]
-			pts = append(pts, vg.Point{X: trX(lft.XMax()), Y: trY(lft.SumW())})
-			pts = append(pts, vg.Point{X: trX(bin.XMin()), Y: trY(bin.SumW())})
-			pts = append(pts, vg.Point{X: trX(bin.XMax()), Y: trY(bin.SumW())})
+			xlft := trX(lft.XMax())
+			_, ylft := yfct(lft.SumW())
+			pts = append(pts, vg.Point{X: xlft, Y: ylft})
+			pts = append(pts, vg.Point{X: xmin, Y: ymax})
+			pts = append(pts, vg.Point{X: xmax, Y: ymax})
 		}
 	}
 
@@ -166,24 +230,27 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 // plot.GlyphBoxer interface.
 func (h *H1D) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
 	bins := h.Hist.Binning.Bins
-	bs := make([]plot.GlyphBox, len(bins))
-	for i := range bs {
+	bs := make([]plot.GlyphBox, 0, len(bins))
+	for i := range bins {
 		bin := bins[i]
 		y := bin.SumW()
+		if h.LogY && y == 0 {
+			continue
+		}
+		var box plot.GlyphBox
 		xmin := bin.XMin()
 		w := p.X.Norm(bin.XWidth())
-		bs[i].X = p.X.Norm(xmin + 0.5*w)
-		bs[i].Y = p.Y.Norm(y)
-		//h := vg.Points(1e-5) //1 //p.Y.Norm(axis.BinWidth(i))
-		bs[i].Rectangle.Min.X = vg.Length(xmin - 0.5*w)
-		bs[i].Rectangle.Min.Y = vg.Length(y - 0.5*w)
-		bs[i].Rectangle.Max.X = vg.Length(w)
-		bs[i].Rectangle.Max.Y = vg.Length(0)
+		box.X = p.X.Norm(xmin + 0.5*w)
+		box.Y = p.Y.Norm(y)
+		box.Rectangle.Min.X = vg.Length(xmin - 0.5*w)
+		box.Rectangle.Min.Y = vg.Length(y - 0.5*w)
+		box.Rectangle.Max.X = vg.Length(w)
+		box.Rectangle.Max.Y = vg.Length(0)
 
 		r := vg.Points(5)
-		//r = vg.Length(w)
-		bs[i].Rectangle.Min = vg.Point{X: 0, Y: 0}
-		bs[i].Rectangle.Max = vg.Point{X: 0, Y: r}
+		box.Rectangle.Min = vg.Point{X: 0, Y: 0}
+		box.Rectangle.Max = vg.Point{X: 0, Y: r}
+		bs = append(bs, box)
 	}
 	return bs
 }
