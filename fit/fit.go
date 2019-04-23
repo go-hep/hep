@@ -35,8 +35,8 @@ type Func1D struct {
 	sig2 []float64 // inverse of squares of measurement errors along Y.
 
 	fct  func(ps []float64) float64 // cost function (objective function)
-	grad func(grad, ps []float64) []float64
-	hess func(hess mat.Symmetric, x []float64) mat.Symmetric
+	grad func(grad, ps []float64)
+	hess func(hess *mat.SymDense, x []float64)
 }
 
 func (f *Func1D) init() {
@@ -78,11 +78,11 @@ func (f *Func1D) init() {
 		return 0.5 * chi2
 	}
 
-	f.grad = func(grad, ps []float64) []float64 {
-		return fd.Gradient(grad, f.fct, ps, nil)
+	f.grad = func(grad, ps []float64) {
+		fd.Gradient(grad, f.fct, ps, nil)
 	}
 
-	f.hess = func(hess mat.Symmetric, x []float64) mat.Symmetric {
-		return fd.Hessian(hess.(*mat.SymDense), f.fct, x, nil)
+	f.hess = func(hess *mat.SymDense, x []float64) {
+		fd.Hessian(hess, f.fct, x, nil)
 	}
 }
