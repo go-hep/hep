@@ -16,6 +16,8 @@ require (
 	github.com/hanwen/go-fuse v1.0.0
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/jcmturner/gofork v0.0.0-20190328161633-dc7c13fece03 // indirect
+	github.com/jung-kurt/gofpdf v1.2.0 // indirect
+	github.com/kr/pretty v0.1.0
 	github.com/peterh/liner v1.1.0
 	github.com/pierrec/lz4 v2.0.5+incompatible
 	github.com/pierrec/xxHash v0.1.5
@@ -24,16 +26,17 @@ require (
 	github.com/sbinet/npyio v0.2.0
 	github.com/ulikunitz/xz v0.5.6
 	go-hep.org/x/exp v0.0.0-20190226095713-73a5dbf93dae
-	golang.org/x/crypto v0.0.0-20190422183909-d864b10871cd
-	golang.org/x/exp v0.0.0-20190422150234-47ea93f3503f
-	golang.org/x/image v0.0.0-20190417020941-4e30a6eb7d9a // indirect
+	golang.org/x/crypto v0.0.0-20190426145343-a29dc8fdc734
+	golang.org/x/exp v0.0.0-20190429183610-475c5042d3f1
+	golang.org/x/image v0.0.0-20190424155947-59b11bec70c7 // indirect
 	golang.org/x/mobile v0.0.0-20190415191353-3e0bab5405d6
-	golang.org/x/net v0.0.0-20190420063019-afa5a82059c6 // indirect
-	golang.org/x/sys v0.0.0-20190422165155-953cdadca894 // indirect
-	golang.org/x/tools v0.0.0-20190422233926-fe54fb35175b // indirect
-	gonum.org/v1/gonum v0.0.0-20190423104919-9a5a03f262cb
+	golang.org/x/net v0.0.0-20190424112056-4829fb13d2c6 // indirect
+	golang.org/x/sys v0.0.0-20190429190828-d89cdac9e872 // indirect
+	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/tools v0.0.0-20190430004104-b9fed7929fc1 // indirect
+	gonum.org/v1/gonum v0.0.0-20190424212039-2a1643c79af2
 	gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e // indirect
-	gonum.org/v1/plot v0.0.0-20190312081609-cd8a2043e414
+	gonum.org/v1/plot v0.0.0-20190410204940-3a5f52653745
 	gopkg.in/jcmturner/aescts.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/dnsutils.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/goidentity.v3 v3.0.0 // indirect
