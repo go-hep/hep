@@ -160,12 +160,12 @@ func dumpObj(w io.Writer, obj root.Object, deep bool) error {
 	case riofs.Directory:
 		fmt.Fprintf(w, "\n")
 		err = dumpDir(w, obj, deep)
-	case rhist.H1:
-		fmt.Fprintf(w, "\n")
-		err = dumpH1(w, obj)
 	case rhist.H2:
 		fmt.Fprintf(w, "\n")
 		err = dumpH2(w, obj)
+	case rhist.H1: // keep after rhist.H2
+		fmt.Fprintf(w, "\n")
+		err = dumpH1(w, obj)
 	case rhist.Graph:
 		fmt.Fprintf(w, "\n")
 		err = dumpGraph(w, obj)
