@@ -14,6 +14,10 @@ import (
 	"go-hep.org/x/hep/groot/root"
 )
 
+// FileOf returns the file hosting the given Tree.
+// If the tree is not connected to any ROOT file, nil is returned.
+func FileOf(tree Tree) *riofs.File { return tree.getFile() }
+
 type Tree interface {
 	root.Named
 

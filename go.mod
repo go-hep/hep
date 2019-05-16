@@ -25,6 +25,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20190321074620-2f0d2b0e0001 // indirect
 	github.com/sbinet/npyio v0.2.0
 	github.com/ulikunitz/xz v0.5.6
+	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 	go-hep.org/x/exp v0.0.0-20190226095713-73a5dbf93dae
 	golang.org/x/crypto v0.0.0-20190426145343-a29dc8fdc734
 	golang.org/x/exp v0.0.0-20190429183610-475c5042d3f1
