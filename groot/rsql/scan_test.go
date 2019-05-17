@@ -45,7 +45,7 @@ func ExampleScan() {
 	// tree["two"]: [1.1 2.2 3.3 4.4]
 }
 
-func ExampleScan_NVars() {
+func ExampleScan_nVars() {
 	f, err := groot.Open("../testdata/simple.root")
 	if err != nil {
 		log.Fatal(err)
