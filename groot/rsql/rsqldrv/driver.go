@@ -232,15 +232,23 @@ func (res *driverResult) RowsAffected() (int64, error) { return res.rows, nil }
 
 // driverRows is an iterator over an executed query's results.
 type driverRows struct {
-	conn *driverConn
-	args []driver.Value
-	cols []string
-	deps []string      // names of the columns to be read
-	vars []interface{} // values of the columns that were read
+	conn  *driverConn
+	args  []driver.Value
+	cols  []string
+	types []colDescr    // types of the columns
+	deps  []string      // names of the columns to be read
+	vars  []interface{} // values of the columns that were read
 
 	cursor *rtree.TreeScanner
 	eval   expression
 	filter expression
+}
+
+type colDescr struct {
+	Name     string
+	Len      int64 // -1 if no length.
+	Nullable bool
+	Type     reflect.Type
 }
 
 func newDriverRows(conn *driverConn, stmt *sqlparser.Select, args []driver.Value) (*driverRows, error) {
@@ -283,6 +291,20 @@ func newDriverRows(conn *driverConn, stmt *sqlparser.Select, args []driver.Value
 	rows.cols, err = rows.extractColsFromSelect(tree, stmt, args)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not extract columns")
+	}
+	rows.types = make([]colDescr, len(rows.cols))
+	for i, name := range rows.cols {
+		if name == "" {
+			rows.types[i].Type = reflect.TypeOf(new(interface{})).Elem()
+			continue
+		}
+		rows.types[i].Name = name
+		branch := tree.Branch(name)
+		if branch == nil {
+			rows.types[i].Type = reflect.TypeOf(new(interface{})).Elem()
+			continue
+		}
+		rows.types[i] = colDescrFromLeaf(branch.Leaves()[0]) // FIXME(sbinet): multi-leaves' branches
 	}
 
 	vars, err := rows.extractDepsFromSelect(tree, stmt, args)
@@ -402,10 +424,35 @@ func (rows *driverRows) extractDepsFromSelect(tree rtree.Tree, stmt *sqlparser.S
 			return nil, errors.Errorf("rsqldrv: could not find branch/leaf %q in tree %q", name, tree.Name())
 		}
 		leaf := branch.Leaves()[0] // FIXME(sbinet): handle sub-leaves
+		etyp := leaf.Type()
+		switch etyp.Kind() {
+		case reflect.Int8:
+			if leaf.IsUnsigned() {
+				etyp = reflect.TypeOf(uint8(0))
+			}
+		case reflect.Int16:
+			if leaf.IsUnsigned() {
+				etyp = reflect.TypeOf(uint16(0))
+			}
+		case reflect.Int32:
+			if leaf.IsUnsigned() {
+				etyp = reflect.TypeOf(uint32(0))
+			}
+		case reflect.Int64:
+			if leaf.IsUnsigned() {
+				etyp = reflect.TypeOf(uint64(0))
+			}
+		}
+		switch {
+		case leaf.LeafCount() != nil:
+			etyp = reflect.SliceOf(etyp)
+		case leaf.Len() > 1 && leaf.Kind() != reflect.String:
+			etyp = reflect.ArrayOf(leaf.Len(), etyp)
+		}
 		vars = append(vars, rtree.ScanVar{
 			Name:  branch.Name(),
 			Leaf:  leaf.Name(),
-			Value: reflect.New(leaf.Type()).Interface(),
+			Value: reflect.New(etyp).Interface(),
 		})
 	}
 
@@ -470,6 +517,32 @@ func (r *driverRows) Columns() []string {
 	return cols
 }
 
+// ColumnTypeScanType returns the value type that can be used to scan types into.
+//
+// See database/sql/driver.RowsColumnTypeScanType.
+func (r *driverRows) ColumnTypeScanType(i int) reflect.Type {
+	return r.types[i].Type
+}
+
+// ColumnTypeLength returns the column type length for variable length column types such
+// as text and binary field types. If the type length is unbounded the value will
+// be math.MaxInt64 (any database limits will still apply).
+// If the column type is not variable length, such as an int, or if not supported
+// by the driver ok is false.
+func (r *driverRows) ColumnTypeLength(i int) (length int64, ok bool) {
+	col := r.types[i]
+	switch col.Len {
+	case -1:
+		return 0, false
+	}
+	return col.Len, true
+}
+
+// ColumnTypeNullable reports whether the column may be null.
+func (r *driverRows) ColumnTypeNullable(i int) (nullable, ok bool) {
+	return r.types[i].Nullable, true
+}
+
 // Close closes the rows iterator.
 func (r *driverRows) Close() error {
 	return r.cursor.Close()
@@ -526,7 +599,7 @@ func (r *driverRows) Next(dest []driver.Value) error {
 			case string:
 				dest[i] = []byte(v)
 			default:
-				dest[i] = reflect.ValueOf(v)
+				dest[i] = v
 			}
 		}
 	case string:
@@ -652,4 +725,10 @@ var (
 
 	_ driver.Result = (*driverResult)(nil)
 	_ driver.Rows   = (*driverRows)(nil)
+)
+
+var (
+	_ driver.RowsColumnTypeLength   = (*driverRows)(nil)
+	_ driver.RowsColumnTypeNullable = (*driverRows)(nil)
+	_ driver.RowsColumnTypeScanType = (*driverRows)(nil)
 )

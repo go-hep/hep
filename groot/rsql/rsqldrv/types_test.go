@@ -319,3 +319,272 @@ func TestCoerce1(t *testing.T) {
 		})
 	}
 }
+
+func TestColFromDesc(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		etyp     reflect.Type
+		kind     reflect.Kind
+		count    bool
+		size     int
+		unsigned bool
+
+		want colDescr
+	}{
+		// int8
+		{
+			name:     "int8",
+			etyp:     reflect.TypeOf(int8(0)),
+			kind:     reflect.Int8,
+			count:    false,
+			size:     0,
+			unsigned: false,
+
+			want: colDescr{Name: "int8", Len: -1, Nullable: false, Type: reflect.TypeOf(int8(0))},
+		},
+		{
+			name:     "[2]int8",
+			etyp:     reflect.TypeOf(int8(0)),
+			kind:     reflect.Int8,
+			count:    false,
+			size:     2,
+			unsigned: false,
+
+			want: colDescr{Name: "[2]int8", Len: 2, Nullable: false, Type: reflect.TypeOf(int8(0))},
+		},
+		{
+			name:     "[]int8",
+			etyp:     reflect.TypeOf(int8(0)),
+			kind:     reflect.Int8,
+			count:    true,
+			size:     0,
+			unsigned: false,
+
+			want: colDescr{Name: "[]int8", Len: math.MaxInt64, Nullable: true, Type: reflect.TypeOf(int8(0))},
+		},
+		// uint8
+		{
+			name:     "uint8",
+			etyp:     reflect.TypeOf(int8(0)),
+			kind:     reflect.Int8,
+			count:    false,
+			size:     0,
+			unsigned: true,
+
+			want: colDescr{Name: "uint8", Len: -1, Nullable: false, Type: reflect.TypeOf(uint8(0))},
+		},
+		{
+			name:     "[2]uint8",
+			etyp:     reflect.TypeOf(int8(0)),
+			kind:     reflect.Int8,
+			count:    false,
+			size:     2,
+			unsigned: true,
+
+			want: colDescr{Name: "[2]uint8", Len: 2, Nullable: false, Type: reflect.TypeOf(uint8(0))},
+		},
+		{
+			name:     "[]uint8",
+			etyp:     reflect.TypeOf(int8(0)),
+			kind:     reflect.Int8,
+			count:    true,
+			size:     0,
+			unsigned: true,
+
+			want: colDescr{Name: "[]uint8", Len: math.MaxInt64, Nullable: true, Type: reflect.TypeOf(uint8(0))},
+		},
+		// int16
+		{
+			name:     "int16",
+			etyp:     reflect.TypeOf(int16(0)),
+			kind:     reflect.Int16,
+			count:    false,
+			size:     0,
+			unsigned: false,
+
+			want: colDescr{Name: "int16", Len: -1, Nullable: false, Type: reflect.TypeOf(int16(0))},
+		},
+		{
+			name:     "[2]int16",
+			etyp:     reflect.TypeOf(int16(0)),
+			kind:     reflect.Int16,
+			count:    false,
+			size:     2,
+			unsigned: false,
+
+			want: colDescr{Name: "[2]int16", Len: 2, Nullable: false, Type: reflect.TypeOf(int16(0))},
+		},
+		{
+			name:     "[]int16",
+			etyp:     reflect.TypeOf(int16(0)),
+			kind:     reflect.Int16,
+			count:    true,
+			size:     0,
+			unsigned: false,
+
+			want: colDescr{Name: "[]int16", Len: math.MaxInt64, Nullable: true, Type: reflect.TypeOf(int16(0))},
+		},
+		// uint16
+		{
+			name:     "uint16",
+			etyp:     reflect.TypeOf(int16(0)),
+			kind:     reflect.Int16,
+			count:    false,
+			size:     0,
+			unsigned: true,
+
+			want: colDescr{Name: "uint16", Len: -1, Nullable: false, Type: reflect.TypeOf(uint16(0))},
+		},
+		{
+			name:     "[2]uint16",
+			etyp:     reflect.TypeOf(int16(0)),
+			kind:     reflect.Int16,
+			count:    false,
+			size:     2,
+			unsigned: true,
+
+			want: colDescr{Name: "[2]uint16", Len: 2, Nullable: false, Type: reflect.TypeOf(uint16(0))},
+		},
+		{
+			name:     "[]uint16",
+			etyp:     reflect.TypeOf(int16(0)),
+			kind:     reflect.Int16,
+			count:    true,
+			size:     0,
+			unsigned: true,
+
+			want: colDescr{Name: "[]uint16", Len: math.MaxInt64, Nullable: true, Type: reflect.TypeOf(uint16(0))},
+		},
+		// int32
+		{
+			name:     "int32",
+			etyp:     reflect.TypeOf(int32(0)),
+			kind:     reflect.Int32,
+			count:    false,
+			size:     0,
+			unsigned: false,
+
+			want: colDescr{Name: "int32", Len: -1, Nullable: false, Type: reflect.TypeOf(int32(0))},
+		},
+		{
+			name:     "[2]int32",
+			etyp:     reflect.TypeOf(int32(0)),
+			kind:     reflect.Int32,
+			count:    false,
+			size:     2,
+			unsigned: false,
+
+			want: colDescr{Name: "[2]int32", Len: 2, Nullable: false, Type: reflect.TypeOf(int32(0))},
+		},
+		{
+			name:     "[]int32",
+			etyp:     reflect.TypeOf(int32(0)),
+			kind:     reflect.Int32,
+			count:    true,
+			size:     0,
+			unsigned: false,
+
+			want: colDescr{Name: "[]int32", Len: math.MaxInt64, Nullable: true, Type: reflect.TypeOf(int32(0))},
+		},
+		// uint32
+		{
+			name:     "uint32",
+			etyp:     reflect.TypeOf(int32(0)),
+			kind:     reflect.Int32,
+			count:    false,
+			size:     0,
+			unsigned: true,
+
+			want: colDescr{Name: "uint32", Len: -1, Nullable: false, Type: reflect.TypeOf(uint32(0))},
+		},
+		{
+			name:     "[2]uint32",
+			etyp:     reflect.TypeOf(int32(0)),
+			kind:     reflect.Int32,
+			count:    false,
+			size:     2,
+			unsigned: true,
+
+			want: colDescr{Name: "[2]uint32", Len: 2, Nullable: false, Type: reflect.TypeOf(uint32(0))},
+		},
+		{
+			name:     "[]uint32",
+			etyp:     reflect.TypeOf(int32(0)),
+			kind:     reflect.Int32,
+			count:    true,
+			size:     0,
+			unsigned: true,
+
+			want: colDescr{Name: "[]uint32", Len: math.MaxInt64, Nullable: true, Type: reflect.TypeOf(uint32(0))},
+		},
+		// int64
+		{
+			name:     "int64",
+			etyp:     reflect.TypeOf(int64(0)),
+			kind:     reflect.Int64,
+			count:    false,
+			size:     0,
+			unsigned: false,
+
+			want: colDescr{Name: "int64", Len: -1, Nullable: false, Type: reflect.TypeOf(int64(0))},
+		},
+		{
+			name:     "[2]int64",
+			etyp:     reflect.TypeOf(int64(0)),
+			kind:     reflect.Int64,
+			count:    false,
+			size:     2,
+			unsigned: false,
+
+			want: colDescr{Name: "[2]int64", Len: 2, Nullable: false, Type: reflect.TypeOf(int64(0))},
+		},
+		{
+			name:     "[]int64",
+			etyp:     reflect.TypeOf(int64(0)),
+			kind:     reflect.Int64,
+			count:    true,
+			size:     0,
+			unsigned: false,
+
+			want: colDescr{Name: "[]int64", Len: math.MaxInt64, Nullable: true, Type: reflect.TypeOf(int64(0))},
+		},
+		// uint64
+		{
+			name:     "uint64",
+			etyp:     reflect.TypeOf(int64(0)),
+			kind:     reflect.Int64,
+			count:    false,
+			size:     0,
+			unsigned: true,
+
+			want: colDescr{Name: "uint64", Len: -1, Nullable: false, Type: reflect.TypeOf(uint64(0))},
+		},
+		{
+			name:     "[2]uint64",
+			etyp:     reflect.TypeOf(int64(0)),
+			kind:     reflect.Int64,
+			count:    false,
+			size:     2,
+			unsigned: true,
+
+			want: colDescr{Name: "[2]uint64", Len: 2, Nullable: false, Type: reflect.TypeOf(uint64(0))},
+		},
+		{
+			name:     "[]uint64",
+			etyp:     reflect.TypeOf(int64(0)),
+			kind:     reflect.Int64,
+			count:    true,
+			size:     0,
+			unsigned: true,
+
+			want: colDescr{Name: "[]uint64", Len: math.MaxInt64, Nullable: true, Type: reflect.TypeOf(uint64(0))},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got := colDescrFrom(tc.name, tc.etyp, tc.kind, tc.count, tc.size, tc.unsigned)
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Fatalf("invalid column descriptor:\ngot= %#v\nwant=%#v", got, tc.want)
+			}
+		})
+	}
+}

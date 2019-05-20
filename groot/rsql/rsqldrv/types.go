@@ -7,6 +7,9 @@ package rsqldrv // import "go-hep.org/x/hep/groot/rsql/rsqldrv"
 import (
 	"math"
 	"reflect"
+
+	"github.com/pkg/errors"
+	"go-hep.org/x/hep/groot/rtree"
 )
 
 type (
@@ -172,4 +175,60 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 		}
 	}
 	return
+}
+
+func colDescrFromLeaf(leaf rtree.Leaf) colDescr {
+	name := leaf.Name()
+	etyp := leaf.Type()
+	kind := leaf.Kind()
+	hasCount := leaf.LeafCount() != nil
+	unsigned := leaf.IsUnsigned()
+
+	size := 1
+	if !hasCount {
+		size = leaf.Len()
+	}
+
+	return colDescrFrom(name, etyp, kind, hasCount, size, unsigned)
+}
+
+func colDescrFrom(name string, etyp reflect.Type, kind reflect.Kind, hasCount bool, size int, unsigned bool) colDescr {
+	col := colDescr{
+		Name: name,
+		Len:  -1,
+	}
+
+	switch {
+	case hasCount:
+		// slice
+		col.Nullable = true
+		col.Len = math.MaxInt64
+	case size > 1 && kind != reflect.String:
+		// array
+		col.Len = int64(size)
+	}
+
+	switch etyp.Kind() {
+	case reflect.Interface, reflect.Map, reflect.Chan, reflect.Slice, reflect.Array:
+		panic(errors.Errorf("rsqldrv: type %T not supported", reflect.New(etyp).Elem().Interface()))
+	case reflect.Int8:
+		if unsigned {
+			etyp = reflect.TypeOf(uint8(0))
+		}
+	case reflect.Int16:
+		if unsigned {
+			etyp = reflect.TypeOf(uint16(0))
+		}
+	case reflect.Int32:
+		if unsigned {
+			etyp = reflect.TypeOf(uint32(0))
+		}
+	case reflect.Int64:
+		if unsigned {
+			etyp = reflect.TypeOf(uint64(0))
+		}
+	}
+
+	col.Type = etyp
+	return col
 }
