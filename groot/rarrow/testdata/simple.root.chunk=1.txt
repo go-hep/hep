@@ -1,0 +1,13 @@
+file: ../testdata/simple.root
+rec[0][one]: [1]
+rec[0][two]: [1.1]
+rec[0][three]: ["uno"]
+rec[1][one]: [2]
+rec[1][two]: [2.2]
+rec[1][three]: ["dos"]
+rec[2][one]: [3]
+rec[2][two]: [3.3]
+rec[2][three]: ["tres"]
+rec[3][one]: [4]
+rec[3][two]: [4.4]
+rec[3][three]: ["quatro"]
