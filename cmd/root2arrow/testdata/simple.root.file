@@ -1,0 +1,17 @@
+version: V4
+record 1/4...
+  col[0] "one": [1]
+  col[1] "two": [1.1]
+  col[2] "three": ["uno"]
+record 2/4...
+  col[0] "one": [2]
+  col[1] "two": [2.2]
+  col[2] "three": ["dos"]
+record 3/4...
+  col[0] "one": [3]
+  col[1] "two": [3.3]
+  col[2] "three": ["tres"]
+record 4/4...
+  col[0] "one": [4]
+  col[1] "two": [4.4]
+  col[2] "three": ["quatro"]
