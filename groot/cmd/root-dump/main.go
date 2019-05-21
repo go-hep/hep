@@ -196,14 +196,7 @@ func dumpList(w io.Writer, lst root.List, deep bool) error {
 
 func dumpTree(w io.Writer, t rtree.Tree) error {
 
-	var vars []rtree.ScanVar
-	for _, b := range t.Branches() {
-		for _, leaf := range b.Leaves() {
-			ptr := newValue(leaf)
-			vars = append(vars, rtree.ScanVar{Name: b.Name(), Leaf: leaf.Name(), Value: ptr})
-		}
-	}
-
+	vars := rtree.NewScanVars(t)
 	sc, err := rtree.NewScannerVars(t, vars...)
 	if err != nil {
 		return err
@@ -245,15 +238,4 @@ func dumpGraph(w io.Writer, gr rhist.Graph) error {
 		return err
 	}
 	return yodacnv.Write(w, g)
-}
-
-func newValue(leaf rtree.Leaf) interface{} {
-	etype := leaf.Type()
-	switch {
-	case leaf.LeafCount() != nil:
-		etype = reflect.SliceOf(etype)
-	case leaf.Len() > 1 && leaf.Kind() != reflect.String:
-		etype = reflect.ArrayOf(leaf.Len(), etype)
-	}
-	return reflect.New(etype).Interface()
 }

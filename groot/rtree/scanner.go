@@ -600,3 +600,64 @@ func (s *Scanner) Scan() error {
 	}
 	return s.scan.err
 }
+
+// NewScanVars returns the complete set of ScanVars to read all the data
+// contained in the provided Tree.
+func NewScanVars(t Tree) []ScanVar {
+	var vars []ScanVar
+	for _, b := range t.Branches() {
+		for _, leaf := range b.Leaves() {
+			ptr := newValue(leaf)
+			vars = append(vars, ScanVar{Name: b.Name(), Leaf: leaf.Name(), Value: ptr})
+		}
+	}
+
+	return vars
+}
+
+func newValue(leaf Leaf) interface{} {
+	etype := leaf.Type()
+	unsigned := leaf.IsUnsigned()
+
+	switch etype.Kind() {
+	case reflect.Interface, reflect.Map, reflect.Chan, reflect.Slice, reflect.Array:
+		panic(errors.Errorf("rtree: type %T not supported", reflect.New(etype).Elem().Interface()))
+	case reflect.Int8:
+		if unsigned {
+			etype = reflect.TypeOf(uint8(0))
+		}
+	case reflect.Int16:
+		if unsigned {
+			etype = reflect.TypeOf(uint16(0))
+		}
+	case reflect.Int32:
+		if unsigned {
+			etype = reflect.TypeOf(uint32(0))
+		}
+	case reflect.Int64:
+		if unsigned {
+			etype = reflect.TypeOf(uint64(0))
+		}
+	}
+
+	switch {
+	case leaf.LeafCount() != nil:
+		etype = reflect.SliceOf(etype)
+	case leaf.Len() > 1:
+		switch leaf.Kind() {
+		case reflect.String:
+			switch dims := leaf.ArrayDim(); dims {
+			case 0, 1:
+				// interpret as a single string.
+			default:
+				// FIXME(sbinet): properly handle [N]string (but ROOT doesn't support that.)
+				// see: https://root-forum.cern.ch/t/char-t-in-a-branch/5591/2
+				// etype = reflect.ArrayOf(leaf.Len(), etype)
+				panic(errors.Errorf("groot/rtree: invalid number of dimensions (%d)", dims))
+			}
+		default:
+			etype = reflect.ArrayOf(leaf.Len(), etype)
+		}
+	}
+	return reflect.New(etype).Interface()
+}
