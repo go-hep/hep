@@ -38,8 +38,15 @@ type ttree struct {
 
 	iofeats tioFeatures // IO features to define for newly-written baskets and branches
 
+	clusters clusters
+
 	branches []Branch // list of branches
 	leaves   []Leaf   // direct pointers to individual branch leaves
+}
+
+type clusters struct {
+	ranges []int64 // last entry to a cluster range
+	sizes  []int64 // number of entries in each cluster for a given range
 }
 
 func (tree *ttree) Class() string {
@@ -176,6 +183,7 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 	if vers >= 17 {
 		_ = r.ReadI32() // fDefaultEntryOffsetLen
 	}
+
 	nclus := 0
 	if vers >= 19 { // FIXME
 		nclus = int(r.ReadI32()) // fNClusterRange
@@ -194,9 +202,9 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	if vers >= 19 { // FIXME
 		_ = r.ReadI8()
-		_ = r.ReadFastArrayI64(nclus) // fClusterRangeEnd
+		tree.clusters.ranges = r.ReadFastArrayI64(nclus) // fClusterRangeEnd
 		_ = r.ReadI8()
-		_ = r.ReadFastArrayI64(nclus) // fClusterSize
+		tree.clusters.sizes = r.ReadFastArrayI64(nclus) // fClusterSize
 	}
 
 	if vers >= 20 {
