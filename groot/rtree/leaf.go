@@ -6,6 +6,9 @@ package rtree
 
 import (
 	"reflect"
+	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbase"
@@ -41,7 +44,7 @@ func (leaf *tleaf) Class() string {
 }
 
 func (leaf *tleaf) ArrayDim() int {
-	panic("not implemented")
+	return strings.Count(leaf.named.Title(), "[")
 }
 
 func (leaf *tleaf) setBranch(b Branch) {
@@ -314,6 +317,34 @@ func init() {
 		}
 		rtypes.Factory.Add("TLeafElement", f)
 	}
+}
+
+var (
+	reLeafDims = regexp.MustCompile(`\w*?\[(\d*)\]+?`)
+)
+
+func leafDims(s string) []int {
+	out := reLeafDims.FindAllStringSubmatch(s, -1)
+	if len(out) == 0 {
+		return nil
+	}
+
+	dims := make([]int, len(out))
+	for i := range out {
+		v := out[i][1]
+		switch v {
+		case "":
+			dims[i] = -1 // variable size
+		default:
+			dim, err := strconv.Atoi(v)
+			if err != nil {
+				panic(errors.Wrap(err, "could not infer leaf array dimension"))
+			}
+			dims[i] = dim
+		}
+	}
+
+	return dims
 }
 
 var (
