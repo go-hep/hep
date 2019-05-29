@@ -48,6 +48,8 @@ const int ARRAYSZ  = 10;
 const int MAXSLICE = 20;
 const int MAXSTR   = 32;
 
+#define OFFSET 0
+
 struct Event {
 	bool     Bool;
 	char     Str[MAXSTR];
@@ -144,7 +146,8 @@ void gentree(const char* fname, int splitlvl = 99) {
 	t->Branch("SliF64", e.SliceF64, "SliF64[N]/D");
 
 
-	for (int i = 0; i != evtmax; i++) {
+	for (int j = 0; j != evtmax; j++) {
+		int i = j + OFFSET;
 		e.Bool = (i % 2) == 0;
 		strncpy(e.Str, TString::Format("str-%d", i).Data(), 32);
 		e.I8  = -i;

@@ -357,10 +357,10 @@ func BenchmarkChainTreeScannerStruct(b *testing.B) {
 	}
 }
 
-func TestSeekEntry(t *testing.T) {
+func TestChainSeekEntryTreeScannerPtr(t *testing.T) {
 	files := []string{
-		"../testdata/chain.1.root",
-		"../testdata/chain.2.root",
+		"../testdata/chain.flat.1.root",
+		"../testdata/chain.flat.2.root",
 	}
 
 	trees := make([]rtree.Tree, len(files))
@@ -381,17 +381,10 @@ func TestSeekEntry(t *testing.T) {
 	chain := rtree.Chain(trees...)
 
 	type Data struct {
-		Event struct {
-			Beg       string      `groot:"Beg"`
-			F64       float64     `groot:"F64"`
-			ArrF64    [10]float64 `groot:"ArrayF64"`
-			N         int32       `groot:"N"`
-			SliF64    []float64   `groot:"SliceF64"`
-			StdStr    string      `groot:"StdStr"`
-			StlVecF64 []float64   `groot:"StlVecF64"`
-			StlVecStr []string    `groot:"StlVecStr"`
-			End       string      `groot:"End"`
-		} `groot:"evt"`
+		F64    float64     `groot:"F64"`
+		ArrF64 [10]float64 `groot:"ArrF64"`
+		N      int32       `groot:"N"`
+		SliF64 []float64   `groot:"SliF64"`
 	}
 
 	sc, err := rtree.NewTreeScanner(chain, &Data{})
@@ -400,7 +393,7 @@ func TestSeekEntry(t *testing.T) {
 	}
 	defer sc.Close()
 
-	var entries = []int64{0, 1, 9, 2, 5, 11, 15, 2, 14, 3, 0}
+	var entries = []int64{0, 1, 4, 2, 5, 6, 7, 2, 7, 3, 0, 9}
 	for _, entry := range entries {
 		err := sc.SeekEntry(entry)
 		if err != nil {
@@ -414,7 +407,6 @@ func TestSeekEntry(t *testing.T) {
 		var data Data
 
 		err = sc.Scan(&data)
-
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -424,9 +416,260 @@ func TestSeekEntry(t *testing.T) {
 		if i != entry {
 			t.Fatalf("did not seek to entry %d. got=%d, want=%d", entry, i, entry)
 		}
-		if data.Event.F64 != float64(i) {
-			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.Event.F64, float64(i))
+		if data.F64 != float64(i) {
+			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.F64, float64(i))
+		}
+		var arr [10]float64
+		for ii := range arr {
+			arr[ii] = float64(i)
+		}
+		if data.ArrF64 != arr {
+			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.ArrF64, arr)
+		}
+		sli := arr[:int(data.N)]
+		if !reflect.DeepEqual(sli, data.SliF64) {
+			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.SliF64, sli)
+		}
+	}
+}
+
+func TestChainSeekEntryTreeScannerVars(t *testing.T) {
+	files := []string{
+		"../testdata/chain.flat.1.root",
+		"../testdata/chain.flat.2.root",
+	}
+
+	trees := make([]rtree.Tree, len(files))
+	for i, fname := range files {
+		f, err := riofs.Open(fname)
+		if err != nil {
+			t.Fatalf("could not open ROOT file %q: %v", fname, err)
+		}
+		defer f.Close()
+
+		obj, err := f.Get("tree")
+		if err != nil {
+			t.Fatal(err)
 		}
 
+		trees[i] = obj.(rtree.Tree)
+	}
+	chain := rtree.Chain(trees...)
+
+	type Data struct {
+		F64    float64     `groot:"F64"`
+		ArrF64 [10]float64 `groot:"ArrF64"`
+		N      int32       `groot:"N"`
+		SliF64 []float64   `groot:"SliF64"`
+	}
+
+	var data Data
+	svars := []rtree.ScanVar{
+		{Name: "F64", Value: &data.F64},
+		{Name: "ArrF64", Value: &data.ArrF64},
+		{Name: "N", Value: &data.N},
+		{Name: "SliF64", Value: &data.SliF64},
+	}
+
+	sc, err := rtree.NewTreeScannerVars(chain, svars...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sc.Close()
+
+	var entries = []int64{0, 1, 4, 2, 5, 6, 7, 2, 7, 3, 0, 9}
+	for _, entry := range entries {
+		err := sc.SeekEntry(entry)
+		if err != nil {
+			t.Fatalf("Could not seek to entry %d: %v", entry, err)
+		}
+
+		if !sc.Next() {
+			t.Fatalf("Could not read entry %d", entry)
+		}
+
+		var data Data
+
+		err = sc.Scan(&data.F64, &data.ArrF64, &data.N, &data.SliF64)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		i := sc.Entry()
+
+		if i != entry {
+			t.Fatalf("did not seek to entry %d. got=%d, want=%d", entry, i, entry)
+		}
+		if data.F64 != float64(i) {
+			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.F64, float64(i))
+		}
+		var arr [10]float64
+		for ii := range arr {
+			arr[ii] = float64(i)
+		}
+		if data.ArrF64 != arr {
+			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.ArrF64, arr)
+		}
+		sli := arr[:int(data.N)]
+		if !reflect.DeepEqual(sli, data.SliF64) {
+			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.SliF64, sli)
+		}
+	}
+}
+
+func TestChainSeekEntryScannerPtr(t *testing.T) {
+	files := []string{
+		"../testdata/chain.flat.1.root",
+		"../testdata/chain.flat.2.root",
+	}
+
+	trees := make([]rtree.Tree, len(files))
+	for i, fname := range files {
+		f, err := riofs.Open(fname)
+		if err != nil {
+			t.Fatalf("could not open ROOT file %q: %v", fname, err)
+		}
+		defer f.Close()
+
+		obj, err := f.Get("tree")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		trees[i] = obj.(rtree.Tree)
+	}
+	chain := rtree.Chain(trees...)
+
+	type Data struct {
+		F64    float64     `groot:"F64"`
+		ArrF64 [10]float64 `groot:"ArrF64"`
+		N      int32       `groot:"N"`
+		SliF64 []float64   `groot:"SliF64"`
+	}
+
+	var data Data
+	sc, err := rtree.NewScanner(chain, &data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sc.Close()
+
+	var entries = []int64{0, 1, 4, 2, 5, 6, 7, 2, 7, 3, 0, 9}
+	for _, entry := range entries {
+		err := sc.SeekEntry(entry)
+		if err != nil {
+			t.Fatalf("Could not seek to entry %d: %v", entry, err)
+		}
+
+		if !sc.Next() {
+			t.Fatalf("Could not read entry %d", entry)
+		}
+
+		err = sc.Scan()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		i := sc.Entry()
+
+		if i != entry {
+			t.Fatalf("did not seek to entry %d. got=%d, want=%d", entry, i, entry)
+		}
+		if data.F64 != float64(i) {
+			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.F64, float64(i))
+		}
+		var arr [10]float64
+		for ii := range arr {
+			arr[ii] = float64(i)
+		}
+		if data.ArrF64 != arr {
+			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.ArrF64, arr)
+		}
+		sli := arr[:int(data.N)]
+		if !reflect.DeepEqual(sli, data.SliF64) {
+			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.SliF64, sli)
+		}
+	}
+}
+
+func TestChainSeekEntryScannerVars(t *testing.T) {
+	files := []string{
+		"../testdata/chain.flat.1.root",
+		"../testdata/chain.flat.2.root",
+	}
+
+	trees := make([]rtree.Tree, len(files))
+	for i, fname := range files {
+		f, err := riofs.Open(fname)
+		if err != nil {
+			t.Fatalf("could not open ROOT file %q: %v", fname, err)
+		}
+		defer f.Close()
+
+		obj, err := f.Get("tree")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		trees[i] = obj.(rtree.Tree)
+	}
+	chain := rtree.Chain(trees...)
+
+	type Data struct {
+		F64    float64     `groot:"F64"`
+		ArrF64 [10]float64 `groot:"ArrF64"`
+		N      int32       `groot:"N"`
+		SliF64 []float64   `groot:"SliF64"`
+	}
+
+	var data Data
+	svars := []rtree.ScanVar{
+		{Name: "F64", Value: &data.F64},
+		{Name: "ArrF64", Value: &data.ArrF64},
+		{Name: "N", Value: &data.N},
+		{Name: "SliF64", Value: &data.SliF64},
+	}
+
+	sc, err := rtree.NewScannerVars(chain, svars...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sc.Close()
+
+	var entries = []int64{0, 1, 4, 2, 5, 6, 7, 2, 7, 3, 0, 9}
+	for _, entry := range entries {
+		err := sc.SeekEntry(entry)
+		if err != nil {
+			t.Fatalf("Could not seek to entry %d: %v", entry, err)
+		}
+
+		if !sc.Next() {
+			t.Fatalf("Could not read entry %d", entry)
+		}
+
+		err = sc.Scan()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		i := sc.Entry()
+
+		if i != entry {
+			t.Fatalf("did not seek to entry %d. got=%d, want=%d", entry, i, entry)
+		}
+		if data.F64 != float64(i) {
+			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.F64, float64(i))
+		}
+		var arr [10]float64
+		for ii := range arr {
+			arr[ii] = float64(i)
+		}
+		if data.ArrF64 != arr {
+			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.ArrF64, arr)
+		}
+		sli := arr[:int(data.N)]
+		if !reflect.DeepEqual(sli, data.SliF64) {
+			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.SliF64, sli)
+		}
 	}
 }

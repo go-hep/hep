@@ -97,7 +97,6 @@ func (s *baseScanner) Next() bool {
 		if s.cur >= s.tot {
 			ch := s.tree.(*tchain)
 			s.loadTree(ch.cur + 1)
-
 		}
 	}
 
@@ -243,7 +242,7 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 			return nil, errors.Errorf("rtree: Tree %q has no branch named %q", t.Name(), sv.Name)
 		}
 		mbr[i] = br
-		ibr[i] = scanField{br: br, i: 0}
+		ibr[i] = scanField{br: br, i: 0, lcnt: -1}
 		leaf := br.Leaves()[0]
 		if sv.Leaf != "" {
 			leaf = br.Leaf(sv.Leaf)
@@ -263,18 +262,26 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 			}
 		}
 	}
+	base := baseScanner{
+		tree: t,
+		i:    0,
+		n:    t.Entries(),
+		cur:  -1,
+		err:  nil,
+		ibr:  ibr,
+		mbr:  mbr,
+		cbr:  cbr,
+	}
+
+	if ch, ok := t.(*tchain); ok {
+		base.chain = ok
+		base.off = ch.off
+		base.tot = ch.tot
+	}
+
 	return &TreeScanner{
-		scan: baseScanner{
-			tree: t,
-			i:    0,
-			n:    t.Entries(),
-			cur:  -1,
-			err:  nil,
-			ibr:  ibr,
-			mbr:  mbr,
-			cbr:  cbr,
-		},
-		typ: nil,
+		scan: base,
+		typ:  nil,
 	}, nil
 }
 
@@ -386,7 +393,7 @@ func (s *TreeScanner) scanStruct(data interface{}) error {
 	rt := reflect.TypeOf(data).Elem()
 	rv := reflect.ValueOf(data).Elem()
 	if rt != s.typ {
-		return errors.Errorf("rtree: Scanner.Scan: types do not match (got: %T, want: %T)", rv.Interface(), reflect.New(s.typ).Elem().Interface())
+		return errors.Errorf("rtree: Scanner.Scan: types do not match (got: %v, want: %v)", rt, s.typ)
 	}
 	for _, br := range s.scan.ibr {
 		fv := rv.Field(br.i)
@@ -430,7 +437,7 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 			return nil, errors.Errorf("rtree: Tree %q has no branch named %q", t.Name(), sv.Name)
 		}
 		mbr[i] = br
-		ibr[i] = scanField{br: br, i: 0}
+		ibr[i] = scanField{br: br, i: 0, lcnt: -1}
 
 		leaf := br.Leaves()[0]
 		if sv.Leaf != "" {
@@ -462,19 +469,28 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 			panic(err)
 		}
 		args[i] = arg
+		ibr[i].ptr = arg
+	}
+
+	base := baseScanner{
+		tree: t,
+		i:    0,
+		n:    t.Entries(),
+		cur:  -1,
+		err:  nil,
+		ibr:  ibr,
+		mbr:  mbr,
+		cbr:  cbr,
+	}
+
+	if ch, ok := t.(*tchain); ok {
+		base.chain = ok
+		base.off = ch.off
+		base.tot = ch.tot
 	}
 
 	return &Scanner{
-		scan: baseScanner{
-			tree: t,
-			i:    0,
-			n:    t.Entries(),
-			cur:  -1,
-			err:  nil,
-			ibr:  ibr,
-			mbr:  mbr,
-			cbr:  cbr,
-		},
+		scan: base,
 		args: args,
 	}, nil
 }
@@ -516,26 +532,34 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 			}
 		}
 		fptr := rv.Field(i).Addr().Interface()
-		mbr = append(mbr, br)
-		ibr = append(ibr, scanField{br: br, i: i})
 		err := br.setAddress(fptr)
 		if err != nil {
 			panic(err)
 		}
 		args = append(args, fptr)
+		mbr = append(mbr, br)
+		ibr = append(ibr, scanField{br: br, i: i, ptr: fptr, lcnt: -1})
+	}
+
+	base := baseScanner{
+		tree: t,
+		i:    0,
+		n:    t.Entries(),
+		cur:  -1,
+		err:  nil,
+		ibr:  ibr,
+		mbr:  mbr,
+		cbr:  cbr,
+	}
+
+	if ch, ok := t.(*tchain); ok {
+		base.chain = ok
+		base.off = ch.off
+		base.tot = ch.tot
 	}
 
 	return &Scanner{
-		scan: baseScanner{
-			tree: t,
-			i:    0,
-			n:    t.Entries(),
-			cur:  -1,
-			err:  nil,
-			ibr:  ibr,
-			mbr:  mbr,
-			cbr:  cbr,
-		},
+		scan: base,
 		args: args,
 	}, nil
 }
