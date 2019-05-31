@@ -141,6 +141,13 @@ func (rec *Record) NewSlice(i, j int64) array.Record {
 	return NewRecord(rec.tree, WithStart(rec.offset+i), WithEnd(rec.offset+j))
 }
 
+// RecordReader is an ARROW RecordReader for ROOT Trees.
+//
+// RecordReader does not materialize more than one record at a time.
+// The number of rows (or entries, in ROOT speak) that record loads can be configured
+// at creation time with the WithChunk function.
+// The default is one entry per record.
+// One can pass -1 to WithChunk to create a record with all entries of the Tree or Chain.
 type RecordReader struct {
 	refs int64
 
@@ -156,8 +163,7 @@ type RecordReader struct {
 	rec *Record
 }
 
-type RecordReaderOption func(r *RecordReader)
-
+// NewRecordReader creates a new ARROW RecordReader from the provided ROOT Tree.
 func NewRecordReader(tree rtree.Tree, opts ...Option) *RecordReader {
 	cfg := newConfig(opts)
 
