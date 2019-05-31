@@ -100,8 +100,21 @@ func dataTypeFromLeaf(leaf rtree.Leaf) arrow.DataType {
 	switch {
 	case leaf.LeafCount() != nil:
 		dt = arrow.ListOf(dt)
-	case leaf.Len() > 1 && kind != reflect.String:
-		dt = fixedSizeListOf(int32(leaf.Len()), dt)
+	case leaf.Len() > 1:
+		switch leaf.Kind() {
+		case reflect.String:
+			switch dims := leaf.ArrayDim(); dims {
+			case 0, 1:
+				// interpret as a single string
+			default:
+				// FIXME(sbinet): properly handle [N]string (but ROOT doesn't support that.)
+				// see: https://root-forum.cern.ch/t/char-t-in-a-branch/5591/2
+				// etype = reflect.ArrayOf(leaf.Len(), etype)
+				panic(errors.Errorf("groot/rtree: invalid number of dimensions (%d)", dims))
+			}
+		default:
+			dt = arrow.FixedSizeListOf(int32(leaf.Len()), dt)
+		}
 	}
 
 	return dt
@@ -138,7 +151,7 @@ func dataTypeFromGo(typ reflect.Type) arrow.DataType {
 		}
 		return arrow.ListOf(dataTypeFromGo(typ.Elem()))
 	case reflect.Array:
-		return fixedSizeListOf(int32(typ.Len()), dataTypeFromGo(typ.Elem()))
+		return arrow.FixedSizeListOf(int32(typ.Len()), dataTypeFromGo(typ.Elem()))
 	case reflect.String:
 		return arrow.BinaryTypes.String
 
@@ -160,11 +173,6 @@ func dataTypeFromGo(typ reflect.Type) arrow.DataType {
 	default:
 		panic(errors.Errorf("rarrow: unsupported Go type %v", typ))
 	}
-}
-
-func fixedSizeListOf(n int32, dt arrow.DataType) arrow.DataType {
-	// FIXME(sbinet): use the real arrow.FixedSizeListOf when available
-	return arrow.ListOf(dt)
 }
 
 func builderFrom(mem memory.Allocator, dt arrow.DataType, size int64) array.Builder {
@@ -198,6 +206,8 @@ func builderFrom(mem memory.Allocator, dt arrow.DataType, size int64) array.Buil
 		bldr = array.NewStringBuilder(mem)
 	case *arrow.ListType:
 		bldr = array.NewListBuilder(mem, dt.Elem())
+	case *arrow.FixedSizeListType:
+		bldr = array.NewFixedSizeListBuilder(mem, dt.Len(), dt.Elem())
 	case *arrow.StructType:
 		bldr = array.NewStructBuilder(mem, dt)
 	default:
@@ -235,6 +245,15 @@ func appendData(bldr array.Builder, v rtree.ScanVar, dt arrow.DataType) {
 		bldr.Append(*v.Value.(*string))
 
 	case *array.ListBuilder:
+		sub := bldr.ValueBuilder()
+		v := reflect.ValueOf(v.Value).Elem()
+		sub.Reserve(v.Len())
+		bldr.Append(true)
+		for i := 0; i < v.Len(); i++ {
+			appendValue(sub, v.Index(i).Interface())
+		}
+
+	case *array.FixedSizeListBuilder:
 		sub := bldr.ValueBuilder()
 		v := reflect.ValueOf(v.Value).Elem()
 		sub.Reserve(v.Len())
@@ -284,6 +303,14 @@ func appendValue(bldr array.Builder, v interface{}) {
 		b.Append(v.(string))
 
 	case *array.ListBuilder:
+		b.Append(true)
+		sub := b.ValueBuilder()
+		v := reflect.ValueOf(v)
+		for i := 0; i < v.Len(); i++ {
+			appendValue(sub, v.Index(i).Interface())
+		}
+
+	case *array.FixedSizeListBuilder:
 		b.Append(true)
 		sub := b.ValueBuilder()
 		v := reflect.ValueOf(v)

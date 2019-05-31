@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/ajstarks/svgo v0.0.0-20181006003313-6ce6a3bcf6cd // indirect
+	github.com/apache/arrow/go/arrow v0.0.0-20190531114516-e61bd90153f6
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
@@ -24,6 +25,7 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/remyoudompheng/bigfft v0.0.0-20190321074620-2f0d2b0e0001 // indirect
 	github.com/sbinet/npyio v0.2.0
+	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/ulikunitz/xz v0.5.6
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 	go-hep.org/x/exp v0.0.0-20190226095713-73a5dbf93dae

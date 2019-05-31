@@ -39,6 +39,17 @@ func TestFile(t *testing.T) {
 			stream: true,
 			want:   "testdata/simple.root.stream",
 		},
+		{
+			file: "../../groot/testdata/leaves.root",
+			tree: "tree",
+			want: "testdata/leaves.root.file",
+		},
+		{
+			file:   "../../groot/testdata/leaves.root",
+			tree:   "tree",
+			stream: true,
+			want:   "testdata/leaves.root.stream",
+		},
 	} {
 		t.Run(tc.file, func(t *testing.T) {
 			f, err := ioutil.TempFile("", "root2arrow-")
