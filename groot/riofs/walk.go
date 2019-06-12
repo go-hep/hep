@@ -20,6 +20,8 @@ var SkipDir = errors.New("riofs: skip this directory")
 
 // Walk walks the ROOT file tree rooted at dir, calling walkFn for each ROOT object
 // or Directory in the ROOT file tree, including dir.
+//
+// If an object exists with multiple cycle values, only the latest one is considered.
 func Walk(dir Directory, walkFn WalkFunc) error {
 	err := walk(dir.(root.Named).Name(), dir.(root.Object), walkFn)
 	if err == SkipDir {
@@ -35,13 +37,24 @@ func walk(path string, obj root.Object, walkFn WalkFunc) error {
 		return walkFn(path, obj, nil)
 	}
 
-	keys := dir.Keys()
 	err := walkFn(path, obj, nil)
 	if err != nil {
 		return err
 	}
 
+	keys := dir.Keys()
+	set := make(map[string]int, len(keys))
 	for _, key := range keys {
+		if cycle, dup := set[key.Name()]; dup && key.Cycle() < cycle {
+			continue
+		}
+		set[key.Name()] = key.Cycle()
+	}
+
+	for _, key := range keys {
+		if key.Cycle() != set[key.Name()] {
+			continue
+		}
 		dirname := stdpath.Join(path, key.Name())
 		obj, err := dir.Get(key.Name())
 		switch err {
@@ -85,9 +98,9 @@ type recDir struct {
 }
 
 func (dir *recDir) Get(namecycle string) (root.Object, error) { return dir.get(namecycle) }
-func (dir *recDir) Put(name string, v root.Object) error      { return dir.dir.Put(name, v) }
+func (dir *recDir) Put(name string, v root.Object) error      { return dir.put(name, v) }
 func (dir *recDir) Keys() []Key                               { return dir.dir.Keys() }
-func (dir *recDir) Mkdir(name string) (Directory, error)      { return dir.dir.Mkdir(name) }
+func (dir *recDir) Mkdir(name string) (Directory, error)      { return dir.mkdir(name) }
 
 func (dir *recDir) get(namecycle string) (root.Object, error) {
 	switch namecycle {
@@ -100,6 +113,78 @@ func (dir *recDir) get(namecycle string) (root.Object, error) {
 	}
 	path := strings.Split(name, "/")
 	return dir.walk(dir.dir, path, cycle)
+}
+
+func (dir *recDir) put(name string, v root.Object) error {
+	pdir, n := stdpath.Split(name)
+	pdir = strings.TrimRight(pdir, "/")
+	switch pdir {
+	case "":
+		return dir.dir.Put(name, v)
+	default:
+		p, err := dir.mkdir(pdir)
+		if err != nil {
+			return errors.Wrapf(err, "riofs: could not create parent directory %q for %q", pdir, name)
+		}
+		return p.Put(n, v)
+	}
+}
+
+func (dir *recDir) mkdir(path string) (Directory, error) {
+	if path == "" || path == "/" {
+		return nil, errors.Errorf("riofs: invalid path %q to Mkdir", path)
+	}
+
+	if o, err := dir.get(path); err == nil {
+		d, ok := o.(Directory)
+		if ok {
+			return d, nil
+		}
+		return nil, keyTypeError{key: path, class: d.(root.Object).Class()}
+	}
+
+	ps := strings.Split(path, "/")
+	if len(ps) == 1 {
+		return dir.dir.Mkdir(path)
+	}
+	for i := range ps {
+		p := strings.Join(ps[:i+1], "/")
+		_, err := dir.get(p)
+		if err == nil {
+			continue
+		}
+		switch errors.Cause(err).(type) {
+		case noKeyError:
+			pname, name := stdpath.Split(p)
+			pname = strings.TrimRight(pname, "/")
+			d, err := dir.get(pname)
+			if err != nil {
+				return nil, err
+			}
+			pdir := d.(Directory)
+			_, err = pdir.Mkdir(name)
+			if err != nil {
+				return nil, err
+			}
+			_, err = pdir.Get(name)
+			if err != nil {
+				return nil, err
+			}
+			continue
+
+		default:
+			return nil, errors.Wrapf(err, "riofs: unknown error accessing %q", p)
+		}
+	}
+	o, err := dir.get(path)
+	if err != nil {
+		return nil, err
+	}
+	d, ok := o.(Directory)
+	if !ok {
+		return nil, errors.Errorf("riofs: could not create directory %q", path)
+	}
+	return d, nil
 }
 
 func (rd *recDir) walk(dir Directory, path []string, cycle int16) (root.Object, error) {

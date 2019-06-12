@@ -27,6 +27,17 @@ func (err noKeyError) Error() string {
 	return fmt.Sprintf("riofs: %s: could not find key %q", err.obj.Name(), err.key)
 }
 
+// keyTypeError is the error returned when a riofs.Key was found but the associated
+// value is not of the expected type.
+type keyTypeError struct {
+	key   string
+	class string
+}
+
+func (err keyTypeError) Error() string {
+	return fmt.Sprintf("riofs: inconsistent value type for key %q (type=%s)", err.key, err.class)
+}
+
 // Key is a key (a label) in a ROOT file
 //
 //  The Key class includes functions to book space on a file,

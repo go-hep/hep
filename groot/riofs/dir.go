@@ -7,6 +7,8 @@ package riofs
 import (
 	"fmt"
 	"reflect"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -320,6 +322,7 @@ func (dir *tdirectoryFile) saveSelf() error {
 //             if object is not in memory, try with highest cycle from file
 //     foo;1 : get cycle 1 of foo on file
 func (dir *tdirectoryFile) Get(namecycle string) (root.Object, error) {
+	var keys []*Key
 	name, cycle := decodeNameCycle(namecycle)
 	for i := range dir.keys {
 		k := &dir.keys[i]
@@ -330,15 +333,29 @@ func (dir *tdirectoryFile) Get(namecycle string) (root.Object, error) {
 				}
 				continue
 			}
-			return k.Object()
+			keys = append(keys, k)
 		}
 	}
-	return nil, noKeyError{key: namecycle, obj: dir}
+	switch len(keys) {
+	case 0:
+		return nil, noKeyError{key: namecycle, obj: dir}
+	case 1:
+		return keys[0].Object()
+	default:
+		sort.Slice(keys, func(i, j int) bool {
+			return keys[i].Cycle() < keys[j].Cycle()
+		})
+		return keys[len(keys)-1].Object()
+	}
 }
 
 func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 	if dir.file.w == nil {
 		return errors.Wrapf(ErrReadOnly, "could not put %q into directory %q", name, dir.dir.Name())
+	}
+
+	if strings.Contains(name, "/") {
+		return errors.Errorf("riofs: invalid path name %q (contains a '/')", name)
 	}
 
 	var (
@@ -361,7 +378,12 @@ func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 		if key.name != name {
 			continue
 		}
-		cycle = key.cycle
+		if key.ClassName() != obj.Class() {
+			return keyTypeError{key: name, class: key.ClassName()}
+		}
+		if key.cycle > cycle {
+			cycle = key.cycle
+		}
 	}
 	cycle++
 
@@ -407,7 +429,11 @@ func (dir *tdirectoryFile) Keys() []Key {
 // Mkdir creates a new subdirectory
 func (dir *tdirectoryFile) Mkdir(name string) (Directory, error) {
 	if _, err := dir.Get(name); err == nil {
-		return nil, errors.Errorf("rootio: %q already exist", name)
+		return nil, errors.Errorf("riofs: %q already exists", name)
+	}
+
+	if strings.Contains(name, "/") {
+		return nil, errors.Errorf("riofs: invalid directory name %q (contains a '/')", name)
 	}
 
 	sub := newDirectoryFile(name, dir.file, dir)
