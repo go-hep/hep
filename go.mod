@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/ajstarks/svgo v0.0.0-20181006003313-6ce6a3bcf6cd // indirect
-	github.com/apache/arrow/go/arrow v0.0.0-20190531114516-e61bd90153f6
+	github.com/apache/arrow/go/arrow v0.0.0-20190625011519-a91f78fa52dc
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0

@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package groot provides a pure-go read-access to ROOT files.
-// groot might, with time, provide write-access too.
+// Package groot provides a pure-go read/write-access to ROOT files.
 //
 // A typical usage is as follows:
 //
@@ -160,4 +159,5 @@
 // A streamer info is actually a list of streamer elements, one for each field
 // and, in C++, base class (in Go, this is emulated as an embedded field.)
 //
+// TODO: groot can not write trees yet.
 package groot // import "go-hep.org/x/hep/groot"
