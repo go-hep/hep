@@ -65,6 +65,37 @@ func TestDir(t *testing.T) {
 	if got, want := keys, []string{"dir1", "dir2", "dir3"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid keys:\ngot = %v\nwant=%v\n", got, want)
 	}
+
+	for _, tc := range []struct {
+		path   string
+		parent string
+	}{
+		{"dir1/dir11", "dir1"},
+		{"/dir1/dir11", "dir1"},
+		{"dir1", f.Name()},
+		{"/dir1", f.Name()},
+		{"", ""},
+		{"/", ""},
+	} {
+		t.Run("parent:"+tc.path, func(t *testing.T) {
+			o, err := rd.Get(tc.path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			p := o.(Directory).Parent()
+			switch p {
+			case nil:
+				if got, want := "", tc.parent; got != want {
+					t.Fatalf("invalid parent: got=%q, want=%q", got, want)
+				}
+			default:
+				if got, want := p.(root.Named).Name(), tc.parent; got != want {
+					t.Fatalf("invalid parent: got=%q, want=%q", got, want)
+				}
+			}
+		})
+	}
+
 }
 
 func TestRecDirMkdir(t *testing.T) {

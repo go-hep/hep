@@ -336,17 +336,38 @@ func (dir *tdirectoryFile) Get(namecycle string) (root.Object, error) {
 			keys = append(keys, k)
 		}
 	}
+	var (
+		obj root.Object
+		err error
+	)
 	switch len(keys) {
 	case 0:
 		return nil, noKeyError{key: namecycle, obj: dir}
 	case 1:
-		return keys[0].Object()
+		obj, err = keys[0].Object()
 	default:
 		sort.Slice(keys, func(i, j int) bool {
 			return keys[i].Cycle() < keys[j].Cycle()
 		})
-		return keys[len(keys)-1].Object()
+		obj, err = keys[len(keys)-1].Object()
 	}
+	if err != nil {
+		return nil, err
+	}
+
+	if obj != nil {
+		switch obj := obj.(type) {
+		case *tdirectoryFile:
+			obj.dir.parent = dir
+			if obj.dir.Name() == "" {
+				obj.dir.named.SetName(name)
+			}
+			if obj.Title() == "" {
+				obj.dir.named.SetTitle(name)
+			}
+		}
+	}
+	return obj, nil
 }
 
 func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
@@ -444,6 +465,10 @@ func (dir *tdirectoryFile) Mkdir(name string) (Directory, error) {
 
 	return sub, nil
 }
+
+// Parent returns the directory holding this directory.
+// Parent returns nil if this is the top-level directory.
+func (dir *tdirectoryFile) Parent() Directory { return dir.dir.parent }
 
 func (dir *tdirectoryFile) RVersion() int16 { return dir.dir.rvers }
 

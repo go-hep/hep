@@ -312,7 +312,7 @@ func (srv *Server) handleDirent(w http.ResponseWriter, r *http.Request) error {
 				cycle = o.Cycle()
 			}
 
-			opath := strings.Replace(stdpath.Join(req.Dir, path), "/"+f.Name(), "/", 1)
+			opath := strings.Replace("/"+path, "/"+f.Name(), "/", 1)
 			if strings.HasPrefix(opath, "//") {
 				opath = strings.Replace(opath, "//", "/", 1)
 			}

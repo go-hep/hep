@@ -38,6 +38,10 @@ type Directory interface {
 
 	// Mkdir creates a new subdirectory
 	Mkdir(name string) (Directory, error)
+
+	// Parent returns the directory holding this directory.
+	// Parent returns nil if this is the top-level directory.
+	Parent() Directory
 }
 
 // SetFiler is a simple interface to establish File ownership.

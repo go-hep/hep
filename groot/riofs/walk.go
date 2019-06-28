@@ -101,6 +101,7 @@ func (dir *recDir) Get(namecycle string) (root.Object, error) { return dir.get(n
 func (dir *recDir) Put(name string, v root.Object) error      { return dir.put(name, v) }
 func (dir *recDir) Keys() []Key                               { return dir.dir.Keys() }
 func (dir *recDir) Mkdir(name string) (Directory, error)      { return dir.mkdir(name) }
+func (dir *recDir) Parent() Directory                         { return dir.dir.Parent() }
 
 func (dir *recDir) get(namecycle string) (root.Object, error) {
 	switch namecycle {

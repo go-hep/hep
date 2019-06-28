@@ -808,6 +808,10 @@ func (f *File) Mkdir(name string) (Directory, error) {
 	return f.dir.Mkdir(name)
 }
 
+// Parent returns the directory holding this directory.
+// Parent returns nil if this is the top-level directory.
+func (*File) Parent() Directory { return nil }
+
 var (
 	_ root.Object                = (*File)(nil)
 	_ root.Named                 = (*File)(nil)

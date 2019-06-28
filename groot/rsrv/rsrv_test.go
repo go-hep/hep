@@ -386,7 +386,7 @@ func testDirent(t *testing.T, ts *httptest.Server, req DirentRequest, content []
 	sort.Strings(content)
 
 	if !reflect.DeepEqual(got, content) {
-		t.Fatalf("invalid dirent content:\ngot= %v\nwant=%v\n", got, content)
+		t.Fatalf("invalid dirent content: (req=%#v)\ngot= %v\nwant=%v\n", req, got, content)
 	}
 }
 
