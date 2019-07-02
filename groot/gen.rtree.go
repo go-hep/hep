@@ -42,6 +42,7 @@ func genLeaves() {
 		Name       string
 		Type       string
 		Kind       string
+		LenType    int
 		DoUnsigned bool
 		RFunc      string
 		RFuncArray string
@@ -56,6 +57,7 @@ func genLeaves() {
 			Name:       "LeafO",
 			Type:       "bool",
 			Kind:       "reflect.Bool",
+			LenType:    1,
 			RFunc:      "r.ReadBool()",
 			RFuncArray: "r.ReadFastArrayBool",
 			WFunc:      "w.WriteBool",
@@ -65,6 +67,7 @@ func genLeaves() {
 			Name:       "LeafB",
 			Type:       "int8",
 			Kind:       "reflect.Int8",
+			LenType:    1,
 			DoUnsigned: true,
 			RFunc:      "r.ReadI8()",
 			RFuncArray: "r.ReadFastArrayI8",
@@ -76,6 +79,7 @@ func genLeaves() {
 			Name:       "LeafS",
 			Type:       "int16",
 			Kind:       "reflect.Int16",
+			LenType:    2,
 			DoUnsigned: true,
 			RFunc:      "r.ReadI16()",
 			RFuncArray: "r.ReadFastArrayI16",
@@ -87,6 +91,7 @@ func genLeaves() {
 			Name:       "LeafI",
 			Type:       "int32",
 			Kind:       "reflect.Int32",
+			LenType:    4,
 			DoUnsigned: true,
 			RFunc:      "r.ReadI32()",
 			RFuncArray: "r.ReadFastArrayI32",
@@ -98,6 +103,7 @@ func genLeaves() {
 			Name:       "LeafL",
 			Type:       "int64",
 			Kind:       "reflect.Int64",
+			LenType:    8,
 			DoUnsigned: true,
 			RFunc:      "r.ReadI64()",
 			RFuncArray: "r.ReadFastArrayI64",
@@ -109,6 +115,7 @@ func genLeaves() {
 			Name:       "LeafF",
 			Type:       "float32",
 			Kind:       "reflect.Float32",
+			LenType:    4,
 			RFunc:      "r.ReadF32()",
 			RFuncArray: "r.ReadFastArrayF32",
 			WFunc:      "w.WriteF32",
@@ -118,6 +125,7 @@ func genLeaves() {
 			Name:       "LeafD",
 			Type:       "float64",
 			Kind:       "reflect.Float64",
+			LenType:    8,
 			RFunc:      "r.ReadF64()",
 			RFuncArray: "r.ReadFastArrayF64",
 			WFunc:      "w.WriteF64",
@@ -127,6 +135,7 @@ func genLeaves() {
 			Name:       "LeafC",
 			Type:       "string",
 			Kind:       "reflect.String",
+			LenType:    1,
 			RFunc:      "r.ReadString()",
 			RFuncArray: "r.ReadFastArrayString",
 			WFunc:      "w.WriteString",
@@ -169,13 +178,14 @@ type {{.Name}} struct {
 }
 
 func new{{.Name}}(b Branch, name string, len int, unsigned bool, count Leaf) *{{.Name}} {
+	const etype = {{.LenType}}
 	var lcnt leafCount
 	if count != nil {
 		lcnt = count.(leafCount)
 	}
 	return &{{.Name}}{
 		rvers: rvers.{{.Name}},
-		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -201,9 +211,18 @@ func (*{{.Name}}) Kind() reflect.Kind {
 }
 
 // Type returns the leaf's type.
-func (*{{.Name}}) Type() reflect.Type {
+func (leaf *{{.Name}}) Type() reflect.Type {
+{{- if .DoUnsigned}}
+	if leaf.IsUnsigned() {
+		var v u{{.Type}}
+		return reflect.TypeOf(v)
+	}
 	var v {{.Type}}
 	return reflect.TypeOf(v)
+{{- else}}
+	var v {{.Type}}
+	return reflect.TypeOf(v)
+{{- end}}
 }
 
 // Value returns the leaf value at index i.
@@ -239,7 +258,14 @@ func (leaf *{{.Name}}) imax() int {
 {{- end}}
 
 func (leaf *{{.Name}}) TypeName() string {
+{{- if .DoUnsigned}}
+	if leaf.IsUnsigned() {
+		return "u{{.Type}}"
+	}
 	return "{{.Type}}"
+{{- else}}
+	return "{{.Type}}"
+{{- end}}
 }
 
 func (leaf *{{.Name}}) MarshalROOT(w *rbytes.WBuffer) (int, error) {
@@ -271,7 +297,7 @@ func (leaf *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *{{.Name}}) readFromBasket(r *rbytes.RBuffer) error {
+func (leaf *{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
         if r.Err() != nil {
                 return r.Err()
         }
@@ -376,7 +402,7 @@ func (leaf *{{.Name}}) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *{{.Name}}) writeToBasket(w *rbytes.WBuffer) error {
+func (leaf *{{.Name}}) writeToBuffer(w *rbytes.WBuffer) error {
 	if w.Err() != nil {
 		return w.Err()
 	}
@@ -384,6 +410,20 @@ func (leaf *{{.Name}}) writeToBasket(w *rbytes.WBuffer) error {
 	switch {
 	case leaf.ptr != nil:
 		{{.WFunc}}(*leaf.ptr)
+{{- if eq .Name "LeafC"}}
+		sz := len(*leaf.ptr)
+		if v := int32(sz); v >= leaf.max {
+			leaf.max = v+1
+		}
+		if sz >= leaf.tleaf.len {
+			leaf.tleaf.len = sz+1
+		}
+{{- else if eq .Name "LeafO"}}
+{{- else}}
+		if v := *leaf.ptr; v > leaf.max {
+			leaf.max = v
+		}
+{{- end}}
 	case leaf.count != nil:
 		n := leaf.count.ivalue()
         max := leaf.count.imax()

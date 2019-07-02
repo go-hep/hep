@@ -54,7 +54,7 @@ type Branch interface {
 	GoType() reflect.Type
 
 	// write interface part
-	writeToBasket(w *rbytes.WBuffer) error
+	writeToBuffer(w *rbytes.WBuffer) error
 }
 
 // Leaf describes branches data types
@@ -76,13 +76,13 @@ type Leaf interface {
 	TypeName() string
 
 	setBranch(Branch)
-	readFromBasket(r *rbytes.RBuffer) error
+	readFromBuffer(r *rbytes.RBuffer) error
 	value() interface{}
 	scan(r *rbytes.RBuffer, ptr interface{}) error
 	setAddress(ptr interface{}) error
 
 	// write interface part
-	writeToBasket(w *rbytes.WBuffer) error
+	writeToBuffer(w *rbytes.WBuffer) error
 }
 
 // leafCount describes leaves that are used for array length count

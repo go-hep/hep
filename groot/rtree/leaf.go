@@ -123,7 +123,7 @@ func (leaf *tleaf) value() interface{} {
 	panic("not implemented: " + leaf.Name())
 }
 
-func (leaf *tleaf) readFromBasket(r *rbytes.RBuffer) error {
+func (leaf *tleaf) readFromBuffer(r *rbytes.RBuffer) error {
 	panic("not implemented: " + leaf.Name())
 }
 
@@ -135,7 +135,7 @@ func (leaf *tleaf) setAddress(ptr interface{}) error {
 	panic("not implemented: " + leaf.Name())
 }
 
-func (leaf *tleaf) writeToBasket(w *rbytes.WBuffer) error {
+func (leaf *tleaf) writeToBuffer(w *rbytes.WBuffer) error {
 	panic("not implemented: " + leaf.Name())
 }
 
@@ -267,7 +267,7 @@ func (leaf *tleafElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *tleafElement) readFromBasket(r *rbytes.RBuffer) error {
+func (leaf *tleafElement) readFromBuffer(r *rbytes.RBuffer) error {
 	if r.Err() != nil {
 		return r.Err()
 	}
@@ -325,7 +325,7 @@ func (leaf *tleafElement) setAddress(ptr interface{}) error {
 	return err
 }
 
-func (leaf *tleafElement) writeToBasket(w *rbytes.WBuffer) error {
+func (leaf *tleafElement) writeToBuffer(w *rbytes.WBuffer) error {
 	panic("not implemented")
 }
 

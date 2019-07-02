@@ -29,13 +29,14 @@ type LeafO struct {
 }
 
 func newLeafO(b Branch, name string, len int, unsigned bool, count Leaf) *LeafO {
+	const etype = 1
 	var lcnt leafCount
 	if count != nil {
 		lcnt = count.(leafCount)
 	}
 	return &LeafO{
 		rvers: rvers.LeafO,
-		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -60,7 +61,7 @@ func (*LeafO) Kind() reflect.Kind {
 }
 
 // Type returns the leaf's type.
-func (*LeafO) Type() reflect.Type {
+func (leaf *LeafO) Type() reflect.Type {
 	var v bool
 	return reflect.TypeOf(v)
 }
@@ -118,7 +119,7 @@ func (leaf *LeafO) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafO) readFromBasket(r *rbytes.RBuffer) error {
+func (leaf *LeafO) readFromBuffer(r *rbytes.RBuffer) error {
 	if r.Err() != nil {
 		return r.Err()
 	}
@@ -197,7 +198,7 @@ func (leaf *LeafO) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafO) writeToBasket(w *rbytes.WBuffer) error {
+func (leaf *LeafO) writeToBuffer(w *rbytes.WBuffer) error {
 	if w.Err() != nil {
 		return w.Err()
 	}
@@ -246,13 +247,14 @@ type LeafB struct {
 }
 
 func newLeafB(b Branch, name string, len int, unsigned bool, count Leaf) *LeafB {
+	const etype = 1
 	var lcnt leafCount
 	if count != nil {
 		lcnt = count.(leafCount)
 	}
 	return &LeafB{
 		rvers: rvers.LeafB,
-		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -277,7 +279,11 @@ func (*LeafB) Kind() reflect.Kind {
 }
 
 // Type returns the leaf's type.
-func (*LeafB) Type() reflect.Type {
+func (leaf *LeafB) Type() reflect.Type {
+	if leaf.IsUnsigned() {
+		var v uint8
+		return reflect.TypeOf(v)
+	}
 	var v int8
 	return reflect.TypeOf(v)
 }
@@ -313,6 +319,9 @@ func (leaf *LeafB) imax() int {
 }
 
 func (leaf *LeafB) TypeName() string {
+	if leaf.IsUnsigned() {
+		return "uint8"
+	}
 	return "int8"
 }
 
@@ -345,7 +354,7 @@ func (leaf *LeafB) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafB) readFromBasket(r *rbytes.RBuffer) error {
+func (leaf *LeafB) readFromBuffer(r *rbytes.RBuffer) error {
 	if r.Err() != nil {
 		return r.Err()
 	}
@@ -444,7 +453,7 @@ func (leaf *LeafB) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafB) writeToBasket(w *rbytes.WBuffer) error {
+func (leaf *LeafB) writeToBuffer(w *rbytes.WBuffer) error {
 	if w.Err() != nil {
 		return w.Err()
 	}
@@ -452,6 +461,9 @@ func (leaf *LeafB) writeToBasket(w *rbytes.WBuffer) error {
 	switch {
 	case leaf.ptr != nil:
 		w.WriteI8(*leaf.ptr)
+		if v := *leaf.ptr; v > leaf.max {
+			leaf.max = v
+		}
 	case leaf.count != nil:
 		n := leaf.count.ivalue()
 		max := leaf.count.imax()
@@ -493,13 +505,14 @@ type LeafS struct {
 }
 
 func newLeafS(b Branch, name string, len int, unsigned bool, count Leaf) *LeafS {
+	const etype = 2
 	var lcnt leafCount
 	if count != nil {
 		lcnt = count.(leafCount)
 	}
 	return &LeafS{
 		rvers: rvers.LeafS,
-		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -524,7 +537,11 @@ func (*LeafS) Kind() reflect.Kind {
 }
 
 // Type returns the leaf's type.
-func (*LeafS) Type() reflect.Type {
+func (leaf *LeafS) Type() reflect.Type {
+	if leaf.IsUnsigned() {
+		var v uint16
+		return reflect.TypeOf(v)
+	}
 	var v int16
 	return reflect.TypeOf(v)
 }
@@ -560,6 +577,9 @@ func (leaf *LeafS) imax() int {
 }
 
 func (leaf *LeafS) TypeName() string {
+	if leaf.IsUnsigned() {
+		return "uint16"
+	}
 	return "int16"
 }
 
@@ -592,7 +612,7 @@ func (leaf *LeafS) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafS) readFromBasket(r *rbytes.RBuffer) error {
+func (leaf *LeafS) readFromBuffer(r *rbytes.RBuffer) error {
 	if r.Err() != nil {
 		return r.Err()
 	}
@@ -691,7 +711,7 @@ func (leaf *LeafS) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafS) writeToBasket(w *rbytes.WBuffer) error {
+func (leaf *LeafS) writeToBuffer(w *rbytes.WBuffer) error {
 	if w.Err() != nil {
 		return w.Err()
 	}
@@ -699,6 +719,9 @@ func (leaf *LeafS) writeToBasket(w *rbytes.WBuffer) error {
 	switch {
 	case leaf.ptr != nil:
 		w.WriteI16(*leaf.ptr)
+		if v := *leaf.ptr; v > leaf.max {
+			leaf.max = v
+		}
 	case leaf.count != nil:
 		n := leaf.count.ivalue()
 		max := leaf.count.imax()
@@ -740,13 +763,14 @@ type LeafI struct {
 }
 
 func newLeafI(b Branch, name string, len int, unsigned bool, count Leaf) *LeafI {
+	const etype = 4
 	var lcnt leafCount
 	if count != nil {
 		lcnt = count.(leafCount)
 	}
 	return &LeafI{
 		rvers: rvers.LeafI,
-		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -771,7 +795,11 @@ func (*LeafI) Kind() reflect.Kind {
 }
 
 // Type returns the leaf's type.
-func (*LeafI) Type() reflect.Type {
+func (leaf *LeafI) Type() reflect.Type {
+	if leaf.IsUnsigned() {
+		var v uint32
+		return reflect.TypeOf(v)
+	}
 	var v int32
 	return reflect.TypeOf(v)
 }
@@ -807,6 +835,9 @@ func (leaf *LeafI) imax() int {
 }
 
 func (leaf *LeafI) TypeName() string {
+	if leaf.IsUnsigned() {
+		return "uint32"
+	}
 	return "int32"
 }
 
@@ -839,7 +870,7 @@ func (leaf *LeafI) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafI) readFromBasket(r *rbytes.RBuffer) error {
+func (leaf *LeafI) readFromBuffer(r *rbytes.RBuffer) error {
 	if r.Err() != nil {
 		return r.Err()
 	}
@@ -938,7 +969,7 @@ func (leaf *LeafI) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafI) writeToBasket(w *rbytes.WBuffer) error {
+func (leaf *LeafI) writeToBuffer(w *rbytes.WBuffer) error {
 	if w.Err() != nil {
 		return w.Err()
 	}
@@ -946,6 +977,9 @@ func (leaf *LeafI) writeToBasket(w *rbytes.WBuffer) error {
 	switch {
 	case leaf.ptr != nil:
 		w.WriteI32(*leaf.ptr)
+		if v := *leaf.ptr; v > leaf.max {
+			leaf.max = v
+		}
 	case leaf.count != nil:
 		n := leaf.count.ivalue()
 		max := leaf.count.imax()
@@ -987,13 +1021,14 @@ type LeafL struct {
 }
 
 func newLeafL(b Branch, name string, len int, unsigned bool, count Leaf) *LeafL {
+	const etype = 8
 	var lcnt leafCount
 	if count != nil {
 		lcnt = count.(leafCount)
 	}
 	return &LeafL{
 		rvers: rvers.LeafL,
-		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -1018,7 +1053,11 @@ func (*LeafL) Kind() reflect.Kind {
 }
 
 // Type returns the leaf's type.
-func (*LeafL) Type() reflect.Type {
+func (leaf *LeafL) Type() reflect.Type {
+	if leaf.IsUnsigned() {
+		var v uint64
+		return reflect.TypeOf(v)
+	}
 	var v int64
 	return reflect.TypeOf(v)
 }
@@ -1054,6 +1093,9 @@ func (leaf *LeafL) imax() int {
 }
 
 func (leaf *LeafL) TypeName() string {
+	if leaf.IsUnsigned() {
+		return "uint64"
+	}
 	return "int64"
 }
 
@@ -1086,7 +1128,7 @@ func (leaf *LeafL) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafL) readFromBasket(r *rbytes.RBuffer) error {
+func (leaf *LeafL) readFromBuffer(r *rbytes.RBuffer) error {
 	if r.Err() != nil {
 		return r.Err()
 	}
@@ -1185,7 +1227,7 @@ func (leaf *LeafL) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafL) writeToBasket(w *rbytes.WBuffer) error {
+func (leaf *LeafL) writeToBuffer(w *rbytes.WBuffer) error {
 	if w.Err() != nil {
 		return w.Err()
 	}
@@ -1193,6 +1235,9 @@ func (leaf *LeafL) writeToBasket(w *rbytes.WBuffer) error {
 	switch {
 	case leaf.ptr != nil:
 		w.WriteI64(*leaf.ptr)
+		if v := *leaf.ptr; v > leaf.max {
+			leaf.max = v
+		}
 	case leaf.count != nil:
 		n := leaf.count.ivalue()
 		max := leaf.count.imax()
@@ -1234,13 +1279,14 @@ type LeafF struct {
 }
 
 func newLeafF(b Branch, name string, len int, unsigned bool, count Leaf) *LeafF {
+	const etype = 4
 	var lcnt leafCount
 	if count != nil {
 		lcnt = count.(leafCount)
 	}
 	return &LeafF{
 		rvers: rvers.LeafF,
-		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -1265,7 +1311,7 @@ func (*LeafF) Kind() reflect.Kind {
 }
 
 // Type returns the leaf's type.
-func (*LeafF) Type() reflect.Type {
+func (leaf *LeafF) Type() reflect.Type {
 	var v float32
 	return reflect.TypeOf(v)
 }
@@ -1323,7 +1369,7 @@ func (leaf *LeafF) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafF) readFromBasket(r *rbytes.RBuffer) error {
+func (leaf *LeafF) readFromBuffer(r *rbytes.RBuffer) error {
 	if r.Err() != nil {
 		return r.Err()
 	}
@@ -1402,7 +1448,7 @@ func (leaf *LeafF) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafF) writeToBasket(w *rbytes.WBuffer) error {
+func (leaf *LeafF) writeToBuffer(w *rbytes.WBuffer) error {
 	if w.Err() != nil {
 		return w.Err()
 	}
@@ -1410,6 +1456,9 @@ func (leaf *LeafF) writeToBasket(w *rbytes.WBuffer) error {
 	switch {
 	case leaf.ptr != nil:
 		w.WriteF32(*leaf.ptr)
+		if v := *leaf.ptr; v > leaf.max {
+			leaf.max = v
+		}
 	case leaf.count != nil:
 		n := leaf.count.ivalue()
 		max := leaf.count.imax()
@@ -1451,13 +1500,14 @@ type LeafD struct {
 }
 
 func newLeafD(b Branch, name string, len int, unsigned bool, count Leaf) *LeafD {
+	const etype = 8
 	var lcnt leafCount
 	if count != nil {
 		lcnt = count.(leafCount)
 	}
 	return &LeafD{
 		rvers: rvers.LeafD,
-		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -1482,7 +1532,7 @@ func (*LeafD) Kind() reflect.Kind {
 }
 
 // Type returns the leaf's type.
-func (*LeafD) Type() reflect.Type {
+func (leaf *LeafD) Type() reflect.Type {
 	var v float64
 	return reflect.TypeOf(v)
 }
@@ -1540,7 +1590,7 @@ func (leaf *LeafD) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafD) readFromBasket(r *rbytes.RBuffer) error {
+func (leaf *LeafD) readFromBuffer(r *rbytes.RBuffer) error {
 	if r.Err() != nil {
 		return r.Err()
 	}
@@ -1619,7 +1669,7 @@ func (leaf *LeafD) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafD) writeToBasket(w *rbytes.WBuffer) error {
+func (leaf *LeafD) writeToBuffer(w *rbytes.WBuffer) error {
 	if w.Err() != nil {
 		return w.Err()
 	}
@@ -1627,6 +1677,9 @@ func (leaf *LeafD) writeToBasket(w *rbytes.WBuffer) error {
 	switch {
 	case leaf.ptr != nil:
 		w.WriteF64(*leaf.ptr)
+		if v := *leaf.ptr; v > leaf.max {
+			leaf.max = v
+		}
 	case leaf.count != nil:
 		n := leaf.count.ivalue()
 		max := leaf.count.imax()
@@ -1668,13 +1721,14 @@ type LeafC struct {
 }
 
 func newLeafC(b Branch, name string, len int, unsigned bool, count Leaf) *LeafC {
+	const etype = 1
 	var lcnt leafCount
 	if count != nil {
 		lcnt = count.(leafCount)
 	}
 	return &LeafC{
 		rvers: rvers.LeafC,
-		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -1699,7 +1753,7 @@ func (*LeafC) Kind() reflect.Kind {
 }
 
 // Type returns the leaf's type.
-func (*LeafC) Type() reflect.Type {
+func (leaf *LeafC) Type() reflect.Type {
 	var v string
 	return reflect.TypeOf(v)
 }
@@ -1757,7 +1811,7 @@ func (leaf *LeafC) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafC) readFromBasket(r *rbytes.RBuffer) error {
+func (leaf *LeafC) readFromBuffer(r *rbytes.RBuffer) error {
 	if r.Err() != nil {
 		return r.Err()
 	}
@@ -1836,7 +1890,7 @@ func (leaf *LeafC) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafC) writeToBasket(w *rbytes.WBuffer) error {
+func (leaf *LeafC) writeToBuffer(w *rbytes.WBuffer) error {
 	if w.Err() != nil {
 		return w.Err()
 	}
@@ -1844,6 +1898,13 @@ func (leaf *LeafC) writeToBasket(w *rbytes.WBuffer) error {
 	switch {
 	case leaf.ptr != nil:
 		w.WriteString(*leaf.ptr)
+		sz := len(*leaf.ptr)
+		if v := int32(sz); v >= leaf.max {
+			leaf.max = v + 1
+		}
+		if sz >= leaf.tleaf.len {
+			leaf.tleaf.len = sz + 1
+		}
 	case leaf.count != nil:
 		n := leaf.count.ivalue()
 		max := leaf.count.imax()

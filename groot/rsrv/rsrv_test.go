@@ -415,44 +415,44 @@ func TestTree(t *testing.T) {
 				Branches: []Branch{
 					{Type: "TBranch", Name: "Int32", Leaves: []Leaf{{Type: "int32", Name: "Int32"}}},
 					{Type: "TBranch", Name: "Int64", Leaves: []Leaf{{Type: "int64", Name: "Int64"}}},
-					{Type: "TBranch", Name: "UInt32", Leaves: []Leaf{{Type: "int32", Name: "UInt32"}}},
-					{Type: "TBranch", Name: "UInt64", Leaves: []Leaf{{Type: "int64", Name: "UInt64"}}},
+					{Type: "TBranch", Name: "UInt32", Leaves: []Leaf{{Type: "uint32", Name: "UInt32"}}},
+					{Type: "TBranch", Name: "UInt64", Leaves: []Leaf{{Type: "uint64", Name: "UInt64"}}},
 					{Type: "TBranch", Name: "Float32", Leaves: []Leaf{{Type: "float32", Name: "Float32"}}},
 					{Type: "TBranch", Name: "Float64", Leaves: []Leaf{{Type: "float64", Name: "Float64"}}},
 					{Type: "TBranch", Name: "Str", Leaves: []Leaf{{Type: "string", Name: "Str"}}},
 					{Type: "TBranch", Name: "ArrayInt32", Leaves: []Leaf{{Type: "int32", Name: "ArrayInt32"}}},
 					{Type: "TBranch", Name: "ArrayInt64", Leaves: []Leaf{{Type: "int64", Name: "ArrayInt64"}}},
-					{Type: "TBranch", Name: "ArrayUInt32", Leaves: []Leaf{{Type: "int32", Name: "ArrayInt32"}}},
-					{Type: "TBranch", Name: "ArrayUInt64", Leaves: []Leaf{{Type: "int64", Name: "ArrayInt64"}}},
+					{Type: "TBranch", Name: "ArrayUInt32", Leaves: []Leaf{{Type: "uint32", Name: "ArrayInt32"}}}, // FIXME(sbinet): ref-file had a typo (should be ArrayUInt32)
+					{Type: "TBranch", Name: "ArrayUInt64", Leaves: []Leaf{{Type: "uint64", Name: "ArrayInt64"}}}, // FIXME(sbinet): ref-file had a typo (should be ArrayUInt64)
 					{Type: "TBranch", Name: "ArrayFloat32", Leaves: []Leaf{{Type: "float32", Name: "ArrayFloat32"}}},
 					{Type: "TBranch", Name: "ArrayFloat64", Leaves: []Leaf{{Type: "float64", Name: "ArrayFloat64"}}},
 					{Type: "TBranch", Name: "N", Leaves: []Leaf{{Type: "int32", Name: "N"}}},
 					{Type: "TBranch", Name: "SliceInt32", Leaves: []Leaf{{Type: "int32", Name: "SliceInt32"}}},
 					{Type: "TBranch", Name: "SliceInt64", Leaves: []Leaf{{Type: "int64", Name: "SliceInt64"}}},
-					{Type: "TBranch", Name: "SliceUInt32", Leaves: []Leaf{{Type: "int32", Name: "SliceInt32"}}},
-					{Type: "TBranch", Name: "SliceUInt64", Leaves: []Leaf{{Type: "int64", Name: "SliceInt64"}}},
+					{Type: "TBranch", Name: "SliceUInt32", Leaves: []Leaf{{Type: "uint32", Name: "SliceInt32"}}}, // FIXME(sbinet): ref-file had a typo (should be SliceUInt32)
+					{Type: "TBranch", Name: "SliceUInt64", Leaves: []Leaf{{Type: "uint64", Name: "SliceInt64"}}}, // FIXME(sbinet): ref-file had a typo (should be SliceUInt64)
 					{Type: "TBranch", Name: "SliceFloat32", Leaves: []Leaf{{Type: "float32", Name: "SliceFloat32"}}},
 					{Type: "TBranch", Name: "SliceFloat64", Leaves: []Leaf{{Type: "float64", Name: "SliceFloat64"}}},
 				},
 				Leaves: []Leaf{
 					{Type: "int32", Name: "Int32"},
 					{Type: "int64", Name: "Int64"},
-					{Type: "int32", Name: "UInt32"},
-					{Type: "int64", Name: "UInt64"},
+					{Type: "uint32", Name: "UInt32"},
+					{Type: "uint64", Name: "UInt64"},
 					{Type: "float32", Name: "Float32"},
 					{Type: "float64", Name: "Float64"},
 					{Type: "string", Name: "Str"},
 					{Type: "int32", Name: "ArrayInt32"},
 					{Type: "int64", Name: "ArrayInt64"},
-					{Type: "int32", Name: "ArrayInt32"},
-					{Type: "int64", Name: "ArrayInt64"},
+					{Type: "uint32", Name: "ArrayInt32"}, // FIXME(sbinet): ref-file had a typo (should be ArrayUInt32)
+					{Type: "uint64", Name: "ArrayInt64"}, // FIXME(sbinet): ref-file had a typo (should be ArrayUInt64)
 					{Type: "float32", Name: "ArrayFloat32"},
 					{Type: "float64", Name: "ArrayFloat64"},
 					{Type: "int32", Name: "N"},
 					{Type: "int32", Name: "SliceInt32"},
 					{Type: "int64", Name: "SliceInt64"},
-					{Type: "int32", Name: "SliceInt32"},
-					{Type: "int64", Name: "SliceInt64"},
+					{Type: "uint32", Name: "SliceInt32"}, // FIXME(sbinet): ref-file had a typo (should be SliceUInt32)
+					{Type: "uint64", Name: "SliceInt64"}, // FIXME(sbinet): ref-file had a typo (should be SliceUInt64)
 					{Type: "float32", Name: "SliceFloat32"},
 					{Type: "float64", Name: "SliceFloat64"},
 				},

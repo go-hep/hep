@@ -39,7 +39,11 @@ func TestLeafReadWriteBasket(t *testing.T) {
 		signed   = false
 	)
 
-	var br Branch
+	var (
+		br   = new(testBranchImpl)
+		scnt = newLeafI(br, "N", 1, signed, nil)
+		ucnt = newLeafI(br, "N", 1, unsigned, nil)
+	)
 
 	for _, tc := range []struct {
 		leaf Leaf
@@ -138,9 +142,90 @@ func TestLeafReadWriteBasket(t *testing.T) {
 			leaf: newLeafD(br, "ArrF64", 4, signed, nil),
 			data: [4]float64{1, 2, 3, 4},
 		},
+		{
+			leaf: newLeafO(br, "SliBools", 1, signed, scnt),
+			data: []bool{true, false, true, false},
+			lcnt: newLeafI(br, "N", 1, signed, nil),
+		},
+		{
+			leaf: newLeafO(br, "SliUBools", 1, unsigned, ucnt),
+			data: []bool{true, false, true, false},
+			lcnt: newLeafI(br, "N", 1, unsigned, nil),
+		},
+		{
+			leaf: newLeafB(br, "SliI8", 1, signed, scnt),
+			data: []int8{1, 2, 3, 4},
+			lcnt: newLeafI(br, "N", 1, signed, nil),
+		},
+		{
+			leaf: newLeafS(br, "SliI16", 1, signed, scnt),
+			data: []int16{1, 2, 3, 4},
+			lcnt: newLeafI(br, "N", 1, signed, nil),
+		},
+		{
+			leaf: newLeafI(br, "SliI32", 1, signed, scnt),
+			data: []int32{1, 2, 3, 4},
+			lcnt: newLeafI(br, "N", 1, signed, nil),
+		},
+		{
+			leaf: newLeafL(br, "SliI64", 1, signed, scnt),
+			data: []int64{1, 2, 3, 4},
+			lcnt: newLeafI(br, "N", 1, signed, nil),
+		},
+		{
+			leaf: newLeafB(br, "SliU8", 1, unsigned, ucnt),
+			data: []uint8{1, 2, 3, 4},
+			lcnt: newLeafI(br, "N", 1, unsigned, nil),
+		},
+		{
+			leaf: newLeafS(br, "SliU16", 1, unsigned, ucnt),
+			data: []uint16{1, 2, 3, 4},
+			lcnt: newLeafI(br, "N", 1, unsigned, nil),
+		},
+		{
+			leaf: newLeafI(br, "SliU32", 1, unsigned, ucnt),
+			data: []uint32{1, 2, 3, 4},
+			lcnt: newLeafI(br, "N", 1, unsigned, nil),
+		},
+		{
+			leaf: newLeafL(br, "SliU64", 1, unsigned, ucnt),
+			data: []uint64{1, 2, 3, 4},
+			lcnt: newLeafI(br, "N", 1, unsigned, nil),
+		},
+		{
+			leaf: newLeafF(br, "SliF32", 1, unsigned, ucnt),
+			data: []float32{1, 2, 3, 4},
+			lcnt: newLeafI(br, "N", 1, unsigned, nil),
+		},
+		{
+			leaf: newLeafD(br, "SliF64", 1, unsigned, ucnt),
+			data: []float64{1, 2, 3, 4},
+			lcnt: newLeafI(br, "N", 1, unsigned, nil),
+		},
 	} {
 		t.Run(tc.leaf.Name(), func(t *testing.T) {
 			wbuf := rbytes.NewWBuffer(nil, nil, 0, nil)
+
+			if tc.lcnt != nil {
+				tc.leaf.(interface{ setLeafCount(leaf Leaf) }).setLeafCount(tc.lcnt)
+				wv := reflect.ValueOf(newValue(tc.lcnt))
+				switch {
+				case tc.lcnt.IsUnsigned():
+					wv.Elem().SetUint(uint64(reflect.ValueOf(tc.data).Len()))
+				default:
+					wv.Elem().SetInt(int64(reflect.ValueOf(tc.data).Len()))
+				}
+				err := tc.lcnt.setAddress(wv.Interface())
+				if err != nil {
+					t.Fatalf("could not setup leaf count: %v", err)
+				}
+
+				err = tc.lcnt.writeToBuffer(wbuf)
+				if err != nil {
+					t.Fatalf("could not write count to basket: %v", err)
+				}
+			}
+
 			wv := reflect.ValueOf(newValue(tc.leaf))
 			wv.Elem().Set(reflect.ValueOf(tc.data))
 
@@ -153,9 +238,37 @@ func TestLeafReadWriteBasket(t *testing.T) {
 				t.Fatalf("could not set write-address: %v", err)
 			}
 
-			err = tc.leaf.writeToBasket(wbuf)
+			err = tc.leaf.writeToBuffer(wbuf)
 			if err != nil {
 				t.Fatalf("could not write to basket: %v", err)
+			}
+
+			rbuf := rbytes.NewRBuffer(wbuf.Bytes(), nil, 0, nil)
+
+			if tc.lcnt != nil {
+				tc.leaf.(interface{ setLeafCount(leaf Leaf) }).setLeafCount(tc.lcnt)
+				rv := reflect.ValueOf(newValue(tc.lcnt))
+				err := tc.lcnt.setAddress(rv.Interface())
+				if err != nil {
+					t.Fatalf("could not setup read leaf count: %v", err)
+				}
+
+				err = tc.lcnt.readFromBuffer(rbuf)
+				if err != nil {
+					t.Fatalf("could not write count to basket: %v", err)
+				}
+
+				dlen := reflect.ValueOf(tc.data).Len()
+				switch {
+				case tc.lcnt.IsUnsigned():
+					if got, want := int(rv.Elem().Uint()), dlen; got != want {
+						t.Fatalf("invalid r/w cycle leaf-count: got=%d, want=%d", got, want)
+					}
+				default:
+					if got, want := int(rv.Elem().Int()), dlen; got != want {
+						t.Fatalf("invalid r/w cycle leaf-count: got=%d, want=%d", got, want)
+					}
+				}
 			}
 
 			rv := reflect.ValueOf(newValue(tc.leaf))
@@ -164,8 +277,7 @@ func TestLeafReadWriteBasket(t *testing.T) {
 				t.Fatalf("could not set read-address: %v", err)
 			}
 
-			rbuf := rbytes.NewRBuffer(wbuf.Bytes(), nil, 0, nil)
-			err = tc.leaf.readFromBasket(rbuf)
+			err = tc.leaf.readFromBuffer(rbuf)
 			if err != nil {
 				t.Fatalf("could not read from basket: %v", err)
 			}
@@ -176,3 +288,18 @@ func TestLeafReadWriteBasket(t *testing.T) {
 		})
 	}
 }
+
+func (leaf *LeafO) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafB) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafS) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafI) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafL) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafF) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafD) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafC) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
+
+type testBranchImpl struct {
+	tbranch
+}
+
+func (b *testBranchImpl) getReadEntry() int64 { return 1 }

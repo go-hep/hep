@@ -364,7 +364,7 @@ func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
 	bk.rbuf = rbytes.NewRBuffer(buf, nil, uint32(bk.key.KeyLen()), sictx)
 
 	for _, leaf := range b.leaves {
-		err = leaf.readFromBasket(bk.rbuf)
+		err = leaf.readFromBuffer(bk.rbuf)
 		if err != nil {
 			return err
 		}
@@ -415,7 +415,7 @@ func (b *tbranch) setStreamerElement(s rbytes.StreamerElement, ctx rbytes.Stream
 	// no op
 }
 
-func (b *tbranch) writeToBasket(w *rbytes.WBuffer) error {
+func (b *tbranch) writeToBuffer(w *rbytes.WBuffer) error {
 	panic("not implemented")
 }
 
