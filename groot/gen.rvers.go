@@ -102,6 +102,7 @@ func genROOTTypes() ([]Type, error) {
 		"TH2", "TH2C", "TH2D", "TH2F", "TH2I", "TH2Poly", "TH2PolyBin", "TH2S",
 
 		// rtree
+		"TBasket",
 		"TBranch", "TBranchElement",
 		"TChain",
 		"TLeaf", "TLeafElement",

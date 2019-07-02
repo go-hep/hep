@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors. All rights reserved.
+// Copyright 2019 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 package rvers
 
 // ROOT version
-const ROOT = 61600
+const ROOT = 61800
 
 // ROOT classes versions
 const (
@@ -51,20 +51,21 @@ const (
 	GraphErrors              = 3  // ROOT version for TGraphErrors
 	GraphAsymmErrors         = 3  // ROOT version for TGraphAsymmErrors
 	H1                       = 8  // ROOT version for TH1
-	H1C                      = 2  // ROOT version for TH1C
-	H1D                      = 2  // ROOT version for TH1D
-	H1F                      = 2  // ROOT version for TH1F
-	H1I                      = 2  // ROOT version for TH1I
-	H1K                      = 1  // ROOT version for TH1K
-	H1S                      = 2  // ROOT version for TH1S
-	H2                       = 4  // ROOT version for TH2
-	H2C                      = 3  // ROOT version for TH2C
-	H2D                      = 3  // ROOT version for TH2D
-	H2F                      = 3  // ROOT version for TH2F
-	H2I                      = 3  // ROOT version for TH2I
-	H2Poly                   = 1  // ROOT version for TH2Poly
+	H1C                      = 3  // ROOT version for TH1C
+	H1D                      = 3  // ROOT version for TH1D
+	H1F                      = 3  // ROOT version for TH1F
+	H1I                      = 3  // ROOT version for TH1I
+	H1K                      = 2  // ROOT version for TH1K
+	H1S                      = 3  // ROOT version for TH1S
+	H2                       = 5  // ROOT version for TH2
+	H2C                      = 4  // ROOT version for TH2C
+	H2D                      = 4  // ROOT version for TH2D
+	H2F                      = 4  // ROOT version for TH2F
+	H2I                      = 4  // ROOT version for TH2I
+	H2Poly                   = 2  // ROOT version for TH2Poly
 	H2PolyBin                = 1  // ROOT version for TH2PolyBin
-	H2S                      = 3  // ROOT version for TH2S
+	H2S                      = 4  // ROOT version for TH2S
+	Basket                   = 3  // ROOT version for TBasket
 	Branch                   = 13 // ROOT version for TBranch
 	BranchElement            = 10 // ROOT version for TBranchElement
 	Chain                    = 5  // ROOT version for TChain
