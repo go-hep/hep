@@ -15,6 +15,7 @@ import (
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
+	"go-hep.org/x/hep/groot/rvers"
 )
 
 type tleaf struct {
@@ -27,6 +28,20 @@ type tleaf struct {
 	unsigned bool
 	count    leafCount
 	branch   Branch
+}
+
+func newLeaf(name string, len, etype, offset int, hasrange, unsigned bool, count leafCount, b Branch) tleaf {
+	return tleaf{
+		rvers:    rvers.Leaf,
+		named:    *rbase.NewNamed(name, ""),
+		len:      len,
+		etype:    etype,
+		offset:   offset,
+		hasrange: hasrange,
+		unsigned: unsigned,
+		count:    count,
+		branch:   b,
+	}
 }
 
 // Name returns the name of the instance

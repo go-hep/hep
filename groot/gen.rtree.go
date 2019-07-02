@@ -35,6 +35,7 @@ func genLeaves() {
 		"go-hep.org/x/hep/groot/root",
 		"go-hep.org/x/hep/groot/rbytes",
 		"go-hep.org/x/hep/groot/rtypes",
+		"go-hep.org/x/hep/groot/rvers",
 	)
 
 	for i, typ := range []struct {
@@ -128,7 +129,7 @@ func genLeaves() {
 			Kind:       "reflect.String",
 			RFunc:      "r.ReadString()",
 			RFuncArray: "r.ReadFastArrayString",
-			WFunc:      "w.WriteString()",
+			WFunc:      "w.WriteString",
 			WFuncArray: "w.WriteFastArrayString",
 			RangeType:  "int32",
 			RRangeFunc: "r.ReadI32()",
@@ -166,6 +167,18 @@ type {{.Name}} struct {
 	min {{.RangeType}}
 	max {{.RangeType}}
 }
+
+func new{{.Name}}(b Branch, name string, len int, unsigned bool, count Leaf) *{{.Name}} {
+	var lcnt leafCount
+	if count != nil {
+		lcnt = count.(leafCount)
+	}
+	return &{{.Name}}{
+		rvers: rvers.{{.Name}},
+		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+	}
+}
+
 
 // Class returns the ROOT class name.
 func (leaf *{{.Name}}) Class() string {
@@ -364,7 +377,25 @@ func (leaf *{{.Name}}) setAddress(ptr interface{}) error {
 }
 
 func (leaf *{{.Name}}) writeToBasket(w *rbytes.WBuffer) error {
-	panic("not implemented")
+	if w.Err() != nil {
+		return w.Err()
+	}
+
+	switch {
+	case leaf.ptr != nil:
+		{{.WFunc}}(*leaf.ptr)
+	case leaf.count != nil:
+		n := leaf.count.ivalue()
+        max := leaf.count.imax()
+        if n > max {
+			n = max
+		}
+		{{.WFuncArray}}((*leaf.sli)[:leaf.tleaf.len*n])
+	default:
+		{{.WFuncArray}}((*leaf.sli)[:leaf.tleaf.len])
+	}
+
+	return w.Err()
 }
 
 func init() {

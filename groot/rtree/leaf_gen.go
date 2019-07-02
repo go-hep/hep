@@ -15,6 +15,7 @@ import (
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
+	"go-hep.org/x/hep/groot/rvers"
 )
 
 // LeafO implements ROOT TLeafO
@@ -25,6 +26,17 @@ type LeafO struct {
 	sli *[]bool
 	min bool
 	max bool
+}
+
+func newLeafO(b Branch, name string, len int, unsigned bool, count Leaf) *LeafO {
+	var lcnt leafCount
+	if count != nil {
+		lcnt = count.(leafCount)
+	}
+	return &LeafO{
+		rvers: rvers.LeafO,
+		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+	}
 }
 
 // Class returns the ROOT class name.
@@ -186,7 +198,25 @@ func (leaf *LeafO) setAddress(ptr interface{}) error {
 }
 
 func (leaf *LeafO) writeToBasket(w *rbytes.WBuffer) error {
-	panic("not implemented")
+	if w.Err() != nil {
+		return w.Err()
+	}
+
+	switch {
+	case leaf.ptr != nil:
+		w.WriteBool(*leaf.ptr)
+	case leaf.count != nil:
+		n := leaf.count.ivalue()
+		max := leaf.count.imax()
+		if n > max {
+			n = max
+		}
+		w.WriteFastArrayBool((*leaf.sli)[:leaf.tleaf.len*n])
+	default:
+		w.WriteFastArrayBool((*leaf.sli)[:leaf.tleaf.len])
+	}
+
+	return w.Err()
 }
 
 func init() {
@@ -213,6 +243,17 @@ type LeafB struct {
 	sli *[]int8
 	min int8
 	max int8
+}
+
+func newLeafB(b Branch, name string, len int, unsigned bool, count Leaf) *LeafB {
+	var lcnt leafCount
+	if count != nil {
+		lcnt = count.(leafCount)
+	}
+	return &LeafB{
+		rvers: rvers.LeafB,
+		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+	}
 }
 
 // Class returns the ROOT class name.
@@ -404,7 +445,25 @@ func (leaf *LeafB) setAddress(ptr interface{}) error {
 }
 
 func (leaf *LeafB) writeToBasket(w *rbytes.WBuffer) error {
-	panic("not implemented")
+	if w.Err() != nil {
+		return w.Err()
+	}
+
+	switch {
+	case leaf.ptr != nil:
+		w.WriteI8(*leaf.ptr)
+	case leaf.count != nil:
+		n := leaf.count.ivalue()
+		max := leaf.count.imax()
+		if n > max {
+			n = max
+		}
+		w.WriteFastArrayI8((*leaf.sli)[:leaf.tleaf.len*n])
+	default:
+		w.WriteFastArrayI8((*leaf.sli)[:leaf.tleaf.len])
+	}
+
+	return w.Err()
 }
 
 func init() {
@@ -431,6 +490,17 @@ type LeafS struct {
 	sli *[]int16
 	min int16
 	max int16
+}
+
+func newLeafS(b Branch, name string, len int, unsigned bool, count Leaf) *LeafS {
+	var lcnt leafCount
+	if count != nil {
+		lcnt = count.(leafCount)
+	}
+	return &LeafS{
+		rvers: rvers.LeafS,
+		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+	}
 }
 
 // Class returns the ROOT class name.
@@ -622,7 +692,25 @@ func (leaf *LeafS) setAddress(ptr interface{}) error {
 }
 
 func (leaf *LeafS) writeToBasket(w *rbytes.WBuffer) error {
-	panic("not implemented")
+	if w.Err() != nil {
+		return w.Err()
+	}
+
+	switch {
+	case leaf.ptr != nil:
+		w.WriteI16(*leaf.ptr)
+	case leaf.count != nil:
+		n := leaf.count.ivalue()
+		max := leaf.count.imax()
+		if n > max {
+			n = max
+		}
+		w.WriteFastArrayI16((*leaf.sli)[:leaf.tleaf.len*n])
+	default:
+		w.WriteFastArrayI16((*leaf.sli)[:leaf.tleaf.len])
+	}
+
+	return w.Err()
 }
 
 func init() {
@@ -649,6 +737,17 @@ type LeafI struct {
 	sli *[]int32
 	min int32
 	max int32
+}
+
+func newLeafI(b Branch, name string, len int, unsigned bool, count Leaf) *LeafI {
+	var lcnt leafCount
+	if count != nil {
+		lcnt = count.(leafCount)
+	}
+	return &LeafI{
+		rvers: rvers.LeafI,
+		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+	}
 }
 
 // Class returns the ROOT class name.
@@ -840,7 +939,25 @@ func (leaf *LeafI) setAddress(ptr interface{}) error {
 }
 
 func (leaf *LeafI) writeToBasket(w *rbytes.WBuffer) error {
-	panic("not implemented")
+	if w.Err() != nil {
+		return w.Err()
+	}
+
+	switch {
+	case leaf.ptr != nil:
+		w.WriteI32(*leaf.ptr)
+	case leaf.count != nil:
+		n := leaf.count.ivalue()
+		max := leaf.count.imax()
+		if n > max {
+			n = max
+		}
+		w.WriteFastArrayI32((*leaf.sli)[:leaf.tleaf.len*n])
+	default:
+		w.WriteFastArrayI32((*leaf.sli)[:leaf.tleaf.len])
+	}
+
+	return w.Err()
 }
 
 func init() {
@@ -867,6 +984,17 @@ type LeafL struct {
 	sli *[]int64
 	min int64
 	max int64
+}
+
+func newLeafL(b Branch, name string, len int, unsigned bool, count Leaf) *LeafL {
+	var lcnt leafCount
+	if count != nil {
+		lcnt = count.(leafCount)
+	}
+	return &LeafL{
+		rvers: rvers.LeafL,
+		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+	}
 }
 
 // Class returns the ROOT class name.
@@ -1058,7 +1186,25 @@ func (leaf *LeafL) setAddress(ptr interface{}) error {
 }
 
 func (leaf *LeafL) writeToBasket(w *rbytes.WBuffer) error {
-	panic("not implemented")
+	if w.Err() != nil {
+		return w.Err()
+	}
+
+	switch {
+	case leaf.ptr != nil:
+		w.WriteI64(*leaf.ptr)
+	case leaf.count != nil:
+		n := leaf.count.ivalue()
+		max := leaf.count.imax()
+		if n > max {
+			n = max
+		}
+		w.WriteFastArrayI64((*leaf.sli)[:leaf.tleaf.len*n])
+	default:
+		w.WriteFastArrayI64((*leaf.sli)[:leaf.tleaf.len])
+	}
+
+	return w.Err()
 }
 
 func init() {
@@ -1085,6 +1231,17 @@ type LeafF struct {
 	sli *[]float32
 	min float32
 	max float32
+}
+
+func newLeafF(b Branch, name string, len int, unsigned bool, count Leaf) *LeafF {
+	var lcnt leafCount
+	if count != nil {
+		lcnt = count.(leafCount)
+	}
+	return &LeafF{
+		rvers: rvers.LeafF,
+		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+	}
 }
 
 // Class returns the ROOT class name.
@@ -1246,7 +1403,25 @@ func (leaf *LeafF) setAddress(ptr interface{}) error {
 }
 
 func (leaf *LeafF) writeToBasket(w *rbytes.WBuffer) error {
-	panic("not implemented")
+	if w.Err() != nil {
+		return w.Err()
+	}
+
+	switch {
+	case leaf.ptr != nil:
+		w.WriteF32(*leaf.ptr)
+	case leaf.count != nil:
+		n := leaf.count.ivalue()
+		max := leaf.count.imax()
+		if n > max {
+			n = max
+		}
+		w.WriteFastArrayF32((*leaf.sli)[:leaf.tleaf.len*n])
+	default:
+		w.WriteFastArrayF32((*leaf.sli)[:leaf.tleaf.len])
+	}
+
+	return w.Err()
 }
 
 func init() {
@@ -1273,6 +1448,17 @@ type LeafD struct {
 	sli *[]float64
 	min float64
 	max float64
+}
+
+func newLeafD(b Branch, name string, len int, unsigned bool, count Leaf) *LeafD {
+	var lcnt leafCount
+	if count != nil {
+		lcnt = count.(leafCount)
+	}
+	return &LeafD{
+		rvers: rvers.LeafD,
+		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+	}
 }
 
 // Class returns the ROOT class name.
@@ -1434,7 +1620,25 @@ func (leaf *LeafD) setAddress(ptr interface{}) error {
 }
 
 func (leaf *LeafD) writeToBasket(w *rbytes.WBuffer) error {
-	panic("not implemented")
+	if w.Err() != nil {
+		return w.Err()
+	}
+
+	switch {
+	case leaf.ptr != nil:
+		w.WriteF64(*leaf.ptr)
+	case leaf.count != nil:
+		n := leaf.count.ivalue()
+		max := leaf.count.imax()
+		if n > max {
+			n = max
+		}
+		w.WriteFastArrayF64((*leaf.sli)[:leaf.tleaf.len*n])
+	default:
+		w.WriteFastArrayF64((*leaf.sli)[:leaf.tleaf.len])
+	}
+
+	return w.Err()
 }
 
 func init() {
@@ -1461,6 +1665,17 @@ type LeafC struct {
 	sli *[]string
 	min int32
 	max int32
+}
+
+func newLeafC(b Branch, name string, len int, unsigned bool, count Leaf) *LeafC {
+	var lcnt leafCount
+	if count != nil {
+		lcnt = count.(leafCount)
+	}
+	return &LeafC{
+		rvers: rvers.LeafC,
+		tleaf: newLeaf(name, len, 1, 0, false, unsigned, lcnt, b),
+	}
 }
 
 // Class returns the ROOT class name.
@@ -1622,7 +1837,25 @@ func (leaf *LeafC) setAddress(ptr interface{}) error {
 }
 
 func (leaf *LeafC) writeToBasket(w *rbytes.WBuffer) error {
-	panic("not implemented")
+	if w.Err() != nil {
+		return w.Err()
+	}
+
+	switch {
+	case leaf.ptr != nil:
+		w.WriteString(*leaf.ptr)
+	case leaf.count != nil:
+		n := leaf.count.ivalue()
+		max := leaf.count.imax()
+		if n > max {
+			n = max
+		}
+		w.WriteFastArrayString((*leaf.sli)[:leaf.tleaf.len*n])
+	default:
+		w.WriteFastArrayString((*leaf.sli)[:leaf.tleaf.len])
+	}
+
+	return w.Err()
 }
 
 func init() {
