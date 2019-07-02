@@ -85,7 +85,7 @@ func (leaf *tleaf) LenType() int {
 }
 
 func (leaf *tleaf) MaxIndex() []int {
-	panic("not implemented")
+	panic("not implemented: " + leaf.Name())
 }
 
 func (leaf *tleaf) Offset() int {
@@ -93,31 +93,39 @@ func (leaf *tleaf) Offset() int {
 }
 
 func (leaf *tleaf) Kind() reflect.Kind {
-	panic("not implemented")
+	panic("not implemented: " + leaf.Name())
 }
 
 func (leaf *tleaf) Type() reflect.Type {
-	panic("not implemented")
+	panic("not implemented: " + leaf.Name())
 }
 
 func (leaf *tleaf) Value(i int) interface{} {
-	panic("not implemented")
+	panic("not implemented: " + leaf.Name())
 }
 
 func (leaf *tleaf) value() interface{} {
-	panic("not implemented")
+	panic("not implemented: " + leaf.Name())
 }
 
-func (leaf *tleaf) readBasket(r *rbytes.RBuffer) error {
-	panic("not implemented")
+func (leaf *tleaf) readFromBasket(r *rbytes.RBuffer) error {
+	panic("not implemented: " + leaf.Name())
 }
 
 func (leaf *tleaf) scan(r *rbytes.RBuffer, ptr interface{}) error {
-	panic("not implemented")
+	panic("not implemented: " + leaf.Name())
+}
+
+func (leaf *tleaf) setAddress(ptr interface{}) error {
+	panic("not implemented: " + leaf.Name())
+}
+
+func (leaf *tleaf) writeToBasket(w *rbytes.WBuffer) error {
+	panic("not implemented: " + leaf.Name())
 }
 
 func (leaf *tleaf) TypeName() string {
-	panic("not implemented")
+	panic("not implemented: " + leaf.Name())
 }
 
 func (leaf *tleaf) MarshalROOT(w *rbytes.WBuffer) (int, error) {
@@ -244,7 +252,7 @@ func (leaf *tleafElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *tleafElement) readBasket(r *rbytes.RBuffer) error {
+func (leaf *tleafElement) readFromBasket(r *rbytes.RBuffer) error {
 	if r.Err() != nil {
 		return r.Err()
 	}
@@ -300,6 +308,10 @@ func (leaf *tleafElement) setAddress(ptr interface{}) error {
 	}
 	leaf.rstreamer = &impl
 	return err
+}
+
+func (leaf *tleafElement) writeToBasket(w *rbytes.WBuffer) error {
+	panic("not implemented")
 }
 
 func init() {

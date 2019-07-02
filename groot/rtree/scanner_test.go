@@ -162,12 +162,22 @@ func TestScannerStruct(t *testing.T) {
 					data.ArrF64[ii] = float64(i)
 				}
 				data.N = int32(i) % 10
-				data.SliI32 = make([]int32, int(data.N))
-				data.SliI64 = make([]int64, int(data.N))
-				data.SliU32 = make([]uint32, int(data.N))
-				data.SliU64 = make([]uint64, int(data.N))
-				data.SliF32 = make([]float32, int(data.N))
-				data.SliF64 = make([]float64, int(data.N))
+				switch data.N {
+				case 0:
+					data.SliI32 = nil
+					data.SliI64 = nil
+					data.SliU32 = nil
+					data.SliU64 = nil
+					data.SliF32 = nil
+					data.SliF64 = nil
+				default:
+					data.SliI32 = make([]int32, int(data.N))
+					data.SliI64 = make([]int64, int(data.N))
+					data.SliU32 = make([]uint32, int(data.N))
+					data.SliU64 = make([]uint64, int(data.N))
+					data.SliF32 = make([]float32, int(data.N))
+					data.SliF64 = make([]float64, int(data.N))
+				}
 				for ii := 0; ii < int(data.N); ii++ {
 					data.SliI32[ii] = int32(i)
 					data.SliI64[ii] = int64(i)
@@ -250,12 +260,22 @@ func TestScannerVars(t *testing.T) {
 					data.ArrF64[ii] = float64(i)
 				}
 				data.N = int32(i) % 10
-				data.SliI32 = make([]int32, int(data.N))
-				data.SliI64 = make([]int64, int(data.N))
-				data.SliU32 = make([]uint32, int(data.N))
-				data.SliU64 = make([]uint64, int(data.N))
-				data.SliF32 = make([]float32, int(data.N))
-				data.SliF64 = make([]float64, int(data.N))
+				switch data.N {
+				case 0:
+					data.SliI32 = nil
+					data.SliI64 = nil
+					data.SliU32 = nil
+					data.SliU64 = nil
+					data.SliF32 = nil
+					data.SliF64 = nil
+				default:
+					data.SliI32 = make([]int32, int(data.N))
+					data.SliI64 = make([]int64, int(data.N))
+					data.SliU32 = make([]uint32, int(data.N))
+					data.SliU64 = make([]uint64, int(data.N))
+					data.SliF32 = make([]float32, int(data.N))
+					data.SliF64 = make([]float64, int(data.N))
+				}
 				for ii := 0; ii < int(data.N); ii++ {
 					data.SliI32[ii] = int32(i)
 					data.SliI64[ii] = int64(i)
@@ -342,7 +362,7 @@ func TestTreeScannerVarsMultipleTimes(t *testing.T) {
 					var data []float32
 					err := sc.Scan(&data)
 					if err != nil {
-						t.Error(err)
+						t.Fatalf("could not scan data i=%d evt=%v err=%v", i, sc.Entry(), err)
 					}
 				}
 				err = sc.Err()
@@ -604,9 +624,14 @@ func TestScannerStructWithCounterLeaf(t *testing.T) {
 			want := func(i int64) Data {
 				var data Data
 				n := int32(i) % 10
-				data.Sli = make([]int32, int(n))
-				for ii := 0; ii < int(n); ii++ {
-					data.Sli[ii] = int32(i)
+				switch n {
+				case 0:
+					data.Sli = nil
+				default:
+					data.Sli = make([]int32, int(n))
+					for ii := 0; ii < int(n); ii++ {
+						data.Sli[ii] = int32(i)
+					}
 				}
 				return data
 			}
@@ -710,11 +735,16 @@ func TestScannerVarsWithCounterLeaf(t *testing.T) {
 
 			want := func(i int64) []int32 {
 				n := int32(i) % 10
-				data := make([]int32, int(n))
-				for ii := 0; ii < int(n); ii++ {
-					data[ii] = int32(i)
+				switch n {
+				case 0:
+					return nil
+				default:
+					data := make([]int32, int(n))
+					for ii := 0; ii < int(n); ii++ {
+						data[ii] = int32(i)
+					}
+					return data
 				}
-				return data
 			}
 
 			var data []int32

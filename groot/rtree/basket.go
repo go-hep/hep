@@ -136,7 +136,7 @@ func (b *Basket) readLeaf(entry int64, leaf Leaf) error {
 	if err != nil {
 		return err
 	}
-	return leaf.readBasket(b.rbuf)
+	return leaf.readFromBasket(b.rbuf)
 }
 
 func init() {

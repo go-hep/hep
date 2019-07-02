@@ -52,6 +52,9 @@ type Branch interface {
 	setStreamer(s rbytes.StreamerInfo, ctx rbytes.StreamerInfoContext)
 	setStreamerElement(s rbytes.StreamerElement, ctx rbytes.StreamerInfoContext)
 	GoType() reflect.Type
+
+	// write interface part
+	writeToBasket(w *rbytes.WBuffer) error
 }
 
 // Leaf describes branches data types
@@ -73,9 +76,13 @@ type Leaf interface {
 	TypeName() string
 
 	setBranch(Branch)
-	readBasket(r *rbytes.RBuffer) error
+	readFromBasket(r *rbytes.RBuffer) error
 	value() interface{}
 	scan(r *rbytes.RBuffer, ptr interface{}) error
+	setAddress(ptr interface{}) error
+
+	// write interface part
+	writeToBasket(w *rbytes.WBuffer) error
 }
 
 // leafCount describes leaves that are used for array length count

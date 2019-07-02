@@ -229,7 +229,8 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 	tree.leaves = make([]Leaf, leaves.Last()+1)
 	for i := range tree.leaves {
-		tree.leaves[i] = leaves.At(i).(Leaf)
+		leaf := leaves.At(i).(Leaf)
+		tree.leaves[i] = leaf
 		// FIXME(sbinet)
 		//tree.leaves[i].SetBranch(tree.branches[i])
 	}

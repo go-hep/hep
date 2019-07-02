@@ -155,6 +155,8 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 	ibr := make([]scanField, 0, cap(mbr))
 	cbr := make([]Branch, 0)
 	cbrset := make(map[string]bool)
+	lset := make(map[Leaf]struct{})
+	clset := make(map[Leaf]struct{})
 
 	rt := reflect.TypeOf(ptr).Elem()
 	if rt.Kind() != reflect.Struct {
@@ -172,6 +174,7 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 			return nil, errors.Errorf("rtree: Tree %q has no branch named %q", t.Name(), name)
 		}
 		leaf := br.Leaves()[0]
+		lset[leaf] = struct{}{}
 		lidx := -1
 		if lcnt := leaf.LeafCount(); lcnt != nil {
 			lbr := t.Leaf(lcnt.Name())
@@ -183,6 +186,7 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 			if !cbrset[bbr.Name()] {
 				cbr = append(cbr, bbr)
 				cbrset[bbr.Name()] = true
+				clset[lcnt] = struct{}{}
 			}
 		}
 		fptr := rv.Field(i).Addr().Interface()
@@ -193,6 +197,19 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 		mbr = append(mbr, br)
 		ibr = append(ibr, scanField{br: br, i: i, ptr: fptr, lcnt: lidx})
 	}
+
+	// setup addresses for leaf-count not explicitly requested by user
+	for leaf := range clset {
+		_, ok := lset[leaf]
+		if ok {
+			continue
+		}
+		err := leaf.setAddress(nil)
+		if err != nil {
+			return nil, errors.Wrapf(err, "rtree: could not set leaf-count address for %q", leaf.Name())
+		}
+	}
+
 	base := baseScanner{
 		tree: t,
 		i:    0,
@@ -235,6 +252,8 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 	ibr := make([]scanField, cap(mbr))
 	cbr := make([]Branch, 0)
 	cbrset := make(map[string]bool)
+	lset := make(map[Leaf]struct{})
+	clset := make(map[Leaf]struct{})
 
 	for i, sv := range vars {
 		br := t.Branch(sv.Name)
@@ -250,6 +269,11 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 		if leaf == nil {
 			return nil, errors.Errorf("rtree: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
 		}
+		lset[leaf] = struct{}{}
+		err := br.setAddress(sv.Value)
+		if err != nil {
+			return nil, errors.Wrapf(err, "rtree: could not set branch address for %q", br.Name())
+		}
 		if lcnt := leaf.LeafCount(); lcnt != nil {
 			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
@@ -259,6 +283,7 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 			if !cbrset[bbr.Name()] {
 				cbr = append(cbr, bbr)
 				cbrset[bbr.Name()] = true
+				clset[lcnt] = struct{}{}
 			}
 		}
 		if sv.Value == nil {
@@ -268,11 +293,24 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 		if rv := reflect.ValueOf(arg); rv.Kind() != reflect.Ptr {
 			return nil, errors.Errorf("rtree: ScanVar %d (name=%v) has non pointer Value", i, sv.Name)
 		}
-		err := br.setAddress(arg)
+		err = br.setAddress(arg)
 		if err != nil {
 			panic(err)
 		}
 	}
+
+	// setup addresses for leaf-count not explicitly requested by user
+	for leaf := range clset {
+		_, ok := lset[leaf]
+		if ok {
+			continue
+		}
+		err := leaf.setAddress(nil)
+		if err != nil {
+			return nil, errors.Wrapf(err, "rtree: could not set leaf-count address for %q", leaf.Name())
+		}
+	}
+
 	base := baseScanner{
 		tree: t,
 		i:    0,
@@ -440,6 +478,8 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 	ibr := make([]scanField, cap(mbr))
 	cbr := make([]Branch, 0)
 	cbrset := make(map[string]bool)
+	lset := make(map[Leaf]struct{})
+	clset := make(map[Leaf]struct{})
 
 	args := make([]interface{}, len(vars))
 	for i, sv := range vars {
@@ -457,6 +497,7 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 		if leaf == nil {
 			return nil, errors.Errorf("rtree: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
 		}
+		lset[leaf] = struct{}{}
 		if lcnt := leaf.LeafCount(); lcnt != nil {
 			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
@@ -466,6 +507,7 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 			if !cbrset[bbr.Name()] {
 				cbr = append(cbr, bbr)
 				cbrset[bbr.Name()] = true
+				clset[lcnt] = struct{}{}
 			}
 		}
 		arg := sv.Value
@@ -481,6 +523,18 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 		}
 		args[i] = arg
 		ibr[i].ptr = arg
+	}
+
+	// setup addresses for leaf-count not explicitly requested by user
+	for leaf := range clset {
+		_, ok := lset[leaf]
+		if ok {
+			continue
+		}
+		err := leaf.setAddress(nil)
+		if err != nil {
+			return nil, errors.Wrapf(err, "rtree: could not set leaf-count address for %q", leaf.Name())
+		}
 	}
 
 	base := baseScanner{
@@ -513,6 +567,8 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 	ibr := make([]scanField, 0, cap(mbr))
 	cbr := make([]Branch, 0)
 	cbrset := make(map[string]bool)
+	lset := make(map[Leaf]struct{})
+	clset := make(map[Leaf]struct{})
 
 	args := make([]interface{}, 0, cap(mbr))
 	rt := reflect.TypeOf(ptr).Elem()
@@ -531,6 +587,7 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 			return nil, errors.Errorf("rtree: Tree %q has no branch named %q", t.Name(), name)
 		}
 		leaf := br.Leaves()[0]
+		lset[leaf] = struct{}{}
 		if lcnt := leaf.LeafCount(); lcnt != nil {
 			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
@@ -540,6 +597,7 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 			if !cbrset[bbr.Name()] {
 				cbr = append(cbr, bbr)
 				cbrset[bbr.Name()] = true
+				clset[lcnt] = struct{}{}
 			}
 		}
 		fptr := rv.Field(i).Addr().Interface()
@@ -550,6 +608,18 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 		args = append(args, fptr)
 		mbr = append(mbr, br)
 		ibr = append(ibr, scanField{br: br, i: i, ptr: fptr, lcnt: -1})
+	}
+
+	// setup addresses for leaf-count not explicitly requested by user
+	for leaf := range clset {
+		_, ok := lset[leaf]
+		if ok {
+			continue
+		}
+		err := leaf.setAddress(nil)
+		if err != nil {
+			return nil, errors.Wrapf(err, "rtree: could not set leaf-count address for %q", leaf.Name())
+		}
 	}
 
 	base := baseScanner{
@@ -621,15 +691,11 @@ func (s *Scanner) Scan() error {
 		}
 	}
 
-	for i, ptr := range s.args {
+	for i := range s.args {
 		br := s.scan.ibr[i]
 		s.scan.err = br.br.loadEntry(ientry)
 		if s.scan.err != nil {
 			// FIXME(sbinet): properly decorate error
-			return s.scan.err
-		}
-		s.scan.err = br.br.scan(ptr)
-		if s.scan.err != nil {
 			return s.scan.err
 		}
 	}

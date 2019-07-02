@@ -28,6 +28,7 @@ func genLeaves() {
 
 	genroot.GenImports("rtree", f,
 		"reflect",
+		"unsafe", // FIXME(sbinet): needed for signed/unsigned handling
 		"",
 		"github.com/pkg/errors",
 		"",
@@ -160,7 +161,8 @@ const leafTmpl = `// {{.Name}} implements ROOT T{{.Name}}
 type {{.Name}} struct {
 	rvers int16
 	tleaf
-	val []{{.Type}}
+	ptr *{{.Type}}
+	sli *[]{{.Type}}
 	min {{.RangeType}}
 	max {{.RangeType}}
 }
@@ -193,25 +195,35 @@ func (*{{.Name}}) Type() reflect.Type {
 
 // Value returns the leaf value at index i.
 func (leaf *{{.Name}}) Value(i int) interface{} {
-	return leaf.val[i]
+	switch {
+	case leaf.ptr != nil:
+		return *leaf.ptr
+	default:
+		return (*leaf.sli)[i]
+	}
 }
 
 // value returns the leaf value.
 func (leaf *{{.Name}}) value() interface{} {
-	return leaf.val
+	switch {
+	case leaf.ptr != nil:
+		return *leaf.ptr
+	default:
+		return *leaf.sli
+	}
 }
 
-{{if .Count}}
+{{- if .Count}}
 // ivalue returns the first leaf value as int
 func (leaf *{{.Name}}) ivalue() int {
-	return int(leaf.val[0])
+	return int(*leaf.ptr)
 }
 
 // imax returns the leaf maximum value as int
 func (leaf *{{.Name}}) imax() int {
 	return int(leaf.max)
 }
-{{end}}
+{{- end}}
 
 func (leaf *{{.Name}}) TypeName() string {
 	return "{{.Type}}"
@@ -246,73 +258,113 @@ func (leaf *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *{{.Name}}) readBasket(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
+func (leaf *{{.Name}}) readFromBasket(r *rbytes.RBuffer) error {
+        if r.Err() != nil {
+                return r.Err()
+        }
 
-	if leaf.count == nil && len(leaf.val) == 1 {
-		leaf.val[0] = {{.RFunc}}
-	} else {
-		if leaf.count != nil {
-			entry := leaf.Branch().getReadEntry()
-			if leaf.count.Branch().getReadEntry() != entry {
-				leaf.count.Branch().getEntry(entry)
-			}
-			n := leaf.count.ivalue()
-			max := leaf.count.imax()
-			if n > max {
-				n = max
-			}
-			leaf.val = {{.RFuncArray}}(leaf.tleaf.len * n)
-		} else {
-			leaf.val = {{.RFuncArray}}(leaf.tleaf.len)
-		}
-	}
-	return r.Err()
+        if leaf.count == nil && leaf.ptr != nil {
+                *leaf.ptr = {{.RFunc}}
+        } else {
+                if leaf.count != nil {
+                        entry := leaf.Branch().getReadEntry()
+                        if leaf.count.Branch().getReadEntry() != entry {
+                                leaf.count.Branch().getEntry(entry)
+                        }
+                        n := leaf.count.ivalue()
+                        max := leaf.count.imax()
+                        if n > max {
+                                n = max
+                        }
+                        *leaf.sli = {{.RFuncArray}}(leaf.tleaf.len * n)
+                } else {
+						copy(*leaf.sli, {{.RFuncArray}}(leaf.tleaf.len))
+                }
+        }
+        return r.Err()
 }
 
 func (leaf *{{.Name}}) scan(r *rbytes.RBuffer, ptr interface{}) error {
-	if r.Err() != nil {
-		return r.Err()
+    if r.Err() != nil {
+            return r.Err()
+    }
+
+    if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
+            return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
+    }
+
+    switch v := ptr.(type) {
+    case *{{.Type}}:
+            *v = *leaf.ptr
+    case *[]{{.Type}}:
+            if len(*v) < len(*leaf.sli) || *v == nil {
+                    *v = make([]{{.Type}}, len(*leaf.sli))
+            }
+            copy(*v, *leaf.sli)
+            *v = (*v)[:leaf.count.ivalue()]
+    case []{{.Type}}:
+            copy(v, *leaf.sli)
+{{- if .DoUnsigned}}
+    case *u{{.Type}}:
+            *v = u{{.Type}}(*leaf.ptr)
+    case *[]u{{.Type}}:
+            if len(*v) < len(*leaf.sli) || *v == nil {
+                    *v = make([]u{{.Type}}, len(*leaf.sli))
+            }
+            for i, u := range (*leaf.sli) {
+                    (*v)[i] = u{{.Type}}(u)
+            }
+            *v = (*v)[:leaf.count.ivalue()]
+    case []u{{.Type}}:
+            for i := range v {
+                    v[i] = u{{.Type}}((*leaf.sli)[i])
+            }
+{{- end}}
+    default:
+            panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+    }
+
+    return r.Err()
+}
+
+func (leaf *{{.Name}}) setAddress(ptr interface{}) error {
+	if ptr == nil {
+		return leaf.setAddress(newValue(leaf))
 	}
 
-	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
-	}
+    if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
+		arr := reflect.ValueOf(ptr).Elem()
+		switch sli :=arr.Slice(0, rv.Len()).Interface().(type) {
+		case []{{.Type}}:
+			return leaf.setAddress(&sli)
+{{- if .DoUnsigned}}
+		case []u{{.Type}}:
+			return leaf.setAddress(&sli)
+{{- end}}
+		default:
+			panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
+		}
+    }
 
 	switch v := ptr.(type) {
-	case *{{.Type}}:
-		*v = leaf.val[0]
-	case *[]{{.Type}}:
-		if len(*v) < len(leaf.val) || *v == nil {
-			*v = make([]{{.Type}}, len(leaf.val))
-		}
-		copy(*v, leaf.val)
-		*v = (*v)[:leaf.count.ivalue()]
-	case []{{.Type}}:
-		copy(v, leaf.val)
-{{if .DoUnsigned}}
-	case *u{{.Type}}:
-		*v = u{{.Type}}(leaf.val[0])
-	case *[]u{{.Type}}:
-		if len(*v) < len(leaf.val) || *v == nil {
-			*v = make([]u{{.Type}}, len(leaf.val))
-		}
-		for i, u := range leaf.val {
-			(*v)[i] = u{{.Type}}(u)
-		}
-		*v = (*v)[:leaf.count.ivalue()]
-	case []u{{.Type}}:
-		for i := range v {
-			v[i] = u{{.Type}}(leaf.val[i])
-		}
-{{end}}
+    case *{{.Type}}:
+		leaf.ptr = v
+    case *[]{{.Type}}:
+		leaf.sli = v
+{{- if .DoUnsigned}}
+    case *u{{.Type}}:
+		leaf.ptr = (*{{.Type}})(unsafe.Pointer(v))
+    case *[]u{{.Type}}:
+		leaf.sli = (*[]{{.Type}})(unsafe.Pointer(v))
+{{- end}}
 	default:
 		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
+	return nil
+}
 
-	return r.Err()
+func (leaf *{{.Name}}) writeToBasket(w *rbytes.WBuffer) error {
+	panic("not implemented")
 }
 
 func init() {

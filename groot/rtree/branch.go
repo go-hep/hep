@@ -364,7 +364,7 @@ func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
 	bk.rbuf = rbytes.NewRBuffer(buf, nil, uint32(bk.key.KeyLen()), sictx)
 
 	for _, leaf := range b.leaves {
-		err = leaf.readBasket(bk.rbuf)
+		err = leaf.readFromBasket(bk.rbuf)
 		if err != nil {
 			return err
 		}
@@ -397,8 +397,14 @@ func (b *tbranch) scan(ptr interface{}) error {
 }
 
 func (b *tbranch) setAddress(ptr interface{}) error {
-	var err error
-	return err
+	for i, leaf := range b.leaves {
+		// FIXME(sbinet): adjust ptr for e.g. a "f1/F;f2/I;f3/i" branch
+		err := leaf.setAddress(ptr)
+		if err != nil {
+			return errors.Wrapf(err, "rtree: could not set address for leaf[%d][%s]", i, leaf.Name())
+		}
+	}
+	return nil
 }
 
 func (b *tbranch) setStreamer(s rbytes.StreamerInfo, ctx rbytes.StreamerInfoContext) {
@@ -407,6 +413,10 @@ func (b *tbranch) setStreamer(s rbytes.StreamerInfo, ctx rbytes.StreamerInfoCont
 
 func (b *tbranch) setStreamerElement(s rbytes.StreamerElement, ctx rbytes.StreamerInfoContext) {
 	// no op
+}
+
+func (b *tbranch) writeToBasket(w *rbytes.WBuffer) error {
+	panic("not implemented")
 }
 
 // tbranchElement is a Branch for objects.
@@ -532,10 +542,6 @@ func (b *tbranchElement) setAddress(ptr interface{}) error {
 	}
 	if b.id < 0 {
 		for _, leaf := range b.tbranch.leaves {
-			leaf, ok := leaf.(*tleafElement)
-			if !ok {
-				continue
-			}
 			err = leaf.setAddress(ptr)
 			if err != nil {
 				return err
