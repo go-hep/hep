@@ -76,9 +76,11 @@ type Key struct {
 	obj root.Object // Key's value
 
 	otyp reflect.Type // Go type of the Key's payload.
+
+	parent Directory // directory holding this key
 }
 
-func newKey(name, title, class string, nbytes int32, f *File) Key {
+func newKey(dir Directory, name, title, class string, nbytes int32, f *File) Key {
 	k := Key{
 		f:        f,
 		rvers:    rvers.Key,
@@ -88,6 +90,7 @@ func newKey(name, title, class string, nbytes int32, f *File) Key {
 		class:    class,
 		name:     name,
 		title:    title,
+		parent:   dir,
 	}
 	k.keylen = k.sizeof()
 	k.nbytes = nbytes + k.keylen
@@ -96,8 +99,8 @@ func newKey(name, title, class string, nbytes int32, f *File) Key {
 }
 
 // createKey creates a new key of the specified size.
-func createKey(name, title, class string, nbytes int32, f *File) Key {
-	k := newKey(name, title, class, nbytes, f)
+func createKey(dir Directory, name, title, class string, nbytes int32, f *File) Key {
+	k := newKey(dir, name, title, class, nbytes, f)
 	if f.end > kStartBigFile {
 		k.rvers += 1000
 	}
@@ -112,7 +115,7 @@ func createKey(name, title, class string, nbytes int32, f *File) Key {
 	return k
 }
 
-func newKeyFrom(obj root.Object, wbuf *rbytes.WBuffer) (Key, error) {
+func newKeyFrom(dir Directory, obj root.Object, wbuf *rbytes.WBuffer) (Key, error) {
 	if wbuf == nil {
 		wbuf = rbytes.NewWBuffer(nil, nil, 0, nil)
 	}

@@ -197,7 +197,7 @@ func Create(name string, opts ...FileOption) (*File, error) {
 	// write directory info
 	namelen := f.dir.dir.named.Sizeof()
 	nbytes := namelen + f.dir.sizeof()
-	key := createKey(f.dir.Name(), f.dir.Title(), "TFile", nbytes, f)
+	key := createKey(&f.dir, f.dir.Name(), f.dir.Title(), "TFile", nbytes, f)
 	f.nbytesname = key.keylen + namelen
 	f.dir.nbytesname = key.keylen + namelen
 	f.dir.seekdir = key.seekkey
@@ -523,7 +523,7 @@ func (f *File) writeStreamerInfo() error {
 		f.markFree(f.seekinfo, f.seekinfo+int64(f.nbytesinfo)-1)
 	}
 
-	key := newKey("StreamerInfo", sinfos.Title(), sinfos.Class(), 0, f)
+	key := newKey(&f.dir, "StreamerInfo", sinfos.Title(), sinfos.Class(), 0, f)
 	offset := uint32(key.keylen)
 	buf := rbytes.NewWBuffer(nil, nil, offset, f)
 	_, err = sinfos.MarshalROOT(buf)
@@ -531,7 +531,7 @@ func (f *File) writeStreamerInfo() error {
 		return errors.Wrapf(err, "riofs: could not write StreamerInfo list")
 	}
 
-	key = createKey("StreamerInfo", sinfos.Title(), sinfos.Class(), int32(len(buf.Bytes())), f)
+	key = createKey(&f.dir, "StreamerInfo", sinfos.Title(), sinfos.Class(), int32(len(buf.Bytes())), f)
 	key.buf = buf.Bytes()
 	f.seekinfo = key.seekkey
 	f.nbytesinfo = key.nbytes
@@ -673,7 +673,7 @@ func (f *File) writeFreeSegments() error {
 		if nbytes == 0 {
 			return nil
 		}
-		key := createKey(f.Name(), f.Title(), "TFile", nbytes, f)
+		key := createKey(&f.dir, f.Name(), f.Title(), "TFile", nbytes, f)
 		if key.seekkey == 0 {
 			return nil
 		}

@@ -437,6 +437,7 @@ func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 		title:    title,
 		obj:      obj,
 		seekpdir: dir.seekdir,
+		parent:   dir,
 	})
 
 	return nil
@@ -582,7 +583,7 @@ func (dir *tdirectoryFile) writeKeys() error {
 		dir.seekdir = blk.first
 	}
 
-	hdr := createKey(dir.Name(), dir.Title(), dir.Class(), nbytes, dir.file)
+	hdr := createKey(dir, dir.Name(), dir.Title(), dir.Class(), nbytes, dir.file)
 
 	buf := rbytes.NewWBuffer(make([]byte, nbytes), nil, 0, nil)
 	buf.WriteI32(int32(len(dir.Keys())))
@@ -628,7 +629,7 @@ func (dir *tdirectoryFile) writeDirHeader() error {
 	dir.mtime = nowUTC()
 
 	nbytes := dir.sizeof() + int32(dir.file.nbytesname)
-	key := newKey(dir.Name(), dir.Title(), "TFile", nbytes, dir.file)
+	key := newKey(dir, dir.Name(), dir.Title(), "TFile", nbytes, dir.file)
 	key.seekkey = dir.file.begin
 	key.seekpdir = dir.seekdir
 

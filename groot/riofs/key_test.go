@@ -71,7 +71,8 @@ func TestKeyNewKeyFrom(t *testing.T) {
 		},
 	} {
 		t.Run("", func(t *testing.T) {
-			k, err := newKeyFrom(tc.want, tc.wbuf)
+			var parent Directory
+			k, err := newKeyFrom(parent, tc.want, tc.wbuf)
 			switch {
 			case err == nil && tc.err == nil:
 				// ok
