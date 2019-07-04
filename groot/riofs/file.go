@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"go-hep.org/x/hep/groot/internal/rcompress"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rcont"
@@ -187,7 +188,7 @@ func Create(name string, opts ...FileOption) (*File, error) {
 	f.dir.dir.named.SetTitle("")
 	f.spans.add(f.begin, kStartBigFile)
 
-	f.setCompression(kZLIB, flate.BestCompression)
+	f.setCompression(rcompress.ZLIB, flate.BestCompression)
 
 	for _, opt := range opts {
 		if opt == nil {

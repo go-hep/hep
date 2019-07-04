@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"go-hep.org/x/hep/groot/internal/rcompress"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
@@ -159,7 +160,7 @@ func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object,
 		k.rvers += 1000
 	}
 
-	k.buf, err = compress(k.f.compression, buf.Bytes())
+	k.buf, err = rcompress.Compress(nil, buf.Bytes(), k.f.compression)
 	if err != nil {
 		return k, errors.Wrapf(err, "riofs: could not compress object %T for key %q", obj, name)
 	}
@@ -317,7 +318,7 @@ func (k *Key) load(buf []byte) ([]byte, error) {
 	if k.isCompressed() {
 		start := k.seekkey + int64(k.keylen)
 		sr := io.NewSectionReader(k.f, start, int64(k.nbytes)-int64(k.keylen))
-		err := decompress(sr, buf)
+		err := rcompress.Decompress(buf, sr)
 		if err != nil {
 			return nil, errors.Wrapf(err, "riofs: could not decompress key payload")
 		}
@@ -345,7 +346,7 @@ func (k *Key) store() error {
 		return err
 	}
 	k.objlen = int32(len(buf.Bytes()))
-	k.buf, err = compress(k.f.compression, buf.Bytes())
+	k.buf, err = rcompress.Compress(nil, buf.Bytes(), k.f.compression)
 	if err != nil {
 		return err
 	}

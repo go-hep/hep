@@ -4,7 +4,7 @@
 
 // +build !race
 
-package riofs
+package rcompress_test
 
 import (
 	"bytes"
@@ -18,13 +18,14 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/groot/rbase"
+	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
 )
 
 func TestCompress(t *testing.T) {
 	t.Parallel()
 
-	dir, err := ioutil.TempDir("", "riofs-compress-")
+	dir, err := ioutil.TempDir("", "groot-rcompress-")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,29 +58,29 @@ void testcompress(const char *fname, int size) {
 
 	for _, tc := range []struct {
 		name string
-		opt  FileOption
+		opt  riofs.FileOption
 	}{
-		{name: "default", opt: func(*File) error { return nil }},
+		{name: "default", opt: func(*riofs.File) error { return nil }},
 		{name: "default-nil", opt: nil},
-		{name: "no-compr", opt: WithoutCompression()},
-		{name: "lz4-default", opt: WithLZ4(flate.DefaultCompression)},
-		{name: "lz4-0", opt: WithLZ4(0)},
-		{name: "lz4-1", opt: WithLZ4(1)},
-		{name: "lz4-9", opt: WithLZ4(9)},
-		{name: "lz4-best-speed", opt: WithLZ4(flate.BestSpeed)},
-		{name: "lz4-best-compr", opt: WithLZ4(flate.BestCompression)},
-		{name: "lzma-default", opt: WithLZMA(flate.DefaultCompression)},
-		{name: "lzma-0", opt: WithLZMA(0)},
-		{name: "lzma-1", opt: WithLZMA(1)},
-		{name: "lzma-9", opt: WithLZMA(9)},
-		{name: "lzma-best-speed", opt: WithLZMA(flate.BestSpeed)},
-		{name: "lzma-best-compr", opt: WithLZMA(flate.BestCompression)},
-		{name: "zlib-default", opt: WithZlib(flate.DefaultCompression)},
-		{name: "zlib-0", opt: WithZlib(0)},
-		{name: "zlib-1", opt: WithZlib(1)},
-		{name: "zlib-9", opt: WithZlib(9)},
-		{name: "zlib-best-speed", opt: WithZlib(flate.BestSpeed)},
-		{name: "zlib-best-compr", opt: WithZlib(flate.BestCompression)},
+		{name: "no-compr", opt: riofs.WithoutCompression()},
+		{name: "lz4-default", opt: riofs.WithLZ4(flate.DefaultCompression)},
+		{name: "lz4-0", opt: riofs.WithLZ4(0)},
+		{name: "lz4-1", opt: riofs.WithLZ4(1)},
+		{name: "lz4-9", opt: riofs.WithLZ4(9)},
+		{name: "lz4-best-speed", opt: riofs.WithLZ4(flate.BestSpeed)},
+		{name: "lz4-best-compr", opt: riofs.WithLZ4(flate.BestCompression)},
+		{name: "lzma-default", opt: riofs.WithLZMA(flate.DefaultCompression)},
+		{name: "lzma-0", opt: riofs.WithLZMA(0)},
+		{name: "lzma-1", opt: riofs.WithLZMA(1)},
+		{name: "lzma-9", opt: riofs.WithLZMA(9)},
+		{name: "lzma-best-speed", opt: riofs.WithLZMA(flate.BestSpeed)},
+		{name: "lzma-best-compr", opt: riofs.WithLZMA(flate.BestCompression)},
+		{name: "zlib-default", opt: riofs.WithZlib(flate.DefaultCompression)},
+		{name: "zlib-0", opt: riofs.WithZlib(0)},
+		{name: "zlib-1", opt: riofs.WithZlib(1)},
+		{name: "zlib-9", opt: riofs.WithZlib(9)},
+		{name: "zlib-best-speed", opt: riofs.WithZlib(flate.BestSpeed)},
+		{name: "zlib-best-compr", opt: riofs.WithZlib(flate.BestCompression)},
 	} {
 		for k, want := range wants {
 			if (k == "16mb" || k == "10mb") &&
@@ -90,7 +91,7 @@ void testcompress(const char *fname, int size) {
 			tname := fmt.Sprintf("%s-%s", k, tc.name)
 			t.Run(tname, func(t *testing.T) {
 				fname := filepath.Join(dir, "test-"+tname+".root")
-				w, err := Create(fname, tc.opt)
+				w, err := riofs.Create(fname, tc.opt)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -106,7 +107,7 @@ void testcompress(const char *fname, int size) {
 					t.Fatal(err)
 				}
 
-				r, err := Open(fname)
+				r, err := riofs.Open(fname)
 				if err != nil {
 					t.Fatal(err)
 				}
