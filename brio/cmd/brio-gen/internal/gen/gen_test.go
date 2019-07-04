@@ -18,9 +18,9 @@ func TestGenerator(t *testing.T) {
 		pkg    = "go-hep.org/x/hep/brio/cmd/brio-gen/internal/gen/_test/pkg"
 		golden = "testdata/brio_gen_golden.go.txt"
 	)
-	err := exec.Command("go", "get", pkg).Run()
+	txt, err := exec.Command("go", "install", pkg).CombinedOutput()
 	if err != nil {
-		t.Fatalf("could not build test package: %v", err)
+		t.Fatalf("could not build test package:\n%v\nerror: %v", string(txt), err)
 	}
 
 	g, err := gen.NewGenerator(pkg)
