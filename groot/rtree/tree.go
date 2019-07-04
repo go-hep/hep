@@ -36,7 +36,7 @@ type ttree struct {
 	totbytes int64 // Total number of bytes in all branches before compression
 	zipbytes int64 // Total number of bytes in all branches after  compression
 
-	iofeats tioFeatures // IO features to define for newly-written baskets and branches
+	iobits tioFeatures // IO features to define for newly-written baskets and branches
 
 	clusters clusters
 
@@ -208,7 +208,7 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	if vers >= 20 {
-		if err := tree.iofeats.UnmarshalROOT(r); err != nil {
+		if err := tree.iobits.UnmarshalROOT(r); err != nil {
 			return err
 		}
 	}
@@ -433,20 +433,37 @@ func (nt *tntuple) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 type tioFeatures uint8
 
+func (*tioFeatures) Class() string { return "TIOFeatures" }
+
+func (tio *tioFeatures) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+	const tioFeaturesVers = 1 // FIXME(sbinet): somehow extract this reliably.
+	pos := w.WriteVersion(tioFeaturesVers)
+
+	var buf [4]byte // FIXME(sbinet) where do these 4 bytes come from ?
+	w.Write(buf[:])
+
+	w.WriteU8(uint8(*tio))
+
+	return w.SetByteCount(pos, tio.Class())
+}
+
 func (tio *tioFeatures) UnmarshalROOT(r *rbytes.RBuffer) error {
 	if r.Err() != nil {
 		return r.Err()
 	}
 
 	beg := r.Pos()
-	_ /*vers*/, pos, bcnt := r.ReadVersion("TIOFeatures")
+	_ /*vers*/, pos, bcnt := r.ReadVersion(tio.Class())
 
 	var buf [4]byte // FIXME(sbinet) where do these 4 bytes come from ?
 	r.Read(buf[:])
 
 	*tio = tioFeatures(r.ReadU8())
 
-	r.CheckByteCount(pos, bcnt, beg, "TIOFeatures")
+	r.CheckByteCount(pos, bcnt, beg, tio.Class())
 	return r.Err()
 }
 
@@ -477,4 +494,8 @@ var (
 	_ root.Named         = (*tntuple)(nil)
 	_ Tree               = (*tntuple)(nil)
 	_ rbytes.Unmarshaler = (*tntuple)(nil)
+
+	_ root.Object        = (*tioFeatures)(nil)
+	_ rbytes.Marshaler   = (*tioFeatures)(nil)
+	_ rbytes.Unmarshaler = (*tioFeatures)(nil)
 )

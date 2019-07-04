@@ -21,13 +21,13 @@ import (
 type tleaf struct {
 	rvers    int16
 	named    rbase.Named
-	len      int
-	etype    int
-	offset   int
-	hasrange bool
-	unsigned bool
-	count    leafCount
-	branch   Branch
+	len      int       // number of fixed length elements in the leaf's data.
+	etype    int       // number of bytes for this data type
+	offset   int       // offset in ClonesArray object
+	hasrange bool      // whether the leaf has a range
+	unsigned bool      // whether the leaf holds unsigned data (uint8, uint16, uint32 or uint64)
+	count    leafCount // leaf count if variable length
+	branch   Branch    // supporting branch of this leaf
 }
 
 func newLeaf(name string, len, etype, offset int, hasrange, unsigned bool, count leafCount, b Branch) tleaf {
@@ -193,6 +193,39 @@ func (leaf *tleaf) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (leaf *tleaf) canGenerateOffsetArray() bool {
+	return leaf.count != nil
+}
+
+func (leaf *tleaf) computeOffsetArray(base, nevts int) []int32 {
+	o := make([]int32, nevts)
+	if leaf.count == nil {
+		return o
+	}
+
+	var (
+		hdr           = tleafHdrSize
+		origEntry     = maxI64(leaf.branch.getReadEntry(), 0) // -1 indicates to start at the beginning
+		origLeafEntry = leaf.count.Branch().getReadEntry()
+		sz            = 0
+		offset        = int32(base)
+	)
+	for i := 0; i < nevts; i++ {
+		o[i] = offset
+		leaf.count.Branch().getEntry(origEntry + int64(i))
+		sz = leaf.count.ivalue()
+		offset += int32(leaf.etype*sz + hdr)
+	}
+	leaf.count.Branch().getEntry(origLeafEntry)
+
+	return o
+}
+
+const (
+	tleafHdrSize        = 0
+	tleafElementHdrSize = 1
+)
+
 // tleafElement is a Leaf for a general object derived from Object.
 type tleafElement struct {
 	rvers int16
@@ -329,6 +362,34 @@ func (leaf *tleafElement) writeToBuffer(w *rbytes.WBuffer) error {
 	panic("not implemented")
 }
 
+func (leaf *tleafElement) canGenerateOffsetArray() bool {
+	return leaf.count != nil && leaf.tleaf.etype != 0
+}
+
+func (leaf *tleafElement) computeOffsetArray(base, nevts int) []int32 {
+	o := make([]int32, nevts)
+	if leaf.count == nil {
+		return o
+	}
+
+	var (
+		hdr           = tleafElementHdrSize
+		origEntry     = maxI64(leaf.branch.getReadEntry(), 0) // -1 indicates to start at the beginning
+		origLeafEntry = leaf.count.Branch().getReadEntry()
+		sz            = 0
+		offset        = int32(base)
+	)
+	for i := 0; i < nevts; i++ {
+		o[i] = offset
+		leaf.count.Branch().getEntry(origEntry + int64(i))
+		sz = leaf.count.ivalue()
+		offset += int32(leaf.etype*sz + hdr)
+	}
+	leaf.count.Branch().getEntry(origLeafEntry)
+
+	return o
+}
+
 func init() {
 	{
 		f := func() reflect.Value {
@@ -372,6 +433,13 @@ func leafDims(s string) []int {
 	}
 
 	return dims
+}
+
+func maxI64(a, b int64) int64 {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 var (

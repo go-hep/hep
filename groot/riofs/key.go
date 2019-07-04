@@ -54,8 +54,8 @@ func (err keyTypeError) Error() string {
 type Key struct {
 	f *File // underlying file
 
-	nbytes   int32     // number of bytes for the compressed object+key
 	rvers    int16     // version of the Key struct
+	nbytes   int32     // number of bytes for the compressed object+key
 	objlen   int32     // length of uncompressed object
 	datetime time.Time // Date/Time when the object was written
 	keylen   int32     // number of bytes for the Key struct
@@ -152,6 +152,7 @@ func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object,
 		seekkey:  f.end,
 		seekpdir: dir.seekdir,
 		obj:      obj,
+		otyp:     reflect.TypeOf(obj),
 		parent:   dir,
 	}
 	if f.end > kStartBigFile {
@@ -170,6 +171,23 @@ func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object,
 	}
 
 	return k, nil
+}
+
+// KeyFromDir creates a new empty key (with no associated payload object)
+// with provided name and title, and the expected object type name.
+// The key will be held by the provided directory.
+func KeyFromDir(dir Directory, name, title, class string) Key {
+	f := fileOf(dir)
+	var k Key
+	switch v := dir.(type) {
+	case *File:
+		k = newKey(&v.dir, name, title, class, 0, f)
+	case *tdirectoryFile:
+		k = newKey(v, name, title, class, 0, f)
+	default:
+		panic(errors.Errorf("riofs: invalid directory type %T", dir))
+	}
+	return k
 }
 
 func (k *Key) RVersion() int16 { return k.rvers }
@@ -198,7 +216,7 @@ func (k *Key) ObjLen() int32 { return k.objlen }
 func (k *Key) KeyLen() int32 { return k.keylen }
 
 func (k *Key) SetFile(f *File)      { k.f = f }
-func (k *Key) SetBuffer(buf []byte) { k.buf = buf }
+func (k *Key) SetBuffer(buf []byte) { k.buf = buf; k.objlen = int32(len(buf)) }
 
 // ObjectType returns the Key's payload type.
 //
@@ -387,6 +405,7 @@ func (k *Key) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	switch {
 	case k.isBigFile():
 		w.WriteI64(k.seekkey)
+		// FIXME(sbinet): handle PidOffsetShift and PidOffset that are stored in the 16 highest bits of seekpdir
 		w.WriteI64(k.seekpdir)
 	default:
 		w.WriteI32(int32(k.seekkey))
@@ -420,6 +439,7 @@ func (k *Key) UnmarshalROOT(r *rbytes.RBuffer) error {
 	switch {
 	case k.isBigFile():
 		k.seekkey = r.ReadI64()
+		// FIXME(sbinet): handle PidOffsetShift and PidOffset that are stored in the 16 highest bits of seekpdir
 		k.seekpdir = r.ReadI64()
 	default:
 		k.seekkey = int64(r.ReadI32())

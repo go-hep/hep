@@ -212,6 +212,25 @@ func Dir(dir Directory) Directory {
 	return &recDir{dir}
 }
 
+func fileOf(d Directory) *File {
+	const max = 1 << 32
+	for i := 0; i < max; i++ {
+		p := d.Parent()
+		if p == nil {
+			switch d := d.(type) {
+			case *File:
+				return d
+			case *tdirectoryFile:
+				return d.file
+			default:
+				panic(errors.Errorf("riofs: unknown Directory type %T", d))
+			}
+		}
+		d = p
+	}
+	panic("impossible")
+}
+
 var (
 	_ Directory = (*recDir)(nil)
 )

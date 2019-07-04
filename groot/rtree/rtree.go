@@ -83,6 +83,9 @@ type Leaf interface {
 
 	// write interface part
 	writeToBuffer(w *rbytes.WBuffer) error
+
+	canGenerateOffsetArray() bool
+	computeOffsetArray(base, nevts int) []int32
 }
 
 // leafCount describes leaves that are used for array length count

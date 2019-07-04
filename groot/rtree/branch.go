@@ -26,7 +26,7 @@ type tbranch struct {
 	entryOffsetLen int         // initial length of entryOffset table in the basket buffers
 	writeBasket    int         // last basket number written
 	entryNumber    int64       // current entry number (last one filled in this branch)
-	iofeats        tioFeatures // IO features for newly-created baskets
+	iobits         tioFeatures // IO features for newly-created baskets
 	offset         int         // offset of this branch
 	maxBaskets     int         // maximum number of baskets so far
 	splitLevel     int         // branch split level
@@ -171,7 +171,7 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 	b.writeBasket = int(r.ReadI32())
 	b.entryNumber = r.ReadI64()
 	if b.rvers >= 13 {
-		if err := b.iofeats.UnmarshalROOT(r); err != nil {
+		if err := b.iobits.UnmarshalROOT(r); err != nil {
 			return err
 		}
 	}
