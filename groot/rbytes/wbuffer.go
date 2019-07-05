@@ -7,6 +7,8 @@ package rbytes
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
+	"fmt"
 	"io"
 	"math"
 	"reflect"
@@ -92,10 +94,22 @@ func (w *WBuffer) Pos() int64 {
 	return int64(w.w.c) + int64(w.offset)
 }
 
+func (w *WBuffer) Len() int64 {
+	return int64(w.w.c)
+}
+
 func (w *WBuffer) SetPos(pos int64) { w.setPos(pos) }
 func (w *WBuffer) setPos(pos int64) {
 	pos -= int64(w.offset)
 	w.w.c = int(pos)
+}
+
+func (w *WBuffer) DumpHex(n int) {
+	buf := w.buffer()
+	if len(buf) > n {
+		buf = buf[:n]
+	}
+	fmt.Printf("--- hex --- (pos=%d len=%d end=%d)\n%s\n", w.Pos(), n, w.Len(), string(hex.Dump(buf)))
 }
 
 func (w *WBuffer) Write(p []byte) (int, error) {
