@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/internal/rtests"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
@@ -399,6 +400,104 @@ func TestBranchRW(t *testing.T) {
 			if !reflect.DeepEqual(obj, tc.want) {
 				t.Fatalf("error\ngot= %+v\nwant=%+v\n", obj, tc.want)
 			}
+		})
+	}
+}
+
+func TestTreeRW(t *testing.T) {
+	tmp, err := ioutil.TempDir("", "groot-rtree-")
+	if err != nil {
+		t.Fatalf("could not create dir: %v", err)
+	}
+	defer os.RemoveAll(tmp)
+
+	for _, tc := range []struct {
+		name    string
+		wvars   []WriteVar
+		btitles []string
+	}{
+		{
+			name: "simple",
+			wvars: []WriteVar{
+				{Name: "i32", Value: new(int32)},
+				{Name: "f64", Value: new(float64)},
+			},
+			btitles: []string{"i32/I", "f64/D"},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			fname := filepath.Join(tmp, tc.name+".root")
+
+			func() {
+				f, err := riofs.Create(fname)
+				if err != nil {
+					t.Fatalf("could not create write ROOT file %q: %v", fname, err)
+				}
+				defer f.Close()
+
+				tw, err := NewWriter(f, "tree", tc.wvars)
+				if err != nil {
+					t.Fatalf("could not create tree writer: %v", err)
+				}
+				for i, b := range tw.Branches() {
+					if got, want := b.Name(), tc.wvars[i].Name; got != want {
+						t.Fatalf("branch[%d]: got=%q, want=%q", i, got, want)
+					}
+					if got, want := b.Title(), tc.btitles[i]; got != want {
+						t.Fatalf("branch[%d]: got=%q, want=%q", i, got, want)
+					}
+				}
+
+				for i, leaf := range tw.Leaves() {
+					if got, want := leaf.Name(), tc.wvars[i].Name; got != want {
+						t.Fatalf("leaf[%d]: got=%q, want=%q", i, got, want)
+					}
+					if got, want := leaf.Title(), tc.wvars[i].Name; got != want {
+						t.Fatalf("leaf[%d]: got=%q, want=%q", i, got, want)
+					}
+				}
+
+				const nevts = 5
+				for i := 0; i < nevts; i++ {
+					for _, wvar := range tc.wvars {
+						switch v := reflect.ValueOf(wvar.Value).Elem(); v.Kind() {
+						case reflect.Int32:
+							v.SetInt(int64(i))
+						case reflect.Float64:
+							v.SetFloat(float64(i))
+						default:
+							panic(errors.Errorf("rtree: invalid write-var type %T", wvar.Value))
+						}
+					}
+					err := tw.Write()
+					if err != nil {
+						t.Fatalf("could not write event %d: %v", i, err)
+					}
+				}
+
+				if got, want := tw.Entries(), int64(nevts); got != want {
+					t.Fatalf("invalid number of entries: got=%d, want=%d", got, want)
+				}
+
+				// FIXME(sbinet): TODO
+				// err = tw.Close()
+				// if err != nil {
+				//	t.Fatalf("could not close tree writer: %v", err)
+				// }
+
+				err = f.Close()
+				if err != nil {
+					t.Fatalf("could not close write ROOT file %q: %v", fname, err)
+				}
+			}()
+
+			func() {
+				f, err := riofs.Open(fname)
+				if err != nil {
+					t.Fatalf("could not opend read ROOT file %q: %v", fname, err)
+				}
+				defer f.Close()
+			}()
 		})
 	}
 }
