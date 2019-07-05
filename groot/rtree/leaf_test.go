@@ -220,9 +220,12 @@ func TestLeafReadWriteBasket(t *testing.T) {
 					t.Fatalf("could not setup leaf count: %v", err)
 				}
 
-				err = tc.lcnt.writeToBuffer(wbuf)
+				n, err := tc.lcnt.writeToBuffer(wbuf)
 				if err != nil {
 					t.Fatalf("could not write count to basket: %v", err)
+				}
+				if n == 0 {
+					t.Fatalf("short write")
 				}
 			}
 
@@ -238,9 +241,12 @@ func TestLeafReadWriteBasket(t *testing.T) {
 				t.Fatalf("could not set write-address: %v", err)
 			}
 
-			err = tc.leaf.writeToBuffer(wbuf)
+			n, err := tc.leaf.writeToBuffer(wbuf)
 			if err != nil {
 				t.Fatalf("could not write to basket: %v", err)
+			}
+			if n == 0 {
+				t.Fatalf("short write")
 			}
 
 			rbuf := rbytes.NewRBuffer(wbuf.Bytes(), nil, 0, nil)

@@ -402,14 +402,16 @@ func (leaf *{{.Name}}) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *{{.Name}}) writeToBuffer(w *rbytes.WBuffer) error {
+func (leaf *{{.Name}}) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
-		return w.Err()
+		return 0, w.Err()
 	}
 
+	var nbytes int
 	switch {
 	case leaf.ptr != nil:
 		{{.WFunc}}(*leaf.ptr)
+		nbytes += leaf.tleaf.etype
 {{- if eq .Name "LeafC"}}
 		sz := len(*leaf.ptr)
 		if v := int32(sz); v >= leaf.max {
@@ -430,12 +432,15 @@ func (leaf *{{.Name}}) writeToBuffer(w *rbytes.WBuffer) error {
         if n > max {
 			n = max
 		}
-		{{.WFuncArray}}((*leaf.sli)[:leaf.tleaf.len*n])
+		end := leaf.tleaf.len*n
+		{{.WFuncArray}}((*leaf.sli)[:end])
+		nbytes += leaf.tleaf.etype * end
 	default:
 		{{.WFuncArray}}((*leaf.sli)[:leaf.tleaf.len])
+		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
-	return w.Err()
+	return nbytes, w.Err()
 }
 
 func init() {

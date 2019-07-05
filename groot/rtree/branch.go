@@ -566,7 +566,7 @@ func (b *tbranch) setStreamerElement(s rbytes.StreamerElement, ctx rbytes.Stream
 	// no op
 }
 
-func (b *tbranch) write() error {
+func (b *tbranch) write() (int, error) {
 	basket := b.basket
 	if basket == nil {
 		b.writeBasket = len(b.baskets)
@@ -578,22 +578,24 @@ func (b *tbranch) write() error {
 	b.entries++
 	b.entryNumber++
 
-	err := b.writeToBuffer(wbuf)
+	n, err := b.writeToBuffer(wbuf)
 	if err != nil {
-		return errors.Wrapf(err, "could not write to buffer (branch=%q)", b.Name())
+		return n, errors.Wrapf(err, "could not write to buffer (branch=%q)", b.Name())
 	}
 
-	return nil
+	return n, nil
 }
 
-func (b *tbranch) writeToBuffer(w *rbytes.WBuffer) error {
+func (b *tbranch) writeToBuffer(w *rbytes.WBuffer) (int, error) {
+	var tot int
 	for i, leaf := range b.leaves {
-		err := leaf.writeToBuffer(w)
+		n, err := leaf.writeToBuffer(w)
 		if err != nil {
-			return errors.Wrapf(err, "could not write leaf[%d] name=%q of branch %q", i, leaf.Name(), b.Name())
+			return tot, errors.Wrapf(err, "could not write leaf[%d] name=%q of branch %q", i, leaf.Name(), b.Name())
 		}
+		tot += n
 	}
-	return nil
+	return tot, nil
 }
 
 // tbranchElement is a Branch for objects.
@@ -829,8 +831,8 @@ func (b *tbranchElement) setStreamerElement(se rbytes.StreamerElement, ctx rbyte
 	}
 }
 
-func (b *tbranchElement) write() error                          { panic("not implemented") }
-func (b *tbranchElement) writeToBuffer(w *rbytes.WBuffer) error { panic("not implemented") }
+func (b *tbranchElement) write() (int, error)                          { panic("not implemented") }
+func (b *tbranchElement) writeToBuffer(w *rbytes.WBuffer) (int, error) { panic("not implemented") }
 
 func btopOf(b Branch) Branch {
 	if b == nil {

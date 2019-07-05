@@ -15,8 +15,9 @@ import (
 type Writer interface {
 	Tree
 
-	// Write writes the event data to ROOT storage.
-	Write() error
+	// Write writes the event data to ROOT storage and returns the number
+	// of bytes (before compression, if any) written.
+	Write() (int, error)
 
 	// Sync commits the current contents of the tree to stable storage.
 	Sync() error
@@ -66,17 +67,21 @@ func NewWriter(dir riofs.Directory, name string, vars []WriteVar) (Writer, error
 
 func (w *wtree) SetTitle(title string) { w.ttree.named.SetTitle(title) }
 
-// Write writes the event data to ROOT storage.
-func (w *wtree) Write() error {
+// Write writes the event data to ROOT storage and returns the number
+// of bytes (before compression, if any) written.
+func (w *wtree) Write() (int, error) {
+	var tot int
 	for _, b := range w.ttree.branches {
-		err := b.write()
+		nbytes, err := b.write()
 		if err != nil {
-			return errors.Wrapf(err, "rtree: could not write branch %q", b.Name())
+			return tot, errors.Wrapf(err, "rtree: could not write branch %q", b.Name())
 		}
+		tot += nbytes
 	}
 	w.ttree.entries++
+	w.ttree.totbytes += int64(tot)
 	// FIXME(sbinet): autoflush
-	return nil
+	return tot, nil
 }
 
 // Sync commits the current contents of the tree to stable storage.

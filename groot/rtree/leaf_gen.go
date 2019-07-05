@@ -198,26 +198,31 @@ func (leaf *LeafO) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafO) writeToBuffer(w *rbytes.WBuffer) error {
+func (leaf *LeafO) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
-		return w.Err()
+		return 0, w.Err()
 	}
 
+	var nbytes int
 	switch {
 	case leaf.ptr != nil:
 		w.WriteBool(*leaf.ptr)
+		nbytes += leaf.tleaf.etype
 	case leaf.count != nil:
 		n := leaf.count.ivalue()
 		max := leaf.count.imax()
 		if n > max {
 			n = max
 		}
-		w.WriteFastArrayBool((*leaf.sli)[:leaf.tleaf.len*n])
+		end := leaf.tleaf.len * n
+		w.WriteFastArrayBool((*leaf.sli)[:end])
+		nbytes += leaf.tleaf.etype * end
 	default:
 		w.WriteFastArrayBool((*leaf.sli)[:leaf.tleaf.len])
+		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
-	return w.Err()
+	return nbytes, w.Err()
 }
 
 func init() {
@@ -453,14 +458,16 @@ func (leaf *LeafB) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafB) writeToBuffer(w *rbytes.WBuffer) error {
+func (leaf *LeafB) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
-		return w.Err()
+		return 0, w.Err()
 	}
 
+	var nbytes int
 	switch {
 	case leaf.ptr != nil:
 		w.WriteI8(*leaf.ptr)
+		nbytes += leaf.tleaf.etype
 		if v := *leaf.ptr; v > leaf.max {
 			leaf.max = v
 		}
@@ -470,12 +477,15 @@ func (leaf *LeafB) writeToBuffer(w *rbytes.WBuffer) error {
 		if n > max {
 			n = max
 		}
-		w.WriteFastArrayI8((*leaf.sli)[:leaf.tleaf.len*n])
+		end := leaf.tleaf.len * n
+		w.WriteFastArrayI8((*leaf.sli)[:end])
+		nbytes += leaf.tleaf.etype * end
 	default:
 		w.WriteFastArrayI8((*leaf.sli)[:leaf.tleaf.len])
+		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
-	return w.Err()
+	return nbytes, w.Err()
 }
 
 func init() {
@@ -711,14 +721,16 @@ func (leaf *LeafS) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafS) writeToBuffer(w *rbytes.WBuffer) error {
+func (leaf *LeafS) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
-		return w.Err()
+		return 0, w.Err()
 	}
 
+	var nbytes int
 	switch {
 	case leaf.ptr != nil:
 		w.WriteI16(*leaf.ptr)
+		nbytes += leaf.tleaf.etype
 		if v := *leaf.ptr; v > leaf.max {
 			leaf.max = v
 		}
@@ -728,12 +740,15 @@ func (leaf *LeafS) writeToBuffer(w *rbytes.WBuffer) error {
 		if n > max {
 			n = max
 		}
-		w.WriteFastArrayI16((*leaf.sli)[:leaf.tleaf.len*n])
+		end := leaf.tleaf.len * n
+		w.WriteFastArrayI16((*leaf.sli)[:end])
+		nbytes += leaf.tleaf.etype * end
 	default:
 		w.WriteFastArrayI16((*leaf.sli)[:leaf.tleaf.len])
+		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
-	return w.Err()
+	return nbytes, w.Err()
 }
 
 func init() {
@@ -969,14 +984,16 @@ func (leaf *LeafI) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafI) writeToBuffer(w *rbytes.WBuffer) error {
+func (leaf *LeafI) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
-		return w.Err()
+		return 0, w.Err()
 	}
 
+	var nbytes int
 	switch {
 	case leaf.ptr != nil:
 		w.WriteI32(*leaf.ptr)
+		nbytes += leaf.tleaf.etype
 		if v := *leaf.ptr; v > leaf.max {
 			leaf.max = v
 		}
@@ -986,12 +1003,15 @@ func (leaf *LeafI) writeToBuffer(w *rbytes.WBuffer) error {
 		if n > max {
 			n = max
 		}
-		w.WriteFastArrayI32((*leaf.sli)[:leaf.tleaf.len*n])
+		end := leaf.tleaf.len * n
+		w.WriteFastArrayI32((*leaf.sli)[:end])
+		nbytes += leaf.tleaf.etype * end
 	default:
 		w.WriteFastArrayI32((*leaf.sli)[:leaf.tleaf.len])
+		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
-	return w.Err()
+	return nbytes, w.Err()
 }
 
 func init() {
@@ -1227,14 +1247,16 @@ func (leaf *LeafL) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafL) writeToBuffer(w *rbytes.WBuffer) error {
+func (leaf *LeafL) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
-		return w.Err()
+		return 0, w.Err()
 	}
 
+	var nbytes int
 	switch {
 	case leaf.ptr != nil:
 		w.WriteI64(*leaf.ptr)
+		nbytes += leaf.tleaf.etype
 		if v := *leaf.ptr; v > leaf.max {
 			leaf.max = v
 		}
@@ -1244,12 +1266,15 @@ func (leaf *LeafL) writeToBuffer(w *rbytes.WBuffer) error {
 		if n > max {
 			n = max
 		}
-		w.WriteFastArrayI64((*leaf.sli)[:leaf.tleaf.len*n])
+		end := leaf.tleaf.len * n
+		w.WriteFastArrayI64((*leaf.sli)[:end])
+		nbytes += leaf.tleaf.etype * end
 	default:
 		w.WriteFastArrayI64((*leaf.sli)[:leaf.tleaf.len])
+		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
-	return w.Err()
+	return nbytes, w.Err()
 }
 
 func init() {
@@ -1448,14 +1473,16 @@ func (leaf *LeafF) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafF) writeToBuffer(w *rbytes.WBuffer) error {
+func (leaf *LeafF) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
-		return w.Err()
+		return 0, w.Err()
 	}
 
+	var nbytes int
 	switch {
 	case leaf.ptr != nil:
 		w.WriteF32(*leaf.ptr)
+		nbytes += leaf.tleaf.etype
 		if v := *leaf.ptr; v > leaf.max {
 			leaf.max = v
 		}
@@ -1465,12 +1492,15 @@ func (leaf *LeafF) writeToBuffer(w *rbytes.WBuffer) error {
 		if n > max {
 			n = max
 		}
-		w.WriteFastArrayF32((*leaf.sli)[:leaf.tleaf.len*n])
+		end := leaf.tleaf.len * n
+		w.WriteFastArrayF32((*leaf.sli)[:end])
+		nbytes += leaf.tleaf.etype * end
 	default:
 		w.WriteFastArrayF32((*leaf.sli)[:leaf.tleaf.len])
+		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
-	return w.Err()
+	return nbytes, w.Err()
 }
 
 func init() {
@@ -1669,14 +1699,16 @@ func (leaf *LeafD) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafD) writeToBuffer(w *rbytes.WBuffer) error {
+func (leaf *LeafD) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
-		return w.Err()
+		return 0, w.Err()
 	}
 
+	var nbytes int
 	switch {
 	case leaf.ptr != nil:
 		w.WriteF64(*leaf.ptr)
+		nbytes += leaf.tleaf.etype
 		if v := *leaf.ptr; v > leaf.max {
 			leaf.max = v
 		}
@@ -1686,12 +1718,15 @@ func (leaf *LeafD) writeToBuffer(w *rbytes.WBuffer) error {
 		if n > max {
 			n = max
 		}
-		w.WriteFastArrayF64((*leaf.sli)[:leaf.tleaf.len*n])
+		end := leaf.tleaf.len * n
+		w.WriteFastArrayF64((*leaf.sli)[:end])
+		nbytes += leaf.tleaf.etype * end
 	default:
 		w.WriteFastArrayF64((*leaf.sli)[:leaf.tleaf.len])
+		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
-	return w.Err()
+	return nbytes, w.Err()
 }
 
 func init() {
@@ -1890,14 +1925,16 @@ func (leaf *LeafC) setAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *LeafC) writeToBuffer(w *rbytes.WBuffer) error {
+func (leaf *LeafC) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
-		return w.Err()
+		return 0, w.Err()
 	}
 
+	var nbytes int
 	switch {
 	case leaf.ptr != nil:
 		w.WriteString(*leaf.ptr)
+		nbytes += leaf.tleaf.etype
 		sz := len(*leaf.ptr)
 		if v := int32(sz); v >= leaf.max {
 			leaf.max = v + 1
@@ -1911,12 +1948,15 @@ func (leaf *LeafC) writeToBuffer(w *rbytes.WBuffer) error {
 		if n > max {
 			n = max
 		}
-		w.WriteFastArrayString((*leaf.sli)[:leaf.tleaf.len*n])
+		end := leaf.tleaf.len * n
+		w.WriteFastArrayString((*leaf.sli)[:end])
+		nbytes += leaf.tleaf.etype * end
 	default:
 		w.WriteFastArrayString((*leaf.sli)[:leaf.tleaf.len])
+		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
-	return w.Err()
+	return nbytes, w.Err()
 }
 
 func init() {

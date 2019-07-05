@@ -137,7 +137,7 @@ func (leaf *tleaf) setAddress(ptr interface{}) error {
 	panic("not implemented: " + leaf.Name())
 }
 
-func (leaf *tleaf) writeToBuffer(w *rbytes.WBuffer) error {
+func (leaf *tleaf) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	panic("not implemented: " + leaf.Name())
 }
 
@@ -359,7 +359,7 @@ func (leaf *tleafElement) setAddress(ptr interface{}) error {
 	return err
 }
 
-func (leaf *tleafElement) writeToBuffer(w *rbytes.WBuffer) error {
+func (leaf *tleafElement) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	panic("not implemented")
 }
 

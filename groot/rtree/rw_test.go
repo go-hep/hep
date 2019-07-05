@@ -411,10 +411,16 @@ func TestTreeRW(t *testing.T) {
 	}
 	defer os.RemoveAll(tmp)
 
+	const (
+		nevts    = 5
+		treeName = "mytree"
+	)
+
 	for _, tc := range []struct {
 		name    string
 		wvars   []WriteVar
 		btitles []string
+		total   int
 	}{
 		{
 			name: "simple",
@@ -423,6 +429,7 @@ func TestTreeRW(t *testing.T) {
 				{Name: "f64", Value: new(float64)},
 			},
 			btitles: []string{"i32/I", "f64/D"},
+			total:   nevts * (4 + 8),
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -435,7 +442,7 @@ func TestTreeRW(t *testing.T) {
 				}
 				defer f.Close()
 
-				tw, err := NewWriter(f, "tree", tc.wvars)
+				tw, err := NewWriter(f, treeName, tc.wvars)
 				if err != nil {
 					t.Fatalf("could not create tree writer: %v", err)
 				}
@@ -457,7 +464,7 @@ func TestTreeRW(t *testing.T) {
 					}
 				}
 
-				const nevts = 5
+				total := 0
 				for i := 0; i < nevts; i++ {
 					for _, wvar := range tc.wvars {
 						switch v := reflect.ValueOf(wvar.Value).Elem(); v.Kind() {
@@ -469,14 +476,18 @@ func TestTreeRW(t *testing.T) {
 							panic(errors.Errorf("rtree: invalid write-var type %T", wvar.Value))
 						}
 					}
-					err := tw.Write()
+					n, err := tw.Write()
 					if err != nil {
 						t.Fatalf("could not write event %d: %v", i, err)
 					}
+					total += n
 				}
 
 				if got, want := tw.Entries(), int64(nevts); got != want {
 					t.Fatalf("invalid number of entries: got=%d, want=%d", got, want)
+				}
+				if got, want := total, tc.total; got != want {
+					t.Fatalf("invalid number of bytes written: got=%d, want=%d", got, want)
 				}
 
 				// FIXME(sbinet): TODO

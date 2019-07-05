@@ -54,8 +54,8 @@ type Branch interface {
 	GoType() reflect.Type
 
 	// write interface part
-	writeToBuffer(w *rbytes.WBuffer) error
-	write() error
+	writeToBuffer(w *rbytes.WBuffer) (int, error)
+	write() (int, error)
 }
 
 // Leaf describes branches data types
@@ -83,7 +83,7 @@ type Leaf interface {
 	setAddress(ptr interface{}) error
 
 	// write interface part
-	writeToBuffer(w *rbytes.WBuffer) error
+	writeToBuffer(w *rbytes.WBuffer) (int, error)
 
 	canGenerateOffsetArray() bool
 	computeOffsetArray(base, nevts int) []int32
