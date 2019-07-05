@@ -152,7 +152,7 @@ func (w *WBuffer) WriteObjectAny(obj root.Object) error {
 		return w.err
 	}
 
-	if reflect.ValueOf(obj).IsNil() {
+	if v := reflect.ValueOf(obj); (v == reflect.Value{}) || v.IsNil() {
 		w.WriteU32(0) // NULL pointer
 		return w.err
 	}
