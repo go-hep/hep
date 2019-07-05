@@ -5,6 +5,7 @@
 package rtree
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -431,6 +432,16 @@ func TestTreeRW(t *testing.T) {
 			btitles: []string{"i32/I", "f64/D"},
 			total:   nevts * (4 + 8),
 		},
+		{
+			name: "strings",
+			wvars: []WriteVar{
+				{Name: "i32", Value: new(int32)},
+				{Name: "f64", Value: new(float64)},
+				{Name: "str", Value: new(string)},
+			},
+			btitles: []string{"i32/I", "f64/D", "str/C"},
+			total:   nevts * (4 + 8 + 3), // 3: strings are "xxx"
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			fname := filepath.Join(tmp, tc.name+".root")
@@ -472,6 +483,8 @@ func TestTreeRW(t *testing.T) {
 							v.SetInt(int64(i))
 						case reflect.Float64:
 							v.SetFloat(float64(i))
+						case reflect.String:
+							v.SetString(fmt.Sprintf("%03d", i))
 						default:
 							panic(errors.Errorf("rtree: invalid write-var type %T", wvar.Value))
 						}

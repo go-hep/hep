@@ -411,9 +411,9 @@ func (leaf *{{.Name}}) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	switch {
 	case leaf.ptr != nil:
 		{{.WFunc}}(*leaf.ptr)
-		nbytes += leaf.tleaf.etype
 {{- if eq .Name "LeafC"}}
 		sz := len(*leaf.ptr)
+		nbytes += sz
 		if v := int32(sz); v >= leaf.max {
 			leaf.max = v+1
 		}
@@ -421,7 +421,9 @@ func (leaf *{{.Name}}) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 			leaf.tleaf.len = sz+1
 		}
 {{- else if eq .Name "LeafO"}}
+		nbytes += leaf.tleaf.etype
 {{- else}}
+		nbytes += leaf.tleaf.etype
 		if v := *leaf.ptr; v > leaf.max {
 			leaf.max = v
 		}

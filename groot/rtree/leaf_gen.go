@@ -1934,8 +1934,8 @@ func (leaf *LeafC) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	switch {
 	case leaf.ptr != nil:
 		w.WriteString(*leaf.ptr)
-		nbytes += leaf.tleaf.etype
 		sz := len(*leaf.ptr)
+		nbytes += sz
 		if v := int32(sz); v >= leaf.max {
 			leaf.max = v + 1
 		}
