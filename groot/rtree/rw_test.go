@@ -5,15 +5,18 @@
 package rtree
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
 
+	"go-hep.org/x/hep/groot/internal/rtests"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/riofs"
+	"go-hep.org/x/hep/groot/rtypes"
 )
 
 func TestBasketRW(t *testing.T) {
@@ -194,6 +197,207 @@ func TestIOFeaturesRW(t *testing.T) {
 
 			if !reflect.DeepEqual(tc.want, got) {
 				t.Fatalf("invalid round-trip: got=%x, want=%x", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestBranchRW(t *testing.T) {
+	const (
+		unsigned = true
+		signed   = false
+	)
+
+	tmp, err := ioutil.TempDir("", "groot-rtree-")
+	if err != nil {
+		t.Fatalf("could not create temporary directory: %v", err)
+	}
+	f, err := riofs.Create(filepath.Join(tmp, "basket.root"))
+	if err != nil {
+		t.Fatalf("could not create temporary file: %v", err)
+	}
+	defer f.Close()
+	defer os.RemoveAll(tmp)
+
+	dir, err := f.Mkdir("data")
+	if err != nil {
+		t.Fatalf("could not create TDirectory: %v", err)
+	}
+
+	for _, tc := range []struct {
+		name string
+		want rtests.ROOTer
+	}{
+		{
+			name: "TBranch",
+			want: &tbranch{
+				named:          *rbase.NewNamed("branch", "leaf1/I"),
+				attfill:        *rbase.NewAttFill(),
+				compress:       1,
+				basketSize:     defaultBasketSize,
+				entryOffsetLen: 0,
+				writeBasket:    1,
+				entryNumber:    4,
+				iobits:         0,
+				offset:         0,
+				maxBaskets:     10,
+				splitLevel:     1,
+				entries:        4,
+				firstEntry:     0,
+				totBytes:       86,
+				zipBytes:       86,
+				branches:       []Branch{},
+				leaves:         []Leaf{},
+				baskets:        []Basket{},
+				basketBytes:    []int32{86},
+				basketEntry:    []int64{0, 4},
+				basketSeek:     []int64{304},
+				fname:          "foo.root",
+
+				//
+				firstbasket: -1,
+				nextbasket:  -1,
+			},
+		},
+		{
+			name: "TBranch-with-leaves",
+			want: &tbranch{
+				named:          *rbase.NewNamed("branch", "leaf1/I:leaf2/L"),
+				attfill:        *rbase.NewAttFill(),
+				compress:       1,
+				basketSize:     defaultBasketSize,
+				entryOffsetLen: 0,
+				writeBasket:    1,
+				entryNumber:    4,
+				iobits:         0,
+				offset:         0,
+				maxBaskets:     10,
+				splitLevel:     1,
+				entries:        4,
+				firstEntry:     0,
+				totBytes:       86,
+				zipBytes:       86,
+				branches:       []Branch{},
+				leaves: []Leaf{
+					newLeafI(nil, "leaf1", 1, signed, nil),
+					newLeafL(nil, "leaf2", 1, signed, nil),
+				},
+				baskets:     []Basket{},
+				basketBytes: []int32{86},
+				basketEntry: []int64{0, 4},
+				basketSeek:  []int64{304},
+				fname:       "foo.root",
+
+				//
+				firstbasket: -1,
+				nextbasket:  -1,
+			},
+		},
+		{
+			name: "TBranch-with-baskets",
+			want: &tbranch{
+				named:          *rbase.NewNamed("branch", "leaf1/I:leaf2/L"),
+				attfill:        *rbase.NewAttFill(),
+				compress:       1,
+				basketSize:     defaultBasketSize,
+				entryOffsetLen: 0,
+				writeBasket:    1,
+				entryNumber:    4,
+				iobits:         0,
+				offset:         0,
+				maxBaskets:     10,
+				splitLevel:     1,
+				entries:        4,
+				firstEntry:     0,
+				totBytes:       86,
+				zipBytes:       86,
+				branches:       []Branch{},
+				leaves: []Leaf{
+					newLeafI(nil, "leaf1", 1, signed, nil),
+					newLeafL(nil, "leaf2", 1, signed, nil),
+				},
+				baskets: []Basket{
+					Basket{
+						key:     riofs.KeyFromDir(dir, "with-offsets", "title", "TBasket"),
+						bufsize: 5,
+						nevsize: 4,
+						nevbuf:  4,
+						last:    0,
+						iobits:  1,
+						offsets: []int32{1, 2, 3, 4},
+						branch:  nil,
+					},
+				},
+				basketBytes: []int32{86},
+				basketEntry: []int64{0, 4},
+				basketSeek:  []int64{304},
+				fname:       "foo.root",
+
+				//
+				firstbasket: -1,
+				nextbasket:  -1,
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			{
+				wbuf := rbytes.NewWBuffer(nil, nil, 0, nil)
+				wbuf.SetErr(io.EOF)
+				_, err := tc.want.MarshalROOT(wbuf)
+				if err == nil {
+					t.Fatalf("expected an error")
+				}
+				if err != io.EOF {
+					t.Fatalf("got=%v, want=%v", err, io.EOF)
+				}
+			}
+
+			if b := tc.want.(*tbranch); len(b.leaves) != 0 {
+				for i := range b.leaves {
+					b.leaves[i].setBranch(b)
+				}
+			}
+
+			if b := tc.want.(*tbranch); len(b.baskets) != 0 {
+				for i := range b.baskets {
+					b.baskets[i].branch = b
+				}
+			}
+
+			wbuf := rbytes.NewWBuffer(nil, nil, 0, nil)
+			_, err := tc.want.MarshalROOT(wbuf)
+			if err != nil {
+				t.Fatalf("could not marshal ROOT: %v", err)
+			}
+
+			rbuf := rbytes.NewRBuffer(wbuf.Bytes(), nil, 0, nil)
+			class := tc.want.Class()
+			obj := rtypes.Factory.Get(class)().Interface().(rbytes.Unmarshaler)
+			{
+				rbuf.SetErr(io.EOF)
+				err = obj.UnmarshalROOT(rbuf)
+				if err == nil {
+					t.Fatalf("expected an error")
+				}
+				if err != io.EOF {
+					t.Fatalf("got=%v, want=%v", err, io.EOF)
+				}
+				rbuf.SetErr(nil)
+			}
+			err = obj.UnmarshalROOT(rbuf)
+			if err != nil {
+				t.Fatalf("could not unmarshal ROOT: %v", err)
+			}
+
+			if b := obj.(*tbranch); len(b.baskets) != 0 {
+				for i := range b.baskets {
+					b.baskets[i].branch = b
+					b.baskets[i].key = tc.want.(*tbranch).baskets[i].key
+				}
+			}
+
+			if !reflect.DeepEqual(obj, tc.want) {
+				t.Fatalf("error\ngot= %+v\nwant=%+v\n", obj, tc.want)
 			}
 		})
 	}

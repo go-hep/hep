@@ -35,6 +35,31 @@ type Basket struct {
 	branch Branch // basket support branch
 }
 
+func newBasketFrom(t Tree, b Branch) Basket {
+	var dir riofs.Directory
+	switch b := b.(type) {
+	case *tbranch:
+		dir = b.dir
+	case *tbranchElement:
+		dir = b.tbranch.dir
+	default:
+		panic(errors.Errorf("rtree: unknown Branch type %T", b))
+	}
+
+	var (
+		name  = b.Name()
+		title = t.Name()
+		class = "TBasket"
+	)
+
+	bkt := Basket{
+		key:  riofs.KeyFromDir(dir, name, title, class),
+		wbuf: rbytes.NewWBuffer(nil, nil, 0, nil),
+	}
+
+	return bkt
+}
+
 func (b *Basket) Name() string {
 	return b.key.Name()
 }

@@ -5,6 +5,7 @@
 package rtree
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -15,10 +16,15 @@ import (
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
+	"go-hep.org/x/hep/groot/rvers"
+)
+
+const (
+	defaultBasketSize = 32000 // default basket size in bytes
+	maxBaskets        = 10    // default number of baskets
 )
 
 type tbranch struct {
-	rvers          int16
 	named          rbase.Named
 	attfill        rbase.AttFill
 	compress       int         // compression level and algorithm
@@ -55,6 +61,58 @@ type tbranch struct {
 	btop Branch          // top-level parent branch in the tree
 	bup  Branch          // parent branch
 	dir  riofs.Directory // directory where this branch's buffers are stored
+}
+
+func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, compress int) (*tbranch, error) {
+	b := &tbranch{
+		named:    *rbase.NewNamed(name, ""),
+		attfill:  *rbase.NewAttFill(),
+		compress: compress,
+
+		basketSize:  defaultBasketSize,
+		maxBaskets:  maxBaskets,
+		basketBytes: make([]int32, maxBaskets),
+		basketEntry: make([]int64, maxBaskets),
+		basketSeek:  make([]int64, maxBaskets),
+
+		tree: &w.ttree,
+		btop: btopOf(parent),
+		bup:  parent,
+		dir:  w.dir,
+	}
+
+	title := new(strings.Builder)
+	for i, wvar := range wvars {
+		if i > 0 {
+			title.WriteString(":")
+		}
+		title.WriteString(wvar.Name)
+		rt := reflect.TypeOf(wvar.Value).Elem()
+		switch k := rt.Kind(); k {
+		case reflect.Array:
+			fmt.Fprintf(title, "[%d]", rt.Len())
+			rt = rt.Elem()
+		case reflect.Slice:
+			fmt.Fprintf(title, "[N]") // FIXME(sbinet): how to link everything together?
+			rt = rt.Elem()
+		}
+		code := gotypeToROOTTypeCode(rt)
+		fmt.Fprintf(title, "/%s", code)
+
+		leaf, err := newLeafFromWVar(b, wvar)
+		if err != nil {
+			return nil, err
+		}
+		b.leaves = append(b.leaves, leaf)
+		w.ttree.leaves = append(w.ttree.leaves, leaf)
+	}
+
+	b.named.SetTitle(title.String())
+	return b, nil
+}
+
+func (b *tbranch) RVersion() int16 {
+	return rvers.Branch
 }
 
 func (b *tbranch) Name() string {
@@ -137,6 +195,103 @@ func (b *tbranch) getEntry(i int64) {
 	}
 }
 
+func (b *tbranch) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	pos := w.WriteVersion(b.RVersion())
+	if n, err := b.named.MarshalROOT(w); err != nil {
+		return n, err
+	}
+	if n, err := b.attfill.MarshalROOT(w); err != nil {
+		return n, err
+	}
+	w.WriteI32(int32(b.compress))
+	w.WriteI32(int32(b.basketSize))
+	w.WriteI32(int32(b.entryOffsetLen))
+	w.WriteI32(int32(b.writeBasket))
+	w.WriteI64(b.entryNumber)
+
+	if n, err := b.iobits.MarshalROOT(w); err != nil {
+		return n, err
+	}
+
+	w.WriteI32(int32(b.offset))
+	w.WriteI32(int32(b.maxBaskets))
+	w.WriteI32(int32(b.splitLevel))
+	w.WriteI64(b.entries)
+	w.WriteI64(b.firstEntry)
+	w.WriteI64(b.totBytes)
+	w.WriteI64(b.zipBytes)
+
+	{
+		branches := rcont.NewObjArray()
+		if len(b.branches) > 0 {
+			elems := make([]root.Object, len(b.branches))
+			for i, v := range b.branches {
+				elems[i] = v
+			}
+			branches.SetElems(elems)
+		}
+		if n, err := branches.MarshalROOT(w); err != nil {
+			return n, err
+		}
+	}
+	{
+		leaves := rcont.NewObjArray()
+		if len(b.leaves) > 0 {
+			elems := make([]root.Object, len(b.leaves))
+			for i, v := range b.leaves {
+				elems[i] = v
+			}
+			leaves.SetElems(elems)
+		}
+		if n, err := leaves.MarshalROOT(w); err != nil {
+			return n, err
+		}
+	}
+	{
+		baskets := rcont.NewObjArray()
+		if len(b.baskets) > 0 {
+			elems := make([]root.Object, len(b.baskets))
+			for i := range b.baskets {
+				elems[i] = &b.baskets[i]
+			}
+			baskets.SetElems(elems)
+		}
+		if n, err := baskets.MarshalROOT(w); err != nil {
+			return n, err
+		}
+		baskets.SetElems(nil)
+	}
+
+	w.WriteI8(0)
+	w.WriteFastArrayI32(b.basketBytes)
+	if len(b.basketBytes) < b.maxBaskets {
+		// fill up with zeros.
+		w.WriteFastArrayI32(make([]int32, b.maxBaskets-len(b.basketBytes)))
+	}
+
+	w.WriteI8(0)
+	w.WriteFastArrayI64(b.basketEntry)
+	if len(b.basketEntry) < b.maxBaskets {
+		// fill up with zeros.
+		w.WriteFastArrayI64(make([]int64, b.maxBaskets-len(b.basketEntry)))
+	}
+
+	w.WriteI8(0)
+	w.WriteFastArrayI64(b.basketSeek[:b.writeBasket])
+	if len(b.basketSeek) < b.maxBaskets {
+		// fill up with zeros.
+		w.WriteFastArrayI64(make([]int64, b.maxBaskets-len(b.basketSeek)))
+	}
+
+	w.WriteString(b.fname)
+
+	return w.SetByteCount(pos, b.Class())
+}
+
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -146,7 +301,6 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(b.Class())
-	b.rvers = vers
 
 	b.tree = nil
 	b.basket = nil
@@ -170,7 +324,7 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 	b.entryOffsetLen = int(r.ReadI32())
 	b.writeBasket = int(r.ReadI32())
 	b.entryNumber = r.ReadI64()
-	if b.rvers >= 13 {
+	if vers >= 13 {
 		if err := b.iobits.UnmarshalROOT(r); err != nil {
 			return err
 		}
@@ -237,10 +391,7 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	/*isArray*/
 	_ = r.ReadI8()
-	// FIXME(sbinet) drop when go-1.9 isn't supported anymore.
-	// workaround different gofmt rules.
-	end := b.writeBasket + 1
-	b.basketEntry = r.ReadFastArrayI64(b.maxBaskets)[:end:end]
+	b.basketEntry = r.ReadFastArrayI64(b.maxBaskets)[: b.writeBasket+1 : b.writeBasket+1]
 
 	/*isArray*/
 	_ = r.ReadI8()
@@ -415,8 +566,34 @@ func (b *tbranch) setStreamerElement(s rbytes.StreamerElement, ctx rbytes.Stream
 	// no op
 }
 
+func (b *tbranch) write() error {
+	basket := b.basket
+	if basket == nil {
+		b.writeBasket = len(b.baskets)
+		b.baskets = append(b.baskets, newBasketFrom(b.tree, b))
+		basket = &b.baskets[b.writeBasket]
+	}
+
+	wbuf := basket.wbuf
+	b.entries++
+	b.entryNumber++
+
+	err := b.writeToBuffer(wbuf)
+	if err != nil {
+		return errors.Wrapf(err, "could not write to buffer (branch=%q)", b.Name())
+	}
+
+	return nil
+}
+
 func (b *tbranch) writeToBuffer(w *rbytes.WBuffer) error {
-	panic("not implemented")
+	for i, leaf := range b.leaves {
+		err := leaf.writeToBuffer(w)
+		if err != nil {
+			return errors.Wrapf(err, "could not write leaf[%d] name=%q of branch %q", i, leaf.Name(), b.Name())
+		}
+	}
+	return nil
 }
 
 // tbranchElement is a Branch for objects.
@@ -443,6 +620,13 @@ type tbranchElement struct {
 
 func (b *tbranchElement) Class() string {
 	return "TBranchElement"
+}
+
+func (b *tbranchElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+	panic("not implemented")
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -645,6 +829,33 @@ func (b *tbranchElement) setStreamerElement(se rbytes.StreamerElement, ctx rbyte
 	}
 }
 
+func (b *tbranchElement) write() error                          { panic("not implemented") }
+func (b *tbranchElement) writeToBuffer(w *rbytes.WBuffer) error { panic("not implemented") }
+
+func btopOf(b Branch) Branch {
+	if b == nil {
+		return nil
+	}
+	const max = 1 << 32
+	for i := 0; i < max; i++ {
+		switch bb := b.(type) {
+		case *tbranch:
+			if bb.bup == nil {
+				return bb
+			}
+			b = bb.bup
+		case *tbranchElement:
+			if bb.bup == nil {
+				return bb
+			}
+			b = bb.bup
+		default:
+			panic(errors.Errorf("rtree: unknown branch type %T", b))
+		}
+	}
+	panic("impossible")
+}
+
 func init() {
 	{
 		f := func() reflect.Value {
@@ -666,10 +877,12 @@ var (
 	_ root.Object        = (*tbranch)(nil)
 	_ root.Named         = (*tbranch)(nil)
 	_ Branch             = (*tbranch)(nil)
+	_ rbytes.Marshaler   = (*tbranch)(nil)
 	_ rbytes.Unmarshaler = (*tbranch)(nil)
 
 	_ root.Object        = (*tbranchElement)(nil)
 	_ root.Named         = (*tbranchElement)(nil)
 	_ Branch             = (*tbranchElement)(nil)
+	_ rbytes.Marshaler   = (*tbranchElement)(nil)
 	_ rbytes.Unmarshaler = (*tbranchElement)(nil)
 )
