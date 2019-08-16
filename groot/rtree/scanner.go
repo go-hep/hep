@@ -261,6 +261,17 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 				cbrset[bbr.Name()] = true
 			}
 		}
+		if sv.Value == nil {
+			sv.Value = newValue(leaf)
+		}
+		arg := sv.Value
+		if rv := reflect.ValueOf(arg); rv.Kind() != reflect.Ptr {
+			return nil, errors.Errorf("rtree: ScanVar %d (name=%v) has non pointer Value", i, sv.Name)
+		}
+		err := br.setAddress(arg)
+		if err != nil {
+			panic(err)
+		}
 	}
 	base := baseScanner{
 		tree: t,

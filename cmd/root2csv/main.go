@@ -39,6 +39,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/pkg/errors"
 	"go-hep.org/x/hep/csvutil"
 	"go-hep.org/x/hep/groot"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
@@ -61,20 +62,28 @@ func main() {
 		log.Fatalf("missing input ROOT filename argument")
 	}
 
-	f, err := groot.Open(*fname)
+	err := process(*oname, *fname, *tname)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func process(oname, fname, tname string) error {
+
+	f, err := groot.Open(fname)
+	if err != nil {
+		return errors.Wrap(err, "could not open ROOT file")
+	}
 	defer f.Close()
 
-	obj, err := f.Get(*tname)
+	obj, err := f.Get(tname)
 	if err != nil {
-		log.Fatal(err)
+		return errors.Wrap(err, "could not get ROOT object")
 	}
 
 	tree, ok := obj.(rtree.Tree)
 	if !ok {
-		log.Fatalf("object %q in file %q is not a rtree.Tree", *tname, *fname)
+		return errors.Errorf("object %q in file %q is not a rtree.Tree", tname, fname)
 	}
 
 	var nt = ntuple{n: tree.Entries()}
@@ -85,11 +94,20 @@ func main() {
 		case reflect.Array, reflect.Map, reflect.Slice, reflect.Struct:
 			log.Printf(">>> %q %v not supported (%v)", leaf.Name(), leaf.Class(), kind)
 			continue
+		case reflect.String:
+			// ok
 		case reflect.Bool,
 			reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 			reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
-			reflect.Float32, reflect.Float64,
-			reflect.String:
+			reflect.Float32, reflect.Float64:
+			if leaf.LeafCount() != nil {
+				log.Printf(">>> %q %v not supported (slice)", leaf.Name(), leaf.Class())
+				continue
+			}
+			if leaf.Len() > 1 {
+				log.Printf(">>> %q %v not supported (array)", leaf.Name(), leaf.Class())
+				continue
+			}
 		default:
 			log.Printf(">>> %q %v not supported (%v) (unknown!)", leaf.Name(), leaf.Class(), kind)
 			continue
@@ -101,7 +119,7 @@ func main() {
 
 	sc, err := rtree.NewTreeScannerVars(tree, nt.args...)
 	if err != nil {
-		log.Fatal(err)
+		return errors.Wrap(err, "could not create tree scanner")
 	}
 	defer sc.Close()
 
@@ -109,15 +127,15 @@ func main() {
 	for sc.Next() {
 		err = sc.Scan(nt.vars...)
 		if err != nil {
-			log.Fatal(err)
+			return errors.Wrapf(err, "could not scan entry %d", nrows)
 		}
 		nt.fill()
 		nrows++
 	}
 
-	tbl, err := csvutil.Create(*oname)
+	tbl, err := csvutil.Create(oname)
 	if err != nil {
-		log.Fatal(err)
+		return errors.Wrap(err, "could not create output CSV file")
 	}
 	defer tbl.Close()
 	tbl.Writer.Comma = ';'
@@ -128,11 +146,11 @@ func main() {
 	}
 	err = tbl.WriteHeader(fmt.Sprintf(
 		"## Automatically generated from %q\n%s\n",
-		*fname,
+		fname,
 		strings.Join(names, string(tbl.Writer.Comma)),
 	))
 	if err != nil {
-		log.Fatalf("could not write header: %v", err)
+		return errors.Wrap(err, "could not write CSV header")
 	}
 
 	row := make([]interface{}, len(nt.cols))
@@ -142,14 +160,16 @@ func main() {
 		}
 		err = tbl.WriteRow(row...)
 		if err != nil {
-			log.Fatalf("error writing row %d: %v", irow, err)
+			return errors.Wrapf(err, "could not write row %d to CSV file", irow)
 		}
 	}
 
 	err = tbl.Close()
 	if err != nil {
-		log.Fatalf("could not close CSV file: %v", err)
+		return errors.Wrap(err, "could not close CSV output file")
 	}
+
+	return nil
 }
 
 type ntuple struct {
@@ -163,7 +183,11 @@ func (nt *ntuple) add(name string, leaf rtree.Leaf) {
 	n := len(nt.cols)
 	nt.cols = append(nt.cols, newColumn(name, leaf, nt.n))
 	col := &nt.cols[n]
-	nt.args = append(nt.args, rtree.ScanVar{Name: name, Leaf: leaf.Name()})
+	nt.args = append(nt.args, rtree.ScanVar{
+		Name:  name,
+		Leaf:  leaf.Name(),
+		Value: col.data.Addr().Interface(),
+	})
 	nt.vars = append(nt.vars, col.data.Addr().Interface())
 }
 
