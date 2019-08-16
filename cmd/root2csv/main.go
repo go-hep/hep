@@ -80,22 +80,21 @@ func main() {
 	var nt = ntuple{n: tree.Entries()}
 	log.Printf("scanning leaves...")
 	for _, leaf := range tree.Leaves() {
-		if leaf.Kind() == reflect.String {
-			nt.add(leaf.Name(), leaf)
+		kind := leaf.Type().Kind()
+		switch kind {
+		case reflect.Array, reflect.Map, reflect.Slice, reflect.Struct:
+			log.Printf(">>> %q %v not supported (%v)", leaf.Name(), leaf.Class(), kind)
+			continue
+		case reflect.Bool,
+			reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+			reflect.Float32, reflect.Float64,
+			reflect.String:
+		default:
+			log.Printf(">>> %q %v not supported (%v) (unknown!)", leaf.Name(), leaf.Class(), kind)
 			continue
 		}
-		if leaf.Class() == "TLeafElement" { // FIXME(sbinet): find a better, type-safe way
-			log.Printf(">>> %q %v not supported", leaf.Name(), leaf.Class())
-			continue
-		}
-		if leaf.LeafCount() != nil {
-			log.Printf(">>> %q []%v not supported", leaf.Name(), leaf.TypeName())
-			continue
-		}
-		if leaf.Len() > 1 {
-			log.Printf(">>> %q [%d]%v not supported", leaf.Name(), leaf.Len(), leaf.TypeName())
-			continue
-		}
+
 		nt.add(leaf.Name(), leaf)
 	}
 	log.Printf("scanning leaves... [done]")
