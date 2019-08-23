@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/root"
 )
 
@@ -219,5 +220,5 @@ func rmeta2Name(t Enum) string {
 	case STLstring:
 		return "string"
 	}
-	panic(fmt.Errorf("not implemented: t=%d", t))
+	panic(errors.Errorf("not implemented: t=%d", t))
 }
