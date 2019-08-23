@@ -65,13 +65,14 @@ func (g *genGoType) genType(si rbytes.StreamerInfo) error {
 	if title := si.Title(); title != "" {
 		g.printf("// %s has been automatically generated.\n// %s\n", name, title)
 	}
-	g.printf("type %s struct{\n", name)
+	goname := g.cxx2go(name, qualNone)
+	g.printf("type %s struct{\n", goname)
 	for i, se := range si.Elements() {
 		g.genField(si, i, se)
 	}
 	g.printf("}\n\n")
-	g.printf("func (*%s) Class() string { return %q }\n", name, name)
-	g.printf("func (*%s) RVersion() int16 { return %d }\n", name, si.ClassVersion())
+	g.printf("func (*%s) Class() string {\nreturn %q\n}\n\n", goname, name)
+	g.printf("func (*%s) RVersion() int16 {\nreturn %d\n}\n", goname, si.ClassVersion())
 	g.printf("\n")
 	g.genMarshal(si)
 	g.genUnmarshal(si)
@@ -85,7 +86,7 @@ func (g *genGoType) genType(si rbytes.StreamerInfo) error {
 }
 
 `,
-		name, name,
+		goname, name,
 	)
 
 	g.genStreamerInfo(si)
@@ -93,7 +94,7 @@ func (g *genGoType) genType(si rbytes.StreamerInfo) error {
 	ifaces := []string{"root.Object", "rbytes.RVersioner", "rbytes.Marshaler", "rbytes.Unmarshaler"}
 	g.printf("var (\n")
 	for _, n := range ifaces {
-		g.printf("\t_ %s = (*%s)(nil)\n", n, name)
+		g.printf("\t_ %s = (*%s)(nil)\n", n, goname)
 	}
 	g.printf(")\n\n")
 
@@ -377,7 +378,7 @@ func (o *%[1]s) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	pos := w.WriteVersion(o.RVersion())
 
 `,
-		si.Name(),
+		g.cxx2go(si.Name(), qualNone),
 	)
 
 	for i, se := range si.Elements() {
@@ -622,7 +623,7 @@ func (o *%[1]s) UnmarshalROOT(r *rbytes.RBuffer) error {
 	/*vers*/ _, pos, bcnt := r.ReadVersion(o.Class())
 
 `,
-		si.Name(),
+		g.cxx2go(si.Name(), qualNone),
 	)
 
 	for i, se := range si.Elements() {
@@ -853,6 +854,7 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 			g.printf("o.%s = r.%s(int(r.ReadI32()))\n", se.Name(), rfunc)
 			g.printf("r.CheckByteCount(pos, bcnt, start, %q)\n", se.TypeName())
 			g.printf("}\n")
+
 		default:
 			panic(errors.Errorf("STL-type not implemented %#v", se))
 		}

@@ -64,8 +64,13 @@ type Event struct {
 	End         string              `groot:"End"`
 }
 
-func (*Event) Class() string   { return "Event" }
-func (*Event) RVersion() int16 { return 1 }
+func (*Event) Class() string {
+	return "Event"
+}
+
+func (*Event) RVersion() int16 {
+	return 1
+}
 
 // MarshalROOT implements rbytes.Marshaler
 func (o *Event) MarshalROOT(w *rbytes.WBuffer) (int, error) {
@@ -988,8 +993,13 @@ type P3 struct {
 	Pz int32   `groot:"Pz"`
 }
 
-func (*P3) Class() string   { return "P3" }
-func (*P3) RVersion() int16 { return 1 }
+func (*P3) Class() string {
+	return "P3"
+}
+
+func (*P3) RVersion() int16 {
+	return 1
+}
 
 // MarshalROOT implements rbytes.Marshaler
 func (o *P3) MarshalROOT(w *rbytes.WBuffer) (int, error) {
