@@ -159,7 +159,7 @@ func (g *genGoType) genField(si rbytes.StreamerInfo, i int, se rbytes.StreamerEl
 
 	case *StreamerSTL:
 		switch se.STLVectorType() {
-		case rmeta.STLvector:
+		case rmeta.STLvector, rmeta.STLmap:
 			tname := g.typename(se)
 			g.printf(docFmt, se.Name(), tname, g.stag(i, se), doc)
 		default:
@@ -295,6 +295,17 @@ func (g *genGoType) typename(se rbytes.StreamerElement) string {
 			default:
 				panic(errors.Errorf("invalid stl-vector element type: %v -- %#v", se.ContainedType(), se))
 			}
+		case rmeta.STLmap:
+			types := rmeta.CxxTemplateArgsOf(se.TypeName())
+			if len(types) != 2 {
+				panic(errors.Errorf(
+					"invalid stl-map: got %d template arguments instead of 2 for type %q",
+					len(types), se.TypeName(),
+				))
+			}
+			k := g.cxx2go(types[0], qualNone)
+			v := g.cxx2go(types[1], qualNone)
+			return "map[" + k + "]" + v
 		default:
 			panic(errors.Errorf("STL-type not implemented %#v", se))
 		}
@@ -351,7 +362,9 @@ func (g *genGoType) cxx2go(name string, qual qualKind) string {
 		}
 		return name
 	}
-	return prefix + f(name)
+	name = f(name)
+	name = strings.Replace(name, "::", "__", -1) // handle namespaces
+	return prefix + name
 }
 
 func (g *genGoType) genMarshal(si rbytes.StreamerInfo) {

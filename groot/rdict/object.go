@@ -192,6 +192,43 @@ func genTypeFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement) 
 		switch se.STLVectorType() {
 		case rmeta.STLvector:
 			return genType(sictx, se.ContainedType(), -1)
+		case rmeta.STLmap:
+			types := rmeta.CxxTemplateArgsOf(se.TypeName())
+			if len(types) != 2 {
+				panic(errors.Errorf(
+					"invalid std::map: got %d template arguments, want=2, for %q",
+					len(types), se.TypeName(),
+				))
+			}
+			var (
+				key reflect.Type
+				val reflect.Type
+			)
+			switch v, ok := rmeta.CxxBuiltins[types[0]]; {
+			case ok:
+				key = v
+			default:
+				sikey, err := sictx.StreamerInfo(types[0], -1)
+				if err != nil {
+					panic(errors.Wrapf(
+						err, "could not find key type %q for std::map %q", types[0], se.TypeName(),
+					))
+				}
+				key = genTypeFromSI(sictx, sikey)
+			}
+			switch v, ok := rmeta.CxxBuiltins[types[1]]; {
+			case ok:
+				val = v
+			default:
+				sival, err := sictx.StreamerInfo(types[1], -1)
+				if err != nil {
+					panic(errors.Wrapf(
+						err, "could not find val type %q for std::map %q", types[1], se.TypeName(),
+					))
+				}
+				val = genTypeFromSI(sictx, sival)
+			}
+			return reflect.MapOf(key, val)
 		}
 		panic(errors.Errorf("rdict: STL container not implemented: %#v", se))
 	}
