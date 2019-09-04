@@ -1,6 +1,6 @@
 module go-hep.org/x/hep
 
-go 1.12
+go 1.11
 
 require (
 	github.com/ajstarks/svgo v0.0.0-20181006003313-6ce6a3bcf6cd // indirect
