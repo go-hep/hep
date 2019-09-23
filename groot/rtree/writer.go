@@ -8,7 +8,9 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
+	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/riofs"
+	"go-hep.org/x/hep/groot/rvers"
 )
 
 // Writer is the interface that wraps the Write method for Trees.
@@ -29,7 +31,6 @@ type Writer interface {
 type wtree struct {
 	ttree
 
-	dir riofs.Directory // directory holding this tree
 	typ reflect.Type
 }
 
@@ -47,11 +48,14 @@ func NewWriter(dir riofs.Directory, name string, vars []WriteVar) (Writer, error
 	}
 
 	w := &wtree{
-		dir: dir,
+		ttree: ttree{
+			f:     fileOf(dir),
+			dir:   dir,
+			rvers: rvers.Tree,
+			named: *rbase.NewNamed(name, ""),
+		},
 		//typ: typ,
 	}
-	w.ttree.f = fileOf(dir)
-	w.ttree.named.SetName(name)
 
 	const compress = 1 // FIXME: make it func-opt
 	for _, v := range vars {

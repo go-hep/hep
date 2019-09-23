@@ -28,7 +28,8 @@ import (
 //   To Fill this object, use member function Fill with no parameters
 //     The Fill function loops on all defined TBranch
 type ttree struct {
-	f *riofs.File // underlying file
+	f   *riofs.File     // underlying file
+	dir riofs.Directory // directory holding this tree
 
 	rvers     int16
 	named     rbase.Named
