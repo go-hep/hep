@@ -17,6 +17,7 @@ import (
 	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
+	"go-hep.org/x/hep/groot/rvers"
 )
 
 // A ttree object is a list of Branch.
@@ -29,24 +30,53 @@ import (
 type ttree struct {
 	f *riofs.File // underlying file
 
-	rvers int16
-	named rbase.Named
+	rvers     int16
+	named     rbase.Named
+	attline   rbase.AttLine
+	attfill   rbase.AttFill
+	attmarker rbase.AttMarker
 
-	entries  int64 // Number of entries
-	totbytes int64 // Total number of bytes in all branches before compression
-	zipbytes int64 // Total number of bytes in all branches after  compression
+	entries       int64   // Number of entries
+	totBytes      int64   // Total number of bytes in all branches before compression
+	zipBytes      int64   // Total number of bytes in all branches after  compression
+	savedBytes    int64   // number of autosaved bytes
+	flushedBytes  int64   // number of auto-flushed bytes
+	weight        float64 // tree weight
+	timerInterval int32   // timer interval in milliseconds
+	scanField     int32   // number of runs before prompting in Scan
+	update        int32   // update frequency for entry-loop
 
-	iobits tioFeatures // IO features to define for newly-written baskets and branches
+	defaultEntryOffsetLen int32 // initial length of the entry offset table in the basket buffers
+	maxEntries            int64 // maximum number of entries in case of circular buffers
+	maxEntryLoop          int64 // maximum number of entries to process
+	maxVirtualSize        int64 // maximum total size of buffers kept in memory
+	autoSave              int64 // autosave tree when autoSave entries written
+	autoFlush             int64 // autoflush tree when autoFlush entries written
+	estimate              int64 // number of entries to estimate histogram limits
 
 	clusters clusters
 
+	iobits tioFeatures // IO features to define for newly-written baskets and branches
+
 	branches []Branch // list of branches
 	leaves   []Leaf   // direct pointers to individual branch leaves
+
+	aliases     *rcont.List   // list of aliases for expressions based on the tree branches
+	indexValues *rcont.ArrayD // sorted index values
+	index       *rcont.ArrayI // index of sorted values
+	treeIndex   root.Object   // pointer to the tree index (if any) // FIXME(sbinet): impl TVirtualIndex?
+	friends     *rcont.List   // pointer to the list of firend elements
+	userInfo    *rcont.List   // pointer to a list of user objects associated with this tree
+	branchRef   root.Object   // branch supporting the reftable (if any) // FIXME(sbinet): impl TBranchRef?
 }
 
 type clusters struct {
 	ranges []int64 // last entry to a cluster range
 	sizes  []int64 // number of entries in each cluster for a given range
+}
+
+func (*ttree) RVersion() int16 {
+	return rvers.Tree
 }
 
 func (tree *ttree) Class() string {
@@ -66,11 +96,11 @@ func (tree *ttree) Entries() int64 {
 }
 
 func (tree *ttree) TotBytes() int64 {
-	return tree.totbytes
+	return tree.totBytes
 }
 
 func (tree *ttree) ZipBytes() int64 {
-	return tree.zipbytes
+	return tree.zipBytes
 }
 
 func (tree *ttree) Branches() []Branch {
@@ -147,9 +177,9 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	for _, a := range []rbytes.Unmarshaler{
 		&tree.named,
-		&rbase.AttLine{},
-		&rbase.AttFill{},
-		&rbase.AttMarker{},
+		&tree.attline,
+		&tree.attfill,
+		&tree.attmarker,
 	} {
 		err := a.UnmarshalROOT(r)
 		if err != nil {
@@ -166,22 +196,22 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	tree.entries = r.ReadI64()
-	tree.totbytes = r.ReadI64()
-	tree.zipbytes = r.ReadI64()
+	tree.totBytes = r.ReadI64()
+	tree.zipBytes = r.ReadI64()
 	if vers >= 16 {
-		_ = r.ReadI64() // fSavedBytes
+		tree.savedBytes = r.ReadI64()
 	}
 	if vers >= 18 {
-		_ = r.ReadI64() // flushed bytes
+		tree.flushedBytes = r.ReadI64()
 	}
 
-	_ = r.ReadF64() // fWeight
-	_ = r.ReadI32() // fTimerInterval
-	_ = r.ReadI32() // fScanField
-	_ = r.ReadI32() // fUpdate
+	tree.weight = r.ReadF64()
+	tree.timerInterval = r.ReadI32()
+	tree.scanField = r.ReadI32()
+	tree.update = r.ReadI32()
 
 	if vers >= 17 {
-		_ = r.ReadI32() // fDefaultEntryOffsetLen
+		tree.defaultEntryOffsetLen = r.ReadI32()
 	}
 
 	nclus := 0
@@ -189,16 +219,16 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 		nclus = int(r.ReadI32()) // fNClusterRange
 	}
 
-	_ = r.ReadI64() // fMaxEntries
-	_ = r.ReadI64() // fMaxEntryLoop
-	_ = r.ReadI64() // fMaxVirtualSize
-	_ = r.ReadI64() // fAutoSave
+	tree.maxEntries = r.ReadI64()
+	tree.maxEntryLoop = r.ReadI64()
+	tree.maxVirtualSize = r.ReadI64()
+	tree.autoSave = r.ReadI64()
 
 	if vers >= 18 {
-		_ = r.ReadI64() // fAutoFlush
+		tree.autoFlush = r.ReadI64()
 	}
 
-	_ = r.ReadI64() // fEstimate
+	tree.estimate = r.ReadI64()
 
 	if vers >= 19 { // FIXME
 		_ = r.ReadI8()
@@ -235,11 +265,26 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 		//tree.leaves[i].SetBranch(tree.branches[i])
 	}
 
-	for range []string{
-		"fAliases", "fIndexValues", "fIndex", "fTreeIndex", "fFriends",
-		"fUserInfo", "fBranchRef",
-	} {
-		_ = r.ReadObjectAny()
+	if v := r.ReadObjectAny(); v != nil {
+		tree.aliases = v.(*rcont.List)
+	}
+	if v := r.ReadObjectAny(); v != nil {
+		tree.indexValues = v.(*rcont.ArrayD)
+	}
+	if v := r.ReadObjectAny(); v != nil {
+		tree.index = v.(*rcont.ArrayI)
+	}
+	if v := r.ReadObjectAny(); v != nil {
+		tree.treeIndex = v
+	}
+	if v := r.ReadObjectAny(); v != nil {
+		tree.friends = v.(*rcont.List)
+	}
+	if v := r.ReadObjectAny(); v != nil {
+		tree.userInfo = v.(*rcont.List)
+	}
+	if v := r.ReadObjectAny(); v != nil {
+		tree.branchRef = v
 	}
 
 	r.CheckByteCount(pos, bcnt, beg, tree.Class())

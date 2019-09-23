@@ -79,7 +79,7 @@ func (w *wtree) Write() (int, error) {
 		tot += nbytes
 	}
 	w.ttree.entries++
-	w.ttree.totbytes += int64(tot)
+	w.ttree.totBytes += int64(tot)
 	// FIXME(sbinet): autoflush
 	return tot, nil
 }
