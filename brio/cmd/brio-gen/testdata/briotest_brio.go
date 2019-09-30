@@ -27,11 +27,11 @@ func (o *Hist) MarshalBinary() (data []byte, err error) {
 	binary.LittleEndian.PutUint64(buf[:8], uint64(o.i64))
 	data = append(data, buf[:8]...)
 	data = append(data, byte(o.u8))
-	binary.LittleEndian.PutUint16(buf[:2], o.u16)
+	binary.LittleEndian.PutUint16(buf[:2], uint16(o.u16))
 	data = append(data, buf[:2]...)
-	binary.LittleEndian.PutUint32(buf[:4], o.u32)
+	binary.LittleEndian.PutUint32(buf[:4], uint32(o.u32))
 	data = append(data, buf[:4]...)
-	binary.LittleEndian.PutUint64(buf[:8], o.u64)
+	binary.LittleEndian.PutUint64(buf[:8], uint64(o.u64))
 	data = append(data, buf[:8]...)
 	binary.LittleEndian.PutUint32(buf[:4], math.Float32bits(o.f32))
 	data = append(data, buf[:4]...)
@@ -98,6 +98,9 @@ func (o *Hist) MarshalBinary() (data []byte, err error) {
 		binary.LittleEndian.PutUint64(buf[:8], math.Float64bits(v))
 		data = append(data, buf[:8]...)
 	}
+	data = append(data, byte(o.myu8))
+	binary.LittleEndian.PutUint16(buf[:2], uint16(o.myu16))
+	data = append(data, buf[:2]...)
 	return data, err
 }
 
@@ -109,7 +112,7 @@ func (o *Hist) UnmarshalBinary(data []byte) (err error) {
 		o.Name = string(data[:n])
 		data = data[n:]
 	}
-	o.Data.X = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+	o.Data.X = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
 	o.i = int(binary.LittleEndian.Uint64(data[:8]))
 	data = data[8:]
@@ -123,21 +126,21 @@ func (o *Hist) UnmarshalBinary(data []byte) (err error) {
 	data = data[4:]
 	o.i64 = int64(binary.LittleEndian.Uint64(data[:8]))
 	data = data[8:]
-	o.u8 = data[0]
+	o.u8 = uint8(data[0])
 	data = data[1:]
-	o.u16 = binary.LittleEndian.Uint16(data[:2])
+	o.u16 = uint16(binary.LittleEndian.Uint16(data[:2]))
 	data = data[2:]
-	o.u32 = binary.LittleEndian.Uint32(data[:4])
+	o.u32 = uint32(binary.LittleEndian.Uint32(data[:4]))
 	data = data[4:]
-	o.u64 = binary.LittleEndian.Uint64(data[:8])
+	o.u64 = uint64(binary.LittleEndian.Uint64(data[:8]))
 	data = data[8:]
-	o.f32 = math.Float32frombits(binary.LittleEndian.Uint32(data[:4]))
+	o.f32 = float32(math.Float32frombits(binary.LittleEndian.Uint32(data[:4])))
 	data = data[4:]
-	o.f64 = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+	o.f64 = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
-	o.c64 = complex(math.Float32frombits(binary.LittleEndian.Uint32(data[:4])), math.Float32frombits(binary.LittleEndian.Uint32(data[4:8])))
+	o.c64 = complex64(complex(math.Float32frombits(binary.LittleEndian.Uint32(data[:4])), math.Float32frombits(binary.LittleEndian.Uint32(data[4:8]))))
 	data = data[8:]
-	o.c128 = complex(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])), math.Float64frombits(binary.LittleEndian.Uint64(data[8:16])))
+	o.c128 = complex128(complex(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])), math.Float64frombits(binary.LittleEndian.Uint64(data[8:16]))))
 	data = data[16:]
 	switch data[i] {
 	case 0:
@@ -155,7 +158,7 @@ func (o *Hist) UnmarshalBinary(data []byte) (err error) {
 		o.sliF64 = make([]float64, n)
 		data = data[8:]
 		for i := range o.sliF64 {
-			o.sliF64[i] = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+			o.sliF64[i] = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 			data = data[8:]
 		}
 	}
@@ -201,11 +204,15 @@ func (o *Hist) UnmarshalBinary(data []byte) (err error) {
 	}
 	{
 		var v float64
-		v = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+		v = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 		data = data[8:]
 		o.ptr = &v
 
 	}
+	o.myu8 = U8(data[0])
+	data = data[1:]
+	o.myu16 = U16(binary.LittleEndian.Uint16(data[:2]))
+	data = data[2:]
 	return err
 }
 
@@ -221,9 +228,9 @@ func (o *Bin) MarshalBinary() (data []byte, err error) {
 
 // UnmarshalBinary implements encoding.BinaryUnmarshaler
 func (o *Bin) UnmarshalBinary(data []byte) (err error) {
-	o.x = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+	o.x = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
-	o.y = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+	o.y = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
 	return err
 }

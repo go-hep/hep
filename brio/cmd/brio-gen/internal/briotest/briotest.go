@@ -34,9 +34,14 @@ type Hist struct {
 	bins   []Bin
 	sliPs  []*Bin
 
-	ptr *float64
+	ptr   *float64
+	myu8  U8
+	myu16 U16
 }
 
 type Bin struct {
 	x, y float64
 }
+
+type U8 uint8
+type U16 uint16

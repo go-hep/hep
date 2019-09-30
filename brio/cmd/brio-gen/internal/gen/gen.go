@@ -120,21 +120,21 @@ func (g *Generator) genMarshalType(t types.Type, n string) {
 
 		case types.Uint16:
 			g.printf(
-				"binary.LittleEndian.PutUint16(buf[:2], %s)\n",
+				"binary.LittleEndian.PutUint16(buf[:2], uint16(%s))\n",
 				n,
 			)
 			g.printf("data = append(data, buf[:2]...)\n")
 
 		case types.Uint32:
 			g.printf(
-				"binary.LittleEndian.PutUint32(buf[:4], %s)\n",
+				"binary.LittleEndian.PutUint32(buf[:4], uint32(%s))\n",
 				n,
 			)
 			g.printf("data = append(data, buf[:4]...)\n")
 
 		case types.Uint64:
 			g.printf(
-				"binary.LittleEndian.PutUint64(buf[:8], %s)\n",
+				"binary.LittleEndian.PutUint64(buf[:8], uint64(%s))\n",
 				n,
 			)
 			g.printf("data = append(data, buf[:8]...)\n")
@@ -316,6 +316,7 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 		return
 	}
 
+	tn := types.TypeString(t, types.RelativeTo(g.pkg))
 	ut := t.Underlying()
 	switch ut := ut.(type) {
 	case *types.Basic:
@@ -327,70 +328,70 @@ func (g *Generator) genUnmarshalType(t types.Type, n string) {
 			g.printf("data = data[1:]\n")
 
 		case types.Uint:
-			g.printf("%s = uint(binary.LittleEndian.Uint64(data[:8]))\n", n)
+			g.printf("%s = %s(binary.LittleEndian.Uint64(data[:8]))\n", n, tn)
 			g.printf("data = data[8:]\n")
 
 		case types.Uint8:
-			g.printf("%s = data[0]\n", n)
+			g.printf("%s = %s(data[0])\n", n, tn)
 			g.printf("data = data[1:]\n")
 
 		case types.Uint16:
-			g.printf("%s = binary.LittleEndian.Uint16(data[:2])\n", n)
+			g.printf("%s = %s(binary.LittleEndian.Uint16(data[:2]))\n", n, tn)
 			g.printf("data = data[2:]\n")
 
 		case types.Uint32:
-			g.printf("%s = binary.LittleEndian.Uint32(data[:4])\n", n)
+			g.printf("%s = %s(binary.LittleEndian.Uint32(data[:4]))\n", n, tn)
 			g.printf("data = data[4:]\n")
 
 		case types.Uint64:
-			g.printf("%s = binary.LittleEndian.Uint64(data[:8])\n", n)
+			g.printf("%s = %s(binary.LittleEndian.Uint64(data[:8]))\n", n, tn)
 			g.printf("data = data[8:]\n")
 
 		case types.Int:
-			g.printf("%s = int(binary.LittleEndian.Uint64(data[:8]))\n", n)
+			g.printf("%s = %s(binary.LittleEndian.Uint64(data[:8]))\n", n, tn)
 			g.printf("data = data[8:]\n")
 
 		case types.Int8:
-			g.printf("%s = int8(data[0])\n", n)
+			g.printf("%s = %s(data[0])\n", n, tn)
 			g.printf("data = data[1:]\n")
 
 		case types.Int16:
-			g.printf("%s = int16(binary.LittleEndian.Uint16(data[:2]))\n", n)
+			g.printf("%s = %s(binary.LittleEndian.Uint16(data[:2]))\n", n, tn)
 			g.printf("data = data[2:]\n")
 
 		case types.Int32:
-			g.printf("%s = int32(binary.LittleEndian.Uint32(data[:4]))\n", n)
+			g.printf("%s = %s(binary.LittleEndian.Uint32(data[:4]))\n", n, tn)
 			g.printf("data = data[4:]\n")
 
 		case types.Int64:
-			g.printf("%s = int64(binary.LittleEndian.Uint64(data[:8]))\n", n)
+			g.printf("%s = %s(binary.LittleEndian.Uint64(data[:8]))\n", n, tn)
 			g.printf("data = data[8:]\n")
 
 		case types.Float32:
 			g.imps["math"] = 1
-			g.printf("%s = math.Float32frombits(binary.LittleEndian.Uint32(data[:4]))\n", n)
+			g.printf("%s = %s(math.Float32frombits(binary.LittleEndian.Uint32(data[:4])))\n", n, tn)
 			g.printf("data = data[4:]\n")
 
 		case types.Float64:
 			g.imps["math"] = 1
-			g.printf("%s = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))\n", n)
+			g.printf("%s = %s(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))\n", n, tn)
 			g.printf("data = data[8:]\n")
 
 		case types.Complex64:
 			g.imps["math"] = 1
-			g.printf("%s = complex(math.Float32frombits(binary.LittleEndian.Uint32(data[:4])), math.Float32frombits(binary.LittleEndian.Uint32(data[4:8])))\n", n)
+			g.printf("%s = %s(complex(math.Float32frombits(binary.LittleEndian.Uint32(data[:4])), math.Float32frombits(binary.LittleEndian.Uint32(data[4:8]))))\n", n, tn)
 			g.printf("data = data[8:]\n")
 
 		case types.Complex128:
 			g.imps["math"] = 1
-			g.printf("%s = complex(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])), math.Float64frombits(binary.LittleEndian.Uint64(data[8:16])))\n", n)
+			g.printf("%s = %s(complex(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])), math.Float64frombits(binary.LittleEndian.Uint64(data[8:16]))))\n", n, tn)
 			g.printf("data = data[16:]\n")
 
 		case types.String:
 			g.printf("{\n")
 			g.printf("n := int(binary.LittleEndian.Uint64(data[:8]))\n")
 			g.printf("data = data[8:]\n")
-			g.printf("%s = string(data[:n])\n", n)
+			g.printf("%s = %s(data[:n])\n", n, tn)
 			g.printf("data = data[n:]\n")
 			g.printf("}\n")
 

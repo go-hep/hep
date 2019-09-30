@@ -39,6 +39,8 @@ type T1 struct {
 	data struct {
 		f64 float64
 	}
+
+	myU16 U16
 }
 
 type T2 struct {
@@ -48,3 +50,5 @@ type T2 struct {
 type T3 struct {
 	Time time.Time // implements encoding.Binary(Un)Marshaler
 }
+
+type U16 uint16
