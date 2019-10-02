@@ -804,7 +804,7 @@ func (r *RBuffer) ReadObjectAny() (obj root.Object) {
 
 		fct, ok := cls.(rtypes.FactoryFct)
 		if !ok {
-			r.err = errors.Errorf("rbytes: invalid class-tag reference [%v] found (not a rypes.FactoryFct)", ref)
+			r.err = errors.Errorf("rbytes: invalid class-tag reference [%v] found (not a rypes.FactoryFct: %T)", ref, cls)
 			return nil
 		}
 

@@ -181,7 +181,7 @@ func (w *WBuffer) WriteClass(beg int64, obj root.Object) (uint32, error) {
 	start := w.Pos()
 	if ref64, dup := w.refs[obj]; dup {
 		// we've already seen this value.
-		w.WriteU32(uint32(ref64) | kClassMask)
+		w.WriteU32(uint32(ref64))
 		bcnt := w.Pos() - start
 		return uint32(bcnt | kByteCountMask), w.err
 	}
