@@ -489,7 +489,10 @@ func (tio *tioFeatures) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	pos := w.WriteVersion(tioFeaturesVers)
 
 	var buf [4]byte // FIXME(sbinet) where do these 4 bytes come from ?
-	w.Write(buf[:])
+	n, err := w.Write(buf[:])
+	if err != nil {
+		return n, errors.Wrapf(err, "could not write tio marshaled buffer")
+	}
 
 	w.WriteU8(uint8(*tio))
 

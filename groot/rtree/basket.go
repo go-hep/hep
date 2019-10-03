@@ -148,7 +148,10 @@ func (b *Basket) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		}
 		if b.wbuf != nil {
 			raw := b.wbuf.Bytes()
-			w.Write(raw[:b.last])
+			_, err := w.Write(raw[:b.last])
+			if err != nil {
+				return int(w.Pos() - beg), err
+			}
 		}
 	}
 

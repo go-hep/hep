@@ -92,8 +92,8 @@ func Compress(dst, src []byte, compr int32) ([]byte, error) {
 	var (
 		nblocks = len(src)/blksz + 1
 		cur     = 0
-		beg     = 0
-		end     = 0
+		beg     int
+		end     int
 	)
 
 	size := len(src) + nblocks*HeaderSize
@@ -130,7 +130,7 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		dst []byte
 
 		srcsz = int32(len(src))
-		dstsz = srcsz
+		dstsz int32
 	)
 
 	switch alg {
@@ -199,7 +199,7 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		var room = int(float64(srcsz) * 2e-4) // lz4 needs some extra scratch space
 		dst = make([]byte, HeaderSize+chksum+len(src)+room)
 		buf := dst[HeaderSize:]
-		var n = 0
+		var n int
 		switch {
 		case lvl >= 4:
 			if lvl > 9 {
@@ -304,7 +304,10 @@ func Decompress(dst []byte, src io.Reader) error {
 			}
 			if lr.N > 0 {
 				// FIXME(sbinet): LZMA leaves some bytes on the floor...
-				lr.Read(make([]byte, lr.N))
+				_, err = lr.Read(make([]byte, lr.N))
+				if err != nil {
+					return err
+				}
 			}
 
 		default:

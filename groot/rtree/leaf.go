@@ -208,7 +208,7 @@ func (leaf *tleaf) computeOffsetArray(base, nevts int) []int32 {
 		hdr           = tleafHdrSize
 		origEntry     = maxI64(leaf.branch.getReadEntry(), 0) // -1 indicates to start at the beginning
 		origLeafEntry = leaf.count.Branch().getReadEntry()
-		sz            = 0
+		sz            int
 		offset        = int32(base)
 	)
 	for i := 0; i < nevts; i++ {
@@ -377,7 +377,7 @@ func (leaf *tleafElement) computeOffsetArray(base, nevts int) []int32 {
 		hdr           = tleafElementHdrSize
 		origEntry     = maxI64(leaf.branch.getReadEntry(), 0) // -1 indicates to start at the beginning
 		origLeafEntry = leaf.count.Branch().getReadEntry()
-		sz            = 0
+		sz            int
 		offset        = int32(base)
 	)
 	for i := 0; i < nevts; i++ {

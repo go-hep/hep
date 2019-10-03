@@ -5,8 +5,6 @@
 package rtree
 
 import (
-	"reflect"
-
 	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/riofs"
@@ -30,8 +28,6 @@ type Writer interface {
 
 type wtree struct {
 	ttree
-
-	typ reflect.Type
 }
 
 // WriteVar describes a variable to be written out to a tree.
