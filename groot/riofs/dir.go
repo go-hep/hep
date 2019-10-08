@@ -6,6 +6,7 @@ package riofs
 
 import (
 	"fmt"
+	"io"
 	"reflect"
 	"sort"
 	"strings"
@@ -661,6 +662,33 @@ func (dir *tdirectoryFile) sizeof() int32 {
 		nbytes += 12 // files with >= 2Gb
 	}
 	return nbytes
+}
+
+func (dir *tdirectoryFile) records(w io.Writer, indent int) error {
+	hdr := strings.Repeat("  ", indent)
+	fmt.Fprintf(w, "%s=== dir %q %p ===\n", hdr, dir.Name(), dir)
+	parent := "<nil>"
+	if dir.dir.parent != nil {
+		parent = fmt.Sprintf("%p", dir.dir.parent)
+	}
+	fmt.Fprintf(w, "%sparent:      %s\n", hdr, parent)
+	fmt.Fprintf(w, "%snbytes-keys: %d\n", hdr, dir.nbyteskeys)
+	fmt.Fprintf(w, "%snbytes-name: %d\n", hdr, dir.nbytesname)
+	fmt.Fprintf(w, "%sseek-dir:    %d\n", hdr, dir.seekdir)
+	fmt.Fprintf(w, "%sseek-parent: %d\n", hdr, dir.seekparent)
+	fmt.Fprintf(w, "%sseek-keys:   %d\n", hdr, dir.seekkeys)
+	fmt.Fprintf(w, "%sclass:       %q\n", hdr, dir.classname)
+	fmt.Fprintf(w, "%skeys:        %d\n", hdr, len(dir.keys))
+	for i := range dir.keys {
+		k := &dir.keys[i]
+		fmt.Fprintf(w, "%skey[%d]: %q\n", hdr+" ", i, k.Name())
+		err := k.records(w, indent+1)
+		if err != nil {
+			return errors.Wrapf(err, "could not inspect key %q", k.Name())
+		}
+	}
+
+	return nil
 }
 
 func init() {
