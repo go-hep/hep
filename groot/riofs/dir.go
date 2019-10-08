@@ -50,13 +50,13 @@ func (dir *tdirectory) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(dir.RVersion())
 
-	dir.named.MarshalROOT(w)
-	switch dir.parent {
-	case nil:
-		w.WriteObjectAny((*rbase.Object)(nil))
-	default:
-		w.WriteObjectAny(dir.parent.(root.Object))
+	if _, err := dir.named.MarshalROOT(w); err != nil {
+		return 0, w.Err()
 	}
+	if err := w.WriteObjectAny((*rbase.Object)(nil)); err != nil {
+		return 0, w.Err()
+	}
+
 	// FIXME(sbinet): stream list
 	dir.uuid.MarshalROOT(w)
 
@@ -233,6 +233,7 @@ func (dir *tdirectoryFile) readKeys() error {
 	for i := range dir.keys {
 		k := &dir.keys[i]
 		k.f = dir.file
+		k.parent = dir
 		err := k.UnmarshalROOT(r)
 		if err != nil {
 			return err

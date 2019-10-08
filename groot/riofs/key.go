@@ -237,6 +237,10 @@ func (k *Key) Object() (root.Object, error) {
 	}
 	if dir, ok := obj.(*tdirectoryFile); ok {
 		dir.file = k.f
+		dir.dir.parent = k.parent
+		dir.dir.named.SetName(k.Name())
+		dir.dir.named.SetTitle(k.Name())
+		dir.classname = k.class
 		err = dir.readKeys()
 		if err != nil {
 			return nil, err
