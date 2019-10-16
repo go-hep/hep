@@ -4,6 +4,7 @@ go 1.11
 
 require (
 	github.com/apache/arrow/go/arrow v0.0.0-20191014003609-07128fa41ef4
+	github.com/campoy/embedmd v1.0.0
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/frankban/quicktest v1.5.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
@@ -16,7 +17,6 @@ require (
 	github.com/hanwen/go-fuse v1.0.0
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/jcmturner/gofork v1.0.0 // indirect
-	github.com/kr/pretty v0.1.0
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/peterh/liner v1.1.0
 	github.com/pierrec/lz4 v2.3.0+incompatible
