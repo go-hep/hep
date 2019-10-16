@@ -25,7 +25,7 @@ https://godoc.org/go-hep.org/x/hep/hplot
 
 ![hist-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_plot_golden.png)
 
-[embedmd]:# (h1d_test.go go /func ExampleH1D/ /\n}/)
+[embedmd]:# (h1d_example_test.go go /func ExampleH1D/ /\n}/)
 ```go
 func ExampleH1D() {
 	const npoints = 10000
@@ -84,9 +84,9 @@ func ExampleH1D() {
 
 ![tiled-plot](https://github.com/go-hep/hep/raw/master/hplot/testdata/tiled_plot_histogram_golden.png)
 
-[embedmd]:# (tiledplot_test.go go /func ExampleTiledPlot/ /\n}/)
+[embedmd]:# (tiledplot_example_test.go go /func ExampleTiledPlot/ /\n}/)
 ```go
-func ExampleTiledPlot(t *testing.T) {
+func ExampleTiledPlot() {
 	tp := hplot.NewTiledPlot(draw.Tiles{Cols: 3, Rows: 2})
 
 	// Create a normal distribution.
@@ -123,7 +123,7 @@ func ExampleTiledPlot(t *testing.T) {
 
 	err := tp.Save(15*vg.Centimeter, -1, "testdata/tiled_plot_histogram.png")
 	if err != nil {
-		t.Fatalf("error: %v\n", err)
+		log.Fatalf("error: %+v\n", err)
 	}
 }
 ```
@@ -148,7 +148,7 @@ https://godoc.org/go-hep.org/x/hep/hplot#example-package--Latexplot
 
 ### 2D histogram
 
-[embedmd]:# (h2d_test.go go /func ExampleH2D/ /\n}/)
+[embedmd]:# (h2d_example_test.go go /func ExampleH2D/ /\n}/)
 ```go
 func ExampleH2D() {
 	h := hbook.NewH2D(100, -10, 10, 100, -10, 10)
@@ -189,7 +189,7 @@ func ExampleH2D() {
 
 ### Scatter2D
 
-[embedmd]:# (s2d_test.go go /func ExampleS2D/ /\n}/)
+[embedmd]:# (s2d_example_test.go go /func ExampleS2D/ /\n}/)
 ```go
 func ExampleS2D() {
 	const npoints = 1000
@@ -237,9 +237,9 @@ func ExampleS2D() {
 
 ### Vertical lines
 
-[embedmd]:# (line_test.go go /func ExampleVLine/ /\n}/)
+[embedmd]:# (line_example_test.go go /func ExampleVLine/ /\n}/)
 ```go
-func ExampleVLine(t *testing.T) {
+func ExampleVLine() {
 	p := hplot.New()
 	p.Title.Text = "vlines"
 	p.X.Min = 0
@@ -260,7 +260,7 @@ func ExampleVLine(t *testing.T) {
 
 	err := p.Save(10*vg.Centimeter, -1, "testdata/vline.png")
 	if err != nil {
-		t.Fatalf("error: %+v", err)
+		log.Fatalf("error: %+v", err)
 	}
 }
 ```
@@ -268,9 +268,9 @@ func ExampleVLine(t *testing.T) {
 
 ### Horizontal lines
 
-[embedmd]:# (line_test.go go /func ExampleHLine/ /\n}/)
+[embedmd]:# (line_example_test.go go /func ExampleHLine/ /\n}/)
 ```go
-func ExampleHLine(t *testing.T) {
+func ExampleHLine() {
 	p := hplot.New()
 	p.Title.Text = "hlines"
 	p.X.Min = 0
@@ -291,7 +291,7 @@ func ExampleHLine(t *testing.T) {
 
 	err := p.Save(10*vg.Centimeter, -1, "testdata/hline.png")
 	if err != nil {
-		t.Fatalf("error: %+v", err)
+		log.Fatalf("error: %+v", err)
 	}
 }
 ```
@@ -299,9 +299,9 @@ func ExampleHLine(t *testing.T) {
 
 ### Band between lines
 
-[embedmd]:# (band_test.go go /func ExampleBand/ /\n}/)
+[embedmd]:# (band_example_test.go go /func ExampleBand/ /\n}/)
 ```go
-func ExampleBand(t *testing.T) {
+func ExampleBand() {
 	const (
 		npoints = 100
 		xmax    = 10
@@ -334,13 +334,13 @@ func ExampleBand(t *testing.T) {
 
 	top, err := hplot.NewLine(topData)
 	if err != nil {
-		t.Fatalf("error: %+v", err)
+		log.Fatalf("error: %+v", err)
 	}
 	top.LineStyle.Color = color.RGBA{R: 255, A: 255}
 
 	bot, err := hplot.NewLine(botData)
 	if err != nil {
-		t.Fatalf("error: %+v", err)
+		log.Fatalf("error: %+v", err)
 	}
 	bot.LineStyle.Color = color.RGBA{B: 255, A: 255}
 
@@ -365,7 +365,7 @@ func ExampleBand(t *testing.T) {
 
 	err = tp.Save(10*vg.Centimeter, -1, "testdata/band.png")
 	if err != nil {
-		t.Fatalf("error: %+v", err)
+		log.Fatalf("error: %+v", err)
 	}
 }
 ```
