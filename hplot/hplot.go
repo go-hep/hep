@@ -188,4 +188,5 @@ const (
 	OptNone      Options = 1 << iota // default
 	WithXErrBars                     // enable display of X-error bars (if available)
 	WithYErrBars                     // enable display of Y-error bars (if available)
+	WithBand                         // enable display of a colored band between Y-error bars (if available)
 )

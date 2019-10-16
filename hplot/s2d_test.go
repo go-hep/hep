@@ -15,6 +15,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/distmv"
 	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/plotutil"
 	"gonum.org/v1/plot/vg"
 )
 
@@ -94,4 +95,40 @@ func ExampleS2D_withErrorBars() {
 func TestScatter2DWithErrorBars(t *testing.T) {
 	ExampleS2D_withErrorBars()
 	checkPlot(t, "testdata/s2d_errbars_golden.png")
+}
+
+// ExampleS2D_withBand draws some scatter points
+// with their error bars and a band
+func ExampleS2D_withBand() {
+	pts := []hbook.Point2D{
+		{X: 1, Y: 1, ErrY: hbook.Range{Min: 2, Max: 3}},
+		{X: 2, Y: 2, ErrY: hbook.Range{Min: 5, Max: 2}},
+		{X: 3, Y: 3, ErrY: hbook.Range{Min: 2, Max: 2}},
+		{X: 4, Y: 4, ErrY: hbook.Range{Min: 1.2, Max: 2}},
+	}
+	s2d := hbook.NewS2D(pts...)
+
+	p := hplot.New()
+	p.Title.Text = "Scatter-2D (with band)"
+	p.X.Label.Text = "X"
+	p.Y.Label.Text = "Y"
+	p.Add(plotter.NewGrid())
+
+	s := hplot.NewS2D(s2d, hplot.WithBand|hplot.WithYErrBars)
+	s.GlyphStyle.Color = color.Black
+	s.GlyphStyle.Radius = vg.Points(4)
+	s.LineStyle.Width = 1
+	s.LineStyle.Dashes = plotutil.Dashes(2)
+
+	p.Add(s)
+
+	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d_band.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func TestScatter2DWithBand(t *testing.T) {
+	ExampleS2D_withBand()
+	checkPlot(t, "testdata/s2d_band_golden.png")
 }

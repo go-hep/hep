@@ -5,6 +5,7 @@
 package hplot
 
 import (
+	"image/color"
 	"math"
 
 	"gonum.org/v1/plot"
@@ -21,11 +22,19 @@ type S2D struct {
 	// at each point.
 	draw.GlyphStyle
 
+	// LineStyle is the style of the line drawn
+	// connecting each point.
+	// Use zero width to disable.
+	LineStyle draw.LineStyle
+
 	// options controls various display options of this plot.
 	options Options
 
 	xbars *plotter.XErrorBars
 	ybars *plotter.YErrorBars
+
+	// Band displays a colored band between the y-min and y-max error bars.
+	Band *Band
 }
 
 // withXErrBars enables the X error bars
@@ -76,6 +85,34 @@ func (pts *S2D) withYErrBars() error {
 	return nil
 }
 
+// withBand enables the band between ymin-ymax error bars.
+func (pts *S2D) withBand() error {
+	if pts.options&WithBand == 0 {
+		pts.Band = nil
+		return nil
+	}
+	yerr, ok := pts.Data.(plotter.YErrorer)
+	if !ok {
+		return nil
+	}
+
+	var (
+		top = make(plotter.XYs, pts.Data.Len())
+		bot = make(plotter.XYs, pts.Data.Len())
+	)
+	for i := range top {
+		x, y := pts.Data.XY(i)
+		ymin, ymax := yerr.YError(i)
+		top[i].X = x
+		top[i].Y = y + math.Abs(ymax)
+		bot[i].X = x
+		bot[i].Y = y - math.Abs(ymin)
+	}
+
+	pts.Band = NewBand(color.Gray{200}, top, bot)
+	return nil
+}
+
 // NewS2D creates a 2-dim scatter plot from a XYer.
 func NewS2D(data plotter.XYer, opts ...Options) *S2D {
 	s := &S2D{
@@ -86,7 +123,10 @@ func NewS2D(data plotter.XYer, opts ...Options) *S2D {
 		s.options |= opt
 	}
 
-	for _, f := range []func() error{s.withXErrBars, s.withYErrBars} {
+	for _, f := range []func() error{
+		s.withXErrBars, s.withYErrBars,
+		s.withBand,
+	} {
 		_ = f()
 	}
 
@@ -98,9 +138,25 @@ func NewS2D(data plotter.XYer, opts ...Options) *S2D {
 // interface.
 func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 	trX, trY := plt.Transforms(&c)
+	if pts.Band != nil {
+		pts.Band.Plot(c, plt)
+	}
+
 	for i := 0; i < pts.Data.Len(); i++ {
 		x, y := pts.Data.XY(i)
 		c.DrawGlyph(pts.GlyphStyle, vg.Point{X: trX(x), Y: trY(y)})
+	}
+
+	if pts.LineStyle.Width > 0 {
+		data, err := plotter.CopyXYs(pts.Data)
+		if err != nil {
+			panic(err)
+		}
+		line := plotter.Line{
+			XYs:       data,
+			LineStyle: pts.LineStyle,
+		}
+		line.Plot(c, plt)
 	}
 
 	if pts.xbars != nil {
@@ -111,7 +167,6 @@ func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 		pts.ybars.LineStyle.Color = pts.GlyphStyle.Color
 		pts.ybars.Plot(c, plt)
 	}
-
 }
 
 // DataRange returns the minimum and maximum

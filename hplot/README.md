@@ -233,6 +233,7 @@ func ExampleS2D() {
 ```
 ![s2d-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/s2d_golden.png)
 ![s2d-errbars-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/s2d_errbars_golden.png)
+![s2d-band-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/s2d_band_golden.png)
 
 ### Vertical lines
 
