@@ -5,6 +5,7 @@
 package riofs_test
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -24,6 +25,41 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtree"
 )
+
+func TestFileSegmentMap(t *testing.T) {
+	f, err := groot.Open("../testdata/dirs-6.14.00.root")
+	if err != nil {
+		t.Fatalf("could not open ROOT file: %+v", err)
+	}
+	defer f.Close()
+
+	out := new(bytes.Buffer)
+	err = f.SegmentMap(out)
+	if err != nil {
+		t.Fatalf("could not run segment map: %+v", err)
+	}
+
+	got := out.String()
+	want := `20180703/110855  At:100    N=130       TFile         
+20180703/110855  At:230    N=107       TDirectory    
+20180703/110855  At:337    N=107       TDirectory    
+20180703/110855  At:444    N=107       TDirectory    
+20180703/110855  At:551    N=109       TDirectory    
+20180703/110855  At:660    N=345       TH1F           CX =  2.82
+20180703/110855  At:1005   N=90        TDirectory    
+20180703/110855  At:1095   N=100       TDirectory    
+20180703/110855  At:1195   N=51        TDirectory    
+20180703/110855  At:1246   N=51        TDirectory    
+20180703/110855  At:1297   N=196       KeysList      
+20180703/110855  At:1493   N=3845      StreamerInfo   CX =  2.44
+20180703/110855  At:5338   N=61        FreeSegments  
+20180703/110855  At:5399   N=1         END           
+`
+
+	if got != want {
+		t.Fatalf("invalid segment map:\ngot:\n%v\nwant:\n%v\n", got, want)
+	}
+}
 
 func TestFileDirectory(t *testing.T) {
 	for _, fname := range []string{

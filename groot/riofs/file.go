@@ -834,6 +834,73 @@ func (f *File) Mkdir(name string) (Directory, error) {
 // Parent returns nil if this is the top-level directory.
 func (*File) Parent() Directory { return nil }
 
+// SegmentMap displays to w the file's segments map.
+func (f *File) SegmentMap(w io.Writer) (err error) {
+	const timefmt = "20060102/150405"
+	var (
+		idcur = f.begin
+		sz    = int64(64)
+		date  time.Time
+	)
+
+	ndigits := int(math.Log10(float64(f.end))) + 1
+	for idcur < f.end {
+		var (
+			buf = make([]byte, sz)
+			n   int
+		)
+		n, err = f.ReadAt(buf, idcur)
+		switch err {
+		case nil:
+			// ok
+		case io.EOF:
+			if n <= 0 {
+				return errors.Wrapf(err, "could not buffer at position %d", idcur)
+			}
+		default:
+			return errors.Wrapf(err, "could not buffer at position %d", idcur)
+		}
+
+		var k Key
+		err = k.UnmarshalROOT(rbytes.NewRBuffer(buf, nil, 0, f))
+		if err != nil {
+			return errors.Wrapf(err, "could not unmarshal key at %d", idcur)
+		}
+		date = k.datetime
+		cname := k.ClassName()
+		if k.nbytes < 0 {
+			cname = "=== [GAP] ==="
+			fmt.Fprintf(w, "%s  At:%-*d  N=%-8d  %-14s\n", strings.Repeat("*", 15), ndigits+1, idcur, k.nbytes, cname)
+			idcur += int64(-k.nbytes)
+			continue
+		}
+		if k.nbytes == 0 {
+			return errors.Errorf("invalid key %q", k.name)
+		}
+
+		switch idcur {
+		case f.seekfree:
+			cname = "FreeSegments"
+		case f.seekinfo:
+			cname = "StreamerInfo"
+		case f.dir.seekkeys:
+			cname = "KeysList"
+		}
+
+		switch {
+		case k.isCompressed():
+			cx := float64(k.ObjLen()+k.KeyLen()) / float64(k.nbytes)
+			fmt.Fprintf(w, "%s  At:%-*d  N=%-8d  %-14s CX = %5.2f\n", date.Format(timefmt), ndigits+1, idcur, k.nbytes, cname, cx)
+		default:
+			fmt.Fprintf(w, "%s  At:%-*d  N=%-8d  %-14s\n", date.Format(timefmt), ndigits+1, idcur, k.nbytes, cname)
+		}
+		idcur += int64(k.nbytes)
+	}
+
+	fmt.Fprintf(w, "%s  At:%-*d  N=%-8d  %-14s\n", date.Format(timefmt), ndigits+1, idcur, 1, "END")
+	return err
+}
+
 var (
 	_ root.Object                = (*File)(nil)
 	_ root.Named                 = (*File)(nil)
