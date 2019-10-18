@@ -6,11 +6,15 @@ package riofs
 
 import (
 	"compress/flate"
+	"fmt"
 	"io"
+	"math"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
+	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rcont"
 	"go-hep.org/x/hep/groot/rdict"
@@ -106,7 +110,7 @@ type File struct {
 	compression int32
 	seekinfo    int64 // pointer to TStreamerInfo
 	nbytesinfo  int32 // sizeof(TStreamerInfo)
-	uuid        [18]byte
+	uuid        rbase.UUID
 
 	dir    tdirectoryFile // root directory of this file
 	siKey  Key
@@ -179,8 +183,9 @@ func Create(name string, opts ...FileOption) (*File, error) {
 		sinfos:      nil,
 		simap:       make(map[rbytes.StreamerInfo]struct{}),
 	}
-	f.dir = *newDirectoryFile(name, f, nil)
-	f.spans.add(kBEGIN, kStartBigFile)
+	f.dir = *newDirectoryFile(name, "", f, nil)
+	f.dir.dir.named.SetTitle("")
+	f.spans.add(f.begin, kStartBigFile)
 
 	f.setCompression(kZLIB, flate.BestCompression)
 
@@ -196,8 +201,8 @@ func Create(name string, opts ...FileOption) (*File, error) {
 
 	// write directory info
 	namelen := f.dir.dir.named.Sizeof()
-	nbytes := namelen + f.dir.sizeof()
-	key := createKey(&f.dir, f.dir.Name(), f.dir.Title(), "TFile", nbytes, f)
+	objlen := namelen + int32(f.dir.recordSize(f.version))
+	key := newKey(&f.dir, f.dir.Name(), f.dir.Title(), "TFile", objlen, f)
 	f.nbytesname = key.keylen + namelen
 	f.dir.nbytesname = key.keylen + namelen
 	f.dir.seekdir = key.seekkey
@@ -210,12 +215,15 @@ func Create(name string, opts ...FileOption) (*File, error) {
 		_ = os.RemoveAll(name)
 		return nil, errors.Errorf("riofs: failed to write header %q: %v", name, err)
 	}
-	buf := rbytes.NewWBuffer(make([]byte, key.nbytes), nil, 0, f)
+
+	buf := rbytes.NewWBuffer(make([]byte, objlen), nil, 0, f)
+	buf.WriteString(f.id)
+	buf.WriteString(f.Title())
+
 	_, err = f.dir.MarshalROOT(buf)
 	if err != nil {
 		return nil, errors.Wrapf(err, "riofs: failed to write header")
 	}
-	key.nbytes = int32(len(buf.Bytes()))
 	key.buf = buf.Bytes()
 
 	_, err = key.writeFile(f)
@@ -224,6 +232,24 @@ func Create(name string, opts ...FileOption) (*File, error) {
 	}
 
 	return f, nil
+}
+
+func (f *File) setEnd(pos int64) error {
+	f.end = pos
+	if f.spans.Len() == 0 {
+		return errors.Errorf("riofs: empty free segment list")
+	}
+	blk := f.spans.last()
+	if blk == nil {
+		return errors.Errorf("riofs: last free segment is nil")
+	}
+
+	if blk.last != kStartBigFile {
+		return errors.Errorf("riofs: last free segment is not the file ending")
+	}
+
+	blk.last = pos
+	return nil
 }
 
 // Stat returns the os.FileInfo structure describing this file.
@@ -344,19 +370,16 @@ func (f *File) readHeader() error {
 func (f *File) writeHeader() error {
 	var (
 		err   error
-		span  = f.spans.last()
 		nfree = int32(len(f.spans))
 	)
-
-	if span != nil {
-		f.end = span.first
-	}
 
 	buf := rbytes.NewWBuffer(make([]byte, f.begin), nil, 0, f)
 	buf.Write([]byte("root"))
 
 	version := f.version
-	if version < 1000000 && f.end > kStartBigFile {
+	if version < 1000000 && (f.end > kStartBigFile ||
+		f.seekfree > kStartBigFile ||
+		f.seekinfo > kStartBigFile) {
 		version += 1000000
 		f.units = 8
 	}
@@ -384,7 +407,7 @@ func (f *File) writeHeader() error {
 		buf.WriteI64(f.seekinfo)
 		buf.WriteI32(f.nbytesinfo)
 	}
-	buf.Write(f.uuid[:])
+	f.uuid.MarshalROOT(buf)
 
 	_, _ = f.w.WriteAt(make([]byte, f.begin), 0)
 	_, err = f.w.WriteAt(buf.Bytes(), 0)
@@ -408,19 +431,17 @@ func (f *File) Close() error {
 
 	var err error
 
-	if f.w != nil {
-		err = f.writeStreamerInfo()
-		if err != nil {
-			return err
-		}
-	}
-
-	err = f.dir.Close()
+	err = f.dir.close()
 	if err != nil {
 		return err
 	}
 
 	if f.w != nil {
+		err = f.writeStreamerInfo()
+		if err != nil {
+			return err
+		}
+
 		err = f.writeFreeSegments()
 		if err != nil {
 			return err
@@ -432,7 +453,8 @@ func (f *File) Close() error {
 		}
 	}
 
-	for _, k := range f.dir.keys {
+	for i := range f.dir.keys {
+		k := &f.dir.keys[i]
 		k.f = nil
 	}
 	f.dir.keys = nil
@@ -531,7 +553,7 @@ func (f *File) writeStreamerInfo() error {
 		return errors.Wrapf(err, "riofs: could not write StreamerInfo list")
 	}
 
-	key = createKey(&f.dir, "StreamerInfo", sinfos.Title(), sinfos.Class(), int32(len(buf.Bytes())), f)
+	key = newKey(&f.dir, "StreamerInfo", sinfos.Title(), sinfos.Class(), int32(len(buf.Bytes())), f)
 	key.buf = buf.Bytes()
 	f.seekinfo = key.seekkey
 	f.nbytesinfo = key.nbytes
@@ -673,7 +695,7 @@ func (f *File) writeFreeSegments() error {
 		if nbytes == 0 {
 			return nil
 		}
-		key := createKey(&f.dir, f.Name(), f.Title(), "TFile", nbytes, f)
+		key := newKey(&f.dir, f.Name(), f.Title(), "TFile", nbytes, f)
 		if key.seekkey == 0 {
 			return nil
 		}

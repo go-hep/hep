@@ -239,7 +239,7 @@ func TestRecDirPut(t *testing.T) {
 		{path: "/dir4/dir44"},
 
 		{path: "/dir5/dir55"},
-		{path: "/dir5", obj: "dir55", err: keyTypeError{key: "dir55", class: "TDirectoryFile"}},
+		{path: "/dir5", obj: "dir55", err: keyTypeError{key: "dir55", class: "TDirectory"}},
 
 		{path: "/dir5/dir55", cycle: 2}, // recreating the same object is ok
 	} {

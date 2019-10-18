@@ -80,71 +80,87 @@ type Key struct {
 	parent Directory // directory holding this key
 }
 
-func newKey(dir Directory, name, title, class string, nbytes int32, f *File) Key {
+func newKey(dir *tdirectoryFile, name, title, class string, objlen int32, f *File) Key {
 	k := Key{
 		f:        f,
 		rvers:    rvers.Key,
-		objlen:   nbytes,
+		objlen:   objlen,
 		datetime: nowUTC(),
 		cycle:    1,
 		class:    class,
 		name:     name,
 		title:    title,
+		seekpdir: f.begin, // FIXME(sbinet): see https://sft.its.cern.ch/jira/browse/ROOT-10352
 		parent:   dir,
 	}
 	k.keylen = k.sizeof()
-	k.nbytes = nbytes + k.keylen
+	// FIXME(sbinet): this assumes the key-payload isn't compressed.
+	// if the key's payload is actually compressed, we introduce a hole
+	// with the f.setEnd call below.
+	k.nbytes = k.objlen + k.keylen
+	if objlen > 0 {
+		k.seekkey = f.end
+		f.setEnd(k.seekkey + int64(k.nbytes))
+	}
 
-	return k
-}
-
-// createKey creates a new key of the specified size.
-func createKey(dir Directory, name, title, class string, nbytes int32, f *File) Key {
-	k := newKey(dir, name, title, class, nbytes, f)
 	if f.end > kStartBigFile {
 		k.rvers += 1000
 	}
 
-	nsize := nbytes + k.keylen
-	err := k.adjust(nsize)
-	if err != nil {
-		panic(err)
+	if dir != nil {
+		k.seekpdir = dir.seekdir
 	}
 
-	k.seekpdir = f.dir.seekdir
 	return k
 }
 
-func newKeyFrom(dir Directory, obj root.Object, wbuf *rbytes.WBuffer) (Key, error) {
-	if wbuf == nil {
-		wbuf = rbytes.NewWBuffer(nil, nil, 0, nil)
-	}
-	beg := int(wbuf.Pos())
-	n, err := obj.(rbytes.Marshaler).MarshalROOT(wbuf)
-	if err != nil {
-		return Key{}, err
-	}
-	end := beg + n
-	data := wbuf.Bytes()[beg:end]
-
-	name := ""
-	title := ""
-	if obj, ok := obj.(root.Named); ok {
-		name = obj.Name()
-		title = obj.Title()
+func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object, f *File) (Key, error) {
+	var err error
+	if dir == nil {
+		dir = &f.dir
 	}
 
+	keylen := keylenFor(name, title, class, dir)
+
+	buf := rbytes.NewWBuffer(nil, nil, uint32(keylen), dir.file)
+	switch obj := obj.(type) {
+	case rbytes.Marshaler:
+		_, err = obj.MarshalROOT(buf)
+		if err != nil {
+			return Key{}, errors.Wrapf(err, "riofs: could not marshal object %T for key=%q", obj, name)
+		}
+	default:
+		return Key{}, errors.Errorf("riofs: object %T can not be ROOT serialized", obj)
+	}
+
+	objlen := int32(len(buf.Bytes()))
 	k := Key{
+		f:        f,
+		nbytes:   keylen + objlen,
 		rvers:    rvers.Key,
-		objlen:   int32(n),
+		keylen:   keylen,
+		objlen:   objlen,
 		datetime: nowUTC(),
-		class:    obj.Class(),
+		cycle:    1,
+		class:    class,
 		name:     name,
 		title:    title,
-		buf:      data,
+		seekkey:  f.end,
+		seekpdir: dir.seekdir,
 		obj:      obj,
-		otyp:     reflect.TypeOf(obj),
+		parent:   dir,
 	}
+	if f.end > kStartBigFile {
+		k.rvers += 1000
+	}
+
+	k.buf, err = compress(k.f.compression, buf.Bytes())
+	if err != nil {
+		return k, errors.Wrapf(err, "riofs: could not compress object %T for key %q", obj, name)
+	}
+	k.nbytes = k.keylen + int32(len(k.buf))
+
+	f.setEnd(k.seekkey + int64(k.nbytes))
 	return k, nil
 }
 
@@ -237,6 +253,10 @@ func (k *Key) Object() (root.Object, error) {
 	}
 	if dir, ok := obj.(*tdirectoryFile); ok {
 		dir.file = k.f
+		dir.dir.parent = k.parent
+		dir.dir.named.SetName(k.Name())
+		dir.dir.named.SetTitle(k.Name())
+		dir.classname = k.class
 		err = dir.readKeys()
 		if err != nil {
 			return nil, err
@@ -293,7 +313,7 @@ func (k *Key) store() error {
 
 	k.keylen = k.sizeof()
 
-	buf := rbytes.NewWBuffer(make([]byte, k.nbytes), nil, uint32(k.keylen), k.f)
+	buf := rbytes.NewWBuffer(make([]byte, k.objlen), nil, uint32(k.keylen), k.f)
 	_, err := k.obj.(rbytes.Marshaler).MarshalROOT(buf)
 	if err != nil {
 		return err
@@ -307,47 +327,7 @@ func (k *Key) store() error {
 	k.nbytes = k.keylen + nbytes
 
 	if k.seekkey <= 0 {
-		// find a place on file where to store that key.
-		err = k.adjust(k.nbytes)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (k *Key) adjust(nsize int32) error {
-	best := k.f.spans.best(int64(nsize))
-	if best == nil {
-		return errors.Errorf("riofs: could not find a suitable free segment")
-	}
-
-	k.seekkey = best.first
-
-	switch {
-	case k.seekkey >= k.f.end:
-		// segment at the end of the file.
-		k.f.end = k.seekkey + int64(nsize)
-		best.first = k.f.end
-		if k.f.end > best.last {
-			best.last += 1000000000
-		}
-		k.left = -1
-	default:
-		k.left = int32(best.last - k.seekkey - int64(nsize) + 1)
-	}
-
-	k.nbytes = nsize
-
-	switch {
-	case k.left == 0:
-		// key's payload fills exactly a deleted gap.
-		panic("not implemented -- k.left==0")
-
-	case k.left > 0:
-		// key's payload placed in a deleted gap larger than strictly needed.
-		panic("not implemented -- k.left >0")
+		panic("impossible: seekkey <= 0")
 	}
 
 	return nil
@@ -363,14 +343,18 @@ func (k *Key) isBigFile() bool {
 
 // sizeof returns the size in bytes of the key header structure.
 func (k *Key) sizeof() int32 {
+	return keylenFor(k.name, k.title, k.class, &k.f.dir)
+}
+
+func keylenFor(name, title, class string, dir *tdirectoryFile) int32 {
 	nbytes := int32(22)
-	if k.isBigFile() {
+	if dir.isBigFile() {
 		nbytes += 8
 	}
 	nbytes += datimeSizeof()
-	nbytes += tstringSizeof(k.class)
-	nbytes += tstringSizeof(k.name)
-	nbytes += tstringSizeof(k.title)
+	nbytes += tstringSizeof(class)
+	nbytes += tstringSizeof(name)
+	nbytes += tstringSizeof(title)
 	return nbytes
 }
 

@@ -6,6 +6,7 @@ package riofs
 
 import (
 	"fmt"
+	"io"
 	"reflect"
 	"sort"
 	"strings"
@@ -50,13 +51,13 @@ func (dir *tdirectory) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(dir.RVersion())
 
-	dir.named.MarshalROOT(w)
-	switch dir.parent {
-	case nil:
-		w.WriteObjectAny((*rbase.Object)(nil))
-	default:
-		w.WriteObjectAny(dir.parent.(root.Object))
+	if _, err := dir.named.MarshalROOT(w); err != nil {
+		return 0, w.Err()
 	}
+	if err := w.WriteObjectAny((*rbase.Object)(nil)); err != nil {
+		return 0, w.Err()
+	}
+
 	// FIXME(sbinet): stream list
 	dir.uuid.MarshalROOT(w)
 
@@ -100,22 +101,54 @@ type tdirectoryFile struct {
 
 	file *File // pointer to current file in memory
 	keys []Key
+	dirs []*tdirectoryFile
 }
 
-func newDirectoryFile(name string, f *File, parent *tdirectoryFile) *tdirectoryFile {
+func newDirectoryFile(name, title string, f *File, parent *tdirectoryFile) *tdirectoryFile {
 	now := nowUTC()
+	if title == "" {
+		title = name
+	}
 	dir := &tdirectoryFile{
 		dir: tdirectory{
 			rvers: rvers.DirectoryFile,
-			named: *rbase.NewNamed(name, name),
+			named: *rbase.NewNamed(name, title),
 		},
 		ctime: now,
 		mtime: now,
 		file:  f,
 	}
-	if parent != nil {
-		dir.dir.parent = parent
+	if parent == nil {
+		return dir
 	}
+
+	dir.dir.parent = parent
+	dir.seekparent = parent.seekdir
+
+	objlen := int32(dir.recordSize(f.version))
+	key := newKey(parent, name, title, "TDirectory", objlen, f)
+	dir.nbytesname = key.keylen
+	dir.seekdir = key.seekkey
+
+	buf := rbytes.NewWBuffer(make([]byte, objlen), nil, 0, f)
+	buf.WriteString(f.id)
+	buf.WriteString(f.Title())
+	// dir-marshal
+	_, err := dir.MarshalROOT(buf)
+	if err != nil {
+		panic(errors.Wrapf(err, "riofs: failed to write header"))
+	}
+	key.buf = buf.Bytes()
+	key.obj = dir
+
+	parent.keys = append(parent.keys, key)
+
+	// key-write-file
+	_, err = key.writeFile(f)
+	if err != nil {
+		panic(errors.Wrapf(err, "riofs: failed to write key header"))
+	}
+
 	return dir
 }
 
@@ -141,6 +174,8 @@ func (dir *tdirectoryFile) recordSize(version int32) int64 {
 		nbytes += 4 // seekparent
 		nbytes += 4 // seekkeys
 	}
+	nbytes += int64(dir.dir.uuid.Sizeof())
+
 	return nbytes
 }
 
@@ -233,6 +268,7 @@ func (dir *tdirectoryFile) readKeys() error {
 	for i := range dir.keys {
 		k := &dir.keys[i]
 		k.f = dir.file
+		k.parent = dir
 		err := k.UnmarshalROOT(r)
 		if err != nil {
 			return err
@@ -245,7 +281,7 @@ func (dir *tdirectoryFile) readKeys() error {
 	return nil
 }
 
-func (dir *tdirectoryFile) Close() error {
+func (dir *tdirectoryFile) close() error {
 	if dir.file.w == nil {
 		return nil
 	}
@@ -264,49 +300,52 @@ func (dir *tdirectoryFile) Close() error {
 }
 
 func (dir *tdirectoryFile) save() error {
-	var err error
-	if dir.file.w == nil {
+	err := dir.saveSelf()
+	if err != nil {
 		return err
 	}
 
-	for i := range dir.keys {
-		k := &dir.keys[i]
-		err = k.store()
+	for _, sub := range dir.dirs {
+		err = sub.save()
 		if err != nil {
 			return err
 		}
-
-		switch obj := k.obj.(type) {
-		case *tdirectoryFile:
-			err = obj.save()
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	err = dir.saveSelf()
-	if err != nil {
-		return errors.Wrapf(err, "riofs: could not save directory")
 	}
 
 	return nil
 }
 
-func (dir *tdirectoryFile) saveSelf() error {
-	if dir.file.w == nil {
-		return nil
-	}
-
-	var err error
+func (dir *tdirectoryFile) saveSelf() (err error) {
 	err = dir.writeKeys()
 	if err != nil {
 		return err
 	}
 
-	err = dir.writeDirHeader()
+	err = dir.writeHeader()
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// writeDirHeader overwrites the Directory header record.
+func (dir *tdirectoryFile) writeHeader() error {
+	var (
+		err error
+	)
+	dir.mtime = nowUTC()
+
+	nbytes := int32(dir.recordSize(dir.file.version))
+	buf := rbytes.NewWBuffer(make([]byte, nbytes), nil, 0, nil)
+	_, err = dir.MarshalROOT(buf)
+	if err != nil {
+		return errors.Wrapf(err, "riofs: could not marshal dir-info")
+	}
+
+	_, err = dir.file.w.WriteAt(buf.Bytes(), dir.seekdir+int64(dir.nbytesname))
+	if err != nil {
+		return errors.Wrapf(err, "riofs: could not write dir-info to file")
 	}
 
 	return nil
@@ -336,21 +375,20 @@ func (dir *tdirectoryFile) Get(namecycle string) (root.Object, error) {
 			keys = append(keys, k)
 		}
 	}
-	var (
-		obj root.Object
-		err error
-	)
+	var key *Key
 	switch len(keys) {
 	case 0:
 		return nil, noKeyError{key: namecycle, obj: dir}
 	case 1:
-		obj, err = keys[0].Object()
+		key = keys[0]
 	default:
 		sort.Slice(keys, func(i, j int) bool {
 			return keys[i].Cycle() < keys[j].Cycle()
 		})
-		obj, err = keys[len(keys)-1].Object()
+		key = keys[len(keys)-1]
 	}
+
+	obj, err := key.Object()
 	if err != nil {
 		return nil, err
 	}
@@ -427,18 +465,17 @@ func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 		dir.addStreamer(si)
 	}
 
-	dir.keys = append(dir.keys, Key{
-		f:        dir.file,
-		rvers:    rvers.Key,
-		datetime: nowUTC(),
-		cycle:    cycle,
-		class:    rdict.GoName2Cxx(typename),
-		name:     name,
-		title:    title,
-		obj:      obj,
-		seekpdir: dir.seekdir,
-		parent:   dir,
-	})
+	key, err := newKeyFrom(dir, name, title, rdict.GoName2Cxx(typename), obj, dir.file)
+	if err != nil {
+		return errors.Wrapf(err, "riofs: could not create key %q for object %T", name, obj)
+	}
+	key.cycle = cycle
+	_, err = key.writeFile(dir.file)
+	if err != nil {
+		return errors.Wrapf(err, "riofs: could not write key %q to file", name)
+	}
+
+	dir.keys = append(dir.keys, key)
 
 	return nil
 }
@@ -458,11 +495,8 @@ func (dir *tdirectoryFile) Mkdir(name string) (Directory, error) {
 		return nil, errors.Errorf("riofs: invalid directory name %q (contains a '/')", name)
 	}
 
-	sub := newDirectoryFile(name, dir.file, dir)
-	err := dir.Put(name, sub)
-	if err != nil {
-		return nil, err
-	}
+	sub := newDirectoryFile(name, "", dir.file, dir)
+	dir.dirs = append(dir.dirs, sub)
 
 	return sub, nil
 }
@@ -492,7 +526,11 @@ func (dir *tdirectoryFile) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	beg := w.Pos()
 
-	w.WriteI16(dir.RVersion())
+	version := dir.RVersion()
+	if dir.isBigFile() && version < 1000 {
+		version += 1000
+	}
+	w.WriteI16(version)
 	w.WriteU32(time2datime(dir.ctime))
 	w.WriteU32(time2datime(dir.mtime))
 	w.WriteI32(dir.nbyteskeys)
@@ -541,8 +579,11 @@ func (dir *tdirectoryFile) UnmarshalROOT(r *rbytes.RBuffer) error {
 		dir.seekkeys = int64(r.ReadI32())
 	}
 
-	if r.Len() != 0 {
-		dir.dir.uuid.UnmarshalROOT(r)
+	switch version := version % 1000; {
+	case version == 2:
+		_ = dir.dir.uuid.UnmarshalROOTv1(r)
+	case version > 2:
+		_ = dir.dir.uuid.UnmarshalROOT(r)
 	}
 
 	return r.Err()
@@ -574,16 +615,10 @@ func (dir *tdirectoryFile) writeKeys() error {
 	}
 	for i := range dir.Keys() {
 		key := &dir.keys[i]
-		nbytes += key.sizeof()
+		nbytes += key.keylen
 	}
 
-	if dir.seekdir <= 0 {
-		nbytes := dir.sizeof() + int32(dir.file.nbytesname)
-		blk := dir.file.spans.best(int64(nbytes))
-		dir.seekdir = blk.first
-	}
-
-	hdr := createKey(dir, dir.Name(), dir.Title(), dir.Class(), nbytes, dir.file)
+	hdr := newKey(dir, dir.Name(), dir.Title(), "TDirectory", nbytes, dir.file)
 
 	buf := rbytes.NewWBuffer(make([]byte, nbytes), nil, 0, nil)
 	buf.WriteI32(int32(len(dir.Keys())))
@@ -597,22 +632,6 @@ func (dir *tdirectoryFile) writeKeys() error {
 
 	dir.seekkeys = hdr.seekkey
 	dir.nbyteskeys = hdr.nbytes
-
-	for i := range dir.keys {
-		k := &dir.keys[i]
-		k.seekpdir = dir.seekdir
-
-		k.buf = nil // force re-computation of serialized key
-		err = k.store()
-		if err != nil {
-			return err
-		}
-
-		_, err = k.writeFile(dir.file)
-		if err != nil {
-			return errors.Wrapf(err, "riofs: could not write sub-key")
-		}
-	}
 
 	_, err = hdr.writeFile(dir.file)
 	if err != nil {
@@ -628,10 +647,10 @@ func (dir *tdirectoryFile) writeDirHeader() error {
 	)
 	dir.mtime = nowUTC()
 
-	nbytes := dir.sizeof() + int32(dir.file.nbytesname)
+	nbytes := int32(dir.recordSize(dir.file.version)) + int32(dir.file.nbytesname)
 	key := newKey(dir, dir.Name(), dir.Title(), "TFile", nbytes, dir.file)
-	key.seekkey = dir.file.begin
-	key.seekpdir = dir.seekdir
+	key.seekkey = dir.seekdir
+	key.seekpdir = dir.file.begin
 
 	buf := rbytes.NewWBuffer(make([]byte, nbytes), nil, 0, nil)
 	buf.WriteString(dir.Name())
@@ -672,7 +691,7 @@ func init() {
 	}
 	{
 		f := func() reflect.Value {
-			o := newDirectoryFile("", nil, nil)
+			o := newDirectoryFile("", "", nil, nil)
 			return reflect.ValueOf(o)
 		}
 		rtypes.Factory.Add("TDirectoryFile", f)

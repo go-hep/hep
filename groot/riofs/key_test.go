@@ -14,6 +14,7 @@ import (
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/groot/root"
+	"go-hep.org/x/hep/groot/rvers"
 )
 
 func TestKeyNewKeyFrom(t *testing.T) {
@@ -72,7 +73,7 @@ func TestKeyNewKeyFrom(t *testing.T) {
 	} {
 		t.Run("", func(t *testing.T) {
 			var parent Directory
-			k, err := newKeyFrom(parent, tc.want, tc.wbuf)
+			k, err := newTestKeyFrom(parent, tc.want, tc.wbuf)
 			switch {
 			case err == nil && tc.err == nil:
 				// ok
@@ -149,4 +150,37 @@ func TestKeyObjectType(t *testing.T) {
 			}
 		})
 	}
+}
+
+func newTestKeyFrom(dir Directory, obj root.Object, wbuf *rbytes.WBuffer) (Key, error) {
+	if wbuf == nil {
+		wbuf = rbytes.NewWBuffer(nil, nil, 0, nil)
+	}
+	beg := int(wbuf.Pos())
+	n, err := obj.(rbytes.Marshaler).MarshalROOT(wbuf)
+	if err != nil {
+		return Key{}, err
+	}
+	end := beg + n
+	data := wbuf.Bytes()[beg:end]
+
+	name := ""
+	title := ""
+	if obj, ok := obj.(root.Named); ok {
+		name = obj.Name()
+		title = obj.Title()
+	}
+
+	k := Key{
+		rvers:    rvers.Key,
+		objlen:   int32(n),
+		datetime: nowUTC(),
+		class:    obj.Class(),
+		name:     name,
+		title:    title,
+		buf:      data,
+		obj:      obj,
+		otyp:     reflect.TypeOf(obj),
+	}
+	return k, nil
 }

@@ -257,3 +257,26 @@ var rwBufferCases = []struct {
 		},
 	},
 }
+
+func TestUUIDv1(t *testing.T) {
+	uuid := UUID([16]byte{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15})
+	wbuf := rbytes.NewWBuffer(nil, nil, 0, nil)
+	_, err := wbuf.Write(uuid[:])
+	if err != nil {
+		t.Fatalf("could not serialize v1: %+v", err)
+	}
+
+	var (
+		got  UUID
+		want = uuid
+	)
+	rbuf := rbytes.NewRBuffer(wbuf.Bytes(), nil, 0, nil)
+	err = got.UnmarshalROOTv1(rbuf)
+	if err != nil {
+		t.Fatalf("could not unserialize v1: %+v", err)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("invalid UUID-v1 round-trip:\ngot= %v\nwant=%v\n", got, want)
+	}
+}
