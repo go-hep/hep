@@ -101,7 +101,10 @@ func newKey(dir *tdirectoryFile, name, title, class string, objlen int32, f *Fil
 	k.nbytes = k.objlen + k.keylen
 	if objlen > 0 {
 		k.seekkey = f.end
-		f.setEnd(k.seekkey + int64(k.nbytes))
+		err := f.setEnd(k.seekkey + int64(k.nbytes))
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	if f.end > kStartBigFile {
@@ -161,7 +164,11 @@ func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object,
 	}
 	k.nbytes = k.keylen + int32(len(k.buf))
 
-	f.setEnd(k.seekkey + int64(k.nbytes))
+	err = f.setEnd(k.seekkey + int64(k.nbytes))
+	if err != nil {
+		return k, errors.Wrapf(err, "riofs: could not update ROOT file end")
+	}
+
 	return k, nil
 }
 

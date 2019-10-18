@@ -407,7 +407,11 @@ func (f *File) writeHeader() error {
 		buf.WriteI64(f.seekinfo)
 		buf.WriteI32(f.nbytesinfo)
 	}
-	f.uuid.MarshalROOT(buf)
+
+	_, err = f.uuid.MarshalROOT(buf)
+	if err != nil {
+		return errors.Wrapf(err, "riofs: could not write UUID's file header")
+	}
 
 	_, _ = f.w.WriteAt(make([]byte, f.begin), 0)
 	_, err = f.w.WriteAt(buf.Bytes(), 0)

@@ -46,7 +46,7 @@ func (uuid *UUID) UnmarshalROOTv1(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	r.Read((*uuid)[:])
+	_, _ = r.Read((*uuid)[:])
 
 	return r.Err()
 }
