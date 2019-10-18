@@ -61,6 +61,127 @@ func TestFileSegmentMap(t *testing.T) {
 	}
 }
 
+func TestFileRecords(t *testing.T) {
+	f, err := groot.Open("../testdata/dirs-6.14.00.root")
+	if err != nil {
+		t.Fatalf("could not open ROOT file: %+v", err)
+	}
+	defer f.Close()
+
+	out := new(bytes.Buffer)
+	err = f.Records(out)
+	if err != nil {
+		t.Fatalf("could not run segment map: %+v", err)
+	}
+
+	got := out.String()
+	want := `=== file "../testdata/dirs-6.14.00.root" ===
+begin: 100
+end:   5399
+seek-free: 5338 nbytes-free=61 nfree=1
+seek-info: 1493 nbytes-info=3845
+=== dir "dirs-6.14.00.root" @100 ===
+parent:      <nil>
+nbytes-keys: 196
+nbytes-name: 70
+seek-dir:    100
+seek-parent: 0
+seek-keys:   1297
+class:       "TFile"
+keys:        3
+ key[0]: "dir1"
+  === key "dir1" ===
+  nbytes:    107
+  keylen:    47
+  objlen:    60
+  cycle:     1
+  seek-key:  230
+  seek-pdir: 100
+  class:     "TDirectoryFile"
+  parent:    @100
+    === dir "dir1" @230 ===
+    parent:      @100
+    nbytes-keys: 100
+    nbytes-name: 47
+    seek-dir:    230
+    seek-parent: 100
+    seek-keys:   1095
+    class:       "TDirectoryFile"
+    keys:        1
+     key[0]: "dir11"
+      === key "dir11" ===
+      nbytes:    109
+      keylen:    49
+      objlen:    60
+      cycle:     1
+      seek-key:  551
+      seek-pdir: 230
+      class:     "TDirectoryFile"
+      parent:    @230
+        === dir "dir11" @551 ===
+        parent:      @230
+        nbytes-keys: 90
+        nbytes-name: 49
+        seek-dir:    551
+        seek-parent: 100
+        seek-keys:   1005
+        class:       "TDirectoryFile"
+        keys:        1
+         key[0]: "h1"
+          === key "h1" ===
+          nbytes:    345
+          keylen:    37
+          objlen:    936
+          cycle:     1
+          seek-key:  660
+          seek-pdir: 551
+          class:     "TH1F"
+          parent:    @551
+ key[1]: "dir2"
+  === key "dir2" ===
+  nbytes:    107
+  keylen:    47
+  objlen:    60
+  cycle:     1
+  seek-key:  337
+  seek-pdir: 100
+  class:     "TDirectoryFile"
+  parent:    @100
+    === dir "dir2" @337 ===
+    parent:      @100
+    nbytes-keys: 51
+    nbytes-name: 47
+    seek-dir:    337
+    seek-parent: 100
+    seek-keys:   1195
+    class:       "TDirectoryFile"
+    keys:        0
+ key[2]: "dir3"
+  === key "dir3" ===
+  nbytes:    107
+  keylen:    47
+  objlen:    60
+  cycle:     1
+  seek-key:  444
+  seek-pdir: 100
+  class:     "TDirectoryFile"
+  parent:    @100
+    === dir "dir3" @444 ===
+    parent:      @100
+    nbytes-keys: 51
+    nbytes-name: 47
+    seek-dir:    444
+    seek-parent: 100
+    seek-keys:   1246
+    class:       "TDirectoryFile"
+    keys:        0
+`
+
+	if got != want {
+		t.Fatalf("invalid segment map:\ngot:\n%v\nwant:\n%v\n", got, want)
+	}
+}
+
 func TestFileDirectory(t *testing.T) {
 	for _, fname := range []string{
 		"../testdata/small-flat-tree.root",

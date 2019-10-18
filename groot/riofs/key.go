@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -451,6 +452,33 @@ func (k *Key) writeFile(f *File) (int, error) {
 
 	k.buf = nil
 	return n, nil
+}
+
+func (k *Key) records(w io.Writer, indent int) error {
+	hdr := strings.Repeat("  ", indent)
+	fmt.Fprintf(w, "%s=== key %q ===\n", hdr, k.Name())
+	fmt.Fprintf(w, "%snbytes:    %d\n", hdr, k.nbytes)
+	fmt.Fprintf(w, "%skeylen:    %d\n", hdr, k.keylen)
+	fmt.Fprintf(w, "%sobjlen:    %d\n", hdr, k.objlen)
+	fmt.Fprintf(w, "%scycle:     %d\n", hdr, k.cycle)
+	fmt.Fprintf(w, "%sseek-key:  %d\n", hdr, k.seekkey)
+	fmt.Fprintf(w, "%sseek-pdir: %d\n", hdr, k.seekpdir)
+	fmt.Fprintf(w, "%sclass:     %q\n", hdr, k.class)
+	parent := "<nil>"
+	if k.parent != nil {
+		parent = fmt.Sprintf("@%d", k.parent.(*tdirectoryFile).seekdir)
+	}
+	fmt.Fprintf(w, "%sparent:    %s\n", hdr, parent)
+
+	switch k.class {
+	case "TDirectory", "TDirectoryFile":
+		obj, err := k.Object()
+		if err != nil {
+			return errors.Wrapf(err, "could not load object of key %q", k.Name())
+		}
+		return obj.(*tdirectoryFile).records(w, indent+1)
+	}
+	return nil
 }
 
 func init() {

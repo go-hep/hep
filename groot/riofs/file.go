@@ -901,6 +901,17 @@ func (f *File) SegmentMap(w io.Writer) (err error) {
 	return err
 }
 
+// Records writes the records structure of the ROOT file to w.
+func (f *File) Records(w io.Writer) error {
+	fmt.Fprintf(w, "=== file %q ===\n", f.id)
+	fmt.Fprintf(w, "begin: %d\n", f.begin)
+	fmt.Fprintf(w, "end:   %d\n", f.end)
+	fmt.Fprintf(w, "seek-free: %d nbytes-free=%d nfree=%d\n", f.seekfree, f.nbytesfree, f.nfree)
+	fmt.Fprintf(w, "seek-info: %d nbytes-info=%d\n", f.seekinfo, f.nbytesinfo)
+
+	return f.dir.records(w, 0)
+}
+
 var (
 	_ root.Object                = (*File)(nil)
 	_ root.Named                 = (*File)(nil)
