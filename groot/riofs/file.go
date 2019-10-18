@@ -248,7 +248,7 @@ func (f *File) setEnd(pos int64) error {
 		return errors.Errorf("riofs: last free segment is not the file ending")
 	}
 
-	blk.last = pos
+	blk.first = pos
 	return nil
 }
 
