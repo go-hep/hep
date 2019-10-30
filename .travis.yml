@@ -4,7 +4,7 @@ os:
   - linux
 
 env:
- - TAGS="-tags travis"
+ - TAGS="-tags=travis"
 
 cache:
  directories:
@@ -19,14 +19,14 @@ matrix:
  include:
    - go: 1.13.x
      env:
-       - TAGS="-tags travis"
+       - TAGS="-tags=travis"
        - COVERAGE="-coverpkg=go-hep.org/x/hep/..."
    - go: 1.12.x
      env:
-       - TAGS="-tags travis"
+       - TAGS="-tags=travis"
    - go: master
      env:
-       - TAGS="-tags travis"
+       - TAGS="-tags=travis,noasm"
        - COVERAGE="-race"
        - GOPROXY="https://proxy.golang.org"
        - GO111MODULE="on"
