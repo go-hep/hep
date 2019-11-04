@@ -283,6 +283,11 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 	return f.seeker.Seek(offset, whence)
 }
 
+// WriteAt implements io.WriterAt
+func (f *File) WriteAt(p []byte, off int64) (int, error) {
+	return f.w.WriteAt(p, off)
+}
+
 // Version returns the ROOT version this file was created with.
 func (f *File) Version() int {
 	return int(f.version)
@@ -923,4 +928,10 @@ var (
 	_ Directory                  = (*File)(nil)
 	_ rbytes.StreamerInfoContext = (*File)(nil)
 	_ streamerInfoStore          = (*File)(nil)
+
+	_ io.Reader   = (*File)(nil)
+	_ io.ReaderAt = (*File)(nil)
+	_ io.Seeker   = (*File)(nil)
+	_ io.WriterAt = (*File)(nil)
+	_ io.Closer   = (*File)(nil)
 )
