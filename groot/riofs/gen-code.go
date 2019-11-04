@@ -42,22 +42,40 @@ func gofmt(f *os.File) {
 }
 
 func genStreamers() {
-	classes := []string{
-		"TObject",
-		"TDirectory",
-		"TDirectoryFile",
-		"TKey",
-		"TNamed",
-		"TClonesArray",
-		"TList",
-		"THashList",
-		"TMap",
-		"TObjArray",
-		"TObjString",
-		"TGraph", "TGraphErrors", "TGraphAsymmErrors",
-		"TH1F", "TH1D", "TH1I",
-		"TH2F", "TH2D", "TH2I",
-		"TTree",
+	classes := []struct {
+		Name string
+		Type string
+	}{
+		{Name: "TObject"},
+		{Name: "TDirectory"},
+		{Name: "TDirectoryFile"},
+		{Name: "TKey"},
+		{Name: "TNamed"},
+		{Name: "TClonesArray"},
+		{Name: "TArrayC", Type: "TArray"},
+		{Name: "TArrayS", Type: "TArray"},
+		{Name: "TArrayI", Type: "TArray"},
+		{Name: "TArrayL", Type: "TArray"},
+		{Name: "TArrayL64", Type: "TArray"},
+		{Name: "TArrayF", Type: "TArray"},
+		{Name: "TArrayD", Type: "TArray"},
+		{Name: "TList"},
+		{Name: "THashList"},
+		{Name: "TMap"},
+		{Name: "TObjArray"},
+		{Name: "TObjString"},
+		{Name: "TGraph"}, {Name: "TGraphErrors"}, {Name: "TGraphAsymmErrors"},
+		{Name: "TH1F"}, {Name: "TH1D"}, {Name: "TH1I"},
+		{Name: "TH2F"}, {Name: "TH2D"}, {Name: "TH2I"},
+
+		{Name: "TTree"},
+		{Name: "TBranch"}, {Name: "TBranchElement"},
+		{Name: "TBasket"},
+		{Name: "TLeaf"}, {Name: "TLeafElement"},
+		{Name: "TLeafO"},
+		{Name: "TLeafB"}, {Name: "TLeafS"}, {Name: "TLeafI"}, {Name: "TLeafL"},
+		{Name: "TLeafF"}, {Name: "TLeafD"},
+		{Name: "TLeafC"},
 	}
 
 	const (
@@ -80,8 +98,10 @@ void genstreamers(const char* fname) {
 	f->SetCompressionLevel(9);
 
 {{range .}}
-	(({{.}}*)(TClass::GetClass("{{.}}")->New()))->Write("type-{{.}}");
-	TClass::GetClass("{{.}}")->GetStreamerInfo()->Write("streamer-info-{{.}}");
+{{if ne .Type "TArray"}}
+	(({{.Name}}*)(TClass::GetClass("{{.Name}}")->New()))->Write("type-{{.}}");
+{{- end}}
+	TClass::GetClass("{{.Name}}")->GetStreamerInfo()->Write("streamer-info-{{.Name}}");
 {{end }}
 
 	f->Write();
