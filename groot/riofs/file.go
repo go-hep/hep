@@ -851,6 +851,7 @@ func (f *File) SegmentMap(w io.Writer) (err error) {
 		idcur = f.begin
 		sz    = int64(64)
 		date  time.Time
+		class string
 	)
 
 	ndigits := int(math.Log10(float64(f.end))) + 1
@@ -867,47 +868,77 @@ func (f *File) SegmentMap(w io.Writer) (err error) {
 			if n <= 0 {
 				return errors.Wrapf(err, "could not buffer at position %d", idcur)
 			}
+			err = nil
 		default:
 			return errors.Wrapf(err, "could not buffer at position %d", idcur)
 		}
 
-		var k Key
-		err = k.UnmarshalROOT(rbytes.NewRBuffer(buf, nil, 0, f))
-		if err != nil {
-			return errors.Wrapf(err, "could not unmarshal key at %d", idcur)
+		var (
+			k struct {
+				nbytes   int32
+				rvers    int16
+				objlen   int32
+				date     time.Time
+				keylen   int16
+				cycle    int16
+				seekkey  int64
+				seekpdir int64
+			}
+			r = rbytes.NewRBuffer(buf, nil, 0, f)
+		)
+
+		k.nbytes = r.ReadI32()
+		if r.Err() != nil || k.nbytes == 0 {
+			class = "=== [ERR] ==="
+			fmt.Fprintf(w, "%s  At:%-*d  N=%-8d  %-14s\n", strings.Repeat("*", 15), ndigits+1, idcur, k.nbytes, class)
+			return errors.Errorf("invalid key (nbytes=%d, err=%v)", k.nbytes, err)
 		}
-		date = k.datetime
-		cname := k.ClassName()
 		if k.nbytes < 0 {
-			cname = "=== [GAP] ==="
-			fmt.Fprintf(w, "%s  At:%-*d  N=%-8d  %-14s\n", strings.Repeat("*", 15), ndigits+1, idcur, k.nbytes, cname)
+			class = "=== [GAP] ==="
+			fmt.Fprintf(w, "%s  At:%-*d  N=%-8d  %-14s\n", strings.Repeat("*", 15), ndigits+1, idcur, k.nbytes, class)
 			idcur += int64(-k.nbytes)
 			continue
 		}
-		if k.nbytes == 0 {
-			return errors.Errorf("invalid key %q", k.name)
+
+		k.rvers = r.ReadI16()
+		k.objlen = r.ReadI32()
+		k.date = datime2time(r.ReadU32())
+		k.keylen = r.ReadI16()
+		k.cycle = r.ReadI16()
+
+		switch {
+		case k.rvers > 1000:
+			k.seekkey = r.ReadI64()
+			k.seekpdir = r.ReadI64()
+		default:
+			k.seekkey = int64(r.ReadI32())
+			k.seekpdir = int64(r.ReadI32())
 		}
+
+		class = r.ReadString()
+		date = k.date
 
 		switch idcur {
 		case f.seekfree:
-			cname = "FreeSegments"
+			class = "FreeSegments"
 		case f.seekinfo:
-			cname = "StreamerInfo"
+			class = "StreamerInfo"
 		case f.dir.seekkeys:
-			cname = "KeysList"
+			class = "KeysList"
 		}
 
 		switch {
-		case k.isCompressed():
-			cx := float64(k.ObjLen()+k.KeyLen()) / float64(k.nbytes)
-			fmt.Fprintf(w, "%s  At:%-*d  N=%-8d  %-14s CX = %5.2f\n", date.Format(timefmt), ndigits+1, idcur, k.nbytes, cname, cx)
+		case k.objlen != k.nbytes-int32(k.keylen):
+			cx := float64(k.objlen+int32(k.keylen)) / float64(k.nbytes)
+			fmt.Fprintf(w, "%s  At:%-*d  N=%-8d  %-14s CX = %5.2f\n", date.Format(timefmt), ndigits+1, idcur, k.nbytes, class, cx)
 		default:
-			fmt.Fprintf(w, "%s  At:%-*d  N=%-8d  %-14s\n", date.Format(timefmt), ndigits+1, idcur, k.nbytes, cname)
+			fmt.Fprintf(w, "%s  At:%-*d  N=%-8d  %-14s\n", date.Format(timefmt), ndigits+1, idcur, k.nbytes, class)
 		}
 		idcur += int64(k.nbytes)
 	}
 
-	fmt.Fprintf(w, "%s  At:%-*d  N=%-8d  %-14s\n", date.Format(timefmt), ndigits+1, idcur, 1, "END")
+	class = "END"
+	fmt.Fprintf(w, "%s  At:%-*d  N=%-8d  %-14s\n", date.Format(timefmt), ndigits+1, idcur, 1, class)
 	return err
 }
 
