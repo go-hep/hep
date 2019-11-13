@@ -63,6 +63,11 @@ func (v *visitor) visitSE(depth int, se rbytes.StreamerElement) error {
 		return err
 	}
 
+	switch se.TypeName() {
+	case "TVirtualIndex", "TVirtualIndex*":
+		return nil
+	}
+
 	switch se := se.(type) {
 	case *StreamerBasicType:
 		// no-op
