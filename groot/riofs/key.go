@@ -119,6 +119,17 @@ func newKey(dir *tdirectoryFile, name, title, class string, objlen int32, f *Fil
 	return k
 }
 
+// NewKey creates a new key from the provided serialized object buffer.
+// NewKey puts the key and its payload at the end of the provided file f.
+// Depending on the file configuration, NewKey may compress the provided object buffer.
+func NewKey(dir Directory, name, title, class string, cycle int16, obj []byte, f *File) (Key, error) {
+	var d *tdirectoryFile
+	if dir != nil {
+		d = dir.(*tdirectoryFile)
+	}
+	return newKeyFromBuf(d, name, title, class, cycle, obj, f)
+}
+
 func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object, f *File) (Key, error) {
 	var err error
 	if dir == nil {
@@ -215,6 +226,48 @@ func newKeyFromBuf(dir *tdirectoryFile, name, title, class string, cycle int16, 
 	return k, nil
 }
 
+// NewKeyForBasketInternal creates a new empty key.
+// This is needed for Tree/Branch/Basket persistency.
+//
+// DO NOT USE.
+func NewKeyForBasketInternal(dir Directory, name, title, class string, cycle int16) Key {
+	var (
+		f = fileOf(dir)
+		d *tdirectoryFile
+	)
+	switch v := dir.(type) {
+	case *File:
+		d = &v.dir
+	case *tdirectoryFile:
+		d = v
+	default:
+		panic(errors.Errorf("riofs: invalid directory type %T", dir))
+	}
+
+	k := Key{
+		f:        f,
+		rvers:    rvers.Key,
+		cycle:    cycle,
+		datetime: nowUTC(),
+		class:    class,
+		name:     name,
+		title:    title,
+		seekpdir: f.begin, // FIXME(sbinet): see https://sft.its.cern.ch/jira/browse/ROOT-10352
+		parent:   dir,
+	}
+	k.keylen = k.sizeof()
+	k.nbytes = k.keylen
+	if f.end > kStartBigFile {
+		k.rvers += 1000
+	}
+
+	if d != nil {
+		k.seekpdir = d.seekdir
+	}
+
+	return k
+}
+
 // KeyFromDir creates a new empty key (with no associated payload object)
 // with provided name and title, and the expected object type name.
 // The key will be held by the provided directory.
@@ -254,8 +307,11 @@ func (k *Key) Cycle() int {
 	return int(k.cycle)
 }
 
-func (k *Key) ObjLen() int32 { return k.objlen }
-func (k *Key) KeyLen() int32 { return k.keylen }
+func (k *Key) Nbytes() int32  { return k.nbytes }
+func (k *Key) ObjLen() int32  { return k.objlen }
+func (k *Key) KeyLen() int32  { return k.keylen }
+func (k *Key) SeekKey() int64 { return k.seekkey }
+func (k *Key) Buffer() []byte { return k.buf }
 
 func (k *Key) SetFile(f *File)      { k.f = f }
 func (k *Key) SetBuffer(buf []byte) { k.buf = buf; k.objlen = int32(len(buf)) }
@@ -423,6 +479,14 @@ func keylenFor(name, title, class string, dir *tdirectoryFile) int32 {
 	nbytes += tstringSizeof(class)
 	nbytes += tstringSizeof(name)
 	nbytes += tstringSizeof(title)
+	if class == "TBasket" {
+		nbytes += 2 // version
+		nbytes += 4 // bufsize
+		nbytes += 4 // nevsize
+		nbytes += 4 // nevbuf
+		nbytes += 4 // last
+		nbytes += 1 // flag
+	}
 	return nbytes
 }
 

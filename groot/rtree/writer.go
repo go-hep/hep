@@ -19,8 +19,8 @@ type Writer interface {
 	// of bytes (before compression, if any) written.
 	Write() (int, error)
 
-	// Sync commits the current contents of the tree to stable storage.
-	Sync() error
+	// Flush commits the current contents of the tree to stable storage.
+	Flush() error
 
 	// Close writes metadata and closes the tree.
 	Close() error
@@ -34,6 +34,7 @@ type wtree struct {
 type WriteVar struct {
 	Name  string      // name of the variable
 	Value interface{} // pointer to the value to write
+	Count string      // name of the branch holding the count-leaf value for slices
 }
 
 // NewWriter creates a new Tree with the given name and under the given
@@ -81,20 +82,32 @@ func (w *wtree) Write() (int, error) {
 	w.ttree.entries++
 	w.ttree.totBytes += int64(tot)
 	// FIXME(sbinet): autoflush
+
 	return tot, nil
 }
 
-// Sync commits the current contents of the tree to stable storage.
-func (w *wtree) Sync() error {
-	panic("not implemented") // FIXME(sbinet): implement
+// Flush commits the current contents of the tree to stable storage.
+func (w *wtree) Flush() error {
+	for _, b := range w.ttree.branches {
+		err := b.flush()
+		if err != nil {
+			return errors.Wrapf(err, "rtree: could not flush branch %q", b.Name())
+		}
+	}
+	return nil
 }
 
 // Close writes metadata and closes the tree.
 func (w *wtree) Close() error {
-	if err := w.Sync(); err != nil {
-		return err
+	if err := w.Flush(); err != nil {
+		return errors.Wrapf(err, "rtree: could not flush tree %q", w.Name())
 	}
-	panic("not implemented") // FIXME(sbinet): implement
+
+	if err := w.ttree.dir.Put(w.Name(), w); err != nil {
+		return errors.Wrapf(err, "rtree: could not save tree %q", w.Name())
+	}
+
+	return nil
 }
 
 func (w *wtree) loadEntry(i int64) error {

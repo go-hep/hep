@@ -490,78 +490,112 @@ func newLeafFromWVar(b Branch, v WriteVar) (Leaf, error) {
 	)
 
 	var (
-		rv   = reflect.Indirect(reflect.ValueOf(v.Value))
-		leaf Leaf
+		rv     = reflect.Indirect(reflect.ValueOf(v.Value))
+		rt     = rv.Type()
+		kind   = rt.Kind()
+		nelems = 1
+		leaf   Leaf
+		count  leafCount
 	)
-	switch rv.Kind() {
+	switch kind {
+	case reflect.Array:
+		nelems = rt.Len()
+		kind = rt.Elem().Kind()
+	case reflect.Slice:
+		lc := b.Leaf(v.Count)
+		if lc == nil {
+			leaves := b.Leaves()
+			names := make([]string, len(leaves))
+			for i, ll := range leaves {
+				names[i] = ll.Name()
+			}
+			return nil, errors.Errorf(
+				"could not find leaf count %q from branch %q for slice (name=%q, type=%T) among: %q",
+				v.Count, b.Name(), v.Name, v.Value, names,
+			)
+		}
+		lcc, ok := lc.(leafCount)
+		if !ok {
+			return nil, errors.Errorf(
+				"leaf count %q from branch %q for slice (name=%q, type=%T) is not a LeafCount",
+				v.Count, b.Name(), v.Name, v.Value,
+			)
+		}
+		count = lcc
+		kind = rt.Elem().Kind()
+	case reflect.Struct:
+		panic("not implemented")
+	}
+
+	switch kind {
 	case reflect.Bool:
-		leaf = newLeafO(b, v.Name, 1, false, nil)
+		leaf = newLeafO(b, v.Name, nelems, false, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not set leaf address for %q", v.Name)
 		}
 	case reflect.Uint8:
-		leaf = newLeafB(b, v.Name, 1, unsigned, nil)
+		leaf = newLeafB(b, v.Name, nelems, unsigned, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not set leaf address for %q", v.Name)
 		}
 	case reflect.Uint16:
-		leaf = newLeafS(b, v.Name, 1, unsigned, nil)
+		leaf = newLeafS(b, v.Name, nelems, unsigned, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not set leaf address for %q", v.Name)
 		}
 	case reflect.Uint32:
-		leaf = newLeafI(b, v.Name, 1, unsigned, nil)
+		leaf = newLeafI(b, v.Name, nelems, unsigned, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not set leaf address for %q", v.Name)
 		}
 	case reflect.Uint64:
-		leaf = newLeafL(b, v.Name, 1, unsigned, nil)
+		leaf = newLeafL(b, v.Name, nelems, unsigned, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not set leaf address for %q", v.Name)
 		}
 	case reflect.Int8:
-		leaf = newLeafB(b, v.Name, 1, signed, nil)
+		leaf = newLeafB(b, v.Name, nelems, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not set leaf address for %q", v.Name)
 		}
 	case reflect.Int16:
-		leaf = newLeafS(b, v.Name, 1, signed, nil)
+		leaf = newLeafS(b, v.Name, nelems, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not set leaf address for %q", v.Name)
 		}
 	case reflect.Int32:
-		leaf = newLeafI(b, v.Name, 1, signed, nil)
+		leaf = newLeafI(b, v.Name, nelems, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not set leaf address for %q", v.Name)
 		}
 	case reflect.Int64:
-		leaf = newLeafL(b, v.Name, 1, signed, nil)
+		leaf = newLeafL(b, v.Name, nelems, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not set leaf address for %q", v.Name)
 		}
 	case reflect.Float32:
-		leaf = newLeafF(b, v.Name, 1, signed, nil)
+		leaf = newLeafF(b, v.Name, nelems, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not set leaf address for %q", v.Name)
 		}
 	case reflect.Float64:
-		leaf = newLeafD(b, v.Name, 1, signed, nil)
+		leaf = newLeafD(b, v.Name, nelems, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not set leaf address for %q", v.Name)
 		}
 	case reflect.String:
-		leaf = newLeafC(b, v.Name, 1, signed, nil)
+		leaf = newLeafC(b, v.Name, nelems, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not set leaf address for %q", v.Name)

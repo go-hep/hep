@@ -69,11 +69,12 @@ func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, 
 		attfill:  *rbase.NewAttFill(),
 		compress: compress,
 
+		iobits:      w.ttree.iobits,
 		basketSize:  defaultBasketSize,
 		maxBaskets:  maxBaskets,
-		basketBytes: make([]int32, maxBaskets),
-		basketEntry: make([]int64, maxBaskets),
-		basketSeek:  make([]int64, maxBaskets),
+		basketBytes: make([]int32, 0, maxBaskets),
+		basketEntry: make([]int64, 1, maxBaskets),
+		basketSeek:  make([]int64, 0, maxBaskets),
 
 		tree: &w.ttree,
 		btop: btopOf(parent),
@@ -93,8 +94,12 @@ func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, 
 			fmt.Fprintf(title, "[%d]", rt.Len())
 			rt = rt.Elem()
 		case reflect.Slice:
-			fmt.Fprintf(title, "[N]") // FIXME(sbinet): how to link everything together?
+			if wvar.Count == "" {
+				return nil, errors.Errorf("rtree: empty name for count-leaf of slice %q", wvar.Name)
+			}
+			fmt.Fprintf(title, "[%s]", wvar.Count)
 			rt = rt.Elem()
+			//b.entryOffsetLen = 1000 // slice, so we need an offset array
 		}
 		code := gotypeToROOTTypeCode(rt)
 		fmt.Fprintf(title, "/%s", code)
@@ -108,6 +113,14 @@ func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, 
 	}
 
 	b.named.SetTitle(title.String())
+
+	if b.basket == nil {
+		b.writeBasket = len(b.baskets)
+		cycle := int16(b.writeBasket)
+		b.baskets = append(b.baskets, newBasketFrom(b.tree, b, cycle, b.basketSize, b.entryOffsetLen))
+		b.basket = &b.baskets[b.writeBasket]
+	}
+
 	return b, nil
 }
 
@@ -160,6 +173,14 @@ func (b *tbranch) Leaf(name string) Leaf {
 		if lf.Name() == name {
 			return lf
 		}
+	}
+	switch {
+	case b.bup != nil:
+		return b.bup.Leaf(name)
+	case b.btop != nil:
+		return b.btop.Leaf(name)
+	case b.tree != nil:
+		return b.tree.Leaf(name)
 	}
 	return nil
 }
@@ -266,25 +287,34 @@ func (b *tbranch) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		baskets.SetElems(nil)
 	}
 
-	w.WriteI8(0)
-	w.WriteFastArrayI32(b.basketBytes)
-	if len(b.basketBytes) < b.maxBaskets {
-		// fill up with zeros.
-		w.WriteFastArrayI32(make([]int32, b.maxBaskets-len(b.basketBytes)))
+	{
+		sli := b.basketBytes[:b.writeBasket]
+		w.WriteI8(1)
+		w.WriteFastArrayI32(sli)
+		if n := b.maxBaskets - len(sli); n > 0 {
+			// fill up with zeros.
+			w.WriteFastArrayI32(make([]int32, n))
+		}
 	}
 
-	w.WriteI8(0)
-	w.WriteFastArrayI64(b.basketEntry)
-	if len(b.basketEntry) < b.maxBaskets {
-		// fill up with zeros.
-		w.WriteFastArrayI64(make([]int64, b.maxBaskets-len(b.basketEntry)))
+	{
+		sli := b.basketEntry[:b.writeBasket+1]
+		w.WriteI8(1)
+		w.WriteFastArrayI64(sli)
+		if n := b.maxBaskets - len(sli); n > 0 {
+			// fill up with zeros.
+			w.WriteFastArrayI64(make([]int64, n))
+		}
 	}
 
-	w.WriteI8(0)
-	w.WriteFastArrayI64(b.basketSeek[:b.writeBasket])
-	if len(b.basketSeek) < b.maxBaskets {
-		// fill up with zeros.
-		w.WriteFastArrayI64(make([]int64, b.maxBaskets-len(b.basketSeek)))
+	{
+		sli := b.basketSeek[:b.writeBasket]
+		w.WriteI8(1)
+		w.WriteFastArrayI64(sli)
+		if n := b.maxBaskets - len(sli); n > 0 {
+			// fill up with zeros.
+			w.WriteFastArrayI64(make([]int64, n))
+		}
 	}
 
 	w.WriteString(b.fname)
@@ -492,14 +522,16 @@ func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
 	if len(b.basketBuf) < int(b.basketBytes[ib]) {
 		b.basketBuf = make([]byte, int(b.basketBytes[ib]))
 	}
-	buf := b.basketBuf[:int(b.basketBytes[ib])]
-	f := b.tree.getFile()
+	var (
+		buf   = b.basketBuf[:int(b.basketBytes[ib])]
+		f     = b.tree.getFile()
+		sictx = f
+	)
 	_, err = f.ReadAt(buf, b.basketSeek[ib])
 	if err != nil {
 		return err
 	}
 
-	sictx := b.tree.getFile()
 	err = bk.UnmarshalROOT(rbytes.NewRBuffer(buf, nil, 0, sictx))
 	if err != nil {
 		return err
@@ -507,13 +539,12 @@ func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
 	bk.key.SetFile(f)
 	b.firstEntry = b.basketEntry[ib]
 
-	buf = make([]byte, int(b.basket.key.ObjLen()))
+	buf = make([]byte, int(bk.key.ObjLen()))
 	_, err = bk.key.Load(buf)
 	if err != nil {
 		return err
 	}
 	bk.rbuf = rbytes.NewRBuffer(buf, nil, uint32(bk.key.KeyLen()), sictx)
-
 	for _, leaf := range b.leaves {
 		err = leaf.readFromBuffer(bk.rbuf)
 		if err != nil {
@@ -567,21 +598,25 @@ func (b *tbranch) setStreamerElement(s rbytes.StreamerElement, ctx rbytes.Stream
 }
 
 func (b *tbranch) write() (int, error) {
-	basket := b.basket
-	if basket == nil {
+	if b.basket == nil {
 		b.writeBasket = len(b.baskets)
-		b.baskets = append(b.baskets, newBasketFrom(b.tree, b))
-		basket = &b.baskets[b.writeBasket]
+		cycle := int16(b.writeBasket)
+		b.baskets = append(b.baskets, newBasketFrom(b.tree, b, cycle, b.basketSize, b.entryOffsetLen))
+		b.basket = &b.baskets[b.writeBasket]
 	}
 
-	wbuf := basket.wbuf
 	b.entries++
 	b.entryNumber++
+	b.basket.nevbuf++
 
-	n, err := b.writeToBuffer(wbuf)
+	szOld := b.basket.wbuf.Len()
+	_, err := b.writeToBuffer(b.basket.wbuf)
+	szNew := b.basket.wbuf.Len()
+	n := int(szNew - szOld)
 	if err != nil {
 		return n, errors.Wrapf(err, "could not write to buffer (branch=%q)", b.Name())
 	}
+	b.basket.nevsize = n
 
 	return n, nil
 }
@@ -596,6 +631,31 @@ func (b *tbranch) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 		tot += n
 	}
 	return tot, nil
+}
+
+func (b *tbranch) flush() error {
+	for i, sub := range b.branches {
+		err := sub.flush()
+		if err != nil {
+			return errors.Wrapf(err, "could not flush subbranch[%d]=%q of branch %q", i, sub.Name(), b.Name())
+		}
+	}
+
+	f := b.tree.getFile()
+	totBytes, zipBytes, err := b.basket.writeFile(f)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal basket[%d] (branch=%q)", b.writeBasket, b.Name())
+	}
+	b.totBytes += totBytes
+	b.zipBytes += zipBytes
+
+	b.basketBytes = append(b.basketBytes, b.basket.key.Nbytes())
+	b.basketEntry = append(b.basketEntry, b.entryNumber)
+	b.basketSeek = append(b.basketSeek, b.basket.key.SeekKey())
+	b.writeBasket++
+	b.basket = nil
+
+	return nil
 }
 
 // tbranchElement is a Branch for objects.

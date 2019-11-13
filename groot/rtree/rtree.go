@@ -56,6 +56,7 @@ type Branch interface {
 	// write interface part
 	writeToBuffer(w *rbytes.WBuffer) (int, error)
 	write() (int, error)
+	flush() error
 }
 
 // Leaf describes branches data types

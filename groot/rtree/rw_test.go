@@ -13,7 +13,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/internal/rtests"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
@@ -419,10 +418,19 @@ func TestTreeRW(t *testing.T) {
 
 	for _, tc := range []struct {
 		name    string
+		skip    bool
 		wvars   []WriteVar
 		btitles []string
 		total   int
+		want    func(i int) interface{}
 	}{
+		{
+			name:    "empty",
+			wvars:   []WriteVar{},
+			btitles: []string{},
+			total:   nevts * (0),
+			want:    func(i int) interface{} { return nil },
+		},
 		{
 			name: "simple",
 			wvars: []WriteVar{
@@ -431,6 +439,65 @@ func TestTreeRW(t *testing.T) {
 			},
 			btitles: []string{"i32/I", "f64/D"},
 			total:   nevts * (4 + 8),
+			want: func(i int) interface{} {
+				return struct {
+					I32 int32
+					F64 float64
+				}{
+					I32: int32(i),
+					F64: float64(i),
+				}
+			},
+		},
+		{
+			name: "builtins",
+			wvars: []WriteVar{
+				{Name: "B", Value: new(bool)},
+				{Name: "I8", Value: new(int8)},
+				{Name: "I16", Value: new(int16)},
+				{Name: "I32", Value: new(int32)},
+				{Name: "I64", Value: new(int64)},
+				{Name: "U8", Value: new(uint8)},
+				{Name: "U16", Value: new(uint16)},
+				{Name: "U32", Value: new(uint32)},
+				{Name: "U64", Value: new(uint64)},
+				{Name: "F32", Value: new(float32)},
+				{Name: "F64", Value: new(float64)},
+			},
+			btitles: []string{
+				"B/O",
+				"I8/B", "I16/S", "I32/I", "I64/L",
+				"U8/b", "U16/s", "U32/i", "U64/l",
+				"F32/F", "F64/D",
+			},
+			total: nevts * 43,
+			want: func(i int) interface{} {
+				return struct {
+					B   bool
+					I8  int8
+					I16 int16
+					I32 int32
+					I64 int64
+					U8  uint8
+					U16 uint16
+					U32 uint32
+					U64 uint64
+					F32 float32
+					F64 float64
+				}{
+					B:   bool(i%2 == 0),
+					I8:  int8(i),
+					I16: int16(i),
+					I32: int32(i),
+					I64: int64(i),
+					U8:  uint8(i),
+					U16: uint16(i),
+					U32: uint32(i),
+					U64: uint64(i),
+					F32: float32(i),
+					F64: float64(i),
+				}
+			},
 		},
 		{
 			name: "strings",
@@ -440,10 +507,113 @@ func TestTreeRW(t *testing.T) {
 				{Name: "str", Value: new(string)},
 			},
 			btitles: []string{"i32/I", "f64/D", "str/C"},
-			total:   nevts * (4 + 8 + 3), // 3: strings are "xxx"
+			total:   nevts * (4 + 8 + (3 + 1)), // 3: strings are "xxx" + 1:string-size
+			want: func(i int) interface{} {
+				return struct {
+					I32 int32
+					F64 float64
+					Str string
+				}{
+					I32: int32(i),
+					F64: float64(i),
+					Str: fmt.Sprintf("%03d", i),
+				}
+			},
+		},
+		{
+			name: "arrays",
+			wvars: []WriteVar{
+				{Name: "ArrB", Value: new([5]bool)},
+				{Name: "ArrI8", Value: new([5]int8)},
+				{Name: "ArrI16", Value: new([5]int16)},
+				{Name: "ArrI32", Value: new([5]int32)},
+				{Name: "ArrI64", Value: new([5]int64)},
+				{Name: "ArrU8", Value: new([5]uint8)},
+				{Name: "ArrU16", Value: new([5]uint16)},
+				{Name: "ArrU32", Value: new([5]uint32)},
+				{Name: "ArrU64", Value: new([5]uint64)},
+				{Name: "ArrF32", Value: new([5]float32)},
+				{Name: "ArrF64", Value: new([5]float64)},
+			},
+			btitles: []string{
+				"ArrB[5]/O",
+				"ArrI8[5]/B", "ArrI16[5]/S", "ArrI32[5]/I", "ArrI64[5]/L",
+				"ArrU8[5]/b", "ArrU16[5]/s", "ArrU32[5]/i", "ArrU64[5]/l",
+				"ArrF32[5]/F", "ArrF64[5]/D",
+			},
+			total: nevts * 215,
+			want: func(i int) interface{} {
+				return struct {
+					ArrBool [5]bool
+					ArrI8   [5]int8
+					ArrI16  [5]int16
+					ArrI32  [5]int32
+					ArrI64  [5]int64
+					ArrU8   [5]uint8
+					ArrU16  [5]uint16
+					ArrU32  [5]uint32
+					ArrU64  [5]uint64
+					ArrF32  [5]float32
+					ArrF64  [5]float64
+				}{
+					ArrBool: [5]bool{bool(i%2 == 0), bool((i+1)%2 == 0), bool((i+2)%2 == 0), bool((i+3)%2 == 0), bool((i+4)%2 == 0)},
+					ArrI8:   [5]int8{int8(i), int8(i + 1), int8(i + 2), int8(i + 3), int8(i + 4)},
+					ArrI16:  [5]int16{int16(i), int16(i + 1), int16(i + 2), int16(i + 3), int16(i + 4)},
+					ArrI32:  [5]int32{int32(i), int32(i + 1), int32(i + 2), int32(i + 3), int32(i + 4)},
+					ArrI64:  [5]int64{int64(i), int64(i + 1), int64(i + 2), int64(i + 3), int64(i + 4)},
+					ArrU8:   [5]uint8{uint8(i), uint8(i + 1), uint8(i + 2), uint8(i + 3), uint8(i + 4)},
+					ArrU16:  [5]uint16{uint16(i), uint16(i + 1), uint16(i + 2), uint16(i + 3), uint16(i + 4)},
+					ArrU32:  [5]uint32{uint32(i), uint32(i + 1), uint32(i + 2), uint32(i + 3), uint32(i + 4)},
+					ArrU64:  [5]uint64{uint64(i), uint64(i + 1), uint64(i + 2), uint64(i + 3), uint64(i + 4)},
+					ArrF32:  [5]float32{float32(i), float32(i + 1), float32(i + 2), float32(i + 3), float32(i + 4)},
+					ArrF64:  [5]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3), float64(i + 4)},
+				}
+			},
+		},
+		{
+			name: "SliI64",
+			skip: true, // FIXME(sbinet): var-len arrays not READY yet
+			wvars: []WriteVar{
+				{Name: "N", Value: new(int32)},
+				{Name: "SliI64", Value: &[]int64{}, Count: "N"},
+			},
+			btitles: []string{"N/I", "SliI64[N]/L"},
+			total:   nevts*(4+5*8) - 120,
+			want: func(i int) interface{} {
+				return struct {
+					N      int32
+					SliI64 []int64
+				}{
+					N:      int32(i),
+					SliI64: []int64{int64(i), int64(i + 1), int64(i + 2), int64(i + 3), int64(i + 4)}[:i],
+				}
+			},
+		},
+		{
+			name: "SliF64",
+			skip: true, // FIXME(sbinet): var-len arrays not READY yet
+			wvars: []WriteVar{
+				{Name: "N", Value: new(int32)},
+				{Name: "SliF64", Value: new([]float64), Count: "N"},
+			},
+			btitles: []string{"N/I", "SliF64[N]/D"},
+			total:   nevts*(4+5*8) - 120,
+			want: func(i int) interface{} {
+				return struct {
+					N      int32
+					SliF64 []float64
+				}{
+					N:      int32(i),
+					SliF64: []float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3), float64(i + 4)}[:i],
+				}
+			},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.skip {
+				t.Skipf("test %s not ready yet", tc.name)
+			}
+
 			fname := filepath.Join(tmp, tc.name+".root")
 
 			func() {
@@ -477,17 +647,11 @@ func TestTreeRW(t *testing.T) {
 
 				total := 0
 				for i := 0; i < nevts; i++ {
-					for _, wvar := range tc.wvars {
-						switch v := reflect.ValueOf(wvar.Value).Elem(); v.Kind() {
-						case reflect.Int32:
-							v.SetInt(int64(i))
-						case reflect.Float64:
-							v.SetFloat(float64(i))
-						case reflect.String:
-							v.SetString(fmt.Sprintf("%03d", i))
-						default:
-							panic(errors.Errorf("rtree: invalid write-var type %T", wvar.Value))
-						}
+					want := tc.want(i)
+					for j, wvar := range tc.wvars {
+						v := reflect.ValueOf(wvar.Value).Elem()
+						want := reflect.ValueOf(want).Field(j)
+						v.Set(want)
 					}
 					n, err := tw.Write()
 					if err != nil {
@@ -503,11 +667,10 @@ func TestTreeRW(t *testing.T) {
 					t.Fatalf("invalid number of bytes written: got=%d, want=%d", got, want)
 				}
 
-				// FIXME(sbinet): TODO
-				// err = tw.Close()
-				// if err != nil {
-				//	t.Fatalf("could not close tree writer: %v", err)
-				// }
+				err = tw.Close()
+				if err != nil {
+					t.Fatalf("could not close tree writer: %v", err)
+				}
 
 				err = f.Close()
 				if err != nil {
@@ -518,9 +681,91 @@ func TestTreeRW(t *testing.T) {
 			func() {
 				f, err := riofs.Open(fname)
 				if err != nil {
-					t.Fatalf("could not opend read ROOT file %q: %v", fname, err)
+					t.Fatalf("could not opend read ROOT file %q: %+v", fname, err)
 				}
 				defer f.Close()
+
+				obj, err := f.Get(treeName)
+				if err != nil {
+					t.Fatalf("could not get ROOT tree %q: %+v", treeName, err)
+				}
+				tree := obj.(Tree)
+
+				if got, want := tree.Entries(), int64(nevts); got != want {
+					t.Fatalf("invalid number of events: got=%v, want=%v", got, want)
+				}
+
+				for i, b := range tree.Branches() {
+					if got, want := b.Name(), tc.wvars[i].Name; got != want {
+						t.Fatalf("branch[%d]: got=%q, want=%q", i, got, want)
+					}
+					if got, want := b.Title(), tc.btitles[i]; got != want {
+						t.Fatalf("branch[%d]: got=%q, want=%q", i, got, want)
+					}
+				}
+
+				for i, leaf := range tree.Leaves() {
+					if got, want := leaf.Name(), tc.wvars[i].Name; got != want {
+						t.Fatalf("leaf[%d]: got=%q, want=%q", i, got, want)
+					}
+					if got, want := leaf.Title(), tc.wvars[i].Name; got != want {
+						t.Fatalf("leaf[%d]: got=%q, want=%q", i, got, want)
+					}
+				}
+
+				if len(tc.wvars) == 0 {
+					return
+				}
+
+				rvars := NewScanVars(tree)
+				if len(rvars) != len(tc.wvars) {
+					t.Fatalf("invalid number of scan-vars: got=%d, want=%d", len(rvars), len(tc.wvars))
+				}
+
+				for i, rvar := range rvars {
+					wvar := tc.wvars[i]
+					if got, want := rvar.Name, wvar.Name; got != want {
+						t.Fatalf("invalid name for rvar[%d]: got=%q, want=%q", i, got, want)
+					}
+					wtyp := reflect.TypeOf(wvar.Value)
+					rtyp := reflect.TypeOf(rvar.Value)
+					if got, want := rtyp, wtyp; got != want {
+						t.Fatalf("invalid type for rvar[%d]: got=%v, want=%v", i, got, want)
+					}
+				}
+
+				sc, err := NewScannerVars(tree, rvars...)
+				if err != nil {
+					t.Fatalf("could not create scanner: %+v", err)
+				}
+				defer sc.Close()
+
+				nn := 0
+				for sc.Next() {
+					err := sc.Scan()
+					if err != nil {
+						t.Fatalf("could not scan entry %d: %+v", sc.Entry(), err)
+					}
+					want := tc.want(nn)
+					for i, rvar := range rvars {
+						var (
+							want = reflect.ValueOf(want).Field(i).Interface()
+							got  = reflect.ValueOf(rvar.Value).Elem().Interface()
+						)
+						if !reflect.DeepEqual(got, want) {
+							t.Errorf("entry[%d]: invalid scan-value[%s]: got=%v, want=%v", nn, tc.wvars[i].Name, got, want)
+						}
+					}
+					nn++
+				}
+
+				if sc.Err() != nil {
+					t.Fatalf("could not scan tree: %+v", sc.Err())
+				}
+
+				if got, want := nn, nevts; got != want {
+					t.Fatalf("invalid number of events: got=%d, want=%d", got, want)
+				}
 			}()
 		})
 	}
