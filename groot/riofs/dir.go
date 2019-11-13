@@ -732,6 +732,10 @@ var coreTypes = map[string]struct{}{
 	"TDirectoryFile": {},
 	"TKey":           {},
 	"TString":        {},
+
+	"TDatime":       {},
+	"TVirtualIndex": {},
+	"TBasket":       {},
 }
 
 func isCoreType(typename string) bool {
