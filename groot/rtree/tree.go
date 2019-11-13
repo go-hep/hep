@@ -168,6 +168,153 @@ func (tree *ttree) loadEntry(entry int64) error {
 	return nil
 }
 
+func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	pos := w.WriteVersion(tree.RVersion())
+	if n, err := tree.named.MarshalROOT(w); err != nil {
+		return n, err
+	}
+	if n, err := tree.attline.MarshalROOT(w); err != nil {
+		return n, err
+	}
+	if n, err := tree.attfill.MarshalROOT(w); err != nil {
+		return n, err
+	}
+	if n, err := tree.attmarker.MarshalROOT(w); err != nil {
+		return n, err
+	}
+	w.WriteI64(tree.entries)
+	w.WriteI64(tree.totBytes)
+	w.WriteI64(tree.zipBytes)
+	w.WriteI64(tree.savedBytes)
+	w.WriteI64(tree.flushedBytes)
+	w.WriteF64(tree.weight)
+	w.WriteI32(tree.timerInterval)
+	w.WriteI32(tree.scanField)
+	w.WriteI32(tree.update)
+	w.WriteI32(tree.defaultEntryOffsetLen)
+	w.WriteI32(int32(len(tree.clusters.ranges)))
+
+	w.WriteI64(tree.maxEntries)
+	w.WriteI64(tree.maxEntryLoop)
+	w.WriteI64(tree.maxVirtualSize)
+	w.WriteI64(tree.autoSave)
+
+	w.WriteI64(tree.autoFlush)
+	w.WriteI64(tree.estimate)
+
+	w.WriteI8(0)
+	w.WriteFastArrayI64(tree.clusters.ranges)
+	w.WriteI8(0)
+	w.WriteFastArrayI64(tree.clusters.sizes)
+
+	if n, err := tree.iobits.MarshalROOT(w); err != nil {
+		return n, err
+	}
+
+	{
+		branches := rcont.NewObjArray()
+		if len(tree.branches) > 0 {
+			elems := make([]root.Object, len(tree.branches))
+			for i, v := range tree.branches {
+				elems[i] = v
+			}
+			branches.SetElems(elems)
+		}
+		if n, err := branches.MarshalROOT(w); err != nil {
+			return n, err
+		}
+	}
+	{
+		leaves := rcont.NewObjArray()
+		if len(tree.leaves) > 0 {
+			elems := make([]root.Object, len(tree.leaves))
+			for i, v := range tree.leaves {
+				elems[i] = v
+			}
+			leaves.SetElems(elems)
+		}
+		if n, err := leaves.MarshalROOT(w); err != nil {
+			return n, err
+		}
+	}
+
+	{
+		var obj root.Object
+		if tree.aliases != nil {
+			obj = tree.aliases
+		}
+		if err := w.WriteObjectAny(obj); err != nil {
+			return int(w.Pos() - pos), err
+		}
+	}
+
+	{
+		var obj root.Object
+		if tree.indexValues != nil {
+			obj = tree.indexValues
+		}
+		if err := w.WriteObjectAny(obj); err != nil {
+			return int(w.Pos() - pos), err
+		}
+	}
+
+	{
+		var obj root.Object
+		if tree.index != nil {
+			obj = tree.index
+		}
+		if err := w.WriteObjectAny(obj); err != nil {
+			return int(w.Pos() - pos), err
+		}
+	}
+
+	{
+		var obj root.Object
+		if tree.treeIndex != nil {
+			obj = tree.treeIndex
+		}
+		if err := w.WriteObjectAny(obj); err != nil {
+			return int(w.Pos() - pos), err
+		}
+	}
+
+	{
+		var obj root.Object
+		if tree.friends != nil {
+			obj = tree.friends
+		}
+		if err := w.WriteObjectAny(obj); err != nil {
+			return int(w.Pos() - pos), err
+		}
+	}
+
+	{
+		var obj root.Object
+		if tree.userInfo != nil {
+			obj = tree.userInfo
+		}
+		if err := w.WriteObjectAny(obj); err != nil {
+			return int(w.Pos() - pos), err
+		}
+	}
+
+	{
+		var obj root.Object
+		if tree.branchRef != nil {
+			obj = tree.branchRef
+		}
+		if err := w.WriteObjectAny(obj); err != nil {
+			return int(w.Pos() - pos), err
+		}
+	}
+
+	return w.SetByteCount(pos, tree.Class())
+}
+
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -488,10 +635,12 @@ func (tio *tioFeatures) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	const tioFeaturesVers = 1 // FIXME(sbinet): somehow extract this reliably.
 	pos := w.WriteVersion(tioFeaturesVers)
 
-	var buf [4]byte // FIXME(sbinet) where do these 4 bytes come from ?
-	n, err := w.Write(buf[:])
-	if err != nil {
-		return n, errors.Wrapf(err, "could not write tio marshaled buffer")
+	if *tio != 0 {
+		var buf = [4]byte{0x1a, 0xa1, 0x2f, 0x10} // FIXME(sbinet) where do these 4 bytes come from ?
+		n, err := w.Write(buf[:])
+		if err != nil {
+			return n, errors.Wrapf(err, "could not write tio marshaled buffer")
+		}
 	}
 
 	w.WriteU8(uint8(*tio))
@@ -508,9 +657,24 @@ func (tio *tioFeatures) UnmarshalROOT(r *rbytes.RBuffer) error {
 	_ /*vers*/, pos, bcnt := r.ReadVersion(tio.Class())
 
 	var buf [4]byte // FIXME(sbinet) where do these 4 bytes come from ?
-	r.Read(buf[:])
+	_, err := r.Read(buf[:1])
+	if err != nil {
+		return err
+	}
 
-	*tio = tioFeatures(r.ReadU8())
+	var u8 uint8
+	switch buf[0] {
+	case 0:
+		// nothing to do.
+	default:
+		_, err := r.Read(buf[1:])
+		if err != nil {
+			return err
+		}
+		u8 = r.ReadU8()
+	}
+
+	*tio = tioFeatures(u8)
 
 	r.CheckByteCount(pos, bcnt, beg, tio.Class())
 	return r.Err()
@@ -537,6 +701,7 @@ var (
 	_ root.Object        = (*ttree)(nil)
 	_ root.Named         = (*ttree)(nil)
 	_ Tree               = (*ttree)(nil)
+	_ rbytes.Marshaler   = (*ttree)(nil)
 	_ rbytes.Unmarshaler = (*ttree)(nil)
 
 	_ root.Object        = (*tntuple)(nil)

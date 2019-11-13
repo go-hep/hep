@@ -35,28 +35,26 @@ type Basket struct {
 	branch Branch // basket support branch
 }
 
-func newBasketFrom(t Tree, b Branch) Basket {
-	var dir riofs.Directory
-	switch b := b.(type) {
-	case *tbranch:
-		dir = b.dir
-	case *tbranchElement:
-		dir = b.tbranch.dir
-	default:
-		panic(errors.Errorf("rtree: unknown Branch type %T", b))
-	}
-
+func newBasketFrom(t Tree, b Branch, cycle int16, bufsize, eoffsetLen int) Basket {
 	var (
+		f     = FileOf(t)
 		name  = b.Name()
 		title = t.Name()
 		class = "TBasket"
 	)
 
 	bkt := Basket{
-		key:  riofs.KeyFromDir(dir, name, title, class),
-		wbuf: rbytes.NewWBuffer(nil, nil, 0, nil),
+		key:     riofs.NewKeyForBasketInternal(f, name, title, class, cycle),
+		bufsize: bufsize,
+		nevsize: eoffsetLen,
+		wbuf:    rbytes.NewWBuffer(nil, nil, 0, nil),
+		header:  true, // FIXME(sbinet): ROOT default is "false"
+		branch:  b,
 	}
 
+	if bkt.nevsize > 0 {
+		bkt.offsets = make([]int32, 0, bkt.nevsize)
+	}
 	return bkt
 }
 
@@ -146,9 +144,13 @@ func (b *Basket) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 				w.WriteFastArrayI32(b.displ)
 			}
 		}
-		if b.wbuf != nil {
+		if b.wbuf != nil && b.wbuf.Len() > 0 {
 			raw := b.wbuf.Bytes()
-			_, err := w.Write(raw[:b.last])
+			n := b.last
+			if len(raw) < n {
+				n = len(raw)
+			}
+			_, err := w.Write(raw[:n])
 			if err != nil {
 				return int(w.Pos() - beg), err
 			}
@@ -294,6 +296,42 @@ func (b *Basket) canGenerateOffsetArray() bool {
 	return leaf.canGenerateOffsetArray()
 }
 
+func (b *Basket) writeFile(f *riofs.File) (totBytes int64, zipBytes int64, err error) {
+	header := b.header
+	b.header = true
+	defer func() {
+		b.header = header
+	}()
+	if noffsets := int32(len(b.offsets)); noffsets > 0 {
+		b.wbuf.WriteI32(noffsets)
+		b.wbuf.WriteFastArrayI32(b.offsets)
+	}
+	b.key, err = riofs.NewKey(nil, b.key.Name(), b.key.Title(), b.Class(), int16(b.key.Cycle()), b.wbuf.Bytes(), f)
+	if err != nil {
+		return 0, 0, errors.Wrapf(err, "rtree: could not create basket-key")
+	}
+
+	nbytes := b.key.KeyLen() + b.key.ObjLen()
+	buf := rbytes.NewWBuffer(make([]byte, nbytes), nil, uint32(b.key.KeyLen()), f)
+	b.last = int(nbytes)
+	_, err = b.MarshalROOT(buf)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	n, err := f.WriteAt(buf.Bytes(), b.key.SeekKey())
+	if err != nil {
+		return int64(n), int64(n), err
+	}
+	nn, err := f.WriteAt(b.key.Buffer(), b.key.SeekKey()+int64(b.key.KeyLen()))
+	n += nn
+	if err != nil {
+		return int64(n), int64(n), err
+	}
+
+	return int64(nbytes), int64(b.key.Nbytes()), nil
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := &Basket{}
@@ -305,5 +343,6 @@ func init() {
 var (
 	_ root.Object        = (*Basket)(nil)
 	_ root.Named         = (*Basket)(nil)
+	_ rbytes.Marshaler   = (*Basket)(nil)
 	_ rbytes.Unmarshaler = (*Basket)(nil)
 )
