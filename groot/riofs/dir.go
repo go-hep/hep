@@ -725,7 +725,7 @@ func init() {
 	}
 }
 
-// coreTypes is the set of types that do not neet a streamer info.
+// coreTypes is the set of types that do not need a streamer info.
 var coreTypes = map[string]struct{}{
 	"TObject":        {},
 	"TFile":          {},

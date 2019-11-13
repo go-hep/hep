@@ -174,6 +174,47 @@ func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object,
 	return k, nil
 }
 
+func newKeyFromBuf(dir *tdirectoryFile, name, title, class string, cycle int16, buf []byte, f *File) (Key, error) {
+	var err error
+	if dir == nil {
+		dir = &f.dir
+	}
+
+	keylen := keylenFor(name, title, class, dir)
+	objlen := int32(len(buf))
+	k := Key{
+		f:        f,
+		nbytes:   keylen + objlen,
+		rvers:    rvers.Key,
+		keylen:   keylen,
+		objlen:   objlen,
+		datetime: nowUTC(),
+		cycle:    cycle,
+		class:    class,
+		name:     name,
+		title:    title,
+		seekkey:  f.end,
+		seekpdir: dir.seekdir,
+		parent:   dir,
+	}
+	if f.end > kStartBigFile {
+		k.rvers += 1000
+	}
+
+	k.buf, err = rcompress.Compress(nil, buf, k.f.compression)
+	if err != nil {
+		return k, errors.Wrapf(err, "riofs: could not compress object %s for key %q", class, name)
+	}
+	k.nbytes = k.keylen + int32(len(k.buf))
+
+	err = f.setEnd(k.seekkey + int64(k.nbytes))
+	if err != nil {
+		return k, errors.Wrapf(err, "riofs: could not update ROOT file end")
+	}
+
+	return k, nil
+}
+
 // KeyFromDir creates a new empty key (with no associated payload object)
 // with provided name and title, and the expected object type name.
 // The key will be held by the provided directory.

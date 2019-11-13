@@ -563,8 +563,10 @@ func (f *File) writeStreamerInfo() error {
 		return errors.Wrapf(err, "riofs: could not write StreamerInfo list")
 	}
 
-	key = newKey(&f.dir, "StreamerInfo", sinfos.Title(), sinfos.Class(), int32(len(buf.Bytes())), f)
-	key.buf = buf.Bytes()
+	key, err = newKeyFromBuf(&f.dir, "StreamerInfo", sinfos.Title(), sinfos.Class(), 1, buf.Bytes(), f)
+	if err != nil {
+		return errors.Wrapf(err, "riofs: could not create StreamerInfo key")
+	}
 	f.seekinfo = key.seekkey
 	f.nbytesinfo = key.nbytes
 
