@@ -16,6 +16,10 @@ import (
 	"go-hep.org/x/hep/groot/rvers"
 )
 
+const (
+	kGenerateOffsetMap = 0
+)
+
 type Basket struct {
 	key riofs.Key
 
@@ -53,7 +57,7 @@ func newBasketFrom(t Tree, b Branch, cycle int16, bufsize, eoffsetLen int) Baske
 	}
 
 	if bkt.nevsize > 0 {
-		bkt.offsets = make([]int32, 0, bkt.nevsize)
+		bkt.offsets = make([]int32, bkt.nevsize)
 	}
 	return bkt
 }
@@ -101,6 +105,7 @@ func (b *Basket) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI32(int32(b.last))
 
 	mustGenOffsets := (len(b.offsets) > 0 && b.nevbuf > 0 &&
+		(b.iobits&kGenerateOffsetMap != 0) &&
 		b.canGenerateOffsetArray())
 
 	if mustGenOffsets && len(b.displ) > 0 {
@@ -224,7 +229,7 @@ func (b *Basket) UnmarshalROOT(r *rbytes.RBuffer) error {
 	case mustGenOffsets:
 		b.offsets = nil
 		if flag <= 40 {
-			panic(errors.Errorf("rtree: invalid basket state (flag=%v <= 40)", flag))
+			panic(errors.Errorf("rtree: invalid basket[%s] state (flag=%v <= 40)", b.Name(), flag))
 		}
 	}
 
@@ -296,15 +301,33 @@ func (b *Basket) canGenerateOffsetArray() bool {
 	return leaf.canGenerateOffsetArray()
 }
 
+func (b *Basket) update(offset int64) {
+	offset += int64(b.key.KeyLen())
+	if len(b.offsets) > 0 {
+		if b.nevbuf+1 >= b.nevsize {
+			nevsize := 10
+			if nevsize < 2*b.nevsize {
+				nevsize = 2 * b.nevsize
+			}
+			b.nevsize = nevsize
+			b.offsets = append(b.offsets, make([]int32, len(b.offsets)-nevsize)...)
+		}
+		b.offsets[b.nevbuf] = int32(offset)
+	}
+	b.nevbuf++
+}
+
 func (b *Basket) writeFile(f *riofs.File) (totBytes int64, zipBytes int64, err error) {
 	header := b.header
 	b.header = true
 	defer func() {
 		b.header = header
 	}()
-	if noffsets := int32(len(b.offsets)); noffsets > 0 {
-		b.wbuf.WriteI32(noffsets)
-		b.wbuf.WriteFastArrayI32(b.offsets)
+	b.last = int(int64(b.key.KeyLen()) + b.wbuf.Len())
+	if b.offsets != nil {
+		b.wbuf.WriteI32(int32(b.nevbuf + 1))
+		b.wbuf.WriteFastArrayI32(b.offsets[:b.nevbuf])
+		b.wbuf.WriteI32(0)
 	}
 	b.key, err = riofs.NewKey(nil, b.key.Name(), b.key.Title(), b.Class(), int16(b.key.Cycle()), b.wbuf.Bytes(), f)
 	if err != nil {
@@ -313,7 +336,6 @@ func (b *Basket) writeFile(f *riofs.File) (totBytes int64, zipBytes int64, err e
 
 	nbytes := b.key.KeyLen() + b.key.ObjLen()
 	buf := rbytes.NewWBuffer(make([]byte, nbytes), nil, uint32(b.key.KeyLen()), f)
-	b.last = int(nbytes)
 	_, err = b.MarshalROOT(buf)
 	if err != nil {
 		return 0, 0, err

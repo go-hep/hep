@@ -19,6 +19,8 @@ func Example_createFlatNtuple() {
 		F64    float64
 		Str    string
 		ArrF64 [5]float64
+		N      int32
+		SliF64 []float64
 	}
 	const (
 		fname = "../testdata/groot-flat-ntuple.root"
@@ -38,6 +40,8 @@ func Example_createFlatNtuple() {
 			{Name: "F64", Value: &evt.F64},
 			{Name: "Str", Value: &evt.Str},
 			{Name: "ArrF64", Value: &evt.ArrF64},
+			{Name: "N", Value: &evt.N},
+			{Name: "SliF64", Value: &evt.SliF64, Count: "N"},
 		}
 		tree, err := rtree.NewWriter(f, "mytree", wvars)
 		if err != nil {
@@ -54,6 +58,8 @@ func Example_createFlatNtuple() {
 			evt.F64 = float64(i)
 			evt.Str = fmt.Sprintf("evt-%0d", i)
 			evt.ArrF64 = [5]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3), float64(i + 4)}
+			evt.N = int32(i)
+			evt.SliF64 = []float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3), float64(i + 4)}[:i]
 			_, err = tree.Write()
 			if err != nil {
 				log.Fatalf("could not write event %d: %+v", i, err)
@@ -117,11 +123,13 @@ func Example_createFlatNtuple() {
 	// branch[1]: name="F64", title="F64/D"
 	// branch[2]: name="Str", title="Str/C"
 	// branch[3]: name="ArrF64", title="ArrF64[5]/D"
+	// branch[4]: name="N", title="N/I"
+	// branch[5]: name="SliF64", title="SliF64[N]/D"
 	// -- filled tree with 5 entries
 	// -- read back ROOT file
-	// entry[0]: {I32:0 F64:0 Str:evt-0 ArrF64:[0 1 2 3 4]}
-	// entry[1]: {I32:1 F64:1 Str:evt-1 ArrF64:[1 2 3 4 5]}
-	// entry[2]: {I32:2 F64:2 Str:evt-2 ArrF64:[2 3 4 5 6]}
-	// entry[3]: {I32:3 F64:3 Str:evt-3 ArrF64:[3 4 5 6 7]}
-	// entry[4]: {I32:4 F64:4 Str:evt-4 ArrF64:[4 5 6 7 8]}
+	// entry[0]: {I32:0 F64:0 Str:evt-0 ArrF64:[0 1 2 3 4] N:0 SliF64:[]}
+	// entry[1]: {I32:1 F64:1 Str:evt-1 ArrF64:[1 2 3 4 5] N:1 SliF64:[1]}
+	// entry[2]: {I32:2 F64:2 Str:evt-2 ArrF64:[2 3 4 5 6] N:2 SliF64:[2 3]}
+	// entry[3]: {I32:3 F64:3 Str:evt-3 ArrF64:[3 4 5 6 7] N:3 SliF64:[3 4 5]}
+	// entry[4]: {I32:4 F64:4 Str:evt-4 ArrF64:[4 5 6 7 8] N:4 SliF64:[4 5 6 7]}
 }

@@ -5,6 +5,7 @@
 package rtree
 
 import (
+	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -30,8 +31,15 @@ type tleaf struct {
 }
 
 func newLeaf(name string, len, etype, offset int, hasrange, unsigned bool, count leafCount, b Branch) tleaf {
+	title := name
+	if count != nil {
+		title = name + "[" + count.Name() + "]"
+	}
+	if len > 1 {
+		title = fmt.Sprintf("%s[%d]", name, len)
+	}
 	return tleaf{
-		named:    *rbase.NewNamed(name, name),
+		named:    *rbase.NewNamed(name, title),
 		len:      len,
 		etype:    etype,
 		offset:   offset,

@@ -421,6 +421,7 @@ func TestTreeRW(t *testing.T) {
 		skip    bool
 		wvars   []WriteVar
 		btitles []string
+		ltitles []string
 		total   int
 		want    func(i int) interface{}
 	}{
@@ -428,6 +429,7 @@ func TestTreeRW(t *testing.T) {
 			name:    "empty",
 			wvars:   []WriteVar{},
 			btitles: []string{},
+			ltitles: []string{},
 			total:   nevts * (0),
 			want:    func(i int) interface{} { return nil },
 		},
@@ -438,6 +440,7 @@ func TestTreeRW(t *testing.T) {
 				{Name: "f64", Value: new(float64)},
 			},
 			btitles: []string{"i32/I", "f64/D"},
+			ltitles: []string{"i32", "f64"},
 			total:   nevts * (4 + 8),
 			want: func(i int) interface{} {
 				return struct {
@@ -469,6 +472,12 @@ func TestTreeRW(t *testing.T) {
 				"I8/B", "I16/S", "I32/I", "I64/L",
 				"U8/b", "U16/s", "U32/i", "U64/l",
 				"F32/F", "F64/D",
+			},
+			ltitles: []string{
+				"B",
+				"I8", "I16", "I32", "I64",
+				"U8", "U16", "U32", "U64",
+				"F32", "F64",
 			},
 			total: nevts * 43,
 			want: func(i int) interface{} {
@@ -507,6 +516,7 @@ func TestTreeRW(t *testing.T) {
 				{Name: "str", Value: new(string)},
 			},
 			btitles: []string{"i32/I", "f64/D", "str/C"},
+			ltitles: []string{"i32", "f64", "str"},
 			total:   nevts * (4 + 8 + (3 + 1)), // 3: strings are "xxx" + 1:string-size
 			want: func(i int) interface{} {
 				return struct {
@@ -541,6 +551,12 @@ func TestTreeRW(t *testing.T) {
 				"ArrU8[5]/b", "ArrU16[5]/s", "ArrU32[5]/i", "ArrU64[5]/l",
 				"ArrF32[5]/F", "ArrF64[5]/D",
 			},
+			ltitles: []string{
+				"ArrB[5]",
+				"ArrI8[5]", "ArrI16[5]", "ArrI32[5]", "ArrI64[5]",
+				"ArrU8[5]", "ArrU16[5]", "ArrU32[5]", "ArrU64[5]",
+				"ArrF32[5]", "ArrF64[5]",
+			},
 			total: nevts * 215,
 			want: func(i int) interface{} {
 				return struct {
@@ -571,40 +587,67 @@ func TestTreeRW(t *testing.T) {
 			},
 		},
 		{
-			name: "SliI64",
-			skip: true, // FIXME(sbinet): var-len arrays not READY yet
+			name: "slices",
 			wvars: []WriteVar{
 				{Name: "N", Value: new(int32)},
-				{Name: "SliI64", Value: &[]int64{}, Count: "N"},
-			},
-			btitles: []string{"N/I", "SliI64[N]/L"},
-			total:   nevts*(4+5*8) - 120,
-			want: func(i int) interface{} {
-				return struct {
-					N      int32
-					SliI64 []int64
-				}{
-					N:      int32(i),
-					SliI64: []int64{int64(i), int64(i + 1), int64(i + 2), int64(i + 3), int64(i + 4)}[:i],
-				}
-			},
-		},
-		{
-			name: "SliF64",
-			skip: true, // FIXME(sbinet): var-len arrays not READY yet
-			wvars: []WriteVar{
-				{Name: "N", Value: new(int32)},
+				{Name: "SliB", Value: new([]bool), Count: "N"},
+				{Name: "SliI8", Value: new([]int8), Count: "N"},
+				{Name: "SliI16", Value: new([]int16), Count: "N"},
+				{Name: "SliI32", Value: new([]int32), Count: "N"},
+				{Name: "SliI64", Value: new([]int64), Count: "N"},
+				{Name: "SliU8", Value: new([]uint8), Count: "N"},
+				{Name: "SliU16", Value: new([]uint16), Count: "N"},
+				{Name: "SliU32", Value: new([]uint32), Count: "N"},
+				{Name: "SliU64", Value: new([]uint64), Count: "N"},
+				{Name: "SliF32", Value: new([]float32), Count: "N"},
 				{Name: "SliF64", Value: new([]float64), Count: "N"},
 			},
-			btitles: []string{"N/I", "SliF64[N]/D"},
-			total:   nevts*(4+5*8) - 120,
+			btitles: []string{
+				"N/I",
+				"SliB[N]/O",
+				"SliI8[N]/B", "SliI16[N]/S", "SliI32[N]/I", "SliI64[N]/L",
+				"SliU8[N]/b", "SliU16[N]/s", "SliU32[N]/i", "SliU64[N]/l",
+				"SliF32[N]/F", "SliF64[N]/D",
+			},
+			ltitles: []string{
+				"N",
+				"SliB[N]",
+				"SliI8[N]", "SliI16[N]", "SliI32[N]", "SliI64[N]",
+				"SliU8[N]", "SliU16[N]", "SliU32[N]", "SliU64[N]",
+				"SliF32[N]", "SliF64[N]",
+			},
+			total: 450,
 			want: func(i int) interface{} {
-				return struct {
-					N      int32
-					SliF64 []float64
-				}{
-					N:      int32(i),
-					SliF64: []float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3), float64(i + 4)}[:i],
+				type Data struct {
+					N       int32
+					SliBool []bool
+					SliI8   []int8
+					SliI16  []int16
+					SliI32  []int32
+					SliI64  []int64
+					SliU8   []uint8
+					SliU16  []uint16
+					SliU32  []uint32
+					SliU64  []uint64
+					SliF32  []float32
+					SliF64  []float64
+				}
+				if i == 0 {
+					return Data{N: 0}
+				}
+				return Data{
+					N:       int32(i),
+					SliBool: []bool{bool(i%2 == 0), bool((i+1)%2 == 0), bool((i+2)%2 == 0), bool((i+3)%2 == 0), bool((i+4)%2 == 0)}[:i],
+					SliI8:   []int8{int8(i), int8(i + 1), int8(i + 2), int8(i + 3), int8(i + 4)}[:i],
+					SliI16:  []int16{int16(i), int16(i + 1), int16(i + 2), int16(i + 3), int16(i + 4)}[:i],
+					SliI32:  []int32{int32(i), int32(i + 1), int32(i + 2), int32(i + 3), int32(i + 4)}[:i],
+					SliI64:  []int64{int64(i), int64(i + 1), int64(i + 2), int64(i + 3), int64(i + 4)}[:i],
+					SliU8:   []uint8{uint8(i), uint8(i + 1), uint8(i + 2), uint8(i + 3), uint8(i + 4)}[:i],
+					SliU16:  []uint16{uint16(i), uint16(i + 1), uint16(i + 2), uint16(i + 3), uint16(i + 4)}[:i],
+					SliU32:  []uint32{uint32(i), uint32(i + 1), uint32(i + 2), uint32(i + 3), uint32(i + 4)}[:i],
+					SliU64:  []uint64{uint64(i), uint64(i + 1), uint64(i + 2), uint64(i + 3), uint64(i + 4)}[:i],
+					SliF32:  []float32{float32(i), float32(i + 1), float32(i + 2), float32(i + 3), float32(i + 4)}[:i],
+					SliF64:  []float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3), float64(i + 4)}[:i],
 				}
 			},
 		},
@@ -640,7 +683,7 @@ func TestTreeRW(t *testing.T) {
 					if got, want := leaf.Name(), tc.wvars[i].Name; got != want {
 						t.Fatalf("leaf[%d]: got=%q, want=%q", i, got, want)
 					}
-					if got, want := leaf.Title(), tc.wvars[i].Name; got != want {
+					if got, want := leaf.Title(), tc.ltitles[i]; got != want {
 						t.Fatalf("leaf[%d]: got=%q, want=%q", i, got, want)
 					}
 				}
@@ -708,7 +751,7 @@ func TestTreeRW(t *testing.T) {
 					if got, want := leaf.Name(), tc.wvars[i].Name; got != want {
 						t.Fatalf("leaf[%d]: got=%q, want=%q", i, got, want)
 					}
-					if got, want := leaf.Title(), tc.wvars[i].Name; got != want {
+					if got, want := leaf.Title(), tc.ltitles[i]; got != want {
 						t.Fatalf("leaf[%d]: got=%q, want=%q", i, got, want)
 					}
 				}

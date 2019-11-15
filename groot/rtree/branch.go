@@ -99,7 +99,7 @@ func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, 
 			}
 			fmt.Fprintf(title, "[%s]", wvar.Count)
 			rt = rt.Elem()
-			//b.entryOffsetLen = 1000 // slice, so we need an offset array
+			b.entryOffsetLen = 1000 // slice, so we need an offset array
 		}
 		code := gotypeToROOTTypeCode(rt)
 		fmt.Fprintf(title, "/%s", code)
@@ -113,13 +113,7 @@ func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, 
 	}
 
 	b.named.SetTitle(title.String())
-
-	if b.basket == nil {
-		b.writeBasket = len(b.baskets)
-		cycle := int16(b.writeBasket)
-		b.baskets = append(b.baskets, newBasketFrom(b.tree, b, cycle, b.basketSize, b.entryOffsetLen))
-		b.basket = &b.baskets[b.writeBasket]
-	}
+	b.createNewBasket()
 
 	return b, nil
 }
@@ -597,19 +591,23 @@ func (b *tbranch) setStreamerElement(s rbytes.StreamerElement, ctx rbytes.Stream
 	// no op
 }
 
+func (b *tbranch) createNewBasket() {
+	b.writeBasket = len(b.baskets)
+	cycle := int16(b.writeBasket)
+	b.baskets = append(b.baskets, newBasketFrom(b.tree, b, cycle, b.basketSize, b.entryOffsetLen))
+	b.basket = &b.baskets[b.writeBasket]
+}
+
 func (b *tbranch) write() (int, error) {
 	if b.basket == nil {
-		b.writeBasket = len(b.baskets)
-		cycle := int16(b.writeBasket)
-		b.baskets = append(b.baskets, newBasketFrom(b.tree, b, cycle, b.basketSize, b.entryOffsetLen))
-		b.basket = &b.baskets[b.writeBasket]
+		b.createNewBasket()
 	}
 
 	b.entries++
 	b.entryNumber++
-	b.basket.nevbuf++
 
 	szOld := b.basket.wbuf.Len()
+	b.basket.update(szOld)
 	_, err := b.writeToBuffer(b.basket.wbuf)
 	szNew := b.basket.wbuf.Len()
 	n := int(szNew - szOld)
