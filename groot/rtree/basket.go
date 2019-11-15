@@ -350,6 +350,8 @@ func (b *Basket) writeFile(f *riofs.File) (totBytes int64, zipBytes int64, err e
 	if err != nil {
 		return int64(n), int64(n), err
 	}
+	b.wbuf = nil
+	b.key.SetBuffer(nil)
 
 	return int64(nbytes), int64(b.key.Nbytes()), nil
 }

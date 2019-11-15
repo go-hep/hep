@@ -412,13 +412,12 @@ func TestTreeRW(t *testing.T) {
 	defer os.RemoveAll(tmp)
 
 	const (
-		nevts    = 5
 		treeName = "mytree"
 	)
 
 	for _, tc := range []struct {
 		name    string
-		skip    bool
+		nevts   int64
 		wvars   []WriteVar
 		btitles []string
 		ltitles []string
@@ -427,21 +426,23 @@ func TestTreeRW(t *testing.T) {
 	}{
 		{
 			name:    "empty",
+			nevts:   5,
 			wvars:   []WriteVar{},
 			btitles: []string{},
 			ltitles: []string{},
-			total:   nevts * (0),
+			total:   5 * (0),
 			want:    func(i int) interface{} { return nil },
 		},
 		{
-			name: "simple",
+			name:  "simple",
+			nevts: 5,
 			wvars: []WriteVar{
 				{Name: "i32", Value: new(int32)},
 				{Name: "f64", Value: new(float64)},
 			},
 			btitles: []string{"i32/I", "f64/D"},
 			ltitles: []string{"i32", "f64"},
-			total:   nevts * (4 + 8),
+			total:   5 * (4 + 8),
 			want: func(i int) interface{} {
 				return struct {
 					I32 int32
@@ -453,7 +454,8 @@ func TestTreeRW(t *testing.T) {
 			},
 		},
 		{
-			name: "builtins",
+			name:  "builtins",
+			nevts: 5,
 			wvars: []WriteVar{
 				{Name: "B", Value: new(bool)},
 				{Name: "I8", Value: new(int8)},
@@ -479,7 +481,7 @@ func TestTreeRW(t *testing.T) {
 				"U8", "U16", "U32", "U64",
 				"F32", "F64",
 			},
-			total: nevts * 43,
+			total: 5 * 43,
 			want: func(i int) interface{} {
 				return struct {
 					B   bool
@@ -509,7 +511,8 @@ func TestTreeRW(t *testing.T) {
 			},
 		},
 		{
-			name: "strings",
+			name:  "strings",
+			nevts: 5,
 			wvars: []WriteVar{
 				{Name: "i32", Value: new(int32)},
 				{Name: "f64", Value: new(float64)},
@@ -517,7 +520,7 @@ func TestTreeRW(t *testing.T) {
 			},
 			btitles: []string{"i32/I", "f64/D", "str/C"},
 			ltitles: []string{"i32", "f64", "str"},
-			total:   nevts * (4 + 8 + (3 + 1)), // 3: strings are "xxx" + 1:string-size
+			total:   5 * (4 + 8 + (3 + 1)), // 3: strings are "xxx" + 1:string-size
 			want: func(i int) interface{} {
 				return struct {
 					I32 int32
@@ -531,7 +534,8 @@ func TestTreeRW(t *testing.T) {
 			},
 		},
 		{
-			name: "arrays",
+			name:  "arrays",
+			nevts: 5,
 			wvars: []WriteVar{
 				{Name: "ArrB", Value: new([5]bool)},
 				{Name: "ArrI8", Value: new([5]int8)},
@@ -557,7 +561,7 @@ func TestTreeRW(t *testing.T) {
 				"ArrU8[5]", "ArrU16[5]", "ArrU32[5]", "ArrU64[5]",
 				"ArrF32[5]", "ArrF64[5]",
 			},
-			total: nevts * 215,
+			total: 5 * 215,
 			want: func(i int) interface{} {
 				return struct {
 					ArrBool [5]bool
@@ -587,7 +591,8 @@ func TestTreeRW(t *testing.T) {
 			},
 		},
 		{
-			name: "slices",
+			name:  "slices",
+			nevts: 5,
 			wvars: []WriteVar{
 				{Name: "N", Value: new(int32)},
 				{Name: "SliB", Value: new([]bool), Count: "N"},
@@ -651,12 +656,41 @@ func TestTreeRW(t *testing.T) {
 				}
 			},
 		},
+		{
+			name:  "slices-multi-baskets",
+			nevts: 10000,
+			wvars: []WriteVar{
+				{Name: "N", Value: new(int32)},
+				{Name: "SliI64", Value: new([]int64), Count: "N"},
+			},
+			btitles: []string{
+				"N/I",
+				"SliI64[N]/L",
+			},
+			ltitles: []string{
+				"N",
+				"SliI64[N]",
+			},
+			total: 400000,
+			want: func(i int) interface{} {
+				type Data struct {
+					N      int32
+					SliI64 []int64
+				}
+				n := i % 10
+				var d = Data{N: int32(n)}
+				if n == 0 {
+					return d
+				}
+				d.SliI64 = make([]int64, n)
+				for j := range d.SliI64 {
+					d.SliI64[j] = int64(j + 1)
+				}
+				return d
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.skip {
-				t.Skipf("test %s not ready yet", tc.name)
-			}
-
 			fname := filepath.Join(tmp, tc.name+".root")
 
 			func() {
@@ -689,7 +723,7 @@ func TestTreeRW(t *testing.T) {
 				}
 
 				total := 0
-				for i := 0; i < nevts; i++ {
+				for i := 0; i < int(tc.nevts); i++ {
 					want := tc.want(i)
 					for j, wvar := range tc.wvars {
 						v := reflect.ValueOf(wvar.Value).Elem()
@@ -703,7 +737,7 @@ func TestTreeRW(t *testing.T) {
 					total += n
 				}
 
-				if got, want := tw.Entries(), int64(nevts); got != want {
+				if got, want := tw.Entries(), tc.nevts; got != want {
 					t.Fatalf("invalid number of entries: got=%d, want=%d", got, want)
 				}
 				if got, want := total, tc.total; got != want {
@@ -734,7 +768,7 @@ func TestTreeRW(t *testing.T) {
 				}
 				tree := obj.(Tree)
 
-				if got, want := tree.Entries(), int64(nevts); got != want {
+				if got, want := tree.Entries(), tc.nevts; got != want {
 					t.Fatalf("invalid number of events: got=%v, want=%v", got, want)
 				}
 
@@ -806,7 +840,7 @@ func TestTreeRW(t *testing.T) {
 					t.Fatalf("could not scan tree: %+v", sc.Err())
 				}
 
-				if got, want := nn, nevts; got != want {
+				if got, want := nn, int(tc.nevts); got != want {
 					t.Fatalf("invalid number of events: got=%d, want=%d", got, want)
 				}
 			}()

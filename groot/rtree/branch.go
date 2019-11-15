@@ -21,7 +21,7 @@ import (
 
 const (
 	defaultBasketSize = 32000 // default basket size in bytes
-	maxBaskets        = 10    // default number of baskets
+	defaultMaxBaskets = 10    // default number of baskets
 )
 
 type tbranch struct {
@@ -71,10 +71,10 @@ func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, 
 
 		iobits:      w.ttree.iobits,
 		basketSize:  defaultBasketSize,
-		maxBaskets:  maxBaskets,
-		basketBytes: make([]int32, 0, maxBaskets),
-		basketEntry: make([]int64, 1, maxBaskets),
-		basketSeek:  make([]int64, 0, maxBaskets),
+		maxBaskets:  defaultMaxBaskets,
+		basketBytes: make([]int32, 0, defaultMaxBaskets),
+		basketEntry: make([]int64, 1, defaultMaxBaskets),
+		basketSeek:  make([]int64, 0, defaultMaxBaskets),
 
 		tree: &w.ttree,
 		btop: btopOf(parent),
@@ -213,6 +213,13 @@ func (b *tbranch) getEntry(i int64) {
 func (b *tbranch) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
 		return 0, w.Err()
+	}
+
+	maxBaskets := b.maxBaskets
+	defer func() { b.maxBaskets = maxBaskets }()
+	b.maxBaskets = b.writeBasket + 1
+	if b.maxBaskets < defaultMaxBaskets {
+		b.maxBaskets = defaultMaxBaskets
 	}
 
 	pos := w.WriteVersion(b.RVersion())
@@ -596,13 +603,12 @@ func (b *tbranch) createNewBasket() {
 	cycle := int16(b.writeBasket)
 	b.baskets = append(b.baskets, newBasketFrom(b.tree, b, cycle, b.basketSize, b.entryOffsetLen))
 	b.basket = &b.baskets[b.writeBasket]
+	if n := len(b.baskets); n > b.maxBaskets {
+		b.maxBaskets = n
+	}
 }
 
 func (b *tbranch) write() (int, error) {
-	if b.basket == nil {
-		b.createNewBasket()
-	}
-
 	b.entries++
 	b.entryNumber++
 
@@ -614,8 +620,19 @@ func (b *tbranch) write() (int, error) {
 	if err != nil {
 		return n, errors.Wrapf(err, "could not write to buffer (branch=%q)", b.Name())
 	}
-	b.basket.nevsize = n
+	if n > b.basket.nevsize {
+		b.basket.nevsize = n
+	}
 
+	// FIXME(sbinet): harmonize or drive via "auto-flush" ?
+	if szNew+int64(n) >= int64(b.basketSize) {
+		err = b.flush()
+		if err != nil {
+			return n, errors.Wrapf(err, "could not flush branch (auto-flush)")
+		}
+
+		b.createNewBasket()
+	}
 	return n, nil
 }
 
