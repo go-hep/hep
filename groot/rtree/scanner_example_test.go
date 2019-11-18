@@ -30,6 +30,10 @@ func ExampleTreeScanner() {
 
 	tree := obj.(rtree.Tree)
 
+	// like for the encoding/json package, struct fields need to
+	// be exported to be properly handled by rtree.Scanner.
+	// Thus, if the ROOT branch name is lower-case, use the "groot"
+	// struct-tag like shown below.
 	type Data struct {
 		I64    int64       `groot:"Int64"`
 		F64    float64     `groot:"Float64"`
@@ -164,6 +168,10 @@ func ExampleScanner_withStruct() {
 
 	tree := obj.(rtree.Tree)
 
+	// like for the encoding/json package, struct fields need to
+	// be exported to be properly handled by rtree.Scanner.
+	// Thus, if the ROOT branch name is lower-case, use the "groot"
+	// struct-tag like shown below.
 	type Data struct {
 		I64    int64       `groot:"Int64"`
 		F64    float64     `groot:"Float64"`

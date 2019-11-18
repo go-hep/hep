@@ -14,6 +14,7 @@ import (
 	"go-hep.org/x/hep/groot/internal/rtests"
 	"go-hep.org/x/hep/groot/riofs"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
+	"golang.org/x/xerrors"
 )
 
 type ScannerData struct {
@@ -1288,5 +1289,78 @@ func TestNewScanVars(t *testing.T) {
 
 	if len(want) != len(vars) {
 		t.Fatalf("invalid lengths. got=%d, want=%d", len(vars), len(want))
+	}
+}
+
+func TestInvalidScannerTypes(t *testing.T) {
+	t.Parallel()
+
+	fname := "../testdata/small-flat-tree.root"
+	f, err := riofs.Open(fname)
+	if err != nil {
+		t.Fatalf("could not open ROOT file %q: %v", fname, err)
+	}
+	defer f.Close()
+
+	obj, err := f.Get("tree")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tree := obj.(Tree)
+
+	for _, tc := range []struct {
+		name string
+		scan func() error
+		want error
+	}{
+		{
+			name: "scanner",
+			scan: func() error {
+				type Event struct {
+					N           int32  `groot:"N"`
+					notExported string `groot:"StdString"`
+				}
+				v := Event{
+					N:           42,
+					notExported: "N/A",
+				}
+				_, err := NewScanner(tree, &v)
+				return err
+			},
+			want: xerrors.Errorf(`rtree: field[1] "notExported" from rtree.Event is not exported`),
+		},
+		{
+			name: "tree-scanner",
+			scan: func() error {
+				type Event struct {
+					N           int32  `groot:"N"`
+					notExported string `groot:"StdString"`
+				}
+				v := Event{
+					N:           42,
+					notExported: "N/A",
+				}
+				_, err := NewTreeScanner(tree, &v)
+				return err
+			},
+			want: xerrors.Errorf(`rtree: field[1] "notExported" from rtree.Event is not exported`),
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.scan()
+			switch {
+			case err == nil && tc.want == nil:
+				// ok
+			case err == nil && tc.want != nil:
+				t.Fatalf("invalid error: got no error, want=%v", tc.want)
+			case err != nil && tc.want == nil:
+				t.Fatalf("invalid error: got=%v, want=%v", err, tc.want)
+			default:
+				if got, want := err.Error(), tc.want.Error(); got != want {
+					t.Fatalf("invalid error:\ngot = %v\nwant= %v\n", got, want)
+				}
+			}
+		})
 	}
 }

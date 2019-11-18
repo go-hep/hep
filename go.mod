@@ -35,6 +35,7 @@ require (
 	golang.org/x/sys v0.0.0-20191010194322-b09406accb47 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/tools v0.0.0-20191012152004-8de300cfc20a // indirect
+	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898
 	gonum.org/v1/gonum v0.0.0-20191013192725-1459092b91f2
 	gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e // indirect
 	gonum.org/v1/plot v0.0.0-20191004082913-159cd04f920c

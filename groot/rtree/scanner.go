@@ -6,6 +6,7 @@ package rtree
 
 import (
 	"reflect"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -165,6 +166,9 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 	rv := reflect.New(rt).Elem()
 	for i := 0; i < rt.NumField(); i++ {
 		f := rt.Field(i)
+		if f.Name != strings.Title(f.Name) {
+			return nil, errors.Errorf("rtree: field[%d] %q from %T is not exported", i, f.Name, rv.Interface())
+		}
 		name := f.Tag.Get("groot")
 		if name == "" {
 			name = f.Name
@@ -578,6 +582,9 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 	rv := reflect.ValueOf(ptr).Elem()
 	for i := 0; i < rt.NumField(); i++ {
 		f := rt.Field(i)
+		if f.Name != strings.Title(f.Name) {
+			return nil, errors.Errorf("rtree: field[%d] %q from %T is not exported", i, f.Name, rv.Interface())
+		}
 		name := f.Tag.Get("groot")
 		if name == "" {
 			name = f.Name
