@@ -9,11 +9,11 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
+	"golang.org/x/xerrors"
 )
 
 var (
@@ -57,7 +57,7 @@ func (obj *Object) Class() string {
 func (obj *Object) SetClass(name string) {
 	si, ok := StreamerInfos.Get(name, -1)
 	if !ok {
-		panic(errors.Errorf("rdict: no streamer for %q", name))
+		panic(xerrors.Errorf("rdict: no streamer for %q", name))
 	}
 	*obj = *newObjectFrom(si, StreamerInfos)
 }
@@ -78,7 +78,7 @@ func (obj *Object) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(obj.Class())
 	if vers != obj.rvers {
-		r.SetErr(errors.Errorf("rdict: inconsistent ROOT version (got=%d, want=%d)", vers, obj.rvers))
+		r.SetErr(xerrors.Errorf("rdict: inconsistent ROOT version (got=%d, want=%d)", vers, obj.rvers))
 		return r.Err()
 	}
 
@@ -153,7 +153,7 @@ func genTypeFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement) 
 
 	switch se := se.(type) {
 	default:
-		panic(errors.Errorf("rdict: unknown streamer element: %#v (%T)", se, se))
+		panic(xerrors.Errorf("rdict: unknown streamer element: %#v (%T)", se, se))
 	case *StreamerBase:
 		si, err := sictx.StreamerInfo(se.Name(), -1)
 		if err != nil {
@@ -195,7 +195,7 @@ func genTypeFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement) 
 		case rmeta.STLmap:
 			types := rmeta.CxxTemplateArgsOf(se.TypeName())
 			if len(types) != 2 {
-				panic(errors.Errorf(
+				panic(xerrors.Errorf(
 					"invalid std::map: got %d template arguments, want=2, for %q",
 					len(types), se.TypeName(),
 				))
@@ -210,8 +210,8 @@ func genTypeFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement) 
 			default:
 				sikey, err := sictx.StreamerInfo(types[0], -1)
 				if err != nil {
-					panic(errors.Wrapf(
-						err, "could not find key type %q for std::map %q", types[0], se.TypeName(),
+					panic(xerrors.Errorf(
+						"could not find key type %q for std::map %q: %w", types[0], se.TypeName(), err,
 					))
 				}
 				key = genTypeFromSI(sictx, sikey)
@@ -222,15 +222,15 @@ func genTypeFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement) 
 			default:
 				sival, err := sictx.StreamerInfo(types[1], -1)
 				if err != nil {
-					panic(errors.Wrapf(
-						err, "could not find val type %q for std::map %q", types[1], se.TypeName(),
+					panic(xerrors.Errorf(
+						"could not find val type %q for std::map %q: %w", types[1], se.TypeName(), err,
 					))
 				}
 				val = genTypeFromSI(sictx, sival)
 			}
 			return reflect.MapOf(key, val)
 		}
-		panic(errors.Errorf("rdict: STL container not implemented: %#v", se))
+		panic(xerrors.Errorf("rdict: STL container not implemented: %#v", se))
 	}
 	return nil
 }
@@ -263,7 +263,7 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 
 	switch se := se.(type) {
 	default:
-		panic(errors.Errorf("rdict: unknown read-streamer element: %#v (%T)", se, se))
+		panic(xerrors.Errorf("rdict: unknown read-streamer element: %#v (%T)", se, se))
 	case *StreamerBase:
 		typename := se.Name()
 		si, err := sictx.StreamerInfo(typename, -1)
@@ -277,7 +277,7 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 			beg := r.Pos()
 			vers, pos, bcnt := r.ReadVersion(typename)
 			if vers != typevers {
-				r.SetErr(errors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
+				r.SetErr(xerrors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
 				return r.Err()
 			}
 
@@ -318,7 +318,7 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 			beg := r.Pos()
 			vers, pos, bcnt := r.ReadVersion(typename)
 			if vers != typevers {
-				r.SetErr(errors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
+				r.SetErr(xerrors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
 				return r.Err()
 			}
 
@@ -353,7 +353,7 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 			beg := r.Pos()
 			vers, pos, bcnt := r.ReadVersion(typename)
 			if vers != typevers {
-				r.SetErr(errors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
+				r.SetErr(xerrors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
 				return r.Err()
 			}
 
@@ -392,7 +392,7 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 			beg := r.Pos()
 			vers, pos, bcnt := r.ReadVersion(typename)
 			if vers != typevers {
-				r.SetErr(errors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
+				r.SetErr(xerrors.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)", typename, vers, typevers))
 				return r.Err()
 			}
 
@@ -496,7 +496,7 @@ func genType(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int) reflect.T
 		return reflect.SliceOf(gotypes[reflect.Float64])
 
 	}
-	panic(errors.Errorf("rmeta=%d not implemented (n=%v)", enum, n))
+	panic(xerrors.Errorf("rmeta=%d not implemented (n=%v)", enum, n))
 }
 
 func genRStreamer(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int, recv reflect.Value) rfunc {
@@ -555,7 +555,7 @@ func genRStreamer(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int, recv
 		return readStrs
 
 	}
-	panic(errors.Errorf("rdict: gen-rstreamer not implemented for rmeta=%v,n=%d", enum, n))
+	panic(xerrors.Errorf("rdict: gen-rstreamer not implemented for rmeta=%v,n=%d", enum, n))
 }
 
 func readBool(recv interface{}, r *rbytes.RBuffer) error {

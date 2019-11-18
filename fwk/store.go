@@ -6,6 +6,8 @@ package fwk
 
 import (
 	"reflect"
+
+	"golang.org/x/xerrors"
 )
 
 type achan chan interface{}
@@ -24,17 +26,17 @@ func (ds *datastore) Configure(ctx Context) error {
 func (ds *datastore) Get(k string) (interface{}, error) {
 	ch, ok := ds.store[k]
 	if !ok {
-		return nil, Errorf("Store.Get: no such key [%v]", k)
+		return nil, xerrors.Errorf("Store.Get: no such key [%v]", k)
 	}
 	select {
 	case v, ok := <-ch:
 		if !ok {
-			return nil, Errorf("%s: closed channel for key [%s]", ds.Name(), k)
+			return nil, xerrors.Errorf("%s: closed channel for key [%s]", ds.Name(), k)
 		}
 		ch <- v
 		return v, nil
 	case <-ds.quit:
-		return nil, Errorf("%s: timeout to get [%s]", ds.Name(), k)
+		return nil, xerrors.Errorf("%s: timeout to get [%s]", ds.Name(), k)
 	}
 }
 
@@ -43,7 +45,7 @@ func (ds *datastore) Put(k string, v interface{}) error {
 	case ds.store[k] <- v:
 		return nil
 	case <-ds.quit:
-		return Errorf("%s: timeout to put [%s]", ds.Name(), k)
+		return xerrors.Errorf("%s: timeout to put [%s]", ds.Name(), k)
 	}
 }
 

@@ -26,7 +26,7 @@ func testDB(t *testing.T, conn csvdriver.Conn, vars string) {
 
 	tx, err := db.Begin()
 	if err != nil {
-		t.Errorf("%s: error starting tx: %v", conn.File, err)
+		t.Errorf("%s: error starting tx: %+v", conn.File, err)
 		return
 	}
 	defer tx.Commit()
@@ -42,14 +42,14 @@ func testDB(t *testing.T, conn csvdriver.Conn, vars string) {
 		return
 	case err := <-done:
 		if err != nil {
-			t.Errorf("%s: error pinging db: %v\n", conn.File, err)
+			t.Errorf("%s: error pinging db: %+v\n", conn.File, err)
 			return
 		}
 	}
 
 	rows, err := tx.Query("select " + vars + " from csv order by id();")
 	if err != nil {
-		t.Errorf("%s: error querying db: %v\n", conn.File, err)
+		t.Errorf("%s: error querying db: %+v\n", conn.File, err)
 		return
 	}
 	defer rows.Close()
@@ -65,7 +65,7 @@ func testDB(t *testing.T, conn csvdriver.Conn, vars string) {
 		var data dataType
 		err = rows.Scan(&data.i, &data.f, &data.s)
 		if err != nil {
-			t.Errorf("%s: error scanning db: %v\n", conn.File, err)
+			t.Errorf("%s: error scanning db: %+v\n", conn.File, err)
 			return
 		}
 		got = append(got, data)
@@ -73,13 +73,13 @@ func testDB(t *testing.T, conn csvdriver.Conn, vars string) {
 
 	err = rows.Close()
 	if err != nil {
-		t.Errorf("%s: error closing rows: %v\n", conn.File, err)
+		t.Errorf("%s: error closing rows: %+v\n", conn.File, err)
 		return
 	}
 
 	err = db.Close()
 	if err != nil {
-		t.Errorf("%s: error closing db: %v\n", conn.File, err)
+		t.Errorf("%s: error closing db: %+v\n", conn.File, err)
 		return
 	}
 
@@ -161,24 +161,24 @@ func TestOpen(t *testing.T) {
 func TestQL(t *testing.T) {
 	db, err := sql.Open("ql", "memory://out-create-ql.csv")
 	if err != nil {
-		t.Fatalf("error creating CSV-QL file: %v\n", err)
+		t.Fatalf("error creating CSV-QL file: %+v\n", err)
 	}
 	defer db.Close()
 
 	err = db.Ping()
 	if err != nil {
-		t.Fatalf("error pinging db: %v\n", err)
+		t.Fatalf("error pinging db: %+v\n", err)
 	}
 
 	tx, err := db.Begin()
 	if err != nil {
-		t.Fatalf("error starting transaction: %v\n", err)
+		t.Fatalf("error starting transaction: %+v\n", err)
 	}
 	defer tx.Commit()
 
 	_, err = tx.Exec("create table csv (var1 int64, var2 float64, var3 string);")
 	if err != nil {
-		t.Fatalf("error creating table: %v\n", err)
+		t.Fatalf("error creating table: %+v\n", err)
 	}
 
 	for i := 0; i < 10; i++ {
@@ -186,12 +186,12 @@ func TestQL(t *testing.T) {
 		s := fmt.Sprintf("str-%d", i)
 		_, err = tx.Exec("insert into csv values($1,$2,$3);", i, f, s)
 		if err != nil {
-			t.Fatalf("error inserting row %d: %v\n", i+1, err)
+			t.Fatalf("error inserting row %d: %+v\n", i+1, err)
 		}
 	}
 	err = tx.Commit()
 	if err != nil {
-		t.Fatalf("error committing transaction: %v\n", err)
+		t.Fatalf("error committing transaction: %+v\n", err)
 	}
 }
 
@@ -201,24 +201,24 @@ func TestCreate(t *testing.T) {
 
 	db, err := csvdriver.Create(fname)
 	if err != nil {
-		t.Fatalf("error creating CSV file: %v\n", err)
+		t.Fatalf("error creating CSV file: %+v\n", err)
 	}
 	defer db.Close()
 
 	err = db.Ping()
 	if err != nil {
-		t.Fatalf("error pinging db: %v\n", err)
+		t.Fatalf("error pinging db: %+v\n", err)
 	}
 
 	tx, err := db.Begin()
 	if err != nil {
-		t.Fatalf("error starting transaction: %v\n", err)
+		t.Fatalf("error starting transaction: %+v\n", err)
 	}
 	defer tx.Commit()
 
 	_, err = tx.Exec("create table csv (var1 int64, var2 float64, var3 string);")
 	if err != nil {
-		t.Fatalf("error creating table: %v\n", err)
+		t.Fatalf("error creating table: %+v\n", err)
 	}
 
 	for i := 0; i < 10; i++ {
@@ -226,12 +226,12 @@ func TestCreate(t *testing.T) {
 		s := fmt.Sprintf("str-%d", i)
 		_, err = tx.Exec("insert into csv values($1,$2,$3);", i, f, s)
 		if err != nil {
-			t.Fatalf("error inserting row %d: %v\n", i+1, err)
+			t.Fatalf("error inserting row %d: %+v\n", i+1, err)
 		}
 	}
 	err = tx.Commit()
 	if err != nil {
-		t.Fatalf("error committing transaction: %v\n", err)
+		t.Fatalf("error committing transaction: %+v\n", err)
 	}
 }
 
@@ -241,24 +241,24 @@ func TestCreateRollback(t *testing.T) {
 
 	db, err := csvdriver.Create(fname)
 	if err != nil {
-		t.Fatalf("error creating CSV file: %v\n", err)
+		t.Fatalf("error creating CSV file: %+v\n", err)
 	}
 	defer db.Close()
 
 	err = db.Ping()
 	if err != nil {
-		t.Fatalf("error pinging db: %v\n", err)
+		t.Fatalf("error pinging db: %+v\n", err)
 	}
 
 	tx, err := db.Begin()
 	if err != nil {
-		t.Fatalf("error starting transaction: %v\n", err)
+		t.Fatalf("error starting transaction: %+v\n", err)
 	}
 	defer tx.Commit()
 
 	_, err = tx.Exec("create table csv (var1 int64, var2 float64, var3 string);")
 	if err != nil {
-		t.Fatalf("error creating table: %v\n", err)
+		t.Fatalf("error creating table: %+v\n", err)
 	}
 
 	for i := 0; i < 10; i++ {
@@ -266,13 +266,13 @@ func TestCreateRollback(t *testing.T) {
 		s := fmt.Sprintf("str-%d", i)
 		_, err = tx.Exec("insert into csv values($1,$2,$3);", i, f, s)
 		if err != nil {
-			t.Fatalf("error inserting row %d: %v\n", i+1, err)
+			t.Fatalf("error inserting row %d: %+v\n", i+1, err)
 		}
 	}
 
 	err = tx.Rollback()
 	if err != nil {
-		t.Fatalf("error committing transaction: %v\n", err)
+		t.Fatalf("error committing transaction: %+v\n", err)
 	}
 
 	err = db.Close()
@@ -332,7 +332,7 @@ func TestOpenDriver(t *testing.T) {
 
 			err = rows.Close()
 			if err != nil {
-				t.Fatalf("error closing rows: %v\n", err)
+				t.Fatalf("error closing rows: %+v\n", err)
 			}
 		})
 	}

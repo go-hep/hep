@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/google/shlex"
+	"golang.org/x/xerrors"
 )
 
 // cmdFileOpen opens a file for read access
@@ -136,7 +137,7 @@ func (cmd *cmdFileList) Run(args []string) error {
 	case 1:
 		return cmd.ctx.fmgr.ls(args[0])
 	default:
-		return fmt.Errorf("%s: need at most 1 file id", cmd.Name())
+		return xerrors.Errorf("%s: need at most 1 file id", cmd.Name())
 	}
 }
 

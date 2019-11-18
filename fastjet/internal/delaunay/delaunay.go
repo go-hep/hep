@@ -5,11 +5,11 @@
 package delaunay
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 
 	"go-hep.org/x/hep/fastjet/internal/predicates"
+	"golang.org/x/xerrors"
 )
 
 // Delaunay holds necessary information for the delaunay triangulation.
@@ -52,7 +52,7 @@ func HierarchicalDelaunay() *Delaunay {
 }
 
 func WalkDelaunay(points []*Point, r *rand.Rand) *Delaunay {
-	panic(fmt.Errorf("delaunay: WalkDelaunay not implemented"))
+	panic(xerrors.Errorf("delaunay: WalkDelaunay not implemented"))
 }
 
 // Triangles returns the triangles that form the delaunay triangulation.
@@ -89,7 +89,7 @@ func (d *Delaunay) Insert(p *Point) (updatedNearestNeighbor []*Point) {
 	case onEdge:
 		updated = d.insertOnEdge(p, t)
 	default:
-		panic(fmt.Errorf("delaunay: no triangle containing point %v", p))
+		panic(xerrors.Errorf("delaunay: no triangle containing point %v", p))
 	}
 	return updated.remove(d.root.A, d.root.B, d.root.C)
 }
@@ -103,7 +103,7 @@ func (d *Delaunay) Remove(p *Point) (updatedNearestNeighbor []*Point) {
 			// must be a duplicate point, therefore don't panic
 			return updatedNearestNeighbor
 		}
-		panic(fmt.Errorf("delaunay: can't remove point %v, not enough adjacent triangles", p))
+		panic(xerrors.Errorf("delaunay: can't remove point %v, not enough adjacent triangles", p))
 	}
 	var updated points
 	pts := p.surroundingPoints()
@@ -138,7 +138,7 @@ func (d *Delaunay) locatePointHierarchy(p *Point, t *Triangle) (*Triangle, locat
 			return t, l
 		}
 	}
-	panic(fmt.Errorf("delaunay: error locating Point %v in Triangle %v", p, t))
+	panic(xerrors.Errorf("delaunay: error locating Point %v in Triangle %v", p, t))
 }
 
 // insertInside inserts a point inside a triangle. It returns the points whose nearest
@@ -174,7 +174,7 @@ func (d *Delaunay) insertOnEdge(p *Point, t *Triangle) []*Point {
 	switch {
 	case p.Equals(t.A):
 		if p.id == t.A.id {
-			panic(fmt.Errorf("delaunay: Point %v was previously inserted", p))
+			panic(xerrors.Errorf("delaunay: Point %v was previously inserted", p))
 		}
 		p.nearest = t.A
 		p.dist2 = 0
@@ -183,7 +183,7 @@ func (d *Delaunay) insertOnEdge(p *Point, t *Triangle) []*Point {
 		return []*Point{p, t.A}
 	case p.Equals(t.B):
 		if p.id == t.B.id {
-			panic(fmt.Errorf("delaunay: Point %v was previously inserted", p))
+			panic(xerrors.Errorf("delaunay: Point %v was previously inserted", p))
 		}
 		p.nearest = t.B
 		p.dist2 = 0
@@ -192,7 +192,7 @@ func (d *Delaunay) insertOnEdge(p *Point, t *Triangle) []*Point {
 		return []*Point{p, t.B}
 	case p.Equals(t.C):
 		if p.id == t.C.id {
-			panic(fmt.Errorf("delaunay: Point %v was previously inserted", p))
+			panic(xerrors.Errorf("delaunay: Point %v was previously inserted", p))
 		}
 		p.nearest = t.C
 		p.dist2 = 0
@@ -273,7 +273,7 @@ func (d *Delaunay) insertOnEdge(p *Point, t *Triangle) []*Point {
 			}
 		}
 		if !found {
-			panic(fmt.Errorf("delaunay: can't find second triangle with edge to %v and %v on edge", t, p))
+			panic(xerrors.Errorf("delaunay: can't find second triangle with edge to %v and %v on edge", t, p))
 		}
 		pA1 = p2
 		pA2 = p3
@@ -286,7 +286,7 @@ func (d *Delaunay) insertOnEdge(p *Point, t *Triangle) []*Point {
 	case !t2.C.Equals(pA1) && !t2.C.Equals(pA2):
 		pO2 = t2.C
 	default:
-		panic(fmt.Errorf("delaunay: no point in %v that is not adjacent to the edge of %v", t2, p))
+		panic(xerrors.Errorf("delaunay: no point in %v that is not adjacent to the edge of %v", t2, p))
 	}
 	// form four new triangles
 	nt1 := NewTriangle(pA1, p, pO1)
@@ -340,7 +340,7 @@ func (d *Delaunay) swapDelaunay(t *Triangle, p *Point) []*Point {
 		p2 = t.A
 		p3 = t.B
 	default:
-		panic(fmt.Errorf("delaunay: can't find point %v in Triangle %v", p, t))
+		panic(xerrors.Errorf("delaunay: can't find point %v in Triangle %v", p, t))
 	}
 	// find triangle opposite to p
 	var ta *Triangle
@@ -391,7 +391,7 @@ func (d *Delaunay) swapEdge(t1, t2 *Triangle) (nt1, nt2 *Triangle, updated []*Po
 		opp1 = t1.B
 		opp2 = t1.A
 	default:
-		panic(fmt.Errorf("delaunay: triangle T1%v is equal to T2%v", t1, t2))
+		panic(xerrors.Errorf("delaunay: triangle T1%v is equal to T2%v", t1, t2))
 	}
 	switch {
 	case !t2.A.Equals(t1.A) && !t2.A.Equals(t1.B) && !t2.A.Equals(t1.C):
@@ -401,7 +401,7 @@ func (d *Delaunay) swapEdge(t1, t2 *Triangle) (nt1, nt2 *Triangle, updated []*Po
 	case !t2.C.Equals(t1.A) && !t2.C.Equals(t1.B) && !t2.C.Equals(t1.C):
 		adj2 = t2.C
 	default:
-		panic(fmt.Errorf("delaunay: triangle T2%v is equal to T1%v", t2, t1))
+		panic(xerrors.Errorf("delaunay: triangle T2%v is equal to T1%v", t2, t1))
 	}
 	// create two new triangles
 	nt1 = NewTriangle(adj1, adj2, opp1)
@@ -483,7 +483,7 @@ func areCounterclockwise(a, b, c int) bool {
 // The function will panic if the number of adjacent triangles is < 3.
 func (d *Delaunay) VoronoiCell(p *Point) ([]*Point, float64) {
 	if len(p.adjacentTriangles) < 3 {
-		panic(fmt.Errorf("delaunay: point %v doesn't have enough adjacent triangles", p))
+		panic(xerrors.Errorf("delaunay: point %v doesn't have enough adjacent triangles", p))
 	}
 	// border1 is set to the index of the first voronoi point that is part of a root triangle
 	border1 := -1
@@ -519,13 +519,13 @@ func (d *Delaunay) VoronoiCell(p *Point) ([]*Point, float64) {
 		return voronoi, area
 	}
 	if border2 == -1 {
-		panic(fmt.Errorf("delaunay: point %v has exactly one adjacent root triangle", p))
+		panic(xerrors.Errorf("delaunay: point %v has exactly one adjacent root triangle", p))
 	}
 	// at this point border1 is either 0 or >= 1.
 	// If necessary reposition the points, so that the border points are the first and last points
 	if border1 != 0 || border2 != len(voronoi)-1 {
 		if border2 != border1+1 {
-			panic(fmt.Errorf("delaunay: point %v has adjacent root triangles at index %d and %d in the voronoi slice", p, border1, border2))
+			panic(xerrors.Errorf("delaunay: point %v has adjacent root triangles at index %d and %d in the voronoi slice", p, border1, border2))
 		}
 		voronoi = append(voronoi[border2:], voronoi[:border2]...)
 	}

@@ -7,13 +7,13 @@ package rhist
 import (
 	"reflect"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rcont"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
+	"golang.org/x/xerrors"
 )
 
 type th1 struct {
@@ -286,7 +286,7 @@ func (h *th2) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 3 {
-		return errors.Errorf("rhist: TH2 version too old (%d<3)", vers)
+		return xerrors.Errorf("rhist: TH2 version too old (%d<3)", vers)
 	}
 
 	if err := h.th1.UnmarshalROOT(r); err != nil {

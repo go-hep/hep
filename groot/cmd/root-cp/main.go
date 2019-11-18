@@ -23,11 +23,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/riofs"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
+	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -71,7 +71,7 @@ options:
 func rootcp(oname string, fnames []string) error {
 	o, err := groot.Create(oname)
 	if err != nil {
-		return errors.Errorf("could not create output ROOT file %q: %v", oname, err)
+		return xerrors.Errorf("could not create output ROOT file %q: %w", oname, err)
 	}
 	defer o.Close()
 
@@ -84,7 +84,7 @@ func rootcp(oname string, fnames []string) error {
 
 	err = o.Close()
 	if err != nil {
-		return errors.Errorf("could not close output ROOT file %q: %v", oname, err)
+		return xerrors.Errorf("could not close output ROOT file %q: %w", oname, err)
 	}
 	return nil
 }
@@ -100,7 +100,7 @@ func process(o *riofs.File, arg string) error {
 
 	f, err := groot.Open(fname)
 	if err != nil {
-		return errors.Errorf("could not open input ROOT file %q: %v", fname, err)
+		return xerrors.Errorf("could not open input ROOT file %q: %w", fname, err)
 	}
 	defer f.Close()
 
@@ -111,12 +111,12 @@ func process(o *riofs.File, arg string) error {
 
 		v, err := k.Object()
 		if err != nil {
-			return errors.Errorf("could not load object %q from file %q: %v", k.Name(), fname, err)
+			return xerrors.Errorf("could not load object %q from file %q: %w", k.Name(), fname, err)
 		}
 
 		err = o.Put(k.Name(), v)
 		if err != nil {
-			return errors.Errorf("could not save object %q to output file: %v", k.Name(), err)
+			return xerrors.Errorf("could not save object %q to output file: %w", k.Name(), err)
 		}
 	}
 
@@ -140,7 +140,7 @@ func splitArg(cmd string) (fname, sel string, err error) {
 	}
 
 	if strings.Count(fname, ":") > 1 {
-		return "", "", errors.Errorf("root-cp: too many ':' in %q", cmd)
+		return "", "", xerrors.Errorf("root-cp: too many ':' in %q", cmd)
 	}
 
 	i := strings.LastIndex(fname, ":")

@@ -6,13 +6,12 @@ package rootio
 
 import (
 	"compress/flate"
-	"fmt"
 	"io"
 	"os"
 	"reflect"
 	"sort"
 
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 type Reader interface {
@@ -115,7 +114,7 @@ type File struct {
 func Open(path string) (*File, error) {
 	fd, err := openFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("rootio: unable to open %q (%q)", path, err.Error())
+		return nil, xerrors.Errorf("rootio: unable to open %q: %w", path, err)
 	}
 
 	f := &File{
@@ -128,7 +127,7 @@ func Open(path string) (*File, error) {
 
 	err = f.readHeader()
 	if err != nil {
-		return nil, fmt.Errorf("rootio: failed to read header %q: %v", path, err)
+		return nil, xerrors.Errorf("rootio: failed to read header %q: %w", path, err)
 	}
 
 	return f, nil
@@ -145,7 +144,7 @@ func NewReader(r Reader) (*File, error) {
 
 	err := f.readHeader()
 	if err != nil {
-		return nil, fmt.Errorf("rootio: failed to read header: %v", err)
+		return nil, xerrors.Errorf("rootio: failed to read header: %w", err)
 	}
 	f.id = f.dir.Name()
 
@@ -156,7 +155,7 @@ func NewReader(r Reader) (*File, error) {
 func Create(name string, opts ...FileOption) (*File, error) {
 	fd, err := os.Create(name)
 	if err != nil {
-		return nil, fmt.Errorf("rootio: unable to create %q (%q)", name, err.Error())
+		return nil, xerrors.Errorf("rootio: unable to create %q: %w", name, err)
 	}
 
 	f := &File{
@@ -182,7 +181,7 @@ func Create(name string, opts ...FileOption) (*File, error) {
 		}
 		err := opt(f)
 		if err != nil {
-			return nil, errors.Wrapf(err, "rootio: could not apply option to ROOT file")
+			return nil, xerrors.Errorf("rootio: could not apply option to ROOT file: %w", err)
 		}
 	}
 
@@ -200,19 +199,19 @@ func Create(name string, opts ...FileOption) (*File, error) {
 	if err != nil {
 		_ = fd.Close()
 		_ = os.RemoveAll(name)
-		return nil, fmt.Errorf("rootio: failed to write header %q: %v", name, err)
+		return nil, xerrors.Errorf("rootio: failed to write header %q: %w", name, err)
 	}
 	buf := NewWBuffer(make([]byte, key.bytes), nil, 0, f)
 	_, err = f.dir.MarshalROOT(buf)
 	if err != nil {
-		return nil, errors.Wrapf(err, "rootio: failed to write header")
+		return nil, xerrors.Errorf("rootio: failed to write header: %w", err)
 	}
 	key.bytes = int32(len(buf.buffer()))
 	key.buf = buf.buffer()
 
 	_, err = key.writeFile(f)
 	if err != nil {
-		return nil, errors.Wrapf(err, "rootio: failed to write key header")
+		return nil, xerrors.Errorf("rootio: failed to write key header: %w", err)
 	}
 
 	return f, nil
@@ -230,7 +229,7 @@ func (f *File) Stat() (os.FileInfo, error) {
 			return st.Stat()
 		}
 	}
-	return nil, errors.Errorf("rootio: underlying file w/o os.FileInfo")
+	return nil, xerrors.Errorf("rootio: underlying file w/o os.FileInfo")
 }
 
 // Read implements io.Reader
@@ -267,9 +266,9 @@ func (f *File) readHeader() error {
 	var magic [4]byte
 	if _, err := io.ReadFull(r.r, magic[:]); err != nil || string(magic[:]) != "root" {
 		if err != nil {
-			return fmt.Errorf("rootio: failed to read ROOT file magic header: %v", err)
+			return xerrors.Errorf("rootio: failed to read ROOT file magic header: %w", err)
 		}
-		return fmt.Errorf("rootio: %q is not a root file", f.id)
+		return xerrors.Errorf("rootio: %q is not a root file", f.id)
 	}
 
 	f.version = r.ReadI32()
@@ -299,7 +298,7 @@ func (f *File) readHeader() error {
 
 	if _, err := io.ReadFull(r.r, f.uuid[:]); err != nil || r.Err() != nil {
 		if err != nil {
-			return fmt.Errorf("rootio: failed to read ROOT's UUID file: %v", err)
+			return xerrors.Errorf("rootio: failed to read ROOT's UUID file: %w", err)
 		}
 		return r.Err()
 	}
@@ -308,26 +307,26 @@ func (f *File) readHeader() error {
 
 	err = f.dir.readDirInfo()
 	if err != nil {
-		return fmt.Errorf("rootio: failed to read ROOT directory infos: %v", err)
+		return xerrors.Errorf("rootio: failed to read ROOT directory infos: %w", err)
 	}
 
 	if f.seekfree > 0 {
 		err = f.readFreeSegments()
 		if err != nil {
-			return errors.Wrapf(err, "rootio: failed to read ROOT file free segments")
+			return xerrors.Errorf("rootio: failed to read ROOT file free segments: %w", err)
 		}
 	}
 
 	if f.seekinfo > 0 {
 		err = f.readStreamerInfo()
 		if err != nil {
-			return fmt.Errorf("rootio: failed to read ROOT streamer infos: %v", err)
+			return xerrors.Errorf("rootio: failed to read ROOT streamer infos: %w", err)
 		}
 	}
 
 	err = f.dir.readKeys()
 	if err != nil {
-		return fmt.Errorf("rootio: failed to read ROOT file keys: %v", err)
+		return xerrors.Errorf("rootio: failed to read ROOT file keys: %w", err)
 	}
 
 	return nil
@@ -381,7 +380,7 @@ func (f *File) writeHeader() error {
 	_, _ = f.w.WriteAt(make([]byte, f.begin), 0)
 	_, err = f.w.WriteAt(buf.buffer(), 0)
 	if err != nil {
-		return errors.Wrapf(err, "rootio: could not write file header")
+		return xerrors.Errorf("rootio: could not write file header: %w", err)
 	}
 
 	if w, ok := f.w.(syncer); ok {
@@ -463,7 +462,7 @@ func (f *File) Class() string {
 // readStreamerInfo reads the list of StreamerInfo from this file
 func (f *File) readStreamerInfo() error {
 	if f.seekinfo <= 0 || f.seekinfo >= f.end {
-		return fmt.Errorf("rootio: invalid pointer to StreamerInfo (pos=%v end=%v)", f.seekinfo, f.end)
+		return xerrors.Errorf("rootio: invalid pointer to StreamerInfo (pos=%v end=%v)", f.seekinfo, f.end)
 
 	}
 	buf := make([]byte, int(f.nbytesinfo))
@@ -472,7 +471,7 @@ func (f *File) readStreamerInfo() error {
 		return err
 	}
 	if nbytes != int(f.nbytesinfo) {
-		return fmt.Errorf("rootio: requested [%v] bytes. read [%v] bytes from file", f.nbytesinfo, nbytes)
+		return xerrors.Errorf("rootio: requested [%v] bytes. read [%v] bytes from file", f.nbytesinfo, nbytes)
 	}
 
 	err = f.siKey.UnmarshalROOT(NewRBuffer(buf, nil, 0, nil))
@@ -523,7 +522,7 @@ func (f *File) writeStreamerInfo() error {
 	buf := NewWBuffer(nil, nil, offset, f)
 	_, err = sinfos.MarshalROOT(buf)
 	if err != nil {
-		return errors.Wrapf(err, "rootio: could not write StreamerInfo list")
+		return xerrors.Errorf("rootio: could not write StreamerInfo list: %w", err)
 	}
 
 	key = createKey("StreamerInfo", sinfos.Title(), sinfos.Class(), int32(len(buf.buffer())), f)
@@ -533,7 +532,7 @@ func (f *File) writeStreamerInfo() error {
 
 	_, err = key.writeFile(f)
 	if err != nil {
-		return errors.Wrapf(err, "rootio: could not write StreamerInfo list key")
+		return xerrors.Errorf("rootio: could not write StreamerInfo list key: %w", err)
 	}
 
 	return nil
@@ -576,7 +575,7 @@ func (f *File) readFreeSegments() error {
 		return err
 	}
 	if nbytes != len(buf) {
-		return errors.Errorf("rootio: requested [%v] bytes, read [%v] bytes from file", f.nbytesfree, nbytes)
+		return xerrors.Errorf("rootio: requested [%v] bytes, read [%v] bytes from file", f.nbytesfree, nbytes)
 	}
 
 	var key = Key{f: f}
@@ -587,7 +586,7 @@ func (f *File) readFreeSegments() error {
 	}
 	buf, err = key.Bytes()
 	if err != nil {
-		return errors.Wrapf(err, "rootio: could not read key payload")
+		return xerrors.Errorf("rootio: could not read key payload: %w", err)
 	}
 	rbuf := NewRBuffer(buf, nil, 0, nil)
 	for rbuf.Len() > 0 {
@@ -646,7 +645,7 @@ func (f *File) writeFreeSegments() error {
 	for _, span := range f.spans {
 		_, err := span.MarshalROOT(buf)
 		if err != nil {
-			return errors.Wrapf(err, "rootio: could not marshal free-block")
+			return xerrors.Errorf("rootio: could not marshal free-block: %w", err)
 		}
 	}
 	if abytes := buf.Pos(); abytes != int64(nbytes) {
@@ -666,7 +665,7 @@ func (f *File) writeFreeSegments() error {
 	key.buf = buf.buffer()
 	_, err = key.writeFile(f)
 	if err != nil {
-		return errors.Wrapf(err, "rootio: could not write free-block list")
+		return xerrors.Errorf("rootio: could not write free-block list: %w", err)
 	}
 	return nil
 }
@@ -679,7 +678,7 @@ func (f *File) StreamerInfos() []StreamerInfo {
 // StreamerInfo returns the StreamerInfo with name of this file and an error if any.
 func (f *File) StreamerInfo(name string) (StreamerInfo, error) {
 	if len(f.sinfos) == 0 {
-		return nil, fmt.Errorf("rootio: no streamer for %q (no streamerinfo list)", name)
+		return nil, xerrors.Errorf("rootio: no streamer for %q (no streamerinfo list)", name)
 	}
 
 	for _, si := range f.sinfos {
@@ -701,7 +700,7 @@ func (f *File) StreamerInfo(name string) (StreamerInfo, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("rootio: no streamer for %q", name)
+	return nil, xerrors.Errorf("rootio: no streamer for %q", name)
 }
 
 func (f *File) addStreamer(streamer StreamerInfo) {

@@ -9,6 +9,7 @@ import (
 	"math"
 
 	"go-hep.org/x/hep/fastjet/internal/predicates"
+	"golang.org/x/xerrors"
 )
 
 // Triangle is a set of three points that make up a triangle. It stores hierarchical information to find triangles.
@@ -31,7 +32,7 @@ func NewTriangle(a, b, c *Point) *Triangle {
 	case predicates.CW:
 		a, b = b, a
 	case predicates.Colinear:
-		panic(fmt.Errorf("delaunay: Can't form triangle, because Points a%v, b%v and c%v are colinear.", a, b, c))
+		panic(xerrors.Errorf("delaunay: Can't form triangle, because Points a%v, b%v and c%v are colinear.", a, b, c))
 	}
 	return &Triangle{
 		A: a,
@@ -152,7 +153,7 @@ func (t *Triangle) circumcenter() (x, y float64) {
 				// because of the way this is set up. The variables with the same x coordinates would have to
 				// be the same as the variables with the same y coordinates and triangles are not made up
 				// of duplicates.
-				panic(fmt.Errorf("delaunay: error calculating the circumcenter of %v", t))
+				panic(xerrors.Errorf("delaunay: error calculating the circumcenter of %v", t))
 			}
 		}
 	}

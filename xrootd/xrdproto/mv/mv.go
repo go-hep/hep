@@ -9,9 +9,9 @@ package mv // import "go-hep.org/x/hep/xrootd/xrdproto/mv"
 import (
 	"strings"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdproto"
+	"golang.org/x/xerrors"
 )
 
 // RequestID is the id of the request, it is sent as part of message.
@@ -42,12 +42,12 @@ func (req *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	fromLen := int(rBuffer.ReadU16())
 	paths := rBuffer.ReadStr()
 	if fromLen >= len(paths) {
-		return errors.Errorf("xrootd: wrong mv request. Want fromLen < %d, got %d", len(paths)-1, fromLen)
+		return xerrors.Errorf("xrootd: wrong mv request. Want fromLen < %d, got %d", len(paths)-1, fromLen)
 	}
 	if fromLen == 0 {
 		fromLen = strings.Index(paths, " ")
 		if fromLen == -1 {
-			return errors.New("xrootd: wrong mv request. Want paths to be separated by ' ', none found.")
+			return xerrors.New("xrootd: wrong mv request. Want paths to be separated by ' ', none found.")
 		}
 	}
 	req.OldPath = string(paths[:fromLen])

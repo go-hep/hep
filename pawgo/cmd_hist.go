@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"golang.org/x/xerrors"
 )
 
 // cmdHistOpen opens a histogram
@@ -20,9 +22,8 @@ func (cmd *cmdHistOpen) Name() string {
 }
 
 func (cmd *cmdHistOpen) Run(args []string) error {
-	var err error
 	if len(args) < 2 {
-		return fmt.Errorf("%s: need histo-id and histo-name (got=%v)", cmd.Name(), args)
+		return xerrors.Errorf("%s: need histo-id and histo-name (got=%v)", cmd.Name(), args)
 	}
 
 	hid := args[0]
@@ -30,8 +31,7 @@ func (cmd *cmdHistOpen) Run(args []string) error {
 	// e.g: /file/id/1/my-histo
 	hname := args[1]
 
-	err = cmd.ctx.hmgr.open(cmd.ctx.fmgr, hid, hname)
-	return err
+	return cmd.ctx.hmgr.open(cmd.ctx.fmgr, hid, hname)
 }
 
 func (cmd *cmdHistOpen) Help(w io.Writer) {
@@ -78,14 +78,12 @@ func (cmd *cmdHistPlot) Name() string {
 }
 
 func (cmd *cmdHistPlot) Run(args []string) error {
-	var err error
 	if len(args) < 1 {
-		return fmt.Errorf("%s: need a histo-id to plot", cmd.Name())
+		return xerrors.Errorf("%s: need a histo-id to plot", cmd.Name())
 	}
 
 	hid := args[0]
-	err = cmd.ctx.hmgr.plot(cmd.ctx.fmgr, cmd.ctx.wmgr, hid)
-	return err
+	return cmd.ctx.hmgr.plot(cmd.ctx.fmgr, cmd.ctx.wmgr, hid)
 }
 
 func (cmd *cmdHistPlot) Help(w io.Writer) {

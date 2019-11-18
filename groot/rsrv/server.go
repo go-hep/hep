@@ -12,7 +12,7 @@ import (
 	"time"
 
 	uuid "github.com/hashicorp/go-uuid"
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 const (
@@ -117,7 +117,7 @@ func (srv *Server) setCookie(w http.ResponseWriter, r *http.Request) error {
 
 	v, err := uuid.GenerateUUID()
 	if err != nil {
-		return errors.Wrapf(err, "could not generate UUID")
+		return xerrors.Errorf("could not generate UUID: %w", err)
 	}
 
 	cookie = &http.Cookie{

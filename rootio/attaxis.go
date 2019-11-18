@@ -5,8 +5,9 @@
 package rootio
 
 import (
-	"fmt"
 	"reflect"
+
+	"golang.org/x/xerrors"
 )
 
 type attaxis struct {
@@ -76,7 +77,7 @@ func (a *attaxis) UnmarshalROOT(r *RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion()
 	a.rvers = vers
 	if vers < 4 {
-		return fmt.Errorf("rootio: TAttAxis version too old (%d < 4)", vers)
+		return xerrors.Errorf("rootio: TAttAxis version too old (%d < 4)", vers)
 	}
 
 	a.ndivs = r.ReadI32()

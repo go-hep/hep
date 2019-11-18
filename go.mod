@@ -3,7 +3,7 @@ module go-hep.org/x/hep
 go 1.12
 
 require (
-	github.com/apache/arrow/go/arrow v0.0.0-20191118101508-cf60316a81ff
+	github.com/apache/arrow/go/arrow v0.0.0-20191119113437-a5a67e8c5460
 	github.com/campoy/embedmd v1.0.0
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/frankban/quicktest v1.5.0 // indirect
@@ -21,7 +21,6 @@ require (
 	github.com/peterh/liner v1.1.0
 	github.com/pierrec/lz4 v2.3.0+incompatible
 	github.com/pierrec/xxHash v0.1.5
-	github.com/pkg/errors v0.8.1
 	github.com/remyoudompheng/bigfft v0.0.0-20190728182440-6a916e37a237 // indirect
 	github.com/sbinet/npyio v0.2.0
 	github.com/stretchr/testify v1.3.0 // indirect

@@ -6,12 +6,11 @@ package rsrv
 
 import (
 	"bytes"
-	"fmt"
 	"reflect"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rtree"
 	"go-hep.org/x/hep/hplot"
+	"golang.org/x/xerrors"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 	"gonum.org/v1/plot/vg/vgeps"
@@ -46,7 +45,7 @@ func (srv *Server) render(p *hplot.Plot, opt PlotOptions) ([]byte, error) {
 	out := new(bytes.Buffer)
 	_, err := canvas.WriteTo(out)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not write canvas")
+		return nil, xerrors.Errorf("could not write canvas: %w", err)
 	}
 
 	return out.Bytes(), nil
@@ -386,7 +385,7 @@ func newFloats(leaf rtree.Leaf) (floats, error) {
 			}
 		}
 	default:
-		return fv, fmt.Errorf("unhandled value of type %q", leaf.TypeName())
+		return fv, xerrors.Errorf("unhandled value of type %q", leaf.TypeName())
 	}
 	return fv, nil
 }

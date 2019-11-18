@@ -9,6 +9,8 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+
+	"golang.org/x/xerrors"
 )
 
 // P1D is a 1-dim profile histogram.
@@ -241,11 +243,11 @@ func (p *P1D) UnmarshalYODA(data []byte) error {
 	// pos of end of annotations
 	pos := bytes.Index(r.Bytes(), []byte("\n# ID\t ID\t"))
 	if pos < 0 {
-		return fmt.Errorf("hbook: invalid P1D-YODA data")
+		return xerrors.Errorf("hbook: invalid P1D-YODA data")
 	}
 	err = ann.UnmarshalYODA(r.Bytes()[:pos+1])
 	if err != nil {
-		return fmt.Errorf("hbook: %v\nhbook: %q", err, string(r.Bytes()[:pos+1]))
+		return xerrors.Errorf("hbook: %q\nhbook: %w", string(r.Bytes()[:pos+1]), err)
 	}
 	p.annFromYODA(ann)
 	r.Next(pos)
@@ -290,7 +292,7 @@ scanLoop:
 				&d.X.Dist.N,
 			)
 			if err != nil {
-				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+				return xerrors.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
 			d.Y.Dist.N = d.X.Dist.N
 		case !ctx.under && bytes.HasPrefix(buf, []byte("Underflow\t")):
@@ -305,7 +307,7 @@ scanLoop:
 				&d.X.Dist.N,
 			)
 			if err != nil {
-				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+				return xerrors.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
 			d.Y.Dist.N = d.X.Dist.N
 		case !ctx.over && bytes.HasPrefix(buf, []byte("Overflow\t")):
@@ -320,7 +322,7 @@ scanLoop:
 				&d.X.Dist.N,
 			)
 			if err != nil {
-				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+				return xerrors.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
 			d.Y.Dist.N = d.X.Dist.N
 			ctx.bins = true
@@ -337,7 +339,7 @@ scanLoop:
 				&d.X.Dist.N,
 			)
 			if err != nil {
-				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+				return xerrors.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
 			d.Y.Dist.N = d.X.Dist.N
 			xset[bin.xrange.Min] = 1
@@ -346,7 +348,7 @@ scanLoop:
 			bins = append(bins, bin)
 
 		default:
-			return fmt.Errorf("hbook: invalid P1D-YODA data: %q", string(buf))
+			return xerrors.Errorf("hbook: invalid P1D-YODA data: %q", string(buf))
 		}
 	}
 	p.bng = newBinningP1D(len(xset), xmin, xmax)

@@ -12,6 +12,8 @@ import (
 	"io"
 	"math"
 	"sort"
+
+	"golang.org/x/xerrors"
 )
 
 type rbuff struct {
@@ -78,7 +80,7 @@ func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32, ctx Stre
 
 func (r *RBuffer) StreamerInfo(name string) (StreamerInfo, error) {
 	if r.sictx == nil {
-		return nil, fmt.Errorf("rootio: no streamers")
+		return nil, xerrors.Errorf("rootio: no streamers")
 	}
 	return r.sictx.StreamerInfo(name)
 }
@@ -572,7 +574,7 @@ func (r *RBuffer) ReadVersion() (vers int16, pos, n int32) {
 	if (int64(bcnt) & ^kByteCountMask) != 0 {
 		n = int32(int64(bcnt) & ^kByteCountMask)
 	} else {
-		r.err = fmt.Errorf("rootio.ReadVersion: too old file")
+		r.err = xerrors.Errorf("rootio.ReadVersion: too old file")
 		return
 	}
 
@@ -629,13 +631,13 @@ func (r *RBuffer) CheckByteCount(pos, count int32, start int64, class string) {
 		return
 
 	case got > want:
-		r.err = fmt.Errorf("rootio.CheckByteCount: read too many bytes. got=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
+		r.err = xerrors.Errorf("rootio.CheckByteCount: read too many bytes. got=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
 			got, want, pos, count, start, class,
 		)
 		return
 
 	case got < want:
-		r.err = fmt.Errorf("rootio.CheckByteCount: read too few bytes. got=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
+		r.err = xerrors.Errorf("rootio.CheckByteCount: read too few bytes. got=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
 			got, want, pos, count, start, class,
 		)
 		return
@@ -708,19 +710,19 @@ func (r *RBuffer) ReadObjectAny() (obj Object) {
 		}
 		// FIXME(sbinet): tag==1 means "self". not implemented yet.
 		if tag == 1 {
-			r.err = fmt.Errorf("rootio: tag == 1 means 'self'. not implemented yet")
+			r.err = xerrors.Errorf("rootio: tag == 1 means 'self'. not implemented yet")
 			return nil
 		}
 
 		o, ok := r.refs[tag64]
 		if !ok {
 			r.setPos(beg + int64(bcnt) + 4)
-			// r.err = fmt.Errorf("rootio: invalid tag [%v] found", tag64)
+			// r.err = xerrors.Errorf("rootio: invalid tag [%v] found", tag64)
 			return nil
 		}
 		obj, ok = o.(Object)
 		if !ok {
-			r.err = fmt.Errorf("rootio: invalid tag [%v] found (not a rootio.Object)", tag64)
+			r.err = xerrors.Errorf("rootio: invalid tag [%v] found (not a rootio.Object)", tag64)
 			return nil
 		}
 		return obj
@@ -752,13 +754,13 @@ func (r *RBuffer) ReadObjectAny() (obj Object) {
 		ref := tag64 & ^kClassMask
 		cls, ok := r.refs[ref]
 		if !ok {
-			r.err = fmt.Errorf("rootio: invalid class-tag reference [%v] found", ref)
+			r.err = xerrors.Errorf("rootio: invalid class-tag reference [%v] found", ref)
 			return nil
 		}
 
 		fct, ok := cls.(FactoryFct)
 		if !ok {
-			r.err = fmt.Errorf("rootio: invalid class-tag reference [%v] found (not a rootio.FactoryFct)", ref)
+			r.err = xerrors.Errorf("rootio: invalid class-tag reference [%v] found (not a rootio.FactoryFct)", ref)
 			return nil
 		}
 

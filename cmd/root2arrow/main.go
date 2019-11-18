@@ -40,12 +40,12 @@ import (
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/ipc"
 	"github.com/apache/arrow/go/arrow/memory"
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rarrow"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 	"go-hep.org/x/hep/groot/rtree"
+	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -84,7 +84,7 @@ func process(oname, fname, tname string, stream bool) error {
 
 	tree, ok := obj.(rtree.Tree)
 	if !ok {
-		return errors.Errorf("object %q in file %q is not a rtree.Tree", tname, fname)
+		return xerrors.Errorf("object %q in file %q is not a rtree.Tree", tname, fname)
 	}
 
 	mem := memory.NewGoAllocator()
@@ -125,14 +125,14 @@ func processStream(o io.Writer, r array.RecordReader, mem memory.Allocator) erro
 		rec := r.Record()
 		err = w.Write(rec)
 		if err != nil {
-			return errors.Wrapf(err, "could not write record[%d]", i)
+			return xerrors.Errorf("could not write record[%d]: %w", i, err)
 		}
 		i++
 	}
 
 	err = w.Close()
 	if err != nil {
-		return errors.Wrap(err, "could not close Arrow stream writer")
+		return xerrors.Errorf("could not close Arrow stream writer: %w", err)
 	}
 
 	return nil
@@ -141,7 +141,7 @@ func processStream(o io.Writer, r array.RecordReader, mem memory.Allocator) erro
 func processFile(o *os.File, r array.RecordReader, mem memory.Allocator) error {
 	w, err := ipc.NewFileWriter(o, ipc.WithSchema(r.Schema()), ipc.WithAllocator(mem))
 	if err != nil {
-		return errors.Wrap(err, "could not create Arrow file writer")
+		return xerrors.Errorf("could not create Arrow file writer: %w", err)
 	}
 	defer w.Close()
 
@@ -150,24 +150,24 @@ func processFile(o *os.File, r array.RecordReader, mem memory.Allocator) error {
 		rec := r.Record()
 		err = w.Write(rec)
 		if err != nil {
-			return errors.Wrapf(err, "could not write record[%d]", i)
+			return xerrors.Errorf("could not write record[%d]: %w", i, err)
 		}
 		i++
 	}
 
 	err = w.Close()
 	if err != nil {
-		return errors.Wrap(err, "could not close Arrow file writer")
+		return xerrors.Errorf("could not close Arrow file writer: %w", err)
 	}
 
 	err = o.Sync()
 	if err != nil {
-		return errors.Wrap(err, "could not sync data to disk")
+		return xerrors.Errorf("could not sync data to disk: %w", err)
 	}
 
 	err = o.Close()
 	if err != nil {
-		return errors.Wrap(err, "could not close output file")
+		return xerrors.Errorf("could not close output file: %w", err)
 	}
 
 	return nil

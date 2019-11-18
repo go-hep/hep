@@ -8,12 +8,12 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
+	"golang.org/x/xerrors"
 )
 
 const (
@@ -95,7 +95,7 @@ func (b *Basket) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	case b.iobits != 0:
 		w.WriteI32(int32(-b.nevsize))
 		if n, err := b.iobits.MarshalROOT(w); err != nil {
-			w.SetErr(errors.Wrapf(err, "rtree: could not marshal iobits basket"))
+			w.SetErr(xerrors.Errorf("rtree: could not marshal iobits basket: %w", err))
 			return n, w.Err()
 		}
 	default:
@@ -176,12 +176,12 @@ func (b *Basket) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	if b.Class() != "TBasket" {
-		return errors.Errorf("rtree: Key is not a Basket")
+		return xerrors.Errorf("rtree: Key is not a Basket")
 	}
 
 	vers := r.ReadI16()
 	if vers > rvers.Basket {
-		return errors.Errorf("rtree: unknown Basket version (got = %d > %d)", vers, rvers.Basket)
+		return xerrors.Errorf("rtree: unknown Basket version (got = %d > %d)", vers, rvers.Basket)
 	}
 
 	b.bufsize = int(r.ReadI32())
@@ -190,7 +190,7 @@ func (b *Basket) UnmarshalROOT(r *rbytes.RBuffer) error {
 	if b.nevsize < 0 {
 		b.nevsize = -b.nevsize
 		if err := b.iobits.UnmarshalROOT(r); err != nil {
-			r.SetErr(errors.Wrapf(err, "rtree: could not read basket I/O bits"))
+			r.SetErr(xerrors.Errorf("rtree: could not read basket I/O bits: %w", err))
 			return r.Err()
 		}
 	}
@@ -229,7 +229,7 @@ func (b *Basket) UnmarshalROOT(r *rbytes.RBuffer) error {
 	case mustGenOffsets:
 		b.offsets = nil
 		if flag <= 40 {
-			panic(errors.Errorf("rtree: invalid basket[%s] state (flag=%v <= 40)", b.Name(), flag))
+			panic(xerrors.Errorf("rtree: invalid basket[%s] state (flag=%v <= 40)", b.Name(), flag))
 		}
 	}
 
@@ -331,7 +331,7 @@ func (b *Basket) writeFile(f *riofs.File) (totBytes int64, zipBytes int64, err e
 	}
 	b.key, err = riofs.NewKey(nil, b.key.Name(), b.key.Title(), b.Class(), int16(b.key.Cycle()), b.wbuf.Bytes(), f)
 	if err != nil {
-		return 0, 0, errors.Wrapf(err, "rtree: could not create basket-key")
+		return 0, 0, xerrors.Errorf("rtree: could not create basket-key: %w", err)
 	}
 
 	nbytes := b.key.KeyLen() + b.key.ObjLen()

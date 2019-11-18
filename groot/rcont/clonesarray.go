@@ -10,11 +10,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
+	"golang.org/x/xerrors"
 )
 
 // ClonesArray implements a ROOT TClonesArray.
@@ -108,7 +108,7 @@ func (arr *ClonesArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	si, err := w.StreamerInfo(arr.cls, -1)
 	if err != nil {
-		w.SetErr(errors.Wrapf(err, "rcont: could not find streamer for TClonesArray element %q", arr.cls))
+		w.SetErr(xerrors.Errorf("rcont: could not find streamer for TClonesArray element %q: %w", arr.cls, err))
 		return 0, w.Err()
 	}
 	clsv := si.ClassVersion()
@@ -133,7 +133,7 @@ func (arr *ClonesArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 			default:
 				w.WriteI8(1)
 				if _, err := obj.(rbytes.Marshaler).MarshalROOT(w); err != nil {
-					return 0, errors.Wrapf(err, "rcont: could not marshal TClonesArray element [%d/%d] (%T)", i+1, len(arr.arr.objs), obj)
+					return 0, xerrors.Errorf("rcont: could not marshal TClonesArray element [%d/%d] (%T): %w", i+1, len(arr.arr.objs), obj, err)
 				}
 			}
 		}
@@ -170,7 +170,7 @@ func (arr *ClonesArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 	arr.cls = toks[0]
 	clv, err := strconv.Atoi(toks[1])
 	if err != nil {
-		r.SetErr(errors.Wrapf(err, "rcont: could not extract TClonesArray element version"))
+		r.SetErr(xerrors.Errorf("rcont: could not extract TClonesArray element version: %w", err))
 		return r.Err()
 	}
 
@@ -184,7 +184,7 @@ func (arr *ClonesArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 	arr.arr.last = nobjs - 1
 	si, err := r.StreamerInfo(arr.cls, clv)
 	if err != nil {
-		r.SetErr(errors.Wrapf(err, "rcont: could not find TClonesArray's element streamer %q and version=%d", arr.cls, clv))
+		r.SetErr(xerrors.Errorf("rcont: could not find TClonesArray's element streamer %q and version=%d: %w", arr.cls, clv, err))
 		return r.Err()
 	}
 	fct := rtypes.Factory.Get(si.Name())
@@ -204,7 +204,7 @@ func (arr *ClonesArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 				if o, ok := obj.(rbytes.Unmarshaler); ok {
 					err := o.UnmarshalROOT(r)
 					if err != nil {
-						return errors.Wrapf(err, "rcont: could not unmarshal TClonesArray element %d/%d", i+1, nobjs)
+						return xerrors.Errorf("rcont: could not unmarshal TClonesArray element %d/%d: %w", i+1, nobjs, err)
 					}
 				}
 				if r.Err() != nil {

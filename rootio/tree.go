@@ -5,9 +5,10 @@
 package rootio
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
+
+	"golang.org/x/xerrors"
 )
 
 // A ttree object is a list of Branch.
@@ -142,7 +143,7 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	if vers < 16 {
-		return fmt.Errorf(
+		return xerrors.Errorf(
 			"rootio.Tree: tree [%s] with version [%v] is not supported (too old)",
 			tree.Name(),
 			vers,
@@ -236,7 +237,7 @@ func (tree *ttree) UnmarshalROOT(r *RBuffer) error {
 		cls := bre.class
 		si, err := r.StreamerInfo(cls)
 		if err != nil {
-			panic(fmt.Errorf("rootio: could not find streamer for branch %q: %v", br.Name(), err))
+			panic(xerrors.Errorf("rootio: could not find streamer for branch %q: %w", br.Name(), err))
 		}
 		// tree.attachStreamer(br, rstreamer, rstreamerCtx)
 		tree.attachStreamer(br, si, r)

@@ -6,11 +6,11 @@ package fastjet
 
 import (
 	"errors"
-	"fmt"
 	"math"
 
 	"go-hep.org/x/hep/fastjet/internal/heap"
 	"go-hep.org/x/hep/fmom"
+	"golang.org/x/xerrors"
 )
 
 // history holds information about the clustering
@@ -330,7 +330,7 @@ func (cs *ClusterSequence) jetScaleForAlgorithm(jet *Jet) float64 {
 		return e * e
 
 	default:
-		panic(fmt.Errorf("fastjet: unrecognised jet algorithm (%v)", cs.alg))
+		panic(xerrors.Errorf("fastjet: unrecognised jet algorithm (%v)", cs.alg))
 	}
 }
 
@@ -382,7 +382,7 @@ func (cs *ClusterSequence) addStepToHistory(istep, i1, i2, idx int, dij float64)
 	)
 	step := len(cs.history) - 1
 	if step != istep {
-		panic(fmt.Errorf("fastjet: internal logic error (step number dont match (%d != %d))",
+		panic(xerrors.Errorf("fastjet: internal logic error (step number dont match (%d != %d))",
 			step, istep,
 		))
 	}
@@ -506,7 +506,7 @@ func (cs *ClusterSequence) runN3Dumb() error {
 // There are internally asserted assumptions about absence of points
 // with coincident eta-phi coordinates.
 func (cs *ClusterSequence) runNlnN() error {
-	panic(fmt.Errorf("fastjet: runNlnN not implemented"))
+	panic(xerrors.Errorf("fastjet: runNlnN not implemented"))
 }
 
 // addKtDistance adds the current kt distance for particle jeti to the heap

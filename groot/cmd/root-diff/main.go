@@ -38,6 +38,7 @@ import (
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtree"
+	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -105,7 +106,7 @@ func calcKeys(kstr string, fchk, fref *riofs.File) ([]string, error) {
 		}
 
 		if len(ukeys) == 0 {
-			return nil, fmt.Errorf("empty key set")
+			return nil, xerrors.Errorf("empty key set")
 		}
 	} else {
 		for _, k := range fchk.Keys() {
@@ -132,11 +133,11 @@ func calcKeys(kstr string, fchk, fref *riofs.File) ([]string, error) {
 	}
 
 	if len(keys) == 0 {
-		return nil, fmt.Errorf("empty key set")
+		return nil, xerrors.Errorf("empty key set")
 	}
 
 	if !allgood {
-		return nil, fmt.Errorf("key set differ")
+		return nil, xerrors.Errorf("key set differ")
 	}
 
 	sort.Strings(keys)
@@ -169,21 +170,21 @@ func diffObject(key string, ref, chk root.Object) error {
 	chkType := reflect.TypeOf(chk)
 
 	if !reflect.DeepEqual(refType, chkType) {
-		return fmt.Errorf("%s: type of keys differ: ref=%v chk=%v", key, refType, chkType)
+		return xerrors.Errorf("%s: type of keys differ: ref=%v chk=%v", key, refType, chkType)
 	}
 
 	switch ref := ref.(type) {
 	case rtree.Tree:
 		return diffTree(key, ref, chk.(rtree.Tree))
 	default:
-		return fmt.Errorf("unhandled type %T (key=%v)", ref, key)
+		return xerrors.Errorf("unhandled type %T (key=%v)", ref, key)
 
 	}
 }
 
 func diffTree(key string, ref, chk rtree.Tree) error {
 	if eref, echk := ref.Entries(), chk.Entries(); eref != echk {
-		return fmt.Errorf("%s: number of entries differ: ref=%v chk=%v", key, eref, echk)
+		return xerrors.Errorf("%s: number of entries differ: ref=%v chk=%v", key, eref, echk)
 	}
 
 	refVars, err := treeVars(ref)
@@ -211,13 +212,13 @@ func diffTree(key string, ref, chk rtree.Tree) error {
 		ref := <-refc
 		chk := <-chkc
 		if ref.err != nil {
-			return fmt.Errorf("%s: error reading ref-tree: %v", key, ref.err)
+			return xerrors.Errorf("%s: error reading ref-tree: %w", key, ref.err)
 		}
 		if chk.err != nil {
-			return fmt.Errorf("%s: error reading chk-tree: %v", key, chk.err)
+			return xerrors.Errorf("%s: error reading chk-tree: %w", key, chk.err)
 		}
 		if chk.n != ref.n {
-			return fmt.Errorf("%s: tree out of sync (ref=%d, chk=%d)", key, ref.n, chk.n)
+			return xerrors.Errorf("%s: tree out of sync (ref=%d, chk=%d)", key, ref.n, chk.n)
 		}
 
 		for ii := range refVars {
@@ -227,7 +228,7 @@ func diffTree(key string, ref, chk rtree.Tree) error {
 			if diff != "" {
 				fmt.Printf("key[%s][%04d].%s -- (-ref +chk)\n%s", key, i, refVars[ii].Name, diff)
 				allgood = false
-				// return fmt.Errorf("%s: trees differ", key)
+				// return xerrors.Errorf("%s: trees differ", key)
 			}
 		}
 		ref.ok <- 1
@@ -235,7 +236,7 @@ func diffTree(key string, ref, chk rtree.Tree) error {
 	}
 
 	if !allgood {
-		return fmt.Errorf("%s: trees differ", key)
+		return xerrors.Errorf("%s: trees differ", key)
 	}
 
 	return nil
@@ -246,7 +247,7 @@ func treeVars(t rtree.Tree) ([]rtree.ScanVar, error) {
 	for _, b := range t.Branches() {
 		for _, leaf := range b.Leaves() {
 			if cls := leaf.Class(); cls == "TLeafElement" {
-				return nil, fmt.Errorf("trees with TLeafElement(s) not handled (leaf=%q)", leaf.Name())
+				return nil, xerrors.Errorf("trees with TLeafElement(s) not handled (leaf=%q)", leaf.Name())
 			}
 			ptr := newValue(leaf)
 			if leaf.LeafCount() != nil && false {

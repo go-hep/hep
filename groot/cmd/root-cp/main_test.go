@@ -11,10 +11,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/root"
+	"golang.org/x/xerrors"
 )
 
 func TestROOTCp(t *testing.T) {
@@ -27,7 +27,7 @@ func TestROOTCp(t *testing.T) {
 	refname := filepath.Join(dir, "ref.root")
 	ref, err := groot.Create(refname)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%+v", err)
 	}
 	defer ref.Close()
 
@@ -43,13 +43,13 @@ func TestROOTCp(t *testing.T) {
 	for i := range refs {
 		err := ref.Put(keys[i], refs[i])
 		if err != nil {
-			t.Fatal(err)
+			t.Fatalf("%+v", err)
 		}
 	}
 
 	err = ref.Close()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%+v", err)
 	}
 
 	for _, tc := range []struct {
@@ -102,7 +102,7 @@ func TestROOTCp(t *testing.T) {
 
 			f, err := groot.Open(oname)
 			if err != nil {
-				t.Fatal(err)
+				t.Fatalf("%+v", err)
 			}
 			defer f.Close()
 
@@ -113,7 +113,7 @@ func TestROOTCp(t *testing.T) {
 			for _, i := range tc.keys {
 				v, err := f.Get(keys[i])
 				if err != nil {
-					t.Fatal(err)
+					t.Fatalf("%+v", err)
 				}
 
 				if !reflect.DeepEqual(v, refs[i]) {
@@ -210,15 +210,15 @@ func TestSplitArg(t *testing.T) {
 		},
 		{
 			cmd: "dir/sub/file.root:h:h",
-			err: errors.Errorf("root-cp: too many ':' in %q", "dir/sub/file.root:h:h"),
+			err: xerrors.Errorf("root-cp: too many ':' in %q", "dir/sub/file.root:h:h"),
 		},
 		{
 			cmd: "root://dir/sub/file.root:h:h",
-			err: errors.Errorf("root-cp: too many ':' in %q", "root://dir/sub/file.root:h:h"),
+			err: xerrors.Errorf("root-cp: too many ':' in %q", "root://dir/sub/file.root:h:h"),
 		},
 		{
 			cmd: "root://dir/sub/file.root::h:",
-			err: errors.Errorf("root-cp: too many ':' in %q", "root://dir/sub/file.root::h:"),
+			err: xerrors.Errorf("root-cp: too many ':' in %q", "root://dir/sub/file.root::h:"),
 		},
 	} {
 		t.Run(tc.cmd, func(t *testing.T) {

@@ -7,8 +7,8 @@ package riofs
 import (
 	"compress/flate"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/internal/rcompress"
+	"golang.org/x/xerrors"
 )
 
 func (f *File) setCompression(alg rcompress.Kind, lvl int) {
@@ -22,7 +22,7 @@ func (f *File) setCompression(alg rcompress.Kind, lvl int) {
 		case rcompress.ZLIB:
 			lvl = 6
 		default:
-			panic(errors.Errorf("riofs: unknown compression algorithm: %v", alg))
+			panic(xerrors.Errorf("riofs: unknown compression algorithm: %v", alg))
 		}
 	case lvl > 99:
 		lvl = 99

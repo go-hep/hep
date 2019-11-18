@@ -32,10 +32,10 @@ import (
 	"os"
 	stdpath "path"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdio"
+	"golang.org/x/xerrors"
 )
 
 func init() {
@@ -111,22 +111,22 @@ func xrdcopy(dst, srcPath string, recursive, verbose bool) error {
 	addDir = func(root, src string) error {
 		fi, err := fs.Stat(ctx, src)
 		if err != nil {
-			return errors.WithMessage(err, "could not stat remote src")
+			return xerrors.Errorf("could not stat remote src: %w", err)
 		}
 		switch {
 		case fi.IsDir():
 			if !recursive {
-				return errors.Errorf("xrd-cp: -r not specified; omitting directory %q", src)
+				return xerrors.Errorf("xrd-cp: -r not specified; omitting directory %q", src)
 			}
 			dst := stdpath.Join(root, stdpath.Base(src))
 			err = os.MkdirAll(dst, 0755)
 			if err != nil {
-				return errors.WithMessage(err, "could not create output directory")
+				return xerrors.Errorf("could not create output directory: %w", err)
 			}
 
 			ents, err := fs.Dirlist(ctx, src)
 			if err != nil {
-				return errors.WithMessage(err, "could not list directory")
+				return xerrors.Errorf("could not list directory: %w", err)
 			}
 			for _, e := range ents {
 				err = addDir(dst, stdpath.Join(src, e.Name()))
@@ -146,7 +146,7 @@ func xrdcopy(dst, srcPath string, recursive, verbose bool) error {
 
 	fiSrc, err := fs.Stat(ctx, src)
 	if err != nil {
-		return errors.WithMessage(err, "could not stat remote src")
+		return xerrors.Errorf("could not stat remote src: %w", err)
 	}
 
 	fiDst, errDst := os.Stat(dst)
@@ -156,11 +156,11 @@ func xrdcopy(dst, srcPath string, recursive, verbose bool) error {
 		case errDst != nil && os.IsNotExist(errDst):
 			err = os.MkdirAll(dst, 0755)
 			if err != nil {
-				return errors.WithMessage(err, "could not create output directory")
+				return xerrors.Errorf("could not create output directory: %w", err)
 			}
 			ents, err := fs.Dirlist(ctx, src)
 			if err != nil {
-				return errors.WithMessage(err, "could not list directory")
+				return xerrors.Errorf("could not list directory: %w", err)
 			}
 			for _, e := range ents {
 				err = addDir(dst, stdpath.Join(src, e.Name()))
@@ -170,7 +170,7 @@ func xrdcopy(dst, srcPath string, recursive, verbose bool) error {
 			}
 
 		case errDst != nil:
-			return errors.WithMessage(errDst, "could not stat local dst")
+			return xerrors.Errorf("could not stat local dst: %w", errDst)
 		case fiDst.IsDir():
 			err = addDir(dst, src)
 			if err != nil {
@@ -183,7 +183,7 @@ func xrdcopy(dst, srcPath string, recursive, verbose bool) error {
 		case errDst != nil && os.IsNotExist(errDst):
 			// ok... dst will be the output file.
 		case errDst != nil:
-			return errors.WithMessage(errDst, "could not stat local dst")
+			return xerrors.Errorf("could not stat local dst: %w", errDst)
 		case fiDst.IsDir():
 			dst = stdpath.Join(dst, stdpath.Base(src))
 		}
@@ -205,7 +205,7 @@ func xrdcopy(dst, srcPath string, recursive, verbose bool) error {
 func xrdremote(name string) (client *xrootd.Client, path string, err error) {
 	url, err := xrdio.Parse(name)
 	if err != nil {
-		return nil, "", errors.WithStack(err)
+		return nil, "", xerrors.Errorf("could not parse %q: %w", name, err)
 	}
 
 	path = url.Path
@@ -233,7 +233,7 @@ func (j job) run(ctx context.Context) (int, error) {
 	default:
 		o, err = os.Create(j.dst)
 		if err != nil {
-			return 0, errors.WithMessage(err, "could not create output file")
+			return 0, xerrors.Errorf("could not create output file: %w", err)
 		}
 	}
 	defer o.Close()
@@ -248,12 +248,12 @@ func (j job) run(ctx context.Context) (int, error) {
 	// TODO(sbinet): use clever heuristics for buffer size?
 	n, err := io.CopyBuffer(o, f, make([]byte, 16*1024*1024))
 	if err != nil {
-		return int(n), errors.WithMessage(err, "could not copy to output file")
+		return int(n), xerrors.Errorf("could not copy to output file: %w", err)
 	}
 
 	err = o.Close()
 	if err != nil {
-		return int(n), errors.WithMessage(err, "could not close output file")
+		return int(n), xerrors.Errorf("could not close output file: %w", err)
 	}
 
 	return int(n), nil

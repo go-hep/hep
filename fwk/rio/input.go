@@ -11,6 +11,7 @@ import (
 
 	"go-hep.org/x/hep/fwk"
 	"go-hep.org/x/hep/rio"
+	"golang.org/x/xerrors"
 )
 
 // InputStreamer reads data from a (set of) rio-stream(s)
@@ -56,12 +57,11 @@ func (input *InputStreamer) Connect(ports []fwk.Port) error {
 }
 
 func (input *InputStreamer) Read(ctx fwk.Context) error {
-	var err error
 	store := ctx.Store()
 	recs := make(map[string]struct{}, len(input.ports))
 	for i := 0; i < len(input.ports); i++ {
 		if !input.scan.Scan() {
-			err = input.scan.Err()
+			err := input.scan.Err()
 			if err == nil {
 				return io.EOF
 			}
@@ -71,20 +71,20 @@ func (input *InputStreamer) Read(ctx fwk.Context) error {
 		obj := reflect.New(input.ports[rec.Name()].Type).Elem()
 		err := blk.Read(obj.Addr().Interface())
 		if err != nil {
-			return fwk.Errorf("block-read error: %v", err)
+			return xerrors.Errorf("block-read error: %w", err)
 		}
 		err = store.Put(rec.Name(), obj.Interface())
 		if err != nil {
-			return fwk.Errorf("store-put error: %v", err)
+			return xerrors.Errorf("store-put error: %w", err)
 		}
 		recs[rec.Name()] = struct{}{}
 	}
 
 	if len(recs) != len(input.ports) {
-		return fwk.Errorf("fwk.rio: expected inputs: %d. got: %d.", len(input.ports), len(recs))
+		return xerrors.Errorf("fwk.rio: expected inputs: %d. got: %d.", len(input.ports), len(recs))
 	}
 
-	return err
+	return nil
 }
 
 func (input *InputStreamer) Disconnect() error {

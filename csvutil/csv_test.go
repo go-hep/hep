@@ -12,13 +12,14 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/csvutil"
+	"golang.org/x/xerrors"
 )
 
 func TestCSVReaderScanArgs(t *testing.T) {
 	fname := "testdata/simple.csv"
 	tbl, err := csvutil.Open(fname)
 	if err != nil {
-		t.Errorf("could not open %s: %v\n", fname, err)
+		t.Errorf("could not open %s: %+v\n", fname, err)
 	}
 	defer tbl.Close()
 	tbl.Reader.Comma = ';'
@@ -26,7 +27,7 @@ func TestCSVReaderScanArgs(t *testing.T) {
 
 	rows, err := tbl.ReadRows(0, 10)
 	if err != nil {
-		t.Errorf("could read rows [0, 10): %v\n", err)
+		t.Errorf("could read rows [0, 10): %+v\n", err)
 	}
 	defer rows.Close()
 
@@ -39,7 +40,7 @@ func TestCSVReaderScanArgs(t *testing.T) {
 		)
 		err = rows.Scan(&i, &f, &s)
 		if err != nil {
-			t.Errorf("error reading row %d: %v\n", irow, err)
+			t.Errorf("error reading row %d: %+v\n", irow, err)
 		}
 		exp := fmt.Sprintf("%d;%d;str-%d", irow, irow, irow)
 		got := fmt.Sprintf("%v;%v;%v", i, f, s)
@@ -53,7 +54,7 @@ func TestCSVReaderScanArgs(t *testing.T) {
 
 	err = rows.Err()
 	if err != nil {
-		t.Errorf("error iterating over rows: %v\n", err)
+		t.Errorf("error iterating over rows: %+v\n", err)
 	}
 }
 
@@ -61,7 +62,7 @@ func TestCSVReaderScanStruct(t *testing.T) {
 	fname := "testdata/simple.csv"
 	tbl, err := csvutil.Open(fname)
 	if err != nil {
-		t.Errorf("could not open %s: %v\n", fname, err)
+		t.Errorf("could not open %s: %+v\n", fname, err)
 	}
 	defer tbl.Close()
 	tbl.Reader.Comma = ';'
@@ -69,7 +70,7 @@ func TestCSVReaderScanStruct(t *testing.T) {
 
 	rows, err := tbl.ReadRows(0, 10)
 	if err != nil {
-		t.Errorf("could read rows [0, 10): %v\n", err)
+		t.Errorf("could read rows [0, 10): %+v\n", err)
 	}
 	defer rows.Close()
 
@@ -82,7 +83,7 @@ func TestCSVReaderScanStruct(t *testing.T) {
 		}{}
 		err = rows.Scan(&data)
 		if err != nil {
-			t.Errorf("error reading row %d: %v\n", irow, err)
+			t.Errorf("error reading row %d: %+v\n", irow, err)
 		}
 		exp := fmt.Sprintf("%d;%d;str-%d", irow, irow, irow)
 		got := fmt.Sprintf("%v;%v;%v", data.I, data.F, data.S)
@@ -96,7 +97,7 @@ func TestCSVReaderScanStruct(t *testing.T) {
 
 	err = rows.Err()
 	if err != nil {
-		t.Errorf("error iterating over rows: %v\n", err)
+		t.Errorf("error iterating over rows: %+v\n", err)
 	}
 }
 
@@ -104,7 +105,7 @@ func TestCSVReaderScanSmallRead(t *testing.T) {
 	fname := "testdata/simple.csv"
 	tbl, err := csvutil.Open(fname)
 	if err != nil {
-		t.Errorf("could not open %s: %v\n", fname, err)
+		t.Errorf("could not open %s: %+v\n", fname, err)
 	}
 	defer tbl.Close()
 	tbl.Reader.Comma = ';'
@@ -112,7 +113,7 @@ func TestCSVReaderScanSmallRead(t *testing.T) {
 
 	rows, err := tbl.ReadRows(0, 2)
 	if err != nil {
-		t.Errorf("could read rows [0, 2): %v\n", err)
+		t.Errorf("could read rows [0, 2): %+v\n", err)
 	}
 	defer rows.Close()
 
@@ -125,7 +126,7 @@ func TestCSVReaderScanSmallRead(t *testing.T) {
 		}{}
 		err = rows.Scan(&data)
 		if err != nil {
-			t.Errorf("error reading row %d: %v\n", irow, err)
+			t.Errorf("error reading row %d: %+v\n", irow, err)
 		}
 		exp := fmt.Sprintf("%d;%d;str-%d", irow, irow, irow)
 		got := fmt.Sprintf("%v;%v;%v", data.I, data.F, data.S)
@@ -139,7 +140,7 @@ func TestCSVReaderScanSmallRead(t *testing.T) {
 
 	err = rows.Err()
 	if err != nil {
-		t.Errorf("error iterating over rows: %v\n", err)
+		t.Errorf("error iterating over rows: %+v\n", err)
 	}
 }
 
@@ -147,7 +148,7 @@ func TestCSVReaderInvalidScan(t *testing.T) {
 	fname := "testdata/simple.csv"
 	tbl, err := csvutil.Open(fname)
 	if err != nil {
-		t.Errorf("could not open %s: %v\n", fname, err)
+		t.Errorf("could not open %s: %+v\n", fname, err)
 	}
 	defer tbl.Close()
 	tbl.Reader.Comma = ';'
@@ -155,7 +156,7 @@ func TestCSVReaderInvalidScan(t *testing.T) {
 
 	rows, err := tbl.ReadRows(0, -1)
 	if err != nil {
-		t.Errorf("could read rows [0, -1): %v\n", err)
+		t.Errorf("could read rows [0, -1): %+v\n", err)
 	}
 	defer rows.Close()
 
@@ -178,7 +179,7 @@ func TestCSVReaderScanEOF(t *testing.T) {
 	fname := "testdata/simple.csv"
 	tbl, err := csvutil.Open(fname)
 	if err != nil {
-		t.Errorf("could not open %s: %v\n", fname, err)
+		t.Errorf("could not open %s: %+v\n", fname, err)
 	}
 	defer tbl.Close()
 	tbl.Reader.Comma = ';'
@@ -186,7 +187,7 @@ func TestCSVReaderScanEOF(t *testing.T) {
 
 	rows, err := tbl.ReadRows(0, 12)
 	if err != nil {
-		t.Errorf("could read rows [0, 12): %v\n", err)
+		t.Errorf("could read rows [0, 12): %+v\n", err)
 	}
 	defer rows.Close()
 
@@ -202,7 +203,7 @@ func TestCSVReaderScanEOF(t *testing.T) {
 			if irow == 10 {
 				break
 			}
-			t.Errorf("error reading row %d: %v\n", irow, err)
+			t.Errorf("error reading row %d: %+v\n", irow, err)
 		}
 		exp := fmt.Sprintf("%d;%d;str-%d", irow, irow, irow)
 		got := fmt.Sprintf("%v;%v;%v", data.I, data.F, data.S)
@@ -220,7 +221,7 @@ func TestCSVReaderScanEOF(t *testing.T) {
 
 	err = rows.Err()
 	if err != io.EOF {
-		t.Errorf("error: expected io.EOF. got=%v\n", err)
+		t.Errorf("error: expected io.EOF. got=%+v\n", err)
 	}
 }
 
@@ -228,7 +229,7 @@ func TestCSVReaderScanUntilEOF(t *testing.T) {
 	fname := "testdata/simple.csv"
 	tbl, err := csvutil.Open(fname)
 	if err != nil {
-		t.Errorf("could not open %s: %v\n", fname, err)
+		t.Errorf("could not open %s: %+v\n", fname, err)
 	}
 	defer tbl.Close()
 	tbl.Reader.Comma = ';'
@@ -236,7 +237,7 @@ func TestCSVReaderScanUntilEOF(t *testing.T) {
 
 	rows, err := tbl.ReadRows(0, -1)
 	if err != nil {
-		t.Errorf("could read rows [0, -1): %v\n", err)
+		t.Errorf("could read rows [0, -1): %+v\n", err)
 	}
 	defer rows.Close()
 
@@ -252,7 +253,7 @@ func TestCSVReaderScanUntilEOF(t *testing.T) {
 			if err == io.EOF {
 				break
 			}
-			t.Errorf("error reading row %d: %v\n", irow, err)
+			t.Errorf("error reading row %d: %+v\n", irow, err)
 		}
 		exp := fmt.Sprintf("%d;%d;str-%d", irow, irow, irow)
 		got := fmt.Sprintf("%v;%v;%v", data.I, data.F, data.S)
@@ -266,7 +267,7 @@ func TestCSVReaderScanUntilEOF(t *testing.T) {
 
 	err = rows.Err()
 	if err != io.EOF {
-		t.Errorf("error: expected io.EOF. got=%v\n", err)
+		t.Errorf("error: expected io.EOF. got=%+v\n", err)
 	}
 }
 
@@ -274,7 +275,7 @@ func TestCSVReaderScanArgsSubSample(t *testing.T) {
 	fname := "testdata/simple.csv"
 	tbl, err := csvutil.Open(fname)
 	if err != nil {
-		t.Errorf("could not open %s: %v\n", fname, err)
+		t.Errorf("could not open %s: %+v\n", fname, err)
 	}
 	defer tbl.Close()
 	tbl.Reader.Comma = ';'
@@ -282,7 +283,7 @@ func TestCSVReaderScanArgsSubSample(t *testing.T) {
 
 	rows, err := tbl.ReadRows(2, 10)
 	if err != nil {
-		t.Errorf("could read rows [2, 10): %v\n", err)
+		t.Errorf("could read rows [2, 10): %+v\n", err)
 	}
 	defer rows.Close()
 
@@ -295,7 +296,7 @@ func TestCSVReaderScanArgsSubSample(t *testing.T) {
 		)
 		err = rows.Scan(&i, &f, &s)
 		if err != nil {
-			t.Errorf("error reading row %d: %v\n", irow, err)
+			t.Errorf("error reading row %d: %+v\n", irow, err)
 		}
 		exp := fmt.Sprintf("%d;%d;str-%d", irow, irow, irow)
 		got := fmt.Sprintf("%v;%v;%v", i, f, s)
@@ -309,7 +310,7 @@ func TestCSVReaderScanArgsSubSample(t *testing.T) {
 
 	err = rows.Err()
 	if err != nil {
-		t.Errorf("error iterating over rows: %v\n", err)
+		t.Errorf("error iterating over rows: %+v\n", err)
 	}
 
 	if irow-2 != 8 {
@@ -321,14 +322,14 @@ func TestCSVWriterArgs(t *testing.T) {
 	fname := "testdata/out-args.csv"
 	tbl, err := csvutil.Create(fname)
 	if err != nil {
-		t.Errorf("could not create %s: %v\n", fname, err)
+		t.Errorf("could not create %s: %+v\n", fname, err)
 	}
 	defer tbl.Close()
 	tbl.Writer.Comma = ';'
 
 	err = tbl.WriteHeader("## a simple set of data: int64;float64;string\n")
 	if err != nil {
-		t.Errorf("error writing header: %v\n", err)
+		t.Errorf("error writing header: %+v\n", err)
 	}
 
 	for i := 0; i < 10; i++ {
@@ -338,19 +339,19 @@ func TestCSVWriterArgs(t *testing.T) {
 		)
 		err = tbl.WriteRow(i, f, s)
 		if err != nil {
-			t.Errorf("error writing row %d: %v\n", i, err)
+			t.Errorf("error writing row %d: %+v\n", i, err)
 			break
 		}
 	}
 
 	err = tbl.Close()
 	if err != nil {
-		t.Errorf("error closing table: %v\n", err)
+		t.Errorf("error closing table: %+v\n", err)
 	}
 
 	err = diff("testdata/simple.csv", fname)
 	if err != nil {
-		t.Errorf("files differ: %v\n", err)
+		t.Errorf("files differ: %+v\n", err)
 	}
 }
 
@@ -358,7 +359,7 @@ func TestCSVWriterStruct(t *testing.T) {
 	fname := "testdata/out-struct.csv"
 	tbl, err := csvutil.Create(fname)
 	if err != nil {
-		t.Errorf("could not create %s: %v\n", fname, err)
+		t.Errorf("could not create %s: %+v\n", fname, err)
 	}
 	defer tbl.Close()
 	tbl.Writer.Comma = ';'
@@ -366,7 +367,7 @@ func TestCSVWriterStruct(t *testing.T) {
 	// test WriteHeader w/o a trailing newline
 	err = tbl.WriteHeader("## a simple set of data: int64;float64;string")
 	if err != nil {
-		t.Errorf("error writing header: %v\n", err)
+		t.Errorf("error writing header: %+v\n", err)
 	}
 
 	for i := 0; i < 10; i++ {
@@ -381,19 +382,19 @@ func TestCSVWriterStruct(t *testing.T) {
 		}
 		err = tbl.WriteRow(data)
 		if err != nil {
-			t.Errorf("error writing row %d: %v\n", i, err)
+			t.Errorf("error writing row %d: %+v\n", i, err)
 			break
 		}
 	}
 
 	err = tbl.Close()
 	if err != nil {
-		t.Errorf("error closing table: %v\n", err)
+		t.Errorf("error closing table: %+v\n", err)
 	}
 
 	err = diff("testdata/simple.csv", fname)
 	if err != nil {
-		t.Errorf("files differ: %v\n", err)
+		t.Errorf("files differ: %+v\n", err)
 	}
 }
 
@@ -410,7 +411,7 @@ func TestCSVAppend(t *testing.T) {
 	// test WriteHeader w/o a trailing newline
 	err = tbl.WriteHeader("## a simple set of data: int64;float64;string")
 	if err != nil {
-		t.Errorf("error writing header: %v\n", err)
+		t.Errorf("error writing header: %+v\n", err)
 	}
 
 	for i := 0; i < 10; i++ {
@@ -425,14 +426,14 @@ func TestCSVAppend(t *testing.T) {
 		}
 		err = tbl.WriteRow(data)
 		if err != nil {
-			t.Errorf("error writing row %d: %v\n", i, err)
+			t.Errorf("error writing row %d: %+v\n", i, err)
 			break
 		}
 	}
 
 	err = tbl.Close()
 	if err != nil {
-		t.Errorf("error closing table: %v\n", err)
+		t.Errorf("error closing table: %+v\n", err)
 	}
 
 	// re-open to append
@@ -455,7 +456,7 @@ func TestCSVAppend(t *testing.T) {
 		}
 		err = tbl.WriteRow(data)
 		if err != nil {
-			t.Errorf("error writing row %d: %v\n", i, err)
+			t.Errorf("error writing row %d: %+v\n", i, err)
 			break
 		}
 	}
@@ -467,7 +468,7 @@ func TestCSVAppend(t *testing.T) {
 
 	err = diff("testdata/append.csv", fname)
 	if err != nil {
-		t.Errorf("files differ: %v\n", err)
+		t.Errorf("files differ: %+v\n", err)
 	}
 }
 
@@ -475,7 +476,7 @@ func TestCSVReaderTypes(t *testing.T) {
 	fname := "testdata/types.csv"
 	tbl, err := csvutil.Open(fname)
 	if err != nil {
-		t.Errorf("could not open %s: %v\n", fname, err)
+		t.Errorf("could not open %s: %+v\n", fname, err)
 	}
 	defer tbl.Close()
 	tbl.Reader.Comma = ';'
@@ -483,7 +484,7 @@ func TestCSVReaderTypes(t *testing.T) {
 
 	rows, err := tbl.ReadRows(0, 2)
 	if err != nil {
-		t.Errorf("could read rows [0, 2): %v\n", err)
+		t.Errorf("could read rows [0, 2): %+v\n", err)
 	}
 	defer rows.Close()
 
@@ -516,7 +517,7 @@ func TestCSVReaderTypes(t *testing.T) {
 			var got Data
 			err = rows.Scan(&got.Bool, &got.Int, &got.Int8, &got.Int16, &got.Int32, &got.Int64, &got.UInt, &got.UInt8, &got.UInt16, &got.UInt32, &got.UInt64, &got.F32, &got.F64, &got.Str)
 			if err != nil {
-				t.Errorf("error reading row %d: %v\n", irow, err)
+				t.Errorf("error reading row %d: %+v\n", irow, err)
 			}
 			if want != got {
 				t.Errorf("error reading row %d\ngot= %#v\nwant=%#v\n",
@@ -536,7 +537,7 @@ func TestCSVReaderTypes(t *testing.T) {
 			var got Data
 			err = rows.Scan(&got)
 			if err != nil {
-				t.Errorf("error reading row %d: %v\n", irow, err)
+				t.Errorf("error reading row %d: %+v\n", irow, err)
 			}
 			if want != got {
 				t.Errorf("error reading row %d\ngot= %#v\nwant=%#v\n",
@@ -555,7 +556,7 @@ func TestCSVReaderTypes(t *testing.T) {
 
 	err = rows.Err()
 	if err != nil {
-		t.Errorf("error iterating over rows: %v\n", err)
+		t.Errorf("error iterating over rows: %+v\n", err)
 	}
 }
 
@@ -563,7 +564,7 @@ func TestCSVWriterTypes(t *testing.T) {
 	fname := "testdata/out-types.csv"
 	tbl, err := csvutil.Create(fname)
 	if err != nil {
-		t.Errorf("could not create %s: %v\n", fname, err)
+		t.Errorf("could not create %s: %+v\n", fname, err)
 	}
 	defer tbl.Close()
 	tbl.Writer.Comma = ';'
@@ -571,7 +572,7 @@ func TestCSVWriterTypes(t *testing.T) {
 	// test WriteHeader w/o a trailing newline
 	err = tbl.WriteHeader("## supported types: bool;int;int8;int16;int32;int64;uint;uint8;uint16;uint32;uint64;float32;float64;string")
 	if err != nil {
-		t.Errorf("error writing header: %v\n", err)
+		t.Errorf("error writing header: %+v\n", err)
 	}
 
 	type Data struct {
@@ -598,19 +599,19 @@ func TestCSVWriterTypes(t *testing.T) {
 	for i := range wants {
 		err = tbl.WriteRow(wants[i])
 		if err != nil {
-			t.Errorf("error writing row %d: %v\n", i, err)
+			t.Errorf("error writing row %d: %+v\n", i, err)
 			break
 		}
 	}
 
 	err = tbl.Close()
 	if err != nil {
-		t.Errorf("error closing table: %v\n", err)
+		t.Errorf("error closing table: %+v\n", err)
 	}
 
 	err = diff("testdata/types.csv.ref", fname)
 	if err != nil {
-		t.Errorf("files differ: %v\n", err)
+		t.Errorf("files differ: %+v\n", err)
 	}
 }
 
@@ -621,7 +622,7 @@ func diff(ref, chk string) error {
 	cmd.Stderr = buf
 	err := cmd.Run()
 	if err != nil {
-		return fmt.Errorf("diff %v %v failed: %v\n%v\n",
+		return xerrors.Errorf("diff %v %v failed: %w\n%v\n",
 			ref, chk, err,
 			buf.String(),
 		)

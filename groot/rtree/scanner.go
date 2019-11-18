@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 type baseScanner struct {
@@ -61,7 +61,7 @@ func (s *baseScanner) SeekEntry(i int64) error {
 		if i >= ch.off+ch.tree.Entries() || i < ch.off {
 			itree := s.findTree(i)
 			if itree == -1 {
-				s.err = errors.Errorf("rtree: could not find Tree containing entry %d", i)
+				s.err = xerrors.Errorf("rtree: could not find Tree containing entry %d", i)
 				return s.err
 			}
 			s.loadTree(itree)
@@ -161,13 +161,13 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 
 	rt := reflect.TypeOf(ptr).Elem()
 	if rt.Kind() != reflect.Struct {
-		return nil, errors.Errorf("rtree: NewTreeScanner expects a pointer to a struct (got: %T)", ptr)
+		return nil, xerrors.Errorf("rtree: NewTreeScanner expects a pointer to a struct (got: %T)", ptr)
 	}
 	rv := reflect.New(rt).Elem()
 	for i := 0; i < rt.NumField(); i++ {
 		f := rt.Field(i)
 		if f.Name != strings.Title(f.Name) {
-			return nil, errors.Errorf("rtree: field[%d] %q from %T is not exported", i, f.Name, rv.Interface())
+			return nil, xerrors.Errorf("rtree: field[%d] %q from %T is not exported", i, f.Name, rv.Interface())
 		}
 		name := f.Tag.Get("groot")
 		if name == "" {
@@ -175,7 +175,7 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 		}
 		br := t.Branch(name)
 		if br == nil {
-			return nil, errors.Errorf("rtree: Tree %q has no branch named %q", t.Name(), name)
+			return nil, xerrors.Errorf("rtree: Tree %q has no branch named %q", t.Name(), name)
 		}
 		leaf := br.Leaves()[0]
 		lset[leaf] = struct{}{}
@@ -183,7 +183,7 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 		if lcnt := leaf.LeafCount(); lcnt != nil {
 			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
-				return nil, errors.Errorf("rtree: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
+				return nil, xerrors.Errorf("rtree: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
 			lidx = len(cbr)
 			bbr := lbr.Branch()
@@ -210,7 +210,7 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 		}
 		err := leaf.setAddress(nil)
 		if err != nil {
-			return nil, errors.Wrapf(err, "rtree: could not set leaf-count address for %q", leaf.Name())
+			return nil, xerrors.Errorf("rtree: could not set leaf-count address for %q: %w", leaf.Name(), err)
 		}
 	}
 
@@ -249,7 +249,7 @@ type ScanVar struct {
 // type stored in the corresponding branch.
 func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 	if len(vars) <= 0 {
-		return nil, errors.Errorf("rtree: NewTreeScannerVars expects at least one branch name")
+		return nil, xerrors.Errorf("rtree: NewTreeScannerVars expects at least one branch name")
 	}
 
 	mbr := make([]Branch, len(vars))
@@ -262,7 +262,7 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 	for i, sv := range vars {
 		br := t.Branch(sv.Name)
 		if br == nil {
-			return nil, errors.Errorf("rtree: Tree %q has no branch named %q", t.Name(), sv.Name)
+			return nil, xerrors.Errorf("rtree: Tree %q has no branch named %q", t.Name(), sv.Name)
 		}
 		mbr[i] = br
 		ibr[i] = scanField{br: br, i: 0, lcnt: -1}
@@ -271,17 +271,17 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 			leaf = br.Leaf(sv.Leaf)
 		}
 		if leaf == nil {
-			return nil, errors.Errorf("rtree: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
+			return nil, xerrors.Errorf("rtree: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
 		}
 		lset[leaf] = struct{}{}
 		err := br.setAddress(sv.Value)
 		if err != nil {
-			return nil, errors.Wrapf(err, "rtree: could not set branch address for %q", br.Name())
+			return nil, xerrors.Errorf("rtree: could not set branch address for %q: %w", br.Name(), err)
 		}
 		if lcnt := leaf.LeafCount(); lcnt != nil {
 			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
-				return nil, errors.Errorf("rtree: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
+				return nil, xerrors.Errorf("rtree: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
 			bbr := lbr.Branch()
 			if !cbrset[bbr.Name()] {
@@ -295,7 +295,7 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 		}
 		arg := sv.Value
 		if rv := reflect.ValueOf(arg); rv.Kind() != reflect.Ptr {
-			return nil, errors.Errorf("rtree: ScanVar %d (name=%v) has non pointer Value", i, sv.Name)
+			return nil, xerrors.Errorf("rtree: ScanVar %d (name=%v) has non pointer Value", i, sv.Name)
 		}
 		err = br.setAddress(arg)
 		if err != nil {
@@ -311,7 +311,7 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 		}
 		err := leaf.setAddress(nil)
 		if err != nil {
-			return nil, errors.Wrapf(err, "rtree: could not set leaf-count address for %q", leaf.Name())
+			return nil, xerrors.Errorf("rtree: could not set leaf-count address for %q: %w", leaf.Name(), err)
 		}
 	}
 
@@ -376,7 +376,7 @@ func (s *TreeScanner) Scan(args ...interface{}) (err error) {
 
 	switch len(args) {
 	case 0:
-		return errors.Errorf("rtree: TreeScanner.Scan needs at least one argument")
+		return xerrors.Errorf("rtree: TreeScanner.Scan needs at least one argument")
 
 	case 1:
 		// maybe special case: map? struct?
@@ -446,7 +446,7 @@ func (s *TreeScanner) scanStruct(data interface{}) error {
 	rt := reflect.TypeOf(data).Elem()
 	rv := reflect.ValueOf(data).Elem()
 	if rt != s.typ {
-		return errors.Errorf("rtree: Scanner.Scan: types do not match (got: %v, want: %v)", rt, s.typ)
+		return xerrors.Errorf("rtree: Scanner.Scan: types do not match (got: %v, want: %v)", rt, s.typ)
 	}
 	for _, br := range s.scan.ibr {
 		fv := rv.Field(br.i)
@@ -475,7 +475,7 @@ type Scanner struct {
 // Scanner will read the branches' data during Scan() and load them into these target-addresses.
 func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 	if len(vars) <= 0 {
-		return nil, errors.Errorf("rtree: NewScannerVars expects at least one branch name")
+		return nil, xerrors.Errorf("rtree: NewScannerVars expects at least one branch name")
 	}
 
 	mbr := make([]Branch, len(vars))
@@ -489,7 +489,7 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 	for i, sv := range vars {
 		br := t.Branch(sv.Name)
 		if br == nil {
-			return nil, errors.Errorf("rtree: Tree %q has no branch named %q", t.Name(), sv.Name)
+			return nil, xerrors.Errorf("rtree: Tree %q has no branch named %q", t.Name(), sv.Name)
 		}
 		mbr[i] = br
 		ibr[i] = scanField{br: br, i: 0, lcnt: -1}
@@ -499,13 +499,13 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 			leaf = br.Leaf(sv.Leaf)
 		}
 		if leaf == nil {
-			return nil, errors.Errorf("rtree: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
+			return nil, xerrors.Errorf("rtree: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
 		}
 		lset[leaf] = struct{}{}
 		if lcnt := leaf.LeafCount(); lcnt != nil {
 			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
-				return nil, errors.Errorf("rtree: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
+				return nil, xerrors.Errorf("rtree: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
 			bbr := lbr.Branch()
 			if !cbrset[bbr.Name()] {
@@ -516,10 +516,10 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 		}
 		arg := sv.Value
 		if arg == nil {
-			return nil, errors.Errorf("rtree: ScanVar %d (name=%v) has nil Value", i, sv.Name)
+			return nil, xerrors.Errorf("rtree: ScanVar %d (name=%v) has nil Value", i, sv.Name)
 		}
 		if rv := reflect.ValueOf(arg); rv.Kind() != reflect.Ptr {
-			return nil, errors.Errorf("rtree: ScanVar %d (name=%v) has non pointer Value", i, sv.Name)
+			return nil, xerrors.Errorf("rtree: ScanVar %d (name=%v) has non pointer Value", i, sv.Name)
 		}
 		err := br.setAddress(arg)
 		if err != nil {
@@ -537,7 +537,7 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 		}
 		err := leaf.setAddress(nil)
 		if err != nil {
-			return nil, errors.Wrapf(err, "rtree: could not set leaf-count address for %q", leaf.Name())
+			return nil, xerrors.Errorf("rtree: could not set leaf-count address for %q: %w", leaf.Name(), err)
 		}
 	}
 
@@ -577,13 +577,13 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 	args := make([]interface{}, 0, cap(mbr))
 	rt := reflect.TypeOf(ptr).Elem()
 	if rt.Kind() != reflect.Struct {
-		return nil, errors.Errorf("rtree: NewScanner expects a pointer to a struct (got: %T)", ptr)
+		return nil, xerrors.Errorf("rtree: NewScanner expects a pointer to a struct (got: %T)", ptr)
 	}
 	rv := reflect.ValueOf(ptr).Elem()
 	for i := 0; i < rt.NumField(); i++ {
 		f := rt.Field(i)
 		if f.Name != strings.Title(f.Name) {
-			return nil, errors.Errorf("rtree: field[%d] %q from %T is not exported", i, f.Name, rv.Interface())
+			return nil, xerrors.Errorf("rtree: field[%d] %q from %T is not exported", i, f.Name, rv.Interface())
 		}
 		name := f.Tag.Get("groot")
 		if name == "" {
@@ -591,14 +591,14 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 		}
 		br := t.Branch(name)
 		if br == nil {
-			return nil, errors.Errorf("rtree: Tree %q has no branch named %q", t.Name(), name)
+			return nil, xerrors.Errorf("rtree: Tree %q has no branch named %q", t.Name(), name)
 		}
 		leaf := br.Leaves()[0]
 		lset[leaf] = struct{}{}
 		if lcnt := leaf.LeafCount(); lcnt != nil {
 			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
-				return nil, errors.Errorf("rtree: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
+				return nil, xerrors.Errorf("rtree: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
 			bbr := lbr.Branch()
 			if !cbrset[bbr.Name()] {
@@ -625,7 +625,7 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 		}
 		err := leaf.setAddress(nil)
 		if err != nil {
-			return nil, errors.Wrapf(err, "rtree: could not set leaf-count address for %q", leaf.Name())
+			return nil, xerrors.Errorf("rtree: could not set leaf-count address for %q: %w", leaf.Name(), err)
 		}
 	}
 
@@ -729,7 +729,7 @@ func newValue(leaf Leaf) interface{} {
 
 	switch etype.Kind() {
 	case reflect.Interface, reflect.Map, reflect.Chan, reflect.Slice, reflect.Array:
-		panic(errors.Errorf("rtree: type %T not supported", reflect.New(etype).Elem().Interface()))
+		panic(xerrors.Errorf("rtree: type %T not supported", reflect.New(etype).Elem().Interface()))
 	case reflect.Int8:
 		if unsigned {
 			etype = reflect.TypeOf(uint8(0))
@@ -761,7 +761,7 @@ func newValue(leaf Leaf) interface{} {
 				// FIXME(sbinet): properly handle [N]string (but ROOT doesn't support that.)
 				// see: https://root-forum.cern.ch/t/char-t-in-a-branch/5591/2
 				// etype = reflect.ArrayOf(leaf.Len(), etype)
-				panic(errors.Errorf("groot/rtree: invalid number of dimensions (%d)", dims))
+				panic(xerrors.Errorf("groot/rtree: invalid number of dimensions (%d)", dims))
 			}
 		default:
 			etype = reflect.ArrayOf(leaf.Len(), etype)

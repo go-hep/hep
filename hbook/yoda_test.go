@@ -2,9 +2,9 @@ package hbook
 
 import (
 	"bytes"
-	"fmt"
-	"reflect"
 	"testing"
+
+	"golang.org/x/xerrors"
 )
 
 func TestReadYODAHeader(t *testing.T) {
@@ -25,27 +25,27 @@ func TestReadYODAHeader(t *testing.T) {
 		{
 			str:  "BEGIN YODA /name",
 			want: "",
-			err:  fmt.Errorf("hbook: could not find %s line", mark),
+			err:  xerrors.Errorf("hbook: could not find %s line", mark),
 		},
 		{
 			str:  "BEGIN YODA /name\n",
 			want: "",
-			err:  fmt.Errorf("hbook: could not find %s mark", mark),
+			err:  xerrors.Errorf("hbook: could not find %s mark", mark),
 		},
 		{
 			str:  "\nBEGIN YODA /name",
 			want: "",
-			err:  fmt.Errorf("hbook: could not find %s mark", mark),
+			err:  xerrors.Errorf("hbook: could not find %s mark", mark),
 		},
 		{
 			str:  "\nBEGIN YODA /name\n",
 			want: "",
-			err:  fmt.Errorf("hbook: could not find %s mark", mark),
+			err:  xerrors.Errorf("hbook: could not find %s mark", mark),
 		},
 		{
 			str:  " BEGIN YODA /name\n",
 			want: "",
-			err:  fmt.Errorf("hbook: could not find %s mark", mark),
+			err:  xerrors.Errorf("hbook: could not find %s mark", mark),
 		},
 	} {
 		t.Run(tc.want, func(t *testing.T) {
@@ -57,8 +57,8 @@ func TestReadYODAHeader(t *testing.T) {
 				t.Fatalf("got=%v, want=nil", err.Error())
 			}
 			if err != nil && tc.err != nil {
-				if !reflect.DeepEqual(err.Error(), tc.err.Error()) { // FIXME(sbinet): use proper error comparison w/ Go1.13
-					t.Fatalf("got error=%v, want=%v", err, tc.err)
+				if got, want := err.Error(), tc.err.Error(); got != want {
+					t.Fatalf("got error=%v, want=%v", got, want)
 				}
 			}
 			if v != tc.want {

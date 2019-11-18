@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 // Decoder represents an LHEF parser reading a particular input stream.
@@ -48,7 +48,7 @@ func NewDecoder(r io.Reader) (*Decoder, error) {
 	// make sure we are reading a LHEF file
 	start, ok := tok.(xml.StartElement)
 	if !ok || start.Name.Local != "LesHouchesEvents" {
-		return nil, fmt.Errorf("lhef.Decoder: missing LesHouchesEvent start-tag")
+		return nil, xerrors.Errorf("lhef.Decoder: missing LesHouchesEvent start-tag")
 	}
 
 	//fmt.Printf(">>> %v\n", start)
@@ -86,12 +86,12 @@ Loop:
 				break Loop
 			case "header":
 				header = tt //FIXME
-				panic(fmt.Errorf("header not implemented: %v", header))
+				panic(xerrors.Errorf("header not implemented: %v", header))
 			}
 		}
 	}
 	if init.Name.Local != "init" {
-		return nil, fmt.Errorf("lhef.Decoder: missing init start-tag")
+		return nil, xerrors.Errorf("lhef.Decoder: missing init start-tag")
 	}
 
 	// extract compulsory initialization information
@@ -101,7 +101,7 @@ Loop:
 	}
 	data, ok := tok.(xml.CharData)
 	if !ok || len(data) == 0 {
-		return nil, fmt.Errorf("lhef.Decoder: missing init payload")
+		return nil, xerrors.Errorf("lhef.Decoder: missing init payload")
 	}
 	buf := bytes.NewBuffer(data)
 	_, err = fmt.Fscanf(
@@ -137,7 +137,7 @@ Loop:
 			&d.Run.LPRUP[i],
 		)
 		if err != nil {
-			return nil, errors.Errorf("lhef: failed to decode NPRUP %d: %v", i, err)
+			return nil, xerrors.Errorf("lhef: failed to decode NPRUP %d: %w", i, err)
 		}
 	}
 
@@ -150,7 +150,7 @@ Loop:
 		return nil, err
 	}
 	if end, ok := tok.(xml.EndElement); !ok || end.Name.Local != "init" {
-		return nil, fmt.Errorf("lhef.Decoder: missing init end-tag")
+		return nil, xerrors.Errorf("lhef.Decoder: missing init end-tag")
 	}
 
 	return d, nil
@@ -186,7 +186,7 @@ func (d *Decoder) Decode() (*HEPEUP, error) {
 
 	// check whether the initialization was successful
 	if d.Run.NPRUP < 0 {
-		return nil, fmt.Errorf("lhef.Decode: initialization failed (no particle entries)")
+		return nil, xerrors.Errorf("lhef.Decode: initialization failed (no particle entries)")
 	}
 
 	err := d.next()
@@ -201,10 +201,10 @@ func (d *Decoder) Decode() (*HEPEUP, error) {
 	}
 	data, ok := tok.(xml.CharData)
 	if !ok {
-		return nil, fmt.Errorf("lhef.Decode: invalid token (%T: %v)", tok, tok)
+		return nil, xerrors.Errorf("lhef.Decode: invalid token (%T: %v)", tok, tok)
 	}
 	if len(data) <= 0 {
-		return nil, fmt.Errorf("lhef.Decode: empty event")
+		return nil, xerrors.Errorf("lhef.Decode: empty event")
 	}
 	buf := bytes.NewBuffer(data)
 
@@ -269,7 +269,7 @@ func (d *Decoder) Decode() (*HEPEUP, error) {
 		return nil, err
 	}
 	if end, ok := tok.(xml.EndElement); !ok || end.Name.Local != "event" {
-		return nil, fmt.Errorf("lhef.Decoder: missing event end-tag")
+		return nil, xerrors.Errorf("lhef.Decoder: missing event end-tag")
 	}
 
 	return evt, nil

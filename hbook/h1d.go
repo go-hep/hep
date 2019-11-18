@@ -14,6 +14,7 @@ import (
 	"math"
 
 	"go-hep.org/x/hep/rio"
+	"golang.org/x/xerrors"
 )
 
 // H1D is a 1-dim histogram with weighted entries.
@@ -396,11 +397,11 @@ func (h *H1D) UnmarshalYODA(data []byte) error {
 	// pos of end of annotations
 	pos := bytes.Index(r.Bytes(), []byte("\n# Mean:"))
 	if pos < 0 {
-		return fmt.Errorf("hbook: invalid H1D-YODA data")
+		return xerrors.Errorf("hbook: invalid H1D-YODA data")
 	}
 	err = ann.UnmarshalYODA(r.Bytes()[:pos+1])
 	if err != nil {
-		return fmt.Errorf("hbook: %v\nhbook: %q", err, string(r.Bytes()[:pos+1]))
+		return xerrors.Errorf("hbook: %q\nhbook: %w", string(r.Bytes()[:pos+1]), err)
 	}
 	h.annFromYODA(ann)
 	r.Next(pos)
@@ -444,7 +445,7 @@ scanLoop:
 				&d.Dist.N,
 			)
 			if err != nil {
-				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+				return xerrors.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
 		case !ctx.under && bytes.HasPrefix(buf, []byte("Underflow\t")):
 			ctx.under = true
@@ -457,7 +458,7 @@ scanLoop:
 				&d.Dist.N,
 			)
 			if err != nil {
-				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+				return xerrors.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
 		case !ctx.over && bytes.HasPrefix(buf, []byte("Overflow\t")):
 			ctx.over = true
@@ -470,7 +471,7 @@ scanLoop:
 				&d.Dist.N,
 			)
 			if err != nil {
-				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+				return xerrors.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
 			ctx.bins = true
 		case ctx.bins:
@@ -485,7 +486,7 @@ scanLoop:
 				&d.Dist.N,
 			)
 			if err != nil {
-				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+				return xerrors.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
 			xset[bin.Range.Min] = 1
 			xmin = math.Min(xmin, bin.Range.Min)
@@ -493,7 +494,7 @@ scanLoop:
 			bins = append(bins, bin)
 
 		default:
-			return fmt.Errorf("hbook: invalid H1D-YODA data: %q", string(buf))
+			return xerrors.Errorf("hbook: invalid H1D-YODA data: %q", string(buf))
 		}
 	}
 	h.Binning = Binning1D{

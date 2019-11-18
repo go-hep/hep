@@ -9,12 +9,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 func TestKeyNewKeyFrom(t *testing.T) {
 	var (
-		werr = errors.Errorf("rootio: invalid")
+		werr = xerrors.Errorf("rootio: invalid")
 	)
 	for _, tc := range []struct {
 		want *tobjstring

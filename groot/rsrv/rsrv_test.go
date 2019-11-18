@@ -68,7 +68,7 @@ func TestOpenFile(t *testing.T) {
 
 	local, err := filepath.Abs("../testdata/simple.root")
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%+v", err)
 	}
 
 	for _, tc := range []struct {
@@ -128,7 +128,7 @@ func TestUploadFile(t *testing.T) {
 
 	local, err := filepath.Abs("../testdata/simple.root")
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%+v", err)
 	}
 
 	for _, tc := range []struct {
@@ -165,7 +165,7 @@ func testUploadFile(t *testing.T, ts *httptest.Server, dst, src string, status i
 	{
 		f, err := os.Open(src)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatalf("%+v", err)
 		}
 		defer f.Close()
 

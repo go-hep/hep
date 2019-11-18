@@ -40,6 +40,7 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hplot"
+	"golang.org/x/xerrors"
 	"gonum.org/v1/plot/plotutil"
 	"gonum.org/v1/plot/vg"
 )
@@ -107,7 +108,7 @@ func process(name string) error {
 		fname = name
 		hname = ".*"
 	default:
-		return fmt.Errorf(
+		return xerrors.Errorf(
 			"invalid input file format. got %q. want: \"file.root:histo\"",
 			name,
 		)
@@ -208,7 +209,7 @@ func printObject(f *riofs.File, obj root.Object) error {
 		p.Add(g)
 
 	default:
-		return fmt.Errorf("unknown type %T for %q", o, name)
+		return xerrors.Errorf("unknown type %T for %q", o, name)
 	}
 
 	p.Add(hplot.NewGrid())

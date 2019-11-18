@@ -15,11 +15,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/ping"
+	"golang.org/x/xerrors"
 )
 
 func getTCPAddr() (string, error) {
@@ -38,26 +38,26 @@ func getTCPAddr() (string, error) {
 func createServer(errorHandler func(err error)) (srv *xrootd.Server, addr, baseDir string, err error) {
 	baseDir, err = ioutil.TempDir("", "xrd-srv-")
 	if err != nil {
-		return nil, "", "", errors.Errorf("xrd-srv: could not create test dir: %v", err)
+		return nil, "", "", xerrors.Errorf("xrd-srv: could not create test dir: %w", err)
 	}
 
 	addr, err = getTCPAddr()
 	if err != nil {
-		return nil, "", "", errors.Errorf("xrd-srv: could not get free port to listen: %v", err)
+		return nil, "", "", xerrors.Errorf("xrd-srv: could not get free port to listen: %w", err)
 	}
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
-		return nil, "", "", errors.Errorf("xrd-srv: could not listen on %q: %v", addr, err)
+		return nil, "", "", xerrors.Errorf("xrd-srv: could not listen on %q: %w", addr, err)
 	}
 
 	srv = xrootd.NewServer(xrootd.NewFSHandler(baseDir), func(err error) {
-		errorHandler(errors.Wrap(err, "xrd-srv: an error occured"))
+		errorHandler(xerrors.Errorf("xrd-srv: an error occured: %w", err))
 	})
 
 	go func() {
 		if err = srv.Serve(listener); err != nil && err != xrootd.ErrServerClosed {
-			errorHandler(errors.Wrap(err, "xrd-srv: could not serve"))
+			errorHandler(xerrors.Errorf("xrd-srv: could not serve: %w", err))
 		}
 	}()
 

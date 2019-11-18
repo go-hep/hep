@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"go-hep.org/x/hep/fwk"
+	"golang.org/x/xerrors"
 )
 
 type CPUCruncher struct {
@@ -48,7 +49,7 @@ func (tsk *CPUCruncher) Configure(ctx fwk.Context) error {
 	if len(tsk.cpus) <= 0 {
 		msg := ctx.Msg()
 		msg.Errorf("invalid cpu-timings list: %v\n", tsk.cpus)
-		return fwk.Errorf("invalid cpu-timings")
+		return xerrors.Errorf("invalid cpu-timings")
 	}
 
 	return err

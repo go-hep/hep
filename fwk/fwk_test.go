@@ -15,7 +15,7 @@ import (
 	"go-hep.org/x/hep/fwk"
 	"go-hep.org/x/hep/fwk/job"
 	"go-hep.org/x/hep/fwk/testdata"
-	"go-hep.org/x/hep/fwk/utils/errstack"
+	"golang.org/x/xerrors"
 )
 
 func newapp(evtmax int64, nprocs int) *job.Job {
@@ -122,11 +122,10 @@ func TestDuplicateOutputPort(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error\n")
 	}
-	exp := fmt.Errorf(`fwk.DeclOutPort: component [t0] already declared out-port with name [t0-ints1 (type=int64)].
+	want := xerrors.Errorf(`fwk.DeclOutPort: component [t0] already declared out-port with name [t0-ints1 (type=int64)].
 fwk.DeclOutPort: component [t1] is trying to add a duplicate out-port [t0-ints1 (type=int64)]`)
-	errs := err.(*errstack.Error)
-	if !reflect.DeepEqual(errs.Err.Error(), exp.Error()) { // FIXME(sbinet): use proper error comparison w/ Go1.13
-		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, errs.Err)
+	if got, want := err.Error(), want.Error(); got != want {
+		t.Fatalf("invalid error.\ngot= %v\nwant=%v", got, want)
 	}
 }
 
@@ -154,10 +153,9 @@ func TestMissingInputPort(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error\n")
 	}
-	exp := fmt.Errorf("dataflow: component [%s] declared port [t1-ints1--NOT-THERE] as input but NO KNOWN producer", "t2")
-	errs := err.(*errstack.Error)
-	if !reflect.DeepEqual(errs.Err.Error(), exp.Error()) { // FIXME(sbinet): use proper error comparison w/ Go1.13
-		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, errs.Err)
+	want := xerrors.Errorf("dataflow: component [%s] declared port [t1-ints1--NOT-THERE] as input but NO KNOWN producer", "t2")
+	if got, want := err.Error(), want.Error(); got != want {
+		t.Fatalf("invalid error.\ngot= %v\nwant=%v", got, want)
 	}
 }
 
@@ -194,16 +192,15 @@ func TestMismatchPortTypes(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error\n")
 	}
-	exp := fmt.Errorf(`fwk.DeclInPort: detected type inconsistency for port [data]:
+	want := xerrors.Errorf(`fwk.DeclInPort: detected type inconsistency for port [data]:
  component=%[1]q port=out type=int64
  component=%[2]q port=in  type=float64
 `,
 		"t2",
 		"t4",
 	)
-	errs := err.(*errstack.Error)
-	if !reflect.DeepEqual(errs.Err.Error(), exp.Error()) { // FIXME(sbinet): use proper error comparison w/ Go1.13
-		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, errs.Err)
+	if got, want := err.Error(), want.Error(); got != want {
+		t.Fatalf("invalid error.\ngot= %v\nwant=%v", got, want)
 	}
 }
 
@@ -240,10 +237,9 @@ func TestPortsCycles(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error\n")
 	}
-	exp := fmt.Errorf("dataflow: cycle detected: 1")
-	errs := err.(*errstack.Error)
-	if !reflect.DeepEqual(errs.Err.Error(), exp.Error()) { // FIXME(sbinet): use proper error comparison w/ Go1.13
-		t.Fatalf("invalid error.\nexp=%v (type=%[1]T)\ngot=%v (type=%[2]T)\n", exp, errs.Err)
+	want := xerrors.Errorf("dataflow: cycle detected: 1")
+	if got, want := err.Error(), want.Error(); got != want {
+		t.Fatalf("invalid error.\ngot= %v\nwant=%v", got, want)
 	}
 }
 

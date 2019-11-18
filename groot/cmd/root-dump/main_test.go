@@ -29,12 +29,12 @@ func TestROOTDump(t *testing.T) {
 			o := new(bytes.Buffer)
 			err := dump(o, tc.name, deep)
 			if err != nil {
-				t.Fatalf("could not dump %q: %v", tc.name, err)
+				t.Fatalf("could not dump %q: %+v", tc.name, err)
 			}
 
 			want, err := ioutil.ReadFile(tc.want)
 			if err != nil {
-				t.Fatalf("could not read reference file: %v", err)
+				t.Fatalf("could not read reference file: %+v", err)
 			}
 
 			if got, want := o.String(), string(want); got != want {
@@ -53,20 +53,20 @@ func diff(t *testing.T, chk, ref string) string {
 
 	tmpdir, err := ioutil.TempDir("", "groot-diff-")
 	if err != nil {
-		t.Fatalf("could not create tmpdir: %v", err)
+		t.Fatalf("could not create tmpdir: %+v", err)
 	}
 	defer os.RemoveAll(tmpdir)
 
 	got := filepath.Join(tmpdir, "got.txt")
 	err = ioutil.WriteFile(got, []byte(chk), 0644)
 	if err != nil {
-		t.Fatalf("could not create %s file: %v", got, err)
+		t.Fatalf("could not create %s file: %+v", got, err)
 	}
 
 	want := filepath.Join(tmpdir, "want.txt")
 	err = ioutil.WriteFile(want, []byte(ref), 0644)
 	if err != nil {
-		t.Fatalf("could not create %s file: %v", want, err)
+		t.Fatalf("could not create %s file: %+v", want, err)
 	}
 
 	out := new(bytes.Buffer)

@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
+	"golang.org/x/xerrors"
 )
 
 // StatFlags identifies the entry's attributes.
@@ -168,7 +168,7 @@ func (o *EntryStat) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 
 	stats := bytes.Split(buf, []byte{' '})
 	if len(stats) < 4 {
-		return errors.Errorf("xrootd: statinfo \"%s\" doesn't have enough fields, expected format is: \"id size flags modtime\"", buf)
+		return xerrors.Errorf("xrootd: statinfo \"%s\" doesn't have enough fields, expected format is: \"id size flags modtime\"", buf)
 	}
 
 	id, err := strconv.Atoi(string(stats[0]))
@@ -232,7 +232,7 @@ func (o *VirtualFSStat) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 
 	stats := bytes.Split(buf, []byte{' '})
 	if len(stats) < 6 {
-		return errors.Errorf("xrootd: virtual statinfo \"%s\" doesn't have enough fields, expected format is: \"nrw frw urw nstg fstg ustg\"", buf)
+		return xerrors.Errorf("xrootd: virtual statinfo \"%s\" doesn't have enough fields, expected format is: \"nrw frw urw nstg fstg ustg\"", buf)
 	}
 
 	nrw, err := strconv.Atoi(string(stats[0]))

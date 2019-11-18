@@ -12,6 +12,7 @@ import (
 	"go-hep.org/x/hep/fastjet"
 	"go-hep.org/x/hep/fmom"
 	"go-hep.org/x/hep/fwk"
+	"golang.org/x/xerrors"
 )
 
 // FastJetFinder finds jets using the fastjet library
@@ -72,11 +73,11 @@ func (tsk *FastJetFinder) Configure(ctx fwk.Context) error {
 	}
 
 	if tsk.jetAlg != fastjet.AntiKtAlgorithm {
-		return fwk.Errorf("fastjet-finder: only implemented for AntiKt")
+		return xerrors.Errorf("fastjet-finder: only implemented for AntiKt")
 	}
 
 	if tsk.areaAlg != 0 {
-		return fwk.Errorf("fastjet-finder: only implemented with *NO* area-definition")
+		return xerrors.Errorf("fastjet-finder: only implemented with *NO* area-definition")
 	}
 
 	tsk.jetDef = fastjet.NewJetDefinition(tsk.jetAlg, tsk.paramR, fastjet.EScheme, fastjet.BestStrategy)

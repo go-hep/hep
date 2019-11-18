@@ -5,9 +5,10 @@
 package rio
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
+
+	"golang.org/x/xerrors"
 )
 
 // Selector selects Records based on their name
@@ -114,7 +115,7 @@ func (s *Scanner) Scan() bool {
 			}
 
 		default:
-			panic(fmt.Errorf("unknown frame %v", hdr.Frame))
+			panic(xerrors.Errorf("unknown frame %v", hdr.Frame))
 		}
 	}
 }

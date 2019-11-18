@@ -5,7 +5,6 @@ package main
 import (
 	"reflect"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rdict"
@@ -13,6 +12,7 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
+	"golang.org/x/xerrors"
 )
 
 type Event struct {
@@ -284,7 +284,7 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 	{
 		vers, pos, bcnt := r.ReadVersion("vector<short>")
 		if vers != rvers.StreamerInfo {
-			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<short>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			r.SetErr(xerrors.Errorf("rbytes: invalid version for \"vector<short>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
 		o.StlVecI16 = r.ReadFastArrayI16(int(r.ReadI32()))
@@ -293,7 +293,7 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 	{
 		vers, pos, bcnt := r.ReadVersion("vector<int>")
 		if vers != rvers.StreamerInfo {
-			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<int>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			r.SetErr(xerrors.Errorf("rbytes: invalid version for \"vector<int>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
 		o.StlVecI32 = r.ReadFastArrayI32(int(r.ReadI32()))
@@ -302,7 +302,7 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 	{
 		vers, pos, bcnt := r.ReadVersion("vector<long>")
 		if vers != rvers.StreamerInfo {
-			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<long>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			r.SetErr(xerrors.Errorf("rbytes: invalid version for \"vector<long>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
 		o.StlVecI64 = r.ReadFastArrayI64(int(r.ReadI32()))
@@ -311,7 +311,7 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 	{
 		vers, pos, bcnt := r.ReadVersion("vector<unsigned short>")
 		if vers != rvers.StreamerInfo {
-			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<unsigned short>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			r.SetErr(xerrors.Errorf("rbytes: invalid version for \"vector<unsigned short>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
 		o.StlVecU16 = r.ReadFastArrayU16(int(r.ReadI32()))
@@ -320,7 +320,7 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 	{
 		vers, pos, bcnt := r.ReadVersion("vector<unsigned int>")
 		if vers != rvers.StreamerInfo {
-			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<unsigned int>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			r.SetErr(xerrors.Errorf("rbytes: invalid version for \"vector<unsigned int>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
 		o.StlVecU32 = r.ReadFastArrayU32(int(r.ReadI32()))
@@ -329,7 +329,7 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 	{
 		vers, pos, bcnt := r.ReadVersion("vector<unsigned long>")
 		if vers != rvers.StreamerInfo {
-			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<unsigned long>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			r.SetErr(xerrors.Errorf("rbytes: invalid version for \"vector<unsigned long>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
 		o.StlVecU64 = r.ReadFastArrayU64(int(r.ReadI32()))
@@ -338,7 +338,7 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 	{
 		vers, pos, bcnt := r.ReadVersion("vector<float>")
 		if vers != rvers.StreamerInfo {
-			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<float>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			r.SetErr(xerrors.Errorf("rbytes: invalid version for \"vector<float>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
 		o.StlVecF32 = r.ReadFastArrayF32(int(r.ReadI32()))
@@ -347,7 +347,7 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 	{
 		vers, pos, bcnt := r.ReadVersion("vector<double>")
 		if vers != rvers.StreamerInfo {
-			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<double>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			r.SetErr(xerrors.Errorf("rbytes: invalid version for \"vector<double>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
 		o.StlVecF64 = r.ReadFastArrayF64(int(r.ReadI32()))
@@ -356,7 +356,7 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 	{
 		vers, pos, bcnt := r.ReadVersion("vector<string>")
 		if vers != rvers.StreamerInfo {
-			r.SetErr(errors.Errorf("rbytes: invalid version for \"vector<string>\". got=%v, want=%v", vers, rvers.StreamerInfo))
+			r.SetErr(xerrors.Errorf("rbytes: invalid version for \"vector<string>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
 		o.StlVecStr = r.ReadFastArrayString(int(r.ReadI32()))

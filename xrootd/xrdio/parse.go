@@ -8,14 +8,14 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 // Parse parses name into an xrootd URL structure.
 func Parse(name string) (URL, error) {
 	urn, err := url.Parse(name)
 	if err != nil {
-		return URL{}, errors.WithStack(err)
+		return URL{}, xerrors.Errorf("could not parse %q as a URL: %w", name, err)
 	}
 
 	host := urn.Hostname()

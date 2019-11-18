@@ -11,8 +11,8 @@ import (
 
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd/xrdfs"
+	"golang.org/x/xerrors"
 )
 
 // File represents a file on the remote XRootD server.
@@ -26,7 +26,7 @@ type File struct {
 func (f *File) Read(dest []byte, off int64) (fuse.ReadResult, fuse.Status) {
 	n, err := f.xrdfile.ReadAt(dest, off)
 	if err != nil {
-		f.fs.handler(errors.WithMessage(err, "xrdfuse: error calling ReadAt"))
+		f.fs.handler(xerrors.Errorf("xrdfuse: error calling ReadAt: %w", err))
 		return nil, fuse.EIO
 	}
 
@@ -37,7 +37,7 @@ func (f *File) Read(dest []byte, off int64) (fuse.ReadResult, fuse.Status) {
 func (f *File) Write(data []byte, off int64) (uint32, fuse.Status) {
 	n, err := f.xrdfile.WriteAt(data, off)
 	if err != nil {
-		f.fs.handler(errors.WithMessage(err, "xrdfuse: error calling WriteAt"))
+		f.fs.handler(xerrors.Errorf("xrdfuse: error calling WriteAt: %w", err))
 		return 0, fuse.EIO
 	}
 
@@ -48,7 +48,7 @@ func (f *File) Write(data []byte, off int64) (uint32, fuse.Status) {
 func (f *File) Truncate(size uint64) fuse.Status {
 	err := f.xrdfile.Truncate(context.Background(), int64(size))
 	if err != nil {
-		f.fs.handler(errors.WithMessage(err, "xrdfuse: error calling Truncate"))
+		f.fs.handler(xerrors.Errorf("xrdfuse: error calling Truncate: %w", err))
 		return fuse.EIO
 	}
 
@@ -64,7 +64,7 @@ func (f *File) Fsync(flags int) (code fuse.Status) {
 func (f *File) Flush() (code fuse.Status) {
 	err := f.xrdfile.Sync(context.Background())
 	if err != nil {
-		f.fs.handler(errors.WithMessage(err, "xrdfuse: error calling Sync"))
+		f.fs.handler(xerrors.Errorf("xrdfuse: error calling Sync: %w", err))
 		return fuse.EIO
 	}
 
@@ -75,7 +75,7 @@ func (f *File) Flush() (code fuse.Status) {
 func (f *File) GetAttr(out *fuse.Attr) fuse.Status {
 	stat, err := f.xrdfile.Stat(context.Background())
 	if err != nil {
-		f.fs.handler(errors.WithMessage(err, "xrdfuse: error calling Stat"))
+		f.fs.handler(xerrors.Errorf("xrdfuse: error calling Stat: %w", err))
 		return fuse.EIO
 	}
 
@@ -90,7 +90,7 @@ func (f *File) GetAttr(out *fuse.Attr) fuse.Status {
 func (f *File) Release() {
 	err := f.xrdfile.Close(context.Background())
 	if err != nil {
-		f.fs.handler(errors.WithMessage(err, "xrdfuse: error calling Close"))
+		f.fs.handler(xerrors.Errorf("xrdfuse: error calling Close: %w", err))
 	}
 }
 

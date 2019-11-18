@@ -5,12 +5,11 @@
 package rdict
 
 import (
-	"fmt"
 	"sort"
 	"sync"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbytes"
+	"golang.org/x/xerrors"
 )
 
 // StreamerInfos stores all the streamers available at runtime.
@@ -31,7 +30,7 @@ type streamerDb struct {
 func (db *streamerDb) StreamerInfo(name string, vers int) (rbytes.StreamerInfo, error) {
 	si, ok := db.Get(name, vers)
 	if !ok {
-		return nil, errors.Errorf("rdict: no streamer for %q", name)
+		return nil, xerrors.Errorf("rdict: no streamer for %q", name)
 	}
 	return si, nil
 }
@@ -94,7 +93,7 @@ func (db *streamerDb) Add(streamer rbytes.StreamerInfo) {
 		old, dup := db.db[key]
 		if dup {
 			if old.CheckSum() != streamer.CheckSum() {
-				panic(fmt.Errorf("rdict: StreamerInfo class=%q version=%d with checksum=%d (got checksum=%d)",
+				panic(xerrors.Errorf("rdict: StreamerInfo class=%q version=%d with checksum=%d (got checksum=%d)",
 					streamer.Name(), streamer.ClassVersion(), streamer.CheckSum(), old.CheckSum(),
 				))
 			}

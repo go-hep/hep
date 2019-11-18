@@ -11,6 +11,7 @@ import (
 	"text/tabwriter"
 
 	"go-hep.org/x/hep/rio"
+	"golang.org/x/xerrors"
 )
 
 type fileType interface {
@@ -73,7 +74,7 @@ func (r *rfile) read(name string, ptr interface{}) error {
 	// FIXME(sbinet): when/if "rio" gets the concept of directories,
 	// handle this there.
 	if !r.rio.Has(name) {
-		return fmt.Errorf("no record [%s] in file [id=%s name=%s]", name, r.id, r.n)
+		return xerrors.Errorf("no record [%s] in file [id=%s name=%s]", name, r.id, r.n)
 	}
 
 	err = r.rio.Get(name, ptr)
@@ -142,7 +143,7 @@ func (mgr *fileMgr) open(id string, fname string) error {
 	var err error
 	r, dup := mgr.rfds[id]
 	if dup {
-		return fmt.Errorf("paw: file [id=%s name=%s] already open", id, r.n)
+		return xerrors.Errorf("paw: file [id=%s name=%s] already open", id, r.n)
 	}
 
 	r.id = id
@@ -168,7 +169,7 @@ func (mgr *fileMgr) close(id string) error {
 		return w.close()
 	}
 
-	return fmt.Errorf("paw: unknown file [id=%s]", id)
+	return xerrors.Errorf("paw: unknown file [id=%s]", id)
 }
 
 func (mgr *fileMgr) ls(id string) error {
@@ -185,7 +186,7 @@ func (mgr *fileMgr) ls(id string) error {
 
 	r, ok := mgr.rfds[id]
 	if !ok {
-		return fmt.Errorf("paw: unknown file [id=%s]", id)
+		return xerrors.Errorf("paw: unknown file [id=%s]", id)
 	}
 
 	err := r.ls()
@@ -200,7 +201,7 @@ func (mgr *fileMgr) create(id string, fname string) error {
 	var err error
 	w, dup := mgr.wfds[id]
 	if dup {
-		return fmt.Errorf("paw: file [id=%s name=%s] already open", id, w.n)
+		return xerrors.Errorf("paw: file [id=%s name=%s] already open", id, w.n)
 	}
 
 	w.id = id

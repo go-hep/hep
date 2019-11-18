@@ -16,10 +16,10 @@ import (
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 	"github.com/hanwen/go-fuse/fuse/pathfs"
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto"
+	"golang.org/x/xerrors"
 )
 
 // FS implements a pathfs.FileSystem that makes requests to the remote server over the XRootD protocol.
@@ -57,7 +57,7 @@ func (fs *FS) GetAttr(name string, ctx *fuse.Context) (*fuse.Attr, fuse.Status) 
 	stat, err := fs.xrdfs.Stat(context.Background(), path.Join(fs.root, name))
 	status := errorToStatus(err)
 	if status == fuse.EIO {
-		fs.handler(errors.WithMessage(err, "xrdfuse: error calling Stat"))
+		fs.handler(xerrors.Errorf("xrdfuse: error calling Stat: %w", err))
 	}
 	if status != fuse.OK {
 		return nil, status
@@ -75,7 +75,7 @@ func (fs *FS) OpenDir(name string, ctx *fuse.Context) (c []fuse.DirEntry, code f
 	entries, err := fs.xrdfs.Dirlist(context.Background(), path.Join(fs.root, name))
 	status := errorToStatus(err)
 	if status == fuse.EIO {
-		fs.handler(errors.WithMessage(err, "xrdfuse: error calling Dirlist"))
+		fs.handler(xerrors.Errorf("xrdfuse: error calling Dirlist: %w", err))
 	}
 	if status != fuse.OK {
 		return nil, status
@@ -141,7 +141,7 @@ func (fs *FS) Open(name string, flags uint32, ctx *fuse.Context) (file nodefs.Fi
 	}
 	status := errorToStatus(err)
 	if status == fuse.EIO {
-		fs.handler(errors.WithMessage(err, "xrdfuse: error calling Open"))
+		fs.handler(xerrors.Errorf("xrdfuse: error calling Open: %w", err))
 	}
 	if status != fuse.OK {
 		return nil, status
@@ -155,7 +155,7 @@ func (fs *FS) Mknod(name string, mode uint32, dev uint32, ctx *fuse.Context) fus
 	f, err := fs.xrdfs.Open(context.Background(), path.Join(fs.root, name), xrdmode, xrdfs.OpenOptionsNew)
 	status := errorToStatus(err)
 	if status == fuse.EIO {
-		fs.handler(errors.WithMessage(err, "xrdfuse: error calling Open"))
+		fs.handler(xerrors.Errorf("xrdfuse: error calling Open: %w", err))
 	}
 	if status != fuse.OK {
 		return status
@@ -164,7 +164,7 @@ func (fs *FS) Mknod(name string, mode uint32, dev uint32, ctx *fuse.Context) fus
 	err = f.Close(context.Background())
 	status = errorToStatus(err)
 	if status == fuse.EIO {
-		fs.handler(errors.WithMessage(err, "xrdfuse: error calling Close"))
+		fs.handler(xerrors.Errorf("xrdfuse: error calling Close: %w", err))
 	}
 	return status
 }
@@ -174,7 +174,7 @@ func (fs *FS) Rename(oldName string, newName string, ctx *fuse.Context) fuse.Sta
 	err := fs.xrdfs.Rename(context.Background(), path.Join(fs.root, oldName), path.Join(fs.root, newName))
 	status := errorToStatus(err)
 	if status == fuse.EIO {
-		fs.handler(errors.WithMessage(err, "xrdfuse: error calling Rename"))
+		fs.handler(xerrors.Errorf("xrdfuse: error calling Rename: %w", err))
 	}
 	return status
 }
@@ -184,7 +184,7 @@ func (fs *FS) Unlink(name string, ctx *fuse.Context) fuse.Status {
 	err := fs.xrdfs.RemoveFile(context.Background(), path.Join(fs.root, name))
 	status := errorToStatus(err)
 	if status == fuse.EIO {
-		fs.handler(errors.WithMessage(err, "xrdfuse: error calling RemoveFile"))
+		fs.handler(xerrors.Errorf("xrdfuse: error calling RemoveFile: %w", err))
 	}
 	return status
 }
@@ -194,7 +194,7 @@ func (fs *FS) Rmdir(name string, ctx *fuse.Context) fuse.Status {
 	err := fs.xrdfs.RemoveDir(context.Background(), path.Join(fs.root, name))
 	status := errorToStatus(err)
 	if status == fuse.EIO {
-		fs.handler(errors.WithMessage(err, "xrdfuse: error calling RemoveDir"))
+		fs.handler(xerrors.Errorf("xrdfuse: error calling RemoveDir: %w", err))
 	}
 	return status
 }
@@ -205,7 +205,7 @@ func (fs *FS) Mkdir(name string, mode uint32, ctx *fuse.Context) fuse.Status {
 	err := fs.xrdfs.Mkdir(context.Background(), path.Join(fs.root, name), xrdmode)
 	status := errorToStatus(err)
 	if status == fuse.EIO {
-		fs.handler(errors.WithMessage(err, "xrdfuse: error calling Mkdir"))
+		fs.handler(xerrors.Errorf("xrdfuse: error calling Mkdir: %w", err))
 	}
 	return status
 }
@@ -216,7 +216,7 @@ func (fs *FS) Chmod(name string, mode uint32, ctx *fuse.Context) fuse.Status {
 	err := fs.xrdfs.Chmod(context.Background(), path.Join(fs.root, name), xrdmode)
 	status := errorToStatus(err)
 	if status == fuse.EIO {
-		fs.handler(errors.WithMessage(err, "xrdfuse: error calling Chmod"))
+		fs.handler(xerrors.Errorf("xrdfuse: error calling Chmod: %w", err))
 	}
 	return status
 }

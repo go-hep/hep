@@ -10,12 +10,11 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/pkg/errors"
-
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
+	"golang.org/x/xerrors"
 )
 
 // LeafO implements ROOT TLeafO
@@ -166,7 +165,7 @@ func (leaf *LeafO) scan(r *rbytes.RBuffer, ptr interface{}) error {
 	case []bool:
 		copy(v, *leaf.sli)
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.Err()
@@ -183,7 +182,7 @@ func (leaf *LeafO) setAddress(ptr interface{}) error {
 		case []bool:
 			return leaf.setAddress(&sli)
 		default:
-			panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
+			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
 	}
 
@@ -193,7 +192,7 @@ func (leaf *LeafO) setAddress(ptr interface{}) error {
 	case *[]bool:
 		leaf.sli = v
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 	return nil
 }
@@ -420,7 +419,7 @@ func (leaf *LeafB) scan(r *rbytes.RBuffer, ptr interface{}) error {
 			v[i] = uint8((*leaf.sli)[i])
 		}
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.Err()
@@ -439,7 +438,7 @@ func (leaf *LeafB) setAddress(ptr interface{}) error {
 		case []uint8:
 			return leaf.setAddress(&sli)
 		default:
-			panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
+			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
 	}
 
@@ -453,7 +452,7 @@ func (leaf *LeafB) setAddress(ptr interface{}) error {
 	case *[]uint8:
 		leaf.sli = (*[]int8)(unsafe.Pointer(v))
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 	return nil
 }
@@ -683,7 +682,7 @@ func (leaf *LeafS) scan(r *rbytes.RBuffer, ptr interface{}) error {
 			v[i] = uint16((*leaf.sli)[i])
 		}
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.Err()
@@ -702,7 +701,7 @@ func (leaf *LeafS) setAddress(ptr interface{}) error {
 		case []uint16:
 			return leaf.setAddress(&sli)
 		default:
-			panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
+			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
 	}
 
@@ -716,7 +715,7 @@ func (leaf *LeafS) setAddress(ptr interface{}) error {
 	case *[]uint16:
 		leaf.sli = (*[]int16)(unsafe.Pointer(v))
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 	return nil
 }
@@ -946,7 +945,7 @@ func (leaf *LeafI) scan(r *rbytes.RBuffer, ptr interface{}) error {
 			v[i] = uint32((*leaf.sli)[i])
 		}
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.Err()
@@ -965,7 +964,7 @@ func (leaf *LeafI) setAddress(ptr interface{}) error {
 		case []uint32:
 			return leaf.setAddress(&sli)
 		default:
-			panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
+			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
 	}
 
@@ -979,7 +978,7 @@ func (leaf *LeafI) setAddress(ptr interface{}) error {
 	case *[]uint32:
 		leaf.sli = (*[]int32)(unsafe.Pointer(v))
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 	return nil
 }
@@ -1209,7 +1208,7 @@ func (leaf *LeafL) scan(r *rbytes.RBuffer, ptr interface{}) error {
 			v[i] = uint64((*leaf.sli)[i])
 		}
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.Err()
@@ -1228,7 +1227,7 @@ func (leaf *LeafL) setAddress(ptr interface{}) error {
 		case []uint64:
 			return leaf.setAddress(&sli)
 		default:
-			panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
+			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
 	}
 
@@ -1242,7 +1241,7 @@ func (leaf *LeafL) setAddress(ptr interface{}) error {
 	case *[]uint64:
 		leaf.sli = (*[]int64)(unsafe.Pointer(v))
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 	return nil
 }
@@ -1441,7 +1440,7 @@ func (leaf *LeafF) scan(r *rbytes.RBuffer, ptr interface{}) error {
 	case []float32:
 		copy(v, *leaf.sli)
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.Err()
@@ -1458,7 +1457,7 @@ func (leaf *LeafF) setAddress(ptr interface{}) error {
 		case []float32:
 			return leaf.setAddress(&sli)
 		default:
-			panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
+			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
 	}
 
@@ -1468,7 +1467,7 @@ func (leaf *LeafF) setAddress(ptr interface{}) error {
 	case *[]float32:
 		leaf.sli = v
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 	return nil
 }
@@ -1667,7 +1666,7 @@ func (leaf *LeafD) scan(r *rbytes.RBuffer, ptr interface{}) error {
 	case []float64:
 		copy(v, *leaf.sli)
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.Err()
@@ -1684,7 +1683,7 @@ func (leaf *LeafD) setAddress(ptr interface{}) error {
 		case []float64:
 			return leaf.setAddress(&sli)
 		default:
-			panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
+			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
 	}
 
@@ -1694,7 +1693,7 @@ func (leaf *LeafD) setAddress(ptr interface{}) error {
 	case *[]float64:
 		leaf.sli = v
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 	return nil
 }
@@ -1893,7 +1892,7 @@ func (leaf *LeafC) scan(r *rbytes.RBuffer, ptr interface{}) error {
 	case []string:
 		copy(v, *leaf.sli)
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.Err()
@@ -1910,7 +1909,7 @@ func (leaf *LeafC) setAddress(ptr interface{}) error {
 		case []string:
 			return leaf.setAddress(&sli)
 		default:
-			panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
+			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
 	}
 
@@ -1920,7 +1919,7 @@ func (leaf *LeafC) setAddress(ptr interface{}) error {
 	case *[]string:
 		leaf.sli = v
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 	return nil
 }

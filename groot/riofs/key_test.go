@@ -9,17 +9,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rvers"
+	"golang.org/x/xerrors"
 )
 
 func TestKeyNewKeyFrom(t *testing.T) {
 	var (
-		werr = errors.Errorf("riofs: invalid")
+		werr = xerrors.Errorf("riofs: invalid")
 	)
 	for _, tc := range []struct {
 		want *rbase.ObjString
@@ -82,8 +82,8 @@ func TestKeyNewKeyFrom(t *testing.T) {
 			case err != nil && tc.err == nil:
 				t.Fatalf("could not generate key from tobjstring: %v", err)
 			case err != nil && tc.err != nil:
-				if !reflect.DeepEqual(err, tc.err) {
-					t.Fatalf("error: got=%#v, want=%#v", err, tc.err)
+				if got, want := err.Error(), tc.err.Error(); got != want {
+					t.Fatalf("error: got=%v, want=%v", got, want)
 				}
 				return
 			}

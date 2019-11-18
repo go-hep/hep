@@ -15,6 +15,7 @@ import (
 
 	"go-hep.org/x/hep/fmom"
 	"go-hep.org/x/hep/hepmc"
+	"golang.org/x/xerrors"
 )
 
 func TestEventRW(t *testing.T) {
@@ -76,7 +77,7 @@ func testEventRW(t *testing.T, fname, outfname string, nevts int) {
 
 	enc := hepmc.NewEncoder(o)
 	if enc == nil {
-		t.Fatal(fmt.Errorf("hepmc.encoder: nil encoder"))
+		t.Fatal(xerrors.Errorf("hepmc.encoder: nil encoder"))
 	}
 	for _, evt := range evts {
 		err = enc.Encode(evt)
@@ -181,7 +182,7 @@ func TestRead(t *testing.T) {
 	r := newReader()
 	dec := hepmc.NewDecoder(r)
 	if dec == nil {
-		t.Fatal(fmt.Errorf("hepmc.decoder: nil decoder"))
+		t.Fatal(xerrors.Errorf("hepmc.decoder: nil decoder"))
 	}
 
 	const NEVTS = 10

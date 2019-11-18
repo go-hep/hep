@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"go-hep.org/x/hep/fwk"
+	"golang.org/x/xerrors"
 )
 
 type testhsvc struct {
@@ -55,16 +56,16 @@ func (tsk *testhsvc) StopTask(ctx fwk.Context) error {
 
 	h := tsk.h1d.Hist
 	if h.Entries() != *evtmax {
-		return fwk.Errorf("expected %d entries. got=%d", *evtmax, h.Entries())
+		return xerrors.Errorf("expected %d entries. got=%d", *evtmax, h.Entries())
 	}
 	mean := h.XMean()
 	if mean != 4.5 {
-		return fwk.Errorf("expected mean=%v. got=%v", 4.5, mean)
+		return xerrors.Errorf("expected mean=%v. got=%v", 4.5, mean)
 	}
 
 	rms := h.XRMS()
 	if rms != 2.8722813232690143 {
-		return fwk.Errorf("expected RMS=%v. got=%v", 2.8722813232690143, rms)
+		return xerrors.Errorf("expected RMS=%v. got=%v", 2.8722813232690143, rms)
 	}
 
 	msg := ctx.Msg()

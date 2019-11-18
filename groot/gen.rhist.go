@@ -30,13 +30,13 @@ func genH1() {
 	genroot.GenImports("rhist", f,
 		"bytes", "fmt", "math", "reflect",
 		"",
-		"github.com/pkg/errors",
 		"go-hep.org/x/hep/hbook",
 		"go-hep.org/x/hep/groot/root",
 		"go-hep.org/x/hep/groot/rcont",
 		"go-hep.org/x/hep/groot/rbytes",
 		"go-hep.org/x/hep/groot/rtypes",
 		"go-hep.org/x/hep/groot/rvers",
+		"golang.org/x/xerrors",
 	)
 
 	for i, typ := range []struct {
@@ -87,13 +87,13 @@ func genH2() {
 	genroot.GenImports("rhist", f,
 		"bytes", "fmt", "math", "reflect",
 		"",
-		"github.com/pkg/errors",
 		"go-hep.org/x/hep/hbook",
 		"go-hep.org/x/hep/groot/root",
 		"go-hep.org/x/hep/groot/rcont",
 		"go-hep.org/x/hep/groot/rbytes",
 		"go-hep.org/x/hep/groot/rtypes",
 		"go-hep.org/x/hep/groot/rvers",
+		"golang.org/x/xerrors",
 	)
 
 	for i, typ := range []struct {
@@ -227,7 +227,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 1 {
-		return errors.Errorf("rhist: T{{.Name}} version too old (%d<1)", vers)
+		return xerrors.Errorf("rhist: T{{.Name}} version too old (%d<1)", vers)
 	}
 
 	for _, v := range []rbytes.Unmarshaler{
@@ -830,7 +830,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 1 {
-		return errors.Errorf("rhist: T{{.Name}} version too old (%d<1)", vers)
+		return xerrors.Errorf("rhist: T{{.Name}} version too old (%d<1)", vers)
 	}
 
 	for _, v := range []rbytes.Unmarshaler{

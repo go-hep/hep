@@ -5,9 +5,9 @@
 package rtree
 
 import (
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
+	"golang.org/x/xerrors"
 )
 
 type tchain struct {
@@ -85,7 +85,7 @@ func ChainOf(name string, files ...string) (Tree, func() error, error) {
 		t, ok := obj.(Tree)
 		if !ok {
 			closef(fs)
-			return nil, nil, errors.Errorf("rtree: object %q in file %q is not a Tree", name, n)
+			return nil, nil, xerrors.Errorf("rtree: object %q in file %q is not a Tree", name, n)
 		}
 
 		trees[i] = t

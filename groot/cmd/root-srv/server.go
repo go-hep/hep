@@ -19,9 +19,9 @@ import (
 	"time"
 
 	uuid "github.com/hashicorp/go-uuid"
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/rsrv"
+	"golang.org/x/xerrors"
 )
 
 const cookieName = "GROOT_SRV"
@@ -104,7 +104,7 @@ func (srv *server) setCookie(w http.ResponseWriter, r *http.Request) error {
 	defer srv.mu.Unlock()
 	cookie, err := r.Cookie(cookieName)
 	if err != nil && err != http.ErrNoCookie {
-		return err
+		return xerrors.Errorf("could not fetch cookie: %w", err)
 	}
 
 	if cookie != nil {
@@ -113,7 +113,7 @@ func (srv *server) setCookie(w http.ResponseWriter, r *http.Request) error {
 
 	v, err := uuid.GenerateUUID()
 	if err != nil {
-		return errors.Wrapf(err, "could not generate UUID")
+		return xerrors.Errorf("could not generate UUID: %w", err)
 	}
 
 	cookie = &http.Cookie{
@@ -130,13 +130,13 @@ func (srv *server) wrap(fn func(w http.ResponseWriter, r *http.Request) error) h
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := srv.setCookie(w, r)
 		if err != nil {
-			log.Printf("error retrieving cookie: %v\n", err)
+			log.Printf("error retrieving cookie: %+v\n", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if err := fn(w, r); err != nil {
-			log.Printf("error %q: %v\n", r.URL.Path, err.Error())
+			log.Printf("error %q: %+v\n", r.URL.Path, err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
@@ -147,7 +147,7 @@ func (srv *server) rootHandle(w http.ResponseWriter, r *http.Request) error {
 	case http.MethodGet:
 		// ok
 	default:
-		return fmt.Errorf("invalid request %q for /", r.Method)
+		return xerrors.Errorf("invalid request %q for /", r.Method)
 	}
 
 	crutime := time.Now().Unix()
@@ -157,7 +157,7 @@ func (srv *server) rootHandle(w http.ResponseWriter, r *http.Request) error {
 
 	t, err := template.New("upload").Parse(page)
 	if err != nil {
-		return err
+		return xerrors.Errorf("could not parse HTML template: %w", err)
 	}
 
 	srv.ping(r)
@@ -171,13 +171,13 @@ func (srv *server) rootHandle(w http.ResponseWriter, r *http.Request) error {
 func (srv *server) uploadHandle(w http.ResponseWriter, r *http.Request) error {
 	cookie, err := r.Cookie(cookieName)
 	if err != nil {
-		return errors.Wrap(err, "could not retrieve cookie")
+		return xerrors.Errorf("could not retrieve cookie: %w", err)
 	}
 
 	defer r.Body.Close()
 	req, err := http.NewRequest(http.MethodPost, "/file-upload", r.Body)
 	if err != nil {
-		return errors.Wrap(err, "could not create upload-file request")
+		return xerrors.Errorf("could not create upload-file request: %w", err)
 	}
 	req.AddCookie(cookie)
 	req.Header.Set("Content-Type", r.Header.Get("Content-Type"))
@@ -187,12 +187,12 @@ func (srv *server) uploadHandle(w http.ResponseWriter, r *http.Request) error {
 
 	if ww.code != http.StatusOK {
 		w.WriteHeader(ww.code)
-		return errors.Errorf("could not upload file")
+		return xerrors.Errorf("could not upload file")
 	}
 
 	nodes, err := srv.nodes(r)
 	if err != nil {
-		return err
+		return xerrors.Errorf("could not create nodes: %w", err)
 	}
 
 	return json.NewEncoder(w).Encode(nodes)
@@ -201,12 +201,12 @@ func (srv *server) uploadHandle(w http.ResponseWriter, r *http.Request) error {
 func (srv *server) openHandle(w http.ResponseWriter, r *http.Request) error {
 	cookie, err := r.Cookie(cookieName)
 	if err != nil {
-		return errors.Wrap(err, "could not retrieve cookie")
+		return xerrors.Errorf("could not retrieve cookie: %w", err)
 	}
 
 	err = r.ParseMultipartForm(500 << 20)
 	if err != nil {
-		return errors.Wrapf(err, "could not parse multipart form")
+		return xerrors.Errorf("could not parse multipart form: %w", err)
 	}
 	fname := r.PostFormValue("uri")
 	if fname == "" {
@@ -217,12 +217,12 @@ func (srv *server) openHandle(w http.ResponseWriter, r *http.Request) error {
 	body := new(bytes.Buffer)
 	err = json.NewEncoder(body).Encode(rsrv.OpenFileRequest{URI: fname})
 	if err != nil {
-		return errors.Wrap(err, "could not encode open-file request")
+		return xerrors.Errorf("could not encode open-file request: %w", err)
 	}
 
 	req, err := http.NewRequest(http.MethodPost, "/file-open", body)
 	if err != nil {
-		return errors.Wrap(err, "could not create open-file request")
+		return xerrors.Errorf("could not create open-file request: %w", err)
 	}
 	req.AddCookie(cookie)
 
@@ -232,12 +232,12 @@ func (srv *server) openHandle(w http.ResponseWriter, r *http.Request) error {
 
 	if ww.code != http.StatusOK {
 		w.WriteHeader(ww.code)
-		return errors.Errorf("could not open file %q", fname)
+		return xerrors.Errorf("could not open file %q", fname)
 	}
 
 	nodes, err := srv.nodes(r)
 	if err != nil {
-		return err
+		return xerrors.Errorf("could not create nodes: %w", err)
 	}
 
 	return json.NewEncoder(w).Encode(nodes)
@@ -258,7 +258,7 @@ func (srv *server) refreshHandle(w http.ResponseWriter, r *http.Request) error {
 func (srv *server) plotHandle(w http.ResponseWriter, r *http.Request) error {
 	cookie, err := r.Cookie(cookieName)
 	if err != nil {
-		return errors.Wrap(err, "could not retrieve cookie")
+		return xerrors.Errorf("could not retrieve cookie: %w", err)
 	}
 
 	var req plot
@@ -266,7 +266,7 @@ func (srv *server) plotHandle(w http.ResponseWriter, r *http.Request) error {
 
 	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		return errors.Wrap(err, "could not decode plot request")
+		return xerrors.Errorf("could not decode plot request: %w", err)
 	}
 
 	cmd := plotRequest{
@@ -281,14 +281,14 @@ func (srv *server) plotHandle(w http.ResponseWriter, r *http.Request) error {
 	select {
 	case resp := <-cmd.resp:
 		if resp.err != nil {
-			return errors.Wrap(resp.err, "could not process plot request")
+			return xerrors.Errorf("could not process plot request: %w", resp.err)
 		}
 		w.Header().Set("Content-Type", resp.ctype)
 		w.WriteHeader(resp.status)
 		_, err = w.Write(resp.body)
 		return err
 	case <-timeout.C:
-		return errors.Errorf("plot request timeout")
+		return xerrors.Errorf("plot request timeout")
 	}
 }
 
@@ -343,19 +343,19 @@ func (srv *server) process(preq plotRequest) {
 			Options: pl.Options,
 		}
 	default:
-		preq.resp <- plotResponse{err: errors.Errorf("root-srv: unknown plot request %q", pl.Type)}
+		preq.resp <- plotResponse{err: xerrors.Errorf("root-srv: unknown plot request %q", pl.Type)}
 		return
 	}
 
 	err = json.NewEncoder(body).Encode(req)
 	if err != nil {
-		preq.resp <- plotResponse{err: errors.Wrapf(err, "could not encode %s request", ep)}
+		preq.resp <- plotResponse{err: xerrors.Errorf("could not encode %s request: %w", ep, err)}
 		return
 	}
 
 	hreq, err = http.NewRequest(http.MethodPost, ep, body)
 	if err != nil {
-		preq.resp <- plotResponse{err: errors.Wrapf(err, "could not create %s request", ep)}
+		preq.resp <- plotResponse{err: xerrors.Errorf("could not create %s request: %w", ep, err)}
 		return
 	}
 	hreq.AddCookie(preq.cookie)
@@ -392,7 +392,7 @@ func (srv *server) nodes(r *http.Request) ([]jsNode, error) {
 			return nil
 		})
 		if err != nil {
-			return nil, errors.Wrapf(err, "could not build nodes-tree for %q", uri)
+			return nil, xerrors.Errorf("could not build nodes-tree for %q: %w", uri, err)
 		}
 	}
 
@@ -416,7 +416,7 @@ func (srv *server) ping(r *http.Request) error {
 	srv.srv.Ping(ww, req)
 
 	if ww.code != http.StatusOK {
-		return errors.Errorf("could not ping")
+		return xerrors.Errorf("could not ping")
 	}
 
 	return nil

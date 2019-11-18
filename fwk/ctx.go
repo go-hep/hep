@@ -6,6 +6,8 @@ package fwk
 
 import (
 	"context"
+
+	"golang.org/x/xerrors"
 )
 
 type ctxType struct {
@@ -36,12 +38,12 @@ func (ctx ctxType) Msg() MsgStream {
 
 func (ctx ctxType) Svc(n string) (Svc, error) {
 	if ctx.mgr == nil {
-		return nil, Errorf("fwk: no fwk.App available to this Context")
+		return nil, xerrors.Errorf("fwk: no fwk.App available to this Context")
 	}
 
 	svc := ctx.mgr.GetSvc(n)
 	if svc == nil {
-		return nil, Errorf("fwk: no such service [%s]", n)
+		return nil, xerrors.Errorf("fwk: no such service [%s]", n)
 	}
 	return svc, nil
 }

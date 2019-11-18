@@ -30,12 +30,11 @@ func genLeaves() {
 		"reflect",
 		"unsafe", // FIXME(sbinet): needed for signed/unsigned handling
 		"",
-		"github.com/pkg/errors",
-		"",
 		"go-hep.org/x/hep/groot/root",
 		"go-hep.org/x/hep/groot/rbytes",
 		"go-hep.org/x/hep/groot/rtypes",
 		"go-hep.org/x/hep/groot/rvers",
+		"golang.org/x/xerrors",
 	)
 
 	for i, typ := range []struct {
@@ -360,7 +359,7 @@ func (leaf *{{.Name}}) scan(r *rbytes.RBuffer, ptr interface{}) error {
             }
 {{- end}}
     default:
-            panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+            panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
     }
 
     return r.Err()
@@ -381,7 +380,7 @@ func (leaf *{{.Name}}) setAddress(ptr interface{}) error {
 			return leaf.setAddress(&sli)
 {{- end}}
 		default:
-			panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
+			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
     }
 
@@ -397,7 +396,7 @@ func (leaf *{{.Name}}) setAddress(ptr interface{}) error {
 		leaf.sli = (*[]{{.Type}})(unsafe.Pointer(v))
 {{- end}}
 	default:
-		panic(errors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 	return nil
 }

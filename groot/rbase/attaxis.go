@@ -7,11 +7,11 @@ package rbase
 import (
 	"reflect"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
+	"golang.org/x/xerrors"
 )
 
 type AttAxis struct {
@@ -81,7 +81,7 @@ func (a *AttAxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(a.Class())
 	if vers < 4 {
-		return errors.Errorf("rbase: TAttAxis version too old (%d < 4)", vers)
+		return xerrors.Errorf("rbase: TAttAxis version too old (%d < 4)", vers)
 	}
 
 	a.Ndivs = r.ReadI32()

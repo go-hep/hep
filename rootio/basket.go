@@ -5,9 +5,10 @@
 package rootio
 
 import (
-	"fmt"
 	"io"
 	"reflect"
+
+	"golang.org/x/xerrors"
 )
 
 type Basket struct {
@@ -49,7 +50,7 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 	}
 
 	if b.Class() != "TBasket" {
-		return fmt.Errorf("rootio.Basket: Key is not a Basket")
+		return xerrors.Errorf("rootio.Basket: Key is not a Basket")
 	}
 
 	b.vers = r.ReadU16()
@@ -57,7 +58,7 @@ func (b *Basket) UnmarshalROOT(r *RBuffer) error {
 	b.nevsize = int(r.ReadI32())
 
 	if b.nevsize < 0 {
-		r.err = fmt.Errorf("rootio.Basket: incorrect event buffer size [%v]", b.nevsize)
+		r.err = xerrors.Errorf("rootio.Basket: incorrect event buffer size [%v]", b.nevsize)
 		b.nevsize = 0
 		return r.err
 	}

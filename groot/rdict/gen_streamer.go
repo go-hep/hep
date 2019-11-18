@@ -13,8 +13,8 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rmeta"
+	"golang.org/x/xerrors"
 )
 
 // genStreamer holds the state of the ROOT streamer generation.
@@ -65,29 +65,29 @@ func NewGenStreamer(p string, verbose bool) (Generator, error) {
 func (g *genStreamer) init() error {
 	pkg, err := importer.Default().Import("encoding")
 	if err != nil {
-		return errors.Wrapf(err, "rdict: could not find package \"encoding\"")
+		return xerrors.Errorf("rdict: could not find package \"encoding\": %w", err)
 	}
 
 	o := pkg.Scope().Lookup("BinaryMarshaler")
 	if o == nil {
-		return errors.Errorf("rdict: could not find interface encoding.BinaryMarshaler")
+		return xerrors.Errorf("rdict: could not find interface encoding.BinaryMarshaler")
 	}
 	g.binMa = o.(*types.TypeName).Type().Underlying().(*types.Interface)
 
 	o = pkg.Scope().Lookup("BinaryUnmarshaler")
 	if o == nil {
-		return errors.Errorf("rdict: could not find interface encoding.BinaryUnmarshaler")
+		return xerrors.Errorf("rdict: could not find interface encoding.BinaryUnmarshaler")
 	}
 	g.binUn = o.(*types.TypeName).Type().Underlying().(*types.Interface)
 
 	pkg, err = importer.Default().Import("go-hep.org/x/hep/groot/rbytes")
 	if err != nil {
-		return errors.Wrapf(err, "rdict: could not find package %q", "go-hep.org/x/hep/groot/rbytes")
+		return xerrors.Errorf("rdict: could not find package %q: %w", "go-hep.org/x/hep/groot/rbytes", err)
 	}
 
 	o = pkg.Scope().Lookup("RVersioner")
 	if o == nil {
-		return errors.Errorf("rdict: could not find interface rbytes.RVersioner")
+		return xerrors.Errorf("rdict: could not find interface rbytes.RVersioner")
 	}
 	g.rvers = o.(*types.TypeName).Type().Underlying().(*types.Interface)
 
@@ -105,24 +105,24 @@ func (g *genStreamer) Generate(typeName string) error {
 	scope := g.pkg.Scope()
 	obj := scope.Lookup(typeName)
 	if obj == nil {
-		return errors.Errorf("no such type %q in package %q\n", typeName, g.pkg.Path()+"/"+g.pkg.Name())
+		return xerrors.Errorf("no such type %q in package %q\n", typeName, g.pkg.Path()+"/"+g.pkg.Name())
 	}
 
 	tn, ok := obj.(*types.TypeName)
 	if !ok {
-		return errors.Errorf("%q is not a type (%v)\n", typeName, obj)
+		return xerrors.Errorf("%q is not a type (%v)\n", typeName, obj)
 	}
 
 	typ, ok := tn.Type().Underlying().(*types.Struct)
 	if !ok {
-		return errors.Errorf("%q is not a named struct (%v)\n", typeName, tn)
+		return xerrors.Errorf("%q is not a named struct (%v)\n", typeName, tn)
 	}
 	if g.verbose {
 		log.Printf("typ: %q: %+v\n", typeName, typ)
 	}
 
 	if !types.Implements(tn.Type(), g.rvers) && !types.Implements(types.NewPointer(tn.Type()), g.rvers) {
-		return errors.Errorf("type %q does not implement %q.", tn.Pkg().Path()+"."+tn.Name(), "go-hep.org/x/hep/groot/rbytes.RVersioner")
+		return xerrors.Errorf("type %q does not implement %q.", tn.Pkg().Path()+"."+tn.Name(), "go-hep.org/x/hep/groot/rbytes.RVersioner")
 	}
 
 	g.genStreamer(typ, typeName)

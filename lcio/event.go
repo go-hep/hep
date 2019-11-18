@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"go-hep.org/x/hep/sio"
+	"golang.org/x/xerrors"
 )
 
 // RunHeader provides metadata about a Run.
@@ -296,7 +297,7 @@ func (evt *Event) Has(name string) bool {
 // Add panics if ptr is not a pointer to some data.
 func (evt *Event) Add(name string, ptr interface{}) {
 	if _, dup := evt.colls[name]; dup {
-		panic(fmt.Errorf("lcio: duplicate key %q", name))
+		panic(xerrors.Errorf("lcio: duplicate key %q", name))
 	}
 	evt.names = append(evt.names, name)
 	if evt.colls == nil {

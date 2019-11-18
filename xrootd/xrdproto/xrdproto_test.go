@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
+	"golang.org/x/xerrors"
 )
 
 func TestReadRequest(t *testing.T) {
@@ -296,12 +296,12 @@ func TestResponseHeaderError(t *testing.T) {
 		{
 			hdr:  ResponseHeader{Status: Error},
 			data: []byte{1, 2, 3},
-			err:  errors.Wrapf(io.ErrShortBuffer, "xrootd: invalid ResponseHeader error"),
+			err:  xerrors.Errorf("xrootd: invalid ResponseHeader error: %w", io.ErrShortBuffer),
 		},
 		{
 			hdr:  ResponseHeader{Status: Error},
 			data: []byte{1, 2, 3, 4},
-			err:  errors.Errorf("xrootd: error occurred during unmarshaling of a server error: xrootd: missing error message in server response"),
+			err:  xerrors.Errorf("xrootd: error occurred during unmarshaling of a server error: xrootd: missing error message in server response"),
 		},
 	} {
 		t.Run("", func(t *testing.T) {

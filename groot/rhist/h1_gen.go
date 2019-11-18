@@ -12,13 +12,13 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rcont"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
 	"go-hep.org/x/hep/hbook"
+	"golang.org/x/xerrors"
 )
 
 // H1F implements ROOT TH1F
@@ -114,7 +114,7 @@ func (h *H1F) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 1 {
-		return errors.Errorf("rhist: TH1F version too old (%d<1)", vers)
+		return xerrors.Errorf("rhist: TH1F version too old (%d<1)", vers)
 	}
 
 	for _, v := range []rbytes.Unmarshaler{
@@ -416,7 +416,7 @@ func (h *H1D) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 1 {
-		return errors.Errorf("rhist: TH1D version too old (%d<1)", vers)
+		return xerrors.Errorf("rhist: TH1D version too old (%d<1)", vers)
 	}
 
 	for _, v := range []rbytes.Unmarshaler{
@@ -718,7 +718,7 @@ func (h *H1I) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 1 {
-		return errors.Errorf("rhist: TH1I version too old (%d<1)", vers)
+		return xerrors.Errorf("rhist: TH1I version too old (%d<1)", vers)
 	}
 
 	for _, v := range []rbytes.Unmarshaler{

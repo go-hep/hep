@@ -9,6 +9,7 @@ import (
 	"reflect"
 
 	"go-hep.org/x/hep/fwk/fsm"
+	"golang.org/x/xerrors"
 )
 
 type statuscode int
@@ -197,7 +198,7 @@ func (lvl Level) msgstring() string {
 	case LvlError:
 		return "ERR "
 	}
-	panic(Errorf("fwk.Level: invalid fwk.Level value [%d]", int(lvl)))
+	panic(xerrors.Errorf("fwk.Level: invalid fwk.Level value [%d]", int(lvl)))
 }
 
 // String prints the human-readable representation of a Level value.
@@ -212,7 +213,7 @@ func (lvl Level) String() string {
 	case LvlError:
 		return "ERROR"
 	}
-	panic(Errorf("fwk.Level: invalid fwk.Level value [%d]", int(lvl)))
+	panic(xerrors.Errorf("fwk.Level: invalid fwk.Level value [%d]", int(lvl)))
 }
 
 // MsgStream provides access to verbosity-defined formated messages, a la fmt.Printf.

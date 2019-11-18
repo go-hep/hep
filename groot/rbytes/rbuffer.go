@@ -12,10 +12,10 @@ import (
 	"math"
 	"sort"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
+	"golang.org/x/xerrors"
 )
 
 type rbuff struct {
@@ -50,10 +50,10 @@ func (r *rbuff) Seek(offset int64, whence int) (int64, error) {
 	case io.SeekEnd:
 		r.c = len(r.p) - int(offset)
 	default:
-		return 0, errors.New("rbytes: invalid whence")
+		return 0, xerrors.Errorf("rbytes: invalid whence")
 	}
 	if r.c < 0 {
-		return 0, errors.New("rbytes: negative position")
+		return 0, xerrors.Errorf("rbytes: negative position")
 	}
 	return int64(r.c), nil
 }
@@ -84,7 +84,7 @@ func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32, ctx Stre
 // If version is negative, the latest version should be returned.
 func (r *RBuffer) StreamerInfo(name string, version int) (StreamerInfo, error) {
 	if r.sictx == nil {
-		return nil, errors.Errorf("rbytes: no streamers")
+		return nil, xerrors.Errorf("rbytes: no streamers")
 	}
 	return r.sictx.StreamerInfo(name, version)
 }
@@ -162,7 +162,7 @@ func (r *RBuffer) ReadSTLString() string {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion("string") // FIXME(sbinet): streamline with RStreamROOT
 	if vers != rvers.StreamerInfo {
-		r.SetErr(errors.Errorf("rbytes: invalid version for std::string. got=%v, want=%v", vers, rvers.StreamerInfo))
+		r.SetErr(xerrors.Errorf("rbytes: invalid version for std::string. got=%v, want=%v", vers, rvers.StreamerInfo))
 		return ""
 	}
 
@@ -675,13 +675,13 @@ func (r *RBuffer) CheckByteCount(pos, count int32, start int64, class string) {
 		return
 
 	case got > want:
-		r.err = errors.Errorf("rbytes: read too many bytes. got=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
+		r.err = xerrors.Errorf("rbytes: read too many bytes. got=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
 			got, want, pos, count, start, class,
 		)
 		return
 
 	case got < want:
-		r.err = errors.Errorf("rbytes: read too few bytes. got=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
+		r.err = xerrors.Errorf("rbytes: read too few bytes. got=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
 			got, want, pos, count, start, class,
 		)
 		return
@@ -754,19 +754,19 @@ func (r *RBuffer) ReadObjectAny() (obj root.Object) {
 		}
 		// FIXME(sbinet): tag==1 means "self". not implemented yet.
 		if tag == 1 {
-			r.err = errors.Errorf("rbytes: tag == 1 means 'self'. not implemented yet")
+			r.err = xerrors.Errorf("rbytes: tag == 1 means 'self'. not implemented yet")
 			return nil
 		}
 
 		o, ok := r.refs[tag64]
 		if !ok {
 			r.setPos(beg + int64(bcnt) + 4)
-			// r.err = errors.Errorf("rbytes: invalid tag [%v] found", tag64)
+			// r.err = xerrors.Errorf("rbytes: invalid tag [%v] found", tag64)
 			return nil
 		}
 		obj, ok = o.(root.Object)
 		if !ok {
-			r.err = errors.Errorf("rbytes: invalid tag [%v] found (not a root.Object)", tag64)
+			r.err = xerrors.Errorf("rbytes: invalid tag [%v] found (not a root.Object)", tag64)
 			return nil
 		}
 		return obj
@@ -798,13 +798,13 @@ func (r *RBuffer) ReadObjectAny() (obj root.Object) {
 		ref := tag64 & ^kClassMask
 		cls, ok := r.refs[ref]
 		if !ok {
-			r.err = errors.Errorf("rbytes: invalid class-tag reference [%v] found", ref)
+			r.err = xerrors.Errorf("rbytes: invalid class-tag reference [%v] found", ref)
 			return nil
 		}
 
 		fct, ok := cls.(rtypes.FactoryFct)
 		if !ok {
-			r.err = errors.Errorf("rbytes: invalid class-tag reference [%v] found (not a rypes.FactoryFct: %T)", ref, cls)
+			r.err = xerrors.Errorf("rbytes: invalid class-tag reference [%v] found (not a rypes.FactoryFct: %T)", ref, cls)
 			return nil
 		}
 

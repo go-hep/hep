@@ -5,7 +5,7 @@
 package fastjet
 
 import (
-	"fmt"
+	"golang.org/x/xerrors"
 )
 
 type Plugin interface {
@@ -21,7 +21,7 @@ var (
 func Register(name string, plugin Plugin) {
 	_, dup := g_plugins[name]
 	if dup {
-		panic(fmt.Errorf("fastjet.Register: duplicate plugin [%s] (%s)", name, plugin.Description()))
+		panic(xerrors.Errorf("fastjet.Register: duplicate plugin [%s] (%s)", name, plugin.Description()))
 	}
 	g_plugins[name] = plugin
 }
@@ -29,7 +29,7 @@ func Register(name string, plugin Plugin) {
 func GetPlugin(name string) (Plugin, error) {
 	plugin, ok := g_plugins[name]
 	if !ok {
-		return nil, fmt.Errorf("fastjet.JetPlugin: no such plugin [%s]", name)
+		return nil, xerrors.Errorf("fastjet.JetPlugin: no such plugin [%s]", name)
 	}
 
 	return plugin, nil

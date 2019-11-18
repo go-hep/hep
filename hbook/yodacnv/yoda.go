@@ -9,11 +9,11 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"reflect"
 
 	"go-hep.org/x/hep/hbook"
+	"golang.org/x/xerrors"
 )
 
 var (
@@ -46,7 +46,7 @@ func Read(r io.Reader) ([]hbook.Object, error) {
 				ignore = true
 			}
 			if err != nil {
-				return nil, fmt.Errorf("yoda: error parsing YODA header (%v)", err)
+				return nil, xerrors.Errorf("yoda: error parsing YODA header: %w", err)
 			}
 			block = block[:0]
 			block = append(block, raw...)
@@ -102,7 +102,7 @@ func splitHeader(raw []byte) (reflect.Type, error) {
 	raw = raw[len(begYoda):]
 	i := bytes.Index(raw, []byte(" "))
 	if i == -1 || i >= len(raw) {
-		return nil, fmt.Errorf("invalid YODA header (missing space)")
+		return nil, xerrors.Errorf("invalid YODA header (missing space)")
 	}
 
 	var rt reflect.Type
@@ -125,7 +125,7 @@ func splitHeader(raw []byte) (reflect.Type, error) {
 	case "COUNTER":
 		return nil, errIgnore
 	default:
-		return nil, fmt.Errorf("unhandled YODA object type %q", string(raw[:i]))
+		return nil, xerrors.Errorf("unhandled YODA object type %q", string(raw[:i]))
 	}
 
 	return rt, nil

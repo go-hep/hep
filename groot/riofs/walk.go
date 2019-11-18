@@ -9,14 +9,14 @@ import (
 	stdpath "path"
 	"strings"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/root"
+	"golang.org/x/xerrors"
 )
 
 // SkipDir is used as a return value from WalkFuncs to indicate that
 // the directory named in the call is to be skipped. It is not returned
 // as an error by any function.
-var SkipDir = errors.New("riofs: skip this directory")
+var SkipDir = xerrors.New("riofs: skip this directory")
 
 // Walk walks the ROOT file tree rooted at dir, calling walkFn for each ROOT object
 // or Directory in the ROOT file tree, including dir.
@@ -125,7 +125,7 @@ func (dir *recDir) put(name string, v root.Object) error {
 	default:
 		p, err := dir.mkdir(pdir)
 		if err != nil {
-			return errors.Wrapf(err, "riofs: could not create parent directory %q for %q", pdir, name)
+			return xerrors.Errorf("riofs: could not create parent directory %q for %q: %w", pdir, name, err)
 		}
 		return p.Put(n, v)
 	}
@@ -133,7 +133,7 @@ func (dir *recDir) put(name string, v root.Object) error {
 
 func (dir *recDir) mkdir(path string) (Directory, error) {
 	if path == "" || path == "/" {
-		return nil, errors.Errorf("riofs: invalid path %q to Mkdir", path)
+		return nil, xerrors.Errorf("riofs: invalid path %q to Mkdir", path)
 	}
 
 	if o, err := dir.get(path); err == nil {
@@ -154,8 +154,8 @@ func (dir *recDir) mkdir(path string) (Directory, error) {
 		if err == nil {
 			continue
 		}
-		switch errors.Cause(err).(type) {
-		case noKeyError:
+		switch {
+		case xerrors.As(err, &noKeyError{}):
 			pname, name := stdpath.Split(p)
 			pname = strings.TrimRight(pname, "/")
 			d, err := dir.get(pname)
@@ -174,7 +174,7 @@ func (dir *recDir) mkdir(path string) (Directory, error) {
 			continue
 
 		default:
-			return nil, errors.Wrapf(err, "riofs: unknown error accessing %q", p)
+			return nil, xerrors.Errorf("riofs: unknown error accessing %q: %w", p, err)
 		}
 	}
 	o, err := dir.get(path)
@@ -183,7 +183,7 @@ func (dir *recDir) mkdir(path string) (Directory, error) {
 	}
 	d, ok := o.(Directory)
 	if !ok {
-		return nil, errors.Errorf("riofs: could not create directory %q", path)
+		return nil, xerrors.Errorf("riofs: could not create directory %q", path)
 	}
 	return d, nil
 }
@@ -202,7 +202,7 @@ func (rd *recDir) walk(dir Directory, path []string, cycle int16) (root.Object, 
 	if ok {
 		return rd.walk(sub, path[1:], cycle)
 	}
-	return nil, errors.Errorf("riofs: not a directory %q", strings.Join([]string{dir.(root.Named).Name(), path[0]}, "/"))
+	return nil, xerrors.Errorf("riofs: not a directory %q", strings.Join([]string{dir.(root.Named).Name(), path[0]}, "/"))
 }
 
 // Dir wraps the given directory to handle fully specified directory names:
@@ -223,7 +223,7 @@ func fileOf(d Directory) *File {
 			case *tdirectoryFile:
 				return d.file
 			default:
-				panic(errors.Errorf("riofs: unknown Directory type %T", d))
+				panic(xerrors.Errorf("riofs: unknown Directory type %T", d))
 			}
 		}
 		d = p

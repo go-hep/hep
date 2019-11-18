@@ -16,7 +16,7 @@ import (
 func TestDB(t *testing.T) {
 	dir, err := ioutil.TempDir("", "groot-rsrv-db-")
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%+v", err)
 	}
 	os.RemoveAll(dir)
 
@@ -47,7 +47,7 @@ func TestDB(t *testing.T) {
 		return nil
 	})
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%+v", err)
 	}
 
 	err = db.Tx("not-there", func(f *riofs.File) error { return nil })

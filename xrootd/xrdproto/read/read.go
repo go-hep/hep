@@ -7,10 +7,10 @@
 package read // import "go-hep.org/x/hep/xrootd/xrdproto/read"
 
 import (
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto"
+	"golang.org/x/xerrors"
 )
 
 // RequestID is the id of the request, it is sent as part of message.
@@ -82,7 +82,7 @@ func (o *OptionalArgs) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	o.PathID = xrdproto.PathID(rBuffer.ReadU8())
 	rBuffer.Skip(7)
 	if alen < 8 || (alen-8)%16 != 0 {
-		return errors.Errorf("xrootd: invalid alen is specified: should be greater or equal to 8"+
+		return xerrors.Errorf("xrootd: invalid alen is specified: should be greater or equal to 8"+
 			"and (alen - 8) should be dividable by 16, got: %v", alen)
 	}
 	if alen <= 8 {
@@ -154,7 +154,7 @@ func (o *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	if alen == 0 {
 		return nil
 	}
-	return errors.Errorf("xrootd: no data is passed after alen of %d", alen)
+	return xerrors.Errorf("xrootd: no data is passed after alen of %d", alen)
 }
 
 // PathID implements xrdproto.DataRequest.PathID.

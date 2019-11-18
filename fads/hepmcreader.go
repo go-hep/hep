@@ -15,6 +15,7 @@ import (
 	"go-hep.org/x/hep/fwk"
 	"go-hep.org/x/hep/hepmc"
 	"go-hep.org/x/hep/heppdt"
+	"golang.org/x/xerrors"
 )
 
 type HepMcStreamer struct {
@@ -36,7 +37,7 @@ func (s *HepMcStreamer) Connect(ports []fwk.Port) error {
 
 	port := ports[0]
 	if port.Type != reflect.TypeOf(hepmc.Event{}) {
-		err = fwk.Errorf("fads: invalid port. expected type=hepmc.Event. got=%v", port.Type)
+		err = xerrors.Errorf("fads: invalid port. expected type=hepmc.Event. got=%v", port.Type)
 		return err
 	}
 

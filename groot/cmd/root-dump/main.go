@@ -52,7 +52,6 @@ import (
 	"reflect"
 	"regexp"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/rhist"
@@ -63,6 +62,7 @@ import (
 	"go-hep.org/x/hep/groot/rtree"
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hbook/yodacnv"
+	"golang.org/x/xerrors"
 )
 
 var (
@@ -101,7 +101,7 @@ options:
 	for _, fname := range flag.Args() {
 		err := dump(os.Stdout, fname, *deepFlag)
 		if err != nil {
-			log.Fatalf("error dumping file %q: %v", fname, err)
+			log.Fatalf("error dumping file %q: %+v", fname, err)
 		}
 	}
 }
@@ -110,7 +110,7 @@ func dump(w io.Writer, fname string, deep bool) error {
 	fmt.Fprintf(w, ">>> file[%s]\n", fname)
 	f, err := groot.Open(fname)
 	if err != nil {
-		return err
+		return xerrors.Errorf("could not open file with read-access: %w", err)
 	}
 	defer f.Close()
 
@@ -126,15 +126,15 @@ func dumpDir(w io.Writer, dir riofs.Directory, deep bool) error {
 		}
 		obj, err := key.Object()
 		if err != nil {
-			return errors.Wrapf(err, "could not decode object %q from dir %q", key.Name(), dir.(root.Named).Name())
+			return xerrors.Errorf("could not decode object %q from dir %q: %w", key.Name(), dir.(root.Named).Name(), err)
 		}
 		err = dumpObj(w, obj, deep)
-		if err == errIgnoreKey {
+		if xerrors.Is(err, errIgnoreKey) {
 			err = nil
 			continue
 		}
 		if err != nil {
-			return fmt.Errorf("error dumping key %q: %v", key.Name(), err)
+			return xerrors.Errorf("error dumping key %q: %w", key.Name(), err)
 		}
 	}
 	return nil
@@ -149,7 +149,7 @@ func match(name string) bool {
 	return reName.MatchString(name)
 }
 
-var errIgnoreKey = errors.New("root-dump: ignore key")
+var errIgnoreKey = xerrors.Errorf("root-dump: ignore key")
 
 func dumpObj(w io.Writer, obj root.Object, deep bool) error {
 	var err error
@@ -187,8 +187,8 @@ func dumpList(w io.Writer, lst root.List, deep bool) error {
 	for i := 0; i < lst.Len(); i++ {
 		fmt.Fprintf(w, "lst[%s][%d]: ", lst.Name(), i)
 		err := dumpObj(w, lst.At(i), deep)
-		if err != nil && err != errIgnoreKey {
-			return err
+		if err != nil && !xerrors.Is(err, errIgnoreKey) {
+			return xerrors.Errorf("could not dump list: %w", err)
 		}
 	}
 	return nil
@@ -199,14 +199,14 @@ func dumpTree(w io.Writer, t rtree.Tree) error {
 	vars := rtree.NewScanVars(t)
 	sc, err := rtree.NewScannerVars(t, vars...)
 	if err != nil {
-		return err
+		return xerrors.Errorf("could not create scanner-vars: %w", err)
 	}
 	defer sc.Close()
 
 	for sc.Next() {
 		err = sc.Scan()
 		if err != nil {
-			return fmt.Errorf("error scanning entry %d: %v", sc.Entry(), err)
+			return xerrors.Errorf("error scanning entry %d: %w", sc.Entry(), err)
 		}
 		for _, v := range vars {
 			rv := reflect.Indirect(reflect.ValueOf(v.Value))
@@ -219,7 +219,7 @@ func dumpTree(w io.Writer, t rtree.Tree) error {
 func dumpH1(w io.Writer, h1 rhist.H1) error {
 	h, err := rootcnv.H1D(h1)
 	if err != nil {
-		return err
+		return xerrors.Errorf("could not convert TH1x to hbook: %w", err)
 	}
 	return yodacnv.Write(w, h)
 }
@@ -227,7 +227,7 @@ func dumpH1(w io.Writer, h1 rhist.H1) error {
 func dumpH2(w io.Writer, h2 rhist.H2) error {
 	h, err := rootcnv.H2D(h2)
 	if err != nil {
-		return err
+		return xerrors.Errorf("could not convert TH2x to hbook: %w", err)
 	}
 	return yodacnv.Write(w, h)
 }
@@ -235,7 +235,7 @@ func dumpH2(w io.Writer, h2 rhist.H2) error {
 func dumpGraph(w io.Writer, gr rhist.Graph) error {
 	g, err := rootcnv.S2D(gr)
 	if err != nil {
-		return err
+		return xerrors.Errorf("could not convert TGraph to hbook: %w", err)
 	}
 	return yodacnv.Write(w, g)
 }

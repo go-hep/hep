@@ -9,6 +9,8 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+
+	"golang.org/x/xerrors"
 )
 
 // H2D is a 2-dim histogram with weighted entries.
@@ -340,11 +342,11 @@ func (h *H2D) UnmarshalYODA(data []byte) error {
 	// pos of end of annotations
 	pos := bytes.Index(r.Bytes(), []byte("\n# Mean:"))
 	if pos < 0 {
-		return fmt.Errorf("hbook: invalid H2D-YODA data")
+		return xerrors.Errorf("hbook: invalid H2D-YODA data")
 	}
 	err = ann.UnmarshalYODA(r.Bytes()[:pos+1])
 	if err != nil {
-		return fmt.Errorf("hbook: %v\nhbook: %q", err, string(r.Bytes()[:pos+1]))
+		return xerrors.Errorf("hbook: %q\nhbook: %w", string(r.Bytes()[:pos+1]), err)
 	}
 	h.annFromYODA(ann)
 	r.Next(pos)
@@ -389,7 +391,7 @@ scanLoop:
 				&d.Stats.SumWXY, &d.X.Dist.N,
 			)
 			if err != nil {
-				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+				return xerrors.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
 			d.Y.Dist = d.X.Dist
 			ctx.bins = true
@@ -406,7 +408,7 @@ scanLoop:
 				&d.Stats.SumWXY, &d.X.Dist.N,
 			)
 			if err != nil {
-				return fmt.Errorf("hbook: %v\nhbook: %q", err, string(buf))
+				return xerrors.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
 			d.Y.Dist = d.X.Dist
 			xset[bin.XRange.Min] = 1
@@ -418,7 +420,7 @@ scanLoop:
 			bins = append(bins, bin)
 
 		default:
-			return fmt.Errorf("hbook: invalid H2D-YODA data: %q", string(buf))
+			return xerrors.Errorf("hbook: invalid H2D-YODA data: %q", string(buf))
 		}
 	}
 	h.Binning = newBinning2D(len(xset), xmin, xmax, len(yset), ymin, ymax)

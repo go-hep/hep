@@ -6,11 +6,12 @@ package hepmc
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"sort"
 	"strconv"
 	"strings"
+
+	"golang.org/x/xerrors"
 )
 
 type rstream struct {
@@ -94,8 +95,10 @@ func (dec *Decoder) Decode(evt *Event) error {
 			return err
 		}
 		if err != nil {
-			err = fmt.Errorf("hepmc.decode: invalid file (expected 'E' got '%v'. line=%q)", string(peek[0]), tokens)
-			return err
+			return xerrors.Errorf(
+				"hepmc.decode: invalid file (expected 'E' got '%v'. line=%q): %w",
+				string(peek[0]), tokens, err,
+			)
 		}
 	}
 
@@ -113,11 +116,11 @@ loop:
 			case hepmcExtendedASCII:
 				err = dec.decodeExtendedASCII(evt, &nVtx, tokens)
 			case hepmcASCIIPdt:
-				err = fmt.Errorf("hepmc.decode: HepMC::IO_Ascii-PARTICLE_DATA is NOT implemented (yet)")
+				err = xerrors.Errorf("hepmc.decode: HepMC::IO_Ascii-PARTICLE_DATA is NOT implemented (yet)")
 			case hepmcExtendedASCIIPdt:
-				err = fmt.Errorf("hepmc.decode: HepMC::IO_ExtendedAscii-PARTICLE_DATA is NOT implemented (yet)")
+				err = xerrors.Errorf("hepmc.decode: HepMC::IO_ExtendedAscii-PARTICLE_DATA is NOT implemented (yet)")
 			default:
-				err = fmt.Errorf("hepmc.decode: unknown file format (%v)", dec.ftype)
+				err = xerrors.Errorf("hepmc.decode: unknown file format (%v)", dec.ftype)
 			}
 			if err != nil {
 				return err
@@ -177,7 +180,7 @@ loop:
 
 		default:
 
-			return fmt.Errorf(
+			return xerrors.Errorf(
 				"hepmc.decoder: invalid file (got '%v')",
 				peek[0],
 			)
@@ -221,7 +224,7 @@ loop:
 			}
 		}
 		if evt.SignalVertex == nil {
-			return fmt.Errorf("hepmc.decode: could not find signal vertex (barcode=%d)", dec.sigProcBc)
+			return xerrors.Errorf("hepmc.decode: could not find signal vertex (barcode=%d)", dec.sigProcBc)
 		}
 	}
 
@@ -288,14 +291,14 @@ func (dec *Decoder) findEndKey(tokens tokens) error {
 	var err error = io.EOF
 	line := tokens.next()
 	if line[0] != 'H' {
-		err = fmt.Errorf("hepmc.decode: not an end-key (line=%q)", line)
+		err = xerrors.Errorf("hepmc.decode: not an end-key (line=%q)", line)
 		return err
 	}
 
 	var ftype hepmcFileType
 	switch line {
 	default:
-		err = fmt.Errorf("hepmc.decode: invalid file type (value=%q)", line)
+		err = xerrors.Errorf("hepmc.decode: invalid file type (value=%q)", line)
 		return err
 
 	case endGenEvent:
@@ -315,7 +318,7 @@ func (dec *Decoder) findEndKey(tokens tokens) error {
 	}
 
 	if ftype != dec.ftype {
-		err = fmt.Errorf(
+		err = xerrors.Errorf(
 			"hepmc.decode: file type changed from %v to %v",
 			dec.ftype, ftype,
 		)
@@ -327,7 +330,7 @@ func (dec *Decoder) decodeUnits(evt *Event, tokens tokens) error {
 	var err error
 	peek := tokens.next()
 	if peek[0] != 'U' {
-		return fmt.Errorf("hepmc.decode: expected 'U'. got '%s'", string(peek[0]))
+		return xerrors.Errorf("hepmc.decode: expected 'U'. got '%s'", string(peek[0]))
 	}
 
 	momUnit := tokens.next()
@@ -348,7 +351,7 @@ func (dec *Decoder) decodeCrossSection(evt *Event, tokens tokens) error {
 	var err error
 	peek := tokens.next()
 	if peek[0] != 'C' {
-		return fmt.Errorf("hepmc.decode: expected 'C'. got '%s'", string(peek[0]))
+		return xerrors.Errorf("hepmc.decode: expected 'C'. got '%s'", string(peek[0]))
 	}
 	var x CrossSection
 	x.Value, err = tokens.float64()
@@ -378,7 +381,7 @@ func (dec *Decoder) decodeEvent(evt *Event, nVtx *int, tokens tokens) error {
 
 	peek := tokens.next()
 	if peek[0] != 'E' {
-		return fmt.Errorf("hepmc.decode: expected 'E'. got '%s'", string(peek[0]))
+		return xerrors.Errorf("hepmc.decode: expected 'E'. got '%s'", string(peek[0]))
 	}
 
 	evtNbr, err = tokens.int()
@@ -480,7 +483,7 @@ func (dec *Decoder) decodeVertex(evt *Event, vtx *Vertex, pidxToEndVtx map[int]i
 	var err error
 	peek := tokens.next()
 	if peek[0] != 'V' {
-		return fmt.Errorf(
+		return xerrors.Errorf(
 			"hepmc.decode: invalid file (expected 'V', got '%v') line=%q",
 			peek[0],
 			tokens,
@@ -583,7 +586,7 @@ func (dec *Decoder) decodeParticle(evt *Event, p *Particle, pidxToEndVtx map[int
 	var err error
 	peek := tokens.next()
 	if peek[0] != 'P' {
-		return fmt.Errorf(
+		return xerrors.Errorf(
 			"hepmc.decode: invalid file (expected 'P', got '%v')",
 			peek[0],
 		)
@@ -685,7 +688,7 @@ func (dec *Decoder) decodeHeavyIon(hi *HeavyIon, tokens tokens) error {
 	var err error
 	peek := tokens.next()
 	if peek[0] != 'H' {
-		return fmt.Errorf(
+		return xerrors.Errorf(
 			"hepmc.decode: invalid file (expected 'H', got '%v')",
 			peek[0],
 		)
@@ -763,7 +766,7 @@ func (dec *Decoder) decodePdfInfo(pdf *PdfInfo, tokens tokens) error {
 	var err error
 	peek := tokens.next()
 	if peek[0] != 'F' {
-		return fmt.Errorf(
+		return xerrors.Errorf(
 			"hepmc.decode: invalid file (expected 'F', got '%v')",
 			peek[0],
 		)

@@ -5,10 +5,10 @@
 package rtree
 
 import (
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/rvers"
+	"golang.org/x/xerrors"
 )
 
 // Writer is the interface that wraps the Write method for Trees.
@@ -41,7 +41,7 @@ type WriteVar struct {
 // directory dir, ready to be filled with data.
 func NewWriter(dir riofs.Directory, name string, vars []WriteVar) (Writer, error) {
 	if dir == nil {
-		return nil, errors.Errorf("rtree: missing parent directory")
+		return nil, xerrors.Errorf("rtree: missing parent directory")
 	}
 
 	w := &wtree{
@@ -58,7 +58,7 @@ func NewWriter(dir riofs.Directory, name string, vars []WriteVar) (Writer, error
 	for _, v := range vars {
 		b, err := newBranchFromWVars(w, v.Name, []WriteVar{v}, nil, compress)
 		if err != nil {
-			return nil, errors.Wrapf(err, "rtree: could not create branch for write-var %#v", v)
+			return nil, xerrors.Errorf("rtree: could not create branch for write-var %#v: %w", v, err)
 		}
 		w.ttree.branches = append(w.ttree.branches, b)
 	}
@@ -75,7 +75,7 @@ func (w *wtree) Write() (int, error) {
 	for _, b := range w.ttree.branches {
 		nbytes, err := b.write()
 		if err != nil {
-			return tot, errors.Wrapf(err, "rtree: could not write branch %q", b.Name())
+			return tot, xerrors.Errorf("rtree: could not write branch %q: %w", b.Name(), err)
 		}
 		tot += nbytes
 	}
@@ -91,7 +91,7 @@ func (w *wtree) Flush() error {
 	for _, b := range w.ttree.branches {
 		err := b.flush()
 		if err != nil {
-			return errors.Wrapf(err, "rtree: could not flush branch %q", b.Name())
+			return xerrors.Errorf("rtree: could not flush branch %q: %w", b.Name(), err)
 		}
 	}
 	return nil
@@ -100,18 +100,18 @@ func (w *wtree) Flush() error {
 // Close writes metadata and closes the tree.
 func (w *wtree) Close() error {
 	if err := w.Flush(); err != nil {
-		return errors.Wrapf(err, "rtree: could not flush tree %q", w.Name())
+		return xerrors.Errorf("rtree: could not flush tree %q: %w", w.Name(), err)
 	}
 
 	if err := w.ttree.dir.Put(w.Name(), w); err != nil {
-		return errors.Wrapf(err, "rtree: could not save tree %q", w.Name())
+		return xerrors.Errorf("rtree: could not save tree %q: %w", w.Name(), err)
 	}
 
 	return nil
 }
 
 func (w *wtree) loadEntry(i int64) error {
-	return errors.Errorf("rtree: Tree writer can not be read from")
+	return xerrors.Errorf("rtree: Tree writer can not be read from")
 }
 
 func fileOf(d riofs.Directory) *riofs.File {

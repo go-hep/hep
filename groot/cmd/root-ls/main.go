@@ -50,13 +50,13 @@ import (
 	"runtime/pprof"
 	"text/tabwriter"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/riofs"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 	"go-hep.org/x/hep/groot/rtree"
 	_ "go-hep.org/x/hep/groot/ztypes"
+	"golang.org/x/xerrors"
 )
 
 var (
@@ -85,7 +85,7 @@ options:
 	if *doProf != "" {
 		f, err := os.Create(*doProf)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("%+v", err)
 		}
 		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
@@ -126,7 +126,7 @@ func (ls rootls) ls(fname string) error {
 	fmt.Fprintf(ls.stdout, "=== [%s] ===\n", fname)
 	f, err := groot.Open(fname)
 	if err != nil {
-		return errors.Wrapf(err, "could not open file")
+		return xerrors.Errorf("could not open file: %w", err)
 	}
 	defer f.Close()
 	fmt.Fprintf(ls.stdout, "version: %v\n", f.Version())

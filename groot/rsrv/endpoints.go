@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	uuid "github.com/hashicorp/go-uuid"
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
@@ -25,6 +24,7 @@ import (
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hplot"
+	"golang.org/x/xerrors"
 )
 
 // Ping verifies the connection to the server is alive.
@@ -57,12 +57,12 @@ func (srv *Server) handleOpen(w http.ResponseWriter, r *http.Request) error {
 
 	err := dec.Decode(&req)
 	if err != nil {
-		return errors.Wrapf(err, "could not decode open-file request")
+		return xerrors.Errorf("could not decode open-file request: %w", err)
 	}
 
 	db, err := srv.db(r)
 	if err != nil {
-		return errors.Wrapf(err, "could not open file database")
+		return xerrors.Errorf("could not open file database: %w", err)
 	}
 
 	if f := db.get(req.URI); f != nil {
@@ -73,7 +73,7 @@ func (srv *Server) handleOpen(w http.ResponseWriter, r *http.Request) error {
 
 	f, err := riofs.Open(req.URI)
 	if err != nil {
-		return errors.Wrap(err, "could not open ROOT file")
+		return xerrors.Errorf("could not open ROOT file: %w", err)
 	}
 
 	db.set(req.URI, f)
@@ -97,7 +97,7 @@ func (srv *Server) UploadFile(w http.ResponseWriter, r *http.Request) {
 func (srv *Server) handleUpload(w http.ResponseWriter, r *http.Request) error {
 	err := r.ParseMultipartForm(500 << 20)
 	if err != nil {
-		return errors.Wrapf(err, "could not parse multipart form")
+		return xerrors.Errorf("could not parse multipart form: %w", err)
 	}
 
 	const (
@@ -107,12 +107,12 @@ func (srv *Server) handleUpload(w http.ResponseWriter, r *http.Request) error {
 
 	dst := r.FormValue(destKey)
 	if dst == "" {
-		return errors.Errorf("empty destination for uploaded ROOT file")
+		return xerrors.Errorf("empty destination for uploaded ROOT file")
 	}
 
 	db, err := srv.db(r)
 	if err != nil {
-		return errors.Wrapf(err, "could not open file database")
+		return xerrors.Errorf("could not open file database: %w", err)
 	}
 
 	if f := db.get(dst); f != nil {
@@ -123,29 +123,29 @@ func (srv *Server) handleUpload(w http.ResponseWriter, r *http.Request) error {
 
 	f, handler, err := r.FormFile(fileKey)
 	if err != nil {
-		return errors.Wrap(err, "could not retrieve ROOT file from multipart form")
+		return xerrors.Errorf("could not retrieve ROOT file from multipart form: %w", err)
 	}
 
 	fid, err := uuid.GenerateUUID()
 	if err != nil {
-		return errors.Wrapf(err, "could not generate UUID for %q", handler.Filename)
+		return xerrors.Errorf("could not generate UUID for %q: %w", handler.Filename, err)
 	}
 
 	fname := filepath.Join(srv.dir, fid+".root")
 	o, err := os.Create(fname)
 	if err != nil {
-		return errors.Wrap(err, "could not create temporary file")
+		return xerrors.Errorf("could not create temporary file: %w", err)
 	}
 	_, err = io.CopyBuffer(o, f, make([]byte, 16*1024*1024))
 	if err != nil {
-		return errors.Wrap(err, "could not copy uploaded file")
+		return xerrors.Errorf("could not copy uploaded file: %w", err)
 	}
 	o.Close()
 	f.Close()
 
 	rfile, err := riofs.Open(o.Name())
 	if err != nil {
-		return errors.Wrapf(err, "could not open ROOT file %q", dst)
+		return xerrors.Errorf("could not open ROOT file %q: %w", dst, err)
 	}
 
 	db.set(dst, rfile)
@@ -164,7 +164,7 @@ func (srv *Server) CloseFile(w http.ResponseWriter, r *http.Request) {
 func (srv *Server) handleCloseFile(w http.ResponseWriter, r *http.Request) error {
 	db, err := srv.db(r)
 	if err != nil {
-		return errors.Wrapf(err, "could not open file database")
+		return xerrors.Errorf("could not open file database: %w", err)
 	}
 
 	dec := json.NewDecoder(r.Body)
@@ -173,7 +173,7 @@ func (srv *Server) handleCloseFile(w http.ResponseWriter, r *http.Request) error
 	var req CloseFileRequest
 	err = dec.Decode(&req)
 	if err != nil {
-		return errors.Wrap(err, "could not decode request")
+		return xerrors.Errorf("could not decode request: %w", err)
 	}
 
 	db.del(req.URI)
@@ -193,7 +193,7 @@ func (srv *Server) ListFiles(w http.ResponseWriter, r *http.Request) {
 func (srv *Server) handleListFiles(w http.ResponseWriter, r *http.Request) error {
 	db, err := srv.db(r)
 	if err != nil {
-		return errors.Wrapf(err, "could not open file database")
+		return xerrors.Errorf("could not open file database: %w", err)
 	}
 
 	var resp ListResponse
@@ -238,19 +238,19 @@ func (srv *Server) handleDirent(w http.ResponseWriter, r *http.Request) error {
 
 	err := dec.Decode(&req)
 	if err != nil {
-		return errors.Wrapf(err, "could not decode dirent request")
+		return xerrors.Errorf("could not decode dirent request: %w", err)
 	}
 
 	resp.URI = req.URI
 
 	db, err := srv.db(r)
 	if err != nil {
-		return errors.Wrap(err, "could not open file database")
+		return xerrors.Errorf("could not open file database: %w", err)
 	}
 
 	f := db.get(req.URI)
 	if f == nil {
-		return errors.Errorf("rsrv: could not find ROOT file %q", req.URI)
+		return xerrors.Errorf("rsrv: could not find ROOT file %q", req.URI)
 	}
 
 	if !strings.HasPrefix(req.Dir, "/") {
@@ -264,12 +264,12 @@ func (srv *Server) handleDirent(w http.ResponseWriter, r *http.Request) error {
 	default:
 		obj, err := riofs.Dir(f).Get(req.Dir)
 		if err != nil {
-			return errors.Wrapf(err, "rsrv: could not find directory %q in ROOT file %q", req.Dir, req.URI)
+			return xerrors.Errorf("rsrv: could not find directory %q in ROOT file %q: %w", req.Dir, req.URI, err)
 		}
 		var ok bool
 		dir, ok = obj.(riofs.Directory)
 		if !ok {
-			return errors.Errorf("rsrv: %q not a directory", req.Dir)
+			return xerrors.Errorf("rsrv: %q not a directory", req.Dir)
 		}
 	case "/":
 		dir = f
@@ -326,7 +326,7 @@ func (srv *Server) handleDirent(w http.ResponseWriter, r *http.Request) error {
 			return nil
 		})
 		if err != nil {
-			return errors.Wrap(err, "could not list directory")
+			return xerrors.Errorf("could not list directory: %w", err)
 		}
 	}
 
@@ -357,7 +357,7 @@ func (srv *Server) handleTree(w http.ResponseWriter, r *http.Request) error {
 
 	err := dec.Decode(&req)
 	if err != nil {
-		return errors.Wrapf(err, "could not decode tree request")
+		return xerrors.Errorf("could not decode tree request: %w", err)
 	}
 
 	resp := TreeResponse{
@@ -368,31 +368,31 @@ func (srv *Server) handleTree(w http.ResponseWriter, r *http.Request) error {
 
 	db, err := srv.db(r)
 	if err != nil {
-		return errors.Wrap(err, "could not open ROOT file database")
+		return xerrors.Errorf("could not open ROOT file database: %w", err)
 	}
 
 	f := db.get(req.URI)
 	if f == nil {
-		return errors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
+		return xerrors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
 	}
 
 	obj, err := riofs.Dir(f).Get(req.Dir)
 	if err != nil {
-		return errors.Wrapf(err, "could not find directory %q in file %q", req.Dir, req.URI)
+		return xerrors.Errorf("could not find directory %q in file %q: %w", req.Dir, req.URI, err)
 	}
 	dir, ok := obj.(riofs.Directory)
 	if !ok {
-		return errors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
+		return xerrors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
 	}
 
 	obj, err = dir.Get(req.Obj)
 	if err != nil {
-		return errors.Wrapf(err, "could not find object %q under directory %q in file %q", req.Obj, req.Dir, req.URI)
+		return xerrors.Errorf("could not find object %q under directory %q in file %q: %w", req.Obj, req.Dir, req.URI, err)
 	}
 
 	tree, ok := obj.(rtree.Tree)
 	if !ok {
-		return errors.Errorf("rsrv: object %v:%s/%q is not a tree (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
+		return xerrors.Errorf("rsrv: object %v:%s/%q is not a tree (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
 	}
 
 	resp.Tree.Type = tree.Class()
@@ -461,41 +461,41 @@ func (srv *Server) handlePlotH1(w http.ResponseWriter, r *http.Request) error {
 
 	err := dec.Decode(&req)
 	if err != nil {
-		return errors.Wrapf(err, "could not decode plot-h1 request")
+		return xerrors.Errorf("could not decode plot-h1 request: %w", err)
 	}
 
 	db, err := srv.db(r)
 	if err != nil {
-		return errors.Wrap(err, "could not open ROOT file database")
+		return xerrors.Errorf("could not open ROOT file database: %w", err)
 	}
 
 	err = db.Tx(req.URI, func(f *riofs.File) error {
 		if f == nil {
-			return errors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
+			return xerrors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
 		}
 
 		obj, err := riofs.Dir(f).Get(req.Dir)
 		if err != nil {
-			return errors.Wrapf(err, "could not find directory %q in file %q", req.Dir, req.URI)
+			return xerrors.Errorf("could not find directory %q in file %q: %w", req.Dir, req.URI, err)
 		}
 		dir, ok := obj.(riofs.Directory)
 		if !ok {
-			return errors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
+			return xerrors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
 		}
 
 		obj, err = dir.Get(req.Obj)
 		if err != nil {
-			return errors.Wrapf(err, "could not find object %q under directory %q in file %q", req.Obj, req.Dir, req.URI)
+			return xerrors.Errorf("could not find object %q under directory %q in file %q: %w", req.Obj, req.Dir, req.URI, err)
 		}
 
 		robj, ok := obj.(rhist.H1)
 		if !ok {
-			return errors.Errorf("rsrv: object %v:%s/%q is not a 1-dim histogram (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
+			return xerrors.Errorf("rsrv: object %v:%s/%q is not a 1-dim histogram (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
 		}
 
 		h1, err := rootcnv.H1D(robj)
 		if err != nil {
-			return errors.Wrap(err, "could not convert TH1 to hbook")
+			return xerrors.Errorf("could not convert TH1 to hbook: %w", err)
 		}
 
 		req.Options.init()
@@ -517,7 +517,7 @@ func (srv *Server) handlePlotH1(w http.ResponseWriter, r *http.Request) error {
 
 		out, err := srv.render(pl, req.Options)
 		if err != nil {
-			return errors.Wrap(err, "could not render H1 plot")
+			return xerrors.Errorf("could not render H1 plot: %w", err)
 		}
 
 		resp.URI = req.URI
@@ -558,41 +558,41 @@ func (srv *Server) handlePlotH2(w http.ResponseWriter, r *http.Request) error {
 
 	err := dec.Decode(&req)
 	if err != nil {
-		return errors.Wrapf(err, "could not decode plot-h2 request")
+		return xerrors.Errorf("could not decode plot-h2 request: %w", err)
 	}
 
 	db, err := srv.db(r)
 	if err != nil {
-		return errors.Wrap(err, "could not open ROOT file database")
+		return xerrors.Errorf("could not open ROOT file database: %w", err)
 	}
 
 	err = db.Tx(req.URI, func(f *riofs.File) error {
 		if f == nil {
-			return errors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
+			return xerrors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
 		}
 
 		obj, err := riofs.Dir(f).Get(req.Dir)
 		if err != nil {
-			return errors.Wrapf(err, "could not find directory %q in file %q", req.Dir, req.URI)
+			return xerrors.Errorf("could not find directory %q in file %q: %w", req.Dir, req.URI, err)
 		}
 		dir, ok := obj.(riofs.Directory)
 		if !ok {
-			return errors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
+			return xerrors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
 		}
 
 		obj, err = dir.Get(req.Obj)
 		if err != nil {
-			return errors.Wrapf(err, "could not find object %q under directory %q in file %q", req.Obj, req.Dir, req.URI)
+			return xerrors.Errorf("could not find object %q under directory %q in file %q: %w", req.Obj, req.Dir, req.URI, err)
 		}
 
 		robj, ok := obj.(rhist.H2)
 		if !ok {
-			return errors.Errorf("rsrv: object %v:%s/%q is not a 2-dim histogram (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
+			return xerrors.Errorf("rsrv: object %v:%s/%q is not a 2-dim histogram (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
 		}
 
 		h2, err := rootcnv.H2D(robj)
 		if err != nil {
-			return errors.Wrap(err, "could not convert TH2 to hbook")
+			return xerrors.Errorf("could not convert TH2 to hbook: %w", err)
 		}
 
 		req.Options.init()
@@ -612,7 +612,7 @@ func (srv *Server) handlePlotH2(w http.ResponseWriter, r *http.Request) error {
 
 		out, err := srv.render(pl, req.Options)
 		if err != nil {
-			return errors.Wrap(err, "could not render H2 plot")
+			return xerrors.Errorf("could not render H2 plot: %w", err)
 		}
 
 		resp.URI = req.URI
@@ -654,41 +654,41 @@ func (srv *Server) handlePlotS2(w http.ResponseWriter, r *http.Request) error {
 
 	err := dec.Decode(&req)
 	if err != nil {
-		return errors.Wrapf(err, "could not decode plot-s2 request")
+		return xerrors.Errorf("could not decode plot-s2 request: %w", err)
 	}
 
 	db, err := srv.db(r)
 	if err != nil {
-		return errors.Wrap(err, "could not open ROOT file database")
+		return xerrors.Errorf("could not open ROOT file database: %w", err)
 	}
 
 	err = db.Tx(req.URI, func(f *riofs.File) error {
 		if f == nil {
-			return errors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
+			return xerrors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
 		}
 
 		obj, err := riofs.Dir(f).Get(req.Dir)
 		if err != nil {
-			return errors.Wrapf(err, "could not find directory %q in file %q", req.Dir, req.URI)
+			return xerrors.Errorf("could not find directory %q in file %q: %w", req.Dir, req.URI, err)
 		}
 		dir, ok := obj.(riofs.Directory)
 		if !ok {
-			return errors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
+			return xerrors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
 		}
 
 		obj, err = dir.Get(req.Obj)
 		if err != nil {
-			return errors.Wrapf(err, "could not find object %q under directory %q in file %q", req.Obj, req.Dir, req.URI)
+			return xerrors.Errorf("could not find object %q under directory %q in file %q: %w", req.Obj, req.Dir, req.URI, err)
 		}
 
 		robj, ok := obj.(rhist.Graph)
 		if !ok {
-			return errors.Errorf("rsrv: object %v:%s/%q is not a 2-dim scatter (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
+			return xerrors.Errorf("rsrv: object %v:%s/%q is not a 2-dim scatter (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
 		}
 
 		s2, err := rootcnv.S2D(robj)
 		if err != nil {
-			return errors.Wrap(err, "could not convert TGraph to hbook")
+			return xerrors.Errorf("could not convert TGraph to hbook: %w", err)
 		}
 
 		req.Options.init()
@@ -712,7 +712,7 @@ func (srv *Server) handlePlotS2(w http.ResponseWriter, r *http.Request) error {
 
 		out, err := srv.render(pl, req.Options)
 		if err != nil {
-			return errors.Wrap(err, "could not render S2 plot")
+			return xerrors.Errorf("could not render S2 plot: %w", err)
 		}
 
 		resp.URI = req.URI
@@ -754,40 +754,40 @@ func (srv *Server) handlePlotTree(w http.ResponseWriter, r *http.Request) error 
 
 	err := dec.Decode(&req)
 	if err != nil {
-		return errors.Wrapf(err, "could not decode plot-tree request")
+		return xerrors.Errorf("could not decode plot-tree request: %w", err)
 	}
 
 	db, err := srv.db(r)
 	if err != nil {
-		return errors.Wrap(err, "could not open ROOT file database")
+		return xerrors.Errorf("could not open ROOT file database: %w", err)
 	}
 
 	err = db.Tx(req.URI, func(f *riofs.File) error {
 		if f == nil {
-			return errors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
+			return xerrors.Errorf("rsrv: could not find ROOT file named %q", req.URI)
 		}
 
 		obj, err := riofs.Dir(f).Get(req.Dir)
 		if err != nil {
-			return errors.Wrapf(err, "could not find directory %q in file %q", req.Dir, req.URI)
+			return xerrors.Errorf("could not find directory %q in file %q: %w", req.Dir, req.URI, err)
 		}
 		dir, ok := obj.(riofs.Directory)
 		if !ok {
-			return errors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
+			return xerrors.Errorf("rsrv: %q in file %q is not a directory", req.Dir, req.URI)
 		}
 
 		obj, err = dir.Get(req.Obj)
 		if err != nil {
-			return errors.Wrapf(err, "could not find object %q under directory %q in file %q", req.Obj, req.Dir, req.URI)
+			return xerrors.Errorf("could not find object %q under directory %q in file %q: %w", req.Obj, req.Dir, req.URI, err)
 		}
 
 		tree, ok := obj.(rtree.Tree)
 		if !ok {
-			return errors.Errorf("rsrv: object %v:%s/%q is not a tree (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
+			return xerrors.Errorf("rsrv: object %v:%s/%q is not a tree (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
 		}
 
 		if len(req.Vars) != 1 {
-			return errors.Errorf("rsrv: tree-draw of %d variables not supported", len(req.Vars))
+			return xerrors.Errorf("rsrv: tree-draw of %d variables not supported", len(req.Vars))
 		}
 
 		var (
@@ -795,7 +795,7 @@ func (srv *Server) handlePlotTree(w http.ResponseWriter, r *http.Request) error 
 			br    = tree.Branch(bname)
 		)
 		if br == nil {
-			return errors.Errorf("rsrv: tree %v:%s/%s has no branch %q", req.URI, req.Dir, req.Obj, bname)
+			return xerrors.Errorf("rsrv: tree %v:%s/%s has no branch %q", req.URI, req.Dir, req.Obj, bname)
 		}
 
 		var (
@@ -805,7 +805,7 @@ func (srv *Server) handlePlotTree(w http.ResponseWriter, r *http.Request) error 
 
 		fv, err := newFloats(leaf)
 		if err != nil {
-			return errors.Wrap(err, "could not create float-leaf")
+			return xerrors.Errorf("could not create float-leaf: %w", err)
 		}
 
 		min := +math.MaxFloat64
@@ -813,26 +813,26 @@ func (srv *Server) handlePlotTree(w http.ResponseWriter, r *http.Request) error 
 		vals := make([]float64, 0, int(tree.Entries()))
 		sc, err := rtree.NewTreeScannerVars(tree, rtree.ScanVar{Name: bname, Leaf: leaf.Name()})
 		if err != nil {
-			return errors.Wrapf(err,
-				"could not create scanner for branch %q in tree %q of file %q",
-				bname, tree.Name(), req.URI,
+			return xerrors.Errorf(
+				"could not create scanner for branch %q in tree %q of file %q: %w",
+				bname, tree.Name(), req.URI, err,
 			)
 		}
 		defer sc.Close()
 
 		err = sc.SeekEntry(0)
 		if err != nil {
-			return errors.Wrapf(err, "could not seek to first entry for branch %q in tree %q of file %q",
-				bname, tree.Name(), req.URI,
+			return xerrors.Errorf("could not seek to first entry for branch %q in tree %q of file %q: %w",
+				bname, tree.Name(), req.URI, err,
 			)
 		}
 
 		for sc.Next() {
 			err = sc.Scan(fv.ptr)
 			if err != nil {
-				return errors.Wrapf(err,
-					"could not scan entry %d of branch %q in tree %q of file %q",
-					sc.Entry(), bname, tree.Name(), req.URI,
+				return xerrors.Errorf(
+					"could not scan entry %d of branch %q in tree %q of file %q: %w",
+					sc.Entry(), bname, tree.Name(), req.URI, err,
 				)
 			}
 			for _, v := range fv.vals() {
@@ -846,12 +846,12 @@ func (srv *Server) handlePlotTree(w http.ResponseWriter, r *http.Request) error 
 
 		err = sc.Err()
 		if err != nil {
-			return errors.Wrap(err, "could not complete scan")
+			return xerrors.Errorf("could not complete scan: %w", err)
 		}
 
 		err = sc.Close()
 		if err != nil {
-			return errors.Wrap(err, "could not close scanner")
+			return xerrors.Errorf("could not close scanner: %w", err)
 		}
 
 		min = math.Nextafter(min, min-1)
@@ -880,7 +880,7 @@ func (srv *Server) handlePlotTree(w http.ResponseWriter, r *http.Request) error 
 
 		out, err := srv.render(pl, req.Options)
 		if err != nil {
-			return errors.Wrap(err, "could not render tree plot")
+			return xerrors.Errorf("could not render tree plot: %w", err)
 		}
 
 		resp.URI = req.URI

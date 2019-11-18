@@ -13,6 +13,7 @@ import (
 
 	"go-hep.org/x/hep/fwk"
 	"go-hep.org/x/hep/fwk/job"
+	"golang.org/x/xerrors"
 )
 
 const (
@@ -193,14 +194,14 @@ func (tsk *testhsvc) StopTask(ctx fwk.Context) error {
 
 	h := tsk.h1d.Hist
 	if got := h.Entries(); got != nentries {
-		return fwk.Errorf("got %d entries. want=%d", got, nentries)
+		return xerrors.Errorf("got %d entries. want=%d", got, nentries)
 	}
 	if got, want := h.XMean(), 49.5; got != want {
-		return fwk.Errorf("got mean=%v. want=%v", got, want)
+		return xerrors.Errorf("got mean=%v. want=%v", got, want)
 	}
 
 	if got, want := h.XRMS(), 57.301832431432764; got != want {
-		return fwk.Errorf("got RMS=%v. want=%v", got, want)
+		return xerrors.Errorf("got RMS=%v. want=%v", got, want)
 	}
 	return err
 }

@@ -4,7 +4,9 @@
 
 package fastjet
 
-import "fmt"
+import (
+	"golang.org/x/xerrors"
+)
 
 // RecombinationScheme defines the recombination choice for the 4-momenta of
 // pseudo-jets during the clustering procedure
@@ -43,6 +45,6 @@ func (s RecombinationScheme) String() string {
 		return "External"
 
 	default:
-		panic(fmt.Errorf("fastjet: invalid RecombinationScheme (%d)", int(s)))
+		panic(xerrors.Errorf("fastjet: invalid RecombinationScheme (%d)", int(s)))
 	}
 }

@@ -6,6 +6,7 @@ package job // import "go-hep.org/x/hep/fwk/job"
 
 import (
 	"go-hep.org/x/hep/fwk"
+	"golang.org/x/xerrors"
 )
 
 // C describes the configuration data of a fwk.Component
@@ -77,7 +78,7 @@ func (job *Job) UI() UI {
 func (job *Job) Create(cfg C) fwk.Component {
 	c, err := job.app.New(cfg.Type, cfg.Name)
 	if err != nil {
-		job.Errorf("could not create [%s:%s]: %v\n", cfg.Type, cfg.Name, err)
+		job.Errorf("could not create [%s:%s]: %w\n", cfg.Type, cfg.Name, err)
 		panic(err)
 	}
 	if cfg.Props == nil {
@@ -114,19 +115,19 @@ func (job *Job) SetProp(c fwk.Component, name string, value interface{}) {
 
 func (job *Job) setProp(c fwk.Component, name string, value interface{}) {
 	if !job.app.HasProp(c, name) {
-		err := fwk.Errorf("component [%s:%s] has no property named %q\n",
+		err := xerrors.Errorf("component [%s:%s] has no property named %q\n",
 			c.Type(),
 			c.Name(),
 			name,
 		)
-		job.Errorf(err.Error())
+		job.Errorf("%+v", err)
 		panic(err)
 	}
 
 	err := job.app.SetProp(c, name, value)
 	if err != nil {
 		job.Errorf(
-			"could not set property name=%q value=%#v on component [%s]: %v\n",
+			"could not set property name=%q value=%#v on component [%s]: %w\n",
 			name, value,
 			c.Name(),
 			err,
@@ -142,7 +143,7 @@ func (job *Job) Run() {
 	err := job.app.Run()
 	if err != nil {
 		job.Errorf(
-			"could not run job: %v\n",
+			"could not run job: %w\n",
 			err,
 		)
 		panic(err)

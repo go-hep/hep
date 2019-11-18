@@ -6,12 +6,13 @@ package main_test
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
 	"testing"
+
+	"golang.org/x/xerrors"
 )
 
 func run(bin string, args ...string) error {
@@ -22,8 +23,8 @@ func run(bin string, args ...string) error {
 	cmd.Stdin = os.Stdin
 	err := cmd.Run()
 	if err != nil {
-		return fmt.Errorf(
-			"error running %q:\n%s\nerr=%v",
+		return xerrors.Errorf(
+			"error running %q:\n%s\nerr: %w",
 			strings.Join(cmd.Args, " "),
 			string(buf.Bytes()),
 			err,
@@ -40,6 +41,6 @@ func TestIssue120(t *testing.T) {
 	}
 	err := run(cmd, "./testdata/issue-120.paw")
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%+v", err)
 	}
 }

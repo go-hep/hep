@@ -8,8 +8,8 @@ package krb5 // import "go-hep.org/x/hep/xrootd/xrdproto/auth/krb5"
 import (
 	"strings"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd/xrdproto/auth"
+	"golang.org/x/xerrors"
 	"gopkg.in/jcmturner/gokrb5.v6/client"
 	"gopkg.in/jcmturner/gokrb5.v6/config"
 	"gopkg.in/jcmturner/gokrb5.v6/credentials"
@@ -40,14 +40,14 @@ func WithPassword(user, realm, password string) (*Auth, error) {
 
 	cfg, err := config.Load(configPath)
 	if err != nil {
-		return nil, errors.WithMessage(err, "auth/krb5: could not load kerberos-5 configuration")
+		return nil, xerrors.Errorf("auth/krb5: could not load kerberos-5 configuration: %w", err)
 	}
 
 	krb.WithConfig(cfg)
 
 	err = krb.Login()
 	if err != nil {
-		return nil, errors.WithMessage(err, "auth/krb5: could not login")
+		return nil, xerrors.Errorf("auth/krb5: could not login: %w", err)
 	}
 
 	return &Auth{client: &krb}, nil
@@ -57,12 +57,12 @@ func WithPassword(user, realm, password string) (*Auth, error) {
 func WithCredCache() (*Auth, error) {
 	cred, err := credentials.LoadCCache(cachePath())
 	if err != nil {
-		return nil, errors.WithMessage(err, "auth/krb5: could not load kerberos-5 cached credentials")
+		return nil, xerrors.Errorf("auth/krb5: could not load kerberos-5 cached credentials: %w", err)
 	}
 
 	krb, err := client.NewClientFromCCache(cred)
 	if err != nil {
-		return nil, errors.WithMessage(err, "auth/krb5: could not create kerberos-5 client from cached credentials")
+		return nil, xerrors.Errorf("auth/krb5: could not create kerberos-5 client from cached credentials: %w", err)
 	}
 
 	cfg, err := config.Load(configPath)
@@ -71,7 +71,7 @@ func WithCredCache() (*Auth, error) {
 		case config.UnsupportedDirective:
 			// ok. just ignore it.
 		default:
-			return nil, errors.WithMessage(err, "auth/krb5: could not load kerberos-5 configuration")
+			return nil, xerrors.Errorf("auth/krb5: could not load kerberos-5 configuration: %w", err)
 		}
 	}
 
@@ -97,7 +97,7 @@ var Type = [4]byte{'k', 'r', 'b', '5'}
 // Request implements auth.Auther
 func (a *Auth) Request(params []string) (*auth.Request, error) {
 	if len(params) == 0 {
-		return nil, errors.New("auth/krb5: want at least 1 parameter, got 0")
+		return nil, xerrors.New("auth/krb5: want at least 1 parameter, got 0")
 	}
 	serviceName := string(params[0])
 	if strings.Contains(serviceName, "@") {
@@ -109,27 +109,27 @@ func (a *Auth) Request(params []string) (*auth.Request, error) {
 	}
 	tkt, key, err := a.client.GetServiceTicket(serviceName)
 	if err != nil {
-		return nil, errors.WithMessage(err, "auth/krb5: could not retrieve kerberos service ticket")
+		return nil, xerrors.Errorf("auth/krb5: could not retrieve kerberos service ticket: %w", err)
 	}
 	authenticator, err := types.NewAuthenticator(a.client.Credentials.Realm, a.client.Credentials.CName)
 	if err != nil {
-		return nil, errors.WithMessage(err, "auth/krb5: could not create kerberos authenticator")
+		return nil, xerrors.Errorf("auth/krb5: could not create kerberos authenticator: %w", err)
 	}
 	etype, err := crypto.GetEtype(key.KeyType)
 	if err != nil {
-		return nil, errors.WithMessage(err, "auth/krb5: could not retrieve crypto key type")
+		return nil, xerrors.Errorf("auth/krb5: could not retrieve crypto key type: %w", err)
 	}
 	err = authenticator.GenerateSeqNumberAndSubKey(key.KeyType, etype.GetKeyByteSize())
 	if err != nil {
-		return nil, errors.WithMessage(err, "auth/krb5: could not generate sequence number or sub key")
+		return nil, xerrors.Errorf("auth/krb5: could not generate sequence number or sub key: %w", err)
 	}
 	APReq, err := messages.NewAPReq(tkt, key, authenticator)
 	if err != nil {
-		return nil, errors.WithMessage(err, "auth/krb5: could not generate AP request")
+		return nil, xerrors.Errorf("auth/krb5: could not generate AP request: %w", err)
 	}
 	request, err := APReq.Marshal()
 	if err != nil {
-		return nil, errors.WithMessage(err, "auth/krb5: could not marshal AP request")
+		return nil, xerrors.Errorf("auth/krb5: could not marshal AP request: %w", err)
 	}
 
 	return &auth.Request{Type: Type, Credentials: "krb5\000" + string(request)}, nil

@@ -12,6 +12,7 @@ import (
 	stdpath "path"
 	"strings"
 
+	"golang.org/x/xerrors"
 	"gonum.org/v1/plot/vg"
 
 	"go-hep.org/x/hep/groot/riofs"
@@ -127,7 +128,7 @@ func dirTree(dir riofs.Directory, path string, root jsNode) ([]jsNode, error) {
 	for _, k := range dir.Keys() {
 		obj, err := k.Object()
 		if err != nil {
-			return nil, fmt.Errorf("failed to extract key %q: %v", k.Name(), err)
+			return nil, xerrors.Errorf("failed to extract key %q: %w", k.Name(), err)
 		}
 		switch obj := obj.(type) {
 		case rtree.Tree:

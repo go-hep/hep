@@ -5,8 +5,9 @@
 package rootio
 
 import (
-	"fmt"
 	"reflect"
+
+	"golang.org/x/xerrors"
 )
 
 type tleaf struct {
@@ -200,7 +201,7 @@ func (leaf *tleafElement) Type() reflect.Type {
 func (leaf *tleafElement) TypeName() string {
 	name := leaf.src.Type().Name()
 	if name == "" {
-		panic(fmt.Errorf("rootio: invalid typename for leaf %q", leaf.Name()))
+		panic(xerrors.Errorf("rootio: invalid typename for leaf %q", leaf.Name()))
 	}
 	return name
 }

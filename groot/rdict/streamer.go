@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rmeta"
+	"golang.org/x/xerrors"
 )
 
 // StreamerOf generates a StreamerInfo from a reflect.Type.
@@ -315,7 +315,7 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 				},
 			}
 		default:
-			panic(errors.Errorf("rdict: invalid struct array field %#v", field))
+			panic(xerrors.Errorf("rdict: invalid struct array field %#v", field))
 		}
 
 	case reflect.Slice:
@@ -453,11 +453,11 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 			}
 
 		default:
-			panic(errors.Errorf("rdict: invalid struct slice field %#v", field))
+			panic(xerrors.Errorf("rdict: invalid struct slice field %#v", field))
 		}
 
 	default:
-		panic(errors.Errorf("rdict: invalid struct field %#v", field))
+		panic(xerrors.Errorf("rdict: invalid struct field %#v", field))
 	}
 }
 

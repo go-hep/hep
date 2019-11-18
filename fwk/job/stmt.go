@@ -5,7 +5,7 @@
 package job
 
 import (
-	"fmt"
+	"golang.org/x/xerrors"
 )
 
 // Stmt represents a job options statement.
@@ -27,7 +27,7 @@ func (stmt StmtType) String() string {
 	case StmtSetProp:
 		return "SetProp"
 	}
-	panic(fmt.Errorf("fwk: invalid StmtType value (%d)", int(stmt)))
+	panic(xerrors.Errorf("fwk: invalid StmtType value (%d)", int(stmt)))
 }
 
 const (

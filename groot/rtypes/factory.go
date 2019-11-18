@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 // FactoryFct creates new values of a given type.
@@ -71,7 +71,7 @@ func (f *factory) Get(n string) FactoryFct {
 func (f *factory) get(n string) FactoryFct {
 	fct := f.Get(n)
 	if fct == nil {
-		panic(errors.Errorf("rtypes: no factory for type %q", n))
+		panic(xerrors.Errorf("rtypes: no factory for type %q", n))
 	}
 	return fct
 }

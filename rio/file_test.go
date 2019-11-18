@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 func TestFile(t *testing.T) {
@@ -118,22 +118,22 @@ func TestInvalidFile(t *testing.T) {
 	}{
 		{
 			r:   nil,
-			err: errors.Errorf("rio: error reading magic-header: EOF"),
+			err: xerrors.Errorf("rio: error reading magic-header: EOF"),
 		},
 		{
 			r:   []byte{'s', 'i', 'o', '\x00'},
-			err: errors.Errorf("rio: not a rio-stream. magic-header=\"sio\\x00\". want=\"rio\\x00\""),
+			err: xerrors.Errorf("rio: not a rio-stream. magic-header=\"sio\\x00\". want=\"rio\\x00\""),
 		},
 		{
 			r:   []byte{'r', 'i', 'o', '\x00'},
-			err: errors.Errorf("rio: error seeking footer (err=bytes.Reader.Seek: negative position)"),
+			err: xerrors.Errorf("rio: error seeking footer: bytes.Reader.Seek: negative position"),
 		},
 	} {
 		t.Run("", func(t *testing.T) {
 			r := bytes.NewReader(tc.r)
 			f, err := Open(r)
-			if !reflect.DeepEqual(err.Error(), tc.err.Error()) { // FIXME(sbinet): use proper error comparison w/ Go1.13
-				t.Fatalf("got=%#v, want=%#v", err, tc.err)
+			if got, want := err.Error(), tc.err.Error(); got != want {
+				t.Fatalf("got=%s, want=%s", got, want)
 			}
 			defer f.Close()
 		})

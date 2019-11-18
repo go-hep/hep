@@ -30,10 +30,10 @@ import (
 	"path"
 	"text/tabwriter"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdio"
+	"golang.org/x/xerrors"
 )
 
 func init() {
@@ -80,7 +80,7 @@ func main() {
 		}
 		err := xrdls(dir, *longFlag, *recFlag)
 		if err != nil {
-			log.Fatalf("could not list %q content: %v", dir, err)
+			log.Fatalf("could not list %q content: %+v", dir, err)
 		}
 	}
 }
@@ -88,14 +88,14 @@ func main() {
 func xrdls(name string, long, recursive bool) error {
 	url, err := xrdio.Parse(name)
 	if err != nil {
-		return errors.Errorf("could not parse %q: %v", name, err)
+		return xerrors.Errorf("could not parse %q: %w", name, err)
 	}
 
 	ctx := context.Background()
 
 	c, err := xrootd.NewClient(ctx, url.Addr, url.User)
 	if err != nil {
-		return errors.Errorf("could not create client: %v", err)
+		return xerrors.Errorf("could not create client: %w", err)
 	}
 	defer c.Close()
 
@@ -104,7 +104,7 @@ func xrdls(name string, long, recursive bool) error {
 	fi, err := fs.Stat(ctx, url.Path)
 	// TODO fi.Name() here is an empty string (see handling in format() below)
 	if err != nil {
-		return errors.Errorf("could not stat %q: %v", url.Path, err)
+		return xerrors.Errorf("could not stat %q: %w", url.Path, err)
 	}
 	err = display(ctx, fs, url.Path, fi, long, recursive)
 	if err != nil {
@@ -133,7 +133,7 @@ func display(ctx context.Context, fs xrdfs.FileSystem, root string, fi os.FileIn
 	}
 	ents, err := fs.Dirlist(ctx, dir)
 	if err != nil {
-		return errors.Errorf("could not list dir %q: %v", dir, err)
+		return xerrors.Errorf("could not list dir %q: %w", dir, err)
 	}
 	o := tabwriter.NewWriter(os.Stdout, 8, 4, 0, ' ', tabwriter.AlignRight)
 	for _, e := range ents {

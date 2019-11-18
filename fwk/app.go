@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"go-hep.org/x/hep/fwk/fsm"
+	"golang.org/x/xerrors"
 )
 
 type appmgr struct {
@@ -65,45 +66,45 @@ func NewApp() App {
 
 	svc, err := app.New("go-hep.org/x/hep/fwk.datastore", "evtstore")
 	if err != nil {
-		app.msg.Errorf("fwk.NewApp: could not create evtstore: %v\n", err)
+		app.msg.Errorf("fwk.NewApp: could not create evtstore: %w\n", err)
 		return nil
 	}
 	app.store = svc.(*datastore)
 
 	err = app.AddSvc(app.store)
 	if err != nil {
-		app.msg.Errorf("fwk.NewApp: could not create evtstore: %v\n", err)
+		app.msg.Errorf("fwk.NewApp: could not create evtstore: %w\n", err)
 		return nil
 	}
 
 	svc, err = app.New("go-hep.org/x/hep/fwk.dflowsvc", "dataflow")
 	if err != nil {
-		app.msg.Errorf("fwk.NewApp: could not create dataflow svc: %v\n", err)
+		app.msg.Errorf("fwk.NewApp: could not create dataflow svc: %w\n", err)
 		return nil
 	}
 	app.dflow = svc.(*dflowsvc)
 
 	err = app.AddSvc(app.dflow)
 	if err != nil {
-		app.msg.Errorf("fwk.NewApp: could not create dataflow svc: %v\n", err)
+		app.msg.Errorf("fwk.NewApp: could not create dataflow svc: %w\n", err)
 		return nil
 	}
 
 	err = app.DeclProp(app, "EvtMax", &app.evtmax)
 	if err != nil {
-		app.msg.Errorf("fwk.NewApp: could not declare property 'EvtMax': %v\n", err)
+		app.msg.Errorf("fwk.NewApp: could not declare property 'EvtMax': %w\n", err)
 		return nil
 	}
 
 	err = app.DeclProp(app, "NProcs", &app.nprocs)
 	if err != nil {
-		app.msg.Errorf("fwk.NewApp: could not declare property 'NProcs': %v\n", err)
+		app.msg.Errorf("fwk.NewApp: could not declare property 'NProcs': %w\n", err)
 		return nil
 	}
 
 	err = app.DeclProp(app, "MsgLevel", &app.msg.lvl)
 	if err != nil {
-		app.msg.Errorf("fwk.NewApp: could not declare property 'MsgLevel': %v\n", err)
+		app.msg.Errorf("fwk.NewApp: could not declare property 'MsgLevel': %w\n", err)
 		return nil
 	}
 
@@ -238,7 +239,7 @@ func (app *appmgr) DeclProp(c Component, name string, ptr interface{}) error {
 	case reflect.Ptr:
 		// ok
 	default:
-		return Errorf(
+		return xerrors.Errorf(
 			"fwk.DeclProp: component [%s] didn't pass a pointer for the property [%s] (type=%T)",
 			c.Name(),
 			name,
@@ -253,7 +254,7 @@ func (app *appmgr) SetProp(c Component, name string, value interface{}) error {
 	cname := c.Name()
 	m, ok := app.props[cname]
 	if !ok {
-		return Errorf(
+		return xerrors.Errorf(
 			"fwk.SetProp: component [%s] didn't declare any property",
 			c.Name(),
 		)
@@ -264,7 +265,7 @@ func (app *appmgr) SetProp(c Component, name string, value interface{}) error {
 	ptr := reflect.ValueOf(m[name])
 	dst := ptr.Elem().Type()
 	if !rt.AssignableTo(dst) {
-		return Errorf(
+		return xerrors.Errorf(
 			"fwk.SetProp: component [%s] has property [%s] with type [%s]. got value=%v (type=%s)",
 			c.Name(),
 			name,
@@ -282,7 +283,7 @@ func (app *appmgr) GetProp(c Component, name string) (interface{}, error) {
 	cname := c.Name()
 	m, ok := app.props[cname]
 	if !ok {
-		return nil, Errorf(
+		return nil, xerrors.Errorf(
 			"fwk.GetProp: component [%s] didn't declare any property",
 			c.Name(),
 		)
@@ -290,7 +291,7 @@ func (app *appmgr) GetProp(c Component, name string) (interface{}, error) {
 
 	ptr, ok := m[name]
 	if !ok {
-		return nil, Errorf(
+		return nil, xerrors.Errorf(
 			"fwk.GetProp: component [%s] didn't declare any property with name [%s]",
 			c.Name(),
 			name,
@@ -313,7 +314,7 @@ func (app *appmgr) HasProp(c Component, name string) bool {
 
 func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) error {
 	if app.state < fsm.Configuring {
-		return Errorf(
+		return xerrors.Errorf(
 			"fwk.DeclInPort: invalid App state (%s). put the DeclInPort in Configure() of %s:%s",
 			app.state,
 			c.Type(),
@@ -325,7 +326,7 @@ func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) error {
 
 func (app *appmgr) DeclOutPort(c Component, name string, t reflect.Type) error {
 	if app.state < fsm.Configuring {
-		return Errorf(
+		return xerrors.Errorf(
 			"fwk.DeclOutPort: invalid App state (%s). put the DeclInPort in Configure() of %s:%s",
 			app.state,
 			c.Type(),
@@ -738,7 +739,7 @@ func (app *appmgr) startInputStream() (StreamControl, error) {
 		}
 
 	default:
-		return ctrl, Errorf("found more than one InputStream! (n=%d)", len(inputs))
+		return ctrl, xerrors.Errorf("found more than one InputStream! (n=%d)", len(inputs))
 	}
 
 	return ctrl, err

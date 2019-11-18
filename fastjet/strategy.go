@@ -4,7 +4,9 @@
 
 package fastjet
 
-import "fmt"
+import (
+	"golang.org/x/xerrors"
+)
 
 // Strategy defines the algorithmic strategy used while clustering.
 type Strategy int
@@ -57,6 +59,6 @@ func (s Strategy) String() string {
 		return "Plugin"
 
 	default:
-		panic(fmt.Errorf("fastjet: invalid Strategy (%d)", int(s)))
+		panic(xerrors.Errorf("fastjet: invalid Strategy (%d)", int(s)))
 	}
 }

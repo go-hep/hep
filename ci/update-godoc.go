@@ -17,8 +17,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -55,10 +55,10 @@ func main() {
 				v.Add("path", pkg)
 				resp, err := http.PostForm("https://godoc.org/-/refresh", v)
 				if err != nil {
-					return errors.Wrapf(err, "could not post %q", pkg)
+					return xerrors.Errorf("could not post %q: %w", pkg, err)
 				}
 				if resp.StatusCode != http.StatusOK {
-					return errors.Errorf("invalid response status for %q: %v", pkg, resp.Status)
+					return xerrors.Errorf("invalid response status for %q: %v", pkg, resp.Status)
 				}
 			}
 			return nil
@@ -80,7 +80,7 @@ func pkgList() ([]string, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not get package list")
+		return nil, xerrors.Errorf("could not get package list: %w", err)
 	}
 
 	var pkgs []string

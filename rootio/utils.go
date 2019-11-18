@@ -5,10 +5,11 @@
 package rootio
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/xerrors"
 )
 
 // decodeNameCycle decodes a namecycle "aap;2" into name "aap" and cycle "2"
@@ -31,7 +32,7 @@ func decodeNameCycle(namecycle string) (string, int16) {
 			cycle = int16(i)
 		}
 	default:
-		panic(fmt.Errorf("invalid namecycle format [%v]", namecycle))
+		panic(xerrors.Errorf("invalid namecycle format [%v]", namecycle))
 	}
 
 	return name, cycle
@@ -68,8 +69,4 @@ func time2datime(t time.Time) uint32 {
 	}
 
 	return (year-1995)<<26 | month<<22 | day<<17 | hour<<12 | min<<6 | sec
-}
-
-func errorf(format string, args ...interface{}) error {
-	return fmt.Errorf(format, args...)
 }

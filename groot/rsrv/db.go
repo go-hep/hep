@@ -9,8 +9,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/riofs"
+	"golang.org/x/xerrors"
 )
 
 type DB struct {
@@ -53,7 +53,7 @@ func (db *DB) Tx(uri string, fct func(f *riofs.File) error) error {
 	defer db.RUnlock()
 	f := db.files[uri]
 	if f == nil {
-		return errors.Errorf("rsrv: no such file %q", uri)
+		return xerrors.Errorf("rsrv: no such file %q", uri)
 	}
 	return fct(db.files[uri])
 }

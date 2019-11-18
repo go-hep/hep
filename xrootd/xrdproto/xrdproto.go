@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
+	"golang.org/x/xerrors"
 )
 
 // Request is a XRootD request issued to a server.
@@ -124,7 +124,7 @@ func (o *ServerError) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	o.Code = ServerErrorCode(rBuffer.ReadI32())
 	data := rBuffer.Bytes()
 	if len(data) == 0 {
-		return errors.New("xrootd: missing error message in server response")
+		return xerrors.New("xrootd: missing error message in server response")
 	}
 	o.Message = string(data[:len(data)-1])
 	return nil
@@ -165,14 +165,14 @@ func (hdr ResponseHeader) Error(data []byte) error {
 		return nil
 	}
 	if len(data) < 4 {
-		return errors.Wrapf(io.ErrShortBuffer, "xrootd: invalid ResponseHeader error")
+		return xerrors.Errorf("xrootd: invalid ResponseHeader error: %w", io.ErrShortBuffer)
 	}
 
 	var serverError ServerError
 	rBuffer := xrdenc.NewRBuffer(data)
 	err := serverError.UnmarshalXrd(rBuffer)
 	if err != nil {
-		return errors.Errorf("xrootd: error occurred during unmarshaling of a server error: %v", err)
+		return xerrors.Errorf("xrootd: error occurred during unmarshaling of a server error: %w", err)
 	}
 
 	return serverError

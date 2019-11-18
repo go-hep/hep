@@ -9,7 +9,6 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -17,6 +16,7 @@ import (
 	"strings"
 	"sync"
 
+	"golang.org/x/xerrors"
 	_ "modernc.org/ql/driver"
 )
 
@@ -280,7 +280,7 @@ func (conn *csvConn) Query(query string, args []driver.Value) (driver.Rows, erro
 
 func (conn *csvConn) Commit() error {
 	if conn.tx == nil {
-		return fmt.Errorf("csvdriver: commit while not in transaction")
+		return xerrors.Errorf("csvdriver: commit while not in transaction")
 	}
 	err := conn.tx.Commit()
 	conn.tx = nil
@@ -289,7 +289,7 @@ func (conn *csvConn) Commit() error {
 
 func (conn *csvConn) Rollback() error {
 	if conn.tx == nil {
-		return fmt.Errorf("csvdriver: rollback while not in transaction")
+		return xerrors.Errorf("csvdriver: rollback while not in transaction")
 	}
 	err := conn.tx.Rollback()
 	conn.tx = nil

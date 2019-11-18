@@ -6,6 +6,8 @@ package rootio
 
 import (
 	"reflect"
+
+	"golang.org/x/xerrors"
 )
 
 type th1 struct {
@@ -286,7 +288,7 @@ func (h *th2) UnmarshalROOT(r *RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion()
 	h.rvers = vers
 	if vers < 3 {
-		return errorf("rootio: TH2 version too old (%d<3)", vers)
+		return xerrors.Errorf("rootio: TH2 version too old (%d<3)", vers)
 	}
 
 	if err := h.th1.UnmarshalROOT(r); err != nil {

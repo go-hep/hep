@@ -11,6 +11,7 @@ import (
 
 	"go-hep.org/x/hep/fmom"
 	"go-hep.org/x/hep/fwk"
+	"golang.org/x/xerrors"
 )
 
 type Propagator struct {
@@ -34,11 +35,11 @@ func (tsk *Propagator) Configure(ctx fwk.Context) error {
 
 	tsk.radius2 = tsk.radius * tsk.radius
 	if tsk.radius < 1.0e-2 {
-		return fwk.Errorf("%s: too small radius value (%v)", tsk.Name(), tsk.radius)
+		return xerrors.Errorf("%s: too small radius value (%v)", tsk.Name(), tsk.radius)
 	}
 
 	if tsk.halflen < 1.0e-2 {
-		return fwk.Errorf("%s: too small 1/2-length value (%v)", tsk.Name(), tsk.halflen)
+		return xerrors.Errorf("%s: too small 1/2-length value (%v)", tsk.Name(), tsk.halflen)
 	}
 
 	err = tsk.DeclInPort(tsk.input, reflect.TypeOf([]Candidate{}))

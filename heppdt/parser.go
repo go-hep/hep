@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"golang.org/x/xerrors"
 )
 
 // parse fills a Table from the content of r
@@ -53,12 +55,12 @@ func parse(r io.Reader, table *Table) error {
 				}
 			}
 			//fmt.Printf("** error: line %d (%d): %v\n", lineno, len(tokens), stoks)
-			return fmt.Errorf("heppdt: malformed line:%d: %v", lineno, string(bline))
+			return xerrors.Errorf("heppdt: malformed line:%d: %v", lineno, string(bline))
 		}
 		var id int64
 		id, err = strconv.ParseInt(tokens[0], 10, 64)
 		if err != nil {
-			return fmt.Errorf("heppdt: line:%d: %v", lineno, err)
+			return xerrors.Errorf("heppdt: line:%d: %w", lineno, err)
 		}
 		pid := PID(id)
 
@@ -67,7 +69,7 @@ func parse(r io.Reader, table *Table) error {
 		var icharge int64
 		icharge, err = strconv.ParseInt(tokens[2], 10, 64)
 		if err != nil {
-			return fmt.Errorf("heppdt: line:%d: %v", lineno, err)
+			return xerrors.Errorf("heppdt: line:%d: %w", lineno, err)
 		}
 		var charge float64
 		// allow for Q-balls
@@ -82,19 +84,19 @@ func parse(r io.Reader, table *Table) error {
 		var mass float64
 		mass, err = strconv.ParseFloat(tokens[3], 64)
 		if err != nil {
-			return fmt.Errorf("heppdt: line:%d: %v", lineno, err)
+			return xerrors.Errorf("heppdt: line:%d: %w", lineno, err)
 		}
 
 		var totwidth float64
 		totwidth, err = strconv.ParseFloat(tokens[4], 64)
 		if err != nil {
-			return fmt.Errorf("heppdt: line:%d: %v", lineno, err)
+			return xerrors.Errorf("heppdt: line:%d: %w", lineno, err)
 		}
 
 		var lifetime float64
 		lifetime, err = strconv.ParseFloat(tokens[5], 64)
 		if err != nil {
-			return fmt.Errorf("heppdt: line:%d: %v", lineno, err)
+			return xerrors.Errorf("heppdt: line:%d: %w", lineno, err)
 		}
 
 		res := Resonance{

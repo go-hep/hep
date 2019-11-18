@@ -13,17 +13,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/internal/rcompress"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rcont"
 	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/root"
+	"golang.org/x/xerrors"
 )
 
 var (
-	ErrReadOnly = errors.New("riofs: file read-only")
+	ErrReadOnly = xerrors.New("riofs: file read-only")
 )
 
 type Reader interface {
@@ -127,7 +127,7 @@ type File struct {
 func Open(path string) (*File, error) {
 	fd, err := openFile(path)
 	if err != nil {
-		return nil, errors.Errorf("riofs: unable to open %q (%q)", path, err.Error())
+		return nil, xerrors.Errorf("riofs: unable to open %q: %w", path, err)
 	}
 
 	f := &File{
@@ -140,7 +140,7 @@ func Open(path string) (*File, error) {
 
 	err = f.readHeader()
 	if err != nil {
-		return nil, errors.Errorf("riofs: failed to read header %q: %v", path, err)
+		return nil, xerrors.Errorf("riofs: failed to read header %q: %w", path, err)
 	}
 
 	return f, nil
@@ -157,7 +157,7 @@ func NewReader(r Reader) (*File, error) {
 
 	err := f.readHeader()
 	if err != nil {
-		return nil, errors.Errorf("riofs: failed to read header: %v", err)
+		return nil, xerrors.Errorf("riofs: failed to read header: %w", err)
 	}
 	f.id = f.dir.Name()
 
@@ -168,7 +168,7 @@ func NewReader(r Reader) (*File, error) {
 func Create(name string, opts ...FileOption) (*File, error) {
 	fd, err := os.Create(name)
 	if err != nil {
-		return nil, errors.Errorf("riofs: unable to create %q (%q)", name, err.Error())
+		return nil, xerrors.Errorf("riofs: unable to create %q: %w", name, err)
 	}
 
 	f := &File{
@@ -196,7 +196,7 @@ func Create(name string, opts ...FileOption) (*File, error) {
 		}
 		err := opt(f)
 		if err != nil {
-			return nil, errors.Wrapf(err, "riofs: could not apply option to ROOT file")
+			return nil, xerrors.Errorf("riofs: could not apply option to ROOT file: %w", err)
 		}
 	}
 
@@ -214,7 +214,7 @@ func Create(name string, opts ...FileOption) (*File, error) {
 	if err != nil {
 		_ = fd.Close()
 		_ = os.RemoveAll(name)
-		return nil, errors.Errorf("riofs: failed to write header %q: %v", name, err)
+		return nil, xerrors.Errorf("riofs: failed to write header %q: %w", name, err)
 	}
 
 	buf := rbytes.NewWBuffer(make([]byte, objlen), nil, 0, f)
@@ -223,13 +223,13 @@ func Create(name string, opts ...FileOption) (*File, error) {
 
 	_, err = f.dir.MarshalROOT(buf)
 	if err != nil {
-		return nil, errors.Wrapf(err, "riofs: failed to write header")
+		return nil, xerrors.Errorf("riofs: failed to write header: %w", err)
 	}
 	key.buf = buf.Bytes()
 
 	_, err = key.writeFile(f)
 	if err != nil {
-		return nil, errors.Wrapf(err, "riofs: failed to write key header")
+		return nil, xerrors.Errorf("riofs: failed to write key header: %w", err)
 	}
 
 	return f, nil
@@ -238,15 +238,15 @@ func Create(name string, opts ...FileOption) (*File, error) {
 func (f *File) setEnd(pos int64) error {
 	f.end = pos
 	if f.spans.Len() == 0 {
-		return errors.Errorf("riofs: empty free segment list")
+		return xerrors.Errorf("riofs: empty free segment list")
 	}
 	blk := f.spans.last()
 	if blk == nil {
-		return errors.Errorf("riofs: last free segment is nil")
+		return xerrors.Errorf("riofs: last free segment is nil")
 	}
 
 	if blk.last != kStartBigFile {
-		return errors.Errorf("riofs: last free segment is not the file ending")
+		return xerrors.Errorf("riofs: last free segment is not the file ending")
 	}
 
 	blk.first = pos
@@ -265,7 +265,7 @@ func (f *File) Stat() (os.FileInfo, error) {
 			return st.Stat()
 		}
 	}
-	return nil, errors.Errorf("riofs: underlying file w/o os.FileInfo")
+	return nil, xerrors.Errorf("riofs: underlying file w/o os.FileInfo")
 }
 
 // Read implements io.Reader
@@ -307,9 +307,9 @@ func (f *File) readHeader() error {
 	var magic [4]byte
 	if _, err := io.ReadFull(r, magic[:]); err != nil || string(magic[:]) != "root" {
 		if err != nil {
-			return errors.Errorf("riofs: failed to read ROOT file magic header: %v", err)
+			return xerrors.Errorf("riofs: failed to read ROOT file magic header: %w", err)
 		}
-		return errors.Errorf("riofs: %q is not a root file", f.id)
+		return xerrors.Errorf("riofs: %q is not a root file", f.id)
 	}
 
 	f.version = r.ReadI32()
@@ -339,7 +339,7 @@ func (f *File) readHeader() error {
 
 	if _, err := io.ReadFull(r, f.uuid[:]); err != nil || r.Err() != nil {
 		if err != nil {
-			return errors.Errorf("riofs: failed to read ROOT's UUID file: %v", err)
+			return xerrors.Errorf("riofs: failed to read ROOT's UUID file: %w", err)
 		}
 		return r.Err()
 	}
@@ -348,26 +348,26 @@ func (f *File) readHeader() error {
 
 	err = f.dir.readDirInfo()
 	if err != nil {
-		return errors.Errorf("riofs: failed to read ROOT directory infos: %v", err)
+		return xerrors.Errorf("riofs: failed to read ROOT directory infos: %w", err)
 	}
 
 	if f.seekfree > 0 {
 		err = f.readFreeSegments()
 		if err != nil {
-			return errors.Wrapf(err, "riofs: failed to read ROOT file free segments")
+			return xerrors.Errorf("riofs: failed to read ROOT file free segments: %w", err)
 		}
 	}
 
 	if f.seekinfo > 0 {
 		err = f.readStreamerInfo()
 		if err != nil {
-			return errors.Errorf("riofs: failed to read ROOT streamer infos: %v", err)
+			return xerrors.Errorf("riofs: failed to read ROOT streamer infos: %w", err)
 		}
 	}
 
 	err = f.dir.readKeys()
 	if err != nil {
-		return errors.Errorf("riofs: failed to read ROOT file keys: %v", err)
+		return xerrors.Errorf("riofs: failed to read ROOT file keys: %w", err)
 	}
 
 	return nil
@@ -416,13 +416,13 @@ func (f *File) writeHeader() error {
 
 	_, err = f.uuid.MarshalROOT(buf)
 	if err != nil {
-		return errors.Wrapf(err, "riofs: could not write UUID's file header")
+		return xerrors.Errorf("riofs: could not write UUID's file header: %w", err)
 	}
 
 	_, _ = f.w.WriteAt(make([]byte, f.begin), 0)
 	_, err = f.w.WriteAt(buf.Bytes(), 0)
 	if err != nil {
-		return errors.Wrapf(err, "riofs: could not write file header")
+		return xerrors.Errorf("riofs: could not write file header: %w", err)
 	}
 
 	if w, ok := f.w.(syncer); ok {
@@ -495,7 +495,7 @@ func (f *File) Class() string {
 // readStreamerInfo reads the list of StreamerInfo from this file
 func (f *File) readStreamerInfo() error {
 	if f.seekinfo <= 0 || f.seekinfo >= f.end {
-		return errors.Errorf("riofs: invalid pointer to StreamerInfo (pos=%v end=%v)", f.seekinfo, f.end)
+		return xerrors.Errorf("riofs: invalid pointer to StreamerInfo (pos=%v end=%v)", f.seekinfo, f.end)
 
 	}
 	buf := make([]byte, int(f.nbytesinfo))
@@ -504,7 +504,7 @@ func (f *File) readStreamerInfo() error {
 		return err
 	}
 	if nbytes != int(f.nbytesinfo) {
-		return errors.Errorf("riofs: requested [%v] bytes. read [%v] bytes from file", f.nbytesinfo, nbytes)
+		return xerrors.Errorf("riofs: requested [%v] bytes. read [%v] bytes from file", f.nbytesinfo, nbytes)
 	}
 
 	err = f.siKey.UnmarshalROOT(rbytes.NewRBuffer(buf, nil, 0, nil))
@@ -540,7 +540,7 @@ func (f *File) writeStreamerInfo() error {
 
 	err = f.findDepStreamers()
 	if err != nil {
-		return errors.Wrap(err, "riofs: could not find dependent streamers")
+		return xerrors.Errorf("riofs: could not find dependent streamers: %w", err)
 	}
 
 	for _, si := range f.sinfos {
@@ -560,19 +560,19 @@ func (f *File) writeStreamerInfo() error {
 	buf := rbytes.NewWBuffer(nil, nil, offset, f)
 	_, err = sinfos.MarshalROOT(buf)
 	if err != nil {
-		return errors.Wrapf(err, "riofs: could not write StreamerInfo list")
+		return xerrors.Errorf("riofs: could not write StreamerInfo list: %w", err)
 	}
 
 	key, err = newKeyFromBuf(&f.dir, "StreamerInfo", sinfos.Title(), sinfos.Class(), 1, buf.Bytes(), f)
 	if err != nil {
-		return errors.Wrapf(err, "riofs: could not create StreamerInfo key")
+		return xerrors.Errorf("riofs: could not create StreamerInfo key: %w", err)
 	}
 	f.seekinfo = key.seekkey
 	f.nbytesinfo = key.nbytes
 
 	_, err = key.writeFile(f)
 	if err != nil {
-		return errors.Wrapf(err, "riofs: could not write StreamerInfo list key")
+		return xerrors.Errorf("riofs: could not write StreamerInfo list key: %w", err)
 	}
 
 	return nil
@@ -608,7 +608,7 @@ func (f *File) findDepStreamers() error {
 			return nil
 		})
 		if err != nil {
-			return errors.Wrapf(err, "riofs: could not visit all dependent streamers for %#v", si)
+			return xerrors.Errorf("riofs: could not visit all dependent streamers for %#v: %w", si, err)
 		}
 	}
 
@@ -618,7 +618,7 @@ func (f *File) findDepStreamers() error {
 		}
 		sub, err := rdict.StreamerInfos.StreamerInfo(dep.name, dep.vers)
 		if err != nil {
-			return errors.Wrapf(err, "riofs: could not find streamer for %q and version=%d", dep.name, dep.vers)
+			return xerrors.Errorf("riofs: could not find streamer for %q and version=%d: %w", dep.name, dep.vers, err)
 		}
 		f.addStreamer(sub)
 	}
@@ -663,7 +663,7 @@ func (f *File) readFreeSegments() error {
 		return err
 	}
 	if nbytes != len(buf) {
-		return errors.Errorf("riofs: requested [%v] bytes, read [%v] bytes from file", f.nbytesfree, nbytes)
+		return xerrors.Errorf("riofs: requested [%v] bytes, read [%v] bytes from file", f.nbytesfree, nbytes)
 	}
 
 	var key = Key{f: f}
@@ -674,7 +674,7 @@ func (f *File) readFreeSegments() error {
 	}
 	buf, err = key.Bytes()
 	if err != nil {
-		return errors.Wrapf(err, "riofs: could not read key payload")
+		return xerrors.Errorf("riofs: could not read key payload: %w", err)
 	}
 	rbuf := rbytes.NewRBuffer(buf, nil, 0, nil)
 	for rbuf.Len() > 0 {
@@ -733,7 +733,7 @@ func (f *File) writeFreeSegments() error {
 	for _, span := range f.spans {
 		_, err := span.MarshalROOT(buf)
 		if err != nil {
-			return errors.Wrapf(err, "riofs: could not marshal free-block")
+			return xerrors.Errorf("riofs: could not marshal free-block: %w", err)
 		}
 	}
 	if abytes := buf.Pos(); abytes != int64(nbytes) {
@@ -753,7 +753,7 @@ func (f *File) writeFreeSegments() error {
 	key.buf = buf.Bytes()
 	_, err = key.writeFile(f)
 	if err != nil {
-		return errors.Wrapf(err, "riofs: could not write free-block list")
+		return xerrors.Errorf("riofs: could not write free-block list: %w", err)
 	}
 	return nil
 }
@@ -767,7 +767,7 @@ func (f *File) StreamerInfos() []rbytes.StreamerInfo {
 // If version is negative, the latest version should be returned.
 func (f *File) StreamerInfo(name string, version int) (rbytes.StreamerInfo, error) {
 	if len(f.sinfos) == 0 {
-		return nil, errors.Errorf("riofs: no streamer for %q (no streamerinfo list)", name)
+		return nil, xerrors.Errorf("riofs: no streamer for %q (no streamerinfo list)", name)
 	}
 
 	for _, si := range f.sinfos {
@@ -797,7 +797,7 @@ func (f *File) StreamerInfo(name string, version int) (rbytes.StreamerInfo, erro
 		}
 	}
 
-	return nil, errors.Errorf("riofs: no streamer for %q", name)
+	return nil, xerrors.Errorf("riofs: no streamer for %q", name)
 }
 
 func (f *File) addStreamer(streamer rbytes.StreamerInfo) {
@@ -829,7 +829,7 @@ func (f *File) Get(namecycle string) (root.Object, error) {
 // Put puts the object v under the key with the given name.
 func (f *File) Put(name string, v root.Object) error {
 	if f.w == nil {
-		return errors.Wrapf(ErrReadOnly, "could not put %q into file %q", name, f.Name())
+		return xerrors.Errorf("could not put %q into file %q: %w", name, f.Name(), ErrReadOnly)
 	}
 	return f.dir.Put(name, v)
 }
@@ -837,7 +837,7 @@ func (f *File) Put(name string, v root.Object) error {
 // Mkdir creates a new subdirectory
 func (f *File) Mkdir(name string) (Directory, error) {
 	if f.w == nil {
-		return nil, errors.Wrapf(ErrReadOnly, "could not mkdir %q in file %q", name, f.Name())
+		return nil, xerrors.Errorf("could not mkdir %q in file %q: %w", name, f.Name(), ErrReadOnly)
 	}
 	return f.dir.Mkdir(name)
 }
@@ -868,11 +868,11 @@ func (f *File) SegmentMap(w io.Writer) (err error) {
 			// ok
 		case io.EOF:
 			if n <= 0 {
-				return errors.Wrapf(err, "could not buffer at position %d", idcur)
+				return xerrors.Errorf("could not read buffer at position %d: %w", idcur, err)
 			}
 			err = nil
 		default:
-			return errors.Wrapf(err, "could not buffer at position %d", idcur)
+			return xerrors.Errorf("could not read buffer at position %d: %w", idcur, err)
 		}
 
 		var (
@@ -893,7 +893,7 @@ func (f *File) SegmentMap(w io.Writer) (err error) {
 		if r.Err() != nil || k.nbytes == 0 {
 			class = "=== [ERR] ==="
 			fmt.Fprintf(w, "%s  At:%-*d  N=%-8d  %-14s\n", strings.Repeat("*", 15), ndigits+1, idcur, k.nbytes, class)
-			return errors.Errorf("invalid key (nbytes=%d, err=%v)", k.nbytes, err)
+			return xerrors.Errorf("invalid key (nbytes=%d): %w)", k.nbytes, err)
 		}
 		if k.nbytes < 0 {
 			class = "=== [GAP] ==="

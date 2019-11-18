@@ -12,10 +12,10 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/pkg/errors"
 	"github.com/xwb1989/sqlparser"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/rtree"
+	"golang.org/x/xerrors"
 )
 
 const driverName = "root"
@@ -59,7 +59,7 @@ func (drv *rootDriver) open(fname string) (driver.Conn, error) {
 	if conn == nil {
 		f, err := riofs.Open(fname)
 		if err != nil {
-			return nil, errors.Wrap(err, "rsqldriver: could not open file")
+			return nil, xerrors.Errorf("rsqldriver: could not open file: %w", err)
 		}
 
 		conn = &driverConn{
@@ -159,7 +159,7 @@ func (conn *driverConn) Close() error {
 	for s := range conn.stop {
 		err := s.Close()
 		if err != nil {
-			return errors.Wrapf(err, "rsqldrv: could not close statement %v", s)
+			return xerrors.Errorf("rsqldrv: could not close statement %v: %w", s, err)
 		}
 	}
 
@@ -265,15 +265,15 @@ func newDriverRows(conn *driverConn, stmt *sqlparser.Select, args []driver.Value
 			case sqlparser.TableName:
 				name = expr.Name.CompliantName()
 			default:
-				panic(errors.Errorf("unknown FROM expression type: %#v", expr))
+				panic(xerrors.Errorf("unknown FROM expression type: %#v", expr))
 			}
 
 		default:
-			panic(errors.Errorf("unknown table expression: %#v", from))
+			panic(xerrors.Errorf("unknown table expression: %#v", from))
 		}
 
 	default:
-		return nil, errors.Errorf("rsqldrv: invalid number of tables (got=%d, want=1)", len(stmt.From))
+		return nil, xerrors.Errorf("rsqldrv: invalid number of tables (got=%d, want=1)", len(stmt.From))
 	}
 
 	obj, err := riofs.Dir(f).Get(name)
@@ -283,14 +283,14 @@ func newDriverRows(conn *driverConn, stmt *sqlparser.Select, args []driver.Value
 
 	tree, ok := obj.(rtree.Tree)
 	if !ok {
-		return nil, errors.Errorf("rsqldrv: object %q is not a Tree", name)
+		return nil, xerrors.Errorf("rsqldrv: object %q is not a Tree", name)
 	}
 
 	rows := &driverRows{conn: conn, args: args}
 
 	rows.cols, err = rows.extractColsFromSelect(tree, stmt, args)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not extract columns")
+		return nil, xerrors.Errorf("could not extract columns: %w", err)
 	}
 	rows.types = make([]colDescr, len(rows.cols))
 	for i, name := range rows.cols {
@@ -309,7 +309,7 @@ func newDriverRows(conn *driverConn, stmt *sqlparser.Select, args []driver.Value
 
 	vars, err := rows.extractDepsFromSelect(tree, stmt, args)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not extract scan-vars")
+		return nil, xerrors.Errorf("could not extract scan-vars: %w", err)
 	}
 	rows.vars = varsFrom(vars)
 	for _, v := range vars {
@@ -325,7 +325,7 @@ func newDriverRows(conn *driverConn, stmt *sqlparser.Select, args []driver.Value
 	case *sqlparser.AliasedExpr:
 		rows.eval, err = newExprFrom(expr.Expr, args)
 		if err != nil {
-			return nil, errors.Wrap(err, "could not generate row expression")
+			return nil, xerrors.Errorf("could not generate row expression: %w", err)
 		}
 	case *sqlparser.StarExpr:
 		tuple := make(sqlparser.ValTuple, len(rows.cols))
@@ -334,7 +334,7 @@ func newDriverRows(conn *driverConn, stmt *sqlparser.Select, args []driver.Value
 		}
 		rows.eval, err = newExprFrom(tuple, args)
 		if err != nil {
-			return nil, errors.Wrap(err, "could not generate row expression from 'select *'")
+			return nil, xerrors.Errorf("could not generate row expression from 'select *': %w", err)
 		}
 	}
 
@@ -346,7 +346,7 @@ func newDriverRows(conn *driverConn, stmt *sqlparser.Select, args []driver.Value
 				return nil, err
 			}
 		default:
-			panic(errors.Errorf("unknown 'where' type: %q", stmt.Where.Type))
+			panic(xerrors.Errorf("unknown 'where' type: %q", stmt.Where.Type))
 		}
 	}
 
@@ -390,7 +390,7 @@ func (rows *driverRows) extractDepsFromSelect(tree rtree.Tree, stmt *sqlparser.S
 					markBranch(b.Name())
 				}
 			default:
-				panic(errors.Errorf("rsqldrv: star-expression with other table name not supported"))
+				panic(xerrors.Errorf("rsqldrv: star-expression with other table name not supported"))
 			}
 			return false, nil
 
@@ -421,7 +421,7 @@ func (rows *driverRows) extractDepsFromSelect(tree rtree.Tree, stmt *sqlparser.S
 	for _, name := range cols {
 		branch := tree.Branch(name)
 		if branch == nil {
-			return nil, errors.Errorf("rsqldrv: could not find branch/leaf %q in tree %q", name, tree.Name())
+			return nil, xerrors.Errorf("rsqldrv: could not find branch/leaf %q in tree %q", name, tree.Name())
 		}
 		leaf := branch.Leaves()[0] // FIXME(sbinet): handle sub-leaves
 		etyp := leaf.Type()
@@ -504,7 +504,7 @@ func (rows *driverRows) extractColsFromSelect(tree rtree.Tree, stmt *sqlparser.S
 		return branches, nil
 
 	default:
-		panic(errors.Errorf("rsqldrv: invalid select-expr type %#v", expr))
+		panic(xerrors.Errorf("rsqldrv: invalid select-expr type %#v", expr))
 	}
 }
 
@@ -589,7 +589,7 @@ func (r *driverRows) Next(dest []driver.Value) error {
 	vs, err := r.eval.eval(ectx, vctx)
 	// log.Printf("row.eval: v=%#v, err=%v n=%d", vs, err, len(dest))
 	if err != nil {
-		return errors.Wrap(err, "could not evaluate row values")
+		return xerrors.Errorf("could not evaluate row values: %w", err)
 	}
 
 	switch vs := vs.(type) {
@@ -637,7 +637,7 @@ func newExprFrom(expr sqlparser.Expr, args []driver.Value) (expression, error) {
 	case *sqlparser.ComparisonExpr:
 		op := operatorFrom(expr.Operator)
 		if op == opInvalid {
-			return nil, errors.Errorf("rsqldrv: invalid comparison operator %q", expr.Operator)
+			return nil, xerrors.Errorf("rsqldrv: invalid comparison operator %q", expr.Operator)
 		}
 
 		l, err := newExprFrom(expr.Left, args)
@@ -698,7 +698,7 @@ func newExprFrom(expr sqlparser.Expr, args []driver.Value) (expression, error) {
 		}
 		op := operatorFrom(expr.Operator)
 		if op == opInvalid {
-			return nil, errors.Errorf("rsqldrv: invalid binary-expression operator %q", expr.Operator)
+			return nil, xerrors.Errorf("rsqldrv: invalid binary-expression operator %q", expr.Operator)
 		}
 		return newBinExpr(expr, op, l, r)
 
@@ -713,7 +713,7 @@ func newExprFrom(expr sqlparser.Expr, args []driver.Value) (expression, error) {
 		}
 		return &tupleExpr{expr: expr, exprs: vs}, nil
 	}
-	return nil, errors.Errorf("rsqldrv: invalid filter expression %#v %T", expr, expr)
+	return nil, xerrors.Errorf("rsqldrv: invalid filter expression %#v %T", expr, expr)
 }
 
 var (

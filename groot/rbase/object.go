@@ -7,11 +7,11 @@ package rbase
 import (
 	"reflect"
 
-	"github.com/pkg/errors"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
+	"golang.org/x/xerrors"
 )
 
 type Object struct {
@@ -55,7 +55,7 @@ func (obj *Object) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteU32(obj.Bits)
 	if obj.Bits&kIsReferenced != 0 {
 		w.WriteU16(0) // FIXME(sbinet): implement referenced objects.
-		panic(errors.Errorf("rbase: writing referenced objects are not supported"))
+		panic(xerrors.Errorf("rbase: writing referenced objects are not supported"))
 	}
 
 	return int(w.Pos() - n), w.Err()

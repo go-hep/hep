@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"reflect"
 
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 // Record manages and describes blocks of data
@@ -51,7 +51,7 @@ func newRecord(name string, options Options) *Record {
 func (rec *Record) Connect(name string, ptr interface{}) error {
 	_, dup := rec.bmap[name]
 	if dup {
-		return errors.Errorf("rio: block [%s] already connected to record [%s]", name, rec.Name())
+		return xerrors.Errorf("rio: block [%s] already connected to record [%s]", name, rec.Name())
 	}
 
 	version := Version(0)
@@ -90,7 +90,7 @@ func (rec *Record) Write() error {
 		block := &rec.blocks[i]
 		err = block.raw.RioMarshal(xbuf)
 		if err != nil {
-			return errors.Errorf("rio: error writing block #%d (%s): %v", i, block.Name(), err)
+			return xerrors.Errorf("rio: error writing block #%d (%s): %w", i, block.Name(), err)
 		}
 	}
 
@@ -116,11 +116,11 @@ func (rec *Record) Write() error {
 		}
 		_, err = io.CopyBuffer(rec.cw, xbuf, make([]byte, 16*1024*1024))
 		if err != nil {
-			return errors.Errorf("rio: error compressing blocks: %v", err)
+			return xerrors.Errorf("rio: error compressing blocks: %w", err)
 		}
 		err = rec.cw.Flush()
 		if err != nil {
-			return errors.Errorf("rio: error compressing blocks: %v", err)
+			return xerrors.Errorf("rio: error compressing blocks: %w", err)
 		}
 
 	default:
@@ -225,7 +225,7 @@ func (rec *Record) readBlocks(r io.Reader) error {
 	}
 
 	if lr.N > 0 {
-		return errors.Errorf("rio: record read too few bytes (want=%d. got=%d)", clen, clen-lr.N)
+		return xerrors.Errorf("rio: record read too few bytes (want=%d. got=%d)", clen, clen-lr.N)
 	}
 	return err
 }

@@ -6,6 +6,8 @@ package fastjet
 
 import (
 	"fmt"
+
+	"golang.org/x/xerrors"
 )
 
 // JetDefinition contains a full specification of how to carry out jet clustering.
@@ -83,7 +85,7 @@ func (def JetDefinition) Description() string {
 		return "uninitialised JetDefinition"
 
 	default:
-		panic(fmt.Errorf("fastjet.Description: invalid jet algorithm (%d)", int(def.alg)))
+		panic(xerrors.Errorf("fastjet.Description: invalid jet algorithm (%d)", int(def.alg)))
 	}
 }
 

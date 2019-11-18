@@ -17,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -106,7 +106,7 @@ func pkgList() ([]string, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not get package list")
+		return nil, xerrors.Errorf("could not get package list: %w", err)
 	}
 
 	var pkgs []string

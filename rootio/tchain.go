@@ -4,7 +4,9 @@
 
 package rootio
 
-import "github.com/pkg/errors"
+import (
+	"golang.org/x/xerrors"
+)
 
 type tchain struct {
 	trees []Tree
@@ -81,7 +83,7 @@ func ChainOf(name string, files ...string) (Tree, func() error, error) {
 		t, ok := obj.(Tree)
 		if !ok {
 			closef(fs)
-			return nil, nil, errors.Errorf("rootio: object %q in file %q is not a Tree", name, n)
+			return nil, nil, xerrors.Errorf("rootio: object %q in file %q is not a Tree", name, n)
 		}
 
 		trees[i] = t

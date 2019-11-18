@@ -20,7 +20,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"go-hep.org/x/hep/fwk"
+	"golang.org/x/xerrors"
 )
 
 type file struct {
@@ -65,17 +65,17 @@ options:
 	for _, fname := range fnames {
 		fi, err := os.Stat(fname)
 		if err != nil {
-			return nil, fwk.Error(err)
+			return nil, xerrors.Errorf("builder: could not stat %q: %w", fname, err)
 		}
 		fm := fi.Mode()
 		if fm.IsRegular() {
 			src, err := ioutil.ReadFile(fname)
 			if err != nil {
-				return nil, fwk.Error(err)
+				return nil, xerrors.Errorf("builder: could not read %q: %w", fname, err)
 			}
 			f, err := parser.ParseFile(b.fset, fname, src, parser.ParseComments)
 			if err != nil {
-				return nil, fwk.Error(err)
+				return nil, xerrors.Errorf("builder: could not parse file %q: %w", fname, err)
 			}
 			b.files[fname] = &file{
 				app:  b,
@@ -86,7 +86,7 @@ options:
 			}
 		}
 		if fm.IsDir() {
-			return nil, fwk.Errorf("directories not (yet) handled (got=%q)", fname)
+			return nil, xerrors.Errorf("directories not (yet) handled (got=%q)", fname)
 		}
 	}
 	return b, err
@@ -99,7 +99,7 @@ func (b *Builder) Build() error {
 	if b.Name == "" {
 		pwd, err := os.Getwd()
 		if err != nil {
-			return fwk.Error(err)
+			return xerrors.Errorf("builder: could not fetch current work directory: %w", err)
 		}
 		b.Name = filepath.Base(pwd)
 	}
@@ -111,7 +111,7 @@ func (b *Builder) Build() error {
 
 	// check we build a 'main' package
 	if !b.isMain() {
-		return fwk.Errorf("not a 'main' package")
+		return xerrors.Errorf("not a 'main' package")
 	}
 
 	err = b.scanSetupFuncs()
@@ -120,7 +120,7 @@ func (b *Builder) Build() error {
 	}
 
 	if len(b.funcs) <= 0 {
-		return fwk.Errorf("no setup function found")
+		return xerrors.Errorf("no setup function found")
 	}
 
 	err = b.genSources()
@@ -245,7 +245,7 @@ func (b *Builder) genSources() error {
 	var err error
 	tmpdir, err := ioutil.TempDir("", "fwk-builder-")
 	if err != nil {
-		return fwk.Error(err)
+		return xerrors.Errorf("builder: could not create tmpdir: %w", err)
 	}
 	defer os.RemoveAll(tmpdir)
 	// fmt.Fprintf(os.Stderr, "tmpdir=[%s]...\n", tmpdir)
@@ -258,25 +258,25 @@ func (b *Builder) genSources() error {
 		dstname := filepath.Join(tmpdir, fname)
 		dst, err := os.Create(dstname)
 		if err != nil {
-			return fwk.Error(err)
+			return xerrors.Errorf("builder: could not create dst: %w", err)
 		}
 		defer dst.Close()
 
 		_, err = dst.Write(f.src)
 		if err != nil {
-			return fwk.Error(err)
+			return xerrors.Errorf("builder: could not write dst: %w", err)
 		}
 
 		err = dst.Close()
 		if err != nil {
-			return fwk.Error(err)
+			return xerrors.Errorf("builder: could not close dst: %w", err)
 		}
 	}
 
 	// add main.
 	f, err := os.Create(filepath.Join(tmpdir, "main.go"))
 	if err != nil {
-		return fwk.Error(err)
+		return xerrors.Errorf("builder: could not create main: %w", err)
 	}
 	defer f.Close()
 
@@ -292,7 +292,7 @@ func (b *Builder) genSources() error {
 
 	err = render(f, tmpl, data)
 	if err != nil {
-		return fwk.Error(err)
+		return xerrors.Errorf("builder: could not render: %w", err)
 	}
 
 	build := exec.Command(
@@ -303,35 +303,35 @@ func (b *Builder) genSources() error {
 	build.Dir = tmpdir
 	err = build.Run()
 	if err != nil {
-		return fwk.Error(err)
+		return xerrors.Errorf("builder: could not build %q: %w", b.Name, err)
 	}
 
 	// copy final binary.
 	{
 		src, err := os.Open(filepath.Join(tmpdir, b.Name))
 		if err != nil {
-			return fwk.Error(err)
+			return xerrors.Errorf("builder: could not open src %q: %w", filepath.Join(tmpdir, b.Name), err)
 		}
 		defer src.Close()
 		fi, err := src.Stat()
 		if err != nil {
-			return fwk.Error(err)
+			return xerrors.Errorf("builder: could not stat src %q: %w", src.Name(), err)
 		}
 
 		dst, err := os.OpenFile(b.Name, os.O_CREATE|os.O_WRONLY, fi.Mode())
 		if err != nil {
-			return fwk.Error(err)
+			return xerrors.Errorf("builder: could not open dst %q: %w", b.Name, err)
 		}
 		defer dst.Close()
 
 		_, err = io.Copy(dst, src)
 		if err != nil {
-			return fwk.Error(err)
+			return xerrors.Errorf("builder: could not copy src to dst: %w", err)
 		}
 
 		err = dst.Close()
 		if err != nil {
-			return fwk.Error(err)
+			return xerrors.Errorf("builder: could not close %q: %w", dst.Name(), err)
 		}
 	}
 

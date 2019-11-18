@@ -10,6 +10,7 @@ import (
 
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
+	"golang.org/x/xerrors"
 )
 
 type histMgr struct {
@@ -26,7 +27,7 @@ func (mgr *histMgr) find(fmgr *fileMgr, path string) (hbook.Histogram, error) {
 	var err error
 	const prefix = "/file/id/"
 	if !strings.HasPrefix(path, prefix) {
-		return nil, fmt.Errorf("invalid path [%s] (missing prefix [%s])", path, prefix)
+		return nil, xerrors.Errorf("invalid path [%s] (missing prefix [%s])", path, prefix)
 	}
 
 	var toks []string
@@ -39,14 +40,14 @@ func (mgr *histMgr) find(fmgr *fileMgr, path string) (hbook.Histogram, error) {
 	}
 
 	if len(toks) < 2 {
-		return nil, fmt.Errorf("invalid path [%s] (missing file-id and histo-name)", path)
+		return nil, xerrors.Errorf("invalid path [%s] (missing file-id and histo-name)", path)
 	}
 
 	fid := toks[0]
 
 	r, ok := fmgr.rfds[fid]
 	if !ok {
-		return nil, fmt.Errorf("unknown file-id [%s]", fid)
+		return nil, xerrors.Errorf("unknown file-id [%s]", fid)
 	}
 
 	hname := strings.Join(toks[1:], "/")
@@ -69,7 +70,7 @@ func (mgr *histMgr) find(fmgr *fileMgr, path string) (hbook.Histogram, error) {
 		return &h2, nil
 
 	default:
-		return nil, fmt.Errorf("%q not an histogram", path)
+		return nil, xerrors.Errorf("%q not an histogram", path)
 	}
 }
 
@@ -97,7 +98,7 @@ func (mgr *histMgr) plot(fmgr *fileMgr, wmgr *winMgr, hid string) error {
 		var ok bool
 		h, ok = mgr.hmap[hid]
 		if !ok {
-			return fmt.Errorf("unknown histogram [id=%s]", hid)
+			return xerrors.Errorf("unknown histogram [id=%s]", hid)
 		}
 	}
 
@@ -108,7 +109,7 @@ func (mgr *histMgr) plot(fmgr *fileMgr, wmgr *winMgr, hid string) error {
 		return mgr.plotH2D(wmgr, h)
 	}
 
-	return fmt.Errorf("unknown histogram type %T [id=%s]", h, hid)
+	return xerrors.Errorf("unknown histogram type %T [id=%s]", h, hid)
 }
 
 func (mgr *histMgr) plotH1D(wmgr *winMgr, h *hbook.H1D) error {
