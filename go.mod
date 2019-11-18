@@ -3,7 +3,7 @@ module go-hep.org/x/hep
 go 1.12
 
 require (
-	github.com/apache/arrow/go/arrow v0.0.0-20191014003609-07128fa41ef4
+	github.com/apache/arrow/go/arrow v0.0.0-20191118101508-cf60316a81ff
 	github.com/campoy/embedmd v1.0.0
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/frankban/quicktest v1.5.0 // indirect

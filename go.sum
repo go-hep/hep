@@ -6,8 +6,13 @@ github.com/ajstarks/svgo v0.0.0-20180226025133-644b8db467af h1:wVe6/Ea46ZMeNkQjj
 github.com/ajstarks/svgo v0.0.0-20180226025133-644b8db467af/go.mod h1:K08gAheRH3/J6wwsYMMT4xOr94bZjxIelGM0+d/wbFw=
 github.com/ajstarks/svgo v0.0.0-20190826172357-de52242f3d65 h1:kZegOsPGxfV9mM8WzfllNZOx3MvM5zItmhQlvITKVvA=
 github.com/ajstarks/svgo v0.0.0-20190826172357-de52242f3d65/go.mod h1:K08gAheRH3/J6wwsYMMT4xOr94bZjxIelGM0+d/wbFw=
+github.com/apache/arrow v0.0.0-20191118101508-cf60316a81ff h1:MGHiywDQtWXG/1g5GgwoDH/5WyaeWG5jLSq8Ozi0gCE=
 github.com/apache/arrow/go/arrow v0.0.0-20191014003609-07128fa41ef4 h1:egJVOyqaS2JhTz00S5Uf+mjUiybcnSvTGfuCMgMsquc=
 github.com/apache/arrow/go/arrow v0.0.0-20191014003609-07128fa41ef4/go.mod h1:VTxUBvSJ3s3eHAg65PNgrsn5BtqCRPdmyXh6rAfdxN0=
+github.com/apache/arrow/go/arrow v0.0.0-20191117172908-1e3545d50d4d h1:OEvNPAmcB0+HiZNoToJqrMb6hs0D35BKbm4lM8D6dsY=
+github.com/apache/arrow/go/arrow v0.0.0-20191117172908-1e3545d50d4d/go.mod h1:VTxUBvSJ3s3eHAg65PNgrsn5BtqCRPdmyXh6rAfdxN0=
+github.com/apache/arrow/go/arrow v0.0.0-20191118101508-cf60316a81ff h1:NeoWw7IXrXva2qq7q9pyGfnfrSHnpC8dzvg13vrKMKc=
+github.com/apache/arrow/go/arrow v0.0.0-20191118101508-cf60316a81ff/go.mod h1:VTxUBvSJ3s3eHAg65PNgrsn5BtqCRPdmyXh6rAfdxN0=
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/campoy/embedmd v1.0.0 h1:V4kI2qTJJLf4J29RzI/MAt2c3Bl4dQSYPuflzwFH2hY=
 github.com/campoy/embedmd v1.0.0/go.mod h1:oxyr9RCiSXg0M3VJ3ks0UGfp98BpSSGr0kpiX3MzVl8=

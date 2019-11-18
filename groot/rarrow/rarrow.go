@@ -319,6 +319,7 @@ func appendValue(bldr array.Builder, v interface{}) {
 		}
 
 	case *array.StructBuilder:
+		b.Append(true)
 		v := reflect.ValueOf(v)
 		for i := 0; i < b.NumField(); i++ {
 			f := b.FieldBuilder(i)
