@@ -127,7 +127,7 @@ func (job *Job) setProp(c fwk.Component, name string, value interface{}) {
 	err := job.app.SetProp(c, name, value)
 	if err != nil {
 		job.Errorf(
-			"could not set property name=%q value=%#v on component [%s]: %w\n",
+			"could not set property name=%q value=%#v on component [%s]: %+v\n",
 			name, value,
 			c.Name(),
 			err,
@@ -143,7 +143,7 @@ func (job *Job) Run() {
 	err := job.app.Run()
 	if err != nil {
 		job.Errorf(
-			"could not run job: %w\n",
+			"could not run job: %+v\n",
 			err,
 		)
 		panic(err)

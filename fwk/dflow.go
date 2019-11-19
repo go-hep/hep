@@ -5,11 +5,11 @@
 package fwk
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"reflect"
 	"sort"
+	"strings"
 
 	"go-hep.org/x/hep/fwk/utils/tarjan"
 	"golang.org/x/xerrors"
@@ -207,12 +207,12 @@ func (svc *dflowsvc) addInNode(tsk string, name string, t reflect.Type) error {
 					)
 				}
 			}
-			var o bytes.Buffer
+			var o strings.Builder
 			fmt.Fprintf(&o, "fwk.DeclInPort: detected type inconsistency for port [%s]:\n", name)
 			for _, c := range cont {
 				fmt.Fprintf(&o, " component=%q port=%s type=%v\n", c.task, c.port, c.typ)
 			}
-			return xerrors.Errorf(string(o.Bytes()))
+			return xerrors.Errorf("%v", o.String())
 		}
 	}
 
