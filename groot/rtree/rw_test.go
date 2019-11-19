@@ -5,6 +5,7 @@
 package rtree
 
 import (
+	"compress/flate"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -417,6 +418,7 @@ func TestTreeRW(t *testing.T) {
 
 	for _, tc := range []struct {
 		name    string
+		wopts   []WriteOption
 		nevts   int64
 		wvars   []WriteVar
 		btitles []string
@@ -689,6 +691,69 @@ func TestTreeRW(t *testing.T) {
 				return d
 			},
 		},
+		{
+			name:  "compr-no-compression",
+			wopts: []WriteOption{WithoutCompression()},
+			nevts: 500,
+			wvars: []WriteVar{
+				{Name: "i32", Value: new(int32)},
+				{Name: "f64", Value: new(float64)},
+			},
+			btitles: []string{"i32/I", "f64/D"},
+			ltitles: []string{"i32", "f64"},
+			total:   5 * (4 + 8),
+			want: func(i int) interface{} {
+				return struct {
+					I32 int32
+					F64 float64
+				}{
+					I32: int32(i),
+					F64: float64(i),
+				}
+			},
+		},
+		{
+			name:  "compr-zlib-2",
+			wopts: []WriteOption{WithZlib(1)},
+			nevts: 500,
+			wvars: []WriteVar{
+				{Name: "i32", Value: new(int32)},
+				{Name: "f64", Value: new(float64)},
+			},
+			btitles: []string{"i32/I", "f64/D"},
+			ltitles: []string{"i32", "f64"},
+			total:   5 * (4 + 8),
+			want: func(i int) interface{} {
+				return struct {
+					I32 int32
+					F64 float64
+				}{
+					I32: int32(i),
+					F64: float64(i),
+				}
+			},
+		},
+		{
+			name:  "compr-zlib-default",
+			wopts: []WriteOption{WithZlib(flate.DefaultCompression)},
+			nevts: 500,
+			wvars: []WriteVar{
+				{Name: "i32", Value: new(int32)},
+				{Name: "f64", Value: new(float64)},
+			},
+			btitles: []string{"i32/I", "f64/D"},
+			ltitles: []string{"i32", "f64"},
+			total:   5 * (4 + 8),
+			want: func(i int) interface{} {
+				return struct {
+					I32 int32
+					F64 float64
+				}{
+					I32: int32(i),
+					F64: float64(i),
+				}
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			fname := filepath.Join(tmp, tc.name+".root")
@@ -700,7 +765,7 @@ func TestTreeRW(t *testing.T) {
 				}
 				defer f.Close()
 
-				tw, err := NewWriter(f, treeName, tc.wvars)
+				tw, err := NewWriter(f, treeName, tc.wvars, tc.wopts...)
 				if err != nil {
 					t.Fatalf("could not create tree writer: %v", err)
 				}

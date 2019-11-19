@@ -492,6 +492,12 @@ func (f *File) Class() string {
 	return "TFile"
 }
 
+// Compression returns the compression-mechanism and compression-level
+// used for this file.
+func (f *File) Compression() int32 {
+	return f.compression
+}
+
 // readStreamerInfo reads the list of StreamerInfo from this file
 func (f *File) readStreamerInfo() error {
 	if f.seekinfo <= 0 || f.seekinfo >= f.end {

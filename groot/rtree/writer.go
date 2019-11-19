@@ -5,6 +5,7 @@
 package rtree
 
 import (
+	"go-hep.org/x/hep/groot/internal/rcompress"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/rvers"
@@ -26,6 +27,47 @@ type Writer interface {
 	Close() error
 }
 
+// WriteOption configures how a ROOT tree (and its branches) should be created.
+type WriteOption func(opt *wopt) error
+
+type wopt struct {
+	bufsize  int32 // buffer size for branches
+	splitlvl int32 // maximum split-level for branches
+	compress int   // compression algorithm name and compression level
+}
+
+// WithLZ4 configures a ROOT tree to use LZ4 as a compression mechanism.
+func WithLZ4(level int) WriteOption {
+	return func(opt *wopt) error {
+		opt.compress = 100*int(rcompress.LZ4) + level
+		return nil
+	}
+}
+
+// WithLZMA configures a ROOT tree to use LZMA as a compression mechanism.
+func WithLZMA(level int) WriteOption {
+	return func(opt *wopt) error {
+		opt.compress = 100*int(rcompress.LZMA) + level
+		return nil
+	}
+}
+
+// WithoutCompression configures a ROOT tree to not use any compression mechanism.
+func WithoutCompression() WriteOption {
+	return func(opt *wopt) error {
+		opt.compress = 0
+		return nil
+	}
+}
+
+// WithZlib configures a ROOT tree to use zlib as a compression mechanism.
+func WithZlib(level int) WriteOption {
+	return func(opt *wopt) error {
+		opt.compress = 100*int(rcompress.ZLIB) + level
+		return nil
+	}
+}
+
 type wtree struct {
 	ttree
 }
@@ -39,7 +81,7 @@ type WriteVar struct {
 
 // NewWriter creates a new Tree with the given name and under the given
 // directory dir, ready to be filled with data.
-func NewWriter(dir riofs.Directory, name string, vars []WriteVar) (Writer, error) {
+func NewWriter(dir riofs.Directory, name string, vars []WriteVar, opts ...WriteOption) (Writer, error) {
 	if dir == nil {
 		return nil, xerrors.Errorf("rtree: missing parent directory")
 	}
@@ -54,9 +96,21 @@ func NewWriter(dir riofs.Directory, name string, vars []WriteVar) (Writer, error
 		//typ: typ,
 	}
 
-	const compress = 1 // FIXME: make it func-opt
+	cfg := wopt{
+		bufsize:  defaultBasketSize,
+		splitlvl: defaultSplitLevel,
+		compress: int(w.ttree.f.Compression()),
+	}
+
+	for _, opt := range opts {
+		err := opt(&cfg)
+		if err != nil {
+			return nil, xerrors.Errorf("rtree: could not configure tree writer: %w", err)
+		}
+	}
+
 	for _, v := range vars {
-		b, err := newBranchFromWVars(w, v.Name, []WriteVar{v}, nil, compress)
+		b, err := newBranchFromWVars(w, v.Name, []WriteVar{v}, nil, cfg)
 		if err != nil {
 			return nil, xerrors.Errorf("rtree: could not create branch for write-var %#v: %w", v, err)
 		}

@@ -20,8 +20,9 @@ import (
 )
 
 const (
-	defaultBasketSize = 32000 // default basket size in bytes
-	defaultMaxBaskets = 10    // default number of baskets
+	defaultBasketSize = 32 * 1024 // default basket size in bytes
+	defaultSplitLevel = 99        // default split-level for branches
+	defaultMaxBaskets = 10        // default number of baskets
 )
 
 type tbranch struct {
@@ -63,14 +64,14 @@ type tbranch struct {
 	dir  riofs.Directory // directory where this branch's buffers are stored
 }
 
-func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, compress int) (*tbranch, error) {
+func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, cfg wopt) (*tbranch, error) {
 	b := &tbranch{
 		named:    *rbase.NewNamed(name, ""),
 		attfill:  *rbase.NewAttFill(),
-		compress: compress,
+		compress: cfg.compress,
 
 		iobits:      w.ttree.iobits,
-		basketSize:  defaultBasketSize,
+		basketSize:  int(cfg.bufsize),
 		maxBaskets:  defaultMaxBaskets,
 		basketBytes: make([]int32, 0, defaultMaxBaskets),
 		basketEntry: make([]int64, 1, defaultMaxBaskets),
