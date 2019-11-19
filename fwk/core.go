@@ -218,12 +218,12 @@ func (lvl Level) String() string {
 
 // MsgStream provides access to verbosity-defined formated messages, a la fmt.Printf.
 type MsgStream interface {
-	Debugf(format string, a ...interface{}) (int, error)
-	Infof(format string, a ...interface{}) (int, error)
-	Warnf(format string, a ...interface{}) (int, error)
-	Errorf(format string, a ...interface{}) (int, error)
+	Debugf(format string, a ...interface{})
+	Infof(format string, a ...interface{})
+	Warnf(format string, a ...interface{})
+	Errorf(format string, a ...interface{})
 
-	Msg(lvl Level, format string, a ...interface{}) (int, error)
+	Msg(lvl Level, format string, a ...interface{})
 }
 
 // Deleter prepares values to be GC-reclaimed

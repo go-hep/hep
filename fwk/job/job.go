@@ -158,23 +158,23 @@ func (job *Job) Stmts() []Stmt {
 }
 
 // Debugf displays a (formated) DBG message
-func (job *Job) Debugf(format string, a ...interface{}) (int, error) {
-	return job.app.Msg().Debugf(format, a...)
+func (job *Job) Debugf(format string, a ...interface{}) {
+	job.app.Msg().Debugf(format, a...)
 }
 
 // Infof displays a (formated) INFO message
-func (job *Job) Infof(format string, a ...interface{}) (int, error) {
-	return job.app.Msg().Infof(format, a...)
+func (job *Job) Infof(format string, a ...interface{}) {
+	job.app.Msg().Infof(format, a...)
 }
 
 // Warnf displays a (formated) WARN message
-func (job *Job) Warnf(format string, a ...interface{}) (int, error) {
-	return job.app.Msg().Warnf(format, a...)
+func (job *Job) Warnf(format string, a ...interface{}) {
+	job.app.Msg().Warnf(format, a...)
 }
 
 // Errorf displays a (formated) ERR message
-func (job *Job) Errorf(format string, a ...interface{}) (int, error) {
-	return job.app.Msg().Errorf(format, a...)
+func (job *Job) Errorf(format string, a ...interface{}) {
+	job.app.Msg().Errorf(format, a...)
 }
 
 /*
