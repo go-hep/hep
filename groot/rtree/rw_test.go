@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"go-hep.org/x/hep/groot/internal/rtests"
@@ -425,6 +426,8 @@ func TestTreeRW(t *testing.T) {
 		ltitles []string
 		total   int
 		want    func(i int) interface{}
+		scan    []string // list of branches to use for ROOT TTree::Scan
+		cxx     string   // expected ROOT-TTree::Scan
 	}{
 		{
 			name:    "empty",
@@ -434,6 +437,16 @@ func TestTreeRW(t *testing.T) {
 			ltitles: []string{},
 			total:   5 * (0),
 			want:    func(i int) interface{} { return nil },
+			cxx: `************
+*    Row   *
+************
+*        0 *
+*        1 *
+*        2 *
+*        3 *
+*        4 *
+************
+`,
 		},
 		{
 			name:  "simple",
@@ -454,6 +467,16 @@ func TestTreeRW(t *testing.T) {
 					F64: float64(i),
 				}
 			},
+			cxx: `************************************
+*    Row   *       i32 *       f64 *
+************************************
+*        0 *         0 *         0 *
+*        1 *         1 *         1 *
+*        2 *         2 *         2 *
+*        3 *         3 *         3 *
+*        4 *         4 *         4 *
+************************************
+`,
 		},
 		{
 			name:  "builtins",
@@ -511,6 +534,16 @@ func TestTreeRW(t *testing.T) {
 					F64: float64(i),
 				}
 			},
+			cxx: `************************************************************************************************************************************************
+*    Row   *         B *        I8 *       I16 *       I32 *       I64 *        U8 *       U16 *       U32 *       U64 *       F32 *       F64 *
+************************************************************************************************************************************************
+*        0 *         1 *         0 *         0 *         0 *         0 *         0 *         0 *         0 *         0 *         0 *         0 *
+*        1 *         0 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *
+*        2 *         1 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *
+*        3 *         0 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *
+*        4 *         1 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *
+************************************************************************************************************************************************
+`,
 		},
 		{
 			name:  "strings",
@@ -534,6 +567,16 @@ func TestTreeRW(t *testing.T) {
 					Str: fmt.Sprintf("%03d", i),
 				}
 			},
+			cxx: `************************************************
+*    Row   *       i32 *       f64 *       str *
+************************************************
+*        0 *         0 *         0 *       000 *
+*        1 *         1 *         1 *       001 *
+*        2 *         2 *         2 *       002 *
+*        3 *         3 *         3 *       003 *
+*        4 *         4 *         4 *       004 *
+************************************************
+`,
 		},
 		{
 			name:  "arrays",
@@ -591,6 +634,43 @@ func TestTreeRW(t *testing.T) {
 					ArrF64:  [5]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3), float64(i + 4)},
 				}
 			},
+			scan: []string{
+				"ArrB",
+				// "ArrI8", // FIXME(sbinet): ROOT's handling of [X]int8 is sub-par.
+				"ArrI16", "ArrI32", "ArrI64",
+				"ArrU8", "ArrU16", "ArrU32", "ArrU64",
+				"ArrF32", "ArrF64",
+			},
+			cxx: `***********************************************************************************************************************************************
+*    Row   * Instance *      ArrB *    ArrI16 *    ArrI32 *    ArrI64 *     ArrU8 *    ArrU16 *    ArrU32 *    ArrU64 *    ArrF32 *    ArrF64 *
+***********************************************************************************************************************************************
+*        0 *        0 *         1 *         0 *         0 *         0 *         0 *         0 *         0 *         0 *         0 *         0 *
+*        0 *        1 *         0 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *
+*        0 *        2 *         1 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *
+*        0 *        3 *         0 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *
+*        0 *        4 *         1 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *
+*        1 *        0 *         0 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *
+*        1 *        1 *         1 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *
+*        1 *        2 *         0 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *
+*        1 *        3 *         1 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *
+*        1 *        4 *         0 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *
+*        2 *        0 *         1 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *
+*        2 *        1 *         0 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *
+*        2 *        2 *         1 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *
+*        2 *        3 *         0 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *
+*        2 *        4 *         1 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *
+*        3 *        0 *         0 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *
+*        3 *        1 *         1 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *
+*        3 *        2 *         0 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *
+*        3 *        3 *         1 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *
+*        3 *        4 *         0 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *
+*        4 *        0 *         1 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *
+*        4 *        1 *         0 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *
+*        4 *        2 *         1 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *
+*        4 *        3 *         0 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *
+*        4 *        4 *         1 *         8 *         8 *         8 *         8 *         8 *         8 *         8 *         8 *         8 *
+***********************************************************************************************************************************************
+`,
 		},
 		{
 			name:  "slices",
@@ -657,6 +737,30 @@ func TestTreeRW(t *testing.T) {
 					SliF64:  []float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3), float64(i + 4)}[:i],
 				}
 			},
+			scan: []string{
+				"N",
+				"SliB",
+				// "SliI8[]", // ROOT's handling of []int8 is sub-par.
+				"SliI16", "SliI32", "SliI64",
+				"SliU8", "SliU16", "SliU32", "SliU64",
+				"SliF32", "SliF64",
+			},
+			cxx: `***********************************************************************************************************************************************************
+*    Row   * Instance *         N *      SliB *    SliI16 *    SliI32 *    SliI64 *     SliU8 *    SliU16 *    SliU32 *    SliU64 *    SliF32 *    SliF64 *
+***********************************************************************************************************************************************************
+*        0 *        0 *         0 *           *           *           *           *           *           *           *           *           *           *
+*        1 *        0 *         1 *         0 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *
+*        2 *        0 *         2 *         1 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *
+*        2 *        1 *         2 *         0 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *
+*        3 *        0 *         3 *         0 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *
+*        3 *        1 *         3 *         1 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *
+*        3 *        2 *         3 *         0 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *
+*        4 *        0 *         4 *         1 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *
+*        4 *        1 *         4 *         0 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *
+*        4 *        2 *         4 *         1 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *
+*        4 *        3 *         4 *         0 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *
+***********************************************************************************************************************************************************
+`,
 		},
 		{
 			name:  "slices-multi-baskets",
@@ -701,7 +805,49 @@ func TestTreeRW(t *testing.T) {
 			},
 			btitles: []string{"i32/I", "f64/D"},
 			ltitles: []string{"i32", "f64"},
-			total:   5 * (4 + 8),
+			total:   500 * (4 + 8),
+			want: func(i int) interface{} {
+				return struct {
+					I32 int32
+					F64 float64
+				}{
+					I32: int32(i),
+					F64: float64(i),
+				}
+			},
+		},
+		{
+			name:  "compr-lz4-default",
+			wopts: []WriteOption{WithLZ4(flate.DefaultCompression)},
+			nevts: 500,
+			wvars: []WriteVar{
+				{Name: "i32", Value: new(int32)},
+				{Name: "f64", Value: new(float64)},
+			},
+			btitles: []string{"i32/I", "f64/D"},
+			ltitles: []string{"i32", "f64"},
+			total:   500 * (4 + 8),
+			want: func(i int) interface{} {
+				return struct {
+					I32 int32
+					F64 float64
+				}{
+					I32: int32(i),
+					F64: float64(i),
+				}
+			},
+		},
+		{
+			name:  "compr-lzma-default",
+			wopts: []WriteOption{WithLZMA(flate.DefaultCompression)},
+			nevts: 500,
+			wvars: []WriteVar{
+				{Name: "i32", Value: new(int32)},
+				{Name: "f64", Value: new(float64)},
+			},
+			btitles: []string{"i32/I", "f64/D"},
+			ltitles: []string{"i32", "f64"},
+			total:   500 * (4 + 8),
 			want: func(i int) interface{} {
 				return struct {
 					I32 int32
@@ -714,7 +860,7 @@ func TestTreeRW(t *testing.T) {
 		},
 		{
 			name:  "compr-zlib-2",
-			wopts: []WriteOption{WithZlib(1)},
+			wopts: []WriteOption{WithZlib(2)},
 			nevts: 500,
 			wvars: []WriteVar{
 				{Name: "i32", Value: new(int32)},
@@ -722,7 +868,7 @@ func TestTreeRW(t *testing.T) {
 			},
 			btitles: []string{"i32/I", "f64/D"},
 			ltitles: []string{"i32", "f64"},
-			total:   5 * (4 + 8),
+			total:   500 * (4 + 8),
 			want: func(i int) interface{} {
 				return struct {
 					I32 int32
@@ -743,7 +889,7 @@ func TestTreeRW(t *testing.T) {
 			},
 			btitles: []string{"i32/I", "f64/D"},
 			ltitles: []string{"i32", "f64"},
-			total:   5 * (4 + 8),
+			total:   500 * (4 + 8),
 			want: func(i int) interface{} {
 				return struct {
 					I32 int32
@@ -909,6 +1055,47 @@ func TestTreeRW(t *testing.T) {
 					t.Fatalf("invalid number of events: got=%d, want=%d", got, want)
 				}
 			}()
+			if rtests.HasROOT && tc.cxx != "" {
+				code := `#include <iostream>
+#include "TFile.h"
+#include "TTree.h"
+#include "TTreePlayer.h"
+
+void scan(const char* fname, const char* tree, const char *list, const char *oname) {
+	auto f = TFile::Open(fname);
+	auto t = (TTree*)f->Get(tree);
+	if (!t) {
+		std::cerr << "could not fetch TTree [" << tree << "] from file [" << fname << "]\n";
+		exit(1);
+	}
+	auto player = dynamic_cast<TTreePlayer*>(t->GetPlayer());
+	player->SetScanRedirect(kTRUE);
+	player->SetScanFileName(oname);
+	t->SetScanField(0);
+	t->Scan(list);
+}
+`
+
+				scan := []string{"*"}
+				if len(tc.scan) != 0 {
+					scan = tc.scan
+				}
+
+				ofile := filepath.Join(tmp, tc.name+".txt")
+				out, err := rtests.RunCxxROOT("scan", []byte(code), fname, treeName, strings.Join(scan, ":"), ofile)
+				if err != nil {
+					t.Fatalf("could not run C++ ROOT: %+v\noutput:\n%s", err, out)
+				}
+
+				got, err := ioutil.ReadFile(ofile)
+				if err != nil {
+					t.Fatalf("could not read C++ ROOT scan file %q: %+v\noutput:\n%s", ofile, err, out)
+				}
+
+				if got, want := string(got), tc.cxx; got != want {
+					t.Fatalf("invalid ROOT scan:\ngot:\n%v\nwant:\n%v\noutput:\n%s", got, want, out)
+				}
+			}
 		})
 	}
 }
