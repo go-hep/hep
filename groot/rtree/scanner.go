@@ -173,6 +173,9 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 		if name == "" {
 			name = f.Name
 		}
+		if i := strings.Index(name, "["); i > 0 {
+			name = name[:i]
+		}
 		br := t.Branch(name)
 		if br == nil {
 			return nil, xerrors.Errorf("rtree: Tree %q has no branch named %q", t.Name(), name)
@@ -588,6 +591,9 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 		name := f.Tag.Get("groot")
 		if name == "" {
 			name = f.Name
+		}
+		if i := strings.Index(name, "["); i > 0 {
+			name = name[:i]
 		}
 		br := t.Branch(name)
 		if br == nil {
