@@ -8,6 +8,7 @@ package rcompress // import "go-hep.org/x/hep/groot/internal/rcompress"
 
 import (
 	"bytes"
+	"compress/flate"
 	"compress/zlib"
 	"encoding/binary"
 	"io"
@@ -39,6 +40,41 @@ var (
 	// than the input
 	errNoCompression = xerrors.Errorf("rcompress: no compression")
 )
+
+// Settings encodes the ROOT way of specifying a compression mechanism
+// and its compression level.
+type Settings struct {
+	Alg Kind
+	Lvl int
+}
+
+// DefaultSettings is the default compression algorithm and level used
+// in ROOT files and trees.
+var DefaultSettings = Settings{Alg: ZLIB, Lvl: flate.BestSpeed}
+
+func (set Settings) Compression() int32 {
+	var (
+		lvl = set.Lvl
+		alg = set.Alg
+	)
+	switch {
+	case lvl == flate.DefaultCompression:
+		switch alg {
+		case ZLIB:
+			lvl = 6
+		case LZ4:
+			lvl = 1
+		case LZMA:
+			lvl = 1
+		default:
+			panic(xerrors.Errorf("rcompress: unknown compression algorithm: %v", alg))
+		}
+	case lvl > 99:
+		lvl = 99
+	}
+	return int32(alg*100) + int32(lvl)
+
+}
 
 // Note: this contains ZL[src][dst] where src and dst are 3 bytes each.
 const HeaderSize = 9

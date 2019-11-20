@@ -33,13 +33,13 @@ type WriteOption func(opt *wopt) error
 type wopt struct {
 	bufsize  int32 // buffer size for branches
 	splitlvl int32 // maximum split-level for branches
-	compress int   // compression algorithm name and compression level
+	compress int32 // compression algorithm name and compression level
 }
 
 // WithLZ4 configures a ROOT tree to use LZ4 as a compression mechanism.
 func WithLZ4(level int) WriteOption {
 	return func(opt *wopt) error {
-		opt.compress = 100*int(rcompress.LZ4) + level
+		opt.compress = rcompress.Settings{Alg: rcompress.LZ4, Lvl: level}.Compression()
 		return nil
 	}
 }
@@ -47,7 +47,7 @@ func WithLZ4(level int) WriteOption {
 // WithLZMA configures a ROOT tree to use LZMA as a compression mechanism.
 func WithLZMA(level int) WriteOption {
 	return func(opt *wopt) error {
-		opt.compress = 100*int(rcompress.LZMA) + level
+		opt.compress = rcompress.Settings{Alg: rcompress.LZMA, Lvl: level}.Compression()
 		return nil
 	}
 }
@@ -63,7 +63,19 @@ func WithoutCompression() WriteOption {
 // WithZlib configures a ROOT tree to use zlib as a compression mechanism.
 func WithZlib(level int) WriteOption {
 	return func(opt *wopt) error {
-		opt.compress = 100*int(rcompress.ZLIB) + level
+		opt.compress = rcompress.Settings{Alg: rcompress.ZLIB, Lvl: level}.Compression()
+		return nil
+	}
+}
+
+// WithBasketSize configures a ROOT tree to use 'size' (in bytes) as a basket buffer size.
+// if size is <= 0, the default buffer size is used (DefaultBasketSize).
+func WithBasketSize(size int) WriteOption {
+	return func(opt *wopt) error {
+		if size <= 0 {
+			size = defaultBasketSize
+		}
+		opt.bufsize = int32(size)
 		return nil
 	}
 }
@@ -99,7 +111,7 @@ func NewWriter(dir riofs.Directory, name string, vars []WriteVar, opts ...WriteO
 	cfg := wopt{
 		bufsize:  defaultBasketSize,
 		splitlvl: defaultSplitLevel,
-		compress: int(w.ttree.f.Compression()),
+		compress: w.ttree.f.Compression(),
 	}
 
 	for _, opt := range opts {

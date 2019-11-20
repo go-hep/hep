@@ -5,29 +5,11 @@
 package riofs
 
 import (
-	"compress/flate"
-
 	"go-hep.org/x/hep/groot/internal/rcompress"
-	"golang.org/x/xerrors"
 )
 
 func (f *File) setCompression(alg rcompress.Kind, lvl int) {
-	switch {
-	case lvl == flate.DefaultCompression:
-		switch alg {
-		case rcompress.LZ4:
-			lvl = 1
-		case rcompress.LZMA:
-			lvl = 1
-		case rcompress.ZLIB:
-			lvl = 6
-		default:
-			panic(xerrors.Errorf("riofs: unknown compression algorithm: %v", alg))
-		}
-	case lvl > 99:
-		lvl = 99
-	}
-	f.compression = int32(alg*100) + int32(lvl)
+	f.compression = rcompress.Settings{Alg: alg, Lvl: lvl}.Compression()
 }
 
 // WithLZ4 configures a ROOT file to use LZ4 as a compression mechanism.

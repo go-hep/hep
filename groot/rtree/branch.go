@@ -68,7 +68,7 @@ func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, 
 	b := &tbranch{
 		named:    *rbase.NewNamed(name, ""),
 		attfill:  *rbase.NewAttFill(),
-		compress: cfg.compress,
+		compress: int(cfg.compress),
 
 		iobits:      w.ttree.iobits,
 		basketSize:  int(cfg.bufsize),
