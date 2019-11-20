@@ -728,7 +728,7 @@ func newValue(leaf Leaf) interface{} {
 	unsigned := leaf.IsUnsigned()
 
 	switch etype.Kind() {
-	case reflect.Interface, reflect.Map, reflect.Chan, reflect.Slice, reflect.Array:
+	case reflect.Interface, reflect.Map, reflect.Chan:
 		panic(xerrors.Errorf("rtree: type %T not supported", reflect.New(etype).Elem().Interface()))
 	case reflect.Int8:
 		if unsigned {
