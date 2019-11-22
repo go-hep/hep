@@ -275,7 +275,7 @@ func (w *wtree) loadEntry(i int64) error {
 }
 
 func fileOf(d riofs.Directory) *riofs.File {
-	const max = 1 << 32
+	const max = 1<<31 - 1
 	for i := 0; i < max; i++ {
 		p := d.Parent()
 		if p == nil {

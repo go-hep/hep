@@ -914,7 +914,7 @@ func btopOf(b Branch) Branch {
 	if b == nil {
 		return nil
 	}
-	const max = 1 << 32
+	const max = 1<<31 - 1
 	for i := 0; i < max; i++ {
 		switch bb := b.(type) {
 		case *tbranch:

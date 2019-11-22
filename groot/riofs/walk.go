@@ -213,7 +213,7 @@ func Dir(dir Directory) Directory {
 }
 
 func fileOf(d Directory) *File {
-	const max = 1 << 32
+	const max = 1<<31 - 1
 	for i := 0; i < max; i++ {
 		p := d.Parent()
 		if p == nil {
