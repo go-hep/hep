@@ -69,3 +69,30 @@ func TestRunCxxROOT(t *testing.T) {
 		t.Fatalf("invalid ROOT macro result. got=%q, want=%q", got, want)
 	}
 }
+
+func TestROOTError(t *testing.T) {
+	var err error = rtests.ROOTError{
+		Err:  xerrors.Errorf("err1"),
+		Cmd:  "root.exe",
+		Args: []string{"arg1", "arg2"},
+		Out:  []byte("some output"),
+	}
+
+	const want = `could not run 'root.exe arg1 arg2': err1
+output:
+some output`
+	if got, want := err.Error(), want; got != want {
+		t.Fatalf("invalid error:\ngot= %q\nwant=%q", got, want)
+	}
+
+	err = xerrors.Errorf("wrap: %w", err)
+	if got, want := err.Error(), "wrap: "+want; got != want {
+		t.Fatalf("invalid error:\ngot= %q\nwant=%q", got, want)
+	}
+
+	err = err.(xerrors.Wrapper).Unwrap().(xerrors.Wrapper).Unwrap()
+	if got, want := err.Error(), "err1"; got != want {
+		t.Fatalf("invalid error:\ngot= %q\nwant=%q", got, want)
+	}
+
+}
