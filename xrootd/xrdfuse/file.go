@@ -9,8 +9,8 @@ package xrdfuse // import "go-hep.org/x/hep/xrootd/xrdfuse"
 import (
 	"context"
 
-	"github.com/hanwen/go-fuse/fuse"
-	"github.com/hanwen/go-fuse/fuse/nodefs"
+	"github.com/hanwen/go-fuse/v2/fuse"
+	"github.com/hanwen/go-fuse/v2/fuse/nodefs"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"golang.org/x/xerrors"
 )

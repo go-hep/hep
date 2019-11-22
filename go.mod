@@ -14,7 +14,7 @@ require (
 	github.com/gonuts/flag v0.1.0
 	github.com/google/go-cmp v0.3.1
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf
-	github.com/hanwen/go-fuse v1.0.0
+	github.com/hanwen/go-fuse/v2 v2.0.2
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/jcmturner/gofork v1.0.0 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
@@ -32,7 +32,7 @@ require (
 	golang.org/x/mobile v0.0.0-20191002175909-6d0d39b2ca82
 	golang.org/x/mod v0.1.1-0.20191119225628-919e395dadcd // indirect
 	golang.org/x/net v0.0.0-20191011234655-491137f69257 // indirect
-	golang.org/x/sys v0.0.0-20191010194322-b09406accb47 // indirect
+	golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e // indirect
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898
 	gonum.org/v1/gonum v0.0.0-20191013192725-1459092b91f2
