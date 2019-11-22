@@ -30,10 +30,10 @@ require (
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/exp v0.0.0-20191002040644-a1355ae1e2c3
 	golang.org/x/mobile v0.0.0-20191002175909-6d0d39b2ca82
+	golang.org/x/mod v0.1.1-0.20191119225628-919e395dadcd // indirect
 	golang.org/x/net v0.0.0-20191011234655-491137f69257 // indirect
 	golang.org/x/sys v0.0.0-20191010194322-b09406accb47 // indirect
 	golang.org/x/text v0.3.2 // indirect
-	golang.org/x/tools v0.0.0-20191012152004-8de300cfc20a // indirect
 	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898
 	gonum.org/v1/gonum v0.0.0-20191013192725-1459092b91f2
 	gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e // indirect
