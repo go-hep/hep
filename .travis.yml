@@ -3,13 +3,17 @@ go_import_path: go-hep.org/x/hep
 os:
   - linux
 
+dist: bionic
+
 env:
- - TAGS="-tags=travis"
+ global:
+   - ROOT_VERSION=6.18.04
 
 cache:
  directories:
    - $HOME/.cache/go-build
    - $HOME/gopath/pkg/mod
+   - $HOME/root-${ROOT_VERSION}
 
 git:
  depth: 10
@@ -45,6 +49,8 @@ before_script:
  - sudo modprobe fuse
  - sudo chmod 666 /dev/fuse
  - sudo chown root:$USER /etc/fuse.conf
+ - go run ./ci/install-cxx-root.go -root-version=${ROOT_VERSION} -o=${HOME}
+ - source $HOME/root-${ROOT_VERSION}/bin/thisroot.sh
 
 script:
  - go get -d -t -v ./...
