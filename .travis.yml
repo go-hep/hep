@@ -51,6 +51,7 @@ before_script:
  - sudo chown root:$USER /etc/fuse.conf
  - go run ./ci/install-cxx-root.go -root-version=${ROOT_VERSION} -o=${HOME}
  - source $HOME/root-${ROOT_VERSION}/bin/thisroot.sh
+ - root.exe --version
 
 script:
  - go get -d -t -v ./...
