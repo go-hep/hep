@@ -8,14 +8,6 @@ import (
 	"gonum.org/v1/plot/plotter"
 )
 
-// NewFunction returns a Function that plots F using
-// the default line style with 50 samples.
-// NewFunction returns a Function that plots F using
-// the default line style with 50 samples.
-func NewFunction(f func(float64) float64) *plotter.Function {
-	return plotter.NewFunction(f)
-}
-
 // NewLine returns a Line that uses the default line style and
 // does not draw glyphs.
 func NewLine(xys plotter.XYer) (*plotter.Line, error) {
