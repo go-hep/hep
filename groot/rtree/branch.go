@@ -339,97 +339,99 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 	b.firstbasket = -1
 	b.nextbasket = -1
 
-	if vers < 10 {
-		panic(xerrors.Errorf("rtree: too old TBanch version (%d<10)", vers))
-	}
+	switch {
+	default:
+		panic(xerrors.Errorf("rtree: too old TBranch version (%d<10)", vers))
+	case vers > 9:
 
-	if err := b.named.UnmarshalROOT(r); err != nil {
-		return err
-	}
-
-	if err := b.attfill.UnmarshalROOT(r); err != nil {
-		return err
-	}
-
-	b.compress = int(r.ReadI32())
-	b.basketSize = int(r.ReadI32())
-	b.entryOffsetLen = int(r.ReadI32())
-	b.writeBasket = int(r.ReadI32())
-	b.entryNumber = r.ReadI64()
-	if vers >= 13 {
-		if err := b.iobits.UnmarshalROOT(r); err != nil {
+		if err := b.named.UnmarshalROOT(r); err != nil {
 			return err
 		}
-	}
-	b.offset = int(r.ReadI32())
-	b.maxBaskets = int(r.ReadI32())
-	b.splitLevel = int(r.ReadI32())
-	b.entries = r.ReadI64()
-	if vers >= 11 {
-		b.firstEntry = r.ReadI64()
-	}
-	b.totBytes = r.ReadI64()
-	b.zipBytes = r.ReadI64()
 
-	{
-		var branches rcont.ObjArray
-		if err := branches.UnmarshalROOT(r); err != nil {
+		if err := b.attfill.UnmarshalROOT(r); err != nil {
 			return err
 		}
-		b.branches = make([]Branch, branches.Last()+1)
-		for i := range b.branches {
-			br := branches.At(i).(Branch)
-			b.branches[i] = br
-		}
-	}
 
-	{
-		var leaves rcont.ObjArray
-		if err := leaves.UnmarshalROOT(r); err != nil {
-			return err
-		}
-		b.leaves = make([]Leaf, leaves.Last()+1)
-		for i := range b.leaves {
-			leaf := leaves.At(i).(Leaf)
-			leaf.setBranch(b)
-			b.leaves[i] = leaf
-		}
-	}
-	{
-		var baskets rcont.ObjArray
-		if err := baskets.UnmarshalROOT(r); err != nil {
-			return err
-		}
-		b.baskets = make([]Basket, 0, baskets.Last()+1)
-		for i := 0; i < baskets.Last()+1; i++ {
-			bkt := baskets.At(i)
-			// FIXME(sbinet) check why some are nil
-			if bkt == nil {
-				b.baskets = append(b.baskets, Basket{})
-				continue
+		b.compress = int(r.ReadI32())
+		b.basketSize = int(r.ReadI32())
+		b.entryOffsetLen = int(r.ReadI32())
+		b.writeBasket = int(r.ReadI32())
+		b.entryNumber = r.ReadI64()
+		if vers >= 13 {
+			if err := b.iobits.UnmarshalROOT(r); err != nil {
+				return err
 			}
-			bk := bkt.(*Basket)
-			b.baskets = append(b.baskets, *bk)
 		}
+		b.offset = int(r.ReadI32())
+		b.maxBaskets = int(r.ReadI32())
+		b.splitLevel = int(r.ReadI32())
+		b.entries = r.ReadI64()
+		if vers >= 11 {
+			b.firstEntry = r.ReadI64()
+		}
+		b.totBytes = r.ReadI64()
+		b.zipBytes = r.ReadI64()
+
+		{
+			var branches rcont.ObjArray
+			if err := branches.UnmarshalROOT(r); err != nil {
+				return err
+			}
+			b.branches = make([]Branch, branches.Last()+1)
+			for i := range b.branches {
+				br := branches.At(i).(Branch)
+				b.branches[i] = br
+			}
+		}
+
+		{
+			var leaves rcont.ObjArray
+			if err := leaves.UnmarshalROOT(r); err != nil {
+				return err
+			}
+			b.leaves = make([]Leaf, leaves.Last()+1)
+			for i := range b.leaves {
+				leaf := leaves.At(i).(Leaf)
+				leaf.setBranch(b)
+				b.leaves[i] = leaf
+			}
+		}
+		{
+			var baskets rcont.ObjArray
+			if err := baskets.UnmarshalROOT(r); err != nil {
+				return err
+			}
+			b.baskets = make([]Basket, 0, baskets.Last()+1)
+			for i := 0; i < baskets.Last()+1; i++ {
+				bkt := baskets.At(i)
+				// FIXME(sbinet) check why some are nil
+				if bkt == nil {
+					b.baskets = append(b.baskets, Basket{})
+					continue
+				}
+				bk := bkt.(*Basket)
+				b.baskets = append(b.baskets, *bk)
+			}
+		}
+
+		b.basketBytes = nil
+		b.basketEntry = nil
+		b.basketSeek = nil
+
+		/*isArray*/
+		_ = r.ReadI8()
+		b.basketBytes = r.ReadFastArrayI32(b.maxBaskets)[:b.writeBasket:b.writeBasket]
+
+		/*isArray*/
+		_ = r.ReadI8()
+		b.basketEntry = r.ReadFastArrayI64(b.maxBaskets)[: b.writeBasket+1 : b.writeBasket+1]
+
+		/*isArray*/
+		_ = r.ReadI8()
+		b.basketSeek = r.ReadFastArrayI64(b.maxBaskets)[:b.writeBasket:b.writeBasket]
+
+		b.fname = r.ReadString()
 	}
-
-	b.basketBytes = nil
-	b.basketEntry = nil
-	b.basketSeek = nil
-
-	/*isArray*/
-	_ = r.ReadI8()
-	b.basketBytes = r.ReadFastArrayI32(b.maxBaskets)[:b.writeBasket:b.writeBasket]
-
-	/*isArray*/
-	_ = r.ReadI8()
-	b.basketEntry = r.ReadFastArrayI64(b.maxBaskets)[: b.writeBasket+1 : b.writeBasket+1]
-
-	/*isArray*/
-	_ = r.ReadI8()
-	b.basketSeek = r.ReadFastArrayI64(b.maxBaskets)[:b.writeBasket:b.writeBasket]
-
-	b.fname = r.ReadString()
 
 	r.CheckByteCount(pos, bcnt, beg, b.Class())
 
