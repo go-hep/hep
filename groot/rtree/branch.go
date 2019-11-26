@@ -719,7 +719,7 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(b.Class())
 	b.rvers = vers
-	if vers < 8 {
+	if vers < 1 {
 		r.SetErr(xerrors.Errorf("rtree: TBranchElement version too old (%d < 8)", vers))
 		return r.Err()
 	}
@@ -729,9 +729,11 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	b.class = r.ReadString()
-	b.parent = r.ReadString()
-	b.clones = r.ReadString()
-	b.chksum = r.ReadU32()
+	if vers > 1 {
+		b.parent = r.ReadString()
+		b.clones = r.ReadString()
+		b.chksum = r.ReadU32()
+	}
 	if vers >= 10 {
 		b.clsver = r.ReadU16()
 	} else {
@@ -740,16 +742,18 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	b.id = r.ReadI32()
 	b.btype = r.ReadI32()
 	b.stype = r.ReadI32()
-	b.max = r.ReadI32()
+	if vers > 1 {
+		b.max = r.ReadI32()
 
-	bcount1 := r.ReadObjectAny()
-	if bcount1 != nil {
-		b.bcount1 = bcount1.(*tbranchElement)
-	}
+		bcount1 := r.ReadObjectAny()
+		if bcount1 != nil {
+			b.bcount1 = bcount1.(*tbranchElement)
+		}
 
-	bcount2 := r.ReadObjectAny()
-	if bcount2 != nil {
-		b.bcount2 = bcount2.(*tbranchElement)
+		bcount2 := r.ReadObjectAny()
+		if bcount2 != nil {
+			b.bcount2 = bcount2.(*tbranchElement)
+		}
 	}
 
 	r.CheckByteCount(pos, bcnt, beg, b.Class())
