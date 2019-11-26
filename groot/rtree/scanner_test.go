@@ -1364,3 +1364,62 @@ func TestInvalidScannerTypes(t *testing.T) {
 		})
 	}
 }
+
+func TestG4LikeTree(t *testing.T) {
+	t.Parallel()
+	fname := rtests.XrdRemote("testdata/g4-like.root")
+
+	f, err := riofs.Open(fname)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	defer f.Close()
+
+	obj, err := f.Get("mytree")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tree := obj.(Tree)
+
+	type EventData struct {
+		I32 int32     `groot:"i32"`
+		F64 float64   `groot:"f64"`
+		Sli []float64 `groot:"slif64"`
+	}
+
+	want := func(i int64) (data EventData) {
+		data.I32 = int32(i + 1)
+		data.F64 = float64(i + 1)
+		data.Sli = make([]float64, i)
+		for ii := range data.Sli {
+			data.Sli[ii] = float64(ii) + float64(i)
+		}
+		return data
+	}
+
+	var data EventData
+	scanVars := []ScanVar{
+		{Name: "i32", Value: &data.I32},
+		{Name: "f64", Value: &data.F64},
+		{Name: "slif64", Value: &data.Sli},
+	}
+	sc, err := NewScannerVars(tree, scanVars...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sc.Close()
+	for sc.Next() {
+		err := sc.Scan()
+		if err != nil {
+			t.Fatal(err)
+		}
+		i := sc.Entry()
+		if !reflect.DeepEqual(data, want(i)) {
+			t.Fatalf("entry[%d]:\ngot= %#v.\nwant=%#v\n", i, data, want(i))
+		}
+	}
+	if err := sc.Err(); err != nil && err != io.EOF {
+		t.Fatal(err)
+	}
+}

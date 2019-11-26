@@ -629,45 +629,73 @@ func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
 	}
 	var (
 		buf   = b.basketBuf[:int(b.basketBytes[ib])]
+		seek  = b.basketSeek[ib]
 		f     = b.tree.getFile()
 		sictx = f
 	)
-	_, err = f.ReadAt(buf, b.basketSeek[ib])
-	if err != nil {
-		return err
-	}
 
-	err = bk.UnmarshalROOT(rbytes.NewRBuffer(buf, nil, 0, sictx))
-	if err != nil {
-		return err
-	}
-	bk.key.SetFile(f)
-	b.firstEntry = b.basketEntry[ib]
+	switch {
+	case len(buf) == 0 && b.basket != nil: // FIXME(sbinet): from trial and error. check this is ok for all cases
+		bk = b.basket
+		bk.key.SetFile(f)
+		b.firstEntry = b.basketEntry[ib]
+		b.basketEntry[ib] = 0
+		b.basketEntry[ib+1] = int64(bk.nevbuf)
 
-	buf = make([]byte, int(bk.key.ObjLen()))
-	_, err = bk.key.Load(buf)
-	if err != nil {
-		return err
-	}
-	bk.rbuf = rbytes.NewRBuffer(buf, nil, uint32(bk.key.KeyLen()), sictx)
-	for _, leaf := range b.leaves {
-		err = leaf.readFromBuffer(bk.rbuf)
+		buf = make([]byte, int(bk.key.ObjLen()))
+		_, err = bk.key.Load(buf)
 		if err != nil {
 			return err
 		}
-	}
 
-	if b.entryOffsetLen > 0 {
-		last := int64(b.basket.last)
-		err = bk.rbuf.SetPos(last)
+		bk.rbuf = rbytes.NewRBuffer(buf, nil, 0, sictx)
+		for _, leaf := range b.leaves {
+			err = leaf.readFromBuffer(bk.rbuf)
+			if err != nil {
+				return err
+			}
+		}
+
+	default:
+		_, err = f.ReadAt(buf, seek)
 		if err != nil {
 			return err
 		}
-		n := bk.rbuf.ReadI32()
-		bk.offsets = bk.rbuf.ReadFastArrayI32(int(n))
-		if err := bk.rbuf.Err(); err != nil {
+
+		err = bk.UnmarshalROOT(rbytes.NewRBuffer(buf, nil, 0, sictx))
+		if err != nil {
 			return err
 		}
+		bk.key.SetFile(f)
+		b.firstEntry = b.basketEntry[ib]
+
+		buf = make([]byte, int(bk.key.ObjLen()))
+		_, err = bk.key.Load(buf)
+		if err != nil {
+			return err
+		}
+
+		bk.rbuf = rbytes.NewRBuffer(buf, nil, uint32(bk.key.KeyLen()), sictx)
+		for _, leaf := range b.leaves {
+			err = leaf.readFromBuffer(bk.rbuf)
+			if err != nil {
+				return err
+			}
+		}
+
+		if b.entryOffsetLen > 0 {
+			last := int64(b.basket.last)
+			err = bk.rbuf.SetPos(last)
+			if err != nil {
+				return err
+			}
+			n := bk.rbuf.ReadI32()
+			bk.offsets = bk.rbuf.ReadFastArrayI32(int(n))
+			if err := bk.rbuf.Err(); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	return err
