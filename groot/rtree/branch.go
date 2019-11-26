@@ -336,13 +336,13 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	b.tree = nil
 	b.basket = nil
+	b.readentry = -1
 	b.firstbasket = -1
 	b.nextbasket = -1
 
+	const minVers = 6
 	switch {
-	default:
-		panic(xerrors.Errorf("rtree: too old TBranch version (%d<10)", vers))
-	case vers > 9:
+	case vers >= 10:
 
 		if err := b.named.UnmarshalROOT(r); err != nil {
 			return err
@@ -431,6 +431,107 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 		b.basketSeek = r.ReadFastArrayI64(b.maxBaskets)[:b.writeBasket:b.writeBasket]
 
 		b.fname = r.ReadString()
+
+	case vers >= 6:
+		if err := b.named.UnmarshalROOT(r); err != nil {
+			return err
+		}
+
+		if vers > 7 {
+			if err := b.attfill.UnmarshalROOT(r); err != nil {
+				return err
+			}
+		}
+
+		b.compress = int(r.ReadI32())
+		b.basketSize = int(r.ReadI32())
+		b.entryOffsetLen = int(r.ReadI32())
+		b.writeBasket = int(r.ReadI32())
+		b.entryNumber = int64(r.ReadI32())
+		b.offset = int(r.ReadI32())
+		b.maxBaskets = int(r.ReadI32())
+		if vers > 6 {
+			b.splitLevel = int(r.ReadI32())
+		}
+		b.entries = int64(r.ReadF64())
+		b.totBytes = int64(r.ReadF64())
+		b.zipBytes = int64(r.ReadF64())
+
+		{
+			var branches rcont.ObjArray
+			if err := branches.UnmarshalROOT(r); err != nil {
+				return err
+			}
+			b.branches = make([]Branch, branches.Last()+1)
+			for i := range b.branches {
+				br := branches.At(i).(Branch)
+				b.branches[i] = br
+			}
+		}
+
+		{
+			var leaves rcont.ObjArray
+			if err := leaves.UnmarshalROOT(r); err != nil {
+				return err
+			}
+			b.leaves = make([]Leaf, leaves.Last()+1)
+			for i := range b.leaves {
+				leaf := leaves.At(i).(Leaf)
+				leaf.setBranch(b)
+				b.leaves[i] = leaf
+			}
+		}
+		{
+			var baskets rcont.ObjArray
+			if err := baskets.UnmarshalROOT(r); err != nil {
+				return err
+			}
+			b.baskets = make([]Basket, 0, baskets.Last()+1)
+			for i := 0; i < baskets.Last()+1; i++ {
+				bkt := baskets.At(i)
+				// FIXME(sbinet) check why some are nil
+				if bkt == nil {
+					b.baskets = append(b.baskets, Basket{})
+					continue
+				}
+				bk := bkt.(*Basket)
+				b.baskets = append(b.baskets, *bk)
+			}
+		}
+
+		b.basketBytes = nil
+		b.basketEntry = nil
+		b.basketSeek = nil
+
+		/*isArray*/
+		_ = r.ReadI8()
+		b.basketBytes = r.ReadFastArrayI32(b.maxBaskets)
+
+		/*isArray*/
+		_ = r.ReadI8()
+		{
+			slice := r.ReadFastArrayI32(b.maxBaskets)
+			b.basketEntry = make([]int64, len(slice))
+			for i, v := range slice {
+				b.basketEntry[i] = int64(v)
+			}
+		}
+
+		switch r.ReadI8() {
+		case 2:
+			b.basketSeek = r.ReadFastArrayI64(b.maxBaskets)
+		default:
+			slice := r.ReadFastArrayI32(b.maxBaskets)
+			b.basketSeek = make([]int64, len(slice))
+			for i, v := range slice {
+				b.basketSeek[i] = int64(v)
+			}
+		}
+
+		b.fname = r.ReadString()
+
+	default:
+		panic(xerrors.Errorf("rtree: too old TBranch version (%d<%d)", vers, minVers))
 	}
 
 	r.CheckByteCount(pos, bcnt, beg, b.Class())

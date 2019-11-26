@@ -258,6 +258,7 @@ func TestBranchRW(t *testing.T) {
 				fname:          "foo.root",
 
 				//
+				readentry:   -1,
 				firstbasket: -1,
 				nextbasket:  -1,
 			},
@@ -292,6 +293,7 @@ func TestBranchRW(t *testing.T) {
 				fname:       "foo.root",
 
 				//
+				readentry:   -1,
 				firstbasket: -1,
 				nextbasket:  -1,
 			},
@@ -337,6 +339,7 @@ func TestBranchRW(t *testing.T) {
 				fname:       "foo.root",
 
 				//
+				readentry:   -1,
 				firstbasket: -1,
 				nextbasket:  -1,
 			},
