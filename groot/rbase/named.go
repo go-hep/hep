@@ -11,6 +11,7 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
+	"golang.org/x/xerrors"
 )
 
 // The TNamed class is the base class for all named ROOT classes
@@ -72,7 +73,10 @@ func (n *Named) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion(n.Class())
+	vers, pos, bcnt := r.ReadVersion(n.Class())
+	if vers > rvers.Named {
+		panic(xerrors.Errorf("rbase: invalid named version=%d > %d", vers, rvers.Named))
+	}
 
 	if err := n.obj.UnmarshalROOT(r); err != nil {
 		return r.Err()

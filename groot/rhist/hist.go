@@ -169,6 +169,10 @@ func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
+	if vers > rvers.H1 {
+		panic(xerrors.Errorf("rhist: invalid TH1 version=%d > %d", vers, rvers.H1))
+	}
+
 	for _, v := range []rbytes.Unmarshaler{
 		&h.Named,
 		&h.attline,
@@ -223,14 +227,16 @@ func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return err
 	}
 
-	n := int(r.ReadI32())
-	_ = r.ReadI8()
-	h.buffer = r.ReadFastArrayF64(n)
-	if vers > 6 {
-		h.erropt = r.ReadI32()
-	}
-	if vers > 7 {
-		h.oflow = r.ReadI32()
+	if vers > 3 {
+		n := int(r.ReadI32())
+		_ = r.ReadI8()
+		h.buffer = r.ReadFastArrayF64(n)
+		if vers > 6 {
+			h.erropt = r.ReadI32()
+		}
+		if vers > 7 {
+			h.oflow = r.ReadI32()
+		}
 	}
 
 	r.CheckByteCount(pos, bcnt, beg, h.Class())

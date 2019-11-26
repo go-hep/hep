@@ -113,8 +113,8 @@ func (h *H1F) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
-	if vers < 1 {
-		return xerrors.Errorf("rhist: TH1F version too old (%d<1)", vers)
+	if vers > rvers.H1F {
+		panic(xerrors.Errorf("rhist: invalid H1F version=%d > %d", vers, rvers.H1F))
 	}
 
 	for _, v := range []rbytes.Unmarshaler{
@@ -415,8 +415,8 @@ func (h *H1D) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
-	if vers < 1 {
-		return xerrors.Errorf("rhist: TH1D version too old (%d<1)", vers)
+	if vers > rvers.H1D {
+		panic(xerrors.Errorf("rhist: invalid H1D version=%d > %d", vers, rvers.H1D))
 	}
 
 	for _, v := range []rbytes.Unmarshaler{
@@ -717,8 +717,8 @@ func (h *H1I) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
-	if vers < 1 {
-		return xerrors.Errorf("rhist: TH1I version too old (%d<1)", vers)
+	if vers > rvers.H1I {
+		panic(xerrors.Errorf("rhist: invalid H1I version=%d > %d", vers, rvers.H1I))
 	}
 
 	for _, v := range []rbytes.Unmarshaler{

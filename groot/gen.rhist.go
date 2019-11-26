@@ -226,8 +226,8 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
-	if vers < 1 {
-		return xerrors.Errorf("rhist: T{{.Name}} version too old (%d<1)", vers)
+	if vers > rvers.{{.Name}} {
+		panic(xerrors.Errorf("rhist: invalid {{.Name}} version=%d > %d", vers, rvers.{{.Name}}))
 	}
 
 	for _, v := range []rbytes.Unmarshaler{

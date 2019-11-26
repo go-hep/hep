@@ -602,7 +602,7 @@ func (r *RBuffer) ReadVersion(class string) (vers int16, pos, n int32) {
 	pos = int32(r.Pos())
 
 	bcnt := r.ReadU32()
-	if (int64(bcnt) & ^kByteCountMask) != 0 {
+	if (int64(bcnt) & kByteCountMask) != 0 {
 		n = int32(int64(bcnt) & ^kByteCountMask)
 		vers = int16(r.ReadU16())
 	} else {

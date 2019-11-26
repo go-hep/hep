@@ -149,8 +149,9 @@ func (a *taxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(a.Class())
-	if vers < 9 {
-		return xerrors.Errorf("rhist: TAxis version too old (%d<9)", vers)
+	const minVers = 6
+	if vers < minVers {
+		return xerrors.Errorf("rhist: TAxis version too old (%d<%d)", vers, minVers)
 	}
 
 	for _, v := range []rbytes.Unmarshaler{
@@ -172,14 +173,18 @@ func (a *taxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	a.first = int(r.ReadI32())
 	a.last = int(r.ReadI32())
-	a.bits2 = r.ReadU16()
+	if vers >= 9 {
+		a.bits2 = r.ReadU16()
+	}
 	a.time = r.ReadBool()
 	a.tfmt = r.ReadString()
 
 	a.labels = nil
-	labels := r.ReadObjectAny()
-	if labels != nil {
-		a.labels = labels.(*rcont.HashList)
+	if vers >= 9 {
+		labels := r.ReadObjectAny()
+		if labels != nil {
+			a.labels = labels.(*rcont.HashList)
+		}
 	}
 
 	a.modlabs = nil
