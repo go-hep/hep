@@ -335,104 +335,133 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	if vers < 16 {
-		return xerrors.Errorf(
+	switch {
+	default:
+		panic(xerrors.Errorf(
 			"rtree: tree [%s] with version [%v] is not supported (too old)",
 			tree.Name(),
 			vers,
-		)
-	}
+		))
+	case vers > 4:
 
-	tree.entries = r.ReadI64()
-	tree.totBytes = r.ReadI64()
-	tree.zipBytes = r.ReadI64()
-	if vers >= 16 {
-		tree.savedBytes = r.ReadI64()
-	}
-	if vers >= 18 {
-		tree.flushedBytes = r.ReadI64()
-	}
+		switch {
+		case vers > 5:
+			tree.entries = r.ReadI64()
+			tree.totBytes = r.ReadI64()
+			tree.zipBytes = r.ReadI64()
+			tree.savedBytes = r.ReadI64()
+		default:
+			tree.entries = int64(r.ReadF64())
+			tree.totBytes = int64(r.ReadF64())
+			tree.zipBytes = int64(r.ReadF64())
+			tree.savedBytes = int64(r.ReadF64())
+		}
 
-	tree.weight = r.ReadF64()
-	tree.timerInterval = r.ReadI32()
-	tree.scanField = r.ReadI32()
-	tree.update = r.ReadI32()
+		if vers >= 18 {
+			tree.flushedBytes = r.ReadI64()
+		}
 
-	if vers >= 17 {
-		tree.defaultEntryOffsetLen = r.ReadI32()
-	}
+		if vers >= 16 {
+			tree.weight = r.ReadF64()
+		}
+		tree.timerInterval = r.ReadI32()
+		tree.scanField = r.ReadI32()
+		tree.update = r.ReadI32()
 
-	nclus := 0
-	if vers >= 19 { // FIXME
-		nclus = int(r.ReadI32()) // fNClusterRange
-	}
+		if vers >= 17 {
+			tree.defaultEntryOffsetLen = r.ReadI32()
+		}
 
-	tree.maxEntries = r.ReadI64()
-	tree.maxEntryLoop = r.ReadI64()
-	tree.maxVirtualSize = r.ReadI64()
-	tree.autoSave = r.ReadI64()
+		nclus := 0
+		if vers >= 19 { // FIXME
+			nclus = int(r.ReadI32()) // fNClusterRange
+		}
 
-	if vers >= 18 {
-		tree.autoFlush = r.ReadI64()
-	}
+		if vers > 5 {
+			tree.maxEntries = r.ReadI64()
+		}
+		switch {
+		case vers > 5:
+			tree.maxEntryLoop = r.ReadI64()
+			tree.maxVirtualSize = r.ReadI64()
+			tree.autoSave = r.ReadI64()
+		default:
+			tree.maxEntryLoop = int64(r.ReadI32())
+			tree.maxVirtualSize = int64(r.ReadI32())
+			tree.autoSave = int64(r.ReadI32())
+		}
 
-	tree.estimate = r.ReadI64()
+		if vers >= 18 {
+			tree.autoFlush = r.ReadI64()
+		}
 
-	if vers >= 19 { // FIXME
-		_ = r.ReadI8()
-		tree.clusters.ranges = r.ReadFastArrayI64(nclus) // fClusterRangeEnd
-		_ = r.ReadI8()
-		tree.clusters.sizes = r.ReadFastArrayI64(nclus) // fClusterSize
-	}
+		switch {
+		case vers > 5:
+			tree.estimate = r.ReadI64()
+		default:
+			tree.estimate = int64(r.ReadI32())
+		}
 
-	if vers >= 20 {
-		if err := tree.iobits.UnmarshalROOT(r); err != nil {
+		if vers >= 19 { // FIXME
+			_ = r.ReadI8()
+			tree.clusters.ranges = r.ReadFastArrayI64(nclus) // fClusterRangeEnd
+			_ = r.ReadI8()
+			tree.clusters.sizes = r.ReadFastArrayI64(nclus) // fClusterSize
+		}
+
+		if vers >= 20 {
+			if err := tree.iobits.UnmarshalROOT(r); err != nil {
+				return err
+			}
+		}
+
+		var branches rcont.ObjArray
+		if err := branches.UnmarshalROOT(r); err != nil {
 			return err
 		}
-	}
+		tree.branches = make([]Branch, branches.Last()+1)
+		for i := range tree.branches {
+			tree.branches[i] = branches.At(i).(Branch)
+			tree.branches[i].setTree(tree)
+		}
 
-	var branches rcont.ObjArray
-	if err := branches.UnmarshalROOT(r); err != nil {
-		return err
-	}
-	tree.branches = make([]Branch, branches.Last()+1)
-	for i := range tree.branches {
-		tree.branches[i] = branches.At(i).(Branch)
-		tree.branches[i].setTree(tree)
-	}
+		var leaves rcont.ObjArray
+		if err := leaves.UnmarshalROOT(r); err != nil {
+			return err
+		}
+		tree.leaves = make([]Leaf, leaves.Last()+1)
+		for i := range tree.leaves {
+			leaf := leaves.At(i).(Leaf)
+			tree.leaves[i] = leaf
+			// FIXME(sbinet)
+			//tree.leaves[i].SetBranch(tree.branches[i])
+		}
 
-	var leaves rcont.ObjArray
-	if err := leaves.UnmarshalROOT(r); err != nil {
-		return err
-	}
-	tree.leaves = make([]Leaf, leaves.Last()+1)
-	for i := range tree.leaves {
-		leaf := leaves.At(i).(Leaf)
-		tree.leaves[i] = leaf
-		// FIXME(sbinet)
-		//tree.leaves[i].SetBranch(tree.branches[i])
-	}
-
-	if v := r.ReadObjectAny(); v != nil {
-		tree.aliases = v.(*rcont.List)
-	}
-	if v := r.ReadObjectAny(); v != nil {
-		tree.indexValues = v.(*rcont.ArrayD)
-	}
-	if v := r.ReadObjectAny(); v != nil {
-		tree.index = v.(*rcont.ArrayI)
-	}
-	if v := r.ReadObjectAny(); v != nil {
-		tree.treeIndex = v
-	}
-	if v := r.ReadObjectAny(); v != nil {
-		tree.friends = v.(*rcont.List)
-	}
-	if v := r.ReadObjectAny(); v != nil {
-		tree.userInfo = v.(*rcont.List)
-	}
-	if v := r.ReadObjectAny(); v != nil {
-		tree.branchRef = v
+		if vers > 5 {
+			if v := r.ReadObjectAny(); v != nil {
+				tree.aliases = v.(*rcont.List)
+			}
+		}
+		if v := r.ReadObjectAny(); v != nil {
+			tree.indexValues = v.(*rcont.ArrayD)
+		}
+		if v := r.ReadObjectAny(); v != nil {
+			tree.index = v.(*rcont.ArrayI)
+		}
+		if vers > 5 {
+			if v := r.ReadObjectAny(); v != nil {
+				tree.treeIndex = v
+			}
+			if v := r.ReadObjectAny(); v != nil {
+				tree.friends = v.(*rcont.List)
+			}
+			if v := r.ReadObjectAny(); v != nil {
+				tree.userInfo = v.(*rcont.List)
+			}
+			if v := r.ReadObjectAny(); v != nil {
+				tree.branchRef = v
+			}
+		}
 	}
 
 	r.CheckByteCount(pos, bcnt, beg, tree.Class())
