@@ -18,6 +18,7 @@ import (
 	"go-hep.org/x/hep/groot/internal/rtests"
 	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/groot/riofs"
+	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
 )
 
 func TestRWHist(t *testing.T) {
@@ -100,5 +101,23 @@ func TestRWHist(t *testing.T) {
 				t.Fatalf("ROOT/C++ could not open file %q", fname)
 			}
 		})
+	}
+}
+
+func TestROOT4Hist(t *testing.T) {
+	f, err := groot.Open("https://github.com/scikit-hep/uproot/raw/master/tests/samples/from-geant4.root")
+	if err != nil {
+		t.Fatalf("could not open uproot geant4 test file: %+v", err)
+	}
+	defer f.Close()
+
+	obj, err := f.Get("edep_inner")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+
+	h := obj.(*rhist.H1D)
+	if got, want := h.Name(), "edep_inner"; got != want {
+		t.Fatalf("invalid H1D name: got=%q, want=%q", got, want)
 	}
 }
