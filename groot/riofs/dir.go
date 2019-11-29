@@ -503,7 +503,12 @@ func (dir *tdirectoryFile) Mkdir(name string) (Directory, error) {
 
 // Parent returns the directory holding this directory.
 // Parent returns nil if this is the top-level directory.
-func (dir *tdirectoryFile) Parent() Directory { return dir.dir.parent }
+func (dir *tdirectoryFile) Parent() Directory {
+	if dir.dir.parent == nil {
+		return dir.file
+	}
+	return dir.dir.parent
+}
 
 func (dir *tdirectoryFile) RVersion() int16 { return dir.dir.rvers }
 

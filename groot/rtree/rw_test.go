@@ -1102,3 +1102,107 @@ void scan(const char* fname, const char* tree, const char *list, const char *ona
 		})
 	}
 }
+
+func TestTreeWriteSubdir(t *testing.T) {
+	tmp, err := ioutil.TempDir("", "groot-rtree-")
+	if err != nil {
+		t.Fatalf("could not create dir: %v", err)
+	}
+	defer os.RemoveAll(tmp)
+
+	fname := filepath.Join(tmp, "tree-subdir.root")
+
+	f, err := riofs.Create(fname)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	defer f.Close()
+
+	dir, err := riofs.Dir(f).Mkdir("dir-1/dir-11/dir-111")
+	if err != nil {
+		t.Fatalf("could not create sub-dir hierarchy: %+v", err)
+	}
+
+	var data struct {
+		I32 int32   `groot:"i32"`
+		F64 float64 `groot:"f64"`
+	}
+
+	ntup, err := NewWriter(dir, "ntup", WriteVarsFromStruct(&data))
+	if err != nil {
+		t.Fatalf("could not create tree: %+v", err)
+	}
+
+	for i := 0; i < 5; i++ {
+		data.I32 = int32(i)
+		data.F64 = float64(i)
+		_, err = ntup.Write()
+		if err != nil {
+			t.Fatalf("could not write event %d: %+v", i, err)
+		}
+	}
+
+	err = ntup.Close()
+	if err != nil {
+		t.Fatalf("could not close tree: %+v", err)
+	}
+
+	err = f.Close()
+	if err != nil {
+		t.Fatalf("could not close file: %+v", err)
+	}
+
+	if !rtests.HasROOT {
+		return
+	}
+
+	code := `#include <iostream>
+#include "TDirectory.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TTreePlayer.h"
+
+void scan(const char *fname, const char *tree, const char *oname) {
+	auto f = TFile::Open(fname);
+	gDirectory->cd("dir-1");
+	gDirectory->cd("dir-11");
+	gDirectory->cd("dir-111");
+
+	auto t = (TTree*)gDirectory->Get(tree);
+	if (!t) {
+		std::cerr << "could not fetch TTree [" << tree << "] from file [" << fname << "]\n";
+		exit(1);
+	}
+	auto player = dynamic_cast<TTreePlayer*>(t->GetPlayer());
+	player->SetScanRedirect(kTRUE);
+	player->SetScanFileName(oname);
+	t->SetScanField(0);
+	t->Scan("i32:f64");
+}
+`
+	ofile := filepath.Join(tmp, "tree-subdir.txt")
+	out, err := rtests.RunCxxROOT("scan", []byte(code), fname, "ntup", ofile)
+	if err != nil {
+		t.Fatalf("could not run C++ ROOT: %+v\noutput:\n%s", err, out)
+	}
+
+	got, err := ioutil.ReadFile(ofile)
+	if err != nil {
+		t.Fatalf("could not read C++ ROOT scan file %q: %+v\noutput:\n%s", ofile, err, out)
+	}
+
+	want := `************************************
+*    Row   *       i32 *       f64 *
+************************************
+*        0 *         0 *         0 *
+*        1 *         1 *         1 *
+*        2 *         2 *         2 *
+*        3 *         3 *         3 *
+*        4 *         4 *         4 *
+************************************
+`
+	if got, want := string(got), want; got != want {
+		t.Fatalf("invalid ROOT scan:\ngot:\n%v\nwant:\n%v\noutput:\n%s", got, want, out)
+	}
+
+}
