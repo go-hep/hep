@@ -582,6 +582,36 @@ func TestTreeRW(t *testing.T) {
 `,
 		},
 		{
+			name:  "strings-empty",
+			nevts: 5,
+			wvars: []WriteVar{
+				{Name: "s1", Value: new(string)},
+				{Name: "s2", Value: new(string)},
+			},
+			btitles: []string{"s1/C", "s2/C"},
+			ltitles: []string{"s1", "s2"},
+			total:   30,
+			want: func(i int) interface{} {
+				return struct {
+					S1 string
+					S2 string
+				}{
+					S1: strings.Repeat("x", 4-i),
+					S2: strings.Repeat("x", i),
+				}
+			},
+			cxx: `************************************
+*    Row   *        s1 *        s2 *
+************************************
+*        0 *      xxxx *           *
+*        1 *       xxx *         x *
+*        2 *        xx *        xx *
+*        3 *         x *       xxx *
+*        4 *           *      xxxx *
+************************************
+`,
+		},
+		{
 			name:  "arrays",
 			nevts: 5,
 			wvars: []WriteVar{
@@ -955,7 +985,7 @@ func TestTreeRW(t *testing.T) {
 					t.Fatalf("invalid number of entries: got=%d, want=%d", got, want)
 				}
 				if got, want := total, tc.total; got != want {
-					t.Fatalf("invalid number of bytes written: got=%d, want=%d", got, want)
+					t.Errorf("invalid number of bytes written: got=%d, want=%d", got, want)
 				}
 
 				err = tw.Close()

@@ -101,6 +101,8 @@ func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, 
 			fmt.Fprintf(title, "[%s]", wvar.Count)
 			rt = rt.Elem()
 			b.entryOffsetLen = 1000 // slice, so we need an offset array
+		case reflect.String:
+			b.entryOffsetLen = 1000 // string, so we need an offset array
 		}
 		code := gotypeToROOTTypeCode(rt)
 		fmt.Fprintf(title, "/%s", code)
