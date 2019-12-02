@@ -418,7 +418,9 @@ func (w *WBuffer) WriteString(v string) {
 	if l < 255 {
 		w.w.grow(1 + l)
 		w.writeU8(uint8(l))
-		w.write([]byte(v))
+		if l > 0 {
+			w.write([]byte(v))
+		}
 		return
 	}
 	w.w.grow(1 + 4 + l)

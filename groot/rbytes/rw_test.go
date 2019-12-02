@@ -66,3 +66,21 @@ func TestReadWriteObjectAny(t *testing.T) {
 		})
 	}
 }
+
+func TestRWStrings(t *testing.T) {
+	want := []string{"", "x", "", "xx", "", "xxx"}
+	wbuf := rbytes.NewWBuffer(nil, nil, 0, nil)
+	for i, str := range want {
+		wbuf.WriteString(str)
+		if err := wbuf.Err(); err != nil {
+			t.Errorf("could not write string #%d: %+v", i, err)
+		}
+	}
+	rbuf := rbytes.NewRBuffer(wbuf.Bytes(), nil, 0, nil)
+	for i := range want {
+		got := rbuf.ReadString()
+		if got != want[i] {
+			t.Errorf("invalid string at %d: got=%q, want=%q", i, got, want[i])
+		}
+	}
+}
