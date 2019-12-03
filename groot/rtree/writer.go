@@ -35,9 +35,10 @@ type Writer interface {
 type WriteOption func(opt *wopt) error
 
 type wopt struct {
-	bufsize  int32 // buffer size for branches
-	splitlvl int32 // maximum split-level for branches
-	compress int32 // compression algorithm name and compression level
+	title    string // title of the writer tree
+	bufsize  int32  // buffer size for branches
+	splitlvl int32  // maximum split-level for branches
+	compress int32  // compression algorithm name and compression level
 }
 
 // WithLZ4 configures a ROOT tree to use LZ4 as a compression mechanism.
@@ -84,8 +85,17 @@ func WithBasketSize(size int) WriteOption {
 	}
 }
 
+// WithTitle sets the title of the tree writer.
+func WithTitle(title string) WriteOption {
+	return func(opt *wopt) error {
+		opt.title = title
+		return nil
+	}
+}
+
 type wtree struct {
 	ttree
+	wvars []WriteVar
 }
 
 // WriteVar describes a variable to be written out to a tree.
@@ -185,6 +195,20 @@ func WriteVarsFromStruct(ptr interface{}) []WriteVar {
 	return wvars
 }
 
+// WriteVarsFromTree creates a slice of WriteVars from the tree value.
+func WriteVarsFromTree(t Tree) []WriteVar {
+	rvars := NewScanVars(t)
+	wvars := make([]WriteVar, len(rvars))
+	for i, rvar := range rvars {
+		wvars[i] = WriteVar{
+			Name:  rvar.Name,
+			Value: reflect.New(reflect.TypeOf(rvar.Value).Elem()).Interface(),
+			Count: rvar.count,
+		}
+	}
+	return wvars
+}
+
 // NewWriter creates a new Tree with the given name and under the given
 // directory dir, ready to be filled with data.
 func NewWriter(dir riofs.Directory, name string, vars []WriteVar, opts ...WriteOption) (Writer, error) {
@@ -199,7 +223,7 @@ func NewWriter(dir riofs.Directory, name string, vars []WriteVar, opts ...WriteO
 			rvers: rvers.Tree,
 			named: *rbase.NewNamed(name, ""),
 		},
-		//typ: typ,
+		wvars: vars,
 	}
 
 	cfg := wopt{
@@ -214,6 +238,8 @@ func NewWriter(dir riofs.Directory, name string, vars []WriteVar, opts ...WriteO
 			return nil, xerrors.Errorf("rtree: could not configure tree writer: %w", err)
 		}
 	}
+
+	w.ttree.named.SetTitle(cfg.title)
 
 	for _, v := range vars {
 		b, err := newBranchFromWVars(w, v.Name, []WriteVar{v}, nil, cfg)

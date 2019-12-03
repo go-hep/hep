@@ -245,6 +245,7 @@ type ScanVar struct {
 	Name  string      // name of the branch to read
 	Leaf  string      // name of the leaf to read
 	Value interface{} // pointer to the value to fill
+	count string      // name of the leaf-count, if any
 }
 
 // NewTreeScannerVars creates a new Scanner from a list of branches.
@@ -722,7 +723,11 @@ func NewScanVars(t Tree) []ScanVar {
 	for _, b := range t.Branches() {
 		for _, leaf := range b.Leaves() {
 			ptr := newValue(leaf)
-			vars = append(vars, ScanVar{Name: b.Name(), Leaf: leaf.Name(), Value: ptr})
+			cnt := ""
+			if leaf.LeafCount() != nil {
+				cnt = leaf.LeafCount().Name()
+			}
+			vars = append(vars, ScanVar{Name: b.Name(), Leaf: leaf.Name(), Value: ptr, count: cnt})
 		}
 	}
 
