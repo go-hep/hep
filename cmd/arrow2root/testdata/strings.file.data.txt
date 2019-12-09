@@ -1,0 +1,22 @@
+>>> file[strings.file.data.root]
+key[000]: tree;1 "tree" (TTree)
+[000][strings]: 1é
+[000][bytes]: 1é
+[001][strings]: 2
+[001][bytes]: 2
+[002][strings]: 3
+[002][bytes]: 3
+[003][strings]: 4
+[003][bytes]: 4
+[004][strings]: 5
+[004][bytes]: 5
+[005][strings]: 11
+[005][bytes]: 11
+[006][strings]: 22
+[006][bytes]: 22
+[007][strings]: 33
+[007][bytes]: 33
+[008][strings]: 44
+[008][bytes]: 44
+[009][strings]: 55
+[009][bytes]: 55

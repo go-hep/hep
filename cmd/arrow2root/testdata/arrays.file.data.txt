@@ -1,0 +1,8 @@
+>>> file[arrays.file.data.root]
+key[000]: tree;1 "tree" (TTree)
+[000][fixed_size_list_nullable]: [1 0 3]
+[001][fixed_size_list_nullable]: [11 0 13]
+[002][fixed_size_list_nullable]: [21 0 23]
+[003][fixed_size_list_nullable]: [-1 0 -3]
+[004][fixed_size_list_nullable]: [-11 0 -13]
+[005][fixed_size_list_nullable]: [-21 0 -23]

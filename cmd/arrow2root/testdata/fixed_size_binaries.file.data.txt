@@ -1,0 +1,12 @@
+>>> file[fixed_size_binaries.file.data.root]
+key[000]: tree;1 "tree" (TTree)
+[000][fixed_size_binary_3]: [48 48 49]
+[001][fixed_size_binary_3]: [48 48 50]
+[002][fixed_size_binary_3]: [48 48 51]
+[003][fixed_size_binary_3]: [48 48 52]
+[004][fixed_size_binary_3]: [48 48 53]
+[005][fixed_size_binary_3]: [48 49 49]
+[006][fixed_size_binary_3]: [48 49 50]
+[007][fixed_size_binary_3]: [48 49 51]
+[008][fixed_size_binary_3]: [48 49 52]
+[009][fixed_size_binary_3]: [48 49 53]
