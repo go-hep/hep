@@ -3,7 +3,7 @@ module go-hep.org/x/hep
 go 1.12
 
 require (
-	github.com/apache/arrow/go/arrow v0.0.0-20191209090558-8ad23c6e137d
+	github.com/apache/arrow/go/arrow v0.0.0-20191211091713-2a127689fae6
 	github.com/campoy/embedmd v1.0.0
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/frankban/quicktest v1.5.0 // indirect
@@ -34,7 +34,7 @@ require (
 	golang.org/x/net v0.0.0-20191011234655-491137f69257 // indirect
 	golang.org/x/sys v0.0.0-20191010194322-b09406accb47 // indirect
 	golang.org/x/text v0.3.2 // indirect
-	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898
+	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	gonum.org/v1/gonum v0.0.0-20191013192725-1459092b91f2
 	gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e // indirect
 	gonum.org/v1/plot v0.0.0-20191004082913-159cd04f920c

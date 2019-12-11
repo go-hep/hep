@@ -1,0 +1,14 @@
+>>> file[lists.file.data.root]
+key[000]: tree;1 "tree" (TTree)
+[000][rarrow_n_list_nullable]: 5
+[000][list_nullable]: [1 0 0 4 5]
+[001][rarrow_n_list_nullable]: 5
+[001][list_nullable]: [11 0 0 14 15]
+[002][rarrow_n_list_nullable]: 5
+[002][list_nullable]: [21 0 0 24 25]
+[003][rarrow_n_list_nullable]: 5
+[003][list_nullable]: [-1 0 0 -4 -5]
+[004][rarrow_n_list_nullable]: 5
+[004][list_nullable]: [-11 0 0 -14 -15]
+[005][rarrow_n_list_nullable]: 5
+[005][list_nullable]: [-21 0 0 -24 -25]

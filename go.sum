@@ -8,10 +8,15 @@ github.com/ajstarks/svgo v0.0.0-20190826172357-de52242f3d65 h1:kZegOsPGxfV9mM8Wz
 github.com/ajstarks/svgo v0.0.0-20190826172357-de52242f3d65/go.mod h1:K08gAheRH3/J6wwsYMMT4xOr94bZjxIelGM0+d/wbFw=
 github.com/apache/arrow v0.0.0-20191119113437-a5a67e8c5460 h1:6KjjDRv6a0mba4yEM7EBgFsE7oUJfYo6uWmr3SeGehs=
 github.com/apache/arrow v0.0.0-20191209090558-8ad23c6e137d h1:Zqm/jepB8RrPpTApxI8IxFZ7cVZ3DzyLLYxwA0XtV9M=
+github.com/apache/arrow v0.0.0-20191211091713-2a127689fae6 h1:yIJnRCe31LD3LIcFmfphPDmBum4rFpvXpO5iXhJsuBw=
 github.com/apache/arrow/go/arrow v0.0.0-20191119113437-a5a67e8c5460 h1:JivWZpU9ACCHTfq07eDavAx+vIE1vZXXKz611LnnXog=
 github.com/apache/arrow/go/arrow v0.0.0-20191119113437-a5a67e8c5460/go.mod h1:VTxUBvSJ3s3eHAg65PNgrsn5BtqCRPdmyXh6rAfdxN0=
 github.com/apache/arrow/go/arrow v0.0.0-20191209090558-8ad23c6e137d h1:kEAJ5R9C7DxzsFSve9SayNrJ5EdAD9nGDeIl+WSdUdc=
 github.com/apache/arrow/go/arrow v0.0.0-20191209090558-8ad23c6e137d/go.mod h1:VTxUBvSJ3s3eHAg65PNgrsn5BtqCRPdmyXh6rAfdxN0=
+github.com/apache/arrow/go/arrow v0.0.0-20191210220529-5b9deef40a26 h1:ZK+cDSU00b3YP/U81a2AkSTaAlDK1HcKGdf7sSC/Cio=
+github.com/apache/arrow/go/arrow v0.0.0-20191210220529-5b9deef40a26/go.mod h1:QNYViu/X0HXDHw7m3KXzWSVXIbfUvJqBFe6Gj8/pYA0=
+github.com/apache/arrow/go/arrow v0.0.0-20191211091713-2a127689fae6 h1:3rb1B3aGZyF+8smx2FbK64+DvbKb+cF0fRBifEyznC0=
+github.com/apache/arrow/go/arrow v0.0.0-20191211091713-2a127689fae6/go.mod h1:QNYViu/X0HXDHw7m3KXzWSVXIbfUvJqBFe6Gj8/pYA0=
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/campoy/embedmd v1.0.0 h1:V4kI2qTJJLf4J29RzI/MAt2c3Bl4dQSYPuflzwFH2hY=
 github.com/campoy/embedmd v1.0.0/go.mod h1:oxyr9RCiSXg0M3VJ3ks0UGfp98BpSSGr0kpiX3MzVl8=
@@ -153,6 +158,8 @@ golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7 h1:9zdDQZ7Thm29KFXgAX/+y
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898 h1:/atklqdjdhuosWIl6AIbOeHJjicWYPqR9bpxqxYG2pA=
 golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
+golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 h1:E7g+9GITq07hpfrRu66IVDexMakfv52eLZ2CXBWiKr4=
+golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 gonum.org/v1/gonum v0.0.0-20180525204857-c75679ee1eff/go.mod h1:cucAdkem48eM79EG1fdGOGASXorNZIYAO9duTse+1cI=
 gonum.org/v1/gonum v0.0.0-20180816165407-929014505bf4/go.mod h1:Y+Yx5eoAFn32cQvJDxZx5Dpnq+c3wtXuadVZAcxbbBo=
 gonum.org/v1/gonum v0.0.0-20190331200053-3d26580ed485/go.mod h1:2ltnJ7xHfj0zHS40VVPYEAAMTa3ZGguvHGBSJeRWqE0=

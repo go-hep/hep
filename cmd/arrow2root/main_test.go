@@ -20,7 +20,8 @@ func TestConvert(t *testing.T) {
 	defer os.RemoveAll(tmp)
 
 	for _, tc := range []struct {
-		name string
+		name   string
+		panics string
 	}{
 		{
 			name: "testdata/primitives.file.data",
@@ -34,14 +35,26 @@ func TestConvert(t *testing.T) {
 		{
 			name: "testdata/fixed_size_binaries.file.data",
 		},
-		//		{
-		//			name: "testdata/lists.file.data",
-		//		},
-		//		{
-		//			name: "testdata/structs.file.data",
-		//		},
+		{
+			name: "testdata/lists.file.data",
+		},
+		{
+			name:   "testdata/structs.file.data",
+			panics: "invalid ARROW data-type: *arrow.StructType", // FIXME(sbinet): needs non-flat-tree writer support
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.panics != "" {
+				defer func() {
+					err := recover()
+					if err == nil {
+						t.Fatalf("expected a panic (%s)", tc.panics)
+					}
+					if got, want := err.(error).Error(), tc.panics; got != want {
+						t.Fatalf("invalid panic message:\ngot= %v\nwant=%v", got, want)
+					}
+				}()
+			}
 			oname := filepath.Join(tmp, filepath.Base(tc.name)+".root")
 			tname := "tree"
 			err := process(oname, tname, tc.name)
