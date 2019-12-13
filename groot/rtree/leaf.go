@@ -30,17 +30,25 @@ type tleaf struct {
 	branch   Branch    // supporting branch of this leaf
 }
 
-func newLeaf(name string, len, etype, offset int, hasrange, unsigned bool, count leafCount, b Branch) tleaf {
-	title := name
-	if count != nil {
-		title = name + "[" + count.Name() + "]"
-	}
-	if len > 1 {
-		title = fmt.Sprintf("%s[%d]", name, len)
+func newLeaf(name string, shape []int, etype, offset int, hasrange, unsigned bool, count leafCount, b Branch) tleaf {
+	var (
+		nelems = 1
+		title  = new(strings.Builder)
+	)
+
+	title.WriteString(name)
+	switch {
+	case count != nil:
+		fmt.Fprintf(title, "[%s]", count.Name())
+	default:
+		for _, dim := range shape {
+			nelems *= dim
+			fmt.Fprintf(title, "[%d]", dim)
+		}
 	}
 	return tleaf{
-		named:    *rbase.NewNamed(name, title),
-		len:      len,
+		named:    *rbase.NewNamed(name, title.String()),
+		len:      nelems,
 		etype:    etype,
 		offset:   offset,
 		hasrange: hasrange,
@@ -498,17 +506,14 @@ func newLeafFromWVar(b Branch, v WriteVar) (Leaf, error) {
 	)
 
 	var (
-		rv     = reflect.Indirect(reflect.ValueOf(v.Value))
-		rt     = rv.Type()
-		kind   = rt.Kind()
-		nelems = 1
-		leaf   Leaf
-		count  leafCount
+		rv        = reflect.Indirect(reflect.ValueOf(v.Value))
+		rt, shape = flattenArrayType(rv.Type())
+		kind      = rt.Kind()
+		leaf      Leaf
+		count     leafCount
 	)
+
 	switch kind {
-	case reflect.Array:
-		nelems = rt.Len()
-		kind = rt.Elem().Kind()
 	case reflect.Slice:
 		lc := b.Leaf(v.Count)
 		if lc == nil {
@@ -537,73 +542,73 @@ func newLeafFromWVar(b Branch, v WriteVar) (Leaf, error) {
 
 	switch kind {
 	case reflect.Bool:
-		leaf = newLeafO(b, v.Name, nelems, false, count)
+		leaf = newLeafO(b, v.Name, shape, false, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Uint8:
-		leaf = newLeafB(b, v.Name, nelems, unsigned, count)
+		leaf = newLeafB(b, v.Name, shape, unsigned, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Uint16:
-		leaf = newLeafS(b, v.Name, nelems, unsigned, count)
+		leaf = newLeafS(b, v.Name, shape, unsigned, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Uint32:
-		leaf = newLeafI(b, v.Name, nelems, unsigned, count)
+		leaf = newLeafI(b, v.Name, shape, unsigned, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Uint64:
-		leaf = newLeafL(b, v.Name, nelems, unsigned, count)
+		leaf = newLeafL(b, v.Name, shape, unsigned, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Int8:
-		leaf = newLeafB(b, v.Name, nelems, signed, count)
+		leaf = newLeafB(b, v.Name, shape, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Int16:
-		leaf = newLeafS(b, v.Name, nelems, signed, count)
+		leaf = newLeafS(b, v.Name, shape, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Int32:
-		leaf = newLeafI(b, v.Name, nelems, signed, count)
+		leaf = newLeafI(b, v.Name, shape, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Int64:
-		leaf = newLeafL(b, v.Name, nelems, signed, count)
+		leaf = newLeafL(b, v.Name, shape, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Float32:
-		leaf = newLeafF(b, v.Name, nelems, signed, count)
+		leaf = newLeafF(b, v.Name, shape, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Float64:
-		leaf = newLeafD(b, v.Name, nelems, signed, count)
+		leaf = newLeafD(b, v.Name, shape, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.String:
-		leaf = newLeafC(b, v.Name, nelems, signed, count)
+		leaf = newLeafC(b, v.Name, shape, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
 			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)

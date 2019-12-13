@@ -27,7 +27,7 @@ type LeafO struct {
 	max bool
 }
 
-func newLeafO(b Branch, name string, len int, unsigned bool, count Leaf) *LeafO {
+func newLeafO(b Branch, name string, shape []int, unsigned bool, count Leaf) *LeafO {
 	const etype = 1
 	var lcnt leafCount
 	if count != nil {
@@ -35,7 +35,7 @@ func newLeafO(b Branch, name string, len int, unsigned bool, count Leaf) *LeafO 
 	}
 	return &LeafO{
 		rvers: rvers.LeafO,
-		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, shape, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -171,16 +171,27 @@ func (leaf *LeafO) scan(r *rbytes.RBuffer, ptr interface{}) error {
 	return r.Err()
 }
 
+func (leaf *LeafO) unsafeDecayArray(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 1
+	arr := (*[0]bool)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *LeafO) setAddress(ptr interface{}) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
 
 	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		arr := reflect.ValueOf(ptr).Elem()
-		switch sli := arr.Slice(0, rv.Len()).Interface().(type) {
-		case []bool:
-			return leaf.setAddress(&sli)
+		sli := leaf.unsafeDecayArray(ptr)
+		switch sli := sli.(type) {
+		case *[]bool:
+			return leaf.setAddress(sli)
 		default:
 			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
@@ -250,7 +261,7 @@ type LeafB struct {
 	max int8
 }
 
-func newLeafB(b Branch, name string, len int, unsigned bool, count Leaf) *LeafB {
+func newLeafB(b Branch, name string, shape []int, unsigned bool, count Leaf) *LeafB {
 	const etype = 1
 	var lcnt leafCount
 	if count != nil {
@@ -258,7 +269,7 @@ func newLeafB(b Branch, name string, len int, unsigned bool, count Leaf) *LeafB 
 	}
 	return &LeafB{
 		rvers: rvers.LeafB,
-		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, shape, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -425,18 +436,29 @@ func (leaf *LeafB) scan(r *rbytes.RBuffer, ptr interface{}) error {
 	return r.Err()
 }
 
+func (leaf *LeafB) unsafeDecayArray(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 1
+	arr := (*[0]int8)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *LeafB) setAddress(ptr interface{}) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
 
 	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		arr := reflect.ValueOf(ptr).Elem()
-		switch sli := arr.Slice(0, rv.Len()).Interface().(type) {
-		case []int8:
-			return leaf.setAddress(&sli)
-		case []uint8:
-			return leaf.setAddress(&sli)
+		sli := leaf.unsafeDecayArray(ptr)
+		switch sli := sli.(type) {
+		case *[]int8:
+			return leaf.setAddress(sli)
+		case *[]uint8:
+			return leaf.setAddress(sli)
 		default:
 			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
@@ -513,7 +535,7 @@ type LeafS struct {
 	max int16
 }
 
-func newLeafS(b Branch, name string, len int, unsigned bool, count Leaf) *LeafS {
+func newLeafS(b Branch, name string, shape []int, unsigned bool, count Leaf) *LeafS {
 	const etype = 2
 	var lcnt leafCount
 	if count != nil {
@@ -521,7 +543,7 @@ func newLeafS(b Branch, name string, len int, unsigned bool, count Leaf) *LeafS 
 	}
 	return &LeafS{
 		rvers: rvers.LeafS,
-		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, shape, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -688,18 +710,29 @@ func (leaf *LeafS) scan(r *rbytes.RBuffer, ptr interface{}) error {
 	return r.Err()
 }
 
+func (leaf *LeafS) unsafeDecayArray(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 2
+	arr := (*[0]int16)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *LeafS) setAddress(ptr interface{}) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
 
 	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		arr := reflect.ValueOf(ptr).Elem()
-		switch sli := arr.Slice(0, rv.Len()).Interface().(type) {
-		case []int16:
-			return leaf.setAddress(&sli)
-		case []uint16:
-			return leaf.setAddress(&sli)
+		sli := leaf.unsafeDecayArray(ptr)
+		switch sli := sli.(type) {
+		case *[]int16:
+			return leaf.setAddress(sli)
+		case *[]uint16:
+			return leaf.setAddress(sli)
 		default:
 			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
@@ -776,7 +809,7 @@ type LeafI struct {
 	max int32
 }
 
-func newLeafI(b Branch, name string, len int, unsigned bool, count Leaf) *LeafI {
+func newLeafI(b Branch, name string, shape []int, unsigned bool, count Leaf) *LeafI {
 	const etype = 4
 	var lcnt leafCount
 	if count != nil {
@@ -784,7 +817,7 @@ func newLeafI(b Branch, name string, len int, unsigned bool, count Leaf) *LeafI 
 	}
 	return &LeafI{
 		rvers: rvers.LeafI,
-		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, shape, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -951,18 +984,29 @@ func (leaf *LeafI) scan(r *rbytes.RBuffer, ptr interface{}) error {
 	return r.Err()
 }
 
+func (leaf *LeafI) unsafeDecayArray(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 4
+	arr := (*[0]int32)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *LeafI) setAddress(ptr interface{}) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
 
 	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		arr := reflect.ValueOf(ptr).Elem()
-		switch sli := arr.Slice(0, rv.Len()).Interface().(type) {
-		case []int32:
-			return leaf.setAddress(&sli)
-		case []uint32:
-			return leaf.setAddress(&sli)
+		sli := leaf.unsafeDecayArray(ptr)
+		switch sli := sli.(type) {
+		case *[]int32:
+			return leaf.setAddress(sli)
+		case *[]uint32:
+			return leaf.setAddress(sli)
 		default:
 			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
@@ -1039,7 +1083,7 @@ type LeafL struct {
 	max int64
 }
 
-func newLeafL(b Branch, name string, len int, unsigned bool, count Leaf) *LeafL {
+func newLeafL(b Branch, name string, shape []int, unsigned bool, count Leaf) *LeafL {
 	const etype = 8
 	var lcnt leafCount
 	if count != nil {
@@ -1047,7 +1091,7 @@ func newLeafL(b Branch, name string, len int, unsigned bool, count Leaf) *LeafL 
 	}
 	return &LeafL{
 		rvers: rvers.LeafL,
-		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, shape, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -1214,18 +1258,29 @@ func (leaf *LeafL) scan(r *rbytes.RBuffer, ptr interface{}) error {
 	return r.Err()
 }
 
+func (leaf *LeafL) unsafeDecayArray(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 8
+	arr := (*[0]int64)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *LeafL) setAddress(ptr interface{}) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
 
 	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		arr := reflect.ValueOf(ptr).Elem()
-		switch sli := arr.Slice(0, rv.Len()).Interface().(type) {
-		case []int64:
-			return leaf.setAddress(&sli)
-		case []uint64:
-			return leaf.setAddress(&sli)
+		sli := leaf.unsafeDecayArray(ptr)
+		switch sli := sli.(type) {
+		case *[]int64:
+			return leaf.setAddress(sli)
+		case *[]uint64:
+			return leaf.setAddress(sli)
 		default:
 			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
@@ -1302,7 +1357,7 @@ type LeafF struct {
 	max float32
 }
 
-func newLeafF(b Branch, name string, len int, unsigned bool, count Leaf) *LeafF {
+func newLeafF(b Branch, name string, shape []int, unsigned bool, count Leaf) *LeafF {
 	const etype = 4
 	var lcnt leafCount
 	if count != nil {
@@ -1310,7 +1365,7 @@ func newLeafF(b Branch, name string, len int, unsigned bool, count Leaf) *LeafF 
 	}
 	return &LeafF{
 		rvers: rvers.LeafF,
-		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, shape, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -1446,16 +1501,27 @@ func (leaf *LeafF) scan(r *rbytes.RBuffer, ptr interface{}) error {
 	return r.Err()
 }
 
+func (leaf *LeafF) unsafeDecayArray(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 4
+	arr := (*[0]float32)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *LeafF) setAddress(ptr interface{}) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
 
 	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		arr := reflect.ValueOf(ptr).Elem()
-		switch sli := arr.Slice(0, rv.Len()).Interface().(type) {
-		case []float32:
-			return leaf.setAddress(&sli)
+		sli := leaf.unsafeDecayArray(ptr)
+		switch sli := sli.(type) {
+		case *[]float32:
+			return leaf.setAddress(sli)
 		default:
 			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
@@ -1528,7 +1594,7 @@ type LeafD struct {
 	max float64
 }
 
-func newLeafD(b Branch, name string, len int, unsigned bool, count Leaf) *LeafD {
+func newLeafD(b Branch, name string, shape []int, unsigned bool, count Leaf) *LeafD {
 	const etype = 8
 	var lcnt leafCount
 	if count != nil {
@@ -1536,7 +1602,7 @@ func newLeafD(b Branch, name string, len int, unsigned bool, count Leaf) *LeafD 
 	}
 	return &LeafD{
 		rvers: rvers.LeafD,
-		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, shape, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -1672,16 +1738,27 @@ func (leaf *LeafD) scan(r *rbytes.RBuffer, ptr interface{}) error {
 	return r.Err()
 }
 
+func (leaf *LeafD) unsafeDecayArray(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 8
+	arr := (*[0]float64)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *LeafD) setAddress(ptr interface{}) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
 
 	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		arr := reflect.ValueOf(ptr).Elem()
-		switch sli := arr.Slice(0, rv.Len()).Interface().(type) {
-		case []float64:
-			return leaf.setAddress(&sli)
+		sli := leaf.unsafeDecayArray(ptr)
+		switch sli := sli.(type) {
+		case *[]float64:
+			return leaf.setAddress(sli)
 		default:
 			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}
@@ -1754,7 +1831,7 @@ type LeafC struct {
 	max int32
 }
 
-func newLeafC(b Branch, name string, len int, unsigned bool, count Leaf) *LeafC {
+func newLeafC(b Branch, name string, shape []int, unsigned bool, count Leaf) *LeafC {
 	const etype = 1
 	var lcnt leafCount
 	if count != nil {
@@ -1762,7 +1839,7 @@ func newLeafC(b Branch, name string, len int, unsigned bool, count Leaf) *LeafC 
 	}
 	return &LeafC{
 		rvers: rvers.LeafC,
-		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, shape, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -1898,16 +1975,27 @@ func (leaf *LeafC) scan(r *rbytes.RBuffer, ptr interface{}) error {
 	return r.Err()
 }
 
+func (leaf *LeafC) unsafeDecayArray(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 16
+	arr := (*[0]string)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *LeafC) setAddress(ptr interface{}) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
 
 	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		arr := reflect.ValueOf(ptr).Elem()
-		switch sli := arr.Slice(0, rv.Len()).Interface().(type) {
-		case []string:
-			return leaf.setAddress(&sli)
+		sli := leaf.unsafeDecayArray(ptr)
+		switch sli := sli.(type) {
+		case *[]string:
+			return leaf.setAddress(sli)
 		default:
 			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
 		}

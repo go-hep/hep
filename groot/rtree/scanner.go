@@ -775,7 +775,10 @@ func newValue(leaf Leaf) interface{} {
 				panic(xerrors.Errorf("groot/rtree: invalid number of dimensions (%d)", dims))
 			}
 		default:
-			etype = reflect.ArrayOf(leaf.Len(), etype)
+			shape := leafDims(leaf.Title())
+			for i := range shape {
+				etype = reflect.ArrayOf(shape[len(shape)-1-i], etype)
+			}
 		}
 	}
 	return reflect.New(etype).Interface()

@@ -92,8 +92,11 @@ func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, 
 		rt := reflect.TypeOf(wvar.Value).Elem()
 		switch k := rt.Kind(); k {
 		case reflect.Array:
-			fmt.Fprintf(title, "[%d]", rt.Len())
-			rt = rt.Elem()
+			et, shape := flattenArrayType(rt)
+			for _, dim := range shape {
+				fmt.Fprintf(title, "[%d]", dim)
+			}
+			rt = et
 		case reflect.Slice:
 			if wvar.Count == "" {
 				return nil, xerrors.Errorf("rtree: empty name for count-leaf of slice %q", wvar.Name)

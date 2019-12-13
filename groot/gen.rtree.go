@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 	"text/template"
 
 	"go-hep.org/x/hep/groot/internal/genroot"
@@ -42,6 +43,7 @@ func genLeaves() {
 		Type       string
 		Kind       string
 		LenType    int
+		GoLenType  int
 		DoUnsigned bool
 		RFunc      string
 		RFuncArray string
@@ -57,6 +59,7 @@ func genLeaves() {
 			Type:       "bool",
 			Kind:       "reflect.Bool",
 			LenType:    1,
+			GoLenType:  int(reflect.TypeOf(true).Size()),
 			RFunc:      "r.ReadBool()",
 			RFuncArray: "r.ReadFastArrayBool",
 			WFunc:      "w.WriteBool",
@@ -67,6 +70,7 @@ func genLeaves() {
 			Type:       "int8",
 			Kind:       "reflect.Int8",
 			LenType:    1,
+			GoLenType:  int(reflect.TypeOf(int8(0)).Size()),
 			DoUnsigned: true,
 			RFunc:      "r.ReadI8()",
 			RFuncArray: "r.ReadFastArrayI8",
@@ -79,6 +83,7 @@ func genLeaves() {
 			Type:       "int16",
 			Kind:       "reflect.Int16",
 			LenType:    2,
+			GoLenType:  int(reflect.TypeOf(int16(0)).Size()),
 			DoUnsigned: true,
 			RFunc:      "r.ReadI16()",
 			RFuncArray: "r.ReadFastArrayI16",
@@ -91,6 +96,7 @@ func genLeaves() {
 			Type:       "int32",
 			Kind:       "reflect.Int32",
 			LenType:    4,
+			GoLenType:  int(reflect.TypeOf(int32(0)).Size()),
 			DoUnsigned: true,
 			RFunc:      "r.ReadI32()",
 			RFuncArray: "r.ReadFastArrayI32",
@@ -103,6 +109,7 @@ func genLeaves() {
 			Type:       "int64",
 			Kind:       "reflect.Int64",
 			LenType:    8,
+			GoLenType:  int(reflect.TypeOf(int64(0)).Size()),
 			DoUnsigned: true,
 			RFunc:      "r.ReadI64()",
 			RFuncArray: "r.ReadFastArrayI64",
@@ -115,6 +122,7 @@ func genLeaves() {
 			Type:       "float32",
 			Kind:       "reflect.Float32",
 			LenType:    4,
+			GoLenType:  int(reflect.TypeOf(float32(0)).Size()),
 			RFunc:      "r.ReadF32()",
 			RFuncArray: "r.ReadFastArrayF32",
 			WFunc:      "w.WriteF32",
@@ -125,6 +133,7 @@ func genLeaves() {
 			Type:       "float64",
 			Kind:       "reflect.Float64",
 			LenType:    8,
+			GoLenType:  int(reflect.TypeOf(float64(0)).Size()),
 			RFunc:      "r.ReadF64()",
 			RFuncArray: "r.ReadFastArrayF64",
 			WFunc:      "w.WriteF64",
@@ -135,6 +144,7 @@ func genLeaves() {
 			Type:       "string",
 			Kind:       "reflect.String",
 			LenType:    1,
+			GoLenType:  int(reflect.TypeOf("").Size()),
 			RFunc:      "r.ReadString()",
 			RFuncArray: "r.ReadFastArrayString",
 			WFunc:      "w.WriteString",
@@ -176,7 +186,7 @@ type {{.Name}} struct {
 	max {{.RangeType}}
 }
 
-func new{{.Name}}(b Branch, name string, len int, unsigned bool, count Leaf) *{{.Name}} {
+func new{{.Name}}(b Branch, name string, shape []int, unsigned bool, count Leaf) *{{.Name}} {
 	const etype = {{.LenType}}
 	var lcnt leafCount
 	if count != nil {
@@ -184,7 +194,7 @@ func new{{.Name}}(b Branch, name string, len int, unsigned bool, count Leaf) *{{
 	}
 	return &{{.Name}}{
 		rvers: rvers.{{.Name}},
-		tleaf: newLeaf(name, len, etype, 0, false, unsigned, lcnt, b),
+		tleaf: newLeaf(name, shape, etype, 0, false, unsigned, lcnt, b),
 	}
 }
 
@@ -365,19 +375,30 @@ func (leaf *{{.Name}}) scan(r *rbytes.RBuffer, ptr interface{}) error {
     return r.Err()
 }
 
+func (leaf *{{.Name}}) unsafeDecayArray(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / {{.GoLenType}}
+	arr := (*[0]{{.Type}})(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *{{.Name}}) setAddress(ptr interface{}) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
 
     if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		arr := reflect.ValueOf(ptr).Elem()
-		switch sli :=arr.Slice(0, rv.Len()).Interface().(type) {
-		case []{{.Type}}:
-			return leaf.setAddress(&sli)
+		sli := leaf.unsafeDecayArray(ptr)
+		switch sli := sli.(type) {
+		case *[]{{.Type}}:
+			return leaf.setAddress(sli)
 {{- if .DoUnsigned}}
-		case []u{{.Type}}:
-			return leaf.setAddress(&sli)
+		case *[]u{{.Type}}:
+			return leaf.setAddress(sli)
 {{- end}}
 		default:
 			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))

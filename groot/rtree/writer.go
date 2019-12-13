@@ -312,6 +312,23 @@ func fileOf(d riofs.Directory) *riofs.File {
 	panic("impossible")
 }
 
+func flattenArrayType(rt reflect.Type) (reflect.Type, []int) {
+	var (
+		shape []int
+		kind  = rt.Kind()
+	)
+	const max = 1<<31 - 1
+	for i := 0; i < max; i++ {
+		if kind != reflect.Array {
+			return rt, shape
+		}
+		shape = append(shape, rt.Len())
+		rt = rt.Elem()
+		kind = rt.Kind()
+	}
+	panic("impossible")
+}
+
 var (
 	_ Tree   = (*wtree)(nil)
 	_ Writer = (*wtree)(nil)

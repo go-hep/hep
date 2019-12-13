@@ -44,7 +44,7 @@ func TestBasketRW(t *testing.T) {
 		branch = &tbranch{
 			named: *rbase.NewNamed("b1", "branch1"),
 		}
-		leaf = newLeafI(branch, "I32", 1, signed, nil)
+		leaf = newLeafI(branch, "I32", nil, signed, nil)
 	)
 	branch.leaves = append(branch.leaves, leaf)
 
@@ -283,8 +283,8 @@ func TestBranchRW(t *testing.T) {
 				zipBytes:       86,
 				branches:       []Branch{},
 				leaves: []Leaf{
-					newLeafI(nil, "leaf1", 1, signed, nil),
-					newLeafL(nil, "leaf2", 1, signed, nil),
+					newLeafI(nil, "leaf1", nil, signed, nil),
+					newLeafL(nil, "leaf2", nil, signed, nil),
 				},
 				baskets:     []Basket{},
 				basketBytes: []int32{86},
@@ -318,8 +318,8 @@ func TestBranchRW(t *testing.T) {
 				zipBytes:       86,
 				branches:       []Branch{},
 				leaves: []Leaf{
-					newLeafI(nil, "leaf1", 1, signed, nil),
-					newLeafL(nil, "leaf2", 1, signed, nil),
+					newLeafI(nil, "leaf1", nil, signed, nil),
+					newLeafL(nil, "leaf2", nil, signed, nil),
 				},
 				baskets: []Basket{
 					Basket{
@@ -701,6 +701,137 @@ func TestTreeRW(t *testing.T) {
 *        4 *        2 *         1 *      efgh *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *
 *        4 *        3 *         0 *      efgh *         7 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *
 *        4 *        4 *         1 *      efgh *         8 *         8 *         8 *         8 *         8 *         8 *         8 *         8 *         8 *
+***********************************************************************************************************************************************************
+`,
+		},
+		{
+			name:  "arrays-2d",
+			nevts: 5,
+			wvars: []WriteVar{
+				{Name: "ArrB", Value: new([2][3]bool)},
+				{Name: "ArrI8", Value: new([2][3]int8)},
+				{Name: "ArrI16", Value: new([2][3]int16)},
+				{Name: "ArrI32", Value: new([2][3]int32)},
+				{Name: "ArrI64", Value: new([2][3]int64)},
+				{Name: "ArrU8", Value: new([2][3]uint8)},
+				{Name: "ArrU16", Value: new([2][3]uint16)},
+				{Name: "ArrU32", Value: new([2][3]uint32)},
+				{Name: "ArrU64", Value: new([2][3]uint64)},
+				{Name: "ArrF32", Value: new([2][3]float32)},
+				{Name: "ArrF64", Value: new([2][3]float64)},
+			},
+			btitles: []string{
+				"ArrB[2][3]/O",
+				"ArrI8[2][3]/B", "ArrI16[2][3]/S", "ArrI32[2][3]/I", "ArrI64[2][3]/L",
+				"ArrU8[2][3]/b", "ArrU16[2][3]/s", "ArrU32[2][3]/i", "ArrU64[2][3]/l",
+				"ArrF32[2][3]/F", "ArrF64[2][3]/D",
+			},
+			ltitles: []string{
+				"ArrB[2][3]",
+				"ArrI8[2][3]", "ArrI16[2][3]", "ArrI32[2][3]", "ArrI64[2][3]",
+				"ArrU8[2][3]", "ArrU16[2][3]", "ArrU32[2][3]", "ArrU64[2][3]",
+				"ArrF32[2][3]", "ArrF64[2][3]",
+			},
+			total: 5 * 258,
+			want: func(i int) interface{} {
+				return struct {
+					ArrBool [2][3]bool
+					ArrI8   [2][3]int8
+					ArrI16  [2][3]int16
+					ArrI32  [2][3]int32
+					ArrI64  [2][3]int64
+					ArrU8   [2][3]uint8
+					ArrU16  [2][3]uint16
+					ArrU32  [2][3]uint32
+					ArrU64  [2][3]uint64
+					ArrF32  [2][3]float32
+					ArrF64  [2][3]float64
+				}{
+					ArrBool: [2][3]bool{
+						{bool(i%2 == 0), bool((i+1)%2 == 0), bool((i+2)%2 == 0)},
+						{bool((i+3)%2 == 0), bool((i+4)%2 == 0), bool((i+4)%2 == 0)},
+					},
+					ArrI8: [2][3]int8{
+						{int8('a' + i + 0), int8('a' + i + 1), int8('a' + i + 2)},
+						{int8('a' + i + 3), int8('a' + i + 4), int8(0)},
+					},
+					ArrI16: [2][3]int16{
+						{int16(i + 0), int16(i + 1), int16(i + 2)},
+						{int16(i + 3), int16(i + 4), int16(i + 5)},
+					},
+					ArrI32: [2][3]int32{
+						{int32(i + 0), int32(i + 1), int32(i + 2)},
+						{int32(i + 3), int32(i + 4), int32(i + 6)},
+					},
+					ArrI64: [2][3]int64{
+						{int64(i + 0), int64(i + 1), int64(i + 2)},
+						{int64(i + 3), int64(i + 4), int64(i + 5)},
+					},
+					ArrU8: [2][3]uint8{
+						{uint8(i + 0), uint8(i + 1), uint8(i + 2)},
+						{uint8(i + 3), uint8(i + 4), uint8(i + 5)},
+					},
+					ArrU16: [2][3]uint16{
+						{uint16(i), uint16(i + 1), uint16(i + 2)},
+						{uint16(i + 3), uint16(i + 4), uint16(i + 5)},
+					},
+					ArrU32: [2][3]uint32{
+						{uint32(i + 0), uint32(i + 1), uint32(i + 2)},
+						{uint32(i + 3), uint32(i + 4), uint32(i + 6)},
+					},
+					ArrU64: [2][3]uint64{
+						{uint64(i + 0), uint64(i + 1), uint64(i + 2)},
+						{uint64(i + 3), uint64(i + 4), uint64(i + 5)},
+					},
+					ArrF32: [2][3]float32{
+						{float32(i + 0), float32(i + 1), float32(i + 2)},
+						{float32(i + 3), float32(i + 4), float32(i + 5)},
+					},
+					ArrF64: [2][3]float64{
+						{float64(i + 0), float64(i + 1), float64(i + 2)},
+						{float64(i + 3), float64(i + 4), float64(i + 5)},
+					},
+				}
+			},
+			scan: []string{
+				"ArrB",
+				"ArrI8", "ArrI16", "ArrI32", "ArrI64",
+				"ArrU8", "ArrU16", "ArrU32", "ArrU64",
+				"ArrF32", "ArrF64",
+			},
+			cxx: `***********************************************************************************************************************************************************
+*    Row   * Instance *      ArrB *     ArrI8 *    ArrI16 *    ArrI32 *    ArrI64 *     ArrU8 *    ArrU16 *    ArrU32 *    ArrU64 *    ArrF32 *    ArrF64 *
+***********************************************************************************************************************************************************
+*        0 *        0 *         1 *     abcde *         0 *         0 *         0 *         0 *         0 *         0 *         0 *         0 *         0 *
+*        0 *        1 *         0 *     abcde *         1 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *
+*        0 *        2 *         1 *     abcde *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *
+*        0 *        3 *         0 *     abcde *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *
+*        0 *        4 *         1 *     abcde *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *
+*        0 *        5 *         1 *     abcde *         5 *         6 *         5 *         5 *         5 *         6 *         5 *         5 *         5 *
+*        1 *        0 *         0 *     bcdef *         1 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *         1 *
+*        1 *        1 *         1 *     bcdef *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *
+*        1 *        2 *         0 *     bcdef *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *
+*        1 *        3 *         1 *     bcdef *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *
+*        1 *        4 *         0 *     bcdef *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *
+*        1 *        5 *         0 *     bcdef *         6 *         7 *         6 *         6 *         6 *         7 *         6 *         6 *         6 *
+*        2 *        0 *         1 *     cdefg *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *         2 *
+*        2 *        1 *         0 *     cdefg *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *
+*        2 *        2 *         1 *     cdefg *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *
+*        2 *        3 *         0 *     cdefg *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *
+*        2 *        4 *         1 *     cdefg *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *
+*        2 *        5 *         1 *     cdefg *         7 *         8 *         7 *         7 *         7 *         8 *         7 *         7 *         7 *
+*        3 *        0 *         0 *     defgh *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *         3 *
+*        3 *        1 *         1 *     defgh *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *
+*        3 *        2 *         0 *     defgh *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *
+*        3 *        3 *         1 *     defgh *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *
+*        3 *        4 *         0 *     defgh *         7 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *
+*        3 *        5 *         0 *     defgh *         8 *         9 *         8 *         8 *         8 *         9 *         8 *         8 *         8 *
+*        4 *        0 *         1 *     efghi *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *         4 *
+*        4 *        1 *         0 *     efghi *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *         5 *
+*        4 *        2 *         1 *     efghi *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *         6 *
+*        4 *        3 *         0 *     efghi *         7 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *         7 *
+*        4 *        4 *         1 *     efghi *         8 *         8 *         8 *         8 *         8 *         8 *         8 *         8 *         8 *
+*        4 *        5 *         1 *     efghi *         9 *        10 *         9 *         9 *         9 *        10 *         9 *         9 *         9 *
 ***********************************************************************************************************************************************************
 `,
 		},
