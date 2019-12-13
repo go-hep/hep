@@ -143,6 +143,25 @@ func (h *H1D) Fill(x, w float64) {
 	h.Binning.fill(x, w)
 }
 
+// FillN fills this histogram with the provided slices of xs and weight ws.
+// if ws is nil, the histogram will be filled with entries of weight 1.
+// Otherwise, FillN panics if the slices lengths differ.
+func (h *H1D) FillN(xs, ws []float64) {
+	switch ws {
+	case nil:
+		for _, x := range xs {
+			h.Binning.fill(x, 1)
+		}
+	default:
+		if len(xs) != len(ws) {
+			panic(xerrors.Errorf("hbook: lengths mismatch"))
+		}
+		for i, x := range xs {
+			h.Binning.fill(x, ws[i])
+		}
+	}
+}
+
 // Bin returns the bin at coordinates (x) for this 1-dim histogram.
 // Bin returns nil for under/over flow bins.
 func (h *H1D) Bin(x float64) *Bin1D {

@@ -38,6 +38,9 @@ func ExampleH1D() {
 		v := dist.Rand()
 		h.Fill(v, 1)
 	}
+	// fill h with a slice of values and their weights
+	h.FillN([]float64{1, 2, 3}, []float64{1, 1, 1})
+	h.FillN([]float64{1, 2, 3}, nil) // all weights are 1.
 
 	fmt.Printf("mean:    %v\n", h.XMean())
 	fmt.Printf("rms:     %v\n", h.XRMS())
@@ -45,10 +48,10 @@ func ExampleH1D() {
 	fmt.Printf("std-err: %v\n", h.XStdErr())
 
 	// Output:
-	// mean:    0.004393321492241603
-	// rms:     1.0051696196105504
-	// std-dev: 1.0052102803319578
-	// std-err: 0.010052102803319578
+	// mean:    0.005589967511734562
+	// rms:     1.0062596231244403
+	// std-dev: 1.0062943821322063
+	// std-err: 0.010059926295994191
 }
 
 func TestH1D(t *testing.T) {
@@ -624,4 +627,45 @@ func TestH1DBin(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestH1DFillN(t *testing.T) {
+	h1 := hbook.NewH1D(10, 0, 10)
+	h2 := hbook.NewH1D(10, 0, 10)
+
+	xs := []float64{1, 2, 3, 4}
+	ws := []float64{1, 2, 1, 1}
+
+	for i := range xs {
+		h1.Fill(xs[i], ws[i])
+	}
+	h2.FillN(xs, ws)
+
+	if s1, s2 := h1.SumW(), h2.SumW(); s1 != s2 {
+		t.Fatalf("invalid sumw: h1=%v, h2=%v", s1, s2)
+	}
+
+	for i := range xs {
+		h1.Fill(xs[i], 1)
+	}
+	h2.FillN(xs, nil)
+
+	if s1, s2 := h1.SumW(), h2.SumW(); s1 != s2 {
+		t.Fatalf("invalid sumw: h1=%v, h2=%v", s1, s2)
+	}
+
+	func() {
+		defer func() {
+			err := recover()
+			if err == nil {
+				t.Fatalf("expected a panic!")
+			}
+			const want = "hbook: lengths mismatch"
+			if got, want := err.(error).Error(), want; got != want {
+				t.Fatalf("invalid panic message:\ngot= %q\nwant=%q", got, want)
+			}
+		}()
+
+		h2.FillN(xs, []float64{1})
+	}()
 }
