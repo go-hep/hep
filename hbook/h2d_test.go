@@ -307,6 +307,20 @@ func ExampleH2D() {
 		v = dist.Rand(v)
 		h.Fill(v[0], v[1], 1)
 	}
+
+	// fill h with slices of values and their weights
+	h.FillN(
+		[]float64{1, 2, 3}, // xs
+		[]float64{1, 2, 3}, // ys
+		[]float64{1, 1, 1}, // ws
+	)
+
+	// fill h with slices of values. all weights are 1.
+	h.FillN(
+		[]float64{1, 2, 3}, // xs
+		[]float64{1, 2, 3}, // ys
+		nil,                // ws
+	)
 }
 
 func TestH2DWriteYODA(t *testing.T) {
@@ -410,4 +424,76 @@ func TestH2DBin(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestH2DFillN(t *testing.T) {
+	h1 := hbook.NewH2D(10, 0, 10, 10, 0, 10)
+	h2 := hbook.NewH2D(10, 0, 10, 10, 0, 10)
+
+	xs := []float64{1, 2, 3, 4}
+	ys := []float64{1, 2, 3, 4}
+	ws := []float64{1, 2, 1, 1}
+
+	for i := range xs {
+		h1.Fill(xs[i], ys[i], ws[i])
+	}
+	h2.FillN(xs, ys, ws)
+
+	if s1, s2 := h1.SumW(), h2.SumW(); s1 != s2 {
+		t.Fatalf("invalid sumw: h1=%v, h2=%v", s1, s2)
+	}
+
+	for i := range xs {
+		h1.Fill(xs[i], ys[i], 1)
+	}
+	h2.FillN(xs, ys, nil)
+
+	if s1, s2 := h1.SumW(), h2.SumW(); s1 != s2 {
+		t.Fatalf("invalid sumw: h1=%v, h2=%v", s1, s2)
+	}
+
+	func() {
+		defer func() {
+			err := recover()
+			if err == nil {
+				t.Fatalf("expected a panic!")
+			}
+			const want = "hbook: lengths mismatch"
+			if got, want := err.(error).Error(), want; got != want {
+				t.Fatalf("invalid panic message:\ngot= %q\nwant=%q", got, want)
+			}
+		}()
+
+		h2.FillN(xs, ys[:len(xs)-2], nil)
+	}()
+
+	func() {
+		defer func() {
+			err := recover()
+			if err == nil {
+				t.Fatalf("expected a panic!")
+			}
+			const want = "hbook: lengths mismatch"
+			if got, want := err.(error).Error(), want; got != want {
+				t.Fatalf("invalid panic message:\ngot= %q\nwant=%q", got, want)
+			}
+		}()
+
+		h2.FillN(xs, []float64{1}, ws)
+	}()
+
+	func() {
+		defer func() {
+			err := recover()
+			if err == nil {
+				t.Fatalf("expected a panic!")
+			}
+			const want = "hbook: lengths mismatch"
+			if got, want := err.(error).Error(), want; got != want {
+				t.Fatalf("invalid panic message:\ngot= %q\nwant=%q", got, want)
+			}
+		}()
+
+		h2.FillN(xs, ys, []float64{1})
+	}()
 }

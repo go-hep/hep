@@ -180,6 +180,36 @@ func (h *H2D) Fill(x, y, w float64) {
 	h.Binning.fill(x, y, w)
 }
 
+// FillN fills this histogram with the provided slices (xs,ys) and weights ws.
+// if ws is nil, the histogram will be filled with entries of weight 1.
+// Otherwise, FillN panics if the slices lengths differ.
+func (h *H2D) FillN(xs, ys, ws []float64) {
+	switch ws {
+	case nil:
+		if len(xs) != len(ys) {
+			panic(xerrors.Errorf("hbook: lengths mismatch"))
+		}
+		for i := range xs {
+			x := xs[i]
+			y := ys[i]
+			h.Binning.fill(x, y, 1)
+		}
+	default:
+		if len(xs) != len(ys) {
+			panic(xerrors.Errorf("hbook: lengths mismatch"))
+		}
+		if len(xs) != len(ws) {
+			panic(xerrors.Errorf("hbook: lengths mismatch"))
+		}
+		for i := range xs {
+			x := xs[i]
+			y := ys[i]
+			w := ws[i]
+			h.Binning.fill(x, y, w)
+		}
+	}
+}
+
 // Bin returns the bin at coordinates (x,y) for this 2-dim histogram.
 // Bin returns nil for under/over flow bins.
 func (h *H2D) Bin(x, y float64) *Bin2D {
