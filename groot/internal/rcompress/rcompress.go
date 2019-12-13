@@ -13,7 +13,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/pierrec/lz4"
+	"github.com/pierrec/lz4/v3"
 	"github.com/pierrec/xxHash/xxHash64"
 	"github.com/ulikunitz/xz"
 	"golang.org/x/xerrors"
