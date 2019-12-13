@@ -121,6 +121,7 @@ func process(oname, tname, fname string) error {
 	}
 
 	rec := NewRecord(npy)
+	defer rec.Release()
 
 	dst, err := groot.Create(oname)
 	if err != nil {

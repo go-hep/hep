@@ -135,9 +135,16 @@ func (rec *Record) read(r *npyio.Reader, nelem int64, bldr array.Builder) {
 		panic(xerrors.Errorf("npy2root: could not read numpy data: %w", err))
 	}
 
-	offset := nelem / rec.nrows
+	ch := make(chan interface{}, nelem/2)
+	go func() {
+		defer close(ch)
+		for i := 0; i < rv.Len(); i++ {
+			ch <- rv.Index(i).Interface()
+		}
+	}()
+
 	for i := int64(0); i < rec.nrows; i++ {
-		appendData(bldr, rv.Interface(), int(offset*i), int(offset*(i+1)), rec.schema.Field(0).Type)
+		appendData(bldr, ch, rec.schema.Field(0).Type)
 	}
 
 	rec.cols = append(rec.cols, bldr.NewArray())
@@ -211,11 +218,11 @@ func schemaFrom(npy *npyio.Reader) *arrow.Schema {
 		// 1d-array
 		dtype = arrow.FixedSizeListOf(int32(shape[1]), dtype)
 
-		//	case 3:
-		//		panic(xerrors.Errorf("npy2root: 2d-arrays not yet supported by groot"))
-		//		// 		// 2d-array
-		//		// 		dtype = arrow.FixedSizeListOf(int32(shape[1]), dtype)
-		//		// 		dtype = arrow.FixedSizeListOf(int32(shape[2]), dtype)
+	case 3, 4, 5:
+		// 2,3d-array
+		for i := range shape[1:] {
+			dtype = arrow.FixedSizeListOf(int32(shape[len(shape)-1-i]), dtype)
+		}
 
 	default:
 		panic(xerrors.Errorf("npy2root: invalid shape descriptor %v", hdr.Descr.Shape))
@@ -298,38 +305,49 @@ func dtypeFrom(dt arrow.DataType) reflect.Type {
 	}
 }
 
-func appendData(bldr array.Builder, vs interface{}, beg, end int, dt arrow.DataType) {
+func appendData(bldr array.Builder, ch <-chan interface{}, dt arrow.DataType) {
 	switch bldr := bldr.(type) {
 	case *array.BooleanBuilder:
-		bldr.Append(vs.([]bool)[beg])
+		v := <-ch
+		bldr.Append(v.(bool))
 	case *array.Int8Builder:
-		bldr.Append(vs.([]int8)[beg])
+		v := <-ch
+		bldr.Append(v.(int8))
 	case *array.Int16Builder:
-		bldr.Append(vs.([]int16)[beg])
+		v := <-ch
+		bldr.Append(v.(int16))
 	case *array.Int32Builder:
-		bldr.Append(vs.([]int32)[beg])
+		v := <-ch
+		bldr.Append(v.(int32))
 	case *array.Int64Builder:
-		bldr.Append(vs.([]int64)[beg])
+		v := <-ch
+		bldr.Append(v.(int64))
 	case *array.Uint8Builder:
-		bldr.Append(vs.([]uint8)[beg])
+		v := <-ch
+		bldr.Append(v.(uint8))
 	case *array.Uint16Builder:
-		bldr.Append(vs.([]uint16)[beg])
+		v := <-ch
+		bldr.Append(v.(uint16))
 	case *array.Uint32Builder:
-		bldr.Append(vs.([]uint32)[beg])
+		v := <-ch
+		bldr.Append(v.(uint32))
 	case *array.Uint64Builder:
-		bldr.Append(vs.([]uint64)[beg])
+		v := <-ch
+		bldr.Append(v.(uint64))
 	case *array.Float32Builder:
-		bldr.Append(vs.([]float32)[beg])
+		v := <-ch
+		bldr.Append(v.(float32))
 	case *array.Float64Builder:
-		bldr.Append(vs.([]float64)[beg])
+		v := <-ch
+		bldr.Append(v.(float64))
 	case *array.FixedSizeListBuilder:
-		elemType := dt.(*arrow.FixedSizeListType)
+		dt := dt.(*arrow.FixedSizeListType)
 		sub := bldr.ValueBuilder()
-		n := int(elemType.Len())
+		n := int(dt.Len())
 		sub.Reserve(n)
 		bldr.Append(true)
 		for i := 0; i < n; i++ {
-			appendData(sub, vs, beg+i, end, elemType)
+			appendData(sub, ch, dt.Elem())
 		}
 	default:
 		panic(xerrors.Errorf("npy2root: invalid Arrow builder type %T", bldr))
