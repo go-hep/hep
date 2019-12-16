@@ -15,6 +15,7 @@ import (
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/internal/rcmd"
 	"go-hep.org/x/hep/groot/rbase"
+	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtree"
 	"golang.org/x/xerrors"
@@ -49,6 +50,46 @@ func TestROOTCp(t *testing.T) {
 			t.Fatalf("%+v", err)
 		}
 	}
+	{
+		subdir, err := riofs.Dir(ref).Mkdir("dir-1/dir-11")
+		if err != nil {
+			t.Fatalf("%+v", err)
+		}
+		obj := rbase.NewObjString("string111")
+		err = subdir.Put("str-111", obj)
+		if err != nil {
+			t.Fatalf("%+v", err)
+		}
+		keys = append(keys, "dir-1/dir-11/str-111")
+		refs = append(refs, obj)
+	}
+	{
+		subdir, err := riofs.Dir(ref).Mkdir("dir-1/dir-12")
+		if err != nil {
+			t.Fatalf("%+v", err)
+		}
+		obj := rbase.NewObjString("string121")
+		err = subdir.Put("str-121", obj)
+		if err != nil {
+			t.Fatalf("%+v", err)
+		}
+		keys = append(keys, "dir-1/dir-12/str-121")
+		refs = append(refs, obj)
+	}
+	{
+		subdir, err := riofs.Dir(ref).Mkdir("dir-2")
+		if err != nil {
+			t.Fatalf("%+v", err)
+		}
+
+		obj := rbase.NewObjString("string21")
+		err = subdir.Put("obj-21", obj)
+		if err != nil {
+			t.Fatalf("%+v", err)
+		}
+		keys = append(keys, "dir-2/obj-21")
+		refs = append(refs, obj)
+	}
 
 	err = ref.Close()
 	if err != nil {
@@ -63,7 +104,7 @@ func TestROOTCp(t *testing.T) {
 		{
 			oname: "out-all.root",
 			fname: refname,
-			keys:  []int{0, 1, 2},
+			keys:  []int{0, 1, 2, 3, 4, 5},
 		},
 		{
 			oname: "out-key.root",
@@ -81,14 +122,39 @@ func TestROOTCp(t *testing.T) {
 			keys:  []int{1},
 		},
 		{
-			oname: "out-str.root",
-			fname: refname + ":str",
+			oname: "out-str10.root",
+			fname: refname + ":^/str",
 			keys:  []int{2},
 		},
 		{
-			oname: "out-str.root",
-			fname: refname + ":str.*",
+			oname: "out-str11.root",
+			fname: refname + ":/str",
+			keys:  []int{2, 3, 4},
+		},
+		{
+			oname: "out-str12.root",
+			fname: refname + ":str",
+			keys:  []int{2, 3, 4},
+		},
+		{
+			oname: "out-str20.root",
+			fname: refname + ":^/str.*",
 			keys:  []int{2},
+		},
+		{
+			oname: "out-str21.root",
+			fname: refname + ":/str.*",
+			keys:  []int{2, 3, 4},
+		},
+		{
+			oname: "out-str22.root",
+			fname: refname + ":str.*",
+			keys:  []int{2, 3, 4},
+		},
+		{
+			oname: "out-dir.root",
+			fname: refname + ":dir",
+			keys:  []int{3, 4, 5},
 		},
 		{
 			oname: "empty.root",
@@ -100,7 +166,7 @@ func TestROOTCp(t *testing.T) {
 			oname := filepath.Join(dir, tc.oname)
 			err := rootcp(oname, []string{tc.fname})
 			if err != nil {
-				t.Fatal(err)
+				t.Fatalf("%+v", err)
 			}
 
 			f, err := groot.Open(oname)
@@ -109,22 +175,52 @@ func TestROOTCp(t *testing.T) {
 			}
 			defer f.Close()
 
-			if got, want := len(f.Keys()), len(tc.keys); got != want {
+			gotKeys := 0
+			err = riofs.Walk(f, func(path string, obj root.Object, err error) error {
+				if err != nil {
+					return err
+				}
+				name := path[len(f.Name()):]
+				if name == "" {
+					return nil
+				}
+				if _, isdir := obj.(riofs.Directory); isdir {
+					return nil
+				}
+				gotKeys++
+				return nil
+			})
+			if err != nil {
+				t.Fatalf("could not count keys in output ROOT file: %+v", err)
+			}
+
+			if got, want := gotKeys, len(tc.keys); got != want {
 				t.Fatalf("invalid number of keys. got=%d, want=%d", got, want)
 			}
 
 			for _, i := range tc.keys {
-				v, err := f.Get(keys[i])
+				v, err := riofs.Dir(f).Get(keys[i])
 				if err != nil {
 					t.Fatalf("%+v", err)
 				}
 
-				if !reflect.DeepEqual(v, refs[i]) {
-					t.Fatalf(
-						"invalid value for %q:\ngot=%v\nwant=%v\n",
-						keys[i],
-						v, refs[i],
-					)
+				switch v := v.(type) {
+				case riofs.Directory:
+					if got, want := v.(root.Named).Name(), refs[i].(root.Named).Name(); got != want {
+						t.Fatalf(
+							"invalid value for %q:\ngot=%v\nwant=%v\n",
+							keys[i],
+							got, want,
+						)
+					}
+				default:
+					if !reflect.DeepEqual(v, refs[i]) {
+						t.Fatalf(
+							"invalid value for %q:\ngot=%v\nwant=%v\n",
+							keys[i],
+							v, refs[i],
+						)
+					}
 				}
 			}
 
@@ -142,73 +238,97 @@ func TestSplitArg(t *testing.T) {
 		{
 			cmd:   "file.root",
 			fname: "file.root",
-			sel:   ".*",
+			sel:   "/.*",
 			err:   nil,
 		},
 		{
 			cmd:   "dir/sub/file.root",
 			fname: "dir/sub/file.root",
-			sel:   ".*",
+			sel:   "/.*",
 			err:   nil,
 		},
 		{
 			cmd:   "/dir/sub/file.root",
 			fname: "/dir/sub/file.root",
-			sel:   ".*",
+			sel:   "/.*",
 			err:   nil,
 		},
 		{
 			cmd:   "../dir/sub/file.root",
 			fname: "../dir/sub/file.root",
-			sel:   ".*",
+			sel:   "/.*",
 			err:   nil,
 		},
 		{
 			cmd:   "dir/sub/file.root:hist",
 			fname: "dir/sub/file.root",
-			sel:   "hist",
+			sel:   "/hist",
 			err:   nil,
 		},
 		{
 			cmd:   "dir/sub/file.root:hist*",
 			fname: "dir/sub/file.root",
-			sel:   "hist*",
+			sel:   "/hist*",
 			err:   nil,
 		},
 		{
 			cmd:   "dir/sub/file.root:",
 			fname: "dir/sub/file.root",
-			sel:   ".*",
+			sel:   "/.*",
 			err:   nil,
 		},
 		{
 			cmd:   "file://dir/sub/file.root:",
 			fname: "file://dir/sub/file.root",
-			sel:   ".*",
+			sel:   "/.*",
 			err:   nil,
 		},
 		{
 			cmd:   "https://dir/sub/file.root",
 			fname: "https://dir/sub/file.root",
-			sel:   ".*",
+			sel:   "/.*",
 			err:   nil,
 		},
 		{
 			cmd:   "http://dir/sub/file.root",
 			fname: "http://dir/sub/file.root",
-			sel:   ".*",
+			sel:   "/.*",
 			err:   nil,
 		},
 		{
 			cmd:   "https://dir/sub/file.root:hist*",
 			fname: "https://dir/sub/file.root",
-			sel:   "hist*",
+			sel:   "/hist*",
 			err:   nil,
 		},
 		{
 			cmd:   "root://dir/sub/file.root:hist*",
 			fname: "root://dir/sub/file.root",
-			sel:   "hist*",
+			sel:   "/hist*",
+			err:   nil,
+		},
+		{
+			cmd:   "root://dir/sub/file.root:/hist*",
+			fname: "root://dir/sub/file.root",
+			sel:   "/hist*",
+			err:   nil,
+		},
+		{
+			cmd:   "root://dir/sub/file.root:^/hist*",
+			fname: "root://dir/sub/file.root",
+			sel:   "^/hist*",
+			err:   nil,
+		},
+		{
+			cmd:   "root://dir/sub/file.root:^hist*",
+			fname: "root://dir/sub/file.root",
+			sel:   "^/hist*",
+			err:   nil,
+		},
+		{
+			cmd:   "root://dir/sub/file.root:/^hist*",
+			fname: "root://dir/sub/file.root",
+			sel:   "/^hist*",
 			err:   nil,
 		},
 		{
@@ -268,7 +388,12 @@ func TestROOTCpTree(t *testing.T) {
 		I32s []int32 `groot:"i32s[N]"`
 	}{}
 
-	rsrc, err := rtree.NewWriter(ref, "mytree", rtree.WriteVarsFromStruct(&rdata))
+	refdir, err := riofs.Dir(ref).Mkdir("dir1/dir11")
+	if err != nil {
+		t.Fatalf("could not create dir hierarchy: %+v", err)
+	}
+
+	rsrc, err := rtree.NewWriter(refdir, "mytree", rtree.WriteVarsFromStruct(&rdata))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -296,7 +421,7 @@ func TestROOTCpTree(t *testing.T) {
 	}
 
 	chkname := filepath.Join(dir, "chk.root")
-	err = rootcp(chkname, []string{refname + ":mytree"})
+	err = rootcp(chkname, []string{refname + ":dir1/dir11/mytree"})
 	if err != nil {
 		t.Fatalf("could not copy tree: %+v", err)
 	}

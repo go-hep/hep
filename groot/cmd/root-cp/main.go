@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	stdpath "path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -106,32 +107,47 @@ func process(o *riofs.File, arg string) error {
 	}
 	defer f.Close()
 
-	for _, k := range f.Keys() {
-		if !re.MatchString(k.Name()) {
-			continue
+	err = riofs.Walk(f, func(path string, obj root.Object, err error) error {
+		if err != nil {
+			return err
+		}
+		name := path[len(f.Name()):]
+		if !re.MatchString(name) {
+			return nil
 		}
 
-		v, err := k.Object()
-		if err != nil {
-			return xerrors.Errorf("could not load object %q from file %q: %w", k.Name(), fname, err)
-		}
+		var (
+			dst riofs.Directory
+			dir = stdpath.Dir(name)
+		)
 
-		err = copyObj(o, k.Name(), v)
+		odst, err := riofs.Dir(o).Get(dir)
 		if err != nil {
-			return xerrors.Errorf("could not copy object %q to output file: %w", k.Name(), err)
+			v, err := riofs.Dir(o).Mkdir(dir)
+			if err != nil {
+				return xerrors.Errorf("could not create directory %q: %w", dir, err)
+			}
+			odst = v.(root.Object)
 		}
+		dst = odst.(riofs.Directory)
+
+		return copyObj(dst, stdpath.Base(name), obj)
+	})
+	if err != nil {
+		return xerrors.Errorf("could not copy input ROOT file: %w", err)
 	}
-
 	return nil
 }
 
-func copyObj(o *riofs.File, k string, obj root.Object) error {
+func copyObj(odir riofs.Directory, k string, obj root.Object) error {
 	var err error
 	switch obj := obj.(type) {
 	case rtree.Tree:
-		err = copyTree(o, k, obj)
+		err = copyTree(odir, k, obj)
+	case riofs.Directory:
+		_, err = odir.Mkdir(k)
 	default:
-		err = o.Put(k, obj)
+		err = odir.Put(k, obj)
 	}
 
 	if err != nil {
@@ -141,8 +157,8 @@ func copyObj(o *riofs.File, k string, obj root.Object) error {
 	return nil
 }
 
-func copyTree(o *riofs.File, name string, tree rtree.Tree) error {
-	dst, err := rtree.NewWriter(o, name, rtree.WriteVarsFromTree(tree))
+func copyTree(dir riofs.Directory, name string, tree rtree.Tree) error {
+	dst, err := rtree.NewWriter(dir, name, rtree.WriteVarsFromTree(tree))
 	if err != nil {
 		return xerrors.Errorf("could not create output copy tree: %w", err)
 	}
@@ -191,5 +207,13 @@ func splitArg(cmd string) (fname, sel string, err error) {
 		sel = ".*"
 	}
 	fname = prefix + vol + fname
+	switch {
+	case strings.HasPrefix(sel, "/"):
+	case strings.HasPrefix(sel, "^/"):
+	case strings.HasPrefix(sel, "^"):
+		sel = "^/" + sel[1:]
+	default:
+		sel = "/" + sel
+	}
 	return fname, sel, err
 }
