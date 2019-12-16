@@ -27,6 +27,8 @@ import (
 	"go-hep.org/x/hep/groot/riofs"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
+	"go-hep.org/x/hep/groot/root"
+	"go-hep.org/x/hep/groot/rtree"
 	"golang.org/x/xerrors"
 )
 
@@ -114,10 +116,44 @@ func process(o *riofs.File, arg string) error {
 			return xerrors.Errorf("could not load object %q from file %q: %w", k.Name(), fname, err)
 		}
 
-		err = o.Put(k.Name(), v)
+		err = copyObj(o, k.Name(), v)
 		if err != nil {
-			return xerrors.Errorf("could not save object %q to output file: %w", k.Name(), err)
+			return xerrors.Errorf("could not copy object %q to output file: %w", k.Name(), err)
 		}
+	}
+
+	return nil
+}
+
+func copyObj(o *riofs.File, k string, obj root.Object) error {
+	var err error
+	switch obj := obj.(type) {
+	case rtree.Tree:
+		err = copyTree(o, k, obj)
+	default:
+		err = o.Put(k, obj)
+	}
+
+	if err != nil {
+		return xerrors.Errorf("could not save object %q to output file: %w", k, err)
+	}
+
+	return nil
+}
+
+func copyTree(o *riofs.File, name string, tree rtree.Tree) error {
+	dst, err := rtree.NewWriter(o, name, rtree.WriteVarsFromTree(tree))
+	if err != nil {
+		return xerrors.Errorf("could not create output copy tree: %w", err)
+	}
+	_, err = rtree.Copy(dst, tree)
+	if err != nil {
+		return xerrors.Errorf("could not copy tree %q: %w", name, err)
+	}
+
+	err = dst.Close()
+	if err != nil {
+		return xerrors.Errorf("could not close copy tree %q: %w", name, err)
 	}
 
 	return nil

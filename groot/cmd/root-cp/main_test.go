@@ -5,6 +5,7 @@
 package main
 
 import (
+	"bytes"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -12,8 +13,10 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/groot"
+	"go-hep.org/x/hep/groot/internal/rcmd"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/root"
+	"go-hep.org/x/hep/groot/rtree"
 	"golang.org/x/xerrors"
 )
 
@@ -243,5 +246,74 @@ func TestSplitArg(t *testing.T) {
 				t.Fatalf("selection=%q, want=%q", got, want)
 			}
 		})
+	}
+}
+
+func TestROOTCpTree(t *testing.T) {
+	dir, err := ioutil.TempDir("", "groot-root-cp-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+
+	refname := filepath.Join(dir, "ref.root")
+	ref, err := groot.Create(refname)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	defer ref.Close()
+
+	rdata := struct {
+		N    int32
+		I32s []int32 `groot:"i32s[N]"`
+	}{}
+
+	rsrc, err := rtree.NewWriter(ref, "mytree", rtree.WriteVarsFromStruct(&rdata))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := 0; i < 5; i++ {
+		rdata.N = int32(i)
+		rdata.I32s = make([]int32, i)
+		for j := range rdata.I32s {
+			rdata.I32s[j] = int32(i)
+		}
+
+		_, err = rsrc.Write()
+		if err != nil {
+			t.Fatalf("could not write event %d: %+v", i, err)
+		}
+	}
+
+	err = rsrc.Close()
+	if err != nil {
+		t.Fatalf("could not close src tree: %+v", err)
+	}
+
+	err = ref.Close()
+	if err != nil {
+		t.Fatalf("could not close ref file: %+v", err)
+	}
+
+	chkname := filepath.Join(dir, "chk.root")
+	err = rootcp(chkname, []string{refname + ":mytree"})
+	if err != nil {
+		t.Fatalf("could not copy tree: %+v", err)
+	}
+
+	want := new(bytes.Buffer)
+	err = rcmd.Dump(want, refname, true, nil)
+	if err != nil {
+		t.Fatalf("could not dump ref file %q: %+v", refname, err)
+	}
+
+	got := new(bytes.Buffer)
+	err = rcmd.Dump(got, chkname, true, nil)
+	if err != nil {
+		t.Fatalf("could not dump new file %q: %+v", chkname, err)
+	}
+
+	if got, want := got.String(), want.String(); got != want {
+		t.Fatalf("dumps differ:\ngot:\n%s\n===\nwant:\n%s\n===\n", got, want)
 	}
 }
