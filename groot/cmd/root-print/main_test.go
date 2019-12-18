@@ -171,6 +171,11 @@ func TestPrint(t *testing.T) {
 			},
 		},
 		{
+			fname: refname + ":^dir-111",
+			otype: "png",
+			want:  []string{},
+		},
+		{
 			fname: refname + ":^/dir-111",
 			otype: "png",
 			want:  []string{},
