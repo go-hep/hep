@@ -43,3 +43,11 @@ func WithZlib(level int) FileOption {
 		return nil
 	}
 }
+
+// WithZstd configures a ROOT file to use zstd as a compression mechanism.
+func WithZstd(level int) FileOption {
+	return func(f *File) error {
+		f.setCompression(rcompress.ZSTD, level)
+		return nil
+	}
+}

@@ -13,6 +13,7 @@ import (
 	"encoding/binary"
 	"io"
 
+	"github.com/klauspost/compress/zstd"
 	"github.com/pierrec/lz4"
 	"github.com/pierrec/xxHash/xxHash64"
 	"github.com/ulikunitz/xz"
@@ -31,7 +32,12 @@ const (
 	LZMA                 Kind = +2
 	OldCompression       Kind = +3
 	LZ4                  Kind = +4
-	UndefinedCompression Kind = +5
+	ZSTD                 Kind = +5
+	UndefinedCompression Kind = +6
+)
+
+const (
+	zstdVersion = 1 // keep in sync with klauspost/compress/zstd and ROOT
 )
 
 var (
@@ -66,6 +72,8 @@ func (set Settings) Compression() int32 {
 			lvl = 1
 		case LZMA:
 			lvl = 1
+		case ZSTD:
+			lvl = 1 // FIXME(sbinet): check with ROOT-6.20.00 default
 		default:
 			panic(xerrors.Errorf("rcompress: unknown compression algorithm: %v", alg))
 		}
@@ -95,6 +103,8 @@ func kindOf(buf [HeaderSize]byte) Kind {
 		return LZMA
 	case buf[0] == 'L' && buf[1] == '4':
 		return LZ4
+	case buf[0] == 'Z' && buf[1] == 'S':
+		return ZSTD
 	case buf[0] == 'C' && buf[1] == 'S':
 		return OldCompression
 	default:
@@ -260,6 +270,34 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		binary.BigEndian.PutUint64(buf[:chksum], xxHash64.Checksum(buf[chksum:], 0))
 		dstsz = int32(n + chksum)
 
+	case ZSTD:
+		hdr[0] = 'Z'
+		hdr[1] = 'S'
+		hdr[2] = zstdVersion
+
+		buf := new(bytes.Buffer)
+		buf.Grow(len(src))
+		w, err := zstd.NewWriter(buf, zstd.WithEncoderLevel(zstd.EncoderLevel(lvl)))
+		if err != nil {
+			return 0, xerrors.Errorf("riofs: could not create ZSTD compressor: %w", err)
+		}
+
+		_, err = w.Write(src)
+		if err != nil {
+			return 0, xerrors.Errorf("riofs: could not write ZSTD compressed bytes: %w", err)
+		}
+
+		err = w.Close()
+		if err != nil {
+			return 0, xerrors.Errorf("riofs: could not close ZSTD compressor: %w", err)
+		}
+
+		dstsz = int32(buf.Len())
+		if dstsz > srcsz {
+			return 0, errNoCompression
+		}
+		dst = append(hdr[:], buf.Bytes()...)
+
 	case OldCompression:
 		return 0, xerrors.Errorf("riofs: old compression algorithm unsupported")
 
@@ -344,6 +382,19 @@ func Decompress(dst []byte, src io.Reader) error {
 				if err != nil {
 					return err
 				}
+			}
+
+		case ZSTD:
+			rc, err := zstd.NewReader(lr)
+			if err != nil {
+				return err
+			}
+			_, err = io.ReadFull(rc, dst[beg:end])
+			if err != nil {
+				return err
+			}
+			if lr.N > 0 {
+				panic("zstd extra bytes")
 			}
 
 		default:

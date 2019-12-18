@@ -17,6 +17,7 @@ require (
 	github.com/hanwen/go-fuse v1.0.0
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/jcmturner/gofork v1.0.0 // indirect
+	github.com/klauspost/compress v1.9.4
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/peterh/liner v1.1.0
 	github.com/pierrec/lz4 v2.3.0+incompatible
