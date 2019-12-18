@@ -7,16 +7,15 @@
 package rcompress_test
 
 import (
-	"bytes"
 	"compress/flate"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"go-hep.org/x/hep/groot/internal/rtests"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
@@ -37,10 +36,10 @@ func TestCompress(t *testing.T) {
 		"16mb":  rbase.NewObjString(strings.Repeat("-+", 16*1024*1024)),
 	}
 
-	cxxROOT, err := exec.LookPath("root.exe")
-	withCxxROOT := err == nil
+	const macroROOT = `
+#include "TFile.h"
+#include "TObjString.h"
 
-	macroROOT := `
 void testcompress(const char *fname, int size) {
 	auto f = TFile::Open(fname, "READ");
 	auto str = (TObjString*)f->Get("str");
@@ -50,12 +49,6 @@ void testcompress(const char *fname, int size) {
 	exit(0);
 }
 `
-	macro := filepath.Join(dir, "testcompress.C")
-	err = ioutil.WriteFile(macro, []byte(macroROOT), 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	for _, tc := range []struct {
 		name string
 		opt  riofs.FileOption
@@ -86,6 +79,11 @@ void testcompress(const char *fname, int size) {
 		{name: "zlib-best-compr", opt: riofs.WithZlib(flate.BestCompression)},
 		// zstd
 		{name: "zstd-default", opt: riofs.WithZstd(flate.DefaultCompression)},
+		{name: "zstd-0", opt: riofs.WithZstd(0)},
+		{name: "zstd-1", opt: riofs.WithZstd(1)},
+		{name: "zstd-9", opt: riofs.WithZstd(9)},
+		{name: "zstd-best-speed", opt: riofs.WithZstd(flate.BestSpeed)},
+		{name: "zstd-best-compr", opt: riofs.WithZstd(flate.BestCompression)},
 	} {
 		for k, want := range wants {
 			if (k == "16mb" || k == "10mb") &&
@@ -98,29 +96,29 @@ void testcompress(const char *fname, int size) {
 				fname := filepath.Join(dir, "test-"+tname+".root")
 				w, err := riofs.Create(fname, tc.opt)
 				if err != nil {
-					t.Fatal(err)
+					t.Fatalf("%+v", err)
 				}
 				defer w.Close()
 
 				err = w.Put("str", want)
 				if err != nil {
-					t.Fatal(err)
+					t.Fatalf("%+v", err)
 				}
 
 				err = w.Close()
 				if err != nil {
-					t.Fatal(err)
+					t.Fatalf("%+v", err)
 				}
 
 				r, err := riofs.Open(fname)
 				if err != nil {
-					t.Fatal(err)
+					t.Fatalf("%+v", err)
 				}
 				defer r.Close()
 
 				obj, err := r.Get("str")
 				if err != nil {
-					t.Fatal(err)
+					t.Fatalf("%+v", err)
 				}
 				str := obj.(root.ObjString)
 
@@ -128,17 +126,18 @@ void testcompress(const char *fname, int size) {
 					t.Fatalf("got=%q, want=%q", got, want)
 				}
 
-				if !withCxxROOT {
+				if !rtests.HasROOT {
 					return
 				}
 
-				buf := new(bytes.Buffer)
-				cmd := exec.Command(cxxROOT, "-b", fmt.Sprintf("%s(%q, %d)", macro, fname, len(want.(root.ObjString).String())))
-				cmd.Stdout = buf
-				cmd.Stderr = buf
-				err = cmd.Run()
+				if strings.Contains(tname, "zstd") {
+					// FIXME(sbinet): do run test when ROOT-6.20/00 is out.
+					return
+				}
+
+				out, err := rtests.RunCxxROOT("testcompress", []byte(macroROOT), fname, len(want.(root.ObjString).String()))
 				if err != nil {
-					t.Fatalf("error: %v\n%s\n", err, buf.String())
+					t.Fatalf("error: %+v\n%s\n", err, out)
 				}
 			})
 		}
