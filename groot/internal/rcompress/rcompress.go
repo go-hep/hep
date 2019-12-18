@@ -77,6 +77,14 @@ func (set Settings) Compression() int32 {
 		default:
 			panic(xerrors.Errorf("rcompress: unknown compression algorithm: %v", alg))
 		}
+	case lvl == flate.BestSpeed:
+		if alg == ZSTD {
+			lvl = int(zstd.SpeedFastest)
+		}
+	case lvl == flate.BestCompression:
+		if alg == ZSTD {
+			lvl = int(zstd.SpeedBestCompression)
+		}
 	case lvl > 99:
 		lvl = 99
 	}
