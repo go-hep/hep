@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+
+	"go-hep.org/x/hep/groot/rbase"
 )
 
 func TestWriteVarsFromStruct(t *testing.T) {
@@ -211,5 +213,22 @@ func TestFlattenArrayType(t *testing.T) {
 				t.Fatalf("invalid shape: got=%v, want=%v", got, want)
 			}
 		})
+	}
+}
+
+func TestInvalidTreeMerger(t *testing.T) {
+	var (
+		w   wtree
+		src = rbase.NewObjString("foo")
+	)
+
+	err := w.ROOTMerge(src)
+	if err == nil {
+		t.Fatalf("expected an error")
+	}
+
+	const want = "rtree: can not merge src=*rbase.ObjString into dst=*rtree.wtree"
+	if got, want := err.Error(), want; got != want {
+		t.Fatalf("invalid ROOTMerge error. got=%q, want=%q", got, want)
 	}
 }

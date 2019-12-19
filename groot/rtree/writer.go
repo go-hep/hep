@@ -12,6 +12,7 @@ import (
 	"go-hep.org/x/hep/groot/internal/rcompress"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/riofs"
+	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rvers"
 	"golang.org/x/xerrors"
 )
@@ -254,6 +255,19 @@ func NewWriter(dir riofs.Directory, name string, vars []WriteVar, opts ...WriteO
 
 func (w *wtree) SetTitle(title string) { w.ttree.named.SetTitle(title) }
 
+func (w *wtree) ROOTMerge(src root.Object) error {
+	switch src := src.(type) {
+	case Tree:
+		_, err := Copy(w, src)
+		if err != nil {
+			return xerrors.Errorf("rtree: could not merge tree: %w", err)
+		}
+		return nil
+	default:
+		return xerrors.Errorf("rtree: can not merge src=%T into dst=%T", src, w)
+	}
+}
+
 // Write writes the event data to ROOT storage and returns the number
 // of bytes (before compression, if any) written.
 func (w *wtree) Write() (int, error) {
@@ -330,6 +344,7 @@ func flattenArrayType(rt reflect.Type) (reflect.Type, []int) {
 }
 
 var (
-	_ Tree   = (*wtree)(nil)
-	_ Writer = (*wtree)(nil)
+	_ Tree        = (*wtree)(nil)
+	_ Writer      = (*wtree)(nil)
+	_ root.Merger = (*wtree)(nil)
 )
