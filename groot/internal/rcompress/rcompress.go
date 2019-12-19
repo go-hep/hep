@@ -7,7 +7,6 @@
 package rcompress // import "go-hep.org/x/hep/groot/internal/rcompress"
 
 import (
-	"bytes"
 	"compress/flate"
 	"compress/zlib"
 	"encoding/binary"
@@ -103,7 +102,8 @@ const HeaderSize = 9
 const kMaxCompressedBlockSize = 0xffffff
 
 // kindOf returns the kind of compression algorithm.
-func kindOf(buf [HeaderSize]byte) Kind {
+func kindOf(buf []byte) Kind {
+	_ = buf[HeaderSize-1] // bound-check
 	switch {
 	case buf[0] == 'Z' && buf[1] == 'L':
 		return ZLIB
@@ -180,8 +180,10 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 
 	var (
 		err error
-		hdr [HeaderSize]byte
-		dst []byte
+
+		dst = tgt[HeaderSize:]
+		hdr = tgt[:HeaderSize]
+		buf = &wbuff{p: dst}
 
 		srcsz = int32(len(src))
 		dstsz int32
@@ -192,12 +194,12 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		hdr[0] = 'Z'
 		hdr[1] = 'L'
 		hdr[2] = 8 // zlib deflated
-		buf := new(bytes.Buffer)
-		buf.Grow(len(src))
 		w, err := zlib.NewWriterLevel(buf, lvl)
 		if err != nil {
 			return 0, xerrors.Errorf("rcompress: could not create ZLIB compressor: %w", err)
 		}
+		defer w.Close()
+
 		_, err = w.Write(src)
 		if err != nil {
 			return 0, xerrors.Errorf("rcompress: could not write ZLIB compressed bytes: %w", err)
@@ -206,8 +208,7 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		if err != nil {
 			return 0, xerrors.Errorf("rcompress: could not close ZLIB compressor: %w", err)
 		}
-		dstsz = int32(buf.Len())
-		dst = append(hdr[:], buf.Bytes()...)
+		dstsz = int32(buf.c)
 
 	case LZMA:
 		hdr[0] = 'X'
@@ -218,12 +219,11 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		if err := cfg.Verify(); err != nil {
 			return 0, xerrors.Errorf("rcompress: could not create LZMA compressor config: %w", err)
 		}
-		buf := new(bytes.Buffer)
-		buf.Grow(len(src))
 		w, err := cfg.NewWriter(buf)
 		if err != nil {
 			return 0, xerrors.Errorf("rcompress: could not create LZMA compressor: %w", err)
 		}
+		defer w.Close()
 
 		_, err = w.Write(src)
 		if err != nil {
@@ -235,8 +235,7 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 			return 0, xerrors.Errorf("rcompress: could not close LZMA compressor: %w", err)
 		}
 
-		dstsz = int32(buf.Len())
-		dst = append(hdr[:], buf.Bytes()...)
+		dstsz = int32(buf.c)
 
 	case LZ4:
 		hdr[0] = 'L'
@@ -245,18 +244,18 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 
 		const chksum = 8
 		var room = int(float64(srcsz) * 2e-4) // lz4 needs some extra scratch space
-		dst = make([]byte, HeaderSize+chksum+len(src)+room)
-		buf := dst[HeaderSize:]
+		dst := make([]byte, HeaderSize+chksum+len(src)+room)
+		wrk := dst[HeaderSize:]
 		var n int
 		switch {
 		case lvl >= 4:
 			if lvl > 9 {
 				lvl = 9
 			}
-			n, err = lz4.CompressBlockHC(src, buf[chksum:], lvl)
+			n, err = lz4.CompressBlockHC(src, wrk[chksum:], lvl)
 		default:
 			ht := make([]int, 1<<16)
-			n, err = lz4.CompressBlock(src, buf[chksum:], ht)
+			n, err = lz4.CompressBlock(src, wrk[chksum:], ht)
 		}
 		if err != nil {
 			return 0, xerrors.Errorf("rcompress: could not compress with LZ4: %w", err)
@@ -264,25 +263,25 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 
 		if n == 0 {
 			// not compressible.
-			n = copy(buf[chksum:], src)
+			n = copy(wrk[chksum:], src)
 		}
 
-		buf = buf[:n+chksum]
-		dst = dst[:len(buf)+HeaderSize]
-		binary.BigEndian.PutUint64(buf[:chksum], xxHash64.Checksum(buf[chksum:], 0))
+		wrk = wrk[:n+chksum]
+		binary.BigEndian.PutUint64(wrk[:chksum], xxHash64.Checksum(wrk[chksum:], 0))
 		dstsz = int32(n + chksum)
+		n = copy(buf.p, wrk)
+		buf.c += n
 
 	case ZSTD:
 		hdr[0] = 'Z'
 		hdr[1] = 'S'
 		hdr[2] = zstdVersion
 
-		buf := new(bytes.Buffer)
-		buf.Grow(len(src))
 		w, err := zstd.NewWriter(buf, zstd.WithEncoderLevel(zstd.EncoderLevel(lvl)))
 		if err != nil {
 			return 0, xerrors.Errorf("rcompress: could not create ZSTD compressor: %w", err)
 		}
+		defer w.Close()
 
 		_, err = w.Write(src)
 		if err != nil {
@@ -294,8 +293,7 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 			return 0, xerrors.Errorf("rcompress: could not close ZSTD compressor: %w", err)
 		}
 
-		dstsz = int32(buf.Len())
-		dst = append(hdr[:], buf.Bytes()...)
+		dstsz = int32(buf.c)
 
 	case OldCompression:
 		return 0, xerrors.Errorf("rcompress: old compression algorithm unsupported")
@@ -316,9 +314,7 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 	hdr[7] = byte(srcsz >> 8)
 	hdr[8] = byte(srcsz >> 16)
 
-	copy(dst, hdr[:])
-	n := copy(tgt, dst)
-
+	n := len(hdr) + int(dstsz)
 	return n, nil
 }
 
@@ -328,15 +324,16 @@ func Decompress(dst []byte, src io.Reader) error {
 		beg    = 0
 		end    = 0
 		buflen = len(dst)
+		hdr    = make([]byte, HeaderSize)
 	)
 
 	for end < buflen {
-		var hdr [HeaderSize]byte
-		_, err := io.ReadFull(src, hdr[:])
+		_, err := io.ReadFull(src, hdr)
 		if err != nil {
 			return xerrors.Errorf("rcompress: could not read compress header: %w", err)
 		}
 
+		_ = hdr[HeaderSize-1] // bound-check
 		srcsz := int64(hdr[3]) | int64(hdr[4])<<8 | int64(hdr[5])<<16
 		tgtsz := int64(hdr[6]) | int64(hdr[7])<<8 | int64(hdr[8])<<16
 		end += int(tgtsz)
@@ -348,6 +345,7 @@ func Decompress(dst []byte, src io.Reader) error {
 				return xerrors.Errorf("rcompress: could not create ZLIB reader: %w", err)
 			}
 			defer rc.Close()
+
 			_, err = io.ReadFull(rc, dst[beg:end])
 			if err != nil {
 				return xerrors.Errorf("rcompress: could not decompress ZLIB buffer: %w", err)
@@ -410,3 +408,21 @@ func Decompress(dst []byte, src io.Reader) error {
 
 	return nil
 }
+
+type wbuff struct {
+	p []byte // buffer of data to write on
+	c int    // current position in buffer of data
+}
+
+func (w *wbuff) Write(p []byte) (int, error) {
+	if w.c >= len(w.p) {
+		return 0, io.EOF
+	}
+	n := copy(w.p[w.c:], p)
+	w.c += n
+	return n, nil
+}
+
+var (
+	_ io.Writer = (*wbuff)(nil)
+)
