@@ -15,6 +15,7 @@ import (
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
 	"go-hep.org/x/hep/hbook"
+	"golang.org/x/xerrors"
 )
 
 type tgraph struct {
@@ -45,7 +46,7 @@ func newGraph(n int) *tgraph {
 func NewGraphFrom(s2 *hbook.S2D) Graph {
 	var (
 		n     = s2.Len()
-		groot = newGraphErrs(n)
+		groot = newGraph(n)
 		ymin  = +math.MaxFloat64
 		ymax  = -math.MaxFloat64
 	)
@@ -58,9 +59,9 @@ func NewGraphFrom(s2 *hbook.S2D) Graph {
 		ymin = math.Min(ymin, pt.Y)
 	}
 
-	groot.tgraph.named.SetName(s2.Name())
+	groot.named.SetName(s2.Name())
 	if v, ok := s2.Annotation()["title"]; ok {
-		groot.tgraph.named.SetTitle(v.(string))
+		groot.named.SetTitle(v.(string))
 	}
 
 	groot.min = ymin
@@ -91,6 +92,26 @@ func (g *tgraph) Len() int {
 
 func (g *tgraph) XY(i int) (float64, float64) {
 	return g.x[i], g.y[i]
+}
+
+func (g *tgraph) ROOTMerge(src root.Object) error {
+	switch src := src.(type) {
+	case *tgraph:
+		if src.maxsize > g.maxsize {
+			g.maxsize = src.maxsize
+		}
+		g.npoints += src.npoints
+		g.x = append(g.x, src.x...)
+		g.y = append(g.y, src.y...)
+		g.min = math.Min(g.min, src.min)
+		g.max = math.Max(g.max, src.max)
+		// FIXME(sbinet): handle g.funcs
+		// FIXME(sbinet): handle g.histo
+		// FIXME(sbinet): re-sort x,y,... slices according to x.
+		return nil
+	default:
+		return xerrors.Errorf("rhist: can not merge %T into %T", src, g)
+	}
 }
 
 // ROOTMarshaler is the interface implemented by an object that can
@@ -254,6 +275,22 @@ func (g *tgrapherrs) YError(i int) (float64, float64) {
 	return g.yerr[i], g.yerr[i]
 }
 
+func (g *tgrapherrs) ROOTMerge(src root.Object) error {
+	switch src := src.(type) {
+	case *tgrapherrs:
+		err := g.tgraph.ROOTMerge(&src.tgraph)
+		if err != nil {
+			return xerrors.Errorf("rhist: could not merge %q: %w", src.Name(), err)
+		}
+		g.xerr = append(g.xerr, src.xerr...)
+		g.yerr = append(g.yerr, src.yerr...)
+		// FIXME(sbinet): re-sort x,y,... slices according to x.
+		return nil
+	default:
+		return xerrors.Errorf("rhist: can not merge %T into %T", src, g)
+	}
+}
+
 // ROOTMarshaler is the interface implemented by an object that can
 // marshal itself to a ROOT buffer
 func (g *tgrapherrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
@@ -378,6 +415,24 @@ func (g *tgraphasymmerrs) YError(i int) (float64, float64) {
 	return g.yerrlo[i], g.yerrhi[i]
 }
 
+func (g *tgraphasymmerrs) ROOTMerge(src root.Object) error {
+	switch src := src.(type) {
+	case *tgraphasymmerrs:
+		err := g.tgraph.ROOTMerge(&src.tgraph)
+		if err != nil {
+			return xerrors.Errorf("rhist: could not merge %q: %w", src.Name(), err)
+		}
+		g.xerrlo = append(g.xerrlo, src.xerrlo...)
+		g.xerrhi = append(g.xerrhi, src.xerrhi...)
+		g.yerrlo = append(g.yerrlo, src.yerrlo...)
+		g.yerrhi = append(g.yerrhi, src.yerrhi...)
+		// FIXME(sbinet): re-sort x,y,... slices according to x.
+		return nil
+	default:
+		return xerrors.Errorf("rhist: can not merge %T into %T", src, g)
+	}
+}
+
 // ROOTMarshaler is the interface implemented by an object that can
 // marshal itself to a ROOT buffer
 func (g *tgraphasymmerrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
@@ -492,12 +547,14 @@ func init() {
 var (
 	_ root.Object        = (*tgraph)(nil)
 	_ root.Named         = (*tgraph)(nil)
+	_ root.Merger        = (*tgraph)(nil)
 	_ Graph              = (*tgraph)(nil)
 	_ rbytes.Marshaler   = (*tgraph)(nil)
 	_ rbytes.Unmarshaler = (*tgraph)(nil)
 
 	_ root.Object        = (*tgrapherrs)(nil)
 	_ root.Named         = (*tgrapherrs)(nil)
+	_ root.Merger        = (*tgrapherrs)(nil)
 	_ Graph              = (*tgrapherrs)(nil)
 	_ GraphErrors        = (*tgrapherrs)(nil)
 	_ rbytes.Marshaler   = (*tgrapherrs)(nil)
@@ -505,6 +562,7 @@ var (
 
 	_ root.Object        = (*tgraphasymmerrs)(nil)
 	_ root.Named         = (*tgraphasymmerrs)(nil)
+	_ root.Merger        = (*tgraphasymmerrs)(nil)
 	_ Graph              = (*tgraphasymmerrs)(nil)
 	_ GraphErrors        = (*tgraphasymmerrs)(nil)
 	_ rbytes.Marshaler   = (*tgraphasymmerrs)(nil)
