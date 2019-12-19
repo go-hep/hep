@@ -75,3 +75,8 @@ type ObjString interface {
 	Name() string
 	String() string
 }
+
+// Merger is a ROOT object that can ingest data from another ROOT object.
+type Merger interface {
+	ROOTMerge(src Object) error
+}
