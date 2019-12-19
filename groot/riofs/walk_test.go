@@ -290,3 +290,80 @@ func TestRecDirPut(t *testing.T) {
 		t.Fatalf("could not create key-val with empty name: %v", err)
 	}
 }
+
+func TestFileOf(t *testing.T) {
+	tmp, err := ioutil.TempDir("", "groot-riofs-")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	defer os.RemoveAll(tmp)
+
+	f, err := Create(stdpath.Join(tmp, "file.root"))
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	defer f.Close()
+
+	dir111, err := Dir(f).Mkdir("dir-1/dir-11/dir-111")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+
+	for _, tc := range []struct {
+		name   string
+		dir    Directory
+		panics string
+	}{
+		{
+			name: "file",
+			dir:  f,
+		},
+		{
+			name: "file-rec",
+			dir:  Dir(f),
+		},
+		{
+			name: "file-dir",
+			dir:  &f.dir,
+		},
+		{
+			name: "dir-111",
+			dir:  dir111,
+		},
+		{
+			name:   "panics",
+			dir:    &unknownDirImpl{},
+			panics: "riofs: unknown Directory type *riofs.unknownDirImpl",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.panics != "" {
+				defer func() {
+					err := recover()
+					if err == nil {
+						t.Fatalf("expected a panic")
+					}
+					if got, want := err.(error).Error(), tc.panics; got != want {
+						t.Fatalf("invalid panic message. got=%q, want=%q", got, want)
+					}
+				}()
+			}
+			got := fileOf(tc.dir)
+			if got != f {
+				t.Fatalf("could not retrieve correct file for %q", tc.name)
+			}
+		})
+	}
+}
+
+type unknownDirImpl struct{}
+
+func (dir *unknownDirImpl) Get(namecycle string) (root.Object, error) { panic("not implemented") }
+func (dir *unknownDirImpl) Put(name string, v root.Object) error      { panic("not implemented") }
+func (dir *unknownDirImpl) Keys() []Key                               { panic("not implemented") }
+func (dir *unknownDirImpl) Mkdir(name string) (Directory, error)      { panic("not implemented") }
+func (dir *unknownDirImpl) Parent() Directory                         { return nil }
+
+var (
+	_ Directory = (*unknownDirImpl)(nil)
+)

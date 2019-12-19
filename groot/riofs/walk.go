@@ -220,8 +220,8 @@ func fileOf(d Directory) *File {
 			switch d := d.(type) {
 			case *File:
 				return d
-			case *tdirectoryFile:
-				return d.file
+			case *recDir:
+				return fileOf(d.dir)
 			default:
 				panic(xerrors.Errorf("riofs: unknown Directory type %T", d))
 			}
