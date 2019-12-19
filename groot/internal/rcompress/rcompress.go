@@ -207,9 +207,6 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 			return 0, xerrors.Errorf("rcompress: could not close ZLIB compressor: %w", err)
 		}
 		dstsz = int32(buf.Len())
-		if dstsz > srcsz {
-			return 0, errNoCompression
-		}
 		dst = append(hdr[:], buf.Bytes()...)
 
 	case LZMA:
@@ -239,9 +236,6 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		}
 
 		dstsz = int32(buf.Len())
-		if dstsz > srcsz {
-			return 0, errNoCompression
-		}
 		dst = append(hdr[:], buf.Bytes()...)
 
 	case LZ4:
@@ -270,7 +264,7 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 
 		if n == 0 {
 			// not compressible.
-			return 0, errNoCompression
+			n = copy(buf[chksum:], src)
 		}
 
 		buf = buf[:n+chksum]
@@ -301,9 +295,6 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		}
 
 		dstsz = int32(buf.Len())
-		if dstsz > srcsz {
-			return 0, errNoCompression
-		}
 		dst = append(hdr[:], buf.Bytes()...)
 
 	case OldCompression:
@@ -346,7 +337,7 @@ func Decompress(dst []byte, src io.Reader) error {
 			return xerrors.Errorf("rcompress: could not read compress header: %w", err)
 		}
 
-		srcsz := (int64(hdr[3]) | int64(hdr[4])<<8 | int64(hdr[5])<<16)
+		srcsz := int64(hdr[3]) | int64(hdr[4])<<8 | int64(hdr[5])<<16
 		tgtsz := int64(hdr[6]) | int64(hdr[7])<<8 | int64(hdr[8])<<16
 		end += int(tgtsz)
 		lr := &io.LimitedReader{R: src, N: srcsz}
@@ -372,7 +363,13 @@ func Decompress(dst []byte, src io.Reader) error {
 			// FIXME: we skip the 32b checksum. use it!
 			_, err = lz4.UncompressBlock(src[chksum:], dst[beg:end])
 			if err != nil {
-				return xerrors.Errorf("rcompress: could not decompress LZ4 block: %w", err)
+				switch {
+				case srcsz > tgtsz:
+					// no compression
+					copy(dst[beg:end], src[chksum:])
+				default:
+					return xerrors.Errorf("rcompress: could not decompress LZ4 block: %w", err)
+				}
 			}
 
 		case LZMA:
