@@ -7,14 +7,17 @@
 package rcompress_test
 
 import (
+	"bytes"
 	"compress/flate"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 
+	"go-hep.org/x/hep/groot/internal/rcompress"
 	"go-hep.org/x/hep/groot/internal/rtests"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/riofs"
@@ -140,6 +143,103 @@ void testcompress(const char *fname, int size) {
 					t.Fatalf("error: %+v\n%s\n", err, out)
 				}
 			})
+		}
+	}
+}
+
+func BenchmarkCompression(b *testing.B) {
+	b.ReportAllocs()
+
+	wants := map[string][]byte{
+		"00-10kb": []byte(strings.Repeat("-+", 10*1024)),
+		"01-10mb": []byte(strings.Repeat("-+", 10*1024*1024)),
+		"02-16mb": []byte(strings.Repeat("-+", 16*1024*1024)),
+	}
+	keysOf := func(kvs map[string][]byte) []string {
+		keys := make([]string, 0, len(kvs))
+		for k := range kvs {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		return keys
+	}
+
+	for _, tc := range []struct {
+		name string
+		opt  rcompress.Settings
+	}{
+		{name: "default", opt: rcompress.DefaultSettings},
+		// lz4
+		{name: "lz4-default", opt: rcompress.Settings{Alg: rcompress.LZ4, Lvl: flate.DefaultCompression}},
+		{name: "lz4-0", opt: rcompress.Settings{Alg: rcompress.LZ4, Lvl: 0}},
+		{name: "lz4-1", opt: rcompress.Settings{Alg: rcompress.LZ4, Lvl: 1}},
+		{name: "lz4-9", opt: rcompress.Settings{Alg: rcompress.LZ4, Lvl: 9}},
+		{name: "lz4-best-speed", opt: rcompress.Settings{Alg: rcompress.LZ4, Lvl: flate.BestSpeed}},
+		{name: "lz4-best-compr", opt: rcompress.Settings{Alg: rcompress.LZ4, Lvl: flate.BestCompression}},
+		// lzma
+		{name: "lzma-default", opt: rcompress.Settings{Alg: rcompress.LZMA, Lvl: flate.DefaultCompression}},
+		{name: "lzma-0", opt: rcompress.Settings{Alg: rcompress.LZMA, Lvl: 0}},
+		{name: "lzma-1", opt: rcompress.Settings{Alg: rcompress.LZMA, Lvl: 1}},
+		{name: "lzma-9", opt: rcompress.Settings{Alg: rcompress.LZMA, Lvl: 9}},
+		{name: "lzma-best-speed", opt: rcompress.Settings{Alg: rcompress.LZMA, Lvl: flate.BestSpeed}},
+		{name: "lzma-best-compr", opt: rcompress.Settings{Alg: rcompress.LZMA, Lvl: flate.BestCompression}},
+		// zlib
+		{name: "zlib-default", opt: rcompress.Settings{Alg: rcompress.ZLIB, Lvl: flate.DefaultCompression}},
+		{name: "zlib-0", opt: rcompress.Settings{Alg: rcompress.ZLIB, Lvl: 0}},
+		{name: "zlib-1", opt: rcompress.Settings{Alg: rcompress.ZLIB, Lvl: 1}},
+		{name: "zlib-9", opt: rcompress.Settings{Alg: rcompress.ZLIB, Lvl: 9}},
+		{name: "zlib-best-speed", opt: rcompress.Settings{Alg: rcompress.ZLIB, Lvl: flate.BestSpeed}},
+		{name: "zlib-best-compr", opt: rcompress.Settings{Alg: rcompress.ZLIB, Lvl: flate.BestCompression}},
+		// zstd
+		{name: "zstd-default", opt: rcompress.Settings{Alg: rcompress.ZSTD, Lvl: flate.DefaultCompression}},
+		{name: "zstd-0", opt: rcompress.Settings{Alg: rcompress.ZSTD, Lvl: 0}},
+		{name: "zstd-1", opt: rcompress.Settings{Alg: rcompress.ZSTD, Lvl: 1}},
+		{name: "zstd-9", opt: rcompress.Settings{Alg: rcompress.ZSTD, Lvl: 9}},
+		{name: "zstd-best-speed", opt: rcompress.Settings{Alg: rcompress.ZSTD, Lvl: flate.BestSpeed}},
+		{name: "zstd-best-compr", opt: rcompress.Settings{Alg: rcompress.ZSTD, Lvl: flate.BestCompression}},
+	} {
+		for _, k := range keysOf(wants) {
+			want := wants[k]
+			tname := fmt.Sprintf("%s-%s", tc.name, k)
+			compr := tc.opt.Compression()
+			xsrc, err := rcompress.Compress(nil, want, compr)
+			if err != nil {
+				b.Fatalf("could not create compressed source: %+v", err)
+			}
+			//			xdst := make([]byte, len(want))
+			//			err = rcompress.Decompress(xdst, bytes.NewReader(xsrc))
+			//			if err != nil {
+			//				b.Fatalf("could not decompress xsrc: %+v", err)
+			//			}
+			//			if !bytes.Equal(xdst, want) {
+			//				b.Fatalf("round-trip failed: %+v", err)
+			//			}
+
+			b.Run("enc-"+tname, func(b *testing.B) {
+				src := want
+				dst := make([]byte, len(src))
+				b.ResetTimer()
+				for i := 0; i < b.N; i++ {
+					_, err := rcompress.Compress(dst, src, compr)
+					if err != nil {
+						b.Fatalf("%+v", err)
+					}
+				}
+			})
+
+			if false {
+				b.Run("dec-"+tname, func(b *testing.B) {
+					dst := make([]byte, len(want))
+					b.ResetTimer()
+					for i := 0; i < b.N; i++ {
+						src := bytes.NewReader(xsrc)
+						err := rcompress.Decompress(dst, src)
+						if err != nil {
+							b.Fatalf("%+v", err)
+						}
+					}
+				})
+			}
 		}
 	}
 }
