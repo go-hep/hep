@@ -3,7 +3,7 @@ module go-hep.org/x/hep
 go 1.12
 
 require (
-	github.com/apache/arrow/go/arrow v0.0.0-20191219064711-344ed4bed675
+	github.com/apache/arrow/go/arrow v0.0.0-20191220150900-42a2e43c090b
 	github.com/campoy/embedmd v1.0.0
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/frankban/quicktest v1.5.0 // indirect
@@ -22,7 +22,7 @@ require (
 	github.com/pierrec/lz4 v2.3.0+incompatible
 	github.com/pierrec/xxHash v0.1.5
 	github.com/remyoudompheng/bigfft v0.0.0-20190728182440-6a916e37a237 // indirect
-	github.com/sbinet/npyio v0.2.0
+	github.com/sbinet/npyio v0.3.0
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/ulikunitz/xz v0.5.6
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
@@ -35,7 +35,7 @@ require (
 	golang.org/x/sys v0.0.0-20191010194322-b09406accb47 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
-	gonum.org/v1/gonum v0.0.0-20191013192725-1459092b91f2
+	gonum.org/v1/gonum v0.6.1
 	gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e // indirect
 	gonum.org/v1/plot v0.0.0-20191107103940-ca91d9d40d0a
 	gopkg.in/jcmturner/aescts.v1 v1.0.1 // indirect

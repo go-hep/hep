@@ -10,6 +10,7 @@ github.com/apache/arrow v0.0.0-20191119113437-a5a67e8c5460 h1:6KjjDRv6a0mba4yEM7
 github.com/apache/arrow v0.0.0-20191209090558-8ad23c6e137d h1:Zqm/jepB8RrPpTApxI8IxFZ7cVZ3DzyLLYxwA0XtV9M=
 github.com/apache/arrow v0.0.0-20191211091713-2a127689fae6 h1:yIJnRCe31LD3LIcFmfphPDmBum4rFpvXpO5iXhJsuBw=
 github.com/apache/arrow v0.0.0-20191219064711-344ed4bed675 h1:Mv0LI85gXzjRepFEQgdQ6oWO/SMZeXfSJauOniBBy7I=
+github.com/apache/arrow v0.0.0-20191220150900-42a2e43c090b h1:7V20uTEi4mLkTzRT6qTDaBO/W1UFiPK1pNg6AmEoeLk=
 github.com/apache/arrow/go/arrow v0.0.0-20191119113437-a5a67e8c5460 h1:JivWZpU9ACCHTfq07eDavAx+vIE1vZXXKz611LnnXog=
 github.com/apache/arrow/go/arrow v0.0.0-20191119113437-a5a67e8c5460/go.mod h1:VTxUBvSJ3s3eHAg65PNgrsn5BtqCRPdmyXh6rAfdxN0=
 github.com/apache/arrow/go/arrow v0.0.0-20191209090558-8ad23c6e137d h1:kEAJ5R9C7DxzsFSve9SayNrJ5EdAD9nGDeIl+WSdUdc=
@@ -20,6 +21,8 @@ github.com/apache/arrow/go/arrow v0.0.0-20191211091713-2a127689fae6 h1:3rb1B3aGZ
 github.com/apache/arrow/go/arrow v0.0.0-20191211091713-2a127689fae6/go.mod h1:QNYViu/X0HXDHw7m3KXzWSVXIbfUvJqBFe6Gj8/pYA0=
 github.com/apache/arrow/go/arrow v0.0.0-20191219064711-344ed4bed675 h1:2vu5RCl5dDGm6UWLh+kfhQAA++u5OKMK+7SgVXEz0p4=
 github.com/apache/arrow/go/arrow v0.0.0-20191219064711-344ed4bed675/go.mod h1:QNYViu/X0HXDHw7m3KXzWSVXIbfUvJqBFe6Gj8/pYA0=
+github.com/apache/arrow/go/arrow v0.0.0-20191220150900-42a2e43c090b h1:h2G2i/FT61bWMS4SGVmZi5AoCo+TGxaKVljjoWM/tWM=
+github.com/apache/arrow/go/arrow v0.0.0-20191220150900-42a2e43c090b/go.mod h1:QNYViu/X0HXDHw7m3KXzWSVXIbfUvJqBFe6Gj8/pYA0=
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/campoy/embedmd v1.0.0 h1:V4kI2qTJJLf4J29RzI/MAt2c3Bl4dQSYPuflzwFH2hY=
 github.com/campoy/embedmd v1.0.0/go.mod h1:oxyr9RCiSXg0M3VJ3ks0UGfp98BpSSGr0kpiX3MzVl8=
@@ -93,6 +96,8 @@ github.com/remyoudompheng/bigfft v0.0.0-20190728182440-6a916e37a237/go.mod h1:qq
 github.com/ruudk/golang-pdf417 v0.0.0-20181029194003-1af4ab5afa58/go.mod h1:6lfFZQK844Gfx8o5WFuvpxWRwnSoipWe/p622j1v06w=
 github.com/sbinet/npyio v0.2.0 h1:fJZX75LDxBl3U1ABvF8LBASG1hVYFjjehCdTdor6V9s=
 github.com/sbinet/npyio v0.2.0/go.mod h1:Wk81yG1hlHgHAy4KXRQ59EfpZoAzT+2V4Pjyv7rUEM0=
+github.com/sbinet/npyio v0.3.0 h1:O2PNHeUwOrXG/oOviqFKtuE3weqfetD8YMswz5LNmQg=
+github.com/sbinet/npyio v0.3.0/go.mod h1:dJ6OpFwUDVVuDSqP5b8paU3yd7Rcs2TZiFimWwD30nc=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.0/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.2.2 h1:bSDNvY7ZPG5RlJ8otE/7V6gMiyenm9RtJ7IUVIAoJ1w=
@@ -179,6 +184,8 @@ gonum.org/v1/gonum v0.0.0-20180816165407-929014505bf4/go.mod h1:Y+Yx5eoAFn32cQvJ
 gonum.org/v1/gonum v0.0.0-20190331200053-3d26580ed485/go.mod h1:2ltnJ7xHfj0zHS40VVPYEAAMTa3ZGguvHGBSJeRWqE0=
 gonum.org/v1/gonum v0.0.0-20191013192725-1459092b91f2 h1:D+ds7MmuzWzfcY6MSHYNNS68eQmBlAaVD5JLPnxS85s=
 gonum.org/v1/gonum v0.0.0-20191013192725-1459092b91f2/go.mod h1:9mxDZsDKxgMAuccQkewq682L+0eCu4dCN2yonUJTCLU=
+gonum.org/v1/gonum v0.6.1 h1:/LSrTrgZtpbXyAR6+0e152SROCkJJSh7goYWVmdPFGc=
+gonum.org/v1/gonum v0.6.1/go.mod h1:9mxDZsDKxgMAuccQkewq682L+0eCu4dCN2yonUJTCLU=
 gonum.org/v1/netlib v0.0.0-20180816165226-ebcc3d2662d3/go.mod h1:wa6Ws7BG/ESfp6dHfk7C6KdzKA7wR7u/rKwOGE66zvw=
 gonum.org/v1/netlib v0.0.0-20190313105609-8cb42192e0e0 h1:OE9mWmgKkjJyEmDAAtGMPjXu+YNeGvK9VTSHY6+Qihc=
 gonum.org/v1/netlib v0.0.0-20190313105609-8cb42192e0e0/go.mod h1:wa6Ws7BG/ESfp6dHfk7C6KdzKA7wR7u/rKwOGE66zvw=

@@ -8,7 +8,7 @@
 //
 // The NumPy data file format is described here:
 //
-//  https://docs.scipy.org/doc/numpy/neps/npy-format.html
+//  https://numpy.org/neps/nep-0001-npy-format.html
 //
 // Example:
 //
@@ -66,7 +66,7 @@ Usage: npy2root [OPTIONS] input.npy
 
 The NumPy data file format is described here:
 
- https://docs.scipy.org/doc/numpy/neps/npy-format.html
+ https://numpy.org/neps/nep-0001-npy-format.html
 
 Example:
 
