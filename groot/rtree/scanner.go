@@ -278,10 +278,6 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 			return nil, xerrors.Errorf("rtree: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
 		}
 		lset[leaf] = struct{}{}
-		err := br.setAddress(sv.Value)
-		if err != nil {
-			return nil, xerrors.Errorf("rtree: could not set branch address for %q: %w", br.Name(), err)
-		}
 		if lcnt := leaf.LeafCount(); lcnt != nil {
 			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
@@ -301,9 +297,9 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 		if rv := reflect.ValueOf(arg); rv.Kind() != reflect.Ptr {
 			return nil, xerrors.Errorf("rtree: ScanVar %d (name=%v) has non pointer Value", i, sv.Name)
 		}
-		err = br.setAddress(arg)
+		err := br.setAddress(arg)
 		if err != nil {
-			panic(err)
+			return nil, xerrors.Errorf("rtree: could not set branch address for %q: %w", br.Name(), err)
 		}
 	}
 
@@ -525,7 +521,15 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 		if rv := reflect.ValueOf(arg); rv.Kind() != reflect.Ptr {
 			return nil, xerrors.Errorf("rtree: ScanVar %d (name=%v) has non pointer Value", i, sv.Name)
 		}
-		err := br.setAddress(arg)
+		var err error
+		switch br := br.(type) {
+		case *tbranchElement:
+			err = br.setAddress(arg)
+		case *tbranch:
+			err = leaf.setAddress(arg)
+		default:
+			panic(xerrors.Errorf("rtree: unknown Branch type %T", br))
+		}
 		if err != nil {
 			panic(err)
 		}

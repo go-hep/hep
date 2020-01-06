@@ -1423,3 +1423,136 @@ func TestG4LikeTree(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestMultiLeafBranchWithScanVars(t *testing.T) {
+	t.Parallel()
+
+	f, err := riofs.Open("../testdata/root_numpy_struct.root")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	defer f.Close()
+
+	obj, err := f.Get("test")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+
+	tree := obj.(Tree)
+
+	type Data struct {
+		b1l1 int32
+		b1l2 float32
+		b2l1 int32
+		b2l2 float32
+	}
+
+	var (
+		data Data
+		want = []Data{
+			{10, 15.5, 20, 781.2},
+		}
+	)
+
+	rvars := []ScanVar{
+		{
+			Name:  "branch1",
+			Leaf:  "intleaf",
+			Value: &data.b1l1,
+		},
+		{
+			Name:  "branch1",
+			Leaf:  "floatleaf",
+			Value: &data.b1l2,
+		},
+		{
+			Name:  "branch2",
+			Leaf:  "intleaf",
+			Value: &data.b2l1,
+		},
+		{
+			Name:  "branch2",
+			Leaf:  "floatleaf",
+			Value: &data.b2l2,
+		},
+	}
+
+	sc, err := NewScannerVars(tree, rvars...)
+	if err != nil {
+		t.Fatalf("could not create scanner: %+v", err)
+	}
+	defer sc.Close()
+
+	for sc.Next() {
+		err = sc.Scan()
+		if err != nil {
+			t.Fatalf("could not scan entry %d: %+v", sc.Entry(), err)
+		}
+
+		if got, want := data, want[sc.Entry()]; !reflect.DeepEqual(got, want) {
+			t.Fatalf("invalid entry %d:\ngot= %#v\nwant=%#v", sc.Entry(), got, want)
+		}
+	}
+}
+
+func TestMultiLeafBranchWithTreeScanVars(t *testing.T) {
+	t.Parallel()
+
+	f, err := riofs.Open("../testdata/root_numpy_struct.root")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	defer f.Close()
+
+	obj, err := f.Get("test")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+
+	tree := obj.(Tree)
+
+	type B struct {
+		L1 int32   `groot:"intleaf"`
+		L2 float32 `groot:"floatleaf"`
+	}
+
+	type Data struct {
+		B1 B `groot:"branch1"`
+		B2 B `groot:"branch2"`
+	}
+
+	var (
+		data Data
+		want = []Data{
+			{B{10, 15.5}, B{20, 781.2}},
+		}
+	)
+
+	rvars := []ScanVar{
+		{
+			Name:  "branch1",
+			Value: &data.B1,
+		},
+		{
+			Name:  "branch2",
+			Value: &data.B2,
+		},
+	}
+
+	sc, err := NewTreeScannerVars(tree, rvars...)
+	if err != nil {
+		t.Fatalf("could not create scanner: %+v", err)
+	}
+	defer sc.Close()
+
+	for sc.Next() {
+		err = sc.Scan(&data.B1, &data.B2)
+		if err != nil {
+			t.Fatalf("could not scan entry %d: %+v", sc.Entry(), err)
+		}
+
+		if got, want := data, want[sc.Entry()]; !reflect.DeepEqual(got, want) {
+			t.Fatalf("invalid entry %d:\ngot= %#v\nwant=%#v", sc.Entry(), got, want)
+		}
+	}
+}

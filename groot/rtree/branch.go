@@ -707,21 +707,62 @@ func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
 }
 
 func (b *tbranch) scan(ptr interface{}) error {
-	for _, leaf := range b.leaves {
+	switch len(b.leaves) {
+	case 1:
+		leaf := b.leaves[0]
 		err := leaf.scan(b.basket.rbuf, ptr)
 		if err != nil {
 			return err
+		}
+	default:
+		rv := reflect.ValueOf(ptr).Elem()
+		rt := rv.Type()
+		for i := 0; i < rt.NumField(); i++ {
+			var (
+				leaf = b.leaves[i]
+				fv   = rv.Field(i)
+				ptr  = fv.Addr().Interface()
+			)
+			err := leaf.scan(b.basket.rbuf, ptr)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return b.basket.rbuf.Err()
 }
 
 func (b *tbranch) setAddress(ptr interface{}) error {
-	for i, leaf := range b.leaves {
-		// FIXME(sbinet): adjust ptr for e.g. a "f1/F;f2/I;f3/i" branch
-		err := leaf.setAddress(ptr)
+	switch len(b.leaves) {
+	case 0:
+		return xerrors.Errorf("rtree: can not set address for a leaf-less branch (name=%q)", b.Name())
+
+	case 1:
+		err := b.leaves[0].setAddress(ptr)
 		if err != nil {
-			return xerrors.Errorf("rtree: could not set address for leaf[%d][%s]: %w", i, leaf.Name(), err)
+			return xerrors.Errorf("rtree: could not set address for leaf[%d][%s]: %w", 0, b.leaves[0].Name(), err)
+		}
+
+	default:
+		rv := reflect.ValueOf(ptr).Elem()
+		rt := rv.Type()
+		switch kind := rv.Kind(); kind {
+		case reflect.Struct:
+			if len(b.leaves) != rt.NumField() {
+				// FIXME(sbinet): be more lenient and clever about this?
+				return xerrors.Errorf("rtree: fields/leaves number mismatch (name=%q, fields=%d, leaves=%d)", b.Name(), rt.NumField(), len(b.leaves))
+			}
+			for i, leaf := range b.leaves {
+				fv := rv.Field(i)
+				err := leaf.setAddress(fv.Addr().Interface())
+				if err != nil {
+					return xerrors.Errorf("rtree: could not set address for leaf[%d][%s]: %w", i, leaf.Name(), err)
+				}
+			}
+		default:
+			// TODO(sbinet): also support map[string]*T ?
+			// TODO(sbinet): also support []*T ?
+			return xerrors.Errorf("rtree: multi-leaf branches need a pointer-to-struct (got=%T)", ptr)
 		}
 	}
 	return nil
