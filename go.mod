@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/apache/arrow/go/arrow v0.0.0-20191220150900-42a2e43c090b
+	github.com/astrogo/fitsio v0.1.0
 	github.com/campoy/embedmd v1.0.0
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/frankban/quicktest v1.5.0 // indirect
