@@ -143,7 +143,7 @@ void genstreamers(const char* fname) {
 	}
 	defer f.Close()
 
-	fmt.Fprintf(f, `// Copyright 2019 The go-hep Authors. All rights reserved.
+	fmt.Fprintf(f, `// Copyright 2020 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
