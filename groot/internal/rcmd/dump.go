@@ -121,7 +121,11 @@ func dumpTree(w io.Writer, t rtree.Tree) error {
 		}
 		for _, v := range vars {
 			rv := reflect.Indirect(reflect.ValueOf(v.Value))
-			fmt.Fprintf(w, "[%03d][%s]: %v\n", sc.Entry(), v.Name, rv.Interface())
+			name := v.Name
+			if v.Leaf != "" && v.Leaf != v.Name {
+				name = v.Name + "." + v.Leaf
+			}
+			fmt.Fprintf(w, "[%03d][%s]: %v\n", sc.Entry(), name, rv.Interface())
 		}
 	}
 	return nil
