@@ -64,6 +64,8 @@ func genStreamers() {
 		{Name: "TMap"},
 		{Name: "TObjArray"},
 		{Name: "TObjString"},
+		{Name: "TProcessID"},
+
 		{Name: "TGraph"}, {Name: "TGraphErrors"}, {Name: "TGraphAsymmErrors"},
 		{Name: "TH1F"}, {Name: "TH1D"}, {Name: "TH1I"},
 		{Name: "TH2F"}, {Name: "TH2D"}, {Name: "TH2I"},
