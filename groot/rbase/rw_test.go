@@ -70,6 +70,12 @@ func TestWRBuffer(t *testing.T) {
 				str: "tobjstring-string",
 			},
 		},
+		{
+			name: "TProcessID",
+			want: &ProcessID{
+				named: Named{obj: Object{ID: 0x0, Bits: 0x3000000}, name: "my-name", title: "my-title"},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			{
