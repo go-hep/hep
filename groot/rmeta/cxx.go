@@ -211,6 +211,9 @@ func rmeta2Name(t Enum) string {
 		return "bool"
 	case Float16:
 		return "Float16_t"
+	case Object:
+		// class derived from TObject
+		return "TObject" // FIXME(sbinet): better handling?
 	case TString:
 		return "TString"
 	case TObject:
@@ -220,5 +223,5 @@ func rmeta2Name(t Enum) string {
 	case STLstring:
 		return "string"
 	}
-	panic(xerrors.Errorf("not implemented: t=%d", t))
+	panic(xerrors.Errorf("not implemented: t=%d (%v)", t, t))
 }
