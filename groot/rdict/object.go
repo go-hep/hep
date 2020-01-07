@@ -496,7 +496,7 @@ func genType(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int) reflect.T
 		return reflect.SliceOf(gotypes[reflect.Float64])
 
 	}
-	panic(xerrors.Errorf("rmeta=%d not implemented (n=%v)", enum, n))
+	panic(xerrors.Errorf("rmeta=%d (%v) not implemented (n=%v)", enum, enum, n))
 }
 
 func genRStreamer(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int, recv reflect.Value) rfunc {
