@@ -43,6 +43,41 @@ func TestDump(t *testing.T) {
 [000][branch2.floatleaf]: 781.2
 `,
 		},
+		{
+			name: "../../testdata/padding.root",
+			want: `key[000]: tree;1 "tree w/ & w/o padding" (TTree)
+[000][pad.x1]: 0
+[000][pad.x2]: 548655054794
+[000][pad.x3]: 0
+[000][nop.x1]: 0
+[000][nop.x2]: 0
+[000][nop.x3]: 0
+[001][pad.x1]: 1
+[001][pad.x2]: 72058142692982730
+[001][pad.x3]: 0
+[001][nop.x1]: 1
+[001][nop.x2]: 1
+[001][nop.x3]: 1
+[002][pad.x1]: 2
+[002][pad.x2]: 144115736730910666
+[002][pad.x3]: 0
+[002][nop.x1]: 2
+[002][nop.x2]: 2
+[002][nop.x3]: 2
+[003][pad.x1]: 3
+[003][pad.x2]: 216173330768838602
+[003][pad.x3]: 0
+[003][nop.x1]: 3
+[003][nop.x2]: 3
+[003][nop.x3]: 3
+[004][pad.x1]: 4
+[004][pad.x2]: 288230924806766538
+[004][pad.x3]: 0
+[004][nop.x1]: 4
+[004][nop.x2]: 4
+[004][nop.x3]: 4
+`,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)
