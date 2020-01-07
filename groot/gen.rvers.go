@@ -71,6 +71,7 @@ func genROOTTypes() ([]Type, error) {
 		"TAttAxis", "TAttFill", "TAttLine", "TAttMarker",
 		"TNamed",
 		"TObject", "TObjString",
+		"TProcessID",
 		"TUUID",
 		// rcont
 		"TArray", "TArrayC", "TArrayD", "TArrayF", "TArrayI", "TArrayL", "TArrayL64", "TArrayS",
