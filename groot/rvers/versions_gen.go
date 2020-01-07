@@ -80,6 +80,8 @@ const (
 	LeafL                    = 1  // ROOT version for TLeafL
 	LeafO                    = 1  // ROOT version for TLeafO
 	LeafS                    = 1  // ROOT version for TLeafS
+	LeafF16                  = 1  // ROOT version for TLeafF16
+	LeafD32                  = 1  // ROOT version for TLeafD32
 	Ntuple                   = 2  // ROOT version for TNtuple
 	Tree                     = 20 // ROOT version for TTree
 	Directory                = 5  // ROOT version for TDirectory

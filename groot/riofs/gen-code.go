@@ -77,7 +77,7 @@ func genStreamers() {
 		{Name: "TLeaf"}, {Name: "TLeafElement"},
 		{Name: "TLeafO"},
 		{Name: "TLeafB"}, {Name: "TLeafS"}, {Name: "TLeafI"}, {Name: "TLeafL"},
-		{Name: "TLeafF"}, {Name: "TLeafD"},
+		{Name: "TLeafF"}, {Name: "TLeafF16"}, {Name: "TLeafD"}, {Name: "TLeafD32"},
 		{Name: "TLeafC"},
 	}
 

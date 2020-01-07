@@ -108,6 +108,7 @@ func genROOTTypes() ([]Type, error) {
 		"TChain",
 		"TLeaf", "TLeafElement",
 		"TLeafB", "TLeafC", "TLeafD", "TLeafF", "TLeafI", "TLeafL", "TLeafO", "TLeafS",
+		"TLeafF16", "TLeafD32",
 		"TNtuple",
 		"TTree",
 		// riofs
