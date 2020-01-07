@@ -8,11 +8,11 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
+
+	"go-hep.org/x/hep/groot/internal/rtests"
 )
 
 var (
@@ -20,8 +20,6 @@ var (
 )
 
 func main() {
-	const fname = "gendirs.C"
-
 	flag.Parse()
 	err := ioutil.WriteFile(fname, []byte(script), 0644)
 	if err != nil {
@@ -29,12 +27,9 @@ func main() {
 	}
 	defer os.Remove(fname)
 
-	cmd := exec.Command("root.exe", "-b", fmt.Sprintf("./%s(%q)", fname, *root))
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	out, err := rtests.RunCxxROOT("gendirs", []byte(script), *root)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("could not run ROOT macro:\noutput:\n%v\nerror: %+v", string(out), err)
 	}
 }
 

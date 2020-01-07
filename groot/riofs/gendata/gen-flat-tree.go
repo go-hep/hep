@@ -8,11 +8,11 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
+
+	"go-hep.org/x/hep/groot/internal/rtests"
 )
 
 var (
@@ -31,12 +31,9 @@ func main() {
 	}
 	defer os.Remove(fname)
 
-	cmd := exec.Command("root.exe", "-b", fmt.Sprintf("./gentree.C(%q, %d)", *root, *split))
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	out, err := rtests.RunCxxROOT("gentree", []byte(script), *root, *split)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("could not run ROOT macro:\noutput:\n%v\nerror: %+v", string(out), err)
 	}
 }
 
