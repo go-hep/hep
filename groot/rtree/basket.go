@@ -310,7 +310,11 @@ func (b *Basket) update(offset int64) {
 				nevsize = 2 * b.nevsize
 			}
 			b.nevsize = nevsize
-			b.offsets = append(b.offsets, make([]int32, len(b.offsets)-nevsize)...)
+			delta := len(b.offsets) - nevsize
+			if delta < 0 {
+				delta = -delta
+			}
+			b.offsets = append(b.offsets, make([]int32, delta)...)
 		}
 		b.offsets[b.nevbuf] = int32(offset)
 	}
