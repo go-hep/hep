@@ -744,7 +744,7 @@ func (b *tbranch) setAddress(ptr interface{}) error {
 		}
 
 	default:
-		rv := reflect.ValueOf(ptr).Elem()
+		rv := reflect.Indirect(reflect.ValueOf(ptr))
 		rt := rv.Type()
 		switch kind := rv.Kind(); kind {
 		case reflect.Struct:
