@@ -35,21 +35,33 @@ func Dump(w io.Writer, fname string, deep bool, filter func(name string) bool) e
 	if filter == nil {
 		filter = func(string) bool { return true }
 	}
-	return dumpDir(w, f, deep, filter)
+
+	cmd := dumpCmd{
+		w:     w,
+		deep:  deep,
+		match: filter,
+	}
+	return cmd.dumpDir(f)
 }
 
-func dumpDir(w io.Writer, dir riofs.Directory, deep bool, match func(name string) bool) error {
+type dumpCmd struct {
+	w     io.Writer
+	deep  bool
+	match func(name string) bool
+}
+
+func (cmd *dumpCmd) dumpDir(dir riofs.Directory) error {
 	for i, key := range dir.Keys() {
-		fmt.Fprintf(w, "key[%03d]: %s;%d %q (%s)", i, key.Name(), key.Cycle(), key.Title(), key.ClassName())
-		if !(deep && match(key.Name())) {
-			fmt.Fprint(w, "\n")
+		fmt.Fprintf(cmd.w, "key[%03d]: %s;%d %q (%s)", i, key.Name(), key.Cycle(), key.Title(), key.ClassName())
+		if !(cmd.deep && cmd.match(key.Name())) {
+			fmt.Fprint(cmd.w, "\n")
 			continue
 		}
 		obj, err := key.Object()
 		if err != nil {
 			return xerrors.Errorf("could not decode object %q from dir %q: %w", key.Name(), dir.(root.Named).Name(), err)
 		}
-		err = dumpObj(w, obj, deep, match)
+		err = cmd.dumpObj(obj)
 		if xerrors.Is(err, errIgnoreKey) {
 			continue
 		}
@@ -62,42 +74,42 @@ func dumpDir(w io.Writer, dir riofs.Directory, deep bool, match func(name string
 
 var errIgnoreKey = xerrors.Errorf("rcmd: ignore key")
 
-func dumpObj(w io.Writer, obj root.Object, deep bool, match func(name string) bool) error {
+func (cmd *dumpCmd) dumpObj(obj root.Object) error {
 	var err error
 	switch obj := obj.(type) {
 	case rtree.Tree:
-		fmt.Fprintf(w, "\n")
-		err = dumpTree(w, obj)
+		fmt.Fprintf(cmd.w, "\n")
+		err = cmd.dumpTree(obj)
 	case riofs.Directory:
-		fmt.Fprintf(w, "\n")
-		err = dumpDir(w, obj, deep, match)
+		fmt.Fprintf(cmd.w, "\n")
+		err = cmd.dumpDir(obj)
 	case rhist.H2:
-		fmt.Fprintf(w, "\n")
-		err = dumpH2(w, obj)
+		fmt.Fprintf(cmd.w, "\n")
+		err = cmd.dumpH2(obj)
 	case rhist.H1: // keep after rhist.H2
-		fmt.Fprintf(w, "\n")
-		err = dumpH1(w, obj)
+		fmt.Fprintf(cmd.w, "\n")
+		err = cmd.dumpH1(obj)
 	case rhist.Graph:
-		fmt.Fprintf(w, "\n")
-		err = dumpGraph(w, obj)
+		fmt.Fprintf(cmd.w, "\n")
+		err = cmd.dumpGraph(obj)
 	case root.List:
-		fmt.Fprintf(w, "\n")
-		err = dumpList(w, obj, deep, match)
+		fmt.Fprintf(cmd.w, "\n")
+		err = cmd.dumpList(obj)
 	case *rdict.Object:
-		fmt.Fprintf(w, " => %v\n", obj)
+		fmt.Fprintf(cmd.w, " => %v\n", obj)
 	case fmt.Stringer:
-		fmt.Fprintf(w, " => %q\n", obj.String())
+		fmt.Fprintf(cmd.w, " => %q\n", obj.String())
 	default:
-		fmt.Fprintf(w, " => ignoring key of type %T\n", obj)
+		fmt.Fprintf(cmd.w, " => ignoring key of type %T\n", obj)
 		return errIgnoreKey
 	}
 	return err
 }
 
-func dumpList(w io.Writer, lst root.List, deep bool, match func(name string) bool) error {
+func (cmd *dumpCmd) dumpList(lst root.List) error {
 	for i := 0; i < lst.Len(); i++ {
-		fmt.Fprintf(w, "lst[%s][%d]: ", lst.Name(), i)
-		err := dumpObj(w, lst.At(i), deep, match)
+		fmt.Fprintf(cmd.w, "lst[%s][%d]: ", lst.Name(), i)
+		err := cmd.dumpObj(lst.At(i))
 		if err != nil && !xerrors.Is(err, errIgnoreKey) {
 			return xerrors.Errorf("could not dump list: %w", err)
 		}
@@ -105,7 +117,7 @@ func dumpList(w io.Writer, lst root.List, deep bool, match func(name string) boo
 	return nil
 }
 
-func dumpTree(w io.Writer, t rtree.Tree) error {
+func (cmd *dumpCmd) dumpTree(t rtree.Tree) error {
 
 	vars := rtree.NewScanVars(t)
 	sc, err := rtree.NewScannerVars(t, vars...)
@@ -125,32 +137,32 @@ func dumpTree(w io.Writer, t rtree.Tree) error {
 			if v.Leaf != "" && v.Leaf != v.Name {
 				name = v.Name + "." + v.Leaf
 			}
-			fmt.Fprintf(w, "[%03d][%s]: %v\n", sc.Entry(), name, rv.Interface())
+			fmt.Fprintf(cmd.w, "[%03d][%s]: %v\n", sc.Entry(), name, rv.Interface())
 		}
 	}
 	return nil
 }
 
-func dumpH1(w io.Writer, h1 rhist.H1) error {
+func (cmd *dumpCmd) dumpH1(h1 rhist.H1) error {
 	h, err := rootcnv.H1D(h1)
 	if err != nil {
 		return xerrors.Errorf("could not convert TH1x to hbook: %w", err)
 	}
-	return yodacnv.Write(w, h)
+	return yodacnv.Write(cmd.w, h)
 }
 
-func dumpH2(w io.Writer, h2 rhist.H2) error {
+func (cmd *dumpCmd) dumpH2(h2 rhist.H2) error {
 	h, err := rootcnv.H2D(h2)
 	if err != nil {
 		return xerrors.Errorf("could not convert TH2x to hbook: %w", err)
 	}
-	return yodacnv.Write(w, h)
+	return yodacnv.Write(cmd.w, h)
 }
 
-func dumpGraph(w io.Writer, gr rhist.Graph) error {
+func (cmd *dumpCmd) dumpGraph(gr rhist.Graph) error {
 	g, err := rootcnv.S2D(gr)
 	if err != nil {
 		return xerrors.Errorf("could not convert TGraph to hbook: %w", err)
 	}
-	return yodacnv.Write(w, g)
+	return yodacnv.Write(cmd.w, g)
 }
