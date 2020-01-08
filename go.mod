@@ -13,7 +13,7 @@ require (
 	github.com/gonuts/binary v0.2.0
 	github.com/gonuts/commander v0.1.0
 	github.com/gonuts/flag v0.1.0
-	github.com/google/go-cmp v0.3.1
+	github.com/google/go-cmp v0.4.0
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf
 	github.com/hashicorp/go-uuid v1.0.1
 	github.com/jcmturner/gofork v1.0.0 // indirect
