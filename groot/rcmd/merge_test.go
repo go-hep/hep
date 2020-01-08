@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main // import "go-hep.org/x/hep/groot/cmd/root-merge"
+package rcmd_test
 
 import (
 	"bytes"
@@ -131,7 +131,7 @@ func TestMerge(t *testing.T) {
 				}()
 			}
 
-			err = rootmerge(oname, fnames, verbose)
+			err = rcmd.Merge(oname, fnames, verbose)
 			if err != nil {
 				t.Fatalf("could not run root-merge: %+v", err)
 			}
