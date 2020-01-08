@@ -7,12 +7,13 @@ package main
 import (
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/astrogo/fitsio"
+	"go-hep.org/x/hep/groot/rcmd"
 )
 
 func TestConvert(t *testing.T) {
@@ -37,8 +38,7 @@ func TestConvert(t *testing.T) {
 				},
 			},
 			data: []bool{true, false, true, false, true},
-			want: `>>> file[bools.root]
-key[000]: test;1 "" (TTree)
+			want: `key[000]: test;1 "" (TTree)
 [000][col]: true
 [001][col]: false
 [002][col]: true
@@ -55,8 +55,7 @@ key[000]: test;1 "" (TTree)
 				},
 			},
 			data: []int8{10, 11, 12, 13, 14},
-			want: `>>> file[i8.root]
-key[000]: test;1 "" (TTree)
+			want: `key[000]: test;1 "" (TTree)
 [000][col]: 10
 [001][col]: 11
 [002][col]: 12
@@ -73,8 +72,7 @@ key[000]: test;1 "" (TTree)
 				},
 			},
 			data: []int16{10, 11, 12, 13, 14},
-			want: `>>> file[i16.root]
-key[000]: test;1 "" (TTree)
+			want: `key[000]: test;1 "" (TTree)
 [000][col]: 10
 [001][col]: 11
 [002][col]: 12
@@ -91,8 +89,7 @@ key[000]: test;1 "" (TTree)
 				},
 			},
 			data: []int32{10, 11, 12, 13, 14},
-			want: `>>> file[i32.root]
-key[000]: test;1 "" (TTree)
+			want: `key[000]: test;1 "" (TTree)
 [000][col]: 10
 [001][col]: 11
 [002][col]: 12
@@ -109,8 +106,7 @@ key[000]: test;1 "" (TTree)
 				},
 			},
 			data: []int64{-10, -11, -12, -13, -14},
-			want: `>>> file[i64.root]
-key[000]: test;1 "" (TTree)
+			want: `key[000]: test;1 "" (TTree)
 [000][col]: -10
 [001][col]: -11
 [002][col]: -12
@@ -127,8 +123,7 @@ key[000]: test;1 "" (TTree)
 				},
 			},
 			data: []uint8{10, 11, 12, 13, 14},
-			want: `>>> file[u8.root]
-key[000]: test;1 "" (TTree)
+			want: `key[000]: test;1 "" (TTree)
 [000][col]: 10
 [001][col]: 11
 [002][col]: 12
@@ -145,8 +140,7 @@ key[000]: test;1 "" (TTree)
 				},
 			},
 			data: []uint16{10, 11, 12, 13, 14},
-			want: `>>> file[u16.root]
-key[000]: test;1 "" (TTree)
+			want: `key[000]: test;1 "" (TTree)
 [000][col]: 10
 [001][col]: 11
 [002][col]: 12
@@ -163,8 +157,7 @@ key[000]: test;1 "" (TTree)
 				},
 			},
 			data: []uint32{10, 11, 12, 13, 14},
-			want: `>>> file[u32.root]
-key[000]: test;1 "" (TTree)
+			want: `key[000]: test;1 "" (TTree)
 [000][col]: 10
 [001][col]: 11
 [002][col]: 12
@@ -181,8 +174,7 @@ key[000]: test;1 "" (TTree)
 				},
 			},
 			data: []uint64{10, 11, 12, 13, 14},
-			want: `>>> file[u64.root]
-key[000]: test;1 "" (TTree)
+			want: `key[000]: test;1 "" (TTree)
 [000][col]: 10
 [001][col]: 11
 [002][col]: 12
@@ -199,8 +191,7 @@ key[000]: test;1 "" (TTree)
 				},
 			},
 			data: []float32{-10, -11, -12, -13, -14},
-			want: `>>> file[f32.root]
-key[000]: test;1 "" (TTree)
+			want: `key[000]: test;1 "" (TTree)
 [000][col]: -10
 [001][col]: -11
 [002][col]: -12
@@ -217,8 +208,7 @@ key[000]: test;1 "" (TTree)
 				},
 			},
 			data: []float64{-10, -11, -12, -13, -14},
-			want: `>>> file[f64.root]
-key[000]: test;1 "" (TTree)
+			want: `key[000]: test;1 "" (TTree)
 [000][col]: -10
 [001][col]: -11
 [002][col]: -12
@@ -235,8 +225,7 @@ key[000]: test;1 "" (TTree)
 				},
 			},
 			data: []string{"a", "", "c ", " d", "eée", " "},
-			want: `>>> file[strings.root]
-key[000]: test;1 "" (TTree)
+			want: `key[000]: test;1 "" (TTree)
 [000][col]: a
 [001][col]: 
 [002][col]: c 
@@ -254,8 +243,7 @@ key[000]: test;1 "" (TTree)
 				},
 			},
 			data: [][2]float64{{10, 11}, {12, 13}, {14, 15}, {16, 17}, {18, 19}},
-			want: `>>> file[2df64.root]
-key[000]: test;1 "" (TTree)
+			want: `key[000]: test;1 "" (TTree)
 [000][col]: [10 11]
 [001][col]: [12 13]
 [002][col]: [14 15]
@@ -326,14 +314,14 @@ key[000]: test;1 "" (TTree)
 
 			// read-back
 			func() {
-				cmd := exec.Command("root-dump", "-name=test", filepath.Base(oname))
-				cmd.Dir = tmp
-				out, err := cmd.CombinedOutput()
+				const deep = true
+				got := new(strings.Builder)
+				err := rcmd.Dump(got, oname, deep, nil)
 				if err != nil {
 					t.Fatalf("could not run root-dump: %+v", err)
 				}
 
-				if got, want := string(out), tc.want; got != want {
+				if got, want := got.String(), tc.want; got != want {
 					t.Fatalf("fits2root conversion failed:\ngot:\n%s\nwant:\n%s\n", got, want)
 				}
 			}()
