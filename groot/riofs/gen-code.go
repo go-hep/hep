@@ -14,9 +14,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
+	"strings"
 	"text/template"
 
+	"go-hep.org/x/hep/groot/internal/rtests"
 	"go-hep.org/x/hep/groot/riofs"
 )
 
@@ -81,16 +82,8 @@ func genStreamers() {
 	}
 
 	const (
-		macro = "genstreamers.C"
 		oname = "streamers.root"
 	)
-
-	froot, err := os.Create(macro)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer froot.Close()
-	defer os.Remove(macro)
 	defer os.Remove(oname)
 
 	tmpl := template.Must(template.New("genstreamers").Parse(`
@@ -112,17 +105,16 @@ void genstreamers(const char* fname) {
 	exit(0);
 }
 `))
-	err = tmpl.Execute(froot, classes)
+
+	macro := new(strings.Builder)
+	err = tmpl.Execute(macro, classes)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	cmd := exec.Command("root.exe", "-b", fmt.Sprintf("./%s(%q)", macro, oname))
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	out, err := rtests.RunCxxROOT("genstreamers", []byte(macro.String()), oname)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("could not run gen-streamers:\n%s\nerror: %+v", out, err)
 	}
 
 	root, err := riofs.Open(oname)

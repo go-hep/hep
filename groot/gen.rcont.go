@@ -8,13 +8,12 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"text/template"
 
 	"go-hep.org/x/hep/groot/internal/genroot"
+	"go-hep.org/x/hep/groot/internal/rtests"
 )
 
 func main() {
@@ -173,11 +172,7 @@ var (
 `
 
 func genTClonesArrayData() {
-	const (
-		macro = "gen-tclonesarray.C"
-	)
-
-	err := ioutil.WriteFile(macro, []byte(`
+	macro := `
 void gen_tclonesarray(const char *fname, bool bypass) {
 	auto f = TFile::Open(fname, "RECREATE");
 	auto c = new TClonesArray("TObjString", 3);
@@ -190,11 +185,7 @@ void gen_tclonesarray(const char *fname, bool bypass) {
 	f->Write();
 	f->Close();
 }
-`), 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer os.Remove(macro)
+`
 
 	for _, v := range []struct {
 		name   string
@@ -209,12 +200,9 @@ void gen_tclonesarray(const char *fname, bool bypass) {
 			bypass: false,
 		},
 	} {
-		cmd := exec.Command("root.exe", "-b", "-q", fmt.Sprintf("./%s(%q, %v)", macro, v.name, v.bypass))
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err = cmd.Run()
+		out, err := rtests.RunCxxROOT("gen_tclonesarray", []byte(macro), v.name, v.bypass)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("could not run gen-tclonesarray:\n%s\nerror: %+v", out, err)
 		}
 	}
 }

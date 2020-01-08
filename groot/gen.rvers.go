@@ -13,11 +13,11 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"strings"
 	"text/template"
 
 	"go-hep.org/x/hep/groot/internal/genroot"
+	"go-hep.org/x/hep/groot/internal/rtests"
 )
 
 func main() {
@@ -118,16 +118,9 @@ func genROOTTypes() ([]Type, error) {
 	}
 
 	const (
-		macro = "genrversions.C"
 		oname = "rversions.json"
 	)
 
-	froot, err := os.Create(macro)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer froot.Close()
-	defer os.Remove(macro)
 	defer os.Remove(oname)
 
 	tmpl := template.Must(template.New("genrversions").Parse(`
@@ -146,22 +139,16 @@ fprintf(f, "{\"name\": \"{{.}}\", \"version\": %d},\n", {{.}}::Class_Version());
 	exit(0);
 }
 `))
-	err = tmpl.Execute(froot, rclasses)
+
+	macro := new(strings.Builder)
+	err := tmpl.Execute(macro, rclasses)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = froot.Close()
+	out, err := rtests.RunCxxROOT("genrversions", []byte(macro.String()), oname)
 	if err != nil {
-		log.Fatalf("could not close ROOT macro: %v", err)
-	}
-
-	cmd := exec.Command("root.exe", "-b", fmt.Sprintf("./%s(%q)", macro, oname))
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("could not run gen-rversions:\n%s\nerror: %+v", out, err)
 	}
 
 	f, err := ioutil.ReadFile(oname)

@@ -8,12 +8,9 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"io/ioutil"
 	"log"
-	"os"
-	"os/exec"
-	"path/filepath"
+
+	"go-hep.org/x/hep/groot/internal/rtests"
 )
 
 var (
@@ -21,28 +18,11 @@ var (
 )
 
 func main() {
-	const fname = "streamers.C"
-
 	flag.Parse()
 
-	dir, err := ioutil.TempDir("", "groot-gen-streamers-data-")
+	out, err := rtests.RunCxxROOT("streamers", []byte(script), *root)
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
-
-	err = ioutil.WriteFile(filepath.Join(dir, fname), []byte(script), 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer os.Remove(fname)
-
-	cmd := exec.Command("root.exe", "-q", "-b", fmt.Sprintf("%s(%q)", filepath.Join(dir, fname), *root))
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("could not run gen-streamers:\n%s\nerror: %+v", out, err)
 	}
 }
 
