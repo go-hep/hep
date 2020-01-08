@@ -51,7 +51,7 @@ import (
 	"os"
 	"regexp"
 
-	"go-hep.org/x/hep/groot/internal/rcmd"
+	"go-hep.org/x/hep/groot/rcmd"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 )

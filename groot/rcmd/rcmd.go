@@ -3,4 +3,4 @@
 // license that can be found in the LICENSE file.
 
 // Package rcmd provides helper functions containing the logic of various root-xyz commands.
-package rcmd
+package rcmd // import "go-hep.org/x/hep/groot/rcmd"

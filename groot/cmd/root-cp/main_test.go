@@ -13,8 +13,8 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/groot"
-	"go-hep.org/x/hep/groot/internal/rcmd"
 	"go-hep.org/x/hep/groot/rbase"
+	"go-hep.org/x/hep/groot/rcmd"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtree"

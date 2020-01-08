@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"go-hep.org/x/hep/groot/internal/rcmd"
+	"go-hep.org/x/hep/groot/rcmd"
 )
 
 func TestDump(t *testing.T) {
@@ -18,7 +18,7 @@ func TestDump(t *testing.T) {
 		want string
 	}{
 		{
-			name: "../../testdata/simple.root",
+			name: "../testdata/simple.root",
 			want: `key[000]: tree;1 "fake data" (TTree)
 [000][one]: 1
 [000][two]: 1.1
@@ -35,7 +35,7 @@ func TestDump(t *testing.T) {
 `,
 		},
 		{
-			name: "../../testdata/root_numpy_struct.root",
+			name: "../testdata/root_numpy_struct.root",
 			want: `key[000]: test;1 "identical leaf names in different branches" (TTree)
 [000][branch1.intleaf]: 10
 [000][branch1.floatleaf]: 15.5
@@ -44,7 +44,7 @@ func TestDump(t *testing.T) {
 `,
 		},
 		{
-			name: "../../testdata/padding.root",
+			name: "../testdata/padding.root",
 			want: `key[000]: tree;1 "tree w/ & w/o padding" (TTree)
 [000][pad.x1]: 0
 [000][pad.x2]: 548655054794
