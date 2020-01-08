@@ -1,4 +1,3 @@
->>> file[lists.file.data.root]
 key[000]: tree;1 "tree" (TTree)
 [000][rarrow_n_list_nullable]: 5
 [000][list_nullable]: [1 0 0 4 5]

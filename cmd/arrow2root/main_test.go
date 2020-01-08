@@ -7,9 +7,11 @@ package main // import "go-hep.org/x/hep/cmd/arrow2root"
 import (
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"go-hep.org/x/hep/groot/rcmd"
 )
 
 func TestConvert(t *testing.T) {
@@ -62,9 +64,11 @@ func TestConvert(t *testing.T) {
 				t.Fatalf("could not convert %q: %+v", tc.name, err)
 			}
 
-			cmd := exec.Command("root-dump", "-name="+tname, filepath.Base(oname))
-			cmd.Dir = tmp
-			out, err := cmd.CombinedOutput()
+			var (
+				out  = new(strings.Builder)
+				deep = true
+			)
+			err = rcmd.Dump(out, oname, deep, nil)
 			if err != nil {
 				t.Fatalf("could not dump ROOT file %q: %+v", oname, err)
 			}
@@ -74,7 +78,7 @@ func TestConvert(t *testing.T) {
 				t.Fatalf("could not load reference file %q: %+v", tc.name, err)
 			}
 
-			if got, want := string(out), string(want); got != want {
+			if got, want := out.String(), string(want); got != want {
 				t.Fatalf("invalid root-dump output:\ngot:\n%s\nwant:\n%s\n", got, want)
 			}
 		})
