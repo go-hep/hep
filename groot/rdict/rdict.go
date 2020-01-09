@@ -8,8 +8,10 @@ package rdict // import "go-hep.org/x/hep/groot/rdict"
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 
@@ -20,6 +22,7 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
+	"golang.org/x/xerrors"
 )
 
 var (
@@ -167,6 +170,7 @@ type Element struct {
 }
 
 func (e Element) New() StreamerElement {
+	e.parse()
 	return StreamerElement{
 		named:  e.Name,
 		etype:  e.Type,
@@ -180,6 +184,100 @@ func (e Element) New() StreamerElement {
 		xmax:   e.XMax,
 		factor: e.Factor,
 	}
+}
+
+// parse parses the element's title for ROOT meta-data information (range, factor, ...)
+func (e *Element) parse() {
+	switch e.Type {
+	case rmeta.Double32: // FIXME(sbinet): also handle *Double32 ?
+		e.XMin, e.XMax, e.Factor = e.getRange(e.Name.Title())
+	}
+}
+
+func (Element) getRange(str string) (xmin, xmax, factor float64) {
+	if str == "" {
+		return xmin, xmax, factor
+	}
+	beg := strings.LastIndex(str, "[")
+	if beg < 0 {
+		return xmin, xmax, factor
+	}
+	end := strings.LastIndex(str, "]")
+	if end < 0 {
+		return xmin, xmax, factor
+	}
+	str = str[beg+1 : end]
+	if !strings.Contains(str, ",") {
+		return xmin, xmax, factor
+	}
+
+	toks := strings.Split(str, ",")
+	for i, tok := range toks {
+		toks[i] = strings.ToLower(strings.TrimSpace(tok))
+	}
+
+	switch len(toks) {
+	case 2, 3:
+	default:
+		panic(xerrors.Errorf("rdict: invalid ROOT range specification (too many commas): %q", str))
+	}
+
+	var nbits uint32 = 32
+	if len(toks) == 3 {
+		n, err := strconv.ParseUint(toks[2], 10, 32)
+		if err != nil {
+			panic(xerrors.Errorf("rdict: could not parse nbits specification %q: %w", str, err))
+		}
+		nbits = uint32(n)
+		if nbits < 2 || nbits > 32 {
+			panic(xerrors.Errorf("rdict: illegal nbits specification (nbits=%d outside of range [2,32])", nbits))
+		}
+	}
+
+	fct := func(s string) float64 {
+		switch {
+		case strings.Contains(s, "pi"):
+			var f float64
+			switch {
+			case strings.Contains(s, "2pi"), strings.Contains(s, "2*pi"), strings.Contains(s, "twopi"):
+				f = 2 * math.Pi
+			case strings.Contains(s, "pi/2"):
+				f = math.Pi / 2
+			case strings.Contains(s, "pi/4"):
+				f = math.Pi / 4
+			case strings.Contains(s, "pi"):
+				f = math.Pi
+			}
+			if strings.Contains(s, "-") {
+				f = -f
+			}
+			return f
+		default:
+			f, err := strconv.ParseFloat(s, 64)
+			if err != nil {
+				panic(xerrors.Errorf("rdict: could not parse range value %q: %w", s, err))
+			}
+			return f
+		}
+	}
+
+	xmin = fct(toks[0])
+	xmax = fct(toks[1])
+
+	var bigint uint32
+	switch {
+	case nbits < 32:
+		bigint = 1 << nbits
+	default:
+		bigint = 0xffffffff
+	}
+	if xmin < xmax {
+		factor = float64(bigint) / (xmax - xmin)
+	}
+	if xmin >= xmax && nbits < 15 {
+		xmin = float64(nbits) + 0.1
+	}
+	return xmin, xmax, factor
 }
 
 type StreamerElement struct {
