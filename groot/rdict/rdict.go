@@ -189,6 +189,8 @@ func (e Element) New() StreamerElement {
 // parse parses the element's title for ROOT meta-data information (range, factor, ...)
 func (e *Element) parse() {
 	switch e.Type {
+	case rmeta.Float16: // FIXME(sbinet): also handle *Float16 ?
+		e.XMin, e.XMax, e.Factor = e.getRange(e.Name.Title())
 	case rmeta.Double32: // FIXME(sbinet): also handle *Double32 ?
 		e.XMin, e.XMax, e.Factor = e.getRange(e.Name.Title())
 	}

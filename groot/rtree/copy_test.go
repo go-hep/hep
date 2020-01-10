@@ -134,6 +134,7 @@ func TestCopyTree(t *testing.T) {
 [000][U64]: 0
 [000][F32]: 0
 [000][F64]: 0
+[000][D16]: 0
 [000][D32]: 0
 [000][ArrBs]: [true false false false false false false false false false]
 [000][ArrI8]: [0 0 0 0 0 0 0 0 0 0]
@@ -146,6 +147,8 @@ func TestCopyTree(t *testing.T) {
 [000][ArrU64]: [0 0 0 0 0 0 0 0 0 0]
 [000][ArrF32]: [0 0 0 0 0 0 0 0 0 0]
 [000][ArrF64]: [0 0 0 0 0 0 0 0 0 0]
+[000][ArrD16]: [0 0 0 0 0 0 0 0 0 0]
+[000][ArrD32]: [0 0 0 0 0 0 0 0 0 0]
 [000][N]: 0
 [000][SliBs]: []
 [000][SliI8]: []
@@ -158,6 +161,8 @@ func TestCopyTree(t *testing.T) {
 [000][SliU64]: []
 [000][SliF32]: []
 [000][SliF64]: []
+[000][SliD16]: []
+[000][SliD32]: []
 [001][B]: false
 [001][Str]: str-1
 [001][I8]: -1
@@ -170,6 +175,7 @@ func TestCopyTree(t *testing.T) {
 [001][U64]: 1
 [001][F32]: 1
 [001][F64]: 1
+[001][D16]: 1
 [001][D32]: 1
 [001][ArrBs]: [false true false false false false false false false false]
 [001][ArrI8]: [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1]
@@ -182,6 +188,8 @@ func TestCopyTree(t *testing.T) {
 [001][ArrU64]: [1 1 1 1 1 1 1 1 1 1]
 [001][ArrF32]: [1 1 1 1 1 1 1 1 1 1]
 [001][ArrF64]: [1 1 1 1 1 1 1 1 1 1]
+[001][ArrD16]: [1 1 1 1 1 1 1 1 1 1]
+[001][ArrD32]: [1 1 1 1 1 1 1 1 1 1]
 [001][N]: 1
 [001][SliBs]: [true]
 [001][SliI8]: [-1]
@@ -194,6 +202,8 @@ func TestCopyTree(t *testing.T) {
 [001][SliU64]: [1]
 [001][SliF32]: [1]
 [001][SliF64]: [1]
+[001][SliD16]: [1]
+[001][SliD32]: [1]
 [002][B]: true
 [002][Str]: str-2
 [002][I8]: -2
@@ -206,6 +216,7 @@ func TestCopyTree(t *testing.T) {
 [002][U64]: 2
 [002][F32]: 2
 [002][F64]: 2
+[002][D16]: 2
 [002][D32]: 2
 [002][ArrBs]: [false false true false false false false false false false]
 [002][ArrI8]: [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2]
@@ -218,6 +229,8 @@ func TestCopyTree(t *testing.T) {
 [002][ArrU64]: [2 2 2 2 2 2 2 2 2 2]
 [002][ArrF32]: [2 2 2 2 2 2 2 2 2 2]
 [002][ArrF64]: [2 2 2 2 2 2 2 2 2 2]
+[002][ArrD16]: [2 2 2 2 2 2 2 2 2 2]
+[002][ArrD32]: [2 2 2 2 2 2 2 2 2 2]
 [002][N]: 2
 [002][SliBs]: [false true]
 [002][SliI8]: [-2 -2]
@@ -230,6 +243,8 @@ func TestCopyTree(t *testing.T) {
 [002][SliU64]: [2 2]
 [002][SliF32]: [2 2]
 [002][SliF64]: [2 2]
+[002][SliD16]: [2 2]
+[002][SliD32]: [2 2]
 [003][B]: false
 [003][Str]: str-3
 [003][I8]: -3
@@ -242,6 +257,7 @@ func TestCopyTree(t *testing.T) {
 [003][U64]: 3
 [003][F32]: 3
 [003][F64]: 3
+[003][D16]: 3
 [003][D32]: 3
 [003][ArrBs]: [false false false true false false false false false false]
 [003][ArrI8]: [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3]
@@ -254,6 +270,8 @@ func TestCopyTree(t *testing.T) {
 [003][ArrU64]: [3 3 3 3 3 3 3 3 3 3]
 [003][ArrF32]: [3 3 3 3 3 3 3 3 3 3]
 [003][ArrF64]: [3 3 3 3 3 3 3 3 3 3]
+[003][ArrD16]: [3 3 3 3 3 3 3 3 3 3]
+[003][ArrD32]: [3 3 3 3 3 3 3 3 3 3]
 [003][N]: 3
 [003][SliBs]: [false false true]
 [003][SliI8]: [-3 -3 -3]
@@ -266,6 +284,8 @@ func TestCopyTree(t *testing.T) {
 [003][SliU64]: [3 3 3]
 [003][SliF32]: [3 3 3]
 [003][SliF64]: [3 3 3]
+[003][SliD16]: [3 3 3]
+[003][SliD32]: [3 3 3]
 `,
 		},
 	} {

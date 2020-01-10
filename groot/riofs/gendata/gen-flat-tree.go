@@ -61,6 +61,7 @@ struct Event {
 	float    F32;
 	double   F64;
 
+	Float16_t  D16;
 	Double32_t D32;
 
 	bool     ArrayBs[ARRAYSZ];
@@ -76,6 +77,9 @@ struct Event {
 	float    ArrayF32[ARRAYSZ];
 	double   ArrayF64[ARRAYSZ];
 
+	Float16_t    ArrayD16[ARRAYSZ];
+	Double32_t   ArrayD32[ARRAYSZ];
+
 	int32_t  N;
 	bool     SliceBs[MAXSLICE];   //[N]
 //	char     SliceStr[MAXSLICE][MAXSTR]; //[N]
@@ -89,6 +93,9 @@ struct Event {
 	uint64_t SliceU64[MAXSLICE];  //[N]
 	float    SliceF32[MAXSLICE];  //[N]
 	double   SliceF64[MAXSLICE];  //[N]
+
+	Float16_t    SliceD16[MAXSLICE];  //[N]
+	Double32_t   SliceD32[MAXSLICE];  //[N]
 };
 
 void gentree(const char* fname, int splitlvl = 99) {
@@ -112,6 +119,7 @@ void gentree(const char* fname, int splitlvl = 99) {
 	t->Branch("U64", &e.U64,  "U64/l");
 	t->Branch("F32", &e.F32,  "F32/F");
 	t->Branch("F64", &e.F64,  "F64/D");
+	t->Branch("D16", &e.D16,  "D16/f[0,0,16]");
 	t->Branch("D32", &e.D32,  "D32/d[0,0,32]");
 
 	// static arrays
@@ -129,6 +137,9 @@ void gentree(const char* fname, int splitlvl = 99) {
 	t->Branch("ArrF32", e.ArrayF32, "ArrF32[10]/F");
 	t->Branch("ArrF64", e.ArrayF64, "ArrF64[10]/D");
 
+	t->Branch("ArrD16", e.ArrayD16, "ArrD16[10]/f[0,0,16]");
+	t->Branch("ArrD32", e.ArrayD32, "ArrD32[10]/d[0,0,32]");
+
 	// dynamic arrays
 	
 	t->Branch("N", &e.N, "N/I");
@@ -145,6 +156,9 @@ void gentree(const char* fname, int splitlvl = 99) {
 	t->Branch("SliF32", e.SliceF32, "SliF32[N]/F");
 	t->Branch("SliF64", e.SliceF64, "SliF64[N]/D");
 
+	t->Branch("SliD16", e.SliceD16, "SliD16[N]/f[0,0,16]");
+	t->Branch("SliD32", e.SliceD32, "SliD32[N]/d[0,0,32]");
+
 
 	for (int j = 0; j != evtmax; j++) {
 		int i = j + OFFSET;
@@ -160,6 +174,7 @@ void gentree(const char* fname, int splitlvl = 99) {
 		e.U64 = i;
 		e.F32 = float(i);
 		e.F64 = double(i);
+		e.D16 = float(i);
 		e.D32 = double(i);
 
 		for (int ii = 0; ii != ARRAYSZ; ii++) {
@@ -175,6 +190,8 @@ void gentree(const char* fname, int splitlvl = 99) {
 			e.ArrayU64[ii] = i;
 			e.ArrayF32[ii] = float(i);
 			e.ArrayF64[ii] = double(i);
+			e.ArrayD16[ii] = float(i);
+			e.ArrayD32[ii] = double(i);
 		}
 
 		e.N = int32_t(i) % 10;
@@ -191,6 +208,8 @@ void gentree(const char* fname, int splitlvl = 99) {
 			e.SliceU64[ii] = i;
 			e.SliceF32[ii] = float(i);
 			e.SliceF64[ii] = double(i);
+			e.SliceD16[ii] = float(i);
+			e.SliceD32[ii] = double(i);
 		}
 
 		t->Fill();

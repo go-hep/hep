@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strings"
 
+	"go-hep.org/x/hep/groot/root"
 	"golang.org/x/xerrors"
 )
 
@@ -761,6 +762,14 @@ func newValue(leaf Leaf) interface{} {
 		if unsigned {
 			etype = reflect.TypeOf(uint64(0))
 		}
+	case reflect.Float32:
+		if _, ok := leaf.(*LeafF16); ok {
+			etype = reflect.TypeOf(root.Float16(0))
+		}
+	case reflect.Float64:
+		if _, ok := leaf.(*LeafD32); ok {
+			etype = reflect.TypeOf(root.Double32(0))
+		}
 	}
 
 	switch {
@@ -779,10 +788,18 @@ func newValue(leaf Leaf) interface{} {
 				panic(xerrors.Errorf("groot/rtree: invalid number of dimensions (%d)", dims))
 			}
 		default:
-			shape := leafDims(leaf.Title())
+			var shape []int
+			switch leaf.(type) {
+			case *LeafF16, *LeafD32:
+				// workaround for https://sft.its.cern.ch/jira/browse/ROOT-10149
+				shape = []int{leaf.Len()}
+			default:
+				shape = leafDims(leaf.Title())
+			}
 			for i := range shape {
 				etype = reflect.ArrayOf(shape[len(shape)-1-i], etype)
 			}
+
 		}
 	}
 	return reflect.New(etype).Interface()

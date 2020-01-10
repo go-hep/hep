@@ -21,12 +21,16 @@ func TestLeafDims(t *testing.T) {
 		want []int
 	}{
 		{s: "Leaf", want: nil},
+		{s: "Leaf/F", want: nil},
 		{s: "Leaf[]", want: []int{-1}},
+		{s: "Leaf[]/F", want: []int{-1}},
 		{s: "Leaf[20]", want: []int{20}},
+		{s: "Leaf[20]/F", want: []int{20}},
 		{s: "Leaf[2000]", want: []int{2000}},
 		{s: "Leaf[1][2]", want: []int{1, 2}},
 		{s: "Leaf[2][]", want: []int{2, -1}},
 		{s: "Leaf[1][2][3]", want: []int{1, 2, 3}},
+		{s: "Leaf[1][2][3]/F", want: []int{1, 2, 3}},
 	} {
 		t.Run(tc.s, func(t *testing.T) {
 			dims := leafDims(tc.s)
@@ -101,6 +105,20 @@ func TestLeafReadWriteBasket(t *testing.T) {
 		{
 			leaf: newLeafD(br, "F64", nil, signed, nil),
 			data: float64(42),
+		},
+		{
+			leaf: newLeafF16(br, "D16", nil, signed, nil, nil),
+			data: root.Float16(42),
+		},
+		{
+			leaf: newLeafF16(br, "D16Range", nil, signed, nil, func() rbytes.StreamerElement {
+				elm := rdict.Element{
+					Name: *rbase.NewNamed("D16Range", "D16Range/f[0, 42]"),
+					Type: rmeta.Float16,
+				}.New()
+				return &elm
+			}()),
+			data: root.Float16(42),
 		},
 		{
 			leaf: newLeafD32(br, "D32", nil, signed, nil, nil),

@@ -381,6 +381,56 @@ func (w *WBuffer) WriteF64(v float64) {
 	w.writeF64(v)
 }
 
+func (w *WBuffer) WriteF16(v root.Float16, elm StreamerElement) {
+	if w.err != nil {
+		return
+	}
+	switch {
+	case elm != nil && elm.Factor() != 0:
+		// range specified.
+		// normalize the float64 to the range and convert to an integer,
+		// according to the provided scaling factor.
+		var (
+			x   = float64(v)
+			min = float64(elm.XMin())
+			max = float64(elm.XMax())
+		)
+		if x < min {
+			x = min
+		}
+		if x > max {
+			x = max
+		}
+		u32 := uint32(0.5 + elm.Factor()*(x-min))
+		w.w.grow(4)
+		w.writeU32(u32)
+	default:
+		var nbits uint32
+		if elm != nil {
+			nbits = uint32(elm.XMin())
+		}
+		if nbits == 0 {
+			nbits = 12
+		}
+		// no range, but nbits.
+		// truncate mantissa to nbits.
+		u32 := math.Float32bits(float32(v))
+		exp := uint8(0x000000ff & ((u32 << 1) >> 24))
+		man := uint16(((1 << (nbits + 1)) - 1) & (u32 >> (23 - nbits - 1)))
+		man++
+		man = man >> 1
+		if man&1<<nbits != 0 {
+			man = (1 << nbits) - 1
+		}
+		if v < 0 {
+			man |= 1 << (nbits + 1)
+		}
+		w.w.grow(3)
+		w.writeU8(exp)
+		w.writeU16(man)
+	}
+}
+
 func (w *WBuffer) WriteD32(v root.Double32, elm StreamerElement) {
 	if w.err != nil {
 		return
@@ -635,6 +685,12 @@ func (w *WBuffer) WriteFastArrayF64(v []float64) {
 	w.w.grow(len(v) * 8)
 	for _, v := range v {
 		w.writeF64(v)
+	}
+}
+
+func (w *WBuffer) WriteFastArrayF16(v []root.Float16, elm StreamerElement) {
+	for _, v := range v {
+		w.WriteF16(v, elm)
 	}
 }
 

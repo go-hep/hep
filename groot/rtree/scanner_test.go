@@ -1243,6 +1243,7 @@ func TestNewScanVars(t *testing.T) {
 		{Name: "U64", Leaf: "U64", Value: new(uint64)},
 		{Name: "F32", Leaf: "F32", Value: new(float32)},
 		{Name: "F64", Leaf: "F64", Value: new(float64)},
+		{Name: "D16", Leaf: "D16", Value: new(root.Float16)},
 		{Name: "D32", Leaf: "D32", Value: new(root.Double32)},
 		// arrays
 		{Name: "ArrBs", Leaf: "ArrBs", Value: new([10]bool)},
@@ -1256,6 +1257,8 @@ func TestNewScanVars(t *testing.T) {
 		{Name: "ArrU64", Leaf: "ArrU64", Value: new([10]uint64)},
 		{Name: "ArrF32", Leaf: "ArrF32", Value: new([10]float32)},
 		{Name: "ArrF64", Leaf: "ArrF64", Value: new([10]float64)},
+		{Name: "ArrD16", Leaf: "ArrD16", Value: new([10]root.Float16)},
+		{Name: "ArrD32", Leaf: "ArrD32", Value: new([10]root.Double32)},
 		// slices
 		{Name: "N", Leaf: "N", Value: new(int32)},
 		{Name: "SliBs", Leaf: "SliBs", Value: new([]bool)},
@@ -1269,6 +1272,8 @@ func TestNewScanVars(t *testing.T) {
 		{Name: "SliU64", Leaf: "SliU64", Value: new([]uint64)},
 		{Name: "SliF32", Leaf: "SliF32", Value: new([]float32)},
 		{Name: "SliF64", Leaf: "SliF64", Value: new([]float64)},
+		{Name: "SliD16", Leaf: "SliD16", Value: new([]root.Float16)},
+		{Name: "SliD32", Leaf: "SliD32", Value: new([]root.Double32)},
 	}
 
 	n := len(want)
@@ -1282,10 +1287,10 @@ func TestNewScanVars(t *testing.T) {
 			t.Fatalf("invalid scan-var name[%d]: got=%q, want=%q", i, got.Name, want[i].Name)
 		}
 		if got.Leaf != want[i].Leaf {
-			t.Fatalf("invalid scan-var leaf-name[%d]: got=%q, want=%q", i, got.Leaf, want[i].Leaf)
+			t.Fatalf("invalid scan-var (name=%q) leaf-name[%d]: got=%q, want=%q", got.Name, i, got.Leaf, want[i].Leaf)
 		}
 		if got, want := reflect.TypeOf(got.Value), reflect.TypeOf(want[i].Value); got != want {
-			t.Fatalf("invalid scan-var type[%d]: got=%v, want=%v", i, got, want)
+			t.Fatalf("invalid scan-var (name=%q) type[%d]: got=%v, want=%v", vars[i].Name, i, got, want)
 		}
 	}
 
