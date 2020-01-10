@@ -4,9 +4,6 @@
 
 package root // import "go-hep.org/x/hep/groot/root"
 
-// FIXME(sbinet): implement a real ROOT float16
-// FIXME(sbinet): implement a real ROOT double32
-
 // Float16 is a float32 in memory, written with a truncated mantissa.
 type Float16 float32
 

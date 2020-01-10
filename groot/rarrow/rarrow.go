@@ -307,9 +307,19 @@ func appendValue(bldr array.Builder, v interface{}) {
 	case *array.Uint64Builder:
 		b.Append(v.(uint64))
 	case *array.Float32Builder:
-		b.Append(v.(float32))
+		switch v := v.(type) {
+		case float32:
+			b.Append(v)
+		case root.Float16:
+			b.Append(float32(v))
+		}
 	case *array.Float64Builder:
-		b.Append(v.(float64))
+		switch v := v.(type) {
+		case float64:
+			b.Append(v)
+		case root.Double32:
+			b.Append(float64(v))
+		}
 	case *array.StringBuilder:
 		b.Append(v.(string))
 
