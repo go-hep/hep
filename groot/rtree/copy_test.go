@@ -134,6 +134,7 @@ func TestCopyTree(t *testing.T) {
 [000][U64]: 0
 [000][F32]: 0
 [000][F64]: 0
+[000][D32]: 0
 [000][ArrBs]: [true false false false false false false false false false]
 [000][ArrI8]: [0 0 0 0 0 0 0 0 0 0]
 [000][ArrI16]: [0 0 0 0 0 0 0 0 0 0]
@@ -169,6 +170,7 @@ func TestCopyTree(t *testing.T) {
 [001][U64]: 1
 [001][F32]: 1
 [001][F64]: 1
+[001][D32]: 1
 [001][ArrBs]: [false true false false false false false false false false]
 [001][ArrI8]: [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1]
 [001][ArrI16]: [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1]
@@ -204,6 +206,7 @@ func TestCopyTree(t *testing.T) {
 [002][U64]: 2
 [002][F32]: 2
 [002][F64]: 2
+[002][D32]: 2
 [002][ArrBs]: [false false true false false false false false false false]
 [002][ArrI8]: [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2]
 [002][ArrI16]: [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2]
@@ -239,6 +242,7 @@ func TestCopyTree(t *testing.T) {
 [003][U64]: 3
 [003][F32]: 3
 [003][F64]: 3
+[003][D32]: 3
 [003][ArrBs]: [false false false true false false false false false false]
 [003][ArrI8]: [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3]
 [003][ArrI16]: [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3]

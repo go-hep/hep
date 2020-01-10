@@ -14,6 +14,7 @@ import (
 	"text/template"
 
 	"go-hep.org/x/hep/groot/internal/genroot"
+	"go-hep.org/x/hep/groot/root"
 )
 
 func main() {
@@ -28,11 +29,16 @@ func genLeaves() {
 	defer f.Close()
 
 	genroot.GenImports("rtree", f,
+		"fmt",
 		"reflect",
+		"strings",
 		"unsafe", // FIXME(sbinet): needed for signed/unsigned handling
 		"",
 		"go-hep.org/x/hep/groot/root",
+		"go-hep.org/x/hep/groot/rbase",
 		"go-hep.org/x/hep/groot/rbytes",
+		"go-hep.org/x/hep/groot/rdict",
+		"go-hep.org/x/hep/groot/rmeta",
 		"go-hep.org/x/hep/groot/rtypes",
 		"go-hep.org/x/hep/groot/rvers",
 		"golang.org/x/xerrors",
@@ -53,6 +59,9 @@ func genLeaves() {
 		RRangeFunc string
 		WRangeFunc string
 		Count      bool
+
+		WithStreamerElement bool   // for TLeaf{F16,D32}
+		Meta                string // name of rmeta.Enum to use (for TLeaf{F16,D32})
 	}{
 		{
 			Name:       "LeafO",
@@ -140,6 +149,19 @@ func genLeaves() {
 			WFuncArray: "w.WriteFastArrayF64",
 		},
 		{
+			Name:                "LeafD32",
+			Type:                "root.Double32",
+			Kind:                "reflect.Float64",
+			LenType:             8,
+			GoLenType:           int(reflect.TypeOf(root.Double32(0)).Size()),
+			RFunc:               "r.ReadD32(leaf.elm)",
+			RFuncArray:          "r.ReadFastArrayD32",
+			WFunc:               "w.WriteD32",
+			WFuncArray:          "w.WriteFastArrayD32",
+			WithStreamerElement: true,
+			Meta:                "rmeta.Double32",
+		},
+		{
 			Name:       "LeafC",
 			Type:       "string",
 			Kind:       "reflect.String",
@@ -184,8 +206,25 @@ type {{.Name}} struct {
 	sli *[]{{.Type}}
 	min {{.RangeType}}
 	max {{.RangeType}}
+{{- if .WithStreamerElement}}
+	elm rbytes.StreamerElement
+{{- end}}
 }
 
+{{- if .WithStreamerElement}}
+func new{{.Name}}(b Branch, name string, shape []int, unsigned bool, count Leaf, elm rbytes.StreamerElement) *{{.Name}} {
+	const etype = {{.LenType}}
+	var lcnt leafCount
+	if count != nil {
+		lcnt = count.(leafCount)
+	}
+	return &{{.Name}}{
+		rvers: rvers.{{.Name}},
+		tleaf: newLeaf(name, shape, etype, 0, false, unsigned, lcnt, b),
+		elm:   elm,
+	}
+}
+{{- else}}
 func new{{.Name}}(b Branch, name string, shape []int, unsigned bool, count Leaf) *{{.Name}} {
 	const etype = {{.LenType}}
 	var lcnt leafCount
@@ -197,7 +236,7 @@ func new{{.Name}}(b Branch, name string, shape []int, unsigned bool, count Leaf)
 		tleaf: newLeaf(name, shape, etype, 0, false, unsigned, lcnt, b),
 	}
 }
-
+{{- end}}
 
 // Class returns the ROOT class name.
 func (leaf *{{.Name}}) Class() string {
@@ -284,8 +323,13 @@ func (leaf *{{.Name}}) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(leaf.rvers)
 	leaf.tleaf.MarshalROOT(w)
+{{- if .WithStreamerElement}}
+	{{.WRangeFunc}}(leaf.min, leaf.elm)
+	{{.WRangeFunc}}(leaf.max, leaf.elm)
+{{- else}}
 	{{.WRangeFunc}}(leaf.min)
 	{{.WRangeFunc}}(leaf.max)
+{{- end}}
 
 	return w.SetByteCount(pos, leaf.Class())
 }
@@ -301,6 +345,17 @@ func (leaf *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	leaf.min = {{.RRangeFunc}}
 	leaf.max = {{.RRangeFunc}}
+
+{{if .WithStreamerElement}}
+	if strings.Contains(leaf.Title(), "[") {
+		elm := rdict.Element{
+			Name:   *rbase.NewNamed(fmt.Sprintf("%s_Element", leaf.Name()), leaf.Title()),
+			Offset: 0,
+			Type:   {{.Meta}},
+		}.New()
+		leaf.elm = &elm
+	}
+{{- end}}
 
 	r.CheckByteCount(pos, bcnt, start, leaf.Class())
 	return r.Err()
@@ -324,9 +379,17 @@ func (leaf *{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
                         if n > max {
                                 n = max
                         }
+{{- if .WithStreamerElement}}
+                        *leaf.sli = {{.RFuncArray}}(leaf.tleaf.len * n, leaf.elm)
+{{- else}}
                         *leaf.sli = {{.RFuncArray}}(leaf.tleaf.len * n)
+{{- end}}
                 } else {
+{{- if .WithStreamerElement}}
+						copy(*leaf.sli, {{.RFuncArray}}(leaf.tleaf.len, leaf.elm))
+{{- else}}
 						copy(*leaf.sli, {{.RFuncArray}}(leaf.tleaf.len))
+{{- end}}
                 }
         }
         return r.Err()
@@ -430,7 +493,11 @@ func (leaf *{{.Name}}) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	var nbytes int
 	switch {
 	case leaf.ptr != nil:
+{{- if .WithStreamerElement}}
+		{{.WFunc}}(*leaf.ptr, leaf.elm)
+{{- else}}
 		{{.WFunc}}(*leaf.ptr)
+{{- end}}
 {{- if eq .Name "LeafC"}}
 		sz := len(*leaf.ptr)
 		nbytes += sz
@@ -455,10 +522,18 @@ func (leaf *{{.Name}}) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 			n = max
 		}
 		end := leaf.tleaf.len*n
+{{- if .WithStreamerElement}}
+		{{.WFuncArray}}((*leaf.sli)[:end], leaf.elm)
+{{- else}}
 		{{.WFuncArray}}((*leaf.sli)[:end])
+{{- end}}
 		nbytes += leaf.tleaf.etype * end
 	default:
+{{- if .WithStreamerElement}}
+		{{.WFuncArray}}((*leaf.sli)[:leaf.tleaf.len], leaf.elm)
+{{- else}}
 		{{.WFuncArray}}((*leaf.sli)[:leaf.tleaf.len])
+{{- end}}
 		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 

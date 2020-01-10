@@ -61,6 +61,8 @@ struct Event {
 	float    F32;
 	double   F64;
 
+	Double32_t D32;
+
 	bool     ArrayBs[ARRAYSZ];
 //	char     ArrayStr[ARRAYSZ][MAXSTR];
 	int8_t   ArrayI8[ARRAYSZ];
@@ -110,6 +112,7 @@ void gentree(const char* fname, int splitlvl = 99) {
 	t->Branch("U64", &e.U64,  "U64/l");
 	t->Branch("F32", &e.F32,  "F32/F");
 	t->Branch("F64", &e.F64,  "F64/D");
+	t->Branch("D32", &e.D32,  "D32/d[0,0,32]");
 
 	// static arrays
 
@@ -157,6 +160,7 @@ void gentree(const char* fname, int splitlvl = 99) {
 		e.U64 = i;
 		e.F32 = float(i);
 		e.F64 = double(i);
+		e.D32 = double(i);
 
 		for (int ii = 0; ii != ARRAYSZ; ii++) {
 			e.ArrayBs[ii]  = ii == i;

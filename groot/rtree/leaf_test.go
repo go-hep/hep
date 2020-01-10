@@ -8,7 +8,11 @@ import (
 	"reflect"
 	"testing"
 
+	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
+	"go-hep.org/x/hep/groot/rdict"
+	"go-hep.org/x/hep/groot/rmeta"
+	"go-hep.org/x/hep/groot/root"
 )
 
 func TestLeafDims(t *testing.T) {
@@ -99,6 +103,20 @@ func TestLeafReadWriteBasket(t *testing.T) {
 			data: float64(42),
 		},
 		{
+			leaf: newLeafD32(br, "D32", nil, signed, nil, nil),
+			data: root.Double32(42),
+		},
+		{
+			leaf: newLeafD32(br, "D32Range", nil, signed, nil, func() rbytes.StreamerElement {
+				elm := rdict.Element{
+					Name: *rbase.NewNamed("D32Range", "D32Range/d[0, 42]"),
+					Type: rmeta.Double32,
+				}.New()
+				return &elm
+			}()),
+			data: root.Double32(42),
+		},
+		{
 			leaf: newLeafO(br, "ArrBools", []int{4}, signed, nil),
 			data: [4]bool{true, false, true, false},
 		},
@@ -141,6 +159,20 @@ func TestLeafReadWriteBasket(t *testing.T) {
 		{
 			leaf: newLeafD(br, "ArrF64", []int{4}, signed, nil),
 			data: [4]float64{1, 2, 3, 4},
+		},
+		{
+			leaf: newLeafD32(br, "ArrD32", []int{4}, signed, nil, nil),
+			data: [4]root.Double32{1, 2, 3, 4},
+		},
+		{
+			leaf: newLeafD32(br, "ArrD32Range", []int{4}, signed, nil, func() rbytes.StreamerElement {
+				elm := rdict.Element{
+					Name: *rbase.NewNamed("ArrD32Range", "ArrD32Range[4]d/[0,4]"),
+					Type: rmeta.Double32,
+				}.New()
+				return &elm
+			}()),
+			data: [4]root.Double32{0, 4, 0, 4},
 		},
 		{
 			leaf: newLeafO(br, "SliBools", nil, signed, scnt),
@@ -295,14 +327,15 @@ func TestLeafReadWriteBasket(t *testing.T) {
 	}
 }
 
-func (leaf *LeafO) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
-func (leaf *LeafB) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
-func (leaf *LeafS) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
-func (leaf *LeafI) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
-func (leaf *LeafL) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
-func (leaf *LeafF) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
-func (leaf *LeafD) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
-func (leaf *LeafC) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafO) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafB) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafS) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafI) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafL) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafF) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafD) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafD32) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafC) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCount) }
 
 type testBranchImpl struct {
 	tbranch

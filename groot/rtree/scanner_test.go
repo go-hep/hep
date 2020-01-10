@@ -14,6 +14,7 @@ import (
 	"go-hep.org/x/hep/groot/internal/rtests"
 	"go-hep.org/x/hep/groot/riofs"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
+	"go-hep.org/x/hep/groot/root"
 	"golang.org/x/xerrors"
 )
 
@@ -1242,6 +1243,7 @@ func TestNewScanVars(t *testing.T) {
 		{Name: "U64", Leaf: "U64", Value: new(uint64)},
 		{Name: "F32", Leaf: "F32", Value: new(float32)},
 		{Name: "F64", Leaf: "F64", Value: new(float64)},
+		{Name: "D32", Leaf: "D32", Value: new(root.Double32)},
 		// arrays
 		{Name: "ArrBs", Leaf: "ArrBs", Value: new([10]bool)},
 		{Name: "ArrI8", Leaf: "ArrI8", Value: new([10]int8)},

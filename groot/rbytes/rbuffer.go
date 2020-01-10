@@ -344,6 +344,45 @@ func (r *RBuffer) ReadF64() float64 {
 	return math.Float64frombits(v)
 }
 
+func (r *RBuffer) ReadD32(elm StreamerElement) root.Double32 {
+	switch {
+	case elm != nil && elm.Factor() != 0:
+		return r.readWithFactorD32(elm.Factor(), elm.XMin())
+	default:
+		var nbits uint32
+		if elm != nil {
+			nbits = uint32(elm.XMin())
+		}
+		if nbits == 0 {
+			f32 := r.ReadF32()
+			return root.Double32(f32)
+		}
+		return r.readWithNbitsD32(nbits)
+	}
+}
+
+func (r *RBuffer) readWithFactorD32(f, xmin float64) root.Double32 {
+	v := float64(r.ReadU32())
+	return root.Double32(v/f + xmin)
+}
+
+func (r *RBuffer) readWithNbitsD32(nbits uint32) root.Double32 {
+	var (
+		exp = uint32(r.ReadU8())
+		man = uint32(r.ReadU16())
+		val = uint32(exp)
+	)
+	val <<= 23
+	val |= (man & ((1 << (nbits + 1)) - 1)) << (23 - nbits)
+
+	f := math.Float32frombits(val)
+	if (1 << (nbits + 1) & man) != 0 {
+		f = -f
+	}
+
+	return root.Double32(f)
+}
+
 func (r *RBuffer) ReadStaticArrayI32() []int32 {
 	if r.err != nil {
 		return nil
@@ -567,6 +606,25 @@ func (r *RBuffer) ReadFastArrayF64(n int) []float64 {
 	arr := make([]float64, n)
 	for i := range arr {
 		arr[i] = r.ReadF64()
+	}
+
+	if r.err != nil {
+		return nil
+	}
+	return arr
+}
+
+func (r *RBuffer) ReadFastArrayD32(n int, elm StreamerElement) []root.Double32 {
+	if r.err != nil {
+		return nil
+	}
+	if n <= 0 || int64(n) > r.Len() {
+		return nil
+	}
+
+	arr := make([]root.Double32, n)
+	for i := range arr {
+		arr[i] = r.ReadD32(elm)
 	}
 
 	if r.err != nil {

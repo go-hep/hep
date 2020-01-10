@@ -11,6 +11,7 @@ import (
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
+	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtree"
 	"golang.org/x/xerrors"
 )
@@ -238,9 +239,19 @@ func appendData(bldr array.Builder, v rtree.ScanVar, dt arrow.DataType) {
 	case *array.Uint64Builder:
 		bldr.Append(*v.Value.(*uint64))
 	case *array.Float32Builder:
-		bldr.Append(*v.Value.(*float32))
+		switch ptr := v.Value.(type) {
+		case *float32:
+			bldr.Append(*ptr)
+		case *root.Float16:
+			bldr.Append(float32(*ptr))
+		}
 	case *array.Float64Builder:
-		bldr.Append(*v.Value.(*float64))
+		switch ptr := v.Value.(type) {
+		case *float64:
+			bldr.Append(*ptr)
+		case *root.Double32:
+			bldr.Append(float64(*ptr))
+		}
 	case *array.StringBuilder:
 		bldr.Append(*v.Value.(*string))
 

@@ -7,10 +7,15 @@
 package rtree
 
 import (
+	"fmt"
 	"reflect"
+	"strings"
 	"unsafe"
 
+	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
+	"go-hep.org/x/hep/groot/rdict"
+	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
@@ -1819,6 +1824,254 @@ var (
 	_ Leaf               = (*LeafD)(nil)
 	_ rbytes.Marshaler   = (*LeafD)(nil)
 	_ rbytes.Unmarshaler = (*LeafD)(nil)
+)
+
+// LeafD32 implements ROOT TLeafD32
+type LeafD32 struct {
+	rvers int16
+	tleaf
+	ptr *root.Double32
+	sli *[]root.Double32
+	min root.Double32
+	max root.Double32
+	elm rbytes.StreamerElement
+}
+
+func newLeafD32(b Branch, name string, shape []int, unsigned bool, count Leaf, elm rbytes.StreamerElement) *LeafD32 {
+	const etype = 8
+	var lcnt leafCount
+	if count != nil {
+		lcnt = count.(leafCount)
+	}
+	return &LeafD32{
+		rvers: rvers.LeafD32,
+		tleaf: newLeaf(name, shape, etype, 0, false, unsigned, lcnt, b),
+		elm:   elm,
+	}
+}
+
+// Class returns the ROOT class name.
+func (leaf *LeafD32) Class() string {
+	return "TLeafD32"
+}
+
+// Minimum returns the minimum value of the leaf.
+func (leaf *LeafD32) Minimum() root.Double32 {
+	return leaf.min
+}
+
+// Maximum returns the maximum value of the leaf.
+func (leaf *LeafD32) Maximum() root.Double32 {
+	return leaf.max
+}
+
+// Kind returns the leaf's kind.
+func (*LeafD32) Kind() reflect.Kind {
+	return reflect.Float64
+}
+
+// Type returns the leaf's type.
+func (leaf *LeafD32) Type() reflect.Type {
+	var v root.Double32
+	return reflect.TypeOf(v)
+}
+
+// Value returns the leaf value at index i.
+func (leaf *LeafD32) Value(i int) interface{} {
+	switch {
+	case leaf.ptr != nil:
+		return *leaf.ptr
+	default:
+		return (*leaf.sli)[i]
+	}
+}
+
+// value returns the leaf value.
+func (leaf *LeafD32) value() interface{} {
+	switch {
+	case leaf.ptr != nil:
+		return *leaf.ptr
+	default:
+		return *leaf.sli
+	}
+}
+
+func (leaf *LeafD32) TypeName() string {
+	return "root.Double32"
+}
+
+func (leaf *LeafD32) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	pos := w.WriteVersion(leaf.rvers)
+	leaf.tleaf.MarshalROOT(w)
+	w.WriteD32(leaf.min, leaf.elm)
+	w.WriteD32(leaf.max, leaf.elm)
+
+	return w.SetByteCount(pos, leaf.Class())
+}
+
+func (leaf *LeafD32) UnmarshalROOT(r *rbytes.RBuffer) error {
+	start := r.Pos()
+	vers, pos, bcnt := r.ReadVersion(leaf.Class())
+	leaf.rvers = vers
+
+	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
+		return err
+	}
+
+	leaf.min = r.ReadD32(leaf.elm)
+	leaf.max = r.ReadD32(leaf.elm)
+
+	if strings.Contains(leaf.Title(), "[") {
+		elm := rdict.Element{
+			Name:   *rbase.NewNamed(fmt.Sprintf("%s_Element", leaf.Name()), leaf.Title()),
+			Offset: 0,
+			Type:   rmeta.Double32,
+		}.New()
+		leaf.elm = &elm
+	}
+
+	r.CheckByteCount(pos, bcnt, start, leaf.Class())
+	return r.Err()
+}
+
+func (leaf *LeafD32) readFromBuffer(r *rbytes.RBuffer) error {
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	if leaf.count == nil && leaf.ptr != nil {
+		*leaf.ptr = r.ReadD32(leaf.elm)
+	} else {
+		if leaf.count != nil {
+			entry := leaf.Branch().getReadEntry()
+			if leaf.count.Branch().getReadEntry() != entry {
+				leaf.count.Branch().getEntry(entry)
+			}
+			n := leaf.count.ivalue()
+			max := leaf.count.imax()
+			if n > max {
+				n = max
+			}
+			*leaf.sli = r.ReadFastArrayD32(leaf.tleaf.len*n, leaf.elm)
+		} else {
+			copy(*leaf.sli, r.ReadFastArrayD32(leaf.tleaf.len, leaf.elm))
+		}
+	}
+	return r.Err()
+}
+
+func (leaf *LeafD32) scan(r *rbytes.RBuffer, ptr interface{}) error {
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
+		return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
+	}
+
+	switch v := ptr.(type) {
+	case *root.Double32:
+		*v = *leaf.ptr
+	case *[]root.Double32:
+		if len(*v) < len(*leaf.sli) || *v == nil {
+			*v = make([]root.Double32, len(*leaf.sli))
+		}
+		copy(*v, *leaf.sli)
+		*v = (*v)[:leaf.count.ivalue()]
+	case []root.Double32:
+		copy(v, *leaf.sli)
+	default:
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+	}
+
+	return r.Err()
+}
+
+func (leaf *LeafD32) unsafeDecayArray(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 8
+	arr := (*[0]root.Double32)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
+func (leaf *LeafD32) setAddress(ptr interface{}) error {
+	if ptr == nil {
+		return leaf.setAddress(newValue(leaf))
+	}
+
+	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
+		sli := leaf.unsafeDecayArray(ptr)
+		switch sli := sli.(type) {
+		case *[]root.Double32:
+			return leaf.setAddress(sli)
+		default:
+			panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
+		}
+	}
+
+	switch v := ptr.(type) {
+	case *root.Double32:
+		leaf.ptr = v
+	case *[]root.Double32:
+		leaf.sli = v
+	default:
+		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+	}
+	return nil
+}
+
+func (leaf *LeafD32) writeToBuffer(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	var nbytes int
+	switch {
+	case leaf.ptr != nil:
+		w.WriteD32(*leaf.ptr, leaf.elm)
+		nbytes += leaf.tleaf.etype
+		if v := *leaf.ptr; v > leaf.max {
+			leaf.max = v
+		}
+	case leaf.count != nil:
+		n := leaf.count.ivalue()
+		max := leaf.count.imax()
+		if n > max {
+			n = max
+		}
+		end := leaf.tleaf.len * n
+		w.WriteFastArrayD32((*leaf.sli)[:end], leaf.elm)
+		nbytes += leaf.tleaf.etype * end
+	default:
+		w.WriteFastArrayD32((*leaf.sli)[:leaf.tleaf.len], leaf.elm)
+		nbytes += leaf.tleaf.etype * leaf.tleaf.len
+	}
+
+	return nbytes, w.Err()
+}
+
+func init() {
+	f := func() reflect.Value {
+		o := &LeafD32{}
+		return reflect.ValueOf(o)
+	}
+	rtypes.Factory.Add("TLeafD32", f)
+}
+
+var (
+	_ root.Object        = (*LeafD32)(nil)
+	_ root.Named         = (*LeafD32)(nil)
+	_ Leaf               = (*LeafD32)(nil)
+	_ rbytes.Marshaler   = (*LeafD32)(nil)
+	_ rbytes.Unmarshaler = (*LeafD32)(nil)
 )
 
 // LeafC implements ROOT TLeafC

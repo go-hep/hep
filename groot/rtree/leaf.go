@@ -482,8 +482,14 @@ func gotypeToROOTTypeCode(rt reflect.Type) string {
 	case reflect.Uint64:
 		return "l"
 	case reflect.Float32:
+		if rt == reflect.TypeOf(root.Float16(0)) {
+			return "f"
+		}
 		return "F"
 	case reflect.Float64:
+		if rt == reflect.TypeOf(root.Double32(0)) {
+			return "d"
+		}
 		return "D"
 	case reflect.Array:
 		return gotypeToROOTTypeCode(rt.Elem())
@@ -602,10 +608,21 @@ func newLeafFromWVar(b Branch, v WriteVar) (Leaf, error) {
 			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Float64:
-		leaf = newLeafD(b, v.Name, shape, signed, count)
-		err := leaf.setAddress(v.Value)
-		if err != nil {
-			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+		switch rt {
+		case reflect.TypeOf(float64(0)), reflect.TypeOf([]float64(nil)):
+			leaf = newLeafD(b, v.Name, shape, signed, count)
+			err := leaf.setAddress(v.Value)
+			if err != nil {
+				return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+			}
+		case reflect.TypeOf(root.Double32(0)), reflect.TypeOf([]root.Double32(nil)):
+			leaf = newLeafD32(b, v.Name, shape, signed, count, nil)
+			err := leaf.setAddress(v.Value)
+			if err != nil {
+				return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+			}
+		default:
+			panic(xerrors.Errorf("invalid type %T", v.Value))
 		}
 	case reflect.String:
 		leaf = newLeafC(b, v.Name, shape, signed, count)
