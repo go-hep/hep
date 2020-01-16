@@ -853,7 +853,7 @@ func (tss *StreamerSTL) ContainedType() rmeta.Enum {
 	return tss.ctype
 }
 
-func (tss *StreamerSTL) STLVectorType() rmeta.ESTLType {
+func (tss *StreamerSTL) STLType() rmeta.ESTLType {
 	return tss.vtype
 }
 

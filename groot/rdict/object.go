@@ -189,7 +189,7 @@ func genTypeFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement) 
 		}
 		return reflect.PtrTo(genTypeFromSI(sictx, si))
 	case *StreamerSTL:
-		switch se.STLVectorType() {
+		switch se.STLType() {
 		case rmeta.STLvector:
 			return genType(sictx, se.ContainedType(), -1)
 		case rmeta.STLmap:

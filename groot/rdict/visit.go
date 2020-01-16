@@ -115,7 +115,7 @@ func (v *visitor) visitSE(depth int, se rbytes.StreamerElement) error {
 		// no-op
 
 	case *StreamerSTL:
-		switch se.STLVectorType() {
+		switch se.STLType() {
 		case rmeta.STLdeque, rmeta.STLforwardlist, rmeta.STLlist,
 			rmeta.STLset, rmeta.STLunorderedset, rmeta.STLunorderedmultiset,
 			rmeta.STLvector:

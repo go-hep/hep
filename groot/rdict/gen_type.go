@@ -159,7 +159,7 @@ func (g *genGoType) genField(si rbytes.StreamerInfo, i int, se rbytes.StreamerEl
 		g.printf(docFmt, se.Name(), "string", g.stag(i, se), doc)
 
 	case *StreamerSTL:
-		switch se.STLVectorType() {
+		switch se.STLType() {
 		case rmeta.STLvector, rmeta.STLmap:
 			tname := g.typename(se)
 			g.printf(docFmt, se.Name(), tname, g.stag(i, se), doc)
@@ -260,7 +260,7 @@ func (g *genGoType) typename(se rbytes.StreamerElement) string {
 		return "string"
 
 	case *StreamerSTL:
-		switch se.STLVectorType() {
+		switch se.STLType() {
 		case rmeta.STLvector:
 			switch se.ContainedType() {
 			case rmeta.Bool:
@@ -555,7 +555,7 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 		g.printf("w.WriteSTLString(o.%s)\n", se.Name())
 
 	case *StreamerSTL:
-		switch se.STLVectorType() {
+		switch se.STLType() {
 		case rmeta.STLvector:
 			wfunc := ""
 			switch se.ContainedType() {
@@ -807,7 +807,7 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 		g.printf("o.%s = r.ReadSTLString()\n", se.Name())
 
 	case *StreamerSTL:
-		switch se.STLVectorType() {
+		switch se.STLType() {
 		case rmeta.STLvector:
 			rfunc := ""
 			switch se.ContainedType() {

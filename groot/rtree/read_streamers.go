@@ -568,7 +568,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 		}
 
 	case *rdict.StreamerSTL:
-		switch se.STLVectorType() {
+		switch se.STLType() {
 		case rmeta.STLvector:
 			switch se.ContainedType() {
 			case rmeta.Short:
@@ -741,7 +741,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				}
 			}
 		default:
-			panic(xerrors.Errorf("rtree: invalid STL type %d for %#v", se.STLVectorType(), se))
+			panic(xerrors.Errorf("rtree: invalid STL type %d for %#v", se.STLType(), se))
 		}
 
 	case *rdict.StreamerObjectAny:
@@ -971,7 +971,7 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 		}
 
 	case *rdict.StreamerSTL:
-		switch se.STLVectorType() {
+		switch se.STLType() {
 		case rmeta.STLvector:
 			switch se.ContainedType() {
 			case rmeta.Char:
@@ -1045,7 +1045,7 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 				}
 			}
 		default:
-			panic(xerrors.Errorf("rtree: invalid STL type %d for %#v", se.STLVectorType(), se))
+			panic(xerrors.Errorf("rtree: invalid STL type %d for %#v", se.STLType(), se))
 		}
 
 	case *rdict.StreamerObjectAny:
