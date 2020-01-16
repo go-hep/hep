@@ -13,9 +13,12 @@ import (
 )
 
 //go:generate go run ./gen-code.go
+//go:generate go run ./gendata/gen-dirs.go -f ../testdata/dirs.root
 //go:generate go run ./gendata/gen-evnt-tree.go -f ../testdata/small-evnt-tree-nosplit.root
 //go:generate go run ./gendata/gen-evnt-tree.go -f ../testdata/small-evnt-tree-fullsplit.root -split=99
 //go:generate go run ./gendata/gen-flat-tree.go -f ../testdata/leaves.root
+//go:generate go run ./gendata/gen-map-tree.go -f ../testdata/stdmap.root
+//go:generate go run ./gendata/gen-multi-leaves-tree.go -f ../testdata/padding.root
 
 // Directory describes a ROOT directory structure in memory.
 type Directory interface {
