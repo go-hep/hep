@@ -13,8 +13,6 @@ hep
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/go-hep/binder/master)
 [![Twitter Follow](https://img.shields.io/twitter/follow/go_hep.svg?style=social&label=Follow)](https://twitter.com/go_hep)
 
-[![Backers on Open Collective](https://opencollective.com/hep/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/hep/sponsors/badge.svg)](#sponsors) 
-
 `hep` is a set of libraries and tools to perform High Energy Physics analyses with ease and [Go](https://golang.org)
 
 See [go-hep.org](https://go-hep.org) for more informations.
@@ -35,34 +33,9 @@ Documentation for `hep` is served by [GoDoc](https://godoc.org/go-hep.org/x/hep)
 Guidelines for contributing to [go-hep](https://go-hep.org) are available here:
  [go-hep.org/contributing](https://go-hep.org/contributing)
  
- ### Contributors
+### Contributors
 
 This project exists thanks to all the people who contribute. 
-<a href="https://github.com/go-hep/hep/graphs/contributors"><img src="https://opencollective.com/hep/contributors.svg?width=890&button=false" /></a>
-
-
-### Backers
-
-Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/hep#backer)]
-
-<a href="https://opencollective.com/hep#backers" target="_blank"><img src="https://opencollective.com/hep/backers.svg?width=890"></a>
-
-
-### Sponsors
-
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/hep#sponsor)]
-
-<a href="https://opencollective.com/hep/sponsor/0/website" target="_blank"><img src="https://opencollective.com/hep/sponsor/0/avatar.svg"></a>
-<a href="https://opencollective.com/hep/sponsor/1/website" target="_blank"><img src="https://opencollective.com/hep/sponsor/1/avatar.svg"></a>
-<a href="https://opencollective.com/hep/sponsor/2/website" target="_blank"><img src="https://opencollective.com/hep/sponsor/2/avatar.svg"></a>
-<a href="https://opencollective.com/hep/sponsor/3/website" target="_blank"><img src="https://opencollective.com/hep/sponsor/3/avatar.svg"></a>
-<a href="https://opencollective.com/hep/sponsor/4/website" target="_blank"><img src="https://opencollective.com/hep/sponsor/4/avatar.svg"></a>
-<a href="https://opencollective.com/hep/sponsor/5/website" target="_blank"><img src="https://opencollective.com/hep/sponsor/5/avatar.svg"></a>
-<a href="https://opencollective.com/hep/sponsor/6/website" target="_blank"><img src="https://opencollective.com/hep/sponsor/6/avatar.svg"></a>
-<a href="https://opencollective.com/hep/sponsor/7/website" target="_blank"><img src="https://opencollective.com/hep/sponsor/7/avatar.svg"></a>
-<a href="https://opencollective.com/hep/sponsor/8/website" target="_blank"><img src="https://opencollective.com/hep/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/hep/sponsor/9/website" target="_blank"><img src="https://opencollective.com/hep/sponsor/9/avatar.svg"></a>
-
 
 # Motivations
 
