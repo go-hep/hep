@@ -8,9 +8,7 @@ package main
 
 import (
 	"flag"
-	"io/ioutil"
 	"log"
-	"os"
 
 	"go-hep.org/x/hep/groot/internal/rtests"
 )
@@ -21,11 +19,6 @@ var (
 
 func main() {
 	flag.Parse()
-	err := ioutil.WriteFile(fname, []byte(script), 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer os.Remove(fname)
 
 	out, err := rtests.RunCxxROOT("gendirs", []byte(script), *root)
 	if err != nil {

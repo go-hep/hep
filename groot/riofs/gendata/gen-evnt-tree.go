@@ -8,9 +8,7 @@ package main
 
 import (
 	"flag"
-	"io/ioutil"
 	"log"
-	"os"
 
 	"go-hep.org/x/hep/groot/internal/rtests"
 )
@@ -21,15 +19,7 @@ var (
 )
 
 func main() {
-	const fname = "gentree.C"
-
 	flag.Parse()
-
-	err := ioutil.WriteFile(fname, []byte(script), 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer os.Remove(fname)
 
 	out, err := rtests.RunCxxROOT("gentree", []byte(script), *root, *split)
 	if err != nil {
