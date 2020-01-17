@@ -286,11 +286,12 @@ func (g *genGoType) typename(se rbytes.StreamerElement) string {
 			case rmeta.Float64, rmeta.Double32:
 				return "[]float64"
 			case rmeta.Object:
-				switch se.ElemTypeName() {
+				etn := se.ElemTypeName()
+				switch etn[0] {
 				case "string":
 					return "[]string"
 				default:
-					etname := g.cxx2go(se.ElemTypeName(), qualNone)
+					etname := g.cxx2go(etn[0], qualNone)
 					return "[]" + etname
 				}
 			default:
@@ -582,7 +583,8 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 			case rmeta.Float64:
 				wfunc = "WriteFastArrayF64"
 			case rmeta.Object:
-				switch se.ElemTypeName() {
+				etn := se.ElemTypeName()
+				switch etn[0] {
 				case "string":
 					wfunc = "WriteFastArrayString"
 				default:
@@ -834,7 +836,8 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 			case rmeta.Float64:
 				rfunc = "ReadFastArrayF64"
 			case rmeta.Object:
-				switch se.ElemTypeName() {
+				etn := se.ElemTypeName()
+				switch etn[0] {
 				case "string":
 					rfunc = "ReadFastArrayString"
 				default:

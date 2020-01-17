@@ -609,7 +609,9 @@ func (f *File) findDepStreamers() error {
 				deps = append(deps, depsType{se.TypeName(), -1})
 
 			case *rdict.StreamerSTL:
-				deps = append(deps, depsType{se.ElemTypeName(), -1})
+				for _, etn := range se.ElemTypeName() {
+					deps = append(deps, depsType{etn, -1})
+				}
 			}
 			return nil
 		})

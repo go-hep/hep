@@ -714,9 +714,10 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					}
 				default:
 					// FIXME(sbinet): always load latest version?
-					subsi, err := sictx.StreamerInfo(se.ElemTypeName(), -1)
+					etn := se.ElemTypeName()
+					subsi, err := sictx.StreamerInfo(etn[0], -1)
 					if err != nil {
-						panic(xerrors.Errorf("rtree: could not retrieve streamer for %q: %w", se.ElemTypeName(), err))
+						panic(xerrors.Errorf("rtree: could not retrieve streamer for %q: %w", etn[0], err))
 					}
 					eptr := reflect.New(rf.Type().Elem())
 					felt := rstreamerFrom(subsi.Elements()[0], eptr.Interface(), lcnt, sictx)
@@ -1025,7 +1026,7 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 				case "vector<vector<string> >":
 					return reflect.TypeOf([][]string(nil))
 				default:
-					eltname := se.ElemTypeName()
+					eltname := se.ElemTypeName()[0]
 					if eltname == "" {
 						panic(xerrors.Errorf("rtree: could not find element name for %q", se.TypeName()))
 					}

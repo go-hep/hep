@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"math"
 	"reflect"
-	"regexp"
 	"strconv"
 	"strings"
 	"text/tabwriter"
@@ -28,8 +27,6 @@ import (
 var (
 	ptrSize = 4 << (^uintptr(0) >> 63)
 	intSize = int(reflect.TypeOf(int(0)).Size())
-
-	reStdVector = regexp.MustCompile("^vector<(.+)>$")
 )
 
 type StreamerInfo struct {
@@ -841,12 +838,130 @@ func (tss *StreamerSTL) Class() string {
 	return "TStreamerSTL"
 }
 
-func (tss *StreamerSTL) ElemTypeName() string {
-	o := reStdVector.FindStringSubmatch(tss.ename)
-	if o == nil {
-		return ""
+func (tss *StreamerSTL) ElemTypeName() []string {
+	switch tss.vtype {
+	case rmeta.STLvector:
+		return parseStdVector(tss.ename)
+	case rmeta.STLmap:
+		return parseStdMap(tss.ename)
+	default:
+		panic("not implemented")
 	}
-	return strings.TrimSpace(o[1])
+}
+
+func parseStdVector(tmpl string) []string {
+	v := tmpl
+	switch {
+	case strings.HasSuffix(v, ">"):
+		v = v[:len(v)-1]
+	default:
+		panic(xerrors.Errorf("invalid std::vector container name (missing '>'): %q", tmpl))
+	}
+	switch {
+	case strings.HasPrefix(v, "vector<"):
+		v = v[len("vector<"):]
+	case strings.HasPrefix(v, "std::vector<"):
+		v = v[len("std::vector<"):]
+	default:
+		panic(xerrors.Errorf("invalid std::vector container name (missing 'vector<'): %q", tmpl))
+	}
+	var (
+		keyT  string
+		allT  string
+		depth int
+		coms  []int
+	)
+	if strings.Contains(v, ",") {
+		for i, b := range []byte(v) {
+			switch b {
+			case '<':
+				depth++
+			case '>':
+				depth--
+			case ',':
+				if depth == 0 {
+					coms = append(coms, i)
+				}
+			}
+		}
+	}
+	switch len(coms) {
+	case 0:
+		keyT = v
+	case 1:
+		keyT = v[:coms[0]]
+		allT = v[coms[0]+1:]
+	default:
+		panic(xerrors.Errorf("invalid std::vector template %q", tmpl))
+	}
+	keyT = strings.TrimSpace(keyT)
+	if keyT == "" {
+		panic(xerrors.Errorf("invalid std::vector container name (missing element type): %q", tmpl))
+	}
+	allT = strings.TrimSpace(allT)
+	switch allT {
+	case "":
+		return []string{keyT}
+	default:
+		return []string{keyT, allT}
+	}
+}
+
+func parseStdMap(tmpl string) []string {
+	v := tmpl
+	switch {
+	case strings.HasSuffix(v, ">"):
+		v = v[:len(v)-1]
+	default:
+		panic(xerrors.Errorf("invalid std::map container name (missing '>'): %q", tmpl))
+	}
+	switch {
+	case strings.HasPrefix(v, "map<"):
+		v = v[len("map<"):]
+	case strings.HasPrefix(v, "std::map<"):
+		v = v[len("std::map<"):]
+	default:
+		panic(xerrors.Errorf("invalid std::map container name (missing 'map<'): %q", tmpl))
+	}
+	var (
+		keyT  string
+		valT  string
+		allT  string
+		depth int
+		coms  []int
+	)
+	for i, b := range []byte(v) {
+		switch b {
+		case '<':
+			depth++
+		case '>':
+			depth--
+		case ',':
+			if depth == 0 {
+				coms = append(coms, i)
+			}
+		}
+	}
+	switch len(coms) {
+	case 1:
+		keyT = v[:coms[0]]
+		valT = v[coms[0]+1:]
+	case 2:
+		keyT = v[:coms[0]]
+		valT = v[coms[0]+1 : coms[1]]
+		allT = v[coms[1]+1:]
+	default:
+		panic(xerrors.Errorf("invalid std::map template %q", tmpl))
+	}
+	keyT = strings.TrimSpace(keyT)
+	valT = strings.TrimSpace(valT)
+	allT = strings.TrimSpace(allT)
+	switch allT {
+	case "":
+		return []string{keyT, valT}
+	default:
+		return []string{keyT, valT, allT}
+	}
 }
 
 func (tss *StreamerSTL) ContainedType() rmeta.Enum {
