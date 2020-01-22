@@ -27,6 +27,6 @@ require (
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	gonum.org/v1/gonum v0.6.1
 	gonum.org/v1/plot v0.0.0-20191107103940-ca91d9d40d0a
-	gopkg.in/jcmturner/gokrb5.v6 v6.1.1
+	gopkg.in/jcmturner/gokrb5.v7 v7.4.0
 	modernc.org/ql v1.0.0
 )

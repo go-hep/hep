@@ -10,12 +10,12 @@ import (
 
 	"go-hep.org/x/hep/xrootd/xrdproto/auth"
 	"golang.org/x/xerrors"
-	"gopkg.in/jcmturner/gokrb5.v6/client"
-	"gopkg.in/jcmturner/gokrb5.v6/config"
-	"gopkg.in/jcmturner/gokrb5.v6/credentials"
-	"gopkg.in/jcmturner/gokrb5.v6/crypto"
-	"gopkg.in/jcmturner/gokrb5.v6/messages"
-	"gopkg.in/jcmturner/gokrb5.v6/types"
+	"gopkg.in/jcmturner/gokrb5.v7/client"
+	"gopkg.in/jcmturner/gokrb5.v7/config"
+	"gopkg.in/jcmturner/gokrb5.v7/credentials"
+	"gopkg.in/jcmturner/gokrb5.v7/crypto"
+	"gopkg.in/jcmturner/gokrb5.v7/messages"
+	"gopkg.in/jcmturner/gokrb5.v7/types"
 )
 
 // Default is a Kerberos 5 client configured from cached credentials.
@@ -36,35 +36,23 @@ type Auth struct {
 
 // WithPassword creates a new Auth configured from the provided user, realm and password.
 func WithPassword(user, realm, password string) (*Auth, error) {
-	krb := client.NewClientWithPassword(user, realm, password)
-
 	cfg, err := config.Load(configPath)
 	if err != nil {
 		return nil, xerrors.Errorf("auth/krb5: could not load kerberos-5 configuration: %w", err)
 	}
 
-	krb.WithConfig(cfg)
+	krb := client.NewClientWithPassword(user, realm, password, cfg)
 
 	err = krb.Login()
 	if err != nil {
 		return nil, xerrors.Errorf("auth/krb5: could not login: %w", err)
 	}
 
-	return &Auth{client: &krb}, nil
+	return &Auth{client: krb}, nil
 }
 
 // WithCredCache creates a new Auth configured from cached credentials.
 func WithCredCache() (*Auth, error) {
-	cred, err := credentials.LoadCCache(cachePath())
-	if err != nil {
-		return nil, xerrors.Errorf("auth/krb5: could not load kerberos-5 cached credentials: %w", err)
-	}
-
-	krb, err := client.NewClientFromCCache(cred)
-	if err != nil {
-		return nil, xerrors.Errorf("auth/krb5: could not create kerberos-5 client from cached credentials: %w", err)
-	}
-
 	cfg, err := config.Load(configPath)
 	if err != nil {
 		switch err.(type) {
@@ -75,9 +63,17 @@ func WithCredCache() (*Auth, error) {
 		}
 	}
 
-	krb.WithConfig(cfg)
+	cred, err := credentials.LoadCCache(cachePath())
+	if err != nil {
+		return nil, xerrors.Errorf("auth/krb5: could not load kerberos-5 cached credentials: %w", err)
+	}
 
-	return &Auth{client: &krb}, nil
+	krb, err := client.NewClientFromCCache(cred, cfg)
+	if err != nil {
+		return nil, xerrors.Errorf("auth/krb5: could not create kerberos-5 client from cached credentials: %w", err)
+	}
+
+	return &Auth{client: krb}, nil
 }
 
 // WithClient creates a new Auth using the provided krb5 client.
@@ -111,7 +107,7 @@ func (a *Auth) Request(params []string) (*auth.Request, error) {
 	if err != nil {
 		return nil, xerrors.Errorf("auth/krb5: could not retrieve kerberos service ticket: %w", err)
 	}
-	authenticator, err := types.NewAuthenticator(a.client.Credentials.Realm, a.client.Credentials.CName)
+	authenticator, err := types.NewAuthenticator(a.client.Credentials.Realm(), a.client.Credentials.CName())
 	if err != nil {
 		return nil, xerrors.Errorf("auth/krb5: could not create kerberos authenticator: %w", err)
 	}
