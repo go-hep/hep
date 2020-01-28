@@ -406,8 +406,7 @@ func (tse *StreamerElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 		tse.xmax = r.ReadF64()
 		tse.factor = r.ReadF64()
 	case vers > 3:
-		// FIXME(sbinet)
-		// if (TestBit(kHasRange)) GetRange(GetTitle(),fXmin,fXmax,fFactor)
+		tse.xmin, tse.xmax, tse.factor = Element{}.getRange(tse.Title())
 	}
 
 	r.CheckByteCount(pos, bcnt, beg, tse.Class())
