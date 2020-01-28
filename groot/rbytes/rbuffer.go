@@ -697,6 +697,15 @@ func (r *RBuffer) ReadObjectAny() (obj root.Object) {
 	}
 }
 
+func (r *RBuffer) RStream(si StreamerInfo, ptr interface{}) error {
+	const kind = ObjectWise
+	dec, err := si.NewDecoder(kind, r)
+	if err != nil {
+		return fmt.Errorf("rbytes: could not create %v decoder for %q (version=%d): %w", kind, si.Name(), si.ClassVersion(), err)
+	}
+	return dec.DecodeROOT(ptr)
+}
+
 var (
 	_ StreamerInfoContext = (*RBuffer)(nil)
 )
