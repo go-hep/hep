@@ -415,7 +415,7 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 				wfunc = "WriteFastArrayI16"
 			case rmeta.OffsetP + rmeta.Int32:
 				wfunc = "WriteFastArrayI32"
-			case rmeta.OffsetP + rmeta.Int64:
+			case rmeta.OffsetP + rmeta.Int64, rmeta.OffsetP + rmeta.Long64:
 				wfunc = "WriteFastArrayI64"
 			case rmeta.OffsetP + rmeta.Uint8:
 				wfunc = "WriteFastArrayU8"
@@ -463,7 +463,7 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 				g.printf("w.WriteI16(o.%s)\n", se.Name())
 			case rmeta.Int32:
 				g.printf("w.WriteI32(o.%s)\n", se.Name())
-			case rmeta.Int64:
+			case rmeta.Int64, rmeta.Long64:
 				g.printf("w.WriteI64(o.%s)\n", se.Name())
 
 			case rmeta.Uint8:
@@ -661,7 +661,7 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 				rfunc = "ReadFastArrayI16"
 			case rmeta.OffsetP + rmeta.Int32:
 				rfunc = "ReadFastArrayI32"
-			case rmeta.OffsetP + rmeta.Int64:
+			case rmeta.OffsetP + rmeta.Int64, rmeta.OffsetP + rmeta.Long64:
 				rfunc = "ReadFastArrayI64"
 			case rmeta.OffsetP + rmeta.Uint8:
 				rfunc = "ReadFastArrayU8"
@@ -709,7 +709,7 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 				g.printf("o.%s = r.ReadI16()\n", se.Name())
 			case rmeta.Int32:
 				g.printf("o.%s = r.ReadI32()\n", se.Name())
-			case rmeta.Int64:
+			case rmeta.Int64, rmeta.Long64:
 				g.printf("o.%s = r.ReadI64()\n", se.Name())
 
 			case rmeta.Uint8:
