@@ -36,8 +36,7 @@ type StreamerInfo struct {
 	objarr *rcont.ObjArray
 	elems  []rbytes.StreamerElement
 
-	mu       sync.Mutex
-	init     bool
+	init     sync.Once
 	robjwise interface{}
 	wobjwise interface{}
 	rmbrwise interface{}
@@ -161,24 +160,40 @@ func (si *StreamerInfo) String() string {
 
 // BuildStreamers builds the r/w streamers.
 func (si *StreamerInfo) BuildStreamers() error {
-	si.mu.Lock()
-	defer si.mu.Unlock()
-	if si.init {
-		return nil
-	}
-	return si.build()
+	var err error
+	si.init.Do(func() {
+		err = si.build()
+	})
+	return err
 }
 
-func (si *StreamerInfo) build() (err error) {
+func (si *StreamerInfo) build() error {
+	var err error
 	panic("not implemented")
 
-	defer func() {
-		if err == nil {
-			si.init = true
-		}
-	}()
-
 	return err
+}
+
+func (si *StreamerInfo) NewDecoder(kind rbytes.StreamKind, r *rbytes.RBuffer) (rbytes.Decoder, error) {
+	err := si.BuildStreamers()
+	if err != nil {
+		return nil, fmt.Errorf("rdict: could not build read streamers: %w", err)
+	}
+
+	switch kind {
+	case rbytes.ObjectWise:
+	case rbytes.MemberWise:
+	}
+	panic("not implemented")
+}
+
+func (si *StreamerInfo) NewEncoder(kind rbytes.StreamKind, w *rbytes.WBuffer) (rbytes.Encoder, error) {
+	err := si.BuildStreamers()
+	if err != nil {
+		return nil, fmt.Errorf("rdict: could not build write streamers: %w", err)
+	}
+
+	panic("not implemented")
 }
 
 type Element struct {

@@ -10,6 +10,8 @@
 package rbytes // import "go-hep.org/x/hep/groot/rbytes"
 
 import (
+	"fmt"
+
 	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
 )
@@ -30,7 +32,29 @@ type StreamerInfo interface {
 
 	// BuildStreamers builds the r/w streamers.
 	BuildStreamers() error
+
+	NewDecoder(kind StreamKind, r *RBuffer) (Decoder, error)
+	NewEncoder(kind StreamKind, w *WBuffer) (Encoder, error)
 }
+
+// StreamKind describes whether a composite ROOT value was encoded
+// member-wise or object-wise.
+type StreamKind byte
+
+func (k StreamKind) String() string {
+	switch k {
+	case ObjectWise:
+		return "object-wise"
+	case MemberWise:
+		return "member-wise"
+	}
+	return fmt.Sprintf("0x%x", byte(k))
+}
+
+const (
+	ObjectWise StreamKind = iota
+	MemberWise
+)
 
 // StreamerElement describes a ROOT StreamerElement
 type StreamerElement interface {
@@ -45,6 +69,16 @@ type StreamerElement interface {
 	XMin() float64
 	XMax() float64
 	Factor() float64
+}
+
+// Decoder is the interface that wraps the basic DecodeROOT method.
+type Decoder interface {
+	DecodeROOT(ptr interface{}) error
+}
+
+// Encoder is the interface that wraps the basic EncodeROOT method.
+type Encoder interface {
+	EncodeROOT(ptr interface{}) error
 }
 
 // StreamerInfoContext defines the protocol to retrieve a ROOT StreamerInfo
