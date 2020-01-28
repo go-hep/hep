@@ -63,9 +63,14 @@ func (g *genGoType) Generate(name string) error {
 func (g *genGoType) genType(si rbytes.StreamerInfo) error {
 	name := si.Name()
 	if title := si.Title(); title != "" {
-		g.printf("// %s has been automatically generated.\n// %s\n", name, title)
+		g.printf("// %s has been automatically generated.\n", name)
+		g.printf("// %s\n", title)
 	}
-	goname := g.cxx2go(name, qualNone)
+	goname := name
+	goname = strings.Replace(goname, "::", "__", -1) // handle namespaces
+	goname = strings.Replace(goname, "<", "_", -1)   // handle C++ templates
+	goname = strings.Replace(goname, ">", "_", -1)   // handle C++ templates
+	goname = strings.Replace(goname, ",", "_", -1)   // handle C++ templates
 	g.printf("type %s struct{\n", goname)
 	for i, se := range si.Elements() {
 		g.genField(si, i, se)
