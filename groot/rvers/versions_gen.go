@@ -1,4 +1,4 @@
-// Copyright 2019 The go-hep Authors. All rights reserved.
+// Copyright 2020 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -22,17 +22,19 @@ const (
 	UUID                     = 1  // ROOT version for TUUID
 	Array                    = 1  // ROOT version for TArray
 	ArrayC                   = 1  // ROOT version for TArrayC
-	ArrayD                   = 1  // ROOT version for TArrayD
-	ArrayF                   = 1  // ROOT version for TArrayF
+	ArrayS                   = 1  // ROOT version for TArrayS
 	ArrayI                   = 1  // ROOT version for TArrayI
 	ArrayL                   = 1  // ROOT version for TArrayL
 	ArrayL64                 = 1  // ROOT version for TArrayL64
-	ArrayS                   = 1  // ROOT version for TArrayS
-	HashList                 = 0  // ROOT version for THashList
+	ArrayF                   = 1  // ROOT version for TArrayF
+	ArrayD                   = 1  // ROOT version for TArrayD
+	Collection               = 3  // ROOT version for TCollection
+	ClonesArray              = 4  // ROOT version for TClonesArray
 	List                     = 5  // ROOT version for TList
+	HashList                 = 0  // ROOT version for THashList
 	Map                      = 3  // ROOT version for TMap
 	ObjArray                 = 3  // ROOT version for TObjArray
-	ClonesArray              = 4  // ROOT version for TClonesArray
+	SeqCollection            = 0  // ROOT version for TSeqCollection
 	StreamerInfo             = 9  // ROOT version for TStreamerInfo
 	StreamerElement          = 4  // ROOT version for TStreamerElement
 	StreamerBase             = 3  // ROOT version for TStreamerBase
@@ -66,26 +68,29 @@ const (
 	H2Poly                   = 2  // ROOT version for TH2Poly
 	H2PolyBin                = 1  // ROOT version for TH2PolyBin
 	H2S                      = 4  // ROOT version for TH2S
-	Basket                   = 3  // ROOT version for TBasket
-	Branch                   = 13 // ROOT version for TBranch
-	BranchElement            = 10 // ROOT version for TBranchElement
-	Chain                    = 5  // ROOT version for TChain
-	Leaf                     = 2  // ROOT version for TLeaf
-	LeafElement              = 1  // ROOT version for TLeafElement
-	LeafB                    = 1  // ROOT version for TLeafB
-	LeafC                    = 1  // ROOT version for TLeafC
-	LeafD                    = 1  // ROOT version for TLeafD
-	LeafF                    = 1  // ROOT version for TLeafF
-	LeafI                    = 1  // ROOT version for TLeafI
-	LeafL                    = 1  // ROOT version for TLeafL
-	LeafO                    = 1  // ROOT version for TLeafO
-	LeafS                    = 1  // ROOT version for TLeafS
-	LeafF16                  = 1  // ROOT version for TLeafF16
-	LeafD32                  = 1  // ROOT version for TLeafD32
-	Ntuple                   = 2  // ROOT version for TNtuple
-	Tree                     = 20 // ROOT version for TTree
 	Directory                = 5  // ROOT version for TDirectory
 	DirectoryFile            = 5  // ROOT version for TDirectoryFile
 	File                     = 8  // ROOT version for TFile
 	Key                      = 4  // ROOT version for TKey
+	ROOT_IOFeatures          = 1  // ROOT version for ROOT::TIOFeatures
+	Basket                   = 3  // ROOT version for TBasket
+	Branch                   = 13 // ROOT version for TBranch
+	BranchElement            = 10 // ROOT version for TBranchElement
+	BranchRef                = 1  // ROOT version for TBranchRef
+	Chain                    = 5  // ROOT version for TChain
+	Leaf                     = 2  // ROOT version for TLeaf
+	LeafElement              = 1  // ROOT version for TLeafElement
+	LeafO                    = 1  // ROOT version for TLeafO
+	LeafB                    = 1  // ROOT version for TLeafB
+	LeafS                    = 1  // ROOT version for TLeafS
+	LeafI                    = 1  // ROOT version for TLeafI
+	LeafL                    = 1  // ROOT version for TLeafL
+	LeafF                    = 1  // ROOT version for TLeafF
+	LeafD                    = 1  // ROOT version for TLeafD
+	LeafF16                  = 1  // ROOT version for TLeafF16
+	LeafD32                  = 1  // ROOT version for TLeafD32
+	LeafC                    = 1  // ROOT version for TLeafC
+	Ntuple                   = 2  // ROOT version for TNtuple
+	RefTable                 = 3  // ROOT version for TRefTable
+	Tree                     = 20 // ROOT version for TTree
 )

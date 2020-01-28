@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"go/format"
+	"io"
 	"log"
 	"path/filepath"
 	"sort"
@@ -29,6 +30,35 @@ type genGoType struct {
 	// set of imported packages.
 	// usually: "go-hep.org/x/hep/groot/rbase", ".../rcont
 	imps map[string]int
+
+	rdict string // whether to prepend 'rdict.'
+}
+
+// GenCxxStreamerInfo generates the textual representation of the provided streamer info.
+func GenCxxStreamerInfo(w io.Writer, si rbytes.StreamerInfo, verbose bool) error {
+	g, err := NewGenGoType("go-hep.org/x/hep/groot/rdict", nil, verbose)
+	if err != nil {
+		return xerrors.Errorf("rdict: could not create streamer info generator: %w", err)
+	}
+	g.rdict = ""
+
+	g.printf("%sNewCxxStreamerInfo(%q, %d, 0x%x, []rbytes.StreamerElement{\n", g.rdict, si.Name(), si.ClassVersion(), si.CheckSum())
+	for i, se := range si.Elements() {
+		g.genStreamerType(si, i, se)
+	}
+	g.printf("})")
+
+	src, err := format.Source(g.buf.Bytes())
+	if err != nil {
+		return xerrors.Errorf("rdict: could not format streamer code for %q: %w", si.Name(), err)
+	}
+
+	_, err = w.Write(src)
+	if err != nil {
+		return xerrors.Errorf("rdict: could not write streamer info generated data: %w", err)
+	}
+
+	return err
 }
 
 // NewGenGoType generates code for Go types from a ROOT StreamerInfo.
@@ -44,6 +74,7 @@ func NewGenGoType(pkg string, sictx rbytes.StreamerInfoContext, verbose bool) (*
 			"go-hep.org/x/hep/groot/root":   1,
 			"go-hep.org/x/hep/groot/rtypes": 1,
 		},
+		rdict: "rdict.",
 	}, nil
 }
 
@@ -875,9 +906,10 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 func (g *genGoType) genStreamerInfo(si rbytes.StreamerInfo) {
 	g.printf(`func init() {
 		// Streamer for %[1]s.
-		rdict.StreamerInfos.Add(rdict.NewCxxStreamerInfo(%[1]q, %[2]d, 0x%[3]x, []rbytes.StreamerElement{
+		%[4]sStreamerInfos.Add(%[4]sNewCxxStreamerInfo(%[1]q, %[2]d, 0x%[3]x, []rbytes.StreamerElement{
 `,
 		si.Name(), si.ClassVersion(), si.CheckSum(),
+		g.rdict,
 	)
 
 	for i, se := range si.Elements() {
@@ -893,12 +925,14 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 	}
 
 	g.imps["go-hep.org/x/hep/groot/rbase"] = 1
-	g.imps["go-hep.org/x/hep/groot/rdict"] = 1
+	if g.rdict != "" {
+		g.imps["go-hep.org/x/hep/groot/rdict"] = 1
+	}
 	g.imps["go-hep.org/x/hep/groot/rmeta"] = 1
 
 	switch se := se.(type) {
 	case *StreamerBase:
-		g.printf(`rdict.NewStreamerBase(rdict.Element{
+		g.printf(`%[13]sNewStreamerBase(%[13]sElement{
 			Name:   *rbase.NewNamed(%[1]q, %[2]q),
 			Type:   rmeta.Base,
 			Size:   %[3]d,
@@ -921,10 +955,11 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 			se.ename,
 			se.xmin, se.xmax, se.factor,
 			se.vbase,
+			g.rdict,
 		)
 
 	case *StreamerBasicType:
-		g.printf(`&rdict.StreamerBasicType{StreamerElement: rdict.Element{
+		g.printf(`&%[13]sStreamerBasicType{StreamerElement: %[13]sElement{
 			Name:   *rbase.NewNamed(%[1]q, %[2]q),
 			Type:   rmeta.%[3]v,
 			Size:   %[4]d,
@@ -947,10 +982,11 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 			se.offset,
 			se.ename,
 			se.xmin, se.xmax, se.factor,
+			g.rdict,
 		)
 
 	case *StreamerBasicPointer:
-		g.printf(`rdict.NewStreamerBasicPointer(rdict.Element{
+		g.printf(`%[16]sNewStreamerBasicPointer(%[16]sElement{
 			Name:   *rbase.NewNamed(%[1]q, %[2]q),
 			Type:   %[3]d,
 			Size:   %[4]d,
@@ -974,10 +1010,11 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 			se.ename,
 			se.xmin, se.xmax, se.factor,
 			se.cvers, se.cname, se.ccls,
+			g.rdict,
 		)
 
 	case *StreamerLoop:
-		g.printf(`rdict.NewStreamerLoop(rdict.Element{
+		g.printf(`%[15]sNewStreamerLoop(%[15]sElement{
 			Name:   *rbase.NewNamed(%[1]q, %[2]q),
 			Type:   rmeta.StreamLoop,
 			Size:   %[3]d,
@@ -1000,10 +1037,11 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 			se.ename,
 			se.xmin, se.xmax, se.factor,
 			se.cvers, se.cname, se.cclass,
+			g.rdict,
 		)
 
 	case *StreamerObject:
-		g.printf(`&rdict.StreamerObject{StreamerElement: rdict.Element{
+		g.printf(`&%[13]sStreamerObject{StreamerElement: %[13]sElement{
 			Name:   *rbase.NewNamed(%[1]q, %[2]q),
 			Type:   rmeta.%[3]v,
 			Size:   %[4]d,
@@ -1026,10 +1064,11 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 			se.offset,
 			se.ename,
 			se.xmin, se.xmax, se.factor,
+			g.rdict,
 		)
 
 	case *StreamerObjectPointer:
-		g.printf(`&rdict.StreamerObjectPointer{StreamerElement: rdict.Element{
+		g.printf(`&%[13]sStreamerObjectPointer{StreamerElement: %[13]sElement{
 			Name:   *rbase.NewNamed(%[1]q, %[2]q),
 			Type:   rmeta.%[3]v,
 			Size:   %[4]d,
@@ -1052,10 +1091,11 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 			se.offset,
 			se.ename,
 			se.xmin, se.xmax, se.factor,
+			g.rdict,
 		)
 
 	case *StreamerObjectAny:
-		g.printf(`&rdict.StreamerObjectAny{StreamerElement: rdict.Element{
+		g.printf(`&%[13]sStreamerObjectAny{StreamerElement: %[13]sElement{
 			Name:   *rbase.NewNamed(%[1]q, %[2]q),
 			Type:   rmeta.%[3]v,
 			Size:   %[4]d,
@@ -1078,10 +1118,11 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 			se.offset,
 			se.ename,
 			se.xmin, se.xmax, se.factor,
+			g.rdict,
 		)
 
 	case *StreamerObjectAnyPointer:
-		g.printf(`&rdict.StreamerObjectAnyPointer{StreamerElement: rdict.Element{
+		g.printf(`&%[13]sStreamerObjectAnyPointer{StreamerElement: %[13]sElement{
 			Name:   *rbase.NewNamed(%[1]q, %[2]q),
 			Type:   rmeta.%[3]v,
 			Size:   %[4]d,
@@ -1104,10 +1145,11 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 			se.offset,
 			se.ename,
 			se.xmin, se.xmax, se.factor,
+			g.rdict,
 		)
 
 	case *StreamerString:
-		g.printf(`&rdict.StreamerString{StreamerElement: rdict.Element{
+		g.printf(`&%[13]sStreamerString{StreamerElement: %[13]sElement{
 			Name:   *rbase.NewNamed(%[1]q, %[2]q),
 			Type:   rmeta.%[3]v,
 			Size:   %[4]d,
@@ -1130,10 +1172,11 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 			se.offset,
 			se.ename,
 			se.xmin, se.xmax, se.factor,
+			g.rdict,
 		)
 
 	case *StreamerSTL:
-		g.printf(`rdict.NewCxxStreamerSTL(rdict.Element{
+		g.printf(`%[15]sNewCxxStreamerSTL(%[15]sElement{
 			Name:   *rbase.NewNamed(%[1]q, %[2]q),
 			Type:   rmeta.%[3]v,
 			Size:   %[4]d,
@@ -1157,10 +1200,11 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 			se.ename,
 			se.xmin, se.xmax, se.factor,
 			se.vtype, se.ctype,
+			g.rdict,
 		)
 
 	case *StreamerSTLstring:
-		g.printf(`&rdict.StreamerSTLstring{*rdict.NewCxxStreamerSTL(rdict.Element{
+		g.printf(`&%[15]sStreamerSTLstring{*%[15]sNewCxxStreamerSTL(%[15]sElement{
 			Name:   *rbase.NewNamed(%[1]q, %[2]q),
 			Type:   rmeta.%[3]v,
 			Size:   %[4]d,
@@ -1184,10 +1228,11 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 			se.ename,
 			se.xmin, se.xmax, se.factor,
 			se.vtype, se.ctype,
+			g.rdict,
 		)
 
 	case *StreamerArtificial:
-		g.printf(`&rdict.StreamerArtificial{StreamerElement: rdict.Element{
+		g.printf(`&%[13]sStreamerArtificial{StreamerElement: %[13]sElement{
 			Name:   *rbase.NewNamed(%[1]q, %[2]q),
 			Type:   rmeta.%[3]v,
 			Size:   %[4]d,
@@ -1210,6 +1255,7 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 			se.offset,
 			se.ename,
 			se.xmin, se.xmax, se.factor,
+			g.rdict,
 		)
 
 	default:

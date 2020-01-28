@@ -423,7 +423,7 @@ func TestCreate(t *testing.T) {
 
 			err = w.Close()
 			if err != nil {
-				t.Fatalf("error closing file: %v", err)
+				t.Fatalf("error closing file: %+v", err)
 			}
 
 			r, err := groot.Open(fname)
@@ -454,7 +454,7 @@ func TestCreate(t *testing.T) {
 
 			err = r.Close()
 			if err != nil {
-				t.Fatalf("error closing file: %v", err)
+				t.Fatalf("error closing file: %+v", err)
 			}
 
 			if !withROOTCxx {

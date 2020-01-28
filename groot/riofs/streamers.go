@@ -5,16 +5,14 @@
 package riofs
 
 import (
-	"bytes"
-	"log"
 	"regexp"
 	"strings"
 
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rdict"
-	rstreamerspkg "go-hep.org/x/hep/groot/riofs/internal/rstreamers"
 	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
+	"golang.org/x/xerrors"
 )
 
 var (
@@ -47,13 +45,6 @@ type streamerInfoStore interface {
 }
 
 func streamerInfoFrom(obj root.Object, sictx streamerInfoStore) (rbytes.StreamerInfo, error) {
-	r := &memFile{bytes.NewReader(rstreamerspkg.Data)}
-	f, err := NewReader(r)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
 	var (
 		typename = obj.Class()
 		cxxtype  = rdict.GoName2Cxx(typename)
@@ -64,31 +55,10 @@ func streamerInfoFrom(obj root.Object, sictx streamerInfoStore) (rbytes.Streamer
 		vers = int(o.RVersion())
 	}
 
-	si, err := f.StreamerInfo(cxxtype, vers)
-	if err != nil {
-		return nil, err
+	si, ok := rdict.StreamerInfos.Get(cxxtype, vers)
+	if !ok {
+		return nil, xerrors.Errorf("riofs: could not find streamer for %q (version=%d)", cxxtype, vers)
 	}
-	rdict.StreamerInfos.Add(si)
 	sictx.addStreamer(si)
 	return si, nil
-}
-
-func init() {
-	// load bootstrap streamers (core ROOT types, such as TObject, TFile, ...)
-	r := &memFile{bytes.NewReader(rstreamerspkg.Data)}
-	f, err := NewReader(r)
-	if err != nil {
-		return
-	}
-	for _, k := range f.Keys() {
-		if !strings.HasPrefix(k.Name(), "streamer-info-") {
-			continue
-		}
-		o, err := k.Object()
-		if err != nil {
-			log.Printf("riofs: could not load streamer info for %q: %v", k.Name(), err)
-		}
-		rdict.StreamerInfos.Add(o.(rbytes.StreamerInfo))
-	}
-	defer f.Close()
 }

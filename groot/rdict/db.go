@@ -30,7 +30,7 @@ type streamerDb struct {
 func (db *streamerDb) StreamerInfo(name string, vers int) (rbytes.StreamerInfo, error) {
 	si, ok := db.Get(name, vers)
 	if !ok {
-		return nil, xerrors.Errorf("rdict: no streamer for %q", name)
+		return nil, xerrors.Errorf("rdict: no streamer for %q (version=%d)", name, vers)
 	}
 	return si, nil
 }
