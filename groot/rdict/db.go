@@ -104,6 +104,28 @@ func (db *streamerDb) Add(streamer rbytes.StreamerInfo) {
 	db.db[key] = streamer
 }
 
+// Values returns all the known StreamerInfos.
+func (db *streamerDb) Values() []rbytes.StreamerInfo {
+	db.RLock()
+	defer db.RUnlock()
+
+	var sinfos = make([]rbytes.StreamerInfo, 0, len(db.db))
+	for _, si := range db.db {
+		sinfos = append(sinfos, si)
+	}
+
+	sort.Slice(sinfos, func(i, j int) bool {
+		si := sinfos[i]
+		sj := sinfos[j]
+		if si.Name() == sj.Name() {
+			return si.ClassVersion() < sj.ClassVersion()
+		}
+		return si.Name() < sj.Name()
+	})
+
+	return sinfos
+}
+
 var (
 	_ rbytes.StreamerInfoContext = (*streamerDb)(nil)
 )
