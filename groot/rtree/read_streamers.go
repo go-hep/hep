@@ -759,6 +759,10 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 						panic(fmt.Errorf("rtree: could not retrieve streamer for %q: %w", etn[0], err))
 					}
 					eptr := reflect.New(rf.Type().Elem())
+					if len(subsi.Elements()) <= 0 {
+						panic(fmt.Errorf("rtree: invalid streamer info for %q", etn[0]))
+					}
+
 					felt := rstreamerFrom(subsi.Elements()[0], eptr.Interface(), lcnt, sictx)
 					fptr := rf.Addr()
 					typename := se.TypeName()
@@ -1090,6 +1094,8 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 					}
 					return reflect.SliceOf(o)
 				}
+			default:
+				panic(fmt.Errorf("rtree: invalid STL contained-type %v for %#v", se.ContainedType(), se))
 			}
 		default:
 			panic(fmt.Errorf("rtree: invalid STL type %d for %#v", se.STLType(), se))
