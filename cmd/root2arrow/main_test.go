@@ -15,7 +15,12 @@ import (
 )
 
 func init() {
-	o, err := exec.Command("go", "get", "github.com/apache/arrow/go/arrow/ipc/cmd/arrow-cat").CombinedOutput()
+	_, err := exec.LookPath("arrow-cat")
+	if err == nil {
+		return
+	}
+
+	o, err := exec.Command("go", "install", "github.com/apache/arrow/go/arrow/ipc/cmd/arrow-cat").CombinedOutput()
 	if err != nil {
 		panic(xerrors.Errorf("could not install arrow-cat command:\n%v\nerr: %w", string(o), err))
 	}
