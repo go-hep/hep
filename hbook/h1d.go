@@ -206,7 +206,7 @@ func (h *H1D) Scale(factor float64) {
 //    v := h.Integral(math.Inf(-1), math.Inf(+1))
 //
 //    // integrall of all in-range bins, overflow bin included
-//    v := h.Integral(h.Binning().LowerEdge(), math.Inf(+1))
+//    v := h.Integral(h.Binning.XRange.Min, math.Inf(+1))
 //
 //    // integrall of all bins for which the lower edge is in [0.5, 5.5)
 //    v := h.Integral(0.5, 5.5)
