@@ -11,5 +11,6 @@ import (
 	_ "go-hep.org/x/hep/groot/rdict"
 	_ "go-hep.org/x/hep/groot/rhist"
 	_ "go-hep.org/x/hep/groot/riofs"
+	_ "go-hep.org/x/hep/groot/rphys"
 	_ "go-hep.org/x/hep/groot/rtree"
 )

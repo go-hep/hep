@@ -74,6 +74,8 @@ const (
 	DirectoryFile            = 5  // ROOT version for TDirectoryFile
 	File                     = 8  // ROOT version for TFile
 	Key                      = 4  // ROOT version for TKey
+	LorentzVector            = 4  // ROOT version for TLorentzVector
+	Vector3                  = 3  // ROOT version for TVector3
 	ROOT_IOFeatures          = 1  // ROOT version for ROOT::TIOFeatures
 	Basket                   = 3  // ROOT version for TBasket
 	Branch                   = 13 // ROOT version for TBranch

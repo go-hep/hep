@@ -74,6 +74,10 @@ var (
 		"TFile",
 		"TKey",
 
+		// rphys
+		"TLorentzVector",
+		"TVector3",
+
 		// rtree
 		"ROOT::TIOFeatures",
 		"TBasket",
