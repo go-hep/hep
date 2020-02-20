@@ -10,4 +10,5 @@ const (
 	kZombie       = 0x04000000
 	kBitMask      = 0x00ffffff
 	kIsReferenced = 1 << 4
+	kHasUUID      = 1 << 5
 )

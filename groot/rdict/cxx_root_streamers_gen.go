@@ -380,6 +380,21 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 1),
 	}))
+	StreamerInfos.Add(NewCxxStreamerInfo("TRef", 1, 0x91757901, []rbytes.StreamerElement{
+		NewStreamerBase(Element{
+			Name:   *rbase.NewNamed("TObject", "Basic ROOT object"),
+			Type:   rmeta.Base,
+			Size:   0,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, -1877229523, 0, 0, 0},
+			Offset: 0,
+			EName:  "BASE",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New(), 1),
+	}))
 	StreamerInfos.Add(NewCxxStreamerInfo("TUUID", 1, 0xd24ea15b, []rbytes.StreamerElement{
 		&StreamerBasicType{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fTimeLow", "60 bit time, lower 32 bits"),

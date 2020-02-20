@@ -19,6 +19,7 @@ const (
 	Object                   = 1  // ROOT version for TObject
 	ObjString                = 1  // ROOT version for TObjString
 	ProcessID                = 1  // ROOT version for TProcessID
+	Ref                      = 1  // ROOT version for TRef
 	UUID                     = 1  // ROOT version for TUUID
 	Array                    = 1  // ROOT version for TArray
 	ArrayC                   = 1  // ROOT version for TArrayC

@@ -11,7 +11,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 type Object struct {
@@ -42,7 +41,7 @@ func (obj *Object) UnmarshalROOT(r *rbytes.RBuffer) error {
 	obj.ID = r.ReadU32()
 	obj.Bits = r.ReadU32()
 	obj.Bits |= kIsOnHeap
-	if obj.Bits&kIsReferenced != 0 {
+	if obj.TestBits(kIsReferenced) {
 		_ = r.ReadU16()
 	}
 	return r.Err()
@@ -51,11 +50,16 @@ func (obj *Object) UnmarshalROOT(r *rbytes.RBuffer) error {
 func (obj *Object) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	n := w.Pos()
 	w.WriteU16(uint16(obj.RVersion()))
-	w.WriteU32(obj.ID)
-	w.WriteU32(obj.Bits)
-	if obj.Bits&kIsReferenced != 0 {
+	switch {
+	case obj.TestBits(kIsReferenced):
+		uid := obj.ID & 0xffffff
+		w.WriteU32(uid)
+		w.WriteU32(obj.Bits)
 		w.WriteU16(0) // FIXME(sbinet): implement referenced objects.
-		panic(xerrors.Errorf("rbase: writing referenced objects are not supported"))
+		// panic(xerrors.Errorf("rbase: writing referenced objects are not supported"))
+	default:
+		w.WriteU32(obj.ID)
+		w.WriteU32(obj.Bits)
 	}
 
 	return int(w.Pos() - n), w.Err()
