@@ -35,6 +35,7 @@ const (
 	HashList                 = 0  // ROOT version for THashList
 	Map                      = 3  // ROOT version for TMap
 	ObjArray                 = 3  // ROOT version for TObjArray
+	RefArray                 = 1  // ROOT version for TRefArray
 	SeqCollection            = 0  // ROOT version for TSeqCollection
 	StreamerInfo             = 9  // ROOT version for TStreamerInfo
 	StreamerElement          = 4  // ROOT version for TStreamerElement

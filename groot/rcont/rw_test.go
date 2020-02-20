@@ -78,6 +78,16 @@ func TestWRBuffer(t *testing.T) {
 			},
 		},
 		{
+			name: "TRefArray",
+			want: &RefArray{
+				obj:   rbase.Object{ID: 0x0, Bits: 0x3000000},
+				name:  "my-refs",
+				refs:  []uint32{1, 2, 3, 4},
+				lower: 1,
+				last:  3,
+			},
+		},
+		{
 			name: "TMap",
 			want: &Map{
 				obj:  rbase.Object{ID: 0x0, Bits: 0x3000000},

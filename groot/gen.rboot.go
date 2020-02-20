@@ -43,6 +43,7 @@ var (
 		"THashList",
 		"TMap",
 		"TObjArray",
+		"TRefArray",
 		"TSeqCollection",
 
 		// rdict
