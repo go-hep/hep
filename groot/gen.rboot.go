@@ -76,7 +76,7 @@ var (
 
 		// rphys
 		"TLorentzVector",
-		"TVector3",
+		"TVector2", "TVector3",
 
 		// rtree
 		"ROOT::TIOFeatures",

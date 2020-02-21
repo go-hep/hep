@@ -3534,6 +3534,47 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 	}))
+	StreamerInfos.Add(NewCxxStreamerInfo("TVector2", 3, 0x89b7f4, []rbytes.StreamerElement{
+		NewStreamerBase(Element{
+			Name:   *rbase.NewNamed("TObject", "Basic ROOT object"),
+			Type:   rmeta.Base,
+			Size:   0,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, -1877229523, 0, 0, 0},
+			Offset: 0,
+			EName:  "BASE",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New(), 1),
+		&StreamerBasicType{StreamerElement: Element{
+			Name:   *rbase.NewNamed("fX", "components of the vector"),
+			Type:   rmeta.Double,
+			Size:   8,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
+			Offset: 0,
+			EName:  "double",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New()},
+		&StreamerBasicType{StreamerElement: Element{
+			Name:   *rbase.NewNamed("fY", ""),
+			Type:   rmeta.Double,
+			Size:   8,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
+			Offset: 0,
+			EName:  "double",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New()},
+	}))
 	StreamerInfos.Add(NewCxxStreamerInfo("TVector3", 3, 0xabb6be1e, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
 			Name:   *rbase.NewNamed("TObject", "Basic ROOT object"),

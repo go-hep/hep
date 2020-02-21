@@ -33,6 +33,13 @@ func TestWRBuffer(t *testing.T) {
 			},
 		},
 		{
+			name: "TVector2",
+			want: &Vector2{
+				obj: rbase.Object{ID: 0x0, Bits: 0x3000000},
+				x:   1, y: 2,
+			},
+		},
+		{
 			name: "TVector3",
 			want: &Vector3{
 				obj: rbase.Object{ID: 0x0, Bits: 0x3000000},

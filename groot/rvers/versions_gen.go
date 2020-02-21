@@ -75,6 +75,7 @@ const (
 	File                     = 8  // ROOT version for TFile
 	Key                      = 4  // ROOT version for TKey
 	LorentzVector            = 4  // ROOT version for TLorentzVector
+	Vector2                  = 3  // ROOT version for TVector2
 	Vector3                  = 3  // ROOT version for TVector3
 	ROOT_IOFeatures          = 1  // ROOT version for ROOT::TIOFeatures
 	Basket                   = 3  // ROOT version for TBasket
