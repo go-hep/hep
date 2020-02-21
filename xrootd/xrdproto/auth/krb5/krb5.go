@@ -8,14 +8,14 @@ package krb5 // import "go-hep.org/x/hep/xrootd/xrdproto/auth/krb5"
 import (
 	"strings"
 
+	"github.com/jcmturner/gokrb5/v8/client"
+	"github.com/jcmturner/gokrb5/v8/config"
+	"github.com/jcmturner/gokrb5/v8/credentials"
+	"github.com/jcmturner/gokrb5/v8/crypto"
+	"github.com/jcmturner/gokrb5/v8/messages"
+	"github.com/jcmturner/gokrb5/v8/types"
 	"go-hep.org/x/hep/xrootd/xrdproto/auth"
 	"golang.org/x/xerrors"
-	"gopkg.in/jcmturner/gokrb5.v7/client"
-	"gopkg.in/jcmturner/gokrb5.v7/config"
-	"gopkg.in/jcmturner/gokrb5.v7/credentials"
-	"gopkg.in/jcmturner/gokrb5.v7/crypto"
-	"gopkg.in/jcmturner/gokrb5.v7/messages"
-	"gopkg.in/jcmturner/gokrb5.v7/types"
 )
 
 // Default is a Kerberos 5 client configured from cached credentials.
@@ -41,7 +41,7 @@ func WithPassword(user, realm, password string) (*Auth, error) {
 		return nil, xerrors.Errorf("auth/krb5: could not load kerberos-5 configuration: %w", err)
 	}
 
-	krb := client.NewClientWithPassword(user, realm, password, cfg)
+	krb := client.NewWithPassword(user, realm, password, cfg)
 
 	err = krb.Login()
 	if err != nil {
@@ -68,7 +68,7 @@ func WithCredCache() (*Auth, error) {
 		return nil, xerrors.Errorf("auth/krb5: could not load kerberos-5 cached credentials: %w", err)
 	}
 
-	krb, err := client.NewClientFromCCache(cred, cfg)
+	krb, err := client.NewFromCCache(cred, cfg)
 	if err != nil {
 		return nil, xerrors.Errorf("auth/krb5: could not create kerberos-5 client from cached credentials: %w", err)
 	}

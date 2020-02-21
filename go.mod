@@ -13,6 +13,7 @@ require (
 	github.com/google/go-cmp v0.4.0
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf
 	github.com/hashicorp/go-uuid v1.0.1
+	github.com/jcmturner/gokrb5/v8 v8.1.1
 	github.com/klauspost/compress v1.9.4
 	github.com/peterh/liner v1.1.0
 	github.com/pierrec/lz4 v2.3.0+incompatible
@@ -27,6 +28,5 @@ require (
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	gonum.org/v1/gonum v0.6.1
 	gonum.org/v1/plot v0.0.0-20191107103940-ca91d9d40d0a
-	gopkg.in/jcmturner/gokrb5.v7 v7.4.0
 	modernc.org/ql v1.0.0
 )
