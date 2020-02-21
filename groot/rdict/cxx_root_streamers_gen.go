@@ -380,6 +380,47 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 1),
 	}))
+	StreamerInfos.Add(NewCxxStreamerInfo("TProcessUUID", 1, 0x9af3ae11, []rbytes.StreamerElement{
+		NewStreamerBase(Element{
+			Name:   *rbase.NewNamed("TProcessID", "Process Unique Identifier in time and space"),
+			Type:   rmeta.Base,
+			Size:   0,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 729740665, 0, 0, 0},
+			Offset: 0,
+			EName:  "BASE",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New(), 1),
+		&StreamerObjectPointer{StreamerElement: Element{
+			Name:   *rbase.NewNamed("fUUIDs", "Global list of TUUIDs"),
+			Type:   rmeta.ObjectP,
+			Size:   8,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
+			Offset: 0,
+			EName:  "TList*",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New()},
+		&StreamerObjectPointer{StreamerElement: Element{
+			Name:   *rbase.NewNamed("fActive", "Table of active UUIDs"),
+			Type:   rmeta.ObjectP,
+			Size:   8,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
+			Offset: 0,
+			EName:  "TBits*",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New()},
+	}))
 	StreamerInfos.Add(NewCxxStreamerInfo("TRef", 1, 0x91757901, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
 			Name:   *rbase.NewNamed("TObject", "Basic ROOT object"),

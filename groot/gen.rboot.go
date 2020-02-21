@@ -33,7 +33,7 @@ var (
 		"TAttAxis", "TAttFill", "TAttLine", "TAttMarker",
 		"TNamed",
 		"TObject", "TObjString",
-		"TProcessID", "TRef", "TUUID",
+		"TProcessID", "TProcessUUID", "TRef", "TUUID",
 
 		// rcont
 		"TArray", "TArrayC", "TArrayS", "TArrayI", "TArrayL", "TArrayL64", "TArrayF", "TArrayD",
