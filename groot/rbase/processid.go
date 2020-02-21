@@ -24,6 +24,10 @@ func (*ProcessID) Class() string {
 	return "TProcessID"
 }
 
+func (pid *ProcessID) UID() uint32 {
+	return pid.named.UID()
+}
+
 func (*ProcessID) RVersion() int16 {
 	return rvers.ProcessID
 }
@@ -89,6 +93,7 @@ func init() {
 
 var (
 	_ root.Object        = (*ProcessID)(nil)
+	_ root.UIDer         = (*ProcessID)(nil)
 	_ root.Named         = (*ProcessID)(nil)
 	_ rbytes.Marshaler   = (*ProcessID)(nil)
 	_ rbytes.Unmarshaler = (*ProcessID)(nil)

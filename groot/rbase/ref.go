@@ -28,6 +28,13 @@ func (*Ref) Class() string { return "TRef" }
 func (*Ref) Name() string  { return "TRef" }
 func (*Ref) Title() string { return "Persistent Reference link to a TObject" }
 
+func (ref *Ref) UID() uint32 {
+	if ref.obj == nil {
+		return 0
+	}
+	return ref.obj.UID()
+}
+
 func (ref *Ref) String() string {
 	if ref.obj == nil {
 		return "<nil>"

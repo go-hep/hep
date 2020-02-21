@@ -15,12 +15,18 @@ func TestRef(t *testing.T) {
 	if obj := ref.Object(); obj != nil {
 		t.Fatalf("invalid referenced object")
 	}
+	if got, want := ref.UID(), uint32(0); got != want {
+		t.Fatalf("invalid UID: got=%d, want=%d", got, want)
+	}
 
 	obj := NewObject()
 	obj.ID = 42
 	ref.obj = obj
 	if ptr := ref.Object().(*Object); ptr != obj {
 		t.Fatalf("invalid referenced object: got=%v, want=%v", ptr, obj)
+	}
+	if got, want := ref.UID(), obj.ID; got != want {
+		t.Fatalf("invalid UID: got=%d, want=%d", got, want)
 	}
 
 	obj.SetBit(kIsReferenced)

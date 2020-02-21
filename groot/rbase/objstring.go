@@ -34,6 +34,10 @@ func (*ObjString) Class() string {
 	return "TObjString"
 }
 
+func (obj *ObjString) UID() uint32 {
+	return obj.obj.UID()
+}
+
 func (obj *ObjString) Name() string {
 	return obj.str
 }
@@ -84,6 +88,7 @@ func init() {
 
 var (
 	_ root.Object        = (*ObjString)(nil)
+	_ root.UIDer         = (*ObjString)(nil)
 	_ root.Named         = (*ObjString)(nil)
 	_ root.ObjString     = (*ObjString)(nil)
 	_ rbytes.Marshaler   = (*ObjString)(nil)

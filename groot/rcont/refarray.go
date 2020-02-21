@@ -39,6 +39,10 @@ func (*RefArray) Class() string {
 	return "TRefArray"
 }
 
+func (arr *RefArray) UID() uint32 {
+	return arr.obj.UID()
+}
+
 func (arr *RefArray) Name() string {
 	if arr.name == "" {
 		return "TRefArray"
@@ -62,8 +66,8 @@ func (arr *RefArray) Len() int {
 	return len(arr.refs)
 }
 
-func (arr *RefArray) UID(i int) uint32 {
-	return arr.refs[i]
+func (arr *RefArray) UIDs() []uint32 {
+	return arr.refs
 }
 
 func (arr *RefArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {

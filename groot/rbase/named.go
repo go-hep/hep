@@ -54,6 +54,10 @@ func (*Named) Class() string {
 	return "TNamed"
 }
 
+func (n *Named) UID() uint32 {
+	return n.obj.UID()
+}
+
 func (n *Named) Sizeof() int32 {
 	return tstringSizeof(n.name) + tstringSizeof(n.title)
 }
@@ -115,6 +119,7 @@ func init() {
 
 var (
 	_ root.Object        = (*Named)(nil)
+	_ root.UIDer         = (*Named)(nil)
 	_ root.Named         = (*Named)(nil)
 	_ rbytes.Marshaler   = (*Named)(nil)
 	_ rbytes.Unmarshaler = (*Named)(nil)

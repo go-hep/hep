@@ -32,6 +32,7 @@ func NewMap() *Map {
 
 func (*Map) RVersion() int16 { return rvers.Map }
 func (*Map) Class() string   { return "TMap" }
+func (m *Map) UID() uint32   { return m.obj.UID() }
 
 func (m *Map) Name() string        { return m.name }
 func (m *Map) Title() string       { return "A (key,value) map" }
@@ -110,6 +111,7 @@ func init() {
 
 var (
 	_ root.Object        = (*Map)(nil)
+	_ root.UIDer         = (*Map)(nil)
 	_ root.Named         = (*Map)(nil)
 	_ rbytes.Marshaler   = (*Map)(nil)
 	_ rbytes.Unmarshaler = (*Map)(nil)

@@ -35,8 +35,12 @@ func (*List) RVersion() int16 {
 	return rvers.List
 }
 
-func (li *List) Class() string {
+func (*List) Class() string {
 	return "TList"
+}
+
+func (li *List) UID() uint32 {
+	return li.obj.UID()
 }
 
 func (li *List) Name() string {
@@ -172,6 +176,7 @@ func init() {
 
 var (
 	_ root.Object        = (*List)(nil)
+	_ root.UIDer         = (*List)(nil)
 	_ root.Collection    = (*List)(nil)
 	_ root.SeqCollection = (*List)(nil)
 	_ root.List          = (*List)(nil)
@@ -181,6 +186,7 @@ var (
 
 var (
 	_ root.Object        = (*HashList)(nil)
+	_ root.UIDer         = (*HashList)(nil)
 	_ root.Collection    = (*HashList)(nil)
 	_ root.SeqCollection = (*HashList)(nil)
 	_ root.List          = (*HashList)(nil)

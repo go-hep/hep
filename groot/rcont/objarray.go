@@ -32,8 +32,12 @@ func (*ObjArray) RVersion() int16 {
 	return rvers.ObjArray
 }
 
-func (arr *ObjArray) Class() string {
+func (*ObjArray) Class() string {
 	return "TObjArray"
+}
+
+func (arr *ObjArray) UID() uint32 {
+	return arr.obj.UID()
 }
 
 func (arr *ObjArray) Name() string {
@@ -143,6 +147,7 @@ func init() {
 
 var (
 	_ root.Object        = (*ObjArray)(nil)
+	_ root.UIDer         = (*ObjArray)(nil)
 	_ root.Named         = (*ObjArray)(nil)
 	_ root.ObjArray      = (*ObjArray)(nil)
 	_ rbytes.Marshaler   = (*ObjArray)(nil)

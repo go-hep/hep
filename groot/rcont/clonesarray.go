@@ -40,6 +40,10 @@ func (arr *ClonesArray) Class() string {
 	return "TClonesArray"
 }
 
+func (arr *ClonesArray) UID() uint32 {
+	return arr.arr.UID()
+}
+
 func (arr *ClonesArray) Name() string {
 	n := arr.arr.name
 	if n == "" {
@@ -229,6 +233,7 @@ func init() {
 
 var (
 	_ root.Object        = (*ClonesArray)(nil)
+	_ root.UIDer         = (*ClonesArray)(nil)
 	_ root.Named         = (*ClonesArray)(nil)
 	_ root.ObjArray      = (*ClonesArray)(nil)
 	_ rbytes.Marshaler   = (*ClonesArray)(nil)

@@ -19,6 +19,12 @@ type Object interface {
 	Class() string
 }
 
+// UIDer is the interface for objects that can be referenced.
+type UIDer interface {
+	// UID returns the unique ID of this object
+	UID() uint32
+}
+
 // Named represents a ROOT TNamed object
 type Named interface {
 	Object

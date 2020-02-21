@@ -26,6 +26,10 @@ func (*Object) Class() string {
 	return "TObject"
 }
 
+func (obj *Object) UID() uint32 {
+	return obj.ID
+}
+
 func (*Object) RVersion() int {
 	return rvers.Object
 }
@@ -75,6 +79,7 @@ func init() {
 
 var (
 	_ root.Object        = (*Object)(nil)
+	_ root.UIDer         = (*Object)(nil)
 	_ rbytes.Marshaler   = (*Object)(nil)
 	_ rbytes.Unmarshaler = (*Object)(nil)
 )
