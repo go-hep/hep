@@ -75,6 +75,7 @@ var (
 		"TKey",
 
 		// rphys
+		"TFeldmanCousins",
 		"TLorentzVector",
 		"TVector2", "TVector3",
 

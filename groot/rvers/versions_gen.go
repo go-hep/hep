@@ -74,6 +74,7 @@ const (
 	DirectoryFile            = 5  // ROOT version for TDirectoryFile
 	File                     = 8  // ROOT version for TFile
 	Key                      = 4  // ROOT version for TKey
+	FeldmanCousins           = 1  // ROOT version for TFeldmanCousins
 	LorentzVector            = 4  // ROOT version for TLorentzVector
 	Vector2                  = 3  // ROOT version for TVector2
 	Vector3                  = 3  // ROOT version for TVector3

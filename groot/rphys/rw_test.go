@@ -22,6 +22,23 @@ func TestWRBuffer(t *testing.T) {
 		cmp  func(a, b rtests.ROOTer) bool
 	}{
 		{
+			name: "TFeldmanCousins",
+			want: &FeldmanCousins{
+				obj:     rbase.Object{ID: 0x0, Bits: 0x3000000},
+				CL:      1,
+				UpLim:   2,
+				LoLim:   3,
+				Nobs:    4,
+				Nbkg:    5,
+				MuMin:   6,
+				MuMax:   7,
+				MuStep:  8,
+				NMuStep: 9,
+				NMax:    10,
+				Quick:   11,
+			},
+		},
+		{
 			name: "TLorentzVector",
 			want: &LorentzVector{
 				obj: rbase.Object{ID: 0x0, Bits: 0x3000000},
