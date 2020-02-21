@@ -76,6 +76,12 @@ func TestWRBuffer(t *testing.T) {
 				named: Named{obj: Object{ID: 0x0, Bits: 0x3000000}, name: "my-name", title: "my-title"},
 			},
 		},
+		{
+			name: "TRef",
+			want: &Ref{
+				obj: Object{ID: 0x0, Bits: 0x3000000},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			{

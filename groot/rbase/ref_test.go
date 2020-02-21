@@ -11,7 +11,7 @@ import (
 )
 
 func TestRef(t *testing.T) {
-	ref := Ref{}
+	ref := Ref{pid: &gPID}
 	if obj := ref.Object(); obj != nil {
 		t.Fatalf("invalid referenced object")
 	}
@@ -21,8 +21,10 @@ func TestRef(t *testing.T) {
 
 	obj := NewObject()
 	obj.ID = 42
-	ref.obj = obj
-	if ptr := ref.Object().(*Object); ptr != obj {
+	gPID.objs[obj.UID()] = obj
+
+	ref.obj = *obj
+	if ptr := ref.Object(); ptr != obj {
 		t.Fatalf("invalid referenced object: got=%v, want=%v", ptr, obj)
 	}
 	if got, want := ref.UID(), obj.ID; got != want {

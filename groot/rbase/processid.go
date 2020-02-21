@@ -18,6 +18,8 @@ import (
 // ProcessID is ROOT's way to provide a process identifier object.
 type ProcessID struct {
 	named Named
+
+	objs map[uint32]root.Object
 }
 
 func (*ProcessID) Class() string {
