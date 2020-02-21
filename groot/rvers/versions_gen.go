@@ -30,6 +30,7 @@ const (
 	ArrayL64                 = 1  // ROOT version for TArrayL64
 	ArrayF                   = 1  // ROOT version for TArrayF
 	ArrayD                   = 1  // ROOT version for TArrayD
+	Bits                     = 1  // ROOT version for TBits
 	Collection               = 3  // ROOT version for TCollection
 	ClonesArray              = 4  // ROOT version for TClonesArray
 	List                     = 5  // ROOT version for TList

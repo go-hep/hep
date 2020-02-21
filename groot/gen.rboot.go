@@ -37,6 +37,7 @@ var (
 
 		// rcont
 		"TArray", "TArrayC", "TArrayS", "TArrayI", "TArrayL", "TArrayL64", "TArrayF", "TArrayD",
+		"TBits",
 		"TCollection",
 		"TClonesArray",
 		"TList",
