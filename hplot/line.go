@@ -43,7 +43,7 @@ func (vline *VertLine) Plot(c draw.Canvas, plt *plot.Plot) {
 		ymax   = c.Max.Y
 	)
 
-	if vline.Left != nil {
+	if vline.Left != nil && x > xmin {
 		c.SetColor(vline.Left)
 		rect := vg.Rectangle{
 			Min: vg.Point{X: xmin, Y: ymin},
@@ -51,7 +51,7 @@ func (vline *VertLine) Plot(c draw.Canvas, plt *plot.Plot) {
 		}
 		c.Fill(rect.Path())
 	}
-	if vline.Right != nil {
+	if vline.Right != nil && x < xmax {
 		c.SetColor(vline.Right)
 		rect := vg.Rectangle{
 			Min: vg.Point{X: x, Y: ymin},
@@ -60,7 +60,7 @@ func (vline *VertLine) Plot(c draw.Canvas, plt *plot.Plot) {
 		c.Fill(rect.Path())
 	}
 
-	if vline.Line.Width != 0 {
+	if vline.Line.Width != 0 && xmin <= x && x <= xmax {
 		c.StrokeLine2(vline.Line, x, ymin, x, ymax)
 	}
 }
@@ -95,7 +95,7 @@ func (hline *HorizLine) Plot(c draw.Canvas, plt *plot.Plot) {
 		ymax   = c.Max.Y
 	)
 
-	if hline.Top != nil {
+	if hline.Top != nil && y < ymax {
 		c.SetColor(hline.Top)
 		rect := vg.Rectangle{
 			Min: vg.Point{X: xmin, Y: y},
@@ -103,7 +103,7 @@ func (hline *HorizLine) Plot(c draw.Canvas, plt *plot.Plot) {
 		}
 		c.Fill(rect.Path())
 	}
-	if hline.Bottom != nil {
+	if hline.Bottom != nil && y > ymin {
 		c.SetColor(hline.Bottom)
 		rect := vg.Rectangle{
 			Min: vg.Point{X: xmin, Y: ymin},
@@ -112,7 +112,7 @@ func (hline *HorizLine) Plot(c draw.Canvas, plt *plot.Plot) {
 		c.Fill(rect.Path())
 	}
 
-	if hline.Line.Width != 0 {
+	if hline.Line.Width != 0 && ymin <= y && y <= ymax {
 		c.StrokeLine2(hline.Line, xmin, y, xmax, y)
 	}
 }
