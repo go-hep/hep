@@ -65,10 +65,12 @@ func (vec *Vector2) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	beg := r.Pos()
 
-	_, pos, bcnt := r.ReadVersion(vec.Class())
+	vers, pos, bcnt := r.ReadVersion(vec.Class())
 
-	if err := vec.obj.UnmarshalROOT(r); err != nil {
-		return err
+	if vers != 2 {
+		if err := vec.obj.UnmarshalROOT(r); err != nil {
+			return err
+		}
 	}
 
 	vec.x = r.ReadF64()
