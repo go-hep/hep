@@ -1,6 +1,6 @@
 module go-hep.org/x/hep
 
-go 1.12
+go 1.13
 
 require (
 	github.com/apache/arrow/go/arrow v0.0.0-20191220150900-42a2e43c090b
