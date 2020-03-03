@@ -614,6 +614,16 @@ func readF64(recv interface{}, r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func readF16(recv interface{}, r *rbytes.RBuffer, se rbytes.StreamerElement) error {
+	*(recv.(*root.Float16)) = r.ReadF16(se)
+	return r.Err()
+}
+
+func readD32(recv interface{}, r *rbytes.RBuffer, se rbytes.StreamerElement) error {
+	*(recv.(*root.Double32)) = r.ReadD32(se)
+	return r.Err()
+}
+
 func readStr(recv interface{}, r *rbytes.RBuffer) error {
 	*(recv.(*string)) = r.ReadString()
 	return r.Err()
@@ -688,6 +698,18 @@ func readF32s(recv interface{}, r *rbytes.RBuffer) error {
 func readF64s(recv interface{}, r *rbytes.RBuffer) error {
 	slice := recv.([]float64)
 	copy(slice[:], r.ReadFastArrayF64(len(slice)))
+	return r.Err()
+}
+
+func readF16s(recv interface{}, r *rbytes.RBuffer, se rbytes.StreamerElement) error {
+	slice := recv.([]root.Float16)
+	copy(slice[:], r.ReadFastArrayF16(len(slice), se))
+	return r.Err()
+}
+
+func readD32s(recv interface{}, r *rbytes.RBuffer, se rbytes.StreamerElement) error {
+	slice := recv.([]root.Double32)
+	copy(slice[:], r.ReadFastArrayD32(len(slice), se))
 	return r.Err()
 }
 

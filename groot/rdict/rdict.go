@@ -36,11 +36,12 @@ type StreamerInfo struct {
 	objarr *rcont.ObjArray
 	elems  []rbytes.StreamerElement
 
-	init     sync.Once
-	robjwise interface{}
-	wobjwise interface{}
-	rmbrwise interface{}
-	wmbrwise interface{}
+	init  sync.Once
+	descr []elemDescr
+	roops []rstreamer // read-stream object-wise operations
+	woops []wstreamOp // write-stream object-wise operations
+	rmops []rstreamer // read-stream member-wise operations
+	wmops []wstreamOp // write-stream member-wise operations
 }
 
 // NewStreamerInfo creates a new StreamerInfo from Go provided informations.
@@ -162,15 +163,73 @@ func (si *StreamerInfo) String() string {
 func (si *StreamerInfo) BuildStreamers() error {
 	var err error
 	si.init.Do(func() {
-		err = si.build()
+		err = si.build(StreamerInfos)
 	})
 	return err
 }
 
-func (si *StreamerInfo) build() error {
+func (si *StreamerInfo) build(sictx rbytes.StreamerInfoContext) error {
 	var err error
-	panic("not implemented")
 
+	si.descr = make([]elemDescr, 0, len(si.elems))
+	si.roops = make([]rstreamer, 0, len(si.elems))
+	si.woops = make([]wstreamOp, 0, len(si.elems))
+	si.rmops = make([]rstreamer, 0, len(si.elems))
+	si.wmops = make([]wstreamOp, 0, len(si.elems))
+
+	for i, se := range si.elems {
+		class := strings.TrimRight(se.TypeName(), "*")
+		method := func() int {
+			switch se := se.(type) {
+			case *StreamerBasicPointer:
+				cname := se.CountName()
+				for j := range si.elems {
+					if si.elems[j].Name() == cname {
+						return j
+					}
+				}
+				return -1
+			case *StreamerLoop:
+				cname := se.CountName()
+				if se.cclass != si.Name() {
+					// reaching into another class internals isn't supported (yet?) in groot
+					panic(fmt.Errorf("rdict: unsupported StreamerLoop case: si=%q, se=%q, count=%q, class=%q",
+						si.Name(), se.Name(), cname, se.cclass,
+					))
+				}
+				for j := range si.elems {
+					if si.elems[j].Name() == cname {
+						return j
+					}
+				}
+				return -1
+			default:
+				return 0
+			}
+		}()
+
+		if method == -1 {
+			return fmt.Errorf("rdict: could not find count-offset for element %q in streamer %q", se.Name(), si.Name())
+		}
+
+		descr := elemDescr{
+			otype:  se.Type(),
+			ntype:  se.Type(), // FIXME(sbinet): handle schema evolution
+			offset: i,         // FIXME(sbinet): make sure this works (instead of se.Offset())
+			length: se.ArrayLen(),
+			elem:   se,
+			method: method, // FIXME(sbinet): schema evolution (old/new class may not have the same "offsets")
+			oclass: class,  // FIXME(sbinet): impl.
+			nclass: class,  // FIXME(sbinet): impl. + schema evolution
+			mbr:    nil,    // FIXME(sbinet): impl
+		}
+
+		si.descr = append(si.descr, descr)
+	}
+
+	for i, descr := range si.descr {
+		si.roops = append(si.roops, si.makeReadOp(sictx, i, descr))
+	}
 	return err
 }
 
@@ -182,9 +241,11 @@ func (si *StreamerInfo) NewDecoder(kind rbytes.StreamKind, r *rbytes.RBuffer) (r
 
 	switch kind {
 	case rbytes.ObjectWise:
+		return newDecoder(r, si, kind, si.roops)
 	case rbytes.MemberWise:
+		return newDecoder(r, si, kind, si.rmops)
 	}
-	panic("not implemented")
+	panic("impossible")
 }
 
 func (si *StreamerInfo) NewEncoder(kind rbytes.StreamKind, w *rbytes.WBuffer) (rbytes.Encoder, error) {
@@ -193,7 +254,13 @@ func (si *StreamerInfo) NewEncoder(kind rbytes.StreamKind, w *rbytes.WBuffer) (r
 		return nil, fmt.Errorf("rdict: could not build write streamers: %w", err)
 	}
 
-	panic("not implemented")
+	switch kind {
+	case rbytes.ObjectWise:
+		return newEncoder(w, si, kind, si.woops)
+	case rbytes.MemberWise:
+		return newEncoder(w, si, kind, si.wmops)
+	}
+	panic("impossible")
 }
 
 type Element struct {
@@ -622,6 +689,7 @@ func (tsb *StreamerBasicPointer) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+// StreamerLoop represents a streamer for a var-length array of a non-basic type.
 type StreamerLoop struct {
 	StreamerElement
 	cvers  int32  // version number of the class with the counter
