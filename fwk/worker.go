@@ -65,61 +65,65 @@ func (wrk *worker) run(tsks []Task) {
 			if !ok {
 				return
 			}
-			wrk.msg.Debugf(">>> running evt=%d...\n", ievt.ID())
+			wrk.runTask(wrk.runctx, ievt, tsks)
 
-			evtstore := ievt.store.(*datastore)
-			evtctx, evtCancel := context.WithCancel(wrk.runctx)
-			evt := taskrunner{
-				ievt:   ievt.ID(),
-				errc:   make(chan error, len(tsks)),
-				evtctx: evtctx,
-			}
-			for i, tsk := range tsks {
-				ctx := wrk.ctxs[i]
-				ctx.store = evtstore
-				ctx.ctx = evtctx
-				go evt.run(i, ctx, tsk)
-			}
-			ndone := 0
-		errloop:
-			for {
-				select {
-				case err, ok := <-evt.errc:
-					if !ok {
-						evtCancel()
-						return
-					}
-					ndone++
-					if err != nil {
-						evtCancel()
-						evtstore.close()
-						wrk.msg.flush()
-
-						wrk.errc <- err
-						return
-					}
-					if ndone == len(tsks) {
-						break errloop
-					}
-				case <-evtctx.Done():
-					evtstore.close()
-					wrk.msg.flush()
-					return
-				}
-			}
-			err := evtstore.reset(wrk.keys)
-			evtstore.close()
-			wrk.msg.flush()
-
-			if err != nil {
-				wrk.errc <- err
-				evtCancel()
-				return
-			}
 		case <-wrk.runctx.Done():
 			//wrk.store.close()
 			return
 		}
+	}
+}
+
+func (wrk *worker) runTask(ctx context.Context, ievt ctxType, tsks []Task) {
+	wrk.msg.Debugf(">>> running evt=%d...\n", ievt.ID())
+
+	evtstore := ievt.store.(*datastore)
+	evtctx, evtCancel := context.WithCancel(wrk.runctx)
+	defer evtCancel()
+
+	evt := taskrunner{
+		ievt:   ievt.ID(),
+		errc:   make(chan error, len(tsks)),
+		evtctx: evtctx,
+	}
+	for i, tsk := range tsks {
+		ctx := wrk.ctxs[i]
+		ctx.store = evtstore
+		ctx.ctx = evtctx
+		go evt.run(i, ctx, tsk)
+	}
+	ndone := 0
+errloop:
+	for {
+		select {
+		case err, ok := <-evt.errc:
+			if !ok {
+				return
+			}
+			ndone++
+			if err != nil {
+				evtstore.close()
+				wrk.msg.flush()
+
+				wrk.errc <- err
+				return
+			}
+			if ndone == len(tsks) {
+				break errloop
+			}
+		case <-evtctx.Done():
+			evtstore.close()
+			wrk.msg.flush()
+			return
+		}
+	}
+	err := evtstore.reset(wrk.keys)
+	evtstore.close()
+	wrk.msg.flush()
+
+	if err != nil {
+		wrk.errc <- err
+		return
 	}
 }
 
