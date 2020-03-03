@@ -333,7 +333,6 @@ func (sess *cliSession) send(ctx context.Context, streamID xrdproto.StreamID, re
 			}
 		}
 	}
-	panic("unreachable")
 }
 
 // Send sends the request to the server and stores the response inside the resp.
@@ -344,7 +343,7 @@ func (sess *cliSession) Send(ctx context.Context, resp xrdproto.Response, req xr
 	}
 
 	var wBuffer xrdenc.WBuffer
-	header := xrdproto.RequestHeader{streamID, req.ReqID()}
+	header := xrdproto.RequestHeader{StreamID: streamID, RequestID: req.ReqID()}
 	if err = header.MarshalXrd(&wBuffer); err != nil {
 		return nil, err
 	}
@@ -427,7 +426,7 @@ func (sess *cliSession) unclaimPathID(pathID xrdproto.PathID) {
 func (sess *cliSession) sign(streamID xrdproto.StreamID, requestID uint16, data []byte) ([]byte, error) {
 	seqID := atomic.AddInt64(&sess.seqID, 1)
 	signRequest := sigver.NewRequest(requestID, seqID, data)
-	header := xrdproto.RequestHeader{streamID, signRequest.ReqID()}
+	header := xrdproto.RequestHeader{StreamID: streamID, RequestID: signRequest.ReqID()}
 
 	var wBuffer xrdenc.WBuffer
 	if err := header.MarshalXrd(&wBuffer); err != nil {

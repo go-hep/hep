@@ -677,8 +677,7 @@ func (f *File) readFreeSegments() error {
 	var key = Key{f: f}
 	err = key.UnmarshalROOT(rbytes.NewRBuffer(buf, nil, 0, nil))
 	if err != nil {
-		panic(err)
-		return err
+		return fmt.Errorf("riofs: could not unmarshal free-segment key: %w", err)
 	}
 	buf, err = key.Bytes()
 	if err != nil {

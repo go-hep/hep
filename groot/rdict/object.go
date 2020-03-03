@@ -231,7 +231,6 @@ func genTypeFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElement) 
 		}
 		panic(fmt.Errorf("rdict: STL container not implemented: %#v", se))
 	}
-	return nil
 }
 
 func genRStreamerFromSI(sictx rbytes.StreamerInfoContext, si rbytes.StreamerInfo, recv reflect.Value) []rfunc {
@@ -413,7 +412,6 @@ func genRStreamerFromSE(sictx rbytes.StreamerInfoContext, se rbytes.StreamerElem
 			return r.Err()
 		}
 	}
-	return nil
 }
 
 func genType(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int) reflect.Type {
@@ -619,8 +617,8 @@ func readStr(recv interface{}, r *rbytes.RBuffer) error {
 
 func readInt(recv interface{}, r *rbytes.RBuffer) error {
 	panic("not implemented")
-	*(recv.(*int)) = int(r.ReadI64())
-	return r.Err()
+	//	*(recv.(*int)) = int(r.ReadI64())
+	//	return r.Err()
 }
 
 func readBools(recv interface{}, r *rbytes.RBuffer) error {

@@ -27,17 +27,17 @@ func (srv *Server) render(p *hplot.Plot, opt PlotOptions) ([]byte, error) {
 	case "eps":
 		canvas = vgeps.NewTitle(opt.Width, opt.Height, p.Title.Text)
 	case "jpg", "jpeg":
-		canvas = vgimg.JpegCanvas{vgimg.New(opt.Width, opt.Height)}
+		canvas = vgimg.JpegCanvas{Canvas: vgimg.New(opt.Width, opt.Height)}
 	case "pdf":
 		canvas = vgpdf.New(opt.Width, opt.Height)
 	case "png":
-		canvas = vgimg.PngCanvas{vgimg.New(opt.Width, opt.Height)}
+		canvas = vgimg.PngCanvas{Canvas: vgimg.New(opt.Width, opt.Height)}
 	case "svg":
 		canvas = vgsvg.New(opt.Width, opt.Height)
 	case "tex":
 		canvas = vgtex.New(opt.Width, opt.Height)
 	case "tiff":
-		canvas = vgimg.TiffCanvas{vgimg.New(opt.Width, opt.Height)}
+		canvas = vgimg.TiffCanvas{Canvas: vgimg.New(opt.Width, opt.Height)}
 	}
 
 	p.Draw(draw.New(canvas))

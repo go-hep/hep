@@ -21,7 +21,7 @@ func TestSession_Protocol_WithSecurityInfo(t *testing.T) {
 		BinaryProtocolVersion: protocolVersion,
 		HasSecurityInfo:       true,
 		SecurityLevel:         xrdproto.Pedantic,
-		SecurityOverrides:     []xrdproto.SecurityOverride{{1, xrdproto.SignNeeded}},
+		SecurityOverrides:     []xrdproto.SecurityOverride{{RequestIndex: 1, RequestLevel: xrdproto.SignNeeded}},
 		Flags:                 protocol.IsServer | protocol.IsManager | protocol.IsMeta | protocol.IsProxy | protocol.IsSupervisor,
 	}
 

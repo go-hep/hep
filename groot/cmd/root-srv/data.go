@@ -44,7 +44,7 @@ type plotRequest struct {
 }
 
 type plotResponse struct {
-	err    error `json:"error"`
+	err    error
 	ctype  string
 	status int
 	body   []byte

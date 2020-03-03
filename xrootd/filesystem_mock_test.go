@@ -222,7 +222,7 @@ func TestFileSystem_Open_Mock(t *testing.T) {
 	}{
 		{"WithoutCompressionAndStat", xrdfs.FileHandle{0, 0, 0, 0}, nil, nil},
 		{"WithEmptyCompression", xrdfs.FileHandle{0, 0, 0, 0}, &xrdfs.FileCompression{}, nil},
-		{"WithCompression", xrdfs.FileHandle{0, 0, 0, 0}, &xrdfs.FileCompression{10, [4]byte{'t', 'e', 's', 't'}}, nil},
+		{"WithCompression", xrdfs.FileHandle{0, 0, 0, 0}, &xrdfs.FileCompression{PageSize: 10, Type: [4]byte{'t', 'e', 's', 't'}}, nil},
 		{"WithStat", xrdfs.FileHandle{0, 0, 0, 0}, &xrdfs.FileCompression{}, &xrdfs.EntryStat{HasStatInfo: true, EntrySize: 10}},
 	}
 

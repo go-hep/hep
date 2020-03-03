@@ -5,12 +5,31 @@
 package ntup_test
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"math"
 
+	"go-hep.org/x/hep/hbook/ntup"
 	"go-hep.org/x/hep/hbook/ntup/ntcsv"
 )
+
+func ExampleNtuple_open() {
+	db, err := sql.Open("csv", "ntcsv/testdata/simple-with-header.csv")
+	if err != nil {
+		log.Fatalf("could not open csv-db file: %+v", err)
+	}
+	defer db.Close()
+
+	nt, err := ntup.Open(db, "ntup")
+	if err != nil {
+		log.Fatalf("could not open ntup: %+v", err)
+	}
+	fmt.Printf("name=%q\n", nt.Name())
+
+	// Output:
+	// name="ntup"
+}
 
 func ExampleNtuple_scanH2D() {
 	nt, err := ntcsv.Open(
