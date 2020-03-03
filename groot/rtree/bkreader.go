@@ -73,7 +73,12 @@ func newBkReader(b Branch, n int, beg, end int64) *bkreader {
 
 	switch {
 	case base.entries == base.basketEntry[len(base.basketSeek)]:
-		// ok, normal case.
+		if len(bkr.spans) == 0 && base.entries == 0 {
+			bkr.spans = append(bkr.spans, rspan{
+				beg: 0,
+				end: -1,
+			})
+		}
 	default: // recover baskets
 		var beg int64
 		if len(bkr.spans) > 0 {

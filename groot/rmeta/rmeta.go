@@ -70,9 +70,9 @@ func TypeName2Enum(typename string) (Enum, bool) {
 		return Uint8, true
 	case "uint16", "uint16_t", "unsigned short", "UShort_t":
 		return Uint16, true
-	case "uint32", "uint32_t", "unsigned int", "UInt_t":
+	case "uint32", "uint32_t", "unsigned", "unsigned int", "UInt_t":
 		return Uint32, true
-	case "uint64", "uint64_t", "unsigned long", "ULong_t", "ULong64_t":
+	case "uint64", "uint64_t", "unsigned long", "unsigned long int", "ULong_t", "ULong64_t":
 		return Uint64, true
 
 	case "char*":
@@ -89,7 +89,7 @@ func TypeName2Enum(typename string) (Enum, bool) {
 		return Int16, true
 	case "int32", "int32_t", "int", "Int_t":
 		return Int32, true
-	case "int64", "int64_t", "long", "Long_t", "Long64_t",
+	case "int64", "int64_t", "long", "long int", "Long_t", "Long64_t",
 		"Seek_t":
 		return Int64, true
 
@@ -104,9 +104,9 @@ func TypeName2Enum(typename string) (Enum, bool) {
 	case "Double32_t", "Double32":
 		return Double32, true
 
-	case "string", "TString", "Option_t":
+	case "TString", "Option_t":
 		return TString, true
-	case "std::string":
+	case "string", "std::string":
 		return STLstring, true
 	case "TObject":
 		return TObject, true

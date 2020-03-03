@@ -977,6 +977,15 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return err
 	}
 
+	for _, leaf := range b.leaves {
+		switch leaf := leaf.(type) {
+		case *tleaf:
+			leaf.branch = b
+		case *tleafElement:
+			leaf.branch = b
+		}
+	}
+
 	b.class = r.ReadString()
 	if vers > 1 {
 		b.parent = r.ReadString()
@@ -1057,8 +1066,19 @@ func (b *tbranchElement) setAddress(ptr interface{}) error {
 			return nil
 		}
 	}
+	const kind = rbytes.ObjectWise // FIXME(sbinet): infer from stream?
 	if b.id < 0 {
 		for _, leaf := range b.tbranch.leaves {
+			leaf, ok := leaf.(*tleafElement)
+			if !ok {
+				continue
+			}
+			leaf.rstreamer, err = b.streamer.NewRStreamer(kind)
+			if err != nil {
+				return fmt.Errorf("rdict: could not find read-streamer for leaf=%q (type=%s): %w",
+					leaf.Name(), leaf.TypeName(), err,
+				)
+			}
 			err = leaf.setAddress(ptr)
 			if err != nil {
 				return err
@@ -1071,20 +1091,30 @@ func (b *tbranchElement) setAddress(ptr interface{}) error {
 			if !ok {
 				continue
 			}
-			var elt rbytes.StreamerElement
+			var (
+				elt rbytes.StreamerElement
+				i   = -1
+			)
 			leafName := leaf.Name()
 			if strings.Contains(leafName, ".") {
 				idx := strings.LastIndex(leafName, ".")
 				leafName = string(leafName[idx+1:])
 			}
-			for _, ee := range elts {
+			for ii, ee := range elts {
 				if ee.Name() == leafName {
 					elt = ee
+					i = ii
 					break
 				}
 			}
 			if elt == nil {
 				return fmt.Errorf("rtree: failed to find StreamerElement for leaf %q", leaf.Name())
+			}
+			leaf.rstreamer, err = rdict.RStreamerOf(b.streamer, i, rbytes.ObjectWise)
+			if err != nil {
+				return fmt.Errorf("rdict: could not find read-streamer for leaf=%q (type=%s): %w",
+					leaf.Name(), leaf.TypeName(), err,
+				)
 			}
 			leaf.streamers = []rbytes.StreamerElement{elt}
 			err = leaf.setAddress(ptr)
@@ -1133,15 +1163,23 @@ func (b *tbranchElement) setupReadStreamer(sictx rbytes.StreamerInfoContext) err
 }
 
 func (b *tbranchElement) GoType() reflect.Type {
-	return gotypeFromSI(b.streamer, b.tree.getFile())
+	typ, err := rdict.TypeFromSI(b.tree.getFile(), b.streamer)
+	if err != nil {
+		panic(err)
+	}
+	return typ
 }
 
 func (b *tbranchElement) setStreamer(s rbytes.StreamerInfo, ctx rbytes.StreamerInfoContext) {
 	b.streamer = s
 	if len(b.tbranch.leaves) == 1 {
+		typ, err := rdict.TypeFromSI(ctx, s)
+		if err != nil {
+			panic(err)
+		}
 		tle := b.tbranch.leaves[0].(*tleafElement)
 		tle.streamers = s.Elements()
-		tle.src = reflect.New(gotypeFromSI(s, ctx)).Elem()
+		tle.src = reflect.New(typ).Elem()
 	}
 	err := b.setupReadStreamer(ctx)
 	if err != nil {
@@ -1154,7 +1192,11 @@ func (b *tbranchElement) setStreamerElement(se rbytes.StreamerElement, ctx rbyte
 	if len(b.Leaves()) == 1 {
 		tle := b.Leaves()[0].(*tleafElement)
 		tle.streamers = []rbytes.StreamerElement{se}
-		tle.src = reflect.New(gotypeFromSE(se, tle.LeafCount(), ctx)).Elem()
+		typ, err := rdict.TypeFromSE(ctx, se)
+		if err != nil {
+			panic(err)
+		}
+		tle.src = reflect.New(typ).Elem()
 	}
 	err := b.setupReadStreamer(ctx)
 	if err != nil {

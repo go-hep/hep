@@ -467,9 +467,8 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 		cls := bre.class
 		si, err := r.StreamerInfo(cls, int(bre.clsver))
 		if err != nil {
-			panic(fmt.Errorf("rtree: could not find streamer for branch %q: %w", br.Name(), err))
+			panic(fmt.Errorf("rtree: could not find streamer (type=%q, vers=%d) for branch %q: %w", cls, bre.clsver, br.Name(), err))
 		}
-		// tree.attachStreamer(br, rstreamer, rstreamerCtx)
 		tree.attachStreamer(br, si, r)
 	}
 

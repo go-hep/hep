@@ -7,9 +7,9 @@ package rtree
 import (
 	"fmt"
 	"reflect"
-	"strings"
 
 	"go-hep.org/x/hep/groot/rbytes"
+	"go-hep.org/x/hep/groot/rdict"
 )
 
 // rleafCtx is the interface that wraps the rcount method.
@@ -127,49 +127,57 @@ func rleafFrom(leaf Leaf, rvar ReadVar, rctx rleafCtx) rleaf {
 }
 
 func newRLeafElem(leaf *tleafElement, rvar ReadVar, rctx rleafCtx) rleaf {
+	const kind = rbytes.ObjectWise // FIXME(sbinet): infer from stream?
+
 	var (
-		impl  rstreamerImpl
-		sictx = leaf.branch.getTree().getFile()
+		b         = leaf.branch.(*tbranchElement)
+		si        = b.streamer
+		err       error
+		rstreamer rbytes.RStreamer
 	)
-	switch rv := reflect.ValueOf(rvar.Value).Elem(); rv.Kind() {
-	case reflect.Struct:
-		var lc leafCount
-		if leaf.count != nil {
-			lc = rctx.rcountLeaf(leaf.count.Name())
-		}
-		for _, elt := range leaf.streamers {
-			impl.funcs = append(impl.funcs, rstreamerFrom(
-				elt, rvar.Value, lc, sictx,
-			))
-		}
+
+	switch {
+	case b.id < 0:
+		rstreamer, err = si.NewRStreamer(kind)
 	default:
-		var lc leafCount
-		if leaf.count != nil {
-			lc = rctx.rcountLeaf(leaf.count.Name())
-		}
-		lname := leaf.Name()
-		if strings.Contains(lname, ".") {
-			toks := strings.Split(lname, ".")
-			lname = toks[len(toks)-1]
-		}
-		for _, elt := range leaf.streamers {
-			if elt.Name() != lname && elt.Name() != "This" {
-				continue
-			}
-			impl.funcs = append(impl.funcs, rstreamerFrom(
-				elt, rvar.Value, lc, sictx,
-			))
-		}
+		rstreamer, err = rdict.RStreamerOf(si, int(b.id), kind)
 	}
-	if len(impl.funcs) == 0 {
+
+	if err != nil {
 		panic(fmt.Errorf(
-			"rtree: could not create rstreamer for rleaf %q", leaf.Name(),
+			"rtree: could not find read-streamer for leaf=%q (type=%s): %+v",
+			leaf.Name(), leaf.TypeName(), err,
 		))
 	}
+	err = rstreamer.(rbytes.Binder).Bind(rvar.Value)
+	if err != nil {
+		panic(fmt.Errorf("rtree: could not bind read-streamer for leaf=%q (type=%s) to ptr=%T: %w",
+			leaf.Name(), leaf.TypeName(), rvar.Value, err,
+		))
+	}
+
+	if leaf.count != nil {
+		r, ok := rstreamer.(rbytes.Counter)
+		if !ok {
+			panic(fmt.Errorf(
+				"rtree: could not set read-streamer counter for leaf=%q (type=%s): %+v",
+				leaf.Name(), leaf.TypeName(), err,
+			))
+		}
+		lc := rctx.rcountLeaf(leaf.count.Name())
+		err = r.Count(lc.ivalue)
+		if err != nil {
+			panic(fmt.Errorf(
+				"rtree: could not set read-streamer counter for leaf=%q (type=%s): %+v",
+				leaf.Name(), leaf.TypeName(), err,
+			))
+		}
+	}
+
 	return &rleafElem{
 		base:     leaf,
 		v:        rvar.Value,
-		streamer: &impl,
+		streamer: rstreamer,
 	}
 }
 

@@ -768,7 +768,7 @@ func TestScannerStructWithStdVectorBool(t *testing.T) {
 				Bool    bool     `groot:"Bool"`
 				ArrBool [10]bool `groot:"ArrayBool"`
 				N       int32    `groot:"N"`
-				SliBool []bool   `groot:"SliceBool"`
+				SliBool []bool   `groot:"SliceBool[N]"`
 				StlBool []bool   `groot:"StlVecBool"`
 			}
 			type Event struct {
@@ -782,8 +782,14 @@ func TestScannerStructWithStdVectorBool(t *testing.T) {
 					data.ArrBool[ii] = i%2 == 0
 				}
 				data.N = int32(i) % 10
-				data.SliBool = make([]bool, int(data.N))
-				data.StlBool = make([]bool, int(data.N))
+				switch i {
+				case 0:
+					data.SliBool = nil
+					data.StlBool = nil
+				default:
+					data.SliBool = make([]bool, int(data.N))
+					data.StlBool = make([]bool, int(data.N))
+				}
 				for ii := 0; ii < int(data.N); ii++ {
 					data.SliBool[ii] = i%2 == 0
 					data.StlBool[ii] = i%2 == 0
@@ -1374,7 +1380,9 @@ func TestG4LikeTree(t *testing.T) {
 		return data
 	}
 
-	var data EventData
+	data := EventData{
+		Sli: make([]float64, 0),
+	}
 	rvars := []ReadVar{
 		{Name: "i32", Value: &data.I32},
 		{Name: "f64", Value: &data.F64},

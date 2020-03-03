@@ -401,10 +401,17 @@ func TestChainScanStruct(t *testing.T) {
 			evt.ArrF64[j] = float64(i)
 		}
 		evt.N = int32(i) % 10
-		evt.SliF64 = make([]float64, evt.N)
 		evt.StdStr = fmt.Sprintf("std-%03d", i)
-		evt.StlVecF64 = make([]float64, int(evt.N))
-		evt.StlVecStr = make([]string, int(evt.N))
+		switch i {
+		case 0:
+			evt.SliF64 = nil
+			evt.StlVecF64 = nil
+			evt.StlVecStr = nil
+		default:
+			evt.SliF64 = make([]float64, evt.N)
+			evt.StlVecF64 = make([]float64, int(evt.N))
+			evt.StlVecStr = make([]string, int(evt.N))
+		}
 		for ii := 0; ii < int(evt.N); ii++ {
 			evt.SliF64[ii] = float64(i)
 			evt.StlVecF64[ii] = float64(i)

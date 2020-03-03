@@ -155,6 +155,17 @@ func TestDump(t *testing.T) {
 			name: "../testdata/no-streamer-string.root",
 			want: loadRef("testdata/no-streamer-string.root.txt"),
 		},
+		{
+			// 'This' streamer of vector<vector<double>>
+			name: "../testdata/vec-vec-double.root",
+			want: `key[000]: t;1 "" (TTree)
+[000][x]: []
+[001][x]: [[] []]
+[002][x]: [[10] [] [10 20]]
+[003][x]: [[20 -21 -22]]
+[004][x]: [[200] [-201] [202]]
+`,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)

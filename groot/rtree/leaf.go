@@ -359,17 +359,32 @@ func (leaf *tleafElement) scan(r *rbytes.RBuffer, ptr interface{}) error {
 }
 
 func (leaf *tleafElement) setAddress(ptr interface{}) error {
-	var err error
 	leaf.ptr = ptr
 	leaf.src = reflect.ValueOf(leaf.ptr).Elem()
 
-	var impl rstreamerImpl
-	sictx := leaf.branch.getTree().getFile()
-	for _, elt := range leaf.streamers {
-		impl.funcs = append(impl.funcs, rstreamerFrom(elt, ptr, leaf.count, sictx))
+	err := leaf.rstreamer.(rbytes.Binder).Bind(ptr)
+	if err != nil {
+		return fmt.Errorf("rtree: could not bind read-streamer for leaf=%q (type=%s) to ptr=%T: %w",
+			leaf.Name(), leaf.TypeName(), leaf.ptr, err,
+		)
 	}
-	leaf.rstreamer = &impl
-	return err
+	if leaf.count != nil {
+		r, ok := leaf.rstreamer.(rbytes.Counter)
+		if !ok {
+			return fmt.Errorf(
+				"rtree: could not set read-streamer counter for leaf=%q (type=%s)",
+				leaf.Name(), leaf.TypeName(),
+			)
+		}
+		err = r.Count(leaf.count.ivalue)
+		if err != nil {
+			return fmt.Errorf(
+				"rtree: could not set read-streamer counter for leaf=%q (type=%s): %w",
+				leaf.Name(), leaf.TypeName(), err,
+			)
+		}
+	}
+	return nil
 }
 
 func (leaf *tleafElement) writeToBuffer(w *rbytes.WBuffer) (int, error) {

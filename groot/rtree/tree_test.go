@@ -108,6 +108,30 @@ type EventData struct {
 	End    string      `groot:"End"`
 }
 
+func newEventType() *EventType {
+	var data EventType
+	data.Evt.SliI16 = make([]int16, int(data.Evt.N))
+	data.Evt.SliI32 = make([]int32, int(data.Evt.N))
+	data.Evt.SliI64 = make([]int64, int(data.Evt.N))
+	data.Evt.SliU16 = make([]uint16, int(data.Evt.N))
+	data.Evt.SliU32 = make([]uint32, int(data.Evt.N))
+	data.Evt.SliU64 = make([]uint64, int(data.Evt.N))
+	data.Evt.SliF32 = make([]float32, int(data.Evt.N))
+	data.Evt.SliF64 = make([]float64, int(data.Evt.N))
+
+	data.Evt.VecI16 = make([]int16, int(data.Evt.N))
+	data.Evt.VecI32 = make([]int32, int(data.Evt.N))
+	data.Evt.VecI64 = make([]int64, int(data.Evt.N))
+	data.Evt.VecU16 = make([]uint16, int(data.Evt.N))
+	data.Evt.VecU32 = make([]uint32, int(data.Evt.N))
+	data.Evt.VecU64 = make([]uint64, int(data.Evt.N))
+	data.Evt.VecF32 = make([]float32, int(data.Evt.N))
+	data.Evt.VecF64 = make([]float64, int(data.Evt.N))
+	data.Evt.VecStr = make([]string, int(data.Evt.N))
+
+	return &data
+}
+
 func (EventType) want(i int64) EventType {
 	var data EventType
 	data.Evt.I16 = int16(i)
@@ -204,7 +228,9 @@ func TestEventTree(t *testing.T) {
 			fname: rtests.XrdRemote("testdata/small-evnt-tree-fullsplit.root"),
 		},
 	} {
-		testEventTree(t, test.name, test.fname)
+		t.Run(test.name, func(t *testing.T) {
+			testEventTree(t, test.name, test.fname)
+		})
 	}
 }
 
@@ -250,14 +276,15 @@ func testEventTree(t *testing.T, name, fname string) {
 	}
 
 	want := EventType{}.want
-
-	sc, err := NewTreeScanner(tree, &EventType{})
+	sc, err := NewTreeScanner(tree, newEventType())
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer sc.Close()
-	var d1 EventType
-	ievt := 0
+	var (
+		d1   EventType
+		ievt = 0
+	)
 	for sc.Next() {
 		err := sc.Scan(&d1)
 		if err != nil {

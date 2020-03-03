@@ -36,11 +36,12 @@ type StreamerInfo struct {
 	objarr *rcont.ObjArray
 	elems  []rbytes.StreamerElement
 
-	init     sync.Once
-	robjwise interface{}
-	wobjwise interface{}
-	rmbrwise interface{}
-	wmbrwise interface{}
+	init  sync.Once
+	descr []elemDescr
+	roops []rstreamer // read-stream object-wise operations
+	woops []wstreamer // write-stream object-wise operations
+	rmops []rstreamer // read-stream member-wise operations
+	wmops []wstreamer // write-stream member-wise operations
 }
 
 // NewStreamerInfo creates a new StreamerInfo from Go provided informations.
@@ -162,16 +163,86 @@ func (si *StreamerInfo) String() string {
 func (si *StreamerInfo) BuildStreamers() error {
 	var err error
 	si.init.Do(func() {
-		err = si.build()
+		err = si.build(StreamerInfos)
 	})
 	return err
 }
 
-func (si *StreamerInfo) build() error {
-	var err error
-	panic("not implemented")
+func (si *StreamerInfo) build(sictx rbytes.StreamerInfoContext) error {
+	si.descr = make([]elemDescr, 0, len(si.elems))
+	si.roops = make([]rstreamer, 0, len(si.elems))
+	si.woops = make([]wstreamer, 0, len(si.elems))
+	si.rmops = make([]rstreamer, 0, len(si.elems))
+	si.wmops = make([]wstreamer, 0, len(si.elems))
 
-	return err
+	for i, se := range si.elems {
+		class := strings.TrimRight(se.TypeName(), "*")
+		method := func() []int {
+			var cname string
+			switch se := se.(type) {
+			case *StreamerBasicPointer:
+				cname = se.CountName()
+			case *StreamerLoop:
+				cname = se.CountName()
+				if se.cclass != si.Name() {
+					// reaching into another class internals isn't supported (yet?) in groot
+					panic(fmt.Errorf("rdict: unsupported StreamerLoop case: si=%q, se=%q, count=%q, class=%q",
+						si.Name(), se.Name(), cname, se.cclass,
+					))
+				}
+			default:
+				return []int{0}
+			}
+
+			for j := range si.elems {
+				if si.elems[j].Name() == cname {
+					return []int{j}
+				}
+			}
+
+			// look into base classes, if any.
+			for j, bse := range si.elems {
+				switch bse := bse.(type) {
+				case *StreamerBase:
+					base, err := sictx.StreamerInfo(bse.Name(), -1)
+					if err != nil {
+						panic(fmt.Errorf("rdict: could not find base class %q of %q: %w", se.Name(), si.Name(), err))
+					}
+					for ii, bbse := range base.Elements() {
+						if bbse.Name() == cname {
+							return []int{j, ii}
+						}
+					}
+				}
+			}
+			return nil
+		}()
+
+		if method == nil {
+			return fmt.Errorf("rdict: could not find count-offset for element %q in streamer %q (se=%T)", se.Name(), si.Name(), se)
+		}
+
+		descr := elemDescr{
+			otype:  se.Type(),
+			ntype:  se.Type(), // FIXME(sbinet): handle schema evolution
+			offset: i,         // FIXME(sbinet): make sure this works (instead of se.Offset())
+			length: se.ArrayLen(),
+			elem:   se,
+			method: method, // FIXME(sbinet): schema evolution (old/new class may not have the same "offsets")
+			oclass: class,  // FIXME(sbinet): impl.
+			nclass: class,  // FIXME(sbinet): impl. + schema evolution
+			mbr:    nil,    // FIXME(sbinet): impl
+		}
+
+		si.descr = append(si.descr, descr)
+	}
+
+	for i, descr := range si.descr {
+		si.roops = append(si.roops, si.makeROp(sictx, i, descr))
+		si.woops = append(si.woops, si.makeWOp(sictx, i, descr))
+	}
+
+	return nil
 }
 
 func (si *StreamerInfo) NewDecoder(kind rbytes.StreamKind, r *rbytes.RBuffer) (rbytes.Decoder, error) {
@@ -182,9 +253,12 @@ func (si *StreamerInfo) NewDecoder(kind rbytes.StreamKind, r *rbytes.RBuffer) (r
 
 	switch kind {
 	case rbytes.ObjectWise:
+		return newDecoder(r, si, kind, si.roops)
 	case rbytes.MemberWise:
+		return newDecoder(r, si, kind, si.rmops)
+	default:
+		return nil, fmt.Errorf("rdict: invalid stream kind %v", kind)
 	}
-	panic("not implemented")
 }
 
 func (si *StreamerInfo) NewEncoder(kind rbytes.StreamKind, w *rbytes.WBuffer) (rbytes.Encoder, error) {
@@ -193,7 +267,50 @@ func (si *StreamerInfo) NewEncoder(kind rbytes.StreamKind, w *rbytes.WBuffer) (r
 		return nil, fmt.Errorf("rdict: could not build write streamers: %w", err)
 	}
 
-	panic("not implemented")
+	switch kind {
+	case rbytes.ObjectWise:
+		return newEncoder(w, si, kind, si.woops)
+	case rbytes.MemberWise:
+		return newEncoder(w, si, kind, si.wmops)
+	default:
+		return nil, fmt.Errorf("rdict: invalid stream kind %v", kind)
+	}
+}
+
+func (si *StreamerInfo) NewRStreamer(kind rbytes.StreamKind) (rbytes.RStreamer, error) {
+	err := si.BuildStreamers()
+	if err != nil {
+		return nil, fmt.Errorf("rdict: could not build read streamers: %w", err)
+	}
+
+	roops := make([]rstreamer, len(si.descr))
+	switch kind {
+	case rbytes.ObjectWise:
+		copy(roops, si.roops)
+	case rbytes.MemberWise:
+		copy(roops, si.rmops)
+	default:
+		return nil, fmt.Errorf("rdict: invalid stream kind %v", kind)
+	}
+	return newRStreamerInfo(si, kind, roops)
+}
+
+func (si *StreamerInfo) NewWStreamer(kind rbytes.StreamKind) (rbytes.WStreamer, error) {
+	err := si.BuildStreamers()
+	if err != nil {
+		return nil, fmt.Errorf("rdict: could not build write streamers: %w", err)
+	}
+
+	wops := make([]wstreamer, len(si.descr))
+	switch kind {
+	case rbytes.ObjectWise:
+		copy(wops, si.woops)
+	case rbytes.MemberWise:
+		copy(wops, si.wmops)
+	default:
+		return nil, fmt.Errorf("rdict: invalid stream kind %v", kind)
+	}
+	return newWStreamerInfo(si, kind, wops)
 }
 
 type Element struct {
@@ -634,6 +751,7 @@ func (tsb *StreamerBasicPointer) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+// StreamerLoop represents a streamer for a var-length array of a non-basic type.
 type StreamerLoop struct {
 	StreamerElement
 	cvers  int32  // version number of the class with the counter
@@ -642,6 +760,7 @@ type StreamerLoop struct {
 }
 
 func NewStreamerLoop(se StreamerElement, cvers int32, cname, cclass string) *StreamerLoop {
+	se.etype = rmeta.StreamLoop
 	return &StreamerLoop{
 		StreamerElement: se,
 		cvers:           cvers,

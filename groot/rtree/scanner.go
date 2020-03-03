@@ -165,7 +165,7 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 	if rt.Kind() != reflect.Struct {
 		return nil, fmt.Errorf("rtree: NewTreeScanner expects a pointer to a struct (got: %T)", ptr)
 	}
-	rv := reflect.New(rt).Elem()
+	rv := reflect.ValueOf(ptr).Elem()
 	for i := 0; i < rt.NumField(); i++ {
 		f := rt.Field(i)
 		if f.Name != strings.Title(f.Name) {
@@ -198,13 +198,13 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 				clset[lcnt] = struct{}{}
 			}
 		}
-		fptr := rv.Field(i).Addr().Interface()
-		err := br.setAddress(fptr)
+		ptr := rv.Field(i).Addr().Interface()
+		err := br.setAddress(ptr)
 		if err != nil {
 			return nil, err
 		}
 		mbr = append(mbr, br)
-		ibr = append(ibr, scanField{br: br, i: i, ptr: fptr, lcnt: lidx})
+		ibr = append(ibr, scanField{br: br, i: i, ptr: ptr, lcnt: lidx})
 	}
 
 	// setup addresses for leaf-count not explicitly requested by user
