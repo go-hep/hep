@@ -5,9 +5,9 @@
 package predicates
 
 import (
+	"fmt"
 	"math/big"
 
-	"golang.org/x/xerrors"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -35,7 +35,7 @@ func (p RelativePosition) String() string {
 	case IndeterminatePosition:
 		return "Indeterminate"
 	default:
-		panic(xerrors.Errorf("predicates: unknown RelativePosition %d", int(p)))
+		panic(fmt.Errorf("predicates: unknown RelativePosition %d", int(p)))
 	}
 }
 

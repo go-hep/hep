@@ -18,7 +18,6 @@ import (
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
 	"go-hep.org/x/hep/hbook"
-	"golang.org/x/xerrors"
 )
 
 // H1F implements ROOT TH1F
@@ -114,7 +113,7 @@ func (h *H1F) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers > rvers.H1F {
-		panic(xerrors.Errorf("rhist: invalid H1F version=%d > %d", vers, rvers.H1F))
+		panic(fmt.Errorf("rhist: invalid H1F version=%d > %d", vers, rvers.H1F))
 	}
 
 	for _, v := range []rbytes.Unmarshaler{
@@ -416,7 +415,7 @@ func (h *H1D) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers > rvers.H1D {
-		panic(xerrors.Errorf("rhist: invalid H1D version=%d > %d", vers, rvers.H1D))
+		panic(fmt.Errorf("rhist: invalid H1D version=%d > %d", vers, rvers.H1D))
 	}
 
 	for _, v := range []rbytes.Unmarshaler{
@@ -718,7 +717,7 @@ func (h *H1I) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers > rvers.H1I {
-		panic(xerrors.Errorf("rhist: invalid H1I version=%d > %d", vers, rvers.H1I))
+		panic(fmt.Errorf("rhist: invalid H1I version=%d > %d", vers, rvers.H1I))
 	}
 
 	for _, v := range []rbytes.Unmarshaler{

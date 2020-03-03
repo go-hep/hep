@@ -7,6 +7,7 @@ package ntup // import "go-hep.org/x/hep/hbook/ntup"
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"go/ast"
 	"io"
@@ -15,22 +16,21 @@ import (
 	"strings"
 
 	"go-hep.org/x/hep/hbook"
-	"golang.org/x/xerrors"
 )
 
 var (
 	// ErrNotExist is returned when an n-tuple could not be located in a sql.DB
-	ErrNotExist = xerrors.New("hbook/ntup: ntuple does not exist")
+	ErrNotExist = errors.New("hbook/ntup: ntuple does not exist")
 
 	// ErrMissingColDef is returned when some information is missing wrt
 	// an n-tuple column definition
-	ErrMissingColDef = xerrors.New("hbook/ntup: expected at least one column definition")
+	ErrMissingColDef = errors.New("hbook/ntup: expected at least one column definition")
 
-	errChanType   = xerrors.New("hbook/ntup: chans not supported")
-	errIfaceType  = xerrors.New("hbook/ntup: interfaces not supported")
-	errMapType    = xerrors.New("hbook/ntup: maps not supported")
-	errSliceType  = xerrors.New("hbook/ntup: nested slices not supported")
-	errStructType = xerrors.New("hbook/ntup: nested structs not supported")
+	errChanType   = errors.New("hbook/ntup: chans not supported")
+	errIfaceType  = errors.New("hbook/ntup: interfaces not supported")
+	errMapType    = errors.New("hbook/ntup: maps not supported")
+	errSliceType  = errors.New("hbook/ntup: nested slices not supported")
+	errStructType = errors.New("hbook/ntup: nested structs not supported")
 )
 
 // Ntuple provides read/write access to row-wise n-tuple data.
@@ -203,15 +203,15 @@ func getTag(tag reflect.StructTag, keys ...string) string {
 //  })
 func (nt *Ntuple) Scan(query string, f interface{}) error {
 	if f == nil {
-		return xerrors.Errorf("hbook/ntup: nil func")
+		return fmt.Errorf("hbook/ntup: nil func")
 	}
 	rv := reflect.ValueOf(f)
 	rt := rv.Type()
 	if rt.Kind() != reflect.Func {
-		return xerrors.Errorf("hbook/ntup: expected a func, got %T", f)
+		return fmt.Errorf("hbook/ntup: expected a func, got %T", f)
 	}
 	if rt.NumOut() != 1 || rt.Out(0) != reflect.TypeOf((*error)(nil)).Elem() {
-		return xerrors.Errorf("hbook/ntup: expected a func returning an error. got %T", f)
+		return fmt.Errorf("hbook/ntup: expected a func returning an error. got %T", f)
 	}
 	vargs := make([]reflect.Value, rt.NumIn())
 	args := make([]interface{}, rt.NumIn())

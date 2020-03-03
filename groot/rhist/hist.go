@@ -5,6 +5,7 @@
 package rhist
 
 import (
+	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -13,7 +14,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 type th1 struct {
@@ -170,7 +170,7 @@ func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers > rvers.H1 {
-		panic(xerrors.Errorf("rhist: invalid TH1 version=%d > %d", vers, rvers.H1))
+		panic(fmt.Errorf("rhist: invalid TH1 version=%d > %d", vers, rvers.H1))
 	}
 
 	for _, v := range []rbytes.Unmarshaler{
@@ -292,7 +292,7 @@ func (h *th2) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 3 {
-		return xerrors.Errorf("rhist: TH2 version too old (%d<3)", vers)
+		return fmt.Errorf("rhist: TH2 version too old (%d<3)", vers)
 	}
 
 	if err := h.th1.UnmarshalROOT(r); err != nil {

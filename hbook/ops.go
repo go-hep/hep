@@ -5,9 +5,8 @@
 package hbook
 
 import (
+	"fmt"
 	"math"
-
-	"golang.org/x/xerrors"
 )
 
 // DivideH1D divides 2 1D-histograms and returns a 2D scatter.
@@ -23,7 +22,7 @@ func DivideH1D(num, den *H1D) (*S2D, error) {
 		b2 := bins2[i]
 
 		if !fuzzyEq(b1.XMin(), b2.XMin()) || !fuzzyEq(b1.XMax(), b2.XMax()) {
-			return nil, xerrors.Errorf("hbook: x binnings are not equivalent in %v / %v", num.Name(), den.Name())
+			return nil, fmt.Errorf("hbook: x binnings are not equivalent in %v / %v", num.Name(), den.Name())
 		}
 
 		// assemble the x value and error

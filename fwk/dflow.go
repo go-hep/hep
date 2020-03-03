@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"go-hep.org/x/hep/fwk/utils/tarjan"
-	"golang.org/x/xerrors"
 	"gonum.org/v1/gonum/graph/encoding"
 	"gonum.org/v1/gonum/graph/encoding/dot"
 	"gonum.org/v1/gonum/graph/simple"
@@ -64,7 +63,7 @@ func (svc *dflowsvc) StartSvc(ctx Context) error {
 		for k := range node.out {
 			n, dup := out[k]
 			if dup {
-				return xerrors.Errorf("%s: component [%s] already declared port [%s] as its output (current=%s)",
+				return fmt.Errorf("%s: component [%s] already declared port [%s] as its output (current=%s)",
 					svc.Name(), n, k, tsk,
 				)
 			}
@@ -77,7 +76,7 @@ func (svc *dflowsvc) StartSvc(ctx Context) error {
 		for k := range node.in {
 			_, ok := out[k]
 			if !ok {
-				return xerrors.Errorf("%s: component [%s] declared port [%s] as input but NO KNOWN producer",
+				return fmt.Errorf("%s: component [%s] declared port [%s] as input but NO KNOWN producer",
 					svc.Name(), tsk, k,
 				)
 			}
@@ -124,7 +123,7 @@ func (svc *dflowsvc) StartSvc(ctx Context) error {
 			s = "s"
 		}
 		if ncycles > 0 {
-			return xerrors.Errorf("%s: cycle%s detected: %d", svc.Name(), s, ncycles)
+			return fmt.Errorf("%s: cycle%s detected: %d", svc.Name(), s, ncycles)
 		}
 	}
 
@@ -157,7 +156,7 @@ func (svc *dflowsvc) addInNode(tsk string, name string, t reflect.Type) error {
 	}
 	_, ok = node.in[name]
 	if ok {
-		return xerrors.Errorf(
+		return fmt.Errorf(
 			"fwk.DeclInPort: component [%s] already declared in-port with name [%s]",
 			tsk,
 			name,
@@ -212,7 +211,7 @@ func (svc *dflowsvc) addInNode(tsk string, name string, t reflect.Type) error {
 			for _, c := range cont {
 				fmt.Fprintf(&o, " component=%q port=%s type=%v\n", c.task, c.port, c.typ)
 			}
-			return xerrors.Errorf("%v", o.String())
+			return fmt.Errorf("%v", o.String())
 		}
 	}
 
@@ -228,7 +227,7 @@ func (svc *dflowsvc) addOutNode(tsk string, name string, t reflect.Type) error {
 	}
 	_, ok = node.out[name]
 	if ok {
-		return xerrors.Errorf(
+		return fmt.Errorf(
 			"fwk.DeclOutPort: component [%s] already declared out-port with name [%s]",
 			tsk,
 			name,
@@ -253,7 +252,7 @@ func (svc *dflowsvc) addOutNode(tsk string, name string, t reflect.Type) error {
 			}
 			for out := range dupnode.out {
 				if out == name {
-					return xerrors.Errorf(
+					return fmt.Errorf(
 						"fwk.DeclOutPort: component [%s] already declared out-port with name [%s (type=%v)].\nfwk.DeclOutPort: component [%s] is trying to add a duplicate out-port [%s (type=%v)]",
 						duptsk,
 						name,
@@ -353,13 +352,13 @@ func (svc *dflowsvc) dumpGraph() error {
 
 	out, err := dot.Marshal(gr, "dataflow", "", "  ")
 	if err != nil {
-		return xerrors.Errorf("could not marshal dataflow to 'dot' format: %w", err)
+		return fmt.Errorf("could not marshal dataflow to 'dot' format: %w", err)
 	}
 	out = append(out, '\n')
 
 	err = ioutil.WriteFile(svc.dotfile, out, 0644)
 	if err != nil {
-		return xerrors.Errorf("could not write dataflow to dot-file %q: %w", svc.dotfile, err)
+		return fmt.Errorf("could not write dataflow to dot-file %q: %w", svc.dotfile, err)
 	}
 
 	return err

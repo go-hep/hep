@@ -17,7 +17,6 @@ import (
 	"github.com/astrogo/fitsio"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 func TestConvert(t *testing.T) {
@@ -293,19 +292,19 @@ F64        | [14 24 34]
 func display(o io.Writer, hname, fname string) error {
 	r, err := os.Open(fname)
 	if err != nil {
-		return xerrors.Errorf("could not open file %q: %w", fname, err)
+		return fmt.Errorf("could not open file %q: %w", fname, err)
 	}
 	defer r.Close()
 
 	f, err := fitsio.Open(r)
 	if err != nil {
-		return xerrors.Errorf("could not open FITS file %q: %w", fname, err)
+		return fmt.Errorf("could not open FITS file %q: %w", fname, err)
 	}
 	defer f.Close()
 
 	hdu := f.Get(hname)
 	if hdu.Type() == fitsio.IMAGE_HDU {
-		return xerrors.Errorf("HDU %q not a table", hname)
+		return fmt.Errorf("HDU %q not a table", hname)
 	}
 
 	table := hdu.(*fitsio.Table)
@@ -313,7 +312,7 @@ func display(o io.Writer, hname, fname string) error {
 	nrows := table.NumRows()
 	rows, err := table.Read(0, nrows)
 	if err != nil {
-		return xerrors.Errorf("could not read FITS table range: %w", err)
+		return fmt.Errorf("could not read FITS table range: %w", err)
 	}
 	hdrline := strings.Repeat("=", 80-15)
 	maxname := 10
@@ -334,7 +333,7 @@ func display(o io.Writer, hname, fname string) error {
 	for irow := 0; rows.Next(); irow++ {
 		err = rows.Scan(data...)
 		if err != nil {
-			return xerrors.Errorf("could not read row %d: %w", irow, err)
+			return fmt.Errorf("could not read row %d: %w", irow, err)
 		}
 		fmt.Fprintf(o, "== %05d/%05d %s\n", irow+1, nrows, hdrline)
 		for i := 0; i < ncols; i++ {
@@ -345,7 +344,7 @@ func display(o io.Writer, hname, fname string) error {
 
 	err = rows.Err()
 	if err != nil {
-		return xerrors.Errorf("could not scan table: %w", err)
+		return fmt.Errorf("could not scan table: %w", err)
 	}
 
 	return nil

@@ -20,8 +20,6 @@ import (
 	"reflect"
 	"sort"
 	"testing"
-
-	"golang.org/x/xerrors"
 )
 
 func TestTypeString(t *testing.T) {
@@ -176,7 +174,7 @@ func sortConnections(connections [][]interface{}) [][]string {
 			case int:
 				slice = append(slice, fmt.Sprintf("%d", v))
 			default:
-				panic(xerrors.Errorf("invalid type [%T]", v))
+				panic(fmt.Errorf("invalid type [%T]", v))
 			}
 		}
 		sort.Strings(slice)

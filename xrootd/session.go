@@ -6,6 +6,7 @@ package xrootd // import "go-hep.org/x/hep/xrootd"
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -16,7 +17,6 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/signing"
 	"go-hep.org/x/hep/xrootd/xrdproto/sigver"
-	"golang.org/x/xerrors"
 )
 
 // cliSession is a connection to the specific XRootD server
@@ -156,7 +156,7 @@ func (sess *cliSession) Close() error {
 		errs = append(errs, err)
 	}
 	if errs != nil {
-		return xerrors.Errorf("xrootd: errors occured during closing of the session: %v", errs)
+		return fmt.Errorf("xrootd: errors occured during closing of the session: %v", errs)
 	}
 	return nil
 }
@@ -196,13 +196,13 @@ func (sess *cliSession) handleWaitResponse(streamID xrdproto.StreamID, data []by
 	req, ok := sess.requests[streamID]
 	sess.mu.RUnlock()
 	if !ok {
-		return xerrors.Errorf("xrootd: could not find a request with stream id equal to %v", streamID)
+		return fmt.Errorf("xrootd: could not find a request with stream id equal to %v", streamID)
 	}
 
 	go func(req pendingRequest) {
 		time.Sleep(resp.Duration)
 		if err := sess.writeRequest(req); err != nil {
-			resp := mux.ServerResponse{Err: xerrors.Errorf("xrootd: could not send data to the server: %w", err)}
+			resp := mux.ServerResponse{Err: fmt.Errorf("xrootd: could not send data to the server: %w", err)}
 			err := sess.mux.SendData(streamID, resp)
 			// TODO: should we log error somehow? We have nowhere to send it.
 			_ = err
@@ -287,7 +287,7 @@ func (sess *cliSession) writeRequest(request pendingRequest) error {
 		conn, ok := sess.subs[request.PathID]
 		sess.subsMu.RUnlock()
 		if !ok {
-			return xerrors.Errorf("xrootd: connection with wrong pathID = %v was requested", request.PathID)
+			return fmt.Errorf("xrootd: connection with wrong pathID = %v was requested", request.PathID)
 		}
 		if _, err := conn.conn.Write(request.Data); err != nil {
 			return err
@@ -395,7 +395,7 @@ func (sess *cliSession) claimPathID(ctx context.Context) (xrdproto.PathID, error
 		sess.subsMu.RLock()
 		if len(sess.subs) >= sess.maxSubs {
 			sess.subsMu.RUnlock()
-			return 0, xerrors.Errorf("xrootd: could not claimPathID: all of %d connections are taken", sess.maxSubs)
+			return 0, fmt.Errorf("xrootd: could not claimPathID: all of %d connections are taken", sess.maxSubs)
 		}
 		sess.subsMu.RUnlock()
 

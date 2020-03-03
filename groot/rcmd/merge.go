@@ -5,6 +5,7 @@
 package rcmd
 
 import (
+	"fmt"
 	"log"
 	stdpath "path"
 
@@ -13,27 +14,26 @@ import (
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 // Merge merges all input fnames ROOT files into the output oname one.
 func Merge(oname string, fnames []string, verbose bool) error {
 	o, err := groot.Create(oname)
 	if err != nil {
-		return xerrors.Errorf("could not create output ROOT file %q: %w", oname, err)
+		return fmt.Errorf("could not create output ROOT file %q: %w", oname, err)
 	}
 	defer o.Close()
 
 	cmd := mergeCmd{verbose: verbose}
 	tsks, err := cmd.mergeTasksFrom(o, fnames[0])
 	if err != nil {
-		return xerrors.Errorf("could not create merge tasks: %w", err)
+		return fmt.Errorf("could not create merge tasks: %w", err)
 	}
 
 	for _, fname := range fnames[1:] {
 		err := cmd.process(tsks, fname)
 		if err != nil {
-			return xerrors.Errorf("could not process ROOT file %q: %w", fname, err)
+			return fmt.Errorf("could not process ROOT file %q: %w", fname, err)
 		}
 	}
 
@@ -41,13 +41,13 @@ func Merge(oname string, fnames []string, verbose bool) error {
 		tsk := &tsks[i]
 		err := tsk.close(o)
 		if err != nil {
-			return xerrors.Errorf("could not close task %d (%s): %w", i, tsk.path(), err)
+			return fmt.Errorf("could not close task %d (%s): %w", i, tsk.path(), err)
 		}
 	}
 
 	err = o.Close()
 	if err != nil {
-		return xerrors.Errorf("could not close output ROOT file %q: %w", oname, err)
+		return fmt.Errorf("could not close output ROOT file %q: %w", oname, err)
 	}
 
 	return nil
@@ -79,7 +79,7 @@ func (cmd mergeCmd) process(tsks []task, fname string) error {
 
 	f, err := groot.Open(fname)
 	if err != nil {
-		return xerrors.Errorf("could not open input ROOT file %q: %w", fname, err)
+		return fmt.Errorf("could not open input ROOT file %q: %w", fname, err)
 	}
 	defer f.Close()
 
@@ -87,7 +87,7 @@ func (cmd mergeCmd) process(tsks []task, fname string) error {
 		tsk := &tsks[i]
 		err = tsk.merge(f)
 		if err != nil {
-			return xerrors.Errorf("could not merge task %d (%s) for file %q: %w", i, tsk.path(), err)
+			return fmt.Errorf("could not merge task %d (%s) for file %q: %w", i, tsk.path(), fname, err)
 		}
 	}
 
@@ -105,7 +105,7 @@ type task struct {
 func (cmd *mergeCmd) mergeTasksFrom(o *riofs.File, fname string) ([]task, error) {
 	f, err := groot.Open(fname)
 	if err != nil {
-		return nil, xerrors.Errorf("could not open input ROOT file %q: %w", fname, err)
+		return nil, fmt.Errorf("could not open input ROOT file %q: %w", fname, err)
 	}
 	defer f.Close()
 
@@ -122,7 +122,7 @@ func (cmd *mergeCmd) mergeTasksFrom(o *riofs.File, fname string) ([]task, error)
 		if _, ok := obj.(riofs.Directory); ok {
 			_, err := riofs.Dir(o).Mkdir(name)
 			if err != nil {
-				return xerrors.Errorf("could not create dir %q in output ROOT file: %w", name, err)
+				return fmt.Errorf("could not create dir %q in output ROOT file: %w", name, err)
 			}
 			if cmd.verbose {
 				log.Printf("selecting %q", name)
@@ -146,7 +146,7 @@ func (cmd *mergeCmd) mergeTasksFrom(o *riofs.File, fname string) ([]task, error)
 		if dirName != "/" && dirName != "" {
 			obj, err := riofs.Dir(o).Get(dirName)
 			if err != nil {
-				return xerrors.Errorf("could not get dir %q from output ROOT file: %w", dirName, err)
+				return fmt.Errorf("could not get dir %q from output ROOT file: %w", dirName, err)
 			}
 			dir = obj.(riofs.Directory)
 		}
@@ -155,11 +155,11 @@ func (cmd *mergeCmd) mergeTasksFrom(o *riofs.File, fname string) ([]task, error)
 		case rtree.Tree:
 			w, err := rtree.NewWriter(dir, objName, rtree.WriteVarsFromTree(oo), rtree.WithTitle(oo.Title()))
 			if err != nil {
-				return xerrors.Errorf("could not create output ROOT tree %q: %w", name, err)
+				return fmt.Errorf("could not create output ROOT tree %q: %w", name, err)
 			}
 			_, err = rtree.Copy(w, oo)
 			if err != nil {
-				return xerrors.Errorf("could not seed output ROOT tree %q: %w", name, err)
+				return fmt.Errorf("could not seed output ROOT tree %q: %w", name, err)
 			}
 			obj = w
 		}
@@ -173,7 +173,7 @@ func (cmd *mergeCmd) mergeTasksFrom(o *riofs.File, fname string) ([]task, error)
 		return nil
 	})
 	if err != nil {
-		return nil, xerrors.Errorf("could not inspect input ROOT file: %w", err)
+		return nil, fmt.Errorf("could not inspect input ROOT file: %w", err)
 	}
 
 	if cmd.verbose {
@@ -191,12 +191,12 @@ func (tsk *task) merge(f *riofs.File) error {
 	name := tsk.path()
 	obj, err := riofs.Dir(f).Get(name)
 	if err != nil {
-		return xerrors.Errorf("could not get %q: %w", name, err)
+		return fmt.Errorf("could not get %q: %w", name, err)
 	}
 
 	err = tsk.mergeObj(tsk.obj, obj)
 	if err != nil {
-		return xerrors.Errorf("could not merge %q: %w", name, err)
+		return fmt.Errorf("could not merge %q: %w", name, err)
 	}
 
 	return nil
@@ -212,7 +212,7 @@ func (tsk *task) close(f *riofs.File) error {
 	}
 
 	if err != nil {
-		return xerrors.Errorf("could not save %q (%T) to output ROOT file: %w", tsk.path(), tsk.obj, err)
+		return fmt.Errorf("could not save %q (%T) to output ROOT file: %w", tsk.path(), tsk.obj, err)
 	}
 
 	return nil
@@ -224,7 +224,7 @@ func (tsk *task) mergeObj(dst, src root.Object) error {
 		rsrc = src.Class()
 	)
 	if rdst != rsrc {
-		return xerrors.Errorf("types differ: dst=%T, src=%T", dst, src)
+		return fmt.Errorf("types differ: dst=%T, src=%T", dst, src)
 	}
 
 	switch dst := dst.(type) {
@@ -235,7 +235,7 @@ func (tsk *task) mergeObj(dst, src root.Object) error {
 	case root.Merger:
 		return dst.ROOTMerge(src)
 	default:
-		return xerrors.Errorf("could not find suitable merge-API for (dst=%T, src=%T)", dst, src)
+		return fmt.Errorf("could not find suitable merge-API for (dst=%T, src=%T)", dst, src)
 	}
 }
 

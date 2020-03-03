@@ -18,7 +18,6 @@ import (
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 // Diff compares the values of the list of keys between the two provided ROOT files.
@@ -29,7 +28,7 @@ import (
 func Diff(w io.Writer, ref, chk *riofs.File, keys []string) error {
 	cmd, err := newDiffCmd(w, ref, chk, keys)
 	if err != nil {
-		return xerrors.Errorf("could not compute keys to compare: %w", err)
+		return fmt.Errorf("could not compute keys to compare: %w", err)
 	}
 
 	return cmd.diffFiles()
@@ -63,7 +62,7 @@ func newDiffCmd(w io.Writer, fref, fchk *riofs.File, keys []string) (*diffCmd, e
 		}
 
 		if len(ukeys) == 0 {
-			return nil, xerrors.Errorf("empty key set")
+			return nil, fmt.Errorf("empty key set")
 		}
 	} else {
 		for _, k := range cmd.fref.Keys() {
@@ -91,11 +90,11 @@ func newDiffCmd(w io.Writer, fref, fchk *riofs.File, keys []string) (*diffCmd, e
 	}
 
 	if len(cmd.keys) == 0 {
-		return nil, xerrors.Errorf("empty key set")
+		return nil, fmt.Errorf("empty key set")
 	}
 
 	if !allgood {
-		return nil, xerrors.Errorf("key set differ")
+		return nil, fmt.Errorf("key set differ")
 	}
 
 	sort.Strings(cmd.keys)
@@ -128,7 +127,7 @@ func (cmd *diffCmd) diffObject(key string, ref, chk root.Object) error {
 	chkType := reflect.TypeOf(chk)
 
 	if !reflect.DeepEqual(refType, chkType) {
-		return xerrors.Errorf("%s: type of keys differ: ref=%v chk=%v", key, refType, chkType)
+		return fmt.Errorf("%s: type of keys differ: ref=%v chk=%v", key, refType, chkType)
 	}
 
 	switch ref := ref.(type) {
@@ -141,11 +140,11 @@ func (cmd *diffCmd) diffObject(key string, ref, chk root.Object) error {
 		ok := reflect.DeepEqual(ref, chk)
 		if !ok {
 			fmt.Fprintf(cmd.w, "key[%s] (%T) -- (-ref +chk)\n-%v\n+%v\n", key, ref, ref, chk)
-			return xerrors.Errorf("%s: keys differ", key)
+			return fmt.Errorf("%s: keys differ", key)
 		}
 		return nil
 	default:
-		return xerrors.Errorf("unhandled type %T (key=%v)", ref, key)
+		return fmt.Errorf("unhandled type %T (key=%v)", ref, key)
 	}
 }
 
@@ -153,7 +152,7 @@ func (cmd *diffCmd) diffDir(key string, ref, chk riofs.Directory) error {
 	kref := ref.Keys()
 	kchk := chk.Keys()
 	if len(kref) != len(kchk) {
-		return xerrors.Errorf("%s: number of keys in directory differ: ref=%d, chk=%d", key, len(kref), len(kchk))
+		return fmt.Errorf("%s: number of keys in directory differ: ref=%d, chk=%d", key, len(kref), len(kchk))
 	}
 
 	krefset := make(map[string]struct{})
@@ -175,22 +174,22 @@ func (cmd *diffCmd) diffDir(key string, ref, chk riofs.Directory) error {
 	sort.Strings(refnames)
 	sort.Strings(chknames)
 	if len(krefset) != len(kchkset) {
-		return xerrors.Errorf("%s: keys in directory differ: ref=%s, chk=%s", key, refnames, chknames)
+		return fmt.Errorf("%s: keys in directory differ: ref=%s, chk=%s", key, refnames, chknames)
 	}
 
 	for _, k := range refnames {
 		oref, err := ref.Get(k)
 		if err != nil {
-			return xerrors.Errorf("%s: could not retrieve %s from ref-directory", key, k)
+			return fmt.Errorf("%s: could not retrieve %s from ref-directory", key, k)
 		}
 		ochk, err := chk.Get(k)
 		if err != nil {
-			return xerrors.Errorf("%s: could not retrieve %s from chk-directory", key, k)
+			return fmt.Errorf("%s: could not retrieve %s from chk-directory", key, k)
 		}
 
 		err = cmd.diffObject(stdpath.Join(key, k), oref, ochk)
 		if err != nil {
-			return xerrors.Errorf("%s: values for %s in directory differ: %w", key, k, err)
+			return fmt.Errorf("%s: values for %s in directory differ: %w", key, k, err)
 		}
 	}
 
@@ -199,7 +198,7 @@ func (cmd *diffCmd) diffDir(key string, ref, chk riofs.Directory) error {
 
 func (cmd *diffCmd) diffTree(key string, ref, chk rtree.Tree) error {
 	if eref, echk := ref.Entries(), chk.Entries(); eref != echk {
-		return xerrors.Errorf("%s: number of entries differ: ref=%v chk=%v", key, eref, echk)
+		return fmt.Errorf("%s: number of entries differ: ref=%v chk=%v", key, eref, echk)
 	}
 
 	refVars := rtree.NewScanVars(ref)
@@ -220,13 +219,13 @@ func (cmd *diffCmd) diffTree(key string, ref, chk rtree.Tree) error {
 		ref := <-refc
 		chk := <-chkc
 		if ref.err != nil {
-			return xerrors.Errorf("%s: error reading ref-tree: %w", key, ref.err)
+			return fmt.Errorf("%s: error reading ref-tree: %w", key, ref.err)
 		}
 		if chk.err != nil {
-			return xerrors.Errorf("%s: error reading chk-tree: %w", key, chk.err)
+			return fmt.Errorf("%s: error reading chk-tree: %w", key, chk.err)
 		}
 		if chk.n != ref.n {
-			return xerrors.Errorf("%s: tree out of sync (ref=%d, chk=%d)", key, ref.n, chk.n)
+			return fmt.Errorf("%s: tree out of sync (ref=%d, chk=%d)", key, ref.n, chk.n)
 		}
 
 		for ii := range refVars {
@@ -245,7 +244,7 @@ func (cmd *diffCmd) diffTree(key string, ref, chk rtree.Tree) error {
 	}
 
 	if !allgood {
-		return xerrors.Errorf("%s: trees differ", key)
+		return fmt.Errorf("%s: trees differ", key)
 	}
 
 	return nil

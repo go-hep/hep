@@ -5,10 +5,9 @@
 package fwk
 
 import (
+	"fmt"
 	"reflect"
 	"sort"
-
-	"golang.org/x/xerrors"
 )
 
 // FactoryFunc creates a Component of type t and name n, managed by the fwk.App mgr.
@@ -47,20 +46,20 @@ func (app *appmgr) New(t, n string) (Component, error) {
 	var err error
 	fct, ok := gFactory[t]
 	if !ok {
-		return nil, xerrors.Errorf("no component with type [%s] registered", t)
+		return nil, fmt.Errorf("no component with type [%s] registered", t)
 	}
 
 	if _, dup := app.props[n]; dup {
-		return nil, xerrors.Errorf("component with name [%s] already created", n)
+		return nil, fmt.Errorf("component with name [%s] already created", n)
 	}
 	app.props[n] = make(map[string]interface{})
 
 	c, err := fct(t, n, app)
 	if err != nil {
-		return nil, xerrors.Errorf("error creating [%s:%s]: %w", t, n, err)
+		return nil, fmt.Errorf("error creating [%s:%s]: %w", t, n, err)
 	}
 	if c.Name() == "" {
-		return nil, xerrors.Errorf("factory for [%s] does NOT set the name of the component", t)
+		return nil, fmt.Errorf("factory for [%s] does NOT set the name of the component", t)
 	}
 
 	err = app.addComponent(c)

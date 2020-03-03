@@ -5,12 +5,12 @@
 package rsrv
 
 import (
+	"fmt"
 	"os"
 	"sort"
 	"sync"
 
 	"go-hep.org/x/hep/groot/riofs"
-	"golang.org/x/xerrors"
 )
 
 type DB struct {
@@ -53,7 +53,7 @@ func (db *DB) Tx(uri string, fct func(f *riofs.File) error) error {
 	defer db.RUnlock()
 	f := db.files[uri]
 	if f == nil {
-		return xerrors.Errorf("rsrv: no such file %q", uri)
+		return fmt.Errorf("rsrv: no such file %q", uri)
 	}
 	return fct(db.files[uri])
 }

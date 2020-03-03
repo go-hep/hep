@@ -5,10 +5,11 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
 	"go-hep.org/x/hep/fwk/utils/builder"
-	"golang.org/x/xerrors"
 )
 
 func fwk_make_cmd_build() *commander.Command {
@@ -47,7 +48,7 @@ func fwk_run_cmd_build(cmd *commander.Command, args []string) error {
 	}
 
 	if len(fnames) <= 0 {
-		return xerrors.Errorf("%s: you need to give a list of files or a directory", n)
+		return fmt.Errorf("%s: you need to give a list of files or a directory", n)
 	}
 
 	bldr, err := builder.NewBuilder(fnames...)

@@ -5,6 +5,7 @@
 package rcmd
 
 import (
+	"fmt"
 	"log"
 	stdpath "path"
 	"regexp"
@@ -13,7 +14,6 @@ import (
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 // Copy copies the content of the ROOT files fnames into the output
@@ -21,7 +21,7 @@ import (
 func Copy(oname string, fnames []string) error {
 	o, err := groot.Create(oname)
 	if err != nil {
-		return xerrors.Errorf("could not create output ROOT file %q: %w", oname, err)
+		return fmt.Errorf("could not create output ROOT file %q: %w", oname, err)
 	}
 	defer o.Close()
 
@@ -35,7 +35,7 @@ func Copy(oname string, fnames []string) error {
 
 	err = o.Close()
 	if err != nil {
-		return xerrors.Errorf("could not close output ROOT file %q: %w", oname, err)
+		return fmt.Errorf("could not close output ROOT file %q: %w", oname, err)
 	}
 	return nil
 }
@@ -53,7 +53,7 @@ func (cmd copyCmd) process(o *riofs.File, arg string) error {
 
 	f, err := groot.Open(fname)
 	if err != nil {
-		return xerrors.Errorf("could not open input ROOT file %q: %w", fname, err)
+		return fmt.Errorf("could not open input ROOT file %q: %w", fname, err)
 	}
 	defer f.Close()
 
@@ -75,7 +75,7 @@ func (cmd copyCmd) process(o *riofs.File, arg string) error {
 		if err != nil {
 			v, err := riofs.Dir(o).Mkdir(dir)
 			if err != nil {
-				return xerrors.Errorf("could not create directory %q: %w", dir, err)
+				return fmt.Errorf("could not create directory %q: %w", dir, err)
 			}
 			odst = v.(root.Object)
 		}
@@ -84,7 +84,7 @@ func (cmd copyCmd) process(o *riofs.File, arg string) error {
 		return cmd.copyObj(dst, stdpath.Base(name), obj)
 	})
 	if err != nil {
-		return xerrors.Errorf("could not copy input ROOT file: %w", err)
+		return fmt.Errorf("could not copy input ROOT file: %w", err)
 	}
 	return nil
 }
@@ -101,7 +101,7 @@ func (cmd copyCmd) copyObj(odir riofs.Directory, k string, obj root.Object) erro
 	}
 
 	if err != nil {
-		return xerrors.Errorf("could not save object %q to output file: %w", k, err)
+		return fmt.Errorf("could not save object %q to output file: %w", k, err)
 	}
 
 	return nil
@@ -110,16 +110,16 @@ func (cmd copyCmd) copyObj(odir riofs.Directory, k string, obj root.Object) erro
 func (cmd copyCmd) copyTree(dir riofs.Directory, name string, tree rtree.Tree) error {
 	dst, err := rtree.NewWriter(dir, name, rtree.WriteVarsFromTree(tree))
 	if err != nil {
-		return xerrors.Errorf("could not create output copy tree: %w", err)
+		return fmt.Errorf("could not create output copy tree: %w", err)
 	}
 	_, err = rtree.Copy(dst, tree)
 	if err != nil {
-		return xerrors.Errorf("could not copy tree %q: %w", name, err)
+		return fmt.Errorf("could not copy tree %q: %w", name, err)
 	}
 
 	err = dst.Close()
 	if err != nil {
-		return xerrors.Errorf("could not close copy tree %q: %w", name, err)
+		return fmt.Errorf("could not close copy tree %q: %w", name, err)
 	}
 
 	return nil

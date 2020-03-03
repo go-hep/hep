@@ -6,6 +6,7 @@ package fwk
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"math"
 	"reflect"
@@ -14,7 +15,6 @@ import (
 	"time"
 
 	"go-hep.org/x/hep/fwk/fsm"
-	"golang.org/x/xerrors"
 )
 
 type appmgr struct {
@@ -239,7 +239,7 @@ func (app *appmgr) DeclProp(c Component, name string, ptr interface{}) error {
 	case reflect.Ptr:
 		// ok
 	default:
-		return xerrors.Errorf(
+		return fmt.Errorf(
 			"fwk.DeclProp: component [%s] didn't pass a pointer for the property [%s] (type=%T)",
 			c.Name(),
 			name,
@@ -254,7 +254,7 @@ func (app *appmgr) SetProp(c Component, name string, value interface{}) error {
 	cname := c.Name()
 	m, ok := app.props[cname]
 	if !ok {
-		return xerrors.Errorf(
+		return fmt.Errorf(
 			"fwk.SetProp: component [%s] didn't declare any property",
 			c.Name(),
 		)
@@ -265,7 +265,7 @@ func (app *appmgr) SetProp(c Component, name string, value interface{}) error {
 	ptr := reflect.ValueOf(m[name])
 	dst := ptr.Elem().Type()
 	if !rt.AssignableTo(dst) {
-		return xerrors.Errorf(
+		return fmt.Errorf(
 			"fwk.SetProp: component [%s] has property [%s] with type [%s]. got value=%v (type=%s)",
 			c.Name(),
 			name,
@@ -283,7 +283,7 @@ func (app *appmgr) GetProp(c Component, name string) (interface{}, error) {
 	cname := c.Name()
 	m, ok := app.props[cname]
 	if !ok {
-		return nil, xerrors.Errorf(
+		return nil, fmt.Errorf(
 			"fwk.GetProp: component [%s] didn't declare any property",
 			c.Name(),
 		)
@@ -291,7 +291,7 @@ func (app *appmgr) GetProp(c Component, name string) (interface{}, error) {
 
 	ptr, ok := m[name]
 	if !ok {
-		return nil, xerrors.Errorf(
+		return nil, fmt.Errorf(
 			"fwk.GetProp: component [%s] didn't declare any property with name [%s]",
 			c.Name(),
 			name,
@@ -314,7 +314,7 @@ func (app *appmgr) HasProp(c Component, name string) bool {
 
 func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) error {
 	if app.state < fsm.Configuring {
-		return xerrors.Errorf(
+		return fmt.Errorf(
 			"fwk.DeclInPort: invalid App state (%s). put the DeclInPort in Configure() of %s:%s",
 			app.state,
 			c.Type(),
@@ -326,7 +326,7 @@ func (app *appmgr) DeclInPort(c Component, name string, t reflect.Type) error {
 
 func (app *appmgr) DeclOutPort(c Component, name string, t reflect.Type) error {
 	if app.state < fsm.Configuring {
-		return xerrors.Errorf(
+		return fmt.Errorf(
 			"fwk.DeclOutPort: invalid App state (%s). put the DeclInPort in Configure() of %s:%s",
 			app.state,
 			c.Type(),
@@ -739,7 +739,7 @@ func (app *appmgr) startInputStream() (StreamControl, error) {
 		}
 
 	default:
-		return ctrl, xerrors.Errorf("found more than one InputStream! (n=%d)", len(inputs))
+		return ctrl, fmt.Errorf("found more than one InputStream! (n=%d)", len(inputs))
 	}
 
 	return ctrl, err

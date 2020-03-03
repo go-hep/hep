@@ -15,7 +15,6 @@ import (
 	"go-hep.org/x/hep/groot/riofs"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 	"go-hep.org/x/hep/groot/root"
-	"golang.org/x/xerrors"
 )
 
 type ScannerData struct {
@@ -1335,7 +1334,7 @@ func TestInvalidScannerTypes(t *testing.T) {
 				_, err := NewScanner(tree, &v)
 				return err
 			},
-			want: xerrors.Errorf(`rtree: field[1] "notExported" from rtree.Event is not exported`),
+			want: fmt.Errorf(`rtree: field[1] "notExported" from rtree.Event is not exported`),
 		},
 		{
 			name: "tree-scanner",
@@ -1351,7 +1350,7 @@ func TestInvalidScannerTypes(t *testing.T) {
 				_, err := NewTreeScanner(tree, &v)
 				return err
 			},
-			want: xerrors.Errorf(`rtree: field[1] "notExported" from rtree.Event is not exported`),
+			want: fmt.Errorf(`rtree: field[1] "notExported" from rtree.Event is not exported`),
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

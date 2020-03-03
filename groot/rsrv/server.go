@@ -5,6 +5,7 @@
 package rsrv
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -12,7 +13,6 @@ import (
 	"time"
 
 	uuid "github.com/hashicorp/go-uuid"
-	"golang.org/x/xerrors"
 )
 
 const (
@@ -117,7 +117,7 @@ func (srv *Server) setCookie(w http.ResponseWriter, r *http.Request) error {
 
 	v, err := uuid.GenerateUUID()
 	if err != nil {
-		return xerrors.Errorf("could not generate UUID: %w", err)
+		return fmt.Errorf("could not generate UUID: %w", err)
 	}
 
 	cookie = &http.Cookie{

@@ -6,6 +6,7 @@ package hepevt_test
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -13,7 +14,6 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/hepevt"
-	"golang.org/x/xerrors"
 )
 
 var (
@@ -141,7 +141,7 @@ func TestDecoderFail(t *testing.T) {
 			if err == nil {
 				t.Fatalf("expected a failure")
 			}
-			if tc.want != nil && !xerrors.Is(err, tc.want) {
+			if tc.want != nil && !errors.Is(err, tc.want) {
 				t.Fatalf("unexpected error.\ngot = %v\nwant= %v", err, tc.want)
 			}
 			if tc.want == nil {

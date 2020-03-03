@@ -29,12 +29,12 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
 
 	"go-hep.org/x/hep/hepmc"
-	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -75,17 +75,16 @@ func dump(w io.Writer, r io.Reader) error {
 			return nil
 		}
 		if err != nil {
-			return xerrors.Errorf("error decoding event: %w", err)
+			return fmt.Errorf("error decoding event: %w", err)
 		}
 		err = evt.Print(w)
 		if err != nil {
-			return xerrors.Errorf("error printing event: %w", err)
+			return fmt.Errorf("error printing event: %w", err)
 		}
 
 		err = hepmc.Delete(&evt)
 		if err != nil {
-			return xerrors.Errorf("error deleting event: %w", err)
+			return fmt.Errorf("error deleting event: %w", err)
 		}
 	}
-	panic("unreachable")
 }

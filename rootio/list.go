@@ -5,10 +5,9 @@
 package rootio
 
 import (
+	"fmt"
 	"io"
 	"reflect"
-
-	"golang.org/x/xerrors"
 )
 
 type tlist struct {
@@ -91,7 +90,7 @@ func (li *tlist) UnmarshalROOT(r *RBuffer) error {
 	li.rvers = vers
 
 	if vers <= 3 {
-		return xerrors.Errorf("rootio: TList version too old (%d <= 3)", vers)
+		return fmt.Errorf("rootio: TList version too old (%d <= 3)", vers)
 	}
 
 	if err := li.obj.UnmarshalROOT(r); err != nil {
@@ -108,7 +107,7 @@ func (li *tlist) UnmarshalROOT(r *RBuffer) error {
 		obj := r.ReadObjectAny()
 		// obj := r.ReadObjectRef()
 		if obj == nil {
-			panic(xerrors.Errorf("nil obj ref: %w", r.Err())) // FIXME(sbinet)
+			panic(fmt.Errorf("nil obj ref: %w", r.Err())) // FIXME(sbinet)
 			// return r.Err()
 		}
 		li.objs[i] = obj

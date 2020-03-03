@@ -5,7 +5,7 @@
 package hepmc
 
 import (
-	"golang.org/x/xerrors"
+	"fmt"
 )
 
 // MomentumUnit describes the units of momentum quantities (MeV or GeV)
@@ -35,7 +35,7 @@ func (mu MomentumUnit) String() string {
 	case GEV:
 		return "GEV"
 	}
-	panic(xerrors.Errorf("hepmc.units: invalid MomentumUnit value (%d)", int(mu)))
+	panic(fmt.Errorf("hepmc.units: invalid MomentumUnit value (%d)", int(mu)))
 }
 
 // MomentumUnitFromString creates a MomentumUnit value from its string representation
@@ -46,7 +46,7 @@ func MomentumUnitFromString(s string) (MomentumUnit, error) {
 	case "GEV":
 		return GEV, nil
 	}
-	return -1, xerrors.Errorf("hepmc.units: invalid MomentumUnit string-value (%s)", s)
+	return -1, fmt.Errorf("hepmc.units: invalid MomentumUnit string-value (%s)", s)
 }
 
 func (lu LengthUnit) String() string {
@@ -56,7 +56,7 @@ func (lu LengthUnit) String() string {
 	case CM:
 		return "CM"
 	}
-	panic(xerrors.Errorf("hepmc.units: invalid LengthUnit value (%d)", int(lu)))
+	panic(fmt.Errorf("hepmc.units: invalid LengthUnit value (%d)", int(lu)))
 }
 
 // LengthUnitFromString creates a LengthUnit value from its string representation
@@ -67,5 +67,5 @@ func LengthUnitFromString(s string) (LengthUnit, error) {
 	case "CM":
 		return CM, nil
 	}
-	return -1, xerrors.Errorf("hepmc.units: invalid LengthUnit string-value (%s)", s)
+	return -1, fmt.Errorf("hepmc.units: invalid LengthUnit string-value (%s)", s)
 }

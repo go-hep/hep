@@ -16,7 +16,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 type tleaf struct {
@@ -279,7 +278,7 @@ func (leaf *tleafElement) Type() reflect.Type {
 func (leaf *tleafElement) TypeName() string {
 	name := leaf.src.Type().Name()
 	if name == "" {
-		panic(xerrors.Errorf("rtree: invalid typename for leaf %q", leaf.Name()))
+		panic(fmt.Errorf("rtree: invalid typename for leaf %q", leaf.Name()))
 	}
 	return name
 }
@@ -323,7 +322,7 @@ func (leaf *tleafElement) readFromBuffer(r *rbytes.RBuffer) error {
 	}
 
 	if leaf.rstreamer == nil {
-		panic(xerrors.Errorf("rtree: nil streamer (leaf: %s)", leaf.Name()))
+		panic(fmt.Errorf("rtree: nil streamer (leaf: %s)", leaf.Name()))
 	}
 
 	err := leaf.rstreamer.RStreamROOT(r)
@@ -443,7 +442,7 @@ func leafDims(s string) []int {
 		default:
 			dim, err := strconv.Atoi(v)
 			if err != nil {
-				panic(xerrors.Errorf("could not infer leaf array dimension: %w", err))
+				panic(fmt.Errorf("could not infer leaf array dimension: %w", err))
 			}
 			dims[i] = dim
 		}
@@ -522,14 +521,14 @@ func newLeafFromWVar(b Branch, v WriteVar) (Leaf, error) {
 			for i, ll := range leaves {
 				names[i] = ll.Name()
 			}
-			return nil, xerrors.Errorf(
+			return nil, fmt.Errorf(
 				"could not find leaf count %q from branch %q for slice (name=%q, type=%T) among: %q",
 				v.Count, b.Name(), v.Name, v.Value, names,
 			)
 		}
 		lcc, ok := lc.(leafCount)
 		if !ok {
-			return nil, xerrors.Errorf(
+			return nil, fmt.Errorf(
 				"leaf count %q from branch %q for slice (name=%q, type=%T) is not a LeafCount",
 				v.Count, b.Name(), v.Name, v.Value,
 			)
@@ -545,55 +544,55 @@ func newLeafFromWVar(b Branch, v WriteVar) (Leaf, error) {
 		leaf = newLeafO(b, v.Name, shape, false, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
-			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+			return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Uint8:
 		leaf = newLeafB(b, v.Name, shape, unsigned, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
-			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+			return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Uint16:
 		leaf = newLeafS(b, v.Name, shape, unsigned, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
-			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+			return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Uint32:
 		leaf = newLeafI(b, v.Name, shape, unsigned, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
-			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+			return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Uint64:
 		leaf = newLeafL(b, v.Name, shape, unsigned, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
-			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+			return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Int8:
 		leaf = newLeafB(b, v.Name, shape, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
-			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+			return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Int16:
 		leaf = newLeafS(b, v.Name, shape, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
-			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+			return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Int32:
 		leaf = newLeafI(b, v.Name, shape, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
-			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+			return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Int64:
 		leaf = newLeafL(b, v.Name, shape, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
-			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+			return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	case reflect.Float32:
 		switch rt {
@@ -601,16 +600,16 @@ func newLeafFromWVar(b Branch, v WriteVar) (Leaf, error) {
 			leaf = newLeafF(b, v.Name, shape, signed, count)
 			err := leaf.setAddress(v.Value)
 			if err != nil {
-				return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+				return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
 			}
 		case reflect.TypeOf(root.Float16(0)), reflect.TypeOf([]root.Float16(nil)):
 			leaf = newLeafF16(b, v.Name, shape, signed, count, nil)
 			err := leaf.setAddress(v.Value)
 			if err != nil {
-				return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+				return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
 			}
 		default:
-			panic(xerrors.Errorf("invalid type %T", v.Value))
+			panic(fmt.Errorf("invalid type %T", v.Value))
 		}
 	case reflect.Float64:
 		switch rt {
@@ -618,25 +617,25 @@ func newLeafFromWVar(b Branch, v WriteVar) (Leaf, error) {
 			leaf = newLeafD(b, v.Name, shape, signed, count)
 			err := leaf.setAddress(v.Value)
 			if err != nil {
-				return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+				return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
 			}
 		case reflect.TypeOf(root.Double32(0)), reflect.TypeOf([]root.Double32(nil)):
 			leaf = newLeafD32(b, v.Name, shape, signed, count, nil)
 			err := leaf.setAddress(v.Value)
 			if err != nil {
-				return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+				return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
 			}
 		default:
-			panic(xerrors.Errorf("invalid type %T", v.Value))
+			panic(fmt.Errorf("invalid type %T", v.Value))
 		}
 	case reflect.String:
 		leaf = newLeafC(b, v.Name, shape, signed, count)
 		err := leaf.setAddress(v.Value)
 		if err != nil {
-			return nil, xerrors.Errorf("could not set leaf address for %q: %w", v.Name, err)
+			return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
 		}
 	default:
-		return nil, xerrors.Errorf("rtree: invalid write-var (name=%q) type %T", v.Name, v.Value)
+		return nil, fmt.Errorf("rtree: invalid write-var (name=%q) type %T", v.Name, v.Value)
 	}
 
 	return leaf, nil

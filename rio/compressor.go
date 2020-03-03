@@ -8,9 +8,8 @@ import (
 	"compress/flate"
 	"compress/gzip"
 	"compress/zlib"
+	"fmt"
 	"io"
-
-	"golang.org/x/xerrors"
 )
 
 // A Compressor takes data written to it and writes the compressed form of that
@@ -92,7 +91,7 @@ func (ck CompressorKind) String() string {
 func (ck CompressorKind) NewCompressor(w io.Writer, opts Options) (Compressor, error) {
 	x, ok := xcomprs[ck]
 	if !ok {
-		return nil, xerrors.Errorf("rio: no compressor registered with %q (%v)", ck.String(), int(ck))
+		return nil, fmt.Errorf("rio: no compressor registered with %q (%v)", ck.String(), int(ck))
 	}
 	return x.Deflate(w, opts)
 }
@@ -101,7 +100,7 @@ func (ck CompressorKind) NewCompressor(w io.Writer, opts Options) (Compressor, e
 func (ck CompressorKind) NewDecompressor(r io.Reader) (Decompressor, error) {
 	x, ok := xcomprs[ck]
 	if !ok {
-		return nil, xerrors.Errorf("rio: no decompressor registered with %q (%v)", ck.String(), int(ck))
+		return nil, fmt.Errorf("rio: no decompressor registered with %q (%v)", ck.String(), int(ck))
 	}
 	return x.Inflate(r)
 }

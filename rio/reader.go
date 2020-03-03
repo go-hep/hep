@@ -6,10 +6,10 @@ package rio
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 
 	riobin "github.com/gonuts/binary"
-	"golang.org/x/xerrors"
 )
 
 // Reader is a rio read-only stream
@@ -45,10 +45,10 @@ func NewReader(r io.Reader) (*Reader, error) {
 	hdr := [4]byte{}
 	_, err := r.Read(hdr[:])
 	if err != nil {
-		return nil, xerrors.Errorf("rio: error reading magic-header: %w", err)
+		return nil, fmt.Errorf("rio: error reading magic-header: %w", err)
 	}
 	if hdr != rioMagic {
-		return nil, xerrors.Errorf("rio: not a rio-stream. magic-header=%q. want=%q",
+		return nil, fmt.Errorf("rio: not a rio-stream. magic-header=%q. want=%q",
 			string(hdr[:]),
 			string(rioMagic[:]),
 		)

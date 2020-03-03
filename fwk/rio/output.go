@@ -5,13 +5,13 @@
 package rio
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"reflect"
 
 	"go-hep.org/x/hep/fwk"
 	"go-hep.org/x/hep/rio"
-	"golang.org/x/xerrors"
 )
 
 // OutputStreamer writes data to a rio-stream.
@@ -85,7 +85,7 @@ func (o *OutputStreamer) Write(ctx fwk.Context) error {
 
 		rt := reflect.TypeOf(obj)
 		if rt != port.Type {
-			return xerrors.Errorf("record[%s]: got type=%q. want type=%q.",
+			return fmt.Errorf("record[%s]: got type=%q. want type=%q.",
 				rec.Name(),
 				rt.Name(),
 				port.Type,

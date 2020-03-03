@@ -29,7 +29,6 @@ import (
 	"github.com/astrogo/fitsio"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -70,30 +69,30 @@ Options:
 func process(oname, tname, fname string) error {
 	f, err := os.Open(fname)
 	if err != nil {
-		return xerrors.Errorf("could not open input file %q: %w", fname, err)
+		return fmt.Errorf("could not open input file %q: %w", fname, err)
 	}
 	defer f.Close()
 
 	fits, err := fitsio.Open(f)
 	if err != nil {
-		return xerrors.Errorf("could not open FITS file %q: %w", fname, err)
+		return fmt.Errorf("could not open FITS file %q: %w", fname, err)
 	}
 	defer fits.Close()
 
 	hdu := fits.Get(tname)
 	if hdu == nil {
-		return xerrors.Errorf("could not retrieve HDU %q from FITS file %q", tname, fname)
+		return fmt.Errorf("could not retrieve HDU %q from FITS file %q", tname, fname)
 	}
 	defer hdu.Close()
 
 	tbl, ok := hdu.(*fitsio.Table)
 	if !ok {
-		return xerrors.Errorf("HDU %q from FITS file %q is not a Table", tname, fname)
+		return fmt.Errorf("HDU %q from FITS file %q is not a Table", tname, fname)
 	}
 
 	o, err := groot.Create(oname)
 	if err != nil {
-		return xerrors.Errorf("could not create output ROOT file %q: %w", oname, err)
+		return fmt.Errorf("could not create output ROOT file %q: %w", oname, err)
 	}
 	defer o.Close()
 
@@ -112,12 +111,12 @@ func process(oname, tname, fname string) error {
 
 	tree, err := rtree.NewWriter(o, tname, wvars)
 	if err != nil {
-		return xerrors.Errorf("could not create output ROOT tree %q: %w", tname, err)
+		return fmt.Errorf("could not create output ROOT tree %q: %w", tname, err)
 	}
 
 	rows, err := tbl.Read(0, tbl.NumRows())
 	if err != nil {
-		return xerrors.Errorf("could not read FITS table range [0, %d): %w", tbl.NumRows(), err)
+		return fmt.Errorf("could not read FITS table range [0, %d): %w", tbl.NumRows(), err)
 	}
 	defer rows.Close()
 
@@ -125,12 +124,12 @@ func process(oname, tname, fname string) error {
 	for rows.Next() {
 		err = rows.Scan(wargs...)
 		if err != nil {
-			return xerrors.Errorf("could not read row %d: %w", irow, err)
+			return fmt.Errorf("could not read row %d: %w", irow, err)
 		}
 
 		_, err = tree.Write()
 		if err != nil {
-			return xerrors.Errorf("could not write row %d: %w", irow, err)
+			return fmt.Errorf("could not write row %d: %w", irow, err)
 		}
 
 		irow++
@@ -138,12 +137,12 @@ func process(oname, tname, fname string) error {
 
 	err = tree.Close()
 	if err != nil {
-		return xerrors.Errorf("could not close ROOT tree writer: %w", err)
+		return fmt.Errorf("could not close ROOT tree writer: %w", err)
 	}
 
 	err = o.Close()
 	if err != nil {
-		return xerrors.Errorf("could not close output ROOT file %q: %w", oname, err)
+		return fmt.Errorf("could not close output ROOT file %q: %w", oname, err)
 	}
 
 	return nil
@@ -189,6 +188,6 @@ func wvarFrom(col fitsio.Column) rtree.WriteVar {
 		}
 
 	default:
-		panic(xerrors.Errorf("fits2root: invalid column type %+v (kind=%v)", col, rt.Kind()))
+		panic(fmt.Errorf("fits2root: invalid column type %+v (kind=%v)", col, rt.Kind()))
 	}
 }

@@ -6,11 +6,11 @@ package xrootd // import "go-hep.org/x/hep/xrootd"
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/auth"
-	"golang.org/x/xerrors"
 )
 
 // A Client to xrootd server which allows to send requests and receive responses.
@@ -106,7 +106,7 @@ func (client *Client) Close() error {
 		}
 	}
 	if errs != nil {
-		return xerrors.Errorf("xrootd: could not close client: %v", errs)
+		return fmt.Errorf("xrootd: could not close client: %v", errs)
 	}
 	return nil
 }
@@ -123,7 +123,7 @@ func (client *Client) sendSession(ctx context.Context, sessionID string, resp xr
 	session, ok := client.sessions[sessionID]
 	client.mu.RUnlock()
 	if !ok {
-		return "", xerrors.Errorf("xrootd: session with id = %q was not found", sessionID)
+		return "", fmt.Errorf("xrootd: session with id = %q was not found", sessionID)
 	}
 
 	redirection, err := session.Send(ctx, resp, req)
@@ -148,7 +148,7 @@ func (client *Client) sendSession(ctx context.Context, sessionID string, resp xr
 	}
 
 	if redirection != nil {
-		err = xerrors.Errorf("xrootd: received %d redirections in a row, aborting request", client.maxRedirections)
+		err = fmt.Errorf("xrootd: received %d redirections in a row, aborting request", client.maxRedirections)
 	}
 
 	return sessionID, err

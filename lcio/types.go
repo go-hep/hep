@@ -5,9 +5,8 @@
 package lcio
 
 import (
+	"fmt"
 	"strings"
-
-	"golang.org/x/xerrors"
 )
 
 func typeFrom(name string) interface{} {
@@ -57,7 +56,7 @@ func typeFrom(name string) interface{} {
 	if strings.HasSuffix(name, "_References") {
 		return new(References)
 	}
-	panic(xerrors.Errorf("unhandled type %q", name))
+	panic(fmt.Errorf("unhandled type %q", name))
 }
 
 func typeName(t interface{}) string {
@@ -104,5 +103,5 @@ func typeName(t interface{}) string {
 	case *RelationContainer:
 		return "LCRelation"
 	}
-	panic(xerrors.Errorf("lcio: unhandled type %T", t))
+	panic(fmt.Errorf("lcio: unhandled type %T", t))
 }

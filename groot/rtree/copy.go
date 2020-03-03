@@ -5,7 +5,7 @@
 package rtree
 
 import (
-	"golang.org/x/xerrors"
+	"fmt"
 )
 
 // Copy copies from src to dst until either the source tree is depleted or
@@ -41,25 +41,25 @@ func CopyN(dst Writer, src Tree, n int64) (int64, error) {
 
 	scan, err := NewScannerVars(src, rvars...)
 	if err != nil {
-		return 0, xerrors.Errorf("rtree: could not create scanner: %w", err)
+		return 0, fmt.Errorf("rtree: could not create scanner: %w", err)
 	}
 
 	for scan.Next() && scan.Entry() < n {
 		err = scan.Scan()
 		if err != nil {
-			return tot, xerrors.Errorf("rtree: could not read entry %d from tree: %w", scan.Entry(), err)
+			return tot, fmt.Errorf("rtree: could not read entry %d from tree: %w", scan.Entry(), err)
 		}
 
 		written, err := dst.Write()
 		if err != nil {
-			return tot, xerrors.Errorf("rtree: could not write entry %d to tree: %w", scan.Entry(), err)
+			return tot, fmt.Errorf("rtree: could not write entry %d to tree: %w", scan.Entry(), err)
 		}
 		tot += int64(written)
 	}
 
 	err = scan.Err()
 	if err != nil {
-		return tot, xerrors.Errorf("rtree: could not scan through tree: %w", err)
+		return tot, fmt.Errorf("rtree: could not scan through tree: %w", err)
 	}
 
 	return tot, err

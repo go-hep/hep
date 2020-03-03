@@ -5,11 +5,11 @@
 package testdata
 
 import (
+	"fmt"
 	"reflect"
 	"sync"
 
 	"go-hep.org/x/hep/fwk"
-	"golang.org/x/xerrors"
 )
 
 type reducer struct {
@@ -49,7 +49,7 @@ func (tsk *reducer) StopTask(ctx fwk.Context) error {
 	msg := ctx.Msg()
 	if sum != tsk.exp {
 		msg.Errorf("expected sum=%v. got=%v (nevts=%d)\n", tsk.exp, sum, nevts)
-		return xerrors.Errorf("%s: expected sum=%v. got=%v (nevts=%d)", tsk.Name(), tsk.exp, sum, nevts)
+		return fmt.Errorf("%s: expected sum=%v. got=%v (nevts=%d)", tsk.Name(), tsk.exp, sum, nevts)
 	}
 	msg.Debugf("expected sum=%v. got=%v (all GOOD) (nevts=%d)\n", tsk.exp, sum, nevts)
 

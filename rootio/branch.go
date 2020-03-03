@@ -5,10 +5,9 @@
 package rootio
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
-
-	"golang.org/x/xerrors"
 )
 
 type tbranch struct {
@@ -127,7 +126,7 @@ func (b *tbranch) getReadEntry() int64 {
 func (b *tbranch) getEntry(i int64) {
 	err := b.loadEntry(i)
 	if err != nil {
-		panic(xerrors.Errorf("rootio: branch [%s] failed to load entry %d: %w", b.Name(), i, err))
+		panic(fmt.Errorf("rootio: branch [%s] failed to load entry %d: %w", b.Name(), i, err))
 	}
 }
 
@@ -148,7 +147,7 @@ func (b *tbranch) UnmarshalROOT(r *RBuffer) error {
 	b.nextbasket = -1
 
 	if vers < 10 {
-		panic(xerrors.Errorf("rootio: too old TBanch version (%d<10)", vers))
+		panic(fmt.Errorf("rootio: too old TBanch version (%d<10)", vers))
 	}
 
 	if err := b.named.UnmarshalROOT(r); err != nil {
@@ -283,7 +282,7 @@ func (b *tbranch) loadEntry(ientry int64) error {
 func (b *tbranch) loadBasket(entry int64) error {
 	ib := b.findBasketIndex(entry)
 	if ib < 0 {
-		return xerrors.Errorf("rootio: no basket for entry %d", entry)
+		return fmt.Errorf("rootio: no basket for entry %d", entry)
 	}
 	b.readentry = entry
 	b.readbasket = ib
@@ -445,7 +444,7 @@ func (b *tbranchElement) UnmarshalROOT(r *RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion()
 	b.rvers = vers
 	if vers < 8 {
-		r.err = xerrors.Errorf("rootio: TBranchElement version too old (%d < 8)", vers)
+		r.err = fmt.Errorf("rootio: TBranchElement version too old (%d < 8)", vers)
 		return r.err
 	}
 
@@ -561,7 +560,7 @@ func (b *tbranchElement) setAddress(ptr interface{}) error {
 				}
 			}
 			if elt == nil {
-				return xerrors.Errorf("rootio: failed to find StreamerElement for leaf %q", leaf.Name())
+				return fmt.Errorf("rootio: failed to find StreamerElement for leaf %q", leaf.Name())
 			}
 			leaf.streamers = []StreamerElement{elt}
 			err = leaf.setAddress(ptr)
@@ -582,7 +581,7 @@ func (b *tbranchElement) setupReadStreamer(sictx StreamerInfoContext) error {
 	if !ok {
 		streamer, ok = streamers.getAny(b.class)
 		if !ok {
-			return xerrors.Errorf("rootio: no StreamerInfo for class=%q version=%d checksum=%d", b.class, b.clsver, b.chksum)
+			return fmt.Errorf("rootio: no StreamerInfo for class=%q version=%d checksum=%d", b.class, b.clsver, b.chksum)
 		}
 	}
 	b.streamer = streamer

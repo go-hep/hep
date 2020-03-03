@@ -11,8 +11,6 @@ import (
 	"io"
 	"math"
 	"sort"
-
-	"golang.org/x/xerrors"
 )
 
 // S2D is a collection of 2-dim data points with errors.
@@ -354,11 +352,11 @@ func (s *S2D) UnmarshalYODA(data []byte) error {
 	// pos of end of annotations
 	pos := bytes.Index(r.Bytes(), []byte("\n# xval\t xerr-\t"))
 	if pos < 0 {
-		return xerrors.Errorf("hbook: invalid Scatter2D-YODA data")
+		return fmt.Errorf("hbook: invalid Scatter2D-YODA data")
 	}
 	err = ann.UnmarshalYODA(r.Bytes()[:pos+1])
 	if err != nil {
-		return xerrors.Errorf("hbook: %q\nhbook: %w", string(r.Bytes()[:pos+1]), err)
+		return fmt.Errorf("hbook: %q\nhbook: %w", string(r.Bytes()[:pos+1]), err)
 	}
 	s.annFromYODA(ann)
 	r.Next(pos)
@@ -382,7 +380,7 @@ scanLoop:
 				&pt.X, &pt.ErrX.Min, &pt.ErrX.Max, &pt.Y, &pt.ErrY.Min, &pt.ErrY.Max,
 			)
 			if err != nil {
-				return xerrors.Errorf("hbook: %q\nhbook: %w", string(buf), err)
+				return fmt.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
 			s.Fill(pt)
 		}

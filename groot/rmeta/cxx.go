@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"go-hep.org/x/hep/groot/root"
-	"golang.org/x/xerrors"
 )
 
 var GoType2ROOTEnum = map[reflect.Type]Enum{
@@ -223,5 +222,5 @@ func rmeta2Name(t Enum) string {
 	case STLstring:
 		return "string"
 	}
-	panic(xerrors.Errorf("not implemented: t=%d (%v)", t, t))
+	panic(fmt.Errorf("not implemented: t=%d (%v)", t, t))
 }

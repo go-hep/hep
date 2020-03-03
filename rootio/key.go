@@ -9,8 +9,6 @@ import (
 	"io"
 	"reflect"
 	"time"
-
-	"golang.org/x/xerrors"
 )
 
 // noKeyError is the error returned when a rootio.Key could not be found.
@@ -169,7 +167,7 @@ func (k *Key) ObjectType() reflect.Type {
 func (k *Key) Value() interface{} {
 	v, err := k.Object()
 	if err != nil {
-		panic(xerrors.Errorf("error loading payload for %q: %w", k.Name(), err))
+		panic(fmt.Errorf("error loading payload for %q: %w", k.Name(), err))
 	}
 	return v
 }
@@ -182,28 +180,28 @@ func (k *Key) Object() (Object, error) {
 
 	buf, err := k.Bytes()
 	if err != nil {
-		return nil, xerrors.Errorf("rootio: could not load key payload: %w", err)
+		return nil, fmt.Errorf("rootio: could not load key payload: %w", err)
 	}
 
 	fct := Factory.Get(k.class)
 	if fct == nil {
-		return nil, xerrors.Errorf("rootio: no registered factory for class %q (key=%q)", k.class, k.Name())
+		return nil, fmt.Errorf("rootio: no registered factory for class %q (key=%q)", k.class, k.Name())
 	}
 
 	v := fct()
 	obj, ok := v.Interface().(Object)
 	if !ok {
-		return nil, xerrors.Errorf("rootio: class %q does not implement rootio.Object (key=%q)", k.class, k.Name())
+		return nil, fmt.Errorf("rootio: class %q does not implement rootio.Object (key=%q)", k.class, k.Name())
 	}
 
 	vv, ok := obj.(ROOTUnmarshaler)
 	if !ok {
-		return nil, xerrors.Errorf("rootio: class %q does not implement rootio.ROOTUnmarshaler (key=%q)", k.class, k.Name())
+		return nil, fmt.Errorf("rootio: class %q does not implement rootio.ROOTUnmarshaler (key=%q)", k.class, k.Name())
 	}
 
 	err = vv.UnmarshalROOT(NewRBuffer(buf, nil, uint32(k.keylen), k.f))
 	if err != nil {
-		return nil, xerrors.Errorf("rootio: could not unmarshal key payload: %w", err)
+		return nil, fmt.Errorf("rootio: could not unmarshal key payload: %w", err)
 	}
 
 	if vv, ok := obj.(SetFiler); ok {
@@ -243,7 +241,7 @@ func (k *Key) load(buf []byte) ([]byte, error) {
 		sr := io.NewSectionReader(k.f, start, int64(k.bytes)-int64(k.keylen))
 		err := decompress(sr, buf)
 		if err != nil {
-			return nil, xerrors.Errorf("rootio: could not decompress key payload: %w", err)
+			return nil, fmt.Errorf("rootio: could not decompress key payload: %w", err)
 		}
 		return buf, nil
 	}
@@ -290,7 +288,7 @@ func (k *Key) store() error {
 func (k *Key) adjust(nsize int32) error {
 	best := k.f.spans.best(int64(nsize))
 	if best == nil {
-		return xerrors.Errorf("rootio: could not find a suitable free segment")
+		return fmt.Errorf("rootio: could not find a suitable free segment")
 	}
 
 	k.seekkey = best.first

@@ -5,8 +5,9 @@
 package fwk
 
 import (
+	"fmt"
+
 	"go-hep.org/x/hep/fwk/fsm"
-	"golang.org/x/xerrors"
 )
 
 // irunner wraps an appmgr to implement fwk.Scripter
@@ -32,7 +33,7 @@ func (ui *irunner) Configure() error {
 
 	err := ui.app.configure(ctx)
 	if err != nil {
-		return xerrors.Errorf("fwk: could not configure application: %w", err)
+		return fmt.Errorf("fwk: could not configure application: %w", err)
 	}
 
 	return nil
@@ -47,12 +48,12 @@ func (ui *irunner) Start() error {
 	}
 
 	if ui.state() < fsm.Configured {
-		return xerrors.Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsm.Configured)
+		return fmt.Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsm.Configured)
 	}
 
 	err := ui.app.start(ctx)
 	if err != nil {
-		return xerrors.Errorf("fwk: could not start application: %w", err)
+		return fmt.Errorf("fwk: could not start application: %w", err)
 	}
 
 	return nil
@@ -67,12 +68,12 @@ func (ui *irunner) Run(evtmax int64) error {
 	}
 
 	if ui.state() < fsm.Started {
-		return xerrors.Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsm.Started)
+		return fmt.Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsm.Started)
 	}
 
 	err := ui.app.run(ctx)
 	if err != nil {
-		return xerrors.Errorf("fwk: could not run application: %w", err)
+		return fmt.Errorf("fwk: could not run application: %w", err)
 	}
 
 	return nil
@@ -87,12 +88,12 @@ func (ui *irunner) Stop() error {
 	}
 
 	if ui.state() < fsm.Running {
-		return xerrors.Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsm.Running)
+		return fmt.Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsm.Running)
 	}
 
 	err := ui.app.stop(ctx)
 	if err != nil {
-		return xerrors.Errorf("fwk: could not stop application: %w", err)
+		return fmt.Errorf("fwk: could not stop application: %w", err)
 	}
 
 	return nil
@@ -107,12 +108,12 @@ func (ui *irunner) Shutdown() error {
 	}
 
 	if ui.state() < fsm.Stopped {
-		return xerrors.Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsm.Stopped)
+		return fmt.Errorf("fwk: invalid app state (%v). need at least %s", ui.state(), fsm.Stopped)
 	}
 
 	err := ui.app.shutdown(ctx)
 	if err != nil {
-		return xerrors.Errorf("fwk: could not shutdown application: %w", err)
+		return fmt.Errorf("fwk: could not shutdown application: %w", err)
 	}
 
 	return nil

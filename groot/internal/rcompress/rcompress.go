@@ -10,13 +10,13 @@ import (
 	"compress/flate"
 	"compress/zlib"
 	"encoding/binary"
+	"fmt"
 	"io"
 
 	"github.com/klauspost/compress/zstd"
 	"github.com/pierrec/lz4"
 	"github.com/pierrec/xxHash/xxHash64"
 	"github.com/ulikunitz/xz"
-	"golang.org/x/xerrors"
 )
 
 // Kind specifies the compression algorithm
@@ -43,7 +43,7 @@ var (
 	// errNoCompression is returned when the compression algorithm
 	// couldn't compress the input or when the compressed output is bigger
 	// than the input
-	errNoCompression = xerrors.Errorf("rcompress: no compression")
+	errNoCompression = fmt.Errorf("rcompress: no compression")
 )
 
 // Settings encodes the ROOT way of specifying a compression mechanism
@@ -74,7 +74,7 @@ func (set Settings) Compression() int32 {
 		case ZSTD:
 			lvl = 1 // FIXME(sbinet): check with ROOT-6.20.00 default
 		default:
-			panic(xerrors.Errorf("rcompress: unknown compression algorithm: %v", alg))
+			panic(fmt.Errorf("rcompress: unknown compression algorithm: %v", alg))
 		}
 	case lvl == flate.BestSpeed:
 		if alg == ZSTD {
@@ -196,17 +196,17 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		hdr[2] = 8 // zlib deflated
 		w, err := zlib.NewWriterLevel(buf, lvl)
 		if err != nil {
-			return 0, xerrors.Errorf("rcompress: could not create ZLIB compressor: %w", err)
+			return 0, fmt.Errorf("rcompress: could not create ZLIB compressor: %w", err)
 		}
 		defer w.Close()
 
 		_, err = w.Write(src)
 		if err != nil {
-			return 0, xerrors.Errorf("rcompress: could not write ZLIB compressed bytes: %w", err)
+			return 0, fmt.Errorf("rcompress: could not write ZLIB compressed bytes: %w", err)
 		}
 		err = w.Close()
 		if err != nil {
-			return 0, xerrors.Errorf("rcompress: could not close ZLIB compressor: %w", err)
+			return 0, fmt.Errorf("rcompress: could not close ZLIB compressor: %w", err)
 		}
 		dstsz = int32(buf.c)
 
@@ -217,22 +217,22 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 			CheckSum: xz.CRC32,
 		}
 		if err := cfg.Verify(); err != nil {
-			return 0, xerrors.Errorf("rcompress: could not create LZMA compressor config: %w", err)
+			return 0, fmt.Errorf("rcompress: could not create LZMA compressor config: %w", err)
 		}
 		w, err := cfg.NewWriter(buf)
 		if err != nil {
-			return 0, xerrors.Errorf("rcompress: could not create LZMA compressor: %w", err)
+			return 0, fmt.Errorf("rcompress: could not create LZMA compressor: %w", err)
 		}
 		defer w.Close()
 
 		_, err = w.Write(src)
 		if err != nil {
-			return 0, xerrors.Errorf("rcompress: could not write LZMA compressed bytes: %w", err)
+			return 0, fmt.Errorf("rcompress: could not write LZMA compressed bytes: %w", err)
 		}
 
 		err = w.Close()
 		if err != nil {
-			return 0, xerrors.Errorf("rcompress: could not close LZMA compressor: %w", err)
+			return 0, fmt.Errorf("rcompress: could not close LZMA compressor: %w", err)
 		}
 
 		dstsz = int32(buf.c)
@@ -258,7 +258,7 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 			n, err = lz4.CompressBlock(src, wrk[chksum:], ht)
 		}
 		if err != nil {
-			return 0, xerrors.Errorf("rcompress: could not compress with LZ4: %w", err)
+			return 0, fmt.Errorf("rcompress: could not compress with LZ4: %w", err)
 		}
 
 		if n == 0 {
@@ -279,27 +279,27 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 
 		w, err := zstd.NewWriter(buf, zstd.WithEncoderLevel(zstd.EncoderLevel(lvl)))
 		if err != nil {
-			return 0, xerrors.Errorf("rcompress: could not create ZSTD compressor: %w", err)
+			return 0, fmt.Errorf("rcompress: could not create ZSTD compressor: %w", err)
 		}
 		defer w.Close()
 
 		_, err = w.Write(src)
 		if err != nil {
-			return 0, xerrors.Errorf("rcompress: could not write ZSTD compressed bytes: %w", err)
+			return 0, fmt.Errorf("rcompress: could not write ZSTD compressed bytes: %w", err)
 		}
 
 		err = w.Close()
 		if err != nil {
-			return 0, xerrors.Errorf("rcompress: could not close ZSTD compressor: %w", err)
+			return 0, fmt.Errorf("rcompress: could not close ZSTD compressor: %w", err)
 		}
 
 		dstsz = int32(buf.c)
 
 	case OldCompression:
-		return 0, xerrors.Errorf("rcompress: old compression algorithm unsupported")
+		return 0, fmt.Errorf("rcompress: old compression algorithm unsupported")
 
 	default:
-		return 0, xerrors.Errorf("rcompress: unknown algorithm %d", alg)
+		return 0, fmt.Errorf("rcompress: unknown algorithm %d", alg)
 	}
 
 	if dstsz > kMaxCompressedBlockSize {
@@ -330,7 +330,7 @@ func Decompress(dst []byte, src io.Reader) error {
 	for end < buflen {
 		_, err := io.ReadFull(src, hdr)
 		if err != nil {
-			return xerrors.Errorf("rcompress: could not read compress header: %w", err)
+			return fmt.Errorf("rcompress: could not read compress header: %w", err)
 		}
 
 		_ = hdr[HeaderSize-1] // bound-check
@@ -342,20 +342,20 @@ func Decompress(dst []byte, src io.Reader) error {
 		case ZLIB:
 			rc, err := zlib.NewReader(lr)
 			if err != nil {
-				return xerrors.Errorf("rcompress: could not create ZLIB reader: %w", err)
+				return fmt.Errorf("rcompress: could not create ZLIB reader: %w", err)
 			}
 			defer rc.Close()
 
 			_, err = io.ReadFull(rc, dst[beg:end])
 			if err != nil {
-				return xerrors.Errorf("rcompress: could not decompress ZLIB buffer: %w", err)
+				return fmt.Errorf("rcompress: could not decompress ZLIB buffer: %w", err)
 			}
 
 		case LZ4:
 			src := make([]byte, srcsz)
 			_, err = io.ReadFull(lr, src)
 			if err != nil {
-				return xerrors.Errorf("rcompress: could not read LZ4 block: %w", err)
+				return fmt.Errorf("rcompress: could not read LZ4 block: %w", err)
 			}
 			const chksum = 8
 			// FIXME: we skip the 32b checksum. use it!
@@ -366,18 +366,18 @@ func Decompress(dst []byte, src io.Reader) error {
 					// no compression
 					copy(dst[beg:end], src[chksum:])
 				default:
-					return xerrors.Errorf("rcompress: could not decompress LZ4 block: %w", err)
+					return fmt.Errorf("rcompress: could not decompress LZ4 block: %w", err)
 				}
 			}
 
 		case LZMA:
 			rc, err := xz.NewReader(lr)
 			if err != nil {
-				return xerrors.Errorf("rcompress: could not create LZMA reader: %w", err)
+				return fmt.Errorf("rcompress: could not create LZMA reader: %w", err)
 			}
 			_, err = io.ReadFull(rc, dst[beg:end])
 			if err != nil {
-				return xerrors.Errorf("rcompress: could not decompress LZMA block: %w", err)
+				return fmt.Errorf("rcompress: could not decompress LZMA block: %w", err)
 			}
 			if lr.N > 0 {
 				// FIXME(sbinet): LZMA leaves some bytes on the floor...
@@ -390,18 +390,18 @@ func Decompress(dst []byte, src io.Reader) error {
 		case ZSTD:
 			rc, err := zstd.NewReader(lr)
 			if err != nil {
-				return xerrors.Errorf("rcompress: could not create ZSTD reader: %w", err)
+				return fmt.Errorf("rcompress: could not create ZSTD reader: %w", err)
 			}
 			_, err = io.ReadFull(rc, dst[beg:end])
 			if err != nil {
-				return xerrors.Errorf("rcompress: could not decompress ZSTD block: %w", err)
+				return fmt.Errorf("rcompress: could not decompress ZSTD block: %w", err)
 			}
 			if lr.N > 0 {
 				panic("zstd extra bytes")
 			}
 
 		default:
-			panic(xerrors.Errorf("rcompress: unknown compression algorithm %q", hdr[:2]))
+			panic(fmt.Errorf("rcompress: unknown compression algorithm %q", hdr[:2]))
 		}
 		beg = end
 	}

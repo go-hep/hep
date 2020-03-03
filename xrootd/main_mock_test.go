@@ -6,13 +6,13 @@ package xrootd // import "go-hep.org/x/hep/xrootd"
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	"go-hep.org/x/hep/xrootd/internal/mux"
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdproto"
 	"go-hep.org/x/hep/xrootd/xrdproto/signing"
-	"golang.org/x/xerrors"
 )
 
 var testClientAddrs []string
@@ -45,7 +45,7 @@ func unmarshalRequest(data []byte, request xrdproto.Request) (xrdproto.RequestHe
 		return xrdproto.RequestHeader{}, err
 	}
 	if header.RequestID != request.ReqID() {
-		return xrdproto.RequestHeader{}, xerrors.Errorf("xrootd: unexpected request id was specified:\nwant = %d\ngot = %d\n", request.ReqID(), header.RequestID)
+		return xrdproto.RequestHeader{}, fmt.Errorf("xrootd: unexpected request id was specified:\nwant = %d\ngot = %d\n", request.ReqID(), header.RequestID)
 	}
 	if err := request.UnmarshalXrd(rBuffer); err != nil {
 		return xrdproto.RequestHeader{}, err

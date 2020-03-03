@@ -6,6 +6,7 @@
 package rsql // import "go-hep.org/x/hep/groot/rsql"
 
 import (
+	"fmt"
 	"io"
 	"math"
 	"reflect"
@@ -13,22 +14,21 @@ import (
 	"go-hep.org/x/hep/groot/rsql/rsqldrv"
 	"go-hep.org/x/hep/groot/rtree"
 	"go-hep.org/x/hep/hbook"
-	"golang.org/x/xerrors"
 )
 
 // Scan executes a query against the given tree and runs the function f
 // within that context.
 func Scan(tree rtree.Tree, query string, f interface{}) error {
 	if f == nil {
-		return xerrors.Errorf("groot/rsql: nil func")
+		return fmt.Errorf("groot/rsql: nil func")
 	}
 	rv := reflect.ValueOf(f)
 	rt := rv.Type()
 	if rt.Kind() != reflect.Func {
-		return xerrors.Errorf("groot/rsql: expected a func, got %T", f)
+		return fmt.Errorf("groot/rsql: expected a func, got %T", f)
 	}
 	if rt.NumOut() != 1 || rt.Out(0) != reflect.TypeOf((*error)(nil)).Elem() {
-		return xerrors.Errorf("groot/rsql: expected a func returning an error. got %T", f)
+		return fmt.Errorf("groot/rsql: expected a func returning an error. got %T", f)
 	}
 	vargs := make([]reflect.Value, rt.NumIn())
 	args := make([]interface{}, rt.NumIn())

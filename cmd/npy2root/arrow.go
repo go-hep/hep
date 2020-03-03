@@ -5,6 +5,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"reflect"
 	"sync/atomic"
@@ -14,7 +15,6 @@ import (
 	"github.com/apache/arrow/go/arrow/arrio"
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/sbinet/npyio"
-	"golang.org/x/xerrors"
 )
 
 var (
@@ -132,7 +132,7 @@ func (rec *Record) read(r *npyio.Reader, nelem int64, bldr array.Builder) {
 
 	err := r.Read(rv.Addr().Interface())
 	if err != nil {
-		panic(xerrors.Errorf("npy2root: could not read numpy data: %w", err))
+		panic(fmt.Errorf("npy2root: could not read numpy data: %w", err))
 	}
 
 	ch := make(chan interface{}, nelem/2)
@@ -190,13 +190,13 @@ func schemaFrom(npy *npyio.Reader) *arrow.Schema {
 		dtype = arrow.PrimitiveTypes.Float64
 
 		//	case "c8", "<c8", "|c8", ">c8", "complex64":
-		//		panic(xerrors.Errorf("npy2root: complex64 not supported"))
+		//		panic(fmt.Errorf("npy2root: complex64 not supported"))
 		//
 		//	case "c16", "<c16", "|c16", ">c16", "complex128":
-		//		panic(xerrors.Errorf("npy2root: complex128 not supported"))
+		//		panic(fmt.Errorf("npy2root: complex128 not supported"))
 
 	default:
-		panic(xerrors.Errorf("npy2root: invalid dtype descriptor %q", hdr.Descr.Type))
+		panic(fmt.Errorf("npy2root: invalid dtype descriptor %q", hdr.Descr.Type))
 	}
 
 	shape := make([]int, len(hdr.Descr.Shape))
@@ -225,7 +225,7 @@ func schemaFrom(npy *npyio.Reader) *arrow.Schema {
 		}
 
 	default:
-		panic(xerrors.Errorf("npy2root: invalid shape descriptor %v", hdr.Descr.Shape))
+		panic(fmt.Errorf("npy2root: invalid shape descriptor %v", hdr.Descr.Shape))
 	}
 
 	schema := arrow.NewSchema([]arrow.Field{{Name: "numpy", Type: dtype}}, nil)
@@ -264,7 +264,7 @@ func builderFrom(mem memory.Allocator, dt arrow.DataType, size int64) array.Buil
 	case *arrow.FixedSizeListType:
 		bldr = array.NewFixedSizeListBuilder(mem, dt.Len(), dt.Elem())
 	default:
-		panic(xerrors.Errorf("npy2root: invalid Arrow type %v", dt))
+		panic(fmt.Errorf("npy2root: invalid Arrow type %v", dt))
 	}
 	bldr.Reserve(int(size))
 	return bldr
@@ -301,7 +301,7 @@ func dtypeFrom(dt arrow.DataType) reflect.Type {
 	case *arrow.FixedSizeListType:
 		return dtypeFrom(dt.Elem())
 	default:
-		panic(xerrors.Errorf("npy2root: invalid Arrow type %v", dt))
+		panic(fmt.Errorf("npy2root: invalid Arrow type %v", dt))
 	}
 }
 
@@ -350,7 +350,7 @@ func appendData(bldr array.Builder, ch <-chan interface{}, dt arrow.DataType) {
 			appendData(sub, ch, dt.Elem())
 		}
 	default:
-		panic(xerrors.Errorf("npy2root: invalid Arrow builder type %T", bldr))
+		panic(fmt.Errorf("npy2root: invalid Arrow builder type %T", bldr))
 	}
 }
 

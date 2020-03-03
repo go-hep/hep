@@ -5,11 +5,11 @@
 package rdict
 
 import (
+	"fmt"
 	"strings"
 
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rmeta"
-	"golang.org/x/xerrors"
 )
 
 // Visit inspects a streamer info and visits all its elements, once.
@@ -77,13 +77,13 @@ func (v *visitor) visitSE(depth int, se rbytes.StreamerElement) error {
 	case *StreamerBase:
 		base, err := v.ctx.StreamerInfo(se.Name(), -1)
 		if err != nil {
-			return xerrors.Errorf("could not find base %q: %w", se.Name(), err)
+			return fmt.Errorf("could not find base %q: %w", se.Name(), err)
 		}
 		return v.run(depth+1, base)
 	case *StreamerObject:
 		si, err := v.ctx.StreamerInfo(se.TypeName(), -1)
 		if err != nil {
-			return xerrors.Errorf("could not find object %q: %w", se.TypeName(), err)
+			return fmt.Errorf("could not find object %q: %w", se.TypeName(), err)
 		}
 		return v.run(depth+1, si)
 
@@ -91,7 +91,7 @@ func (v *visitor) visitSE(depth int, se rbytes.StreamerElement) error {
 		tname := strings.TrimRight(se.TypeName(), "*")
 		si, err := v.ctx.StreamerInfo(tname, -1)
 		if err != nil {
-			return xerrors.Errorf("could not find object-pointer %q: %w", tname, err)
+			return fmt.Errorf("could not find object-pointer %q: %w", tname, err)
 		}
 		return v.run(depth+1, si)
 
@@ -99,7 +99,7 @@ func (v *visitor) visitSE(depth int, se rbytes.StreamerElement) error {
 		tname := se.TypeName()
 		si, err := v.ctx.StreamerInfo(tname, -1)
 		if err != nil {
-			return xerrors.Errorf("could not find object-any %q: %w", tname, err)
+			return fmt.Errorf("could not find object-any %q: %w", tname, err)
 		}
 		return v.run(depth+1, si)
 
@@ -107,7 +107,7 @@ func (v *visitor) visitSE(depth int, se rbytes.StreamerElement) error {
 		tname := strings.TrimRight(se.TypeName(), "*")
 		si, err := v.ctx.StreamerInfo(tname, -1)
 		if err != nil {
-			return xerrors.Errorf("could not find object-any-pointer %q: %w", tname, err)
+			return fmt.Errorf("could not find object-any-pointer %q: %w", tname, err)
 		}
 		return v.run(depth+1, si)
 
@@ -128,16 +128,16 @@ func (v *visitor) visitSE(depth int, se rbytes.StreamerElement) error {
 			}
 			si, err := v.ctx.StreamerInfo(tname, -1)
 			if err != nil {
-				return xerrors.Errorf("could not find std::container<T> element %q: %w", tname, err)
+				return fmt.Errorf("could not find std::container<T> element %q: %w", tname, err)
 			}
 			return v.run(depth+1, si)
 
 		default:
-			return xerrors.Errorf("rdict: cant visit non-vector-like STL streamers %#v", se)
+			return fmt.Errorf("rdict: cant visit non-vector-like STL streamers %#v", se)
 		}
 
 	default:
-		panic(xerrors.Errorf("rdict: unknown visit streamer %T", se))
+		panic(fmt.Errorf("rdict: unknown visit streamer %T", se))
 	}
 
 	return nil

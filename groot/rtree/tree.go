@@ -5,6 +5,7 @@
 package rtree
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -17,7 +18,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 // A ttree object is a list of Branch.
@@ -337,7 +337,7 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	switch {
 	default:
-		panic(xerrors.Errorf(
+		panic(fmt.Errorf(
 			"rtree: tree [%s] with version [%v] is not supported (too old)",
 			tree.Name(),
 			vers,
@@ -476,7 +476,7 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 		cls := bre.class
 		si, err := r.StreamerInfo(cls, int(bre.clsver))
 		if err != nil {
-			panic(xerrors.Errorf("rtree: could not find streamer for branch %q: %w", br.Name(), err))
+			panic(fmt.Errorf("rtree: could not find streamer for branch %q: %w", br.Name(), err))
 		}
 		// tree.attachStreamer(br, rstreamer, rstreamerCtx)
 		tree.attachStreamer(br, si, r)
@@ -668,7 +668,7 @@ func (tio *tioFeatures) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		var buf = [4]byte{0x1a, 0xa1, 0x2f, 0x10} // FIXME(sbinet) where do these 4 bytes come from ?
 		n, err := w.Write(buf[:])
 		if err != nil {
-			return n, xerrors.Errorf("could not write tio marshaled buffer: %w", err)
+			return n, fmt.Errorf("could not write tio marshaled buffer: %w", err)
 		}
 	}
 

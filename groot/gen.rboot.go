@@ -24,7 +24,6 @@ import (
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/riofs"
-	"golang.org/x/xerrors"
 )
 
 var (
@@ -206,7 +205,7 @@ func writeStreamer(w io.Writer, si rbytes.StreamerInfo) error {
 	const verbose = true
 	err := rdict.GenCxxStreamerInfo(w, si, verbose)
 	if err != nil {
-		return xerrors.Errorf("could not write streamer info %q: %w", si.Name(), err)
+		return fmt.Errorf("could not write streamer info %q: %w", si.Name(), err)
 	}
 	return nil
 }

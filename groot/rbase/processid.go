@@ -12,7 +12,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 // ProcessID is ROOT's way to provide a process identifier object.
@@ -59,7 +58,7 @@ func (pid *ProcessID) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(pid.Class())
 	if vers > rvers.ProcessID {
-		panic(xerrors.Errorf("rbase: invalid %s version=%d > %d", pid.Class(), vers, rvers.ProcessID))
+		panic(fmt.Errorf("rbase: invalid %s version=%d > %d", pid.Class(), vers, rvers.ProcessID))
 	}
 
 	if err := pid.named.UnmarshalROOT(r); err != nil {

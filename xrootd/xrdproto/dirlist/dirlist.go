@@ -8,11 +8,12 @@ package dirlist // import "go-hep.org/x/hep/xrootd/xrdproto/dirlist"
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
 	"go-hep.org/x/hep/xrootd/xrdfs"
 	"go-hep.org/x/hep/xrootd/xrdproto"
-	"golang.org/x/xerrors"
 )
 
 // RequestID is the id of the request, it is sent as part of message.
@@ -49,7 +50,7 @@ func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 
 	if !consistent {
 		// TODO: keep this error or remove it?
-		return xerrors.New("xrootd: all entries of dirlist.Response should either have stat info or not")
+		return errors.New("xrootd: all entries of dirlist.Response should either have stat info or not")
 	}
 
 	for i := range entries {
@@ -113,7 +114,7 @@ func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	}
 
 	if len(lines)%2 != 0 {
-		return xerrors.Errorf("xrootd: wrong response size for the dirlist request: want even number of lines, got %d", len(lines))
+		return fmt.Errorf("xrootd: wrong response size for the dirlist request: want even number of lines, got %d", len(lines))
 	}
 
 	lines = lines[2:]

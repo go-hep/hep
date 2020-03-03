@@ -5,10 +5,10 @@
 package fastjet
 
 import (
+	"fmt"
 	"math"
 
 	"go-hep.org/x/hep/fmom"
-	"golang.org/x/xerrors"
 )
 
 type Recombiner interface {
@@ -55,7 +55,7 @@ func (rec DefaultRecombiner) Recombine(j1, j2 *Jet) (Jet, error) {
 		w2 = j2.Pt2()
 
 	default:
-		return Jet{}, xerrors.Errorf("fastjet.Recombine: invalid recombination scheme (%v)", rec.Scheme())
+		return Jet{}, fmt.Errorf("fastjet.Recombine: invalid recombination scheme (%v)", rec.Scheme())
 	}
 
 	pt := j1.Pt() + j2.Pt()
@@ -109,7 +109,7 @@ func (rec DefaultRecombiner) Preprocess(jet *Jet) error {
 		return nil
 
 	default:
-		return xerrors.Errorf("fastjet.Preprocess: invalid recombination scheme (%v)", rec.Scheme())
+		return fmt.Errorf("fastjet.Preprocess: invalid recombination scheme (%v)", rec.Scheme())
 	}
 }
 

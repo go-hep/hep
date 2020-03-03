@@ -7,8 +7,6 @@ package hepevt
 import (
 	"fmt"
 	"io"
-
-	"golang.org/x/xerrors"
 )
 
 // Encoder encodes ASCII files in the HEPEVT format.
@@ -25,7 +23,7 @@ func NewEncoder(w io.Writer) *Encoder {
 func (enc *Encoder) Encode(evt *Event) error {
 	_, err := fmt.Fprintf(enc.w, "%d %d\n", evt.Nevhep, evt.Nhep)
 	if err != nil {
-		return xerrors.Errorf("could not encode event header line: %w", err)
+		return fmt.Errorf("could not encode event header line: %w", err)
 	}
 
 	for i := 0; i < evt.Nhep; i++ {
@@ -43,7 +41,7 @@ func (enc *Encoder) Encode(evt *Event) error {
 			evt.Vhep[i][0], evt.Vhep[i][1], evt.Vhep[i][2], evt.Vhep[i][3],
 		)
 		if err != nil {
-			return xerrors.Errorf("could not encode event particle line[%d]: %w", i, err)
+			return fmt.Errorf("could not encode event particle line[%d]: %w", i, err)
 		}
 	}
 	return nil
@@ -63,7 +61,7 @@ func NewDecoder(r io.Reader) *Decoder {
 func (dec *Decoder) Decode(evt *Event) error {
 	_, err := fmt.Fscanf(dec.r, "%d %d\n", &evt.Nevhep, &evt.Nhep)
 	if err != nil {
-		return xerrors.Errorf("could not decode event header line: %w", err)
+		return fmt.Errorf("could not decode event header line: %w", err)
 	}
 
 	// resize
@@ -97,7 +95,7 @@ func (dec *Decoder) Decode(evt *Event) error {
 			&evt.Vhep[i][0], &evt.Vhep[i][1], &evt.Vhep[i][2], &evt.Vhep[i][3],
 		)
 		if err != nil {
-			return xerrors.Errorf("could not decode event line[%d]: %w", i, err)
+			return fmt.Errorf("could not decode event line[%d]: %w", i, err)
 		}
 		// convert 0-based indices to 1-based ones
 		evt.Jmohep[i][0] -= 1

@@ -9,7 +9,6 @@ import (
 	"math"
 
 	"go-hep.org/x/hep/fastjet/internal/predicates"
-	"golang.org/x/xerrors"
 )
 
 // Point in the X-Y Plane.
@@ -88,7 +87,7 @@ func (p *Point) SecondNearestNeighbor() (*Point, float64) {
 			p2 = t.A
 			p3 = t.B
 		default:
-			panic(xerrors.Errorf("delaunay: point %v not found in %v", p, t))
+			panic(fmt.Errorf("delaunay: point %v not found in %v", p, t))
 		}
 		dist := p.distance(p2)
 		switch {
@@ -170,7 +169,7 @@ func (p *Point) findNearest() {
 				np = t.B
 			}
 		default:
-			panic(xerrors.Errorf("delaunay: point P%s not found in T%s", p, t))
+			panic(fmt.Errorf("delaunay: point P%s not found in T%s", p, t))
 		}
 		// check whether the distance found is smaller than the previous smallest distance.
 		if dist < min {
@@ -202,11 +201,11 @@ func (p *Point) surroundingPoints() []*Point {
 		points[0] = t.A
 		points[1] = t.B
 	default:
-		panic(xerrors.Errorf("delaunay: point %v not in adjacent triangle %v", p, t))
+		panic(fmt.Errorf("delaunay: point %v not in adjacent triangle %v", p, t))
 	}
 	for i := 0; j < len(points)-1; {
 		if i >= len(p.adjacentTriangles) {
-			panic(xerrors.Errorf("delaunay: internal error with adjacent triangles for %v. Can't find counterclockwise neighbor of %v", p, points[j]))
+			panic(fmt.Errorf("delaunay: internal error with adjacent triangles for %v. Can't find counterclockwise neighbor of %v", p, points[j]))
 		}
 		// it needs to find the triangle next to k and not k again
 		if p.adjacentTriangles[i].Equals(p.adjacentTriangles[k]) {
@@ -255,7 +254,7 @@ func (p *Point) findClockwiseTriangle(t *Triangle) *Triangle {
 	case p.Equals(t.C):
 		p2 = t.A
 	default:
-		panic(xerrors.Errorf("delaunay: can't find Point %v in Triangle %v", p, t))
+		panic(fmt.Errorf("delaunay: can't find Point %v in Triangle %v", p, t))
 	}
 	for _, t1 := range p.adjacentTriangles {
 		for _, t2 := range p2.adjacentTriangles {
@@ -264,7 +263,7 @@ func (p *Point) findClockwiseTriangle(t *Triangle) *Triangle {
 			}
 		}
 	}
-	panic(xerrors.Errorf("delaunay: no clockwise neighbor of Triangle %v around Point %v", t, p))
+	panic(fmt.Errorf("delaunay: no clockwise neighbor of Triangle %v around Point %v", t, p))
 }
 
 // inTriangle checks whether the point is in the triangle and whether it is on an edge.
@@ -299,7 +298,7 @@ func (l location) String() string {
 	case outside:
 		return "Outside Triangle"
 	default:
-		panic(xerrors.Errorf("delaunay: unknown location %d", int(l)))
+		panic(fmt.Errorf("delaunay: unknown location %d", int(l)))
 	}
 }
 

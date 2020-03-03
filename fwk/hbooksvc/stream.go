@@ -5,12 +5,12 @@
 package hbooksvc
 
 import (
+	"fmt"
 	"io"
 	"os"
 
 	"go-hep.org/x/hep/fwk"
 	"go-hep.org/x/hep/rio"
-	"golang.org/x/xerrors"
 )
 
 // Mode describes the open-mode of a stream
@@ -55,7 +55,7 @@ func (stream *istream) read(name string, ptr interface{}) error {
 
 	seekr, ok := stream.f.(io.Seeker)
 	if !ok {
-		return xerrors.Errorf("hbooksvc: input stream [%s] is not seek-able", stream.name)
+		return fmt.Errorf("hbooksvc: input stream [%s] is not seek-able", stream.name)
 	}
 
 	pos, err := seekr.Seek(0, 1)
@@ -83,18 +83,18 @@ func (stream *istream) read(name string, ptr interface{}) error {
 	}
 	rec := scan.Record()
 	if rec == nil {
-		return xerrors.Errorf("hbooksvc: could not find record [%s] in stream [%s]", name, stream.name)
+		return fmt.Errorf("hbooksvc: could not find record [%s] in stream [%s]", name, stream.name)
 	}
 	blk := rec.Block(name)
 	if blk == nil {
-		return xerrors.Errorf(
+		return fmt.Errorf(
 			"hbooksvc: could not get block [%s] from record [%s] in stream [%s]",
 			name, name, stream.name,
 		)
 	}
 	err = blk.Read(ptr)
 	if err != nil {
-		return xerrors.Errorf(
+		return fmt.Errorf(
 			"hbooksvc: could not read data from block [%s] from record [%s] in stream [%s]: %w",
 			name, name, stream.name, err,
 		)
@@ -117,7 +117,7 @@ func (stream *ostream) write() error {
 		rec := stream.w.Record(name)
 		err := rec.Connect(name, obj.Value())
 		if err != nil {
-			return xerrors.Errorf(
+			return fmt.Errorf(
 				"error writing object [%s] to stream [%s]: %w",
 				name, stream.name, err,
 			)
@@ -126,7 +126,7 @@ func (stream *ostream) write() error {
 		blk := rec.Block(name)
 		err = blk.Write(obj.Value())
 		if err != nil {
-			return xerrors.Errorf(
+			return fmt.Errorf(
 				"error writing object [%s] to stream [%s]: %w",
 				name, stream.name, err,
 			)
@@ -134,7 +134,7 @@ func (stream *ostream) write() error {
 
 		err = rec.Write()
 		if err != nil {
-			return xerrors.Errorf(
+			return fmt.Errorf(
 				"error writing object [%s] to stream [%s]: %w",
 				name, stream.name, err,
 			)

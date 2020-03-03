@@ -19,7 +19,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 type tdirectory struct {
@@ -136,7 +135,7 @@ func newDirectoryFile(name, title string, f *File, parent *tdirectoryFile) *tdir
 	// dir-marshal
 	_, err := dir.MarshalROOT(buf)
 	if err != nil {
-		panic(xerrors.Errorf("riofs: failed to write header: %w", err))
+		panic(fmt.Errorf("riofs: failed to write header: %w", err))
 	}
 	key.buf = buf.Bytes()
 	key.obj = dir
@@ -146,7 +145,7 @@ func newDirectoryFile(name, title string, f *File, parent *tdirectoryFile) *tdir
 	// key-write-file
 	_, err = key.writeFile(f)
 	if err != nil {
-		panic(xerrors.Errorf("riofs: failed to write key header: %w", err))
+		panic(fmt.Errorf("riofs: failed to write key header: %w", err))
 	}
 
 	return dir
@@ -184,7 +183,7 @@ func (dir *tdirectoryFile) readDirInfo() error {
 	nbytes := int64(f.nbytesname) + dir.recordSize(f.version)
 
 	if nbytes+f.begin > f.end {
-		return xerrors.Errorf(
+		return fmt.Errorf(
 			"riofs: file [%v] has an incorrect header length [%v] or incorrect end of file length [%v]",
 			f.id,
 			f.begin+nbytes,
@@ -229,7 +228,7 @@ func (dir *tdirectoryFile) readDirInfo() error {
 	dir.dir.named.SetTitle(r.ReadString())
 
 	if dir.nbytesname < 10 || dir.nbytesname > 1000 {
-		return xerrors.Errorf("riofs: can't read directory info")
+		return fmt.Errorf("riofs: can't read directory info")
 	}
 
 	return r.Err()
@@ -340,12 +339,12 @@ func (dir *tdirectoryFile) writeHeader() error {
 	buf := rbytes.NewWBuffer(make([]byte, nbytes), nil, 0, nil)
 	_, err = dir.MarshalROOT(buf)
 	if err != nil {
-		return xerrors.Errorf("riofs: could not marshal dir-info: %w", err)
+		return fmt.Errorf("riofs: could not marshal dir-info: %w", err)
 	}
 
 	_, err = dir.file.w.WriteAt(buf.Bytes(), dir.seekdir+int64(dir.nbytesname))
 	if err != nil {
-		return xerrors.Errorf("riofs: could not write dir-info to file: %w", err)
+		return fmt.Errorf("riofs: could not write dir-info to file: %w", err)
 	}
 
 	return nil
@@ -410,11 +409,11 @@ func (dir *tdirectoryFile) Get(namecycle string) (root.Object, error) {
 
 func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 	if dir.file.w == nil {
-		return xerrors.Errorf("could not put %q into directory %q: %w", name, dir.dir.Name(), ErrReadOnly)
+		return fmt.Errorf("could not put %q into directory %q: %w", name, dir.dir.Name(), ErrReadOnly)
 	}
 
 	if strings.Contains(name, "/") {
-		return xerrors.Errorf("riofs: invalid path name %q (contains a '/')", name)
+		return fmt.Errorf("riofs: invalid path name %q (contains a '/')", name)
 	}
 
 	var (
@@ -428,7 +427,7 @@ func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 		title = v.Title()
 	}
 	if name == "" {
-		return xerrors.Errorf("riofs: empty key name")
+		return fmt.Errorf("riofs: empty key name")
 	}
 
 	// FIXME(sbinet): implement a fast look-up ?
@@ -455,24 +454,24 @@ func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 		if err != nil {
 			si, err = streamerInfoFrom(obj, dir)
 			if err != nil {
-				return xerrors.Errorf("riofs: could not generate streamer for key %q and type %T: %w", name, obj, err)
+				return fmt.Errorf("riofs: could not generate streamer for key %q and type %T: %w", name, obj, err)
 			}
 			si, err = dir.StreamerInfo(cxx, -1)
 		}
 		if err != nil {
-			return xerrors.Errorf("riofs: could not find streamer for %T: %w", obj, err)
+			return fmt.Errorf("riofs: could not find streamer for %T: %w", obj, err)
 		}
 		dir.addStreamer(si)
 	}
 
 	key, err := newKeyFrom(dir, name, title, rdict.GoName2Cxx(typename), obj, dir.file)
 	if err != nil {
-		return xerrors.Errorf("riofs: could not create key %q for object %T: %w", name, obj, err)
+		return fmt.Errorf("riofs: could not create key %q for object %T: %w", name, obj, err)
 	}
 	key.cycle = cycle
 	_, err = key.writeFile(dir.file)
 	if err != nil {
-		return xerrors.Errorf("riofs: could not write key %q to file: %w", name, err)
+		return fmt.Errorf("riofs: could not write key %q to file: %w", name, err)
 	}
 
 	dir.keys = append(dir.keys, key)
@@ -488,11 +487,11 @@ func (dir *tdirectoryFile) Keys() []Key {
 // Mkdir creates a new subdirectory
 func (dir *tdirectoryFile) Mkdir(name string) (Directory, error) {
 	if _, err := dir.Get(name); err == nil {
-		return nil, xerrors.Errorf("riofs: %q already exists", name)
+		return nil, fmt.Errorf("riofs: %q already exists", name)
 	}
 
 	if strings.Contains(name, "/") {
-		return nil, xerrors.Errorf("riofs: invalid directory name %q (contains a '/')", name)
+		return nil, fmt.Errorf("riofs: invalid directory name %q (contains a '/')", name)
 	}
 
 	sub := newDirectoryFile(name, "", dir.file, dir)
@@ -598,7 +597,7 @@ func (dir *tdirectoryFile) UnmarshalROOT(r *rbytes.RBuffer) error {
 // If version is negative, the latest version should be returned.
 func (dir *tdirectoryFile) StreamerInfo(name string, version int) (rbytes.StreamerInfo, error) {
 	if dir.file == nil {
-		return nil, xerrors.Errorf("riofs: no streamers")
+		return nil, fmt.Errorf("riofs: no streamers")
 	}
 	return dir.file.StreamerInfo(name, version)
 }
@@ -630,7 +629,7 @@ func (dir *tdirectoryFile) writeKeys() error {
 	for _, k := range dir.Keys() {
 		_, err = k.MarshalROOT(buf)
 		if err != nil {
-			return xerrors.Errorf("riofs: could not write key: %w", err)
+			return fmt.Errorf("riofs: could not write key: %w", err)
 		}
 	}
 	hdr.buf = buf.Bytes()
@@ -640,7 +639,7 @@ func (dir *tdirectoryFile) writeKeys() error {
 
 	_, err = hdr.writeFile(dir.file)
 	if err != nil {
-		return xerrors.Errorf("riofs: could not write header key: %w", err)
+		return fmt.Errorf("riofs: could not write header key: %w", err)
 	}
 	return nil
 }
@@ -662,13 +661,13 @@ func (dir *tdirectoryFile) writeDirHeader() error {
 	buf.WriteString(dir.Title())
 	_, err = dir.MarshalROOT(buf)
 	if err != nil {
-		return xerrors.Errorf("riofs: could not marshal dir-info: %w", err)
+		return fmt.Errorf("riofs: could not marshal dir-info: %w", err)
 	}
 
 	key.buf = buf.Bytes()
 	_, err = key.writeFile(dir.file)
 	if err != nil {
-		return xerrors.Errorf("riofs: could not write dir-info to file: %w", err)
+		return fmt.Errorf("riofs: could not write dir-info to file: %w", err)
 	}
 
 	return nil
@@ -706,7 +705,7 @@ func (dir *tdirectoryFile) records(w io.Writer, indent int) error {
 		fmt.Fprintf(w, "%skey[%d]: %q\n", hdr+" ", i, k.Name())
 		err := k.records(w, indent+1)
 		if err != nil {
-			return xerrors.Errorf("could not inspect key %q: %w", k.Name(), err)
+			return fmt.Errorf("could not inspect key %q: %w", k.Name(), err)
 		}
 	}
 

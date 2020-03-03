@@ -9,12 +9,13 @@ import (
 	"compress/flate"
 	"compress/zlib"
 	"encoding/binary"
+	"errors"
+	"fmt"
 	"io"
 
 	"github.com/pierrec/lz4"
 	"github.com/pierrec/xxHash/xxHash64"
 	"github.com/ulikunitz/xz"
-	"golang.org/x/xerrors"
 )
 
 type compressAlgType int
@@ -32,7 +33,7 @@ var (
 	// errNoCompression is returned when the compression algorithm
 	// couldn't compress the input or when the compressed output is bigger
 	// than the input
-	errNoCompression = xerrors.New("rootio: no compression")
+	errNoCompression = errors.New("rootio: no compression")
 )
 
 // Note: this contains ZL[src][dst] where src and dst are 3 bytes each.
@@ -56,7 +57,7 @@ func (f *File) setCompression(alg compressAlgType, lvl int) {
 		case kZLIB:
 			lvl = 6
 		default:
-			panic(xerrors.Errorf("rootio: unknown compression algorithm: %v", alg))
+			panic(fmt.Errorf("rootio: unknown compression algorithm: %v", alg))
 		}
 	case lvl > 99:
 		lvl = 99
@@ -181,15 +182,15 @@ func compressBlock(alg compressAlgType, lvl int, tgt, src []byte) (int, error) {
 		buf.Grow(len(src))
 		w, err := zlib.NewWriterLevel(buf, lvl)
 		if err != nil {
-			return 0, xerrors.Errorf("rootio: could not create ZLIB compressor: %w", err)
+			return 0, fmt.Errorf("rootio: could not create ZLIB compressor: %w", err)
 		}
 		_, err = w.Write(src)
 		if err != nil {
-			return 0, xerrors.Errorf("rootio: could not write ZLIB compressed bytes: %w", err)
+			return 0, fmt.Errorf("rootio: could not write ZLIB compressed bytes: %w", err)
 		}
 		err = w.Close()
 		if err != nil {
-			return 0, xerrors.Errorf("rootio: could not close ZLIB compressor: %w", err)
+			return 0, fmt.Errorf("rootio: could not close ZLIB compressor: %w", err)
 		}
 		dstsz = int32(buf.Len())
 		if dstsz > srcsz {
@@ -204,23 +205,23 @@ func compressBlock(alg compressAlgType, lvl int, tgt, src []byte) (int, error) {
 			CheckSum: xz.CRC32,
 		}
 		if err := cfg.Verify(); err != nil {
-			return 0, xerrors.Errorf("rootio: could not create LZMA compressor config: %w", err)
+			return 0, fmt.Errorf("rootio: could not create LZMA compressor config: %w", err)
 		}
 		buf := new(bytes.Buffer)
 		buf.Grow(len(src))
 		w, err := cfg.NewWriter(buf)
 		if err != nil {
-			return 0, xerrors.Errorf("rootio: could not create LZMA compressor: %w", err)
+			return 0, fmt.Errorf("rootio: could not create LZMA compressor: %w", err)
 		}
 
 		_, err = w.Write(src)
 		if err != nil {
-			return 0, xerrors.Errorf("rootio: could not write LZMA compressed bytes: %w", err)
+			return 0, fmt.Errorf("rootio: could not write LZMA compressed bytes: %w", err)
 		}
 
 		err = w.Close()
 		if err != nil {
-			return 0, xerrors.Errorf("rootio: could not close LZMA compressor: %w", err)
+			return 0, fmt.Errorf("rootio: could not close LZMA compressor: %w", err)
 		}
 
 		dstsz = int32(buf.Len())
@@ -250,7 +251,7 @@ func compressBlock(alg compressAlgType, lvl int, tgt, src []byte) (int, error) {
 			n, err = lz4.CompressBlock(src, buf[chksum:], ht)
 		}
 		if err != nil {
-			return 0, xerrors.Errorf("rootio: could not compress with LZ4: %w", err)
+			return 0, fmt.Errorf("rootio: could not compress with LZ4: %w", err)
 		}
 
 		if n == 0 {
@@ -264,10 +265,10 @@ func compressBlock(alg compressAlgType, lvl int, tgt, src []byte) (int, error) {
 		dstsz = int32(n + chksum)
 
 	case kOldCompressionAlgo:
-		return 0, xerrors.Errorf("rootio: old compression algorithm unsupported")
+		return 0, fmt.Errorf("rootio: old compression algorithm unsupported")
 
 	default:
-		return 0, xerrors.Errorf("rootio: unknown algorithm %d", alg)
+		return 0, fmt.Errorf("rootio: unknown algorithm %d", alg)
 	}
 
 	if dstsz > kMaxCompressedBlockSize {
@@ -299,7 +300,7 @@ func decompress(r io.Reader, buf []byte) error {
 		var hdr [rootHDRSIZE]byte
 		_, err := io.ReadFull(r, hdr[:])
 		if err != nil {
-			return xerrors.Errorf("rootio: could not read compress header: %w", err)
+			return fmt.Errorf("rootio: could not read compress header: %w", err)
 		}
 
 		srcsz := (int64(hdr[3]) | int64(hdr[4])<<8 | int64(hdr[5])<<16)
@@ -310,12 +311,12 @@ func decompress(r io.Reader, buf []byte) error {
 		case kZLIB:
 			rc, err := zlib.NewReader(lr)
 			if err != nil {
-				return xerrors.Errorf("rootio: could not create ZLIB reader: %w", err)
+				return fmt.Errorf("rootio: could not create ZLIB reader: %w", err)
 			}
 			defer rc.Close()
 			_, err = io.ReadFull(rc, buf[beg:end])
 			if err != nil {
-				return xerrors.Errorf("rootio: could not decompress ZLIB buffer: %w", err)
+				return fmt.Errorf("rootio: could not decompress ZLIB buffer: %w", err)
 			}
 
 		case kLZ4:
@@ -346,7 +347,7 @@ func decompress(r io.Reader, buf []byte) error {
 			}
 
 		default:
-			panic(xerrors.Errorf("rootio: unknown compression algorithm %q", hdr[:2]))
+			panic(fmt.Errorf("rootio: unknown compression algorithm %q", hdr[:2]))
 		}
 		beg = end
 	}

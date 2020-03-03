@@ -5,6 +5,7 @@
 package rcont
 
 import (
+	"fmt"
 	"io"
 	"reflect"
 
@@ -13,7 +14,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 type List struct {
@@ -104,7 +104,7 @@ func (li *List) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(li.Class())
 
 	if vers <= 3 {
-		return xerrors.Errorf("rcont: TList version too old (%d <= 3)", vers)
+		return fmt.Errorf("rcont: TList version too old (%d <= 3)", vers)
 	}
 
 	if err := li.obj.UnmarshalROOT(r); err != nil {
@@ -120,7 +120,7 @@ func (li *List) UnmarshalROOT(r *rbytes.RBuffer) error {
 		obj := r.ReadObjectAny()
 		// obj := r.ReadObjectRef()
 		if obj == nil {
-			panic(xerrors.Errorf("nil obj ref: %w", r.Err())) // FIXME(sbinet)
+			panic(fmt.Errorf("nil obj ref: %w", r.Err())) // FIXME(sbinet)
 			// return r.Err()
 		}
 		li.objs[i] = obj

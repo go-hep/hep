@@ -5,6 +5,7 @@
 package rbase
 
 import (
+	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbytes"
@@ -12,7 +13,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 type AttLine struct {
@@ -58,7 +58,7 @@ func (a *AttLine) UnmarshalROOT(r *rbytes.RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(a.Class())
 	if vers > rvers.AttLine {
-		panic(xerrors.Errorf("rbase: invalid attline version=%d > %d", vers, rvers.AttLine))
+		panic(fmt.Errorf("rbase: invalid attline version=%d > %d", vers, rvers.AttLine))
 	}
 
 	a.Color = r.ReadI16()

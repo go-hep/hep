@@ -5,6 +5,7 @@
 package rtree
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -12,7 +13,6 @@ import (
 	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
-	"golang.org/x/xerrors"
 )
 
 var (
@@ -65,7 +65,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 	if rt.Kind() == reflect.Struct {
 		field := fieldOf(rt, se.Name())
 		if field < 0 {
-			panic(xerrors.Errorf("rtree: no such field %q in type %T", se.Name(), ptr))
+			panic(fmt.Errorf("rtree: no such field %q in type %T", se.Name(), ptr))
 		}
 
 		rf = rv.Field(field)
@@ -73,7 +73,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 
 	switch se := se.(type) {
 	default:
-		panic(xerrors.Errorf("rtree: unknown streamer element: %#v", se))
+		panic(fmt.Errorf("rtree: unknown streamer element: %#v", se))
 
 	case *rdict.StreamerBasicType:
 		switch se.Type() {
@@ -98,7 +98,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					return r.Err()
 				}
 			default:
-				panic(xerrors.Errorf("rtree: invalid kCounter size %d", se.Size()))
+				panic(fmt.Errorf("rtree: invalid kCounter size %d", se.Size()))
 			}
 
 		case rmeta.Char:
@@ -333,7 +333,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 			}
 
 		default:
-			panic(xerrors.Errorf("rtree: invalid element type value %d for %#v", se.Type(), se))
+			panic(fmt.Errorf("rtree: invalid element type value %d for %#v", se.Type(), se))
 		}
 
 	case *rdict.StreamerString:
@@ -549,7 +549,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 			}
 
 		default:
-			panic(xerrors.Errorf("rtree: invalid element type value %d for %#v", se.Type(), se))
+			panic(fmt.Errorf("rtree: invalid element type value %d for %#v", se.Type(), se))
 		}
 
 	case *rdict.StreamerSTLstring:
@@ -564,7 +564,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				return r.Err()
 			}
 		default:
-			panic(xerrors.Errorf("rtree: invalid element type value %d for %#v", se.ContainedType(), se))
+			panic(fmt.Errorf("rtree: invalid element type value %d for %#v", se.ContainedType(), se))
 		}
 
 	case *rdict.StreamerSTL:
@@ -717,7 +717,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					etn := se.ElemTypeName()
 					subsi, err := sictx.StreamerInfo(etn[0], -1)
 					if err != nil {
-						panic(xerrors.Errorf("rtree: could not retrieve streamer for %q: %w", etn[0], err))
+						panic(fmt.Errorf("rtree: could not retrieve streamer for %q: %w", etn[0], err))
 					}
 					eptr := reflect.New(rf.Type().Elem())
 					felt := rstreamerFrom(subsi.Elements()[0], eptr.Interface(), lcnt, sictx)
@@ -742,13 +742,13 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				}
 			}
 		default:
-			panic(xerrors.Errorf("rtree: invalid STL type %d for %#v", se.STLType(), se))
+			panic(fmt.Errorf("rtree: invalid STL type %d for %#v", se.STLType(), se))
 		}
 
 	case *rdict.StreamerObjectAny:
 		sinfo, err := sictx.StreamerInfo(se.TypeName(), -1)
 		if err != nil {
-			panic(xerrors.Errorf("no streamer-info for %q", se.TypeName()))
+			panic(fmt.Errorf("no streamer-info for %q", se.TypeName()))
 		}
 		var funcs []func(r *rbytes.RBuffer) error
 		for i, elt := range sinfo.Elements() {
@@ -770,7 +770,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 		}
 
 	}
-	panic(xerrors.Errorf("rtree: unknown streamer element: %#v", se))
+	panic(fmt.Errorf("rtree: unknown streamer element: %#v", se))
 }
 
 func gotypeFromSI(sinfo rbytes.StreamerInfo, ctx rbytes.StreamerInfoContext) reflect.Type {
@@ -784,7 +784,7 @@ func gotypeFromSI(sinfo rbytes.StreamerInfo, ctx rbytes.StreamerInfoContext) ref
 		elt := elts[i]
 		ename := elt.Name()
 		if ename == "" {
-			panic(xerrors.Errorf("elt[%d]: %q for si=%v", i, elt.Class(), sinfo))
+			panic(fmt.Errorf("elt[%d]: %q for si=%v", i, elt.Class(), sinfo))
 		}
 		ft.Name = "ROOT_" + elt.Name()
 		ft.Name = cxxNameSanitizer.Replace(ft.Name)
@@ -806,7 +806,7 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 	}
 	switch se := se.(type) {
 	default:
-		panic(xerrors.Errorf("rtree: unknown streamer element: %#v", se))
+		panic(fmt.Errorf("rtree: unknown streamer element: %#v", se))
 
 	case *rdict.StreamerBasicType:
 		switch se.Type() {
@@ -817,7 +817,7 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 			case 8:
 				return reflect.TypeOf(int64(0))
 			default:
-				panic(xerrors.Errorf("rtree: invalid rmeta.Counter size %d", se.Size()))
+				panic(fmt.Errorf("rtree: invalid rmeta.Counter size %d", se.Size()))
 			}
 
 		case rmeta.Char:
@@ -873,7 +873,7 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 		case rmeta.OffsetL + rmeta.Bool:
 			return reflect.ArrayOf(se.ArrayLen(), reflect.TypeOf(false))
 		default:
-			panic(xerrors.Errorf("rtree: invalid element type value %d for %#v", se.Type(), se))
+			panic(fmt.Errorf("rtree: invalid element type value %d for %#v", se.Type(), se))
 		}
 
 	case *rdict.StreamerString:
@@ -960,7 +960,7 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 			}
 			return reflect.PtrTo(tp)
 		default:
-			panic(xerrors.Errorf("rtree: invalid element type value %d for %#v", se.Type(), se))
+			panic(fmt.Errorf("rtree: invalid element type value %d for %#v", se.Type(), se))
 		}
 
 	case *rdict.StreamerSTLstring:
@@ -968,7 +968,7 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 		case rmeta.STLstring:
 			return reflect.TypeOf("")
 		default:
-			panic(xerrors.Errorf("rtree: invalid element type value %d for %#v", se.ContainedType(), se))
+			panic(fmt.Errorf("rtree: invalid element type value %d for %#v", se.ContainedType(), se))
 		}
 
 	case *rdict.StreamerSTL:
@@ -1028,7 +1028,7 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 				default:
 					eltname := se.ElemTypeName()[0]
 					if eltname == "" {
-						panic(xerrors.Errorf("rtree: could not find element name for %q", se.TypeName()))
+						panic(fmt.Errorf("rtree: could not find element name for %q", se.TypeName()))
 					}
 					if et, ok := rmeta.CxxBuiltins[eltname]; ok {
 						return reflect.SliceOf(et)
@@ -1040,13 +1040,13 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 					}
 					o := gotypeFromSI(sielt, ctx)
 					if o == nil {
-						panic(xerrors.Errorf("rtree: invalid std::vector<kObject>: ename=%q", se.TypeName()))
+						panic(fmt.Errorf("rtree: invalid std::vector<kObject>: ename=%q", se.TypeName()))
 					}
 					return reflect.SliceOf(o)
 				}
 			}
 		default:
-			panic(xerrors.Errorf("rtree: invalid STL type %d for %#v", se.STLType(), se))
+			panic(fmt.Errorf("rtree: invalid STL type %d for %#v", se.STLType(), se))
 		}
 
 	case *rdict.StreamerObjectAny:
@@ -1068,7 +1068,7 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 			return gotypeFromSI(si, ctx)
 
 		default:
-			panic(xerrors.Errorf("rtree: unknown base class %q in StreamerElement %q: %#v", se.TypeName(), se.Name(), se))
+			panic(fmt.Errorf("rtree: unknown base class %q in StreamerElement %q: %#v", se.TypeName(), se.Name(), se))
 		}
 
 	case *rdict.StreamerObject:
@@ -1100,5 +1100,5 @@ func gotypeFromSE(se rbytes.StreamerElement, lcount Leaf, ctx rbytes.StreamerInf
 		return reflect.PtrTo(typ)
 	}
 
-	panic(xerrors.Errorf("rtree: unknown streamer element: %#v", se))
+	panic(fmt.Errorf("rtree: unknown streamer element: %#v", se))
 }

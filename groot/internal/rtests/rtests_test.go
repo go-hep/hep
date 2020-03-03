@@ -6,10 +6,11 @@ package rtests_test
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"testing"
 
 	"go-hep.org/x/hep/groot/internal/rtests"
-	"golang.org/x/xerrors"
 )
 
 func TestRunCxxROOTWithoutROOT(t *testing.T) {
@@ -20,7 +21,7 @@ func TestRunCxxROOTWithoutROOT(t *testing.T) {
 	}()
 
 	out, err := rtests.RunCxxROOT("hello", []byte(`void hello(const char* name) { std::cout << name << std::endl; }`), "hello")
-	if !xerrors.Is(err, rtests.ErrNoROOT) {
+	if !errors.Is(err, rtests.ErrNoROOT) {
 		t.Fatalf("unexpected error: got=%v, want=%v\noutput:\n%s", err, rtests.ErrNoROOT, out)
 	}
 }
@@ -34,7 +35,7 @@ func TestRunCxxROOTInvalidMacro(t *testing.T) {
 		return
 	}
 	var dst rtests.ROOTError
-	if !xerrors.As(err, &dst) {
+	if !errors.As(err, &dst) {
 		t.Fatalf("unexpected error-type (%T): got=%+v", err, err)
 	}
 	const suffix = `hello.C:1:45: error: use of undeclared identifier 'nameXXX'
@@ -53,7 +54,7 @@ func TestRunCxxROOT(t *testing.T) {
 		case rtests.HasROOT:
 			t.Fatalf("expected C++ ROOT macro to run correctly: %+v\noutput:\n%s", err, out)
 		default:
-			if !xerrors.Is(err, rtests.ErrNoROOT) {
+			if !errors.Is(err, rtests.ErrNoROOT) {
 				t.Fatalf("unexpected error: got=%v, want=%v", err, rtests.ErrNoROOT)
 			}
 		}
@@ -72,7 +73,7 @@ func TestRunCxxROOT(t *testing.T) {
 
 func TestROOTError(t *testing.T) {
 	var err error = rtests.ROOTError{
-		Err:  xerrors.Errorf("err1"),
+		Err:  fmt.Errorf("err1"),
 		Cmd:  "root.exe",
 		Args: []string{"arg1", "arg2"},
 		Out:  []byte("some output"),
@@ -85,12 +86,12 @@ some output`
 		t.Fatalf("invalid error:\ngot= %q\nwant=%q", got, want)
 	}
 
-	err = xerrors.Errorf("wrap: %w", err)
+	err = fmt.Errorf("wrap: %w", err)
 	if got, want := err.Error(), "wrap: "+want; got != want {
 		t.Fatalf("invalid error:\ngot= %q\nwant=%q", got, want)
 	}
 
-	err = err.(xerrors.Wrapper).Unwrap().(xerrors.Wrapper).Unwrap()
+	err = errors.Unwrap(errors.Unwrap(err))
 	if got, want := err.Error(), "err1"; got != want {
 		t.Fatalf("invalid error:\ngot= %q\nwant=%q", got, want)
 	}

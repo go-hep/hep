@@ -5,6 +5,7 @@
 package hbooksvc // import "go-hep.org/x/hep/fwk/hbooksvc"
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 	"strings"
@@ -14,7 +15,6 @@ import (
 	"go-hep.org/x/hep/fwk/fsm"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/rio"
-	"golang.org/x/xerrors"
 )
 
 type h1d struct {
@@ -64,16 +64,16 @@ func (svc *hsvc) StartSvc(ctx fwk.Context) error {
 		case Read:
 			_, dup := svc.r[name]
 			if dup {
-				return xerrors.Errorf("%s: duplicate read-stream %q", svc.Name(), name)
+				return fmt.Errorf("%s: duplicate read-stream %q", svc.Name(), name)
 			}
 			// FIXME(sbinet): handle remote/local files + protocols
 			f, err := os.Open(stream.Name)
 			if err != nil {
-				return xerrors.Errorf("error opening file [%s]: %w", stream.Name, err)
+				return fmt.Errorf("error opening file [%s]: %w", stream.Name, err)
 			}
 			r, err := rio.NewReader(f)
 			if err != nil {
-				return xerrors.Errorf("error opening rio-stream [%s]: %w", stream.Name, err)
+				return fmt.Errorf("error opening rio-stream [%s]: %w", stream.Name, err)
 			}
 
 			svc.r[name] = istream{
@@ -86,16 +86,16 @@ func (svc *hsvc) StartSvc(ctx fwk.Context) error {
 		case Write:
 			_, dup := svc.w[name]
 			if dup {
-				return xerrors.Errorf("%s: duplicate write-stream %q", svc.Name(), name)
+				return fmt.Errorf("%s: duplicate write-stream %q", svc.Name(), name)
 			}
 			// FIXME(sbinet): handle remote/local files + protocols
 			f, err := os.Create(stream.Name)
 			if err != nil {
-				return xerrors.Errorf("error creating file [%s]: %w", stream.Name, err)
+				return fmt.Errorf("error creating file [%s]: %w", stream.Name, err)
 			}
 			w, err := rio.NewWriter(f)
 			if err != nil {
-				return xerrors.Errorf("error creating rio-stream [%s]: %w", stream.Name, err)
+				return fmt.Errorf("error creating rio-stream [%s]: %w", stream.Name, err)
 			}
 
 			svc.w[name] = ostream{
@@ -106,7 +106,7 @@ func (svc *hsvc) StartSvc(ctx fwk.Context) error {
 			}
 
 		default:
-			return xerrors.Errorf("%s: invalid stream mode (%d)", svc.Name(), stream.Mode)
+			return fmt.Errorf("%s: invalid stream mode (%d)", svc.Name(), stream.Mode)
 		}
 	}
 	return err
@@ -122,12 +122,12 @@ func (svc *hsvc) StopSvc(ctx fwk.Context) error {
 
 		werr := w.write()
 		if werr != nil {
-			errs = append(errs, xerrors.Errorf("error flushing %q: %w", n, werr))
+			errs = append(errs, fmt.Errorf("error flushing %q: %w", n, werr))
 		}
 
 		werr = w.close()
 		if werr != nil {
-			errs = append(errs, xerrors.Errorf("error closing %q: %w", n, werr))
+			errs = append(errs, fmt.Errorf("error closing %q: %w", n, werr))
 		}
 	}
 
@@ -136,7 +136,7 @@ func (svc *hsvc) StopSvc(ctx fwk.Context) error {
 
 		rerr := r.close()
 		if rerr != nil {
-			errs = append(errs, xerrors.Errorf("error closing %q: %w", n, rerr))
+			errs = append(errs, fmt.Errorf("error closing %q: %w", n, rerr))
 		}
 	}
 
@@ -153,7 +153,7 @@ func (svc *hsvc) BookH1D(name string, nbins int, low, high float64) (fwk.H1D, er
 	var h fwk.H1D
 
 	if !(fsm.Configured < svc.FSMState() && svc.FSMState() < fsm.Running) {
-		return h, xerrors.Errorf("fwk: can not book histograms during FSM-state %v", svc.FSMState())
+		return h, fmt.Errorf("fwk: can not book histograms during FSM-state %v", svc.FSMState())
 	}
 
 	stream, hid := svc.split(name)
@@ -170,13 +170,13 @@ func (svc *hsvc) BookH1D(name string, nbins int, low, high float64) (fwk.H1D, er
 		sname := "/" + stream
 		str, ok := svc.streams[sname]
 		if !ok {
-			return h, xerrors.Errorf("fwk: no stream [%s] declared", sname)
+			return h, fmt.Errorf("fwk: no stream [%s] declared", sname)
 		}
 		switch str.Mode {
 		case Read:
 			r, ok := svc.r[sname]
 			if !ok {
-				return h, xerrors.Errorf("fwk: no read-stream [%s] declared", sname)
+				return h, fmt.Errorf("fwk: no read-stream [%s] declared", sname)
 			}
 			err = r.read(hid, h.Hist)
 			if err != nil {
@@ -189,12 +189,12 @@ func (svc *hsvc) BookH1D(name string, nbins int, low, high float64) (fwk.H1D, er
 		case Write:
 			w, ok := svc.w[sname]
 			if !ok {
-				return h, xerrors.Errorf("fwk: no write-stream [%s] declared: %v", sname, svc.w)
+				return h, fmt.Errorf("fwk: no write-stream [%s] declared: %v", sname, svc.w)
 			}
 			w.objs = append(w.objs, h)
 			svc.w[sname] = w
 		default:
-			return h, xerrors.Errorf("%s: invalid stream mode (%d)", svc.Name(), str.Mode)
+			return h, fmt.Errorf("%s: invalid stream mode (%d)", svc.Name(), str.Mode)
 		}
 	}
 
@@ -208,7 +208,7 @@ func (svc *hsvc) BookH2D(name string, nx int, xmin, xmax float64, ny int, ymin, 
 	var h fwk.H2D
 
 	if !(fsm.Configured < svc.FSMState() && svc.FSMState() < fsm.Running) {
-		return h, xerrors.Errorf("fwk: can not book histograms during FSM-state %v", svc.FSMState())
+		return h, fmt.Errorf("fwk: can not book histograms during FSM-state %v", svc.FSMState())
 	}
 
 	stream, hid := svc.split(name)
@@ -225,13 +225,13 @@ func (svc *hsvc) BookH2D(name string, nx int, xmin, xmax float64, ny int, ymin, 
 		sname := "/" + stream
 		str, ok := svc.streams[sname]
 		if !ok {
-			return h, xerrors.Errorf("fwk: no stream [%s] declared", sname)
+			return h, fmt.Errorf("fwk: no stream [%s] declared", sname)
 		}
 		switch str.Mode {
 		case Read:
 			r, ok := svc.r[sname]
 			if !ok {
-				return h, xerrors.Errorf("fwk: no read-stream [%s] declared", sname)
+				return h, fmt.Errorf("fwk: no read-stream [%s] declared", sname)
 			}
 			err = r.read(hid, h.Hist)
 			if err != nil {
@@ -244,12 +244,12 @@ func (svc *hsvc) BookH2D(name string, nx int, xmin, xmax float64, ny int, ymin, 
 		case Write:
 			w, ok := svc.w[sname]
 			if !ok {
-				return h, xerrors.Errorf("fwk: no write-stream [%s] declared: %v", sname, svc.w)
+				return h, fmt.Errorf("fwk: no write-stream [%s] declared: %v", sname, svc.w)
 			}
 			w.objs = append(w.objs, h)
 			svc.w[sname] = w
 		default:
-			return h, xerrors.Errorf("%s: invalid stream mode (%d)", svc.Name(), str.Mode)
+			return h, fmt.Errorf("%s: invalid stream mode (%d)", svc.Name(), str.Mode)
 		}
 	}
 
@@ -263,7 +263,7 @@ func (svc *hsvc) BookP1D(name string, nbins int, low, high float64) (fwk.P1D, er
 	var h fwk.P1D
 
 	if !(fsm.Configured < svc.FSMState() && svc.FSMState() < fsm.Running) {
-		return h, xerrors.Errorf("fwk: can not book histograms during FSM-state %v", svc.FSMState())
+		return h, fmt.Errorf("fwk: can not book histograms during FSM-state %v", svc.FSMState())
 	}
 
 	stream, hid := svc.split(name)
@@ -280,13 +280,13 @@ func (svc *hsvc) BookP1D(name string, nbins int, low, high float64) (fwk.P1D, er
 		sname := "/" + stream
 		str, ok := svc.streams[sname]
 		if !ok {
-			return h, xerrors.Errorf("fwk: no stream [%s] declared", sname)
+			return h, fmt.Errorf("fwk: no stream [%s] declared", sname)
 		}
 		switch str.Mode {
 		case Read:
 			r, ok := svc.r[sname]
 			if !ok {
-				return h, xerrors.Errorf("fwk: no read-stream [%s] declared", sname)
+				return h, fmt.Errorf("fwk: no read-stream [%s] declared", sname)
 			}
 			err = r.read(hid, h.Profile)
 			if err != nil {
@@ -299,12 +299,12 @@ func (svc *hsvc) BookP1D(name string, nbins int, low, high float64) (fwk.P1D, er
 		case Write:
 			w, ok := svc.w[sname]
 			if !ok {
-				return h, xerrors.Errorf("fwk: no write-stream [%s] declared: %v", sname, svc.w)
+				return h, fmt.Errorf("fwk: no write-stream [%s] declared: %v", sname, svc.w)
 			}
 			w.objs = append(w.objs, h)
 			svc.w[sname] = w
 		default:
-			return h, xerrors.Errorf("%s: invalid stream mode (%d)", svc.Name(), str.Mode)
+			return h, fmt.Errorf("%s: invalid stream mode (%d)", svc.Name(), str.Mode)
 		}
 	}
 
@@ -318,7 +318,7 @@ func (svc *hsvc) BookS2D(name string) (fwk.S2D, error) {
 	var h fwk.S2D
 
 	if !(fsm.Configured < svc.FSMState() && svc.FSMState() < fsm.Running) {
-		return h, xerrors.Errorf("fwk: can not book histograms during FSM-state %v", svc.FSMState())
+		return h, fmt.Errorf("fwk: can not book histograms during FSM-state %v", svc.FSMState())
 	}
 
 	stream, hid := svc.split(name)
@@ -335,13 +335,13 @@ func (svc *hsvc) BookS2D(name string) (fwk.S2D, error) {
 		sname := "/" + stream
 		str, ok := svc.streams[sname]
 		if !ok {
-			return h, xerrors.Errorf("fwk: no stream [%s] declared", sname)
+			return h, fmt.Errorf("fwk: no stream [%s] declared", sname)
 		}
 		switch str.Mode {
 		case Read:
 			r, ok := svc.r[sname]
 			if !ok {
-				return h, xerrors.Errorf("fwk: no read-stream [%s] declared", sname)
+				return h, fmt.Errorf("fwk: no read-stream [%s] declared", sname)
 			}
 			err = r.read(hid, h.Scatter)
 			if err != nil {
@@ -354,12 +354,12 @@ func (svc *hsvc) BookS2D(name string) (fwk.S2D, error) {
 		case Write:
 			w, ok := svc.w[sname]
 			if !ok {
-				return h, xerrors.Errorf("fwk: no write-stream [%s] declared: %v", sname, svc.w)
+				return h, fmt.Errorf("fwk: no write-stream [%s] declared: %v", sname, svc.w)
 			}
 			w.objs = append(w.objs, h)
 			svc.w[sname] = w
 		default:
-			return h, xerrors.Errorf("%s: invalid stream mode (%d)", svc.Name(), str.Mode)
+			return h, fmt.Errorf("%s: invalid stream mode (%d)", svc.Name(), str.Mode)
 		}
 	}
 

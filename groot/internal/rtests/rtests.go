@@ -5,6 +5,7 @@
 package rtests
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -14,7 +15,6 @@ import (
 
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/root"
-	"golang.org/x/xerrors"
 )
 
 type ROOTer interface {
@@ -30,7 +30,7 @@ func XrdRemote(fname string) string {
 
 var (
 	HasROOT   = false // HasROOT is true when a C++ ROOT installation could be detected.
-	ErrNoROOT = xerrors.New("rtests: no C++ ROOT installed")
+	ErrNoROOT = errors.New("rtests: no C++ ROOT installed")
 	rootCmd   = ""
 )
 
@@ -41,14 +41,14 @@ var (
 func RunCxxROOT(fct string, code []byte, args ...interface{}) ([]byte, error) {
 	tmp, err := ioutil.TempDir("", "groot-rtests-")
 	if err != nil {
-		return nil, xerrors.Errorf("could not create tmpdir: %w", err)
+		return nil, fmt.Errorf("could not create tmpdir: %w", err)
 	}
 	defer os.RemoveAll(tmp)
 
 	fname := filepath.Join(tmp, fct+".C")
 	err = ioutil.WriteFile(fname, []byte(code), 0644)
 	if err != nil {
-		return nil, xerrors.Errorf("could not generate ROOT macro %q: %w", fname, err)
+		return nil, fmt.Errorf("could not generate ROOT macro %q: %w", fname, err)
 	}
 
 	o := new(strings.Builder)
@@ -111,6 +111,6 @@ func init() {
 }
 
 var (
-	_ error           = (*ROOTError)(nil)
-	_ xerrors.Wrapper = (*ROOTError)(nil)
+	_ error                       = (*ROOTError)(nil)
+	_ interface{ Unwrap() error } = (*ROOTError)(nil)
 )

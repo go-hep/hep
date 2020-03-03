@@ -5,13 +5,13 @@
 package rarrow // import "go-hep.org/x/hep/groot/rarrow"
 
 import (
+	"fmt"
 	"sync/atomic"
 
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 // Record is an in-memory Arrow Record backed by a ROOT Tree.
@@ -65,7 +65,7 @@ func (rec *Record) load(beg, end int64) {
 	vars := rtree.NewScanVars(rec.tree)
 	sc, err := rtree.NewScannerVars(rec.tree, vars...)
 	if err != nil {
-		panic(xerrors.Errorf("could not create scanner from scan-vars %#v: %w", vars, err))
+		panic(fmt.Errorf("could not create scanner from scan-vars %#v: %w", vars, err))
 	}
 	defer sc.Close()
 
@@ -77,14 +77,14 @@ func (rec *Record) load(beg, end int64) {
 
 	err = sc.SeekEntry(beg)
 	if err != nil {
-		panic(xerrors.Errorf("could not seek to entry: %w", err))
+		panic(fmt.Errorf("could not seek to entry: %w", err))
 	}
 
 	n := beg
 	for sc.Next() {
 		err := sc.Scan()
 		if err != nil {
-			panic(xerrors.Errorf("could not scan entry %d: %w", sc.Entry(), err))
+			panic(fmt.Errorf("could not scan entry %d: %w", sc.Entry(), err))
 		}
 
 		for i, field := range rec.schema.Fields() {

@@ -2,9 +2,8 @@ package hbook
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
-
-	"golang.org/x/xerrors"
 )
 
 func TestReadYODAHeader(t *testing.T) {
@@ -25,27 +24,27 @@ func TestReadYODAHeader(t *testing.T) {
 		{
 			str:  "BEGIN YODA /name",
 			want: "",
-			err:  xerrors.Errorf("hbook: could not find %s line", mark),
+			err:  fmt.Errorf("hbook: could not find %s line", mark),
 		},
 		{
 			str:  "BEGIN YODA /name\n",
 			want: "",
-			err:  xerrors.Errorf("hbook: could not find %s mark", mark),
+			err:  fmt.Errorf("hbook: could not find %s mark", mark),
 		},
 		{
 			str:  "\nBEGIN YODA /name",
 			want: "",
-			err:  xerrors.Errorf("hbook: could not find %s mark", mark),
+			err:  fmt.Errorf("hbook: could not find %s mark", mark),
 		},
 		{
 			str:  "\nBEGIN YODA /name\n",
 			want: "",
-			err:  xerrors.Errorf("hbook: could not find %s mark", mark),
+			err:  fmt.Errorf("hbook: could not find %s mark", mark),
 		},
 		{
 			str:  " BEGIN YODA /name\n",
 			want: "",
-			err:  xerrors.Errorf("hbook: could not find %s mark", mark),
+			err:  fmt.Errorf("hbook: could not find %s mark", mark),
 		},
 	} {
 		t.Run(tc.want, func(t *testing.T) {

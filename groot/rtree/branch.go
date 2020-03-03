@@ -16,7 +16,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 const (
@@ -99,7 +98,7 @@ func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, 
 			rt = et
 		case reflect.Slice:
 			if wvar.Count == "" {
-				return nil, xerrors.Errorf("rtree: empty name for count-leaf of slice %q", wvar.Name)
+				return nil, fmt.Errorf("rtree: empty name for count-leaf of slice %q", wvar.Name)
 			}
 			fmt.Fprintf(title, "[%s]", wvar.Count)
 			rt = rt.Elem()
@@ -212,7 +211,7 @@ func (b *tbranch) getReadEntry() int64 {
 func (b *tbranch) getEntry(i int64) {
 	err := b.loadEntry(i)
 	if err != nil {
-		panic(xerrors.Errorf("rtree: branch [%s] failed to load entry %d: %w", b.Name(), i, err))
+		panic(fmt.Errorf("rtree: branch [%s] failed to load entry %d: %w", b.Name(), i, err))
 	}
 }
 
@@ -536,7 +535,7 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 		b.fname = r.ReadString()
 
 	default:
-		panic(xerrors.Errorf("rtree: too old TBranch version (%d<%d)", vers, minVers))
+		panic(fmt.Errorf("rtree: too old TBranch version (%d<%d)", vers, minVers))
 	}
 
 	r.CheckByteCount(pos, bcnt, beg, b.Class())
@@ -577,7 +576,7 @@ func (b *tbranch) loadEntry(ientry int64) error {
 func (b *tbranch) loadBasket(entry int64) error {
 	ib := b.findBasketIndex(entry)
 	if ib < 0 {
-		return xerrors.Errorf("rtree: no basket for entry %d", entry)
+		return fmt.Errorf("rtree: no basket for entry %d", entry)
 	}
 	b.readentry = entry
 	b.readbasket = ib
@@ -735,12 +734,12 @@ func (b *tbranch) scan(ptr interface{}) error {
 func (b *tbranch) setAddress(ptr interface{}) error {
 	switch len(b.leaves) {
 	case 0:
-		return xerrors.Errorf("rtree: can not set address for a leaf-less branch (name=%q)", b.Name())
+		return fmt.Errorf("rtree: can not set address for a leaf-less branch (name=%q)", b.Name())
 
 	case 1:
 		err := b.leaves[0].setAddress(ptr)
 		if err != nil {
-			return xerrors.Errorf("rtree: could not set address for leaf[%d][%s]: %w", 0, b.leaves[0].Name(), err)
+			return fmt.Errorf("rtree: could not set address for leaf[%d][%s]: %w", 0, b.leaves[0].Name(), err)
 		}
 
 	default:
@@ -750,19 +749,19 @@ func (b *tbranch) setAddress(ptr interface{}) error {
 		case reflect.Struct:
 			if len(b.leaves) != rt.NumField() {
 				// FIXME(sbinet): be more lenient and clever about this?
-				return xerrors.Errorf("rtree: fields/leaves number mismatch (name=%q, fields=%d, leaves=%d)", b.Name(), rt.NumField(), len(b.leaves))
+				return fmt.Errorf("rtree: fields/leaves number mismatch (name=%q, fields=%d, leaves=%d)", b.Name(), rt.NumField(), len(b.leaves))
 			}
 			for i, leaf := range b.leaves {
 				fv := rv.Field(i)
 				err := leaf.setAddress(fv.Addr().Interface())
 				if err != nil {
-					return xerrors.Errorf("rtree: could not set address for leaf[%d][%s]: %w", i, leaf.Name(), err)
+					return fmt.Errorf("rtree: could not set address for leaf[%d][%s]: %w", i, leaf.Name(), err)
 				}
 			}
 		default:
 			// TODO(sbinet): also support map[string]*T ?
 			// TODO(sbinet): also support []*T ?
-			return xerrors.Errorf("rtree: multi-leaf branches need a pointer-to-struct (got=%T)", ptr)
+			return fmt.Errorf("rtree: multi-leaf branches need a pointer-to-struct (got=%T)", ptr)
 		}
 	}
 	return nil
@@ -796,7 +795,7 @@ func (b *tbranch) write() (int, error) {
 	szNew := b.basket.wbuf.Len()
 	n := int(szNew - szOld)
 	if err != nil {
-		return n, xerrors.Errorf("could not write to buffer (branch=%q): %w", b.Name(), err)
+		return n, fmt.Errorf("could not write to buffer (branch=%q): %w", b.Name(), err)
 	}
 	if n > b.basket.nevsize {
 		b.basket.nevsize = n
@@ -806,7 +805,7 @@ func (b *tbranch) write() (int, error) {
 	if szNew+int64(n) >= int64(b.basketSize) {
 		err = b.flush()
 		if err != nil {
-			return n, xerrors.Errorf("could not flush branch (auto-flush): %w", err)
+			return n, fmt.Errorf("could not flush branch (auto-flush): %w", err)
 		}
 
 		b.createNewBasket()
@@ -819,7 +818,7 @@ func (b *tbranch) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 	for i, leaf := range b.leaves {
 		n, err := leaf.writeToBuffer(w)
 		if err != nil {
-			return tot, xerrors.Errorf("could not write leaf[%d] name=%q of branch %q: %w", i, leaf.Name(), b.Name(), err)
+			return tot, fmt.Errorf("could not write leaf[%d] name=%q of branch %q: %w", i, leaf.Name(), b.Name(), err)
 		}
 		tot += n
 	}
@@ -830,14 +829,14 @@ func (b *tbranch) flush() error {
 	for i, sub := range b.branches {
 		err := sub.flush()
 		if err != nil {
-			return xerrors.Errorf("could not flush subbranch[%d]=%q of branch %q: %w", i, sub.Name(), b.Name(), err)
+			return fmt.Errorf("could not flush subbranch[%d]=%q of branch %q: %w", i, sub.Name(), b.Name(), err)
 		}
 	}
 
 	f := b.tree.getFile()
 	totBytes, zipBytes, err := b.basket.writeFile(f)
 	if err != nil {
-		return xerrors.Errorf("could not marshal basket[%d] (branch=%q): %w", b.writeBasket, b.Name(), err)
+		return fmt.Errorf("could not marshal basket[%d] (branch=%q): %w", b.writeBasket, b.Name(), err)
 	}
 	b.totBytes += totBytes
 	b.zipBytes += zipBytes
@@ -895,7 +894,7 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(b.Class())
 	b.rvers = vers
 	if vers < 1 {
-		r.SetErr(xerrors.Errorf("rtree: TBranchElement version too old (%d < 8)", vers))
+		r.SetErr(fmt.Errorf("rtree: TBranchElement version too old (%d < 8)", vers))
 		return r.Err()
 	}
 
@@ -1010,7 +1009,7 @@ func (b *tbranchElement) setAddress(ptr interface{}) error {
 				}
 			}
 			if elt == nil {
-				return xerrors.Errorf("rtree: failed to find StreamerElement for leaf %q", leaf.Name())
+				return fmt.Errorf("rtree: failed to find StreamerElement for leaf %q", leaf.Name())
 			}
 			leaf.streamers = []rbytes.StreamerElement{elt}
 			err = leaf.setAddress(ptr)
@@ -1031,7 +1030,7 @@ func (b *tbranchElement) setupReadStreamer(sictx rbytes.StreamerInfoContext) err
 	if err != nil {
 		streamer, err = sictx.StreamerInfo(b.class, -1)
 		if err != nil {
-			return xerrors.Errorf("rtree: no StreamerInfo for class=%q version=%d checksum=%d", b.class, b.clsver, b.chksum)
+			return fmt.Errorf("rtree: no StreamerInfo for class=%q version=%d checksum=%d", b.class, b.clsver, b.chksum)
 		}
 	}
 	b.streamer = streamer
@@ -1109,7 +1108,7 @@ func btopOf(b Branch) Branch {
 			}
 			b = bb.bup
 		default:
-			panic(xerrors.Errorf("rtree: unknown branch type %T", b))
+			panic(fmt.Errorf("rtree: unknown branch type %T", b))
 		}
 	}
 	panic("impossible")

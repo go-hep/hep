@@ -5,9 +5,8 @@
 package rootio
 
 import (
+	"fmt"
 	"reflect"
-
-	"golang.org/x/xerrors"
 )
 
 type taxis struct {
@@ -145,7 +144,7 @@ func (a *taxis) UnmarshalROOT(r *RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion()
 	a.rvers = vers
 	if vers < 9 {
-		return xerrors.Errorf("rootio: TAxis version too old (%d<9)", vers)
+		return fmt.Errorf("rootio: TAxis version too old (%d<9)", vers)
 	}
 
 	for _, v := range []ROOTUnmarshaler{

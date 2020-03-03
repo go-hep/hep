@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"go-hep.org/x/hep/sio"
-	"golang.org/x/xerrors"
 )
 
 // RecParticleContainer is a collection of RecParticles.
@@ -139,7 +138,7 @@ func (recs *RecParticleContainer) UnmarshalSio(r sio.Reader) error {
 	dec.Decode(&n)
 	recs.Parts = make([]RecParticle, int(n))
 	if r.VersionSio() <= 1002 {
-		return xerrors.Errorf("lcio: too old file (%d)", r.VersionSio())
+		return fmt.Errorf("lcio: too old file (%d)", r.VersionSio())
 	}
 
 	for i := range recs.Parts {

@@ -5,10 +5,9 @@
 package rio
 
 import (
+	"fmt"
 	"io"
 	"sort"
-
-	"golang.org/x/xerrors"
 )
 
 // File random-read-access to a rio stream
@@ -28,10 +27,10 @@ func Open(r io.ReadSeeker) (*File, error) {
 	hdr := [4]byte{}
 	_, err := f.r.Read(hdr[:])
 	if err != nil {
-		return nil, xerrors.Errorf("rio: error reading magic-header: %w", err)
+		return nil, fmt.Errorf("rio: error reading magic-header: %w", err)
 	}
 	if hdr != rioMagic {
-		return nil, xerrors.Errorf("rio: not a rio-stream. magic-header=%q. want=%q",
+		return nil, fmt.Errorf("rio: not a rio-stream. magic-header=%q. want=%q",
 			string(hdr[:]),
 			string(rioMagic[:]),
 		)
@@ -40,7 +39,7 @@ func Open(r io.ReadSeeker) (*File, error) {
 	// a seek-able rio streams sports a rioFooter at the end.
 	_, err = f.r.Seek(-int64(ftrSize), io.SeekEnd)
 	if err != nil {
-		return nil, xerrors.Errorf("rio: error seeking footer: %w", err)
+		return nil, fmt.Errorf("rio: error seeking footer: %w", err)
 	}
 
 	// {
@@ -60,7 +59,7 @@ func Open(r io.ReadSeeker) (*File, error) {
 
 	_, err = f.r.Seek(ftr.Meta, io.SeekStart)
 	if err != nil {
-		return nil, xerrors.Errorf("rio: error seeking metadata: %w", err)
+		return nil, fmt.Errorf("rio: error seeking metadata: %w", err)
 	}
 
 	rec := newRecord(MetaRecord, 0)
@@ -93,11 +92,11 @@ func (f *File) Keys() []RecordDesc {
 func (f *File) Get(name string, ptr interface{}) error {
 	offsets, ok := f.meta.Offsets[name]
 	if !ok {
-		return xerrors.Errorf("rio: no record [%s]", name)
+		return fmt.Errorf("rio: no record [%s]", name)
 	}
 
 	if len(offsets) > 1 {
-		return xerrors.Errorf("rio: multi-record streams unsupported")
+		return fmt.Errorf("rio: multi-record streams unsupported")
 	}
 
 	offset := offsets[0]

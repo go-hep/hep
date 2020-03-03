@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/groot/rbase"
-	"golang.org/x/xerrors"
 )
 
 func TestBranchSetAddress(t *testing.T) {
@@ -24,7 +23,7 @@ func TestBranchSetAddress(t *testing.T) {
 			name: "0-leave",
 			b:    &tbranch{named: *rbase.NewNamed("branch", "branch")},
 			ptr:  nil,
-			err:  xerrors.Errorf("rtree: can not set address for a leaf-less branch (name=%q)", "branch"),
+			err:  fmt.Errorf("rtree: can not set address for a leaf-less branch (name=%q)", "branch"),
 		},
 		{
 			name: "not-enough-fields",
@@ -36,7 +35,7 @@ func TestBranchSetAddress(t *testing.T) {
 				},
 			},
 			ptr: &struct{ i int32 }{},
-			err: xerrors.Errorf("rtree: fields/leaves number mismatch (name=%q, fields=%d, leaves=%d)", "branch", 1, 2),
+			err: fmt.Errorf("rtree: fields/leaves number mismatch (name=%q, fields=%d, leaves=%d)", "branch", 1, 2),
 		},
 		{
 			name: "too-many-fields",
@@ -48,7 +47,7 @@ func TestBranchSetAddress(t *testing.T) {
 				},
 			},
 			ptr: &struct{ f1, f2, f3 int32 }{},
-			err: xerrors.Errorf("rtree: fields/leaves number mismatch (name=%q, fields=%d, leaves=%d)", "branch", 3, 2),
+			err: fmt.Errorf("rtree: fields/leaves number mismatch (name=%q, fields=%d, leaves=%d)", "branch", 3, 2),
 		},
 		{
 			name: "invalid-field-type",
@@ -83,7 +82,7 @@ func TestBranchSetAddress(t *testing.T) {
 				},
 			},
 			ptr: []interface{}{new(int32), new(float32)},
-			err: xerrors.Errorf("rtree: multi-leaf branches need a pointer-to-struct (got=%s)", "[]interface {}"),
+			err: fmt.Errorf("rtree: multi-leaf branches need a pointer-to-struct (got=%s)", "[]interface {}"),
 		},
 		{
 			name: "not-a-struct",
@@ -95,7 +94,7 @@ func TestBranchSetAddress(t *testing.T) {
 				},
 			},
 			ptr: &[]interface{}{new(int32), new(float32)},
-			err: xerrors.Errorf("rtree: multi-leaf branches need a pointer-to-struct (got=%s)", "*[]interface {}"),
+			err: fmt.Errorf("rtree: multi-leaf branches need a pointer-to-struct (got=%s)", "*[]interface {}"),
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

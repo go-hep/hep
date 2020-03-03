@@ -5,6 +5,7 @@
 package riofs
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -12,7 +13,6 @@ import (
 	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
-	"golang.org/x/xerrors"
 )
 
 var (
@@ -57,7 +57,7 @@ func streamerInfoFrom(obj root.Object, sictx streamerInfoStore) (rbytes.Streamer
 
 	si, ok := rdict.StreamerInfos.Get(cxxtype, vers)
 	if !ok {
-		return nil, xerrors.Errorf("riofs: could not find streamer for %q (version=%d)", cxxtype, vers)
+		return nil, fmt.Errorf("riofs: could not find streamer for %q (version=%d)", cxxtype, vers)
 	}
 	sictx.addStreamer(si)
 	return si, nil

@@ -12,7 +12,6 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/csvutil"
-	"golang.org/x/xerrors"
 )
 
 func TestCSVReaderScanArgs(t *testing.T) {
@@ -622,7 +621,7 @@ func diff(ref, chk string) error {
 	cmd.Stderr = buf
 	err := cmd.Run()
 	if err != nil {
-		return xerrors.Errorf("diff %v %v failed: %w\n%v\n",
+		return fmt.Errorf("diff %v %v failed: %w\n%v\n",
 			ref, chk, err,
 			buf.String(),
 		)

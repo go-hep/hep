@@ -5,6 +5,7 @@
 package rarrow
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/apache/arrow/go/arrow"
@@ -12,7 +13,6 @@ import (
 	"github.com/apache/arrow/go/arrow/arrio"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 // flatTreeWriter writes ARROW data as a ROOT flat-tree.
@@ -37,7 +37,7 @@ func NewFlatTreeWriter(dir riofs.Directory, name string, schema *arrow.Schema, o
 
 	tree, err := rtree.NewWriter(dir, name, wvars, opts...)
 	if err != nil {
-		return nil, xerrors.Errorf("rarrow: could not create flat-tree writer %q: %w", name, err)
+		return nil, fmt.Errorf("rarrow: could not create flat-tree writer %q: %w", name, err)
 	}
 	return &flatTreeWriter{w: tree, schema: schema, ctx: ctx}, nil
 }
@@ -51,13 +51,13 @@ func (fw *flatTreeWriter) Close() error {
 // Write implements arrio.Writer.
 func (fw *flatTreeWriter) Write(rec array.Record) error {
 	if src := rec.Schema(); !fw.schema.Equal(src) {
-		return xerrors.Errorf("rarrow: invalid input record schema:\n - got= %v\n - want=%v", src, fw.schema)
+		return fmt.Errorf("rarrow: invalid input record schema:\n - got= %v\n - want=%v", src, fw.schema)
 	}
 
 	nrows := rec.Column(0).Len()
 	for icol, col := range rec.Columns() {
 		if col.Len() != nrows {
-			return xerrors.Errorf(
+			return fmt.Errorf(
 				"rarrow: column %q (index=%d) has not the same number of rows than others (got=%d, want=%d)",
 				rec.ColumnName(icol), icol, col.Len(), nrows,
 			)
@@ -69,7 +69,7 @@ func (fw *flatTreeWriter) Write(rec array.Record) error {
 			wvar := &fw.ctx.wvars[icol]
 			err := fw.ctx.readFrom(wvar, irow, col)
 			if err != nil {
-				return xerrors.Errorf(
+				return fmt.Errorf(
 					"rarrow: could not read row=%d from column[%d](name=%s): %w",
 					irow, icol, rec.ColumnName(icol), err,
 				)
@@ -77,7 +77,7 @@ func (fw *flatTreeWriter) Write(rec array.Record) error {
 		}
 		_, err := fw.w.Write()
 		if err != nil {
-			return xerrors.Errorf("rarrow: could not write row=%d to tree: %w", irow, err)
+			return fmt.Errorf("rarrow: could not write row=%d to tree: %w", irow, err)
 		}
 	}
 
@@ -226,7 +226,7 @@ func (ctx *contextWriter) writeVarFrom(field arrow.Field) rtree.WriteVar {
 		//		}
 
 	default:
-		panic(xerrors.Errorf("invalid ARROW data-type: %T", dt))
+		panic(fmt.Errorf("invalid ARROW data-type: %T", dt))
 	}
 }
 
@@ -319,7 +319,7 @@ func (ctx *contextWriter) readFrom(wvar *rtree.WriteVar, irow int, arr array.Int
 		}
 
 	default:
-		panic(xerrors.Errorf("invalid array type %T", arr))
+		panic(fmt.Errorf("invalid array type %T", arr))
 	}
 	return nil
 }

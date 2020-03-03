@@ -5,11 +5,11 @@
 package rsqldrv // import "go-hep.org/x/hep/groot/rsql/rsqldrv"
 
 import (
+	"fmt"
 	"math"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 type (
@@ -210,7 +210,7 @@ func colDescrFrom(name string, etyp reflect.Type, kind reflect.Kind, hasCount bo
 
 	switch etyp.Kind() {
 	case reflect.Interface, reflect.Map, reflect.Chan, reflect.Slice, reflect.Array:
-		panic(xerrors.Errorf("rsqldrv: type %T not supported", reflect.New(etyp).Elem().Interface()))
+		panic(fmt.Errorf("rsqldrv: type %T not supported", reflect.New(etyp).Elem().Interface()))
 	case reflect.Int8:
 		if unsigned {
 			etyp = reflect.TypeOf(uint8(0))

@@ -9,8 +9,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"golang.org/x/xerrors"
 )
 
 const (
@@ -96,7 +94,7 @@ func newBitField64(codec string) *bitField64 {
 			}
 			cur = field.offset + iabs(field.width)
 		default:
-			panic(xerrors.Errorf("lcio: invalid number of subfields: %q", tok))
+			panic(fmt.Errorf("lcio: invalid number of subfields: %q", tok))
 		}
 		field.signed = field.width < 0
 		field.width = iabs(field.width)

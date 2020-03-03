@@ -44,7 +44,6 @@ import (
 	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -72,18 +71,18 @@ func process(oname, fname, tname string) error {
 
 	f, err := groot.Open(fname)
 	if err != nil {
-		return xerrors.Errorf("could not open ROOT file: %w", err)
+		return fmt.Errorf("could not open ROOT file: %w", err)
 	}
 	defer f.Close()
 
 	obj, err := f.Get(tname)
 	if err != nil {
-		return xerrors.Errorf("could not get ROOT object: %w", err)
+		return fmt.Errorf("could not get ROOT object: %w", err)
 	}
 
 	tree, ok := obj.(rtree.Tree)
 	if !ok {
-		return xerrors.Errorf("object %q in file %q is not a rtree.Tree", tname, fname)
+		return fmt.Errorf("object %q in file %q is not a rtree.Tree", tname, fname)
 	}
 
 	var nt = ntuple{n: tree.Entries()}
@@ -119,7 +118,7 @@ func process(oname, fname, tname string) error {
 
 	sc, err := rtree.NewTreeScannerVars(tree, nt.args...)
 	if err != nil {
-		return xerrors.Errorf("could not create tree scanner: %w", err)
+		return fmt.Errorf("could not create tree scanner: %w", err)
 	}
 	defer sc.Close()
 
@@ -127,7 +126,7 @@ func process(oname, fname, tname string) error {
 	for sc.Next() {
 		err = sc.Scan(nt.vars...)
 		if err != nil {
-			return xerrors.Errorf("could not scan entry %d: %w", nrows, err)
+			return fmt.Errorf("could not scan entry %d: %w", nrows, err)
 		}
 		nt.fill()
 		nrows++
@@ -135,7 +134,7 @@ func process(oname, fname, tname string) error {
 
 	tbl, err := csvutil.Create(oname)
 	if err != nil {
-		return xerrors.Errorf("could not create output CSV file: %w", err)
+		return fmt.Errorf("could not create output CSV file: %w", err)
 	}
 	defer tbl.Close()
 	tbl.Writer.Comma = ';'
@@ -150,7 +149,7 @@ func process(oname, fname, tname string) error {
 		strings.Join(names, string(tbl.Writer.Comma)),
 	))
 	if err != nil {
-		return xerrors.Errorf("could not write CSV header: %w", err)
+		return fmt.Errorf("could not write CSV header: %w", err)
 	}
 
 	row := make([]interface{}, len(nt.cols))
@@ -160,13 +159,13 @@ func process(oname, fname, tname string) error {
 		}
 		err = tbl.WriteRow(row...)
 		if err != nil {
-			return xerrors.Errorf("could not write row %d to CSV file: %w", irow, err)
+			return fmt.Errorf("could not write row %d to CSV file: %w", irow, err)
 		}
 	}
 
 	err = tbl.Close()
 	if err != nil {
-		return xerrors.Errorf("could not close CSV output file: %w", err)
+		return fmt.Errorf("could not close CSV output file: %w", err)
 	}
 
 	return nil

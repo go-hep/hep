@@ -5,10 +5,9 @@
 package rootio
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
-
-	"golang.org/x/xerrors"
 )
 
 type RStreamer interface {
@@ -55,7 +54,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 	if rt.Kind() == reflect.Struct {
 		field := fieldOf(rt, se.Name())
 		if field < 0 {
-			panic(xerrors.Errorf("rootio: no such field %q in type %T", se.Name(), ptr))
+			panic(fmt.Errorf("rootio: no such field %q in type %T", se.Name(), ptr))
 		}
 
 		rf = rv.Field(field)
@@ -63,7 +62,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 
 	switch se := se.(type) {
 	default:
-		panic(xerrors.Errorf("rootio: unknown streamer element: %#v", se))
+		panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
 
 	case *tstreamerBasicType:
 		switch se.etype {
@@ -88,7 +87,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 					return r.err
 				}
 			default:
-				panic(xerrors.Errorf("rootio: invalid kCounter size %d", se.esize))
+				panic(fmt.Errorf("rootio: invalid kCounter size %d", se.esize))
 			}
 
 		case kChar:
@@ -323,7 +322,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 			}
 
 		default:
-			panic(xerrors.Errorf("rootio: invalid element type value %d for %#v", se.etype, se))
+			panic(fmt.Errorf("rootio: invalid element type value %d for %#v", se.etype, se))
 		}
 
 	case *tstreamerString:
@@ -539,7 +538,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 			}
 
 		default:
-			panic(xerrors.Errorf("rootio: invalid element type value %d for %#v", se.etype, se))
+			panic(fmt.Errorf("rootio: invalid element type value %d for %#v", se.etype, se))
 		}
 
 	case *tstreamerSTLstring:
@@ -554,7 +553,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 				return r.err
 			}
 		default:
-			panic(xerrors.Errorf("rootio: invalid element type value %d for %#v", se.ctype, se))
+			panic(fmt.Errorf("rootio: invalid element type value %d for %#v", se.ctype, se))
 		}
 
 	case *tstreamerSTL:
@@ -705,7 +704,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 				default:
 					subsi, err := sictx.StreamerInfo(se.elemTypeName())
 					if err != nil {
-						panic(xerrors.Errorf("rootio: could not retrieve streamer for %q: %w", se.elemTypeName(), err))
+						panic(fmt.Errorf("rootio: could not retrieve streamer for %q: %w", se.elemTypeName(), err))
 					}
 					eptr := reflect.New(rf.Type().Elem())
 					felt := rstreamerFrom(subsi.Elements()[0], eptr.Interface(), lcnt, sictx)
@@ -729,13 +728,13 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 				}
 			}
 		default:
-			panic(xerrors.Errorf("rootio: invalid STL type %d for %#v", se.vtype, se))
+			panic(fmt.Errorf("rootio: invalid STL type %d for %#v", se.vtype, se))
 		}
 
 	case *tstreamerObjectAny:
 		sinfo, ok := streamers.getAny(se.ename)
 		if !ok {
-			panic(xerrors.Errorf("no streamer-info for %q", se.ename))
+			panic(fmt.Errorf("no streamer-info for %q", se.ename))
 		}
 		var funcs []func(r *RBuffer) error
 		for i, elt := range sinfo.Elements() {
@@ -747,7 +746,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 			_, pos, bcnt := r.ReadVersion()
 			chksum := int(r.ReadI32())
 			if sinfo.CheckSum() != chksum {
-				return xerrors.Errorf("rootio: on-disk checksum=%d, streamer=%d (type=%q)", chksum, sinfo.CheckSum(), se.ename)
+				return fmt.Errorf("rootio: on-disk checksum=%d, streamer=%d (type=%q)", chksum, sinfo.CheckSum(), se.ename)
 			}
 			for _, fct := range funcs {
 				err := fct(r)
@@ -760,7 +759,7 @@ func rstreamerFrom(se StreamerElement, ptr interface{}, lcnt leafCount, sictx St
 		}
 
 	}
-	panic(xerrors.Errorf("rootio: unknown streamer element: %#v", se))
+	panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
 }
 
 func stdvecSIFrom(name, ename string, ctx StreamerInfoContext) StreamerInfo {
@@ -827,7 +826,7 @@ func gotypeFromSI(sinfo StreamerInfo, ctx StreamerInfoContext) reflect.Type {
 		elt := elts[i]
 		ename := elt.Name()
 		if ename == "" {
-			panic(xerrors.Errorf("elt[%d]: %q for si=%v", i, elt.Class(), sinfo))
+			panic(fmt.Errorf("elt[%d]: %q for si=%v", i, elt.Class(), sinfo))
 		}
 		ft.Name = "ROOT_" + elt.Name()
 		ft.Name = cxxNameSanitizer.Replace(ft.Name)
@@ -849,7 +848,7 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 	}
 	switch se := se.(type) {
 	default:
-		panic(xerrors.Errorf("rootio: unknown streamer element: %#v", se))
+		panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
 
 	case *tstreamerBasicType:
 		switch se.etype {
@@ -860,7 +859,7 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 			case 8:
 				return reflect.TypeOf(int64(0))
 			default:
-				panic(xerrors.Errorf("rootio: invalid kCounter size %d", se.esize))
+				panic(fmt.Errorf("rootio: invalid kCounter size %d", se.esize))
 			}
 
 		case kChar:
@@ -916,7 +915,7 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 		case kOffsetL + kBool:
 			return reflect.ArrayOf(int(se.arrlen), reflect.TypeOf(false))
 		default:
-			panic(xerrors.Errorf("rootio: invalid element type value %d for %#v", se.etype, se))
+			panic(fmt.Errorf("rootio: invalid element type value %d for %#v", se.etype, se))
 		}
 
 	case *tstreamerString:
@@ -1003,7 +1002,7 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 			}
 			return reflect.PtrTo(tp)
 		default:
-			panic(xerrors.Errorf("rootio: invalid element type value %d for %#v", se.etype, se))
+			panic(fmt.Errorf("rootio: invalid element type value %d for %#v", se.etype, se))
 		}
 
 	case *tstreamerSTLstring:
@@ -1011,7 +1010,7 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 		case kSTLstring:
 			return reflect.TypeOf("")
 		default:
-			panic(xerrors.Errorf("rootio: invalid element type value %d for %#v", se.ctype, se))
+			panic(fmt.Errorf("rootio: invalid element type value %d for %#v", se.ctype, se))
 		}
 
 	case *tstreamerSTL:
@@ -1071,7 +1070,7 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 				default:
 					eltname := se.elemTypeName()
 					if eltname == "" {
-						panic(xerrors.Errorf("rootio: could not find element name for %q", se.ename))
+						panic(fmt.Errorf("rootio: could not find element name for %q", se.ename))
 					}
 					if et, ok := cxxbuiltins[eltname]; ok {
 						return reflect.SliceOf(et)
@@ -1082,13 +1081,13 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 					}
 					o := gotypeFromSI(sielt, ctx)
 					if o == nil {
-						panic(xerrors.Errorf("rootio: invalid std::vector<kObject>: ename=%q", se.ename))
+						panic(fmt.Errorf("rootio: invalid std::vector<kObject>: ename=%q", se.ename))
 					}
 					return reflect.SliceOf(o)
 				}
 			}
 		default:
-			panic(xerrors.Errorf("rootio: invalid STL type %d for %#v", se.vtype, se))
+			panic(fmt.Errorf("rootio: invalid STL type %d for %#v", se.vtype, se))
 		}
 
 	case *tstreamerObjectAny:
@@ -1108,7 +1107,7 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 			return gotypeFromSI(si, ctx)
 
 		default:
-			panic(xerrors.Errorf("rootio: unknown base class %q in StreamerElement %q: %#v", se.ename, se.Name(), se))
+			panic(fmt.Errorf("rootio: unknown base class %q in StreamerElement %q: %#v", se.ename, se.Name(), se))
 		}
 
 	case *tstreamerObject:
@@ -1137,5 +1136,5 @@ func gotypeFromSE(se StreamerElement, lcount Leaf, ctx StreamerInfoContext) refl
 		return reflect.PtrTo(typ)
 	}
 
-	panic(xerrors.Errorf("rootio: unknown streamer element: %#v", se))
+	panic(fmt.Errorf("rootio: unknown streamer element: %#v", se))
 }

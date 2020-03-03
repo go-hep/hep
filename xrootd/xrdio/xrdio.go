@@ -7,12 +7,12 @@ package xrdio // import "go-hep.org/x/hep/xrootd/xrdio"
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 
 	"go-hep.org/x/hep/xrootd"
 	"go-hep.org/x/hep/xrootd/xrdfs"
-	"golang.org/x/xerrors"
 )
 
 // File wraps a xrdfs.File and implements the following interfaces:
@@ -41,26 +41,26 @@ type File struct {
 func Open(name string) (*File, error) {
 	urn, err := Parse(name)
 	if err != nil {
-		return nil, xerrors.Errorf("could not parse %q: %w", name, err)
+		return nil, fmt.Errorf("could not parse %q: %w", name, err)
 	}
 
 	xrd, err := xrootd.NewClient(context.Background(), urn.Addr, urn.User)
 	if err != nil {
-		return nil, xerrors.Errorf("xrdio: could not connect to xrootd server %q: %w", urn.Addr, err)
+		return nil, fmt.Errorf("xrdio: could not connect to xrootd server %q: %w", urn.Addr, err)
 	}
 
 	fs := xrd.FS()
 	f, err := fs.Open(context.Background(), urn.Path, xrdfs.OpenModeOwnerRead, xrdfs.OpenOptionsOpenRead)
 	if err != nil {
 		xrd.Close()
-		return nil, xerrors.Errorf("xrdio: could not open %q: %w", name, err)
+		return nil, fmt.Errorf("xrdio: could not open %q: %w", name, err)
 	}
 
 	xf := &File{cli: xrd, fs: fs, f: f, name: urn.Path}
 	fi, err := xf.Stat()
 	if err != nil {
 		xrd.Close()
-		return nil, xerrors.Errorf("xrdio: could not stat %q: %w", name, err)
+		return nil, fmt.Errorf("xrdio: could not stat %q: %w", name, err)
 	}
 	xf.size = fi.Size()
 
@@ -76,13 +76,13 @@ func Open(name string) (*File, error) {
 func OpenFrom(fs xrdfs.FileSystem, name string) (*File, error) {
 	f, err := fs.Open(context.Background(), name, xrdfs.OpenModeOwnerRead, xrdfs.OpenOptionsOpenRead)
 	if err != nil {
-		return nil, xerrors.Errorf("xrdio: could not open %q: %w", name, err)
+		return nil, fmt.Errorf("xrdio: could not open %q: %w", name, err)
 	}
 
 	xf := &File{fs: fs, f: f, name: name}
 	fi, err := xf.Stat()
 	if err != nil {
-		return nil, xerrors.Errorf("xrdio: could not stat %q: %w", name, err)
+		return nil, fmt.Errorf("xrdio: could not stat %q: %w", name, err)
 	}
 	xf.size = fi.Size()
 
@@ -105,10 +105,10 @@ func (f *File) Close() error {
 		err2 = f.cli.Close()
 	}
 	if err1 != nil {
-		return xerrors.Errorf("could not close file %q: %w", f.name, err1)
+		return fmt.Errorf("could not close file %q: %w", f.name, err1)
 	}
 	if err2 != nil {
-		return xerrors.Errorf("could not close xrd-client: %w", err2)
+		return fmt.Errorf("could not close xrd-client: %w", err2)
 	}
 	return nil
 }
@@ -152,7 +152,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 	case io.SeekEnd:
 		st, err := f.Stat()
 		if err != nil {
-			return 0, xerrors.Errorf("xrdio: could not xrootd-stat %q: %w", f.Name(), err)
+			return 0, fmt.Errorf("xrdio: could not xrootd-stat %q: %w", f.Name(), err)
 		}
 		f.pos = st.Size() - offset
 	case io.SeekCurrent:

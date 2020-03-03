@@ -5,10 +5,9 @@
 package rcmd // import "go-hep.org/x/hep/groot/rcmd"
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
-
-	"golang.org/x/xerrors"
 )
 
 func TestSplitArg(t *testing.T) {
@@ -116,15 +115,15 @@ func TestSplitArg(t *testing.T) {
 		},
 		{
 			cmd: "dir/sub/file.root:h:h",
-			err: xerrors.Errorf("root-cp: too many ':' in %q", "dir/sub/file.root:h:h"),
+			err: fmt.Errorf("root-cp: too many ':' in %q", "dir/sub/file.root:h:h"),
 		},
 		{
 			cmd: "root://dir/sub/file.root:h:h",
-			err: xerrors.Errorf("root-cp: too many ':' in %q", "root://dir/sub/file.root:h:h"),
+			err: fmt.Errorf("root-cp: too many ':' in %q", "root://dir/sub/file.root:h:h"),
 		},
 		{
 			cmd: "root://dir/sub/file.root::h:",
-			err: xerrors.Errorf("root-cp: too many ':' in %q", "root://dir/sub/file.root::h:"),
+			err: fmt.Errorf("root-cp: too many ':' in %q", "root://dir/sub/file.root::h:"),
 		},
 	} {
 		t.Run(tc.cmd, func(t *testing.T) {

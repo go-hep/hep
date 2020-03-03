@@ -8,10 +8,9 @@ import (
 	"bytes"
 	"compress/flate"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"reflect"
-
-	"golang.org/x/xerrors"
 )
 
 const (
@@ -90,12 +89,12 @@ func (hdr *rioHeader) RioMarshal(w io.Writer) error {
 
 	err = binary.Write(w, Endian, hdr.Len)
 	if err != nil {
-		return xerrors.Errorf("rio: write header length failed: %w", err)
+		return fmt.Errorf("rio: write header length failed: %w", err)
 	}
 
 	err = binary.Write(w, Endian, hdr.Frame)
 	if err != nil {
-		return xerrors.Errorf("rio: write header frame failed: %w", err)
+		return fmt.Errorf("rio: write header frame failed: %w", err)
 	}
 
 	return err
@@ -109,12 +108,12 @@ func (hdr *rioHeader) RioUnmarshal(r io.Reader) error {
 		if err == io.EOF {
 			return err
 		}
-		return xerrors.Errorf("rio: read header length failed: %w", err)
+		return fmt.Errorf("rio: read header length failed: %w", err)
 	}
 
 	err = binary.Read(r, Endian, &hdr.Frame)
 	if err != nil {
-		return xerrors.Errorf("rio: read header frame failed: %w", err)
+		return fmt.Errorf("rio: read header frame failed: %w", err)
 	}
 
 	return err
@@ -210,40 +209,40 @@ func (rec *rioRecord) RioMarshal(w io.Writer) error {
 
 	err = rec.Header.RioMarshal(w)
 	if err != nil {
-		return xerrors.Errorf("rio: write record header failed: %w", err)
+		return fmt.Errorf("rio: write record header failed: %w", err)
 	}
 
 	err = binary.Write(w, Endian, rec.Options)
 	if err != nil {
-		return xerrors.Errorf("rio: write record options failed: %w", err)
+		return fmt.Errorf("rio: write record options failed: %w", err)
 	}
 
 	err = binary.Write(w, Endian, rec.CLen)
 	if err != nil {
-		return xerrors.Errorf("rio: write record compr-len failed: %w", err)
+		return fmt.Errorf("rio: write record compr-len failed: %w", err)
 	}
 
 	err = binary.Write(w, Endian, rec.XLen)
 	if err != nil {
-		return xerrors.Errorf("rio: write record len failed: %w", err)
+		return fmt.Errorf("rio: write record len failed: %w", err)
 	}
 
 	err = binary.Write(w, Endian, uint32(len(rec.Name)))
 	if err != nil {
-		return xerrors.Errorf("rio: write record name-len failed: %w", err)
+		return fmt.Errorf("rio: write record name-len failed: %w", err)
 	}
 
 	name := []byte(rec.Name)
 	_, err = w.Write(name)
 	if err != nil {
-		return xerrors.Errorf("rio: write record name failed: %w", err)
+		return fmt.Errorf("rio: write record name failed: %w", err)
 	}
 
 	size := rioAlign(len(name))
 	if size > len(name) {
 		_, err = w.Write(make([]byte, size-len(name)))
 		if err != nil {
-			return xerrors.Errorf("rio: write record name-padding failed: %w", err)
+			return fmt.Errorf("rio: write record name-padding failed: %w", err)
 		}
 	}
 
@@ -273,11 +272,11 @@ func (rec *rioRecord) unmarshalHeader(r io.Reader) error {
 		if err == io.EOF || err == io.ErrUnexpectedEOF {
 			return err
 		}
-		return xerrors.Errorf("rio: read record header failed: %w", err)
+		return fmt.Errorf("rio: read record header failed: %w", err)
 	}
 
 	if rec.Header.Frame != recFrame {
-		return xerrors.Errorf("rio: read record header corrupted (frame=%#v)", rec.Header.Frame)
+		return fmt.Errorf("rio: read record header corrupted (frame=%#v)", rec.Header.Frame)
 	}
 
 	return err
@@ -288,29 +287,29 @@ func (rec *rioRecord) unmarshalData(r io.Reader) error {
 
 	err = binary.Read(r, Endian, &rec.Options)
 	if err != nil {
-		return xerrors.Errorf("rio: read record options failed: %w", err)
+		return fmt.Errorf("rio: read record options failed: %w", err)
 	}
 
 	err = binary.Read(r, Endian, &rec.CLen)
 	if err != nil {
-		return xerrors.Errorf("rio: read record compr-len failed: %w", err)
+		return fmt.Errorf("rio: read record compr-len failed: %w", err)
 	}
 
 	err = binary.Read(r, Endian, &rec.XLen)
 	if err != nil {
-		return xerrors.Errorf("rio: read record len failed failed: %w", err)
+		return fmt.Errorf("rio: read record len failed failed: %w", err)
 	}
 
 	nsize := uint32(0)
 	err = binary.Read(r, Endian, &nsize)
 	if err != nil {
-		return xerrors.Errorf("rio: read record name-len failed: %w", err)
+		return fmt.Errorf("rio: read record name-len failed: %w", err)
 	}
 
 	buf := make([]byte, rioAlign(int(nsize)))
 	_, err = r.Read(buf)
 	if err != nil {
-		return xerrors.Errorf("rio: read record name failed: %w", err)
+		return fmt.Errorf("rio: read record name failed: %w", err)
 	}
 
 	rec.Name = string(buf[:int(nsize)])
@@ -350,55 +349,55 @@ func (blk *rioBlock) RioMarshal(w io.Writer) error {
 
 	err = blk.Header.RioMarshal(w)
 	if err != nil {
-		return xerrors.Errorf("rio: write block header failed: %w", err)
+		return fmt.Errorf("rio: write block header failed: %w", err)
 	}
 
 	err = binary.Write(w, Endian, blk.Version)
 	if err != nil {
-		return xerrors.Errorf("rio: write block version failed: %w", err)
+		return fmt.Errorf("rio: write block version failed: %w", err)
 	}
 
 	name := []byte(blk.Name)
 	err = binary.Write(w, Endian, uint32(len(name)))
 	if err != nil {
-		return xerrors.Errorf("rio: write block name-len failed: %w", err)
+		return fmt.Errorf("rio: write block name-len failed: %w", err)
 	}
 
 	nb, err := w.Write(name)
 	if err != nil {
-		return xerrors.Errorf("rio: write block name failed: %w", err)
+		return fmt.Errorf("rio: write block name failed: %w", err)
 	}
 	if nb != len(name) {
-		return xerrors.Errorf("rio: wrote too few bytes (want=%d. got=%d)", len(name), nb)
+		return fmt.Errorf("rio: wrote too few bytes (want=%d. got=%d)", len(name), nb)
 	}
 
 	nsize := rioAlign(len(name))
 	if nsize > len(name) {
 		nb, err = w.Write(make([]byte, nsize-len(name)))
 		if err != nil {
-			return xerrors.Errorf("rio: write block name-padding failed: %w", err)
+			return fmt.Errorf("rio: write block name-padding failed: %w", err)
 		}
 		if nb != nsize-len(name) {
-			return xerrors.Errorf("rio: wrote too few bytes (want=%d. got=%d)", nsize-len(name), nb)
+			return fmt.Errorf("rio: wrote too few bytes (want=%d. got=%d)", nsize-len(name), nb)
 		}
 	}
 
 	nb, err = w.Write(blk.Data)
 	if err != nil {
-		return xerrors.Errorf("rio: write block data failed: %w", err)
+		return fmt.Errorf("rio: write block data failed: %w", err)
 	}
 	if nb != len(blk.Data) {
-		return xerrors.Errorf("rio: wrote too few bytes (want=%d. got=%d)", len(blk.Data), nb)
+		return fmt.Errorf("rio: wrote too few bytes (want=%d. got=%d)", len(blk.Data), nb)
 	}
 
 	dsize := rioAlign(len(blk.Data))
 	if dsize > len(blk.Data) {
 		nb, err = w.Write(make([]byte, dsize-len(blk.Data)))
 		if err != nil {
-			return xerrors.Errorf("rio: write block data-padding failed: %w", err)
+			return fmt.Errorf("rio: write block data-padding failed: %w", err)
 		}
 		if nb != dsize-len(blk.Data) {
-			return xerrors.Errorf("rio: wrote too few bytes (want=%d. got=%d)", dsize-len(blk.Data), nb)
+			return fmt.Errorf("rio: wrote too few bytes (want=%d. got=%d)", dsize-len(blk.Data), nb)
 		}
 	}
 
@@ -413,31 +412,31 @@ func (blk *rioBlock) RioUnmarshal(r io.Reader) error {
 		if err == io.EOF || err == io.ErrUnexpectedEOF {
 			return err
 		}
-		return xerrors.Errorf("rio: read block header failed: %w", err)
+		return fmt.Errorf("rio: read block header failed: %w", err)
 	}
 
 	if blk.Header.Frame != blkFrame {
-		return xerrors.Errorf("rio: read block header corrupted (frame=%#v)", blk.Header.Frame)
+		return fmt.Errorf("rio: read block header corrupted (frame=%#v)", blk.Header.Frame)
 	}
 
 	err = binary.Read(r, Endian, &blk.Version)
 	if err != nil {
-		return xerrors.Errorf("rio: read block version failed: %w", err)
+		return fmt.Errorf("rio: read block version failed: %w", err)
 	}
 
 	nsize := uint32(0)
 	err = binary.Read(r, Endian, &nsize)
 	if err != nil {
-		return xerrors.Errorf("rio: read block name-len failed: %w", err)
+		return fmt.Errorf("rio: read block name-len failed: %w", err)
 	}
 	name := make([]byte, rioAlign(int(nsize)))
 
 	nb, err := io.ReadFull(r, name)
 	if err != nil {
-		return xerrors.Errorf("rio: read block name failed: %w", err)
+		return fmt.Errorf("rio: read block name failed: %w", err)
 	}
 	if int(nb) != len(name) {
-		return xerrors.Errorf("rio: read too few bytes for name (want=%d. got=%d)", len(name), nb)
+		return fmt.Errorf("rio: read too few bytes for name (want=%d. got=%d)", len(name), nb)
 	}
 
 	blk.Name = string(name[:int(nsize)])
@@ -445,10 +444,10 @@ func (blk *rioBlock) RioUnmarshal(r io.Reader) error {
 	data := make([]byte, rioAlign(int(blk.Header.Len)))
 	nb, err = io.ReadFull(r, data)
 	if err != nil {
-		return xerrors.Errorf("rio: read block data failed: %w", err)
+		return fmt.Errorf("rio: read block data failed: %w", err)
 	}
 	if int(nb) != len(data) {
-		return xerrors.Errorf("rio: read too few bytes for data (want=%d. got=%d)", len(data), nb)
+		return fmt.Errorf("rio: read too few bytes for data (want=%d. got=%d)", len(data), nb)
 	}
 	blk.Data = data[:int(blk.Header.Len)]
 
@@ -489,12 +488,12 @@ func (ftr *rioFooter) RioMarshal(w io.Writer) error {
 
 	err = ftr.Header.RioMarshal(w)
 	if err != nil {
-		return xerrors.Errorf("rio: write footer header failed: %w", err)
+		return fmt.Errorf("rio: write footer header failed: %w", err)
 	}
 
 	err = binary.Write(w, Endian, ftr.Meta)
 	if err != nil {
-		return xerrors.Errorf("rio: write footer meta failed: %w", err)
+		return fmt.Errorf("rio: write footer meta failed: %w", err)
 	}
 
 	return err
@@ -523,11 +522,11 @@ func (ftr *rioFooter) unmarshalHeader(r io.Reader) error {
 		if err == io.EOF {
 			return err
 		}
-		return xerrors.Errorf("rio: read footer header failed: %w", err)
+		return fmt.Errorf("rio: read footer header failed: %w", err)
 	}
 
 	if ftr.Header.Frame != ftrFrame {
-		return xerrors.Errorf("rio: read footer header corrupted (frame=%#v)", ftr.Header.Frame)
+		return fmt.Errorf("rio: read footer header corrupted (frame=%#v)", ftr.Header.Frame)
 	}
 
 	return err
@@ -538,7 +537,7 @@ func (ftr *rioFooter) unmarshalData(r io.Reader) error {
 
 	err = binary.Read(r, Endian, &ftr.Meta)
 	if err != nil {
-		return xerrors.Errorf("rio: read footer meta failed: %w", err)
+		return fmt.Errorf("rio: read footer meta failed: %w", err)
 	}
 
 	return err

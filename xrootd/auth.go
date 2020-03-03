@@ -7,12 +7,12 @@ package xrootd // import "go-hep.org/x/hep/xrootd"
 import (
 	"bytes"
 	"context"
+	"fmt"
 
 	"go-hep.org/x/hep/xrootd/xrdproto/auth"
 	"go-hep.org/x/hep/xrootd/xrdproto/auth/host"
 	"go-hep.org/x/hep/xrootd/xrdproto/auth/krb5"
 	"go-hep.org/x/hep/xrootd/xrdproto/auth/unix"
-	"golang.org/x/xerrors"
 )
 
 // defaultProviders is the list of authentification providers a xrootd client will use by default.
@@ -39,22 +39,22 @@ func (sess *cliSession) auth(ctx context.Context, securityInformation []byte) er
 
 		auther, ok := sess.client.auths[provider]
 		if !ok {
-			errs = append(errs, xerrors.Errorf("xrootd: could not authorize using %s: provider was not found", provider))
+			errs = append(errs, fmt.Errorf("xrootd: could not authorize using %s: provider was not found", provider))
 			continue
 		}
 		r, err := auther.Request(params)
 		if err != nil {
-			errs = append(errs, xerrors.Errorf("xrootd: could not authorize using %s: %w", provider, err))
+			errs = append(errs, fmt.Errorf("xrootd: could not authorize using %s: %w", provider, err))
 			continue
 		}
 		_, err = sess.Send(ctx, nil, r)
 		// TODO: should we react somehow to redirection?
 		if err != nil {
-			errs = append(errs, xerrors.Errorf("xrootd: could not authorize using %s: %w", provider, err))
+			errs = append(errs, fmt.Errorf("xrootd: could not authorize using %s: %w", provider, err))
 			continue
 		}
 		return nil
 	}
 
-	return xerrors.Errorf("xrootd: could not authorize:\n%v", errs)
+	return fmt.Errorf("xrootd: could not authorize:\n%v", errs)
 }

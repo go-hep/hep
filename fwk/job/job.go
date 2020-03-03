@@ -5,8 +5,9 @@
 package job // import "go-hep.org/x/hep/fwk/job"
 
 import (
+	"fmt"
+
 	"go-hep.org/x/hep/fwk"
-	"golang.org/x/xerrors"
 )
 
 // C describes the configuration data of a fwk.Component
@@ -115,7 +116,7 @@ func (job *Job) SetProp(c fwk.Component, name string, value interface{}) {
 
 func (job *Job) setProp(c fwk.Component, name string, value interface{}) {
 	if !job.app.HasProp(c, name) {
-		err := xerrors.Errorf("component [%s:%s] has no property named %q\n",
+		err := fmt.Errorf("component [%s:%s] has no property named %q\n",
 			c.Type(),
 			c.Name(),
 			name,

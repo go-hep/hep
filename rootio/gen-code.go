@@ -428,8 +428,7 @@ package rstreamers
 
 import (
 	"encoding/base64"
-
-	"golang.org/x/xerrors"
+	"fmt"
 )
 
 var Data []byte
@@ -442,7 +441,7 @@ func init() {
 	fmt.Fprintf(f, "`%s`)\n", base64.StdEncoding.EncodeToString(raw))
 	fmt.Fprintf(f, `
 	if err != nil {
-		panic(xerrors.Errorf("rootio: could not decode embedded streamer: %%w", err))
+		panic(fmt.Errorf("rootio: could not decode embedded streamer: %%w", err))
 	}
 }
 `)

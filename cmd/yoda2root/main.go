@@ -28,7 +28,6 @@ import (
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hbook/yodacnv"
-	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -80,14 +79,14 @@ func convert(w *riofs.File, fname string) error {
 	var r io.ReadCloser
 	r, err := os.Open(fname)
 	if err != nil {
-		return xerrors.Errorf("error opening file [%s]: %w", fname, err)
+		return fmt.Errorf("error opening file [%s]: %w", fname, err)
 	}
 	defer r.Close()
 
 	if filepath.Ext(fname) == ".gz" {
 		rz, err := gzip.NewReader(r)
 		if err != nil {
-			return xerrors.Errorf("could not open gzip file [%s]: %w", fname, err)
+			return fmt.Errorf("could not open gzip file [%s]: %w", fname, err)
 		}
 		defer rz.Close()
 		r = rz
@@ -95,7 +94,7 @@ func convert(w *riofs.File, fname string) error {
 
 	vs, err := yodacnv.Read(r)
 	if err != nil {
-		return xerrors.Errorf("error decoding YODA file [%s]: %w", fname, err)
+		return fmt.Errorf("error decoding YODA file [%s]: %w", fname, err)
 	}
 
 	for i, v := range vs {
@@ -125,7 +124,7 @@ func convert(w *riofs.File, fname string) error {
 		}
 		err = w.Put(key, obj)
 		if err != nil {
-			return xerrors.Errorf("error writing %q from YODA file [%s]: %w", v.Name(), fname, err)
+			return fmt.Errorf("error writing %q from YODA file [%s]: %w", v.Name(), fname, err)
 		}
 	}
 

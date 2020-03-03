@@ -5,13 +5,13 @@
 package rio
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"reflect"
 
 	"go-hep.org/x/hep/fwk"
 	"go-hep.org/x/hep/rio"
-	"golang.org/x/xerrors"
 )
 
 // InputStreamer reads data from a (set of) rio-stream(s)
@@ -71,17 +71,17 @@ func (input *InputStreamer) Read(ctx fwk.Context) error {
 		obj := reflect.New(input.ports[rec.Name()].Type).Elem()
 		err := blk.Read(obj.Addr().Interface())
 		if err != nil {
-			return xerrors.Errorf("block-read error: %w", err)
+			return fmt.Errorf("block-read error: %w", err)
 		}
 		err = store.Put(rec.Name(), obj.Interface())
 		if err != nil {
-			return xerrors.Errorf("store-put error: %w", err)
+			return fmt.Errorf("store-put error: %w", err)
 		}
 		recs[rec.Name()] = struct{}{}
 	}
 
 	if len(recs) != len(input.ports) {
-		return xerrors.Errorf("fwk.rio: expected inputs: %d. got: %d.", len(input.ports), len(recs))
+		return fmt.Errorf("fwk.rio: expected inputs: %d. got: %d.", len(input.ports), len(recs))
 	}
 
 	return nil

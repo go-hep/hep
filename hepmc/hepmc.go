@@ -6,17 +6,17 @@
 package hepmc // import "go-hep.org/x/hep/hepmc"
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"sort"
 
 	"go-hep.org/x/hep/fmom"
-	"golang.org/x/xerrors"
 )
 
 var (
-	errNilVtx      = xerrors.New("hepmc: nil Vertex")
-	errNilParticle = xerrors.New("hepmc: nil Particle")
+	errNilVtx      = errors.New("hepmc: nil Vertex")
+	errNilParticle = errors.New("hepmc: nil Particle")
 )
 
 // Delete deletes an event and allows memory to be reclaimed by the garbage collector
@@ -718,7 +718,7 @@ type Weights struct {
 func (w Weights) Add(n string, v float64) error {
 	_, ok := w.Map[n]
 	if ok {
-		return xerrors.Errorf("hepmc.Weights.Add: name [%s] already in container", n)
+		return fmt.Errorf("hepmc.Weights.Add: name [%s] already in container", n)
 	}
 	idx := len(w.Slice)
 	w.Map[n] = idx

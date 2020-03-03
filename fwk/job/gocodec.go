@@ -12,8 +12,6 @@ import (
 	"os"
 	"reflect"
 	"strings"
-
-	"golang.org/x/xerrors"
 )
 
 // NewGoEncoder returns a new encoder that writes to w
@@ -39,7 +37,7 @@ func (enc *GoEncoder) Encode(data interface{}) error {
 	var err error
 	stmts, ok := data.([]Stmt)
 	if !ok {
-		return xerrors.Errorf("fwk/job: expected a []job.Stmt as input. got %T", data)
+		return fmt.Errorf("fwk/job: expected a []job.Stmt as input. got %T", data)
 	}
 
 	err = enc.encode(stmts)
@@ -79,7 +77,7 @@ package main
 				typename := stmt.Data.Type
 				i := strings.LastIndex(typename, ".")
 				if i == -1 {
-					return xerrors.Errorf("fwk/job: invalid package name %q (no dot)", typename)
+					return fmt.Errorf("fwk/job: invalid package name %q (no dot)", typename)
 				}
 				//typ := typename[i+1:]
 				pkg := typename[:i]
@@ -115,7 +113,7 @@ package main
 
 		// first stmt should be the NewApp one.
 		if stmts[0].Type != StmtNewApp {
-			return xerrors.Errorf("fwk/job: invalid stmts! expected stmts[0].Type==%v. got=%v",
+			return fmt.Errorf("fwk/job: invalid stmts! expected stmts[0].Type==%v. got=%v",
 				StmtNewApp,
 				stmts[0].Type,
 			)
@@ -123,7 +121,7 @@ package main
 
 		if stmts[0].Data.Type != "go-hep.org/x/hep/fwk.appmgr" {
 			// only support fwk.appmgr for now...
-			return xerrors.Errorf("fwk/job: invalid fwk.App concrete type (%v)", stmts[0].Data.Type)
+			return fmt.Errorf("fwk/job: invalid fwk.App concrete type (%v)", stmts[0].Data.Type)
 		}
 
 		fmt.Fprintf(enc.buf, `
@@ -180,7 +178,7 @@ func newApp() *job.Job {
 			)
 
 		default:
-			return xerrors.Errorf("fwk/job: invalid statement type (%#v)", stmt.Type)
+			return fmt.Errorf("fwk/job: invalid statement type (%#v)", stmt.Type)
 		}
 	}
 

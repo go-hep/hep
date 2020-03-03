@@ -16,7 +16,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 // noKeyError is the error returned when a riofs.Key could not be found.
@@ -143,10 +142,10 @@ func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object,
 	case rbytes.Marshaler:
 		_, err = obj.MarshalROOT(buf)
 		if err != nil {
-			return Key{}, xerrors.Errorf("riofs: could not marshal object %T for key=%q: %w", obj, name, err)
+			return Key{}, fmt.Errorf("riofs: could not marshal object %T for key=%q: %w", obj, name, err)
 		}
 	default:
-		return Key{}, xerrors.Errorf("riofs: object %T can not be ROOT serialized", obj)
+		return Key{}, fmt.Errorf("riofs: object %T can not be ROOT serialized", obj)
 	}
 
 	objlen := int32(len(buf.Bytes()))
@@ -173,13 +172,13 @@ func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object,
 
 	k.buf, err = rcompress.Compress(nil, buf.Bytes(), k.f.compression)
 	if err != nil {
-		return k, xerrors.Errorf("riofs: could not compress object %T for key %q: %w", obj, name, err)
+		return k, fmt.Errorf("riofs: could not compress object %T for key %q: %w", obj, name, err)
 	}
 	k.nbytes = k.keylen + int32(len(k.buf))
 
 	err = f.setEnd(k.seekkey + int64(k.nbytes))
 	if err != nil {
-		return k, xerrors.Errorf("riofs: could not update ROOT file end: %w", err)
+		return k, fmt.Errorf("riofs: could not update ROOT file end: %w", err)
 	}
 
 	return k, nil
@@ -214,13 +213,13 @@ func newKeyFromBuf(dir *tdirectoryFile, name, title, class string, cycle int16, 
 
 	k.buf, err = rcompress.Compress(nil, buf, k.f.compression)
 	if err != nil {
-		return k, xerrors.Errorf("riofs: could not compress object %s for key %q: %w", class, name, err)
+		return k, fmt.Errorf("riofs: could not compress object %s for key %q: %w", class, name, err)
 	}
 	k.nbytes = k.keylen + int32(len(k.buf))
 
 	err = f.setEnd(k.seekkey + int64(k.nbytes))
 	if err != nil {
-		return k, xerrors.Errorf("riofs: could not update ROOT file end: %w", err)
+		return k, fmt.Errorf("riofs: could not update ROOT file end: %w", err)
 	}
 
 	return k, nil
@@ -241,7 +240,7 @@ func NewKeyForBasketInternal(dir Directory, name, title, class string, cycle int
 	case *tdirectoryFile:
 		d = v
 	default:
-		panic(xerrors.Errorf("riofs: invalid directory type %T", dir))
+		panic(fmt.Errorf("riofs: invalid directory type %T", dir))
 	}
 
 	k := Key{
@@ -280,7 +279,7 @@ func KeyFromDir(dir Directory, name, title, class string) Key {
 	case *tdirectoryFile:
 		k = newKey(v, name, title, class, 0, f)
 	default:
-		panic(xerrors.Errorf("riofs: invalid directory type %T", dir))
+		panic(fmt.Errorf("riofs: invalid directory type %T", dir))
 	}
 	return k
 }
@@ -335,7 +334,7 @@ func (k *Key) ObjectType() reflect.Type {
 func (k *Key) Value() interface{} {
 	v, err := k.Object()
 	if err != nil {
-		panic(xerrors.Errorf("error loading payload for %q: %w", k.Name(), err))
+		panic(fmt.Errorf("error loading payload for %q: %w", k.Name(), err))
 	}
 	return v
 }
@@ -348,28 +347,28 @@ func (k *Key) Object() (root.Object, error) {
 
 	buf, err := k.Bytes()
 	if err != nil {
-		return nil, xerrors.Errorf("riofs: could not load key payload: %w", err)
+		return nil, fmt.Errorf("riofs: could not load key payload: %w", err)
 	}
 
 	fct := rtypes.Factory.Get(k.class)
 	if fct == nil {
-		return nil, xerrors.Errorf("riofs: no registered factory for class %q (key=%q)", k.class, k.Name())
+		return nil, fmt.Errorf("riofs: no registered factory for class %q (key=%q)", k.class, k.Name())
 	}
 
 	v := fct()
 	obj, ok := v.Interface().(root.Object)
 	if !ok {
-		return nil, xerrors.Errorf("riofs: class %q does not implement root.Object (key=%q)", k.class, k.Name())
+		return nil, fmt.Errorf("riofs: class %q does not implement root.Object (key=%q)", k.class, k.Name())
 	}
 
 	vv, ok := obj.(rbytes.Unmarshaler)
 	if !ok {
-		return nil, xerrors.Errorf("riofs: class %q does not implement rbytes.Unmarshaler (key=%q)", k.class, k.Name())
+		return nil, fmt.Errorf("riofs: class %q does not implement rbytes.Unmarshaler (key=%q)", k.class, k.Name())
 	}
 
 	err = vv.UnmarshalROOT(rbytes.NewRBuffer(buf, nil, uint32(k.keylen), k.f))
 	if err != nil {
-		return nil, xerrors.Errorf("riofs: could not unmarshal key payload: %w", err)
+		return nil, fmt.Errorf("riofs: could not unmarshal key payload: %w", err)
 	}
 
 	if vv, ok := obj.(SetFiler); ok {
@@ -417,7 +416,7 @@ func (k *Key) load(buf []byte) ([]byte, error) {
 		sr := io.NewSectionReader(k.f, start, int64(k.nbytes)-int64(k.keylen))
 		err := rcompress.Decompress(buf, sr)
 		if err != nil {
-			return nil, xerrors.Errorf("riofs: could not decompress key payload: %w", err)
+			return nil, fmt.Errorf("riofs: could not decompress key payload: %w", err)
 		}
 		return buf, nil
 	}
@@ -425,7 +424,7 @@ func (k *Key) load(buf []byte) ([]byte, error) {
 	r := io.NewSectionReader(k.f, start, int64(k.nbytes))
 	_, err := io.ReadFull(r, buf)
 	if err != nil {
-		return nil, xerrors.Errorf("riofs: could not read key payload: %w", err)
+		return nil, fmt.Errorf("riofs: could not read key payload: %w", err)
 	}
 	return buf, nil
 }
@@ -607,7 +606,7 @@ func (k *Key) records(w io.Writer, indent int) error {
 	case "TDirectory", "TDirectoryFile":
 		obj, err := k.Object()
 		if err != nil {
-			return xerrors.Errorf("could not load object of key %q: %w", k.Name(), err)
+			return fmt.Errorf("could not load object of key %q: %w", k.Name(), err)
 		}
 		return obj.(*tdirectoryFile).records(w, indent+1)
 	}

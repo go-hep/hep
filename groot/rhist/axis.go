@@ -5,6 +5,7 @@
 package rhist
 
 import (
+	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -13,7 +14,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 type taxis struct {
@@ -151,7 +151,7 @@ func (a *taxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(a.Class())
 	const minVers = 6
 	if vers < minVers {
-		return xerrors.Errorf("rhist: TAxis version too old (%d<%d)", vers, minVers)
+		return fmt.Errorf("rhist: TAxis version too old (%d<%d)", vers, minVers)
 	}
 
 	for _, v := range []rbytes.Unmarshaler{

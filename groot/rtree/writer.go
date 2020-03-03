@@ -5,6 +5,7 @@
 package rtree
 
 import (
+	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
@@ -14,7 +15,6 @@ import (
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 // Writer is the interface that wraps the Write method for Trees.
@@ -112,12 +112,12 @@ type WriteVar struct {
 func WriteVarsFromStruct(ptr interface{}) []WriteVar {
 	rv := reflect.ValueOf(ptr)
 	if rv.Kind() != reflect.Ptr {
-		panic(xerrors.Errorf("rtree: expect a pointer value, got %T", ptr))
+		panic(fmt.Errorf("rtree: expect a pointer value, got %T", ptr))
 	}
 
 	rv = rv.Elem()
 	if rv.Kind() != reflect.Struct {
-		panic(xerrors.Errorf("rtree: expect a pointer to struct value, got %T", ptr))
+		panic(fmt.Errorf("rtree: expect a pointer to struct value, got %T", ptr))
 	}
 	var (
 		reDims = regexp.MustCompile(`\w*?\[(\w*)\]+?`)
@@ -168,7 +168,7 @@ func WriteVarsFromStruct(ptr interface{}) []WriteVar {
 			case reflect.Slice:
 				sli, dims := split(wvar.Name)
 				if len(dims) > 1 {
-					panic(xerrors.Errorf("rtree: invalid number of slice-dimensions for field %q: %q", ft.Name, wvar.Name))
+					panic(fmt.Errorf("rtree: invalid number of slice-dimensions for field %q: %q", ft.Name, wvar.Name))
 				}
 				wvar.Name = sli
 				wvar.Count = dims[0]
@@ -176,18 +176,18 @@ func WriteVarsFromStruct(ptr interface{}) []WriteVar {
 			case reflect.Array:
 				arr, dims := split(wvar.Name)
 				if len(dims) > 3 {
-					panic(xerrors.Errorf("rtree: invalid number of array-dimension for field %q: %q", ft.Name, wvar.Name))
+					panic(fmt.Errorf("rtree: invalid number of array-dimension for field %q: %q", ft.Name, wvar.Name))
 				}
 				wvar.Name = arr
 			default:
-				panic(xerrors.Errorf("rtree: invalid field type for %q, or invalid struct-tag %q: %T", ft.Name, wvar.Name, fv.Interface()))
+				panic(fmt.Errorf("rtree: invalid field type for %q, or invalid struct-tag %q: %T", ft.Name, wvar.Name, fv.Interface()))
 			}
 		}
 		switch ft.Type.Kind() {
 		case reflect.Int, reflect.Uint, reflect.UnsafePointer, reflect.Uintptr, reflect.Chan, reflect.Interface:
-			panic(xerrors.Errorf("rtree: invalid field type for %q: %T", ft.Name, fv.Interface()))
+			panic(fmt.Errorf("rtree: invalid field type for %q: %T", ft.Name, fv.Interface()))
 		case reflect.Map:
-			panic(xerrors.Errorf("rtree: invalid field type for %q: %T (not yet supported)", ft.Name, fv.Interface()))
+			panic(fmt.Errorf("rtree: invalid field type for %q: %T (not yet supported)", ft.Name, fv.Interface()))
 		}
 
 		wvars = append(wvars, wvar)
@@ -214,7 +214,7 @@ func WriteVarsFromTree(t Tree) []WriteVar {
 // directory dir, ready to be filled with data.
 func NewWriter(dir riofs.Directory, name string, vars []WriteVar, opts ...WriteOption) (Writer, error) {
 	if dir == nil {
-		return nil, xerrors.Errorf("rtree: missing parent directory")
+		return nil, fmt.Errorf("rtree: missing parent directory")
 	}
 
 	w := &wtree{
@@ -236,7 +236,7 @@ func NewWriter(dir riofs.Directory, name string, vars []WriteVar, opts ...WriteO
 	for _, opt := range opts {
 		err := opt(&cfg)
 		if err != nil {
-			return nil, xerrors.Errorf("rtree: could not configure tree writer: %w", err)
+			return nil, fmt.Errorf("rtree: could not configure tree writer: %w", err)
 		}
 	}
 
@@ -245,7 +245,7 @@ func NewWriter(dir riofs.Directory, name string, vars []WriteVar, opts ...WriteO
 	for _, v := range vars {
 		b, err := newBranchFromWVars(w, v.Name, []WriteVar{v}, nil, cfg)
 		if err != nil {
-			return nil, xerrors.Errorf("rtree: could not create branch for write-var %#v: %w", v, err)
+			return nil, fmt.Errorf("rtree: could not create branch for write-var %#v: %w", v, err)
 		}
 		w.ttree.branches = append(w.ttree.branches, b)
 	}
@@ -260,11 +260,11 @@ func (w *wtree) ROOTMerge(src root.Object) error {
 	case Tree:
 		_, err := Copy(w, src)
 		if err != nil {
-			return xerrors.Errorf("rtree: could not merge tree: %w", err)
+			return fmt.Errorf("rtree: could not merge tree: %w", err)
 		}
 		return nil
 	default:
-		return xerrors.Errorf("rtree: can not merge src=%T into dst=%T", src, w)
+		return fmt.Errorf("rtree: can not merge src=%T into dst=%T", src, w)
 	}
 }
 
@@ -275,7 +275,7 @@ func (w *wtree) Write() (int, error) {
 	for _, b := range w.ttree.branches {
 		nbytes, err := b.write()
 		if err != nil {
-			return tot, xerrors.Errorf("rtree: could not write branch %q: %w", b.Name(), err)
+			return tot, fmt.Errorf("rtree: could not write branch %q: %w", b.Name(), err)
 		}
 		tot += nbytes
 	}
@@ -291,7 +291,7 @@ func (w *wtree) Flush() error {
 	for _, b := range w.ttree.branches {
 		err := b.flush()
 		if err != nil {
-			return xerrors.Errorf("rtree: could not flush branch %q: %w", b.Name(), err)
+			return fmt.Errorf("rtree: could not flush branch %q: %w", b.Name(), err)
 		}
 	}
 	return nil
@@ -300,18 +300,18 @@ func (w *wtree) Flush() error {
 // Close writes metadata and closes the tree.
 func (w *wtree) Close() error {
 	if err := w.Flush(); err != nil {
-		return xerrors.Errorf("rtree: could not flush tree %q: %w", w.Name(), err)
+		return fmt.Errorf("rtree: could not flush tree %q: %w", w.Name(), err)
 	}
 
 	if err := w.ttree.dir.Put(w.Name(), w); err != nil {
-		return xerrors.Errorf("rtree: could not save tree %q: %w", w.Name(), err)
+		return fmt.Errorf("rtree: could not save tree %q: %w", w.Name(), err)
 	}
 
 	return nil
 }
 
 func (w *wtree) loadEntry(i int64) error {
-	return xerrors.Errorf("rtree: Tree writer can not be read from")
+	return fmt.Errorf("rtree: Tree writer can not be read from")
 }
 
 func fileOf(d riofs.Directory) *riofs.File {

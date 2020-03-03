@@ -7,9 +7,8 @@
 package rootio
 
 import (
+	"fmt"
 	"reflect"
-
-	"golang.org/x/xerrors"
 )
 
 // LeafO implements ROOT TLeafO
@@ -140,7 +139,7 @@ func (leaf *LeafO) scan(r *RBuffer, ptr interface{}) error {
 		copy(v, leaf.val)
 
 	default:
-		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.err
@@ -316,7 +315,7 @@ func (leaf *LeafB) scan(r *RBuffer, ptr interface{}) error {
 		}
 
 	default:
-		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.err
@@ -492,7 +491,7 @@ func (leaf *LeafS) scan(r *RBuffer, ptr interface{}) error {
 		}
 
 	default:
-		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.err
@@ -668,7 +667,7 @@ func (leaf *LeafI) scan(r *RBuffer, ptr interface{}) error {
 		}
 
 	default:
-		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.err
@@ -844,7 +843,7 @@ func (leaf *LeafL) scan(r *RBuffer, ptr interface{}) error {
 		}
 
 	default:
-		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.err
@@ -995,7 +994,7 @@ func (leaf *LeafF) scan(r *RBuffer, ptr interface{}) error {
 		copy(v, leaf.val)
 
 	default:
-		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.err
@@ -1146,7 +1145,7 @@ func (leaf *LeafD) scan(r *RBuffer, ptr interface{}) error {
 		copy(v, leaf.val)
 
 	default:
-		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.err
@@ -1297,7 +1296,7 @@ func (leaf *LeafC) scan(r *RBuffer, ptr interface{}) error {
 		copy(v, leaf.val)
 
 	default:
-		panic(xerrors.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
 
 	return r.err

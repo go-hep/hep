@@ -10,14 +10,13 @@ import (
 	"bufio"
 	"bytes"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
-
-	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -106,7 +105,7 @@ func pkgList() ([]string, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		return nil, xerrors.Errorf("could not get package list: %w", err)
+		return nil, fmt.Errorf("could not get package list: %w", err)
 	}
 
 	var pkgs []string

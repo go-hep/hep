@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"go-hep.org/x/hep/fwk/job"
-	"golang.org/x/xerrors"
 )
 
 var (
@@ -67,7 +66,7 @@ options:
 	if *dotfile != "" {
 		dflow := app.App().GetSvc("dataflow")
 		if dflow == nil {
-			panic(xerrors.Errorf("could not retrieve dataflow service"))
+			panic(fmt.Errorf("could not retrieve dataflow service"))
 		}
 
 		app.SetProp(dflow, "DotFile", *dotfile)

@@ -5,6 +5,7 @@
 package rcont
 
 import (
+	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -12,7 +13,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 type RefArray struct {
@@ -100,7 +100,7 @@ func (arr *RefArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(arr.Class())
 
 	if vers < 1 {
-		return xerrors.Errorf("rcont: TRefArray version too old (%d < 1)", vers)
+		return fmt.Errorf("rcont: TRefArray version too old (%d < 1)", vers)
 	}
 
 	if err := arr.obj.UnmarshalROOT(r); err != nil {

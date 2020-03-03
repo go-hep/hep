@@ -49,7 +49,6 @@ import (
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rarrow"
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -111,13 +110,13 @@ Options:
 func process(oname, tname, fname string) error {
 	src, err := os.Open(fname)
 	if err != nil {
-		return xerrors.Errorf("could not open numpy file %q: %w", fname, err)
+		return fmt.Errorf("could not open numpy file %q: %w", fname, err)
 	}
 	defer src.Close()
 
 	npy, err := npyio.NewReader(src)
 	if err != nil {
-		return xerrors.Errorf("could not create numpy file reader %q: %w", fname, err)
+		return fmt.Errorf("could not create numpy file reader %q: %w", fname, err)
 	}
 
 	rec := NewRecord(npy)
@@ -125,28 +124,28 @@ func process(oname, tname, fname string) error {
 
 	dst, err := groot.Create(oname)
 	if err != nil {
-		return xerrors.Errorf("could not create output ROOT file %q: %w", oname, err)
+		return fmt.Errorf("could not create output ROOT file %q: %w", oname, err)
 	}
 	defer dst.Close()
 
 	t, err := rarrow.NewFlatTreeWriter(dst, tname, rec.Schema(), rtree.WithTitle(tname))
 	if err != nil {
-		return xerrors.Errorf("could not create output ROOT tree %q: %w", tname, err)
+		return fmt.Errorf("could not create output ROOT tree %q: %w", tname, err)
 	}
 
 	_, err = arrio.Copy(t, NewRecordReader(rec))
 	if err != nil {
-		return xerrors.Errorf("could not copy numpy array to ROOT tree %q: %w", tname, err)
+		return fmt.Errorf("could not copy numpy array to ROOT tree %q: %w", tname, err)
 	}
 
 	err = t.Close()
 	if err != nil {
-		return xerrors.Errorf("could not close output ROOT tree %q: %w", tname, err)
+		return fmt.Errorf("could not close output ROOT tree %q: %w", tname, err)
 	}
 
 	err = dst.Close()
 	if err != nil {
-		return xerrors.Errorf("could not close output ROOT file %q: %w", oname, err)
+		return fmt.Errorf("could not close output ROOT file %q: %w", oname, err)
 	}
 
 	return nil

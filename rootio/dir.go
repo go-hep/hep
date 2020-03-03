@@ -5,10 +5,9 @@
 package rootio
 
 import (
+	"fmt"
 	"reflect"
 	"time"
-
-	"golang.org/x/xerrors"
 )
 
 // FIXME(sbinet): reorganize tdirectory/tdirectoryFile fields
@@ -127,7 +126,7 @@ func (dir *tdirectoryFile) readDirInfo() error {
 	nbytes := int64(f.nbytesname) + dir.recordSize(f.version)
 
 	if nbytes+f.begin > f.end {
-		return xerrors.Errorf(
+		return fmt.Errorf(
 			"rootio: file [%v] has an incorrect header length [%v] or incorrect end of file length [%v]",
 			f.id,
 			f.begin+nbytes,
@@ -172,7 +171,7 @@ func (dir *tdirectoryFile) readDirInfo() error {
 	dir.dir.named.title = r.ReadString()
 
 	if dir.nbytesname < 10 || dir.nbytesname > 1000 {
-		return xerrors.Errorf("rootio: can't read directory info.")
+		return fmt.Errorf("rootio: can't read directory info.")
 	}
 
 	return r.Err()
@@ -255,13 +254,13 @@ func (dir *tdirectoryFile) save() error {
 		}
 		_, err = k.writeFile(dir.file)
 		if err != nil {
-			return xerrors.Errorf("rootio: could not write key for directory %q: %w", dir.Name(), err)
+			return fmt.Errorf("rootio: could not write key for directory %q: %w", dir.Name(), err)
 		}
 	}
 
 	err = dir.saveSelf()
 	if err != nil {
-		return xerrors.Errorf("rootio: could not save directory: %w", err)
+		return fmt.Errorf("rootio: could not save directory: %w", err)
 	}
 
 	// FIXME(sbinet): recursively save sub-directories.
@@ -326,7 +325,7 @@ func (dir *tdirectoryFile) Put(name string, obj Object) error {
 		title = v.Title()
 	}
 	if name == "" {
-		return xerrors.Errorf("rootio: empty key name")
+		return fmt.Errorf("rootio: empty key name")
 	}
 
 	// FIXME(sbinet): implement a fast look-up ?
@@ -345,7 +344,7 @@ func (dir *tdirectoryFile) Put(name string, obj Object) error {
 	if _, err := dir.StreamerInfo(typename); err != nil {
 		_, err = streamerInfoFrom(obj, dir)
 		if err != nil {
-			return xerrors.Errorf("rootio: could not generate streamer for key: %w", err)
+			return fmt.Errorf("rootio: could not generate streamer for key: %w", err)
 		}
 		_, err = dir.StreamerInfo(typename)
 		if err != nil {
@@ -448,7 +447,7 @@ func (dir *tdirectoryFile) UnmarshalROOT(r *RBuffer) error {
 // StreamerInfo returns the StreamerInfo with name of this directory, or nil otherwise.
 func (dir *tdirectoryFile) StreamerInfo(name string) (StreamerInfo, error) {
 	if dir.file == nil {
-		return nil, xerrors.Errorf("rootio: no streamers")
+		return nil, fmt.Errorf("rootio: no streamers")
 	}
 	return dir.file.StreamerInfo(name)
 }
@@ -480,7 +479,7 @@ func (dir *tdirectoryFile) writeKeys() error {
 	for _, k := range dir.Keys() {
 		_, err = k.MarshalROOT(buf)
 		if err != nil {
-			return xerrors.Errorf("rootio: could not write key: %w", err)
+			return fmt.Errorf("rootio: could not write key: %w", err)
 		}
 	}
 	hdr.buf = buf.buffer()
@@ -490,7 +489,7 @@ func (dir *tdirectoryFile) writeKeys() error {
 
 	_, err = hdr.writeFile(dir.file)
 	if err != nil {
-		return xerrors.Errorf("rootio: could not write header key: %w", err)
+		return fmt.Errorf("rootio: could not write header key: %w", err)
 	}
 	return nil
 }
@@ -512,13 +511,13 @@ func (dir *tdirectoryFile) writeDirHeader() error {
 	buf.WriteString(dir.Title())
 	_, err = dir.MarshalROOT(buf)
 	if err != nil {
-		return xerrors.Errorf("rootio: could not marshal dir-info: %w", err)
+		return fmt.Errorf("rootio: could not marshal dir-info: %w", err)
 	}
 
 	key.buf = buf.buffer()
 	_, err = key.writeFile(dir.file)
 	if err != nil {
-		return xerrors.Errorf("rootio: could not write dir-info to file: %w", err)
+		return fmt.Errorf("rootio: could not write dir-info to file: %w", err)
 	}
 
 	return nil

@@ -6,13 +6,13 @@ package rootio
 
 import (
 	"bytes"
+	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
 	"sync"
 
 	rstreamerspkg "go-hep.org/x/hep/rootio/internal/rstreamers"
-	"golang.org/x/xerrors"
 )
 
 var (
@@ -927,7 +927,7 @@ func (db *streamerDb) add(streamer StreamerInfo) {
 	old, dup := db.db[key]
 	if dup {
 		if old.CheckSum() != streamer.CheckSum() {
-			panic(xerrors.Errorf("rootio: StreamerInfo class=%q version=%d with checksum=%d (got checksum=%d)",
+			panic(fmt.Errorf("rootio: StreamerInfo class=%q version=%d with checksum=%d (got checksum=%d)",
 				streamer.Name(), streamer.ClassVersion(), streamer.CheckSum(), old.CheckSum(),
 			))
 		}

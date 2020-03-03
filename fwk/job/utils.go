@@ -5,10 +5,10 @@
 package job
 
 import (
+	"fmt"
 	"strings"
 
 	"go-hep.org/x/hep/fwk"
-	"golang.org/x/xerrors"
 )
 
 // MsgLevel returns the fwk.Level according to the given lvl string value.
@@ -25,6 +25,6 @@ func MsgLevel(lvl string) fwk.Level {
 	case "ERROR", "ERR":
 		return fwk.LvlError
 	default:
-		panic(xerrors.Errorf("fwk.MsgLevel: invalid fwk.Level string %q", lvl))
+		panic(fmt.Errorf("fwk.MsgLevel: invalid fwk.Level string %q", lvl))
 	}
 }

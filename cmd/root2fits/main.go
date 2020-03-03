@@ -31,7 +31,6 @@ import (
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -77,44 +76,44 @@ Options:
 func process(oname, tname, fname string) error {
 	f, err := groot.Open(fname)
 	if err != nil {
-		return xerrors.Errorf("could not open input ROOT file %q: %w", fname, err)
+		return fmt.Errorf("could not open input ROOT file %q: %w", fname, err)
 	}
 	defer f.Close()
 
 	obj, err := riofs.Dir(f).Get(tname)
 	if err != nil {
-		return xerrors.Errorf("could not retrieve ROOT tree %q from file %q: %w", tname, fname, err)
+		return fmt.Errorf("could not retrieve ROOT tree %q from file %q: %w", tname, fname, err)
 	}
 
 	tree, ok := obj.(rtree.Tree)
 	if !ok {
-		return xerrors.Errorf("ROOT object %q from file %q is not a tree", tname, fname)
+		return fmt.Errorf("ROOT object %q from file %q is not a tree", tname, fname)
 	}
 
 	o, err := os.Create(oname)
 	if err != nil {
-		return xerrors.Errorf("could not create output file %q: %w", oname, err)
+		return fmt.Errorf("could not create output file %q: %w", oname, err)
 	}
 	defer o.Close()
 
 	fits, err := fitsio.Create(o)
 	if err != nil {
-		return xerrors.Errorf("could not create output FITS file %q: %w", oname, err)
+		return fmt.Errorf("could not create output FITS file %q: %w", oname, err)
 	}
 	defer fits.Close()
 
 	phdu, err := fitsio.NewPrimaryHDU(nil)
 	if err != nil {
-		return xerrors.Errorf("could not create primary HDU: %w", err)
+		return fmt.Errorf("could not create primary HDU: %w", err)
 	}
 	err = fits.Write(phdu)
 	if err != nil {
-		return xerrors.Errorf("could not write primary HDU: %w", err)
+		return fmt.Errorf("could not write primary HDU: %w", err)
 	}
 
 	tbl, err := tableFrom(tree)
 	if err != nil {
-		return xerrors.Errorf("could not create output FITS table: %w", err)
+		return fmt.Errorf("could not create output FITS table: %w", err)
 	}
 	defer tbl.Close()
 
@@ -125,39 +124,39 @@ func process(oname, tname, fname string) error {
 	}
 	scan, err := rtree.NewScannerVars(tree, rvars...)
 	if err != nil {
-		return xerrors.Errorf("could not create ROOT scanner: %w", err)
+		return fmt.Errorf("could not create ROOT scanner: %w", err)
 	}
 	defer scan.Close()
 
 	for scan.Next() {
 		err = scan.Scan()
 		if err != nil {
-			return xerrors.Errorf("could not read entry %d from ROOT tree: %w", scan.Entry(), err)
+			return fmt.Errorf("could not read entry %d from ROOT tree: %w", scan.Entry(), err)
 		}
 		err = tbl.Write(wvars...)
 		if err != nil {
-			return xerrors.Errorf("could not write entry %d to FITS table: %w", scan.Entry(), err)
+			return fmt.Errorf("could not write entry %d to FITS table: %w", scan.Entry(), err)
 		}
 	}
 
 	err = fits.Write(tbl)
 	if err != nil {
-		return xerrors.Errorf("could not write output FITS table %q: %w", tname, err)
+		return fmt.Errorf("could not write output FITS table %q: %w", tname, err)
 	}
 
 	err = tbl.Close()
 	if err != nil {
-		return xerrors.Errorf("could not close output FITS table %q: %w", tname, err)
+		return fmt.Errorf("could not close output FITS table %q: %w", tname, err)
 	}
 
 	err = fits.Close()
 	if err != nil {
-		return xerrors.Errorf("could not close output FITS file %q: %w", oname, err)
+		return fmt.Errorf("could not close output FITS file %q: %w", oname, err)
 	}
 
 	err = o.Close()
 	if err != nil {
-		return xerrors.Errorf("could not close output file %q: %w", oname, err)
+		return fmt.Errorf("could not close output file %q: %w", oname, err)
 	}
 	return nil
 }
@@ -217,7 +216,7 @@ func formatFrom(rt reflect.Type) string {
 		elmt := formatFrom(rt.Elem())
 		format = fmt.Sprintf("%d%s", rt.Len(), elmt)
 	default:
-		panic(xerrors.Errorf("invalid branch type %T", reflect.New(rt).Elem().Interface()))
+		panic(fmt.Errorf("invalid branch type %T", reflect.New(rt).Elem().Interface()))
 	}
 
 	return format

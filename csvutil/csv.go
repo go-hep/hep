@@ -12,13 +12,12 @@ package csvutil // import "go-hep.org/x/hep/csvutil"
 import (
 	"bufio"
 	"encoding/csv"
+	"fmt"
 	"math"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
-
-	"golang.org/x/xerrors"
 )
 
 func min(a, b int) int {
@@ -144,12 +143,12 @@ func (tbl *Table) WriteHeader(hdr string) error {
 func (tbl *Table) WriteRow(args ...interface{}) error {
 	var err error
 	if tbl.Writer == nil {
-		return xerrors.Errorf("csvutil: Table is not in write mode")
+		return fmt.Errorf("csvutil: Table is not in write mode")
 	}
 
 	switch len(args) {
 	case 0:
-		return xerrors.Errorf("csvutil: Table.WriteRow needs at least one argument")
+		return fmt.Errorf("csvutil: Table.WriteRow needs at least one argument")
 
 	case 1:
 		// maybe special case: struct?
@@ -187,7 +186,7 @@ func (tbl *Table) write(args ...interface{}) error {
 		case reflect.String:
 			rec[i] = rv.String()
 		default:
-			return xerrors.Errorf("csvutil: invalid type (%[1]T) %[1]v (kind=%[2]v)", arg, rt.Kind())
+			return fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v (kind=%[2]v)", arg, rt.Kind())
 		}
 	}
 	return tbl.Writer.Write(rec)
@@ -259,7 +258,7 @@ func (rows *Rows) Scan(dest ...interface{}) error {
 
 	switch len(dest) {
 	case 0:
-		err = xerrors.Errorf("csvutil: Rows.Scan needs at least one argument")
+		err = fmt.Errorf("csvutil: Rows.Scan needs at least one argument")
 		return err
 
 	case 1:
@@ -317,7 +316,7 @@ func (rows *Rows) scan(args ...interface{}) error {
 			rv.SetString(rec)
 
 		default:
-			return xerrors.Errorf("csvutil: invalid type (%T) %q (kind=%v)", rv.Interface(), rec, rt.Kind())
+			return fmt.Errorf("csvutil: invalid type (%T) %q (kind=%v)", rv.Interface(), rec, rt.Kind())
 		}
 	}
 

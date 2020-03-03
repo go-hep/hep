@@ -6,10 +6,9 @@ package rio
 
 import (
 	"bytes"
+	"fmt"
 	"reflect"
 	"testing"
-
-	"golang.org/x/xerrors"
 )
 
 func TestFile(t *testing.T) {
@@ -118,15 +117,15 @@ func TestInvalidFile(t *testing.T) {
 	}{
 		{
 			r:   nil,
-			err: xerrors.Errorf("rio: error reading magic-header: EOF"),
+			err: fmt.Errorf("rio: error reading magic-header: EOF"),
 		},
 		{
 			r:   []byte{'s', 'i', 'o', '\x00'},
-			err: xerrors.Errorf("rio: not a rio-stream. magic-header=\"sio\\x00\". want=\"rio\\x00\""),
+			err: fmt.Errorf("rio: not a rio-stream. magic-header=\"sio\\x00\". want=\"rio\\x00\""),
 		},
 		{
 			r:   []byte{'r', 'i', 'o', '\x00'},
-			err: xerrors.Errorf("rio: error seeking footer: bytes.Reader.Seek: negative position"),
+			err: fmt.Errorf("rio: error seeking footer: bytes.Reader.Seek: negative position"),
 		},
 	} {
 		t.Run("", func(t *testing.T) {

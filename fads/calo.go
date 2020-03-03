@@ -5,6 +5,7 @@
 package fads
 
 import (
+	"fmt"
 	"math"
 	"reflect"
 	"sort"
@@ -12,7 +13,6 @@ import (
 
 	"go-hep.org/x/hep/fwk"
 	"golang.org/x/exp/rand"
-	"golang.org/x/xerrors"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
@@ -382,7 +382,7 @@ func (tsk *Calorimeter) Process(ctx fwk.Context) error {
 		// get eta/phi of tower's center
 		eta, phi, ok := tsk.bins.EtaPhiBin(int(ieta), int(iphi))
 		if !ok {
-			return xerrors.Errorf("calorimeter: no valid eta/phi bin (ieta=%d iphi=%d)", ieta, iphi)
+			return fmt.Errorf("calorimeter: no valid eta/phi bin (ieta=%d iphi=%d)", ieta, iphi)
 		}
 
 		etabins := tsk.bins.eta

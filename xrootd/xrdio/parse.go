@@ -5,17 +5,16 @@
 package xrdio
 
 import (
+	"fmt"
 	"net/url"
 	"strings"
-
-	"golang.org/x/xerrors"
 )
 
 // Parse parses name into an xrootd URL structure.
 func Parse(name string) (URL, error) {
 	urn, err := url.Parse(name)
 	if err != nil {
-		return URL{}, xerrors.Errorf("could not parse %q as a URL: %w", name, err)
+		return URL{}, fmt.Errorf("could not parse %q as a URL: %w", name, err)
 	}
 
 	host := urn.Hostname()

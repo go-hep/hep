@@ -5,13 +5,13 @@
 package rarrow // import "go-hep.org/x/hep/groot/rarrow"
 
 import (
+	"fmt"
 	"sync/atomic"
 
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 // NewTable creates a new in-memory Arrow Table from the provided ROOT Tree.
@@ -79,7 +79,7 @@ func (tbl *rootTable) init() {
 	vars := rtree.NewScanVars(tbl.tree)
 	sc, err := rtree.NewScannerVars(tbl.tree, vars...)
 	if err != nil {
-		panic(xerrors.Errorf("could not create scanner from scan-vars %#v: %w", vars, err))
+		panic(fmt.Errorf("could not create scanner from scan-vars %#v: %w", vars, err))
 	}
 	defer sc.Close()
 
@@ -93,7 +93,7 @@ func (tbl *rootTable) init() {
 	for sc.Next() {
 		err := sc.Scan()
 		if err != nil {
-			panic(xerrors.Errorf("could not scan entry %d: %w", sc.Entry(), err))
+			panic(fmt.Errorf("could not scan entry %d: %w", sc.Entry(), err))
 		}
 
 		for i, field := range tbl.schema.Fields() {
@@ -110,7 +110,7 @@ func (tbl *rootTable) init() {
 	for i, arr := range arrs {
 		field := tbl.schema.Field(i)
 		if !arrow.TypeEquals(field.Type, arr.DataType()) {
-			panic(xerrors.Errorf("field[%d][%s]: type=%v|%v array=%v", i, field.Name, field.Type, arr.DataType(), arr))
+			panic(fmt.Errorf("field[%d][%s]: type=%v|%v array=%v", i, field.Name, field.Type, arr.DataType(), arr))
 		}
 		chunked := array.NewChunked(field.Type, []array.Interface{arr})
 		defer chunked.Release()

@@ -21,7 +21,6 @@ import (
 	"golang.org/x/mod/modfile"
 	"golang.org/x/mod/module"
 	"golang.org/x/sync/errgroup"
-	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -208,7 +207,7 @@ func pkgList(dir, module string, ctx OSArch) ([]string, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		return nil, xerrors.Errorf("could not get package list: %w", err)
+		return nil, fmt.Errorf("could not get package list: %w", err)
 	}
 
 	var pkgs []string

@@ -60,7 +60,7 @@ func (obj *Object) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteU32(uid)
 		w.WriteU32(obj.Bits)
 		w.WriteU16(0) // FIXME(sbinet): implement referenced objects.
-		// panic(xerrors.Errorf("rbase: writing referenced objects are not supported"))
+		// panic(fmt.Errorf("rbase: writing referenced objects are not supported"))
 	default:
 		w.WriteU32(obj.ID)
 		w.WriteU32(obj.Bits)

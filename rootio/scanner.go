@@ -5,9 +5,8 @@
 package rootio
 
 import (
+	"fmt"
 	"reflect"
-
-	"golang.org/x/xerrors"
 )
 
 type baseScanner struct {
@@ -60,7 +59,7 @@ func (s *baseScanner) SeekEntry(i int64) error {
 		if i >= ch.off+ch.tree.Entries() || i < ch.off {
 			itree := s.findTree(i)
 			if itree == -1 {
-				s.err = xerrors.Errorf("rootio: could not find Tree containing entry %d", i)
+				s.err = fmt.Errorf("rootio: could not find Tree containing entry %d", i)
 				return s.err
 			}
 			s.loadTree(itree)
@@ -159,7 +158,7 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 
 	rt := reflect.TypeOf(ptr).Elem()
 	if rt.Kind() != reflect.Struct {
-		return nil, xerrors.Errorf("rootio: NewTreeScanner expects a pointer to a struct (got: %T)", ptr)
+		return nil, fmt.Errorf("rootio: NewTreeScanner expects a pointer to a struct (got: %T)", ptr)
 	}
 	rv := reflect.New(rt).Elem()
 	for i := 0; i < rt.NumField(); i++ {
@@ -170,14 +169,14 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 		}
 		br := t.Branch(name)
 		if br == nil {
-			return nil, xerrors.Errorf("rootio: Tree %q has no branch named %q", t.Name(), name)
+			return nil, fmt.Errorf("rootio: Tree %q has no branch named %q", t.Name(), name)
 		}
 		leaf := br.Leaves()[0]
 		lidx := -1
 		if lcnt := leaf.LeafCount(); lcnt != nil {
 			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
-				return nil, xerrors.Errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
+				return nil, fmt.Errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
 			lidx = len(cbr)
 			bbr := lbr.Branch()
@@ -229,7 +228,7 @@ type ScanVar struct {
 // type stored in the corresponding branch.
 func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 	if len(vars) <= 0 {
-		return nil, xerrors.Errorf("rootio: NewTreeScannerVars expects at least one branch name")
+		return nil, fmt.Errorf("rootio: NewTreeScannerVars expects at least one branch name")
 	}
 
 	mbr := make([]Branch, len(vars))
@@ -240,7 +239,7 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 	for i, sv := range vars {
 		br := t.Branch(sv.Name)
 		if br == nil {
-			return nil, xerrors.Errorf("rootio: Tree %q has no branch named %q", t.Name(), sv.Name)
+			return nil, fmt.Errorf("rootio: Tree %q has no branch named %q", t.Name(), sv.Name)
 		}
 		mbr[i] = br
 		ibr[i] = scanField{br: br, i: 0}
@@ -249,12 +248,12 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 			leaf = br.Leaf(sv.Leaf)
 		}
 		if leaf == nil {
-			return nil, xerrors.Errorf("rootio: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
+			return nil, fmt.Errorf("rootio: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
 		}
 		if lcnt := leaf.LeafCount(); lcnt != nil {
 			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
-				return nil, xerrors.Errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
+				return nil, fmt.Errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
 			bbr := lbr.Branch()
 			if !cbrset[bbr.Name()] {
@@ -316,7 +315,7 @@ func (s *TreeScanner) Scan(args ...interface{}) (err error) {
 
 	switch len(args) {
 	case 0:
-		return xerrors.Errorf("rootio: TreeScanner.Scan needs at least one argument")
+		return fmt.Errorf("rootio: TreeScanner.Scan needs at least one argument")
 
 	case 1:
 		// maybe special case: map? struct?
@@ -386,7 +385,7 @@ func (s *TreeScanner) scanStruct(data interface{}) error {
 	rt := reflect.TypeOf(data).Elem()
 	rv := reflect.ValueOf(data).Elem()
 	if rt != s.typ {
-		return xerrors.Errorf("rootio: Scanner.Scan: types do not match (got: %T, want: %T)", rv.Interface(), reflect.New(s.typ).Elem().Interface())
+		return fmt.Errorf("rootio: Scanner.Scan: types do not match (got: %T, want: %T)", rv.Interface(), reflect.New(s.typ).Elem().Interface())
 	}
 	for _, br := range s.scan.ibr {
 		fv := rv.Field(br.i)
@@ -415,7 +414,7 @@ type Scanner struct {
 // Scanner will read the branches' data during Scan() and load them into these target-addresses.
 func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 	if len(vars) <= 0 {
-		return nil, xerrors.Errorf("rootio: NewScannerVars expects at least one branch name")
+		return nil, fmt.Errorf("rootio: NewScannerVars expects at least one branch name")
 	}
 
 	mbr := make([]Branch, len(vars))
@@ -427,7 +426,7 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 	for i, sv := range vars {
 		br := t.Branch(sv.Name)
 		if br == nil {
-			return nil, xerrors.Errorf("rootio: Tree %q has no branch named %q", t.Name(), sv.Name)
+			return nil, fmt.Errorf("rootio: Tree %q has no branch named %q", t.Name(), sv.Name)
 		}
 		mbr[i] = br
 		ibr[i] = scanField{br: br, i: 0}
@@ -437,12 +436,12 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 			leaf = br.Leaf(sv.Leaf)
 		}
 		if leaf == nil {
-			return nil, xerrors.Errorf("rootio: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
+			return nil, fmt.Errorf("rootio: Tree %q has no leaf named %q", t.Name(), sv.Leaf)
 		}
 		if lcnt := leaf.LeafCount(); lcnt != nil {
 			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
-				return nil, xerrors.Errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
+				return nil, fmt.Errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
 			bbr := lbr.Branch()
 			if !cbrset[bbr.Name()] {
@@ -452,10 +451,10 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 		}
 		arg := sv.Value
 		if arg == nil {
-			return nil, xerrors.Errorf("rootio: ScanVar %d (name=%v) has nil Value", i, sv.Name)
+			return nil, fmt.Errorf("rootio: ScanVar %d (name=%v) has nil Value", i, sv.Name)
 		}
 		if rv := reflect.ValueOf(arg); rv.Kind() != reflect.Ptr {
-			return nil, xerrors.Errorf("rootio: ScanVar %d (name=%v) has non pointer Value", i, sv.Name)
+			return nil, fmt.Errorf("rootio: ScanVar %d (name=%v) has non pointer Value", i, sv.Name)
 		}
 		err := br.setAddress(arg)
 		if err != nil {
@@ -490,7 +489,7 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 	args := make([]interface{}, 0, cap(mbr))
 	rt := reflect.TypeOf(ptr).Elem()
 	if rt.Kind() != reflect.Struct {
-		return nil, xerrors.Errorf("rootio: NewScanner expects a pointer to a struct (got: %T)", ptr)
+		return nil, fmt.Errorf("rootio: NewScanner expects a pointer to a struct (got: %T)", ptr)
 	}
 	rv := reflect.ValueOf(ptr).Elem()
 	for i := 0; i < rt.NumField(); i++ {
@@ -501,13 +500,13 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 		}
 		br := t.Branch(name)
 		if br == nil {
-			return nil, xerrors.Errorf("rootio: Tree %q has no branch named %q", t.Name(), name)
+			return nil, fmt.Errorf("rootio: Tree %q has no branch named %q", t.Name(), name)
 		}
 		leaf := br.Leaves()[0]
 		if lcnt := leaf.LeafCount(); lcnt != nil {
 			lbr := t.Leaf(lcnt.Name())
 			if lbr == nil {
-				return nil, xerrors.Errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
+				return nil, fmt.Errorf("rootio: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
 			}
 			bbr := lbr.Branch()
 			if !cbrset[bbr.Name()] {

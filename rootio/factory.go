@@ -5,11 +5,10 @@
 package rootio
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 	"sync"
-
-	"golang.org/x/xerrors"
 )
 
 // FactoryFct creates new values of a given type.
@@ -68,7 +67,7 @@ func (f *factory) Get(n string) FactoryFct {
 func (f *factory) get(n string) FactoryFct {
 	fct := f.Get(n)
 	if fct == nil {
-		panic(xerrors.Errorf("rootio: no factory for type %q", n))
+		panic(fmt.Errorf("rootio: no factory for type %q", n))
 	}
 	return fct
 }

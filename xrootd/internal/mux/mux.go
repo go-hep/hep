@@ -38,13 +38,14 @@ package mux // import "go-hep.org/x/hep/xrootd/internal/mux"
 
 import (
 	"encoding/binary"
+	"errors"
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
 	"sync"
 
 	"go-hep.org/x/hep/xrootd/xrdproto"
-	"golang.org/x/xerrors"
 )
 
 // ServerResponse contains slice of bytes Data representing data from
@@ -81,7 +82,7 @@ func ParseRedirection(raw []byte) (*Redirection, error) {
 	port := binary.BigEndian.Uint32(raw)
 	parts := strings.Split(string(raw[4:]), "?")
 	if len(parts) == 0 {
-		return nil, xerrors.Errorf("xrootd: could not parse redirect url %q", string(raw))
+		return nil, fmt.Errorf("xrootd: could not parse redirect url %q", string(raw))
 	}
 
 	var opaque, token string
@@ -149,7 +150,7 @@ func (m *Mux) Close() {
 	m.mu.Unlock()
 	close(m.quit)
 
-	response := ServerResponse{Err: xerrors.New("xrootd: close was called before response was fully received")}
+	response := ServerResponse{Err: errors.New("xrootd: close was called before response was fully received")}
 	for streamID := range m.dataWaiters {
 		m.SendData(streamID, response)
 		m.Unclaim(streamID)
@@ -167,7 +168,7 @@ func (m *Mux) Claim() (xrdproto.StreamID, DataRecvChan, error) {
 		m.mu.Lock()
 		if m.closed {
 			m.mu.Unlock()
-			return xrdproto.StreamID{}, nil, xerrors.New("mux: Claim was called on closed Mux")
+			return xrdproto.StreamID{}, nil, errors.New("mux: Claim was called on closed Mux")
 		}
 		if _, claimed := m.dataWaiters[streamId]; claimed { // Skip id if it was already claimed manually via ClaimWithID
 			m.mu.Unlock()
@@ -185,12 +186,12 @@ func (m *Mux) ClaimWithID(id xrdproto.StreamID) (DataRecvChan, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if m.closed {
-		return nil, xerrors.New("mux: ClaimWithID was called on closed Mux")
+		return nil, errors.New("mux: ClaimWithID was called on closed Mux")
 	}
 	ch := make(chan ServerResponse)
 
 	if _, claimed := m.dataWaiters[id]; claimed {
-		return nil, xerrors.Errorf("mux: channel with id %s is already claimed", id)
+		return nil, fmt.Errorf("mux: channel with id %v is already claimed", id)
 	}
 
 	m.dataWaiters[id] = ch
@@ -215,7 +216,7 @@ func (m *Mux) SendData(id xrdproto.StreamID, data ServerResponse) error {
 	defer m.mu.Unlock()
 
 	if _, ok := m.dataWaiters[id]; !ok {
-		return xerrors.Errorf("mux: cannot find data waiter for id %s", id)
+		return fmt.Errorf("mux: cannot find data waiter for id %v", id)
 	}
 
 	m.dataWaiters[id] <- data

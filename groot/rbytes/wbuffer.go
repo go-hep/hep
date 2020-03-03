@@ -15,7 +15,6 @@ import (
 
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 type wbuff struct {
@@ -38,7 +37,7 @@ func (w *wbuff) Write(p []byte) (int, error) {
 // If n is negative, grow will panic.
 func (w *wbuff) grow(n int) {
 	if n < 0 {
-		panic(xerrors.Errorf("rbytes: negative count"))
+		panic(fmt.Errorf("rbytes: negative count"))
 	}
 	if n == 0 {
 		return
@@ -78,7 +77,7 @@ func NewWBuffer(data []byte, refs map[interface{}]int64, offset uint32, ctx Stre
 // If version is negative, the latest version should be returned.
 func (w *WBuffer) StreamerInfo(name string, version int) (StreamerInfo, error) {
 	if w.sictx == nil {
-		return nil, xerrors.Errorf("rbytes: no streamers")
+		return nil, fmt.Errorf("rbytes: no streamers")
 	}
 	return w.sictx.StreamerInfo(name, version)
 }

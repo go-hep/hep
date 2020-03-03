@@ -11,8 +11,6 @@ import (
 	"sort"
 	"strings"
 	"text/tabwriter"
-
-	"golang.org/x/xerrors"
 )
 
 // cmdHelp prints the help
@@ -42,7 +40,7 @@ func (cmd *cmdHelp) Run(args []string) error {
 	case 1:
 		c, ok := cmd.ctx.cmds[args[0]]
 		if !ok {
-			return xerrors.Errorf("unknown command %q", args[0])
+			return fmt.Errorf("unknown command %q", args[0])
 		}
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
 		c.Help(w)

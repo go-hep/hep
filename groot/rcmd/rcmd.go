@@ -6,10 +6,9 @@
 package rcmd // import "go-hep.org/x/hep/groot/rcmd"
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
-
-	"golang.org/x/xerrors"
 )
 
 func splitArg(cmd string) (fname, sel string, err error) {
@@ -29,7 +28,7 @@ func splitArg(cmd string) (fname, sel string, err error) {
 	}
 
 	if strings.Count(fname, ":") > 1 {
-		return "", "", xerrors.Errorf("root-cp: too many ':' in %q", cmd)
+		return "", "", fmt.Errorf("root-cp: too many ':' in %q", cmd)
 	}
 
 	i := strings.LastIndex(fname, ":")

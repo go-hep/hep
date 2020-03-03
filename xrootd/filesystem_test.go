@@ -16,7 +16,6 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/xrootd/xrdfs"
-	"golang.org/x/xerrors"
 )
 
 var fstest = map[string]*xrdfs.EntryStat{
@@ -45,7 +44,7 @@ func tempdir(client *Client, dir, prefix string) (name string, err error) {
 	fs := client.FS()
 	err = fs.MkdirAll(context.Background(), name, xrdfs.OpenModeOwnerRead|xrdfs.OpenModeOwnerWrite|xrdfs.OpenModeOwnerExecute)
 	if err != nil {
-		return "", xerrors.Errorf("could not create tempdir: %w", err)
+		return "", fmt.Errorf("could not create tempdir: %w", err)
 	}
 	return name, nil
 }

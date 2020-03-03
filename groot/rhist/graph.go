@@ -5,6 +5,7 @@
 package rhist
 
 import (
+	"fmt"
 	"math"
 	"reflect"
 
@@ -15,7 +16,6 @@ import (
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
 	"go-hep.org/x/hep/hbook"
-	"golang.org/x/xerrors"
 )
 
 type tgraph struct {
@@ -110,7 +110,7 @@ func (g *tgraph) ROOTMerge(src root.Object) error {
 		// FIXME(sbinet): re-sort x,y,... slices according to x.
 		return nil
 	default:
-		return xerrors.Errorf("rhist: can not merge %T into %T", src, g)
+		return fmt.Errorf("rhist: can not merge %T into %T", src, g)
 	}
 }
 
@@ -280,14 +280,14 @@ func (g *tgrapherrs) ROOTMerge(src root.Object) error {
 	case *tgrapherrs:
 		err := g.tgraph.ROOTMerge(&src.tgraph)
 		if err != nil {
-			return xerrors.Errorf("rhist: could not merge %q: %w", src.Name(), err)
+			return fmt.Errorf("rhist: could not merge %q: %w", src.Name(), err)
 		}
 		g.xerr = append(g.xerr, src.xerr...)
 		g.yerr = append(g.yerr, src.yerr...)
 		// FIXME(sbinet): re-sort x,y,... slices according to x.
 		return nil
 	default:
-		return xerrors.Errorf("rhist: can not merge %T into %T", src, g)
+		return fmt.Errorf("rhist: can not merge %T into %T", src, g)
 	}
 }
 
@@ -420,7 +420,7 @@ func (g *tgraphasymmerrs) ROOTMerge(src root.Object) error {
 	case *tgraphasymmerrs:
 		err := g.tgraph.ROOTMerge(&src.tgraph)
 		if err != nil {
-			return xerrors.Errorf("rhist: could not merge %q: %w", src.Name(), err)
+			return fmt.Errorf("rhist: could not merge %q: %w", src.Name(), err)
 		}
 		g.xerrlo = append(g.xerrlo, src.xerrlo...)
 		g.xerrhi = append(g.xerrhi, src.xerrhi...)
@@ -429,7 +429,7 @@ func (g *tgraphasymmerrs) ROOTMerge(src root.Object) error {
 		// FIXME(sbinet): re-sort x,y,... slices according to x.
 		return nil
 	default:
-		return xerrors.Errorf("rhist: can not merge %T into %T", src, g)
+		return fmt.Errorf("rhist: can not merge %T into %T", src, g)
 	}
 }
 

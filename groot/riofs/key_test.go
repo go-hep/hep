@@ -5,6 +5,7 @@
 package riofs
 
 import (
+	"errors"
 	"reflect"
 	"strings"
 	"testing"
@@ -14,12 +15,11 @@ import (
 	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 func TestKeyNewKeyFrom(t *testing.T) {
 	var (
-		werr = xerrors.Errorf("riofs: invalid")
+		werr = errors.New("riofs: invalid")
 	)
 	for _, tc := range []struct {
 		want *rbase.ObjString

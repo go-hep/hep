@@ -9,8 +9,6 @@ import (
 	"bytes"
 	"fmt"
 	"math"
-
-	"golang.org/x/xerrors"
 )
 
 // H2D is a 2-dim histogram with weighted entries.
@@ -187,7 +185,7 @@ func (h *H2D) FillN(xs, ys, ws []float64) {
 	switch ws {
 	case nil:
 		if len(xs) != len(ys) {
-			panic(xerrors.Errorf("hbook: lengths mismatch"))
+			panic(fmt.Errorf("hbook: lengths mismatch"))
 		}
 		for i := range xs {
 			x := xs[i]
@@ -196,10 +194,10 @@ func (h *H2D) FillN(xs, ys, ws []float64) {
 		}
 	default:
 		if len(xs) != len(ys) {
-			panic(xerrors.Errorf("hbook: lengths mismatch"))
+			panic(fmt.Errorf("hbook: lengths mismatch"))
 		}
 		if len(xs) != len(ws) {
-			panic(xerrors.Errorf("hbook: lengths mismatch"))
+			panic(fmt.Errorf("hbook: lengths mismatch"))
 		}
 		for i := range xs {
 			x := xs[i]
@@ -372,11 +370,11 @@ func (h *H2D) UnmarshalYODA(data []byte) error {
 	// pos of end of annotations
 	pos := bytes.Index(r.Bytes(), []byte("\n# Mean:"))
 	if pos < 0 {
-		return xerrors.Errorf("hbook: invalid H2D-YODA data")
+		return fmt.Errorf("hbook: invalid H2D-YODA data")
 	}
 	err = ann.UnmarshalYODA(r.Bytes()[:pos+1])
 	if err != nil {
-		return xerrors.Errorf("hbook: %q\nhbook: %w", string(r.Bytes()[:pos+1]), err)
+		return fmt.Errorf("hbook: %q\nhbook: %w", string(r.Bytes()[:pos+1]), err)
 	}
 	h.annFromYODA(ann)
 	r.Next(pos)
@@ -421,7 +419,7 @@ scanLoop:
 				&d.Stats.SumWXY, &d.X.Dist.N,
 			)
 			if err != nil {
-				return xerrors.Errorf("hbook: %q\nhbook: %w", string(buf), err)
+				return fmt.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
 			d.Y.Dist = d.X.Dist
 			ctx.bins = true
@@ -438,7 +436,7 @@ scanLoop:
 				&d.Stats.SumWXY, &d.X.Dist.N,
 			)
 			if err != nil {
-				return xerrors.Errorf("hbook: %q\nhbook: %w", string(buf), err)
+				return fmt.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
 			d.Y.Dist = d.X.Dist
 			xset[bin.XRange.Min] = 1
@@ -450,7 +448,7 @@ scanLoop:
 			bins = append(bins, bin)
 
 		default:
-			return xerrors.Errorf("hbook: invalid H2D-YODA data: %q", string(buf))
+			return fmt.Errorf("hbook: invalid H2D-YODA data: %q", string(buf))
 		}
 	}
 	h.Binning = newBinning2D(len(xset), xmin, xmax, len(yset), ymin, ymax)

@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"golang.org/x/exp/shiny/screen"
-	"golang.org/x/xerrors"
 
 	"github.com/google/shlex"
 	"github.com/peterh/liner"
@@ -168,11 +167,11 @@ func (c *Cmd) RunScript(r io.Reader) error {
 func (c *Cmd) exec(line string) error {
 	args, err := shlex.Split(line)
 	if err != nil {
-		return xerrors.Errorf("paw: splitting line failed: %w", err)
+		return fmt.Errorf("paw: splitting line failed: %w", err)
 	}
 	cmd, ok := c.cmds[args[0]]
 	if !ok {
-		return xerrors.Errorf("unknown command %q", args[0])
+		return fmt.Errorf("unknown command %q", args[0])
 	}
 	err = cmd.Run(args[1:])
 	return err

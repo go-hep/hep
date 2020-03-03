@@ -13,7 +13,6 @@ import (
 	"reflect"
 
 	"go-hep.org/x/hep/hbook"
-	"golang.org/x/xerrors"
 )
 
 // H1F implements ROOT TH1F
@@ -110,7 +109,7 @@ func (h *H1F) UnmarshalROOT(r *RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion()
 	h.rvers = vers
 	if vers < 1 {
-		return xerrors.Errorf("rootio: TH1F version too old (%d<1)", vers)
+		return fmt.Errorf("rootio: TH1F version too old (%d<1)", vers)
 	}
 
 	for _, v := range []ROOTUnmarshaler{
@@ -415,7 +414,7 @@ func (h *H1D) UnmarshalROOT(r *RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion()
 	h.rvers = vers
 	if vers < 1 {
-		return xerrors.Errorf("rootio: TH1D version too old (%d<1)", vers)
+		return fmt.Errorf("rootio: TH1D version too old (%d<1)", vers)
 	}
 
 	for _, v := range []ROOTUnmarshaler{
@@ -720,7 +719,7 @@ func (h *H1I) UnmarshalROOT(r *RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion()
 	h.rvers = vers
 	if vers < 1 {
-		return xerrors.Errorf("rootio: TH1I version too old (%d<1)", vers)
+		return fmt.Errorf("rootio: TH1I version too old (%d<1)", vers)
 	}
 
 	for _, v := range []ROOTUnmarshaler{

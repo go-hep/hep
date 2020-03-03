@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-
-	"golang.org/x/xerrors"
 )
 
 // cmdHistOpen opens a histogram
@@ -23,7 +21,7 @@ func (cmd *cmdHistOpen) Name() string {
 
 func (cmd *cmdHistOpen) Run(args []string) error {
 	if len(args) < 2 {
-		return xerrors.Errorf("%s: need histo-id and histo-name (got=%v)", cmd.Name(), args)
+		return fmt.Errorf("%s: need histo-id and histo-name (got=%v)", cmd.Name(), args)
 	}
 
 	hid := args[0]
@@ -79,7 +77,7 @@ func (cmd *cmdHistPlot) Name() string {
 
 func (cmd *cmdHistPlot) Run(args []string) error {
 	if len(args) < 1 {
-		return xerrors.Errorf("%s: need a histo-id to plot", cmd.Name())
+		return fmt.Errorf("%s: need a histo-id to plot", cmd.Name())
 	}
 
 	hid := args[0]

@@ -15,7 +15,6 @@ import (
 
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/root"
-	"golang.org/x/xerrors"
 )
 
 func TestDir(t *testing.T) {
@@ -122,7 +121,7 @@ func TestRecDirMkdir(t *testing.T) {
 			return nil
 		})
 		if err != nil {
-			return xerrors.Errorf("could not display file content: %w", err).Error()
+			return fmt.Errorf("could not display file content: %w", err).Error()
 		}
 		return o.String()
 	}
@@ -138,8 +137,8 @@ func TestRecDirMkdir(t *testing.T) {
 		{path: "/dir3"},
 		{path: "/dir3"}, // recursive mkdir does not fail.
 		{path: "/dir4/dir44"},
-		{path: "/", err: xerrors.Errorf("riofs: invalid path \"/\" to Mkdir")},
-		{path: "", err: xerrors.Errorf("riofs: invalid path \"\" to Mkdir")},
+		{path: "/", err: fmt.Errorf("riofs: invalid path \"/\" to Mkdir")},
+		{path: "", err: fmt.Errorf("riofs: invalid path \"\" to Mkdir")},
 	} {
 		t.Run(tc.path, func(t *testing.T) {
 			_, err := rd.Mkdir(tc.path)
@@ -165,7 +164,7 @@ func TestRecDirMkdir(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error, got=%v\ncontent:\n%v", err, display())
 	}
-	if got, want := err.Error(), xerrors.Errorf("riofs: invalid directory name %q (contains a '/')", "xdir/xsubdir").Error(); got != want {
+	if got, want := err.Error(), fmt.Errorf("riofs: invalid directory name %q (contains a '/')", "xdir/xsubdir").Error(); got != want {
 		t.Fatalf("invalid error. got=%q, want=%q", got, want)
 	}
 
@@ -174,7 +173,7 @@ func TestRecDirMkdir(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error, got=%v\ncontent:\n%v", err, display())
 	}
-	if got, want := err.Error(), xerrors.Errorf("riofs: %q already exists", "dir1").Error(); got != want {
+	if got, want := err.Error(), fmt.Errorf("riofs: %q already exists", "dir1").Error(); got != want {
 		t.Fatalf("invalid error. got=%q, want=%q", got, want)
 	}
 }
@@ -220,7 +219,7 @@ func TestRecDirPut(t *testing.T) {
 			return nil
 		})
 		if err != nil {
-			return xerrors.Errorf("could not display file content: %w", err).Error()
+			return fmt.Errorf("could not display file content: %w", err).Error()
 		}
 		return o.String()
 	}
@@ -281,7 +280,7 @@ func TestRecDirPut(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error, got=%v\ncontent:\n%v", err, display())
 	}
-	if got, want := err.Error(), xerrors.Errorf("riofs: invalid path name %q (contains a '/')", "xdir/xsubdir/obj").Error(); got != want {
+	if got, want := err.Error(), fmt.Errorf("riofs: invalid path name %q (contains a '/')", "xdir/xsubdir/obj").Error(); got != want {
 		t.Fatalf("invalid error. got=%q, want=%q", got, want)
 	}
 

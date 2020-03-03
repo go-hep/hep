@@ -5,6 +5,7 @@
 package rcmd_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -16,7 +17,6 @@ import (
 	"go-hep.org/x/hep/groot/rcmd"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 func TestDiff(t *testing.T) {
@@ -87,7 +87,7 @@ func TestDiff(t *testing.T) {
 
 				return f
 			},
-			err: xerrors.Errorf("could not compute keys to compare: empty key set"),
+			err: fmt.Errorf("could not compute keys to compare: empty key set"),
 		},
 		{
 			name: "empty-with-keys",
@@ -126,7 +126,7 @@ func TestDiff(t *testing.T) {
 
 				return f
 			},
-			err: xerrors.Errorf("could not compute keys to compare: empty key set"),
+			err: fmt.Errorf("could not compute keys to compare: empty key set"),
 		},
 		{
 			name: "only-dirs",
@@ -233,7 +233,7 @@ func TestDiff(t *testing.T) {
 				}
 				return f
 			},
-			err: xerrors.Errorf("dir-1: values for dir-11 in directory differ: dir-1/dir-11: values for k1 in directory differ: dir-1/dir-11/k1: type of keys differ: ref=*rbase.Named chk=*rbase.ObjString"),
+			err: fmt.Errorf("dir-1: values for dir-11 in directory differ: dir-1/dir-11: values for k1 in directory differ: dir-1/dir-11/k1: type of keys differ: ref=*rbase.Named chk=*rbase.ObjString"),
 		},
 		{
 			name: "different-key-set-chk",
@@ -303,7 +303,7 @@ func TestDiff(t *testing.T) {
 				}
 				return f
 			},
-			err:  xerrors.Errorf("could not compute keys to compare: key set differ"),
+			err:  fmt.Errorf("could not compute keys to compare: key set differ"),
 			want: "key[dir-2] -- missing from chk-file\n",
 		},
 		{
@@ -375,7 +375,7 @@ func TestDiff(t *testing.T) {
 				}
 				return f
 			},
-			err:  xerrors.Errorf("could not compute keys to compare: key set differ"),
+			err:  fmt.Errorf("could not compute keys to compare: key set differ"),
 			want: "key[dir-3] -- missing from ref-file\n",
 		},
 		{
@@ -435,7 +435,7 @@ func TestDiff(t *testing.T) {
 				}
 				return f
 			},
-			err: xerrors.Errorf("dir-1: values for dir-11 in directory differ: dir-1/dir-11: values for k1 in directory differ: dir-1/dir-11/k1: keys differ"),
+			err: fmt.Errorf("dir-1: values for dir-11 in directory differ: dir-1/dir-11: values for k1 in directory differ: dir-1/dir-11/k1: keys differ"),
 			want: `key[dir-1/dir-11/k1] (*rbase.ObjString) -- (-ref +chk)
 -obj-string
 +obj-string-xxx
@@ -537,7 +537,7 @@ func TestDiff(t *testing.T) {
 				}
 				return f
 			},
-			err: xerrors.Errorf("dir-1: values for dir-11 in directory differ: dir-1/dir-11: values for tree in directory differ: dir-1/dir-11/tree: number of entries differ: ref=5 chk=6"),
+			err: fmt.Errorf("dir-1: values for dir-11 in directory differ: dir-1/dir-11: values for tree in directory differ: dir-1/dir-11/tree: number of entries differ: ref=5 chk=6"),
 		},
 		{
 			name: "different-trees-values",
@@ -635,7 +635,7 @@ func TestDiff(t *testing.T) {
 				}
 				return f
 			},
-			err: xerrors.Errorf("dir-1: values for dir-11 in directory differ: dir-1/dir-11: values for tree in directory differ: dir-1/dir-11/tree: trees differ"),
+			err: fmt.Errorf("dir-1: values for dir-11 in directory differ: dir-1/dir-11: values for tree in directory differ: dir-1/dir-11/tree: trees differ"),
 			want: `key[dir-1/dir-11/tree][0000].F64 -- (-ref +chk)
   float64(
 - 	1,
@@ -789,7 +789,7 @@ key[dir-1/dir-11/tree][0004].Arr -- (-ref +chk)
 				}
 				return f
 			},
-			err: xerrors.Errorf("dir-1: values for dir-11 in directory differ: dir-1/dir-11: values for tree in directory differ: dir-1/dir-11/tree: trees differ"),
+			err: fmt.Errorf("dir-1: values for dir-11 in directory differ: dir-1/dir-11: values for tree in directory differ: dir-1/dir-11/tree: trees differ"),
 			want: `key[dir-1/dir-11/tree][0000].I32 -- (-ref +chk)
   interface{}(
 - 	int64(0),

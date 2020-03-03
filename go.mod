@@ -21,11 +21,10 @@ require (
 	github.com/sbinet/npyio v0.3.0
 	github.com/ulikunitz/xz v0.5.7
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
-	go-hep.org/x/exp v0.4.0
+	go-hep.org/x/exp v0.5.0
 	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d
 	golang.org/x/exp v0.0.0-20200228211341-fcea875c7e85
 	golang.org/x/mobile v0.0.0-20200222142934-3c8601c510d0
-	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	gonum.org/v1/gonum v0.7.0
 	gonum.org/v1/plot v0.7.0
 	modernc.org/ql v1.0.1

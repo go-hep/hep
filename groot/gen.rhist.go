@@ -36,7 +36,6 @@ func genH1() {
 		"go-hep.org/x/hep/groot/rbytes",
 		"go-hep.org/x/hep/groot/rtypes",
 		"go-hep.org/x/hep/groot/rvers",
-		"golang.org/x/xerrors",
 	)
 
 	for i, typ := range []struct {
@@ -93,7 +92,6 @@ func genH2() {
 		"go-hep.org/x/hep/groot/rbytes",
 		"go-hep.org/x/hep/groot/rtypes",
 		"go-hep.org/x/hep/groot/rvers",
-		"golang.org/x/xerrors",
 	)
 
 	for i, typ := range []struct {
@@ -227,7 +225,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers > rvers.{{.Name}} {
-		panic(xerrors.Errorf("rhist: invalid {{.Name}} version=%d > %d", vers, rvers.{{.Name}}))
+		panic(fmt.Errorf("rhist: invalid {{.Name}} version=%d > %d", vers, rvers.{{.Name}}))
 	}
 
 	for _, v := range []rbytes.Unmarshaler{
@@ -830,7 +828,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 1 {
-		return xerrors.Errorf("rhist: T{{.Name}} version too old (%d<1)", vers)
+		return fmt.Errorf("rhist: T{{.Name}} version too old (%d<1)", vers)
 	}
 
 	for _, v := range []rbytes.Unmarshaler{

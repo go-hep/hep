@@ -18,7 +18,6 @@ import (
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
 	"go-hep.org/x/hep/hbook"
-	"golang.org/x/xerrors"
 )
 
 // H2F implements ROOT TH2F
@@ -414,7 +413,7 @@ func (h *H2F) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 1 {
-		return xerrors.Errorf("rhist: TH2F version too old (%d<1)", vers)
+		return fmt.Errorf("rhist: TH2F version too old (%d<1)", vers)
 	}
 
 	for _, v := range []rbytes.Unmarshaler{
@@ -839,7 +838,7 @@ func (h *H2D) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 1 {
-		return xerrors.Errorf("rhist: TH2D version too old (%d<1)", vers)
+		return fmt.Errorf("rhist: TH2D version too old (%d<1)", vers)
 	}
 
 	for _, v := range []rbytes.Unmarshaler{
@@ -1264,7 +1263,7 @@ func (h *H2I) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(h.Class())
 	if vers < 1 {
-		return xerrors.Errorf("rhist: TH2I version too old (%d<1)", vers)
+		return fmt.Errorf("rhist: TH2I version too old (%d<1)", vers)
 	}
 
 	for _, v := range []rbytes.Unmarshaler{

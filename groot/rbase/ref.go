@@ -13,7 +13,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 var (
@@ -26,7 +25,7 @@ var (
 func mustGenUUID() string {
 	id, err := uuid.GenerateUUID()
 	if err != nil {
-		panic(xerrors.Errorf("groot/rbase: could not generate UUID: %+v", err))
+		panic(fmt.Errorf("groot/rbase: could not generate UUID: %+v", err))
 	}
 	return id
 }

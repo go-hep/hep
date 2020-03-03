@@ -5,8 +5,9 @@
 package lcio
 
 import (
+	"fmt"
+
 	"go-hep.org/x/hep/sio"
-	"golang.org/x/xerrors"
 )
 
 func Open(fname string) (*Reader, error) {
@@ -98,28 +99,28 @@ func (r *Reader) Next() bool {
 	switch rec.Name() {
 	case Records.Index:
 		if !rec.Unpack() {
-			r.err = xerrors.Errorf("lcio: expected record %q to unpack", rec.Name())
+			r.err = fmt.Errorf("lcio: expected record %q to unpack", rec.Name())
 			return false
 		}
 		return r.Next()
 
 	case Records.RandomAccess:
 		if !rec.Unpack() {
-			r.err = xerrors.Errorf("lcio: expected record %q to unpack", rec.Name())
+			r.err = fmt.Errorf("lcio: expected record %q to unpack", rec.Name())
 			return false
 		}
 		return r.Next()
 
 	case Records.RunHeader:
 		if !rec.Unpack() {
-			r.err = xerrors.Errorf("lcio: expected record %q to unpack", rec.Name())
+			r.err = fmt.Errorf("lcio: expected record %q to unpack", rec.Name())
 			return false
 		}
 		return r.Next()
 
 	case Records.EventHeader:
 		if !rec.Unpack() {
-			r.err = xerrors.Errorf("lcio: expected record %q to unpack", rec.Name())
+			r.err = fmt.Errorf("lcio: expected record %q to unpack", rec.Name())
 			return false
 		}
 		err = r.remap()
@@ -131,7 +132,7 @@ func (r *Reader) Next() bool {
 
 	case Records.Event:
 		if !rec.Unpack() {
-			r.err = xerrors.Errorf("lcio: expected record %q to unpack", rec.Name())
+			r.err = fmt.Errorf("lcio: expected record %q to unpack", rec.Name())
 		}
 	}
 	return true

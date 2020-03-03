@@ -13,7 +13,6 @@ import (
 	"sync"
 
 	"github.com/xwb1989/sqlparser"
-	"golang.org/x/xerrors"
 )
 
 type expression interface {
@@ -62,7 +61,7 @@ func (expr *binExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r in
 			case error:
 				r, err = nil, x
 			default:
-				r, err = nil, xerrors.Errorf("%v", x)
+				r, err = nil, fmt.Errorf("%v", x)
 			}
 		}
 	}()
@@ -89,11 +88,11 @@ func (expr *binExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r in
 			case bool:
 				return r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 
 		default:
-			panic(xerrors.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
+			panic(fmt.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
 		}
 
 	case opOrOr:
@@ -117,11 +116,11 @@ func (expr *binExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r in
 			case bool:
 				return r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 
 		default:
-			panic(xerrors.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
+			panic(fmt.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
 		}
 
 	case opLT:
@@ -132,101 +131,101 @@ func (expr *binExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r in
 			case idealUint:
 				return l < r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealInt:
 			switch r := r.(type) {
 			case idealInt:
 				return l < r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealFloat:
 			switch r := r.(type) {
 			case idealFloat:
 				return l < r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case int8:
 			switch r := r.(type) {
 			case int8:
 				return l < r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int16:
 			switch r := r.(type) {
 			case int16:
 				return l < r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int32:
 			switch r := r.(type) {
 			case int32:
 				return l < r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int64:
 			switch r := r.(type) {
 			case int64:
 				return l < r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint8:
 			switch r := r.(type) {
 			case uint8:
 				return l < r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint16:
 			switch r := r.(type) {
 			case uint16:
 				return l < r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint32:
 			switch r := r.(type) {
 			case uint32:
 				return l < r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint64:
 			switch r := r.(type) {
 			case uint64:
 				return l < r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float32:
 			switch r := r.(type) {
 			case float32:
 				return l < r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float64:
 			switch r := r.(type) {
 			case float64:
 				return l < r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case string:
 			switch r := r.(type) {
 			case string:
 				return l < r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		default:
-			panic(xerrors.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
+			panic(fmt.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
 		}
 
 	case opLE:
@@ -237,101 +236,101 @@ func (expr *binExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r in
 			case idealUint:
 				return l <= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealInt:
 			switch r := r.(type) {
 			case idealInt:
 				return l <= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealFloat:
 			switch r := r.(type) {
 			case idealFloat:
 				return l <= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case int8:
 			switch r := r.(type) {
 			case int8:
 				return l <= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int16:
 			switch r := r.(type) {
 			case int16:
 				return l <= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int32:
 			switch r := r.(type) {
 			case int32:
 				return l <= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int64:
 			switch r := r.(type) {
 			case int64:
 				return l <= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint8:
 			switch r := r.(type) {
 			case uint8:
 				return l <= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint16:
 			switch r := r.(type) {
 			case uint16:
 				return l <= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint32:
 			switch r := r.(type) {
 			case uint32:
 				return l <= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint64:
 			switch r := r.(type) {
 			case uint64:
 				return l <= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float32:
 			switch r := r.(type) {
 			case float32:
 				return l <= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float64:
 			switch r := r.(type) {
 			case float64:
 				return l <= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case string:
 			switch r := r.(type) {
 			case string:
 				return l <= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		default:
-			panic(xerrors.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
+			panic(fmt.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
 		}
 
 	case opGT:
@@ -342,101 +341,101 @@ func (expr *binExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r in
 			case idealUint:
 				return l > r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealInt:
 			switch r := r.(type) {
 			case idealInt:
 				return l > r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealFloat:
 			switch r := r.(type) {
 			case idealFloat:
 				return l > r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case int8:
 			switch r := r.(type) {
 			case int8:
 				return l > r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int16:
 			switch r := r.(type) {
 			case int16:
 				return l > r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int32:
 			switch r := r.(type) {
 			case int32:
 				return l > r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int64:
 			switch r := r.(type) {
 			case int64:
 				return l > r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint8:
 			switch r := r.(type) {
 			case uint8:
 				return l > r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint16:
 			switch r := r.(type) {
 			case uint16:
 				return l > r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint32:
 			switch r := r.(type) {
 			case uint32:
 				return l > r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint64:
 			switch r := r.(type) {
 			case uint64:
 				return l > r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float32:
 			switch r := r.(type) {
 			case float32:
 				return l > r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float64:
 			switch r := r.(type) {
 			case float64:
 				return l > r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case string:
 			switch r := r.(type) {
 			case string:
 				return l > r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		default:
-			panic(xerrors.Errorf("sqldrv: invalid left-operand value/type in %#v: %#v", expr.l, l))
+			panic(fmt.Errorf("sqldrv: invalid left-operand value/type in %#v: %#v", expr.l, l))
 		}
 
 	case opGE:
@@ -447,101 +446,101 @@ func (expr *binExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r in
 			case idealUint:
 				return l >= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealInt:
 			switch r := r.(type) {
 			case idealInt:
 				return l >= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealFloat:
 			switch r := r.(type) {
 			case idealFloat:
 				return l >= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case int8:
 			switch r := r.(type) {
 			case int8:
 				return l >= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int16:
 			switch r := r.(type) {
 			case int16:
 				return l >= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int32:
 			switch r := r.(type) {
 			case int32:
 				return l >= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int64:
 			switch r := r.(type) {
 			case int64:
 				return l >= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint8:
 			switch r := r.(type) {
 			case uint8:
 				return l >= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint16:
 			switch r := r.(type) {
 			case uint16:
 				return l >= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint32:
 			switch r := r.(type) {
 			case uint32:
 				return l >= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint64:
 			switch r := r.(type) {
 			case uint64:
 				return l >= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float32:
 			switch r := r.(type) {
 			case float32:
 				return l >= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float64:
 			switch r := r.(type) {
 			case float64:
 				return l >= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case string:
 			switch r := r.(type) {
 			case string:
 				return l >= r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		default:
-			panic(xerrors.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
+			panic(fmt.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
 		}
 
 	case opNotEq:
@@ -552,108 +551,108 @@ func (expr *binExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r in
 			case idealUint:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealInt:
 			switch r := r.(type) {
 			case idealInt:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealFloat:
 			switch r := r.(type) {
 			case idealFloat:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case bool:
 			switch r := r.(type) {
 			case bool:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int8:
 			switch r := r.(type) {
 			case int8:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int16:
 			switch r := r.(type) {
 			case int16:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int32:
 			switch r := r.(type) {
 			case int32:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int64:
 			switch r := r.(type) {
 			case int64:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint8:
 			switch r := r.(type) {
 			case uint8:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint16:
 			switch r := r.(type) {
 			case uint16:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint32:
 			switch r := r.(type) {
 			case uint32:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint64:
 			switch r := r.(type) {
 			case uint64:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float32:
 			switch r := r.(type) {
 			case float32:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float64:
 			switch r := r.(type) {
 			case float64:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case string:
 			switch r := r.(type) {
 			case string:
 				return l != r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		default:
-			panic(xerrors.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
+			panic(fmt.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
 		}
 
 	case opEq:
@@ -664,108 +663,108 @@ func (expr *binExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r in
 			case idealUint:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealInt:
 			switch r := r.(type) {
 			case idealInt:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealFloat:
 			switch r := r.(type) {
 			case idealFloat:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case bool:
 			switch r := r.(type) {
 			case bool:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int8:
 			switch r := r.(type) {
 			case int8:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int16:
 			switch r := r.(type) {
 			case int16:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int32:
 			switch r := r.(type) {
 			case int32:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int64:
 			switch r := r.(type) {
 			case int64:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint8:
 			switch r := r.(type) {
 			case uint8:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint16:
 			switch r := r.(type) {
 			case uint16:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint32:
 			switch r := r.(type) {
 			case uint32:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint64:
 			switch r := r.(type) {
 			case uint64:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float32:
 			switch r := r.(type) {
 			case float32:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float64:
 			switch r := r.(type) {
 			case float64:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case string:
 			switch r := r.(type) {
 			case string:
 				return l == r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		default:
-			panic(xerrors.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
+			panic(fmt.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
 		}
 
 	case opAdd:
@@ -776,101 +775,101 @@ func (expr *binExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r in
 			case idealUint:
 				return idealUint(uint64(l) + uint64(r)), nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealInt:
 			switch r := r.(type) {
 			case idealInt:
 				return idealInt(int64(l) + int64(r)), nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealFloat:
 			switch r := r.(type) {
 			case idealFloat:
 				return idealFloat(float64(l) + float64(r)), nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case int8:
 			switch r := r.(type) {
 			case int8:
 				return l + r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int16:
 			switch r := r.(type) {
 			case int16:
 				return l + r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int32:
 			switch r := r.(type) {
 			case int32:
 				return l + r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int64:
 			switch r := r.(type) {
 			case int64:
 				return l + r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint8:
 			switch r := r.(type) {
 			case uint8:
 				return l + r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint16:
 			switch r := r.(type) {
 			case uint16:
 				return l + r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint32:
 			switch r := r.(type) {
 			case uint32:
 				return l + r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint64:
 			switch r := r.(type) {
 			case uint64:
 				return l + r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float32:
 			switch r := r.(type) {
 			case float32:
 				return l + r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float64:
 			switch r := r.(type) {
 			case float64:
 				return l + r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case string:
 			switch r := r.(type) {
 			case string:
 				return l + r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		default:
-			panic(xerrors.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
+			panic(fmt.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
 		}
 
 	case opSub:
@@ -881,94 +880,94 @@ func (expr *binExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r in
 			case idealUint:
 				return idealUint(uint64(l) - uint64(r)), nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealInt:
 			switch r := r.(type) {
 			case idealInt:
 				return idealInt(int64(l) - int64(r)), nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealFloat:
 			switch r := r.(type) {
 			case idealFloat:
 				return idealFloat(float64(l) - float64(r)), nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case int8:
 			switch r := r.(type) {
 			case int8:
 				return l - r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int16:
 			switch r := r.(type) {
 			case int16:
 				return l - r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int32:
 			switch r := r.(type) {
 			case int32:
 				return l - r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int64:
 			switch r := r.(type) {
 			case int64:
 				return l - r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint8:
 			switch r := r.(type) {
 			case uint8:
 				return l - r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint16:
 			switch r := r.(type) {
 			case uint16:
 				return l - r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint32:
 			switch r := r.(type) {
 			case uint32:
 				return l - r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint64:
 			switch r := r.(type) {
 			case uint64:
 				return l - r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float32:
 			switch r := r.(type) {
 			case float32:
 				return l - r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float64:
 			switch r := r.(type) {
 			case float64:
 				return l - r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		default:
-			panic(xerrors.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
+			panic(fmt.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
 		}
 
 	case opMul:
@@ -979,94 +978,94 @@ func (expr *binExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r in
 			case idealUint:
 				return idealUint(uint64(l) * uint64(r)), nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealInt:
 			switch r := r.(type) {
 			case idealInt:
 				return idealInt(int64(l) * int64(r)), nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealFloat:
 			switch r := r.(type) {
 			case idealFloat:
 				return idealFloat(float64(l) * float64(r)), nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case int8:
 			switch r := r.(type) {
 			case int8:
 				return l * r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int16:
 			switch r := r.(type) {
 			case int16:
 				return l * r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int32:
 			switch r := r.(type) {
 			case int32:
 				return l * r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int64:
 			switch r := r.(type) {
 			case int64:
 				return l * r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint8:
 			switch r := r.(type) {
 			case uint8:
 				return l * r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint16:
 			switch r := r.(type) {
 			case uint16:
 				return l * r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint32:
 			switch r := r.(type) {
 			case uint32:
 				return l * r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint64:
 			switch r := r.(type) {
 			case uint64:
 				return l * r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float32:
 			switch r := r.(type) {
 			case float32:
 				return l * r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float64:
 			switch r := r.(type) {
 			case float64:
 				return l * r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		default:
-			panic(xerrors.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
+			panic(fmt.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
 		}
 
 	case opDiv:
@@ -1077,94 +1076,94 @@ func (expr *binExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r in
 			case idealUint:
 				return idealUint(uint64(l) / uint64(r)), nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealInt:
 			switch r := r.(type) {
 			case idealInt:
 				return idealInt(int64(l) / int64(r)), nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case idealFloat:
 			switch r := r.(type) {
 			case idealFloat:
 				return idealFloat(float64(l) / float64(r)), nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v %T", expr.r, r, r))
 			}
 		case int8:
 			switch r := r.(type) {
 			case int8:
 				return l / r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int16:
 			switch r := r.(type) {
 			case int16:
 				return l / r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int32:
 			switch r := r.(type) {
 			case int32:
 				return l / r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case int64:
 			switch r := r.(type) {
 			case int64:
 				return l / r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint8:
 			switch r := r.(type) {
 			case uint8:
 				return l / r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint16:
 			switch r := r.(type) {
 			case uint16:
 				return l / r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint32:
 			switch r := r.(type) {
 			case uint32:
 				return l / r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case uint64:
 			switch r := r.(type) {
 			case uint64:
 				return l / r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float32:
 			switch r := r.(type) {
 			case float32:
 				return l / r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		case float64:
 			switch r := r.(type) {
 			case float64:
 				return l / r, nil
 			default:
-				panic(xerrors.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
+				panic(fmt.Errorf("sqldrv: invalid right-operand value/type in %v: %#v", expr.r, r))
 			}
 		default:
-			panic(xerrors.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
+			panic(fmt.Errorf("sqldrv: invalid left-operand value/type in %v: %#v", expr.l, l))
 		}
 
 	}
@@ -1305,7 +1304,7 @@ func (expr *identExpr) isStatic() bool      { return false }
 func (expr *identExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r interface{}, err error) {
 	r, ok := vctx[expr.name]
 	if !ok {
-		err = xerrors.Errorf("unknown field %q", expr.name)
+		err = fmt.Errorf("unknown field %q", expr.name)
 	}
 	return r, err
 }
@@ -1351,7 +1350,7 @@ func newValueExpr(expr *sqlparser.SQLVal, args []driver.Value) (expression, erro
 
 	case sqlparser.ValArg:
 		if !strings.HasPrefix(s, ":v") {
-			return nil, xerrors.Errorf("rsqldrv: invalid ValArg name %q", s)
+			return nil, fmt.Errorf("rsqldrv: invalid ValArg name %q", s)
 		}
 		i, err := strconv.ParseInt(s[len(":v"):], 10, 64)
 		if err != nil {
@@ -1364,7 +1363,7 @@ func newValueExpr(expr *sqlparser.SQLVal, args []driver.Value) (expression, erro
 		}, nil
 
 	default:
-		panic(xerrors.Errorf("invalid SQLVal type %#v (%T)", expr, expr))
+		panic(fmt.Errorf("invalid SQLVal type %#v (%T)", expr, expr))
 	}
 }
 
@@ -1382,7 +1381,7 @@ func idealValArgFrom(v interface{}) interface{} {
 	case reflect.String:
 		return rv.String()
 	}
-	panic(xerrors.Errorf("rsqldrv: invalid ValArg type %#v", v))
+	panic(fmt.Errorf("rsqldrv: invalid ValArg type %#v", v))
 }
 
 func (expr *valueExpr) sql() sqlparser.Expr { return expr.expr }

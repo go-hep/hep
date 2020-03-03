@@ -21,7 +21,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
-	"golang.org/x/xerrors"
 )
 
 var (
@@ -218,18 +217,18 @@ func (Element) getRange(str string) (xmin, xmax, factor float64) {
 	switch len(toks) {
 	case 2, 3:
 	default:
-		panic(xerrors.Errorf("rdict: invalid ROOT range specification (too many commas): %q", str))
+		panic(fmt.Errorf("rdict: invalid ROOT range specification (too many commas): %q", str))
 	}
 
 	var nbits uint32 = 32
 	if len(toks) == 3 {
 		n, err := strconv.ParseUint(toks[2], 10, 32)
 		if err != nil {
-			panic(xerrors.Errorf("rdict: could not parse nbits specification %q: %w", str, err))
+			panic(fmt.Errorf("rdict: could not parse nbits specification %q: %w", str, err))
 		}
 		nbits = uint32(n)
 		if nbits < 2 || nbits > 32 {
-			panic(xerrors.Errorf("rdict: illegal nbits specification (nbits=%d outside of range [2,32])", nbits))
+			panic(fmt.Errorf("rdict: illegal nbits specification (nbits=%d outside of range [2,32])", nbits))
 		}
 	}
 
@@ -254,7 +253,7 @@ func (Element) getRange(str string) (xmin, xmax, factor float64) {
 		default:
 			f, err := strconv.ParseFloat(s, 64)
 			if err != nil {
-				panic(xerrors.Errorf("rdict: could not parse range value %q: %w", s, err))
+				panic(fmt.Errorf("rdict: could not parse range value %q: %w", s, err))
 			}
 			return f
 		}
@@ -854,7 +853,7 @@ func parseStdVector(tmpl string) []string {
 	case strings.HasSuffix(v, ">"):
 		v = v[:len(v)-1]
 	default:
-		panic(xerrors.Errorf("invalid std::vector container name (missing '>'): %q", tmpl))
+		panic(fmt.Errorf("invalid std::vector container name (missing '>'): %q", tmpl))
 	}
 	switch {
 	case strings.HasPrefix(v, "vector<"):
@@ -862,7 +861,7 @@ func parseStdVector(tmpl string) []string {
 	case strings.HasPrefix(v, "std::vector<"):
 		v = v[len("std::vector<"):]
 	default:
-		panic(xerrors.Errorf("invalid std::vector container name (missing 'vector<'): %q", tmpl))
+		panic(fmt.Errorf("invalid std::vector container name (missing 'vector<'): %q", tmpl))
 	}
 	var (
 		keyT  string
@@ -891,11 +890,11 @@ func parseStdVector(tmpl string) []string {
 		keyT = v[:coms[0]]
 		allT = v[coms[0]+1:]
 	default:
-		panic(xerrors.Errorf("invalid std::vector template %q", tmpl))
+		panic(fmt.Errorf("invalid std::vector template %q", tmpl))
 	}
 	keyT = strings.TrimSpace(keyT)
 	if keyT == "" {
-		panic(xerrors.Errorf("invalid std::vector container name (missing element type): %q", tmpl))
+		panic(fmt.Errorf("invalid std::vector container name (missing element type): %q", tmpl))
 	}
 	allT = strings.TrimSpace(allT)
 	switch allT {
@@ -912,7 +911,7 @@ func parseStdMap(tmpl string) []string {
 	case strings.HasSuffix(v, ">"):
 		v = v[:len(v)-1]
 	default:
-		panic(xerrors.Errorf("invalid std::map container name (missing '>'): %q", tmpl))
+		panic(fmt.Errorf("invalid std::map container name (missing '>'): %q", tmpl))
 	}
 	switch {
 	case strings.HasPrefix(v, "map<"):
@@ -920,7 +919,7 @@ func parseStdMap(tmpl string) []string {
 	case strings.HasPrefix(v, "std::map<"):
 		v = v[len("std::map<"):]
 	default:
-		panic(xerrors.Errorf("invalid std::map container name (missing 'map<'): %q", tmpl))
+		panic(fmt.Errorf("invalid std::map container name (missing 'map<'): %q", tmpl))
 	}
 	var (
 		keyT  string
@@ -950,7 +949,7 @@ func parseStdMap(tmpl string) []string {
 		valT = v[coms[0]+1 : coms[1]]
 		allT = v[coms[1]+1:]
 	default:
-		panic(xerrors.Errorf("invalid std::map template %q", tmpl))
+		panic(fmt.Errorf("invalid std::map template %q", tmpl))
 	}
 	keyT = strings.TrimSpace(keyT)
 	valT = strings.TrimSpace(valT)

@@ -5,13 +5,12 @@
 package riofs
 
 import (
+	"fmt"
 	"net/url"
 	"os"
 	"sort"
 	"strings"
 	"sync"
-
-	"golang.org/x/xerrors"
 )
 
 var drivers = struct {
@@ -31,7 +30,7 @@ func Register(name string, f func(path string) (Reader, error)) {
 		panic("riofs: plugin function is nil")
 	}
 	if _, dup := drivers.db[name]; dup {
-		panic(xerrors.Errorf("riofs: Register called twice for plugin %q", name))
+		panic(fmt.Errorf("riofs: Register called twice for plugin %q", name))
 	}
 	drivers.db[name] = f
 }
@@ -65,7 +64,7 @@ func openFile(path string) (Reader, error) {
 		return open(path)
 	}
 
-	return nil, xerrors.Errorf("riofs: no ROOT plugin to open [%s] (scheme=%s)", path, scheme)
+	return nil, fmt.Errorf("riofs: no ROOT plugin to open [%s] (scheme=%s)", path, scheme)
 }
 
 func openLocalFile(path string) (Reader, error) {

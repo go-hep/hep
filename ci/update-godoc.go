@@ -10,6 +10,7 @@ import (
 	"bufio"
 	"bytes"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -18,7 +19,6 @@ import (
 	"strings"
 
 	"golang.org/x/sync/errgroup"
-	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -55,10 +55,10 @@ func main() {
 				v.Add("path", pkg)
 				resp, err := http.PostForm("https://godoc.org/-/refresh", v)
 				if err != nil {
-					return xerrors.Errorf("could not post %q: %w", pkg, err)
+					return fmt.Errorf("could not post %q: %w", pkg, err)
 				}
 				if resp.StatusCode != http.StatusOK {
-					return xerrors.Errorf("invalid response status for %q: %v", pkg, resp.Status)
+					return fmt.Errorf("invalid response status for %q: %v", pkg, resp.Status)
 				}
 			}
 			return nil
@@ -80,7 +80,7 @@ func pkgList() ([]string, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		return nil, xerrors.Errorf("could not get package list: %w", err)
+		return nil, fmt.Errorf("could not get package list: %w", err)
 	}
 
 	var pkgs []string

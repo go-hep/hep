@@ -5,9 +5,8 @@
 package fmom
 
 import (
+	"fmt"
 	"math"
-
-	"golang.org/x/xerrors"
 )
 
 // Equal returns true if p1==p2
@@ -70,7 +69,7 @@ func Add(p1, p2 P4) P4 {
 		sum = &pp
 
 	default:
-		panic(xerrors.Errorf("fmom: invalid P4 concrete value: %#v", p1))
+		panic(fmt.Errorf("fmom: invalid P4 concrete value: %#v", p1))
 	}
 	return sum
 }
@@ -109,7 +108,7 @@ func IAdd(dst, src P4) P4 {
 		sum = dst
 
 	default:
-		panic(xerrors.Errorf("fmom: invalid P4 concrete value: %#v", dst))
+		panic(fmt.Errorf("fmom: invalid P4 concrete value: %#v", dst))
 	}
 	p4[0] += src.Px()
 	p4[1] += src.Py()
@@ -156,7 +155,7 @@ func Scale(a float64, p P4) P4 {
 		out = &pp
 
 	default:
-		panic(xerrors.Errorf("fmom: invalid P4 concrete value: %#v", p))
+		panic(fmt.Errorf("fmom: invalid P4 concrete value: %#v", p))
 	}
 
 	return out

@@ -15,7 +15,6 @@ import (
 	"go-hep.org/x/hep/fwk"
 	"go-hep.org/x/hep/fwk/job"
 	"go-hep.org/x/hep/fwk/testdata"
-	"golang.org/x/xerrors"
 )
 
 func newapp(evtmax int64, nprocs int) *job.Job {
@@ -122,7 +121,7 @@ func TestDuplicateOutputPort(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error\n")
 	}
-	want := xerrors.Errorf(`fwk.DeclOutPort: component [t0] already declared out-port with name [t0-ints1 (type=int64)].
+	want := fmt.Errorf(`fwk.DeclOutPort: component [t0] already declared out-port with name [t0-ints1 (type=int64)].
 fwk.DeclOutPort: component [t1] is trying to add a duplicate out-port [t0-ints1 (type=int64)]`)
 	if got, want := err.Error(), want.Error(); got != want {
 		t.Fatalf("invalid error.\ngot= %v\nwant=%v", got, want)
@@ -153,7 +152,7 @@ func TestMissingInputPort(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error\n")
 	}
-	want := xerrors.Errorf("dataflow: component [%s] declared port [t1-ints1--NOT-THERE] as input but NO KNOWN producer", "t2")
+	want := fmt.Errorf("dataflow: component [%s] declared port [t1-ints1--NOT-THERE] as input but NO KNOWN producer", "t2")
 	if got, want := err.Error(), want.Error(); got != want {
 		t.Fatalf("invalid error.\ngot= %v\nwant=%v", got, want)
 	}
@@ -192,7 +191,7 @@ func TestMismatchPortTypes(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error\n")
 	}
-	want := xerrors.Errorf(`fwk.DeclInPort: detected type inconsistency for port [data]:
+	want := fmt.Errorf(`fwk.DeclInPort: detected type inconsistency for port [data]:
  component=%[1]q port=out type=int64
  component=%[2]q port=in  type=float64
 `,
@@ -237,7 +236,7 @@ func TestPortsCycles(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected an error\n")
 	}
-	want := xerrors.Errorf("dataflow: cycle detected: 1")
+	want := fmt.Errorf("dataflow: cycle detected: 1")
 	if got, want := err.Error(), want.Error(); got != want {
 		t.Fatalf("invalid error.\ngot= %v\nwant=%v", got, want)
 	}

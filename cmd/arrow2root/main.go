@@ -7,6 +7,7 @@ package main // import "go-hep.org/x/hep/cmd/arrow2root"
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 
@@ -16,7 +17,6 @@ import (
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rarrow"
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -43,41 +43,41 @@ func main() {
 func process(oname, tname, fname string) error {
 	f, err := os.Open(fname)
 	if err != nil {
-		return xerrors.Errorf("could not open ARROW file %q: %w", fname, err)
+		return fmt.Errorf("could not open ARROW file %q: %w", fname, err)
 	}
 	defer f.Close()
 
 	mem := memory.NewGoAllocator()
 	r, err := ipc.NewFileReader(f, ipc.WithAllocator(mem))
 	if err != nil {
-		return xerrors.Errorf("could not create ARROW IPC reader from %q: %w", fname, err)
+		return fmt.Errorf("could not create ARROW IPC reader from %q: %w", fname, err)
 	}
 	defer r.Close()
 
 	o, err := groot.Create(oname)
 	if err != nil {
-		return xerrors.Errorf("could not create output ROOT file %q: %w", oname, err)
+		return fmt.Errorf("could not create output ROOT file %q: %w", oname, err)
 	}
 	defer o.Close()
 
 	tree, err := rarrow.NewFlatTreeWriter(o, tname, r.Schema(), rtree.WithTitle(tname))
 	if err != nil {
-		return xerrors.Errorf("could not create output ROOT tree %q: %w", tname, err)
+		return fmt.Errorf("could not create output ROOT tree %q: %w", tname, err)
 	}
 
 	_, err = arrio.Copy(tree, r)
 	if err != nil {
-		return xerrors.Errorf("could not convert ARROW file to ROOT tree: %w", err)
+		return fmt.Errorf("could not convert ARROW file to ROOT tree: %w", err)
 	}
 
 	err = tree.Close()
 	if err != nil {
-		return xerrors.Errorf("could not close ROOT tree writer: %w", err)
+		return fmt.Errorf("could not close ROOT tree writer: %w", err)
 	}
 
 	err = o.Close()
 	if err != nil {
-		return xerrors.Errorf("could not close output ROOT file %q: %w", oname, err)
+		return fmt.Errorf("could not close output ROOT file %q: %w", oname, err)
 	}
 
 	return nil

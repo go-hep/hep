@@ -7,6 +7,7 @@ package xrootd // import "go-hep.org/x/hep/xrootd"
 import (
 	"context"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -31,11 +32,10 @@ import (
 	"go-hep.org/x/hep/xrootd/xrdproto/truncate"
 	"go-hep.org/x/hep/xrootd/xrdproto/write"
 	"go-hep.org/x/hep/xrootd/xrdproto/xrdclose"
-	"golang.org/x/xerrors"
 )
 
 // ErrServerClosed is returned by the Server's Serve method after a call to Shutdown.
-var ErrServerClosed = xerrors.New("xrootd: server closed")
+var ErrServerClosed = errors.New("xrootd: server closed")
 
 // ErrorHandler is the function which handles occurred error (e.g. logs it).
 type ErrorHandler func(error)
@@ -141,16 +141,16 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	var sessionID [16]byte
 	if _, err := rand.Read(sessionID[:]); err != nil {
-		s.errorHandler(xerrors.Errorf("could not read session ID: %w", err))
+		s.errorHandler(fmt.Errorf("could not read session ID: %w", err))
 	}
 	defer func() {
 		if err := s.handler.CloseSession(sessionID); err != nil {
-			s.errorHandler(xerrors.Errorf("could not close session ID %q: %w", sessionID, err))
+			s.errorHandler(fmt.Errorf("could not close session ID %q: %w", sessionID, err))
 		}
 	}()
 
 	if err := s.handleHandshake(conn); err != nil {
-		s.errorHandler(xerrors.Errorf("could not handle handshake: %w", err))
+		s.errorHandler(fmt.Errorf("could not handle handshake: %w", err))
 		// Abort the connection if the handshake was malformed.
 		return
 	}
@@ -169,7 +169,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 			defer s.closedMu.RUnlock()
 			// TODO: wait for active requests to be processed while closing.
 			if !s.closed {
-				s.errorHandler(xerrors.Errorf("could not close connection: %w", err))
+				s.errorHandler(fmt.Errorf("could not close connection: %w", err))
 			}
 			// Abort the connection if an error occurred during
 			// the reading phase because we can't recover from it.
@@ -199,7 +199,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 				defer s.closedMu.RUnlock()
 				// TODO: wait for active requests to be processed while closing.
 				if !s.closed {
-					s.errorHandler(xerrors.Errorf("could not close connection: %w", err))
+					s.errorHandler(fmt.Errorf("could not close connection: %w", err))
 				}
 				// Abort the connection if an error occurred during
 				// the writing phase because we can't recover from it.
@@ -224,7 +224,7 @@ func (s *Server) handleHandshake(conn net.Conn) error {
 
 	correctHandshake := handshake.NewRequest()
 	if !reflect.DeepEqual(req, correctHandshake) {
-		return xerrors.Errorf("xrootd: connection %v: wrong handshake\ngot = %v\nwant = %v", conn.RemoteAddr(), req, correctHandshake)
+		return fmt.Errorf("xrootd: connection %v: wrong handshake\ngot = %v\nwant = %v", conn.RemoteAddr(), req, correctHandshake)
 	}
 
 	resp, status := s.handler.Handshake()
@@ -234,7 +234,7 @@ func (s *Server) handleHandshake(conn net.Conn) error {
 func newUnmarshalingErrorResponse(err error) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	response := xrdproto.ServerError{
 		Code:    xrdproto.InvalidRequest,
-		Message: xerrors.Errorf("An error occurred while parsing the request: %w", err).Error(),
+		Message: fmt.Errorf("An error occurred while parsing the request: %w", err).Error(),
 	}
 	return response, xrdproto.Error
 }

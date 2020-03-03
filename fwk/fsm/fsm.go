@@ -5,7 +5,7 @@
 package fsm // import "go-hep.org/x/hep/fwk/fsm"
 
 import (
-	"golang.org/x/xerrors"
+	"fmt"
 )
 
 type State int
@@ -44,6 +44,6 @@ func (state State) String() string {
 		return "OFFLINE"
 
 	default:
-		panic(xerrors.Errorf("invalid fsm.State value %d", int(state)))
+		panic(fmt.Errorf("invalid fsm.State value %d", int(state)))
 	}
 }

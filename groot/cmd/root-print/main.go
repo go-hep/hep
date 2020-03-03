@@ -41,7 +41,6 @@ import (
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hplot"
-	"golang.org/x/xerrors"
 	"gonum.org/v1/plot/plotutil"
 	"gonum.org/v1/plot/vg"
 )
@@ -92,13 +91,13 @@ options:
 func rootprint(odir string, fnames []string, otype string, verbose bool) error {
 	err := os.MkdirAll(odir, 0755)
 	if err != nil {
-		return xerrors.Errorf("could not create output directory %q: %w", odir, err)
+		return fmt.Errorf("could not create output directory %q: %w", odir, err)
 	}
 
 	for _, fname := range fnames {
 		err := process(odir, fname, otype, verbose)
 		if err != nil {
-			return xerrors.Errorf("could not process %q: %w", fname, err)
+			return fmt.Errorf("could not process %q: %w", fname, err)
 		}
 	}
 
@@ -108,7 +107,7 @@ func rootprint(odir string, fnames []string, otype string, verbose bool) error {
 func process(odir, name, otyp string, verbose bool) error {
 	fname, hname, err := splitArg(name)
 	if err != nil {
-		return xerrors.Errorf(
+		return fmt.Errorf(
 			"invalid input file format. got %q. want: \"file.root:histo\"",
 			name,
 		)
@@ -146,7 +145,7 @@ func process(odir, name, otyp string, verbose bool) error {
 		return nil
 	})
 	if err != nil {
-		return xerrors.Errorf("could not inspect input ROOT file: %w", err)
+		return fmt.Errorf("could not inspect input ROOT file: %w", err)
 	}
 
 	for _, obj := range objs {
@@ -176,14 +175,14 @@ func printObject(odir, otyp string, obj root.Object, verbose bool) error {
 	case rhist.H2:
 		h, err := rootcnv.H2D(o)
 		if err != nil {
-			return xerrors.Errorf("could not convert %q to hbook.H2D: %w", name, err)
+			return fmt.Errorf("could not convert %q to hbook.H2D: %w", name, err)
 		}
 		p.Add(hplot.NewH2D(h, nil))
 
 	case rhist.H1:
 		h, err := rootcnv.H1D(o)
 		if err != nil {
-			return xerrors.Errorf("could not convert %q to hbook.H1D: %w", name, err)
+			return fmt.Errorf("could not convert %q to hbook.H1D: %w", name, err)
 		}
 		hh := hplot.NewH1D(h)
 		hh.Color = colors[2]
@@ -196,7 +195,7 @@ func printObject(odir, otyp string, obj root.Object, verbose bool) error {
 	case rhist.GraphErrors:
 		h, err := rootcnv.S2D(o)
 		if err != nil {
-			return xerrors.Errorf("could not convert %q to hbook.S2D: %w", name, err)
+			return fmt.Errorf("could not convert %q to hbook.S2D: %w", name, err)
 		}
 		if name := h.Name(); name != "" {
 			p.Title.Text = name
@@ -208,7 +207,7 @@ func printObject(odir, otyp string, obj root.Object, verbose bool) error {
 	case rhist.Graph:
 		h, err := rootcnv.S2D(o)
 		if err != nil {
-			return xerrors.Errorf("could not convert %q to hbook.S2D: %w", name, err)
+			return fmt.Errorf("could not convert %q to hbook.S2D: %w", name, err)
 		}
 		if name := h.Name(); name != "" {
 			p.Title.Text = name
@@ -218,7 +217,7 @@ func printObject(odir, otyp string, obj root.Object, verbose bool) error {
 		p.Add(g)
 
 	default:
-		return xerrors.Errorf("unknown type %T for %q", o, name)
+		return fmt.Errorf("unknown type %T for %q", o, name)
 	}
 
 	p.Add(hplot.NewGrid())
@@ -230,7 +229,7 @@ func printObject(odir, otyp string, obj root.Object, verbose bool) error {
 
 	err := p.Save(20*vg.Centimeter, -1, oname)
 	if err != nil {
-		return xerrors.Errorf("could not print %q to %q: %w", name, oname, err)
+		return fmt.Errorf("could not print %q to %q: %w", name, oname, err)
 	}
 
 	return nil
@@ -267,7 +266,7 @@ func splitArg(cmd string) (fname, sel string, err error) {
 	}
 
 	if strings.Count(fname, ":") > 1 {
-		return "", "", xerrors.Errorf("root-cp: too many ':' in %q", cmd)
+		return "", "", fmt.Errorf("root-cp: too many ':' in %q", cmd)
 	}
 
 	i := strings.LastIndex(fname, ":")

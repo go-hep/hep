@@ -33,7 +33,6 @@ import (
 	"go-hep.org/x/hep/groot/rcmd"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
-	"golang.org/x/xerrors"
 )
 
 func main() {
@@ -70,13 +69,13 @@ options:
 func rootdiff(ref, chk string, keysFlag string) error {
 	fref, err := groot.Open(ref)
 	if err != nil {
-		return xerrors.Errorf("could not open reference file: %w", err)
+		return fmt.Errorf("could not open reference file: %w", err)
 	}
 	defer fref.Close()
 
 	fchk, err := groot.Open(chk)
 	if err != nil {
-		return xerrors.Errorf("could not open check file: %w", err)
+		return fmt.Errorf("could not open check file: %w", err)
 	}
 	defer fchk.Close()
 
@@ -87,7 +86,7 @@ func rootdiff(ref, chk string, keysFlag string) error {
 
 	err = rcmd.Diff(nil, fchk, fref, keys)
 	if err != nil {
-		return xerrors.Errorf("files differ: %w", err)
+		return fmt.Errorf("files differ: %w", err)
 	}
 
 	return nil

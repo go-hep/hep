@@ -5,16 +5,15 @@
 package rootio
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
-
-	"golang.org/x/xerrors"
 )
 
 func TestKeyNewKeyFrom(t *testing.T) {
 	var (
-		werr = xerrors.Errorf("rootio: invalid")
+		werr = fmt.Errorf("rootio: invalid")
 	)
 	for _, tc := range []struct {
 		want *tobjstring

@@ -5,9 +5,9 @@
 package predicates
 
 import (
+	"fmt"
 	"math/big"
 
-	"golang.org/x/xerrors"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -34,7 +34,7 @@ func (o OrientationKind) String() string {
 	case IndeterminateOrientation:
 		return "Indeterminate"
 	default:
-		panic(xerrors.Errorf("predicates: unknown OrientationKind %d", int(o)))
+		panic(fmt.Errorf("predicates: unknown OrientationKind %d", int(o)))
 	}
 }
 

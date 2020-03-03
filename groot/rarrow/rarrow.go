@@ -6,6 +6,7 @@
 package rarrow // import "go-hep.org/x/hep/groot/rarrow"
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/apache/arrow/go/arrow"
@@ -13,7 +14,6 @@ import (
 	"github.com/apache/arrow/go/arrow/memory"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtree"
-	"golang.org/x/xerrors"
 )
 
 // SchemaFrom returns an Arrow schema from the provided ROOT tree.
@@ -95,7 +95,7 @@ func dataTypeFromLeaf(leaf rtree.Leaf) arrow.DataType {
 		dt = dataTypeFromGo(leaf.Type())
 
 	default:
-		panic(xerrors.Errorf("not implemented %#v", leaf))
+		panic(fmt.Errorf("not implemented %#v", leaf))
 	}
 
 	switch {
@@ -111,7 +111,7 @@ func dataTypeFromLeaf(leaf rtree.Leaf) arrow.DataType {
 				// FIXME(sbinet): properly handle [N]string (but ROOT doesn't support that.)
 				// see: https://root-forum.cern.ch/t/char-t-in-a-branch/5591/2
 				// etype = reflect.ArrayOf(leaf.Len(), etype)
-				panic(xerrors.Errorf("groot/rtree: invalid number of dimensions (%d)", dims))
+				panic(fmt.Errorf("groot/rtree: invalid number of dimensions (%d)", dims))
 			}
 		default:
 			dt = arrow.FixedSizeListOf(int32(leaf.Len()), dt)
@@ -172,7 +172,7 @@ func dataTypeFromGo(typ reflect.Type) arrow.DataType {
 		return arrow.StructOf(fields...)
 
 	default:
-		panic(xerrors.Errorf("rarrow: unsupported Go type %v", typ))
+		panic(fmt.Errorf("rarrow: unsupported Go type %v", typ))
 	}
 }
 
@@ -212,7 +212,7 @@ func builderFrom(mem memory.Allocator, dt arrow.DataType, size int64) array.Buil
 	case *arrow.StructType:
 		bldr = array.NewStructBuilder(mem, dt)
 	default:
-		panic(xerrors.Errorf("groot/rarrow: invalid Arrow type %v", dt))
+		panic(fmt.Errorf("groot/rarrow: invalid Arrow type %v", dt))
 	}
 	bldr.Reserve(int(size))
 	return bldr
@@ -282,7 +282,7 @@ func appendData(bldr array.Builder, v rtree.ScanVar, dt arrow.DataType) {
 		}
 
 	default:
-		panic(xerrors.Errorf("groot/rarrow: invalid Arrow builder type %T", bldr))
+		panic(fmt.Errorf("groot/rarrow: invalid Arrow builder type %T", bldr))
 	}
 }
 
@@ -348,6 +348,6 @@ func appendValue(bldr array.Builder, v interface{}) {
 		}
 
 	default:
-		panic(xerrors.Errorf("groot/rarrow: invalid Arrow builder type %T", b))
+		panic(fmt.Errorf("groot/rarrow: invalid Arrow builder type %T", b))
 	}
 }

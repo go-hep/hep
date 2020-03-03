@@ -8,13 +8,13 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"reflect"
 	"testing"
 	"time"
 
 	"go-hep.org/x/hep/xrootd/internal/xrdenc"
-	"golang.org/x/xerrors"
 )
 
 func TestReadRequest(t *testing.T) {
@@ -296,12 +296,12 @@ func TestResponseHeaderError(t *testing.T) {
 		{
 			hdr:  ResponseHeader{Status: Error},
 			data: []byte{1, 2, 3},
-			err:  xerrors.Errorf("xrootd: invalid ResponseHeader error: %w", io.ErrShortBuffer),
+			err:  fmt.Errorf("xrootd: invalid ResponseHeader error: %w", io.ErrShortBuffer),
 		},
 		{
 			hdr:  ResponseHeader{Status: Error},
 			data: []byte{1, 2, 3, 4},
-			err:  xerrors.Errorf("xrootd: error occurred during unmarshaling of a server error: xrootd: missing error message in server response"),
+			err:  fmt.Errorf("xrootd: error occurred during unmarshaling of a server error: xrootd: missing error message in server response"),
 		},
 	} {
 		t.Run("", func(t *testing.T) {

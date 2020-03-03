@@ -17,7 +17,6 @@ import (
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/rtypes"
-	"golang.org/x/xerrors"
 )
 
 type genGoType struct {
@@ -38,7 +37,7 @@ type genGoType struct {
 func GenCxxStreamerInfo(w io.Writer, si rbytes.StreamerInfo, verbose bool) error {
 	g, err := NewGenGoType("go-hep.org/x/hep/groot/rdict", nil, verbose)
 	if err != nil {
-		return xerrors.Errorf("rdict: could not create streamer info generator: %w", err)
+		return fmt.Errorf("rdict: could not create streamer info generator: %w", err)
 	}
 	g.rdict = ""
 
@@ -50,12 +49,12 @@ func GenCxxStreamerInfo(w io.Writer, si rbytes.StreamerInfo, verbose bool) error
 
 	src, err := format.Source(g.buf.Bytes())
 	if err != nil {
-		return xerrors.Errorf("rdict: could not format streamer code for %q: %w", si.Name(), err)
+		return fmt.Errorf("rdict: could not format streamer code for %q: %w", si.Name(), err)
 	}
 
 	_, err = w.Write(src)
 	if err != nil {
-		return xerrors.Errorf("rdict: could not write streamer info generated data: %w", err)
+		return fmt.Errorf("rdict: could not write streamer info generated data: %w", err)
 	}
 
 	return err
@@ -85,7 +84,7 @@ func (g *genGoType) Generate(name string) error {
 	}
 	si, err := g.ctx.StreamerInfo(name, -1)
 	if err != nil {
-		return xerrors.Errorf("rdict: could not find streamer for %q: %w", name, err)
+		return fmt.Errorf("rdict: could not find streamer for %q: %w", name, err)
 	}
 
 	return g.genType(si)
@@ -200,7 +199,7 @@ func (g *genGoType) genField(si rbytes.StreamerInfo, i int, se rbytes.StreamerEl
 			tname := g.typename(se)
 			g.printf(docFmt, se.Name(), tname, g.stag(i, se), doc)
 		default:
-			panic(xerrors.Errorf("STL-type not implemented %#v", se))
+			panic(fmt.Errorf("STL-type not implemented %#v", se))
 		}
 	default:
 		g.printf("\t%s\t%s // %T -- %s\n", se.Name(), g.typename(se), se, doc)
@@ -248,7 +247,7 @@ func (g *genGoType) typename(se rbytes.StreamerElement) string {
 		tname = tname[:len(tname)-1] // drop last '*'
 		t, ok := rmeta.CxxBuiltins[tname]
 		if !ok {
-			panic(xerrors.Errorf("gen-type: unknown C++ builtin %q", tname))
+			panic(fmt.Errorf("gen-type: unknown C++ builtin %q", tname))
 		}
 		switch {
 		case strings.HasPrefix(se.Title(), "["):
@@ -268,7 +267,7 @@ func (g *genGoType) typename(se rbytes.StreamerElement) string {
 		}
 		t, ok := rmeta.CxxBuiltins[tname]
 		if !ok {
-			panic(xerrors.Errorf("gen-type: unknown C++ builtin %q", tname))
+			panic(fmt.Errorf("gen-type: unknown C++ builtin %q", tname))
 		}
 		return t.Name()
 
@@ -331,12 +330,12 @@ func (g *genGoType) typename(se rbytes.StreamerElement) string {
 					return "[]" + etname
 				}
 			default:
-				panic(xerrors.Errorf("invalid stl-vector element type: %v -- %#v", se.ContainedType(), se))
+				panic(fmt.Errorf("invalid stl-vector element type: %v -- %#v", se.ContainedType(), se))
 			}
 		case rmeta.STLmap:
 			types := rmeta.CxxTemplateArgsOf(se.TypeName())
 			if len(types) != 2 {
-				panic(xerrors.Errorf(
+				panic(fmt.Errorf(
 					"invalid stl-map: got %d template arguments instead of 2 for type %q",
 					len(types), se.TypeName(),
 				))
@@ -345,7 +344,7 @@ func (g *genGoType) typename(se rbytes.StreamerElement) string {
 			v := g.cxx2go(types[1], qualNone)
 			return "map[" + k + "]" + v
 		default:
-			panic(xerrors.Errorf("STL-type not implemented %#v", se))
+			panic(fmt.Errorf("STL-type not implemented %#v", se))
 		}
 	}
 	return tname
@@ -362,7 +361,7 @@ func (q qualKind) String() string {
 	case qualSlice:
 		return "[]"
 	}
-	panic(xerrors.Errorf("invalid qual-kind value %d", int(q)))
+	panic(fmt.Errorf("invalid qual-kind value %d", int(q)))
 }
 
 const (
@@ -461,7 +460,7 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 			case rmeta.OffsetP + rmeta.Float64:
 				wfunc = "WriteFastArrayF64"
 			default:
-				panic(xerrors.Errorf("invalid element type: %v", se.Type()))
+				panic(fmt.Errorf("invalid element type: %v", se.Type()))
 			}
 			g.printf("w.%s(o.%s[:o.%s])\n", wfunc, se.Name(), n)
 		default:
@@ -482,7 +481,7 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 				case 8:
 					g.printf("w.WriteI64(int64(o.%s))\n", se.Name())
 				default:
-					panic(xerrors.Errorf("invalid counter size %d for %s.%s", se.Size(), si.Name(), se.Name()))
+					panic(fmt.Errorf("invalid counter size %d for %s.%s", se.Size(), si.Name(), se.Name()))
 				}
 
 			case rmeta.Bits:
@@ -517,7 +516,7 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 				g.printf("w.WriteF32(float32(o.%s)) // FIXME(sbinet)\n", se.Name()) // FIXME(sbinet): handle compression
 
 			default:
-				panic(xerrors.Errorf("invalid basic type %v (%d) for %s.%s", se.Type(), se.Type(), si.Name(), se.Name()))
+				panic(fmt.Errorf("invalid basic type %v (%d) for %s.%s", se.Type(), se.Type(), si.Name(), se.Name()))
 			}
 		default:
 			n := int(se.ArrayLen())
@@ -546,7 +545,7 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 			case rmeta.OffsetL + rmeta.Float64:
 				wfunc = "WriteFastArrayF64"
 			default:
-				panic(xerrors.Errorf("invalid array element type: %v", se.Type()))
+				panic(fmt.Errorf("invalid array element type: %v", se.Type()))
 			}
 			g.printf("w.%s(o.%s[:%d])\n", wfunc, se.Name(), n)
 		}
@@ -624,12 +623,11 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 				case "string":
 					wfunc = "WriteFastArrayString"
 				default:
-					panic(xerrors.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
+					panic(fmt.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
 				}
 			default:
-				panic(xerrors.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
+				panic(fmt.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
 			}
-			g.imps["golang.org/x/xerrors"] = 1
 			g.imps["go-hep.org/x/hep/groot/rvers"] = 1
 			g.printf("{\n")
 			g.printf("pos := w.WriteVersion(rvers.StreamerInfo)\n")
@@ -642,7 +640,7 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 			g.printf("}\n")
 
 		default:
-			panic(xerrors.Errorf("STL-type not implemented %#v", se))
+			panic(fmt.Errorf("STL-type not implemented %#v", se))
 		}
 
 	default:
@@ -707,7 +705,7 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 			case rmeta.OffsetP + rmeta.Float64:
 				rfunc = "ReadFastArrayF64"
 			default:
-				panic(xerrors.Errorf("invalid element type: %v", se.Type()))
+				panic(fmt.Errorf("invalid element type: %v", se.Type()))
 			}
 			g.printf("o.%s = r.%s(int(o.%s))\n", se.Name(), rfunc, n)
 		default:
@@ -728,7 +726,7 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 				case 8:
 					g.printf("o.%s = r.ReadI64()\n", se.Name())
 				default:
-					panic(xerrors.Errorf("invalid counter size %d for %s.%s", se.Size(), si.Name(), se.Name()))
+					panic(fmt.Errorf("invalid counter size %d for %s.%s", se.Size(), si.Name(), se.Name()))
 				}
 
 			case rmeta.Bits:
@@ -763,7 +761,7 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 				g.printf("o.%s = root.Double32(r.ReadF32()) // FIXME(sbinet)\n", se.Name()) // FIXME(sbinet): handle compression,factor
 
 			default:
-				panic(xerrors.Errorf("invalid basic type %v (%d) for %s.%s", se.Type(), se.Type(), si.Name(), se.Name()))
+				panic(fmt.Errorf("invalid basic type %v (%d) for %s.%s", se.Type(), se.Type(), si.Name(), se.Name()))
 			}
 		default:
 			rfunc := ""
@@ -791,7 +789,7 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 			case rmeta.OffsetL + rmeta.Float64:
 				rfunc = "ReadFastArrayF64"
 			default:
-				panic(xerrors.Errorf("invalid array element type: %v", se.Type()))
+				panic(fmt.Errorf("invalid array element type: %v", se.Type()))
 			}
 			g.printf("copy(o.%s[:], r.%s(len(o.%s)))\n", se.Name(), rfunc, se.Name())
 		}
@@ -877,17 +875,17 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 				case "string":
 					rfunc = "ReadFastArrayString"
 				default:
-					panic(xerrors.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
+					panic(fmt.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
 				}
 			default:
-				panic(xerrors.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
+				panic(fmt.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
 			}
-			g.imps["golang.org/x/xerrors"] = 1
+			g.imps["fmt"] = 1
 			g.imps["go-hep.org/x/hep/groot/rvers"] = 1
 			g.printf("{\n")
 			g.printf("vers, pos, bcnt := r.ReadVersion(%q)\n", se.TypeName())
 			g.printf("if vers != rvers.StreamerInfo {\n")
-			g.printf("r.SetErr(xerrors.Errorf(\"rbytes: invalid version for \\\"%s\\\". got=%%v, want=%%v\", vers, rvers.StreamerInfo))\n", se.TypeName())
+			g.printf("r.SetErr(fmt.Errorf(\"rbytes: invalid version for \\\"%s\\\". got=%%v, want=%%v\", vers, rvers.StreamerInfo))\n", se.TypeName())
 			g.printf("return r.Err()\n")
 			g.printf("}\n")
 			g.printf("o.%s = r.%s(int(r.ReadI32()))\n", se.Name(), rfunc)
@@ -895,7 +893,7 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 			g.printf("}\n")
 
 		default:
-			panic(xerrors.Errorf("STL-type not implemented %#v", se))
+			panic(fmt.Errorf("STL-type not implemented %#v", se))
 		}
 
 	default:
@@ -1260,7 +1258,7 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 
 	default:
 		g.printf("// %s -- %T\n", se.Name(), se)
-		panic(xerrors.Errorf("rdict: unknown streamer type %T (%#v)", se, se))
+		panic(fmt.Errorf("rdict: unknown streamer type %T (%#v)", se, se))
 	}
 }
 
