@@ -5,15 +5,37 @@
 package rdict
 
 import (
+	"fmt"
+	"reflect"
+
 	"go-hep.org/x/hep/groot/rbytes"
 )
 
 type decoder struct {
-	si *StreamerInfo
+	r    *rbytes.RBuffer
+	si   *StreamerInfo
+	kind rbytes.StreamKind
+	rops []rstreamer
+}
+
+func newDecoder(r *rbytes.RBuffer, si *StreamerInfo, kind rbytes.StreamKind, ops []rstreamer) (*decoder, error) {
+	return &decoder{r, si, kind, ops}, nil
 }
 
 func (dec *decoder) DecodeROOT(ptr interface{}) error {
-	panic("not implemented")
+	rv := reflect.ValueOf(ptr)
+	if rv.Kind() != reflect.Ptr {
+		return fmt.Errorf("rdict: invalid kind (got=%T, want=pointer)", ptr)
+	}
+
+	for i, op := range dec.rops {
+		err := op.rstream(dec.r, ptr)
+		if err != nil {
+			return fmt.Errorf("rdict: could not read element %d from %q: %w", i, dec.si.Name(), err)
+		}
+	}
+
+	return nil
 }
 
 var (

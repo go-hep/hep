@@ -9,7 +9,14 @@ import (
 )
 
 type encoder struct {
-	si *StreamerInfo
+	w    *rbytes.WBuffer
+	si   *StreamerInfo
+	kind rbytes.StreamKind
+	wops []wstreamOp
+}
+
+func newEncoder(w *rbytes.WBuffer, si *StreamerInfo, kind rbytes.StreamKind, ops []wstreamOp) (*encoder, error) {
+	return &encoder{w, si, kind, ops}, nil
 }
 
 func (enc *encoder) EncodeROOT(ptr interface{}) error {
