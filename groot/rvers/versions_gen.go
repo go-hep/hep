@@ -7,7 +7,7 @@
 package rvers
 
 // ROOT version
-const ROOT = 61804
+const ROOT = 62000
 
 // ROOT classes versions
 const (
@@ -69,7 +69,7 @@ const (
 	H2D                      = 4  // ROOT version for TH2D
 	H2F                      = 4  // ROOT version for TH2F
 	H2I                      = 4  // ROOT version for TH2I
-	H2Poly                   = 2  // ROOT version for TH2Poly
+	H2Poly                   = 3  // ROOT version for TH2Poly
 	H2PolyBin                = 1  // ROOT version for TH2PolyBin
 	H2S                      = 4  // ROOT version for TH2S
 	Directory                = 5  // ROOT version for TDirectory

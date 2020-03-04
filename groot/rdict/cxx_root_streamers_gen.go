@@ -2586,7 +2586,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 1),
 	}))
-	StreamerInfos.Add(NewCxxStreamerInfo("TH2Poly", 2, 0xd59da56a, []rbytes.StreamerElement{
+	StreamerInfos.Add(NewCxxStreamerInfo("TH2Poly", 3, 0xbc566968, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
 			Name:   *rbase.NewNamed("TH2", "2-Dim histogram base class"),
 			Type:   rmeta.Base,
@@ -2600,19 +2600,6 @@ func init() {
 			XMax:   0.000000,
 			Factor: 0.000000,
 		}.New(), 5),
-		&StreamerObjectPointer{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fBins", "List of bins. The list owns the contained objects"),
-			Type:   rmeta.ObjectP,
-			Size:   8,
-			ArrLen: 0,
-			ArrDim: 0,
-			MaxIdx: [5]int32{0, 0, 0, 0, 0},
-			Offset: 0,
-			EName:  "TList*",
-			XMin:   0.000000,
-			XMax:   0.000000,
-			Factor: 0.000000,
-		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fOverflow", "Overflow bins"),
 			Type:   rmeta.Enum(28),
@@ -2677,7 +2664,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 2, "fNCells", "TH2Poly"),
+		}.New(), 3, "fNCells", "TH2Poly"),
 		&StreamerBasicType{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fStepX", "Dimensions of a partition cell"),
 			Type:   rmeta.Double,
@@ -2716,7 +2703,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 2, "fNCells", "TH2Poly"),
+		}.New(), 3, "fNCells", "TH2Poly"),
 		NewStreamerBasicPointer(Element{
 			Name:   *rbase.NewNamed("fCompletelyInside", "[fNCells] The array that returns true if the cell at the given coordinate is completely inside a bin"),
 			Type:   58,
@@ -2729,7 +2716,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 2, "fNCells", "TH2Poly"),
+		}.New(), 3, "fNCells", "TH2Poly"),
 		&StreamerBasicType{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fFloat", "When set to kTRUE, allows the histogram to expand if a bin outside the limits is added."),
 			Type:   rmeta.Bool,
@@ -2739,6 +2726,19 @@ func init() {
 			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 			Offset: 0,
 			EName:  "bool",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New()},
+		&StreamerObjectPointer{StreamerElement: Element{
+			Name:   *rbase.NewNamed("fBins", "List of bins. The list owns the contained objects"),
+			Type:   rmeta.ObjectP,
+			Size:   8,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
+			Offset: 0,
+			EName:  "TList*",
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
@@ -2960,7 +2960,7 @@ func init() {
 	}))
 	StreamerInfos.Add(NewCxxStreamerInfo("TDirectoryFile", 5, 0xbf9f443e, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
-			Name:   *rbase.NewNamed("TDirectory", "Describe directory structure in memory"),
+			Name:   *rbase.NewNamed("TDirectory", ""),
 			Type:   rmeta.Base,
 			Size:   0,
 			ArrLen: 0,
@@ -3131,7 +3131,7 @@ func init() {
 	}))
 	StreamerInfos.Add(NewCxxStreamerInfo("TFile", 8, 0x9468e382, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
-			Name:   *rbase.NewNamed("TDirectoryFile", "Describe directory structure in a ROOT file"),
+			Name:   *rbase.NewNamed("TDirectoryFile", ""),
 			Type:   rmeta.Base,
 			Size:   0,
 			ArrLen: 0,
@@ -4611,7 +4611,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fIsRange", "(=kTRUE if leaf has a range, kFALSE otherwise)"),
+			Name:   *rbase.NewNamed("fIsRange", "(=kTRUE if leaf has a range, kFALSE otherwise).  This is equivalent to being a 'leafcount'.  For a TLeafElement the range information is actually store in the TBranchElement."),
 			Type:   rmeta.Bool,
 			Size:   1,
 			ArrLen: 0,

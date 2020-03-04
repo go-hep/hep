@@ -138,11 +138,6 @@ void testcompress(const char *fname, int size) {
 					return
 				}
 
-				if strings.Contains(tname, "zstd") {
-					// FIXME(sbinet): do run test when ROOT-6.20/00 is out.
-					return
-				}
-
 				out, err := rtests.RunCxxROOT("testcompress", []byte(macroROOT), fname, len(want.(root.ObjString).String()))
 				if err != nil {
 					t.Fatalf("error: %+v\n%s\n", err, out)
