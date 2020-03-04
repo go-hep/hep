@@ -7,7 +7,7 @@ dist: bionic
 
 env:
  global:
-   - ROOT_VERSION=6.18.04
+   - ROOT_VERSION=6.20.00
 
 cache:
  directories:
