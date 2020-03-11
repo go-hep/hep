@@ -128,7 +128,7 @@ func ExampleTiledPlot() {
 }
 ```
 
-![tiled-plot-aligned](https://github.com/go-hep/hep/raw/master/hplot/testdata/tiled_plot_histogram_aligned_golden.png)
+![tiled-plot-aligned](https://github.com/go-hep/hep/raw/master/hplot/testdata/tiled_plot_aligned_histogram_golden.png)
 
 [embedmd]:# (tiledplot_example_test.go go /func ExampleTiledPlot_align/ /\n}/)
 ```go
