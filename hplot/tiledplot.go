@@ -13,6 +13,7 @@ import (
 
 	"go-hep.org/x/exp/vgshiny"
 	"golang.org/x/exp/shiny/screen"
+	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 	"gonum.org/v1/plot/vg/vgimg"
@@ -22,6 +23,7 @@ import (
 type TiledPlot struct {
 	Plots []*Plot
 	Tiles draw.Tiles
+	Align bool // whether to align all tiles axes
 }
 
 // NewTiledPlot creates a new set of plots aranged as tiles.
@@ -63,15 +65,41 @@ func (tp *TiledPlot) Plot(i, j int) *Plot {
 // Each non-nil plot.Plot in the aranged set of tiled plots is drawn
 // inside its dedicated sub-canvas, using hplot.Plot.Draw.
 func (tp *TiledPlot) Draw(c draw.Canvas) {
-	for row := 0; row < tp.Tiles.Rows; row++ {
-		for col := 0; col < tp.Tiles.Cols; col++ {
-			sub := tp.Tiles.At(c, col, row)
-			i := row*tp.Tiles.Cols + col
-			p := tp.Plots[i]
-			if p == nil {
-				continue
+	switch {
+	case tp.Align:
+		ps := make([][]*plot.Plot, tp.Tiles.Rows)
+		for row := 0; row < tp.Tiles.Rows; row++ {
+			ps[row] = make([]*plot.Plot, tp.Tiles.Cols)
+			for col := range ps[row] {
+				p := tp.Plots[row*tp.Tiles.Cols+col]
+				if p == nil {
+					continue
+				}
+				ps[row][col] = p.Plot
 			}
-			p.Draw(sub)
+		}
+		cs := plot.Align(ps, tp.Tiles, c)
+		for i := 0; i < tp.Tiles.Rows; i++ {
+			for j := 0; j < tp.Tiles.Cols; j++ {
+				p := ps[i][j]
+				if p == nil {
+					continue
+				}
+				p.Draw(cs[i][j])
+			}
+		}
+
+	default:
+		for row := 0; row < tp.Tiles.Rows; row++ {
+			for col := 0; col < tp.Tiles.Cols; col++ {
+				sub := tp.Tiles.At(c, col, row)
+				i := row*tp.Tiles.Cols + col
+				p := tp.Plots[i]
+				if p == nil {
+					continue
+				}
+				p.Draw(sub)
+			}
 		}
 	}
 }
