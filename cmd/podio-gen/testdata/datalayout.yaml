@@ -1,0 +1,146 @@
+---
+options :
+  # should getters / setters be prefixed with get / set?
+  getSyntax: False
+  # should POD members be exposed with getters/setters in classes that have them as members?
+  exposePODMembers: True
+
+components :
+  SimpleStruct:
+    x : int
+    y : int
+    z : int
+    p: std::array<int, 4>
+    # can also add c'tors:
+    ExtraCode :
+      declaration: "
+      SimpleStruct() : x(0),y(0),z(0) {}
+      SimpleStruct( const int* v) : x(v[0]),y(v[1]),z(v[2]) {}
+      "
+
+  NotSoSimpleStruct:
+    data : SimpleStruct
+
+  ex2::NamespaceStruct:
+    x : int
+    y : int
+
+  ex2::NamespaceInNamespaceStruct:
+    data : ex2::NamespaceStruct
+
+datatypes :
+
+  EventInfo:
+    Description : "Event info"
+    Author : "B. Hegner"
+    Members :
+     - int Number // event number
+    ExtraCode :
+       const_declaration: "int getNumber() const; "
+       const_implementation: "int {name}::getNumber() const { return Number(); } "
+       declaration: "void setNumber(int n) { Number( n ) ; } "
+
+  ExampleHit :
+    Description : "Example Hit"
+    Author : "B. Hegner"
+    Members:
+     - unsigned long long cellID      // cellID
+     - double x      // x-coordinate
+     - double y      // y-coordinate
+     - double z      // z-coordinate
+     - double energy // measured energy deposit
+
+  ExampleMC :
+    Description : "Example MC-particle"
+    Author: "F.Gaede"
+    Members:
+      - double energy  // energy
+      - int PDG  // PDG code
+    OneToManyRelations:
+      - ExampleMC parents   // parents
+      - ExampleMC daughters  // daughters
+
+  ExampleCluster :
+    Description : "Cluster"
+    Author : "B. Hegner"
+    Members:
+      - double energy // cluster energy
+    OneToManyRelations:
+     - ExampleHit Hits // hits contained in the cluster
+     - ExampleCluster Clusters // sub clusters used to create this cluster
+
+  ExampleReferencingType :
+    Description : "Referencing Type"
+    Author : "B. Hegner"
+    OneToManyRelations:
+     - ExampleCluster         Clusters  // some refs to Clusters
+     - ExampleReferencingType Refs      // refs into same type
+
+  ExampleWithVectorMember :
+    Description : "Type with a vector member"
+    Author : "B. Hegner"
+    VectorMembers:
+     - int count // various ADC counts
+
+  ExampleWithOneRelation :
+    Description : "Type with one relation member"
+    Author : "Benedikt Hegner"
+    OneToOneRelations:
+     - ExampleCluster cluster // a particular cluster
+
+  ExampleWithComponent :
+    Description : "Type with one component"
+    Author : "Benedikt Hegner"
+    Members :
+     - NotSoSimpleStruct component // a component
+
+  ExampleForCyclicDependency1 :
+    Description : "Type for cyclic dependency"
+    Author : "Benedikt Hegner"
+    OneToOneRelations :
+      - ExampleForCyclicDependency2 ref // a ref
+
+  ExampleForCyclicDependency2 :
+    Description : "Type for cyclic dependency"
+    Author : "Benedikt Hegner"
+    OneToOneRelations :
+      - ExampleForCyclicDependency1 ref // a ref
+
+#  ExampleWithArray :
+#    Description : "Type with an array"
+#    Author : "Benedikt Hegner"
+#    Members:
+#      - std::array<int,33> array // the array
+
+  ExampleWithString :
+    Description : "Type with a string"
+    Author : "Benedikt Hegner"
+    Members:
+      - std::string theString // the string
+
+  ex42::ExampleWithNamespace :
+    Description : "Type with namespace and namespaced member"
+    Author : "Joschka Lingemann"
+    Members:
+      - ex2::NamespaceStruct data // a component
+
+  ex42::ExampleWithARelation :
+    Description : "Type with namespace and namespaced relation"
+    Author : "Joschka Lingemann"
+    Members:
+     - float number // just a number
+    OneToOneRelations :
+     - ex42::ExampleWithNamespace ref // a ref in a namespace
+    OneToManyRelations :
+     - ex42::ExampleWithNamespace refs // multiple refs in a namespace
+
+  ExampleWithArray:
+    Description: "Datatype with an array member"
+    Author: "Joschka Lingemann"
+    Members:
+      - NotSoSimpleStruct arrayStruct // component that contains an array
+      - std::array<int,4> myArray // array-member without space to test regex
+      - std::array<int, 4> anotherArray2 // array-member with space to test regex
+      - std::array<int, 4> snail_case_array // snail case to test regex
+      - std::array<int, 4> snail_case_Array3 // mixing things up for regex
+      - std::array<ex2::NamespaceStruct, 4> structArray // an array containing structs

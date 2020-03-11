@@ -15,6 +15,7 @@ require (
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/jcmturner/gokrb5/v8 v8.1.1
 	github.com/klauspost/compress v1.10.2
+	github.com/kr/pretty v0.1.0
 	github.com/peterh/liner v1.2.0
 	github.com/pierrec/lz4 v2.4.1+incompatible
 	github.com/pierrec/xxHash v0.1.5
@@ -27,5 +28,6 @@ require (
 	golang.org/x/mobile v0.0.0-20200222142934-3c8601c510d0
 	gonum.org/v1/gonum v0.7.0
 	gonum.org/v1/plot v0.7.0
+	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
 	modernc.org/ql v1.0.1
 )
