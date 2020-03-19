@@ -97,6 +97,8 @@ func WithTitle(title string) WriteOption {
 type wtree struct {
 	ttree
 	wvars []WriteVar
+
+	closed bool
 }
 
 // WriteVar describes a variable to be written out to a tree.
@@ -311,6 +313,13 @@ func (w *wtree) Flush() error {
 
 // Close writes metadata and closes the tree.
 func (w *wtree) Close() error {
+	if w.closed {
+		return nil
+	}
+	defer func() {
+		w.closed = true
+	}()
+
 	if err := w.Flush(); err != nil {
 		return fmt.Errorf("rtree: could not flush tree %q: %w", w.Name(), err)
 	}

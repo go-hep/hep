@@ -1172,6 +1172,7 @@ func TestTreeRW(t *testing.T) {
 				if err != nil {
 					t.Fatalf("could not create tree writer: %v", err)
 				}
+				defer tw.Close()
 				for i, b := range tw.Branches() {
 					if got, want := b.Name(), tc.wvars[i].Name; got != want {
 						t.Fatalf("branch[%d]: got=%q, want=%q", i, got, want)
@@ -1386,6 +1387,7 @@ func TestTreeWriteSubdir(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not create tree: %+v", err)
 	}
+	defer ntup.Close()
 
 	for i := 0; i < 5; i++ {
 		data.I32 = int32(i)

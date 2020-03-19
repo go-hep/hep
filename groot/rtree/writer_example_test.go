@@ -48,6 +48,7 @@ func Example_createFlatNtuple() {
 		if err != nil {
 			log.Fatalf("could not create tree writer: %+v", err)
 		}
+		defer tree.Close()
 
 		fmt.Printf("-- created tree %q:\n", tree.Name())
 		for i, b := range tree.Branches() {
@@ -169,6 +170,7 @@ func Example_createFlatNtupleWithLZMA() {
 		if err != nil {
 			log.Fatalf("could not create tree writer: %+v", err)
 		}
+		defer tree.Close()
 
 		fmt.Printf("-- created tree %q:\n", tree.Name())
 		for i, b := range tree.Branches() {
@@ -282,6 +284,7 @@ func Example_createFlatNtupleFromStruct() {
 		if err != nil {
 			log.Fatalf("could not create tree writer: %+v", err)
 		}
+		defer tree.Close()
 
 		fmt.Printf("-- created tree %q:\n", tree.Name())
 		for i, b := range tree.Branches() {
