@@ -219,10 +219,22 @@ func NewWriter(dir riofs.Directory, name string, vars []WriteVar, opts ...WriteO
 
 	w := &wtree{
 		ttree: ttree{
-			f:     fileOf(dir),
-			dir:   dir,
-			rvers: rvers.Tree,
-			named: *rbase.NewNamed(name, ""),
+			f:         fileOf(dir),
+			dir:       dir,
+			rvers:     rvers.Tree,
+			named:     *rbase.NewNamed(name, ""),
+			attline:   *rbase.NewAttLine(),
+			attfill:   *rbase.NewAttFill(),
+			attmarker: *rbase.NewAttMarker(),
+			weight:    1,
+			scanField: 25,
+
+			defaultEntryOffsetLen: 1000,
+			maxEntries:            1000000000000,
+			maxEntryLoop:          1000000000000,
+			autoSave:              -300000000,
+			autoFlush:             -30000000,
+			estimate:              1000000,
 		},
 		wvars: vars,
 	}
