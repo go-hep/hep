@@ -43,6 +43,9 @@ type H1D struct {
 	// InfoStyle is the style of infos displayed for
 	// the histogram (entries, mean, rms)
 	Infos HInfos
+
+	// YErrs is the y error bars plotter.
+	YErrs *plotter.YErrorBars
 }
 
 type HInfoStyle uint32
@@ -68,19 +71,19 @@ type HInfos struct {
 // count for the corresponding x.
 //
 // It panics if the number of bins is non-positive.
-func NewH1FromXYer(xy plotter.XYer, n int) *H1D {
+func NewH1FromXYer(xy plotter.XYer, n int, opts ...Options) *H1D {
 	if n <= 0 {
 		panic(errors.New("hplot: histogram with non-positive number of bins"))
 	}
 	h := newHistFromXYer(xy, n)
-	return NewH1D(h)
+	return NewH1D(h, opts...)
 }
 
 // NewH1FromValuer returns a new histogram, as in
 // NewH1FromXYer, except that it accepts a plotter.Valuer
 // instead of an XYer.
-func NewH1FromValuer(vs plotter.Valuer, n int) *H1D {
-	return NewH1FromXYer(unitYs{vs}, n)
+func NewH1FromValuer(vs plotter.Valuer, n int, opts ...Options) *H1D {
+	return NewH1FromXYer(unitYs{vs}, n, opts...)
 }
 
 type unitYs struct {
@@ -94,17 +97,68 @@ func (u unitYs) XY(i int) (float64, float64) {
 // NewH1D returns a new histogram, as in
 // NewH1DFromXYer, except that it accepts a hbook.H1D
 // instead of a plotter.XYer
-func NewH1D(h *hbook.H1D) *H1D {
-	return &H1D{
+func NewH1D(h *hbook.H1D, opts ...Options) *H1D {
+	h1 := &H1D{
 		Hist:      h,
 		LineStyle: plotter.DefaultLineStyle,
 	}
+
+	cfg := newConfig(opts)
+
+	h1.LogY = cfg.log.y
+	h1.Infos = cfg.hinfos
+
+	if cfg.bars.yerrs {
+		h1.withYErrBars()
+	}
+
+	return h1
+}
+
+// withYErrBars enables the Y error bars
+func (h *H1D) withYErrBars() {
+	bins := h.Hist.Binning.Bins
+	data := make(plotter.XYs, 0, len(bins))
+	yerr := make(plotter.YErrors, 0, len(bins))
+	for _, bin := range bins {
+		if bin.Entries() == 0 {
+			continue
+		}
+		data = append(data, plotter.XY{
+			X: bin.XMid(),
+			Y: bin.SumW(),
+		})
+		ey := 0.5 * bin.ErrW()
+		yerr = append(yerr, struct{ Low, High float64 }{ey, ey})
+	}
+
+	type yerrT struct {
+		plotter.XYer
+		plotter.YErrorer
+	}
+
+	yplt, err := plotter.NewYErrorBars(yerrT{data, yerr})
+	if err != nil {
+		panic(err)
+	}
+	yplt.LineStyle.Color = h.LineStyle.Color
+	yplt.LineStyle.Width = h.LineStyle.Width
+
+	h.YErrs = yplt
 }
 
 // DataRange returns the minimum and maximum X and Y values
 func (h *H1D) DataRange() (xmin, xmax, ymin, ymax float64) {
 	if !h.LogY {
-		return h.Hist.DataRange()
+		xmin, xmax, ymin, ymax = h.Hist.DataRange()
+		if h.YErrs != nil {
+			xmin1, xmax1, ymin1, ymax1 := h.YErrs.DataRange()
+			xmin = math.Min(xmin, xmin1)
+			ymin = math.Min(ymin, ymin1)
+			xmax = math.Max(xmax, xmax1)
+			ymax = math.Max(ymax, ymax1)
+		}
+		return xmin, xmax, ymin, ymax
 	}
 
 	xmin = math.Inf(+1)
@@ -133,6 +187,14 @@ func (h *H1D) DataRange() (xmin, xmax, ymin, ymax float64) {
 	if ymin == 0 && !math.IsInf(ylow, +1) {
 		// Reserve a bit of space for the smallest bin to be displayed still.
 		ymin = ylow * 0.5
+	}
+
+	if h.YErrs != nil {
+		xmin1, xmax1, ymin1, ymax1 := h.YErrs.DataRange()
+		xmin = math.Min(xmin, xmin1)
+		ymin = math.Min(ymin, ymin1)
+		xmax = math.Max(xmax, xmax1)
+		ymax = math.Min(ymax, ymax1)
 	}
 
 	return
@@ -195,6 +257,10 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 		c.FillPolygon(h.FillColor, c.ClipPolygonXY(pts))
 	}
 	c.StrokeLines(h.LineStyle, c.ClipLinesXY(pts)...)
+
+	if h.YErrs != nil {
+		h.YErrs.Plot(c, p)
+	}
 
 	if h.Infos.Style != HInfoNone {
 		fnt, err := vg.MakeFont(DefaultStyle.Fonts.Name, DefaultStyle.Fonts.Tick.Size)

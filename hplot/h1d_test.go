@@ -21,3 +21,7 @@ func TestH1DtoPDF(t *testing.T) {
 func TestH1DLogScale(t *testing.T) {
 	cmpimg.CheckPlot(ExampleH1D_logScaleY, t, "h1d_logy.png")
 }
+
+func TestH1DYErrs(t *testing.T) {
+	cmpimg.CheckPlot(ExampleH1D_withYErrBars, t, "h1d_yerrs.png")
+}

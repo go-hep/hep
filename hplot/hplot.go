@@ -191,6 +191,9 @@ type config struct {
 	}
 	band   bool
 	hinfos HInfos
+	log    struct {
+		y bool
+	}
 }
 
 func newConfig(opts []Options) *config {
@@ -199,6 +202,13 @@ func newConfig(opts []Options) *config {
 		opt(cfg)
 	}
 	return cfg
+}
+
+// WithLogY sets whether the plotter in Y should handle log-scale.
+func WithLogY(v bool) Options {
+	return func(c *config) {
+		c.log.y = v
+	}
 }
 
 // WithXErrBars enables or disables the display of X-error bars.
