@@ -283,7 +283,7 @@ func ExampleCurve1D_powerlaw() {
 			pts[i].ErrY.Max = 0.5 * yerrs[i]
 		}
 
-		s := hplot.NewS2D(hbook.NewS2D(pts...), hplot.WithYErrBars)
+		s := hplot.NewS2D(hbook.NewS2D(pts...), hplot.WithYErrBars(true))
 		s.Color = color.RGBA{0, 0, 255, 255}
 		p.Add(s)
 

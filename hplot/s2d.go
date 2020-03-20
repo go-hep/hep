@@ -27,9 +27,6 @@ type S2D struct {
 	// Use zero width to disable.
 	LineStyle draw.LineStyle
 
-	// options controls various display options of this plot.
-	options Options
-
 	xbars *plotter.XErrorBars
 	ybars *plotter.YErrorBars
 
@@ -39,10 +36,6 @@ type S2D struct {
 
 // withXErrBars enables the X error bars
 func (pts *S2D) withXErrBars() error {
-	if pts.options&WithXErrBars == 0 {
-		pts.xbars = nil
-		return nil
-	}
 	xerr, ok := pts.Data.(plotter.XErrorer)
 	if !ok {
 		return nil
@@ -63,10 +56,6 @@ func (pts *S2D) withXErrBars() error {
 
 // withYErrBars enables the Y error bars
 func (pts *S2D) withYErrBars() error {
-	if pts.options&WithYErrBars == 0 {
-		pts.ybars = nil
-		return nil
-	}
 	yerr, ok := pts.Data.(plotter.YErrorer)
 	if !ok {
 		return nil
@@ -87,10 +76,6 @@ func (pts *S2D) withYErrBars() error {
 
 // withBand enables the band between ymin-ymax error bars.
 func (pts *S2D) withBand() error {
-	if pts.options&WithBand == 0 {
-		pts.Band = nil
-		return nil
-	}
 	yerr, ok := pts.Data.(plotter.YErrorer)
 	if !ok {
 		return nil
@@ -119,15 +104,19 @@ func NewS2D(data plotter.XYer, opts ...Options) *S2D {
 		Data:       data,
 		GlyphStyle: plotter.DefaultGlyphStyle,
 	}
-	for _, opt := range opts {
-		s.options |= opt
+
+	cfg := newConfig(opts)
+
+	if cfg.bars.xerrs {
+		_ = s.withXErrBars()
 	}
 
-	for _, f := range []func() error{
-		s.withXErrBars, s.withYErrBars,
-		s.withBand,
-	} {
-		_ = f()
+	if cfg.bars.yerrs {
+		_ = s.withYErrBars()
+	}
+
+	if cfg.band {
+		_ = s.withBand()
 	}
 
 	s.GlyphStyle.Shape = draw.CrossGlyph{}

@@ -200,7 +200,7 @@ func printObject(odir, otyp string, obj root.Object, verbose bool) error {
 		if name := h.Name(); name != "" {
 			p.Title.Text = name
 		}
-		g := hplot.NewS2D(h, hplot.WithXErrBars, hplot.WithYErrBars)
+		g := hplot.NewS2D(h, hplot.WithXErrBars(true), hplot.WithYErrBars(true))
 		g.Color = colors[0]
 		p.Add(g)
 

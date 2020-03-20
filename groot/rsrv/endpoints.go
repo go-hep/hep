@@ -701,11 +701,14 @@ func (srv *Server) handlePlotS2(w http.ResponseWriter, r *http.Request) error {
 		pl.X.Label.Text = req.Options.X
 		pl.Y.Label.Text = req.Options.Y
 
-		var opts hplot.Options
+		var opts []hplot.Options
 		if _, ok := robj.(rhist.GraphErrors); ok {
-			opts = hplot.WithXErrBars | hplot.WithYErrBars
+			opts = append(
+				opts,
+				hplot.WithXErrBars(true), hplot.WithYErrBars(true),
+			)
 		}
-		h := hplot.NewS2D(s2, opts)
+		h := hplot.NewS2D(s2, opts...)
 		h.Color = req.Options.Line.Color
 
 		pl.Add(h, hplot.NewGrid())

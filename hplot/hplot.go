@@ -182,11 +182,49 @@ func ZipXY(x, y []float64) plotter.XYer {
 }
 
 // Options encodes various options to pass to a plot.
-type Options int32
+type Options func(cfg *config)
 
-const (
-	OptNone      Options = 1 << iota // default
-	WithXErrBars                     // enable display of X-error bars (if available)
-	WithYErrBars                     // enable display of Y-error bars (if available)
-	WithBand                         // enable display of a colored band between Y-error bars (if available)
-)
+type config struct {
+	bars struct {
+		xerrs bool
+		yerrs bool
+	}
+	band   bool
+	hinfos HInfos
+}
+
+func newConfig(opts []Options) *config {
+	cfg := new(config)
+	for _, opt := range opts {
+		opt(cfg)
+	}
+	return cfg
+}
+
+// WithXErrBars enables or disables the display of X-error bars.
+func WithXErrBars(v bool) Options {
+	return func(c *config) {
+		c.bars.xerrs = v
+	}
+}
+
+// WithYErrBars enables or disables the display of Y-error bars.
+func WithYErrBars(v bool) Options {
+	return func(c *config) {
+		c.bars.yerrs = v
+	}
+}
+
+// WithBand enables or disables the display of a colored band between Y-error bars.
+func WithBand(v bool) Options {
+	return func(c *config) {
+		c.band = v
+	}
+}
+
+// WithHInfo sets a given histogram info style.
+func WithHInfo(v HInfoStyle) Options {
+	return func(c *config) {
+		c.hinfos.Style = v
+	}
+}
