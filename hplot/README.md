@@ -25,7 +25,7 @@ https://godoc.org/go-hep.org/x/hep/hplot
 
 ![hist-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_plot_golden.png)
 
-[embedmd]:# (h1d_example_test.go go /func ExampleH1D/ /\n}/)
+[embedmd]:# (example_h1d_test.go go /func ExampleH1D/ /\n}/)
 ```go
 func ExampleH1D() {
 	const npoints = 10000
@@ -84,7 +84,7 @@ func ExampleH1D() {
 
 ![tiled-plot](https://github.com/go-hep/hep/raw/master/hplot/testdata/tiled_plot_histogram_golden.png)
 
-[embedmd]:# (tiledplot_example_test.go go /func ExampleTiledPlot/ /\n}/)
+[embedmd]:# (example_tiledplot_test.go go /func ExampleTiledPlot/ /\n}/)
 ```go
 func ExampleTiledPlot() {
 	tp := hplot.NewTiledPlot(draw.Tiles{Cols: 3, Rows: 2})
@@ -130,7 +130,7 @@ func ExampleTiledPlot() {
 
 ![tiled-plot-aligned](https://github.com/go-hep/hep/raw/master/hplot/testdata/tiled_plot_aligned_histogram_golden.png)
 
-[embedmd]:# (tiledplot_example_test.go go /func ExampleTiledPlot_align/ /\n}/)
+[embedmd]:# (example_tiledplot_test.go go /func ExampleTiledPlot_align/ /\n}/)
 ```go
 func ExampleTiledPlot_align() {
 	tp := hplot.NewTiledPlot(draw.Tiles{
@@ -199,7 +199,7 @@ https://godoc.org/go-hep.org/x/hep/hplot#example-package--Latexplot
 
 ### 2D histogram
 
-[embedmd]:# (h2d_example_test.go go /func ExampleH2D/ /\n}/)
+[embedmd]:# (example_h2d_test.go go /func ExampleH2D/ /\n}/)
 ```go
 func ExampleH2D() {
 	h := hbook.NewH2D(100, -10, 10, 100, -10, 10)
@@ -240,7 +240,7 @@ func ExampleH2D() {
 
 ### Scatter2D
 
-[embedmd]:# (s2d_example_test.go go /func ExampleS2D/ /\n}/)
+[embedmd]:# (example_s2d_test.go go /func ExampleS2D/ /\n}/)
 ```go
 func ExampleS2D() {
 	const npoints = 1000
@@ -288,7 +288,7 @@ func ExampleS2D() {
 
 ### Vertical lines
 
-[embedmd]:# (line_example_test.go go /func ExampleVLine/ /\n}/)
+[embedmd]:# (example_line_test.go go /func ExampleVLine/ /\n}/)
 ```go
 func ExampleVLine() {
 	p := hplot.New()
@@ -319,7 +319,7 @@ func ExampleVLine() {
 
 ### Horizontal lines
 
-[embedmd]:# (line_example_test.go go /func ExampleHLine/ /\n}/)
+[embedmd]:# (example_line_test.go go /func ExampleHLine/ /\n}/)
 ```go
 func ExampleHLine() {
 	p := hplot.New()
@@ -350,7 +350,7 @@ func ExampleHLine() {
 
 ### Band between lines
 
-[embedmd]:# (band_example_test.go go /func ExampleBand/ /\n}/)
+[embedmd]:# (example_band_test.go go /func ExampleBand/ /\n}/)
 ```go
 func ExampleBand() {
 	const (
