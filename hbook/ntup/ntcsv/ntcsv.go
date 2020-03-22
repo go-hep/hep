@@ -34,6 +34,8 @@
 package ntcsv // import "go-hep.org/x/hep/hbook/ntup/ntcsv"
 
 import (
+	"fmt"
+
 	"go-hep.org/x/hep/csvutil/csvdriver"
 	"go-hep.org/x/hep/hbook/ntup"
 )
@@ -51,7 +53,13 @@ func Open(name string, opts ...Option) (*ntup.Ntuple, error) {
 		return nil, err
 	}
 
-	return ntup.Open(db, "csv")
+	nt, err := ntup.Open(db, "csv")
+	if err != nil {
+		db.Close()
+		return nil, fmt.Errorf("could not open n-tuple: %w", err)
+	}
+
+	return nt, nil
 }
 
 // Option configures the underlying sql.DB connection to the n-tuple.
