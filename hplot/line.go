@@ -65,6 +65,45 @@ func (vline *VertLine) Plot(c draw.Canvas, plt *plot.Plot) {
 	}
 }
 
+// Thumbnail returns the thumbnail for the VertLine,
+// implementing the plot.Thumbnailer interface.
+func (vline *VertLine) Thumbnail(c *draw.Canvas) {
+	if vline.Left != nil {
+		minX := c.Min.X
+		maxX := c.Center().X
+		minY := c.Min.Y
+		maxY := c.Max.Y
+		points := []vg.Point{
+			{X: minX, Y: minY},
+			{X: minX, Y: maxY},
+			{X: maxX, Y: maxY},
+			{X: maxX, Y: minY},
+		}
+		poly := c.ClipPolygonY(points)
+		c.FillPolygon(vline.Left, poly)
+	}
+
+	if vline.Right != nil {
+		minX := c.Center().X
+		maxX := c.Max.X
+		minY := c.Min.Y
+		maxY := c.Max.Y
+		points := []vg.Point{
+			{X: minX, Y: minY},
+			{X: minX, Y: maxY},
+			{X: maxX, Y: maxY},
+			{X: maxX, Y: minY},
+		}
+		poly := c.ClipPolygonY(points)
+		c.FillPolygon(vline.Right, poly)
+	}
+
+	if vline.Line.Width != 0 {
+		x := c.Center().X
+		c.StrokeLine2(vline.Line, x, c.Min.Y, x, c.Max.Y)
+	}
+}
+
 // HorizLine draws a horizontal line at Y and colors the
 // top and bottom portions of the plot with the provided
 // colors.
@@ -117,7 +156,49 @@ func (hline *HorizLine) Plot(c draw.Canvas, plt *plot.Plot) {
 	}
 }
 
+// Thumbnail returns the thumbnail for the VertLine,
+// implementing the plot.Thumbnailer interface.
+func (hline *HorizLine) Thumbnail(c *draw.Canvas) {
+	if hline.Top != nil {
+		minX := c.Min.X
+		maxX := c.Max.X
+		minY := c.Center().Y
+		maxY := c.Max.Y
+		points := []vg.Point{
+			{X: minX, Y: minY},
+			{X: minX, Y: maxY},
+			{X: maxX, Y: maxY},
+			{X: maxX, Y: minY},
+		}
+		poly := c.ClipPolygonY(points)
+		c.FillPolygon(hline.Top, poly)
+	}
+
+	if hline.Bottom != nil {
+		minX := c.Min.X
+		maxX := c.Max.X
+		minY := c.Min.Y
+		maxY := c.Center().Y
+		points := []vg.Point{
+			{X: minX, Y: minY},
+			{X: minX, Y: maxY},
+			{X: maxX, Y: maxY},
+			{X: maxX, Y: minY},
+		}
+		poly := c.ClipPolygonY(points)
+		c.FillPolygon(hline.Bottom, poly)
+	}
+
+	if hline.Line.Width != 0 {
+		y := c.Center().Y
+		c.StrokeLine2(hline.Line, c.Min.X, y, c.Max.X, y)
+	}
+}
+
 var (
 	_ plot.Plotter = (*VertLine)(nil)
 	_ plot.Plotter = (*HorizLine)(nil)
+
+	_ plot.Thumbnailer = (*VertLine)(nil)
+	_ plot.Thumbnailer = (*HorizLine)(nil)
 )
