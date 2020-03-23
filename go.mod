@@ -3,6 +3,7 @@ module go-hep.org/x/hep
 go 1.13
 
 require (
+	github.com/ajstarks/svgo v0.0.0-20200320125537-f189e35d30ca // indirect
 	github.com/apache/arrow/go/arrow v0.0.0-20200228160020-c67ff099122d
 	github.com/astrogo/fitsio v0.1.0
 	github.com/campoy/embedmd v1.0.0
@@ -14,6 +15,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/jcmturner/gokrb5/v8 v8.1.1
+	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	github.com/klauspost/compress v1.10.2
 	github.com/kr/pretty v0.1.0
 	github.com/peterh/liner v1.2.0
@@ -25,9 +27,10 @@ require (
 	go-hep.org/x/exp v0.5.0
 	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d
 	golang.org/x/exp v0.0.0-20200228211341-fcea875c7e85
+	golang.org/x/image v0.0.0-20200119044424-58c23975cae1 // indirect
 	golang.org/x/mobile v0.0.0-20200222142934-3c8601c510d0
 	gonum.org/v1/gonum v0.7.0
-	gonum.org/v1/plot v0.7.0
+	gonum.org/v1/plot v0.7.1-0.20200323092842-6973214b8663
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
 	modernc.org/ql v1.0.1
 )

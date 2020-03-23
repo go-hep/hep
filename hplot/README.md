@@ -80,6 +80,8 @@ func ExampleH1D() {
 }
 ```
 
+### 1D histogram with y-error bars
+
 ![hist-yerrs-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_yerrs_golden.png)
 
 [embedmd]:# (example_h1d_test.go go /func ExampleH1D_withYErrBars/ /\n}/)

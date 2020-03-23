@@ -17,7 +17,6 @@ import (
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 	"gonum.org/v1/plot/vg/vgimg"
-	"gonum.org/v1/plot/vg/vgtex"
 )
 
 // An example of a plot + sub-plot
@@ -243,19 +242,8 @@ func Example_latexplot() {
 		height = width / math.Phi
 	)
 
-	c := vgtex.NewDocument(width, height)
-	p.Draw(draw.New(c))
-	f, err := os.Create("testdata/latex_plot.tex")
+	err := p.Save(width, height, "testdata/latex_plot.tex")
 	if err != nil {
-		log.Fatalf("error: %v\n", err)
-	}
-	defer f.Close()
-	_, err = c.WriteTo(f)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = f.Close()
-	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("could not save LaTeX plot: %+v\n", err)
 	}
 }
