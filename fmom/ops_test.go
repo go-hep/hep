@@ -322,3 +322,71 @@ func TestInvMass(t *testing.T) {
 		}
 	}
 }
+
+func TestBoost(t *testing.T) {
+	var (
+		p1      = NewPxPyPzE(1, 2, 3, 4)
+		boost   = BoostOf(&p1)
+		p1RF    = Boost(&p1, Vec3{-boost.X(), -boost.Y(), -boost.Z()})
+		boostRF = BoostOf(p1RF)
+		zero    Vec3
+	)
+
+	if boostRF != zero {
+		t.Fatalf("invalid boost: got=%v, want=%v", boostRF, zero)
+	}
+
+	if got, want := Boost(&p1, Vec3{}), &p1; !reflect.DeepEqual(got, want) {
+		t.Fatalf("invalid zero-boost: got=%v, want=%v", got, want)
+	}
+}
+
+func TestBoostOf(t *testing.T) {
+	for _, tc := range []struct {
+		p      P4
+		v      Vec3
+		panics string
+	}{
+		{
+			p: newPxPyPzE(NewPxPyPzE(1, 2, 4, 10)),
+			v: Vec3{0.1, 0.2, 0.4},
+		},
+		{
+			p: newPxPyPzE(NewPxPyPzE(1, 2, 4, -10)),
+			v: Vec3{-0.1, -0.2, -0.4},
+		},
+		{
+			p:      newPxPyPzE(NewPxPyPzE(1, 2, 3, 1)),
+			v:      Vec3{},
+			panics: "fmom: non-timelike four-vector",
+		},
+		{
+			p:      newPxPyPzE(NewPxPyPzE(1, 2, 3, 0)),
+			v:      Vec3{},
+			panics: "fmom: zero-energy four-vector",
+		},
+		{
+			p: newPxPyPzE(NewPxPyPzE(0, 0, 0, 0)),
+			v: Vec3{},
+		},
+	} {
+		t.Run("", func(t *testing.T) {
+			if tc.panics != "" {
+				defer func() {
+					e := recover()
+					if e == nil {
+						t.Fatalf("expected a panic: got=%v, want=%v", e, tc.panics)
+					}
+					if got, want := e.(string), tc.panics; got != want {
+						t.Fatalf("invalid panic message:\ngot= %v\nwant=%v", got, want)
+					}
+				}()
+			}
+
+			got := BoostOf(tc.p)
+			if got, want := got, tc.v; got != want {
+				t.Fatalf("invalid boost vector:\ngot= %v\nwant=%v", got, want)
+			}
+		})
+	}
+}
