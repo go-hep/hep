@@ -101,16 +101,16 @@ func (tck Ticks) Ticks(min, max float64) []plot.Tick {
 	// creating big ticks
 	for x := xoffset; x <= max; x += xstep {
 		label := fmt.Sprintf(xfmt, x)
-		ticks = append(ticks, plot.Tick{x, label})
+		ticks = append(ticks, plot.Tick{Value: x, Label: label})
 	}
 
 	// 5 small ticks for each big tick
 	xsub := xstep / 5
 	for x := xoffset - xsub; x >= min; x -= xsub {
-		ticks = append(ticks, plot.Tick{x, ""})
+		ticks = append(ticks, plot.Tick{Value: x, Label: ""})
 	}
 	for x := xoffset + xsub; x <= max; x += xsub {
-		ticks = append(ticks, plot.Tick{x, ""})
+		ticks = append(ticks, plot.Tick{Value: x, Label: ""})
 	}
 
 	return ticks
