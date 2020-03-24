@@ -5,6 +5,7 @@
 package hplot
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 
@@ -63,4 +64,54 @@ type NoTicks struct{}
 // Ticks returns Ticks in a specified range
 func (NoTicks) Ticks(min, max float64) []plot.Tick {
 	return nil
+}
+
+// Ticks implements plot.Ticker.
+// Ticks allows to specify the maximum number of major ticks to display.
+// The zero value of Ticks display a maximum number of 3 major ticks.
+type Ticks struct {
+	N int // maximum number of major ticks to display.
+}
+
+func (tck Ticks) Ticks(min, max float64) []plot.Tick {
+	if tck.N == 0 {
+		tck.N = 3 // same default than plot.Ticks
+	}
+
+	var ticks []plot.Tick
+
+	// computing order of range (position of least significant digit)
+	xorder := int(math.Log10(max-min)+0.5) - 1
+
+	xfmt := "%.0f"
+	if xorder < 1 {
+		xfmt = fmt.Sprintf("%%.%df", -xorder)
+	}
+
+	// stepping is a power of 10 with integer exponent (xorder)
+	xstep := math.Pow10(xorder)
+	// tuning step
+	for (max-min)/xstep > float64(tck.N) {
+		xstep *= 5
+	}
+
+	// first big tick is rounded to the correct significant digit
+	xoffset := float64(int(min/xstep)) * xstep
+
+	// creating big ticks
+	for x := xoffset; x <= max; x += xstep {
+		label := fmt.Sprintf(xfmt, x)
+		ticks = append(ticks, plot.Tick{x, label})
+	}
+
+	// 5 small ticks for each big tick
+	xsub := xstep / 5
+	for x := xoffset - xsub; x >= min; x -= xsub {
+		ticks = append(ticks, plot.Tick{x, ""})
+	}
+	for x := xoffset + xsub; x <= max; x += xsub {
+		ticks = append(ticks, plot.Tick{x, ""})
+	}
+
+	return ticks
 }
