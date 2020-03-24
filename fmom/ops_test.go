@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/spatial/r3"
 )
 
 func newPxPyPzE(p4 PxPyPzE) P4 {
@@ -327,16 +328,16 @@ func TestBoost(t *testing.T) {
 	var (
 		p1      = NewPxPyPzE(1, 2, 3, 4)
 		boost   = BoostOf(&p1)
-		p1RF    = Boost(&p1, Vec3{-boost.X(), -boost.Y(), -boost.Z()})
+		p1RF    = Boost(&p1, r3.Vec{X: -boost.X, Y: -boost.Y, Z: -boost.Z})
 		boostRF = BoostOf(p1RF)
-		zero    Vec3
+		zero    r3.Vec
 	)
 
 	if boostRF != zero {
 		t.Fatalf("invalid boost: got=%v, want=%v", boostRF, zero)
 	}
 
-	if got, want := Boost(&p1, Vec3{}), &p1; !reflect.DeepEqual(got, want) {
+	if got, want := Boost(&p1, r3.Vec{}), &p1; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid zero-boost: got=%v, want=%v", got, want)
 	}
 }
@@ -344,30 +345,30 @@ func TestBoost(t *testing.T) {
 func TestBoostOf(t *testing.T) {
 	for _, tc := range []struct {
 		p      P4
-		v      Vec3
+		v      r3.Vec
 		panics string
 	}{
 		{
 			p: newPxPyPzE(NewPxPyPzE(1, 2, 4, 10)),
-			v: Vec3{0.1, 0.2, 0.4},
+			v: r3.Vec{X: 0.1, Y: 0.2, Z: 0.4},
 		},
 		{
 			p: newPxPyPzE(NewPxPyPzE(1, 2, 4, -10)),
-			v: Vec3{-0.1, -0.2, -0.4},
+			v: r3.Vec{X: -0.1, Y: -0.2, Z: -0.4},
 		},
 		{
 			p:      newPxPyPzE(NewPxPyPzE(1, 2, 3, 1)),
-			v:      Vec3{},
+			v:      r3.Vec{},
 			panics: "fmom: non-timelike four-vector",
 		},
 		{
 			p:      newPxPyPzE(NewPxPyPzE(1, 2, 3, 0)),
-			v:      Vec3{},
+			v:      r3.Vec{},
 			panics: "fmom: zero-energy four-vector",
 		},
 		{
 			p: newPxPyPzE(NewPxPyPzE(0, 0, 0, 0)),
-			v: Vec3{},
+			v: r3.Vec{},
 		},
 	} {
 		t.Run("", func(t *testing.T) {

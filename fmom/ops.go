@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"math"
 
-	"gonum.org/v1/gonum/mat"
+	"gonum.org/v1/gonum/spatial/r3"
 )
 
 // Equal returns true if p1==p2
@@ -172,11 +172,11 @@ func InvMass(p1, p2 P4) float64 {
 // BoostOf returns the 3d boost vector of the provided four-vector p.
 // It panics if p has zero energy and a non-zero |p|^2.
 // It panics if p isn't a timelike four-vector.
-func BoostOf(p P4) Vec3 {
+func BoostOf(p P4) r3.Vec {
 	e := p.E()
 	if e == 0 {
 		if p.P2() == 0 {
-			return Vec3{}
+			return r3.Vec{}
 		}
 		panic("fmom: zero-energy four-vector")
 	}
@@ -185,43 +185,46 @@ func BoostOf(p P4) Vec3 {
 	}
 
 	inv := 1 / e
-	return Vec3{inv * p.Px(), inv * p.Py(), inv * p.Pz()}
+	return r3.Vec{X: inv * p.Px(), Y: inv * p.Py(), Z: inv * p.Pz()}
 }
 
 // Boost returns a copy of the provided four-vector
 // boosted by the provided three-vector.
-func Boost(p4 P4, boost Vec3) P4 {
-	o := p4.Clone()
-	if boost == (Vec3{}) {
+func Boost(p P4, vec r3.Vec) P4 {
+	o := p.Clone()
+	if vec == (r3.Vec{}) {
 		return o
 	}
 
 	var (
-		px = p4.Px()
-		py = p4.Py()
-		pz = p4.Pz()
-		ee = p4.E()
+		px = p.Px()
+		py = p.Py()
+		pz = p.Pz()
+		ee = p.E()
 
-		b  = mat.NewVecDense(3, boost[:])
-		b2 = mat.Dot(b, b)
+		p3 = r3.Vec{X: px, Y: py, Z: pz}
+		v2 = vecDot(vec, vec)
+		bp = vecDot(vec, p3)
 
-		p3 = mat.NewVecDense(3, []float64{px, py, pz})
-		bp = mat.Dot(b, p3)
+		gamma = 1 / math.Sqrt(1-v2)
+		beta  = (gamma - 1) / v2
 
-		ga = 1 / math.Sqrt(1-b2)
-		gg = (ga - 1) / b2
-
-		alpha = gg*bp + ga*ee
+		alpha = beta*bp + gamma*ee
 	)
 
 	pp := NewPxPyPzE(
-		px+alpha*boost.X(),
-		py+alpha*boost.Y(),
-		pz+alpha*boost.Z(),
-		ga*(ee+bp),
+		px+alpha*vec.X,
+		py+alpha*vec.Y,
+		pz+alpha*vec.Z,
+		gamma*(ee+bp),
 	)
 
 	o.Set(&pp)
 
 	return o
+}
+
+func vecDot(u, v r3.Vec) float64 {
+	// FIXME(sbinet): use r3.Vec.Dot when available
+	return u.X*v.X + u.Y*v.Y + u.Z*v.Z
 }
