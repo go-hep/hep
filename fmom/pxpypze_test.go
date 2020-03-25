@@ -14,56 +14,56 @@ import (
 func TestPxPyPzE(t *testing.T) {
 	{
 		var p4 fmom.PxPyPzE
-		if p4.Px() != 0 {
-			t.Fatalf("expected p4.Px=%v (got=%v)", 0, p4.Px())
+		if got, want := p4.Px(), 0.0; got != want {
+			t.Fatalf("p4.Px=%v, want=%v", got, want)
 		}
-		if p4.Py() != 0 {
-			t.Fatalf("expected p4.Py=%v (got=%v)", 0, p4.Py())
+		if got, want := p4.Py(), 0.0; got != want {
+			t.Fatalf("p4.Py=%v, want=%v", got, want)
 		}
-		if p4.Pz() != 0 {
-			t.Fatalf("expected p4.Pz=%v (got=%v)", 0, p4.Pz())
+		if got, want := p4.Pz(), 0.0; got != want {
+			t.Fatalf("p4.Pz=%v, want=%v", got, want)
 		}
-		if p4.E() != 0 {
-			t.Fatalf("expected p4.E=%v (got=%v)", 0, p4.E())
+		if got, want := p4.E(), 0.0; got != want {
+			t.Fatalf("p4.E=%v, want=%v", got, want)
 		}
 	}
 
 	{
 		p4 := fmom.NewPxPyPzE(10, 11, 12, 20)
-		if p4.Px() != 10 {
-			t.Fatalf("expected p4.Px=%v (got=%v)", 10, p4.Px())
+		if got, want := p4.Px(), 10.0; got != want {
+			t.Fatalf("p4.Px=%v, want=%v", got, want)
 		}
-		if p4.Py() != 11 {
-			t.Fatalf("expected p4.Py=%v (got=%v)", 11, p4.Py())
+		if got, want := p4.Py(), 11.0; got != want {
+			t.Fatalf("p4.Py=%v, want=%v", got, want)
 		}
-		if p4.Pz() != 12 {
-			t.Fatalf("expected p4.Pz=%v (got=%v)", 12, p4.Pz())
+		if got, want := p4.Pz(), 12.0; got != want {
+			t.Fatalf("p4.Pz=%v, want=%v", got, want)
 		}
-		if p4.E() != 20 {
-			t.Fatalf("expected p4.E=%v (got=%v)", 20, p4.E())
+		if got, want := p4.E(), 20.0; got != want {
+			t.Fatalf("p4.E=%v, want=%v", got, want)
 		}
-		if p4.X() != 10 {
-			t.Fatalf("expected p4.X=%v (got=%v)", 10, p4.X())
+		if got, want := p4.X(), 10.0; got != want {
+			t.Fatalf("p4.X=%v, want=%v", got, want)
 		}
-		if p4.Y() != 11 {
-			t.Fatalf("expected p4.Y=%v (got=%v)", 11, p4.Y())
+		if got, want := p4.Y(), 11.0; got != want {
+			t.Fatalf("p4.Y=%v, want=%v", got, want)
 		}
-		if p4.Z() != 12 {
-			t.Fatalf("expected p4.Z=%v (got=%v)", 12, p4.Z())
+		if got, want := p4.Z(), 12.0; got != want {
+			t.Fatalf("p4.Z=%v, want=%v", got, want)
 		}
-		if p4.T() != 20 {
-			t.Fatalf("expected p4.T=%v (got=%v)", 20, p4.T())
+		if got, want := p4.T(), 20.0; got != want {
+			t.Fatalf("p4.T=%v, want=%v", got, want)
 		}
 
 		p1 := fmom.NewPxPyPzE(10, 11, 12, 20)
 		if p1 != p4 {
-			t.Fatalf("expected p4=%v (got=%v)", p4, p1)
+			t.Fatalf("p4=%v, want=%v", p1, p4)
 		}
 
 		var p2 fmom.PxPyPzE
 		p2 = p1
 		if p1 != p2 {
-			t.Fatalf("expected p4=%v (got=%v)", p2, p1)
+			t.Fatalf("p4=%v, want=%v", p1, p2)
 		}
 	}
 
@@ -72,7 +72,7 @@ func TestPxPyPzE(t *testing.T) {
 		var p2 fmom.PxPyPzE
 		p2.Set(&p1)
 		if p1 != p2 {
-			t.Fatalf("expected p4=%v (got=%v)", p1, p2)
+			t.Fatalf("p4=%v want=%v", p2, p1)
 		}
 	}
 

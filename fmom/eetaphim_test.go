@@ -14,44 +14,44 @@ import (
 func TestEEtaPhiM(t *testing.T) {
 	{
 		var p4 fmom.EEtaPhiM
-		if p4.E() != 0 {
-			t.Fatalf("expected p4.E=%v (got=%v)", 0, p4.E())
+		if got, want := p4.E(), 0.0; got != want {
+			t.Fatalf("p4.E=%v, want=%v", got, want)
 		}
-		if p4.Eta() != 0 {
-			t.Fatalf("expected p4.Eta=%v (got=%v)", 0, p4.Eta())
+		if got, want := p4.Eta(), 0.0; got != want {
+			t.Fatalf("p4.Eta=%v, want=%v", got, want)
 		}
-		if p4.Phi() != 0 {
-			t.Fatalf("expected p4.Phi=%v (got=%v)", 0, p4.Phi())
+		if got, want := p4.Phi(), 0.0; got != want {
+			t.Fatalf("p4.Phi=%v, want=%v", got, want)
 		}
-		if p4.M() != 0 {
-			t.Fatalf("expected p4.M=%v (got=%v)", 0, p4.M())
+		if got, want := p4.M(), 0.0; got != want {
+			t.Fatalf("p4.M=%v, want=%v", got, want)
 		}
 	}
 
 	{
 		p4 := fmom.NewEEtaPhiM(10, 11, 12, 20)
-		if p4.E() != 10 {
-			t.Fatalf("expected p4.E=%v (got=%v)", 10, p4.E())
+		if got, want := p4.E(), 10.0; got != want {
+			t.Fatalf("p4.E=%v, want=%v", got, want)
 		}
-		if p4.Eta() != 11 {
-			t.Fatalf("expected p4.Eta=%v (got=%v)", 11, p4.Eta())
+		if got, want := p4.Eta(), 11.0; got != want {
+			t.Fatalf("p4.Eta=%v, want=%v", got, want)
 		}
-		if p4.Phi() != 12 {
-			t.Fatalf("expected p4.Phi=%v (got=%v)", 12, p4.Phi())
+		if got, want := p4.Phi(), 12.0; got != want {
+			t.Fatalf("p4.Phi=%v, want=%v", got, want)
 		}
-		if p4.M() != 20 {
-			t.Fatalf("expected p4.M=%v (got=%v)", 20, p4.M())
+		if got, want := p4.M(), 20.0; got != want {
+			t.Fatalf("p4.M=%v, want=%v", got, want)
 		}
 
 		p1 := fmom.NewEEtaPhiM(10, 11, 12, 20)
 		if p1 != p4 {
-			t.Fatalf("expected p4=%v (got=%v)", p4, p1)
+			t.Fatalf("p4=%v, want=%v", p1, p4)
 		}
 
 		var p2 fmom.EEtaPhiM
 		p2 = p1
 		if p1 != p2 {
-			t.Fatalf("expected p4=%v (got=%v)", p2, p1)
+			t.Fatalf("p4=%v, want=%v", p1, p2)
 		}
 	}
 
@@ -60,7 +60,7 @@ func TestEEtaPhiM(t *testing.T) {
 		var p2 fmom.EEtaPhiM
 		p2.Set(&p1)
 		if p1 != p2 {
-			t.Fatalf("expected p4=%v (got=%v)", p1, p2)
+			t.Fatalf("p4=%v want=%v", p2, p1)
 		}
 	}
 

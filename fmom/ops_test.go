@@ -45,281 +45,280 @@ func deepEqual(p1, p2 P4) bool {
 }
 
 func TestAdd(t *testing.T) {
-	for _, table := range []struct {
-		p1  P4
-		p2  P4
-		exp P4
+	for _, tc := range []struct {
+		p1   P4
+		p2   P4
+		want P4
 	}{
 		{
-			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newPxPyPzE(NewPxPyPzE(20, 20, 20, 40)),
+			p1:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newPxPyPzE(NewPxPyPzE(20, 20, 20, 40)),
 		},
 		{
-			p1:  newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newEEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+			p1:   newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newEEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
 		},
 		{
-			p1:  newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newEtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+			p1:   newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newEtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
 		},
 		{
-			p1:  newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newPtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+			p1:   newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newPtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
 		},
 		{
-			p1:  newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newIPtCotThPhiM(NewPxPyPzE(20, 20, 20, 40)),
+			p1:   newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newIPtCotThPhiM(NewPxPyPzE(20, 20, 20, 40)),
 		},
 	} {
-		p1 := table.p1.Clone()
-		p2 := table.p2.Clone()
+		p1 := tc.p1.Clone()
+		p2 := tc.p2.Clone()
 
-		sum := Add(p1, p2)
+		got := Add(p1, p2)
 
-		if !deepEqual(sum, table.exp) {
-			t.Fatalf("exp: %#v\ngot: %#v", table.exp, sum)
+		if !deepEqual(got, tc.want) {
+			t.Fatalf("got= %#v\nwant=%#v", got, tc.want)
 		}
-		if !reflect.DeepEqual(p1, table.p1) {
-			t.Fatalf("add modified p1:\np1=%#v (ref)\np1=%#v (new)", table.p1, p1)
+		if !reflect.DeepEqual(p1, tc.p1) {
+			t.Fatalf("add modified p1:\ngot= %#v\nwant=%#v", p1, tc.p1)
 		}
-		if !reflect.DeepEqual(p2, table.p2) {
-			t.Fatalf("add modified p2:\np1=%#v (ref)\np2=%#v (new)", table.p2, p2)
+		if !reflect.DeepEqual(p2, tc.p2) {
+			t.Fatalf("add modified p2:\ngot= %#v\nwant=%#v", p2, tc.p2)
 		}
-
 	}
 }
 
 func TestIAdd(t *testing.T) {
-	for _, table := range []struct {
-		p1  P4
-		p2  P4
-		exp P4
+	for _, tc := range []struct {
+		p1   P4
+		p2   P4
+		want P4
 	}{
 		{
-			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newPxPyPzE(NewPxPyPzE(20, 20, 20, 40)),
+			p1:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newPxPyPzE(NewPxPyPzE(20, 20, 20, 40)),
 		},
 		{
-			p1:  newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newEEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+			p1:   newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newEEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
 		},
 		{
-			p1:  newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newEtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+			p1:   newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newEtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
 		},
 		{
-			p1:  newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newPtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+			p1:   newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newPtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
 		},
 		{
-			p1:  newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newIPtCotThPhiM(NewPxPyPzE(20, 20, 20, 40)),
+			p1:   newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newIPtCotThPhiM(NewPxPyPzE(20, 20, 20, 40)),
 		},
 	} {
-		p1 := table.p1.Clone()
-		p2 := table.p2.Clone()
+		p1 := tc.p1.Clone()
+		p2 := tc.p2.Clone()
 
-		sum := IAdd(p1, p2)
+		got := IAdd(p1, p2)
 
-		if !deepEqual(sum, table.exp) {
-			t.Fatalf("exp: %#v\ngot: %#v", table.exp, sum)
+		if !deepEqual(got, tc.want) {
+			t.Fatalf("got= %#v\nwant=%#v", got, tc.want)
 		}
 
-		if !reflect.DeepEqual(sum, p1) {
-			t.Fatalf("fmom.IAdd did not modify p1 in-place:\nexp: %#v\ngot: %#v", sum, p1)
+		if !reflect.DeepEqual(got, p1) {
+			t.Fatalf("fmom.IAdd did not modify p1 in-place:\ngot= %#v\nwant=%#v", got, p1)
 		}
-		if !reflect.DeepEqual(p2, table.p2) {
-			t.Fatalf("fmom.IAdd modified p2:\np1=%#v (ref)\np2=%#v (new)", table.p2, p2)
+		if !reflect.DeepEqual(p2, tc.p2) {
+			t.Fatalf("fmom.IAdd modified p2:\ngot= %#v\nwant=%#v", p2, tc.p2)
 		}
 	}
 }
 
 func TestEqual(t *testing.T) {
-	for _, table := range []struct {
-		p1  P4
-		p2  P4
-		exp bool
+	for _, tc := range []struct {
+		p1   P4
+		p2   P4
+		want bool
 	}{
 		{
-			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: true,
+			p1:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: true,
 		},
 		{
-			p1:  newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: true,
+			p1:   newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: true,
 		},
 		{
-			p1:  newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: true,
+			p1:   newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: true,
 		},
 		{
-			p1:  newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: true,
+			p1:   newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: true,
 		},
 		{
-			p1:  newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: true,
+			p1:   newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: true,
 		},
 
 		{
-			p1:  newPxPyPzE(NewPxPyPzE(10+1e-14, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: false,
+			p1:   newPxPyPzE(NewPxPyPzE(10+1e-14, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: false,
 		},
 		{
-			p1:  newPxPyPzE(NewPxPyPzE(10, 10+1e-14, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: false,
+			p1:   newPxPyPzE(NewPxPyPzE(10, 10+1e-14, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: false,
 		},
 		{
-			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10+1e-14, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: false,
+			p1:   newPxPyPzE(NewPxPyPzE(10, 10, 10+1e-14, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: false,
 		},
 		{
-			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20+1e-14)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: false,
+			p1:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20+1e-14)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: false,
 		},
 	} {
 		{
-			eq := deepEqual(table.p1, table.p2)
-			if eq != table.exp {
-				t.Fatalf("exp: %#v\ngot: %#v\np1=%#v\np2=%#v\n", table.exp, eq, table.p1, table.p2)
+			got := deepEqual(tc.p1, tc.p2)
+			if got != tc.want {
+				t.Fatalf("got= %#v\nwant=%#v\np1=%#v\np2=%#v\n", got, tc.want, tc.p1, tc.p2)
 			}
 		}
-		eq := Equal(table.p1, table.p2)
-		if eq != table.exp {
-			t.Fatalf("exp: %#v\ngot: %#v\np1=%#v\np2=%#v\n", table.exp, eq, table.p1, table.p2)
+		got := Equal(tc.p1, tc.p2)
+		if got != tc.want {
+			t.Fatalf("got= %#v\nwant=%#v\np1=%#v\np2=%#v\n", got, tc.want, tc.p1, tc.p2)
 		}
 	}
 }
 
 func TestScale(t *testing.T) {
-	for _, table := range []struct {
-		p   P4
-		a   float64
-		exp P4
+	for _, tc := range []struct {
+		p    P4
+		a    float64
+		want P4
 	}{
 		{
-			p:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			a:   1,
-			exp: newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p:    newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			a:    1,
+			want: newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
 		},
 
 		{
-			p:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			a:   0,
-			exp: newPxPyPzE(NewPxPyPzE(0, 0, 0, 0)),
+			p:    newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			a:    0,
+			want: newPxPyPzE(NewPxPyPzE(0, 0, 0, 0)),
 		},
 
 		{
-			p:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			a:   -1,
-			exp: newPxPyPzE(NewPxPyPzE(-10, -10, -10, -20)),
+			p:    newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			a:    -1,
+			want: newPxPyPzE(NewPxPyPzE(-10, -10, -10, -20)),
 		},
 
 		{
-			p:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			a:   2,
-			exp: newPxPyPzE(NewPxPyPzE(20, 20, 20, 40)),
+			p:    newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			a:    2,
+			want: newPxPyPzE(NewPxPyPzE(20, 20, 20, 40)),
 		},
 
 		{
-			p:   newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			a:   2,
-			exp: newEEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+			p:    newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			a:    2,
+			want: newEEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
 		},
 		{
-			p:   newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			a:   2,
-			exp: newEtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+			p:    newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			a:    2,
+			want: newEtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
 		},
 		{
-			p:   newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			a:   2,
-			exp: newPtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
+			p:    newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			a:    2,
+			want: newPtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)),
 		},
 		{
-			p:   newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			a:   2,
-			exp: newIPtCotThPhiM(NewPxPyPzE(20, 20, 20, 40)),
+			p:    newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			a:    2,
+			want: newIPtCotThPhiM(NewPxPyPzE(20, 20, 20, 40)),
 		},
 	} {
-		p := table.p.Clone()
+		p := tc.p.Clone()
 
-		o := Scale(table.a, p)
+		got := Scale(tc.a, p)
 
-		if !deepEqual(o, table.exp) {
-			t.Fatalf("exp: %#v\ngot: %#v", table.exp, o)
+		if !deepEqual(got, tc.want) {
+			t.Fatalf("got= %#v\nwant=%#v", got, tc.want)
 		}
-		if !reflect.DeepEqual(p, table.p) {
-			t.Fatalf("add modified p:\np=%#v (ref)\np=%#v (new)", table.p, p)
+		if !reflect.DeepEqual(p, tc.p) {
+			t.Fatalf("add modified p:\np=%#v (ref)\np=%#v (new)", tc.p, p)
 		}
 	}
 }
 
 func TestInvMass(t *testing.T) {
-	for _, table := range []struct {
-		p1  P4
-		p2  P4
-		exp float64
+	for _, tc := range []struct {
+		p1   P4
+		p2   P4
+		want float64
 	}{
 		{
-			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newPxPyPzE(NewPxPyPzE(20, 20, 20, 40)).M(),
+			p1:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newPxPyPzE(NewPxPyPzE(20, 20, 20, 40)).M(),
 		},
 		{
-			p1:  newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newEEtaPhiM(NewPxPyPzE(20, 20, 20, 40)).M(),
+			p1:   newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newEEtaPhiM(NewPxPyPzE(20, 20, 20, 40)).M(),
 		},
 		{
-			p1:  newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newEtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)).M(),
+			p1:   newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newEtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)).M(),
 		},
 		{
-			p1:  newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newPtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)).M(),
+			p1:   newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newPtEtaPhiM(NewPxPyPzE(20, 20, 20, 40)).M(),
 		},
 		{
-			p1:  newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
-			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
-			exp: newIPtCotThPhiM(NewPxPyPzE(20, 20, 20, 40)).M(),
+			p1:   newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			p2:   newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			want: newIPtCotThPhiM(NewPxPyPzE(20, 20, 20, 40)).M(),
 		},
 	} {
-		p1 := table.p1.Clone()
-		p2 := table.p2.Clone()
+		p1 := tc.p1.Clone()
+		p2 := tc.p2.Clone()
 
-		mass := InvMass(p1, p2)
+		got := InvMass(p1, p2)
 
-		if !floats.EqualWithinULP(mass, table.exp, 2) {
-			t.Fatalf("exp: %#v\ngot: %#v", table.exp, mass)
+		if !floats.EqualWithinULP(got, tc.want, 2) {
+			t.Fatalf("got= %#v\nwant=%#v", got, tc.want)
 		}
 
-		if !reflect.DeepEqual(table.p1, p1) {
-			t.Fatalf("fmom.InvMass modified p1 in-place:\ngot: %#v\nwant:%#v", p1, table.p1)
+		if !reflect.DeepEqual(tc.p1, p1) {
+			t.Fatalf("fmom.InvMass modified p1 in-place:\ngot: %#v\nwant:%#v", p1, tc.p1)
 		}
-		if !reflect.DeepEqual(table.p2, p2) {
-			t.Fatalf("fmom.InvMass modified p2 in-place:\ngot: %#v\nwant:%#v", p2, table.p2)
+		if !reflect.DeepEqual(tc.p2, p2) {
+			t.Fatalf("fmom.InvMass modified p2 in-place:\ngot: %#v\nwant:%#v", p2, tc.p2)
 		}
 	}
 }
