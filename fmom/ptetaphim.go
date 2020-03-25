@@ -8,10 +8,12 @@ import (
 	"math"
 )
 
-type PtEtaPhiM [4]float64
+type PtEtaPhiM struct {
+	P4 Vec4
+}
 
 func NewPtEtaPhiM(pt, eta, phi, m float64) PtEtaPhiM {
-	return PtEtaPhiM([4]float64{pt, eta, phi, m})
+	return PtEtaPhiM{P4: Vec4{X: pt, Y: eta, Z: phi, T: m}}
 }
 
 func (p4 *PtEtaPhiM) Clone() P4 {
@@ -20,19 +22,19 @@ func (p4 *PtEtaPhiM) Clone() P4 {
 }
 
 func (p4 *PtEtaPhiM) Pt() float64 {
-	return p4[0]
+	return p4.P4.X
 }
 
 func (p4 *PtEtaPhiM) Eta() float64 {
-	return p4[1]
+	return p4.P4.Y
 }
 
 func (p4 *PtEtaPhiM) Phi() float64 {
-	return p4[2]
+	return p4.P4.Z
 }
 
 func (p4 *PtEtaPhiM) M() float64 {
-	return p4[3]
+	return p4.P4.T
 }
 
 func (p4 *PtEtaPhiM) E() float64 {
@@ -150,8 +152,8 @@ func (p4 *PtEtaPhiM) Pz() float64 {
 }
 
 func (p4 *PtEtaPhiM) Set(p P4) {
-	p4[0] = p.Pt()
-	p4[1] = p.Eta()
-	p4[2] = p.Phi()
-	p4[3] = p.M()
+	p4.P4.X = p.Pt()
+	p4.P4.Y = p.Eta()
+	p4.P4.Z = p.Phi()
+	p4.P4.T = p.M()
 }
