@@ -221,6 +221,108 @@ func TestDeltaPhi(t *testing.T) {
 	}
 }
 
+func TestDot(t *testing.T) {
+	for _, table := range []struct {
+		p1  P4
+		p2  P4
+		exp float64
+	}{
+		// pxpypze
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			exp: 100,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newPxPyPzE(NewPxPyPzE(-10, -10, -10, +20)),
+			exp: 700,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newPxPyPzE(NewPxPyPzE(+10, -10, +10, +20)),
+			exp: 300,
+		},
+
+		// eetaphim
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newEEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			exp: 100,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newEEtaPhiM(NewPxPyPzE(-10, -10, -10, +20)),
+			exp: 700,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newEEtaPhiM(NewPxPyPzE(+10, -10, +10, +20)),
+			exp: 300,
+		},
+
+		// etetaphim
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newEtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			exp: 100,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newEtEtaPhiM(NewPxPyPzE(-10, -10, -10, +20)),
+			exp: 700,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newEtEtaPhiM(NewPxPyPzE(+10, -10, +10, +20)),
+			exp: 300,
+		},
+
+		// ptetaphim
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newPtEtaPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			exp: 100,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newPtEtaPhiM(NewPxPyPzE(-10, -10, -10, +20)),
+			exp: 700,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newPtEtaPhiM(NewPxPyPzE(+10, -10, +10, +20)),
+			exp: 300,
+		},
+
+		// iptcotthphim
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(10, 10, 10, 20)),
+			p2:  newIPtCotThPhiM(NewPxPyPzE(10, 10, 10, 20)),
+			exp: 100,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newIPtCotThPhiM(NewPxPyPzE(-10, -10, -10, +20)),
+			exp: 700,
+		},
+		{
+			p1:  newPxPyPzE(NewPxPyPzE(+10, +10, +10, +20)),
+			p2:  newIPtCotThPhiM(NewPxPyPzE(+10, -10, +10, +20)),
+			exp: 300,
+		},
+	} {
+		dot := Dot(table.p1, table.p2)
+		if dot-table.exp > epsilon_test {
+			t.Fatalf("Dot error\np1=%#v\np2=%#v\ngot= %+e\nwant=%+e\n",
+				table.p1,
+				table.p2,
+				dot,
+				table.exp,
+			)
+		}
+	}
+}
 func TestCosTheta(t *testing.T) {
 	for _, table := range []struct {
 		p1  P4

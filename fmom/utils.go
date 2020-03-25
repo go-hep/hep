@@ -34,6 +34,11 @@ func DeltaR(p1, p2 P4) float64 {
 	return math.Sqrt(deta*deta + dphi*dphi)
 }
 
+// Dot returns the dot product p1·p2.
+func Dot(p1, p2 P4) float64 {
+	return p1.E()*p2.E() - p1.Px()*p2.Px() - p1.Py()*p2.Py() - p1.Pz()*p2.Pz()
+}
+
 // CosTheta returns the cosine of the angle between the momentum of two 4-vectors.
 func CosTheta(p1, p2 P4) float64 {
 	mag1 := p1.P()
