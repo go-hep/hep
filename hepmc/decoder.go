@@ -503,22 +503,22 @@ func (dec *Decoder) decodeVertex(evt *Event, vtx *Vertex, pidxToEndVtx map[int]i
 		return err
 	}
 
-	vtx.Position[0], err = tokens.float64()
+	vtx.Position.P4.X, err = tokens.float64()
 	if err != nil {
 		return err
 	}
 
-	vtx.Position[1], err = tokens.float64()
+	vtx.Position.P4.Y, err = tokens.float64()
 	if err != nil {
 		return err
 	}
 
-	vtx.Position[2], err = tokens.float64()
+	vtx.Position.P4.Z, err = tokens.float64()
 	if err != nil {
 		return err
 	}
 
-	vtx.Position[3], err = tokens.float64()
+	vtx.Position.P4.T, err = tokens.float64()
 	if err != nil {
 		return err
 	}
@@ -602,22 +602,22 @@ func (dec *Decoder) decodeParticle(evt *Event, p *Particle, pidxToEndVtx map[int
 		return err
 	}
 
-	p.Momentum[0], err = tokens.float64()
+	p.Momentum.P4.X, err = tokens.float64()
 	if err != nil {
 		return err
 	}
 
-	p.Momentum[1], err = tokens.float64()
+	p.Momentum.P4.Y, err = tokens.float64()
 	if err != nil {
 		return err
 	}
 
-	p.Momentum[2], err = tokens.float64()
+	p.Momentum.P4.Z, err = tokens.float64()
 	if err != nil {
 		return err
 	}
 
-	p.Momentum[3], err = tokens.float64()
+	p.Momentum.P4.T, err = tokens.float64()
 	if err != nil {
 		return err
 	}

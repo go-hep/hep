@@ -282,7 +282,7 @@ func ExampleEvent_buildFromScratch() {
 	}
 
 	err = v1.AddParticleIn(&hepmc.Particle{
-		Momentum: fmom.PxPyPzE{0, 0, 7000, 7000},
+		Momentum: fmom.NewPxPyPzE(0, 0, 7000, 7000),
 		PdgID:    2212,
 		Status:   3,
 	})
@@ -297,7 +297,7 @@ func ExampleEvent_buildFromScratch() {
 	}
 
 	err = v2.AddParticleIn(&hepmc.Particle{
-		Momentum: fmom.PxPyPzE{0, 0, -7000, 7000},
+		Momentum: fmom.NewPxPyPzE(0, 0, -7000, 7000),
 		PdgID:    2212,
 		Status:   3,
 		//Barcode:  2,
@@ -308,7 +308,7 @@ func ExampleEvent_buildFromScratch() {
 
 	// create the outgoing particles of v1 and v2
 	p3 := &hepmc.Particle{
-		Momentum: fmom.PxPyPzE{.750, -1.569, 32.191, 32.238},
+		Momentum: fmom.NewPxPyPzE(.750, -1.569, 32.191, 32.238),
 		PdgID:    1,
 		Status:   3,
 		// Barcode: 3,
@@ -319,7 +319,7 @@ func ExampleEvent_buildFromScratch() {
 	}
 
 	p4 := &hepmc.Particle{
-		Momentum: fmom.PxPyPzE{-3.047, -19., -54.629, 57.920},
+		Momentum: fmom.NewPxPyPzE(-3.047, -19., -54.629, 57.920),
 		PdgID:    -2,
 		Status:   3,
 		// Barcode: 4,
@@ -347,7 +347,7 @@ func ExampleEvent_buildFromScratch() {
 	}
 
 	err = v3.AddParticleOut(&hepmc.Particle{
-		Momentum: fmom.PxPyPzE{-3.813, 0.113, -1.833, 4.233},
+		Momentum: fmom.NewPxPyPzE(-3.813, 0.113, -1.833, 4.233),
 		PdgID:    22,
 		Status:   1,
 	})
@@ -356,7 +356,7 @@ func ExampleEvent_buildFromScratch() {
 	}
 
 	p5 := &hepmc.Particle{
-		Momentum: fmom.PxPyPzE{1.517, -20.68, -20.605, 85.925},
+		Momentum: fmom.NewPxPyPzE(1.517, -20.68, -20.605, 85.925),
 		PdgID:    -24,
 		Status:   3,
 	}
@@ -367,7 +367,7 @@ func ExampleEvent_buildFromScratch() {
 
 	// create v4
 	v4 := &hepmc.Vertex{
-		Position: fmom.PxPyPzE{0.12, -0.3, 0.05, 0.004},
+		Position: fmom.NewPxPyPzE(0.12, -0.3, 0.05, 0.004),
 	}
 	err = evt.AddVertex(v4)
 	if err != nil {
@@ -380,7 +380,7 @@ func ExampleEvent_buildFromScratch() {
 	}
 
 	err = v4.AddParticleOut(&hepmc.Particle{
-		Momentum: fmom.PxPyPzE{-2.445, 28.816, 6.082, 29.552},
+		Momentum: fmom.NewPxPyPzE(-2.445, 28.816, 6.082, 29.552),
 		PdgID:    1,
 		Status:   1,
 	})
@@ -389,7 +389,7 @@ func ExampleEvent_buildFromScratch() {
 	}
 
 	err = v4.AddParticleOut(&hepmc.Particle{
-		Momentum: fmom.PxPyPzE{3.962, -49.498, -26.687, 56.373},
+		Momentum: fmom.NewPxPyPzE(3.962, -49.498, -26.687, 56.373),
 		PdgID:    -2,
 		Status:   1,
 	})

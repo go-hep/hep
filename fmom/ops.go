@@ -110,10 +110,10 @@ func IAdd(dst, src P4) P4 {
 	default:
 		panic(fmt.Errorf("fmom: invalid P4 concrete value: %#v", dst))
 	}
-	p4[0] += src.Px()
-	p4[1] += src.Py()
-	p4[2] += src.Pz()
-	p4[3] += src.E()
+	p4.P4.X += src.Px()
+	p4.P4.Y += src.Py()
+	p4.P4.Z += src.Pz()
+	p4.P4.T += src.E()
 	sum.Set(p4)
 	return sum
 }

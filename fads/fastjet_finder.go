@@ -149,8 +149,10 @@ func (tsk *FastJetFinder) Process(ctx fwk.Context) error {
 	dphiMax := 0.0
 	output = make([]Candidate, 0, len(outjets))
 	for i := range outjets {
-		jet := &outjets[i]
-		area := fmom.PxPyPzE{0, 0, 0, 0}
+		var (
+			jet  = &outjets[i]
+			area fmom.PxPyPzE
+		)
 		if tsk.areaDef != nil {
 			// FIXME
 			panic("not implemented")
@@ -187,7 +189,7 @@ func (tsk *FastJetFinder) Process(ctx fwk.Context) error {
 			cand.Add(cst)
 		}
 
-		cand.Pos[3] = time / wtime
+		cand.Pos.P4.T = time / wtime
 		cand.Area = area
 		cand.DEta = detaMax
 		cand.DPhi = dphiMax

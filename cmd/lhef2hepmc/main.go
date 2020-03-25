@@ -132,21 +132,21 @@ func main() {
 			Barcode: -1,
 		}
 		p1 := hepmc.Particle{
-			Momentum: fmom.PxPyPzE{
+			Momentum: fmom.NewPxPyPzE(
 				0, 0,
 				dec.Run.EBMUP[0],
 				dec.Run.EBMUP[0],
-			},
+			),
 			PdgID:   dec.Run.IDBMUP[0],
 			Status:  4,
 			Barcode: 1,
 		}
 		p2 := hepmc.Particle{
-			Momentum: fmom.PxPyPzE{
+			Momentum: fmom.NewPxPyPzE(
 				0, 0,
 				dec.Run.EBMUP[1],
 				dec.Run.EBMUP[1],
-			},
+			),
 			PdgID:   dec.Run.IDBMUP[1],
 			Status:  4,
 			Barcode: 2,
@@ -170,12 +170,12 @@ func main() {
 			}
 			nmax += 1
 			vtx.AddParticleOut(&hepmc.Particle{
-				Momentum: fmom.PxPyPzE{
+				Momentum: fmom.NewPxPyPzE(
 					lhevt.PUP[i][0],
 					lhevt.PUP[i][1],
 					lhevt.PUP[i][2],
 					lhevt.PUP[i][3],
-				},
+				),
 				GeneratedMass: lhevt.PUP[i][4],
 				PdgID:         lhevt.IDUP[i],
 				Status:        1,

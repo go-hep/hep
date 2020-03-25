@@ -506,8 +506,10 @@ func (vtx *Vertex) removeParticleOut(p *Particle) error {
 
 // Print prints the vertex to w in a human-readable format
 func (vtx *Vertex) Print(w io.Writer) error {
-	var err error
-	zero := fmom.PxPyPzE{0, 0, 0, 0}
+	var (
+		err  error
+		zero fmom.PxPyPzE
+	)
 	if vtx.Barcode != 0 {
 		if vtx.Position != zero {
 			_, err = fmt.Fprintf(

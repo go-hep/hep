@@ -46,5 +46,5 @@ func newPtEtaPhiE(pt, eta, phi, ene float64) fmom.PxPyPzE {
 	py := pt * math.Sin(phi)
 	pz := pt * math.Sinh(eta)
 
-	return fmom.PxPyPzE{px, py, pz, ene}
+	return fmom.NewPxPyPzE(px, py, pz, ene)
 }

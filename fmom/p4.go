@@ -30,3 +30,8 @@ type P4 interface {
 	Set(p4 P4)
 	Clone() P4
 }
+
+// Vec4 holds the four components of a Lorentz vector.
+type Vec4 struct {
+	X, Y, Z, T float64
+}

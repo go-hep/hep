@@ -8,10 +8,12 @@ import (
 	"math"
 )
 
-type PxPyPzE [4]float64
+type PxPyPzE struct {
+	P4 Vec4
+}
 
 func NewPxPyPzE(px, py, pz, e float64) PxPyPzE {
-	return PxPyPzE([4]float64{px, py, pz, e})
+	return PxPyPzE{P4: Vec4{X: px, Y: py, Z: pz, T: e}}
 }
 
 func (p4 *PxPyPzE) Clone() P4 {
@@ -19,37 +21,15 @@ func (p4 *PxPyPzE) Clone() P4 {
 	return &pp
 }
 
-func (p4 *PxPyPzE) Px() float64 {
-	return p4[0]
-}
+func (p4 *PxPyPzE) Px() float64 { return p4.P4.X }
+func (p4 *PxPyPzE) Py() float64 { return p4.P4.Y }
+func (p4 *PxPyPzE) Pz() float64 { return p4.P4.Z }
+func (p4 *PxPyPzE) E() float64  { return p4.P4.T }
 
-func (p4 *PxPyPzE) Py() float64 {
-	return p4[1]
-}
-
-func (p4 *PxPyPzE) Pz() float64 {
-	return p4[2]
-}
-
-func (p4 *PxPyPzE) E() float64 {
-	return p4[3]
-}
-
-func (p4 *PxPyPzE) X() float64 {
-	return p4[0]
-}
-
-func (p4 *PxPyPzE) Y() float64 {
-	return p4[1]
-}
-
-func (p4 *PxPyPzE) Z() float64 {
-	return p4[2]
-}
-
-func (p4 *PxPyPzE) T() float64 {
-	return p4[3]
-}
+func (p4 *PxPyPzE) X() float64 { return p4.P4.X }
+func (p4 *PxPyPzE) Y() float64 { return p4.P4.Y }
+func (p4 *PxPyPzE) Z() float64 { return p4.P4.Z }
+func (p4 *PxPyPzE) T() float64 { return p4.P4.T }
 
 func (p4 *PxPyPzE) M2() float64 {
 	px := p4.Px()
@@ -206,8 +186,8 @@ func (p4 *PxPyPzE) Rapidity() float64 {
 }
 
 func (p4 *PxPyPzE) Set(p P4) {
-	p4[0] = p.Px()
-	p4[1] = p.Py()
-	p4[2] = p.Pz()
-	p4[3] = p.E()
+	p4.P4.X = p.Px()
+	p4.P4.Y = p.Py()
+	p4.P4.Z = p.Pz()
+	p4.P4.T = p.E()
 }
