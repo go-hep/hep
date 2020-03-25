@@ -6,6 +6,8 @@ package fmom
 
 import (
 	"math"
+
+	"gonum.org/v1/gonum/spatial/r3"
 )
 
 const (
@@ -32,17 +34,16 @@ func DeltaR(p1, p2 P4) float64 {
 	return math.Sqrt(deta*deta + dphi*dphi)
 }
 
-// DotProduct returns the dot product of two 4-vectors.
-func DotProduct(p1, p2 P4) float64 {
-	dot := p1.Px()*p2.Px() + p1.Py()*p2.Py() + p1.Pz()*p2.Pz()
-	return dot
-}
-
 // CosTheta returns the cosine of the angle between the momentum of two 4-vectors.
 func CosTheta(p1, p2 P4) float64 {
 	mag1 := p1.P()
 	mag2 := p2.P()
-	dot := DotProduct(p1, p2)
+	dot := vecDot(vecOf(p1), vecOf(p2))
 	cosTh := dot / (mag1 * mag2)
 	return cosTh
+}
+
+// vecOf returns the space-components of a 4-vector.
+func vecOf(p P4) r3.Vec {
+	return r3.Vec{X: p.Px(), Y: p.Py(), Z: p.Pz()}
 }
