@@ -8,10 +8,12 @@ import (
 	"math"
 )
 
-type IPtCotThPhiM [4]float64
+type IPtCotThPhiM struct {
+	P4 Vec4
+}
 
 func NewIPtCotThPhiM(pt, eta, phi, m float64) IPtCotThPhiM {
-	return IPtCotThPhiM([4]float64{pt, eta, phi, m})
+	return IPtCotThPhiM{P4: Vec4{X: pt, Y: eta, Z: phi, T: m}}
 }
 
 func (p4 *IPtCotThPhiM) Clone() P4 {
@@ -20,19 +22,19 @@ func (p4 *IPtCotThPhiM) Clone() P4 {
 }
 
 func (p4 *IPtCotThPhiM) IPt() float64 {
-	return p4[0]
+	return p4.P4.X
 }
 
 func (p4 *IPtCotThPhiM) CotTh() float64 {
-	return p4[1]
+	return p4.P4.Y
 }
 
 func (p4 *IPtCotThPhiM) Phi() float64 {
-	return p4[2]
+	return p4.P4.Z
 }
 
 func (p4 *IPtCotThPhiM) M() float64 {
-	return p4[3]
+	return p4.P4.T
 }
 
 func (p4 *IPtCotThPhiM) Pt() float64 {
@@ -137,8 +139,8 @@ func (p4 *IPtCotThPhiM) SinPhi() float64 {
 }
 
 func (p4 *IPtCotThPhiM) Set(p P4) {
-	p4[0] = p.IPt()
-	p4[1] = p.CotTh()
-	p4[2] = p.Phi()
-	p4[3] = p.M()
+	p4.P4.X = p.IPt()
+	p4.P4.Y = p.CotTh()
+	p4.P4.Z = p.Phi()
+	p4.P4.T = p.M()
 }
