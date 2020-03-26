@@ -6,158 +6,159 @@ package rtree_test
 
 import (
 	"fmt"
-	"log"
+	"io"
+	"testing"
 
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rtree"
 )
 
-func ExampleReader() {
+func TestReader(t *testing.T) {
 	f, err := groot.Open("../testdata/simple.root")
 	if err != nil {
-		log.Fatalf("could not open ROOT file: %+v", err)
+		t.Fatalf("could not open ROOT file: %+v", err)
 	}
 	defer f.Close()
 
 	o, err := f.Get("tree")
 	if err != nil {
-		log.Fatalf("could not retrieve ROOT tree: %+v", err)
+		t.Fatalf("could not retrieve ROOT tree: %+v", err)
 	}
-	t := o.(rtree.Tree)
+	tree := o.(rtree.Tree)
 
-	var (
-		v1 int32
-		v2 float32
-		v3 string
+	for _, tc := range []struct {
+		name  string
+		rvars []rtree.ReadVar
+		ropts []rtree.ReadOption
+		beg   int64
+		end   int64
+		fun   func(rtree.RCtx) error
+		enew  error
+		eloop error
+	}{
+		{
+			name: "ok",
+			beg:  0, end: -1,
+			fun: func(rtree.RCtx) error { return nil },
+		},
+		{
+			name: "empty-range",
+			beg:  4, end: -1,
+			fun: func(rtree.RCtx) error { return nil },
+		},
+		{
+			name:  "invalid-rvar",
+			rvars: []rtree.ReadVar{{Name: "not-there", Value: new(int16)}},
+			beg:   0, end: -1,
+			fun:  func(rtree.RCtx) error { return nil },
+			enew: fmt.Errorf(`rtree: could not create scanner: rtree: Tree "tree" has no branch named "not-there"`),
+		},
+		{
+			name:  "invalid-ropt",
+			ropts: []rtree.ReadOption{func(r *rtree.Reader) error { return io.EOF }},
+			beg:   0, end: -1,
+			fun:  func(rtree.RCtx) error { return nil },
+			enew: fmt.Errorf(`rtree: could not set reader option 1: EOF`),
+		},
+		{
+			name: "negative-start",
+			beg:  -1, end: -1,
+			fun:  func(rtree.RCtx) error { return nil },
+			enew: fmt.Errorf("rtree: invalid event reader range [-1, 4) (start=-1 < 0)"),
+		},
+		{
+			name: "start-greater-than-end",
+			beg:  2, end: 1,
+			fun:  func(rtree.RCtx) error { return nil },
+			enew: fmt.Errorf("rtree: invalid event reader range [2, 1) (start=2 > end=1)"),
+		},
+		{
+			name: "start-greater-than-nentries",
+			beg:  5, end: 10,
+			fun:  func(rtree.RCtx) error { return nil },
+			enew: fmt.Errorf("rtree: invalid event reader range [5, 10) (start=5 > tree-entries=4)"),
+		},
+		{
+			name: "end-greater-than-nentries",
+			beg:  0, end: 5,
+			fun:  func(rtree.RCtx) error { return nil },
+			enew: fmt.Errorf("rtree: invalid event reader range [0, 5) (end=5 > tree-entries=4)"),
+		},
+		{
+			name: "process-error",
+			beg:  0, end: 4,
+			fun: func(ctx rtree.RCtx) error {
+				if ctx.Entry == 2 {
+					return io.EOF
+				}
+				return nil
+			},
+			eloop: fmt.Errorf("rtree: could not process entry 2: EOF"),
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var (
+				v1 int32
+				v2 float32
+				v3 string
 
-		rvars = []rtree.ReadVar{
-			{Name: "one", Value: &v1},
-			{Name: "two", Value: &v2},
-			{Name: "three", Value: &v3},
-		}
-	)
+				rvars = []rtree.ReadVar{
+					{Name: "one", Value: &v1},
+					{Name: "two", Value: &v2},
+					{Name: "three", Value: &v3},
+				}
+			)
 
-	r, err := rtree.NewReader(t, rvars)
-	if err != nil {
-		log.Fatalf("could not create tree reader: %+v", err)
+			if tc.rvars != nil {
+				rvars = tc.rvars
+			}
+
+			ropts := []rtree.ReadOption{rtree.WithRange(tc.beg, tc.end)}
+			if tc.ropts != nil {
+				ropts = append(ropts, tc.ropts...)
+			}
+
+			r, err := rtree.NewReader(tree, rvars, ropts...)
+			switch {
+			case err != nil && tc.enew != nil:
+				if got, want := err.Error(), tc.enew.Error(); got != want {
+					t.Fatalf("invalid error:\ngot= %v\nwant=%v", got, want)
+				}
+				return
+			case err != nil && tc.enew == nil:
+				t.Fatalf("unexpected error: %v", err)
+			case err == nil && tc.enew != nil:
+				t.Fatalf("expected an error: got=%v, want=%v", err, tc.enew)
+			case err == nil && tc.enew == nil:
+				// ok.
+			}
+			defer r.Close()
+
+			err = r.Read(tc.fun)
+
+			switch {
+			case err != nil && tc.eloop != nil:
+				if got, want := err.Error(), tc.eloop.Error(); got != want {
+					t.Fatalf("invalid error:\ngot= %v\nwant=%v", got, want)
+				}
+			case err != nil && tc.eloop == nil:
+				t.Fatalf("unexpected error: %v", err)
+			case err == nil && tc.eloop != nil:
+				t.Fatalf("expected an error: got=%v, want=%v", err, tc.eloop)
+			case err == nil && tc.eloop == nil:
+				// ok.
+			}
+
+			err = r.Close()
+			if err != nil {
+				t.Fatalf("could not close tree reader: %+v", err)
+			}
+
+			// check r.Close is idem-potent.
+			err = r.Close()
+			if err != nil {
+				t.Fatalf("tree reader close not idem-potent: %+v", err)
+			}
+		})
 	}
-	defer r.Close()
-
-	err = r.Read(func(ctx rtree.RCtx) error {
-		fmt.Printf("evt[%d]: %v, %v, %v\n", ctx.Entry, v1, v2, v3)
-		return nil
-	})
-	if err != nil {
-		log.Fatalf("could not process tree: %+v", err)
-	}
-
-	// Output:
-	// evt[0]: 1, 1.1, uno
-	// evt[1]: 2, 2.2, dos
-	// evt[2]: 3, 3.3, tres
-	// evt[3]: 4, 4.4, quatro
-}
-
-func ExampleReader_withRange() {
-	f, err := groot.Open("../testdata/simple.root")
-	if err != nil {
-		log.Fatalf("could not open ROOT file: %+v", err)
-	}
-	defer f.Close()
-
-	o, err := f.Get("tree")
-	if err != nil {
-		log.Fatalf("could not retrieve ROOT tree: %+v", err)
-	}
-	t := o.(rtree.Tree)
-
-	var (
-		v1 int32
-		v2 float32
-		v3 string
-
-		rvars = []rtree.ReadVar{
-			{Name: "one", Value: &v1},
-			{Name: "two", Value: &v2},
-			{Name: "three", Value: &v3},
-		}
-	)
-
-	r, err := rtree.NewReader(t, rvars, rtree.WithRange(1, 3))
-	if err != nil {
-		log.Fatalf("could not create tree reader: %+v", err)
-	}
-	defer r.Close()
-
-	err = r.Read(func(ctx rtree.RCtx) error {
-		fmt.Printf("evt[%d]: %v, %v, %v\n", ctx.Entry, v1, v2, v3)
-		return nil
-	})
-	if err != nil {
-		log.Fatalf("could not process tree: %+v", err)
-	}
-
-	// Output:
-	// evt[1]: 2, 2.2, dos
-	// evt[2]: 3, 3.3, tres
-}
-
-func ExampleReader_withChain() {
-	f, err := groot.Open("../testdata/simple.root")
-	if err != nil {
-		log.Fatalf("could not open ROOT file: %+v", err)
-	}
-	defer f.Close()
-
-	o, err := f.Get("tree")
-	if err != nil {
-		log.Fatalf("could not retrieve ROOT tree: %+v", err)
-	}
-	t := o.(rtree.Tree)
-
-	t = rtree.Chain(t, t, t, t)
-
-	var (
-		v1 int32
-		v2 float32
-		v3 string
-
-		rvars = []rtree.ReadVar{
-			{Name: "one", Value: &v1},
-			{Name: "two", Value: &v2},
-			{Name: "three", Value: &v3},
-		}
-	)
-
-	r, err := rtree.NewReader(t, rvars, rtree.WithRange(0, -1))
-	if err != nil {
-		log.Fatalf("could not create tree reader: %+v", err)
-	}
-	defer r.Close()
-
-	err = r.Read(func(ctx rtree.RCtx) error {
-		fmt.Printf("evt[%d]: %v, %v, %v\n", ctx.Entry, v1, v2, v3)
-		return nil
-	})
-	if err != nil {
-		log.Fatalf("could not process tree: %+v", err)
-	}
-
-	// Output:
-	// evt[0]: 1, 1.1, uno
-	// evt[1]: 2, 2.2, dos
-	// evt[2]: 3, 3.3, tres
-	// evt[3]: 4, 4.4, quatro
-	// evt[4]: 1, 1.1, uno
-	// evt[5]: 2, 2.2, dos
-	// evt[6]: 3, 3.3, tres
-	// evt[7]: 4, 4.4, quatro
-	// evt[8]: 1, 1.1, uno
-	// evt[9]: 2, 2.2, dos
-	// evt[10]: 3, 3.3, tres
-	// evt[11]: 4, 4.4, quatro
-	// evt[12]: 1, 1.1, uno
-	// evt[13]: 2, 2.2, dos
-	// evt[14]: 3, 3.3, tres
-	// evt[15]: 4, 4.4, quatro
 }

@@ -58,20 +58,26 @@ func NewReader(t Tree, rvars []ReadVar, opts ...ReadOption) (*Reader, error) {
 		r.end = r.t.Entries()
 	}
 
-	if r.beg < 0 || r.beg > r.end {
-		return nil, fmt.Errorf("rtree: invalid event reader range [%d, %d)",
-			r.beg, r.end,
+	if r.beg < 0 {
+		return nil, fmt.Errorf("rtree: invalid event reader range [%d, %d) (start=%d < 0)",
+			r.beg, r.end, r.beg,
+		)
+	}
+
+	if r.beg > r.end {
+		return nil, fmt.Errorf("rtree: invalid event reader range [%d, %d) (start=%d > end=%d)",
+			r.beg, r.end, r.beg, r.end,
 		)
 	}
 
 	if r.beg > r.t.Entries() {
-		return nil, fmt.Errorf("rtree: invalid event reader range [%d, %d) (start=%d > tree-entries (%d))",
+		return nil, fmt.Errorf("rtree: invalid event reader range [%d, %d) (start=%d > tree-entries=%d)",
 			r.beg, r.end, r.beg, r.t.Entries(),
 		)
 	}
 
 	if r.end > r.t.Entries() {
-		return nil, fmt.Errorf("rtree: invalid event reader range [%d, %d) (end=%d > tree-entries (%d))",
+		return nil, fmt.Errorf("rtree: invalid event reader range [%d, %d) (end=%d > tree-entries=%d)",
 			r.beg, r.end, r.end, r.t.Entries(),
 		)
 	}
