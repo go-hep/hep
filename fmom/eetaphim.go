@@ -5,6 +5,7 @@
 package fmom
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -14,6 +15,13 @@ type EEtaPhiM struct {
 
 func NewEEtaPhiM(e, eta, phi, m float64) EEtaPhiM {
 	return EEtaPhiM{P4: Vec4{X: e, Y: eta, Z: phi, T: m}}
+}
+
+func (p4 EEtaPhiM) String() string {
+	return fmt.Sprintf(
+		"fmom.P4{E:%v, Eta:%v, Phi:%v, M:%v}",
+		p4.E(), p4.Eta(), p4.Phi(), p4.M(),
+	)
 }
 
 func (p4 *EEtaPhiM) Clone() P4 {
@@ -150,3 +158,8 @@ func (p4 *EEtaPhiM) Set(p P4) {
 	p4.P4.Z = p.Phi()
 	p4.P4.T = p.M()
 }
+
+var (
+	_ P4           = (*EEtaPhiM)(nil)
+	_ fmt.Stringer = (*EEtaPhiM)(nil)
+)

@@ -26,6 +26,9 @@ func TestPxPyPzE(t *testing.T) {
 		if got, want := p4.E(), 0.0; got != want {
 			t.Fatalf("p4.E=%v, want=%v", got, want)
 		}
+		if got, want := p4.String(), "fmom.P4{Px:0, Py:0, Pz:0, E:0}"; got != want {
+			t.Fatalf("p4=%v, want=%v", got, want)
+		}
 	}
 
 	{
@@ -53,6 +56,9 @@ func TestPxPyPzE(t *testing.T) {
 		}
 		if got, want := p4.T(), 20.0; got != want {
 			t.Fatalf("p4.T=%v, want=%v", got, want)
+		}
+		if got, want := p4.String(), "fmom.P4{Px:10, Py:11, Pz:12, E:20}"; got != want {
+			t.Fatalf("p4=%v, want=%v", got, want)
 		}
 
 		p1 := fmom.NewPxPyPzE(10, 11, 12, 20)

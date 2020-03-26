@@ -5,6 +5,7 @@
 package fmom
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -14,6 +15,13 @@ type IPtCotThPhiM struct {
 
 func NewIPtCotThPhiM(pt, eta, phi, m float64) IPtCotThPhiM {
 	return IPtCotThPhiM{P4: Vec4{X: pt, Y: eta, Z: phi, T: m}}
+}
+
+func (p4 IPtCotThPhiM) String() string {
+	return fmt.Sprintf(
+		"fmom.P4{IPt:%v, CotTh:%v, Phi:%v, M:%v}",
+		p4.IPt(), p4.CotTh(), p4.Phi(), p4.M(),
+	)
 }
 
 func (p4 *IPtCotThPhiM) Clone() P4 {
@@ -144,3 +152,8 @@ func (p4 *IPtCotThPhiM) Set(p P4) {
 	p4.P4.Z = p.Phi()
 	p4.P4.T = p.M()
 }
+
+var (
+	_ P4           = (*IPtCotThPhiM)(nil)
+	_ fmt.Stringer = (*IPtCotThPhiM)(nil)
+)

@@ -26,6 +26,9 @@ func TestEtEtaPhiM(t *testing.T) {
 		if got, want := p4.M(), 0.0; got != want {
 			t.Fatalf("p4.M=%v, want=%v", got, want)
 		}
+		if got, want := p4.String(), "fmom.P4{Et:0, Eta:0, Phi:0, M:0}"; got != want {
+			t.Fatalf("p4=%v, want=%v", got, want)
+		}
 	}
 
 	{
@@ -41,6 +44,9 @@ func TestEtEtaPhiM(t *testing.T) {
 		}
 		if got, want := p4.M(), 20.0; got != want {
 			t.Fatalf("p4.M=%v, want=%v", got, want)
+		}
+		if got, want := p4.String(), "fmom.P4{Et:10, Eta:11, Phi:12, M:20}"; got != want {
+			t.Fatalf("p4=%v, want=%v", got, want)
 		}
 
 		p1 := fmom.NewEtEtaPhiM(10, 11, 12, 20)

@@ -5,6 +5,7 @@
 package fmom
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -14,6 +15,13 @@ type PxPyPzE struct {
 
 func NewPxPyPzE(px, py, pz, e float64) PxPyPzE {
 	return PxPyPzE{P4: Vec4{X: px, Y: py, Z: pz, T: e}}
+}
+
+func (p4 PxPyPzE) String() string {
+	return fmt.Sprintf(
+		"fmom.P4{Px:%v, Py:%v, Pz:%v, E:%v}",
+		p4.Px(), p4.Py(), p4.Pz(), p4.E(),
+	)
 }
 
 func (p4 *PxPyPzE) Clone() P4 {
@@ -191,3 +199,8 @@ func (p4 *PxPyPzE) Set(p P4) {
 	p4.P4.Z = p.Pz()
 	p4.P4.T = p.E()
 }
+
+var (
+	_ P4           = (*PxPyPzE)(nil)
+	_ fmt.Stringer = (*PxPyPzE)(nil)
+)
