@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package ntroot provides convenience fnctions to access ROOT trees as n-tuple
+// Package ntroot provides convenience functions to access ROOT trees as n-tuple
 // data.
 //
 // Example:
