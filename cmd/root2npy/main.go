@@ -252,7 +252,7 @@ func main() {
 type ntuple struct {
 	n    int64
 	cols []column
-	args []rtree.ScanVar
+	args []rtree.ReadVar
 	vars []interface{}
 }
 
@@ -260,7 +260,7 @@ func (nt *ntuple) add(name string, leaf rtree.Leaf) {
 	n := len(nt.cols)
 	nt.cols = append(nt.cols, newColumn(name, leaf, nt.n))
 	col := &nt.cols[n]
-	nt.args = append(nt.args, rtree.ScanVar{Name: name, Leaf: leaf.Name()})
+	nt.args = append(nt.args, rtree.ReadVar{Name: name, Leaf: leaf.Name()})
 	nt.vars = append(nt.vars, col.data.Addr().Interface())
 }
 

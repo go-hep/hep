@@ -279,7 +279,7 @@ func TestConvert(t *testing.T) {
 			}
 
 			tree := obj.(rtree.Tree)
-			rvars := rtree.NewScanVars(tree)
+			rvars := rtree.NewReadVars(tree)
 			scan, err := rtree.NewScannerVars(tree, rvars...)
 			if err != nil {
 				t.Fatalf("could not create tree scanner: %+v", err)

@@ -9,7 +9,7 @@ import "fmt"
 // Reader reads data from a Tree.
 type Reader struct {
 	t     Tree
-	rvars []ScanVar
+	rvars []ReadVar
 	scan  *Scanner
 	beg   int64
 	end   int64
@@ -30,7 +30,7 @@ func WithRange(beg, end int64) ReadOption {
 
 // NewReader creates a new Tree Reader from the provided ROOT Tree and
 // the set of read-variables into which data will be read.
-func NewReader(t Tree, rvars []ScanVar, opts ...ReadOption) (*Reader, error) {
+func NewReader(t Tree, rvars []ReadVar, opts ...ReadOption) (*Reader, error) {
 	sc, err := NewScannerVars(t, rvars...)
 	if err != nil {
 		return nil, fmt.Errorf("rtree: could not create scanner: %w", err)

@@ -289,7 +289,7 @@ func TestScannerVars(t *testing.T) {
 			}
 
 			var data ScannerData
-			scanVars := []ScanVar{
+			rvars := []ReadVar{
 				{Name: "Int32", Value: &data.I32},
 				{Name: "Int64", Value: &data.I64},
 				{Name: "UInt32", Value: &data.U32},
@@ -311,7 +311,7 @@ func TestScannerVars(t *testing.T) {
 				{Name: "SliceFloat32", Value: &data.SliF32},
 				{Name: "SliceFloat64", Value: &data.SliF64},
 			}
-			sc, err := NewScannerVars(tree, scanVars...)
+			sc, err := NewScannerVars(tree, rvars...)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -353,7 +353,7 @@ func TestTreeScannerVarsMultipleTimes(t *testing.T) {
 			tree := obj.(Tree)
 
 			for i := 0; i < 10; i++ {
-				sc, err := NewTreeScannerVars(tree, ScanVar{Name: "lep_pt"})
+				sc, err := NewTreeScannerVars(tree, ReadVar{Name: "lep_pt"})
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -430,7 +430,7 @@ func TestTreeScannerVars(t *testing.T) {
 				return data
 			}
 
-			scanVars := []ScanVar{
+			rvars := []ReadVar{
 				{Name: "Int32"},
 				{Name: "Int64"},
 				{Name: "UInt32"},
@@ -452,7 +452,7 @@ func TestTreeScannerVars(t *testing.T) {
 				{Name: "SliceFloat32"},
 				{Name: "SliceFloat64"},
 			}
-			sc, err := NewTreeScannerVars(tree, scanVars...)
+			sc, err := NewTreeScannerVars(tree, rvars...)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -517,7 +517,7 @@ func TestScannerVarsMultipleTimes(t *testing.T) {
 
 			var pt []float32
 			for i := 0; i < 10; i++ {
-				sc, err := NewScannerVars(tree, ScanVar{Name: "lep_pt", Value: &pt})
+				sc, err := NewScannerVars(tree, ReadVar{Name: "lep_pt", Value: &pt})
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -689,8 +689,8 @@ func TestTreeScannerVarsWithCounterLeaf(t *testing.T) {
 				return data
 			}
 
-			scanVar := ScanVar{Name: "SliceInt32"}
-			sc, err := NewTreeScannerVars(tree, scanVar)
+			rvar := ReadVar{Name: "SliceInt32"}
+			sc, err := NewTreeScannerVars(tree, rvar)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -749,8 +749,8 @@ func TestScannerVarsWithCounterLeaf(t *testing.T) {
 			}
 
 			var data []int32
-			scanVar := ScanVar{Name: "SliceInt32", Value: &data}
-			sc, err := NewScannerVars(tree, scanVar)
+			rvar := ReadVar{Name: "SliceInt32", Value: &data}
+			sc, err := NewScannerVars(tree, rvar)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -944,10 +944,10 @@ func BenchmarkTreeScannerVars(b *testing.B) {
 
 	tree := obj.(Tree)
 
-	scanVars := []ScanVar{
+	rvars := []ReadVar{
 		{Name: "Float64"},
 	}
-	s, err := NewTreeScannerVars(tree, scanVars...)
+	s, err := NewTreeScannerVars(tree, rvars...)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -985,10 +985,10 @@ func BenchmarkScannerVars(b *testing.B) {
 	tree := obj.(Tree)
 
 	var f64 float64
-	scanVars := []ScanVar{
+	rvars := []ReadVar{
 		{Name: "Float64", Value: &f64},
 	}
-	s, err := NewScannerVars(tree, scanVars...)
+	s, err := NewScannerVars(tree, rvars...)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1022,7 +1022,7 @@ func BenchmarkTreeScannerVarsBigFileScalar(b *testing.B) {
 	}
 	tree := obj.(Tree)
 
-	sc, err := NewTreeScannerVars(tree, ScanVar{Name: "mcWeight"})
+	sc, err := NewTreeScannerVars(tree, ReadVar{Name: "mcWeight"})
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1058,7 +1058,7 @@ func BenchmarkScannerVarsBigFileScalar(b *testing.B) {
 	tree := obj.(Tree)
 
 	var mc float32
-	sc, err := NewScannerVars(tree, ScanVar{Name: "mcWeight", Value: &mc})
+	sc, err := NewScannerVars(tree, ReadVar{Name: "mcWeight", Value: &mc})
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1092,7 +1092,7 @@ func BenchmarkTreeScannerVarsBigFileSlice(b *testing.B) {
 	}
 	tree := obj.(Tree)
 
-	sc, err := NewTreeScannerVars(tree, ScanVar{Name: "lep_pt"})
+	sc, err := NewTreeScannerVars(tree, ReadVar{Name: "lep_pt"})
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1128,7 +1128,7 @@ func BenchmarkScannerVarsBigFileSlice(b *testing.B) {
 	tree := obj.(Tree)
 
 	var pt []float32
-	sc, err := NewScannerVars(tree, ScanVar{Name: "lep_pt", Value: &pt})
+	sc, err := NewScannerVars(tree, ReadVar{Name: "lep_pt", Value: &pt})
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1214,7 +1214,7 @@ func TestTreeScannerSeekEntry(t *testing.T) {
 	}
 }
 
-func TestNewScanVars(t *testing.T) {
+func TestNewReadVars(t *testing.T) {
 	f, err := riofs.Open("../testdata/leaves.root")
 	if err != nil {
 		t.Fatal(err)
@@ -1228,8 +1228,8 @@ func TestNewScanVars(t *testing.T) {
 
 	tree := o.(Tree)
 
-	vars := NewScanVars(tree)
-	want := []ScanVar{
+	vars := NewReadVars(tree)
+	want := []ReadVar{
 		{Name: "B", Leaf: "B", Value: new(bool)},
 		{Name: "Str", Leaf: "Str", Value: new(string)},
 		{Name: "I8", Leaf: "I8", Value: new(int8)},
@@ -1283,13 +1283,13 @@ func TestNewScanVars(t *testing.T) {
 	for i := 0; i < n; i++ {
 		got := vars[i]
 		if got.Name != want[i].Name {
-			t.Fatalf("invalid scan-var name[%d]: got=%q, want=%q", i, got.Name, want[i].Name)
+			t.Fatalf("invalid read-var name[%d]: got=%q, want=%q", i, got.Name, want[i].Name)
 		}
 		if got.Leaf != want[i].Leaf {
-			t.Fatalf("invalid scan-var (name=%q) leaf-name[%d]: got=%q, want=%q", got.Name, i, got.Leaf, want[i].Leaf)
+			t.Fatalf("invalid read-var (name=%q) leaf-name[%d]: got=%q, want=%q", got.Name, i, got.Leaf, want[i].Leaf)
 		}
 		if got, want := reflect.TypeOf(got.Value), reflect.TypeOf(want[i].Value); got != want {
-			t.Fatalf("invalid scan-var (name=%q) type[%d]: got=%v, want=%v", vars[i].Name, i, got, want)
+			t.Fatalf("invalid read-var (name=%q) type[%d]: got=%v, want=%v", vars[i].Name, i, got, want)
 		}
 	}
 
@@ -1405,12 +1405,12 @@ func TestG4LikeTree(t *testing.T) {
 	}
 
 	var data EventData
-	scanVars := []ScanVar{
+	rvars := []ReadVar{
 		{Name: "i32", Value: &data.I32},
 		{Name: "f64", Value: &data.F64},
 		{Name: "slif64", Value: &data.Sli},
 	}
-	sc, err := NewScannerVars(tree, scanVars...)
+	sc, err := NewScannerVars(tree, rvars...)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1430,7 +1430,7 @@ func TestG4LikeTree(t *testing.T) {
 	}
 }
 
-func TestMultiLeafBranchWithScanVars(t *testing.T) {
+func TestMultiLeafBranchWithReadVars(t *testing.T) {
 	t.Parallel()
 
 	f, err := riofs.Open("../testdata/root_numpy_struct.root")
@@ -1460,7 +1460,7 @@ func TestMultiLeafBranchWithScanVars(t *testing.T) {
 		}
 	)
 
-	rvars := []ScanVar{
+	rvars := []ReadVar{
 		{
 			Name:  "branch1",
 			Leaf:  "intleaf",
@@ -1501,7 +1501,7 @@ func TestMultiLeafBranchWithScanVars(t *testing.T) {
 	}
 }
 
-func TestMultiLeafBranchWithTreeScanVars(t *testing.T) {
+func TestMultiLeafBranchWithTreeReadVars(t *testing.T) {
 	t.Parallel()
 
 	f, err := riofs.Open("../testdata/root_numpy_struct.root")
@@ -1534,7 +1534,7 @@ func TestMultiLeafBranchWithTreeScanVars(t *testing.T) {
 		}
 	)
 
-	rvars := []ScanVar{
+	rvars := []ReadVar{
 		{
 			Name:  "branch1",
 			Value: &data.B1,

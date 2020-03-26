@@ -119,7 +119,7 @@ func (cmd *dumpCmd) dumpList(lst root.List) error {
 
 func (cmd *dumpCmd) dumpTree(t rtree.Tree) error {
 
-	vars := rtree.NewScanVars(t)
+	vars := rtree.NewReadVars(t)
 	sc, err := rtree.NewScannerVars(t, vars...)
 	if err != nil {
 		return fmt.Errorf("could not create scanner-vars: %w", err)

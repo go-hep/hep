@@ -117,7 +117,7 @@ func process(oname, tname, fname string) error {
 	}
 	defer tbl.Close()
 
-	rvars := rtree.NewScanVars(tree)
+	rvars := rtree.NewReadVars(tree)
 	wvars := make([]interface{}, len(rvars))
 	for i, rvar := range rvars {
 		wvars[i] = rvar.Value
@@ -162,7 +162,7 @@ func process(oname, tname, fname string) error {
 }
 
 func tableFrom(tree rtree.Tree) (*fitsio.Table, error) {
-	rvars := rtree.NewScanVars(tree)
+	rvars := rtree.NewReadVars(tree)
 	cols := make([]fitsio.Column, len(rvars))
 	for i, rvar := range rvars {
 		cols[i] = colFrom(rvar, tree)
@@ -171,7 +171,7 @@ func tableFrom(tree rtree.Tree) (*fitsio.Table, error) {
 	return fitsio.NewTable(tree.Name(), cols, fitsio.BINARY_TBL)
 }
 
-func colFrom(rvar rtree.ScanVar, tree rtree.Tree) fitsio.Column {
+func colFrom(rvar rtree.ReadVar, tree rtree.Tree) fitsio.Column {
 	var (
 		rt     = reflect.TypeOf(rvar.Value).Elem()
 		format = formatFrom(rt)

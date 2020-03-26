@@ -96,7 +96,7 @@ func ExampleTreeScanner_withVars() {
 
 	tree := obj.(rtree.Tree)
 
-	scanVars := []rtree.ScanVar{
+	rvars := []rtree.ReadVar{
 		{Name: "Int64"},
 		{Name: "Float64"},
 		{Name: "Str"},
@@ -104,7 +104,7 @@ func ExampleTreeScanner_withVars() {
 		{Name: "N"},
 		{Name: "SliceFloat64"},
 	}
-	sc, err := rtree.NewTreeScannerVars(tree, scanVars...)
+	sc, err := rtree.NewTreeScannerVars(tree, rvars...)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -242,7 +242,7 @@ func ExampleScanner_withVars() {
 		n   int32
 		sli []float64
 	)
-	scanVars := []rtree.ScanVar{
+	rvars := []rtree.ReadVar{
 		{Name: "Int64", Value: &i64},
 		{Name: "Float64", Value: &f64},
 		{Name: "Str", Value: &str},
@@ -250,7 +250,7 @@ func ExampleScanner_withVars() {
 		{Name: "N", Value: &n},
 		{Name: "SliceFloat64", Value: &sli},
 	}
-	sc, err := rtree.NewScannerVars(tree, scanVars...)
+	sc, err := rtree.NewScannerVars(tree, rvars...)
 	if err != nil {
 		log.Fatal(err)
 	}

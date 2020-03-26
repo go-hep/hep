@@ -309,7 +309,7 @@ func newDriverRows(conn *driverConn, stmt *sqlparser.Select, args []driver.Value
 
 	vars, err := rows.extractDepsFromSelect(tree, stmt, args)
 	if err != nil {
-		return nil, fmt.Errorf("could not extract scan-vars: %w", err)
+		return nil, fmt.Errorf("could not extract read-vars: %w", err)
 	}
 	rows.vars = varsFrom(vars)
 	for _, v := range vars {
@@ -353,7 +353,7 @@ func newDriverRows(conn *driverConn, stmt *sqlparser.Select, args []driver.Value
 	return rows, nil
 }
 
-func varsFrom(vars []rtree.ScanVar) []interface{} {
+func varsFrom(vars []rtree.ReadVar) []interface{} {
 	vs := make([]interface{}, len(vars))
 	for i, v := range vars {
 		vs[i] = v.Value
@@ -363,9 +363,9 @@ func varsFrom(vars []rtree.ScanVar) []interface{} {
 
 // extractDepsFromSelect analyses the query and extracts the branches that need to be read
 // for the query to be properly executed.
-func (rows *driverRows) extractDepsFromSelect(tree rtree.Tree, stmt *sqlparser.Select, args []driver.Value) ([]rtree.ScanVar, error) {
+func (rows *driverRows) extractDepsFromSelect(tree rtree.Tree, stmt *sqlparser.Select, args []driver.Value) ([]rtree.ReadVar, error) {
 	var (
-		vars []rtree.ScanVar
+		vars []rtree.ReadVar
 
 		set  = make(map[string]struct{})
 		cols []string
@@ -449,7 +449,7 @@ func (rows *driverRows) extractDepsFromSelect(tree rtree.Tree, stmt *sqlparser.S
 		case leaf.Len() > 1 && leaf.Kind() != reflect.String:
 			etyp = reflect.ArrayOf(leaf.Len(), etyp)
 		}
-		vars = append(vars, rtree.ScanVar{
+		vars = append(vars, rtree.ReadVar{
 			Name:  branch.Name(),
 			Leaf:  leaf.Name(),
 			Value: reflect.New(etyp).Interface(),

@@ -201,8 +201,8 @@ func (cmd *diffCmd) diffTree(key string, ref, chk rtree.Tree) error {
 		return fmt.Errorf("%s: number of entries differ: ref=%v chk=%v", key, eref, echk)
 	}
 
-	refVars := rtree.NewScanVars(ref)
-	chkVars := rtree.NewScanVars(chk)
+	refVars := rtree.NewReadVars(ref)
+	chkVars := rtree.NewReadVars(chk)
 
 	quit := make(chan struct{})
 	defer close(quit)
@@ -256,7 +256,7 @@ type treeEntry struct {
 	ok  chan int
 }
 
-func (cmd *diffCmd) treeDump(quit chan struct{}, out chan treeEntry, t rtree.Tree, vars []rtree.ScanVar) {
+func (cmd *diffCmd) treeDump(quit chan struct{}, out chan treeEntry, t rtree.Tree, vars []rtree.ReadVar) {
 	sc, err := rtree.NewScannerVars(t, vars...)
 	if err != nil {
 		out <- treeEntry{err: err}

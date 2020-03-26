@@ -241,18 +241,20 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 	}, nil
 }
 
-// ScanVar describes a variable to be read out of a tree during a scan.
-type ScanVar struct {
+// ReadVar describes a variable to be read out of a tree.
+type ReadVar struct {
 	Name  string      // name of the branch to read
 	Leaf  string      // name of the leaf to read
 	Value interface{} // pointer to the value to fill
 	count string      // name of the leaf-count, if any
 }
 
+type ScanVar = ReadVar
+
 // NewTreeScannerVars creates a new Scanner from a list of branches.
 // It will return an error if the provided type does not match the
 // type stored in the corresponding branch.
-func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
+func NewTreeScannerVars(t Tree, vars ...ReadVar) (*TreeScanner, error) {
 	if len(vars) <= 0 {
 		return nil, fmt.Errorf("rtree: NewTreeScannerVars expects at least one branch name")
 	}
@@ -296,7 +298,7 @@ func NewTreeScannerVars(t Tree, vars ...ScanVar) (*TreeScanner, error) {
 		}
 		arg := sv.Value
 		if rv := reflect.ValueOf(arg); rv.Kind() != reflect.Ptr {
-			return nil, fmt.Errorf("rtree: ScanVar %d (name=%v) has non pointer Value", i, sv.Name)
+			return nil, fmt.Errorf("rtree: ReadVar %d (name=%v) has non pointer Value", i, sv.Name)
 		}
 		err := br.setAddress(arg)
 		if err != nil {
@@ -474,7 +476,7 @@ type Scanner struct {
 
 // NewScannerVars creates a new Scanner from a list of pairs (branch-name, target-address).
 // Scanner will read the branches' data during Scan() and load them into these target-addresses.
-func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
+func NewScannerVars(t Tree, vars ...ReadVar) (*Scanner, error) {
 	if len(vars) <= 0 {
 		return nil, fmt.Errorf("rtree: NewScannerVars expects at least one branch name")
 	}
@@ -517,10 +519,10 @@ func NewScannerVars(t Tree, vars ...ScanVar) (*Scanner, error) {
 		}
 		arg := sv.Value
 		if arg == nil {
-			return nil, fmt.Errorf("rtree: ScanVar %d (name=%v) has nil Value", i, sv.Name)
+			return nil, fmt.Errorf("rtree: ReadVar %d (name=%v) has nil Value", i, sv.Name)
 		}
 		if rv := reflect.ValueOf(arg); rv.Kind() != reflect.Ptr {
-			return nil, fmt.Errorf("rtree: ScanVar %d (name=%v) has non pointer Value", i, sv.Name)
+			return nil, fmt.Errorf("rtree: ReadVar %d (name=%v) has non pointer Value", i, sv.Name)
 		}
 		var err error
 		switch br := br.(type) {
@@ -721,10 +723,10 @@ func (s *Scanner) Scan() error {
 	return s.scan.err
 }
 
-// NewScanVars returns the complete set of ScanVars to read all the data
+// NewReadVars returns the complete set of ReadVars to read all the data
 // contained in the provided Tree.
-func NewScanVars(t Tree) []ScanVar {
-	var vars []ScanVar
+func NewReadVars(t Tree) []ReadVar {
+	var vars []ReadVar
 	for _, b := range t.Branches() {
 		for _, leaf := range b.Leaves() {
 			ptr := newValue(leaf)
@@ -732,7 +734,7 @@ func NewScanVars(t Tree) []ScanVar {
 			if leaf.LeafCount() != nil {
 				cnt = leaf.LeafCount().Name()
 			}
-			vars = append(vars, ScanVar{Name: b.Name(), Leaf: leaf.Name(), Value: ptr, count: cnt})
+			vars = append(vars, ReadVar{Name: b.Name(), Leaf: leaf.Name(), Value: ptr, count: cnt})
 		}
 	}
 

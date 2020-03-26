@@ -1263,9 +1263,9 @@ func TestTreeRW(t *testing.T) {
 					return
 				}
 
-				rvars := NewScanVars(tree)
+				rvars := NewReadVars(tree)
 				if len(rvars) != len(tc.wvars) {
-					t.Fatalf("invalid number of scan-vars: got=%d, want=%d", len(rvars), len(tc.wvars))
+					t.Fatalf("invalid number of read-vars: got=%d, want=%d", len(rvars), len(tc.wvars))
 				}
 
 				for i, rvar := range rvars {

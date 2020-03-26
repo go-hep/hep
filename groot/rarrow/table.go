@@ -76,10 +76,10 @@ func (tbl *rootTable) init() {
 	// FIXME(sbinet): infer clusters sizes
 	// FIXME(sbinet): lazily populate rootTable
 
-	vars := rtree.NewScanVars(tbl.tree)
+	vars := rtree.NewReadVars(tbl.tree)
 	sc, err := rtree.NewScannerVars(tbl.tree, vars...)
 	if err != nil {
-		panic(fmt.Errorf("could not create scanner from scan-vars %#v: %w", vars, err))
+		panic(fmt.Errorf("could not create scanner from read-vars %#v: %w", vars, err))
 	}
 	defer sc.Close()
 

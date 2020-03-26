@@ -30,9 +30,9 @@ func CopyN(dst Writer, src Tree, n int64) (int64, error) {
 	)
 
 	wvars := dst.(*wtree).wvars
-	rvars := make([]ScanVar, len(wvars))
+	rvars := make([]ReadVar, len(wvars))
 	for i, wvar := range wvars {
-		rvars[i] = ScanVar{
+		rvars[i] = ReadVar{
 			Name: wvar.Name,
 			//			Leaf:  wvar.Name, // ??
 			Value: wvar.Value,

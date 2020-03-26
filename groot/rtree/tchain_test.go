@@ -464,14 +464,14 @@ func TestChainSeekEntryTreeScannerVars(t *testing.T) {
 	}
 
 	var data Data
-	svars := []rtree.ScanVar{
+	rvars := []rtree.ReadVar{
 		{Name: "F64", Value: &data.F64},
 		{Name: "ArrF64", Value: &data.ArrF64},
 		{Name: "N", Value: &data.N},
 		{Name: "SliF64", Value: &data.SliF64},
 	}
 
-	sc, err := rtree.NewTreeScannerVars(chain, svars...)
+	sc, err := rtree.NewTreeScannerVars(chain, rvars...)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -626,14 +626,14 @@ func TestChainSeekEntryScannerVars(t *testing.T) {
 	}
 
 	var data Data
-	svars := []rtree.ScanVar{
+	rvars := []rtree.ReadVar{
 		{Name: "F64", Value: &data.F64},
 		{Name: "ArrF64", Value: &data.ArrF64},
 		{Name: "N", Value: &data.N},
 		{Name: "SliF64", Value: &data.SliF64},
 	}
 
-	sc, err := rtree.NewScannerVars(chain, svars...)
+	sc, err := rtree.NewScannerVars(chain, rvars...)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -218,7 +218,7 @@ func builderFrom(mem memory.Allocator, dt arrow.DataType, size int64) array.Buil
 	return bldr
 }
 
-func appendData(bldr array.Builder, v rtree.ScanVar, dt arrow.DataType) {
+func appendData(bldr array.Builder, v rtree.ReadVar, dt arrow.DataType) {
 	switch bldr := bldr.(type) {
 	case *array.BooleanBuilder:
 		bldr.Append(*v.Value.(*bool))

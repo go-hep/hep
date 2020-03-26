@@ -62,10 +62,10 @@ func NewRecord(t rtree.Tree, opts ...Option) *Record {
 }
 
 func (rec *Record) load(beg, end int64) {
-	vars := rtree.NewScanVars(rec.tree)
+	vars := rtree.NewReadVars(rec.tree)
 	sc, err := rtree.NewScannerVars(rec.tree, vars...)
 	if err != nil {
-		panic(fmt.Errorf("could not create scanner from scan-vars %#v: %w", vars, err))
+		panic(fmt.Errorf("could not create scanner from read-vars %#v: %w", vars, err))
 	}
 	defer sc.Close()
 

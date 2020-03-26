@@ -30,7 +30,7 @@ func ExampleReader() {
 		v2 float32
 		v3 string
 
-		rvars = []rtree.ScanVar{
+		rvars = []rtree.ReadVar{
 			{Name: "one", Value: &v1},
 			{Name: "two", Value: &v2},
 			{Name: "three", Value: &v3},
@@ -76,7 +76,7 @@ func ExampleReader_withRange() {
 		v2 float32
 		v3 string
 
-		rvars = []rtree.ScanVar{
+		rvars = []rtree.ReadVar{
 			{Name: "one", Value: &v1},
 			{Name: "two", Value: &v2},
 			{Name: "three", Value: &v3},
@@ -122,7 +122,7 @@ func ExampleReader_withChain() {
 		v2 float32
 		v3 string
 
-		rvars = []rtree.ScanVar{
+		rvars = []rtree.ReadVar{
 			{Name: "one", Value: &v1},
 			{Name: "two", Value: &v2},
 			{Name: "three", Value: &v3},

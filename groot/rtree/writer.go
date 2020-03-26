@@ -200,7 +200,7 @@ func WriteVarsFromStruct(ptr interface{}) []WriteVar {
 
 // WriteVarsFromTree creates a slice of WriteVars from the tree value.
 func WriteVarsFromTree(t Tree) []WriteVar {
-	rvars := NewScanVars(t)
+	rvars := NewReadVars(t)
 	wvars := make([]WriteVar, len(rvars))
 	for i, rvar := range rvars {
 		wvars[i] = WriteVar{

@@ -174,7 +174,7 @@ func process(oname, fname, tname string) error {
 type ntuple struct {
 	n    int64
 	cols []column
-	args []rtree.ScanVar
+	args []rtree.ReadVar
 	vars []interface{}
 }
 
@@ -182,7 +182,7 @@ func (nt *ntuple) add(name string, leaf rtree.Leaf) {
 	n := len(nt.cols)
 	nt.cols = append(nt.cols, newColumn(name, leaf, nt.n))
 	col := &nt.cols[n]
-	nt.args = append(nt.args, rtree.ScanVar{
+	nt.args = append(nt.args, rtree.ReadVar{
 		Name:  name,
 		Leaf:  leaf.Name(),
 		Value: col.data.Addr().Interface(),

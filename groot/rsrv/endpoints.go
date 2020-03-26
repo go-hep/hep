@@ -814,7 +814,7 @@ func (srv *Server) handlePlotTree(w http.ResponseWriter, r *http.Request) error 
 		min := +math.MaxFloat64
 		max := -math.MaxFloat64
 		vals := make([]float64, 0, int(tree.Entries()))
-		sc, err := rtree.NewTreeScannerVars(tree, rtree.ScanVar{Name: bname, Leaf: leaf.Name()})
+		sc, err := rtree.NewTreeScannerVars(tree, rtree.ReadVar{Name: bname, Leaf: leaf.Name()})
 		if err != nil {
 			return fmt.Errorf(
 				"could not create scanner for branch %q in tree %q of file %q: %w",
