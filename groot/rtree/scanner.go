@@ -241,15 +241,16 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 	}, nil
 }
 
-// ReadVar describes a variable to be read out of a tree.
-type ReadVar struct {
-	Name  string      // name of the branch to read
-	Leaf  string      // name of the leaf to read
-	Value interface{} // pointer to the value to fill
-	count string      // name of the leaf-count, if any
-}
-
+// ScanVar describes a variable to be read out of a tree.
+//
+// DEPRECATED: please use ReadVar instead.
 type ScanVar = ReadVar
+
+// NewScanVars returns the complete set of ReadVars to read all the data
+// contained in the provided Tree.
+//
+// DEPRECATED: please use NewReadVars instead.
+func NewScanVars(t Tree) []ScanVar { return NewReadVars(t) }
 
 // NewTreeScannerVars creates a new Scanner from a list of branches.
 // It will return an error if the provided type does not match the
@@ -721,24 +722,6 @@ func (s *Scanner) Scan() error {
 		}
 	}
 	return s.scan.err
-}
-
-// NewReadVars returns the complete set of ReadVars to read all the data
-// contained in the provided Tree.
-func NewReadVars(t Tree) []ReadVar {
-	var vars []ReadVar
-	for _, b := range t.Branches() {
-		for _, leaf := range b.Leaves() {
-			ptr := newValue(leaf)
-			cnt := ""
-			if leaf.LeafCount() != nil {
-				cnt = leaf.LeafCount().Name()
-			}
-			vars = append(vars, ReadVar{Name: b.Name(), Leaf: leaf.Name(), Value: ptr, count: cnt})
-		}
-	}
-
-	return vars
 }
 
 func newValue(leaf Leaf) interface{} {

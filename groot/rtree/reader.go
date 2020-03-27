@@ -6,6 +6,32 @@ package rtree
 
 import "fmt"
 
+// ReadVar describes a variable to be read out of a tree.
+type ReadVar struct {
+	Name  string      // name of the branch to read
+	Leaf  string      // name of the leaf to read
+	Value interface{} // pointer to the value to fill
+	count string      // name of the leaf-count, if any
+}
+
+// NewReadVars returns the complete set of ReadVars to read all the data
+// contained in the provided Tree.
+func NewReadVars(t Tree) []ReadVar {
+	var vars []ReadVar
+	for _, b := range t.Branches() {
+		for _, leaf := range b.Leaves() {
+			ptr := newValue(leaf)
+			cnt := ""
+			if leaf.LeafCount() != nil {
+				cnt = leaf.LeafCount().Name()
+			}
+			vars = append(vars, ReadVar{Name: b.Name(), Leaf: leaf.Name(), Value: ptr, count: cnt})
+		}
+	}
+
+	return vars
+}
+
 // Reader reads data from a Tree.
 type Reader struct {
 	t     Tree

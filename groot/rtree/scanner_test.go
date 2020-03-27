@@ -1214,7 +1214,7 @@ func TestTreeScannerSeekEntry(t *testing.T) {
 	}
 }
 
-func TestNewReadVars(t *testing.T) {
+func TestNewScanVars(t *testing.T) {
 	f, err := riofs.Open("../testdata/leaves.root")
 	if err != nil {
 		t.Fatal(err)
@@ -1228,7 +1228,7 @@ func TestNewReadVars(t *testing.T) {
 
 	tree := o.(Tree)
 
-	vars := NewReadVars(tree)
+	vars := NewScanVars(tree)
 	want := []ReadVar{
 		{Name: "B", Leaf: "B", Value: new(bool)},
 		{Name: "Str", Leaf: "Str", Value: new(string)},
