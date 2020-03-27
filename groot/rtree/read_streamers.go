@@ -789,12 +789,19 @@ func gotypeFromSI(sinfo rbytes.StreamerInfo, ctx rbytes.StreamerInfoContext) ref
 		ft.Name = "ROOT_" + elt.Name()
 		ft.Name = cxxNameSanitizer.Replace(ft.Name)
 
-		var lcount Leaf
+		var (
+			lcount Leaf
+			ltitle = ""
+		)
 		if elt.Title() != "" {
 			lcount = &tleaf{}
+			ltitle = elt.Title()
 		}
 		ft.Type = gotypeFromSE(elt, lcount, ctx)
-		ft.Tag = reflect.StructTag(`groot:"` + elt.Name() + `"`)
+		if ft.Type.Kind() == reflect.Array {
+			ltitle = fmt.Sprintf("[%d]", ft.Type.Len())
+		}
+		ft.Tag = reflect.StructTag(`groot:"` + elt.Name() + ltitle + `"`)
 	}
 
 	return reflect.StructOf(fields)
