@@ -62,8 +62,8 @@ func NewDecoder(r io.Reader) (*Decoder, error) {
 	}
 
 	var (
-		init   xml.StartElement
-		header xml.StartElement
+		init xml.StartElement
+		// header xml.StartElement // FIXME(sbinet)
 	)
 
 Loop:
@@ -72,22 +72,24 @@ Loop:
 		if err != nil || tok == nil {
 			return nil, err
 		}
-		switch tt := tok.(type) {
+		switch tok := tok.(type) {
 		case xml.Comment:
 			// skip
 		case xml.CharData:
 			// skip
 		case xml.StartElement:
-			switch tt.Name.Local {
+			switch tok.Name.Local {
 			case "init":
-				init = tt
+				init = tok
 				break Loop
 			case "header":
-				header = tt //FIXME
-				panic(fmt.Errorf("header not implemented: %v", header))
+				// FIXME(sbinet): do something about header's content.
+				//		header = tok //FIXME
+				//panic(fmt.Errorf("header not implemented: %v", header))
 			}
 		}
 	}
+
 	if init.Name.Local != "init" {
 		return nil, fmt.Errorf("lhef.Decoder: missing init start-tag")
 	}
@@ -143,12 +145,9 @@ Loop:
 		// do version-2 specific stuff
 	}
 
-	tok, err = dec.Token()
+	err = d.seek(init.End())
 	if err != nil {
-		return nil, err
-	}
-	if end, ok := tok.(xml.EndElement); !ok || end.Name.Local != "init" {
-		return nil, fmt.Errorf("lhef.Decoder: missing init end-tag")
+		return nil, fmt.Errorf("lhef: could not find 'init' end tag: %w", err)
 	}
 
 	return d, nil
@@ -173,6 +172,21 @@ LoopEvt:
 				d.evt = tt
 				break LoopEvt
 			}
+		}
+	}
+
+	return nil
+}
+
+func (d *Decoder) seek(tok xml.Token) error {
+seek:
+	for {
+		tk, err := d.dec.Token()
+		if err != nil {
+			return err
+		}
+		if tk == tok {
+			break seek
 		}
 	}
 
@@ -262,12 +276,9 @@ func (d *Decoder) Decode() (*HEPEUP, error) {
 	// do
 
 	// put "cursor" to next event...
-	tok, err = d.dec.Token()
+	err = d.seek(d.evt.End())
 	if err != nil {
-		return nil, err
-	}
-	if end, ok := tok.(xml.EndElement); !ok || end.Name.Local != "event" {
-		return nil, fmt.Errorf("lhef.Decoder: missing event end-tag")
+		return nil, fmt.Errorf("lhef: could not find 'event' end tag: %w", err)
 	}
 
 	return evt, nil
