@@ -13,25 +13,25 @@
 //  package event
 //
 //  type Data struct {
-//  	Int32        int32       `groot:"Int32"`
-//  	Int64        int64       `groot:"Int64"`
-//  	UInt32       int32       `groot:"UInt32"`
-//  	UInt64       int64       `groot:"UInt64"`
-//  	Float32      float32     `groot:"Float32"`
-//  	Float64      float64     `groot:"Float64"`
-//  	ArrayInt32   [10]int32   `groot:"ArrayInt32"`
-//  	ArrayInt64   [10]int64   `groot:"ArrayInt64"`
-//  	ArrayInt32   [10]int32   `groot:"ArrayInt32"`
-//  	ArrayInt64   [10]int64   `groot:"ArrayInt64"`
-//  	ArrayFloat32 [10]float32 `groot:"ArrayFloat32"`
-//  	ArrayFloat64 [10]float64 `groot:"ArrayFloat64"`
-//  	N            int32       `groot:"N"`
-//  	SliceInt32   []int32     `groot:"SliceInt32"`
-//  	SliceInt64   []int64     `groot:"SliceInt64"`
-//  	SliceInt32   []int32     `groot:"SliceInt32"`
-//  	SliceInt64   []int64     `groot:"SliceInt64"`
-//  	SliceFloat32 []float32   `groot:"SliceFloat32"`
-//  	SliceFloat64 []float64   `groot:"SliceFloat64"`
+//  	ROOT_Int32        int32       `groot:"Int32"`
+//  	ROOT_Int64        int64       `groot:"Int64"`
+//  	ROOT_UInt32       int32       `groot:"UInt32"`
+//  	ROOT_UInt64       int64       `groot:"UInt64"`
+//  	ROOT_Float32      float32     `groot:"Float32"`
+//  	ROOT_Float64      float64     `groot:"Float64"`
+//  	ROOT_ArrayInt32   [10]int32   `groot:"ArrayInt32[10]"`
+//  	ROOT_ArrayInt64   [10]int64   `groot:"ArrayInt64[10]"`
+//  	ROOT_ArrayInt32   [10]int32   `groot:"ArrayInt32[10]"`
+//  	ROOT_ArrayInt64   [10]int64   `groot:"ArrayInt64[10]"`
+//  	ROOT_ArrayFloat32 [10]float32 `groot:"ArrayFloat32[10]"`
+//  	ROOT_ArrayFloat64 [10]float64 `groot:"ArrayFloat64[10]"`
+//  	ROOT_N            int32       `groot:"N"`
+//  	ROOT_SliceInt32   []int32     `groot:"SliceInt32[N]"`
+//  	ROOT_SliceInt64   []int64     `groot:"SliceInt64[N]"`
+//  	ROOT_SliceInt32   []int32     `groot:"SliceInt32[N]"`
+//  	ROOT_SliceInt64   []int64     `groot:"SliceInt64[N]"`
+//  	ROOT_SliceFloat32 []float32   `groot:"SliceFloat32[N]"`
+//  	ROOT_SliceFloat64 []float64   `groot:"SliceFloat64[N]"`
 //  }
 package main // import "go-hep.org/x/hep/groot/cmd/root-gen-datareader"
 
@@ -43,6 +43,8 @@ import (
 	"io"
 	"log"
 	"os"
+	"reflect"
+	"strings"
 	"text/template"
 
 	"go-hep.org/x/hep/groot"
@@ -72,19 +74,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	ctx := Context{
-		Package: *pkgName,
-		Defs: map[string]*StructDef{
-			"DataReader": {
-				Name:   "DataReader",
-				Fields: nil,
-			},
-		},
-		GenDataReader: *dataReader,
-		File:          flag.Arg(0),
-		Tree:          *treeName,
-		Verbose:       *verbose,
-	}
+	ctx := newContext(*pkgName, flag.Arg(0), *treeName, *dataReader, *verbose)
 
 	var o io.Writer = os.Stdout
 	if *outName != "" {
@@ -102,7 +92,7 @@ func main() {
 	}
 }
 
-func process(w io.Writer, ctx Context) error {
+func process(w io.Writer, ctx *Context) error {
 	f, err := groot.Open(ctx.File)
 	if err != nil {
 		log.Fatal(err)
@@ -113,63 +103,68 @@ func process(w io.Writer, ctx Context) error {
 	if err != nil {
 		return fmt.Errorf("could not retrieve tree %q: %w", ctx.Tree, err)
 	}
-	tree := obj.(rtree.Tree)
-
+	var (
+		tree  = obj.(rtree.Tree)
+		rvars = rtree.NewReadVars(tree)
+	)
 	ctx.printf("entries: %v\n", tree.Entries())
 
-	defs := ctx.Defs
-	branches := tree.Branches()
-	ctx.printf("branches: %d\n", len(branches))
-	for i, br := range branches {
-		bname := goName(br.Name())
-		ctx.printf("branch[%3d]=%s (=> %s title=%q)\n", i, br.Name(), bname, br.Title())
-		leaves := br.Leaves()
-		ctx.printf("leaves: %d\n", len(leaves))
-		brStruct := StructDef{Name: bname, Fields: nil}
-		for j, leaf := range leaves {
-			ctx.printf("  [%03d] leaf: %v (title=%q)\n", j, leaf.Name(), leaf.Title())
-			lname := goName(leaf.Name())
-			tname := leaf.TypeName()
-			switch {
-			case leaf.LeafCount() != nil:
-				tname = "[]" + tname
-			case leaf.Len() > 1:
-				tname = fmt.Sprintf("[%d]%s", leaf.Len(), tname)
-			}
-			brField := FieldDef{
-				Name:       lname,
-				BranchName: leaf.Name(),
-				VarName:    lname,
-				Type:       tname,
-			}
-			if j == 0 {
-				brField.VarName = br.Name() + "." + lname
-			}
-			brStruct.Fields = append(brStruct.Fields, brField)
-		}
-		if len(brStruct.Fields) > 1 {
-			defs[bname] = &brStruct
-			defs["DataReader"].Fields = append(
-				defs["DataReader"].Fields,
+	for i, rvar := range rvars {
+		ctx.printf("rvar[%03d]: %q (%v)", i, rvar.Name, reflect.Indirect(reflect.ValueOf(rvar.Value)).Kind())
+		rv := reflect.Indirect(reflect.ValueOf(rvar.Value))
+		switch rv.Kind() {
+		case reflect.Struct:
+			def := structDefFrom(ctx, rvar.Name, reflect.Indirect(reflect.ValueOf(rvar.Value)).Type())
+			ctx.Defs[rvar.Name] = def
+			ctx.DataReader.Fields = append(
+				ctx.DataReader.Fields,
 				FieldDef{
-					Name:       bname,
-					BranchName: br.Name(),
-					VarName:    brStruct.Fields[0].VarName,
-					Type:       bname,
+					Name:    goName(rvar.Name),
+					Tag:     rvar.Name,
+					VarName: rvar.Name,
+					Type:    def.Name,
 				},
 			)
-		} else {
-			defs["DataReader"].Fields = append(
-				defs["DataReader"].Fields,
-				brStruct.Fields...,
+		case reflect.Array:
+			ctx.DataReader.Fields = append(
+				ctx.DataReader.Fields,
+				FieldDef{
+					Name:    goName(rvar.Name),
+					Tag:     fmt.Sprintf("%s[%d]", rvar.Name, rv.Type().Len()),
+					VarName: rvar.Name,
+					Type:    fmt.Sprintf("%T", rv.Interface()),
+				},
 			)
+			ctx.checkType(rv.Type().Elem())
+
+		case reflect.Slice:
+			ctx.DataReader.Fields = append(
+				ctx.DataReader.Fields,
+				FieldDef{
+					Name:    goName(rvar.Name),
+					Tag:     rvar.Name,
+					VarName: rvar.Name,
+					Type:    fmt.Sprintf("%T", rv.Interface()),
+				},
+			)
+			ctx.checkType(rv.Type().Elem())
+
+		default:
+			ctx.DataReader.Fields = append(
+				ctx.DataReader.Fields,
+				FieldDef{
+					Name:    goName(rvar.Name),
+					Tag:     rvar.Name,
+					VarName: rvar.Name,
+					Type:    fmt.Sprintf("%T", rv.Interface()),
+				},
+			)
+			ctx.checkType(rv.Type())
 		}
 	}
+	delete(ctx.Defs, "DataReader")
 
-	ctx.DataReader = defs["DataReader"]
-	delete(defs, "DataReader")
-
-	err = genCode(w, ctx)
+	err = ctx.genCode(w)
 	if err != nil {
 		return fmt.Errorf("could not generate reader code: %w", err)
 	}
@@ -190,15 +185,16 @@ type StructDef struct {
 
 // FieldDef describes a Go struct field, corresponding to a TTree's branch.
 type FieldDef struct {
-	Name       string
-	Type       string
-	VarName    string
-	BranchName string
+	Name    string
+	Type    string
+	VarName string
+	Tag     string
 }
 
 // Context holds together various informations about the TTree being processed.
 type Context struct {
 	Package       string
+	Imports       map[string]int
 	DataReader    *StructDef
 	Defs          map[string]*StructDef
 	GenDataReader bool
@@ -207,13 +203,35 @@ type Context struct {
 	Verbose       bool
 }
 
-func (ctx Context) printf(format string, args ...interface{}) {
+func newContext(pkg, file, tree string, dataReader, verbose bool) *Context {
+	ctx := &Context{
+		Package: pkg,
+		Imports: make(map[string]int),
+		Defs: map[string]*StructDef{
+			"DataReader": {
+				Name:   "DataReader",
+				Fields: nil,
+			},
+		},
+		GenDataReader: dataReader,
+		File:          file,
+		Tree:          tree,
+		Verbose:       verbose,
+	}
+	ctx.DataReader = ctx.Defs["DataReader"]
+	if dataReader {
+		ctx.Imports["go-hep.org/x/hep/groot/rtree"]++
+	}
+	return ctx
+}
+
+func (ctx *Context) printf(format string, args ...interface{}) {
 	if ctx.Verbose {
 		log.Printf(format, args...)
 	}
 }
 
-func genCode(w io.Writer, ctx Context) error {
+func (ctx *Context) genCode(w io.Writer) error {
 	t := template.New("top")
 	template.Must(t.Parse(codeTmpl))
 	buf := new(bytes.Buffer)
@@ -223,6 +241,8 @@ func genCode(w io.Writer, ctx Context) error {
 	}
 	src, err := format.Source(buf.Bytes())
 	if err != nil {
+		log.Printf("source:\n%s\n", buf.Bytes())
+		log.Printf("error: %+v", err)
 		return err
 	}
 	_, err = w.Write(src)
@@ -234,15 +254,17 @@ const codeTmpl = `// automatically generated by root-gen-datareader.
 
 package {{.Package}}
 
-{{if .GenDataReader}}import (
-  "fmt"
-
-  "go-hep.org/x/hep/groot/rtree"
-){{end}}
+{{$length := len .Imports}}{{if gt $length 0}}
+import (
+{{range $key, $value := .Imports}}
+"{{$key}}"
+{{- end}}
+)
+{{- end}}
 
 {{range .Defs}}
 type {{.Name}} struct {
-{{range .Fields}}	{{.Name}} {{.Type}}
+{{range .Fields}}	{{.Name}} {{.Type}} ` + "`groot:\"{{.Tag}}\"`" + `
 {{end}}}
 {{end}}
 
@@ -250,7 +272,7 @@ type {{.Name}} struct {
 {{with .DataReader}}
 // Data is the data contained in a rtree.Tree.
 type Data struct {
-{{ range .Fields}}	{{.Name}} {{.Type}} ` + "`groot:\"{{.BranchName}}\"`" + `
+{{ range .Fields}}	{{.Name}} {{.Type}} ` + "`groot:\"{{.Tag}}\"`" + `
 {{ end}}}
 {{end}}
 
@@ -264,3 +286,50 @@ type DataReader struct {
 {{end}}
 {{end}}
 `
+
+func structDefFrom(ctx *Context, name string, rt reflect.Type) *StructDef {
+	def := StructDef{
+		Name:   name,
+		Fields: make([]FieldDef, rt.NumField()),
+	}
+	for i := range def.Fields {
+		ft := rt.Field(i)
+		def.Fields[i] = fieldDefFrom(ctx, ft)
+	}
+
+	return &def
+}
+
+func fieldDefFrom(ctx *Context, typ reflect.StructField) FieldDef {
+	tag := typ.Tag.Get("groot")
+	ctx.checkType(typ.Type)
+
+	switch typ.Type.Kind() {
+	case reflect.Struct:
+		branch := tag
+		if i := strings.Index(branch, "["); i > 0 {
+			branch = branch[:i]
+		}
+		ctx.Defs[branch] = structDefFrom(ctx, branch, typ.Type)
+		return FieldDef{
+			Name:    typ.Name,
+			Type:    branch,
+			VarName: tag,
+			Tag:     tag,
+		}
+	default:
+		return FieldDef{
+			Name:    typ.Name,
+			Type:    typ.Type.String(),
+			VarName: tag,
+			Tag:     tag,
+		}
+	}
+}
+
+func (ctx *Context) checkType(typ reflect.Type) {
+	pkg := typ.PkgPath()
+	if pkg != "" {
+		ctx.Imports[pkg]++
+	}
+}
