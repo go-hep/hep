@@ -86,13 +86,23 @@ func main() {
 		Verbose:       *verbose,
 	}
 
-	err := process(*outName, ctx)
+	var o io.Writer = os.Stdout
+	if *outName != "" {
+		f, err := os.Create(*outName)
+		if err != nil {
+			log.Fatalf("could not create output file: %+v", err)
+		}
+		defer f.Close()
+		o = f
+	}
+
+	err := process(o, ctx)
 	if err != nil {
 		log.Fatalf("could not generate data-reader: %+v", err)
 	}
 }
 
-func process(oname string, ctx Context) error {
+func process(w io.Writer, ctx Context) error {
 	f, err := groot.Open(ctx.File)
 	if err != nil {
 		log.Fatal(err)
@@ -159,15 +169,7 @@ func process(oname string, ctx Context) error {
 	ctx.DataReader = defs["DataReader"]
 	delete(defs, "DataReader")
 
-	var o io.WriteCloser = os.Stdout
-	if oname != "" {
-		o, err = os.Create(oname)
-		if err != nil {
-			return fmt.Errorf("could not create output file: %w", err)
-		}
-	}
-
-	err = genCode(o, ctx)
+	err = genCode(w, ctx)
 	if err != nil {
 		return fmt.Errorf("could not generate reader code: %w", err)
 	}
