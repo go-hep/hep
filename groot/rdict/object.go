@@ -133,10 +133,14 @@ func genTypeFromSI(sictx rbytes.StreamerInfoContext, si rbytes.StreamerInfo) ref
 	var fields = make([]reflect.StructField, 0, len(si.Elements()))
 	for _, se := range si.Elements() {
 		rt := genTypeFromSE(sictx, se)
+		et := se.Title()
+		if rt.Kind() == reflect.Array {
+			et = fmt.Sprintf("[%d]", rt.Len())
+		}
 		ft := reflect.StructField{
 			Name: "ROOT_" + cxxNameSanitizer.Replace(se.Name()),
 			Type: rt,
-			Tag:  reflect.StructTag(fmt.Sprintf("groot:%q", se.Name())),
+			Tag:  reflect.StructTag(fmt.Sprintf("groot:%q", se.Name()+et)),
 		}
 		fields = append(fields, ft)
 	}

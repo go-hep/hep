@@ -8,6 +8,7 @@ package rarrow // import "go-hep.org/x/hep/groot/rarrow"
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
@@ -163,6 +164,9 @@ func dataTypeFromGo(typ reflect.Type) arrow.DataType {
 			name := f.Name
 			if v, ok := f.Tag.Lookup("groot"); ok {
 				name = v
+			}
+			if idx := strings.Index(name, "["); idx > 0 {
+				name = name[:idx]
 			}
 			fields[i] = arrow.Field{
 				Name: name,

@@ -48,6 +48,9 @@ func fieldOf(rt reflect.Type, field string) int {
 		if name == "" {
 			name = f.Name
 		}
+		if idx := strings.Index(name, "["); idx > 0 {
+			name = name[:idx]
+		}
 		if name == field {
 			return i
 		}
