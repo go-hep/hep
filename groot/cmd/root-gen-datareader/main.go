@@ -46,27 +46,22 @@ import (
 	"text/template"
 
 	"go-hep.org/x/hep/groot"
+	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/rtree"
 )
-
-var (
-	treeName   = flag.String("t", "tree", "name of the tree to inspect")
-	pkgName    = flag.String("p", "event", "name of the package where to generate the data model")
-	outName    = flag.String("o", "", "name of the file where to store the generated data model (STDOUT)")
-	dataReader = flag.Bool("reader", false, "generate data reader code")
-	verbose    = flag.Bool("v", false, "enable verbose mode")
-)
-
-func printf(format string, args ...interface{}) {
-	if *verbose {
-		log.Printf(format, args...)
-	}
-}
 
 func main() {
 
 	log.SetPrefix("root-gen-datareader: ")
 	log.SetFlags(0)
+
+	var (
+		treeName   = flag.String("t", "tree", "name of the tree to inspect")
+		pkgName    = flag.String("p", "event", "name of the package where to generate the data model")
+		outName    = flag.String("o", "", "name of the file where to store the generated data model (STDOUT)")
+		dataReader = flag.Bool("reader", false, "generate data reader code")
+		verbose    = flag.Bool("v", false, "enable verbose mode")
+	)
 
 	flag.Parse()
 
@@ -86,32 +81,43 @@ func main() {
 			},
 		},
 		GenDataReader: *dataReader,
+		File:          flag.Arg(0),
+		Tree:          *treeName,
+		Verbose:       *verbose,
 	}
 
-	f, err := groot.Open(flag.Arg(0))
+	err := process(*outName, ctx)
+	if err != nil {
+		log.Fatalf("could not generate data-reader: %+v", err)
+	}
+}
+
+func process(oname string, ctx Context) error {
+	f, err := groot.Open(ctx.File)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
 
-	obj, err := f.Get(*treeName)
+	obj, err := riofs.Dir(f).Get(ctx.Tree)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("could not retrieve tree %q: %w", ctx.Tree, err)
 	}
 	tree := obj.(rtree.Tree)
-	printf("entries: %v\n", tree.Entries())
+
+	ctx.printf("entries: %v\n", tree.Entries())
 
 	defs := ctx.Defs
 	branches := tree.Branches()
-	printf("branches: %d\n", len(branches))
+	ctx.printf("branches: %d\n", len(branches))
 	for i, br := range branches {
 		bname := goName(br.Name())
-		printf("branch[%3d]=%s (=> %s title=%q)\n", i, br.Name(), bname, br.Title())
+		ctx.printf("branch[%3d]=%s (=> %s title=%q)\n", i, br.Name(), bname, br.Title())
 		leaves := br.Leaves()
-		printf("leaves: %d\n", len(leaves))
+		ctx.printf("leaves: %d\n", len(leaves))
 		brStruct := StructDef{Name: bname, Fields: nil}
 		for j, leaf := range leaves {
-			printf("  [%03d] leaf: %v (title=%q)\n", j, leaf.Name(), leaf.Title())
+			ctx.printf("  [%03d] leaf: %v (title=%q)\n", j, leaf.Name(), leaf.Title())
 			lname := goName(leaf.Name())
 			tname := leaf.TypeName()
 			switch {
@@ -154,17 +160,19 @@ func main() {
 	delete(defs, "DataReader")
 
 	var o io.WriteCloser = os.Stdout
-	if *outName != "" {
-		o, err = os.Create(*outName)
+	if oname != "" {
+		o, err = os.Create(oname)
 		if err != nil {
-			log.Fatal(err)
+			return fmt.Errorf("could not create output file: %w", err)
 		}
 	}
 
 	err = genCode(o, ctx)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("could not generate reader code: %w", err)
 	}
+
+	return nil
 }
 
 func goName(s string) string {
@@ -192,6 +200,15 @@ type Context struct {
 	DataReader    *StructDef
 	Defs          map[string]*StructDef
 	GenDataReader bool
+	File          string
+	Tree          string
+	Verbose       bool
+}
+
+func (ctx Context) printf(format string, args ...interface{}) {
+	if ctx.Verbose {
+		log.Printf(format, args...)
+	}
 }
 
 func genCode(w io.Writer, ctx Context) error {
