@@ -20,8 +20,8 @@ type Vector2 struct {
 	y   float64
 }
 
-func NewVector2(x, y float64) *Vector3 {
-	return &Vector3{
+func NewVector2(x, y float64) *Vector2 {
+	return &Vector2{
 		obj: *rbase.NewObject(),
 		x:   x,
 		y:   y,
