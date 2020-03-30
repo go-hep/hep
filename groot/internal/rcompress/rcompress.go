@@ -205,7 +205,15 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 			return 0, fmt.Errorf("rcompress: could not write ZLIB compressed bytes: %w", err)
 		}
 		err = w.Close()
-		if err != nil {
+		switch err {
+		case nil:
+			// ok.
+		case io.EOF:
+			// not compressible.
+			copy(buf.p, src)
+			buf.c = len(src)
+			buf.p = buf.p[:buf.c]
+		default:
 			return 0, fmt.Errorf("rcompress: could not close ZLIB compressor: %w", err)
 		}
 		dstsz = int32(buf.c)
@@ -231,7 +239,15 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		}
 
 		err = w.Close()
-		if err != nil {
+		switch err {
+		case nil:
+			// ok.
+		case io.EOF:
+			// not-compressible.
+			copy(buf.p, src)
+			buf.c = len(src)
+			buf.p = buf.p[:buf.c]
+		default:
 			return 0, fmt.Errorf("rcompress: could not close LZMA compressor: %w", err)
 		}
 
@@ -289,7 +305,15 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		}
 
 		err = w.Close()
-		if err != nil {
+		switch err {
+		case nil:
+			// ok.
+		case io.EOF:
+			// not compressible.
+			copy(buf.p, src)
+			buf.c = len(src)
+			buf.p = buf.p[:buf.c]
+		default:
 			return 0, fmt.Errorf("rcompress: could not close ZSTD compressor: %w", err)
 		}
 
