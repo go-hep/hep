@@ -125,41 +125,9 @@ func Scale(a float64, p P4) P4 {
 	// FIXME(sbinet):
 	// dispatch most efficient/less-lossy operation
 	// based on type(dst) (and, optionally, type(src))
-	var out P4
-	switch p := p.(type) {
-
-	case *PxPyPzE:
-		dst := NewPxPyPzE(a*p.Px(), a*p.Py(), a*p.Pz(), a*p.E())
-		out = &dst
-
-	case *EEtaPhiM:
-		dst := NewPxPyPzE(a*p.Px(), a*p.Py(), a*p.Pz(), a*p.E())
-		var pp EEtaPhiM
-		pp.Set(&dst)
-		out = &pp
-
-	case *EtEtaPhiM:
-		dst := NewPxPyPzE(a*p.Px(), a*p.Py(), a*p.Pz(), a*p.E())
-		var pp EtEtaPhiM
-		pp.Set(&dst)
-		out = &pp
-
-	case *PtEtaPhiM:
-		dst := NewPxPyPzE(a*p.Px(), a*p.Py(), a*p.Pz(), a*p.E())
-		var pp PtEtaPhiM
-		pp.Set(&dst)
-		out = &pp
-
-	case *IPtCotThPhiM:
-		dst := NewPxPyPzE(a*p.Px(), a*p.Py(), a*p.Pz(), a*p.E())
-		var pp IPtCotThPhiM
-		pp.Set(&dst)
-		out = &pp
-
-	default:
-		panic(fmt.Errorf("fmom: invalid P4 concrete value: %#v", p))
-	}
-
+	out := p.Clone()
+	dst := NewPxPyPzE(a*p.Px(), a*p.Py(), a*p.Pz(), a*p.E())
+	out.Set(&dst)
 	return out
 }
 
