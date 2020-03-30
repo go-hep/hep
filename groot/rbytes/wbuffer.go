@@ -42,13 +42,21 @@ func (w *wbuff) grow(n int) {
 	if n == 0 {
 		return
 	}
-	plen := len(w.p)
-	pcap := cap(w.p)
-	if plen+n < pcap {
-		w.p = w.p[:plen+n]
+	var (
+		plen = len(w.p)
+		pcap = cap(w.p)
+		nlen = plen + n
+	)
+	if nlen < pcap {
+		w.p = w.p[:nlen]
 		return
 	}
-	w.p = append(w.p, make([]byte, pcap+n)...)
+	if pcap < nlen {
+		const sz = 4 * 1024
+		pcap = ((nlen / sz) + 1) * sz
+	}
+	w.p = append(w.p[:cap(w.p)], make([]byte, 2*pcap)...)
+	w.p = w.p[:nlen:cap(w.p)]
 }
 
 // WBuffer is a write-only ROOT buffer for streaming.

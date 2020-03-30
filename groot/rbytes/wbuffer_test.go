@@ -20,22 +20,34 @@ func TestWBufferGrow(t *testing.T) {
 
 	buf.w.grow(8)
 	if got, want := len(buf.w.p), 8; got != want {
-		t.Fatalf("got=%d, want=%d buffer size", got, want)
+		t.Fatalf("got=%d, want=%d buffer len-size", got, want)
 	}
 
 	buf.w.grow(8)
-	if got, want := len(buf.w.p), 2*8+8; got != want {
-		t.Fatalf("got=%d, want=%d buffer size", got, want)
+	if got, want := len(buf.w.p), 2*8; got != want {
+		t.Fatalf("got=%d, want=%d buffer len-size", got, want)
 	}
 
 	buf.w.grow(1)
-	if got, want := len(buf.w.p), 3*8+1; got != want {
-		t.Fatalf("got=%d, want=%d buffer size", got, want)
+	if got, want := len(buf.w.p), 2*8+1; got != want {
+		t.Fatalf("got=%d, want=%d buffer len-size", got, want)
 	}
 
 	buf.w.grow(0)
-	if got, want := len(buf.w.p), 3*8+1; got != want {
-		t.Fatalf("got=%d, want=%d buffer size", got, want)
+	if got, want := len(buf.w.p), 2*8+1; got != want {
+		t.Fatalf("got=%d, want=%d buffer len-size", got, want)
+	}
+	if got, want := cap(buf.w.p), 8*1024; got != want {
+		t.Fatalf("got=%d, want=%d buffer cap-size", got, want)
+	}
+
+	const n = 10 * 1024
+	buf.w.grow(n)
+	if got, want := len(buf.w.p), 2*8+1+n; got != want {
+		t.Fatalf("got=%d, want=%d buffer len-size", got, want)
+	}
+	if got, want := cap(buf.w.p), 8*4*1024; got != want {
+		t.Fatalf("got=%d, want=%d buffer cap-size", got, want)
 	}
 
 	defer func() {
