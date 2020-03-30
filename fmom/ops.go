@@ -225,6 +225,5 @@ func Boost(p P4, vec r3.Vec) P4 {
 }
 
 func vecDot(u, v r3.Vec) float64 {
-	// FIXME(sbinet): use r3.Vec.Dot when available
-	return u.X*v.X + u.Y*v.Y + u.Z*v.Z
+	return u.Dot(v)
 }
