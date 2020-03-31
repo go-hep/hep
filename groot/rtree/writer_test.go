@@ -188,6 +188,16 @@ func TestFlattenArrayType(t *testing.T) {
 			shape: []int{2, 3, 4, 0},
 		},
 		{
+			typ:   [2][3][4][5]int32{},
+			want:  int32(0),
+			shape: []int{2, 3, 4, 5},
+		},
+		{
+			typ:   [2][3][4][5][6]int32{},
+			want:  int32(0),
+			shape: []int{2, 3, 4, 5, 6},
+		},
+		{
 			typ:   [2][3][4][0]struct{}{},
 			want:  struct{}{},
 			shape: []int{2, 3, 4, 0},
