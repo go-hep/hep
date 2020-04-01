@@ -345,6 +345,176 @@ func TestBranchRW(t *testing.T) {
 				nextbasket:  -1,
 			},
 		},
+		{
+			name: "TBranchElement",
+			want: &tbranchElement{
+				tbranch: tbranch{
+					named:          *rbase.NewNamed("branch", "leaf1/I:leaf2/L"),
+					attfill:        *rbase.NewAttFill(),
+					compress:       1,
+					basketSize:     defaultBasketSize,
+					entryOffsetLen: 0,
+					writeBasket:    1,
+					entryNumber:    4,
+					iobits:         0,
+					offset:         0,
+					maxBaskets:     10,
+					splitLevel:     1,
+					entries:        4,
+					firstEntry:     0,
+					totBytes:       86,
+					zipBytes:       86,
+					branches:       []Branch{},
+					leaves: []Leaf{
+						newLeafI(nil, "leaf1", nil, signed, nil),
+						newLeafL(nil, "leaf2", nil, signed, nil),
+					},
+					baskets: []Basket{
+						Basket{
+							key:     riofs.KeyFromDir(dir, "with-offsets", "title", "TBasket"),
+							bufsize: 5,
+							nevsize: 4,
+							nevbuf:  4,
+							last:    0,
+							iobits:  1,
+							offsets: []int32{1, 2, 3, 4},
+							branch:  nil,
+						},
+					},
+					basketBytes: []int32{86},
+					basketEntry: []int64{0, 4},
+					basketSeek:  []int64{304},
+					fname:       "foo.root",
+
+					//
+					readentry:   -1,
+					firstbasket: -1,
+					nextbasket:  -1,
+				},
+				class:  "myclass",
+				parent: "parentclass",
+				clones: "clones",
+				chksum: 123456789,
+				clsver: 42,
+				id:     3,
+				btype:  4,
+				stype:  5,
+				max:    42,
+				//stltyp: 45,
+			},
+		},
+		{
+			name: "TBranchElement-with-bcount1",
+			want: &tbranchElement{
+				tbranch: tbranch{
+					named:          *rbase.NewNamed("branch", "leaf1/I:leaf2/L"),
+					attfill:        *rbase.NewAttFill(),
+					compress:       1,
+					basketSize:     defaultBasketSize,
+					entryOffsetLen: 0,
+					writeBasket:    1,
+					entryNumber:    4,
+					iobits:         0,
+					offset:         0,
+					maxBaskets:     10,
+					splitLevel:     1,
+					entries:        4,
+					firstEntry:     0,
+					totBytes:       86,
+					zipBytes:       86,
+					branches:       []Branch{},
+					leaves: []Leaf{
+						newLeafI(nil, "leaf1", nil, signed, nil),
+						newLeafL(nil, "leaf2", nil, signed, nil),
+					},
+					baskets: []Basket{
+						Basket{
+							key:     riofs.KeyFromDir(dir, "with-offsets", "title", "TBasket"),
+							bufsize: 5,
+							nevsize: 4,
+							nevbuf:  4,
+							last:    0,
+							iobits:  1,
+							offsets: []int32{1, 2, 3, 4},
+							branch:  nil,
+						},
+					},
+					basketBytes: []int32{86},
+					basketEntry: []int64{0, 4},
+					basketSeek:  []int64{304},
+					fname:       "foo.root",
+
+					//
+					readentry:   -1,
+					firstbasket: -1,
+					nextbasket:  -1,
+				},
+				class:  "myclass",
+				parent: "parentclass",
+				clones: "clones",
+				chksum: 123456789,
+				clsver: 42,
+				id:     3,
+				btype:  4,
+				stype:  5,
+				max:    42,
+				//stltyp: 45,
+				bcount1: &tbranchElement{
+					tbranch: tbranch{
+						named:          *rbase.NewNamed("count", "leaf1/I"),
+						attfill:        *rbase.NewAttFill(),
+						compress:       1,
+						basketSize:     defaultBasketSize,
+						entryOffsetLen: 0,
+						writeBasket:    1,
+						entryNumber:    4,
+						iobits:         0,
+						offset:         0,
+						maxBaskets:     10,
+						splitLevel:     1,
+						entries:        4,
+						firstEntry:     0,
+						totBytes:       86,
+						zipBytes:       86,
+						branches:       []Branch{},
+						leaves: []Leaf{
+							newLeafI(nil, "leaf1", nil, signed, nil),
+						},
+						baskets: []Basket{
+							Basket{
+								key:     riofs.KeyFromDir(dir, "with-offsets", "title", "TBasket"),
+								bufsize: 5,
+								nevsize: 4,
+								nevbuf:  4,
+								last:    0,
+								iobits:  1,
+								offsets: []int32{1, 2, 3, 4},
+								branch:  nil,
+							},
+						},
+						basketBytes: []int32{86},
+						basketEntry: []int64{0, 4},
+						basketSeek:  []int64{304},
+						fname:       "foo.root",
+
+						//
+						readentry:   -1,
+						firstbasket: -1,
+						nextbasket:  -1,
+					},
+					class:  "myotherclass",
+					parent: "parentclass",
+					clones: "clones",
+					chksum: 123456789,
+					clsver: 42,
+					id:     3,
+					btype:  4,
+					stype:  5,
+					max:    42,
+					// stltyp: 45,
+				},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			{
@@ -359,15 +529,35 @@ func TestBranchRW(t *testing.T) {
 				}
 			}
 
-			if b := tc.want.(*tbranch); len(b.leaves) != 0 {
-				for i := range b.leaves {
-					b.leaves[i].setBranch(b)
+			asTBranch := func(b interface{}) *tbranch {
+				switch b := b.(type) {
+				case *tbranch:
+					return b
+				case *tbranchElement:
+					return &b.tbranch
 				}
+				panic("impossible")
 			}
 
-			if b := tc.want.(*tbranch); len(b.baskets) != 0 {
-				for i := range b.baskets {
-					b.baskets[i].branch = b
+			setupInput := func(b interface{}) {
+				if b := asTBranch(b); len(b.leaves) != 0 {
+					for i := range b.leaves {
+						b.leaves[i].setBranch(b)
+					}
+				}
+				if b := asTBranch(tc.want); len(b.baskets) != 0 {
+					for i := range b.baskets {
+						b.baskets[i].branch = b
+					}
+				}
+
+			}
+
+			setupInput(tc.want)
+
+			if b, ok := tc.want.(*tbranchElement); ok {
+				if b.bcount1 != nil {
+					setupInput(b.bcount1)
 				}
 			}
 
@@ -396,11 +586,61 @@ func TestBranchRW(t *testing.T) {
 				t.Fatalf("could not unmarshal ROOT: %v", err)
 			}
 
-			if b := obj.(*tbranch); len(b.baskets) != 0 {
+			if b := asTBranch(obj); len(b.baskets) != 0 {
 				for i := range b.baskets {
 					b.baskets[i].branch = b
-					b.baskets[i].key = tc.want.(*tbranch).baskets[i].key
+					b.baskets[i].key = asTBranch(tc.want).baskets[i].key
 				}
+			}
+
+			if b, ok := obj.(*tbranchElement); ok {
+
+				want := tc.want.(*tbranchElement)
+				if want.bcount1 != nil {
+					for i := range b.bcount1.baskets {
+						b.bcount1.baskets[i].branch = want.bcount1.baskets[i].branch
+						b.bcount1.baskets[i].key = want.bcount1.baskets[i].key
+					}
+				}
+
+				var cmpTBE func(n string, got, want *tbranchElement)
+				cmpTBE = func(n string, got, want *tbranchElement) {
+					if got == nil && want == nil {
+						return
+					}
+					if got == nil && want != nil {
+						t.Fatalf("got=%v, want=%v", got, want)
+					}
+					if got != nil && want == nil {
+						t.Fatalf("got=%v, want=%v", got, want)
+					}
+
+					for i, v := range []struct {
+						got, want interface{}
+					}{
+						{got.tbranch, want.tbranch},
+						{got.class, want.class},
+						{got.parent, want.parent},
+						{got.clones, want.clones},
+						{got.chksum, want.chksum},
+						{got.clsver, want.clsver},
+						{got.id, want.id},
+						{got.btype, want.btype},
+						{got.stype, want.stype},
+						{got.max, want.max},
+						{got.stltyp, want.stltyp},
+						{got.streamer, want.streamer},
+						{got.estreamer, want.estreamer},
+					} {
+						if !reflect.DeepEqual(v.got, v.want) {
+							t.Fatalf("error[%s-%d]\ngot= %+v\nwant=%+v\n", n, i, v.got, v.want)
+						}
+					}
+					cmpTBE("bcount1", got.bcount1, want.bcount1)
+					cmpTBE("bcount2", got.bcount2, want.bcount2)
+				}
+				cmpTBE("master", b, want)
+				return
 			}
 
 			if !reflect.DeepEqual(obj, tc.want) {

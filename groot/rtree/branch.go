@@ -852,7 +852,6 @@ func (b *tbranch) flush() error {
 
 // tbranchElement is a Branch for objects.
 type tbranchElement struct {
-	rvers int16
 	tbranch
 	class   string          // class name of referenced object
 	parent  string          // name of parent class
@@ -872,6 +871,10 @@ type tbranchElement struct {
 	scanfct   func(b *tbranchElement, ptr interface{}) error
 }
 
+func (b *tbranchElement) RVersion() int16 {
+	return rvers.BranchElement
+}
+
 func (b *tbranchElement) Class() string {
 	return "TBranchElement"
 }
@@ -880,7 +883,41 @@ func (b *tbranchElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
 		return 0, w.Err()
 	}
-	panic("not implemented")
+
+	pos := w.WriteVersion(b.RVersion())
+	if n, err := b.tbranch.MarshalROOT(w); err != nil {
+		return n, err
+	}
+	w.WriteString(b.class)
+	w.WriteString(b.parent)
+	w.WriteString(b.clones)
+	w.WriteU32(b.chksum)
+	w.WriteU16(b.clsver)
+	w.WriteI32(b.id)
+	w.WriteI32(b.btype)
+	w.WriteI32(b.stype)
+	w.WriteI32(b.max)
+
+	{
+		var obj root.Object
+		if b.bcount1 != nil {
+			obj = b.bcount1
+		}
+		if err := w.WriteObjectAny(obj); err != nil {
+			return int(w.Pos() - pos), err
+		}
+	}
+	{
+		var obj root.Object
+		if b.bcount2 != nil {
+			obj = b.bcount2
+		}
+		if err := w.WriteObjectAny(obj); err != nil {
+			return int(w.Pos() - pos), err
+		}
+	}
+
+	return w.SetByteCount(pos, b.Class())
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -892,7 +929,6 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	beg := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(b.Class())
-	b.rvers = vers
 	if vers < 1 {
 		r.SetErr(fmt.Errorf("rtree: TBranchElement version too old (%d < 8)", vers))
 		return r.Err()
