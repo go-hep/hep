@@ -89,6 +89,21 @@ func TestWriteVarsFromStruct(t *testing.T) {
 			},
 		},
 		{
+			name: "slices-no-count",
+			ptr: &struct {
+				F1 int32
+				F2 []float32 `groot:"F2[F1]"`
+				X3 []float64 `groot:"F3"`
+				F4 []float64
+			}{},
+			want: []WriteVar{
+				{Name: "F1"},
+				{Name: "F2", Count: "F1"},
+				{Name: "F3"},
+				{Name: "F4"},
+			},
+		},
+		{
 			name: "arrays",
 			ptr: &struct {
 				N     int32 `groot:"n"`
@@ -109,6 +124,42 @@ func TestWriteVarsFromStruct(t *testing.T) {
 				{Name: "arr12"},
 				{Name: "arr13"},
 				{Name: "arr14"},
+			},
+		},
+		{
+			name: "struct-with-struct",
+			ptr: &struct {
+				F1 int64
+				F2 struct {
+					FF1 int64
+					FF2 float64
+					FF3 struct {
+						FFF1 float64
+					}
+				}
+			}{},
+			want: []WriteVar{
+				{Name: "F1"},
+				{Name: "F2"},
+			},
+		},
+		{
+			name: "struct-with-struct+slice",
+			ptr: &struct {
+				F1 int64
+				F2 struct {
+					FF1 int64
+					FF2 float64
+					FF3 []float64
+					FF4 []struct {
+						FFF1 float64
+						FFF2 []float64
+					}
+				}
+			}{},
+			want: []WriteVar{
+				{Name: "F1"},
+				{Name: "F2"},
 			},
 		},
 		{
