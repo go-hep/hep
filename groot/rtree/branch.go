@@ -12,6 +12,7 @@ import (
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rcont"
+	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
@@ -63,8 +64,8 @@ type tbranch struct {
 	dir  riofs.Directory // directory where this branch's buffers are stored
 }
 
-func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, cfg wopt) (*tbranch, error) {
-	b := &tbranch{
+func newBranchFromWVar(w *wtree, name string, wvar WriteVar, parent Branch, lvl int, cfg wopt) (Branch, error) {
+	base := &tbranch{
 		named:    *rbase.NewNamed(name, ""),
 		attfill:  *rbase.NewAttFill(),
 		compress: int(cfg.compress),
@@ -82,43 +83,63 @@ func newBranchFromWVars(w *wtree, name string, wvars []WriteVar, parent Branch, 
 		dir:  w.dir,
 	}
 
-	title := new(strings.Builder)
-	for i, wvar := range wvars {
-		if i > 0 {
-			title.WriteString(":")
-		}
-		title.WriteString(wvar.Name)
-		rt := reflect.TypeOf(wvar.Value).Elem()
-		switch k := rt.Kind(); k {
-		case reflect.Array:
-			et, shape := flattenArrayType(rt)
-			for _, dim := range shape {
-				fmt.Fprintf(title, "[%d]", dim)
-			}
-			rt = et
-		case reflect.Slice:
-			if wvar.Count == "" {
-				return nil, fmt.Errorf("rtree: empty name for count-leaf of slice %q", wvar.Name)
-			}
-			fmt.Fprintf(title, "[%s]", wvar.Count)
-			rt = rt.Elem()
-			b.entryOffsetLen = 1000 // slice, so we need an offset array
-		case reflect.String:
-			b.entryOffsetLen = 1000 // string, so we need an offset array
-		}
-		code := gotypeToROOTTypeCode(rt)
-		fmt.Fprintf(title, "/%s", code)
+	var (
+		b Branch = base
 
-		leaf, err := newLeafFromWVar(b, wvar)
-		if err != nil {
-			return nil, err
+		title = new(strings.Builder)
+		rt    = reflect.TypeOf(wvar.Value).Elem()
+	)
+
+	title.WriteString(wvar.Name)
+	switch k := rt.Kind(); k {
+	case reflect.Array:
+		et, shape := flattenArrayType(rt)
+		for _, dim := range shape {
+			fmt.Fprintf(title, "[%d]", dim)
 		}
-		b.leaves = append(b.leaves, leaf)
-		w.ttree.leaves = append(w.ttree.leaves, leaf)
+		rt = et
+
+	case reflect.Slice:
+		if wvar.Count == "" {
+			return nil, fmt.Errorf("rtree: empty name for count-leaf of slice %q", wvar.Name)
+		}
+		fmt.Fprintf(title, "[%s]", wvar.Count)
+		rt = rt.Elem()
+		base.entryOffsetLen = 1000 // slice, so we need an offset array
+
+	case reflect.String:
+		base.entryOffsetLen = 1000 // string, so we need an offset array
+
+	case reflect.Struct:
+		return newBranchElementFromWVar(w, base, wvar, parent, lvl, cfg)
 	}
 
-	b.named.SetTitle(title.String())
-	b.createNewBasket()
+	isBranchElem := false
+	if parent != nil {
+		if parent, ok := parent.(*tbranchElement); ok {
+			isBranchElem = true
+			be := &tbranchElement{
+				tbranch: *base,
+				class:   parent.class,
+				parent:  parent.class,
+			}
+			b = be
+			base = &be.tbranch
+		}
+	}
+
+	if !isBranchElem && rt.Kind() != reflect.Struct {
+		code := gotypeToROOTTypeCode(rt)
+		fmt.Fprintf(title, "/%s", code)
+	}
+
+	_, err := newLeafFromWVar(w, b, wvar, lvl, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	base.named.SetTitle(title.String())
+	base.createNewBasket()
 
 	return b, nil
 }
@@ -869,6 +890,45 @@ type tbranchElement struct {
 	streamer  rbytes.StreamerInfo
 	estreamer rbytes.StreamerElement
 	scanfct   func(b *tbranchElement, ptr interface{}) error
+}
+
+func newBranchElementFromWVar(w *wtree, base *tbranch, wvar WriteVar, parent Branch, lvl int, cfg wopt) (Branch, error) {
+	var (
+		rv       = reflect.ValueOf(wvar.Value)
+		streamer = rdict.StreamerOf(w.ttree.f, reflect.Indirect(rv).Type())
+		pclass   = ""
+	)
+
+	if parent, ok := parent.(*tbranchElement); ok {
+		pclass = parent.class
+	}
+
+	b := &tbranchElement{
+		tbranch:  *base,
+		class:    streamer.Name(),
+		parent:   pclass,
+		chksum:   uint32(streamer.CheckSum()),
+		clsver:   uint16(streamer.ClassVersion()),
+		streamer: streamer,
+	}
+	w.ttree.f.RegisterStreamer(b.streamer)
+
+	_, err := newLeafFromWVar(w, b, wvar, lvl, cfg)
+	if err != nil {
+		return nil, err
+	}
+	wvars := WriteVarsFromStruct(rv.Interface())
+	for _, wvar := range wvars {
+		sub, err := newBranchFromWVar(w, wvar.Name, wvar, b, lvl+1, cfg)
+		if err != nil {
+			return nil, fmt.Errorf("rtree: could not create sub-branch for write-var %#v: %w", wvar, err)
+		}
+		b.branches = append(b.branches, sub)
+	}
+
+	b.named.SetTitle(wvar.Name)
+	b.createNewBasket()
+	return b, nil
 }
 
 func (b *tbranchElement) RVersion() int16 {
