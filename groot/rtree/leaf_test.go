@@ -5,6 +5,7 @@
 package rtree
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -360,3 +361,58 @@ type testBranchImpl struct {
 }
 
 func (b *testBranchImpl) getReadEntry() int64 { return 1 }
+
+func TestAsLeafBase(t *testing.T) {
+	for _, tc := range []struct {
+		leaf Leaf
+		want rmeta.Enum
+	}{
+		{
+			leaf: new(LeafO),
+			want: rmeta.Bool,
+		},
+		{
+			leaf: new(LeafB),
+			want: rmeta.Int8,
+		},
+		{
+			leaf: new(LeafS),
+			want: rmeta.Int16,
+		},
+		{
+			leaf: new(LeafI),
+			want: rmeta.Int32,
+		},
+		{
+			leaf: new(LeafL),
+			want: rmeta.Int64,
+		},
+		{
+			leaf: new(LeafF),
+			want: rmeta.Float32,
+		},
+		{
+			leaf: new(LeafD),
+			want: rmeta.Float64,
+		},
+		{
+			leaf: new(LeafF16),
+			want: rmeta.Float16,
+		},
+		{
+			leaf: new(LeafD32),
+			want: rmeta.Double32,
+		},
+		{
+			leaf: new(LeafC),
+			want: rmeta.CharStar, // FIXME(sbinet): rmeta.Char?
+		},
+	} {
+		t.Run(fmt.Sprintf("%T", tc.leaf), func(t *testing.T) {
+			_, got := asLeafBase(tc.leaf)
+			if got != tc.want {
+				t.Fatalf("got=%v, want=%v", got, tc.want)
+			}
+		})
+	}
+}
