@@ -807,6 +807,13 @@ func (f *File) StreamerInfo(name string, version int) (rbytes.StreamerInfo, erro
 	return nil, fmt.Errorf("riofs: no streamer for %q", name)
 }
 
+// RegisterStreamer adds the given streamer info to the list of streamers
+// that will be stored in the ROOT file.
+func (f *File) RegisterStreamer(streamer rbytes.StreamerInfo) {
+	rdict.StreamerInfos.Add(streamer)
+	f.addStreamer(streamer)
+}
+
 func (f *File) addStreamer(streamer rbytes.StreamerInfo) {
 	if isCoreType(streamer.Name()) {
 		return
