@@ -10,6 +10,7 @@ import (
 
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
+	"go-hep.org/x/hep/groot/rcont"
 	"go-hep.org/x/hep/groot/rmeta"
 )
 
@@ -21,7 +22,8 @@ func TestStreamerOf(t *testing.T) {
 		{
 			typ: reflect.TypeOf((*struct1)(nil)).Elem(),
 			want: &StreamerInfo{
-				named: *rbase.NewNamed("struct1", "struct1"),
+				named:  *rbase.NewNamed("struct1", "struct1"),
+				objarr: rcont.NewObjArray(),
 				elems: []rbytes.StreamerElement{
 					&StreamerString{StreamerElement{
 						named:  *rbase.NewNamed("Name", ""),
@@ -120,7 +122,8 @@ func TestStreamerOf(t *testing.T) {
 		{
 			typ: reflect.TypeOf((*struct2)(nil)).Elem(),
 			want: &StreamerInfo{
-				named: *rbase.NewNamed("struct2", "struct2"),
+				named:  *rbase.NewNamed("struct2", "struct2"),
+				objarr: rcont.NewObjArray(),
 				elems: []rbytes.StreamerElement{
 					&StreamerObjectAny{StreamerElement{
 						named:  *rbase.NewNamed("V1", ""),
@@ -135,7 +138,8 @@ func TestStreamerOf(t *testing.T) {
 		{
 			typ: reflect.TypeOf((*struct3)(nil)).Elem(),
 			want: &StreamerInfo{
-				named: *rbase.NewNamed("struct3", "struct3"),
+				named:  *rbase.NewNamed("struct3", "struct3"),
+				objarr: rcont.NewObjArray(),
 				elems: []rbytes.StreamerElement{
 					&StreamerBasicType{StreamerElement{
 						named:  *rbase.NewNamed("Names", ""),
@@ -234,7 +238,8 @@ func TestStreamerOf(t *testing.T) {
 		{
 			typ: reflect.TypeOf((*struct4)(nil)).Elem(),
 			want: &StreamerInfo{
-				named: *rbase.NewNamed("struct4", "struct4"),
+				named:  *rbase.NewNamed("struct4", "struct4"),
+				objarr: rcont.NewObjArray(),
 				elems: []rbytes.StreamerElement{
 					&StreamerObjectAny{StreamerElement{
 						named:  *rbase.NewNamed("Names", ""),
