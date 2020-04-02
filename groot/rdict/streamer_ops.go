@@ -367,10 +367,8 @@ func (si *StreamerInfo) makeReadOp(sictx rbytes.StreamerInfoContext, i int, desc
 
 	default:
 		panic(fmt.Errorf("not implemented k=%d (%v)", descr.otype, descr.otype))
-		return rstreamer{rstreamGeneric, &streamerConfig{si, i, &descr, descr.offset, 0}}
+		// return rstreamer{rstreamGeneric, &streamerConfig{si, i, &descr, descr.offset, 0}}
 	}
-
-	panic("impossible")
 }
 
 func rstreamBool(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
