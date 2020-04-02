@@ -10,6 +10,7 @@ import (
 
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
+	"go-hep.org/x/hep/groot/rcont"
 	"go-hep.org/x/hep/groot/rmeta"
 )
 
@@ -35,10 +36,12 @@ func newStreamerBuilder(ctx rbytes.StreamerInfoContext, typ reflect.Type) *strea
 
 func (bld *streamerBuilder) genStreamer(typ reflect.Type) rbytes.StreamerInfo {
 	si := &StreamerInfo{
-		named: *rbase.NewNamed(typ.Name(), typ.Name()),
+		named:  *rbase.NewNamed(typ.Name(), typ.Name()),
+		objarr: rcont.NewObjArray(),
 	}
 	switch typ.Kind() {
 	case reflect.Struct:
+		si.elems = make([]rbytes.StreamerElement, 0, typ.NumField())
 		for i := 0; i < typ.NumField(); i++ {
 			ft := typ.Field(i)
 			si.elems = append(si.elems, bld.genField(ft))
