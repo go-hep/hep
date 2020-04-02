@@ -257,7 +257,7 @@ func NewWriter(dir riofs.Directory, name string, vars []WriteVar, opts ...WriteO
 	w.ttree.named.SetTitle(cfg.title)
 
 	for _, v := range vars {
-		b, err := newBranchFromWVars(w, v.Name, []WriteVar{v}, nil, cfg)
+		b, err := newBranchFromWVar(w, v.Name, v, nil, 0, cfg)
 		if err != nil {
 			return nil, fmt.Errorf("rtree: could not create branch for write-var %#v: %w", v, err)
 		}
