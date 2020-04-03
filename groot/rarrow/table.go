@@ -109,7 +109,7 @@ func (tbl *rootTable) init() {
 	tbl.cols = make([]*array.Column, tbl.ncols)
 	for i, arr := range arrs {
 		field := tbl.schema.Field(i)
-		if !arrow.TypeEquals(field.Type, arr.DataType()) {
+		if !arrow.TypeEqual(field.Type, arr.DataType()) {
 			panic(fmt.Errorf("field[%d][%s]: type=%v|%v array=%v", i, field.Name, field.Type, arr.DataType(), arr))
 		}
 		chunked := array.NewChunked(field.Type, []array.Interface{arr})
