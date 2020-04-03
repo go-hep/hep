@@ -74,6 +74,9 @@ var (
 		"TFile",
 		"TKey",
 
+		// rntup
+		// "ROOT::Experimental::RNTuple", // FIXME(sbinet): TODO
+
 		// rphys
 		"TFeldmanCousins",
 		"TLorentzVector",
@@ -220,6 +223,11 @@ func (t Type) GoName() string {
 		namespace = ""
 		name      = t.Name
 	)
+	if strings.HasPrefix(name, "ROOT::Experimental") {
+		namespace = "ROOT_Experimental"
+		name = name[len("ROOT::Experimental"):]
+	}
+
 	if strings.HasPrefix(name, "ROOT::") {
 		namespace = "ROOT_"
 		name = name[len("ROOT::"):]

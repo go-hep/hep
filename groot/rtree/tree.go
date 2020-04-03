@@ -318,6 +318,10 @@ func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
+	if r.Err() != nil {
+		return r.Err()
+	}
+
 	beg := r.Pos()
 
 	vers, pos, bcnt := r.ReadVersion(tree.Class())

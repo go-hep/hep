@@ -13,4 +13,7 @@ import (
 	_ "go-hep.org/x/hep/groot/riofs"
 	_ "go-hep.org/x/hep/groot/rphys"
 	_ "go-hep.org/x/hep/groot/rtree"
+
+	// ROOT::Experimental
+	_ "go-hep.org/x/hep/groot/exp/rntup"
 )
