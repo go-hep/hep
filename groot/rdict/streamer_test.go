@@ -5,6 +5,7 @@
 package rdict
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -395,6 +396,49 @@ type struct4 struct {
 	F32s  []float32
 	F64s  []float64
 	S1s   []struct1
+}
+
+func TestNameOfStructField(t *testing.T) {
+	for _, tc := range []struct {
+		field reflect.StructField
+		want  string
+	}{
+		{
+			field: reflect.StructField{},
+			want:  "",
+		},
+		{
+			field: reflect.StructField{Name: "f1"},
+			want:  "f1",
+		},
+		{
+			field: reflect.StructField{Name: "F1"},
+			want:  "F1",
+		},
+		{
+			field: reflect.StructField{Name: "f1", Tag: `groot:"F1"`},
+			want:  "F1",
+		},
+		{
+			field: reflect.StructField{Name: "F1", Tag: `groot:"f1"`},
+			want:  "f1",
+		},
+		{
+			field: reflect.StructField{Name: "F1", Tag: `groot:"f1[N]"`},
+			want:  "f1",
+		},
+		{
+			field: reflect.StructField{Name: "F1", Tag: `groot:"f1[10]"`},
+			want:  "f1",
+		},
+	} {
+		t.Run(fmt.Sprintf("%v", tc.field), func(t *testing.T) {
+			got := nameOf(tc.field)
+			if got != tc.want {
+				t.Fatalf("got=%q, want=%q", got, tc.want)
+			}
+		})
+	}
 }
 
 var (

@@ -7,6 +7,7 @@ package rdict
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
@@ -491,10 +492,13 @@ func (store *streamerStoreImpl) addStreamer(si rbytes.StreamerInfo) {
 
 func nameOf(field reflect.StructField) string {
 	tag, ok := field.Tag.Lookup("groot")
-	if ok {
-		return tag
+	if !ok {
+		return field.Name
 	}
-	return field.Name
+	if i := strings.Index(tag, "["); i > 0 {
+		tag = tag[:i]
+	}
+	return tag
 }
 
 func offsetOf(field reflect.StructField) int32 {
