@@ -13,6 +13,7 @@ import (
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rcont"
 	"go-hep.org/x/hep/groot/rmeta"
+	"go-hep.org/x/hep/groot/root"
 )
 
 func TestStreamerOf(t *testing.T) {
@@ -346,6 +347,10 @@ func TestStreamerOf(t *testing.T) {
 	}
 }
 
+var (
+	ctx = newStreamerStore(nil)
+)
+
 type struct1 struct {
 	Name    string
 	Bool    bool
@@ -441,6 +446,105 @@ func TestNameOfStructField(t *testing.T) {
 	}
 }
 
-var (
-	ctx = newStreamerStore(nil)
-)
+func TestBuildStreamerInfo(t *testing.T) {
+	type builtinsT1 struct {
+		F0  bool
+		F1  uint8
+		F2  uint16
+		F3  uint32
+		F4  uint64
+		F5  int8
+		F6  int16
+		F7  int32
+		F8  int64
+		F9  float32
+		F10 float64
+		F11 root.Float16
+		F12 root.Double32
+		F13 string
+	}
+
+	for _, tc := range []struct {
+		name string
+		v    interface{}
+		wfct func(w *rbytes.WBuffer, ptr interface{}) // FIXME
+	}{
+		{
+			name: "builtins",
+			v: builtinsT1{
+				F0: true,
+				F1: 1, F2: 2, F3: 3, F4: 4,
+				F5: -5, F6: -6, F7: -7, F8: -8,
+				F9: 9.9, F10: 10.10,
+				F11: -11, F12: -12,
+				F13: "hello\nworld",
+			},
+			wfct: func(w *rbytes.WBuffer, ptr interface{}) {
+				v := ptr.(*builtinsT1)
+				w.WriteBool(v.F0)
+				w.WriteU8(v.F1)
+				w.WriteU16(v.F2)
+				w.WriteU32(v.F3)
+				w.WriteU64(v.F4)
+				w.WriteI8(v.F5)
+				w.WriteI16(v.F6)
+				w.WriteI32(v.F7)
+				w.WriteI64(v.F8)
+				w.WriteF32(v.F9)
+				w.WriteF64(v.F10)
+				w.WriteF16(v.F11, nil)
+				w.WriteD32(v.F12, nil)
+				w.WriteString(v.F13)
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var (
+				rt  = reflect.TypeOf(tc.v)
+				ctx = newStreamerStore(nil)
+				si  = StreamerOf(ctx, rt).(*StreamerInfo)
+			)
+
+			err := si.BuildStreamers()
+			if err != nil {
+				t.Fatalf("could not build streamers: %+v", err)
+			}
+
+			ptr := reflect.New(rt)
+			ptr.Elem().Set(reflect.ValueOf(tc.v))
+
+			wbuf := rbytes.NewWBuffer(nil, nil, 0, ctx)
+			//	enc, err := si.NewEncoder(rbytes.ObjectWise, wbuf)
+			//	if err != nil {
+			//		t.Fatalf("could not create streamer encoder: %+v", err)
+			//	}
+			//
+			//	err = enc.EncodeROOT(ptr.Interface())
+			//	if err != nil {
+			//		t.Fatalf("could not encode value %T: %+v", tc.v, err)
+			//	}
+
+			tc.wfct(wbuf, ptr.Interface()) // FIXME(sbinet): use encoder
+
+			rbuf := rbytes.NewRBuffer(wbuf.Bytes(), nil, 0, ctx)
+
+			dec, err := si.NewDecoder(rbytes.ObjectWise, rbuf)
+			if err != nil {
+				t.Fatalf("could not create streamer decoder: %+v", err)
+			}
+
+			got := reflect.New(reflect.TypeOf(tc.v))
+			err = dec.DecodeROOT(got.Interface())
+			if err != nil {
+				t.Fatalf("could not decode value %T: %+v", tc.v, err)
+			}
+
+			if got, want := got.Elem().Interface(), tc.v; !reflect.DeepEqual(got, want) {
+				t.Fatalf(
+					"invalid enc/dec round-trip:\ngot= %#v\nwant=%#v",
+					got, want,
+				)
+			}
+		})
+	}
+}
