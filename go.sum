@@ -10,6 +10,8 @@ github.com/ajstarks/svgo v0.0.0-20200320125537-f189e35d30ca/go.mod h1:K08gAheRH3
 github.com/apache/arrow/go/arrow v0.0.0-20191119113437-a5a67e8c5460/go.mod h1:VTxUBvSJ3s3eHAg65PNgrsn5BtqCRPdmyXh6rAfdxN0=
 github.com/apache/arrow/go/arrow v0.0.0-20200228160020-c67ff099122d h1:i6J2Ahy7nXUKgKMUrebVuGtWkHiwKuT5b+tuIVLYb+8=
 github.com/apache/arrow/go/arrow v0.0.0-20200228160020-c67ff099122d/go.mod h1:QNYViu/X0HXDHw7m3KXzWSVXIbfUvJqBFe6Gj8/pYA0=
+github.com/apache/arrow/go/arrow v0.0.0-20200403134915-89ce1cadb678 h1:R72+9UXiP7TnpTAdznM1okjzyqb3bzopSA7HCP7p3gM=
+github.com/apache/arrow/go/arrow v0.0.0-20200403134915-89ce1cadb678/go.mod h1:QNYViu/X0HXDHw7m3KXzWSVXIbfUvJqBFe6Gj8/pYA0=
 github.com/astrogo/fitsio v0.1.0 h1:lJtA14sbCDPqPc0j6sA6pejFCDGugcb/BD36TOQVrNU=
 github.com/astrogo/fitsio v0.1.0/go.mod h1:AMazbBDPn8fcAglKAWIR5+5iDBnBv78pf6UHmTKSCbE=
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=

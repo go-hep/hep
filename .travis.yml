@@ -30,7 +30,7 @@ matrix:
        - TAGS="-tags=travis"
    - go: master
      env:
-       - TAGS="-tags=travis,noasm"
+       - TAGS="-tags=travis"
        - COVERAGE="-race"
        - GOPROXY="https://proxy.golang.org"
        - GO111MODULE="on"
