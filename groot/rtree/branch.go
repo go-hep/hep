@@ -6,6 +6,7 @@ package rtree
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 
@@ -1240,3 +1241,26 @@ var (
 	_ rbytes.Marshaler   = (*tbranchElement)(nil)
 	_ rbytes.Unmarshaler = (*tbranchElement)(nil)
 )
+
+func DDD(b Branch) {
+	switch b := b.(type) {
+	case *tbranch:
+		// ok
+	case *tbranchElement:
+		log.Printf("---- %q, %q ----", b.Name(), b.Title())
+		log.Printf("class:  %q", b.class)
+		log.Printf("parent: %q", b.parent)
+		log.Printf("clones: %q", b.clones)
+		log.Printf("chksum: %v", b.chksum)
+		log.Printf("clsver: %v", b.clsver)
+		log.Printf("id:     %v", b.id)
+		log.Printf("btype:  %v", b.btype)
+		log.Printf("stype:  %v", b.stype)
+		log.Printf("max:    %v", b.max)
+		log.Printf("stltyp: %v", b.stltyp)
+		log.Printf("leaves: %d", len(b.leaves))
+		for i, leaf := range b.leaves {
+			log.Printf("  %d: %T (%q, %q)", i, leaf, leaf.Name(), leaf.Title())
+		}
+	}
+}

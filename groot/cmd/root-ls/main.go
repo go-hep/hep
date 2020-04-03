@@ -234,6 +234,7 @@ func displayBranches(w io.Writer, bres brancher, indent int) {
 	ww := newWindent(indent, w)
 	for _, b := range branches {
 		fmt.Fprintf(ww, "%s\t%q\t%v\n", b.Name(), b.Title(), b.Class())
+		rtree.DDD(b)
 		displayBranches(ww, b, 2)
 	}
 	ww.Flush()
