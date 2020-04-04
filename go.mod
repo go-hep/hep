@@ -14,7 +14,7 @@ require (
 	github.com/google/go-cmp v0.4.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-uuid v1.0.2
-	github.com/jcmturner/gokrb5/v8 v8.1.1
+	github.com/jcmturner/gokrb5/v8 v8.3.0
 	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	github.com/klauspost/compress v1.10.3
 	github.com/peterh/liner v1.2.0
