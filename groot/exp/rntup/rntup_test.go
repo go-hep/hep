@@ -80,4 +80,8 @@ func TestReadNTuple(t *testing.T) {
 	if got, want := *nt, want; got != want {
 		t.Fatalf("error:\ngot= %#v\nwant=%#v", got, want)
 	}
+
+	if got, want := nt.String(), want.String(); got != want {
+		t.Fatalf("error:\ngot= %v\nwant=%v", got, want)
+	}
 }

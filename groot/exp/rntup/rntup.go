@@ -6,6 +6,7 @@
 package rntup // import "go-hep.org/x/hep/groot/exp/rntup"
 
 import (
+	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbytes"
@@ -35,6 +36,12 @@ func (*NTuple) Class() string {
 
 func (*NTuple) RVersion() int16 {
 	return 0 // FIXME(sbinet): generate through gen.rboot
+}
+
+func (nt *NTuple) String() string {
+	return fmt.Sprintf("NTuple{version:%d, size:%d, header:%v, footer:%v}",
+		nt.rvers, nt.size, nt.header, nt.footer,
+	)
 }
 
 func (nt *NTuple) MarshalROOT(w *rbytes.WBuffer) (int, error) {
