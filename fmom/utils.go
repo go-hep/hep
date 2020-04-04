@@ -41,10 +41,10 @@ func Dot(p1, p2 P4) float64 {
 
 // CosTheta returns the cosine of the angle between the momentum of two 4-vectors.
 func CosTheta(p1, p2 P4) float64 {
-	mag1 := p1.P()
-	mag2 := p2.P()
+	mag1 := p1.P2()
+	mag2 := p2.P2()
 	dot := vecDot(vecOf(p1), vecOf(p2))
-	cosTh := dot / (mag1 * mag2)
+	cosTh := dot / math.Sqrt(mag1*mag2)
 	return cosTh
 }
 
