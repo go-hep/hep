@@ -104,6 +104,7 @@ func NewS2D(data plotter.XYer, opts ...Options) *S2D {
 		Data:       data,
 		GlyphStyle: plotter.DefaultGlyphStyle,
 	}
+	s.GlyphStyle.Shape = draw.CrossGlyph{}
 
 	cfg := newConfig(opts)
 
@@ -119,7 +120,10 @@ func NewS2D(data plotter.XYer, opts ...Options) *S2D {
 		_ = s.withBand()
 	}
 
-	s.GlyphStyle.Shape = draw.CrossGlyph{}
+	if cfg.glyph != (draw.GlyphStyle{}) {
+		s.GlyphStyle = cfg.glyph
+	}
+
 	return s
 }
 

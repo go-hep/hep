@@ -16,6 +16,7 @@ import (
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/plotutil"
 	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/vg/draw"
 )
 
 // ExampleS2D draws some scatter points.
@@ -74,9 +75,15 @@ func ExampleS2D_withErrorBars() {
 	p.Y.Label.Text = "Y"
 	p.Add(plotter.NewGrid())
 
-	s := hplot.NewS2D(s2d, hplot.WithXErrBars(true), hplot.WithYErrBars(true))
-	s.GlyphStyle.Color = color.RGBA{R: 255, A: 255}
-	s.GlyphStyle.Radius = vg.Points(4)
+	s := hplot.NewS2D(s2d,
+		hplot.WithXErrBars(true),
+		hplot.WithYErrBars(true),
+		hplot.WithGlyphStyle(draw.GlyphStyle{
+			Color:  color.RGBA{R: 255, A: 255},
+			Radius: vg.Points(4),
+			Shape:  draw.CrossGlyph{},
+		}),
+	)
 
 	p.Add(s)
 

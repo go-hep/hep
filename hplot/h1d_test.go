@@ -25,3 +25,7 @@ func TestH1DLogScale(t *testing.T) {
 func TestH1DYErrs(t *testing.T) {
 	cmpimg.CheckPlot(ExampleH1D_withYErrBars, t, "h1d_yerrs.png")
 }
+
+func TestH1DAsData(t *testing.T) {
+	cmpimg.CheckPlot(ExampleH1D_withYErrBarsAndData, t, "h1d_glyphs.png")
+}

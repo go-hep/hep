@@ -194,6 +194,7 @@ type config struct {
 	log    struct {
 		y bool
 	}
+	glyph draw.GlyphStyle
 }
 
 func newConfig(opts []Options) *config {
@@ -229,6 +230,13 @@ func WithYErrBars(v bool) Options {
 func WithBand(v bool) Options {
 	return func(c *config) {
 		c.band = v
+	}
+}
+
+// WithGlyphStyle sets the glyph style of a plotter.
+func WithGlyphStyle(sty draw.GlyphStyle) Options {
+	return func(c *config) {
+		c.glyph = sty
 	}
 }
 

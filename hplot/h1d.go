@@ -32,6 +32,10 @@ type H1D struct {
 	// bar of the histogram.
 	draw.LineStyle
 
+	// GlyphStyle is the style of the glyphs drawn
+	// at the top of each histogram bar.
+	GlyphStyle draw.GlyphStyle
+
 	// LogY allows rendering with a log-scaled Y axis.
 	// When enabled, histogram bins with no entries will be discarded from
 	// the histogram's DataRange.
@@ -110,6 +114,10 @@ func NewH1D(h *hbook.H1D, opts ...Options) *H1D {
 
 	if cfg.bars.yerrs {
 		h1.withYErrBars()
+	}
+
+	if cfg.glyph != (draw.GlyphStyle{}) {
+		h1.GlyphStyle = cfg.glyph
 	}
 
 	return h1
@@ -250,6 +258,12 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 			pts = append(pts, vg.Point{X: xlft, Y: ylft})
 			pts = append(pts, vg.Point{X: xmin, Y: ymax})
 			pts = append(pts, vg.Point{X: xmax, Y: ymax})
+		}
+
+		if h.GlyphStyle.Radius != 0 {
+			x := trX(bin.XMid())
+			_, y := yfct(bin.SumW())
+			c.DrawGlyph(h.GlyphStyle, vg.Point{X: x, Y: y})
 		}
 	}
 
