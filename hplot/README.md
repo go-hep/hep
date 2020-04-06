@@ -552,3 +552,68 @@ func ExampleBand() {
 }
 ```
 ![band-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/band_golden.png)
+
+### Plot with borders
+
+One can specify extra-space between the image borders (the physical file canvas) and the actual plot data.
+
+![plot-border-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_borders.png)
+
+[embedmd]:# (example_h1d_test.go go /func ExampleH1D_withPlotBorders/ /\n}/)
+```go
+func ExampleH1D_withPlotBorders() {
+	const npoints = 10000
+
+	// Create a normal distribution.
+	dist := distuv.Normal{
+		Mu:    0,
+		Sigma: 1,
+		Src:   rand.New(rand.NewSource(0)),
+	}
+
+	// Draw some random values from the standard
+	// normal distribution.
+	hist := hbook.NewH1D(20, -4, +4)
+	for i := 0; i < npoints; i++ {
+		v := dist.Rand()
+		hist.Fill(v, 1)
+	}
+
+	// normalize histogram
+	area := 0.0
+	for _, bin := range hist.Binning.Bins {
+		area += bin.SumW() * bin.XWidth()
+	}
+	hist.Scale(1 / area)
+
+	// Make a plot and set its title.
+	p := hplot.New()
+	p.Border.Right = 5
+	p.Border.Left = 2
+	p.Border.Top = 5
+	p.Border.Bottom = 2
+	p.Title.Text = "Histogram"
+	p.X.Label.Text = "X"
+	p.Y.Label.Text = "Y"
+
+	// Create a histogram of our values drawn
+	// from the standard normal.
+	h := hplot.NewH1D(hist)
+	h.Infos.Style = hplot.HInfoSummary
+	p.Add(h)
+
+	// The normal distribution function
+	norm := hplot.NewFunction(dist.Prob)
+	norm.Color = color.RGBA{R: 255, A: 255}
+	norm.Width = vg.Points(2)
+	p.Add(norm)
+
+	// draw a grid
+	p.Add(hplot.NewGrid())
+
+	// Save the plot to a PNG file.
+	if err := p.Save(6*vg.Inch, -1, "testdata/h1d_borders.png"); err != nil {
+		log.Fatalf("error saving plot: %v\n", err)
+	}
+}
+```

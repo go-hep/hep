@@ -10,7 +10,11 @@ package hplot // import "go-hep.org/x/hep/hplot"
 
 import (
 	"bytes"
+	"io"
 	"math"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"go-hep.org/x/exp/vgshiny"
 	"golang.org/x/exp/shiny/screen"
@@ -28,6 +32,15 @@ import (
 type Plot struct {
 	*plot.Plot
 	Style Style
+
+	// Border specifies the borders' sizes, the space between the
+	// end of the plot image (PDF, PNG, ...) and the actual plot.
+	Border struct {
+		Left   vg.Length
+		Right  vg.Length
+		Bottom vg.Length
+		Top    vg.Length
+	}
 }
 
 // New returns a new plot with some reasonable
@@ -76,12 +89,32 @@ func (p *Plot) Add(ps ...plot.Plotter) {
 	p.Plot.Add(ps...)
 }
 
+// WriterTo returns an io.WriterTo that will write the plot as
+// the specified image format.
+//
+// Supported formats are:
+//
+//  eps, jpg|jpeg, pdf, png, svg, tex, and tif|tiff.
+func (p *Plot) WriterTo(w, h vg.Length, format string) (io.WriterTo, error) {
+	c, err := draw.NewFormattedCanvas(w, h, format)
+	if err != nil {
+		return nil, err
+	}
+	dc := draw.New(c)
+	dc = draw.Crop(dc,
+		p.Border.Left, -p.Border.Right,
+		p.Border.Bottom, -p.Border.Top,
+	)
+	p.Draw(dc)
+	return c, nil
+}
+
 // Save saves the plot to an image file.  The file format is determined
 // by the extension.
 //
 // Supported extensions are:
 //
-//  .eps, .jpg, .jpeg, .pdf, .png, .svg, .tif and .tiff.
+//  .eps, .jpg, .jpeg, .pdf, .png, .svg, .tex, .tif and .tiff.
 //
 // If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
 // If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
@@ -96,7 +129,33 @@ func (p *Plot) Save(w, h vg.Length, file string) (err error) {
 	case h <= 0:
 		h = w / math.Phi
 	}
-	return p.Plot.Save(w, h, file)
+
+	f, err := os.Create(file)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	format := strings.ToLower(filepath.Ext(file))
+	if len(format) != 0 {
+		format = format[1:]
+	}
+	c, err := p.WriterTo(w, h, format)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.WriteTo(f)
+	if err != nil {
+		return err
+	}
+
+	err = f.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Show displays the plot to the screen, with the given dimensions.

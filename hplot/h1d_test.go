@@ -29,3 +29,7 @@ func TestH1DYErrs(t *testing.T) {
 func TestH1DAsData(t *testing.T) {
 	cmpimg.CheckPlot(ExampleH1D_withYErrBarsAndData, t, "h1d_glyphs.png")
 }
+
+func TestH1DWithBorders(t *testing.T) {
+	cmpimg.CheckPlot(ExampleH1D_withPlotBorders, t, "h1d_borders.png")
+}
