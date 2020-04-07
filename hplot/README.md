@@ -562,7 +562,7 @@ func ExampleBand() {
 
 One can specify extra-space between the image borders (the physical file canvas) and the actual plot data.
 
-![plot-border-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_borders.png)
+![plot-border-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_borders_golden.png)
 
 [embedmd]:# (example_h1d_test.go go /func ExampleH1D_withPlotBorders/ /\n}/)
 ```go
