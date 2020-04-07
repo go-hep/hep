@@ -31,7 +31,7 @@ func TestPDFLatex(t *testing.T) {
 			latex: &pdfLatex{cmd: "pdflatex-not-there"},
 			want: func() error {
 				err := fmt.Errorf("hplot: could not generate PDF: hplot: could not generate PDF from vgtex:\n\nerror: exec: \"pdflatex-not-there\": executable file not found in $PATH")
-				if runtime.GOOS() != "windows" {
+				if runtime.GOOS != "windows" {
 					return err
 				}
 				return fmt.Errorf("hplot: could not generate PDF: hplot: could not generate PDF from vgtex:\n\nerror: exec: \"pdflatex-not-there\": executable file not found in %%PATH%%")
