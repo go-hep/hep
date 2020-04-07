@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"testing"
 
 	"gonum.org/v1/plot/vg"
@@ -28,7 +29,13 @@ func TestPDFLatex(t *testing.T) {
 		{
 			name:  "pdflatex-not-there",
 			latex: &pdfLatex{cmd: "pdflatex-not-there"},
-			want:  fmt.Errorf("hplot: could not generate PDF: hplot: could not generate PDF from vgtex:\n\nerror: exec: \"pdflatex-not-there\": executable file not found in $PATH"),
+			want: func() error {
+				err := fmt.Errorf("hplot: could not generate PDF: hplot: could not generate PDF from vgtex:\n\nerror: exec: \"pdflatex-not-there\": executable file not found in $PATH")
+				if runtime.GOOS() != "windows" {
+					return err
+				}
+				return fmt.Errorf("hplot: could not generate PDF: hplot: could not generate PDF from vgtex:\n\nerror: exec: \"pdflatex-not-there\": executable file not found in %%PATH%%")
+			}(),
 		},
 		{
 			name:  "pdflatex-handler",
