@@ -113,7 +113,7 @@ func NewH1D(h *hbook.H1D, opts ...Options) *H1D {
 	h1.Infos = cfg.hinfos
 
 	if cfg.bars.yerrs {
-		h1.withYErrBars()
+		h1.YErrs = h1.withYErrBars(nil)
 	}
 
 	if cfg.glyph != (draw.GlyphStyle{}) {
@@ -124,17 +124,20 @@ func NewH1D(h *hbook.H1D, opts ...Options) *H1D {
 }
 
 // withYErrBars enables the Y error bars
-func (h *H1D) withYErrBars() {
+func (h *H1D) withYErrBars(yoffs []float64) *plotter.YErrorBars {
 	bins := h.Hist.Binning.Bins
+	if yoffs == nil {
+		yoffs = make([]float64, len(bins))
+	}
 	data := make(plotter.XYs, 0, len(bins))
 	yerr := make(plotter.YErrors, 0, len(bins))
-	for _, bin := range bins {
+	for i, bin := range bins {
 		if bin.Entries() == 0 {
 			continue
 		}
 		data = append(data, plotter.XY{
 			X: bin.XMid(),
-			Y: bin.SumW(),
+			Y: yoffs[i] + bin.SumW(),
 		})
 		ey := 0.5 * bin.ErrW()
 		yerr = append(yerr, struct{ Low, High float64 }{ey, ey})
@@ -152,7 +155,7 @@ func (h *H1D) withYErrBars() {
 	yplt.LineStyle.Color = h.LineStyle.Color
 	yplt.LineStyle.Width = h.LineStyle.Width
 
-	h.YErrs = yplt
+	return yplt
 }
 
 // DataRange returns the minimum and maximum X and Y values
@@ -175,20 +178,12 @@ func (h *H1D) DataRange() (xmin, xmax, ymin, ymax float64) {
 	ymax = math.Inf(-1)
 	ylow := math.Inf(+1) // ylow will hold the smallest non-zero y value.
 	for _, bin := range h.Hist.Binning.Bins {
-		if bin.XMax() > xmax {
-			xmax = bin.XMax()
-		}
-		if bin.XMin() < xmin {
-			xmin = bin.XMin()
-		}
-		if bin.SumW() > ymax {
-			ymax = bin.SumW()
-		}
-		if bin.SumW() < ymin {
-			ymin = bin.SumW()
-		}
-		if bin.SumW() != 0 && bin.SumW() < ylow {
-			ylow = bin.SumW()
+		xmax = math.Max(bin.XMax(), xmax)
+		xmin = math.Min(bin.XMin(), xmin)
+		ymax = math.Max(bin.SumW(), ymax)
+		ymin = math.Min(bin.SumW(), ymin)
+		if bin.SumW() != 0 {
+			ylow = math.Min(bin.SumW(), ylow)
 		}
 	}
 
@@ -509,3 +504,8 @@ func (l *histLegend) Add(name string, value interface{}) {
 	}
 	l.entries = append(l.entries, legendEntry{text: name, value: str})
 }
+
+var (
+	_ plot.Plotter     = (*H1D)(nil)
+	_ plot.Thumbnailer = (*H1D)(nil)
+)
