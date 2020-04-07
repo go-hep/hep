@@ -10,6 +10,7 @@ package hplot // import "go-hep.org/x/hep/hplot"
 
 import (
 	"bytes"
+	"fmt"
 	"image/color"
 	"io"
 	"math"
@@ -43,6 +44,13 @@ type Plot struct {
 		Bottom vg.Length
 		Top    vg.Length
 	}
+
+	// Latex handles the generation of PDFs from .tex files.
+	// The default is to use DefaultLatexHandler (a no-op).
+	// To enable the automatic generation of PDFs, use PDFLatexHandler:
+	//  p := hplot.New()
+	//  p.Latex = hplot.PDFLatexHandler
+	Latex LatexHandler
 }
 
 // New returns a new plot with some reasonable
@@ -60,6 +68,7 @@ func New() *Plot {
 	pp := &Plot{
 		Plot:  p,
 		Style: style,
+		Latex: DefaultLatexHandler,
 	}
 	pp.Style.Apply(pp)
 	// p.X.Padding = 0
@@ -189,6 +198,13 @@ func (p *Plot) Save(w, h vg.Length, file string) (err error) {
 		return err
 	}
 
+	if format == "tex" {
+		err = p.Latex.CompileLatex(file)
+		if err != nil {
+			return fmt.Errorf("hplot: could not generate PDF: %w", err)
+		}
+	}
+
 	return nil
 }
 
@@ -272,70 +288,4 @@ func ZipXY(x, y []float64) plotter.XYer {
 		panic("hplot: slices length differ")
 	}
 	return zip{x: x, y: y}
-}
-
-// Options encodes various options to pass to a plot.
-type Options func(cfg *config)
-
-type config struct {
-	bars struct {
-		xerrs bool
-		yerrs bool
-	}
-	band   bool
-	hinfos HInfos
-	log    struct {
-		y bool
-	}
-	glyph draw.GlyphStyle
-}
-
-func newConfig(opts []Options) *config {
-	cfg := new(config)
-	for _, opt := range opts {
-		opt(cfg)
-	}
-	return cfg
-}
-
-// WithLogY sets whether the plotter in Y should handle log-scale.
-func WithLogY(v bool) Options {
-	return func(c *config) {
-		c.log.y = v
-	}
-}
-
-// WithXErrBars enables or disables the display of X-error bars.
-func WithXErrBars(v bool) Options {
-	return func(c *config) {
-		c.bars.xerrs = v
-	}
-}
-
-// WithYErrBars enables or disables the display of Y-error bars.
-func WithYErrBars(v bool) Options {
-	return func(c *config) {
-		c.bars.yerrs = v
-	}
-}
-
-// WithBand enables or disables the display of a colored band between Y-error bars.
-func WithBand(v bool) Options {
-	return func(c *config) {
-		c.band = v
-	}
-}
-
-// WithGlyphStyle sets the glyph style of a plotter.
-func WithGlyphStyle(sty draw.GlyphStyle) Options {
-	return func(c *config) {
-		c.glyph = sty
-	}
-}
-
-// WithHInfo sets a given histogram info style.
-func WithHInfo(v HInfoStyle) Options {
-	return func(c *config) {
-		c.hinfos.Style = v
-	}
 }
