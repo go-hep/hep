@@ -10,6 +10,7 @@ package hplot // import "go-hep.org/x/hep/hplot"
 
 import (
 	"bytes"
+	"image/color"
 	"io"
 	"math"
 	"os"
@@ -23,6 +24,7 @@ import (
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 	"gonum.org/v1/plot/vg/vgimg"
+	"gonum.org/v1/plot/vg/vgtex"
 )
 
 //go:generate go get github.com/campoy/embedmd
@@ -100,11 +102,43 @@ func (p *Plot) WriterTo(w, h vg.Length, format string) (io.WriterTo, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	dc := draw.New(c)
-	dc = draw.Crop(dc,
-		p.Border.Left, -p.Border.Right,
-		p.Border.Bottom, -p.Border.Top,
-	)
+	switch c.(type) {
+	case *vgtex.Canvas:
+		// FIXME(sbinet): remove when gonum/plot#597 is fixed.
+		dc.Push()
+		defer dc.Pop()
+
+		// prevent pgf/tikz to crop-out the bounding box
+		// by filling the whole image with a transparent box.
+		dc.FillPolygon(color.Transparent, []vg.Point{
+			{X: dc.Min.X, Y: dc.Min.Y},
+			{X: dc.Max.X, Y: dc.Min.Y},
+			{X: dc.Max.X, Y: dc.Max.Y},
+			{X: dc.Min.X, Y: dc.Max.Y},
+		})
+
+		minpt := vg.Point{
+			X: dc.Min.X + p.Border.Left,
+			Y: dc.Min.Y + p.Border.Bottom,
+		}
+		maxpt := vg.Point{
+			X: dc.Max.X - p.Border.Right,
+			Y: dc.Max.Y - p.Border.Top,
+		}
+		xscale := (maxpt.X - minpt.X) / (dc.Max.X - dc.Min.X)
+		yscale := (maxpt.Y - minpt.Y) / (dc.Max.Y - dc.Min.Y)
+		dc.Translate(minpt)
+		dc.Scale(float64(xscale), float64(yscale))
+
+	default:
+		dc = draw.Crop(dc,
+			p.Border.Left, -p.Border.Right,
+			p.Border.Bottom, -p.Border.Top,
+		)
+	}
+
 	p.Draw(dc)
 	return c, nil
 }

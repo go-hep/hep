@@ -226,6 +226,10 @@ func Example_latexplot() {
 	p.Title.Text = `Gaussian distribution: $f(x) = \frac{e^{-(x - \mu)^{2}/(2\sigma^{2}) }} {\sigma\sqrt{2\pi}}$`
 	p.Y.Label.Text = `$f(x)$`
 	p.X.Label.Text = `$x$`
+	p.Border.Left = 5
+	p.Border.Right = 5
+	p.Border.Top = 5
+	p.Border.Bottom = 5
 
 	// Create a histogram of our values drawn
 	// from the standard normal.
