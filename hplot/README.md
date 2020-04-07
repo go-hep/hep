@@ -179,6 +179,9 @@ func ExampleH1D_withYErrBarsAndData() {
 	p.X.Label.Text = "X"
 	p.Y.Label.Text = "Y"
 
+	p.Legend.Top = true
+	p.Legend.Left = true
+
 	// Create a histogram of our values drawn
 	// from the standard normal.
 	h := hplot.NewH1D(hist,
@@ -194,12 +197,14 @@ func ExampleH1D_withYErrBarsAndData() {
 	h.YErrs.LineStyle.Color = color.Black
 	h.LineStyle.Width = 0 // disable histogram lines
 	p.Add(h)
+	p.Legend.Add("data", h)
 
 	// The normal distribution function
 	norm := hplot.NewFunction(dist.Prob)
 	norm.Color = color.RGBA{R: 255, A: 255}
 	norm.Width = vg.Points(2)
 	p.Add(norm)
+	p.Legend.Add("model", norm)
 
 	// draw a grid
 	p.Add(hplot.NewGrid())

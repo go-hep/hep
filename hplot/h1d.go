@@ -360,6 +360,10 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 	}
 	pts = append(pts, vg.Point{X: xmin, Y: ymin})
 	c.StrokeLines(h.LineStyle, c.ClipLinesXY(pts)...)
+
+	if h.GlyphStyle != (draw.GlyphStyle{}) {
+		c.DrawGlyph(h.GlyphStyle, c.Center())
+	}
 }
 
 func newHistFromXYer(xys plotter.XYer, n int) *hbook.H1D {
