@@ -20,6 +20,7 @@ import (
 
 	"go-hep.org/x/exp/vgshiny"
 	"go-hep.org/x/hep/hplot/htex"
+	"go-hep.org/x/hep/hplot/huntex"
 	"golang.org/x/exp/shiny/screen"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
@@ -191,6 +192,8 @@ func (p *Plot) Draw(dc draw.Canvas) {
 			{X: dc.Max.X, Y: dc.Max.Y},
 			{X: dc.Min.X, Y: dc.Max.Y},
 		})
+	default:
+		dc.Canvas = huntex.Canvas{Canvas: dc.Canvas}
 	}
 
 	dc = draw.Crop(dc,
