@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"go-hep.org/x/exp/vgshiny"
+	"go-hep.org/x/hep/hplot/htex"
 	"golang.org/x/exp/shiny/screen"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
@@ -46,11 +47,11 @@ type Plot struct {
 	}
 
 	// Latex handles the generation of PDFs from .tex files.
-	// The default is to use DefaultLatexHandler (a no-op).
-	// To enable the automatic generation of PDFs, use PDFLatexHandler:
+	// The default is to use htex.NoopHandler (a no-op).
+	// To enable the automatic generation of PDFs, use DefaultHandler:
 	//  p := hplot.New()
-	//  p.Latex = hplot.PDFLatexHandler
-	Latex LatexHandler
+	//  p.Latex = htex.DefaultHandler
+	Latex htex.Handler
 }
 
 // New returns a new plot with some reasonable
@@ -68,7 +69,7 @@ func New() *Plot {
 	pp := &Plot{
 		Plot:  p,
 		Style: style,
-		Latex: DefaultLatexHandler,
+		Latex: htex.NoopHandler{},
 	}
 	pp.Style.Apply(pp)
 	// p.X.Padding = 0
