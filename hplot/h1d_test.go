@@ -5,9 +5,19 @@
 package hplot_test
 
 import (
+	"image/color"
+	"math"
+	"os"
 	"testing"
 
+	"go-hep.org/x/hep/hbook"
+	"go-hep.org/x/hep/hplot"
+	"golang.org/x/exp/rand"
+	"gonum.org/v1/gonum/stat/distuv"
 	"gonum.org/v1/plot/cmpimg"
+	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/vg/draw"
+	"gonum.org/v1/plot/vg/vgimg"
 )
 
 func TestH1D(t *testing.T) {
@@ -31,5 +41,82 @@ func TestH1DAsData(t *testing.T) {
 }
 
 func TestH1DWithBorders(t *testing.T) {
+	_ = os.Remove("testdata/h1d_borders.png")
 	cmpimg.CheckPlot(ExampleH1D_withPlotBorders, t, "h1d_borders.png")
+
+	_ = os.Remove("testdata/h1d_borders.png")
+	// check that it works with a vg.Canvas-WriterTo.
+	cmpimg.CheckPlot(func() {
+		const npoints = 10000
+
+		// Create a normal distribution.
+		dist := distuv.Normal{
+			Mu:    0,
+			Sigma: 1,
+			Src:   rand.New(rand.NewSource(0)),
+		}
+
+		// Draw some random values from the standard
+		// normal distribution.
+		hist := hbook.NewH1D(20, -4, +4)
+		for i := 0; i < npoints; i++ {
+			v := dist.Rand()
+			hist.Fill(v, 1)
+		}
+
+		// normalize histogram
+		area := 0.0
+		for _, bin := range hist.Binning.Bins {
+			area += bin.SumW() * bin.XWidth()
+		}
+		hist.Scale(1 / area)
+
+		// Make a plot and set its title.
+		p := hplot.New()
+		p.Border.Right = 25
+		p.Border.Left = 20
+		p.Border.Top = 25
+		p.Border.Bottom = 20
+		p.Title.Text = "Histogram"
+		p.X.Label.Text = "X"
+		p.Y.Label.Text = "Y"
+
+		// Create a histogram of our values drawn
+		// from the standard normal.
+		h := hplot.NewH1D(hist)
+		h.Infos.Style = hplot.HInfoSummary
+		p.Add(h)
+
+		// The normal distribution function
+		norm := hplot.NewFunction(dist.Prob)
+		norm.Color = color.RGBA{R: 255, A: 255}
+		norm.Width = vg.Points(2)
+		p.Add(norm)
+
+		// draw a grid
+		p.Add(hplot.NewGrid())
+
+		c := vgimg.NewWith(
+			vgimg.UseWH(6*vg.Inch, 6*vg.Inch/math.Phi),
+		)
+		dc := draw.New(c)
+		p.Draw(dc)
+
+		f, err := os.Create("testdata/h1d_borders.png")
+		if err != nil {
+			t.Fatalf("could not create output plot file: %+v", err)
+		}
+		defer f.Close()
+
+		img := vgimg.PngCanvas{Canvas: c}
+		_, err = img.WriteTo(f)
+		if err != nil {
+			t.Fatalf("could not encode canvas to png: %+v", err)
+		}
+
+		err = f.Close()
+		if err != nil {
+			t.Fatalf("could not save file: %+v", err)
+		}
+	}, t, "h1d_borders.png")
 }

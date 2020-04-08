@@ -100,58 +100,6 @@ func (p *Plot) Add(ps ...plot.Plotter) {
 	p.Plot.Add(ps...)
 }
 
-// WriterTo returns an io.WriterTo that will write the plot as
-// the specified image format.
-//
-// Supported formats are:
-//
-//  eps, jpg|jpeg, pdf, png, svg, tex, and tif|tiff.
-func (p *Plot) WriterTo(w, h vg.Length, format string) (io.WriterTo, error) {
-	c, err := draw.NewFormattedCanvas(w, h, format)
-	if err != nil {
-		return nil, err
-	}
-
-	dc := draw.New(c)
-	switch c.(type) {
-	case *vgtex.Canvas:
-		// FIXME(sbinet): remove when gonum/plot#597 is fixed.
-		dc.Push()
-		defer dc.Pop()
-
-		// prevent pgf/tikz to crop-out the bounding box
-		// by filling the whole image with a transparent box.
-		dc.FillPolygon(color.Transparent, []vg.Point{
-			{X: dc.Min.X, Y: dc.Min.Y},
-			{X: dc.Max.X, Y: dc.Min.Y},
-			{X: dc.Max.X, Y: dc.Max.Y},
-			{X: dc.Min.X, Y: dc.Max.Y},
-		})
-
-		minpt := vg.Point{
-			X: dc.Min.X + p.Border.Left,
-			Y: dc.Min.Y + p.Border.Bottom,
-		}
-		maxpt := vg.Point{
-			X: dc.Max.X - p.Border.Right,
-			Y: dc.Max.Y - p.Border.Top,
-		}
-		xscale := (maxpt.X - minpt.X) / (dc.Max.X - dc.Min.X)
-		yscale := (maxpt.Y - minpt.Y) / (dc.Max.Y - dc.Min.Y)
-		dc.Translate(minpt)
-		dc.Scale(float64(xscale), float64(yscale))
-
-	default:
-		dc = draw.Crop(dc,
-			p.Border.Left, -p.Border.Right,
-			p.Border.Bottom, -p.Border.Top,
-		)
-	}
-
-	p.Draw(dc)
-	return c, nil
-}
-
 // Save saves the plot to an image file.  The file format is determined
 // by the extension.
 //
@@ -206,6 +154,68 @@ func (p *Plot) Save(w, h vg.Length, file string) (err error) {
 	}
 
 	return nil
+}
+
+// WriterTo returns an io.WriterTo that will write the plot as
+// the specified image format.
+//
+// Supported formats are:
+//
+//  eps, jpg|jpeg, pdf, png, svg, tex, and tif|tiff.
+func (p *Plot) WriterTo(w, h vg.Length, format string) (io.WriterTo, error) {
+	c, err := draw.NewFormattedCanvas(w, h, format)
+	if err != nil {
+		return nil, err
+	}
+	p.Draw(draw.New(c))
+	return c, nil
+}
+
+// Draw draws a plot to a draw.Canvas.
+//
+// Plotters are drawn in the order in which they were
+// added to the plot.  Plotters that  implement the
+// GlyphBoxer interface will have their GlyphBoxes
+// taken into account when padding the plot so that
+// none of their glyphs are clipped.
+func (p *Plot) Draw(dc draw.Canvas) {
+
+	switch dc.Canvas.(type) {
+	case *vgtex.Canvas:
+		// FIXME(sbinet): remove when gonum/plot#597 is fixed.
+		dc.Push()
+		defer dc.Pop()
+
+		// prevent pgf/tikz to crop-out the bounding box
+		// by filling the whole image with a transparent box.
+		dc.FillPolygon(color.Transparent, []vg.Point{
+			{X: dc.Min.X, Y: dc.Min.Y},
+			{X: dc.Max.X, Y: dc.Min.Y},
+			{X: dc.Max.X, Y: dc.Max.Y},
+			{X: dc.Min.X, Y: dc.Max.Y},
+		})
+
+		minpt := vg.Point{
+			X: dc.Min.X + p.Border.Left,
+			Y: dc.Min.Y + p.Border.Bottom,
+		}
+		maxpt := vg.Point{
+			X: dc.Max.X - p.Border.Right,
+			Y: dc.Max.Y - p.Border.Top,
+		}
+		xscale := (maxpt.X - minpt.X) / (dc.Max.X - dc.Min.X)
+		yscale := (maxpt.Y - minpt.Y) / (dc.Max.Y - dc.Min.Y)
+		dc.Translate(minpt)
+		dc.Scale(float64(xscale), float64(yscale))
+
+	default:
+		dc = draw.Crop(dc,
+			p.Border.Left, -p.Border.Right,
+			p.Border.Bottom, -p.Border.Top,
+		)
+	}
+
+	p.Plot.Draw(dc)
 }
 
 // Show displays the plot to the screen, with the given dimensions.
