@@ -363,6 +363,30 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 
 	if h.GlyphStyle != (draw.GlyphStyle{}) {
 		c.DrawGlyph(h.GlyphStyle, c.Center())
+		if h.YErrs != nil {
+			var (
+				yerrs = h.YErrs
+				vsize = 0.5 * ((ymax - ymin) * 0.95)
+				x     = c.Center().X
+				ylo   = c.Center().Y - vsize
+				yup   = c.Center().Y + vsize
+				xylo  = vg.Point{X: x, Y: ylo}
+				xyup  = vg.Point{X: x, Y: yup}
+				line  = []vg.Point{xylo, xyup}
+				bar   = c.ClipLinesY(line)
+			)
+			c.StrokeLines(yerrs.LineStyle, bar...)
+			for _, pt := range []vg.Point{xylo, xyup} {
+				if c.Contains(pt) {
+					c.StrokeLine2(yerrs.LineStyle,
+						pt.X-yerrs.CapWidth/2,
+						pt.Y,
+						pt.X+yerrs.CapWidth/2,
+						pt.Y,
+					)
+				}
+			}
+		}
 	}
 }
 
