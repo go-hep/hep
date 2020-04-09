@@ -5,6 +5,8 @@
 package huntex_test
 
 import (
+	"image/color"
+	"math"
 	"testing"
 
 	"go-hep.org/x/hep/hplot"
@@ -19,10 +21,20 @@ func TestCanvas(t *testing.T) {
 		p.X.Label.Text = `\alpha`
 		p.Y.Label.Text = `\Delta`
 
-		err := p.Save(10*vg.Centimeter, -1, "testdata/plot.png")
+		fct := hplot.NewFunction(math.Cos)
+		fct.LineStyle.Color = color.RGBA{R: 255, A: 255}
+		p.Legend.Add(`\beta`, fct)
+
+		var err error
+
+		err = p.Save(10*vg.Centimeter, -1, "testdata/plot.png")
 		if err != nil {
 			t.Fatalf("could not save plot: %+v", err)
 		}
-	}, t, "plot.png")
+		err = p.Save(10*vg.Centimeter, -1, "testdata/plot.tex")
+		if err != nil {
+			t.Fatalf("could not save plot: %+v", err)
+		}
+	}, t, "plot.png", "plot.tex")
 
 }

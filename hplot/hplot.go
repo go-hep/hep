@@ -193,7 +193,8 @@ func (p *Plot) Draw(dc draw.Canvas) {
 			{X: dc.Min.X, Y: dc.Max.Y},
 		})
 	default:
-		dc.Canvas = huntex.Canvas{Canvas: dc.Canvas}
+		utx := huntex.NewHandler(p.Plot)
+		defer utx.Close()
 	}
 
 	dc = draw.Crop(dc,
