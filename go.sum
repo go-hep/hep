@@ -219,10 +219,8 @@ gonum.org/v1/plot v0.0.0-20191004082913-159cd04f920c/go.mod h1:Wt8AAjI+ypCyYX3nZ
 gonum.org/v1/plot v0.0.0-20191107103940-ca91d9d40d0a/go.mod h1:2EC9bQmADoXz4qWOuiPhNNky9U7T8rgIULcW8j/muig=
 gonum.org/v1/plot v0.7.0 h1:Otpxyvra6Ie07ft50OX5BrCfS/BWEMvhsCUHwPEJmLI=
 gonum.org/v1/plot v0.7.0/go.mod h1:2wtU6YrrdQAhAF9+MTd5tOQjrov/zF70b1i99Npjvgo=
-gonum.org/v1/plot v0.7.1-0.20200323092842-6973214b8663 h1:ZAm+geG16PtLtR8W/BtR3QSYB71tNVIpSx4bMGOmWI0=
-gonum.org/v1/plot v0.7.1-0.20200323092842-6973214b8663/go.mod h1:2wtU6YrrdQAhAF9+MTd5tOQjrov/zF70b1i99Npjvgo=
-gonum.org/v1/plot v0.7.1-0.20200406222744-04fc25f75daf h1:qVQpnE7pQUIjzwzpJnanNaaeyoPPVxscFoQe8Fp03SQ=
-gonum.org/v1/plot v0.7.1-0.20200406222744-04fc25f75daf/go.mod h1:2wtU6YrrdQAhAF9+MTd5tOQjrov/zF70b1i99Npjvgo=
+gonum.org/v1/plot v0.7.1-0.20200409110503-eddda93a2277 h1:Dd9muKz0CB4Y1RtjvDswHoU7l6isWebv2L+V01imnZ4=
+gonum.org/v1/plot v0.7.1-0.20200409110503-eddda93a2277/go.mod h1:2wtU6YrrdQAhAF9+MTd5tOQjrov/zF70b1i99Npjvgo=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/jcmturner/aescts.v1 v1.0.1/go.mod h1:nsR8qBOg+OucoIW+WMhB3GspUQXq9XorLnQb9XtvcOo=
