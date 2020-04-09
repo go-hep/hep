@@ -17,13 +17,13 @@ import (
 func TestCanvas(t *testing.T) {
 	cmpimg.CheckPlot(func() {
 		p := hplot.New()
-		p.Title.Text = `Gaussian with \mu=1 and \sigma=0`
-		p.X.Label.Text = `\alpha`
-		p.Y.Label.Text = `\Delta`
+		p.Title.Text = `Gaussian with $\mu=1$ and $\sigma=0$`
+		p.X.Label.Text = `$\alpha$`
+		p.Y.Label.Text = `$\Delta$`
 
 		fct := hplot.NewFunction(math.Cos)
 		fct.LineStyle.Color = color.RGBA{R: 255, A: 255}
-		p.Legend.Add(`\beta`, fct)
+		p.Legend.Add(`$\beta$`, fct)
 
 		var err error
 

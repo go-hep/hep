@@ -16,6 +16,7 @@ func (replace) replace(s string) string {
 
 var (
 	greek = strings.NewReplacer(
+		"$", "",
 		`\alpha`, `α`,
 		`\Alpha`, `Α`,
 		`\beta`, `β`,
