@@ -38,7 +38,7 @@ func ExampleHStack() {
 
 	hh2 := hplot.NewH1D(h2)
 	hh2.FillColor = colors[1]
-	hh2.LineStyle.Color = color.Black
+	hh2.LineStyle.Width = 0
 
 	hh3 := hplot.NewH1D(h3)
 	hh3.FillColor = colors[2]
