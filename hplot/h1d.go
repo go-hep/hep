@@ -226,6 +226,8 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 		}
 	}
 
+	var glyphs []vg.Point
+
 	for i, bin := range bins {
 		xmin := trX(bin.XMin())
 		xmax := trX(bin.XMax())
@@ -258,7 +260,9 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 		if h.GlyphStyle.Radius != 0 {
 			x := trX(bin.XMid())
 			_, y := yfct(bin.SumW())
-			c.DrawGlyph(h.GlyphStyle, vg.Point{X: x, Y: y})
+			// capture glyph location, to be drawn after
+			// the histogram line, if any.
+			glyphs = append(glyphs, vg.Point{X: x, Y: y})
 		}
 	}
 
@@ -269,6 +273,12 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 
 	if h.YErrs != nil {
 		h.YErrs.Plot(c, p)
+	}
+
+	if h.GlyphStyle.Radius != 0 {
+		for _, glyph := range glyphs {
+			c.DrawGlyph(h.GlyphStyle, glyph)
+		}
 	}
 
 	if h.Infos.Style != HInfoNone {
