@@ -358,8 +358,11 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 	if h.FillColor != nil {
 		c.FillPolygon(h.FillColor, c.ClipPolygonXY(pts))
 	}
-	pts = append(pts, vg.Point{X: xmin, Y: ymin})
-	c.StrokeLines(h.LineStyle, c.ClipLinesXY(pts)...)
+	if h.LineStyle.Width != 0 {
+		ymid := c.Center().Y
+		line := []vg.Point{{X: xmin, Y: ymid}, {X: xmax, Y: ymid}}
+		c.StrokeLines(h.LineStyle, c.ClipLinesX(line)...)
+	}
 
 	if h.GlyphStyle != (draw.GlyphStyle{}) {
 		c.DrawGlyph(h.GlyphStyle, c.Center())
