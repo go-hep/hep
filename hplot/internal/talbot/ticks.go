@@ -8,6 +8,7 @@ import (
 	"math"
 	"strconv"
 
+	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/plot"
 )
 
@@ -83,6 +84,15 @@ func Ticks(min, max float64, n int) []plot.Tick {
 			ticks = append(ticks, plot.Tick{Value: val})
 		}
 		i++
+	}
+
+	if last := &ticks[len(ticks)-1]; last.IsMinor() {
+		// check if we could elect it to "major"
+		delta := last.Value - lastMajor.Value
+		elect := floats.EqualWithinAbs(delta, majorDelta, 1e-15)
+		if elect {
+			last.Label = strconv.FormatFloat(last.Value, fc, prec, 64)
+		}
 	}
 
 	return ticks
