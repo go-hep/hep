@@ -52,14 +52,18 @@ func ExampleTicks() {
 				p.X.Max = 120
 			}
 			if j == 0 {
-				n := 20
+				var (
+					n    = 10
+					xfmt = ""
+				)
 				switch i {
 				case 4:
-					n = 10
+					n = 5
 				case 5:
 					n = 5
+					xfmt = "%g"
 				}
-				p.X.Tick.Marker = hplot.Ticks{N: n}
+				p.X.Tick.Marker = hplot.Ticks{N: n, Format: xfmt}
 			}
 			p.Add(hplot.NewGrid())
 		}
