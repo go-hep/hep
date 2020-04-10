@@ -349,13 +349,14 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 	xmin := c.Min.X
 	xmax := c.Max.X
 
-	pts := []vg.Point{
-		{X: xmin, Y: ymin},
-		{X: xmax, Y: ymin},
-		{X: xmax, Y: ymax},
-		{X: xmin, Y: ymax},
-	}
 	if h.FillColor != nil {
+		pts := []vg.Point{
+			{X: xmin, Y: ymin},
+			{X: xmax, Y: ymin},
+			{X: xmax, Y: ymax},
+			{X: xmin, Y: ymax},
+			{X: xmin, Y: ymin},
+		}
 		c.FillPolygon(h.FillColor, c.ClipPolygonXY(pts))
 	}
 	if h.LineStyle.Width != 0 {
