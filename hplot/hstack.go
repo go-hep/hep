@@ -216,15 +216,8 @@ func (hs *HStack) hplot(c draw.Canvas, p *plot.Plot, h *H1D, yoffs []float64, hs
 			xmin := trX(bin.XMin())
 			xmax := trX(bin.XMax())
 			ymin, _ := yfct(j, bin.SumW())
-			switch j {
-			case 0:
-				poly = append(poly, vg.Point{X: xmin, Y: ymin})
-			case nbins - 1:
-				poly = append(poly, vg.Point{X: xmax, Y: ymin})
-			default:
-				poly = append(poly, vg.Point{X: xmax, Y: ymin})
-				poly = append(poly, vg.Point{X: xmin, Y: ymin})
-			}
+			poly = append(poly, vg.Point{X: xmax, Y: ymin})
+			poly = append(poly, vg.Point{X: xmin, Y: ymin})
 		}
 		c.FillPolygon(h.FillColor, c.ClipPolygonXY(poly))
 	}
