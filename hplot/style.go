@@ -8,6 +8,7 @@ import (
 	"github.com/golang/freetype/truetype"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/vg/draw"
 	"gonum.org/v1/plot/vg/fonts"
 )
 
@@ -35,6 +36,7 @@ func (s *Style) Apply(p *Plot) {
 	p.Plot.X.Tick.Label.Font = s.Fonts.Tick
 	p.Plot.Y.Tick.Label.Font = s.Fonts.Tick
 	p.Plot.Legend.TextStyle.Font = s.Fonts.Legend
+	p.Plot.Legend.YPosition = draw.PosCenter
 }
 
 func (s *Style) reset(name string) {
