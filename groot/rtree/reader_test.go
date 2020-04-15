@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package rtree_test
+package rtree
 
 import (
 	"fmt"
@@ -10,13 +10,12 @@ import (
 	"reflect"
 	"testing"
 
-	"go-hep.org/x/hep/groot"
+	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
-	"go-hep.org/x/hep/groot/rtree"
 )
 
 func TestReader(t *testing.T) {
-	f, err := groot.Open("../testdata/simple.root")
+	f, err := riofs.Open("../testdata/simple.root")
 	if err != nil {
 		t.Fatalf("could not open ROOT file: %+v", err)
 	}
@@ -26,70 +25,70 @@ func TestReader(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not retrieve ROOT tree: %+v", err)
 	}
-	tree := o.(rtree.Tree)
+	tree := o.(Tree)
 
 	for _, tc := range []struct {
 		name  string
-		rvars []rtree.ReadVar
-		ropts []rtree.ReadOption
+		rvars []ReadVar
+		ropts []ReadOption
 		beg   int64
 		end   int64
-		fun   func(rtree.RCtx) error
+		fun   func(RCtx) error
 		enew  error
 		eloop error
 	}{
 		{
 			name: "ok",
 			beg:  0, end: -1,
-			fun: func(rtree.RCtx) error { return nil },
+			fun: func(RCtx) error { return nil },
 		},
 		{
 			name: "empty-range",
 			beg:  4, end: -1,
-			fun: func(rtree.RCtx) error { return nil },
+			fun: func(RCtx) error { return nil },
 		},
 		{
 			name:  "invalid-rvar",
-			rvars: []rtree.ReadVar{{Name: "not-there", Value: new(int16)}},
+			rvars: []ReadVar{{Name: "not-there", Value: new(int16)}},
 			beg:   0, end: -1,
-			fun:  func(rtree.RCtx) error { return nil },
+			fun:  func(RCtx) error { return nil },
 			enew: fmt.Errorf(`rtree: could not create scanner: rtree: Tree "tree" has no branch named "not-there"`),
 		},
 		{
 			name:  "invalid-ropt",
-			ropts: []rtree.ReadOption{func(r *rtree.Reader) error { return io.EOF }},
+			ropts: []ReadOption{func(r *Reader) error { return io.EOF }},
 			beg:   0, end: -1,
-			fun:  func(rtree.RCtx) error { return nil },
+			fun:  func(RCtx) error { return nil },
 			enew: fmt.Errorf(`rtree: could not set reader option 1: EOF`),
 		},
 		{
 			name: "negative-start",
 			beg:  -1, end: -1,
-			fun:  func(rtree.RCtx) error { return nil },
+			fun:  func(RCtx) error { return nil },
 			enew: fmt.Errorf("rtree: invalid event reader range [-1, 4) (start=-1 < 0)"),
 		},
 		{
 			name: "start-greater-than-end",
 			beg:  2, end: 1,
-			fun:  func(rtree.RCtx) error { return nil },
+			fun:  func(RCtx) error { return nil },
 			enew: fmt.Errorf("rtree: invalid event reader range [2, 1) (start=2 > end=1)"),
 		},
 		{
 			name: "start-greater-than-nentries",
 			beg:  5, end: 10,
-			fun:  func(rtree.RCtx) error { return nil },
+			fun:  func(RCtx) error { return nil },
 			enew: fmt.Errorf("rtree: invalid event reader range [5, 10) (start=5 > tree-entries=4)"),
 		},
 		{
 			name: "end-greater-than-nentries",
 			beg:  0, end: 5,
-			fun:  func(rtree.RCtx) error { return nil },
+			fun:  func(RCtx) error { return nil },
 			enew: fmt.Errorf("rtree: invalid event reader range [0, 5) (end=5 > tree-entries=4)"),
 		},
 		{
 			name: "process-error",
 			beg:  0, end: 4,
-			fun: func(ctx rtree.RCtx) error {
+			fun: func(ctx RCtx) error {
 				if ctx.Entry == 2 {
 					return io.EOF
 				}
@@ -104,7 +103,7 @@ func TestReader(t *testing.T) {
 				v2 float32
 				v3 string
 
-				rvars = []rtree.ReadVar{
+				rvars = []ReadVar{
 					{Name: "one", Value: &v1},
 					{Name: "two", Value: &v2},
 					{Name: "three", Value: &v3},
@@ -115,12 +114,12 @@ func TestReader(t *testing.T) {
 				rvars = tc.rvars
 			}
 
-			ropts := []rtree.ReadOption{rtree.WithRange(tc.beg, tc.end)}
+			ropts := []ReadOption{WithRange(tc.beg, tc.end)}
 			if tc.ropts != nil {
 				ropts = append(ropts, tc.ropts...)
 			}
 
-			r, err := rtree.NewReader(tree, rvars, ropts...)
+			r, err := NewReader(tree, rvars, ropts...)
 			switch {
 			case err != nil && tc.enew != nil:
 				if got, want := err.Error(), tc.enew.Error(); got != want {
@@ -166,7 +165,7 @@ func TestReader(t *testing.T) {
 }
 
 func TestNewReadVars(t *testing.T) {
-	f, err := groot.Open("../testdata/leaves.root")
+	f, err := riofs.Open("../testdata/leaves.root")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -177,10 +176,10 @@ func TestNewReadVars(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	tree := o.(rtree.Tree)
+	tree := o.(Tree)
 
-	vars := rtree.NewReadVars(tree)
-	want := []rtree.ReadVar{
+	vars := NewReadVars(tree)
+	want := []ReadVar{
 		{Name: "B", Leaf: "B", Value: new(bool)},
 		{Name: "Str", Leaf: "Str", Value: new(string)},
 		{Name: "I8", Leaf: "I8", Value: new(int8)},
@@ -246,5 +245,200 @@ func TestNewReadVars(t *testing.T) {
 
 	if len(want) != len(vars) {
 		t.Fatalf("invalid lengths. got=%d, want=%d", len(vars), len(want))
+	}
+}
+
+func TestReadVarsFromStruct(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		ptr    interface{}
+		want   []ReadVar
+		panics string
+	}{
+		{
+			name: "not-ptr",
+			ptr: struct {
+				I32 int32
+			}{},
+			panics: "rtree: expect a pointer value, got struct { I32 int32 }",
+		},
+		{
+			name:   "not-ptr-to-struct",
+			ptr:    new(int32),
+			panics: "rtree: expect a pointer to struct value, got *int32",
+		},
+		{
+			name: "struct-with-int",
+			ptr: &struct {
+				I32 int
+				F32 float32
+				Str string
+			}{},
+			panics: "rtree: invalid field type for \"I32\": int",
+		},
+		{
+			name: "struct-with-map", // FIXME(sbinet)
+			ptr: &struct {
+				Map map[int32]string
+			}{},
+			panics: "rtree: invalid field type for \"Map\": map[int32]string (not yet supported)",
+		},
+		{
+			name: "invalid-struct-tag",
+			ptr: &struct {
+				N int32 `groot:"N[42]"`
+			}{},
+			panics: "rtree: invalid field type for \"N\", or invalid struct-tag \"N[42]\": int32",
+		},
+		{
+			name: "simple",
+			ptr: &struct {
+				I32 int32
+				F32 float32
+				Str string
+			}{},
+			want: []ReadVar{{Name: "I32"}, {Name: "F32"}, {Name: "Str"}},
+		},
+		{
+			name: "simple-with-unexported",
+			ptr: &struct {
+				I32 int32
+				F32 float32
+				val float32
+				Str string
+			}{},
+			want: []ReadVar{{Name: "I32"}, {Name: "F32"}, {Name: "Str"}},
+		},
+		{
+			name: "slices",
+			ptr: &struct {
+				N      int32
+				NN     int64
+				SliF32 []float32 `groot:"F32s[N]"`
+				SliF64 []float64 `groot:"F64s[NN]"`
+			}{},
+			want: []ReadVar{
+				{Name: "N"},
+				{Name: "NN"},
+				{Name: "F32s", count: "N"},
+				{Name: "F64s", count: "NN"},
+			},
+		},
+		{
+			name: "slices-no-count",
+			ptr: &struct {
+				F1 int32
+				F2 []float32 `groot:"F2[F1]"`
+				X3 []float64 `groot:"F3"`
+				F4 []float64
+			}{},
+			want: []ReadVar{
+				{Name: "F1"},
+				{Name: "F2", count: "F1"},
+				{Name: "F3"},
+				{Name: "F4"},
+			},
+		},
+		{
+			name: "arrays",
+			ptr: &struct {
+				N     int32 `groot:"n"`
+				Arr01 [10]float64
+				Arr02 [10][10]float64
+				Arr03 [10][10][10]float64
+				Arr11 [10]float64         `groot:"arr11[10]"`
+				Arr12 [10][10]float64     `groot:"arr12[10][10]"`
+				Arr13 [10][10][10]float64 `groot:"arr13[10][10][10]"`
+				Arr14 [10][10][10]float64 `groot:"arr14"`
+			}{},
+			want: []ReadVar{
+				{Name: "n"},
+				{Name: "Arr01"},
+				{Name: "Arr02"},
+				{Name: "Arr03"},
+				{Name: "arr11"},
+				{Name: "arr12"},
+				{Name: "arr13"},
+				{Name: "arr14"},
+			},
+		},
+		{
+			name: "struct-with-struct",
+			ptr: &struct {
+				F1 int64
+				F2 struct {
+					FF1 int64
+					FF2 float64
+					FF3 struct {
+						FFF1 float64
+					}
+				}
+			}{},
+			want: []ReadVar{
+				{Name: "F1"},
+				{Name: "F2"},
+			},
+		},
+		{
+			name: "struct-with-struct+slice",
+			ptr: &struct {
+				F1 int64
+				F2 struct {
+					FF1 int64
+					FF2 float64
+					FF3 []float64
+					FF4 []struct {
+						FFF1 float64
+						FFF2 []float64
+					}
+				}
+			}{},
+			want: []ReadVar{
+				{Name: "F1"},
+				{Name: "F2"},
+			},
+		},
+		{
+			name: "invalid-slice-tag",
+			ptr: &struct {
+				N   int32
+				Sli []int32 `groot:"vs[N][N]"`
+			}{},
+			panics: "rtree: invalid number of slice-dimensions for field \"Sli\": \"vs[N][N]\"",
+		},
+		{
+			name: "invalid-array-tag",
+			ptr: &struct {
+				N   int32
+				Arr [12]int32 `groot:"vs[1][2][3][4]"`
+			}{},
+			panics: "rtree: invalid number of array-dimension for field \"Arr\": \"vs[1][2][3][4]\"",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.panics != "" {
+				defer func() {
+					err := recover()
+					if err == nil {
+						t.Fatalf("expected a panic")
+					}
+					if got, want := err.(error).Error(), tc.panics; got != want {
+						t.Fatalf("invalid panic message:\ngot= %q\nwant=%q", got, want)
+					}
+				}()
+			}
+			got := ReadVarsFromStruct(tc.ptr)
+			if got, want := len(got), len(tc.want); got != want {
+				t.Fatalf("invalid number of rvars: got=%d, want=%d", got, want)
+			}
+			for i := range got {
+				if got, want := got[i].Name, tc.want[i].Name; got != want {
+					t.Fatalf("invalid name for rvar[%d]: got=%q, want=%q", i, got, want)
+				}
+				if got, want := got[i].count, tc.want[i].count; got != want {
+					t.Fatalf("invalid count for rvar[%d]: got=%q, want=%q", i, got, want)
+				}
+			}
+		})
 	}
 }

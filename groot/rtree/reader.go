@@ -4,7 +4,12 @@
 
 package rtree
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+	"regexp"
+	"strings"
+)
 
 // ReadVar describes a variable to be read out of a tree.
 type ReadVar struct {
@@ -30,6 +35,96 @@ func NewReadVars(t Tree) []ReadVar {
 	}
 
 	return vars
+}
+
+// ReadVarsFromStruct returns a list of ReadVars bound to the exported fields
+// of the provided pointer to a struct value.
+//
+// ReadVarsFromStruct panicks if the provided value is not a pointer to
+// a struct value.
+func ReadVarsFromStruct(ptr interface{}) []ReadVar {
+	rv := reflect.ValueOf(ptr)
+	if rv.Kind() != reflect.Ptr {
+		panic(fmt.Errorf("rtree: expect a pointer value, got %T", ptr))
+	}
+
+	rv = rv.Elem()
+	if rv.Kind() != reflect.Struct {
+		panic(fmt.Errorf("rtree: expect a pointer to struct value, got %T", ptr))
+	}
+
+	var (
+		rt     = rv.Type()
+		rvars  = make([]ReadVar, 0, rt.NumField())
+		reDims = regexp.MustCompile(`\w*?\[(\w*)\]+?`)
+	)
+
+	split := func(s string) (string, []string) {
+		n := s
+		if i := strings.Index(s, "["); i > 0 {
+			n = s[:i]
+		}
+
+		out := reDims.FindAllStringSubmatch(s, -1)
+		if len(out) == 0 {
+			return n, nil
+		}
+
+		dims := make([]string, len(out))
+		for i := range out {
+			dims[i] = out[i][1]
+		}
+		return n, dims
+	}
+
+	for i := 0; i < rt.NumField(); i++ {
+		var (
+			ft = rt.Field(i)
+			fv = rv.Field(i)
+		)
+		if ft.Name != strings.Title(ft.Name) {
+			// not exported. ignore.
+			continue
+		}
+		rvar := ReadVar{
+			Name:  ft.Tag.Get("groot"),
+			Value: fv.Addr().Interface(),
+		}
+		if rvar.Name == "" {
+			rvar.Name = ft.Name
+		}
+
+		if strings.Contains(rvar.Name, "[") {
+			switch ft.Type.Kind() {
+			case reflect.Slice:
+				sli, dims := split(rvar.Name)
+				if len(dims) > 1 {
+					panic(fmt.Errorf("rtree: invalid number of slice-dimensions for field %q: %q", ft.Name, rvar.Name))
+				}
+				rvar.Name = sli
+				rvar.count = dims[0]
+
+			case reflect.Array:
+				arr, dims := split(rvar.Name)
+				if len(dims) > 3 {
+					panic(fmt.Errorf("rtree: invalid number of array-dimension for field %q: %q", ft.Name, rvar.Name))
+				}
+				rvar.Name = arr
+			default:
+				panic(fmt.Errorf("rtree: invalid field type for %q, or invalid struct-tag %q: %T", ft.Name, rvar.Name, fv.Interface()))
+			}
+		}
+		switch ft.Type.Kind() {
+		case reflect.Int, reflect.Uint, reflect.UnsafePointer, reflect.Uintptr, reflect.Chan, reflect.Interface:
+			panic(fmt.Errorf("rtree: invalid field type for %q: %T", ft.Name, fv.Interface()))
+		case reflect.Map:
+			panic(fmt.Errorf("rtree: invalid field type for %q: %T (not yet supported)", ft.Name, fv.Interface()))
+		}
+
+		rvar.Leaf = rvar.Name
+		rvars = append(rvars, rvar)
+	}
+	return rvars
 }
 
 // Reader reads data from a Tree.

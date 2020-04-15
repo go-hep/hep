@@ -161,3 +161,46 @@ func ExampleReader_withChain() {
 	// evt[14]: 3, 3.3, tres
 	// evt[15]: 4, 4.4, quatro
 }
+
+func ExampleReader_withReadVarsFromStruct() {
+	f, err := groot.Open("../testdata/simple.root")
+	if err != nil {
+		log.Fatalf("could not open ROOT file: %+v", err)
+	}
+	defer f.Close()
+
+	o, err := f.Get("tree")
+	if err != nil {
+		log.Fatalf("could not retrieve ROOT tree: %+v", err)
+	}
+	t := o.(rtree.Tree)
+
+	var (
+		data struct {
+			V1 int32   `groot:"one"`
+			V2 float32 `groot:"two"`
+			V3 string  `groot:"three"`
+		}
+		rvars = rtree.ReadVarsFromStruct(&data)
+	)
+
+	r, err := rtree.NewReader(t, rvars)
+	if err != nil {
+		log.Fatalf("could not create tree reader: %+v", err)
+	}
+	defer r.Close()
+
+	err = r.Read(func(ctx rtree.RCtx) error {
+		fmt.Printf("evt[%d]: %v, %v, %v\n", ctx.Entry, data.V1, data.V2, data.V3)
+		return nil
+	})
+	if err != nil {
+		log.Fatalf("could not process tree: %+v", err)
+	}
+
+	// Output:
+	// evt[0]: 1, 1.1, uno
+	// evt[1]: 2, 2.2, dos
+	// evt[2]: 3, 3.3, tres
+	// evt[3]: 4, 4.4, quatro
+}
