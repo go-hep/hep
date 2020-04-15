@@ -134,6 +134,8 @@ type Reader struct {
 	scan  *Scanner
 	beg   int64
 	end   int64
+
+	evals []Formula
 }
 
 // ReadOption configures how a ROOT tree should be traversed.
@@ -213,6 +215,7 @@ func (r *Reader) Close() error {
 	}
 	err := r.scan.Close()
 	r.scan = nil
+	r.evals = nil
 	return err
 }
 
@@ -248,4 +251,15 @@ func (r *Reader) Read(f func(ctx RCtx) error) error {
 	}
 
 	return nil
+}
+
+// Formula creates a new formula based on the provided expression and
+// the list of stdlib imports.
+func (r *Reader) Formula(expr string, imports []string) (Formula, error) {
+	f, err := newFormula(r, expr, imports)
+	if err != nil {
+		return Formula{}, fmt.Errorf("rtree: could not create Formula: %w", err)
+	}
+	r.evals = append(r.evals, f)
+	return f, nil
 }

@@ -204,3 +204,58 @@ func ExampleReader_withReadVarsFromStruct() {
 	// evt[2]: 3, 3.3, tres
 	// evt[3]: 4, 4.4, quatro
 }
+
+func ExampleReader_withFormula() {
+	f, err := groot.Open("../testdata/simple.root")
+	if err != nil {
+		log.Fatalf("could not open ROOT file: %+v", err)
+	}
+	defer f.Close()
+
+	o, err := f.Get("tree")
+	if err != nil {
+		log.Fatalf("could not retrieve ROOT tree: %+v", err)
+	}
+	t := o.(rtree.Tree)
+
+	var (
+		data struct {
+			V1 int32   `groot:"one"`
+			V2 float32 `groot:"two"`
+			V3 string  `groot:"three"`
+		}
+		rvars = rtree.ReadVarsFromStruct(&data)
+	)
+
+	r, err := rtree.NewReader(t, rvars)
+	if err != nil {
+		log.Fatalf("could not create tree reader: %+v", err)
+	}
+	defer r.Close()
+
+	f64, err := r.Formula("float64(two*10) + float64(1000*one) + float64(100*len(three))", nil)
+	if err != nil {
+		log.Fatalf("could not create formula: %+v", err)
+	}
+
+	fstr, err := r.Formula(`fmt.Sprintf("%q: %v, %q: %v, %q: %v", "one", one, "two", two, "three", three)`, []string{"fmt"})
+	if err != nil {
+		log.Fatalf("could not create formula: %+v", err)
+	}
+
+	err = r.Read(func(ctx rtree.RCtx) error {
+		valf64 := f64.Eval().(float64)
+		valstr := fstr.Eval().(string)
+		fmt.Printf("evt[%d]: %v, %v, %v -> %g | %s\n", ctx.Entry, data.V1, data.V2, data.V3, valf64, valstr)
+		return nil
+	})
+	if err != nil {
+		log.Fatalf("could not process tree: %+v", err)
+	}
+
+	// Output:
+	// evt[0]: 1, 1.1, uno -> 1311 | "one": 1, "two": 1.1, "three": uno
+	// evt[1]: 2, 2.2, dos -> 2322 | "one": 2, "two": 2.2, "three": dos
+	// evt[2]: 3, 3.3, tres -> 3433 | "one": 3, "two": 3.3, "three": tres
+	// evt[3]: 4, 4.4, quatro -> 4644 | "one": 4, "two": 4.4, "three": quatro
+}
