@@ -136,6 +136,7 @@ type Reader struct {
 	end   int64
 
 	evals []Formula
+	dirty bool // whether we need to re-create scanner (if formula needed new branches)
 }
 
 // ReadOption configures how a ROOT tree should be traversed.
@@ -227,6 +228,16 @@ type RCtx struct {
 // Read will read data from the underlying tree over the whole specified range.
 // Read calls the provided user function f for each entry successfully read.
 func (r *Reader) Read(f func(ctx RCtx) error) error {
+	if r.dirty {
+		r.dirty = false
+		_ = r.scan.Close()
+		sc, err := NewScannerVars(r.t, r.rvars...)
+		if err != nil {
+			return fmt.Errorf("rtree: could not re-create scanner: %w", err)
+		}
+		r.scan = sc
+	}
+
 	err := r.scan.SeekEntry(r.beg)
 	if err != nil {
 		return fmt.Errorf("rtree: could not seek to entry %d: %w", r.beg, err)
@@ -256,10 +267,18 @@ func (r *Reader) Read(f func(ctx RCtx) error) error {
 // Formula creates a new formula based on the provided expression and
 // the list of stdlib imports.
 func (r *Reader) Formula(expr string, imports []string) (Formula, error) {
+	n := len(r.rvars)
 	f, err := newFormula(r, expr, imports)
 	if err != nil {
 		return Formula{}, fmt.Errorf("rtree: could not create Formula: %w", err)
 	}
 	r.evals = append(r.evals, f)
+
+	if n != len(r.rvars) {
+		// formula needed to auto-load new branches.
+		// mark reader as dirty to re-create its internal scanner
+		// before the event-loop.
+		r.dirty = true
+	}
 	return f, nil
 }
