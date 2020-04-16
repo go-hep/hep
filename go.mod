@@ -7,7 +7,7 @@ require (
 	github.com/apache/arrow/go/arrow v0.0.0-20200403134915-89ce1cadb678
 	github.com/astrogo/fitsio v0.1.0
 	github.com/campoy/embedmd v1.0.0
-	github.com/containous/yaegi v0.8.1
+	github.com/containous/yaegi v0.8.2
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/gonuts/binary v0.2.0
 	github.com/gonuts/commander v0.1.0
