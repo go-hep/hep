@@ -478,10 +478,6 @@ type Scanner struct {
 // NewScannerVars creates a new Scanner from a list of pairs (branch-name, target-address).
 // Scanner will read the branches' data during Scan() and load them into these target-addresses.
 func NewScannerVars(t Tree, vars ...ReadVar) (*Scanner, error) {
-	if len(vars) <= 0 {
-		return nil, fmt.Errorf("rtree: NewScannerVars expects at least one branch name")
-	}
-
 	mbr := make([]Branch, len(vars))
 	ibr := make([]scanField, cap(mbr))
 	cbr := make([]Branch, 0)

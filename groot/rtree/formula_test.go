@@ -40,6 +40,13 @@ func TestFormula(t *testing.T) {
 		{
 			fname: "../testdata/simple.root",
 			tname: "tree",
+			rvars: 0,
+			expr:  "float64(one) + float64(two*100)",
+			want:  []interface{}{float64(111), float64(222)},
+		},
+		{
+			fname: "../testdata/simple.root",
+			tname: "tree",
 			rvars: 1,
 			expr:  "float64(one) + float64(two*100)",
 			want:  []interface{}{float64(111), float64(222)},
