@@ -17,6 +17,7 @@ import (
 // Handler is the interface that handles the generation of PDFs
 // from TeX, usually via pdflatex.
 type Handler interface {
+	// CompileLatex compiles the provided .tex document.
 	CompileLatex(fname string) error
 }
 
@@ -41,6 +42,7 @@ func NewHandler(cmd string) Handler {
 	return &pdfLatex{cmd: cmd}
 }
 
+// CompileLatex compiles the provided .tex document.
 func (pdf *pdfLatex) CompileLatex(fname string) error {
 	tmp, err := ioutil.TempDir("", "hplot-htex-")
 	if err != nil {
