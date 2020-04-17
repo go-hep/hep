@@ -15,7 +15,10 @@ import (
 
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
+	"gonum.org/v1/plot/vg/vgeps"
 	"gonum.org/v1/plot/vg/vgimg"
+	"gonum.org/v1/plot/vg/vgpdf"
+	"gonum.org/v1/plot/vg/vgsvg"
 	"gonum.org/v1/plot/vg/vgtex"
 )
 
@@ -86,12 +89,62 @@ func Save(p Drawer, w, h vg.Length, file string) (err error) {
 func WriterTo(p Drawer, w, h vg.Length, format string) (io.WriterTo, error) {
 	w, h = Dims(w, h)
 
-	c, err := draw.NewFormattedCanvas(w, h, format)
+	dpi := float64(vgimg.DefaultDPI)
+	if p, ok := p.(*wplot); ok {
+		dpi = p.DPI
+	}
+
+	c, err := newFormattedCanvas(w, h, format, dpi)
 	if err != nil {
 		return nil, fmt.Errorf("hplot: could not create canvas: %w", err)
 	}
 	p.Draw(draw.New(c))
 
+	return c, nil
+}
+
+// newFormattedCanvas creates a new vg.CanvasWriterTo with the specified
+// image format.
+//
+// Supported formats are:
+//
+//  eps, jpg|jpeg, pdf, png, svg, tex and tif|tiff.
+func newFormattedCanvas(w, h vg.Length, format string, dpi float64) (vg.CanvasWriterTo, error) {
+	var c vg.CanvasWriterTo
+	switch format {
+	case "eps":
+		c = vgeps.New(w, h)
+
+	case "jpg", "jpeg":
+		c = vgimg.JpegCanvas{Canvas: vgimg.NewWith(
+			vgimg.UseDPI(int(dpi)),
+			vgimg.UseWH(w, h),
+		)}
+
+	case "pdf":
+		c = vgpdf.New(w, h)
+
+	case "png":
+		c = vgimg.PngCanvas{Canvas: vgimg.NewWith(
+			vgimg.UseDPI(int(dpi)),
+			vgimg.UseWH(w, h),
+		)}
+
+	case "svg":
+		c = vgsvg.New(w, h)
+
+	case "tex":
+		c = vgtex.NewDocument(w, h)
+
+	case "tif", "tiff":
+		c = vgimg.TiffCanvas{Canvas: vgimg.NewWith(
+			vgimg.UseDPI(int(dpi)),
+			vgimg.UseWH(w, h),
+		)}
+
+	default:
+		return nil, fmt.Errorf("unsupported format: %q", format)
+	}
 	return c, nil
 }
 

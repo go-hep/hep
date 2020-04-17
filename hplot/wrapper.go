@@ -8,6 +8,7 @@ import (
 	"go-hep.org/x/hep/hplot/htex"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
+	"gonum.org/v1/plot/vg/vgimg"
 )
 
 // Wrap wraps a plot with plot-level drawing options and
@@ -16,6 +17,7 @@ func Wrap(p Drawer, opts ...DrawOption) Drawer {
 	wp := &wplot{
 		p:     p,
 		latex: htex.NoopHandler{},
+		DPI:   float64(vgimg.DefaultDPI),
 	}
 	for _, opt := range opts {
 		opt(wp)
@@ -51,10 +53,18 @@ func WithLatexHandler(h htex.Handler) DrawOption {
 	}
 }
 
+// WithDPI allows to modify the default DPI of a plot.
+func WithDPI(dpi float64) DrawOption {
+	return func(p *wplot) {
+		p.DPI = dpi
+	}
+}
+
 type wplot struct {
 	p      Drawer
 	border Border
 	latex  htex.Handler
+	DPI    float64
 }
 
 func (p *wplot) Draw(dc draw.Canvas) {
