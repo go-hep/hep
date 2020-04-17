@@ -90,7 +90,7 @@ func WriterTo(p Drawer, w, h vg.Length, format string) (io.WriterTo, error) {
 	w, h = Dims(w, h)
 
 	dpi := float64(vgimg.DefaultDPI)
-	if p, ok := p.(*wplot); ok {
+	if p, ok := p.(*P); ok {
 		dpi = p.DPI
 	}
 

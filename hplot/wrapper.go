@@ -13,19 +13,19 @@ import (
 
 // Wrap wraps a plot with plot-level drawing options and
 // returns a value implementing the Drawer interface.
-func Wrap(p Drawer, opts ...DrawOption) Drawer {
-	wp := &wplot{
-		p:     p,
-		latex: htex.NoopHandler{},
+func Wrap(p Drawer, opts ...DrawOption) *P {
+	plt := &P{
+		Plot:  p,
+		Latex: htex.NoopHandler{},
 		DPI:   float64(vgimg.DefaultDPI),
 	}
 	for _, opt := range opts {
-		opt(wp)
+		opt(plt)
 	}
-	return wp
+	return plt
 }
 
-type DrawOption func(p *wplot)
+type DrawOption func(p *P)
 
 // Border specifies the borders' sizes, the space between the
 // end of the plot image (PDF, PNG, ...) and the actual plot.
@@ -39,8 +39,8 @@ type Border struct {
 // WithBorder allows to specify the borders' sizes, the space between the
 // end of the plot image (PDF, PNG, ...) and the actual plot.
 func WithBorder(b Border) DrawOption {
-	return func(p *wplot) {
-		p.border = b
+	return func(p *P) {
+		p.Border = b
 	}
 }
 
@@ -48,36 +48,49 @@ func WithBorder(b Border) DrawOption {
 // To enable the automatic generation of PDFs, use DefaultHandler:
 //  WithLatexHandler(htex.DefaultHandler)
 func WithLatexHandler(h htex.Handler) DrawOption {
-	return func(p *wplot) {
-		p.latex = h
+	return func(p *P) {
+		p.Latex = h
 	}
 }
 
 // WithDPI allows to modify the default DPI of a plot.
 func WithDPI(dpi float64) DrawOption {
-	return func(p *wplot) {
+	return func(p *P) {
 		p.DPI = dpi
 	}
 }
 
-type wplot struct {
-	p      Drawer
-	border Border
-	latex  htex.Handler
-	DPI    float64
+// P is a plot wrapper, holding plot-level customizations.
+type P struct {
+	// Plot is a gonum/plot.Plot like value.
+	Plot Drawer
+
+	// Border specifies the borders' sizes, the space between the
+	// end of the plot image (PDF, PNG, ...) and the actual plot.
+	Border Border
+
+	// Latex handles the generation of PDFs from .tex files.
+	// The default is to use htex.NoopHandler (a no-op).
+	// To enable the automatic generation of PDFs, use DefaultHandler:
+	//  p := hplot.Wrap(plt)
+	//  p.Latex = htex.DefaultHandler
+	Latex htex.Handler
+
+	// DPI is the dot-per-inch for PNG,JPEG,... plots.
+	DPI float64
 }
 
-func (p *wplot) Draw(dc draw.Canvas) {
+func (p *P) Draw(dc draw.Canvas) {
 	vgtexBorder(dc)
 
 	dc = draw.Crop(dc,
-		p.border.Left, -p.border.Right,
-		p.border.Bottom, -p.border.Top,
+		p.Border.Left, -p.Border.Right,
+		p.Border.Bottom, -p.Border.Top,
 	)
 
-	p.p.Draw(dc)
+	p.Plot.Draw(dc)
 }
 
 var (
-	_ Drawer = (*wplot)(nil)
+	_ Drawer = (*P)(nil)
 )
