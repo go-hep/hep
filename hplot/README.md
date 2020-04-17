@@ -321,11 +321,80 @@ func ExampleTiledPlot_align() {
 
 https://godoc.org/go-hep.org/x/hep/hplot#example-package--Subplot
 
-### Diff-plots
+### Ratio-plots
 
-![diff-plot](https://github.com/go-hep/hep/raw/master/hplot/testdata/diff_plot_golden.png)
+![ratio-plot](https://github.com/go-hep/hep/raw/master/hplot/testdata/diff_plot_golden.png)
 
-https://godoc.org/go-hep.org/x/hep/hplot#example-package--Diffplot
+[embedmd]:# (example_ratioplot_test.go go /func ExampleRatioPlot/ /\n}/)
+```go
+func ExampleRatioPlot() {
+
+	const npoints = 10000
+
+	// Create a normal distribution.
+	dist := distuv.Normal{
+		Mu:    0,
+		Sigma: 1,
+		Src:   rand.New(rand.NewSource(0)),
+	}
+
+	hist1 := hbook.NewH1D(20, -4, +4)
+	hist2 := hbook.NewH1D(20, -4, +4)
+
+	for i := 0; i < npoints; i++ {
+		v1 := dist.Rand()
+		v2 := dist.Rand() + 0.5
+		hist1.Fill(v1, 1)
+		hist2.Fill(v2, 1)
+	}
+
+	rp := hplot.NewRatioPlot()
+	rp.Ratio = 0.3
+
+	// Make a plot and set its title.
+	rp.Top.Title.Text = "Histos"
+	rp.Top.Y.Label.Text = "Y"
+
+	// Create a histogram of our values drawn
+	// from the standard normal.
+	h1 := hplot.NewH1D(hist1)
+	h1.LineStyle.Color = color.RGBA{R: 255, A: 255}
+	h1.FillColor = nil
+	rp.Top.Add(h1)
+
+	h2 := hplot.NewH1D(hist2)
+	h2.LineStyle.Color = color.RGBA{B: 255, A: 255}
+	h2.FillColor = nil
+	rp.Top.Add(h2)
+
+	rp.Top.Add(hplot.NewGrid())
+
+	hist3 := hbook.NewH1D(20, -4, +4)
+	for i := 0; i < hist3.Len(); i++ {
+		v1 := hist1.Value(i)
+		v2 := hist2.Value(i)
+		x1, _ := hist1.XY(i)
+		hist3.Fill(x1, v1-v2)
+	}
+
+	hdiff := hplot.NewH1D(hist3)
+
+	rp.Bottom.X.Label.Text = "X"
+	rp.Bottom.Y.Label.Text = "Delta-Y"
+	rp.Bottom.Add(hdiff)
+	rp.Bottom.Add(hplot.NewGrid())
+
+	const (
+		width  = 15 * vg.Centimeter
+		height = width / math.Phi
+	)
+
+	err := hplot.Save(rp, width, height, "testdata/diff_plot.png")
+	if err != nil {
+		log.Fatalf("error: %v\n", err)
+	}
+}
+```
 
 ### LaTeX-plots
 
@@ -651,7 +720,7 @@ func ExampleHStack() {
 
 	hh2 := hplot.NewH1D(h2)
 	hh2.FillColor = colors[1]
-	hh2.LineStyle.Color = color.Black
+	hh2.LineStyle.Width = 0
 
 	hh3 := hplot.NewH1D(h3)
 	hh3.FillColor = colors[2]
