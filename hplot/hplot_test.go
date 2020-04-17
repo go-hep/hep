@@ -7,9 +7,8 @@ package hplot_test
 import (
 	"io/ioutil"
 	"os"
-	"path/filepath"
+	"path"
 	"reflect"
-	"strings"
 	"testing"
 
 	"go-hep.org/x/hep/hplot"
@@ -17,37 +16,23 @@ import (
 	"gonum.org/v1/plot/vg"
 )
 
-func checkPlot(t *testing.T, ref string) {
-	fname := strings.Replace(ref, "_golden", "", 1)
+type chkplotFunc func(ExampleFunc func(), t *testing.T, filenames ...string)
 
-	if *cmpimg.GenerateTestData {
-		got, _ := ioutil.ReadFile(fname)
-		ioutil.WriteFile(ref, got, 0644)
-	}
-
-	want, err := ioutil.ReadFile(ref)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	got, err := ioutil.ReadFile(fname)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ext := filepath.Ext(ref)[1:]
-	if ok, err := cmpimg.Equal(ext, got, want); !ok || err != nil {
-		if err != nil {
-			t.Fatalf("error: comparing %q with reference file: %v\n", fname, err)
-		} else {
-			t.Fatalf("error: %q differ with reference file\n", fname)
+func checkPlot(f chkplotFunc) chkplotFunc {
+	return func(ex func(), t *testing.T, filenames ...string) {
+		t.Helper()
+		f(ex, t, filenames...)
+		if t.Failed() {
+			return
+		}
+		for _, fname := range filenames {
+			_ = os.Remove(path.Join("testdata", fname))
 		}
 	}
-	os.Remove(fname)
 }
 
 func TestSubPlot(t *testing.T) {
-	cmpimg.CheckPlot(Example_subplot, t, "sub_plot.png")
+	checkPlot(cmpimg.CheckPlot)(Example_subplot, t, "sub_plot.png")
 }
 
 func TestLatexPlot(t *testing.T) {

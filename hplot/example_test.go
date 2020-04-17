@@ -182,6 +182,4 @@ func ExampleSave() {
 	if err != nil {
 		log.Fatalf("could not save plot: %+v", err)
 	}
-
-	// Output:
 }

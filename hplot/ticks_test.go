@@ -11,5 +11,5 @@ import (
 )
 
 func TestTicks(t *testing.T) {
-	cmpimg.CheckPlot(ExampleTicks, t, "ticks.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleTicks, t, "ticks.png")
 }

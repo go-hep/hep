@@ -11,13 +11,13 @@ import (
 )
 
 func TestS2D(t *testing.T) {
-	cmpimg.CheckPlot(ExampleS2D, t, "s2d.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleS2D, t, "s2d.png")
 }
 
 func TestScatter2DWithErrorBars(t *testing.T) {
-	cmpimg.CheckPlot(ExampleS2D_withErrorBars, t, "s2d_errbars.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleS2D_withErrorBars, t, "s2d_errbars.png")
 }
 
 func TestScatter2DWithBand(t *testing.T) {
-	cmpimg.CheckPlot(ExampleS2D_withBand, t, "s2d_band.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleS2D_withBand, t, "s2d_band.png")
 }

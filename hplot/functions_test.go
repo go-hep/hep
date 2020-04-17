@@ -15,9 +15,9 @@ import (
 )
 
 func TestFunction(t *testing.T) {
-	cmpimg.CheckPlot(ExampleFunction, t, "functions.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleFunction, t, "functions.png")
 }
 
 func TestFunctionLogY(t *testing.T) {
-	cmpimg.CheckPlot(ExampleFunction_logY, t, "functions_logy.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleFunction_logY, t, "functions_logy.png")
 }

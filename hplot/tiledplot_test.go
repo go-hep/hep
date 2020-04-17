@@ -11,9 +11,9 @@ import (
 )
 
 func TestTiledPlot(t *testing.T) {
-	cmpimg.CheckPlot(ExampleTiledPlot, t, "tiled_plot_histogram.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleTiledPlot, t, "tiled_plot_histogram.png")
 }
 
 func TestTiledPlotAlign(t *testing.T) {
-	cmpimg.CheckPlot(ExampleTiledPlot_align, t, "tiled_plot_aligned_histogram.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleTiledPlot_align, t, "tiled_plot_aligned_histogram.png")
 }

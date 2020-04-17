@@ -21,32 +21,32 @@ import (
 )
 
 func TestH1D(t *testing.T) {
-	cmpimg.CheckPlot(ExampleH1D, t, "h1d_plot.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleH1D, t, "h1d_plot.png")
 }
 
 func TestH1DtoPDF(t *testing.T) {
-	cmpimg.CheckPlot(ExampleH1D_toPDF, t, "h1d_plot.pdf")
+	checkPlot(cmpimg.CheckPlot)(ExampleH1D_toPDF, t, "h1d_plot.pdf")
 }
 
 func TestH1DLogScale(t *testing.T) {
-	cmpimg.CheckPlot(ExampleH1D_logScaleY, t, "h1d_logy.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleH1D_logScaleY, t, "h1d_logy.png")
 }
 
 func TestH1DYErrs(t *testing.T) {
-	cmpimg.CheckPlot(ExampleH1D_withYErrBars, t, "h1d_yerrs.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withYErrBars, t, "h1d_yerrs.png")
 }
 
 func TestH1DAsData(t *testing.T) {
-	cmpimg.CheckPlot(ExampleH1D_withYErrBarsAndData, t, "h1d_glyphs.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withYErrBarsAndData, t, "h1d_glyphs.png")
 }
 
 func TestH1DWithBorders(t *testing.T) {
 	_ = os.Remove("testdata/h1d_borders.png")
-	cmpimg.CheckPlot(ExampleH1D_withPlotBorders, t, "h1d_borders.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withPlotBorders, t, "h1d_borders.png")
 
 	_ = os.Remove("testdata/h1d_borders.png")
 	// check that it works with a vg.Canvas-WriterTo.
-	cmpimg.CheckPlot(func() {
+	checkPlot(cmpimg.CheckPlot)(func() {
 		const npoints = 10000
 
 		// Create a normal distribution.

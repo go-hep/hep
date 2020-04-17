@@ -15,15 +15,15 @@ import (
 )
 
 func TestVLine(t *testing.T) {
-	cmpimg.CheckPlot(ExampleVLine, t, "vline.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleVLine, t, "vline.png")
 }
 
 func TestHLine(t *testing.T) {
-	cmpimg.CheckPlot(ExampleHLine, t, "hline.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleHLine, t, "hline.png")
 }
 
 func TestHLineOutOfPlot(t *testing.T) {
-	cmpimg.CheckPlot(func() {
+	checkPlot(cmpimg.CheckPlot)(func() {
 		p := hplot.New()
 
 		pts := []hbook.Point2D{
@@ -49,7 +49,7 @@ func TestHLineOutOfPlot(t *testing.T) {
 }
 
 func TestVLineOutOfPlot(t *testing.T) {
-	cmpimg.CheckPlot(func() {
+	checkPlot(cmpimg.CheckPlot)(func() {
 		p := hplot.New()
 
 		pts := []hbook.Point2D{
@@ -75,37 +75,39 @@ func TestVLineOutOfPlot(t *testing.T) {
 }
 
 func TestHVLineThumbnail(t *testing.T) {
-	p := hplot.New()
-	p.Title.Text = "hvlines"
-	p.X.Min = 0
-	p.X.Max = 10
-	p.Y.Min = 0
-	p.Y.Max = 10
+	checkPlot(cmpimg.CheckPlot)(func() {
+		p := hplot.New()
+		p.Title.Text = "hvlines"
+		p.X.Min = 0
+		p.X.Max = 10
+		p.Y.Min = 0
+		p.Y.Max = 10
 
-	var (
-		left   = color.Transparent
-		right  = color.Transparent
-		top    = color.Transparent
-		bottom = color.Transparent
-	)
+		var (
+			left   = color.Transparent
+			right  = color.Transparent
+			top    = color.Transparent
+			bottom = color.Transparent
+		)
 
-	l1 := hplot.VLine(2.5, left, nil)
-	l2 := hplot.VLine(5, nil, nil)
-	l3 := hplot.VLine(7.5, nil, right)
-	l4 := hplot.HLine(2.5, nil, bottom)
-	l5 := hplot.HLine(5, nil, nil)
-	l6 := hplot.HLine(7.5, top, nil)
+		l1 := hplot.VLine(2.5, left, nil)
+		l2 := hplot.VLine(5, nil, nil)
+		l3 := hplot.VLine(7.5, nil, right)
+		l4 := hplot.HLine(2.5, nil, bottom)
+		l5 := hplot.HLine(5, nil, nil)
+		l6 := hplot.HLine(7.5, top, nil)
 
-	p.Add(l1, l2, l3, l4, l5, l6)
-	p.Legend.Add("l1", l1)
-	p.Legend.Add("l2", l2)
-	p.Legend.Add("l3", l3)
-	p.Legend.Add("l4", l4)
-	p.Legend.Add("l5", l5)
-	p.Legend.Add("l6", l6)
+		p.Add(l1, l2, l3, l4, l5, l6)
+		p.Legend.Add("l1", l1)
+		p.Legend.Add("l2", l2)
+		p.Legend.Add("l3", l3)
+		p.Legend.Add("l4", l4)
+		p.Legend.Add("l5", l5)
+		p.Legend.Add("l6", l6)
 
-	err := p.Save(-1, -1, "testdata/hvline.png")
-	if err != nil {
-		t.Fatalf("could not save hvline: %+v", err)
-	}
+		err := p.Save(-1, -1, "testdata/hvline.png")
+		if err != nil {
+			t.Fatalf("could not save hvline: %+v", err)
+		}
+	}, t, "hvline.png")
 }

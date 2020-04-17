@@ -11,5 +11,5 @@ import (
 )
 
 func TestRatioPlot(t *testing.T) {
-	cmpimg.CheckPlot(ExampleRatioPlot, t, "diff_plot.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleRatioPlot, t, "diff_plot.png")
 }

@@ -17,7 +17,7 @@ import (
 )
 
 func TestHStack(t *testing.T) {
-	cmpimg.CheckPlot(ExampleHStack, t, "hstack.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleHStack, t, "hstack.png")
 }
 
 func TestHStackPanic(t *testing.T) {
@@ -85,7 +85,7 @@ func TestHStackPanic(t *testing.T) {
 }
 
 func TestHStackCornerBins(t *testing.T) {
-	cmpimg.CheckPlot(func() {
+	checkPlot(cmpimg.CheckPlot)(func() {
 		h1 := hbook.NewH1D(10, 0, 10)
 		h2 := hbook.NewH1D(10, 0, 10)
 		h3 := hbook.NewH1D(10, 0, 10)

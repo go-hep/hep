@@ -11,5 +11,5 @@ import (
 )
 
 func TestBand(t *testing.T) {
-	cmpimg.CheckPlot(ExampleBand, t, "band.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleBand, t, "band.png")
 }
