@@ -7,11 +7,9 @@ package hplot
 import (
 	"io"
 	"math"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"go-hep.org/x/exp/vgshiny"
+	"go-hep.org/x/hep/hplot/htex"
 	"golang.org/x/exp/shiny/screen"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
@@ -24,6 +22,13 @@ type TiledPlot struct {
 	Plots []*Plot
 	Tiles draw.Tiles
 	Align bool // whether to align all tiles axes
+
+	// Latex handles the generation of PDFs from .tex files.
+	// The default is to use htex.NoopHandler (a no-op).
+	// To enable the automatic generation of PDFs, use DefaultHandler:
+	//  p := hplot.New()
+	//  p.Latex = htex.DefaultHandler
+	Latex htex.Handler
 }
 
 // NewTiledPlot creates a new set of plots aranged as tiles.
@@ -42,6 +47,7 @@ func NewTiledPlot(tiles draw.Tiles) *TiledPlot {
 	plot := &TiledPlot{
 		Plots: make([]*Plot, tiles.Rows*tiles.Cols),
 		Tiles: tiles,
+		Latex: htex.NoopHandler{},
 	}
 
 	for i := 0; i < tiles.Rows; i++ {
@@ -51,6 +57,10 @@ func NewTiledPlot(tiles draw.Tiles) *TiledPlot {
 	}
 
 	return plot
+}
+
+func (tp *TiledPlot) LatexHandler() htex.Handler {
+	return tp.Latex
 }
 
 // Plot returns the plot at the i-th column and j-th row in the set of
@@ -65,6 +75,8 @@ func (tp *TiledPlot) Plot(i, j int) *Plot {
 // Each non-nil plot.Plot in the aranged set of tiled plots is drawn
 // inside its dedicated sub-canvas, using hplot.Plot.Draw.
 func (tp *TiledPlot) Draw(c draw.Canvas) {
+	vgtexBorder(c)
+
 	switch {
 	case tp.Align:
 		ps := make([][]*plot.Plot, tp.Tiles.Rows)
@@ -112,40 +124,8 @@ func (tp *TiledPlot) Draw(c draw.Canvas) {
 // If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
 // If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
 // (the width is defaulted to vgimg.DefaultWidth).
-func (tp *TiledPlot) Save(w, h vg.Length, file string) (err error) {
-	switch {
-	case w <= 0 && h <= 0:
-		w = vgimg.DefaultWidth
-		h = vgimg.DefaultWidth / math.Phi
-	case w <= 0:
-		w = h * math.Phi
-	case h <= 0:
-		h = w / math.Phi
-	}
-
-	f, err := os.Create(file)
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		e := f.Close()
-		if err == nil {
-			err = e
-		}
-	}()
-
-	format := strings.ToLower(filepath.Ext(file))
-	if len(format) != 0 {
-		format = format[1:]
-	}
-	c, err := tp.WriterTo(w, h, format)
-	if err != nil {
-		return err
-	}
-
-	_, err = c.WriteTo(f)
-	return err
+func (tp *TiledPlot) Save(w, h vg.Length, file string) error {
+	return Save(tp, w, h, file)
 }
 
 // WriterTo returns an io.WriterTo that will write the plots as
@@ -198,3 +178,8 @@ func (tp *TiledPlot) Show(w, h vg.Length, scr screen.Screen) (*vgshiny.Canvas, e
 	c.Paint()
 	return c, err
 }
+
+var (
+	_ Drawer       = (*TiledPlot)(nil)
+	_ latexHandler = (*TiledPlot)(nil)
+)

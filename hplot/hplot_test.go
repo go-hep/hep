@@ -48,10 +48,6 @@ func TestSubPlot(t *testing.T) {
 	cmpimg.CheckPlot(Example_subplot, t, "sub_plot.png")
 }
 
-func TestDiffPlot(t *testing.T) {
-	cmpimg.CheckPlot(Example_diffplot, t, "diff_plot.png")
-}
-
 func TestLatexPlot(t *testing.T) {
 	Example_latexplot()
 	ref, err := ioutil.ReadFile("testdata/latex_plot_golden.tex")

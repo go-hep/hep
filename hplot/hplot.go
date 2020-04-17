@@ -10,13 +10,8 @@ package hplot // import "go-hep.org/x/hep/hplot"
 
 import (
 	"bytes"
-	"fmt"
-	"image/color"
 	"io"
 	"math"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"go-hep.org/x/exp/vgshiny"
 	"go-hep.org/x/hep/hplot/htex"
@@ -26,7 +21,6 @@ import (
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 	"gonum.org/v1/plot/vg/vgimg"
-	"gonum.org/v1/plot/vg/vgtex"
 )
 
 //go:generate go get github.com/campoy/embedmd
@@ -101,6 +95,10 @@ func (p *Plot) Add(ps ...plot.Plotter) {
 	p.Plot.Add(ps...)
 }
 
+func (p *Plot) LatexHandler() htex.Handler {
+	return p.Latex
+}
+
 // Save saves the plot to an image file.  The file format is determined
 // by the extension.
 //
@@ -111,50 +109,8 @@ func (p *Plot) Add(ps ...plot.Plotter) {
 // If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
 // If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
 // (the width is defaulted to vgimg.DefaultWidth).
-func (p *Plot) Save(w, h vg.Length, file string) (err error) {
-	switch {
-	case w <= 0 && h <= 0:
-		w = vgimg.DefaultWidth
-		h = vgimg.DefaultWidth / math.Phi
-	case w <= 0:
-		w = h * math.Phi
-	case h <= 0:
-		h = w / math.Phi
-	}
-
-	f, err := os.Create(file)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	format := strings.ToLower(filepath.Ext(file))
-	if len(format) != 0 {
-		format = format[1:]
-	}
-	c, err := p.WriterTo(w, h, format)
-	if err != nil {
-		return err
-	}
-
-	_, err = c.WriteTo(f)
-	if err != nil {
-		return err
-	}
-
-	err = f.Close()
-	if err != nil {
-		return err
-	}
-
-	if format == "tex" {
-		err = p.Latex.CompileLatex(file)
-		if err != nil {
-			return fmt.Errorf("hplot: could not generate PDF: %w", err)
-		}
-	}
-
-	return nil
+func (p *Plot) Save(w, h vg.Length, file string) error {
+	return Save(p, w, h, file)
 }
 
 // WriterTo returns an io.WriterTo that will write the plot as
@@ -180,18 +136,7 @@ func (p *Plot) WriterTo(w, h vg.Length, format string) (io.WriterTo, error) {
 // taken into account when padding the plot so that
 // none of their glyphs are clipped.
 func (p *Plot) Draw(dc draw.Canvas) {
-
-	switch dc.Canvas.(type) {
-	case *vgtex.Canvas:
-		// prevent pgf/tikz to crop-out the bounding box
-		// by filling the whole image with a transparent box.
-		dc.FillPolygon(color.Transparent, []vg.Point{
-			{X: dc.Min.X, Y: dc.Min.Y},
-			{X: dc.Max.X, Y: dc.Min.Y},
-			{X: dc.Max.X, Y: dc.Max.Y},
-			{X: dc.Min.X, Y: dc.Max.Y},
-		})
-	}
+	vgtexBorder(dc)
 
 	dc = draw.Crop(dc,
 		p.Border.Left, -p.Border.Right,
@@ -224,13 +169,18 @@ func (p *Plot) Show(w, h vg.Length, scr screen.Screen) (*vgshiny.Canvas, error) 
 	return c, err
 }
 
+var (
+	_ Drawer       = (*Plot)(nil)
+	_ latexHandler = (*Plot)(nil)
+)
+
 // Show displays the plot according to format, returning the raw bytes and
 // an error, if any.
 //
 // If format is the empty string, then "png" is selected.
 // The list of accepted format strings is the same one than from
 // the gonum.org/v1/plot/vg/draw.NewFormattedCanvas function.
-func Show(p *Plot, w, h vg.Length, format string) ([]byte, error) {
+func Show(p Drawer, w, h vg.Length, format string) ([]byte, error) {
 	switch {
 	case w <= 0 && h <= 0:
 		w = vgimg.DefaultWidth
