@@ -37,41 +37,55 @@ type Drawer interface {
 // If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
 // If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
 // (the width is defaulted to vgimg.DefaultWidth).
-func Save(p Drawer, w, h vg.Length, file string) (err error) {
+func Save(p Drawer, w, h vg.Length, fnames ...string) (err error) {
+	if len(fnames) == 0 {
+		return fmt.Errorf("hplot: need at least 1 file name")
+	}
+
 	w, h = Dims(w, h)
 
-	f, err := os.Create(file)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
+	save := func(file string) error {
+		format := strings.ToLower(filepath.Ext(file))
+		if len(format) != 0 {
+			format = format[1:]
+		}
 
-	format := strings.ToLower(filepath.Ext(file))
-	if len(format) != 0 {
-		format = format[1:]
-	}
+		dc, err := WriterTo(p, w, h, format)
+		if err != nil {
+			return err
+		}
 
-	dc, err := WriterTo(p, w, h, format)
-	if err != nil {
-		return err
-	}
+		f, err := os.Create(file)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
 
-	_, err = dc.WriteTo(f)
-	if err != nil {
-		return err
-	}
+		_, err = dc.WriteTo(f)
+		if err != nil {
+			return err
+		}
 
-	err = f.Close()
-	if err != nil {
-		return err
-	}
+		err = f.Close()
+		if err != nil {
+			return err
+		}
 
-	if format == "tex" {
-		if p, ok := p.(*wplot); ok {
-			err = p.latex.CompileLatex(file)
-			if err != nil {
-				return fmt.Errorf("hplot: could not generate PDF: %w", err)
+		if format == "tex" {
+			if p, ok := p.(*P); ok {
+				err = p.Latex.CompileLatex(file)
+				if err != nil {
+					return fmt.Errorf("hplot: could not generate PDF: %w", err)
+				}
 			}
+		}
+		return nil
+	}
+
+	for _, file := range fnames {
+		err := save(file)
+		if err != nil {
+			return fmt.Errorf("hplot: could not save plot: %w", err)
 		}
 	}
 

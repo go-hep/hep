@@ -155,3 +155,33 @@ func Example_latexplot() {
 		log.Fatalf("could not save LaTeX plot: %+v\n", err)
 	}
 }
+
+func ExampleSave() {
+	p := hplot.New()
+	p.Title.Text = "my title"
+	p.X.Label.Text = "x"
+	p.Y.Label.Text = "y"
+
+	const (
+		width  = -1 // automatically choose a nice plot width
+		height = -1 // automatically choose a nice plot height
+	)
+
+	err := hplot.Save(
+		p,
+		width, height,
+		"testdata/plot_save.eps",
+		"testdata/plot_save.jpg",
+		"testdata/plot_save.pdf",
+		"testdata/plot_save.png",
+		"testdata/plot_save.svg",
+		"testdata/plot_save.tex",
+		"testdata/plot_save.tif",
+	)
+
+	if err != nil {
+		log.Fatalf("could not save plot: %+v", err)
+	}
+
+	// Output:
+}

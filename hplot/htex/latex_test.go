@@ -39,11 +39,11 @@ func TestHandler(t *testing.T) {
 			name:  "pdflatex-not-there",
 			latex: htex.NewHandler("pdflatex-not-there"),
 			want: func() error {
-				err := fmt.Errorf("hplot: could not generate PDF: htex: could not generate PDF from vgtex:\n\nerror: exec: \"pdflatex-not-there\": executable file not found in $PATH")
+				err := fmt.Errorf("hplot: could not save plot: hplot: could not generate PDF: htex: could not generate PDF from vgtex:\n\nerror: exec: \"pdflatex-not-there\": executable file not found in $PATH")
 				if runtime.GOOS != "windows" {
 					return err
 				}
-				return fmt.Errorf("hplot: could not generate PDF: htex: could not generate PDF from vgtex:\n\nerror: exec: \"pdflatex-not-there\": executable file not found in %%PATH%%")
+				return fmt.Errorf("hplot: could not save plot: hplot: could not generate PDF: htex: could not generate PDF from vgtex:\n\nerror: exec: \"pdflatex-not-there\": executable file not found in %%PATH%%")
 			}(),
 		},
 		{
