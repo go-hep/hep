@@ -19,6 +19,7 @@ import (
 	"golang.org/x/mobile/event/paint"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/vg/draw"
 	vgdraw "gonum.org/v1/plot/vg/draw"
 )
 
@@ -72,10 +73,15 @@ func main() {
 	driver.Main(func(scr screen.Screen) {
 		{
 			p := newPlot()
-			c, err := p.Show(-1, -1, scr)
+
+			w, h := hplot.Dims(-1, -1)
+			c, err := vgshiny.New(scr, w, h)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatalf("could not create shiny canvas: %+v", err)
 			}
+			p.Draw(draw.New(c))
+			c.Paint()
+
 			go func() {
 				c.Run(nil)
 				c.Release()

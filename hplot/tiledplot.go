@@ -5,10 +5,6 @@
 package hplot
 
 import (
-	"io"
-
-	"go-hep.org/x/exp/vgshiny"
-	"golang.org/x/exp/shiny/screen"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
@@ -109,42 +105,6 @@ func (tp *TiledPlot) Draw(c draw.Canvas) {
 // (the width is defaulted to vgimg.DefaultWidth).
 func (tp *TiledPlot) Save(w, h vg.Length, file string) error {
 	return Save(tp, w, h, file)
-}
-
-// WriterTo returns an io.WriterTo that will write the plots as
-// the specified image format.
-//
-// Supported formats are the same ones than hplot.Plot.WriterTo
-//
-// If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
-// If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
-// (the width is defaulted to vgimg.DefaultWidth).
-func (tp *TiledPlot) WriterTo(w, h vg.Length, format string) (io.WriterTo, error) {
-	w, h = Dims(w, h)
-
-	c, err := draw.NewFormattedCanvas(w, h, format)
-	if err != nil {
-		return nil, err
-	}
-	tp.Draw(draw.New(c))
-	return c, nil
-}
-
-// Show displays the plots to the screen, with the given dimensions.
-//
-// If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
-// If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
-// (the width is defaulted to vgimg.DefaultWidth).
-func (tp *TiledPlot) Show(w, h vg.Length, scr screen.Screen) (*vgshiny.Canvas, error) {
-	w, h = niceDims(w, h)
-
-	c, err := vgshiny.New(scr, w, h)
-	if err != nil {
-		return nil, err
-	}
-	tp.Draw(draw.New(c))
-	c.Paint()
-	return c, err
 }
 
 var (

@@ -7,6 +7,7 @@ package hplot
 import (
 	"fmt"
 	"image/color"
+	"io"
 	"math"
 	"os"
 	"path/filepath"
@@ -47,12 +48,10 @@ func Save(p Drawer, w, h vg.Length, file string) (err error) {
 		format = format[1:]
 	}
 
-	dc, err := draw.NewFormattedCanvas(w, h, format)
+	dc, err := WriterTo(p, w, h, format)
 	if err != nil {
 		return err
 	}
-
-	p.Draw(draw.New(dc))
 
 	_, err = dc.WriteTo(f)
 	if err != nil {
@@ -74,6 +73,26 @@ func Save(p Drawer, w, h vg.Length, file string) (err error) {
 	}
 
 	return nil
+}
+
+// WriterTo returns an io.WriterTo that will write the plots as
+// the specified image format.
+//
+// Supported formats are the same ones than hplot.Plot.WriterTo
+//
+// If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
+// If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
+// (the width is defaulted to vgimg.DefaultWidth).
+func WriterTo(p Drawer, w, h vg.Length, format string) (io.WriterTo, error) {
+	w, h = Dims(w, h)
+
+	c, err := draw.NewFormattedCanvas(w, h, format)
+	if err != nil {
+		return nil, fmt.Errorf("hplot: could not create canvas: %w", err)
+	}
+	p.Draw(draw.New(c))
+
+	return c, nil
 }
 
 func vgtexBorder(dc draw.Canvas) {
