@@ -5,17 +5,18 @@
 package hplot
 
 import (
-	"io"
-	"math"
-
+	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-	"gonum.org/v1/plot/vg/vgimg"
 )
 
 type RatioPlot struct {
 	Top    *Plot
 	Bottom *Plot
+
+	// Tiles controls the layout of the 2x1 ratio-plot grid.
+	// Tiles can be used to customize the padding between plots.
+	Tiles draw.Tiles
 
 	// Ratio controls how the vertical space is partioned between
 	// the top and bottom plots.
@@ -29,7 +30,20 @@ func NewRatioPlot() *RatioPlot {
 		Top:    New(),
 		Bottom: New(),
 		Ratio:  0.3,
+		Tiles:  draw.Tiles{Rows: 2, Cols: 1},
 	}
+
+	const pad = 1
+	for _, v := range []*vg.Length{
+		&rp.Tiles.PadTop, &rp.Tiles.PadBottom,
+		&rp.Tiles.PadRight, &rp.Tiles.PadLeft,
+		&rp.Tiles.PadX, &rp.Tiles.PadY,
+	} {
+		if *v == 0 {
+			*v = pad
+		}
+	}
+
 	// hide X-axis labels
 	rp.Top.X.Tick.Marker = NoTicks{}
 	return rp
@@ -44,67 +58,32 @@ func NewRatioPlot() *RatioPlot {
 // none of their glyphs are clipped.
 func (rp *RatioPlot) Draw(dc draw.Canvas) {
 	var (
-		ratio  = vg.Length(rp.Ratio)
-		width  = dc.Rectangle.Size().X
-		height = dc.Rectangle.Size().Y
+		top, bot = rp.align(dc)
 	)
 
-	top := draw.Canvas{
-		Canvas: dc,
-		Rectangle: vg.Rectangle{
-			Min: vg.Point{X: 0, Y: ratio * height},
-			Max: vg.Point{X: width, Y: height},
-		},
-	}
 	rp.Top.Draw(top)
-
-	bottom := draw.Canvas{
-		Canvas: dc,
-		Rectangle: vg.Rectangle{
-			Min: vg.Point{X: 0, Y: 0},
-			Max: vg.Point{X: width, Y: ratio * height},
-		},
-	}
-	rp.Bottom.Draw(bottom)
+	rp.Bottom.Draw(bot)
 }
 
-// Save saves the plots to an image file.
-// The file format is determined by the extension.
-//
-// Supported extensions are the same ones than hplot.Plot.Save.
-//
-// If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
-// If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
-// (the width is defaulted to vgimg.DefaultWidth).
-func (rp *RatioPlot) Save(w, h vg.Length, file string) error {
-	return Save(rp, w, h, file)
-}
+func (rp *RatioPlot) align(dc draw.Canvas) (top, bot draw.Canvas) {
+	var (
+		ratio = vg.Length(rp.Ratio)
+		h     = dc.Size().Y
+		ps    = [][]*plot.Plot{
+			{rp.Top.Plot},
+			{rp.Bottom.Plot},
+		}
+		cs = plot.Align(ps, rp.Tiles, dc)
+	)
 
-// WriterTo returns an io.WriterTo that will write the plots as
-// the specified image format.
-//
-// Supported formats are the same ones than hplot.Plot.WriterTo
-//
-// If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
-// If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
-// (the width is defaulted to vgimg.DefaultWidth).
-func (rp *RatioPlot) WriterTo(w, h vg.Length, format string) (io.WriterTo, error) {
-	switch {
-	case w <= 0 && h <= 0:
-		w = vgimg.DefaultWidth
-		h = vgimg.DefaultWidth / math.Phi
-	case w <= 0:
-		w = h * math.Phi
-	case h <= 0:
-		h = w / math.Phi
-	}
+	top = cs[0][0]
+	bot = cs[1][0]
 
-	c, err := draw.NewFormattedCanvas(w, h, format)
-	if err != nil {
-		return nil, err
-	}
-	rp.Draw(draw.New(c))
-	return c, nil
+	top.Rectangle.Min.Y = ratio * h
+	top.Rectangle.Max.Y = h
+	bot.Rectangle.Max.Y = ratio * h
+
+	return top, bot
 }
 
 var (

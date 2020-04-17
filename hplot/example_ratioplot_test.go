@@ -31,7 +31,7 @@ func ExampleRatioPlot() {
 	hist2 := hbook.NewH1D(20, -4, +4)
 
 	for i := 0; i < npoints; i++ {
-		v1 := dist.Rand()
+		v1 := dist.Rand() - 0.5
 		v2 := dist.Rand() + 0.5
 		hist1.Fill(v1, 1)
 		hist2.Fill(v2, 1)
@@ -47,13 +47,11 @@ func ExampleRatioPlot() {
 	// Create a histogram of our values drawn
 	// from the standard normal.
 	h1 := hplot.NewH1D(hist1)
-	h1.LineStyle.Color = color.RGBA{R: 255, A: 255}
-	h1.FillColor = nil
+	h1.FillColor = color.NRGBA{R: 255, A: 100}
 	rp.Top.Add(h1)
 
 	h2 := hplot.NewH1D(hist2)
-	h2.LineStyle.Color = color.RGBA{B: 255, A: 255}
-	h2.FillColor = nil
+	h2.FillColor = color.NRGBA{B: 255, A: 100}
 	rp.Top.Add(h2)
 
 	rp.Top.Add(hplot.NewGrid())
