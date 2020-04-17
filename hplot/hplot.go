@@ -14,7 +14,6 @@ import (
 	"math"
 
 	"go-hep.org/x/exp/vgshiny"
-	"go-hep.org/x/hep/hplot/htex"
 	"golang.org/x/exp/shiny/screen"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
@@ -30,22 +29,6 @@ import (
 type Plot struct {
 	*plot.Plot
 	Style Style
-
-	// Border specifies the borders' sizes, the space between the
-	// end of the plot image (PDF, PNG, ...) and the actual plot.
-	Border struct {
-		Left   vg.Length
-		Right  vg.Length
-		Bottom vg.Length
-		Top    vg.Length
-	}
-
-	// Latex handles the generation of PDFs from .tex files.
-	// The default is to use htex.NoopHandler (a no-op).
-	// To enable the automatic generation of PDFs, use DefaultHandler:
-	//  p := hplot.New()
-	//  p.Latex = htex.DefaultHandler
-	Latex htex.Handler
 }
 
 // New returns a new plot with some reasonable
@@ -63,7 +46,6 @@ func New() *Plot {
 	pp := &Plot{
 		Plot:  p,
 		Style: style,
-		Latex: htex.NoopHandler{},
 	}
 	pp.Style.Apply(pp)
 	// p.X.Padding = 0
@@ -93,10 +75,6 @@ func (p *Plot) Add(ps ...plot.Plotter) {
 	}
 
 	p.Plot.Add(ps...)
-}
-
-func (p *Plot) LatexHandler() htex.Handler {
-	return p.Latex
 }
 
 // Save saves the plot to an image file.  The file format is determined
@@ -136,12 +114,6 @@ func (p *Plot) WriterTo(w, h vg.Length, format string) (io.WriterTo, error) {
 // taken into account when padding the plot so that
 // none of their glyphs are clipped.
 func (p *Plot) Draw(dc draw.Canvas) {
-	vgtexBorder(dc)
-
-	dc = draw.Crop(dc,
-		p.Border.Left, -p.Border.Right,
-		p.Border.Bottom, -p.Border.Top,
-	)
 	p.Plot.Draw(dc)
 }
 
@@ -170,8 +142,7 @@ func (p *Plot) Show(w, h vg.Length, scr screen.Screen) (*vgshiny.Canvas, error) 
 }
 
 var (
-	_ Drawer       = (*Plot)(nil)
-	_ latexHandler = (*Plot)(nil)
+	_ Drawer = (*Plot)(nil)
 )
 
 // Show displays the plot according to format, returning the raw bytes and

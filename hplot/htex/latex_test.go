@@ -70,12 +70,13 @@ func TestHandler(t *testing.T) {
 			p.Title.Text = name
 			p.X.Label.Text = "X"
 			p.Y.Label.Text = "Y"
-			p.Latex = tc.latex
+
+			pp := hplot.Wrap(p, hplot.WithLatexHandler(tc.latex))
 
 			fname := fmt.Sprintf("%s/%s.tex", tmp, name)
 			defer os.RemoveAll(fname)
 
-			err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, fname)
+			err := hplot.Save(pp, 10*vg.Centimeter, 10*vg.Centimeter, fname)
 			switch {
 			case err != nil && tc.want != nil:
 				if got, want := err.Error(), tc.want.Error(); got != want {

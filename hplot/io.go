@@ -12,7 +12,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"go-hep.org/x/hep/hplot/htex"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 	"gonum.org/v1/plot/vg/vgimg"
@@ -22,56 +21,6 @@ import (
 // Drawer is the interface that wraps the Draw method.
 type Drawer interface {
 	Draw(draw.Canvas)
-}
-
-type latexHandler interface {
-	LatexHandler() htex.Handler
-}
-
-type DrawOption func(p *wplot)
-
-type Border struct {
-	Left   vg.Length
-	Right  vg.Length
-	Bottom vg.Length
-	Top    vg.Length
-}
-
-func WithBorder(b Border) DrawOption {
-	return func(p *wplot) {
-		p.border = b
-	}
-}
-
-func WithLatexHandler(h htex.Handler) DrawOption {
-	return func(p *wplot) {
-		p.latex = h
-	}
-}
-
-type wplot struct {
-	p      Drawer
-	border Border
-	latex  htex.Handler
-}
-
-func (p *wplot) Draw(dc draw.Canvas) {
-	p.p.Draw(dc)
-}
-
-func (p *wplot) LatexHandler() htex.Handler { return p.latex }
-
-var (
-	_ Drawer       = (*wplot)(nil)
-	_ latexHandler = (*wplot)(nil)
-)
-
-func Wrap(p Drawer, opts ...DrawOption) Drawer {
-	wp := &wplot{p: p}
-	for _, opt := range opts {
-		opt(wp)
-	}
-	return wp
 }
 
 // Save saves the plot to an image file.  The file format is determined
@@ -124,8 +73,8 @@ func Save(p Drawer, w, h vg.Length, file string) (err error) {
 	}
 
 	if format == "tex" {
-		if p, ok := p.(latexHandler); ok {
-			err = p.LatexHandler().CompileLatex(file)
+		if p, ok := p.(*wplot); ok {
+			err = p.latex.CompileLatex(file)
 			if err != nil {
 				return fmt.Errorf("hplot: could not generate PDF: %w", err)
 			}

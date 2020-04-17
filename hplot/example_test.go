@@ -127,10 +127,6 @@ func Example_latexplot() {
 	p.Title.Text = `Gaussian distribution: $f(x) = \frac{e^{-(x - \mu)^{2}/(2\sigma^{2}) }} {\sigma\sqrt{2\pi}}$`
 	p.Y.Label.Text = `$f(x)$`
 	p.X.Label.Text = `$x$`
-	p.Border.Left = 5
-	p.Border.Right = 5
-	p.Border.Top = 5
-	p.Border.Bottom = 5
 
 	// Create a histogram of our values drawn
 	// from the standard normal.
@@ -147,7 +143,14 @@ func Example_latexplot() {
 		height = width / math.Phi
 	)
 
-	err := p.Save(width, height, "testdata/latex_plot.tex")
+	pp := hplot.Wrap(p, hplot.WithBorder(hplot.Border{
+		Left:   5,
+		Right:  5,
+		Top:    5,
+		Bottom: 5,
+	}))
+
+	err := hplot.Save(pp, width, height, "testdata/latex_plot.tex")
 	if err != nil {
 		log.Fatalf("could not save LaTeX plot: %+v\n", err)
 	}

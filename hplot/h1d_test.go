@@ -73,10 +73,6 @@ func TestH1DWithBorders(t *testing.T) {
 
 		// Make a plot and set its title.
 		p := hplot.New()
-		p.Border.Right = 25
-		p.Border.Left = 20
-		p.Border.Top = 25
-		p.Border.Bottom = 20
 		p.Title.Text = "Histogram"
 		p.X.Label.Text = "X"
 		p.Y.Label.Text = "Y"
@@ -96,11 +92,18 @@ func TestH1DWithBorders(t *testing.T) {
 		// draw a grid
 		p.Add(hplot.NewGrid())
 
+		pp := hplot.Wrap(p, hplot.WithBorder(hplot.Border{
+			Right:  25,
+			Left:   20,
+			Top:    25,
+			Bottom: 20,
+		}))
+
 		c := vgimg.NewWith(
 			vgimg.UseWH(6*vg.Inch, 6*vg.Inch/math.Phi),
 		)
 		dc := draw.New(c)
-		p.Draw(dc)
+		pp.Draw(dc)
 
 		f, err := os.Create("testdata/h1d_borders.png")
 		if err != nil {

@@ -9,7 +9,6 @@ import (
 	"math"
 
 	"go-hep.org/x/exp/vgshiny"
-	"go-hep.org/x/hep/hplot/htex"
 	"golang.org/x/exp/shiny/screen"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
@@ -22,13 +21,6 @@ type TiledPlot struct {
 	Plots []*Plot
 	Tiles draw.Tiles
 	Align bool // whether to align all tiles axes
-
-	// Latex handles the generation of PDFs from .tex files.
-	// The default is to use htex.NoopHandler (a no-op).
-	// To enable the automatic generation of PDFs, use DefaultHandler:
-	//  p := hplot.New()
-	//  p.Latex = htex.DefaultHandler
-	Latex htex.Handler
 }
 
 // NewTiledPlot creates a new set of plots aranged as tiles.
@@ -47,7 +39,6 @@ func NewTiledPlot(tiles draw.Tiles) *TiledPlot {
 	plot := &TiledPlot{
 		Plots: make([]*Plot, tiles.Rows*tiles.Cols),
 		Tiles: tiles,
-		Latex: htex.NoopHandler{},
 	}
 
 	for i := 0; i < tiles.Rows; i++ {
@@ -57,10 +48,6 @@ func NewTiledPlot(tiles draw.Tiles) *TiledPlot {
 	}
 
 	return plot
-}
-
-func (tp *TiledPlot) LatexHandler() htex.Handler {
-	return tp.Latex
 }
 
 // Plot returns the plot at the i-th column and j-th row in the set of
@@ -75,8 +62,6 @@ func (tp *TiledPlot) Plot(i, j int) *Plot {
 // Each non-nil plot.Plot in the aranged set of tiled plots is drawn
 // inside its dedicated sub-canvas, using hplot.Plot.Draw.
 func (tp *TiledPlot) Draw(c draw.Canvas) {
-	vgtexBorder(c)
-
 	switch {
 	case tp.Align:
 		ps := make([][]*plot.Plot, tp.Tiles.Rows)
@@ -180,6 +165,5 @@ func (tp *TiledPlot) Show(w, h vg.Length, scr screen.Screen) (*vgshiny.Canvas, e
 }
 
 var (
-	_ Drawer       = (*TiledPlot)(nil)
-	_ latexHandler = (*TiledPlot)(nil)
+	_ Drawer = (*TiledPlot)(nil)
 )

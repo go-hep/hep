@@ -8,7 +8,6 @@ import (
 	"io"
 	"math"
 
-	"go-hep.org/x/hep/hplot/htex"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 	"gonum.org/v1/plot/vg/vgimg"
@@ -23,13 +22,6 @@ type RatioPlot struct {
 	// The top plot will take (1-ratio)*height.
 	// Default is 0.3.
 	Ratio float64
-
-	// Latex handles the generation of PDFs from .tex files.
-	// The default is to use htex.NoopHandler (a no-op).
-	// To enable the automatic generation of PDFs, use DefaultHandler:
-	//  p := hplot.New()
-	//  p.Latex = htex.DefaultHandler
-	Latex htex.Handler
 }
 
 func NewRatioPlot() *RatioPlot {
@@ -37,16 +29,10 @@ func NewRatioPlot() *RatioPlot {
 		Top:    New(),
 		Bottom: New(),
 		Ratio:  0.3,
-		Latex:  htex.NoopHandler{},
 	}
 	// hide X-axis labels
 	rp.Top.X.Tick.Marker = NoTicks{}
-
 	return rp
-}
-
-func (rp *RatioPlot) LatexHandler() htex.Handler {
-	return rp.Latex
 }
 
 // Draw draws a ratio plot to a draw.Canvas.
@@ -57,8 +43,6 @@ func (rp *RatioPlot) LatexHandler() htex.Handler {
 // taken into account when padding the plot so that
 // none of their glyphs are clipped.
 func (rp *RatioPlot) Draw(dc draw.Canvas) {
-	vgtexBorder(dc)
-
 	var (
 		ratio  = vg.Length(rp.Ratio)
 		width  = dc.Rectangle.Size().X
@@ -124,6 +108,5 @@ func (rp *RatioPlot) WriterTo(w, h vg.Length, format string) (io.WriterTo, error
 }
 
 var (
-	_ Drawer       = (*RatioPlot)(nil)
-	_ latexHandler = (*RatioPlot)(nil)
+	_ Drawer = (*RatioPlot)(nil)
 )
