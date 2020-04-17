@@ -5,6 +5,7 @@
 package hplot
 
 import (
+	"io"
 	"math"
 
 	"gonum.org/v1/plot"
@@ -73,6 +74,16 @@ func (p *Plot) Add(ps ...plot.Plotter) {
 // (the width is defaulted to vgimg.DefaultWidth).
 func (p *Plot) Save(w, h vg.Length, file string) error {
 	return Save(p, w, h, file)
+}
+
+// WriterTo returns an io.WriterTo that will write the plot as
+// the specified image format.
+//
+// Supported formats are:
+//
+//  eps, jpg|jpeg, pdf, png, svg, tex and tif|tiff.
+func (p *Plot) WriterTo(w, h vg.Length, format string) (io.WriterTo, error) {
+	return WriterTo(p, w, h, format)
 }
 
 // Draw draws a plot to a draw.Canvas.
