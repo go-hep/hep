@@ -12,7 +12,9 @@ import (
 	"strings"
 	"testing"
 
+	"go-hep.org/x/hep/hplot"
 	"gonum.org/v1/plot/cmpimg"
+	"gonum.org/v1/plot/vg"
 )
 
 func checkPlot(t *testing.T, ref string) {
@@ -62,4 +64,32 @@ func TestLatexPlot(t *testing.T) {
 		t.Fatal("files testdata/latex_plot{,_golden}.tex differ\n")
 	}
 	os.Remove("testdata/latex_plot.tex")
+}
+
+func TestShow(t *testing.T) {
+	p := hplot.New()
+	p.Title.Text = "title"
+	p.X.Label.Text = "x"
+	p.Y.Label.Text = "y"
+
+	for _, tc := range []struct {
+		w, h   vg.Length
+		format string
+	}{
+		{-1, -1, ""},
+		{-1, -1, "png"},
+		{-1, -1, "jpg"},
+		{-1, -1, "pdf"},
+		{-1, -1, "eps"},
+		{-1, -1, "tex"},
+		{-1, 10 * vg.Centimeter, ""},
+		{10 * vg.Centimeter, -1, ""},
+	} {
+		t.Run(tc.format, func(t *testing.T) {
+			_, err := hplot.Show(p, tc.w, tc.h, tc.format)
+			if err != nil {
+				t.Fatalf("%+v", err)
+			}
+		})
+	}
 }

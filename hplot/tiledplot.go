@@ -6,14 +6,12 @@ package hplot
 
 import (
 	"io"
-	"math"
 
 	"go-hep.org/x/exp/vgshiny"
 	"golang.org/x/exp/shiny/screen"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-	"gonum.org/v1/plot/vg/vgimg"
 )
 
 // TiledPlot is a regularly spaced set of plots, aranged as tiles.
@@ -122,15 +120,7 @@ func (tp *TiledPlot) Save(w, h vg.Length, file string) error {
 // If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
 // (the width is defaulted to vgimg.DefaultWidth).
 func (tp *TiledPlot) WriterTo(w, h vg.Length, format string) (io.WriterTo, error) {
-	switch {
-	case w <= 0 && h <= 0:
-		w = vgimg.DefaultWidth
-		h = vgimg.DefaultWidth / math.Phi
-	case w <= 0:
-		w = h * math.Phi
-	case h <= 0:
-		h = w / math.Phi
-	}
+	w, h = Dims(w, h)
 
 	c, err := draw.NewFormattedCanvas(w, h, format)
 	if err != nil {
@@ -146,15 +136,8 @@ func (tp *TiledPlot) WriterTo(w, h vg.Length, format string) (io.WriterTo, error
 // If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
 // (the width is defaulted to vgimg.DefaultWidth).
 func (tp *TiledPlot) Show(w, h vg.Length, scr screen.Screen) (*vgshiny.Canvas, error) {
-	switch {
-	case w <= 0 && h <= 0:
-		w = vgimg.DefaultWidth
-		h = vgimg.DefaultWidth / math.Phi
-	case w <= 0:
-		w = h * math.Phi
-	case h <= 0:
-		h = w / math.Phi
-	}
+	w, h = niceDims(w, h)
+
 	c, err := vgshiny.New(scr, w, h)
 	if err != nil {
 		return nil, err

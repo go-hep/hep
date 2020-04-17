@@ -19,7 +19,6 @@ import (
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-	"gonum.org/v1/plot/vg/vgimg"
 )
 
 //go:generate go get github.com/campoy/embedmd
@@ -123,15 +122,7 @@ func (p *Plot) Draw(dc draw.Canvas) {
 // If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
 // (the width is defaulted to vgimg.DefaultWidth).
 func (p *Plot) Show(w, h vg.Length, scr screen.Screen) (*vgshiny.Canvas, error) {
-	switch {
-	case w <= 0 && h <= 0:
-		w = vgimg.DefaultWidth
-		h = vgimg.DefaultWidth / math.Phi
-	case w <= 0:
-		w = h * math.Phi
-	case h <= 0:
-		h = w / math.Phi
-	}
+	w, h = niceDims(w, h)
 	c, err := vgshiny.New(scr, w, h)
 	if err != nil {
 		return nil, err
@@ -152,15 +143,7 @@ var (
 // The list of accepted format strings is the same one than from
 // the gonum.org/v1/plot/vg/draw.NewFormattedCanvas function.
 func Show(p Drawer, w, h vg.Length, format string) ([]byte, error) {
-	switch {
-	case w <= 0 && h <= 0:
-		w = vgimg.DefaultWidth
-		h = vgimg.DefaultWidth / math.Phi
-	case w <= 0:
-		w = h * math.Phi
-	case h <= 0:
-		h = w / math.Phi
-	}
+	w, h = Dims(w, h)
 
 	if format == "" {
 		format = "png"
