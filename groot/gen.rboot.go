@@ -1,4 +1,4 @@
-// Copyright 2018 The go-hep Authors. All rights reserved.
+// Copyright ©2018 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -166,7 +166,7 @@ void genstreamers(const char* fname) {
 	}
 	defer f.Close()
 
-	_, err = f.Write([]byte(`// Copyright 2020 The go-hep Authors. All rights reserved.
+	_, err = f.Write([]byte(`// Copyright ©2020 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
