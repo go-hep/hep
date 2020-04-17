@@ -7,7 +7,7 @@
 package rvers
 
 // ROOT version
-const ROOT = 62000
+const ROOT = 62004
 
 // ROOT classes versions
 const (
