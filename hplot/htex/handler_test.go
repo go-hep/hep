@@ -66,13 +66,13 @@ func TestGoHandler(t *testing.T) {
 			p.X.Label.Text = "X"
 			p.Y.Label.Text = "Y"
 
-			pp := hplot.Wrap(p, hplot.WithLatexHandler(tc.latex))
+			fig := hplot.Figure(p, hplot.WithLatexHandler(tc.latex))
 
 			for i := 0; i < 10; i++ {
 				fname := fmt.Sprintf("%s/%s-%02d.tex", tmp, name, i)
 				defer os.RemoveAll(fname)
 
-				err := hplot.Save(pp, 10*vg.Centimeter, 10*vg.Centimeter, fname)
+				err := hplot.Save(fig, 10*vg.Centimeter, 10*vg.Centimeter, fname)
 				if err != nil {
 					t.Fatalf("error: %+v", err)
 				}
