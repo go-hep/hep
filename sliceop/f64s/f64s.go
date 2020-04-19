@@ -5,42 +5,60 @@
 // Package f64s provide common operations on float64 slices.
 package f64s
 
-
-// Return a slice with all elements for which f(x) returns true
+// Filter creates a slice with all the elements x_i of src for which f(x_i) is true.
+// Filter uses dst as work buffer, storing elements at the start of the slice.
+// Filter clears dst if a slice is passed, and allocates a new slice if dst is nil.
 func Filter(dst, src []float64, f func(v float64) bool) []float64 {
+
 	if dst == nil {
-		dst = []float64{}
+		dst = make([]float64, 0, len(src))
 	}
+
+	dst = dst[:0]
 	for _, x := range src {
 		if f(x) {
 			dst = append(dst, x)
 		}
 	}
-	return dst	
+
+	return dst
 }
 
-// Return a slice of {f(x_i)} when src = {x_i}
+// Map creates a slice with all the elements f(x_i) where x_i are elements from src.
+// Map uses dst as work buffer, storing elements at the start of the slice.
+// Map allocates a new slice if dst is nil.
+// Map will panic if the lengths of src and dst differ.
 func Map(dst, src []float64, f func(v float64) float64) []float64 {
+
 	if dst == nil {
-		dst = []float64{}
+		dst = make([]float64, 0, len(src))
 	}
-	for _, x := range src {
-		dst = append(dst, f(x))
+
+	if len(src) != len(dst) {
+		panic("f64s: length mismatch")
+	}
+
+	for i, x := range src {
+		dst[i] = f(x)
 	}
 	return dst
 }
 
-// Return a slice of all indices corresponding to elements for which f(x) is true
+// Find creates a slice with all indices corresponding to elements for which f(x) is true.
+// Find uses dst as work buffer, storing indices at the start of the slice.
+// Find clears dst if a slice is passed, and allocates a new slice if dst is nil.
 func Find(dst []int, src []float64, f func(v float64) bool) []int {
+
 	if dst == nil {
-		dst = []int{}
+		dst = make([]int, 0, len(src))
 	}
+
+	dst = dst[:0]
 	for i, x := range src {
 		if f(x) {
 			dst = append(dst, i)
 		}
 	}
+
 	return dst
 }
-
-
