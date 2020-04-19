@@ -187,6 +187,7 @@ func (h *H1D) Scale(factor float64) {
 }
 
 // AddH1D returns the bin-by-bin summed histogram of h1 and h2 
+// assuming their statistical uncertainies are uncorrelated.
 func AddH1D(h1, h2 *H1D) *H1D {
 	
 	if h1.Len() != h2.Len() {
@@ -203,9 +204,13 @@ func AddH1D(h1, h2 *H1D) *H1D {
 
 	hsum := NewH1D(h1.Len(), h1.XMin(), h1.XMax())
 	for i := 0; i < hsum.Len(); i++ {
-		y := h1.Value(i) + h2.Value(i)
 		x := hsum.Binning.Bins[i].Range.Min
+		y := h1.Value(i) + h2.Value(i)
+		y1err := h1.Binning.Bins[i].SumW2()
+		y2err := h2.Binning.Bins[i].SumW2()
+		yerr := math.Sqrt( y1err*y1err + y2err*y2err) 
 		hsum.Binning.fill(x, y)
+		_ = yerr // Needs something like bin.SetSumW2(x, yerr)
 	}
 	
 	return hsum
