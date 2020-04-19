@@ -186,10 +186,10 @@ func (h *H1D) Scale(factor float64) {
 	h.Binning.scaleW(factor)
 }
 
-// AddH1D returns the bin-by-bin summed histogram of h1 and h2 
-// assuming their statistical uncertainies are uncorrelated.
+// AddH1D returns the bin-by-bin summed histogram of h1 and h2
+// assuming their statistical uncertainties are uncorrelated.
 func AddH1D(h1, h2 *H1D) *H1D {
-	
+
 	if h1.Len() != h2.Len() {
 		panic("hbook: h1 and h2 have different number of bins")
 	}
@@ -203,16 +203,26 @@ func AddH1D(h1, h2 *H1D) *H1D {
 	}
 
 	hsum := NewH1D(h1.Len(), h1.XMin(), h1.XMax())
+
 	for i := 0; i < hsum.Len(); i++ {
-		x := hsum.Binning.Bins[i].Range.Min
 		y := h1.Value(i) + h2.Value(i)
 		y1err := h1.Binning.Bins[i].SumW2()
 		y2err := h2.Binning.Bins[i].SumW2()
-		yerr := math.Sqrt( y1err*y1err + y2err*y2err) 
-		hsum.Binning.fill(x, y)
-		_ = yerr // Needs something like bin.SetSumW2(x, yerr)
+		yerr := math.Sqrt(y1err*y1err + y2err*y2err)
+		hsum.Binning.Bins[i].Dist.Dist.SumW = y
+		hsum.Binning.Bins[i].Dist.Dist.SumW2 = yerr
 	}
-	
+
+	// handle under/over flow
+	for i := range hsum.Binning.Outflows {
+		y := h1.Binning.Outflows[i].Dist.SumW2 + h2.Binning.Outflows[i].Dist.SumW2
+		y1err := h1.Binning.Outflows[i].Dist.SumW2
+		y2err := h2.Binning.Outflows[i].Dist.SumW2
+		yerr := math.Sqrt(y1err*y1err + y2err*y2err)
+		hsum.Binning.Outflows[i].Dist.SumW = y
+		hsum.Binning.Outflows[i].Dist.SumW2 = yerr
+	}
+
 	return hsum
 }
 
