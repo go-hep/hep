@@ -206,24 +206,29 @@ func AddH1D(h1, h2 *H1D) *H1D {
 
 	for i := 0; i < hsum.Len(); i++ {
 		y := h1.Value(i) + h2.Value(i)
-		y1err := h1.Binning.Bins[i].SumW2()
-		y2err := h2.Binning.Bins[i].SumW2()
-		yerr := math.Sqrt(y1err*y1err + y2err*y2err)
+		y1err2 := h1.Binning.Bins[i].SumW2()
+		y2err2 := h2.Binning.Bins[i].SumW2()
 		hsum.Binning.Bins[i].Dist.Dist.SumW = y
-		hsum.Binning.Bins[i].Dist.Dist.SumW2 = yerr
+		hsum.Binning.Bins[i].Dist.Dist.SumW2 = y1err2 + y2err2
 	}
 
 	// handle under/over flow
 	for i := range hsum.Binning.Outflows {
-		y := h1.Binning.Outflows[i].Dist.SumW2 + h2.Binning.Outflows[i].Dist.SumW2
-		y1err := h1.Binning.Outflows[i].Dist.SumW2
-		y2err := h2.Binning.Outflows[i].Dist.SumW2
-		yerr := math.Sqrt(y1err*y1err + y2err*y2err)
+		y := h1.Binning.Outflows[i].Dist.SumW + h2.Binning.Outflows[i].Dist.SumW
+		y1err2 := h1.Binning.Outflows[i].Dist.SumW2
+		y2err2 := h2.Binning.Outflows[i].Dist.SumW2
 		hsum.Binning.Outflows[i].Dist.SumW = y
-		hsum.Binning.Outflows[i].Dist.SumW2 = yerr
+		hsum.Binning.Outflows[i].Dist.SumW2 = y1err2 + y2err2
 	}
 
 	return hsum
+}
+
+// AddScaledH1D returns the histogram with the bin-by-bin h1+alpha*h2
+// operation, assuming statistical uncertainties are uncorrelated.
+func AddScaledH1D(h1 *H1D, alpha float64, h2 *H1D) *H1D {
+	h2.Scale(alpha)
+	return AddH1D(h1, h2)
 }
 
 // Integral computes the integral of the histogram.
