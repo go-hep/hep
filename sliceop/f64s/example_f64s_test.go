@@ -27,7 +27,7 @@ func ExampleMap() {
 	fmt.Println(f64s.Map(nil, slice, operation))
 
 	// Output:
-	// [1, 4, 9801, 16, 25, 9801, 49]
+	// [1 4 9801 16 25 9801 49]
 }
 
 // An example of slice finding
