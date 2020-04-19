@@ -231,6 +231,59 @@ func AddScaledH1D(h1 *H1D, alpha float64, h2 *H1D) *H1D {
 	return AddH1D(h1, h2)
 }
 
+// DivH1D returns the bin-by-bin ratio histogram of h1 to h2
+// assuming their statistical uncertainties are uncorrelated.
+// Bins with NaN value are set to 0, as well as their uncertainty.
+func DivH1D(h1, h2 *H1D) *H1D {
+
+	if h1.Len() != h2.Len() {
+		panic("hbook: h1 and h2 have different number of bins")
+	}
+
+	if h1.XMin() != h2.XMin() {
+		panic("hbook: h1 and h2 have different Xmin")
+	}
+
+	if h1.XMax() != h2.XMax() {
+		panic("hbook: h1 and h2 have different Xmax")
+	}
+
+	hratio := NewH1D(h1.Len(), h1.XMin(), h1.XMax())
+
+	for i := 0; i < hratio.Len(); i++ {
+		y1 := h1.Value(i)
+		y2 := h2.Value(i)
+		y1err2 := h1.Binning.Bins[i].SumW2()
+		y2err2 := h2.Binning.Bins[i].SumW2()
+		y := y1 / y2
+		yerr := y * y * (y1err2/(y1*y1) + y2err2/(y2*y2))
+		if math.IsNaN(y) {
+			y = 0
+			yerr = 0
+		}
+		hratio.Binning.Bins[i].Dist.Dist.SumW = y
+		hratio.Binning.Bins[i].Dist.Dist.SumW2 = yerr
+	}
+
+	// Handle under/over flow
+	for i := range hratio.Binning.Outflows {
+		y1 := h1.Binning.Outflows[i].Dist.SumW
+		y2 := h2.Binning.Outflows[i].Dist.SumW
+		y1err2 := h1.Binning.Outflows[i].Dist.SumW2
+		y2err2 := h2.Binning.Outflows[i].Dist.SumW2
+		y := y1 / y2
+		yerr := y * y * (y1err2/(y1*y1) + y2err2/(y2*y2))
+		if math.IsNaN(y) {
+			y = 0
+			yerr = 0
+		}
+		hratio.Binning.Outflows[i].Dist.SumW = y
+		hratio.Binning.Outflows[i].Dist.SumW2 = yerr
+	}
+
+	return hratio
+}
+
 // Integral computes the integral of the histogram.
 //
 // The number of parameters can be 0 or 2.
