@@ -11,21 +11,22 @@ import (
 	"gonum.org/v1/plot/vg/vgimg"
 )
 
-// Wrap wraps a plot with plot-level drawing options and
-// returns a value implementing the Drawer interface.
-func Wrap(p Drawer, opts ...DrawOption) *P {
-	plt := &P{
+// Figure creates a new figure from a plot and options.
+// Figure returns a value implementing the Drawer interface.
+func Figure(p Drawer, opts ...FigOption) *Fig {
+	fig := &Fig{
 		Plot:  p,
 		Latex: htex.NoopHandler{},
 		DPI:   float64(vgimg.DefaultDPI),
 	}
 	for _, opt := range opts {
-		opt(plt)
+		opt(fig)
 	}
-	return plt
+	return fig
 }
 
-type DrawOption func(p *P)
+// FigOption allows to customize the creation of figures.
+type FigOption func(fig *Fig)
 
 // Border specifies the borders' sizes, the space between the
 // end of the plot image (PDF, PNG, ...) and the actual plot.
@@ -38,30 +39,30 @@ type Border struct {
 
 // WithBorder allows to specify the borders' sizes, the space between the
 // end of the plot image (PDF, PNG, ...) and the actual plot.
-func WithBorder(b Border) DrawOption {
-	return func(p *P) {
-		p.Border = b
+func WithBorder(b Border) FigOption {
+	return func(fig *Fig) {
+		fig.Border = b
 	}
 }
 
 // WithLatexHandler allows to enable the automatic generation of PDFs from .tex files.
 // To enable the automatic generation of PDFs, use DefaultHandler:
 //  WithLatexHandler(htex.DefaultHandler)
-func WithLatexHandler(h htex.Handler) DrawOption {
-	return func(p *P) {
-		p.Latex = h
+func WithLatexHandler(h htex.Handler) FigOption {
+	return func(fig *Fig) {
+		fig.Latex = h
 	}
 }
 
 // WithDPI allows to modify the default DPI of a plot.
-func WithDPI(dpi float64) DrawOption {
-	return func(p *P) {
-		p.DPI = dpi
+func WithDPI(dpi float64) FigOption {
+	return func(fig *Fig) {
+		fig.DPI = dpi
 	}
 }
 
-// P is a plot wrapper, holding plot-level customizations.
-type P struct {
+// Fig is a figure, holding a plot and figure-level customizations.
+type Fig struct {
 	// Plot is a gonum/plot.Plot like value.
 	Plot Drawer
 
@@ -80,17 +81,17 @@ type P struct {
 	DPI float64
 }
 
-func (p *P) Draw(dc draw.Canvas) {
+func (fig *Fig) Draw(dc draw.Canvas) {
 	vgtexBorder(dc)
 
 	dc = draw.Crop(dc,
-		p.Border.Left, -p.Border.Right,
-		p.Border.Bottom, -p.Border.Top,
+		fig.Border.Left, -fig.Border.Right,
+		fig.Border.Bottom, -fig.Border.Top,
 	)
 
-	p.Plot.Draw(dc)
+	fig.Plot.Draw(dc)
 }
 
 var (
-	_ Drawer = (*P)(nil)
+	_ Drawer = (*Fig)(nil)
 )

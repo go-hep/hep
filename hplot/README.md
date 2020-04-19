@@ -679,7 +679,7 @@ func ExampleH1D_withPlotBorders() {
 	// draw a grid
 	p.Add(hplot.NewGrid())
 
-	pp := hplot.Wrap(p,
+	fig := hplot.Figure(p,
 		hplot.WithDPI(96),
 		hplot.WithBorder(hplot.Border{
 			Right:  25,
@@ -690,7 +690,7 @@ func ExampleH1D_withPlotBorders() {
 	)
 
 	// Save the plot to a PNG file.
-	if err := hplot.Save(pp, 6*vg.Inch, -1, "testdata/h1d_borders.png"); err != nil {
+	if err := hplot.Save(fig, 6*vg.Inch, -1, "testdata/h1d_borders.png"); err != nil {
 		log.Fatalf("error saving plot: %v\n", err)
 	}
 }

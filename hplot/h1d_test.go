@@ -92,7 +92,7 @@ func TestH1DWithBorders(t *testing.T) {
 		// draw a grid
 		p.Add(hplot.NewGrid())
 
-		pp := hplot.Wrap(p, hplot.WithBorder(hplot.Border{
+		fig := hplot.Figure(p, hplot.WithBorder(hplot.Border{
 			Right:  25,
 			Left:   20,
 			Top:    25,
@@ -103,7 +103,7 @@ func TestH1DWithBorders(t *testing.T) {
 			vgimg.UseWH(6*vg.Inch, 6*vg.Inch/math.Phi),
 		)
 		dc := draw.New(c)
-		pp.Draw(dc)
+		fig.Draw(dc)
 
 		f, err := os.Create("testdata/h1d_borders.png")
 		if err != nil {

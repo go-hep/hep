@@ -143,14 +143,14 @@ func Example_latexplot() {
 		height = width / math.Phi
 	)
 
-	pp := hplot.Wrap(p, hplot.WithBorder(hplot.Border{
+	fig := hplot.Figure(p, hplot.WithBorder(hplot.Border{
 		Left:   5,
 		Right:  5,
 		Top:    5,
 		Bottom: 5,
 	}))
 
-	err := hplot.Save(pp, width, height, "testdata/latex_plot.tex")
+	err := hplot.Save(fig, width, height, "testdata/latex_plot.tex")
 	if err != nil {
 		log.Fatalf("could not save LaTeX plot: %+v\n", err)
 	}

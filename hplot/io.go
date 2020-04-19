@@ -72,8 +72,8 @@ func Save(p Drawer, w, h vg.Length, fnames ...string) (err error) {
 		}
 
 		if format == "tex" {
-			if p, ok := p.(*P); ok {
-				err = p.Latex.CompileLatex(file)
+			if fig, ok := p.(*Fig); ok {
+				err = fig.Latex.CompileLatex(file)
 				if err != nil {
 					return fmt.Errorf("hplot: could not generate PDF: %w", err)
 				}
@@ -104,8 +104,8 @@ func WriterTo(p Drawer, w, h vg.Length, format string) (io.WriterTo, error) {
 	w, h = Dims(w, h)
 
 	dpi := float64(vgimg.DefaultDPI)
-	if p, ok := p.(*P); ok {
-		dpi = p.DPI
+	if fig, ok := p.(*Fig); ok {
+		dpi = fig.DPI
 	}
 
 	c, err := newFormattedCanvas(w, h, format, dpi)
