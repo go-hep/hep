@@ -186,6 +186,31 @@ func (h *H1D) Scale(factor float64) {
 	h.Binning.scaleW(factor)
 }
 
+// AddH1D returns the bin-by-bin summed histogram of h1 and h2 
+func AddH1D(h1, h2 *H1D) *H1D {
+	
+	if h1.Len() != h2.Len() {
+		panic("hbook: h1 and h2 have different number of bins")
+	}
+
+	if h1.XMin() != h2.XMin() {
+		panic("hbook: h1 and h2 have different Xmin")
+	}
+
+	if h1.XMax() != h2.XMax() {
+		panic("hbook: h1 and h2 have different Xmax")
+	}
+
+	hsum := NewH1D(h1.Len(), h1.XMin(), h1.XMax())
+	for i := 0; i < hsum.Len(); i++ {
+		y := h1.Value(i) + h2.Value(i)
+		x := hsum.Binning.Bins[i].Range.Min
+		hsum.Binning.fill(x, y)
+	}
+	
+	return hsum
+}
+
 // Integral computes the integral of the histogram.
 //
 // The number of parameters can be 0 or 2.
