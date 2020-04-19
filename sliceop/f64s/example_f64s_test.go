@@ -6,6 +6,8 @@ package f64s_test
 
 import (
 	"fmt"
+
+	"go-hep.org/x/hep/sliceop/f64s"
 )
 
 // An example of slice filtering
@@ -19,7 +21,7 @@ func ExampleFilter() {
 }
 
 // An example of slice mapping
-func ExampleFind() {
+func ExampleMap() {
 	slice := []float64{1, 2, -99, 4, 5, -99, 7}
 	operation := func(x float64) float64 { return x * x }
 	fmt.Println(f64s.Map(nil, slice, operation))
