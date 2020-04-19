@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Common operations on float64 slices
+// Package f64s provide common operations on float64 slices.
 package f64s
 
 
