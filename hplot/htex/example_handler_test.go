@@ -23,7 +23,7 @@ func ExampleGoHandler() {
 		p.Y.Label.Text = "y"
 
 		err := hplot.Save(
-			hplot.Wrap(p, hplot.WithLatexHandler(hdlr)),
+			hplot.Figure(p, hplot.WithLatexHandler(hdlr)),
 			-1, -1, name+".tex",
 		)
 		if err != nil {
