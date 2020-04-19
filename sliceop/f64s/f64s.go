@@ -31,7 +31,7 @@ func Filter(dst, src []float64, f func(v float64) bool) []float64 {
 func Map(dst, src []float64, f func(v float64) float64) []float64 {
 
 	if dst == nil {
-		dst = make([]float64, 0, len(src))
+		dst = make([]float64, len(src))
 	}
 
 	if len(src) != len(dst) {
