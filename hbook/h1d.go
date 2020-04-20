@@ -231,15 +231,16 @@ func h1dApply(dst, h1, h2 *H1D, fct func(d, d1, d2 *Dist0D)) {
 		panic("hbook: length mismatch")
 	}
 
-	var d Dist0D
 	for i := 0; i < dst.Len(); i++ {
-		fct(&d, &h1.Binning.Bins[i].Dist.Dist, &h2.Binning.Bins[i].Dist.Dist)
-		dst.Binning.Bins[i].Dist.Dist = d
+		fct(&dst.Binning.Bins[i].Dist.Dist,
+			&h1.Binning.Bins[i].Dist.Dist,
+			&h2.Binning.Bins[i].Dist.Dist)
 	}
 
 	for i := range dst.Binning.Outflows {
-		fct(&d, &h1.Binning.Outflows[i].Dist, &h2.Binning.Outflows[i].Dist)
-		dst.Binning.Outflows[i].Dist = d
+		fct(&dst.Binning.Outflows[i].Dist,
+			&h1.Binning.Outflows[i].Dist,
+			&h2.Binning.Outflows[i].Dist)
 	}
 }
 
