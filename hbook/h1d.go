@@ -210,6 +210,7 @@ func AddScaledH1D(h1 *H1D, alpha float64, h2 *H1D) *H1D {
 		y2, y2err2 := d2.SumW, d2.SumW2
 		dst.SumW = y1 + alpha*y2
 		dst.SumW2 = y1err2 + alpha2*y2err2
+		dst.N = d1.N + d2.N
 		return
 	}
 
