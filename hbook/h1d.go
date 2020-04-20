@@ -233,7 +233,8 @@ func AddScaledH1D(h1 *H1D, alpha float64, h2 *H1D) *H1D {
 
 // DivH1D returns the bin-by-bin ratio histogram of h1 to h2
 // assuming their statistical uncertainties are uncorrelated.
-// Bins with NaN value are set to 0, as well as their uncertainty.
+// Bins with NaN of +/- infinity value are set to 0, as well
+// as their uncertainty.
 func DivH1D(h1, h2 *H1D) *H1D {
 
 	if h1.Len() != h2.Len() {
@@ -257,7 +258,7 @@ func DivH1D(h1, h2 *H1D) *H1D {
 		y2err2 := h2.Binning.Bins[i].SumW2()
 		y := y1 / y2
 		yerr := y * y * (y1err2/(y1*y1) + y2err2/(y2*y2))
-		if math.IsNaN(y) {
+		if math.IsNaN(y) || math.IsInf(y, 0) {
 			y = 0
 			yerr = 0
 		}
@@ -273,7 +274,7 @@ func DivH1D(h1, h2 *H1D) *H1D {
 		y2err2 := h2.Binning.Outflows[i].Dist.SumW2
 		y := y1 / y2
 		yerr := y * y * (y1err2/(y1*y1) + y2err2/(y2*y2))
-		if math.IsNaN(y) {
+		if math.IsNaN(y) || math.IsInf(y, 0) {
 			y = 0
 			yerr = 0
 		}
