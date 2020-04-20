@@ -203,11 +203,11 @@ func AddScaledH1D(h1 *H1D, alpha float64, h2 *H1D) *H1D {
 	}
 
 	hsum := NewH1D(h1.Len(), h1.XMin(), h1.XMax())
-
+	alpha2 := alpha * alpha
 	for i := 0; i < hsum.Len(); i++ {
 		y := h1.Value(i) + alpha*h2.Value(i)
 		y1err2 := h1.Binning.Bins[i].SumW2()
-		y2err2 := alpha * alpha * h2.Binning.Bins[i].SumW2()
+		y2err2 := alpha2 * h2.Binning.Bins[i].SumW2()
 		hsum.Binning.Bins[i].Dist.Dist.SumW = y
 		hsum.Binning.Bins[i].Dist.Dist.SumW2 = y1err2 + y2err2
 	}
@@ -216,7 +216,7 @@ func AddScaledH1D(h1 *H1D, alpha float64, h2 *H1D) *H1D {
 	for i := range hsum.Binning.Outflows {
 		y := h1.Binning.Outflows[i].Dist.SumW + alpha*h2.Binning.Outflows[i].Dist.SumW
 		y1err2 := h1.Binning.Outflows[i].Dist.SumW2
-		y2err2 := alpha * alpha * h2.Binning.Outflows[i].Dist.SumW2
+		y2err2 := alpha2 * h2.Binning.Outflows[i].Dist.SumW2
 		hsum.Binning.Outflows[i].Dist.SumW = y
 		hsum.Binning.Outflows[i].Dist.SumW2 = y1err2 + y2err2
 	}
@@ -282,6 +282,24 @@ func DivH1D(h1, h2 *H1D) *H1D {
 	}
 
 	return hratio
+}
+
+// h1dApply is a helper function to perform bin-by-bin operations on H1D.
+func h1dApply(dst, bins1, bins2 []Bin1D, fct func(b1, b2 Bin1D) (float64, float64)) {
+
+	if len(bins1) != len(bins2) {
+		panic("bins1 and bins2 have different lengths ")
+	}
+
+	if len(bins1) != len(dst) {
+		panic("dst doesn't have the same length as bin1 & bin2")
+	}
+
+	for i := range dst {
+		y, yerr := fct(bins1[i], bins2[i])
+		dst[i].Dist.Dist.SumW = y
+		dst[i].Dist.Dist.SumW2 = yerr
+	}
 }
 
 // Integral computes the integral of the histogram.
