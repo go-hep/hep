@@ -247,6 +247,11 @@ func (h *H1D) Value(i int) float64 {
 	return h.Binning.Bins[i].SumW()
 }
 
+// Error returns the error, defined as sqrt(sumW2), of the idx-th bin.
+func (h *H1D) Error(i int) float64 {
+	return math.Sqrt(h.Binning.Bins[i].SumW2())
+}
+
 // Len returns the number of bins for this histogram
 //
 // Len implements gonum/plot/plotter.Valuer
