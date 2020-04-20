@@ -374,7 +374,7 @@ func ExampleAddScaledH1D() {
 	// Over : 10.5 +/- 10.0
 }
 
-func ExampleDivH1D(t *testing.T) {
+func ExampleDivH1D() {
 
 	h1 := hbook.NewH1D(6, 0, 6)
 	h1.Fill(-0.5, 1)
