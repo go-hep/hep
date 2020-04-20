@@ -205,107 +205,17 @@ func AddScaledH1D(h1 *H1D, alpha float64, h2 *H1D) *H1D {
 	hsum := NewH1D(h1.Len(), h1.XMin(), h1.XMax())
 	alpha2 := alpha * alpha
 
-	compute_sum := func(b1, b2 Bin1D) (float64, float64) {
-		y1, y1err2 := b1.SumW(), b1.SumW2()
-		y2, y2err2 := b2.SumW(), b2.SumW2()
-		y := y1 + alpha*y2
-		yerr := y1err2 + alpha2*y2err2
-		return y, yerr
+	compute_sum := func(dst, d1, d2 *Dist0D) {
+		y1, y1err2 := d1.SumW, d1.SumW2
+		y2, y2err2 := d2.SumW, d2.SumW2
+		dst.SumW = y1 + alpha*y2
+		dst.SumW2 = y1err2 + alpha2*y2err2
+		return
 	}
 
-	h1dApply(hsum.Binning.Bins, h1.Binning.Bins, h2.Binning.Bins, compute_sum)
-
-	/*
-		for i := 0; i < hsum.Len(); i++ {
-			y := h1.Value(i) + alpha*h2.Value(i)
-			y1err2 := h1.Binning.Bins[i].SumW2()
-			y2err2 := alpha2 * h2.Binning.Bins[i].SumW2()
-			hsum.Binning.Bins[i].Dist.Dist.SumW = y
-			hsum.Binning.Bins[i].Dist.Dist.SumW2 = y1err2 + y2err2
-		}
-
-		// handle under/over flow
-		for i := range hsum.Binning.Outflows {
-			y := h1.Binning.Outflows[i].Dist.SumW + alpha*h2.Binning.Outflows[i].Dist.SumW
-			y1err2 := h1.Binning.Outflows[i].Dist.SumW2
-			y2err2 := alpha2 * h2.Binning.Outflows[i].Dist.SumW2
-			hsum.Binning.Outflows[i].Dist.SumW = y
-			hsum.Binning.Outflows[i].Dist.SumW2 = y1err2 + y2err2
-		}
-	*/
+	h1dApply_test(hsum, h1, h2, compute_sum)
 
 	return hsum
-}
-
-// DivH1D returns the bin-by-bin ratio histogram of h1 to h2
-// assuming their statistical uncertainties are uncorrelated.
-// Bins with NaN of +/- infinity value are set to 0, as well
-// as their uncertainty.
-func DivH1D(h1, h2 *H1D) *H1D {
-
-	if h1.Len() != h2.Len() {
-		panic("hbook: h1 and h2 have different number of bins")
-	}
-
-	if h1.XMin() != h2.XMin() {
-		panic("hbook: h1 and h2 have different Xmin")
-	}
-
-	if h1.XMax() != h2.XMax() {
-		panic("hbook: h1 and h2 have different Xmax")
-	}
-
-	hratio := NewH1D(h1.Len(), h1.XMin(), h1.XMax())
-
-	compute_ratio := func(b1, b2 Bin1D) (float64, float64) {
-		y1, y1err2 := b1.SumW(), b1.SumW2()
-		y2, y2err2 := b2.SumW(), b2.SumW2()
-		y := y1 / y2
-		yerr := y * y * (y1err2/(y1*y1) + y2err2/(y2*y2))
-		if math.IsNaN(y) || math.IsInf(y, 0) {
-			y = 0
-			yerr = 0
-		}
-		return y, yerr
-	}
-
-	h1dApply(hratio.Binning.Bins, h1.Binning.Bins, h2.Binning.Bins, compute_ratio)
-	//h1dApply(hratio.Outflows, h1.Outflows, h2.Outflows, compute_ratio)
-
-	/*
-		for i := 0; i < hratio.Len(); i++ {
-			y1 := h1.Value(i)
-			y2 := h2.Value(i)
-			y1err2 := h1.Binning.Bins[i].SumW2()
-			y2err2 := h2.Binning.Bins[i].SumW2()
-			y := y1 / y2
-			yerr := y * y * (y1err2/(y1*y1) + y2err2/(y2*y2))
-			if math.IsNaN(y) || math.IsInf(y, 0) {
-				y = 0
-				yerr = 0
-			}
-			hratio.Binning.Bins[i].Dist.Dist.SumW = y
-			hratio.Binning.Bins[i].Dist.Dist.SumW2 = yerr
-		}
-
-		// Handle under/over flow
-		for i := range hratio.Binning.Outflows {
-			y1 := h1.Binning.Outflows[i].Dist.SumW
-			y2 := h2.Binning.Outflows[i].Dist.SumW
-			y1err2 := h1.Binning.Outflows[i].Dist.SumW2
-			y2err2 := h2.Binning.Outflows[i].Dist.SumW2
-			y := y1 / y2
-			yerr := y * y * (y1err2/(y1*y1) + y2err2/(y2*y2))
-			if math.IsNaN(y) || math.IsInf(y, 0) {
-				y = 0
-				yerr = 0
-			}
-			hratio.Binning.Outflows[i].Dist.SumW = y
-			hratio.Binning.Outflows[i].Dist.SumW2 = yerr
-		}
-	*/
-
-	return hratio
 }
 
 // AddH1D returns the bin-by-bin summed histogram of h1 and h2
@@ -325,6 +235,24 @@ func h1dApply(dst, bins1, bins2 []Bin1D, fct func(b1, b2 Bin1D) (float64, float6
 		y, yerr2 := fct(bins1[i], bins2[i])
 		dst[i].Dist.Dist.SumW = y
 		dst[i].Dist.Dist.SumW2 = yerr2
+	}
+}
+
+func h1dApply_test(dst, h1, h2 *H1D, fct func(d, d1, d2 *Dist0D)) {
+
+	if h1.Len() != dst.Len() || h1.Len() != dst.Len() {
+		panic("hbook: length mismatch")
+	}
+
+	var d Dist0D
+	for i := 0; i < dst.Len(); i++ {
+		fct(&d, &h1.Binning.Bins[i].Dist.Dist, &h2.Binning.Bins[i].Dist.Dist)
+		dst.Binning.Bins[i].Dist.Dist = d
+	}
+
+	for i := range dst.Binning.Outflows {
+		fct(&d, &h1.Binning.Outflows[i].Dist, &h2.Binning.Outflows[i].Dist)
+		dst.Binning.Outflows[i].Dist = d
 	}
 }
 

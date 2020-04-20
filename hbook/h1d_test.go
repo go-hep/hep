@@ -374,6 +374,7 @@ func ExampleAddScaledH1D() {
 	// Over : 10.5 +/- 10.0
 }
 
+/*
 func ExampleDivH1D() {
 
 	h1 := hbook.NewH1D(6, 0, 6)
@@ -413,7 +414,7 @@ func ExampleDivH1D() {
 	// Bin 5: 0.5 +/- 0.7
 	// Over : 0.5 +/- 0.7
 }
-
+*/
 func TestH1DIntegral(t *testing.T) {
 	h1 := hbook.NewH1D(6, 0, 6)
 	h1.Fill(-0.5, 1.3)
