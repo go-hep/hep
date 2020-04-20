@@ -204,30 +204,37 @@ func AddScaledH1D(h1 *H1D, alpha float64, h2 *H1D) *H1D {
 
 	hsum := NewH1D(h1.Len(), h1.XMin(), h1.XMax())
 	alpha2 := alpha * alpha
-	for i := 0; i < hsum.Len(); i++ {
-		y := h1.Value(i) + alpha*h2.Value(i)
-		y1err2 := h1.Binning.Bins[i].SumW2()
-		y2err2 := alpha2 * h2.Binning.Bins[i].SumW2()
-		hsum.Binning.Bins[i].Dist.Dist.SumW = y
-		hsum.Binning.Bins[i].Dist.Dist.SumW2 = y1err2 + y2err2
+
+	compute_sum := func(b1, b2 Bin1D) (float64, float64) {
+		y1, y1err2 := b1.SumW(), b1.SumW2()
+		y2, y2err2 := b2.SumW(), b2.SumW2()
+		y := y1 + alpha*y2
+		yerr := y1err2 + alpha2*y2err2
+		return y, yerr
 	}
 
-	// handle under/over flow
-	for i := range hsum.Binning.Outflows {
-		y := h1.Binning.Outflows[i].Dist.SumW + alpha*h2.Binning.Outflows[i].Dist.SumW
-		y1err2 := h1.Binning.Outflows[i].Dist.SumW2
-		y2err2 := alpha2 * h2.Binning.Outflows[i].Dist.SumW2
-		hsum.Binning.Outflows[i].Dist.SumW = y
-		hsum.Binning.Outflows[i].Dist.SumW2 = y1err2 + y2err2
-	}
+	h1dApply(hsum.Binning.Bins, h1.Binning.Bins, h2.Binning.Bins, compute_sum)
+
+	/*
+		for i := 0; i < hsum.Len(); i++ {
+			y := h1.Value(i) + alpha*h2.Value(i)
+			y1err2 := h1.Binning.Bins[i].SumW2()
+			y2err2 := alpha2 * h2.Binning.Bins[i].SumW2()
+			hsum.Binning.Bins[i].Dist.Dist.SumW = y
+			hsum.Binning.Bins[i].Dist.Dist.SumW2 = y1err2 + y2err2
+		}
+
+		// handle under/over flow
+		for i := range hsum.Binning.Outflows {
+			y := h1.Binning.Outflows[i].Dist.SumW + alpha*h2.Binning.Outflows[i].Dist.SumW
+			y1err2 := h1.Binning.Outflows[i].Dist.SumW2
+			y2err2 := alpha2 * h2.Binning.Outflows[i].Dist.SumW2
+			hsum.Binning.Outflows[i].Dist.SumW = y
+			hsum.Binning.Outflows[i].Dist.SumW2 = y1err2 + y2err2
+		}
+	*/
 
 	return hsum
-}
-
-// AddH1D returns the bin-by-bin summed histogram of h1 and h2
-// assuming their statistical uncertainties are uncorrelated.
-func AddH1D(h1, h2 *H1D) *H1D {
-	return AddScaledH1D(h1, 1, h2)
 }
 
 // DivH1D returns the bin-by-bin ratio histogram of h1 to h2
@@ -250,55 +257,74 @@ func DivH1D(h1, h2 *H1D) *H1D {
 
 	hratio := NewH1D(h1.Len(), h1.XMin(), h1.XMax())
 
-	for i := 0; i < hratio.Len(); i++ {
-		y1 := h1.Value(i)
-		y2 := h2.Value(i)
-		y1err2 := h1.Binning.Bins[i].SumW2()
-		y2err2 := h2.Binning.Bins[i].SumW2()
+	compute_ratio := func(b1, b2 Bin1D) (float64, float64) {
+		y1, y1err2 := b1.SumW(), b1.SumW2()
+		y2, y2err2 := b2.SumW(), b2.SumW2()
 		y := y1 / y2
 		yerr := y * y * (y1err2/(y1*y1) + y2err2/(y2*y2))
 		if math.IsNaN(y) || math.IsInf(y, 0) {
 			y = 0
 			yerr = 0
 		}
-		hratio.Binning.Bins[i].Dist.Dist.SumW = y
-		hratio.Binning.Bins[i].Dist.Dist.SumW2 = yerr
+		return y, yerr
 	}
 
-	// Handle under/over flow
-	for i := range hratio.Binning.Outflows {
-		y1 := h1.Binning.Outflows[i].Dist.SumW
-		y2 := h2.Binning.Outflows[i].Dist.SumW
-		y1err2 := h1.Binning.Outflows[i].Dist.SumW2
-		y2err2 := h2.Binning.Outflows[i].Dist.SumW2
-		y := y1 / y2
-		yerr := y * y * (y1err2/(y1*y1) + y2err2/(y2*y2))
-		if math.IsNaN(y) || math.IsInf(y, 0) {
-			y = 0
-			yerr = 0
+	h1dApply(hratio.Binning.Bins, h1.Binning.Bins, h2.Binning.Bins, compute_ratio)
+	//h1dApply(hratio.Outflows, h1.Outflows, h2.Outflows, compute_ratio)
+
+	/*
+		for i := 0; i < hratio.Len(); i++ {
+			y1 := h1.Value(i)
+			y2 := h2.Value(i)
+			y1err2 := h1.Binning.Bins[i].SumW2()
+			y2err2 := h2.Binning.Bins[i].SumW2()
+			y := y1 / y2
+			yerr := y * y * (y1err2/(y1*y1) + y2err2/(y2*y2))
+			if math.IsNaN(y) || math.IsInf(y, 0) {
+				y = 0
+				yerr = 0
+			}
+			hratio.Binning.Bins[i].Dist.Dist.SumW = y
+			hratio.Binning.Bins[i].Dist.Dist.SumW2 = yerr
 		}
-		hratio.Binning.Outflows[i].Dist.SumW = y
-		hratio.Binning.Outflows[i].Dist.SumW2 = yerr
-	}
+
+		// Handle under/over flow
+		for i := range hratio.Binning.Outflows {
+			y1 := h1.Binning.Outflows[i].Dist.SumW
+			y2 := h2.Binning.Outflows[i].Dist.SumW
+			y1err2 := h1.Binning.Outflows[i].Dist.SumW2
+			y2err2 := h2.Binning.Outflows[i].Dist.SumW2
+			y := y1 / y2
+			yerr := y * y * (y1err2/(y1*y1) + y2err2/(y2*y2))
+			if math.IsNaN(y) || math.IsInf(y, 0) {
+				y = 0
+				yerr = 0
+			}
+			hratio.Binning.Outflows[i].Dist.SumW = y
+			hratio.Binning.Outflows[i].Dist.SumW2 = yerr
+		}
+	*/
 
 	return hratio
+}
+
+// AddH1D returns the bin-by-bin summed histogram of h1 and h2
+// assuming their statistical uncertainties are uncorrelated.
+func AddH1D(h1, h2 *H1D) *H1D {
+	return AddScaledH1D(h1, 1, h2)
 }
 
 // h1dApply is a helper function to perform bin-by-bin operations on H1D.
 func h1dApply(dst, bins1, bins2 []Bin1D, fct func(b1, b2 Bin1D) (float64, float64)) {
 
-	if len(bins1) != len(bins2) {
-		panic("bins1 and bins2 have different lengths ")
-	}
-
-	if len(bins1) != len(dst) {
-		panic("dst doesn't have the same length as bin1 & bin2")
+	if len(bins1) != len(bins2) || len(bins1) != len(dst) {
+		panic("hbook: length mismatch")
 	}
 
 	for i := range dst {
-		y, yerr := fct(bins1[i], bins2[i])
+		y, yerr2 := fct(bins1[i], bins2[i])
 		dst[i].Dist.Dist.SumW = y
-		dst[i].Dist.Dist.SumW2 = yerr
+		dst[i].Dist.Dist.SumW2 = yerr2
 	}
 }
 
