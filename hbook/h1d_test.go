@@ -354,6 +354,9 @@ func TestH1DIntegral(t *testing.T) {
 		if got, want := h2.Value(ibin), 1.0; got != want {
 			t.Errorf("got H1D.Value(%d) = %v. want %v\n", ibin, got, want)
 		}
+		if got, want := h2.Error(ibin), 1.0; got != want {
+			t.Errorf("got H1D.Error(%d) = %v. want %v\n", ibin, got, want)
+		}
 	}
 
 	if got, want := h2.Integral(), 2.0; got != want {
