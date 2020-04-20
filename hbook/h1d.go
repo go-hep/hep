@@ -186,9 +186,9 @@ func (h *H1D) Scale(factor float64) {
 	h.Binning.scaleW(factor)
 }
 
-// AddH1D returns the bin-by-bin summed histogram of h1 and h2
-// assuming their statistical uncertainties are uncorrelated.
-func AddH1D(h1, h2 *H1D) *H1D {
+// AddScaledH1D returns the histogram with the bin-by-bin h1+alpha*h2
+// operation, assuming statistical uncertainties are uncorrelated.
+func AddScaledH1D(h1 *H1D, alpha float64, h2 *H1D) *H1D {
 
 	if h1.Len() != h2.Len() {
 		panic("hbook: h1 and h2 have different number of bins")
@@ -205,18 +205,18 @@ func AddH1D(h1, h2 *H1D) *H1D {
 	hsum := NewH1D(h1.Len(), h1.XMin(), h1.XMax())
 
 	for i := 0; i < hsum.Len(); i++ {
-		y := h1.Value(i) + h2.Value(i)
+		y := h1.Value(i) + alpha*h2.Value(i)
 		y1err2 := h1.Binning.Bins[i].SumW2()
-		y2err2 := h2.Binning.Bins[i].SumW2()
+		y2err2 := alpha * alpha * h2.Binning.Bins[i].SumW2()
 		hsum.Binning.Bins[i].Dist.Dist.SumW = y
 		hsum.Binning.Bins[i].Dist.Dist.SumW2 = y1err2 + y2err2
 	}
 
 	// handle under/over flow
 	for i := range hsum.Binning.Outflows {
-		y := h1.Binning.Outflows[i].Dist.SumW + h2.Binning.Outflows[i].Dist.SumW
+		y := h1.Binning.Outflows[i].Dist.SumW + alpha*h2.Binning.Outflows[i].Dist.SumW
 		y1err2 := h1.Binning.Outflows[i].Dist.SumW2
-		y2err2 := h2.Binning.Outflows[i].Dist.SumW2
+		y2err2 := alpha * alpha * h2.Binning.Outflows[i].Dist.SumW2
 		hsum.Binning.Outflows[i].Dist.SumW = y
 		hsum.Binning.Outflows[i].Dist.SumW2 = y1err2 + y2err2
 	}
@@ -224,11 +224,10 @@ func AddH1D(h1, h2 *H1D) *H1D {
 	return hsum
 }
 
-// AddScaledH1D returns the histogram with the bin-by-bin h1+alpha*h2
-// operation, assuming statistical uncertainties are uncorrelated.
-func AddScaledH1D(h1 *H1D, alpha float64, h2 *H1D) *H1D {
-	h2.Scale(alpha)
-	return AddH1D(h1, h2)
+// AddH1D returns the bin-by-bin summed histogram of h1 and h2
+// assuming their statistical uncertainties are uncorrelated.
+func AddH1D(h1, h2 *H1D) *H1D {
+	return AddScaledH1D(h1, 1, h2)
 }
 
 // DivH1D returns the bin-by-bin ratio histogram of h1 to h2

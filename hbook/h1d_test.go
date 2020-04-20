@@ -294,7 +294,7 @@ func TestH1DBinsWithPanics(t *testing.T) {
 	}
 }
 
-func TestH1DAddH1D(t *testing.T) {
+func ExampleAddH1D() {
 
 	h1 := hbook.NewH1D(6, 0, 6)
 	h1.Fill(-0.5, 1)
@@ -317,24 +317,24 @@ func TestH1DAddH1D(t *testing.T) {
 	h2.Fill(6.8, 1)
 
 	hsum := hbook.AddH1D(h1, h2)
-	fmt.Printf("Under: %.1f +/- %.1f \n", hsum.Binning.Outflows[0].SumW(), math.Sqrt(hsum.Binning.Outflows[0].SumW2()))
+	fmt.Printf("Under: %.1f +/- %.1f\n", hsum.Binning.Outflows[0].SumW(), math.Sqrt(hsum.Binning.Outflows[0].SumW2()))
 	for i := 0; i < hsum.Len(); i++ {
-		fmt.Printf("Bin %v: %.1f +/- %.1f \n", i, hsum.Binning.Bins[i].SumW(), math.Sqrt(hsum.Binning.Bins[i].SumW2()))
+		fmt.Printf("Bin %v: %.1f +/- %.1f\n", i, hsum.Binning.Bins[i].SumW(), math.Sqrt(hsum.Binning.Bins[i].SumW2()))
 	}
-	fmt.Printf("Over : %.1f +/- %.1f \n", hsum.Binning.Outflows[1].SumW(), math.Sqrt(hsum.Binning.Outflows[1].SumW2()))
+	fmt.Printf("Over : %.1f +/- %.1f\n", hsum.Binning.Outflows[1].SumW(), math.Sqrt(hsum.Binning.Outflows[1].SumW2()))
 
 	// Output:
-	// Under: 1.5 +/- 1.2
+	// Under: 1.7 +/- 1.2
 	// Bin 0: 4.7 +/- 2.4
 	// Bin 1: 1.8 +/- 1.3
 	// Bin 2: 2.7 +/- 2.1
 	// Bin 3: 0.0 +/- 0.0
 	// Bin 4: 2.3 +/- 1.6
 	// Bin 5: 3.0 +/- 2.2
-	// Over : 1.2 +/- 1.1
+	// Over : 1.5 +/- 1.1
 }
 
-func TestH1DAddScaledH1D(t *testing.T) {
+func ExampleAddScaledH1D() {
 
 	h1 := hbook.NewH1D(6, 0, 6)
 	h1.Fill(-0.5, 1)
@@ -357,11 +357,11 @@ func TestH1DAddScaledH1D(t *testing.T) {
 	h2.Fill(6.8, 1)
 
 	hsum := hbook.AddScaledH1D(h1, 10, h2)
-	fmt.Printf("Under: %.1f +/- %.1f \n", hsum.Binning.Outflows[0].SumW(), math.Sqrt(hsum.Binning.Outflows[0].SumW2()))
+	fmt.Printf("Under: %.1f +/- %.1f\n", hsum.Binning.Outflows[0].SumW(), math.Sqrt(hsum.Binning.Outflows[0].SumW2()))
 	for i := 0; i < hsum.Len(); i++ {
-		fmt.Printf("Bin %v: %.1f +/- %.1f \n", i, hsum.Binning.Bins[i].SumW(), math.Sqrt(hsum.Binning.Bins[i].SumW2()))
+		fmt.Printf("Bin %v: %.1f +/- %.1f\n", i, hsum.Binning.Bins[i].SumW(), math.Sqrt(hsum.Binning.Bins[i].SumW2()))
 	}
-	fmt.Printf("Over : %.1f +/- %.1f \n", hsum.Binning.Outflows[1].SumW(), math.Sqrt(hsum.Binning.Outflows[1].SumW2()))
+	fmt.Printf("Over : %.1f +/- %.1f\n", hsum.Binning.Outflows[1].SumW(), math.Sqrt(hsum.Binning.Outflows[1].SumW2()))
 
 	// Output:
 	// Under: 8.0 +/- 7.1
@@ -374,7 +374,7 @@ func TestH1DAddScaledH1D(t *testing.T) {
 	// Over : 10.5 +/- 10.0
 }
 
-func TestH1DDivH1D(t *testing.T) {
+func ExampleDivH1D(t *testing.T) {
 
 	h1 := hbook.NewH1D(6, 0, 6)
 	h1.Fill(-0.5, 1)
