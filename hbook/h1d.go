@@ -213,7 +213,7 @@ func AddScaledH1D(h1 *H1D, alpha float64, h2 *H1D) *H1D {
 		return
 	}
 
-	h1dApply_test(hsum, h1, h2, compute_sum)
+	h1dApply(hsum, h1, h2, compute_sum)
 
 	return hsum
 }
@@ -225,20 +225,7 @@ func AddH1D(h1, h2 *H1D) *H1D {
 }
 
 // h1dApply is a helper function to perform bin-by-bin operations on H1D.
-func h1dApply(dst, bins1, bins2 []Bin1D, fct func(b1, b2 Bin1D) (float64, float64)) {
-
-	if len(bins1) != len(bins2) || len(bins1) != len(dst) {
-		panic("hbook: length mismatch")
-	}
-
-	for i := range dst {
-		y, yerr2 := fct(bins1[i], bins2[i])
-		dst[i].Dist.Dist.SumW = y
-		dst[i].Dist.Dist.SumW2 = yerr2
-	}
-}
-
-func h1dApply_test(dst, h1, h2 *H1D, fct func(d, d1, d2 *Dist0D)) {
+func h1dApply(dst, h1, h2 *H1D, fct func(d, d1, d2 *Dist0D)) {
 
 	if h1.Len() != dst.Len() || h1.Len() != dst.Len() {
 		panic("hbook: length mismatch")
