@@ -52,7 +52,7 @@ func TestS2DWriteYODA(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ref, err := ioutil.ReadFile("testdata/s2d_golden.yoda")
+	ref, err := ioutil.ReadFile("testdata/s2d_v1_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,8 +65,8 @@ func TestS2DWriteYODA(t *testing.T) {
 	}
 }
 
-func TestS2DReadYODA(t *testing.T) {
-	ref, err := ioutil.ReadFile("testdata/s2d_golden.yoda")
+func TestS2DReadYODAv1(t *testing.T) {
+	ref, err := ioutil.ReadFile("testdata/s2d_v1_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}

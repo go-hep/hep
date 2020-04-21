@@ -293,7 +293,7 @@ func TestH2DWriteYODA(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ref, err := ioutil.ReadFile("testdata/h2d_golden.yoda")
+	ref, err := ioutil.ReadFile("testdata/h2d_v1_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -306,8 +306,8 @@ func TestH2DWriteYODA(t *testing.T) {
 	}
 }
 
-func TestH2DReadYODA(t *testing.T) {
-	ref, err := ioutil.ReadFile("testdata/h2d_golden.yoda")
+func TestH2DReadYODAv1(t *testing.T) {
+	ref, err := ioutil.ReadFile("testdata/h2d_v1_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}

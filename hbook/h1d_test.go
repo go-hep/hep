@@ -200,7 +200,7 @@ func TestH1DBinsWithGaps(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want, err := ioutil.ReadFile("testdata/h1d_gaps_golden.yoda")
+	want, err := ioutil.ReadFile("testdata/h1d_gaps_v1_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -511,7 +511,7 @@ func TestH1DWriteYODA(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ref, err := ioutil.ReadFile("testdata/h1d_golden.yoda")
+	ref, err := ioutil.ReadFile("testdata/h1d_v1_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -524,8 +524,8 @@ func TestH1DWriteYODA(t *testing.T) {
 	}
 }
 
-func TestH1DReadYODA(t *testing.T) {
-	ref, err := ioutil.ReadFile("testdata/h1d_golden.yoda")
+func TestH1DReadYODAv1(t *testing.T) {
+	ref, err := ioutil.ReadFile("testdata/h1d_v1_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -107,7 +107,7 @@ func TestP1DWriteYODA(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ref, err := ioutil.ReadFile("testdata/p1d_golden.yoda")
+	ref, err := ioutil.ReadFile("testdata/p1d_v1_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,8 +120,8 @@ func TestP1DWriteYODA(t *testing.T) {
 	}
 }
 
-func TestP1DReadYODA(t *testing.T) {
-	ref, err := ioutil.ReadFile("testdata/p1d_golden.yoda")
+func TestP1DReadYODAv1(t *testing.T) {
+	ref, err := ioutil.ReadFile("testdata/p1d_v1_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
