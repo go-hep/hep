@@ -11,6 +11,7 @@ import (
 	"io"
 	"math"
 	"sort"
+	"strings"
 )
 
 // S2D is a collection of 2-dim data points with errors.
@@ -306,9 +307,13 @@ func (s *S2D) annFromYODA(ann Annotation) {
 		case "Type":
 			// noop
 		case "Path":
-			s.ann["name"] = string(v.(string)[1:]) // skip leading '/'
+			name := v.(string)
+			if strings.HasPrefix(name, "/") {
+				name = name[1:]
+			}
+			s.ann["name"] = name
 		case "Title":
-			s.ann["title"] = v.(string)
+			s.ann["title"] = v
 		default:
 			s.ann[k] = v
 		}
@@ -317,10 +322,14 @@ func (s *S2D) annFromYODA(ann Annotation) {
 
 // MarshalYODA implements the YODAMarshaler interface.
 func (s *S2D) MarshalYODA() ([]byte, error) {
+	return s.marshalYODAv2()
+}
+
+func (s *S2D) marshalYODAv1() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	ann := s.annToYODA()
 	fmt.Fprintf(buf, "BEGIN YODA_SCATTER2D %s\n", ann["Path"])
-	data, err := ann.MarshalYODA()
+	data, err := ann.marshalYODAv1()
 	if err != nil {
 		return nil, err
 	}
@@ -340,13 +349,49 @@ func (s *S2D) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
+func (s *S2D) marshalYODAv2() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	ann := s.annToYODA()
+	fmt.Fprintf(buf, "BEGIN YODA_SCATTER2D_V2 %s\n", ann["Path"])
+	data, err := ann.marshalYODAv2()
+	if err != nil {
+		return nil, err
+	}
+	buf.Write(data)
+	buf.Write([]byte("---\n"))
+
+	// TODO: change ordering to {vals} {errs} {errs} ...
+	fmt.Fprintf(buf, "# xval\t xerr-\t xerr+\t yval\t yerr-\t yerr+\t\n")
+	s.Sort()
+	for _, pt := range s.pts {
+		fmt.Fprintf(
+			buf,
+			"%e\t%e\t%e\t%e\t%e\t%e\n",
+			pt.X, pt.ErrX.Min, pt.ErrX.Max, pt.Y, pt.ErrY.Min, pt.ErrY.Max,
+		)
+	}
+	fmt.Fprintf(buf, "END YODA_SCATTER2D_V2\n\n")
+	return buf.Bytes(), err
+}
+
 // UnmarshalYODA implements the YODAUnmarshaler interface.
 func (s *S2D) UnmarshalYODA(data []byte) error {
-	r := bytes.NewBuffer(data)
-	_, err := readYODAHeader(r, "BEGIN YODA_SCATTER2D")
+	r := newRBuffer(data)
+	_, vers, err := readYODAHeader(r, "BEGIN YODA_SCATTER2D")
 	if err != nil {
 		return err
 	}
+	switch vers {
+	case 1:
+		return s.unmarshalYODAv1(r)
+	case 2:
+		return s.unmarshalYODAv2(r)
+	default:
+		return fmt.Errorf("hbook: invalid YODA version %v", vers)
+	}
+}
+
+func (s *S2D) unmarshalYODAv1(r *rbuffer) error {
 	ann := make(Annotation)
 
 	// pos of end of annotations
@@ -354,12 +399,12 @@ func (s *S2D) UnmarshalYODA(data []byte) error {
 	if pos < 0 {
 		return fmt.Errorf("hbook: invalid Scatter2D-YODA data")
 	}
-	err = ann.UnmarshalYODA(r.Bytes()[:pos+1])
+	err := ann.unmarshalYODAv1(r.Bytes()[:pos+1])
 	if err != nil {
 		return fmt.Errorf("hbook: %q\nhbook: %w", string(r.Bytes()[:pos+1]), err)
 	}
 	s.annFromYODA(ann)
-	r.Next(pos)
+	r.next(pos)
 
 	sc := bufio.NewScanner(r)
 scanLoop:
@@ -371,6 +416,53 @@ scanLoop:
 		rbuf := bytes.NewReader(buf)
 		switch {
 		case bytes.HasPrefix(buf, []byte("END YODA_SCATTER2D")):
+			break scanLoop
+		default:
+			var pt Point2D
+			fmt.Fscanf(
+				rbuf,
+				"%e\t%e\t%e\t%e\t%e\t%e\n",
+				&pt.X, &pt.ErrX.Min, &pt.ErrX.Max, &pt.Y, &pt.ErrY.Min, &pt.ErrY.Max,
+			)
+			if err != nil {
+				return fmt.Errorf("hbook: %q\nhbook: %w", string(buf), err)
+			}
+			s.Fill(pt)
+		}
+	}
+	err = sc.Err()
+	if err == io.EOF {
+		err = nil
+	}
+	s.Sort()
+	return err
+}
+
+func (s *S2D) unmarshalYODAv2(r *rbuffer) error {
+	ann := make(Annotation)
+
+	// pos of end of annotations
+	pos := bytes.Index(r.Bytes(), []byte("\n# xval\t xerr-\t"))
+	if pos < 0 {
+		return fmt.Errorf("hbook: invalid Scatter2D-YODA data")
+	}
+	err := ann.unmarshalYODAv2(r.Bytes()[:pos+1])
+	if err != nil {
+		return fmt.Errorf("hbook: %q\nhbook: %w", string(r.Bytes()[:pos+1]), err)
+	}
+	s.annFromYODA(ann)
+	r.next(pos)
+
+	sc := bufio.NewScanner(r)
+scanLoop:
+	for sc.Scan() {
+		buf := sc.Bytes()
+		if len(buf) == 0 || buf[0] == '#' {
+			continue
+		}
+		rbuf := bytes.NewReader(buf)
+		switch {
+		case bytes.HasPrefix(buf, []byte("END YODA_SCATTER2D_V2")):
 			break scanLoop
 		default:
 			var pt Point2D

@@ -1,6 +1,6 @@
 BEGIN YODA_HISTO1D /
 Path=/
-Title=
+Title=my-title
 Type=Histo1D
 # Mean: 1.500000e+00
 # Area: 4.000000e+00

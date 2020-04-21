@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package hbook_test
+package hbook
 
 import (
 	"bytes"
@@ -11,16 +11,25 @@ import (
 	"io/ioutil"
 	"math"
 	"reflect"
-	"sync"
 	"testing"
 
-	"go-hep.org/x/hep/hbook"
+	"github.com/google/go-cmp/cmp"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/plot/plotter"
 )
 
+func panics(fn func()) (panicked bool, message string) {
+	defer func() {
+		r := recover()
+		panicked = r != nil
+		message = fmt.Sprint(r)
+	}()
+	fn()
+	return
+}
+
 func TestH1D(t *testing.T) {
-	h1 := hbook.NewH1D(100, 0., 100.)
+	h1 := NewH1D(100, 0., 100.)
 	if h1 == nil {
 		t.Errorf("nil pointer to H1D")
 	}
@@ -59,7 +68,7 @@ func TestH1D(t *testing.T) {
 }
 
 func TestH1DEdges(t *testing.T) {
-	h := hbook.NewH1DFromEdges([]float64{
+	h := NewH1DFromEdges([]float64{
 		-4.0, -3.6, -3.2, -2.8, -2.4, -2.0, -1.6, -1.2, -0.8, -0.4,
 		+0.0, +0.4, +0.8, +1.2, +1.6, +2.0, +2.4, +2.8, +3.2, +3.6,
 		+4.0,
@@ -71,12 +80,12 @@ func TestH1DEdges(t *testing.T) {
 		t.Errorf("got xmax=%v. want=%v", got, want)
 	}
 
-	bins := hbook.Bin1Ds(h.Binning.Bins)
+	bins := Bin1Ds(h.Binning.Bins)
 	for _, test := range []struct {
 		v    float64
 		want int
 	}{
-		{v: -4.1, want: hbook.UnderflowBin1D},
+		{v: -4.1, want: UnderflowBin1D},
 		{v: -4.0, want: 0},
 		{v: -3.6, want: 1},
 		{v: -3.2, want: 2},
@@ -97,7 +106,7 @@ func TestH1DEdges(t *testing.T) {
 		{v: +2.8, want: 17},
 		{v: +3.2, want: 18},
 		{v: +3.6, want: 19},
-		{v: +4.0, want: hbook.OverflowBin1D},
+		{v: +4.0, want: OverflowBin1D},
 	} {
 		idx := bins.IndexOf(test.v)
 		if idx != test.want {
@@ -107,7 +116,7 @@ func TestH1DEdges(t *testing.T) {
 }
 
 func TestH1DBins(t *testing.T) {
-	h := hbook.NewH1DFromBins([]hbook.Range{
+	h := NewH1DFromBins([]Range{
 		{Min: -4.0, Max: -3.6}, {Min: -3.6, Max: -3.2}, {Min: -3.2, Max: -2.8}, {Min: -2.8, Max: -2.4}, {Min: -2.4, Max: -2.0},
 		{Min: -2.0, Max: -1.6}, {Min: -1.6, Max: -1.2}, {Min: -1.2, Max: -0.8}, {Min: -0.8, Max: -0.4}, {Min: -0.4, Max: +0.0},
 		{Min: +0.0, Max: +0.4}, {Min: +0.4, Max: +0.8}, {Min: +0.8, Max: +1.2}, {Min: +1.2, Max: +1.6}, {Min: +1.6, Max: +2.0},
@@ -119,12 +128,12 @@ func TestH1DBins(t *testing.T) {
 	if got, want := h.XMax(), +4.0; got != want {
 		t.Errorf("got xmax=%v. want=%v", got, want)
 	}
-	bins := hbook.Bin1Ds(h.Binning.Bins)
+	bins := Bin1Ds(h.Binning.Bins)
 	for _, test := range []struct {
 		v    float64
 		want int
 	}{
-		{v: -4.1, want: hbook.UnderflowBin1D},
+		{v: -4.1, want: UnderflowBin1D},
 		{v: -4.0, want: 0},
 		{v: -3.6, want: 1},
 		{v: -3.2, want: 2},
@@ -145,7 +154,7 @@ func TestH1DBins(t *testing.T) {
 		{v: +2.8, want: 17},
 		{v: +3.2, want: 18},
 		{v: +3.6, want: 19},
-		{v: +4.0, want: hbook.OverflowBin1D},
+		{v: +4.0, want: OverflowBin1D},
 	} {
 		idx := bins.IndexOf(test.v)
 		if idx != test.want {
@@ -155,8 +164,8 @@ func TestH1DBins(t *testing.T) {
 
 }
 
-func TestH1DBinsWithGaps(t *testing.T) {
-	h1 := hbook.NewH1DFromBins([]hbook.Range{
+func TestH1DBinsWithGapsv1(t *testing.T) {
+	h1 := NewH1DFromBins([]Range{
 		{Min: -10, Max: -5}, {Min: -5, Max: 0}, {Min: 0, Max: 4} /*GAP*/, {Min: 5, Max: 10},
 	}...)
 	if got, want := h1.XMin(), -10.0; got != want {
@@ -166,12 +175,12 @@ func TestH1DBinsWithGaps(t *testing.T) {
 		t.Errorf("got xmax=%v. want=%v", got, want)
 	}
 
-	bins := hbook.Bin1Ds(h1.Binning.Bins)
+	bins := Bin1Ds(h1.Binning.Bins)
 	for _, test := range []struct {
 		v    float64
 		want int
 	}{
-		{v: -20, want: hbook.UnderflowBin1D},
+		{v: -20, want: UnderflowBin1D},
 		{v: -10, want: 0},
 		{v: -9, want: 0},
 		{v: -5, want: 1},
@@ -179,7 +188,7 @@ func TestH1DBinsWithGaps(t *testing.T) {
 		{v: 4.5, want: len(bins)},
 		{v: 5, want: 3},
 		{v: 6, want: 3},
-		{v: 10, want: hbook.OverflowBin1D},
+		{v: 10, want: OverflowBin1D},
 	} {
 		idx := bins.IndexOf(test.v)
 		if idx != test.want {
@@ -187,15 +196,16 @@ func TestH1DBinsWithGaps(t *testing.T) {
 		}
 	}
 
-	h := hbook.NewH1DFromBins([]hbook.Range{
+	h := NewH1DFromBins([]Range{
 		{Min: 0, Max: 1}, {Min: 1, Max: 2}, {Min: 3, Max: 4},
 	}...)
 	h.Fill(0, 1)
 	h.Fill(1, 1)
 	h.Fill(2, 1) // gap
 	h.Fill(3, 1)
+	h.Annotation()["title"] = "my-title"
 
-	raw, err := h.MarshalYODA()
+	raw, err := h.marshalYODAv1()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -206,13 +216,99 @@ func TestH1DBinsWithGaps(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(raw, want) {
-		t.Fatalf("got:\n%s\nwant:\n%s\n", string(raw), string(want))
+		t.Fatalf("h1d file differ:\n%s\n",
+			cmp.Diff(
+				string(want),
+				string(raw),
+			),
+		)
 	}
 
-	var href hbook.H1D
+	var href H1D
 	err = href.UnmarshalYODA(want)
 	if err != nil {
+		t.Fatalf("error: %+v", err)
+	}
+
+	raw, err = href.marshalYODAv1()
+	if err != nil {
 		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(raw, want) {
+		t.Fatalf("h1d file differ:\n%s\n",
+			cmp.Diff(
+				string(want),
+				string(raw),
+			),
+		)
+	}
+}
+
+func TestH1DBinsWithGapsv2(t *testing.T) {
+	h1 := NewH1DFromBins([]Range{
+		{Min: -10, Max: -5}, {Min: -5, Max: 0}, {Min: 0, Max: 4} /*GAP*/, {Min: 5, Max: 10},
+	}...)
+	if got, want := h1.XMin(), -10.0; got != want {
+		t.Errorf("got xmin=%v. want=%v", got, want)
+	}
+	if got, want := h1.XMax(), 10.0; got != want {
+		t.Errorf("got xmax=%v. want=%v", got, want)
+	}
+
+	bins := Bin1Ds(h1.Binning.Bins)
+	for _, test := range []struct {
+		v    float64
+		want int
+	}{
+		{v: -20, want: UnderflowBin1D},
+		{v: -10, want: 0},
+		{v: -9, want: 0},
+		{v: -5, want: 1},
+		{v: 0, want: 2},
+		{v: 4.5, want: len(bins)},
+		{v: 5, want: 3},
+		{v: 6, want: 3},
+		{v: 10, want: OverflowBin1D},
+	} {
+		idx := bins.IndexOf(test.v)
+		if idx != test.want {
+			t.Errorf("invalid index for %v. got=%d. want=%d\n", test.v, idx, test.want)
+		}
+	}
+
+	h := NewH1DFromBins([]Range{
+		{Min: 0, Max: 1}, {Min: 1, Max: 2}, {Min: 3, Max: 4},
+	}...)
+	h.Fill(0, 1)
+	h.Fill(1, 1)
+	h.Fill(2, 1) // gap
+	h.Fill(3, 1)
+	h.Annotation()["title"] = "my-title"
+
+	raw, err := h.MarshalYODA()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want, err := ioutil.ReadFile("testdata/h1d_gaps_v2_golden.yoda")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(raw, want) {
+		t.Fatalf("h1d file differ:\n%s\n",
+			cmp.Diff(
+				string(want),
+				string(raw),
+			),
+		)
+	}
+
+	var href H1D
+	err = href.UnmarshalYODA(want)
+	if err != nil {
+		t.Fatalf("error: %+v", err)
 	}
 
 	raw, err = href.MarshalYODA()
@@ -221,7 +317,12 @@ func TestH1DBinsWithGaps(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(raw, want) {
-		t.Fatalf("got:\n%s\nwant:\n%s\n", string(raw), string(want))
+		t.Fatalf("h1d file differ:\n%s\n",
+			cmp.Diff(
+				string(want),
+				string(raw),
+			),
+		)
 	}
 }
 
@@ -235,7 +336,7 @@ func TestH1DEdgesWithPanics(t *testing.T) {
 		{0, 1, 2, 2, 2},
 	} {
 		panicked, _ := panics(func() {
-			_ = hbook.NewH1DFromEdges(test)
+			_ = NewH1DFromEdges(test)
 		})
 		if !panicked {
 			t.Fatalf("edges %v should have panicked", test)
@@ -244,14 +345,14 @@ func TestH1DEdgesWithPanics(t *testing.T) {
 }
 
 func TestH1DBinsWithPanics(t *testing.T) {
-	for _, test := range [][]hbook.Range{
+	for _, test := range [][]Range{
 		{{Min: 0, Max: 1}, {Min: 0.5, Max: 1.5}},
 		{{Min: 0, Max: 1}, {Min: -1, Max: 2}},
 		{{Min: 0, Max: 1.5}, {Min: -1, Max: 1}},
 		{{Min: 0, Max: 1}, {Min: 0.5, Max: 0.6}},
 	} {
 		panicked, _ := panics(func() {
-			_ = hbook.NewH1DFromBins(test...)
+			_ = NewH1DFromBins(test...)
 		})
 		if !panicked {
 			t.Fatalf("bins %v should have panicked", test)
@@ -260,7 +361,7 @@ func TestH1DBinsWithPanics(t *testing.T) {
 }
 
 func TestH1DIntegral(t *testing.T) {
-	h1 := hbook.NewH1D(6, 0, 6)
+	h1 := NewH1D(6, 0, 6)
 	h1.Fill(-0.5, 1.3)
 	h1.Fill(0, 1)
 	h1.Fill(0.5, 1.6)
@@ -312,7 +413,7 @@ func TestH1DIntegral(t *testing.T) {
 		t.Errorf("rms has changed while rescaling (rms1, rms2) = (%v, %v)", rms1, rms2)
 	}
 
-	h2 := hbook.NewH1D(2, 0, 1)
+	h2 := NewH1D(2, 0, 1)
 	h2.Fill(0.0, 1)
 	h2.Fill(0.5, 1)
 	for _, ibin := range []int{0, 1} {
@@ -330,13 +431,13 @@ func TestH1DIntegral(t *testing.T) {
 }
 
 func TestH1DNegativeWeights(t *testing.T) {
-	h1 := hbook.NewH1D(5, 0, 100)
+	h1 := NewH1D(5, 0, 100)
 	h1.Fill(10, -200)
 	h1.Fill(20, 1)
 	h1.Fill(30, 0.2)
 	h1.Fill(10, +200)
 
-	h2 := hbook.NewH1D(5, 0, 100)
+	h2 := NewH1D(5, 0, 100)
 	h2.Fill(20, 1)
 	h2.Fill(30, 0.2)
 
@@ -354,99 +455,9 @@ func TestH1DNegativeWeights(t *testing.T) {
 	*/
 }
 
-func BenchmarkH1DSTFillConst(b *testing.B) {
-	b.StopTimer()
-	h1 := hbook.NewH1D(100, 0., 100.)
-	b.StartTimer()
-
-	for i := 0; i < b.N; i++ {
-		h1.Fill(10., 1.)
-	}
-}
-
-func BenchmarkH1DFillFlat(b *testing.B) {
-	b.StopTimer()
-	h1 := hbook.NewH1D(100, 0., 100.)
-	b.StartTimer()
-
-	for i := 0; i < b.N; i++ {
-		h1.Fill(rnd()*100., 1.)
-	}
-}
-
-func BenchmarkH1DFillFlatGo(b *testing.B) {
-	b.StopTimer()
-	h1 := hbook.NewH1D(100, 0., 100.)
-	wg := new(sync.WaitGroup)
-	//wg.Add(b.N)
-	b.StartTimer()
-
-	// throttle...
-	q := make(chan struct{}, 1000)
-	for i := 0; i < b.N; i++ {
-		q <- struct{}{}
-		go func() {
-			wg.Add(1)
-			h1.Fill(rnd()*100., 1.)
-			<-q
-			wg.Done()
-		}()
-	}
-	wg.Wait()
-}
-
-func st_process_evts(n int, hists []*hbook.H1D, process func(hists []*hbook.H1D)) {
-	var wg sync.WaitGroup
-	for i := 0; i < n; i++ {
-		wg.Add(1)
-		go func() {
-			process(hists)
-			wg.Done()
-		}()
-	}
-	wg.Wait()
-}
-
-func st_process_evts_const(hists []*hbook.H1D) {
-	for _, h := range hists {
-		h.Fill(10., 1.)
-	}
-}
-func BenchmarkNH1DFillConst(b *testing.B) {
-	b.StopTimer()
-	hists := make([]*hbook.H1D, 100)
-	for i := 0; i < 100; i++ {
-		hists[i] = hbook.NewH1D(100, 0., 100.)
-	}
-	b.StartTimer()
-
-	for i := 0; i < b.N; i++ {
-		st_process_evts(100, hists, st_process_evts_const)
-	}
-}
-
-func st_process_evts_flat(hists []*hbook.H1D) {
-	for _, h := range hists {
-		h.Fill(rnd()*100., 1.)
-	}
-}
-
-func BenchmarkNH1DFillFlat(b *testing.B) {
-	b.StopTimer()
-	hists := make([]*hbook.H1D, 100)
-	for i := 0; i < 100; i++ {
-		hists[i] = hbook.NewH1D(100, 0., 100.)
-	}
-	b.StartTimer()
-
-	for i := 0; i < b.N; i++ {
-		st_process_evts(100, hists, st_process_evts_flat)
-	}
-}
-
 func TestH1DSerialization(t *testing.T) {
 	const nentries = 50
-	href := hbook.NewH1D(100, 0., 100.)
+	href := NewH1D(100, 0., 100.)
 	for i := 0; i < nentries; i++ {
 		href.Fill(rnd()*100., 1.)
 	}
@@ -462,7 +473,7 @@ func TestH1DSerialization(t *testing.T) {
 			t.Fatalf("could not serialize histogram: %v", err)
 		}
 
-		var hnew hbook.H1D
+		var hnew H1D
 		dec := gob.NewDecoder(buf)
 		err = dec.Decode(&hnew)
 		if err != nil {
@@ -482,7 +493,7 @@ func TestH1DSerialization(t *testing.T) {
 			t.Fatalf("could not serialize histogram: %v", err)
 		}
 
-		var hnew hbook.H1D
+		var hnew H1D
 		err = hnew.RioUnmarshal(buf)
 		if err != nil {
 			t.Fatalf("could not deserialize histogram: %v", err)
@@ -496,7 +507,7 @@ func TestH1DSerialization(t *testing.T) {
 }
 
 func TestH1DWriteYODA(t *testing.T) {
-	h := hbook.NewH1D(10, -4, 4)
+	h := NewH1D(10, -4, 4)
 	h.Fill(1, 1)
 	h.Fill(2, 1)
 	h.Fill(-3, 1)
@@ -511,15 +522,17 @@ func TestH1DWriteYODA(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ref, err := ioutil.ReadFile("testdata/h1d_v1_golden.yoda")
+	ref, err := ioutil.ReadFile("testdata/h1d_v2_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if !reflect.DeepEqual(chk, ref) {
-		t.Fatalf("h2d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
-			string(chk),
-			string(ref),
+		t.Fatalf("h1d file differ:\n%s\n",
+			cmp.Diff(
+				string(ref),
+				string(chk),
+			),
 		)
 	}
 }
@@ -530,7 +543,34 @@ func TestH1DReadYODAv1(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var h hbook.H1D
+	var h H1D
+	err = h.UnmarshalYODA(ref)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	chk, err := h.marshalYODAv1()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(chk, ref) {
+		t.Fatalf("h1d file differ:\n%s\n",
+			cmp.Diff(
+				string(ref),
+				string(chk),
+			),
+		)
+	}
+}
+
+func TestH1DReadYODAv2(t *testing.T) {
+	ref, err := ioutil.ReadFile("testdata/h1d_v2_golden.yoda")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var h H1D
 	err = h.UnmarshalYODA(ref)
 	if err != nil {
 		t.Fatal(err)
@@ -542,15 +582,17 @@ func TestH1DReadYODAv1(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(chk, ref) {
-		t.Fatalf("h1d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
-			string(chk),
-			string(ref),
+		t.Fatalf("h1d file differ:\n%s\n",
+			cmp.Diff(
+				string(ref),
+				string(chk),
+			),
 		)
 	}
 }
 
 func TestH1DBin(t *testing.T) {
-	h := hbook.NewH1DFromEdges([]float64{
+	h := NewH1DFromEdges([]float64{
 		-4.0, -3.6, -3.2, -2.8, -2.4, -2.0, -1.6, -1.2, -0.8, -0.4,
 		+0.0, +0.4, +0.8, +1.2, +1.6, +2.0, +2.4, +2.8, +3.2, +3.6,
 		+4.0,
@@ -598,8 +640,8 @@ func TestH1DBin(t *testing.T) {
 }
 
 func TestH1DFillN(t *testing.T) {
-	h1 := hbook.NewH1D(10, 0, 10)
-	h2 := hbook.NewH1D(10, 0, 10)
+	h1 := NewH1D(10, 0, 10)
+	h2 := NewH1D(10, 0, 10)
 
 	xs := []float64{1, 2, 3, 4}
 	ws := []float64{1, 2, 1, 1}

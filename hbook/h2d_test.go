@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package hbook_test
+package hbook
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"reflect"
 	"testing"
 
-	"go-hep.org/x/hep/hbook"
+	"github.com/google/go-cmp/cmp"
 	"gonum.org/v1/plot/plotter"
 )
 
@@ -25,7 +25,7 @@ func TestH2D(t *testing.T) {
 		ymax = 100.0
 	)
 
-	h := hbook.NewH2D(nx, xmin, xmax, ny, ymin, ymax)
+	h := NewH2D(nx, xmin, xmax, ny, ymin, ymax)
 	if h == nil {
 		t.Fatalf("nil pointer to H2D")
 	}
@@ -208,7 +208,7 @@ func TestH2D(t *testing.T) {
 }
 
 func TestH2Edges(t *testing.T) {
-	h := hbook.NewH2DFromEdges(
+	h := NewH2DFromEdges(
 		[]float64{+0, +1, +2, +3},
 		[]float64{-3, -2, -1, +0},
 	)
@@ -262,7 +262,7 @@ func TestH2EdgesWithPanics(t *testing.T) {
 	} {
 		{
 			panicked, _ := panics(func() {
-				_ = hbook.NewH2DFromEdges(test.xs, test.ys)
+				_ = NewH2DFromEdges(test.xs, test.ys)
 			})
 			if !panicked {
 				t.Errorf("edges {x=%v, y=%v} should have panicked", test.xs, test.ys)
@@ -270,7 +270,7 @@ func TestH2EdgesWithPanics(t *testing.T) {
 		}
 		{
 			panicked, _ := panics(func() {
-				_ = hbook.NewH2DFromEdges(test.ys, test.xs)
+				_ = NewH2DFromEdges(test.ys, test.xs)
 			})
 			if !panicked {
 				t.Errorf("edges {y=%v, x=%v} should have panicked", test.xs, test.ys)
@@ -280,10 +280,10 @@ func TestH2EdgesWithPanics(t *testing.T) {
 }
 
 // check H2D can be plotted
-var _ plotter.GridXYZ = ((*hbook.H2D)(nil)).GridXYZ()
+var _ plotter.GridXYZ = ((*H2D)(nil)).GridXYZ()
 
 func TestH2DWriteYODA(t *testing.T) {
-	h := hbook.NewH2D(5, -1, 1, 5, -2, +2)
+	h := NewH2D(5, -1, 1, 5, -2, +2)
 	h.Fill(+0.5, +1, 1)
 	h.Fill(-0.5, +1, 1)
 	h.Fill(+0.0, -1, 1)
@@ -293,15 +293,17 @@ func TestH2DWriteYODA(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ref, err := ioutil.ReadFile("testdata/h2d_v1_golden.yoda")
+	ref, err := ioutil.ReadFile("testdata/h2d_v2_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if !reflect.DeepEqual(chk, ref) {
-		t.Fatalf("h2d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
-			string(chk),
-			string(ref),
+		t.Fatalf("h2d file differ:\n%s\n",
+			cmp.Diff(
+				string(ref),
+				string(chk),
+			),
 		)
 	}
 }
@@ -312,7 +314,34 @@ func TestH2DReadYODAv1(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var h hbook.H2D
+	var h H2D
+	err = h.UnmarshalYODA(ref)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	chk, err := h.marshalYODAv1()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(chk, ref) {
+		t.Fatalf("h2d file differ:\n%s\n",
+			cmp.Diff(
+				string(ref),
+				string(chk),
+			),
+		)
+	}
+}
+
+func TestH2DReadYODAv2(t *testing.T) {
+	ref, err := ioutil.ReadFile("testdata/h2d_v2_golden.yoda")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var h H2D
 	err = h.UnmarshalYODA(ref)
 	if err != nil {
 		t.Fatal(err)
@@ -324,15 +353,17 @@ func TestH2DReadYODAv1(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(chk, ref) {
-		t.Fatalf("h2d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
-			string(chk),
-			string(ref),
+		t.Fatalf("h2d file differ:\n%s\n",
+			cmp.Diff(
+				string(ref),
+				string(chk),
+			),
 		)
 	}
 }
 
 func TestH2DBin(t *testing.T) {
-	h := hbook.NewH2DFromEdges(
+	h := NewH2DFromEdges(
 		[]float64{+0, +1, +2, +3},
 		[]float64{-3, -2, -1, +0},
 	)
@@ -386,8 +417,8 @@ func TestH2DBin(t *testing.T) {
 }
 
 func TestH2DFillN(t *testing.T) {
-	h1 := hbook.NewH2D(10, 0, 10, 10, 0, 10)
-	h2 := hbook.NewH2D(10, 0, 10, 10, 0, 10)
+	h1 := NewH2D(10, 0, 10, 10, 0, 10)
+	h2 := NewH2D(10, 0, 10, 10, 0, 10)
 
 	xs := []float64{1, 2, 3, 4}
 	ys := []float64{1, 2, 3, 4}

@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"strings"
 )
 
 // H2D is a 2-dim histogram with weighted entries.
@@ -306,9 +307,13 @@ func (h *H2D) annFromYODA(ann Annotation) {
 		case "Type":
 			// noop
 		case "Path":
-			h.Ann["name"] = string(v.(string)[1:]) // skip leading '/'
+			name := v.(string)
+			if strings.HasPrefix(name, "/") {
+				name = name[1:]
+			}
+			h.Ann["name"] = name
 		case "Title":
-			h.Ann["title"] = v.(string)
+			h.Ann["title"] = v
 		default:
 			h.Ann[k] = v
 		}
@@ -317,10 +322,14 @@ func (h *H2D) annFromYODA(ann Annotation) {
 
 // MarshalYODA implements the YODAMarshaler interface.
 func (h *H2D) MarshalYODA() ([]byte, error) {
+	return h.marshalYODAv2()
+}
+
+func (h *H2D) marshalYODAv1() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	ann := h.annToYODA()
 	fmt.Fprintf(buf, "BEGIN YODA_HISTO2D %s\n", ann["Path"])
-	data, err := ann.MarshalYODA()
+	data, err := ann.marshalYODAv1()
 	if err != nil {
 		return nil, err
 	}
@@ -358,13 +367,67 @@ func (h *H2D) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
+func (h *H2D) marshalYODAv2() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	ann := h.annToYODA()
+	fmt.Fprintf(buf, "BEGIN YODA_HISTO2D_V2 %s\n", ann["Path"])
+	data, err := ann.marshalYODAv2()
+	if err != nil {
+		return nil, err
+	}
+	buf.Write(data)
+	buf.Write([]byte("---\n"))
+
+	fmt.Fprintf(buf, "# Mean: (%e, %e)\n", h.XMean(), h.YMean())
+	fmt.Fprintf(buf, "# Volume: %e\n", h.Integral())
+
+	fmt.Fprintf(buf, "# ID\t ID\t sumw\t sumw2\t sumwx\t sumwx2\t sumwy\t sumwy2\t sumwxy\t numEntries\n")
+	d := h.Binning.Dist
+	fmt.Fprintf(
+		buf,
+		"Total   \tTotal   \t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
+		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), float64(d.Entries()),
+	)
+
+	// outflows
+	fmt.Fprintf(buf, "# 2D outflow persistency not currently supported until API is stable\n")
+
+	// bins
+	fmt.Fprintf(buf, "# xlow\t xhigh\t ylow\t yhigh\t sumw\t sumw2\t sumwx\t sumwx2\t sumwy\t sumwy2\t sumwxy\t numEntries\n")
+	for ix := 0; ix < h.Binning.Nx; ix++ {
+		for iy := 0; iy < h.Binning.Ny; iy++ {
+			bin := h.Binning.Bins[iy*h.Binning.Nx+ix]
+			d := bin.Dist
+			fmt.Fprintf(
+				buf,
+				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
+				bin.XRange.Min, bin.XRange.Max, bin.YRange.Min, bin.YRange.Max,
+				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), float64(d.Entries()),
+			)
+		}
+	}
+	fmt.Fprintf(buf, "END YODA_HISTO2D_V2\n\n")
+	return buf.Bytes(), err
+}
+
 // UnmarshalYODA implements the YODAUnmarshaler interface.
 func (h *H2D) UnmarshalYODA(data []byte) error {
-	r := bytes.NewBuffer(data)
-	_, err := readYODAHeader(r, "BEGIN YODA_HISTO2D")
+	r := newRBuffer(data)
+	_, vers, err := readYODAHeader(r, "BEGIN YODA_HISTO2D")
 	if err != nil {
 		return err
 	}
+	switch vers {
+	case 1:
+		return h.unmarshalYODAv1(r)
+	case 2:
+		return h.unmarshalYODAv2(r)
+	default:
+		return fmt.Errorf("hbook: invalid YODA version %v", vers)
+	}
+}
+
+func (h *H2D) unmarshalYODAv1(r *rbuffer) error {
 	ann := make(Annotation)
 
 	// pos of end of annotations
@@ -372,12 +435,12 @@ func (h *H2D) UnmarshalYODA(data []byte) error {
 	if pos < 0 {
 		return fmt.Errorf("hbook: invalid H2D-YODA data")
 	}
-	err = ann.UnmarshalYODA(r.Bytes()[:pos+1])
+	err := ann.unmarshalYODAv1(r.Bytes()[:pos+1])
 	if err != nil {
 		return fmt.Errorf("hbook: %q\nhbook: %w", string(r.Bytes()[:pos+1]), err)
 	}
 	h.annFromYODA(ann)
-	r.Next(pos)
+	r.next(pos)
 
 	var ctx struct {
 		dist bool
@@ -438,6 +501,108 @@ scanLoop:
 			if err != nil {
 				return fmt.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
+			d.Y.Dist = d.X.Dist
+			xset[bin.XRange.Min] = 1
+			yset[bin.YRange.Min] = 1
+			xmin = math.Min(xmin, bin.XRange.Min)
+			xmax = math.Max(xmax, bin.XRange.Max)
+			ymin = math.Min(ymin, bin.YRange.Min)
+			ymax = math.Max(ymax, bin.YRange.Max)
+			bins = append(bins, bin)
+
+		default:
+			return fmt.Errorf("hbook: invalid H2D-YODA data: %q", string(buf))
+		}
+	}
+	h.Binning = newBinning2D(len(xset), xmin, xmax, len(yset), ymin, ymax)
+	h.Binning.Dist = dist
+	// YODA bins are transposed wrt ours
+	for ix := 0; ix < h.Binning.Nx; ix++ {
+		for iy := 0; iy < h.Binning.Ny; iy++ {
+			h.Binning.Bins[iy*h.Binning.Nx+ix] = bins[ix*h.Binning.Ny+iy]
+		}
+	}
+	return err
+}
+
+func (h *H2D) unmarshalYODAv2(r *rbuffer) error {
+	ann := make(Annotation)
+
+	// pos of end of annotations
+	pos := bytes.Index(r.Bytes(), []byte("\n# Mean:"))
+	if pos < 0 {
+		return fmt.Errorf("hbook: invalid H2D-YODA data")
+	}
+	err := ann.unmarshalYODAv2(r.Bytes()[:pos+1])
+	if err != nil {
+		return fmt.Errorf("hbook: %q\nhbook: %w", string(r.Bytes()[:pos+1]), err)
+	}
+	h.annFromYODA(ann)
+	r.next(pos)
+
+	var ctx struct {
+		dist bool
+		bins bool
+	}
+
+	// sets of xlow and ylow values, to infer number of bins in X and Y.
+	xset := make(map[float64]int)
+	yset := make(map[float64]int)
+
+	var (
+		dist Dist2D
+		bins []Bin2D
+		xmin = math.Inf(+1)
+		xmax = math.Inf(-1)
+		ymin = math.Inf(+1)
+		ymax = math.Inf(-1)
+	)
+	s := bufio.NewScanner(r)
+scanLoop:
+	for s.Scan() {
+		buf := s.Bytes()
+		if len(buf) == 0 || buf[0] == '#' {
+			continue
+		}
+		rbuf := bytes.NewReader(buf)
+		switch {
+		case bytes.HasPrefix(buf, []byte("END YODA_HISTO2D_V2")):
+			break scanLoop
+		case !ctx.dist && bytes.HasPrefix(buf, []byte("Total   \t")):
+			ctx.dist = true
+			d := &dist
+			var n float64
+			_, err = fmt.Fscanf(
+				rbuf,
+				"Total   \tTotal   \t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
+				&d.X.Dist.SumW, &d.X.Dist.SumW2,
+				&d.X.Stats.SumWX, &d.X.Stats.SumWX2,
+				&d.Y.Stats.SumWX, &d.Y.Stats.SumWX2,
+				&d.Stats.SumWXY, &n,
+			)
+			if err != nil {
+				return fmt.Errorf("hbook: %q\nhbook: %w", string(buf), err)
+			}
+			d.X.Dist.N = int64(n)
+			d.Y.Dist = d.X.Dist
+			ctx.bins = true
+		case ctx.bins:
+			var bin Bin2D
+			d := &bin.Dist
+			var n float64
+			_, err = fmt.Fscanf(
+				rbuf,
+				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
+				&bin.XRange.Min, &bin.XRange.Max, &bin.YRange.Min, &bin.YRange.Max,
+				&d.X.Dist.SumW, &d.X.Dist.SumW2,
+				&d.X.Stats.SumWX, &d.X.Stats.SumWX2,
+				&d.Y.Stats.SumWX, &d.Y.Stats.SumWX2,
+				&d.Stats.SumWXY, &n,
+			)
+			if err != nil {
+				return fmt.Errorf("hbook: %q\nhbook: %w", string(buf), err)
+			}
+			d.X.Dist.N = int64(n)
 			d.Y.Dist = d.X.Dist
 			xset[bin.XRange.Min] = 1
 			yset[bin.YRange.Min] = 1

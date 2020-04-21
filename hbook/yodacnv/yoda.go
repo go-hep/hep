@@ -108,21 +108,21 @@ func splitHeader(raw []byte) (reflect.Type, error) {
 	var rt reflect.Type
 
 	switch string(raw[:i]) {
-	case "HISTO1D":
+	case "HISTO1D", "HISTO1D_V2":
 		rt = reflect.TypeOf((*hbook.H1D)(nil)).Elem()
-	case "HISTO2D":
+	case "HISTO2D", "HISTO2D_V2":
 		rt = reflect.TypeOf((*hbook.H2D)(nil)).Elem()
-	case "PROFILE1D":
+	case "PROFILE1D", "PROFILE1D_V2":
 		rt = reflect.TypeOf((*hbook.P1D)(nil)).Elem()
-	case "PROFILE2D":
+	case "PROFILE2D", "PROFILE2D_V2":
 		return nil, errIgnore
-	case "SCATTER1D":
+	case "SCATTER1D", "SCATTER1D_V2":
 		return nil, errIgnore
-	case "SCATTER2D":
+	case "SCATTER2D", "SCATTER2D_V2":
 		rt = reflect.TypeOf((*hbook.S2D)(nil)).Elem()
-	case "SCATTER3D":
+	case "SCATTER3D", "SCATTER3D_V2":
 		return nil, errIgnore
-	case "COUNTER":
+	case "COUNTER", "COUNTER_V2":
 		return nil, errIgnore
 	default:
 		return nil, fmt.Errorf("unhandled YODA object type %q", string(raw[:i]))

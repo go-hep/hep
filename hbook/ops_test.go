@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestDivideH1D(t *testing.T) {
@@ -28,22 +30,28 @@ func TestDivideH1D(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want := []byte(`BEGIN YODA_SCATTER2D /
-Path=/
-Title=
-Type=Scatter2D
-# xval	 xerr-	 xerr+	 yval	 yerr-	 yerr+
+	want := []byte(`BEGIN YODA_SCATTER2D_V2 /
+Path: /
+Title: ""
+Type: Scatter2D
+---
+# xval	 xerr-	 xerr+	 yval	 yerr-	 yerr+	
 5.000000e-01	5.000000e-01	5.000000e-01	3.333333e-01	4.714045e-01	4.714045e-01
 1.500000e+00	5.000000e-01	5.000000e-01	5.000000e-01	7.071068e-01	7.071068e-01
 2.500000e+00	5.000000e-01	5.000000e-01	6.000000e-01	8.485281e-01	8.485281e-01
 3.500000e+00	5.000000e-01	5.000000e-01	6.666667e-01	9.428090e-01	9.428090e-01
 4.500000e+00	5.000000e-01	5.000000e-01	7.142857e-01	1.010153e+00	1.010153e+00
-END YODA_SCATTER2D
+END YODA_SCATTER2D_V2
 
 `)
 
 	if !reflect.DeepEqual(chk, want) {
-		t.Fatalf("divide(num,den) differ:\ngot:\n%s\nwant:\n%s\n", string(chk), string(want))
+		t.Fatalf("divide(num,den) differ:\n%s\n",
+			cmp.Diff(
+				string(chk),
+				string(want),
+			),
+		)
 	}
 }
 

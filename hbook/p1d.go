@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"strings"
 )
 
 // P1D is a 1-dim profile histogram.
@@ -159,6 +160,10 @@ func (p *P1D) annToYODA() Annotation {
 		if k == "name" {
 			continue
 		}
+		if k == "title" {
+			ann["Title"] = v
+			continue
+		}
 		ann[k] = v
 	}
 	return ann
@@ -174,7 +179,13 @@ func (p *P1D) annFromYODA(ann Annotation) {
 		case "Type":
 			// noop
 		case "Path":
-			p.ann["name"] = string(v.(string)[1:]) // skip leading '/'
+			name := v.(string)
+			if strings.HasPrefix(name, "/") {
+				name = name[1:]
+			}
+			p.ann["name"] = name
+		case "Title":
+			p.ann["title"] = v
 		default:
 			p.ann[k] = v
 		}
@@ -183,10 +194,14 @@ func (p *P1D) annFromYODA(ann Annotation) {
 
 // MarshalYODA implements the YODAMarshaler interface.
 func (p *P1D) MarshalYODA() ([]byte, error) {
+	return p.marshalYODAv2()
+}
+
+func (p *P1D) marshalYODAv1() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	ann := p.annToYODA()
 	fmt.Fprintf(buf, "BEGIN YODA_PROFILE1D %s\n", ann["Path"])
-	data, err := ann.MarshalYODA()
+	data, err := ann.marshalYODAv1()
 	if err != nil {
 		return nil, err
 	}
@@ -229,13 +244,72 @@ func (p *P1D) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
+func (p *P1D) marshalYODAv2() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	ann := p.annToYODA()
+	fmt.Fprintf(buf, "BEGIN YODA_PROFILE1D_V2 %s\n", ann["Path"])
+	data, err := ann.marshalYODAv2()
+	if err != nil {
+		return nil, err
+	}
+	buf.Write(data)
+	buf.Write([]byte("---\n"))
+
+	fmt.Fprintf(buf, "# ID\t ID\t sumw\t sumw2\t sumwx\t sumwx2\t sumwy\t sumwy2\t numEntries\n")
+	d := p.bng.dist
+	fmt.Fprintf(
+		buf,
+		"Total   \tTotal   \t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
+		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), float64(d.Entries()),
+	)
+
+	d = p.bng.outflows[0]
+	fmt.Fprintf(
+		buf,
+		"Underflow\tUnderflow\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
+		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), float64(d.Entries()),
+	)
+
+	d = p.bng.outflows[1]
+	fmt.Fprintf(
+		buf,
+		"Overflow\tOverflow\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
+		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), float64(d.Entries()),
+	)
+
+	// bins
+	fmt.Fprintf(buf, "# xlow\t xhigh\t sumw\t sumw2\t sumwx\t sumwx2\t sumwy\t sumwy2\t numEntries\n")
+	for _, bin := range p.bng.bins {
+		d := bin.dist
+		fmt.Fprintf(
+			buf,
+			"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
+			bin.xrange.Min, bin.xrange.Max,
+			d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), float64(d.Entries()),
+		)
+	}
+	fmt.Fprintf(buf, "END YODA_PROFILE1D_V2\n\n")
+	return buf.Bytes(), err
+}
+
 // UnmarshalYODA implements the YODAUnmarshaler interface.
 func (p *P1D) UnmarshalYODA(data []byte) error {
-	r := bytes.NewBuffer(data)
-	_, err := readYODAHeader(r, "BEGIN YODA_PROFILE1D")
+	r := newRBuffer(data)
+	_, vers, err := readYODAHeader(r, "BEGIN YODA_PROFILE1D")
 	if err != nil {
 		return err
 	}
+	switch vers {
+	case 1:
+		return p.unmarshalYODAv1(r)
+	case 2:
+		return p.unmarshalYODAv2(r)
+	default:
+		return fmt.Errorf("hbook: invalid YODA version %v", vers)
+	}
+}
+
+func (p *P1D) unmarshalYODAv1(r *rbuffer) error {
 	ann := make(Annotation)
 
 	// pos of end of annotations
@@ -243,12 +317,12 @@ func (p *P1D) UnmarshalYODA(data []byte) error {
 	if pos < 0 {
 		return fmt.Errorf("hbook: invalid P1D-YODA data")
 	}
-	err = ann.UnmarshalYODA(r.Bytes()[:pos+1])
+	err := ann.unmarshalYODAv1(r.Bytes()[:pos+1])
 	if err != nil {
 		return fmt.Errorf("hbook: %q\nhbook: %w", string(r.Bytes()[:pos+1]), err)
 	}
 	p.annFromYODA(ann)
-	r.Next(pos)
+	r.next(pos)
 
 	var ctx struct {
 		total bool
@@ -339,6 +413,135 @@ scanLoop:
 			if err != nil {
 				return fmt.Errorf("hbook: %q\nhbook: %w", string(buf), err)
 			}
+			d.Y.Dist.N = d.X.Dist.N
+			xset[bin.xrange.Min] = 1
+			xmin = math.Min(xmin, bin.xrange.Min)
+			xmax = math.Max(xmax, bin.xrange.Max)
+			bins = append(bins, bin)
+
+		default:
+			return fmt.Errorf("hbook: invalid P1D-YODA data: %q", string(buf))
+		}
+	}
+	p.bng = newBinningP1D(len(xset), xmin, xmax)
+	p.bng.dist = dist
+	p.bng.bins = bins
+	p.bng.outflows = oflows
+	return err
+}
+
+func (p *P1D) unmarshalYODAv2(r *rbuffer) error {
+	ann := make(Annotation)
+
+	// pos of end of annotations
+	pos := bytes.Index(r.Bytes(), []byte("\n# ID\t ID\t"))
+	if pos < 0 {
+		return fmt.Errorf("hbook: invalid P1D-YODA data")
+	}
+	err := ann.unmarshalYODAv2(r.Bytes()[:pos+1])
+	if err != nil {
+		return fmt.Errorf("hbook: %q\nhbook: %w", string(r.Bytes()[:pos+1]), err)
+	}
+	p.annFromYODA(ann)
+	r.next(pos)
+
+	var ctx struct {
+		total bool
+		under bool
+		over  bool
+		bins  bool
+	}
+
+	// sets of xlow values, to infer number of bins in X.
+	xset := make(map[float64]int)
+
+	var (
+		dist   Dist2D
+		oflows [2]Dist2D
+		bins   []BinP1D
+		xmin   = math.Inf(+1)
+		xmax   = math.Inf(-1)
+	)
+	s := bufio.NewScanner(r)
+scanLoop:
+	for s.Scan() {
+		buf := s.Bytes()
+		if len(buf) == 0 || buf[0] == '#' {
+			continue
+		}
+		rbuf := bytes.NewReader(buf)
+		switch {
+		case bytes.HasPrefix(buf, []byte("END YODA_PROFILE1D_V2")):
+			break scanLoop
+		case !ctx.total && bytes.HasPrefix(buf, []byte("Total   \t")):
+			ctx.total = true
+			d := &dist
+			var n float64
+			_, err = fmt.Fscanf(
+				rbuf,
+				"Total   \tTotal   \t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
+				&d.X.Dist.SumW, &d.X.Dist.SumW2,
+				&d.X.Stats.SumWX, &d.X.Stats.SumWX2,
+				&d.Y.Stats.SumWX, &d.Y.Stats.SumWX2,
+				&n,
+			)
+			if err != nil {
+				return fmt.Errorf("hbook: %q\nhbook: %w", string(buf), err)
+			}
+			d.X.Dist.N = int64(n)
+			d.Y.Dist.N = d.X.Dist.N
+		case !ctx.under && bytes.HasPrefix(buf, []byte("Underflow\t")):
+			ctx.under = true
+			d := &oflows[0]
+			var n float64
+			_, err = fmt.Fscanf(
+				rbuf,
+				"Underflow\tUnderflow\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
+				&d.X.Dist.SumW, &d.X.Dist.SumW2,
+				&d.X.Stats.SumWX, &d.X.Stats.SumWX2,
+				&d.Y.Stats.SumWX, &d.Y.Stats.SumWX2,
+				&n,
+			)
+			if err != nil {
+				return fmt.Errorf("hbook: %q\nhbook: %w", string(buf), err)
+			}
+			d.X.Dist.N = int64(n)
+			d.Y.Dist.N = d.X.Dist.N
+		case !ctx.over && bytes.HasPrefix(buf, []byte("Overflow\t")):
+			ctx.over = true
+			d := &oflows[1]
+			var n float64
+			_, err = fmt.Fscanf(
+				rbuf,
+				"Overflow\tOverflow\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
+				&d.X.Dist.SumW, &d.X.Dist.SumW2,
+				&d.X.Stats.SumWX, &d.X.Stats.SumWX2,
+				&d.Y.Stats.SumWX, &d.Y.Stats.SumWX2,
+				&n,
+			)
+			if err != nil {
+				return fmt.Errorf("hbook: %q\nhbook: %w", string(buf), err)
+			}
+			d.X.Dist.N = int64(n)
+			d.Y.Dist.N = d.X.Dist.N
+			ctx.bins = true
+		case ctx.bins:
+			var bin BinP1D
+			d := &bin.dist
+			var n float64
+			_, err = fmt.Fscanf(
+				rbuf,
+				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
+				&bin.xrange.Min, &bin.xrange.Max,
+				&d.X.Dist.SumW, &d.X.Dist.SumW2,
+				&d.X.Stats.SumWX, &d.X.Stats.SumWX2,
+				&d.Y.Stats.SumWX, &d.Y.Stats.SumWX2,
+				&n,
+			)
+			if err != nil {
+				return fmt.Errorf("hbook: %q\nhbook: %w", string(buf), err)
+			}
+			d.X.Dist.N = int64(n)
 			d.Y.Dist.N = d.X.Dist.N
 			xset[bin.xrange.Min] = 1
 			xmin = math.Min(xmin, bin.xrange.Min)

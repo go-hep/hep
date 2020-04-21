@@ -5,7 +5,6 @@
 package hbook
 
 import (
-	"bytes"
 	"fmt"
 	"testing"
 )
@@ -15,15 +14,28 @@ func TestReadYODAHeader(t *testing.T) {
 	for _, tc := range []struct {
 		str  string
 		want string
+		vers int
 		err  error
 	}{
 		{
 			str:  "BEGIN YODA_HISTO1D /name\n",
 			want: "/name",
+			vers: 1,
 		},
 		{
 			str:  "BEGIN YODA_HISTO1D /name with whitespace\n",
 			want: "/name with whitespace",
+			vers: 1,
+		},
+		{
+			str:  "BEGIN YODA_HISTO1D_V2 /name\n",
+			want: "/name",
+			vers: 2,
+		},
+		{
+			str:  "BEGIN YODA_HISTO1D_V2 /name with whitespace\n",
+			want: "/name with whitespace",
+			vers: 2,
 		},
 		{
 			str:  "BEGIN YODA /name",
@@ -52,7 +64,7 @@ func TestReadYODAHeader(t *testing.T) {
 		},
 	} {
 		t.Run(tc.want, func(t *testing.T) {
-			v, err := readYODAHeader(bytes.NewBuffer([]byte(tc.str)), mark)
+			name, vers, err := readYODAHeader(newRBuffer([]byte(tc.str)), mark)
 			if err == nil && tc.err != nil {
 				t.Fatalf("got err=nil, want=%v", tc.err.Error())
 			}
@@ -64,8 +76,11 @@ func TestReadYODAHeader(t *testing.T) {
 					t.Fatalf("got error=%v, want=%v", got, want)
 				}
 			}
-			if v != tc.want {
-				t.Fatalf("got: %q, want: %q", v, tc.want)
+			if got, want := name, tc.want; got != want {
+				t.Fatalf("invalid name: got: %q, want: %q", got, want)
+			}
+			if got, want := vers, tc.vers; got != want {
+				t.Fatalf("invalid version: got: %d, want: %d", got, want)
 			}
 		})
 	}

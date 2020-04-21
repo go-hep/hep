@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package hbook_test
+package hbook
 
 import (
 	"bytes"
@@ -11,11 +11,11 @@ import (
 	"reflect"
 	"testing"
 
-	"go-hep.org/x/hep/hbook"
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestP1D(t *testing.T) {
-	p := hbook.NewP1D(10, -4, +4)
+	p := NewP1D(10, -4, +4)
 	if p == nil {
 		t.Fatalf("nil pointer to P1D")
 	}
@@ -91,7 +91,7 @@ func TestP1D(t *testing.T) {
 }
 
 func TestP1DWriteYODA(t *testing.T) {
-	p := hbook.NewP1D(10, -4, +4)
+	p := NewP1D(10, -4, +4)
 	if p == nil {
 		t.Fatalf("nil pointer to P1D")
 	}
@@ -107,15 +107,17 @@ func TestP1DWriteYODA(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ref, err := ioutil.ReadFile("testdata/p1d_v1_golden.yoda")
+	ref, err := ioutil.ReadFile("testdata/p1d_v2_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if !reflect.DeepEqual(chk, ref) {
-		t.Fatalf("h2d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
-			string(chk),
-			string(ref),
+		t.Fatalf("p1d file differ:\n%s\n",
+			cmp.Diff(
+				string(ref),
+				string(chk),
+			),
 		)
 	}
 }
@@ -126,7 +128,34 @@ func TestP1DReadYODAv1(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var h hbook.P1D
+	var h P1D
+	err = h.UnmarshalYODA(ref)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	chk, err := h.marshalYODAv1()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(chk, ref) {
+		t.Fatalf("p1d file differ:\n%s\n",
+			cmp.Diff(
+				string(ref),
+				string(chk),
+			),
+		)
+	}
+}
+
+func TestP1DReadYODAv2(t *testing.T) {
+	ref, err := ioutil.ReadFile("testdata/p1d_v2_golden.yoda")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var h P1D
 	err = h.UnmarshalYODA(ref)
 	if err != nil {
 		t.Fatal(err)
@@ -138,15 +167,17 @@ func TestP1DReadYODAv1(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(chk, ref) {
-		t.Fatalf("h1d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
-			string(chk),
-			string(ref),
+		t.Fatalf("p1d file differ:\n%s\n",
+			cmp.Diff(
+				string(ref),
+				string(chk),
+			),
 		)
 	}
 }
 
 func TestP1DSerialization(t *testing.T) {
-	pref := hbook.NewP1D(10, -4, +4)
+	pref := NewP1D(10, -4, +4)
 	if pref == nil {
 		t.Fatalf("nil pointer to P1D")
 	}
@@ -168,7 +199,7 @@ func TestP1DSerialization(t *testing.T) {
 			t.Fatalf("could not serialize p1d: %v\n", err)
 		}
 
-		var pnew hbook.P1D
+		var pnew P1D
 		dec := gob.NewDecoder(buf)
 		err = dec.Decode(&pnew)
 		if err != nil {

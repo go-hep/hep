@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package hbook_test
+package hbook
 
 import (
 	"bytes"
@@ -11,11 +11,11 @@ import (
 	"reflect"
 	"testing"
 
-	"go-hep.org/x/hep/hbook"
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestS2D(t *testing.T) {
-	s := hbook.NewS2D(hbook.Point2D{X: 1, Y: 1}, hbook.Point2D{X: 2, Y: 1.5}, hbook.Point2D{X: -1, Y: +2})
+	s := NewS2D(Point2D{X: 1, Y: 1}, Point2D{X: 2, Y: 1.5}, Point2D{X: -1, Y: +2})
 	if s == nil {
 		t.Fatal("nil pointer to S2D")
 	}
@@ -24,7 +24,7 @@ func TestS2D(t *testing.T) {
 		t.Errorf("got len=%d. want=%d\n", got, want)
 	}
 
-	pt := hbook.Point2D{X: 10, Y: -10, ErrX: hbook.Range{Min: 5, Max: 5}, ErrY: hbook.Range{Min: 6, Max: 6}}
+	pt := Point2D{X: 10, Y: -10, ErrX: Range{Min: 5, Max: 5}, ErrY: Range{Min: 6, Max: 6}}
 	s.Fill(pt)
 
 	if got, want := s.Len(), 4; got != want {
@@ -37,7 +37,7 @@ func TestS2D(t *testing.T) {
 }
 
 func TestS2DWriteYODA(t *testing.T) {
-	h := hbook.NewH1D(20, -4, +4)
+	h := NewH1D(20, -4, +4)
 	h.Fill(1, 2)
 	h.Fill(2, 3)
 	h.Fill(3, 1)
@@ -45,22 +45,24 @@ func TestS2DWriteYODA(t *testing.T) {
 	h.Fill(-2, 1)
 	h.Fill(-3, 1)
 
-	s := hbook.NewS2DFromH1D(h)
+	s := NewS2DFromH1D(h)
 
 	chk, err := s.MarshalYODA()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ref, err := ioutil.ReadFile("testdata/s2d_v1_golden.yoda")
+	ref, err := ioutil.ReadFile("testdata/s2d_v2_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if !reflect.DeepEqual(chk, ref) {
-		t.Fatalf("s2d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
-			string(chk),
-			string(ref),
+		t.Fatalf("s2d file differ:\n%s\n",
+			cmp.Diff(
+				string(ref),
+				string(chk),
+			),
 		)
 	}
 }
@@ -71,30 +73,59 @@ func TestS2DReadYODAv1(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var s hbook.S2D
+	var s S2D
 	err = s.UnmarshalYODA(ref)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	chk, err := s.MarshalYODA()
+	chk, err := s.marshalYODAv1()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if !reflect.DeepEqual(chk, ref) {
-		t.Fatalf("s2d file differ:\n=== got ===\n%s\n=== want ===\n%s\n",
-			string(chk),
-			string(ref),
+		t.Fatalf("s2d file differ:\n%s\n",
+			cmp.Diff(
+				string(ref),
+				string(chk),
+			),
+		)
+	}
+}
+
+func TestS2DReadYODAv2(t *testing.T) {
+	ref, err := ioutil.ReadFile("testdata/s2d_v2_golden.yoda")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var s S2D
+	err = s.UnmarshalYODA(ref)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	chk, err := s.marshalYODAv2()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(chk, ref) {
+		t.Fatalf("s2d file differ:\n%s\n",
+			cmp.Diff(
+				string(ref),
+				string(chk),
+			),
 		)
 	}
 }
 
 func TestS2DSerialization(t *testing.T) {
-	sref := hbook.NewS2D()
+	sref := NewS2D()
 	for i := 0; i < 10; i++ {
 		v := float64(i)
-		sref.Fill(hbook.Point2D{X: v, Y: v, ErrX: hbook.Range{Min: v, Max: 2 * v}, ErrY: hbook.Range{Min: v, Max: 3 * v}})
+		sref.Fill(Point2D{X: v, Y: v, ErrX: Range{Min: v, Max: 2 * v}, ErrY: Range{Min: v, Max: 3 * v}})
 	}
 	sref.Annotation()["title"] = "scatter2d title"
 	sref.Annotation()["name"] = "s2d-name"
@@ -107,7 +138,7 @@ func TestS2DSerialization(t *testing.T) {
 			t.Fatalf("could not serialize scatter2d: %v\n", err)
 		}
 
-		var snew hbook.S2D
+		var snew S2D
 		dec := gob.NewDecoder(buf)
 		err = dec.Decode(&snew)
 		if err != nil {

@@ -13,6 +13,8 @@ import (
 	"math"
 	"sort"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 //go:generate go get github.com/campoy/embedmd
@@ -64,6 +66,11 @@ type Histogram interface {
 
 // MarshalYODA implements the YODAMarshaler interface.
 func (ann Annotation) MarshalYODA() ([]byte, error) {
+	return ann.marshalYODAv2()
+}
+
+// marshalYODAv1 implements the YODAMarshaler interface.
+func (ann Annotation) marshalYODAv1() ([]byte, error) {
 	keys := make([]string, 0, len(ann))
 	for k := range ann {
 		if k == "" {
@@ -79,8 +86,18 @@ func (ann Annotation) MarshalYODA() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// marshalYODAv2 implements the YODAMarshaler interface.
+func (ann Annotation) marshalYODAv2() ([]byte, error) {
+	return yaml.Marshal(ann)
+}
+
 // UnmarshalYODA implements the YODAUnmarshaler interface.
 func (ann *Annotation) UnmarshalYODA(data []byte) error {
+	return ann.unmarshalYODAv2(data)
+}
+
+// unmarshalYODAv1 unmarshal YODA v1.
+func (ann *Annotation) unmarshalYODAv1(data []byte) error {
 	var err error
 	s := bufio.NewScanner(bytes.NewReader(data))
 	for s.Scan() {
@@ -95,6 +112,11 @@ func (ann *Annotation) UnmarshalYODA(data []byte) error {
 		err = nil
 	}
 	return err
+}
+
+// unmarshalYODAv2 unmarshal YODA v2.
+func (ann *Annotation) unmarshalYODAv2(data []byte) error {
+	return yaml.Unmarshal(data, ann)
 }
 
 // MarshalBinary implements encoding.BinaryMarshaler
