@@ -15,44 +15,9 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/hbook"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/floats"
-	"gonum.org/v1/gonum/stat/distuv"
 	"gonum.org/v1/plot/plotter"
 )
-
-func ExampleH1D() {
-	const npoints = 10000
-
-	// Create a normal distribution.
-	dist := distuv.Normal{
-		Mu:    0,
-		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
-	}
-
-	// Draw some random values from the standard
-	// normal distribution.
-	h := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
-		v := dist.Rand()
-		h.Fill(v, 1)
-	}
-	// fill h with a slice of values and their weights
-	h.FillN([]float64{1, 2, 3}, []float64{1, 1, 1})
-	h.FillN([]float64{1, 2, 3}, nil) // all weights are 1.
-
-	fmt.Printf("mean:    %v\n", h.XMean())
-	fmt.Printf("rms:     %v\n", h.XRMS())
-	fmt.Printf("std-dev: %v\n", h.XStdDev())
-	fmt.Printf("std-err: %v\n", h.XStdErr())
-
-	// Output:
-	// mean:    0.005589967511734562
-	// rms:     1.0062596231244403
-	// std-dev: 1.0062943821322063
-	// std-err: 0.010059926295994191
-}
 
 func TestH1D(t *testing.T) {
 	h1 := hbook.NewH1D(100, 0., 100.)
@@ -353,6 +318,9 @@ func TestH1DIntegral(t *testing.T) {
 	for _, ibin := range []int{0, 1} {
 		if got, want := h2.Value(ibin), 1.0; got != want {
 			t.Errorf("got H1D.Value(%d) = %v. want %v\n", ibin, got, want)
+		}
+		if got, want := h2.Error(ibin), 1.0; got != want {
+			t.Errorf("got H1D.Error(%d) = %v. want %v\n", ibin, got, want)
 		}
 	}
 

@@ -37,9 +37,9 @@ func (o *Point2D) MarshalBinary() (data []byte, err error) {
 
 // UnmarshalBinary implements encoding.BinaryUnmarshaler
 func (o *Point2D) UnmarshalBinary(data []byte) (err error) {
-	o.X = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+	o.X = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
-	o.Y = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+	o.Y = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
 	{
 		n := int(binary.LittleEndian.Uint64(data[:8]))

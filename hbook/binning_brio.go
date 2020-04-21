@@ -19,9 +19,9 @@ func (o *Range) MarshalBinary() (data []byte, err error) {
 
 // UnmarshalBinary implements encoding.BinaryUnmarshaler
 func (o *Range) UnmarshalBinary(data []byte) (err error) {
-	o.Min = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+	o.Min = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
-	o.Max = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+	o.Max = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
 	return err
 }
@@ -229,7 +229,7 @@ func (o *binningP1D) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
-	o.xstep = math.Float64frombits(binary.LittleEndian.Uint64(data[:8]))
+	o.xstep = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
 	return err
 }
