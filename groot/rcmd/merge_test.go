@@ -46,6 +46,16 @@ func TestMerge(t *testing.T) {
 			output: makeFlatTree(2),
 		},
 		{
+			name:   "h1f-1",
+			inputs: []funcT{makeH1F(1)},
+			output: makeH1F(1),
+		},
+		{
+			name:   "h1f-2",
+			inputs: []funcT{makeH1F(1), makeH1F(1)},
+			output: makeH1F(2),
+		},
+		{
 			name:   "h1d-1",
 			inputs: []funcT{makeH1D(1)},
 			output: makeH1D(1),
@@ -54,7 +64,16 @@ func TestMerge(t *testing.T) {
 			name:   "h1d-2",
 			inputs: []funcT{makeH1D(1), makeH1D(1)},
 			output: makeH1D(2),
-			panics: "not implemented", // FIXME(sbinet)
+		},
+		{
+			name:   "h1i-1",
+			inputs: []funcT{makeH1I(1)},
+			output: makeH1I(1),
+		},
+		{
+			name:   "h1i-2",
+			inputs: []funcT{makeH1I(1), makeH1I(1)},
+			output: makeH1I(2),
 		},
 		{
 			name:   "h2d-1",
@@ -215,6 +234,45 @@ func makeFlatTree(n int) func(t *testing.T, fname string) error {
 	}
 }
 
+func makeH1F(n int) func(t *testing.T, fname string) error {
+	return func(t *testing.T, fname string) error {
+		f, err := groot.Create(fname)
+		if err != nil {
+			t.Fatalf("%+v", err)
+		}
+		defer f.Close()
+
+		_, err = riofs.Dir(f).Mkdir("dir-1/dir-11")
+		if err != nil {
+			t.Fatalf("could not create directory: %+v", err)
+		}
+
+		dir21, err := riofs.Dir(f).Mkdir("dir-2/dir-11")
+		if err != nil {
+			t.Fatalf("could not create directory: %+v", err)
+		}
+
+		h := hbook.NewH1D(10, 0, 10)
+		h.Annotation()["title"] = "h1f"
+		for i := 0; i < n; i++ {
+			h.Fill(5, 1)
+			h.Fill(6, 2)
+		}
+
+		err = dir21.Put("h1f", rhist.NewH1FFrom(h))
+		if err != nil {
+			t.Fatalf("could not save H1F: %+v", err)
+		}
+
+		err = f.Close()
+		if err != nil {
+			t.Fatalf("could not close file: %+v", err)
+		}
+
+		return nil
+	}
+}
+
 func makeH1D(n int) func(t *testing.T, fname string) error {
 	return func(t *testing.T, fname string) error {
 		f, err := groot.Create(fname)
@@ -243,6 +301,45 @@ func makeH1D(n int) func(t *testing.T, fname string) error {
 		err = dir21.Put("h1d", rootcnv.FromH1D(h))
 		if err != nil {
 			t.Fatalf("could not save H1D: %+v", err)
+		}
+
+		err = f.Close()
+		if err != nil {
+			t.Fatalf("could not close file: %+v", err)
+		}
+
+		return nil
+	}
+}
+
+func makeH1I(n int) func(t *testing.T, fname string) error {
+	return func(t *testing.T, fname string) error {
+		f, err := groot.Create(fname)
+		if err != nil {
+			t.Fatalf("%+v", err)
+		}
+		defer f.Close()
+
+		_, err = riofs.Dir(f).Mkdir("dir-1/dir-11")
+		if err != nil {
+			t.Fatalf("could not create directory: %+v", err)
+		}
+
+		dir21, err := riofs.Dir(f).Mkdir("dir-2/dir-11")
+		if err != nil {
+			t.Fatalf("could not create directory: %+v", err)
+		}
+
+		h := hbook.NewH1D(10, 0, 10)
+		h.Annotation()["title"] = "h1i"
+		for i := 0; i < n; i++ {
+			h.Fill(5, 1)
+			h.Fill(6, 2)
+		}
+
+		err = dir21.Put("h1i", rhist.NewH1IFrom(h))
+		if err != nil {
+			t.Fatalf("could not save H1I: %+v", err)
 		}
 
 		err = f.Close()

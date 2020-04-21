@@ -230,17 +230,11 @@ func (tsk *task) mergeObj(dst, src root.Object) error {
 	switch dst := dst.(type) {
 	case rhist.H2:
 		return tsk.mergeH2(dst, src.(rhist.H2))
-	case rhist.H1:
-		return tsk.mergeH1(dst, src.(rhist.H1))
 	case root.Merger:
 		return dst.ROOTMerge(src)
 	default:
 		return fmt.Errorf("could not find suitable merge-API for (dst=%T, src=%T)", dst, src)
 	}
-}
-
-func (tsk *task) mergeH1(dst, src rhist.H1) error {
-	panic("not implemented")
 }
 
 func (tsk *task) mergeH2(dst, src rhist.H2) error {

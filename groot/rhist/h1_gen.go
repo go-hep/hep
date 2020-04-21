@@ -246,10 +246,11 @@ func (h *H1F) MarshalYODA() ([]byte, error) {
 	}
 
 	buf := new(bytes.Buffer)
-	fmt.Fprintf(buf, "BEGIN YODA_HISTO1D /%s\n", h.Name())
-	fmt.Fprintf(buf, "Path=/%s\n", h.Name())
-	fmt.Fprintf(buf, "Title=%s\n", h.Title())
-	fmt.Fprintf(buf, "Type=Histo1D\n")
+	fmt.Fprintf(buf, "BEGIN YODA_HISTO1D_V2 /%s\n", h.Name())
+	fmt.Fprintf(buf, "Path: /%s\n", h.Name())
+	fmt.Fprintf(buf, "Title: %s\n", h.Title())
+	fmt.Fprintf(buf, "Type: Histo1D\n")
+	fmt.Fprintf(buf, "---\n")
 	fmt.Fprintf(buf, "# Mean: %e\n", math.NaN())
 	fmt.Fprintf(buf, "# Area: %e\n", math.NaN())
 
@@ -258,25 +259,25 @@ func (h *H1F) MarshalYODA() ([]byte, error) {
 	var name = "Total   "
 	fmt.Fprintf(
 		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
+		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
 		name, name,
-		dtot.SumW(), dtot.SumW2(), dtot.SumWX(), dtot.SumWX2(), dtot.Entries(),
+		dtot.SumW(), dtot.SumW2(), dtot.SumWX(), dtot.SumWX2(), float64(dtot.Entries()),
 	)
 
 	name = "Underflow"
 	fmt.Fprintf(
 		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
+		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
 		name, name,
-		dflow[0].SumW(), dflow[0].SumW2(), dflow[0].SumWX(), dflow[0].SumWX2(), dflow[0].Entries(),
+		dflow[0].SumW(), dflow[0].SumW2(), dflow[0].SumWX(), dflow[0].SumWX2(), float64(dflow[0].Entries()),
 	)
 
 	name = "Overflow"
 	fmt.Fprintf(
 		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
+		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
 		name, name,
-		dflow[1].SumW(), dflow[1].SumW2(), dflow[1].SumWX(), dflow[1].SumWX2(), dflow[1].Entries(),
+		dflow[1].SumW(), dflow[1].SumW2(), dflow[1].SumWX(), dflow[1].SumWX2(), float64(dflow[1].Entries()),
 	)
 	fmt.Fprintf(buf, "# xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries\n")
 	for i, d := range dists {
@@ -284,12 +285,12 @@ func (h *H1F) MarshalYODA() ([]byte, error) {
 		xmax := h.XBinWidth(i+1) + xmin
 		fmt.Fprintf(
 			buf,
-			"%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
+			"%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
 			xmin, xmax,
-			d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.Entries(),
+			d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), float64(d.Entries()),
 		)
 	}
-	fmt.Fprintf(buf, "END YODA_HISTO1D\n\n")
+	fmt.Fprintf(buf, "END YODA_HISTO1D_V2\n\n")
 
 	return buf.Bytes(), nil
 }
@@ -306,6 +307,40 @@ func (h *H1F) UnmarshalYODA(raw []byte) error {
 	return nil
 }
 
+func (h *H1F) ROOTMerge(src root.Object) error {
+	var h1 hbook.H1D
+	raw, err := h.MarshalYODA()
+	if err != nil {
+		return fmt.Errorf("rhist: could not marshal to YODA: %w", err)
+	}
+
+	err = h1.UnmarshalYODA(raw)
+	if err != nil {
+		return fmt.Errorf("rhist: could not unmarshal from YODA: %w", err)
+	}
+
+	hsrc, ok := src.(*H1F)
+	if !ok {
+		return fmt.Errorf("rhist: object %q is not a *rhist.H1F (%T)", src.(root.Named).Name(), src)
+	}
+
+	raw, err = hsrc.MarshalYODA()
+	if err != nil {
+		return fmt.Errorf("rhist: could not marshal to YODA: %w", err)
+	}
+
+	var h2 hbook.H1D
+	err = h2.UnmarshalYODA(raw)
+	if err != nil {
+		return fmt.Errorf("rhist: could not unmarshal from YODA: %w", err)
+	}
+
+	hadd := hbook.AddH1D(&h1, &h2)
+	*h = *NewH1FFrom(hadd)
+
+	return nil
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := newH1F()
@@ -316,6 +351,7 @@ func init() {
 
 var (
 	_ root.Object        = (*H1F)(nil)
+	_ root.Merger        = (*H1F)(nil)
 	_ root.Named         = (*H1F)(nil)
 	_ H1                 = (*H1F)(nil)
 	_ rbytes.Marshaler   = (*H1F)(nil)
@@ -548,10 +584,11 @@ func (h *H1D) MarshalYODA() ([]byte, error) {
 	}
 
 	buf := new(bytes.Buffer)
-	fmt.Fprintf(buf, "BEGIN YODA_HISTO1D /%s\n", h.Name())
-	fmt.Fprintf(buf, "Path=/%s\n", h.Name())
-	fmt.Fprintf(buf, "Title=%s\n", h.Title())
-	fmt.Fprintf(buf, "Type=Histo1D\n")
+	fmt.Fprintf(buf, "BEGIN YODA_HISTO1D_V2 /%s\n", h.Name())
+	fmt.Fprintf(buf, "Path: /%s\n", h.Name())
+	fmt.Fprintf(buf, "Title: %s\n", h.Title())
+	fmt.Fprintf(buf, "Type: Histo1D\n")
+	fmt.Fprintf(buf, "---\n")
 	fmt.Fprintf(buf, "# Mean: %e\n", math.NaN())
 	fmt.Fprintf(buf, "# Area: %e\n", math.NaN())
 
@@ -560,25 +597,25 @@ func (h *H1D) MarshalYODA() ([]byte, error) {
 	var name = "Total   "
 	fmt.Fprintf(
 		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
+		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
 		name, name,
-		dtot.SumW(), dtot.SumW2(), dtot.SumWX(), dtot.SumWX2(), dtot.Entries(),
+		dtot.SumW(), dtot.SumW2(), dtot.SumWX(), dtot.SumWX2(), float64(dtot.Entries()),
 	)
 
 	name = "Underflow"
 	fmt.Fprintf(
 		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
+		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
 		name, name,
-		dflow[0].SumW(), dflow[0].SumW2(), dflow[0].SumWX(), dflow[0].SumWX2(), dflow[0].Entries(),
+		dflow[0].SumW(), dflow[0].SumW2(), dflow[0].SumWX(), dflow[0].SumWX2(), float64(dflow[0].Entries()),
 	)
 
 	name = "Overflow"
 	fmt.Fprintf(
 		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
+		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
 		name, name,
-		dflow[1].SumW(), dflow[1].SumW2(), dflow[1].SumWX(), dflow[1].SumWX2(), dflow[1].Entries(),
+		dflow[1].SumW(), dflow[1].SumW2(), dflow[1].SumWX(), dflow[1].SumWX2(), float64(dflow[1].Entries()),
 	)
 	fmt.Fprintf(buf, "# xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries\n")
 	for i, d := range dists {
@@ -586,12 +623,12 @@ func (h *H1D) MarshalYODA() ([]byte, error) {
 		xmax := h.XBinWidth(i+1) + xmin
 		fmt.Fprintf(
 			buf,
-			"%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
+			"%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
 			xmin, xmax,
-			d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.Entries(),
+			d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), float64(d.Entries()),
 		)
 	}
-	fmt.Fprintf(buf, "END YODA_HISTO1D\n\n")
+	fmt.Fprintf(buf, "END YODA_HISTO1D_V2\n\n")
 
 	return buf.Bytes(), nil
 }
@@ -608,6 +645,40 @@ func (h *H1D) UnmarshalYODA(raw []byte) error {
 	return nil
 }
 
+func (h *H1D) ROOTMerge(src root.Object) error {
+	var h1 hbook.H1D
+	raw, err := h.MarshalYODA()
+	if err != nil {
+		return fmt.Errorf("rhist: could not marshal to YODA: %w", err)
+	}
+
+	err = h1.UnmarshalYODA(raw)
+	if err != nil {
+		return fmt.Errorf("rhist: could not unmarshal from YODA: %w", err)
+	}
+
+	hsrc, ok := src.(*H1D)
+	if !ok {
+		return fmt.Errorf("rhist: object %q is not a *rhist.H1F (%T)", src.(root.Named).Name(), src)
+	}
+
+	raw, err = hsrc.MarshalYODA()
+	if err != nil {
+		return fmt.Errorf("rhist: could not marshal to YODA: %w", err)
+	}
+
+	var h2 hbook.H1D
+	err = h2.UnmarshalYODA(raw)
+	if err != nil {
+		return fmt.Errorf("rhist: could not unmarshal from YODA: %w", err)
+	}
+
+	hadd := hbook.AddH1D(&h1, &h2)
+	*h = *NewH1DFrom(hadd)
+
+	return nil
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := newH1D()
@@ -618,6 +689,7 @@ func init() {
 
 var (
 	_ root.Object        = (*H1D)(nil)
+	_ root.Merger        = (*H1D)(nil)
 	_ root.Named         = (*H1D)(nil)
 	_ H1                 = (*H1D)(nil)
 	_ rbytes.Marshaler   = (*H1D)(nil)
@@ -850,10 +922,11 @@ func (h *H1I) MarshalYODA() ([]byte, error) {
 	}
 
 	buf := new(bytes.Buffer)
-	fmt.Fprintf(buf, "BEGIN YODA_HISTO1D /%s\n", h.Name())
-	fmt.Fprintf(buf, "Path=/%s\n", h.Name())
-	fmt.Fprintf(buf, "Title=%s\n", h.Title())
-	fmt.Fprintf(buf, "Type=Histo1D\n")
+	fmt.Fprintf(buf, "BEGIN YODA_HISTO1D_V2 /%s\n", h.Name())
+	fmt.Fprintf(buf, "Path: /%s\n", h.Name())
+	fmt.Fprintf(buf, "Title: %s\n", h.Title())
+	fmt.Fprintf(buf, "Type: Histo1D\n")
+	fmt.Fprintf(buf, "---\n")
 	fmt.Fprintf(buf, "# Mean: %e\n", math.NaN())
 	fmt.Fprintf(buf, "# Area: %e\n", math.NaN())
 
@@ -862,25 +935,25 @@ func (h *H1I) MarshalYODA() ([]byte, error) {
 	var name = "Total   "
 	fmt.Fprintf(
 		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
+		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
 		name, name,
-		dtot.SumW(), dtot.SumW2(), dtot.SumWX(), dtot.SumWX2(), dtot.Entries(),
+		dtot.SumW(), dtot.SumW2(), dtot.SumWX(), dtot.SumWX2(), float64(dtot.Entries()),
 	)
 
 	name = "Underflow"
 	fmt.Fprintf(
 		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
+		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
 		name, name,
-		dflow[0].SumW(), dflow[0].SumW2(), dflow[0].SumWX(), dflow[0].SumWX2(), dflow[0].Entries(),
+		dflow[0].SumW(), dflow[0].SumW2(), dflow[0].SumWX(), dflow[0].SumWX2(), float64(dflow[0].Entries()),
 	)
 
 	name = "Overflow"
 	fmt.Fprintf(
 		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%d\n",
+		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
 		name, name,
-		dflow[1].SumW(), dflow[1].SumW2(), dflow[1].SumWX(), dflow[1].SumWX2(), dflow[1].Entries(),
+		dflow[1].SumW(), dflow[1].SumW2(), dflow[1].SumWX(), dflow[1].SumWX2(), float64(dflow[1].Entries()),
 	)
 	fmt.Fprintf(buf, "# xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries\n")
 	for i, d := range dists {
@@ -888,12 +961,12 @@ func (h *H1I) MarshalYODA() ([]byte, error) {
 		xmax := h.XBinWidth(i+1) + xmin
 		fmt.Fprintf(
 			buf,
-			"%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
+			"%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
 			xmin, xmax,
-			d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.Entries(),
+			d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), float64(d.Entries()),
 		)
 	}
-	fmt.Fprintf(buf, "END YODA_HISTO1D\n\n")
+	fmt.Fprintf(buf, "END YODA_HISTO1D_V2\n\n")
 
 	return buf.Bytes(), nil
 }
@@ -910,6 +983,40 @@ func (h *H1I) UnmarshalYODA(raw []byte) error {
 	return nil
 }
 
+func (h *H1I) ROOTMerge(src root.Object) error {
+	var h1 hbook.H1D
+	raw, err := h.MarshalYODA()
+	if err != nil {
+		return fmt.Errorf("rhist: could not marshal to YODA: %w", err)
+	}
+
+	err = h1.UnmarshalYODA(raw)
+	if err != nil {
+		return fmt.Errorf("rhist: could not unmarshal from YODA: %w", err)
+	}
+
+	hsrc, ok := src.(*H1I)
+	if !ok {
+		return fmt.Errorf("rhist: object %q is not a *rhist.H1F (%T)", src.(root.Named).Name(), src)
+	}
+
+	raw, err = hsrc.MarshalYODA()
+	if err != nil {
+		return fmt.Errorf("rhist: could not marshal to YODA: %w", err)
+	}
+
+	var h2 hbook.H1D
+	err = h2.UnmarshalYODA(raw)
+	if err != nil {
+		return fmt.Errorf("rhist: could not unmarshal from YODA: %w", err)
+	}
+
+	hadd := hbook.AddH1D(&h1, &h2)
+	*h = *NewH1IFrom(hadd)
+
+	return nil
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := newH1I()
@@ -920,6 +1027,7 @@ func init() {
 
 var (
 	_ root.Object        = (*H1I)(nil)
+	_ root.Merger        = (*H1I)(nil)
 	_ root.Named         = (*H1I)(nil)
 	_ H1                 = (*H1I)(nil)
 	_ rbytes.Marshaler   = (*H1I)(nil)
