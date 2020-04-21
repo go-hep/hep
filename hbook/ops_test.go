@@ -13,6 +13,72 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+func ExampleDivideH1D() {
+
+	h1 := NewH1D(5, 0, 5)
+	h1.Fill(0, 1)
+	h1.Fill(1, 2)
+	h1.Fill(2, 3)
+	h1.Fill(3, 3)
+	h1.Fill(4, 4)
+
+	h2 := NewH1D(5, 0, 5)
+	h2.Fill(0, 11)
+	h2.Fill(1, 22)
+	h2.Fill(2, 0)
+	h2.Fill(3, 33)
+	h2.Fill(4, 44)
+
+	s0, err := DivideH1D(h1, h2)
+	if err != nil {
+		panic(err)
+	}
+	s1, err := DivideH1D(h1, h2, DivIgnoreNaNs())
+	if err != nil {
+		panic(err)
+	}
+	s2, err := DivideH1D(h1, h2, DivReplaceNaNs(1.0))
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Default:")
+	for i, pt := range s0.Points() {
+		fmt.Printf("Point %v: %.2f  + %.2f  - %.2f\n", i, pt.Y, pt.ErrY.Min, pt.ErrY.Min)
+	}
+
+	fmt.Println("\nDivIgnoreNaNs:")
+	for i, pt := range s1.Points() {
+		fmt.Printf("Point %v: %.2f  + %.2f  - %.2f\n", i, pt.Y, pt.ErrY.Min, pt.ErrY.Min)
+	}
+
+	fmt.Println("\nDivReplaceNaNs with v=1.0:")
+	for i, pt := range s2.Points() {
+		fmt.Printf("Point %v: %.2f  + %.2f  - %.2f\n", i, pt.Y, pt.ErrY.Min, pt.ErrY.Min)
+	}
+
+	// Output:
+	// Default:
+	// Point 0: 0.09  + 0.13  - 0.13
+	// Point 1: 0.09  + 0.13  - 0.13
+	// Point 2: NaN  + 0.00  - 0.00
+	// Point 3: 0.09  + 0.13  - 0.13
+	// Point 4: 0.09  + 0.13  - 0.13
+	//
+	// DivIgnoreNaNs:
+	// Point 0: 0.09  + 0.13  - 0.13
+	// Point 1: 0.09  + 0.13  - 0.13
+	// Point 2: 0.09  + 0.13  - 0.13
+	// Point 3: 0.09  + 0.13  - 0.13
+	//
+	// DivReplaceNaNs with v=1.0:
+	// Point 0: 0.09  + 0.13  - 0.13
+	// Point 1: 0.09  + 0.13  - 0.13
+	// Point 2: 1.00  + 0.00  - 0.00
+	// Point 3: 0.09  + 0.13  - 0.13
+	// Point 4: 0.09  + 0.13  - 0.13
+}
+
 func TestDivideH1D(t *testing.T) {
 	h1 := NewH1D(5, 0, 5)
 	h2 := NewH1D(5, 0, 5)

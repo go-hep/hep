@@ -11,7 +11,14 @@ import (
 
 // DivideH1D divides 2 1D-histograms and returns a 2D scatter.
 // DivideH1D returns an error if the binning of the 1D histograms are not compatible.
-func DivideH1D(num, den *H1D) (*S2D, error) {
+// If no DivOptions is passed, NaN raised during division are kept.
+func DivideH1D(num, den *H1D, opts ...DivOptions) (*S2D, error) {
+
+	cfg := newDivConfig()
+	for _, opt := range opts {
+		opt(cfg)
+	}
+
 	var s2d S2D
 
 	bins1 := num.Binning.Bins
@@ -32,8 +39,6 @@ func DivideH1D(num, den *H1D) (*S2D, error) {
 		exp := b1.XMax() - x
 
 		// assemble the y value and error
-		// TODO(sbinet): provide optional alternative behaviours to fill with NaN
-		//               or remove the invalid points
 		var y, ey float64
 		b2h := b2.SumW() / b2.XWidth() // height of the bin
 		b1h := b1.SumW() / b1.XWidth() // ditto
@@ -42,8 +47,13 @@ func DivideH1D(num, den *H1D) (*S2D, error) {
 
 		switch {
 		case b2h == 0 || (b1h == 0 && b1herr != 0): // TODO(sbinet): is it OK?
-			y = math.NaN()
-			ey = math.NaN()
+			if cfg.ignoreNaN {
+				continue
+			} else {
+				y = cfg.replaceNaN
+				ey = 0.0 // TODO(rmadar): I guess this is the most sensitive case
+				// but another field could be added to divConfig
+			}
 		default:
 			y = b1h / b2h
 			// TODO(sbinet): is this the exact error treatment for all (uncorrelated) cases?
@@ -65,6 +75,38 @@ func DivideH1D(num, den *H1D) (*S2D, error) {
 		s2d.Fill(Point2D{X: x, Y: y, ErrX: Range{Min: exm, Max: exp}, ErrY: Range{Min: ey, Max: ey}})
 	}
 	return &s2d, nil
+}
+
+// DivOptions allows to customize the behaviour of DivideH1D
+type DivOptions func(c *divConfig)
+
+// divConfig type specifies the possible configurations
+// passed as DivOptions.
+type divConfig struct {
+	ignoreNaN  bool
+	replaceNaN float64
+}
+
+// newDivConfig function builds the default configuration
+// for DivideH1D() option.
+func newDivConfig() *divConfig {
+	return &divConfig{replaceNaN: math.NaN()}
+}
+
+// DivIgnoreNaNs function configures DivideH1D to
+// ignore data points with NaNs.
+func DivIgnoreNaNs() DivOptions {
+	return func(c *divConfig) {
+		c.ignoreNaN = true
+	}
+}
+
+// DivReplaceNaNs function configures DivideH1D to replace
+// NaN raised during divisions with the provided value.
+func DivReplaceNaNs(v float64) DivOptions {
+	return func(c *divConfig) {
+		c.replaceNaN = v
+	}
 }
 
 // fuzzyEq returns true if a and b are equal with a degree of fuzziness
