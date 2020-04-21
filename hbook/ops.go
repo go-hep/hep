@@ -11,7 +11,7 @@ import (
 
 // DivideH1D divides 2 1D-histograms and returns a 2D scatter.
 // DivideH1D returns an error if the binning of the 1D histograms are not compatible.
-func DivideH1D(num, den *H1D) (*S2D, error) {
+func DivideH1D(num, den *H1D, ignoreNaN bool) (*S2D, error) {
 	var s2d S2D
 
 	bins1 := num.Binning.Bins
@@ -44,6 +44,9 @@ func DivideH1D(num, den *H1D) (*S2D, error) {
 		case b2h == 0 || (b1h == 0 && b1herr != 0): // TODO(sbinet): is it OK?
 			y = math.NaN()
 			ey = math.NaN()
+			if ignoreNaN {
+				continue
+			}
 		default:
 			y = b1h / b2h
 			// TODO(sbinet): is this the exact error treatment for all (uncorrelated) cases?
