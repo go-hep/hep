@@ -88,3 +88,46 @@ func TestAddH1DPanics(t *testing.T) {
 		})
 	}
 }
+
+func TestSubH1DPanics(t *testing.T) {
+	for _, tc := range []struct {
+		h1, h2 *H1D
+		panics error
+	}{
+		{
+			h1:     NewH1D(10, 0, 10),
+			h2:     NewH1D(5, 0, 10),
+			panics: fmt.Errorf("hbook: h1 and h2 have different number of bins"),
+		},
+		{
+			h1:     NewH1D(10, 0, 10),
+			h2:     NewH1D(10, 1, 10),
+			panics: fmt.Errorf("hbook: h1 and h2 have different range"),
+		},
+		{
+			h1:     NewH1D(10, 0, 10),
+			h2:     NewH1D(10, 0, 11),
+			panics: fmt.Errorf("hbook: h1 and h2 have different range"),
+		},
+		{
+			h1:     NewH1D(10, 0, 10),
+			h2:     NewH1D(10, 1, 11),
+			panics: fmt.Errorf("hbook: h1 and h2 have different range"),
+		},
+	} {
+		t.Run("", func(t *testing.T) {
+			if tc.panics != nil {
+				defer func() {
+					err := recover()
+					if err == nil {
+						t.Fatalf("expected a panic")
+					}
+					if got, want := err.(error).Error(), tc.panics.Error(); got != want {
+						t.Fatalf("invalid panic message.\ngot= %v\nwant=%v", got, want)
+					}
+				}()
+			}
+			_ = SubH1D(tc.h1, tc.h2)
+		})
+	}
+}

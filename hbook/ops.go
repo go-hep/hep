@@ -112,6 +112,12 @@ func AddH1D(h1, h2 *H1D) *H1D {
 	return AddScaledH1D(h1, 1, h2)
 }
 
+// SubH1D returns the bin-by-bin subtracted histogram of h1 and h2
+// assuming their statistical uncertainties are uncorrelated.
+func SubH1D(h1, h2 *H1D) *H1D {
+	return AddScaledH1D(h1, -1, h2)
+}
+
 // h1dApply is a helper function to perform bin-by-bin operations on H1D.
 func h1dApply(dst, h1, h2 *H1D, fct func(d, d1, d2 *Dist0D)) {
 
