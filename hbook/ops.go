@@ -11,6 +11,7 @@ import (
 
 // DivideH1D divides 2 1D-histograms and returns a 2D scatter.
 // DivideH1D returns an error if the binning of the 1D histograms are not compatible.
+// If no DivOptions is passed, NaN raised during division are kept.
 func DivideH1D(num, den *H1D, opts ...DivOptions) (*S2D, error) {
 
 	cfg := newDivConfig()
@@ -38,8 +39,6 @@ func DivideH1D(num, den *H1D, opts ...DivOptions) (*S2D, error) {
 		exp := b1.XMax() - x
 
 		// assemble the y value and error
-		// TODO(sbinet): provide optional alternative behaviours to fill with NaN
-		//               or remove the invalid points
 		var y, ey float64
 		b2h := b2.SumW() / b2.XWidth() // height of the bin
 		b1h := b1.SumW() / b1.XWidth() // ditto
@@ -52,7 +51,7 @@ func DivideH1D(num, den *H1D, opts ...DivOptions) (*S2D, error) {
 				continue
 			} else {
 				y = cfg.replaceNaN
-				ey = 0.0 // TODO(rmadar): I guess this is the most senstive case
+				ey = 0.0 // TODO(rmadar): I guess this is the most sensitive case
 				// but another field could be added to divConfig
 			}
 		default:
@@ -78,8 +77,7 @@ func DivideH1D(num, den *H1D, opts ...DivOptions) (*S2D, error) {
 	return &s2d, nil
 }
 
-// DivOptions is type handling options of DivideH1D()
-// functions.
+// DivOptions allows to customize the behaviour of DivideH1D
 type DivOptions func(c *divConfig)
 
 // divConfig type specifies the possible configurations
@@ -95,16 +93,16 @@ func newDivConfig() *divConfig {
 	return &divConfig{replaceNaN: math.NaN()}
 }
 
-// DivIgnoreNaNs function returns an option of DivideH1D()
-// where NaN values are ignored.
+// DivIgnoreNaNs function configures DivideH1D to
+// ignore data points with NaNs.
 func DivIgnoreNaNs() DivOptions {
 	return func(c *divConfig) {
 		c.ignoreNaN = true
 	}
 }
 
-// DivReplaceNaNs function returns an option of DivideH1D()
-// where NaN values are replaced by v.
+// DivReplaceNaNs function configures DivideH1D to replace
+// NaN raised during divisions with the provided value.
 func DivReplaceNaNs(v float64) DivOptions {
 	return func(c *divConfig) {
 		c.replaceNaN = v
