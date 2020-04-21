@@ -27,8 +27,8 @@ func (cmd *cmdShell) Name() string {
 func (cmd *cmdShell) Run(args []string) error {
 	sh := exec.Command(args[0], args[1:]...)
 	sh.Stdin = os.Stdin
-	sh.Stdout = os.Stdout
-	sh.Stderr = os.Stderr
+	sh.Stdout = cmd.ctx.msg.Writer()
+	sh.Stderr = cmd.ctx.msg.Writer()
 	return sh.Run()
 }
 

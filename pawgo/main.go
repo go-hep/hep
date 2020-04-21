@@ -31,6 +31,8 @@
 //  /quit 		-- quit PAW-Go
 package main // import "go-hep.org/x/hep/pawgo"
 
+//go:generate go run ./gen.hsimple.go
+
 import (
 	"flag"
 	"fmt"
@@ -42,15 +44,6 @@ import (
 )
 
 func main() {
-	rc := 0
-	driver.Main(func(scr screen.Screen) {
-		rc = xmain(scr)
-	})
-	os.Exit(rc)
-}
-
-func xmain(scr screen.Screen) int {
-
 	interactive := flag.Bool(
 		"i", false,
 		"enable interactive mode: drop into PAW-Go prompt after processing script files",
@@ -58,7 +51,16 @@ func xmain(scr screen.Screen) int {
 
 	flag.Parse()
 
-	fmt.Printf(`
+	rc := 0
+	driver.Main(func(scr screen.Screen) {
+		rc = xmain(os.Stdout, scr, *interactive, flag.Args())
+	})
+	os.Exit(rc)
+}
+
+func xmain(stdout io.Writer, scr screen.Screen, interactive bool, args []string) int {
+
+	fmt.Fprintf(stdout, `
 :::::::::::::::::::::::::::::
 :::   Welcome to PAW-Go   :::
 :::::::::::::::::::::::::::::
@@ -68,12 +70,12 @@ Type /? for help.
 
 `)
 
-	icmd := newCmd(scr)
+	icmd := newCmd(stdout, scr)
 	defer icmd.Close()
-	defer fmt.Printf("bye.\n")
+	defer fmt.Fprintf(stdout, "bye.\n")
 
-	if flag.NArg() > 0 {
-		for _, fname := range flag.Args() {
+	if len(args) > 0 {
+		for _, fname := range args {
 			f, err := os.Open(fname)
 			if err != nil {
 				icmd.msg.Printf("error: %v\n", err)
@@ -89,8 +91,9 @@ Type /? for help.
 				icmd.msg.Printf("error running script [%s]: %v\n", f.Name(), err)
 				return 1
 			}
+			_ = f.Close()
 		}
-		if !*interactive {
+		if !interactive {
 			return 0
 		}
 	}

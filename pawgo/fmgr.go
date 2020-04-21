@@ -7,6 +7,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"text/tabwriter"
 
@@ -43,16 +44,16 @@ func (r *rfile) open(fname string) error {
 	return err
 }
 
-func (r *rfile) ls() error {
+func (r *rfile) ls(o io.Writer) error {
 	var err error
 
-	fmt.Printf("/file/id/%s name=%s\n", r.id, r.n)
-	w := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
+	fmt.Fprintf(o, "/file/id/%s name=%s\n", r.id, r.n)
+	w := tabwriter.NewWriter(o, 0, 8, 0, '\t', 0)
 	for _, k := range r.rio.Keys() {
 		fmt.Fprintf(w, " \t- %s\t(type=%q)\n", k.Name, k.Blocks[0].Type)
 	}
 	w.Flush()
-	fmt.Printf("\n")
+	fmt.Fprintf(o, "\n")
 
 	return err
 }
@@ -127,12 +128,14 @@ func (w *wfile) close() error {
 }
 
 type fileMgr struct {
+	msg  *log.Logger
 	rfds map[string]rfile
 	wfds map[string]wfile
 }
 
-func newFileMgr() *fileMgr {
+func newFileMgr(msg *log.Logger) *fileMgr {
 	return &fileMgr{
+		msg:  msg,
 		rfds: make(map[string]rfile),
 		wfds: make(map[string]wfile),
 	}
@@ -188,7 +191,7 @@ func (mgr *fileMgr) ls(id string) error {
 		return fmt.Errorf("paw: unknown file [id=%s]", id)
 	}
 
-	err := r.ls()
+	err := r.ls(mgr.msg.Writer())
 	if err != nil {
 		return err
 	}
@@ -218,7 +221,7 @@ func (mgr *fileMgr) Close() error {
 	for k, r := range mgr.rfds {
 		e := r.close()
 		if e != nil {
-			fmt.Printf("error closing file [%s]: %v\n", k, e)
+			mgr.msg.Printf("error closing file [%s]: %v\n", k, e)
 			if err != nil {
 				err = e
 			}
@@ -228,7 +231,7 @@ func (mgr *fileMgr) Close() error {
 	for k, w := range mgr.wfds {
 		e := w.close()
 		if e != nil {
-			fmt.Printf("error closing file [%s]: %v\n", k, e)
+			mgr.msg.Printf("error closing file [%s]: %v\n", k, e)
 			if err != nil {
 				err = e
 			}

@@ -34,13 +34,14 @@ type Cmd struct {
 	hmgr *histMgr
 }
 
-func newCmd(scr screen.Screen) *Cmd {
+func newCmd(stdout io.Writer, scr screen.Screen) *Cmd {
+	msg := log.New(stdout, "paw: ", 0)
 	c := Cmd{
-		msg:  log.New(os.Stdout, "paw: ", 0),
+		msg:  msg,
 		rl:   liner.NewLiner(),
-		wmgr: newWinMgr(scr),
-		fmgr: newFileMgr(),
-		hmgr: newHistMgr(),
+		wmgr: newWinMgr(scr, msg),
+		fmgr: newFileMgr(msg),
+		hmgr: newHistMgr(msg),
 	}
 	c.cmds = map[string]Cmdr{
 		"/?": &cmdHelp{&c},
@@ -115,7 +116,7 @@ func (c *Cmd) Run() error {
 		o, err := c.rl.Prompt("paw> ")
 		if err != nil {
 			if err == io.EOF {
-				os.Stdout.Write([]byte("\n"))
+				c.msg.Writer().Write([]byte("\n"))
 				err = nil
 			}
 			return err
@@ -146,7 +147,7 @@ func (c *Cmd) RunScript(r io.Reader) error {
 		if line == "" || line[0] == '#' {
 			continue
 		}
-		fmt.Printf("# %s\n", line)
+		fmt.Fprintf(c.msg.Writer(), "# %s\n", line)
 		err = c.exec(line)
 		if err == io.EOF {
 			return err

@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"go-hep.org/x/hep/hbook"
@@ -13,11 +14,13 @@ import (
 )
 
 type histMgr struct {
+	msg  *log.Logger
 	hmap map[string]hbook.Histogram
 }
 
-func newHistMgr() *histMgr {
+func newHistMgr(msg *log.Logger) *histMgr {
 	return &histMgr{
+		msg:  msg,
 		hmap: make(map[string]hbook.Histogram),
 	}
 }
@@ -69,7 +72,7 @@ func (mgr *histMgr) find(fmgr *fileMgr, path string) (hbook.Histogram, error) {
 		return &h2, nil
 
 	default:
-		return nil, fmt.Errorf("%q not an histogram", path)
+		return nil, fmt.Errorf("%q not an histogram (%s)", path, r.typ(hname))
 	}
 }
 
@@ -112,7 +115,9 @@ func (mgr *histMgr) plot(fmgr *fileMgr, wmgr *winMgr, hid string) error {
 }
 
 func (mgr *histMgr) plotH1D(wmgr *winMgr, h *hbook.H1D) error {
-	fmt.Printf("== h1d: name=%q\nentries=%d\nmean=%+8.3f\nRMS= %+8.3f\n",
+	fmt.Fprintf(
+		mgr.msg.Writer(),
+		"== h1d: name=%q\nentries=%d\nmean=%+8.3f\nRMS= %+8.3f\n",
 		h.Name(), h.Entries(), h.XMean(), h.XRMS(),
 	)
 
@@ -136,7 +141,8 @@ func (mgr *histMgr) plotH1D(wmgr *winMgr, h *hbook.H1D) error {
 }
 
 func (mgr *histMgr) plotH2D(wmgr *winMgr, h *hbook.H2D) error {
-	fmt.Printf(
+	fmt.Fprintf(
+		mgr.msg.Writer(),
 		"== h2d: name=%q\nentries=%d\nxmean=%+8.3f\nxRMS= %+8.3f\nymean=%+8.3f\nyRMS= %+8.3f\n",
 		h.Name(), h.Entries(),
 		h.XMean(), h.XRMS(),

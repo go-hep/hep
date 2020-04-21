@@ -5,6 +5,7 @@
 package main
 
 import (
+	"log"
 	"math"
 
 	"go-hep.org/x/exp/vgshiny"
@@ -21,11 +22,13 @@ const (
 
 type winMgr struct {
 	scr screen.Screen
+	msg *log.Logger
 }
 
-func newWinMgr(scr screen.Screen) *winMgr {
+func newWinMgr(scr screen.Screen, msg *log.Logger) *winMgr {
 	return &winMgr{
 		scr: scr,
+		msg: msg,
 	}
 }
 
