@@ -163,7 +163,7 @@ func (tsk *McGeneric) StopTask(ctx fwk.Context) error {
 		{tsk.hEtaPlusCh.Hist, tsk.hEtaMinusCh.Hist, tsk.hetaChPMRatio.Scatter},
 		{tsk.hRapPlusCh.Hist, tsk.hRapMinusCh.Hist, tsk.hrapChPMRatio.Scatter},
 	} {
-		res, err := hbook.DivideH1D(v.num, v.den, false)
+		res, err := hbook.DivideH1D(v.num, v.den)
 		if err != nil {
 			return err
 		}

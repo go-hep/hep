@@ -11,8 +11,13 @@ import (
 
 // DivideH1D divides 2 1D-histograms and returns a 2D scatter.
 // DivideH1D returns an error if the binning of the 1D histograms are not compatible.
-// DivideH1D ignores points with NaN values if ignoreNaN is true.
-func DivideH1D(num, den *H1D, ignoreNaN bool) (*S2D, error) {
+func DivideH1D(num, den *H1D, opts ...DivOptions) (*S2D, error) {
+
+	cfg := newDivConfig()
+	for _, opt := range opts {
+		opt(cfg)
+	}
+
 	var s2d S2D
 
 	bins1 := num.Binning.Bins
@@ -43,10 +48,12 @@ func DivideH1D(num, den *H1D, ignoreNaN bool) (*S2D, error) {
 
 		switch {
 		case b2h == 0 || (b1h == 0 && b1herr != 0): // TODO(sbinet): is it OK?
-			y = math.NaN()
-			ey = math.NaN()
-			if ignoreNaN {
+			if cfg.ignoreNaN {
 				continue
+			} else {
+				y = cfg.replaceNaN
+				ey = 0.0 // TODO(rmadar): I guess this is the most senstive case
+				// but another field could be added to divConfig
 			}
 		default:
 			y = b1h / b2h
@@ -69,6 +76,39 @@ func DivideH1D(num, den *H1D, ignoreNaN bool) (*S2D, error) {
 		s2d.Fill(Point2D{X: x, Y: y, ErrX: Range{Min: exm, Max: exp}, ErrY: Range{Min: ey, Max: ey}})
 	}
 	return &s2d, nil
+}
+
+// DivOptions is type handling options of DivideH1D()
+// functions.
+type DivOptions func(c *divConfig)
+
+// divConfig type specifies the possible configurations
+// passed as DivOptions.
+type divConfig struct {
+	ignoreNaN  bool
+	replaceNaN float64
+}
+
+// newDivConfig function builds the default configuration
+// for DivideH1D() option.
+func newDivConfig() *divConfig {
+	return &divConfig{replaceNaN: math.NaN()}
+}
+
+// DivIgnoreNaNs function returns an option of DivideH1D()
+// where NaN values are ignored.
+func DivIgnoreNaNs() DivOptions {
+	return func(c *divConfig) {
+		c.ignoreNaN = true
+	}
+}
+
+// DivReplaceNaNs function returns an option of DivideH1D()
+// where NaN values are replaced by v.
+func DivReplaceNaNs(v float64) DivOptions {
+	return func(c *divConfig) {
+		c.replaceNaN = v
+	}
 }
 
 // fuzzyEq returns true if a and b are equal with a degree of fuzziness

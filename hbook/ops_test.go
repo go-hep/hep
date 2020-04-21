@@ -18,7 +18,7 @@ func TestDivideH1D(t *testing.T) {
 		h1.Fill(float64(i), float64(i+1))
 		h2.Fill(float64(i), float64(i+3))
 	}
-	s, err := DivideH1D(h1, h2, false)
+	s, err := DivideH1D(h1, h2)
 	if err != nil {
 		t.Fatal(err)
 	}
