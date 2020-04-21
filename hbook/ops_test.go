@@ -5,6 +5,7 @@
 package hbook
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"testing"
@@ -89,6 +90,66 @@ func TestAddH1DPanics(t *testing.T) {
 	}
 }
 
+func TestAddH1D(t *testing.T) {
+	t.Skipf("missing some dist") // FIXME(sbinet)
+
+	h1 := NewH1D(6, 0, 6)
+	h1.Fill(-0.5, 1)
+	h1.Fill(0, 1.5)
+	h1.Fill(0.5, 1)
+	h1.Fill(1.2, 1)
+	h1.Fill(2.1, 2)
+	h1.Fill(4.2, 1)
+	h1.Fill(5.9, 1)
+	h1.Fill(6, 0.5)
+
+	h2 := NewH1D(6, 0, 6)
+	h2.Fill(-0.5, 0.7)
+	h2.Fill(0.2, 1)
+	h2.Fill(0.7, 1.2)
+	h2.Fill(1.5, 0.8)
+	h2.Fill(2.2, 0.7)
+	h2.Fill(4.3, 1.3)
+	h2.Fill(5.2, 2)
+	h2.Fill(6.8, 1)
+
+	h3 := AddH1D(h1, h2)
+
+	got, err := h3.MarshalYODA()
+	if err != nil {
+		t.Fatalf("could not marshal to yoda: %+v", err)
+	}
+
+	want := []byte(`BEGIN YODA_HISTO1D_V2 /
+Path: /
+Title: 
+Type: Histo1D
+---
+# Mean: 2.526554e+00
+# Area: 1.770000e+01
+# ID	 ID	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries
+Total   	Total   	1.770000e+01	2.225000e+01	4.472000e+01	2.115580e+02	1.600000e+01
+Underflow	Underflow	1.700000e+00	1.490000e+00	-8.500000e-01	4.250000e-01	2.000000e+00
+Overflow	Overflow	1.500000e+00	1.250000e+00	9.800000e+00	6.424000e+01	2.000000e+00
+# xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries
+0.000000e+00	1.000000e+00	4.700000e+00	5.690000e+00	1.540000e+00	8.780000e-01	4.000000e+00
+1.000000e+00	2.000000e+00	1.800000e+00	1.640000e+00	2.400000e+00	3.240000e+00	2.000000e+00
+2.000000e+00	3.000000e+00	2.700000e+00	4.490000e+00	5.740000e+00	1.220800e+01	2.000000e+00
+3.000000e+00	4.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00
+4.000000e+00	5.000000e+00	2.300000e+00	2.690000e+00	9.790000e+00	4.167700e+01	2.000000e+00
+5.000000e+00	6.000000e+00	3.000000e+00	5.000000e+00	1.630000e+01	8.889000e+01	2.000000e+00
+END YODA_HISTO1D_V2
+
+`)
+
+	if !bytes.Equal(got, want) {
+		t.Fatalf(
+			"invalid yoda marshal response:\ngot:\n%s\nwant:\n%s\n",
+			got, want,
+		)
+	}
+}
+
 func TestSubH1DPanics(t *testing.T) {
 	for _, tc := range []struct {
 		h1, h2 *H1D
@@ -129,5 +190,65 @@ func TestSubH1DPanics(t *testing.T) {
 			}
 			_ = SubH1D(tc.h1, tc.h2)
 		})
+	}
+}
+
+func TestSubH1D(t *testing.T) {
+	t.Skipf("missing some dist") // FIXME(sbinet)
+
+	h1 := NewH1D(6, 0, 6)
+	h1.Fill(-0.5, 1)
+	h1.Fill(0, 1.5)
+	h1.Fill(0.5, 1)
+	h1.Fill(1.2, 1)
+	h1.Fill(2.1, 2)
+	h1.Fill(4.2, 1)
+	h1.Fill(5.9, 1)
+	h1.Fill(6, 0.5)
+
+	h2 := NewH1D(6, 0, 6)
+	h2.Fill(-0.5, 0.7)
+	h2.Fill(0.2, 1)
+	h2.Fill(0.7, 1.2)
+	h2.Fill(1.5, 0.8)
+	h2.Fill(2.2, 0.7)
+	h2.Fill(4.3, 1.3)
+	h2.Fill(5.2, 2)
+	h2.Fill(6.8, 1)
+
+	h3 := SubH1D(h1, h2)
+
+	got, err := h3.MarshalYODA()
+	if err != nil {
+		t.Fatalf("could not marshal to yoda: %+v", err)
+	}
+
+	want := []byte(`BEGIN YODA_HISTO1D_V2 /
+Path: /
+Title: 
+Type: Histo1D
+---
+# Mean: -2.573333e+01
+# Area: 3.000000e-01
+# ID	 ID	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries
+Total   	Total   	3.000000e-01	2.225000e+01	-7.720000e+00	-4.913800e+01	1.600000e+01
+Underflow	Underflow	3.000000e-01	1.490000e+00	-1.500000e-01	7.500000e-02	2.000000e+00
+Overflow	Overflow	-5.000000e-01	1.250000e+00	-3.800000e+00	-2.824000e+01	2.000000e+00
+# xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries
+0.000000e+00	1.000000e+00	3.000000e-01	5.690000e+00	-5.400000e-01	-3.780000e-01	4.000000e+00
+1.000000e+00	2.000000e+00	2.000000e-01	1.640000e+00	-2.220446e-16	-3.600000e-01	2.000000e+00
+2.000000e+00	3.000000e+00	1.300000e+00	4.490000e+00	2.660000e+00	5.432000e+00	2.000000e+00
+3.000000e+00	4.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00
+4.000000e+00	5.000000e+00	-3.000000e-01	2.690000e+00	-1.390000e+00	-6.397000e+00	2.000000e+00
+5.000000e+00	6.000000e+00	-1.000000e+00	5.000000e+00	-4.500000e+00	-1.927000e+01	2.000000e+00
+END YODA_HISTO1D_V2
+
+`)
+
+	if !bytes.Equal(got, want) {
+		t.Fatalf(
+			"invalid yoda marshal response:\ngot:\n%s\nwant:\n%s\n",
+			got, want,
+		)
 	}
 }
