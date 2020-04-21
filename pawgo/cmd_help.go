@@ -7,7 +7,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"os"
 	"sort"
 	"strings"
 	"text/tabwriter"
@@ -31,7 +30,7 @@ func (cmd *cmdHelp) Run(args []string) error {
 			cmds = append(cmds, k)
 		}
 		sort.Strings(cmds)
-		w := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
+		w := tabwriter.NewWriter(cmd.ctx.msg.Writer(), 0, 8, 0, '\t', 0)
 		for _, k := range cmds {
 			c := cmd.ctx.cmds[k]
 			c.Help(w)
@@ -42,7 +41,7 @@ func (cmd *cmdHelp) Run(args []string) error {
 		if !ok {
 			return fmt.Errorf("unknown command %q", args[0])
 		}
-		w := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
+		w := tabwriter.NewWriter(cmd.ctx.msg.Writer(), 0, 8, 0, '\t', 0)
 		c.Help(w)
 		w.Flush()
 	}

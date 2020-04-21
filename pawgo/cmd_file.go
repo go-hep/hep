@@ -126,7 +126,7 @@ type cmdFileList struct {
 }
 
 func (cmd *cmdFileList) Name() string {
-	return "/file/list"
+	return "/file/ls"
 }
 
 func (cmd *cmdFileList) Run(args []string) error {

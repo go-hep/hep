@@ -36,15 +36,15 @@ func TestPawgoScript(t *testing.T) {
 	}
 	defer os.RemoveAll(tmp)
 
-	var (
-		stdout      = new(bytes.Buffer)
-		scr         screen.Screen
+	for _, tc := range []struct {
+		name        string
+		script      string
+		want        string
 		interactive bool
-		fname       = path.Join(tmp, "script.paw")
-		args        = []string{fname}
-	)
-
-	err = ioutil.WriteFile(fname, []byte(`## comment
+	}{
+		{
+			name: "basic",
+			script: `## comment
 
 ## open the rio file hsimple.rio, assign it the variable name 'f'
 /file/open f ./testdata/hsimple.rio
@@ -55,14 +55,9 @@ func TestPawgoScript(t *testing.T) {
 ## open the hbook.H1D histogram 'h1' from file 'f', assign it the variable name 'h'
 /hist/open h /file/id/f/h1
 
-`), 0644)
-
-	rc := xmain(stdout, scr, interactive, args)
-	if rc != 0 {
-		t.Fatalf("invalid exit-code: %d", rc)
-	}
-
-	want := `
+/file/close f
+`,
+			want: `
 :::::::::::::::::::::::::::::
 :::   Welcome to PAW-Go   :::
 :::::::::::::::::::::::::::::
@@ -79,16 +74,79 @@ Type /? for help.
  	- s2	(type="*go-hep.org/x/hep/hbook.S2D")
 
 # /hist/open h /file/id/f/h1
+# /file/close f
 bye.
-`
+`,
+			interactive: false,
+		},
+		{
+			name:   "help",
+			script: "/?\n/? /file/open",
+			want: `
+:::::::::::::::::::::::::::::
+:::   Welcome to PAW-Go   :::
+:::::::::::::::::::::::::::::
 
-	if got, want := stdout.String(), want; got != want {
-		t.Fatalf("stdout differ:\n%s\n",
-			cmp.Diff(
-				string(want),
-				string(got),
-			),
-		)
+Type /? for help.
+^D or /quit to quit.
+
+# /?
+/! 		-- run a shell command
+/? 		-- print help
+/file/close 	-- close a file
+/file/create 	-- create file for write access
+/file/ls 	-- list a file's content
+/file/open 	-- open file for read access
+/hist/open 	-- open a histogram
+/hist/plot 	-- plot a histogram
+/quit 		-- quit PAW-Go
+# /? /file/open
+/file/open 	-- open file for read access
+bye.
+`,
+			interactive: false,
+		},
+		{
+			name:   "quit",
+			script: "/quit\n",
+			want: `
+:::::::::::::::::::::::::::::
+:::   Welcome to PAW-Go   :::
+:::::::::::::::::::::::::::::
+
+Type /? for help.
+^D or /quit to quit.
+
+# /quit
+bye.
+`,
+			interactive: false,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var (
+				stdout = new(bytes.Buffer)
+				scr    screen.Screen
+				fname  = path.Join(tmp, tc.name+".paw")
+				args   = []string{fname}
+			)
+
+			err = ioutil.WriteFile(fname, []byte(tc.script), 0644)
+
+			rc := xmain(stdout, scr, tc.interactive, args)
+			if rc != 0 {
+				t.Fatalf("invalid exit-code: %d", rc)
+			}
+
+			if got, want := stdout.String(), tc.want; got != want {
+				t.Fatalf("stdout differ:\n%s\n",
+					cmp.Diff(
+						string(want),
+						string(got),
+					),
+				)
+			}
+		})
 	}
 }
 
