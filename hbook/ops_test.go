@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func ExampleDivideH1D(){
+func ExampleDivideH1D() {
 
 	h1 := NewH1D(5, 0, 5)
 	h1.Fill(0, 1)
@@ -54,7 +54,7 @@ func ExampleDivideH1D(){
 	for i, pt := range s2.Points() {
 		fmt.Printf("Point %v: %.2f  + %.2f  - %.2f\n", i, pt.Y, pt.ErrY.Min, pt.ErrY.Min)
 	}
-	
+
 	// Output:
 	// Default:
 	// Point 0: 0.09  + 0.13  - 0.13
@@ -68,7 +68,7 @@ func ExampleDivideH1D(){
 	// Point 1: 0.09  + 0.13  - 0.13
 	// Point 2: 0.09  + 0.13  - 0.13
 	// Point 3: 0.09  + 0.13  - 0.13
-	// 
+	//
 	// DivReplaceNaNs with v=1.0:
 	// Point 0: 0.09  + 0.13  - 0.13
 	// Point 1: 0.09  + 0.13  - 0.13
@@ -76,7 +76,6 @@ func ExampleDivideH1D(){
 	// Point 3: 0.09  + 0.13  - 0.13
 	// Point 4: 0.09  + 0.13  - 0.13
 }
-
 
 func TestDivideH1D(t *testing.T) {
 	h1 := NewH1D(5, 0, 5)
@@ -319,5 +318,3 @@ END YODA_HISTO1D_V2
 		)
 	}
 }
-
-
