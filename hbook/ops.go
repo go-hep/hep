@@ -11,6 +11,7 @@ import (
 
 // DivideH1D divides 2 1D-histograms and returns a 2D scatter.
 // DivideH1D returns an error if the binning of the 1D histograms are not compatible.
+// DivideH1D ignores points with NaN values if ignoreNaN is true.
 func DivideH1D(num, den *H1D, ignoreNaN bool) (*S2D, error) {
 	var s2d S2D
 
