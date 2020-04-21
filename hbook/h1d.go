@@ -53,6 +53,14 @@ func NewH1DFromBins(bins ...Range) *H1D {
 	}
 }
 
+// Clone returns a deep copy of this 1-dim histogram.
+func (h *H1D) Clone() *H1D {
+	return &H1D{
+		Binning: h.Binning.clone(),
+		Ann:     h.Ann.clone(),
+	}
+}
+
 // Name returns the name of this histogram, if any
 func (h *H1D) Name() string {
 	v, ok := h.Ann["name"]

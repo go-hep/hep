@@ -13,6 +13,10 @@ type Dist0D struct {
 	SumW2 float64 // sum of squared weights
 }
 
+func (d Dist0D) clone() Dist0D {
+	return d
+}
+
 // Rank returns the number of dimensions of the distribution.
 func (*Dist0D) Rank() int {
 	return 1
@@ -49,6 +53,12 @@ func (d *Dist0D) fill(w float64) {
 	d.SumW2 += w * w
 }
 
+func (d *Dist0D) addScaled(a, a2 float64, o Dist0D) {
+	d.N += o.N
+	d.SumW += a * o.SumW
+	d.SumW2 += a2 * o.SumW2
+}
+
 func (d *Dist0D) scaleW(f float64) {
 	d.SumW *= f
 	d.SumW2 *= f * f
@@ -60,6 +70,13 @@ type Dist1D struct {
 	Stats struct {
 		SumWX  float64 // 1st order weighted x moment
 		SumWX2 float64 // 2nd order weighted x moment
+	}
+}
+
+func (d Dist1D) clone() Dist1D {
+	return Dist1D{
+		Dist:  d.Dist.clone(),
+		Stats: d.Stats,
 	}
 }
 
@@ -150,6 +167,12 @@ func (d *Dist1D) fill(x, w float64) {
 	d.Dist.fill(w)
 	d.Stats.SumWX += w * x
 	d.Stats.SumWX2 += w * x * x
+}
+
+func (d *Dist1D) addScaled(a, a2 float64, o Dist1D) {
+	d.Dist.addScaled(a, a2, o.Dist)
+	d.Stats.SumWX += a * o.Stats.SumWX
+	d.Stats.SumWX2 += a * o.Stats.SumWX2
 }
 
 func (d *Dist1D) scaleW(f float64) {

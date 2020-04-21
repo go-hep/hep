@@ -12,8 +12,19 @@ type Bin1D struct {
 	Dist  Dist1D
 }
 
+func (b Bin1D) clone() Bin1D {
+	return Bin1D{
+		Range: b.Range.clone(),
+		Dist:  b.Dist.clone(),
+	}
+}
+
 // Rank returns the number of dimensions for this bin.
 func (Bin1D) Rank() int { return 1 }
+
+func (b *Bin1D) addScaled(a, a2 float64, o Bin1D) {
+	b.Dist.addScaled(a, a2, o.Dist)
+}
 
 func (b *Bin1D) scaleW(f float64) {
 	b.Dist.scaleW(f)

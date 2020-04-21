@@ -80,7 +80,6 @@ func fuzzyEq(a, b float64) bool {
 // AddScaledH1D returns the histogram with the bin-by-bin h1+alpha*h2
 // operation, assuming statistical uncertainties are uncorrelated.
 func AddScaledH1D(h1 *H1D, alpha float64, h2 *H1D) *H1D {
-
 	if h1.Len() != h2.Len() {
 		panic(fmt.Errorf("hbook: h1 and h2 have different number of bins"))
 	}
@@ -89,21 +88,20 @@ func AddScaledH1D(h1 *H1D, alpha float64, h2 *H1D) *H1D {
 		panic(fmt.Errorf("hbook: h1 and h2 have different range"))
 	}
 
-	hsum := NewH1D(h1.Len(), h1.XMin(), h1.XMax())
-	alpha2 := alpha * alpha
+	var (
+		o  = h1.Clone()
+		a2 = alpha * alpha
+	)
 
-	compute_sum := func(dst, d1, d2 *Dist0D) {
-		y1, y1err2 := d1.SumW, d1.SumW2
-		y2, y2err2 := d2.SumW, d2.SumW2
-		dst.SumW = y1 + alpha*y2
-		dst.SumW2 = y1err2 + alpha2*y2err2
-		dst.N = d1.N + d2.N
-		return
+	for i := range o.Binning.Bins {
+		o := &o.Binning.Bins[i]
+		o.addScaled(alpha, a2, h2.Binning.Bins[i])
 	}
 
-	h1dApply(hsum, h1, h2, compute_sum)
-
-	return hsum
+	o.Binning.Dist.addScaled(alpha, a2, h2.Binning.Dist)
+	o.Binning.Outflows[0].addScaled(alpha, a2, h2.Binning.Outflows[0])
+	o.Binning.Outflows[1].addScaled(alpha, a2, h2.Binning.Outflows[1])
+	return o
 }
 
 // AddH1D returns the bin-by-bin summed histogram of h1 and h2
@@ -116,25 +114,4 @@ func AddH1D(h1, h2 *H1D) *H1D {
 // assuming their statistical uncertainties are uncorrelated.
 func SubH1D(h1, h2 *H1D) *H1D {
 	return AddScaledH1D(h1, -1, h2)
-}
-
-// h1dApply is a helper function to perform bin-by-bin operations on H1D.
-func h1dApply(dst, h1, h2 *H1D, fct func(d, d1, d2 *Dist0D)) {
-
-	if len(h1.Binning.Bins) != len(dst.Binning.Bins) ||
-		len(h2.Binning.Bins) != len(dst.Binning.Bins) {
-		panic("hbook: length mismatch")
-	}
-
-	for i := range dst.Binning.Bins {
-		fct(&dst.Binning.Bins[i].Dist.Dist,
-			&h1.Binning.Bins[i].Dist.Dist,
-			&h2.Binning.Bins[i].Dist.Dist)
-	}
-
-	for i := range dst.Binning.Outflows {
-		fct(&dst.Binning.Outflows[i].Dist,
-			&h1.Binning.Outflows[i].Dist,
-			&h2.Binning.Outflows[i].Dist)
-	}
 }

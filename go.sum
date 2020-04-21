@@ -17,8 +17,6 @@ github.com/astrogo/fitsio v0.1.0/go.mod h1:AMazbBDPn8fcAglKAWIR5+5iDBnBv78pf6UHm
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/campoy/embedmd v1.0.0 h1:V4kI2qTJJLf4J29RzI/MAt2c3Bl4dQSYPuflzwFH2hY=
 github.com/campoy/embedmd v1.0.0/go.mod h1:oxyr9RCiSXg0M3VJ3ks0UGfp98BpSSGr0kpiX3MzVl8=
-github.com/containous/yaegi v0.8.1 h1:MYf4NuROUpNkcFBeRQ8qu4M34fRXNP7GCxTEVgcSrr0=
-github.com/containous/yaegi v0.8.1/go.mod h1:Yj82MHpXQ9/h3ukzc2numJQ/Wr4+M3C9YLMzNjFtd3o=
 github.com/containous/yaegi v0.8.2 h1:JAJhUd/RU35r4vSMqEf2yOG7AGPf/8Q8VWRhwEpVtZg=
 github.com/containous/yaegi v0.8.2/go.mod h1:Yj82MHpXQ9/h3ukzc2numJQ/Wr4+M3C9YLMzNjFtd3o=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -224,8 +222,6 @@ gonum.org/v1/plot v0.0.0-20191004082913-159cd04f920c/go.mod h1:Wt8AAjI+ypCyYX3nZ
 gonum.org/v1/plot v0.0.0-20191107103940-ca91d9d40d0a/go.mod h1:2EC9bQmADoXz4qWOuiPhNNky9U7T8rgIULcW8j/muig=
 gonum.org/v1/plot v0.7.0 h1:Otpxyvra6Ie07ft50OX5BrCfS/BWEMvhsCUHwPEJmLI=
 gonum.org/v1/plot v0.7.0/go.mod h1:2wtU6YrrdQAhAF9+MTd5tOQjrov/zF70b1i99Npjvgo=
-gonum.org/v1/plot v0.7.1-0.20200409110503-eddda93a2277 h1:Dd9muKz0CB4Y1RtjvDswHoU7l6isWebv2L+V01imnZ4=
-gonum.org/v1/plot v0.7.1-0.20200409110503-eddda93a2277/go.mod h1:2wtU6YrrdQAhAF9+MTd5tOQjrov/zF70b1i99Npjvgo=
 gonum.org/v1/plot v0.7.1-0.20200414075901-f4e1939a9e7a h1:tBDQRiC/lYKhx2AC87XbGseCEkfbW7VgID8Kxr0PkkI=
 gonum.org/v1/plot v0.7.1-0.20200414075901-f4e1939a9e7a/go.mod h1:2wtU6YrrdQAhAF9+MTd5tOQjrov/zF70b1i99Npjvgo=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=

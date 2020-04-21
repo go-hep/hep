@@ -679,3 +679,61 @@ func TestH1DFillN(t *testing.T) {
 		h2.FillN(xs, []float64{1})
 	}()
 }
+
+func TestH1DClone(t *testing.T) {
+	h1 := NewH1D(10, 0, 10)
+	h1.FillN(
+		[]float64{-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11},
+		[]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 1},
+	)
+	h1.Ann["hello"] = "world"
+
+	msg1, err := h1.MarshalYODA()
+	if err != nil {
+		t.Fatalf("could not marshal h1: %+v", err)
+	}
+
+	h2 := h1.Clone()
+	msg2, err := h2.MarshalYODA()
+	if err != nil {
+		t.Fatalf("could not marshal h2: %+v", err)
+	}
+
+	if !bytes.Equal(msg1, msg2) {
+		t.Fatalf("h1d file differ:\n%s\n",
+			cmp.Diff(
+				string(msg1),
+				string(msg2),
+			),
+		)
+	}
+
+	h1.Ann["world"] = "bye"
+	h1.FillN(
+		[]float64{-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11},
+		[]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 1},
+	)
+
+	msg3, err := h1.MarshalYODA()
+	if err != nil {
+		t.Fatalf("could not marshal h1: %+v", err)
+	}
+
+	msg4, err := h2.MarshalYODA()
+	if err != nil {
+		t.Fatalf("could not marshal h2: %+v", err)
+	}
+
+	if bytes.Equal(msg1, msg3) {
+		t.Fatalf("msg1/msg3 should differ")
+	}
+
+	if !bytes.Equal(msg4, msg2) {
+		t.Fatalf("h1d file differ:\n%s\n",
+			cmp.Diff(
+				string(msg4),
+				string(msg2),
+			),
+		)
+	}
+}

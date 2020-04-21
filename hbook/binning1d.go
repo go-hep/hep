@@ -108,6 +108,24 @@ func newBinning1DFromEdges(edges []float64) Binning1D {
 	return bng
 }
 
+func (bng *Binning1D) clone() Binning1D {
+	o := Binning1D{
+		Bins: make([]Bin1D, len(bng.Bins)),
+		Dist: bng.Dist.clone(),
+		Outflows: [2]Dist1D{
+			bng.Outflows[0].clone(),
+			bng.Outflows[1].clone(),
+		},
+		XRange: bng.XRange.clone(),
+	}
+
+	for i, bin := range bng.Bins {
+		o.Bins[i] = bin.clone()
+	}
+
+	return o
+}
+
 func (bng *Binning1D) entries() int64 {
 	return bng.Dist.Entries()
 }

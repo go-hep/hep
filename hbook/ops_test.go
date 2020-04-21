@@ -99,7 +99,6 @@ func TestAddH1DPanics(t *testing.T) {
 }
 
 func TestAddH1D(t *testing.T) {
-	t.Skipf("missing some dist") // FIXME(sbinet)
 
 	h1 := NewH1D(6, 0, 6)
 	h1.Fill(-0.5, 1)
@@ -130,7 +129,7 @@ func TestAddH1D(t *testing.T) {
 
 	want := []byte(`BEGIN YODA_HISTO1D_V2 /
 Path: /
-Title: 
+Title: ""
 Type: Histo1D
 ---
 # Mean: 2.526554e+00
@@ -151,9 +150,11 @@ END YODA_HISTO1D_V2
 `)
 
 	if !bytes.Equal(got, want) {
-		t.Fatalf(
-			"invalid yoda marshal response:\ngot:\n%s\nwant:\n%s\n",
-			got, want,
+		t.Fatalf("add differ:\n%s\n",
+			cmp.Diff(
+				string(got),
+				string(want),
+			),
 		)
 	}
 }
@@ -202,8 +203,6 @@ func TestSubH1DPanics(t *testing.T) {
 }
 
 func TestSubH1D(t *testing.T) {
-	t.Skipf("missing some dist") // FIXME(sbinet)
-
 	h1 := NewH1D(6, 0, 6)
 	h1.Fill(-0.5, 1)
 	h1.Fill(0, 1.5)
@@ -233,7 +232,7 @@ func TestSubH1D(t *testing.T) {
 
 	want := []byte(`BEGIN YODA_HISTO1D_V2 /
 Path: /
-Title: 
+Title: ""
 Type: Histo1D
 ---
 # Mean: -2.573333e+01
@@ -254,9 +253,11 @@ END YODA_HISTO1D_V2
 `)
 
 	if !bytes.Equal(got, want) {
-		t.Fatalf(
-			"invalid yoda marshal response:\ngot:\n%s\nwant:\n%s\n",
-			got, want,
+		t.Fatalf("sub differ:\n%s\n",
+			cmp.Diff(
+				string(got),
+				string(want),
+			),
 		)
 	}
 }
