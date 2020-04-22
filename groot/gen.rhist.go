@@ -84,7 +84,7 @@ func genH2() {
 	defer f.Close()
 
 	genroot.GenImports("rhist", f,
-		"bytes", "fmt", "math", "reflect",
+		"fmt", "math", "reflect",
 		"",
 		"go-hep.org/x/hep/hbook",
 		"go-hep.org/x/hep/groot/root",
@@ -673,108 +673,79 @@ func (h *{{.Name}}) entries(height, err float64) int64 {
 	return int64(v*v + 0.5)
 }
 
-// MarshalYODA implements the YODAMarshaler interface.
-func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
+// AsH2D creates a new hbook.H2D from this ROOT histogram.
+func (h *{{.Name}}) AsH2D() *hbook.H2D {
 	var (
-		nx       = h.NbinsX()
-		ny       = h.NbinsY()
+		nx = h.NbinsX()
+		ny = h.NbinsY()
+		hh = hbook.NewH2D(
+			nx, h.XAxis().XMin(), h.XAxis().XMax(),
+			ny, h.YAxis().XMin(), h.YAxis().XMax(),
+		)
 		xinrange = 1
 		yinrange = 1
-		dflow    = [8]hbook.Dist2D{
-			h.dist2D(0, 0),
-			h.dist2D(0, yinrange),
-			h.dist2D(0, ny+1),
-			h.dist2D(nx+1, 0),
-			h.dist2D(nx+1, yinrange),
-			h.dist2D(nx+1, ny+1),
-			h.dist2D(xinrange, 0),
-			h.dist2D(xinrange, ny+1),
-		}
-		dtot = hbook.Dist2D{
-			X: hbook.Dist1D{
-				Dist: hbook.Dist0D {
-					N:      int64(h.Entries()),
-					SumW:   float64(h.SumW()),
-					SumW2:  float64(h.SumW2()),
-				},
-			},
-			Y: hbook.Dist1D{
-				Dist: hbook.Dist0D{
-					N:      int64(h.Entries()),
-					SumW:   float64(h.SumW()),
-					SumW2:  float64(h.SumW2()),
-				},
-			},
-		}
-		dists = make([]hbook.Dist2D, int(nx*ny))
 	)
-	dtot.X.Stats.SumWX = float64(h.SumWX())
-	dtot.X.Stats.SumWX2 = float64(h.SumWX2())
-	dtot.Y.Stats.SumWX = float64(h.SumWY())
-	dtot.Y.Stats.SumWX2 = float64(h.SumWY2())
-	dtot.Stats.SumWXY = h.SumWXY()
+	hh.Ann = hbook.Annotation{
+		"name":  h.Name(),
+		"title": h.Title(),
+	}
+	hh.Binning.Outflows = [8]hbook.Dist2D{
+		h.dist2D(0, 0),
+		h.dist2D(0, yinrange),
+		h.dist2D(0, ny+1),
+		h.dist2D(nx+1, 0),
+		h.dist2D(nx+1, yinrange),
+		h.dist2D(nx+1, ny+1),
+		h.dist2D(xinrange, 0),
+		h.dist2D(xinrange, ny+1),
+	}
+
+	hh.Binning.Dist = hbook.Dist2D{
+		X: hbook.Dist1D{
+			Dist: hbook.Dist0D{
+				N:     int64(h.Entries()),
+				SumW:  float64(h.SumW()),
+				SumW2: float64(h.SumW2()),
+			},
+		},
+		Y: hbook.Dist1D{
+			Dist: hbook.Dist0D{
+				N:     int64(h.Entries()),
+				SumW:  float64(h.SumW()),
+				SumW2: float64(h.SumW2()),
+			},
+		},
+	}
+	hh.Binning.Dist.X.Stats.SumWX = float64(h.SumWX())
+	hh.Binning.Dist.X.Stats.SumWX2 = float64(h.SumWX2())
+	hh.Binning.Dist.Y.Stats.SumWX = float64(h.SumWY())
+	hh.Binning.Dist.Y.Stats.SumWX2 = float64(h.SumWY2())
+	hh.Binning.Dist.Stats.SumWXY = h.SumWXY()
 
 	for ix := 0; ix < nx; ix++ {
 		for iy := 0; iy < ny; iy++ {
-			i := iy*nx + ix
-			dists[i] = h.dist2D(ix+1, iy+1)
-		}
-	}
-
-	buf := new(bytes.Buffer)
-	fmt.Fprintf(buf, "BEGIN YODA_HISTO2D /%s\n", h.Name())
-	fmt.Fprintf(buf, "Path=/%s\n", h.Name())
-	fmt.Fprintf(buf, "Title=%s\n", h.Title())
-	fmt.Fprintf(buf, "Type=Histo2D\n")
-	fmt.Fprintf(buf, "# Mean: %e\n", math.NaN())
-	fmt.Fprintf(buf, "# Volume: %e\n", math.NaN())
-
-	fmt.Fprintf(buf, "# ID\t ID\t sumw\t sumw2\t sumwx\t sumwx2\t sumwy\t sumwy2\t sumwxy\t numEntries\n")
-
-	var name = "Total   "
-	d := &dtot
-	fmt.Fprintf(
-		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
-		name, name,
-		d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), d.Entries(),
-	)
-
-	if false { // FIXME(sbinet)
-		for _, d := range dflow {
-			fmt.Fprintf(
-				buf,
-				"%s\t%s\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
-				name, name,
-				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), d.Entries(),
+			var (
+				i    = iy*nx + ix
+				xmin = h.XBinLowEdge(ix + 1)
+				xmax = h.XBinWidth(ix+1) + xmin
+				ymin = h.YBinLowEdge(iy + 1)
+				ymax = h.YBinWidth(iy+1) + ymin
+				bin  = &hh.Binning.Bins[i]
 			)
-
-		}
-	} else {
-		// outflows
-		fmt.Fprintf(buf, "# 2D outflow persistency not currently supported until API is stable\n")
-	}
-
-	// bins
-	fmt.Fprintf(buf, "# xlow\t xhigh\t ylow\t yhigh\t sumw\t sumw2\t sumwx\t sumwx2\t sumwy\t sumwy2\t sumwxy\t numEntries\n")
-	for ix := 0; ix < nx; ix++ {
-		for iy := 0; iy < ny; iy++ {
-			xmin := h.XBinLowEdge(ix + 1)
-			xmax := h.XBinWidth(ix+1) + xmin
-			ymin := h.YBinLowEdge(iy + 1)
-			ymax := h.YBinWidth(iy+1) + ymin
-			i := iy*nx+ix
-			d := &dists[i]
-			fmt.Fprintf(
-				buf,
-				"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%d\n",
-				xmin, xmax, ymin, ymax,
-				d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), d.SumWY(), d.SumWY2(), d.SumWXY(), d.Entries(),
-			)
+			bin.XRange.Min = xmin
+			bin.XRange.Max = xmax
+			bin.YRange.Min = ymin
+			bin.YRange.Max = ymax
+			bin.Dist = h.dist2D(ix+1, iy+1)
 		}
 	}
-	fmt.Fprintf(buf, "END YODA_HISTO2D\n\n")
-	return buf.Bytes(), nil
+
+	return hh
+}
+
+// MarshalYODA implements the YODAMarshaler interface.
+func (h *{{.Name}}) MarshalYODA() ([]byte, error) {
+	return h.AsH2D().MarshalYODA()
 }
 
 // UnmarshalYODA implements the YODAUnmarshaler interface.

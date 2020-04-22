@@ -8,7 +8,6 @@ package rootcnv
 import (
 	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/hbook"
-	"go-hep.org/x/hep/hbook/yodacnv"
 )
 
 type h1der interface {
@@ -20,18 +19,13 @@ func H1D(h1 rhist.H1) *hbook.H1D {
 	return h1.(h1der).AsH1D()
 }
 
+type h2der interface {
+	AsH2D() *hbook.H2D
+}
+
 // H2D creates a new H2D from a TH2x.
 func H2D(h2 rhist.H2) *hbook.H2D {
-	raw, err := h2.(yodacnv.Marshaler).MarshalYODA()
-	if err != nil {
-		panic(err) // FIXME(sbinet): implement AsH2D
-	}
-	var h hbook.H2D
-	err = h.UnmarshalYODA(raw)
-	if err != nil {
-		panic(err)
-	}
-	return &h
+	return h2.(h2der).AsH2D()
 }
 
 // S2D creates a new S2D from a TGraph, TGraphErrors or TGraphAsymmErrors.
