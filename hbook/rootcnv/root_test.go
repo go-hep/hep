@@ -34,11 +34,10 @@ func ExampleH1D() {
 		log.Fatal(err)
 	}
 
-	root := obj.(*rhist.H1D)
-	h, err := rootcnv.H1D(root)
-	if err != nil {
-		log.Fatalf("error converting TH1D: %v\n", err)
-	}
+	var (
+		root = obj.(*rhist.H1D)
+		h    = rootcnv.H1D(root)
+	)
 
 	fmt.Printf("name:    %q\n", root.Name())
 	fmt.Printf("mean:    %v\n", h.XMean())
@@ -47,9 +46,9 @@ func ExampleH1D() {
 
 	// Output:
 	// name:    "h1d"
-	// mean:    0.028120161729965475
-	// std-dev: 2.5450388581847907
-	// std-err: 0.025447022905060374
+	// mean:    0.028120158262930028
+	// std-dev: 2.5450388861661377
+	// std-err: 0.025447023184829384
 }
 
 func ExampleH2D() {
@@ -64,11 +63,10 @@ func ExampleH2D() {
 		log.Fatal(err)
 	}
 
-	root := obj.(*rhist.H2D)
-	h, err := rootcnv.H2D(root)
-	if err != nil {
-		log.Fatalf("error converting TH2D: %v\n", err)
-	}
+	var (
+		root = obj.(*rhist.H2D)
+		h    = rootcnv.H2D(root)
+	)
 
 	fmt.Printf("name:      %q\n", root.Name())
 	fmt.Printf("x-mean:    %v\n", h.XMean())
@@ -100,11 +98,10 @@ func ExampleS2D() {
 		log.Fatal(err)
 	}
 
-	root := obj.(rhist.GraphErrors)
-	g, err := rootcnv.S2D(root)
-	if err != nil {
-		log.Fatalf("error converting TGraphErrors: %v\n", err)
-	}
+	var (
+		root = obj.(rhist.GraphErrors)
+		g    = rootcnv.S2D(root)
+	)
 
 	fmt.Printf("name:  %q\n", g.Annotation()["name"])
 	fmt.Printf("title: %q\n", g.Annotation()["title"])
@@ -258,14 +255,13 @@ END YODA_HISTO1D_V2
 			if err != nil {
 				t.Fatalf("error: %+v", err)
 			}
-			rhisto := obj.(rhist.H1)
 
-			h, err := rootcnv.H1D(rhisto)
-			if err != nil {
-				t.Fatalf("convertion error: %+v", err)
-			}
+			var (
+				rhisto = obj.(rhist.H1)
+				h      = rootcnv.H1D(rhisto)
+				buf    = new(bytes.Buffer)
+			)
 
-			buf := new(bytes.Buffer)
 			err = yodacnv.Write(buf, h)
 			if err != nil {
 				t.Fatalf("YODA error: %+v", err)
@@ -352,14 +348,12 @@ END YODA_HISTO2D_V2
 			if err != nil {
 				t.Fatalf("error: %+v", err)
 			}
-			rhisto := obj.(rhist.H2)
+			var (
+				rhisto = obj.(rhist.H2)
+				h      = rootcnv.H2D(rhisto)
+				buf    = new(bytes.Buffer)
+			)
 
-			h, err := rootcnv.H2D(rhisto)
-			if err != nil {
-				t.Fatalf("convertion error: %v+", err)
-			}
-
-			buf := new(bytes.Buffer)
 			err = yodacnv.Write(buf, h)
 			if err != nil {
 				t.Fatalf("YODA error: %+v", err)
@@ -437,10 +431,7 @@ func TestFromH1D(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			hh, err := rootcnv.H1D(tc.h1)
-			if err != nil {
-				t.Fatal(err)
-			}
+			hh := rootcnv.H1D(tc.h1)
 
 			hraw, err := hh.MarshalYODA()
 			if err != nil {
@@ -530,10 +521,7 @@ func TestFromH2D(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			hh, err := rootcnv.H2D(tc.h2)
-			if err != nil {
-				t.Fatal(err)
-			}
+			hh := rootcnv.H2D(tc.h2)
 
 			hraw, err := hh.MarshalYODA()
 			if err != nil {
@@ -566,10 +554,7 @@ func TestFromS2D(t *testing.T) {
 
 	rg := rootcnv.FromS2D(hg)
 
-	hr, err := rootcnv.S2D(rg)
-	if err != nil {
-		t.Fatal(err)
-	}
+	hr := rootcnv.S2D(rg)
 
 	want, err := hg.MarshalYODA()
 	if err != nil {

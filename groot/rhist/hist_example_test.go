@@ -78,10 +78,7 @@ func ExampleCreate_histo1D() {
 		log.Fatal(err)
 	}
 
-	hr, err := rootcnv.H1D(robj.(rhist.H1))
-	if err != nil {
-		log.Fatal(err)
-	}
+	hr := rootcnv.H1D(robj.(rhist.H1))
 
 	fmt.Printf("\nhisto read back:\n")
 	fmt.Printf("r-mean:    %.7f\n", hr.XMean())
@@ -158,10 +155,7 @@ func ExampleCreate_histo2D() {
 		log.Fatal(err)
 	}
 
-	hr, err := rootcnv.H2D(robj.(rhist.H2))
-	if err != nil {
-		log.Fatal(err)
-	}
+	hr := rootcnv.H2D(robj.(rhist.H2))
 
 	fmt.Printf("\nhisto read back:\n")
 	fmt.Printf("w-mean-x:    %+.6f\n", hr.XMean())
@@ -259,10 +253,7 @@ func TestH1(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			hh, err := rootcnv.H1D(tc.h1)
-			if err != nil {
-				t.Fatal(err)
-			}
+			hh := rootcnv.H1D(tc.h1)
 
 			hraw, err := hh.MarshalYODA()
 			if err != nil {
@@ -368,10 +359,7 @@ func TestH2(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			hh, err := rootcnv.H2D(tc.h2)
-			if err != nil {
-				t.Fatal(err)
-			}
+			hh := rootcnv.H2D(tc.h2)
 
 			hraw, err := hh.MarshalYODA()
 			if err != nil {

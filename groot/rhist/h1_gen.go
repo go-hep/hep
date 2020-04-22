@@ -7,7 +7,6 @@
 package rhist
 
 import (
-	"bytes"
 	"fmt"
 	"math"
 	"reflect"
@@ -221,78 +220,48 @@ func (h *H1F) entries(height, err float64) int64 {
 	return int64(v*v + 0.5)
 }
 
-// MarshalYODA implements the YODAMarshaler interface.
-func (h *H1F) MarshalYODA() ([]byte, error) {
+// AsH1D creates a new hbook.H1D from this ROOT histogram.
+func (h *H1F) AsH1D() *hbook.H1D {
 	var (
-		nx    = h.NbinsX()
-		dflow = [2]hbook.Dist1D{
-			h.dist1D(0),      // underflow
-			h.dist1D(nx + 1), // overflow
-		}
-		dtot = hbook.Dist1D{
-			Dist: hbook.Dist0D{
-				N:     int64(h.Entries()),
-				SumW:  float64(h.SumW()),
-				SumW2: float64(h.SumW2()),
-			},
-		}
-		dists = make([]hbook.Dist1D, int(nx))
+		nx = h.NbinsX()
+		hh = hbook.NewH1D(int(nx), h.XAxis().XMin(), h.XAxis().XMax())
 	)
-	dtot.Stats.SumWX = float64(h.SumWX())
-	dtot.Stats.SumWX2 = float64(h.SumWX2())
+	hh.Ann = hbook.Annotation{
+		"name":  h.Name(),
+		"title": h.Title(),
+	}
+
+	hh.Binning.Dist = hbook.Dist1D{
+		Dist: hbook.Dist0D{
+			N:     int64(h.Entries()),
+			SumW:  float64(h.SumW()),
+			SumW2: float64(h.SumW2()),
+		},
+	}
+	hh.Binning.Dist.Stats.SumWX = float64(h.SumWX())
+	hh.Binning.Dist.Stats.SumWX2 = float64(h.SumWX2())
+
+	hh.Binning.Outflows = [2]hbook.Dist1D{
+		h.dist1D(0),      // underflow
+		h.dist1D(nx + 1), // overflow
+	}
 
 	for i := 0; i < nx; i++ {
-		dists[i] = h.dist1D(i + 1)
-	}
-
-	buf := new(bytes.Buffer)
-	fmt.Fprintf(buf, "BEGIN YODA_HISTO1D_V2 /%s\n", h.Name())
-	fmt.Fprintf(buf, "Path: /%s\n", h.Name())
-	fmt.Fprintf(buf, "Title: %s\n", h.Title())
-	fmt.Fprintf(buf, "Type: Histo1D\n")
-	fmt.Fprintf(buf, "---\n")
-	fmt.Fprintf(buf, "# Mean: %e\n", math.NaN())
-	fmt.Fprintf(buf, "# Area: %e\n", math.NaN())
-
-	fmt.Fprintf(buf, "# ID\t ID\t sumw\t sumw2\t sumwx\t sumwx2\t numEntries\n")
-
-	var name = "Total   "
-	fmt.Fprintf(
-		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
-		name, name,
-		dtot.SumW(), dtot.SumW2(), dtot.SumWX(), dtot.SumWX2(), float64(dtot.Entries()),
-	)
-
-	name = "Underflow"
-	fmt.Fprintf(
-		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
-		name, name,
-		dflow[0].SumW(), dflow[0].SumW2(), dflow[0].SumWX(), dflow[0].SumWX2(), float64(dflow[0].Entries()),
-	)
-
-	name = "Overflow"
-	fmt.Fprintf(
-		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
-		name, name,
-		dflow[1].SumW(), dflow[1].SumW2(), dflow[1].SumWX(), dflow[1].SumWX2(), float64(dflow[1].Entries()),
-	)
-	fmt.Fprintf(buf, "# xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries\n")
-	for i, d := range dists {
+		bin := &hh.Binning.Bins[i]
 		xmin := h.XBinLowEdge(i + 1)
 		xmax := h.XBinWidth(i+1) + xmin
-		fmt.Fprintf(
-			buf,
-			"%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
-			xmin, xmax,
-			d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), float64(d.Entries()),
-		)
+		bin.Dist = h.dist1D(i + 1)
+		bin.Range.Min = xmin
+		bin.Range.Max = xmax
+		hh.Binning.Bins[i].Dist = h.dist1D(i + 1)
 	}
-	fmt.Fprintf(buf, "END YODA_HISTO1D_V2\n\n")
 
-	return buf.Bytes(), nil
+	return hh
+}
+
+// MarshalYODA implements the YODAMarshaler interface.
+func (h *H1F) MarshalYODA() ([]byte, error) {
+	return h.AsH1D().MarshalYODA()
 }
 
 // UnmarshalYODA implements the YODAUnmarshaler interface.
@@ -308,36 +277,18 @@ func (h *H1F) UnmarshalYODA(raw []byte) error {
 }
 
 func (h *H1F) ROOTMerge(src root.Object) error {
-	var h1 hbook.H1D
-	raw, err := h.MarshalYODA()
-	if err != nil {
-		return fmt.Errorf("rhist: could not marshal to YODA: %w", err)
-	}
-
-	err = h1.UnmarshalYODA(raw)
-	if err != nil {
-		return fmt.Errorf("rhist: could not unmarshal from YODA: %w", err)
-	}
-
 	hsrc, ok := src.(*H1F)
 	if !ok {
 		return fmt.Errorf("rhist: object %q is not a *rhist.H1F (%T)", src.(root.Named).Name(), src)
 	}
 
-	raw, err = hsrc.MarshalYODA()
-	if err != nil {
-		return fmt.Errorf("rhist: could not marshal to YODA: %w", err)
-	}
+	var (
+		h1   = h.AsH1D()
+		h2   = hsrc.AsH1D()
+		hadd = hbook.AddH1D(h1, h2)
+	)
 
-	var h2 hbook.H1D
-	err = h2.UnmarshalYODA(raw)
-	if err != nil {
-		return fmt.Errorf("rhist: could not unmarshal from YODA: %w", err)
-	}
-
-	hadd := hbook.AddH1D(&h1, &h2)
 	*h = *NewH1FFrom(hadd)
-
 	return nil
 }
 
@@ -559,78 +510,48 @@ func (h *H1D) entries(height, err float64) int64 {
 	return int64(v*v + 0.5)
 }
 
-// MarshalYODA implements the YODAMarshaler interface.
-func (h *H1D) MarshalYODA() ([]byte, error) {
+// AsH1D creates a new hbook.H1D from this ROOT histogram.
+func (h *H1D) AsH1D() *hbook.H1D {
 	var (
-		nx    = h.NbinsX()
-		dflow = [2]hbook.Dist1D{
-			h.dist1D(0),      // underflow
-			h.dist1D(nx + 1), // overflow
-		}
-		dtot = hbook.Dist1D{
-			Dist: hbook.Dist0D{
-				N:     int64(h.Entries()),
-				SumW:  float64(h.SumW()),
-				SumW2: float64(h.SumW2()),
-			},
-		}
-		dists = make([]hbook.Dist1D, int(nx))
+		nx = h.NbinsX()
+		hh = hbook.NewH1D(int(nx), h.XAxis().XMin(), h.XAxis().XMax())
 	)
-	dtot.Stats.SumWX = float64(h.SumWX())
-	dtot.Stats.SumWX2 = float64(h.SumWX2())
+	hh.Ann = hbook.Annotation{
+		"name":  h.Name(),
+		"title": h.Title(),
+	}
+
+	hh.Binning.Dist = hbook.Dist1D{
+		Dist: hbook.Dist0D{
+			N:     int64(h.Entries()),
+			SumW:  float64(h.SumW()),
+			SumW2: float64(h.SumW2()),
+		},
+	}
+	hh.Binning.Dist.Stats.SumWX = float64(h.SumWX())
+	hh.Binning.Dist.Stats.SumWX2 = float64(h.SumWX2())
+
+	hh.Binning.Outflows = [2]hbook.Dist1D{
+		h.dist1D(0),      // underflow
+		h.dist1D(nx + 1), // overflow
+	}
 
 	for i := 0; i < nx; i++ {
-		dists[i] = h.dist1D(i + 1)
-	}
-
-	buf := new(bytes.Buffer)
-	fmt.Fprintf(buf, "BEGIN YODA_HISTO1D_V2 /%s\n", h.Name())
-	fmt.Fprintf(buf, "Path: /%s\n", h.Name())
-	fmt.Fprintf(buf, "Title: %s\n", h.Title())
-	fmt.Fprintf(buf, "Type: Histo1D\n")
-	fmt.Fprintf(buf, "---\n")
-	fmt.Fprintf(buf, "# Mean: %e\n", math.NaN())
-	fmt.Fprintf(buf, "# Area: %e\n", math.NaN())
-
-	fmt.Fprintf(buf, "# ID\t ID\t sumw\t sumw2\t sumwx\t sumwx2\t numEntries\n")
-
-	var name = "Total   "
-	fmt.Fprintf(
-		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
-		name, name,
-		dtot.SumW(), dtot.SumW2(), dtot.SumWX(), dtot.SumWX2(), float64(dtot.Entries()),
-	)
-
-	name = "Underflow"
-	fmt.Fprintf(
-		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
-		name, name,
-		dflow[0].SumW(), dflow[0].SumW2(), dflow[0].SumWX(), dflow[0].SumWX2(), float64(dflow[0].Entries()),
-	)
-
-	name = "Overflow"
-	fmt.Fprintf(
-		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
-		name, name,
-		dflow[1].SumW(), dflow[1].SumW2(), dflow[1].SumWX(), dflow[1].SumWX2(), float64(dflow[1].Entries()),
-	)
-	fmt.Fprintf(buf, "# xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries\n")
-	for i, d := range dists {
+		bin := &hh.Binning.Bins[i]
 		xmin := h.XBinLowEdge(i + 1)
 		xmax := h.XBinWidth(i+1) + xmin
-		fmt.Fprintf(
-			buf,
-			"%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
-			xmin, xmax,
-			d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), float64(d.Entries()),
-		)
+		bin.Dist = h.dist1D(i + 1)
+		bin.Range.Min = xmin
+		bin.Range.Max = xmax
+		hh.Binning.Bins[i].Dist = h.dist1D(i + 1)
 	}
-	fmt.Fprintf(buf, "END YODA_HISTO1D_V2\n\n")
 
-	return buf.Bytes(), nil
+	return hh
+}
+
+// MarshalYODA implements the YODAMarshaler interface.
+func (h *H1D) MarshalYODA() ([]byte, error) {
+	return h.AsH1D().MarshalYODA()
 }
 
 // UnmarshalYODA implements the YODAUnmarshaler interface.
@@ -646,36 +567,18 @@ func (h *H1D) UnmarshalYODA(raw []byte) error {
 }
 
 func (h *H1D) ROOTMerge(src root.Object) error {
-	var h1 hbook.H1D
-	raw, err := h.MarshalYODA()
-	if err != nil {
-		return fmt.Errorf("rhist: could not marshal to YODA: %w", err)
-	}
-
-	err = h1.UnmarshalYODA(raw)
-	if err != nil {
-		return fmt.Errorf("rhist: could not unmarshal from YODA: %w", err)
-	}
-
 	hsrc, ok := src.(*H1D)
 	if !ok {
 		return fmt.Errorf("rhist: object %q is not a *rhist.H1F (%T)", src.(root.Named).Name(), src)
 	}
 
-	raw, err = hsrc.MarshalYODA()
-	if err != nil {
-		return fmt.Errorf("rhist: could not marshal to YODA: %w", err)
-	}
+	var (
+		h1   = h.AsH1D()
+		h2   = hsrc.AsH1D()
+		hadd = hbook.AddH1D(h1, h2)
+	)
 
-	var h2 hbook.H1D
-	err = h2.UnmarshalYODA(raw)
-	if err != nil {
-		return fmt.Errorf("rhist: could not unmarshal from YODA: %w", err)
-	}
-
-	hadd := hbook.AddH1D(&h1, &h2)
 	*h = *NewH1DFrom(hadd)
-
 	return nil
 }
 
@@ -897,78 +800,48 @@ func (h *H1I) entries(height, err float64) int64 {
 	return int64(v*v + 0.5)
 }
 
-// MarshalYODA implements the YODAMarshaler interface.
-func (h *H1I) MarshalYODA() ([]byte, error) {
+// AsH1D creates a new hbook.H1D from this ROOT histogram.
+func (h *H1I) AsH1D() *hbook.H1D {
 	var (
-		nx    = h.NbinsX()
-		dflow = [2]hbook.Dist1D{
-			h.dist1D(0),      // underflow
-			h.dist1D(nx + 1), // overflow
-		}
-		dtot = hbook.Dist1D{
-			Dist: hbook.Dist0D{
-				N:     int64(h.Entries()),
-				SumW:  float64(h.SumW()),
-				SumW2: float64(h.SumW2()),
-			},
-		}
-		dists = make([]hbook.Dist1D, int(nx))
+		nx = h.NbinsX()
+		hh = hbook.NewH1D(int(nx), h.XAxis().XMin(), h.XAxis().XMax())
 	)
-	dtot.Stats.SumWX = float64(h.SumWX())
-	dtot.Stats.SumWX2 = float64(h.SumWX2())
+	hh.Ann = hbook.Annotation{
+		"name":  h.Name(),
+		"title": h.Title(),
+	}
+
+	hh.Binning.Dist = hbook.Dist1D{
+		Dist: hbook.Dist0D{
+			N:     int64(h.Entries()),
+			SumW:  float64(h.SumW()),
+			SumW2: float64(h.SumW2()),
+		},
+	}
+	hh.Binning.Dist.Stats.SumWX = float64(h.SumWX())
+	hh.Binning.Dist.Stats.SumWX2 = float64(h.SumWX2())
+
+	hh.Binning.Outflows = [2]hbook.Dist1D{
+		h.dist1D(0),      // underflow
+		h.dist1D(nx + 1), // overflow
+	}
 
 	for i := 0; i < nx; i++ {
-		dists[i] = h.dist1D(i + 1)
-	}
-
-	buf := new(bytes.Buffer)
-	fmt.Fprintf(buf, "BEGIN YODA_HISTO1D_V2 /%s\n", h.Name())
-	fmt.Fprintf(buf, "Path: /%s\n", h.Name())
-	fmt.Fprintf(buf, "Title: %s\n", h.Title())
-	fmt.Fprintf(buf, "Type: Histo1D\n")
-	fmt.Fprintf(buf, "---\n")
-	fmt.Fprintf(buf, "# Mean: %e\n", math.NaN())
-	fmt.Fprintf(buf, "# Area: %e\n", math.NaN())
-
-	fmt.Fprintf(buf, "# ID\t ID\t sumw\t sumw2\t sumwx\t sumwx2\t numEntries\n")
-
-	var name = "Total   "
-	fmt.Fprintf(
-		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
-		name, name,
-		dtot.SumW(), dtot.SumW2(), dtot.SumWX(), dtot.SumWX2(), float64(dtot.Entries()),
-	)
-
-	name = "Underflow"
-	fmt.Fprintf(
-		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
-		name, name,
-		dflow[0].SumW(), dflow[0].SumW2(), dflow[0].SumWX(), dflow[0].SumWX2(), float64(dflow[0].Entries()),
-	)
-
-	name = "Overflow"
-	fmt.Fprintf(
-		buf,
-		"%s\t%s\t%e\t%e\t%e\t%e\t%e\n",
-		name, name,
-		dflow[1].SumW(), dflow[1].SumW2(), dflow[1].SumWX(), dflow[1].SumWX2(), float64(dflow[1].Entries()),
-	)
-	fmt.Fprintf(buf, "# xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries\n")
-	for i, d := range dists {
+		bin := &hh.Binning.Bins[i]
 		xmin := h.XBinLowEdge(i + 1)
 		xmax := h.XBinWidth(i+1) + xmin
-		fmt.Fprintf(
-			buf,
-			"%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
-			xmin, xmax,
-			d.SumW(), d.SumW2(), d.SumWX(), d.SumWX2(), float64(d.Entries()),
-		)
+		bin.Dist = h.dist1D(i + 1)
+		bin.Range.Min = xmin
+		bin.Range.Max = xmax
+		hh.Binning.Bins[i].Dist = h.dist1D(i + 1)
 	}
-	fmt.Fprintf(buf, "END YODA_HISTO1D_V2\n\n")
 
-	return buf.Bytes(), nil
+	return hh
+}
+
+// MarshalYODA implements the YODAMarshaler interface.
+func (h *H1I) MarshalYODA() ([]byte, error) {
+	return h.AsH1D().MarshalYODA()
 }
 
 // UnmarshalYODA implements the YODAUnmarshaler interface.
@@ -984,36 +857,18 @@ func (h *H1I) UnmarshalYODA(raw []byte) error {
 }
 
 func (h *H1I) ROOTMerge(src root.Object) error {
-	var h1 hbook.H1D
-	raw, err := h.MarshalYODA()
-	if err != nil {
-		return fmt.Errorf("rhist: could not marshal to YODA: %w", err)
-	}
-
-	err = h1.UnmarshalYODA(raw)
-	if err != nil {
-		return fmt.Errorf("rhist: could not unmarshal from YODA: %w", err)
-	}
-
 	hsrc, ok := src.(*H1I)
 	if !ok {
 		return fmt.Errorf("rhist: object %q is not a *rhist.H1F (%T)", src.(root.Named).Name(), src)
 	}
 
-	raw, err = hsrc.MarshalYODA()
-	if err != nil {
-		return fmt.Errorf("rhist: could not marshal to YODA: %w", err)
-	}
+	var (
+		h1   = h.AsH1D()
+		h2   = hsrc.AsH1D()
+		hadd = hbook.AddH1D(h1, h2)
+	)
 
-	var h2 hbook.H1D
-	err = h2.UnmarshalYODA(raw)
-	if err != nil {
-		return fmt.Errorf("rhist: could not unmarshal from YODA: %w", err)
-	}
-
-	hadd := hbook.AddH1D(&h1, &h2)
 	*h = *NewH1IFrom(hadd)
-
 	return nil
 }
 

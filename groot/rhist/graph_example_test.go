@@ -152,10 +152,7 @@ func ExampleCreate_graph() {
 		log.Fatal(err)
 	}
 
-	hr, err := rootcnv.S2D(robj.(rhist.Graph))
-	if err != nil {
-		log.Fatal(err)
-	}
+	hr := rootcnv.S2D(robj.(rhist.Graph))
 
 	fmt.Printf("\ngraph read back:\n")
 	for i, pt := range hr.Points() {
@@ -218,10 +215,7 @@ func ExampleCreate_graphErrors() {
 		log.Fatal(err)
 	}
 
-	hr, err := rootcnv.S2D(robj.(rhist.GraphErrors))
-	if err != nil {
-		log.Fatal(err)
-	}
+	hr := rootcnv.S2D(robj.(rhist.GraphErrors))
 
 	fmt.Printf("\ngraph read back:\n")
 	for i, pt := range hr.Points() {
@@ -284,10 +278,7 @@ func ExampleCreate_graphAsymmErrors() {
 		log.Fatal(err)
 	}
 
-	hr, err := rootcnv.S2D(robj.(rhist.GraphErrors))
-	if err != nil {
-		log.Fatal(err)
-	}
+	hr := rootcnv.S2D(robj.(rhist.GraphErrors))
 
 	fmt.Printf("\ngraph read back:\n")
 	for i, pt := range hr.Points() {

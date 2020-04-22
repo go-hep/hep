@@ -144,25 +144,16 @@ func (cmd *dumpCmd) dumpTree(t rtree.Tree) error {
 }
 
 func (cmd *dumpCmd) dumpH1(h1 rhist.H1) error {
-	h, err := rootcnv.H1D(h1)
-	if err != nil {
-		return fmt.Errorf("could not convert TH1x to hbook: %w", err)
-	}
+	h := rootcnv.H1D(h1)
 	return yodacnv.Write(cmd.w, h)
 }
 
 func (cmd *dumpCmd) dumpH2(h2 rhist.H2) error {
-	h, err := rootcnv.H2D(h2)
-	if err != nil {
-		return fmt.Errorf("could not convert TH2x to hbook: %w", err)
-	}
+	h := rootcnv.H2D(h2)
 	return yodacnv.Write(cmd.w, h)
 }
 
 func (cmd *dumpCmd) dumpGraph(gr rhist.Graph) error {
-	g, err := rootcnv.S2D(gr)
-	if err != nil {
-		return fmt.Errorf("could not convert TGraph to hbook: %w", err)
-	}
+	g := rootcnv.S2D(gr)
 	return yodacnv.Write(cmd.w, g)
 }

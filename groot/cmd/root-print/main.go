@@ -173,17 +173,11 @@ func printObject(odir, otyp string, obj root.Object, verbose bool) error {
 
 	switch o := obj.(type) {
 	case rhist.H2:
-		h, err := rootcnv.H2D(o)
-		if err != nil {
-			return fmt.Errorf("could not convert %q to hbook.H2D: %w", name, err)
-		}
+		h := rootcnv.H2D(o)
 		p.Add(hplot.NewH2D(h, nil))
 
 	case rhist.H1:
-		h, err := rootcnv.H1D(o)
-		if err != nil {
-			return fmt.Errorf("could not convert %q to hbook.H1D: %w", name, err)
-		}
+		h := rootcnv.H1D(o)
 		hh := hplot.NewH1D(h)
 		hh.Color = colors[2]
 		hh.LineStyle.Color = colors[2]
@@ -193,10 +187,7 @@ func printObject(odir, otyp string, obj root.Object, verbose bool) error {
 		p.Add(hh)
 
 	case rhist.GraphErrors:
-		h, err := rootcnv.S2D(o)
-		if err != nil {
-			return fmt.Errorf("could not convert %q to hbook.S2D: %w", name, err)
-		}
+		h := rootcnv.S2D(o)
 		if name := h.Name(); name != "" {
 			p.Title.Text = name
 		}
@@ -205,10 +196,7 @@ func printObject(odir, otyp string, obj root.Object, verbose bool) error {
 		p.Add(g)
 
 	case rhist.Graph:
-		h, err := rootcnv.S2D(o)
-		if err != nil {
-			return fmt.Errorf("could not convert %q to hbook.S2D: %w", name, err)
-		}
+		h := rootcnv.S2D(o)
 		if name := h.Name(); name != "" {
 			p.Title.Text = name
 		}

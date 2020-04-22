@@ -493,10 +493,7 @@ func (srv *Server) handlePlotH1(w http.ResponseWriter, r *http.Request) error {
 			return fmt.Errorf("rsrv: object %v:%s/%q is not a 1-dim histogram (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
 		}
 
-		h1, err := rootcnv.H1D(robj)
-		if err != nil {
-			return fmt.Errorf("could not convert TH1 to hbook: %w", err)
-		}
+		h1 := rootcnv.H1D(robj)
 
 		req.Options.init()
 
@@ -590,10 +587,7 @@ func (srv *Server) handlePlotH2(w http.ResponseWriter, r *http.Request) error {
 			return fmt.Errorf("rsrv: object %v:%s/%q is not a 2-dim histogram (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
 		}
 
-		h2, err := rootcnv.H2D(robj)
-		if err != nil {
-			return fmt.Errorf("could not convert TH2 to hbook: %w", err)
-		}
+		h2 := rootcnv.H2D(robj)
 
 		req.Options.init()
 
@@ -686,10 +680,7 @@ func (srv *Server) handlePlotS2(w http.ResponseWriter, r *http.Request) error {
 			return fmt.Errorf("rsrv: object %v:%s/%q is not a 2-dim scatter (type=%s)", req.URI, req.Dir, req.Obj, obj.Class())
 		}
 
-		s2, err := rootcnv.S2D(robj)
-		if err != nil {
-			return fmt.Errorf("could not convert TGraph to hbook: %w", err)
-		}
+		s2 := rootcnv.S2D(robj)
 
 		req.Options.init()
 

@@ -115,10 +115,7 @@ func TestYODA2ROOT(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			rh1, err := rootcnv.H1D(robj.(rhist.H1))
-			if err != nil {
-				t.Fatal(err)
-			}
+			rh1 := rootcnv.H1D(robj.(rhist.H1))
 
 			if got, want := rh1.XMean(), h1.XMean(); got != want {
 				t.Fatalf("h1 round-trip failed: got: %v, want: %v", got, want)
@@ -129,10 +126,7 @@ func TestYODA2ROOT(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			rh2, err := rootcnv.H2D(robj.(rhist.H2))
-			if err != nil {
-				t.Fatal(err)
-			}
+			rh2 := rootcnv.H2D(robj.(rhist.H2))
 
 			if got, want := rh2.XMean(), h2.XMean(); got != want {
 				t.Fatalf("h2 round-trip failed: got: %v, want: %v", got, want)
@@ -143,10 +137,7 @@ func TestYODA2ROOT(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			rs2, err := rootcnv.S2D(robj.(rhist.GraphErrors))
-			if err != nil {
-				t.Fatal(err)
-			}
+			rs2 := rootcnv.S2D(robj.(rhist.GraphErrors))
 
 			if !reflect.DeepEqual(rs2, s2) {
 				t.Fatalf("s2 round-trip failed")
@@ -157,10 +148,7 @@ func TestYODA2ROOT(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			ranon, err := rootcnv.S2D(robj.(rhist.GraphErrors))
-			if err != nil {
-				t.Fatal(err)
-			}
+			ranon := rootcnv.S2D(robj.(rhist.GraphErrors))
 
 			if !reflect.DeepEqual(ranon.Points(), anon.Points()) {
 				t.Fatalf("s2-anon round-trip failed")

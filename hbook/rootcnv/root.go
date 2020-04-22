@@ -11,36 +11,31 @@ import (
 	"go-hep.org/x/hep/hbook/yodacnv"
 )
 
+type h1der interface {
+	AsH1D() *hbook.H1D
+}
+
 // H1D creates a new H1D from a TH1x.
-func H1D(h1 rhist.H1) (*hbook.H1D, error) {
-	raw, err := h1.(yodacnv.Marshaler).MarshalYODA()
-	if err != nil {
-		return nil, err
-	}
-	var h hbook.H1D
-	err = h.UnmarshalYODA(raw)
-	if err != nil {
-		return nil, err
-	}
-	return &h, nil
+func H1D(h1 rhist.H1) *hbook.H1D {
+	return h1.(h1der).AsH1D()
 }
 
 // H2D creates a new H2D from a TH2x.
-func H2D(h2 rhist.H2) (*hbook.H2D, error) {
+func H2D(h2 rhist.H2) *hbook.H2D {
 	raw, err := h2.(yodacnv.Marshaler).MarshalYODA()
 	if err != nil {
-		return nil, err
+		panic(err) // FIXME(sbinet): implement AsH2D
 	}
 	var h hbook.H2D
 	err = h.UnmarshalYODA(raw)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
-	return &h, nil
+	return &h
 }
 
 // S2D creates a new S2D from a TGraph, TGraphErrors or TGraphAsymmErrors.
-func S2D(g rhist.Graph) (*hbook.S2D, error) {
+func S2D(g rhist.Graph) *hbook.S2D {
 	pts := make([]hbook.Point2D, g.Len())
 	for i := range pts {
 		x, y := g.XY(i)
@@ -60,7 +55,7 @@ func S2D(g rhist.Graph) (*hbook.S2D, error) {
 	s2d := hbook.NewS2D(pts...)
 	s2d.Annotation()["name"] = g.Name()
 	s2d.Annotation()["title"] = g.Title()
-	return s2d, nil
+	return s2d
 }
 
 // FromH1D creates a new ROOT TH1D from a 1-dim hbook histogram.
