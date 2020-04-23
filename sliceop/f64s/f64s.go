@@ -63,22 +63,26 @@ func Find(dst []int, src []float64, f func(v float64) bool) []int {
 	return dst
 }
 
-// Take creates a slice with all elements of src indiced by the provided indices.
+// Take creates a slice with all elements of src indiced by provided indices.
 // Take uses dst as work buffer, storing elements at the start of the slice.
 // Take clears dst if a slice is passed, and allocates a new slice if dst is nil.
 func Take(dst, src []float64, indices []int) []float64 {
 
 	if dst == nil {
-		dst = make([]float64, 0, len(indices))
+		dst = make([]float64, len(indices))
+	}
+
+	if len(dst) != len(indices) {
+		panic("f64s: length mismatch")
 	}
 
 	if len(indices) > len(src) {
 		panic("f64s: length mismatch")
 	}
 
-	dst = dst[:0]
-	for _, i := range indices {
-		dst = append(dst, src[i])
+	dst = dst[0:len(indices)]
+	for i, v := range indices {
+		dst[i] = src[v]
 	}
 
 	return dst
