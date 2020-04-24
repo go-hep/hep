@@ -93,10 +93,10 @@ func Take(dst, src []float64, indices []int) []float64 {
 
 	dst = dst[0:len(indices)]
 
-	m := make(map[int]int, len(indices))
+	m := make(map[int]struct{}, len(indices))
 	for i, v := range indices {
 		if _, there := m[v]; !there {
-			m[v] = v
+			m[v] = struct{}{}
 		} else {
 			panic("f64s: duplicate indices")
 		}
