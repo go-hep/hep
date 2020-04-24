@@ -116,7 +116,7 @@ var takeSink []float64
 
 func BenchmarkTake(b *testing.B) {
 	for _, size := range []int{2, 4, 8, 128, 1024, 1024 * 1024} {
-		b.Run(fmt.Sprintf("%d", size), func(b *testing.B) {
+		b.Run(fmt.Sprintf("Len=%d", size), func(b *testing.B) {
 			src := make([]float64, size)
 			ind := make([]int, 0, len(src))
 			rnd := rand.New(rand.NewSource(0))
@@ -127,10 +127,9 @@ func BenchmarkTake(b *testing.B) {
 				}
 			}
 			dst := make([]float64, len(ind))
-
 			b.ReportAllocs()
-			b.ResetTimer()
 
+			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				takeSink = Take(dst, src, ind)
 			}

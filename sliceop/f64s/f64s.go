@@ -7,7 +7,6 @@ package f64s
 
 import (
 	"fmt"
-	"sort"
 )
 
 var (
@@ -82,10 +81,6 @@ func Find(dst []int, src []float64, f func(v float64) bool) []int {
 // Take will panic if length of indices is different from length of dst.
 func Take(dst, src []float64, indices []int) []float64 {
 
-	if !sort.IntsAreSorted(indices) {
-		panic(errSortedIndices)
-	}
-
 	if len(indices) > len(src) {
 		panic(errLength)
 	}
@@ -98,15 +93,21 @@ func Take(dst, src []float64, indices []int) []float64 {
 		panic(errLength)
 	}
 
-	dst = dst[:len(indices)]
+	if len(indices) == 0 {
+		return dst
+	}
 
-	set := make(map[int]struct{}, len(indices))
-	for i, v := range indices {
-		if _, dup := set[v]; dup {
+	dst[0] = src[indices[0]]
+	for i := 1; i < len(indices); i++ {
+		v0 := indices[i-1]
+		v1 := indices[i]
+		switch {
+		case v0 == v1:
 			panic(errDuplicateIndices)
+		case v0 > v1:
+			panic(errSortedIndices)
 		}
-		set[v] = struct{}{}
-		dst[i] = src[v]
+		dst[i] = src[v1]
 	}
 
 	return dst
