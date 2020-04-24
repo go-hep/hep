@@ -6,7 +6,14 @@
 package f64s
 
 import (
+	"fmt"
 	"sort"
+)
+
+var (
+	errLength           = fmt.Errorf("f64s: length mismatch")
+	errSortedIndices    = fmt.Errorf("f64s: indices not sorted")
+	errDuplicateIndices = fmt.Errorf("f64s: duplicate indices")
 )
 
 // Filter creates a slice with all the elements x_i of src for which f(x_i) is true.
@@ -39,7 +46,7 @@ func Map(dst, src []float64, f func(v float64) float64) []float64 {
 	}
 
 	if len(src) != len(dst) {
-		panic("f64s: length mismatch")
+		panic(errLength)
 	}
 
 	for i, x := range src {
@@ -76,11 +83,11 @@ func Find(dst []int, src []float64, f func(v float64) bool) []int {
 func Take(dst, src []float64, indices []int) []float64 {
 
 	if !sort.IntsAreSorted(indices) {
-		panic("f64s: indices not sorted")
+		panic(errSortedIndices)
 	}
 
 	if len(indices) > len(src) {
-		panic("f64s: length mismatch")
+		panic(errLength)
 	}
 
 	if dst == nil {
@@ -88,18 +95,17 @@ func Take(dst, src []float64, indices []int) []float64 {
 	}
 
 	if len(dst) != len(indices) {
-		panic("f64s: length mismatch")
+		panic(errLength)
 	}
 
-	dst = dst[0:len(indices)]
+	dst = dst[:len(indices)]
 
-	m := make(map[int]struct{}, len(indices))
+	set := make(map[int]struct{}, len(indices))
 	for i, v := range indices {
-		if _, there := m[v]; !there {
-			m[v] = struct{}{}
-		} else {
-			panic("f64s: duplicate indices")
+		if _, dup := set[v]; dup {
+			panic(errDuplicateIndices)
 		}
+		set[v] = struct{}{}
 		dst[i] = src[v]
 	}
 
