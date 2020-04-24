@@ -98,7 +98,7 @@ func Take(dst, src []float64, indices []int) []float64 {
 		if _, there := m[v]; !there {
 			m[v] = v
 		} else {
-			panic("f64s: ducplicate indices")
+			panic("f64s: duplicate indices")
 		}
 		dst[i] = src[v]
 	}
