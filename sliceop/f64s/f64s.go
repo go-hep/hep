@@ -5,6 +5,10 @@
 // Package f64s provides common operations on float64 slices.
 package f64s
 
+import (
+	"sort"
+)
+
 // Filter creates a slice with all the elements x_i of src for which f(x_i) is true.
 // Filter uses dst as work buffer, storing elements at the start of the slice.
 // Filter clears dst if a slice is passed, and allocates a new slice if dst is nil.
@@ -63,17 +67,22 @@ func Find(dst []int, src []float64, f func(v float64) bool) []int {
 	return dst
 }
 
-// Take creates a slice with all elements of src indiced by provided indices.
+// Take creates a sub-slice of src with all elements indiced by the provided indices.
 // Take uses dst as work buffer, storing elements at the start of the slice.
 // Take clears dst if a slice is passed, and allocates a new slice if dst is nil.
-// Take will panic if length of indices is larger than lenght of src.
-// Take will panic if length of indices is different from lenght of dst.
+// Take will panic if indices is not sorted or has duplicates.
+// Take will panic if length of indices is larger than length of src.
+// Take will panic if length of indices is different from length of dst.
 func Take(dst, src []float64, indices []int) []float64 {
 
-	// TO BE DONE (rmadar)
-	// - require that indices is sorted (for perf reasons) + doc
- 	// - deal with duplicated indices + doc
-	
+	if !sort.IntsAreSorted(indices) {
+		panic("f64s: indices not sorted")
+	}
+
+	if len(indices) > len(src) {
+		panic("f64s: length mismatch")
+	}
+
 	if dst == nil {
 		dst = make([]float64, len(indices))
 	}
@@ -82,12 +91,15 @@ func Take(dst, src []float64, indices []int) []float64 {
 		panic("f64s: length mismatch")
 	}
 
-	if len(indices) > len(src) {
-		panic("f64s: length mismatch")
-	}
-
 	dst = dst[0:len(indices)]
+
+	m := make(map[int]int, len(indices))
 	for i, v := range indices {
+		if _, there := m[v]; !there {
+			m[v] = v
+		} else {
+			panic("f64s: ducplicate indices")
+		}
 		dst[i] = src[v]
 	}
 
