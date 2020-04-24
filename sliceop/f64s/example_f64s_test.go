@@ -39,3 +39,13 @@ func ExampleFind() {
 	// Output:
 	// [2 5]
 }
+
+// An example of taking a sub-slice defined by indices
+func ExampleTake() {
+	slice := []float64{1, 2, -99, 4, 5, -99, 7}
+	indices := []int{2, 5}
+	fmt.Println(f64s.Take(nil, slice, indices))
+
+	// Output:
+	// [-99 -99]
+}
