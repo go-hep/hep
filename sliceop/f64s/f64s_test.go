@@ -5,6 +5,8 @@
 package f64s
 
 import (
+	"fmt"
+	"math/rand"
 	"reflect"
 	"testing"
 )
@@ -105,6 +107,32 @@ func TestTake(t *testing.T) {
 			got := Take(tc.dst, tc.src, tc.inds)
 			if !reflect.DeepEqual(got, tc.want) {
 				t.Fatalf("got= %v\nwant=%v", got, tc.want)
+			}
+		})
+	}
+}
+
+var takeSink []float64
+
+func BenchmarkTake(b *testing.B) {
+	for _, size := range []int{2, 4, 8, 128, 1024, 1024 * 1024} {
+		b.Run(fmt.Sprintf("%d", size), func(b *testing.B) {
+			src := make([]float64, size)
+			ind := make([]int, 0, len(src))
+			rnd := rand.New(rand.NewSource(0))
+			for i := range src {
+				src[i] = rnd.Float64()
+				if rnd.Float64() > 0.5 {
+					ind = append(ind, i)
+				}
+			}
+			dst := make([]float64, len(ind))
+
+			b.ReportAllocs()
+			b.ResetTimer()
+
+			for i := 0; i < b.N; i++ {
+				takeSink = Take(dst, src, ind)
 			}
 		})
 	}
