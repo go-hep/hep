@@ -124,15 +124,14 @@ func ExampleS2D_withBand() {
 	}
 }
 
-
 // ExampleS2D_withHiSteps draws some scatter points
 // with their error bars, using a step-like style
 func ExampleS2D_WithStepKind() {
 	pts := []hbook.Point2D{
-		{X: 1, ErrX: hbook.Range{Min: 0.5, Max: 0.5},  Y: 1, ErrY: hbook.Range{Min: 2, Max: 3}},
-		{X: 2, ErrX: hbook.Range{Min: 0.5, Max: 0.5},  Y: 2, ErrY: hbook.Range{Min: 5, Max: 2}},
-		{X: 3, ErrX: hbook.Range{Min: 0.5, Max: 0.5},  Y: 3, ErrY: hbook.Range{Min: 2, Max: 2}},
-		{X: 4, ErrX: hbook.Range{Min: 0.5, Max: 0.5},  Y: 4, ErrY: hbook.Range{Min: 1.2, Max: 2}},
+		{X: 1, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, Y: 1, ErrY: hbook.Range{Min: 2, Max: 3}},
+		{X: 2, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, Y: 2, ErrY: hbook.Range{Min: 5, Max: 2}},
+		{X: 3, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, Y: 3, ErrY: hbook.Range{Min: 2, Max: 2}},
+		{X: 4, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, Y: 4, ErrY: hbook.Range{Min: 1.2, Max: 2}},
 	}
 	s2d := hbook.NewS2D(pts...)
 

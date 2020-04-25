@@ -127,7 +127,7 @@ func NewS2D(data plotter.XYer, opts ...Options) *S2D {
 
 	// rmadar: not sure about this (ie, best to handle default value)
 	s.Steps = cfg.steps
-	
+
 	if cfg.bars.xerrs {
 		_ = s.withXErrBars()
 	}
@@ -161,28 +161,28 @@ func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 	}
 
 	if pts.LineStyle.Width > 0 {
-		
+
 		data, err := plotter.CopyXYs(pts.Data)
 		if err != nil {
 			panic(err)
 		}
-		
+
 		// rmadar: a switch was suggested but I'd say a if seems more suitable
 		if pts.Steps == HiSteps && pts.xbars != nil {
-			
+
 			xerr, ok := pts.Data.(plotter.XErrorer)
 			if !ok {
 				panic("s2d: cannot get X errors during HiSteps plotting")
 			}
-			
+
 			data_step := plotter.XYs{}
 			for i, d := range data {
 				xmin, xmax := xerr.XError(i)
-				data_step = append(data_step, plotter.XY{X: d.X - xmin, Y: d.Y} )
-				data_step = append(data_step, plotter.XY{X: d.X + xmax, Y: d.Y} )
+				data_step = append(data_step, plotter.XY{X: d.X - xmin, Y: d.Y})
+				data_step = append(data_step, plotter.XY{X: d.X + xmax, Y: d.Y})
 			}
 		}
-		
+
 		line := plotter.Line{
 			XYs:       data,
 			LineStyle: pts.LineStyle,

@@ -13,9 +13,10 @@ type Options func(cfg *config)
 
 // Step kind
 type StepsKind byte
+
 const (
-    NoSteps StepsKind = iota
-    HiSteps
+	NoSteps StepsKind = iota
+	HiSteps
 )
 
 type config struct {
