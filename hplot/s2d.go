@@ -168,7 +168,7 @@ func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 		}
 
 		// rmadar: a switch was suggested but I'd say a if seems more suitable
-		if pts.Steps == HiSteps && pts.xbars != nil {
+		if pts.Steps == HiSteps {
 
 			xerr, ok := pts.Data.(plotter.XErrorer)
 			if !ok {
