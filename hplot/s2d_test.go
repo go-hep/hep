@@ -25,3 +25,7 @@ func TestScatter2DWithBand(t *testing.T) {
 func TestScatter2DWithStepsKind(t *testing.T) {
 	checkPlot(cmpimg.CheckPlot)(ExampleS2D_withStepsKind, t, "s2d_steps.png")
 }
+
+func TestScatter2DWithStepsKindWithBand(t *testing.T) {
+	checkPlot(cmpimg.CheckPlot)(ExampleS2D_withStepsKind_withBand, t, "s2d_steps_band.png")
+}

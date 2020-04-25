@@ -86,12 +86,15 @@ func (pts *S2D) withBand() error {
 	}
 
 	var (
-		top = make(plotter.XYs, pts.Data.Len())
-		bot = make(plotter.XYs, pts.Data.Len())
+		top plotter.XYs
+		bot plotter.XYs
 	)
 
 	switch pts.Steps {
+
 	case NoSteps:
+		top = make(plotter.XYs, pts.Data.Len())
+		bot = make(plotter.XYs, pts.Data.Len())
 		for i := range top {
 			x, y := pts.Data.XY(i)
 			ymin, ymax := yerr.YError(i)
@@ -100,16 +103,28 @@ func (pts *S2D) withBand() error {
 			bot[i].X = x
 			bot[i].Y = y - math.Abs(ymin)
 		}
+
 	case HiSteps:
-		for i := range top {
-			// WIP(rmadar): implement the proper band in case of step
-			//              this might actually involve 2xn points - need to think
-			x, y := pts.Data.XY(i)
+		top = make(plotter.XYs, 2*pts.Data.Len())
+		bot = make(plotter.XYs, 2*pts.Data.Len())
+		xerr, ok := pts.Data.(plotter.XErrorer)
+		if !ok {
+			panic("s2d: cannot get X errors, required for HiSteps plotting")
+		}
+
+		// rmadar: the loop here doesn't really need a copy of XYs() but I am not sure
+		// how to handle indices in the loop if only i is defined.
+		data, err := plotter.CopyXYs(pts.Data)
+		if err != nil {
+			panic(err)
+		}
+		for i, d := range data {
+			xmin, xmax := xerr.XError(i)
 			ymin, ymax := yerr.YError(i)
-			top[i].X = x
-			top[i].Y = y + math.Abs(ymax)
-			bot[i].X = x
-			bot[i].Y = y - math.Abs(ymin)
+			top = append(top, plotter.XY{X: d.X - math.Abs(xmin), Y: d.Y + math.Abs(ymax)})
+			top = append(top, plotter.XY{X: d.X + math.Abs(xmax), Y: d.Y + math.Abs(ymax)})
+			bot = append(bot, plotter.XY{X: d.X - math.Abs(xmin), Y: d.Y - math.Abs(ymin)})
+			bot = append(bot, plotter.XY{X: d.X + math.Abs(xmax), Y: d.Y - math.Abs(ymin)})
 		}
 	}
 	pts.Band = NewBand(color.Gray{200}, top, bot)
@@ -176,7 +191,7 @@ func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 				panic("s2d: cannot get X errors, required for HiSteps plotting")
 			}
 
-			dsteps := make([]plotter.XY, 0, 2*len(data))
+			dsteps := make(plotter.XYs, 0, 2*len(data))
 			for i, d := range data {
 				xmin, xmax := xerr.XError(i)
 				dsteps = append(dsteps, plotter.XY{X: d.X - xmin, Y: d.Y})
