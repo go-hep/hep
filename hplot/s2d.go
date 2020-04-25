@@ -181,6 +181,7 @@ func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 				data_step = append(data_step, plotter.XY{X: d.X - xmin, Y: d.Y})
 				data_step = append(data_step, plotter.XY{X: d.X + xmax, Y: d.Y})
 			}
+			data = data_step
 		}
 
 		line := plotter.Line{
