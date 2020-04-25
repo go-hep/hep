@@ -182,7 +182,7 @@ func ExampleS2D_withStepsKind_withBand() {
 
 	p.Add(s)
 
-	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d_steps_bands.png")
+	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d_steps_band.png")
 	if err != nil {
 		log.Fatal(err)
 	}

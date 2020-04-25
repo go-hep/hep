@@ -107,24 +107,22 @@ func (pts *S2D) withBand() error {
 	case HiSteps:
 		top = make(plotter.XYs, 2*pts.Data.Len())
 		bot = make(plotter.XYs, 2*pts.Data.Len())
-		xerr, ok := pts.Data.(plotter.XErrorer)
-		if !ok {
-			panic("s2d: cannot get X errors, required for HiSteps plotting")
-		}
-
-		// rmadar: the loop here doesn't really need a copy of XYs() but I am not sure
-		// how to handle indices in the loop if only i is defined.
-		data, err := plotter.CopyXYs(pts.Data)
-		if err != nil {
-			panic(err)
-		}
-		for i, d := range data {
-			xmin, xmax := xerr.XError(i)
-			ymin, ymax := yerr.YError(i)
-			top = append(top, plotter.XY{X: d.X - math.Abs(xmin), Y: d.Y + math.Abs(ymax)})
-			top = append(top, plotter.XY{X: d.X + math.Abs(xmax), Y: d.Y + math.Abs(ymax)})
-			bot = append(bot, plotter.XY{X: d.X - math.Abs(xmin), Y: d.Y - math.Abs(ymin)})
-			bot = append(bot, plotter.XY{X: d.X + math.Abs(xmax), Y: d.Y - math.Abs(ymin)})
+		xerr := pts.Data.(plotter.XErrorer)
+		for i := range top {
+			idata := i / 2
+			x, y := pts.Data.XY(idata)
+			xmin, xmax := xerr.XError(idata)
+			ymin, ymax := yerr.YError(idata)
+			top[i].X = x - math.Abs(xmin)
+			top[i].Y = y + math.Abs(ymax)
+			bot[i].X = x - math.Abs(xmin)
+			bot[i].Y = y - math.Abs(ymin)
+			if i%2 != 0 {
+				top[i].X = x + math.Abs(xmax)
+				top[i].Y = y + math.Abs(ymax)
+				bot[i].X = x + math.Abs(xmax)
+				bot[i].Y = y - math.Abs(ymin)
+			}
 		}
 	}
 	pts.Band = NewBand(color.Gray{200}, top, bot)
@@ -143,6 +141,11 @@ func NewS2D(data plotter.XYer, opts ...Options) *S2D {
 
 	if cfg.steps > 0 {
 		s.Steps = cfg.steps
+
+		_, ok := data.(plotter.XErrorer)
+		if !ok {
+			panic("s2d: cannot get X errors, required for HiSteps plotting")
+		}
 	}
 
 	if cfg.bars.xerrs {
@@ -185,12 +188,7 @@ func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 		}
 
 		if pts.Steps == HiSteps {
-
-			xerr, ok := pts.Data.(plotter.XErrorer)
-			if !ok {
-				panic("s2d: cannot get X errors, required for HiSteps plotting")
-			}
-
+			xerr := pts.Data.(plotter.XErrorer)
 			dsteps := make(plotter.XYs, 0, 2*len(data))
 			for i, d := range data {
 				xmin, xmax := xerr.XError(i)
