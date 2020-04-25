@@ -32,6 +32,9 @@ type S2D struct {
 
 	// Band displays a colored band between the y-min and y-max error bars.
 	Band *Band
+
+	// Step enable a step-like plotting style
+	Steps StepsKind
 }
 
 // withXErrBars enables the X error bars
@@ -85,15 +88,29 @@ func (pts *S2D) withBand() error {
 		top = make(plotter.XYs, pts.Data.Len())
 		bot = make(plotter.XYs, pts.Data.Len())
 	)
-	for i := range top {
-		x, y := pts.Data.XY(i)
-		ymin, ymax := yerr.YError(i)
-		top[i].X = x
-		top[i].Y = y + math.Abs(ymax)
-		bot[i].X = x
-		bot[i].Y = y - math.Abs(ymin)
-	}
 
+	switch pts.Steps {
+	case NoSteps:
+		for i := range top {
+			x, y := pts.Data.XY(i)
+			ymin, ymax := yerr.YError(i)
+			top[i].X = x
+			top[i].Y = y + math.Abs(ymax)
+			bot[i].X = x
+			bot[i].Y = y - math.Abs(ymin)
+		}
+	case HiSteps:
+		for i := range top {
+			// WIP(rmadar): implement the proper band in case of step
+			//              this might actually involve 2xn points - need to think
+			x, y := pts.Data.XY(i)
+			ymin, ymax := yerr.YError(i)
+			top[i].X = x
+			top[i].Y = y + math.Abs(ymax)
+			bot[i].X = x
+			bot[i].Y = y - math.Abs(ymin)
+		}
+	}
 	pts.Band = NewBand(color.Gray{200}, top, bot)
 	return nil
 }
@@ -108,6 +125,9 @@ func NewS2D(data plotter.XYer, opts ...Options) *S2D {
 
 	cfg := newConfig(opts)
 
+	// rmadar: not sure about this (ie, best to handle default value)
+	s.Steps = cfg.steps
+	
 	if cfg.bars.xerrs {
 		_ = s.withXErrBars()
 	}
@@ -141,10 +161,28 @@ func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 	}
 
 	if pts.LineStyle.Width > 0 {
+		
 		data, err := plotter.CopyXYs(pts.Data)
 		if err != nil {
 			panic(err)
 		}
+		
+		// rmadar: a switch was suggested but I'd say a if seems more suitable
+		if pts.Steps == HiSteps && pts.xbars != nil {
+			
+			xerr, ok := pts.Data.(plotter.XErrorer)
+			if !ok {
+				panic("s2d: cannot get X errors during HiSteps plotting")
+			}
+			
+			data_step := plotter.XYs{}
+			for i, d := range data {
+				xmin, xmax := xerr.XError(i)
+				data_step = append(data_step, plotter.XY{X: d.X - xmin, Y: d.Y} )
+				data_step = append(data_step, plotter.XY{X: d.X + xmax, Y: d.Y} )
+			}
+		}
+		
 		line := plotter.Line{
 			XYs:       data,
 			LineStyle: pts.LineStyle,

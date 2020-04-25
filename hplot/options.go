@@ -11,6 +11,13 @@ import (
 // Options encodes various options to pass to a plot.
 type Options func(cfg *config)
 
+// Step kind
+type StepsKind byte
+const (
+    NoSteps StepsKind = iota
+    HiSteps
+)
+
 type config struct {
 	bars struct {
 		xerrs bool
@@ -22,6 +29,7 @@ type config struct {
 		y bool
 	}
 	glyph draw.GlyphStyle
+	steps StepsKind
 }
 
 func newConfig(opts []Options) *config {
@@ -57,6 +65,13 @@ func WithYErrBars(v bool) Options {
 func WithBand(v bool) Options {
 	return func(c *config) {
 		c.band = v
+	}
+}
+
+// WithStepKind enables or disables the display of a colored band between Y-error bars.
+func WithStepKind(s StepsKind) Options {
+	return func(c *config) {
+		c.steps = s
 	}
 }
 
