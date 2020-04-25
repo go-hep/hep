@@ -33,7 +33,8 @@ type S2D struct {
 	// Band displays a colored band between the y-min and y-max error bars.
 	Band *Band
 
-	// Step enable a step-like plotting style
+	// Steps controls the style of the connecting
+	// line (NoSteps, HiSteps, etc...)
 	Steps StepsKind
 }
 
@@ -125,8 +126,9 @@ func NewS2D(data plotter.XYer, opts ...Options) *S2D {
 
 	cfg := newConfig(opts)
 
-	// rmadar: not sure about this (ie, best to handle default value)
-	s.Steps = cfg.steps
+	if cfg.steps > 0 {
+		s.Steps = cfg.steps
+	}
 
 	if cfg.bars.xerrs {
 		_ = s.withXErrBars()
@@ -167,21 +169,20 @@ func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 			panic(err)
 		}
 
-		// rmadar: a switch was suggested but I'd say a if seems more suitable
 		if pts.Steps == HiSteps {
 
 			xerr, ok := pts.Data.(plotter.XErrorer)
 			if !ok {
-				panic("s2d: cannot get X errors during HiSteps plotting")
+				panic("s2d: cannot get X errors, required for HiSteps plotting")
 			}
 
-			data_step := plotter.XYs{}
+			dsteps := make([]plotter.XY, 0, 2*len(data))
 			for i, d := range data {
 				xmin, xmax := xerr.XError(i)
-				data_step = append(data_step, plotter.XY{X: d.X - xmin, Y: d.Y})
-				data_step = append(data_step, plotter.XY{X: d.X + xmax, Y: d.Y})
+				dsteps = append(dsteps, plotter.XY{X: d.X - xmin, Y: d.Y})
+				dsteps = append(dsteps, plotter.XY{X: d.X + xmax, Y: d.Y})
 			}
-			data = data_step
+			data = dsteps
 		}
 
 		line := plotter.Line{

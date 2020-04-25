@@ -126,7 +126,7 @@ func ExampleS2D_withBand() {
 
 // ExampleS2D_withHiSteps draws some scatter points
 // with their error bars, using a step-like style
-func ExampleS2D_WithStepKind() {
+func ExampleS2D_withStepsKind() {
 	pts := []hbook.Point2D{
 		{X: 1, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, Y: 1, ErrY: hbook.Range{Min: 2, Max: 3}},
 		{X: 2, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, Y: 2, ErrY: hbook.Range{Min: 5, Max: 2}},
@@ -142,7 +142,7 @@ func ExampleS2D_WithStepKind() {
 	p.Add(plotter.NewGrid())
 
 	var stepsKind hplot.StepsKind = 1
-	s := hplot.NewS2D(s2d, hplot.WithStepKind(stepsKind), hplot.WithYErrBars(true))
+	s := hplot.NewS2D(s2d, hplot.WithStepsKind(stepsKind), hplot.WithYErrBars(true))
 	s.GlyphStyle.Color = color.Black
 	s.GlyphStyle.Radius = vg.Points(4)
 	s.LineStyle.Width = 1

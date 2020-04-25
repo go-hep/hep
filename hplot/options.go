@@ -35,6 +35,7 @@ type config struct {
 
 func newConfig(opts []Options) *config {
 	cfg := new(config)
+	cfg.steps = NoSteps
 	for _, opt := range opts {
 		opt(cfg)
 	}
@@ -69,8 +70,8 @@ func WithBand(v bool) Options {
 	}
 }
 
-// WithStepKind enables or disables the display of a colored band between Y-error bars.
-func WithStepKind(s StepsKind) Options {
+// WithStepsKind sets the style of the connecting line (NoSteps, HiSteps, etc...)
+func WithStepsKind(s StepsKind) Options {
 	return func(c *config) {
 		c.steps = s
 	}
