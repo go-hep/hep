@@ -213,5 +213,54 @@ func (pts *S2D) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 // Thumbnail the thumbnail for the Scatter,
 // implementing the plot.Thumbnailer interface.
 func (pts *S2D) Thumbnail(c *draw.Canvas) {
-	c.DrawGlyph(pts.GlyphStyle, c.Center())
+	ymin := c.Min.Y
+	ymax := c.Max.Y
+	xmin := c.Min.X
+	xmax := c.Max.X
+
+	if pts.Band != nil {
+		box := []vg.Point{
+			{X: xmin, Y: ymin},
+			{X: xmax, Y: ymin},
+			{X: xmax, Y: ymax},
+			{X: xmin, Y: ymax},
+			{X: xmin, Y: ymin},
+		}
+		c.FillPolygon(pts.Band.FillColor, c.ClipPolygonXY(box))
+	}
+
+	if pts.LineStyle.Width != 0 {
+		ymid := c.Center().Y
+		line := []vg.Point{{X: xmin, Y: ymid}, {X: xmax, Y: ymid}}
+		c.StrokeLines(pts.LineStyle, c.ClipLinesX(line)...)
+
+	}
+
+	if pts.GlyphStyle != (draw.GlyphStyle{}) {
+		c.DrawGlyph(pts.GlyphStyle, c.Center())
+		if pts.ybars != nil {
+			var (
+				yerrs = pts.ybars
+				vsize = 0.5 * ((ymax - ymin) * 0.95)
+				x     = c.Center().X
+				ylo   = c.Center().Y - vsize
+				yup   = c.Center().Y + vsize
+				xylo  = vg.Point{X: x, Y: ylo}
+				xyup  = vg.Point{X: x, Y: yup}
+				line  = []vg.Point{xylo, xyup}
+				bar   = c.ClipLinesY(line)
+			)
+			c.StrokeLines(yerrs.LineStyle, bar...)
+			for _, pt := range []vg.Point{xylo, xyup} {
+				if c.Contains(pt) {
+					c.StrokeLine2(yerrs.LineStyle,
+						pt.X-yerrs.CapWidth/2,
+						pt.Y,
+						pt.X+yerrs.CapWidth/2,
+						pt.Y,
+					)
+				}
+			}
+		}
+	}
 }

@@ -86,6 +86,7 @@ func ExampleS2D_withErrorBars() {
 	)
 
 	p.Add(s)
+	p.Legend.Add("s2d", s)
 
 	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d_errbars.png")
 	if err != nil {
@@ -117,6 +118,7 @@ func ExampleS2D_withBand() {
 	s.LineStyle.Dashes = plotutil.Dashes(2)
 
 	p.Add(s)
+	p.Legend.Add("s2d", s)
 
 	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d_band.png")
 	if err != nil {
