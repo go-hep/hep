@@ -50,6 +50,9 @@ type H1D struct {
 
 	// YErrs is the y error bars plotter.
 	YErrs *plotter.YErrorBars
+
+	// Band displays a colored band between the y-min and y-max error bars.
+	Band *Band
 }
 
 type HInfoStyle uint32
@@ -112,6 +115,10 @@ func NewH1D(h *hbook.H1D, opts ...Options) *H1D {
 	h1.LogY = cfg.log.y
 	h1.Infos = cfg.hinfos
 
+	if cfg.band {
+		_ = h1.withBand()
+	}
+
 	if cfg.bars.yerrs {
 		h1.YErrs = h1.withYErrBars(nil)
 	}
@@ -156,6 +163,37 @@ func (h *H1D) withYErrBars(yoffs []float64) *plotter.YErrorBars {
 	yplt.LineStyle.Width = h.LineStyle.Width
 
 	return yplt
+}
+
+// withBand enables the band between ymin-ymax error bars.
+func (h1 *H1D) withBand() error {
+
+	bins := h1.Hist.Binning.Bins
+	var (
+		top = make(plotter.XYs, 2*len(bins))
+		bot = make(plotter.XYs, 2*len(bins))
+	)
+
+	for i := range top {
+		ibin := i / 2
+		bin := bins[ibin]
+		xmin, xmax := bin.XEdges().Min, bin.XEdges().Max
+		switch {
+		case i%2 != 0:
+			top[i].X = xmax
+			top[i].Y = bin.SumW() - 0.5*bin.ErrW()
+			bot[i].X = xmax
+			bot[i].Y = bin.SumW() + 0.5*bin.ErrW()
+		default:
+			top[i].X = xmin
+			top[i].Y = bin.SumW() - 0.5*bin.ErrW()
+			bot[i].X = xmin
+			bot[i].Y = bin.SumW() + 0.5*bin.ErrW()
+		}
+	}
+
+	h1.Band = NewBand(color.Gray{200}, top, bot)
+	return nil
 }
 
 // DataRange returns the minimum and maximum X and Y values
@@ -227,6 +265,10 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 	}
 
 	var glyphs []vg.Point
+
+	if h.Band != nil {
+		h.Band.Plot(c, p)
+	}
 
 	for i, bin := range bins {
 		xmin := trX(bin.XMin())
