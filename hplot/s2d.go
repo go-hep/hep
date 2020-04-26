@@ -32,6 +32,10 @@ type S2D struct {
 
 	// Band displays a colored band between the y-min and y-max error bars.
 	Band *Band
+
+	// Steps controls the style of the connecting
+	// line (NoSteps, HiSteps, etc...)
+	Steps StepsKind
 }
 
 // withXErrBars enables the X error bars
@@ -82,18 +86,47 @@ func (pts *S2D) withBand() error {
 	}
 
 	var (
+		top plotter.XYs
+		bot plotter.XYs
+	)
+
+	switch pts.Steps {
+
+	case NoSteps:
 		top = make(plotter.XYs, pts.Data.Len())
 		bot = make(plotter.XYs, pts.Data.Len())
-	)
-	for i := range top {
-		x, y := pts.Data.XY(i)
-		ymin, ymax := yerr.YError(i)
-		top[i].X = x
-		top[i].Y = y + math.Abs(ymax)
-		bot[i].X = x
-		bot[i].Y = y - math.Abs(ymin)
-	}
+		for i := range top {
+			x, y := pts.Data.XY(i)
+			ymin, ymax := yerr.YError(i)
+			top[i].X = x
+			top[i].Y = y + math.Abs(ymax)
+			bot[i].X = x
+			bot[i].Y = y - math.Abs(ymin)
+		}
 
+	case HiSteps:
+		top = make(plotter.XYs, 2*pts.Data.Len())
+		bot = make(plotter.XYs, 2*pts.Data.Len())
+		xerr := pts.Data.(plotter.XErrorer)
+		for i := range top {
+			idata := i / 2
+			x, y := pts.Data.XY(idata)
+			xmin, xmax := xerr.XError(idata)
+			ymin, ymax := yerr.YError(idata)
+			switch {
+			case i%2 != 0:
+				top[i].X = x + math.Abs(xmax)
+				top[i].Y = y + math.Abs(ymax)
+				bot[i].X = x + math.Abs(xmax)
+				bot[i].Y = y - math.Abs(ymin)
+			default:
+				top[i].X = x - math.Abs(xmin)
+				top[i].Y = y + math.Abs(ymax)
+				bot[i].X = x - math.Abs(xmin)
+				bot[i].Y = y - math.Abs(ymin)
+			}
+		}
+	}
 	pts.Band = NewBand(color.Gray{200}, top, bot)
 	return nil
 }
@@ -107,6 +140,8 @@ func NewS2D(data plotter.XYer, opts ...Options) *S2D {
 	s.GlyphStyle.Shape = draw.CrossGlyph{}
 
 	cfg := newConfig(opts)
+
+	s.Steps = cfg.steps
 
 	if cfg.bars.xerrs {
 		_ = s.withXErrBars()
@@ -141,10 +176,23 @@ func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 	}
 
 	if pts.LineStyle.Width > 0 {
+
 		data, err := plotter.CopyXYs(pts.Data)
 		if err != nil {
 			panic(err)
 		}
+
+		if pts.Steps == HiSteps {
+			xerr := pts.Data.(plotter.XErrorer)
+			dsteps := make(plotter.XYs, 0, 2*len(data))
+			for i, d := range data {
+				xmin, xmax := xerr.XError(i)
+				dsteps = append(dsteps, plotter.XY{X: d.X - xmin, Y: d.Y})
+				dsteps = append(dsteps, plotter.XY{X: d.X + xmax, Y: d.Y})
+			}
+			data = dsteps
+		}
+
 		line := plotter.Line{
 			XYs:       data,
 			LineStyle: pts.LineStyle,

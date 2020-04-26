@@ -125,3 +125,65 @@ func ExampleS2D_withBand() {
 		log.Fatal(err)
 	}
 }
+
+// ExampleS2D_withStepsKind draws some scatter points
+// with their error bars, using a step-like style
+func ExampleS2D_withStepsKind() {
+	pts := []hbook.Point2D{
+		{X: 1, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, Y: 1, ErrY: hbook.Range{Min: 2, Max: 3}},
+		{X: 2, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, Y: 2, ErrY: hbook.Range{Min: 5, Max: 2}},
+		{X: 3, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, Y: 3, ErrY: hbook.Range{Min: 2, Max: 2}},
+		{X: 4, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, Y: 4, ErrY: hbook.Range{Min: 1.2, Max: 2}},
+	}
+	s2d := hbook.NewS2D(pts...)
+
+	p := hplot.New()
+	p.Title.Text = "Scatter-2D (with steps)"
+	p.X.Label.Text = "X"
+	p.Y.Label.Text = "Y"
+	p.Add(plotter.NewGrid())
+
+	s := hplot.NewS2D(s2d, hplot.WithStepsKind(hplot.HiSteps), hplot.WithYErrBars(true))
+	s.GlyphStyle.Color = color.Black
+	s.GlyphStyle.Radius = vg.Points(4)
+	s.LineStyle.Width = 1
+	s.LineStyle.Dashes = plotutil.Dashes(2)
+
+	p.Add(s)
+
+	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d_steps.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// ExampleS2D_withSteps_withBand draws some scatter points
+// with their error bars, using a step-like style together with a band
+func ExampleS2D_withStepsKind_withBand() {
+	pts := []hbook.Point2D{
+		{X: 1, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, Y: 1, ErrY: hbook.Range{Min: 2, Max: 3}},
+		{X: 2, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, Y: 5, ErrY: hbook.Range{Min: 5, Max: 2}},
+		{X: 3, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, Y: 10, ErrY: hbook.Range{Min: 2, Max: 2}},
+		{X: 4, ErrX: hbook.Range{Min: 0.5, Max: 0.5}, Y: 15, ErrY: hbook.Range{Min: 1.2, Max: 2}},
+	}
+	s2d := hbook.NewS2D(pts...)
+
+	p := hplot.New()
+	p.Title.Text = "Scatter-2D (with steps and band)"
+	p.X.Label.Text = "X"
+	p.Y.Label.Text = "Y"
+	p.Add(plotter.NewGrid())
+
+	s := hplot.NewS2D(s2d, hplot.WithStepsKind(hplot.HiSteps), hplot.WithYErrBars(true), hplot.WithBand(true))
+	s.GlyphStyle.Color = color.Black
+	s.GlyphStyle.Radius = vg.Points(4)
+	s.LineStyle.Width = 1
+	s.LineStyle.Dashes = plotutil.Dashes(2)
+
+	p.Add(s)
+
+	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d_steps_band.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+}
