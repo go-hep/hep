@@ -124,7 +124,7 @@ func ExampleS2D_withBand() {
 	}
 }
 
-// ExampleS2D_withHiSteps draws some scatter points
+// ExampleS2D_withStepsKind draws some scatter points
 // with their error bars, using a step-like style
 func ExampleS2D_withStepsKind() {
 	pts := []hbook.Point2D{
@@ -141,8 +141,7 @@ func ExampleS2D_withStepsKind() {
 	p.Y.Label.Text = "Y"
 	p.Add(plotter.NewGrid())
 
-	var stepsKind hplot.StepsKind = 1
-	s := hplot.NewS2D(s2d, hplot.WithStepsKind(stepsKind), hplot.WithYErrBars(true))
+	s := hplot.NewS2D(s2d, hplot.WithStepsKind(hplot.HiSteps), hplot.WithYErrBars(true))
 	s.GlyphStyle.Color = color.Black
 	s.GlyphStyle.Radius = vg.Points(4)
 	s.LineStyle.Width = 1
@@ -156,7 +155,7 @@ func ExampleS2D_withStepsKind() {
 	}
 }
 
-// ExampleS2D_withHiSteps_withBand draws some scatter points
+// ExampleS2D_withSteps_withBand draws some scatter points
 // with their error bars, using a step-like style together with a band
 func ExampleS2D_withStepsKind_withBand() {
 	pts := []hbook.Point2D{
@@ -173,8 +172,7 @@ func ExampleS2D_withStepsKind_withBand() {
 	p.Y.Label.Text = "Y"
 	p.Add(plotter.NewGrid())
 
-	var stepsKind hplot.StepsKind = 1
-	s := hplot.NewS2D(s2d, hplot.WithStepsKind(stepsKind), hplot.WithYErrBars(true), hplot.WithBand(true))
+	s := hplot.NewS2D(s2d, hplot.WithStepsKind(hplot.HiSteps), hplot.WithYErrBars(true), hplot.WithBand(true))
 	s.GlyphStyle.Color = color.Black
 	s.GlyphStyle.Radius = vg.Points(4)
 	s.LineStyle.Width = 1

@@ -113,14 +113,16 @@ func (pts *S2D) withBand() error {
 			x, y := pts.Data.XY(idata)
 			xmin, xmax := xerr.XError(idata)
 			ymin, ymax := yerr.YError(idata)
-			top[i].X = x - math.Abs(xmin)
-			top[i].Y = y + math.Abs(ymax)
-			bot[i].X = x - math.Abs(xmin)
-			bot[i].Y = y - math.Abs(ymin)
-			if i%2 != 0 {
+			switch {
+			case i%2 != 0:
 				top[i].X = x + math.Abs(xmax)
 				top[i].Y = y + math.Abs(ymax)
 				bot[i].X = x + math.Abs(xmax)
+				bot[i].Y = y - math.Abs(ymin)
+			default:
+				top[i].X = x - math.Abs(xmin)
+				top[i].Y = y + math.Abs(ymax)
+				bot[i].X = x - math.Abs(xmin)
 				bot[i].Y = y - math.Abs(ymin)
 			}
 		}
@@ -139,14 +141,7 @@ func NewS2D(data plotter.XYer, opts ...Options) *S2D {
 
 	cfg := newConfig(opts)
 
-	if cfg.steps > 0 {
-		s.Steps = cfg.steps
-
-		_, ok := data.(plotter.XErrorer)
-		if !ok {
-			panic("s2d: cannot get X errors, required for HiSteps plotting")
-		}
-	}
+	s.Steps = cfg.steps
 
 	if cfg.bars.xerrs {
 		_ = s.withXErrBars()
