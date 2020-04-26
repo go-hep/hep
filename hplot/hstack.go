@@ -172,6 +172,10 @@ func (hs *HStack) hplot(c draw.Canvas, p *plot.Plot, h *H1D, yoffs []float64, hs
 		}
 	}
 
+	if h.Band != nil {
+		h.Band.Plot(c, p)
+	}
+	
 	for i, bin := range bins {
 		xmin := trX(bin.XMin())
 		xmax := trX(bin.XMax())
@@ -208,6 +212,8 @@ func (hs *HStack) hplot(c draw.Canvas, p *plot.Plot, h *H1D, yoffs []float64, hs
 		}
 	}
 
+
+	
 	if h.FillColor != nil {
 		poly := pts
 		for i := range yoffs {
