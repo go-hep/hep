@@ -36,6 +36,10 @@ func TestH1DYErrs(t *testing.T) {
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withYErrBars, t, "h1d_yerrs.png")
 }
 
+func TestH1DYErrsBand(t *testing.T) {
+	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withYErrBars_withBand, t, "h1d_yerrs_band.png")
+}
+
 func TestH1DAsData(t *testing.T) {
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withYErrBarsAndData, t, "h1d_glyphs.png")
 }
