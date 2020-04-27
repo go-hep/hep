@@ -27,7 +27,10 @@ type S2D struct {
 	// Use zero width to disable.
 	LineStyle draw.LineStyle
 
+	// XErrs is the x error bars plotter.
 	XErrs *plotter.XErrorBars
+
+	// YErrs is the y error bars plotter.
 	YErrs *plotter.YErrorBars
 
 	// Band displays a colored band between the y-min and y-max error bars.
