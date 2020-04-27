@@ -172,7 +172,8 @@ func (hs *HStack) hplot(c draw.Canvas, p *plot.Plot, h *H1D, yoffs []float64, hs
 		}
 	}
 
-	if h.Band != nil {
+	// Plot individual histo band when not stacked
+	if h.Band != nil && hsk == HStackOff {
 		h.Band.Plot(c, p)
 	}
 
