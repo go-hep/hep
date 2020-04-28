@@ -30,6 +30,11 @@ type HStack struct {
 	// Stack specifies how histograms are displayed.
 	// Default is to display histograms stacked on top of each other.
 	Stack HStackKind
+
+	// Band displays a colored band between the y-min and y-max error bars.
+	// Error bars are computed as the bin-by-bin quadratic sum of individual
+	// histogram uncertainties.
+	Band *Band
 }
 
 // HStackKind customizes how a HStack should behave.
@@ -77,6 +82,21 @@ func NewHStack(histos []*H1D, opts ...Options) *HStack {
 		h.LogY = cfg.log.y
 		hstack.checkBins(ref, h.Hist.Binning.Bins)
 	}
+
+	if cfg.band {
+
+		// rmadar: is there a nicer way to code the sum of histograms?
+		// Maybe a helper (internal) function of hstack?
+		bookHtot := hstack.hs[0].Hist
+		for i, h := range hstack.hs {
+			if i > 0 {
+				bookHtot = hbook.AddH1D(bookHtot, h.Hist)
+			}
+		}
+		plotHtot := NewH1D(bookHtot, WithBand(true))
+		hstack.Band = plotHtot.Band
+	}
+
 	return hstack
 }
 
@@ -225,6 +245,13 @@ func (hs *HStack) hplot(c draw.Canvas, p *plot.Plot, h *H1D, yoffs []float64, hs
 			poly = append(poly, vg.Point{X: xmin, Y: ymin})
 		}
 		c.FillPolygon(h.FillColor, c.ClipPolygonXY(poly))
+	}
+
+	// FIX-ME (rmadar): this is plot many times but it has to be here
+	// to appear above the 'fill' and below the 'line' of the histo.
+	// Ideally, this step should be done only for the last histogram, not all.
+	if hs.Band != nil && hs.Stack == HStackOn {
+		hs.Band.Plot(c, p)
 	}
 
 	c.StrokeLines(h.LineStyle, c.ClipLinesXY(pts)...)
