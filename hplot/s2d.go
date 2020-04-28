@@ -27,8 +27,11 @@ type S2D struct {
 	// Use zero width to disable.
 	LineStyle draw.LineStyle
 
-	xbars *plotter.XErrorBars
-	ybars *plotter.YErrorBars
+	// XErrs is the x error bars plotter.
+	XErrs *plotter.XErrorBars
+
+	// YErrs is the y error bars plotter.
+	YErrs *plotter.YErrorBars
 
 	// Band displays a colored band between the y-min and y-max error bars.
 	Band *Band
@@ -54,7 +57,7 @@ func (pts *S2D) withXErrBars() error {
 		return err
 	}
 
-	pts.xbars = xplt
+	pts.XErrs = xplt
 	return nil
 }
 
@@ -74,7 +77,7 @@ func (pts *S2D) withYErrBars() error {
 		return err
 	}
 
-	pts.ybars = yplt
+	pts.YErrs = yplt
 	return nil
 }
 
@@ -200,13 +203,13 @@ func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 		line.Plot(c, plt)
 	}
 
-	if pts.xbars != nil {
-		pts.xbars.LineStyle.Color = pts.GlyphStyle.Color
-		pts.xbars.Plot(c, plt)
+	if pts.XErrs != nil {
+		pts.XErrs.LineStyle.Color = pts.GlyphStyle.Color
+		pts.XErrs.Plot(c, plt)
 	}
-	if pts.ybars != nil {
-		pts.ybars.LineStyle.Color = pts.GlyphStyle.Color
-		pts.ybars.Plot(c, plt)
+	if pts.YErrs != nil {
+		pts.YErrs.LineStyle.Color = pts.GlyphStyle.Color
+		pts.YErrs.Plot(c, plt)
 	}
 }
 
@@ -220,16 +223,16 @@ func (pts *S2D) DataRange() (xmin, xmax, ymin, ymax float64) {
 		xmin, xmax, ymin, ymax = plotter.XYRange(pts.Data)
 	}
 
-	if pts.xbars != nil {
-		xmin1, xmax1, ymin1, ymax1 := pts.xbars.DataRange()
+	if pts.XErrs != nil {
+		xmin1, xmax1, ymin1, ymax1 := pts.XErrs.DataRange()
 		xmin = math.Min(xmin1, xmin)
 		xmax = math.Max(xmax1, xmax)
 		ymin = math.Min(ymin1, ymin)
 		ymax = math.Max(ymax1, ymax)
 	}
 
-	if pts.ybars != nil {
-		xmin1, xmax1, ymin1, ymax1 := pts.ybars.DataRange()
+	if pts.YErrs != nil {
+		xmin1, xmax1, ymin1, ymax1 := pts.YErrs.DataRange()
 		xmin = math.Min(xmin1, xmin)
 		xmax = math.Max(xmax1, xmax)
 		ymin = math.Min(ymin1, ymin)
@@ -249,11 +252,11 @@ func (pts *S2D) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 		bs[i].Y = plt.Y.Norm(y)
 		bs[i].Rectangle = pts.GlyphStyle.Rectangle()
 	}
-	if pts.xbars != nil {
-		bs = append(bs, pts.xbars.GlyphBoxes(plt)...)
+	if pts.XErrs != nil {
+		bs = append(bs, pts.XErrs.GlyphBoxes(plt)...)
 	}
-	if pts.ybars != nil {
-		bs = append(bs, pts.ybars.GlyphBoxes(plt)...)
+	if pts.YErrs != nil {
+		bs = append(bs, pts.YErrs.GlyphBoxes(plt)...)
 	}
 	return bs
 }
@@ -286,9 +289,9 @@ func (pts *S2D) Thumbnail(c *draw.Canvas) {
 
 	if pts.GlyphStyle != (draw.GlyphStyle{}) {
 		c.DrawGlyph(pts.GlyphStyle, c.Center())
-		if pts.ybars != nil {
+		if pts.YErrs != nil {
 			var (
-				yerrs = pts.ybars
+				yerrs = pts.YErrs
 				vsize = 0.5 * ((ymax - ymin) * 0.95)
 				x     = c.Center().X
 				ylo   = c.Center().Y - vsize
