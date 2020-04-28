@@ -29,6 +29,11 @@ type HStack struct {
 
 	// Stack specifies how histograms are displayed.
 	// Default is to display histograms stacked on top of each other.
+	// If not stacked, individual histogram uncertainty bands will be
+	// displayed when defined.
+	// If stacked, individual uncertainty bands will not be diplayed
+	// but the total band can be displayed thanks to hplot.WithBand(true)
+	// option.
 	Stack HStackKind
 
 	// Band displays a colored band between the y-min and y-max error bars.
