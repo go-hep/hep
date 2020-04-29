@@ -32,7 +32,7 @@ type HStack struct {
 	// If not stacked, individual histogram uncertainty bands will be
 	// displayed when defined.
 	// If stacked, individual uncertainty bands will not be diplayed
-	// but the total band can be displayed thanks to hplot.WithBand(true)
+	// but the total band can be displayed with the hplot.WithBand(true)
 	// option.
 	Stack HStackKind
 
@@ -89,20 +89,20 @@ func NewHStack(histos []*H1D, opts ...Options) *HStack {
 	}
 
 	if cfg.band {
-
-		// rmadar: is there a nicer way to code the sum of histograms?
-		// Maybe a helper (internal) function of hstack?
-		bookHtot := hstack.hs[0].Hist
-		for i, h := range hstack.hs {
-			if i > 0 {
-				bookHtot = hbook.AddH1D(bookHtot, h.Hist)
-			}
-		}
-		plotHtot := NewH1D(bookHtot, WithBand(true))
+		plotHtot := NewH1D(hstack.summedH1D(), WithBand(true))
 		hstack.Band = plotHtot.Band
 	}
 
 	return hstack
+}
+
+// summedH1D() returns the summed histogram
+func (hstack *HStack) summedH1D() *hbook.H1D {
+	bookHtot := hstack.hs[0].Hist
+	for _, h := range hstack.hs[1:] {
+		bookHtot = hbook.AddH1D(bookHtot, h.Hist)
+	}
+	return bookHtot
 }
 
 // DataRange returns the minimum and maximum X and Y values
@@ -155,8 +155,8 @@ func (hstack *HStack) Plot(c draw.Canvas, p *plot.Plot) {
 	}
 
 	yoffs := make([]float64, len(hstack.hs[0].Hist.Binning.Bins))
-	for _, h := range hstack.hs {
-		hstack.hplot(c, p, h, yoffs, hstack.Stack)
+	for i, h := range hstack.hs {
+		hstack.hplot(c, p, h, yoffs, hstack.Stack, i)
 	}
 }
 
@@ -173,7 +173,7 @@ func (hstack *HStack) checkBins(refs, bins []hbook.Bin1D) {
 	}
 }
 
-func (hs *HStack) hplot(c draw.Canvas, p *plot.Plot, h *H1D, yoffs []float64, hsk HStackKind) {
+func (hs *HStack) hplot(c draw.Canvas, p *plot.Plot, h *H1D, yoffs []float64, hsk HStackKind, ih int) {
 	trX, trY := p.Transforms(&c)
 	var pts []vg.Point
 	hist := h.Hist
@@ -195,11 +195,6 @@ func (hs *HStack) hplot(c draw.Canvas, p *plot.Plot, h *H1D, yoffs []float64, hs
 			}
 			return ymin, ymax
 		}
-	}
-
-	// Plot individual histo band when not stacked
-	if h.Band != nil && hsk == HStackOff {
-		h.Band.Plot(c, p)
 	}
 
 	for i, bin := range bins {
@@ -252,11 +247,16 @@ func (hs *HStack) hplot(c draw.Canvas, p *plot.Plot, h *H1D, yoffs []float64, hs
 		c.FillPolygon(h.FillColor, c.ClipPolygonXY(poly))
 	}
 
-	// FIX-ME (rmadar): this is plot many times but it has to be here
-	// to appear above the 'fill' and below the 'line' of the histo.
-	// Ideally, this step should be done only for the last histogram, not all.
-	if hs.Band != nil && hs.Stack == HStackOn {
-		hs.Band.Plot(c, p)
+	// Plot individual histo band when not stacked or total band
+	if h.Band != nil {
+		switch hsk {
+		case HStackOff:
+			h.Band.Plot(c, p)
+		case HStackOn:
+			if ih == len(hs.hs)-1 {
+				hs.Band.Plot(c, p)
+			}
+		}
 	}
 
 	c.StrokeLines(h.LineStyle, c.ClipLinesXY(pts)...)
