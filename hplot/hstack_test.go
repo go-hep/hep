@@ -18,6 +18,7 @@ import (
 
 func TestHStack(t *testing.T) {
 	checkPlot(cmpimg.CheckPlot)(ExampleHStack, t, "hstack.png")
+	checkPlot(cmpimg.CheckPlot)(ExampleHStack_withBand, t, "hstack_band.png")
 }
 
 func TestHStackPanic(t *testing.T) {
