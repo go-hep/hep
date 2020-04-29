@@ -266,10 +266,6 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 
 	var glyphs []vg.Point
 
-	if h.Band != nil {
-		h.Band.Plot(c, p)
-	}
-
 	for i, bin := range bins {
 		xmin := trX(bin.XMin())
 		xmax := trX(bin.XMax())
@@ -311,6 +307,11 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 	if h.FillColor != nil {
 		c.FillPolygon(h.FillColor, c.ClipPolygonXY(pts))
 	}
+
+	if h.Band != nil {
+		h.Band.Plot(c, p)
+	}
+
 	c.StrokeLines(h.LineStyle, c.ClipLinesXY(pts)...)
 
 	if h.YErrs != nil {
