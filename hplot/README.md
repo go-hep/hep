@@ -848,3 +848,80 @@ func ExampleHStack() {
 }
 ```
 
+### Stack of 1D histograms with a band
+
+![hstack-band-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/hstack_band_golden.png)
+
+[embedmd]:# (example_hstack_test.go go /func ExampleHStack_withBand/ /\n}/)
+```go
+func ExampleHStack_withBand() {
+	h1 := hbook.NewH1D(50, -8, 12)
+	h2 := hbook.NewH1D(50, -8, 12)
+	h3 := hbook.NewH1D(50, -8, 12)
+
+	const seed = 1234
+	fillH1(h1, 2000, -2, 1, seed)
+	fillH1(h2, 2000, +3, 3, seed)
+	fillH1(h3, 2000, +4, 1, seed)
+
+	colors := []color.Color{
+		color.NRGBA{122, 195, 106, 150},
+		color.NRGBA{90, 155, 212, 150},
+		color.NRGBA{250, 167, 91, 150},
+	}
+
+	hh1 := hplot.NewH1D(h1, hplot.WithBand(true))
+	hh1.FillColor = colors[0]
+	hh1.LineStyle.Color = color.Black
+	hh1.Band.FillColor = color.NRGBA{G: 210, A: 200}
+
+	hh2 := hplot.NewH1D(h2, hplot.WithBand(true))
+	hh2.FillColor = colors[1]
+	hh2.LineStyle.Width = 0
+	hh2.Band.FillColor = color.NRGBA{B: 220, A: 200}
+
+	hh3 := hplot.NewH1D(h3, hplot.WithBand(true))
+	hh3.FillColor = colors[2]
+	hh3.LineStyle.Color = color.Black
+	hh3.Band.FillColor = color.NRGBA{R: 220, A: 200}
+
+	hs := []*hplot.H1D{hh1, hh2, hh3}
+
+	tp := hplot.NewTiledPlot(draw.Tiles{Cols: 1, Rows: 2})
+	tp.Align = true
+
+	{
+		p := tp.Plot(0, 0)
+		p.Title.Text = "With Band, Stack: OFF"
+		p.Y.Label.Text = "Y"
+		hstack := hplot.NewHStack(hs, hplot.WithBand(true))
+		hstack.Stack = hplot.HStackOff
+		p.Add(hstack, hplot.NewGrid())
+		p.Legend.Add("h1", hs[0])
+		p.Legend.Add("h2", hs[1])
+		p.Legend.Add("h3", hs[2])
+		p.Legend.Top = true
+		p.Legend.Left = true
+	}
+
+	{
+		p := tp.Plot(1, 0)
+		p.Title.Text = "With Band, Stack: ON"
+		p.X.Label.Text = "X"
+		p.Y.Label.Text = "Y"
+		hstack := hplot.NewHStack(hs, hplot.WithBand(true))
+		hstack.Band.FillColor = color.NRGBA{R: 100, G: 100, B: 100, A: 200}
+		p.Add(hstack, hplot.NewGrid())
+		p.Legend.Add("h1", hs[0])
+		p.Legend.Add("h2", hs[1])
+		p.Legend.Add("h3", hs[2])
+		p.Legend.Top = true
+		p.Legend.Left = true
+	}
+
+	err := tp.Save(15*vg.Centimeter, 15*vg.Centimeter, "testdata/hstack_band.png")
+	if err != nil {
+		log.Fatalf("error: %+v", err)
+	}
+}
+```
