@@ -122,14 +122,14 @@ func TestFormula(t *testing.T) {
 			expr:  "ones",
 			err:   fmt.Errorf(`rtree: could not create Formula: rtree: could not analyze formula type: rtree: could not type-check formula analysis code: groot_rtree_formula.go:10:19: undeclared name: ones`),
 		},
-		{
-			fname:   "../testdata/simple.root",
-			tname:   "tree",
-			rvars:   -1,
-			expr:    "one",
-			imports: []string{"go-hep.org/x/hep/groot"},
-			err:     fmt.Errorf(`rtree: could not create Formula: rtree: no known stdlib import for "go-hep.org/x/hep/groot"`),
-		},
+		// {
+		// 	fname:   "../testdata/simple.root",
+		// 	tname:   "tree",
+		// 	rvars:   -1,
+		// 	expr:    "one",
+		// 	imports: []string{"golang.org/x/exp/rand"},
+		// 	err:     fmt.Errorf(`rtree: could not create Formula: rtree: no known stdlib import for "go-hep.org/x/hep/groot"`),
+		// },
 		{
 			fname: "../testdata/simple.root",
 			tname: "tree",

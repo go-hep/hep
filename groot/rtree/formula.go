@@ -15,8 +15,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/containous/yaegi/interp"
-	"github.com/containous/yaegi/stdlib"
+	"github.com/cosmos72/gomacro/fast"
 	"go-hep.org/x/hep/groot/root"
 )
 
@@ -28,20 +27,16 @@ type Formula struct {
 	r    *Reader
 	expr string
 	prog string
-	eval *interp.Interpreter
+	ir   *fast.Interp
+	eval *fast.Expr
 
-	fct  interface{}
-	rfun reflect.Value
+	fct interface{}
 }
 
 func newFormula(r *Reader, expr string, imports []string) (Formula, error) {
 	var (
-		eval = interp.New(interp.Options{})
-		pkg  = "groot_rtree"
-		uses = interp.Exports{
-			pkg: make(map[string]reflect.Value),
-		}
-		prog = new(strings.Builder)
+		ir   = fast.New()
+		code = new(strings.Builder)
 	)
 
 	idents, err := identsFromExpr(expr)
@@ -82,10 +77,10 @@ func newFormula(r *Reader, expr string, imports []string) (Formula, error) {
 	}
 
 	for _, name := range imports {
-		if _, ok := stdlib.Symbols[name]; !ok {
-			return Formula{}, fmt.Errorf("rtree: no known stdlib import for %q", name)
-		}
-		fmt.Fprintf(prog, "import %q\n", name)
+		_ = ir.ImportPackage("", name)
+		//if err != nil {
+		//	return Formula{}, fmt.Errorf("rtree: could not import %q into formula interpreter", name)
+		//}
 	}
 
 	names := make([]string, 0, len(needed))
@@ -109,47 +104,69 @@ func newFormula(r *Reader, expr string, imports []string) (Formula, error) {
 	// "groot_rtree" package, say, groot_rtree.Out.
 	// we'd need to generate a reflect.Func wrapping it.
 
-	fmt.Fprintf(prog, "import %q\n", pkg)
-	fmt.Fprintf(prog, "func _groot_rtree_func_eval() %v {\n", ret)
+	fmt.Fprintf(code, "func _groot_rtree_func_eval() %v {\n", ret)
 
 	for _, n := range names {
 		rvar := needed[n]
-		name := "Var_" + rvar.Name
-		uses[pkg][name] = reflect.ValueOf(rvar.Value)
-		fmt.Fprintf(prog, "\t%s := *%s.%s // %T\n", rvar.Name, pkg, name, rvar.Value)
+		name := "_groot_var_" + rvar.Name
+		rval := reflect.ValueOf(rvar.Value)
+		rtyp := ir.TypeOf(rval.Interface())
+		ir.DeclVar(name, rtyp, rval.Interface())
+		fmt.Fprintf(code, "\t%s := *%s // %T\n", rvar.Name, name, rvar.Value)
 	}
 
-	eval.Use(stdlib.Symbols)
-	eval.Use(uses)
+	fmt.Fprintf(code,
+		"\treturn %s(%s)\n}\n_groot_rtree_func_eval()\n",
+		ret, expr,
+	)
 
-	fmt.Fprintf(prog, "\treturn %s(%s)\n}", ret, expr)
-
-	_, err = eval.Eval(prog.String())
+	var prog *fast.Expr
+	func() {
+		defer func() {
+			e := recover()
+			if e == nil {
+				return
+			}
+			err = e.(error)
+		}()
+		prog = ir.Compile(code.String())
+	}()
 	if err != nil {
 		return Formula{}, fmt.Errorf("rtree: could not define formula eval-func: %w", err)
 	}
 
-	f, err := eval.Eval("_groot_rtree_func_eval")
-	if err != nil {
-		return Formula{}, fmt.Errorf("rtree: could not retrieve formula eval-func: %w", err)
+	results := make([]reflect.Value, 1)
+	otypes := []reflect.Type{
+		prog.DefaultType().ReflectType(),
 	}
+	sig := reflect.FuncOf(nil, otypes, false)
+	f := reflect.MakeFunc(
+		sig,
+		func(args []reflect.Value) []reflect.Value {
+			results[0], _ = ir.RunExpr1(prog)
+			return results
+		},
+	)
 
 	form := Formula{
 		r:    r,
 		expr: expr,
-		prog: prog.String(),
-		eval: eval,
+		prog: code.String(),
+		ir:   ir,
+		eval: prog,
 		fct:  f.Interface(),
-		rfun: f,
 	}
 
 	return form, nil
 }
 
-func (form *Formula) Func() interface{} { return form.fct }
+func (form *Formula) Func() interface{} {
+	return form.fct
+}
 
 func (form *Formula) Eval() interface{} {
-	return form.rfun.Call(nil)[0].Interface()
+	rv, _ := form.ir.RunExpr1(form.eval)
+	return rv.Interface()
 }
 
 func identsFromExpr(s string) (map[string]struct{}, error) {
