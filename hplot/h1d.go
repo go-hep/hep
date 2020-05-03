@@ -266,10 +266,6 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 
 	var glyphs []vg.Point
 
-	if h.Band != nil {
-		h.Band.Plot(c, p)
-	}
-
 	for i, bin := range bins {
 		xmin := trX(bin.XMin())
 		xmax := trX(bin.XMax())
@@ -311,6 +307,11 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 	if h.FillColor != nil {
 		c.FillPolygon(h.FillColor, c.ClipPolygonXY(pts))
 	}
+
+	if h.Band != nil {
+		h.Band.Plot(c, p)
+	}
+
 	c.StrokeLines(h.LineStyle, c.ClipLinesXY(pts)...)
 
 	if h.YErrs != nil {
@@ -420,19 +421,32 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 
 	if hasBand {
 		pts := []vg.Point{
-			{X: xmin, Y: ymin + 0.25*dy},
-			{X: xmax, Y: ymin + 0.25*dy},
-			{X: xmax, Y: ymax - 0.25*dy},
-			{X: xmin, Y: ymax - 0.25*dy},
-			{X: xmin, Y: ymin + 0.25*dy},
+			{X: xmin, Y: ymin + 0.2*dy},
+			{X: xmax, Y: ymin + 0.2*dy},
+			{X: xmax, Y: ymax - 0.2*dy},
+			{X: xmin, Y: ymax - 0.2*dy},
+			{X: xmin, Y: ymin + 0.2*dy},
 		}
 		c.FillPolygon(h.Band.FillColor, c.ClipPolygonXY(pts))
 	}
 
 	if hasLine {
-		ymid := c.Center().Y
-		line := []vg.Point{{X: xmin, Y: ymid}, {X: xmax, Y: ymid}}
-		c.StrokeLines(h.LineStyle, c.ClipLinesX(line)...)
+
+		if hasFill && !hasMarker && !hasBand {
+			line := []vg.Point{
+				{X: xmin, Y: ymin},
+				{X: xmax, Y: ymin},
+				{X: xmax, Y: ymax},
+				{X: xmin, Y: ymax},
+				{X: xmin, Y: ymin},
+			}
+			c.StrokeLines(h.LineStyle, c.ClipLinesX(line)...)
+		} else {
+			ymid := c.Center().Y
+			line := []vg.Point{{X: xmin, Y: ymid}, {X: xmax, Y: ymid}}
+			c.StrokeLines(h.LineStyle, c.ClipLinesX(line)...)
+		}
+
 	}
 
 	if hasMarker {
@@ -440,7 +454,7 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 		if h.YErrs != nil {
 			var (
 				yerrs = h.YErrs
-				vsize = 0.5 * ((ymax - ymin) * 0.95)
+				vsize = 0.35 * ((ymax - ymin) * 0.95)
 				x     = c.Center().X
 				ylo   = c.Center().Y - vsize
 				yup   = c.Center().Y + vsize
