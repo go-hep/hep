@@ -7,16 +7,12 @@ package rtree
 import (
 	"fmt"
 	"go/ast"
-	"go/importer"
 	"go/parser"
-	"go/token"
-	"go/types"
 	"reflect"
 	"sort"
 	"strings"
 
 	"github.com/cosmos72/gomacro/fast"
-	"go-hep.org/x/hep/groot/root"
 )
 
 // Formula is a mathematical formula bound to variables (branches) of
@@ -24,13 +20,11 @@ import (
 //
 // Formulae are attached to a rtree.Reader.
 type Formula struct {
-	r    *Reader
-	expr string
-	prog string
 	ir   *fast.Interp
-	eval *fast.Expr
+	expr *fast.Expr
 
-	fct interface{}
+	fct  interface{}
+	recv reflect.Value
 }
 
 func newFormula(r *Reader, expr string, imports []string) (Formula, error) {
@@ -94,17 +88,7 @@ func newFormula(r *Reader, expr string, imports []string) (Formula, error) {
 		return Formula{}, fmt.Errorf("rtree: could not analyze formula type: %w", err)
 	}
 
-	// FIXME(sbinet): instead of returning the result of evaluating
-	// the user expression by value, we could perhaps pass a pointer
-	// as argument, storing the result in there.
-	// we'd then zap everything to unsafe.Pointer so signatures match.
-	// (that's to support, e.g., root.Double32, which isn't a float64)
-	//
-	// Alternatively, we could define the "return" value inside the fake
-	// "groot_rtree" package, say, groot_rtree.Out.
-	// we'd need to generate a reflect.Func wrapping it.
-
-	fmt.Fprintf(code, "func _groot_rtree_func_eval() %v {\n", ret)
+	fmt.Fprintf(code, "func _groot_eval() {\n")
 
 	for _, n := range names {
 		rvar := needed[n]
@@ -112,50 +96,37 @@ func newFormula(r *Reader, expr string, imports []string) (Formula, error) {
 		rval := reflect.ValueOf(rvar.Value)
 		rtyp := ir.TypeOf(rval.Interface())
 		ir.DeclVar(name, rtyp, rval.Interface())
-		fmt.Fprintf(code, "\t%s := *%s // %T\n", rvar.Name, name, rvar.Value)
+		fmt.Fprintf(code, "\t%s := *%s\n", rvar.Name, name)
 	}
+	recv := reflect.New(ret)
+	rtyp := ir.TypeOf(recv.Interface())
+	ir.DeclVar("_groot_recv", rtyp, recv.Interface())
 
-	fmt.Fprintf(code,
-		"\treturn %s(%s)\n}\n_groot_rtree_func_eval()\n",
-		ret, expr,
-	)
+	fmt.Fprintf(code, "\t*_groot_recv = %s\n}\n", expr)
+	fmt.Fprintf(code, "_groot_eval()\n")
 
-	var prog *fast.Expr
-	func() {
-		defer func() {
-			e := recover()
-			if e == nil {
-				return
-			}
-			err = e.(error)
-		}()
-		prog = ir.Compile(code.String())
-	}()
-	if err != nil {
-		return Formula{}, fmt.Errorf("rtree: could not define formula eval-func: %w", err)
-	}
+	prog := ir.Compile(code.String())
 
 	results := make([]reflect.Value, 1)
-	otypes := []reflect.Type{
-		prog.DefaultType().ReflectType(),
-	}
+	otypes := []reflect.Type{ret}
 	sig := reflect.FuncOf(nil, otypes, false)
+
+	form := Formula{
+		ir:   ir,
+		expr: prog,
+		recv: recv,
+	}
+
 	f := reflect.MakeFunc(
 		sig,
 		func(args []reflect.Value) []reflect.Value {
-			results[0], _ = ir.RunExpr1(prog)
+			form.eval()
+			results[0] = form.recv.Elem()
 			return results
 		},
 	)
 
-	form := Formula{
-		r:    r,
-		expr: expr,
-		prog: code.String(),
-		ir:   ir,
-		eval: prog,
-		fct:  f.Interface(),
-	}
+	form.fct = f.Interface()
 
 	return form, nil
 }
@@ -165,8 +136,12 @@ func (form *Formula) Func() interface{} {
 }
 
 func (form *Formula) Eval() interface{} {
-	rv, _ := form.ir.RunExpr1(form.eval)
-	return rv.Interface()
+	form.eval()
+	return form.recv.Elem().Interface()
+}
+
+func (form *Formula) eval() {
+	_, _ = form.ir.RunExpr(form.expr)
 }
 
 func identsFromExpr(s string) (map[string]struct{}, error) {
@@ -190,99 +165,38 @@ func identsFromExpr(s string) (map[string]struct{}, error) {
 	return set, nil
 }
 
-func formulaAnalyze(rvars map[string]*ReadVar, imports []string, expr string) (types.Type, error) {
-	prog := new(strings.Builder)
-	fmt.Fprintf(prog, "package main\n")
-	fmt.Fprintf(prog, "\nimport (\n")
+func formulaAnalyze(rvars map[string]*ReadVar, imports []string, expr string) (reflect.Type, error) {
+	ir := fast.New()
 	for _, name := range imports {
-		fmt.Fprintf(prog, "\t%q\n", name)
+		_ = ir.ImportPackage("", name)
 	}
-	fmt.Fprintf(prog, ")\n")
-
-	fmt.Fprintf(prog, "\nfunc main() {}\n")
-	fmt.Fprintf(prog, "\nfunc _() {\n")
+	code := new(strings.Builder)
 	for _, rvar := range rvars {
-		rv := reflect.ValueOf(rvar.Value).Elem().Interface()
-		// hack for root.Double32/root.Float16
-		switch rv.(type) {
-		case root.Double32:
-			rv = float64(0)
-		case root.Float16:
-			rv = float32(0)
-		}
-		fmt.Fprintf(prog, "\tvar %s %T\n", rvar.Name, rv)
+		name := "_groot_var_" + rvar.Name
+		rval := reflect.ValueOf(rvar.Value)
+		rtyp := ir.TypeOf(rval.Interface())
+		ir.DeclVar(name, rtyp, rval.Interface())
+		fmt.Fprintf(code, "%s := *%s // %T\n", rvar.Name, name, rvar.Value)
 	}
-	fmt.Fprintf(prog, "\n\tvar _groot_out = %s\n", expr)
-	fmt.Fprintf(prog, "\t_ = _groot_out\n}\n")
+	fmt.Fprintf(code, "_groot_recv := %s\n_groot_recv\n", expr)
 
 	var (
-		fset  = token.NewFileSet()
-		input = prog.String()
+		prog *fast.Expr
+		err  error
 	)
-
-	f, err := parser.ParseFile(fset, "groot_rtree_formula.go", input, 0)
+	func() {
+		defer func() {
+			e := recover()
+			if e == nil {
+				return
+			}
+			err = e.(error)
+		}()
+		prog = ir.Compile(code.String())
+	}()
 	if err != nil {
-		return nil, fmt.Errorf("rtree: could not create type analysis code: %w", err)
+		return nil, fmt.Errorf("rtree: could not analyze formula: %w", err)
 	}
 
-	conf := types.Config{Importer: importer.Default()}
-	info := &types.Info{Types: make(map[ast.Expr]types.TypeAndValue)}
-	if _, err := conf.Check("cmd/groot-rtree-formula-type", fset, []*ast.File{f}, info); err != nil {
-		return nil, fmt.Errorf("rtree: could not type-check formula analysis code: %w", err)
-	}
-
-	var typ types.Type
-	ast.Inspect(f, func(node ast.Node) bool {
-		switch node := node.(type) {
-		case *ast.Ident:
-			if node.Name != "_groot_out" {
-				return true
-			}
-			tv, ok := info.Types[node]
-			if !ok {
-				return true
-			}
-			typ = tv.Type
-			return false
-		}
-		return true
-	})
-
-	if typ == nil {
-		return nil, fmt.Errorf("rtree: could not find type of expression")
-	}
-
-	return typ.Underlying(), nil
+	return prog.DefaultType().ReflectType(), nil
 }
-
-//func reflectTypeFromGoTypes(typ types.Type) reflect.Type {
-//	ut := typ.Underlying()
-//	switch typ := ut.(type) {
-//	case *types.Basic:
-//		return map[types.BasicKind]reflect.Type{
-//			types.Bool:       reflect.TypeOf(true),
-//			types.Int:        reflect.TypeOf(int(0)),
-//			types.Int8:       reflect.TypeOf(int8(0)),
-//			types.Int16:      reflect.TypeOf(int16(0)),
-//			types.Int32:      reflect.TypeOf(int32(0)),
-//			types.Int64:      reflect.TypeOf(int64(0)),
-//			types.Uint:       reflect.TypeOf(uint(0)),
-//			types.Uint8:      reflect.TypeOf(uint8(0)),
-//			types.Uint16:     reflect.TypeOf(uint16(0)),
-//			types.Uint32:     reflect.TypeOf(uint32(0)),
-//			types.Uint64:     reflect.TypeOf(uint64(0)),
-//			types.Float32:    reflect.TypeOf(float32(0)),
-//			types.Float64:    reflect.TypeOf(float64(0)),
-//			types.Complex64:  reflect.TypeOf(complex(float32(0), float32(0))),
-//			types.Complex128: reflect.TypeOf(complex(float64(0), float64(0))),
-//			types.String:     reflect.TypeOf(""),
-//		}[typ.Kind()]
-//	case *types.Slice:
-//		et := reflectTypeFromGoTypes(typ.Elem())
-//		return reflect.SliceOf(et)
-//	case *types.Array:
-//		et := reflectTypeFromGoTypes(typ.Elem())
-//		return reflect.ArrayOf(int(typ.Len()), et)
-//	}
-//	panic("not implemented")
-//}

@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/groot/riofs"
+	"go-hep.org/x/hep/groot/root"
 )
 
 func TestFormula(t *testing.T) {
@@ -92,14 +93,21 @@ func TestFormula(t *testing.T) {
 			tname: "tree",
 			rvars: -1,
 			expr:  "D16",
-			want:  []interface{}{float32(0.0), float32(1.0)},
+			want:  []interface{}{root.Float16(0.0), root.Float16(1.0)},
 		},
 		{
 			fname: "../testdata/leaves.root",
 			tname: "tree",
 			rvars: -1,
 			expr:  "D32",
-			want:  []interface{}{0.0, 1.0},
+			want:  []interface{}{root.Double32(0.0), root.Double32(1.0)},
+		},
+		{
+			fname: "../testdata/leaves.root",
+			tname: "tree",
+			rvars: -1,
+			expr:  "ArrD32[0]",
+			want:  []interface{}{root.Double32(0), root.Double32(1)},
 		},
 		{
 			fname: "../testdata/leaves.root",
@@ -120,7 +128,7 @@ func TestFormula(t *testing.T) {
 			tname: "tree",
 			rvars: -1,
 			expr:  "ones",
-			err:   fmt.Errorf(`rtree: could not create Formula: rtree: could not analyze formula type: rtree: could not type-check formula analysis code: groot_rtree_formula.go:10:19: undeclared name: ones`),
+			err:   fmt.Errorf(`rtree: could not create Formula: rtree: could not analyze formula type: rtree: could not analyze formula: repl.go:1:16: undefined identifier: ones`),
 		},
 		// {
 		// 	fname:   "../testdata/simple.root",
@@ -135,14 +143,14 @@ func TestFormula(t *testing.T) {
 			tname: "tree",
 			rvars: -1,
 			expr:  "one+three",
-			err:   fmt.Errorf(`rtree: could not create Formula: rtree: could not analyze formula type: rtree: could not type-check formula analysis code: groot_rtree_formula.go:12:19: invalid operation: mismatched types int32 and string`),
+			err:   fmt.Errorf(`rtree: could not create Formula: rtree: could not analyze formula type: rtree: could not analyze formula: repl.go:3:20: mismatched types in binary operation + between <int32> and <string>: one + three`),
 		},
 		{
 			fname: "../testdata/simple.root",
 			tname: "tree",
 			rvars: -1,
 			expr:  "math.Sqrt(float64(one))",
-			err:   fmt.Errorf(`rtree: could not create Formula: rtree: could not analyze formula type: rtree: could not type-check formula analysis code: groot_rtree_formula.go:11:19: undeclared name: math`),
+			err:   fmt.Errorf(`rtree: could not create Formula: rtree: could not analyze formula type: rtree: could not analyze formula: repl.go:2:16: undefined "math" in math.Sqrt <*ast.SelectorExpr>`),
 		},
 	} {
 		t.Run(tc.expr, func(t *testing.T) {
@@ -193,7 +201,7 @@ func TestFormula(t *testing.T) {
 			defer func() {
 				e := recover()
 				if e != nil {
-					t.Fatalf("could not run form-eval:\n%s\n%+v", form.prog, e)
+					t.Fatalf("could not run form-eval: %+v", e)
 				}
 			}()
 
