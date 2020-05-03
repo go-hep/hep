@@ -400,8 +400,14 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 	ymax := c.Max.Y
 	xmin := c.Min.X
 	xmax := c.Max.X
+	dy := ymax - ymin
 
-	if h.FillColor != nil {
+	hasFill := h.FillColor != nil
+	hasLine := h.LineStyle.Width != 0
+	hasMarker := h.GlyphStyle != (draw.GlyphStyle{})
+	hasBand := h.Band != nil
+		
+	if hasFill {
 		pts := []vg.Point{
 			{X: xmin, Y: ymin},
 			{X: xmax, Y: ymin},
@@ -411,13 +417,25 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 		}
 		c.FillPolygon(h.FillColor, c.ClipPolygonXY(pts))
 	}
-	if h.LineStyle.Width != 0 {
+
+	if hasBand {
+		pts := []vg.Point{
+			{X: xmin, Y: ymin + 0.25 * dy},
+			{X: xmax, Y: ymin + 0.25 * dy},
+			{X: xmax, Y: ymax - 0.25 * dy},
+			{X: xmin, Y: ymax - 0.25 * dy},
+			{X: xmin, Y: ymin + 0.25 * dy},
+		}
+		c.FillPolygon(h.Band.FillColor, c.ClipPolygonXY(pts))
+	}
+
+	if hasLine {
 		ymid := c.Center().Y
 		line := []vg.Point{{X: xmin, Y: ymid}, {X: xmax, Y: ymid}}
 		c.StrokeLines(h.LineStyle, c.ClipLinesX(line)...)
 	}
 
-	if h.GlyphStyle != (draw.GlyphStyle{}) {
+	if hasMarker {
 		c.DrawGlyph(h.GlyphStyle, c.Center())
 		if h.YErrs != nil {
 			var (

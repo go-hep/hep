@@ -15,6 +15,7 @@ import (
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
+	"gonum.org/v1/plot/plotutil"
 )
 
 // An example of making a 1D-histogram.
@@ -337,7 +338,7 @@ func ExampleH1D_withYErrBarsAndData() {
 	h.LineStyle.Width = 0 // disable histogram lines
 	p.Add(h)
 	p.Legend.Add("data", h)
-
+	
 	// The normal distribution function
 	norm := hplot.NewFunction(dist.Prob)
 	norm.Color = color.RGBA{R: 255, A: 255}
@@ -415,4 +416,86 @@ func ExampleH1D_withPlotBorders() {
 	if err := hplot.Save(fig, 6*vg.Inch, -1, "testdata/h1d_borders.png"); err != nil {
 		log.Fatalf("error saving plot: %v\n", err)
 	}
+}
+
+
+// An example showing legend with different style
+func ExampleH1D_legendStyle() {
+
+	const npoints = 500
+	
+	// Create a few normal distributions.
+	var hists [3]*hbook.H1D
+	for id := range [3]int{0, 1, 2} {
+		mu := -2. + float64(id)*2
+		sigma := 0.3
+			
+		dist := distuv.Normal{
+			Mu:    mu,
+			Sigma: sigma,
+			Src:   rand.New(rand.NewSource(uint64(id))),
+		}
+		
+		// Draw some random values from the standard
+		// normal distribution.
+		hists[id] = hbook.NewH1D(20, mu-5*sigma, mu+5*sigma)
+		for i := 0; i < npoints; i++ {
+			v := dist.Rand()
+			hists[id].Fill(v, 1)
+		}
+	}
+
+	// Make a plot and set its title.
+	p := hplot.New()
+	p.Title.Text = "Histogram"
+	p.X.Label.Text = "X"
+	p.Y.Label.Text = "Y"
+	p.X.Max = 10 
+
+	// Legend style tunning
+	p.Legend.Top = true
+	p.Legend.ThumbnailWidth = 0.5 * vg.Inch
+	p.Legend.TextStyle.Font.Size = 12
+	p.Legend.Padding = 0.1 * vg.Inch
+	
+	// Histogram with error band
+	hband := hplot.NewH1D(hists[0], hplot.WithBand(true))
+	hband.LineStyle.Width = 1.3
+	p.Add(hband)
+	p.Legend.Add("Band", hband)
+	
+	// Histogram with fill and line
+	hfill := hplot.NewH1D(hists[1])
+	hfill.FillColor = color.NRGBA{R: 200, A: 180}
+	hfill.LineStyle.Color = color.NRGBA{R: 200, G: 30, A: 255}
+	hfill.LineStyle.Width = 1.3
+	p.Add(hfill)
+	p.Legend.Add("Fill & line", hfill)
+	
+	// Histogram with line and markers
+	hmarker := hplot.NewH1D(hists[2],
+		hplot.WithYErrBars(true),
+		hplot.WithGlyphStyle(draw.GlyphStyle{
+			Color:  color.Black,
+			Radius: 2,
+			Shape:  draw.CircleGlyph{},
+		}),
+	)
+	hmarker.LineStyle.Color = color.NRGBA{R: 200, G: 30, A: 255}
+	hmarker.LineStyle.Width = 1
+	hmarker.LineStyle.Dashes = plotutil.Dashes(2)
+	p.Add(hmarker)
+	p.Legend.Add("marker & line", hmarker)
+
+	// Create a figure
+	fig := hplot.Figure(p, hplot.WithDPI(192.))
+	fig.Border.Right = 15
+	fig.Border.Left = 10
+	fig.Border.Top = 10
+	fig.Border.Bottom = 10
+
+	// Save the figure to a PNG file.
+	if err := hplot.Save(fig, 6*vg.Inch, -1, "testdata/h1d_legend.png"); err != nil {
+		log.Fatalf("error saving plot: %v\n", err)
+	}	
 }
