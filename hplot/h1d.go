@@ -406,7 +406,7 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 	hasLine := h.LineStyle.Width != 0
 	hasMarker := h.GlyphStyle != (draw.GlyphStyle{})
 	hasBand := h.Band != nil
-		
+
 	if hasFill {
 		pts := []vg.Point{
 			{X: xmin, Y: ymin},
@@ -420,11 +420,11 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 
 	if hasBand {
 		pts := []vg.Point{
-			{X: xmin, Y: ymin + 0.25 * dy},
-			{X: xmax, Y: ymin + 0.25 * dy},
-			{X: xmax, Y: ymax - 0.25 * dy},
-			{X: xmin, Y: ymax - 0.25 * dy},
-			{X: xmin, Y: ymin + 0.25 * dy},
+			{X: xmin, Y: ymin + 0.25*dy},
+			{X: xmax, Y: ymin + 0.25*dy},
+			{X: xmax, Y: ymax - 0.25*dy},
+			{X: xmin, Y: ymax - 0.25*dy},
+			{X: xmin, Y: ymin + 0.25*dy},
 		}
 		c.FillPolygon(h.Band.FillColor, c.ClipPolygonXY(pts))
 	}

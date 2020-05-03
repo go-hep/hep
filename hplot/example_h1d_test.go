@@ -13,9 +13,9 @@ import (
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotutil"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-	"gonum.org/v1/plot/plotutil"
 )
 
 // An example of making a 1D-histogram.
@@ -338,7 +338,7 @@ func ExampleH1D_withYErrBarsAndData() {
 	h.LineStyle.Width = 0 // disable histogram lines
 	p.Add(h)
 	p.Legend.Add("data", h)
-	
+
 	// The normal distribution function
 	norm := hplot.NewFunction(dist.Prob)
 	norm.Color = color.RGBA{R: 255, A: 255}
@@ -418,24 +418,23 @@ func ExampleH1D_withPlotBorders() {
 	}
 }
 
-
 // An example showing legend with different style
 func ExampleH1D_legendStyle() {
 
 	const npoints = 500
-	
+
 	// Create a few normal distributions.
 	var hists [3]*hbook.H1D
 	for id := range [3]int{0, 1, 2} {
 		mu := -2. + float64(id)*2
 		sigma := 0.3
-			
+
 		dist := distuv.Normal{
 			Mu:    mu,
 			Sigma: sigma,
 			Src:   rand.New(rand.NewSource(uint64(id))),
 		}
-		
+
 		// Draw some random values from the standard
 		// normal distribution.
 		hists[id] = hbook.NewH1D(20, mu-5*sigma, mu+5*sigma)
@@ -450,20 +449,20 @@ func ExampleH1D_legendStyle() {
 	p.Title.Text = "Histogram"
 	p.X.Label.Text = "X"
 	p.Y.Label.Text = "Y"
-	p.X.Max = 10 
+	p.X.Max = 10
 
 	// Legend style tunning
 	p.Legend.Top = true
 	p.Legend.ThumbnailWidth = 0.5 * vg.Inch
 	p.Legend.TextStyle.Font.Size = 12
 	p.Legend.Padding = 0.1 * vg.Inch
-	
+
 	// Histogram with error band
 	hband := hplot.NewH1D(hists[0], hplot.WithBand(true))
 	hband.LineStyle.Width = 1.3
 	p.Add(hband)
 	p.Legend.Add("Band", hband)
-	
+
 	// Histogram with fill and line
 	hfill := hplot.NewH1D(hists[1])
 	hfill.FillColor = color.NRGBA{R: 200, A: 180}
@@ -471,7 +470,7 @@ func ExampleH1D_legendStyle() {
 	hfill.LineStyle.Width = 1.3
 	p.Add(hfill)
 	p.Legend.Add("Fill & line", hfill)
-	
+
 	// Histogram with line and markers
 	hmarker := hplot.NewH1D(hists[2],
 		hplot.WithYErrBars(true),
@@ -497,5 +496,5 @@ func ExampleH1D_legendStyle() {
 	// Save the figure to a PNG file.
 	if err := hplot.Save(fig, 6*vg.Inch, -1, "testdata/h1d_legend.png"); err != nil {
 		log.Fatalf("error saving plot: %v\n", err)
-	}	
+	}
 }
