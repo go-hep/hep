@@ -210,3 +210,142 @@ func TestFormula(t *testing.T) {
 		})
 	}
 }
+
+var sumBenchFormula float64
+
+func BenchmarkFormulaEval(b *testing.B) {
+	for _, tc := range []struct {
+		expr string
+		imps []string
+	}{
+		{
+			expr: "42.0",
+		},
+		{
+			expr: "F64",
+		},
+		{
+			expr: "2*F64",
+		},
+		{
+			expr: "math.Abs(2*F64)",
+			imps: []string{"math"},
+		},
+	} {
+		b.Run(tc.expr, func(b *testing.B) {
+			f, err := riofs.Open("../testdata/leaves.root")
+			if err != nil {
+				b.Fatal(err)
+			}
+			defer f.Close()
+
+			o, err := f.Get("tree")
+			if err != nil {
+				b.Fatal(err)
+			}
+			tree := o.(Tree)
+
+			rvars := []ReadVar{{Name: "F64", Value: new(float64)}}
+
+			r, err := NewReader(tree, rvars)
+			if err != nil {
+				b.Fatal(err)
+			}
+
+			form, err := r.Formula(tc.expr, tc.imps)
+			if err != nil {
+				b.Fatal(err)
+			}
+
+			err = r.Read(func(ctx RCtx) error {
+				sumBenchFormula += form.Eval().(float64)
+				return nil
+			})
+			if err != nil {
+				b.Fatalf("error: %+v", err)
+			}
+
+			err = r.scan.SeekEntry(0)
+			if err != nil {
+				b.Fatalf("error: %+v", err)
+			}
+
+			sumBenchFormula = 0
+			b.ReportAllocs()
+			b.ResetTimer()
+
+			for i := 0; i < b.N; i++ {
+				sumBenchFormula += form.Eval().(float64)
+			}
+		})
+	}
+}
+
+func BenchmarkFormulaFunc(b *testing.B) {
+	for _, tc := range []struct {
+		expr string
+		imps []string
+	}{
+		{
+			expr: "42.0",
+		},
+		{
+			expr: "F64",
+		},
+		{
+			expr: "2*F64",
+		},
+		{
+			expr: "math.Abs(2*F64)",
+			imps: []string{"math"},
+		},
+	} {
+		b.Run(tc.expr, func(b *testing.B) {
+			f, err := riofs.Open("../testdata/leaves.root")
+			if err != nil {
+				b.Fatal(err)
+			}
+			defer f.Close()
+
+			o, err := f.Get("tree")
+			if err != nil {
+				b.Fatal(err)
+			}
+			tree := o.(Tree)
+
+			rvars := []ReadVar{{Name: "F64", Value: new(float64)}}
+
+			r, err := NewReader(tree, rvars)
+			if err != nil {
+				b.Fatal(err)
+			}
+
+			form, err := r.Formula(tc.expr, tc.imps)
+			if err != nil {
+				b.Fatal(err)
+			}
+			eval := form.Func().(func() float64)
+
+			err = r.Read(func(ctx RCtx) error {
+				sumBenchFormula += eval()
+				return nil
+			})
+			if err != nil {
+				b.Fatalf("error: %+v", err)
+			}
+
+			err = r.scan.SeekEntry(0)
+			if err != nil {
+				b.Fatalf("error: %+v", err)
+			}
+
+			sumBenchFormula = 0
+			b.ReportAllocs()
+			b.ResetTimer()
+
+			for i := 0; i < b.N; i++ {
+				sumBenchFormula += eval()
+			}
+		})
+	}
+}
