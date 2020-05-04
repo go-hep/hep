@@ -139,7 +139,7 @@ var (
 )
 
 type FormulaFunc struct {
-	rvars []*ReadVar
+	rvars []reflect.Value
 	args  []reflect.Value
 	out   []reflect.Value
 	rfct  reflect.Value // formula-created function to eval read-vars
@@ -181,22 +181,99 @@ func newFormulaFunc(r *Reader, branches []string, fct interface{}) (*FormulaFunc
 	}
 
 	form := &FormulaFunc{
-		rvars: rvars,
+		rvars: make([]reflect.Value, len(rvars)),
 		args:  make([]reflect.Value, len(rvars)),
 		ufct:  rv,
 	}
 
 	for i := range form.rvars {
 		form.args[i] = reflect.New(rv.Type().In(i)).Elem()
+		form.rvars[i] = reflect.ValueOf(rvars[i].Value)
 	}
 
-	rfct := reflect.MakeFunc(
-		reflect.FuncOf(nil, []reflect.Type{rv.Type().Out(0)}, false),
-		func(in []reflect.Value) []reflect.Value {
+	var rfct reflect.Value
+	switch rv.Type().Out(0).Kind() {
+	case reflect.Bool:
+		ufct := func() bool {
 			form.eval()
-			return form.out
-		},
-	)
+			return form.out[0].Interface().(bool)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case reflect.Uint8:
+		ufct := func() uint8 {
+			form.eval()
+			return form.out[0].Interface().(uint8)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case reflect.Uint16:
+		ufct := func() uint16 {
+			form.eval()
+			return form.out[0].Interface().(uint16)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case reflect.Uint32:
+		ufct := func() uint32 {
+			form.eval()
+			return form.out[0].Interface().(uint32)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case reflect.Uint64:
+		ufct := func() uint64 {
+			form.eval()
+			return form.out[0].Interface().(uint64)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case reflect.Int8:
+		ufct := func() int8 {
+			form.eval()
+			return form.out[0].Interface().(int8)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case reflect.Int16:
+		ufct := func() int16 {
+			form.eval()
+			return form.out[0].Interface().(int16)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case reflect.Int32:
+		ufct := func() int32 {
+			form.eval()
+			return form.out[0].Interface().(int32)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case reflect.Int64:
+		ufct := func() int64 {
+			form.eval()
+			return form.out[0].Interface().(int64)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case reflect.String:
+		ufct := func() string {
+			form.eval()
+			return form.out[0].Interface().(string)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case reflect.Float32:
+		ufct := func() float32 {
+			form.eval()
+			return form.out[0].Interface().(float32)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case reflect.Float64:
+		ufct := func() float64 {
+			form.eval()
+			return form.out[0].Float()
+		}
+		rfct = reflect.ValueOf(ufct)
+	default:
+		rfct = reflect.MakeFunc(
+			reflect.FuncOf(nil, []reflect.Type{rv.Type().Out(0)}, false),
+			func(in []reflect.Value) []reflect.Value {
+				form.eval()
+				return form.out
+			},
+		)
+	}
 	form.rfct = rfct
 
 	return form, nil
@@ -204,7 +281,7 @@ func newFormulaFunc(r *Reader, branches []string, fct interface{}) (*FormulaFunc
 
 func (form *FormulaFunc) eval() {
 	for i, rvar := range form.rvars {
-		form.args[i].Set(reflect.ValueOf(rvar.Value).Elem())
+		form.args[i].Set(rvar.Elem())
 	}
 	form.out = form.ufct.Call(form.args)
 }
