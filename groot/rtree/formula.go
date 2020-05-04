@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/cosmos72/gomacro/fast"
+	"go-hep.org/x/hep/groot/root"
 )
 
 // Formula is a mathematical formula bound to variables (branches) of
@@ -27,7 +28,7 @@ type Formula struct {
 	recv reflect.Value
 }
 
-func newFormula(r *Reader, expr string, imports []string) (Formula, error) {
+func newFormula(r *Reader, expr string, imports []string) (*Formula, error) {
 	var (
 		ir   = fast.New()
 		code = new(strings.Builder)
@@ -35,40 +36,10 @@ func newFormula(r *Reader, expr string, imports []string) (Formula, error) {
 
 	idents, err := identsFromExpr(expr)
 	if err != nil {
-		return Formula{}, fmt.Errorf("rtree: could not parse expression: %w", err)
+		return nil, fmt.Errorf("rtree: could not parse expression: %w", err)
 	}
 
-	var (
-		loaded = make(map[string]*ReadVar, len(r.rvars))
-		needed = make(map[string]*ReadVar, len(idents))
-		rvars  = NewReadVars(r.t)
-		all    = make(map[string]*ReadVar, len(rvars))
-	)
-
-	for i := range r.rvars {
-		rvar := &r.rvars[i]
-		loaded[rvar.Name] = rvar
-		all[rvar.Name] = rvar
-	}
-	for i := range rvars {
-		rvar := &rvars[i]
-		if _, ok := all[rvar.Name]; ok {
-			continue
-		}
-		all[rvar.Name] = rvar
-	}
-	for k := range idents {
-		rvar, ok := all[k]
-		if !ok {
-			continue
-		}
-		if _, ok := loaded[k]; !ok {
-			r.rvars = append(r.rvars, *rvar)
-			rvar = &r.rvars[len(r.rvars)-1]
-			loaded[k] = rvar
-		}
-		needed[k] = rvar
-	}
+	needed := formulaAutoLoad(r, idents)
 
 	for _, name := range imports {
 		_ = ir.ImportPackage("", name)
@@ -77,21 +48,14 @@ func newFormula(r *Reader, expr string, imports []string) (Formula, error) {
 		//}
 	}
 
-	names := make([]string, 0, len(needed))
-	for k := range needed {
-		names = append(names, k)
-	}
-	sort.Strings(names)
-
 	ret, err := formulaAnalyze(needed, imports, expr)
 	if err != nil {
-		return Formula{}, fmt.Errorf("rtree: could not analyze formula type: %w", err)
+		return nil, fmt.Errorf("rtree: could not analyze formula type: %w", err)
 	}
 
 	fmt.Fprintf(code, "func _groot_eval() {\n")
 
-	for _, n := range names {
-		rvar := needed[n]
+	for _, rvar := range needed {
 		name := "_groot_var_" + rvar.Name
 		rval := reflect.ValueOf(rvar.Value)
 		rtyp := ir.TypeOf(rval.Interface())
@@ -111,7 +75,7 @@ func newFormula(r *Reader, expr string, imports []string) (Formula, error) {
 	otypes := []reflect.Type{ret}
 	sig := reflect.FuncOf(nil, otypes, false)
 
-	form := Formula{
+	form := &Formula{
 		ir:   ir,
 		expr: prog,
 		recv: recv,
@@ -144,7 +108,7 @@ func (form *Formula) eval() {
 	_, _ = form.ir.RunExpr(form.expr)
 }
 
-func identsFromExpr(s string) (map[string]struct{}, error) {
+func identsFromExpr(s string) ([]string, error) {
 	set := make(map[string]struct{})
 	expr, err := parser.ParseExpr(s)
 	if err != nil {
@@ -162,10 +126,193 @@ func identsFromExpr(s string) (map[string]struct{}, error) {
 		return true
 	})
 
-	return set, nil
+	idents := make([]string, 0, len(set))
+	for k := range set {
+		idents = append(idents, k)
+	}
+	sort.Strings(idents)
+
+	return idents, nil
 }
 
-func formulaAnalyze(rvars map[string]*ReadVar, imports []string, expr string) (reflect.Type, error) {
+var (
+	_ formula = (*Formula)(nil)
+)
+
+type FormulaFunc struct {
+	rvars []reflect.Value
+	args  []reflect.Value
+	out   []reflect.Value
+	rfct  reflect.Value // formula-created function to eval read-vars
+	ufct  reflect.Value // user-provided function
+}
+
+func newFormulaFunc(r *Reader, branches []string, fct interface{}) (*FormulaFunc, error) {
+	rv := reflect.ValueOf(fct)
+	if rv.Kind() != reflect.Func {
+		return nil, fmt.Errorf("rtree: FormulaFunc expects a func")
+	}
+
+	if len(branches) != rv.Type().NumIn() {
+		return nil, fmt.Errorf("rtree: num-branches/func-arity mismatch")
+	}
+
+	if rv.Type().NumOut() != 1 {
+		// FIXME(sbinet): allow any kind of function?
+		return nil, fmt.Errorf("rtree: invalid number of return values")
+	}
+
+	rvars := formulaAutoLoad(r, branches)
+	if len(rvars) != len(branches) {
+		return nil, fmt.Errorf("rtree: could not find all needed ReadVars")
+	}
+
+	for i, rvar := range rvars {
+		btyp := reflect.TypeOf(rvar.Value).Elem()
+		atyp := rv.Type().In(i)
+		if btyp != atyp {
+			return nil, fmt.Errorf(
+				"rtree: argument type %d mismatch: func=%T, read-var[%s]=%T",
+				i,
+				reflect.New(atyp).Elem().Interface(),
+				rvar.Name,
+				reflect.New(btyp).Elem().Interface(),
+			)
+		}
+	}
+
+	form := &FormulaFunc{
+		rvars: make([]reflect.Value, len(rvars)),
+		args:  make([]reflect.Value, len(rvars)),
+		ufct:  rv,
+	}
+
+	for i := range form.rvars {
+		form.args[i] = reflect.New(rv.Type().In(i)).Elem()
+		form.rvars[i] = reflect.ValueOf(rvars[i].Value)
+	}
+
+	var rfct reflect.Value
+	switch reflect.New(rv.Type().Out(0)).Elem().Interface().(type) {
+	case bool:
+		ufct := func() bool {
+			form.eval()
+			return form.out[0].Interface().(bool)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case uint8:
+		ufct := func() uint8 {
+			form.eval()
+			return form.out[0].Interface().(uint8)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case uint16:
+		ufct := func() uint16 {
+			form.eval()
+			return form.out[0].Interface().(uint16)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case uint32:
+		ufct := func() uint32 {
+			form.eval()
+			return form.out[0].Interface().(uint32)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case uint64:
+		ufct := func() uint64 {
+			form.eval()
+			return form.out[0].Interface().(uint64)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case int8:
+		ufct := func() int8 {
+			form.eval()
+			return form.out[0].Interface().(int8)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case int16:
+		ufct := func() int16 {
+			form.eval()
+			return form.out[0].Interface().(int16)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case int32:
+		ufct := func() int32 {
+			form.eval()
+			return form.out[0].Interface().(int32)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case int64:
+		ufct := func() int64 {
+			form.eval()
+			return form.out[0].Interface().(int64)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case string:
+		ufct := func() string {
+			form.eval()
+			return form.out[0].Interface().(string)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case root.Float16:
+		ufct := func() root.Float16 {
+			form.eval()
+			return form.out[0].Interface().(root.Float16)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case float32:
+		ufct := func() float32 {
+			form.eval()
+			return form.out[0].Interface().(float32)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case root.Double32:
+		ufct := func() root.Double32 {
+			form.eval()
+			return form.out[0].Interface().(root.Double32)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case float64:
+		ufct := func() float64 {
+			form.eval()
+			return form.out[0].Float()
+		}
+		rfct = reflect.ValueOf(ufct)
+	default:
+		rfct = reflect.MakeFunc(
+			reflect.FuncOf(nil, []reflect.Type{rv.Type().Out(0)}, false),
+			func(in []reflect.Value) []reflect.Value {
+				form.eval()
+				return form.out
+			},
+		)
+	}
+	form.rfct = rfct
+
+	return form, nil
+}
+
+func (form *FormulaFunc) eval() {
+	for i, rvar := range form.rvars {
+		form.args[i].Set(rvar.Elem())
+	}
+	form.out = form.ufct.Call(form.args)
+}
+
+func (form *FormulaFunc) Eval() interface{} {
+	form.eval()
+	return form.out[0].Interface()
+}
+
+func (form *FormulaFunc) Func() interface{} {
+	return form.rfct.Interface()
+}
+
+var (
+	_ formula = (*FormulaFunc)(nil)
+)
+
+func formulaAnalyze(rvars []*ReadVar, imports []string, expr string) (reflect.Type, error) {
 	ir := fast.New()
 	for _, name := range imports {
 		_ = ir.ImportPackage("", name)
@@ -199,4 +346,40 @@ func formulaAnalyze(rvars map[string]*ReadVar, imports []string, expr string) (r
 	}
 
 	return prog.DefaultType().ReflectType(), nil
+}
+
+func formulaAutoLoad(r *Reader, idents []string) []*ReadVar {
+	var (
+		loaded = make(map[string]*ReadVar, len(r.rvars))
+		needed = make([]*ReadVar, 0, len(idents))
+		rvars  = NewReadVars(r.t)
+		all    = make(map[string]*ReadVar, len(rvars))
+	)
+
+	for i := range r.rvars {
+		rvar := &r.rvars[i]
+		loaded[rvar.Name] = rvar
+		all[rvar.Name] = rvar
+	}
+	for i := range rvars {
+		rvar := &rvars[i]
+		if _, ok := all[rvar.Name]; ok {
+			continue
+		}
+		all[rvar.Name] = rvar
+	}
+	for _, name := range idents {
+		rvar, ok := all[name]
+		if !ok {
+			continue
+		}
+		if _, ok := loaded[name]; !ok {
+			r.rvars = append(r.rvars, *rvar)
+			rvar = &r.rvars[len(r.rvars)-1]
+			loaded[name] = rvar
+		}
+		needed = append(needed, rvar)
+	}
+
+	return needed
 }

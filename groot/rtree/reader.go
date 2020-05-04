@@ -135,7 +135,7 @@ type Reader struct {
 	beg   int64
 	end   int64
 
-	evals []Formula
+	evals []formula
 	dirty bool // whether we need to re-create scanner (if formula needed new branches)
 }
 
@@ -264,13 +264,36 @@ func (r *Reader) Read(f func(ctx RCtx) error) error {
 	return nil
 }
 
+type formula interface {
+	eval()
+}
+
 // Formula creates a new formula based on the provided expression and
 // the list of stdlib imports.
-func (r *Reader) Formula(expr string, imports []string) (Formula, error) {
+func (r *Reader) Formula(expr string, imports []string) (*Formula, error) {
 	n := len(r.rvars)
 	f, err := newFormula(r, expr, imports)
 	if err != nil {
-		return Formula{}, fmt.Errorf("rtree: could not create Formula: %w", err)
+		return nil, fmt.Errorf("rtree: could not create Formula: %w", err)
+	}
+	r.evals = append(r.evals, f)
+
+	if n != len(r.rvars) {
+		// formula needed to auto-load new branches.
+		// mark reader as dirty to re-create its internal scanner
+		// before the event-loop.
+		r.dirty = true
+	}
+	return f, nil
+}
+
+// FormulaFunc creates a new formula based on the provided function and
+// the list of branches as inputs.
+func (r *Reader) FormulaFunc(branches []string, fct interface{}) (*FormulaFunc, error) {
+	n := len(r.rvars)
+	f, err := newFormulaFunc(r, branches, fct)
+	if err != nil {
+		return nil, fmt.Errorf("rtree: could not create FormulaFunc: %w", err)
 	}
 	r.evals = append(r.evals, f)
 
