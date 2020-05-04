@@ -193,97 +193,91 @@ func newFormulaFunc(r *Reader, branches []string, fct interface{}) (*FormulaFunc
 	}
 
 	var rfct reflect.Value
-	switch rv.Type().Out(0).Kind() {
-	case reflect.Bool:
+	switch reflect.New(rv.Type().Out(0)).Elem().Interface().(type) {
+	case bool:
 		ufct := func() bool {
 			form.eval()
 			return form.out[0].Interface().(bool)
 		}
 		rfct = reflect.ValueOf(ufct)
-	case reflect.Uint8:
+	case uint8:
 		ufct := func() uint8 {
 			form.eval()
 			return form.out[0].Interface().(uint8)
 		}
 		rfct = reflect.ValueOf(ufct)
-	case reflect.Uint16:
+	case uint16:
 		ufct := func() uint16 {
 			form.eval()
 			return form.out[0].Interface().(uint16)
 		}
 		rfct = reflect.ValueOf(ufct)
-	case reflect.Uint32:
+	case uint32:
 		ufct := func() uint32 {
 			form.eval()
 			return form.out[0].Interface().(uint32)
 		}
 		rfct = reflect.ValueOf(ufct)
-	case reflect.Uint64:
+	case uint64:
 		ufct := func() uint64 {
 			form.eval()
 			return form.out[0].Interface().(uint64)
 		}
 		rfct = reflect.ValueOf(ufct)
-	case reflect.Int8:
+	case int8:
 		ufct := func() int8 {
 			form.eval()
 			return form.out[0].Interface().(int8)
 		}
 		rfct = reflect.ValueOf(ufct)
-	case reflect.Int16:
+	case int16:
 		ufct := func() int16 {
 			form.eval()
 			return form.out[0].Interface().(int16)
 		}
 		rfct = reflect.ValueOf(ufct)
-	case reflect.Int32:
+	case int32:
 		ufct := func() int32 {
 			form.eval()
 			return form.out[0].Interface().(int32)
 		}
 		rfct = reflect.ValueOf(ufct)
-	case reflect.Int64:
+	case int64:
 		ufct := func() int64 {
 			form.eval()
 			return form.out[0].Interface().(int64)
 		}
 		rfct = reflect.ValueOf(ufct)
-	case reflect.String:
+	case string:
 		ufct := func() string {
 			form.eval()
 			return form.out[0].Interface().(string)
 		}
 		rfct = reflect.ValueOf(ufct)
-	case reflect.Float32:
-		switch reflect.New(rv.Type().Out(0)).Elem().Interface().(type) {
-		case root.Float16:
-			ufct := func() root.Float16 {
-				form.eval()
-				return form.out[0].Interface().(root.Float16)
-			}
-			rfct = reflect.ValueOf(ufct)
-		default:
-			ufct := func() float32 {
-				form.eval()
-				return form.out[0].Interface().(float32)
-			}
-			rfct = reflect.ValueOf(ufct)
+	case root.Float16:
+		ufct := func() root.Float16 {
+			form.eval()
+			return form.out[0].Interface().(root.Float16)
 		}
-	case reflect.Float64:
-		switch reflect.New(rv.Type().Out(0)).Elem().Interface().(type) {
-		case root.Double32:
-			ufct := func() root.Double32 {
-				form.eval()
-				return form.out[0].Interface().(root.Double32)
-			}
-			rfct = reflect.ValueOf(ufct)
-		default:
-			ufct := func() float64 {
-				form.eval()
-				return form.out[0].Float()
-			}
-			rfct = reflect.ValueOf(ufct)
+		rfct = reflect.ValueOf(ufct)
+	case float32:
+		ufct := func() float32 {
+			form.eval()
+			return form.out[0].Interface().(float32)
 		}
+		rfct = reflect.ValueOf(ufct)
+	case root.Double32:
+		ufct := func() root.Double32 {
+			form.eval()
+			return form.out[0].Interface().(root.Double32)
+		}
+		rfct = reflect.ValueOf(ufct)
+	case float64:
+		ufct := func() float64 {
+			form.eval()
+			return form.out[0].Float()
+		}
+		rfct = reflect.ValueOf(ufct)
 	default:
 		rfct = reflect.MakeFunc(
 			reflect.FuncOf(nil, []reflect.Type{rv.Type().Out(0)}, false),
