@@ -488,6 +488,38 @@ func TestFormulaFunc(t *testing.T) {
 			branches: []string{"one", "two"},
 			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: argument type 1 mismatch: func=float64, read-var[two]=float32`),
 		},
+		{
+			fname:    "../testdata/simple.root",
+			tname:    "tree",
+			rvars:    -1,
+			fct:      "not a func",
+			branches: []string{"one", "two"},
+			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: FormulaFunc expects a func`),
+		},
+		{
+			fname:    "../testdata/simple.root",
+			tname:    "tree",
+			rvars:    -1,
+			fct:      func(x1 int32, x2 float64) float64 { return 0 },
+			branches: []string{"one"},
+			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: num-branches/func-arity mismatch`),
+		},
+		{
+			fname:    "../testdata/simple.root",
+			tname:    "tree",
+			rvars:    -1,
+			fct:      func(x1 int32) float64 { return 0 },
+			branches: []string{"one", "two"},
+			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: num-branches/func-arity mismatch`),
+		},
+		{
+			fname:    "../testdata/simple.root",
+			tname:    "tree",
+			rvars:    -1,
+			fct:      func(x1 int32) (a, b float64) { return },
+			branches: []string{"one"},
+			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: invalid number of return values`),
+		},
 	} {
 		t.Run("", func(t *testing.T) {
 			f, err := riofs.Open(tc.fname)
@@ -559,24 +591,29 @@ var sumBenchFormula float64
 
 func BenchmarkFormula(b *testing.B) {
 	for _, tc := range []struct {
+		name string
 		expr string
 		imps []string
 	}{
 		{
+			name: "f0",
 			expr: "42.0",
 		},
 		{
+			name: "f1",
 			expr: "F64",
 		},
 		{
+			name: "f2",
 			expr: "2*F64",
 		},
 		{
+			name: "f3",
 			expr: "math.Abs(2*F64)",
 			imps: []string{"math"},
 		},
 	} {
-		b.Run(tc.expr, func(b *testing.B) {
+		b.Run(tc.name, func(b *testing.B) {
 			f, err := riofs.Open("../testdata/leaves.root")
 			if err != nil {
 				b.Fatal(err)
