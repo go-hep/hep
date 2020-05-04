@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/cosmos72/gomacro/fast"
+	"go-hep.org/x/hep/groot/root"
 )
 
 // Formula is a mathematical formula bound to variables (branches) of
@@ -254,17 +255,35 @@ func newFormulaFunc(r *Reader, branches []string, fct interface{}) (*FormulaFunc
 		}
 		rfct = reflect.ValueOf(ufct)
 	case reflect.Float32:
-		ufct := func() float32 {
-			form.eval()
-			return form.out[0].Interface().(float32)
+		switch reflect.New(rv.Type().Out(0)).Elem().Interface().(type) {
+		case root.Float16:
+			ufct := func() root.Float16 {
+				form.eval()
+				return form.out[0].Interface().(root.Float16)
+			}
+			rfct = reflect.ValueOf(ufct)
+		default:
+			ufct := func() float32 {
+				form.eval()
+				return form.out[0].Interface().(float32)
+			}
+			rfct = reflect.ValueOf(ufct)
 		}
-		rfct = reflect.ValueOf(ufct)
 	case reflect.Float64:
-		ufct := func() float64 {
-			form.eval()
-			return form.out[0].Float()
+		switch reflect.New(rv.Type().Out(0)).Elem().Interface().(type) {
+		case root.Double32:
+			ufct := func() root.Double32 {
+				form.eval()
+				return form.out[0].Interface().(root.Double32)
+			}
+			rfct = reflect.ValueOf(ufct)
+		default:
+			ufct := func() float64 {
+				form.eval()
+				return form.out[0].Float()
+			}
+			rfct = reflect.ValueOf(ufct)
 		}
-		rfct = reflect.ValueOf(ufct)
 	default:
 		rfct = reflect.MakeFunc(
 			reflect.FuncOf(nil, []reflect.Type{rv.Type().Out(0)}, false),

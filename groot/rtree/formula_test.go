@@ -574,10 +574,14 @@ func TestFormulaFunc(t *testing.T) {
 			}()
 
 			err = r.Read(func(ctx RCtx) error {
-				got := form.Eval()
-				if got, want := got, tc.want[ctx.Entry]; !reflect.DeepEqual(got, want) {
+				if got, want := form.Eval(), tc.want[ctx.Entry]; !reflect.DeepEqual(got, want) {
 					return fmt.Errorf("entry[%d]: invalid form-eval:\ngot=%v (%T)\nwant=%v (%T)", ctx.Entry, got, got, want, want)
 				}
+
+				if got, want := reflect.ValueOf(form.Func()).Call(nil)[0].Interface(), tc.want[ctx.Entry]; !reflect.DeepEqual(got, want) {
+					return fmt.Errorf("entry[%d]: invalid form-eval:\ngot=%v (%T)\nwant=%v (%T)", ctx.Entry, got, got, want, want)
+				}
+
 				return nil
 			})
 			if err != nil {
