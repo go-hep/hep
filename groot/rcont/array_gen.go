@@ -63,7 +63,8 @@ func (arr *ArrayC) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	n := int(r.ReadI32())
-	arr.Data = r.ReadFastArrayI8(n)
+	arr.Data = rbytes.ResizeI8(arr.Data, n)
+	r.ReadArrayI8(arr.Data)
 
 	return r.Err()
 }
@@ -130,7 +131,8 @@ func (arr *ArrayS) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	n := int(r.ReadI32())
-	arr.Data = r.ReadFastArrayI16(n)
+	arr.Data = rbytes.ResizeI16(arr.Data, n)
+	r.ReadArrayI16(arr.Data)
 
 	return r.Err()
 }
@@ -197,7 +199,8 @@ func (arr *ArrayI) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	n := int(r.ReadI32())
-	arr.Data = r.ReadFastArrayI32(n)
+	arr.Data = rbytes.ResizeI32(arr.Data, n)
+	r.ReadArrayI32(arr.Data)
 
 	return r.Err()
 }
@@ -264,7 +267,8 @@ func (arr *ArrayL) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	n := int(r.ReadI32())
-	arr.Data = r.ReadFastArrayI64(n)
+	arr.Data = rbytes.ResizeI64(arr.Data, n)
+	r.ReadArrayI64(arr.Data)
 
 	return r.Err()
 }
@@ -331,7 +335,8 @@ func (arr *ArrayL64) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	n := int(r.ReadI32())
-	arr.Data = r.ReadFastArrayI64(n)
+	arr.Data = rbytes.ResizeI64(arr.Data, n)
+	r.ReadArrayI64(arr.Data)
 
 	return r.Err()
 }
@@ -398,7 +403,8 @@ func (arr *ArrayF) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	n := int(r.ReadI32())
-	arr.Data = r.ReadFastArrayF32(n)
+	arr.Data = rbytes.ResizeF32(arr.Data, n)
+	r.ReadArrayF32(arr.Data)
 
 	return r.Err()
 }
@@ -465,7 +471,8 @@ func (arr *ArrayD) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	n := int(r.ReadI32())
-	arr.Data = r.ReadFastArrayF64(n)
+	arr.Data = rbytes.ResizeF64(arr.Data, n)
+	r.ReadArrayF64(arr.Data)
 
 	return r.Err()
 }

@@ -681,33 +681,46 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 			n := title[strings.Index(title, "[")+1 : strings.Index(title, "]")]
 			g.printf("_ = r.ReadI8() // is-array\n")
 			rfunc := ""
+			rsize := ""
 			switch se.Type() {
 			case rmeta.OffsetP + rmeta.Bool:
-				rfunc = "ReadFastArrayBool"
+				rfunc = "ReadArrayBool"
+				rsize = "ResizeBool"
 			case rmeta.OffsetP + rmeta.Int8:
-				rfunc = "ReadFastArrayI8"
+				rfunc = "ReadArrayI8"
+				rsize = "ResizeI8"
 			case rmeta.OffsetP + rmeta.Int16:
-				rfunc = "ReadFastArrayI16"
+				rfunc = "ReadArrayI16"
+				rsize = "ResizeI16"
 			case rmeta.OffsetP + rmeta.Int32:
-				rfunc = "ReadFastArrayI32"
+				rfunc = "ReadArrayI32"
+				rsize = "ResizeI32"
 			case rmeta.OffsetP + rmeta.Int64, rmeta.OffsetP + rmeta.Long64:
-				rfunc = "ReadFastArrayI64"
+				rfunc = "ReadArrayI64"
+				rsize = "ResizeI64"
 			case rmeta.OffsetP + rmeta.Uint8:
-				rfunc = "ReadFastArrayU8"
+				rfunc = "ReadArrayU8"
+				rsize = "ResizeU8"
 			case rmeta.OffsetP + rmeta.Uint16:
-				rfunc = "ReadFastArrayU16"
+				rfunc = "ReadArrayU16"
+				rsize = "ResizeU16"
 			case rmeta.OffsetP + rmeta.Uint32:
-				rfunc = "ReadFastArrayU32"
+				rfunc = "ReadArrayU32"
+				rsize = "ResizeU32"
 			case rmeta.OffsetP + rmeta.Uint64:
-				rfunc = "ReadFastArrayU64"
+				rfunc = "ReadArrayU64"
+				rsize = "ResizeU64"
 			case rmeta.OffsetP + rmeta.Float32:
-				rfunc = "ReadFastArrayF32"
+				rfunc = "ReadArrayF32"
+				rsize = "ResizeF32"
 			case rmeta.OffsetP + rmeta.Float64:
-				rfunc = "ReadFastArrayF64"
+				rfunc = "ReadArrayF64"
+				rsize = "ResizeF64"
 			default:
 				panic(fmt.Errorf("invalid element type: %v", se.Type()))
 			}
-			g.printf("o.%s = r.%s(int(o.%s))\n", se.Name(), rfunc, n)
+			g.printf("o.%s = rbytes.%s(nil, int(o.%s))\n", se.Name(), rsize, n)
+			g.printf("r.%s(o.%s)\n", rfunc, se.Name())
 		default:
 			panic("not implemented")
 		}
@@ -767,31 +780,31 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 			rfunc := ""
 			switch se.Type() {
 			case rmeta.OffsetL + rmeta.Bool:
-				rfunc = "ReadFastArrayBool"
+				rfunc = "ReadArrayBool"
 			case rmeta.OffsetL + rmeta.Int8:
-				rfunc = "ReadFastArrayI8"
+				rfunc = "ReadArrayI8"
 			case rmeta.OffsetL + rmeta.Int16:
-				rfunc = "ReadFastArrayI16"
+				rfunc = "ReadArrayI16"
 			case rmeta.OffsetL + rmeta.Int32:
-				rfunc = "ReadFastArrayI32"
+				rfunc = "ReadArrayI32"
 			case rmeta.OffsetL + rmeta.Int64:
-				rfunc = "ReadFastArrayI64"
+				rfunc = "ReadArrayI64"
 			case rmeta.OffsetL + rmeta.Uint8:
-				rfunc = "ReadFastArrayU8"
+				rfunc = "ReadArrayU8"
 			case rmeta.OffsetL + rmeta.Uint16:
-				rfunc = "ReadFastArrayU16"
+				rfunc = "ReadArrayU16"
 			case rmeta.OffsetL + rmeta.Uint32:
-				rfunc = "ReadFastArrayU32"
+				rfunc = "ReadArrayU32"
 			case rmeta.OffsetL + rmeta.Uint64:
-				rfunc = "ReadFastArrayU64"
+				rfunc = "ReadArrayU64"
 			case rmeta.OffsetL + rmeta.Float32:
-				rfunc = "ReadFastArrayF32"
+				rfunc = "ReadArrayF32"
 			case rmeta.OffsetL + rmeta.Float64:
-				rfunc = "ReadFastArrayF64"
+				rfunc = "ReadArrayF64"
 			default:
 				panic(fmt.Errorf("invalid array element type: %v", se.Type()))
 			}
-			g.printf("copy(o.%s[:], r.%s(len(o.%s)))\n", se.Name(), rfunc, se.Name())
+			g.printf("r.%s(o.%s[:])\n", rfunc, se.Name())
 		}
 
 	case *StreamerLoop:
@@ -846,34 +859,47 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 		switch se.STLType() {
 		case rmeta.STLvector:
 			rfunc := ""
+			rsize := ""
 			switch se.ContainedType() {
 			case rmeta.Bool:
-				rfunc = "ReadFastArrayBool"
+				rfunc = "ReadArrayBool"
+				rsize = "ResizeBool"
 			case rmeta.Int8:
-				rfunc = "ReadFastArrayI8"
+				rfunc = "ReadArrayI8"
+				rsize = "ResizeI8"
 			case rmeta.Int16:
-				rfunc = "ReadFastArrayI16"
+				rfunc = "ReadArrayI16"
+				rsize = "ResizeI16"
 			case rmeta.Int32:
-				rfunc = "ReadFastArrayI32"
+				rfunc = "ReadArrayI32"
+				rsize = "ResizeI32"
 			case rmeta.Int64:
-				rfunc = "ReadFastArrayI64"
+				rfunc = "ReadArrayI64"
+				rsize = "ResizeI64"
 			case rmeta.Uint8:
-				rfunc = "ReadFastArrayU8"
+				rfunc = "ReadArrayU8"
+				rsize = "ResizeU8"
 			case rmeta.Uint16:
-				rfunc = "ReadFastArrayU16"
+				rfunc = "ReadArrayU16"
+				rsize = "ResizeU16"
 			case rmeta.Uint32:
-				rfunc = "ReadFastArrayU32"
+				rfunc = "ReadArrayU32"
+				rsize = "ResizeU32"
 			case rmeta.Uint64:
-				rfunc = "ReadFastArrayU64"
+				rfunc = "ReadArrayU64"
+				rsize = "ResizeU64"
 			case rmeta.Float32:
-				rfunc = "ReadFastArrayF32"
+				rfunc = "ReadArrayF32"
+				rsize = "ResizeF32"
 			case rmeta.Float64:
-				rfunc = "ReadFastArrayF64"
+				rfunc = "ReadArrayF64"
+				rsize = "ResizeF64"
 			case rmeta.Object:
 				etn := se.ElemTypeName()
 				switch etn[0] {
 				case "string":
-					rfunc = "ReadFastArrayString"
+					rfunc = "ReadArrayString"
+					rsize = "ResizeStr"
 				default:
 					panic(fmt.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
 				}
@@ -888,7 +914,8 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 			g.printf("r.SetErr(fmt.Errorf(\"rbytes: invalid version for \\\"%s\\\". got=%%v, want=%%v\", vers, rvers.StreamerInfo))\n", se.TypeName())
 			g.printf("return r.Err()\n")
 			g.printf("}\n")
-			g.printf("o.%s = r.%s(int(r.ReadI32()))\n", se.Name(), rfunc)
+			g.printf("o.%s = rbytes.%s(nil, int(r.ReadI32()))\n", se.Name(), rsize)
+			g.printf("r.%s(o.%s)\n", rfunc, se.Name())
 			g.printf("r.CheckByteCount(pos, bcnt, start, %q)\n", se.TypeName())
 			g.printf("}\n")
 

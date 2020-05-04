@@ -140,9 +140,13 @@ func (leaf *LeafO) readFromBuffer(r *rbytes.RBuffer) error {
 			if n > max {
 				n = max
 			}
-			*leaf.sli = r.ReadFastArrayBool(leaf.tleaf.len * n)
+			nn := leaf.tleaf.len * n
+			*leaf.sli = rbytes.ResizeBool(*leaf.sli, nn)
+			r.ReadArrayBool(*leaf.sli)
 		} else {
-			copy(*leaf.sli, r.ReadFastArrayBool(leaf.tleaf.len))
+			nn := leaf.tleaf.len
+			*leaf.sli = rbytes.ResizeBool(*leaf.sli, nn)
+			r.ReadArrayBool(*leaf.sli)
 		}
 	}
 	return r.Err()
@@ -206,6 +210,9 @@ func (leaf *LeafO) setAddress(ptr interface{}) error {
 		leaf.ptr = v
 	case *[]bool:
 		leaf.sli = v
+		if *v == nil {
+			*leaf.sli = make([]bool, 0)
+		}
 	default:
 		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
@@ -391,9 +398,13 @@ func (leaf *LeafB) readFromBuffer(r *rbytes.RBuffer) error {
 			if n > max {
 				n = max
 			}
-			*leaf.sli = r.ReadFastArrayI8(leaf.tleaf.len * n)
+			nn := leaf.tleaf.len * n
+			*leaf.sli = rbytes.ResizeI8(*leaf.sli, nn)
+			r.ReadArrayI8(*leaf.sli)
 		} else {
-			copy(*leaf.sli, r.ReadFastArrayI8(leaf.tleaf.len))
+			nn := leaf.tleaf.len
+			*leaf.sli = rbytes.ResizeI8(*leaf.sli, nn)
+			r.ReadArrayI8(*leaf.sli)
 		}
 	}
 	return r.Err()
@@ -473,10 +484,16 @@ func (leaf *LeafB) setAddress(ptr interface{}) error {
 		leaf.ptr = v
 	case *[]int8:
 		leaf.sli = v
+		if *v == nil {
+			*leaf.sli = make([]int8, 0)
+		}
 	case *uint8:
 		leaf.ptr = (*int8)(unsafe.Pointer(v))
 	case *[]uint8:
 		leaf.sli = (*[]int8)(unsafe.Pointer(v))
+		if *v == nil {
+			*leaf.sli = make([]int8, 0)
+		}
 	default:
 		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
@@ -665,9 +682,13 @@ func (leaf *LeafS) readFromBuffer(r *rbytes.RBuffer) error {
 			if n > max {
 				n = max
 			}
-			*leaf.sli = r.ReadFastArrayI16(leaf.tleaf.len * n)
+			nn := leaf.tleaf.len * n
+			*leaf.sli = rbytes.ResizeI16(*leaf.sli, nn)
+			r.ReadArrayI16(*leaf.sli)
 		} else {
-			copy(*leaf.sli, r.ReadFastArrayI16(leaf.tleaf.len))
+			nn := leaf.tleaf.len
+			*leaf.sli = rbytes.ResizeI16(*leaf.sli, nn)
+			r.ReadArrayI16(*leaf.sli)
 		}
 	}
 	return r.Err()
@@ -747,10 +768,16 @@ func (leaf *LeafS) setAddress(ptr interface{}) error {
 		leaf.ptr = v
 	case *[]int16:
 		leaf.sli = v
+		if *v == nil {
+			*leaf.sli = make([]int16, 0)
+		}
 	case *uint16:
 		leaf.ptr = (*int16)(unsafe.Pointer(v))
 	case *[]uint16:
 		leaf.sli = (*[]int16)(unsafe.Pointer(v))
+		if *v == nil {
+			*leaf.sli = make([]int16, 0)
+		}
 	default:
 		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
@@ -939,9 +966,13 @@ func (leaf *LeafI) readFromBuffer(r *rbytes.RBuffer) error {
 			if n > max {
 				n = max
 			}
-			*leaf.sli = r.ReadFastArrayI32(leaf.tleaf.len * n)
+			nn := leaf.tleaf.len * n
+			*leaf.sli = rbytes.ResizeI32(*leaf.sli, nn)
+			r.ReadArrayI32(*leaf.sli)
 		} else {
-			copy(*leaf.sli, r.ReadFastArrayI32(leaf.tleaf.len))
+			nn := leaf.tleaf.len
+			*leaf.sli = rbytes.ResizeI32(*leaf.sli, nn)
+			r.ReadArrayI32(*leaf.sli)
 		}
 	}
 	return r.Err()
@@ -1021,10 +1052,16 @@ func (leaf *LeafI) setAddress(ptr interface{}) error {
 		leaf.ptr = v
 	case *[]int32:
 		leaf.sli = v
+		if *v == nil {
+			*leaf.sli = make([]int32, 0)
+		}
 	case *uint32:
 		leaf.ptr = (*int32)(unsafe.Pointer(v))
 	case *[]uint32:
 		leaf.sli = (*[]int32)(unsafe.Pointer(v))
+		if *v == nil {
+			*leaf.sli = make([]int32, 0)
+		}
 	default:
 		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
@@ -1213,9 +1250,13 @@ func (leaf *LeafL) readFromBuffer(r *rbytes.RBuffer) error {
 			if n > max {
 				n = max
 			}
-			*leaf.sli = r.ReadFastArrayI64(leaf.tleaf.len * n)
+			nn := leaf.tleaf.len * n
+			*leaf.sli = rbytes.ResizeI64(*leaf.sli, nn)
+			r.ReadArrayI64(*leaf.sli)
 		} else {
-			copy(*leaf.sli, r.ReadFastArrayI64(leaf.tleaf.len))
+			nn := leaf.tleaf.len
+			*leaf.sli = rbytes.ResizeI64(*leaf.sli, nn)
+			r.ReadArrayI64(*leaf.sli)
 		}
 	}
 	return r.Err()
@@ -1295,10 +1336,16 @@ func (leaf *LeafL) setAddress(ptr interface{}) error {
 		leaf.ptr = v
 	case *[]int64:
 		leaf.sli = v
+		if *v == nil {
+			*leaf.sli = make([]int64, 0)
+		}
 	case *uint64:
 		leaf.ptr = (*int64)(unsafe.Pointer(v))
 	case *[]uint64:
 		leaf.sli = (*[]int64)(unsafe.Pointer(v))
+		if *v == nil {
+			*leaf.sli = make([]int64, 0)
+		}
 	default:
 		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
@@ -1470,9 +1517,13 @@ func (leaf *LeafF) readFromBuffer(r *rbytes.RBuffer) error {
 			if n > max {
 				n = max
 			}
-			*leaf.sli = r.ReadFastArrayF32(leaf.tleaf.len * n)
+			nn := leaf.tleaf.len * n
+			*leaf.sli = rbytes.ResizeF32(*leaf.sli, nn)
+			r.ReadArrayF32(*leaf.sli)
 		} else {
-			copy(*leaf.sli, r.ReadFastArrayF32(leaf.tleaf.len))
+			nn := leaf.tleaf.len
+			*leaf.sli = rbytes.ResizeF32(*leaf.sli, nn)
+			r.ReadArrayF32(*leaf.sli)
 		}
 	}
 	return r.Err()
@@ -1536,6 +1587,9 @@ func (leaf *LeafF) setAddress(ptr interface{}) error {
 		leaf.ptr = v
 	case *[]float32:
 		leaf.sli = v
+		if *v == nil {
+			*leaf.sli = make([]float32, 0)
+		}
 	default:
 		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
@@ -1707,9 +1761,13 @@ func (leaf *LeafD) readFromBuffer(r *rbytes.RBuffer) error {
 			if n > max {
 				n = max
 			}
-			*leaf.sli = r.ReadFastArrayF64(leaf.tleaf.len * n)
+			nn := leaf.tleaf.len * n
+			*leaf.sli = rbytes.ResizeF64(*leaf.sli, nn)
+			r.ReadArrayF64(*leaf.sli)
 		} else {
-			copy(*leaf.sli, r.ReadFastArrayF64(leaf.tleaf.len))
+			nn := leaf.tleaf.len
+			*leaf.sli = rbytes.ResizeF64(*leaf.sli, nn)
+			r.ReadArrayF64(*leaf.sli)
 		}
 	}
 	return r.Err()
@@ -1773,6 +1831,9 @@ func (leaf *LeafD) setAddress(ptr interface{}) error {
 		leaf.ptr = v
 	case *[]float64:
 		leaf.sli = v
+		if *v == nil {
+			*leaf.sli = make([]float64, 0)
+		}
 	default:
 		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
@@ -2021,6 +2082,9 @@ func (leaf *LeafF16) setAddress(ptr interface{}) error {
 		leaf.ptr = v
 	case *[]root.Float16:
 		leaf.sli = v
+		if *v == nil {
+			*leaf.sli = make([]root.Float16, 0)
+		}
 	default:
 		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
@@ -2269,6 +2333,9 @@ func (leaf *LeafD32) setAddress(ptr interface{}) error {
 		leaf.ptr = v
 	case *[]root.Double32:
 		leaf.sli = v
+		if *v == nil {
+			*leaf.sli = make([]root.Double32, 0)
+		}
 	default:
 		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}
@@ -2440,9 +2507,13 @@ func (leaf *LeafC) readFromBuffer(r *rbytes.RBuffer) error {
 			if n > max {
 				n = max
 			}
-			*leaf.sli = r.ReadFastArrayString(leaf.tleaf.len * n)
+			nn := leaf.tleaf.len * n
+			*leaf.sli = rbytes.ResizeStr(*leaf.sli, nn)
+			r.ReadArrayString(*leaf.sli)
 		} else {
-			copy(*leaf.sli, r.ReadFastArrayString(leaf.tleaf.len))
+			nn := leaf.tleaf.len
+			*leaf.sli = rbytes.ResizeStr(*leaf.sli, nn)
+			r.ReadArrayString(*leaf.sli)
 		}
 	}
 	return r.Err()
@@ -2506,6 +2577,9 @@ func (leaf *LeafC) setAddress(ptr interface{}) error {
 		leaf.ptr = v
 	case *[]string:
 		leaf.sli = v
+		if *v == nil {
+			*leaf.sli = make([]string, 0)
+		}
 	default:
 		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
 	}

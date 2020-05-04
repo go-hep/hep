@@ -1111,9 +1111,6 @@ func TestTreeRW(t *testing.T) {
 					SliU32 []uint32
 					SliU64 []uint64
 				}
-				if i == 0 {
-					return Data{N: 0}
-				}
 				return Data{
 					N:      int32(i),
 					SliU8:  []uint8{uint8(i), uint8(i + 1), uint8(i + 2), uint8(i + 3), uint8(i + 4)}[:i],
@@ -1169,9 +1166,6 @@ func TestTreeRW(t *testing.T) {
 					SliI16 []int16
 					SliI32 []int32
 					SliI64 []int64
-				}
-				if i == 0 {
-					return Data{N: 0}
 				}
 				return Data{
 					N:      int32(i),
@@ -1229,9 +1223,6 @@ func TestTreeRW(t *testing.T) {
 					SliF32  []float32
 					SliF64  []float64
 				}
-				if i == 0 {
-					return Data{N: 0}
-				}
 				return Data{
 					N:       int32(i),
 					SliBool: []bool{bool(i%2 == 0), bool((i+1)%2 == 0), bool((i+2)%2 == 0), bool((i+3)%2 == 0), bool((i+4)%2 == 0)}[:i],
@@ -1283,11 +1274,10 @@ func TestTreeRW(t *testing.T) {
 					SliI64 []int64
 				}
 				n := i % 10
-				var d = Data{N: int32(n)}
-				if n == 0 {
-					return d
+				d := Data{
+					N:      int32(n),
+					SliI64: make([]int64, n),
 				}
-				d.SliI64 = make([]int64, n)
 				for j := range d.SliI64 {
 					d.SliI64[j] = int64(j + 1)
 				}

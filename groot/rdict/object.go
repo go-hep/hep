@@ -627,73 +627,73 @@ func readInt(recv interface{}, r *rbytes.RBuffer) error {
 
 func readBools(recv interface{}, r *rbytes.RBuffer) error {
 	slice := recv.([]bool)
-	copy(slice[:], r.ReadFastArrayBool(len(slice)))
+	r.ReadArrayBool(slice)
 	return r.Err()
 }
 
 func readU8s(recv interface{}, r *rbytes.RBuffer) error {
 	slice := recv.([]uint8)
-	copy(slice[:], r.ReadFastArrayU8(len(slice)))
+	r.ReadArrayU8(slice)
 	return r.Err()
 }
 
 func readU16s(recv interface{}, r *rbytes.RBuffer) error {
 	slice := recv.([]uint16)
-	copy(slice[:], r.ReadFastArrayU16(len(slice)))
+	r.ReadArrayU16(slice)
 	return r.Err()
 }
 
 func readU32s(recv interface{}, r *rbytes.RBuffer) error {
 	slice := recv.([]uint32)
-	copy(slice[:], r.ReadFastArrayU32(len(slice)))
+	r.ReadArrayU32(slice)
 	return r.Err()
 }
 
 func readU64s(recv interface{}, r *rbytes.RBuffer) error {
 	slice := recv.([]uint64)
-	copy(slice[:], r.ReadFastArrayU64(len(slice)))
+	r.ReadArrayU64(slice)
 	return r.Err()
 }
 
 func readI8s(recv interface{}, r *rbytes.RBuffer) error {
 	slice := recv.([]int8)
-	copy(slice[:], r.ReadFastArrayI8(len(slice)))
+	r.ReadArrayI8(slice)
 	return r.Err()
 }
 
 func readI16s(recv interface{}, r *rbytes.RBuffer) error {
 	slice := recv.([]int16)
-	copy(slice[:], r.ReadFastArrayI16(len(slice)))
+	r.ReadArrayI16(slice)
 	return r.Err()
 }
 
 func readI32s(recv interface{}, r *rbytes.RBuffer) error {
 	slice := recv.([]int32)
-	copy(slice[:], r.ReadFastArrayI32(len(slice)))
+	r.ReadArrayI32(slice)
 	return r.Err()
 }
 
 func readI64s(recv interface{}, r *rbytes.RBuffer) error {
 	slice := recv.([]int64)
-	copy(slice[:], r.ReadFastArrayI64(len(slice)))
+	r.ReadArrayI64(slice)
 	return r.Err()
 }
 
 func readF32s(recv interface{}, r *rbytes.RBuffer) error {
 	slice := recv.([]float32)
-	copy(slice[:], r.ReadFastArrayF32(len(slice)))
+	r.ReadArrayF32(slice)
 	return r.Err()
 }
 
 func readF64s(recv interface{}, r *rbytes.RBuffer) error {
 	slice := recv.([]float64)
-	copy(slice[:], r.ReadFastArrayF64(len(slice)))
+	r.ReadArrayF64(slice)
 	return r.Err()
 }
 
 func readStrs(recv interface{}, r *rbytes.RBuffer) error {
 	slice := recv.([]string)
-	copy(slice[:], r.ReadFastArrayString(len(slice)))
+	r.ReadArrayString(slice)
 	return r.Err()
 }
 

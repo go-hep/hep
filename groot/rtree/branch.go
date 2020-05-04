@@ -445,15 +445,21 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 		/*isArray*/
 		_ = r.ReadI8()
-		b.basketBytes = r.ReadFastArrayI32(b.maxBaskets)[:b.writeBasket:b.writeBasket]
+		b.basketBytes = make([]int32, b.maxBaskets)
+		r.ReadArrayI32(b.basketBytes)
+		b.basketBytes = b.basketBytes[:b.writeBasket:b.writeBasket]
 
 		/*isArray*/
 		_ = r.ReadI8()
-		b.basketEntry = r.ReadFastArrayI64(b.maxBaskets)[: b.writeBasket+1 : b.writeBasket+1]
+		b.basketEntry = make([]int64, b.maxBaskets)
+		r.ReadArrayI64(b.basketEntry)
+		b.basketEntry = b.basketEntry[: b.writeBasket+1 : b.writeBasket+1]
 
 		/*isArray*/
 		_ = r.ReadI8()
-		b.basketSeek = r.ReadFastArrayI64(b.maxBaskets)[:b.writeBasket:b.writeBasket]
+		b.basketSeek = make([]int64, b.maxBaskets)
+		r.ReadArrayI64(b.basketSeek)
+		b.basketSeek = b.basketSeek[:b.writeBasket:b.writeBasket]
 
 		b.fname = r.ReadString()
 
@@ -530,12 +536,14 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 		/*isArray*/
 		_ = r.ReadI8()
-		b.basketBytes = r.ReadFastArrayI32(b.maxBaskets)
+		b.basketBytes = make([]int32, b.maxBaskets)
+		r.ReadArrayI32(b.basketBytes)
 
 		/*isArray*/
 		_ = r.ReadI8()
 		{
-			slice := r.ReadFastArrayI32(b.maxBaskets)
+			slice := make([]int32, b.maxBaskets)
+			r.ReadArrayI32(slice)
 			b.basketEntry = make([]int64, len(slice))
 			for i, v := range slice {
 				b.basketEntry[i] = int64(v)
@@ -544,9 +552,11 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 		switch r.ReadI8() {
 		case 2:
-			b.basketSeek = r.ReadFastArrayI64(b.maxBaskets)
+			b.basketSeek = make([]int64, b.maxBaskets)
+			r.ReadArrayI64(b.basketSeek)
 		default:
-			slice := r.ReadFastArrayI32(b.maxBaskets)
+			slice := make([]int32, b.maxBaskets)
+			r.ReadArrayI32(slice)
 			b.basketSeek = make([]int64, len(slice))
 			for i, v := range slice {
 				b.basketSeek[i] = int64(v)
@@ -648,12 +658,14 @@ func (b *tbranch) findBasketIndex(entry int64) int {
 }
 
 func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
-	var err error
-	if len(b.basketBuf) < int(b.basketBytes[ib]) {
-		b.basketBuf = make([]byte, int(b.basketBytes[ib]))
-	}
 	var (
-		buf   = b.basketBuf[:int(b.basketBytes[ib])]
+		err error
+		n   = int(b.basketBytes[ib])
+	)
+
+	b.basketBuf = rbytes.ResizeU8(b.basketBuf, n)
+	var (
+		buf   = b.basketBuf[:n]
 		seek  = b.basketSeek[ib]
 		f     = b.tree.getFile()
 		sictx = f
@@ -667,7 +679,7 @@ func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
 		b.basketEntry[ib] = 0
 		b.basketEntry[ib+1] = int64(bk.nevbuf)
 
-		buf = make([]byte, int(bk.key.ObjLen()))
+		buf = rbytes.ResizeU8(buf, int(bk.key.ObjLen()))
 		_, err = bk.key.Load(buf)
 		if err != nil {
 			return err
@@ -694,7 +706,7 @@ func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
 		bk.key.SetFile(f)
 		b.firstEntry = b.basketEntry[ib]
 
-		buf = make([]byte, int(bk.key.ObjLen()))
+		buf = rbytes.ResizeU8(buf, int(bk.key.ObjLen()))
 		_, err = bk.key.Load(buf)
 		if err != nil {
 			return err
@@ -714,8 +726,9 @@ func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
 			if err != nil {
 				return err
 			}
-			n := bk.rbuf.ReadI32()
-			bk.offsets = bk.rbuf.ReadFastArrayI32(int(n))
+			n := int(bk.rbuf.ReadI32())
+			bk.offsets = rbytes.ResizeI32(bk.offsets, n)
+			bk.rbuf.ReadArrayI32(bk.offsets)
 			if err := bk.rbuf.Err(); err != nil {
 				return err
 			}

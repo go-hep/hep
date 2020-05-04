@@ -52,6 +52,7 @@ func genLeaves() {
 		DoUnsigned bool
 		RFunc      string
 		RFuncArray string
+		ResizeFunc string
 		WFunc      string
 		WFuncArray string
 		RangeType  string
@@ -69,7 +70,8 @@ func genLeaves() {
 			LenType:    1,
 			GoLenType:  int(reflect.TypeOf(true).Size()),
 			RFunc:      "r.ReadBool()",
-			RFuncArray: "r.ReadFastArrayBool",
+			RFuncArray: "r.ReadArrayBool",
+			ResizeFunc: "rbytes.ResizeBool",
 			WFunc:      "w.WriteBool",
 			WFuncArray: "w.WriteFastArrayBool",
 		},
@@ -81,7 +83,8 @@ func genLeaves() {
 			GoLenType:  int(reflect.TypeOf(int8(0)).Size()),
 			DoUnsigned: true,
 			RFunc:      "r.ReadI8()",
-			RFuncArray: "r.ReadFastArrayI8",
+			RFuncArray: "r.ReadArrayI8",
+			ResizeFunc: "rbytes.ResizeI8",
 			WFunc:      "w.WriteI8",
 			WFuncArray: "w.WriteFastArrayI8",
 			Count:      true,
@@ -94,7 +97,8 @@ func genLeaves() {
 			GoLenType:  int(reflect.TypeOf(int16(0)).Size()),
 			DoUnsigned: true,
 			RFunc:      "r.ReadI16()",
-			RFuncArray: "r.ReadFastArrayI16",
+			RFuncArray: "r.ReadArrayI16",
+			ResizeFunc: "rbytes.ResizeI16",
 			WFunc:      "w.WriteI16",
 			WFuncArray: "w.WriteFastArrayI16",
 			Count:      true,
@@ -107,7 +111,8 @@ func genLeaves() {
 			GoLenType:  int(reflect.TypeOf(int32(0)).Size()),
 			DoUnsigned: true,
 			RFunc:      "r.ReadI32()",
-			RFuncArray: "r.ReadFastArrayI32",
+			RFuncArray: "r.ReadArrayI32",
+			ResizeFunc: "rbytes.ResizeI32",
 			WFunc:      "w.WriteI32",
 			WFuncArray: "w.WriteFastArrayI32",
 			Count:      true,
@@ -120,7 +125,8 @@ func genLeaves() {
 			GoLenType:  int(reflect.TypeOf(int64(0)).Size()),
 			DoUnsigned: true,
 			RFunc:      "r.ReadI64()",
-			RFuncArray: "r.ReadFastArrayI64",
+			RFuncArray: "r.ReadArrayI64",
+			ResizeFunc: "rbytes.ResizeI64",
 			WFunc:      "w.WriteI64",
 			WFuncArray: "w.WriteFastArrayI64",
 			Count:      true,
@@ -132,7 +138,8 @@ func genLeaves() {
 			LenType:    4,
 			GoLenType:  int(reflect.TypeOf(float32(0)).Size()),
 			RFunc:      "r.ReadF32()",
-			RFuncArray: "r.ReadFastArrayF32",
+			RFuncArray: "r.ReadArrayF32",
+			ResizeFunc: "rbytes.ResizeF32",
 			WFunc:      "w.WriteF32",
 			WFuncArray: "w.WriteFastArrayF32",
 		},
@@ -143,7 +150,8 @@ func genLeaves() {
 			LenType:    8,
 			GoLenType:  int(reflect.TypeOf(float64(0)).Size()),
 			RFunc:      "r.ReadF64()",
-			RFuncArray: "r.ReadFastArrayF64",
+			RFuncArray: "r.ReadArrayF64",
+			ResizeFunc: "rbytes.ResizeF64",
 			WFunc:      "w.WriteF64",
 			WFuncArray: "w.WriteFastArrayF64",
 		},
@@ -155,6 +163,7 @@ func genLeaves() {
 			GoLenType:           int(reflect.TypeOf(root.Float16(0)).Size()),
 			RFunc:               "r.ReadF16(leaf.elm)",
 			RFuncArray:          "r.ReadFastArrayF16",
+			ResizeFunc:          "rbytes.ResizeF16",
 			WFunc:               "w.WriteF16",
 			WFuncArray:          "w.WriteFastArrayF16",
 			WithStreamerElement: true,
@@ -168,6 +177,7 @@ func genLeaves() {
 			GoLenType:           int(reflect.TypeOf(root.Double32(0)).Size()),
 			RFunc:               "r.ReadD32(leaf.elm)",
 			RFuncArray:          "r.ReadFastArrayD32",
+			ResizeFunc:          "rbytes.ResizeD32",
 			WFunc:               "w.WriteD32",
 			WFuncArray:          "w.WriteFastArrayD32",
 			WithStreamerElement: true,
@@ -180,7 +190,8 @@ func genLeaves() {
 			LenType:    1,
 			GoLenType:  int(reflect.TypeOf("").Size()),
 			RFunc:      "r.ReadString()",
-			RFuncArray: "r.ReadFastArrayString",
+			RFuncArray: "r.ReadArrayString",
+			ResizeFunc: "rbytes.ResizeStr",
 			WFunc:      "w.WriteString",
 			WFuncArray: "w.WriteFastArrayString",
 			RangeType:  "int32",
@@ -394,13 +405,17 @@ func (leaf *{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
 {{- if .WithStreamerElement}}
                         *leaf.sli = {{.RFuncArray}}(leaf.tleaf.len * n, leaf.elm)
 {{- else}}
-                        *leaf.sli = {{.RFuncArray}}(leaf.tleaf.len * n)
+						nn := leaf.tleaf.len * n
+						*leaf.sli = {{.ResizeFunc}}(*leaf.sli, nn)
+                        {{.RFuncArray}}(*leaf.sli)
 {{- end}}
                 } else {
 {{- if .WithStreamerElement}}
 						copy(*leaf.sli, {{.RFuncArray}}(leaf.tleaf.len, leaf.elm))
 {{- else}}
-						copy(*leaf.sli, {{.RFuncArray}}(leaf.tleaf.len))
+						nn := leaf.tleaf.len
+						*leaf.sli = {{.ResizeFunc}}(*leaf.sli, nn)
+						{{.RFuncArray}}(*leaf.sli)
 {{- end}}
                 }
         }
@@ -485,11 +500,17 @@ func (leaf *{{.Name}}) setAddress(ptr interface{}) error {
 		leaf.ptr = v
     case *[]{{.Type}}:
 		leaf.sli = v
+		if *v == nil {
+			*leaf.sli = make([]{{.Type}}, 0)
+		}
 {{- if .DoUnsigned}}
     case *u{{.Type}}:
 		leaf.ptr = (*{{.Type}})(unsafe.Pointer(v))
     case *[]u{{.Type}}:
 		leaf.sli = (*[]{{.Type}})(unsafe.Pointer(v))
+		if *v == nil {
+			*leaf.sli = make([]{{.Type}}, 0)
+		}
 {{- end}}
 	default:
 		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))

@@ -404,9 +404,7 @@ func (k *Key) Load(buf []byte) ([]byte, error) {
 }
 
 func (k *Key) load(buf []byte) ([]byte, error) {
-	if len(buf) < int(k.objlen) {
-		buf = make([]byte, k.objlen)
-	}
+	buf = rbytes.ResizeU8(buf, int(k.objlen))
 	if len(k.buf) > 0 {
 		copy(buf, k.buf)
 		return buf, nil

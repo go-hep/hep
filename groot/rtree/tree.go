@@ -407,10 +407,12 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 
 		if vers >= 19 { // FIXME
+			tree.clusters.ranges = make([]int64, nclus)
+			tree.clusters.sizes = make([]int64, nclus)
 			_ = r.ReadI8()
-			tree.clusters.ranges = r.ReadFastArrayI64(nclus) // fClusterRangeEnd
+			r.ReadArrayI64(tree.clusters.ranges) // fClusterRangeEnd
 			_ = r.ReadI8()
-			tree.clusters.sizes = r.ReadFastArrayI64(nclus) // fClusterSize
+			r.ReadArrayI64(tree.clusters.sizes) // fClusterSize
 		}
 
 		if vers >= 20 {

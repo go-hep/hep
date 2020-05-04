@@ -56,9 +56,7 @@ func newBasketFrom(t Tree, b Branch, cycle int16, bufsize, eoffsetLen int) Baske
 		branch:  b,
 	}
 
-	if bkt.nevsize > 0 {
-		bkt.offsets = make([]int32, bkt.nevsize)
-	}
+	bkt.offsets = rbytes.ResizeI32(bkt.offsets, bkt.nevsize)
 	return bkt
 }
 
@@ -214,7 +212,8 @@ func (b *Basket) UnmarshalROOT(r *rbytes.RBuffer) error {
 	case !mustGenOffsets && flag != 0 && (flag%10 != 2):
 		if b.nevbuf > 0 {
 			n := int(r.ReadI32())
-			b.offsets = r.ReadFastArrayI32(n)
+			b.offsets = rbytes.ResizeI32(b.offsets, n)
+			r.ReadArrayI32(b.offsets)
 			if 20 < flag && flag < 40 {
 				const displacement uint32 = 0xFF000000
 				for i, v := range b.offsets {
@@ -224,7 +223,8 @@ func (b *Basket) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 		if flag > 40 {
 			n := int(r.ReadI32())
-			b.displ = r.ReadFastArrayI32(n)
+			b.displ = rbytes.ResizeI32(b.displ, n)
+			r.ReadArrayI32(b.displ)
 		}
 	case mustGenOffsets:
 		b.offsets = nil

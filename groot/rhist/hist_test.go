@@ -82,7 +82,7 @@ func TestRWHist(t *testing.T) {
 			}
 
 			if got, want := rgot.(rtests.ROOTer), tc.Want; !reflect.DeepEqual(got, want) {
-				t.Fatalf("error reading back objstring.\ngot = %#v\nwant = %#v", got, want)
+				t.Fatalf("error reading back objstring.\ngot = %#v\nwant= %#v", got, want)
 			}
 
 			err = r.Close()

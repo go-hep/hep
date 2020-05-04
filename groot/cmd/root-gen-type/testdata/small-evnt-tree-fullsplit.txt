@@ -216,31 +216,39 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 	o.F64 = r.ReadF64()
 	o.Str = r.ReadString()
 	o.P3.UnmarshalROOT(r) // obj-any
-	copy(o.ArrayI16[:], r.ReadFastArrayI16(len(o.ArrayI16)))
-	copy(o.ArrayI32[:], r.ReadFastArrayI32(len(o.ArrayI32)))
-	copy(o.ArrayI64[:], r.ReadFastArrayI64(len(o.ArrayI64)))
-	copy(o.ArrayU16[:], r.ReadFastArrayU16(len(o.ArrayU16)))
-	copy(o.ArrayU32[:], r.ReadFastArrayU32(len(o.ArrayU32)))
-	copy(o.ArrayU64[:], r.ReadFastArrayU64(len(o.ArrayU64)))
-	copy(o.ArrayF32[:], r.ReadFastArrayF32(len(o.ArrayF32)))
-	copy(o.ArrayF64[:], r.ReadFastArrayF64(len(o.ArrayF64)))
+	r.ReadArrayI16(o.ArrayI16[:])
+	r.ReadArrayI32(o.ArrayI32[:])
+	r.ReadArrayI64(o.ArrayI64[:])
+	r.ReadArrayU16(o.ArrayU16[:])
+	r.ReadArrayU32(o.ArrayU32[:])
+	r.ReadArrayU64(o.ArrayU64[:])
+	r.ReadArrayF32(o.ArrayF32[:])
+	r.ReadArrayF64(o.ArrayF64[:])
 	o.N = r.ReadI32()
 	_ = r.ReadI8() // is-array
-	o.SliceI16 = r.ReadFastArrayI16(int(o.N))
+	o.SliceI16 = rbytes.ResizeI16(nil, int(o.N))
+	r.ReadArrayI16(o.SliceI16)
 	_ = r.ReadI8() // is-array
-	o.SliceI32 = r.ReadFastArrayI32(int(o.N))
+	o.SliceI32 = rbytes.ResizeI32(nil, int(o.N))
+	r.ReadArrayI32(o.SliceI32)
 	_ = r.ReadI8() // is-array
-	o.SliceI64 = r.ReadFastArrayI64(int(o.N))
+	o.SliceI64 = rbytes.ResizeI64(nil, int(o.N))
+	r.ReadArrayI64(o.SliceI64)
 	_ = r.ReadI8() // is-array
-	o.SliceU16 = r.ReadFastArrayU16(int(o.N))
+	o.SliceU16 = rbytes.ResizeU16(nil, int(o.N))
+	r.ReadArrayU16(o.SliceU16)
 	_ = r.ReadI8() // is-array
-	o.SliceU32 = r.ReadFastArrayU32(int(o.N))
+	o.SliceU32 = rbytes.ResizeU32(nil, int(o.N))
+	r.ReadArrayU32(o.SliceU32)
 	_ = r.ReadI8() // is-array
-	o.SliceU64 = r.ReadFastArrayU64(int(o.N))
+	o.SliceU64 = rbytes.ResizeU64(nil, int(o.N))
+	r.ReadArrayU64(o.SliceU64)
 	_ = r.ReadI8() // is-array
-	o.SliceF32 = r.ReadFastArrayF32(int(o.N))
+	o.SliceF32 = rbytes.ResizeF32(nil, int(o.N))
+	r.ReadArrayF32(o.SliceF32)
 	_ = r.ReadI8() // is-array
-	o.SliceF64 = r.ReadFastArrayF64(int(o.N))
+	o.SliceF64 = rbytes.ResizeF64(nil, int(o.N))
+	r.ReadArrayF64(o.SliceF64)
 	o.StdStr = r.ReadSTLString()
 	{
 		vers, pos, bcnt := r.ReadVersion("vector<short>")
@@ -248,7 +256,8 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 			r.SetErr(fmt.Errorf("rbytes: invalid version for \"vector<short>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
-		o.StlVecI16 = r.ReadFastArrayI16(int(r.ReadI32()))
+		o.StlVecI16 = rbytes.ResizeI16(nil, int(r.ReadI32()))
+		r.ReadArrayI16(o.StlVecI16)
 		r.CheckByteCount(pos, bcnt, start, "vector<short>")
 	}
 	{
@@ -257,7 +266,8 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 			r.SetErr(fmt.Errorf("rbytes: invalid version for \"vector<int>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
-		o.StlVecI32 = r.ReadFastArrayI32(int(r.ReadI32()))
+		o.StlVecI32 = rbytes.ResizeI32(nil, int(r.ReadI32()))
+		r.ReadArrayI32(o.StlVecI32)
 		r.CheckByteCount(pos, bcnt, start, "vector<int>")
 	}
 	{
@@ -266,7 +276,8 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 			r.SetErr(fmt.Errorf("rbytes: invalid version for \"vector<long>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
-		o.StlVecI64 = r.ReadFastArrayI64(int(r.ReadI32()))
+		o.StlVecI64 = rbytes.ResizeI64(nil, int(r.ReadI32()))
+		r.ReadArrayI64(o.StlVecI64)
 		r.CheckByteCount(pos, bcnt, start, "vector<long>")
 	}
 	{
@@ -275,7 +286,8 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 			r.SetErr(fmt.Errorf("rbytes: invalid version for \"vector<unsigned short>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
-		o.StlVecU16 = r.ReadFastArrayU16(int(r.ReadI32()))
+		o.StlVecU16 = rbytes.ResizeU16(nil, int(r.ReadI32()))
+		r.ReadArrayU16(o.StlVecU16)
 		r.CheckByteCount(pos, bcnt, start, "vector<unsigned short>")
 	}
 	{
@@ -284,7 +296,8 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 			r.SetErr(fmt.Errorf("rbytes: invalid version for \"vector<unsigned int>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
-		o.StlVecU32 = r.ReadFastArrayU32(int(r.ReadI32()))
+		o.StlVecU32 = rbytes.ResizeU32(nil, int(r.ReadI32()))
+		r.ReadArrayU32(o.StlVecU32)
 		r.CheckByteCount(pos, bcnt, start, "vector<unsigned int>")
 	}
 	{
@@ -293,7 +306,8 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 			r.SetErr(fmt.Errorf("rbytes: invalid version for \"vector<unsigned long>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
-		o.StlVecU64 = r.ReadFastArrayU64(int(r.ReadI32()))
+		o.StlVecU64 = rbytes.ResizeU64(nil, int(r.ReadI32()))
+		r.ReadArrayU64(o.StlVecU64)
 		r.CheckByteCount(pos, bcnt, start, "vector<unsigned long>")
 	}
 	{
@@ -302,7 +316,8 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 			r.SetErr(fmt.Errorf("rbytes: invalid version for \"vector<float>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
-		o.StlVecF32 = r.ReadFastArrayF32(int(r.ReadI32()))
+		o.StlVecF32 = rbytes.ResizeF32(nil, int(r.ReadI32()))
+		r.ReadArrayF32(o.StlVecF32)
 		r.CheckByteCount(pos, bcnt, start, "vector<float>")
 	}
 	{
@@ -311,7 +326,8 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 			r.SetErr(fmt.Errorf("rbytes: invalid version for \"vector<double>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
-		o.StlVecF64 = r.ReadFastArrayF64(int(r.ReadI32()))
+		o.StlVecF64 = rbytes.ResizeF64(nil, int(r.ReadI32()))
+		r.ReadArrayF64(o.StlVecF64)
 		r.CheckByteCount(pos, bcnt, start, "vector<double>")
 	}
 	{
@@ -320,7 +336,8 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 			r.SetErr(fmt.Errorf("rbytes: invalid version for \"vector<string>\". got=%v, want=%v", vers, rvers.StreamerInfo))
 			return r.Err()
 		}
-		o.StlVecStr = r.ReadFastArrayString(int(r.ReadI32()))
+		o.StlVecStr = rbytes.ResizeStr(nil, int(r.ReadI32()))
+		r.ReadArrayString(o.StlVecStr)
 		r.CheckByteCount(pos, bcnt, start, "vector<string>")
 	}
 	o.End = r.ReadString()

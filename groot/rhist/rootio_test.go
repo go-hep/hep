@@ -99,7 +99,7 @@ func TestCreate(t *testing.T) {
 				}
 
 				if got := rgot.(rtests.ROOTer); !reflect.DeepEqual(got, want) {
-					t.Fatalf("error reading back value[%d].\ngot = %#v\nwant = %#v", i, got, want)
+					t.Fatalf("error reading back value[%d].\ngot = %#v\nwant= %#v", i, got, want)
 				}
 			}
 

@@ -400,7 +400,9 @@ func TestWBuffer_Write(t *testing.T) {
 				w.WriteFastArrayBool(v.([]bool))
 			},
 			rfct: func(r *RBuffer) interface{} {
-				return r.ReadFastArrayBool(5)
+				sli := make([]bool, 5)
+				r.ReadArrayBool(sli)
+				return sli
 			},
 		},
 		{
@@ -410,7 +412,9 @@ func TestWBuffer_Write(t *testing.T) {
 				w.WriteFastArrayI8(v.([]int8))
 			},
 			rfct: func(r *RBuffer) interface{} {
-				return r.ReadFastArrayI8(5)
+				sli := make([]int8, 5)
+				r.ReadArrayI8(sli)
+				return sli
 			},
 		},
 		{
@@ -420,7 +424,9 @@ func TestWBuffer_Write(t *testing.T) {
 				w.WriteFastArrayI16(v.([]int16))
 			},
 			rfct: func(r *RBuffer) interface{} {
-				return r.ReadFastArrayI16(5)
+				sli := make([]int16, 5)
+				r.ReadArrayI16(sli)
+				return sli
 			},
 		},
 		{
@@ -430,7 +436,9 @@ func TestWBuffer_Write(t *testing.T) {
 				w.WriteFastArrayI32(v.([]int32))
 			},
 			rfct: func(r *RBuffer) interface{} {
-				return r.ReadFastArrayI32(5)
+				sli := make([]int32, 5)
+				r.ReadArrayI32(sli)
+				return sli
 			},
 		},
 		{
@@ -440,7 +448,9 @@ func TestWBuffer_Write(t *testing.T) {
 				w.WriteFastArrayI64(v.([]int64))
 			},
 			rfct: func(r *RBuffer) interface{} {
-				return r.ReadFastArrayI64(5)
+				sli := make([]int64, 5)
+				r.ReadArrayI64(sli)
+				return sli
 			},
 		},
 		{
@@ -450,7 +460,9 @@ func TestWBuffer_Write(t *testing.T) {
 				w.WriteFastArrayU8(v.([]uint8))
 			},
 			rfct: func(r *RBuffer) interface{} {
-				return r.ReadFastArrayU8(5)
+				sli := make([]uint8, 5)
+				r.ReadArrayU8(sli)
+				return sli
 			},
 		},
 		{
@@ -460,7 +472,9 @@ func TestWBuffer_Write(t *testing.T) {
 				w.WriteFastArrayU16(v.([]uint16))
 			},
 			rfct: func(r *RBuffer) interface{} {
-				return r.ReadFastArrayU16(5)
+				sli := make([]uint16, 5)
+				r.ReadArrayU16(sli)
+				return sli
 			},
 		},
 		{
@@ -470,7 +484,9 @@ func TestWBuffer_Write(t *testing.T) {
 				w.WriteFastArrayU32(v.([]uint32))
 			},
 			rfct: func(r *RBuffer) interface{} {
-				return r.ReadFastArrayU32(5)
+				sli := make([]uint32, 5)
+				r.ReadArrayU32(sli)
+				return sli
 			},
 		},
 		{
@@ -480,7 +496,9 @@ func TestWBuffer_Write(t *testing.T) {
 				w.WriteFastArrayU64(v.([]uint64))
 			},
 			rfct: func(r *RBuffer) interface{} {
-				return r.ReadFastArrayU64(5)
+				sli := make([]uint64, 5)
+				r.ReadArrayU64(sli)
+				return sli
 			},
 		},
 		{
@@ -490,7 +508,9 @@ func TestWBuffer_Write(t *testing.T) {
 				w.WriteFastArrayF32(v.([]float32))
 			},
 			rfct: func(r *RBuffer) interface{} {
-				return r.ReadFastArrayF32(5)
+				sli := make([]float32, 5)
+				r.ReadArrayF32(sli)
+				return sli
 			},
 		},
 		{
@@ -500,7 +520,9 @@ func TestWBuffer_Write(t *testing.T) {
 				w.WriteFastArrayF32(v.([]float32))
 			},
 			rfct: func(r *RBuffer) interface{} {
-				return r.ReadFastArrayF32(5)
+				sli := make([]float32, 5)
+				r.ReadArrayF32(sli)
+				return sli
 			},
 			cmp: func(a, b interface{}) bool {
 				aa := a.([]float32)
@@ -550,7 +572,9 @@ func TestWBuffer_Write(t *testing.T) {
 				w.WriteFastArrayF64(v.([]float64))
 			},
 			rfct: func(r *RBuffer) interface{} {
-				return r.ReadFastArrayF64(5)
+				sli := make([]float64, 5)
+				r.ReadArrayF64(sli)
+				return sli
 			},
 		},
 		{
@@ -560,7 +584,9 @@ func TestWBuffer_Write(t *testing.T) {
 				w.WriteFastArrayF64(v.([]float64))
 			},
 			rfct: func(r *RBuffer) interface{} {
-				return r.ReadFastArrayF64(5)
+				sli := make([]float64, 5)
+				r.ReadArrayF64(sli)
+				return sli
 			},
 			cmp: func(a, b interface{}) bool {
 				aa := a.([]float64)
@@ -610,7 +636,9 @@ func TestWBuffer_Write(t *testing.T) {
 				w.WriteFastArrayString(v.([]string))
 			},
 			rfct: func(r *RBuffer) interface{} {
-				return r.ReadFastArrayString(2)
+				sli := make([]string, 2)
+				r.ReadArrayString(sli)
+				return sli
 			},
 		},
 	} {

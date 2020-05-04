@@ -175,9 +175,11 @@ func (g *tgraph) UnmarshalROOT(r *rbytes.RBuffer) error {
 	g.maxsize = g.npoints
 	if vers < 2 {
 		_ = r.ReadI8()
-		xs := r.ReadFastArrayF32(int(g.npoints))
+		xs := make([]float32, g.npoints)
+		r.ReadArrayF32(xs)
 		_ = r.ReadI8()
-		ys := r.ReadFastArrayF32(int(g.npoints))
+		ys := make([]float32, g.npoints)
+		r.ReadArrayF32(ys)
 		g.x = make([]float64, len(xs))
 		g.y = make([]float64, len(ys))
 		for i := range xs {
@@ -187,9 +189,11 @@ func (g *tgraph) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	} else {
 		_ = r.ReadI8()
-		g.x = r.ReadFastArrayF64(int(g.npoints))
+		g.x = make([]float64, g.npoints)
+		r.ReadArrayF64(g.x)
 		_ = r.ReadI8()
-		g.y = r.ReadFastArrayF64(int(g.npoints))
+		g.y = make([]float64, g.npoints)
+		r.ReadArrayF64(g.y)
 	}
 
 	funcs := r.ReadObjectAny()
@@ -328,9 +332,11 @@ func (g *tgrapherrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	if vers < 2 {
 		_ = r.ReadI8()
-		xerrs := r.ReadFastArrayF32(int(g.tgraph.npoints))
+		xerrs := make([]float32, g.tgraph.npoints)
+		r.ReadArrayF32(xerrs)
 		_ = r.ReadI8()
-		yerrs := r.ReadFastArrayF32(int(g.tgraph.npoints))
+		yerrs := make([]float32, g.tgraph.npoints)
+		r.ReadArrayF32(yerrs)
 		g.xerr = make([]float64, len(xerrs))
 		g.yerr = make([]float64, len(yerrs))
 		for i := range xerrs {
@@ -340,9 +346,11 @@ func (g *tgrapherrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	} else {
 		_ = r.ReadI8()
-		g.xerr = r.ReadFastArrayF64(int(g.tgraph.npoints))
+		g.xerr = make([]float64, g.tgraph.npoints)
+		r.ReadArrayF64(g.xerr)
 		_ = r.ReadI8()
-		g.yerr = r.ReadFastArrayF64(int(g.tgraph.npoints))
+		g.yerr = make([]float64, g.tgraph.npoints)
+		r.ReadArrayF64(g.yerr)
 	}
 	r.CheckByteCount(pos, bcnt, beg, g.Class())
 	return r.Err()
@@ -473,21 +481,25 @@ func (g *tgraphasymmerrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	n := int(g.tgraph.npoints)
+	g.xerrlo = make([]float64, n)
+	g.xerrhi = make([]float64, n)
+	g.yerrlo = make([]float64, n)
+	g.yerrhi = make([]float64, n)
 	switch {
 	case vers < 2:
 		// up to version 2, order is: xlo,ylo,xhi,yhi
+		xerrlo := make([]float32, n)
+		yerrlo := make([]float32, n)
+		xerrhi := make([]float32, n)
+		yerrhi := make([]float32, n)
 		_ = r.ReadI8()
-		xerrlo := r.ReadFastArrayF32(n)
+		r.ReadArrayF32(xerrlo)
 		_ = r.ReadI8()
-		yerrlo := r.ReadFastArrayF32(n)
+		r.ReadArrayF32(yerrlo)
 		_ = r.ReadI8()
-		xerrhi := r.ReadFastArrayF32(n)
+		r.ReadArrayF32(xerrhi)
 		_ = r.ReadI8()
-		yerrhi := r.ReadFastArrayF32(n)
-		g.xerrlo = make([]float64, n)
-		g.xerrhi = make([]float64, n)
-		g.yerrlo = make([]float64, n)
-		g.yerrhi = make([]float64, n)
+		r.ReadArrayF32(yerrhi)
 		for i := range xerrlo {
 			g.xerrlo[i] = float64(xerrlo[i])
 			g.xerrhi[i] = float64(xerrhi[i])
@@ -497,24 +509,24 @@ func (g *tgraphasymmerrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 	case vers == 2:
 		// version 2, order is: xlo,ylo,xhi,yhi (but in float64)
 		_ = r.ReadI8()
-		g.xerrlo = r.ReadFastArrayF64(n)
+		r.ReadArrayF64(g.xerrlo)
 		_ = r.ReadI8()
-		g.yerrlo = r.ReadFastArrayF64(n)
+		r.ReadArrayF64(g.yerrlo)
 		_ = r.ReadI8()
-		g.xerrhi = r.ReadFastArrayF64(n)
+		r.ReadArrayF64(g.xerrhi)
 		_ = r.ReadI8()
-		g.yerrhi = r.ReadFastArrayF64(n)
+		r.ReadArrayF64(g.yerrhi)
 	default:
 		// version 3 and higher: xlo,xhi,ylo,yhi
 		// ie: the order of the fields in the TGraphAsymmErrors class.
 		_ = r.ReadI8()
-		g.xerrlo = r.ReadFastArrayF64(n)
+		r.ReadArrayF64(g.xerrlo)
 		_ = r.ReadI8()
-		g.xerrhi = r.ReadFastArrayF64(n)
+		r.ReadArrayF64(g.xerrhi)
 		_ = r.ReadI8()
-		g.yerrlo = r.ReadFastArrayF64(n)
+		r.ReadArrayF64(g.yerrlo)
 		_ = r.ReadI8()
-		g.yerrhi = r.ReadFastArrayF64(n)
+		r.ReadArrayF64(g.yerrhi)
 	}
 	r.CheckByteCount(pos, bcnt, beg, g.Class())
 	return r.Err()

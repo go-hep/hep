@@ -383,7 +383,7 @@ func (tse *StreamerElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	if vers == 1 {
 		copy(tse.maxidx[:], r.ReadStaticArrayI32())
 	} else {
-		copy(tse.maxidx[:], r.ReadFastArrayI32(len(tse.maxidx)))
+		r.ReadArrayI32(tse.maxidx[:])
 	}
 	tse.ename = r.ReadString()
 

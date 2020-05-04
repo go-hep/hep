@@ -586,9 +586,6 @@ func TestChainSeekEntryScannerPtr(t *testing.T) {
 			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.ArrF64, arr)
 		}
 		sli := arr[:int(data.N)]
-		if data.N == 0 {
-			sli = nil
-		}
 		if !reflect.DeepEqual(sli, data.SliF64) {
 			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.SliF64, sli)
 		}
@@ -671,9 +668,6 @@ func TestChainSeekEntryScannerVars(t *testing.T) {
 			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.ArrF64, arr)
 		}
 		sli := arr[:int(data.N)]
-		if data.N == 0 {
-			sli = nil
-		}
 		if !reflect.DeepEqual(sli, data.SliF64) {
 			t.Fatalf("entry [%d] : got= %#v want=%#v\n", i, data.SliF64, sli)
 		}

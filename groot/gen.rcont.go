@@ -41,48 +41,56 @@ func genArrays() {
 		Name  string
 		Type  string
 		RFunc string
+		DType string
 		WFunc string
 	}{
 		{
 			Name:  "ArrayC",
 			Type:  "int8",
-			RFunc: "r.ReadFastArrayI8",
+			RFunc: "r.ReadArrayI8",
+			DType: "I8",
 			WFunc: "w.WriteFastArrayI8",
 		},
 		{
 			Name:  "ArrayS",
 			Type:  "int16",
-			RFunc: "r.ReadFastArrayI16",
+			RFunc: "r.ReadArrayI16",
+			DType: "I16",
 			WFunc: "w.WriteFastArrayI16",
 		},
 		{
 			Name:  "ArrayI",
 			Type:  "int32",
-			RFunc: "r.ReadFastArrayI32",
+			RFunc: "r.ReadArrayI32",
+			DType: "I32",
 			WFunc: "w.WriteFastArrayI32",
 		},
 		{
 			Name:  "ArrayL",
 			Type:  "int64",
-			RFunc: "r.ReadFastArrayI64",
+			RFunc: "r.ReadArrayI64",
+			DType: "I64",
 			WFunc: "w.WriteFastArrayI64",
 		},
 		{
 			Name:  "ArrayL64",
 			Type:  "int64",
-			RFunc: "r.ReadFastArrayI64",
+			RFunc: "r.ReadArrayI64",
+			DType: "I64",
 			WFunc: "w.WriteFastArrayI64",
 		},
 		{
 			Name:  "ArrayF",
 			Type:  "float32",
-			RFunc: "r.ReadFastArrayF32",
+			RFunc: "r.ReadArrayF32",
+			DType: "F32",
 			WFunc: "w.WriteFastArrayF32",
 		},
 		{
 			Name:  "ArrayD",
 			Type:  "float64",
-			RFunc: "r.ReadFastArrayF64",
+			RFunc: "r.ReadArrayF64",
+			DType: "F64",
 			WFunc: "w.WriteFastArrayF64",
 		},
 	} {
@@ -151,7 +159,8 @@ func (arr *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	n := int(r.ReadI32())
-	arr.Data = {{.RFunc}}(n)
+	arr.Data = rbytes.Resize{{.DType}}(arr.Data, n)
+	{{.RFunc}}(arr.Data)
 
 	return r.Err()
 }

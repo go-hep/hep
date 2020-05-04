@@ -221,7 +221,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				if r.Err() != nil {
 					return r.Err()
 				}
-				copy(fptr[:], r.ReadFastArrayI8(n))
+				r.ReadArrayI8(fptr)
 				return r.Err()
 			}
 
@@ -232,7 +232,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				if r.Err() != nil {
 					return r.Err()
 				}
-				copy(fptr[:], r.ReadFastArrayI16(n))
+				r.ReadArrayI16(fptr)
 				return r.Err()
 			}
 
@@ -243,7 +243,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				if r.Err() != nil {
 					return r.Err()
 				}
-				copy(fptr[:], r.ReadFastArrayI32(n))
+				r.ReadArrayI32(fptr)
 				return r.Err()
 			}
 
@@ -254,7 +254,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				if r.Err() != nil {
 					return r.Err()
 				}
-				copy(fptr[:], r.ReadFastArrayI64(n))
+				r.ReadArrayI64(fptr)
 				return r.Err()
 			}
 
@@ -265,7 +265,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				if r.Err() != nil {
 					return r.Err()
 				}
-				copy(fptr[:], r.ReadFastArrayF32(n))
+				r.ReadArrayF32(fptr)
 				return r.Err()
 			}
 
@@ -276,7 +276,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				if r.Err() != nil {
 					return r.Err()
 				}
-				copy(fptr[:], r.ReadFastArrayF64(n))
+				r.ReadArrayF64(fptr)
 				return r.Err()
 			}
 
@@ -287,7 +287,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				if r.Err() != nil {
 					return r.Err()
 				}
-				copy(fptr[:], r.ReadFastArrayU8(n))
+				r.ReadArrayU8(fptr)
 				return r.Err()
 			}
 
@@ -298,7 +298,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				if r.Err() != nil {
 					return r.Err()
 				}
-				copy(fptr[:], r.ReadFastArrayU16(n))
+				r.ReadArrayU16(fptr)
 				return r.Err()
 			}
 
@@ -309,7 +309,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				if r.Err() != nil {
 					return r.Err()
 				}
-				copy(fptr[:], r.ReadFastArrayU32(n))
+				r.ReadArrayU32(fptr)
 				return r.Err()
 			}
 
@@ -320,7 +320,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				if r.Err() != nil {
 					return r.Err()
 				}
-				copy(fptr[:], r.ReadFastArrayU64(n))
+				r.ReadArrayU64(fptr)
 				return r.Err()
 			}
 
@@ -331,7 +331,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				if r.Err() != nil {
 					return r.Err()
 				}
-				copy(fptr[:], r.ReadFastArrayBool(n))
+				r.ReadArrayBool(fptr)
 				return r.Err()
 			}
 
@@ -383,8 +383,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				}
 				n := flen()
 				_ = r.ReadU8()
+				*fptr = rbytes.ResizeI8(*fptr, n)
 				if n > 0 {
-					*fptr = r.ReadFastArrayI8(n)
+					r.ReadArrayI8(*fptr)
 				} else {
 					*fptr = []int8{}
 				}
@@ -399,8 +400,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				}
 				n := flen()
 				_ = r.ReadU8()
+				*fptr = rbytes.ResizeI16(*fptr, n)
 				if n > 0 {
-					*fptr = r.ReadFastArrayI16(n)
+					r.ReadArrayI16(*fptr)
 				} else {
 					*fptr = []int16{}
 				}
@@ -415,8 +417,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				}
 				n := flen()
 				_ = r.ReadU8()
+				*fptr = rbytes.ResizeI32(*fptr, n)
 				if n > 0 {
-					*fptr = r.ReadFastArrayI32(n)
+					r.ReadArrayI32(*fptr)
 				} else {
 					*fptr = []int32{}
 				}
@@ -431,8 +434,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				}
 				n := flen()
 				_ = r.ReadU8()
+				*fptr = rbytes.ResizeI64(*fptr, n)
 				if n > 0 {
-					*fptr = r.ReadFastArrayI64(n)
+					r.ReadArrayI64(*fptr)
 				} else {
 					*fptr = []int64{}
 				}
@@ -447,8 +451,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				}
 				n := flen()
 				_ = r.ReadU8()
+				*fptr = rbytes.ResizeF32(*fptr, n)
 				if n > 0 {
-					*fptr = r.ReadFastArrayF32(n)
+					r.ReadArrayF32(*fptr)
 				} else {
 					*fptr = []float32{}
 				}
@@ -463,8 +468,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				}
 				n := flen()
 				_ = r.ReadU8()
+				*fptr = rbytes.ResizeF64(*fptr, n)
 				if n > 0 {
-					*fptr = r.ReadFastArrayF64(n)
+					r.ReadArrayF64(*fptr)
 				} else {
 					*fptr = []float64{}
 				}
@@ -479,8 +485,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				}
 				n := flen()
 				_ = r.ReadU8()
+				*fptr = rbytes.ResizeU8(*fptr, n)
 				if n > 0 {
-					*fptr = r.ReadFastArrayU8(n)
+					r.ReadArrayU8(*fptr)
 				} else {
 					*fptr = []uint8{}
 				}
@@ -495,8 +502,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				}
 				n := flen()
 				_ = r.ReadU8()
+				*fptr = rbytes.ResizeU16(*fptr, n)
 				if n > 0 {
-					*fptr = r.ReadFastArrayU16(n)
+					r.ReadArrayU16(*fptr)
 				} else {
 					*fptr = []uint16{}
 				}
@@ -511,8 +519,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				}
 				n := flen()
 				_ = r.ReadU8()
+				*fptr = rbytes.ResizeU32(*fptr, n)
 				if n > 0 {
-					*fptr = r.ReadFastArrayU32(n)
+					r.ReadArrayU32(*fptr)
 				} else {
 					*fptr = []uint32{}
 				}
@@ -527,8 +536,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				}
 				n := flen()
 				_ = r.ReadU8()
+				*fptr = rbytes.ResizeU64(*fptr, n)
 				if n > 0 {
-					*fptr = r.ReadFastArrayU64(n)
+					r.ReadArrayU64(*fptr)
 				} else {
 					*fptr = []uint64{}
 				}
@@ -543,8 +553,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				}
 				n := flen()
 				_ = r.ReadU8()
+				*fptr = rbytes.ResizeBool(*fptr, n)
 				if n > 0 {
-					*fptr = r.ReadFastArrayBool(n)
+					r.ReadArrayBool(*fptr)
 				} else {
 					*fptr = []bool{}
 				}
@@ -580,8 +591,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					var hdr [6]byte
 					r.Read(hdr[:])
 					n := int(r.ReadI32())
+					*fptr = rbytes.ResizeI16(*fptr, n)
 					if n > 0 {
-						*fptr = r.ReadFastArrayI16(n)
+						r.ReadArrayI16(*fptr)
 					} else {
 						*fptr = []int16{}
 					}
@@ -594,8 +606,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					var hdr [6]byte
 					r.Read(hdr[:])
 					n := int(r.ReadI32())
+					*fptr = rbytes.ResizeI32(*fptr, n)
 					if n > 0 {
-						*fptr = r.ReadFastArrayI32(n)
+						r.ReadArrayI32(*fptr)
 					} else {
 						*fptr = []int32{}
 					}
@@ -608,8 +621,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					var hdr [6]byte
 					r.Read(hdr[:])
 					n := int(r.ReadI32())
+					*fptr = rbytes.ResizeI64(*fptr, n)
 					if n > 0 {
-						*fptr = r.ReadFastArrayI64(n)
+						r.ReadArrayI64(*fptr)
 					} else {
 						*fptr = []int64{}
 					}
@@ -622,8 +636,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					var hdr [6]byte
 					r.Read(hdr[:])
 					n := int(r.ReadI32())
+					*fptr = rbytes.ResizeF32(*fptr, n)
 					if n > 0 {
-						*fptr = r.ReadFastArrayF32(n)
+						r.ReadArrayF32(*fptr)
 					} else {
 						*fptr = []float32{}
 					}
@@ -636,8 +651,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					var hdr [6]byte
 					r.Read(hdr[:])
 					n := int(r.ReadI32())
+					*fptr = rbytes.ResizeF64(*fptr, n)
 					if n > 0 {
-						*fptr = r.ReadFastArrayF64(n)
+						r.ReadArrayF64(*fptr)
 					} else {
 						*fptr = []float64{}
 					}
@@ -650,8 +666,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					var hdr [6]byte
 					r.Read(hdr[:])
 					n := int(r.ReadI32())
+					*fptr = rbytes.ResizeU16(*fptr, n)
 					if n > 0 {
-						*fptr = r.ReadFastArrayU16(n)
+						r.ReadArrayU16(*fptr)
 					} else {
 						*fptr = []uint16{}
 					}
@@ -664,8 +681,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					var hdr [6]byte
 					r.Read(hdr[:])
 					n := int(r.ReadI32())
+					*fptr = rbytes.ResizeU32(*fptr, n)
 					if n > 0 {
-						*fptr = r.ReadFastArrayU32(n)
+						r.ReadArrayU32(*fptr)
 					} else {
 						*fptr = []uint32{}
 					}
@@ -678,8 +696,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					var hdr [6]byte
 					r.Read(hdr[:])
 					n := int(r.ReadI32())
+					*fptr = rbytes.ResizeU64(*fptr, n)
 					if n > 0 {
-						*fptr = r.ReadFastArrayU64(n)
+						r.ReadArrayU64(*fptr)
 					} else {
 						*fptr = []uint64{}
 					}
@@ -692,8 +711,9 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 					var hdr [6]byte
 					r.Read(hdr[:])
 					n := int(r.ReadI32())
+					*fptr = rbytes.ResizeBool(*fptr, n)
 					if n > 0 {
-						*fptr = r.ReadFastArrayBool(n)
+						r.ReadArrayBool(*fptr)
 					} else {
 						*fptr = []bool{}
 					}
@@ -704,11 +724,12 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				switch se.TypeName() {
 				case "vector<string>", "std::vector<std::string>":
 					fptr := rf.Addr().Interface().(*[]string)
+					*fptr = make([]string, 0, 8)
 					return func(r *rbytes.RBuffer) error {
 						start := r.Pos()
 						_, pos, bcnt := r.ReadVersion("vector<string>")
 						n := int(r.ReadI32())
-						*fptr = make([]string, n)
+						*fptr = rbytes.ResizeStr(*fptr, n)
 						for i := 0; i < n; i++ {
 							(*fptr)[i] = r.ReadString()
 						}

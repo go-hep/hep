@@ -208,7 +208,8 @@ func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
 		h.min = float64(r.ReadF32())
 		h.norm = float64(r.ReadF32())
 		n := int(r.ReadI32())
-		h.contour.Data = r.ReadFastArrayF64(n)
+		h.contour.Data = rbytes.ResizeF64(h.contour.Data, n)
+		r.ReadArrayF64(h.contour.Data)
 	} else {
 		h.max = r.ReadF64()
 		h.min = r.ReadF64()
@@ -230,7 +231,8 @@ func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
 	if vers > 3 {
 		n := int(r.ReadI32())
 		_ = r.ReadI8()
-		h.buffer = r.ReadFastArrayF64(n)
+		h.buffer = rbytes.ResizeF64(h.buffer, n)
+		r.ReadArrayF64(h.buffer)
 		if vers > 6 {
 			h.erropt = r.ReadI32()
 		}
