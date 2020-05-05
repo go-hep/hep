@@ -39,7 +39,7 @@ func newFormula(r *Reader, expr string, imports []string) (*Formula, error) {
 		return nil, fmt.Errorf("rtree: could not parse expression: %w", err)
 	}
 
-	needed := formulaAutoLoad(r, idents)
+	needed, _ := formulaAutoLoad(r, idents)
 
 	for _, name := range imports {
 		_ = ir.ImportPackage("", name)
@@ -162,9 +162,9 @@ func newFormulaFunc(r *Reader, branches []string, fct interface{}) (*FormulaFunc
 		return nil, fmt.Errorf("rtree: invalid number of return values")
 	}
 
-	rvars := formulaAutoLoad(r, branches)
+	rvars, missing := formulaAutoLoad(r, branches)
 	if len(rvars) != len(branches) {
-		return nil, fmt.Errorf("rtree: could not find all needed ReadVars")
+		return nil, fmt.Errorf("rtree: could not find all needed ReadVars (missing: %v)", missing)
 	}
 
 	for i, rvar := range rvars {
@@ -348,12 +348,13 @@ func formulaAnalyze(rvars []*ReadVar, imports []string, expr string) (reflect.Ty
 	return prog.DefaultType().ReflectType(), nil
 }
 
-func formulaAutoLoad(r *Reader, idents []string) []*ReadVar {
+func formulaAutoLoad(r *Reader, idents []string) ([]*ReadVar, []string) {
 	var (
-		loaded = make(map[string]*ReadVar, len(r.rvars))
-		needed = make([]*ReadVar, 0, len(idents))
-		rvars  = NewReadVars(r.t)
-		all    = make(map[string]*ReadVar, len(rvars))
+		loaded  = make(map[string]*ReadVar, len(r.rvars))
+		needed  = make([]*ReadVar, 0, len(idents))
+		rvars   = NewReadVars(r.t)
+		all     = make(map[string]*ReadVar, len(rvars))
+		missing []string
 	)
 
 	for i := range r.rvars {
@@ -371,6 +372,7 @@ func formulaAutoLoad(r *Reader, idents []string) []*ReadVar {
 	for _, name := range idents {
 		rvar, ok := all[name]
 		if !ok {
+			missing = append(missing, name)
 			continue
 		}
 		if _, ok := loaded[name]; !ok {
@@ -381,5 +383,5 @@ func formulaAutoLoad(r *Reader, idents []string) []*ReadVar {
 		needed = append(needed, rvar)
 	}
 
-	return needed
+	return needed, missing
 }

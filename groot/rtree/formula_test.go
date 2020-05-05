@@ -478,7 +478,15 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(x int32) int32 { return x },
 			branches: []string{"ones"},
-			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: could not find all needed ReadVars`),
+			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: could not find all needed ReadVars (missing: [ones])`),
+		},
+		{
+			fname:    "../testdata/simple.root",
+			tname:    "tree",
+			rvars:    -1,
+			fct:      func(x int32, y float32, z int32) int32 { return x },
+			branches: []string{"one", "twos", "ones"},
+			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: could not find all needed ReadVars (missing: [twos ones])`),
 		},
 		{
 			fname:    "../testdata/simple.root",
