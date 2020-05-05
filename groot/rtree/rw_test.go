@@ -261,9 +261,11 @@ func TestBranchRW(t *testing.T) {
 				fname:          "foo.root",
 
 				//
-				readentry:   -1,
-				firstbasket: -1,
-				nextbasket:  -1,
+				ctx: basketCtx{
+					entry: -1,
+					first: -1,
+					next:  -1,
+				},
 			},
 		},
 		{
@@ -296,9 +298,11 @@ func TestBranchRW(t *testing.T) {
 				fname:       "foo.root",
 
 				//
-				readentry:   -1,
-				firstbasket: -1,
-				nextbasket:  -1,
+				ctx: basketCtx{
+					entry: -1,
+					first: -1,
+					next:  -1,
+				},
 			},
 		},
 		{
@@ -342,9 +346,11 @@ func TestBranchRW(t *testing.T) {
 				fname:       "foo.root",
 
 				//
-				readentry:   -1,
-				firstbasket: -1,
-				nextbasket:  -1,
+				ctx: basketCtx{
+					entry: -1,
+					first: -1,
+					next:  -1,
+				},
 			},
 		},
 		{
@@ -389,9 +395,11 @@ func TestBranchRW(t *testing.T) {
 					fname:       "foo.root",
 
 					//
-					readentry:   -1,
-					firstbasket: -1,
-					nextbasket:  -1,
+					ctx: basketCtx{
+						entry: -1,
+						first: -1,
+						next:  -1,
+					},
 				},
 				class:  "myclass",
 				parent: "parentclass",
@@ -447,9 +455,11 @@ func TestBranchRW(t *testing.T) {
 					fname:       "foo.root",
 
 					//
-					readentry:   -1,
-					firstbasket: -1,
-					nextbasket:  -1,
+					ctx: basketCtx{
+						entry: -1,
+						first: -1,
+						next:  -1,
+					},
 				},
 				class:  "myclass",
 				parent: "parentclass",
@@ -500,9 +510,11 @@ func TestBranchRW(t *testing.T) {
 						fname:       "foo.root",
 
 						//
-						readentry:   -1,
-						firstbasket: -1,
-						nextbasket:  -1,
+						ctx: basketCtx{
+							entry: -1,
+							first: -1,
+							next:  -1,
+						},
 					},
 					class:  "myotherclass",
 					parent: "parentclass",
