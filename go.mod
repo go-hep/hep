@@ -17,7 +17,7 @@ require (
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/jcmturner/gokrb5/v8 v8.3.0
 	github.com/jung-kurt/gofpdf v1.16.2 // indirect
-	github.com/klauspost/compress v1.10.3
+	github.com/klauspost/compress v1.10.5
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/peterh/liner v1.2.0
 	github.com/pierrec/lz4 v2.4.1+incompatible

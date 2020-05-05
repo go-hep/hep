@@ -7,12 +7,12 @@
 package rcompress // import "go-hep.org/x/hep/groot/internal/rcompress"
 
 import (
-	"compress/flate"
-	"compress/zlib"
 	"encoding/binary"
 	"fmt"
 	"io"
 
+	"github.com/klauspost/compress/flate"
+	"github.com/klauspost/compress/zlib"
 	"github.com/klauspost/compress/zstd"
 	"github.com/pierrec/lz4"
 	"github.com/pierrec/xxHash/xxHash64"
@@ -198,10 +198,10 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		if err != nil {
 			return 0, fmt.Errorf("rcompress: could not create ZLIB compressor: %w", err)
 		}
-		defer w.Close()
 
 		_, err = w.Write(src)
 		if err != nil {
+			_ = w.Close()
 			return 0, fmt.Errorf("rcompress: could not write ZLIB compressed bytes: %w", err)
 		}
 		err = w.Close()
