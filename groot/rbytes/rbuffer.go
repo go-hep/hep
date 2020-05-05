@@ -5,7 +5,6 @@
 package rbytes
 
 import (
-	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -232,62 +231,6 @@ func (r *RBuffer) readBool() bool {
 	return false
 }
 
-func (r *RBuffer) ReadI8() int8 {
-	if r.err != nil {
-		return 0
-	}
-	return r.readI8()
-}
-
-func (r *RBuffer) readI8() int8 {
-	beg := r.r.c
-	r.r.c++
-	v := int8(r.r.p[beg])
-	return v
-}
-
-func (r *RBuffer) ReadI16() int16 {
-	if r.err != nil {
-		return 0
-	}
-	return r.readI16()
-}
-
-func (r *RBuffer) readI16() int16 {
-	beg := r.r.c
-	r.r.c += 2
-	v := int16(binary.BigEndian.Uint16(r.r.p[beg:r.r.c]))
-	return v
-}
-
-func (r *RBuffer) ReadI32() int32 {
-	if r.err != nil {
-		return 0
-	}
-	return r.readI32()
-}
-
-func (r *RBuffer) readI32() int32 {
-	beg := r.r.c
-	r.r.c += 4
-	v := int32(binary.BigEndian.Uint32(r.r.p[beg:r.r.c]))
-	return v
-}
-
-func (r *RBuffer) ReadI64() int64 {
-	if r.err != nil {
-		return 0
-	}
-	return r.readI64()
-}
-
-func (r *RBuffer) readI64() int64 {
-	beg := r.r.c
-	r.r.c += 8
-	v := int64(binary.BigEndian.Uint64(r.r.p[beg:r.r.c]))
-	return v
-}
-
 func (r *RBuffer) ReadU8() uint8 {
 	if r.err != nil {
 		return 0
@@ -302,74 +245,18 @@ func (r *RBuffer) readU8() uint8 {
 	return uint8(v)
 }
 
-func (r *RBuffer) ReadU16() uint16 {
+func (r *RBuffer) ReadI8() int8 {
 	if r.err != nil {
 		return 0
 	}
-	return r.readU16()
+	return r.readI8()
 }
 
-func (r *RBuffer) readU16() uint16 {
+func (r *RBuffer) readI8() int8 {
 	beg := r.r.c
-	r.r.c += 2
-	v := binary.BigEndian.Uint16(r.r.p[beg:r.r.c])
-	return v
-}
-
-func (r *RBuffer) ReadU32() uint32 {
-	if r.err != nil {
-		return 0
-	}
-	return r.readU32()
-}
-
-func (r *RBuffer) readU32() uint32 {
-	beg := r.r.c
-	r.r.c += 4
-	v := binary.BigEndian.Uint32(r.r.p[beg:r.r.c])
-	return v
-}
-
-func (r *RBuffer) ReadU64() uint64 {
-	if r.err != nil {
-		return 0
-	}
-	return r.readU64()
-}
-
-func (r *RBuffer) readU64() uint64 {
-	beg := r.r.c
-	r.r.c += 8
-	v := binary.BigEndian.Uint64(r.r.p[beg:r.r.c])
-	return v
-}
-
-func (r *RBuffer) ReadF32() float32 {
-	if r.err != nil {
-		return 0
-	}
-	return r.readF32()
-}
-
-func (r *RBuffer) readF32() float32 {
-	beg := r.r.c
-	r.r.c += 4
-	v := binary.BigEndian.Uint32(r.r.p[beg:r.r.c])
-	return math.Float32frombits(v)
-}
-
-func (r *RBuffer) ReadF64() float64 {
-	if r.err != nil {
-		return 0
-	}
-	return r.readF64()
-}
-
-func (r *RBuffer) readF64() float64 {
-	beg := r.r.c
-	r.r.c += 8
-	v := binary.BigEndian.Uint64(r.r.p[beg:r.r.c])
-	return math.Float64frombits(v)
+	r.r.c++
+	v := r.r.p[beg]
+	return int8(v)
 }
 
 func (r *RBuffer) ReadF16(elm StreamerElement) root.Float16 {
@@ -499,48 +386,6 @@ func (r *RBuffer) ReadArrayI8(arr []int8) {
 	}
 }
 
-func (r *RBuffer) ReadArrayI16(arr []int16) {
-	if r.err != nil {
-		return
-	}
-	n := len(arr)
-	if n <= 0 || int64(n) > r.Len() {
-		return
-	}
-
-	for i := range arr {
-		arr[i] = r.readI16()
-	}
-}
-
-func (r *RBuffer) ReadArrayI32(arr []int32) {
-	if r.err != nil {
-		return
-	}
-	n := len(arr)
-	if n <= 0 || int64(n) > r.Len() {
-		return
-	}
-
-	for i := range arr {
-		arr[i] = r.readI32()
-	}
-}
-
-func (r *RBuffer) ReadArrayI64(arr []int64) {
-	if r.err != nil {
-		return
-	}
-	n := len(arr)
-	if n <= 0 || int64(n) > r.Len() {
-		return
-	}
-
-	for i := range arr {
-		arr[i] = r.readI64()
-	}
-}
-
 func (r *RBuffer) ReadArrayU8(arr []uint8) {
 	if r.err != nil {
 		return
@@ -552,76 +397,6 @@ func (r *RBuffer) ReadArrayU8(arr []uint8) {
 
 	for i := range arr {
 		arr[i] = r.readU8()
-	}
-}
-
-func (r *RBuffer) ReadArrayU16(arr []uint16) {
-	if r.err != nil {
-		return
-	}
-	n := len(arr)
-	if n <= 0 || int64(n) > r.Len() {
-		return
-	}
-
-	for i := range arr {
-		arr[i] = r.readU16()
-	}
-}
-
-func (r *RBuffer) ReadArrayU32(arr []uint32) {
-	if r.err != nil {
-		return
-	}
-	n := len(arr)
-	if n <= 0 || int64(n) > r.Len() {
-		return
-	}
-
-	for i := range arr {
-		arr[i] = r.readU32()
-	}
-}
-
-func (r *RBuffer) ReadArrayU64(arr []uint64) {
-	if r.err != nil {
-		return
-	}
-	n := len(arr)
-	if n <= 0 || int64(n) > r.Len() {
-		return
-	}
-
-	for i := range arr {
-		arr[i] = r.readU64()
-	}
-}
-
-func (r *RBuffer) ReadArrayF32(arr []float32) {
-	if r.err != nil {
-		return
-	}
-	n := len(arr)
-	if n <= 0 || int64(n) > r.Len() {
-		return
-	}
-
-	for i := range arr {
-		arr[i] = r.readF32()
-	}
-}
-
-func (r *RBuffer) ReadArrayF64(arr []float64) {
-	if r.err != nil {
-		return
-	}
-	n := len(arr)
-	if n <= 0 || int64(n) > r.Len() {
-		return
-	}
-
-	for i := range arr {
-		arr[i] = r.readF64()
 	}
 }
 

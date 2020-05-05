@@ -5,6 +5,7 @@
 package groot
 
 //go:generate go run ./gen.rboot.go
+//go:generate go run ./gen.rbytes.go
 //go:generate go run ./gen.rcont.go
 //go:generate go run ./gen.rhist.go
 //go:generate go run ./gen.rtree.go
