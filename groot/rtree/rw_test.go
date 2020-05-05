@@ -9,7 +9,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -1701,4 +1703,215 @@ void scan(const char *fname, const char *tree, const char *oname) {
 		t.Fatalf("invalid ROOT scan:\ngot:\n%v\nwant:\n%v\noutput:\n%s", got, want, out)
 	}
 
+}
+
+var sumBenchReadTreeF64 = 0.0
+
+func BenchmarkReadTreeF64(b *testing.B) {
+	tmp, err := ioutil.TempDir("", "groot-rtree-read-tree-f64-")
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer os.RemoveAll(tmp)
+
+	const nevts = 10000
+
+	fname := path.Join(tmp, "f64.root")
+	func() {
+		b.StopTimer()
+		defer b.StartTimer()
+
+		f, err := riofs.Create(fname, riofs.WithoutCompression())
+		if err != nil {
+			b.Fatal(err)
+		}
+		defer f.Close()
+
+		var data struct {
+			F64 float64
+		}
+		wvars := []WriteVar{
+			{Name: "F64", Value: &data.F64},
+		}
+		tree, err := NewWriter(f, "tree", wvars, WithoutCompression())
+		if err != nil {
+			b.Fatal(err)
+		}
+		defer tree.Close()
+
+		rnd := rand.New(rand.NewSource(1234))
+		for i := 0; i < nevts; i++ {
+			data.F64 = rnd.Float64() * 10
+
+			_, err = tree.Write()
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+
+		err = tree.Close()
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		err = f.Close()
+		if err != nil {
+			b.Fatal(err)
+		}
+	}()
+
+	b.StopTimer()
+	f, err := riofs.Open(fname)
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer f.Close()
+
+	o, err := f.Get("tree")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	tree := o.(Tree)
+
+	var data struct {
+		F64 float64
+	}
+
+	rvars := ReadVarsFromStruct(&data)
+	r, err := NewReader(tree, rvars)
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer r.Close()
+
+	b.StartTimer()
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		r.scan.SeekEntry(0)
+		b.StartTimer()
+
+		err = r.Read(func(RCtx) error {
+			sumBenchReadTreeF64 += data.F64
+			return nil
+		})
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+var sumBenchReadTreeSliF64 = 0
+
+func BenchmarkReadTreeSliF64(b *testing.B) {
+	tmp, err := ioutil.TempDir("", "groot-rtree-read-tree-sli-f64s-")
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer os.RemoveAll(tmp)
+
+	const nevts = 1000
+
+	for _, sz := range []int{0, 1, 2, 4, 8, 16, 64, 128, 512, 1024, 1024 * 1024} {
+		fname := path.Join(tmp, fmt.Sprintf("f64s-%d.root", sz))
+		func() {
+			b.StopTimer()
+			defer b.StartTimer()
+
+			f, err := riofs.Create(fname, riofs.WithoutCompression())
+			if err != nil {
+				b.Fatal(err)
+			}
+			defer f.Close()
+
+			var data struct {
+				N   int32
+				Sli []float64
+			}
+			wvars := []WriteVar{
+				{Name: "N", Value: &data.N},
+				{Name: "Sli", Value: &data.Sli, Count: "N"},
+			}
+			tree, err := NewWriter(f, "tree", wvars, WithoutCompression())
+			if err != nil {
+				b.Fatal(err)
+			}
+			defer tree.Close()
+
+			rnd := rand.New(rand.NewSource(1234))
+			for i := 0; i < nevts; i++ {
+				data.N = int32(rnd.Float64() * 100)
+				data.Sli = make([]float64, int(data.N))
+				for j := range data.Sli {
+					data.Sli[j] = rnd.Float64() * 10
+				}
+
+				_, err = tree.Write()
+				if err != nil {
+					b.Fatal(err)
+				}
+			}
+
+			err = tree.Close()
+			if err != nil {
+				b.Fatal(err)
+			}
+
+			err = f.Close()
+			if err != nil {
+				b.Fatal(err)
+			}
+		}()
+
+		b.Run(fmt.Sprintf("%d", sz), func(b *testing.B) {
+			b.StopTimer()
+			f, err := riofs.Open(fname)
+			if err != nil {
+				b.Fatal(err)
+			}
+			defer f.Close()
+
+			o, err := f.Get("tree")
+			if err != nil {
+				b.Fatal(err)
+			}
+
+			tree := o.(Tree)
+
+			var data struct {
+				N   int32
+				Sli []float64
+			}
+
+			rvars := ReadVarsFromStruct(&data)
+			r, err := NewReader(tree, rvars)
+			if err != nil {
+				b.Fatal(err)
+			}
+			defer r.Close()
+
+			b.StartTimer()
+			b.ReportAllocs()
+			b.ResetTimer()
+
+			for i := 0; i < b.N; i++ {
+				b.StopTimer()
+				r.scan.SeekEntry(0)
+				data.N = 0
+				data.Sli = data.Sli[:0]
+				b.StartTimer()
+
+				err = r.Read(func(RCtx) error {
+					sumBenchReadTreeSliF64 += len(data.Sli)
+					return nil
+				})
+				if err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
+	}
 }
