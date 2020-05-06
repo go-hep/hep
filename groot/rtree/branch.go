@@ -678,47 +678,31 @@ func (b *tbranch) findBasketIndex(entry int64) int {
 }
 
 func (b *tbranch) setupBasket(ctx *basketCtx, entry int64) error {
-	var (
-		err error
-		ib  = ctx.id
-	)
+	ib := ctx.id
 	switch ctx.keylen {
 	case 0: // FIXME(sbinet): from trial and error. check this is ok for all cases
 		b.basketEntry[ib] = 0
 		b.basketEntry[ib+1] = int64(ctx.bk.nevbuf)
 
-		for _, leaf := range b.leaves {
-			err = leaf.readFromBuffer(ctx.bk.rbuf)
-			if err != nil {
-				return err
-			}
-		}
-
 	default:
-		for _, leaf := range b.leaves {
-			err = leaf.readFromBuffer(ctx.bk.rbuf)
-			if err != nil {
-				return err
-			}
+		if b.entryOffsetLen <= 0 {
+			return nil
 		}
 
-		if b.entryOffsetLen > 0 {
-			last := int64(ctx.bk.last)
-			err = ctx.bk.rbuf.SetPos(last)
-			if err != nil {
-				return err
-			}
-			n := int(ctx.bk.rbuf.ReadI32())
-			ctx.bk.offsets = rbytes.ResizeI32(ctx.bk.offsets, n)
-			ctx.bk.rbuf.ReadArrayI32(ctx.bk.offsets)
-			if err := ctx.bk.rbuf.Err(); err != nil {
-				return err
-			}
+		last := int64(ctx.bk.last)
+		err := ctx.bk.rbuf.SetPos(last)
+		if err != nil {
+			return err
 		}
-
+		n := int(ctx.bk.rbuf.ReadI32())
+		ctx.bk.offsets = rbytes.ResizeI32(ctx.bk.offsets, n)
+		ctx.bk.rbuf.ReadArrayI32(ctx.bk.offsets)
+		if err := ctx.bk.rbuf.Err(); err != nil {
+			return err
+		}
 	}
 
-	return err
+	return nil
 }
 
 func (b *tbranch) scan(ptr interface{}) error {
