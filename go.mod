@@ -37,3 +37,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
 	modernc.org/ql v1.0.1
 )
+
+replace github.com/cosmos72/gomacro => github.com/go-hep/gomacro v0.0.0-20200506165324-d28799dcbb28
