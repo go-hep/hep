@@ -605,6 +605,12 @@ func (b *tbranch) loadBasket(entry int64) error {
 	if ib < 0 {
 		return fmt.Errorf("rtree: no basket for entry %d", entry)
 	}
+	var (
+		err   error
+		bufsz = int(b.basketBytes[ib])
+		seek  = b.basketSeek[ib]
+		f     = b.tree.getFile()
+	)
 	b.ctx.id = ib
 	b.ctx.entry = entry
 	b.ctx.next = b.basketEntry[ib+1]
@@ -612,14 +618,23 @@ func (b *tbranch) loadBasket(entry int64) error {
 	if ib < len(b.baskets) {
 		b.ctx.bk = &b.baskets[ib]
 		if b.ctx.bk.rbuf == nil {
-			return b.setupBasket(&b.ctx, ib, entry)
+			err = b.ctx.inflate(bufsz, seek, f)
+			if err != nil {
+				return fmt.Errorf("rtree: could not inflate basket: %w", err)
+			}
+
+			return b.setupBasket(&b.ctx, entry)
 		}
 		return nil
 	}
 
 	b.baskets = append(b.baskets, Basket{})
 	b.ctx.bk = &b.baskets[len(b.baskets)-1]
-	return b.setupBasket(&b.ctx, ib, entry)
+	err = b.ctx.inflate(bufsz, seek, f)
+	if err != nil {
+		return fmt.Errorf("rtree: could not inflate basket: %w", err)
+	}
+	return b.setupBasket(&b.ctx, entry)
 }
 
 func (b *tbranch) findBasketIndex(entry int64) int {
@@ -652,63 +667,26 @@ func (b *tbranch) findBasketIndex(entry int64) int {
 	return -1
 }
 
-func (b *tbranch) setupBasket(ctx *basketCtx, ib int, entry int64) error {
+func (b *tbranch) setupBasket(ctx *basketCtx, entry int64) error {
 	var (
 		err error
-		n   = int(b.basketBytes[ib])
+		ib  = ctx.id
 	)
-
-	ctx.buf = rbytes.ResizeU8(ctx.buf, n)
-	var (
-		bk    = ctx.bk
-		buf   = ctx.buf[:n]
-		seek  = b.basketSeek[ib]
-		f     = b.tree.getFile()
-		sictx = f
-	)
-
-	switch {
-	case len(buf) == 0 && ctx.bk != nil: // FIXME(sbinet): from trial and error. check this is ok for all cases
-		bk = ctx.bk
-		bk.key.SetFile(f)
+	switch ctx.keylen {
+	case 0: // FIXME(sbinet): from trial and error. check this is ok for all cases
 		b.basketEntry[ib] = 0
-		b.basketEntry[ib+1] = int64(bk.nevbuf)
+		b.basketEntry[ib+1] = int64(ctx.bk.nevbuf)
 
-		buf = rbytes.ResizeU8(buf, int(bk.key.ObjLen()))
-		_, err = bk.key.Load(buf)
-		if err != nil {
-			return err
-		}
-
-		bk.rbuf = rbytes.NewRBuffer(buf, nil, 0, sictx)
 		for _, leaf := range b.leaves {
-			err = leaf.readFromBuffer(bk.rbuf)
+			err = leaf.readFromBuffer(ctx.bk.rbuf)
 			if err != nil {
 				return err
 			}
 		}
 
 	default:
-		_, err = f.ReadAt(buf, seek)
-		if err != nil {
-			return err
-		}
-
-		err = bk.UnmarshalROOT(rbytes.NewRBuffer(buf, nil, 0, sictx))
-		if err != nil {
-			return err
-		}
-		bk.key.SetFile(f)
-
-		buf = rbytes.ResizeU8(buf, int(bk.key.ObjLen()))
-		_, err = bk.key.Load(buf)
-		if err != nil {
-			return err
-		}
-
-		bk.rbuf = rbytes.NewRBuffer(buf, nil, uint32(bk.key.KeyLen()), sictx)
 		for _, leaf := range b.leaves {
-			err = leaf.readFromBuffer(bk.rbuf)
+			err = leaf.readFromBuffer(ctx.bk.rbuf)
 			if err != nil {
 				return err
 			}
@@ -716,14 +694,14 @@ func (b *tbranch) setupBasket(ctx *basketCtx, ib int, entry int64) error {
 
 		if b.entryOffsetLen > 0 {
 			last := int64(ctx.bk.last)
-			err = bk.rbuf.SetPos(last)
+			err = ctx.bk.rbuf.SetPos(last)
 			if err != nil {
 				return err
 			}
-			n := int(bk.rbuf.ReadI32())
-			bk.offsets = rbytes.ResizeI32(bk.offsets, n)
-			bk.rbuf.ReadArrayI32(bk.offsets)
-			if err := bk.rbuf.Err(); err != nil {
+			n := int(ctx.bk.rbuf.ReadI32())
+			ctx.bk.offsets = rbytes.ResizeI32(ctx.bk.offsets, n)
+			ctx.bk.rbuf.ReadArrayI32(ctx.bk.offsets)
+			if err := ctx.bk.rbuf.Err(); err != nil {
 				return err
 			}
 		}
@@ -1247,6 +1225,8 @@ type basketCtx struct {
 	next  int64   // next entry that will require us to go to TBranchElement next basket
 	bk    *Basket // pointer to the current basket
 	buf   []byte  // scratch space for the current basket
+
+	keylen uint32
 }
 
 func (ctx *basketCtx) loadEntry(i int64) error {
@@ -1255,6 +1235,45 @@ func (ctx *basketCtx) loadEntry(i int64) error {
 
 func (ctx *basketCtx) readLeaf(i int64, leaf Leaf) error {
 	return ctx.bk.readLeaf(i-ctx.first, leaf)
+}
+
+func (ctx *basketCtx) inflate(bufsz int, seek int64, f *riofs.File) error {
+	ctx.buf = rbytes.ResizeU8(ctx.buf, bufsz)
+	ctx.bk.key.SetFile(f)
+	ctx.keylen = 0
+
+	var (
+		bk    = ctx.bk
+		buf   = ctx.buf[:bufsz]
+		sictx = f
+		err   error
+	)
+
+	switch {
+	case len(buf) == 0 && ctx.bk != nil: // FIXME(sbinet): from trial and error. check this is ok for all cases
+
+	default:
+		_, err = f.ReadAt(buf, seek)
+		if err != nil {
+			return fmt.Errorf("rtree: could not read basket buffer from file: %w", err)
+		}
+
+		err = bk.UnmarshalROOT(rbytes.NewRBuffer(buf, nil, 0, sictx))
+		if err != nil {
+			return fmt.Errorf("rtree: could not unmarshal basket buffer from file: %w", err)
+		}
+
+		ctx.keylen = uint32(bk.key.KeyLen())
+	}
+
+	buf = rbytes.ResizeU8(buf, int(bk.key.ObjLen()))
+	_, err = bk.key.Load(buf)
+	if err != nil {
+		return err
+	}
+
+	bk.rbuf = rbytes.NewRBuffer(buf, nil, ctx.keylen, sictx)
+	return nil
 }
 
 var (
