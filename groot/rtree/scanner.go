@@ -140,6 +140,7 @@ type scanField struct {
 	i    int         // field index
 	ptr  interface{} // field address
 	lcnt int         // index of dependant leaf-count (if any)
+	dup  bool        // whether the field is already read via leaf-count
 }
 
 // TreeScanner scans, selects and iterates over Tree entries.
@@ -215,6 +216,13 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 		err := leaf.setAddress(nil)
 		if err != nil {
 			return nil, fmt.Errorf("rtree: could not set leaf-count address for %q: %w", leaf.Name(), err)
+		}
+	}
+
+	// remove branches already loaded via leaf-count
+	for i, ib := range ibr {
+		if _, dup := cbrset[ib.br.Name()]; dup {
+			ibr[i].dup = true
 		}
 	}
 
@@ -319,6 +327,13 @@ func NewTreeScannerVars(t Tree, vars ...ReadVar) (*TreeScanner, error) {
 		}
 	}
 
+	// remove branches already loaded via leaf-count
+	for i, ib := range ibr {
+		if _, dup := cbrset[ib.br.Name()]; dup {
+			ibr[i].dup = true
+		}
+	}
+
 	base := baseScanner{
 		tree: t,
 		i:    0,
@@ -418,8 +433,8 @@ func (s *TreeScanner) scanArgs(args ...interface{}) error {
 	}
 
 	for i, ptr := range args {
-		fv := reflect.ValueOf(ptr).Elem()
 		br := s.scan.ibr[i]
+		fv := reflect.ValueOf(ptr).Elem()
 		err = br.br.loadEntry(ientry)
 		if err != nil {
 			// FIXME(sbinet): properly decorate error
@@ -549,6 +564,13 @@ func NewScannerVars(t Tree, vars ...ReadVar) (*Scanner, error) {
 		}
 	}
 
+	// remove branches already loaded via leaf-count
+	for i, ib := range ibr {
+		if _, dup := cbrset[ib.br.Name()]; dup {
+			ibr[i].dup = true
+		}
+	}
+
 	base := baseScanner{
 		tree: t,
 		i:    0,
@@ -640,6 +662,13 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 		}
 	}
 
+	// remove branches already loaded via leaf-count
+	for i, ib := range ibr {
+		if _, dup := cbrset[ib.br.Name()]; dup {
+			ibr[i].dup = true
+		}
+	}
+
 	base := baseScanner{
 		tree: t,
 		i:    0,
@@ -709,8 +738,10 @@ func (s *Scanner) Scan() error {
 		}
 	}
 
-	for i := range s.args {
-		br := s.scan.ibr[i]
+	for _, br := range s.scan.ibr {
+		if br.dup {
+			continue
+		}
 		s.scan.err = br.br.loadEntry(ientry)
 		if s.scan.err != nil {
 			// FIXME(sbinet): properly decorate error
