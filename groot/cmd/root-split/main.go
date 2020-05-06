@@ -18,7 +18,7 @@
 //   -t string
 //     	input tree name to split (default "tree")
 //   -v	enable verbose mode
-package main // import "go-hep.org/x/hep/groot/cmd/root-merge"
+package main // import "go-hep.org/x/hep/groot/cmd/root-split"
 
 import (
 	"flag"
