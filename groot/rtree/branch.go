@@ -586,18 +586,28 @@ func (b *tbranch) loadEntry(ientry int64) error {
 	}
 	b.firstEntry = b.ctx.first
 
-	err = b.ctx.loadEntry(ientry)
+	jentry := ientry - b.ctx.first
+	err = b.ctx.bk.loadEntry(jentry)
 	if err != nil {
 		return err
 	}
 
-	for _, leaf := range b.leaves {
-		err = b.ctx.readLeaf(ientry, leaf)
+	switch len(b.leaves) {
+	case 1:
+		err = b.ctx.bk.readLeaf(jentry, b.leaves[0])
 		if err != nil {
 			return err
 		}
+	default:
+		for _, leaf := range b.leaves {
+			err = b.ctx.bk.readLeaf(jentry, leaf)
+			if err != nil {
+				return err
+			}
+		}
 	}
-	return err
+
+	return nil
 }
 
 func (b *tbranch) loadBasket(entry int64) error {
@@ -1227,14 +1237,6 @@ type basketCtx struct {
 	buf   []byte  // scratch space for the current basket
 
 	keylen uint32
-}
-
-func (ctx *basketCtx) loadEntry(i int64) error {
-	return ctx.bk.loadEntry(i - ctx.first)
-}
-
-func (ctx *basketCtx) readLeaf(i int64, leaf Leaf) error {
-	return ctx.bk.readLeaf(i-ctx.first, leaf)
 }
 
 func (ctx *basketCtx) inflate(bufsz int, seek int64, f *riofs.File) error {
