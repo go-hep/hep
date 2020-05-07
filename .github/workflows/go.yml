@@ -1,0 +1,79 @@
+name: Go
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: "0 2 * * 1-7"
+
+env:
+  GOPROXY: "https://proxy.golang.org"
+  ROOT_VERSION: "6.20.00"
+  TAGS: "-tags=travis"
+  COVERAGE: "-race -coverpkg=go-hep.org/x/hep/..."
+
+jobs:
+
+  build:
+    name: Build
+    strategy:
+      matrix:
+        go-version: [1.13.x, 1.14.x, master]
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go-version }}
+ 
+    - name: Cache-Go
+      uses: actions/cache@v1
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-key: |
+          ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+ 
+    - name: Cache-ROOT
+      uses: actions/cache@v1
+      with:
+        path: ~/root-${ROOT_VERSION}
+        key: ${{ runner.os }}-root-${ROOT_VERSION}
+        
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Linux packages
+      if: matrix.platform == 'ubuntu-latest'
+      run: |
+        sudo apt-get install -qq pkg-config fuse
+        sudo modprobe fuse
+        sudo chmod 666 /dev/fuse
+        sudo chown root:$USER /etc/fuse.conf
+        go run ./ci/install-cxx-root.go -root-version=${ROOT_VERSION} -o=${HOME}
+        source $HOME/root-${ROOT_VERSION}/bin/thisroot.sh
+        root.exe --version
+    
+    - name: Build-Linux
+      if: matrix.platform == 'ubuntu-latest'
+      run: |
+        GOARCH=386   go install -v $TAGS ./...
+        GOARCH=amd64 go install -v $TAGS ./...       
+    - name: Build-Windows
+      if: matrix.platform == 'windows-latest'
+      run: |
+        go install -v $TAGS ./...
+    - name: Build-Darwin
+      if: matrix.platform == 'macos-latest'
+      run: |
+        go install -v $TAGS ./...
+    - name: Test
+      run: |
+        go run ./ci/run-tests.go $TAGS $COVERAGE
+    - name: Upload-Coverage
+      if: matrix.platform == 'ubuntu-latest'
+      run: |
+          bash <(curl -s https://codecov.io/bash)
