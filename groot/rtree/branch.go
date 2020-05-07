@@ -740,6 +740,12 @@ func (b *tbranch) setupBasket(bk *Basket, ib int, entry int64) error {
 }
 
 func (b *tbranch) scan(ptr interface{}) error {
+	if b.basket == nil {
+		if len(b.basketBytes) == 0 {
+			return nil
+		}
+		return fmt.Errorf("rtree: no basket data in branch %q", b.Name())
+	}
 	switch len(b.leaves) {
 	case 1:
 		leaf := b.leaves[0]
