@@ -31,7 +31,7 @@ require (
 	golang.org/x/image v0.0.0-20200119044424-58c23975cae1 // indirect
 	golang.org/x/mobile v0.0.0-20200222142934-3c8601c510d0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	golang.org/x/tools v0.0.0-20200502202811-ed308ab3e770 // indirect
+	golang.org/x/tools v0.0.0-20200507050207-a1532b81a28f
 	gonum.org/v1/gonum v0.7.1-0.20200330111830-e98ce15ff236
 	gonum.org/v1/plot v0.7.1-0.20200414075901-f4e1939a9e7a
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71

@@ -11,12 +11,13 @@ import (
 	"flag"
 	"fmt"
 	"go/format"
-	"go/importer"
 	"go/types"
 	"io"
 	"log"
 	"os"
 	"strings"
+
+	"golang.org/x/tools/go/packages"
 )
 
 func main() {
@@ -67,7 +68,7 @@ type Generator struct {
 // NewGenerator returns a new code generator for package p,
 // where p is the package's import path.
 func NewGenerator(p string) (*Generator, error) {
-	pkg, err := importer.Default().Import(p)
+	pkg, err := importPkg(p)
 	if err != nil {
 		return nil, err
 	}
@@ -348,4 +349,14 @@ func (g *Generator) Format() ([]byte, error) {
 		log.Printf("=== error ===\n%s\n", buf.Bytes())
 	}
 	return src, err
+}
+
+func importPkg(p string) (*types.Package, error) {
+	cfg := &packages.Config{Mode: packages.NeedTypes | packages.NeedTypesInfo | packages.NeedTypesSizes | packages.NeedDeps}
+	pkgs, err := packages.Load(cfg, p)
+	if err != nil {
+		return nil, fmt.Errorf("could not load package %q: %w", p, err)
+	}
+
+	return pkgs[0].Types, nil
 }

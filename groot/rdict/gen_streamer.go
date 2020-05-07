@@ -8,12 +8,12 @@ import (
 	"bytes"
 	"fmt"
 	"go/format"
-	"go/importer"
 	"go/types"
 	"log"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rmeta"
+	"golang.org/x/tools/go/packages"
 )
 
 // genStreamer holds the state of the ROOT streamer generation.
@@ -34,14 +34,23 @@ type genStreamer struct {
 	gosizes types.Sizes
 }
 
+func importPkg(p string) (*types.Package, error) {
+	cfg := &packages.Config{Mode: packages.NeedTypes | packages.NeedTypesInfo | packages.NeedTypesSizes | packages.NeedDeps}
+	pkgs, err := packages.Load(cfg, p)
+	if err != nil {
+		return nil, fmt.Errorf("could not load package %q: %w", p, err)
+	}
+
+	return pkgs[0].Types, nil
+}
+
 // NewGenStreamer returns a new code generator for package p,
 // where p is the package's import path.
 func NewGenStreamer(p string, verbose bool) (Generator, error) {
-	pkg, err := importer.Default().Import(p)
+	pkg, err := importPkg(p)
 	if err != nil {
 		return nil, err
 	}
-
 	g := &genStreamer{
 		buf: new(bytes.Buffer),
 		pkg: pkg,
@@ -62,7 +71,7 @@ func NewGenStreamer(p string, verbose bool) (Generator, error) {
 }
 
 func (g *genStreamer) init() error {
-	pkg, err := importer.Default().Import("encoding")
+	pkg, err := importPkg("encoding")
 	if err != nil {
 		return fmt.Errorf("rdict: could not find package \"encoding\": %w", err)
 	}
@@ -79,7 +88,7 @@ func (g *genStreamer) init() error {
 	}
 	g.binUn = o.(*types.TypeName).Type().Underlying().(*types.Interface)
 
-	pkg, err = importer.Default().Import("go-hep.org/x/hep/groot/rbytes")
+	pkg, err = importPkg("go-hep.org/x/hep/groot/rbytes")
 	if err != nil {
 		return fmt.Errorf("rdict: could not find package %q: %w", "go-hep.org/x/hep/groot/rbytes", err)
 	}
