@@ -50,7 +50,7 @@ func main() {
 
 	args := []string{"test"}
 
-	if *verbose || *cover != "" || *race {
+	if *verbose {
 		args = append(args, "-v")
 	}
 	if *cover != "" {
