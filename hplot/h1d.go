@@ -408,13 +408,16 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 	hasLine := h.LineStyle.Width != 0
 	hasGlyph := h.GlyphStyle != (draw.GlyphStyle{})
 	hasBand := h.Band != nil
-	
-	// WIP [rmadar]: define default behaviour
+
+	// Define default behaviour with priority
+	// 1) w/  fill: boxline, disregard band
+	// 2) w/o fill: skyline, band and markers
 	drawFill := hasFill
-	drawBand := hasBand
-	drawLine := hasLine
+	drawBand := !drawFill && hasBand
 	drawGlyph := hasGlyph
-	
+	drawSkyLine := !drawFill && hasLine
+	drawBoxLine := hasFill && hasLine
+
 	if drawFill {
 		pts := []vg.Point{
 			{X: xmin, Y: ymin},
@@ -428,31 +431,30 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 
 	if drawBand {
 		pts := []vg.Point{
-			{X: xmin, Y: ymin + 0.2*dy},
-			{X: xmax, Y: ymin + 0.2*dy},
-			{X: xmax, Y: ymax - 0.2*dy},
-			{X: xmin, Y: ymax - 0.2*dy},
-			{X: xmin, Y: ymin + 0.2*dy},
+			{X: xmin, Y: ymin + 0.0*dy},
+			{X: xmax, Y: ymin + 0.0*dy},
+			{X: xmax, Y: ymax - 0.0*dy},
+			{X: xmin, Y: ymax - 0.0*dy},
+			{X: xmin, Y: ymin + 0.0*dy},
 		}
 		c.FillPolygon(h.Band.FillColor, c.ClipPolygonXY(pts))
 	}
 
-	if drawLine {
-		if hasFill && !hasGlyph && !hasBand {
-			line := []vg.Point{
-				{X: xmin, Y: ymin},
-				{X: xmax, Y: ymin},
-				{X: xmax, Y: ymax},
-				{X: xmin, Y: ymax},
-				{X: xmin, Y: ymin},
-			}
-			c.StrokeLines(h.LineStyle, c.ClipLinesX(line)...)
-		} else {
-			ymid := c.Center().Y
-			line := []vg.Point{{X: xmin, Y: ymid}, {X: xmax, Y: ymid}}
-			c.StrokeLines(h.LineStyle, c.ClipLinesX(line)...)
+	if drawBoxLine {
+		line := []vg.Point{
+			{X: xmin, Y: ymin},
+			{X: xmax, Y: ymin},
+			{X: xmax, Y: ymax},
+			{X: xmin, Y: ymax},
+			{X: xmin, Y: ymin},
 		}
+		c.StrokeLines(h.LineStyle, c.ClipLinesX(line)...)
+	}
 
+	if drawSkyLine {
+		ymid := c.Center().Y
+		line := []vg.Point{{X: xmin, Y: ymid}, {X: xmax, Y: ymid}}
+		c.StrokeLines(h.LineStyle, c.ClipLinesX(line)...)
 	}
 
 	if drawGlyph {

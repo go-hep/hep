@@ -13,9 +13,9 @@ import (
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotutil"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-	"gonum.org/v1/plot/plotutil"
 )
 
 // An example of making a 1D-histogram.
@@ -509,7 +509,7 @@ func ExampleH1D_legendStyle() {
 		}),
 	)
 	hall.FillColor = color.NRGBA{G: 200, A: 180}
-	hall.LineStyle.Color = color.NRGBA{G: 220, B: 30, A: 255}
+	hall.LineStyle.Color = color.NRGBA{G: 100, B: 30, R: 150, A: 255}
 	hall.LineStyle.Width = 1.3
 	p.Add(hall)
 	p.Legend.Add("fill, marker, line & band", hall)
