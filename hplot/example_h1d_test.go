@@ -494,7 +494,7 @@ func ExampleH1D_legendStyle() {
 	hfillband.FillColor = color.NRGBA{B: 200, A: 180}
 	hfillband.LineStyle.Color = color.NRGBA{B: 200, G: 30, A: 255}
 	hfillband.LineStyle.Width = 1.3
-	hfillband.Band.FillColor = color.NRGBA{R: 200, G: 180, B: 100, A: 200}
+	hfillband.Band.FillColor = color.NRGBA{R: 180, G: 180, B: 180, A: 180}
 	p.Add(hfillband)
 	p.Legend.Add("fill, line & band", hfillband)
 
@@ -508,8 +508,8 @@ func ExampleH1D_legendStyle() {
 			Shape:  draw.CircleGlyph{},
 		}),
 	)
-	hall.FillColor = color.NRGBA{G: 200, A: 180}
-	hall.LineStyle.Color = color.NRGBA{G: 100, B: 30, R: 150, A: 255}
+	hall.FillColor = color.NRGBA{G: 160, A: 180}
+	hall.LineStyle.Color = color.NRGBA{G: 250, B: 60, R: 20, A: 255}
 	hall.LineStyle.Width = 1.3
 	p.Add(hall)
 	p.Legend.Add("fill, marker, line & band", hall)

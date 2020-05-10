@@ -29,7 +29,7 @@ type H1D struct {
 	FillColor color.Color
 
 	// LineStyle is the style of the outline of each
-	// bar of the histogram.
+	// bar of the histogram.	
 	draw.LineStyle
 
 	// GlyphStyle is the style of the glyphs drawn
@@ -45,13 +45,14 @@ type H1D struct {
 	LogY bool
 
 	// InfoStyle is the style of infos displayed for
-	// the histogram (entries, mean, rms)
+	// the histogram (entries, mean, rms).
 	Infos HInfos
 
 	// YErrs is the y error bars plotter.
 	YErrs *plotter.YErrorBars
 
 	// Band displays a colored band between the y-min and y-max error bars.
+	// The band is shown in the legend thumbnail only if there is no filling.
 	Band *Band
 }
 
