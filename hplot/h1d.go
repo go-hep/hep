@@ -29,7 +29,7 @@ type H1D struct {
 	FillColor color.Color
 
 	// LineStyle is the style of the outline of each
-	// bar of the histogram.	
+	// bar of the histogram.
 	draw.LineStyle
 
 	// GlyphStyle is the style of the glyphs drawn
