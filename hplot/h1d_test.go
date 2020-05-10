@@ -44,6 +44,10 @@ func TestH1DAsData(t *testing.T) {
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withYErrBarsAndData, t, "h1d_glyphs.png")
 }
 
+func TestH1DLegendStyle(t *testing.T) {
+	checkPlot(cmpimg.CheckPlot)(ExampleH1D_legendStyle, t, "h1d_legend.png")
+}
+
 func TestH1DWithBorders(t *testing.T) {
 	_ = os.Remove("testdata/h1d_borders.png")
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withPlotBorders, t, "h1d_borders.png")

@@ -401,8 +401,21 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 	ymax := c.Max.Y
 	xmin := c.Min.X
 	xmax := c.Max.X
+	dy := ymax - ymin
 
-	if h.FillColor != nil {
+	// Style of the histogram
+	hasFill := h.FillColor != nil
+	hasLine := h.LineStyle.Width != 0
+	hasGlyph := h.GlyphStyle != (draw.GlyphStyle{})
+	hasBand := h.Band != nil
+	
+	// WIP [rmadar]: define default behaviour
+	drawFill := hasFill
+	drawBand := hasBand
+	drawLine := hasLine
+	drawGlyph := hasGlyph
+	
+	if drawFill {
 		pts := []vg.Point{
 			{X: xmin, Y: ymin},
 			{X: xmax, Y: ymin},
@@ -412,18 +425,42 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 		}
 		c.FillPolygon(h.FillColor, c.ClipPolygonXY(pts))
 	}
-	if h.LineStyle.Width != 0 {
-		ymid := c.Center().Y
-		line := []vg.Point{{X: xmin, Y: ymid}, {X: xmax, Y: ymid}}
-		c.StrokeLines(h.LineStyle, c.ClipLinesX(line)...)
+
+	if drawBand {
+		pts := []vg.Point{
+			{X: xmin, Y: ymin + 0.2*dy},
+			{X: xmax, Y: ymin + 0.2*dy},
+			{X: xmax, Y: ymax - 0.2*dy},
+			{X: xmin, Y: ymax - 0.2*dy},
+			{X: xmin, Y: ymin + 0.2*dy},
+		}
+		c.FillPolygon(h.Band.FillColor, c.ClipPolygonXY(pts))
 	}
 
-	if h.GlyphStyle != (draw.GlyphStyle{}) {
+	if drawLine {
+		if hasFill && !hasGlyph && !hasBand {
+			line := []vg.Point{
+				{X: xmin, Y: ymin},
+				{X: xmax, Y: ymin},
+				{X: xmax, Y: ymax},
+				{X: xmin, Y: ymax},
+				{X: xmin, Y: ymin},
+			}
+			c.StrokeLines(h.LineStyle, c.ClipLinesX(line)...)
+		} else {
+			ymid := c.Center().Y
+			line := []vg.Point{{X: xmin, Y: ymid}, {X: xmax, Y: ymid}}
+			c.StrokeLines(h.LineStyle, c.ClipLinesX(line)...)
+		}
+
+	}
+
+	if drawGlyph {
 		c.DrawGlyph(h.GlyphStyle, c.Center())
 		if h.YErrs != nil {
 			var (
 				yerrs = h.YErrs
-				vsize = 0.5 * ((ymax - ymin) * 0.95)
+				vsize = 0.5 * dy * 0.95
 				x     = c.Center().X
 				ylo   = c.Center().Y - vsize
 				yup   = c.Center().Y + vsize
