@@ -131,10 +131,6 @@ func (leaf *LeafO) readFromBuffer(r *rbytes.RBuffer) error {
 		*leaf.ptr = r.ReadBool()
 	} else {
 		if leaf.count != nil {
-			entry := leaf.Branch().getReadEntry()
-			if leaf.count.Branch().getReadEntry() != entry {
-				leaf.count.Branch().getEntry(entry)
-			}
 			n := leaf.count.ivalue()
 			max := leaf.count.imax()
 			if n > max {
@@ -389,10 +385,6 @@ func (leaf *LeafB) readFromBuffer(r *rbytes.RBuffer) error {
 		*leaf.ptr = r.ReadI8()
 	} else {
 		if leaf.count != nil {
-			entry := leaf.Branch().getReadEntry()
-			if leaf.count.Branch().getReadEntry() != entry {
-				leaf.count.Branch().getEntry(entry)
-			}
 			n := leaf.count.ivalue()
 			max := leaf.count.imax()
 			if n > max {
@@ -673,10 +665,6 @@ func (leaf *LeafS) readFromBuffer(r *rbytes.RBuffer) error {
 		*leaf.ptr = r.ReadI16()
 	} else {
 		if leaf.count != nil {
-			entry := leaf.Branch().getReadEntry()
-			if leaf.count.Branch().getReadEntry() != entry {
-				leaf.count.Branch().getEntry(entry)
-			}
 			n := leaf.count.ivalue()
 			max := leaf.count.imax()
 			if n > max {
@@ -957,10 +945,6 @@ func (leaf *LeafI) readFromBuffer(r *rbytes.RBuffer) error {
 		*leaf.ptr = r.ReadI32()
 	} else {
 		if leaf.count != nil {
-			entry := leaf.Branch().getReadEntry()
-			if leaf.count.Branch().getReadEntry() != entry {
-				leaf.count.Branch().getEntry(entry)
-			}
 			n := leaf.count.ivalue()
 			max := leaf.count.imax()
 			if n > max {
@@ -1241,10 +1225,6 @@ func (leaf *LeafL) readFromBuffer(r *rbytes.RBuffer) error {
 		*leaf.ptr = r.ReadI64()
 	} else {
 		if leaf.count != nil {
-			entry := leaf.Branch().getReadEntry()
-			if leaf.count.Branch().getReadEntry() != entry {
-				leaf.count.Branch().getEntry(entry)
-			}
 			n := leaf.count.ivalue()
 			max := leaf.count.imax()
 			if n > max {
@@ -1508,10 +1488,6 @@ func (leaf *LeafF) readFromBuffer(r *rbytes.RBuffer) error {
 		*leaf.ptr = r.ReadF32()
 	} else {
 		if leaf.count != nil {
-			entry := leaf.Branch().getReadEntry()
-			if leaf.count.Branch().getReadEntry() != entry {
-				leaf.count.Branch().getEntry(entry)
-			}
 			n := leaf.count.ivalue()
 			max := leaf.count.imax()
 			if n > max {
@@ -1752,10 +1728,6 @@ func (leaf *LeafD) readFromBuffer(r *rbytes.RBuffer) error {
 		*leaf.ptr = r.ReadF64()
 	} else {
 		if leaf.count != nil {
-			entry := leaf.Branch().getReadEntry()
-			if leaf.count.Branch().getReadEntry() != entry {
-				leaf.count.Branch().getEntry(entry)
-			}
 			n := leaf.count.ivalue()
 			max := leaf.count.imax()
 			if n > max {
@@ -2007,10 +1979,6 @@ func (leaf *LeafF16) readFromBuffer(r *rbytes.RBuffer) error {
 		*leaf.ptr = r.ReadF16(leaf.elm)
 	} else {
 		if leaf.count != nil {
-			entry := leaf.Branch().getReadEntry()
-			if leaf.count.Branch().getReadEntry() != entry {
-				leaf.count.Branch().getEntry(entry)
-			}
 			n := leaf.count.ivalue()
 			max := leaf.count.imax()
 			if n > max {
@@ -2258,10 +2226,6 @@ func (leaf *LeafD32) readFromBuffer(r *rbytes.RBuffer) error {
 		*leaf.ptr = r.ReadD32(leaf.elm)
 	} else {
 		if leaf.count != nil {
-			entry := leaf.Branch().getReadEntry()
-			if leaf.count.Branch().getReadEntry() != entry {
-				leaf.count.Branch().getEntry(entry)
-			}
 			n := leaf.count.ivalue()
 			max := leaf.count.imax()
 			if n > max {
@@ -2498,10 +2462,6 @@ func (leaf *LeafC) readFromBuffer(r *rbytes.RBuffer) error {
 		*leaf.ptr = r.ReadString()
 	} else {
 		if leaf.count != nil {
-			entry := leaf.Branch().getReadEntry()
-			if leaf.count.Branch().getReadEntry() != entry {
-				leaf.count.Branch().getEntry(entry)
-			}
 			n := leaf.count.ivalue()
 			max := leaf.count.imax()
 			if n > max {

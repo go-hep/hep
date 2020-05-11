@@ -393,10 +393,6 @@ func (leaf *{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
                 *leaf.ptr = {{.RFunc}}
         } else {
                 if leaf.count != nil {
-                        entry := leaf.Branch().getReadEntry()
-                        if leaf.count.Branch().getReadEntry() != entry {
-                                leaf.count.Branch().getEntry(entry)
-                        }
                         n := leaf.count.ivalue()
                         max := leaf.count.imax()
                         if n > max {

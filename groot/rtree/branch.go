@@ -589,11 +589,6 @@ func (b *tbranch) loadEntry(ientry int64) error {
 	b.firstEntry = b.ctx.first
 
 	jentry := ientry - b.ctx.first
-	err = b.ctx.bk.loadEntry(jentry)
-	if err != nil {
-		return err
-	}
-
 	switch len(b.leaves) {
 	case 1:
 		err = b.ctx.bk.readLeaf(jentry, b.leaves[0])
