@@ -424,16 +424,16 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 			if err := baskets.UnmarshalROOT(r); err != nil {
 				return err
 			}
-			b.baskets = make([]Basket, 0, baskets.Last()+1)
-			for i := 0; i < baskets.Last()+1; i++ {
+
+			b.baskets = make([]Basket, baskets.Last()+1)
+			for i := range b.baskets {
 				bkt := baskets.At(i)
 				// FIXME(sbinet) check why some are nil
 				if bkt == nil {
-					b.baskets = append(b.baskets, Basket{})
 					continue
 				}
 				bk := bkt.(*Basket)
-				b.baskets = append(b.baskets, *bk)
+				b.baskets[i] = *bk
 			}
 		}
 
@@ -515,16 +515,15 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 			if err := baskets.UnmarshalROOT(r); err != nil {
 				return err
 			}
-			b.baskets = make([]Basket, 0, baskets.Last()+1)
-			for i := 0; i < baskets.Last()+1; i++ {
+			b.baskets = make([]Basket, baskets.Last()+1)
+			for i := range b.baskets {
 				bkt := baskets.At(i)
 				// FIXME(sbinet) check why some are nil
 				if bkt == nil {
-					b.baskets = append(b.baskets, Basket{})
 					continue
 				}
 				bk := bkt.(*Basket)
-				b.baskets = append(b.baskets, *bk)
+				b.baskets[i] = *bk
 			}
 		}
 
