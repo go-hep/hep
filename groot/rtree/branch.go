@@ -225,6 +225,9 @@ func (b *tbranch) getReadEntry() int64 {
 }
 
 func (b *tbranch) getEntry(i int64) {
+	if b.ctx.entry == i {
+		return
+	}
 	err := b.loadEntry(i)
 	if err != nil {
 		panic(fmt.Errorf("rtree: branch [%s] failed to load entry %d: %w", b.Name(), i, err))
