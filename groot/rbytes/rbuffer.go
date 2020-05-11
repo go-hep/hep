@@ -400,42 +400,33 @@ func (r *RBuffer) ReadArrayU8(arr []uint8) {
 	}
 }
 
-func (r *RBuffer) ReadFastArrayF16(n int, elm StreamerElement) []root.Float16 {
+func (r *RBuffer) ReadArrayF16(arr []root.Float16, elm StreamerElement) {
 	if r.err != nil {
-		return nil
+		return
 	}
+	n := len(arr)
 	if n <= 0 || int64(n) > r.Len() {
-		return nil
+		return
 	}
 
-	arr := make([]root.Float16, n)
 	for i := range arr {
 		arr[i] = r.ReadF16(elm)
 	}
-
-	if r.err != nil {
-		return nil
-	}
-	return arr
 }
 
-func (r *RBuffer) ReadFastArrayD32(n int, elm StreamerElement) []root.Double32 {
+func (r *RBuffer) ReadArrayD32(arr []root.Double32, elm StreamerElement) {
 	if r.err != nil {
-		return nil
-	}
-	if n <= 0 || int64(n) > r.Len() {
-		return nil
+		return
 	}
 
-	arr := make([]root.Double32, n)
+	n := len(arr)
+	if n <= 0 || int64(n) > r.Len() {
+		return
+	}
+
 	for i := range arr {
 		arr[i] = r.ReadD32(elm)
 	}
-
-	if r.err != nil {
-		return nil
-	}
-	return arr
 }
 
 func (r *RBuffer) ReadArrayString(arr []string) {

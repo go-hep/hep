@@ -1984,9 +1984,13 @@ func (leaf *LeafF16) readFromBuffer(r *rbytes.RBuffer) error {
 			if n > max {
 				n = max
 			}
-			*leaf.sli = r.ReadFastArrayF16(leaf.tleaf.len*n, leaf.elm)
+			nn := leaf.tleaf.len * n
+			*leaf.sli = rbytes.ResizeF16(*leaf.sli, nn)
+			r.ReadArrayF16(*leaf.sli, leaf.elm)
 		} else {
-			copy(*leaf.sli, r.ReadFastArrayF16(leaf.tleaf.len, leaf.elm))
+			nn := leaf.tleaf.len
+			*leaf.sli = rbytes.ResizeF16(*leaf.sli, nn)
+			r.ReadArrayF16(*leaf.sli, leaf.elm)
 		}
 	}
 	return r.Err()
@@ -2231,9 +2235,13 @@ func (leaf *LeafD32) readFromBuffer(r *rbytes.RBuffer) error {
 			if n > max {
 				n = max
 			}
-			*leaf.sli = r.ReadFastArrayD32(leaf.tleaf.len*n, leaf.elm)
+			nn := leaf.tleaf.len * n
+			*leaf.sli = rbytes.ResizeD32(*leaf.sli, nn)
+			r.ReadArrayD32(*leaf.sli, leaf.elm)
 		} else {
-			copy(*leaf.sli, r.ReadFastArrayD32(leaf.tleaf.len, leaf.elm))
+			nn := leaf.tleaf.len
+			*leaf.sli = rbytes.ResizeD32(*leaf.sli, nn)
+			r.ReadArrayD32(*leaf.sli, leaf.elm)
 		}
 	}
 	return r.Err()

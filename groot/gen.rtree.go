@@ -162,7 +162,7 @@ func genLeaves() {
 			LenType:             4,
 			GoLenType:           int(reflect.TypeOf(root.Float16(0)).Size()),
 			RFunc:               "r.ReadF16(leaf.elm)",
-			RFuncArray:          "r.ReadFastArrayF16",
+			RFuncArray:          "r.ReadArrayF16",
 			ResizeFunc:          "rbytes.ResizeF16",
 			WFunc:               "w.WriteF16",
 			WFuncArray:          "w.WriteFastArrayF16",
@@ -176,7 +176,7 @@ func genLeaves() {
 			LenType:             8,
 			GoLenType:           int(reflect.TypeOf(root.Double32(0)).Size()),
 			RFunc:               "r.ReadD32(leaf.elm)",
-			RFuncArray:          "r.ReadFastArrayD32",
+			RFuncArray:          "r.ReadArrayD32",
 			ResizeFunc:          "rbytes.ResizeD32",
 			WFunc:               "w.WriteD32",
 			WFuncArray:          "w.WriteFastArrayD32",
@@ -398,19 +398,19 @@ func (leaf *{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
                         if n > max {
                                 n = max
                         }
-{{- if .WithStreamerElement}}
-                        *leaf.sli = {{.RFuncArray}}(leaf.tleaf.len * n, leaf.elm)
-{{- else}}
 						nn := leaf.tleaf.len * n
 						*leaf.sli = {{.ResizeFunc}}(*leaf.sli, nn)
+{{- if .WithStreamerElement}}
+                        {{.RFuncArray}}(*leaf.sli, leaf.elm)
+{{- else}}
                         {{.RFuncArray}}(*leaf.sli)
 {{- end}}
                 } else {
-{{- if .WithStreamerElement}}
-						copy(*leaf.sli, {{.RFuncArray}}(leaf.tleaf.len, leaf.elm))
-{{- else}}
 						nn := leaf.tleaf.len
 						*leaf.sli = {{.ResizeFunc}}(*leaf.sli, nn)
+{{- if .WithStreamerElement}}
+						{{.RFuncArray}}(*leaf.sli, leaf.elm)
+{{- else}}
 						{{.RFuncArray}}(*leaf.sli)
 {{- end}}
                 }

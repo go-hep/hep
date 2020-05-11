@@ -150,7 +150,8 @@ func TestRWFloat16(t *testing.T) {
 			}
 
 			rbuf := rbytes.NewRBuffer(wbuf.Bytes(), nil, 0, nil)
-			got := rbuf.ReadFastArrayF16(1, elm)
+			got := make([]root.Float16, 1)
+			rbuf.ReadArrayF16(got, elm)
 			if err := rbuf.Err(); err != nil {
 				t.Fatalf("could not read f16=%v: %+v", tc.v, err)
 			}
@@ -224,7 +225,8 @@ func TestRWDouble32(t *testing.T) {
 			}
 
 			rbuf := rbytes.NewRBuffer(wbuf.Bytes(), nil, 0, nil)
-			got := rbuf.ReadFastArrayD32(1, elm)
+			got := make([]root.Double32, 1)
+			rbuf.ReadArrayD32(got, elm)
 			if err := rbuf.Err(); err != nil {
 				t.Fatalf("could not read d32=%v: %+v", tc.v, err)
 			}
