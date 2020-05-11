@@ -45,13 +45,14 @@ type H1D struct {
 	LogY bool
 
 	// InfoStyle is the style of infos displayed for
-	// the histogram (entries, mean, rms)
+	// the histogram (entries, mean, rms).
 	Infos HInfos
 
 	// YErrs is the y error bars plotter.
 	YErrs *plotter.YErrorBars
 
 	// Band displays a colored band between the y-min and y-max error bars.
+	// The band is shown in the legend thumbnail only if there is no filling.
 	Band *Band
 }
 
@@ -401,8 +402,24 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 	ymax := c.Max.Y
 	xmin := c.Min.X
 	xmax := c.Max.X
+	dy := ymax - ymin
 
-	if h.FillColor != nil {
+	// Style of the histogram
+	hasFill := h.FillColor != nil
+	hasLine := h.LineStyle.Width != 0
+	hasGlyph := h.GlyphStyle != (draw.GlyphStyle{})
+	hasBand := h.Band != nil
+
+	// Define default behaviour with priority
+	// 1) w/  fill: boxline, disregard band
+	// 2) w/o fill: skyline, band and markers
+	drawFill := hasFill
+	drawBand := !drawFill && hasBand
+	drawGlyph := hasGlyph
+	drawSkyLine := !drawFill && hasLine
+	drawBoxLine := hasFill && hasLine
+
+	if drawFill {
 		pts := []vg.Point{
 			{X: xmin, Y: ymin},
 			{X: xmax, Y: ymin},
@@ -412,18 +429,41 @@ func (h *H1D) Thumbnail(c *draw.Canvas) {
 		}
 		c.FillPolygon(h.FillColor, c.ClipPolygonXY(pts))
 	}
-	if h.LineStyle.Width != 0 {
+
+	if drawBand {
+		pts := []vg.Point{
+			{X: xmin, Y: ymin + 0.0*dy},
+			{X: xmax, Y: ymin + 0.0*dy},
+			{X: xmax, Y: ymax - 0.0*dy},
+			{X: xmin, Y: ymax - 0.0*dy},
+			{X: xmin, Y: ymin + 0.0*dy},
+		}
+		c.FillPolygon(h.Band.FillColor, c.ClipPolygonXY(pts))
+	}
+
+	if drawBoxLine {
+		line := []vg.Point{
+			{X: xmin, Y: ymin},
+			{X: xmax, Y: ymin},
+			{X: xmax, Y: ymax},
+			{X: xmin, Y: ymax},
+			{X: xmin, Y: ymin},
+		}
+		c.StrokeLines(h.LineStyle, c.ClipLinesX(line)...)
+	}
+
+	if drawSkyLine {
 		ymid := c.Center().Y
 		line := []vg.Point{{X: xmin, Y: ymid}, {X: xmax, Y: ymid}}
 		c.StrokeLines(h.LineStyle, c.ClipLinesX(line)...)
 	}
 
-	if h.GlyphStyle != (draw.GlyphStyle{}) {
+	if drawGlyph {
 		c.DrawGlyph(h.GlyphStyle, c.Center())
 		if h.YErrs != nil {
 			var (
 				yerrs = h.YErrs
-				vsize = 0.5 * ((ymax - ymin) * 0.95)
+				vsize = 0.5 * dy * 0.95
 				x     = c.Center().X
 				ylo   = c.Center().Y - vsize
 				yup   = c.Center().Y + vsize
