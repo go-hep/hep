@@ -738,7 +738,8 @@ func (s *Scanner) Scan() error {
 		}
 	}
 
-	for _, br := range s.scan.ibr {
+	for i := range s.scan.ibr {
+		br := &s.scan.ibr[i]
 		if br.dup {
 			continue
 		}
