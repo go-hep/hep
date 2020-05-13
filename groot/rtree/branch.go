@@ -591,13 +591,13 @@ func (b *tbranch) loadEntry(ientry int64) error {
 	jentry := ientry - b.ctx.first
 	switch len(b.leaves) {
 	case 1:
-		err = b.ctx.bk.readLeaf(jentry, b.leaves[0])
+		err = b.ctx.bk.loadLeaf(jentry, b.leaves[0])
 		if err != nil {
 			return err
 		}
 	default:
 		for _, leaf := range b.leaves {
-			err = b.ctx.bk.readLeaf(jentry, leaf)
+			err = b.ctx.bk.loadLeaf(jentry, leaf)
 			if err != nil {
 				return err
 			}

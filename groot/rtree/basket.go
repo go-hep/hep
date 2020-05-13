@@ -251,18 +251,7 @@ func (b *Basket) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (b *Basket) loadEntry(entry int64) error {
-	var err error
-	var offset = int64(b.key.KeyLen())
-	if len(b.offsets) > 0 {
-		offset = int64(b.offsets[int(entry)])
-	}
-	pos := entry*int64(b.nevsize) + offset
-	err = b.rbuf.SetPos(pos)
-	return err
-}
-
-func (b *Basket) readLeaf(entry int64, leaf Leaf) error {
+func (b *Basket) loadLeaf(entry int64, leaf Leaf) error {
 	var offset int64
 	if len(b.offsets) == 0 {
 		offset = entry*int64(b.nevsize) + int64(leaf.Offset()) + int64(b.key.KeyLen())
