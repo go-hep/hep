@@ -53,7 +53,7 @@ type tbranch struct {
 
 	ctx basketCtx // basket context for the current basket
 
-	tree Tree            // tree header
+	tree *ttree          // tree header
 	btop Branch          // top-level parent branch in the tree
 	bup  Branch          // parent branch
 	dir  riofs.Directory // directory where this branch's buffers are stored
@@ -155,11 +155,11 @@ func (b *tbranch) Class() string {
 	return "TBranch"
 }
 
-func (b *tbranch) getTree() Tree {
+func (b *tbranch) getTree() *ttree {
 	return b.tree
 }
 
-func (b *tbranch) setTree(t Tree) {
+func (b *tbranch) setTree(t *ttree) {
 	b.tree = t
 	for _, sub := range b.branches {
 		sub.setTree(t)

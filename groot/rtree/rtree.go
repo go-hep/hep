@@ -42,8 +42,8 @@ type Branch interface {
 	Branch(name string) Branch
 	Leaf(name string) Leaf
 
-	setTree(Tree)
-	getTree() Tree
+	setTree(*ttree)
+	getTree() *ttree
 	loadEntry(i int64) error
 	getReadEntry() int64
 	getEntry(i int64)
