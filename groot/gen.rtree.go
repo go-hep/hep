@@ -385,37 +385,37 @@ func (leaf *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 }
 
 func (leaf *{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
-        if r.Err() != nil {
-                return r.Err()
-        }
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-        if leaf.count == nil && leaf.ptr != nil {
-                *leaf.ptr = {{.RFunc}}
-        } else {
-                if leaf.count != nil {
-                        n := leaf.count.ivalue()
-                        max := leaf.count.imax()
-                        if n > max {
-                                n = max
-                        }
-						nn := leaf.tleaf.len * n
-						*leaf.sli = {{.ResizeFunc}}(*leaf.sli, nn)
-{{- if .WithStreamerElement}}
-                        {{.RFuncArray}}(*leaf.sli, leaf.elm)
-{{- else}}
-                        {{.RFuncArray}}(*leaf.sli)
-{{- end}}
-                } else {
-						nn := leaf.tleaf.len
-						*leaf.sli = {{.ResizeFunc}}(*leaf.sli, nn)
-{{- if .WithStreamerElement}}
-						{{.RFuncArray}}(*leaf.sli, leaf.elm)
-{{- else}}
-						{{.RFuncArray}}(*leaf.sli)
-{{- end}}
+	if leaf.count == nil && leaf.ptr != nil {
+		*leaf.ptr = {{.RFunc}}
+	} else {
+            if leaf.count != nil {
+                n := leaf.count.ivalue()
+                max := leaf.count.imax()
+                if n > max {
+                        n = max
                 }
-        }
-        return r.Err()
+				nn := leaf.tleaf.len * n
+				*leaf.sli = {{.ResizeFunc}}(*leaf.sli, nn)
+{{- if .WithStreamerElement}}
+                {{.RFuncArray}}(*leaf.sli, leaf.elm)
+{{- else}}
+                {{.RFuncArray}}(*leaf.sli)
+{{- end}}
+            } else {
+				nn := leaf.tleaf.len
+				*leaf.sli = {{.ResizeFunc}}(*leaf.sli, nn)
+{{- if .WithStreamerElement}}
+				{{.RFuncArray}}(*leaf.sli, leaf.elm)
+{{- else}}
+				{{.RFuncArray}}(*leaf.sli)
+{{- end}}
+            }
+    }
+    return r.Err()
 }
 
 func (leaf *{{.Name}}) scan(r *rbytes.RBuffer, ptr interface{}) error {
