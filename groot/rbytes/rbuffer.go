@@ -58,7 +58,7 @@ func (r *rbuff) Seek(offset int64, whence int) (int64, error) {
 
 // RBuffer is a read-only ROOT buffer for streaming.
 type RBuffer struct {
-	r      *rbuff
+	r      rbuff
 	err    error
 	offset uint32
 	refs   map[int64]interface{}
@@ -71,7 +71,7 @@ func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32, ctx Stre
 	}
 
 	return &RBuffer{
-		r:      &rbuff{p: data, c: 0},
+		r:      rbuff{p: data, c: 0},
 		refs:   refs,
 		offset: offset,
 		sictx:  ctx,
