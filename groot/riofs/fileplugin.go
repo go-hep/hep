@@ -7,10 +7,11 @@ package riofs
 import (
 	"fmt"
 	"net/url"
-	"os"
 	"sort"
 	"strings"
 	"sync"
+
+	"go-hep.org/x/hep/groot/internal/mmap"
 )
 
 var drivers = struct {
@@ -52,7 +53,7 @@ func openFile(path string) (Reader, error) {
 	drivers.RLock()
 	defer drivers.RUnlock()
 
-	if f, err := os.Open(path); err == nil {
+	if f, err := openLocalFile(path); err == nil {
 		return f, nil
 	}
 
@@ -69,9 +70,9 @@ func openFile(path string) (Reader, error) {
 
 func openLocalFile(path string) (Reader, error) {
 	if strings.HasPrefix(path, "file://") {
-		return os.Open(path[len("file://"):])
+		path = path[len("file://"):]
 	}
-	return os.Open(path)
+	return mmap.Open(path)
 }
 
 func init() {
