@@ -120,25 +120,25 @@ func (cmd *dumpCmd) dumpList(lst root.List) error {
 func (cmd *dumpCmd) dumpTree(t rtree.Tree) error {
 
 	vars := rtree.NewReadVars(t)
-	sc, err := rtree.NewScannerVars(t, vars...)
+	r, err := rtree.NewReader(t, vars)
 	if err != nil {
-		return fmt.Errorf("could not create scanner-vars: %w", err)
+		return fmt.Errorf("could not create reader: %w", err)
 	}
-	defer sc.Close()
+	defer r.Close()
 
-	for sc.Next() {
-		err = sc.Scan()
-		if err != nil {
-			return fmt.Errorf("error scanning entry %d: %w", sc.Entry(), err)
-		}
+	err = r.Read(func(rctx rtree.RCtx) error {
 		for _, v := range vars {
-			rv := reflect.Indirect(reflect.ValueOf(v.Value))
 			name := v.Name
 			if v.Leaf != "" && v.Leaf != v.Name {
 				name = v.Name + "." + v.Leaf
 			}
-			fmt.Fprintf(cmd.w, "[%03d][%s]: %v\n", sc.Entry(), name, rv.Interface())
+			rv := reflect.Indirect(reflect.ValueOf(v.Value))
+			fmt.Fprintf(cmd.w, "[%03d][%s]: %v\n", rctx.Entry, name, rv.Interface())
 		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("rcmd: could not read through tree: %w", err)
 	}
 	return nil
 }
