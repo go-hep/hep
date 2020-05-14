@@ -29,14 +29,12 @@ var (
 type Reader interface {
 	io.Reader
 	io.ReaderAt
-	io.Seeker
 	io.Closer
 }
 
 type Writer interface {
 	io.Writer
 	io.WriterAt
-	io.Seeker
 	io.Closer
 }
 
@@ -93,7 +91,6 @@ type FileOption func(f *File) error
 type File struct {
 	r      Reader
 	w      Writer
-	seeker io.Seeker
 	closer io.Closer
 
 	id string //non-root, identifies filename, etc.
@@ -132,7 +129,6 @@ func Open(path string) (*File, error) {
 
 	f := &File{
 		r:      fd,
-		seeker: fd,
 		closer: fd,
 		id:     path,
 	}
@@ -150,7 +146,6 @@ func Open(path string) (*File, error) {
 func NewReader(r Reader) (*File, error) {
 	f := &File{
 		r:      r,
-		seeker: r,
 		closer: r,
 	}
 	f.dir.file = f
@@ -173,7 +168,6 @@ func Create(name string, opts ...FileOption) (*File, error) {
 
 	f := &File{
 		w:           fd,
-		seeker:      fd,
 		closer:      fd,
 		id:          name,
 		version:     root.Version,
@@ -276,11 +270,6 @@ func (f *File) Read(p []byte) (int, error) {
 // ReadAt implements io.ReaderAt
 func (f *File) ReadAt(p []byte, off int64) (int, error) {
 	return f.r.ReadAt(p, off)
-}
-
-// Seek implements io.Seeker
-func (f *File) Seek(offset int64, whence int) (int64, error) {
-	return f.seeker.Seek(offset, whence)
 }
 
 // WriteAt implements io.WriterAt
@@ -978,7 +967,6 @@ var (
 
 	_ io.Reader   = (*File)(nil)
 	_ io.ReaderAt = (*File)(nil)
-	_ io.Seeker   = (*File)(nil)
 	_ io.WriterAt = (*File)(nil)
 	_ io.Closer   = (*File)(nil)
 )
