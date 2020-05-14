@@ -265,6 +265,20 @@ func (b *Basket) loadLeaf(entry int64, leaf Leaf) error {
 	return leaf.readFromBuffer(b.rbuf)
 }
 
+func (b *Basket) loadRLeaf(entry int64, leaf rleaf) error {
+	var offset int64
+	if len(b.offsets) == 0 {
+		offset = entry*int64(b.nevsize) + leaf.Offset() + int64(b.key.KeyLen())
+	} else {
+		offset = int64(b.offsets[int(entry)]) + leaf.Offset()
+	}
+	err := b.rbuf.SetPos(offset)
+	if err != nil {
+		return err
+	}
+	return leaf.readFromBuffer(b.rbuf)
+}
+
 func (b *Basket) computeEntryOffsets() {
 	if b.offsets != nil {
 		return

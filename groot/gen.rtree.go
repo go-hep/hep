@@ -19,6 +19,7 @@ import (
 
 func main() {
 	genLeaves()
+	genRLeaves()
 }
 
 func genLeaves() {
@@ -583,5 +584,229 @@ var (
 	_ Leaf               = (*{{.Name}})(nil)
 	_ rbytes.Marshaler   = (*{{.Name}})(nil)
 	_ rbytes.Unmarshaler = (*{{.Name}})(nil)
+)
+`
+
+func genRLeaves() {
+	f, err := os.Create("./rtree/rleaf_gen.go")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	type Kind string
+	const (
+		Val = Kind("Val")
+		Arr = Kind("Arr")
+		Sli = Kind("Sli")
+	)
+
+	genroot.GenImports("rtree", f,
+		"reflect",
+		"",
+		"go-hep.org/x/hep/groot/rbytes",
+		"go-hep.org/x/hep/groot/root",
+	)
+
+	for i, typ := range []struct {
+		Name string
+		Base string
+		Type string
+		Kind Kind
+		Func string
+
+		WithStreamerElement bool // for TLeaf{F16,D32}
+	}{
+		{
+			Name: "Bool",
+			Base: "LeafO",
+			Type: "bool",
+		},
+		{
+			Name: "I8",
+			Base: "LeafB",
+			Type: "int8",
+		},
+		{
+			Name: "I16",
+			Base: "LeafS",
+			Type: "int16",
+		},
+		{
+			Name: "I32",
+			Base: "LeafI",
+			Type: "int32",
+		},
+		{
+			Name: "I64",
+			Base: "LeafL",
+			Type: "int64",
+		},
+		{
+			Name: "U8",
+			Base: "LeafB",
+			Type: "uint8",
+		},
+		{
+			Name: "U16",
+			Base: "LeafS",
+			Type: "uint16",
+		},
+		{
+			Name: "U32",
+			Base: "LeafI",
+			Type: "uint32",
+		},
+		{
+			Name: "U64",
+			Base: "LeafL",
+			Type: "uint64",
+		},
+		{
+			Name: "F32",
+			Base: "LeafF",
+			Type: "float32",
+		},
+		{
+			Name: "F64",
+			Base: "LeafD",
+			Type: "float64",
+		},
+		{
+			Name: "D32",
+			Base: "LeafD32",
+			Type: "root.Double32",
+
+			WithStreamerElement: true,
+		},
+		{
+			Name: "F16",
+			Base: "LeafF16",
+			Type: "root.Float16",
+
+			WithStreamerElement: true,
+		},
+		{
+			Name: "Str",
+			Base: "LeafC",
+			Type: "string",
+		},
+	} {
+		for j, kind := range []Kind{Val, Arr, Sli} {
+			if i > 0 || j > 0 {
+				fmt.Fprintf(f, "\n")
+			}
+			typ.Kind = kind
+			switch typ.Name {
+			case "Str":
+				typ.Func = "String"
+			default:
+				typ.Func = typ.Name
+			}
+
+			tmpl := template.Must(template.New(typ.Name).Parse(rleafTmpl))
+			err = tmpl.Execute(f, typ)
+			if err != nil {
+				log.Fatalf("error executing template for %q: %v\n", typ.Name, err)
+			}
+		}
+	}
+
+	err = f.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	genroot.GoFmt(f)
+}
+
+const rleafTmpl = `// rleaf{{.Kind}}{{.Name}} implements rleaf for ROOT T{{.Base}}
+type rleaf{{.Kind}}{{.Name}} struct {
+	base *{{.Base}}
+{{- if eq .Kind "Val" }}
+	v *{{.Type}}
+{{- else if eq .Kind "Arr" }}
+	v []{{.Type}}
+{{- else if eq .Kind "Sli" }}
+	n func() int
+	v *[]{{.Type}}
+{{- end}}
+{{- if .WithStreamerElement}}
+	elm rbytes.StreamerElement
+{{- end}}
+}
+
+{{- if eq .Kind "Val"}}
+func newRLeaf{{.Name}}(leaf *{{.Base}}, rvar ReadVar, rctx rleafCtx) rleaf {
+	switch {
+	case leaf.count != nil:
+		slice := reflect.ValueOf(rvar.Value).Interface().(*[]{{.Type}})
+		if *slice == nil {
+			*slice = make([]{{.Type}}, 0, rleafDefaultSliceCap)
+		}
+		return &rleafSli{{.Name}}{
+			base: leaf,
+			n:    rctx.rcount(leaf.count.Name()),
+			v:    slice,
+		}
+
+	case leaf.len > 1:
+		return &rleafArr{{.Name}}{
+			base: leaf,
+			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]{{.Type}}),
+		}
+
+	default:
+		return &rleafVal{{.Name}}{
+			base: leaf,
+			v:    reflect.ValueOf(rvar.Value).Interface().(*{{.Type}}),
+		}
+	}
+}
+{{- end}}
+
+func (leaf *rleaf{{.Kind}}{{.Name}}) Leaf() Leaf { return leaf.base }
+
+func (leaf *rleaf{{.Kind}}{{.Name}}) Offset() int64 {
+	return int64(leaf.base.Offset())
+}
+
+{{if .WithStreamerElement}}
+func (leaf *rleaf{{.Kind}}{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
+	if r.Err() != nil {
+		return r.Err()
+	}
+{{- if eq .Kind "Val" }}
+	*leaf.v = r.Read{{.Func}}(leaf.elm)
+{{- else if eq .Kind "Arr" }}
+	r.ReadArray{{.Func}}(leaf.v, leaf.elm)
+{{- else if eq .Kind "Sli" }}
+	n := leaf.base.tleaf.len * leaf.n()
+	sli := rbytes.Resize{{.Name}}(*leaf.v, n)
+	r.ReadArray{{.Func}}(sli, leaf.elm)
+	*leaf.v = sli
+{{- end}}
+	return r.Err()
+}
+{{else}}
+func (leaf *rleaf{{.Kind}}{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
+	if r.Err() != nil {
+		return r.Err()
+	}
+{{- if eq .Kind "Val" }}
+	*leaf.v = r.Read{{.Func}}()
+{{- else if eq .Kind "Arr" }}
+	r.ReadArray{{.Func}}(leaf.v)
+{{- else if eq .Kind "Sli" }}
+	n := leaf.base.tleaf.len * leaf.n()
+	sli := rbytes.Resize{{.Name}}(*leaf.v, n)
+	r.ReadArray{{.Func}}(sli)
+	*leaf.v = sli
+{{- end}}
+	return r.Err()
+}
+{{- end}}
+
+var (
+	_ rleaf = (*rleaf{{.Kind}}{{.Name}})(nil)
 )
 `
