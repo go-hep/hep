@@ -550,7 +550,7 @@ func newRLeafU8(leaf *LeafB, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrU8{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]uint8),
+			v:    reflect.ValueOf(leaf.unsafeDecayArrayU(rvar.Value)).Elem().Interface().([]uint8),
 		}
 
 	default:
@@ -653,7 +653,7 @@ func newRLeafU16(leaf *LeafS, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrU16{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]uint16),
+			v:    reflect.ValueOf(leaf.unsafeDecayArrayU(rvar.Value)).Elem().Interface().([]uint16),
 		}
 
 	default:
@@ -756,7 +756,7 @@ func newRLeafU32(leaf *LeafI, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrU32{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]uint32),
+			v:    reflect.ValueOf(leaf.unsafeDecayArrayU(rvar.Value)).Elem().Interface().([]uint32),
 		}
 
 	default:
@@ -859,7 +859,7 @@ func newRLeafU64(leaf *LeafL, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrU64{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]uint64),
+			v:    reflect.ValueOf(leaf.unsafeDecayArrayU(rvar.Value)).Elem().Interface().([]uint64),
 		}
 
 	default:

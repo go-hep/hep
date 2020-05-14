@@ -473,6 +473,19 @@ func (leaf *{{.Name}}) unsafeDecayArray(ptr interface{}) interface{} {
 	return &sli
 }
 
+{{if .DoUnsigned}}
+func (leaf *{{.Name}}) unsafeDecayArrayU(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / {{.GoLenType}}
+	arr := (*[0]u{{.Type}})(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+{{- end}}
+
 func (leaf *{{.Name}}) setAddress(ptr interface{}) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
@@ -609,11 +622,12 @@ func genRLeaves() {
 	)
 
 	for i, typ := range []struct {
-		Name string
-		Base string
-		Type string
-		Kind Kind
-		Func string
+		Name  string
+		Base  string
+		Type  string
+		Kind  Kind
+		Func  string
+		Decay string
 
 		WithStreamerElement bool // for TLeaf{F16,D32}
 	}{
@@ -704,6 +718,13 @@ func genRLeaves() {
 				typ.Func = typ.Name
 			}
 
+			switch typ.Type[0] {
+			case 'u':
+				typ.Decay = "unsafeDecayArrayU"
+			default:
+				typ.Decay = "unsafeDecayArray"
+			}
+
 			tmpl := template.Must(template.New(typ.Name).Parse(rleafTmpl))
 			err = tmpl.Execute(f, typ)
 			if err != nil {
@@ -752,7 +773,7 @@ func newRLeaf{{.Name}}(leaf *{{.Base}}, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArr{{.Name}}{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]{{.Type}}),
+			v:    reflect.ValueOf(leaf.{{.Decay}}(rvar.Value)).Elem().Interface().([]{{.Type}}),
 		}
 
 	default:

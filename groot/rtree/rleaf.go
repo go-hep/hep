@@ -34,6 +34,7 @@ func rleafFrom(leaf Leaf, rvar ReadVar, rctx rleafCtx) rleaf {
 		case *uint8, *[]uint8:
 			return newRLeafU8(leaf, rvar, rctx)
 		default:
+			rv := rv.Elem()
 			if rv.Kind() == reflect.Array {
 				switch rv.Type().Elem().Kind() {
 				case reflect.Int8:
@@ -51,6 +52,7 @@ func rleafFrom(leaf Leaf, rvar ReadVar, rctx rleafCtx) rleaf {
 		case *uint16, *[]uint16:
 			return newRLeafU16(leaf, rvar, rctx)
 		default:
+			rv := rv.Elem()
 			if rv.Kind() == reflect.Array {
 				switch rv.Type().Elem().Kind() {
 				case reflect.Int16:
@@ -68,6 +70,7 @@ func rleafFrom(leaf Leaf, rvar ReadVar, rctx rleafCtx) rleaf {
 		case *uint32, *[]uint32:
 			return newRLeafU32(leaf, rvar, rctx)
 		default:
+			rv := rv.Elem()
 			if rv.Kind() == reflect.Array {
 				switch rv.Type().Elem().Kind() {
 				case reflect.Int32:
@@ -85,6 +88,7 @@ func rleafFrom(leaf Leaf, rvar ReadVar, rctx rleafCtx) rleaf {
 		case *uint64, *[]uint64:
 			return newRLeafU64(leaf, rvar, rctx)
 		default:
+			rv := rv.Elem()
 			if rv.Kind() == reflect.Array {
 				switch rv.Type().Elem().Kind() {
 				case reflect.Int64:
@@ -103,6 +107,8 @@ func rleafFrom(leaf Leaf, rvar ReadVar, rctx rleafCtx) rleaf {
 		return newRLeafF16(leaf, rvar, rctx)
 	case *LeafD32:
 		return newRLeafD32(leaf, rvar, rctx)
+	case *LeafC:
+		return newRLeafStr(leaf, rvar, rctx)
 
 	default:
 		panic(fmt.Errorf("not implemented %T", leaf))

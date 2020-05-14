@@ -4,7 +4,9 @@
 
 package rtree
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type preader struct {
 	ievt int64
@@ -16,34 +18,93 @@ type preader struct {
 	leaves []rleaf
 }
 
-func NewPReader(t Tree, rvars []ReadVar) (*preader, error) {
-	pr := &preader{
-		nevt:   t.Entries(),
-		tree:   t,
-		rvars:  rvars,
-		leaves: make([]rleaf, len(rvars)),
-	}
-
-	//brs := make(map[string]struct{}, len(rvars))
-	for i, rvar := range rvars {
-		name := rvar.Leaf
-		if name == "" {
-			name = rvar.Name
+func sanitizeRVars(t Tree, rvars []ReadVar) []ReadVar {
+	for i := range rvars {
+		rvar := &rvars[i]
+		if rvar.Leaf == "" {
+			rvar.Leaf = rvar.Name
 		}
-		pr.leaves[i] = rleafFrom(t.Leaf(name), rvar, pr)
+		if rvar.count == "" {
+			leaf := t.Leaf(rvar.Leaf).LeafCount()
+			if leaf != nil {
+				rvar.count = leaf.Name()
+			}
+		}
+	}
+	return rvars
+}
 
-		//brs[rvar.Name] = struct{}{}
+func NewPReader(t Tree, rvars []ReadVar) (*preader, error) {
+	return newPReader(t, rvars, 128)
+}
+
+func newPReader(t Tree, rvars []ReadVar, n int) (*preader, error) {
+	rvars = sanitizeRVars(t, rvars)
+
+	pr := &preader{
+		nevt:  t.Entries(),
+		tree:  t,
+		rvars: rvars,
+	}
+	usr := make(map[string]struct{}, len(rvars))
+	for _, rvar := range rvars {
+		usr[rvar.Name+"."+rvar.Leaf] = struct{}{}
 	}
 
-	//bnames := make([]string, 0, len(brs))
-	//for k := range brs {
-	//	bnames = append(bnames, k)
-	//}
+	var rcounts []ReadVar
+	for _, rvar := range rvars {
+		if rvar.count == "" {
+			continue
+		}
+		leaf := t.Leaf(rvar.Leaf).LeafCount()
+		name := leaf.Branch().Name() + "." + leaf.Name()
+		if _, ok := usr[name]; !ok {
+			var ptr interface{}
+			switch leaf := leaf.(type) {
+			case *LeafB:
+				ptr = new(int8)
+			case *LeafS:
+				ptr = new(int16)
+			case *LeafI:
+				ptr = new(int32)
+			case *LeafL:
+				ptr = new(int64)
+			default:
+				panic(fmt.Errorf("unknown Leaf count type %T", leaf))
+			}
+			rcounts = append(rcounts, ReadVar{
+				Name:  leaf.Branch().Name(),
+				Leaf:  leaf.Name(),
+				Value: ptr,
+			})
+		}
+	}
+	pr.rvars = append(rcounts, pr.rvars...)
 
-	const n = 128
-	pr.rbs = make([]rbranch, len(rvars))
-	for i, rvar := range rvars {
-		pr.rbs[i] = newRBranch(t.Branch(rvar.Name), n, pr.leaves[i:i+1], pr)
+	pr.leaves = make([]rleaf, len(pr.rvars))
+	for i, rvar := range pr.rvars {
+		br := t.Branch(rvar.Name)
+		leaf := br.Leaf(rvar.Leaf)
+		pr.leaves[i] = rleafFrom(leaf, rvar, pr)
+	}
+
+	// regroup leaves by holding branch
+	set := make(map[string]int)
+	brs := make([][]rleaf, 0, len(pr.leaves))
+	for _, leaf := range pr.leaves {
+		br := leaf.Leaf().Branch().Name()
+		if _, ok := set[br]; !ok {
+			set[br] = len(brs)
+			brs = append(brs, []rleaf{})
+		}
+		id := set[br]
+		brs[id] = append(brs[id], leaf)
+	}
+
+	pr.rbs = make([]rbranch, len(brs))
+	for i, leaves := range brs {
+		branch := leaves[0].Leaf().Branch()
+		pr.rbs[i] = newRBranch(branch, n, leaves, pr)
 	}
 
 	return pr, nil

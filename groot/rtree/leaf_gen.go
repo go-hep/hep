@@ -454,6 +454,17 @@ func (leaf *LeafB) unsafeDecayArray(ptr interface{}) interface{} {
 	return &sli
 }
 
+func (leaf *LeafB) unsafeDecayArrayU(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 1
+	arr := (*[0]uint8)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *LeafB) setAddress(ptr interface{}) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
@@ -727,6 +738,17 @@ func (leaf *LeafS) unsafeDecayArray(ptr interface{}) interface{} {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 2
 	arr := (*[0]int16)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
+func (leaf *LeafS) unsafeDecayArrayU(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 2
+	arr := (*[0]uint16)(unsafe.Pointer(rv.UnsafeAddr()))
 	sli := (*arr)[:]
 	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
 	hdr.Len = int(sz)
@@ -1014,6 +1036,17 @@ func (leaf *LeafI) unsafeDecayArray(ptr interface{}) interface{} {
 	return &sli
 }
 
+func (leaf *LeafI) unsafeDecayArrayU(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 4
+	arr := (*[0]uint32)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *LeafI) setAddress(ptr interface{}) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
@@ -1287,6 +1320,17 @@ func (leaf *LeafL) unsafeDecayArray(ptr interface{}) interface{} {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 8
 	arr := (*[0]int64)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
+func (leaf *LeafL) unsafeDecayArrayU(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 8
+	arr := (*[0]uint64)(unsafe.Pointer(rv.UnsafeAddr()))
 	sli := (*arr)[:]
 	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
 	hdr.Len = int(sz)
