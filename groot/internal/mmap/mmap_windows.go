@@ -15,53 +15,53 @@ import (
 	"unsafe"
 )
 
-// debug is whether to print debugging messages for manual testing.
-//
-// The runtime.SetFinalizer documentation says that, "The finalizer for x is
-// scheduled to run at some arbitrary time after x becomes unreachable. There
-// is no guarantee that finalizers will run before a program exits", so we
-// cannot automatically test that the finalizer runs. Instead, set this to true
-// when running the manual test.
-const debug = false
-
-// ReaderAt reads a memory-mapped file.
-//
-// Like any io.ReaderAt, clients can execute parallel ReadAt calls, but it is
-// not safe to call Close and reading methods concurrently.
-type ReaderAt struct {
+// Reader reads a memory-mapped file.
+type Reader struct {
 	data []byte
+	c    int
 }
 
 // Close closes the reader.
-func (r *ReaderAt) Close() error {
+func (r *Reader) Close() error {
 	if r.data == nil {
 		return nil
 	}
 	data := r.data
 	r.data = nil
-	if debug {
-		var p *byte
-		if len(data) != 0 {
-			p = &data[0]
-		}
-		println("munmap", r, p)
-	}
 	runtime.SetFinalizer(r, nil)
 	return syscall.UnmapViewOfFile(uintptr(unsafe.Pointer(&data[0])))
 }
 
 // Len returns the length of the underlying memory-mapped file.
-func (r *ReaderAt) Len() int {
+func (r *Reader) Len() int {
 	return len(r.data)
 }
 
 // At returns the byte at index i.
-func (r *ReaderAt) At(i int) byte {
+func (r *Reader) At(i int) byte {
 	return r.data[i]
 }
 
+func (r *Reader) Read(p []byte) (int, error) {
+	if r.c >= len(r.data) {
+		return 0, io.EOF
+	}
+	n := copy(p, r.data[r.c:])
+	r.c += n
+	return n, nil
+}
+
+func (r *Reader) ReadByte() (byte, error) {
+	if r.c >= len(r.data) {
+		return 0, io.EOF
+	}
+	v := r.data[r.c]
+	r.c++
+	return v, nil
+}
+
 // ReadAt implements the io.ReaderAt interface.
-func (r *ReaderAt) ReadAt(p []byte, off int64) (int, error) {
+func (r *Reader) ReadAt(p []byte, off int64) (int, error) {
 	if r.data == nil {
 		return 0, errors.New("mmap: closed")
 	}
@@ -75,8 +75,25 @@ func (r *ReaderAt) ReadAt(p []byte, off int64) (int, error) {
 	return n, nil
 }
 
+func (r *Reader) Seek(offset int64, whence int) (int64, error) {
+	switch whence {
+	case io.SeekStart:
+		r.c = int(offset)
+	case io.SeekCurrent:
+		r.c += int(offset)
+	case io.SeekEnd:
+		r.c = len(r.data) - int(offset)
+	default:
+		return 0, fmt.Errorf("mmap: invalid whence")
+	}
+	if r.c < 0 {
+		return 0, fmt.Errorf("mmap: negative position")
+	}
+	return int64(r.c), nil
+}
+
 // Open memory-maps the named file for reading.
-func Open(filename string) (*ReaderAt, error) {
+func Open(filename string) (*Reader, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -89,7 +106,7 @@ func Open(filename string) (*ReaderAt, error) {
 
 	size := fi.Size()
 	if size == 0 {
-		return &ReaderAt{}, nil
+		return &Reader{}, nil
 	}
 	if size < 0 {
 		return nil, fmt.Errorf("mmap: file %q has negative size", filename)
@@ -110,14 +127,15 @@ func Open(filename string) (*ReaderAt, error) {
 	}
 	data := (*[maxBytes]byte)(unsafe.Pointer(ptr))[:size]
 
-	r := &ReaderAt{data: data}
-	if debug {
-		var p *byte
-		if len(data) != 0 {
-			p = &data[0]
-		}
-		println("mmap", r, p)
-	}
-	runtime.SetFinalizer(r, (*ReaderAt).Close)
+	r := &Reader{data: data}
+	runtime.SetFinalizer(r, (*Reader).Close)
 	return r, nil
 }
+
+var (
+	_ io.Reader     = (*Reader)(nil)
+	_ io.ReaderAt   = (*Reader)(nil)
+	_ io.Seeker     = (*Reader)(nil)
+	_ io.Closer     = (*Reader)(nil)
+	_ io.ByteReader = (*Reader)(nil)
+)

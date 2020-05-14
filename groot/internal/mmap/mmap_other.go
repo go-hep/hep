@@ -9,30 +9,31 @@ package mmap
 
 import (
 	"fmt"
+	"io"
 	"os"
 )
 
-// ReaderAt reads a memory-mapped file.
+// Reader reads a memory-mapped file.
 //
 // Like any io.ReaderAt, clients can execute parallel ReadAt calls, but it is
 // not safe to call Close and reading methods concurrently.
-type ReaderAt struct {
+type Reader struct {
 	f   *os.File
 	len int
 }
 
 // Close closes the reader.
-func (r *ReaderAt) Close() error {
+func (r *Reader) Close() error {
 	return r.f.Close()
 }
 
 // Len returns the length of the underlying memory-mapped file.
-func (r *ReaderAt) Len() int {
+func (r *Reader) Len() int {
 	return r.len
 }
 
 // At returns the byte at index i.
-func (r *ReaderAt) At(i int) byte {
+func (r *Reader) At(i int) byte {
 	if i < 0 || r.len <= i {
 		panic("index out of range")
 	}
@@ -41,13 +42,22 @@ func (r *ReaderAt) At(i int) byte {
 	return b[0]
 }
 
+// Read implements the io.Reader interface.
+func (r *Reader) Read(p []byte) (int, error) {
+	return r.f.Read(p)
+}
+
 // ReadAt implements the io.ReaderAt interface.
-func (r *ReaderAt) ReadAt(p []byte, off int64) (int, error) {
+func (r *Reader) ReadAt(p []byte, off int64) (int, error) {
 	return r.f.ReadAt(p, off)
 }
 
+func (r *Reader) Seek(offset int64, whence int) (int64, error) {
+	return r.f.Seek(offset, whence)
+}
+
 // Open memory-maps the named file for reading.
-func Open(filename string) (*ReaderAt, error) {
+func Open(filename string) (*Reader, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -68,8 +78,15 @@ func Open(filename string) (*ReaderAt, error) {
 		return nil, fmt.Errorf("mmap: file %q is too large", filename)
 	}
 
-	return &ReaderAt{
+	return &Reader{
 		f:   f,
 		len: int(fi.Size()),
 	}, nil
 }
+
+var (
+	_ io.Reader   = (*Reader)(nil)
+	_ io.ReaderAt = (*Reader)(nil)
+	_ io.Seeker   = (*Reader)(nil)
+	_ io.Closer   = (*Reader)(nil)
+)
