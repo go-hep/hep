@@ -81,11 +81,14 @@ func TestReadAheadBasket(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			tree := o.(Tree)
+			var (
+				tree = o.(Tree)
+				b    = tree.Branch(tc.branch)
+				beg  = int64(0)
+				end  = tree.Entries()
+			)
 
-			b := tree.Branch(tc.branch)
-
-			ra := newRBasket(b, tc.conc)
+			ra := newBkReader(b, tc.conc, beg, end)
 			defer ra.close()
 
 			var got []rspan

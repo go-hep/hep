@@ -1793,7 +1793,7 @@ func BenchmarkReadTreeF64(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
-		r.scan.SeekEntry(0)
+		r.r.reset()
 		b.StartTimer()
 
 		err = r.Read(func(RCtx) error {
@@ -1901,7 +1901,7 @@ func BenchmarkReadTreeSliF64(b *testing.B) {
 
 			for i := 0; i < b.N; i++ {
 				b.StopTimer()
-				r.scan.SeekEntry(0)
+				r.r.reset()
 				data.N = 0
 				data.Sli = data.Sli[:0]
 				b.StartTimer()

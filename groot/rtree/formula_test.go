@@ -454,10 +454,7 @@ func BenchmarkFormulaFunc(b *testing.B) {
 					b.Fatalf("error: %+v", err)
 				}
 
-				err = r.scan.SeekEntry(0)
-				if err != nil {
-					b.Fatalf("error: %+v", err)
-				}
+				r.r.reset()
 
 				sumBenchFormulaFunc = 0
 				b.ReportAllocs()
@@ -479,10 +476,7 @@ func BenchmarkFormulaFunc(b *testing.B) {
 					b.Fatalf("error: %+v", err)
 				}
 
-				err = r.scan.SeekEntry(0)
-				if err != nil {
-					b.Fatalf("error: %+v", err)
-				}
+				r.r.reset()
 
 				sumBenchFormulaFunc = 0
 				b.ReportAllocs()

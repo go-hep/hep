@@ -473,19 +473,6 @@ func (leaf *{{.Name}}) unsafeDecayArray(ptr interface{}) interface{} {
 	return &sli
 }
 
-{{if .DoUnsigned}}
-func (leaf *{{.Name}}) unsafeDecayArrayU(ptr interface{}) interface{} {
-	rv := reflect.ValueOf(ptr).Elem()
-	sz := rv.Type().Size() / {{.GoLenType}}
-	arr := (*[0]u{{.Type}})(unsafe.Pointer(rv.UnsafeAddr()))
-	sli := (*arr)[:]
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(sz)
-	hdr.Cap = int(sz)
-	return &sli
-}
-{{- end}}
-
 func (leaf *{{.Name}}) setAddress(ptr interface{}) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
@@ -616,6 +603,7 @@ func genRLeaves() {
 
 	genroot.GenImports("rtree", f,
 		"reflect",
+		"unsafe", // for unsafeDecayArrayXXX
 		"",
 		"go-hep.org/x/hep/groot/rbytes",
 		"go-hep.org/x/hep/groot/root",
@@ -625,6 +613,7 @@ func genRLeaves() {
 		Name  string
 		Base  string
 		Type  string
+		Size  int
 		Kind  Kind
 		Func  string
 		Decay string
@@ -635,61 +624,73 @@ func genRLeaves() {
 			Name: "Bool",
 			Base: "LeafO",
 			Type: "bool",
+			Size: int(reflect.TypeOf(true).Size()),
 		},
 		{
 			Name: "I8",
 			Base: "LeafB",
 			Type: "int8",
+			Size: int(reflect.TypeOf(int8(0)).Size()),
 		},
 		{
 			Name: "I16",
 			Base: "LeafS",
 			Type: "int16",
+			Size: int(reflect.TypeOf(int16(0)).Size()),
 		},
 		{
 			Name: "I32",
 			Base: "LeafI",
 			Type: "int32",
+			Size: int(reflect.TypeOf(int32(0)).Size()),
 		},
 		{
 			Name: "I64",
 			Base: "LeafL",
 			Type: "int64",
+			Size: int(reflect.TypeOf(int64(0)).Size()),
 		},
 		{
 			Name: "U8",
 			Base: "LeafB",
 			Type: "uint8",
+			Size: int(reflect.TypeOf(uint8(0)).Size()),
 		},
 		{
 			Name: "U16",
 			Base: "LeafS",
 			Type: "uint16",
+			Size: int(reflect.TypeOf(uint16(0)).Size()),
 		},
 		{
 			Name: "U32",
 			Base: "LeafI",
 			Type: "uint32",
+			Size: int(reflect.TypeOf(uint32(0)).Size()),
 		},
 		{
 			Name: "U64",
 			Base: "LeafL",
 			Type: "uint64",
+			Size: int(reflect.TypeOf(uint64(0)).Size()),
 		},
 		{
 			Name: "F32",
 			Base: "LeafF",
 			Type: "float32",
+			Size: int(reflect.TypeOf(float32(0)).Size()),
 		},
 		{
 			Name: "F64",
 			Base: "LeafD",
 			Type: "float64",
+			Size: int(reflect.TypeOf(float64(0)).Size()),
 		},
 		{
 			Name: "D32",
 			Base: "LeafD32",
 			Type: "root.Double32",
+			Size: int(reflect.TypeOf(root.Double32(0)).Size()),
 
 			WithStreamerElement: true,
 		},
@@ -697,6 +698,7 @@ func genRLeaves() {
 			Name: "F16",
 			Base: "LeafF16",
 			Type: "root.Float16",
+			Size: int(reflect.TypeOf(root.Float16(0)).Size()),
 
 			WithStreamerElement: true,
 		},
@@ -704,6 +706,7 @@ func genRLeaves() {
 			Name: "Str",
 			Base: "LeafC",
 			Type: "string",
+			Size: int(reflect.TypeOf("").Size()),
 		},
 	} {
 		for j, kind := range []Kind{Val, Arr, Sli} {
@@ -773,7 +776,7 @@ func newRLeaf{{.Name}}(leaf *{{.Base}}, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArr{{.Name}}{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.{{.Decay}}(rvar.Value)).Elem().Interface().([]{{.Type}}),
+			v:    reflect.ValueOf(unsafeDecayArray{{.Name}}(rvar.Value)).Elem().Interface().([]{{.Type}}),
 		}
 
 	default:
@@ -791,11 +794,21 @@ func (leaf *rleaf{{.Kind}}{{.Name}}) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+{{if eq .Kind "Arr"}}
+func unsafeDecayArray{{.Name}}(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / {{.Size}}
+	arr := (*[0]{{.Type}})(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+{{- end}}
+
 {{if .WithStreamerElement}}
 func (leaf *rleaf{{.Kind}}{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 {{- if eq .Kind "Val" }}
 	*leaf.v = r.Read{{.Func}}(leaf.elm)
 {{- else if eq .Kind "Arr" }}
@@ -810,9 +823,6 @@ func (leaf *rleaf{{.Kind}}{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
 }
 {{else}}
 func (leaf *rleaf{{.Kind}}{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 {{- if eq .Kind "Val" }}
 	*leaf.v = r.Read{{.Func}}()
 {{- else if eq .Kind "Arr" }}

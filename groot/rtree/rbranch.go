@@ -6,15 +6,15 @@ package rtree
 
 type rbranch struct {
 	b      Branch
-	rb     *raBasket
+	rb     *bkreader
 	cur    *rbasket
 	leaves []rleaf
 }
 
-func newRBranch(b Branch, n int, leaves []rleaf, rctx rleafCtx) rbranch {
+func newRBranch(b Branch, n int, beg, end int64, leaves []rleaf, rctx rleafCtx) rbranch {
 	rb := rbranch{
 		b:      b,
-		rb:     newRBasket(b, n),
+		rb:     newBkReader(b, n, beg, end),
 		leaves: leaves,
 	}
 	return rb
@@ -36,7 +36,7 @@ func (rb *rbranch) stop() error {
 
 func (rb *rbranch) reset() {
 	rb.rb.close()
-	rb.rb = newRBasket(rb.b, rb.rb.n)
+	rb.rb = newBkReader(rb.b, rb.rb.n, rb.rb.beg, rb.rb.end)
 }
 
 func (rb *rbranch) read(i int64) error {

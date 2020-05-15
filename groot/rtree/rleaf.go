@@ -11,16 +11,22 @@ import (
 	"go-hep.org/x/hep/groot/rbytes"
 )
 
+// rleafCtx is the interface that wraps the rcount method.
 type rleafCtx interface {
+	// rcount returns the function that gives the leaf-count
+	// of the provided leaf.
 	rcount(leaf string) func() int
 }
 
+// rleaf is the leaf reading interface.
 type rleaf interface {
 	Leaf() Leaf
 	Offset() int64
 	readFromBuffer(*rbytes.RBuffer) error
 }
 
+// rleafDefaultSliceCap is the default capacity for all
+// rleaves that hold slices of data.
 const rleafDefaultSliceCap = 8
 
 func rleafFrom(leaf Leaf, rvar ReadVar, rctx rleafCtx) rleaf {

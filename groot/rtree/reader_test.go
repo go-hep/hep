@@ -52,7 +52,7 @@ func TestReader(t *testing.T) {
 			rvars: []ReadVar{{Name: "not-there", Value: new(int16)}},
 			beg:   0, end: -1,
 			fun:  func(RCtx) error { return nil },
-			enew: fmt.Errorf(`rtree: could not create scanner: rtree: Tree "tree" has no branch named "not-there"`),
+			enew: fmt.Errorf(`rtree: could not create reader: rtree: tree "tree" has no branch named "not-there"`),
 		},
 		{
 			name:  "invalid-ropt",

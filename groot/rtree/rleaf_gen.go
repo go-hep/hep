@@ -8,6 +8,7 @@ package rtree
 
 import (
 	"reflect"
+	"unsafe"
 
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/root"
@@ -35,7 +36,7 @@ func newRLeafBool(leaf *LeafO, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrBool{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]bool),
+			v:    reflect.ValueOf(unsafeDecayArrayBool(rvar.Value)).Elem().Interface().([]bool),
 		}
 
 	default:
@@ -53,9 +54,6 @@ func (leaf *rleafValBool) Offset() int64 {
 }
 
 func (leaf *rleafValBool) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	*leaf.v = r.ReadBool()
 	return r.Err()
 }
@@ -76,10 +74,18 @@ func (leaf *rleafArrBool) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+func unsafeDecayArrayBool(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 1
+	arr := (*[0]bool)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *rleafArrBool) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	r.ReadArrayBool(leaf.v)
 	return r.Err()
 }
@@ -102,9 +108,6 @@ func (leaf *rleafSliBool) Offset() int64 {
 }
 
 func (leaf *rleafSliBool) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	n := leaf.base.tleaf.len * leaf.n()
 	sli := rbytes.ResizeBool(*leaf.v, n)
 	r.ReadArrayBool(sli)
@@ -138,7 +141,7 @@ func newRLeafI8(leaf *LeafB, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrI8{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]int8),
+			v:    reflect.ValueOf(unsafeDecayArrayI8(rvar.Value)).Elem().Interface().([]int8),
 		}
 
 	default:
@@ -156,9 +159,6 @@ func (leaf *rleafValI8) Offset() int64 {
 }
 
 func (leaf *rleafValI8) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	*leaf.v = r.ReadI8()
 	return r.Err()
 }
@@ -179,10 +179,18 @@ func (leaf *rleafArrI8) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+func unsafeDecayArrayI8(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 1
+	arr := (*[0]int8)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *rleafArrI8) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	r.ReadArrayI8(leaf.v)
 	return r.Err()
 }
@@ -205,9 +213,6 @@ func (leaf *rleafSliI8) Offset() int64 {
 }
 
 func (leaf *rleafSliI8) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	n := leaf.base.tleaf.len * leaf.n()
 	sli := rbytes.ResizeI8(*leaf.v, n)
 	r.ReadArrayI8(sli)
@@ -241,7 +246,7 @@ func newRLeafI16(leaf *LeafS, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrI16{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]int16),
+			v:    reflect.ValueOf(unsafeDecayArrayI16(rvar.Value)).Elem().Interface().([]int16),
 		}
 
 	default:
@@ -259,9 +264,6 @@ func (leaf *rleafValI16) Offset() int64 {
 }
 
 func (leaf *rleafValI16) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	*leaf.v = r.ReadI16()
 	return r.Err()
 }
@@ -282,10 +284,18 @@ func (leaf *rleafArrI16) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+func unsafeDecayArrayI16(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 2
+	arr := (*[0]int16)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *rleafArrI16) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	r.ReadArrayI16(leaf.v)
 	return r.Err()
 }
@@ -308,9 +318,6 @@ func (leaf *rleafSliI16) Offset() int64 {
 }
 
 func (leaf *rleafSliI16) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	n := leaf.base.tleaf.len * leaf.n()
 	sli := rbytes.ResizeI16(*leaf.v, n)
 	r.ReadArrayI16(sli)
@@ -344,7 +351,7 @@ func newRLeafI32(leaf *LeafI, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrI32{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]int32),
+			v:    reflect.ValueOf(unsafeDecayArrayI32(rvar.Value)).Elem().Interface().([]int32),
 		}
 
 	default:
@@ -362,9 +369,6 @@ func (leaf *rleafValI32) Offset() int64 {
 }
 
 func (leaf *rleafValI32) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	*leaf.v = r.ReadI32()
 	return r.Err()
 }
@@ -385,10 +389,18 @@ func (leaf *rleafArrI32) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+func unsafeDecayArrayI32(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 4
+	arr := (*[0]int32)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *rleafArrI32) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	r.ReadArrayI32(leaf.v)
 	return r.Err()
 }
@@ -411,9 +423,6 @@ func (leaf *rleafSliI32) Offset() int64 {
 }
 
 func (leaf *rleafSliI32) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	n := leaf.base.tleaf.len * leaf.n()
 	sli := rbytes.ResizeI32(*leaf.v, n)
 	r.ReadArrayI32(sli)
@@ -447,7 +456,7 @@ func newRLeafI64(leaf *LeafL, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrI64{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]int64),
+			v:    reflect.ValueOf(unsafeDecayArrayI64(rvar.Value)).Elem().Interface().([]int64),
 		}
 
 	default:
@@ -465,9 +474,6 @@ func (leaf *rleafValI64) Offset() int64 {
 }
 
 func (leaf *rleafValI64) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	*leaf.v = r.ReadI64()
 	return r.Err()
 }
@@ -488,10 +494,18 @@ func (leaf *rleafArrI64) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+func unsafeDecayArrayI64(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 8
+	arr := (*[0]int64)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *rleafArrI64) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	r.ReadArrayI64(leaf.v)
 	return r.Err()
 }
@@ -514,9 +528,6 @@ func (leaf *rleafSliI64) Offset() int64 {
 }
 
 func (leaf *rleafSliI64) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	n := leaf.base.tleaf.len * leaf.n()
 	sli := rbytes.ResizeI64(*leaf.v, n)
 	r.ReadArrayI64(sli)
@@ -550,7 +561,7 @@ func newRLeafU8(leaf *LeafB, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrU8{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArrayU(rvar.Value)).Elem().Interface().([]uint8),
+			v:    reflect.ValueOf(unsafeDecayArrayU8(rvar.Value)).Elem().Interface().([]uint8),
 		}
 
 	default:
@@ -568,9 +579,6 @@ func (leaf *rleafValU8) Offset() int64 {
 }
 
 func (leaf *rleafValU8) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	*leaf.v = r.ReadU8()
 	return r.Err()
 }
@@ -591,10 +599,18 @@ func (leaf *rleafArrU8) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+func unsafeDecayArrayU8(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 1
+	arr := (*[0]uint8)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *rleafArrU8) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	r.ReadArrayU8(leaf.v)
 	return r.Err()
 }
@@ -617,9 +633,6 @@ func (leaf *rleafSliU8) Offset() int64 {
 }
 
 func (leaf *rleafSliU8) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	n := leaf.base.tleaf.len * leaf.n()
 	sli := rbytes.ResizeU8(*leaf.v, n)
 	r.ReadArrayU8(sli)
@@ -653,7 +666,7 @@ func newRLeafU16(leaf *LeafS, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrU16{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArrayU(rvar.Value)).Elem().Interface().([]uint16),
+			v:    reflect.ValueOf(unsafeDecayArrayU16(rvar.Value)).Elem().Interface().([]uint16),
 		}
 
 	default:
@@ -671,9 +684,6 @@ func (leaf *rleafValU16) Offset() int64 {
 }
 
 func (leaf *rleafValU16) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	*leaf.v = r.ReadU16()
 	return r.Err()
 }
@@ -694,10 +704,18 @@ func (leaf *rleafArrU16) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+func unsafeDecayArrayU16(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 2
+	arr := (*[0]uint16)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *rleafArrU16) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	r.ReadArrayU16(leaf.v)
 	return r.Err()
 }
@@ -720,9 +738,6 @@ func (leaf *rleafSliU16) Offset() int64 {
 }
 
 func (leaf *rleafSliU16) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	n := leaf.base.tleaf.len * leaf.n()
 	sli := rbytes.ResizeU16(*leaf.v, n)
 	r.ReadArrayU16(sli)
@@ -756,7 +771,7 @@ func newRLeafU32(leaf *LeafI, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrU32{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArrayU(rvar.Value)).Elem().Interface().([]uint32),
+			v:    reflect.ValueOf(unsafeDecayArrayU32(rvar.Value)).Elem().Interface().([]uint32),
 		}
 
 	default:
@@ -774,9 +789,6 @@ func (leaf *rleafValU32) Offset() int64 {
 }
 
 func (leaf *rleafValU32) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	*leaf.v = r.ReadU32()
 	return r.Err()
 }
@@ -797,10 +809,18 @@ func (leaf *rleafArrU32) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+func unsafeDecayArrayU32(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 4
+	arr := (*[0]uint32)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *rleafArrU32) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	r.ReadArrayU32(leaf.v)
 	return r.Err()
 }
@@ -823,9 +843,6 @@ func (leaf *rleafSliU32) Offset() int64 {
 }
 
 func (leaf *rleafSliU32) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	n := leaf.base.tleaf.len * leaf.n()
 	sli := rbytes.ResizeU32(*leaf.v, n)
 	r.ReadArrayU32(sli)
@@ -859,7 +876,7 @@ func newRLeafU64(leaf *LeafL, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrU64{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArrayU(rvar.Value)).Elem().Interface().([]uint64),
+			v:    reflect.ValueOf(unsafeDecayArrayU64(rvar.Value)).Elem().Interface().([]uint64),
 		}
 
 	default:
@@ -877,9 +894,6 @@ func (leaf *rleafValU64) Offset() int64 {
 }
 
 func (leaf *rleafValU64) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	*leaf.v = r.ReadU64()
 	return r.Err()
 }
@@ -900,10 +914,18 @@ func (leaf *rleafArrU64) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+func unsafeDecayArrayU64(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 8
+	arr := (*[0]uint64)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *rleafArrU64) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	r.ReadArrayU64(leaf.v)
 	return r.Err()
 }
@@ -926,9 +948,6 @@ func (leaf *rleafSliU64) Offset() int64 {
 }
 
 func (leaf *rleafSliU64) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	n := leaf.base.tleaf.len * leaf.n()
 	sli := rbytes.ResizeU64(*leaf.v, n)
 	r.ReadArrayU64(sli)
@@ -962,7 +981,7 @@ func newRLeafF32(leaf *LeafF, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrF32{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]float32),
+			v:    reflect.ValueOf(unsafeDecayArrayF32(rvar.Value)).Elem().Interface().([]float32),
 		}
 
 	default:
@@ -980,9 +999,6 @@ func (leaf *rleafValF32) Offset() int64 {
 }
 
 func (leaf *rleafValF32) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	*leaf.v = r.ReadF32()
 	return r.Err()
 }
@@ -1003,10 +1019,18 @@ func (leaf *rleafArrF32) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+func unsafeDecayArrayF32(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 4
+	arr := (*[0]float32)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *rleafArrF32) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	r.ReadArrayF32(leaf.v)
 	return r.Err()
 }
@@ -1029,9 +1053,6 @@ func (leaf *rleafSliF32) Offset() int64 {
 }
 
 func (leaf *rleafSliF32) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	n := leaf.base.tleaf.len * leaf.n()
 	sli := rbytes.ResizeF32(*leaf.v, n)
 	r.ReadArrayF32(sli)
@@ -1065,7 +1086,7 @@ func newRLeafF64(leaf *LeafD, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrF64{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]float64),
+			v:    reflect.ValueOf(unsafeDecayArrayF64(rvar.Value)).Elem().Interface().([]float64),
 		}
 
 	default:
@@ -1083,9 +1104,6 @@ func (leaf *rleafValF64) Offset() int64 {
 }
 
 func (leaf *rleafValF64) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	*leaf.v = r.ReadF64()
 	return r.Err()
 }
@@ -1106,10 +1124,18 @@ func (leaf *rleafArrF64) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+func unsafeDecayArrayF64(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 8
+	arr := (*[0]float64)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *rleafArrF64) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	r.ReadArrayF64(leaf.v)
 	return r.Err()
 }
@@ -1132,9 +1158,6 @@ func (leaf *rleafSliF64) Offset() int64 {
 }
 
 func (leaf *rleafSliF64) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	n := leaf.base.tleaf.len * leaf.n()
 	sli := rbytes.ResizeF64(*leaf.v, n)
 	r.ReadArrayF64(sli)
@@ -1169,7 +1192,7 @@ func newRLeafD32(leaf *LeafD32, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrD32{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]root.Double32),
+			v:    reflect.ValueOf(unsafeDecayArrayD32(rvar.Value)).Elem().Interface().([]root.Double32),
 		}
 
 	default:
@@ -1187,9 +1210,6 @@ func (leaf *rleafValD32) Offset() int64 {
 }
 
 func (leaf *rleafValD32) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	*leaf.v = r.ReadD32(leaf.elm)
 	return r.Err()
 }
@@ -1211,10 +1231,18 @@ func (leaf *rleafArrD32) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+func unsafeDecayArrayD32(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 8
+	arr := (*[0]root.Double32)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *rleafArrD32) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	r.ReadArrayD32(leaf.v, leaf.elm)
 	return r.Err()
 }
@@ -1238,9 +1266,6 @@ func (leaf *rleafSliD32) Offset() int64 {
 }
 
 func (leaf *rleafSliD32) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	n := leaf.base.tleaf.len * leaf.n()
 	sli := rbytes.ResizeD32(*leaf.v, n)
 	r.ReadArrayD32(sli, leaf.elm)
@@ -1275,7 +1300,7 @@ func newRLeafF16(leaf *LeafF16, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrF16{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]root.Float16),
+			v:    reflect.ValueOf(unsafeDecayArrayF16(rvar.Value)).Elem().Interface().([]root.Float16),
 		}
 
 	default:
@@ -1293,9 +1318,6 @@ func (leaf *rleafValF16) Offset() int64 {
 }
 
 func (leaf *rleafValF16) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	*leaf.v = r.ReadF16(leaf.elm)
 	return r.Err()
 }
@@ -1317,10 +1339,18 @@ func (leaf *rleafArrF16) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+func unsafeDecayArrayF16(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 4
+	arr := (*[0]root.Float16)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *rleafArrF16) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	r.ReadArrayF16(leaf.v, leaf.elm)
 	return r.Err()
 }
@@ -1344,9 +1374,6 @@ func (leaf *rleafSliF16) Offset() int64 {
 }
 
 func (leaf *rleafSliF16) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	n := leaf.base.tleaf.len * leaf.n()
 	sli := rbytes.ResizeF16(*leaf.v, n)
 	r.ReadArrayF16(sli, leaf.elm)
@@ -1380,7 +1407,7 @@ func newRLeafStr(leaf *LeafC, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArrStr{
 			base: leaf,
-			v:    reflect.ValueOf(leaf.unsafeDecayArray(rvar.Value)).Elem().Interface().([]string),
+			v:    reflect.ValueOf(unsafeDecayArrayStr(rvar.Value)).Elem().Interface().([]string),
 		}
 
 	default:
@@ -1398,9 +1425,6 @@ func (leaf *rleafValStr) Offset() int64 {
 }
 
 func (leaf *rleafValStr) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	*leaf.v = r.ReadString()
 	return r.Err()
 }
@@ -1421,10 +1445,18 @@ func (leaf *rleafArrStr) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
 
+func unsafeDecayArrayStr(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 16
+	arr := (*[0]string)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
 func (leaf *rleafArrStr) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	r.ReadArrayString(leaf.v)
 	return r.Err()
 }
@@ -1447,9 +1479,6 @@ func (leaf *rleafSliStr) Offset() int64 {
 }
 
 func (leaf *rleafSliStr) readFromBuffer(r *rbytes.RBuffer) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
 	n := leaf.base.tleaf.len * leaf.n()
 	sli := rbytes.ResizeStr(*leaf.v, n)
 	r.ReadArrayString(sli)

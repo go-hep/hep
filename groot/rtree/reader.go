@@ -6,6 +6,7 @@ package rtree
 
 import (
 	"fmt"
+	"io"
 	"reflect"
 	"regexp"
 	"strings"
@@ -129,11 +130,10 @@ func ReadVarsFromStruct(ptr interface{}) []ReadVar {
 
 // Reader reads data from a Tree.
 type Reader struct {
-	t     Tree
-	rvars []ReadVar
-	scan  *Scanner
-	beg   int64
-	end   int64
+	r    *reader
+	beg  int64
+	end  int64
+	nrab int // number of read-ahead baskets
 
 	evals []formula
 	dirty bool // whether we need to re-create scanner (if formula needed new branches)
@@ -152,20 +152,23 @@ func WithRange(beg, end int64) ReadOption {
 	}
 }
 
+// WithPrefetchBaskets specifies the number of baskets to read-ahead, per branch.
+// The default is 2.
+// The number of prefetch baskets is cap'ed by the number of baskets, per branch.
+func WithPrefetchBaskets(n int) ReadOption {
+	return func(r *Reader) error {
+		r.nrab = n
+		return nil
+	}
+}
+
 // NewReader creates a new Tree Reader from the provided ROOT Tree and
 // the set of read-variables into which data will be read.
 func NewReader(t Tree, rvars []ReadVar, opts ...ReadOption) (*Reader, error) {
-	sc, err := NewScannerVars(t, rvars...)
-	if err != nil {
-		return nil, fmt.Errorf("rtree: could not create scanner: %w", err)
-	}
-
 	r := Reader{
-		t:     t,
-		rvars: rvars,
-		scan:  sc,
-		beg:   0,
-		end:   -1,
+		beg:  0,
+		end:  -1,
+		nrab: 2,
 	}
 
 	for i, opt := range opts {
@@ -179,7 +182,7 @@ func NewReader(t Tree, rvars []ReadVar, opts ...ReadOption) (*Reader, error) {
 	}
 
 	if r.end < 0 {
-		r.end = r.t.Entries()
+		r.end = t.Entries()
 	}
 
 	if r.beg < 0 {
@@ -194,28 +197,35 @@ func NewReader(t Tree, rvars []ReadVar, opts ...ReadOption) (*Reader, error) {
 		)
 	}
 
-	if r.beg > r.t.Entries() {
+	if r.beg > t.Entries() {
 		return nil, fmt.Errorf("rtree: invalid event reader range [%d, %d) (start=%d > tree-entries=%d)",
-			r.beg, r.end, r.beg, r.t.Entries(),
+			r.beg, r.end, r.beg, t.Entries(),
 		)
 	}
 
-	if r.end > r.t.Entries() {
+	if r.end > t.Entries() {
 		return nil, fmt.Errorf("rtree: invalid event reader range [%d, %d) (end=%d > tree-entries=%d)",
-			r.beg, r.end, r.end, r.t.Entries(),
+			r.beg, r.end, r.end, t.Entries(),
 		)
 	}
+
+	rvars, err := sanitizeRVars(t, rvars)
+	if err != nil {
+		return nil, fmt.Errorf("rtree: could not create reader: %w", err)
+	}
+
+	r.r = newReader(t, rvars, r.nrab, r.beg, r.end)
 
 	return &r, nil
 }
 
 // Close closes the Reader.
 func (r *Reader) Close() error {
-	if r.scan == nil {
+	if r.r == nil {
 		return nil
 	}
-	err := r.scan.Close()
-	r.scan = nil
+	err := r.r.Close()
+	r.r = nil
 	r.evals = nil
 	return err
 }
@@ -230,38 +240,11 @@ type RCtx struct {
 func (r *Reader) Read(f func(ctx RCtx) error) error {
 	if r.dirty {
 		r.dirty = false
-		_ = r.scan.Close()
-		sc, err := NewScannerVars(r.t, r.rvars...)
-		if err != nil {
-			return fmt.Errorf("rtree: could not re-create scanner: %w", err)
-		}
-		r.scan = sc
+		_ = r.r.Close()
+		r.r = newReader(r.r.tree, r.r.rvars, r.nrab, r.beg, r.end)
 	}
 
-	err := r.scan.SeekEntry(r.beg)
-	if err != nil {
-		return fmt.Errorf("rtree: could not seek to entry %d: %w", r.beg, err)
-	}
-
-	for r.scan.Next() && r.scan.Entry() < r.end {
-		iev := r.scan.Entry()
-		err := r.scan.Scan()
-		if err != nil {
-			return fmt.Errorf("rtree: could not read entry %d: %w", iev, err)
-		}
-
-		err = f(RCtx{Entry: iev})
-		if err != nil {
-			return fmt.Errorf("rtree: could not process entry %d: %w", iev, err)
-		}
-	}
-
-	err = r.scan.Err()
-	if err != nil {
-		return fmt.Errorf("rtree: could not traverse tree: %w", err)
-	}
-
-	return nil
+	return r.r.run(r.beg, r.end, f)
 }
 
 type formula interface {
@@ -271,14 +254,14 @@ type formula interface {
 // FormulaFunc creates a new formula based on the provided function and
 // the list of branches as inputs.
 func (r *Reader) FormulaFunc(branches []string, fct interface{}) (*FormulaFunc, error) {
-	n := len(r.rvars)
+	n := len(r.r.rvars)
 	f, err := newFormulaFunc(r, branches, fct)
 	if err != nil {
 		return nil, fmt.Errorf("rtree: could not create FormulaFunc: %w", err)
 	}
 	r.evals = append(r.evals, f)
 
-	if n != len(r.rvars) {
+	if n != len(r.r.rvars) {
 		// formula needed to auto-load new branches.
 		// mark reader as dirty to re-create its internal scanner
 		// before the event-loop.
@@ -286,3 +269,229 @@ func (r *Reader) FormulaFunc(branches []string, fct interface{}) (*FormulaFunc, 
 	}
 	return f, nil
 }
+
+type reader struct {
+	tree  Tree
+	rvars []ReadVar
+	brs   []rbranch
+	lvs   []rleaf
+}
+
+func sanitizeRVars(t Tree, rvars []ReadVar) ([]ReadVar, error) {
+	for i := range rvars {
+		rvar := &rvars[i]
+		if rvar.Leaf == "" {
+			rvar.Leaf = rvar.Name
+		}
+		if rvar.count != "" {
+			continue
+		}
+		br := t.Branch(rvar.Name)
+		if br == nil {
+			return nil, fmt.Errorf("rtree: tree %q has no branch named %q", t.Name(), rvar.Name)
+		}
+		leaf := br.Leaf(rvar.Leaf)
+		if leaf == nil {
+			continue
+		}
+		lfc := leaf.LeafCount()
+		if lfc != nil {
+			rvar.count = lfc.Name()
+		}
+	}
+	return rvars, nil
+}
+
+func newReader(t Tree, rvars []ReadVar, n int, beg, end int64) *reader {
+	rvars, err := sanitizeRVars(t, rvars)
+	if err != nil {
+		panic(err)
+	}
+
+	r := &reader{
+		tree:  t,
+		rvars: rvars,
+	}
+	usr := make(map[string]struct{}, len(rvars))
+	for _, rvar := range rvars {
+		usr[rvar.Name+"."+rvar.Leaf] = struct{}{}
+	}
+
+	var rcounts []ReadVar
+	for _, rvar := range rvars {
+		if rvar.count == "" {
+			continue
+		}
+		leaf := t.Branch(rvar.Name).Leaf(rvar.Leaf).LeafCount()
+		name := leaf.Branch().Name() + "." + leaf.Name()
+		if _, ok := usr[name]; !ok {
+			var ptr interface{}
+			switch leaf := leaf.(type) {
+			case *LeafB:
+				ptr = new(int8)
+			case *LeafS:
+				ptr = new(int16)
+			case *LeafI:
+				ptr = new(int32)
+			case *LeafL:
+				ptr = new(int64)
+			default:
+				panic(fmt.Errorf("unknown Leaf count type %T", leaf))
+			}
+			rcounts = append(rcounts, ReadVar{
+				Name:  leaf.Branch().Name(),
+				Leaf:  leaf.Name(),
+				Value: ptr,
+			})
+		}
+	}
+	r.rvars = append(rcounts, r.rvars...)
+
+	r.lvs = make([]rleaf, len(r.rvars))
+	for i, rvar := range r.rvars {
+		br := t.Branch(rvar.Name)
+		if br == nil {
+			continue
+		}
+		leaf := br.Leaf(rvar.Leaf)
+		r.lvs[i] = rleafFrom(leaf, rvar, r)
+	}
+
+	// regroup leaves by holding branch
+	set := make(map[string]int)
+	brs := make([][]rleaf, 0, len(r.lvs))
+	for _, leaf := range r.lvs {
+		br := leaf.Leaf().Branch().Name()
+		if _, ok := set[br]; !ok {
+			set[br] = len(brs)
+			brs = append(brs, []rleaf{})
+		}
+		id := set[br]
+		brs[id] = append(brs[id], leaf)
+	}
+
+	r.brs = make([]rbranch, len(brs))
+	for i, leaves := range brs {
+		branch := leaves[0].Leaf().Branch()
+		r.brs[i] = newRBranch(branch, n, beg, end, leaves, r)
+	}
+
+	return r
+}
+
+func (r *reader) Close() error {
+	for i := range r.brs {
+		rb := &r.brs[i]
+		rb.rb.close()
+	}
+	return nil
+}
+
+func (r *reader) reset() {
+	for i := range r.brs {
+		rb := &r.brs[i]
+		rb.reset()
+	}
+}
+
+func (r *reader) rcount(name string) func() int {
+	for _, leaf := range r.lvs {
+		n := leaf.Leaf().Name()
+		if n != name {
+			continue
+		}
+		switch leaf := leaf.(type) {
+		case *rleafValI8:
+			return func() int {
+				return int(*leaf.v)
+			}
+		case *rleafValI16:
+			return func() int {
+				return int(*leaf.v)
+			}
+		case *rleafValI32:
+			return func() int {
+				return int(*leaf.v)
+			}
+		case *rleafValI64:
+			return func() int {
+				return int(*leaf.v)
+			}
+		case *rleafValU8:
+			return func() int {
+				return int(*leaf.v)
+			}
+		case *rleafValU16:
+			return func() int {
+				return int(*leaf.v)
+			}
+		case *rleafValU32:
+			return func() int {
+				return int(*leaf.v)
+			}
+		case *rleafValU64:
+			return func() int {
+				return int(*leaf.v)
+			}
+		default:
+			panic(fmt.Errorf("rleaf %T not implemented", leaf))
+		}
+	}
+	panic("impossible")
+}
+
+func (r *reader) run(beg, end int64, f func(RCtx) error) error {
+	var (
+		err  error
+		rctx RCtx
+	)
+
+	defer r.Close()
+
+	for i := range r.brs {
+		rb := &r.brs[i]
+		err = rb.start()
+		if err != nil {
+			if err == io.EOF {
+				// empty range.
+				return nil
+			}
+			return err
+		}
+	}
+	defer func() {
+		for i := range r.brs {
+			rb := &r.brs[i]
+			rb.stop()
+		}
+	}()
+
+	for i := beg; i < end; i++ {
+		err = r.read(i)
+		if err != nil {
+			return fmt.Errorf("rtree: could not read entry %d: %w", i, err)
+		}
+		rctx.Entry = i
+		err = f(rctx)
+		if err != nil {
+			return fmt.Errorf("rtree: could not process entry %d: %w", i, err)
+		}
+	}
+
+	return err
+}
+
+func (r *reader) read(ievt int64) error {
+	for i := range r.brs {
+		rb := &r.brs[i]
+		err := rb.read(ievt)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+var (
+	_ rleafCtx = (*reader)(nil)
+)
