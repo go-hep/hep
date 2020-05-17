@@ -8,7 +8,6 @@ import (
 	"bufio"
 	//"image/color"
 	"log"
-	//"math"
 	"math/rand"
 	"os"
 	"strconv"
