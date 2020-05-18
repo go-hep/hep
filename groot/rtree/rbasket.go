@@ -48,7 +48,7 @@ func (rbk *rbasket) inflate(name string, id int, span rspan, eoff int, f *riofs.
 		if err != nil {
 			return err
 		}
-		rbk.bk.rbuf = rbytes.NewRBuffer(rbk.buf, nil, keylen, sictx)
+		rbk.bk.rbuf = rbk.bk.rbuf.Reset(rbk.buf, nil, keylen, sictx)
 
 	default:
 		rbk.buf = rbytes.ResizeU8(rbk.buf, int(bufsz))
@@ -57,7 +57,8 @@ func (rbk *rbasket) inflate(name string, id int, span rspan, eoff int, f *riofs.
 			return fmt.Errorf("rtree: could not read basket buffer from file: %w", err)
 		}
 
-		err = rbk.bk.UnmarshalROOT(rbytes.NewRBuffer(rbk.buf, nil, 0, sictx))
+		rbk.bk.rbuf = rbk.bk.rbuf.Reset(rbk.buf, nil, 0, sictx)
+		err = rbk.bk.UnmarshalROOT(rbk.bk.rbuf)
 		if err != nil {
 			return fmt.Errorf("rtree: could not unmarshal basket buffer from file: %w", err)
 		}
@@ -69,7 +70,7 @@ func (rbk *rbasket) inflate(name string, id int, span rspan, eoff int, f *riofs.
 			return err
 		}
 		keylen = uint32(rbk.bk.key.KeyLen())
-		rbk.bk.rbuf = rbytes.NewRBuffer(rbk.buf, nil, keylen, sictx)
+		rbk.bk.rbuf = rbk.bk.rbuf.Reset(rbk.buf, nil, keylen, sictx)
 
 		if eoff > 0 {
 			last := int64(rbk.bk.last)

@@ -78,6 +78,24 @@ func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32, ctx Stre
 	}
 }
 
+func (r *RBuffer) Reset(data []byte, refs map[int64]interface{}, offset uint32, ctx StreamerInfoContext) *RBuffer {
+	if r == nil {
+		return NewRBuffer(data, refs, offset, ctx)
+	}
+	if refs == nil {
+		for k := range r.refs {
+			delete(r.refs, k)
+		}
+		refs = r.refs
+	}
+
+	r.r = rbuff{p: data, c: 0}
+	r.refs = refs
+	r.offset = offset
+	r.sictx = ctx
+	return r
+}
+
 // StreamerInfo returns the named StreamerInfo.
 // If version is negative, the latest version should be returned.
 func (r *RBuffer) StreamerInfo(name string, version int) (StreamerInfo, error) {
