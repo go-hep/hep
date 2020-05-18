@@ -8,10 +8,10 @@
 
 ### Fit a gaussian
 
-![h1d-gaussian-example](https://github.com/go-hep/hep/raw/master/fit/testdata/h1d-gauss-plot.png)
+![h1d-gaussian-example](https://github.com/go-hep/hep/raw/master/fit/testdata/h1d-gauss-plot_golden.png)
 
-[embedmd]:# (hist_test.go go /func ExampleH1D_gaussian/ /\n}/)
-``` go
+[embedmd]:# (example_hist_test.go go /func ExampleH1D_gaussian/ /\n}/)
+```go
 func ExampleH1D_gaussian() {
 	var (
 		mean  = 2.0
@@ -96,10 +96,10 @@ func ExampleH1D_gaussian() {
 
 ### Fit a gaussian
 
-![func1d-gaussian-example](https://github.com/go-hep/hep/raw/master/fit/testdata/gauss-plot.png)
+![func1d-gaussian-example](https://github.com/go-hep/hep/raw/master/fit/testdata/gauss-plot_golden.png)
 
-[embedmd]:# (curve1d_test.go go /func ExampleCurve1D_gaussian/ /\n}/)
-``` go
+[embedmd]:# (example_curve1d_test.go go /func ExampleCurve1D_gaussian/ /\n}/)
+```go
 func ExampleCurve1D_gaussian() {
 	var (
 		cst   = 3.0
@@ -168,10 +168,10 @@ func ExampleCurve1D_gaussian() {
 
 ### Fit a powerlaw (with Y-errors)
 
-![func1d-powerlaw-example](https://github.com/go-hep/hep/raw/master/fit/testdata/powerlaw-plot.png)
+![func1d-powerlaw-example](https://github.com/go-hep/hep/raw/master/fit/testdata/powerlaw-plot_golden.png)
 
-[embedmd]:# (curve1d_test.go go /func ExampleCurve1D_powerlaw/ /\n}/)
-``` go
+[embedmd]:# (example_curve1d_test.go go /func ExampleCurve1D_powerlaw/ /\n}/)
+```go
 func ExampleCurve1D_powerlaw() {
 	var (
 		amp   = 11.021171432949746
@@ -228,7 +228,7 @@ func ExampleCurve1D_powerlaw() {
 			pts[i].ErrY.Max = 0.5 * yerrs[i]
 		}
 
-		s := hplot.NewS2D(hbook.NewS2D(pts...), hplot.WithYErrBars)
+		s := hplot.NewS2D(hbook.NewS2D(pts...), hplot.WithYErrBars(true))
 		s.Color = color.RGBA{0, 0, 255, 255}
 		p.Add(s)
 
@@ -251,10 +251,10 @@ func ExampleCurve1D_powerlaw() {
 
 ### Fit an exponential
 
-![func1d-exp-example](https://github.com/go-hep/hep/raw/master/fit/testdata/exp-plot.png)
+![func1d-exp-example](https://github.com/go-hep/hep/raw/master/fit/testdata/exp-plot_golden.png)
 
-[embedmd]:# (curve1d_test.go go /func ExampleCurve1D_exponential/ /\n}/)
-``` go
+[embedmd]:# (example_curve1d_test.go go /func ExampleCurve1D_exponential/ /\n}/)
+```go
 func ExampleCurve1D_exponential() {
 	const (
 		a   = 0.3
@@ -325,10 +325,10 @@ func ExampleCurve1D_exponential() {
 
 ### Fit a polynomial
 
-![func1d-poly-example](https://github.com/go-hep/hep/raw/master/fit/testdata/poly-plot.png)
+![func1d-poly-example](https://github.com/go-hep/hep/raw/master/fit/testdata/poly-plot_golden.png)
 
-[embedmd]:# (curve1d_test.go go /func ExampleCurve1D_poly/ /\n}/)
-``` go
+[embedmd]:# (example_curve1d_test.go go /func ExampleCurve1D_poly/ /\n}/)
+```go
 func ExampleCurve1D_poly() {
 	var (
 		a    = 1.0
@@ -396,22 +396,22 @@ func ExampleCurve1D_poly() {
 ## Fitting with more than one independent variable (x has more than one dimension)
 ### Fit a flat plane
 
-![2d-example](https://github.com/go-hep/hep/raw/master/fit/testdata/2dplane-plot.png)
+![2d-example](https://github.com/go-hep/hep/raw/master/fit/testdata/2d-plane-plot_golden.png)
 
-[embedmd]:# (curve_nd_test.go go /func ExampleCurve2D_plane/ /\n}/)
-``` go
-func ExampleCurve2D_plane() {
+[embedmd]:# (example_curve_nd_test.go go /func ExampleCurveND_plane/ /\n}/)
+```go
+func ExampleCurveND_plane() {
 	var (
-		m1         = 0.3
-		m2         = 0.1
-		c          = 0.2
-		ps         = []float64{m1, m2, c}
-		n0    uint = 10
-		n1    uint = 10
-		x0min      = -1.
-		x0max      = 1.
-		x1min      = -1.
-		x1max      = 1.
+		m1    = 0.3
+		m2    = 0.1
+		c     = 0.2
+		ps    = []float64{m1, m2, c}
+		n0    = 10
+		n1    = 10
+		x0min = -1.
+		x0max = 1.
+		x1min = -1.
+		x1max = 1.
 	)
 
 	plane := func(x, ps []float64) float64 {
@@ -443,18 +443,10 @@ func ExampleCurve2D_plane() {
 	}
 
 	{
-		p := hplot.New()
-		p.X.Label.Text = "x1"
-		p.Y.Label.Text = "y"
-		p.Y.Min = x1min
-		p.Y.Max = x1max
-		p.X.Min = x0min
-		p.X.Max = x0max
-
-		// slicing for a particular x0 value to plot y as a function of x1, to visualise how well the
-		// the fit is working for a given x0.
-		var x0Selection uint = 8
-		if x0Selection > n0 {
+		// slicing for a particular x0 value to plot y as a function of x1,
+		// to visualise how well the fit is working for a given x0.
+		x0Selection := 8
+		if 0 > x0Selection || x0Selection > n0 {
 			log.Fatalf("x0 slice, %d, is not in valid range [0 - %d]", x0Selection, n0)
 		}
 		x0SlicePos := x0min + ((x0max-x0min)/float64(n0))*float64(x0Selection)
@@ -468,6 +460,15 @@ func ExampleCurve2D_plane() {
 				ySlice = append(ySlice, yData[i])
 			}
 		}
+
+		p := hplot.New()
+		p.Title.Text = fmt.Sprintf("Slice of plane at x0 = %.2f", x0SlicePos)
+		p.X.Label.Text = "x1"
+		p.Y.Label.Text = "y"
+		p.Y.Min = x1min
+		p.Y.Max = x1max
+		p.X.Min = x0min
+		p.X.Max = x0max
 
 		s := hplot.NewS2D(hplot.ZipXY(x1Slice, ySlice))
 		s.Color = color.RGBA{B: 255, A: 255}
@@ -485,8 +486,7 @@ func ExampleCurve2D_plane() {
 		p.Add(f)
 
 		p.Add(plotter.NewGrid())
-		p.Title.Text = fmt.Sprintf("Slice of plane at x0 = %.2f", x0SlicePos)
-		err := p.Save(20*vg.Centimeter, -1, "testdata/2dplane-plot.png")
+		err := p.Save(20*vg.Centimeter, -1, "testdata/2d-plane-plot.png")
 		if err != nil {
 			log.Fatal(err)
 		}

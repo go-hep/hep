@@ -87,8 +87,8 @@ func (f *Func1D) init() {
 	}
 }
 
-// FuncND describes a multivariate function F(x0, x1... xn; p0, p1... pn) for which the parameters ps can be found with
-// a fit.
+// FuncND describes a multivariate function F(x0, x1... xn; p0, p1... pn)
+// for which the parameters ps can be found with a fit.
 type FuncND struct {
 	// F is the function to minimize.
 	// ps is the slice of parameters to optimize during the fit.
@@ -105,9 +105,10 @@ type FuncND struct {
 	Ps []float64
 
 	// X is the multidimensional slice of the independent variables,
-	// it must be structured so that the X[i] is a list of values for the independent variables
-	// that corresponds to a single Y value. In other words, the sequence of rows must correspond to
-	// the sequence of independent variable values.
+	// it must be structured so that the X[i] is a list of values for the
+	// independent variables that corresponds to a single Y value.
+	// In other words, the sequence of rows must correspond to the sequence
+	// of independent variable values.
 	X   [][]float64
 	Y   []float64
 	Err []float64
