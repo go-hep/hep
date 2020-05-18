@@ -6,7 +6,9 @@ package fit_test
 
 import (
 	"bufio"
-	//"image/color"
+	"fmt"
+	"image/color"
+
 	"log"
 	"math/rand"
 	"os"
@@ -15,7 +17,6 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/fit"
-	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/optimize"
@@ -29,31 +30,31 @@ func TestCurve2D(t *testing.T) {
 
 func ExampleCurve2D_plane() {
 	var (
-		m1    = 0.3
-		m2    = 0.1
-		c     = 0.2
-		ps    = []float64{m1, m2, c}
-		n0    = 30
-		n1    = 30
-		x0min = -1.
-		x0max = 1.
-		x1min = -1.
-		x1max = 1.
+		m1         = 0.3
+		m2         = 0.1
+		c          = 0.2
+		ps         = []float64{m1, m2, c}
+		n0    uint = 10
+		n1    uint = 10
+		x0min      = -1.
+		x0max      = 1.
+		x1min      = -1.
+		x1max      = 1.
 	)
 
 	plane := func(x, ps []float64) float64 {
 		return ps[0]*x[0] + ps[1]*x[1] + ps[2]
 	}
 
-	xdata, ydata := genData2D(n0, n1, plane, ps, x0min, x0max, x1min, x1max)
+	xData, yData := genData2D(n0, n1, plane, ps, x0min, x0max, x1min, x1max)
 
 	res, err := fit.CurveND(
 		fit.FuncND{
 			F: func(x []float64, ps []float64) float64 {
 				return plane(x, ps)
 			},
-			X: xdata,
-			Y: ydata,
+			X: xData,
+			Y: yData,
 			N: 3,
 		},
 		nil, &optimize.NelderMead{},
@@ -78,35 +79,61 @@ func ExampleCurve2D_plane() {
 		p.X.Min = x0min
 		p.X.Max = x0max
 
-		s := hbook.NewH2D(n0, x0min, x0max, n1, x1min, x1max)
+		// slicing for a particular x0 value to plot y as a function of x1, to visualise how well the
+		// the fit is working for a given x0.
+		var x0Selection uint = 8
+		if x0Selection > n0 {
+			log.Fatalf("x0 slice, %d, is not in valid range [0 - %d]", x0Selection, n0)
+		}
+		x0SlicePos := x0min + ((x0max-x0min)/float64(n0))*float64(x0Selection)
 
-		for i := range xdata {
-			s.Fill(xdata[i][0], xdata[i][1], ydata[i])
+		var x1Slice []float64
+		var ySlice []float64
+
+		for i := range xData {
+			if xData[i][0] == x0SlicePos {
+				x1Slice = append(x1Slice, xData[i][1])
+				ySlice = append(ySlice, yData[i])
+			}
 		}
 
-		p.Add(hplot.NewH2D(s, nil))
-		p.Add(plotter.NewGrid())
+		s := hplot.NewS2D(hplot.ZipXY(x1Slice, ySlice))
+		s.Color = color.RGBA{B: 255, A: 255}
+		p.Add(s)
 
-		err := p.Save(20*vg.Centimeter, -1, "testdata/2DPlane-plot.png")
+		shiftLine := func(x, m, c, mxOtherAxis float64) float64 {
+			return m*x + c + mxOtherAxis
+		}
+
+		f := plotter.NewFunction(func(x float64) float64 {
+			return shiftLine(x, res.X[1], res.X[2], res.X[0]*x0SlicePos)
+		})
+		f.Color = color.RGBA{R: 255, A: 255}
+		f.Samples = 1000
+		p.Add(f)
+
+		p.Add(plotter.NewGrid())
+		p.Title.Text = fmt.Sprintf("Slice of plane at x0 = %.2f", x0SlicePos)
+		err := p.Save(20*vg.Centimeter, -1, "testdata/2dplane-plot.png")
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 }
 
-func genData2D(n0 int, n1 int, f func(x []float64, ps []float64) float64, ps []float64, x0min, x0max float64, x1min, x1max float64) ([][]float64, []float64) {
+func genData2D(n0 uint, n1 uint, f func(x []float64, ps []float64) float64, ps []float64, x0min, x0max float64, x1min, x1max float64) ([][]float64, []float64) {
 	xdata := make([][]float64, n0*n1)
 	ydata := make([]float64, n0*n1)
 	rnd := rand.New(rand.NewSource(1234))
 	x0step := (x0max - x0min) / float64(n0)
 	x1step := (x1max - x1min) / float64(n1)
 	p := make([]float64, len(ps))
-	for i := 0; i < n0; i++ {
-		for j := 0; j < n1; j++ {
+	for i := uint(0); i < n0; i++ {
+		for j := uint(0); j < n1; j++ {
 			x := []float64{x0min + x0step*float64(i), x1min + x1step*float64(j)}
 			for k := range p {
 				v := rnd.NormFloat64()
-				p[k] = ps[k] + v*0.05
+				p[k] = ps[k] + v*0.01
 			}
 			xdata[(i%n0)*n0+j] = x
 			ydata[(i%n0)*n0+j] = f(x, p)
