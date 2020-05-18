@@ -11,7 +11,7 @@
 ![h1d-gaussian-example](https://github.com/go-hep/hep/raw/master/fit/testdata/h1d-gauss-plot.png)
 
 [embedmd]:# (hist_test.go go /func ExampleH1D_gaussian/ /\n}/)
-```go
+``` go
 func ExampleH1D_gaussian() {
 	var (
 		mean  = 2.0
@@ -99,7 +99,7 @@ func ExampleH1D_gaussian() {
 ![func1d-gaussian-example](https://github.com/go-hep/hep/raw/master/fit/testdata/gauss-plot.png)
 
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_gaussian/ /\n}/)
-```go
+``` go
 func ExampleCurve1D_gaussian() {
 	var (
 		cst   = 3.0
@@ -171,7 +171,7 @@ func ExampleCurve1D_gaussian() {
 ![func1d-powerlaw-example](https://github.com/go-hep/hep/raw/master/fit/testdata/powerlaw-plot.png)
 
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_powerlaw/ /\n}/)
-```go
+``` go
 func ExampleCurve1D_powerlaw() {
 	var (
 		amp   = 11.021171432949746
@@ -254,7 +254,7 @@ func ExampleCurve1D_powerlaw() {
 ![func1d-exp-example](https://github.com/go-hep/hep/raw/master/fit/testdata/exp-plot.png)
 
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_exponential/ /\n}/)
-```go
+``` go
 func ExampleCurve1D_exponential() {
 	const (
 		a   = 0.3
@@ -328,7 +328,7 @@ func ExampleCurve1D_exponential() {
 ![func1d-poly-example](https://github.com/go-hep/hep/raw/master/fit/testdata/poly-plot.png)
 
 [embedmd]:# (curve1d_test.go go /func ExampleCurve1D_poly/ /\n}/)
-```go
+``` go
 func ExampleCurve1D_poly() {
 	var (
 		a    = 1.0
@@ -387,6 +387,106 @@ func ExampleCurve1D_poly() {
 		p.Add(plotter.NewGrid())
 
 		err := p.Save(20*vg.Centimeter, -1, "testdata/poly-plot.png")
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+```
+## Fitting with more than one independent variable (x has more than one dimension)
+### Fit a flat plane
+
+![2d-example](https://github.com/go-hep/hep/raw/master/fit/testdata/2dplane-plot.png)
+
+[embedmd]:# (curve_nd_test.go go /func ExampleCurve2D_plane/ /\n}/)
+``` go
+func ExampleCurve2D_plane() {
+	var (
+		m1         = 0.3
+		m2         = 0.1
+		c          = 0.2
+		ps         = []float64{m1, m2, c}
+		n0    uint = 10
+		n1    uint = 10
+		x0min      = -1.
+		x0max      = 1.
+		x1min      = -1.
+		x1max      = 1.
+	)
+
+	plane := func(x, ps []float64) float64 {
+		return ps[0]*x[0] + ps[1]*x[1] + ps[2]
+	}
+
+	xData, yData := genData2D(n0, n1, plane, ps, x0min, x0max, x1min, x1max)
+
+	res, err := fit.CurveND(
+		fit.FuncND{
+			F: func(x []float64, ps []float64) float64 {
+				return plane(x, ps)
+			},
+			X: xData,
+			Y: yData,
+			N: 3,
+		},
+		nil, &optimize.NelderMead{},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := res.Status.Err(); err != nil {
+		log.Fatal(err)
+	}
+	if got, want := res.X, []float64{m1, m2, c}; !floats.EqualApprox(got, want, 0.1) {
+		log.Fatalf("got= %v\nwant=%v\n", got, want)
+	}
+
+	{
+		p := hplot.New()
+		p.X.Label.Text = "x1"
+		p.Y.Label.Text = "y"
+		p.Y.Min = x1min
+		p.Y.Max = x1max
+		p.X.Min = x0min
+		p.X.Max = x0max
+
+		// slicing for a particular x0 value to plot y as a function of x1, to visualise how well the
+		// the fit is working for a given x0.
+		var x0Selection uint = 8
+		if x0Selection > n0 {
+			log.Fatalf("x0 slice, %d, is not in valid range [0 - %d]", x0Selection, n0)
+		}
+		x0SlicePos := x0min + ((x0max-x0min)/float64(n0))*float64(x0Selection)
+
+		var x1Slice []float64
+		var ySlice []float64
+
+		for i := range xData {
+			if xData[i][0] == x0SlicePos {
+				x1Slice = append(x1Slice, xData[i][1])
+				ySlice = append(ySlice, yData[i])
+			}
+		}
+
+		s := hplot.NewS2D(hplot.ZipXY(x1Slice, ySlice))
+		s.Color = color.RGBA{B: 255, A: 255}
+		p.Add(s)
+
+		shiftLine := func(x, m, c, mxOtherAxis float64) float64 {
+			return m*x + c + mxOtherAxis
+		}
+
+		f := plotter.NewFunction(func(x float64) float64 {
+			return shiftLine(x, res.X[1], res.X[2], res.X[0]*x0SlicePos)
+		})
+		f.Color = color.RGBA{R: 255, A: 255}
+		f.Samples = 1000
+		p.Add(f)
+
+		p.Add(plotter.NewGrid())
+		p.Title.Text = fmt.Sprintf("Slice of plane at x0 = %.2f", x0SlicePos)
+		err := p.Save(20*vg.Centimeter, -1, "testdata/2dplane-plot.png")
 		if err != nil {
 			log.Fatal(err)
 		}

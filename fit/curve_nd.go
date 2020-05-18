@@ -1,4 +1,4 @@
-// Copyright ©2017 The go-hep Authors. All rights reserved.
+// Copyright ©2020 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,7 +10,7 @@ import (
 
 // CurveND returns the result of a non-linear least squares to fit
 // a function f to the underlying data with method m, where there
-// are more than one independent variables.
+// is more than one independent variable.
 func CurveND(f FuncND, settings *optimize.Settings, m optimize.Method) (*optimize.Result, error) {
 	f.init()
 

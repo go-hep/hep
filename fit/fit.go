@@ -87,9 +87,12 @@ func (f *Func1D) init() {
 	}
 }
 
+// FuncND describes a multivariate function F(x0, x1... xn; p0, p1... pn) for which the parameters ps can be found with
+// a fit.
 type FuncND struct {
 	// F is the function to minimize.
 	// ps is the slice of parameters to optimize during the fit.
+	// x is the slice of independent variables.
 	F func(x []float64, ps []float64) float64
 
 	// N is the number of parameters to optimize during the fit.
@@ -113,7 +116,7 @@ type FuncND struct {
 
 	fct  func(ps []float64) float64 // cost function (objective function)
 	grad func(grad, ps []float64)
-	hess func(hess *mat.SymDense, x []float64)
+	hess func(hess *mat.SymDense, x []float64) // hessian matrix
 }
 
 func (f *FuncND) init() {

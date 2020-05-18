@@ -1,4 +1,4 @@
-// Copyright ©2017 The go-hep Authors. All rights reserved.
+// Copyright ©2020 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -71,7 +71,7 @@ func ExampleCurve2D_plane() {
 
 	{
 		p := hplot.New()
-		p.X.Label.Text = "x"
+		p.X.Label.Text = "x1"
 		p.Y.Label.Text = "y"
 		p.Y.Min = x1min
 		p.Y.Max = x1max
