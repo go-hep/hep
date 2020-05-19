@@ -44,6 +44,7 @@
 package main // import "go-hep.org/x/hep/groot/cmd/root-dump"
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"io"
@@ -89,9 +90,13 @@ options:
 		log.Fatalf("need at least one input ROOT file")
 	}
 
+	out := bufio.NewWriter(os.Stdout)
+	defer out.Flush()
+
 	for _, fname := range flag.Args() {
-		err := dump(os.Stdout, fname, *deepFlag)
+		err := dump(out, fname, *deepFlag)
 		if err != nil {
+			out.Flush()
 			log.Fatalf("error dumping file %q: %+v", fname, err)
 		}
 	}
