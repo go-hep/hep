@@ -85,7 +85,10 @@ func newBkReader(b Branch, n int, beg, end int64) *bkreader {
 
 	ibeg, iend := bkr.findBaskets(beg, end)
 	if ibeg < 0 || iend < 0 {
-		panic(fmt.Errorf("rtree: could not find basket index for span [%d, %d): [%d, %d), spans: %#v", beg, end, ibeg, iend, bkr.spans))
+		panic(fmt.Errorf(
+			"rtree: could not find basket index for span [%d, %d): [%d, %d), spans: %#v",
+			beg, end, ibeg, iend, bkr.spans,
+		))
 	}
 
 	go bkr.run(base.entryOffsetLen, ibeg, iend)

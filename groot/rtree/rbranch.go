@@ -51,14 +51,14 @@ func (rb *rbranch) read(i int64) error {
 	j := i - rb.cur.span.beg
 	switch len(rb.leaves) {
 	case 1:
-		err = rb.cur.bk.loadRLeaf(j, rb.leaves[0])
+		err = rb.cur.loadRLeaf(j, rb.leaves[0])
 		if err != nil {
 			return err
 		}
 
 	default:
 		for _, leaf := range rb.leaves {
-			err = rb.cur.bk.loadRLeaf(j, leaf)
+			err = rb.cur.loadRLeaf(j, leaf)
 			if err != nil {
 				return err
 			}

@@ -186,15 +186,15 @@ var (
 
 func formulaAutoLoad(r *Reader, idents []string) ([]*ReadVar, []string) {
 	var (
-		loaded  = make(map[string]*ReadVar, len(r.r.rvars))
+		loaded  = make(map[string]*ReadVar, len(r.rvars))
 		needed  = make([]*ReadVar, 0, len(idents))
-		rvars   = NewReadVars(r.r.tree)
+		rvars   = NewReadVars(r.tree)
 		all     = make(map[string]*ReadVar, len(rvars))
 		missing []string
 	)
 
-	for i := range r.r.rvars {
-		rvar := &r.r.rvars[i]
+	for i := range r.rvars {
+		rvar := &r.rvars[i]
 		loaded[rvar.Name] = rvar
 		all[rvar.Name] = rvar
 	}
@@ -212,8 +212,8 @@ func formulaAutoLoad(r *Reader, idents []string) ([]*ReadVar, []string) {
 			continue
 		}
 		if _, ok := loaded[name]; !ok {
-			r.r.rvars = append(r.r.rvars, *rvar)
-			rvar = &r.r.rvars[len(r.r.rvars)-1]
+			r.rvars = append(r.rvars, *rvar)
+			rvar = &r.rvars[len(r.rvars)-1]
 			loaded[name] = rvar
 		}
 		needed = append(needed, rvar)

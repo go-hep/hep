@@ -129,7 +129,10 @@ func ExampleReader_withChain() {
 		}
 	)
 
-	r, err := rtree.NewReader(t, rvars, rtree.WithRange(0, -1))
+	r, err := rtree.NewReader(t, rvars,
+		rtree.WithRange(0, -1),
+		rtree.WithPrefetchBaskets(2),
+	)
 	if err != nil {
 		log.Fatalf("could not create tree reader: %+v", err)
 	}

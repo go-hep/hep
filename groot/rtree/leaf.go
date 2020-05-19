@@ -452,13 +452,6 @@ func leafDims(s string) []int {
 	return dims
 }
 
-func maxI64(a, b int64) int64 {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 func gotypeToROOTTypeCode(rt reflect.Type) string {
 	switch rt.Kind() {
 	case reflect.Bool:

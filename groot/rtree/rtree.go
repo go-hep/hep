@@ -96,3 +96,17 @@ type leafCount interface {
 	ivalue() int // for leaf-count
 	imax() int
 }
+
+func maxI64(a, b int64) int64 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func minI64(a, b int64) int64 {
+	if a < b {
+		return a
+	}
+	return b
+}

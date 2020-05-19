@@ -21,7 +21,21 @@ type rbasket struct {
 func (rbk *rbasket) reset() {
 	rbk.id = 0
 	rbk.span = rspan{}
-	//	rbk.bk = Basket{}
+}
+
+func (rbk *rbasket) loadRLeaf(entry int64, leaf rleaf) error {
+	var offset int64
+	if len(rbk.bk.offsets) == 0 {
+		offset = entry*int64(rbk.bk.nevsize) + leaf.Offset() + int64(rbk.bk.key.KeyLen())
+	} else {
+		offset = int64(rbk.bk.offsets[int(entry)]) + leaf.Offset()
+	}
+	err := rbk.bk.rbuf.SetPos(offset)
+	if err != nil {
+		return err
+	}
+	return leaf.readFromBuffer(rbk.bk.rbuf)
+
 }
 
 func (rbk *rbasket) inflate(name string, id int, span rspan, eoff int, f *riofs.File) error {
