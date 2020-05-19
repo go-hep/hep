@@ -41,6 +41,7 @@
 package main // import "go-hep.org/x/hep/groot/cmd/root-ls"
 
 import (
+	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
@@ -96,8 +97,11 @@ options:
 		os.Exit(1)
 	}
 
+	stdout := bufio.NewWriter(os.Stdout)
+	defer stdout.Flush()
+
 	cmd := rootls{
-		stdout:    os.Stdout,
+		stdout:    stdout,
 		streamers: *doSI,
 		trees:     *doTree,
 	}
@@ -109,6 +113,7 @@ options:
 		}
 		err := cmd.ls(fname)
 		if err != nil {
+			stdout.Flush()
 			log.Printf("%+v", err)
 			os.Exit(1)
 		}
