@@ -617,6 +617,7 @@ func genRLeaves() {
 		Kind  Kind
 		Func  string
 		Decay string
+		Count bool
 
 		WithStreamerElement bool // for TLeaf{F16,D32}
 	}{
@@ -627,52 +628,60 @@ func genRLeaves() {
 			Size: int(reflect.TypeOf(true).Size()),
 		},
 		{
-			Name: "I8",
-			Base: "LeafB",
-			Type: "int8",
-			Size: int(reflect.TypeOf(int8(0)).Size()),
+			Name:  "I8",
+			Base:  "LeafB",
+			Type:  "int8",
+			Size:  int(reflect.TypeOf(int8(0)).Size()),
+			Count: true,
 		},
 		{
-			Name: "I16",
-			Base: "LeafS",
-			Type: "int16",
-			Size: int(reflect.TypeOf(int16(0)).Size()),
+			Name:  "I16",
+			Base:  "LeafS",
+			Type:  "int16",
+			Size:  int(reflect.TypeOf(int16(0)).Size()),
+			Count: true,
 		},
 		{
-			Name: "I32",
-			Base: "LeafI",
-			Type: "int32",
-			Size: int(reflect.TypeOf(int32(0)).Size()),
+			Name:  "I32",
+			Base:  "LeafI",
+			Type:  "int32",
+			Size:  int(reflect.TypeOf(int32(0)).Size()),
+			Count: true,
 		},
 		{
-			Name: "I64",
-			Base: "LeafL",
-			Type: "int64",
-			Size: int(reflect.TypeOf(int64(0)).Size()),
+			Name:  "I64",
+			Base:  "LeafL",
+			Type:  "int64",
+			Size:  int(reflect.TypeOf(int64(0)).Size()),
+			Count: true,
 		},
 		{
-			Name: "U8",
-			Base: "LeafB",
-			Type: "uint8",
-			Size: int(reflect.TypeOf(uint8(0)).Size()),
+			Name:  "U8",
+			Base:  "LeafB",
+			Type:  "uint8",
+			Size:  int(reflect.TypeOf(uint8(0)).Size()),
+			Count: true,
 		},
 		{
-			Name: "U16",
-			Base: "LeafS",
-			Type: "uint16",
-			Size: int(reflect.TypeOf(uint16(0)).Size()),
+			Name:  "U16",
+			Base:  "LeafS",
+			Type:  "uint16",
+			Size:  int(reflect.TypeOf(uint16(0)).Size()),
+			Count: true,
 		},
 		{
-			Name: "U32",
-			Base: "LeafI",
-			Type: "uint32",
-			Size: int(reflect.TypeOf(uint32(0)).Size()),
+			Name:  "U32",
+			Base:  "LeafI",
+			Type:  "uint32",
+			Size:  int(reflect.TypeOf(uint32(0)).Size()),
+			Count: true,
 		},
 		{
-			Name: "U64",
-			Base: "LeafL",
-			Type: "uint64",
-			Size: int(reflect.TypeOf(uint64(0)).Size()),
+			Name:  "U64",
+			Base:  "LeafL",
+			Type:  "uint64",
+			Size:  int(reflect.TypeOf(uint64(0)).Size()),
+			Count: true,
 		},
 		{
 			Name: "F32",
@@ -769,7 +778,7 @@ func newRLeaf{{.Name}}(leaf *{{.Base}}, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSli{{.Name}}{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 
@@ -793,6 +802,12 @@ func (leaf *rleaf{{.Kind}}{{.Name}}) Leaf() Leaf { return leaf.base }
 func (leaf *rleaf{{.Kind}}{{.Name}}) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
+
+{{if eq .Kind "Val"}}
+{{if .Count}}
+func (leaf *rleaf{{.Kind}}{{.Name}}) ivalue() int { return int(*leaf.v) }
+{{- end}}
+{{- end}}
 
 {{if eq .Kind "Arr"}}
 func unsafeDecayArray{{.Name}}(ptr interface{}) interface{} {

@@ -29,7 +29,7 @@ func newRLeafBool(leaf *LeafO, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSliBool{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 
@@ -134,7 +134,7 @@ func newRLeafI8(leaf *LeafB, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSliI8{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 
@@ -157,6 +157,8 @@ func (leaf *rleafValI8) Leaf() Leaf { return leaf.base }
 func (leaf *rleafValI8) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
+
+func (leaf *rleafValI8) ivalue() int { return int(*leaf.v) }
 
 func (leaf *rleafValI8) readFromBuffer(r *rbytes.RBuffer) error {
 	*leaf.v = r.ReadI8()
@@ -239,7 +241,7 @@ func newRLeafI16(leaf *LeafS, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSliI16{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 
@@ -262,6 +264,8 @@ func (leaf *rleafValI16) Leaf() Leaf { return leaf.base }
 func (leaf *rleafValI16) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
+
+func (leaf *rleafValI16) ivalue() int { return int(*leaf.v) }
 
 func (leaf *rleafValI16) readFromBuffer(r *rbytes.RBuffer) error {
 	*leaf.v = r.ReadI16()
@@ -344,7 +348,7 @@ func newRLeafI32(leaf *LeafI, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSliI32{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 
@@ -367,6 +371,8 @@ func (leaf *rleafValI32) Leaf() Leaf { return leaf.base }
 func (leaf *rleafValI32) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
+
+func (leaf *rleafValI32) ivalue() int { return int(*leaf.v) }
 
 func (leaf *rleafValI32) readFromBuffer(r *rbytes.RBuffer) error {
 	*leaf.v = r.ReadI32()
@@ -449,7 +455,7 @@ func newRLeafI64(leaf *LeafL, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSliI64{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 
@@ -472,6 +478,8 @@ func (leaf *rleafValI64) Leaf() Leaf { return leaf.base }
 func (leaf *rleafValI64) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
+
+func (leaf *rleafValI64) ivalue() int { return int(*leaf.v) }
 
 func (leaf *rleafValI64) readFromBuffer(r *rbytes.RBuffer) error {
 	*leaf.v = r.ReadI64()
@@ -554,7 +562,7 @@ func newRLeafU8(leaf *LeafB, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSliU8{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 
@@ -577,6 +585,8 @@ func (leaf *rleafValU8) Leaf() Leaf { return leaf.base }
 func (leaf *rleafValU8) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
+
+func (leaf *rleafValU8) ivalue() int { return int(*leaf.v) }
 
 func (leaf *rleafValU8) readFromBuffer(r *rbytes.RBuffer) error {
 	*leaf.v = r.ReadU8()
@@ -659,7 +669,7 @@ func newRLeafU16(leaf *LeafS, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSliU16{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 
@@ -682,6 +692,8 @@ func (leaf *rleafValU16) Leaf() Leaf { return leaf.base }
 func (leaf *rleafValU16) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
+
+func (leaf *rleafValU16) ivalue() int { return int(*leaf.v) }
 
 func (leaf *rleafValU16) readFromBuffer(r *rbytes.RBuffer) error {
 	*leaf.v = r.ReadU16()
@@ -764,7 +776,7 @@ func newRLeafU32(leaf *LeafI, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSliU32{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 
@@ -787,6 +799,8 @@ func (leaf *rleafValU32) Leaf() Leaf { return leaf.base }
 func (leaf *rleafValU32) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
+
+func (leaf *rleafValU32) ivalue() int { return int(*leaf.v) }
 
 func (leaf *rleafValU32) readFromBuffer(r *rbytes.RBuffer) error {
 	*leaf.v = r.ReadU32()
@@ -869,7 +883,7 @@ func newRLeafU64(leaf *LeafL, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSliU64{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 
@@ -892,6 +906,8 @@ func (leaf *rleafValU64) Leaf() Leaf { return leaf.base }
 func (leaf *rleafValU64) Offset() int64 {
 	return int64(leaf.base.Offset())
 }
+
+func (leaf *rleafValU64) ivalue() int { return int(*leaf.v) }
 
 func (leaf *rleafValU64) readFromBuffer(r *rbytes.RBuffer) error {
 	*leaf.v = r.ReadU64()
@@ -974,7 +990,7 @@ func newRLeafF32(leaf *LeafF, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSliF32{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 
@@ -1079,7 +1095,7 @@ func newRLeafF64(leaf *LeafD, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSliF64{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 
@@ -1185,7 +1201,7 @@ func newRLeafD32(leaf *LeafD32, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSliD32{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 
@@ -1293,7 +1309,7 @@ func newRLeafF16(leaf *LeafF16, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSliF16{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 
@@ -1400,7 +1416,7 @@ func newRLeafStr(leaf *LeafC, rvar ReadVar, rctx rleafCtx) rleaf {
 		}
 		return &rleafSliStr{
 			base: leaf,
-			n:    rctx.rcount(leaf.count.Name()),
+			n:    rctx.rcountFunc(leaf.count.Name()),
 			v:    slice,
 		}
 

@@ -7,15 +7,17 @@ package rtree
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"go-hep.org/x/hep/groot/rbytes"
 )
 
 // rleafCtx is the interface that wraps the rcount method.
 type rleafCtx interface {
-	// rcount returns the function that gives the leaf-count
+	// rcountFunc returns the function that gives the leaf-count
 	// of the provided leaf.
-	rcount(leaf string) func() int
+	rcountFunc(leaf string) func() int
+	rcountLeaf(leaf string) leafCount
 }
 
 // rleaf is the leaf reading interface.
@@ -116,7 +118,118 @@ func rleafFrom(leaf Leaf, rvar ReadVar, rctx rleafCtx) rleaf {
 	case *LeafC:
 		return newRLeafStr(leaf, rvar, rctx)
 
+	case *tleafElement:
+		return newRLeafElem(leaf, rvar, rctx)
+
 	default:
 		panic(fmt.Errorf("not implemented %T", leaf))
 	}
 }
+
+func newRLeafElem(leaf *tleafElement, rvar ReadVar, rctx rleafCtx) rleaf {
+	var (
+		impl  rstreamerImpl
+		sictx = leaf.branch.getTree().getFile()
+	)
+	switch rv := reflect.ValueOf(rvar.Value).Elem(); rv.Kind() {
+	case reflect.Struct:
+		var lc leafCount
+		if leaf.count != nil {
+			lc = rctx.rcountLeaf(leaf.count.Name())
+		}
+		for _, elt := range leaf.streamers {
+			impl.funcs = append(impl.funcs, rstreamerFrom(
+				elt, rvar.Value, lc, sictx,
+			))
+		}
+	default:
+		var lc leafCount
+		if leaf.count != nil {
+			lc = rctx.rcountLeaf(leaf.count.Name())
+		}
+		lname := leaf.Name()
+		if strings.Contains(lname, ".") {
+			toks := strings.Split(lname, ".")
+			lname = toks[len(toks)-1]
+		}
+		for _, elt := range leaf.streamers {
+			if elt.Name() != lname {
+				continue
+			}
+			impl.funcs = append(impl.funcs, rstreamerFrom(
+				elt, rvar.Value, lc, sictx,
+			))
+		}
+	}
+	return &rleafElem{
+		base:     leaf,
+		v:        rvar.Value,
+		streamer: &impl,
+	}
+}
+
+type rleafElem struct {
+	base     *tleafElement
+	v        interface{}
+	n        func() int
+	streamer rbytes.RStreamer
+}
+
+func (leaf *rleafElem) Leaf() Leaf { return leaf.base }
+
+func (leaf *rleafElem) Offset() int64 {
+	return int64(leaf.base.Offset())
+}
+
+func (leaf *rleafElem) readFromBuffer(r *rbytes.RBuffer) error {
+	return leaf.streamer.RStreamROOT(r)
+}
+
+func (leaf *rleafElem) bindCount() {
+	switch v := reflect.ValueOf(leaf.v).Interface().(type) {
+	case *int8:
+		leaf.n = func() int { return int(*v) }
+	case *int16:
+		leaf.n = func() int { return int(*v) }
+	case *int32:
+		leaf.n = func() int { return int(*v) }
+	case *int64:
+		leaf.n = func() int { return int(*v) }
+	case *uint8:
+		leaf.n = func() int { return int(*v) }
+	case *uint16:
+		leaf.n = func() int { return int(*v) }
+	case *uint32:
+		leaf.n = func() int { return int(*v) }
+	case *uint64:
+		leaf.n = func() int { return int(*v) }
+	default:
+		panic(fmt.Errorf("invalid leaf-elem type: %T", v))
+	}
+}
+
+func (leaf *rleafElem) ivalue() int {
+	return leaf.n()
+}
+
+var (
+	_ rleaf = (*rleafElem)(nil)
+)
+
+type rleafCount struct {
+	Leaf
+	n    func() int
+	leaf rleaf
+}
+
+func (l *rleafCount) ivalue() int {
+	return l.n()
+}
+
+func (l *rleafCount) imax() int {
+	panic("not implemented")
+}
+
+var (
+	_ leafCount = (*rleafCount)(nil)
+)

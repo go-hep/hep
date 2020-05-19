@@ -7,126 +7,7 @@ package rtree
 import (
 	"fmt"
 	"io"
-	"reflect"
-	"regexp"
-	"strings"
 )
-
-// ReadVar describes a variable to be read out of a tree.
-type ReadVar struct {
-	Name  string      // name of the branch to read
-	Leaf  string      // name of the leaf to read
-	Value interface{} // pointer to the value to fill
-	count string      // name of the leaf-count, if any
-}
-
-// NewReadVars returns the complete set of ReadVars to read all the data
-// contained in the provided Tree.
-func NewReadVars(t Tree) []ReadVar {
-	var vars []ReadVar
-	for _, b := range t.Branches() {
-		for _, leaf := range b.Leaves() {
-			ptr := newValue(leaf)
-			cnt := ""
-			if leaf.LeafCount() != nil {
-				cnt = leaf.LeafCount().Name()
-			}
-			vars = append(vars, ReadVar{Name: b.Name(), Leaf: leaf.Name(), Value: ptr, count: cnt})
-		}
-	}
-
-	return vars
-}
-
-// ReadVarsFromStruct returns a list of ReadVars bound to the exported fields
-// of the provided pointer to a struct value.
-//
-// ReadVarsFromStruct panicks if the provided value is not a pointer to
-// a struct value.
-func ReadVarsFromStruct(ptr interface{}) []ReadVar {
-	rv := reflect.ValueOf(ptr)
-	if rv.Kind() != reflect.Ptr {
-		panic(fmt.Errorf("rtree: expect a pointer value, got %T", ptr))
-	}
-
-	rv = rv.Elem()
-	if rv.Kind() != reflect.Struct {
-		panic(fmt.Errorf("rtree: expect a pointer to struct value, got %T", ptr))
-	}
-
-	var (
-		rt     = rv.Type()
-		rvars  = make([]ReadVar, 0, rt.NumField())
-		reDims = regexp.MustCompile(`\w*?\[(\w*)\]+?`)
-	)
-
-	split := func(s string) (string, []string) {
-		n := s
-		if i := strings.Index(s, "["); i > 0 {
-			n = s[:i]
-		}
-
-		out := reDims.FindAllStringSubmatch(s, -1)
-		if len(out) == 0 {
-			return n, nil
-		}
-
-		dims := make([]string, len(out))
-		for i := range out {
-			dims[i] = out[i][1]
-		}
-		return n, dims
-	}
-
-	for i := 0; i < rt.NumField(); i++ {
-		var (
-			ft = rt.Field(i)
-			fv = rv.Field(i)
-		)
-		if ft.Name != strings.Title(ft.Name) {
-			// not exported. ignore.
-			continue
-		}
-		rvar := ReadVar{
-			Name:  ft.Tag.Get("groot"),
-			Value: fv.Addr().Interface(),
-		}
-		if rvar.Name == "" {
-			rvar.Name = ft.Name
-		}
-
-		if strings.Contains(rvar.Name, "[") {
-			switch ft.Type.Kind() {
-			case reflect.Slice:
-				sli, dims := split(rvar.Name)
-				if len(dims) > 1 {
-					panic(fmt.Errorf("rtree: invalid number of slice-dimensions for field %q: %q", ft.Name, rvar.Name))
-				}
-				rvar.Name = sli
-				rvar.count = dims[0]
-
-			case reflect.Array:
-				arr, dims := split(rvar.Name)
-				if len(dims) > 3 {
-					panic(fmt.Errorf("rtree: invalid number of array-dimension for field %q: %q", ft.Name, rvar.Name))
-				}
-				rvar.Name = arr
-			default:
-				panic(fmt.Errorf("rtree: invalid field type for %q, or invalid struct-tag %q: %T", ft.Name, rvar.Name, fv.Interface()))
-			}
-		}
-		switch ft.Type.Kind() {
-		case reflect.Int, reflect.Uint, reflect.UnsafePointer, reflect.Uintptr, reflect.Chan, reflect.Interface:
-			panic(fmt.Errorf("rtree: invalid field type for %q: %T", ft.Name, fv.Interface()))
-		case reflect.Map:
-			panic(fmt.Errorf("rtree: invalid field type for %q: %T (not yet supported)", ft.Name, fv.Interface()))
-		}
-
-		rvar.Leaf = rvar.Name
-		rvars = append(rvars, rvar)
-	}
-	return rvars
-}
 
 // Reader reads data from a Tree.
 type Reader struct {
@@ -329,6 +210,7 @@ func newReader(t Tree, rvars []ReadVar, n int, beg, end int64) reader {
 	if err != nil {
 		panic(err)
 	}
+
 	switch t := t.(type) {
 	case *ttree:
 		return newRTree(t, rvars, n, beg, end)
@@ -374,19 +256,17 @@ func newRTree(t *ttree, rvars []ReadVar, n int, beg, end int64) *rtree {
 				Name:  leaf.Branch().Name(),
 				Leaf:  leaf.Name(),
 				Value: ptr,
+				leaf:  leaf,
 			})
 		}
 	}
 	r.rvs = append(rcounts, r.rvs...)
+	r.rvs = bindRVarsTo(t, r.rvs)
 
-	r.lvs = make([]rleaf, len(r.rvs))
-	for i, rvar := range r.rvs {
-		br := t.Branch(rvar.Name)
-		if br == nil {
-			continue
-		}
-		leaf := br.Leaf(rvar.Leaf)
-		r.lvs[i] = rleafFrom(leaf, rvar, r)
+	r.lvs = make([]rleaf, 0, len(r.rvs))
+	for i := range r.rvs {
+		rv := r.rvs[i]
+		r.lvs = append(r.lvs, rleafFrom(rv.leaf, rv, r))
 	}
 
 	// regroup leaves by holding branch
@@ -410,7 +290,6 @@ func newRTree(t *ttree, rvars []ReadVar, n int, beg, end int64) *rtree {
 
 	return r
 }
-
 func (r *rtree) Close() error {
 	for i := range r.brs {
 		rb := &r.brs[i]
@@ -426,7 +305,7 @@ func (r *rtree) reset() {
 	}
 }
 
-func (r *rtree) rcount(name string) func() int {
+func (r *rtree) rcountFunc(name string) func() int {
 	for _, leaf := range r.lvs {
 		n := leaf.Leaf().Name()
 		if n != name {
@@ -434,42 +313,45 @@ func (r *rtree) rcount(name string) func() int {
 		}
 		switch leaf := leaf.(type) {
 		case *rleafValI8:
-			return func() int {
-				return int(*leaf.v)
-			}
+			return leaf.ivalue
 		case *rleafValI16:
-			return func() int {
-				return int(*leaf.v)
-			}
+			return leaf.ivalue
 		case *rleafValI32:
-			return func() int {
-				return int(*leaf.v)
-			}
+			return leaf.ivalue
 		case *rleafValI64:
-			return func() int {
-				return int(*leaf.v)
-			}
+			return leaf.ivalue
 		case *rleafValU8:
-			return func() int {
-				return int(*leaf.v)
-			}
+			return leaf.ivalue
 		case *rleafValU16:
-			return func() int {
-				return int(*leaf.v)
-			}
+			return leaf.ivalue
 		case *rleafValU32:
-			return func() int {
-				return int(*leaf.v)
-			}
+			return leaf.ivalue
 		case *rleafValU64:
-			return func() int {
-				return int(*leaf.v)
-			}
+			return leaf.ivalue
+		case *rleafElem:
+			leaf.bindCount()
+			return leaf.ivalue
+
 		default:
 			panic(fmt.Errorf("rleaf %T not implemented", leaf))
 		}
 	}
-	panic("impossible")
+	panic(fmt.Errorf("impossible: no leaf for %s", name))
+}
+
+func (r *rtree) rcountLeaf(name string) leafCount {
+	for _, leaf := range r.lvs {
+		n := leaf.Leaf().Name()
+		if n != name {
+			continue
+		}
+		return &rleafCount{
+			Leaf: leaf.Leaf(),
+			n:    r.rcountFunc(name),
+			leaf: leaf,
+		}
+	}
+	panic(fmt.Errorf("impossible: no leaf for %s", name))
 }
 
 func (r *rtree) run(off, beg, end int64, f func(RCtx) error) error {
