@@ -118,7 +118,6 @@ func (cmd *dumpCmd) dumpList(lst root.List) error {
 }
 
 func (cmd *dumpCmd) dumpTree(t rtree.Tree) error {
-
 	vars := rtree.NewReadVars(t)
 	r, err := rtree.NewReader(t, vars)
 	if err != nil {

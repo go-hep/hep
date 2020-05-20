@@ -5,14 +5,25 @@
 package rcmd_test
 
 import (
+	"io/ioutil"
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"go-hep.org/x/hep/groot/rcmd"
 )
 
 func TestDump(t *testing.T) {
 	const deep = true
+	loadRef := func(fname string) string {
+		t.Helper()
+		raw, err := ioutil.ReadFile(fname)
+		if err != nil {
+			t.Fatalf("could not load reference file %q: %+v", fname, err)
+		}
+		return string(raw)
+	}
+
 	for _, tc := range []struct {
 		name string
 		want string
@@ -78,6 +89,22 @@ func TestDump(t *testing.T) {
 [004][nop.x3]: 4
 `,
 		},
+		{
+			name: "../testdata/small-flat-tree.root",
+			want: loadRef("testdata/small-flat-tree.root.txt"),
+		},
+		{
+			name: "../testdata/small-evnt-tree-fullsplit.root",
+			want: loadRef("testdata/small-evnt-tree-fullsplit.root.txt"),
+		},
+		{
+			name: "../testdata/small-evnt-tree-nosplit.root",
+			want: loadRef("testdata/small-evnt-tree-nosplit.root.txt"),
+		},
+		{
+			name: "../testdata/leaves.root",
+			want: loadRef("testdata/leaves.root.txt"),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)
@@ -87,7 +114,8 @@ func TestDump(t *testing.T) {
 			}
 
 			if got, want := got.String(), tc.want; got != want {
-				t.Fatalf("invalid root-dump output:\ngot:\n%s\nwant:\n%s", got, want)
+				diff := cmp.Diff(want, got)
+				t.Fatalf("invalid root-dump output: -- (-ref +got)\n%s", diff)
 			}
 		})
 	}
