@@ -116,7 +116,7 @@ func (job *Job) SetProp(c fwk.Component, name string, value interface{}) {
 
 func (job *Job) setProp(c fwk.Component, name string, value interface{}) {
 	if !job.app.HasProp(c, name) {
-		err := fmt.Errorf("component [%s:%s] has no property named %q\n",
+		err := fmt.Errorf("component [%s:%s] has no property named %q",
 			c.Type(),
 			c.Name(),
 			name,

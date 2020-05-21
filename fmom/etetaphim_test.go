@@ -54,8 +54,7 @@ func TestEtEtaPhiM(t *testing.T) {
 			t.Fatalf("p4=%v, want=%v", p1, p4)
 		}
 
-		var p2 fmom.EtEtaPhiM
-		p2 = p1
+		var p2 fmom.EtEtaPhiM = p1
 		if p1 != p2 {
 			t.Fatalf("p4=%v, want=%v", p1, p2)
 		}

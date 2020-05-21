@@ -106,7 +106,12 @@ func ExampleChainOf() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer closer()
+	defer func() {
+		err = closer()
+		if err != nil {
+			log.Fatalf("could not close ROOT chain: %+v", err)
+		}
+	}()
 
 	type Data struct {
 		Event struct {

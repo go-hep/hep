@@ -152,7 +152,7 @@ func (m *Mux) Close() {
 
 	response := ServerResponse{Err: errors.New("xrootd: close was called before response was fully received")}
 	for streamID := range m.dataWaiters {
-		m.SendData(streamID, response)
+		_ = m.SendData(streamID, response)
 		m.Unclaim(streamID)
 	}
 }

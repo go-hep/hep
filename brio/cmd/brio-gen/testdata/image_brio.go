@@ -22,5 +22,6 @@ func (o *Point) UnmarshalBinary(data []byte) (err error) {
 	data = data[8:]
 	o.Y = int(binary.LittleEndian.Uint64(data[:8]))
 	data = data[8:]
+	_ = data
 	return err
 }

@@ -16,7 +16,7 @@ import (
 // SkipDir is used as a return value from WalkFuncs to indicate that
 // the directory named in the call is to be skipped. It is not returned
 // as an error by any function.
-var SkipDir = errors.New("riofs: skip this directory")
+var SkipDir = errors.New("riofs: skip this directory") //lint:ignore ST1012 EOF-like sentry
 
 // Walk walks the ROOT file tree rooted at dir, calling walkFn for each ROOT object
 // or Directory in the ROOT file tree, including dir.
@@ -109,9 +109,7 @@ func (dir *recDir) get(namecycle string) (root.Object, error) {
 		return dir.dir.(root.Object), nil
 	}
 	name, cycle := decodeNameCycle(namecycle)
-	if strings.HasPrefix(name, "/") {
-		name = name[1:]
-	}
+	name = strings.TrimPrefix(name, "/")
 	path := strings.Split(name, "/")
 	return dir.walk(dir.dir, path, cycle)
 }

@@ -14,9 +14,9 @@ type Bin2D struct {
 // Rank returns the number of dimensions for this bin.
 func (Bin2D) Rank() int { return 2 }
 
-func (b *Bin2D) scaleW(f float64) {
-	b.Dist.scaleW(f)
-}
+// func (b *Bin2D) scaleW(f float64) {
+// 	b.Dist.scaleW(f)
+// }
 
 func (b *Bin2D) fill(x, y, w float64) {
 	b.Dist.fill(x, y, w)

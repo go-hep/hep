@@ -384,12 +384,8 @@ func (svc *hsvc) fullname(stream, hid string) string {
 //     "histo"            -> ("",          "histo")
 func (svc *hsvc) split(n string) (string, string) {
 
-	if strings.HasPrefix(n, "/") {
-		n = n[1:]
-	}
-	if strings.HasSuffix(n, "/") {
-		n = n[:len(n)-1]
-	}
+	n = strings.TrimPrefix(n, "/")
+	n = strings.TrimSuffix(n, "/")
 
 	o := strings.Split(n, "/")
 	switch len(o) {

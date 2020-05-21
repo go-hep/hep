@@ -41,17 +41,12 @@ func (tsk *OutputStream) Configure(ctx Context) error {
 
 // StartTask starts the OutputStreamer task
 func (tsk *OutputStream) StartTask(ctx Context) error {
-	var err error
-
-	return err
+	return nil
 }
 
 // StopTask stops the OutputStreamer task
 func (tsk *OutputStream) StopTask(ctx Context) error {
-	var err error
-
-	err = tsk.disconnect()
-	return err
+	return tsk.disconnect()
 }
 
 func (tsk *OutputStream) connect(ctrl StreamControl) error {

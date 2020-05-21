@@ -157,6 +157,7 @@ func Example() {
 	if err != nil {
 		log.Fatalf("config request error: %v", err)
 	}
+	fmt.Printf("sess: %s\n", id)
 	for i, v := range strings.Split(strings.TrimRight(string(resp.Data), "\n"), "\n") {
 		if v == cfg[i] {
 			fmt.Printf("config: %s=N/A\n", v)
@@ -166,6 +167,7 @@ func Example() {
 	}
 
 	// Output:
+	// sess: ccxrootdgotest.in2p3.fr:9001
 	// sess: ccxrootdgotest.in2p3.fr:9001
 	// config: bind_max="15"
 	// config: chksum=N/A

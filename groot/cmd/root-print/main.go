@@ -210,10 +210,10 @@ func printObject(odir, otyp string, obj root.Object, verbose bool) error {
 
 	p.Add(hplot.NewGrid())
 
-	ext := strings.ToLower(stdpath.Ext(oname))
-	if len(ext) > 0 {
-		ext = ext[1:]
-	}
+	//	ext := strings.ToLower(stdpath.Ext(oname))
+	//	if len(ext) > 0 {
+	//		ext = ext[1:]
+	//	}
 
 	err := p.Save(20*vg.Centimeter, -1, oname)
 	if err != nil {
@@ -225,13 +225,13 @@ func printObject(odir, otyp string, obj root.Object, verbose bool) error {
 
 func filter(obj root.Object) bool {
 	switch obj.(type) {
-	case rhist.H1:
+	case rhist.Graph, rhist.GraphErrors:
 		return true
 
 	case rhist.H2:
 		return true
 
-	case rhist.Graph, rhist.GraphErrors:
+	case rhist.H1:
 		return true
 	}
 	return false

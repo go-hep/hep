@@ -51,15 +51,11 @@ func (blk *genericBlock) VersionSio() uint32 {
 }
 
 func (blk *genericBlock) MarshalSio(w Writer) error {
-	var err error
-	err = bwrite(w, blk.rv.Interface())
-	return err
+	return bwrite(w, blk.rv.Interface())
 }
 
 func (blk *genericBlock) UnmarshalSio(r Reader) error {
-	var err error
-	err = bread(r, blk.rv.Interface())
-	return err
+	return bread(r, blk.rv.Interface())
 }
 
 // userBlock adapts a user-provided Codec implementation into a Block one.

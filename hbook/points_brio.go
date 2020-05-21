@@ -59,5 +59,6 @@ func (o *Point2D) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
+	_ = data
 	return err
 }

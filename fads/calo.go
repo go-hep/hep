@@ -16,11 +16,6 @@ import (
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
-type etaphiBin struct {
-	eta float64
-	phi float64
-}
-
 type EtaPhiBin struct {
 	EtaBins []float64
 	PhiBins []float64
@@ -160,9 +155,9 @@ type Calorimeter struct {
 	efrac map[int]EneFrac
 	bins  EtaPhiGrid
 
-	etaphibins []EtaPhiBin
-	ecalres    func(eta, ene float64) float64
-	hcalres    func(eta, ene float64) float64
+	//etaphibins []EtaPhiBin
+	ecalres func(eta, ene float64) float64
+	hcalres func(eta, ene float64) float64
 
 	particles   string
 	tracks      string
@@ -399,10 +394,11 @@ func (tsk *Calorimeter) Process(ctx fwk.Context) error {
 			},
 		}
 
-		calotrk := caloTrack{}
-
-		var tower Candidate
-		twrtrks := make([]Candidate, 0, len(tracks))
+		var (
+			calotrk = caloTrack{}
+			tower   Candidate
+			//twrtrks = make([]Candidate, 0, len(tracks)) // FIXME(sbinet)
+		)
 
 		for _, hit := range hits[towerid] {
 			flags := (hit >> 24) & 0x00000000000000FF
@@ -412,21 +408,25 @@ func (tsk *Calorimeter) Process(ctx fwk.Context) error {
 			switch {
 			case (flags & 1) != 0: // track hits
 				calotower.TrackHits++
-				track := &tracks[n]
-				ene := track.Mom.E()
-				t := track.Pos.T()
+				var (
+					track = &tracks[n]
+					ene   = track.Mom.E()
+					t     = track.Pos.T()
+				)
 				calotrk.ECal.Add(ene*trkecal[n], t)
 				calotrk.HCal.Add(ene*trkhcal[n], t)
-				twrtrks = append(twrtrks, *track)
+				//twrtrks = append(twrtrks, *track) // FIXME(sbinet)
 
 			default:
 				if (flags & 2) != 0 { // photon hits
 					calotower.PhotonHits++
 				}
 
-				part := &parts[n]
-				ene := part.Mom.E()
-				t := part.Pos.T()
+				var (
+					part = &parts[n]
+					ene  = part.Mom.E()
+					t    = part.Pos.T()
+				)
 				calotower.ECal.Add(ene*twrecal[n], t)
 				calotower.HCal.Add(ene*twrhcal[n], t)
 				tower.Add(part)

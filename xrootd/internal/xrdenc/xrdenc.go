@@ -119,7 +119,6 @@ func (r *RBuffer) ReadBytes(data []byte) {
 	end := r.pos + n
 	copy(data, r.buf[beg:end])
 	r.pos += n
-	return
 }
 
 func (r *RBuffer) ReadStr() string {

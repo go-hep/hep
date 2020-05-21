@@ -5,7 +5,6 @@
 package lcio
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -20,7 +19,7 @@ type SimCalorimeterHitContainer struct {
 }
 
 func (hits SimCalorimeterHitContainer) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of SimCalorimeterHit collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", hits.Flags, hits.Params)
 	fmt.Fprintf(o, "  -> LCIO::CHBIT_LONG   : %v\n", hits.Flags.Test(BitsChLong))
@@ -35,8 +34,8 @@ func (hits SimCalorimeterHitContainer) String() string {
 			"           -> MC contribution: prim. PDG |  energy  |   time   | sec. PDG | stepPosition (x,y,z) \n"
 		tail = "------------|--------|--------|----------|----------------------------------|--------------\n"
 	)
-	fmt.Fprintf(o, head)
-	fmt.Fprintf(o, tail)
+	o.WriteString(head)
+	o.WriteString(tail)
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
 		fmt.Fprintf(o, "[%09d] |%08d|%08d|%+.3e|", ID(hit), hit.CellID0, hit.CellID1, hit.Energy)
@@ -65,8 +64,8 @@ func (hits SimCalorimeterHitContainer) String() string {
 		}
 		fmt.Fprintf(o, "\n")
 	}
-	fmt.Fprintf(o, tail)
-	return string(o.Bytes())
+	o.WriteString(tail)
+	return o.String()
 }
 
 func (*SimCalorimeterHitContainer) VersionSio() uint32 {

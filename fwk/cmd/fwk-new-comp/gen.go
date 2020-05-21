@@ -11,19 +11,14 @@ import (
 )
 
 func gen_task(c Component) error {
-	var err error
-	err = gen(os.Stdout, g_task_template, c)
-	return err
+	return gen(os.Stdout, g_task_template, c)
 }
 
 func gen_svc(c Component) error {
-	var err error
-	err = gen(os.Stdout, g_svc_template, c)
-	return err
+	return gen(os.Stdout, g_svc_template, c)
 }
 
 func gen(w io.Writer, text string, data interface{}) error {
-	t := template.New("fwk")
-	template.Must(t.Parse(text))
+	t := template.Must(template.New("fwk").Parse(text))
 	return t.Execute(w, data)
 }

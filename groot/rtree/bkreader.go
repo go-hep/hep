@@ -151,7 +151,6 @@ func (bkr *bkreader) close() {
 	case bkr.exit <- struct{}{}:
 		<-bkr.closed
 	}
-	return
 }
 
 type rspan struct {

@@ -60,19 +60,14 @@ type McGeneric struct {
 }
 
 func (tsk *McGeneric) Configure(ctx fwk.Context) error {
-	var err error
-
-	err = tsk.DeclInPort(tsk.mcevt, reflect.TypeOf(hepmc.Event{}))
+	err := tsk.DeclInPort(tsk.mcevt, reflect.TypeOf(hepmc.Event{}))
 	if err != nil {
 		return err
 	}
-
-	return err
+	return nil
 }
 
 func (tsk *McGeneric) StartTask(ctx fwk.Context) error {
-	var err error
-
 	svc, err := ctx.Svc("histsvc")
 	if err != nil {
 		return err
@@ -139,11 +134,10 @@ func (tsk *McGeneric) StartTask(ctx fwk.Context) error {
 	tsk.hetaChPMRatio = bookS2D("EtaChPMRatio")
 	tsk.hrapChPMRatio = bookS2D("RapidityChPMRatio")
 
-	return err
+	return nil
 }
 
 func (tsk *McGeneric) StopTask(ctx fwk.Context) error {
-	var err error
 	for _, h := range []*hbook.H1D{
 		tsk.hmult.Hist, tsk.heta.Hist, tsk.hrap.Hist, tsk.hpt.Hist, tsk.hene.Hist, tsk.hphi.Hist,
 		tsk.hmultCh.Hist, tsk.hetaCh.Hist, tsk.hrapCh.Hist, tsk.hptCh.Hist, tsk.heneCh.Hist, tsk.hphiCh.Hist,
@@ -169,13 +163,14 @@ func (tsk *McGeneric) StopTask(ctx fwk.Context) error {
 		}
 		v.res.Fill(res.Points()...)
 	}
-	return err
+	return nil
 }
 
 func (tsk *McGeneric) Process(ctx fwk.Context) error {
-	var err error
-	store := ctx.Store()
-	msg := ctx.Msg()
+	var (
+		store = ctx.Store()
+		msg   = ctx.Msg()
+	)
 
 	v, err := store.Get(tsk.mcevt)
 	if err != nil {
@@ -214,10 +209,10 @@ func (tsk *McGeneric) Process(ctx fwk.Context) error {
 			mc.M1 = 1
 			mc.Pos = fmom.PxPyPzE(vtx.Position)
 		}
-		pdgcode := p.PdgID
-		if pdgcode < 0 {
-			pdgcode = -pdgcode
-		}
+		// pdgcode := p.PdgID
+		// if pdgcode < 0 {
+		// 	pdgcode = -pdgcode
+		// }
 
 		if p.Status != 1 {
 			continue
@@ -300,12 +295,10 @@ func (tsk *McGeneric) Process(ctx fwk.Context) error {
 
 	tsk.hsvc.FillH1D(tsk.hmultCh.ID, float64(ncfsparts), weight)
 	msg.Debugf("total charged multiplicity = %d\n", ncfsparts)
-	return err
+	return nil
 }
 
 func newMcGeneric(typ, name string, mgr fwk.App) (fwk.Component, error) {
-	var err error
-
 	tsk := &McGeneric{
 		TaskBase: fwk.NewTask(typ, name, mgr),
 		mcevt:    "/fads/McEvent",
@@ -314,7 +307,7 @@ func newMcGeneric(typ, name string, mgr fwk.App) (fwk.Component, error) {
 		hstream:  "/MC_GENERIC",
 	}
 
-	err = tsk.DeclProp("Input", &tsk.mcevt)
+	err := tsk.DeclProp("Input", &tsk.mcevt)
 	if err != nil {
 		return nil, err
 	}
@@ -334,7 +327,7 @@ func newMcGeneric(typ, name string, mgr fwk.App) (fwk.Component, error) {
 		return nil, err
 	}
 
-	return tsk, err
+	return tsk, nil
 }
 
 func init() {

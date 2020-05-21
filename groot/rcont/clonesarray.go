@@ -118,7 +118,11 @@ func (arr *ClonesArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(arr.RVersion())
 
-	arr.arr.obj.MarshalROOT(w)
+	_, err = arr.arr.obj.MarshalROOT(w)
+	if err != nil {
+		w.SetErr(err)
+		return 0, w.Err()
+	}
 	w.WriteString(arr.arr.name)
 	w.WriteString(fmt.Sprintf("%s;%d", arr.cls, clsv))
 

@@ -557,7 +557,7 @@ func (tree *ttree) attachStreamerElement(br Branch, se rbytes.StreamerElement, c
 
 	br.setStreamerElement(se, ctx)
 	var members []rbytes.StreamerElement
-	switch se.(type) {
+	switch se := se.(type) {
 	case *rdict.StreamerObject, *rdict.StreamerObjectAny, *rdict.StreamerObjectPointer, *rdict.StreamerObjectAnyPointer:
 		typename := strings.TrimRight(se.TypeName(), "*")
 		typevers := -1
@@ -574,7 +574,7 @@ func (tree *ttree) attachStreamerElement(br Branch, se rbytes.StreamerElement, c
 			typename = typename[strings.Index(typename, "<")+1 : strings.LastIndex(typename, ">")]
 			typename = strings.TrimRight(typename, "*")
 		}
-		typename = strings.TrimSpace(se.TypeName())
+		typename = strings.TrimSpace(typename)
 		typevers := -1
 		// FIXME(sbinet): always load latest version?
 		info, err := ctx.StreamerInfo(typename, typevers)

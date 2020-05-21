@@ -31,10 +31,7 @@ func (p *Particle) IsStable() bool {
 	if res.Width.Value > 0 || lt.Value > 0 {
 		// FIXME(sbinet): res.Width.Value should be == -1.
 		// when lifetime.Value == +inf
-		if math.IsInf(lt.Value, +1) {
-			return true
-		}
-		return false
+		return math.IsInf(lt.Value, +1)
 	}
 	return true
 }

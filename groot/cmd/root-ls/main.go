@@ -60,9 +60,9 @@ import (
 )
 
 var (
-	doProf = flag.String("profile", "", "filename of cpuprofile")
-	doSI   = flag.Bool("sinfos", false, "print StreamerInfos")
-	doTree = flag.Bool("t", false, "print Tree(s) (recursively)")
+	siFlag   = flag.Bool("sinfos", false, "print StreamerInfos")
+	treeFlag = flag.Bool("t", false, "print Tree(s) (recursively)")
+	cpuFlag  = flag.String("cpu-profile", "", "path to CPU profile output file")
 )
 
 func main() {
@@ -82,12 +82,15 @@ options:
 
 	flag.Parse()
 
-	if *doProf != "" {
-		f, err := os.Create(*doProf)
+	if *cpuFlag != "" {
+		f, err := os.Create(*cpuFlag)
 		if err != nil {
 			log.Fatalf("%+v", err)
 		}
-		pprof.StartCPUProfile(f)
+		err = pprof.StartCPUProfile(f)
+		if err != nil {
+			log.Fatalf("could not start CPU profiling: %+v", err)
+		}
 		defer pprof.StopCPUProfile()
 	}
 
@@ -102,8 +105,8 @@ options:
 
 	cmd := rootls{
 		stdout:    stdout,
-		streamers: *doSI,
-		trees:     *doTree,
+		streamers: *siFlag,
+		trees:     *treeFlag,
 	}
 
 	for ii, fname := range flag.Args() {

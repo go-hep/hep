@@ -294,7 +294,7 @@ func (f *File) readHeader() error {
 	// Header
 
 	var magic [4]byte
-	if _, err := io.ReadFull(r, magic[:]); err != nil || string(magic[:]) != "root" {
+	if _, err := io.ReadFull(r, magic[:]); err != nil || string(magic[:]) != string(rootMagic) {
 		if err != nil {
 			return fmt.Errorf("riofs: failed to read ROOT file magic header: %w", err)
 		}
@@ -369,7 +369,10 @@ func (f *File) writeHeader() error {
 	)
 
 	buf := rbytes.NewWBuffer(make([]byte, f.begin), nil, 0, f)
-	buf.Write([]byte("root"))
+	_, err = buf.Write(rootMagic)
+	if err != nil {
+		return fmt.Errorf("riofs: could not write ROOT file magic header: %w", err)
+	}
 
 	version := f.version
 	if version < 1000000 && (f.end > kStartBigFile ||

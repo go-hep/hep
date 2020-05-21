@@ -81,7 +81,7 @@ func newCmd(stdout io.Writer, scr screen.Screen) *Cmd {
 	f, err := os.Open(".pawgo.history")
 	if err == nil {
 		defer f.Close()
-		c.rl.ReadHistory(f)
+		_, _ = c.rl.ReadHistory(f)
 	}
 
 	return &c
@@ -98,7 +98,7 @@ func (c *Cmd) Close() error {
 	f, err := os.Create(".pawgo.history")
 	if err == nil {
 		defer f.Close()
-		c.rl.WriteHistory(f)
+		_, _ = c.rl.WriteHistory(f)
 	}
 
 	e := c.rl.Close()
@@ -116,7 +116,7 @@ func (c *Cmd) Run() error {
 		o, err := c.rl.Prompt("paw> ")
 		if err != nil {
 			if err == io.EOF {
-				c.msg.Writer().Write([]byte("\n"))
+				_, _ = c.msg.Writer().Write([]byte("\n"))
 				err = nil
 			}
 			return err

@@ -73,12 +73,12 @@ func NewRequest(requestID uint16, seqID int64, data []byte) Request {
 
 	var s [8]byte
 	binary.BigEndian.PutUint64(s[:], uint64(seqID))
-	hash.Write(s[:])
+	_, _ = hash.Write(s[:])
 
 	if requestID == write.RequestID || requestID == verifyw.RequestID {
-		hash.Write(data[:24])
+		_, _ = hash.Write(data[:24])
 	} else {
-		hash.Write(data)
+		_, _ = hash.Write(data)
 	}
 	signature := hash.Sum(nil)
 

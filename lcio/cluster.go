@@ -5,7 +5,6 @@
 package lcio
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -40,19 +39,19 @@ type Cluster struct {
 }
 
 func (clus ClusterContainer) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of Cluster collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", clus.Flags, clus.Params)
 	fmt.Fprintf(o, "     LCIO::CLBIT_HITS : %v\n", clus.Flags.Test(BitsClHits))
 
-	fmt.Fprintf(o, "\n")
+	o.WriteString("\n")
 
 	const (
 		head = " [   id   ] |type|  energy  |energyerr |      position ( x,y,z)           |  itheta  |   iphi   \n"
 		tail = "------------|----|----------|----------|----------------------------------|----------|----------\n"
 	)
-	fmt.Fprintf(o, head)
-	fmt.Fprintf(o, tail)
+	o.WriteString(head)
+	o.WriteString(tail)
 	for i := range clus.Clusters {
 		clu := &clus.Clusters[i]
 		fmt.Fprintf(o,
@@ -68,19 +67,19 @@ func (clus ClusterContainer) String() string {
 			clu.PosErr[0], clu.PosErr[1], clu.PosErr[2], clu.PosErr[3], clu.PosErr[4], clu.PosErr[5],
 			clu.DirErr[0], clu.DirErr[1], clu.DirErr[2],
 		)
-		fmt.Fprintf(o, "            clusters(e): ")
+		o.WriteString("            clusters(e): ")
 		for ii, cc := range clu.Clusters {
 			var e float32
 			if cc != nil {
 				e = cc.Energy
 			}
 			if ii > 0 {
-				fmt.Fprintf(o, ", ")
+				o.WriteString(", ")
 			}
 			fmt.Fprintf(o, "%+.3e", e)
 		}
-		fmt.Fprintf(o, "\n")
-		fmt.Fprintf(o, "            subdetector energies : ")
+		o.WriteString("\n")
+		o.WriteString("            subdetector energies : ")
 		for ii, ee := range clu.SubDetEnes {
 			if ii > 0 {
 				fmt.Fprintf(o, ", ")
@@ -89,9 +88,9 @@ func (clus ClusterContainer) String() string {
 		}
 		fmt.Fprintf(o, "\n")
 	}
-	fmt.Fprintf(o, tail)
+	o.WriteString(tail)
 
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (*ClusterContainer) VersionSio() uint32 {

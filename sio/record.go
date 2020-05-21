@@ -164,11 +164,10 @@ func (rec *Record) read(r *reader) error {
 		if n != int64(nlen) {
 			return ErrBlockShortRead
 		}
-		name := string(cbuf.Bytes()[:data.NameLen])
-		iblk, ok := rec.bindex[name]
+		iblk, ok := rec.bindex[string(cbuf.Bytes()[:data.NameLen])]
 		if ok {
 			blk := rec.blocks[iblk]
-			// fmt.Printf("### %q\n", string(buf.Bytes()))
+			// fmt.Printf("### %q\n", buf.String())
 			err = blk.UnmarshalSio(r)
 			end := r.Len()
 			if err != nil {

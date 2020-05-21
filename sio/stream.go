@@ -172,14 +172,13 @@ func (stream *Stream) Records() []*Record {
 	return recs
 }
 
-func (stream *Stream) dump() {
-	fmt.Printf("=========== stream [%s] ============\n", stream.name)
-	fmt.Printf("::: records: (%d)\n", len(stream.recs))
-	for k, rec := range stream.recs {
-		fmt.Printf("::: %s: %v\n", k, rec)
-	}
-	return
-}
+//func (stream *Stream) dump() {
+//	fmt.Printf("=========== stream [%s] ============\n", stream.name)
+//	fmt.Printf("::: records: (%d)\n", len(stream.recs))
+//	for k, rec := range stream.recs {
+//		fmt.Printf("::: %s: %v\n", k, rec)
+//	}
+//}
 
 // ReadRecord reads the next record
 func (stream *Stream) ReadRecord() (*Record, error) {
@@ -230,7 +229,7 @@ func (stream *Stream) ReadRecord() (*Record, error) {
 		// fmt.Printf(">>> name=[%s]\n", recname)
 		record = stream.Record(recname)
 		record.options = recdata.Options
-		requested = record != nil && record.Unpack()
+		requested = record.Unpack()
 
 		// if the record is not interesting, go to next record.
 		// skip over any padding bytes inserted to make the next record header

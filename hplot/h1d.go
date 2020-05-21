@@ -258,7 +258,7 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 		yfct = func(sumw float64) (ymin, ymax vg.Length) {
 			ymin = c.Min.Y
 			ymax = c.Min.Y
-			if 0 != sumw {
+			if sumw != 0 {
 				ymax = trY(sumw)
 			}
 			return ymin, ymax

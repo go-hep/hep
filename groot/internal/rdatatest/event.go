@@ -60,6 +60,102 @@ type Event struct {
 	ArrF64 [10]float64 `groot:"ArrF64"`
 }
 
+func NewEvent(
+	name string,
+	u8 uint8,
+	u16 uint16,
+	u32 uint32,
+	u64 uint64,
+	i8 int8,
+	i16 int16,
+	i32 int32,
+	i64 int64,
+	f32 float32,
+	f64 float64,
+
+	b bool,
+	bb byte,
+
+	u8s []uint8,
+	u16s []uint16,
+	u32s []uint32,
+	u64s []uint64,
+	i8s []int8,
+	i16s []int16,
+	i32s []int32,
+	i64s []int64,
+	f32s []float32,
+	f64s []float64,
+	bs []bool,
+	bbs []byte,
+
+	arru8s [10]uint8,
+	arru16s [10]uint16,
+	arru32s [10]uint32,
+	arru64s [10]uint64,
+	arri8s [10]int8,
+	arri16s [10]int16,
+	arri32s [10]int32,
+	arri64s [10]int64,
+	arrf32s [10]float32,
+	arrf64s [10]float64,
+	arrbs [10]bool,
+	arrbbs [10]byte,
+
+	SliF64 []float64,
+	SliStr []string,
+	SliHLV []HLV,
+	ArrF64 [10]float64,
+) *Event {
+	return &Event{
+		name: name,
+		u8:   u8,
+		u16:  u16,
+		u32:  u32,
+		u64:  u64,
+		i8:   i8,
+		i16:  i16,
+		i32:  i32,
+		i64:  i64,
+		f32:  f32,
+		f64:  f64,
+
+		b:  b,
+		bb: bb,
+
+		u8s:  u8s,
+		u16s: u16s,
+		u32s: u32s,
+		u64s: u64s,
+		i8s:  i8s,
+		i16s: i16s,
+		i32s: i32s,
+		i64s: i64s,
+		f32s: f32s,
+		f64s: f64s,
+		bs:   bs,
+		bbs:  bbs,
+
+		arru8s:  arru8s,
+		arru16s: arru16s,
+		arru32s: arru32s,
+		arru64s: arru64s,
+		arri8s:  arri8s,
+		arri16s: arri16s,
+		arri32s: arri32s,
+		arri64s: arri64s,
+		arrf32s: arrf32s,
+		arrf64s: arrf64s,
+		arrbs:   arrbs,
+		arrbbs:  arrbbs,
+
+		SliF64: SliF64,
+		SliStr: SliStr,
+		SliHLV: SliHLV,
+		ArrF64: ArrF64,
+	}
+}
+
 func (*Event) RVersion() int16 { return 1 }
 func (*Event) Class() string   { return "go-hep.org/x/hep/groot/internal/rdatatest.Event" }
 
@@ -68,6 +164,14 @@ type Particle struct {
 	name string
 	pid  int
 	mom  HLV
+}
+
+func NewParticle(name string, pid int, mom HLV) *Particle {
+	return &Particle{
+		name: name,
+		pid:  pid,
+		mom:  mom,
+	}
 }
 
 func (*Particle) RVersion() int16 { return 1 }
@@ -224,10 +328,22 @@ type TObject struct {
 	name string
 }
 
+func NewTObject(o rbase.Object, name string) TObject {
+	return TObject{Object: o, name: name}
+}
+
 type TList struct {
 	rbase.Object
 	objs []root.Object
 	list rcont.List
+}
+
+func NewTList(o rbase.Object, objs []root.Object, list rcont.List) TList {
+	return TList{
+		Object: o,
+		objs:   objs,
+		list:   list,
+	}
 }
 
 type TClonesArray struct {

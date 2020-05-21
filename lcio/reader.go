@@ -18,7 +18,10 @@ func Open(fname string) (*Reader, error) {
 	r := &Reader{
 		f: f,
 	}
-	r.init()
+	err = r.init()
+	if err != nil {
+		return nil, err
+	}
 	return r, nil
 }
 

@@ -232,7 +232,12 @@ func ExampleRecordReader_withChain() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer closer()
+	defer func() {
+		err = closer()
+		if err != nil {
+			log.Fatalf("could not close chain: %+v", err)
+		}
+	}()
 
 	rr := rarrow.NewRecordReader(chain, rarrow.WithStart(10), rarrow.WithEnd(20))
 	defer rr.Release()

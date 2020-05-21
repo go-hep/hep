@@ -92,9 +92,9 @@ func (evt *Event) AddVertex(vtx *Vertex) error {
 	if vtx == nil {
 		return errNilVtx
 	}
-	if vtx.Event != nil && vtx.Event != evt {
-		//TODO: warn and remove from previous event
-	}
+	//TODO(sbinet): warn and remove from previous event
+	//if vtx.Event != nil && vtx.Event != evt {
+	//}
 	return vtx.setParentEvent(evt)
 }
 

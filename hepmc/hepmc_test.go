@@ -65,7 +65,12 @@ func testEventRW(t *testing.T, fname, outfname string, nevts int) {
 			t.Fatalf("file: %s. ievt=%d err=%v\n", fname, ievt, err)
 		}
 		evts = append(evts, &evt)
-		defer hepmc.Delete(&evt)
+		defer func() {
+			err = hepmc.Delete(&evt)
+			if err != nil {
+				t.Fatalf("error: %+v", err)
+			}
+		}()
 	}
 
 	o, err := os.Create(outfname)
@@ -107,10 +112,8 @@ func testEventRW(t *testing.T, fname, outfname string, nevts int) {
 type reader struct {
 	header []byte
 	footer []byte
-	event  []byte
 	data   []byte
 	pos    int
-	nevts  int
 }
 
 func newReader() *reader {
@@ -144,10 +147,6 @@ P 8 -2 3.9620000000000002e+00 -4.9497999999999998e+01 -2.6687000000000001e+01 5.
 
 func (r *reader) Read(data []byte) (int, error) {
 	return r.read(data)
-}
-
-func printf(format string, args ...interface{}) (int, error) {
-	return fmt.Fprintf(os.Stderr, format, args...)
 }
 
 func (r *reader) read(dst []byte) (int, error) {
@@ -186,7 +185,6 @@ func TestRead(t *testing.T) {
 
 	const NEVTS = 10
 	const fname = "small.hepmc"
-	evts := make([]*hepmc.Event, 0, NEVTS)
 	for ievt := 0; ievt < NEVTS; ievt++ {
 		var evt hepmc.Event
 		err := dec.Decode(&evt)
@@ -196,8 +194,10 @@ func TestRead(t *testing.T) {
 			}
 			t.Fatalf("file: %s. ievt=%d err=%v\n", fname, ievt, err)
 		}
-		evts = append(evts, &evt)
-		defer hepmc.Delete(&evt)
+		err = hepmc.Delete(&evt)
+		if err != nil {
+			t.Fatalf("error: %+v", err)
+		}
 	}
 }
 
@@ -216,7 +216,7 @@ func BenchmarkDecode(b *testing.B) {
 		if err != nil {
 			b.Fatalf("error: %v\n", err)
 		}
-		hepmc.Delete(&evt)
+		_ = hepmc.Delete(&evt)
 	}
 
 	b.ResetTimer()
@@ -230,7 +230,7 @@ func BenchmarkDecode(b *testing.B) {
 			}
 			b.Fatalf("file: %s. ievt=%d err=%v\n", fname, i, err)
 		}
-		//defer hepmc.Delete(&evt)
+		_ = hepmc.Delete(&evt)
 	}
 
 }
@@ -268,7 +268,12 @@ func ExampleEvent_buildFromScratch() {
 		Particles:       make(map[int]*hepmc.Particle),
 		Vertices:        make(map[int]*hepmc.Vertex),
 	}
-	defer evt.Delete()
+	defer func() {
+		err = evt.Delete()
+		if err != nil {
+			log.Fatalf("could not clean-up event: %+v", err)
+		}
+	}()
 
 	// define the units
 	evt.MomentumUnit = hepmc.GEV

@@ -63,7 +63,7 @@ func TestGenerate(t *testing.T) {
 			}
 
 			if *regen {
-				ioutil.WriteFile(tc.want, got, 0644)
+				_ = ioutil.WriteFile(tc.want, got, 0644)
 			}
 
 			want, err := ioutil.ReadFile(tc.want)
@@ -225,7 +225,7 @@ func main() {
 			}
 
 			if *regen {
-				ioutil.WriteFile(tc.want, got, 0644)
+				_ = ioutil.WriteFile(tc.want, got, 0644)
 			}
 
 			want, err := ioutil.ReadFile(tc.want)

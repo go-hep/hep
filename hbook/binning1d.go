@@ -26,7 +26,6 @@ var (
 	errInvalidYAxis   = errors.New("hbook: invalid Y-axis limits")
 	errEmptyYAxis     = errors.New("hbook: Y-axis with zero bins")
 	errShortYAxis     = errors.New("hbook: too few 1-dim Y-bins")
-	errOverlapYAxis   = errors.New("hbook: invalid Y-binning (overlap)")
 	errNotSortedYAxis = errors.New("hbook: Y-edges slice not sorted")
 	errDupEdgesYAxis  = errors.New("hbook: duplicates in Y-edge values")
 )

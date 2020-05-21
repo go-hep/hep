@@ -16,20 +16,6 @@ import (
 	"go-hep.org/x/hep/groot/rtree"
 )
 
-func mdFrom(vs ...string) arrow.Metadata {
-	keys := make([]string, 0, len(vs)/2)
-	vals := make([]string, 0, len(vs)/2)
-	for i, v := range vs {
-		switch {
-		case i%2 == 0:
-			keys = append(keys, v)
-		default:
-			vals = append(vals, v)
-		}
-	}
-	return arrow.NewMetadata(keys, vals)
-}
-
 func TestSchemaFrom(t *testing.T) {
 	for _, tc := range []struct {
 		file string

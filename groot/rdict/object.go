@@ -118,11 +118,6 @@ func newObjectFrom(si rbytes.StreamerInfo, sictx rbytes.StreamerInfoContext) *Ob
 	return obj
 }
 
-type counter interface {
-	ivalue() int
-	imax() int
-}
-
 func genTypeFromSI(sictx rbytes.StreamerInfoContext, si rbytes.StreamerInfo) reflect.Type {
 	if n := si.Name(); rtypes.Factory.HasKey(n) {
 		fct := rtypes.Factory.Get(n)

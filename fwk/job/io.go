@@ -11,9 +11,7 @@ type Encoder interface {
 
 // Save saves a job's configuration description using the Encoder enc.
 func Save(stmts []Stmt, enc Encoder) error {
-	var err error
-	err = enc.Encode(stmts)
-	return err
+	return enc.Encode(stmts)
 }
 
 // Decoder decodes data from the unerlying io.Reader
@@ -23,12 +21,11 @@ type Decoder interface {
 
 // Load loads a job's configuration description using the Decoder dec.
 func Load(dec Decoder) ([]Stmt, error) {
-	var err error
 	stmts := make([]Stmt, 0)
-	err = dec.Decode(&stmts)
+	err := dec.Decode(&stmts)
 	if err != nil {
 		return nil, err
 	}
 
-	return stmts, err
+	return stmts, nil
 }

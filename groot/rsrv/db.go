@@ -20,7 +20,10 @@ type DB struct {
 }
 
 func NewDB(dir string) *DB {
-	os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		panic(fmt.Errorf("rsrv: could not create DB dir %q: %+v", dir, err))
+	}
 	return &DB{
 		dir:   dir,
 		files: make(map[string]*riofs.File),

@@ -69,9 +69,7 @@ func openFile(path string) (Reader, error) {
 }
 
 func openLocalFile(path string) (Reader, error) {
-	if strings.HasPrefix(path, "file://") {
-		path = path[len("file://"):]
-	}
+	path = strings.TrimPrefix(path, "file://")
 	return mmap.Open(path)
 }
 

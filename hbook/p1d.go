@@ -180,9 +180,7 @@ func (p *P1D) annFromYODA(ann Annotation) {
 			// noop
 		case "Path":
 			name := v.(string)
-			if strings.HasPrefix(name, "/") {
-				name = name[1:]
-			}
+			name = strings.TrimPrefix(name, "/")
 			p.ann["name"] = name
 		case "Title":
 			p.ann["title"] = v

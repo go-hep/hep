@@ -80,9 +80,3 @@ func (p points2D) Less(i, j int) bool {
 	return false
 }
 func (p points2D) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
-
-// point1D is a position in a 1-dim space
-type point1D struct {
-	x  float64    // x-position
-	ex [2]float64 // error on x-position
-}

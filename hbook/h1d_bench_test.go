@@ -58,8 +58,8 @@ func BenchmarkH1DFillFlatGo(b *testing.B) {
 	q := make(chan struct{}, 1000)
 	for i := 0; i < b.N; i++ {
 		q <- struct{}{}
+		wg.Add(1)
 		go func() {
-			wg.Add(1)
 			h1.Fill(rnd()*100., 1.)
 			<-q
 			wg.Done()

@@ -116,7 +116,6 @@ func (ch *tchain) loadTree(i int) {
 	ch.tree = ch.trees[ch.cur]
 	ch.off = ch.offs[ch.cur]
 	ch.tot = ch.tots[ch.cur]
-	return
 }
 
 // Class returns the ROOT class of the argument.

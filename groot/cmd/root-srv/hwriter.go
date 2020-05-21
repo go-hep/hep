@@ -25,12 +25,13 @@ func newResponseWriter() *hwriter {
 func (w *hwriter) Header() http.Header         { return w.hdr }
 func (w *hwriter) Write(p []byte) (int, error) { return w.body.Write(p) }
 func (w *hwriter) WriteHeader(code int)        { w.code = code }
-func (w *hwriter) reset() {
-	w.body.Reset()
-	for k := range w.hdr {
-		delete(w.hdr, k)
-	}
-}
+
+// func (w *hwriter) reset() {
+// 	w.body.Reset()
+// 	for k := range w.hdr {
+// 		delete(w.hdr, k)
+// 	}
+// }
 
 var (
 	_ http.ResponseWriter = (*hwriter)(nil)

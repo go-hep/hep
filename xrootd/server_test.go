@@ -67,13 +67,21 @@ func TestServe_Handshake(t *testing.T) {
 	srv := xrootd.NewServer(xrootd.Default(), func(err error) {
 		t.Error(err)
 	})
-	defer srv.Shutdown(context.Background())
+	defer func() {
+		_ = srv.Shutdown(context.Background())
+	}()
 
 	go func() {
 		req := handshake.NewRequest()
 		var wBuffer xrdenc.WBuffer
-		req.MarshalXrd(&wBuffer)
-		p2.Write(wBuffer.Bytes())
+		err := req.MarshalXrd(&wBuffer)
+		if err != nil {
+			t.Errorf("could not marshal request: %+v", err)
+		}
+		_, err = p2.Write(wBuffer.Bytes())
+		if err != nil {
+			t.Errorf("could not write buffer: %+v", err)
+		}
 		respHeader, respData, err := xrdproto.ReadResponse(p2)
 		if err != nil {
 			t.Errorf("unexpected read error: %v", err)
@@ -98,7 +106,10 @@ func TestServe_Handshake(t *testing.T) {
 			t.Errorf("wrong handshake response:\ngot = %v\nwant = %v", handshakeResp, want)
 		}
 
-		srv.Shutdown(context.Background())
+		err = srv.Shutdown(context.Background())
+		if err != nil {
+			t.Errorf("could not shutdown server: %+v", err)
+		}
 	}()
 
 	if err := srv.Serve(listener); err != nil && err != xrootd.ErrServerClosed {
@@ -119,14 +130,22 @@ func TestServe_Login(t *testing.T) {
 	srv := xrootd.NewServer(xrootd.Default(), func(err error) {
 		t.Error(err)
 	})
-	defer srv.Shutdown(context.Background())
+	defer func() {
+		_ = srv.Shutdown(context.Background())
+	}()
 
 	go func() {
 		handshakeReq := handshake.NewRequest()
 		var wBuffer xrdenc.WBuffer
-		handshakeReq.MarshalXrd(&wBuffer)
-		p2.Write(wBuffer.Bytes())
-		_, _, err := xrdproto.ReadResponse(p2)
+		err := handshakeReq.MarshalXrd(&wBuffer)
+		if err != nil {
+			t.Errorf("could not marshal handshake request: %+v", err)
+		}
+		_, err = p2.Write(wBuffer.Bytes())
+		if err != nil {
+			t.Errorf("could not write buffer: %+v", err)
+		}
+		_, _, err = xrdproto.ReadResponse(p2)
 		if err != nil {
 			t.Errorf("unexpected read error: %v", err)
 		}
@@ -135,9 +154,18 @@ func TestServe_Login(t *testing.T) {
 		streamID := [2]byte{0, 1}
 		reqHeader := xrdproto.RequestHeader{RequestID: login.RequestID, StreamID: streamID}
 		wBuffer = xrdenc.WBuffer{}
-		reqHeader.MarshalXrd(&wBuffer)
-		req.MarshalXrd(&wBuffer)
-		p2.Write(wBuffer.Bytes())
+		err = reqHeader.MarshalXrd(&wBuffer)
+		if err != nil {
+			t.Errorf("could not marshal req-header: %+v", err)
+		}
+		err = req.MarshalXrd(&wBuffer)
+		if err != nil {
+			t.Errorf("could not marshal request: %+v", err)
+		}
+		_, err = p2.Write(wBuffer.Bytes())
+		if err != nil {
+			t.Errorf("could not write buffer: %+v", err)
+		}
 		respHeader, respData, err := xrdproto.ReadResponse(p2)
 		if err != nil {
 			t.Errorf("unexpected read error: %v", err)
@@ -159,7 +187,10 @@ func TestServe_Login(t *testing.T) {
 
 		// TODO: validate loginResp.
 
-		srv.Shutdown(context.Background())
+		err = srv.Shutdown(context.Background())
+		if err != nil {
+			t.Errorf("could not shutdown server: %+v", err)
+		}
 	}()
 
 	if err := srv.Serve(listener); err != nil && err != xrootd.ErrServerClosed {
@@ -180,14 +211,24 @@ func TestServe_Protocol(t *testing.T) {
 	srv := xrootd.NewServer(xrootd.Default(), func(err error) {
 		t.Error(err)
 	})
-	defer srv.Shutdown(context.Background())
+	defer func() {
+		_ = srv.Shutdown(context.Background())
+	}()
 
 	go func() {
-		handshakeReq := handshake.NewRequest()
-		var wBuffer xrdenc.WBuffer
-		handshakeReq.MarshalXrd(&wBuffer)
-		p2.Write(wBuffer.Bytes())
-		_, _, err := xrdproto.ReadResponse(p2)
+		var (
+			handshakeReq = handshake.NewRequest()
+			wBuffer      xrdenc.WBuffer
+		)
+		err := handshakeReq.MarshalXrd(&wBuffer)
+		if err != nil {
+			t.Errorf("could not marshal handshake request: %+v", err)
+		}
+		_, err = p2.Write(wBuffer.Bytes())
+		if err != nil {
+			t.Errorf("could not write buffer: %+v", err)
+		}
+		_, _, err = xrdproto.ReadResponse(p2)
 		if err != nil {
 			t.Errorf("unexpected read error: %v", err)
 		}
@@ -196,9 +237,18 @@ func TestServe_Protocol(t *testing.T) {
 		streamID := [2]byte{0, 2}
 		reqHeader := xrdproto.RequestHeader{RequestID: protocol.RequestID, StreamID: streamID}
 		wBuffer = xrdenc.WBuffer{}
-		reqHeader.MarshalXrd(&wBuffer)
-		req.MarshalXrd(&wBuffer)
-		p2.Write(wBuffer.Bytes())
+		err = reqHeader.MarshalXrd(&wBuffer)
+		if err != nil {
+			t.Errorf("could not marshal request header: %+v", err)
+		}
+		err = req.MarshalXrd(&wBuffer)
+		if err != nil {
+			t.Errorf("could not marshal request: %+v", err)
+		}
+		_, err = p2.Write(wBuffer.Bytes())
+		if err != nil {
+			t.Errorf("could not write buffer: %+v", err)
+		}
 
 		respHeader, respData, err := xrdproto.ReadResponse(p2)
 		if err != nil {
@@ -224,7 +274,10 @@ func TestServe_Protocol(t *testing.T) {
 			t.Errorf("wrong response:\ngot = %v\nwant = %v", protocolResp, want)
 		}
 
-		srv.Shutdown(context.Background())
+		err = srv.Shutdown(context.Background())
+		if err != nil {
+			t.Errorf("could not shutdown server: %+v", err)
+		}
 	}()
 
 	if err := srv.Serve(listener); err != nil && err != xrootd.ErrServerClosed {
@@ -245,14 +298,24 @@ func TestServe_Dirlist(t *testing.T) {
 	srv := xrootd.NewServer(xrootd.Default(), func(err error) {
 		t.Error(err)
 	})
-	defer srv.Shutdown(context.Background())
+	defer func() {
+		_ = srv.Shutdown(context.Background())
+	}()
 
 	go func() {
-		handshakeReq := handshake.NewRequest()
-		var wBuffer xrdenc.WBuffer
-		handshakeReq.MarshalXrd(&wBuffer)
-		p2.Write(wBuffer.Bytes())
-		_, _, err := xrdproto.ReadResponse(p2)
+		var (
+			handshakeReq = handshake.NewRequest()
+			wBuffer      xrdenc.WBuffer
+		)
+		err := handshakeReq.MarshalXrd(&wBuffer)
+		if err != nil {
+			t.Errorf("could not marshal handshake request: %+v", err)
+		}
+		_, err = p2.Write(wBuffer.Bytes())
+		if err != nil {
+			t.Errorf("could not write buffer: %+v", err)
+		}
+		_, _, err = xrdproto.ReadResponse(p2)
 		if err != nil {
 			t.Errorf("unexpected read error: %v", err)
 		}
@@ -261,9 +324,18 @@ func TestServe_Dirlist(t *testing.T) {
 		streamID := [2]byte{0, 2}
 		reqHeader := xrdproto.RequestHeader{RequestID: dirlist.RequestID, StreamID: streamID}
 		wBuffer = xrdenc.WBuffer{}
-		reqHeader.MarshalXrd(&wBuffer)
-		req.MarshalXrd(&wBuffer)
-		p2.Write(wBuffer.Bytes())
+		err = reqHeader.MarshalXrd(&wBuffer)
+		if err != nil {
+			t.Errorf("could not marshal request header: %+v", err)
+		}
+		err = req.MarshalXrd(&wBuffer)
+		if err != nil {
+			t.Errorf("could not marshal request: %+v", err)
+		}
+		_, err = p2.Write(wBuffer.Bytes())
+		if err != nil {
+			t.Errorf("could not write buffer: %+v", err)
+		}
 
 		respHeader, respData, err := xrdproto.ReadResponse(p2)
 		if err != nil {
@@ -289,7 +361,10 @@ func TestServe_Dirlist(t *testing.T) {
 			t.Errorf("wrong response:\ngot = %v\nwant = %v", errorResp, want)
 		}
 
-		srv.Shutdown(context.Background())
+		err = srv.Shutdown(context.Background())
+		if err != nil {
+			t.Errorf("could not shutdown server: %+v", err)
+		}
 	}()
 
 	if err := srv.Serve(listener); err != nil && err != xrootd.ErrServerClosed {

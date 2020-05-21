@@ -50,6 +50,7 @@ func (o *H1D) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
+	_ = data
 	return err
 }
 
@@ -97,6 +98,7 @@ func (o *H2D) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
+	_ = data
 	return err
 }
 
@@ -144,6 +146,7 @@ func (o *P1D) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
+	_ = data
 	return err
 }
 
@@ -204,5 +207,6 @@ func (o *S2D) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
+	_ = data
 	return err
 }

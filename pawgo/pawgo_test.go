@@ -25,7 +25,7 @@ func run(bin string, args ...string) error {
 		return fmt.Errorf(
 			"error running %q:\n%s\nerr: %w",
 			strings.Join(cmd.Args, " "),
-			string(buf.Bytes()),
+			buf.String(),
 			err,
 		)
 	}

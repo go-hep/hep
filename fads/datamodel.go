@@ -25,37 +25,37 @@ type ScalarHt float64
 // rho energy density
 type Rho float64
 
-type mcParticle struct {
-	Pid    int32 // pdg id number
-	Status int32 // particle status
-	IsPU   byte  // 0 or 1 for particles from pile-up interactions
-
-	M1 int // particle 1st mother
-	M2 int // particle 2nd mother
-	D1 int // particle 1st daughter
-	D2 int // particle 2nd daughter
-
-	McCharge int     // particle charge
-	Mass     float64 // particle mass
-
-	Mom fmom.PxPyPzE // particle momentum (px,py,pz,e)
-
-	Pt  float64 // particle transverse momentum
-	Eta float64 // particle pseudo-rapidity
-	Phi float64 // particle azimuthal angle
-
-	Rapidity float64 // particle rapidity
-
-	Pos [4]float64 // particle vertex position (t,x,y,z)
-}
-
-func (mc *mcParticle) P4() fmom.P4 {
-	return &mc.Mom
-}
-
-func (mc *mcParticle) Charge() int32 {
-	return int32(mc.McCharge)
-}
+// type mcParticle struct {
+// 	Pid    int32 // pdg id number
+// 	Status int32 // particle status
+// 	IsPU   byte  // 0 or 1 for particles from pile-up interactions
+//
+// 	M1 int // particle 1st mother
+// 	M2 int // particle 2nd mother
+// 	D1 int // particle 1st daughter
+// 	D2 int // particle 2nd daughter
+//
+// 	McCharge int     // particle charge
+// 	Mass     float64 // particle mass
+//
+// 	Mom fmom.PxPyPzE // particle momentum (px,py,pz,e)
+//
+// 	Pt  float64 // particle transverse momentum
+// 	Eta float64 // particle pseudo-rapidity
+// 	Phi float64 // particle azimuthal angle
+//
+// 	Rapidity float64 // particle rapidity
+//
+// 	Pos [4]float64 // particle vertex position (t,x,y,z)
+// }
+//
+// func (mc *mcParticle) P4() fmom.P4 {
+// 	return &mc.Mom
+// }
+//
+// func (mc *mcParticle) Charge() int32 {
+// 	return int32(mc.McCharge)
+// }
 
 type Photon struct {
 	Mom    fmom.PtEtaPhiM // photon momentum (mass=0.0)

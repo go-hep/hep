@@ -62,7 +62,9 @@ func (stream *istream) read(name string, ptr interface{}) error {
 	if err != nil {
 		return err
 	}
-	defer seekr.Seek(pos, 0)
+	defer func() {
+		_, _ = seekr.Seek(pos, 0)
+	}()
 
 	_, err = seekr.Seek(0, 0)
 	if err != nil {

@@ -142,8 +142,8 @@ func (g *tgraph) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteFastArrayF64(g.y)
 	}
 
-	w.WriteObjectAny(g.funcs)
-	w.WriteObjectAny(g.histo)
+	_ = w.WriteObjectAny(g.funcs)
+	_ = w.WriteObjectAny(g.histo)
 	{
 		w.WriteF64(g.min)
 		w.WriteF64(g.max)

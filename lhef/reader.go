@@ -141,9 +141,10 @@ Loop:
 		}
 	}
 
-	if d.Version >= 2 {
-		// do version-2 specific stuff
-	}
+	// FIXME(sbinet): implement v2 specific stuff
+	// if d.Version >= 2 {
+	// 	// do version-2 specific stuff
+	// }
 
 	err = d.seek(init.End())
 	if err != nil {

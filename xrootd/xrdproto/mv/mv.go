@@ -48,7 +48,7 @@ func (req *Request) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	if fromLen == 0 {
 		fromLen = strings.Index(paths, " ")
 		if fromLen == -1 {
-			return errors.New("xrootd: wrong mv request. Want paths to be separated by ' ', none found.")
+			return errors.New("xrootd: wrong mv request. Want paths to be separated by ' ', none found")
 		}
 	}
 	req.OldPath = string(paths[:fromLen])

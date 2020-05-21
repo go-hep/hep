@@ -215,9 +215,8 @@ func (b *Basket) UnmarshalROOT(r *rbytes.RBuffer) error {
 			b.offsets = rbytes.ResizeI32(b.offsets, n)
 			r.ReadArrayI32(b.offsets)
 			if 20 < flag && flag < 40 {
-				const displacement uint32 = 0xFF000000
 				for i, v := range b.offsets {
-					b.offsets[i] = int32(uint32(v) &^ displacement)
+					b.offsets[i] = int32(uint32(v) &^ rbytes.DisplacementMask)
 				}
 			}
 		}
@@ -258,10 +257,7 @@ func (b *Basket) loadLeaf(entry int64, leaf Leaf) error {
 	} else {
 		offset = int64(b.offsets[int(entry)]) + int64(leaf.Offset())
 	}
-	err := b.rbuf.SetPos(offset)
-	if err != nil {
-		return err
-	}
+	b.rbuf.SetPos(offset)
 	return leaf.readFromBuffer(b.rbuf)
 }
 

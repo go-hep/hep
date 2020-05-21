@@ -13,14 +13,14 @@ const (
 	kByteCountVMask = 0x4000
 	kByteCountMask  = 0x40000000
 
-	kIsOnHeap     = 0x01000000
-	kNotDeleted   = 0x02000000
-	kZombie       = 0x04000000
-	kBitMask      = 0x00ffffff
+	kIsOnHeap = 0x01000000
+	//kNotDeleted   = 0x02000000
+	//kZombie       = 0x04000000
+	//kBitMask      = 0x00ffffff
 	kIsReferenced = 1 << 4
 
 	//baskets
-	kDisplacementMask = 0xFF000000
+	DisplacementMask = 0xFF000000
 )
 
 const (

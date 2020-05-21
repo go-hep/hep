@@ -5,7 +5,6 @@
 package lcio
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -29,7 +28,7 @@ func (data *TrackerData) GetCellID0() int32 { return data.CellID0 }
 func (data *TrackerData) GetCellID1() int32 { return data.CellID1 }
 
 func (tds *TrackerDataContainer) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of TrackerData collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n", tds.Flags)
 	fmt.Fprintf(o, "     LCIO::TRAWBIT_ID1 : %v\n", tds.Flags.Test(BitsTRawID1))
@@ -40,8 +39,8 @@ func (tds *TrackerDataContainer) String() string {
 		head = " [   id   ] |  cellid0 |  cellid1 |   time   | cellid-fields  \n"
 		tail = "------------|----------|----------|----------|----------------\n"
 	)
-	fmt.Fprintf(o, head)
-	fmt.Fprintf(o, tail)
+	o.WriteString(head)
+	o.WriteString(tail)
 	for i := range tds.Data {
 		data := &tds.Data[i]
 		fmt.Fprintf(o,
@@ -52,7 +51,7 @@ func (tds *TrackerDataContainer) String() string {
 			data.Charges,
 		)
 	}
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (*TrackerDataContainer) VersionSio() uint32 {

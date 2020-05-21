@@ -234,7 +234,7 @@ func (s *Server) handleHandshake(conn net.Conn) error {
 func newUnmarshalingErrorResponse(err error) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
 	response := xrdproto.ServerError{
 		Code:    xrdproto.InvalidRequest,
-		Message: fmt.Errorf("An error occurred while parsing the request: %w", err).Error(),
+		Message: fmt.Errorf("xrootd: an error occurred while parsing the request: %w", err).Error(),
 	}
 	return response, xrdproto.Error
 }

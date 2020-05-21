@@ -27,6 +27,7 @@ func (o *Dist0D) UnmarshalBinary(data []byte) (err error) {
 	data = data[8:]
 	o.SumW2 = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
+	_ = data
 	return err
 }
 
@@ -64,6 +65,7 @@ func (o *Dist1D) UnmarshalBinary(data []byte) (err error) {
 	data = data[8:]
 	o.Stats.SumWX2 = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
+	_ = data
 	return err
 }
 
@@ -115,5 +117,6 @@ func (o *Dist2D) UnmarshalBinary(data []byte) (err error) {
 	}
 	o.Stats.SumWXY = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
+	_ = data
 	return err
 }

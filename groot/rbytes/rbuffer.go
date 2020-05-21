@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"sort"
 
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
@@ -109,11 +108,10 @@ func (r *RBuffer) Pos() int64 {
 	return int64(r.r.c) + int64(r.offset)
 }
 
-func (r *RBuffer) SetPos(pos int64) error { return r.setPos(pos) }
-func (r *RBuffer) setPos(pos int64) error {
+func (r *RBuffer) SetPos(pos int64) { r.setPos(pos) }
+func (r *RBuffer) setPos(pos int64) {
 	pos -= int64(r.offset)
 	r.r.c = int(pos)
-	return nil
 }
 
 func (r *RBuffer) Len() int64 {
@@ -144,23 +142,23 @@ func (r *RBuffer) bytes() []byte {
 	return r.r.p[r.r.c:]
 }
 
-func (r *RBuffer) dumpRefs() {
-	fmt.Printf("--- refs ---\n")
-	ids := make([]int64, 0, len(r.refs))
-	for k := range r.refs {
-		ids = append(ids, k)
-	}
-	sort.Sort(int64Slice(ids))
-	for _, id := range ids {
-		fmt.Printf(" id=%4d -> %v\n", id, r.refs[id])
-	}
-}
-
-type int64Slice []int64
-
-func (p int64Slice) Len() int           { return len(p) }
-func (p int64Slice) Less(i, j int) bool { return p[i] < p[j] }
-func (p int64Slice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+// func (r *RBuffer) dumpRefs() {
+// 	fmt.Printf("--- refs ---\n")
+// 	ids := make([]int64, 0, len(r.refs))
+// 	for k := range r.refs {
+// 		ids = append(ids, k)
+// 	}
+// 	sort.Sort(int64Slice(ids))
+// 	for _, id := range ids {
+// 		fmt.Printf(" id=%4d -> %v\n", id, r.refs[id])
+// 	}
+// }
+//
+// type int64Slice []int64
+//
+// func (p int64Slice) Len() int           { return len(p) }
+// func (p int64Slice) Less(i, j int) bool { return p[i] < p[j] }
+// func (p int64Slice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func (r *RBuffer) DumpHex(n int) {
 	buf := r.bytes()
@@ -243,10 +241,7 @@ func (r *RBuffer) ReadBool() bool {
 
 func (r *RBuffer) readBool() bool {
 	v := r.readI8()
-	if v != 0 {
-		return true
-	}
-	return false
+	return v != 0
 }
 
 func (r *RBuffer) ReadU8() uint8 {
@@ -474,7 +469,7 @@ func (r *RBuffer) ReadVersion(class string) (vers int16, pos, n int32) {
 		vers = int16(r.ReadU16())
 	} else {
 		// no byte count. rewind and read version
-		r.SetPos(int64(pos))
+		r.setPos(int64(pos))
 		vers = int16(r.ReadU16())
 	}
 
@@ -510,18 +505,18 @@ func (r *RBuffer) SkipVersion(class string) {
 	}
 }
 
-func (r *RBuffer) chk(pos, count int32) bool {
-	if count <= 0 {
-		return true
-	}
-
-	var (
-		want = int64(pos) + int64(count) + 4
-		got  = r.Pos()
-	)
-
-	return got == want
-}
+//func (r *RBuffer) chk(pos, count int32) bool {
+//	if count <= 0 {
+//		return true
+//	}
+//
+//	var (
+//		want = int64(pos) + int64(count) + 4
+//		got  = r.Pos()
+//	)
+//
+//	return got == want
+//}
 
 func (r *RBuffer) CheckByteCount(pos, count int32, start int64, class string) {
 	if r.err != nil {
@@ -553,8 +548,6 @@ func (r *RBuffer) CheckByteCount(pos, count int32, start int64, class string) {
 		)
 		return
 	}
-
-	return
 }
 
 func (r *RBuffer) SkipObject() {
@@ -577,7 +570,6 @@ func (r *RBuffer) SkipObject() {
 			return
 		}
 	}
-	return
 }
 
 func (r *RBuffer) ReadObject(class string) root.Object {
@@ -616,7 +608,7 @@ func (r *RBuffer) ReadObjectAny() (obj root.Object) {
 	tag64 := int64(tag)
 	switch {
 	case tag64&kClassMask == 0:
-		if tag64 == 0 {
+		if tag64 == kNullTag {
 			return nil
 		}
 		// FIXME(sbinet): tag==1 means "self". not implemented yet.

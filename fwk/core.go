@@ -11,12 +11,6 @@ import (
 	"go-hep.org/x/hep/fwk/fsm"
 )
 
-type statuscode int
-
-func (sc statuscode) Error() string {
-	return fmt.Sprintf("fwk: error code [%d]", int(sc))
-}
-
 // Context is the interface to access context-local data.
 type Context interface {
 	ID() int64      // id of this context (e.g. entry number or some kind of event number)

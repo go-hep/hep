@@ -93,10 +93,10 @@ func (srv *server) gc() {
 	}
 }
 
-func (srv *server) expired(cookie *http.Cookie) bool {
-	now := time.Now()
-	return now.After(cookie.Expires)
-}
+// func (srv *server) expired(cookie *http.Cookie) bool {
+// 	now := time.Now()
+// 	return now.After(cookie.Expires)
+// }
 
 func (srv *server) setCookie(w http.ResponseWriter, r *http.Request) error {
 	srv.mu.Lock()
@@ -151,7 +151,10 @@ func (srv *server) rootHandle(w http.ResponseWriter, r *http.Request) error {
 
 	crutime := time.Now().Unix()
 	h := md5.New()
-	io.WriteString(h, strconv.FormatInt(crutime, 10))
+	_, err := io.WriteString(h, strconv.FormatInt(crutime, 10))
+	if err != nil {
+		return fmt.Errorf("could not hash current time: %w", err)
+	}
 	token := fmt.Sprintf("%x", h.Sum(nil))
 
 	t, err := template.New("upload").Parse(page)
@@ -159,7 +162,10 @@ func (srv *server) rootHandle(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("could not parse HTML template: %w", err)
 	}
 
-	srv.ping(r)
+	err = srv.ping(r)
+	if err != nil {
+		return fmt.Errorf("could not ping ROOT server: %w", err)
+	}
 
 	return t.Execute(w, struct {
 		Token string

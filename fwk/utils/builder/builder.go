@@ -338,10 +338,7 @@ func (b *Builder) genSources() error {
 }
 
 func (f *file) isMain() bool {
-	if f.f.Name.Name == "main" {
-		return true
-	}
-	return false
+	return f.f.Name.Name == "main"
 }
 
 func (f *file) walk(fn func(ast.Node) bool) {

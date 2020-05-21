@@ -5,7 +5,6 @@
 package rtypes
 
 import (
-	"fmt"
 	"reflect"
 	"sync"
 )
@@ -64,14 +63,6 @@ func (f *factory) Get(n string) FactoryFct {
 		return v
 	}
 
-	return fct
-}
-
-func (f *factory) get(n string) FactoryFct {
-	fct := f.Get(n)
-	if fct == nil {
-		panic(fmt.Errorf("rtypes: no factory for type %q", n))
-	}
 	return fct
 }
 

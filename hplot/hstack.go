@@ -190,7 +190,7 @@ func (hs *HStack) hplot(c draw.Canvas, p *plot.Plot, h *H1D, yoffs []float64, hs
 				ymin = trY(yoffs[i])
 			}
 			ymax = c.Min.Y
-			if 0 != sumw+yoffs[i] {
+			if sumw+yoffs[i] != 0 {
 				ymax = trY(yoffs[i] + sumw)
 			}
 			return ymin, ymax

@@ -25,7 +25,6 @@ type tdirectory struct {
 	rvers  int16
 	named  rbase.Named // name+title of this directory
 	parent Directory
-	objs   []root.Object
 	uuid   rbase.UUID
 }
 
@@ -58,7 +57,7 @@ func (dir *tdirectory) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	// FIXME(sbinet): stream list
-	dir.uuid.MarshalROOT(w)
+	_, _ = dir.uuid.MarshalROOT(w)
 
 	return w.SetByteCount(pos, dir.Class())
 }
@@ -73,13 +72,13 @@ func (dir *tdirectory) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	dir.rvers = vers
 
-	dir.named.UnmarshalROOT(r)
+	_ = dir.named.UnmarshalROOT(r)
 	obj := r.ReadObjectAny()
 	if obj != nil {
 		dir.parent = obj.(Directory)
 	}
 	// FIXME(sbinet): stream list
-	dir.uuid.UnmarshalROOT(r)
+	_ = dir.uuid.UnmarshalROOT(r)
 
 	r.CheckByteCount(pos, bcnt, start, dir.Class())
 	return r.Err()
@@ -452,7 +451,7 @@ func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 		cxx := rdict.GoName2Cxx(typename)
 		si, err := dir.StreamerInfo(cxx, -1)
 		if err != nil {
-			si, err = streamerInfoFrom(obj, dir)
+			_, err = streamerInfoFrom(obj, dir)
 			if err != nil {
 				return fmt.Errorf("riofs: could not generate streamer for key %q and type %T: %w", name, obj, err)
 			}
@@ -551,7 +550,7 @@ func (dir *tdirectoryFile) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteI32(int32(dir.seekkeys))
 	}
 
-	dir.dir.uuid.MarshalROOT(w)
+	_, _ = dir.dir.uuid.MarshalROOT(w)
 
 	end := w.Pos()
 
@@ -644,46 +643,46 @@ func (dir *tdirectoryFile) writeKeys() error {
 	return nil
 }
 
-// writeDirHeader overwrites the Directory header record.
-func (dir *tdirectoryFile) writeDirHeader() error {
-	var (
-		err error
-	)
-	dir.mtime = nowUTC()
-
-	nbytes := int32(dir.recordSize(dir.file.version)) + int32(dir.file.nbytesname)
-	key := newKey(dir, dir.Name(), dir.Title(), "TFile", nbytes, dir.file)
-	key.seekkey = dir.seekdir
-	key.seekpdir = dir.file.begin
-
-	buf := rbytes.NewWBuffer(make([]byte, nbytes), nil, 0, nil)
-	buf.WriteString(dir.Name())
-	buf.WriteString(dir.Title())
-	_, err = dir.MarshalROOT(buf)
-	if err != nil {
-		return fmt.Errorf("riofs: could not marshal dir-info: %w", err)
-	}
-
-	key.buf = buf.Bytes()
-	_, err = key.writeFile(dir.file)
-	if err != nil {
-		return fmt.Errorf("riofs: could not write dir-info to file: %w", err)
-	}
-
-	return nil
-}
-
-func (dir *tdirectoryFile) sizeof() int32 {
-	nbytes := int32(22)
-
-	nbytes += datimeSizeof() // ctime
-	nbytes += datimeSizeof() // mtime
-	nbytes += dir.dir.uuid.Sizeof()
-	if dir.file.version >= 40000 {
-		nbytes += 12 // files with >= 2Gb
-	}
-	return nbytes
-}
+// // writeDirHeader overwrites the Directory header record.
+// func (dir *tdirectoryFile) writeDirHeader() error {
+// 	var (
+// 		err error
+// 	)
+// 	dir.mtime = nowUTC()
+//
+// 	nbytes := int32(dir.recordSize(dir.file.version)) + int32(dir.file.nbytesname)
+// 	key := newKey(dir, dir.Name(), dir.Title(), "TFile", nbytes, dir.file)
+// 	key.seekkey = dir.seekdir
+// 	key.seekpdir = dir.file.begin
+//
+// 	buf := rbytes.NewWBuffer(make([]byte, nbytes), nil, 0, nil)
+// 	buf.WriteString(dir.Name())
+// 	buf.WriteString(dir.Title())
+// 	_, err = dir.MarshalROOT(buf)
+// 	if err != nil {
+// 		return fmt.Errorf("riofs: could not marshal dir-info: %w", err)
+// 	}
+//
+// 	key.buf = buf.Bytes()
+// 	_, err = key.writeFile(dir.file)
+// 	if err != nil {
+// 		return fmt.Errorf("riofs: could not write dir-info to file: %w", err)
+// 	}
+//
+// 	return nil
+// }
+//
+// func (dir *tdirectoryFile) sizeof() int32 {
+// 	nbytes := int32(22)
+//
+// 	nbytes += datimeSizeof() // ctime
+// 	nbytes += datimeSizeof() // mtime
+// 	nbytes += dir.dir.uuid.Sizeof()
+// 	if dir.file.version >= 40000 {
+// 		nbytes += 12 // files with >= 2Gb
+// 	}
+// 	return nbytes
+// }
 
 func (dir *tdirectoryFile) records(w io.Writer, indent int) error {
 	hdr := strings.Repeat("  ", indent)

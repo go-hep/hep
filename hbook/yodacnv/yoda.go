@@ -52,10 +52,6 @@ func Read(r io.Reader) ([]hbook.Object, error) {
 			block = append(block, raw...)
 			block = append(block, '\n')
 
-		default:
-			block = append(block, raw...)
-			block = append(block, '\n')
-
 		case bytes.HasPrefix(raw, endYoda):
 			block = append(block, raw...)
 			block = append(block, '\n')
@@ -71,6 +67,10 @@ func Read(r io.Reader) ([]hbook.Object, error) {
 				return nil, err
 			}
 			o = append(o, v.Addr().Interface().(hbook.Object))
+
+		default:
+			block = append(block, raw...)
+			block = append(block, '\n')
 		}
 	}
 	err = scan.Err()

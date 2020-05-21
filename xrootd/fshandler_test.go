@@ -76,7 +76,9 @@ func TestHandler_Dirlist(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(baseDir)
-	defer srv.Shutdown(context.Background())
+	defer func() {
+		_ = srv.Shutdown(context.Background())
+	}()
 
 	file := path.Join(baseDir, "file1.txt")
 	err = ioutil.WriteFile(file, nil, 0777)
@@ -121,7 +123,9 @@ func TestHandler_Dirlist_WhenPathIsInvalid(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(baseDir)
-	defer srv.Shutdown(context.Background())
+	defer func() {
+		_ = srv.Shutdown(context.Background())
+	}()
 
 	cli, err := createClient(addr)
 	if err != nil {
@@ -147,7 +151,9 @@ func TestHandler_Dirlist_With1000Requests(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(baseDir)
-	defer srv.Shutdown(context.Background())
+	defer func() {
+		_ = srv.Shutdown(context.Background())
+	}()
 
 	file := path.Join(baseDir, "file1.txt")
 	err = ioutil.WriteFile(file, nil, 0777)
@@ -168,7 +174,7 @@ func TestHandler_Dirlist_With1000Requests(t *testing.T) {
 			defer wg.Done()
 			_, err := cli.FS().Dirlist(context.Background(), "/")
 			if err != nil {
-				t.Fatalf("could not call Dirlist: %v", err)
+				t.Errorf("could not call Dirlist: %v", err)
 			}
 		}()
 	}
@@ -183,7 +189,9 @@ func BenchmarkHandler_Dirlist(b *testing.B) {
 		b.Fatal(err)
 	}
 	defer os.RemoveAll(baseDir)
-	defer srv.Shutdown(context.Background())
+	defer func() {
+		_ = srv.Shutdown(context.Background())
+	}()
 
 	file := path.Join(baseDir, "file1.txt")
 	err = ioutil.WriteFile(file, nil, 0777)
@@ -280,7 +288,9 @@ func TestHandler_Open(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer os.RemoveAll(baseDir)
-			defer srv.Shutdown(context.Background())
+			defer func() {
+				_ = srv.Shutdown(context.Background())
+			}()
 
 			if tc.createFile {
 				err = ioutil.WriteFile(path.Join(baseDir, tc.file), nil, 0777)
@@ -386,7 +396,9 @@ func TestHandler_Read(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer os.RemoveAll(baseDir)
-			defer srv.Shutdown(context.Background())
+			defer func() {
+				_ = srv.Shutdown(context.Background())
+			}()
 
 			file := path.Join(baseDir, "file1.txt")
 
@@ -480,7 +492,9 @@ func TestHandler_Write(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer os.RemoveAll(baseDir)
-			defer srv.Shutdown(context.Background())
+			defer func() {
+				_ = srv.Shutdown(context.Background())
+			}()
 
 			file := path.Join(baseDir, "file1.txt")
 
@@ -556,7 +570,9 @@ func TestHandler_Stat(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer os.RemoveAll(baseDir)
-			defer srv.Shutdown(context.Background())
+			defer func() {
+				_ = srv.Shutdown(context.Background())
+			}()
 
 			var entry string
 			if tc.isFile {
@@ -659,7 +675,9 @@ func TestHandler_Truncate(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer os.RemoveAll(baseDir)
-			defer srv.Shutdown(context.Background())
+			defer func() {
+				_ = srv.Shutdown(context.Background())
+			}()
 
 			entry := "file1.txt"
 			err = ioutil.WriteFile(path.Join(baseDir, entry), tc.data, 0777)
@@ -736,7 +754,9 @@ func TestHandler_Rename(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer os.RemoveAll(baseDir)
-			defer srv.Shutdown(context.Background())
+			defer func() {
+				_ = srv.Shutdown(context.Background())
+			}()
 
 			oldName := "old.txt"
 			newName := "new.txt"
@@ -812,7 +832,9 @@ func TestHandler_Mkdir(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer os.RemoveAll(baseDir)
-			defer srv.Shutdown(context.Background())
+			defer func() {
+				_ = srv.Shutdown(context.Background())
+			}()
 
 			if tc.createFile {
 				err = os.MkdirAll(path.Join(baseDir, tc.path), os.FileMode(0777))
@@ -875,7 +897,9 @@ func TestHandler_Remove(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer os.RemoveAll(baseDir)
-			defer srv.Shutdown(context.Background())
+			defer func() {
+				_ = srv.Shutdown(context.Background())
+			}()
 
 			if tc.createFile {
 				f, err := os.Create(path.Join(baseDir, tc.path))
@@ -948,7 +972,9 @@ func TestHandler_RemoveDir(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer os.RemoveAll(baseDir)
-			defer srv.Shutdown(context.Background())
+			defer func() {
+				_ = srv.Shutdown(context.Background())
+			}()
 
 			dirPath := path.Join(baseDir, tc.path)
 			if tc.createDir {
@@ -1000,7 +1026,9 @@ func TestHandler_Ping(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(baseDir)
-	defer srv.Shutdown(context.Background())
+	defer func() {
+		_ = srv.Shutdown(context.Background())
+	}()
 
 	cli, err := createClient(addr)
 	if err != nil {

@@ -128,7 +128,7 @@ func (li *List) UnmarshalROOT(r *rbytes.RBuffer) error {
 		n := int(r.ReadU8())
 		if n > 0 {
 			opt := make([]byte, n)
-			io.ReadFull(r, opt)
+			_, _ = io.ReadFull(r, opt)
 			// drop the option on the floor. // FIXME(sbinet)
 		}
 	}

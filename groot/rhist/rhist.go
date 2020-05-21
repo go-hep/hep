@@ -27,8 +27,7 @@ type Axis interface {
 type H1 interface {
 	root.Named
 
-	// FIXME(sbinet): reinstate when rootio is removed
-	// isH1()
+	isH1()
 
 	// Entries returns the number of entries for this histogram.
 	Entries() float64
@@ -48,8 +47,7 @@ type H1 interface {
 type H2 interface {
 	root.Named
 
-	// FIXME(sbinet): reinstate when rootio is removed
-	// isH2()
+	isH2()
 
 	// Entries returns the number of entries for this histogram.
 	Entries() float64

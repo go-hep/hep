@@ -5,7 +5,6 @@
 package lcio
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -36,7 +35,7 @@ func (vtx *Vertex) AlgName() string {
 }
 
 func (vtxs VertexContainer) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of Vertex collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "%v", vtxs.Params)
 
@@ -46,8 +45,8 @@ func (vtxs VertexContainer) String() string {
 		head = " [   id   ] |pri|     alg. type     |    chi2   |    prob.  |       position ( x, y, z)       | [par] |  [idRecP]  \n"
 		tail = "------------|---|-------------------|-----------|-----------|---------------------------------|-------|------------\n"
 	)
-	fmt.Fprintf(o, head)
-	fmt.Fprintf(o, tail)
+	o.WriteString(head)
+	o.WriteString(tail)
 
 	for _, vtx := range vtxs.Vtxs {
 		fmt.Fprintf(o, " [%08d] | %d | %-17s | %+.2e | %+.2e | %+.2e, %+.2e, %+.2e | [%03d] | [%06d]\n",
@@ -59,7 +58,7 @@ func (vtxs VertexContainer) String() string {
 		)
 	}
 
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (*VertexContainer) VersionSio() uint32 {

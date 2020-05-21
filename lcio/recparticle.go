@@ -5,7 +5,6 @@
 package lcio
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -45,7 +44,7 @@ type ParticleID struct {
 }
 
 func (recs *RecParticleContainer) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of ReconstructedParticle collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", recs.Flags, recs.Params)
 
@@ -55,8 +54,8 @@ func (recs *RecParticleContainer) String() string {
 		head = " [   id   ] |com|type|     momentum( px,py,pz)       | energy | mass   | charge  |        position ( x,y,z)      | pidUsed |GoodnessOfPID|\n"
 		tail = "------------|---|----|-------------------------------|--------|--------|---------|-------------------------------|---------|-------------|\n"
 	)
-	fmt.Fprintf(o, head)
-	fmt.Fprintf(o, tail)
+	o.WriteString(head)
+	o.WriteString(tail)
 	for i := range recs.Parts {
 		rec := &recs.Parts[i]
 		compound := 0
@@ -73,7 +72,7 @@ func (recs *RecParticleContainer) String() string {
 			rec.GoodnessOfPID,
 		)
 	}
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (*RecParticleContainer) VersionSio() uint32 {

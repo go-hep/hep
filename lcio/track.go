@@ -5,7 +5,6 @@
 package lcio
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -79,7 +78,7 @@ type TrackState struct {
 }
 
 func (trks *TrackContainer) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of Track collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", trks.Flags, trks.Params)
 	fmt.Fprintf(o, "     LCIO::TRBIT_HITS : %v\n", trks.Flags.Test(BitsClHits))
@@ -90,8 +89,8 @@ func (trks *TrackContainer) String() string {
 		head = " [   id   ] |   type   |    d0    |  phi     | omega    |    z0     | tan lambda|   reference point(x,y,z)        |    dEdx  |  dEdxErr |   chi2   |  ndf   \n"
 		tail = "------------|----------|----------|----------|----------|-----------|-----------|---------------------------------|----------|----------|-------- \n"
 	)
-	fmt.Fprintf(o, head)
-	fmt.Fprintf(o, tail)
+	o.WriteString(head)
+	o.WriteString(tail)
 	for i := range trks.Tracks {
 		trk := &trks.Tracks[i]
 		var ref [3]float32
@@ -107,7 +106,7 @@ func (trks *TrackContainer) String() string {
 		)
 	}
 
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (*TrackContainer) VersionSio() uint32 {

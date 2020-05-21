@@ -198,6 +198,9 @@ func TestRecDirPut(t *testing.T) {
 	display := func() string {
 		o := new(strings.Builder)
 		err := Walk(f, func(path string, obj root.Object, err error) error {
+			if err != nil {
+				return err
+			}
 			name := path[len(f.Name()):]
 			if name == "" {
 				fmt.Fprintf(o, "%s (%s)\n", path, obj.Class())

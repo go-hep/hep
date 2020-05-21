@@ -23,6 +23,7 @@ func (o *Range) UnmarshalBinary(data []byte) (err error) {
 	data = data[8:]
 	o.Max = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
+	_ = data
 	return err
 }
 
@@ -125,6 +126,7 @@ func (o *Binning1D) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
+	_ = data
 	return err
 }
 
@@ -231,6 +233,7 @@ func (o *binningP1D) UnmarshalBinary(data []byte) (err error) {
 	}
 	o.xstep = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
+	_ = data
 	return err
 }
 
@@ -278,6 +281,7 @@ func (o *Bin1D) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
+	_ = data
 	return err
 }
 
@@ -325,6 +329,7 @@ func (o *BinP1D) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
+	_ = data
 	return err
 }
 
@@ -515,6 +520,7 @@ func (o *Binning2D) UnmarshalBinary(data []byte) (err error) {
 			}
 		}
 	}
+	_ = data
 	return err
 }
 
@@ -580,5 +586,6 @@ func (o *Bin2D) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
+	_ = data
 	return err
 }

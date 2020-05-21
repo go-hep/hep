@@ -49,14 +49,14 @@ func (m *Map) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(m.RVersion())
-	m.obj.MarshalROOT(w)
+	_, _ = m.obj.MarshalROOT(w)
 	w.WriteString(m.name)
 
 	w.WriteI32(int32(len(m.tbl)))
 
 	for k, v := range m.tbl {
-		w.WriteObjectAny(k)
-		w.WriteObjectAny(v)
+		_ = w.WriteObjectAny(k)
+		_ = w.WriteObjectAny(v)
 	}
 
 	return w.SetByteCount(pos, m.Class())

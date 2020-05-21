@@ -177,7 +177,9 @@ func TestChainOf(t *testing.T) {
 			if err != nil {
 				t.Fatalf("could not create chain: %v", err)
 			}
-			defer closer()
+			defer func() {
+				_ = closer()
+			}()
 
 			if got, want := chain.Name(), tc.name; got != want {
 				t.Fatalf("names differ\ngot = %q, want= %q", got, want)

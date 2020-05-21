@@ -118,7 +118,7 @@ func (s *baseScanner) loadTree(i int) {
 	for i, v := range s.ibr {
 		name := v.br.Name()
 		br := ch.Branch(name)
-		br.setAddress(v.ptr)
+		_ = br.setAddress(v.ptr)
 		s.ibr[i].br = br
 		s.mbr[i] = br
 		if v.lcnt >= 0 {

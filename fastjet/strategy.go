@@ -13,17 +13,17 @@ type Strategy int
 
 const (
 	N2MinHeapTiledStrategy Strategy = -4
-	N2TiledStrategy                 = -3
-	N2PoorTiledStrategy             = -2
-	N2PlainStrategy                 = -1
-	N3DumbStrategy                  = 0
-	BestStrategy                    = 1
-	NlnNStrategy                    = 2
-	NlnN3piStrategy                 = 3
-	NlnN4piStrategy                 = 4
-	NlnNCam4piStrategy              = 14
-	NlnNCam2pi2RStrategy            = 13
-	NlnNCamStrategy                 = 12
+	N2TiledStrategy        Strategy = -3
+	N2PoorTiledStrategy    Strategy = -2
+	N2PlainStrategy        Strategy = -1
+	N3DumbStrategy         Strategy = 0
+	BestStrategy           Strategy = 1
+	NlnNStrategy           Strategy = 2
+	NlnN3piStrategy        Strategy = 3
+	NlnN4piStrategy        Strategy = 4
+	NlnNCam4piStrategy     Strategy = 14
+	NlnNCam2pi2RStrategy   Strategy = 13
+	NlnNCamStrategy        Strategy = 12
 
 	PluginStrategy Strategy = 999
 )

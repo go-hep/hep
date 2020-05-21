@@ -146,11 +146,13 @@ func Example() {
 		log.Fatalf("cancel request error: %v", err)
 	}
 	fmt.Printf("cancel: %q\n", resp.Data)
+	fmt.Printf("sess:   %s\n", id)
 
 	// Output:
 	// sess:   ccxrootdgotest.in2p3.fr:9001
 	// stage:  "23297f000001"
 	// cancel: ""
+	// sess:   ccxrootdgotest.in2p3.fr:9001
 }
 
 var (

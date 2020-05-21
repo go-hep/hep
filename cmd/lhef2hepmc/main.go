@@ -100,7 +100,10 @@ func main() {
 		evt.LengthUnit = hepmc.MM
 
 		weight := lhevt.XWGTUP
-		evt.Weights.Add("0", weight)
+		err = evt.Weights.Add("0", weight)
+		if err != nil {
+			log.Fatalf("could not add weights: %+v", err)
+		}
 
 		xsecval := -1.0
 		xsecerr := -1.0
@@ -169,7 +172,7 @@ func main() {
 				continue
 			}
 			nmax += 1
-			vtx.AddParticleOut(&hepmc.Particle{
+			err = vtx.AddParticleOut(&hepmc.Particle{
 				Momentum: fmom.NewPxPyPzE(
 					lhevt.PUP[i][0],
 					lhevt.PUP[i][1],
@@ -181,6 +184,9 @@ func main() {
 				Status:        1,
 				Barcode:       3 + i,
 			})
+			if err != nil {
+				log.Fatalf("could not add out-particle: %+v", err)
+			}
 		}
 		err = evt.AddVertex(&vtx)
 		if err != nil {

@@ -5,6 +5,7 @@
 package mux // import "go-hep.org/x/hep/xrootd/internal/mux"
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -93,10 +94,12 @@ func TestMux_ClaimWithID_WhenIDIsTakenByClaimWithID(t *testing.T) {
 	m := New()
 	defer m.Close()
 	streamID := xrdproto.StreamID{13, 14}
-	m.ClaimWithID(streamID)
-
 	_, err := m.ClaimWithID(streamID)
+	if err != nil {
+		t.Fatalf("could not claim stream %v: %+v", streamID, err)
+	}
 
+	_, err = m.ClaimWithID(streamID)
 	if err == nil {
 		t.Fatal("should not be able to ClaimWithID when that id is already claimed")
 	}
@@ -122,7 +125,10 @@ func TestMux_Claim_WhenIDIsTakenByClaimWithID(t *testing.T) {
 	m := New()
 	defer m.Close()
 	takenID := xrdproto.StreamID{0, 0}
-	m.ClaimWithID(takenID)
+	_, err := m.ClaimWithID(takenID)
+	if err != nil {
+		t.Fatalf("could not claim stream %v: %+v", takenID, err)
+	}
 
 	id, channel, err := m.Claim()
 
@@ -149,15 +155,22 @@ func TestMux_SendData_WhenIDIsTaken(t *testing.T) {
 	want := ServerResponse{}
 	var got ServerResponse
 
+	errch := make(chan error)
 	channel, _ := m.ClaimWithID(takenID)
 	go func() {
 		err := m.SendData(takenID, want)
 		if err != nil {
-			t.Fatalf("could not SendData: %v", err)
+			errch <- fmt.Errorf("could not SendData: %w", err)
 		}
 	}()
 
-	got = <-channel
+	select {
+	case got = <-channel:
+	case err := <-errch:
+		if err != nil {
+			t.Fatalf("error: %+v", err)
+		}
+	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid data\ngot = %v\nwant = %v", got, want)
 	}

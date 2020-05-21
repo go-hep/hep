@@ -16,8 +16,10 @@ import (
 	"gonum.org/v1/plot/vg"
 )
 
-var g_persist = flag.Bool("p", false, "lets plot windows survive after hplot exists")
-var g_cmdlist = flag.String("e", "", "executes the requested commands before loading the next input file")
+//var (
+//	persist = flag.Bool("p", false, "lets plot windows survive after hplot exists")
+//	cmdlist = flag.String("e", "", "executes the requested commands before loading the next input file")
+//)
 
 func main() {
 	fmt.Printf(":: welcome to hplot\n")

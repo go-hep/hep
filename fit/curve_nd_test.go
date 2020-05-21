@@ -5,10 +5,6 @@
 package fit_test
 
 import (
-	"bufio"
-	"os"
-	"strconv"
-	"strings"
 	"testing"
 
 	"golang.org/x/exp/rand"
@@ -41,76 +37,4 @@ func genData2D(n0, n1 int, f func(x, ps []float64) float64, ps []float64, x0min,
 
 	}
 	return xdata, ydata
-}
-
-func readData2D(fname string) (xs [][]float64, ys []float64, err error) {
-	f, err := os.Open(fname)
-	if err != nil {
-		return xs, ys, err
-	}
-	defer f.Close()
-
-	scan := bufio.NewScanner(f)
-	for scan.Scan() {
-		line := scan.Text()
-		toks := strings.Split(line, " ")
-		x0, err := strconv.ParseFloat(toks[0], 64)
-		if err != nil {
-			return xs, ys, err
-		}
-
-		x1, err := strconv.ParseFloat(toks[1], 64)
-		if err != nil {
-			return xs, ys, err
-		}
-
-		xs = append(xs, []float64{x0, x1})
-
-		y, err := strconv.ParseFloat(toks[2], 64)
-		if err != nil {
-			return xs, ys, err
-		}
-		ys = append(ys, y)
-	}
-
-	return
-}
-
-func readDataErr2D(fname string) (xs [][]float64, ys, yerrs []float64, err error) {
-	f, err := os.Open(fname)
-	if err != nil {
-		return xs, ys, yerrs, err
-	}
-	defer f.Close()
-
-	scan := bufio.NewScanner(f)
-	for scan.Scan() {
-		line := scan.Text()
-		toks := strings.Split(line, " ")
-		x0, err := strconv.ParseFloat(toks[0], 64)
-		if err != nil {
-			return xs, ys, yerrs, err
-		}
-
-		x1, err := strconv.ParseFloat(toks[1], 64)
-		if err != nil {
-			return xs, ys, yerrs, err
-		}
-
-		xs = append(xs, []float64{x0, x1})
-
-		y, err := strconv.ParseFloat(toks[2], 64)
-		if err != nil {
-			return xs, ys, yerrs, err
-		}
-		ys = append(ys, y)
-
-		yerr, err := strconv.ParseFloat(toks[2], 64)
-		if err != nil {
-			return xs, ys, yerrs, err
-		}
-		yerrs = append(yerrs, yerr)
-	}
-
-	return
 }

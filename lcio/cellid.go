@@ -5,15 +5,13 @@
 package lcio
 
 import (
-	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
 )
 
 const (
-	defaultCellEncoding = "byte0:8,byte1:8,byte2:8,byte3:8,byte4:8,byte5:8,byte6:8,byte7:8"
-	cellIDEncoding      = "CellIDEncoding"
+	cellIDEncoding = "CellIDEncoding"
 )
 
 // CellIDDecoder decodes cell IDs from a Hit cell-ID
@@ -60,7 +58,6 @@ type bitField64 struct {
 	fields []bitFieldValue
 	value  int64
 	index  map[string]int
-	joined int64
 }
 
 func newBitField64(codec string) *bitField64 {
@@ -110,7 +107,7 @@ func newBitField64(codec string) *bitField64 {
 }
 
 func (bf *bitField64) Description() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	for i, v := range bf.fields {
 		format := "%s:%d:%d"
 		if i != 0 {
@@ -122,11 +119,11 @@ func (bf *bitField64) Description() string {
 		}
 		fmt.Fprintf(o, format, v.name, v.offset, width)
 	}
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (bf *bitField64) valueString() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	for i, v := range bf.fields {
 		format := "%s:%d"
 		if i != 0 {
@@ -134,7 +131,7 @@ func (bf *bitField64) valueString() string {
 		}
 		fmt.Fprintf(o, format, v.name, v.value())
 	}
-	return string(o.Bytes())
+	return o.String()
 }
 
 type bitFieldValue struct {
@@ -143,8 +140,6 @@ type bitFieldValue struct {
 	name   string
 	offset int
 	width  int
-	min    int
-	max    int
 	signed bool
 }
 

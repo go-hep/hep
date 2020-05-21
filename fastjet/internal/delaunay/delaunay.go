@@ -20,7 +20,6 @@ type Delaunay struct {
 	// root is a triangle that contains all points. It is used as the starting point in the hierarchy
 	// to locate a point. The variable root's nil-ness also indicates which method to use to locate a point.
 	root *Triangle
-	r    *rand.Rand
 	n    int // n is the number of points inserted. It is used to assign the id to points.
 }
 

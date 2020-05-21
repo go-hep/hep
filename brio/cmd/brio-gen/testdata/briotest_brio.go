@@ -213,6 +213,7 @@ func (o *Hist) UnmarshalBinary(data []byte) (err error) {
 	data = data[1:]
 	o.myu16 = U16(binary.LittleEndian.Uint16(data[:2]))
 	data = data[2:]
+	_ = data
 	return err
 }
 
@@ -232,5 +233,6 @@ func (o *Bin) UnmarshalBinary(data []byte) (err error) {
 	data = data[8:]
 	o.y = float64(math.Float64frombits(binary.LittleEndian.Uint64(data[:8])))
 	data = data[8:]
+	_ = data
 	return err
 }

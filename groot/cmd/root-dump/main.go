@@ -36,6 +36,8 @@
 //   $> root-dump -deep=0 ./testdata/small-flat-tree.root
 //
 //  options:
+//    -cpu-profile string
+//      	path to CPU profile output file
 //    -deep
 //      	enable deep dumping of values (including Trees' entries) (default true)
 //    -name string
@@ -51,6 +53,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"runtime/pprof"
 
 	"go-hep.org/x/hep/groot/rcmd"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
@@ -60,6 +63,7 @@ import (
 var (
 	deepFlag = flag.Bool("deep", true, "enable deep dumping of values (including Trees' entries)")
 	nameFlag = flag.String("name", "", "regex of object names to dump")
+	cpuFlag  = flag.String("cpu-profile", "", "path to CPU profile output file")
 )
 
 func main() {
@@ -88,6 +92,18 @@ options:
 	if flag.NArg() == 0 {
 		flag.Usage()
 		log.Fatalf("need at least one input ROOT file")
+	}
+
+	if *cpuFlag != "" {
+		f, err := os.Create(*cpuFlag)
+		if err != nil {
+			log.Fatalf("%+v", err)
+		}
+		err = pprof.StartCPUProfile(f)
+		if err != nil {
+			log.Fatalf("could not start CPU profiling: %+v", err)
+		}
+		defer pprof.StopCPUProfile()
 	}
 
 	out := bufio.NewWriter(os.Stdout)

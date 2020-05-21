@@ -155,7 +155,9 @@ func testFileSystem_RemoveFile(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveAll(context.Background(), dir)
+	defer func() {
+		_ = fs.RemoveAll(context.Background(), dir)
+	}()
 	filePath := path.Join(dir, fileName)
 
 	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsDelete)
@@ -213,7 +215,9 @@ func testFileSystem_Truncate(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveAll(context.Background(), dir)
+	defer func() {
+		_ = fs.RemoveAll(context.Background(), dir)
+	}()
 	filePath := path.Join(dir, fileName)
 
 	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsNew)
@@ -372,7 +376,9 @@ func testFileSystem_RemoveDir(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveDir(context.Background(), parent)
+	defer func() {
+		_ = fs.RemoveDir(context.Background(), parent)
+	}()
 	dir := path.Join(parent, dirName)
 
 	err = fs.Mkdir(context.Background(), dir, xrdfs.OpenModeOwnerRead|xrdfs.OpenModeOwnerWrite)
@@ -441,7 +447,9 @@ func TestFileSystem_RemoveAll(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer fs.RemoveAll(context.Background(), parent)
+			defer func() {
+				_ = fs.RemoveAll(context.Background(), parent)
+			}()
 			dir := path.Join(parent, dirName)
 
 			err = fs.Mkdir(context.Background(), dir, xrdfs.OpenModeOwnerRead|xrdfs.OpenModeOwnerWrite)
@@ -498,12 +506,14 @@ func testFileSystem_Rename(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveAll(context.Background(), parent)
 	oldpath := path.Join(parent, oldName)
 	newpath := path.Join(parent, newName)
 
-	defer fs.RemoveDir(context.Background(), oldpath)
-	defer fs.RemoveDir(context.Background(), newpath)
+	defer func() {
+		_ = fs.RemoveDir(context.Background(), newpath)
+		_ = fs.RemoveDir(context.Background(), oldpath)
+		_ = fs.RemoveAll(context.Background(), parent)
+	}()
 
 	err = fs.Mkdir(context.Background(), oldpath, xrdfs.OpenModeOwnerRead|xrdfs.OpenModeOwnerWrite)
 	if err != nil {
@@ -578,7 +588,9 @@ func testFileSystem_Chmod(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveAll(context.Background(), parent)
+	defer func() {
+		_ = fs.RemoveAll(context.Background(), parent)
+	}()
 	file := path.Join(parent, name)
 
 	f, err := fs.Open(context.Background(), file, oldPerm, xrdfs.OpenOptionsNew)
@@ -589,7 +601,9 @@ func testFileSystem_Chmod(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatalf("could not close file: %v", err)
 	}
-	defer fs.RemoveFile(context.Background(), file)
+	defer func() {
+		_ = fs.RemoveFile(context.Background(), file)
+	}()
 
 	s, err := fs.Stat(context.Background(), file)
 	if err != nil {

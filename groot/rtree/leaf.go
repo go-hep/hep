@@ -167,14 +167,14 @@ func (leaf *tleaf) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.RVersion())
-	leaf.named.MarshalROOT(w)
+	_, _ = leaf.named.MarshalROOT(w)
 
 	w.WriteI32(int32(leaf.len))
 	w.WriteI32(int32(leaf.etype))
 	w.WriteI32(int32(leaf.offset))
 	w.WriteBool(leaf.hasrange)
 	w.WriteBool(leaf.unsigned)
-	w.WriteObjectAny(leaf.count)
+	_ = w.WriteObjectAny(leaf.count)
 	return w.SetByteCount(pos, leaf.Class())
 }
 
@@ -290,7 +290,7 @@ func (leaf *tleafElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.rvers)
-	leaf.tleaf.MarshalROOT(w)
+	_, _ = leaf.tleaf.MarshalROOT(w)
 	w.WriteI32(leaf.id)
 	w.WriteI32(leaf.ltype)
 
@@ -306,10 +306,7 @@ func (leaf *tleafElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
-	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
-		return err
-	}
-
+	_ = leaf.tleaf.UnmarshalROOT(r)
 	leaf.id = r.ReadI32()
 	leaf.ltype = r.ReadI32()
 

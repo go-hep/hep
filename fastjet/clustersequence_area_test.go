@@ -4,6 +4,8 @@
 
 package fastjet_test
 
+/* FIXME
+
 import (
 	"bufio"
 	"fmt"
@@ -149,3 +151,4 @@ func loadRefAreas(name string) ([][5]float64, error) {
 	}
 	return refs, nil
 }
+*/

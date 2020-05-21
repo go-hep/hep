@@ -121,7 +121,7 @@ func Encode(w io.Writer, data *SLHA) error {
 			continue
 		}
 
-		_, err = fmt.Fprintf(w, decayHeader)
+		_, err = w.Write([]byte(decayHeader))
 		if err != nil {
 			return err
 		}

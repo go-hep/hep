@@ -5,7 +5,6 @@
 package lcio
 
 import (
-	"bytes"
 	"fmt"
 	"reflect"
 	"strings"
@@ -30,7 +29,7 @@ type FloatVec struct {
 }
 
 func (vec FloatVec) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of LCFloatVec collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", vec.Flags, vec.Params)
 	fmt.Fprintf(o, "\n")
@@ -39,8 +38,8 @@ func (vec FloatVec) String() string {
 		head = " [   id   ] | val0, val1, ...\n"
 		tail = "------------|----------------\n"
 	)
-	fmt.Fprintf(o, head)
-	fmt.Fprintf(o, tail)
+	o.WriteString(head)
+	o.WriteString(tail)
 	for i, slice := range vec.Elements {
 		fmt.Fprintf(o, "[%09d] |",
 			ID(&vec.Elements[i]),
@@ -56,8 +55,8 @@ func (vec FloatVec) String() string {
 		}
 		fmt.Fprintf(o, "\n")
 	}
-	fmt.Fprintf(o, tail)
-	return string(o.Bytes())
+	o.WriteString(tail)
+	return o.String()
 }
 
 func (*FloatVec) VersionSio() uint32 {
@@ -110,7 +109,7 @@ type IntVec struct {
 }
 
 func (vec IntVec) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of LCIntVec collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", vec.Flags, vec.Params)
 	fmt.Fprintf(o, "\n")
@@ -119,8 +118,8 @@ func (vec IntVec) String() string {
 		head = " [   id   ] | val0, val1, ...\n"
 		tail = "------------|----------------\n"
 	)
-	fmt.Fprintf(o, head)
-	fmt.Fprintf(o, tail)
+	o.WriteString(head)
+	o.WriteString(tail)
 	for i, slice := range vec.Elements {
 		fmt.Fprintf(o, "[%09d] |",
 			ID(&vec.Elements[i]),
@@ -136,8 +135,8 @@ func (vec IntVec) String() string {
 		}
 		fmt.Fprintf(o, "\n")
 	}
-	fmt.Fprintf(o, tail)
-	return string(o.Bytes())
+	o.WriteString(tail)
+	return o.String()
 }
 
 func (*IntVec) VersionSio() uint32 {
@@ -190,7 +189,7 @@ type StrVec struct {
 }
 
 func (vec StrVec) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of LCStrVec collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", vec.Flags, vec.Params)
 	fmt.Fprintf(o, "\n")
@@ -199,8 +198,8 @@ func (vec StrVec) String() string {
 		head = " [   id   ] | val0, val1, ...\n"
 		tail = "------------|----------------\n"
 	)
-	fmt.Fprintf(o, head)
-	fmt.Fprintf(o, tail)
+	o.WriteString(head)
+	o.WriteString(tail)
 	for i, slice := range vec.Elements {
 		fmt.Fprintf(o, "[%09d] |",
 			ID(&vec.Elements[i]),
@@ -216,8 +215,8 @@ func (vec StrVec) String() string {
 		}
 		fmt.Fprintf(o, "\n")
 	}
-	fmt.Fprintf(o, tail)
-	return string(o.Bytes())
+	o.WriteString(tail)
+	return o.String()
 }
 
 func (*StrVec) VersionSio() uint32 {
@@ -276,7 +275,7 @@ type GenericObjectData struct {
 }
 
 func (obj GenericObject) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of LCGenericObject collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v\n", obj.Flag, obj.Params)
 	fmt.Fprintf(o, " [   id   ] ")
@@ -302,11 +301,11 @@ func (obj GenericObject) String() string {
 		fmt.Fprintf(o, "%v\n", data)
 		fmt.Fprintf(o, "%s\n", tail)
 	}
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (obj *GenericObjectData) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "[%09d] ", ID(obj))
 	for _, v := range obj.I32s {
 		fmt.Fprintf(o, "i:%d; ", v)
@@ -317,7 +316,7 @@ func (obj *GenericObjectData) String() string {
 	for _, v := range obj.F64s {
 		fmt.Fprintf(o, "d:%f; ", v)
 	}
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (*GenericObject) VersionSio() uint32 {
@@ -427,7 +426,7 @@ type Relation struct {
 }
 
 func (rc RelationContainer) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of LCRelation collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v\n", rc.Flags, rc.Params)
 
@@ -436,8 +435,8 @@ func (rc RelationContainer) String() string {
 		tail   = "-------------|-------------|---------\n"
 	)
 
-	fmt.Fprintf(o, "%s", header)
-	fmt.Fprintf(o, "%s", tail)
+	o.WriteString(header)
+	o.WriteString(tail)
 	for _, rel := range rc.Rels {
 		fmt.Fprintf(o,
 			" [%09d] | [%09d] | %.2e\n",
@@ -446,7 +445,7 @@ func (rc RelationContainer) String() string {
 			rel.Weight,
 		)
 	}
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (*RelationContainer) VersionSio() uint32 {

@@ -20,7 +20,7 @@ import (
 func TestReadRequest(t *testing.T) {
 	header := make([]byte, RequestHeaderLength+16+4)
 	data := make([]byte, 10)
-	rand.Read(data)
+	_, _ = rand.Read(data)
 	binary.BigEndian.PutUint32(header[RequestHeaderLength+16:], 10)
 
 	for _, tc := range []struct {
@@ -69,7 +69,7 @@ func TestReadRequest(t *testing.T) {
 func TestReadResponse(t *testing.T) {
 	header := make([]byte, RequestHeaderLength+16+4)
 	data := make([]byte, 10)
-	rand.Read(data)
+	_, _ = rand.Read(data)
 	binary.BigEndian.PutUint32(header[RequestHeaderLength+16:], 10)
 
 	for _, tc := range []struct {
@@ -124,7 +124,7 @@ func TestReadResponse(t *testing.T) {
 func TestWriteResponse(t *testing.T) {
 	header := make([]byte, RequestHeaderLength+16+4)
 	data := make([]byte, 10)
-	rand.Read(data)
+	_, _ = rand.Read(data)
 	binary.BigEndian.PutUint32(header[RequestHeaderLength+16:], 10)
 
 	for _, tc := range []struct {

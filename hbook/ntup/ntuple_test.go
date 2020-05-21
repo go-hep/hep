@@ -488,7 +488,7 @@ func TestScanInvalid(t *testing.T) {
 		},
 		{
 			name: "2-arity",
-			fct:  func() (error, int) { return nil, 1 },
+			fct:  func() (int, error) { return 1, nil },
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -558,11 +558,10 @@ func TestCreateFromStruct(t *testing.T) {
 	defer db.Close()
 
 	type dataType struct {
-		I   int64
-		F   float64
-		FF  float64 `rio:"ff" hbook:"-"`
-		S   string  `rio:"STR" hbook:"str"`
-		not string
+		I  int64
+		F  float64
+		FF float64 `rio:"ff" hbook:"-"`
+		S  string  `rio:"STR" hbook:"str"`
 	}
 
 	const ntname = "ntup"

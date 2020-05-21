@@ -427,32 +427,32 @@ func (k *Key) load(buf []byte) ([]byte, error) {
 	return buf, nil
 }
 
-func (k *Key) store() error {
-	if k.buf != nil {
-		return nil
-	}
-
-	k.keylen = k.sizeof()
-
-	buf := rbytes.NewWBuffer(make([]byte, k.objlen), nil, uint32(k.keylen), k.f)
-	_, err := k.obj.(rbytes.Marshaler).MarshalROOT(buf)
-	if err != nil {
-		return err
-	}
-	k.objlen = int32(len(buf.Bytes()))
-	k.buf, err = rcompress.Compress(nil, buf.Bytes(), k.f.compression)
-	if err != nil {
-		return err
-	}
-	nbytes := int32(len(k.buf))
-	k.nbytes = k.keylen + nbytes
-
-	if k.seekkey <= 0 {
-		panic("impossible: seekkey <= 0")
-	}
-
-	return nil
-}
+// func (k *Key) store() error {
+// 	if k.buf != nil {
+// 		return nil
+// 	}
+//
+// 	k.keylen = k.sizeof()
+//
+// 	buf := rbytes.NewWBuffer(make([]byte, k.objlen), nil, uint32(k.keylen), k.f)
+// 	_, err := k.obj.(rbytes.Marshaler).MarshalROOT(buf)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	k.objlen = int32(len(buf.Bytes()))
+// 	k.buf, err = rcompress.Compress(nil, buf.Bytes(), k.f.compression)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	nbytes := int32(len(k.buf))
+// 	k.nbytes = k.keylen + nbytes
+//
+// 	if k.seekkey <= 0 {
+// 		panic("impossible: seekkey <= 0")
+// 	}
+//
+// 	return nil
+// }
 
 func (k *Key) isCompressed() bool {
 	return k.objlen != k.nbytes-k.keylen

@@ -89,12 +89,8 @@ func (jet *Jet) Constituents() []Jet {
 
 // Distance returns the squared cylinder (rapidity-phi) distance between 2 jets
 func Distance(j1, j2 *Jet) float64 {
-	//dphi := deltaPhi(j1, j2)
-	dphi := math.Abs(j1.Phi() - j2.Phi())
-	if dphi > math.Pi {
-		dphi = 2*math.Pi - dphi
-	}
-	drap := j1.Rapidity() - j2.Rapidity()
+	dphi := deltaPhi(j1, j2)
+	drap := deltaRap(j1, j2)
 	return dphi*dphi + drap*drap
 }
 

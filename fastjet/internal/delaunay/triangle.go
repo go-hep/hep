@@ -31,7 +31,7 @@ func NewTriangle(a, b, c *Point) *Triangle {
 	case predicates.CW:
 		a, b = b, a
 	case predicates.Colinear:
-		panic(fmt.Errorf("delaunay: Can't form triangle, because Points a%v, b%v and c%v are colinear.", a, b, c))
+		panic(fmt.Errorf("delaunay: Can't form triangle, because Points a%v, b%v and c%v are colinear", a, b, c))
 	}
 	return &Triangle{
 		A: a,

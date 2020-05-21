@@ -5,7 +5,6 @@
 package lcio
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -35,7 +34,7 @@ func (hit *SimTrackerHit) GetCellID0() int32 { return hit.CellID0 }
 func (hit *SimTrackerHit) GetCellID1() int32 { return hit.CellID1 }
 
 func (hits SimTrackerHitContainer) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of SimTrackerHit collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", hits.Flags, hits.Params)
 	fmt.Fprintf(o, "     LCIO::THBIT_BARREL   : %v\n", hits.Flags.Test(BitsThBarrel))
@@ -50,8 +49,8 @@ func (hits SimTrackerHitContainer) String() string {
 		head = " [   id   ] |cellId0 |cellId1 |  position (x,y,z)               |   EDep   |   time   |  PDG  |        (px,  py, pz)          | path-len | Quality \n"
 		tail = "------------|--------|--------|---------------------------------|----------|----------|-------|-------------------------------|----------|---------\n"
 	)
-	fmt.Fprintf(o, head)
-	fmt.Fprintf(o, tail)
+	o.WriteString(head)
+	o.WriteString(tail)
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
 		var pdg int32 = 0
@@ -73,8 +72,8 @@ func (hits SimTrackerHitContainer) String() string {
 			fmt.Fprintf(o, "        id-fields: (%s)\n", dec.ValueString(hit))
 		}
 	}
-	fmt.Fprintf(o, tail)
-	return string(o.Bytes())
+	o.WriteString(tail)
+	return o.String()
 }
 
 func (*SimTrackerHitContainer) VersionSio() uint32 {

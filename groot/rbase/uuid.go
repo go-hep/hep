@@ -35,7 +35,7 @@ func (uuid *UUID) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 	pos := w.Pos()
 	w.WriteU16(uint16(uuid.RVersion()))
-	w.Write((*uuid)[:])
+	_, _ = w.Write((*uuid)[:])
 	end := w.Pos()
 
 	return int(end - pos), w.Err()
@@ -57,7 +57,7 @@ func (uuid *UUID) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	_ = r.ReadU16() // version
-	r.Read((*uuid)[:])
+	_, _ = r.Read((*uuid)[:])
 
 	return r.Err()
 }

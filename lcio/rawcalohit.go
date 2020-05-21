@@ -5,7 +5,6 @@
 package lcio
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -20,7 +19,7 @@ type RawCalorimeterHitContainer struct {
 }
 
 func (hits RawCalorimeterHitContainer) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of RawCalorimeterHit collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", hits.Flags, hits.Params)
 	fmt.Fprintf(o, "     LCIO::RCHBIT_ID1    : %v\n", hits.Flags.Test(BitsRChID1))
@@ -33,8 +32,8 @@ func (hits RawCalorimeterHitContainer) String() string {
 		head = " [   id   ] |  cellId0 ( M, S, I, J, K) |cellId1 | amplitude |  time  \n"
 		tail = "------------|---------------------------|--------|-----------|---------\n"
 	)
-	fmt.Fprintf(o, head)
-	fmt.Fprintf(o, tail)
+	o.WriteString(head)
+	o.WriteString(tail)
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
 		fmt.Fprintf(o, "[%09d] |%08d%19s|%08d|%10d |%8d\n", ID(hit), hit.CellID0, "", hit.CellID1, hit.Amplitude, hit.TimeStamp)
@@ -45,8 +44,8 @@ func (hits RawCalorimeterHitContainer) String() string {
 		}
 		fmt.Fprintf(o, "\n")
 	}
-	fmt.Fprintf(o, tail)
-	return string(o.Bytes())
+	o.WriteString(tail)
+	return o.String()
 }
 
 func (*RawCalorimeterHitContainer) VersionSio() uint32 {

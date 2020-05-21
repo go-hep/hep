@@ -298,6 +298,7 @@ func (o *T1) UnmarshalBinary(data []byte) (err error) {
 	data = data[8:]
 	o.myU16 = U16(binary.LittleEndian.Uint16(data[:2]))
 	data = data[2:]
+	_ = data
 	return err
 }
 
@@ -313,6 +314,7 @@ func (o *T2) MarshalBinary() (data []byte, err error) {
 func (o *T2) UnmarshalBinary(data []byte) (err error) {
 	o.ID = int64(binary.LittleEndian.Uint64(data[:8]))
 	data = data[8:]
+	_ = data
 	return err
 }
 
@@ -342,5 +344,6 @@ func (o *T3) UnmarshalBinary(data []byte) (err error) {
 		}
 		data = data[n:]
 	}
+	_ = data
 	return err
 }

@@ -81,7 +81,7 @@ func (input *InputStreamer) Read(ctx fwk.Context) error {
 	}
 
 	if len(recs) != len(input.ports) {
-		return fmt.Errorf("fwk.rio: expected inputs: %d. got: %d.", len(input.ports), len(recs))
+		return fmt.Errorf("fwk.rio: expected inputs: %d, got: %d", len(input.ports), len(recs))
 	}
 
 	return nil

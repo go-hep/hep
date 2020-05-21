@@ -581,7 +581,7 @@ func TestPlotH1(t *testing.T) {
 			}
 
 			if *cmpimg.GenerateTestData {
-				ioutil.WriteFile(tc.want, raw, 0644)
+				_ = ioutil.WriteFile(tc.want, raw, 0644)
 			}
 
 			want, err := ioutil.ReadFile(tc.want)
@@ -594,7 +594,7 @@ func TestPlotH1(t *testing.T) {
 				typ = "png"
 			}
 			if ok, err := cmpimg.Equal(typ, raw, want); !ok || err != nil {
-				ioutil.WriteFile(strings.Replace(tc.want, "_golden", "", -1), raw, 0644)
+				_ = ioutil.WriteFile(strings.Replace(tc.want, "_golden", "", -1), raw, 0644)
 				t.Fatalf("reference files differ: err=%v ok=%v", err, ok)
 			}
 		})
@@ -709,7 +709,7 @@ func TestPlotH2(t *testing.T) {
 			}
 
 			if *cmpimg.GenerateTestData {
-				ioutil.WriteFile(tc.want, raw, 0644)
+				_ = ioutil.WriteFile(tc.want, raw, 0644)
 			}
 
 			want, err := ioutil.ReadFile(tc.want)
@@ -722,7 +722,7 @@ func TestPlotH2(t *testing.T) {
 				typ = "png"
 			}
 			if ok, err := cmpimg.Equal(typ, raw, want); !ok || err != nil {
-				ioutil.WriteFile(strings.Replace(tc.want, "_golden", "", -1), raw, 0644)
+				_ = ioutil.WriteFile(strings.Replace(tc.want, "_golden", "", -1), raw, 0644)
 				t.Fatalf("reference files differ: err=%v ok=%v", err, ok)
 			}
 		})
@@ -840,7 +840,7 @@ func TestPlotS2(t *testing.T) {
 			}
 
 			if *cmpimg.GenerateTestData {
-				ioutil.WriteFile(tc.want, raw, 0644)
+				_ = ioutil.WriteFile(tc.want, raw, 0644)
 			}
 
 			want, err := ioutil.ReadFile(tc.want)
@@ -853,7 +853,7 @@ func TestPlotS2(t *testing.T) {
 				typ = "png"
 			}
 			if ok, err := cmpimg.Equal(typ, raw, want); !ok || err != nil {
-				ioutil.WriteFile(strings.Replace(tc.want, "_golden", "", -1), raw, 0644)
+				_ = ioutil.WriteFile(strings.Replace(tc.want, "_golden", "", -1), raw, 0644)
 				t.Fatalf("reference files differ: err=%v ok=%v", err, ok)
 			}
 		})
@@ -949,7 +949,7 @@ func TestPlotTree(t *testing.T) {
 			}
 
 			if *cmpimg.GenerateTestData {
-				ioutil.WriteFile(tc.want, raw, 0644)
+				_ = ioutil.WriteFile(tc.want, raw, 0644)
 			}
 
 			want, err := ioutil.ReadFile(tc.want)
@@ -962,7 +962,7 @@ func TestPlotTree(t *testing.T) {
 				typ = "png"
 			}
 			if ok, err := cmpimg.Equal(typ, raw, want); !ok || err != nil {
-				ioutil.WriteFile(strings.Replace(tc.want, "_golden", "", -1), raw, 0644)
+				_ = ioutil.WriteFile(strings.Replace(tc.want, "_golden", "", -1), raw, 0644)
 				t.Fatalf("reference files differ: err=%v ok=%v", err, ok)
 			}
 		})

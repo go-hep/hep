@@ -589,7 +589,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				fptr := rf.Addr().Interface().(*[]int16)
 				return func(r *rbytes.RBuffer) error {
 					var hdr [6]byte
-					r.Read(hdr[:])
+					_, _ = r.Read(hdr[:])
 					n := int(r.ReadI32())
 					*fptr = rbytes.ResizeI16(*fptr, n)
 					if n > 0 {
@@ -604,7 +604,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				fptr := rf.Addr().Interface().(*[]int32)
 				return func(r *rbytes.RBuffer) error {
 					var hdr [6]byte
-					r.Read(hdr[:])
+					_, _ = r.Read(hdr[:])
 					n := int(r.ReadI32())
 					*fptr = rbytes.ResizeI32(*fptr, n)
 					if n > 0 {
@@ -619,7 +619,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				fptr := rf.Addr().Interface().(*[]int64)
 				return func(r *rbytes.RBuffer) error {
 					var hdr [6]byte
-					r.Read(hdr[:])
+					_, _ = r.Read(hdr[:])
 					n := int(r.ReadI32())
 					*fptr = rbytes.ResizeI64(*fptr, n)
 					if n > 0 {
@@ -634,7 +634,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				fptr := rf.Addr().Interface().(*[]float32)
 				return func(r *rbytes.RBuffer) error {
 					var hdr [6]byte
-					r.Read(hdr[:])
+					_, _ = r.Read(hdr[:])
 					n := int(r.ReadI32())
 					*fptr = rbytes.ResizeF32(*fptr, n)
 					if n > 0 {
@@ -649,7 +649,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				fptr := rf.Addr().Interface().(*[]float64)
 				return func(r *rbytes.RBuffer) error {
 					var hdr [6]byte
-					r.Read(hdr[:])
+					_, _ = r.Read(hdr[:])
 					n := int(r.ReadI32())
 					*fptr = rbytes.ResizeF64(*fptr, n)
 					if n > 0 {
@@ -664,7 +664,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				fptr := rf.Addr().Interface().(*[]uint16)
 				return func(r *rbytes.RBuffer) error {
 					var hdr [6]byte
-					r.Read(hdr[:])
+					_, _ = r.Read(hdr[:])
 					n := int(r.ReadI32())
 					*fptr = rbytes.ResizeU16(*fptr, n)
 					if n > 0 {
@@ -679,7 +679,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				fptr := rf.Addr().Interface().(*[]uint32)
 				return func(r *rbytes.RBuffer) error {
 					var hdr [6]byte
-					r.Read(hdr[:])
+					_, _ = r.Read(hdr[:])
 					n := int(r.ReadI32())
 					*fptr = rbytes.ResizeU32(*fptr, n)
 					if n > 0 {
@@ -694,7 +694,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				fptr := rf.Addr().Interface().(*[]uint64)
 				return func(r *rbytes.RBuffer) error {
 					var hdr [6]byte
-					r.Read(hdr[:])
+					_, _ = r.Read(hdr[:])
 					n := int(r.ReadI32())
 					*fptr = rbytes.ResizeU64(*fptr, n)
 					if n > 0 {
@@ -709,7 +709,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 				fptr := rf.Addr().Interface().(*[]bool)
 				return func(r *rbytes.RBuffer) error {
 					var hdr [6]byte
-					r.Read(hdr[:])
+					_, _ = r.Read(hdr[:])
 					n := int(r.ReadI32())
 					*fptr = rbytes.ResizeBool(*fptr, n)
 					if n > 0 {
@@ -756,7 +756,7 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 						}
 						sli := fptr.Elem()
 						for i := 0; i < n; i++ {
-							felt(r)
+							_ = felt(r)
 							sli.Index(i).Set(eptr.Elem())
 						}
 

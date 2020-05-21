@@ -31,7 +31,7 @@ func NewScanner(r *Reader) *Scanner {
 		r:      r,
 		err:    nil,
 		rec:    newRecord("<N/A>", 0),
-		filter: make(map[string]Selector, 0),
+		filter: make(map[string]Selector),
 	}
 	scan.rec.unpack = false
 	scan.rec.r = r

@@ -65,10 +65,13 @@ func Example_mkdir() {
 	}
 	defer r.Close()
 
-	riofs.Walk(r, func(path string, obj root.Object, err error) error {
+	err = riofs.Walk(r, func(path string, obj root.Object, err error) error {
 		fmt.Printf(">> %v\n", path)
 		return err
 	})
+	if err != nil {
+		log.Fatalf("could not walk ROOT file: %+v", err)
+	}
 
 	// Output:
 	// >> ../testdata/subdirs.root
@@ -137,7 +140,7 @@ func Example_recursivePut() {
 		log.Fatalf("invalid obj-1 value. got=%q, want=%q", got, want)
 	}
 
-	riofs.Walk(f, func(path string, obj root.Object, err error) error {
+	err = riofs.Walk(f, func(path string, obj root.Object, err error) error {
 		name := path[len(fname):]
 		if name == "" {
 			return err
@@ -150,6 +153,9 @@ func Example_recursivePut() {
 		}
 		return err
 	})
+	if err != nil {
+		log.Fatalf("could not walk ROOT file: %+v", err)
+	}
 
 	err = f.Close()
 	if err != nil {
@@ -198,7 +204,7 @@ func Example_recursiveMkdir() {
 		log.Fatal(err)
 	}
 
-	riofs.Walk(f, func(path string, obj root.Object, err error) error {
+	err = riofs.Walk(f, func(path string, obj root.Object, err error) error {
 		name := path[len(fname):]
 		if name == "" {
 			return err
@@ -211,6 +217,9 @@ func Example_recursiveMkdir() {
 		}
 		return err
 	})
+	if err != nil {
+		log.Fatalf("could not walk ROOT file: %+v", err)
+	}
 
 	err = f.Close()
 	if err != nil {

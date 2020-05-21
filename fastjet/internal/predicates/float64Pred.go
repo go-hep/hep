@@ -48,16 +48,16 @@ func newFloat64Pred(n float64) float64Pred {
 	}
 }
 
-// addFloat64 adds f to p and updates the potential error
-func (p float64Pred) addFloat64(f float64) float64Pred {
-	p.n += f
-	if p.n == 0 {
-		p.e += math.SmallestNonzeroFloat64
-	} else {
-		p.e += macheps * math.Abs(p.n) / (1 - macheps)
-	}
-	return p
-}
+// // addFloat64 adds f to p and updates the potential error
+// func (p float64Pred) addFloat64(f float64) float64Pred {
+// 	p.n += f
+// 	if p.n == 0 {
+// 		p.e += math.SmallestNonzeroFloat64
+// 	} else {
+// 		p.e += macheps * math.Abs(p.n) / (1 - macheps)
+// 	}
+// 	return p
+// }
 
 // addFloat64Pred adds b to a and updates the potential error
 func (a float64Pred) addFloat64Pred(b float64Pred) float64Pred {
@@ -70,16 +70,16 @@ func (a float64Pred) addFloat64Pred(b float64Pred) float64Pred {
 	return a
 }
 
-// subFloat64 subtracts f from p and updates the potential error
-func (p float64Pred) subFloat64(f float64) float64Pred {
-	p.n -= f
-	if p.n == 0 {
-		p.e += math.SmallestNonzeroFloat64
-	} else {
-		p.e += macheps * math.Abs(p.n) / (1 - macheps)
-	}
-	return p
-}
+// // subFloat64 subtracts f from p and updates the potential error
+// func (p float64Pred) subFloat64(f float64) float64Pred {
+// 	p.n -= f
+// 	if p.n == 0 {
+// 		p.e += math.SmallestNonzeroFloat64
+// 	} else {
+// 		p.e += macheps * math.Abs(p.n) / (1 - macheps)
+// 	}
+// 	return p
+// }
 
 // subFloat64Pred subtracts f from p and updates the potential error
 func (a float64Pred) subFloat64Pred(b float64Pred) float64Pred {

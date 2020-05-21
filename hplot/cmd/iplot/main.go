@@ -20,17 +20,12 @@ import (
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-	vgdraw "gonum.org/v1/plot/vg/draw"
 )
 
 const (
 	NPOINTS = 100000
 	xmax    = 400
 	ymax    = 400
-)
-
-var (
-	bkgCol = color.Black
 )
 
 func newPlot() *hplot.Plot {
@@ -110,7 +105,7 @@ func main() {
 				case key.CodeN, key.CodeSpacebar:
 					if e.Direction == key.DirPress {
 						p := newPlot()
-						p.Draw(vgdraw.New(w.canvas))
+						p.Draw(draw.New(w.canvas))
 						repaint = true
 					}
 				}

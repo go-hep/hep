@@ -34,6 +34,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"reflect"
 	"runtime/pprof"
@@ -82,7 +83,10 @@ options:
 			panic(err)
 		}
 		defer f.Close()
-		pprof.StartCPUProfile(f)
+		err = pprof.StartCPUProfile(f)
+		if err != nil {
+			log.Fatalf("could not start CPU profile: %+v", err)
+		}
 		defer pprof.StopCPUProfile()
 	}
 

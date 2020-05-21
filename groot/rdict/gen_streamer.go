@@ -113,24 +113,24 @@ func (g *genStreamer) Generate(typeName string) error {
 	scope := g.pkg.Scope()
 	obj := scope.Lookup(typeName)
 	if obj == nil {
-		return fmt.Errorf("no such type %q in package %q\n", typeName, g.pkg.Path()+"/"+g.pkg.Name())
+		return fmt.Errorf("no such type %q in package %q", typeName, g.pkg.Path()+"/"+g.pkg.Name())
 	}
 
 	tn, ok := obj.(*types.TypeName)
 	if !ok {
-		return fmt.Errorf("%q is not a type (%v)\n", typeName, obj)
+		return fmt.Errorf("%q is not a type (%v)", typeName, obj)
 	}
 
 	typ, ok := tn.Type().Underlying().(*types.Struct)
 	if !ok {
-		return fmt.Errorf("%q is not a named struct (%v)\n", typeName, tn)
+		return fmt.Errorf("%q is not a named struct (%v)", typeName, tn)
 	}
 	if g.verbose {
 		log.Printf("typ: %q: %+v\n", typeName, typ)
 	}
 
 	if !types.Implements(tn.Type(), g.rvers) && !types.Implements(types.NewPointer(tn.Type()), g.rvers) {
-		return fmt.Errorf("type %q does not implement %q.", tn.Pkg().Path()+"."+tn.Name(), "go-hep.org/x/hep/groot/rbytes.RVersioner")
+		return fmt.Errorf("type %q does not implement %q", tn.Pkg().Path()+"."+tn.Name(), "go-hep.org/x/hep/groot/rbytes.RVersioner")
 	}
 
 	g.genStreamer(typ, typeName)
@@ -163,19 +163,19 @@ func (o *%[1]s) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	g.printf("\n\treturn w.SetByteCount(pos, o.Class())\n}\n\n")
 }
 
-func (g *genStreamer) genUnmarshal(t types.Type, typeName string) {
-	g.printf(`// UnmarshalROOT implements rbytes.Unmarshaler
-func (o *%[1]s) UnmarshalROOT(r *rbytes.RBuffer) error {
-	rs, err := rdict.RStreamer(r, o)
-	if err != nil {
-		return err
-	}
-	return rs.RStreamROOT(r)
-}
-`,
-		typeName,
-	)
-}
+// func (g *genStreamer) genUnmarshal(t types.Type, typeName string) {
+// 	g.printf(`// UnmarshalROOT implements rbytes.Unmarshaler
+// func (o *%[1]s) UnmarshalROOT(r *rbytes.RBuffer) error {
+// 	rs, err := rdict.RStreamer(r, o)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return rs.RStreamROOT(r)
+// }
+// `,
+// 		typeName,
+// 	)
+// }
 
 func (g *genStreamer) genStreamer(t types.Type, typeName string) {
 	g.printf(`func init() {

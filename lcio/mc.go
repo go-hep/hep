@@ -5,7 +5,6 @@
 package lcio
 
 import (
-	"bytes"
 	"fmt"
 	"math"
 	"strings"
@@ -21,7 +20,7 @@ type McParticleContainer struct {
 }
 
 func (mcs McParticleContainer) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of MCParticle collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", mcs.Flags, mcs.Params)
 
@@ -99,7 +98,7 @@ func (mcs McParticleContainer) String() string {
 	}
 
 	fmt.Fprintf(o, "\n-------------------------------------------------------------------------------- \n")
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (*McParticleContainer) VersionSio() uint32 {

@@ -271,7 +271,7 @@ END YODA_HISTO1D_V2
 				t.Fatalf("invalid h1:\n%s",
 					cmp.Diff(
 						string(test.want),
-						string(buf.Bytes()),
+						buf.String(),
 					),
 				)
 			}
@@ -363,7 +363,7 @@ END YODA_HISTO2D_V2
 				t.Fatalf("invalid h2d:\n%s",
 					cmp.Diff(
 						string(test.want),
-						string(buf.Bytes()),
+						buf.String(),
 					),
 				)
 			}

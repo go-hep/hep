@@ -92,7 +92,7 @@ func (tsi *StreamerInfo) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tsi.RVersion())
-	tsi.named.MarshalROOT(w)
+	_, _ = tsi.named.MarshalROOT(w)
 	w.WriteU32(tsi.chksum)
 	w.WriteI32(tsi.clsver)
 
@@ -103,7 +103,7 @@ func (tsi *StreamerInfo) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		}
 		tsi.objarr.SetElems(elems)
 	}
-	w.WriteObjectAny(tsi.objarr)
+	_ = w.WriteObjectAny(tsi.objarr)
 	tsi.objarr.SetElems(nil)
 
 	return w.SetByteCount(pos, "TStreamerInfo")
@@ -348,7 +348,7 @@ func (tse *StreamerElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tse.RVersion())
-	tse.named.MarshalROOT(w)
+	_, _ = tse.named.MarshalROOT(w)
 	w.WriteI32(int32(tse.etype))
 	w.WriteI32(tse.esize)
 	w.WriteI32(tse.arrlen)
@@ -391,10 +391,10 @@ func (tse *StreamerElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 		tse.etype = 18
 	}
 
-	if vers <= 2 {
-		// FIXME(sbinet)
-		// tse.esize = tse.arrlen * gROOT->GetType(GetTypeName())->Size()
-	}
+	// if vers <= 2 {
+	// 	// FIXME(sbinet)
+	// 	// tse.esize = tse.arrlen * gROOT->GetType(GetTypeName())->Size()
+	// }
 	switch {
 	default:
 		tse.xmin = 0
@@ -438,7 +438,7 @@ func (tsb *StreamerBase) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tsb.RVersion())
-	tsb.StreamerElement.MarshalROOT(w)
+	_, _ = tsb.StreamerElement.MarshalROOT(w)
 	w.WriteI32(tsb.vbase)
 
 	return w.SetByteCount(pos, tsb.Class())
@@ -476,7 +476,7 @@ func (tsb *StreamerBasicType) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tsb.RVersion())
-	tsb.StreamerElement.MarshalROOT(w)
+	_, _ = tsb.StreamerElement.MarshalROOT(w)
 
 	return w.SetByteCount(pos, tsb.Class())
 }
@@ -552,7 +552,7 @@ func (tsb *StreamerBasicPointer) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tsb.RVersion())
-	tsb.StreamerElement.MarshalROOT(w)
+	_, _ = tsb.StreamerElement.MarshalROOT(w)
 	w.WriteI32(tsb.cvers)
 	w.WriteString(tsb.cname)
 	w.WriteString(tsb.ccls)
@@ -609,7 +609,7 @@ func (tsl *StreamerLoop) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tsl.RVersion())
-	tsl.StreamerElement.MarshalROOT(w)
+	_, _ = tsl.StreamerElement.MarshalROOT(w)
 	w.WriteI32(tsl.cvers)
 	w.WriteString(tsl.cname)
 	w.WriteString(tsl.cclass)
@@ -650,7 +650,7 @@ func (tso *StreamerObject) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tso.RVersion())
-	tso.StreamerElement.MarshalROOT(w)
+	_, _ = tso.StreamerElement.MarshalROOT(w)
 	return w.SetByteCount(pos, tso.Class())
 }
 
@@ -683,7 +683,7 @@ func (tso *StreamerObjectPointer) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tso.RVersion())
-	tso.StreamerElement.MarshalROOT(w)
+	_, _ = tso.StreamerElement.MarshalROOT(w)
 	return w.SetByteCount(pos, tso.Class())
 }
 
@@ -716,7 +716,7 @@ func (tso *StreamerObjectAny) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tso.RVersion())
-	tso.StreamerElement.MarshalROOT(w)
+	_, _ = tso.StreamerElement.MarshalROOT(w)
 
 	return w.SetByteCount(pos, tso.Class())
 }
@@ -750,7 +750,7 @@ func (tso *StreamerObjectAnyPointer) MarshalROOT(w *rbytes.WBuffer) (int, error)
 	}
 
 	pos := w.WriteVersion(tso.RVersion())
-	tso.StreamerElement.MarshalROOT(w)
+	_, _ = tso.StreamerElement.MarshalROOT(w)
 
 	return w.SetByteCount(pos, tso.Class())
 }
@@ -784,7 +784,7 @@ func (tss *StreamerString) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tss.RVersion())
-	tss.StreamerElement.MarshalROOT(w)
+	_, _ = tss.StreamerElement.MarshalROOT(w)
 
 	return w.SetByteCount(pos, tss.Class())
 }
@@ -976,7 +976,7 @@ func (tss *StreamerSTL) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tss.RVersion())
-	tss.StreamerElement.MarshalROOT(w)
+	_, _ = tss.StreamerElement.MarshalROOT(w)
 	w.WriteI32(int32(tss.vtype))
 	w.WriteI32(int32(tss.ctype))
 
@@ -1008,10 +1008,10 @@ func (tss *StreamerSTL) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (tss *StreamerSTL) isaPointer() bool {
-	tname := tss.StreamerElement.ename
-	return strings.HasSuffix(tname, "*")
-}
+// func (tss *StreamerSTL) isaPointer() bool {
+// 	tname := tss.StreamerElement.ename
+// 	return strings.HasSuffix(tname, "*")
+// }
 
 type StreamerSTLstring struct {
 	StreamerSTL
@@ -1029,7 +1029,7 @@ func (tss *StreamerSTLstring) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tss.RVersion())
-	tss.StreamerSTL.MarshalROOT(w)
+	_, _ = tss.StreamerSTL.MarshalROOT(w)
 
 	return w.SetByteCount(pos, tss.Class())
 }
@@ -1063,7 +1063,7 @@ func (tsa *StreamerArtificial) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tsa.RVersion())
-	tsa.StreamerElement.MarshalROOT(w)
+	_, _ = tsa.StreamerElement.MarshalROOT(w)
 
 	return w.SetByteCount(pos, tsa.Class())
 }

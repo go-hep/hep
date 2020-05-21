@@ -472,31 +472,36 @@ func TestCreate(t *testing.T) {
 }
 
 func TestOpenBigFile(t *testing.T) {
-	ch := make(chan int)
+	ch := make(chan error)
 	go func() {
 		f, err := riofs.Open("root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/SMHiggsToZZTo4L.root")
 		if err != nil {
-			t.Fatal(err)
+			ch <- err
+			return
 		}
 		defer f.Close()
 
 		o, err := f.Get("Events")
 		if err != nil {
-			t.Fatal(err)
+			ch <- err
+			return
 		}
 
 		tree := o.(rtree.Tree)
 		if got, want := tree.Entries(), int64(299973); got != want {
-			t.Fatalf("invalid entries: got=%d, want=%d", got, want)
+			ch <- fmt.Errorf("invalid entries: got=%d, want=%d", got, want)
+			return
 		}
-		ch <- 1
+		ch <- nil
 	}()
 
 	timeout := time.NewTimer(30 * time.Second)
 	defer timeout.Stop()
 	select {
-	case <-ch:
-		// ok
+	case err := <-ch:
+		if err != nil {
+			t.Fatalf("error: %+v", err)
+		}
 	case <-timeout.C:
 		t.Fatalf("timeout")
 	}

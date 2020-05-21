@@ -46,7 +46,7 @@ func TestSession_WaitResponse(t *testing.T) {
 			t.Fatalf("could not read request: %v", err)
 		}
 
-		sleepTime := time.Now().Sub(responseTime)
+		sleepTime := time.Since(responseTime)
 		if sleepTime < time.Second/2 {
 			t.Errorf("client should wait around 1 second before re-issuing request, waited %v", sleepTime)
 		}

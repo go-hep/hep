@@ -41,9 +41,10 @@ var (
 	// Endian exposes the endianness of rio streams
 	Endian = binary.LittleEndian
 
-	hdrSize = int(reflect.TypeOf(rioHeader{}).Size())
+	// hdrSize = int(reflect.TypeOf(rioHeader{}).Size())
+	// blkSize = int(reflect.TypeOf(rioBlock{}).Size())
+
 	recSize = int(reflect.TypeOf(rioRecord{}).Size())
-	blkSize = int(reflect.TypeOf(rioBlock{}).Size())
 	ftrSize = int(reflect.TypeOf(rioFooter{}).Size())
 )
 
@@ -265,9 +266,7 @@ func (rec *rioRecord) RioUnmarshal(r io.Reader) error {
 }
 
 func (rec *rioRecord) unmarshalHeader(r io.Reader) error {
-	var err error
-
-	err = rec.Header.RioUnmarshal(r)
+	err := rec.Header.RioUnmarshal(r)
 	if err != nil {
 		if err == io.EOF || err == io.ErrUnexpectedEOF {
 			return err
@@ -279,13 +278,11 @@ func (rec *rioRecord) unmarshalHeader(r io.Reader) error {
 		return fmt.Errorf("rio: read record header corrupted (frame=%#v)", rec.Header.Frame)
 	}
 
-	return err
+	return nil
 }
 
 func (rec *rioRecord) unmarshalData(r io.Reader) error {
-	var err error
-
-	err = binary.Read(r, Endian, &rec.Options)
+	err := binary.Read(r, Endian, &rec.Options)
 	if err != nil {
 		return fmt.Errorf("rio: read record options failed: %w", err)
 	}
@@ -314,7 +311,7 @@ func (rec *rioRecord) unmarshalData(r io.Reader) error {
 
 	rec.Name = string(buf[:int(nsize)])
 
-	return err
+	return nil
 }
 
 func (rec *rioRecord) RioVersion() Version {
@@ -516,8 +513,7 @@ func (ftr *rioFooter) RioUnmarshal(r io.Reader) error {
 }
 
 func (ftr *rioFooter) unmarshalHeader(r io.Reader) error {
-	var err error
-	err = ftr.Header.RioUnmarshal(r)
+	err := ftr.Header.RioUnmarshal(r)
 	if err != nil {
 		if err == io.EOF {
 			return err
@@ -529,18 +525,16 @@ func (ftr *rioFooter) unmarshalHeader(r io.Reader) error {
 		return fmt.Errorf("rio: read footer header corrupted (frame=%#v)", ftr.Header.Frame)
 	}
 
-	return err
+	return nil
 }
 
 func (ftr *rioFooter) unmarshalData(r io.Reader) error {
-	var err error
-
-	err = binary.Read(r, Endian, &ftr.Meta)
+	err := binary.Read(r, Endian, &ftr.Meta)
 	if err != nil {
 		return fmt.Errorf("rio: read footer meta failed: %w", err)
 	}
 
-	return err
+	return nil
 }
 
 // Metadata stores metadata about a rio stream

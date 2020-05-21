@@ -5,7 +5,6 @@
 package lcio
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -32,7 +31,7 @@ func (hit *TrackerPulse) GetCellID0() int32 { return hit.CellID0 }
 func (hit *TrackerPulse) GetCellID1() int32 { return hit.CellID1 }
 
 func (ps *TrackerPulseContainer) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of TrackerPulse collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n", ps.Flags)
 	fmt.Fprintf(o, "     LCIO::TRAWBIT_ID1 : %v\n", ps.Flags.Test(BitsTRawID1))
@@ -44,8 +43,8 @@ func (ps *TrackerPulseContainer) String() string {
 		head = " [   id   ] | cellid0  | cellid1  |  time | charge | quality  | [corr.Data] |  cellid-fields: | cov(c,c), cov(t,c), cov(t,t) \n"
 		tail = "------------|----------|----------|-------|--------|----------|-------------|-----------------|------------------------------\n"
 	)
-	fmt.Fprintf(o, head)
-	fmt.Fprintf(o, tail)
+	o.WriteString(head)
+	o.WriteString(tail)
 	for i := range ps.Pulses {
 		p := &ps.Pulses[i]
 		fmt.Fprintf(o,
@@ -58,7 +57,7 @@ func (ps *TrackerPulseContainer) String() string {
 			p.Cov[0], p.Cov[1], p.Cov[2],
 		)
 	}
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (*TrackerPulseContainer) VersionSio() uint32 {

@@ -18,31 +18,22 @@ type dumper struct {
 }
 
 func (tsk *dumper) Configure(ctx fwk.Context) error {
-	var err error
-
-	err = tsk.DeclInPort(tsk.input, reflect.TypeOf([]Candidate{}))
+	err := tsk.DeclInPort(tsk.input, reflect.TypeOf([]Candidate{}))
 	if err != nil {
 		return err
 	}
-
-	return err
+	return nil
 }
 
 func (tsk *dumper) StartTask(ctx fwk.Context) error {
-	var err error
-
-	return err
+	return nil
 }
 
 func (tsk *dumper) StopTask(ctx fwk.Context) error {
-	var err error
-
-	return err
+	return nil
 }
 
 func (tsk *dumper) Process(ctx fwk.Context) error {
-	var err error
-
 	store := ctx.Store()
 
 	v, err := store.Get(tsk.input)
@@ -53,23 +44,21 @@ func (tsk *dumper) Process(ctx fwk.Context) error {
 	input := v.([]Candidate)
 	//msg.Debugf(">>> particles: %v\n", len(parts))
 	fmt.Printf("%s: %d\n", tsk.input, len(input))
-	return err
+	return nil
 }
 
 func newDumper(typ, name string, mgr fwk.App) (fwk.Component, error) {
-	var err error
-
 	tsk := &dumper{
 		TaskBase: fwk.NewTask(typ, name, mgr),
 		input:    "Input",
 	}
 
-	err = tsk.DeclProp("Input", &tsk.input)
+	err := tsk.DeclProp("Input", &tsk.input)
 	if err != nil {
 		return nil, err
 	}
 
-	return tsk, err
+	return tsk, nil
 }
 
 func init() {

@@ -27,31 +27,23 @@ type InputStream struct {
 
 // Configure declares the output ports defined by the 'Ports' property.
 func (tsk *InputStream) Configure(ctx Context) error {
-	var err error
-
 	for _, port := range tsk.ctrl.Ports {
-		err = tsk.DeclOutPort(port.Name, port.Type)
+		err := tsk.DeclOutPort(port.Name, port.Type)
 		if err != nil {
 			return err
 		}
 	}
-
-	return err
+	return nil
 }
 
 // StartTask starts the InputStreamer task
 func (tsk *InputStream) StartTask(ctx Context) error {
-	var err error
-
-	return err
+	return nil
 }
 
 // StopTask stops the InputStreamer task
 func (tsk *InputStream) StopTask(ctx Context) error {
-	var err error
-
-	err = tsk.disconnect()
-	return err
+	return tsk.disconnect()
 }
 
 func (tsk *InputStream) connect(ctrl StreamControl) error {

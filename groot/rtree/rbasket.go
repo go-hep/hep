@@ -30,10 +30,7 @@ func (rbk *rbasket) loadRLeaf(entry int64, leaf rleaf) error {
 	} else {
 		offset = int64(rbk.bk.offsets[int(entry)]) + leaf.Offset()
 	}
-	err := rbk.bk.rbuf.SetPos(offset)
-	if err != nil {
-		return err
-	}
+	rbk.bk.rbuf.SetPos(offset)
 	return leaf.readFromBuffer(rbk.bk.rbuf)
 
 }
@@ -88,10 +85,7 @@ func (rbk *rbasket) inflate(name string, id int, span rspan, eoff int, f *riofs.
 
 		if eoff > 0 {
 			last := int64(rbk.bk.last)
-			err = rbk.bk.rbuf.SetPos(last)
-			if err != nil {
-				return err
-			}
+			rbk.bk.rbuf.SetPos(last)
 			n := int(rbk.bk.rbuf.ReadI32())
 			rbk.bk.offsets = rbytes.ResizeI32(rbk.bk.offsets, n)
 			rbk.bk.rbuf.ReadArrayI32(rbk.bk.offsets)

@@ -14,10 +14,12 @@ import (
 	"strings"
 	"testing"
 
-	"go-hep.org/x/hep/groot/internal/rdatatest" // make sure this is compiled
+	"go-hep.org/x/hep/groot/internal/rdatatest"
 )
 
-var evt rdatatest.Event
+var (
+	_ rdatatest.Event // make sure rdatatest is compiled
+)
 
 func TestGenerate(t *testing.T) {
 

@@ -103,6 +103,47 @@ func ExampleAddH1D() {
 }
 ```
 [embedmd]:# (example_h1d_test.go go /func ExampleAddScaledH1D/ /\n}/)
+```go
+func ExampleAddScaledH1D() {
+
+	h1 := hbook.NewH1D(6, 0, 6)
+	h1.Fill(-0.5, 1)
+	h1.Fill(0, 1.5)
+	h1.Fill(0.5, 1)
+	h1.Fill(1.2, 1)
+	h1.Fill(2.1, 2)
+	h1.Fill(4.2, 1)
+	h1.Fill(5.9, 1)
+	h1.Fill(6, 0.5)
+
+	h2 := hbook.NewH1D(6, 0, 6)
+	h2.Fill(-0.5, 0.7)
+	h2.Fill(0.2, 1)
+	h2.Fill(0.7, 1.2)
+	h2.Fill(1.5, 0.8)
+	h2.Fill(2.2, 0.7)
+	h2.Fill(4.3, 1.3)
+	h2.Fill(5.2, 2)
+	h2.Fill(6.8, 1)
+
+	hsum := hbook.AddScaledH1D(h1, 10, h2)
+	fmt.Printf("Under: %.1f +/- %.1f\n", hsum.Binning.Outflows[0].SumW(), math.Sqrt(hsum.Binning.Outflows[0].SumW2()))
+	for i := 0; i < hsum.Len(); i++ {
+		fmt.Printf("Bin %v: %.1f +/- %.1f\n", i, hsum.Binning.Bins[i].SumW(), math.Sqrt(hsum.Binning.Bins[i].SumW2()))
+	}
+	fmt.Printf("Over : %.1f +/- %.1f\n", hsum.Binning.Outflows[1].SumW(), math.Sqrt(hsum.Binning.Outflows[1].SumW2()))
+
+	// Output:
+	// Under: 8.0 +/- 7.1
+	// Bin 0: 24.5 +/- 15.7
+	// Bin 1: 9.0 +/- 8.1
+	// Bin 2: 9.0 +/- 7.3
+	// Bin 3: 0.0 +/- 0.0
+	// Bin 4: 14.0 +/- 13.0
+	// Bin 5: 21.0 +/- 20.0
+	// Over : 10.5 +/- 10.0
+}
+```
 [embedmd]:# (example_h1d_test.go go /func ExampleSubH1D/ /\n}/)
 ```go
 func ExampleSubH1D() {

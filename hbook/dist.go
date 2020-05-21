@@ -41,11 +41,11 @@ func (d *Dist0D) errW() float64 {
 	return math.Sqrt(d.SumW2)
 }
 
-// relErrW returns the relative error on sumW()
-func (d *Dist0D) relErrW() float64 {
-	// FIXME(sbinet) check for low stats ?
-	return d.errW() / d.SumW
-}
+// // relErrW returns the relative error on sumW()
+// func (d *Dist0D) relErrW() float64 {
+// 	// FIXME(sbinet) check for low stats ?
+// 	return d.errW() / d.SumW
+// }
 
 func (d *Dist0D) fill(w float64) {
 	d.N++
@@ -120,10 +120,10 @@ func (d *Dist1D) errW() float64 {
 	return d.Dist.errW()
 }
 
-// relErrW returns the relative error on sumW()
-func (d *Dist1D) relErrW() float64 {
-	return d.Dist.relErrW()
-}
+// // relErrW returns the relative error on sumW()
+// func (d *Dist1D) relErrW() float64 {
+// 	return d.Dist.relErrW()
+// }
 
 // mean returns the weighted mean of the distribution
 func (d *Dist1D) mean() float64 {
@@ -179,11 +179,6 @@ func (d *Dist1D) scaleW(f float64) {
 	d.Dist.scaleW(f)
 	d.Stats.SumWX *= f
 	d.Stats.SumWX2 *= f
-}
-
-func (d *Dist1D) scaleX(f float64) {
-	d.Stats.SumWX *= f
-	d.Stats.SumWX2 *= f * f
 }
 
 // Dist2D is a 2-dim distribution.
@@ -245,15 +240,15 @@ func (d *Dist2D) SumWXY() float64 {
 	return d.Stats.SumWXY
 }
 
-// errW returns the absolute error on sumW()
-func (d *Dist2D) errW() float64 {
-	return d.X.errW()
-}
-
-// relErrW returns the relative error on sumW()
-func (d *Dist2D) relErrW() float64 {
-	return d.X.relErrW()
-}
+// // errW returns the absolute error on sumW()
+// func (d *Dist2D) errW() float64 {
+// 	return d.X.errW()
+// }
+//
+// // relErrW returns the relative error on sumW()
+// func (d *Dist2D) relErrW() float64 {
+// 	return d.X.relErrW()
+// }
 
 // xMean returns the weighted mean of the distribution
 func (d *Dist2D) xMean() float64 {
@@ -315,19 +310,4 @@ func (d *Dist2D) scaleW(f float64) {
 	d.X.scaleW(f)
 	d.Y.scaleW(f)
 	d.Stats.SumWXY *= f
-}
-
-func (d *Dist2D) scaleX(f float64) {
-	d.X.scaleX(f)
-	d.Stats.SumWXY *= f
-}
-
-func (d *Dist2D) scaleY(f float64) {
-	d.Y.scaleX(f)
-	d.Stats.SumWXY *= f
-}
-
-func (d *Dist2D) scaleXY(fx, fy float64) {
-	d.scaleX(fx)
-	d.scaleY(fy)
 }

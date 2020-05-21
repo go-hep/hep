@@ -302,6 +302,7 @@ func (o *%[1]s) UnmarshalBinary(data []byte) (err error) {
 		g.genUnmarshalType(ft.Type(), "o."+ft.Name())
 	}
 
+	g.printf("_ = data\n")
 	g.printf("return err\n}\n\n")
 }
 

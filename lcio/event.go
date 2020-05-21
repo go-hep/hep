@@ -5,7 +5,6 @@
 package lcio
 
 import (
-	"bytes"
 	"fmt"
 	"reflect"
 	"sort"
@@ -26,7 +25,7 @@ type RunHeader struct {
 }
 
 func (hdr *RunHeader) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%s\n", strings.Repeat("=", 80))
 	fmt.Fprintf(o, "        Run:   %d\n", hdr.RunNumber)
 	fmt.Fprintf(o, "%s\n", strings.Repeat("=", 80))
@@ -34,7 +33,7 @@ func (hdr *RunHeader) String() string {
 	fmt.Fprintf(o, " detector   : %s\n", hdr.Detector)
 	fmt.Fprintf(o, " sub-dets   : %v\n", hdr.SubDetectors)
 	fmt.Fprintf(o, " parameters :\n%v\n", hdr.Params)
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (*RunHeader) VersionSio() uint32 {
@@ -72,7 +71,7 @@ type EventHeader struct {
 }
 
 func (hdr *EventHeader) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%s\n", strings.Repeat("=", 80))
 	fmt.Fprintf(o, "        Event  : %d - run:   %d - timestamp %v - weight %v\n",
 		hdr.EventNumber, hdr.RunNumber, hdr.TimeStamp, hdr.Weight(),
@@ -88,7 +87,7 @@ func (hdr *EventHeader) String() string {
 	}
 	w.Flush()
 
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (*EventHeader) VersionSio() uint32 {
@@ -139,7 +138,7 @@ type Params struct {
 }
 
 func (p Params) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	{
 		keys := make([]string, 0, len(p.Ints))
 		for k := range p.Ints {
@@ -194,7 +193,7 @@ func (p Params) String() string {
 			fmt.Fprintf(o, "\n")
 		}
 	}
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (*Params) VersionSio() uint32 {
@@ -309,7 +308,7 @@ func (evt *Event) Add(name string, ptr interface{}) {
 }
 
 func (evt *Event) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%s\n", strings.Repeat("=", 80))
 	fmt.Fprintf(o, "        Event  : %d - run:   %d - timestamp %v - weight %v\n",
 		evt.EventNumber, evt.RunNumber, evt.TimeStamp, evt.Weight(),
@@ -323,7 +322,7 @@ func (evt *Event) String() string {
 		coll := evt.colls[name]
 		fmt.Fprintf(o, " collection name : %s\n parameters: \n%v\n", name, coll)
 	}
-	return string(o.Bytes())
+	return o.String()
 }
 
 func (evt *Event) Weight() float64 {

@@ -62,7 +62,9 @@ func testFile_CloseVerify(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveAll(context.Background(), dir)
+	defer func() {
+		_ = fs.RemoveAll(context.Background(), dir)
+	}()
 	filePath := path.Join(dir, fileName)
 
 	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsNew)
@@ -148,7 +150,9 @@ func testFile_WriteAt(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveAll(context.Background(), dir)
+	defer func() {
+		_ = fs.RemoveAll(context.Background(), dir)
+	}()
 	filePath := path.Join(dir, fileName)
 
 	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsNew)
@@ -217,7 +221,9 @@ func testFile_Truncate(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveAll(context.Background(), dir)
+	defer func() {
+		_ = fs.RemoveAll(context.Background(), dir)
+	}()
 	filePath := path.Join(dir, fileName)
 
 	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsNew)
@@ -378,7 +384,9 @@ func testFile_VerifyWriteAt(t *testing.T, addr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fs.RemoveAll(context.Background(), dir)
+	defer func() {
+		_ = fs.RemoveAll(context.Background(), dir)
+	}()
 	filePath := path.Join(dir, fileName)
 
 	file, err := fs.Open(context.Background(), filePath, xrdfs.OpenModeOwnerWrite, xrdfs.OpenOptionsNew)

@@ -31,10 +31,10 @@ func TestGofmt(t *testing.T) {
 
 	err = cmd.Run()
 	if err != nil {
-		t.Fatalf("error running %s:\n%s\n%v", exe, string(buf.Bytes()), err)
+		t.Fatalf("error running %s:\n%s\n%v", exe, buf.String(), err)
 	}
 
 	if len(buf.Bytes()) != 0 {
-		t.Errorf("some files were not gofmt'ed:\n%s\n", string(buf.Bytes()))
+		t.Fatalf("some files were not gofmt'ed:\n%s\n", buf.String())
 	}
 }

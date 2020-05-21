@@ -851,7 +851,7 @@ func BenchmarkTreeScannerStruct(b *testing.B) {
 	var sum float64
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		s.SeekEntry(0)
+		_ = s.SeekEntry(0)
 		for s.Next() {
 			err = s.Scan(&data)
 			if err != nil {
@@ -889,7 +889,7 @@ func BenchmarkScannerStruct(b *testing.B) {
 	var sum float64
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		s.SeekEntry(0)
+		_ = s.SeekEntry(0)
 		for s.Next() {
 			err = s.Scan()
 			if err != nil {
@@ -929,7 +929,7 @@ func BenchmarkTreeScannerVars(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		s.SeekEntry(0)
+		_ = s.SeekEntry(0)
 		for s.Next() {
 			err := s.Scan(&data.F64)
 			if err != nil {
@@ -969,7 +969,7 @@ func BenchmarkScannerVars(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		s.SeekEntry(0)
+		_ = s.SeekEntry(0)
 		for s.Next() {
 			err := s.Scan()
 			if err != nil {
@@ -1003,7 +1003,7 @@ func BenchmarkTreeScannerVarsBigFileScalar(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		sc.SeekEntry(0)
+		_ = sc.SeekEntry(0)
 		for sc.Next() {
 			var data float32
 			err := sc.Scan(&data)
@@ -1039,7 +1039,7 @@ func BenchmarkScannerVarsBigFileScalar(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		sc.SeekEntry(0)
+		_ = sc.SeekEntry(0)
 		for sc.Next() {
 			err := sc.Scan()
 			if err != nil {
@@ -1073,7 +1073,7 @@ func BenchmarkTreeScannerVarsBigFileSlice(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		sc.SeekEntry(0)
+		_ = sc.SeekEntry(0)
 		for sc.Next() {
 			var data []float32
 			err := sc.Scan(&data)
@@ -1109,7 +1109,7 @@ func BenchmarkScannerVarsBigFileSlice(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		sc.SeekEntry(0)
+		_ = sc.SeekEntry(0)
 		for sc.Next() {
 			err := sc.Scan()
 			if err != nil {

@@ -687,10 +687,7 @@ func (b *tbranch) setupBasket(ctx *basketCtx, entry int64) error {
 		}
 
 		last := int64(ctx.bk.last)
-		err := ctx.bk.rbuf.SetPos(last)
-		if err != nil {
-			return err
-		}
+		ctx.bk.rbuf.SetPos(last)
 		n := int(ctx.bk.rbuf.ReadI32())
 		ctx.bk.offsets = rbytes.ResizeI32(ctx.bk.offsets, n)
 		ctx.bk.rbuf.ReadArrayI32(ctx.bk.offsets)

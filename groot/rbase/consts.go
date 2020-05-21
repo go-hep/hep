@@ -6,8 +6,6 @@ package rbase
 
 const (
 	kIsOnHeap     = 0x01000000
-	kNotDeleted   = 0x02000000
-	kZombie       = 0x04000000
 	kBitMask      = 0x00ffffff
 	kIsReferenced = 1 << 4
 	kHasUUID      = 1 << 5

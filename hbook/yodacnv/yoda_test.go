@@ -37,7 +37,7 @@ func TestReadWrite(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(w.Bytes(), rdata) {
-		t.Fatalf("got:\n%s\nwant:\n%s\n", string(w.Bytes()), string(rdata))
+		t.Fatalf("got:\n%s\nwant:\n%s\n", w.String(), string(rdata))
 	}
 }
 

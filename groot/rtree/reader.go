@@ -376,7 +376,7 @@ func (r *rtree) run(off, beg, end int64, f func(RCtx) error) error {
 	defer func() {
 		for i := range r.brs {
 			rb := &r.brs[i]
-			rb.stop()
+			_ = rb.stop()
 		}
 	}()
 

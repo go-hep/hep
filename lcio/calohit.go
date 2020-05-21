@@ -5,7 +5,6 @@
 package lcio
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -20,7 +19,7 @@ type CalorimeterHitContainer struct {
 }
 
 func (hits CalorimeterHitContainer) String() string {
-	o := new(bytes.Buffer)
+	o := new(strings.Builder)
 	fmt.Fprintf(o, "%[1]s print out of CalorimeterHit collection %[1]s\n\n", strings.Repeat("-", 15))
 	fmt.Fprintf(o, "  flag:  0x%x\n%v", hits.Flags, hits.Params)
 	fmt.Fprintf(o, "  -> LCIO::RCHBIT_LONG   : %v\n", hits.Flags.Test(BitsRChLong))
@@ -32,31 +31,31 @@ func (hits CalorimeterHitContainer) String() string {
 
 	dec := NewCellIDDecoderFrom(hits.Params)
 
-	fmt.Fprintf(o, "\n")
+	o.WriteString("\n")
 
 	const (
 		head = " [   id   ] |cellId0 |cellId1 |  energy  |energyerr |        position (x,y,z)           \n"
 		tail = "------------|--------|--------|----------|----------|-----------------------------------\n"
 	)
-	fmt.Fprintf(o, head)
-	fmt.Fprintf(o, tail)
+	o.WriteString(head)
+	o.WriteString(tail)
 	for i := range hits.Hits {
 		hit := &hits.Hits[i]
 		fmt.Fprintf(o, "[%09d] |%08d|%08d|%+.3e|%+.3e|", ID(hit), hit.CellID0, hit.CellID1, hit.Energy, hit.EnergyErr)
 		if hits.Flags.Test(BitsChLong) {
 			fmt.Fprintf(o, "+%.3e, %+.3e, %+.3e", hit.Pos[0], hit.Pos[1], hit.Pos[2])
 		} else {
-			fmt.Fprintf(o, "    no position available         ")
+			o.WriteString("    no position available         ")
 		}
 		if dec != nil {
 			fmt.Fprintf(o, "        id-fields: (%s)", dec.ValueString(hit))
 		} else {
-			fmt.Fprintf(o, "        id-fields: --- unknown/default ----   ")
+			o.WriteString("        id-fields: --- unknown/default ----   ")
 		}
-		fmt.Fprintf(o, "\n")
+		o.WriteString("\n")
 	}
-	fmt.Fprintf(o, tail)
-	return string(o.Bytes())
+	o.WriteString(tail)
+	return o.String()
 }
 
 func (*CalorimeterHitContainer) VersionSio() uint32 {
