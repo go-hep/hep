@@ -29,7 +29,7 @@ type execCtx struct {
 	mu    sync.RWMutex
 }
 
-func newExecCtx(db *driverConn, args []driver.Value) *execCtx {
+func newExecCtx(db *driverConn, args []driver.NamedValue) *execCtx {
 	ectx := execCtx{db: db}
 	return &ectx
 }
@@ -1314,7 +1314,7 @@ type valueExpr struct {
 	v    interface{}
 }
 
-func newValueExpr(expr *sqlparser.SQLVal, args []driver.Value) (expression, error) {
+func newValueExpr(expr *sqlparser.SQLVal, args []driver.NamedValue) (expression, error) {
 	s := string(expr.Val)
 	switch expr.Type {
 	//	case sqlparser.HexVal: // FIXME(sbinet): difference with HexNum?
@@ -1359,7 +1359,7 @@ func newValueExpr(expr *sqlparser.SQLVal, args []driver.Value) (expression, erro
 		i-- // :v1 --> index-0
 		return &valueExpr{
 			expr: expr,
-			v:    idealValArgFrom(args[i]), // FIXME(sbinet): unwrap driver.Value?
+			v:    idealValArgFrom(args[i].Value), // FIXME(sbinet): unwrap driver.Value?
 		}, nil
 
 	default:
