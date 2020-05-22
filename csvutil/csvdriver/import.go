@@ -35,7 +35,9 @@ func (conn *csvConn) importCSV() error {
 	if err != nil {
 		return err
 	}
-	defer tx.Commit()
+	defer func() {
+		_ = tx.Commit()
+	}()
 
 	ctx := context.Background()
 

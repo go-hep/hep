@@ -29,7 +29,9 @@ func testDB(t *testing.T, conn csvdriver.Conn, vars string) {
 		t.Errorf("%s: error starting tx: %+v", conn.File, err)
 		return
 	}
-	defer tx.Commit()
+	defer func() {
+		_ = tx.Commit()
+	}()
 
 	done := make(chan error)
 	go func() {
@@ -174,7 +176,9 @@ func TestQL(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error starting transaction: %+v\n", err)
 	}
-	defer tx.Commit()
+	defer func() {
+		_ = tx.Commit()
+	}()
 
 	_, err = tx.Exec("create table csv (var1 int64, var2 float64, var3 string);")
 	if err != nil {
@@ -214,7 +218,9 @@ func TestCreate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error starting transaction: %+v\n", err)
 	}
-	defer tx.Commit()
+	defer func() {
+		_ = tx.Commit()
+	}()
 
 	_, err = tx.Exec("create table csv (var1 int64, var2 float64, var3 string);")
 	if err != nil {
@@ -254,7 +260,9 @@ func TestCreateRollback(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error starting transaction: %+v\n", err)
 	}
-	defer tx.Commit()
+	defer func() {
+		_ = tx.Commit()
+	}()
 
 	_, err = tx.Exec("create table csv (var1 int64, var2 float64, var3 string);")
 	if err != nil {
