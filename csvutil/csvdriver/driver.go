@@ -22,11 +22,13 @@ import (
 )
 
 var (
-	_ driver.Driver         = (*csvDriver)(nil)
-	_ drvConn               = (*csvConn)(nil)
-	_ driver.ExecerContext  = (*csvConn)(nil)
-	_ driver.QueryerContext = (*csvConn)(nil)
-	_ driver.Tx             = (*csvConn)(nil)
+	_ driver.Driver             = (*csvDriver)(nil)
+	_ drvConn                   = (*csvConn)(nil)
+	_ driver.ExecerContext      = (*csvConn)(nil)
+	_ driver.QueryerContext     = (*csvConn)(nil)
+	_ driver.ConnBeginTx        = (*csvConn)(nil)
+	_ driver.ConnPrepareContext = (*csvConn)(nil)
+	_ driver.Tx                 = (*csvConn)(nil)
 )
 
 type drvConn interface {
@@ -212,32 +214,10 @@ func (conn *csvConn) initDB() error {
 		return err
 	}
 
-	conn.conn = connWrap(c)
+	conn.conn = c.(drvConn)
 	conn.exec = c.(driver.ExecerContext)
 	conn.query = c.(driver.QueryerContext)
 	return nil
-}
-
-func connWrap(c driver.Conn) drvConn {
-	if c, ok := c.(drvConn); ok {
-		return c
-	}
-
-	wrap := &drvConnWrap{
-		Conn:               c,
-		ConnPrepareContext: c.(driver.ConnPrepareContext),
-	}
-	return wrap
-}
-
-type drvConnWrap struct {
-	driver.Conn
-	driver.ConnPrepareContext
-}
-
-func (drv *drvConnWrap) BeginTx(ctx context.Context, opts driver.TxOptions) (driver.Tx, error) {
-	// FIXME(sbinet): drop this hack when modernc.org/ql implements driver.ConnBeginTx.
-	return drv.Conn.Begin() //lint:ignore SA1019 drop this hack when modernc.org/ql supports driver.ConnBeginTx
 }
 
 // PrepareContext returns a prepared statement, bound to this connection.

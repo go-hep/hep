@@ -34,7 +34,5 @@ require (
 	gonum.org/v1/gonum v0.7.1-0.20200330111830-e98ce15ff236
 	gonum.org/v1/plot v0.7.1-0.20200414075901-f4e1939a9e7a
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
-	modernc.org/ql v1.0.1
+	modernc.org/ql v1.1.0
 )
-
-replace github.com/cosmos72/gomacro => github.com/go-hep/gomacro v0.0.0-20200506165324-d28799dcbb28
