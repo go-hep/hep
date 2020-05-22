@@ -72,6 +72,12 @@ func (r *rchain) run(off, beg, end int64, f func(RCtx) error) error {
 		return nil
 	}
 
+	err := r.start()
+	if err != nil {
+		return err
+	}
+	defer r.stop()
+
 	for i := r.ibeg; i < r.iend; i++ {
 		var (
 			eoff = r.ch.offs[i]
@@ -117,4 +123,6 @@ func (r *rchain) runTree(itree int, off, beg, end int64, f func(RCtx) error) err
 	return rr.run(off, beg, end, f)
 }
 
-func (r *rchain) reset() {}
+func (r *rchain) start() error { return nil }
+func (r *rchain) stop()        {}
+func (r *rchain) reset()       {}

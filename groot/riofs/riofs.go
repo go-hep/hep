@@ -19,6 +19,7 @@ import (
 //go:generate go run ./gendata/gen-flat-tree.go -f ../testdata/leaves.root
 //go:generate go run ./gendata/gen-map-tree.go -f ../testdata/stdmap.root
 //go:generate go run ./gendata/gen-multi-leaves-tree.go -f ../testdata/padding.root
+//go:generate go run ./gendata/gen-join-trees.go -d ../testdata
 
 // Directory describes a ROOT directory structure in memory.
 type Directory interface {

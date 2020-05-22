@@ -188,6 +188,8 @@ type reader interface {
 	rvars() []ReadVar
 
 	run(off, beg, end int64, f func(RCtx) error) error
+	start() error
+	stop()
 	reset()
 }
 
@@ -216,6 +218,8 @@ func newReader(t Tree, rvars []ReadVar, n int, beg, end int64) reader {
 		return newRTree(t, rvars, n, beg, end)
 	case *chain:
 		return newRChain(t, rvars, n, beg, end)
+	case *join:
+		return newRJoin(t, rvars, n, beg, end)
 	default:
 		panic(fmt.Errorf("rtree: unknown Tree implementation %T", t))
 	}
@@ -298,6 +302,28 @@ func (r *rtree) Close() error {
 	return nil
 }
 
+func (r *rtree) start() error {
+	for i := range r.brs {
+		rb := &r.brs[i]
+		err := rb.start()
+		if err != nil {
+			if err == io.EOF {
+				// empty range.
+				return nil
+			}
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *rtree) stop() {
+	for i := range r.brs {
+		rb := &r.brs[i]
+		_ = rb.stop()
+	}
+}
+
 func (r *rtree) reset() {
 	for i := range r.brs {
 		rb := &r.brs[i]
@@ -362,23 +388,11 @@ func (r *rtree) run(off, beg, end int64, f func(RCtx) error) error {
 
 	defer r.Close()
 
-	for i := range r.brs {
-		rb := &r.brs[i]
-		err = rb.start()
-		if err != nil {
-			if err == io.EOF {
-				// empty range.
-				return nil
-			}
-			return err
-		}
+	err = r.start()
+	if err != nil {
+		return err
 	}
-	defer func() {
-		for i := range r.brs {
-			rb := &r.brs[i]
-			_ = rb.stop()
-		}
-	}()
+	defer r.stop()
 
 	for i := beg; i < end; i++ {
 		err = r.read(i)

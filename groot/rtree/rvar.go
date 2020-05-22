@@ -39,6 +39,11 @@ func NewReadVars(t Tree) []ReadVar {
 	return vars
 }
 
+// Deref returns the value pointed at by this read-var.
+func (rv ReadVar) Deref() interface{} {
+	return reflect.ValueOf(rv.Value).Elem().Interface()
+}
+
 // ReadVarsFromStruct returns a list of ReadVars bound to the exported fields
 // of the provided pointer to a struct value.
 //
