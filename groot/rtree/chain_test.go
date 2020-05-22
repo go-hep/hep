@@ -22,6 +22,12 @@ func TestChain(t *testing.T) {
 		entries int64
 		name    string
 		title   string
+		brs     []string
+		brOK    string
+		brNOT   string
+		lvs     []string
+		lvOK    string
+		lvNOT   string
 	}{
 		{
 			fnames:  nil,
@@ -34,12 +40,24 @@ func TestChain(t *testing.T) {
 			entries: 10,
 			name:    "tree",
 			title:   "my tree title",
+			brs:     []string{"evt"},
+			brOK:    "evt",
+			brNOT:   "foo",
+			lvs:     []string{"evt"},
+			lvOK:    "evt",
+			lvNOT:   "foo",
 		},
 		{
 			fnames:  []string{rtests.XrdRemote("testdata/chain.1.root")},
 			entries: 10,
 			name:    "tree",
 			title:   "my tree title",
+			brs:     []string{"evt"},
+			brOK:    "evt",
+			brNOT:   "foo",
+			lvs:     []string{"evt"},
+			lvOK:    "evt",
+			lvNOT:   "foo",
 		},
 		{
 			// twice the same tree
@@ -47,6 +65,12 @@ func TestChain(t *testing.T) {
 			entries: 20,
 			name:    "tree",
 			title:   "my tree title",
+			brs:     []string{"evt"},
+			brOK:    "evt",
+			brNOT:   "foo",
+			lvs:     []string{"evt"},
+			lvOK:    "evt",
+			lvNOT:   "foo",
 		},
 		{
 			// twice the same tree
@@ -57,6 +81,12 @@ func TestChain(t *testing.T) {
 			entries: 20,
 			name:    "tree",
 			title:   "my tree title",
+			brs:     []string{"evt"},
+			brOK:    "evt",
+			brNOT:   "foo",
+			lvs:     []string{"evt"},
+			lvOK:    "evt",
+			lvNOT:   "foo",
 		},
 		{
 			// two different trees (with the same schema)
@@ -64,6 +94,12 @@ func TestChain(t *testing.T) {
 			entries: 20,
 			name:    "tree",
 			title:   "my tree title",
+			brs:     []string{"evt"},
+			brOK:    "evt",
+			brNOT:   "foo",
+			lvs:     []string{"evt"},
+			lvOK:    "evt",
+			lvNOT:   "foo",
 		},
 		{
 			// two different trees (with the same schema)
@@ -74,6 +110,58 @@ func TestChain(t *testing.T) {
 			entries: 20,
 			name:    "tree",
 			title:   "my tree title",
+			brs:     []string{"evt"},
+			brOK:    "evt",
+			brNOT:   "foo",
+			lvs:     []string{"evt"},
+			lvOK:    "evt",
+			lvNOT:   "foo",
+		},
+		{
+			// two different (flat) trees (with the same schema)
+			fnames: []string{
+				"../testdata/chain.flat.1.root",
+				"../testdata/chain.flat.2.root",
+			},
+			entries: 10,
+			name:    "tree",
+			title:   "my tree title",
+			brs: []string{
+				"B",
+				"Str",
+				"I8", "I16", "I32", "I64",
+				"U8", "U16", "U32", "U64",
+				"F32", "F64",
+				"ArrBs",
+				"ArrI8", "ArrI16", "ArrI32", "ArrI64",
+				"ArrU8", "ArrU16", "ArrU32", "ArrU64",
+				"ArrF32", "ArrF64",
+				"N",
+				"SliBs",
+				"SliI8", "SliI16", "SliI32", "SliI64",
+				"SliU8", "SliU16", "SliU32", "SliU64",
+				"SliF32", "SliF64",
+			},
+			brOK:  "N",
+			brNOT: "foo",
+			lvs: []string{
+				"B",
+				"Str",
+				"I8", "I16", "I32", "I64",
+				"U8", "U16", "U32", "U64",
+				"F32", "F64",
+				"ArrBs",
+				"ArrI8", "ArrI16", "ArrI32", "ArrI64",
+				"ArrU8", "ArrU16", "ArrU32", "ArrU64",
+				"ArrF32", "ArrF64",
+				"N",
+				"SliBs",
+				"SliI8", "SliI16", "SliI32", "SliI64",
+				"SliU8", "SliU16", "SliU32", "SliU64",
+				"SliF32", "SliF64",
+			},
+			lvOK:  "N",
+			lvNOT: "foo",
 		},
 		// TODO(sbinet): add a test with 2 trees with different schemas)
 	} {
@@ -98,6 +186,9 @@ func TestChain(t *testing.T) {
 
 			chain := rtree.Chain(trees...)
 
+			if got, want := chain.Class(), "TChain"; got != want {
+				t.Fatalf("class name differ\ngot = %q, want= %q", got, want)
+			}
 			if got, want := chain.Name(), tc.name; got != want {
 				t.Fatalf("names differ\ngot = %q, want= %q", got, want)
 			}
@@ -106,6 +197,73 @@ func TestChain(t *testing.T) {
 			}
 			if got, want := chain.Entries(), tc.entries; got != want {
 				t.Fatalf("titles differ\ngot = %v, want= %v", got, want)
+			}
+			{
+				brs := chain.Branches()
+				n := len(tc.brs)
+				if len(brs) < n {
+					n = len(brs)
+				}
+
+				for i := 0; i < n; i++ {
+					if got, want := brs[i].Name(), tc.brs[i]; got != want {
+						t.Fatalf("invalid branch name[%d]: got=%q, want=%q", i, got, want)
+					}
+				}
+
+				if got, want := len(brs), len(tc.brs); got != want {
+					t.Fatalf("invalid number of branches: got=%d, want=%d", got, want)
+				}
+
+				if tc.brOK != "" {
+					br := chain.Branch(tc.brOK)
+					if br == nil {
+						t.Fatalf("could not retrieve branch %q", tc.brOK)
+					}
+					if got, want := br.Name(), tc.brOK; got != want {
+						t.Fatalf("invalid name for branch-ok: got=%q, want=%q", got, want)
+					}
+				}
+
+				br := chain.Branch(tc.brNOT)
+				if br != nil {
+					t.Fatalf("unexpected branch for branch-not (%s): got=%#v", tc.brNOT, br)
+				}
+			}
+			{
+				lvs := chain.Leaves()
+				n := len(tc.lvs)
+				if len(lvs) < n {
+					n = len(lvs)
+				}
+
+				for i := 0; i < n; i++ {
+					if got, want := lvs[i].Name(), tc.lvs[i]; got != want {
+						t.Fatalf("invalid leaf name[%d]: got=%q, want=%q", i, got, want)
+					}
+				}
+
+				if got, want := len(lvs), len(tc.lvs); got != want {
+					t.Fatalf("invalid number of leaves: got=%d, want=%d", got, want)
+				}
+
+				if tc.lvOK != "" {
+					lv := chain.Leaf(tc.lvOK)
+					if lv == nil {
+						t.Fatalf("could not retrieve leaf %q", tc.lvOK)
+					}
+					if got, want := lv.Name(), tc.lvOK; got != want {
+						t.Fatalf("invalid name for leaf-ok: got=%q, want=%q", got, want)
+					}
+					br := lv.Branch()
+					if br == nil || br.Name() != tc.lvOK {
+						t.Fatalf("invalid leaf-branch: ptr-ok=%v", br != nil)
+					}
+				}
+				lv := chain.Leaf(tc.lvNOT)
+				if lv != nil {
+					t.Fatalf("unexpected leaf for leaf-not (%s): got=%#v", tc.lvNOT, lv)
+				}
 			}
 		})
 	}

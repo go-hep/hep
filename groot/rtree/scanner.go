@@ -58,7 +58,7 @@ func (s *baseScanner) SeekEntry(i int64) error {
 		return s.err
 	}
 	if s.chain {
-		ch := s.tree.(*tchain)
+		ch := s.tree.(*chain)
 		if i >= ch.off+ch.tree.Entries() || i < ch.off {
 			itree := s.findTree(i)
 			if itree == -1 {
@@ -75,7 +75,7 @@ func (s *baseScanner) SeekEntry(i int64) error {
 
 // findTree finds the tree number in the chain that contains entry i
 func (s *baseScanner) findTree(i int64) int {
-	ch := s.tree.(*tchain)
+	ch := s.tree.(*chain)
 	for j := range ch.trees {
 		if i <= ch.tots[j] {
 			return j
@@ -97,7 +97,7 @@ func (s *baseScanner) Next() bool {
 
 	if s.chain {
 		if s.cur >= s.tot {
-			ch := s.tree.(*tchain)
+			ch := s.tree.(*chain)
 			s.loadTree(ch.cur + 1)
 		}
 	}
@@ -106,7 +106,7 @@ func (s *baseScanner) Next() bool {
 }
 
 func (s *baseScanner) loadTree(i int) {
-	ch := s.tree.(*tchain)
+	ch := s.tree.(*chain)
 	ch.loadTree(i)
 	s.off = ch.off
 	s.tot = ch.tot
@@ -237,7 +237,7 @@ func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
 		mbr:  mbr,
 		cbr:  cbr,
 	}
-	if ch, ok := t.(*tchain); ok {
+	if ch, ok := t.(*chain); ok {
 		base.chain = ok
 		base.off = ch.off
 		base.tot = ch.tot
@@ -345,7 +345,7 @@ func NewTreeScannerVars(t Tree, vars ...ReadVar) (*TreeScanner, error) {
 		cbr:  cbr,
 	}
 
-	if ch, ok := t.(*tchain); ok {
+	if ch, ok := t.(*chain); ok {
 		base.chain = ok
 		base.off = ch.off
 		base.tot = ch.tot
@@ -582,7 +582,7 @@ func NewScannerVars(t Tree, vars ...ReadVar) (*Scanner, error) {
 		cbr:  cbr,
 	}
 
-	if ch, ok := t.(*tchain); ok {
+	if ch, ok := t.(*chain); ok {
 		base.chain = ok
 		base.off = ch.off
 		base.tot = ch.tot
@@ -680,7 +680,7 @@ func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
 		cbr:  cbr,
 	}
 
-	if ch, ok := t.(*tchain); ok {
+	if ch, ok := t.(*chain); ok {
 		base.chain = ok
 		base.off = ch.off
 		base.tot = ch.tot

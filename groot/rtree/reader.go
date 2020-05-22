@@ -214,7 +214,7 @@ func newReader(t Tree, rvars []ReadVar, n int, beg, end int64) reader {
 	switch t := t.(type) {
 	case *ttree:
 		return newRTree(t, rvars, n, beg, end)
-	case *tchain:
+	case *chain:
 		return newRChain(t, rvars, n, beg, end)
 	default:
 		panic(fmt.Errorf("rtree: unknown Tree implementation %T", t))

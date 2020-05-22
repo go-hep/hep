@@ -11,7 +11,7 @@ import (
 	"go-hep.org/x/hep/groot/root"
 )
 
-type tchain struct {
+type chain struct {
 	trees []Tree
 	offs  []int64 // number of entries before this tree
 	tots  []int64 // total number of entries up to this tree
@@ -22,13 +22,13 @@ type tchain struct {
 	tot  int64 // current number of entries
 }
 
-// Chain returns a tchain that is the concatenation of all the input Trees.
+// Chain returns a Tree that is the concatenation of all the input Trees.
 func Chain(trees ...Tree) Tree {
 	if len(trees) == 0 {
-		return &tchain{}
+		return &chain{}
 	}
 	n := len(trees)
-	ch := &tchain{
+	ch := &chain{
 		trees: make([]Tree, n),
 		offs:  make([]int64, n),
 		tots:  make([]int64, n),
@@ -107,7 +107,7 @@ func ChainOf(name string, files ...string) (Tree, func() error, error) {
 	return ch, close, nil
 }
 
-func (ch *tchain) loadTree(i int) {
+func (ch *chain) loadTree(i int) {
 	ch.cur = i
 	if ch.cur >= len(ch.trees) {
 		ch.tree = nil
@@ -119,12 +119,12 @@ func (ch *tchain) loadTree(i int) {
 }
 
 // Class returns the ROOT class of the argument.
-func (*tchain) Class() string {
+func (*chain) Class() string {
 	return "TChain"
 }
 
 // Name returns the name of the ROOT objet in the argument.
-func (t *tchain) Name() string {
+func (t *chain) Name() string {
 	if t.tree == nil {
 		return ""
 	}
@@ -132,7 +132,7 @@ func (t *tchain) Name() string {
 }
 
 // Title returns the title of the ROOT object in the argument.
-func (t *tchain) Title() string {
+func (t *chain) Title() string {
 	if t.tree == nil {
 		return ""
 	}
@@ -140,7 +140,7 @@ func (t *tchain) Title() string {
 }
 
 // Entries returns the total number of entries.
-func (t *tchain) Entries() int64 {
+func (t *chain) Entries() int64 {
 	var v int64
 	for _, tree := range t.trees {
 		v += tree.Entries()
@@ -149,7 +149,7 @@ func (t *tchain) Entries() int64 {
 }
 
 // TotBytes return the total number of bytes before compression.
-func (t *tchain) TotBytes() int64 {
+func (t *chain) TotBytes() int64 {
 	var v int64
 	for _, tree := range t.trees {
 		v += tree.TotBytes()
@@ -158,7 +158,7 @@ func (t *tchain) TotBytes() int64 {
 }
 
 // ZipBytes returns the total number of bytes after compression.
-func (t *tchain) ZipBytes() int64 {
+func (t *chain) ZipBytes() int64 {
 	var v int64
 	for _, tree := range t.trees {
 		v += tree.ZipBytes()
@@ -168,7 +168,7 @@ func (t *tchain) ZipBytes() int64 {
 }
 
 // Branches returns the list of branches.
-func (t *tchain) Branches() []Branch {
+func (t *chain) Branches() []Branch {
 	if t.tree == nil {
 		return nil
 	}
@@ -176,7 +176,7 @@ func (t *tchain) Branches() []Branch {
 }
 
 // Branch returns the branch whose name is the argument.
-func (t *tchain) Branch(name string) Branch {
+func (t *chain) Branch(name string) Branch {
 	if t.tree == nil {
 		return nil
 	}
@@ -184,7 +184,7 @@ func (t *tchain) Branch(name string) Branch {
 }
 
 // Leaves returns direct pointers to individual branch leaves.
-func (t *tchain) Leaves() []Leaf {
+func (t *chain) Leaves() []Leaf {
 	if t.tree == nil {
 		return nil
 	}
@@ -192,7 +192,7 @@ func (t *tchain) Leaves() []Leaf {
 }
 
 // Leaf returns the leaf whose name is the argument.
-func (t *tchain) Leaf(name string) Leaf {
+func (t *chain) Leaf(name string) Leaf {
 	if t.tree == nil {
 		return nil
 	}
@@ -200,7 +200,7 @@ func (t *tchain) Leaf(name string) Leaf {
 }
 
 // getFile returns the underlying file.
-func (t *tchain) getFile() *riofs.File {
+func (t *chain) getFile() *riofs.File {
 	if t.tree == nil {
 		return nil
 	}
@@ -208,7 +208,7 @@ func (t *tchain) getFile() *riofs.File {
 }
 
 // loadEntry returns an error if there is a problem during the loading.
-func (t *tchain) loadEntry(i int64) error {
+func (t *chain) loadEntry(i int64) error {
 	if t.tree == nil {
 		return nil
 	}
@@ -217,7 +217,7 @@ func (t *tchain) loadEntry(i int64) error {
 }
 
 var (
-	_ root.Object = (*tchain)(nil)
-	_ root.Named  = (*tchain)(nil)
-	_ Tree        = (*tchain)(nil)
+	_ root.Object = (*chain)(nil)
+	_ root.Named  = (*chain)(nil)
+	_ Tree        = (*chain)(nil)
 )

@@ -9,7 +9,7 @@ import (
 )
 
 type rchain struct {
-	ch *tchain
+	ch *chain
 
 	rvs  []ReadVar
 	nrab int
@@ -24,7 +24,7 @@ var (
 	_ reader = (*rchain)(nil)
 )
 
-func newRChain(ch *tchain, rvars []ReadVar, n int, beg, end int64) *rchain {
+func newRChain(ch *chain, rvars []ReadVar, n int, beg, end int64) *rchain {
 	r := &rchain{
 		ch:   ch,
 		rvs:  rvars,
