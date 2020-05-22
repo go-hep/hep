@@ -5,6 +5,7 @@
 package csvdriver
 
 import (
+	"context"
 	"database/sql/driver"
 	"fmt"
 	"io"
@@ -36,12 +37,14 @@ func (conn *csvConn) importCSV() error {
 	}
 	defer tx.Commit()
 
-	_, err = conn.Exec("create table csv ("+schema.Decl()+")", nil)
+	ctx := context.Background()
+
+	_, err = conn.ExecContext(ctx, "create table csv ("+schema.Decl()+")", nil)
 	if err != nil {
 		return err
 	}
 
-	_, err = conn.Exec("create index csv_id on csv (id());", nil)
+	_, err = conn.ExecContext(ctx, "create index csv_id on csv (id());", nil)
 	if err != nil {
 		return err
 	}
@@ -65,9 +68,9 @@ func (conn *csvConn) importCSV() error {
 			return err
 		}
 		for i, arg := range pargs {
-			vargs[i] = reflect.ValueOf(arg).Elem().Interface()
+			vargs[i].Value = reflect.ValueOf(arg).Elem().Interface()
 		}
-		_, err = conn.Exec(insert, vargs)
+		_, err = conn.ExecContext(ctx, insert, vargs)
 		if err != nil {
 			return err
 		}
@@ -177,12 +180,16 @@ func (st *schemaType) Decl() string {
 	return strings.Join(o, ", ")
 }
 
-func (st *schemaType) Args() ([]driver.Value, []interface{}) {
-	vargs := make([]driver.Value, len(*st))
+func (st *schemaType) Args() ([]driver.NamedValue, []interface{}) {
+	vargs := make([]driver.NamedValue, len(*st))
 	pargs := make([]interface{}, len(*st))
 	for i, v := range *st {
 		ptr := reflect.New(v.v.Type())
-		vargs[i] = ptr.Elem().Interface()
+		vargs[i] = driver.NamedValue{
+			Name:    v.n,
+			Ordinal: i + 1,
+			Value:   ptr.Elem().Interface(),
+		}
 		pargs[i] = ptr.Interface()
 	}
 	return vargs, pargs
