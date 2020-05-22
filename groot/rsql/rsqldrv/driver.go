@@ -124,8 +124,6 @@ type driverConn struct {
 	drv  *rootDriver
 	stop map[*driverStmt]struct{}
 	refs int
-
-	tx driver.Tx
 }
 
 // Prepare returns a prepared statement, bound to this connection.

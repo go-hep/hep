@@ -11,7 +11,6 @@ import (
 
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rsql/rsqldrv"
-	_ "go-hep.org/x/hep/groot/rsql/rsqldrv"
 	"go-hep.org/x/hep/groot/rtree"
 )
 

@@ -159,15 +159,15 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			}
 		//case string:
 		case uint8:
-			if x >= 0 && x <= math.MaxUint8 {
+			if x <= math.MaxUint8 {
 				return uint8(int64(x))
 			}
 		case uint16:
-			if x >= 0 && x <= math.MaxUint16 {
+			if x <= math.MaxUint16 {
 				return uint16(int64(x))
 			}
 		case uint32:
-			if x >= 0 && x <= math.MaxUint32 {
+			if x <= math.MaxUint32 {
 				return uint32(int64(x))
 			}
 		case uint64:

@@ -10,7 +10,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/xwb1989/sqlparser"
 )
@@ -23,10 +22,7 @@ type expression interface {
 }
 
 type execCtx struct {
-	db    *driverConn
-	args  []interface{}
-	cache map[interface{}]interface{}
-	mu    sync.RWMutex
+	db *driverConn
 }
 
 func newExecCtx(db *driverConn, args []driver.NamedValue) *execCtx {
