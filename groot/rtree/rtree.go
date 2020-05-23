@@ -16,21 +16,16 @@ import (
 
 // FileOf returns the file hosting the given Tree.
 // If the tree is not connected to any ROOT file, nil is returned.
-func FileOf(tree Tree) *riofs.File { return tree.getFile() }
+func FileOf(tree Tree) *riofs.File { return tree.(*ttree).f }
 
 type Tree interface {
 	root.Named
 
 	Entries() int64
-	TotBytes() int64
-	ZipBytes() int64
 	Branch(name string) Branch
 	Branches() []Branch
 	Leaf(name string) Leaf
 	Leaves() []Leaf
-
-	getFile() *riofs.File
-	loadEntry(i int64) error
 }
 
 // Branch describes a branch of a ROOT Tree.

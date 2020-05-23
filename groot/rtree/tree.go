@@ -150,23 +150,8 @@ func (tree *ttree) Leaf(name string) Leaf {
 	return nil
 }
 
-func (tree *ttree) SetFile(f *riofs.File) {
-	tree.f = f
-}
-
-func (tree *ttree) getFile() *riofs.File {
-	return tree.f
-}
-
-func (tree *ttree) loadEntry(entry int64) error {
-	for _, b := range tree.branches {
-		err := b.loadEntry(entry)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
+func (tree *ttree) SetFile(f *riofs.File) { tree.f = f }
+func (tree *ttree) getFile() *riofs.File  { return tree.f }
 
 func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {

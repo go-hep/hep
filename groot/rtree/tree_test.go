@@ -54,14 +54,6 @@ func TestFlatTree(t *testing.T) {
 	if got, want := entries, int64(100); got != want {
 		t.Fatalf("tree.Entries: got=%v. want=%v", got, want)
 	}
-
-	if got, want := tree.TotBytes(), int64(61368); got != want {
-		t.Fatalf("tree.totbytes: got=%v. want=%v", got, want)
-	}
-
-	if got, want := tree.ZipBytes(), int64(8544); got != want {
-		t.Fatalf("tree.zipbytes: got=%v. want=%v", got, want)
-	}
 }
 
 type EventType struct {
@@ -337,14 +329,6 @@ func TestSimpleTree(t *testing.T) {
 	if got, want := entries, int64(4); got != want {
 		t.Fatalf("tree.Entries: got=%v. want=%v", got, want)
 	}
-
-	if got, want := tree.TotBytes(), int64(288); got != want {
-		t.Fatalf("tree.totbytes: got=%v. want=%v", got, want)
-	}
-
-	if got, want := tree.ZipBytes(), int64(288); got != want {
-		t.Fatalf("tree.zipbytes: got=%v. want=%v", got, want)
-	}
 }
 
 func TestSimpleTreeOverHTTP(t *testing.T) {
@@ -383,14 +367,6 @@ func TestSimpleTreeOverHTTP(t *testing.T) {
 	entries := tree.Entries()
 	if got, want := entries, int64(4); got != want {
 		t.Fatalf("tree.Entries: got=%v. want=%v", got, want)
-	}
-
-	if got, want := tree.TotBytes(), int64(288); got != want {
-		t.Fatalf("tree.totbytes: got=%v. want=%v", got, want)
-	}
-
-	if got, want := tree.ZipBytes(), int64(288); got != want {
-		t.Fatalf("tree.zipbytes: got=%v. want=%v", got, want)
 	}
 }
 

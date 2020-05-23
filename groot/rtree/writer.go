@@ -285,7 +285,10 @@ func (w *wtree) ROOTMerge(src root.Object) error {
 // Write writes the event data to ROOT storage and returns the number
 // of bytes (before compression, if any) written.
 func (w *wtree) Write() (int, error) {
-	var tot int
+	var (
+		tot int
+		zip int
+	)
 	for _, b := range w.ttree.branches {
 		nbytes, err := b.write()
 		if err != nil {
@@ -295,6 +298,7 @@ func (w *wtree) Write() (int, error) {
 	}
 	w.ttree.entries++
 	w.ttree.totBytes += int64(tot)
+	w.ttree.zipBytes += int64(zip)
 	// FIXME(sbinet): autoflush
 
 	return tot, nil
@@ -329,10 +333,6 @@ func (w *wtree) Close() error {
 	}
 
 	return nil
-}
-
-func (w *wtree) loadEntry(i int64) error {
-	return fmt.Errorf("rtree: Tree writer can not be read from")
 }
 
 func fileOf(d riofs.Directory) *riofs.File {

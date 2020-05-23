@@ -148,25 +148,6 @@ func (t *chain) Entries() int64 {
 	return v
 }
 
-// TotBytes return the total number of bytes before compression.
-func (t *chain) TotBytes() int64 {
-	var v int64
-	for _, tree := range t.trees {
-		v += tree.TotBytes()
-	}
-	return v
-}
-
-// ZipBytes returns the total number of bytes after compression.
-func (t *chain) ZipBytes() int64 {
-	var v int64
-	for _, tree := range t.trees {
-		v += tree.ZipBytes()
-	}
-	return v
-
-}
-
 // Branches returns the list of branches.
 func (t *chain) Branches() []Branch {
 	if t.tree == nil {
@@ -197,23 +178,6 @@ func (t *chain) Leaf(name string) Leaf {
 		return nil
 	}
 	return t.tree.Leaf(name)
-}
-
-// getFile returns the underlying file.
-func (t *chain) getFile() *riofs.File {
-	if t.tree == nil {
-		return nil
-	}
-	return t.tree.getFile()
-}
-
-// loadEntry returns an error if there is a problem during the loading.
-func (t *chain) loadEntry(i int64) error {
-	if t.tree == nil {
-		return nil
-	}
-	j := i - t.off
-	return t.tree.loadEntry(j)
 }
 
 var (
