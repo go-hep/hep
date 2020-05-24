@@ -272,7 +272,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(x int32) int32 { return x },
 			branches: []string{"ones"},
-			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: could not find all needed ReadVars (missing: [ones])`),
+			err:      fmt.Errorf(`rtree: could not create formula: rtree: could not find all needed ReadVars (missing: [ones])`),
 		},
 		{
 			fname:    "../testdata/simple.root",
@@ -280,7 +280,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(x int32, y float32, z int32) int32 { return x },
 			branches: []string{"one", "twos", "ones"},
-			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: could not find all needed ReadVars (missing: [twos ones])`),
+			err:      fmt.Errorf(`rtree: could not create formula: rtree: could not find all needed ReadVars (missing: [twos ones])`),
 		},
 		{
 			fname:    "../testdata/simple.root",
@@ -288,7 +288,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(x1 int32, x2 float64) float64 { return 0 },
 			branches: []string{"one", "two"},
-			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: argument type 1 mismatch: func=float64, read-var[two]=float32`),
+			err:      fmt.Errorf(`rtree: could not create formula: rtree: could not bind formula to rvars: rfunc: argument type 1 (name=two) mismatch: got=float32, want=float64`),
 		},
 		{
 			fname:    "../testdata/simple.root",
@@ -296,7 +296,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      "not a func",
 			branches: []string{"one", "two"},
-			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: FormulaFunc expects a func`),
+			err:      fmt.Errorf(`rtree: could not create formula: rfunc: formula expects a func`),
 		},
 		{
 			fname:    "../testdata/simple.root",
@@ -304,7 +304,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(x1 int32, x2 float64) float64 { return 0 },
 			branches: []string{"one"},
-			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: num-branches/func-arity mismatch`),
+			err:      fmt.Errorf(`rtree: could not create formula: rfunc: num-branches/func-arity mismatch`),
 		},
 		{
 			fname:    "../testdata/simple.root",
@@ -312,7 +312,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(x1 int32) float64 { return 0 },
 			branches: []string{"one", "two"},
-			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: num-branches/func-arity mismatch`),
+			err:      fmt.Errorf(`rtree: could not create formula: rfunc: num-branches/func-arity mismatch`),
 		},
 		{
 			fname:    "../testdata/simple.root",
@@ -320,7 +320,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(x1 int32) (a, b float64) { return },
 			branches: []string{"one"},
-			err:      fmt.Errorf(`rtree: could not create FormulaFunc: rtree: invalid number of return values`),
+			err:      fmt.Errorf(`rtree: could not create formula: rfunc: invalid number of return values`),
 		},
 	} {
 		t.Run("", func(t *testing.T) {
@@ -376,10 +376,6 @@ func TestFormulaFunc(t *testing.T) {
 			}()
 
 			err = r.Read(func(ctx RCtx) error {
-				if got, want := form.Eval(), tc.want[ctx.Entry]; !reflect.DeepEqual(got, want) {
-					return fmt.Errorf("entry[%d]: invalid form-eval:\ngot=%v (%T)\nwant=%v (%T)", ctx.Entry, got, got, want, want)
-				}
-
 				if got, want := reflect.ValueOf(form.Func()).Call(nil)[0].Interface(), tc.want[ctx.Entry]; !reflect.DeepEqual(got, want) {
 					return fmt.Errorf("entry[%d]: invalid form-eval:\ngot=%v (%T)\nwant=%v (%T)", ctx.Entry, got, got, want, want)
 				}
@@ -434,9 +430,7 @@ func BenchmarkFormulaFunc(b *testing.B) {
 			}
 			tree := o.(Tree)
 
-			rvars := []ReadVar{{Name: "F64", Value: new(float64)}}
-
-			r, err := NewReader(tree, rvars)
+			r, err := NewReader(tree, nil)
 			if err != nil {
 				b.Fatal(err)
 			}
@@ -445,25 +439,6 @@ func BenchmarkFormulaFunc(b *testing.B) {
 			if err != nil {
 				b.Fatal(err)
 			}
-			b.Run("Eval", func(b *testing.B) {
-				err = r.Read(func(ctx RCtx) error {
-					sumBenchFormulaFunc += form.Eval().(float64)
-					return nil
-				})
-				if err != nil {
-					b.Fatalf("error: %+v", err)
-				}
-
-				r.r.reset()
-
-				sumBenchFormulaFunc = 0
-				b.ReportAllocs()
-				b.ResetTimer()
-
-				for i := 0; i < b.N; i++ {
-					sumBenchFormulaFunc += form.Eval().(float64)
-				}
-			})
 
 			b.Run("Func", func(b *testing.B) {
 				eval := form.Func().(func() float64)

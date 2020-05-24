@@ -7,6 +7,8 @@ package rtree
 import (
 	"fmt"
 	"io"
+
+	"go-hep.org/x/hep/groot/rtree/rfunc"
 )
 
 // Reader reads data from a Tree.
@@ -19,7 +21,7 @@ type Reader struct {
 	tree  Tree
 	rvars []ReadVar
 
-	evals []formula
+	evals []rfunc.Formula
 	dirty bool // whether we need to re-create scanner (if formula needed new branches)
 }
 
@@ -135,18 +137,25 @@ func (r *Reader) Read(f func(ctx RCtx) error) error {
 	return r.r.run(eoff, r.beg, r.end, f)
 }
 
-type formula interface {
-	eval()
-}
-
 // FormulaFunc creates a new formula based on the provided function and
 // the list of branches as inputs.
-func (r *Reader) FormulaFunc(branches []string, fct interface{}) (*FormulaFunc, error) {
-	n := len(r.rvars)
-	f, err := newFormulaFunc(r, branches, fct)
+func (r *Reader) FormulaFunc(branches []string, fct interface{}) (rfunc.Formula, error) {
+	f, err := rfunc.New(branches, fct)
 	if err != nil {
-		return nil, fmt.Errorf("rtree: could not create FormulaFunc: %w", err)
+		return nil, fmt.Errorf("rtree: could not create formula: %w", err)
 	}
+	return r.Formula(f)
+}
+
+// Formula creates a new formula based on the provided user provided formula.
+// Formula binds the provided function with the requested list of leaves.
+func (r *Reader) Formula(f rfunc.Formula) (rfunc.Formula, error) {
+	n := len(r.rvars)
+	f, err := newFormula(r, f)
+	if err != nil {
+		return nil, fmt.Errorf("rtree: could not create formula: %w", err)
+	}
+
 	r.evals = append(r.evals, f)
 
 	if n != len(r.rvars) {
