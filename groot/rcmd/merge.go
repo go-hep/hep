@@ -157,7 +157,17 @@ func (cmd *mergeCmd) mergeTasksFrom(o *riofs.File, fname string) ([]task, error)
 			if err != nil {
 				return fmt.Errorf("could not create output ROOT tree %q: %w", name, err)
 			}
-			_, err = rtree.Copy(w, oo)
+
+			r, err := rtree.NewReader(oo, nil)
+			if err != nil {
+				return fmt.Errorf(
+					"could not create input ROOT tree reader %q: %w",
+					name, err,
+				)
+			}
+			defer r.Close()
+
+			_, err = rtree.Copy(w, r)
 			if err != nil {
 				return fmt.Errorf("could not seed output ROOT tree %q: %w", name, err)
 			}

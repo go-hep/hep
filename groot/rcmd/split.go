@@ -103,10 +103,9 @@ func split(oname, tname string, tree rtree.Tree, i int, beg, nevts int64, verbos
 	defer w.Close()
 
 	var (
-		tot   int64
 		rvars = make([]rtree.ReadVar, len(wvars))
 		src   = tree
-		max   = beg + nevts
+		end   = beg + nevts
 	)
 	for i, wvar := range wvars {
 		rvars[i] = rtree.ReadVar{
@@ -115,44 +114,28 @@ func split(oname, tname string, tree rtree.Tree, i int, beg, nevts int64, verbos
 		}
 	}
 
-	scan, err := rtree.NewScannerVars(src, rvars...)
-	if err != nil {
-		return 0, fmt.Errorf("could not create scanner: %w", err)
-	}
-	err = scan.SeekEntry(beg)
-	if err != nil {
-		return 0, fmt.Errorf("could not seek to entry %d: %w", beg, err)
+	if end > tree.Entries() {
+		end = tree.Entries()
 	}
 
-	if max > tree.Entries() {
-		max = tree.Entries()
+	r, err := rtree.NewReader(src, rvars, rtree.WithRange(beg, end))
+	if err != nil {
+		return 0, fmt.Errorf("could not create tree reader: %w", err)
+	}
+	defer r.Close()
+
+	if verbose {
+		log.Printf("splitting [%d, %d) into %q...", beg, end, oname)
+	}
+
+	_, err = rtree.Copy(w, r)
+	if err != nil {
+		return 0, fmt.Errorf("rtree: could not copy tree: %w", err)
 	}
 
 	if verbose {
-		log.Printf("splitting [%d, %d) into %q...", beg, max, oname)
+		log.Printf("splitting [%d, %d) into %q... [ok]", beg, end, oname)
 	}
 
-	for scan.Next() && scan.Entry() < max {
-		err = scan.Scan()
-		if err != nil {
-			return tot, fmt.Errorf("rtree: could not read entry %d from tree: %w", scan.Entry(), err)
-		}
-
-		_, err = w.Write()
-		if err != nil {
-			return tot, fmt.Errorf("rtree: could not write entry %d to tree: %w", scan.Entry(), err)
-		}
-		tot++
-	}
-
-	err = scan.Err()
-	if err != nil {
-		return tot, fmt.Errorf("rtree: could not scan through tree: %w", err)
-	}
-
-	if verbose {
-		log.Printf("splitting [%d, %d) into %q... [ok]", beg, max, oname)
-	}
-
-	return tot, nil
+	return end - beg, nil
 }

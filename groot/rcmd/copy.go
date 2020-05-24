@@ -112,7 +112,15 @@ func (cmd copyCmd) copyTree(dir riofs.Directory, name string, tree rtree.Tree) e
 	if err != nil {
 		return fmt.Errorf("could not create output copy tree: %w", err)
 	}
-	_, err = rtree.Copy(dst, tree)
+	defer dst.Close()
+
+	src, err := rtree.NewReader(tree, nil)
+	if err != nil {
+		return fmt.Errorf("could not create tree reader: %w", err)
+	}
+	defer src.Close()
+
+	_, err = rtree.Copy(dst, src)
 	if err != nil {
 		return fmt.Errorf("could not copy tree %q: %w", name, err)
 	}

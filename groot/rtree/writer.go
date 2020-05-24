@@ -272,7 +272,13 @@ func (w *wtree) SetTitle(title string) { w.ttree.named.SetTitle(title) }
 func (w *wtree) ROOTMerge(src root.Object) error {
 	switch src := src.(type) {
 	case Tree:
-		_, err := Copy(w, src)
+		r, err := NewReader(src, nil)
+		if err != nil {
+			return fmt.Errorf("rtree: could not create tree reader: %w", err)
+		}
+		defer r.Close()
+
+		_, err = Copy(w, r)
 		if err != nil {
 			return fmt.Errorf("rtree: could not merge tree: %w", err)
 		}

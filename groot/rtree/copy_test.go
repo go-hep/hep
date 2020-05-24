@@ -115,7 +115,20 @@ func TestCopyTree(t *testing.T) {
 				"three": 1,
 			},
 			nevts: -1,
-			want:  "key[000]: tree;1 \"fake data\" (TTree)\n",
+			want: `key[000]: tree;1 "fake data" (TTree)
+[000][one]: 1
+[000][two]: 1.1
+[000][three]: uno
+[001][one]: 2
+[001][two]: 2.2
+[001][three]: dos
+[002][one]: 3
+[002][two]: 3.3
+[002][three]: tres
+[003][one]: 4
+[003][two]: 4.4
+[003][three]: quatro
+`,
 		},
 		{
 			file:  "../testdata/leaves.root",
@@ -327,7 +340,13 @@ func TestCopyTree(t *testing.T) {
 				t.Fatalf("could not create tree writer: %+v", err)
 			}
 
-			_, err = rtree.CopyN(dst, src, tc.nevts)
+			r, err := rtree.NewReader(src, nil, rtree.WithRange(0, tc.nevts))
+			if err != nil {
+				t.Fatalf("could not create tree reader: %+v", err)
+			}
+			defer r.Close()
+
+			_, err = rtree.Copy(dst, r)
 			if err != nil {
 				t.Fatalf("could not copy tree: %+v", err)
 			}
