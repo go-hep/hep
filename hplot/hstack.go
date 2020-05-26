@@ -258,7 +258,7 @@ func (hs *HStack) hplot(c draw.Canvas, p *plot.Plot, h *H1D, yoffs []float64, hs
 			hs.Band.Plot(c, p)
 		}
 	}
-	
+
 	c.StrokeLines(h.LineStyle, c.ClipLinesXY(pts)...)
 
 	if h.YErrs != nil {
