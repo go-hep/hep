@@ -117,10 +117,9 @@ func ExampleHStack_withBand() {
 	hh1.LineStyle.Color = color.Black
 	hh1.Band.FillColor = color.NRGBA{G: 210, A: 200}
 
-	hh2 := hplot.NewH1D(h2, hplot.WithBand(true))
+	hh2 := hplot.NewH1D(h2, hplot.WithBand(false))
 	hh2.FillColor = colors[1]
 	hh2.LineStyle.Width = 0
-	hh2.Band.FillColor = color.NRGBA{B: 220, A: 200}
 
 	hh3 := hplot.NewH1D(h3, hplot.WithBand(true))
 	hh3.FillColor = colors[2]
@@ -129,12 +128,27 @@ func ExampleHStack_withBand() {
 
 	hs := []*hplot.H1D{hh1, hh2, hh3}
 
-	tp := hplot.NewTiledPlot(draw.Tiles{Cols: 1, Rows: 2})
+	hh4 := hplot.NewH1D(h1)
+	hh4.FillColor = colors[0]
+	hh4.LineStyle.Color = color.Black
+
+	hh5 := hplot.NewH1D(h2)
+	hh5.FillColor = colors[1]
+	hh5.LineStyle.Width = 0
+
+	hh6 := hplot.NewH1D(h3)
+	hh6.FillColor = colors[2]
+	hh6.LineStyle.Color = color.Black
+
+	hsHistoNoBand := []*hplot.H1D{hh4, hh5, hh6}
+
+	tp := hplot.NewTiledPlot(draw.Tiles{Cols: 2, Rows: 2})
 	tp.Align = true
 
 	{
 		p := tp.Plot(0, 0)
-		p.Title.Text = "With Band, Stack: OFF"
+		p.Title.Text = "Histos With or Without Band, Stack: OFF"
+		p.Title.Padding = 10
 		p.Y.Label.Text = "Y"
 		hstack := hplot.NewHStack(hs, hplot.WithBand(true))
 		hstack.Stack = hplot.HStackOff
@@ -147,9 +161,26 @@ func ExampleHStack_withBand() {
 	}
 
 	{
-		p := tp.Plot(1, 0)
-		p.Title.Text = "With Band, Stack: ON"
+		p := tp.Plot(0, 1)
+		p.Title.Text = "Histos Without Band, Stack: OFF"
+		p.Title.Padding = 10
 		p.X.Label.Text = "X"
+		p.Y.Label.Text = "Y"
+		hstack := hplot.NewHStack(hsHistoNoBand, hplot.WithBand(true))
+		hstack.Stack = hplot.HStackOff
+		hstack.Band.FillColor = color.NRGBA{R: 100, G: 100, B: 100, A: 200}
+		p.Add(hstack, hplot.NewGrid())
+		p.Legend.Add("h1", hs[0])
+		p.Legend.Add("h2", hs[1])
+		p.Legend.Add("h3", hs[2])
+		p.Legend.Top = true
+		p.Legend.Left = true
+	}
+
+	{
+		p := tp.Plot(1, 0)
+		p.Title.Text = "Histos With or Without Band, Stack: ON"
+		p.Title.Padding = 10
 		p.Y.Label.Text = "Y"
 		hstack := hplot.NewHStack(hs, hplot.WithBand(true))
 		hstack.Band.FillColor = color.NRGBA{R: 100, G: 100, B: 100, A: 200}
@@ -161,7 +192,23 @@ func ExampleHStack_withBand() {
 		p.Legend.Left = true
 	}
 
-	err := tp.Save(15*vg.Centimeter, 15*vg.Centimeter, "testdata/hstack_band.png")
+	{
+		p := tp.Plot(1, 1)
+		p.Title.Text = "Histos Without Band, Stack: ON"
+		p.Title.Padding = 10
+		p.X.Label.Text = "X"
+		p.Y.Label.Text = "Y"
+		hstack := hplot.NewHStack(hsHistoNoBand, hplot.WithBand(true))
+		hstack.Band.FillColor = color.NRGBA{R: 100, G: 100, B: 100, A: 200}
+		p.Add(hstack, hplot.NewGrid())
+		p.Legend.Add("h1", hs[0])
+		p.Legend.Add("h2", hs[1])
+		p.Legend.Add("h3", hs[2])
+		p.Legend.Top = true
+		p.Legend.Left = true
+	}
+
+	err := tp.Save(25*vg.Centimeter, 15*vg.Centimeter, "testdata/hstack_band.png")
 	if err != nil {
 		log.Fatalf("error: %+v", err)
 	}
