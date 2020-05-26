@@ -248,17 +248,17 @@ func (hs *HStack) hplot(c draw.Canvas, p *plot.Plot, h *H1D, yoffs []float64, hs
 	}
 
 	// Plot individual histo band when not stacked or total band
-	if h.Band != nil {
-		switch hsk {
-		case HStackOff:
+	switch hsk {
+	case HStackOff:
+		if h.Band != nil {
 			h.Band.Plot(c, p)
-		case HStackOn:
-			if ih == len(hs.hs)-1 {
-				hs.Band.Plot(c, p)
-			}
+		}
+	case HStackOn:
+		if ih == len(hs.hs)-1 && hs.Band != nil {
+			hs.Band.Plot(c, p)
 		}
 	}
-
+	
 	c.StrokeLines(h.LineStyle, c.ClipLinesXY(pts)...)
 
 	if h.YErrs != nil {
