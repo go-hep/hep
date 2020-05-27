@@ -5,12 +5,15 @@
 package genroot // import "go-hep.org/x/hep/groot/internal/genroot"
 
 import (
+	"bytes"
 	"fmt"
 	"go/format"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
+	"time"
 )
 
 // GoFmt formats a file using gofmt.
@@ -32,8 +35,11 @@ func GoFmt(f *os.File) {
 }
 
 // GenImports adds the provided imports to the given writer.
-func GenImports(pkg string, w io.Writer, imports ...string) {
-	fmt.Fprintf(w, srcHeader, pkg)
+func GenImports(year int, pkg string, w io.Writer, imports ...string) {
+	if year <= 0 {
+		year = gopherYear
+	}
+	fmt.Fprintf(w, srcHeader, year, pkg)
 	if len(imports) == 0 {
 		return
 	}
@@ -49,7 +55,30 @@ func GenImports(pkg string, w io.Writer, imports ...string) {
 	fmt.Fprintf(w, ")\n\n")
 }
 
-const srcHeader = `// Copyright ©2020 The go-hep Authors. All rights reserved.
+// ExtractYear returns the copyright year of a Go-HEP header file.
+func ExtractYear(fname string) int {
+	raw, err := ioutil.ReadFile(fname)
+	if err != nil {
+		return gopherYear
+	}
+	if !bytes.HasPrefix(raw, []byte("// Copyright")) {
+		return gopherYear
+	}
+	raw = bytes.TrimPrefix(raw, []byte("// Copyright ©"))
+	raw = bytes.TrimPrefix(raw, []byte("// Copyright "))
+	idx := bytes.Index(raw, []byte("The go-hep Authors"))
+	raw = bytes.TrimSpace(raw[:idx])
+
+	year, err := strconv.Atoi(string(raw))
+	if err != nil {
+		return gopherYear
+	}
+	return year
+}
+
+var gopherYear = time.Now().Year()
+
+const srcHeader = `// Copyright ©%d The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 

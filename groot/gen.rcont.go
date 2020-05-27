@@ -22,13 +22,15 @@ func main() {
 }
 
 func genArrays() {
-	f, err := os.Create("./rcont/array_gen.go")
+	fname := "./rcont/array_gen.go"
+	year := genroot.ExtractYear(fname)
+	f, err := os.Create(fname)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
 
-	genroot.GenImports("rcont", f,
+	genroot.GenImports(year, "rcont", f,
 		"reflect",
 		"",
 		"go-hep.org/x/hep/groot/root",

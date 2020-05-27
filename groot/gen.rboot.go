@@ -245,13 +245,15 @@ func genVersions(streamers []rbytes.StreamerInfo) {
 		log.Fatalf("could not generate ROOT classes versions: %+v", err)
 	}
 
-	f, err := os.Create("./rvers/versions_gen.go")
+	fname := "./rvers/versions_gen.go"
+	year := genroot.ExtractYear(fname)
+	f, err := os.Create(fname)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
 
-	genroot.GenImports("rvers", f)
+	genroot.GenImports(year, "rvers", f)
 
 	fmt.Fprintf(f, "\n\n// ROOT version\nconst ROOT = %d\n\n", types[len(types)-1].Version)
 

@@ -21,13 +21,15 @@ func main() {
 }
 
 func genH1() {
-	f, err := os.Create("./rhist/h1_gen.go")
+	fname := "./rhist/h1_gen.go"
+	year := genroot.ExtractYear(fname)
+	f, err := os.Create(fname)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
 
-	genroot.GenImports("rhist", f,
+	genroot.GenImports(year, "rhist", f,
 		"fmt", "math", "reflect",
 		"",
 		"go-hep.org/x/hep/hbook",
@@ -77,13 +79,15 @@ func genH1() {
 }
 
 func genH2() {
-	f, err := os.Create("./rhist/h2_gen.go")
+	fname := "./rhist/h2_gen.go"
+	year := genroot.ExtractYear(fname)
+	f, err := os.Create(fname)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
 
-	genroot.GenImports("rhist", f,
+	genroot.GenImports(year, "rhist", f,
 		"fmt", "math", "reflect",
 		"",
 		"go-hep.org/x/hep/hbook",

@@ -103,23 +103,29 @@ func genRFuncs() {
 }
 
 func genRFunc(typ Func) {
-	f, err := os.Create("./rfunc_" + typ.Name + "_gen.go")
+	fcodeName := "./rfunc_" + typ.Name + "_gen.go"
+	yearCode := genroot.ExtractYear(fcodeName)
+
+	ftestName := "./rfunc_" + typ.Name + "_gen_test.go"
+	yearTest := genroot.ExtractYear(ftestName)
+
+	f, err := os.Create(fcodeName)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
 
-	ft, err := os.Create("./rfunc_" + typ.Name + "_gen_test.go")
+	ft, err := os.Create(ftestName)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer ft.Close()
 
-	genroot.GenImports("rfunc", f,
+	genroot.GenImports(yearCode, "rfunc", f,
 		"fmt",
 	)
 
-	genroot.GenImports("rfunc", ft,
+	genroot.GenImports(yearTest, "rfunc", ft,
 		"reflect",
 		"testing",
 	)

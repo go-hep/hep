@@ -23,13 +23,15 @@ func main() {
 }
 
 func genLeaves() {
-	f, err := os.Create("./rtree/leaf_gen.go")
+	fname := "./rtree/leaf_gen.go"
+	year := genroot.ExtractYear(fname)
+	f, err := os.Create(fname)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
 
-	genroot.GenImports("rtree", f,
+	genroot.GenImports(year, "rtree", f,
 		"fmt",
 		"reflect",
 		"strings",
@@ -588,7 +590,9 @@ var (
 `
 
 func genRLeaves() {
-	f, err := os.Create("./rtree/rleaf_gen.go")
+	fname := "./rtree/rleaf_gen.go"
+	year := genroot.ExtractYear(fname)
+	f, err := os.Create(fname)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -601,7 +605,7 @@ func genRLeaves() {
 		Sli = Kind("Sli")
 	)
 
-	genroot.GenImports("rtree", f,
+	genroot.GenImports(year, "rtree", f,
 		"reflect",
 		"unsafe", // for unsafeDecayArrayXXX
 		"",

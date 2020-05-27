@@ -20,13 +20,15 @@ func main() {
 }
 
 func genRBuffer() {
-	f, err := os.Create("./rbytes/rbuffer_gen.go")
+	fname := "./rbytes/rbuffer_gen.go"
+	year := genroot.ExtractYear(fname)
+	f, err := os.Create(fname)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
 
-	genroot.GenImports("rbytes", f,
+	genroot.GenImports(year, "rbytes", f,
 		"encoding/binary",
 		"math",
 	)
