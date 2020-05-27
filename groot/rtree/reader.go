@@ -140,7 +140,7 @@ func (r *Reader) Read(f func(ctx RCtx) error) error {
 // FormulaFunc creates a new formula based on the provided function and
 // the list of branches as inputs.
 func (r *Reader) FormulaFunc(branches []string, fct interface{}) (rfunc.Formula, error) {
-	f, err := rfunc.New(branches, fct)
+	f, err := rfunc.NewGenericFormula(branches, fct)
 	if err != nil {
 		return nil, fmt.Errorf("rtree: could not create formula: %w", err)
 	}

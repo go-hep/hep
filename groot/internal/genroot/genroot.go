@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package genroot
+package genroot // import "go-hep.org/x/hep/groot/internal/genroot"
 
 import (
 	"fmt"
@@ -13,6 +13,7 @@ import (
 	"os"
 )
 
+// GoFmt formats a file using gofmt.
 func GoFmt(f *os.File) {
 	fname := f.Name()
 	src, err := ioutil.ReadFile(fname)
@@ -30,6 +31,7 @@ func GoFmt(f *os.File) {
 	}
 }
 
+// GenImports adds the provided imports to the given writer.
 func GenImports(pkg string, w io.Writer, imports ...string) {
 	fmt.Fprintf(w, srcHeader, pkg)
 	if len(imports) == 0 {

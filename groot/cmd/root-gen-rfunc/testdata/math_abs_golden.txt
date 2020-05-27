@@ -1,0 +1,53 @@
+// MyAbs implements rfunc.Formula
+type MyAbs struct {
+	rvars []string
+	arg0 *float64
+	fct func(arg00 float64) float64
+}
+
+// NewMyAbs return a new formula, from the provided function.
+func NewMyAbs(rvars []string, fct func(arg00 float64) float64) *MyAbs {
+	return &MyAbs{
+		rvars: rvars,
+		fct: fct,
+	}
+}
+
+
+// RVars implements rfunc.Formula
+func (f *MyAbs) RVars() []string { return f.rvars }
+
+
+// Bind implements rfunc.Formula
+func (f *MyAbs) Bind(args []interface{}) error {
+	if got, want := len(args), 1; got != want {
+		return fmt.Errorf(
+			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
+			got, want,
+		)
+	}
+	{
+		ptr, ok := args[0].(*float64)
+		if !ok {
+			return fmt.Errorf(
+				"rfunc: argument type 0 (name=%s) mismatch: got=%T, want=*float64",
+				f.rvars[0], args[0],
+			)
+		}
+		f.arg0 = ptr
+	}
+	return nil
+}
+
+// Func implements rfunc.Formula
+func (f *MyAbs) Func() interface{} {
+	return func()  float64 {
+		return f.fct(
+			*f.arg0,
+		)
+	}
+}
+
+var (
+	_ rfunc.Formula = (*MyAbs)(nil)
+)

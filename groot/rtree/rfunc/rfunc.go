@@ -32,20 +32,10 @@ type Formula interface {
 	Func() interface{}
 }
 
-type newFunc func(rvars []string, fct interface{}) (Formula, error)
-
-var (
-	funcs = make(map[reflect.Type]newFunc)
-)
-
-// New returns a new formula from the provided list of needed tree variables
-// and the provided user function.
-func New(rvars []string, fct interface{}) (Formula, error) {
-	typ := reflect.TypeOf(fct)
-	mk, ok := funcs[typ]
-	if ok {
-		return mk(rvars, fct)
-	}
+// NewGenericFormula returns a new formula from the provided list of needed
+// tree variables and the provided user function.
+// NewGenericFormula uses reflect to bind read-vars and the generic function.
+func NewGenericFormula(rvars []string, fct interface{}) (Formula, error) {
 	return newGenericFormula(rvars, fct)
 }
 
