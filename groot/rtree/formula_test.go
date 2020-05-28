@@ -116,6 +116,20 @@ func TestFormulaFunc(t *testing.T) {
 			fname: "../testdata/leaves.root",
 			tname: "tree",
 			rvars: -1,
+			fct: func(x []float32) []float64 {
+				o := make([]float64, len(x))
+				for i, v := range x {
+					o[i] = float64(2 * v)
+				}
+				return o
+			},
+			branches: []string{"SliF32"},
+			want:     []interface{}{[]float64{}, []float64{2}},
+		},
+		{
+			fname: "../testdata/leaves.root",
+			tname: "tree",
+			rvars: -1,
 			fct: func(x root.Float16) root.Float16 {
 				return x
 			},
@@ -377,7 +391,7 @@ func TestFormulaFunc(t *testing.T) {
 
 			err = r.Read(func(ctx RCtx) error {
 				if got, want := reflect.ValueOf(form.Func()).Call(nil)[0].Interface(), tc.want[ctx.Entry]; !reflect.DeepEqual(got, want) {
-					return fmt.Errorf("entry[%d]: invalid form-eval:\ngot=%v (%T)\nwant=%v (%T)", ctx.Entry, got, got, want, want)
+					return fmt.Errorf("entry[%d]: invalid form-eval:\ngot= %v (%T)\nwant=%v (%T)", ctx.Entry, got, got, want, want)
 				}
 
 				return nil
