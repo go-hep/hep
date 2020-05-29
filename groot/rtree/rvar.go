@@ -32,7 +32,7 @@ func NewReadVars(t Tree) []ReadVar {
 			if leaf.LeafCount() != nil {
 				cnt = leaf.LeafCount().Name()
 			}
-			vars = append(vars, ReadVar{Name: b.Name(), Leaf: leaf.Name(), Value: ptr, count: cnt})
+			vars = append(vars, ReadVar{Name: b.Name(), Leaf: leaf.Name(), Value: ptr, count: cnt, leaf: leaf})
 		}
 	}
 

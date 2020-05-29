@@ -153,13 +153,18 @@ func newRLeafElem(leaf *tleafElement, rvar ReadVar, rctx rleafCtx) rleaf {
 			lname = toks[len(toks)-1]
 		}
 		for _, elt := range leaf.streamers {
-			if elt.Name() != lname {
+			if elt.Name() != lname && elt.Name() != "This" {
 				continue
 			}
 			impl.funcs = append(impl.funcs, rstreamerFrom(
 				elt, rvar.Value, lc, sictx,
 			))
 		}
+	}
+	if len(impl.funcs) == 0 {
+		panic(fmt.Errorf(
+			"rtree: could not create rstreamer for rleaf %q", leaf.Name(),
+		))
 	}
 	return &rleafElem{
 		base:     leaf,

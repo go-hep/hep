@@ -127,6 +127,64 @@ func TestFormulaFunc(t *testing.T) {
 			want:     []interface{}{[]float64{}, []float64{2}},
 		},
 		{
+			fname: "../testdata/small-evnt-tree-fullsplit.root",
+			tname: "tree",
+			rvars: -1,
+			fct: func(x []float32) []float64 {
+				o := make([]float64, len(x))
+				for i, v := range x {
+					o[i] = float64(2 * v)
+				}
+				return o
+			},
+			branches: []string{"evt.SliceF32"},
+			want:     []interface{}{[]float64{}, []float64{2}},
+		},
+		{
+			fname: "../testdata/small-evnt-tree-fullsplit.root",
+			tname: "tree",
+			rvars: -1,
+			fct: func(x []float32) []float64 {
+				o := make([]float64, len(x))
+				for i, v := range x {
+					o[i] = float64(2 * v)
+				}
+				return o
+			},
+			branches: []string{"evt.StlVecF32"},
+			want:     []interface{}{[]float64{}, []float64{2}},
+		},
+		{
+			fname: "../testdata/embedded-std-vector.root",
+			tname: "modules",
+			rvars: -1,
+			fct: func(x []float32) []float64 {
+				o := make([]float64, len(x))
+				for i, v := range x {
+					o[i] = float64(2 * v)
+				}
+				return o
+			},
+			branches: []string{"hits_time_mc"},
+			want: []interface{}{
+				[]float64{
+					24.412797927856445, 23.422243118286133,
+					23.469839096069336, 24.914079666137695,
+					23.116113662719727, 23.13003921508789,
+					23.375518798828125, 23.057828903198242,
+					25.786481857299805, 22.85857582092285,
+				},
+				[]float64{
+					23.436037063598633, 25.970693588256836,
+					24.462419509887695, 23.650163650512695,
+					24.811952590942383, 30.67894172668457,
+					23.878101348876953, 25.87006378173828,
+					27.323381423950195, 23.939083099365234,
+					23.786226272583008,
+				},
+			},
+		},
+		{
 			fname: "../testdata/leaves.root",
 			tname: "tree",
 			rvars: -1,
