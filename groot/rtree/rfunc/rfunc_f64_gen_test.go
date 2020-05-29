@@ -52,7 +52,7 @@ func TestFuncI32ToF64(t *testing.T) {
 	}
 
 	got := form.Func().(func() float64)()
-	if got, want := got, float64(42); got != want {
+	if got, want := got, float64(42); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
@@ -98,7 +98,7 @@ func TestFuncF32ToF64(t *testing.T) {
 	}
 
 	got := form.Func().(func() float64)()
-	if got, want := got, float64(42); got != want {
+	if got, want := got, float64(42); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
@@ -133,7 +133,7 @@ func TestFuncToF64(t *testing.T) {
 	}
 
 	got := form.Func().(func() float64)()
-	if got, want := got, float64(42); got != want {
+	if got, want := got, float64(42); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
@@ -179,7 +179,7 @@ func TestFuncF64ToF64(t *testing.T) {
 	}
 
 	got := form.Func().(func() float64)()
-	if got, want := got, float64(42); got != want {
+	if got, want := got, float64(42); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
@@ -227,7 +227,7 @@ func TestFuncF64F64ToF64(t *testing.T) {
 	}
 
 	got := form.Func().(func() float64)()
-	if got, want := got, float64(42); got != want {
+	if got, want := got, float64(42); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
@@ -277,7 +277,7 @@ func TestFuncF64F64F64ToF64(t *testing.T) {
 	}
 
 	got := form.Func().(func() float64)()
-	if got, want := got, float64(42); got != want {
+	if got, want := got, float64(42); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }

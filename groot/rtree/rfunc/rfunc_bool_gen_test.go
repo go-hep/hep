@@ -41,7 +41,7 @@ func TestFuncToBool(t *testing.T) {
 	}
 
 	got := form.Func().(func() bool)()
-	if got, want := got, bool(true); got != want {
+	if got, want := got, bool(true); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
@@ -87,7 +87,7 @@ func TestFuncF32ToBool(t *testing.T) {
 	}
 
 	got := form.Func().(func() bool)()
-	if got, want := got, bool(true); got != want {
+	if got, want := got, bool(true); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
@@ -135,7 +135,7 @@ func TestFuncF32F32ToBool(t *testing.T) {
 	}
 
 	got := form.Func().(func() bool)()
-	if got, want := got, bool(true); got != want {
+	if got, want := got, bool(true); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
@@ -185,7 +185,7 @@ func TestFuncF32F32F32ToBool(t *testing.T) {
 	}
 
 	got := form.Func().(func() bool)()
-	if got, want := got, bool(true); got != want {
+	if got, want := got, bool(true); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
@@ -231,7 +231,7 @@ func TestFuncF64ToBool(t *testing.T) {
 	}
 
 	got := form.Func().(func() bool)()
-	if got, want := got, bool(true); got != want {
+	if got, want := got, bool(true); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
@@ -279,7 +279,7 @@ func TestFuncF64F64ToBool(t *testing.T) {
 	}
 
 	got := form.Func().(func() bool)()
-	if got, want := got, bool(true); got != want {
+	if got, want := got, bool(true); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
@@ -329,7 +329,7 @@ func TestFuncF64F64F64ToBool(t *testing.T) {
 	}
 
 	got := form.Func().(func() bool)()
-	if got, want := got, bool(true); got != want {
+	if got, want := got, bool(true); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }

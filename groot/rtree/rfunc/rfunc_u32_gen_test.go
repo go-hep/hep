@@ -41,7 +41,7 @@ func TestFuncToU32(t *testing.T) {
 	}
 
 	got := form.Func().(func() uint32)()
-	if got, want := got, uint32(42); got != want {
+	if got, want := got, uint32(42); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
@@ -87,7 +87,7 @@ func TestFuncU32ToU32(t *testing.T) {
 	}
 
 	got := form.Func().(func() uint32)()
-	if got, want := got, uint32(42); got != want {
+	if got, want := got, uint32(42); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
@@ -135,7 +135,7 @@ func TestFuncU32U32ToU32(t *testing.T) {
 	}
 
 	got := form.Func().(func() uint32)()
-	if got, want := got, uint32(42); got != want {
+	if got, want := got, uint32(42); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
@@ -185,7 +185,7 @@ func TestFuncU32U32U32ToU32(t *testing.T) {
 	}
 
 	got := form.Func().(func() uint32)()
-	if got, want := got, uint32(42); got != want {
+	if got, want := got, uint32(42); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }

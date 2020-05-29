@@ -380,6 +380,8 @@ func (f rfuncType) TestFunc() string {
 		return `"42"`
 	case "bool":
 		return "true"
+	case "[]float64":
+		return "[]float64{42}"
 	default:
 		return "42"
 	}
@@ -515,7 +517,7 @@ const rfuncTestTmpl = `func Test{{.Type}}(t *testing.T) {
 	}
 
 	got := form.Func().(func () {{.Return}})()
-	if got, want := got, {{Out0}}({{.TestFunc}}); got != want {
+	if got, want := got, {{Out0}}({{.TestFunc}}); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
