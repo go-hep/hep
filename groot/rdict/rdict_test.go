@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/groot/rbase"
+	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rmeta"
 )
 
@@ -313,6 +314,167 @@ func TestParseStdContainers(t *testing.T) {
 			got := tc.parse(tc.name)
 			if !reflect.DeepEqual(got, tc.want) {
 				t.Fatalf("got=%q, want=%q", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestGenChecksum(t *testing.T) {
+	sbt := func(n string, t rmeta.Enum, et string) *StreamerBasicType {
+		return &StreamerBasicType{
+			StreamerElement: Element{
+				Name:  *rbase.NewNamed(n, ""),
+				Type:  t,
+				EName: et,
+			}.New(),
+		}
+	}
+	sbsli := func(n, t string, typ rmeta.Enum, et string) *StreamerBasicType {
+		return &StreamerBasicType{
+			StreamerElement: Element{
+				Name:  *rbase.NewNamed(n, t),
+				Type:  typ + rmeta.OffsetP,
+				EName: et + "*",
+			}.New(),
+		}
+	}
+	sbarr := func(n string, t rmeta.Enum, et string, i int) *StreamerBasicType {
+		return &StreamerBasicType{
+			StreamerElement: Element{
+				Name:   *rbase.NewNamed(n, ""),
+				Type:   t + rmeta.OffsetL,
+				ArrDim: 1,
+				ArrLen: int32(i),
+				MaxIdx: [5]int32{int32(i)},
+				EName:  et,
+			}.New(),
+		}
+	}
+	tstr := func(n string) *StreamerString {
+		return &StreamerString{
+			StreamerElement: Element{
+				Name:  *rbase.NewNamed(n, ""),
+				Type:  rmeta.TString,
+				EName: "TString",
+			}.New(),
+		}
+	}
+	stlstr := func(n string) *StreamerSTLstring {
+		return &StreamerSTLstring{
+			StreamerSTL: StreamerSTL{
+				StreamerElement: Element{
+					Name:  *rbase.NewNamed(n, ""),
+					Type:  rmeta.TString,
+					EName: "string",
+				}.New(),
+			},
+		}
+	}
+	stlvec := func(n, et string) *StreamerSTL {
+		return &StreamerSTL{
+			StreamerElement: Element{
+				Name:  *rbase.NewNamed(n, ""),
+				Type:  rmeta.STL,
+				EName: "vector<" + et + ">",
+			}.New(),
+		}
+	}
+	soa := func(n, et string) *StreamerObjectAny {
+		return &StreamerObjectAny{
+			StreamerElement: Element{
+				Name:  *rbase.NewNamed(n, ""),
+				Type:  rmeta.Any,
+				EName: et,
+			}.New(),
+		}
+	}
+
+	for _, tc := range []struct {
+		name  string
+		elems []rbytes.StreamerElement
+		want  uint32
+	}{
+		{
+			name: "P3",
+			elems: []rbytes.StreamerElement{
+				sbt("Px", rmeta.Int32, "int"),
+				sbt("Py", rmeta.Float64, "double"),
+				sbt("Pz", rmeta.Int32, "int"),
+			},
+			want: 1678002455, // obtained w/ 6.20/04
+		},
+		{
+			name: "ArrF64",
+			elems: []rbytes.StreamerElement{
+				sbarr("Arr", rmeta.Float64, "double", 10),
+			},
+			want: 1711917547, // obtained w/ 6.20/04
+		},
+		{
+			name: "SliF64",
+			elems: []rbytes.StreamerElement{
+				sbt("N", rmeta.Int32, "int"),
+				sbsli("Sli", "[N]", rmeta.Float64, "double"),
+			},
+			want: 193076120, // obtained w/ 6.20/04
+		},
+		{
+			name: "StlVecF64",
+			elems: []rbytes.StreamerElement{
+				stlvec("Stl", "double"),
+			},
+			want: 2364618348, // obtained w/ 6.20/04
+		},
+		{
+			name: "Event",
+			elems: []rbytes.StreamerElement{
+				tstr("Beg"),
+				sbt("I16", rmeta.Int16, "short"),
+				sbt("I32", rmeta.Int32, "int"),
+				sbt("I64", rmeta.Int64, "long"),
+				sbt("U16", rmeta.Uint16, "unsigned short"),
+				sbt("U32", rmeta.Uint32, "unsigned int"),
+				sbt("U64", rmeta.Uint64, "unsigned long"),
+				sbt("F32", rmeta.Float32, "float"),
+				sbt("F64", rmeta.Float64, "double"),
+				tstr("Str"),
+				soa("P3", "P3"),
+				sbarr("ArrayI16", rmeta.Int16, "short", 10),
+				sbarr("ArrayI32", rmeta.Int32, "int", 10),
+				sbarr("ArrayI64", rmeta.Int64, "long", 10),
+				sbarr("ArrayU16", rmeta.Uint16, "unsigned short", 10),
+				sbarr("ArrayU32", rmeta.Uint32, "unsigned int", 10),
+				sbarr("ArrayU64", rmeta.Uint64, "unsigned long", 10),
+				sbarr("ArrayF32", rmeta.Float32, "float", 10),
+				sbarr("ArrayF64", rmeta.Float64, "double", 10),
+				sbt("N", rmeta.Int32, "int"),
+				sbsli("SliceI16", "[N]", rmeta.Int16, "short"),
+				sbsli("SliceI32", "[N]", rmeta.Int32, "int"),
+				sbsli("SliceI64", "[N]", rmeta.Int64, "long"),
+				sbsli("SliceU16", "[N]", rmeta.Uint16, "unsigned short"),
+				sbsli("SliceU32", "[N]", rmeta.Uint32, "unsigned int"),
+				sbsli("SliceU64", "[N]", rmeta.Uint64, "unsigned long"),
+				sbsli("SliceF32", "[N]", rmeta.Float32, "float"),
+				sbsli("SliceF64", "[N]", rmeta.Float64, "double"),
+				stlstr("StdStr"),
+				stlvec("StlVecI16", "short"),
+				stlvec("StlVecI32", "int"),
+				stlvec("StlVecI64", "long"),
+				stlvec("StlVecU16", "unsigned short"),
+				stlvec("StlVecU32", "unsigned int"),
+				stlvec("StlVecU64", "unsigned long"),
+				stlvec("StlVecF32", "float"),
+				stlvec("StlVecF64", "double"),
+				stlvec("StlVecStr", "string"),
+				tstr("End"),
+			},
+			want: 1123173915, // obtained w/ 6.20/04
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			chksum := genChecksum(tc.name, tc.elems)
+			if got, want := chksum, tc.want; got != want {
+				t.Fatalf("invalid checksum: got=%d, want=%d", got, want)
 			}
 		})
 	}

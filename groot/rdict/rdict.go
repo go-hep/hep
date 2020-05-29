@@ -40,7 +40,7 @@ type StreamerInfo struct {
 func NewStreamerInfo(name string, version int, elems []rbytes.StreamerElement) *StreamerInfo {
 	sinfos := &StreamerInfo{
 		named:  *rbase.NewNamed(GoName2Cxx(name), "Go;"+name),
-		chksum: 0, // FIXME(sbinet): how to generate a stable and meaningful checksum?
+		chksum: genChecksum(name, elems),
 		clsver: int32(version),
 		objarr: rcont.NewObjArray(),
 		elems:  elems,
@@ -308,6 +308,10 @@ func (tse *StreamerElement) Title() string {
 
 func (tse *StreamerElement) ArrayDim() int {
 	return int(tse.arrdim)
+}
+
+func (tse *StreamerElement) MaxIdx() [5]int32 {
+	return tse.maxidx
 }
 
 func (tse *StreamerElement) ArrayLen() int {
@@ -1079,6 +1083,47 @@ func (tsa *StreamerArtificial) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	r.CheckByteCount(pos, bcnt, beg, tsa.Class())
 	return r.Err()
+}
+
+func genChecksum(name string, elems []rbytes.StreamerElement) uint32 {
+	var (
+		id   uint32
+		hash = func(s string) {
+			for _, v := range []byte(s) {
+				id = id*3 + uint32(v)
+			}
+		}
+	)
+
+	hash(name)
+
+	// FIXME(sbinet): handle base-classes for std::pair<K,V>
+	for _, se := range elems {
+		//if se, ok := se.(*StreamerBase); ok {
+		//	// FIXME(sbinet): get base checksum.
+		//}
+
+		// FIXME(sbinet): add enum handling.
+		hash(se.Name())
+		hash(se.TypeName())
+
+		dims := se.ArrayDim()
+		if dims > 0 {
+			maxidx := se.(interface{ MaxIdx() [5]int32 }).MaxIdx()
+			for _, v := range maxidx[:dims] {
+				id = id*3 + uint32(v)
+			}
+		}
+		title := se.Title()
+		beg := strings.Index(title, "[")
+		if beg != 0 {
+			continue
+		}
+		end := strings.Index(title, "]")
+		hash(title[1:end])
+	}
+
+	return id
 }
 
 func init() {
