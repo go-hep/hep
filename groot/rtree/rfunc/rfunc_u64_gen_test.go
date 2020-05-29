@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestU64Ar0(t *testing.T) {
+func TestFuncToU64(t *testing.T) {
 
 	var rvars []string
 
@@ -19,7 +19,7 @@ func TestU64Ar0(t *testing.T) {
 		return 42
 	}
 
-	form := NewU64Ar0(rvars, fct)
+	form := NewFuncToU64(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
@@ -41,12 +41,12 @@ func TestU64Ar0(t *testing.T) {
 	}
 
 	got := form.Func().(func() uint64)()
-	if got, want := got, uint64(42); got != want {
+	if got, want := got, uint64(42); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
 
-func TestU64Ar1(t *testing.T) {
+func TestFuncU64ToU64(t *testing.T) {
 
 	rvars := make([]string, 1)
 	rvars[0] = "name-0"
@@ -55,7 +55,7 @@ func TestU64Ar1(t *testing.T) {
 		return 42
 	}
 
-	form := NewU64Ar1(rvars, fct)
+	form := NewFuncU64ToU64(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
@@ -87,12 +87,12 @@ func TestU64Ar1(t *testing.T) {
 	}
 
 	got := form.Func().(func() uint64)()
-	if got, want := got, uint64(42); got != want {
+	if got, want := got, uint64(42); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
 
-func TestU64Ar2(t *testing.T) {
+func TestFuncU64U64ToU64(t *testing.T) {
 
 	rvars := make([]string, 2)
 	rvars[0] = "name-0"
@@ -102,7 +102,7 @@ func TestU64Ar2(t *testing.T) {
 		return 42
 	}
 
-	form := NewU64Ar2(rvars, fct)
+	form := NewFuncU64U64ToU64(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
@@ -135,12 +135,12 @@ func TestU64Ar2(t *testing.T) {
 	}
 
 	got := form.Func().(func() uint64)()
-	if got, want := got, uint64(42); got != want {
+	if got, want := got, uint64(42); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }
 
-func TestU64Ar3(t *testing.T) {
+func TestFuncU64U64U64ToU64(t *testing.T) {
 
 	rvars := make([]string, 3)
 	rvars[0] = "name-0"
@@ -151,7 +151,7 @@ func TestU64Ar3(t *testing.T) {
 		return 42
 	}
 
-	form := NewU64Ar3(rvars, fct)
+	form := NewFuncU64U64U64ToU64(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
@@ -185,7 +185,7 @@ func TestU64Ar3(t *testing.T) {
 	}
 
 	got := form.Func().(func() uint64)()
-	if got, want := got, uint64(42); got != want {
+	if got, want := got, uint64(42); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }

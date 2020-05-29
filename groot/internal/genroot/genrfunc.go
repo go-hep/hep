@@ -11,6 +11,7 @@ import (
 	"go/token"
 	"go/types"
 	"io"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -100,7 +101,7 @@ func NewRFuncGenerator(w io.Writer, fct RFunc) (*rfuncGen, error) {
 	if name == "" {
 		switch fct.Path {
 		case "":
-			name = "FuncFormula"
+			name = genRFuncName(f)
 		default:
 			name = fct.Def + "Formula"
 		}
@@ -115,6 +116,64 @@ func NewRFuncGenerator(w io.Writer, fct RFunc) (*rfuncGen, error) {
 	}
 
 	return gen, nil
+}
+
+func genRFuncName(sig *types.Signature) string {
+	o := new(strings.Builder)
+	o.WriteString("Func")
+	basic := func(k types.BasicKind) string {
+		switch k {
+		case types.Bool:
+			return "Bool"
+		case types.Uint8:
+			return "U8"
+		case types.Uint16:
+			return "U16"
+		case types.Uint32:
+			return "U32"
+		case types.Uint64:
+			return "U64"
+		case types.Int8:
+			return "I8"
+		case types.Int16:
+			return "I16"
+		case types.Int32:
+			return "I32"
+		case types.Int64:
+			return "I64"
+		case types.Float32:
+			return "F32"
+		case types.Float64:
+			return "F64"
+		case types.String:
+			return "Str"
+		}
+		panic(fmt.Errorf("unhandled type kind %#v", k))
+	}
+	var code func(typ types.Type) string
+	code = func(typ types.Type) string {
+		switch typ := typ.Underlying().(type) {
+		case *types.Basic:
+			return basic(typ.Kind())
+		case *types.Slice:
+			return code(typ.Elem()) + "s"
+		default:
+			panic(fmt.Errorf("unhandled type %#v", typ))
+		}
+	}
+
+	params := sig.Params()
+	for i := 0; i < params.Len(); i++ {
+		o.WriteString(code(params.At(i).Type()))
+	}
+	res := sig.Results()
+	if res.Len() > 0 {
+		o.WriteString("To")
+		for i := 0; i < res.Len(); i++ {
+			o.WriteString(code(res.At(i).Type()))
+		}
+	}
+	return o.String()
 }
 
 func (gen *rfuncGen) Generate() error {
@@ -160,13 +219,14 @@ func parseExpr(x string) (*types.Signature, error) {
 	switch expr := expr.(type) {
 	case *ast.FuncType:
 		var (
-			pos token.Pos
-			pkg *types.Package
-			par *types.Tuple
-			res *types.Tuple
-			sig *types.Signature
+			pos     token.Pos
+			pkg     *types.Package
+			par     *types.Tuple
+			res     *types.Tuple
+			sig     *types.Signature
+			typeFor func(typ ast.Expr) types.Type
 		)
-		typeFor := func(typ ast.Expr) types.Type {
+		typeFor = func(typ ast.Expr) types.Type {
 			switch typ := typ.(type) {
 			case *ast.Ident:
 				t, ok := astTypesToGoTypes[typ.Name]
@@ -174,8 +234,20 @@ func parseExpr(x string) (*types.Signature, error) {
 					panic(fmt.Errorf("unknown ast.Ident type name %q", typ.Name))
 				}
 				return t
+			case *ast.ArrayType:
+				elt := typeFor(typ.Elt)
+				switch typ.Len {
+				case nil:
+					return types.NewSlice(elt)
+				default:
+					sz, err := strconv.ParseInt(typ.Len.(*ast.Ident).String(), 10, 64)
+					if err != nil {
+						panic(fmt.Errorf("invalid array expression: %#v: %+v", typ, err))
+					}
+					return types.NewArray(elt, sz)
+				}
 			default:
-				panic(fmt.Errorf("unhandled ast.Expr: %#v (%T)", typ, typ))
+				panic(fmt.Errorf("unhandled ast.Expr: %#v (%T), x=%q", typ, typ, x))
 			}
 		}
 		mk := func(lst *ast.FieldList) *types.Tuple {
@@ -308,6 +380,8 @@ func (f rfuncType) TestFunc() string {
 		return `"42"`
 	case "bool":
 		return "true"
+	case "[]float64":
+		return "[]float64{42}"
 	default:
 		return "42"
 	}
@@ -443,7 +517,7 @@ const rfuncTestTmpl = `func Test{{.Type}}(t *testing.T) {
 	}
 
 	got := form.Func().(func () {{.Return}})()
-	if got, want := got, {{Out0}}({{.TestFunc}}); got != want {
+	if got, want := got, {{Out0}}({{.TestFunc}}); !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid output:\ngot= %v (%T)\nwant=%v (%T)", got, got, want, want)
 	}
 }

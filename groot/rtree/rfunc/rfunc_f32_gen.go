@@ -10,23 +10,23 @@ import (
 	"fmt"
 )
 
-// F32Ar0 implements rfunc.Formula
-type F32Ar0 struct {
+// FuncToF32 implements rfunc.Formula
+type FuncToF32 struct {
 	fct func() float32
 }
 
-// NewF32Ar0 return a new formula, from the provided function.
-func NewF32Ar0(rvars []string, fct func() float32) *F32Ar0 {
-	return &F32Ar0{
+// NewFuncToF32 return a new formula, from the provided function.
+func NewFuncToF32(rvars []string, fct func() float32) *FuncToF32 {
+	return &FuncToF32{
 		fct: fct,
 	}
 }
 
 // RVars implements rfunc.Formula
-func (f *F32Ar0) RVars() []string { return nil }
+func (f *FuncToF32) RVars() []string { return nil }
 
 // Bind implements rfunc.Formula
-func (f *F32Ar0) Bind(args []interface{}) error {
+func (f *FuncToF32) Bind(args []interface{}) error {
 	if got, want := len(args), 0; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -37,36 +37,36 @@ func (f *F32Ar0) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *F32Ar0) Func() interface{} {
+func (f *FuncToF32) Func() interface{} {
 	return func() float32 {
 		return f.fct()
 	}
 }
 
 var (
-	_ Formula = (*F32Ar0)(nil)
+	_ Formula = (*FuncToF32)(nil)
 )
 
-// F32Ar1 implements rfunc.Formula
-type F32Ar1 struct {
+// FuncF32ToF32 implements rfunc.Formula
+type FuncF32ToF32 struct {
 	rvars []string
 	arg0  *float32
 	fct   func(arg00 float32) float32
 }
 
-// NewF32Ar1 return a new formula, from the provided function.
-func NewF32Ar1(rvars []string, fct func(arg00 float32) float32) *F32Ar1 {
-	return &F32Ar1{
+// NewFuncF32ToF32 return a new formula, from the provided function.
+func NewFuncF32ToF32(rvars []string, fct func(arg00 float32) float32) *FuncF32ToF32 {
+	return &FuncF32ToF32{
 		rvars: rvars,
 		fct:   fct,
 	}
 }
 
 // RVars implements rfunc.Formula
-func (f *F32Ar1) RVars() []string { return f.rvars }
+func (f *FuncF32ToF32) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *F32Ar1) Bind(args []interface{}) error {
+func (f *FuncF32ToF32) Bind(args []interface{}) error {
 	if got, want := len(args), 1; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -87,7 +87,7 @@ func (f *F32Ar1) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *F32Ar1) Func() interface{} {
+func (f *FuncF32ToF32) Func() interface{} {
 	return func() float32 {
 		return f.fct(
 			*f.arg0,
@@ -96,30 +96,30 @@ func (f *F32Ar1) Func() interface{} {
 }
 
 var (
-	_ Formula = (*F32Ar1)(nil)
+	_ Formula = (*FuncF32ToF32)(nil)
 )
 
-// F32Ar2 implements rfunc.Formula
-type F32Ar2 struct {
+// FuncF32F32ToF32 implements rfunc.Formula
+type FuncF32F32ToF32 struct {
 	rvars []string
 	arg0  *float32
 	arg1  *float32
 	fct   func(arg00 float32, arg01 float32) float32
 }
 
-// NewF32Ar2 return a new formula, from the provided function.
-func NewF32Ar2(rvars []string, fct func(arg00 float32, arg01 float32) float32) *F32Ar2 {
-	return &F32Ar2{
+// NewFuncF32F32ToF32 return a new formula, from the provided function.
+func NewFuncF32F32ToF32(rvars []string, fct func(arg00 float32, arg01 float32) float32) *FuncF32F32ToF32 {
+	return &FuncF32F32ToF32{
 		rvars: rvars,
 		fct:   fct,
 	}
 }
 
 // RVars implements rfunc.Formula
-func (f *F32Ar2) RVars() []string { return f.rvars }
+func (f *FuncF32F32ToF32) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *F32Ar2) Bind(args []interface{}) error {
+func (f *FuncF32F32ToF32) Bind(args []interface{}) error {
 	if got, want := len(args), 2; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -150,7 +150,7 @@ func (f *F32Ar2) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *F32Ar2) Func() interface{} {
+func (f *FuncF32F32ToF32) Func() interface{} {
 	return func() float32 {
 		return f.fct(
 			*f.arg0,
@@ -160,11 +160,11 @@ func (f *F32Ar2) Func() interface{} {
 }
 
 var (
-	_ Formula = (*F32Ar2)(nil)
+	_ Formula = (*FuncF32F32ToF32)(nil)
 )
 
-// F32Ar3 implements rfunc.Formula
-type F32Ar3 struct {
+// FuncF32F32F32ToF32 implements rfunc.Formula
+type FuncF32F32F32ToF32 struct {
 	rvars []string
 	arg0  *float32
 	arg1  *float32
@@ -172,19 +172,19 @@ type F32Ar3 struct {
 	fct   func(arg00 float32, arg01 float32, arg02 float32) float32
 }
 
-// NewF32Ar3 return a new formula, from the provided function.
-func NewF32Ar3(rvars []string, fct func(arg00 float32, arg01 float32, arg02 float32) float32) *F32Ar3 {
-	return &F32Ar3{
+// NewFuncF32F32F32ToF32 return a new formula, from the provided function.
+func NewFuncF32F32F32ToF32(rvars []string, fct func(arg00 float32, arg01 float32, arg02 float32) float32) *FuncF32F32F32ToF32 {
+	return &FuncF32F32F32ToF32{
 		rvars: rvars,
 		fct:   fct,
 	}
 }
 
 // RVars implements rfunc.Formula
-func (f *F32Ar3) RVars() []string { return f.rvars }
+func (f *FuncF32F32F32ToF32) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *F32Ar3) Bind(args []interface{}) error {
+func (f *FuncF32F32F32ToF32) Bind(args []interface{}) error {
 	if got, want := len(args), 3; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -225,7 +225,7 @@ func (f *F32Ar3) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *F32Ar3) Func() interface{} {
+func (f *FuncF32F32F32ToF32) Func() interface{} {
 	return func() float32 {
 		return f.fct(
 			*f.arg0,
@@ -236,5 +236,5 @@ func (f *F32Ar3) Func() interface{} {
 }
 
 var (
-	_ Formula = (*F32Ar3)(nil)
+	_ Formula = (*FuncF32F32F32ToF32)(nil)
 )
