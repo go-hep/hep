@@ -26,75 +26,87 @@ type Func struct {
 func genRFuncs() {
 	for _, typ := range []Func{
 		{
-			Name: "bool_f64",
+			Name: "bool",
 			Funcs: []genroot.RFunc{
-				{Name: "PredF64Ar0", Def: "func() bool"},
-				{Name: "PredF64Ar1", Def: "func(x1 float64) bool"},
-				{Name: "PredF64Ar2", Def: "func(x1,x2 float64) bool"},
-				{Name: "PredF64Ar3", Def: "func(x1,x2,x3 float64) bool"},
-			},
-		},
-		{
-			Name: "bool_f32",
-			Funcs: []genroot.RFunc{
-				{Name: "PredF32Ar0", Def: "func() bool"},
-				{Name: "PredF32Ar1", Def: "func(x1 float32) bool"},
-				{Name: "PredF32Ar2", Def: "func(x1,x2 float32) bool"},
-				{Name: "PredF32Ar3", Def: "func(x1,x2,x3 float32) bool"},
-			},
-		},
-		{
-			Name: "f64",
-			Funcs: []genroot.RFunc{
-				{Name: "F64Ar0", Def: "func() float64"},
-				{Name: "F64Ar1", Def: "func(x1 float64) float64"},
-				{Name: "F64Ar2", Def: "func(x1,x2 float64) float64"},
-				{Name: "F64Ar3", Def: "func(x1,x2,x3 float64) float64"},
-			},
-		},
-		{
-			Name: "f32",
-			Funcs: []genroot.RFunc{
-				{Name: "F32Ar0", Def: "func() float32"},
-				{Name: "F32Ar1", Def: "func(x1 float32) float32"},
-				{Name: "F32Ar2", Def: "func(x1,x2 float32) float32"},
-				{Name: "F32Ar3", Def: "func(x1,x2,x3 float32) float32"},
+				{Def: "func() bool"},
+				// float32
+				{Def: "func(x1 float32) bool"},
+				{Def: "func(x1,x2 float32) bool"},
+				{Def: "func(x1,x2,x3 float32) bool"},
+				// float64
+				{Def: "func(x1 float64) bool"},
+				{Def: "func(x1,x2 float64) bool"},
+				{Def: "func(x1,x2,x3 float64) bool"},
 			},
 		},
 		{
 			Name: "i32",
 			Funcs: []genroot.RFunc{
-				{Name: "I32Ar0", Def: "func() int32"},
-				{Name: "I32Ar1", Def: "func(x1 int32) int32"},
-				{Name: "I32Ar2", Def: "func(x1,x2 int32) int32"},
-				{Name: "I32Ar3", Def: "func(x1,x2,x3 int32) int32"},
+				{Def: "func() int32"},
+				{Def: "func(x1 int32) int32"},
+				{Def: "func(x1,x2 int32) int32"},
+				{Def: "func(x1,x2,x3 int32) int32"},
 			},
 		},
 		{
 			Name: "i64",
 			Funcs: []genroot.RFunc{
-				{Name: "I64Ar0", Def: "func() int64"},
-				{Name: "I64Ar1", Def: "func(x1 int64) int64"},
-				{Name: "I64Ar2", Def: "func(x1,x2 int64) int64"},
-				{Name: "I64Ar3", Def: "func(x1,x2,x3 int64) int64"},
+				{Def: "func() int64"},
+				{Def: "func(x1 int64) int64"},
+				{Def: "func(x1,x2 int64) int64"},
+				{Def: "func(x1,x2,x3 int64) int64"},
 			},
 		},
 		{
 			Name: "u32",
 			Funcs: []genroot.RFunc{
-				{Name: "U32Ar0", Def: "func() uint32"},
-				{Name: "U32Ar1", Def: "func(x1 uint32) uint32"},
-				{Name: "U32Ar2", Def: "func(x1,x2 uint32) uint32"},
-				{Name: "U32Ar3", Def: "func(x1,x2,x3 uint32) uint32"},
+				{Def: "func() uint32"},
+				{Def: "func(x1 uint32) uint32"},
+				{Def: "func(x1,x2 uint32) uint32"},
+				{Def: "func(x1,x2,x3 uint32) uint32"},
 			},
 		},
 		{
 			Name: "u64",
 			Funcs: []genroot.RFunc{
-				{Name: "U64Ar0", Def: "func() uint64"},
-				{Name: "U64Ar1", Def: "func(x1 uint64) uint64"},
-				{Name: "U64Ar2", Def: "func(x1,x2 uint64) uint64"},
-				{Name: "U64Ar3", Def: "func(x1,x2,x3 uint64) uint64"},
+				{Def: "func() uint64"},
+				{Def: "func(x1 uint64) uint64"},
+				{Def: "func(x1,x2 uint64) uint64"},
+				{Def: "func(x1,x2,x3 uint64) uint64"},
+			},
+		},
+		{
+			Name: "f32",
+			Funcs: []genroot.RFunc{
+				// float32
+				{Def: "func() float32"},
+				{Def: "func(x1 float32) float32"},
+				{Def: "func(x1,x2 float32) float32"},
+				{Def: "func(x1,x2,x3 float32) float32"},
+			},
+		},
+		{
+			Name: "f64",
+			Funcs: []genroot.RFunc{
+				// int32
+				{Def: "func(x1 int32) float64"},
+				// float32
+				{Def: "func(x1 float32) float64"},
+				// float64
+				{Def: "func() float64"},
+				{Def: "func(x1 float64) float64"},
+				{Def: "func(x1,x2 float64) float64"},
+				{Def: "func(x1,x2,x3 float64) float64"},
+			},
+		},
+		// slices
+		{
+			Name: "f64s",
+			Funcs: []genroot.RFunc{
+				// float32s
+				{Def: "func(xs []float32) []float64"},
+				// float64s
+				{Def: "func(xs []float64) []float64"},
 			},
 		},
 	} {

@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestF32Ar0(t *testing.T) {
+func TestFuncToF32(t *testing.T) {
 
 	var rvars []string
 
@@ -19,7 +19,7 @@ func TestF32Ar0(t *testing.T) {
 		return 42
 	}
 
-	form := NewF32Ar0(rvars, fct)
+	form := NewFuncToF32(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
@@ -46,7 +46,7 @@ func TestF32Ar0(t *testing.T) {
 	}
 }
 
-func TestF32Ar1(t *testing.T) {
+func TestFuncF32ToF32(t *testing.T) {
 
 	rvars := make([]string, 1)
 	rvars[0] = "name-0"
@@ -55,7 +55,7 @@ func TestF32Ar1(t *testing.T) {
 		return 42
 	}
 
-	form := NewF32Ar1(rvars, fct)
+	form := NewFuncF32ToF32(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
@@ -92,7 +92,7 @@ func TestF32Ar1(t *testing.T) {
 	}
 }
 
-func TestF32Ar2(t *testing.T) {
+func TestFuncF32F32ToF32(t *testing.T) {
 
 	rvars := make([]string, 2)
 	rvars[0] = "name-0"
@@ -102,7 +102,7 @@ func TestF32Ar2(t *testing.T) {
 		return 42
 	}
 
-	form := NewF32Ar2(rvars, fct)
+	form := NewFuncF32F32ToF32(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
@@ -140,7 +140,7 @@ func TestF32Ar2(t *testing.T) {
 	}
 }
 
-func TestF32Ar3(t *testing.T) {
+func TestFuncF32F32F32ToF32(t *testing.T) {
 
 	rvars := make([]string, 3)
 	rvars[0] = "name-0"
@@ -151,7 +151,7 @@ func TestF32Ar3(t *testing.T) {
 		return 42
 	}
 
-	form := NewF32Ar3(rvars, fct)
+	form := NewFuncF32F32F32ToF32(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)

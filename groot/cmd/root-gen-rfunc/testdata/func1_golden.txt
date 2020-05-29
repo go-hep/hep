@@ -1,14 +1,14 @@
-// FuncFormula implements rfunc.Formula
-type FuncFormula struct {
+// FuncF64F64ToBool implements rfunc.Formula
+type FuncF64F64ToBool struct {
 	rvars []string
 	arg0 *float64
 	arg1 *float64
 	fct func(arg00 float64, arg01 float64) bool
 }
 
-// NewFuncFormula return a new formula, from the provided function.
-func NewFuncFormula(rvars []string, fct func(arg00 float64, arg01 float64) bool) *FuncFormula {
-	return &FuncFormula{
+// NewFuncF64F64ToBool return a new formula, from the provided function.
+func NewFuncF64F64ToBool(rvars []string, fct func(arg00 float64, arg01 float64) bool) *FuncF64F64ToBool {
+	return &FuncF64F64ToBool{
 		rvars: rvars,
 		fct: fct,
 	}
@@ -16,11 +16,11 @@ func NewFuncFormula(rvars []string, fct func(arg00 float64, arg01 float64) bool)
 
 
 // RVars implements rfunc.Formula
-func (f *FuncFormula) RVars() []string { return f.rvars }
+func (f *FuncF64F64ToBool) RVars() []string { return f.rvars }
 
 
 // Bind implements rfunc.Formula
-func (f *FuncFormula) Bind(args []interface{}) error {
+func (f *FuncF64F64ToBool) Bind(args []interface{}) error {
 	if got, want := len(args), 2; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -51,7 +51,7 @@ func (f *FuncFormula) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncFormula) Func() interface{} {
+func (f *FuncF64F64ToBool) Func() interface{} {
 	return func()  bool {
 		return f.fct(
 			*f.arg0,
@@ -61,5 +61,5 @@ func (f *FuncFormula) Func() interface{} {
 }
 
 var (
-	_ rfunc.Formula = (*FuncFormula)(nil)
+	_ rfunc.Formula = (*FuncF64F64ToBool)(nil)
 )

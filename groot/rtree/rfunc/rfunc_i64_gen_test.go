@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestI64Ar0(t *testing.T) {
+func TestFuncToI64(t *testing.T) {
 
 	var rvars []string
 
@@ -19,7 +19,7 @@ func TestI64Ar0(t *testing.T) {
 		return 42
 	}
 
-	form := NewI64Ar0(rvars, fct)
+	form := NewFuncToI64(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
@@ -46,7 +46,7 @@ func TestI64Ar0(t *testing.T) {
 	}
 }
 
-func TestI64Ar1(t *testing.T) {
+func TestFuncI64ToI64(t *testing.T) {
 
 	rvars := make([]string, 1)
 	rvars[0] = "name-0"
@@ -55,7 +55,7 @@ func TestI64Ar1(t *testing.T) {
 		return 42
 	}
 
-	form := NewI64Ar1(rvars, fct)
+	form := NewFuncI64ToI64(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
@@ -92,7 +92,7 @@ func TestI64Ar1(t *testing.T) {
 	}
 }
 
-func TestI64Ar2(t *testing.T) {
+func TestFuncI64I64ToI64(t *testing.T) {
 
 	rvars := make([]string, 2)
 	rvars[0] = "name-0"
@@ -102,7 +102,7 @@ func TestI64Ar2(t *testing.T) {
 		return 42
 	}
 
-	form := NewI64Ar2(rvars, fct)
+	form := NewFuncI64I64ToI64(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
@@ -140,7 +140,7 @@ func TestI64Ar2(t *testing.T) {
 	}
 }
 
-func TestI64Ar3(t *testing.T) {
+func TestFuncI64I64I64ToI64(t *testing.T) {
 
 	rvars := make([]string, 3)
 	rvars[0] = "name-0"
@@ -151,7 +151,7 @@ func TestI64Ar3(t *testing.T) {
 		return 42
 	}
 
-	form := NewI64Ar3(rvars, fct)
+	form := NewFuncI64I64I64ToI64(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)

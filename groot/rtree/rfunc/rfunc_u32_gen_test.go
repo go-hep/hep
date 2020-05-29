@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestU32Ar0(t *testing.T) {
+func TestFuncToU32(t *testing.T) {
 
 	var rvars []string
 
@@ -19,7 +19,7 @@ func TestU32Ar0(t *testing.T) {
 		return 42
 	}
 
-	form := NewU32Ar0(rvars, fct)
+	form := NewFuncToU32(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
@@ -46,7 +46,7 @@ func TestU32Ar0(t *testing.T) {
 	}
 }
 
-func TestU32Ar1(t *testing.T) {
+func TestFuncU32ToU32(t *testing.T) {
 
 	rvars := make([]string, 1)
 	rvars[0] = "name-0"
@@ -55,7 +55,7 @@ func TestU32Ar1(t *testing.T) {
 		return 42
 	}
 
-	form := NewU32Ar1(rvars, fct)
+	form := NewFuncU32ToU32(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
@@ -92,7 +92,7 @@ func TestU32Ar1(t *testing.T) {
 	}
 }
 
-func TestU32Ar2(t *testing.T) {
+func TestFuncU32U32ToU32(t *testing.T) {
 
 	rvars := make([]string, 2)
 	rvars[0] = "name-0"
@@ -102,7 +102,7 @@ func TestU32Ar2(t *testing.T) {
 		return 42
 	}
 
-	form := NewU32Ar2(rvars, fct)
+	form := NewFuncU32U32ToU32(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
@@ -140,7 +140,7 @@ func TestU32Ar2(t *testing.T) {
 	}
 }
 
-func TestU32Ar3(t *testing.T) {
+func TestFuncU32U32U32ToU32(t *testing.T) {
 
 	rvars := make([]string, 3)
 	rvars[0] = "name-0"
@@ -151,7 +151,7 @@ func TestU32Ar3(t *testing.T) {
 		return 42
 	}
 
-	form := NewU32Ar3(rvars, fct)
+	form := NewFuncU32U32U32ToU32(rvars, fct)
 
 	if got, want := form.RVars(), rvars; !reflect.DeepEqual(got, want) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
