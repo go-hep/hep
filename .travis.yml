@@ -31,8 +31,6 @@ sudo: required
 
 notifications:
   email:
-    recipients:
-      - go.hep.dev@gmail.com
     on_success: always
     on_failure: always
 
