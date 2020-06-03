@@ -5,12 +5,13 @@
 package main // import "go-hep.org/x/hep/cmd/root2arrow"
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func init() {
@@ -55,8 +56,19 @@ func TestFile(t *testing.T) {
 			stream: true,
 			want:   "testdata/leaves.root.stream",
 		},
+		{
+			file: "../../groot/testdata/embedded-std-vector.root",
+			tree: "modules",
+			want: "testdata/embedded-std-vector.root.file",
+		},
+		{
+			file:   "../../groot/testdata/embedded-std-vector.root",
+			tree:   "modules",
+			stream: true,
+			want:   "testdata/embedded-std-vector.root.stream",
+		},
 	} {
-		t.Run(tc.file, func(t *testing.T) {
+		t.Run(tc.want, func(t *testing.T) {
 			f, err := ioutil.TempFile("", "root2arrow-")
 			if err != nil {
 				t.Fatal(err)
@@ -79,8 +91,12 @@ func TestFile(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if !bytes.Equal(got, want) {
-				t.Fatalf("arrow file/stream differ")
+			if got, want := string(got), string(want); got != want {
+				diff := cmp.Diff(want, got)
+				t.Fatalf(
+					"arrow file/stream differ: -- (-ref +got)\n%s",
+					diff,
+				)
 			}
 		})
 	}

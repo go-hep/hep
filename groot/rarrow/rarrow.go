@@ -95,8 +95,11 @@ func dataTypeFromLeaf(leaf rtree.Leaf) arrow.DataType {
 	case reflect.Struct:
 		dt = dataTypeFromGo(leaf.Type())
 
+	case reflect.Slice:
+		dt = dataTypeFromGo(leaf.Type())
+
 	default:
-		panic(fmt.Errorf("not implemented %#v", leaf))
+		panic(fmt.Errorf("not implemented %#v (kind=%v)", leaf, kind))
 	}
 
 	switch {
