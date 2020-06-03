@@ -150,7 +150,7 @@ void testcompress(const char *fname, int size) {
 func TestRoundtrip(t *testing.T) {
 	wants := map[string][]byte{
 		"00-10kb": []byte(strings.Repeat("-+", 10*1024)),
-		"01-16mb": []byte(strings.Repeat("-+", 16*1024*1024)),
+		"01-16mb": []byte(strings.Repeat("-+", 16*1024*1024-2)), // remove 2 so divisible by kMaxCompressedBlockSize
 	}
 	keysOf := func(kvs map[string][]byte) []string {
 		keys := make([]string, 0, len(kvs))

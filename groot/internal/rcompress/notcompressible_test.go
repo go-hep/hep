@@ -25,6 +25,8 @@ func TestNotCompressible(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not read reference data: %+v", err)
 	}
+
+	srcsz := len(src)
 	tgtsz := len(src) + HeaderSize
 
 	for _, tc := range []struct {
@@ -33,15 +35,15 @@ func TestNotCompressible(t *testing.T) {
 		lvl  int
 		want int
 	}{
-		{name: "lz4", alg: LZ4, lvl: 9, want: tgtsz + 8},
-		{name: "lzma", alg: LZMA, lvl: 9, want: tgtsz},
-		{name: "zlib", alg: ZLIB, lvl: 9, want: tgtsz},
-		{name: "zstd", alg: ZSTD, lvl: 1, want: tgtsz},
+		{name: "lz4", alg: LZ4, lvl: 1, want: srcsz},
+		{name: "lzma", alg: LZMA, lvl: 1, want: srcsz},
+		{name: "zlib", alg: ZLIB, lvl: 1, want: srcsz},
+		{name: "zstd", alg: ZSTD, lvl: 1, want: srcsz},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			tgt := make([]byte, len(src)+HeaderSize)
+			tgt := make([]byte, tgtsz)
 			n, err := compressBlock(tc.alg, tc.lvl, tgt, src)
-			if err != nil {
+			if err != nil && err != errNoCompression {
 				t.Fatalf("could not compress block: %+v", err)
 			}
 			if got, want := n, tc.want; got != want {

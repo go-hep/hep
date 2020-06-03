@@ -8,6 +8,7 @@ package rcompress // import "go-hep.org/x/hep/groot/internal/rcompress"
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 
@@ -205,14 +206,12 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 			return 0, fmt.Errorf("rcompress: could not write ZLIB compressed bytes: %w", err)
 		}
 		err = w.Close()
-		switch err {
-		case nil:
+		switch {
+		case err == nil:
 			// ok.
-		case io.EOF:
+		case errors.Is(err, errNoCompression):
 			// not compressible.
-			copy(buf.p, src)
-			buf.c = len(src)
-			buf.p = buf.p[:buf.c]
+			return len(src), errNoCompression
 		default:
 			return 0, fmt.Errorf("rcompress: could not close ZLIB compressor: %w", err)
 		}
@@ -239,14 +238,12 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		}
 
 		err = w.Close()
-		switch err {
-		case nil:
+		switch {
+		case err == nil:
 			// ok.
-		case io.EOF:
+		case errors.Is(err, errNoCompression):
 			// not-compressible.
-			copy(buf.p, src)
-			buf.c = len(src)
-			buf.p = buf.p[:buf.c]
+			return len(src), errNoCompression
 		default:
 			return 0, fmt.Errorf("rcompress: could not close LZMA compressor: %w", err)
 		}
@@ -279,7 +276,7 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 
 		if n == 0 {
 			// not compressible.
-			n = copy(wrk[chksum:], src)
+			return len(src), errNoCompression
 		}
 
 		wrk = wrk[:n+chksum]
@@ -305,14 +302,12 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		}
 
 		err = w.Close()
-		switch err {
-		case nil:
-			// ok.
-		case io.EOF:
+		switch {
+		case buf.c >= len(src) || errors.Is(err, errNoCompression):
 			// not compressible.
-			copy(buf.p, src)
-			buf.c = len(src)
-			buf.p = buf.p[:buf.c]
+			return len(src), errNoCompression
+		case err == nil:
+			// ok.
 		default:
 			return 0, fmt.Errorf("rcompress: could not close ZSTD compressor: %w", err)
 		}
@@ -440,7 +435,7 @@ type wbuff struct {
 
 func (w *wbuff) Write(p []byte) (int, error) {
 	if w.c >= len(w.p) {
-		return 0, io.EOF
+		return 0, errNoCompression
 	}
 	n := copy(w.p[w.c:], p)
 	w.c += n
