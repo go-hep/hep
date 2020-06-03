@@ -241,8 +241,20 @@ func displayBranches(w io.Writer, bres brancher, indent int) {
 	}
 	ww := newWindent(indent, w)
 	for _, b := range branches {
-		fmt.Fprintf(ww, "%s\t%q\t%v\n", b.Name(), b.Title(), b.Class())
+		var (
+			name  = clip(b.Name(), 60)
+			title = clip(b.Title(), 50)
+			class = clip(b.Class(), 20)
+		)
+		fmt.Fprintf(ww, "%s\t%q\t%v\n", name, title, class)
 		displayBranches(ww, b, 2)
 	}
 	ww.Flush()
+}
+
+func clip(s string, n int) string {
+	if len(s) > n {
+		s = s[:n-5] + "[...]"
+	}
+	return s
 }
