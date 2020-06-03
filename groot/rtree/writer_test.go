@@ -6,10 +6,16 @@ package rtree
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"reflect"
+	"sync"
 	"testing"
 
 	"go-hep.org/x/hep/groot/rbase"
+	"go-hep.org/x/hep/groot/riofs"
+	"golang.org/x/exp/rand"
 )
 
 func TestFlattenArrayType(t *testing.T) {
@@ -97,4 +103,71 @@ func TestInvalidTreeMerger(t *testing.T) {
 	if got, want := err.Error(), want; got != want {
 		t.Fatalf("invalid ROOTMerge error. got=%q, want=%q", got, want)
 	}
+}
+
+func TestConcurrentWrite(t *testing.T) {
+	tmp, err := ioutil.TempDir("", "groot-rtree-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		_ = os.RemoveAll(tmp)
+	}()
+
+	const N = 10
+	var wg sync.WaitGroup
+	wg.Add(N)
+
+	for i := 0; i < N; i++ {
+		go func(i int) {
+			defer wg.Done()
+			f, err := riofs.Create(filepath.Join(tmp, fmt.Sprintf("file-%03d.root", i)))
+			if err != nil {
+				t.Errorf("could not create root file: %+v", err)
+				return
+			}
+			defer f.Close()
+
+			var (
+				evt struct {
+					N   int32
+					Sli []float64 `groot:"Sli[N]"`
+				}
+				wvars = WriteVarsFromStruct(&evt)
+			)
+			w, err := NewWriter(f, "tree", wvars)
+			if err != nil {
+				t.Errorf("could not create tree writer: %+v", err)
+				return
+			}
+			defer w.Close()
+
+			rng := rand.New(rand.NewSource(1234))
+			for i := 0; i < 100; i++ {
+				evt.N = rng.Int31n(10) + 1
+				evt.Sli = evt.Sli[:0]
+				for j := 0; j < int(evt.N); j++ {
+					evt.Sli = append(evt.Sli, rng.Float64())
+				}
+				_, err = w.Write()
+				if err != nil {
+					t.Errorf("could not write event %d: %+v", i, err)
+					return
+				}
+			}
+
+			err = w.Close()
+			if err != nil {
+				t.Errorf("could not close tree writer: %+v", err)
+				return
+			}
+
+			err = f.Close()
+			if err != nil {
+				t.Errorf("could not close root file: %+v", err)
+				return
+			}
+		}(i)
+	}
+	wg.Wait()
 }

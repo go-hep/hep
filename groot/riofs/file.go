@@ -12,6 +12,7 @@ import (
 	"math"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"go-hep.org/x/hep/groot/internal/rcompress"
@@ -524,8 +525,15 @@ func (f *File) readStreamerInfo() error {
 	return nil
 }
 
-// writeStreamerInfo rites the list of StreamerInfos used in this file.
+// muWriteStreamerInfo makes sure we serialize calls to File.writeStreamerInfo,
+// as StreamerInfos are shared through the global rdict.StreamerInfos registry.
+var muWriteStreamerInfo sync.Mutex
+
+// writeStreamerInfo writes the list of StreamerInfos used in this file.
 func (f *File) writeStreamerInfo() error {
+	muWriteStreamerInfo.Lock()
+	defer muWriteStreamerInfo.Unlock()
+
 	if f.w == nil {
 		return nil
 	}
