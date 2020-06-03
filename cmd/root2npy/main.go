@@ -191,18 +191,18 @@ func main() {
 	}
 	log.Printf("scanning leaves... [done]")
 
-	sc, err := rtree.NewTreeScannerVars(tree, nt.args...)
+	r, err := rtree.NewReader(tree, nt.args)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer sc.Close()
+	defer r.Close()
 
-	for sc.Next() {
-		err = sc.Scan(nt.vars...)
-		if err != nil {
-			log.Fatal(err)
-		}
+	err = r.Read(func(ctx rtree.RCtx) error {
 		nt.fill()
+		return nil
+	})
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	out, err := os.Create(*oname)
@@ -253,15 +253,16 @@ type ntuple struct {
 	n    int64
 	cols []column
 	args []rtree.ReadVar
-	vars []interface{}
 }
 
 func (nt *ntuple) add(name string, leaf rtree.Leaf) {
 	n := len(nt.cols)
 	nt.cols = append(nt.cols, newColumn(name, leaf, nt.n))
 	col := &nt.cols[n]
-	nt.args = append(nt.args, rtree.ReadVar{Name: name, Leaf: leaf.Name()})
-	nt.vars = append(nt.vars, col.data.Addr().Interface())
+	nt.args = append(nt.args, rtree.ReadVar{
+		Name: name, Leaf: leaf.Name(),
+		Value: col.data.Addr().Interface(),
+	})
 }
 
 func (nt *ntuple) fill() {
