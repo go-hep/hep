@@ -32,7 +32,6 @@ func (rbk *rbasket) loadRLeaf(entry int64, leaf rleaf) error {
 	}
 	rbk.bk.rbuf.SetPos(offset)
 	return leaf.readFromBuffer(rbk.bk.rbuf)
-
 }
 
 func (rbk *rbasket) inflate(name string, id int, span rspan, eoff int, f *riofs.File) error {
@@ -49,6 +48,13 @@ func (rbk *rbasket) inflate(name string, id int, span rspan, eoff int, f *riofs.
 		err    error
 		keylen uint32
 	)
+
+	// handle recovered baskets.
+	// the way we attach them to the incoming span (ie: with a pos=0),
+	// will enable the bufsz==0 case below.
+	if span.bkt != nil {
+		rbk.bk = *span.bkt
+	}
 
 	switch {
 	case bufsz == 0: // FIXME(sbinet): from trial and error. check this is ok for all cases

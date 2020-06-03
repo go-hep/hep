@@ -120,6 +120,11 @@ func TestDump(t *testing.T) {
 [004][hits_time_mc]: [12.156414 12.641215 11.678816 12.329707 11.578169 12.512748 11.840462 14.120602 11.875188 14.133265 14.105912 14.905052 11.813884]
 `,
 		},
+		{
+			// recovered baskets
+			name: "../testdata/uproot/issue21.root",
+			want: loadRef("../testdata/uproot/issue21.root.txt"),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)

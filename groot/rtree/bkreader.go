@@ -42,7 +42,7 @@ func newBkReader(b Branch, n int, beg, end int64) *bkreader {
 		n = 1
 	}
 	base := asBranch(b)
-	if m := len(base.basketSeek); n > m {
+	if m := len(base.basketSeek); n > m && m != 0 {
 		n = m
 	}
 	bkr := &bkreader{
@@ -69,6 +69,27 @@ func newBkReader(b Branch, n int, beg, end int64) *bkreader {
 
 	for i := 0; i < n; i++ {
 		bkr.reuse <- bkReq{bkt: new(rbasket), err: nil}
+	}
+
+	switch {
+	case base.entries == base.basketEntry[len(base.basketSeek)]:
+		// ok, normal case.
+	default: // recover baskets
+		var beg int64
+		if len(bkr.spans) > 0 {
+			beg = bkr.spans[len(bkr.spans)-1].end
+		}
+		for i := range base.baskets {
+			bkt := &base.baskets[i]
+			span := rspan{
+				pos: 0,
+				beg: beg,
+				end: beg + int64(bkt.nevbuf),
+				bkt: bkt,
+			}
+			bkr.spans = append(bkr.spans, span)
+			beg = span.end
+		}
 	}
 
 	all := rspan{
@@ -159,4 +180,7 @@ type rspan struct {
 
 	pos int64 // span location on-disk
 	sz  int32 // basket size
+
+	// for recovered baskets
+	bkt *Basket
 }
