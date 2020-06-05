@@ -19,3 +19,4 @@ jobs:
           # be specified without a patch version:
           # we always use the latest patch version.
           version: v1.27
+          args: --timeout=10m
