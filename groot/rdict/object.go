@@ -431,7 +431,7 @@ func genType(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int) reflect.T
 		return gotypes[reflect.Int16]
 	case rmeta.Int32:
 		return gotypes[reflect.Int32]
-	case rmeta.Int64:
+	case rmeta.Int64, rmeta.Long64:
 		return gotypes[reflect.Int64]
 	case rmeta.Float32:
 		return gotypes[reflect.Float32]
@@ -513,7 +513,7 @@ func genRStreamer(sictx rbytes.StreamerInfoContext, enum rmeta.Enum, n int, recv
 		return readI16
 	case rmeta.Int32:
 		return readI32
-	case rmeta.Int64:
+	case rmeta.Int64, rmeta.Long64:
 		return readI64
 	case rmeta.Float32:
 		return readF32
