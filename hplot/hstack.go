@@ -89,8 +89,10 @@ func NewHStack(histos []*H1D, opts ...Options) *HStack {
 	}
 
 	if cfg.band {
-		plotHtot := NewH1D(hstack.summedH1D(), WithBand(true))
-		hstack.Band = plotHtot.Band
+		hstack.Band = NewH1D(hstack.summedH1D(),
+			WithBand(true),
+			WithLogY(cfg.log.y),
+		).Band
 	}
 
 	return hstack

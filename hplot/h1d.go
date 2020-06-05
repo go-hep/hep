@@ -171,25 +171,32 @@ func (h1 *H1D) withBand() error {
 
 	bins := h1.Hist.Binning.Bins
 	var (
-		top = make(plotter.XYs, 2*len(bins))
-		bot = make(plotter.XYs, 2*len(bins))
+		top = make(plotter.XYs, 0, 2*len(bins))
+		bot = make(plotter.XYs, 0, 2*len(bins))
 	)
 
-	for i := range top {
-		ibin := i / 2
-		bin := bins[ibin]
-		xmin, xmax := bin.XEdges().Min, bin.XEdges().Max
+	for i := 0; i < 2*len(bins); i++ {
+		var (
+			ibin = i / 2
+			bin  = bins[ibin]
+			xmin = bin.XEdges().Min
+			xmax = bin.XEdges().Max
+			sumw = bin.SumW()
+			errw = bin.ErrW()
+			ymin = sumw - 0.5*errw
+			ymax = sumw + 0.5*errw
+		)
+		switch {
+		case h1.LogY && ymin <= 0:
+			continue
+		}
 		switch {
 		case i%2 != 0:
-			top[i].X = xmax
-			top[i].Y = bin.SumW() - 0.5*bin.ErrW()
-			bot[i].X = xmax
-			bot[i].Y = bin.SumW() + 0.5*bin.ErrW()
+			top = append(top, plotter.XY{X: xmax, Y: ymin})
+			bot = append(bot, plotter.XY{X: xmax, Y: ymax})
 		default:
-			top[i].X = xmin
-			top[i].Y = bin.SumW() - 0.5*bin.ErrW()
-			bot[i].X = xmin
-			bot[i].Y = bin.SumW() + 0.5*bin.ErrW()
+			top = append(top, plotter.XY{X: xmin, Y: ymin})
+			bot = append(bot, plotter.XY{X: xmin, Y: ymax})
 		}
 	}
 
