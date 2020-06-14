@@ -6,6 +6,7 @@ package hplot
 
 import (
 	"image/color"
+	"math"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
@@ -34,9 +35,9 @@ type BinnedErrBand struct {
 	FillColor color.Color
 }
 
-// NewBinnedErrBand creates a binned error band from a binning
-// (slice of range) and y errors bars.
-// FIX-ME[rmadar]: use a more friendly type to pass error bars?
+// NewBinnedErrBand creates a binned error band
+// from a binning (slice of range) and y errors bars.
+// FIX-ME[rmadar]: use a more friendly type to pass Y errors?
 func NewBinnedErrBand(bins [][2]float64, yerrs *plotter.YErrors) *BinnedErrBand {
 	return &BinnedErrBand{
 		YErrs: yerrs,
@@ -44,15 +45,16 @@ func NewBinnedErrBand(bins [][2]float64, yerrs *plotter.YErrors) *BinnedErrBand 
 	}
 }
 
-
+// Plot implements the Plotter interface,
+// drawing a colored box defined by width
+// of bins (x-axis) and error (y-axis).
 func (b *BinnedErrBand) Plot(c draw.Canvas, plt *plot.Plot) {
 
 	for i := range b.Bins {
 
 		// Get four corner of the ith bin
 		xmin, xmax := b.Bins[i][0], b.Bins[i][1]
-		ymin, ymax := b.YErrs.YError(i)		
-
+		ymin, ymax := b.YErrs.YError(i)
 		xys := plotter.XYs{
 			plotter.XY{X: xmin, Y: ymin},
 			plotter.XY{X: xmin, Y: ymax},
@@ -62,17 +64,33 @@ func (b *BinnedErrBand) Plot(c draw.Canvas, plt *plot.Plot) {
 
 		// Polygon
 		// FIX-ME(rmadar): it would be better to draw only top
-		//                 and bottom horizontal lines (not vertical lines)
+		//                 and bottom horizontal lines, but
+		//                 not the vertical lines.
 		poly := plotter.Polygon{
 			XYs:       []plotter.XYs{xys},
 			LineStyle: b.LineStyle,
 			Color:     b.FillColor,
 		}
+
+		// Plot the box for the current bin
 		poly.Plot(c, plt)
 	}
 }
 
-
-func (band *BinnedErrBand) DataRange() (xmin, xmax, ymin, ymax float64) {
-	return 
+// DataRange returns the minimum and maximum x and
+// y values, implementing the plot.DataRanger interface.
+func (b *BinnedErrBand) DataRange() (xmin, xmax, ymin, ymax float64) {
+	xmin, xmax = b.Bins[0][0], b.Bins[len(b.Bins)-1][1]
+	ymin, ymax = math.Inf(+1), math.Inf(-1)
+	for i := range b.Bins {
+		ydo, yup := b.YErrs.YError(i)
+		ymin = math.Min(ymin, ydo)
+		ymax = math.Max(ymax, yup)
+	}
+	return xmin, xmax, ymin, ymax
 }
+
+var (
+	_ plot.Plotter    = (*BinnedErrBand)(nil)
+	_ plot.DataRanger = (*BinnedErrBand)(nil)
+)
