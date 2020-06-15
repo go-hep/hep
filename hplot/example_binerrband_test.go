@@ -37,7 +37,7 @@ func ExampleBinnedErrBand() {
 	b.FillColor = color.NRGBA{B: 180, A: 200}
 	b.LineStyle.Color = color.NRGBA{R: 180, A: 200}
 	b.LineStyle.Width = 2
-	
+
 	// Create a new plot and add b
 	p := hplot.New()
 	p.Title.Text = "Binned Error Band"

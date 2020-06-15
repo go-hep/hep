@@ -11,7 +11,7 @@ import (
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
-	"gonum.org/v1/plot/vg/draw"	
+	"gonum.org/v1/plot/vg/draw"
 )
 
 // BinnedErrBand implements the plot.Plotter interface,
@@ -79,7 +79,7 @@ func (b *BinnedErrBand) Plot(c draw.Canvas, plt *plot.Plot) {
 			Color: b.FillColor,
 		}
 		poly.Plot(c, plt)
-		
+
 		// Bottom line
 		xysBo := plotter.XYs{xys[0], xys[3]}
 		lBo := plotter.Line{
@@ -87,7 +87,7 @@ func (b *BinnedErrBand) Plot(c draw.Canvas, plt *plot.Plot) {
 			LineStyle: b.LineStyle,
 		}
 		lBo.Plot(c, plt)
-		
+
 		// Upper line
 		xysUp := plotter.XYs{xys[1], xys[2]}
 		lUp := plotter.Line{
