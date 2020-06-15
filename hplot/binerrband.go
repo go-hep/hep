@@ -11,7 +11,7 @@ import (
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
-	"gonum.org/v1/plot/vg/draw"
+	"gonum.org/v1/plot/vg/draw"	
 )
 
 // BinnedErrBand implements the plot.Plotter interface,
@@ -31,7 +31,6 @@ type BinnedErrBand struct {
 
 	// LineStyle is the style of the line contouring the band.
 	// Use zero width to disable.
-	// FIX-ME[rmadar]: do we want to keep a line style attribute?
 	draw.LineStyle
 
 	// FillColor is the color to fill the area between
@@ -75,17 +74,27 @@ func (b *BinnedErrBand) Plot(c draw.Canvas, plt *plot.Plot) {
 		}
 
 		// Polygon
-		// FIX-ME(rmadar): it would be better to draw only top
-		//                 and bottom horizontal lines, but
-		//                 not the vertical lines.
 		poly := plotter.Polygon{
-			XYs:       []plotter.XYs{xys},
-			LineStyle: b.LineStyle,
-			Color:     b.FillColor,
+			XYs:   []plotter.XYs{xys},
+			Color: b.FillColor,
 		}
-
-		// Plot the box for the current bin
 		poly.Plot(c, plt)
+		
+		// Bottom line
+		xysBo := plotter.XYs{xys[0], xys[3]}
+		lBo := plotter.Line{
+			XYs:       xysBo,
+			LineStyle: b.LineStyle,
+		}
+		lBo.Plot(c, plt)
+		
+		// Upper line
+		xysUp := plotter.XYs{xys[1], xys[2]}
+		lUp := plotter.Line{
+			XYs:       xysUp,
+			LineStyle: b.LineStyle,
+		}
+		lUp.Plot(c, plt)
 	}
 }
 
