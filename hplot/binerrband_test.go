@@ -13,3 +13,7 @@ import (
 func TestBinnedErrBand(t *testing.T) {
 	checkPlot(cmpimg.CheckPlot)(ExampleBinnedErrBand, t, "binnederrband.png")
 }
+
+func TestBinnedErrBandFromH1D(t *testing.T) {
+	checkPlot(cmpimg.CheckPlot)(ExampleBinnedErrBand_fromH1D, t, "binnederrband_fromh1d.png")
+}

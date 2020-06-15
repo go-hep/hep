@@ -728,6 +728,18 @@ scanLoop:
 	return err
 }
 
+// Counts return a slice of Count, ignoring outerflow.
+func (h *H1D) Counts() []Count {
+	cs := make([]Count, h.Len())
+	for i, bin := range h.Binning.Bins {
+		cs[i].XRange = bin.Range
+		cs[i].Val = bin.Dist.Dist.SumW
+		cs[i].Err.Low = math.Sqrt(bin.Dist.Dist.SumW2) * 0.5
+		cs[i].Err.High = math.Sqrt(bin.Dist.Dist.SumW2) * 0.5
+	}
+	return cs
+}
+
 // check various interfaces
 var _ Object = (*H1D)(nil)
 var _ Histogram = (*H1D)(nil)
