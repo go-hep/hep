@@ -200,6 +200,14 @@ func (Element) getRange(str string) (xmin, xmax, factor float64) {
 	if beg < 0 {
 		return xmin, xmax, factor
 	}
+	if beg > 0 {
+		// make sure there is a '/' in-between
+		// make sure the slash is just one position before.
+		slash := strings.LastIndex(str[:beg], "/")
+		if slash < 0 || slash+2 != beg {
+			return xmin, xmax, factor
+		}
+	}
 	end := strings.LastIndex(str, "]")
 	if end < 0 {
 		return xmin, xmax, factor

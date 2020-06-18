@@ -57,6 +57,31 @@ func TestElementGetRange(t *testing.T) {
 			rtype: rmeta.Double32,
 		},
 		{
+			name:  "normal-with-brackets",
+			title: "From [tleft,tright+10 ns]",
+			rtype: rmeta.Double32,
+		},
+		{
+			name:  "normal-with-brackets-2",
+			title: "Bias voltage [V]",
+			rtype: rmeta.Double32,
+		},
+		{
+			name:  "normal-with-brackets-3",
+			title: "Bias voltage [0, 100]",
+			rtype: rmeta.Double32,
+		},
+		{
+			name:  "normal-with-brackets-4",
+			title: "Bias/voltage [0, 100]",
+			rtype: rmeta.Double32,
+		},
+		{
+			name:  "normal-with-brackets-5",
+			title: "Bias voltage [0]",
+			rtype: rmeta.Double32,
+		},
+		{
 			name:   "range",
 			title:  "[ 0 , 100 ]",
 			rtype:  rmeta.Double32,
