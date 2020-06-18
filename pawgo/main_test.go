@@ -13,17 +13,16 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"golang.org/x/exp/shiny/screen"
 )
 
 func TestPawgo(t *testing.T) {
 	var (
 		stdout      = new(bytes.Buffer)
-		scr         screen.Screen
 		interactive bool
 		args        []string
 	)
-	rc := xmain(stdout, scr, interactive, args)
+
+	rc := xmain(stdout, interactive, args)
 	if rc != 0 {
 		t.Fatalf("invalid exit-code: %d", rc)
 	}
@@ -122,18 +121,46 @@ bye.
 `,
 			interactive: false,
 		},
+		{
+			name: "hplot-cmd",
+			script: `## comment
+
+/file/open f ./testdata/hsimple.rio
+/hist/open h /file/id/f/h1
+/hist/plot h
+/quit
+`,
+			want: `
+:::::::::::::::::::::::::::::
+:::   Welcome to PAW-Go   :::
+:::::::::::::::::::::::::::::
+
+Type /? for help.
+^D or /quit to quit.
+
+# /file/open f ./testdata/hsimple.rio
+# /hist/open h /file/id/f/h1
+# /hist/plot h
+== h1d: name=""
+entries=10000
+mean=  +0.004
+RMS=   +1.005
+# /quit
+bye.
+`,
+			interactive: false,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var (
 				stdout = new(bytes.Buffer)
-				scr    screen.Screen
 				fname  = path.Join(tmp, tc.name+".paw")
 				args   = []string{fname}
 			)
 
 			err = ioutil.WriteFile(fname, []byte(tc.script), 0644)
 
-			rc := xmain(stdout, scr, tc.interactive, args)
+			rc := xmain(stdout, tc.interactive, args)
 			if rc != 0 {
 				t.Fatalf("invalid exit-code: %d", rc)
 			}
@@ -159,7 +186,6 @@ func TestPawgoShellCommand(t *testing.T) {
 
 	var (
 		stdout      = new(bytes.Buffer)
-		scr         screen.Screen
 		interactive bool
 		fname       = path.Join(tmp, "script.paw")
 		args        = []string{fname}
@@ -175,7 +201,7 @@ func TestPawgoShellCommand(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rc := xmain(stdout, scr, interactive, args)
+	rc := xmain(stdout, interactive, args)
 	if rc != 0 {
 		t.Fatalf("invalid exit-code: %d", rc)
 	}
@@ -227,12 +253,11 @@ bye.
 func TestIssue120(t *testing.T) {
 	var (
 		stdout      = new(bytes.Buffer)
-		scr         screen.Screen
 		interactive bool
 		args        = []string{"./testdata/issue-120.paw"}
 	)
 
-	rc := xmain(stdout, scr, interactive, args)
+	rc := xmain(stdout, interactive, args)
 	if rc != 0 {
 		t.Fatalf("invalid exit-code: %d", rc)
 	}

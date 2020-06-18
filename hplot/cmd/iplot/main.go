@@ -2,31 +2,68 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build !cross_compile
+
 package main
 
 import (
-	"image"
 	"image/color"
-	"log"
 	"math/rand"
+	"os"
 
-	"go-hep.org/x/exp/vgshiny"
+	"gioui.org/app"
+	"gioui.org/io/key"
+	"gioui.org/io/system"
+	"gioui.org/unit"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
-	"golang.org/x/exp/shiny/driver"
-	"golang.org/x/exp/shiny/screen"
-	"golang.org/x/mobile/event/key"
-	"golang.org/x/mobile/event/paint"
 	"gonum.org/v1/plot/plotter"
-	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
+	"gonum.org/v1/plot/vg/vggio"
 )
 
 const (
 	NPOINTS = 100000
-	xmax    = 400
-	ymax    = 400
+	dpi     = 96
 )
+
+func main() {
+	go run()
+	app.Main()
+}
+
+func run() {
+	w, h := hplot.Dims(-1, -1)
+	win := app.NewWindow(
+		app.Title("iplot"),
+		app.Size(
+			unit.Px(float32(w.Dots(dpi))),
+			unit.Px(float32(h.Dots(dpi))),
+		),
+	)
+	defer win.Close()
+
+	for e := range win.Events() {
+		switch e := e.(type) {
+		case system.FrameEvent:
+			c := vggio.New(e, w, h)
+			p := newPlot()
+			p.Draw(draw.New(c))
+			c.Paint(e)
+
+		case system.DestroyEvent:
+			return
+
+		case key.Event:
+			switch e.Name {
+			case "Q", key.NameEscape:
+				os.Exit(0)
+			case " ", key.NameReturn, key.NameEnter:
+				win.Invalidate()
+			}
+		}
+	}
+}
 
 func newPlot() *hplot.Plot {
 	// Draw some random values from the standard
@@ -62,83 +99,4 @@ func newPlot() *hplot.Plot {
 
 	p.Add(plotter.NewGrid())
 	return p
-}
-
-func main() {
-	driver.Main(func(scr screen.Screen) {
-		{
-			p := newPlot()
-
-			w, h := hplot.Dims(-1, -1)
-			c, err := vgshiny.New(scr, w, h)
-			if err != nil {
-				log.Fatalf("could not create shiny canvas: %+v", err)
-			}
-			p.Draw(draw.New(c))
-			c.Paint()
-
-			go func() {
-				c.Run(nil)
-				c.Release()
-			}()
-		}
-		w, err := newWidget(scr, image.Point{xmax, ymax})
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer w.Release()
-
-		w.canvas.Run(func(e interface{}) bool {
-			switch e := e.(type) {
-			case key.Event:
-				repaint := false
-				switch e.Code {
-				case key.CodeEscape, key.CodeQ:
-					if e.Direction == key.DirPress {
-						return false
-					}
-				case key.CodeR:
-					if e.Direction == key.DirPress {
-						repaint = true
-					}
-
-				case key.CodeN, key.CodeSpacebar:
-					if e.Direction == key.DirPress {
-						p := newPlot()
-						p.Draw(draw.New(w.canvas))
-						repaint = true
-					}
-				}
-				if repaint {
-					w.canvas.Send(paint.Event{})
-				}
-
-			case paint.Event:
-				w.canvas.Paint()
-			}
-			return true
-		})
-	})
-}
-
-type widget struct {
-	s      screen.Screen
-	canvas *vgshiny.Canvas
-}
-
-func newWidget(s screen.Screen, size image.Point) (*widget, error) {
-	c, err := vgshiny.New(s, vg.Length(size.X), vg.Length(size.Y))
-	if err != nil {
-		return nil, err
-	}
-
-	return &widget{s: s, canvas: c}, err
-}
-
-func (w *widget) Release() {
-	if w.canvas != nil {
-		w.canvas.Release()
-		w.canvas = nil
-	}
-	w.s = nil
 }

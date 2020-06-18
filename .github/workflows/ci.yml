@@ -52,7 +52,7 @@ jobs:
     - name: Install Linux packages
       if: matrix.platform == 'ubuntu-latest'
       run: |
-        sudo apt-get install -qq pkg-config fuse
+        sudo apt-get install -qq pkg-config fuse libgles2-mesa-dev libxkbcommon-dev libxkbcommon-x11-dev
         sudo modprobe fuse
         sudo chmod 666 /dev/fuse
         sudo chown root:$USER /etc/fuse.conf
@@ -63,7 +63,7 @@ jobs:
     - name: Build-Linux-32b
       if: matrix.platform == 'ubuntu-latest'
       run: |
-        GOARCH=386   go install -v $TAGS ./...
+        GOARCH=386   go install -v $TAGS,cross_compile ./...
     - name: Build-Linux-64b
       if: matrix.platform == 'ubuntu-latest'
       run: |

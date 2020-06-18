@@ -38,9 +38,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-
-	"golang.org/x/exp/shiny/driver"
-	"golang.org/x/exp/shiny/screen"
 )
 
 func main() {
@@ -51,14 +48,15 @@ func main() {
 
 	flag.Parse()
 
-	rc := 0
-	driver.Main(func(scr screen.Screen) {
-		rc = xmain(os.Stdout, scr, *interactive, flag.Args())
-	})
-	os.Exit(rc)
+	go func() {
+		rc := xmain(os.Stdout, *interactive, flag.Args())
+		os.Exit(rc)
+	}()
+
+	appMain()
 }
 
-func xmain(stdout io.Writer, scr screen.Screen, interactive bool, args []string) int {
+func xmain(stdout io.Writer, interactive bool, args []string) int {
 
 	fmt.Fprintf(stdout, `
 :::::::::::::::::::::::::::::
@@ -70,7 +68,7 @@ Type /? for help.
 
 `)
 
-	icmd := newCmd(stdout, scr)
+	icmd := newCmd(stdout)
 	defer icmd.Close()
 	defer fmt.Fprintf(stdout, "bye.\n")
 

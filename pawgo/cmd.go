@@ -12,8 +12,6 @@ import (
 	"os"
 	"strings"
 
-	"golang.org/x/exp/shiny/screen"
-
 	"github.com/google/shlex"
 	"github.com/peterh/liner"
 )
@@ -34,12 +32,12 @@ type Cmd struct {
 	hmgr *histMgr
 }
 
-func newCmd(stdout io.Writer, scr screen.Screen) *Cmd {
+func newCmd(stdout io.Writer) *Cmd {
 	msg := log.New(stdout, "paw: ", 0)
 	c := Cmd{
 		msg:  msg,
 		rl:   liner.NewLiner(),
-		wmgr: newWinMgr(scr, msg),
+		wmgr: newWinMgr(msg),
 		fmgr: newFileMgr(msg),
 		hmgr: newHistMgr(msg),
 	}
