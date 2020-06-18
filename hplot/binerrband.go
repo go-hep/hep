@@ -39,7 +39,7 @@ type BinnedErrBand struct {
 	// The lowest Y value for the DataRange will be corrected to leave an
 	// arbitrary amount of height for the smallest bin entry so it is visible
 	// on the final plot.
-	LogY bool	
+	LogY bool
 }
 
 // NewBinnedErrBand creates a binned error band
@@ -67,7 +67,7 @@ func (b *BinnedErrBand) Plot(c draw.Canvas, plt *plot.Plot) {
 		}
 
 		// If log scale disregard negative values.
-		if b.LogY && y - ydo <= 0 {
+		if b.LogY && y-ydo <= 0 {
 			continue
 		}
 
@@ -104,7 +104,7 @@ func (b *BinnedErrBand) DataRange() (xmin, xmax, ymin, ymax float64) {
 	for _, c := range b.Counts {
 
 		y, ydo, yup := c.Val, c.Err.Low, c.Err.High
-		
+
 		// Ignore bins for which there are no error
 		if ydo == 0 && yup == 0 {
 			continue
