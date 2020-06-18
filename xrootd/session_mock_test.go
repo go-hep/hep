@@ -6,7 +6,9 @@ package xrootd // import "go-hep.org/x/hep/xrootd"
 
 import (
 	"context"
+	"errors"
 	"net"
+	"os"
 	"testing"
 	"time"
 
@@ -131,4 +133,12 @@ func TestSession_ConnectionAbort(t *testing.T) {
 	}
 
 	testClientWithMockServer(serverFunc, clientFunc)
+}
+
+func TestSessionCloseNil(t *testing.T) {
+	var sess *cliSession
+	err := sess.Close()
+	if !errors.Is(err, os.ErrInvalid) {
+		t.Fatalf("invalid error: got=%v, want=%v", err, os.ErrInvalid)
+	}
 }

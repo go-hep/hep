@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -136,6 +137,10 @@ func newSession(ctx context.Context, address, username, token string, client *Cl
 
 // Close closes the connection. Any blocked operation will be unblocked and return error.
 func (sess *cliSession) Close() error {
+	if sess == nil {
+		return os.ErrInvalid
+	}
+
 	sess.cancel()
 
 	var errs []error

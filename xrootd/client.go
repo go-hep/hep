@@ -7,6 +7,7 @@ package xrootd // import "go-hep.org/x/hep/xrootd"
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 
 	"go-hep.org/x/hep/xrootd/xrdproto"
@@ -95,6 +96,10 @@ func NewClient(ctx context.Context, address string, username string, opts ...Opt
 
 // Close closes the connection. Any blocked operation will be unblocked and return error.
 func (client *Client) Close() error {
+	if client == nil {
+		return os.ErrInvalid
+	}
+
 	defer client.cancel()
 	client.mu.Lock()
 	defer client.mu.Unlock()

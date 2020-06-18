@@ -96,6 +96,10 @@ func (f *File) Name() string {
 
 // Close implements io.Closer.
 func (f *File) Close() error {
+	if f == nil {
+		return os.ErrInvalid
+	}
+
 	var (
 		err1 = f.f.Close(context.Background())
 		err2 error
@@ -105,10 +109,10 @@ func (f *File) Close() error {
 		err2 = f.cli.Close()
 	}
 	if err1 != nil {
-		return fmt.Errorf("could not close file %q: %w", f.name, err1)
+		return fmt.Errorf("xrdio: could not close file %q: %w", f.name, err1)
 	}
 	if err2 != nil {
-		return fmt.Errorf("could not close xrd-client: %w", err2)
+		return fmt.Errorf("xrdio: could not close xrd-client: %w", err2)
 	}
 	return nil
 }

@@ -6,6 +6,8 @@ package xrootd // import "go-hep.org/x/hep/xrootd"
 
 import (
 	"context"
+	"errors"
+	"os"
 	"testing"
 )
 
@@ -31,6 +33,14 @@ func testNewClient(t *testing.T, addr string) {
 
 	if err := client.Close(); err != nil {
 		t.Fatalf("could not close client: %v", err)
+	}
+}
+
+func TestCloseNilClient(t *testing.T) {
+	var cli *Client
+	err := cli.Close()
+	if !errors.Is(err, os.ErrInvalid) {
+		t.Fatalf("invalid error: got=%v, want=%v", err, os.ErrInvalid)
 	}
 }
 
