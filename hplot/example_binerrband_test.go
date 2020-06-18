@@ -9,9 +9,7 @@ import (
 	"log"
 
 	"golang.org/x/exp/rand"
-
 	"gonum.org/v1/gonum/stat/distuv"
-
 	"gonum.org/v1/plot/vg"
 
 	"go-hep.org/x/hep/hbook"
@@ -73,8 +71,8 @@ func ExampleBinnedErrBand_fromH1D() {
 	hp.LineStyle.Width = 0
 	hp.FillColor = color.NRGBA{R: 180, G: 180, B: 180, A: 200}
 
-	// Binned error band from the histo
-	b := hplot.NewBinnedErrBand(h)
+	// Binned error band from the histo counts.
+	b := hplot.NewBinnedErrBand(h.Counts())
 	b.FillColor = color.NRGBA{B: 180, A: 100}
 	b.LineStyle.Color = color.NRGBA{B: 100, A: 200}
 	b.LineStyle.Width = 1
