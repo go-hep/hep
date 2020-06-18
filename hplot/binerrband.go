@@ -36,9 +36,9 @@ type BinnedErrBand struct {
 
 // NewBinnedErrBand creates a binned error band
 // from a slice of count.
-func NewBinnedErrBand(h *hbook.H1D) *BinnedErrBand {
+func NewBinnedErrBand(cs []hbook.Count) *BinnedErrBand {
 	return &BinnedErrBand{
-		Counts: h.Counts(),
+		Counts: cs,
 	}
 }
 
