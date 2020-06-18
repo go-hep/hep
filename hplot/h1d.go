@@ -168,7 +168,6 @@ func (h *H1D) withYErrBars(yoffs []float64) *plotter.YErrorBars {
 
 // withBand enables the band between ymin-ymax error bars.
 func (h1 *H1D) withBand() *BinnedErrBand {
-	fmt.Println("I am setting up the band")
 	b := NewBinnedErrBand(h1.Hist.Counts())
 	b.FillColor = color.Gray{200}
 	b.LogY = h1.LogY
