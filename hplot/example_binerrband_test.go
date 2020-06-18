@@ -26,14 +26,15 @@ func ExampleBinnedErrBand() {
 	// Creation of a slice of hbook.Count.
 	counts := make([]hbook.Count, nBins)
 	for i, xrange := range newBinning(nBins, 0, 10) {
+		y := float64(i + 1)
 		counts[i].XRange = xrange
-		counts[i].Val = float64(i + 1)
-		counts[i].Err.Low = 0.1 * counts[i].Val
-		counts[i].Err.High = 0.1 * counts[i].Val
+		counts[i].Val = y
+		counts[i].Err.Low = 0.1 * (y - 5) * (y - 5)
+		counts[i].Err.High = 0.1 * (y - 5) * (y - 5)
 	}
 
-	// Set 5th bin to zero
-	counts[4].Val, counts[4].Err.Low, counts[4].Err.High = 0, 0, 0
+	// Set error of the 5th bin to zero
+	counts[4].Err.Low, counts[4].Err.High = 0, 0
 
 	// Binned error band
 	b := &hplot.BinnedErrBand{Counts: counts}
@@ -60,11 +61,11 @@ func ExampleBinnedErrBand_fromH1D() {
 	// Histogram
 	h := hbook.NewH1D(20, -5, 5)
 	for i := 0; i < 1000; i++ {
-		x, w := gauss.Rand(), 1.0
+		x := gauss.Rand()
 		if 0 < x && x < 0.5 {
-			w = 0.0
+			continue
 		}
-		h.Fill(x, w)
+		h.Fill(x, 1)
 	}
 
 	hp := hplot.NewH1D(h)

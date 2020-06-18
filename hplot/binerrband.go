@@ -61,11 +61,6 @@ func (b *BinnedErrBand) Plot(c draw.Canvas, plt *plot.Plot) {
 		xmin, xmax := count.XRange.Min, count.XRange.Max
 		y, ydo, yup := count.Val, count.Err.Low, count.Err.High
 
-		// Don't do anything if both errors are zero
-		if ydo == 0 && yup == 0 {
-			continue
-		}
-
 		// If log scale disregard negative values.
 		if b.LogY && y-ydo <= 0 {
 			continue
@@ -102,14 +97,7 @@ func (b *BinnedErrBand) DataRange() (xmin, xmax, ymin, ymax float64) {
 
 	ymin, ymax = math.Inf(+1), math.Inf(-1)
 	for _, c := range b.Counts {
-
 		y, ydo, yup := c.Val, c.Err.Low, c.Err.High
-
-		// Ignore bins for which there are no error
-		if ydo == 0 && yup == 0 {
-			continue
-		}
-
 		ymin = math.Min(ymin, y-ydo)
 		ymax = math.Max(ymax, y+yup)
 	}
