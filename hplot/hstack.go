@@ -39,7 +39,7 @@ type HStack struct {
 	// Band displays a colored band between the y-min and y-max error bars.
 	// Error bars are computed as the bin-by-bin quadratic sum of individual
 	// histogram uncertainties.
-	Band *Band
+	Band *BinnedErrBand
 }
 
 // HStackKind customizes how a HStack should behave.
