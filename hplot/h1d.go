@@ -167,41 +167,10 @@ func (h *H1D) withYErrBars(yoffs []float64) *plotter.YErrorBars {
 }
 
 // withBand enables the band between ymin-ymax error bars.
-func (h1 *H1D) withBand() error {
-	/*
-		bins := h1.Hist.Binning.Bins
-		var (
-			top = make(plotter.XYs, 0, 2*len(bins))
-			bot = make(plotter.XYs, 0, 2*len(bins))
-		)
-
-		for i := 0; i < 2*len(bins); i++ {
-			var (
-				ibin = i / 2
-				bin  = bins[ibin]
-				xmin = bin.XEdges().Min
-				xmax = bin.XEdges().Max
-				sumw = bin.SumW()
-				errw = bin.ErrW()
-				ymin = sumw - 0.5*errw
-				ymax = sumw + 0.5*errw
-			)
-			switch {
-			case h1.LogY && ymin <= 0:
-				continue
-			}
-			switch {
-			case i%2 != 0:
-				top = append(top, plotter.XY{X: xmax, Y: ymin})
-				bot = append(bot, plotter.XY{X: xmax, Y: ymax})
-			default:
-				top = append(top, plotter.XY{X: xmin, Y: ymin})
-				bot = append(bot, plotter.XY{X: xmin, Y: ymax})
-			}
-		}*/
-
+func (h1 *H1D) withBand() error {	
 	h1.Band = NewBinnedErrBand(h1.Hist.Counts())
 	h1.Band.FillColor = color.Gray{200}
+	h1.Band.LogY = h1.LogY
 	return nil
 }
 

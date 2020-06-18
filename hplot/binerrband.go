@@ -32,6 +32,14 @@ type BinnedErrBand struct {
 	// between the top and bottom data points.
 	// Use nil to disable the filling.
 	FillColor color.Color
+
+	// LogY allows rendering with a log-scaled Y axis.
+	// When enabled, bins with negative or zero minimal value (val-err)
+	// will be discarded from the error band.
+	// The lowest Y value for the DataRange will be corrected to leave an
+	// arbitrary amount of height for the smallest bin entry so it is visible
+	// on the final plot.
+	LogY bool	
 }
 
 // NewBinnedErrBand creates a binned error band
@@ -49,22 +57,27 @@ func (b *BinnedErrBand) Plot(c draw.Canvas, plt *plot.Plot) {
 
 	for _, count := range b.Counts {
 
-		// Don't do anything if both errors are zero
-		if count.Err.Low == 0 && count.Err.High == 0 {
-			continue
-		}
-
 		// Get four corner of the ith bin
 		xmin, xmax := count.XRange.Min, count.XRange.Max
 		y, ydo, yup := count.Val, count.Err.Low, count.Err.High
+
+		// Don't do anything if both errors are zero
+		if ydo == 0 && yup == 0 {
+			continue
+		}
+
+		// If log scale disregard negative values.
+		if b.LogY && y - ydo <= 0 {
+			continue
+		}
+
+		// Polygon
 		xys := plotter.XYs{
 			plotter.XY{X: xmin, Y: y - ydo},
 			plotter.XY{X: xmin, Y: y + yup},
 			plotter.XY{X: xmax, Y: y + yup},
 			plotter.XY{X: xmax, Y: y - ydo},
 		}
-
-		// Polygon
 		poly := plotter.Polygon{XYs: []plotter.XYs{xys}, Color: b.FillColor}
 		poly.Plot(c, plt)
 
@@ -90,12 +103,13 @@ func (b *BinnedErrBand) DataRange() (xmin, xmax, ymin, ymax float64) {
 	ymin, ymax = math.Inf(+1), math.Inf(-1)
 	for _, c := range b.Counts {
 
+		y, ydo, yup := c.Val, c.Err.Low, c.Err.High
+		
 		// Ignore bins for which there are no error
-		if c.Err.Low == 0 && c.Err.High == 0 {
+		if ydo == 0 && yup == 0 {
 			continue
 		}
 
-		y, ydo, yup := c.Val, c.Err.Low, c.Err.High
 		ymin = math.Min(ymin, y-ydo)
 		ymax = math.Max(ymax, y+yup)
 	}
