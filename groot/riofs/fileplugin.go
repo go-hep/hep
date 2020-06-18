@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 
-	"go-hep.org/x/hep/groot/internal/mmap"
+	"github.com/go-mmap/mmap"
 )
 
 var drivers = struct {

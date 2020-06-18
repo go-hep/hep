@@ -7,6 +7,7 @@ require (
 	github.com/apache/arrow/go/arrow v0.0.0-20200603085845-24b352135a5b
 	github.com/astrogo/fitsio v0.1.0
 	github.com/campoy/embedmd v1.0.0
+	github.com/go-mmap/mmap v0.1.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/gonuts/binary v0.2.0
 	github.com/gonuts/commander v0.1.0
