@@ -119,10 +119,11 @@ func (hstack *HStack) DataRange() (xmin, xmax, ymin, ymax float64) {
 	for _, h := range hstack.hs {
 		for i, bin := range h.Hist.Binning.Bins {
 			sumw := bin.SumW()
+			errw := bin.ErrW()
 			xmax = math.Max(bin.XMax(), xmax)
 			xmin = math.Min(bin.XMin(), xmin)
-			ymax = math.Max(yoffs[i]+sumw, ymax)
-			ymin = math.Min(yoffs[i]+sumw, ymin)
+			ymax = math.Max(yoffs[i]+sumw+0.5*errw, ymax)
+			ymin = math.Min(yoffs[i]+sumw-0.5*errw, ymin)
 			if bin.SumW() != 0 {
 				ylow = math.Min(bin.SumW(), ylow)
 			}
