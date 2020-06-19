@@ -98,7 +98,7 @@ func NewHStack(histos []*H1D, opts ...Options) *HStack {
 	return hstack
 }
 
-// summedH1D() returns the summed histogram
+// summedH1D returns the summed histogram
 func (hstack *HStack) summedH1D() *hbook.H1D {
 	bookHtot := hstack.hs[0].Hist
 	for _, h := range hstack.hs[1:] {
@@ -119,15 +119,34 @@ func (hstack *HStack) DataRange() (xmin, xmax, ymin, ymax float64) {
 	for _, h := range hstack.hs {
 		for i, bin := range h.Hist.Binning.Bins {
 			sumw := bin.SumW()
-			errw := bin.ErrW()
 			xmax = math.Max(bin.XMax(), xmax)
 			xmin = math.Min(bin.XMin(), xmin)
-			ymax = math.Max(yoffs[i]+sumw+0.5*errw, ymax)
-			ymin = math.Min(yoffs[i]+sumw-0.5*errw, ymin)
+			ymax = math.Max(yoffs[i]+sumw, ymax)
+			ymin = math.Min(yoffs[i]+sumw, ymin)
 			if bin.SumW() != 0 {
 				ylow = math.Min(bin.SumW(), ylow)
 			}
 			hstack.Stack.yoffs(i, yoffs, sumw)
+		}
+	}
+
+	// Handle error bands the error band of individual histograms
+	switch hstack.Stack {
+	case HStackOff:
+		for _, h := range hstack.hs {
+			if h.Band != nil {
+				_, _, ymin1, ymax1 := h.Band.DataRange()
+				for i := range h.Hist.Binning.Bins {
+					ymin = math.Min(yoffs[i]+ymin1, ymin)
+					ymax = math.Max(yoffs[i]+ymax1, ymax)
+				}
+			}
+		}
+	case HStackOn:
+		if hstack.Band != nil {
+			_, _, ymin1, ymax1 := hstack.Band.DataRange()
+			ymin = math.Min(ymin, ymin1)
+			ymax = math.Max(ymax, ymax1)
 		}
 	}
 
@@ -137,15 +156,6 @@ func (hstack *HStack) DataRange() (xmin, xmax, ymin, ymax float64) {
 			ymin = ylow * 0.5
 		}
 	}
-
-	//	FIXME(sbinet)
-	//	if h.YErrs != nil {
-	//		xmin1, xmax1, ymin1, ymax1 := h.YErrs.DataRange()
-	//		xmin = math.Min(xmin, xmin1)
-	//		ymin = math.Min(ymin, ymin1)
-	//		xmax = math.Max(xmax, xmax1)
-	//		ymax = math.Min(ymax, ymax1)
-	//	}
 
 	return xmin, xmax, ymin, ymax
 }
