@@ -53,7 +53,7 @@ type H1D struct {
 
 	// Band displays a colored band between the y-min and y-max error bars.
 	// The band is shown in the legend thumbnail only if there is no filling.
-	Band *Band
+	Band *BinnedErrBand
 }
 
 type HInfoStyle uint32
@@ -117,7 +117,7 @@ func NewH1D(h *hbook.H1D, opts ...Options) *H1D {
 	h1.Infos = cfg.hinfos
 
 	if cfg.band {
-		_ = h1.withBand()
+		h1.Band = h1.withBand()
 	}
 
 	if cfg.bars.yerrs {
@@ -167,45 +167,16 @@ func (h *H1D) withYErrBars(yoffs []float64) *plotter.YErrorBars {
 }
 
 // withBand enables the band between ymin-ymax error bars.
-func (h1 *H1D) withBand() error {
-
-	bins := h1.Hist.Binning.Bins
-	var (
-		top = make(plotter.XYs, 0, 2*len(bins))
-		bot = make(plotter.XYs, 0, 2*len(bins))
-	)
-
-	for i := 0; i < 2*len(bins); i++ {
-		var (
-			ibin = i / 2
-			bin  = bins[ibin]
-			xmin = bin.XEdges().Min
-			xmax = bin.XEdges().Max
-			sumw = bin.SumW()
-			errw = bin.ErrW()
-			ymin = sumw - 0.5*errw
-			ymax = sumw + 0.5*errw
-		)
-		switch {
-		case h1.LogY && ymin <= 0:
-			continue
-		}
-		switch {
-		case i%2 != 0:
-			top = append(top, plotter.XY{X: xmax, Y: ymin})
-			bot = append(bot, plotter.XY{X: xmax, Y: ymax})
-		default:
-			top = append(top, plotter.XY{X: xmin, Y: ymin})
-			bot = append(bot, plotter.XY{X: xmin, Y: ymax})
-		}
-	}
-
-	h1.Band = NewBand(color.Gray{200}, top, bot)
-	return nil
+func (h1 *H1D) withBand() *BinnedErrBand {
+	b := NewBinnedErrBand(h1.Hist.Counts())
+	b.FillColor = color.Gray{200}
+	b.LogY = h1.LogY
+	return b
 }
 
 // DataRange returns the minimum and maximum X and Y values
 func (h *H1D) DataRange() (xmin, xmax, ymin, ymax float64) {
+
 	if !h.LogY {
 		xmin, xmax, ymin, ymax = h.Hist.DataRange()
 		if h.YErrs != nil {
@@ -215,7 +186,14 @@ func (h *H1D) DataRange() (xmin, xmax, ymin, ymax float64) {
 			xmax = math.Max(xmax, xmax1)
 			ymax = math.Max(ymax, ymax1)
 		}
-		return xmin, xmax, ymin, ymax
+		if h.Band != nil {
+			xmin1, xmax1, ymin1, ymax1 := h.Band.DataRange()
+			xmin = math.Min(xmin, xmin1)
+			ymin = math.Min(ymin, ymin1)
+			xmax = math.Max(xmax, xmax1)
+			ymax = math.Max(ymax, ymax1)
+		}
+		return
 	}
 
 	xmin = math.Inf(+1)
@@ -244,6 +222,14 @@ func (h *H1D) DataRange() (xmin, xmax, ymin, ymax float64) {
 		ymin = math.Min(ymin, ymin1)
 		xmax = math.Max(xmax, xmax1)
 		ymax = math.Min(ymax, ymax1)
+	}
+
+	if h.Band != nil {
+		xmin1, xmax1, ymin1, ymax1 := h.Band.DataRange()
+		xmin = math.Min(xmin, xmin1)
+		ymin = math.Min(ymin, ymin1)
+		xmax = math.Max(xmax, xmax1)
+		ymax = math.Max(ymax, ymax1)
 	}
 
 	return

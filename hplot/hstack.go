@@ -39,7 +39,7 @@ type HStack struct {
 	// Band displays a colored band between the y-min and y-max error bars.
 	// Error bars are computed as the bin-by-bin quadratic sum of individual
 	// histogram uncertainties.
-	Band *Band
+	Band *BinnedErrBand
 }
 
 // HStackKind customizes how a HStack should behave.
@@ -98,7 +98,7 @@ func NewHStack(histos []*H1D, opts ...Options) *HStack {
 	return hstack
 }
 
-// summedH1D() returns the summed histogram
+// summedH1D returns the summed histogram
 func (hstack *HStack) summedH1D() *hbook.H1D {
 	bookHtot := hstack.hs[0].Hist
 	for _, h := range hstack.hs[1:] {
@@ -130,21 +130,32 @@ func (hstack *HStack) DataRange() (xmin, xmax, ymin, ymax float64) {
 		}
 	}
 
+	// Handle error bands the error band of individual histograms
+	switch hstack.Stack {
+	case HStackOff:
+		for _, h := range hstack.hs {
+			if h.Band != nil {
+				_, _, ymin1, ymax1 := h.Band.DataRange()
+				for i := range h.Hist.Binning.Bins {
+					ymin = math.Min(yoffs[i]+ymin1, ymin)
+					ymax = math.Max(yoffs[i]+ymax1, ymax)
+				}
+			}
+		}
+	case HStackOn:
+		if hstack.Band != nil {
+			_, _, ymin1, ymax1 := hstack.Band.DataRange()
+			ymin = math.Min(ymin, ymin1)
+			ymax = math.Max(ymax, ymax1)
+		}
+	}
+
 	if hstack.LogY {
 		if ymin == 0 && !math.IsInf(ylow, +1) {
 			// Reserve a bit of space for the smallest bin to be displayed still.
 			ymin = ylow * 0.5
 		}
 	}
-
-	//	FIXME(sbinet)
-	//	if h.YErrs != nil {
-	//		xmin1, xmax1, ymin1, ymax1 := h.YErrs.DataRange()
-	//		xmin = math.Min(xmin, xmin1)
-	//		ymin = math.Min(ymin, ymin1)
-	//		xmax = math.Max(xmax, xmax1)
-	//		ymax = math.Min(ymax, ymax1)
-	//	}
 
 	return xmin, xmax, ymin, ymax
 }

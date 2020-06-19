@@ -40,6 +40,17 @@ func (r Range) Width() float64 {
 	return math.Abs(r.Max - r.Min)
 }
 
+// Count is a 1-dim binned information, made of
+// a X range, a value and its uncertainties.
+type Count struct {
+	XRange Range
+	Val    float64
+	Err    struct {
+		Low  float64
+		High float64
+	}
+}
+
 // Histogram is an n-dim histogram (with weighted entries)
 type Histogram interface {
 	// Annotation returns the annotations attached to the

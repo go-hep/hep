@@ -728,6 +728,19 @@ scanLoop:
 	return err
 }
 
+// Counts return a slice of Count, ignoring outerflow.
+// The low and high error is equal to 0.5 * sqrt(sum(w^2)).
+func (h *H1D) Counts() []Count {
+	cs := make([]Count, h.Len())
+	for i, bin := range h.Binning.Bins {
+		cs[i].XRange = bin.Range
+		cs[i].Val = h.Value(i)
+		cs[i].Err.Low = h.Error(i) * 0.5
+		cs[i].Err.High = h.Error(i) * 0.5
+	}
+	return cs
+}
+
 // check various interfaces
 var _ Object = (*H1D)(nil)
 var _ Histogram = (*H1D)(nil)
