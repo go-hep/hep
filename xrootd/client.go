@@ -99,10 +99,11 @@ func (client *Client) Close() error {
 	if client == nil {
 		return os.ErrInvalid
 	}
-
 	defer client.cancel()
+
 	client.mu.Lock()
 	defer client.mu.Unlock()
+
 	var errs []error
 	for _, session := range client.sessions {
 		err := session.Close()
@@ -120,6 +121,10 @@ func (client *Client) Close() error {
 // If the resp is nil, then no response is stored.
 // Send returns a session id which identifies the server that provided response.
 func (client *Client) Send(ctx context.Context, resp xrdproto.Response, req xrdproto.Request) (string, error) {
+	if client == nil {
+		return "", os.ErrInvalid
+	}
+
 	return client.sendSession(ctx, client.initialSessionID, resp, req)
 }
 
