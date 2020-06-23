@@ -74,22 +74,29 @@ Type /? for help.
 
 	if len(args) > 0 {
 		for _, fname := range args {
-			f, err := os.Open(fname)
-			if err != nil {
-				icmd.msg.Printf("error: %v\n", err)
-				return 1
-			}
-			defer f.Close()
+			rc := func(fname string) int {
+				f, err := os.Open(fname)
+				if err != nil {
+					icmd.msg.Printf("error: %+v\n", err)
+					return 1
+				}
+				defer f.Close()
 
-			err = icmd.RunScript(f)
-			if err == io.EOF {
+				err = icmd.RunScript(f)
+				if err == io.EOF {
+					return 0
+				}
+				if err != nil {
+					icmd.msg.Printf("error running script [%s]: %+v\n", f.Name(), err)
+					return 1
+				}
+
 				return 0
+			}(fname)
+
+			if rc != 0 {
+				return rc
 			}
-			if err != nil {
-				icmd.msg.Printf("error running script [%s]: %v\n", f.Name(), err)
-				return 1
-			}
-			_ = f.Close()
 		}
 		if !interactive {
 			return 0

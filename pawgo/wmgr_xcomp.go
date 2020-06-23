@@ -22,6 +22,13 @@ func newWinMgr(msg *log.Logger) *winMgr {
 	}
 }
 
-func (wmgr *winMgr) newPlot(p *hplot.Plot) error {
+func (wmgr *winMgr) newPlot(p *hplot.Plot) *window {
 	return nil
+}
+
+func (wmgr *winMgr) Close() error {
+	return nil
+}
+
+type window struct {
 }

@@ -81,7 +81,11 @@ func (cmd *cmdHistPlot) Run(args []string) error {
 	}
 
 	hid := args[0]
-	return cmd.ctx.hmgr.plot(cmd.ctx.fmgr, cmd.ctx.wmgr, hid)
+	_, err := cmd.ctx.hmgr.plot(cmd.ctx.fmgr, cmd.ctx.wmgr, hid)
+	if err != nil {
+		return fmt.Errorf("could not plot histo %s: %w", hid, err)
+	}
+	return nil
 }
 
 func (cmd *cmdHistPlot) Help(w io.Writer) {

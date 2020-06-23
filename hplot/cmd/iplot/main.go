@@ -14,6 +14,8 @@ import (
 	"gioui.org/app"
 	"gioui.org/io/key"
 	"gioui.org/io/system"
+	"gioui.org/layout"
+	"gioui.org/op"
 	"gioui.org/unit"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
@@ -46,7 +48,7 @@ func run() {
 	for e := range win.Events() {
 		switch e := e.(type) {
 		case system.FrameEvent:
-			c := vggio.New(e, w, h)
+			c := vggio.New(layout.NewContext(new(op.Ops), e), w, h)
 			p := newPlot()
 			p.Draw(draw.New(c))
 			c.Paint(e)

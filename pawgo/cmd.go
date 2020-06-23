@@ -90,7 +90,12 @@ func (c *Cmd) Close() error {
 
 	err = c.fmgr.Close()
 	if err != nil {
-		return err
+		return fmt.Errorf("could not close file manager: %w", err)
+	}
+
+	err = c.wmgr.Close()
+	if err != nil {
+		return fmt.Errorf("could not close window manager: %w", err)
 	}
 
 	f, err := os.Create(".pawgo.history")
@@ -105,8 +110,11 @@ func (c *Cmd) Close() error {
 			err = e
 		}
 	}
+	if err != nil {
+		return fmt.Errorf("could not close REPL: %w", err)
+	}
 
-	return err
+	return nil
 }
 
 func (c *Cmd) Run() error {

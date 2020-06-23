@@ -85,7 +85,7 @@ func (mgr *histMgr) open(fmgr *fileMgr, hid, path string) error {
 	return nil
 }
 
-func (mgr *histMgr) plot(fmgr *fileMgr, wmgr *winMgr, hid string) error {
+func (mgr *histMgr) plot(fmgr *fileMgr, wmgr *winMgr, hid string) (*window, error) {
 	var (
 		h   hbook.Histogram
 		err error
@@ -94,13 +94,13 @@ func (mgr *histMgr) plot(fmgr *fileMgr, wmgr *winMgr, hid string) error {
 		// directly plot from file
 		h, err = mgr.find(fmgr, hid)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	} else {
 		var ok bool
 		h, ok = mgr.hmap[hid]
 		if !ok {
-			return fmt.Errorf("unknown histogram [id=%s]", hid)
+			return nil, fmt.Errorf("unknown histogram [id=%s]", hid)
 		}
 	}
 
@@ -111,10 +111,10 @@ func (mgr *histMgr) plot(fmgr *fileMgr, wmgr *winMgr, hid string) error {
 		return mgr.plotH2D(wmgr, h)
 	}
 
-	return fmt.Errorf("unknown histogram type %T [id=%s]", h, hid)
+	return nil, fmt.Errorf("unknown histogram type %T [id=%s]", h, hid)
 }
 
-func (mgr *histMgr) plotH1D(wmgr *winMgr, h *hbook.H1D) error {
+func (mgr *histMgr) plotH1D(wmgr *winMgr, h *hbook.H1D) (*window, error) {
 	fmt.Fprintf(
 		mgr.msg.Writer(),
 		"== h1d: name=%q\nentries=%d\nmean=%+8.3f\nRMS= %+8.3f\n",
@@ -132,15 +132,11 @@ func (mgr *histMgr) plotH1D(wmgr *winMgr, h *hbook.H1D) error {
 	p.Add(hh)
 	p.Add(hplot.NewGrid())
 
-	err := wmgr.newPlot(p)
-	if err != nil {
-		return err
-	}
-
-	return err
+	win := wmgr.newPlot(p)
+	return win, nil
 }
 
-func (mgr *histMgr) plotH2D(wmgr *winMgr, h *hbook.H2D) error {
+func (mgr *histMgr) plotH2D(wmgr *winMgr, h *hbook.H2D) (*window, error) {
 	fmt.Fprintf(
 		mgr.msg.Writer(),
 		"== h2d: name=%q\nentries=%d\nxmean=%+8.3f\nxRMS= %+8.3f\nymean=%+8.3f\nyRMS= %+8.3f\n",
@@ -160,10 +156,6 @@ func (mgr *histMgr) plotH2D(wmgr *winMgr, h *hbook.H2D) error {
 	p.Add(hh)
 	p.Add(hplot.NewGrid())
 
-	err := wmgr.newPlot(p)
-	if err != nil {
-		return err
-	}
-
-	return err
+	win := wmgr.newPlot(p)
+	return win, nil
 }

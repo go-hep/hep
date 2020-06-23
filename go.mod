@@ -3,7 +3,7 @@ module go-hep.org/x/hep
 go 1.13
 
 require (
-	gioui.org v0.0.0-20200619121558-88ced59dad93
+	gioui.org v0.0.0-20200630184602-223f8fd40ae4
 	github.com/ajstarks/svgo v0.0.0-20200320125537-f189e35d30ca // indirect
 	github.com/apache/arrow/go/arrow v0.0.0-20200619041403-25a9567c07fe
 	github.com/astrogo/fitsio v0.1.0
@@ -29,7 +29,7 @@ require (
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	golang.org/x/tools v0.0.0-20200619023621-037be6a06566
 	gonum.org/v1/gonum v0.7.1-0.20200618223603-4cf9025fcfd1
-	gonum.org/v1/plot v0.7.1-0.20200619102754-57b3081579f0
+	gonum.org/v1/plot v0.7.1-0.20200701071522-4260761de856
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 	modernc.org/ql v1.1.0
 )

@@ -9,10 +9,14 @@ package main
 import (
 	"log"
 	"math"
+	"sync"
 
 	"gioui.org/app"
+	"gioui.org/io/event"
 	"gioui.org/io/key"
 	"gioui.org/io/system"
+	"gioui.org/layout"
+	"gioui.org/op"
 	"gioui.org/unit"
 	"go-hep.org/x/hep/hplot"
 	"gonum.org/v1/plot/vg"
@@ -27,44 +31,109 @@ const (
 )
 
 type winMgr struct {
-	msg *log.Logger
+	msg  *log.Logger
+	quit chan int
+	once sync.Once
+	wg   sync.WaitGroup
 }
 
 func newWinMgr(msg *log.Logger) *winMgr {
 	return &winMgr{
-		msg: msg,
+		msg:  msg,
+		quit: make(chan int),
 	}
 }
 
-func (wmgr *winMgr) newPlot(p *hplot.Plot) error {
-	win := app.NewWindow(
-		app.Title("PAW-Go"),
-		app.Size(
-			unit.Px(float32(xmax.Dots(dpi))),
-			unit.Px(float32(ymax.Dots(dpi))),
-		),
-	)
-
-	go func() {
-		defer win.Close()
-
-		for e := range win.Events() {
-			switch e := e.(type) {
-			case system.DestroyEvent:
-				return
-			case system.FrameEvent:
-				cnv := vggio.New(e, xmax, ymax, vggio.UseDPI(dpi))
-				p.Draw(draw.New(cnv))
-				cnv.Paint(e)
-
-			case key.Event:
-				switch e.Name {
-				case "Q", key.NameEscape:
-					return
-				}
-			}
-		}
-	}()
-
+func (wmgr *winMgr) Close() error {
+	wmgr.once.Do(wmgr.doClose)
 	return nil
+}
+
+func (wmgr *winMgr) doClose() {
+	close(wmgr.quit)
+}
+
+func (wmgr *winMgr) newPlot(p *hplot.Plot) *window {
+	wmgr.wg.Add(1)
+	win := newWindow(p)
+	go win.run(wmgr)
+	return win
+}
+
+type window struct {
+	w     *app.Window
+	ready chan int
+
+	mu  sync.Mutex
+	plt *hplot.Plot
+}
+
+func newWindow(p *hplot.Plot) *window {
+	title := p.Plot.Title.Text
+	switch title {
+	case "":
+		title = "PAW-Go"
+	default:
+		title = "PAW-Go [" + title + "]"
+	}
+
+	x := unit.Px(float32(xmax.Dots(dpi)))
+	y := unit.Px(float32(ymax.Dots(dpi)))
+
+	win := &window{
+		w:     app.NewWindow(app.Title(title), app.Size(x, y)),
+		plt:   p,
+		ready: make(chan int),
+	}
+	return win
+}
+
+func (w *window) run(wmgr *winMgr) {
+	defer wmgr.wg.Done()
+	close(w.ready)
+
+	for {
+		select {
+		case e := <-w.w.Events():
+			o := w.handle(e)
+			if o == winStop {
+				return
+			}
+		case <-wmgr.quit:
+			w.w.Close()
+			return
+		}
+	}
+}
+
+type winState byte
+
+const (
+	winContinue winState = iota
+	winStop
+)
+
+func (w *window) handle(e event.Event) winState {
+	switch e := e.(type) {
+	case system.DestroyEvent:
+		return winStop
+	case system.FrameEvent:
+		cnv := vggio.New(
+			layout.NewContext(new(op.Ops), e),
+			xmax, ymax,
+			vggio.UseDPI(dpi),
+		)
+		w.mu.Lock()
+		w.plt.Draw(draw.New(cnv))
+		w.mu.Unlock()
+		cnv.Paint(e)
+
+	case key.Event:
+		switch e.Name {
+		case "Q", key.NameEscape:
+			w.w.Invalidate()
+			w.w.Close()
+		}
+	}
+	return winContinue
 }
