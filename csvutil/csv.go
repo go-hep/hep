@@ -27,6 +27,34 @@ func min(a, b int) int {
 	return b
 }
 
+func formatValue(val interface{}) (string, error) {
+	var err error
+	rv := reflect.Indirect(reflect.ValueOf(val))
+	rt := rv.Type()
+	switch rt.Kind() {
+	case reflect.Bool:
+		return strconv.FormatBool(rv.Bool()), nil
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return strconv.FormatInt(rv.Int(), 10), nil
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return strconv.FormatUint(rv.Uint(), 10), nil
+	case reflect.Float32, reflect.Float64:
+		return strconv.FormatFloat(rv.Float(), 'g', -1, rt.Bits()), nil
+	case reflect.String:
+		return rv.String(), nil
+	case reflect.Slice:
+		vals := make([]string, rv.Len())
+		for i := 0; i < rv.Len(); i++ {
+			if vals[i], err = formatValue(rv.Index(i).Interface()); err != nil {
+				return "", err
+			}
+		}
+		return "[" + strings.Join(vals, ",") + "]", nil
+	default:
+		return "", fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v (kind=%[2]v)", val, rt.Kind())
+	}
+}
+
 // Open opens a Table in read mode connected to a CSV file.
 func Open(fname string) (*Table, error) {
 	r, err := os.Open(fname)
@@ -172,21 +200,9 @@ func (tbl *Table) WriteRow(args ...interface{}) error {
 func (tbl *Table) write(args ...interface{}) error {
 	rec := make([]string, len(args))
 	for i, arg := range args {
-		rv := reflect.Indirect(reflect.ValueOf(arg))
-		rt := rv.Type()
-		switch rt.Kind() {
-		case reflect.Bool:
-			rec[i] = strconv.FormatBool(rv.Bool())
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			rec[i] = strconv.FormatInt(rv.Int(), 10)
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			rec[i] = strconv.FormatUint(rv.Uint(), 10)
-		case reflect.Float32, reflect.Float64:
-			rec[i] = strconv.FormatFloat(rv.Float(), 'g', -1, rt.Bits())
-		case reflect.String:
-			rec[i] = rv.String()
-		default:
-			return fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v (kind=%[2]v)", arg, rt.Kind())
+		var err error
+		if rec[i], err = formatValue(arg); err != nil {
+			return err
 		}
 	}
 	return tbl.Writer.Write(rec)
