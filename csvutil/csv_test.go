@@ -335,7 +335,7 @@ func TestCSVWriterArgs(t *testing.T) {
 		var (
 			f = float64(i)
 			s = fmt.Sprintf("str-%d", i)
-			l = []int{1,2,3,4}
+			l = []int{1, 2, 3, 4}
 		)
 		err = tbl.WriteRow(i, f, s, l)
 		if err != nil {
@@ -380,7 +380,7 @@ func TestCSVWriterStruct(t *testing.T) {
 			I: i,
 			F: float64(i),
 			S: fmt.Sprintf("str-%d", i),
-			L: []int{1,2,3,4},
+			L: []int{1, 2, 3, 4},
 		}
 		err = tbl.WriteRow(data)
 		if err != nil {
