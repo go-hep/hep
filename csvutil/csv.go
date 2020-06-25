@@ -27,8 +27,7 @@ func min(a, b int) int {
 	return b
 }
 
-func formatValue(val interface{}) (string, error) {
-	var err error
+func formatValue(val interface{}, in_quotes bool) (string, error) {
 	rv := reflect.Indirect(reflect.ValueOf(val))
 	rt := rv.Type()
 	switch rt.Kind() {
@@ -41,15 +40,26 @@ func formatValue(val interface{}) (string, error) {
 	case reflect.Float32, reflect.Float64:
 		return strconv.FormatFloat(rv.Float(), 'g', -1, rt.Bits()), nil
 	case reflect.String:
-		return rv.String(), nil
+		if in_quotes {
+			return "'" + rv.String() + "'", nil
+		} else {
+			return rv.String(), nil
+		}
 	case reflect.Slice:
-		vals := make([]string, rv.Len())
+		var slice strings.Builder
+		fmt.Fprintf(&slice, "[")
 		for i := 0; i < rv.Len(); i++ {
-			if vals[i], err = formatValue(rv.Index(i).Interface()); err != nil {
+			cur_elem, err := formatValue(rv.Index(i).Interface(), true)
+			if err != nil {
 				return "", err
 			}
+			fmt.Fprintf(&slice, "%s", cur_elem)
+			if i != rv.Len()-1 {
+				fmt.Fprintf(&slice, ", ")
+			}
 		}
-		return "[" + strings.Join(vals, ",") + "]", nil
+		fmt.Fprintf(&slice, "]")
+		return slice.String(), nil
 	default:
 		return "", fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v (kind=%[2]v)", val, rt.Kind())
 	}
@@ -201,7 +211,7 @@ func (tbl *Table) write(args ...interface{}) error {
 	rec := make([]string, len(args))
 	for i, arg := range args {
 		var err error
-		if rec[i], err = formatValue(arg); err != nil {
+		if rec[i], err = formatValue(arg, false); err != nil {
 			return err
 		}
 	}

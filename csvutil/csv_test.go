@@ -400,6 +400,45 @@ func TestCSVWriterStruct(t *testing.T) {
 	}
 }
 
+func TestCSVWriterArgsSlice(t *testing.T) {
+	fname := "testdata/out-args-slice.csv"
+	tbl, err := csvutil.Create(fname)
+	if err != nil {
+		t.Errorf("could not create %s: %+v\n", fname, err)
+	}
+	defer tbl.Close()
+	tbl.Writer.Comma = ','
+
+	err = tbl.WriteHeader("## more complicated slices: [][]int{}, [][]string{}, []string{}, float64\n")
+	if err != nil {
+		t.Errorf("error writing header: %+v\n", err)
+	}
+
+	for i := 0; i < 10; i++ {
+		var (
+			lii = [][]int{{1, 2, 3}, {2, 3, 4}, {7, 8, 15}}
+			lss = [][]string{{"foo", "bar", "baz"}, {"abc", "def", "ghi"}, {"qwerty"}}
+			ls  = []string{"abc", "def", "ghi"}
+			f   = float64(i)
+		)
+		err = tbl.WriteRow(lii, lss, ls, f)
+		if err != nil {
+			t.Errorf("error writing row %d: %+v\n", i, err)
+			break
+		}
+	}
+
+	err = tbl.Close()
+	if err != nil {
+		t.Errorf("error closing table: %+v\n", err)
+	}
+
+	err = diff("testdata/write-results-slice.csv", fname)
+	if err != nil {
+		t.Errorf("files differ: %+v\n", err)
+	}
+}
+
 func TestCSVAppend(t *testing.T) {
 	fname := "testdata/append-test.csv"
 	tbl, err := csvutil.Create(fname)
