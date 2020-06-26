@@ -27,41 +27,40 @@ func min(a, b int) int {
 	return b
 }
 
-func formatValue(val interface{}, in_quotes bool) (string, error) {
+func formatValue(val interface{}, in_quotes bool, recBuilder *strings.Builder) error {
 	rv := reflect.Indirect(reflect.ValueOf(val))
 	rt := rv.Type()
 	switch rt.Kind() {
 	case reflect.Bool:
-		return strconv.FormatBool(rv.Bool()), nil
+		recBuilder.WriteString(strconv.FormatBool(rv.Bool()))
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return strconv.FormatInt(rv.Int(), 10), nil
+		recBuilder.WriteString(strconv.FormatInt(rv.Int(), 10))
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return strconv.FormatUint(rv.Uint(), 10), nil
+		recBuilder.WriteString(strconv.FormatUint(rv.Uint(), 10))
 	case reflect.Float32, reflect.Float64:
-		return strconv.FormatFloat(rv.Float(), 'g', -1, rt.Bits()), nil
+		recBuilder.WriteString(strconv.FormatFloat(rv.Float(), 'g', -1, rt.Bits()))
 	case reflect.String:
-		if quotes {
-			return "'" + rv.String() + "'", nil
+		if in_quotes {
+			recBuilder.WriteString("'" + rv.String() + "'")
+		} else {
+			recBuilder.WriteString(rv.String())
 		}
-		return rv.String(), nil
 	case reflect.Slice:
-		var slice strings.Builder
-		fmt.Fprintf(&slice, "[")
+		recBuilder.WriteString("[")
 		for i := 0; i < rv.Len(); i++ {
-			elem, err := formatValue(rv.Index(i).Interface(), true)
-			if err != nil {
-				return "", err
+			if i > 0 {
+				recBuilder.WriteString(", ")
 			}
-			slice.WriteString(elem)
-			if i != rv.Len()-1 {
-				fmt.Fprintf(&slice, ", ")
+			err := formatValue(rv.Index(i).Interface(), true, recBuilder)
+			if err != nil {
+				return err
 			}
 		}
-		slice.WriteString("]")
-		return slice.String(), nil
+		recBuilder.WriteString("]")
 	default:
-		return "", fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v (kind=%[2]v)", val, rt.Kind())
+		return fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v (kind=%[2]v)", val, rt.Kind())
 	}
+	return nil
 }
 
 // Open opens a Table in read mode connected to a CSV file.
@@ -208,11 +207,14 @@ func (tbl *Table) WriteRow(args ...interface{}) error {
 
 func (tbl *Table) write(args ...interface{}) error {
 	rec := make([]string, len(args))
+	var recBuilder strings.Builder
 	for i, arg := range args {
-		var err error
-		if rec[i], err = formatValue(arg, false); err != nil {
+		recBuilder.Reset()
+		err := formatValue(arg, false, &recBuilder)
+		if err != nil {
 			return err
 		}
+		rec[i] = recBuilder.String()
 	}
 	return tbl.Writer.Write(rec)
 }
