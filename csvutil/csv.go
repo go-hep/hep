@@ -40,25 +40,24 @@ func formatValue(val interface{}, in_quotes bool) (string, error) {
 	case reflect.Float32, reflect.Float64:
 		return strconv.FormatFloat(rv.Float(), 'g', -1, rt.Bits()), nil
 	case reflect.String:
-		if in_quotes {
+		if quotes {
 			return "'" + rv.String() + "'", nil
-		} else {
-			return rv.String(), nil
 		}
+		return rv.String(), nil
 	case reflect.Slice:
 		var slice strings.Builder
 		fmt.Fprintf(&slice, "[")
 		for i := 0; i < rv.Len(); i++ {
-			cur_elem, err := formatValue(rv.Index(i).Interface(), true)
+			elem, err := formatValue(rv.Index(i).Interface(), true)
 			if err != nil {
 				return "", err
 			}
-			fmt.Fprintf(&slice, "%s", cur_elem)
+			slice.WriteString(elem)
 			if i != rv.Len()-1 {
 				fmt.Fprintf(&slice, ", ")
 			}
 		}
-		fmt.Fprintf(&slice, "]")
+		slice.WriteString("]")
 		return slice.String(), nil
 	default:
 		return "", fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v (kind=%[2]v)", val, rt.Kind())
