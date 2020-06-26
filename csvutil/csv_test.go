@@ -326,7 +326,7 @@ func TestCSVWriterArgs(t *testing.T) {
 	defer tbl.Close()
 	tbl.Writer.Comma = ';'
 
-	err = tbl.WriteHeader("## a simple set of data: int64;float64;string\n")
+	err = tbl.WriteHeader("## a simple set of data: int64;float64;string;slice\n")
 	if err != nil {
 		t.Errorf("error writing header: %+v\n", err)
 	}
@@ -335,8 +335,9 @@ func TestCSVWriterArgs(t *testing.T) {
 		var (
 			f = float64(i)
 			s = fmt.Sprintf("str-%d", i)
+			l = []int{1, 2, 3, 4}
 		)
-		err = tbl.WriteRow(i, f, s)
+		err = tbl.WriteRow(i, f, s, l)
 		if err != nil {
 			t.Errorf("error writing row %d: %+v\n", i, err)
 			break
@@ -348,7 +349,7 @@ func TestCSVWriterArgs(t *testing.T) {
 		t.Errorf("error closing table: %+v\n", err)
 	}
 
-	err = diff("testdata/simple.csv", fname)
+	err = diff("testdata/write-results.csv", fname)
 	if err != nil {
 		t.Errorf("files differ: %+v\n", err)
 	}
@@ -364,7 +365,7 @@ func TestCSVWriterStruct(t *testing.T) {
 	tbl.Writer.Comma = ';'
 
 	// test WriteHeader w/o a trailing newline
-	err = tbl.WriteHeader("## a simple set of data: int64;float64;string")
+	err = tbl.WriteHeader("## a simple set of data: int64;float64;string;slice")
 	if err != nil {
 		t.Errorf("error writing header: %+v\n", err)
 	}
@@ -374,10 +375,12 @@ func TestCSVWriterStruct(t *testing.T) {
 			I int
 			F float64
 			S string
+			L []int
 		}{
 			I: i,
 			F: float64(i),
 			S: fmt.Sprintf("str-%d", i),
+			L: []int{1, 2, 3, 4},
 		}
 		err = tbl.WriteRow(data)
 		if err != nil {
@@ -391,9 +394,47 @@ func TestCSVWriterStruct(t *testing.T) {
 		t.Errorf("error closing table: %+v\n", err)
 	}
 
-	err = diff("testdata/simple.csv", fname)
+	err = diff("testdata/write-results.csv", fname)
 	if err != nil {
 		t.Errorf("files differ: %+v\n", err)
+	}
+}
+
+func TestCSVWriterArgsSlice(t *testing.T) {
+	fname := "testdata/out-args-slice.csv"
+	tbl, err := csvutil.Create(fname)
+	if err != nil {
+		t.Fatalf("could not create %s: %+v", fname, err)
+	}
+	defer tbl.Close()
+	tbl.Writer.Comma = ','
+
+	err = tbl.WriteHeader("## more complicated slices: [][]int{}, [][]string{}, []string{}, float64\n")
+	if err != nil {
+		t.Fatalf("error writing header: %+v", err)
+	}
+
+	for i := 0; i < 10; i++ {
+		var (
+			lii = [][]int{{1, 2, 3}, {2, 3, 4}, {7, 8, 15}}
+			lss = [][]string{{"foo", "bar", "baz"}, {"abc", "def", "ghi"}, {"qwerty"}}
+			ls  = []string{"abc", "def", "ghi"}
+			f   = float64(i)
+		)
+		err = tbl.WriteRow(lii, lss, ls, f)
+		if err != nil {
+			t.Fatalf("error writing row %d: %+v", i, err)
+		}
+	}
+
+	err = tbl.Close()
+	if err != nil {
+		t.Fatalf("error closing table: %+v", err)
+	}
+
+	err = diff("testdata/write-results-slice.csv", fname)
+	if err != nil {
+		t.Fatalf("files differ: %+v", err)
 	}
 }
 

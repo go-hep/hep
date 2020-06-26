@@ -27,6 +27,42 @@ func min(a, b int) int {
 	return b
 }
 
+func formatValue(val interface{}, quotes bool, recBuilder *strings.Builder) error {
+	rv := reflect.Indirect(reflect.ValueOf(val))
+	rt := rv.Type()
+	switch rt.Kind() {
+	case reflect.Bool:
+		recBuilder.WriteString(strconv.FormatBool(rv.Bool()))
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		recBuilder.WriteString(strconv.FormatInt(rv.Int(), 10))
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		recBuilder.WriteString(strconv.FormatUint(rv.Uint(), 10))
+	case reflect.Float32, reflect.Float64:
+		recBuilder.WriteString(strconv.FormatFloat(rv.Float(), 'g', -1, rt.Bits()))
+	case reflect.String:
+		if quotes {
+			recBuilder.WriteString("'" + rv.String() + "'")
+		} else {
+			recBuilder.WriteString(rv.String())
+		}
+	case reflect.Slice:
+		recBuilder.WriteString("[")
+		for i := 0; i < rv.Len(); i++ {
+			if i > 0 {
+				recBuilder.WriteString(", ")
+			}
+			err := formatValue(rv.Index(i).Interface(), true, recBuilder)
+			if err != nil {
+				return err
+			}
+		}
+		recBuilder.WriteString("]")
+	default:
+		return fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v (kind=%[2]v)", val, rt.Kind())
+	}
+	return nil
+}
+
 // Open opens a Table in read mode connected to a CSV file.
 func Open(fname string) (*Table, error) {
 	r, err := os.Open(fname)
@@ -171,23 +207,14 @@ func (tbl *Table) WriteRow(args ...interface{}) error {
 
 func (tbl *Table) write(args ...interface{}) error {
 	rec := make([]string, len(args))
+	var recBuilder strings.Builder
 	for i, arg := range args {
-		rv := reflect.Indirect(reflect.ValueOf(arg))
-		rt := rv.Type()
-		switch rt.Kind() {
-		case reflect.Bool:
-			rec[i] = strconv.FormatBool(rv.Bool())
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			rec[i] = strconv.FormatInt(rv.Int(), 10)
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			rec[i] = strconv.FormatUint(rv.Uint(), 10)
-		case reflect.Float32, reflect.Float64:
-			rec[i] = strconv.FormatFloat(rv.Float(), 'g', -1, rt.Bits())
-		case reflect.String:
-			rec[i] = rv.String()
-		default:
-			return fmt.Errorf("csvutil: invalid type (%[1]T) %[1]v (kind=%[2]v)", arg, rt.Kind())
+		recBuilder.Reset()
+		err := formatValue(arg, false, &recBuilder)
+		if err != nil {
+			return err
 		}
+		rec[i] = recBuilder.String()
 	}
 	return tbl.Writer.Write(rec)
 }
