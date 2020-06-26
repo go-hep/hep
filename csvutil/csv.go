@@ -27,7 +27,7 @@ func min(a, b int) int {
 	return b
 }
 
-func formatValue(val interface{}, in_quotes bool, recBuilder *strings.Builder) error {
+func formatValue(val interface{}, quotes bool, recBuilder *strings.Builder) error {
 	rv := reflect.Indirect(reflect.ValueOf(val))
 	rt := rv.Type()
 	switch rt.Kind() {
@@ -40,7 +40,7 @@ func formatValue(val interface{}, in_quotes bool, recBuilder *strings.Builder) e
 	case reflect.Float32, reflect.Float64:
 		recBuilder.WriteString(strconv.FormatFloat(rv.Float(), 'g', -1, rt.Bits()))
 	case reflect.String:
-		if in_quotes {
+		if quotes {
 			recBuilder.WriteString("'" + rv.String() + "'")
 		} else {
 			recBuilder.WriteString(rv.String())
