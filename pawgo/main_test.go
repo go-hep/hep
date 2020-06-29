@@ -126,8 +126,10 @@ bye.
 			script: `## comment
 
 /file/open f ./testdata/hsimple.rio
-/hist/open h /file/id/f/h1
-/hist/plot h
+/hist/open h1 /file/id/f/h1
+/hist/plot h1
+/hist/open h2 /file/id/f/h2
+/hist/plot h2
 /quit
 `,
 			want: `
@@ -139,12 +141,20 @@ Type /? for help.
 ^D or /quit to quit.
 
 # /file/open f ./testdata/hsimple.rio
-# /hist/open h /file/id/f/h1
-# /hist/plot h
+# /hist/open h1 /file/id/f/h1
+# /hist/plot h1
 == h1d: name=""
 entries=10000
 mean=  +0.004
 RMS=   +1.005
+# /hist/open h2 /file/id/f/h2
+# /hist/plot h2
+== h2d: name=""
+entries=10000
+xmean=  +0.027
+xRMS=   +2.003
+ymean=  +0.992
+yRMS=   +1.723
 # /quit
 bye.
 `,
