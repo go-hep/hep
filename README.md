@@ -2,7 +2,7 @@ hep
 ===
 
 [![GitHub release](https://img.shields.io/github/release/go-hep/hep.svg)](https://github.com/go-hep/hep/releases)
-[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat)](https://pkg.go.dev/go-hep.org/x/hep)
+[![go.dev reference](https://pkg.go.dev/badge/go-hep.org/x/hep)](https://pkg.go.dev/go-hep.org/x/hep)
 [![Build Status](https://travis-ci.org/go-hep/hep.svg?branch=master)](https://travis-ci.org/go-hep/hep)
 [![Build status](https://ci.appveyor.com/api/projects/status/qnnp26vv2c71f560?svg=true)](https://ci.appveyor.com/project/sbinet/hep)
 [![CI](https://github.com/go-hep/hep/workflows/CI/badge.svg)](https://github.com/go-hep/hep/actions)
