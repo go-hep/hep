@@ -52,6 +52,7 @@ jobs:
     - name: Install Linux packages
       if: matrix.platform == 'ubuntu-latest'
       run: |
+        sudo apt-get update
         sudo apt-get install -qq pkg-config fuse libgles2-mesa-dev libxkbcommon-dev libxkbcommon-x11-dev
         sudo modprobe fuse
         sudo chmod 666 /dev/fuse
