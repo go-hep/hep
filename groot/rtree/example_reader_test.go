@@ -414,3 +414,57 @@ func ExampleReader_withFormulaFromUser() {
 	// evt[2]: 3, 3.3, tres -> 3433 | "one": 3, "two": 3.3, "three": tres
 	// evt[3]: 4, 4.4, quatro -> 4644 | "one": 4, "two": 4.4, "three": quatro
 }
+
+func ExampleReader_withReset() {
+	f, err := groot.Open("../testdata/simple.root")
+	if err != nil {
+		log.Fatalf("could not open ROOT file: %+v", err)
+	}
+	defer f.Close()
+
+	o, err := f.Get("tree")
+	if err != nil {
+		log.Fatalf("could not retrieve ROOT tree: %+v", err)
+	}
+	t := o.(rtree.Tree)
+
+	var (
+		v1 int32
+		v2 float32
+		v3 string
+
+		rvars = []rtree.ReadVar{
+			{Name: "one", Value: &v1},
+			{Name: "two", Value: &v2},
+			{Name: "three", Value: &v3},
+		}
+	)
+
+	r, err := rtree.NewReader(t, rvars)
+	if err != nil {
+		log.Fatalf("could not create tree reader: %+v", err)
+	}
+	defer r.Close()
+
+	err = r.Reset()
+	if err != nil {
+		log.Fatalf("could not reset tree reader: %+v", err)
+	}
+
+	err = r.Reset(rtree.WithRange(1, 3))
+	if err != nil {
+		log.Fatalf("could not reset tree reader: %+v", err)
+	}
+
+	err = r.Read(func(ctx rtree.RCtx) error {
+		fmt.Printf("evt[%d]: %v, %v, %v\n", ctx.Entry, v1, v2, v3)
+		return nil
+	})
+	if err != nil {
+		log.Fatalf("could not process tree: %+v", err)
+	}
+
+	// Output:
+	// evt[1]: 2, 2.2, dos
+	// evt[2]: 3, 3.3, tres
+}

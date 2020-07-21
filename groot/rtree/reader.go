@@ -51,17 +51,33 @@ func WithPrefetchBaskets(n int) ReadOption {
 // NewReader creates a new Tree Reader from the provided ROOT Tree and
 // the set of read-variables into which data will be read.
 func NewReader(t Tree, rvars []ReadVar, opts ...ReadOption) (*Reader, error) {
-	r := Reader{
-		beg:  0,
-		end:  -1,
-		nrab: 2,
-		tree: t,
+	r := Reader{tree: t}
+
+	err := r.setup(t, opts)
+	if err != nil {
+		return nil, err
 	}
 
+	rvars, err = sanitizeRVars(t, rvars)
+	if err != nil {
+		return nil, fmt.Errorf("rtree: could not create reader: %w", err)
+	}
+
+	r.r = newReader(t, rvars, r.nrab, r.beg, r.end)
+	r.rvars = r.r.rvars()
+
+	return &r, nil
+}
+
+func (r *Reader) setup(t Tree, opts []ReadOption) error {
+	r.beg = 0
+	r.end = -1
+	r.nrab = 2
+
 	for i, opt := range opts {
-		err := opt(&r)
+		err := opt(r)
 		if err != nil {
-			return nil, fmt.Errorf(
+			return fmt.Errorf(
 				"rtree: could not set reader option %d: %w",
 				i, err,
 			)
@@ -73,38 +89,30 @@ func NewReader(t Tree, rvars []ReadVar, opts ...ReadOption) (*Reader, error) {
 	}
 
 	if r.beg < 0 {
-		return nil, fmt.Errorf("rtree: invalid event reader range [%d, %d) (start=%d < 0)",
+		return fmt.Errorf("rtree: invalid event reader range [%d, %d) (start=%d < 0)",
 			r.beg, r.end, r.beg,
 		)
 	}
 
 	if r.beg > r.end {
-		return nil, fmt.Errorf("rtree: invalid event reader range [%d, %d) (start=%d > end=%d)",
+		return fmt.Errorf("rtree: invalid event reader range [%d, %d) (start=%d > end=%d)",
 			r.beg, r.end, r.beg, r.end,
 		)
 	}
 
 	if r.beg > t.Entries() {
-		return nil, fmt.Errorf("rtree: invalid event reader range [%d, %d) (start=%d > tree-entries=%d)",
+		return fmt.Errorf("rtree: invalid event reader range [%d, %d) (start=%d > tree-entries=%d)",
 			r.beg, r.end, r.beg, t.Entries(),
 		)
 	}
 
 	if r.end > t.Entries() {
-		return nil, fmt.Errorf("rtree: invalid event reader range [%d, %d) (end=%d > tree-entries=%d)",
+		return fmt.Errorf("rtree: invalid event reader range [%d, %d) (end=%d > tree-entries=%d)",
 			r.beg, r.end, r.end, t.Entries(),
 		)
 	}
 
-	rvars, err := sanitizeRVars(t, rvars)
-	if err != nil {
-		return nil, fmt.Errorf("rtree: could not create reader: %w", err)
-	}
-
-	r.r = newReader(t, rvars, r.nrab, r.beg, r.end)
-	r.rvars = r.r.rvars()
-
-	return &r, nil
+	return nil
 }
 
 // Close closes the Reader.
@@ -135,6 +143,26 @@ func (r *Reader) Read(f func(ctx RCtx) error) error {
 
 	const eoff = 0 // entry offset
 	return r.r.run(eoff, r.beg, r.end, f)
+}
+
+// Reset resets the current Reader with the provided options.
+func (r *Reader) Reset(opts ...ReadOption) error {
+	if r.r != nil {
+		err := r.r.Close()
+		if err != nil {
+			return fmt.Errorf("rtree: could not reset internal reader: %w", err)
+		}
+	}
+
+	err := r.setup(r.tree, opts)
+	if err != nil {
+		return fmt.Errorf("rtree: could not reset reader options: %w", err)
+	}
+
+	r.r = newReader(r.tree, r.rvars, r.nrab, r.beg, r.end)
+	r.rvars = r.r.rvars()
+
+	return nil
 }
 
 // FormulaFunc creates a new formula based on the provided function and
