@@ -585,6 +585,21 @@ func rstreamerFrom(se rbytes.StreamerElement, ptr interface{}, lcnt leafCount, s
 		switch se.STLType() {
 		case rmeta.STLvector:
 			switch se.ContainedType() {
+			case rmeta.Char:
+				fptr := rf.Addr().Interface().(*[]int8)
+				return func(r *rbytes.RBuffer) error {
+					var hdr [6]byte
+					_, _ = r.Read(hdr[:])
+					n := int(r.ReadI32())
+					*fptr = rbytes.ResizeI8(*fptr, n)
+					if n > 0 {
+						r.ReadArrayI8(*fptr)
+					} else {
+						*fptr = []int8{}
+					}
+					return r.Err()
+				}
+
 			case rmeta.Short:
 				fptr := rf.Addr().Interface().(*[]int16)
 				return func(r *rbytes.RBuffer) error {

@@ -125,6 +125,31 @@ func TestDump(t *testing.T) {
 			name: "../testdata/uproot/issue21.root",
 			want: loadRef("../testdata/uproot/issue21.root.txt"),
 		},
+		{
+			name: "../testdata/treeCharExample.root",
+			want: `key[000]: nominal;1 "tree" (TTree)
+[000][d_fakeEvent]: false
+[000][d_lep_ECIDS]: [1 110]
+[001][d_fakeEvent]: false
+[001][d_lep_ECIDS]: [1 1]
+[002][d_fakeEvent]: false
+[002][d_lep_ECIDS]: [110 110]
+[003][d_fakeEvent]: false
+[003][d_lep_ECIDS]: [1 110]
+[004][d_fakeEvent]: false
+[004][d_lep_ECIDS]: [1 110]
+[005][d_fakeEvent]: false
+[005][d_lep_ECIDS]: [110 110]
+[006][d_fakeEvent]: false
+[006][d_lep_ECIDS]: [1 0]
+[007][d_fakeEvent]: false
+[007][d_lep_ECIDS]: [1 110]
+[008][d_fakeEvent]: false
+[008][d_lep_ECIDS]: [1 1]
+[009][d_fakeEvent]: false
+[009][d_lep_ECIDS]: [1 1]
+`,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)
