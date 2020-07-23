@@ -20,6 +20,7 @@ import (
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rcont"
 	"go-hep.org/x/hep/groot/rdict"
+	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
 )
 
@@ -801,6 +802,22 @@ func (f *File) StreamerInfo(name string, version int) (rbytes.StreamerInfo, erro
 			f.sinfos = append(f.sinfos, si)
 			rdict.StreamerInfos.Add(si)
 			return si, nil
+		}
+	}
+
+	if isCxxBuiltin(name) {
+		switch name {
+		case "string":
+			return rdict.NewStreamerInfo(name, version, []rbytes.StreamerElement{
+				&rdict.StreamerSTLstring{
+					StreamerSTL: *rdict.NewCxxStreamerSTL(
+						rdict.Element{
+							Name:  *rbase.NewNamed(name, ""),
+							Type:  rmeta.STLstring,
+							EName: "string",
+						}.New(), 0, rmeta.STLstring),
+				},
+			}), nil
 		}
 	}
 

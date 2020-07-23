@@ -150,6 +150,11 @@ func TestDump(t *testing.T) {
 [009][d_lep_ECIDS]: [1 1]
 `,
 		},
+		{
+			// no embedded streamer for std::string
+			name: "../testdata/no-streamer-string.root",
+			want: loadRef("testdata/no-streamer-string.root.txt"),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)
