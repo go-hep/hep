@@ -16,7 +16,7 @@ require (
 	github.com/google/go-cmp v0.5.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-uuid v1.0.2
-	github.com/jcmturner/gokrb5/v8 v8.4.0
+	github.com/jcmturner/gokrb5/v8 v8.4.1
 	github.com/klauspost/compress v1.10.10
 	github.com/peterh/liner v1.2.0
 	github.com/pierrec/lz4 v2.5.2+incompatible
