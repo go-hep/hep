@@ -200,13 +200,13 @@ func (h *H1D) DataRange() (xmin, xmax, ymin, ymax float64) {
 	xmax = math.Inf(-1)
 	ymin = math.Inf(+1)
 	ymax = math.Inf(-1)
-	ylow := math.Inf(+1) // ylow will hold the smallest non-zero y value.
+	ylow := math.Inf(+1) // ylow will hold the smallest positive y value.
 	for _, bin := range h.Hist.Binning.Bins {
 		xmax = math.Max(bin.XMax(), xmax)
 		xmin = math.Min(bin.XMin(), xmin)
 		ymax = math.Max(bin.SumW(), ymax)
 		ymin = math.Min(bin.SumW(), ymin)
-		if bin.SumW() != 0 {
+		if bin.SumW() > 0 {
 			ylow = math.Min(bin.SumW(), ylow)
 		}
 	}
