@@ -122,9 +122,7 @@ func (hstack *HStack) DataRange() (xmin, xmax, ymin, ymax float64) {
 			xmax = math.Max(bin.XMax(), xmax)
 			xmin = math.Min(bin.XMin(), xmin)
 			ymax = math.Max(yoffs[i]+sumw, ymax)
-			//if !(yoffs[i]+sumw <= 0 && hstack.LogY){
 			ymin = math.Min(yoffs[i]+sumw, ymin)
-			//}
 			if bin.SumW() != 0 && !(sumw <= 0 && hstack.LogY) {
 				ylow = math.Min(bin.SumW(), ylow)
 			}
