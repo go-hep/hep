@@ -123,7 +123,7 @@ func (hstack *HStack) DataRange() (xmin, xmax, ymin, ymax float64) {
 			xmin = math.Min(bin.XMin(), xmin)
 			ymax = math.Max(yoffs[i]+sumw, ymax)
 			ymin = math.Min(yoffs[i]+sumw, ymin)
-			if bin.SumW() != 0 {
+			if bin.SumW() != 0 && !(sumw <= 0 && hstack.LogY) {
 				ylow = math.Min(bin.SumW(), ylow)
 			}
 			hstack.Stack.yoffs(i, yoffs, sumw)
@@ -151,7 +151,7 @@ func (hstack *HStack) DataRange() (xmin, xmax, ymin, ymax float64) {
 	}
 
 	if hstack.LogY {
-		if ymin == 0 && !math.IsInf(ylow, +1) {
+		if ymin <= 0 && !math.IsInf(ylow, +1) {
 			// Reserve a bit of space for the smallest bin to be displayed still.
 			ymin = ylow * 0.5
 		}
@@ -199,11 +199,11 @@ func (hs *HStack) hplot(c draw.Canvas, p *plot.Plot, h *H1D, yoffs []float64, hs
 	if h.LogY {
 		yfct = func(i int, sumw float64) (ymin, ymax vg.Length) {
 			ymin = c.Min.Y
-			if yoffs[i] != 0 {
+			if yoffs[i] > 0 {
 				ymin = trY(yoffs[i])
 			}
 			ymax = c.Min.Y
-			if sumw+yoffs[i] != 0 {
+			if sumw+yoffs[i] > 0 {
 				ymax = trY(yoffs[i] + sumw)
 			}
 			return ymin, ymax

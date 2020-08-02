@@ -98,7 +98,9 @@ func (b *BinnedErrBand) DataRange() (xmin, xmax, ymin, ymax float64) {
 	ymin, ymax = math.Inf(+1), math.Inf(-1)
 	for _, c := range b.Counts {
 		y, ydo, yup := c.Val, c.Err.Low, c.Err.High
-		ymin = math.Min(ymin, y-ydo)
+		if !(y-ydo <= 0 && b.LogY) {
+			ymin = math.Min(ymin, y-ydo)
+		}
 		ymax = math.Max(ymax, y+yup)
 	}
 
