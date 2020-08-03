@@ -1,7 +1,12 @@
+// Copyright ©2020 The go-hep Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 package hplot
 
 import (
+	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 )
 
@@ -10,50 +15,53 @@ type Label struct {
 	X, Y  float64        // Position of the label
 	Style draw.TextStyle // Style of the label
 
-	// Compute the position wrt canvas size. This
-	// feature would need to be implemented into the plotter.
-	// (There is an example in gonum/v1/plot/plotter).
-	CanPos bool
+	// Compute the position wrt canvas size
+	// X, Y are [0, 1].
+	Normalize bool
 }
 
-// NewLabel creates a new value of type Label.
-func NewLabel(x, y float64, txt string, opts ...LabelOption) Label {
+// Plot implements the Plotter interface,
+// drawing the label on the canvas.
+func (l *Label) Plot(c draw.Canvas, plt *plot.Plot) {
 
-	// Handle configuration
-	cfg := &LabelConfig{}
-	for _, opt := range opts {
-		opt(cfg)
+	// FIXME[rmadar]: how to properly propagate TextStyle to
+	//                the FillString() command? This includes:
+	//                color, font, rotation, X/Yalign and TexHandler.
+	if l.Normalize {
+		da := plt.DataCanvas(c)
+		fnt, err := vg.MakeFont(plotter.DefaultFont, vg.Points(12))
+		if err != nil {
+			panic("couldn't create font.")
+		}
+		da.FillString(fnt, vg.Point{X: da.X(l.X), Y: da.Y(l.Y)}, l.Text)
+
+	} else {
+		pLabels := plotterLabels(l)
+		pLabels.Plot(c, plt)
 	}
-
-	// Create the basic label
-	label := Label{Text: txt, X: x, Y: y}
-
-	// Apply configuration
-	label.Style = cfg.Style
-	label.CanPos = cfg.CanPos
-
-	// Return the customized object
-	return label
 }
 
-// This function could be internal only to convert
-// the a slice of labels into a plotter.Labels object?
-func PlotterLabels(Ls []Label) *plotter.Labels {
+// DataRange returns the minimum and maximum x and
+// y values, implementing the plot.DataRanger interface.
+func (l *Label) DataRange() (xmin, xmax, ymin, ymax float64) {
+	pLabels := plotterLabels(l)
+	return pLabels.DataRange()
+}
 
-	// Wrap up all the labels into a field slices.
-	xys := make([]plotter.XY, len(Ls))
-	txt := make([]string, len(Ls))
-	stl := make([]draw.TextStyle, len(Ls))
-	for i, l := range Ls {
-		xys[i] = plotter.XY{X: l.X, Y: l.Y}
-		txt[i] = l.Text
-		stl[i] = l.Style
-	}
+// GlyphBoxes returns a GlyphBoxe, corresponding
+// to the label, implementing the plot.GlyphBoxer interface.
+func (l *Label) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
+	pLabels := plotterLabels(l)
+	return pLabels.GlyphBoxes(p)
+}
+
+// Internal helper function to get plotter.Labels type.
+func plotterLabels(l *Label) *plotter.Labels {
 
 	// Create of the YXlabels.
 	xyL := plotter.XYLabels{
-		XYs:    xys,
-		Labels: txt,
+		XYs:    []plotter.XY{{X: l.X, Y: l.Y}},
+		Labels: []string{l.Text},
 	}
 
 	// Create the plotter.Labels
@@ -63,32 +71,15 @@ func PlotterLabels(Ls []Label) *plotter.Labels {
 	}
 
 	// Add the text styles.
-	// FIXME[rmadar]: uncomment this line when l.Style will
-	//                be set to a default value.
-	// labels.TextStyle = stl
+	// FIXME(rmadar): this crashes when l.Style is not
+	//                assigned.
+	// labels.TextStyle = []draw.TextStyle{l.Style}
 
 	// Return the result
 	return labels
 }
 
-type labelConfig struct {
-	Style  draw.TextStyle
-	CanPos bool
-}
-
-// Label option
-type LabelOption func(cfg *labelConfig)
-
-// withTextStyle specifies the text style of the label.
-func withTextStyle(style draw.TextStyle) LabelOption {
-	return func(cfg *labelConfig) {
-		cfg.Style = style
-	}
-}
-
-// withTextStyle specifies the text style of the label.
-func withCanPos(doIt bool) LabelOption {
-	return func(cfg *labelConfig) {
-		cfg.CanPos = doIt
-	}
-}
+var (
+	_ plot.Plotter    = (*Label)(nil)
+	_ plot.DataRanger = (*Label)(nil)
+)
