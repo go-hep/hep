@@ -8,10 +8,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"reflect"
-	"runtime"
 	"testing"
 
 	"go-hep.org/x/hep/groot/internal/rtests"
@@ -20,14 +18,6 @@ import (
 )
 
 func TestCreate(t *testing.T) {
-
-	rootls := "rootls"
-	if runtime.GOOS == "windows" {
-		rootls = "rootls.exe"
-	}
-
-	rootls, err := exec.LookPath(rootls)
-	withROOTCxx := err == nil
 
 	dir, err := ioutil.TempDir("", "groot-")
 	if err != nil {
@@ -108,15 +98,32 @@ func TestCreate(t *testing.T) {
 				t.Fatalf("error closing file: %v", err)
 			}
 
-			if !withROOTCxx {
+			if !rtests.HasROOT {
 				t.Logf("skip test with ROOT/C++")
 				return
 			}
 
-			cmd := exec.Command(rootls, "-l", fname)
-			err = cmd.Run()
-			if err != nil {
-				t.Fatalf("ROOT/C++ could not open file %q", fname)
+			const rootls = `#include <iostream>
+#include "TFile.h"
+#include "TNamed.h"
+
+void rootls(const char *fname, const char *kname) {
+	auto f = TFile::Open(fname);
+	auto o = f->Get<TNamed>(kname);
+	if (o == NULL) {
+		std:cerr << "could not retrieve [" << kname << "]" << std::endl;
+		o->ClassName();
+	}
+	std::cout << "retrieved: [" << o->GetName() << "]" << std::endl;
+}
+`
+			for i := range tc.Want {
+				kname := fmt.Sprintf("key-%s-%02d", tc.Name, i)
+
+				out, err := rtests.RunCxxROOT("rootls", []byte(rootls), fname, kname)
+				if err != nil {
+					t.Fatalf("ROOT/C++ could not open file %q:\n%s", fname, string(out))
+				}
 			}
 		})
 	}
