@@ -1,6 +1,7 @@
 // Copyright ©2020 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package hplot_test
 
 import (
@@ -11,21 +12,21 @@ import (
 	"go-hep.org/x/hep/hplot"
 )
 
-func exampleLabel() {
+func ExampleLabel() {
 
 	// Label definition
-	l1 := &hplot.Label{
+	l1 := hplot.Label{
 		Text: "You are in ...",
 		X:    -0.5, Y: 0.5,
 	}
-	l2 := &hplot.Label{
+	l2 := hplot.Label{
 		Text: "... the right place",
 		X:    0.5, Y: -0.5,
 	}
-	l3 := &hplot.Label{
+	l3 := hplot.Label{
 		Text: "This is the middle",
 		X:    0.5, Y: 0.5,
-		Normalize: true}
+		Normalized: true}
 
 	// New plot
 	p := hplot.New()

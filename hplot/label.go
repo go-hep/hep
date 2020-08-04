@@ -1,9 +1,13 @@
 // Copyright ©2020 The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package hplot
 
 import (
+	"image/color"
+	"math"
+
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
@@ -11,75 +15,93 @@ import (
 )
 
 type Label struct {
-	Text  string         // Text of the label
-	X, Y  float64        // Position of the label
-	Style draw.TextStyle // Style of the label
+	Text      string         // Text of the label
+	X, Y      float64        // Position of the label
+	TextStyle draw.TextStyle // Text style of the label
 
-	// Compute the position wrt canvas size
-	// X, Y are [0, 1].
-	Normalize bool
+	// Normalized indicates whether the label position
+	//is in data coordinates  or normalized with regard
+	// to the canvas space.
+	// When normalized, the label position is assumed
+	// to fall in the [0, 1] interval.
+	Normalized bool
 }
 
 // Plot implements the Plotter interface,
 // drawing the label on the canvas.
-func (l *Label) Plot(c draw.Canvas, plt *plot.Plot) {
-
-	// FIXME[rmadar]: how to properly propagate TextStyle to
-	//                the FillString() command? This includes:
-	//                color, font, rotation, X/Yalign and TexHandler.
-	if l.Normalize {
-		da := plt.DataCanvas(c)
-		fnt, err := vg.MakeFont(plotter.DefaultFont, vg.Points(12))
-		if err != nil {
-			panic("couldn't create font.")
-		}
-		da.FillString(fnt, vg.Point{X: da.X(l.X), Y: da.Y(l.Y)}, l.Text)
-
-	} else {
-		pLabels := plotterLabels(l)
-		pLabels.Plot(c, plt)
-	}
+func (lbl Label) Plot(c draw.Canvas, p *plot.Plot) {
+	lbls := lbl.labels(c, p)
+	lbls.Plot(c, p)
 }
 
 // DataRange returns the minimum and maximum x and
 // y values, implementing the plot.DataRanger interface.
-func (l *Label) DataRange() (xmin, xmax, ymin, ymax float64) {
-	pLabels := plotterLabels(l)
+func (lbl Label) DataRange() (xmin, xmax, ymin, ymax float64) {
+
+	if lbl.Normalized {
+		return math.Inf(+1), math.Inf(-1), math.Inf(+1), math.Inf(-1)
+	}
+
+	pLabels := lbl.labels(draw.Canvas{}, nil)
 	return pLabels.DataRange()
 }
 
 // GlyphBoxes returns a GlyphBoxe, corresponding
 // to the label, implementing the plot.GlyphBoxer interface.
-func (l *Label) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
-	pLabels := plotterLabels(l)
-	return pLabels.GlyphBoxes(p)
+func (lbl Label) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
+
+	if lbl.Normalized {
+		// FIXME[rmadar]: this crashes and I don't understand why.
+		return []plot.GlyphBox{
+			{X: lbl.X, Y: lbl.Y, Rectangle: lbl.TextStyle.Rectangle(lbl.Text)},
+		}
+	}
+
+	return lbl.labels(draw.Canvas{}, p).GlyphBoxes(p)
 }
 
 // Internal helper function to get plotter.Labels type.
-func plotterLabels(l *Label) *plotter.Labels {
+func (lbl *Label) labels(c draw.Canvas, p *plot.Plot) *plotter.Labels {
 
-	// Create of the YXlabels.
-	xyL := plotter.XYLabels{
-		XYs:    []plotter.XY{{X: l.X, Y: l.Y}},
-		Labels: []string{l.Text},
+	if lbl.TextStyle == (draw.TextStyle{}) {
+		// FIXME[rmadar]: implement the hplot.DefaultFont
+		//                and hplot.DefaultFontSize.
+		defaultFont, err := vg.MakeFont(plotter.DefaultFont, plotter.DefaultFontSize)
+		if err != nil {
+			panic("impossible to make font.")
+		}
+
+		lbl.TextStyle = draw.TextStyle{
+			Color: color.Black,
+			Font:  defaultFont,
+		}
 	}
 
-	// Create the plotter.Labels
-	labels, err := plotter.NewLabels(xyL)
+	x := lbl.X
+	y := lbl.Y
+	if lbl.Normalized {
+		dc := p.DataCanvas(c)
+		x = float64(dc.X(x))
+		y = float64(dc.Y(y))
+	}
+
+	xyL := plotter.XYLabels{
+		XYs:    []plotter.XY{{X: x, Y: y}},
+		Labels: []string{lbl.Text},
+	}
+
+	lbls, err := plotter.NewLabels(xyL)
 	if err != nil {
 		panic("cannot create plotter.Labels")
 	}
 
-	// Add the text styles.
-	// FIXME(rmadar): this crashes when l.Style is not
-	//                assigned.
-	// labels.TextStyle = []draw.TextStyle{l.Style}
+	lbls.TextStyle = []draw.TextStyle{lbl.TextStyle}
 
-	// Return the result
-	return labels
+	return lbls
 }
 
 var (
 	_ plot.Plotter    = (*Label)(nil)
 	_ plot.DataRanger = (*Label)(nil)
+	_ plot.GlyphBoxer = (*Label)(nil)
 )
