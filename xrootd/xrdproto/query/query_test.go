@@ -170,7 +170,7 @@ func Example() {
 	// sess: ccxrootdgotest.in2p3.fr:9001
 	// sess: ccxrootdgotest.in2p3.fr:9001
 	// config: bind_max="15"
-	// config: chksum=N/A
+	// config: chksum="0:md5"
 	// config: cid=N/A
 	// config: cms="none|"
 	// config: pio_max="5"

@@ -150,7 +150,7 @@ func Example() {
 
 	// Output:
 	// sess:   ccxrootdgotest.in2p3.fr:9001
-	// stage:  "23297f000001"
+	// stage:  "2329ac11003d"
 	// cancel: ""
 	// sess:   ccxrootdgotest.in2p3.fr:9001
 }

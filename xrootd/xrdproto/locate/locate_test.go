@@ -44,7 +44,7 @@ func Example() {
 
 	// Output:
 	// sess: ccxrootdgotest.in2p3.fr:9001
-	// locate: "Sr[::127.0.0.1]:9001"
+	// locate: "Sr[::172.17.0.61]:9001"
 }
 
 func TestRequest(t *testing.T) {
