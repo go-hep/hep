@@ -284,6 +284,12 @@ func (dir *tdirectoryFile) close() error {
 		return nil
 	}
 
+	if dir.file != nil && dir.file.end > kStartBigFile {
+		if dir.dir.rvers < 1000 {
+			dir.dir.rvers += 1000
+		}
+	}
+
 	// FIXME(sbinet): ROOT applies this optimization. should we ?
 	//	if len(dir.dir.keys) == 0 || dir.dir.seekdir == 0 {
 	//		return nil
@@ -530,9 +536,6 @@ func (dir *tdirectoryFile) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	beg := w.Pos()
 
 	version := dir.RVersion()
-	if dir.isBigFile() && version < 1000 {
-		version += 1000
-	}
 	w.WriteI16(version)
 	w.WriteU32(time2datime(dir.ctime))
 	w.WriteU32(time2datime(dir.mtime))

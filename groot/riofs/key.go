@@ -500,6 +500,12 @@ func (k *Key) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return int(w.Pos() - pos), nil
 	}
 
+	if k.seekkey > kStartBigFile {
+		if k.rvers < 1000 {
+			k.rvers += 1000
+		}
+	}
+
 	w.WriteI16(k.RVersion())
 	w.WriteI32(k.objlen)
 	w.WriteU32(time2datime(k.datetime))

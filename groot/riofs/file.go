@@ -377,10 +377,12 @@ func (f *File) writeHeader() error {
 	}
 
 	version := f.version
-	if version < 1000000 && (f.end > kStartBigFile ||
+	if f.end > kStartBigFile ||
 		f.seekfree > kStartBigFile ||
-		f.seekinfo > kStartBigFile) {
-		version += 1000000
+		f.seekinfo > kStartBigFile {
+		if version < 1000000 {
+			version += 1000000
+		}
 		f.units = 8
 	}
 	buf.WriteI32(version)
