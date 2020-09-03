@@ -698,13 +698,13 @@ func readF64s(recv interface{}, r *rbytes.RBuffer) error {
 
 func readF16s(recv interface{}, r *rbytes.RBuffer, se rbytes.StreamerElement) error {
 	slice := recv.([]root.Float16)
-	copy(slice[:], r.ReadFastArrayF16(len(slice), se))
+	r.ReadArrayF16(slice, se)
 	return r.Err()
 }
 
 func readD32s(recv interface{}, r *rbytes.RBuffer, se rbytes.StreamerElement) error {
 	slice := recv.([]root.Double32)
-	copy(slice[:], r.ReadFastArrayD32(len(slice), se))
+	r.ReadArrayD32(slice, se)
 	return r.Err()
 }
 

@@ -521,7 +521,7 @@ func rstreamBools(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) erro
 		*sli = append(*sli, make([]bool, n-nn)...)
 	}
 	*sli = (*sli)[:n]
-	copy((*sli)[:], r.ReadFastArrayBool(n))
+	r.ReadArrayBool(*sli)
 	return r.Err()
 }
 
@@ -529,13 +529,13 @@ func rstreamU8s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error 
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
-		sli = cfg.adjust(recv).(*[]bool)
+		sli = cfg.adjust(recv).(*[]uint8)
 	)
 	if nn := len(*sli); nn < n {
-		*sli = append(*sli, make([]bool, n-nn)...)
+		*sli = append(*sli, make([]uint8, n-nn)...)
 	}
 	*sli = (*sli)[:n]
-	copy((*sli)[:], r.ReadFastArrayBool(n))
+	r.ReadArrayU8(*sli)
 	return r.Err()
 }
 
@@ -543,13 +543,13 @@ func rstreamU16s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
-		sli = cfg.adjust(recv).(*[]bool)
+		sli = cfg.adjust(recv).(*[]uint16)
 	)
 	if nn := len(*sli); nn < n {
-		*sli = append(*sli, make([]bool, n-nn)...)
+		*sli = append(*sli, make([]uint16, n-nn)...)
 	}
 	*sli = (*sli)[:n]
-	copy((*sli)[:], r.ReadFastArrayBool(n))
+	r.ReadArrayU16(*sli)
 	return r.Err()
 }
 
@@ -557,13 +557,13 @@ func rstreamU32s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
-		sli = cfg.adjust(recv).(*[]bool)
+		sli = cfg.adjust(recv).(*[]uint32)
 	)
 	if nn := len(*sli); nn < n {
-		*sli = append(*sli, make([]bool, n-nn)...)
+		*sli = append(*sli, make([]uint32, n-nn)...)
 	}
 	*sli = (*sli)[:n]
-	copy((*sli)[:], r.ReadFastArrayBool(n))
+	r.ReadArrayU32(*sli)
 	return r.Err()
 }
 
@@ -571,13 +571,13 @@ func rstreamU64s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
-		sli = cfg.adjust(recv).(*[]bool)
+		sli = cfg.adjust(recv).(*[]uint64)
 	)
 	if nn := len(*sli); nn < n {
-		*sli = append(*sli, make([]bool, n-nn)...)
+		*sli = append(*sli, make([]uint64, n-nn)...)
 	}
 	*sli = (*sli)[:n]
-	copy((*sli)[:], r.ReadFastArrayBool(n))
+	r.ReadArrayU64(*sli)
 	return r.Err()
 }
 
@@ -591,7 +591,7 @@ func rstreamI8s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error 
 		*sli = append(*sli, make([]int8, n-nn)...)
 	}
 	*sli = (*sli)[:n]
-	copy((*sli)[:], r.ReadFastArrayI8(n))
+	r.ReadArrayI8(*sli)
 	return r.Err()
 }
 
@@ -605,7 +605,7 @@ func rstreamI16s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 		*sli = append(*sli, make([]int16, n-nn)...)
 	}
 	*sli = (*sli)[:n]
-	copy((*sli)[:], r.ReadFastArrayI16(n))
+	r.ReadArrayI16(*sli)
 	return r.Err()
 }
 
@@ -619,7 +619,7 @@ func rstreamI32s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 		*sli = append(*sli, make([]int32, n-nn)...)
 	}
 	*sli = (*sli)[:n]
-	copy((*sli)[:], r.ReadFastArrayI32(n))
+	r.ReadArrayI32(*sli)
 	return r.Err()
 }
 
@@ -633,7 +633,7 @@ func rstreamI64s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 		*sli = append(*sli, make([]int64, n-nn)...)
 	}
 	*sli = (*sli)[:n]
-	copy((*sli)[:], r.ReadFastArrayI64(n))
+	r.ReadArrayI64(*sli)
 	return r.Err()
 }
 
@@ -647,7 +647,7 @@ func rstreamF32s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 		*sli = append(*sli, make([]float32, n-nn)...)
 	}
 	*sli = (*sli)[:n]
-	copy((*sli)[:], r.ReadFastArrayF32(n))
+	r.ReadArrayF32(*sli)
 	return r.Err()
 }
 
@@ -661,7 +661,7 @@ func rstreamF64s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 		*sli = append(*sli, make([]float64, n-nn)...)
 	}
 	*sli = (*sli)[:n]
-	copy((*sli)[:], r.ReadFastArrayF64(n))
+	r.ReadArrayF64(*sli)
 	return r.Err()
 }
 
@@ -675,7 +675,7 @@ func rstreamF16s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 		*sli = append(*sli, make([]root.Float16, n-nn)...)
 	}
 	*sli = (*sli)[:n]
-	copy((*sli)[:], r.ReadFastArrayF16(n, cfg.descr.elem))
+	r.ReadArrayF16(*sli, cfg.descr.elem)
 	return r.Err()
 }
 
@@ -689,7 +689,7 @@ func rstreamD32s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 		*sli = append(*sli, make([]root.Double32, n-nn)...)
 	}
 	*sli = (*sli)[:n]
-	copy((*sli)[:], r.ReadFastArrayD32(n, cfg.descr.elem))
+	r.ReadArrayD32(*sli, cfg.descr.elem)
 	return r.Err()
 }
 
