@@ -39,22 +39,22 @@ func TestElementGetRange(t *testing.T) {
 		{
 			name:  "normal-f64-ndims",
 			title: "var[10][20][30]/D",
-			rtype: rmeta.Float64,
+			rtype: rmeta.OffsetL + rmeta.Float64,
 		},
 		{
 			name:  "normal-1d",
 			title: "var[3]/d",
-			rtype: rmeta.Double32,
+			rtype: rmeta.OffsetL + rmeta.Double32,
 		},
 		{
 			name:  "normal-2d",
 			title: "var[3][4]/d",
-			rtype: rmeta.Double32,
+			rtype: rmeta.OffsetL + rmeta.Double32,
 		},
 		{
 			name:  "normal-3d",
 			title: "var[3][4][5]/d",
-			rtype: rmeta.Double32,
+			rtype: rmeta.OffsetL + rmeta.Double32,
 		},
 		{
 			name:  "normal-with-brackets",
@@ -92,7 +92,15 @@ func TestElementGetRange(t *testing.T) {
 		{
 			name:   "range-ndim",
 			title:  "var[3]/d[ 0 , 100 ]",
-			rtype:  rmeta.Double32,
+			rtype:  rmeta.OffsetL + rmeta.Double32,
+			xmin:   0,
+			xmax:   100,
+			factor: float64(0xffffffff) / 100,
+		},
+		{
+			name:   "range-ndim-slice",
+			title:  "var[N]/d[ 0 , 100 ]",
+			rtype:  rmeta.OffsetP + rmeta.Double32,
 			xmin:   0,
 			xmax:   100,
 			factor: float64(0xffffffff) / 100,
@@ -108,7 +116,15 @@ func TestElementGetRange(t *testing.T) {
 		{
 			name:   "range-nbits-1d",
 			title:  "var[3]/d[ 10 , 100, 30 ]",
-			rtype:  rmeta.Double32,
+			rtype:  rmeta.OffsetL + rmeta.Double32,
+			xmin:   10,
+			xmax:   100,
+			factor: float64(1<<30) / 90,
+		},
+		{
+			name:   "range-nbits-slice-1d",
+			title:  "var[N]/d[ 10 , 100, 30 ]",
+			rtype:  rmeta.OffsetP + rmeta.Double32,
 			xmin:   10,
 			xmax:   100,
 			factor: float64(1<<30) / 90,
@@ -174,15 +190,14 @@ func TestElementGetRange(t *testing.T) {
 			elmt := Element{
 				Name: *rbase.NewNamed(tc.name, tc.title),
 				Type: tc.rtype,
-			}
-			elmt.parse()
-			if got, want := elmt.XMin, tc.xmin; got != want {
+			}.New()
+			if got, want := elmt.xmin, tc.xmin; got != want {
 				t.Fatalf("invalid xmin: got=%v, want=%v", got, want)
 			}
-			if got, want := elmt.XMax, tc.xmax; got != want {
+			if got, want := elmt.xmax, tc.xmax; got != want {
 				t.Fatalf("invalid xmax: got=%v, want=%v", got, want)
 			}
-			if got, want := elmt.Factor, tc.factor; got != want {
+			if got, want := elmt.factor, tc.factor; got != want {
 				t.Fatalf("invalid factor: got=%v, want=%v", got, want)
 			}
 		})
