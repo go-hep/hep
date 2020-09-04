@@ -14,7 +14,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/floats/scalar"
 	"gonum.org/v1/plot/plotter"
 )
 
@@ -442,14 +442,14 @@ func TestH1DNegativeWeights(t *testing.T) {
 	h2.Fill(30, 0.2)
 
 	const tol = 1e-12
-	if x1, x2 := h1.XMean(), h2.XMean(); !floats.EqualWithinAbs(x1, x2, tol) {
+	if x1, x2 := h1.XMean(), h2.XMean(); !scalar.EqualWithinAbs(x1, x2, tol) {
 		t.Errorf("mean differ:\nh1=%v\nh2=%v\n", x1, x2)
 	}
-	if x1, x2 := h1.XRMS(), h2.XRMS(); !floats.EqualWithinAbs(x1, x2, tol) {
+	if x1, x2 := h1.XRMS(), h2.XRMS(); !scalar.EqualWithinAbs(x1, x2, tol) {
 		t.Errorf("rms differ:\nh1=%v\nh2=%v\n", x1, x2)
 	}
 	/* FIXME
-	if x1, x2 := h1.StdDevX(), h2.StdDevX(); !floats.EqualWithinAbs(x1, x2, tol) {
+	if x1, x2 := h1.StdDevX(), h2.StdDevX(); !scalar.EqualWithinAbs(x1, x2, tol) {
 		t.Errorf("std-dev differ:\nh1=%v\nh2=%v\n", x1, x2)
 	}
 	*/

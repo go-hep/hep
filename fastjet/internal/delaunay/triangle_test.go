@@ -7,7 +7,7 @@ package delaunay
 import (
 	"testing"
 
-	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/floats/scalar"
 )
 
 func TestTriangleEquals(t *testing.T) {
@@ -119,7 +119,7 @@ func TestTriangleCircumcenter(t *testing.T) {
 	}
 	for _, test := range tests {
 		gotX, gotY := test.t.circumcenter()
-		if !floats.EqualWithinAbs(gotX, test.wantX, tol) || !floats.EqualWithinAbs(gotY, test.wantY, tol) {
+		if !scalar.EqualWithinAbs(gotX, test.wantX, tol) || !scalar.EqualWithinAbs(gotY, test.wantY, tol) {
 			t.Errorf("Circumcenter of %v, got = (%f,%f), want = (%f,%f)", test.t, gotX, gotY, test.wantX, test.wantY)
 		}
 	}

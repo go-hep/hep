@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/fmom"
-	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/floats/scalar"
 )
 
 func TestPxPyPzE(t *testing.T) {
@@ -134,7 +134,7 @@ func TestPxPyPzE(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			if !floats.EqualWithinULP(tc.got, tc.want, tc.ulp) {
+			if !scalar.EqualWithinULP(tc.got, tc.want, tc.ulp) {
 				t.Fatalf("error (ulp=%d)\ngot = %v\nwant= %v", tc.ulp, tc.got, tc.want)
 			}
 		})

@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/floats/scalar"
 	"gonum.org/v1/gonum/spatial/r3"
 )
 
@@ -310,7 +310,7 @@ func TestInvMass(t *testing.T) {
 
 		got := InvMass(p1, p2)
 
-		if !floats.EqualWithinULP(got, tc.want, 2) {
+		if !scalar.EqualWithinULP(got, tc.want, 2) {
 			t.Fatalf("got= %#v\nwant=%#v", got, tc.want)
 		}
 

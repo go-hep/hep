@@ -15,7 +15,7 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/fastjet"
-	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/floats/scalar"
 )
 
 func TestClusterSequenceArea(t *testing.T) {
@@ -118,7 +118,7 @@ func TestClusterSequenceArea(t *testing.T) {
 				areaErr := csa.AreaErr(jet)
 
 				got := []float64{rap, phi, pt, area, areaErr}
-				if !floats.EqualApprox(got, ref, tol) {
+				if !scalar.EqualApprox(got, ref, tol) {
 					t.Errorf("#%d\ngot= %v\nwant=%v", i, got, ref)
 				}
 			}

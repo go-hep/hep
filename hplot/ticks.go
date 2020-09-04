@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"go-hep.org/x/hep/hplot/internal/talbot"
-	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/floats/scalar"
 	"gonum.org/v1/plot"
 )
 
@@ -44,7 +44,7 @@ func (ft FreqTicks) Ticks(min, max float64) []plot.Tick {
 // formatFloatTick returns a g-formated string representation of v
 // to the specified precision.
 func formatFloatTick(v float64, prec int) string {
-	return strconv.FormatFloat(floats.Round(v, prec), 'g', displayPrecision, 64)
+	return strconv.FormatFloat(scalar.Round(v, prec), 'g', displayPrecision, 64)
 }
 
 // precisionOf returns the precision needed to display x without e notation.

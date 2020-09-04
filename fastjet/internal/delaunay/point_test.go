@@ -8,7 +8,7 @@ import (
 	"math"
 	"testing"
 
-	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/floats/scalar"
 )
 
 func TestPointEquals(t *testing.T) {
@@ -71,7 +71,7 @@ func TestFindNearest(t *testing.T) {
 		test.p.adjacentTriangles = test.adjacentTriangles
 		test.p.findNearest()
 		gotNeighbor, gotDistance := test.p.NearestNeighbor()
-		if !floats.EqualWithinAbs(gotDistance, test.wantDist, tol) || !test.wantNeighbor.Equals(gotNeighbor) {
+		if !scalar.EqualWithinAbs(gotDistance, test.wantDist, tol) || !test.wantNeighbor.Equals(gotNeighbor) {
 			t.Errorf("Nearest Neighbor for P%v with adjacent triangles %v, \n gotDist = %v, wantDist = %v, gotNeighbor = %v, wantNeighbor = %v",
 				test.p, test.adjacentTriangles, gotDistance, test.wantDist, gotNeighbor, test.wantNeighbor)
 		}
@@ -137,7 +137,7 @@ func TestFindSecondNearest(t *testing.T) {
 	for _, test := range tests {
 		test.p.adjacentTriangles = test.adjacentTriangles
 		gotNeighbor, gotDistance := test.p.SecondNearestNeighbor()
-		if !floats.EqualWithinAbs(gotDistance, test.wantDist, tol) || !test.wantNeighbor.Equals(gotNeighbor) {
+		if !scalar.EqualWithinAbs(gotDistance, test.wantDist, tol) || !test.wantNeighbor.Equals(gotNeighbor) {
 			t.Errorf("Second Nearest Neighbor for P%v with adjacent triangles %v, \n gotDist = %v, wantDist = %v, gotNeighbor = %v, wantNeighbor = %v",
 				test.p, test.adjacentTriangles, gotDistance, test.wantDist, gotNeighbor, test.wantNeighbor)
 		}
@@ -207,7 +207,7 @@ func TestPolyArea(t *testing.T) {
 	}
 	for i, test := range tests {
 		got := test.points.polyArea()
-		if !floats.EqualWithinAbs(got, test.want, tol) {
+		if !scalar.EqualWithinAbs(got, test.want, tol) {
 			t.Errorf("test %d: got = %f, want = %f", i, got, test.want)
 		}
 	}

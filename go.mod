@@ -4,8 +4,8 @@ go 1.13
 
 require (
 	gioui.org v0.0.0-20200630184602-223f8fd40ae4
-	github.com/ajstarks/svgo v0.0.0-20200320125537-f189e35d30ca // indirect
-	github.com/apache/arrow/go/arrow v0.0.0-20200619041403-25a9567c07fe
+	github.com/ajstarks/svgo v0.0.0-20200725142600-7a3c8b57fecb // indirect
+	github.com/apache/arrow/go/arrow v0.0.0-20200903155615-e2ae2122a2f8
 	github.com/astrogo/fitsio v0.1.0
 	github.com/campoy/embedmd v1.0.0
 	github.com/go-mmap/mmap v0.4.0
@@ -13,7 +13,7 @@ require (
 	github.com/gonuts/binary v0.2.0
 	github.com/gonuts/commander v0.1.0
 	github.com/gonuts/flag v0.1.0
-	github.com/google/go-cmp v0.5.0
+	github.com/google/go-cmp v0.5.2
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/jcmturner/gokrb5/v8 v8.4.1
@@ -28,8 +28,8 @@ require (
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	golang.org/x/tools v0.0.0-20200619023621-037be6a06566
-	gonum.org/v1/gonum v0.7.1-0.20200618223603-4cf9025fcfd1
-	gonum.org/v1/plot v0.7.1-0.20200701071522-4260761de856
+	gonum.org/v1/gonum v0.8.1
+	gonum.org/v1/plot v0.8.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 	modernc.org/ql v1.1.0
 )
