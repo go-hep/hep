@@ -105,5 +105,6 @@ const (
 	STLunorderedmap      ESTLType = 12
 	STLunorderedmultimap ESTLType = 13
 	STLend               ESTLType = 14
-	STLany               ESTLType = 300 /* TVirtualStreamerInfo::kSTL */
+	STLany               ESTLType = 300                 /* TVirtualStreamerInfo::kSTL */
+	STLstdstring                  = ESTLType(STLstring) /* TVirtualStreamerInfo::kSTLstring */
 )
