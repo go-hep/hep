@@ -516,6 +516,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 	}))
+	StreamerInfos.Add(NewCxxStreamerInfo("TString", 2, 0x17419, []rbytes.StreamerElement{}))
 	StreamerInfos.Add(NewCxxStreamerInfo("TArray", 1, 0x7021b2, []rbytes.StreamerElement{
 		&StreamerBasicType{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fN", "Number of array elements"),

@@ -22,6 +22,7 @@ const (
 	ProcessUUID              = 1  // ROOT version for TProcessUUID
 	Ref                      = 1  // ROOT version for TRef
 	UUID                     = 1  // ROOT version for TUUID
+	String                   = 2  // ROOT version for TString
 	Array                    = 1  // ROOT version for TArray
 	ArrayC                   = 1  // ROOT version for TArrayC
 	ArrayS                   = 1  // ROOT version for TArrayS

@@ -33,6 +33,7 @@ var (
 		"TNamed",
 		"TObject", "TObjString",
 		"TProcessID", "TProcessUUID", "TRef", "TUUID",
+		"TString",
 
 		// rcont
 		"TArray", "TArrayC", "TArrayS", "TArrayI", "TArrayL", "TArrayL64", "TArrayF", "TArrayD",
