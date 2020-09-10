@@ -60,3 +60,59 @@ func CxxTemplateArgsOf(typename string) []string {
 		return types
 	}
 }
+
+// TypeName2Enum returns the Enum corresponding to the provided C++ (or Go) typename.
+func TypeName2Enum(typename string) (Enum, bool) {
+	switch typename {
+	case "bool", "_Bool", "Bool_t":
+		return Bool, true
+	case "byte", "uint8", "uint8_t", "unsigned char", "UChar_t", "Byte_t":
+		return Uint8, true
+	case "uint16", "uint16_t", "unsigned short", "UShort_t":
+		return Uint16, true
+	case "uint32", "uint32_t", "unsigned int", "UInt_t":
+		return Uint32, true
+	case "uint64", "uint64_t", "unsigned long", "ULong_t", "ULong64_t":
+		return Uint64, true
+
+	case "char*":
+		return CharStar, true
+	case "Bits_t":
+		return Bits, true
+
+	case "int8", "int8_t", "char", "Char_t":
+		return Int8, true
+	case "int16", "int16_t", "short", "Short_t", "Version_t",
+		"Font_t", "Style_t", "Marker_t", "Width_t",
+		"Color_t",
+		"SCoord_t":
+		return Int16, true
+	case "int32", "int32_t", "int", "Int_t":
+		return Int32, true
+	case "int64", "int64_t", "long", "Long_t", "Long64_t",
+		"Seek_t":
+		return Int64, true
+
+	case "float32", "float", "Float_t", "float32_t",
+		"Angle_t", "Size_t":
+		return Float32, true
+	case "float64", "double", "Double_t", "float64_t",
+		"Coord_t":
+		return Float64, true
+	case "Float16_t", "Float16":
+		return Float16, true
+	case "Double32_t", "Double32":
+		return Double32, true
+
+	case "string", "TString", "Option_t":
+		return TString, true
+	case "std::string":
+		return STLstring, true
+	case "TObject":
+		return TObject, true
+	case "TNamed":
+		return TNamed, true
+	}
+
+	return -1, false
+}
