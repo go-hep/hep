@@ -24,6 +24,7 @@ type ObjArray struct {
 
 func NewObjArray() *ObjArray {
 	return &ObjArray{
+		obj:  *rbase.NewObject(),
 		objs: make([]root.Object, 0),
 	}
 }

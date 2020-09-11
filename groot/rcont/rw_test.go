@@ -88,6 +88,60 @@ func TestWRBuffer(t *testing.T) {
 			},
 		},
 		{
+			name: "TRefTable",
+			want: &RefTable{
+				obj:   rbase.Object{ID: 0x0, Bits: 0x3000000},
+				size:  42,
+				guids: []string{"1", "2", "3ec87674-3aa2-11e9-bb02-0301a8c0beef"},
+			},
+		},
+		{
+			name: "TRefTable-owner",
+			want: &RefTable{
+				obj:   rbase.Object{ID: 0x0, Bits: 0x3000000},
+				size:  42,
+				owner: rbase.NewNamed("n1", "t1"),
+				guids: []string{"1", "2", "3ec87674-3aa2-11e9-bb02-0301a8c0beef"},
+			},
+		},
+		{
+			name: "TRefTable-parents",
+			want: &RefTable{
+				obj:  rbase.Object{ID: 0x0, Bits: 0x3000000},
+				size: 42,
+				parents: &ObjArray{
+					obj:  rbase.Object{ID: 0x0, Bits: 0x3000000},
+					name: "my-objs",
+					objs: []root.Object{
+						rbase.NewNamed("n0", "t0"),
+						rbase.NewNamed("n1", "t1"),
+						rbase.NewNamed("n2", "t2"),
+					},
+					last: 2,
+				},
+				guids: []string{"1", "2", "3ec87674-3aa2-11e9-bb02-0301a8c0beef"},
+			},
+		},
+		{
+			name: "TRefTable-full",
+			want: &RefTable{
+				obj:   rbase.Object{ID: 0x0, Bits: 0x3000000},
+				size:  42,
+				owner: rbase.NewNamed("n1", "t1"),
+				parents: &ObjArray{
+					obj:  rbase.Object{ID: 0x0, Bits: 0x3000000},
+					name: "my-objs",
+					objs: []root.Object{
+						rbase.NewNamed("n0", "t0"),
+						rbase.NewNamed("n1", "t1"),
+						rbase.NewNamed("n2", "t2"),
+					},
+					last: 2,
+				},
+				guids: []string{"1", "2", "3ec87674-3aa2-11e9-bb02-0301a8c0beef"},
+			},
+		},
+		{
 			name: "TMap",
 			want: &Map{
 				obj:  rbase.Object{ID: 0x0, Bits: 0x3000000},

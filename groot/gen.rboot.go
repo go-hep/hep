@@ -45,6 +45,7 @@ var (
 		"TMap",
 		"TObjArray",
 		"TRefArray",
+		"TRefTable",
 		"TSeqCollection",
 
 		// rdict
@@ -95,7 +96,6 @@ var (
 		"TLeafF16", "TLeafD32",
 		"TLeafC",
 		"TNtuple",
-		"TRefTable",
 		"TTree",
 	}
 )

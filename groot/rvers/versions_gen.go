@@ -39,6 +39,7 @@ const (
 	Map                      = 3  // ROOT version for TMap
 	ObjArray                 = 3  // ROOT version for TObjArray
 	RefArray                 = 1  // ROOT version for TRefArray
+	RefTable                 = 3  // ROOT version for TRefTable
 	SeqCollection            = 0  // ROOT version for TSeqCollection
 	StreamerInfo             = 9  // ROOT version for TStreamerInfo
 	StreamerElement          = 4  // ROOT version for TStreamerElement
@@ -100,6 +101,5 @@ const (
 	LeafD32                  = 1  // ROOT version for TLeafD32
 	LeafC                    = 1  // ROOT version for TLeafC
 	Ntuple                   = 2  // ROOT version for TNtuple
-	RefTable                 = 3  // ROOT version for TRefTable
 	Tree                     = 20 // ROOT version for TTree
 )
