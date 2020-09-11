@@ -730,6 +730,28 @@ func (w *WBuffer) WriteFastArrayString(v []string) {
 	}
 }
 
+func (w *WBuffer) WriteStdVectorStrs(v []string) {
+	const typename = "vector<string>"
+	if w.err != nil {
+		return
+	}
+	var (
+		pos = w.WriteVersion(rvers.StreamerInfo)
+	)
+	w.WriteI32(int32(len(v)))
+
+	n := 0
+	for _, v := range v {
+		n += w.strlen(v)
+	}
+	w.w.grow(n)
+
+	for _, v := range v {
+		w.writeString(v)
+	}
+	_, _ = w.SetByteCount(pos, typename)
+}
+
 var (
 	_ StreamerInfoContext = (*WBuffer)(nil)
 )

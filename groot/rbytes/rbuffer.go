@@ -456,6 +456,21 @@ func (r *RBuffer) ReadArrayString(arr []string) {
 	}
 }
 
+func (r *RBuffer) ReadStdVectorStrs(sli *[]string) {
+	if r.err != nil {
+		return
+	}
+	const typename = "vector<string>"
+	beg := r.Pos()
+	_ /*vers*/, pos, bcnt := r.ReadVersion(typename)
+	n := int(r.ReadI32())
+	*sli = ResizeStr(*sli, n)
+	for i := range *sli {
+		(*sli)[i] = r.ReadString()
+	}
+	r.CheckByteCount(pos, bcnt, beg, typename)
+}
+
 func (r *RBuffer) ReadVersion(class string) (vers int16, pos, n int32) {
 	if r.err != nil {
 		return

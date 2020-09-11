@@ -6,6 +6,7 @@ package rbytes_test
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -84,6 +85,30 @@ func TestRWStrings(t *testing.T) {
 		got := rbuf.ReadString()
 		if got != want[i] {
 			t.Errorf("invalid string at %d: got=%q, want=%q", i, got, want[i])
+		}
+	}
+}
+
+func TestRWStdVecStrings(t *testing.T) {
+	want := [][]string{
+		{"", "x", "", "xx", "", "xxx"},
+		{"x", "", "xx", "", "xxx"},
+		{"", "x", "", "xx", "", "xxx"},
+		{"x", "", "xx", "", "xxx", strings.Repeat("1!", 256)},
+	}
+	wbuf := rbytes.NewWBuffer(nil, nil, 0, nil)
+	for i, str := range want {
+		wbuf.WriteStdVectorStrs(str)
+		if err := wbuf.Err(); err != nil {
+			t.Errorf("could not write string #%d: %+v", i, err)
+		}
+	}
+	rbuf := rbytes.NewRBuffer(wbuf.Bytes(), nil, 0, nil)
+	for i := range want {
+		var got []string
+		rbuf.ReadStdVectorStrs(&got)
+		if got, want := got, want[i]; !reflect.DeepEqual(got, want) {
+			t.Errorf("invalid string at %d: got=%q, want=%q", i, got, want)
 		}
 	}
 }
