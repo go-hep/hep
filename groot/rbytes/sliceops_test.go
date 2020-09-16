@@ -18,23 +18,14 @@ func TestResizeBool(t *testing.T) {
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 16; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeBool(sli, 10)
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 16; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeBool(sli, 5)
 	if got, want := len(sli), 5; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
-	if got, want := cap(sli), 16; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 }
@@ -51,23 +42,14 @@ func TestResizeU8(t *testing.T) {
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 16; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeU8(sli, 10)
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 16; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeU8(sli, 5)
 	if got, want := len(sli), 5; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
-	if got, want := cap(sli), 16; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 }
@@ -84,23 +66,14 @@ func TestResizeU16(t *testing.T) {
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 16; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeU16(sli, 10)
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 16; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeU16(sli, 5)
 	if got, want := len(sli), 5; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
-	if got, want := cap(sli), 16; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 }
@@ -117,23 +90,14 @@ func TestResizeU32(t *testing.T) {
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 12; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeU32(sli, 10)
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 12; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeU32(sli, 5)
 	if got, want := len(sli), 5; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
-	if got, want := cap(sli), 12; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 }
@@ -150,23 +114,14 @@ func TestResizeU64(t *testing.T) {
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 10; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeU64(sli, 10)
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 10; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeU64(sli, 5)
 	if got, want := len(sli), 5; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
-	if got, want := cap(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 }
@@ -183,23 +138,14 @@ func TestResizeI8(t *testing.T) {
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 16; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeI8(sli, 10)
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 16; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeI8(sli, 5)
 	if got, want := len(sli), 5; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
-	if got, want := cap(sli), 16; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 }
@@ -216,23 +162,14 @@ func TestResizeI16(t *testing.T) {
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 16; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeI16(sli, 10)
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 16; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeI16(sli, 5)
 	if got, want := len(sli), 5; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
-	if got, want := cap(sli), 16; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 }
@@ -249,23 +186,14 @@ func TestResizeI32(t *testing.T) {
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 12; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeI32(sli, 10)
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 12; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeI32(sli, 5)
 	if got, want := len(sli), 5; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
-	if got, want := cap(sli), 12; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 }
@@ -282,23 +210,14 @@ func TestResizeI64(t *testing.T) {
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 10; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeI64(sli, 10)
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 10; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeI64(sli, 5)
 	if got, want := len(sli), 5; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
-	if got, want := cap(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 }
@@ -315,23 +234,14 @@ func TestResizeF32(t *testing.T) {
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 12; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeF32(sli, 10)
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 12; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeF32(sli, 5)
 	if got, want := len(sli), 5; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
-	if got, want := cap(sli), 12; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 }
@@ -348,23 +258,14 @@ func TestResizeF64(t *testing.T) {
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 10; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeF64(sli, 10)
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 10; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeF64(sli, 5)
 	if got, want := len(sli), 5; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
-	if got, want := cap(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 }
@@ -381,23 +282,14 @@ func TestResizeF16(t *testing.T) {
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 12; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeF16(sli, 10)
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 12; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeF16(sli, 5)
 	if got, want := len(sli), 5; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
-	if got, want := cap(sli), 12; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 }
@@ -414,23 +306,14 @@ func TestResizeD32(t *testing.T) {
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 10; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeD32(sli, 10)
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 10; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeD32(sli, 5)
 	if got, want := len(sli), 5; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
-	if got, want := cap(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 }
@@ -447,23 +330,14 @@ func TestResizeStr(t *testing.T) {
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 10; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeStr(sli, 10)
 	if got, want := len(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
-	if got, want := cap(sli), 10; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
 
 	sli = ResizeStr(sli, 5)
 	if got, want := len(sli), 5; got != want {
-		t.Fatalf("got=%d, want=%d", got, want)
-	}
-	if got, want := cap(sli), 10; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 }
