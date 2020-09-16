@@ -35,6 +35,9 @@ type StreamerInfo interface {
 
 	NewDecoder(kind StreamKind, r *RBuffer) (Decoder, error)
 	NewEncoder(kind StreamKind, w *WBuffer) (Encoder, error)
+
+	NewRStreamer(kind StreamKind) (RStreamer, error)
+	NewWStreamer(kind StreamKind) (WStreamer, error)
 }
 
 // StreamKind describes whether a composite ROOT value was encoded
@@ -120,6 +123,16 @@ type RStreamer interface {
 type Streamer interface {
 	WStreamer
 	RStreamer
+}
+
+// Binder wraps the Bind method.
+type Binder interface {
+	Bind(ptr interface{}) error
+}
+
+// Counter wraps the Count method.
+type Counter interface {
+	Count(f func() int) error
 }
 
 const (
