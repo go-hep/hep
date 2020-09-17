@@ -868,6 +868,21 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 5),
 	}))
+	StreamerInfos.Add(NewCxxStreamerInfo("THashTable", 0, 0xe11cfb96, []rbytes.StreamerElement{
+		NewStreamerBase(Element{
+			Name:   *rbase.NewNamed("TCollection", "Collection abstract base class"),
+			Type:   rmeta.Base,
+			Size:   0,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 1474546588, 0, 0, 0},
+			Offset: 0,
+			EName:  "BASE",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New(), 3),
+	}))
 	StreamerInfos.Add(NewCxxStreamerInfo("TMap", 3, 0xfec4a388, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
 			Name:   *rbase.NewNamed("TCollection", "Collection abstract base class"),

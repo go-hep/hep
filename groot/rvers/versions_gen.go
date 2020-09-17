@@ -36,6 +36,7 @@ const (
 	ClonesArray              = 4  // ROOT version for TClonesArray
 	List                     = 5  // ROOT version for TList
 	HashList                 = 0  // ROOT version for THashList
+	HashTable                = 0  // ROOT version for THashTable
 	Map                      = 3  // ROOT version for TMap
 	ObjArray                 = 3  // ROOT version for TObjArray
 	RefArray                 = 1  // ROOT version for TRefArray

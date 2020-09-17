@@ -42,6 +42,7 @@ var (
 		"TClonesArray",
 		"TList",
 		"THashList",
+		"THashTable",
 		"TMap",
 		"TObjArray",
 		"TRefArray",
