@@ -541,6 +541,17 @@ func (si *StreamerInfo) makeROp(sictx rbytes.StreamerInfoContext, i int, descr e
 		)
 		return rstreamer{rop, cfg}
 
+	case rmeta.AnyP, rmeta.Anyp:
+		var (
+			se       = descr.elem
+			typename = strings.TrimRight(se.TypeName(), "*") // FIXME(sbinet): handle T** ?
+			rop      = ropFrom(sictx, typename, -1, 0, nil)
+		)
+		return rstreamer{
+			rstreamAnyPtr(rop),
+			cfg,
+		}
+
 	case rmeta.ObjectP, rmeta.Objectp:
 		var (
 			se       = descr.elem
@@ -597,10 +608,31 @@ func rstreamObjPtr(rop ropFunc) ropFunc {
 		if r.Err() != nil {
 			return r.Err()
 		}
+		rv := reflect.ValueOf(cfg.adjust(recv))
 		if obj == nil {
+			if !rv.Elem().IsNil() {
+				rv.Elem().Set(reflect.Value{})
+			}
 			return nil
 		}
+		rv.Elem().Set(reflect.ValueOf(obj))
+		return nil
+	}
+}
+
+func rstreamAnyPtr(rop ropFunc) ropFunc {
+	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+		obj := r.ReadObjectAny()
+		if r.Err() != nil {
+			return r.Err()
+		}
 		rv := reflect.ValueOf(cfg.adjust(recv))
+		if obj == nil {
+			if !rv.Elem().IsNil() {
+				rv.Elem().Set(reflect.Value{})
+			}
+			return nil
+		}
 		rv.Elem().Set(reflect.ValueOf(obj))
 		return nil
 	}

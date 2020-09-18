@@ -920,7 +920,7 @@ func TestTypeFromSI(t *testing.T) {
 				&rdict.StreamerObjectAnyPointer{
 					StreamerElement: rdict.Element{
 						Name:  *rbase.NewNamed("ptrPos1", ""),
-						Type:  rmeta.ObjectP, // FIXME(sbinet): use AnyP when ready in r/w-streamers
+						Type:  rmeta.AnyP,
 						Size:  8,
 						EName: "TypeFromSI_Pos1*",
 					}.New(),
@@ -928,7 +928,7 @@ func TestTypeFromSI(t *testing.T) {
 				&rdict.StreamerObjectAnyPointer{
 					StreamerElement: rdict.Element{
 						Name:  *rbase.NewNamed("ptrPos2", ""),
-						Type:  rmeta.ObjectP, // FIXME(sbinet): use AnyP when ready in r/w-streamers
+						Type:  rmeta.AnyP,
 						Size:  8,
 						EName: "TypeFromSI_Pos2*",
 					}.New(),
@@ -936,7 +936,7 @@ func TestTypeFromSI(t *testing.T) {
 				&rdict.StreamerObjectAnyPointer{
 					StreamerElement: rdict.Element{
 						Name:  *rbase.NewNamed("ptrArrF", ""),
-						Type:  rmeta.ObjectP, // FIXME(sbinet): use AnyP when ready in r/w-streamers
+						Type:  rmeta.AnyP,
 						Size:  8,
 						EName: "TArrayF*",
 					}.New(),

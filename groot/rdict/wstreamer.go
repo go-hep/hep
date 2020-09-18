@@ -498,6 +498,17 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 		)
 		return wstreamer{wop, cfg}
 
+	case rmeta.AnyP, rmeta.Anyp:
+		var (
+			se       = descr.elem
+			typename = strings.TrimRight(se.TypeName(), "*") // FIXME(sbinet): handle T** ?
+			wop      = wopFrom(sictx, typename, -1, 0, nil)
+		)
+		return wstreamer{
+			wstreamAnyPtr(wop),
+			cfg,
+		}
+
 	case rmeta.ObjectP, rmeta.Objectp:
 		var (
 			se       = descr.elem
@@ -549,6 +560,22 @@ func wstreamSI(si *StreamerInfo) wopFunc {
 }
 
 func wstreamObjPtr(wop wopFunc) wopFunc {
+	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+		var (
+			pos = w.Pos()
+			rv  = reflect.ValueOf(cfg.adjust(recv)).Elem()
+			ptr root.Object
+		)
+		if !((rv == reflect.Value{}) || rv.IsNil()) {
+			ptr = rv.Interface().(root.Object)
+		}
+
+		err := w.WriteObjectAny(ptr)
+		return int(w.Pos() - pos), err
+	}
+}
+
+func wstreamAnyPtr(wop wopFunc) wopFunc {
 	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
 		var (
 			pos = w.Pos()

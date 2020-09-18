@@ -5,6 +5,7 @@
 package rdict
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -2138,6 +2139,38 @@ func TestRWStream(t *testing.T) {
 			},
 		},
 		{
+			name: "ptr-to-any",
+			ptr: &PtrToAny_T{
+				Pos: &rcont.ArrayD{Data: []float64{1, 2, 3}},
+				Nil: nil,
+			},
+			si: &StreamerInfo{
+				named:  *rbase.NewNamed("Particle", "Particle"),
+				clsver: int32(((*PtrToAny_T)(nil)).RVersion()),
+				objarr: rcont.NewObjArray(),
+				elems: []rbytes.StreamerElement{
+					&StreamerObjectAnyPointer{
+						StreamerElement: Element{
+							Name:   *rbase.NewNamed("pos", ""),
+							Type:   rmeta.AnyP,
+							Size:   8,
+							MaxIdx: [5]int32{0, 0, 0, 0, 0},
+							EName:  "TArrayD*",
+						}.New(),
+					},
+					&StreamerObjectAnyPointer{
+						StreamerElement: Element{
+							Name:   *rbase.NewNamed("nil", ""),
+							Type:   rmeta.AnyP,
+							Size:   8,
+							MaxIdx: [5]int32{0, 0, 0, 0, 0},
+							EName:  "TArrayD*",
+						}.New(),
+					},
+				},
+			},
+		},
+		{
 			name: "event-particles",
 			ptr: func() interface{} {
 				type P2 struct {
@@ -3911,3 +3944,58 @@ func TestRWStreamerElem(t *testing.T) {
 		})
 	}
 }
+
+type PtrToAny_T struct {
+	Pos *rcont.ArrayD `groot:"pos"`
+	Nil *rcont.ArrayD `groot:"nil"`
+}
+
+func (*PtrToAny_T) RVersion() int16 { return 41 }
+func (*PtrToAny_T) Class() string   { return "Particle" }
+
+func (p *PtrToAny_T) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	pos := w.WriteVersion(p.RVersion())
+	if err := w.WriteObjectAny(p.Pos); err != nil {
+		return 0, err
+	}
+	if err := w.WriteObjectAny(p.Nil); err != nil {
+		return 0, err
+	}
+
+	return w.SetByteCount(pos, p.Class())
+}
+
+func (p *PtrToAny_T) UnmarshalROOT(r *rbytes.RBuffer) error {
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion(p.Class())
+	if vers != p.RVersion() {
+		return fmt.Errorf("invalid particle version: got=%d, want=%d", vers, p.RVersion())
+	}
+
+	p.Pos = nil
+	if obj := r.ReadObjectAny(); obj != nil {
+		p.Pos = obj.(*rcont.ArrayD)
+	}
+
+	p.Nil = nil
+	if obj := r.ReadObjectAny(); obj != nil {
+		p.Nil = obj.(*rcont.ArrayD)
+	}
+
+	r.CheckByteCount(pos, bcnt, beg, p.Class())
+	return r.Err()
+}
+
+var (
+	_ root.Object        = (*PtrToAny_T)(nil)
+	_ rbytes.Marshaler   = (*PtrToAny_T)(nil)
+	_ rbytes.Unmarshaler = (*PtrToAny_T)(nil)
+)
