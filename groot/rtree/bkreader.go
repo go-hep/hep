@@ -58,12 +58,17 @@ func newBkReader(b Branch, n int, beg, end int64) *bkreader {
 		name:   b.Name(),
 	}
 
-	for i, seek := range base.basketSeek {
-		bkr.spans[i] = rspan{
-			pos: seek,
-			sz:  base.basketBytes[i],
-			beg: base.basketEntry[i],
-			end: base.basketEntry[i+1],
+	if len(base.basketEntry) == len(base.basketSeek) {
+		// prepare for recover basket mode.
+		base.basketEntry = append(base.basketEntry, 0)
+	} else {
+		for i, seek := range base.basketSeek {
+			bkr.spans[i] = rspan{
+				pos: seek,
+				sz:  base.basketBytes[i],
+				beg: base.basketEntry[i],
+				end: base.basketEntry[i+1],
+			}
 		}
 	}
 

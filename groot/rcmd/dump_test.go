@@ -166,6 +166,27 @@ func TestDump(t *testing.T) {
 [004][x]: [[200] [-201] [202]]
 `,
 		},
+		{
+			// Geant4 w/ recover baskets
+			name: "../testdata/g4-like.root",
+			want: `key[000]: mytree;1 "my title" (TTree)
+[000][i32]: 1
+[000][f64]: 1
+[000][slif64]: []
+[001][i32]: 2
+[001][f64]: 2
+[001][slif64]: [1]
+[002][i32]: 3
+[002][f64]: 3
+[002][slif64]: [2 3]
+[003][i32]: 4
+[003][f64]: 4
+[003][slif64]: [3 4 5]
+[004][i32]: 5
+[004][f64]: 5
+[004][slif64]: [4 5 6 7]
+`,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)
