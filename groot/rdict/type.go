@@ -238,7 +238,7 @@ func typeFrom(ctx rbytes.StreamerInfoContext, typename string, enum rmeta.Enum, 
 		rt = gotypes[reflect.Uint16]
 	case rmeta.Uint32, rmeta.Bits:
 		rt = gotypes[reflect.Uint32]
-	case rmeta.Uint64:
+	case rmeta.Uint64, rmeta.ULong64:
 		rt = gotypes[reflect.Uint64]
 	case rmeta.Int8:
 		rt = gotypes[reflect.Int8]
@@ -290,7 +290,7 @@ func typeFrom(ctx rbytes.StreamerInfoContext, typename string, enum rmeta.Enum, 
 	case rmeta.OffsetL + rmeta.Uint32:
 		// dim handled by typeFromDescr.
 		rt = gotypes[reflect.Uint32]
-	case rmeta.OffsetL + rmeta.Uint64:
+	case rmeta.OffsetL + rmeta.Uint64, rmeta.OffsetL + rmeta.ULong64:
 		// dim handled by typeFromDescr.
 		rt = gotypes[reflect.Uint64]
 	case rmeta.OffsetL + rmeta.Int8:
@@ -302,8 +302,7 @@ func typeFrom(ctx rbytes.StreamerInfoContext, typename string, enum rmeta.Enum, 
 	case rmeta.OffsetL + rmeta.Int32:
 		// dim handled by typeFromDescr.
 		rt = gotypes[reflect.Int32]
-	case rmeta.OffsetL + rmeta.Int64,
-		rmeta.OffsetL + rmeta.Long64:
+	case rmeta.OffsetL + rmeta.Int64, rmeta.OffsetL + rmeta.Long64:
 		// dim handled by typeFromDescr.
 		rt = gotypes[reflect.Int64]
 	case rmeta.OffsetL + rmeta.Float32:
@@ -332,7 +331,7 @@ func typeFrom(ctx rbytes.StreamerInfoContext, typename string, enum rmeta.Enum, 
 		rt = reflect.SliceOf(gotypes[reflect.Uint16])
 	case rmeta.OffsetP + rmeta.Uint32:
 		rt = reflect.SliceOf(gotypes[reflect.Uint32])
-	case rmeta.OffsetP + rmeta.Uint64:
+	case rmeta.OffsetP + rmeta.Uint64, rmeta.OffsetP + rmeta.ULong64:
 		rt = reflect.SliceOf(gotypes[reflect.Uint64])
 	case rmeta.OffsetP + rmeta.Int8:
 		rt = reflect.SliceOf(gotypes[reflect.Int8])
@@ -340,7 +339,7 @@ func typeFrom(ctx rbytes.StreamerInfoContext, typename string, enum rmeta.Enum, 
 		rt = reflect.SliceOf(gotypes[reflect.Int16])
 	case rmeta.OffsetP + rmeta.Int32:
 		rt = reflect.SliceOf(gotypes[reflect.Int32])
-	case rmeta.OffsetP + rmeta.Int64:
+	case rmeta.OffsetP + rmeta.Int64, rmeta.OffsetP + rmeta.Long64:
 		rt = reflect.SliceOf(gotypes[reflect.Int64])
 	case rmeta.OffsetP + rmeta.Float32:
 		rt = reflect.SliceOf(gotypes[reflect.Float32])
