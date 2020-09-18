@@ -342,6 +342,7 @@ func (g *genStreamer) se(t types.Type, n, rtype string, arrlen int64) string {
 		elmt.Size = int32(arrlen)
 		elmt.ArrLen = int32(arrlen)
 		elmt.ArrDim = 1
+		elmt.MaxIdx[0] = elmt.ArrLen // FIXME(sbinet): handle n-dim arrays [n][m][u][v][w]T
 	}
 
 	ut := t.Underlying()
@@ -350,103 +351,114 @@ func (g *genStreamer) se(t types.Type, n, rtype string, arrlen int64) string {
 		g.imps["go-hep.org/x/hep/groot/rbase"]++
 		switch kind := ut.Kind(); kind {
 		case types.Bool:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Bool %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Bool %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\nMaxIdx:%#[8]v,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				1*elmt.Size,
 				elmt.ArrLen,
 				elmt.ArrDim,
+				elmt.MaxIdx,
 			)
 		case types.Uint8:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint8 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint8 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\nMaxIdx:%#[8]v,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				1*elmt.Size,
 				elmt.ArrLen,
 				elmt.ArrDim,
+				elmt.MaxIdx,
 			)
 		case types.Uint16:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint16 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint16 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\nMaxIdx:%#[8]v,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				2*elmt.Size,
 				elmt.ArrLen,
 				elmt.ArrDim,
+				elmt.MaxIdx,
 			)
 		case types.Uint32, types.Uint:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\nMaxIdx:%#[8]v,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				4*elmt.Size,
 				elmt.ArrLen,
 				elmt.ArrDim,
+				elmt.MaxIdx,
 			)
 		case types.Uint64:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Uint64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\nMaxIdx:%#[8]v,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				8*elmt.Size,
 				elmt.ArrLen,
 				elmt.ArrDim,
+				elmt.MaxIdx,
 			)
 		case types.Int8:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int8 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int8 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\nMaxIdx:%#[8]v,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				1*elmt.Size,
 				elmt.ArrLen,
 				elmt.ArrDim,
+				elmt.MaxIdx,
 			)
 		case types.Int16:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int16 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int16 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\nMaxIdx:%#[8]v,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				2*elmt.Size,
 				elmt.ArrLen,
 				elmt.ArrDim,
+				elmt.MaxIdx,
 			)
 		case types.Int32, types.Int:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\nMaxIdx:%#[8]v,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				4*elmt.Size,
 				elmt.ArrLen,
 				elmt.ArrDim,
+				elmt.MaxIdx,
 			)
 		case types.Int64:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Int64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\nMaxIdx:%#[8]v,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				8*elmt.Size,
 				elmt.ArrLen,
 				elmt.ArrDim,
+				elmt.MaxIdx,
 			)
 		case types.Float32:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float32 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\nMaxIdx:%#[8]v,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				4*elmt.Size,
 				elmt.ArrLen,
 				elmt.ArrDim,
+				elmt.MaxIdx,
 			)
 		case types.Float64:
-			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()",
+			return fmt.Sprintf("rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.Float64 %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\nMaxIdx:%#[8]v,\n}.New()",
 				n, "",
 				rmeta.GoType2Cxx[ut.Name()],
 				rtype,
 				8*elmt.Size,
 				elmt.ArrLen,
 				elmt.ArrDim,
+				elmt.MaxIdx,
 			)
 		case types.Complex64:
 			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
@@ -455,13 +467,14 @@ func (g *genStreamer) se(t types.Type, n, rtype string, arrlen int64) string {
 			log.Fatalf("unhandled type: %v (underlying %v)\n", t, ut) // FIXME(sbinet)
 
 		case types.String:
-			return fmt.Sprintf("&rdict.StreamerString{rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.TString %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\n}.New()}",
+			return fmt.Sprintf("&rdict.StreamerString{rdict.Element{\nName: *rbase.NewNamed(%[1]q, %[2]q),\nType: rmeta.TString %[4]s,\nSize: %[5]d,\nEName:%[3]q,\nArrLen:%[6]d,\nArrDim:%[7]d,\nMaxIdx:%#[8]v,\n}.New()}",
 				n, "",
 				"TString",
 				rtype,
 				24*elmt.Size,
 				elmt.ArrLen,
 				elmt.ArrDim,
+				elmt.MaxIdx,
 			)
 		}
 	case *types.Struct:

@@ -19,6 +19,7 @@ func init() {
 			EName:  "TString",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("u8", ""),
@@ -27,6 +28,7 @@ func init() {
 			EName:  "unsigned char",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("u16", ""),
@@ -35,6 +37,7 @@ func init() {
 			EName:  "unsigned short",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("u32", ""),
@@ -43,6 +46,7 @@ func init() {
 			EName:  "unsigned int",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("u64", ""),
@@ -51,6 +55,7 @@ func init() {
 			EName:  "unsigned long",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("i8", ""),
@@ -59,6 +64,7 @@ func init() {
 			EName:  "char",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("i16", ""),
@@ -67,6 +73,7 @@ func init() {
 			EName:  "short",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("i32", ""),
@@ -75,6 +82,7 @@ func init() {
 			EName:  "int",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("i64", ""),
@@ -83,6 +91,7 @@ func init() {
 			EName:  "long",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("f32", ""),
@@ -91,6 +100,7 @@ func init() {
 			EName:  "float",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("f64", ""),
@@ -99,6 +109,7 @@ func init() {
 			EName:  "double",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("b", ""),
@@ -107,6 +118,7 @@ func init() {
 			EName:  "bool",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("bb", ""),
@@ -115,6 +127,7 @@ func init() {
 			EName:  "unsigned char",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		rdict.NewStreamerSTL("u8s", rmeta.STLvector, rmeta.UChar),
 		rdict.NewStreamerSTL("u16s", rmeta.STLvector, rmeta.UShort),
@@ -135,6 +148,7 @@ func init() {
 			EName:  "unsigned char",
 			ArrLen: 10,
 			ArrDim: 1,
+			MaxIdx: [5]int32{10, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("arru16s", ""),
@@ -143,6 +157,7 @@ func init() {
 			EName:  "unsigned short",
 			ArrLen: 10,
 			ArrDim: 1,
+			MaxIdx: [5]int32{10, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("arru32s", ""),
@@ -151,6 +166,7 @@ func init() {
 			EName:  "unsigned int",
 			ArrLen: 10,
 			ArrDim: 1,
+			MaxIdx: [5]int32{10, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("arru64s", ""),
@@ -159,6 +175,7 @@ func init() {
 			EName:  "unsigned long",
 			ArrLen: 10,
 			ArrDim: 1,
+			MaxIdx: [5]int32{10, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("arri8s", ""),
@@ -167,6 +184,7 @@ func init() {
 			EName:  "char",
 			ArrLen: 10,
 			ArrDim: 1,
+			MaxIdx: [5]int32{10, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("arri16s", ""),
@@ -175,6 +193,7 @@ func init() {
 			EName:  "short",
 			ArrLen: 10,
 			ArrDim: 1,
+			MaxIdx: [5]int32{10, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("arri32s", ""),
@@ -183,6 +202,7 @@ func init() {
 			EName:  "int",
 			ArrLen: 10,
 			ArrDim: 1,
+			MaxIdx: [5]int32{10, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("arri64s", ""),
@@ -191,6 +211,7 @@ func init() {
 			EName:  "long",
 			ArrLen: 10,
 			ArrDim: 1,
+			MaxIdx: [5]int32{10, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("arrf32s", ""),
@@ -199,6 +220,7 @@ func init() {
 			EName:  "float",
 			ArrLen: 10,
 			ArrDim: 1,
+			MaxIdx: [5]int32{10, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("arrf64s", ""),
@@ -207,6 +229,7 @@ func init() {
 			EName:  "double",
 			ArrLen: 10,
 			ArrDim: 1,
+			MaxIdx: [5]int32{10, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("arrbs", ""),
@@ -215,6 +238,7 @@ func init() {
 			EName:  "bool",
 			ArrLen: 10,
 			ArrDim: 1,
+			MaxIdx: [5]int32{10, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("arrbbs", ""),
@@ -223,6 +247,7 @@ func init() {
 			EName:  "unsigned char",
 			ArrLen: 10,
 			ArrDim: 1,
+			MaxIdx: [5]int32{10, 0, 0, 0, 0},
 		}.New()},
 		rdict.NewStreamerSTL("SliceF64", rmeta.STLvector, rmeta.Double),
 		rdict.NewStreamerSTL("SliceStr", rmeta.STLvector, rmeta.TString),
@@ -234,6 +259,7 @@ func init() {
 			EName:  "double",
 			ArrLen: 10,
 			ArrDim: 1,
+			MaxIdx: [5]int32{10, 0, 0, 0, 0},
 		}.New()},
 	}))
 }
@@ -301,6 +327,7 @@ func init() {
 			EName:  "double",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("py", ""),
@@ -309,6 +336,7 @@ func init() {
 			EName:  "double",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("pz", ""),
@@ -317,6 +345,7 @@ func init() {
 			EName:  "double",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("e", ""),
@@ -325,6 +354,7 @@ func init() {
 			EName:  "double",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 	}))
 }
@@ -355,6 +385,7 @@ func init() {
 			EName:  "TString",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerBasicType{StreamerElement: rdict.Element{
 			Name:   *rbase.NewNamed("pid", ""),
@@ -363,6 +394,7 @@ func init() {
 			EName:  "int",
 			ArrLen: 0,
 			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 		}.New()},
 		&rdict.StreamerObjectAny{StreamerElement: rdict.Element{
 			Name:  *rbase.NewNamed("mom", ""),
