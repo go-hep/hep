@@ -519,3 +519,95 @@ func TestGenChecksum(t *testing.T) {
 		})
 	}
 }
+
+func TestFindCounterOffset(t *testing.T) {
+	ctx := StreamerInfos
+	for _, tc := range []struct {
+		name  string
+		vers  int
+		count string
+		se    int
+		want  []int
+	}{
+		{
+			// StreamerInfo for "TArrayD" version=1 title=""
+			//  BASE    TArray  offset=  0 type=  0 size=  0  Abstract array base class
+			//  double* fArray  offset=  0 type= 48 size=  8  [fN] Array of fN doubles
+			//
+			// StreamerInfo for "TArray" version=1 title=""
+			//  int   fN      offset=  0 type=  6 size=  4  Number of array elements
+			name:  "TArrayD",
+			vers:  -1,
+			count: "fN",
+			se:    1,
+			want:  []int{0, 0},
+		},
+		{
+			name:  "TArrayD",
+			vers:  -1,
+			count: "fNotThere",
+			se:    1,
+			want:  nil,
+		},
+		{
+			// StreamerInfo for "TRefArray" version=1 title=""
+			//  BASE          TSeqCollection offset=  0 type=  0 size=  0  Sequenceable collection ABC
+			//  TProcessID*   fPID           offset=  0 type= 64 size=  8  Pointer to Process Unique Identifier
+			//  unsigned int* fUIDs          offset=  0 type= 53 size=  4  [fSize] To store uids of referenced objects
+			//  int           fLowerBound    offset=  0 type=  3 size=  4  Lower bound of the array
+			//  int           fLast          offset=  0 type=  3 size=  4  Last element in array containing an object
+			//
+			// StreamerInfo for "TSeqCollection" version=0 title=""
+			//  BASE  TCollection offset=  0 type=  0 size=  0  Collection abstract base class
+			//
+			// StreamerInfo for "TCollection" version=3 title=""
+			//  BASE    TObject offset=  0 type= 66 size=  0  Basic ROOT object
+			//  TString fName   offset=  0 type= 65 size= 24  name of the collection
+			//  int     fSize   offset=  0 type=  6 size=  4  number of elements in collection
+			name:  "TRefArray",
+			vers:  -1,
+			count: "fSize",
+			se:    2,
+			want:  []int{0, 0, 2},
+		},
+		{
+			// StreamerInfo for "TH2Poly" version=3 title=""
+			//  BASE   TH2               offset=  0 type=  0 size=  0  2-Dim histogram base class
+			//  double fOverflow         offset=  0 type= 28 size= 72  Overflow bins
+			//  int    fCellX            offset=  0 type=  3 size=  4  Number of partition cells in the x-direction of the histogram
+			//  int    fCellY            offset=  0 type=  3 size=  4  Number of partition cells in the y-direction of the histogram
+			//  int    fNCells           offset=  0 type=  6 size=  4  Number of partition cells: fCellX*fCellY
+			//  TList* fCells            offset=  0 type=501 size=  8  [fNCells] The array of TLists that store the bins that intersect with each cell. List do not own the contained objects
+			//  double fStepX            offset=  0 type=  8 size=  8  Dimensions of a partition cell
+			//  double fStepY            offset=  0 type=  8 size=  8  Dimensions of a partition cell
+			//  bool*  fIsEmpty          offset=  0 type= 58 size=  1  [fNCells] The array that returns true if the cell at the given coordinate is empty
+			//  bool*  fCompletelyInside offset=  0 type= 58 size=  1  [fNCells] The array that returns true if the cell at the given coordinate is completely inside a bin
+			//  bool   fFloat            offset=  0 type= 18 size=  1  When set to kTRUE, allows the histogram to expand if a bin outside the limits is added.
+			//  TList* fBins             offset=  0 type= 64 size=  8  List of bins. The list owns the contained objects
+			name:  "TH2Poly",
+			vers:  -1,
+			count: "fNCells",
+			se:    5,
+			want:  []int{4},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			esi, err := ctx.StreamerInfo(tc.name, tc.vers)
+			if err != nil {
+				t.Fatalf("could not find streamer for (%q, v=%d): %+v", tc.name, tc.vers, err)
+			}
+			si := esi.(*StreamerInfo)
+
+			err = si.BuildStreamers()
+			if err != nil {
+				t.Fatalf("could not build streamers for %q: %+v", tc.name, err)
+			}
+
+			se := si.Elements()[tc.se]
+			got := si.findField(ctx, tc.count, se, nil)
+			if got, want := got, tc.want; !reflect.DeepEqual(got, want) {
+				t.Fatalf("invalid offset:\ngot= %v\nwant=%v\nstreamer:\n%v", got, want, si)
+			}
+		})
+	}
+}

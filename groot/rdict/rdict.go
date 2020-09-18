@@ -194,28 +194,7 @@ func (si *StreamerInfo) build(sictx rbytes.StreamerInfoContext) error {
 				return []int{0}
 			}
 
-			for j := range si.elems {
-				if si.elems[j].Name() == cname {
-					return []int{j}
-				}
-			}
-
-			// look into base classes, if any.
-			for j, bse := range si.elems {
-				switch bse := bse.(type) {
-				case *StreamerBase:
-					base, err := sictx.StreamerInfo(bse.Name(), -1)
-					if err != nil {
-						panic(fmt.Errorf("rdict: could not find base class %q of %q: %w", se.Name(), si.Name(), err))
-					}
-					for ii, bbse := range base.Elements() {
-						if bbse.Name() == cname {
-							return []int{j, ii}
-						}
-					}
-				}
-			}
-			return nil
+			return si.findField(sictx, cname, se, nil)
 		}()
 
 		if method == nil {
@@ -311,6 +290,32 @@ func (si *StreamerInfo) NewWStreamer(kind rbytes.StreamKind) (rbytes.WStreamer, 
 		return nil, fmt.Errorf("rdict: invalid stream kind %v", kind)
 	}
 	return newWStreamerInfo(si, kind, wops)
+}
+
+func (si *StreamerInfo) findField(ctx rbytes.StreamerInfoContext, name string, se rbytes.StreamerElement, offset []int) []int {
+	for j := range si.elems {
+		if si.elems[j].Name() == name {
+			offset = append(offset, j)
+			return offset
+		}
+	}
+
+	// look into base classes, if any.
+	for j, bse := range si.elems {
+		switch bse := bse.(type) {
+		case *StreamerBase:
+			base, err := ctx.StreamerInfo(bse.Name(), -1)
+			if err != nil {
+				panic(fmt.Errorf("rdict: could not find base class %q of %q: %w", se.Name(), si.Name(), err))
+			}
+			boffset := base.(*StreamerInfo).findField(ctx, name, se, nil)
+			if boffset != nil {
+				return append(append(offset, j), boffset...)
+			}
+		}
+	}
+
+	return nil
 }
 
 type Element struct {
