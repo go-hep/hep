@@ -40,7 +40,7 @@ func WStreamerOf(sinfo rbytes.StreamerInfo, i int, kind rbytes.StreamKind) (rbyt
 	}
 }
 
-type wstreamerImpl struct {
+type wstreamerElem struct {
 	recv interface{}
 	wop  *wstreamer
 	i    int // streamer-element index (or -1 for the whole StreamerInfo)
@@ -49,8 +49,8 @@ type wstreamerImpl struct {
 	se   rbytes.StreamerElement
 }
 
-func newWStreamer(i int, si *StreamerInfo, kind rbytes.StreamKind, wops []wstreamer) (*wstreamerImpl, error) {
-	return &wstreamerImpl{
+func newWStreamer(i int, si *StreamerInfo, kind rbytes.StreamKind, wops []wstreamer) (*wstreamerElem, error) {
+	return &wstreamerElem{
 		recv: nil,
 		wop:  &wops[i],
 		i:    i,
@@ -60,16 +60,17 @@ func newWStreamer(i int, si *StreamerInfo, kind rbytes.StreamKind, wops []wstrea
 	}, nil
 }
 
-func (ww *wstreamerImpl) Bind(recv interface{}) error {
+func (ww *wstreamerElem) Bind(recv interface{}) error {
 	rv := reflect.ValueOf(recv)
 	if rv.Kind() != reflect.Ptr {
 		return fmt.Errorf("rdict: invalid kind (got=%T, want=pointer)", recv)
 	}
 	ww.recv = recv
+	ww.wop.cfg.offset = -1 // binding directly to 'recv'. assume no offset is to be applied
 	return nil
 }
 
-func (ww *wstreamerImpl) WStreamROOT(w *rbytes.WBuffer) error {
+func (ww *wstreamerElem) WStreamROOT(w *rbytes.WBuffer) error {
 	_, err := ww.wop.wstream(w, ww.recv)
 	if err != nil {
 		var (
@@ -85,8 +86,8 @@ func (ww *wstreamerImpl) WStreamROOT(w *rbytes.WBuffer) error {
 }
 
 var (
-	_ rbytes.WStreamer = (*wstreamerImpl)(nil)
-	_ rbytes.Binder    = (*wstreamerImpl)(nil)
+	_ rbytes.WStreamer = (*wstreamerElem)(nil)
+	_ rbytes.Binder    = (*wstreamerElem)(nil)
 )
 
 type wstreamOp interface {

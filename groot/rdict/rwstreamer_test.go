@@ -3349,3 +3349,565 @@ func TestRWStreamerInfo(t *testing.T) {
 		})
 	}
 }
+
+func TestRWStreamerElem(t *testing.T) {
+	const kind = rbytes.ObjectWise // FIXME(sbinet): also test MemberWise.
+
+	for _, tc := range []struct {
+		name string
+		skip bool
+		si   *StreamerInfo
+		ptr  interface{}
+		deps []rbytes.StreamerInfo
+		err  error
+	}{
+		{
+			name: "event",
+			ptr: func() interface{} {
+				type P2 struct {
+					Px float32 `groot:"px"`
+					Py float64 `groot:"py"`
+				}
+				type Particle struct {
+					Pos  P2     `groot:"pos"`
+					Name string `groot:"name"`
+				}
+
+				type T struct {
+					Name string `groot:"name"`
+
+					B   bool    `groot:"b"`
+					I8  int8    `groot:"i8"`
+					I16 int16   `groot:"i16"`
+					I32 int32   `groot:"i32"`
+					I64 int64   `groot:"i64"`
+					U8  uint8   `groot:"u8"`
+					U16 uint16  `groot:"u16"`
+					U32 uint32  `groot:"u32"`
+					U64 uint64  `groot:"u64"`
+					F32 float32 `groot:"f32"`
+					F64 float64 `groot:"f64"`
+
+					ArrB   [3]bool    `groot:"arrB[3]"`
+					ArrI8  [3]int8    `groot:"arrU8[3]"`
+					ArrI16 [3]int16   `groot:"arrU16[3]"`
+					ArrI32 [3]int32   `groot:"arrU32[3]"`
+					ArrI64 [3]int64   `groot:"arrU64[3]"`
+					ArrU8  [3]uint8   `groot:"arrU8[3]"`
+					ArrU16 [3]uint16  `groot:"arrU16[3]"`
+					ArrU32 [3]uint32  `groot:"arrU32[3]"`
+					ArrU64 [3]uint64  `groot:"arrU64[3]"`
+					ArrF32 [3]float32 `groot:"arrF32[3]"`
+					ArrF64 [3]float64 `groot:"arrF64[3]"`
+
+					N      int32     `groot:"N"`
+					SliB   []bool    `groot:"sliB[N]"`
+					SliI8  []int8    `groot:"sliU8[N]"`
+					SliI16 []int16   `groot:"sliU16[N]"`
+					SliI32 []int32   `groot:"sliU32[N]"`
+					SliI64 []int64   `groot:"sliU64[N]"`
+					SliU8  []uint8   `groot:"sliU8[N]"`
+					SliU16 []uint16  `groot:"sliU16[N]"`
+					SliU32 []uint32  `groot:"sliU32[N]"`
+					SliU64 []uint64  `groot:"sliU64[N]"`
+					SliF32 []float32 `groot:"sliF32[N]"`
+					SliF64 []float64 `groot:"sliF64[N]"`
+
+					Particle Particle `groot:"particle"`
+				}
+				return &T{
+					Name: "Go-HEP",
+
+					B:   true,
+					I8:  -8,
+					I16: -16,
+					I32: -32,
+					I64: -64,
+					U8:  8,
+					U16: 16,
+					U32: 32,
+					U64: 64,
+					F32: -32,
+					F64: -64,
+
+					ArrB:   [3]bool{true, false, true},
+					ArrI8:  [3]int8{-18, -28, -38},
+					ArrI16: [3]int16{-18, -28, -38},
+					ArrI32: [3]int32{-132, -232, -332},
+					ArrI64: [3]int64{-164, -264, -364},
+					ArrU8:  [3]uint8{18, 28, 38},
+					ArrU16: [3]uint16{18, 28, 38},
+					ArrU32: [3]uint32{132, 232, 332},
+					ArrU64: [3]uint64{164, 264, 364},
+					ArrF32: [3]float32{-132, -232, -332},
+					ArrF64: [3]float64{-164, -264, -364},
+
+					N:      2,
+					SliB:   []bool{true, false},
+					SliI8:  []int8{-18, -28},
+					SliI16: []int16{-18, -28},
+					SliI32: []int32{-132, -232},
+					SliI64: []int64{-164, -264},
+					SliU8:  []uint8{18, 28},
+					SliU16: []uint16{18, 28},
+					SliU32: []uint32{132, 232},
+					SliU64: []uint64{164, 264},
+					SliF32: []float32{-132, -232},
+					SliF64: []float64{-164, -264},
+
+					Particle: Particle{Pos: P2{142, 166}, Name: "HEP-1"},
+				}
+			}(),
+			si: &StreamerInfo{
+				named:  *rbase.NewNamed("T", "T"),
+				objarr: rcont.NewObjArray(),
+				elems: []rbytes.StreamerElement{
+					&StreamerString{Element{
+						Name:  *rbase.NewNamed("name", ""),
+						Type:  rmeta.TString,
+						Size:  24,
+						EName: "TString",
+					}.New()},
+
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:  *rbase.NewNamed("b", ""),
+							Type:  rmeta.Bool,
+							EName: "bool",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:  *rbase.NewNamed("i8", ""),
+							Type:  rmeta.Int8,
+							EName: "int8_t",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:  *rbase.NewNamed("i16", ""),
+							Type:  rmeta.Int16,
+							EName: "int16_t",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:  *rbase.NewNamed("i32", ""),
+							Type:  rmeta.Int32,
+							EName: "int32_t",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:  *rbase.NewNamed("i64", ""),
+							Type:  rmeta.Int64,
+							EName: "int64_t",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:  *rbase.NewNamed("u8", ""),
+							Type:  rmeta.Uint8,
+							EName: "uint8_t",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:  *rbase.NewNamed("u16", ""),
+							Type:  rmeta.Uint16,
+							EName: "uint16_t",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:  *rbase.NewNamed("u32", ""),
+							Type:  rmeta.Uint32,
+							EName: "uint32_t",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:  *rbase.NewNamed("u64", ""),
+							Type:  rmeta.Uint64,
+							EName: "uint64_t",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:  *rbase.NewNamed("f32", ""),
+							Type:  rmeta.Float32,
+							EName: "float32_t",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:  *rbase.NewNamed("f64", ""),
+							Type:  rmeta.Float64,
+							EName: "float64_t",
+						}.New(),
+					},
+
+					// arrays
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:   *rbase.NewNamed("arrB", ""),
+							Type:   rmeta.OffsetL + rmeta.Bool,
+							Size:   3 * 1,
+							ArrLen: 3,
+							ArrDim: 1,
+							MaxIdx: [5]int32{3, 0, 0, 0, 0},
+							EName:  "bool*",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:   *rbase.NewNamed("arrI8", ""),
+							Type:   rmeta.OffsetL + rmeta.Int8,
+							Size:   3 * 1,
+							ArrLen: 3,
+							ArrDim: 1,
+							MaxIdx: [5]int32{3, 0, 0, 0, 0},
+							EName:  "int8_t*",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:   *rbase.NewNamed("arrI16", ""),
+							Type:   rmeta.OffsetL + rmeta.Int16,
+							Size:   3 * 2,
+							ArrLen: 3,
+							ArrDim: 1,
+							MaxIdx: [5]int32{3, 0, 0, 0, 0},
+							EName:  "int16_t*",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:   *rbase.NewNamed("arrI32", ""),
+							Type:   rmeta.OffsetL + rmeta.Int32,
+							Size:   3 * 4,
+							ArrLen: 3,
+							ArrDim: 1,
+							MaxIdx: [5]int32{3, 0, 0, 0, 0},
+							EName:  "int32_t*",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:   *rbase.NewNamed("arrI64", ""),
+							Type:   rmeta.OffsetL + rmeta.Int64,
+							Size:   3 * 8,
+							ArrLen: 3,
+							ArrDim: 1,
+							MaxIdx: [5]int32{3, 0, 0, 0, 0},
+							EName:  "int64_t*",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:   *rbase.NewNamed("arrU8", ""),
+							Type:   rmeta.OffsetL + rmeta.Uint8,
+							Size:   3 * 1,
+							ArrLen: 3,
+							ArrDim: 1,
+							MaxIdx: [5]int32{3, 0, 0, 0, 0},
+							EName:  "uint8_t*",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:   *rbase.NewNamed("arrU16", ""),
+							Type:   rmeta.OffsetL + rmeta.Uint16,
+							Size:   3 * 2,
+							ArrLen: 3,
+							ArrDim: 1,
+							MaxIdx: [5]int32{3, 0, 0, 0, 0},
+							EName:  "uint16_t*",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:   *rbase.NewNamed("arrU32", ""),
+							Type:   rmeta.OffsetL + rmeta.Uint32,
+							Size:   3 * 4,
+							ArrLen: 3,
+							ArrDim: 1,
+							MaxIdx: [5]int32{3, 0, 0, 0, 0},
+							EName:  "uint32_t*",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:   *rbase.NewNamed("arrU64", ""),
+							Type:   rmeta.OffsetL + rmeta.Uint64,
+							Size:   3 * 8,
+							ArrLen: 3,
+							ArrDim: 1,
+							MaxIdx: [5]int32{3, 0, 0, 0, 0},
+							EName:  "uint64_t*",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:   *rbase.NewNamed("arrF32", ""),
+							Type:   rmeta.OffsetL + rmeta.Float32,
+							Size:   3 * 4,
+							ArrLen: 3,
+							ArrDim: 1,
+							MaxIdx: [5]int32{3, 0, 0, 0, 0},
+							EName:  "float32_t*",
+						}.New(),
+					},
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:   *rbase.NewNamed("arrF64", ""),
+							Type:   rmeta.OffsetL + rmeta.Float64,
+							Size:   3 * 8,
+							ArrLen: 3,
+							ArrDim: 1,
+							MaxIdx: [5]int32{3, 0, 0, 0, 0},
+							EName:  "float64_t*",
+						}.New(),
+					},
+
+					// var-len arrays
+					&StreamerBasicType{
+						StreamerElement: Element{
+							Name:  *rbase.NewNamed("N", ""),
+							Type:  rmeta.Counter,
+							Size:  4,
+							EName: "int32_t",
+						}.New(),
+					},
+					NewStreamerBasicPointer(
+						Element{
+							Name:  *rbase.NewNamed("sliB", "[N]"),
+							Type:  rmeta.OffsetP + rmeta.Bool,
+							Size:  1,
+							EName: "bool*",
+						}.New(), 1, "N", "T",
+					),
+					NewStreamerBasicPointer(
+						Element{
+							Name:  *rbase.NewNamed("sliI8", "[N]"),
+							Type:  rmeta.OffsetP + rmeta.Int8,
+							Size:  1,
+							EName: "int8_t*",
+						}.New(), 1, "N", "T",
+					),
+					NewStreamerBasicPointer(
+						Element{
+							Name:  *rbase.NewNamed("sliI16", "[N]"),
+							Type:  rmeta.OffsetP + rmeta.Int16,
+							Size:  1,
+							EName: "int16_t*",
+						}.New(), 1, "N", "T",
+					),
+					NewStreamerBasicPointer(
+						Element{
+							Name:  *rbase.NewNamed("sliI32", "[N]"),
+							Type:  rmeta.OffsetP + rmeta.Int32,
+							Size:  1,
+							EName: "int32_t*",
+						}.New(), 1, "N", "T",
+					),
+					NewStreamerBasicPointer(
+						Element{
+							Name:  *rbase.NewNamed("sliI64", "[N]"),
+							Type:  rmeta.OffsetP + rmeta.Int64,
+							Size:  1,
+							EName: "int64_t*",
+						}.New(), 1, "N", "T",
+					),
+					NewStreamerBasicPointer(
+						Element{
+							Name:  *rbase.NewNamed("sliU8", "[N]"),
+							Type:  rmeta.OffsetP + rmeta.Uint8,
+							Size:  1,
+							EName: "uint8_t*",
+						}.New(), 1, "N", "T",
+					),
+					NewStreamerBasicPointer(
+						Element{
+							Name:  *rbase.NewNamed("sliU16", "[N]"),
+							Type:  rmeta.OffsetP + rmeta.Uint16,
+							Size:  1,
+							EName: "uint16_t*",
+						}.New(), 1, "N", "T",
+					),
+					NewStreamerBasicPointer(
+						Element{
+							Name:  *rbase.NewNamed("sliU32", "[N]"),
+							Type:  rmeta.OffsetP + rmeta.Uint32,
+							Size:  1,
+							EName: "uint32_t*",
+						}.New(), 1, "N", "T",
+					),
+					NewStreamerBasicPointer(
+						Element{
+							Name:  *rbase.NewNamed("sliU64", "[N]"),
+							Type:  rmeta.OffsetP + rmeta.Uint64,
+							Size:  1,
+							EName: "uint64_t*",
+						}.New(), 1, "N", "T",
+					),
+					NewStreamerBasicPointer(
+						Element{
+							Name:  *rbase.NewNamed("sliF32", "[N]"),
+							Type:  rmeta.OffsetP + rmeta.Float32,
+							Size:  1,
+							EName: "float32_t*",
+						}.New(), 1, "N", "T",
+					),
+					NewStreamerBasicPointer(
+						Element{
+							Name:  *rbase.NewNamed("sliF64", "[N]"),
+							Type:  rmeta.OffsetP + rmeta.Float64,
+							Size:  1,
+							EName: "float64_t*",
+						}.New(), 1, "N", "T",
+					),
+
+					&StreamerObjectAny{
+						StreamerElement: Element{
+							Name:   *rbase.NewNamed("particle", ""),
+							Type:   rmeta.Any,
+							Size:   4 + 8 + 24,
+							MaxIdx: [5]int32{0, 0, 0, 0, 0},
+							EName:  "Particle",
+						}.New(),
+					},
+				},
+			},
+			deps: []rbytes.StreamerInfo{
+				&StreamerInfo{
+					named:  *rbase.NewNamed("Particle", "Particle"),
+					objarr: rcont.NewObjArray(),
+					elems: []rbytes.StreamerElement{
+						&StreamerObjectAny{
+							StreamerElement: Element{
+								Name:   *rbase.NewNamed("pos", ""),
+								Type:   rmeta.Any,
+								Size:   4 + 8,
+								MaxIdx: [5]int32{0, 0, 0, 0, 0},
+								EName:  "P2",
+							}.New(),
+						},
+						&StreamerString{Element{
+							Name:  *rbase.NewNamed("name", ""),
+							Type:  rmeta.TString,
+							Size:  24,
+							EName: "TString",
+						}.New()},
+					},
+				},
+				&StreamerInfo{
+					named:  *rbase.NewNamed("P2", "P2"),
+					objarr: rcont.NewObjArray(),
+					elems: []rbytes.StreamerElement{
+						&StreamerBasicType{
+							StreamerElement: Element{
+								Name:   *rbase.NewNamed("px", ""),
+								Type:   rmeta.Float32,
+								Size:   4,
+								MaxIdx: [5]int32{0, 0, 0, 0, 0},
+								EName:  "float32",
+							}.New(),
+						},
+						&StreamerBasicType{
+							StreamerElement: Element{
+								Name:   *rbase.NewNamed("py", ""),
+								Type:   rmeta.Float64,
+								Size:   8,
+								MaxIdx: [5]int32{0, 0, 0, 0, 0},
+								EName:  "float64",
+							}.New(),
+						},
+					},
+				},
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.skip {
+				t.Skipf("skipping %s", tc.name)
+			}
+
+			for _, dep := range tc.deps {
+				StreamerInfos.Add(dep)
+			}
+			defer func() {
+				StreamerInfos.Lock()
+				defer StreamerInfos.Unlock()
+				for _, dep := range tc.deps {
+					key := streamerDbKey{
+						class:   dep.Name(),
+						version: dep.ClassVersion(),
+					}
+					delete(StreamerInfos.db, key)
+				}
+			}()
+
+			err := tc.si.BuildStreamers()
+			if err != nil {
+				t.Fatalf("could not build streamers: %+v", err)
+			}
+
+			for i, se := range tc.si.Elements() {
+				t.Run(se.Name(), func(t *testing.T) {
+					ptr := reflect.ValueOf(tc.ptr).Elem().Field(i).Addr().Interface()
+
+					wbuf := rbytes.NewWBuffer(nil, nil, 0, nil)
+					w, err := WStreamerOf(tc.si, i, kind)
+					if err != nil {
+						t.Fatalf("could not create write-streamer: %+v", err)
+					}
+
+					err = w.(rbytes.Binder).Bind(ptr)
+					if err != nil {
+						t.Fatalf("could not bind write-streamer: %+v", err)
+					}
+
+					if rv := reflect.ValueOf(ptr).Elem(); rv.Kind() == reflect.Slice {
+						w.(*wstreamerElem).wop.cfg.count = func() int { return rv.Len() }
+					}
+
+					err = w.WStreamROOT(wbuf)
+					if err != nil {
+						t.Fatalf("could not write value: %+v", err)
+					}
+
+					rbuf := rbytes.NewRBuffer(wbuf.Bytes(), nil, 0, nil)
+					r, err := RStreamerOf(tc.si, i, kind)
+					if err != nil {
+						t.Fatalf("could not create read-streamer: %+v", err)
+					}
+
+					rv := reflect.New(reflect.TypeOf(ptr).Elem()).Elem()
+					got := rv.Addr().Interface()
+
+					err = r.(rbytes.Binder).Bind(got)
+					if err != nil {
+						t.Fatalf("could not bind read-streamer: %+v", err)
+					}
+
+					if rv := reflect.ValueOf(ptr).Elem(); rv.Kind() == reflect.Slice {
+						err = r.(rbytes.Counter).Count(func() int { return rv.Len() })
+						if err != nil {
+							t.Fatalf("could not set read-streamer counter: %+v", err)
+						}
+					}
+
+					err = r.RStreamROOT(rbuf)
+					if err != nil {
+						t.Fatalf("could not read value: %+v", err)
+					}
+
+					if got, want := got, ptr; !reflect.DeepEqual(got, want) {
+						t.Fatalf("invalid round-trip:\ngot= %#v\nwant=%#v", got, want)
+					}
+				})
+			}
+		})
+	}
+}
