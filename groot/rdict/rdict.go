@@ -480,8 +480,8 @@ func (tse *StreamerElement) ArrayDim() int {
 	return int(tse.arrdim)
 }
 
-func (tse *StreamerElement) MaxIdx() [5]int32 {
-	return tse.maxidx
+func (tse *StreamerElement) ArrayDims() []int32 {
+	return tse.maxidx[:tse.arrdim]
 }
 
 func (tse *StreamerElement) ArrayLen() int {
@@ -1279,12 +1279,8 @@ func genChecksum(name string, elems []rbytes.StreamerElement) uint32 {
 		hash(se.Name())
 		hash(se.TypeName())
 
-		dims := se.ArrayDim()
-		if dims > 0 {
-			maxidx := se.(interface{ MaxIdx() [5]int32 }).MaxIdx()
-			for _, v := range maxidx[:dims] {
-				id = id*3 + uint32(v)
-			}
+		for _, v := range se.ArrayDims() {
+			id = id*3 + uint32(v)
 		}
 		title := se.Title()
 		beg := strings.Index(title, "[")

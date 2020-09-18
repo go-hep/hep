@@ -64,6 +64,7 @@ type StreamerElement interface {
 	root.Named
 
 	ArrayDim() int
+	ArrayDims() []int32
 	ArrayLen() int
 	Type() rmeta.Enum
 	Offset() uintptr
