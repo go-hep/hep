@@ -497,7 +497,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 		)
 		return wstreamer{wop, cfg}
 
-	case rmeta.ObjectP:
+	case rmeta.ObjectP, rmeta.Objectp:
 		var (
 			se       = descr.elem
 			typename = strings.TrimRight(se.TypeName(), "*") // FIXME(sbinet): handle T** ?

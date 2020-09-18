@@ -14,10 +14,60 @@ import (
 	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
+	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
 )
 
 func TestTypeFromSI(t *testing.T) {
+	rdict.StreamerInfos.Add(rdict.NewCxxStreamerInfo("TypeFromSI_Pos1", 1, 0, []rbytes.StreamerElement{
+		&rdict.StreamerBasicType{
+			StreamerElement: rdict.Element{
+				Name:   *rbase.NewNamed("px", ""),
+				Type:   rmeta.Float32,
+				Size:   4,
+				MaxIdx: [5]int32{0, 0, 0, 0, 0},
+				EName:  "float32",
+			}.New(),
+		},
+		&rdict.StreamerBasicType{
+			StreamerElement: rdict.Element{
+				Name:   *rbase.NewNamed("py", ""),
+				Type:   rmeta.Float64,
+				Size:   8,
+				MaxIdx: [5]int32{0, 0, 0, 0, 0},
+				EName:  "float64",
+			}.New(),
+		},
+	}))
+
+	rdict.StreamerInfos.Add(rdict.NewCxxStreamerInfo("TypeFromSI_Pos2", 1, 0, []rbytes.StreamerElement{
+		&rdict.StreamerBasicType{
+			StreamerElement: rdict.Element{
+				Name:   *rbase.NewNamed("px", ""),
+				Type:   rmeta.Float32,
+				Size:   4,
+				MaxIdx: [5]int32{0, 0, 0, 0, 0},
+				EName:  "float32",
+			}.New(),
+		},
+		&rdict.StreamerBasicType{
+			StreamerElement: rdict.Element{
+				Name:   *rbase.NewNamed("py", ""),
+				Type:   rmeta.Float64,
+				Size:   8,
+				MaxIdx: [5]int32{0, 0, 0, 0, 0},
+				EName:  "float64",
+			}.New(),
+		},
+	}))
+	type TypeFromSI_Pos2 struct {
+		Px float32 `groot:"px"`
+		Py float64 `groot:"py"`
+	}
+	rtypes.Factory.Add("TypeFromSI_Pos2", func() reflect.Value {
+		return reflect.ValueOf(&TypeFromSI_Pos2{})
+	})
+
 	for _, tc := range []struct {
 		name string
 		si   rbytes.StreamerInfo
@@ -89,11 +139,10 @@ func TestTypeFromSI(t *testing.T) {
 				&rdict.StreamerSTLstring{
 					StreamerSTL: *rdict.NewCxxStreamerSTL(
 						rdict.Element{
-							Name:   *rbase.NewNamed("Name", ""),
-							Type:   rmeta.Streamer,
-							Size:   32,
-							MaxIdx: [5]int32{0, 0, 0, 0, 0},
-							EName:  "string",
+							Name:  *rbase.NewNamed("Name", ""),
+							Type:  rmeta.Streamer,
+							Size:  32,
+							EName: "string",
 						}.New(),
 						rmeta.ESTLType(rmeta.STLstring),
 						rmeta.STLstring,
@@ -101,11 +150,10 @@ func TestTypeFromSI(t *testing.T) {
 				},
 				&rdict.StreamerObject{
 					StreamerElement: rdict.Element{
-						Name:   *rbase.NewNamed("Array", ""),
-						Type:   rmeta.Object,
-						Size:   40,
-						MaxIdx: [5]int32{0, 0, 0, 0, 0},
-						EName:  "TArrayD",
+						Name:  *rbase.NewNamed("Array", ""),
+						Type:  rmeta.Object,
+						Size:  40,
+						EName: "TArrayD",
 					}.New(),
 				},
 			}),
@@ -125,11 +173,10 @@ func TestTypeFromSI(t *testing.T) {
 			name: "vector<double>-old-streamer-v6",
 			si: rdict.NewCxxStreamerInfo("vector<double>", 6, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:   *rbase.NewNamed("vector<double>", ""),
-					Type:   rmeta.Streamer,
-					Size:   24,
-					MaxIdx: [5]int32{0, 0, 0, 0, 0},
-					EName:  "vector<double>",
+					Name:  *rbase.NewNamed("vector<double>", ""),
+					Type:  rmeta.Streamer,
+					Size:  24,
+					EName: "vector<double>",
 				}.New(), rmeta.STLvector, rmeta.Float64),
 			}),
 			want: reflect.TypeOf((*[]float64)(nil)).Elem(),
@@ -161,11 +208,10 @@ func TestTypeFromSI(t *testing.T) {
 			name: "map<int,float>",
 			si: rdict.NewCxxStreamerInfo("map<int,float>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:   *rbase.NewNamed("This", ""),
-					Type:   rmeta.Streamer,
-					Size:   48,
-					MaxIdx: [5]int32{0, 0, 0, 0, 0},
-					EName:  "map<int,float>",
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "map<int,float>",
 				}.New(), rmeta.STLmap, rmeta.Object),
 			}),
 			want: reflect.TypeOf((*map[int32]float32)(nil)).Elem(),
@@ -174,11 +220,10 @@ func TestTypeFromSI(t *testing.T) {
 			name: "map<int,string>",
 			si: rdict.NewCxxStreamerInfo("map<int,string>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:   *rbase.NewNamed("This", ""),
-					Type:   rmeta.Streamer,
-					Size:   48,
-					MaxIdx: [5]int32{0, 0, 0, 0, 0},
-					EName:  "map<int,string>",
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "map<int,string>",
 				}.New(), rmeta.STLmap, rmeta.Object),
 			}),
 			want: reflect.TypeOf((*map[int32]string)(nil)).Elem(),
@@ -187,11 +232,10 @@ func TestTypeFromSI(t *testing.T) {
 			name: "map<int,TNamed>",
 			si: rdict.NewCxxStreamerInfo("map<int,TNamed>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:   *rbase.NewNamed("This", ""),
-					Type:   rmeta.Streamer,
-					Size:   48,
-					MaxIdx: [5]int32{0, 0, 0, 0, 0},
-					EName:  "map<int,TNamed>",
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "map<int,TNamed>",
 				}.New(), rmeta.STLmap, rmeta.Object),
 			}),
 			want: reflect.TypeOf((*map[int32]rbase.Named)(nil)).Elem(),
@@ -200,11 +244,10 @@ func TestTypeFromSI(t *testing.T) {
 			name: "map<TNamed,int>",
 			si: rdict.NewCxxStreamerInfo("map<TNamed,int>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:   *rbase.NewNamed("This", ""),
-					Type:   rmeta.Streamer,
-					Size:   48,
-					MaxIdx: [5]int32{0, 0, 0, 0, 0},
-					EName:  "map<TNamed,int>",
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "map<TNamed,int>",
 				}.New(), rmeta.STLmap, rmeta.Object),
 			}),
 			want: reflect.TypeOf((*map[rbase.Named]int32)(nil)).Elem(),
@@ -213,11 +256,10 @@ func TestTypeFromSI(t *testing.T) {
 			name: "map<int,vector<TNamed> >",
 			si: rdict.NewCxxStreamerInfo("map<int,vector<TNamed> >", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:   *rbase.NewNamed("This", ""),
-					Type:   rmeta.Streamer,
-					Size:   48,
-					MaxIdx: [5]int32{0, 0, 0, 0, 0},
-					EName:  "map<int,vector<TNamed> >",
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "map<int,vector<TNamed> >",
 				}.New(), rmeta.STLmap, rmeta.Object),
 			}),
 			want: reflect.TypeOf((*map[int32][]rbase.Named)(nil)).Elem(),
@@ -226,11 +268,10 @@ func TestTypeFromSI(t *testing.T) {
 			name: "map<int,vector<string> >",
 			si: rdict.NewCxxStreamerInfo("map<int,vector<string> >", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:   *rbase.NewNamed("This", ""),
-					Type:   rmeta.Streamer,
-					Size:   48,
-					MaxIdx: [5]int32{0, 0, 0, 0, 0},
-					EName:  "map<int,vector<string> >",
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "map<int,vector<string> >",
 				}.New(), rmeta.STLmap, rmeta.Object),
 			}),
 			want: reflect.TypeOf((*map[int32][]string)(nil)).Elem(),
@@ -239,11 +280,10 @@ func TestTypeFromSI(t *testing.T) {
 			name: "map<int,map<int,vector<string> > >",
 			si: rdict.NewCxxStreamerInfo("map<int,map<int,vector<string> > >", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:   *rbase.NewNamed("This", ""),
-					Type:   rmeta.Streamer,
-					Size:   48,
-					MaxIdx: [5]int32{0, 0, 0, 0, 0},
-					EName:  "map<int,map<int,vector<string> > >",
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "map<int,map<int,vector<string> > >",
 				}.New(), rmeta.STLmap, rmeta.Object),
 			}),
 			want: reflect.TypeOf((*map[int32]map[int32][]string)(nil)).Elem(),
@@ -252,11 +292,10 @@ func TestTypeFromSI(t *testing.T) {
 			name: "vector<TObject>",
 			si: rdict.NewCxxStreamerInfo("vector<TObject>", rvers.StreamerInfo, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:   *rbase.NewNamed("vector<TObject>", ""),
-					Type:   rmeta.Streamer,
-					Size:   24,
-					MaxIdx: [5]int32{0, 0, 0, 0, 0},
-					EName:  "vector<TObject>",
+					Name:  *rbase.NewNamed("vector<TObject>", ""),
+					Type:  rmeta.Streamer,
+					Size:  24,
+					EName: "vector<TObject>",
 				}.New(), rmeta.STLvector, rmeta.TObject),
 			}),
 			want: reflect.TypeOf((*[]rbase.Object)(nil)).Elem(),
@@ -265,11 +304,10 @@ func TestTypeFromSI(t *testing.T) {
 			name: "vector<TNamed>",
 			si: rdict.NewCxxStreamerInfo("vector<TNamed>", rvers.StreamerInfo, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:   *rbase.NewNamed("vector<TNamed>", ""),
-					Type:   rmeta.Streamer,
-					Size:   24,
-					MaxIdx: [5]int32{0, 0, 0, 0, 0},
-					EName:  "vector<TNamed>",
+					Name:  *rbase.NewNamed("vector<TNamed>", ""),
+					Type:  rmeta.Streamer,
+					Size:  24,
+					EName: "vector<TNamed>",
 				}.New(), rmeta.STLvector, rmeta.TNamed),
 			}),
 			want: reflect.TypeOf((*[]rbase.Named)(nil)).Elem(),
@@ -278,11 +316,10 @@ func TestTypeFromSI(t *testing.T) {
 			name: "vector<TObjString>",
 			si: rdict.NewCxxStreamerInfo("vector<TObjString>", rvers.StreamerInfo, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:   *rbase.NewNamed("vector<TObjString>", ""),
-					Type:   rmeta.Streamer,
-					Size:   24,
-					MaxIdx: [5]int32{0, 0, 0, 0, 0},
-					EName:  "vector<TObjString>",
+					Name:  *rbase.NewNamed("vector<TObjString>", ""),
+					Type:  rmeta.Streamer,
+					Size:  24,
+					EName: "vector<TObjString>",
 				}.New(), rmeta.STLvector, rmeta.Object),
 			}),
 			want: reflect.TypeOf((*[]rbase.ObjString)(nil)).Elem(),
@@ -292,10 +329,9 @@ func TestTypeFromSI(t *testing.T) {
 			si: rdict.NewCxxStreamerInfo("event", 1, 0, []rbytes.StreamerElement{
 				rdict.NewStreamerBase(
 					rdict.Element{
-						Name:   *rbase.NewNamed("TObject", ""),
-						Type:   rmeta.Base,
-						MaxIdx: [5]int32{0, 0, 0, 0, 0},
-						EName:  "BASE",
+						Name:  *rbase.NewNamed("TObject", ""),
+						Type:  rmeta.Base,
+						EName: "BASE",
 					}.New(),
 					rvers.Named,
 				),
@@ -437,7 +473,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 1,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "bool",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "bool*",
 					}.New(),
 				},
 				&rdict.StreamerBasicType{
@@ -447,7 +484,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 1,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "int8_t",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "int8_t*",
 					}.New(),
 				},
 				&rdict.StreamerBasicType{
@@ -457,7 +495,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 2,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "int16_t",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "int16_t*",
 					}.New(),
 				},
 				&rdict.StreamerBasicType{
@@ -467,7 +506,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 4,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "int32_t",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "int32_t*",
 					}.New(),
 				},
 				&rdict.StreamerBasicType{
@@ -477,7 +517,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 8,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "int64_t",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "int64_t*",
 					}.New(),
 				},
 				&rdict.StreamerBasicType{
@@ -487,7 +528,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 1,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "uint8_t",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "uint8_t*",
 					}.New(),
 				},
 				&rdict.StreamerBasicType{
@@ -497,7 +539,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 2,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "uint16_t",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "uint16_t*",
 					}.New(),
 				},
 				&rdict.StreamerBasicType{
@@ -507,7 +550,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 4,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "uint32_t",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "uint32_t*",
 					}.New(),
 				},
 				&rdict.StreamerBasicType{
@@ -517,7 +561,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 8,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "uint64_t",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "uint64_t*",
 					}.New(),
 				},
 				&rdict.StreamerBasicType{
@@ -527,7 +572,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 4,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "float32_t",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "float32_t*",
 					}.New(),
 				},
 				&rdict.StreamerBasicType{
@@ -537,7 +583,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 8,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "float64_t",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "float64_t*",
 					}.New(),
 				},
 				&rdict.StreamerBasicType{
@@ -547,7 +594,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 4,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "Float16_t",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "Float16_t*",
 					}.New(),
 				},
 				&rdict.StreamerBasicType{
@@ -557,7 +605,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 4,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "Double32_t",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "Double32_t*",
 					}.New(),
 				},
 				&rdict.StreamerBasicType{
@@ -567,7 +616,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 24,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "TString",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "TString*",
 					}.New(),
 				},
 				&rdict.StreamerBasicType{
@@ -577,7 +627,8 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 8,
 						ArrLen: 3,
 						ArrDim: 1,
-						EName:  "char*",
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
+						EName:  "char**",
 					}.New(),
 				},
 				//	&rdict.StreamerBasicType{
@@ -587,6 +638,7 @@ func TestTypeFromSI(t *testing.T) {
 				//			Size:   3 * 4,
 				//			ArrLen: 3,
 				//			ArrDim: 1,
+				//		MaxIdx: [5]int32{1, 0, 0, 0, 0},
 				//			EName:  "Counter_t",
 				//		}.New(),
 				//	},
@@ -597,6 +649,7 @@ func TestTypeFromSI(t *testing.T) {
 				//			Size:   3 * 8,
 				//			ArrLen: 3,
 				//			ArrDim: 1,
+				//		MaxIdx: [5]int32{1, 0, 0, 0, 0},
 				//			EName:  "Counter_t",
 				//		}.New(),
 				//	},
@@ -608,6 +661,7 @@ func TestTypeFromSI(t *testing.T) {
 						Size:   3 * 16,
 						ArrLen: 3,
 						ArrDim: 1,
+						MaxIdx: [5]int32{3, 0, 0, 0, 0},
 						EName:  "TObject*",
 					}.New(),
 				},
@@ -853,6 +907,40 @@ func TestTypeFromSI(t *testing.T) {
 					MaxIdx: [5]int32{0, 0, 0, 0, 0},
 					EName:  "vector<TNamed>",
 				}.New(), rmeta.STLvector, rmeta.TNamed),
+
+				// obj-ptr
+				&rdict.StreamerObjectPointer{
+					StreamerElement: rdict.Element{
+						Name:  *rbase.NewNamed("ptrObj", ""),
+						Type:  rmeta.ObjectP,
+						Size:  8,
+						EName: "TObject*",
+					}.New(),
+				},
+				&rdict.StreamerObjectAnyPointer{
+					StreamerElement: rdict.Element{
+						Name:  *rbase.NewNamed("ptrPos1", ""),
+						Type:  rmeta.ObjectP, // FIXME(sbinet): use AnyP when ready in r/w-streamers
+						Size:  8,
+						EName: "TypeFromSI_Pos1*",
+					}.New(),
+				},
+				&rdict.StreamerObjectAnyPointer{
+					StreamerElement: rdict.Element{
+						Name:  *rbase.NewNamed("ptrPos2", ""),
+						Type:  rmeta.ObjectP, // FIXME(sbinet): use AnyP when ready in r/w-streamers
+						Size:  8,
+						EName: "TypeFromSI_Pos2*",
+					}.New(),
+				},
+				&rdict.StreamerObjectAnyPointer{
+					StreamerElement: rdict.Element{
+						Name:  *rbase.NewNamed("ptrArrF", ""),
+						Type:  rmeta.ObjectP, // FIXME(sbinet): use AnyP when ready in r/w-streamers
+						Size:  8,
+						EName: "TArrayF*",
+					}.New(),
+				},
 			}),
 			want: reflect.TypeOf((*struct {
 				ROOT_TObject rbase.Object  `groot:"TObject"`
@@ -929,6 +1017,15 @@ func TestTypeFromSI(t *testing.T) {
 				ROOT_stdVecCstr   []string        `groot:"stdVecCstr"`
 				ROOT_stdVecNamed1 []rbase.Named   `groot:"stdVecNamed1"`
 				ROOT_stdVecNamed2 []rbase.Named   `groot:"stdVecNamed2"`
+
+				// obj-ptr
+				ROOT_ptrObj  *rbase.Object `groot:"ptrObj"`
+				ROOT_ptrPos1 *struct {
+					ROOT_px float32 `groot:"px"`
+					ROOT_py float64 `groot:"py"`
+				} `groot:"ptrPos1"`
+				ROOT_ptrPos2 *TypeFromSI_Pos2 `groot:"ptrPos2"`
+				ROOT_ptrArrF *rcont.ArrayF    `groot:"ptrArrF"`
 			})(nil)).Elem(),
 		},
 	} {

@@ -100,12 +100,7 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 			typ = v.Elem().Type()
 		)
 
-		switch alen := se.ArrayLen(); alen {
-		case 0:
-			return typ, nil
-		default:
-			return reflect.ArrayOf(alen, typ), nil
-		}
+		return typeFromDescr(typ, se.TypeName(), se.ArrayLen(), se.ArrayDims()), nil
 	}
 
 	switch se := se.(type) {
@@ -125,13 +120,13 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 		return TypeFromSI(ctx, si)
 
 	case *StreamerBasicType:
-		return typeFrom(ctx, se.Type(), se.Size(), se.ArrayLen())
+		return typeFrom(ctx, se.TypeName(), se.Type(), se.Size(), se.ArrayLen(), se.ArrayDims())
 
 	case *StreamerString:
-		return typeFrom(ctx, se.Type(), se.Size(), se.ArrayLen())
+		return typeFrom(ctx, se.TypeName(), se.Type(), se.Size(), se.ArrayLen(), se.ArrayDims())
 
 	case *StreamerBasicPointer:
-		return typeFrom(ctx, se.Type(), se.Size(), -1)
+		return typeFrom(ctx, se.TypeName(), se.Type(), se.Size(), -1, se.ArrayDims())
 
 	case *StreamerSTLstring:
 		return gotypes[reflect.String], nil
@@ -166,11 +161,7 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 		if err != nil {
 			return nil, fmt.Errorf("rdict: could not build type for %q: %w", typename, err)
 		}
-
-		if alen > 0 {
-			return reflect.ArrayOf(se.ArrayLen(), typ), nil
-		}
-		return typ, nil
+		return typeFromDescr(typ, typename, alen, se.ArrayDims()), nil
 
 	case *StreamerObjectPointer, *StreamerObjectAnyPointer:
 		var (
@@ -189,12 +180,8 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 		if err != nil {
 			return nil, fmt.Errorf("rdict: could not create type for ptr-to-object %q: %w", typename, err)
 		}
-		ptr := reflect.PtrTo(typ)
-
-		if alen > 0 {
-			return reflect.ArrayOf(alen, ptr), nil
-		}
-		return ptr, nil
+		typ = reflect.PtrTo(typ)
+		return typeFromDescr(typ, typename, alen, se.ArrayDims()), nil
 
 	case *StreamerSTL:
 		switch se.STLType() {
@@ -239,126 +226,146 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 	}
 }
 
-func typeFrom(ctx rbytes.StreamerInfoContext, enum rmeta.Enum, size uintptr, n int) (reflect.Type, error) {
+func typeFrom(ctx rbytes.StreamerInfoContext, typename string, enum rmeta.Enum, size uintptr, n int, dims []int32) (reflect.Type, error) {
+	var rt reflect.Type
+
 	switch enum {
 	case rmeta.Bool:
-		return gotypes[reflect.Bool], nil
+		rt = gotypes[reflect.Bool]
 	case rmeta.Uint8:
-		return gotypes[reflect.Uint8], nil
+		rt = gotypes[reflect.Uint8]
 	case rmeta.Uint16:
-		return gotypes[reflect.Uint16], nil
+		rt = gotypes[reflect.Uint16]
 	case rmeta.Uint32, rmeta.Bits:
-		return gotypes[reflect.Uint32], nil
+		rt = gotypes[reflect.Uint32]
 	case rmeta.Uint64:
-		return gotypes[reflect.Uint64], nil
+		rt = gotypes[reflect.Uint64]
 	case rmeta.Int8:
-		return gotypes[reflect.Int8], nil
+		rt = gotypes[reflect.Int8]
 	case rmeta.Int16:
-		return gotypes[reflect.Int16], nil
+		rt = gotypes[reflect.Int16]
 	case rmeta.Int32:
-		return gotypes[reflect.Int32], nil
+		rt = gotypes[reflect.Int32]
 	case rmeta.Int64, rmeta.Long64:
-		return gotypes[reflect.Int64], nil
+		rt = gotypes[reflect.Int64]
 	case rmeta.Float32:
-		return gotypes[reflect.Float32], nil
+		rt = gotypes[reflect.Float32]
 	case rmeta.Float64:
-		return gotypes[reflect.Float64], nil
+		rt = gotypes[reflect.Float64]
 	case rmeta.Float16:
-		return reflect.TypeOf((*root.Float16)(nil)).Elem(), nil
+		rt = reflect.TypeOf((*root.Float16)(nil)).Elem()
 	case rmeta.Double32:
-		return reflect.TypeOf((*root.Double32)(nil)).Elem(), nil
+		rt = reflect.TypeOf((*root.Double32)(nil)).Elem()
 	case rmeta.TString, rmeta.STLstring:
-		return gotypes[reflect.String], nil
+		rt = gotypes[reflect.String]
 
 	case rmeta.CharStar:
-		return gotypes[reflect.String], nil
+		rt = gotypes[reflect.String]
 
 	case rmeta.Counter:
 		switch size {
 		case 4:
-			return gotypes[reflect.Int32], nil
+			rt = gotypes[reflect.Int32]
 		case 8:
-			return gotypes[reflect.Int64], nil
+			rt = gotypes[reflect.Int64]
 		default:
 			return nil, fmt.Errorf("rdict: invalid counter size=%d", size)
 		}
 
 	case rmeta.TObject:
-		return reflect.TypeOf((*rbase.Object)(nil)).Elem(), nil
+		rt = reflect.TypeOf((*rbase.Object)(nil)).Elem()
 
 	case rmeta.TNamed:
-		return reflect.TypeOf((*rbase.Named)(nil)).Elem(), nil
+		rt = reflect.TypeOf((*rbase.Named)(nil)).Elem()
 
 	case rmeta.OffsetL + rmeta.Bool:
-		return reflect.ArrayOf(n, gotypes[reflect.Bool]), nil
+		// dim handled by typeFromDescr.
+		rt = gotypes[reflect.Bool]
 	case rmeta.OffsetL + rmeta.Uint8:
-		return reflect.ArrayOf(n, gotypes[reflect.Uint8]), nil
+		// dim handled by typeFromDescr.
+		rt = gotypes[reflect.Uint8]
 	case rmeta.OffsetL + rmeta.Uint16:
-		return reflect.ArrayOf(n, gotypes[reflect.Uint16]), nil
+		// dim handled by typeFromDescr.
+		rt = gotypes[reflect.Uint16]
 	case rmeta.OffsetL + rmeta.Uint32:
-		return reflect.ArrayOf(n, gotypes[reflect.Uint32]), nil
+		// dim handled by typeFromDescr.
+		rt = gotypes[reflect.Uint32]
 	case rmeta.OffsetL + rmeta.Uint64:
-		return reflect.ArrayOf(n, gotypes[reflect.Uint64]), nil
+		// dim handled by typeFromDescr.
+		rt = gotypes[reflect.Uint64]
 	case rmeta.OffsetL + rmeta.Int8:
-		return reflect.ArrayOf(n, gotypes[reflect.Int8]), nil
+		// dim handled by typeFromDescr.
+		rt = gotypes[reflect.Int8]
 	case rmeta.OffsetL + rmeta.Int16:
-		return reflect.ArrayOf(n, gotypes[reflect.Int16]), nil
+		// dim handled by typeFromDescr.
+		rt = gotypes[reflect.Int16]
 	case rmeta.OffsetL + rmeta.Int32:
-		return reflect.ArrayOf(n, gotypes[reflect.Int32]), nil
+		// dim handled by typeFromDescr.
+		rt = gotypes[reflect.Int32]
 	case rmeta.OffsetL + rmeta.Int64,
 		rmeta.OffsetL + rmeta.Long64:
-		return reflect.ArrayOf(n, gotypes[reflect.Int64]), nil
+		// dim handled by typeFromDescr.
+		rt = gotypes[reflect.Int64]
 	case rmeta.OffsetL + rmeta.Float32:
-		return reflect.ArrayOf(n, gotypes[reflect.Float32]), nil
+		// dim handled by typeFromDescr.
+		rt = gotypes[reflect.Float32]
 	case rmeta.OffsetL + rmeta.Float64:
-		return reflect.ArrayOf(n, gotypes[reflect.Float64]), nil
+		// dim handled by typeFromDescr.
+		rt = gotypes[reflect.Float64]
 	case rmeta.OffsetL + rmeta.Float16:
-		return reflect.ArrayOf(n, reflect.TypeOf((*root.Float16)(nil)).Elem()), nil
+		// dim handled by typeFromDescr.
+		rt = reflect.TypeOf((*root.Float16)(nil)).Elem()
 	case rmeta.OffsetL + rmeta.Double32:
-		return reflect.ArrayOf(n, reflect.TypeOf((*root.Double32)(nil)).Elem()), nil
+		// dim handled by typeFromDescr.
+		rt = reflect.TypeOf((*root.Double32)(nil)).Elem()
 	case rmeta.OffsetL + rmeta.TString,
 		rmeta.OffsetL + rmeta.CharStar,
 		rmeta.OffsetL + rmeta.STLstring:
-		return reflect.ArrayOf(n, gotypes[reflect.String]), nil
+		// dim handled by typeFromDescr.
+		rt = gotypes[reflect.String]
 
 	case rmeta.OffsetP + rmeta.Bool:
-		return reflect.SliceOf(gotypes[reflect.Bool]), nil
+		rt = reflect.SliceOf(gotypes[reflect.Bool])
 	case rmeta.OffsetP + rmeta.Uint8:
-		return reflect.SliceOf(gotypes[reflect.Uint8]), nil
+		rt = reflect.SliceOf(gotypes[reflect.Uint8])
 	case rmeta.OffsetP + rmeta.Uint16:
-		return reflect.SliceOf(gotypes[reflect.Uint16]), nil
+		rt = reflect.SliceOf(gotypes[reflect.Uint16])
 	case rmeta.OffsetP + rmeta.Uint32:
-		return reflect.SliceOf(gotypes[reflect.Uint32]), nil
+		rt = reflect.SliceOf(gotypes[reflect.Uint32])
 	case rmeta.OffsetP + rmeta.Uint64:
-		return reflect.SliceOf(gotypes[reflect.Uint64]), nil
+		rt = reflect.SliceOf(gotypes[reflect.Uint64])
 	case rmeta.OffsetP + rmeta.Int8:
-		return reflect.SliceOf(gotypes[reflect.Int8]), nil
+		rt = reflect.SliceOf(gotypes[reflect.Int8])
 	case rmeta.OffsetP + rmeta.Int16:
-		return reflect.SliceOf(gotypes[reflect.Int16]), nil
+		rt = reflect.SliceOf(gotypes[reflect.Int16])
 	case rmeta.OffsetP + rmeta.Int32:
-		return reflect.SliceOf(gotypes[reflect.Int32]), nil
+		rt = reflect.SliceOf(gotypes[reflect.Int32])
 	case rmeta.OffsetP + rmeta.Int64:
-		return reflect.SliceOf(gotypes[reflect.Int64]), nil
+		rt = reflect.SliceOf(gotypes[reflect.Int64])
 	case rmeta.OffsetP + rmeta.Float32:
-		return reflect.SliceOf(gotypes[reflect.Float32]), nil
+		rt = reflect.SliceOf(gotypes[reflect.Float32])
 	case rmeta.OffsetP + rmeta.Float64:
-		return reflect.SliceOf(gotypes[reflect.Float64]), nil
+		rt = reflect.SliceOf(gotypes[reflect.Float64])
 	case rmeta.OffsetP + rmeta.Float16:
-		return reflect.SliceOf(reflect.TypeOf((*root.Float16)(nil)).Elem()), nil
+		rt = reflect.SliceOf(reflect.TypeOf((*root.Float16)(nil)).Elem())
 	case rmeta.OffsetP + rmeta.Double32:
-		return reflect.SliceOf(reflect.TypeOf((*root.Double32)(nil)).Elem()), nil
+		rt = reflect.SliceOf(reflect.TypeOf((*root.Double32)(nil)).Elem())
 	case rmeta.OffsetP + rmeta.STLstring,
 		rmeta.OffsetP + rmeta.CharStar:
-		return reflect.SliceOf(gotypes[reflect.String]), nil
-
+		rt = reflect.SliceOf(gotypes[reflect.String])
 	}
-	return nil, fmt.Errorf("rmeta=%d (%v) not implemented (size=%d, n=%v)", enum, enum, size, n)
+
+	if rt == nil {
+		return nil, fmt.Errorf("rmeta=%d (%v) not implemented (size=%d, n=%v)", enum, enum, size, n)
+	}
+
+	return typeFromDescr(rt, typename, n, dims), nil
 }
 
 func typeFromTypeName(ctx rbytes.StreamerInfoContext, typename string, typevers int16, enum rmeta.Enum, se rbytes.StreamerElement, n int) (reflect.Type, error) {
 	e, ok := rmeta.TypeName2Enum(typename)
 	if ok {
-		return typeFrom(ctx, e, se.Size(), n)
+		return typeFrom(ctx, typename, e, se.Size(), n, se.ArrayDims())
 	}
 
 	switch {
@@ -393,6 +400,40 @@ func typeFromTypeName(ctx rbytes.StreamerInfoContext, typename string, typevers 
 	}
 
 	return TypeFromSI(ctx, osi)
+}
+
+func typeFromDescr(typ reflect.Type, typename string, alen int, dims []int32) reflect.Type {
+	if alen > 0 {
+		// handle [n][m][u][v][w]T
+		ndim := len(dims)
+		for i := range dims {
+			typ = reflect.ArrayOf(int(dims[ndim-1-i]), typ)
+		}
+		return typ
+	}
+
+	if alen < 0 {
+		// slice. drop one '*' from typename.
+		if strings.HasSuffix(typename, "*") {
+			typename = typename[:len(typename)-1]
+		}
+	}
+	if typename == "char*" {
+		// slice. drop one '*' from typename.
+		if strings.HasSuffix(typename, "*") {
+			typename = typename[:len(typename)-1]
+		}
+	}
+
+	// handle T***
+	for i := range typename {
+		if typename[len(typename)-1-i] != '*' {
+			break
+		}
+		typ = reflect.PtrTo(typ)
+	}
+
+	return typ
 }
 
 var (
