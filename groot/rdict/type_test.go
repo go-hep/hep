@@ -325,6 +325,34 @@ func TestTypeFromSI(t *testing.T) {
 			want: reflect.TypeOf((*[]rbase.ObjString)(nil)).Elem(),
 		},
 		{
+			name: "bitset<256>",
+			si: rdict.NewCxxStreamerInfo("MyBitset", rvers.StreamerInfo, 0, []rbytes.StreamerElement{
+				rdict.NewCxxStreamerSTL(rdict.Element{
+					Name:  *rbase.NewNamed("bs", ""),
+					Type:  rmeta.Streamer,
+					Size:  24,
+					EName: "bitset<256>",
+				}.New(), rmeta.STLbitset, 0),
+			}),
+			want: reflect.TypeOf((*struct {
+				ROOT_bs []uint8 `groot:"bs"`
+			})(nil)).Elem(),
+		},
+		{
+			name: "vector<bitset<256> >",
+			si: rdict.NewCxxStreamerInfo("MyBitset", rvers.StreamerInfo, 0, []rbytes.StreamerElement{
+				rdict.NewCxxStreamerSTL(rdict.Element{
+					Name:  *rbase.NewNamed("bs", ""),
+					Type:  rmeta.Streamer,
+					Size:  24,
+					EName: "vector<bitset<256> >",
+				}.New(), rmeta.STLvector, 0),
+			}),
+			want: reflect.TypeOf((*struct {
+				ROOT_bs [][]uint8 `groot:"bs"`
+			})(nil)).Elem(),
+		},
+		{
 			name: "event",
 			si: rdict.NewCxxStreamerInfo("event", 1, 0, []rbytes.StreamerElement{
 				rdict.NewStreamerBase(

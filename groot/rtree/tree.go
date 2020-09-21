@@ -560,15 +560,20 @@ func (tree *ttree) attachStreamerElement(br Branch, se rbytes.StreamerElement, c
 		}
 		typename = strings.TrimSpace(typename)
 		typevers := -1
-		// FIXME(sbinet): always load latest version?
-		info, err := ctx.StreamerInfo(typename, typevers)
-		if err != nil {
-			if _, ok := rmeta.CxxBuiltins[typename]; !ok {
-				panic(err)
+		switch se.STLType() {
+		case rmeta.STLbitset:
+			members = []rbytes.StreamerElement{se}
+		default:
+			// FIXME(sbinet): always load latest version?
+			info, err := ctx.StreamerInfo(typename, typevers)
+			if err != nil {
+				if _, ok := rmeta.CxxBuiltins[typename]; !ok {
+					panic(err)
+				}
 			}
-		}
-		if err == nil {
-			members = info.Elements()
+			if err == nil {
+				members = info.Elements()
+			}
 		}
 	}
 

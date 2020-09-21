@@ -7,6 +7,7 @@ package rdict
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -220,6 +221,20 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 				)
 			}
 			return reflect.MapOf(key, val), nil
+
+		case rmeta.STLbitset:
+			var (
+				typename = se.TypeName()
+				enames   = rmeta.CxxTemplateArgsOf(typename)
+				_, err   = strconv.Atoi(enames[0])
+			)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"could not infer bitset argument (type=%q): %w", typename, err,
+				)
+			}
+			return reflect.SliceOf(gotypes[reflect.Uint8]), nil
+
 		default:
 			return nil, fmt.Errorf("rdict: STL container not implemented: %#v", se)
 		}
@@ -391,6 +406,17 @@ func typeFromTypeName(ctx rbytes.StreamerInfoContext, typename string, typevers 
 			return nil, err
 		}
 		return reflect.MapOf(kt, vt), nil
+
+	case strings.HasPrefix(typename, "bitset<"):
+		var (
+			enames = rmeta.CxxTemplateArgsOf(typename)
+			_, err = strconv.Atoi(enames[0])
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("rdict: invalid STL bitset argument (type=%q): %+v", typename, err)
+		}
+		return reflect.SliceOf(gotypes[reflect.Uint8]), nil
 	}
 
 	osi, err := ctx.StreamerInfo(typename, int(typevers))

@@ -706,6 +706,13 @@ func (r *RBuffer) RStream(si StreamerInfo, ptr interface{}) error {
 	return dec.DecodeROOT(ptr)
 }
 
+func (r *RBuffer) ReadStdBitset(v []uint8) {
+	n := len(v)
+	for i := range v {
+		v[n-1-i] = r.readU8()
+	}
+}
+
 var (
 	_ StreamerInfoContext = (*RBuffer)(nil)
 )

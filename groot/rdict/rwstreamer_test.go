@@ -1667,6 +1667,100 @@ func TestRWStream(t *testing.T) {
 			},
 		},
 		{
+			name: "std::bitset<32>",
+			ptr: &struct {
+				F []byte
+			}{[]byte{
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				0, 0, 0, 1,
+				1, 1, 1, 0,
+				1, 1, 0, 1,
+				1, 0, 1, 1,
+				0, 1, 1, 1,
+			}},
+			si: &StreamerInfo{
+				named:  *rbase.NewNamed("T", "T"),
+				objarr: rcont.NewObjArray(),
+				elems: []rbytes.StreamerElement{
+					NewCxxStreamerSTL(Element{
+						Name:   *rbase.NewNamed("F", ""),
+						Type:   rmeta.Streamer,
+						Size:   32,
+						MaxIdx: [5]int32{0, 0, 0, 0, 0},
+						EName:  "bitset<32>",
+					}.New(), rmeta.STLbitset, rmeta.Base),
+				},
+			},
+		},
+		{
+			name: "std::vector<std::bitset<32> >",
+			ptr: &struct {
+				F [][]byte
+			}{[][]byte{{0, 0, 0, 1}, {1, 0, 0, 1}, {1, 1, 0, 0}}},
+			si: &StreamerInfo{
+				named:  *rbase.NewNamed("T", "T"),
+				objarr: rcont.NewObjArray(),
+				elems: []rbytes.StreamerElement{
+					NewCxxStreamerSTL(Element{
+						Name:   *rbase.NewNamed("F", ""),
+						Type:   rmeta.Streamer,
+						Size:   24,
+						MaxIdx: [5]int32{0, 0, 0, 0, 0},
+						EName:  "vector<bitset<4> >",
+					}.New(), rmeta.STLvector, rmeta.Base),
+				},
+			},
+		},
+		{
+			name: "std::bitset<32>-rmeta-stl",
+			ptr: &struct {
+				F []byte
+			}{[]byte{
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				0, 0, 0, 1,
+				1, 1, 1, 0,
+				1, 1, 0, 1,
+				1, 0, 1, 1,
+				0, 1, 1, 1,
+			}},
+			si: &StreamerInfo{
+				named:  *rbase.NewNamed("T", "T"),
+				objarr: rcont.NewObjArray(),
+				elems: []rbytes.StreamerElement{
+					NewCxxStreamerSTL(Element{
+						Name:   *rbase.NewNamed("F", ""),
+						Type:   rmeta.STL,
+						Size:   32,
+						MaxIdx: [5]int32{0, 0, 0, 0, 0},
+						EName:  "bitset<32>",
+					}.New(), rmeta.STLbitset, rmeta.Base),
+				},
+			},
+		},
+		{
+			name: "std::vector<std::bitset<32> >-rmeta-stl",
+			ptr: &struct {
+				F [][]byte
+			}{[][]byte{{0, 0, 0, 1}, {1, 0, 0, 1}, {1, 1, 0, 0}}},
+			si: &StreamerInfo{
+				named:  *rbase.NewNamed("T", "T"),
+				objarr: rcont.NewObjArray(),
+				elems: []rbytes.StreamerElement{
+					NewCxxStreamerSTL(Element{
+						Name:   *rbase.NewNamed("F", ""),
+						Type:   rmeta.STL,
+						Size:   24,
+						MaxIdx: [5]int32{0, 0, 0, 0, 0},
+						EName:  "vector<bitset<4> >",
+					}.New(), rmeta.STLvector, rmeta.Base),
+				},
+			},
+		},
+		{
 			name: "particle",
 			ptr: func() interface{} {
 				type P2 struct {

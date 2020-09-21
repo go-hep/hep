@@ -187,6 +187,15 @@ func TestDump(t *testing.T) {
 [004][slif64]: [4 5 6 7]
 `,
 		},
+		{
+			// std::bitset<N>, std::vector<std::bitset<N>>
+			name: "../testdata/std-bitset.root",
+			want: `key[000]: tree;1 "my tree title" (TTree)
+[000][evt]: {[0 0 0 1 0 0 0 1] [[1 1 1 0 1 1 1 0]]}
+[001][evt]: {[1 0 0 1 1 0 0 1] [[0 0 0 1 0 0 0 1] [1 1 1 0 1 1 1 0]]}
+[002][evt]: {[0 1 1 0 0 1 1 0] [[1 0 0 1 1 0 0 1] [0 1 1 0 0 1 1 0] [1 1 0 0 1 1 0 0]]}
+`,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)

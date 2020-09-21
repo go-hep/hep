@@ -1023,6 +1023,8 @@ func (tss *StreamerSTL) ElemTypeName() []string {
 		return parseStdVector(tss.ename)
 	case rmeta.STLmap:
 		return parseStdMap(tss.ename)
+	case rmeta.STLbitset:
+		return parseStdBitset(tss.ename)
 	default:
 		panic("not implemented")
 	}
@@ -1141,6 +1143,14 @@ func parseStdMap(tmpl string) []string {
 	default:
 		return []string{keyT, valT, allT}
 	}
+}
+
+func parseStdBitset(tmpl string) []string {
+	enames := rmeta.CxxTemplateArgsOf(tmpl)
+	if len(enames) > 1 {
+		panic(fmt.Errorf("invalid std::bitset template %q", tmpl))
+	}
+	return enames
 }
 
 func (tss *StreamerSTL) ContainedType() rmeta.Enum {

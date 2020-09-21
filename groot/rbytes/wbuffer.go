@@ -752,6 +752,14 @@ func (w *WBuffer) WriteStdVectorStrs(v []string) {
 	_, _ = w.SetByteCount(pos, typename)
 }
 
+func (w *WBuffer) WriteStdBitset(v []uint8) {
+	n := len(v)
+	w.w.grow(n)
+	for i := range v {
+		w.writeU8(v[n-1-i])
+	}
+}
+
 var (
 	_ StreamerInfoContext = (*WBuffer)(nil)
 )

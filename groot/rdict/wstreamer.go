@@ -7,6 +7,7 @@ package rdict
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -259,6 +260,22 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 							wstreamStdMap(kname, vname, kwop, vwop),
 							cfg,
 						}
+
+					case rmeta.STLbitset:
+						var (
+							typename = se.TypeName()
+							enames   = rmeta.CxxTemplateArgsOf(typename)
+							n, err   = strconv.Atoi(enames[0])
+						)
+
+						if err != nil {
+							panic(fmt.Errorf("rdict: invalid STL bitset argument (type=%q): %+v", typename, err))
+						}
+						return wstreamer{
+							wstreamType(typename, wstreamStdBitset(typename, n)),
+							cfg,
+						}
+
 					default:
 						panic(fmt.Errorf("rdict: STL container type=%v not handled", se.STLType()))
 					}
@@ -482,6 +499,21 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 				vwop := wopFrom(sictx, vname, -1, ct, &descr)
 				return wstreamer{
 					wstreamStdMap(kname, vname, kwop, vwop),
+					cfg,
+				}
+
+			case rmeta.STLbitset:
+				var (
+					typename = se.TypeName()
+					enames   = rmeta.CxxTemplateArgsOf(typename)
+					n, err   = strconv.Atoi(enames[0])
+				)
+
+				if err != nil {
+					panic(fmt.Errorf("rdict: invalid STL bitset argument (type=%q): %+v", typename, err))
+				}
+				return wstreamer{
+					wstreamType(typename, wstreamStdBitset(typename, n)),
 					cfg,
 				}
 
@@ -869,6 +901,17 @@ func wstreamStdMap(kname, vname string, kwop, vwop wopFunc) wopFunc {
 	}
 }
 
+func wstreamStdBitset(typename string, n int) wopFunc {
+	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+		sli := *cfg.adjust(recv).(*[]uint8)
+		sli = sli[:n]
+
+		w.WriteI32(int32(n))
+		w.WriteStdBitset(sli)
+		return n + 4, w.Err()
+	}
+}
+
 func wstreamBools(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
@@ -1139,6 +1182,14 @@ func wopFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, 
 		enames := rmeta.CxxTemplateArgsOf(typename)
 		wop := wopFrom(sictx, enames[0], -1, 0, nil)
 		return wstreamStdDeque(typename, wop)
+
+	case strings.HasPrefix(typename, "bitset<"):
+		enames := rmeta.CxxTemplateArgsOf(typename)
+		n, err := strconv.Atoi(enames[0])
+		if err != nil {
+			panic(fmt.Errorf("rdict: invalid STL bitset argument (type=%q): %+v", typename, err))
+		}
+		return wstreamStdBitset(typename, n)
 	}
 
 	osi, err := sictx.StreamerInfo(typename, int(typevers))
