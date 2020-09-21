@@ -95,5 +95,49 @@ some output`
 	if got, want := err.Error(), "err1"; got != want {
 		t.Fatalf("invalid error:\ngot= %q\nwant=%q", got, want)
 	}
+}
 
+func TestGenROOTDictCodeWithoutROOT(t *testing.T) {
+	hasROOT := rtests.HasROOT
+	rtests.HasROOT = false
+	defer func() {
+		rtests.HasROOT = hasROOT
+	}()
+
+	out, err := rtests.GenROOTDictCode("struct Event {};", "")
+	if !errors.Is(err, rtests.ErrNoROOT) {
+		t.Fatalf("unexpected error: got=%v, want=%v\noutput:\n%s", err, rtests.ErrNoROOT, out)
+	}
+}
+
+func TestGenROOTDictCodeWithROOT(t *testing.T) {
+	if !rtests.HasROOT {
+		t.Skipf("ROOT isn't installed")
+	}
+
+	const event = `struct Event {
+	double D;
+};
+`
+
+	const link = `
+#ifdef __CINT__
+
+#pragma link off all globals;
+#pragma link off all classes;
+#pragma link off all functions;
+
+#pragma link C++ class Event+;
+
+#endif
+`
+	out, err := rtests.GenROOTDictCode(event, link)
+	if err != nil {
+		t.Fatalf("could not generate ROOT dict: %+v", err)
+	}
+
+	const want = `// Do NOT change. Changes will be lost next time file is generated`
+	if !bytes.HasPrefix(out, []byte(want)) {
+		t.Fatalf("unexpected ROOT dict content:\n%s", out)
+	}
 }

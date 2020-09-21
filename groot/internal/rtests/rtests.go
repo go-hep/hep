@@ -32,6 +32,7 @@ var (
 	HasROOT   = false // HasROOT is true when a C++ ROOT installation could be detected.
 	ErrNoROOT = errors.New("rtests: no C++ ROOT installed")
 	rootCmd   = ""
+	rootCling = ""
 )
 
 // RunCxxROOT executes the function fct in the provided C++ code with optional arguments args.
@@ -44,6 +45,9 @@ func RunCxxROOT(fct string, code []byte, args ...interface{}) ([]byte, error) {
 		return nil, fmt.Errorf("could not create tmpdir: %w", err)
 	}
 	defer os.RemoveAll(tmp)
+
+	// create a dummy header file for ROOT-dictionary generation purposes.
+	_ = ioutil.WriteFile(filepath.Join(tmp, "__groot-Event.h"), []byte(""), 0644)
 
 	fname := filepath.Join(tmp, fct+".C")
 	err = ioutil.WriteFile(fname, []byte(code), 0644)
@@ -81,6 +85,57 @@ func RunCxxROOT(fct string, code []byte, args ...interface{}) ([]byte, error) {
 	return out, nil
 }
 
+// GenROOTDictCode generates the ROOT dictionary code from the given event
+// and linkdef definitions.
+// GenROOTDictCode invokes rootcling and returns the generated code.
+func GenROOTDictCode(event, linkdef string) ([]byte, error) {
+	if !HasROOT {
+		return nil, ErrNoROOT
+	}
+
+	tmp, err := ioutil.TempDir("", "groot-rtests-")
+	if err != nil {
+		return nil, fmt.Errorf("rtests: could not create tmp dir: %w", err)
+	}
+	defer os.RemoveAll(tmp)
+
+	var (
+		fname = filepath.Join(tmp, "__groot-Event.h")
+		link  = filepath.Join(tmp, "LinkDef.h")
+		dname = filepath.Join(tmp, "dict.cxx")
+	)
+
+	err = ioutil.WriteFile(fname, []byte(event), 0644)
+	if err != nil {
+		return nil, fmt.Errorf("rtests: could not write event header file: %w", err)
+	}
+
+	err = ioutil.WriteFile(link, []byte(linkdef), 0644)
+	if err != nil {
+		return nil, fmt.Errorf("rtests: could not write event header file: %w", err)
+	}
+
+	cmd := exec.Command(
+		rootCling,
+		filepath.Base(dname),
+		filepath.Base(fname),
+		filepath.Base(link),
+	)
+	cmd.Dir = tmp
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, ROOTError{Err: err, Cmd: cmd.Path, Args: cmd.Args, Out: out}
+	}
+
+	dict, err := ioutil.ReadFile(dname)
+	if err != nil {
+		return nil, fmt.Errorf("rtests: could not read dict file: %w", err)
+	}
+
+	return dict, nil
+}
+
 type ROOTError struct {
 	Err  error
 	Cmd  string
@@ -108,6 +163,16 @@ func init() {
 	}
 	HasROOT = true
 	rootCmd = cmd
+
+	cmd, err = exec.LookPath("rootcling")
+	if err != nil {
+		cmd, err = exec.LookPath("rootcling.exe")
+	}
+
+	if err != nil {
+		return
+	}
+	rootCling = cmd
 }
 
 var (
