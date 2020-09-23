@@ -74,6 +74,9 @@ func TypeFromSI(ctx rbytes.StreamerInfoContext, si rbytes.StreamerInfo) (reflect
 			)
 		}
 		et := se.Title()
+		if !strings.HasPrefix(et, "[") {
+			et = ""
+		}
 		if rt.Kind() == reflect.Array {
 			et = fmt.Sprintf("[%d]", rt.Len())
 		}

@@ -17,7 +17,9 @@ import (
 //go:generate go run ./gendata/gen-evnt-tree.go -f ../testdata/small-evnt-tree-nosplit.root
 //go:generate go run ./gendata/gen-evnt-tree.go -f ../testdata/small-evnt-tree-fullsplit.root -split=99
 //go:generate go run ./gendata/gen-flat-tree.go -f ../testdata/leaves.root
-//go:generate go run ./gendata/gen-map-tree.go -f ../testdata/stdmap.root
+//go:generate go run ./gendata/gen-map-tree.go -f ../testdata/std-map-split0.root -split=0
+//go:generate go run ./gendata/gen-map-tree.go -f ../testdata/std-map-split1.root -split=1
+//go:generate go run ./gendata/gen-map-tree.go -f ../testdata/std-map-split2.root -split=2
 //go:generate go run ./gendata/gen-multi-leaves-tree.go -f ../testdata/padding.root
 //go:generate go run ./gendata/gen-join-trees.go -d ../testdata
 //go:generate go run ./gendata/gen-bitset-tree.go -f ../testdata/std-bitset.root

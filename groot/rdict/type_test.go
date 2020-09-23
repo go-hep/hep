@@ -289,6 +289,20 @@ func TestTypeFromSI(t *testing.T) {
 			want: reflect.TypeOf((*map[int32]map[int32][]string)(nil)).Elem(),
 		},
 		{
+			name: "map<int,string>-with-pair-dict",
+			si: rdict.NewCxxStreamerInfo("MyEvent", 1, 0, []rbytes.StreamerElement{
+				rdict.NewCxxStreamerSTL(rdict.Element{
+					Name:  *rbase.NewNamed("mapI32Str", " (pair<int,string>)"),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "map<int,string>",
+				}.New(), rmeta.STLmap, rmeta.Object),
+			}),
+			want: reflect.TypeOf((*struct {
+				ROOT_mapI32Str map[int32]string `groot:"mapI32Str"`
+			})(nil)).Elem(),
+		},
+		{
 			name: "vector<TObject>",
 			si: rdict.NewCxxStreamerInfo("vector<TObject>", rvers.StreamerInfo, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
