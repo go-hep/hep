@@ -1123,8 +1123,10 @@ func wopFuncFor(e rmeta.Enum, descr *elemDescr) wopFunc {
 		return wstreamF16(descr.elem)
 	case rmeta.Double32:
 		return wstreamD32(descr.elem)
-	case rmeta.TString, rmeta.STLstring, rmeta.CharStar:
+	case rmeta.TString, rmeta.CharStar:
 		return wstreamTString
+	case rmeta.STLstring:
+		return wstreamStdString
 	case rmeta.TObject:
 		return wstreamTObject
 	case rmeta.TNamed:
@@ -1149,9 +1151,6 @@ func wopFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, 
 	}
 
 	switch {
-	case typename == "string", typename == "std::string":
-		return wstreamTString
-
 	case strings.HasPrefix(typename, "vector<"), strings.HasPrefix(typename, "std::vector<"):
 		enames := rmeta.CxxTemplateArgsOf(typename)
 		wop := wopFrom(sictx, enames[0], -1, 0, nil)

@@ -884,8 +884,21 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
 		//typevers = int16(cfg.si.ClassVersion())
 		beg := r.Pos()
-		_ /*vers*/, pos, bcnt := r.ReadVersion(typename)
-		// FIXME(sbinet): use vers to infer obj-/mbr-wise reading.
+		vers, pos, bcnt := r.ReadVersion(typename)
+		mbrwise := vers&rbytes.StreamedMemberWise != 0
+		if mbrwise {
+			vers &= ^rbytes.StreamedMemberWise
+		}
+
+		if mbrwise {
+			vers = r.ReadI16()
+			switch {
+			case vers == 1:
+				// TODO
+			case vers <= 0:
+				/*chksum*/ _ = r.ReadU32()
+			}
+		}
 
 		n := int(r.ReadI32())
 		rv := reflect.ValueOf(cfg.adjust(recv)).Elem()
@@ -1279,8 +1292,10 @@ func ropFuncFor(e rmeta.Enum, descr *elemDescr) ropFunc {
 		return rstreamF16(descr.elem)
 	case rmeta.Double32:
 		return rstreamD32(descr.elem)
-	case rmeta.TString, rmeta.STLstring, rmeta.CharStar:
+	case rmeta.TString, rmeta.CharStar:
 		return rstreamTString
+	case rmeta.STLstring:
+		return rstreamStdString
 	case rmeta.TObject:
 		return rstreamTObject
 	case rmeta.TNamed:
@@ -1305,9 +1320,6 @@ func ropFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, 
 	}
 
 	switch {
-	case typename == "string", typename == "std::string":
-		return rstreamTString
-
 	case strings.HasPrefix(typename, "vector<"), strings.HasPrefix(typename, "std::vector<"):
 		enames := rmeta.CxxTemplateArgsOf(typename)
 		rop := ropFrom(sictx, enames[0], -1, 0, nil)
