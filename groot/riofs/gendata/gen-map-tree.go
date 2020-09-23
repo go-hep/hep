@@ -40,8 +40,6 @@ const event = `
 #include <vector>
 #include <string>
 
-const int ARRAYSZ = 10;
-
 struct P3 {
 	int32_t Px;
 	double  Py;
@@ -55,8 +53,8 @@ struct Event {
 	std::map<std::string, std::string> mss;
 //	std::map<std::string, P3>          msp3;
 
-//	std::map<std::string, std::vector<std::string> > msvs;
-//	std::map<std::string, std::vector<int32_t> >     msvi32;
+	std::map<std::string, std::vector<std::string> > msvs;
+	std::map<std::string, std::vector<int32_t> >     msvi32;
 //	std::map<std::string, std::vector<P3> >          msvp3;
 
 	void clear() {
@@ -66,8 +64,8 @@ struct Event {
 		this->mss.clear();
 //		this->msp3.clear();
 
-//		this->msvs.clear();
-//		this->msvi32.clear();
+		this->msvs.clear();
+		this->msvi32.clear();
 //		this->msvp3.clear();
 	}
 };
@@ -82,6 +80,7 @@ const link = `
 #pragma link off all classes;
 #pragma link off all functions;
 
+//#pragma link C++ class P3+;
 #pragma link C++ class Event+;
 
 #endif
@@ -110,12 +109,12 @@ void gentree(const char* fname, int splitlvl = 99) {
 			e.mss[key] = std::string(TString::Format("val-%03d", ii).Data());
 //			e.msp3[key] = P3{ii, double(ii+1), ii+2};
 
-//			e.msvs[key] = std::vector<std::string>({
-//					{TString::Format("val-%03d", ii).Data()}
-//					,{TString::Format("val-%03d", ii+1).Data()}
-//					,{TString::Format("val-%03d", ii+2).Data()}
-//			});
-//			e.msvi32[key] = std::vector<int32_t>({1, ii, 3, ii});
+			e.msvs[key] = std::vector<std::string>({
+					{TString::Format("val-%03d", ii).Data()}
+					,{TString::Format("val-%03d", ii+1).Data()}
+					,{TString::Format("val-%03d", ii+2).Data()}
+			});
+			e.msvi32[key] = std::vector<int32_t>({1, ii, 3, ii});
 //			e.msvp3[key] = std::vector<P3>({{ii, double(ii+1), ii+2}, {ii+1, double(ii+2), ii+3}});
 		}
 

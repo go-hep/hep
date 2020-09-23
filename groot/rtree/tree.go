@@ -540,6 +540,10 @@ func (tree *ttree) attachStreamerElement(br Branch, se rbytes.StreamerElement, c
 	}
 
 	br.setStreamerElement(se, ctx)
+	if len(br.Branches()) == 0 {
+		return
+	}
+
 	var members []rbytes.StreamerElement
 	switch se := se.(type) {
 	case *rdict.StreamerObject, *rdict.StreamerObjectAny, *rdict.StreamerObjectPointer, *rdict.StreamerObjectAnyPointer:
@@ -552,17 +556,33 @@ func (tree *ttree) attachStreamerElement(br Branch, se rbytes.StreamerElement, c
 		}
 		members = info.Elements()
 	case *rdict.StreamerSTL:
-		typename := strings.TrimSpace(se.TypeName())
-		// FIXME(sbinet): this string manipulation only works for one-parameter templates
-		if strings.Contains(typename, "<") {
-			typename = typename[strings.Index(typename, "<")+1 : strings.LastIndex(typename, ">")]
-			typename = strings.TrimRight(typename, "*")
-		}
-		typename = strings.TrimSpace(typename)
-		typevers := -1
+		var (
+			typename = strings.TrimSpace(se.TypeName())
+			enames   = rmeta.CxxTemplateArgsOf(typename)
+			typevers = -1
+		)
 		switch se.STLType() {
 		case rmeta.STLbitset:
 			members = []rbytes.StreamerElement{se}
+
+		case rmeta.STLvector, rmeta.STLlist,
+			rmeta.STLset, rmeta.STLunorderedset,
+			rmeta.STLdeque:
+			typename = strings.TrimSpace(strings.TrimRight(enames[0], "*"))
+			info, err := ctx.StreamerInfo(typename, typevers)
+			if err != nil {
+				if _, ok := rmeta.CxxBuiltins[typename]; !ok {
+					panic(err)
+				}
+			}
+			if err == nil {
+				members = info.Elements()
+			}
+
+		case rmeta.STLmap, rmeta.STLunorderedmap:
+			// FIXME(sbinet): split it further or not?
+			members = []rbytes.StreamerElement{se}
+
 		default:
 			// FIXME(sbinet): always load latest version?
 			info, err := ctx.StreamerInfo(typename, typevers)

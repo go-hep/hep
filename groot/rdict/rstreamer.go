@@ -203,7 +203,11 @@ func (si *StreamerInfo) makeROp(sictx rbytes.StreamerInfoContext, i int, descr e
 					panic(fmt.Errorf("rdict: invalid streamer element: %#v", se))
 
 				case *StreamerSTLstring:
-					return rstreamer{rstreamStdString, cfg}
+					return rstreamer{
+						rstreamType("string", rstreamStdString),
+						cfg,
+					}
+
 				case *StreamerSTL:
 					switch se.STLType() {
 					case rmeta.STLvector:
@@ -480,7 +484,11 @@ func (si *StreamerInfo) makeROp(sictx rbytes.StreamerInfoContext, i int, descr e
 			panic(fmt.Errorf("rdict: invalid streamer element: %#v", se))
 
 		case *StreamerSTLstring:
-			return rstreamer{rstreamStdString, cfg}
+			return rstreamer{
+				rstreamType("string", rstreamStdString),
+				cfg,
+			}
+
 		case *StreamerSTL:
 			switch se.STLType() {
 			case rmeta.STLvector:
@@ -822,6 +830,23 @@ func rstreamBasicSlice(sli ropFunc) ropFunc {
 	}
 }
 
+func readVersion(r *rbytes.RBuffer, typename string) (beg int64, pos int32, bcnt int32) {
+	if _, ok := rmeta.CxxBuiltins[typename]; ok && typename != "string" {
+		return -1, -1, -1
+	}
+	beg = r.Pos()
+	_, pos, bcnt = r.ReadVersion(typename)
+	return beg, pos, bcnt
+}
+
+func rcheckByteCount(r *rbytes.RBuffer, pos int32, bcnt int32, beg int64, typename string) error {
+	if pos < 0 {
+		return nil
+	}
+	r.CheckByteCount(pos, bcnt, beg, typename)
+	return r.Err()
+}
+
 func rstreamType(typename string, rop ropFunc) ropFunc {
 	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
 		beg := r.Pos()
@@ -886,16 +911,16 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 		beg := r.Pos()
 		vers, pos, bcnt := r.ReadVersion(typename)
 		mbrwise := vers&rbytes.StreamedMemberWise != 0
-		if mbrwise {
-			vers &= ^rbytes.StreamedMemberWise
-		}
+		// if mbrwise {
+		// 	vers &= ^rbytes.StreamedMemberWise
+		// }
 
 		if mbrwise {
-			vers = r.ReadI16()
+			clvers := r.ReadI16()
 			switch {
-			case vers == 1:
+			case clvers == 1:
 				// TODO
-			case vers <= 0:
+			case clvers <= 0:
 				/*chksum*/ _ = r.ReadU32()
 			}
 		}
@@ -906,25 +931,39 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 		valT := reflect.SliceOf(rv.Type().Elem())
 		keys := reflect.New(keyT).Elem()
 		keys.Set(reflect.AppendSlice(keys, reflect.MakeSlice(keyT, n, n)))
-		for i := 0; i < n; i++ {
-			err := krop(r, keys.Index(i).Addr().Interface(), nil)
+		if n > 0 {
+			beg, pos, bcnt := readVersion(r, kname)
+			for i := 0; i < n; i++ {
+				err := krop(r, keys.Index(i).Addr().Interface(), nil)
+				if err != nil {
+					return fmt.Errorf(
+						"rdict: could not rstream key-element %s[%d] of %s: %w",
+						kname, i, cfg.si.Name(), err,
+					)
+				}
+			}
+			err := rcheckByteCount(r, pos, bcnt, beg, kname)
 			if err != nil {
-				return fmt.Errorf(
-					"rdict: could not rstream key-element %s[%d] of %s: %w",
-					kname, i, cfg.si.Name(), err,
-				)
+				return err
 			}
 		}
 
 		vals := reflect.New(valT).Elem()
 		vals.Set(reflect.AppendSlice(vals, reflect.MakeSlice(valT, n, n)))
-		for i := 0; i < n; i++ {
-			err := vrop(r, vals.Index(i).Addr().Interface(), nil)
+		if n > 0 {
+			beg, pos, bcnt := readVersion(r, vname)
+			for i := 0; i < n; i++ {
+				err := vrop(r, vals.Index(i).Addr().Interface(), nil)
+				if err != nil {
+					return fmt.Errorf(
+						"rdict: could not rstream val-element %s[%d] of %s: %w",
+						vname, i, cfg.si.Name(), err,
+					)
+				}
+			}
+			err := rcheckByteCount(r, pos, bcnt, beg, vname)
 			if err != nil {
-				return fmt.Errorf(
-					"rdict: could not rstream val-element %s[%d] of %s: %w",
-					vname, i, cfg.si.Name(), err,
-				)
+				return err
 			}
 		}
 
@@ -1134,10 +1173,7 @@ func rstreamCat(typename string, typevers int16, rops []rstreamer) ropFunc {
 }
 
 func rstreamStdString(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
-	beg := r.Pos()
-	_ /*vers*/, pos, bcnt := r.ReadVersion("string")
 	*(cfg.adjust(recv).(*string)) = r.ReadString()
-	r.CheckByteCount(pos, bcnt, beg, "string")
 	return r.Err()
 
 }

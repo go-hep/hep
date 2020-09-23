@@ -196,6 +196,16 @@ func TestDump(t *testing.T) {
 [002][evt]: {[0 1 1 0 0 1 1 0] [[1 0 0 1 1 0 0 1] [0 1 1 0 0 1 1 0] [1 1 0 0 1 1 0 0]]}
 `,
 		},
+		{
+			// std-map w/ split-level=0, mbr-wise
+			name: "../testdata/std-map-split0.root",
+			want: loadRef("testdata/std-map-split0.root.txt"),
+		},
+		{
+			// std-map w/ split-level=1, mbr-wise
+			name: "../testdata/std-map-split1.root",
+			want: loadRef("testdata/std-map-split1.root.txt"),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)

@@ -122,7 +122,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 			se       = descr.elem.(*StreamerBase)
 			typename = se.Name()
 			typevers = se.vbase
-			wop      = wopFrom(sictx, typename, int16(typevers), 0, nil)
+			wop, _   = wopFrom(sictx, typename, int16(typevers), 0, nil)
 		)
 		return wstreamer{wop, cfg}
 
@@ -195,7 +195,11 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 					panic(fmt.Errorf("rdict: invalid streamer element: %#v", se))
 
 				case *StreamerSTLstring:
-					return wstreamer{wstreamStdString, cfg}
+					return wstreamer{
+						wstreamType("string", wstreamStdString),
+						cfg,
+					}
+
 				case *StreamerSTL:
 					switch se.STLType() {
 					case rmeta.STLvector:
@@ -203,7 +207,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 							ct       = se.ContainedType()
 							typename = se.TypeName()
 							enames   = rmeta.CxxTemplateArgsOf(typename)
-							wop      = wopFrom(sictx, enames[0], -1, ct, &descr)
+							wop, _   = wopFrom(sictx, enames[0], -1, ct, &descr)
 						)
 						return wstreamer{
 							wstreamType(typename, wstreamStdVector(typename, wop)),
@@ -215,7 +219,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 							ct       = se.ContainedType()
 							typename = se.TypeName()
 							enames   = rmeta.CxxTemplateArgsOf(typename)
-							wop      = wopFrom(sictx, enames[0], -1, ct, &descr)
+							wop, _   = wopFrom(sictx, enames[0], -1, ct, &descr)
 						)
 						return wstreamer{
 							wstreamType(typename, wstreamStdSet(typename, wop)),
@@ -227,7 +231,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 							ct       = se.ContainedType()
 							typename = se.TypeName()
 							enames   = rmeta.CxxTemplateArgsOf(typename)
-							wop      = wopFrom(sictx, enames[0], -1, ct, &descr)
+							wop, _   = wopFrom(sictx, enames[0], -1, ct, &descr)
 						)
 						return wstreamer{
 							wstreamType(typename, wstreamStdList(typename, wop)),
@@ -239,7 +243,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 							ct       = se.ContainedType()
 							typename = se.TypeName()
 							enames   = rmeta.CxxTemplateArgsOf(typename)
-							wop      = wopFrom(sictx, enames[0], -1, ct, &descr)
+							wop, _   = wopFrom(sictx, enames[0], -1, ct, &descr)
 						)
 						return wstreamer{
 							wstreamType(typename, wstreamStdList(typename, wop)),
@@ -254,10 +258,14 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 							vname  = enames[1]
 						)
 
-						kwop := wopFrom(sictx, kname, -1, ct, &descr)
-						vwop := wopFrom(sictx, vname, -1, ct, &descr)
+						kwop, kvers := wopFrom(sictx, kname, -1, ct, &descr)
+						vwop, vvers := wopFrom(sictx, vname, -1, ct, &descr)
 						return wstreamer{
-							wstreamStdMap(kname, vname, kwop, vwop),
+							wstreamStdMap(
+								kname, vname,
+								kwop, vwop,
+								kvers, vvers,
+							),
 							cfg,
 						}
 
@@ -377,7 +385,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 		var (
 			se       = descr.elem
 			typename = se.TypeName()
-			wop      = wopFrom(sictx, typename, -1, 0, nil)
+			wop, _   = wopFrom(sictx, typename, -1, 0, nil)
 		)
 		cfg.length = se.ArrayLen()
 		return wstreamer{wstreamBasicArray(cfg.length, wop), cfg}
@@ -432,7 +440,11 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 			panic(fmt.Errorf("rdict: invalid streamer element: %#v", se))
 
 		case *StreamerSTLstring:
-			return wstreamer{wstreamStdString, cfg}
+			return wstreamer{
+				wstreamType("string", wstreamStdString),
+				cfg,
+			}
+
 		case *StreamerSTL:
 			switch se.STLType() {
 			case rmeta.STLvector:
@@ -441,7 +453,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 					typename = se.TypeName()
 					enames   = rmeta.CxxTemplateArgsOf(typename)
 					vname    = enames[0]
-					wop      = wopFrom(sictx, vname, -1, ct, &descr)
+					wop, _   = wopFrom(sictx, vname, -1, ct, &descr)
 				)
 				return wstreamer{
 					wstreamType(typename, wstreamStdVector(typename, wop)),
@@ -454,7 +466,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 					typename = se.TypeName()
 					enames   = rmeta.CxxTemplateArgsOf(typename)
 					vname    = enames[0]
-					wop      = wopFrom(sictx, vname, -1, ct, &descr)
+					wop, _   = wopFrom(sictx, vname, -1, ct, &descr)
 				)
 				return wstreamer{
 					wstreamType(typename, wstreamStdSet(typename, wop)),
@@ -467,7 +479,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 					typename = se.TypeName()
 					enames   = rmeta.CxxTemplateArgsOf(typename)
 					vname    = enames[0]
-					wop      = wopFrom(sictx, vname, -1, ct, &descr)
+					wop, _   = wopFrom(sictx, vname, -1, ct, &descr)
 				)
 				return wstreamer{
 					wstreamType(typename, wstreamStdList(typename, wop)),
@@ -480,7 +492,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 					typename = se.TypeName()
 					enames   = rmeta.CxxTemplateArgsOf(typename)
 					vname    = enames[0]
-					wop      = wopFrom(sictx, vname, -1, ct, &descr)
+					wop, _   = wopFrom(sictx, vname, -1, ct, &descr)
 				)
 				return wstreamer{
 					wstreamType(typename, wstreamStdDeque(typename, wop)),
@@ -495,10 +507,16 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 					vname  = enames[1]
 				)
 
-				kwop := wopFrom(sictx, kname, -1, ct, &descr)
-				vwop := wopFrom(sictx, vname, -1, ct, &descr)
+				kwop, kvers := wopFrom(sictx, kname, -1, ct, &descr)
+				vwop, vvers := wopFrom(sictx, vname, -1, ct, &descr)
 				return wstreamer{
-					wstreamStdMap(kname, vname, kwop, vwop),
+					wstreamStdMap(
+						kname, vname,
+						kwop,
+						vwop,
+						kvers,
+						vvers,
+					),
 					cfg,
 				}
 
@@ -526,7 +544,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 		var (
 			se       = descr.elem
 			typename = se.TypeName()
-			wop      = wopFrom(sictx, typename, -1, 0, nil)
+			wop, _   = wopFrom(sictx, typename, -1, 0, nil)
 		)
 		return wstreamer{wop, cfg}
 
@@ -534,7 +552,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 		var (
 			se       = descr.elem
 			typename = strings.TrimRight(se.TypeName(), "*") // FIXME(sbinet): handle T** ?
-			wop      = wopFrom(sictx, typename, -1, 0, nil)
+			wop, _   = wopFrom(sictx, typename, -1, 0, nil)
 		)
 		return wstreamer{
 			wstreamAnyPtr(wop),
@@ -545,7 +563,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 		var (
 			se       = descr.elem
 			typename = strings.TrimRight(se.TypeName(), "*") // FIXME(sbinet): handle T** ?
-			wop      = wopFrom(sictx, typename, -1, 0, nil)
+			wop, _   = wopFrom(sictx, typename, -1, 0, nil)
 		)
 		return wstreamer{
 			wstreamObjPtr(wop),
@@ -556,7 +574,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 		var (
 			se       = descr.elem.(*StreamerLoop)
 			typename = strings.TrimRight(se.TypeName(), "*") // FIXME(sbinet): handle T** ?
-			wop      = wopFrom(sictx, typename, -1, 0, nil)
+			wop, _   = wopFrom(sictx, typename, -1, 0, nil)
 		)
 		return wstreamer{
 			wstreamBasicSlice(wop),
@@ -801,6 +819,20 @@ func wstreamBasicSlice(sli wopFunc) wopFunc {
 	}
 }
 
+func writeVersion(w *rbytes.WBuffer, typename string, typevers int16) int64 {
+	if _, ok := rmeta.CxxBuiltins[typename]; ok && typename != "string" {
+		return -1
+	}
+	return w.WriteVersion(typevers)
+}
+
+func writeByteCount(w *rbytes.WBuffer, pos int64, typename string) (int, error) {
+	if pos < 0 {
+		return 0, nil
+	}
+	return w.SetByteCount(pos, typename)
+}
+
 func wstreamType(typename string, wop wopFunc) wopFunc {
 	const typevers = rvers.StreamerInfo
 	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
@@ -847,7 +879,7 @@ func wstreamStdDeque(typename string, wop wopFunc) wopFunc {
 	return wstreamStdVector(typename, wop)
 }
 
-func wstreamStdMap(kname, vname string, kwop, vwop wopFunc) wopFunc {
+func wstreamStdMap(kname, vname string, kwop, vwop wopFunc, kvers, vvers int16) wopFunc {
 	typename := fmt.Sprintf("map<%s,%s>", kname, vname)
 	if strings.HasSuffix(vname, ">") {
 		typename = fmt.Sprintf("map<%s,%s >", kname, vname)
@@ -875,26 +907,42 @@ func wstreamStdMap(kname, vname string, kwop, vwop wopFunc) wopFunc {
 			keys.Index(i).Set(key)
 			vals.Index(i).Set(val)
 		}
-		for i := 0; i < n; i++ {
-			nb, err := kwop(w, keys.Index(i).Addr().Interface(), nil)
+		if n > 0 {
+			pos := writeVersion(w, kname, kvers)
+			for i := 0; i < n; i++ {
+				nb, err := kwop(w, keys.Index(i).Addr().Interface(), nil)
+				if err != nil {
+					return nn, fmt.Errorf(
+						"rdict: could not wstream key-element %s[%d] of %s: %w",
+						kname, i, cfg.si.Name(), err,
+					)
+				}
+				nn += nb
+			}
+			nb, err := writeByteCount(w, pos, kname)
 			if err != nil {
-				return nn, fmt.Errorf(
-					"rdict: could not wstream key-element %s[%d] of %s: %w",
-					kname, i, cfg.si.Name(), err,
-				)
+				return nn, err
 			}
 			nn += nb
 		}
 
-		for i := 0; i < n; i++ {
-			nb, err := vwop(w, vals.Index(i).Addr().Interface(), nil)
-			if err != nil {
-				return nn, fmt.Errorf(
-					"rdict: could not rstream val-element %s[%d] of %s: %w",
-					vname, i, cfg.si.Name(), err,
-				)
+		if n > 0 {
+			pos := writeVersion(w, kname, vvers)
+
+			for i := 0; i < n; i++ {
+				nb, err := vwop(w, vals.Index(i).Addr().Interface(), nil)
+				if err != nil {
+					return nn, fmt.Errorf(
+						"rdict: could not rstream val-element %s[%d] of %s: %w",
+						vname, i, cfg.si.Name(), err,
+					)
+				}
+				nn += nb
 			}
-			nn += nb
+			_, err := writeByteCount(w, pos, vname)
+			if err != nil {
+				return nn, err
+			}
 		}
 
 		return w.SetByteCount(pos, typename)
@@ -1088,7 +1136,7 @@ func wstreamCat(typename string, typevers int16, wops []wstreamer) wopFunc {
 
 func wstreamStdString(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
 	beg := w.Pos()
-	w.WriteSTLString(*cfg.adjust(recv).(*string))
+	w.WriteString(*cfg.adjust(recv).(*string))
 	return int(w.Pos() - beg), w.Err()
 
 }
@@ -1136,31 +1184,31 @@ func wopFuncFor(e rmeta.Enum, descr *elemDescr) wopFunc {
 	}
 }
 
-func wopFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, enum rmeta.Enum, descr *elemDescr) wopFunc {
+func wopFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, enum rmeta.Enum, descr *elemDescr) (wopFunc, int16) {
 	e, ok := rmeta.TypeName2Enum(typename)
 	if ok {
 		wop := wopFuncFor(e, descr)
 		if wop != nil {
-			return wop
+			return wop, -1
 		}
 	}
 
 	wop := wopFuncFor(enum, descr)
 	if wop != nil {
-		return wop
+		return wop, -1
 	}
 
 	switch {
 	case strings.HasPrefix(typename, "vector<"), strings.HasPrefix(typename, "std::vector<"):
 		enames := rmeta.CxxTemplateArgsOf(typename)
-		wop := wopFrom(sictx, enames[0], -1, 0, nil)
-		return wstreamStdVector(typename, wop)
+		wop, _ := wopFrom(sictx, enames[0], -1, 0, nil)
+		return wstreamStdVector(typename, wop), rvers.StreamerInfo
 
 	case strings.HasPrefix(typename, "set<"), strings.HasPrefix(typename, "std::set<"),
 		strings.HasPrefix(typename, "unordered_set<"), strings.HasPrefix(typename, "std::unordered_set<"):
 		enames := rmeta.CxxTemplateArgsOf(typename)
-		wop := wopFrom(sictx, enames[0], -1, 0, nil)
-		return wstreamStdSet(typename, wop)
+		wop, _ := wopFrom(sictx, enames[0], -1, 0, nil)
+		return wstreamStdSet(typename, wop), rvers.StreamerInfo
 
 	case strings.HasPrefix(typename, "map<"), strings.HasPrefix(typename, "std::map<"),
 		strings.HasPrefix(typename, "unordered_map<"), strings.HasPrefix(typename, "std::unordered_map<"):
@@ -1168,19 +1216,19 @@ func wopFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, 
 		kname := enames[0]
 		vname := enames[1]
 
-		kwop := wopFrom(sictx, kname, -1, 0, nil)
-		vwop := wopFrom(sictx, vname, -1, 0, nil)
-		return wstreamStdMap(kname, vname, kwop, vwop)
+		kwop, kvers := wopFrom(sictx, kname, -1, 0, nil)
+		vwop, vvers := wopFrom(sictx, vname, -1, 0, nil)
+		return wstreamStdMap(kname, vname, kwop, vwop, kvers, vvers), rvers.StreamerInfo
 
 	case strings.HasPrefix(typename, "list<"), strings.HasPrefix(typename, "std::list<"):
 		enames := rmeta.CxxTemplateArgsOf(typename)
-		wop := wopFrom(sictx, enames[0], -1, 0, nil)
-		return wstreamStdList(typename, wop)
+		wop, _ := wopFrom(sictx, enames[0], -1, 0, nil)
+		return wstreamStdList(typename, wop), rvers.StreamerInfo
 
 	case strings.HasPrefix(typename, "deque<"), strings.HasPrefix(typename, "std::deque<"):
 		enames := rmeta.CxxTemplateArgsOf(typename)
-		wop := wopFrom(sictx, enames[0], -1, 0, nil)
-		return wstreamStdDeque(typename, wop)
+		wop, _ := wopFrom(sictx, enames[0], -1, 0, nil)
+		return wstreamStdDeque(typename, wop), rvers.StreamerInfo
 
 	case strings.HasPrefix(typename, "bitset<"):
 		enames := rmeta.CxxTemplateArgsOf(typename)
@@ -1188,7 +1236,7 @@ func wopFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, 
 		if err != nil {
 			panic(fmt.Errorf("rdict: invalid STL bitset argument (type=%q): %+v", typename, err))
 		}
-		return wstreamStdBitset(typename, n)
+		return wstreamStdBitset(typename, n), rvers.StreamerInfo
 	}
 
 	osi, err := sictx.StreamerInfo(typename, int(typevers))
@@ -1203,5 +1251,5 @@ func wopFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, 
 	}
 
 	wop = wstreamSI(esi)
-	return wop
+	return wop, int16(esi.ClassVersion())
 }
