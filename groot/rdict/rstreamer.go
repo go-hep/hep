@@ -982,10 +982,10 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 func rstreamStdBitset(typename string, n int) ropFunc {
 	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
 		var (
-			nn  = int(r.ReadI32())
-			sli = cfg.adjust(recv).(*[]uint8)
+			bits = int(r.ReadI32())
+			sli  = cfg.adjust(recv).(*[]uint8)
 		)
-		*sli = rbytes.ResizeU8(*sli, nn)
+		*sli = rbytes.ResizeU8(*sli, bits)
 		r.ReadStdBitset(*sli)
 		return r.Err()
 	}
