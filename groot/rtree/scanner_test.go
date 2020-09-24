@@ -18,32 +18,114 @@ import (
 )
 
 type ScannerData struct {
-	I32    int32       `groot:"Int32"`
-	I64    int64       `groot:"Int64"`
-	U32    uint32      `groot:"UInt32"`
-	U64    uint64      `groot:"UInt64"`
-	F32    float32     `groot:"Float32"`
-	F64    float64     `groot:"Float64"`
-	Str    string      `groot:"Str"`
-	ArrI32 [10]int32   `groot:"ArrayInt32"`
-	ArrI64 [10]int64   `groot:"ArrayInt64"`
-	ArrU32 [10]uint32  `groot:"ArrayUInt32"`
-	ArrU64 [10]uint64  `groot:"ArrayUInt64"`
-	ArrF32 [10]float32 `groot:"ArrayFloat32"`
-	ArrF64 [10]float64 `groot:"ArrayFloat64"`
-	N      int32       `groot:"N"`
-	SliI32 []int32     `groot:"SliceInt32"`
-	SliI64 []int64     `groot:"SliceInt64"`
-	SliU32 []uint32    `groot:"SliceUInt32"`
-	SliU64 []uint64    `groot:"SliceUInt64"`
-	SliF32 []float32   `groot:"SliceFloat32"`
-	SliF64 []float64   `groot:"SliceFloat64"`
+	B      bool              `groot:"B"`
+	Str    string            `groot:"Str"`
+	I8     int8              `groot:"I8"`
+	I16    int16             `groot:"I16"`
+	I32    int32             `groot:"I32"`
+	I64    int64             `groot:"I64"`
+	U8     uint8             `groot:"U8"`
+	U16    uint16            `groot:"U16"`
+	U32    uint32            `groot:"U32"`
+	U64    uint64            `groot:"U64"`
+	F32    float32           `groot:"F32"`
+	F64    float64           `groot:"F64"`
+	D16    root.Float16      `groot:"D16"`
+	D32    root.Double32     `groot:"D32"`
+	ArrBs  [10]bool          `groot:"ArrBs[10]"`
+	ArrI8  [10]int8          `groot:"ArrI8[10]"`
+	ArrI16 [10]int16         `groot:"ArrI16[10]"`
+	ArrI32 [10]int32         `groot:"ArrI32[10]"`
+	ArrI64 [10]int64         `groot:"ArrI64[10]"`
+	ArrU8  [10]uint8         `groot:"ArrU8[10]"`
+	ArrU16 [10]uint16        `groot:"ArrU16[10]"`
+	ArrU32 [10]uint32        `groot:"ArrU32[10]"`
+	ArrU64 [10]uint64        `groot:"ArrU64[10]"`
+	ArrF32 [10]float32       `groot:"ArrF32[10]"`
+	ArrF64 [10]float64       `groot:"ArrF64[10]"`
+	ArrD16 [10]root.Float16  `groot:"ArrD16[10]"`
+	ArrD32 [10]root.Double32 `groot:"ArrD32[10]"`
+	N      int32             `groot:"N"`
+	SliBs  []bool            `groot:"SliBs[N]"`
+	SliI8  []int8            `groot:"SliI8[N]"`
+	SliI16 []int16           `groot:"SliI16[N]"`
+	SliI32 []int32           `groot:"SliI32[N]"`
+	SliI64 []int64           `groot:"SliI64[N]"`
+	SliU8  []uint8           `groot:"SliU8[N]"`
+	SliU16 []uint16          `groot:"SliU16[N]"`
+	SliU32 []uint32          `groot:"SliU32[N]"`
+	SliU64 []uint64          `groot:"SliU64[N]"`
+	SliF32 []float32         `groot:"SliF32[N]"`
+	SliF64 []float64         `groot:"SliF64[N]"`
+	SliD16 []root.Float16    `groot:"SliD16[N]"`
+	SliD32 []root.Double32   `groot:"SliD32[N]"`
 }
 
+func (ScannerData) want(i int64) (data ScannerData) {
+	data.B = i%2 == 0
+	data.Str = fmt.Sprintf("str-%d", i)
+	data.I8 = int8(-i)
+	data.I16 = int16(-i)
+	data.I32 = int32(-i)
+	data.I64 = int64(-i)
+	data.U8 = uint8(i)
+	data.U16 = uint16(i)
+	data.U32 = uint32(i)
+	data.U64 = uint64(i)
+	data.F32 = float32(i)
+	data.F64 = float64(i)
+	data.D16 = root.Float16(i)
+	data.D32 = root.Double32(i)
+	for ii := range data.ArrI32 {
+		data.ArrBs[ii] = ii == int(i)
+		data.ArrI8[ii] = int8(-i)
+		data.ArrI16[ii] = int16(-i)
+		data.ArrI32[ii] = int32(-i)
+		data.ArrI64[ii] = int64(-i)
+		data.ArrU8[ii] = uint8(i)
+		data.ArrU16[ii] = uint16(i)
+		data.ArrU32[ii] = uint32(i)
+		data.ArrU64[ii] = uint64(i)
+		data.ArrF32[ii] = float32(i)
+		data.ArrF64[ii] = float64(i)
+		data.ArrD16[ii] = root.Float16(i)
+		data.ArrD32[ii] = root.Double32(i)
+	}
+	data.N = int32(i) % 10
+	data.SliBs = make([]bool, int(data.N))
+	data.SliI8 = make([]int8, int(data.N))
+	data.SliI16 = make([]int16, int(data.N))
+	data.SliI32 = make([]int32, int(data.N))
+	data.SliI64 = make([]int64, int(data.N))
+	data.SliU8 = make([]uint8, int(data.N))
+	data.SliU16 = make([]uint16, int(data.N))
+	data.SliU32 = make([]uint32, int(data.N))
+	data.SliU64 = make([]uint64, int(data.N))
+	data.SliF32 = make([]float32, int(data.N))
+	data.SliF64 = make([]float64, int(data.N))
+	data.SliD16 = make([]root.Float16, int(data.N))
+	data.SliD32 = make([]root.Double32, int(data.N))
+	for ii := 0; ii < int(data.N); ii++ {
+		data.SliBs[ii] = (ii + 1) == int(i)
+		data.SliI8[ii] = int8(-i)
+		data.SliI16[ii] = int16(-i)
+		data.SliI32[ii] = int32(-i)
+		data.SliI64[ii] = int64(-i)
+		data.SliU8[ii] = uint8(i)
+		data.SliU16[ii] = uint16(i)
+		data.SliU32[ii] = uint32(i)
+		data.SliU64[ii] = uint64(i)
+		data.SliF32[ii] = float32(i)
+		data.SliF64[ii] = float64(i)
+		data.SliD16[ii] = root.Float16(i)
+		data.SliD32[ii] = root.Double32(i)
+	}
+	return data
+}
 func TestTreeScannerStruct(t *testing.T) {
 	for _, fname := range []string{
-		"../testdata/small-flat-tree.root",
-		rtests.XrdRemote("testdata/small-flat-tree.root"),
+		"../testdata/x-flat-tree.root",
+		rtests.XrdRemote("testdata/x-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -60,39 +142,7 @@ func TestTreeScannerStruct(t *testing.T) {
 			}
 			tree := obj.(Tree)
 
-			want := func(i int64) (data ScannerData) {
-				data.I32 = int32(i)
-				data.I64 = int64(i)
-				data.U32 = uint32(i)
-				data.U64 = uint64(i)
-				data.F32 = float32(i)
-				data.F64 = float64(i)
-				data.Str = fmt.Sprintf("evt-%03d", i)
-				for ii := range data.ArrI32 {
-					data.ArrI32[ii] = int32(i)
-					data.ArrI64[ii] = int64(i)
-					data.ArrU32[ii] = uint32(i)
-					data.ArrU64[ii] = uint64(i)
-					data.ArrF32[ii] = float32(i)
-					data.ArrF64[ii] = float64(i)
-				}
-				data.N = int32(i) % 10
-				data.SliI32 = make([]int32, int(data.N))
-				data.SliI64 = make([]int64, int(data.N))
-				data.SliU32 = make([]uint32, int(data.N))
-				data.SliU64 = make([]uint64, int(data.N))
-				data.SliF32 = make([]float32, int(data.N))
-				data.SliF64 = make([]float64, int(data.N))
-				for ii := 0; ii < int(data.N); ii++ {
-					data.SliI32[ii] = int32(i)
-					data.SliI64[ii] = int64(i)
-					data.SliU32[ii] = uint32(i)
-					data.SliU64[ii] = uint64(i)
-					data.SliF32[ii] = float32(i)
-					data.SliF64[ii] = float64(i)
-				}
-				return data
-			}
+			want := ScannerData{}.want
 
 			sc, err := NewTreeScanner(tree, &ScannerData{})
 			if err != nil {
@@ -128,8 +178,8 @@ func TestTreeScannerStruct(t *testing.T) {
 
 func TestScannerStruct(t *testing.T) {
 	for _, fname := range []string{
-		"../testdata/small-flat-tree.root",
-		rtests.XrdRemote("testdata/small-flat-tree.root"),
+		"../testdata/x-flat-tree.root",
+		rtests.XrdRemote("testdata/x-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -146,41 +196,10 @@ func TestScannerStruct(t *testing.T) {
 			}
 			tree := obj.(Tree)
 
-			want := func(i int64) (data ScannerData) {
-				data.I32 = int32(i)
-				data.I64 = int64(i)
-				data.U32 = uint32(i)
-				data.U64 = uint64(i)
-				data.F32 = float32(i)
-				data.F64 = float64(i)
-				data.Str = fmt.Sprintf("evt-%03d", i)
-				for ii := range data.ArrI32 {
-					data.ArrI32[ii] = int32(i)
-					data.ArrI64[ii] = int64(i)
-					data.ArrU32[ii] = uint32(i)
-					data.ArrU64[ii] = uint64(i)
-					data.ArrF32[ii] = float32(i)
-					data.ArrF64[ii] = float64(i)
-				}
-				data.N = int32(i) % 10
-				data.SliI32 = make([]int32, int(data.N))
-				data.SliI64 = make([]int64, int(data.N))
-				data.SliU32 = make([]uint32, int(data.N))
-				data.SliU64 = make([]uint64, int(data.N))
-				data.SliF32 = make([]float32, int(data.N))
-				data.SliF64 = make([]float64, int(data.N))
-				for ii := 0; ii < int(data.N); ii++ {
-					data.SliI32[ii] = int32(i)
-					data.SliI64[ii] = int64(i)
-					data.SliU32[ii] = uint32(i)
-					data.SliU64[ii] = uint64(i)
-					data.SliF32[ii] = float32(i)
-					data.SliF64[ii] = float64(i)
-				}
-				return data
-			}
-
-			var data ScannerData
+			var (
+				want = ScannerData{}.want
+				data ScannerData
+			)
 			sc, err := NewScanner(tree, &data)
 			if err != nil {
 				t.Fatal(err)
@@ -215,8 +234,8 @@ func TestScannerStruct(t *testing.T) {
 
 func TestScannerVars(t *testing.T) {
 	for _, fname := range []string{
-		"../testdata/small-flat-tree.root",
-		rtests.XrdRemote("testdata/small-flat-tree.root"),
+		"../testdata/x-flat-tree.root",
+		rtests.XrdRemote("testdata/x-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -234,63 +253,12 @@ func TestScannerVars(t *testing.T) {
 
 			tree := obj.(Tree)
 
-			want := func(i int64) (data ScannerData) {
-				data.I32 = int32(i)
-				data.I64 = int64(i)
-				data.U32 = uint32(i)
-				data.U64 = uint64(i)
-				data.F32 = float32(i)
-				data.F64 = float64(i)
-				data.Str = fmt.Sprintf("evt-%03d", i)
-				for ii := range data.ArrI32 {
-					data.ArrI32[ii] = int32(i)
-					data.ArrI64[ii] = int64(i)
-					data.ArrU32[ii] = uint32(i)
-					data.ArrU64[ii] = uint64(i)
-					data.ArrF32[ii] = float32(i)
-					data.ArrF64[ii] = float64(i)
-				}
-				data.N = int32(i) % 10
-				data.SliI32 = make([]int32, int(data.N))
-				data.SliI64 = make([]int64, int(data.N))
-				data.SliU32 = make([]uint32, int(data.N))
-				data.SliU64 = make([]uint64, int(data.N))
-				data.SliF32 = make([]float32, int(data.N))
-				data.SliF64 = make([]float64, int(data.N))
-				for ii := 0; ii < int(data.N); ii++ {
-					data.SliI32[ii] = int32(i)
-					data.SliI64[ii] = int64(i)
-					data.SliU32[ii] = uint32(i)
-					data.SliU64[ii] = uint64(i)
-					data.SliF32[ii] = float32(i)
-					data.SliF64[ii] = float64(i)
-				}
-				return data
-			}
+			want := ScannerData{}.want
 
-			var data ScannerData
-			rvars := []ReadVar{
-				{Name: "Int32", Value: &data.I32},
-				{Name: "Int64", Value: &data.I64},
-				{Name: "UInt32", Value: &data.U32},
-				{Name: "UInt64", Value: &data.U64},
-				{Name: "Float32", Value: &data.F32},
-				{Name: "Float64", Value: &data.F64},
-				{Name: "Str", Value: &data.Str},
-				{Name: "ArrayInt32", Value: &data.ArrI32},
-				{Name: "ArrayInt64", Value: &data.ArrI64},
-				{Name: "ArrayUInt32", Value: &data.ArrU32},
-				{Name: "ArrayUInt64", Value: &data.ArrU64},
-				{Name: "ArrayFloat32", Value: &data.ArrF32},
-				{Name: "ArrayFloat64", Value: &data.ArrF64},
-				{Name: "N", Value: &data.N},
-				{Name: "SliceInt32", Value: &data.SliI32},
-				{Name: "SliceInt64", Value: &data.SliI64},
-				{Name: "SliceUInt32", Value: &data.SliU32},
-				{Name: "SliceUInt64", Value: &data.SliU64},
-				{Name: "SliceFloat32", Value: &data.SliF32},
-				{Name: "SliceFloat64", Value: &data.SliF64},
-			}
+			var (
+				data  ScannerData
+				rvars = ReadVarsFromStruct(&data)
+			)
 			sc, err := NewScannerVars(tree, rvars...)
 			if err != nil {
 				t.Fatal(err)
@@ -357,8 +325,8 @@ func TestTreeScannerVarsMultipleTimes(t *testing.T) {
 
 func TestTreeScannerVars(t *testing.T) {
 	for _, fname := range []string{
-		"../testdata/small-flat-tree.root",
-		rtests.XrdRemote("testdata/small-flat-tree.root"),
+		"../testdata/x-flat-tree.root",
+		rtests.XrdRemote("testdata/x-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -375,63 +343,8 @@ func TestTreeScannerVars(t *testing.T) {
 			}
 
 			tree := obj.(Tree)
-
-			want := func(i int64) (data ScannerData) {
-				data.I32 = int32(i)
-				data.I64 = int64(i)
-				data.U32 = uint32(i)
-				data.U64 = uint64(i)
-				data.F32 = float32(i)
-				data.F64 = float64(i)
-				data.Str = fmt.Sprintf("evt-%03d", i)
-				for ii := range data.ArrI32 {
-					data.ArrI32[ii] = int32(i)
-					data.ArrI64[ii] = int64(i)
-					data.ArrU32[ii] = uint32(i)
-					data.ArrU64[ii] = uint64(i)
-					data.ArrF32[ii] = float32(i)
-					data.ArrF64[ii] = float64(i)
-				}
-				data.N = int32(i) % 10
-				data.SliI32 = make([]int32, int(data.N))
-				data.SliI64 = make([]int64, int(data.N))
-				data.SliU32 = make([]uint32, int(data.N))
-				data.SliU64 = make([]uint64, int(data.N))
-				data.SliF32 = make([]float32, int(data.N))
-				data.SliF64 = make([]float64, int(data.N))
-				for ii := 0; ii < int(data.N); ii++ {
-					data.SliI32[ii] = int32(i)
-					data.SliI64[ii] = int64(i)
-					data.SliU32[ii] = uint32(i)
-					data.SliU64[ii] = uint64(i)
-					data.SliF32[ii] = float32(i)
-					data.SliF64[ii] = float64(i)
-				}
-				return data
-			}
-
-			rvars := []ReadVar{
-				{Name: "Int32"},
-				{Name: "Int64"},
-				{Name: "UInt32"},
-				{Name: "UInt64"},
-				{Name: "Float32"},
-				{Name: "Float64"},
-				{Name: "Str"},
-				{Name: "ArrayInt32"},
-				{Name: "ArrayInt64"},
-				{Name: "ArrayUInt32"},
-				{Name: "ArrayUInt64"},
-				{Name: "ArrayFloat32"},
-				{Name: "ArrayFloat64"},
-				{Name: "N"},
-				{Name: "SliceInt32"},
-				{Name: "SliceInt64"},
-				{Name: "SliceUInt32"},
-				{Name: "SliceUInt64"},
-				{Name: "SliceFloat32"},
-				{Name: "SliceFloat64"},
-			}
+			want := ScannerData{}.want
+			rvars := ReadVarsFromStruct(new(ScannerData))
 			sc, err := NewTreeScannerVars(tree, rvars...)
 			if err != nil {
 				t.Fatal(err)
@@ -440,11 +353,47 @@ func TestTreeScannerVars(t *testing.T) {
 			var d1 ScannerData
 			for sc.Next() {
 				err := sc.Scan(
-					&d1.I32, &d1.I64, &d1.U32, &d1.U64, &d1.F32, &d1.F64,
+					&d1.B,
 					&d1.Str,
-					&d1.ArrI32, &d1.ArrI64, &d1.ArrU32, &d1.ArrU64, &d1.ArrF32, &d1.ArrF64,
+					&d1.I8,
+					&d1.I16,
+					&d1.I32,
+					&d1.I64,
+					&d1.U8,
+					&d1.U16,
+					&d1.U32,
+					&d1.U64,
+					&d1.F32,
+					&d1.F64,
+					&d1.D16,
+					&d1.D32,
+					&d1.ArrBs,
+					&d1.ArrI8,
+					&d1.ArrI16,
+					&d1.ArrI32,
+					&d1.ArrI64,
+					&d1.ArrU8,
+					&d1.ArrU16,
+					&d1.ArrU32,
+					&d1.ArrU64,
+					&d1.ArrF32,
+					&d1.ArrF64,
+					&d1.ArrD16,
+					&d1.ArrD32,
 					&d1.N,
-					&d1.SliI32, &d1.SliI64, &d1.SliU32, &d1.SliU64, &d1.SliF32, &d1.SliF64,
+					&d1.SliBs,
+					&d1.SliI8,
+					&d1.SliI16,
+					&d1.SliI32,
+					&d1.SliI64,
+					&d1.SliU8,
+					&d1.SliU16,
+					&d1.SliU32,
+					&d1.SliU64,
+					&d1.SliF32,
+					&d1.SliF64,
+					&d1.SliD16,
+					&d1.SliD32,
 				)
 				if err != nil {
 					t.Fatal(err)
@@ -456,11 +405,47 @@ func TestTreeScannerVars(t *testing.T) {
 
 				var d2 ScannerData
 				err = sc.Scan(
-					&d2.I32, &d2.I64, &d2.U32, &d2.U64, &d2.F32, &d2.F64,
+					&d2.B,
 					&d2.Str,
-					&d2.ArrI32, &d2.ArrI64, &d2.ArrU32, &d2.ArrU64, &d2.ArrF32, &d2.ArrF64,
+					&d2.I8,
+					&d2.I16,
+					&d2.I32,
+					&d2.I64,
+					&d2.U8,
+					&d2.U16,
+					&d2.U32,
+					&d2.U64,
+					&d2.F32,
+					&d2.F64,
+					&d2.D16,
+					&d2.D32,
+					&d2.ArrBs,
+					&d2.ArrI8,
+					&d2.ArrI16,
+					&d2.ArrI32,
+					&d2.ArrI64,
+					&d2.ArrU8,
+					&d2.ArrU16,
+					&d2.ArrU32,
+					&d2.ArrU64,
+					&d2.ArrF32,
+					&d2.ArrF64,
+					&d2.ArrD16,
+					&d2.ArrD32,
 					&d2.N,
-					&d2.SliI32, &d2.SliI64, &d2.SliU32, &d2.SliU64, &d2.SliF32, &d2.SliF64,
+					&d2.SliBs,
+					&d2.SliI8,
+					&d2.SliI16,
+					&d2.SliI32,
+					&d2.SliI64,
+					&d2.SliU8,
+					&d2.SliU16,
+					&d2.SliU32,
+					&d2.SliU64,
+					&d2.SliF32,
+					&d2.SliF64,
+					&d2.SliD16,
+					&d2.SliD32,
 				)
 				if err != nil {
 					t.Fatal(err)
@@ -520,8 +505,8 @@ func TestScannerVarsMultipleTimes(t *testing.T) {
 
 func TestTreeScannerStructWithCounterLeaf(t *testing.T) {
 	for _, fname := range []string{
-		"../testdata/small-flat-tree.root",
-		rtests.XrdRemote("testdata/small-flat-tree.root"),
+		"../testdata/x-flat-tree.root",
+		rtests.XrdRemote("testdata/x-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -540,7 +525,7 @@ func TestTreeScannerStructWithCounterLeaf(t *testing.T) {
 			tree := obj.(Tree)
 
 			type Data struct {
-				Sli []int32 `groot:"SliceInt32"`
+				Sli []int32 `groot:"SliI32"`
 			}
 			var data Data
 
@@ -549,7 +534,7 @@ func TestTreeScannerStructWithCounterLeaf(t *testing.T) {
 				n := int32(i) % 10
 				data.Sli = make([]int32, int(n))
 				for ii := 0; ii < int(n); ii++ {
-					data.Sli[ii] = int32(i)
+					data.Sli[ii] = int32(-i)
 				}
 				return data
 			}
@@ -578,8 +563,8 @@ func TestTreeScannerStructWithCounterLeaf(t *testing.T) {
 
 func TestScannerStructWithCounterLeaf(t *testing.T) {
 	for _, fname := range []string{
-		"../testdata/small-flat-tree.root",
-		rtests.XrdRemote("testdata/small-flat-tree.root"),
+		"../testdata/x-flat-tree.root",
+		rtests.XrdRemote("testdata/x-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -598,7 +583,7 @@ func TestScannerStructWithCounterLeaf(t *testing.T) {
 			tree := obj.(Tree)
 
 			type Data struct {
-				Sli []int32 `groot:"SliceInt32"`
+				Sli []int32 `groot:"SliI32"`
 			}
 			var data Data
 
@@ -607,7 +592,7 @@ func TestScannerStructWithCounterLeaf(t *testing.T) {
 				n := int32(i) % 10
 				data.Sli = make([]int32, int(n))
 				for ii := 0; ii < int(n); ii++ {
-					data.Sli[ii] = int32(i)
+					data.Sli[ii] = int32(-i)
 				}
 				return data
 			}
@@ -636,8 +621,8 @@ func TestScannerStructWithCounterLeaf(t *testing.T) {
 
 func TestTreeScannerVarsWithCounterLeaf(t *testing.T) {
 	for _, fname := range []string{
-		"../testdata/small-flat-tree.root",
-		rtests.XrdRemote("testdata/small-flat-tree.root"),
+		"../testdata/x-flat-tree.root",
+		rtests.XrdRemote("testdata/x-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -659,12 +644,12 @@ func TestTreeScannerVarsWithCounterLeaf(t *testing.T) {
 				n := int32(i) % 10
 				data := make([]int32, int(n))
 				for ii := 0; ii < int(n); ii++ {
-					data[ii] = int32(i)
+					data[ii] = int32(-i)
 				}
 				return data
 			}
 
-			rvar := ReadVar{Name: "SliceInt32"}
+			rvar := ReadVar{Name: "SliI32"}
 			sc, err := NewTreeScannerVars(tree, rvar)
 			if err != nil {
 				t.Fatal(err)
@@ -690,8 +675,8 @@ func TestTreeScannerVarsWithCounterLeaf(t *testing.T) {
 
 func TestScannerVarsWithCounterLeaf(t *testing.T) {
 	for _, fname := range []string{
-		"../testdata/small-flat-tree.root",
-		rtests.XrdRemote("testdata/small-flat-tree.root"),
+		"../testdata/x-flat-tree.root",
+		rtests.XrdRemote("testdata/x-flat-tree.root"),
 	} {
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
@@ -713,13 +698,13 @@ func TestScannerVarsWithCounterLeaf(t *testing.T) {
 				n := int32(i) % 10
 				data := make([]int32, int(n))
 				for ii := 0; ii < int(n); ii++ {
-					data[ii] = int32(i)
+					data[ii] = int32(-i)
 				}
 				return data
 			}
 
 			var data []int32
-			rvar := ReadVar{Name: "SliceInt32", Value: &data}
+			rvar := ReadVar{Name: "SliI32", Value: &data}
 			sc, err := NewScannerVars(tree, rvar)
 			if err != nil {
 				t.Fatal(err)
@@ -831,7 +816,7 @@ func TestScannerStructWithStdVectorBool(t *testing.T) {
 }
 
 func BenchmarkTreeScannerStruct(b *testing.B) {
-	f, err := riofs.Open("../testdata/small-flat-tree.root")
+	f, err := riofs.Open("../testdata/x-flat-tree.root")
 	if err != nil {
 		b.Fatal(err.Error())
 	}
@@ -844,7 +829,7 @@ func BenchmarkTreeScannerStruct(b *testing.B) {
 	tree := obj.(Tree)
 
 	type Data struct {
-		F64 float64 `groot:"Float64"`
+		F64 float64 `groot:"F64"`
 	}
 
 	var data Data
@@ -869,7 +854,7 @@ func BenchmarkTreeScannerStruct(b *testing.B) {
 }
 
 func BenchmarkScannerStruct(b *testing.B) {
-	f, err := riofs.Open("../testdata/small-flat-tree.root")
+	f, err := riofs.Open("../testdata/x-flat-tree.root")
 	if err != nil {
 		b.Fatal(err.Error())
 	}
@@ -882,7 +867,7 @@ func BenchmarkScannerStruct(b *testing.B) {
 	tree := obj.(Tree)
 
 	type Data struct {
-		F64 float64 `groot:"Float64"`
+		F64 float64 `groot:"F64"`
 	}
 
 	var data Data
@@ -907,7 +892,7 @@ func BenchmarkScannerStruct(b *testing.B) {
 }
 
 func BenchmarkTreeScannerVars(b *testing.B) {
-	f, err := riofs.Open("../testdata/small-flat-tree.root")
+	f, err := riofs.Open("../testdata/x-flat-tree.root")
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -921,7 +906,7 @@ func BenchmarkTreeScannerVars(b *testing.B) {
 	tree := obj.(Tree)
 
 	rvars := []ReadVar{
-		{Name: "Float64"},
+		{Name: "F64"},
 	}
 	s, err := NewTreeScannerVars(tree, rvars...)
 	if err != nil {
@@ -947,7 +932,7 @@ func BenchmarkTreeScannerVars(b *testing.B) {
 }
 
 func BenchmarkScannerVars(b *testing.B) {
-	f, err := riofs.Open("../testdata/small-flat-tree.root")
+	f, err := riofs.Open("../testdata/x-flat-tree.root")
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -962,7 +947,7 @@ func BenchmarkScannerVars(b *testing.B) {
 
 	var f64 float64
 	rvars := []ReadVar{
-		{Name: "Float64", Value: &f64},
+		{Name: "F64", Value: &f64},
 	}
 	s, err := NewScannerVars(tree, rvars...)
 	if err != nil {
@@ -1277,7 +1262,7 @@ func TestNewScanVars(t *testing.T) {
 func TestInvalidScannerTypes(t *testing.T) {
 	t.Parallel()
 
-	fname := "../testdata/small-flat-tree.root"
+	fname := "../testdata/x-flat-tree.root"
 	f, err := riofs.Open(fname)
 	if err != nil {
 		t.Fatalf("could not open ROOT file %q: %v", fname, err)

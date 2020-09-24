@@ -42,6 +42,10 @@ func TestGenerate(t *testing.T) {
 			want: "testdata/small-evnt-tree.root.txt",
 		},
 		{
+			ctx:  newCtx("../../testdata/x-flat-tree.root", "tree"),
+			want: "testdata/x-flat-tree.root.txt",
+		},
+		{
 			ctx:  newCtx("../../testdata/leaves.root", "tree"),
 			want: "testdata/leaves.root.txt",
 		},
