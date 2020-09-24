@@ -7,9 +7,6 @@ package rtree
 import (
 	"fmt"
 	"reflect"
-	"strings"
-
-	"go-hep.org/x/hep/groot/root"
 )
 
 type baseScanner struct {
@@ -154,99 +151,26 @@ type TreeScanner struct {
 // NewTreeScanner creates a new Scanner connecting the pointer to some
 // user provided type to the given Tree.
 func NewTreeScanner(t Tree, ptr interface{}) (*TreeScanner, error) {
-	mbr := make([]Branch, 0, len(t.Branches()))
-	ibr := make([]scanField, 0, cap(mbr))
-	cbr := make([]Branch, 0)
-	cbrset := make(map[string]bool)
-	lset := make(map[Leaf]struct{})
-	clset := make(map[Leaf]struct{})
-
-	rt := reflect.TypeOf(ptr).Elem()
-	if rt.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("rtree: NewTreeScanner expects a pointer to a struct (got: %T)", ptr)
+	rvars := ReadVarsFromStruct(ptr)
+	sc, err := NewTreeScannerVars(t, rvars...)
+	if err != nil {
+		return nil, err
 	}
-	rv := reflect.ValueOf(ptr).Elem()
-	for i := 0; i < rt.NumField(); i++ {
-		f := rt.Field(i)
-		if f.Name != strings.Title(f.Name) {
-			return nil, fmt.Errorf("rtree: field[%d] %q from %T is not exported", i, f.Name, rv.Interface())
-		}
-		name := f.Tag.Get("groot")
-		if name == "" {
-			name = f.Name
-		}
-		if i := strings.Index(name, "["); i > 0 {
-			name = name[:i]
-		}
-		br := t.Branch(name)
-		if br == nil {
-			return nil, fmt.Errorf("rtree: Tree %q has no branch named %q", t.Name(), name)
-		}
-		leaf := br.Leaves()[0]
-		lset[leaf] = struct{}{}
-		lidx := -1
-		if lcnt := leaf.LeafCount(); lcnt != nil {
-			lbr := t.Leaf(lcnt.Name())
-			if lbr == nil {
-				return nil, fmt.Errorf("rtree: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
-			}
-			lidx = len(cbr)
-			bbr := lbr.Branch()
-			if !cbrset[bbr.Name()] {
-				cbr = append(cbr, bbr)
-				cbrset[bbr.Name()] = true
-				clset[lcnt] = struct{}{}
+	sc.ptr = reflect.ValueOf(ptr)
+	sc.typ = reflect.TypeOf(ptr).Elem()
+	for i := range sc.scan.ibr {
+		br := &sc.scan.ibr[i]
+		n := br.br.Name()
+	fields:
+		for j := 0; j < sc.typ.NumField(); j++ {
+			ft := sc.typ.Field(j)
+			if ft.Tag.Get("groot") == n || ft.Name == n {
+				br.i = j
+				break fields
 			}
 		}
-		ptr := rv.Field(i).Addr().Interface()
-		err := br.setAddress(ptr)
-		if err != nil {
-			return nil, err
-		}
-		mbr = append(mbr, br)
-		ibr = append(ibr, scanField{br: br, i: i, ptr: ptr, lcnt: lidx})
 	}
-
-	// setup addresses for leaf-count not explicitly requested by user
-	for leaf := range clset {
-		_, ok := lset[leaf]
-		if ok {
-			continue
-		}
-		err := leaf.setAddress(nil)
-		if err != nil {
-			return nil, fmt.Errorf("rtree: could not set leaf-count address for %q: %w", leaf.Name(), err)
-		}
-	}
-
-	// remove branches already loaded via leaf-count
-	for i, ib := range ibr {
-		if _, dup := cbrset[ib.br.Name()]; dup {
-			ibr[i].dup = true
-		}
-	}
-
-	base := baseScanner{
-		tree: t,
-		i:    0,
-		n:    t.Entries(),
-		cur:  -1,
-		tot:  t.Entries(),
-		err:  nil,
-		ibr:  ibr,
-		mbr:  mbr,
-		cbr:  cbr,
-	}
-	if ch, ok := t.(*chain); ok {
-		base.chain = ok
-		base.off = ch.off
-		base.tot = ch.tot
-	}
-	return &TreeScanner{
-		scan: base,
-		typ:  rt,
-		ptr:  rv.Addr(),
-	}, nil
+	return sc, nil
 }
 
 // ScanVar describes a variable to be read out of a tree.
@@ -281,7 +205,7 @@ func NewTreeScannerVars(t Tree, vars ...ReadVar) (*TreeScanner, error) {
 			return nil, fmt.Errorf("rtree: Tree %q has no branch named %q", t.Name(), sv.Name)
 		}
 		mbr[i] = br
-		ibr[i] = scanField{br: br, i: 0, lcnt: -1}
+		ibr[i] = scanField{br: br, i: 0, lcnt: -1, ptr: sv.Value}
 		leaf := br.Leaves()[0]
 		if sv.Leaf != "" {
 			leaf = br.Leaf(sv.Leaf)
@@ -597,99 +521,8 @@ func NewScannerVars(t Tree, vars ...ReadVar) (*Scanner, error) {
 // NewScanner creates a new Scanner bound to a (pointer to a) struct value.
 // Scanner will read the branches' data during Scan() and load them into the fields of the struct value.
 func NewScanner(t Tree, ptr interface{}) (*Scanner, error) {
-	mbr := make([]Branch, 0, len(t.Branches()))
-	ibr := make([]scanField, 0, cap(mbr))
-	cbr := make([]Branch, 0)
-	cbrset := make(map[string]bool)
-	lset := make(map[Leaf]struct{})
-	clset := make(map[Leaf]struct{})
-
-	args := make([]interface{}, 0, cap(mbr))
-	rt := reflect.TypeOf(ptr).Elem()
-	if rt.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("rtree: NewScanner expects a pointer to a struct (got: %T)", ptr)
-	}
-	rv := reflect.ValueOf(ptr).Elem()
-	for i := 0; i < rt.NumField(); i++ {
-		f := rt.Field(i)
-		if f.Name != strings.Title(f.Name) {
-			return nil, fmt.Errorf("rtree: field[%d] %q from %T is not exported", i, f.Name, rv.Interface())
-		}
-		name := f.Tag.Get("groot")
-		if name == "" {
-			name = f.Name
-		}
-		if i := strings.Index(name, "["); i > 0 {
-			name = name[:i]
-		}
-		br := t.Branch(name)
-		if br == nil {
-			return nil, fmt.Errorf("rtree: Tree %q has no branch named %q", t.Name(), name)
-		}
-		leaf := br.Leaves()[0]
-		lset[leaf] = struct{}{}
-		if lcnt := leaf.LeafCount(); lcnt != nil {
-			lbr := t.Leaf(lcnt.Name())
-			if lbr == nil {
-				return nil, fmt.Errorf("rtree: Tree %q has no (count) branch named %q", t.Name(), lcnt.Name())
-			}
-			bbr := lbr.Branch()
-			if !cbrset[bbr.Name()] {
-				cbr = append(cbr, bbr)
-				cbrset[bbr.Name()] = true
-				clset[lcnt] = struct{}{}
-			}
-		}
-		fptr := rv.Field(i).Addr().Interface()
-		err := br.setAddress(fptr)
-		if err != nil {
-			panic(err)
-		}
-		args = append(args, fptr)
-		mbr = append(mbr, br)
-		ibr = append(ibr, scanField{br: br, i: i, ptr: fptr, lcnt: -1})
-	}
-
-	// setup addresses for leaf-count not explicitly requested by user
-	for leaf := range clset {
-		_, ok := lset[leaf]
-		if ok {
-			continue
-		}
-		err := leaf.setAddress(nil)
-		if err != nil {
-			return nil, fmt.Errorf("rtree: could not set leaf-count address for %q: %w", leaf.Name(), err)
-		}
-	}
-
-	// remove branches already loaded via leaf-count
-	for i, ib := range ibr {
-		if _, dup := cbrset[ib.br.Name()]; dup {
-			ibr[i].dup = true
-		}
-	}
-
-	base := baseScanner{
-		tree: t,
-		i:    0,
-		n:    t.Entries(),
-		cur:  -1,
-		err:  nil,
-		ibr:  ibr,
-		mbr:  mbr,
-		cbr:  cbr,
-	}
-
-	if ch, ok := t.(*chain); ok {
-		base.chain = ok
-		base.off = ch.off
-		base.tot = ch.tot
-	}
-
-	return &Scanner{
-		scan: base,
-		args: args,
-	}, nil
+	rvars := ReadVarsFromStruct(ptr)
+	return NewScannerVars(t, rvars...)
 }
 
 // Close closes the Scanner, preventing further iteration.
@@ -750,70 +583,4 @@ func (s *Scanner) Scan() error {
 		}
 	}
 	return s.scan.err
-}
-
-func newValue(leaf Leaf) interface{} {
-	etype := leaf.Type()
-	unsigned := leaf.IsUnsigned()
-
-	switch etype.Kind() {
-	case reflect.Interface, reflect.Map, reflect.Chan:
-		panic(fmt.Errorf("rtree: type %T not supported", reflect.New(etype).Elem().Interface()))
-	case reflect.Int8:
-		if unsigned {
-			etype = reflect.TypeOf(uint8(0))
-		}
-	case reflect.Int16:
-		if unsigned {
-			etype = reflect.TypeOf(uint16(0))
-		}
-	case reflect.Int32:
-		if unsigned {
-			etype = reflect.TypeOf(uint32(0))
-		}
-	case reflect.Int64:
-		if unsigned {
-			etype = reflect.TypeOf(uint64(0))
-		}
-	case reflect.Float32:
-		if _, ok := leaf.(*LeafF16); ok {
-			etype = reflect.TypeOf(root.Float16(0))
-		}
-	case reflect.Float64:
-		if _, ok := leaf.(*LeafD32); ok {
-			etype = reflect.TypeOf(root.Double32(0))
-		}
-	}
-
-	switch {
-	case leaf.LeafCount() != nil:
-		etype = reflect.SliceOf(etype)
-	case leaf.Len() > 1:
-		switch leaf.Kind() {
-		case reflect.String:
-			switch dims := leaf.ArrayDim(); dims {
-			case 0, 1:
-				// interpret as a single string.
-			default:
-				// FIXME(sbinet): properly handle [N]string (but ROOT doesn't support that.)
-				// see: https://root-forum.cern.ch/t/char-t-in-a-branch/5591/2
-				// etype = reflect.ArrayOf(leaf.Len(), etype)
-				panic(fmt.Errorf("groot/rtree: invalid number of dimensions (%d)", dims))
-			}
-		default:
-			var shape []int
-			switch leaf.(type) {
-			case *LeafF16, *LeafD32:
-				// workaround for https://sft.its.cern.ch/jira/browse/ROOT-10149
-				shape = []int{leaf.Len()}
-			default:
-				shape = leafDims(leaf.Title())
-			}
-			for i := range shape {
-				etype = reflect.ArrayOf(shape[len(shape)-1-i], etype)
-			}
-
-		}
-	}
-	return reflect.New(etype).Interface()
 }

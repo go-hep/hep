@@ -9,6 +9,8 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+
+	"go-hep.org/x/hep/groot/root"
 )
 
 // ReadVar describes a variable to be read out of a tree.
@@ -229,4 +231,70 @@ func bindRVarsTo(t Tree, rvars []ReadVar) []ReadVar {
 		}
 	}
 	return ors
+}
+
+func newValue(leaf Leaf) interface{} {
+	etype := leaf.Type()
+	unsigned := leaf.IsUnsigned()
+
+	switch etype.Kind() {
+	case reflect.Interface, reflect.Map, reflect.Chan:
+		panic(fmt.Errorf("rtree: type %T not supported", reflect.New(etype).Elem().Interface()))
+	case reflect.Int8:
+		if unsigned {
+			etype = reflect.TypeOf(uint8(0))
+		}
+	case reflect.Int16:
+		if unsigned {
+			etype = reflect.TypeOf(uint16(0))
+		}
+	case reflect.Int32:
+		if unsigned {
+			etype = reflect.TypeOf(uint32(0))
+		}
+	case reflect.Int64:
+		if unsigned {
+			etype = reflect.TypeOf(uint64(0))
+		}
+	case reflect.Float32:
+		if _, ok := leaf.(*LeafF16); ok {
+			etype = reflect.TypeOf(root.Float16(0))
+		}
+	case reflect.Float64:
+		if _, ok := leaf.(*LeafD32); ok {
+			etype = reflect.TypeOf(root.Double32(0))
+		}
+	}
+
+	switch {
+	case leaf.LeafCount() != nil:
+		etype = reflect.SliceOf(etype)
+	case leaf.Len() > 1:
+		switch leaf.Kind() {
+		case reflect.String:
+			switch dims := leaf.ArrayDim(); dims {
+			case 0, 1:
+				// interpret as a single string.
+			default:
+				// FIXME(sbinet): properly handle [N]string (but ROOT doesn't support that.)
+				// see: https://root-forum.cern.ch/t/char-t-in-a-branch/5591/2
+				// etype = reflect.ArrayOf(leaf.Len(), etype)
+				panic(fmt.Errorf("groot/rtree: invalid number of dimensions (%d)", dims))
+			}
+		default:
+			var shape []int
+			switch leaf.(type) {
+			case *LeafF16, *LeafD32:
+				// workaround for https://sft.its.cern.ch/jira/browse/ROOT-10149
+				shape = []int{leaf.Len()}
+			default:
+				shape = leafDims(leaf.Title())
+			}
+			for i := range shape {
+				etype = reflect.ArrayOf(shape[len(shape)-1-i], etype)
+			}
+
+		}
+	}
+	return reflect.New(etype).Interface()
 }
