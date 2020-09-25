@@ -805,30 +805,20 @@ func (srv *Server) handlePlotTree(w http.ResponseWriter, r *http.Request) error 
 		min := +math.MaxFloat64
 		max := -math.MaxFloat64
 		vals := make([]float64, 0, int(tree.Entries()))
-		sc, err := rtree.NewTreeScannerVars(tree, rtree.ReadVar{Name: bname, Leaf: leaf.Name()})
+		r, err := rtree.NewReader(tree, []rtree.ReadVar{{
+			Name:  bname,
+			Leaf:  leaf.Name(),
+			Value: fv.ptr,
+		}})
 		if err != nil {
 			return fmt.Errorf(
-				"could not create scanner for branch %q in tree %q of file %q: %w",
+				"could not create reader for branch %q in tree %q of file %q: %w",
 				bname, tree.Name(), req.URI, err,
 			)
 		}
-		defer sc.Close()
+		defer r.Close()
 
-		err = sc.SeekEntry(0)
-		if err != nil {
-			return fmt.Errorf("could not seek to first entry for branch %q in tree %q of file %q: %w",
-				bname, tree.Name(), req.URI, err,
-			)
-		}
-
-		for sc.Next() {
-			err = sc.Scan(fv.ptr)
-			if err != nil {
-				return fmt.Errorf(
-					"could not scan entry %d of branch %q in tree %q of file %q: %w",
-					sc.Entry(), bname, tree.Name(), req.URI, err,
-				)
-			}
+		err = r.Read(func(ctx rtree.RCtx) error {
 			for _, v := range fv.vals() {
 				if !math.IsNaN(v) && !math.IsInf(v, 0) {
 					max = math.Max(max, v)
@@ -836,16 +826,15 @@ func (srv *Server) handlePlotTree(w http.ResponseWriter, r *http.Request) error 
 				}
 				vals = append(vals, v)
 			}
-		}
-
-		err = sc.Err()
+			return nil
+		})
 		if err != nil {
 			return fmt.Errorf("could not complete scan: %w", err)
 		}
 
-		err = sc.Close()
+		err = r.Close()
 		if err != nil {
-			return fmt.Errorf("could not close scanner: %w", err)
+			return fmt.Errorf("could not close reader: %w", err)
 		}
 
 		min = math.Nextafter(min, min-1)
