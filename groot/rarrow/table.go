@@ -76,12 +76,14 @@ func (tbl *rootTable) init() {
 	// FIXME(sbinet): infer clusters sizes
 	// FIXME(sbinet): lazily populate rootTable
 
-	vars := rtree.NewReadVars(tbl.tree)
-	sc, err := rtree.NewScannerVars(tbl.tree, vars...)
+	var (
+		rvars  = rtree.NewReadVars(tbl.tree)
+		r, err = rtree.NewReader(tbl.tree, rvars)
+	)
 	if err != nil {
-		panic(fmt.Errorf("could not create scanner from read-vars %#v: %w", vars, err))
+		panic(fmt.Errorf("could not create reader from read-vars %#v: %+v", rvars, err))
 	}
-	defer sc.Close()
+	defer r.Close()
 
 	arrs := make([]array.Interface, tbl.ncols)
 	blds := make([]array.Builder, tbl.ncols)
@@ -90,15 +92,14 @@ func (tbl *rootTable) init() {
 		defer blds[i].Release()
 	}
 
-	for sc.Next() {
-		err := sc.Scan()
-		if err != nil {
-			panic(fmt.Errorf("could not scan entry %d: %w", sc.Entry(), err))
-		}
-
+	err = r.Read(func(ctx rtree.RCtx) error {
 		for i, field := range tbl.schema.Fields() {
-			appendData(blds[i], vars[i], field.Type)
+			appendData(blds[i], rvars[i], field.Type)
 		}
+		return nil
+	})
+	if err != nil {
+		panic(fmt.Errorf("could not read tree: %+v", err))
 	}
 
 	for i, bldr := range blds {

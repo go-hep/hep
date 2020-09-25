@@ -62,12 +62,14 @@ func NewRecord(t rtree.Tree, opts ...Option) *Record {
 }
 
 func (rec *Record) load(beg, end int64) {
-	vars := rtree.NewReadVars(rec.tree)
-	sc, err := rtree.NewScannerVars(rec.tree, vars...)
+	var (
+		rvars  = rtree.NewReadVars(rec.tree)
+		r, err = rtree.NewReader(rec.tree, rvars, rtree.WithRange(beg, end))
+	)
 	if err != nil {
-		panic(fmt.Errorf("could not create scanner from read-vars %#v: %w", vars, err))
+		panic(fmt.Errorf("could not create reader from read-vars %#v: %+v", rvars, err))
 	}
-	defer sc.Close()
+	defer r.Close()
 
 	blds := make([]array.Builder, rec.ncols)
 	for i, field := range rec.schema.Fields() {
@@ -75,26 +77,14 @@ func (rec *Record) load(beg, end int64) {
 		defer blds[i].Release()
 	}
 
-	err = sc.SeekEntry(beg)
-	if err != nil {
-		panic(fmt.Errorf("could not seek to entry: %w", err))
-	}
-
-	n := beg
-	for sc.Next() {
-		err := sc.Scan()
-		if err != nil {
-			panic(fmt.Errorf("could not scan entry %d: %w", sc.Entry(), err))
-		}
-
+	err = r.Read(func(ctx rtree.RCtx) error {
 		for i, field := range rec.schema.Fields() {
-			appendData(blds[i], vars[i], field.Type)
+			appendData(blds[i], rvars[i], field.Type)
 		}
-
-		n++
-		if n >= end {
-			break
-		}
+		return nil
+	})
+	if err != nil {
+		panic(fmt.Errorf("could not read tree: %+v", err))
 	}
 
 	for i, bldr := range blds {
