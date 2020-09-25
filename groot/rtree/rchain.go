@@ -83,7 +83,7 @@ func (r *rchain) run(off, beg, end int64, f func(RCtx) error) error {
 			eoff = r.ch.offs[i]
 			tots = r.ch.tots[i]
 			ibeg = maxI64(beg-eoff, 0)
-			iend = minI64(end, tots-eoff)
+			iend = minI64(end-eoff, tots-eoff)
 			err  = r.runTree(i, eoff+off, ibeg, iend, f)
 		)
 		if err != nil {
@@ -103,7 +103,7 @@ func (r *rchain) findTrees(beg, end int64) (int, int) {
 
 	for i, t := range r.ch.trees {
 		n := t.Entries()
-		if ibeg < 0 && beg <= eoff {
+		if ibeg < 0 && eoff <= beg && beg < eoff+n {
 			ibeg = i
 		}
 		if iend < 0 && end <= eoff+n {
