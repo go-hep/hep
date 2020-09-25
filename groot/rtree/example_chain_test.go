@@ -56,22 +56,22 @@ func ExampleChain() {
 		} `groot:"evt"`
 	}
 
-	sc, err := rtree.NewTreeScanner(chain, &Data{})
+	var data Data
+	r, err := rtree.NewReader(chain, rtree.ReadVarsFromStruct(&data))
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer sc.Close()
+	defer r.Close()
 
-	for sc.Next() {
-		var data Data
-		err := sc.Scan(&data)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("entry[%02d]: beg=%q f64=%v\n", sc.Entry(), data.Event.Beg, data.Event.F64)
-	}
+	err = r.Read(func(ctx rtree.RCtx) error {
+		fmt.Printf(
+			"entry[%02d]: beg=%q f64=%v\n",
+			ctx.Entry, data.Event.Beg, data.Event.F64,
+		)
+		return nil
+	})
 
-	if err := sc.Err(); err != nil {
+	if err != nil {
 		log.Fatalf("error during scan: %v", err)
 	}
 
@@ -127,22 +127,22 @@ func ExampleChainOf() {
 		} `groot:"evt"`
 	}
 
-	sc, err := rtree.NewTreeScanner(chain, &Data{})
+	var data Data
+	r, err := rtree.NewReader(chain, rtree.ReadVarsFromStruct(&data))
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer sc.Close()
+	defer r.Close()
 
-	for sc.Next() {
-		var data Data
-		err := sc.Scan(&data)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("entry[%02d]: beg=%q f64=%v\n", sc.Entry(), data.Event.Beg, data.Event.F64)
-	}
+	err = r.Read(func(ctx rtree.RCtx) error {
+		fmt.Printf(
+			"entry[%02d]: beg=%q f64=%v\n",
+			ctx.Entry, data.Event.Beg, data.Event.F64,
+		)
+		return nil
+	})
 
-	if err := sc.Err(); err != nil {
+	if err != nil {
 		log.Fatalf("error during scan: %v", err)
 	}
 

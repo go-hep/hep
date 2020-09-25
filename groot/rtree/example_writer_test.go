@@ -7,7 +7,6 @@ package rtree_test
 import (
 	"compress/flate"
 	"fmt"
-	"io"
 	"log"
 
 	"go-hep.org/x/hep/groot"
@@ -95,26 +94,19 @@ func Example_createFlatNtuple() {
 
 		tree := obj.(rtree.Tree)
 
-		sc, err := rtree.NewTreeScanner(tree, &Data{})
+		var data Data
+		r, err := rtree.NewReader(tree, rtree.ReadVarsFromStruct(&data))
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer sc.Close()
+		defer r.Close()
 
-		for sc.Next() {
-			var data Data
-			err := sc.Scan(&data)
-			if err != nil {
-				log.Fatal(err)
-			}
+		err = r.Read(func(ctx rtree.RCtx) error {
+			fmt.Printf("entry[%d]: %+v\n", ctx.Entry, data)
+			return nil
+		})
 
-			fmt.Printf("entry[%d]: %+v\n", sc.Entry(), data)
-			if sc.Entry() == 9 {
-				break
-			}
-		}
-
-		if err := sc.Err(); err != nil && err != io.EOF {
+		if err != nil {
 			log.Fatal(err)
 		}
 	}()
@@ -217,26 +209,19 @@ func Example_createFlatNtupleWithLZMA() {
 
 		tree := obj.(rtree.Tree)
 
-		sc, err := rtree.NewTreeScanner(tree, &Data{})
+		var data Data
+		r, err := rtree.NewReader(tree, rtree.ReadVarsFromStruct(&data))
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer sc.Close()
+		defer r.Close()
 
-		for sc.Next() {
-			var data Data
-			err := sc.Scan(&data)
-			if err != nil {
-				log.Fatal(err)
-			}
+		err = r.Read(func(ctx rtree.RCtx) error {
+			fmt.Printf("entry[%d]: %+v\n", ctx.Entry, data)
+			return nil
+		})
 
-			fmt.Printf("entry[%d]: %+v\n", sc.Entry(), data)
-			if sc.Entry() == 9 {
-				break
-			}
-		}
-
-		if err := sc.Err(); err != nil && err != io.EOF {
+		if err != nil {
 			log.Fatal(err)
 		}
 	}()
@@ -331,26 +316,19 @@ func Example_createFlatNtupleFromStruct() {
 
 		tree := obj.(rtree.Tree)
 
-		sc, err := rtree.NewTreeScanner(tree, &Data{})
+		var data Data
+		r, err := rtree.NewReader(tree, rtree.ReadVarsFromStruct(&data))
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer sc.Close()
+		defer r.Close()
 
-		for sc.Next() {
-			var data Data
-			err := sc.Scan(&data)
-			if err != nil {
-				log.Fatal(err)
-			}
+		err = r.Read(func(ctx rtree.RCtx) error {
+			fmt.Printf("entry[%d]: %+v\n", ctx.Entry, data)
+			return nil
+		})
 
-			fmt.Printf("entry[%d]: %+v\n", sc.Entry(), data)
-			if sc.Entry() == 9 {
-				break
-			}
-		}
-
-		if err := sc.Err(); err != nil && err != io.EOF {
+		if err != nil {
 			log.Fatal(err)
 		}
 	}()

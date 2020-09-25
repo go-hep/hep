@@ -122,6 +122,7 @@ func (ScannerData) want(i int64) (data ScannerData) {
 	}
 	return data
 }
+
 func TestTreeScannerStruct(t *testing.T) {
 	for _, fname := range []string{
 		"../testdata/x-flat-tree.root",

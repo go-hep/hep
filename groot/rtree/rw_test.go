@@ -1571,33 +1571,33 @@ func TestTreeRW(t *testing.T) {
 					}
 				}
 
-				sc, err := NewScannerVars(tree, rvars...)
+				r, err := NewReader(tree, rvars)
 				if err != nil {
-					t.Fatalf("could not create scanner: %+v", err)
+					t.Fatalf("could not create reader: %+v", err)
 				}
-				defer sc.Close()
+				defer r.Close()
 
 				nn := 0
-				for sc.Next() {
-					err := sc.Scan()
-					if err != nil {
-						t.Fatalf("could not scan entry %d: %+v", sc.Entry(), err)
-					}
-					want := tc.want(nn)
+				err = r.Read(func(ctx RCtx) error {
+					i := int(ctx.Entry)
+					want := tc.want(i)
 					for i, rvar := range rvars {
 						var (
 							want = reflect.ValueOf(want).Field(i).Interface()
 							got  = reflect.ValueOf(rvar.Value).Elem().Interface()
 						)
 						if !reflect.DeepEqual(got, want) {
-							t.Errorf("entry[%d]: invalid scan-value[%s]: got=%v, want=%v", nn, tc.wvars[i].Name, got, want)
+							return fmt.Errorf(
+								"entry[%d]: invalid scan-value[%s]: got=%v, want=%v",
+								ctx.Entry, tc.wvars[i].Name, got, want,
+							)
 						}
 					}
 					nn++
-				}
-
-				if sc.Err() != nil {
-					t.Fatalf("could not scan tree: %+v", sc.Err())
+					return nil
+				})
+				if err != nil {
+					t.Fatalf("could not read tree: %+v", err)
 				}
 
 				if got, want := nn, int(tc.nevts); got != want {

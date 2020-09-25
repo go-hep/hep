@@ -6,7 +6,6 @@ package rtree
 
 import (
 	"fmt"
-	"io"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -68,33 +67,33 @@ type Vec3 struct {
 
 type EventData struct {
 	Beg    string      `groot:"Beg"`
-	I16    int16       `groot:"Int16"`
-	I32    int32       `groot:"Int32"`
-	I64    int64       `groot:"Int64"`
-	U16    uint16      `groot:"UInt16"`
-	U32    uint32      `groot:"UInt32"`
-	U64    uint64      `groot:"UInt64"`
-	F32    float32     `groot:"Float32"`
-	F64    float64     `groot:"Float64"`
+	I16    int16       `groot:"I16"`
+	I32    int32       `groot:"I32"`
+	I64    int64       `groot:"I64"`
+	U16    uint16      `groot:"U16"`
+	U32    uint32      `groot:"U32"`
+	U64    uint64      `groot:"U64"`
+	F32    float32     `groot:"F32"`
+	F64    float64     `groot:"F64"`
 	Str    string      `groot:"Str"`
 	Vec    Vec3        `groot:"P3"`
-	ArrI16 [10]int16   `groot:"ArrayI16"`
-	ArrI32 [10]int32   `groot:"ArrayI32"`
-	ArrI64 [10]int64   `groot:"ArrayI64"`
-	ArrU16 [10]uint16  `groot:"ArrayU16"`
-	ArrU32 [10]uint32  `groot:"ArrayU32"`
-	ArrU64 [10]uint64  `groot:"ArrayU64"`
-	ArrF32 [10]float32 `groot:"ArrayF32"`
-	ArrF64 [10]float64 `groot:"ArrayF64"`
+	ArrI16 [10]int16   `groot:"ArrayI16[10]"`
+	ArrI32 [10]int32   `groot:"ArrayI32[10]"`
+	ArrI64 [10]int64   `groot:"ArrayI64[10]"`
+	ArrU16 [10]uint16  `groot:"ArrayU16[10]"`
+	ArrU32 [10]uint32  `groot:"ArrayU32[10]"`
+	ArrU64 [10]uint64  `groot:"ArrayU64[10]"`
+	ArrF32 [10]float32 `groot:"ArrayF32[10]"`
+	ArrF64 [10]float64 `groot:"ArrayF64[10]"`
 	N      int32       `groot:"N"`
-	SliI16 []int16     `groot:"SliceI16"`
-	SliI32 []int32     `groot:"SliceI32"`
-	SliI64 []int64     `groot:"SliceI64"`
-	SliU16 []uint16    `groot:"SliceU16"`
-	SliU32 []uint32    `groot:"SliceU32"`
-	SliU64 []uint64    `groot:"SliceU64"`
-	SliF32 []float32   `groot:"SliceF32"`
-	SliF64 []float64   `groot:"SliceF64"`
+	SliI16 []int16     `groot:"SliceI16[N]"`
+	SliI32 []int32     `groot:"SliceI32[N]"`
+	SliI64 []int64     `groot:"SliceI64[N]"`
+	SliU16 []uint16    `groot:"SliceU16[N]"`
+	SliU32 []uint32    `groot:"SliceU32[N]"`
+	SliU64 []uint64    `groot:"SliceU64[N]"`
+	SliF32 []float32   `groot:"SliceF32[N]"`
+	SliF64 []float64   `groot:"SliceF64[N]"`
 	StdStr string      `groot:"StdStr"`
 	VecI16 []int16     `groot:"StlVecI16"`
 	VecI32 []int32     `groot:"StlVecI32"`
@@ -276,40 +275,26 @@ func testEventTree(t *testing.T, name, fname string) {
 	}
 
 	want := EventType{}.want
-	sc, err := NewTreeScanner(tree, newEventType())
+	data := newEventType()
+	r, err := NewReader(tree, ReadVarsFromStruct(data))
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer sc.Close()
-	var (
-		d1   EventType
-		ievt = 0
-	)
-	for sc.Next() {
-		err := sc.Scan(&d1)
-		if err != nil {
-			t.Errorf("%s: %v", name, err)
-			return
-		}
-		i := sc.Entry()
-		if !reflect.DeepEqual(d1, want(i)) {
-			t.Errorf("%s: entry[%d]:\ngot= %#v.\nwant=%#v\n", name, i, d1, want(i))
-			return
-		}
+	defer r.Close()
 
-		var d2 EventType
-		err = sc.Scan(&d2)
-		if err != nil {
-			t.Errorf("%s: %v", name, err)
-			return
-		}
-		if !reflect.DeepEqual(d2, want(i)) {
-			t.Errorf("%s: entry[%d]:\ngot= %#v.\nwant=%#v\n", name, i, d2, want(i))
-			return
+	ievt := 0
+	err = r.Read(func(ctx RCtx) error {
+		i := ctx.Entry
+		if !reflect.DeepEqual(*data, want(i)) {
+			return fmt.Errorf(
+				"%s: entry[%d]:\ngot= %#v\nwant=%#v\n",
+				name, i, *data, want(i),
+			)
 		}
 		ievt++
-	}
-	if err := sc.Err(); err != nil && err != io.EOF {
+		return nil
+	})
+	if err != nil {
 		t.Errorf("%s: %v", name, err)
 		return
 	}
@@ -1603,25 +1588,24 @@ func TestUprootTrees(t *testing.T) {
 			}
 			tree := obj.(Tree)
 
-			s, err := NewScanner(tree, &d)
+			r, err := NewReader(tree, ReadVarsFromStruct(&d))
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer s.Close()
+			defer r.Close()
 
-			for s.Next() {
-				err = s.Scan()
-				if err != nil {
-					t.Fatalf("error scanning entry %d: %v", s.Entry(), err)
-				}
-				i := int(s.Entry())
+			err = r.Read(func(ctx RCtx) error {
+				i := int(ctx.Entry)
 				if !reflect.DeepEqual(d, want[i]) {
-					t.Fatalf("entry %d differ.\ngot= %#v\nwant=%#v\n", s.Entry(), d, want[i])
+					return fmt.Errorf(
+						"entry %d differ.\ngot= %#v\nwant=%#v\n",
+						ctx.Entry, d, want[i],
+					)
 				}
-			}
-			err = s.Err()
+				return nil
+			})
 			if err != nil {
-				t.Fatal(err)
+				t.Fatalf("error: %+v", err)
 			}
 		})
 	}
