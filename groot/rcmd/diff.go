@@ -257,24 +257,26 @@ type treeEntry struct {
 }
 
 func (cmd *diffCmd) treeDump(quit chan struct{}, out chan treeEntry, t rtree.Tree, vars []rtree.ReadVar) {
-	sc, err := rtree.NewScannerVars(t, vars...)
+	r, err := rtree.NewReader(t, vars)
 	if err != nil {
 		out <- treeEntry{err: err}
 		return
 	}
-	defer sc.Close()
+	defer r.Close()
 
 	defer close(out)
 
 	next := make(chan int)
-	for sc.Next() {
-		err = sc.Scan()
+	err = r.Read(func(ctx rtree.RCtx) error {
 		select {
 		case <-quit:
-			return
-		case out <- treeEntry{err: err, n: sc.Entry(), ok: next}:
+			return io.EOF
+		case out <- treeEntry{err: nil, n: ctx.Entry, ok: next}:
 			<-next
-			continue
+			return nil
 		}
+	})
+	if err != nil {
+		out <- treeEntry{err: err}
 	}
 }
