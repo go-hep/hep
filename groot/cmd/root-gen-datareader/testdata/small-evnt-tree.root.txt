@@ -61,7 +61,7 @@ type Data struct {
 }
 
 type DataReader struct {
-	Data    Data
-	Tree    rtree.Tree
-	Scanner *rtree.Scanner
+	Data   Data
+	Tree   rtree.Tree
+	Reader *rtree.Reader
 }

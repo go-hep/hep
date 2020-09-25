@@ -279,9 +279,9 @@ type Data struct {
 {{if .GenDataReader}}
 {{with .DataReader}}
 type DataReader struct {
-	Data    Data
-	Tree    rtree.Tree
-	Scanner *rtree.Scanner
+	Data   Data
+	Tree   rtree.Tree
+	Reader *rtree.Reader
 }
 {{end}}
 {{end}}
