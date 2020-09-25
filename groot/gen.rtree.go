@@ -309,16 +309,6 @@ func (leaf *{{.Name}}) Value(i int) interface{} {
 	}
 }
 
-// value returns the leaf value.
-func (leaf *{{.Name}}) value() interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return *leaf.sli
-	}
-}
-
 {{- if .Count}}
 // ivalue returns the first leaf value as int
 func (leaf *{{.Name}}) ivalue() int {
@@ -418,49 +408,6 @@ func (leaf *{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
 {{- end}}
             }
     }
-    return r.Err()
-}
-
-func (leaf *{{.Name}}) scan(r *rbytes.RBuffer, ptr interface{}) error {
-    if r.Err() != nil {
-            return r.Err()
-    }
-
-    if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-            return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
-    }
-
-    switch v := ptr.(type) {
-    case *{{.Type}}:
-            *v = *leaf.ptr
-    case *[]{{.Type}}:
-            if len(*v) < len(*leaf.sli) || *v == nil {
-                    *v = make([]{{.Type}}, len(*leaf.sli))
-            }
-            copy(*v, *leaf.sli)
-            *v = (*v)[:leaf.count.ivalue()]
-    case []{{.Type}}:
-            copy(v, *leaf.sli)
-{{- if .DoUnsigned}}
-    case *u{{.Type}}:
-            *v = u{{.Type}}(*leaf.ptr)
-    case *[]u{{.Type}}:
-            if len(*v) < len(*leaf.sli) || *v == nil {
-                    *v = make([]u{{.Type}}, len(*leaf.sli))
-            }
-            for i, u := range (*leaf.sli) {
-                    (*v)[i] = u{{.Type}}(u)
-            }
-            *v = (*v)[:leaf.count.ivalue()]
-    case []u{{.Type}}:
-            for i := range v {
-                    v[i] = u{{.Type}}((*leaf.sli)[i])
-            }
-{{- end}}
-    default:
-            panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
-    }
-
     return r.Err()
 }
 

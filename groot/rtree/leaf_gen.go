@@ -79,16 +79,6 @@ func (leaf *LeafO) Value(i int) interface{} {
 	}
 }
 
-// value returns the leaf value.
-func (leaf *LeafO) value() interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return *leaf.sli
-	}
-}
-
 func (leaf *LeafO) TypeName() string {
 	return "bool"
 }
@@ -145,33 +135,6 @@ func (leaf *LeafO) readFromBuffer(r *rbytes.RBuffer) error {
 			r.ReadArrayBool(*leaf.sli)
 		}
 	}
-	return r.Err()
-}
-
-func (leaf *LeafO) scan(r *rbytes.RBuffer, ptr interface{}) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
-
-	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
-	}
-
-	switch v := ptr.(type) {
-	case *bool:
-		*v = *leaf.ptr
-	case *[]bool:
-		if len(*v) < len(*leaf.sli) || *v == nil {
-			*v = make([]bool, len(*leaf.sli))
-		}
-		copy(*v, *leaf.sli)
-		*v = (*v)[:leaf.count.ivalue()]
-	case []bool:
-		copy(v, *leaf.sli)
-	default:
-		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
-	}
-
 	return r.Err()
 }
 
@@ -320,16 +283,6 @@ func (leaf *LeafB) Value(i int) interface{} {
 	}
 }
 
-// value returns the leaf value.
-func (leaf *LeafB) value() interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return *leaf.sli
-	}
-}
-
 // ivalue returns the first leaf value as int
 func (leaf *LeafB) ivalue() int {
 	return int(*leaf.ptr)
@@ -399,47 +352,6 @@ func (leaf *LeafB) readFromBuffer(r *rbytes.RBuffer) error {
 			r.ReadArrayI8(*leaf.sli)
 		}
 	}
-	return r.Err()
-}
-
-func (leaf *LeafB) scan(r *rbytes.RBuffer, ptr interface{}) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
-
-	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
-	}
-
-	switch v := ptr.(type) {
-	case *int8:
-		*v = *leaf.ptr
-	case *[]int8:
-		if len(*v) < len(*leaf.sli) || *v == nil {
-			*v = make([]int8, len(*leaf.sli))
-		}
-		copy(*v, *leaf.sli)
-		*v = (*v)[:leaf.count.ivalue()]
-	case []int8:
-		copy(v, *leaf.sli)
-	case *uint8:
-		*v = uint8(*leaf.ptr)
-	case *[]uint8:
-		if len(*v) < len(*leaf.sli) || *v == nil {
-			*v = make([]uint8, len(*leaf.sli))
-		}
-		for i, u := range *leaf.sli {
-			(*v)[i] = uint8(u)
-		}
-		*v = (*v)[:leaf.count.ivalue()]
-	case []uint8:
-		for i := range v {
-			v[i] = uint8((*leaf.sli)[i])
-		}
-	default:
-		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
-	}
-
 	return r.Err()
 }
 
@@ -600,16 +512,6 @@ func (leaf *LeafS) Value(i int) interface{} {
 	}
 }
 
-// value returns the leaf value.
-func (leaf *LeafS) value() interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return *leaf.sli
-	}
-}
-
 // ivalue returns the first leaf value as int
 func (leaf *LeafS) ivalue() int {
 	return int(*leaf.ptr)
@@ -679,47 +581,6 @@ func (leaf *LeafS) readFromBuffer(r *rbytes.RBuffer) error {
 			r.ReadArrayI16(*leaf.sli)
 		}
 	}
-	return r.Err()
-}
-
-func (leaf *LeafS) scan(r *rbytes.RBuffer, ptr interface{}) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
-
-	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
-	}
-
-	switch v := ptr.(type) {
-	case *int16:
-		*v = *leaf.ptr
-	case *[]int16:
-		if len(*v) < len(*leaf.sli) || *v == nil {
-			*v = make([]int16, len(*leaf.sli))
-		}
-		copy(*v, *leaf.sli)
-		*v = (*v)[:leaf.count.ivalue()]
-	case []int16:
-		copy(v, *leaf.sli)
-	case *uint16:
-		*v = uint16(*leaf.ptr)
-	case *[]uint16:
-		if len(*v) < len(*leaf.sli) || *v == nil {
-			*v = make([]uint16, len(*leaf.sli))
-		}
-		for i, u := range *leaf.sli {
-			(*v)[i] = uint16(u)
-		}
-		*v = (*v)[:leaf.count.ivalue()]
-	case []uint16:
-		for i := range v {
-			v[i] = uint16((*leaf.sli)[i])
-		}
-	default:
-		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
-	}
-
 	return r.Err()
 }
 
@@ -880,16 +741,6 @@ func (leaf *LeafI) Value(i int) interface{} {
 	}
 }
 
-// value returns the leaf value.
-func (leaf *LeafI) value() interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return *leaf.sli
-	}
-}
-
 // ivalue returns the first leaf value as int
 func (leaf *LeafI) ivalue() int {
 	return int(*leaf.ptr)
@@ -959,47 +810,6 @@ func (leaf *LeafI) readFromBuffer(r *rbytes.RBuffer) error {
 			r.ReadArrayI32(*leaf.sli)
 		}
 	}
-	return r.Err()
-}
-
-func (leaf *LeafI) scan(r *rbytes.RBuffer, ptr interface{}) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
-
-	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
-	}
-
-	switch v := ptr.(type) {
-	case *int32:
-		*v = *leaf.ptr
-	case *[]int32:
-		if len(*v) < len(*leaf.sli) || *v == nil {
-			*v = make([]int32, len(*leaf.sli))
-		}
-		copy(*v, *leaf.sli)
-		*v = (*v)[:leaf.count.ivalue()]
-	case []int32:
-		copy(v, *leaf.sli)
-	case *uint32:
-		*v = uint32(*leaf.ptr)
-	case *[]uint32:
-		if len(*v) < len(*leaf.sli) || *v == nil {
-			*v = make([]uint32, len(*leaf.sli))
-		}
-		for i, u := range *leaf.sli {
-			(*v)[i] = uint32(u)
-		}
-		*v = (*v)[:leaf.count.ivalue()]
-	case []uint32:
-		for i := range v {
-			v[i] = uint32((*leaf.sli)[i])
-		}
-	default:
-		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
-	}
-
 	return r.Err()
 }
 
@@ -1160,16 +970,6 @@ func (leaf *LeafL) Value(i int) interface{} {
 	}
 }
 
-// value returns the leaf value.
-func (leaf *LeafL) value() interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return *leaf.sli
-	}
-}
-
 // ivalue returns the first leaf value as int
 func (leaf *LeafL) ivalue() int {
 	return int(*leaf.ptr)
@@ -1239,47 +1039,6 @@ func (leaf *LeafL) readFromBuffer(r *rbytes.RBuffer) error {
 			r.ReadArrayI64(*leaf.sli)
 		}
 	}
-	return r.Err()
-}
-
-func (leaf *LeafL) scan(r *rbytes.RBuffer, ptr interface{}) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
-
-	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
-	}
-
-	switch v := ptr.(type) {
-	case *int64:
-		*v = *leaf.ptr
-	case *[]int64:
-		if len(*v) < len(*leaf.sli) || *v == nil {
-			*v = make([]int64, len(*leaf.sli))
-		}
-		copy(*v, *leaf.sli)
-		*v = (*v)[:leaf.count.ivalue()]
-	case []int64:
-		copy(v, *leaf.sli)
-	case *uint64:
-		*v = uint64(*leaf.ptr)
-	case *[]uint64:
-		if len(*v) < len(*leaf.sli) || *v == nil {
-			*v = make([]uint64, len(*leaf.sli))
-		}
-		for i, u := range *leaf.sli {
-			(*v)[i] = uint64(u)
-		}
-		*v = (*v)[:leaf.count.ivalue()]
-	case []uint64:
-		for i := range v {
-			v[i] = uint64((*leaf.sli)[i])
-		}
-	default:
-		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
-	}
-
 	return r.Err()
 }
 
@@ -1436,16 +1195,6 @@ func (leaf *LeafF) Value(i int) interface{} {
 	}
 }
 
-// value returns the leaf value.
-func (leaf *LeafF) value() interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return *leaf.sli
-	}
-}
-
 func (leaf *LeafF) TypeName() string {
 	return "float32"
 }
@@ -1502,33 +1251,6 @@ func (leaf *LeafF) readFromBuffer(r *rbytes.RBuffer) error {
 			r.ReadArrayF32(*leaf.sli)
 		}
 	}
-	return r.Err()
-}
-
-func (leaf *LeafF) scan(r *rbytes.RBuffer, ptr interface{}) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
-
-	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
-	}
-
-	switch v := ptr.(type) {
-	case *float32:
-		*v = *leaf.ptr
-	case *[]float32:
-		if len(*v) < len(*leaf.sli) || *v == nil {
-			*v = make([]float32, len(*leaf.sli))
-		}
-		copy(*v, *leaf.sli)
-		*v = (*v)[:leaf.count.ivalue()]
-	case []float32:
-		copy(v, *leaf.sli)
-	default:
-		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
-	}
-
 	return r.Err()
 }
 
@@ -1676,16 +1398,6 @@ func (leaf *LeafD) Value(i int) interface{} {
 	}
 }
 
-// value returns the leaf value.
-func (leaf *LeafD) value() interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return *leaf.sli
-	}
-}
-
 func (leaf *LeafD) TypeName() string {
 	return "float64"
 }
@@ -1742,33 +1454,6 @@ func (leaf *LeafD) readFromBuffer(r *rbytes.RBuffer) error {
 			r.ReadArrayF64(*leaf.sli)
 		}
 	}
-	return r.Err()
-}
-
-func (leaf *LeafD) scan(r *rbytes.RBuffer, ptr interface{}) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
-
-	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
-	}
-
-	switch v := ptr.(type) {
-	case *float64:
-		*v = *leaf.ptr
-	case *[]float64:
-		if len(*v) < len(*leaf.sli) || *v == nil {
-			*v = make([]float64, len(*leaf.sli))
-		}
-		copy(*v, *leaf.sli)
-		*v = (*v)[:leaf.count.ivalue()]
-	case []float64:
-		copy(v, *leaf.sli)
-	default:
-		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
-	}
-
 	return r.Err()
 }
 
@@ -1918,16 +1603,6 @@ func (leaf *LeafF16) Value(i int) interface{} {
 	}
 }
 
-// value returns the leaf value.
-func (leaf *LeafF16) value() interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return *leaf.sli
-	}
-}
-
 func (leaf *LeafF16) TypeName() string {
 	return "root.Float16"
 }
@@ -1993,33 +1668,6 @@ func (leaf *LeafF16) readFromBuffer(r *rbytes.RBuffer) error {
 			r.ReadArrayF16(*leaf.sli, leaf.elm)
 		}
 	}
-	return r.Err()
-}
-
-func (leaf *LeafF16) scan(r *rbytes.RBuffer, ptr interface{}) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
-
-	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
-	}
-
-	switch v := ptr.(type) {
-	case *root.Float16:
-		*v = *leaf.ptr
-	case *[]root.Float16:
-		if len(*v) < len(*leaf.sli) || *v == nil {
-			*v = make([]root.Float16, len(*leaf.sli))
-		}
-		copy(*v, *leaf.sli)
-		*v = (*v)[:leaf.count.ivalue()]
-	case []root.Float16:
-		copy(v, *leaf.sli)
-	default:
-		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
-	}
-
 	return r.Err()
 }
 
@@ -2169,16 +1817,6 @@ func (leaf *LeafD32) Value(i int) interface{} {
 	}
 }
 
-// value returns the leaf value.
-func (leaf *LeafD32) value() interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return *leaf.sli
-	}
-}
-
 func (leaf *LeafD32) TypeName() string {
 	return "root.Double32"
 }
@@ -2244,33 +1882,6 @@ func (leaf *LeafD32) readFromBuffer(r *rbytes.RBuffer) error {
 			r.ReadArrayD32(*leaf.sli, leaf.elm)
 		}
 	}
-	return r.Err()
-}
-
-func (leaf *LeafD32) scan(r *rbytes.RBuffer, ptr interface{}) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
-
-	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
-	}
-
-	switch v := ptr.(type) {
-	case *root.Double32:
-		*v = *leaf.ptr
-	case *[]root.Double32:
-		if len(*v) < len(*leaf.sli) || *v == nil {
-			*v = make([]root.Double32, len(*leaf.sli))
-		}
-		copy(*v, *leaf.sli)
-		*v = (*v)[:leaf.count.ivalue()]
-	case []root.Double32:
-		copy(v, *leaf.sli)
-	default:
-		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
-	}
-
 	return r.Err()
 }
 
@@ -2418,16 +2029,6 @@ func (leaf *LeafC) Value(i int) interface{} {
 	}
 }
 
-// value returns the leaf value.
-func (leaf *LeafC) value() interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return *leaf.sli
-	}
-}
-
 func (leaf *LeafC) TypeName() string {
 	return "string"
 }
@@ -2484,33 +2085,6 @@ func (leaf *LeafC) readFromBuffer(r *rbytes.RBuffer) error {
 			r.ReadArrayString(*leaf.sli)
 		}
 	}
-	return r.Err()
-}
-
-func (leaf *LeafC) scan(r *rbytes.RBuffer, ptr interface{}) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
-
-	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
-		return leaf.scan(r, rv.Slice(0, rv.Len()).Interface())
-	}
-
-	switch v := ptr.(type) {
-	case *string:
-		*v = *leaf.ptr
-	case *[]string:
-		if len(*v) < len(*leaf.sli) || *v == nil {
-			*v = make([]string, len(*leaf.sli))
-		}
-		copy(*v, *leaf.sli)
-		*v = (*v)[:leaf.count.ivalue()]
-	case []string:
-		copy(v, *leaf.sli)
-	default:
-		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
-	}
-
 	return r.Err()
 }
 

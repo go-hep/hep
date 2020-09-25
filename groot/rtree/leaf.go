@@ -141,15 +141,7 @@ func (leaf *tleaf) Value(i int) interface{} {
 	panic("not implemented: " + leaf.Name())
 }
 
-func (leaf *tleaf) value() interface{} {
-	panic("not implemented: " + leaf.Name())
-}
-
 func (leaf *tleaf) readFromBuffer(r *rbytes.RBuffer) error {
-	panic("not implemented: " + leaf.Name())
-}
-
-func (leaf *tleaf) scan(r *rbytes.RBuffer, ptr interface{}) error {
 	panic("not implemented: " + leaf.Name())
 }
 
@@ -333,33 +325,6 @@ func (leaf *tleafElement) readFromBuffer(r *rbytes.RBuffer) error {
 	}
 
 	return nil
-}
-
-func (leaf *tleafElement) scan(r *rbytes.RBuffer, ptr interface{}) error {
-	if r.Err() != nil {
-		return r.Err()
-	}
-
-	rv := reflect.Indirect(reflect.ValueOf(ptr))
-	switch rv.Kind() {
-	case reflect.Struct:
-		for i := 0; i < rv.Type().NumField(); i++ {
-			f := rv.Field(i)
-			ft := rv.Type().Field(i)
-			f.Set(leaf.src.FieldByName(ft.Name))
-		}
-	case reflect.Array:
-		reflect.Copy(rv, leaf.src)
-	case reflect.Slice:
-		if rv.UnsafeAddr() != leaf.src.UnsafeAddr() {
-			sli := leaf.src
-			rv.Set(reflect.MakeSlice(sli.Type(), sli.Len(), sli.Cap()))
-			reflect.Copy(rv, sli)
-		}
-	default:
-		rv.Set(leaf.src)
-	}
-	return r.Err()
 }
 
 func (leaf *tleafElement) setAddress(ptr interface{}) error {

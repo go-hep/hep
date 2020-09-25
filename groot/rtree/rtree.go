@@ -42,8 +42,6 @@ type Branch interface {
 	loadEntry(i int64) error
 	getReadEntry() int64
 	getEntry(i int64)
-	scan(ptr interface{}) error
-	setAddress(ptr interface{}) error
 	setStreamer(s rbytes.StreamerInfo, ctx rbytes.StreamerInfoContext)
 	setStreamerElement(s rbytes.StreamerElement, ctx rbytes.StreamerInfoContext)
 	GoType() reflect.Type
@@ -75,8 +73,6 @@ type Leaf interface {
 
 	setBranch(Branch)
 	readFromBuffer(r *rbytes.RBuffer) error
-	value() interface{}
-	scan(r *rbytes.RBuffer, ptr interface{}) error
 	setAddress(ptr interface{}) error
 
 	// write interface part

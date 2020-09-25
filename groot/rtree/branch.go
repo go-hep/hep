@@ -699,74 +699,6 @@ func (b *tbranch) setupBasket(ctx *basketCtx, entry int64) error {
 	return nil
 }
 
-func (b *tbranch) scan(ptr interface{}) error {
-	if b.ctx.bk == nil {
-		if len(b.basketBytes) == 0 {
-			return nil
-		}
-		return fmt.Errorf("rtree: no basket data in branch %q", b.Name())
-	}
-	switch len(b.leaves) {
-	case 1:
-		leaf := b.leaves[0]
-		err := leaf.scan(b.ctx.bk.rbuf, ptr)
-		if err != nil {
-			return err
-		}
-	default:
-		rv := reflect.ValueOf(ptr).Elem()
-		rt := rv.Type()
-		for i := 0; i < rt.NumField(); i++ {
-			var (
-				leaf = b.leaves[i]
-				fv   = rv.Field(i)
-				ptr  = fv.Addr().Interface()
-			)
-			err := leaf.scan(b.ctx.bk.rbuf, ptr)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return b.ctx.bk.rbuf.Err()
-}
-
-func (b *tbranch) setAddress(ptr interface{}) error {
-	switch len(b.leaves) {
-	case 0:
-		return fmt.Errorf("rtree: can not set address for a leaf-less branch (name=%q)", b.Name())
-
-	case 1:
-		err := b.leaves[0].setAddress(ptr)
-		if err != nil {
-			return fmt.Errorf("rtree: could not set address for leaf[%d][%s]: %w", 0, b.leaves[0].Name(), err)
-		}
-
-	default:
-		rv := reflect.Indirect(reflect.ValueOf(ptr))
-		rt := rv.Type()
-		switch kind := rv.Kind(); kind {
-		case reflect.Struct:
-			if len(b.leaves) != rt.NumField() {
-				// FIXME(sbinet): be more lenient and clever about this?
-				return fmt.Errorf("rtree: fields/leaves number mismatch (name=%q, fields=%d, leaves=%d)", b.Name(), rt.NumField(), len(b.leaves))
-			}
-			for i, leaf := range b.leaves {
-				fv := rv.Field(i)
-				err := leaf.setAddress(fv.Addr().Interface())
-				if err != nil {
-					return fmt.Errorf("rtree: could not set address for leaf[%d][%s]: %w", i, leaf.Name(), err)
-				}
-			}
-		default:
-			// TODO(sbinet): also support map[string]*T ?
-			// TODO(sbinet): also support []*T ?
-			return fmt.Errorf("rtree: multi-leaf branches need a pointer-to-struct (got=%T)", ptr)
-		}
-	}
-	return nil
-}
-
 func (b *tbranch) setStreamer(s rbytes.StreamerInfo, ctx rbytes.StreamerInfoContext) {
 	// no op
 }
@@ -868,7 +800,6 @@ type tbranchElement struct {
 
 	streamer  rbytes.StreamerInfo
 	estreamer rbytes.StreamerElement
-	scanfct   func(b *tbranchElement, ptr interface{}) error
 }
 
 func newBranchElementFromWVar(w *wtree, base *tbranch, wvar WriteVar, parent Branch, lvl int, cfg wopt) (Branch, error) {
@@ -1028,106 +959,6 @@ func (b *tbranchElement) loadEntry(ientry int64) error {
 		}
 	}
 	return b.tbranch.loadEntry(ientry)
-}
-
-func (b *tbranchElement) setAddress(ptr interface{}) error {
-	var sictx rbytes.StreamerInfoContext = b.getTree().getFile()
-	var err error
-	err = b.setupReadStreamer(sictx)
-	if err != nil {
-		return err
-	}
-
-	b.scanfct = func(b *tbranchElement, ptr interface{}) error {
-		return b.tbranch.scan(ptr)
-	}
-	if len(b.branches) > 0 {
-		var ids []int
-		rv := reflect.ValueOf(ptr).Elem()
-		for _, sub := range b.branches {
-			i := int(sub.(*tbranchElement).id)
-			ids = append(ids, i)
-			fptr := rv.Field(i).Addr().Interface()
-			err = sub.setAddress(fptr)
-			if err != nil {
-				return err
-			}
-		}
-		b.scanfct = func(b *tbranchElement, ptr interface{}) error {
-			rv := reflect.ValueOf(ptr).Elem()
-			for i, sub := range b.branches {
-				id := ids[i]
-				fptr := rv.Field(id).Addr().Interface()
-				err := sub.scan(fptr)
-				if err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-	}
-	const kind = rbytes.ObjectWise // FIXME(sbinet): infer from stream?
-	if b.id < 0 {
-		for _, leaf := range b.tbranch.leaves {
-			leaf, ok := leaf.(*tleafElement)
-			if !ok {
-				continue
-			}
-			leaf.rstreamer, err = b.streamer.NewRStreamer(kind)
-			if err != nil {
-				return fmt.Errorf("rdict: could not find read-streamer for leaf=%q (type=%s): %w",
-					leaf.Name(), leaf.TypeName(), err,
-				)
-			}
-			err = leaf.setAddress(ptr)
-			if err != nil {
-				return err
-			}
-		}
-	} else {
-		elts := b.streamer.Elements()
-		for _, leaf := range b.tbranch.leaves {
-			leaf, ok := leaf.(*tleafElement)
-			if !ok {
-				continue
-			}
-			var (
-				elt rbytes.StreamerElement
-				i   = -1
-			)
-			leafName := leaf.Name()
-			if strings.Contains(leafName, ".") {
-				idx := strings.LastIndex(leafName, ".")
-				leafName = string(leafName[idx+1:])
-			}
-			for ii, ee := range elts {
-				if ee.Name() == leafName {
-					elt = ee
-					i = ii
-					break
-				}
-			}
-			if elt == nil {
-				return fmt.Errorf("rtree: failed to find StreamerElement for leaf %q", leaf.Name())
-			}
-			leaf.rstreamer, err = rdict.RStreamerOf(b.streamer, i, rbytes.ObjectWise)
-			if err != nil {
-				return fmt.Errorf("rdict: could not find read-streamer for leaf=%q (type=%s): %w",
-					leaf.Name(), leaf.TypeName(), err,
-				)
-			}
-			leaf.streamers = []rbytes.StreamerElement{elt}
-			err = leaf.setAddress(ptr)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return err
-}
-
-func (b *tbranchElement) scan(ptr interface{}) error {
-	return b.scanfct(b, ptr)
 }
 
 func (b *tbranchElement) setupReadStreamer(sictx rbytes.StreamerInfoContext) error {
