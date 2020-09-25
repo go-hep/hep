@@ -5,6 +5,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"math"
 	"os"
@@ -280,21 +281,16 @@ func TestConvert(t *testing.T) {
 
 			tree := obj.(rtree.Tree)
 			rvars := rtree.NewReadVars(tree)
-			scan, err := rtree.NewScannerVars(tree, rvars...)
+			r, err := rtree.NewReader(tree, rvars)
 			if err != nil {
-				t.Fatalf("could not create tree scanner: %+v", err)
+				t.Fatalf("could not create tree reader: %+v", err)
 			}
-			defer scan.Close()
+			defer r.Close()
 
 			want := reflect.ValueOf(tc.want)
 			n := 0
-			for scan.Next() {
-				err := scan.Scan()
-				if err != nil {
-					t.Fatalf("could not read entry %d: %+v", scan.Entry(), err)
-				}
-
-				i := int(scan.Entry())
+			err = r.Read(func(ctx rtree.RCtx) error {
+				i := int(ctx.Entry)
 				want := want.Index(i).Interface()
 				got := reflect.ValueOf(rvars[0].Value).Elem().Interface()
 				ok := false
@@ -316,9 +312,13 @@ func TestConvert(t *testing.T) {
 				}
 
 				if !ok {
-					t.Fatalf("invalid value for entry %d:\ngot= %v\nwant=%v", scan.Entry(), got, want)
+					return fmt.Errorf("invalid value for entry %d:\ngot= %v\nwant=%v", ctx.Entry, got, want)
 				}
 				n++
+				return nil
+			})
+			if err != nil {
+				t.Fatalf("could not read tree: %+v", err)
 			}
 
 			if got, want := n, want.Len(); got != want {

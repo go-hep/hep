@@ -122,21 +122,22 @@ func process(oname, tname, fname string) error {
 	for i, rvar := range rvars {
 		wvars[i] = rvar.Value
 	}
-	scan, err := rtree.NewScannerVars(tree, rvars...)
-	if err != nil {
-		return fmt.Errorf("could not create ROOT scanner: %w", err)
-	}
-	defer scan.Close()
 
-	for scan.Next() {
-		err = scan.Scan()
-		if err != nil {
-			return fmt.Errorf("could not read entry %d from ROOT tree: %w", scan.Entry(), err)
-		}
+	r, err := rtree.NewReader(tree, rvars)
+	if err != nil {
+		return fmt.Errorf("could not create ROOT reader: %w", err)
+	}
+	defer r.Close()
+
+	err = r.Read(func(ctx rtree.RCtx) error {
 		err = tbl.Write(wvars...)
 		if err != nil {
-			return fmt.Errorf("could not write entry %d to FITS table: %w", scan.Entry(), err)
+			return fmt.Errorf("could not write entry %d to FITS table: %w", ctx.Entry, err)
 		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("could not read input ROOT file: %w", err)
 	}
 
 	err = fits.Write(tbl)

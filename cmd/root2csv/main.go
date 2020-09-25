@@ -116,20 +116,20 @@ func process(oname, fname, tname string) error {
 	}
 	log.Printf("scanning leaves... [done]")
 
-	sc, err := rtree.NewTreeScannerVars(tree, nt.args...)
+	r, err := rtree.NewReader(tree, nt.args)
 	if err != nil {
-		return fmt.Errorf("could not create tree scanner: %w", err)
+		return fmt.Errorf("could not create tree reader: %w", err)
 	}
-	defer sc.Close()
+	defer r.Close()
 
 	nrows := 0
-	for sc.Next() {
-		err = sc.Scan(nt.vars...)
-		if err != nil {
-			return fmt.Errorf("could not scan entry %d: %w", nrows, err)
-		}
+	err = r.Read(func(ctx rtree.RCtx) error {
 		nt.fill()
 		nrows++
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("could not read tree: %w", err)
 	}
 
 	tbl, err := csvutil.Create(oname)
