@@ -23,14 +23,47 @@ type rleafValBool struct {
 func newRLeafBool(leaf *LeafO, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]bool)
-		if *slice == nil {
-			*slice = make([]bool, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSliBool{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]bool)
+			if *slice == nil {
+				*slice = make([]bool, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSliBool{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]bool)(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArrayBool(ptr, sz).(*[]bool)
+			if *hdr == nil {
+				*hdr = make([]bool, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSliBool{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
 		}
 
 	case leaf.len > 1:
@@ -85,6 +118,15 @@ func unsafeDecayArrayBool(ptr interface{}) interface{} {
 	return &sli
 }
 
+func unsafeDecaySliceArrayBool(ptr *[]bool, size int) interface{} {
+	var sli []bool
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
+
 func (leaf *rleafArrBool) readFromBuffer(r *rbytes.RBuffer) error {
 	r.ReadArrayBool(leaf.v)
 	return r.Err()
@@ -99,6 +141,7 @@ type rleafSliBool struct {
 	base *LeafO
 	n    func() int
 	v    *[]bool
+	set  func() // reslice underlying slice
 }
 
 func (leaf *rleafSliBool) Leaf() Leaf { return leaf.base }
@@ -112,6 +155,7 @@ func (leaf *rleafSliBool) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.ResizeBool(*leaf.v, n)
 	r.ReadArrayBool(sli)
 	*leaf.v = sli
+	leaf.set()
 	return r.Err()
 }
 
@@ -128,14 +172,47 @@ type rleafValI8 struct {
 func newRLeafI8(leaf *LeafB, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]int8)
-		if *slice == nil {
-			*slice = make([]int8, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSliI8{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]int8)
+			if *slice == nil {
+				*slice = make([]int8, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSliI8{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]int8)(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArrayI8(ptr, sz).(*[]int8)
+			if *hdr == nil {
+				*hdr = make([]int8, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSliI8{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
 		}
 
 	case leaf.len > 1:
@@ -192,6 +269,15 @@ func unsafeDecayArrayI8(ptr interface{}) interface{} {
 	return &sli
 }
 
+func unsafeDecaySliceArrayI8(ptr *[]int8, size int) interface{} {
+	var sli []int8
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
+
 func (leaf *rleafArrI8) readFromBuffer(r *rbytes.RBuffer) error {
 	r.ReadArrayI8(leaf.v)
 	return r.Err()
@@ -206,6 +292,7 @@ type rleafSliI8 struct {
 	base *LeafB
 	n    func() int
 	v    *[]int8
+	set  func() // reslice underlying slice
 }
 
 func (leaf *rleafSliI8) Leaf() Leaf { return leaf.base }
@@ -219,6 +306,7 @@ func (leaf *rleafSliI8) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.ResizeI8(*leaf.v, n)
 	r.ReadArrayI8(sli)
 	*leaf.v = sli
+	leaf.set()
 	return r.Err()
 }
 
@@ -235,14 +323,47 @@ type rleafValI16 struct {
 func newRLeafI16(leaf *LeafS, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]int16)
-		if *slice == nil {
-			*slice = make([]int16, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSliI16{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]int16)
+			if *slice == nil {
+				*slice = make([]int16, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSliI16{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]int16)(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArrayI16(ptr, sz).(*[]int16)
+			if *hdr == nil {
+				*hdr = make([]int16, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSliI16{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
 		}
 
 	case leaf.len > 1:
@@ -299,6 +420,15 @@ func unsafeDecayArrayI16(ptr interface{}) interface{} {
 	return &sli
 }
 
+func unsafeDecaySliceArrayI16(ptr *[]int16, size int) interface{} {
+	var sli []int16
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
+
 func (leaf *rleafArrI16) readFromBuffer(r *rbytes.RBuffer) error {
 	r.ReadArrayI16(leaf.v)
 	return r.Err()
@@ -313,6 +443,7 @@ type rleafSliI16 struct {
 	base *LeafS
 	n    func() int
 	v    *[]int16
+	set  func() // reslice underlying slice
 }
 
 func (leaf *rleafSliI16) Leaf() Leaf { return leaf.base }
@@ -326,6 +457,7 @@ func (leaf *rleafSliI16) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.ResizeI16(*leaf.v, n)
 	r.ReadArrayI16(sli)
 	*leaf.v = sli
+	leaf.set()
 	return r.Err()
 }
 
@@ -342,14 +474,47 @@ type rleafValI32 struct {
 func newRLeafI32(leaf *LeafI, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]int32)
-		if *slice == nil {
-			*slice = make([]int32, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSliI32{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]int32)
+			if *slice == nil {
+				*slice = make([]int32, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSliI32{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]int32)(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArrayI32(ptr, sz).(*[]int32)
+			if *hdr == nil {
+				*hdr = make([]int32, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSliI32{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
 		}
 
 	case leaf.len > 1:
@@ -406,6 +571,15 @@ func unsafeDecayArrayI32(ptr interface{}) interface{} {
 	return &sli
 }
 
+func unsafeDecaySliceArrayI32(ptr *[]int32, size int) interface{} {
+	var sli []int32
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
+
 func (leaf *rleafArrI32) readFromBuffer(r *rbytes.RBuffer) error {
 	r.ReadArrayI32(leaf.v)
 	return r.Err()
@@ -420,6 +594,7 @@ type rleafSliI32 struct {
 	base *LeafI
 	n    func() int
 	v    *[]int32
+	set  func() // reslice underlying slice
 }
 
 func (leaf *rleafSliI32) Leaf() Leaf { return leaf.base }
@@ -433,6 +608,7 @@ func (leaf *rleafSliI32) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.ResizeI32(*leaf.v, n)
 	r.ReadArrayI32(sli)
 	*leaf.v = sli
+	leaf.set()
 	return r.Err()
 }
 
@@ -449,14 +625,47 @@ type rleafValI64 struct {
 func newRLeafI64(leaf *LeafL, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]int64)
-		if *slice == nil {
-			*slice = make([]int64, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSliI64{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]int64)
+			if *slice == nil {
+				*slice = make([]int64, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSliI64{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]int64)(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArrayI64(ptr, sz).(*[]int64)
+			if *hdr == nil {
+				*hdr = make([]int64, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSliI64{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
 		}
 
 	case leaf.len > 1:
@@ -513,6 +722,15 @@ func unsafeDecayArrayI64(ptr interface{}) interface{} {
 	return &sli
 }
 
+func unsafeDecaySliceArrayI64(ptr *[]int64, size int) interface{} {
+	var sli []int64
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
+
 func (leaf *rleafArrI64) readFromBuffer(r *rbytes.RBuffer) error {
 	r.ReadArrayI64(leaf.v)
 	return r.Err()
@@ -527,6 +745,7 @@ type rleafSliI64 struct {
 	base *LeafL
 	n    func() int
 	v    *[]int64
+	set  func() // reslice underlying slice
 }
 
 func (leaf *rleafSliI64) Leaf() Leaf { return leaf.base }
@@ -540,6 +759,7 @@ func (leaf *rleafSliI64) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.ResizeI64(*leaf.v, n)
 	r.ReadArrayI64(sli)
 	*leaf.v = sli
+	leaf.set()
 	return r.Err()
 }
 
@@ -556,14 +776,47 @@ type rleafValU8 struct {
 func newRLeafU8(leaf *LeafB, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]uint8)
-		if *slice == nil {
-			*slice = make([]uint8, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSliU8{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]uint8)
+			if *slice == nil {
+				*slice = make([]uint8, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSliU8{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]uint8)(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArrayU8(ptr, sz).(*[]uint8)
+			if *hdr == nil {
+				*hdr = make([]uint8, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSliU8{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
 		}
 
 	case leaf.len > 1:
@@ -620,6 +873,15 @@ func unsafeDecayArrayU8(ptr interface{}) interface{} {
 	return &sli
 }
 
+func unsafeDecaySliceArrayU8(ptr *[]uint8, size int) interface{} {
+	var sli []uint8
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
+
 func (leaf *rleafArrU8) readFromBuffer(r *rbytes.RBuffer) error {
 	r.ReadArrayU8(leaf.v)
 	return r.Err()
@@ -634,6 +896,7 @@ type rleafSliU8 struct {
 	base *LeafB
 	n    func() int
 	v    *[]uint8
+	set  func() // reslice underlying slice
 }
 
 func (leaf *rleafSliU8) Leaf() Leaf { return leaf.base }
@@ -647,6 +910,7 @@ func (leaf *rleafSliU8) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.ResizeU8(*leaf.v, n)
 	r.ReadArrayU8(sli)
 	*leaf.v = sli
+	leaf.set()
 	return r.Err()
 }
 
@@ -663,14 +927,47 @@ type rleafValU16 struct {
 func newRLeafU16(leaf *LeafS, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]uint16)
-		if *slice == nil {
-			*slice = make([]uint16, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSliU16{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]uint16)
+			if *slice == nil {
+				*slice = make([]uint16, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSliU16{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]uint16)(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArrayU16(ptr, sz).(*[]uint16)
+			if *hdr == nil {
+				*hdr = make([]uint16, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSliU16{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
 		}
 
 	case leaf.len > 1:
@@ -727,6 +1024,15 @@ func unsafeDecayArrayU16(ptr interface{}) interface{} {
 	return &sli
 }
 
+func unsafeDecaySliceArrayU16(ptr *[]uint16, size int) interface{} {
+	var sli []uint16
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
+
 func (leaf *rleafArrU16) readFromBuffer(r *rbytes.RBuffer) error {
 	r.ReadArrayU16(leaf.v)
 	return r.Err()
@@ -741,6 +1047,7 @@ type rleafSliU16 struct {
 	base *LeafS
 	n    func() int
 	v    *[]uint16
+	set  func() // reslice underlying slice
 }
 
 func (leaf *rleafSliU16) Leaf() Leaf { return leaf.base }
@@ -754,6 +1061,7 @@ func (leaf *rleafSliU16) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.ResizeU16(*leaf.v, n)
 	r.ReadArrayU16(sli)
 	*leaf.v = sli
+	leaf.set()
 	return r.Err()
 }
 
@@ -770,14 +1078,47 @@ type rleafValU32 struct {
 func newRLeafU32(leaf *LeafI, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]uint32)
-		if *slice == nil {
-			*slice = make([]uint32, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSliU32{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]uint32)
+			if *slice == nil {
+				*slice = make([]uint32, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSliU32{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]uint32)(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArrayU32(ptr, sz).(*[]uint32)
+			if *hdr == nil {
+				*hdr = make([]uint32, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSliU32{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
 		}
 
 	case leaf.len > 1:
@@ -834,6 +1175,15 @@ func unsafeDecayArrayU32(ptr interface{}) interface{} {
 	return &sli
 }
 
+func unsafeDecaySliceArrayU32(ptr *[]uint32, size int) interface{} {
+	var sli []uint32
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
+
 func (leaf *rleafArrU32) readFromBuffer(r *rbytes.RBuffer) error {
 	r.ReadArrayU32(leaf.v)
 	return r.Err()
@@ -848,6 +1198,7 @@ type rleafSliU32 struct {
 	base *LeafI
 	n    func() int
 	v    *[]uint32
+	set  func() // reslice underlying slice
 }
 
 func (leaf *rleafSliU32) Leaf() Leaf { return leaf.base }
@@ -861,6 +1212,7 @@ func (leaf *rleafSliU32) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.ResizeU32(*leaf.v, n)
 	r.ReadArrayU32(sli)
 	*leaf.v = sli
+	leaf.set()
 	return r.Err()
 }
 
@@ -877,14 +1229,47 @@ type rleafValU64 struct {
 func newRLeafU64(leaf *LeafL, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]uint64)
-		if *slice == nil {
-			*slice = make([]uint64, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSliU64{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]uint64)
+			if *slice == nil {
+				*slice = make([]uint64, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSliU64{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]uint64)(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArrayU64(ptr, sz).(*[]uint64)
+			if *hdr == nil {
+				*hdr = make([]uint64, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSliU64{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
 		}
 
 	case leaf.len > 1:
@@ -941,6 +1326,15 @@ func unsafeDecayArrayU64(ptr interface{}) interface{} {
 	return &sli
 }
 
+func unsafeDecaySliceArrayU64(ptr *[]uint64, size int) interface{} {
+	var sli []uint64
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
+
 func (leaf *rleafArrU64) readFromBuffer(r *rbytes.RBuffer) error {
 	r.ReadArrayU64(leaf.v)
 	return r.Err()
@@ -955,6 +1349,7 @@ type rleafSliU64 struct {
 	base *LeafL
 	n    func() int
 	v    *[]uint64
+	set  func() // reslice underlying slice
 }
 
 func (leaf *rleafSliU64) Leaf() Leaf { return leaf.base }
@@ -968,6 +1363,7 @@ func (leaf *rleafSliU64) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.ResizeU64(*leaf.v, n)
 	r.ReadArrayU64(sli)
 	*leaf.v = sli
+	leaf.set()
 	return r.Err()
 }
 
@@ -984,14 +1380,47 @@ type rleafValF32 struct {
 func newRLeafF32(leaf *LeafF, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]float32)
-		if *slice == nil {
-			*slice = make([]float32, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSliF32{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]float32)
+			if *slice == nil {
+				*slice = make([]float32, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSliF32{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]float32)(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArrayF32(ptr, sz).(*[]float32)
+			if *hdr == nil {
+				*hdr = make([]float32, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSliF32{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
 		}
 
 	case leaf.len > 1:
@@ -1046,6 +1475,15 @@ func unsafeDecayArrayF32(ptr interface{}) interface{} {
 	return &sli
 }
 
+func unsafeDecaySliceArrayF32(ptr *[]float32, size int) interface{} {
+	var sli []float32
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
+
 func (leaf *rleafArrF32) readFromBuffer(r *rbytes.RBuffer) error {
 	r.ReadArrayF32(leaf.v)
 	return r.Err()
@@ -1060,6 +1498,7 @@ type rleafSliF32 struct {
 	base *LeafF
 	n    func() int
 	v    *[]float32
+	set  func() // reslice underlying slice
 }
 
 func (leaf *rleafSliF32) Leaf() Leaf { return leaf.base }
@@ -1073,6 +1512,7 @@ func (leaf *rleafSliF32) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.ResizeF32(*leaf.v, n)
 	r.ReadArrayF32(sli)
 	*leaf.v = sli
+	leaf.set()
 	return r.Err()
 }
 
@@ -1089,14 +1529,47 @@ type rleafValF64 struct {
 func newRLeafF64(leaf *LeafD, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]float64)
-		if *slice == nil {
-			*slice = make([]float64, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSliF64{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]float64)
+			if *slice == nil {
+				*slice = make([]float64, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSliF64{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]float64)(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArrayF64(ptr, sz).(*[]float64)
+			if *hdr == nil {
+				*hdr = make([]float64, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSliF64{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
 		}
 
 	case leaf.len > 1:
@@ -1151,6 +1624,15 @@ func unsafeDecayArrayF64(ptr interface{}) interface{} {
 	return &sli
 }
 
+func unsafeDecaySliceArrayF64(ptr *[]float64, size int) interface{} {
+	var sli []float64
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
+
 func (leaf *rleafArrF64) readFromBuffer(r *rbytes.RBuffer) error {
 	r.ReadArrayF64(leaf.v)
 	return r.Err()
@@ -1165,6 +1647,7 @@ type rleafSliF64 struct {
 	base *LeafD
 	n    func() int
 	v    *[]float64
+	set  func() // reslice underlying slice
 }
 
 func (leaf *rleafSliF64) Leaf() Leaf { return leaf.base }
@@ -1178,6 +1661,7 @@ func (leaf *rleafSliF64) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.ResizeF64(*leaf.v, n)
 	r.ReadArrayF64(sli)
 	*leaf.v = sli
+	leaf.set()
 	return r.Err()
 }
 
@@ -1195,14 +1679,47 @@ type rleafValD32 struct {
 func newRLeafD32(leaf *LeafD32, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]root.Double32)
-		if *slice == nil {
-			*slice = make([]root.Double32, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSliD32{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]root.Double32)
+			if *slice == nil {
+				*slice = make([]root.Double32, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSliD32{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]root.Double32)(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArrayD32(ptr, sz).(*[]root.Double32)
+			if *hdr == nil {
+				*hdr = make([]root.Double32, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSliD32{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
 		}
 
 	case leaf.len > 1:
@@ -1258,6 +1775,15 @@ func unsafeDecayArrayD32(ptr interface{}) interface{} {
 	return &sli
 }
 
+func unsafeDecaySliceArrayD32(ptr *[]root.Double32, size int) interface{} {
+	var sli []root.Double32
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
+
 func (leaf *rleafArrD32) readFromBuffer(r *rbytes.RBuffer) error {
 	r.ReadArrayD32(leaf.v, leaf.elm)
 	return r.Err()
@@ -1272,6 +1798,7 @@ type rleafSliD32 struct {
 	base *LeafD32
 	n    func() int
 	v    *[]root.Double32
+	set  func() // reslice underlying slice
 	elm  rbytes.StreamerElement
 }
 
@@ -1286,6 +1813,7 @@ func (leaf *rleafSliD32) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.ResizeD32(*leaf.v, n)
 	r.ReadArrayD32(sli, leaf.elm)
 	*leaf.v = sli
+	leaf.set()
 	return r.Err()
 }
 
@@ -1303,14 +1831,47 @@ type rleafValF16 struct {
 func newRLeafF16(leaf *LeafF16, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]root.Float16)
-		if *slice == nil {
-			*slice = make([]root.Float16, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSliF16{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]root.Float16)
+			if *slice == nil {
+				*slice = make([]root.Float16, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSliF16{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]root.Float16)(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArrayF16(ptr, sz).(*[]root.Float16)
+			if *hdr == nil {
+				*hdr = make([]root.Float16, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSliF16{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
 		}
 
 	case leaf.len > 1:
@@ -1366,6 +1927,15 @@ func unsafeDecayArrayF16(ptr interface{}) interface{} {
 	return &sli
 }
 
+func unsafeDecaySliceArrayF16(ptr *[]root.Float16, size int) interface{} {
+	var sli []root.Float16
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
+
 func (leaf *rleafArrF16) readFromBuffer(r *rbytes.RBuffer) error {
 	r.ReadArrayF16(leaf.v, leaf.elm)
 	return r.Err()
@@ -1380,6 +1950,7 @@ type rleafSliF16 struct {
 	base *LeafF16
 	n    func() int
 	v    *[]root.Float16
+	set  func() // reslice underlying slice
 	elm  rbytes.StreamerElement
 }
 
@@ -1394,6 +1965,7 @@ func (leaf *rleafSliF16) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.ResizeF16(*leaf.v, n)
 	r.ReadArrayF16(sli, leaf.elm)
 	*leaf.v = sli
+	leaf.set()
 	return r.Err()
 }
 
@@ -1410,14 +1982,47 @@ type rleafValStr struct {
 func newRLeafStr(leaf *LeafC, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]string)
-		if *slice == nil {
-			*slice = make([]string, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSliStr{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]string)
+			if *slice == nil {
+				*slice = make([]string, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSliStr{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]string)(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArrayStr(ptr, sz).(*[]string)
+			if *hdr == nil {
+				*hdr = make([]string, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSliStr{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
 		}
 
 	case leaf.len > 1:
@@ -1472,6 +2077,15 @@ func unsafeDecayArrayStr(ptr interface{}) interface{} {
 	return &sli
 }
 
+func unsafeDecaySliceArrayStr(ptr *[]string, size int) interface{} {
+	var sli []string
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
+
 func (leaf *rleafArrStr) readFromBuffer(r *rbytes.RBuffer) error {
 	r.ReadArrayString(leaf.v)
 	return r.Err()
@@ -1486,6 +2100,7 @@ type rleafSliStr struct {
 	base *LeafC
 	n    func() int
 	v    *[]string
+	set  func() // reslice underlying slice
 }
 
 func (leaf *rleafSliStr) Leaf() Leaf { return leaf.base }
@@ -1499,6 +2114,7 @@ func (leaf *rleafSliStr) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.ResizeStr(*leaf.v, n)
 	r.ReadArrayString(sli)
 	*leaf.v = sli
+	leaf.set()
 	return r.Err()
 }
 

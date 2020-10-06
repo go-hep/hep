@@ -713,8 +713,9 @@ type rleaf{{.Kind}}{{.Name}} struct {
 {{- else if eq .Kind "Arr" }}
 	v []{{.Type}}
 {{- else if eq .Kind "Sli" }}
-	n func() int
-	v *[]{{.Type}}
+	n   func() int
+	v   *[]{{.Type}}
+	set func() // reslice underlying slice
 {{- end}}
 {{- if .WithStreamerElement}}
 	elm rbytes.StreamerElement
@@ -725,15 +726,48 @@ type rleaf{{.Kind}}{{.Name}} struct {
 func newRLeaf{{.Name}}(leaf *{{.Base}}, rvar ReadVar, rctx rleafCtx) rleaf {
 	switch {
 	case leaf.count != nil:
-		slice := reflect.ValueOf(rvar.Value).Interface().(*[]{{.Type}})
-		if *slice == nil {
-			*slice = make([]{{.Type}}, 0, rleafDefaultSliceCap)
-		}
-		return &rleafSli{{.Name}}{
-			base: leaf,
-			n:    rctx.rcountFunc(leaf.count.Name()),
-			v:    slice,
-		}
+		switch len(leaf.Shape()) {
+		case 0:
+			slice := reflect.ValueOf(rvar.Value).Interface().(*[]{{.Type}})
+			if *slice == nil {
+				*slice = make([]{{.Type}}, 0, rleafDefaultSliceCap)
+			}
+			return &rleafSli{{.Name}}{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    slice,
+				set:  func() {},
+			}
+		default:
+			sz := 1
+			for _, v := range leaf.Shape() {
+				sz *= v
+			}
+			sli := reflect.ValueOf(rvar.Value).Elem()
+			ptr := (*[]{{.Type}})(unsafe.Pointer(sli.UnsafeAddr()))
+			hdr := unsafeDecaySliceArray{{.Name}}(ptr, sz).(*[]{{.Type}})
+			if *hdr == nil {
+				*hdr = make([]{{.Type}}, 0, rleafDefaultSliceCap*sz)
+			}
+			rleaf := &rleafSli{{.Name}}{
+				base: leaf,
+				n:    rctx.rcountFunc(leaf.count.Name()),
+				v:    hdr,
+			}
+			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
+			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+
+			// alias slices
+			rawSli.Data = rawHdr.Data
+
+			rleaf.set = func() {
+				n := rleaf.n()
+				rawSli.Len = n
+				rawSli.Cap = n
+			}
+
+			return rleaf
+}
 
 	case leaf.len > 1:
 		return &rleafArr{{.Name}}{
@@ -773,6 +807,15 @@ func unsafeDecayArray{{.Name}}(ptr interface{}) interface{} {
 	hdr.Cap = int(sz)
 	return &sli
 }
+
+func unsafeDecaySliceArray{{.Name}}(ptr *[]{{.Type}}, size int) interface{} {
+	var sli []{{.Type}}
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(size)
+	hdr.Cap = int(size)
+	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
+	return &sli
+}
 {{- end}}
 
 {{if .WithStreamerElement}}
@@ -786,6 +829,7 @@ func (leaf *rleaf{{.Kind}}{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.Resize{{.Name}}(*leaf.v, n)
 	r.ReadArray{{.Func}}(sli, leaf.elm)
 	*leaf.v = sli
+	leaf.set()
 {{- end}}
 	return r.Err()
 }
@@ -800,6 +844,7 @@ func (leaf *rleaf{{.Kind}}{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
 	sli := rbytes.Resize{{.Name}}(*leaf.v, n)
 	r.ReadArray{{.Func}}(sli)
 	*leaf.v = sli
+	leaf.set()
 {{- end}}
 	return r.Err()
 }

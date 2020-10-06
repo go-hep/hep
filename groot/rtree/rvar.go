@@ -268,6 +268,15 @@ func newValue(leaf Leaf) interface{} {
 
 	switch {
 	case leaf.LeafCount() != nil:
+		shape := leaf.Shape()
+		switch leaf.(type) {
+		case *LeafF16, *LeafD32:
+			// workaround for https://sft.its.cern.ch/jira/browse/ROOT-10149
+			shape = nil
+		}
+		for i := range shape {
+			etype = reflect.ArrayOf(shape[len(shape)-1-i], etype)
+		}
 		etype = reflect.SliceOf(etype)
 	case leaf.Len() > 1:
 		shape := leaf.Shape()
@@ -291,7 +300,6 @@ func newValue(leaf Leaf) interface{} {
 			for i := range shape {
 				etype = reflect.ArrayOf(shape[len(shape)-1-i], etype)
 			}
-
 		}
 	}
 	return reflect.New(etype).Interface()

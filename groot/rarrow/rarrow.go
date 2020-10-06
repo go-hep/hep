@@ -105,6 +105,15 @@ func dataTypeFromLeaf(leaf rtree.Leaf) arrow.DataType {
 
 	switch {
 	case leaf.LeafCount() != nil:
+		shape := leaf.Shape()
+		switch leaf.(type) {
+		case *rtree.LeafF16, *rtree.LeafD32:
+			// workaround for https://sft.its.cern.ch/jira/browse/ROOT-10149
+			shape = nil
+		}
+		for i := range shape {
+			dt = arrow.FixedSizeListOf(int32(shape[len(shape)-1-i]), dt)
+		}
 		dt = arrow.ListOf(dt)
 	case leaf.Len() > 1:
 		shape := leaf.Shape()

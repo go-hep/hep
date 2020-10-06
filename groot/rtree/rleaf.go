@@ -43,8 +43,17 @@ func rleafFrom(leaf Leaf, rvar ReadVar, rctx rleafCtx) rleaf {
 			return newRLeafU8(leaf, rvar, rctx)
 		default:
 			rv := rv.Elem()
-			if rv.Kind() == reflect.Array {
+			switch rv.Kind() {
+			case reflect.Array:
 				rt, _ := flattenArrayType(rv.Type())
+				switch rt.Kind() {
+				case reflect.Int8:
+					return newRLeafI8(leaf, rvar, rctx)
+				case reflect.Uint8:
+					return newRLeafU8(leaf, rvar, rctx)
+				}
+			case reflect.Slice:
+				rt, _ := flattenArrayType(rv.Type().Elem())
 				switch rt.Kind() {
 				case reflect.Int8:
 					return newRLeafI8(leaf, rvar, rctx)
@@ -62,8 +71,17 @@ func rleafFrom(leaf Leaf, rvar ReadVar, rctx rleafCtx) rleaf {
 			return newRLeafU16(leaf, rvar, rctx)
 		default:
 			rv := rv.Elem()
-			if rv.Kind() == reflect.Array {
+			switch rv.Kind() {
+			case reflect.Array:
 				rt, _ := flattenArrayType(rv.Type())
+				switch rt.Kind() {
+				case reflect.Int16:
+					return newRLeafI16(leaf, rvar, rctx)
+				case reflect.Uint16:
+					return newRLeafU16(leaf, rvar, rctx)
+				}
+			case reflect.Slice:
+				rt, _ := flattenArrayType(rv.Type().Elem())
 				switch rt.Kind() {
 				case reflect.Int16:
 					return newRLeafI16(leaf, rvar, rctx)
@@ -81,8 +99,17 @@ func rleafFrom(leaf Leaf, rvar ReadVar, rctx rleafCtx) rleaf {
 			return newRLeafU32(leaf, rvar, rctx)
 		default:
 			rv := rv.Elem()
-			if rv.Kind() == reflect.Array {
+			switch rv.Kind() {
+			case reflect.Array:
 				rt, _ := flattenArrayType(rv.Type())
+				switch rt.Kind() {
+				case reflect.Int32:
+					return newRLeafI32(leaf, rvar, rctx)
+				case reflect.Uint32:
+					return newRLeafU32(leaf, rvar, rctx)
+				}
+			case reflect.Slice:
+				rt, _ := flattenArrayType(rv.Type().Elem())
 				switch rt.Kind() {
 				case reflect.Int32:
 					return newRLeafI32(leaf, rvar, rctx)
@@ -100,8 +127,17 @@ func rleafFrom(leaf Leaf, rvar ReadVar, rctx rleafCtx) rleaf {
 			return newRLeafU64(leaf, rvar, rctx)
 		default:
 			rv := rv.Elem()
-			if rv.Kind() == reflect.Array {
+			switch rv.Kind() {
+			case reflect.Array:
 				rt, _ := flattenArrayType(rv.Type())
+				switch rt.Kind() {
+				case reflect.Int64:
+					return newRLeafI64(leaf, rvar, rctx)
+				case reflect.Uint64:
+					return newRLeafU64(leaf, rvar, rctx)
+				}
+			case reflect.Slice:
+				rt, _ := flattenArrayType(rv.Type().Elem())
 				switch rt.Kind() {
 				case reflect.Int64:
 					return newRLeafI64(leaf, rvar, rctx)
