@@ -58,28 +58,28 @@ func dataTypeFromLeaf(leaf rtree.Leaf) arrow.DataType {
 	switch kind {
 	case reflect.Bool:
 		dt = arrow.FixedWidthTypes.Boolean
-	case reflect.Int8:
+	case reflect.Int8, reflect.Uint8:
 		switch {
 		case unsigned:
 			dt = arrow.PrimitiveTypes.Uint8
 		default:
 			dt = arrow.PrimitiveTypes.Int8
 		}
-	case reflect.Int16:
+	case reflect.Int16, reflect.Uint16:
 		switch {
 		case unsigned:
 			dt = arrow.PrimitiveTypes.Uint16
 		default:
 			dt = arrow.PrimitiveTypes.Int16
 		}
-	case reflect.Int32:
+	case reflect.Int32, reflect.Uint32:
 		switch {
 		case unsigned:
 			dt = arrow.PrimitiveTypes.Uint32
 		default:
 			dt = arrow.PrimitiveTypes.Int32
 		}
-	case reflect.Int64:
+	case reflect.Int64, reflect.Uint64:
 		switch {
 		case unsigned:
 			dt = arrow.PrimitiveTypes.Uint64

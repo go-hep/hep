@@ -50,6 +50,7 @@ func genLeaves() {
 		Name       string
 		Type       string
 		Kind       string
+		UKind      string
 		LenType    int
 		GoLenType  int
 		DoUnsigned bool
@@ -82,6 +83,7 @@ func genLeaves() {
 			Name:       "LeafB",
 			Type:       "int8",
 			Kind:       "reflect.Int8",
+			UKind:      "reflect.Uint8",
 			LenType:    1,
 			GoLenType:  int(reflect.TypeOf(int8(0)).Size()),
 			DoUnsigned: true,
@@ -96,6 +98,7 @@ func genLeaves() {
 			Name:       "LeafS",
 			Type:       "int16",
 			Kind:       "reflect.Int16",
+			UKind:      "reflect.Uint16",
 			LenType:    2,
 			GoLenType:  int(reflect.TypeOf(int16(0)).Size()),
 			DoUnsigned: true,
@@ -110,6 +113,7 @@ func genLeaves() {
 			Name:       "LeafI",
 			Type:       "int32",
 			Kind:       "reflect.Int32",
+			UKind:      "reflect.Uint32",
 			LenType:    4,
 			GoLenType:  int(reflect.TypeOf(int32(0)).Size()),
 			DoUnsigned: true,
@@ -124,6 +128,7 @@ func genLeaves() {
 			Name:       "LeafL",
 			Type:       "int64",
 			Kind:       "reflect.Int64",
+			UKind:      "reflect.Uint64",
 			LenType:    8,
 			GoLenType:  int(reflect.TypeOf(int64(0)).Size()),
 			DoUnsigned: true,
@@ -280,8 +285,15 @@ func (leaf *{{.Name}}) Maximum() {{.RangeType}} {
 }
 
 // Kind returns the leaf's kind.
-func (*{{.Name}}) Kind() reflect.Kind {
+func (leaf *{{.Name}}) Kind() reflect.Kind {
+{{- if .DoUnsigned}}
+	if leaf.IsUnsigned() {
+		return {{.UKind}}
+	}
 	return {{.Kind}}
+{{- else}}
+	return {{.Kind}}
+{{- end}}
 }
 
 // Type returns the leaf's type.

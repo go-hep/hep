@@ -416,3 +416,244 @@ func TestAsLeafBase(t *testing.T) {
 		})
 	}
 }
+
+func TestLeafAPI(t *testing.T) {
+	var (
+		b        Branch
+		count    leafCount
+		shape    = []int{2, 3, 4, 5}
+		unsigned = true
+		signed   = false
+		norange  = false
+	)
+
+	for _, tc := range []struct {
+		leaf     Leaf
+		dims     []int
+		hasrange bool
+		unsigned bool
+		lentype  int
+		offset   int
+		kind     reflect.Kind
+		typ      reflect.Type
+		class    string
+		typename string
+	}{
+		{
+			leaf:     newLeafO(b, "leaf", shape, unsigned, count),
+			dims:     shape,
+			hasrange: norange,
+			unsigned: unsigned,
+			lentype:  1,
+			offset:   0,
+			kind:     reflect.TypeOf(false).Kind(),
+			typ:      reflect.TypeOf(false),
+			class:    "TLeafO",
+			typename: "bool",
+		},
+		{
+			leaf:     newLeafB(b, "leaf", shape, unsigned, count),
+			dims:     shape,
+			hasrange: norange,
+			unsigned: unsigned,
+			lentype:  1,
+			offset:   0,
+			kind:     reflect.TypeOf(uint8(0)).Kind(),
+			typ:      reflect.TypeOf(uint8(0)),
+			class:    "TLeafB",
+			typename: "uint8",
+		},
+		{
+			leaf:     newLeafB(b, "leaf", shape, signed, count),
+			dims:     shape,
+			hasrange: norange,
+			unsigned: signed,
+			lentype:  1,
+			offset:   0,
+			kind:     reflect.TypeOf(int8(0)).Kind(),
+			typ:      reflect.TypeOf(int8(0)),
+			class:    "TLeafB",
+			typename: "int8",
+		},
+		{
+			leaf:     newLeafS(b, "leaf", shape, unsigned, count),
+			dims:     shape,
+			hasrange: norange,
+			unsigned: unsigned,
+			lentype:  2,
+			offset:   0,
+			kind:     reflect.TypeOf(uint16(0)).Kind(),
+			typ:      reflect.TypeOf(uint16(0)),
+			class:    "TLeafS",
+			typename: "uint16",
+		},
+		{
+			leaf:     newLeafS(b, "leaf", shape, signed, count),
+			dims:     shape,
+			hasrange: norange,
+			unsigned: signed,
+			lentype:  2,
+			offset:   0,
+			kind:     reflect.TypeOf(int16(0)).Kind(),
+			typ:      reflect.TypeOf(int16(0)),
+			class:    "TLeafS",
+			typename: "int16",
+		},
+		{
+			leaf:     newLeafI(b, "leaf", shape, unsigned, count),
+			dims:     shape,
+			hasrange: norange,
+			unsigned: unsigned,
+			lentype:  4,
+			offset:   0,
+			kind:     reflect.TypeOf(uint32(0)).Kind(),
+			typ:      reflect.TypeOf(uint32(0)),
+			class:    "TLeafI",
+			typename: "uint32",
+		},
+		{
+			leaf:     newLeafI(b, "leaf", shape, signed, count),
+			dims:     shape,
+			hasrange: norange,
+			unsigned: signed,
+			lentype:  4,
+			offset:   0,
+			kind:     reflect.TypeOf(int32(0)).Kind(),
+			typ:      reflect.TypeOf(int32(0)),
+			class:    "TLeafI",
+			typename: "int32",
+		},
+		{
+			leaf:     newLeafL(b, "leaf", shape, unsigned, count),
+			dims:     shape,
+			hasrange: norange,
+			unsigned: unsigned,
+			lentype:  8,
+			offset:   0,
+			kind:     reflect.TypeOf(uint64(0)).Kind(),
+			typ:      reflect.TypeOf(uint64(0)),
+			class:    "TLeafL",
+			typename: "uint64",
+		},
+		{
+			leaf:     newLeafL(b, "leaf", shape, signed, count),
+			dims:     shape,
+			hasrange: norange,
+			unsigned: signed,
+			lentype:  8,
+			offset:   0,
+			kind:     reflect.TypeOf(int64(0)).Kind(),
+			typ:      reflect.TypeOf(int64(0)),
+			class:    "TLeafL",
+			typename: "int64",
+		},
+		{
+			leaf:     newLeafF(b, "leaf", shape, unsigned, count),
+			dims:     shape,
+			hasrange: norange,
+			unsigned: unsigned,
+			lentype:  4,
+			offset:   0,
+			kind:     reflect.TypeOf(float32(0)).Kind(),
+			typ:      reflect.TypeOf(float32(0)),
+			class:    "TLeafF",
+			typename: "float32",
+		},
+		{
+			leaf:     newLeafD(b, "leaf", shape, unsigned, count),
+			dims:     shape,
+			hasrange: norange,
+			unsigned: unsigned,
+			lentype:  8,
+			offset:   0,
+			kind:     reflect.TypeOf(float64(0)).Kind(),
+			typ:      reflect.TypeOf(float64(0)),
+			class:    "TLeafD",
+			typename: "float64",
+		},
+		{
+			leaf:     newLeafF16(b, "leaf", shape, unsigned, count, nil),
+			dims:     shape,
+			hasrange: norange,
+			unsigned: unsigned,
+			lentype:  4,
+			offset:   0,
+			kind:     reflect.TypeOf(root.Float16(0)).Kind(),
+			typ:      reflect.TypeOf(root.Float16(0)),
+			class:    "TLeafF16",
+			typename: "root.Float16",
+		},
+		{
+			leaf:     newLeafD32(b, "leaf", shape, unsigned, count, nil),
+			dims:     shape,
+			hasrange: norange,
+			unsigned: unsigned,
+			lentype:  8,
+			offset:   0,
+			kind:     reflect.TypeOf(root.Double32(0)).Kind(),
+			typ:      reflect.TypeOf(root.Double32(0)),
+			class:    "TLeafD32",
+			typename: "root.Double32",
+		},
+		{
+			leaf:     newLeafC(b, "leaf", shape, unsigned, count),
+			dims:     shape,
+			hasrange: norange,
+			unsigned: unsigned,
+			lentype:  1,
+			offset:   0,
+			kind:     reflect.TypeOf("").Kind(),
+			typ:      reflect.TypeOf(""),
+			class:    "TLeafC",
+			typename: "string",
+		},
+	} {
+		t.Run(fmt.Sprintf("%T", tc.leaf), func(t *testing.T) {
+			dims := tc.leaf.Shape()
+			if got, want := dims, tc.dims; !reflect.DeepEqual(got, want) {
+				t.Fatalf("invalid dims: got=%v, want=%v", got, want)
+			}
+
+			hasrange := tc.leaf.HasRange()
+			if got, want := hasrange, tc.hasrange; !reflect.DeepEqual(got, want) {
+				t.Fatalf("invalid hasrange: got=%v, want=%v", got, want)
+			}
+
+			unsigned := tc.leaf.IsUnsigned()
+			if got, want := unsigned, tc.unsigned; !reflect.DeepEqual(got, want) {
+				t.Fatalf("invalid unsigned: got=%v, want=%v", got, want)
+			}
+
+			lentype := tc.leaf.LenType()
+			if got, want := lentype, tc.lentype; !reflect.DeepEqual(got, want) {
+				t.Fatalf("invalid lentype: got=%v, want=%v", got, want)
+			}
+
+			offset := tc.leaf.Offset()
+			if got, want := offset, tc.offset; !reflect.DeepEqual(got, want) {
+				t.Fatalf("invalid offset: got=%v, want=%v", got, want)
+			}
+
+			kind := tc.leaf.Kind()
+			if got, want := kind, tc.kind; !reflect.DeepEqual(got, want) {
+				t.Fatalf("invalid kind: got=%v, want=%v", got, want)
+			}
+
+			typ := tc.leaf.Type()
+			if got, want := typ, tc.typ; !reflect.DeepEqual(got, want) {
+				t.Fatalf("invalid type: got=%v, want=%v", got, want)
+			}
+
+			class := tc.leaf.Class()
+			if got, want := class, tc.class; !reflect.DeepEqual(got, want) {
+				t.Fatalf("invalid class: got=%v, want=%v", got, want)
+			}
+
+			typename := tc.leaf.TypeName()
+			if got, want := typename, tc.typename; !reflect.DeepEqual(got, want) {
+				t.Fatalf("invalid typename: got=%v, want=%v", got, want)
+			}
+
+		})
+	}
+}

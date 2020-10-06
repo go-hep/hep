@@ -21,11 +21,12 @@ import (
 
 type tleaf struct {
 	named    rbase.Named
-	len      int       // number of fixed length elements in the leaf's data.
-	etype    int       // number of bytes for this data type
-	offset   int       // offset in ClonesArray object
-	hasrange bool      // whether the leaf has a range
-	unsigned bool      // whether the leaf holds unsigned data (uint8, uint16, uint32 or uint64)
+	len      int  // number of fixed length elements in the leaf's data.
+	etype    int  // number of bytes for this data type
+	offset   int  // offset in ClonesArray object
+	hasrange bool // whether the leaf has a range
+	unsigned bool // whether the leaf holds unsigned data (uint8, uint16, uint32 or uint64)
+	shape    []int
 	count    leafCount // leaf count if variable length
 	branch   Branch    // supporting branch of this leaf
 }
@@ -53,6 +54,7 @@ func newLeaf(name string, shape []int, etype, offset int, hasrange, unsigned boo
 		offset:   offset,
 		hasrange: hasrange,
 		unsigned: unsigned,
+		shape:    shape,
 		count:    count,
 		branch:   b,
 	}
@@ -77,11 +79,11 @@ func (leaf *tleaf) Class() string {
 }
 
 func (leaf *tleaf) ArrayDim() int {
-	return strings.Count(leaf.named.Title(), "[")
+	return len(leaf.shape)
 }
 
 func (leaf *tleaf) Shape() []int {
-	return leafDims(leaf.Title())
+	return leaf.shape
 }
 
 func (leaf *tleaf) setBranch(b Branch) {
@@ -185,6 +187,7 @@ func (leaf *tleaf) UnmarshalROOT(r *rbytes.RBuffer) error {
 	if err := leaf.named.UnmarshalROOT(r); err != nil {
 		return err
 	}
+	leaf.shape = leafDims(leaf.Title())
 
 	leaf.len = int(r.ReadI32())
 	leaf.etype = int(r.ReadI32())

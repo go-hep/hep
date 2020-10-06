@@ -59,7 +59,7 @@ func (leaf *LeafO) Maximum() bool {
 }
 
 // Kind returns the leaf's kind.
-func (*LeafO) Kind() reflect.Kind {
+func (leaf *LeafO) Kind() reflect.Kind {
 	return reflect.Bool
 }
 
@@ -259,7 +259,10 @@ func (leaf *LeafB) Maximum() int8 {
 }
 
 // Kind returns the leaf's kind.
-func (*LeafB) Kind() reflect.Kind {
+func (leaf *LeafB) Kind() reflect.Kind {
+	if leaf.IsUnsigned() {
+		return reflect.Uint8
+	}
 	return reflect.Int8
 }
 
@@ -488,7 +491,10 @@ func (leaf *LeafS) Maximum() int16 {
 }
 
 // Kind returns the leaf's kind.
-func (*LeafS) Kind() reflect.Kind {
+func (leaf *LeafS) Kind() reflect.Kind {
+	if leaf.IsUnsigned() {
+		return reflect.Uint16
+	}
 	return reflect.Int16
 }
 
@@ -717,7 +723,10 @@ func (leaf *LeafI) Maximum() int32 {
 }
 
 // Kind returns the leaf's kind.
-func (*LeafI) Kind() reflect.Kind {
+func (leaf *LeafI) Kind() reflect.Kind {
+	if leaf.IsUnsigned() {
+		return reflect.Uint32
+	}
 	return reflect.Int32
 }
 
@@ -946,7 +955,10 @@ func (leaf *LeafL) Maximum() int64 {
 }
 
 // Kind returns the leaf's kind.
-func (*LeafL) Kind() reflect.Kind {
+func (leaf *LeafL) Kind() reflect.Kind {
+	if leaf.IsUnsigned() {
+		return reflect.Uint64
+	}
 	return reflect.Int64
 }
 
@@ -1175,7 +1187,7 @@ func (leaf *LeafF) Maximum() float32 {
 }
 
 // Kind returns the leaf's kind.
-func (*LeafF) Kind() reflect.Kind {
+func (leaf *LeafF) Kind() reflect.Kind {
 	return reflect.Float32
 }
 
@@ -1378,7 +1390,7 @@ func (leaf *LeafD) Maximum() float64 {
 }
 
 // Kind returns the leaf's kind.
-func (*LeafD) Kind() reflect.Kind {
+func (leaf *LeafD) Kind() reflect.Kind {
 	return reflect.Float64
 }
 
@@ -1583,7 +1595,7 @@ func (leaf *LeafF16) Maximum() root.Float16 {
 }
 
 // Kind returns the leaf's kind.
-func (*LeafF16) Kind() reflect.Kind {
+func (leaf *LeafF16) Kind() reflect.Kind {
 	return reflect.Float32
 }
 
@@ -1797,7 +1809,7 @@ func (leaf *LeafD32) Maximum() root.Double32 {
 }
 
 // Kind returns the leaf's kind.
-func (*LeafD32) Kind() reflect.Kind {
+func (leaf *LeafD32) Kind() reflect.Kind {
 	return reflect.Float64
 }
 
@@ -2009,7 +2021,7 @@ func (leaf *LeafC) Maximum() int32 {
 }
 
 // Kind returns the leaf's kind.
-func (*LeafC) Kind() reflect.Kind {
+func (leaf *LeafC) Kind() reflect.Kind {
 	return reflect.String
 }
 
