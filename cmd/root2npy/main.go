@@ -128,6 +128,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -156,44 +157,48 @@ func main() {
 		log.Fatalf("missing input ROOT filename argument")
 	}
 
-	f, err := groot.Open(*fname)
+	err := process(*oname, *fname, *tname)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("%+v", err)
+	}
+}
+
+func process(oname, fname, tname string) error {
+	f, err := groot.Open(fname)
+	if err != nil {
+		return fmt.Errorf("could not open ROOT file: %w", err)
 	}
 	defer f.Close()
 
-	obj, err := f.Get(*tname)
+	obj, err := f.Get(tname)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("%w", err)
 	}
 
 	tree, ok := obj.(rtree.Tree)
 	if !ok {
-		log.Fatalf("object %q in file %q is not a rtree.Tree", *tname, *fname)
+		return fmt.Errorf("object %q in file %q is not a rtree.Tree", tname, fname)
 	}
 
-	var nt = ntuple{n: tree.Entries()}
+	var (
+		nt    = ntuple{n: tree.Entries()}
+		rvars = rtree.NewReadVars(tree)
+	)
 	log.Printf("scanning leaves...")
-	for _, leaf := range tree.Leaves() {
-		if leaf.Kind() == reflect.String {
-			nt.add(leaf.Name(), leaf)
+	for _, rvar := range rvars {
+		rv := reflect.ValueOf(rvar.Value).Elem()
+		switch rv.Kind() {
+		case reflect.Struct, reflect.Slice:
+			log.Printf(">>> %q %T not supported", rvar.Name, rv.Interface())
 			continue
 		}
-		if leaf.Class() == "TLeafElement" { // FIXME(sbinet): find a better, type-safe way
-			log.Printf(">>> %q %v not supported", leaf.Name(), leaf.Class())
-			continue
-		}
-		if leaf.LeafCount() != nil {
-			log.Printf(">>> %q []%v not supported", leaf.Name(), leaf.TypeName())
-			continue
-		}
-		nt.add(leaf.Name(), leaf)
+		nt.add(rvar)
 	}
 	log.Printf("scanning leaves... [done]")
 
 	r, err := rtree.NewReader(tree, nt.args)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("could not create ROOT reader: %w", err)
 	}
 	defer r.Close()
 
@@ -202,12 +207,12 @@ func main() {
 		return nil
 	})
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("could not read ROOT data: %w", err)
 	}
 
-	out, err := os.Create(*oname)
+	out, err := os.Create(oname)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("could not create NumPy file: %w", err)
 	}
 	defer out.Close()
 
@@ -219,34 +224,36 @@ func main() {
 		buf := new(bytes.Buffer)
 		err = npyio.Write(buf, col.slice.Interface())
 		if err != nil {
-			log.Fatalf("error writing %q: %v\n", col.name, err)
+			return fmt.Errorf("could not write %q: %w", col.name, err)
 		}
 
 		wz, err := npz.Create(col.name)
 		if err != nil {
-			log.Fatalf("error creating %q: %v\n", col.name, err)
+			return fmt.Errorf("could not create column %q: %w", col.name, err)
 		}
 
 		_, err = io.CopyBuffer(wz, buf, work)
 		if err != nil {
-			log.Fatal(err)
+			return fmt.Errorf("could not save column %q: %w", col.name, err)
 		}
 	}
 
 	err = npz.Flush()
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("could not flush NumPy zip-file: %w", err)
 	}
 
 	err = npz.Close()
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("could not close NumPy zip-file: %w", err)
 	}
 
 	err = out.Close()
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("could not close NumPy file: %w", err)
 	}
+
+	return nil
 }
 
 type ntuple struct {
@@ -255,14 +262,9 @@ type ntuple struct {
 	args []rtree.ReadVar
 }
 
-func (nt *ntuple) add(name string, leaf rtree.Leaf) {
-	n := len(nt.cols)
-	nt.cols = append(nt.cols, newColumn(name, leaf, nt.n))
-	col := &nt.cols[n]
-	nt.args = append(nt.args, rtree.ReadVar{
-		Name: name, Leaf: leaf.Name(),
-		Value: col.data.Addr().Interface(),
-	})
+func (nt *ntuple) add(rvar rtree.ReadVar) {
+	nt.cols = append(nt.cols, newColumn(rvar, nt.n))
+	nt.args = append(nt.args, rvar)
 }
 
 func (nt *ntuple) fill() {
@@ -275,28 +277,22 @@ func (nt *ntuple) fill() {
 type column struct {
 	name  string
 	i     int64
-	leaf  rtree.Leaf
 	etype reflect.Type
 	shape []int
 	data  reflect.Value
 	slice reflect.Value
 }
 
-func newColumn(name string, leaf rtree.Leaf, n int64) column {
-	etype := leaf.Type()
+func newColumn(rvar rtree.ReadVar, n int64) column {
+	etype := reflect.TypeOf(rvar.Value).Elem()
 	shape := []int{int(n)}
-	if leaf.Len() > 1 && leaf.Kind() != reflect.String {
-		etype = reflect.ArrayOf(leaf.Len(), etype)
-		shape = append(shape, leaf.Len())
-	}
 	rtype := reflect.SliceOf(etype)
 	return column{
-		name:  name,
+		name:  rvar.Name,
 		i:     0,
-		leaf:  leaf,
 		etype: etype,
 		shape: shape,
-		data:  reflect.New(etype).Elem(),
+		data:  reflect.ValueOf(rvar.Value).Elem(),
 		slice: reflect.MakeSlice(rtype, int(n), int(n)),
 	}
 }

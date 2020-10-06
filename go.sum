@@ -80,6 +80,8 @@ github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446/go.mod h1:uY
 github.com/ruudk/golang-pdf417 v0.0.0-20181029194003-1af4ab5afa58/go.mod h1:6lfFZQK844Gfx8o5WFuvpxWRwnSoipWe/p622j1v06w=
 github.com/sbinet/npyio v0.3.0 h1:O2PNHeUwOrXG/oOviqFKtuE3weqfetD8YMswz5LNmQg=
 github.com/sbinet/npyio v0.3.0/go.mod h1:dJ6OpFwUDVVuDSqP5b8paU3yd7Rcs2TZiFimWwD30nc=
+github.com/sbinet/npyio v0.4.0 h1:OwfSnslcvT+5A8SPPCX5XbUHhGdyB5YFMr4zYCTwjxs=
+github.com/sbinet/npyio v0.4.0/go.mod h1:f2FG7w12n50UjFpmW5UJf2si2MCy3hgXkJsxwEXZAmM=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.0/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
