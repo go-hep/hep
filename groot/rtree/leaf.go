@@ -78,10 +78,6 @@ func (leaf *tleaf) Class() string {
 	return "TLeaf"
 }
 
-func (leaf *tleaf) ArrayDim() int {
-	return len(leaf.shape)
-}
-
 func (leaf *tleaf) Shape() []int {
 	return leaf.shape
 }
@@ -123,10 +119,6 @@ func (leaf *tleaf) LenType() int {
 	return leaf.etype
 }
 
-func (leaf *tleaf) MaxIndex() []int {
-	panic("not implemented: " + leaf.Name())
-}
-
 func (leaf *tleaf) Offset() int {
 	return leaf.offset
 }
@@ -136,10 +128,6 @@ func (leaf *tleaf) Kind() reflect.Kind {
 }
 
 func (leaf *tleaf) Type() reflect.Type {
-	panic("not implemented: " + leaf.Name())
-}
-
-func (leaf *tleaf) Value(i int) interface{} {
 	panic("not implemented: " + leaf.Name())
 }
 

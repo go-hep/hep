@@ -311,16 +311,6 @@ func (leaf *{{.Name}}) Type() reflect.Type {
 {{- end}}
 }
 
-// Value returns the leaf value at index i.
-func (leaf *{{.Name}}) Value(i int) interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return (*leaf.sli)[i]
-	}
-}
-
 {{- if .Count}}
 // ivalue returns the first leaf value as int
 func (leaf *{{.Name}}) ivalue() int {

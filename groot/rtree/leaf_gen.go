@@ -69,16 +69,6 @@ func (leaf *LeafO) Type() reflect.Type {
 	return reflect.TypeOf(v)
 }
 
-// Value returns the leaf value at index i.
-func (leaf *LeafO) Value(i int) interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return (*leaf.sli)[i]
-	}
-}
-
 func (leaf *LeafO) TypeName() string {
 	return "bool"
 }
@@ -274,16 +264,6 @@ func (leaf *LeafB) Type() reflect.Type {
 	}
 	var v int8
 	return reflect.TypeOf(v)
-}
-
-// Value returns the leaf value at index i.
-func (leaf *LeafB) Value(i int) interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return (*leaf.sli)[i]
-	}
 }
 
 // ivalue returns the first leaf value as int
@@ -508,16 +488,6 @@ func (leaf *LeafS) Type() reflect.Type {
 	return reflect.TypeOf(v)
 }
 
-// Value returns the leaf value at index i.
-func (leaf *LeafS) Value(i int) interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return (*leaf.sli)[i]
-	}
-}
-
 // ivalue returns the first leaf value as int
 func (leaf *LeafS) ivalue() int {
 	return int(*leaf.ptr)
@@ -738,16 +708,6 @@ func (leaf *LeafI) Type() reflect.Type {
 	}
 	var v int32
 	return reflect.TypeOf(v)
-}
-
-// Value returns the leaf value at index i.
-func (leaf *LeafI) Value(i int) interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return (*leaf.sli)[i]
-	}
 }
 
 // ivalue returns the first leaf value as int
@@ -972,16 +932,6 @@ func (leaf *LeafL) Type() reflect.Type {
 	return reflect.TypeOf(v)
 }
 
-// Value returns the leaf value at index i.
-func (leaf *LeafL) Value(i int) interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return (*leaf.sli)[i]
-	}
-}
-
 // ivalue returns the first leaf value as int
 func (leaf *LeafL) ivalue() int {
 	return int(*leaf.ptr)
@@ -1197,16 +1147,6 @@ func (leaf *LeafF) Type() reflect.Type {
 	return reflect.TypeOf(v)
 }
 
-// Value returns the leaf value at index i.
-func (leaf *LeafF) Value(i int) interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return (*leaf.sli)[i]
-	}
-}
-
 func (leaf *LeafF) TypeName() string {
 	return "float32"
 }
@@ -1398,16 +1338,6 @@ func (leaf *LeafD) Kind() reflect.Kind {
 func (leaf *LeafD) Type() reflect.Type {
 	var v float64
 	return reflect.TypeOf(v)
-}
-
-// Value returns the leaf value at index i.
-func (leaf *LeafD) Value(i int) interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return (*leaf.sli)[i]
-	}
 }
 
 func (leaf *LeafD) TypeName() string {
@@ -1603,16 +1533,6 @@ func (leaf *LeafF16) Kind() reflect.Kind {
 func (leaf *LeafF16) Type() reflect.Type {
 	var v root.Float16
 	return reflect.TypeOf(v)
-}
-
-// Value returns the leaf value at index i.
-func (leaf *LeafF16) Value(i int) interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return (*leaf.sli)[i]
-	}
 }
 
 func (leaf *LeafF16) TypeName() string {
@@ -1819,16 +1739,6 @@ func (leaf *LeafD32) Type() reflect.Type {
 	return reflect.TypeOf(v)
 }
 
-// Value returns the leaf value at index i.
-func (leaf *LeafD32) Value(i int) interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return (*leaf.sli)[i]
-	}
-}
-
 func (leaf *LeafD32) TypeName() string {
 	return "root.Double32"
 }
@@ -2029,16 +1939,6 @@ func (leaf *LeafC) Kind() reflect.Kind {
 func (leaf *LeafC) Type() reflect.Type {
 	var v string
 	return reflect.TypeOf(v)
-}
-
-// Value returns the leaf value at index i.
-func (leaf *LeafC) Value(i int) interface{} {
-	switch {
-	case leaf.ptr != nil:
-		return *leaf.ptr
-	default:
-		return (*leaf.sli)[i]
-	}
 }
 
 func (leaf *LeafC) TypeName() string {

@@ -438,6 +438,7 @@ func TestLeafAPI(t *testing.T) {
 		typ      reflect.Type
 		class    string
 		typename string
+		ptrs     []interface{}
 	}{
 		{
 			leaf:     newLeafO(b, "leaf", shape, unsigned, count),
@@ -450,6 +451,11 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(false),
 			class:    "TLeafO",
 			typename: "bool",
+			ptrs: []interface{}{
+				new(bool),
+				&[]bool{},
+				&[1][2][3][4][5]bool{},
+			},
 		},
 		{
 			leaf:     newLeafB(b, "leaf", shape, unsigned, count),
@@ -462,6 +468,14 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(uint8(0)),
 			class:    "TLeafB",
 			typename: "uint8",
+			ptrs: []interface{}{
+				new(int8),
+				&[]int8{},
+				&[1][2][3][4][5]int8{},
+				new(uint8),
+				&[]uint8{},
+				&[1][2][3][4][5]uint8{},
+			},
 		},
 		{
 			leaf:     newLeafB(b, "leaf", shape, signed, count),
@@ -474,6 +488,14 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(int8(0)),
 			class:    "TLeafB",
 			typename: "int8",
+			ptrs: []interface{}{
+				new(int8),
+				&[]int8{},
+				&[1][2][3][4][5]int8{},
+				new(uint8),
+				&[]uint8{},
+				&[1][2][3][4][5]uint8{},
+			},
 		},
 		{
 			leaf:     newLeafS(b, "leaf", shape, unsigned, count),
@@ -486,6 +508,14 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(uint16(0)),
 			class:    "TLeafS",
 			typename: "uint16",
+			ptrs: []interface{}{
+				new(int16),
+				&[]int16{},
+				&[1][2][3][4][5]int16{},
+				new(uint16),
+				&[]uint16{},
+				&[1][2][3][4][5]uint16{},
+			},
 		},
 		{
 			leaf:     newLeafS(b, "leaf", shape, signed, count),
@@ -498,6 +528,14 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(int16(0)),
 			class:    "TLeafS",
 			typename: "int16",
+			ptrs: []interface{}{
+				new(int16),
+				&[]int16{},
+				&[1][2][3][4][5]int16{},
+				new(uint16),
+				&[]uint16{},
+				&[1][2][3][4][5]uint16{},
+			},
 		},
 		{
 			leaf:     newLeafI(b, "leaf", shape, unsigned, count),
@@ -510,6 +548,14 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(uint32(0)),
 			class:    "TLeafI",
 			typename: "uint32",
+			ptrs: []interface{}{
+				new(int32),
+				&[]int32{},
+				&[1][2][3][4][5]int32{},
+				new(uint32),
+				&[]uint32{},
+				&[1][2][3][4][5]uint32{},
+			},
 		},
 		{
 			leaf:     newLeafI(b, "leaf", shape, signed, count),
@@ -522,6 +568,14 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(int32(0)),
 			class:    "TLeafI",
 			typename: "int32",
+			ptrs: []interface{}{
+				new(int32),
+				&[]int32{},
+				&[1][2][3][4][5]int32{},
+				new(uint32),
+				&[]uint32{},
+				&[1][2][3][4][5]uint32{},
+			},
 		},
 		{
 			leaf:     newLeafL(b, "leaf", shape, unsigned, count),
@@ -534,6 +588,14 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(uint64(0)),
 			class:    "TLeafL",
 			typename: "uint64",
+			ptrs: []interface{}{
+				new(int64),
+				&[]int64{},
+				&[1][2][3][4][5]int64{},
+				new(uint64),
+				&[]uint64{},
+				&[1][2][3][4][5]uint64{},
+			},
 		},
 		{
 			leaf:     newLeafL(b, "leaf", shape, signed, count),
@@ -546,6 +608,14 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(int64(0)),
 			class:    "TLeafL",
 			typename: "int64",
+			ptrs: []interface{}{
+				new(int64),
+				&[]int64{},
+				&[1][2][3][4][5]int64{},
+				new(uint64),
+				&[]uint64{},
+				&[1][2][3][4][5]uint64{},
+			},
 		},
 		{
 			leaf:     newLeafF(b, "leaf", shape, unsigned, count),
@@ -558,6 +628,11 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(float32(0)),
 			class:    "TLeafF",
 			typename: "float32",
+			ptrs: []interface{}{
+				new(float32),
+				&[]float32{},
+				&[1][2][3][4][5]float32{},
+			},
 		},
 		{
 			leaf:     newLeafD(b, "leaf", shape, unsigned, count),
@@ -570,6 +645,11 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(float64(0)),
 			class:    "TLeafD",
 			typename: "float64",
+			ptrs: []interface{}{
+				new(float64),
+				&[]float64{},
+				&[1][2][3][4][5]float64{},
+			},
 		},
 		{
 			leaf:     newLeafF16(b, "leaf", shape, unsigned, count, nil),
@@ -582,6 +662,11 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(root.Float16(0)),
 			class:    "TLeafF16",
 			typename: "root.Float16",
+			ptrs: []interface{}{
+				new(root.Float16),
+				&[]root.Float16{},
+				&[1][2][3][4][5]root.Float16{},
+			},
 		},
 		{
 			leaf:     newLeafD32(b, "leaf", shape, unsigned, count, nil),
@@ -594,6 +679,11 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(root.Double32(0)),
 			class:    "TLeafD32",
 			typename: "root.Double32",
+			ptrs: []interface{}{
+				new(root.Double32),
+				&[]root.Double32{},
+				&[1][2][3][4][5]root.Double32{},
+			},
 		},
 		{
 			leaf:     newLeafC(b, "leaf", shape, unsigned, count),
@@ -606,6 +696,11 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(""),
 			class:    "TLeafC",
 			typename: "string",
+			ptrs: []interface{}{
+				new(string),
+				&[]string{},
+				&[1][2][3][4][5]string{},
+			},
 		},
 	} {
 		t.Run(fmt.Sprintf("%T", tc.leaf), func(t *testing.T) {
@@ -654,6 +749,75 @@ func TestLeafAPI(t *testing.T) {
 				t.Fatalf("invalid typename: got=%v, want=%v", got, want)
 			}
 
+			switch leaf := tc.leaf.(type) {
+			case *LeafO:
+				min := leaf.Minimum()
+				max := leaf.Maximum()
+				if min != max || min != false {
+					t.Fatalf("invalid min/max: got=%v,%v", min, max)
+				}
+			case *LeafB:
+				min := leaf.Minimum()
+				max := leaf.Minimum()
+				if min != max || min != int8(0) {
+					t.Fatalf("invalid min/max: got=%v,%v", min, max)
+				}
+			case *LeafS:
+				min := leaf.Minimum()
+				max := leaf.Minimum()
+				if min != max || min != int16(0) {
+					t.Fatalf("invalid min/max: got=%v,%v", min, max)
+				}
+			case *LeafI:
+				min := leaf.Minimum()
+				max := leaf.Minimum()
+				if min != max || min != int32(0) {
+					t.Fatalf("invalid min/max: got=%v,%v", min, max)
+				}
+			case *LeafL:
+				min := leaf.Minimum()
+				max := leaf.Minimum()
+				if min != max || min != int64(0) {
+					t.Fatalf("invalid min/max: got=%v,%v", min, max)
+				}
+			case *LeafF:
+				min := leaf.Minimum()
+				max := leaf.Minimum()
+				if min != max || min != float32(0) {
+					t.Fatalf("invalid min/max: got=%v,%v", min, max)
+				}
+			case *LeafD:
+				min := leaf.Minimum()
+				max := leaf.Minimum()
+				if min != max || min != float64(0) {
+					t.Fatalf("invalid min/max: got=%v,%v", min, max)
+				}
+			case *LeafF16:
+				min := leaf.Minimum()
+				max := leaf.Minimum()
+				if min != max || min != root.Float16(0) {
+					t.Fatalf("invalid min/max: got=%v,%v", min, max)
+				}
+			case *LeafD32:
+				min := leaf.Minimum()
+				max := leaf.Minimum()
+				if min != max || min != root.Double32(0) {
+					t.Fatalf("invalid min/max: got=%v,%v", min, max)
+				}
+			case *LeafC:
+				min := leaf.Minimum()
+				max := leaf.Minimum()
+				if min != max || min != int32(0) {
+					t.Fatalf("invalid min/max: got=%v,%v", min, max)
+				}
+			}
+
+			for _, addr := range tc.ptrs {
+				err := tc.leaf.setAddress(addr)
+				if err != nil {
+					t.Fatalf("could not set address to %T: %+v", addr, err)
+				}
+			}
 		})
 	}
 }

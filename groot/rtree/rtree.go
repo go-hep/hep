@@ -56,7 +56,6 @@ type Branch interface {
 type Leaf interface {
 	root.Named
 
-	ArrayDim() int
 	Branch() Branch
 	HasRange() bool
 	IsUnsigned() bool
@@ -64,11 +63,9 @@ type Leaf interface {
 	Len() int        // Len returns the number of fixed length elements
 	LenType() int    // LenType returns the number of bytes for this data type
 	Shape() []int
-	MaxIndex() []int
 	Offset() int
 	Kind() reflect.Kind
 	Type() reflect.Type
-	Value(int) interface{}
 	TypeName() string
 
 	setBranch(Branch)

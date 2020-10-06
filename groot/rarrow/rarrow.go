@@ -107,9 +107,10 @@ func dataTypeFromLeaf(leaf rtree.Leaf) arrow.DataType {
 	case leaf.LeafCount() != nil:
 		dt = arrow.ListOf(dt)
 	case leaf.Len() > 1:
+		shape := leaf.Shape()
 		switch leaf.Kind() {
 		case reflect.String:
-			switch dims := leaf.ArrayDim(); dims {
+			switch dims := len(shape); dims {
 			case 0, 1:
 				// interpret as a single string
 			default:
@@ -119,7 +120,6 @@ func dataTypeFromLeaf(leaf rtree.Leaf) arrow.DataType {
 				panic(fmt.Errorf("groot/rtree: invalid number of dimensions (%d)", dims))
 			}
 		default:
-			shape := leaf.Shape()
 			switch leaf.(type) {
 			case *rtree.LeafF16, *rtree.LeafD32:
 				// workaround for https://sft.its.cern.ch/jira/browse/ROOT-10149
