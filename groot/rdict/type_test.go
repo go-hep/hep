@@ -1070,6 +1070,194 @@ func TestTypeFromSI(t *testing.T) {
 				ROOT_ptrArrF *rcont.ArrayF    `groot:"ptrArrF"`
 			})(nil)).Elem(),
 		},
+		{
+			name: "event-ndim",
+			si: rdict.NewCxxStreamerInfo("event", 1, 0, []rbytes.StreamerElement{
+				// arrays
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrB", ""),
+						Type:   rmeta.OffsetL + rmeta.Bool,
+						Size:   2 * 3 * 4 * 5 * 1,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "bool*",
+					}.New(),
+				},
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrI8", ""),
+						Type:   rmeta.OffsetL + rmeta.Int8,
+						Size:   2 * 3 * 4 * 5 * 1,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "int8_t*",
+					}.New(),
+				},
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrI16", ""),
+						Type:   rmeta.OffsetL + rmeta.Int16,
+						Size:   2 * 3 * 4 * 5 * 2,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "int16_t*",
+					}.New(),
+				},
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrI32", ""),
+						Type:   rmeta.OffsetL + rmeta.Int32,
+						Size:   2 * 3 * 4 * 5 * 4,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "int32_t*",
+					}.New(),
+				},
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrI64", ""),
+						Type:   rmeta.OffsetL + rmeta.Int64,
+						Size:   2 * 3 * 4 * 5 * 8,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "int64_t*",
+					}.New(),
+				},
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrU8", ""),
+						Type:   rmeta.OffsetL + rmeta.Uint8,
+						Size:   2 * 3 * 4 * 5 * 1,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "uint8_t*",
+					}.New(),
+				},
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrU16", ""),
+						Type:   rmeta.OffsetL + rmeta.Uint16,
+						Size:   2 * 3 * 4 * 5 * 2,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "uint16_t*",
+					}.New(),
+				},
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrU32", ""),
+						Type:   rmeta.OffsetL + rmeta.Uint32,
+						Size:   2 * 3 * 4 * 5 * 4,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "uint32_t*",
+					}.New(),
+				},
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrU64", ""),
+						Type:   rmeta.OffsetL + rmeta.Uint64,
+						Size:   2 * 3 * 4 * 5 * 8,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "uint64_t*",
+					}.New(),
+				},
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrF32", ""),
+						Type:   rmeta.OffsetL + rmeta.Float32,
+						Size:   2 * 3 * 4 * 5 * 4,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "float32_t*",
+					}.New(),
+				},
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrF64", ""),
+						Type:   rmeta.OffsetL + rmeta.Float64,
+						Size:   2 * 3 * 4 * 5 * 8,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "float64_t*",
+					}.New(),
+				},
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrF16", ""),
+						Type:   rmeta.OffsetL + rmeta.Float16,
+						Size:   2 * 3 * 4 * 5 * 4,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "Float16_t*",
+					}.New(),
+				},
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrD32", ""),
+						Type:   rmeta.OffsetL + rmeta.Double32,
+						Size:   2 * 3 * 4 * 5 * 4,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "Double32_t*",
+					}.New(),
+				},
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrStr", ""),
+						Type:   rmeta.OffsetL + rmeta.TString,
+						Size:   2 * 3 * 4 * 5 * 24,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "TString*",
+					}.New(),
+				},
+				&rdict.StreamerBasicType{
+					StreamerElement: rdict.Element{
+						Name:   *rbase.NewNamed("arrCstr", ""),
+						Type:   rmeta.OffsetL + rmeta.CharStar,
+						Size:   2 * 3 * 4 * 5 * 8,
+						ArrLen: 2 * 3 * 4 * 5,
+						ArrDim: 4,
+						MaxIdx: [5]int32{2, 3, 4, 5, 0},
+						EName:  "char**",
+					}.New(),
+				},
+			}),
+			want: reflect.TypeOf((*struct {
+				ROOT_arrB    [2][3][4][5]bool          `groot:"arrB[2][3][4][5]"`
+				ROOT_arrI8   [2][3][4][5]int8          `groot:"arrI8[2][3][4][5]"`
+				ROOT_arrI16  [2][3][4][5]int16         `groot:"arrI16[2][3][4][5]"`
+				ROOT_arrI32  [2][3][4][5]int32         `groot:"arrI32[2][3][4][5]"`
+				ROOT_arrI64  [2][3][4][5]int64         `groot:"arrI64[2][3][4][5]"`
+				ROOT_arrU8   [2][3][4][5]uint8         `groot:"arrU8[2][3][4][5]"`
+				ROOT_arrU16  [2][3][4][5]uint16        `groot:"arrU16[2][3][4][5]"`
+				ROOT_arrU32  [2][3][4][5]uint32        `groot:"arrU32[2][3][4][5]"`
+				ROOT_arrU64  [2][3][4][5]uint64        `groot:"arrU64[2][3][4][5]"`
+				ROOT_arrF32  [2][3][4][5]float32       `groot:"arrF32[2][3][4][5]"`
+				ROOT_arrF64  [2][3][4][5]float64       `groot:"arrF64[2][3][4][5]"`
+				ROOT_arrF16  [2][3][4][5]root.Float16  `groot:"arrF16[2][3][4][5]"`
+				ROOT_arrD32  [2][3][4][5]root.Double32 `groot:"arrD32[2][3][4][5]"`
+				ROOT_arrStr  [2][3][4][5]string        `groot:"arrStr[2][3][4][5]"`
+				ROOT_arrCstr [2][3][4][5]string        `groot:"arrCstr[2][3][4][5]"`
+			})(nil)).Elem(),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.si.BuildStreamers()

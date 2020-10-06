@@ -78,7 +78,7 @@ func TypeFromSI(ctx rbytes.StreamerInfoContext, si rbytes.StreamerInfo) (reflect
 			et = ""
 		}
 		if rt.Kind() == reflect.Array {
-			et = fmt.Sprintf("[%d]", rt.Len())
+			et = ndimsFromType(rt)
 		}
 		ft := reflect.StructField{
 			Name: "ROOT_" + cxxNameSanitizer.Replace(se.Name()),
@@ -462,6 +462,19 @@ func typeFromDescr(typ reflect.Type, typename string, alen int, dims []int32) re
 	}
 
 	return typ
+}
+
+func ndimsFromType(rt reflect.Type) string {
+	var dims []int
+	for rt.Kind() == reflect.Array {
+		dims = append(dims, rt.Len())
+		rt = rt.Elem()
+	}
+	var o strings.Builder
+	for _, v := range dims {
+		o.WriteString("[" + strconv.Itoa(v) + "]")
+	}
+	return o.String()
 }
 
 var (

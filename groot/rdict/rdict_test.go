@@ -5,6 +5,7 @@
 package rdict
 
 import (
+	"fmt"
 	"math"
 	"reflect"
 	"testing"
@@ -607,6 +608,53 @@ func TestFindCounterOffset(t *testing.T) {
 			got := si.findField(ctx, tc.count, se, nil)
 			if got, want := got, tc.want; !reflect.DeepEqual(got, want) {
 				t.Fatalf("invalid offset:\ngot= %v\nwant=%v\nstreamer:\n%v", got, want, si)
+			}
+		})
+	}
+}
+
+func TestNdimsFromType(t *testing.T) {
+	for _, tc := range []struct {
+		typ  reflect.Type
+		want string
+	}{
+		{
+			typ:  reflect.TypeOf([]bool{}),
+			want: "",
+		},
+		{
+			typ:  reflect.TypeOf([0]bool{}),
+			want: "[0]",
+		},
+		{
+			typ:  reflect.TypeOf([1]bool{}),
+			want: "[1]",
+		},
+		{
+			typ:  reflect.TypeOf([1][2]bool{}),
+			want: "[1][2]",
+		},
+		{
+			typ:  reflect.TypeOf([1][2][3]bool{}),
+			want: "[1][2][3]",
+		},
+		{
+			typ:  reflect.TypeOf([1][2][3][4]bool{}),
+			want: "[1][2][3][4]",
+		},
+		{
+			typ:  reflect.TypeOf([1][2][3][4][5]bool{}),
+			want: "[1][2][3][4][5]",
+		},
+		{
+			typ:  reflect.TypeOf([1][2][3][4][5][6]bool{}),
+			want: "[1][2][3][4][5][6]",
+		},
+	} {
+		t.Run(fmt.Sprintf("%v", tc.typ), func(t *testing.T) {
+			got := ndimsFromType(tc.typ)
+			if got != tc.want {
+				t.Fatalf("invalid type:\ngot= %q\nwant=%q", got, tc.want)
 			}
 		})
 	}

@@ -80,6 +80,10 @@ func (leaf *tleaf) ArrayDim() int {
 	return strings.Count(leaf.named.Title(), "[")
 }
 
+func (leaf *tleaf) Shape() []int {
+	return leafDims(leaf.Title())
+}
+
 func (leaf *tleaf) setBranch(b Branch) {
 	leaf.branch = b
 }

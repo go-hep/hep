@@ -43,6 +43,15 @@ func TestRecord(t *testing.T) {
 			tree: "tree",
 			want: "testdata/small-evnt-tree-nosplit.root.txt",
 		},
+		{
+			// n-dim arrays
+			// FIXME(sbinet): arrays of Float16_t and Double32_t are flatten.
+			// This is because of:
+			// https://sft.its.cern.ch/jira/browse/ROOT-10149
+			file: "../testdata/ndim.root",
+			tree: "tree",
+			want: "testdata/ndim.root.txt",
+		},
 	} {
 		t.Run(tc.file, func(t *testing.T) {
 			f, err := groot.Open(tc.file)

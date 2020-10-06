@@ -206,6 +206,14 @@ func TestDump(t *testing.T) {
 			name: "../testdata/std-map-split1.root",
 			want: loadRef("testdata/std-map-split1.root.txt"),
 		},
+		{
+			// n-dim arrays
+			// FIXME(sbinet): arrays of Float16_t and Double32_t are flatten.
+			// This is because of:
+			// https://sft.its.cern.ch/jira/browse/ROOT-10149
+			name: "../testdata/ndim.root",
+			want: loadRef("testdata/ndim.root.txt"),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)

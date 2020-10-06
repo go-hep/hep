@@ -282,13 +282,11 @@ func newValue(leaf Leaf) interface{} {
 				panic(fmt.Errorf("groot/rtree: invalid number of dimensions (%d)", dims))
 			}
 		default:
-			var shape []int
+			shape := leaf.Shape()
 			switch leaf.(type) {
 			case *LeafF16, *LeafD32:
 				// workaround for https://sft.its.cern.ch/jira/browse/ROOT-10149
 				shape = []int{leaf.Len()}
-			default:
-				shape = leafDims(leaf.Title())
 			}
 			for i := range shape {
 				etype = reflect.ArrayOf(shape[len(shape)-1-i], etype)

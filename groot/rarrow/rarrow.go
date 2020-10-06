@@ -51,6 +51,7 @@ func dataTypeFromLeaf(leaf rtree.Leaf) arrow.DataType {
 	var (
 		unsigned = leaf.IsUnsigned()
 		kind     = leaf.Kind()
+		typ      = leaf.Type()
 		dt       arrow.DataType
 	)
 
@@ -93,10 +94,10 @@ func dataTypeFromLeaf(leaf rtree.Leaf) arrow.DataType {
 		dt = arrow.BinaryTypes.String
 
 	case reflect.Struct:
-		dt = dataTypeFromGo(leaf.Type())
+		dt = dataTypeFromGo(typ)
 
 	case reflect.Slice:
-		dt = dataTypeFromGo(leaf.Type())
+		dt = dataTypeFromGo(typ)
 
 	default:
 		panic(fmt.Errorf("not implemented %#v (kind=%v)", leaf, kind))
@@ -118,7 +119,15 @@ func dataTypeFromLeaf(leaf rtree.Leaf) arrow.DataType {
 				panic(fmt.Errorf("groot/rtree: invalid number of dimensions (%d)", dims))
 			}
 		default:
-			dt = arrow.FixedSizeListOf(int32(leaf.Len()), dt)
+			shape := leaf.Shape()
+			switch leaf.(type) {
+			case *rtree.LeafF16, *rtree.LeafD32:
+				// workaround for https://sft.its.cern.ch/jira/browse/ROOT-10149
+				shape = []int{leaf.Len()}
+			}
+			for i := range shape {
+				dt = arrow.FixedSizeListOf(int32(shape[len(shape)-1-i]), dt)
+			}
 		}
 	}
 
