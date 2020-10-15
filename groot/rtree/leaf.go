@@ -13,6 +13,7 @@ import (
 
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
+	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
@@ -240,6 +241,7 @@ type tleafElement struct {
 	ptr       interface{}
 	src       reflect.Value
 	rstreamer rbytes.RStreamer
+	wstreamer rbytes.WStreamer
 	streamers []rbytes.StreamerElement
 }
 
@@ -322,6 +324,18 @@ func (leaf *tleafElement) setAddress(ptr interface{}) error {
 	leaf.ptr = ptr
 	leaf.src = reflect.ValueOf(leaf.ptr).Elem()
 
+	if leaf.rstreamer != nil {
+		return leaf.setReadAddress(ptr)
+	}
+
+	if leaf.wstreamer != nil {
+		return leaf.setWriteAddress(ptr)
+	}
+
+	return fmt.Errorf("rtree: leaf %q is neither read nor write", leaf.Name())
+}
+
+func (leaf *tleafElement) setReadAddress(ptr interface{}) error {
 	err := leaf.rstreamer.(rbytes.Binder).Bind(ptr)
 	if err != nil {
 		return fmt.Errorf("rtree: could not bind read-streamer for leaf=%q (type=%s) to ptr=%T: %w",
@@ -347,8 +361,44 @@ func (leaf *tleafElement) setAddress(ptr interface{}) error {
 	return nil
 }
 
+func (leaf *tleafElement) setWriteAddress(ptr interface{}) error {
+	err := leaf.wstreamer.(rbytes.Binder).Bind(ptr)
+	if err != nil {
+		return fmt.Errorf("rtree: could not bind write-streamer for leaf=%q (type=%s) to ptr=%T: %w",
+			leaf.Name(), leaf.TypeName(), leaf.ptr, err,
+		)
+	}
+	if leaf.count != nil {
+		w, ok := leaf.wstreamer.(rbytes.Counter)
+		if !ok {
+			return fmt.Errorf(
+				"rtree: could not set write-streamer counter for leaf=%q (type=%s)",
+				leaf.Name(), leaf.TypeName(),
+			)
+		}
+		err = w.Count(leaf.count.ivalue)
+		if err != nil {
+			return fmt.Errorf(
+				"rtree: could not set write-streamer counter for leaf=%q (type=%s): %w",
+				leaf.Name(), leaf.TypeName(), err,
+			)
+		}
+	}
+	return nil
+}
+
 func (leaf *tleafElement) writeToBuffer(w *rbytes.WBuffer) (int, error) {
-	panic("not implemented")
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	if leaf.wstreamer == nil {
+		panic(fmt.Errorf("rtree: nil write-streamer (leaf: %s)", leaf.Name()))
+	}
+
+	pos := w.Pos()
+	err := leaf.wstreamer.WStreamROOT(w)
+	return int(w.Pos() - pos), err
 }
 
 func (leaf *tleafElement) canGenerateOffsetArray() bool {
@@ -510,28 +560,79 @@ func newLeafFromWVar(w *wtree, b Branch, v WriteVar, lvl int, cfg wopt) (Leaf, e
 	switch kind {
 	case reflect.Slice:
 		lc := b.Leaf(v.Count)
-		if lc == nil {
-			leaves := b.Leaves()
-			names := make([]string, len(leaves))
-			for i, ll := range leaves {
-				names[i] = ll.Name()
+		switch lc {
+		case nil:
+			// write as vector<T>.
+			const (
+				offset   = 0
+				hasrange = false
+				unsigned = false
+			)
+			base := newLeaf(v.Name, nil, int(rt.Size()), offset, hasrange, unsigned, count, b)
+			leaf := &tleafElement{
+				rvers: rvers.LeafElement,
+				tleaf: base,
+				id:    -1, // FIXME(sbinet): create proper serial number
+				ltype: 2,  // FIXME(sbinet)
+				ptr:   v.Value,
+				src:   reflect.ValueOf(v.Value),
 			}
-			return nil, fmt.Errorf(
-				"could not find leaf count %q from branch %q for slice (name=%q, type=%T) among: %q",
-				v.Count, b.Name(), v.Name, v.Value, names,
-			)
+			si := rdict.StreamerOf(w.ttree.f, reflect.TypeOf(v.Value).Elem())
+
+			var err error
+			leaf.wstreamer, err = si.NewWStreamer(rbytes.ObjectWise)
+			if err != nil {
+				return nil, fmt.Errorf("could not create w-streamer for leaf %q: %w", v.Name, err)
+			}
+
+			err = leaf.setAddress(v.Value)
+			if err != nil {
+				return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
+			}
+
+			addLeaf(leaf)
+			return leaf, nil
+
+		default:
+			lcc, ok := lc.(leafCount)
+			if !ok {
+				return nil, fmt.Errorf(
+					"leaf count %q from branch %q for slice (name=%q, type=%T) is not a LeafCount",
+					v.Count, b.Name(), v.Name, v.Value,
+				)
+			}
+			count = lcc
+			kind = rt.Elem().Kind()
 		}
-		lcc, ok := lc.(leafCount)
-		if !ok {
-			return nil, fmt.Errorf(
-				"leaf count %q from branch %q for slice (name=%q, type=%T) is not a LeafCount",
-				v.Count, b.Name(), v.Name, v.Value,
-			)
-		}
-		count = lcc
-		kind = rt.Elem().Kind()
+
 	case reflect.Struct:
-		panic("not implemented")
+		const (
+			offset   = 0
+			hasrange = false
+			unsigned = false
+		)
+		base := newLeaf(v.Name, nil, int(rt.Size()), offset, hasrange, unsigned, count, b)
+		leaf := &tleafElement{
+			rvers: rvers.LeafElement,
+			tleaf: base,
+			id:    -1, // FIXME(sbinet): create proper serial number
+			ltype: -1, // FIXME(sbinet)
+			ptr:   v.Value,
+			src:   reflect.ValueOf(v.Value),
+		}
+		si := rdict.StreamerOf(w.ttree.f, reflect.TypeOf(v.Value).Elem())
+		wstreamer, err := si.NewWStreamer(rbytes.ObjectWise)
+		if err != nil {
+			return nil, fmt.Errorf("could not create w-streamer for leaf %q: %w", v.Name, err)
+		}
+		leaf.wstreamer = wstreamer
+
+		err = leaf.setAddress(v.Value)
+		if err != nil {
+			return nil, fmt.Errorf("could not set leaf address for %q: %w", v.Name, err)
+		}
+		addLeaf(leaf)
+		return leaf, nil
 	}
 
 	switch kind {

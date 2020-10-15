@@ -306,6 +306,15 @@ func (b *Basket) update(offset int64) {
 	b.nevbuf++
 }
 
+func (b *Basket) grow(n int) {
+	b.nevsize = n
+	delta := len(b.offsets) - n
+	if delta < 0 {
+		delta = -delta
+	}
+	b.offsets = append(b.offsets, make([]int32, delta)...)
+}
+
 func (b *Basket) writeFile(f *riofs.File) (totBytes int64, zipBytes int64, err error) {
 	header := b.header
 	b.header = true

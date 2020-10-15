@@ -20,6 +20,7 @@ import (
 	"go-hep.org/x/hep/groot/internal/rtests"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
+	"go-hep.org/x/hep/groot/rdict"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
@@ -1464,6 +1465,7 @@ func TestTreeRW(t *testing.T) {
 					t.Fatalf("could not create tree writer: %v", err)
 				}
 				defer tw.Close()
+
 				for i, b := range tw.Branches() {
 					if got, want := b.Name(), tc.wvars[i].Name; got != want {
 						t.Fatalf("branch[%d]: got=%q, want=%q", i, got, want)
@@ -1632,6 +1634,1039 @@ void scan(const char* fname, const char* tree, const char *list, const char *ona
 
 				ofile := filepath.Join(tmp, tc.name+".txt")
 				out, err := rtests.RunCxxROOT("scan", []byte(code), fname, treeName, strings.Join(scan, ":"), ofile)
+				if err != nil {
+					t.Fatalf("could not run C++ ROOT: %+v\noutput:\n%s", err, out)
+				}
+
+				got, err := ioutil.ReadFile(ofile)
+				if err != nil {
+					t.Fatalf("could not read C++ ROOT scan file %q: %+v\noutput:\n%s", ofile, err, out)
+				}
+
+				if got, want := string(got), tc.cxx; got != want {
+					t.Fatalf("invalid ROOT scan:\ngot:\n%v\nwant:\n%v\noutput:\n%s", got, want, out)
+				}
+			}
+		})
+	}
+}
+
+func TestNestedTreeRW(t *testing.T) {
+	tmp, err := ioutil.TempDir("", "groot-rtree-")
+	if err != nil {
+		t.Fatalf("could not create dir: %v", err)
+	}
+	defer os.RemoveAll(tmp)
+
+	const (
+		treeName = "mytree"
+	)
+
+	sictx := rdict.StreamerInfos
+
+	for _, tc := range []struct {
+		name    string
+		skip    bool
+		wopts   []WriteOption
+		nevts   int64
+		wvars   []WriteVar
+		rvars   []ReadVar
+		btitles []string
+		ltitles []string
+		total   int
+		want    func(i int) interface{}
+		macro   string // ROOT macro to execute to read back ROOT file
+		cxx     string // expected ROOT-TTree::Scan
+		sinfos  []rbytes.StreamerInfo
+	}{
+		{
+			name: "struct-with-struct",
+			wopts: []WriteOption{
+				WithZlib(flate.DefaultCompression),
+				WithSplitLevel(0),
+			},
+			nevts: 10,
+			wvars: []WriteVar{
+				{Name: "evt", Value: new(TNestedStruct1)},
+			},
+			rvars: []ReadVar{
+				{Name: "evt", Value: new(TNestedStruct1)},
+			},
+			btitles: []string{"evt"},
+			ltitles: []string{"evt"},
+			total:   460,
+			want: func(i int) interface{} {
+				var evt struct {
+					Data TNestedStruct1
+				}
+				evt.Data.RunNbr = 10 + int64(i)
+				evt.Data.EvtNbr = int64(i)
+				evt.Data.P3.Px = float64(i + 10)
+				evt.Data.P3.Py = float64(i + 20)
+				evt.Data.P3.Pz = float64(i + 30)
+				return evt
+			},
+			macro: `
+#include "TFile.h"
+#include "TTree.h"
+
+#include <vector>
+#include <fstream>
+
+struct TNestedStruct1P3 {
+	double px,py,pz;
+};
+
+struct TNestedStruct1 {
+	Long64_t runnbr;
+	Long64_t evtnbr;
+	TNestedStruct1P3 p3;
+};
+
+
+void scan(const char *fname, const char *tname, const char *oname) {
+ auto o = std::fstream(oname, std::ofstream::out);
+ auto f = TFile::Open(fname, "READ");
+ auto t = (TTree*)f->Get(tname);
+ t->Print();
+
+ TNestedStruct1 *evt = nullptr;
+ t->SetBranchAddress("evt", &evt);
+
+ auto n = t->GetEntries();
+ o << "entries: " << n << "\n";
+ for (int i = 0; i < n; i++) {
+	t->GetEntry(i);
+	o << "evt[" << i << "]:"
+	  << " run=" << evt->runnbr << ","
+	  << " evt=" << evt->evtnbr << ","
+	  << " p3(" << evt->p3.px << ", " << evt->p3.py << ", " << evt->p3.pz << ")"
+	  << "\n";
+ }
+ o.flush();
+}
+			`,
+			cxx: `entries: 10
+evt[0]: run=10, evt=0, p3(10, 20, 30)
+evt[1]: run=11, evt=1, p3(11, 21, 31)
+evt[2]: run=12, evt=2, p3(12, 22, 32)
+evt[3]: run=13, evt=3, p3(13, 23, 33)
+evt[4]: run=14, evt=4, p3(14, 24, 34)
+evt[5]: run=15, evt=5, p3(15, 25, 35)
+evt[6]: run=16, evt=6, p3(16, 26, 36)
+evt[7]: run=17, evt=7, p3(17, 27, 37)
+evt[8]: run=18, evt=8, p3(18, 28, 38)
+evt[9]: run=19, evt=9, p3(19, 29, 39)
+`,
+			sinfos: []rbytes.StreamerInfo{
+				rdict.StreamerOf(sictx, reflect.TypeOf(TNestedStruct1P3{})),
+				rdict.StreamerOf(sictx, reflect.TypeOf(TNestedStruct1{})),
+			},
+		},
+		{
+			name: "large-struct-with-struct",
+			wopts: []WriteOption{
+				WithZlib(flate.DefaultCompression),
+				WithSplitLevel(0),
+			},
+			nevts: 1000,
+			wvars: []WriteVar{
+				{Name: "evt", Value: new(TNestedStruct1)},
+			},
+			rvars: []ReadVar{
+				{Name: "evt", Value: new(TNestedStruct1)},
+			},
+			btitles: []string{"evt"},
+			ltitles: []string{"evt"},
+			total:   46 * 1000,
+			want: func(i int) interface{} {
+				var evt struct {
+					Data TNestedStruct1
+				}
+				evt.Data.RunNbr = 10 + int64(i)
+				evt.Data.EvtNbr = int64(i)
+				evt.Data.P3.Px = float64(i + 10)
+				evt.Data.P3.Py = float64(i + 20)
+				evt.Data.P3.Pz = float64(i + 30)
+				return evt
+			},
+			sinfos: []rbytes.StreamerInfo{
+				rdict.StreamerOf(sictx, reflect.TypeOf(TNestedStruct1P3{})),
+				rdict.StreamerOf(sictx, reflect.TypeOf(TNestedStruct1{})),
+			},
+		},
+		{
+			name: "struct-with-struct+slice",
+			wopts: []WriteOption{
+				WithZlib(flate.DefaultCompression),
+				WithSplitLevel(0),
+			},
+			nevts: 10,
+			wvars: []WriteVar{
+				{Name: "evt", Value: new(TNestedStruct2)},
+			},
+			rvars: []ReadVar{
+				{Name: "evt", Value: new(TNestedStruct2)},
+			},
+			btitles: []string{"evt"},
+			ltitles: []string{"evt"},
+			total:   740,
+			want: func(i int) interface{} {
+				var evt struct {
+					Data TNestedStruct2
+				}
+				evt.Data.RunNbr = 10 + int64(i)
+				evt.Data.EvtNbr = int64(i)
+				evt.Data.P3.Px = float64(i + 10)
+				evt.Data.P3.Py = float64(i + 20)
+				evt.Data.P3.Pz = float64(i + 30)
+				switch i {
+				case 0:
+					evt.Data.F32s = nil
+				default:
+					evt.Data.F32s = make([]float32, 0, i)
+				}
+				for j := 0; j < i; j++ {
+					evt.Data.F32s = append(evt.Data.F32s, float32((i+1)*10+j))
+				}
+
+				return evt
+			},
+			macro: `
+#include "TFile.h"
+#include "TTree.h"
+
+#include <vector>
+#include <fstream>
+
+struct TNestedStruct1P3 {
+	double px,py,pz;
+};
+
+struct TNestedStruct2 {
+	Long64_t runnbr;
+	Long64_t evtnbr;
+	TNestedStruct1P3 p3;
+	std::vector<float> f32s;
+};
+
+template<class T>
+std::string printVec(const std::vector<T>& v) {
+	std::stringstream o;
+	int i = 0;
+	o << "[";
+	for (auto e : v) {
+		if (i > 0) {
+			o << ", ";
+		}
+		o << e;
+		i++;
+	}
+	o << "]";
+	return o.str();
+}
+
+void scan(const char *fname, const char *tname, const char *oname) {
+ auto o = std::fstream(oname, std::ofstream::out);
+ auto f = TFile::Open(fname, "READ");
+ auto t = (TTree*)f->Get(tname);
+ t->Print();
+
+ TNestedStruct2 *evt = nullptr;
+ t->SetBranchAddress("evt", &evt);
+
+ auto n = t->GetEntries();
+ o << "entries: " << n << "\n";
+ for (int i = 0; i < n; i++) {
+	t->GetEntry(i);
+	o << "evt[" << i << "]:"
+	  << " run=" << evt->runnbr << ","
+	  << " evt=" << evt->evtnbr << ","
+	  << " p3(" << evt->p3.px << ", " << evt->p3.py << ", " << evt->p3.pz << ")"
+	  << " f32s(" << printVec(evt->f32s) << ")"
+	  << "\n";
+ }
+ o.flush();
+}
+			`,
+			cxx: `entries: 10
+evt[0]: run=10, evt=0, p3(10, 20, 30) f32s([])
+evt[1]: run=11, evt=1, p3(11, 21, 31) f32s([20])
+evt[2]: run=12, evt=2, p3(12, 22, 32) f32s([30, 31])
+evt[3]: run=13, evt=3, p3(13, 23, 33) f32s([40, 41, 42])
+evt[4]: run=14, evt=4, p3(14, 24, 34) f32s([50, 51, 52, 53])
+evt[5]: run=15, evt=5, p3(15, 25, 35) f32s([60, 61, 62, 63, 64])
+evt[6]: run=16, evt=6, p3(16, 26, 36) f32s([70, 71, 72, 73, 74, 75])
+evt[7]: run=17, evt=7, p3(17, 27, 37) f32s([80, 81, 82, 83, 84, 85, 86])
+evt[8]: run=18, evt=8, p3(18, 28, 38) f32s([90, 91, 92, 93, 94, 95, 96, 97])
+evt[9]: run=19, evt=9, p3(19, 29, 39) f32s([100, 101, 102, 103, 104, 105, 106, 107, 108])
+`,
+			sinfos: []rbytes.StreamerInfo{
+				rdict.StreamerOf(sictx, reflect.TypeOf(TNestedStruct1P3{})),
+				rdict.StreamerOf(sictx, reflect.TypeOf(TNestedStruct2{})),
+			},
+		},
+		{
+			name: "struct+slice",
+			wopts: []WriteOption{
+				WithZlib(flate.DefaultCompression),
+				WithSplitLevel(0),
+			},
+			nevts: 10,
+			wvars: []WriteVar{
+				{Name: "runnbr", Value: new(int64)},
+				{Name: "evtnbr", Value: new(int64)},
+				{Name: "p3", Value: new(TNestedStruct1P3)},
+				{Name: "f32s", Value: new([]float32)},
+			},
+			rvars: []ReadVar{
+				{Name: "runnbr", Value: new(int64)},
+				{Name: "evtnbr", Value: new(int64)},
+				{Name: "p3", Value: new(TNestedStruct1P3)},
+				{Name: "f32s", Value: new([]float32)},
+			},
+			btitles: []string{"runnbr/L", "evtnbr/L", "p3", "f32s"},
+			ltitles: []string{"runnbr", "evtnbr", "p3", "f32s"},
+			total:   680,
+			want: func(i int) interface{} {
+				var evt struct {
+					Data TNestedStruct3
+				}
+				evt.Data.RunNbr = 10 + int64(i)
+				evt.Data.EvtNbr = int64(i)
+				evt.Data.P3.Px = float64(i + 10)
+				evt.Data.P3.Py = float64(i + 20)
+				evt.Data.P3.Pz = float64(i + 30)
+				switch i {
+				case 0:
+					evt.Data.F32s = nil
+				default:
+					evt.Data.F32s = make([]float32, 0, i)
+				}
+				for j := 0; j < i; j++ {
+					evt.Data.F32s = append(evt.Data.F32s, float32((i+1)*10+j))
+				}
+
+				return evt.Data
+			},
+			macro: `
+#include "TFile.h"
+#include "TTree.h"
+
+#include <vector>
+#include <fstream>
+
+struct TNestedStruct1P3 {
+	double px,py,pz;
+};
+
+struct TNestedStruct3 {
+	Long64_t runnbr;
+	Long64_t evtnbr;
+	TNestedStruct1P3 p3;
+	std::vector<float> f32s;
+};
+
+template<class T>
+std::string printVec(const std::vector<T>& v) {
+	std::stringstream o;
+	int i = 0;
+	o << "[";
+	for (auto e : v) {
+		if (i > 0) {
+			o << ", ";
+		}
+		o << e;
+		i++;
+	}
+	o << "]";
+	return o.str();
+}
+
+void scan(const char *fname, const char *tname, const char *oname) {
+ auto o = std::fstream(oname, std::ofstream::out);
+ auto f = TFile::Open(fname, "READ");
+ auto t = (TTree*)f->Get(tname);
+ t->Print();
+
+ Long64_t runnbr;
+ t->SetBranchAddress("runnbr", &runnbr);
+
+ Long64_t evtnbr;
+ t->SetBranchAddress("evtnbr", &evtnbr);
+
+ TNestedStruct1P3 *p3 = nullptr;
+ t->SetBranchAddress("p3", &p3);
+
+ std::vector<float> *f32s = nullptr;
+ t->SetBranchAddress("f32s", &f32s);
+
+ auto n = t->GetEntries();
+ o << "entries: " << n << "\n";
+ for (int i = 0; i < n; i++) {
+	t->GetEntry(i);
+	o << "evt[" << i << "]:"
+	  << " run=" << runnbr << ","
+	  << " evt=" << evtnbr << ","
+	  << " p3(" << p3->px << ", " << p3->py << ", " << p3->pz << ")"
+	  << " f32s(" << printVec(*f32s) << ")"
+	  << "\n";
+ }
+ o.flush();
+}
+			`,
+			cxx: `entries: 10
+evt[0]: run=10, evt=0, p3(10, 20, 30) f32s([])
+evt[1]: run=11, evt=1, p3(11, 21, 31) f32s([20])
+evt[2]: run=12, evt=2, p3(12, 22, 32) f32s([30, 31])
+evt[3]: run=13, evt=3, p3(13, 23, 33) f32s([40, 41, 42])
+evt[4]: run=14, evt=4, p3(14, 24, 34) f32s([50, 51, 52, 53])
+evt[5]: run=15, evt=5, p3(15, 25, 35) f32s([60, 61, 62, 63, 64])
+evt[6]: run=16, evt=6, p3(16, 26, 36) f32s([70, 71, 72, 73, 74, 75])
+evt[7]: run=17, evt=7, p3(17, 27, 37) f32s([80, 81, 82, 83, 84, 85, 86])
+evt[8]: run=18, evt=8, p3(18, 28, 38) f32s([90, 91, 92, 93, 94, 95, 96, 97])
+evt[9]: run=19, evt=9, p3(19, 29, 39) f32s([100, 101, 102, 103, 104, 105, 106, 107, 108])
+`,
+			sinfos: []rbytes.StreamerInfo{
+				rdict.StreamerOf(sictx, reflect.TypeOf(TNestedStruct1P3{})),
+				rdict.StreamerOf(sictx, reflect.TypeOf(TNestedStruct3{})),
+			},
+		},
+		{
+			name: "vector+slice",
+			wopts: []WriteOption{
+				WithZlib(flate.DefaultCompression),
+				WithSplitLevel(0),
+			},
+			nevts: 10,
+			wvars: []WriteVar{
+				{Name: "N", Value: new(int32)},
+				{Name: "vec", Value: new([]float32)},
+				//				{Name: "sli", Value: new([]float32), Count: "N"},
+			},
+			rvars: []ReadVar{
+				{Name: "N", Value: new(int32)},
+				{Name: "vec", Value: new([]float32)},
+				//				{Name: "sli", Value: new([]float32)},
+			},
+			btitles: []string{"N/I", "vec"}, // "sli[N]/F"},
+			ltitles: []string{"N", "vec"},   // "sli[N]"},
+			total:   360,
+			want: func(i int) interface{} {
+				var evt struct {
+					N   int32
+					Vec []float32
+					//					Sli []float32 `groot:"sli[N]"`
+				}
+
+				evt.N = int32(i) + 1
+				evt.Vec = make([]float32, evt.N)
+				//				evt.Sli = make([]float32, evt.N)
+				for j := 0; j < int(evt.N); j++ {
+					evt.Vec[j] = -float32((i+1)*10 + j)
+					//					evt.Sli[j] = +float32((i+1)*10 + j)
+				}
+
+				return evt
+			},
+			macro: `
+#include "TFile.h"
+#include "TTree.h"
+
+#include <vector>
+#include <fstream>
+
+template<class T>
+std::string printVec(const std::vector<T>& v) {
+	std::stringstream o;
+	int i = 0;
+	o << "[";
+	for (auto e : v) {
+		if (i > 0) {
+			o << " ";
+		}
+		o << e;
+		i++;
+	}
+	o << "]";
+	return o.str();
+}
+
+template<class T>
+std::string printSli(int32_t n, const T *v) {
+	std::stringstream o;
+	o << "[";
+	for (int i = 0; i < n; i++) {
+		auto e = v[i];
+		if (i > 0) {
+			o << " ";
+		}
+		o << e;
+	}
+	o << "]";
+	return o.str();
+}
+
+void scan(const char *fname, const char *tname, const char *oname) {
+ auto o = std::fstream(oname, std::ofstream::out);
+ auto f = TFile::Open(fname, "READ");
+ auto t = (TTree*)f->Get(tname);
+ t->Print();
+
+ int32_t n;
+ t->SetBranchAddress("N", &n);
+
+ std::vector<float> *vec = nullptr;
+ t->SetBranchAddress("vec", &vec);
+
+// float *sli = nullptr;
+// t->SetBranchAddress("sli", &sli);
+
+ auto nevts = t->GetEntries();
+ o << "entries: " << nevts << "\n";
+ for (int i = 0; i < nevts; i++) {
+	t->GetEntry(i);
+	o << "evt[" << i << "]:"
+	  << " " << n
+	  << " " << printVec(*vec)
+//	  << " " << printSli(n, sli)
+	  << "\n";
+ }
+ o.flush();
+}
+			`,
+			cxx: `entries: 10
+evt[0]: 1 [-10]
+evt[1]: 2 [-20 -21]
+evt[2]: 3 [-30 -31 -32]
+evt[3]: 4 [-40 -41 -42 -43]
+evt[4]: 5 [-50 -51 -52 -53 -54]
+evt[5]: 6 [-60 -61 -62 -63 -64 -65]
+evt[6]: 7 [-70 -71 -72 -73 -74 -75 -76]
+evt[7]: 8 [-80 -81 -82 -83 -84 -85 -86 -87]
+evt[8]: 9 [-90 -91 -92 -93 -94 -95 -96 -97 -98]
+evt[9]: 10 [-100 -101 -102 -103 -104 -105 -106 -107 -108 -109]
+`,
+			sinfos: []rbytes.StreamerInfo{
+				rdict.StreamerOf(sictx, reflect.TypeOf([]float32{})),
+			},
+		},
+		{
+			name: "event-nosplit",
+			wopts: []WriteOption{
+				WithZlib(flate.DefaultCompression),
+				WithSplitLevel(0),
+			},
+			nevts: 10,
+			wvars: []WriteVar{
+				{Name: "evt", Value: new(TNestedEvent1)},
+			},
+			rvars: []ReadVar{
+				{Name: "evt", Value: new(TNestedEvent1)},
+			},
+			btitles: []string{"evt"},
+			ltitles: []string{"evt"},
+			total:   13130,
+			want: func(i int) interface{} {
+				var evt struct {
+					Event TNestedEvent1
+				}
+
+				evt.Event = TNestedEvent1{}.want(int64(i))
+
+				return evt
+			},
+			macro: `
+#include "TFile.h"
+#include "TTree.h"
+#include "TString.h"
+
+#include <vector>
+#include <fstream>
+
+const int ARRAYSZ  = 10;
+const int MAXSLICE = 20;
+const int MAXSTR   = 32;
+
+#define OFFSET 0
+
+template<class T>
+std::string printV(T v) {
+	std::stringstream o;
+	o << v;
+	return o.str();
+}
+
+template<>
+std::string printV(bool v) {
+	if (v) {
+		return "true";
+	}
+	return "false";
+}
+
+template<>
+std::string printV(int8_t v) {
+	std::stringstream o;
+	o << int(v);
+	return o.str();
+}
+
+template<>
+std::string printV(uint8_t v) {
+	std::stringstream o;
+	o << int(v);
+	return o.str();
+}
+
+template<>
+std::string printV(TString v) {
+	std::stringstream o;
+	o << v.Data();
+	return o.str();
+}
+
+template<class T>
+std::string printArr(const T *v) {
+	std::stringstream o;
+	o << "[";
+	for (int i = 0; i < ARRAYSZ; i++) {
+		auto e = v[i];
+		if (i > 0) {
+			o << " ";
+		}
+		o << printV(e);
+	}
+	o << "]";
+	return o.str();
+}
+
+//template<>
+std::string printArrCStr(char *v[ARRAYSZ]) {
+	std::stringstream o;
+	o << "[";
+	for (int i = 0; i < ARRAYSZ; i++) {
+		auto e = v[i];
+		if (i > 0) {
+			o << " ";
+		}
+		o << e;
+	}
+	o << "]";
+	return o.str();
+}
+
+template<class T>
+std::string printSli(int32_t n, const T v[ARRAYSZ]) {
+	std::stringstream o;
+	o << "[";
+	for (int i = 0; i < n; i++) {
+		auto e = v[i];
+		if (i > 0) {
+			o << " ";
+		}
+		o << printV(e);
+	}
+	o << "]";
+	return o.str();
+}
+
+std::string printSliStr(int32_t n, char *v[ARRAYSZ]) {
+	std::stringstream o;
+	o << "[";
+	for (int i = 0; i < n; i++) {
+		auto e = v[i];
+		if (i > 0) {
+			o << " ";
+		}
+		o << e;
+	}
+	o << "]";
+	return o.str();
+}
+
+template<class T>
+std::string printVec(const std::vector<T>& v) {
+	std::stringstream o;
+	int i = 0;
+	o << "[";
+	for (auto e : v) {
+		if (i > 0) {
+			o << " ";
+		}
+		o << printV(e);
+		i++;
+	}
+	o << "]";
+	return o.str();
+}
+
+template<class T>
+std::string printVecVec(const std::vector<std::vector<T> >& v) {
+	std::stringstream o;
+	int i = 0;
+	o << "[";
+	for (auto e : v) {
+		if (i > 0) {
+			o << " ";
+		}
+		o << printVec(e);
+		i++;
+	}
+	o << "]";
+	return o.str();
+}
+
+struct TNestedEvent1 {
+	bool     Bool;
+	//char     Str[MAXSTR];
+	//char    *Str;
+	std::string Str;
+	int8_t   I8;
+	int16_t  I16;
+	int32_t  I32;
+	int64_t  I64;
+	uint8_t  U8;
+	uint16_t U16;
+	uint32_t U32;
+	uint64_t U64;
+	float    F32;
+	double   F64;
+
+	Float16_t  D16;
+	Double32_t D32;
+
+	bool     ArrBs[ARRAYSZ];
+//	TString  ArrStr[ARRAYSZ];
+	int8_t   ArrI8[ARRAYSZ];
+	int16_t  ArrI16[ARRAYSZ];
+	int32_t  ArrI32[ARRAYSZ];
+	int64_t  ArrI64[ARRAYSZ];
+	uint8_t  ArrU8[ARRAYSZ];
+	uint16_t ArrU16[ARRAYSZ];
+	uint32_t ArrU32[ARRAYSZ];
+	uint64_t ArrU64[ARRAYSZ];
+	float    ArrF32[ARRAYSZ];
+	double   ArrF64[ARRAYSZ];
+
+	Float16_t    ArrD16[ARRAYSZ];
+	Double32_t   ArrD32[ARRAYSZ];
+
+	int32_t  N;
+//	bool     SliBs[MAXSLICE];   //[N]
+//	char    *SliStr[MAXSLICE];  //[N]
+//	int8_t   SliI8[MAXSLICE];   //[N]
+//	int16_t  SliI16[MAXSLICE];  //[N]
+//	int32_t  SliI32[MAXSLICE];  //[N]
+//	int64_t  SliI64[MAXSLICE];  //[N]
+//	uint8_t  SliU8[MAXSLICE];   //[N]
+//	uint16_t SliU16[MAXSLICE];  //[N]
+//	uint32_t SliU32[MAXSLICE];  //[N]
+//	uint64_t SliU64[MAXSLICE];  //[N]
+//	float    SliF32[MAXSLICE];  //[N]
+//	double   SliF64[MAXSLICE];  //[N]
+
+//	Float16_t    SliD16[MAXSLICE];  //[N]
+//	Double32_t   SliD32[MAXSLICE];  //[N]
+
+	std::vector<bool> StdVecBs;
+	std::vector<std::string> StdVecStr;
+	std::vector<int8_t>  StdVecI8;
+	std::vector<int16_t> StdVecI16;
+	std::vector<int32_t> StdVecI32;
+	std::vector<int64_t> StdVecI64;
+	std::vector<uint8_t>  StdVecU8;
+	std::vector<uint16_t> StdVecU16;
+	std::vector<uint32_t> StdVecU32;
+	std::vector<uint64_t> StdVecU64;
+	std::vector<float>    StdVecF32;
+	std::vector<double>   StdVecF64;
+
+	std::vector<Float16_t>  StdVecD16;
+	std::vector<Double32_t> StdVecD32;
+
+	std::vector<std::vector<double> >      StdVecVecF64;
+	std::vector<std::vector<std::string> > StdVecVecStr;
+};
+
+
+
+void scan(const char *fname, const char *tname, const char *oname) {
+ auto o = std::fstream(oname, std::ofstream::out);
+ auto f = TFile::Open(fname, "READ");
+ auto t = (TTree*)f->Get(tname);
+ t->Print();
+
+ TNestedEvent1 *evt = nullptr;
+ t->SetBranchAddress("evt", &evt);
+
+ o << "key[000]: " << tname << ";1 \"\" (TTree)\n";
+
+ auto n = t->GetEntries();
+ for (int i = 0; i < n; i++) {
+	t->GetEntry(i);
+	o << "[00" << i << "][evt]: {"
+	  << printV(evt->Bool)
+	  << " " << printV(evt->Str)
+	  << " " << printV(int(evt->I8))
+	  << " " << printV(evt->I16)
+	  << " " << printV(evt->I32)
+	  << " " << printV(evt->I64)
+	  << " " << printV(int(evt->U8))
+	  << " " << printV(evt->U16)
+	  << " " << printV(evt->U32)
+	  << " " << printV(evt->U64)
+	  << " " << printV(evt->F32)
+	  << " " << printV(evt->F64)
+	  << " " << printV(evt->D16)
+	  << " " << printV(evt->D32)
+	  << " " << printArr(evt->ArrBs)
+//	  << " " << printArr(evt->ArrStr)
+	  << " " << printArr(evt->ArrI8)
+	  << " " << printArr(evt->ArrI16)
+	  << " " << printArr(evt->ArrI32)
+	  << " " << printArr(evt->ArrI64)
+	  << " " << printArr(evt->ArrU8)
+	  << " " << printArr(evt->ArrU16)
+	  << " " << printArr(evt->ArrU32)
+	  << " " << printArr(evt->ArrU64)
+	  << " " << printArr(evt->ArrF32)
+	  << " " << printArr(evt->ArrF64)
+	  << " " << printArr(evt->ArrD16)
+	  << " " << printArr(evt->ArrD32)
+	  << " " << evt->N
+//	  << " " << printSli(evt->N, evt->SliBs)
+//	  << " " << printSliStr(evt->N, evt->SliStr)
+//	  << " " << printSli(evt->N, evt->SliI8)
+//	  << " " << printSli(evt->N, evt->SliI16)
+//	  << " " << printSli(evt->N, evt->SliI32)
+//	  << " " << printSli(evt->N, evt->SliI64)
+//	  << " " << printSli(evt->N, evt->SliU8)
+//	  << " " << printSli(evt->N, evt->SliU16)
+//	  << " " << printSli(evt->N, evt->SliU32)
+//	  << " " << printSli(evt->N, evt->SliU64)
+//	  << " " << printSli(evt->N, evt->SliF32)
+//	  << " " << printSli(evt->N, evt->SliF64)
+//	  << " " << printSli(evt->N, evt->SliD16)
+//	  << " " << printSli(evt->N, evt->SliD32)
+	  << " " << printVec(evt->StdVecBs)
+	  << " " << printVec(evt->StdVecStr)
+	  << " " << printVec(evt->StdVecI8)
+	  << " " << printVec(evt->StdVecI16)
+	  << " " << printVec(evt->StdVecI32)
+	  << " " << printVec(evt->StdVecI64)
+	  << " " << printVec(evt->StdVecU8)
+	  << " " << printVec(evt->StdVecU16)
+	  << " " << printVec(evt->StdVecU32)
+	  << " " << printVec(evt->StdVecU64)
+	  << " " << printVec(evt->StdVecF32)
+	  << " " << printVec(evt->StdVecF64)
+	  << " " << printVec(evt->StdVecD16)
+	  << " " << printVec(evt->StdVecD32)
+	  << " " << printVecVec(evt->StdVecVecF64)
+	  << " " << printVecVec(evt->StdVecVecStr)
+	  << "}\n";
+ }
+ o.flush();
+}
+			`,
+			cxx: `key[000]: mytree;1 "" (TTree)
+[000][evt]: {true str-000 0 0 0 0 0 0 0 0 0 0 0 0 [true false false false false false false false false false] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] 0 [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] []}
+[001][evt]: {false str-001 -1 -1 -1 -1 1 1 1 1 1 1 1 1 [false true false false false false false false false false] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] 1 [true] [std-001] [-1] [-1] [-1] [-1] [1] [1] [1] [1] [1] [1] [1] [1] [[0 1 2 3]] [[vec-001 vec-002 vec-003 vec-004]]}
+[002][evt]: {true str-002 -2 -2 -2 -2 2 2 2 2 2 2 2 2 [false false true false false false false false false false] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] 2 [false true] [std-002 std-002] [-2 -2] [-2 -2] [-2 -2] [-2 -2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [[0 1 2 3] [1 2 3 4]] [[vec-002 vec-003 vec-004 vec-005] [vec-002 vec-003 vec-004 vec-005]]}
+[003][evt]: {false str-003 -3 -3 -3 -3 3 3 3 3 3 3 3 3 [false false false true false false false false false false] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] 3 [false false true] [std-003 std-003 std-003] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [[0 1 2 3] [1 2 3 4] [2 3 4 5]] [[vec-003 vec-004 vec-005 vec-006] [vec-003 vec-004 vec-005 vec-006] [vec-003 vec-004 vec-005 vec-006]]}
+[004][evt]: {true str-004 -4 -4 -4 -4 4 4 4 4 4 4 4 4 [false false false false true false false false false false] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] 4 [false false false true] [std-004 std-004 std-004 std-004] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6]] [[vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007]]}
+[005][evt]: {false str-005 -5 -5 -5 -5 5 5 5 5 5 5 5 5 [false false false false false true false false false false] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] 5 [false false false false true] [std-005 std-005 std-005 std-005 std-005] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7]] [[vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008]]}
+[006][evt]: {true str-006 -6 -6 -6 -6 6 6 6 6 6 6 6 6 [false false false false false false true false false false] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] 6 [false false false false false true] [std-006 std-006 std-006 std-006 std-006 std-006] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8]] [[vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009]]}
+[007][evt]: {false str-007 -7 -7 -7 -7 7 7 7 7 7 7 7 7 [false false false false false false false true false false] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] 7 [false false false false false false true] [std-007 std-007 std-007 std-007 std-007 std-007 std-007] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9]] [[vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010]]}
+[008][evt]: {true str-008 -8 -8 -8 -8 8 8 8 8 8 8 8 8 [false false false false false false false false true false] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] 8 [false false false false false false false true] [std-008 std-008 std-008 std-008 std-008 std-008 std-008 std-008] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9] [7 8 9 10]] [[vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011]]}
+[009][evt]: {false str-009 -9 -9 -9 -9 9 9 9 9 9 9 9 9 [false false false false false false false false false true] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] 9 [false false false false false false false false true] [std-009 std-009 std-009 std-009 std-009 std-009 std-009 std-009 std-009] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9] [7 8 9 10] [8 9 10 11]] [[vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012]]}
+`,
+			sinfos: []rbytes.StreamerInfo{
+				rdict.StreamerOf(sictx, reflect.TypeOf([]float64{})),
+				rdict.StreamerOf(sictx, reflect.TypeOf([]string{})),
+				rdict.StreamerOf(sictx, reflect.TypeOf([][]float64{})),
+				rdict.StreamerOf(sictx, reflect.TypeOf([][]string{})),
+				rdict.StreamerOf(sictx, reflect.TypeOf(TNestedEvent1{})),
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			fname := filepath.Join(tmp, tc.name+".root")
+
+			if tc.skip {
+				t.Skipf("skipping %s...", tc.name)
+			}
+
+			for i := range tc.sinfos {
+				rdict.StreamerInfos.Add(tc.sinfos[i])
+			}
+
+			func() {
+				f, err := riofs.Create(fname)
+				if err != nil {
+					t.Fatalf("could not create write ROOT file %q: %v", fname, err)
+				}
+				defer f.Close()
+
+				tw, err := NewWriter(f, treeName, tc.wvars, tc.wopts...)
+				if err != nil {
+					t.Fatalf("could not create tree writer: %v", err)
+				}
+				defer tw.Close()
+
+				if got, want := len(tw.Branches()), len(tc.wvars); got != want {
+					t.Fatalf("invalid number of branches: got=%d, want=%d", got, want)
+				}
+
+				for i, b := range tw.Branches() {
+					if got, want := b.Name(), tc.wvars[i].Name; got != want {
+						t.Fatalf("branch[%d]: got=%q, want=%q", i, got, want)
+					}
+					if got, want := b.Title(), tc.btitles[i]; got != want {
+						t.Fatalf("branch[%d]: got=%q, want=%q", i, got, want)
+					}
+				}
+
+				if got, want := len(tw.Leaves()), len(tc.wvars); got != want {
+					leaves := make([]string, got)
+					for i, l := range tw.Leaves() {
+						leaves[i] = l.Name()
+					}
+					t.Fatalf("invalid number of leaves: got=%d, want=%d (leaves: %q)", got, want, leaves)
+				}
+
+				for i, leaf := range tw.Leaves() {
+					if got, want := leaf.Name(), tc.wvars[i].Name; got != want {
+						t.Fatalf("leaf[%d]: got=%q, want=%q", i, got, want)
+					}
+					if got, want := leaf.Title(), tc.ltitles[i]; got != want {
+						t.Fatalf("leaf[%d]: got=%q, want=%q", i, got, want)
+					}
+				}
+
+				total := 0
+				for i := 0; i < int(tc.nevts); i++ {
+					want := tc.want(i)
+					for j, wvar := range tc.wvars {
+						v := reflect.ValueOf(wvar.Value).Elem()
+						o := reflect.ValueOf(want).Field(j)
+						v.Set(o)
+					}
+					n, err := tw.Write()
+					if err != nil {
+						t.Fatalf("could not write event %d: %v", i, err)
+					}
+					total += n
+				}
+
+				if got, want := tw.Entries(), tc.nevts; got != want {
+					t.Fatalf("invalid number of entries: got=%d, want=%d", got, want)
+				}
+				if got, want := total, tc.total; got != want {
+					t.Errorf("invalid number of bytes written: got=%d, want=%d", got, want)
+				}
+
+				err = tw.Close()
+				if err != nil {
+					t.Fatalf("could not close tree writer: %v", err)
+				}
+
+				err = f.Close()
+				if err != nil {
+					t.Fatalf("could not close write ROOT file %q: %v", fname, err)
+				}
+			}()
+
+			func() {
+				f, err := riofs.Open(fname)
+				if err != nil {
+					t.Fatalf("could not opend read ROOT file %q: %+v", fname, err)
+				}
+				defer f.Close()
+
+				obj, err := f.Get(treeName)
+				if err != nil {
+					t.Fatalf("could not get ROOT tree %q: %+v", treeName, err)
+				}
+				tree := obj.(Tree)
+
+				if got, want := tree.Entries(), tc.nevts; got != want {
+					t.Fatalf("invalid number of events: got=%v, want=%v", got, want)
+				}
+
+				for i, b := range tree.Branches() {
+					if got, want := b.Name(), tc.wvars[i].Name; got != want {
+						t.Fatalf("branch[%d]: got=%q, want=%q", i, got, want)
+					}
+					if got, want := b.Title(), tc.btitles[i]; got != want {
+						t.Fatalf("branch[%d]: got=%q, want=%q", i, got, want)
+					}
+				}
+
+				for i, leaf := range tree.Leaves() {
+					if got, want := leaf.Name(), tc.wvars[i].Name; got != want {
+						t.Fatalf("leaf[%d]: got=%q, want=%q", i, got, want)
+					}
+					if got, want := leaf.Title(), tc.ltitles[i]; got != want {
+						t.Fatalf("leaf[%d]: got=%q, want=%q", i, got, want)
+					}
+				}
+
+				rvars := tc.rvars
+				if len(rvars) != len(tc.wvars) {
+					t.Fatalf("invalid number of read-vars: got=%d, want=%d", len(rvars), len(tc.wvars))
+				}
+
+				for i, rvar := range rvars {
+					wvar := tc.wvars[i]
+					if got, want := rvar.Name, wvar.Name; got != want {
+						t.Fatalf("invalid name for rvar[%d]: got=%q, want=%q", i, got, want)
+					}
+					wtyp := reflect.TypeOf(wvar.Value)
+					rtyp := reflect.TypeOf(rvar.Value)
+					if got, want := rtyp, wtyp; got != want {
+						t.Fatalf("invalid type for rvar[%d]: got=%v, want=%v", i, got, want)
+					}
+				}
+
+				r, err := NewReader(tree, rvars)
+				if err != nil {
+					t.Fatalf("could not create reader: %+v", err)
+				}
+				defer r.Close()
+
+				nn := 0
+				err = r.Read(func(ctx RCtx) error {
+					i := int(ctx.Entry)
+					want := tc.want(i)
+					for i, rvar := range rvars {
+						var (
+							want = reflect.ValueOf(want).Field(i).Interface()
+							got  = reflect.ValueOf(rvar.Value).Elem().Interface()
+						)
+						if !reflect.DeepEqual(got, want) {
+							return fmt.Errorf(
+								"entry[%d]: invalid scan-value[%s]:\ngot= %v\nwant=%v",
+								ctx.Entry, tc.wvars[i].Name, got, want,
+							)
+						}
+					}
+					nn++
+					return nil
+				})
+				if err != nil {
+					t.Fatalf("could not read tree: %+v", err)
+				}
+
+				if got, want := nn, int(tc.nevts); got != want {
+					t.Fatalf("invalid number of events: got=%d, want=%d", got, want)
+				}
+			}()
+
+			if rtests.HasROOT && len(tc.macro) != 0 {
+				ofile := filepath.Join(tmp, tc.name+".txt")
+				out, err := rtests.RunCxxROOT("scan", []byte(tc.macro), fname, treeName, ofile)
 				if err != nil {
 					t.Fatalf("could not run C++ ROOT: %+v\noutput:\n%s", err, out)
 				}
@@ -1963,4 +2998,253 @@ func BenchmarkReadTreeSliF64(b *testing.B) {
 			}
 		})
 	}
+}
+
+type TNestedStruct1 struct {
+	RunNbr int64            `groot:"runnbr"`
+	EvtNbr int64            `groot:"evtnbr"`
+	P3     TNestedStruct1P3 `groot:"p3"`
+}
+
+type TNestedStruct1P3 struct {
+	Px float64 `groot:"px"`
+	Py float64 `groot:"py"`
+	Pz float64 `groot:"pz"`
+}
+
+type TNestedStruct2 struct {
+	RunNbr int64            `groot:"runnbr"`
+	EvtNbr int64            `groot:"evtnbr"`
+	P3     TNestedStruct1P3 `groot:"p3"`
+	F32s   []float32        `groot:"f32s"`
+}
+
+type TNestedStruct3 struct {
+	RunNbr int64            `groot:"runnbr"`
+	EvtNbr int64            `groot:"evtnbr"`
+	P3     TNestedStruct1P3 `groot:"p3"`
+	F32s   []float32        `groot:"f32s"`
+}
+
+type TNestedEvent1 struct {
+	B   bool          `groot:"Bool"`
+	Str string        `groot:"Str"`
+	I8  int8          `groot:"I8"`
+	I16 int16         `groot:"I16"`
+	I32 int32         `groot:"I32"`
+	I64 int64         `groot:"I64"`
+	U8  uint8         `groot:"U8"`
+	U16 uint16        `groot:"U16"`
+	U32 uint32        `groot:"U32"`
+	U64 uint64        `groot:"U64"`
+	F32 float32       `groot:"F32"`
+	F64 float64       `groot:"F64"`
+	D16 root.Float16  `groot:"D16"`
+	D32 root.Double32 `groot:"D32"`
+
+	ArrBs [10]bool `groot:"ArrBs[10]"`
+	//ArrStr [10]string `groot:"ArrStr[10]"`
+	ArrI8  [10]int8          `groot:"ArrI8[10]"`
+	ArrI16 [10]int16         `groot:"ArrI16[10]"`
+	ArrI32 [10]int32         `groot:"ArrI32[10]"`
+	ArrI64 [10]int64         `groot:"ArrI64[10]"`
+	ArrU8  [10]uint8         `groot:"ArrU8[10]"`
+	ArrU16 [10]uint16        `groot:"ArrU16[10]"`
+	ArrU32 [10]uint32        `groot:"ArrU32[10]"`
+	ArrU64 [10]uint64        `groot:"ArrU64[10]"`
+	ArrF32 [10]float32       `groot:"ArrF32[10]"`
+	ArrF64 [10]float64       `groot:"ArrF64[10]"`
+	ArrD16 [10]root.Float16  `groot:"ArrD16[10]"`
+	ArrD32 [10]root.Double32 `groot:"ArrD32[10]"`
+
+	N int32 `groot:"N"`
+	// SliBs []bool `groot:"SliBs[N]"`
+	//	SliStr []string        `groot:"SliStr[N]"`
+	//	SliI8  []int8          `groot:"SliI8[N]"`
+	//	SliI16 []int16 `groot:"SliI16[N]"`
+	//	SliI32 []int32 `groot:"SliI32[N]"`
+	//	SliI64 []int64 `groot:"SliI64[N]"`
+	//	SliU8  []uint8         `groot:"SliU8[N]"`
+	//	SliU16 []uint16        `groot:"SliU16[N]"`
+	//	SliU32 []uint32        `groot:"SliU32[N]"`
+	//	SliU64 []uint64        `groot:"SliU64[N]"`
+	//SliF32 []float32 `groot:"SliF32[N]"`
+	//SliF64 []float64 `groot:"SliF64[N]"`
+	//	SliD16 []root.Float16  `groot:"SliD16[N]"`
+	//	SliD32 []root.Double32 `groot:"SliD32[N]"`
+
+	StdVecBs  []bool          `groot:"StdVecBs"`
+	StdVecStr []string        `groot:"StdVecStr"`
+	StdVecI8  []int8          `groot:"StdVecI8"`
+	StdVecI16 []int16         `groot:"StdVecI16"`
+	StdVecI32 []int32         `groot:"StdVecI32"`
+	StdVecI64 []int64         `groot:"StdVecI64"`
+	StdVecU8  []uint8         `groot:"StdVecU8"`
+	StdVecU16 []uint16        `groot:"StdVecU16"`
+	StdVecU32 []uint32        `groot:"StdVecU32"`
+	StdVecU64 []uint64        `groot:"StdVecU64"`
+	StdVecF32 []float32       `groot:"StdVecF32"`
+	StdVecF64 []float64       `groot:"StdVecF64"`
+	StdVecD16 []root.Float16  `groot:"StdVecD16"`
+	StdVecD32 []root.Double32 `groot:"StdVecD32"`
+
+	StdVecVecF64 [][]float64 `groot:"StdVecVecF64"`
+	StdVecVecStr [][]string  `groot:"StdVecVecStr"`
+}
+
+func (TNestedEvent1) want(i int64) (data TNestedEvent1) {
+	data.B = i%2 == 0
+	data.Str = fmt.Sprintf("str-%03d", i)
+	data.I8 = int8(-i)
+	data.I16 = int16(-i)
+	data.I32 = int32(-i)
+	data.I64 = int64(-i)
+	data.U8 = uint8(i)
+	data.U16 = uint16(i)
+	data.U32 = uint32(i)
+	data.U64 = uint64(i)
+	data.F32 = float32(i)
+	data.F64 = float64(i)
+	data.D16 = root.Float16(i)
+	data.D32 = root.Double32(i)
+	for ii := range data.ArrI32 {
+		data.ArrBs[ii] = ii == int(i)
+		//data.ArrStr[ii] = fmt.Sprintf("arr-%03d", i)
+		data.ArrI8[ii] = int8(-i)
+		data.ArrI16[ii] = int16(-i)
+		data.ArrI32[ii] = int32(-i)
+		data.ArrI64[ii] = int64(-i)
+		data.ArrU8[ii] = uint8(i)
+		data.ArrU16[ii] = uint16(i)
+		data.ArrU32[ii] = uint32(i)
+		data.ArrU64[ii] = uint64(i)
+		data.ArrF32[ii] = float32(i)
+		data.ArrF64[ii] = float64(i)
+		data.ArrD16[ii] = root.Float16(i)
+		data.ArrD32[ii] = root.Double32(i)
+	}
+	data.N = int32(i) % 10
+
+	//	switch data.N {
+	//	case 0:
+	//		data.SliBs = nil
+	//		//		data.SliStr = nil
+	//		//		data.SliI8 = nil
+	//		//		data.SliI16 = nil
+	//		//		data.SliI32 = nil
+	//		//		data.SliI64 = nil
+	//		//		data.SliU8 = nil
+	//		//		data.SliU16 = nil
+	//		//		data.SliU32 = nil
+	//		//		data.SliU64 = nil
+	//		data.SliF32 = nil
+	//		data.SliF64 = nil
+	//		//		data.SliD16 = nil
+	//		//		data.SliD32 = nil
+	//	default:
+	//		data.SliBs = make([]bool, int(data.N))
+	//		//		data.SliStr = make([]string, int(data.N))
+	//		//		data.SliI8 = make([]int8, int(data.N))
+	//		//		data.SliI16 = make([]int16, int(data.N))
+	//		//		data.SliI32 = make([]int32, int(data.N))
+	//		//		data.SliI64 = make([]int64, int(data.N))
+	//		//		data.SliU8 = make([]uint8, int(data.N))
+	//		//		data.SliU16 = make([]uint16, int(data.N))
+	//		//		data.SliU32 = make([]uint32, int(data.N))
+	//		//		data.SliU64 = make([]uint64, int(data.N))
+	//		data.SliF32 = make([]float32, int(data.N))
+	//		data.SliF64 = make([]float64, int(data.N))
+	//		//		data.SliD16 = make([]root.Float16, int(data.N))
+	//		//		data.SliD32 = make([]root.Double32, int(data.N))
+	//	}
+	//	for ii := 0; ii < int(data.N); ii++ {
+	//		data.SliBs[ii] = (ii + 1) == int(i)
+	//		//		data.SliStr[ii] = fmt.Sprintf("sli-%03d", i)
+	//		//		data.SliI8[ii] = int8(-i)
+	//		//		data.SliI16[ii] = int16(-i)
+	//		//		data.SliI32[ii] = int32(-i)
+	//		//		data.SliI64[ii] = int64(-i)
+	//		//		data.SliU8[ii] = uint8(i)
+	//		//		data.SliU16[ii] = uint16(i)
+	//		//		data.SliU32[ii] = uint32(i)
+	//		//		data.SliU64[ii] = uint64(i)
+	//		data.SliF32[ii] = float32(i)
+	//		data.SliF64[ii] = float64(i)
+	//		//		data.SliD16[ii] = root.Float16(i)
+	//		//		data.SliD32[ii] = root.Double32(i)
+	//	}
+
+	switch data.N {
+	case 0:
+		data.StdVecBs = nil
+		data.StdVecStr = nil
+		data.StdVecI8 = nil
+		data.StdVecI16 = nil
+		data.StdVecI32 = nil
+		data.StdVecI64 = nil
+		data.StdVecU8 = nil
+		data.StdVecU16 = nil
+		data.StdVecU32 = nil
+		data.StdVecU64 = nil
+		data.StdVecF32 = nil
+		data.StdVecF64 = nil
+		data.StdVecD16 = nil
+		data.StdVecD32 = nil
+	default:
+		data.StdVecBs = make([]bool, int(data.N))
+		data.StdVecStr = make([]string, int(data.N))
+		data.StdVecI8 = make([]int8, int(data.N))
+		data.StdVecI16 = make([]int16, int(data.N))
+		data.StdVecI32 = make([]int32, int(data.N))
+		data.StdVecI64 = make([]int64, int(data.N))
+		data.StdVecU8 = make([]uint8, int(data.N))
+		data.StdVecU16 = make([]uint16, int(data.N))
+		data.StdVecU32 = make([]uint32, int(data.N))
+		data.StdVecU64 = make([]uint64, int(data.N))
+		data.StdVecF32 = make([]float32, int(data.N))
+		data.StdVecF64 = make([]float64, int(data.N))
+		data.StdVecD16 = make([]root.Float16, int(data.N))
+		data.StdVecD32 = make([]root.Double32, int(data.N))
+	}
+	for ii := 0; ii < int(data.N); ii++ {
+		data.StdVecBs[ii] = (ii + 1) == int(i)
+		data.StdVecStr[ii] = fmt.Sprintf("std-%03d", i)
+		data.StdVecI8[ii] = int8(-i)
+		data.StdVecI16[ii] = int16(-i)
+		data.StdVecI32[ii] = int32(-i)
+		data.StdVecI64[ii] = int64(-i)
+		data.StdVecU8[ii] = uint8(i)
+		data.StdVecU16[ii] = uint16(i)
+		data.StdVecU32[ii] = uint32(i)
+		data.StdVecU64[ii] = uint64(i)
+		data.StdVecF32[ii] = float32(i)
+		data.StdVecF64[ii] = float64(i)
+		data.StdVecD16[ii] = root.Float16(i)
+		data.StdVecD32[ii] = root.Double32(i)
+	}
+
+	switch data.N {
+	case 0:
+		data.StdVecVecF64 = nil
+		data.StdVecVecStr = nil
+	default:
+		data.StdVecVecF64 = make([][]float64, data.N)
+		data.StdVecVecStr = make([][]string, data.N)
+	}
+	for ii := 0; ii < int(data.N); ii++ {
+		data.StdVecVecF64[ii] = []float64{
+			float64(ii),
+			float64(ii + 1),
+			float64(ii + 2),
+			float64(ii + 3),
+		}
+		data.StdVecVecStr[ii] = []string{
+			fmt.Sprintf("vec-%03d", i),
+			fmt.Sprintf("vec-%03d", i+1),
+			fmt.Sprintf("vec-%03d", i+2),
+			fmt.Sprintf("vec-%03d", i+3),
+		}
+	}
+
+	return data
 }

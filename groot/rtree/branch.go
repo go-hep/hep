@@ -95,11 +95,14 @@ func newBranchFromWVar(w *wtree, name string, wvar WriteVar, parent Branch, lvl 
 		rt = et
 
 	case reflect.Slice:
-		if wvar.Count == "" {
-			return nil, fmt.Errorf("rtree: empty name for count-leaf of slice %q", wvar.Name)
+		switch wvar.Count {
+		case "":
+			// write as a std::vector<T>
+			return newBranchElementFromWVar(w, base, wvar, parent, lvl, cfg)
+		default:
+			fmt.Fprintf(title, "[%s]", wvar.Count)
+			rt = rt.Elem()
 		}
-		fmt.Fprintf(title, "[%s]", wvar.Count)
-		rt = rt.Elem()
 		base.entryOffsetLen = 1000 // slice, so we need an offset array
 
 	case reflect.String:
@@ -819,23 +822,24 @@ func newBranchElementFromWVar(w *wtree, base *tbranch, wvar WriteVar, parent Bra
 		parent:   pclass,
 		chksum:   uint32(streamer.CheckSum()),
 		clsver:   uint16(streamer.ClassVersion()),
+		id:       -1,
+		btype:    0,
+		stype:    -1,
 		streamer: streamer,
 	}
+	switch reflect.TypeOf(wvar.Value).Elem().Kind() {
+	case reflect.Struct:
+		b.tbranch.entryOffsetLen = 20
+	case reflect.Slice:
+		b.tbranch.entryOffsetLen = 400
+	}
+
 	w.ttree.f.RegisterStreamer(b.streamer)
 
 	_, err := newLeafFromWVar(w, b, wvar, lvl, cfg)
 	if err != nil {
 		return nil, err
 	}
-	wvars := WriteVarsFromStruct(rv.Interface())
-	for _, wvar := range wvars {
-		sub, err := newBranchFromWVar(w, wvar.Name, wvar, b, lvl+1, cfg)
-		if err != nil {
-			return nil, fmt.Errorf("rtree: could not create sub-branch for write-var %#v: %w", wvar, err)
-		}
-		b.branches = append(b.branches, sub)
-	}
-
 	b.named.SetTitle(wvar.Name)
 	b.createNewBasket()
 	return b, nil
@@ -1035,8 +1039,45 @@ func (b *tbranchElement) setStreamerElement(se rbytes.StreamerElement, ctx rbyte
 	}
 }
 
-func (b *tbranchElement) write() (int, error)                          { panic("not implemented") }
-func (b *tbranchElement) writeToBuffer(w *rbytes.WBuffer) (int, error) { panic("not implemented") }
+func (b *tbranchElement) write() (int, error) {
+	b.entries++
+	b.entryNumber++
+
+	szOld := b.ctx.bk.wbuf.Len()
+	b.ctx.bk.update(szOld)
+	_, err := b.writeToBuffer(b.ctx.bk.wbuf)
+	szNew := b.ctx.bk.wbuf.Len()
+	n := int(szNew - szOld)
+	if err != nil {
+		return n, fmt.Errorf("could not write to buffer (branch=%q): %w", b.Name(), err)
+	}
+	if n > b.ctx.bk.nevsize {
+		b.ctx.bk.grow(n)
+	}
+
+	// FIXME(sbinet): harmonize or drive via "auto-flush" ?
+	if szNew+int64(n) >= int64(b.basketSize) {
+		err = b.flush()
+		if err != nil {
+			return n, fmt.Errorf("could not flush branch (auto-flush): %w", err)
+		}
+
+		b.createNewBasket()
+	}
+	return n, nil
+}
+
+func (b *tbranchElement) writeToBuffer(w *rbytes.WBuffer) (int, error) {
+	var tot int
+	for i, leaf := range b.leaves {
+		n, err := leaf.writeToBuffer(w)
+		if err != nil {
+			return tot, fmt.Errorf("could not write leaf[%d] name=%q of branch %q: %w", i, leaf.Name(), b.Name(), err)
+		}
+		tot += n
+	}
+	return tot, nil
+}
 
 func btopOf(b Branch) Branch {
 	if b == nil {
