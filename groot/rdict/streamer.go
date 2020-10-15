@@ -7,11 +7,14 @@ package rdict
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rcont"
 	"go-hep.org/x/hep/groot/rmeta"
+	"go-hep.org/x/hep/groot/root"
+	"go-hep.org/x/hep/groot/rvers"
 )
 
 // StreamerOf generates a StreamerInfo from a reflect.Type.
@@ -35,31 +38,220 @@ func newStreamerBuilder(ctx rbytes.StreamerInfoContext, typ reflect.Type) *strea
 }
 
 func (bld *streamerBuilder) genStreamer(typ reflect.Type) rbytes.StreamerInfo {
+	name := typenameOf(typ)
 	si := &StreamerInfo{
-		named:  *rbase.NewNamed(typ.Name(), typ.Name()),
+		named:  *rbase.NewNamed(name, name),
 		objarr: rcont.NewObjArray(),
+		clsver: 1,
 	}
 	switch typ.Kind() {
 	case reflect.Struct:
 		si.elems = make([]rbytes.StreamerElement, 0, typ.NumField())
 		for i := 0; i < typ.NumField(); i++ {
 			ft := typ.Field(i)
-			si.elems = append(si.elems, bld.genField(ft))
+			si.elems = append(si.elems, bld.genField(typ, ft))
+		}
+	case reflect.Slice:
+		si.clsver = rvers.StreamerInfo
+		si.elems = []rbytes.StreamerElement{
+			bld.genStdVectorOf(typ.Elem(), "This", 0),
 		}
 	}
 	return si
 }
 
-func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerElement {
+func (bld *streamerBuilder) genStdVectorOf(typ reflect.Type, name string, offset int32) rbytes.StreamerElement {
+	const esize = 24
+	var (
+		ename = ""
+		etype rmeta.Enum
+	)
+	switch typ.Kind() {
+	case reflect.Bool:
+		ename = "vector<bool>"
+		etype = rmeta.Bool
+	case reflect.Int8:
+		ename = "vector<int8_t>"
+		etype = rmeta.Int8
+	case reflect.Int16:
+		ename = "vector<int16_t>"
+		etype = rmeta.Int16
+	case reflect.Int32:
+		ename = "vector<int32_t>"
+		etype = rmeta.Int32
+	case reflect.Int64:
+		ename = "vector<int64_t>"
+		etype = rmeta.Int64
+	case reflect.Uint8:
+		ename = "vector<uint8_t>"
+		etype = rmeta.Uint8
+	case reflect.Uint16:
+		ename = "vector<uint16_t>"
+		etype = rmeta.Uint16
+	case reflect.Uint32:
+		ename = "vector<uint32_t>"
+		etype = rmeta.Uint32
+	case reflect.Uint64:
+		ename = "vector<uint64_t>"
+		etype = rmeta.Uint64
+	case reflect.Float32:
+		switch typ {
+		case reflect.TypeOf(root.Float16(0)):
+			ename = "vector<Float16_t>"
+			etype = rmeta.Float16
+		default:
+			ename = "vector<float>"
+			etype = rmeta.Float32
+		}
+	case reflect.Float64:
+		switch typ {
+		case reflect.TypeOf(root.Double32(0)):
+			ename = "vector<Double32_t>"
+			etype = rmeta.Double32
+		default:
+			ename = "vector<double>"
+			etype = rmeta.Float64
+		}
+	case reflect.String:
+		ename = "vector<string>"
+		etype = rmeta.STLstring
+	case reflect.Struct:
+		ename = fmt.Sprintf("vector<%s>", typenameOf(typ))
+		etype = rmeta.Any
+	case reflect.Slice:
+		ename = typenameOf(typ)
+		if strings.HasSuffix(ename, ">") {
+			ename += " "
+		}
+		ename = fmt.Sprintf("vector<%s>", ename)
+		etype = rmeta.Any
+	default:
+		panic(fmt.Errorf("rdict: invalid slice type %v", typ))
+	}
+
+	return NewCxxStreamerSTL(
+		StreamerElement{
+			named:  *rbase.NewNamed(name, ""),
+			etype:  rmeta.Streamer,
+			esize:  esize,
+			offset: offset,
+			ename:  ename,
+		}, rmeta.STLvector, etype,
+	)
+}
+
+func (bld *streamerBuilder) genVarLenArrayOf(typ reflect.Type, class, count, name string, offset int32) rbytes.StreamerElement {
+	var (
+		esize = 0
+		ename = ""
+		etype rmeta.Enum
+	)
+	switch typ.Kind() {
+	case reflect.Bool:
+		esize = 1
+		ename = "bool"
+		etype = rmeta.Bool
+	case reflect.Int8:
+		esize = 1
+		ename = "int8_t"
+		etype = rmeta.Int8
+	case reflect.Int16:
+		esize = 2
+		ename = "int16_t"
+		etype = rmeta.Int16
+	case reflect.Int32:
+		esize = 4
+		ename = "int32_t"
+		etype = rmeta.Int32
+	case reflect.Int64:
+		esize = 8
+		ename = "int64_t"
+		etype = rmeta.Int64
+	case reflect.Uint8:
+		esize = 1
+		ename = "uint8_t"
+		etype = rmeta.Uint8
+	case reflect.Uint16:
+		esize = 2
+		ename = "uint16_t"
+		etype = rmeta.Uint16
+	case reflect.Uint32:
+		esize = 4
+		ename = "uint32_t"
+		etype = rmeta.Uint32
+	case reflect.Uint64:
+		esize = 8
+		ename = "uint64_t"
+		etype = rmeta.Uint64
+	case reflect.Float32:
+		esize = 4
+		switch typ {
+		case reflect.TypeOf(root.Float16(0)):
+			ename = "Float16_t"
+			etype = rmeta.Float16
+		default:
+			ename = "float"
+			etype = rmeta.Float32
+		}
+	case reflect.Float64:
+		esize = 8
+		switch typ {
+		case reflect.TypeOf(root.Double32(0)):
+			ename = "Double32_t"
+			etype = rmeta.Double32
+		default:
+			ename = "double"
+			etype = rmeta.Float64
+		}
+	case reflect.String:
+		return NewStreamerLoop(
+			StreamerElement{
+				named:  *rbase.NewNamed(name, "["+count+"]"),
+				esize:  4,
+				offset: offset,
+				ename:  "TString*",
+			},
+			1, count, class,
+		)
+	case reflect.Struct:
+		ename = typenameOf(typ)
+		return NewStreamerLoop(
+			StreamerElement{
+				named:  *rbase.NewNamed(name, "["+count+"]"),
+				esize:  4,
+				offset: offset,
+				ename:  ename + "*",
+			},
+			1, count, class,
+		)
+	default:
+		panic(fmt.Errorf("rdict: invalid c-var-len-array type %v", typ))
+	}
+
+	return NewStreamerBasicPointer(
+		StreamerElement{
+			named:  *rbase.NewNamed(name, "["+count+"]"),
+			etype:  rmeta.OffsetP + etype,
+			esize:  int32(esize),
+			offset: offset,
+			ename:  ename + "*",
+		}, 1, count, class,
+	)
+}
+
+func (bld *streamerBuilder) genField(typ reflect.Type, field reflect.StructField) rbytes.StreamerElement {
+
+	offset := offsetOf(field)
+
 	switch field.Type.Kind() {
 	case reflect.Bool:
 		return &StreamerBasicType{
 			StreamerElement{
 				named:  *rbase.NewNamed(nameOf(field), ""),
 				etype:  rmeta.GoType2ROOTEnum[field.Type],
-				esize:  int32(field.Type.Size()),
-				offset: offsetOf(field),
-				ename:  "golang::bool",
+				esize:  1,
+				offset: offset,
+				ename:  "bool",
 			},
 		}
 	case reflect.Int8:
@@ -67,9 +259,9 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 			StreamerElement{
 				named:  *rbase.NewNamed(nameOf(field), ""),
 				etype:  rmeta.GoType2ROOTEnum[field.Type],
-				esize:  int32(field.Type.Size()),
-				offset: offsetOf(field),
-				ename:  "golang::int8",
+				esize:  1,
+				offset: offset,
+				ename:  "int8_t",
 			},
 		}
 	case reflect.Int16:
@@ -77,9 +269,9 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 			StreamerElement{
 				named:  *rbase.NewNamed(nameOf(field), ""),
 				etype:  rmeta.GoType2ROOTEnum[field.Type],
-				esize:  int32(field.Type.Size()),
-				offset: offsetOf(field),
-				ename:  "golang::int16",
+				esize:  2,
+				offset: offset,
+				ename:  "int16_t",
 			},
 		}
 	case reflect.Int32:
@@ -87,9 +279,9 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 			StreamerElement{
 				named:  *rbase.NewNamed(nameOf(field), ""),
 				etype:  rmeta.GoType2ROOTEnum[field.Type],
-				esize:  int32(field.Type.Size()),
-				offset: offsetOf(field),
-				ename:  "golang::int32",
+				esize:  4,
+				offset: offset,
+				ename:  "int32_t",
 			},
 		}
 	case reflect.Int64:
@@ -97,9 +289,9 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 			StreamerElement{
 				named:  *rbase.NewNamed(nameOf(field), ""),
 				etype:  rmeta.GoType2ROOTEnum[field.Type],
-				esize:  int32(field.Type.Size()),
-				offset: offsetOf(field),
-				ename:  "golang::int64",
+				esize:  8,
+				offset: offset,
+				ename:  "int64_t",
 			},
 		}
 	case reflect.Uint8:
@@ -107,9 +299,9 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 			StreamerElement{
 				named:  *rbase.NewNamed(nameOf(field), ""),
 				etype:  rmeta.GoType2ROOTEnum[field.Type],
-				esize:  int32(field.Type.Size()),
-				offset: offsetOf(field),
-				ename:  "golang::uint8",
+				esize:  1,
+				offset: offset,
+				ename:  "uint8_t",
 			},
 		}
 	case reflect.Uint16:
@@ -117,9 +309,9 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 			StreamerElement{
 				named:  *rbase.NewNamed(nameOf(field), ""),
 				etype:  rmeta.GoType2ROOTEnum[field.Type],
-				esize:  int32(field.Type.Size()),
-				offset: offsetOf(field),
-				ename:  "golang::uint16",
+				esize:  2,
+				offset: offset,
+				ename:  "uint16_t",
 			},
 		}
 	case reflect.Uint32:
@@ -127,9 +319,9 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 			StreamerElement{
 				named:  *rbase.NewNamed(nameOf(field), ""),
 				etype:  rmeta.GoType2ROOTEnum[field.Type],
-				esize:  int32(field.Type.Size()),
-				offset: offsetOf(field),
-				ename:  "golang::uint32",
+				esize:  4,
+				offset: offset,
+				ename:  "uint32_t",
 			},
 		}
 	case reflect.Uint64:
@@ -137,39 +329,67 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 			StreamerElement{
 				named:  *rbase.NewNamed(nameOf(field), ""),
 				etype:  rmeta.GoType2ROOTEnum[field.Type],
-				esize:  int32(field.Type.Size()),
-				offset: offsetOf(field),
-				ename:  "golang::uint64",
+				esize:  8,
+				offset: offset,
+				ename:  "uint64_t",
 			},
 		}
 	case reflect.Float32:
-		return &StreamerBasicType{
-			StreamerElement{
-				named:  *rbase.NewNamed(nameOf(field), ""),
-				etype:  rmeta.GoType2ROOTEnum[field.Type],
-				esize:  int32(field.Type.Size()),
-				offset: offsetOf(field),
-				ename:  "golang::float32",
-			},
+		switch field.Type {
+		case reflect.TypeOf(root.Float16(0)):
+			return &StreamerBasicType{
+				StreamerElement{
+					named:  *rbase.NewNamed(nameOf(field), ""),
+					etype:  rmeta.Float16,
+					esize:  4,
+					offset: offset,
+					ename:  "Float16_t",
+				},
+			}
+		default:
+			return &StreamerBasicType{
+				StreamerElement{
+					named:  *rbase.NewNamed(nameOf(field), ""),
+					etype:  rmeta.GoType2ROOTEnum[field.Type],
+					esize:  4,
+					offset: offset,
+					ename:  "float",
+				},
+			}
 		}
 	case reflect.Float64:
-		return &StreamerBasicType{
-			StreamerElement{
-				named:  *rbase.NewNamed(nameOf(field), ""),
-				etype:  rmeta.GoType2ROOTEnum[field.Type],
-				esize:  int32(field.Type.Size()),
-				offset: offsetOf(field),
-				ename:  "golang::float64",
-			},
+		switch field.Type {
+		case reflect.TypeOf(root.Double32(0)):
+			return &StreamerBasicType{
+				StreamerElement{
+					named:  *rbase.NewNamed(nameOf(field), ""),
+					etype:  rmeta.Double32,
+					esize:  8,
+					offset: offset,
+					ename:  "Double32_t",
+				},
+			}
+		default:
+			return &StreamerBasicType{
+				StreamerElement{
+					named:  *rbase.NewNamed(nameOf(field), ""),
+					etype:  rmeta.GoType2ROOTEnum[field.Type],
+					esize:  8,
+					offset: offset,
+					ename:  "double",
+				},
+			}
 		}
 	case reflect.String:
-		return &StreamerString{
-			StreamerElement{
-				named:  *rbase.NewNamed(nameOf(field), ""),
-				etype:  rmeta.TString,
-				esize:  int32(field.Type.Size()),
-				offset: offsetOf(field),
-				ename:  "golang::string",
+		return &StreamerSTLstring{
+			StreamerSTL: StreamerSTL{
+				StreamerElement: StreamerElement{
+					named:  *rbase.NewNamed(nameOf(field), ""),
+					etype:  rmeta.Streamer,
+					esize:  sizeOfStdString,
+					offset: offset,
+					ename:  "string",
+				},
 			},
 		}
 	case reflect.Struct:
@@ -177,23 +397,32 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 			StreamerElement{
 				named:  *rbase.NewNamed(nameOf(field), ""),
 				etype:  rmeta.Any,
-				esize:  int32(field.Type.Size()),
-				offset: offsetOf(field),
-				ename:  field.Type.Name(),
+				esize:  sizeOf(field.Type),
+				offset: offset,
+				ename:  typenameOf(field.Type),
 			},
 		}
 
 	case reflect.Array:
-		et := field.Type.Elem()
+		// FIXME(sbinet): generate proper maxidx+arrdim+arrlen fields.
+		var (
+			et     = field.Type.Elem()
+			arrlen = int32(field.Type.Len())
+			arrdim = int32(1) // FIXME(sbinet)
+			maxidx = [5]int32{arrlen, 0, 0, 0, 0}
+		)
 		switch et.Kind() {
 		case reflect.Bool:
 			return &StreamerBasicType{
 				StreamerElement{
 					named:  *rbase.NewNamed(nameOf(field), ""),
 					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::bool",
+					esize:  arrlen * 1,
+					offset: offset,
+					arrlen: arrlen,
+					arrdim: arrdim,
+					maxidx: maxidx,
+					ename:  "bool",
 				},
 			}
 		case reflect.Int8:
@@ -201,9 +430,12 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 				StreamerElement{
 					named:  *rbase.NewNamed(nameOf(field), ""),
 					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::int8",
+					esize:  arrlen * 1,
+					offset: offset,
+					arrlen: arrlen,
+					arrdim: arrdim,
+					maxidx: maxidx,
+					ename:  "int8_t",
 				},
 			}
 		case reflect.Int16:
@@ -211,9 +443,12 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 				StreamerElement{
 					named:  *rbase.NewNamed(nameOf(field), ""),
 					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::int16",
+					esize:  arrlen * 2,
+					offset: offset,
+					arrlen: arrlen,
+					arrdim: arrdim,
+					maxidx: maxidx,
+					ename:  "int16_t",
 				},
 			}
 		case reflect.Int32:
@@ -221,9 +456,12 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 				StreamerElement{
 					named:  *rbase.NewNamed(nameOf(field), ""),
 					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::int32",
+					esize:  arrlen * 4,
+					offset: offset,
+					arrlen: arrlen,
+					arrdim: arrdim,
+					maxidx: maxidx,
+					ename:  "int32_t",
 				},
 			}
 		case reflect.Int64:
@@ -231,9 +469,12 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 				StreamerElement{
 					named:  *rbase.NewNamed(nameOf(field), ""),
 					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::int64",
+					esize:  arrlen * 8,
+					offset: offset,
+					arrlen: arrlen,
+					arrdim: arrdim,
+					maxidx: maxidx,
+					ename:  "int64_t",
 				},
 			}
 		case reflect.Uint8:
@@ -241,9 +482,12 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 				StreamerElement{
 					named:  *rbase.NewNamed(nameOf(field), ""),
 					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::uint8",
+					esize:  arrlen * 1,
+					offset: offset,
+					arrlen: arrlen,
+					arrdim: arrdim,
+					maxidx: maxidx,
+					ename:  "uint8_t",
 				},
 			}
 		case reflect.Uint16:
@@ -251,9 +495,12 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 				StreamerElement{
 					named:  *rbase.NewNamed(nameOf(field), ""),
 					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::uint16",
+					esize:  arrlen * 2,
+					offset: offset,
+					arrlen: arrlen,
+					arrdim: arrdim,
+					maxidx: maxidx,
+					ename:  "uint16_t",
 				},
 			}
 		case reflect.Uint32:
@@ -261,9 +508,12 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 				StreamerElement{
 					named:  *rbase.NewNamed(nameOf(field), ""),
 					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::uint32",
+					esize:  arrlen * 4,
+					offset: offset,
+					arrlen: arrlen,
+					arrdim: arrdim,
+					maxidx: maxidx,
+					ename:  "uint32_t",
 				},
 			}
 		case reflect.Uint64:
@@ -271,48 +521,95 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 				StreamerElement{
 					named:  *rbase.NewNamed(nameOf(field), ""),
 					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::uint64",
+					esize:  arrlen * 8,
+					offset: offset,
+					arrlen: arrlen,
+					arrdim: arrdim,
+					maxidx: maxidx,
+					ename:  "uint64_t",
 				},
 			}
 		case reflect.Float32:
-			return &StreamerBasicType{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::float32",
-				},
+			switch et {
+			case reflect.TypeOf(root.Float16(0)):
+				return &StreamerBasicType{
+					StreamerElement{
+						named:  *rbase.NewNamed(nameOf(field), ""),
+						etype:  rmeta.OffsetL + rmeta.Float16,
+						esize:  arrlen * 4,
+						offset: offset,
+						arrlen: arrlen,
+						arrdim: arrdim,
+						maxidx: maxidx,
+						ename:  "Float16_t",
+					},
+				}
+			default:
+				return &StreamerBasicType{
+					StreamerElement{
+						named:  *rbase.NewNamed(nameOf(field), ""),
+						etype:  rmeta.OffsetL + rmeta.Float32,
+						esize:  arrlen * 4,
+						offset: offset,
+						arrlen: arrlen,
+						arrdim: arrdim,
+						maxidx: maxidx,
+						ename:  "float",
+					},
+				}
 			}
 		case reflect.Float64:
-			return &StreamerBasicType{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::float64",
-				},
+			switch et {
+			case reflect.TypeOf(root.Double32(0)):
+				return &StreamerBasicType{
+					StreamerElement{
+						named:  *rbase.NewNamed(nameOf(field), ""),
+						etype:  rmeta.OffsetL + rmeta.Double32,
+						esize:  arrlen * 8,
+						offset: offset,
+						arrlen: arrlen,
+						arrdim: arrdim,
+						maxidx: maxidx,
+						ename:  "Double32_t",
+					},
+				}
+			default:
+				return &StreamerBasicType{
+					StreamerElement{
+						named:  *rbase.NewNamed(nameOf(field), ""),
+						etype:  rmeta.OffsetL + rmeta.Float64,
+						esize:  arrlen * 8,
+						offset: offset,
+						arrlen: arrlen,
+						arrdim: arrdim,
+						maxidx: maxidx,
+						ename:  "double",
+					},
+				}
 			}
 		case reflect.String:
-			return &StreamerBasicType{
+			return &StreamerString{
 				StreamerElement{
 					named:  *rbase.NewNamed(nameOf(field), ""),
 					etype:  rmeta.OffsetL + rmeta.TString,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::string",
+					esize:  arrlen * sizeOfTString,
+					arrlen: arrlen,
+					arrdim: arrdim,
+					maxidx: maxidx,
+					offset: offset,
+					ename:  "TString",
 				},
 			}
 		case reflect.Struct:
-			return &StreamerBasicType{
+			return &StreamerObjectAny{
 				StreamerElement{
 					named:  *rbase.NewNamed(nameOf(field), ""),
 					etype:  rmeta.OffsetL + rmeta.Any,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
+					esize:  arrlen * sizeOf(field.Type),
+					arrlen: arrlen,
+					arrdim: arrdim,
+					maxidx: maxidx,
+					offset: offset,
 					ename:  typenameOf(et),
 				},
 			}
@@ -322,141 +619,12 @@ func (bld *streamerBuilder) genField(field reflect.StructField) rbytes.StreamerE
 
 	case reflect.Slice:
 		et := field.Type.Elem()
-		switch et.Kind() {
-		case reflect.Bool:
-			return &StreamerObjectAny{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.Any,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::slice<golang::bool>",
-				},
-			}
-		case reflect.Int8:
-			return &StreamerObjectAny{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.Any,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::slice<golang::int8>",
-				},
-			}
-		case reflect.Int16:
-			return &StreamerObjectAny{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.Any,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::slice<golang::int16>",
-				},
-			}
-		case reflect.Int32:
-			return &StreamerObjectAny{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.Any,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::slice<golang::int32>",
-				},
-			}
-		case reflect.Int64:
-			return &StreamerObjectAny{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.Any,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::slice<golang::int64>",
-				},
-			}
-		case reflect.Uint8:
-			return &StreamerObjectAny{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.Any,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::slice<golang::uint8>",
-				},
-			}
-		case reflect.Uint16:
-			return &StreamerObjectAny{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.Any,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::slice<golang::uint16>",
-				},
-			}
-		case reflect.Uint32:
-			return &StreamerObjectAny{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.Any,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::slice<golang::uint32>",
-				},
-			}
-		case reflect.Uint64:
-			return &StreamerObjectAny{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.Any,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::slice<golang::uint64>",
-				},
-			}
-		case reflect.Float32:
-			return &StreamerObjectAny{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.Any,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::slice<golang::float32>",
-				},
-			}
-		case reflect.Float64:
-			return &StreamerObjectAny{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.Any,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::slice<golang::float64>",
-				},
-			}
-		case reflect.String:
-			return &StreamerObjectAny{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.Any,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  "golang::slice<golang::string>",
-				},
-			}
-		case reflect.Struct:
-			return &StreamerObjectAny{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.Any,
-					esize:  int32(field.Type.Size()),
-					offset: offsetOf(field),
-					ename:  fmt.Sprintf("golang::slice<%s>", typenameOf(et)),
-				},
-			}
-
-		default:
-			panic(fmt.Errorf("rdict: invalid struct slice field %#v", field))
+		count, ok := hasCount(field)
+		if ok {
+			class := typenameOf(typ)
+			return bld.genVarLenArrayOf(et, class, count, nameOf(field), offsetOf(field))
 		}
+		return bld.genStdVectorOf(et, nameOf(field), offsetOf(field))
 
 	default:
 		panic(fmt.Errorf("rdict: invalid struct field %#v", field))
@@ -492,9 +660,64 @@ func (store *streamerStoreImpl) addStreamer(si rbytes.StreamerInfo) {
 func nameOf(field reflect.StructField) string {
 	tag, ok := field.Tag.Lookup("groot")
 	if ok {
-		return tag
+		i := strings.Index(tag, "[")
+		if i < 0 {
+			return tag
+		}
+		return tag[:i]
 	}
 	return field.Name
+}
+
+func hasCount(field reflect.StructField) (string, bool) {
+	tag, ok := field.Tag.Lookup("groot")
+	if !ok || !strings.Contains(tag, "[") {
+		return "", false
+	}
+	var (
+		count = new(strings.Builder)
+		brack bool
+	)
+	for _, v := range tag {
+		switch v {
+		case '[':
+			brack = true
+		case ']':
+			name := strings.TrimSpace(count.String())
+			if !isIdent(name) {
+				return "", false
+			}
+			return name, true
+		default:
+			if brack {
+				_, _ = count.WriteString(string(v))
+			}
+		}
+	}
+	return "", false
+}
+
+func isIdent(name string) bool {
+	if len(name) == 0 {
+		return false
+	}
+
+	ok := func(c rune) bool {
+		return 'A' <= c && c <= 'Z' ||
+			'a' <= c && c <= 'z' ||
+			'0' <= c && c <= '9' ||
+			c == '_'
+	}
+
+	for i, c := range name {
+		if i == 0 && ('0' <= c && c <= '9') {
+			return false
+		}
+		if !ok(c) {
+			return false
+		}
+	}
+	return true
 }
 
 func offsetOf(field reflect.StructField) int32 {
@@ -503,9 +726,86 @@ func offsetOf(field reflect.StructField) int32 {
 	return 0
 }
 
-func typenameOf(typ reflect.Type) string {
-	return typ.Name()
+func sizeOf(typ reflect.Type) int32 {
+	// FIXME(sbinet): compute ROOT-compatible size.
+	return int32(typ.Size())
 }
+
+func typenameOf(typ reflect.Type) string {
+	switch typ.Kind() {
+	case reflect.Slice:
+		ename := typenameOf(typ.Elem())
+		if strings.HasSuffix(ename, ">") {
+			ename += " "
+		}
+		return "vector<" + ename + ">"
+	case reflect.Array:
+		var (
+			dims []int
+			et   = typ
+		)
+		for i := 0; i < 10; i++ {
+			dims = append(dims, et.Len())
+			et = et.Elem()
+			if et.Kind() != reflect.Array {
+				break
+			}
+
+		}
+		o := new(strings.Builder)
+		ename := typenameOf(et)
+		_, _ = o.WriteString(ename)
+		for _, v := range dims {
+			fmt.Fprintf(o, "[%d]", v)
+		}
+		return o.String()
+	case reflect.Bool:
+		return "bool"
+	case reflect.Int8:
+		return "int8_t"
+	case reflect.Int16:
+		return "int16_t"
+	case reflect.Int32:
+		return "int32_t"
+	case reflect.Int64:
+		return "int64_t"
+	case reflect.Uint8:
+		return "uint8_t"
+	case reflect.Uint16:
+		return "uint16_t"
+	case reflect.Uint32:
+		return "uint32_t"
+	case reflect.Uint64:
+		return "uint64_t"
+	case reflect.Float32:
+		switch typ {
+		case reflect.TypeOf(root.Float16(0)):
+			return "Float16_t"
+		default:
+			return "float"
+		}
+	case reflect.Float64:
+		switch typ {
+		case reflect.TypeOf(root.Double32(0)):
+			return "Double32_t"
+		default:
+			return "double"
+		}
+	case reflect.String:
+		return "string"
+	default:
+		name := typ.Name()
+		if name == "" {
+			panic(fmt.Errorf("rdict: invalid reflect type %v", typ))
+		}
+		return name
+	}
+}
+
+const (
+	sizeOfTString   = 24
+	sizeOfStdString = 32
+)
 
 var (
 	_ streamerStore              = (*streamerStoreImpl)(nil)

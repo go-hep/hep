@@ -729,7 +729,7 @@ func TestTypeFromSI(t *testing.T) {
 					rdict.Element{
 						Name:  *rbase.NewNamed("sliI16", "[N]"),
 						Type:  rmeta.OffsetP + rmeta.Int16,
-						Size:  1,
+						Size:  2,
 						EName: "int16_t*",
 					}.New(), 1, "N", "event",
 				),
@@ -737,7 +737,7 @@ func TestTypeFromSI(t *testing.T) {
 					rdict.Element{
 						Name:  *rbase.NewNamed("sliI32", "[N]"),
 						Type:  rmeta.OffsetP + rmeta.Int32,
-						Size:  1,
+						Size:  4,
 						EName: "int32_t*",
 					}.New(), 1, "N", "event",
 				),
@@ -745,7 +745,7 @@ func TestTypeFromSI(t *testing.T) {
 					rdict.Element{
 						Name:  *rbase.NewNamed("sliI64", "[N]"),
 						Type:  rmeta.OffsetP + rmeta.Int64,
-						Size:  1,
+						Size:  8,
 						EName: "int64_t*",
 					}.New(), 1, "N", "event",
 				),
@@ -761,7 +761,7 @@ func TestTypeFromSI(t *testing.T) {
 					rdict.Element{
 						Name:  *rbase.NewNamed("sliU16", "[N]"),
 						Type:  rmeta.OffsetP + rmeta.Uint16,
-						Size:  1,
+						Size:  2,
 						EName: "uint16_t*",
 					}.New(), 1, "N", "event",
 				),
@@ -769,7 +769,7 @@ func TestTypeFromSI(t *testing.T) {
 					rdict.Element{
 						Name:  *rbase.NewNamed("sliU32", "[N]"),
 						Type:  rmeta.OffsetP + rmeta.Uint32,
-						Size:  1,
+						Size:  4,
 						EName: "uint32_t*",
 					}.New(), 1, "N", "event",
 				),
@@ -777,7 +777,7 @@ func TestTypeFromSI(t *testing.T) {
 					rdict.Element{
 						Name:  *rbase.NewNamed("sliU64", "[N]"),
 						Type:  rmeta.OffsetP + rmeta.Uint64,
-						Size:  1,
+						Size:  8,
 						EName: "uint64_t*",
 					}.New(), 1, "N", "event",
 				),
@@ -785,7 +785,7 @@ func TestTypeFromSI(t *testing.T) {
 					rdict.Element{
 						Name:  *rbase.NewNamed("sliF32", "[N]"),
 						Type:  rmeta.OffsetP + rmeta.Float32,
-						Size:  1,
+						Size:  4,
 						EName: "float32_t*",
 					}.New(), 1, "N", "event",
 				),
@@ -793,7 +793,7 @@ func TestTypeFromSI(t *testing.T) {
 					rdict.Element{
 						Name:  *rbase.NewNamed("sliF64", "[N]"),
 						Type:  rmeta.OffsetP + rmeta.Float64,
-						Size:  1,
+						Size:  8,
 						EName: "float64_t*",
 					}.New(), 1, "N", "event",
 				),
@@ -801,7 +801,7 @@ func TestTypeFromSI(t *testing.T) {
 					rdict.Element{
 						Name:  *rbase.NewNamed("sliF16", "[N]"),
 						Type:  rmeta.OffsetP + rmeta.Float16,
-						Size:  1,
+						Size:  4,
 						EName: "Float16_t*",
 					}.New(), 1, "N", "event",
 				),
@@ -809,7 +809,7 @@ func TestTypeFromSI(t *testing.T) {
 					rdict.Element{
 						Name:  *rbase.NewNamed("sliD32", "[N]"),
 						Type:  rmeta.OffsetP + rmeta.Double32,
-						Size:  1,
+						Size:  8,
 						EName: "Double32_t*",
 					}.New(), 1, "N", "event",
 				),
