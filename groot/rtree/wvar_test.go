@@ -10,6 +10,7 @@ func TestWriteVarsFromStruct(t *testing.T) {
 	for _, tc := range []struct {
 		name   string
 		ptr    interface{}
+		wopts  []WriteOption
 		want   []WriteVar
 		panics string
 	}{
@@ -86,7 +87,7 @@ func TestWriteVarsFromStruct(t *testing.T) {
 			name: "slices-no-count",
 			ptr: &struct {
 				F1 int32
-				F2 []float32 `groot:"F2[F1]"`
+				X2 []float32 `groot:"F2[F1]"`
 				X3 []float64 `groot:"F3"`
 				F4 []float64
 			}{},
@@ -172,6 +173,17 @@ func TestWriteVarsFromStruct(t *testing.T) {
 			}{},
 			panics: "rtree: invalid number of array-dimension for field \"Arr\": \"vs[1][2][3][4]\"",
 		},
+		{
+			name: "no-split-struct",
+			ptr: &struct {
+				N   int32
+				F32 float32
+			}{},
+			wopts: []WriteOption{WithTitle("evt"), WithSplitLevel(0)},
+			want: []WriteVar{
+				{Name: "evt"},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.panics != "" {
@@ -185,7 +197,7 @@ func TestWriteVarsFromStruct(t *testing.T) {
 					}
 				}()
 			}
-			got := WriteVarsFromStruct(tc.ptr)
+			got := WriteVarsFromStruct(tc.ptr, tc.wopts...)
 			if got, want := len(got), len(tc.want); got != want {
 				t.Fatalf("invalid number of wvars: got=%d, want=%d", got, want)
 			}

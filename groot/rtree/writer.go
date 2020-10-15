@@ -92,6 +92,14 @@ func WithTitle(title string) WriteOption {
 	}
 }
 
+// WithSplitLevel sets the maximum branch depth split level
+func WithSplitLevel(lvl int) WriteOption {
+	return func(opt *wopt) error {
+		opt.splitlvl = int32(lvl)
+		return nil
+	}
+}
+
 type wtree struct {
 	ttree
 	wvars []WriteVar

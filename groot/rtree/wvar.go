@@ -21,7 +21,14 @@ type WriteVar struct {
 // WriteVarsFromStruct creates a slice of WriteVars from the ptr value.
 // WriteVarsFromStruct panics if ptr is not a pointer to a struct value.
 // WriteVarsFromStruct ignores fields that are not exported.
-func WriteVarsFromStruct(ptr interface{}) []WriteVar {
+func WriteVarsFromStruct(ptr interface{}, opts ...WriteOption) []WriteVar {
+	cfg := wopt{
+		splitlvl: defaultSplitLevel,
+	}
+	for _, opt := range opts {
+		_ = opt(&cfg)
+	}
+
 	rv := reflect.ValueOf(ptr)
 	if rv.Kind() != reflect.Ptr {
 		panic(fmt.Errorf("rtree: expect a pointer value, got %T", ptr))
@@ -51,6 +58,16 @@ func WriteVarsFromStruct(ptr interface{}) []WriteVar {
 			dims[i] = out[i][1]
 		}
 		return n, dims
+	}
+
+	if cfg.splitlvl == 0 {
+		name := cfg.title
+		if name == "" {
+			panic(fmt.Errorf("rtree: expect a title for split-less struct"))
+		}
+		return []WriteVar{
+			{Name: name, Value: ptr},
+		}
 	}
 
 	var (
