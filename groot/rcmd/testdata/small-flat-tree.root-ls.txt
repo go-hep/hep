@@ -1,0 +1,148 @@
+=== [../testdata/small-flat-tree.root] ===
+version: 60806
+streamer-infos:
+ StreamerInfo for "TTree" version=19 title=""
+  BASE           TNamed                 offset=  0 type= 67 size=  0  The basis for a named object (name, title)
+  BASE           TAttLine               offset=  0 type=  0 size=  0  Line attributes
+  BASE           TAttFill               offset=  0 type=  0 size=  0  Fill area attributes
+  BASE           TAttMarker             offset=  0 type=  0 size=  0  Marker attributes
+  Long64_t       fEntries               offset=  0 type= 16 size=  8  Number of entries
+  Long64_t       fTotBytes              offset=  0 type= 16 size=  8  Total number of bytes in all branches before compression
+  Long64_t       fZipBytes              offset=  0 type= 16 size=  8  Total number of bytes in all branches after compression
+  Long64_t       fSavedBytes            offset=  0 type= 16 size=  8  Number of autosaved bytes
+  Long64_t       fFlushedBytes          offset=  0 type= 16 size=  8  Number of auto-flushed bytes
+  double         fWeight                offset=  0 type=  8 size=  8  Tree weight (see TTree::SetWeight)
+  int            fTimerInterval         offset=  0 type=  3 size=  4  Timer interval in milliseconds
+  int            fScanField             offset=  0 type=  3 size=  4  Number of runs before prompting in Scan
+  int            fUpdate                offset=  0 type=  3 size=  4  Update frequency for EntryLoop
+  int            fDefaultEntryOffsetLen offset=  0 type=  3 size=  4  Initial Length of fEntryOffset table in the basket buffers
+  int            fNClusterRange         offset=  0 type=  6 size=  4  Number of Cluster range in addition to the one defined by 'AutoFlush'
+  Long64_t       fMaxEntries            offset=  0 type= 16 size=  8  Maximum number of entries in case of circular buffers
+  Long64_t       fMaxEntryLoop          offset=  0 type= 16 size=  8  Maximum number of entries to process
+  Long64_t       fMaxVirtualSize        offset=  0 type= 16 size=  8  Maximum total size of buffers kept in memory
+  Long64_t       fAutoSave              offset=  0 type= 16 size=  8  Autosave tree when fAutoSave entries written or -fAutoSave (compressed) bytes produced
+  Long64_t       fAutoFlush             offset=  0 type= 16 size=  8  Auto-flush tree when fAutoFlush entries written or -fAutoFlush (compressed) bytes produced
+  Long64_t       fEstimate              offset=  0 type= 16 size=  8  Number of entries to estimate histogram limits
+  Long64_t*      fClusterRangeEnd       offset=  0 type= 56 size=  8  [fNClusterRange] Last entry of a cluster range.
+  Long64_t*      fClusterSize           offset=  0 type= 56 size=  8  [fNClusterRange] Number of entries in each cluster for a given range.
+  TObjArray      fBranches              offset=  0 type= 61 size= 64  List of Branches
+  TObjArray      fLeaves                offset=  0 type= 61 size= 64  Direct pointers to individual branch leaves
+  TList*         fAliases               offset=  0 type= 64 size=  8  List of aliases for expressions based on the tree branches.
+  TArrayD        fIndexValues           offset=  0 type= 62 size= 24  Sorted index values
+  TArrayI        fIndex                 offset=  0 type= 62 size= 24  Index of sorted values
+  TVirtualIndex* fTreeIndex             offset=  0 type= 64 size=  8  Pointer to the tree Index (if any)
+  TList*         fFriends               offset=  0 type= 64 size=  8  pointer to list of friend elements
+  TList*         fUserInfo              offset=  0 type= 64 size=  8  pointer to a list of user objects associated to this Tree
+  TBranchRef*    fBranchRef             offset=  0 type= 64 size=  8  Branch supporting the TRefTable (if any)
+ StreamerInfo for "TNamed" version=1 title=""
+  BASE    TObject offset=  0 type= 66 size=  0  Basic ROOT object
+  TString fName   offset=  0 type= 65 size= 24  object identifier
+  TString fTitle  offset=  0 type= 65 size= 24  object title
+ StreamerInfo for "TObject" version=1 title=""
+  unsigned int fUniqueID offset=  0 type= 13 size=  4  object unique identifier
+  unsigned int fBits     offset=  0 type= 15 size=  4  bit field status word
+ StreamerInfo for "TAttLine" version=2 title=""
+  short fLineColor offset=  0 type=  2 size=  2  Line color
+  short fLineStyle offset=  0 type=  2 size=  2  Line style
+  short fLineWidth offset=  0 type=  2 size=  2  Line width
+ StreamerInfo for "TAttFill" version=2 title=""
+  short fFillColor offset=  0 type=  2 size=  2  Fill area color
+  short fFillStyle offset=  0 type=  2 size=  2  Fill area style
+ StreamerInfo for "TAttMarker" version=2 title=""
+  short fMarkerColor offset=  0 type=  2 size=  2  Marker color
+  short fMarkerStyle offset=  0 type=  2 size=  2  Marker style
+  float fMarkerSize  offset=  0 type=  5 size=  4  Marker size
+ StreamerInfo for "TBranch" version=12 title=""
+  BASE      TNamed          offset=  0 type= 67 size=  0  The basis for a named object (name, title)
+  BASE      TAttFill        offset=  0 type=  0 size=  0  Fill area attributes
+  int       fCompress       offset=  0 type=  3 size=  4  Compression level and algorithm
+  int       fBasketSize     offset=  0 type=  3 size=  4  Initial Size of  Basket Buffer
+  int       fEntryOffsetLen offset=  0 type=  3 size=  4  Initial Length of fEntryOffset table in the basket buffers
+  int       fWriteBasket    offset=  0 type=  3 size=  4  Last basket number written
+  Long64_t  fEntryNumber    offset=  0 type= 16 size=  8  Current entry number (last one filled in this branch)
+  int       fOffset         offset=  0 type=  3 size=  4  Offset of this branch
+  int       fMaxBaskets     offset=  0 type=  6 size=  4  Maximum number of Baskets so far
+  int       fSplitLevel     offset=  0 type=  3 size=  4  Branch split level
+  Long64_t  fEntries        offset=  0 type= 16 size=  8  Number of entries
+  Long64_t  fFirstEntry     offset=  0 type= 16 size=  8  Number of the first entry in this branch
+  Long64_t  fTotBytes       offset=  0 type= 16 size=  8  Total number of bytes in all leaves before compression
+  Long64_t  fZipBytes       offset=  0 type= 16 size=  8  Total number of bytes in all leaves after compression
+  TObjArray fBranches       offset=  0 type= 61 size= 64  -> List of Branches of this branch
+  TObjArray fLeaves         offset=  0 type= 61 size= 64  -> List of leaves of this branch
+  TObjArray fBaskets        offset=  0 type= 61 size= 64  -> List of baskets of this branch
+  int*      fBasketBytes    offset=  0 type= 43 size=  4  [fMaxBaskets] Length of baskets on file
+  Long64_t* fBasketEntry    offset=  0 type= 56 size=  8  [fMaxBaskets] Table of first entry in each basket
+  Long64_t* fBasketSeek     offset=  0 type= 56 size=  8  [fMaxBaskets] Addresses of baskets on file
+  TString   fFileName       offset=  0 type= 65 size= 24  Name of file where buffers are stored ("" if in same file as Tree header)
+ StreamerInfo for "TLeafI" version=1 title=""
+  BASE  TLeaf    offset=  0 type=  0 size=  0  Leaf: description of a Branch data type
+  int   fMinimum offset=  0 type=  3 size=  4  Minimum value if leaf range is specified
+  int   fMaximum offset=  0 type=  3 size=  4  Maximum value if leaf range is specified
+ StreamerInfo for "TLeaf" version=2 title=""
+  BASE   TNamed      offset=  0 type= 67 size=  0  The basis for a named object (name, title)
+  int    fLen        offset=  0 type=  3 size=  4  Number of fixed length elements
+  int    fLenType    offset=  0 type=  3 size=  4  Number of bytes for this data type
+  int    fOffset     offset=  0 type=  3 size=  4  Offset in ClonesArray object (if one)
+  bool   fIsRange    offset=  0 type= 18 size=  1  (=kTRUE if leaf has a range, kFALSE otherwise)
+  bool   fIsUnsigned offset=  0 type= 18 size=  1  (=kTRUE if unsigned, kFALSE otherwise)
+  TLeaf* fLeafCount  offset=  0 type= 64 size=  8  Pointer to Leaf count if variable length (we do not own the counter)
+ StreamerInfo for "TLeafL" version=1 title=""
+  BASE     TLeaf    offset=  0 type=  0 size=  0  Leaf: description of a Branch data type
+  Long64_t fMinimum offset=  0 type= 16 size=  8  Minimum value if leaf range is specified
+  Long64_t fMaximum offset=  0 type= 16 size=  8  Maximum value if leaf range is specified
+ StreamerInfo for "TLeafF" version=1 title=""
+  BASE  TLeaf    offset=  0 type=  0 size=  0  Leaf: description of a Branch data type
+  float fMinimum offset=  0 type=  5 size=  4  Minimum value if leaf range is specified
+  float fMaximum offset=  0 type=  5 size=  4  Maximum value if leaf range is specified
+ StreamerInfo for "TLeafD" version=1 title=""
+  BASE   TLeaf    offset=  0 type=  0 size=  0  Leaf: description of a Branch data type
+  double fMinimum offset=  0 type=  8 size=  8  Minimum value if leaf range is specified
+  double fMaximum offset=  0 type=  8 size=  8  Maximum value if leaf range is specified
+ StreamerInfo for "TLeafC" version=1 title=""
+  BASE  TLeaf    offset=  0 type=  0 size=  0  Leaf: description of a Branch data type
+  int   fMinimum offset=  0 type=  3 size=  4  Minimum value if leaf range is specified
+  int   fMaximum offset=  0 type=  3 size=  4  Maximum value if leaf range is specified
+ StreamerInfo for "TList" version=5 title=""
+  BASE  TSeqCollection offset=  0 type=  0 size=  0  Sequenceable collection ABC
+ StreamerInfo for "TSeqCollection" version=0 title=""
+  BASE  TCollection offset=  0 type=  0 size=  0  Collection abstract base class
+ StreamerInfo for "TCollection" version=3 title=""
+  BASE    TObject offset=  0 type= 66 size=  0  Basic ROOT object
+  TString fName   offset=  0 type= 65 size= 24  name of the collection
+  int     fSize   offset=  0 type=  3 size=  4  number of elements in collection
+ StreamerInfo for "TString" version=2 title=""
+ StreamerInfo for "TBranchRef" version=1 title=""
+  BASE       TBranch   offset=  0 type=  0 size=  0  Branch descriptor
+  TRefTable* fRefTable offset=  0 type= 64 size=  8  pointer to the TRefTable
+ StreamerInfo for "TRefTable" version=3 title=""
+  BASE           TObject       offset=  0 type= 66 size=  0  Basic ROOT object
+  int            fSize         offset=  0 type=  3 size=  4  dummy for backward compatibility
+  TObjArray*     fParents      offset=  0 type= 64 size=  8  array of Parent objects  (eg TTree branch) holding the referenced objects
+  TObject*       fOwner        offset=  0 type= 64 size=  8  Object owning this TRefTable
+  vector<string> fProcessGUIDs offset=  0 type=500 size= 24  UUIDs of TProcessIDs used in fParentIDs
+ StreamerInfo for "TObjArray" version=3 title=""
+  BASE  TSeqCollection offset=  0 type=  0 size=  0  Sequenceable collection ABC
+  int   fLowerBound    offset=  0 type=  3 size=  4  Lower bound of the array
+  int   fLast          offset=  0 type=  3 size=  4  Last element in array containing an object
+---
+  TTree          tree                 my tree title (entries=100)
+    Int32        "Int32/I"            TBranch
+    Int64        "Int64/L"            TBranch
+    UInt32       "UInt32/i"           TBranch
+    UInt64       "UInt64/l"           TBranch
+    Float32      "Float32/F"          TBranch
+    Float64      "Float64/D"          TBranch
+    Str          "Str/C"              TBranch
+    ArrayInt32   "ArrayInt32[10]/I"   TBranch
+    ArrayInt64   "ArrayInt64[10]/L"   TBranch
+    ArrayUInt32  "ArrayInt32[10]/i"   TBranch
+    ArrayUInt64  "ArrayInt64[10]/l"   TBranch
+    ArrayFloat32 "ArrayFloat32[10]/F" TBranch
+    ArrayFloat64 "ArrayFloat64[10]/D" TBranch
+    N            "N/I"                TBranch
+    SliceInt32   "SliceInt32[N]/I"    TBranch
+    SliceInt64   "SliceInt64[N]/L"    TBranch
+    SliceUInt32  "SliceInt32[N]/i"    TBranch
+    SliceUInt64  "SliceInt64[N]/l"    TBranch
+    SliceFloat32 "SliceFloat32[N]/F"  TBranch
+    SliceFloat64 "SliceFloat64[N]/D"  TBranch

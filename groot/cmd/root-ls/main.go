@@ -42,45 +42,55 @@ package main // import "go-hep.org/x/hep/groot/cmd/root-ls"
 
 import (
 	"bufio"
-	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"runtime/pprof"
-	"text/tabwriter"
 
-	"go-hep.org/x/hep/groot"
-	"go-hep.org/x/hep/groot/riofs"
+	"go-hep.org/x/hep/groot/rcmd"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
-	"go-hep.org/x/hep/groot/rtree"
 	_ "go-hep.org/x/hep/groot/ztypes"
 )
 
 var (
-	siFlag   = flag.Bool("sinfos", false, "print StreamerInfos")
-	treeFlag = flag.Bool("t", false, "print Tree(s) (recursively)")
-	cpuFlag  = flag.String("cpu-profile", "", "path to CPU profile output file")
-)
+	fset = flag.NewFlagSet("ls", flag.ContinueOnError)
 
-func main() {
-	flag.Usage = func() {
-		fmt.Fprintf(
-			os.Stderr,
-			`Usage: root-ls [options] file1.root [file2.root [...]]
+	siFlag   = fset.Bool("sinfos", false, "print StreamerInfos")
+	treeFlag = fset.Bool("t", false, "print Tree(s) (recursively)")
+	cpuFlag  = fset.String("cpu-profile", "", "path to CPU profile output file")
+
+	usage = `Usage: root-ls [options] file1.root [file2.root [...]]
 
 ex:
  $> root-ls ./testdata/graphs.root
+ $> root-ls -t -sinfos ./testdata/graphs.root
 
 options:
-`,
-		)
-		flag.PrintDefaults()
+`
+)
+
+func main() {
+	os.Exit(run(os.Stdout, os.Stderr, os.Args[1:]))
+}
+
+func run(stdout, stderr io.Writer, args []string) int {
+	fset.Usage = func() {
+		fmt.Fprint(stderr, usage)
+		fset.PrintDefaults()
 	}
 
-	flag.Parse()
+	err := fset.Parse(args)
+	if err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return 0
+		}
+		log.Printf("could not parse args %q: %+v", args, err)
+		return 1
+	}
 
 	if *cpuFlag != "" {
 		f, err := os.Create(*cpuFlag)
@@ -94,167 +104,31 @@ options:
 		defer pprof.StopCPUProfile()
 	}
 
-	if flag.NArg() <= 0 {
-		fmt.Fprintf(os.Stderr, "error: you need to give a ROOT file\n\n")
-		flag.Usage()
-		os.Exit(1)
+	if fset.NArg() <= 0 {
+		fmt.Fprintf(stderr, "error: you need to give a ROOT file\n\n")
+		fset.Usage()
+		return 1
 	}
 
-	stdout := bufio.NewWriter(os.Stdout)
-	defer stdout.Flush()
+	out := bufio.NewWriter(stdout)
+	defer out.Flush()
 
-	cmd := rootls{
-		stdout:    stdout,
-		streamers: *siFlag,
-		trees:     *treeFlag,
+	opts := []rcmd.ListOption{
+		rcmd.ListStreamers(*siFlag),
+		rcmd.ListTrees(*treeFlag),
 	}
 
-	for ii, fname := range flag.Args() {
-
+	for ii, fname := range fset.Args() {
 		if ii > 0 {
-			fmt.Fprintf(cmd.stdout, "\n")
+			fmt.Fprintf(out, "\n")
 		}
-		err := cmd.ls(fname)
+		err := rcmd.List(out, fname, opts...)
 		if err != nil {
-			stdout.Flush()
+			out.Flush()
 			log.Printf("%+v", err)
-			os.Exit(1)
+			return 1
 		}
 	}
-}
 
-type rootls struct {
-	stdout    io.Writer
-	streamers bool
-	trees     bool
-}
-
-func (ls rootls) ls(fname string) error {
-	fmt.Fprintf(ls.stdout, "=== [%s] ===\n", fname)
-	f, err := groot.Open(fname)
-	if err != nil {
-		return fmt.Errorf("could not open file: %w", err)
-	}
-	defer f.Close()
-	fmt.Fprintf(ls.stdout, "version: %v\n", f.Version())
-	if ls.streamers {
-		fmt.Fprintf(ls.stdout, "streamer-infos:\n")
-		sinfos := f.StreamerInfos()
-		for _, v := range sinfos {
-			name := v.Name()
-			fmt.Fprintf(ls.stdout, " StreamerInfo for %q version=%d title=%q\n", name, v.ClassVersion(), v.Title())
-			w := tabwriter.NewWriter(ls.stdout, 8, 4, 1, ' ', 0)
-			for _, elm := range v.Elements() {
-				fmt.Fprintf(w, "  %s\t%s\toffset=%3d\ttype=%3d\tsize=%3d\t %s\n", elm.TypeName(), elm.Name(), elm.Offset(), elm.Type(), elm.Size(), elm.Title())
-			}
-			w.Flush()
-		}
-		fmt.Fprintf(ls.stdout, "---\n")
-	}
-
-	w := tabwriter.NewWriter(ls.stdout, 8, 4, 1, ' ', 0)
-	for _, k := range f.Keys() {
-		ls.walk(w, k)
-	}
-	w.Flush()
-
-	return nil
-}
-
-func (ls rootls) walk(w io.Writer, k riofs.Key) {
-	if ls.trees && isTreelike(k.ClassName()) {
-		obj := k.Value()
-		tree, ok := obj.(rtree.Tree)
-		if ok {
-			w := newWindent(2, w)
-			fmt.Fprintf(w, "%s\t%s\t%s\t(entries=%d)\n", k.ClassName(), k.Name(), k.Title(), tree.Entries())
-			displayBranches(w, tree, 2)
-			w.Flush()
-			return
-		}
-	}
-	fmt.Fprintf(w, "%s\t%s\t%s\t(cycle=%d)\n", k.ClassName(), k.Name(), k.Title(), k.Cycle())
-	if isDirlike(k.ClassName()) {
-		obj := k.Value()
-		if dir, ok := obj.(riofs.Directory); ok {
-			w := newWindent(2, w)
-			for _, k := range dir.Keys() {
-				ls.walk(w, k)
-			}
-			w.Flush()
-		}
-	}
-}
-
-func isDirlike(class string) bool {
-	switch class {
-	case "TDirectory", "TDirectoryFile":
-		return true
-	}
-	return false
-}
-
-func isTreelike(class string) bool {
-	switch class {
-	case "TTree", "TTreeSQL", "TChain", "TNtuple", "TNtupleD":
-		return true
-	}
-	return false
-}
-
-type windent struct {
-	hdr []byte
-	w   io.Writer
-}
-
-func newWindent(n int, w io.Writer) *windent {
-	return &windent{
-		hdr: bytes.Repeat([]byte(" "), n),
-		w:   w,
-	}
-}
-
-func (w *windent) Write(data []byte) (int, error) {
-	return w.w.Write(append(w.hdr, data...))
-}
-
-func (w *windent) Flush() error {
-	ww, ok := w.w.(flusher)
-	if !ok {
-		return nil
-	}
-	return ww.Flush()
-}
-
-type flusher interface {
-	Flush() error
-}
-
-type brancher interface {
-	Branches() []rtree.Branch
-}
-
-func displayBranches(w io.Writer, bres brancher, indent int) {
-	branches := bres.Branches()
-	if len(branches) <= 0 {
-		return
-	}
-	ww := newWindent(indent, w)
-	for _, b := range branches {
-		var (
-			name  = clip(b.Name(), 60)
-			title = clip(b.Title(), 50)
-			class = clip(b.Class(), 20)
-		)
-		fmt.Fprintf(ww, "%s\t%q\t%v\n", name, title, class)
-		displayBranches(ww, b, 2)
-	}
-	ww.Flush()
-}
-
-func clip(s string, n int) string {
-	if len(s) > n {
-		s = s[:n-5] + "[...]"
-	}
-	return s
+	return 0
 }

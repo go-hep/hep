@@ -7,24 +7,65 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 )
 
 func TestROOTls(t *testing.T) {
-	for _, name := range []string{
-		"../../testdata/dirs-6.14.00.root",
-		"../../testdata/graphs.root",
-		"../../testdata/small-flat-tree.root",
+	tmp, err := ioutil.TempDir("", "root-ls-")
+	if err != nil {
+		t.Fatalf("could not create tmp dir: %+v", err)
+	}
+	defer os.RemoveAll(tmp)
+
+	for _, tc := range []struct {
+		name string
+		rc   int
+	}{
+		{
+			name: "../../testdata/dirs-6.14.00.root",
+		},
+		{
+			name: "../../testdata/graphs.root",
+		},
+		{
+			name: "../../testdata/small-flat-tree.root",
+		},
+		{
+			name: filepath.Join(tmp, "not-there.root"),
+			rc:   1,
+		},
+		{
+			name: "-h",
+			rc:   0,
+		},
+		{
+			name: "-=3",
+			rc:   1,
+		},
+		{
+			name: "-cpu-profile=" + filepath.Join(tmp, "cpu.prof"),
+			rc:   1,
+		},
 	} {
-		t.Run(name, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			out := new(bytes.Buffer)
-			cmd := rootls{stdout: out, streamers: true, trees: true}
-			err := cmd.ls(name)
-			if err != nil {
-				t.Fatal(err)
+			rc := run(out, out, []string{
+				"-sinfos", "-t", tc.name,
+			})
+
+			if rc != tc.rc {
+				t.Fatalf(
+					"invalid exit-code for root-ls: got=%d, want=%d\n%s",
+					rc, tc.rc, out.String(),
+				)
 			}
-			ref := filepath.Join("testdata", filepath.Base(name)+".txt")
+			if rc != 0 || tc.name == "-h" {
+				return
+			}
+
+			ref := filepath.Join("testdata", filepath.Base(tc.name)+".txt")
 			want, err := ioutil.ReadFile(ref)
 			if err != nil {
 				t.Fatalf("could not open reference file: %v", err)
