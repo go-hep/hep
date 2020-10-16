@@ -69,9 +69,19 @@ var CxxBuiltins = map[string]reflect.Type{
 		"float64": reflect.TypeOf(float64(0)),
 	*/
 
+	// stdint
+	"int8_t":   reflect.TypeOf(int8(0)),
+	"int16_t":  reflect.TypeOf(int16(0)),
+	"int32_t":  reflect.TypeOf(int32(0)),
+	"int64_t":  reflect.TypeOf(int64(0)),
+	"uint8_t":  reflect.TypeOf(uint8(0)),
+	"uint16_t": reflect.TypeOf(uint16(0)),
+	"uint32_t": reflect.TypeOf(uint32(0)),
+	"uint64_t": reflect.TypeOf(uint64(0)),
+
 	// C/C++ builtins
 
-	"unsigned":       reflect.TypeOf(uint(0)),
+	"unsigned":       reflect.TypeOf(uint32(0)),
 	"unsigned char":  reflect.TypeOf(uint8(0)),
 	"unsigned short": reflect.TypeOf(uint16(0)),
 	"unsigned int":   reflect.TypeOf(uint32(0)),
