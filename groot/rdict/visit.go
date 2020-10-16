@@ -136,6 +136,18 @@ func (v *visitor) visitSE(depth int, se rbytes.StreamerElement) error {
 			return fmt.Errorf("rdict: cant visit non-vector-like STL streamers %#v", se)
 		}
 
+	case *StreamerLoop:
+		tname := strings.TrimRight(se.TypeName(), "*")
+		if _, ok := rmeta.CxxBuiltins[tname]; ok {
+			// no-op: C++ builtin.
+			return nil
+		}
+		si, err := v.ctx.StreamerInfo(tname, -1)
+		if err != nil {
+			return fmt.Errorf("could not find looper %q: %w", tname, err)
+		}
+		return v.run(depth+1, si)
+
 	default:
 		panic(fmt.Errorf("rdict: unknown visit streamer %T", se))
 	}
