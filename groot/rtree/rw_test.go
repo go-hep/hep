@@ -2166,7 +2166,7 @@ evt[9]: 10 [-100 -101 -102 -103 -104 -105 -106 -107 -108 -109]
 			},
 			btitles: []string{"evt"},
 			ltitles: []string{"evt"},
-			total:   13130,
+			total:   15510,
 			want: func(i int) interface{} {
 				var evt struct {
 					Event TNestedEvent1
@@ -2224,6 +2224,11 @@ std::string printV(TString v) {
 	std::stringstream o;
 	o << v.Data();
 	return o.str();
+}
+
+template<>
+std::string printV(std::string v) {
+	return v;
 }
 
 template<class T>
@@ -2353,21 +2358,21 @@ struct TNestedEvent1 {
 	Double32_t   ArrD32[ARRAYSZ];
 
 	int32_t  N;
-//	bool     SliBs[MAXSLICE];   //[N]
-//	char    *SliStr[MAXSLICE];  //[N]
-//	int8_t   SliI8[MAXSLICE];   //[N]
-//	int16_t  SliI16[MAXSLICE];  //[N]
-//	int32_t  SliI32[MAXSLICE];  //[N]
-//	int64_t  SliI64[MAXSLICE];  //[N]
-//	uint8_t  SliU8[MAXSLICE];   //[N]
-//	uint16_t SliU16[MAXSLICE];  //[N]
-//	uint32_t SliU32[MAXSLICE];  //[N]
-//	uint64_t SliU64[MAXSLICE];  //[N]
-//	float    SliF32[MAXSLICE];  //[N]
-//	double   SliF64[MAXSLICE];  //[N]
+	bool     *SliBs;   //[N]
+//	char*  *SliStr;  //[N]
+	int8_t   *SliI8;   //[N]
+	int16_t  *SliI16;  //[N]
+	int32_t  *SliI32;  //[N]
+	int64_t  *SliI64;  //[N]
+	uint8_t  *SliU8;   //[N]
+	uint16_t *SliU16;  //[N]
+	uint32_t *SliU32;  //[N]
+	uint64_t *SliU64;  //[N]
+	float    *SliF32;  //[N]
+	double   *SliF64;  //[N]
 
-//	Float16_t    SliD16[MAXSLICE];  //[N]
-//	Double32_t   SliD32[MAXSLICE];  //[N]
+	Float16_t    *SliD16;  //[N]
+	Double32_t   *SliD32;  //[N]
 
 	std::vector<bool> StdVecBs;
 	std::vector<std::string> StdVecStr;
@@ -2389,6 +2394,26 @@ struct TNestedEvent1 {
 	std::vector<std::vector<std::string> > StdVecVecStr;
 };
 
+TNestedEvent1 *newEvent() {
+	auto *evt = new TNestedEvent1;
+	evt->SliBs = (bool*)malloc(sizeof(bool)*0);
+//	evt->SliStr = (char**)malloc(sizeof(char*)*0);
+	evt->SliI8  = (int8_t*)malloc(sizeof(int8_t)*0);
+	evt->SliI16 = (int16_t*)malloc(sizeof(int16_t)*0);
+	evt->SliI32 = (int32_t*)malloc(sizeof(int32_t)*0);
+	evt->SliI64 = (int64_t*)malloc(sizeof(int64_t)*0);
+	evt->SliU8  = (uint8_t*)malloc(sizeof(uint8_t)*0);
+	evt->SliU16 = (uint16_t*)malloc(sizeof(uint16_t)*0);
+	evt->SliU32 = (uint32_t*)malloc(sizeof(uint32_t)*0);
+	evt->SliU64 = (uint64_t*)malloc(sizeof(uint64_t)*0);
+	evt->SliF32 = (float*)malloc(sizeof(float)*0);
+	evt->SliF64 = (double*)malloc(sizeof(double)*0);
+
+	evt->SliD16 = (Float16_t*)malloc(sizeof(Float16_t)*0);
+	evt->SliD32 = (Double32_t*)malloc(sizeof(Double32_t)*0);
+
+	return evt;
+}
 
 
 void scan(const char *fname, const char *tname, const char *oname) {
@@ -2397,7 +2422,7 @@ void scan(const char *fname, const char *tname, const char *oname) {
  auto t = (TTree*)f->Get(tname);
  t->Print();
 
- TNestedEvent1 *evt = nullptr;
+ TNestedEvent1 *evt = newEvent();
  t->SetBranchAddress("evt", &evt);
 
  o << "key[000]: " << tname << ";1 \"\" (TTree)\n";
@@ -2435,20 +2460,20 @@ void scan(const char *fname, const char *tname, const char *oname) {
 	  << " " << printArr(evt->ArrD16)
 	  << " " << printArr(evt->ArrD32)
 	  << " " << evt->N
-//	  << " " << printSli(evt->N, evt->SliBs)
-//	  << " " << printSliStr(evt->N, evt->SliStr)
-//	  << " " << printSli(evt->N, evt->SliI8)
-//	  << " " << printSli(evt->N, evt->SliI16)
-//	  << " " << printSli(evt->N, evt->SliI32)
-//	  << " " << printSli(evt->N, evt->SliI64)
-//	  << " " << printSli(evt->N, evt->SliU8)
-//	  << " " << printSli(evt->N, evt->SliU16)
-//	  << " " << printSli(evt->N, evt->SliU32)
-//	  << " " << printSli(evt->N, evt->SliU64)
-//	  << " " << printSli(evt->N, evt->SliF32)
-//	  << " " << printSli(evt->N, evt->SliF64)
-//	  << " " << printSli(evt->N, evt->SliD16)
-//	  << " " << printSli(evt->N, evt->SliD32)
+	  << " " << printSli(evt->N, evt->SliBs)
+//	  << " " << printSli(evt->N, evt->SliStr)
+	  << " " << printSli(evt->N, evt->SliI8)
+	  << " " << printSli(evt->N, evt->SliI16)
+	  << " " << printSli(evt->N, evt->SliI32)
+	  << " " << printSli(evt->N, evt->SliI64)
+	  << " " << printSli(evt->N, evt->SliU8)
+	  << " " << printSli(evt->N, evt->SliU16)
+	  << " " << printSli(evt->N, evt->SliU32)
+	  << " " << printSli(evt->N, evt->SliU64)
+	  << " " << printSli(evt->N, evt->SliF32)
+	  << " " << printSli(evt->N, evt->SliF64)
+	  << " " << printSli(evt->N, evt->SliD16)
+	  << " " << printSli(evt->N, evt->SliD32)
 	  << " " << printVec(evt->StdVecBs)
 	  << " " << printVec(evt->StdVecStr)
 	  << " " << printVec(evt->StdVecI8)
@@ -2471,16 +2496,16 @@ void scan(const char *fname, const char *tname, const char *oname) {
 }
 			`,
 			cxx: `key[000]: mytree;1 "" (TTree)
-[000][evt]: {true str-000 0 0 0 0 0 0 0 0 0 0 0 0 [true false false false false false false false false false] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] 0 [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] []}
-[001][evt]: {false str-001 -1 -1 -1 -1 1 1 1 1 1 1 1 1 [false true false false false false false false false false] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] 1 [true] [std-001] [-1] [-1] [-1] [-1] [1] [1] [1] [1] [1] [1] [1] [1] [[0 1 2 3]] [[vec-001 vec-002 vec-003 vec-004]]}
-[002][evt]: {true str-002 -2 -2 -2 -2 2 2 2 2 2 2 2 2 [false false true false false false false false false false] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] 2 [false true] [std-002 std-002] [-2 -2] [-2 -2] [-2 -2] [-2 -2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [[0 1 2 3] [1 2 3 4]] [[vec-002 vec-003 vec-004 vec-005] [vec-002 vec-003 vec-004 vec-005]]}
-[003][evt]: {false str-003 -3 -3 -3 -3 3 3 3 3 3 3 3 3 [false false false true false false false false false false] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] 3 [false false true] [std-003 std-003 std-003] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [[0 1 2 3] [1 2 3 4] [2 3 4 5]] [[vec-003 vec-004 vec-005 vec-006] [vec-003 vec-004 vec-005 vec-006] [vec-003 vec-004 vec-005 vec-006]]}
-[004][evt]: {true str-004 -4 -4 -4 -4 4 4 4 4 4 4 4 4 [false false false false true false false false false false] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] 4 [false false false true] [std-004 std-004 std-004 std-004] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6]] [[vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007]]}
-[005][evt]: {false str-005 -5 -5 -5 -5 5 5 5 5 5 5 5 5 [false false false false false true false false false false] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] 5 [false false false false true] [std-005 std-005 std-005 std-005 std-005] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7]] [[vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008]]}
-[006][evt]: {true str-006 -6 -6 -6 -6 6 6 6 6 6 6 6 6 [false false false false false false true false false false] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] 6 [false false false false false true] [std-006 std-006 std-006 std-006 std-006 std-006] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8]] [[vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009]]}
-[007][evt]: {false str-007 -7 -7 -7 -7 7 7 7 7 7 7 7 7 [false false false false false false false true false false] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] 7 [false false false false false false true] [std-007 std-007 std-007 std-007 std-007 std-007 std-007] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9]] [[vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010]]}
-[008][evt]: {true str-008 -8 -8 -8 -8 8 8 8 8 8 8 8 8 [false false false false false false false false true false] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] 8 [false false false false false false false true] [std-008 std-008 std-008 std-008 std-008 std-008 std-008 std-008] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9] [7 8 9 10]] [[vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011]]}
-[009][evt]: {false str-009 -9 -9 -9 -9 9 9 9 9 9 9 9 9 [false false false false false false false false false true] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] 9 [false false false false false false false false true] [std-009 std-009 std-009 std-009 std-009 std-009 std-009 std-009 std-009] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9] [7 8 9 10] [8 9 10 11]] [[vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012]]}
+[000][evt]: {true str-000 0 0 0 0 0 0 0 0 0 0 0 0 [true false false false false false false false false false] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] 0 [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] []}
+[001][evt]: {false str-001 -1 -1 -1 -1 1 1 1 1 1 1 1 1 [false true false false false false false false false false] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] 1 [true] [-1] [-1] [-1] [-1] [1] [1] [1] [1] [1] [1] [1] [1] [true] [std-001] [-1] [-1] [-1] [-1] [1] [1] [1] [1] [1] [1] [1] [1] [[0 1 2 3]] [[vec-001 vec-002 vec-003 vec-004]]}
+[002][evt]: {true str-002 -2 -2 -2 -2 2 2 2 2 2 2 2 2 [false false true false false false false false false false] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] 2 [false true] [-2 -2] [-2 -2] [-2 -2] [-2 -2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [false true] [std-002 std-002] [-2 -2] [-2 -2] [-2 -2] [-2 -2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [[0 1 2 3] [1 2 3 4]] [[vec-002 vec-003 vec-004 vec-005] [vec-002 vec-003 vec-004 vec-005]]}
+[003][evt]: {false str-003 -3 -3 -3 -3 3 3 3 3 3 3 3 3 [false false false true false false false false false false] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] 3 [false false true] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [false false true] [std-003 std-003 std-003] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [[0 1 2 3] [1 2 3 4] [2 3 4 5]] [[vec-003 vec-004 vec-005 vec-006] [vec-003 vec-004 vec-005 vec-006] [vec-003 vec-004 vec-005 vec-006]]}
+[004][evt]: {true str-004 -4 -4 -4 -4 4 4 4 4 4 4 4 4 [false false false false true false false false false false] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] 4 [false false false true] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [false false false true] [std-004 std-004 std-004 std-004] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6]] [[vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007]]}
+[005][evt]: {false str-005 -5 -5 -5 -5 5 5 5 5 5 5 5 5 [false false false false false true false false false false] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] 5 [false false false false true] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [false false false false true] [std-005 std-005 std-005 std-005 std-005] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7]] [[vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008]]}
+[006][evt]: {true str-006 -6 -6 -6 -6 6 6 6 6 6 6 6 6 [false false false false false false true false false false] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] 6 [false false false false false true] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [false false false false false true] [std-006 std-006 std-006 std-006 std-006 std-006] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8]] [[vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009]]}
+[007][evt]: {false str-007 -7 -7 -7 -7 7 7 7 7 7 7 7 7 [false false false false false false false true false false] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] 7 [false false false false false false true] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [false false false false false false true] [std-007 std-007 std-007 std-007 std-007 std-007 std-007] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9]] [[vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010]]}
+[008][evt]: {true str-008 -8 -8 -8 -8 8 8 8 8 8 8 8 8 [false false false false false false false false true false] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] 8 [false false false false false false false true] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [false false false false false false false true] [std-008 std-008 std-008 std-008 std-008 std-008 std-008 std-008] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9] [7 8 9 10]] [[vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011]]}
+[009][evt]: {false str-009 -9 -9 -9 -9 9 9 9 9 9 9 9 9 [false false false false false false false false false true] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] 9 [false false false false false false false false true] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [false false false false false false false false true] [std-009 std-009 std-009 std-009 std-009 std-009 std-009 std-009 std-009] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9] [7 8 9 10] [8 9 10 11]] [[vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012]]}
 `,
 			sinfos: []rbytes.StreamerInfo{
 				rdict.StreamerOf(sictx, reflect.TypeOf([]float64{})),
@@ -3057,21 +3082,21 @@ type TNestedEvent1 struct {
 	ArrD16 [10]root.Float16  `groot:"ArrD16[10]"`
 	ArrD32 [10]root.Double32 `groot:"ArrD32[10]"`
 
-	N int32 `groot:"N"`
-	// SliBs []bool `groot:"SliBs[N]"`
+	N     int32  `groot:"N"`
+	SliBs []bool `groot:"SliBs[N]"`
 	//	SliStr []string        `groot:"SliStr[N]"`
-	//	SliI8  []int8          `groot:"SliI8[N]"`
-	//	SliI16 []int16 `groot:"SliI16[N]"`
-	//	SliI32 []int32 `groot:"SliI32[N]"`
-	//	SliI64 []int64 `groot:"SliI64[N]"`
-	//	SliU8  []uint8         `groot:"SliU8[N]"`
-	//	SliU16 []uint16        `groot:"SliU16[N]"`
-	//	SliU32 []uint32        `groot:"SliU32[N]"`
-	//	SliU64 []uint64        `groot:"SliU64[N]"`
-	//SliF32 []float32 `groot:"SliF32[N]"`
-	//SliF64 []float64 `groot:"SliF64[N]"`
-	//	SliD16 []root.Float16  `groot:"SliD16[N]"`
-	//	SliD32 []root.Double32 `groot:"SliD32[N]"`
+	SliI8  []int8          `groot:"SliI8[N]"`
+	SliI16 []int16         `groot:"SliI16[N]"`
+	SliI32 []int32         `groot:"SliI32[N]"`
+	SliI64 []int64         `groot:"SliI64[N]"`
+	SliU8  []uint8         `groot:"SliU8[N]"`
+	SliU16 []uint16        `groot:"SliU16[N]"`
+	SliU32 []uint32        `groot:"SliU32[N]"`
+	SliU64 []uint64        `groot:"SliU64[N]"`
+	SliF32 []float32       `groot:"SliF32[N]"`
+	SliF64 []float64       `groot:"SliF64[N]"`
+	SliD16 []root.Float16  `groot:"SliD16[N]"`
+	SliD32 []root.Double32 `groot:"SliD32[N]"`
 
 	StdVecBs  []bool          `groot:"StdVecBs"`
 	StdVecStr []string        `groot:"StdVecStr"`
@@ -3125,54 +3150,54 @@ func (TNestedEvent1) want(i int64) (data TNestedEvent1) {
 	}
 	data.N = int32(i) % 10
 
-	//	switch data.N {
-	//	case 0:
-	//		data.SliBs = nil
-	//		//		data.SliStr = nil
-	//		//		data.SliI8 = nil
-	//		//		data.SliI16 = nil
-	//		//		data.SliI32 = nil
-	//		//		data.SliI64 = nil
-	//		//		data.SliU8 = nil
-	//		//		data.SliU16 = nil
-	//		//		data.SliU32 = nil
-	//		//		data.SliU64 = nil
-	//		data.SliF32 = nil
-	//		data.SliF64 = nil
-	//		//		data.SliD16 = nil
-	//		//		data.SliD32 = nil
-	//	default:
-	//		data.SliBs = make([]bool, int(data.N))
-	//		//		data.SliStr = make([]string, int(data.N))
-	//		//		data.SliI8 = make([]int8, int(data.N))
-	//		//		data.SliI16 = make([]int16, int(data.N))
-	//		//		data.SliI32 = make([]int32, int(data.N))
-	//		//		data.SliI64 = make([]int64, int(data.N))
-	//		//		data.SliU8 = make([]uint8, int(data.N))
-	//		//		data.SliU16 = make([]uint16, int(data.N))
-	//		//		data.SliU32 = make([]uint32, int(data.N))
-	//		//		data.SliU64 = make([]uint64, int(data.N))
-	//		data.SliF32 = make([]float32, int(data.N))
-	//		data.SliF64 = make([]float64, int(data.N))
-	//		//		data.SliD16 = make([]root.Float16, int(data.N))
-	//		//		data.SliD32 = make([]root.Double32, int(data.N))
-	//	}
-	//	for ii := 0; ii < int(data.N); ii++ {
-	//		data.SliBs[ii] = (ii + 1) == int(i)
-	//		//		data.SliStr[ii] = fmt.Sprintf("sli-%03d", i)
-	//		//		data.SliI8[ii] = int8(-i)
-	//		//		data.SliI16[ii] = int16(-i)
-	//		//		data.SliI32[ii] = int32(-i)
-	//		//		data.SliI64[ii] = int64(-i)
-	//		//		data.SliU8[ii] = uint8(i)
-	//		//		data.SliU16[ii] = uint16(i)
-	//		//		data.SliU32[ii] = uint32(i)
-	//		//		data.SliU64[ii] = uint64(i)
-	//		data.SliF32[ii] = float32(i)
-	//		data.SliF64[ii] = float64(i)
-	//		//		data.SliD16[ii] = root.Float16(i)
-	//		//		data.SliD32[ii] = root.Double32(i)
-	//	}
+	switch data.N {
+	case 0:
+		data.SliBs = nil
+		//		data.SliStr = nil
+		data.SliI8 = nil
+		data.SliI16 = nil
+		data.SliI32 = nil
+		data.SliI64 = nil
+		data.SliU8 = nil
+		data.SliU16 = nil
+		data.SliU32 = nil
+		data.SliU64 = nil
+		data.SliF32 = nil
+		data.SliF64 = nil
+		data.SliD16 = nil
+		data.SliD32 = nil
+	default:
+		data.SliBs = make([]bool, int(data.N))
+		//		data.SliStr = make([]string, int(data.N))
+		data.SliI8 = make([]int8, int(data.N))
+		data.SliI16 = make([]int16, int(data.N))
+		data.SliI32 = make([]int32, int(data.N))
+		data.SliI64 = make([]int64, int(data.N))
+		data.SliU8 = make([]uint8, int(data.N))
+		data.SliU16 = make([]uint16, int(data.N))
+		data.SliU32 = make([]uint32, int(data.N))
+		data.SliU64 = make([]uint64, int(data.N))
+		data.SliF32 = make([]float32, int(data.N))
+		data.SliF64 = make([]float64, int(data.N))
+		data.SliD16 = make([]root.Float16, int(data.N))
+		data.SliD32 = make([]root.Double32, int(data.N))
+	}
+	for ii := 0; ii < int(data.N); ii++ {
+		data.SliBs[ii] = (ii + 1) == int(i)
+		//		data.SliStr[ii] = fmt.Sprintf("sli-%03d", i)
+		data.SliI8[ii] = int8(-i)
+		data.SliI16[ii] = int16(-i)
+		data.SliI32[ii] = int32(-i)
+		data.SliI64[ii] = int64(-i)
+		data.SliU8[ii] = uint8(i)
+		data.SliU16[ii] = uint16(i)
+		data.SliU32[ii] = uint32(i)
+		data.SliU64[ii] = uint64(i)
+		data.SliF32[ii] = float32(i)
+		data.SliF64[ii] = float64(i)
+		data.SliD16[ii] = root.Float16(i)
+		data.SliD32[ii] = root.Double32(i)
+	}
 
 	switch data.N {
 	case 0:
