@@ -3,10 +3,10 @@ module go-hep.org/x/hep
 go 1.13
 
 require (
-	gioui.org v0.0.0-20200630184602-223f8fd40ae4
+	gioui.org v0.0.0-20201018162216-7a4b48f67b54
 	github.com/ajstarks/svgo v0.0.0-20200725142600-7a3c8b57fecb // indirect
-	github.com/apache/arrow/go/arrow v0.0.0-20200903155615-e2ae2122a2f8
-	github.com/astrogo/fitsio v0.1.0
+	github.com/apache/arrow/go/arrow v0.0.0-20201019125519-69b444baac89
+	github.com/astrogo/fitsio v0.2.1
 	github.com/campoy/embedmd v1.0.0
 	github.com/go-mmap/mmap v0.4.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
@@ -17,14 +17,14 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/jcmturner/gokrb5/v8 v8.4.1
-	github.com/klauspost/compress v1.10.11
+	github.com/klauspost/compress v1.11.1
 	github.com/peterh/liner v1.2.0
 	github.com/pierrec/lz4 v2.5.2+incompatible
 	github.com/pierrec/xxHash v0.1.5
 	github.com/sbinet/npyio v0.4.0
-	github.com/ulikunitz/xz v0.5.7
+	github.com/ulikunitz/xz v0.5.8
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
-	golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	golang.org/x/tools v0.0.0-20200619023621-037be6a06566
