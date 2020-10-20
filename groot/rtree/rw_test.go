@@ -2166,7 +2166,7 @@ evt[9]: 10 [-100 -101 -102 -103 -104 -105 -106 -107 -108 -109]
 			},
 			btitles: []string{"evt"},
 			ltitles: []string{"evt"},
-			total:   21920,
+			total:   25520,
 			want: func(i int) interface{} {
 				var evt struct {
 					Event TNestedEvent1
@@ -2180,6 +2180,7 @@ evt[9]: 10 [-100 -101 -102 -103 -104 -105 -106 -107 -108 -109]
 #include "TFile.h"
 #include "TTree.h"
 #include "TString.h"
+#include "TObjString.h"
 
 #include <vector>
 #include <fstream>
@@ -2236,6 +2237,13 @@ template<>
 std::string printV(TString v) {
 	std::stringstream o;
 	o << v.Data();
+	return o.str();
+}
+
+template<>
+std::string printV(TObjString v) {
+	std::stringstream o;
+	o << v.GetString().Data();
 	return o.str();
 }
 
@@ -2354,7 +2362,8 @@ struct TNestedEvent1 {
 	Float16_t  D16;
 	Double32_t D32;
 
-	TNestedP2 P2;
+	TNestedP2  P2;
+	TObjString Obj;
 
 	bool     ArrBs[ARRAYSZ];
 //	TString  ArrStr[ARRAYSZ];
@@ -2372,7 +2381,8 @@ struct TNestedEvent1 {
 	Float16_t    ArrD16[ARRAYSZ];
 	Double32_t   ArrD32[ARRAYSZ];
 
-	TNestedP2 ArrP2[ARRAYSZ];
+	TNestedP2  ArrP2[ARRAYSZ];
+	TObjString ArrObj[ARRAYSZ];
 
 	int32_t  N;
 	bool     *SliBs;   //[N]
@@ -2391,6 +2401,7 @@ struct TNestedEvent1 {
 	Float16_t  *SliD16; //[N]
 	Double32_t *SliD32; //[N]
 //	TNestedP2  *SliP2;  //[N]
+//	TObjString *SliObj; //[N]
 
 	std::vector<bool> StdVecBs;
 	std::vector<std::string> StdVecStr;
@@ -2408,6 +2419,7 @@ struct TNestedEvent1 {
 	std::vector<Float16_t>  StdVecD16;
 	std::vector<Double32_t> StdVecD32;
 	std::vector<TNestedP2>  StdVecP2;
+	std::vector<TObjString> StdVecObj;
 
 	std::vector<std::vector<double> >      StdVecVecF64;
 	std::vector<std::vector<std::string> > StdVecVecStr;
@@ -2432,6 +2444,7 @@ TNestedEvent1 *newEvent() {
 	evt->SliD16 = (Float16_t*)malloc(sizeof(Float16_t)*0);
 	evt->SliD32 = (Double32_t*)malloc(sizeof(Double32_t)*0);
 //	evt->SliP2 =  (TNestedP2*)malloc(sizeof(TNestedP2)*0);
+//	evt->SliObj = (TObjString*)malloc(sizeof(TObjString)*0);
 
 	return evt;
 }
@@ -2467,6 +2480,7 @@ void scan(const char *fname, const char *tname, const char *oname) {
 	  << " " << printV(evt->D16)
 	  << " " << printV(evt->D32)
 	  << " " << printV(evt->P2)
+	  << " " << printV(evt->Obj)
 
 	  << " " << printArr(evt->ArrBs)
 //	  << " " << printArr(evt->ArrStr)
@@ -2483,6 +2497,7 @@ void scan(const char *fname, const char *tname, const char *oname) {
 	  << " " << printArr(evt->ArrD16)
 	  << " " << printArr(evt->ArrD32)
 	  << " " << printArr(evt->ArrP2)
+	  << " " << printArr(evt->ArrObj)
 
 	  << " " << evt->N
 	  << " " << printSli(evt->N, evt->SliBs)
@@ -2500,6 +2515,7 @@ void scan(const char *fname, const char *tname, const char *oname) {
 	  << " " << printSli(evt->N, evt->SliD16)
 	  << " " << printSli(evt->N, evt->SliD32)
 //	  << " " << printSli(evt->N, evt->SliP2)
+//	  << " " << printSli(evt->N, evt->SliObj)
 
 	  << " " << printVec(evt->StdVecBs)
 	  << " " << printVec(evt->StdVecStr)
@@ -2516,6 +2532,7 @@ void scan(const char *fname, const char *tname, const char *oname) {
 	  << " " << printVec(evt->StdVecD16)
 	  << " " << printVec(evt->StdVecD32)
 	  << " " << printVec(evt->StdVecP2)
+	  << " " << printVec(evt->StdVecObj)
 
 	  << " " << printVecVec(evt->StdVecVecF64)
 	  << " " << printVecVec(evt->StdVecVecStr)
@@ -2526,16 +2543,16 @@ void scan(const char *fname, const char *tname, const char *oname) {
 }
 			`,
 			cxx: `key[000]: mytree;1 "" (TTree)
-[000][evt]: {true str-000 0 0 0 0 0 0 0 0 0 0 0 0 {0 0} [true false false false false false false false false false] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [{0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0}] 0 [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] []}
-[001][evt]: {false str-001 -1 -1 -1 -1 1 1 1 1 1 1 1 1 {1 1} [false true false false false false false false false false] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [{1 1} {1 1} {1 1} {1 1} {1 1} {1 1} {1 1} {1 1} {1 1} {1 1}] 1 [true] [-1] [-1] [-1] [-1] [1] [1] [1] [1] [1] [1] [1] [1] [true] [std-001] [-1] [-1] [-1] [-1] [1] [1] [1] [1] [1] [1] [1] [1] [{1 1}] [[0 1 2 3]] [[vec-001 vec-002 vec-003 vec-004]] [[{1 1} {2 2} {3 3} {4 4}]]}
-[002][evt]: {true str-002 -2 -2 -2 -2 2 2 2 2 2 2 2 2 {2 2} [false false true false false false false false false false] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [{2 2} {2 2} {2 2} {2 2} {2 2} {2 2} {2 2} {2 2} {2 2} {2 2}] 2 [false true] [-2 -2] [-2 -2] [-2 -2] [-2 -2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [false true] [std-002 std-002] [-2 -2] [-2 -2] [-2 -2] [-2 -2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [{2 2} {2 2}] [[0 1 2 3] [1 2 3 4]] [[vec-002 vec-003 vec-004 vec-005] [vec-002 vec-003 vec-004 vec-005]] [[{2 2} {3 3} {4 4} {5 5}] [{2 2} {3 3} {4 4} {5 5}]]}
-[003][evt]: {false str-003 -3 -3 -3 -3 3 3 3 3 3 3 3 3 {3 3} [false false false true false false false false false false] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [{3 3} {3 3} {3 3} {3 3} {3 3} {3 3} {3 3} {3 3} {3 3} {3 3}] 3 [false false true] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [false false true] [std-003 std-003 std-003] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [{3 3} {3 3} {3 3}] [[0 1 2 3] [1 2 3 4] [2 3 4 5]] [[vec-003 vec-004 vec-005 vec-006] [vec-003 vec-004 vec-005 vec-006] [vec-003 vec-004 vec-005 vec-006]] [[{3 3} {4 4} {5 5} {6 6}] [{3 3} {4 4} {5 5} {6 6}] [{3 3} {4 4} {5 5} {6 6}]]}
-[004][evt]: {true str-004 -4 -4 -4 -4 4 4 4 4 4 4 4 4 {4 4} [false false false false true false false false false false] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [{4 4} {4 4} {4 4} {4 4} {4 4} {4 4} {4 4} {4 4} {4 4} {4 4}] 4 [false false false true] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [false false false true] [std-004 std-004 std-004 std-004] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [{4 4} {4 4} {4 4} {4 4}] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6]] [[vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007]] [[{4 4} {5 5} {6 6} {7 7}] [{4 4} {5 5} {6 6} {7 7}] [{4 4} {5 5} {6 6} {7 7}] [{4 4} {5 5} {6 6} {7 7}]]}
-[005][evt]: {false str-005 -5 -5 -5 -5 5 5 5 5 5 5 5 5 {5 5} [false false false false false true false false false false] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [{5 5} {5 5} {5 5} {5 5} {5 5} {5 5} {5 5} {5 5} {5 5} {5 5}] 5 [false false false false true] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [false false false false true] [std-005 std-005 std-005 std-005 std-005] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [{5 5} {5 5} {5 5} {5 5} {5 5}] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7]] [[vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008]] [[{5 5} {6 6} {7 7} {8 8}] [{5 5} {6 6} {7 7} {8 8}] [{5 5} {6 6} {7 7} {8 8}] [{5 5} {6 6} {7 7} {8 8}] [{5 5} {6 6} {7 7} {8 8}]]}
-[006][evt]: {true str-006 -6 -6 -6 -6 6 6 6 6 6 6 6 6 {6 6} [false false false false false false true false false false] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [{6 6} {6 6} {6 6} {6 6} {6 6} {6 6} {6 6} {6 6} {6 6} {6 6}] 6 [false false false false false true] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [false false false false false true] [std-006 std-006 std-006 std-006 std-006 std-006] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [{6 6} {6 6} {6 6} {6 6} {6 6} {6 6}] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8]] [[vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009]] [[{6 6} {7 7} {8 8} {9 9}] [{6 6} {7 7} {8 8} {9 9}] [{6 6} {7 7} {8 8} {9 9}] [{6 6} {7 7} {8 8} {9 9}] [{6 6} {7 7} {8 8} {9 9}] [{6 6} {7 7} {8 8} {9 9}]]}
-[007][evt]: {false str-007 -7 -7 -7 -7 7 7 7 7 7 7 7 7 {7 7} [false false false false false false false true false false] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [{7 7} {7 7} {7 7} {7 7} {7 7} {7 7} {7 7} {7 7} {7 7} {7 7}] 7 [false false false false false false true] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [false false false false false false true] [std-007 std-007 std-007 std-007 std-007 std-007 std-007] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [{7 7} {7 7} {7 7} {7 7} {7 7} {7 7} {7 7}] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9]] [[vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010]] [[{7 7} {8 8} {9 9} {10 10}] [{7 7} {8 8} {9 9} {10 10}] [{7 7} {8 8} {9 9} {10 10}] [{7 7} {8 8} {9 9} {10 10}] [{7 7} {8 8} {9 9} {10 10}] [{7 7} {8 8} {9 9} {10 10}] [{7 7} {8 8} {9 9} {10 10}]]}
-[008][evt]: {true str-008 -8 -8 -8 -8 8 8 8 8 8 8 8 8 {8 8} [false false false false false false false false true false] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [{8 8} {8 8} {8 8} {8 8} {8 8} {8 8} {8 8} {8 8} {8 8} {8 8}] 8 [false false false false false false false true] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [false false false false false false false true] [std-008 std-008 std-008 std-008 std-008 std-008 std-008 std-008] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [{8 8} {8 8} {8 8} {8 8} {8 8} {8 8} {8 8} {8 8}] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9] [7 8 9 10]] [[vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011]] [[{8 8} {9 9} {10 10} {11 11}] [{8 8} {9 9} {10 10} {11 11}] [{8 8} {9 9} {10 10} {11 11}] [{8 8} {9 9} {10 10} {11 11}] [{8 8} {9 9} {10 10} {11 11}] [{8 8} {9 9} {10 10} {11 11}] [{8 8} {9 9} {10 10} {11 11}] [{8 8} {9 9} {10 10} {11 11}]]}
-[009][evt]: {false str-009 -9 -9 -9 -9 9 9 9 9 9 9 9 9 {9 9} [false false false false false false false false false true] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [{9 9} {9 9} {9 9} {9 9} {9 9} {9 9} {9 9} {9 9} {9 9} {9 9}] 9 [false false false false false false false false true] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [false false false false false false false false true] [std-009 std-009 std-009 std-009 std-009 std-009 std-009 std-009 std-009] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [{9 9} {9 9} {9 9} {9 9} {9 9} {9 9} {9 9} {9 9} {9 9}] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9] [7 8 9 10] [8 9 10 11]] [[vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012]] [[{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}]]}
+[000][evt]: {true str-000 0 0 0 0 0 0 0 0 0 0 0 0 {0 0} obj-0 [true false false false false false false false false false] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0 0 0] [{0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0}] [obj-0 obj-0 obj-0 obj-0 obj-0 obj-0 obj-0 obj-0 obj-0 obj-0] 0 [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] []}
+[001][evt]: {false str-001 -1 -1 -1 -1 1 1 1 1 1 1 1 1 {1 1} obj-1 [false true false false false false false false false false] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [1 1 1 1 1 1 1 1 1 1] [{1 1} {1 1} {1 1} {1 1} {1 1} {1 1} {1 1} {1 1} {1 1} {1 1}] [obj-1 obj-1 obj-1 obj-1 obj-1 obj-1 obj-1 obj-1 obj-1 obj-1] 1 [true] [-1] [-1] [-1] [-1] [1] [1] [1] [1] [1] [1] [1] [1] [true] [std-001] [-1] [-1] [-1] [-1] [1] [1] [1] [1] [1] [1] [1] [1] [{1 1}] [obj-001] [[0 1 2 3]] [[vec-001 vec-002 vec-003 vec-004]] [[{1 1} {2 2} {3 3} {4 4}]]}
+[002][evt]: {true str-002 -2 -2 -2 -2 2 2 2 2 2 2 2 2 {2 2} obj-2 [false false true false false false false false false false] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [-2 -2 -2 -2 -2 -2 -2 -2 -2 -2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [2 2 2 2 2 2 2 2 2 2] [{2 2} {2 2} {2 2} {2 2} {2 2} {2 2} {2 2} {2 2} {2 2} {2 2}] [obj-2 obj-2 obj-2 obj-2 obj-2 obj-2 obj-2 obj-2 obj-2 obj-2] 2 [false true] [-2 -2] [-2 -2] [-2 -2] [-2 -2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [false true] [std-002 std-002] [-2 -2] [-2 -2] [-2 -2] [-2 -2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [2 2] [{2 2} {2 2}] [obj-002 obj-002] [[0 1 2 3] [1 2 3 4]] [[vec-002 vec-003 vec-004 vec-005] [vec-002 vec-003 vec-004 vec-005]] [[{2 2} {3 3} {4 4} {5 5}] [{2 2} {3 3} {4 4} {5 5}]]}
+[003][evt]: {false str-003 -3 -3 -3 -3 3 3 3 3 3 3 3 3 {3 3} obj-3 [false false false true false false false false false false] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [-3 -3 -3 -3 -3 -3 -3 -3 -3 -3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [3 3 3 3 3 3 3 3 3 3] [{3 3} {3 3} {3 3} {3 3} {3 3} {3 3} {3 3} {3 3} {3 3} {3 3}] [obj-3 obj-3 obj-3 obj-3 obj-3 obj-3 obj-3 obj-3 obj-3 obj-3] 3 [false false true] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [false false true] [std-003 std-003 std-003] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [-3 -3 -3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [3 3 3] [{3 3} {3 3} {3 3}] [obj-003 obj-003 obj-003] [[0 1 2 3] [1 2 3 4] [2 3 4 5]] [[vec-003 vec-004 vec-005 vec-006] [vec-003 vec-004 vec-005 vec-006] [vec-003 vec-004 vec-005 vec-006]] [[{3 3} {4 4} {5 5} {6 6}] [{3 3} {4 4} {5 5} {6 6}] [{3 3} {4 4} {5 5} {6 6}]]}
+[004][evt]: {true str-004 -4 -4 -4 -4 4 4 4 4 4 4 4 4 {4 4} obj-4 [false false false false true false false false false false] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [-4 -4 -4 -4 -4 -4 -4 -4 -4 -4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [4 4 4 4 4 4 4 4 4 4] [{4 4} {4 4} {4 4} {4 4} {4 4} {4 4} {4 4} {4 4} {4 4} {4 4}] [obj-4 obj-4 obj-4 obj-4 obj-4 obj-4 obj-4 obj-4 obj-4 obj-4] 4 [false false false true] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [false false false true] [std-004 std-004 std-004 std-004] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [-4 -4 -4 -4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [4 4 4 4] [{4 4} {4 4} {4 4} {4 4}] [obj-004 obj-004 obj-004 obj-004] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6]] [[vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007] [vec-004 vec-005 vec-006 vec-007]] [[{4 4} {5 5} {6 6} {7 7}] [{4 4} {5 5} {6 6} {7 7}] [{4 4} {5 5} {6 6} {7 7}] [{4 4} {5 5} {6 6} {7 7}]]}
+[005][evt]: {false str-005 -5 -5 -5 -5 5 5 5 5 5 5 5 5 {5 5} obj-5 [false false false false false true false false false false] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [-5 -5 -5 -5 -5 -5 -5 -5 -5 -5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [5 5 5 5 5 5 5 5 5 5] [{5 5} {5 5} {5 5} {5 5} {5 5} {5 5} {5 5} {5 5} {5 5} {5 5}] [obj-5 obj-5 obj-5 obj-5 obj-5 obj-5 obj-5 obj-5 obj-5 obj-5] 5 [false false false false true] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [false false false false true] [std-005 std-005 std-005 std-005 std-005] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [-5 -5 -5 -5 -5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [5 5 5 5 5] [{5 5} {5 5} {5 5} {5 5} {5 5}] [obj-005 obj-005 obj-005 obj-005 obj-005] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7]] [[vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008] [vec-005 vec-006 vec-007 vec-008]] [[{5 5} {6 6} {7 7} {8 8}] [{5 5} {6 6} {7 7} {8 8}] [{5 5} {6 6} {7 7} {8 8}] [{5 5} {6 6} {7 7} {8 8}] [{5 5} {6 6} {7 7} {8 8}]]}
+[006][evt]: {true str-006 -6 -6 -6 -6 6 6 6 6 6 6 6 6 {6 6} obj-6 [false false false false false false true false false false] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6 -6 -6 -6 -6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [6 6 6 6 6 6 6 6 6 6] [{6 6} {6 6} {6 6} {6 6} {6 6} {6 6} {6 6} {6 6} {6 6} {6 6}] [obj-6 obj-6 obj-6 obj-6 obj-6 obj-6 obj-6 obj-6 obj-6 obj-6] 6 [false false false false false true] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [false false false false false true] [std-006 std-006 std-006 std-006 std-006 std-006] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [-6 -6 -6 -6 -6 -6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [6 6 6 6 6 6] [{6 6} {6 6} {6 6} {6 6} {6 6} {6 6}] [obj-006 obj-006 obj-006 obj-006 obj-006 obj-006] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8]] [[vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009] [vec-006 vec-007 vec-008 vec-009]] [[{6 6} {7 7} {8 8} {9 9}] [{6 6} {7 7} {8 8} {9 9}] [{6 6} {7 7} {8 8} {9 9}] [{6 6} {7 7} {8 8} {9 9}] [{6 6} {7 7} {8 8} {9 9}] [{6 6} {7 7} {8 8} {9 9}]]}
+[007][evt]: {false str-007 -7 -7 -7 -7 7 7 7 7 7 7 7 7 {7 7} obj-7 [false false false false false false false true false false] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [7 7 7 7 7 7 7 7 7 7] [{7 7} {7 7} {7 7} {7 7} {7 7} {7 7} {7 7} {7 7} {7 7} {7 7}] [obj-7 obj-7 obj-7 obj-7 obj-7 obj-7 obj-7 obj-7 obj-7 obj-7] 7 [false false false false false false true] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [false false false false false false true] [std-007 std-007 std-007 std-007 std-007 std-007 std-007] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [-7 -7 -7 -7 -7 -7 -7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [7 7 7 7 7 7 7] [{7 7} {7 7} {7 7} {7 7} {7 7} {7 7} {7 7}] [obj-007 obj-007 obj-007 obj-007 obj-007 obj-007 obj-007] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9]] [[vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010] [vec-007 vec-008 vec-009 vec-010]] [[{7 7} {8 8} {9 9} {10 10}] [{7 7} {8 8} {9 9} {10 10}] [{7 7} {8 8} {9 9} {10 10}] [{7 7} {8 8} {9 9} {10 10}] [{7 7} {8 8} {9 9} {10 10}] [{7 7} {8 8} {9 9} {10 10}] [{7 7} {8 8} {9 9} {10 10}]]}
+[008][evt]: {true str-008 -8 -8 -8 -8 8 8 8 8 8 8 8 8 {8 8} obj-8 [false false false false false false false false true false] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8 -8 -8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8 8 8] [{8 8} {8 8} {8 8} {8 8} {8 8} {8 8} {8 8} {8 8} {8 8} {8 8}] [obj-8 obj-8 obj-8 obj-8 obj-8 obj-8 obj-8 obj-8 obj-8 obj-8] 8 [false false false false false false false true] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [false false false false false false false true] [std-008 std-008 std-008 std-008 std-008 std-008 std-008 std-008] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [-8 -8 -8 -8 -8 -8 -8 -8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [8 8 8 8 8 8 8 8] [{8 8} {8 8} {8 8} {8 8} {8 8} {8 8} {8 8} {8 8}] [obj-008 obj-008 obj-008 obj-008 obj-008 obj-008 obj-008 obj-008] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9] [7 8 9 10]] [[vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011] [vec-008 vec-009 vec-010 vec-011]] [[{8 8} {9 9} {10 10} {11 11}] [{8 8} {9 9} {10 10} {11 11}] [{8 8} {9 9} {10 10} {11 11}] [{8 8} {9 9} {10 10} {11 11}] [{8 8} {9 9} {10 10} {11 11}] [{8 8} {9 9} {10 10} {11 11}] [{8 8} {9 9} {10 10} {11 11}] [{8 8} {9 9} {10 10} {11 11}]]}
+[009][evt]: {false str-009 -9 -9 -9 -9 9 9 9 9 9 9 9 9 {9 9} obj-9 [false false false false false false false false false true] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9 -9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9 9] [{9 9} {9 9} {9 9} {9 9} {9 9} {9 9} {9 9} {9 9} {9 9} {9 9}] [obj-9 obj-9 obj-9 obj-9 obj-9 obj-9 obj-9 obj-9 obj-9 obj-9] 9 [false false false false false false false false true] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [false false false false false false false false true] [std-009 std-009 std-009 std-009 std-009 std-009 std-009 std-009 std-009] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [-9 -9 -9 -9 -9 -9 -9 -9 -9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [9 9 9 9 9 9 9 9 9] [{9 9} {9 9} {9 9} {9 9} {9 9} {9 9} {9 9} {9 9} {9 9}] [obj-009 obj-009 obj-009 obj-009 obj-009 obj-009 obj-009 obj-009 obj-009] [[0 1 2 3] [1 2 3 4] [2 3 4 5] [3 4 5 6] [4 5 6 7] [5 6 7 8] [6 7 8 9] [7 8 9 10] [8 9 10 11]] [[vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012] [vec-009 vec-010 vec-011 vec-012]] [[{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}] [{9 9} {10 10} {11 11} {12 12}]]}
 `,
 			sinfos: []rbytes.StreamerInfo{
 				rdict.StreamerOf(sictx, reflect.TypeOf([]float64{})),
@@ -3090,37 +3107,39 @@ type TNestedP2 struct {
 }
 
 type TNestedEvent1 struct {
-	B   bool          `groot:"Bool"`
-	Str string        `groot:"Str"`
-	I8  int8          `groot:"I8"`
-	I16 int16         `groot:"I16"`
-	I32 int32         `groot:"I32"`
-	I64 int64         `groot:"I64"`
-	U8  uint8         `groot:"U8"`
-	U16 uint16        `groot:"U16"`
-	U32 uint32        `groot:"U32"`
-	U64 uint64        `groot:"U64"`
-	F32 float32       `groot:"F32"`
-	F64 float64       `groot:"F64"`
-	D16 root.Float16  `groot:"D16"`
-	D32 root.Double32 `groot:"D32"`
-	P2  TNestedP2     `groot:"P2"`
+	B   bool            `groot:"Bool"`
+	Str string          `groot:"Str"`
+	I8  int8            `groot:"I8"`
+	I16 int16           `groot:"I16"`
+	I32 int32           `groot:"I32"`
+	I64 int64           `groot:"I64"`
+	U8  uint8           `groot:"U8"`
+	U16 uint16          `groot:"U16"`
+	U32 uint32          `groot:"U32"`
+	U64 uint64          `groot:"U64"`
+	F32 float32         `groot:"F32"`
+	F64 float64         `groot:"F64"`
+	D16 root.Float16    `groot:"D16"`
+	D32 root.Double32   `groot:"D32"`
+	P2  TNestedP2       `groot:"P2"`
+	Obj rbase.ObjString `groot:"Obj"`
 
 	ArrBs [10]bool `groot:"ArrBs[10]"`
 	//ArrStr [10]string `groot:"ArrStr[10]"`
-	ArrI8  [10]int8          `groot:"ArrI8[10]"`
-	ArrI16 [10]int16         `groot:"ArrI16[10]"`
-	ArrI32 [10]int32         `groot:"ArrI32[10]"`
-	ArrI64 [10]int64         `groot:"ArrI64[10]"`
-	ArrU8  [10]uint8         `groot:"ArrU8[10]"`
-	ArrU16 [10]uint16        `groot:"ArrU16[10]"`
-	ArrU32 [10]uint32        `groot:"ArrU32[10]"`
-	ArrU64 [10]uint64        `groot:"ArrU64[10]"`
-	ArrF32 [10]float32       `groot:"ArrF32[10]"`
-	ArrF64 [10]float64       `groot:"ArrF64[10]"`
-	ArrD16 [10]root.Float16  `groot:"ArrD16[10]"`
-	ArrD32 [10]root.Double32 `groot:"ArrD32[10]"`
-	ArrP2  [10]TNestedP2     `groot:"ArrP2[10]"`
+	ArrI8  [10]int8            `groot:"ArrI8[10]"`
+	ArrI16 [10]int16           `groot:"ArrI16[10]"`
+	ArrI32 [10]int32           `groot:"ArrI32[10]"`
+	ArrI64 [10]int64           `groot:"ArrI64[10]"`
+	ArrU8  [10]uint8           `groot:"ArrU8[10]"`
+	ArrU16 [10]uint16          `groot:"ArrU16[10]"`
+	ArrU32 [10]uint32          `groot:"ArrU32[10]"`
+	ArrU64 [10]uint64          `groot:"ArrU64[10]"`
+	ArrF32 [10]float32         `groot:"ArrF32[10]"`
+	ArrF64 [10]float64         `groot:"ArrF64[10]"`
+	ArrD16 [10]root.Float16    `groot:"ArrD16[10]"`
+	ArrD32 [10]root.Double32   `groot:"ArrD32[10]"`
+	ArrP2  [10]TNestedP2       `groot:"ArrP2[10]"`
+	ArrObj [10]rbase.ObjString `groot:"ArrObj[10]"`
 
 	N     int32  `groot:"N"`
 	SliBs []bool `groot:"SliBs[N]"`
@@ -3138,22 +3157,24 @@ type TNestedEvent1 struct {
 	SliD16 []root.Float16  `groot:"SliD16[N]"`
 	SliD32 []root.Double32 `groot:"SliD32[N]"`
 	//	SliP2  []TNestedP2     `groot:"SliP2[N]"` // FIXME(sbinet): var-len-array of non-builtins has extra bytes in front
+	//	SliObj  []rbase.ObjString     `groot:"SliObj[N]"` // FIXME(sbinet): var-len-array of non-builtins has extra bytes in front
 
-	StdVecBs  []bool          `groot:"StdVecBs"`
-	StdVecStr []string        `groot:"StdVecStr"`
-	StdVecI8  []int8          `groot:"StdVecI8"`
-	StdVecI16 []int16         `groot:"StdVecI16"`
-	StdVecI32 []int32         `groot:"StdVecI32"`
-	StdVecI64 []int64         `groot:"StdVecI64"`
-	StdVecU8  []uint8         `groot:"StdVecU8"`
-	StdVecU16 []uint16        `groot:"StdVecU16"`
-	StdVecU32 []uint32        `groot:"StdVecU32"`
-	StdVecU64 []uint64        `groot:"StdVecU64"`
-	StdVecF32 []float32       `groot:"StdVecF32"`
-	StdVecF64 []float64       `groot:"StdVecF64"`
-	StdVecD16 []root.Float16  `groot:"StdVecD16"`
-	StdVecD32 []root.Double32 `groot:"StdVecD32"`
-	StdVecP2  []TNestedP2     `groot:"StdVecP2"`
+	StdVecBs  []bool            `groot:"StdVecBs"`
+	StdVecStr []string          `groot:"StdVecStr"`
+	StdVecI8  []int8            `groot:"StdVecI8"`
+	StdVecI16 []int16           `groot:"StdVecI16"`
+	StdVecI32 []int32           `groot:"StdVecI32"`
+	StdVecI64 []int64           `groot:"StdVecI64"`
+	StdVecU8  []uint8           `groot:"StdVecU8"`
+	StdVecU16 []uint16          `groot:"StdVecU16"`
+	StdVecU32 []uint32          `groot:"StdVecU32"`
+	StdVecU64 []uint64          `groot:"StdVecU64"`
+	StdVecF32 []float32         `groot:"StdVecF32"`
+	StdVecF64 []float64         `groot:"StdVecF64"`
+	StdVecD16 []root.Float16    `groot:"StdVecD16"`
+	StdVecD32 []root.Double32   `groot:"StdVecD32"`
+	StdVecP2  []TNestedP2       `groot:"StdVecP2"`
+	StdVecObj []rbase.ObjString `groot:"StdVecObj"`
 
 	StdVecVecF64 [][]float64   `groot:"StdVecVecF64"`
 	StdVecVecStr [][]string    `groot:"StdVecVecStr"`
@@ -3176,6 +3197,7 @@ func (TNestedEvent1) want(i int64) (data TNestedEvent1) {
 	data.D16 = root.Float16(i)
 	data.D32 = root.Double32(i)
 	data.P2 = TNestedP2{Px: float64(i), Py: float32(i)}
+	data.Obj = *rbase.NewObjString(fmt.Sprintf("obj-%d", i))
 
 	for ii := range data.ArrI32 {
 		data.ArrBs[ii] = ii == int(i)
@@ -3196,6 +3218,7 @@ func (TNestedEvent1) want(i int64) (data TNestedEvent1) {
 			Px: float64(i),
 			Py: float32(i),
 		}
+		data.ArrObj[ii] = *rbase.NewObjString(fmt.Sprintf("obj-%d", i))
 	}
 	data.N = int32(i) % 10
 
@@ -3216,6 +3239,7 @@ func (TNestedEvent1) want(i int64) (data TNestedEvent1) {
 		data.SliD16 = nil
 		data.SliD32 = nil
 		//		data.SliP2 = nil
+		//		data.SliObj = nil
 	default:
 		data.SliBs = make([]bool, int(data.N))
 		//		data.SliStr = make([]string, int(data.N))
@@ -3232,6 +3256,7 @@ func (TNestedEvent1) want(i int64) (data TNestedEvent1) {
 		data.SliD16 = make([]root.Float16, int(data.N))
 		data.SliD32 = make([]root.Double32, int(data.N))
 		//		data.SliP2 = make([]TNestedP2, int(data.N))
+		//		data.SliObj = make([]rbase.ObjString, int(data.N))
 	}
 	for ii := 0; ii < int(data.N); ii++ {
 		data.SliBs[ii] = (ii + 1) == int(i)
@@ -3252,6 +3277,7 @@ func (TNestedEvent1) want(i int64) (data TNestedEvent1) {
 		//			Px: float64(i),
 		//			Py: float32(i),
 		//		}
+		//		data.SliObj[ii] = *rbase.NewObjString(fmt.Sprintf("obj-%03d", i))
 	}
 
 	switch data.N {
@@ -3271,6 +3297,7 @@ func (TNestedEvent1) want(i int64) (data TNestedEvent1) {
 		data.StdVecD16 = nil
 		data.StdVecD32 = nil
 		data.StdVecP2 = nil
+		data.StdVecObj = nil
 	default:
 		data.StdVecBs = make([]bool, int(data.N))
 		data.StdVecStr = make([]string, int(data.N))
@@ -3287,6 +3314,7 @@ func (TNestedEvent1) want(i int64) (data TNestedEvent1) {
 		data.StdVecD16 = make([]root.Float16, int(data.N))
 		data.StdVecD32 = make([]root.Double32, int(data.N))
 		data.StdVecP2 = make([]TNestedP2, int(data.N))
+		data.StdVecObj = make([]rbase.ObjString, int(data.N))
 	}
 	for ii := 0; ii < int(data.N); ii++ {
 		data.StdVecBs[ii] = (ii + 1) == int(i)
@@ -3307,6 +3335,7 @@ func (TNestedEvent1) want(i int64) (data TNestedEvent1) {
 			Px: float64(i),
 			Py: float32(i),
 		}
+		data.StdVecObj[ii] = *rbase.NewObjString(fmt.Sprintf("obj-%03d", i))
 	}
 
 	switch data.N {

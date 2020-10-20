@@ -19,6 +19,14 @@ import (
 
 // StreamerOf generates a StreamerInfo from a reflect.Type.
 func StreamerOf(ctx rbytes.StreamerInfoContext, typ reflect.Type) rbytes.StreamerInfo {
+	if isTObject(typ) {
+		name := reflect.New(typ).Elem().Interface().(root.Object).Class()
+		si, err := ctx.StreamerInfo(name, -1)
+		if err == nil {
+			return si
+		}
+	}
+
 	bldr := newStreamerBuilder(ctx, typ)
 	return bldr.genStreamer(typ)
 }
@@ -61,7 +69,7 @@ func (bld *streamerBuilder) genStreamer(typ reflect.Type) rbytes.StreamerInfo {
 }
 
 func (bld *streamerBuilder) genStdVectorOf(typ reflect.Type, name string, offset int32) rbytes.StreamerElement {
-	const esize = 24
+	const esize = 3 * diskPtrSize
 	var (
 		ename = ""
 		etype rmeta.Enum
@@ -118,6 +126,9 @@ func (bld *streamerBuilder) genStdVectorOf(typ reflect.Type, name string, offset
 	case reflect.Struct:
 		ename = fmt.Sprintf("vector<%s>", typenameOf(typ))
 		etype = rmeta.Any
+		if isTObject(typ) || isTObject(reflect.PtrTo(typ)) {
+			etype = rmeta.Object
+		}
 	case reflect.Slice:
 		ename = typenameOf(typ)
 		if strings.HasSuffix(ename, ">") {
@@ -138,6 +149,169 @@ func (bld *streamerBuilder) genStdVectorOf(typ reflect.Type, name string, offset
 			ename:  ename,
 		}, rmeta.STLvector, etype,
 	)
+}
+
+func (bld *streamerBuilder) genPtr(typ reflect.Type, name string, offset int32) rbytes.StreamerElement {
+	// FIXME(sbinet): is typ always a struct?
+	switch typ.Kind() {
+	case reflect.Struct:
+	default:
+		panic(fmt.Errorf("rdict: invalid ptr-to type %v", typ))
+	}
+
+	se := StreamerElement{
+		named:  *rbase.NewNamed(name, ""),
+		etype:  rmeta.AnyP,
+		esize:  int32(ptrSize),
+		offset: offset,
+		ename:  typenameOf(typ) + "*",
+	}
+
+	if isTObject(typ) {
+		se.etype = rmeta.ObjectP
+		return &StreamerObjectPointer{se}
+	}
+
+	return &StreamerObjectAnyPointer{se}
+}
+
+func (bld *streamerBuilder) genArrayOf(n int, typ reflect.Type, name string, offset int32) rbytes.StreamerElement {
+	// FIXME(sbinet): generate proper maxidx+arrdim+arrlen fields.
+	var (
+		arrlen = int32(n)
+		arrdim = int32(1) // FIXME(sbinet)
+		maxidx = [5]int32{arrlen, 0, 0, 0, 0}
+		esize  = arrlen
+		etype  rmeta.Enum
+		ename  = ""
+	)
+
+	switch typ.Kind() {
+	case reflect.Bool:
+		esize *= 1
+		ename = "bool"
+		etype = rmeta.Bool
+
+	case reflect.Int8:
+		esize *= 1
+		ename = "int8_t"
+		etype = rmeta.Int8
+
+	case reflect.Int16:
+		esize *= 2
+		ename = "int16_t"
+		etype = rmeta.Int16
+
+	case reflect.Int32:
+		esize *= 4
+		ename = "int32_t"
+		etype = rmeta.Int32
+
+	case reflect.Int64:
+		esize *= 8
+		ename = "int64_t"
+		etype = rmeta.Int64
+
+	case reflect.Uint8:
+		esize *= 1
+		ename = "uint8_t"
+		etype = rmeta.Uint8
+
+	case reflect.Uint16:
+		esize *= 2
+		ename = "uint16_t"
+		etype = rmeta.Uint16
+
+	case reflect.Uint32:
+		esize *= 4
+		ename = "uint32_t"
+		etype = rmeta.Uint32
+
+	case reflect.Uint64:
+		esize *= 8
+		ename = "uint64_t"
+		etype = rmeta.Uint64
+
+	case reflect.Float32:
+		switch typ {
+		case reflect.TypeOf(root.Float16(0)):
+			esize *= 4
+			ename = "Float16_t"
+			etype = rmeta.Float16
+		default:
+			esize *= 4
+			ename = "float"
+			etype = rmeta.Float32
+		}
+
+	case reflect.Float64:
+		switch typ {
+		case reflect.TypeOf(root.Double32(0)):
+			esize *= 8
+			ename = "Double32_t"
+			etype = rmeta.Double32
+		default:
+			esize *= 8
+			ename = "double"
+			etype = rmeta.Float64
+		}
+
+	case reflect.String:
+		return &StreamerString{
+			StreamerElement{
+				named:  *rbase.NewNamed(name, ""),
+				etype:  rmeta.OffsetL + rmeta.TString,
+				esize:  arrlen * sizeOfTString,
+				arrlen: arrlen,
+				arrdim: arrdim,
+				maxidx: maxidx,
+				offset: offset,
+				ename:  "TString",
+			},
+		}
+	case reflect.Struct:
+		if isTObject(typ) || isTObject(reflect.PtrTo(typ)) {
+			return &StreamerObject{
+				StreamerElement{
+					named:  *rbase.NewNamed(name, ""),
+					etype:  rmeta.OffsetL + rmeta.Object,
+					esize:  arrlen * sizeOf(typ),
+					arrlen: arrlen,
+					arrdim: arrdim,
+					maxidx: maxidx,
+					offset: offset,
+					ename:  typenameOf(typ),
+				},
+			}
+		}
+		return &StreamerObjectAny{
+			StreamerElement{
+				named:  *rbase.NewNamed(name, ""),
+				etype:  rmeta.OffsetL + rmeta.Any,
+				esize:  arrlen * sizeOf(typ),
+				arrlen: arrlen,
+				arrdim: arrdim,
+				maxidx: maxidx,
+				offset: offset,
+				ename:  typenameOf(typ),
+			},
+		}
+	default:
+		panic("boo")
+	}
+
+	return &StreamerBasicType{
+		StreamerElement{
+			named:  *rbase.NewNamed(name, ""),
+			etype:  rmeta.OffsetL + etype,
+			esize:  esize,
+			offset: offset,
+			arrlen: arrlen,
+			arrdim: arrdim,
+			maxidx: maxidx,
+			ename:  ename,
+		},
+	}
 }
 
 func (bld *streamerBuilder) genVarLenArrayOf(typ reflect.Type, class, count, name string, offset int32) rbytes.StreamerElement {
@@ -218,7 +392,7 @@ func (bld *streamerBuilder) genVarLenArrayOf(typ reflect.Type, class, count, nam
 		return NewStreamerLoop(
 			StreamerElement{
 				named:  *rbase.NewNamed(name, "["+count+"]"),
-				esize:  4,
+				esize:  diskPtrSize,
 				offset: offset,
 				ename:  ename + "*",
 			},
@@ -404,218 +578,12 @@ func (bld *streamerBuilder) genField(typ reflect.Type, field reflect.StructField
 		}
 
 	case reflect.Array:
-		// FIXME(sbinet): generate proper maxidx+arrdim+arrlen fields.
 		var (
-			et     = field.Type.Elem()
-			arrlen = int32(field.Type.Len())
-			arrdim = int32(1) // FIXME(sbinet)
-			maxidx = [5]int32{arrlen, 0, 0, 0, 0}
+			et   = field.Type.Elem()
+			n    = field.Type.Len()
+			name = nameOf(field)
 		)
-		switch et.Kind() {
-		case reflect.Bool:
-			return &StreamerBasicType{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  arrlen * 1,
-					offset: offset,
-					arrlen: arrlen,
-					arrdim: arrdim,
-					maxidx: maxidx,
-					ename:  "bool",
-				},
-			}
-		case reflect.Int8:
-			return &StreamerBasicType{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  arrlen * 1,
-					offset: offset,
-					arrlen: arrlen,
-					arrdim: arrdim,
-					maxidx: maxidx,
-					ename:  "int8_t",
-				},
-			}
-		case reflect.Int16:
-			return &StreamerBasicType{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  arrlen * 2,
-					offset: offset,
-					arrlen: arrlen,
-					arrdim: arrdim,
-					maxidx: maxidx,
-					ename:  "int16_t",
-				},
-			}
-		case reflect.Int32:
-			return &StreamerBasicType{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  arrlen * 4,
-					offset: offset,
-					arrlen: arrlen,
-					arrdim: arrdim,
-					maxidx: maxidx,
-					ename:  "int32_t",
-				},
-			}
-		case reflect.Int64:
-			return &StreamerBasicType{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  arrlen * 8,
-					offset: offset,
-					arrlen: arrlen,
-					arrdim: arrdim,
-					maxidx: maxidx,
-					ename:  "int64_t",
-				},
-			}
-		case reflect.Uint8:
-			return &StreamerBasicType{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  arrlen * 1,
-					offset: offset,
-					arrlen: arrlen,
-					arrdim: arrdim,
-					maxidx: maxidx,
-					ename:  "uint8_t",
-				},
-			}
-		case reflect.Uint16:
-			return &StreamerBasicType{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  arrlen * 2,
-					offset: offset,
-					arrlen: arrlen,
-					arrdim: arrdim,
-					maxidx: maxidx,
-					ename:  "uint16_t",
-				},
-			}
-		case reflect.Uint32:
-			return &StreamerBasicType{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  arrlen * 4,
-					offset: offset,
-					arrlen: arrlen,
-					arrdim: arrdim,
-					maxidx: maxidx,
-					ename:  "uint32_t",
-				},
-			}
-		case reflect.Uint64:
-			return &StreamerBasicType{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.OffsetL + rmeta.GoType2ROOTEnum[et],
-					esize:  arrlen * 8,
-					offset: offset,
-					arrlen: arrlen,
-					arrdim: arrdim,
-					maxidx: maxidx,
-					ename:  "uint64_t",
-				},
-			}
-		case reflect.Float32:
-			switch et {
-			case reflect.TypeOf(root.Float16(0)):
-				return &StreamerBasicType{
-					StreamerElement{
-						named:  *rbase.NewNamed(nameOf(field), ""),
-						etype:  rmeta.OffsetL + rmeta.Float16,
-						esize:  arrlen * 4,
-						offset: offset,
-						arrlen: arrlen,
-						arrdim: arrdim,
-						maxidx: maxidx,
-						ename:  "Float16_t",
-					},
-				}
-			default:
-				return &StreamerBasicType{
-					StreamerElement{
-						named:  *rbase.NewNamed(nameOf(field), ""),
-						etype:  rmeta.OffsetL + rmeta.Float32,
-						esize:  arrlen * 4,
-						offset: offset,
-						arrlen: arrlen,
-						arrdim: arrdim,
-						maxidx: maxidx,
-						ename:  "float",
-					},
-				}
-			}
-		case reflect.Float64:
-			switch et {
-			case reflect.TypeOf(root.Double32(0)):
-				return &StreamerBasicType{
-					StreamerElement{
-						named:  *rbase.NewNamed(nameOf(field), ""),
-						etype:  rmeta.OffsetL + rmeta.Double32,
-						esize:  arrlen * 8,
-						offset: offset,
-						arrlen: arrlen,
-						arrdim: arrdim,
-						maxidx: maxidx,
-						ename:  "Double32_t",
-					},
-				}
-			default:
-				return &StreamerBasicType{
-					StreamerElement{
-						named:  *rbase.NewNamed(nameOf(field), ""),
-						etype:  rmeta.OffsetL + rmeta.Float64,
-						esize:  arrlen * 8,
-						offset: offset,
-						arrlen: arrlen,
-						arrdim: arrdim,
-						maxidx: maxidx,
-						ename:  "double",
-					},
-				}
-			}
-		case reflect.String:
-			return &StreamerString{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.OffsetL + rmeta.TString,
-					esize:  arrlen * sizeOfTString,
-					arrlen: arrlen,
-					arrdim: arrdim,
-					maxidx: maxidx,
-					offset: offset,
-					ename:  "TString",
-				},
-			}
-		case reflect.Struct:
-			return &StreamerObjectAny{
-				StreamerElement{
-					named:  *rbase.NewNamed(nameOf(field), ""),
-					etype:  rmeta.OffsetL + rmeta.Any,
-					esize:  arrlen * sizeOf(field.Type),
-					arrlen: arrlen,
-					arrdim: arrdim,
-					maxidx: maxidx,
-					offset: offset,
-					ename:  typenameOf(et),
-				},
-			}
-		default:
-			panic(fmt.Errorf("rdict: invalid struct array field %#v", field))
-		}
+		return bld.genArrayOf(n, et, name, offsetOf(field))
 
 	case reflect.Slice:
 		et := field.Type.Elem()
@@ -625,6 +593,10 @@ func (bld *streamerBuilder) genField(typ reflect.Type, field reflect.StructField
 			return bld.genVarLenArrayOf(et, class, count, nameOf(field), offsetOf(field))
 		}
 		return bld.genStdVectorOf(et, nameOf(field), offsetOf(field))
+
+	case reflect.Ptr:
+		et := field.Type.Elem()
+		return bld.genPtr(et, nameOf(field), offsetOf(field))
 
 	default:
 		panic(fmt.Errorf("rdict: invalid struct field %#v", field))
@@ -731,7 +703,26 @@ func sizeOf(typ reflect.Type) int32 {
 	return int32(typ.Size())
 }
 
+func isTObject(typ reflect.Type) bool {
+	return typ.Implements(rootObjectIface)
+}
+
 func typenameOf(typ reflect.Type) string {
+	if isTObject(typ) {
+		name := reflect.New(typ).Elem().Interface().(root.Object).Class()
+		if typ.Kind() == reflect.Ptr {
+			return name + "*"
+		}
+		return name
+	}
+	if ptr := reflect.PtrTo(typ); isTObject(ptr) {
+		name := reflect.New(typ).Interface().(root.Object).Class()
+		if typ.Kind() == reflect.Ptr {
+			return name + "*"
+		}
+		return name
+	}
+
 	switch typ.Kind() {
 	case reflect.Slice:
 		ename := typenameOf(typ.Elem())
@@ -803,8 +794,13 @@ func typenameOf(typ reflect.Type) string {
 }
 
 const (
-	sizeOfTString   = 24
-	sizeOfStdString = 32
+	diskPtrSize     = 8
+	sizeOfTString   = 3 * diskPtrSize
+	sizeOfStdString = 4 * diskPtrSize
+)
+
+var (
+	rootObjectIface = reflect.TypeOf((*root.Object)(nil)).Elem()
 )
 
 var (
