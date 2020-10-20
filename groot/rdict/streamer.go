@@ -18,6 +18,9 @@ import (
 )
 
 // StreamerOf generates a StreamerInfo from a reflect.Type.
+//
+// StreamerOf panics if the provided type contains non-ROOT compatible types
+// such as chan, int, uint or func.
 func StreamerOf(ctx rbytes.StreamerInfoContext, typ reflect.Type) rbytes.StreamerInfo {
 	if isTObject(typ) {
 		name := reflect.New(typ).Elem().Interface().(root.Object).Class()
@@ -608,7 +611,10 @@ func (bld *streamerBuilder) genField(typ reflect.Type, field reflect.StructField
 		return bld.genPtr(et, nameOf(field), offsetOf(field))
 
 	default:
-		panic(fmt.Errorf("rdict: invalid struct field %#v", field))
+		panic(fmt.Errorf(
+			"rdict: invalid struct field (name=%v, type=%v, kind=%v)",
+			field.Name, field.Type, field.Type.Kind(),
+		))
 	}
 }
 

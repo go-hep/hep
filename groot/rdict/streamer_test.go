@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"unsafe"
 
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
@@ -339,8 +340,9 @@ func TestTypenameOf(t *testing.T) {
 
 func TestStreamerOf(t *testing.T) {
 	for _, tc := range []struct {
-		typ  reflect.Type
-		want rbytes.StreamerInfo
+		typ    reflect.Type
+		want   rbytes.StreamerInfo
+		panics string
 	}{
 		{
 			typ: reflect.TypeOf(&rbase.ObjString{}),
@@ -1116,8 +1118,107 @@ func TestStreamerOf(t *testing.T) {
 				},
 			},
 		},
+		{
+			// FIXME(sbinet): add support for maps.
+			typ: reflect.TypeOf(panicFIXMEStruct0{}),
+			want: &StreamerInfo{
+				named:  *rbase.NewNamed("panicFIXMEStruct0", "panicFIXMEStruct0"),
+				clsver: 1,
+			},
+			panics: `rdict: invalid struct field (name=Map, type=map[int32]int32, kind=map)`,
+		},
+		{
+			// FIXME(sbinet): add support for interfaces?
+			typ: reflect.TypeOf(panicFIXMEStruct1{}),
+			want: &StreamerInfo{
+				named:  *rbase.NewNamed("panicFIXMEStruct1", "panicFIXMEStruct1"),
+				clsver: 1,
+			},
+			panics: `rdict: invalid struct field (name=Iface, type=error, kind=interface)`,
+		},
+		{
+			// FIXME(sbinet): add support for complex-64
+			typ: reflect.TypeOf(panicFIXMEStruct2{}),
+			want: &StreamerInfo{
+				named:  *rbase.NewNamed("panicFIXMEStruct2", "panicFIXMEStruct2"),
+				clsver: 1,
+			},
+			panics: `rdict: invalid struct field (name=C64, type=complex64, kind=complex64)`,
+		},
+		{
+			// FIXME(sbinet): add support for complex-128
+			typ: reflect.TypeOf(panicFIXMEStruct3{}),
+			want: &StreamerInfo{
+				named:  *rbase.NewNamed("panicFIXMEStruct3", "panicFIXMEStruct3"),
+				clsver: 1,
+			},
+			panics: `rdict: invalid struct field (name=C128, type=complex128, kind=complex128)`,
+		},
+		{
+			typ: reflect.TypeOf(panicStruct0{}),
+			want: &StreamerInfo{
+				named:  *rbase.NewNamed("panicStruct0", "panicStruct0"),
+				clsver: 1,
+			},
+			panics: `rdict: invalid struct field (name=Chan, type=chan int32, kind=chan)`,
+		},
+		{
+			typ: reflect.TypeOf(panicStruct1{}),
+			want: &StreamerInfo{
+				named:  *rbase.NewNamed("panicStruct1", "panicStruct1"),
+				clsver: 1,
+			},
+			panics: `rdict: invalid struct field (name=Int, type=int, kind=int)`,
+		},
+		{
+			typ: reflect.TypeOf(panicStruct2{}),
+			want: &StreamerInfo{
+				named:  *rbase.NewNamed("panicStruct2", "panicStruct2"),
+				clsver: 1,
+			},
+			panics: `rdict: invalid struct field (name=Uint, type=uint, kind=uint)`,
+		},
+		{
+			typ: reflect.TypeOf(panicStruct3{}),
+			want: &StreamerInfo{
+				named:  *rbase.NewNamed("panicStruct3", "panicStruct3"),
+				clsver: 1,
+			},
+			panics: `rdict: invalid struct field (name=Uintptr, type=uintptr, kind=uintptr)`,
+		},
+		{
+			typ: reflect.TypeOf(panicStruct4{}),
+			want: &StreamerInfo{
+				named:  *rbase.NewNamed("panicStruct4", "panicStruct4"),
+				clsver: 1,
+			},
+			panics: `rdict: invalid struct field (name=Unsafe, type=unsafe.Pointer, kind=unsafe.Pointer)`,
+		},
+		{
+			typ: reflect.TypeOf(panicStruct5{}),
+			want: &StreamerInfo{
+				named:  *rbase.NewNamed("panicStruct5", "panicStruct5"),
+				clsver: 1,
+			},
+			panics: `rdict: invalid struct field (name=Func, type=func(), kind=func)`,
+		},
 	} {
 		t.Run(tc.want.Name(), func(t *testing.T) {
+			if tc.panics != "" {
+				defer func() {
+					err := recover()
+					if err == nil {
+						t.Fatalf("expected a panic (%s)", tc.panics)
+					}
+					if got, want := err.(error).Error(), tc.panics; got != want {
+						t.Fatalf(
+							"invalid panic message:\ngot= %s\nwant=%s",
+							got, want,
+						)
+					}
+				}()
+			}
+
 			ctx := newStreamerStore(StreamerInfos)
 			got := StreamerOf(ctx, tc.typ)
 			if !reflect.DeepEqual(got, tc.want) {
@@ -1242,6 +1343,46 @@ type struct7 struct {
 	ArrStr [1][2][3][4][5]string          `groot:"ArrStr[1][2][3][4][5]"`
 	ArrObj [1][2][3][4][5]rbase.ObjString `groot:"ArrObj[1][2][3][4][5]"`
 	ArrUsr [1][2][3][4][5]struct1         `groot:"ArrUsr[1][2][3][4][5]"`
+}
+
+type panicFIXMEStruct0 struct {
+	Map map[int32]int32 `groot:"Map"`
+}
+
+type panicFIXMEStruct1 struct {
+	Iface error
+}
+
+type panicFIXMEStruct2 struct {
+	C64 complex64
+}
+
+type panicFIXMEStruct3 struct {
+	C128 complex128
+}
+
+type panicStruct0 struct {
+	Chan chan int32
+}
+
+type panicStruct1 struct {
+	Int int
+}
+
+type panicStruct2 struct {
+	Uint uint
+}
+
+type panicStruct3 struct {
+	Uintptr uintptr
+}
+
+type panicStruct4 struct {
+	Unsafe unsafe.Pointer
+}
+
+type panicStruct5 struct {
+	Func func()
 }
 
 type tobject struct{}
