@@ -29,7 +29,7 @@ require (
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	golang.org/x/tools v0.0.0-20200619023621-037be6a06566
 	gonum.org/v1/gonum v0.8.1
-	gonum.org/v1/plot v0.8.0
+	gonum.org/v1/plot v0.8.1
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 	modernc.org/ql v1.1.0
 )
