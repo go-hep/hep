@@ -10,6 +10,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -24,7 +25,9 @@ import (
 
 func TestCurve1D(t *testing.T) {
 	checkPlot(cmpimg.CheckPlot)(ExampleCurve1D_gaussian, t, "gauss-plot.png")
-	checkPlot(cmpimg.CheckPlot)(ExampleCurve1D_exponential, t, "exp-plot.png")
+	if runtime.GOOS != "darwin" {
+		checkPlot(cmpimg.CheckPlot)(ExampleCurve1D_exponential, t, "exp-plot.png")
+	}
 	checkPlot(cmpimg.CheckPlot)(ExampleCurve1D_poly, t, "poly-plot.png")
 	checkPlot(cmpimg.CheckPlot)(ExampleCurve1D_powerlaw, t, "powerlaw-plot.png")
 }
