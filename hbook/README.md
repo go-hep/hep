@@ -24,7 +24,7 @@ Documentation is available on godoc:
 
 ### H1D
 
-[embedmd]:# (example_h1d_test.go go /func ExampleH1D/ /\n}/)
+[embedmd]:# (h1d_example_test.go go /func ExampleH1D/ /\n}/)
 ```go
 func ExampleH1D() {
 	const npoints = 10000
@@ -60,7 +60,7 @@ func ExampleH1D() {
 }
 ```
 
-[embedmd]:# (example_h1d_test.go go /func ExampleAddH1D/ /\n}/)
+[embedmd]:# (h1d_example_test.go go /func ExampleAddH1D/ /\n}/)
 ```go
 func ExampleAddH1D() {
 
@@ -102,7 +102,7 @@ func ExampleAddH1D() {
 	// Over : 1.5 +/- 1.1
 }
 ```
-[embedmd]:# (example_h1d_test.go go /func ExampleAddScaledH1D/ /\n}/)
+[embedmd]:# (h1d_example_test.go go /func ExampleAddScaledH1D/ /\n}/)
 ```go
 func ExampleAddScaledH1D() {
 
@@ -144,7 +144,7 @@ func ExampleAddScaledH1D() {
 	// Over : 10.5 +/- 10.0
 }
 ```
-[embedmd]:# (example_h1d_test.go go /func ExampleSubH1D/ /\n}/)
+[embedmd]:# (h1d_example_test.go go /func ExampleSubH1D/ /\n}/)
 ```go
 func ExampleSubH1D() {
 
@@ -191,7 +191,7 @@ func ExampleSubH1D() {
 
 ### H2D
 
-[embedmd]:# (example_h2d_test.go go /func ExampleH2D/ /\n}/)
+[embedmd]:# (h2d_example_test.go go /func ExampleH2D/ /\n}/)
 ```go
 func ExampleH2D() {
 	h := hbook.NewH2D(100, -10, 10, 100, -10, 10)
@@ -233,7 +233,7 @@ func ExampleH2D() {
 
 ### S2D
 
-[embedmd]:# (example_s2d_test.go go /func ExampleS2D/ /\n}/)
+[embedmd]:# (s2d_example_test.go go /func ExampleS2D/ /\n}/)
 ```go
 func ExampleS2D() {
 	s := hbook.NewS2D(hbook.Point2D{X: 1, Y: 1}, hbook.Point2D{X: 2, Y: 1.5}, hbook.Point2D{X: -1, Y: +2})

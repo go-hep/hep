@@ -25,7 +25,7 @@ https://godoc.org/go-hep.org/x/hep/hplot
 
 ![hist-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_plot_golden.png)
 
-[embedmd]:# (example_h1d_test.go go /func ExampleH1D/ /\n}/)
+[embedmd]:# (h1d_example_test.go go /func ExampleH1D/ /\n}/)
 ```go
 func ExampleH1D() {
 	const npoints = 10000
@@ -84,7 +84,7 @@ func ExampleH1D() {
 
 ![hist-yerrs-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_yerrs_golden.png)
 
-[embedmd]:# (example_h1d_test.go go /func ExampleH1D_withYErrBars/ /\n}/)
+[embedmd]:# (h1d_example_test.go go /func ExampleH1D_withYErrBars/ /\n}/)
 ```go
 func ExampleH1D_withYErrBars() {
 	const npoints = 100
@@ -146,7 +146,7 @@ func ExampleH1D_withYErrBars() {
 
 ![hist-glyphs-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_glyphs_golden.png)
 
-[embedmd]:# (example_h1d_test.go go /func ExampleH1D_withYErrBarsAndData/ /\n}/)
+[embedmd]:# (h1d_example_test.go go /func ExampleH1D_withYErrBarsAndData/ /\n}/)
 ```go
 func ExampleH1D_withYErrBarsAndData() {
 	const npoints = 100
@@ -220,7 +220,7 @@ func ExampleH1D_withYErrBarsAndData() {
 
 ![hist-yerrs-band-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_yerrs_band_golden.png)
 
-[embedmd]:# (example_h1d_test.go go /func ExampleH1D_withYErrBars_withBand/ /\n}/)
+[embedmd]:# (h1d_example_test.go go /func ExampleH1D_withYErrBars_withBand/ /\n}/)
 ```go
 func ExampleH1D_withYErrBars_withBand() {
 	const npoints = 100
@@ -283,7 +283,7 @@ func ExampleH1D_withYErrBars_withBand() {
 
 ![tiled-plot](https://github.com/go-hep/hep/raw/master/hplot/testdata/tiled_plot_histogram_golden.png)
 
-[embedmd]:# (example_tiledplot_test.go go /func ExampleTiledPlot/ /\n}/)
+[embedmd]:# (tiledplot_example_test.go go /func ExampleTiledPlot/ /\n}/)
 ```go
 func ExampleTiledPlot() {
 	tp := hplot.NewTiledPlot(draw.Tiles{Cols: 3, Rows: 2})
@@ -329,7 +329,7 @@ func ExampleTiledPlot() {
 
 ![tiled-plot-aligned](https://github.com/go-hep/hep/raw/master/hplot/testdata/tiled_plot_aligned_histogram_golden.png)
 
-[embedmd]:# (example_tiledplot_test.go go /func ExampleTiledPlot_align/ /\n}/)
+[embedmd]:# (tiledplot_example_test.go go /func ExampleTiledPlot_align/ /\n}/)
 ```go
 func ExampleTiledPlot_align() {
 	tp := hplot.NewTiledPlot(draw.Tiles{
@@ -388,7 +388,7 @@ https://godoc.org/go-hep.org/x/hep/hplot#example-package--Subplot
 
 ![ratio-plot](https://github.com/go-hep/hep/raw/master/hplot/testdata/diff_plot_golden.png)
 
-[embedmd]:# (example_ratioplot_test.go go /func ExampleRatioPlot/ /\n}/)
+[embedmd]:# (ratioplot_example_test.go go /func ExampleRatioPlot/ /\n}/)
 ```go
 func ExampleRatioPlot() {
 
@@ -465,7 +465,7 @@ https://godoc.org/go-hep.org/x/hep/hplot#example-package--Latexplot
 
 ### 2D histogram
 
-[embedmd]:# (example_h2d_test.go go /func ExampleH2D/ /\n}/)
+[embedmd]:# (h2d_example_test.go go /func ExampleH2D/ /\n}/)
 ```go
 func ExampleH2D() {
 	h := hbook.NewH2D(100, -10, 10, 100, -10, 10)
@@ -506,7 +506,7 @@ func ExampleH2D() {
 
 ### Scatter2D
 
-[embedmd]:# (example_s2d_test.go go /func ExampleS2D/ /\n}/)
+[embedmd]:# (s2d_example_test.go go /func ExampleS2D/ /\n}/)
 ```go
 func ExampleS2D() {
 	const npoints = 1000
@@ -556,7 +556,7 @@ func ExampleS2D() {
 
 ### Vertical lines
 
-[embedmd]:# (example_line_test.go go /func ExampleVLine/ /\n}/)
+[embedmd]:# (line_example_test.go go /func ExampleVLine/ /\n}/)
 ```go
 func ExampleVLine() {
 	p := hplot.New()
@@ -587,7 +587,7 @@ func ExampleVLine() {
 
 ### Horizontal lines
 
-[embedmd]:# (example_line_test.go go /func ExampleHLine/ /\n}/)
+[embedmd]:# (line_example_test.go go /func ExampleHLine/ /\n}/)
 ```go
 func ExampleHLine() {
 	p := hplot.New()
@@ -618,7 +618,7 @@ func ExampleHLine() {
 
 ### Band between lines
 
-[embedmd]:# (example_band_test.go go /func ExampleBand/ /\n}/)
+[embedmd]:# (band_example_test.go go /func ExampleBand/ /\n}/)
 ```go
 func ExampleBand() {
 	const (
@@ -696,7 +696,7 @@ One can specify extra-space between the image borders (the physical file canvas)
 
 ![plot-border-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_borders_golden.png)
 
-[embedmd]:# (example_h1d_test.go go /func ExampleH1D_withPlotBorders/ /\n}/)
+[embedmd]:# (h1d_example_test.go go /func ExampleH1D_withPlotBorders/ /\n}/)
 ```go
 func ExampleH1D_withPlotBorders() {
 	const npoints = 10000
@@ -765,7 +765,7 @@ func ExampleH1D_withPlotBorders() {
 
 ![hstack-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/hstack_golden.png)
 
-[embedmd]:# (example_hstack_test.go go /func ExampleHStack/ /\n}/)
+[embedmd]:# (hstack_example_test.go go /func ExampleHStack/ /\n}/)
 ```go
 func ExampleHStack() {
 	h1 := hbook.NewH1D(100, -10, 10)
@@ -852,7 +852,7 @@ func ExampleHStack() {
 
 ![hstack-band-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/hstack_band_golden.png)
 
-[embedmd]:# (example_hstack_test.go go /func ExampleHStack_withBand/ /\n}/)
+[embedmd]:# (hstack_example_test.go go /func ExampleHStack_withBand/ /\n}/)
 ```go
 func ExampleHStack_withBand() {
 	h1 := hbook.NewH1D(50, -8, 12)
@@ -979,7 +979,7 @@ func ExampleHStack_withBand() {
 
 ![hstack-logy-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/hstack_logy_golden.png)
 
-[embedmd]:# (example_hstack_test.go go /func ExampleHStack_withLogY/ /\n}/)
+[embedmd]:# (hstack_example_test.go go /func ExampleHStack_withLogY/ /\n}/)
 ```go
 func ExampleHStack_withLogY() {
 	h1 := hbook.NewH1D(50, -8, 12)

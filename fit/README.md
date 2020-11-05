@@ -10,7 +10,7 @@
 
 ![h1d-gaussian-example](https://github.com/go-hep/hep/raw/master/fit/testdata/h1d-gauss-plot_golden.png)
 
-[embedmd]:# (example_hist_test.go go /func ExampleH1D_gaussian/ /\n}/)
+[embedmd]:# (hist_example_test.go go /func ExampleH1D_gaussian/ /\n}/)
 ```go
 func ExampleH1D_gaussian() {
 	var (
@@ -98,7 +98,7 @@ func ExampleH1D_gaussian() {
 
 ![func1d-gaussian-example](https://github.com/go-hep/hep/raw/master/fit/testdata/gauss-plot_golden.png)
 
-[embedmd]:# (example_curve1d_test.go go /func ExampleCurve1D_gaussian/ /\n}/)
+[embedmd]:# (curve1d_example_test.go go /func ExampleCurve1D_gaussian/ /\n}/)
 ```go
 func ExampleCurve1D_gaussian() {
 	var (
@@ -170,7 +170,7 @@ func ExampleCurve1D_gaussian() {
 
 ![func1d-powerlaw-example](https://github.com/go-hep/hep/raw/master/fit/testdata/powerlaw-plot_golden.png)
 
-[embedmd]:# (example_curve1d_test.go go /func ExampleCurve1D_powerlaw/ /\n}/)
+[embedmd]:# (curve1d_example_test.go go /func ExampleCurve1D_powerlaw/ /\n}/)
 ```go
 func ExampleCurve1D_powerlaw() {
 	var (
@@ -253,7 +253,7 @@ func ExampleCurve1D_powerlaw() {
 
 ![func1d-exp-example](https://github.com/go-hep/hep/raw/master/fit/testdata/exp-plot_golden.png)
 
-[embedmd]:# (example_curve1d_test.go go /func ExampleCurve1D_exponential/ /\n}/)
+[embedmd]:# (curve1d_example_test.go go /func ExampleCurve1D_exponential/ /\n}/)
 ```go
 func ExampleCurve1D_exponential() {
 	const (
@@ -327,7 +327,7 @@ func ExampleCurve1D_exponential() {
 
 ![func1d-poly-example](https://github.com/go-hep/hep/raw/master/fit/testdata/poly-plot_golden.png)
 
-[embedmd]:# (example_curve1d_test.go go /func ExampleCurve1D_poly/ /\n}/)
+[embedmd]:# (curve1d_example_test.go go /func ExampleCurve1D_poly/ /\n}/)
 ```go
 func ExampleCurve1D_poly() {
 	var (
@@ -398,7 +398,7 @@ func ExampleCurve1D_poly() {
 
 ![2d-example](https://github.com/go-hep/hep/raw/master/fit/testdata/2d-plane-plot_golden.png)
 
-[embedmd]:# (example_curve_nd_test.go go /func ExampleCurveND_plane/ /\n}/)
+[embedmd]:# (curve_nd_example_test.go go /func ExampleCurveND_plane/ /\n}/)
 ```go
 func ExampleCurveND_plane() {
 	var (
