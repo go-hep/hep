@@ -737,7 +737,10 @@ func (b *tbranch) write() (int, error) {
 	}
 
 	// FIXME(sbinet): harmonize or drive via "auto-flush" ?
-	if szNew+int64(n) >= int64(b.basketSize) {
+	if szNew+int64(n) >= int64(b.basketSize) ||
+		// handle case where branch is a slice, empty, for "too long"
+		// see: go-hep/hep#821.
+		len(b.ctx.bk.offsets) > b.basketSize {
 		err = b.flush()
 		if err != nil {
 			return n, fmt.Errorf("could not flush branch (auto-flush): %w", err)
