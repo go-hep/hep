@@ -99,15 +99,16 @@ func newKey(dir *tdirectoryFile, name, title, class string, objlen int32, f *Fil
 	// if the key's payload is actually compressed, we introduce a hole
 	// with the f.setEnd call below.
 	k.nbytes = k.objlen + k.keylen
+	eof := f.end
 	if objlen > 0 {
-		k.seekkey = f.end
+		k.seekkey = eof
 		err := f.setEnd(k.seekkey + int64(k.nbytes))
 		if err != nil {
 			panic(err)
 		}
 	}
 
-	if f.end > kStartBigFile {
+	if eof > kStartBigFile {
 		k.rvers += 1000
 	}
 
@@ -135,7 +136,7 @@ func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object,
 		dir = &f.dir
 	}
 
-	keylen := keylenFor(name, title, class, dir)
+	keylen := keylenFor(name, title, class, dir, f.end)
 
 	buf := rbytes.NewWBuffer(nil, nil, uint32(keylen), dir.file)
 	switch obj := obj.(type) {
@@ -190,7 +191,7 @@ func newKeyFromBuf(dir *tdirectoryFile, name, title, class string, cycle int16, 
 		dir = &f.dir
 	}
 
-	keylen := keylenFor(name, title, class, dir)
+	keylen := keylenFor(name, title, class, dir, f.end)
 	objlen := int32(len(buf))
 	k := Key{
 		f:        f,
@@ -464,12 +465,12 @@ func (k *Key) isBigFile() bool {
 
 // sizeof returns the size in bytes of the key header structure.
 func (k *Key) sizeof() int32 {
-	return keylenFor(k.name, k.title, k.class, &k.f.dir)
+	return keylenFor(k.name, k.title, k.class, &k.f.dir, k.f.end)
 }
 
-func keylenFor(name, title, class string, dir *tdirectoryFile) int32 {
+func keylenFor(name, title, class string, dir *tdirectoryFile, eof int64) int32 {
 	nbytes := int32(22)
-	if dir.isBigFile() {
+	if dir.isBigFile() || eof > kStartBigFile {
 		nbytes += 8
 	}
 	nbytes += datimeSizeof()
