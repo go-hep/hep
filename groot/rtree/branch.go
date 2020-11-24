@@ -711,11 +711,10 @@ func (b *tbranch) setStreamerElement(s rbytes.StreamerElement, ctx rbytes.Stream
 }
 
 func (b *tbranch) createNewBasket() {
-	b.writeBasket = len(b.baskets)
-	cycle := int16(b.writeBasket)
-	b.baskets = append(b.baskets, newBasketFrom(b.tree, b, cycle, b.basketSize, b.entryOffsetLen))
-	b.ctx.bk = &b.baskets[b.writeBasket]
-	if n := len(b.baskets); n > b.maxBaskets {
+	cycle := int16(b.writeBasket) + 1
+	bk := newBasketFrom(b.tree, b, cycle, b.basketSize, b.entryOffsetLen)
+	b.ctx.bk = &bk
+	if n := b.writeBasket; n > b.maxBaskets {
 		b.maxBaskets = n
 	}
 }
