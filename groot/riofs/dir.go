@@ -284,7 +284,7 @@ func (dir *tdirectoryFile) close() error {
 		return nil
 	}
 
-	if dir.file != nil && dir.file.end > kStartBigFile {
+	if dir.file != nil && dir.file.IsBigFile() {
 		if dir.dir.rvers < 1000 {
 			dir.dir.rvers += 1000
 		}
@@ -616,7 +616,7 @@ func (dir *tdirectoryFile) writeKeys() error {
 		nbytes = int32(4) // space for n-keys
 	)
 
-	if dir.file.end > kStartBigFile {
+	if dir.file.IsBigFile() {
 		nbytes += 8
 	}
 	for i := range dir.Keys() {

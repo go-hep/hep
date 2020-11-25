@@ -377,7 +377,7 @@ func (f *File) writeHeader() error {
 	}
 
 	version := f.version
-	if f.end > kStartBigFile ||
+	if f.IsBigFile() ||
 		f.seekfree > kStartBigFile ||
 		f.seekinfo > kStartBigFile {
 		if version < 1000000 {
@@ -728,7 +728,7 @@ func (f *File) writeFreeSegments() error {
 		return nil
 	}
 
-	isBigFile := f.end > kStartBigFile
+	isBigFile := f.IsBigFile()
 	if !isBigFile && f.end > kStartBigFile {
 		// the free block list is large enough to bring the file over the
 		// 2Gb limit.
@@ -986,6 +986,11 @@ func (f *File) Records(w io.Writer) error {
 	fmt.Fprintf(w, "seek-info: %d nbytes-info=%d\n", f.seekinfo, f.nbytesinfo)
 
 	return f.dir.records(w, 0)
+}
+
+// IsBigFile returns whether the file will need 64b offsets.
+func (f *File) IsBigFile() bool {
+	return f.end > kStartBigFile
 }
 
 var (

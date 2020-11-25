@@ -167,7 +167,7 @@ func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object,
 		otyp:     reflect.TypeOf(obj),
 		parent:   dir,
 	}
-	if f.end > kStartBigFile {
+	if f.IsBigFile() {
 		k.rvers += 1000
 	}
 
@@ -208,7 +208,7 @@ func newKeyFromBuf(dir *tdirectoryFile, name, title, class string, cycle int16, 
 		seekpdir: dir.seekdir,
 		parent:   dir,
 	}
-	if f.end > kStartBigFile {
+	if f.IsBigFile() {
 		k.rvers += 1000
 	}
 
@@ -257,7 +257,7 @@ func NewKeyForBasketInternal(dir Directory, name, title, class string, cycle int
 	}
 	k.keylen = k.sizeof()
 	k.nbytes = k.keylen
-	if f.end > kStartBigFile {
+	if f.IsBigFile() {
 		k.rvers += 1000
 	}
 

@@ -321,8 +321,22 @@ func (b *Basket) writeFile(f *riofs.File) (totBytes int64, zipBytes int64, err e
 	defer func() {
 		b.header = header
 	}()
+
+	// we need to handle the case for a basket being created
+	// while the file was small, and *then* being flushed while
+	// the file is big.
+	// ie: the TKey structure switched to 64b offsets, and add an
+	// extra 8bytes.
+	// we need to propagate to the 'offsets' and 'last' fields.
+	adjust := !(b.key.RVersion() > 1000) && f.IsBigFile()
+
 	b.last = int(int64(b.key.KeyLen()) + b.wbuf.Len())
 	if b.offsets != nil {
+		if adjust {
+			for i, v := range b.offsets {
+				b.offsets[i] = v + 8
+			}
+		}
 		b.wbuf.WriteI32(int32(b.nevbuf + 1))
 		b.wbuf.WriteFastArrayI32(b.offsets[:b.nevbuf])
 		b.wbuf.WriteI32(0)
@@ -330,6 +344,9 @@ func (b *Basket) writeFile(f *riofs.File) (totBytes int64, zipBytes int64, err e
 	b.key, err = riofs.NewKey(nil, b.key.Name(), b.key.Title(), b.Class(), int16(b.key.Cycle()), b.wbuf.Bytes(), f)
 	if err != nil {
 		return 0, 0, fmt.Errorf("rtree: could not create basket-key: %w", err)
+	}
+	if adjust {
+		b.last += 8
 	}
 
 	nbytes := b.key.KeyLen() + b.key.ObjLen()
