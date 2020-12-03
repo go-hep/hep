@@ -200,6 +200,32 @@ func (p4 *PxPyPzE) Set(p P4) {
 	p4.P4.T = p.E()
 }
 
+func (p4 *PxPyPzE) SetPtEtaPhiM(pt, eta, phi, m float64) {
+	sin, cos := math.Sincos(phi)
+	pt = math.Abs(pt)
+	p4.P4.X = pt * cos
+	p4.P4.Y = pt * sin
+	p4.P4.Z = pt * math.Sinh(eta)
+
+	p2 := p4.P4.X*p4.P4.X + p4.P4.Y*p4.P4.Y + p4.P4.Z*p4.P4.Z
+	m2 := m * m
+	switch {
+	case m >= 0:
+		p4.P4.T = math.Sqrt(p2 + m2)
+	default:
+		p4.P4.T = math.Sqrt(math.Max(0, p2-m2))
+	}
+}
+
+func (p4 *PxPyPzE) SetPtEtaPhiE(pt, eta, phi, e float64) {
+	sin, cos := math.Sincos(phi)
+	pt = math.Abs(pt)
+	p4.P4.X = pt * cos
+	p4.P4.Y = pt * sin
+	p4.P4.Z = pt * math.Sinh(eta)
+	p4.P4.T = e
+}
+
 var (
 	_ P4           = (*PxPyPzE)(nil)
 	_ fmt.Stringer = (*PxPyPzE)(nil)

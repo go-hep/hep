@@ -5,6 +5,7 @@
 package fmom_test
 
 import (
+	"math"
 	"testing"
 
 	"go-hep.org/x/hep/fmom"
@@ -139,4 +140,32 @@ func TestPxPyPzE(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("set-PtEtaPhiM", func(t *testing.T) {
+		p1 := fmom.NewPxPyPzE(10, 20, 30, 40)
+		p1.SetPtEtaPhiM(100, 1.5, 1/3.*math.Pi, 10)
+		want := fmom.NewPxPyPzE(
+			49.99999999999999,
+			86.60254037844388,
+			212.9279455094818,
+			235.45341360636257,
+		)
+		if got, want := p1, want; got != want {
+			t.Fatalf("invalid p4:\ngot= %v\nwant=%v", got, want)
+		}
+	})
+
+	t.Run("set-PtEtaPhiE", func(t *testing.T) {
+		p1 := fmom.NewPxPyPzE(10, 20, 30, 40)
+		p1.SetPtEtaPhiE(100, 1.5, 1/3.*math.Pi, 10)
+		want := fmom.NewPxPyPzE(
+			49.99999999999999,
+			86.60254037844388,
+			212.9279455094818,
+			10,
+		)
+		if got, want := p1, want; got != want {
+			t.Fatalf("invalid p4:\ngot= %v\nwant=%v", got, want)
+		}
+	})
 }
