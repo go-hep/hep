@@ -192,6 +192,15 @@ func Boost(p P4, vec r3.Vec) P4 {
 	return o
 }
 
+// VecOf returns the 3-vector of fhe four-momentum
+func VecOf(p P4) r3.Vec {
+	return r3.Vec{
+		X: p.Px(),
+		Y: p.Py(),
+		Z: p.Pz(),
+	}
+}
+
 func vecDot(u, v r3.Vec) float64 {
 	return u.Dot(v)
 }

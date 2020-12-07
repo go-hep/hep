@@ -44,6 +44,10 @@ func deepEqual(p1, p2 P4) bool {
 	return Equal(p1, p2)
 }
 
+func deepEqualP3(p1, p2 r3.Vec) bool {
+	return p1.X == p2.X && p1.Y == p2.Y && p1.Z == p2.Z
+}
+
 func TestAdd(t *testing.T) {
 	for _, tc := range []struct {
 		p1   P4
@@ -388,5 +392,36 @@ func TestBoostOf(t *testing.T) {
 				t.Fatalf("invalid boost vector:\ngot= %v\nwant=%v", got, want)
 			}
 		})
+	}
+}
+
+
+func TestVecOf(t *testing.T) {
+	for _, tc := range []struct {
+		p    P4
+		want r3.Vec
+	}{
+		{
+			p:    newPxPyPzE(NewPxPyPzE(0, 10, 10, 20)),
+			want: r3.Vec{X: 0, Y: 10, Z: 10},
+		},
+
+		{
+			p:    newPxPyPzE(NewPxPyPzE(10,  0, 10, 20)),
+			want: r3.Vec{X: 10, Y: 0, Z: 10},
+		},
+
+		{
+			p:    newPxPyPzE(NewPxPyPzE(10, 10, 0, 20)),
+			want: r3.Vec{X: 10, Y: 10, Z: 0},
+		},
+	} {
+		p := tc.p.Clone()
+
+		got := VecOf(p)
+
+		if !deepEqualP3(got, tc.want) {
+			t.Fatalf("got= %#v\nwant=%#v", got, tc.want)
+		}
 	}
 }
