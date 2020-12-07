@@ -1173,7 +1173,5 @@ func ExampleLabel() {
 	if err != nil {
 		log.Fatalf("error saving plot: %v\n", err)
 	}
-
-	// Output:
 }
 ```
