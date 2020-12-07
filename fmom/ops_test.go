@@ -390,3 +390,32 @@ func TestBoostOf(t *testing.T) {
 		})
 	}
 }
+
+func TestVecOf(t *testing.T) {
+	for _, tc := range []struct {
+		p    P4
+		want r3.Vec
+	}{
+		{
+			p:    newPxPyPzE(NewPxPyPzE(0, 10, 20, 30)),
+			want: r3.Vec{X: 0, Y: 10, Z: 20},
+		},
+
+		{
+			p:    newPxPyPzE(NewPxPyPzE(10, 0, 20, 30)),
+			want: r3.Vec{X: 10, Y: 0, Z: 20},
+		},
+
+		{
+			p:    newPxPyPzE(NewPxPyPzE(10, 20, 0, 30)),
+			want: r3.Vec{X: 10, Y: 20, Z: 0},
+		},
+	} {
+		got := VecOf(tc.p)
+
+		if got != tc.want {
+			t.Fatalf("invalid spatial components for %#v: got= %#v\nwant=%#v",
+				tc.p, got, tc.want)
+		}
+	}
+}
