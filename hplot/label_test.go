@@ -8,7 +8,9 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/hplot"
+	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/cmpimg"
+	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 )
@@ -84,4 +86,43 @@ func TestLabelPanic(t *testing.T) {
 			p.Draw(draw.New(dc))
 		})
 	}
+}
+
+func TestLabelWithLog(t *testing.T) {
+	checkPlot(cmpimg.CheckPlot)(func() {
+
+		// Creating a new plot
+		p := hplot.New()
+		p.Title.Text = "Plot labels"
+		p.X.Min = 1
+		p.X.Max = 110
+		p.Y.Min = 1
+		p.Y.Max = 110
+
+		p.X.Scale = plot.LogScale{}
+		p.Y.Scale = plot.LogScale{}
+
+		p.Add(hplot.NewLabel(
+			0.5, 0.5,
+			"(0.5,0.5)\nMy Label",
+			hplot.WithLabelNormalized(true),
+		))
+
+		p.Add(hplot.NewLabel(
+			0.95, 0.95,
+			"(0.95,0.95)\nAuto-adjust",
+			hplot.WithLabelNormalized(true),
+			hplot.WithLabelAutoAdjust(true),
+		))
+
+		p.Add(plotter.NewGlyphBoxes())
+		p.Add(hplot.NewGrid())
+
+		// Save the plot to a PNG file.
+		err := p.Save(15*vg.Centimeter, -1, "testdata/label_log_plot.png")
+		if err != nil {
+			t.Fatalf("error saving plot: %v\n", err)
+		}
+
+	}, t, "label_log_plot.png")
 }

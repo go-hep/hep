@@ -143,8 +143,8 @@ func (lbl *Label) labels(c draw.Canvas, p *plot.Plot) *plotter.Labels {
 		}
 
 		// Turn relative into absolute coordinates
-		x = p.X.Min + x*(p.X.Max-p.X.Min)
-		y = p.Y.Min + y*(p.Y.Max-p.Y.Min)
+		x = lbl.scale(x, p.X.Min, p.X.Max, p.X.Scale)
+		y = lbl.scale(y, p.Y.Min, p.Y.Max, p.Y.Scale)
 	}
 
 	lbl.plt, err = plotter.NewLabels(plotter.XYLabels{
@@ -196,6 +196,18 @@ func (lbl *Label) adjustY(ynorm float64) float64 {
 		y = 0
 	}
 	return y
+}
+
+func (Label) scale(v, min, max float64, scaler plot.Normalizer) float64 {
+	mid := min + 0.5*(max-min)
+	if math.Abs(scaler.Normalize(min, max, mid)-0.5) < 1e-12 {
+		return min + v*(max-min)
+	}
+
+	// log-scale
+	min = math.Log(min)
+	max = math.Log(max)
+	return math.Exp(min + v*(max-min))
 }
 
 type labelConfig struct {
