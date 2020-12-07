@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 
+	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/plotutil"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
@@ -20,25 +21,29 @@ func ExampleLabel() {
 	// Creating a new plot
 	p := hplot.New()
 	p.Title.Text = "Plot labels"
-	p.X.Min = -1
-	p.X.Max = 1
-	p.Y.Min = -1
-	p.Y.Max = 1
+	p.X.Min = -10
+	p.X.Max = +10
+	p.Y.Min = -10
+	p.Y.Max = +10
 
 	// Default labels
-	l1 := hplot.NewLabel(-0.8, 0.5, "Default label.")
+	l1 := hplot.NewLabel(-8, 5, "(-8,5)\nDefault label")
 	p.Add(l1)
 
 	// Label with normalized coordinates.
-	l3 := hplot.NewLabel(0.5, 0.5, "Label with relative coordinates.",
-		hplot.WithNormalized(true),
+	l3 := hplot.NewLabel(
+		0.5, 0.5,
+		"(0.5,0.5)\nLabel with relative coords",
+		hplot.WithLabelNormalized(true),
 	)
 	p.Add(l3)
 
 	// Label with normalized coordinates and auto-adjustement.
-	l4 := hplot.NewLabel(0.95, 0.95, "Label at the canvas edge, with AutoAdjust",
-		hplot.WithNormalized(true),
-		//hplot.WithAutoAdjust(true),
+	l4 := hplot.NewLabel(
+		0.95, 0.95,
+		"(0.95,0.95)\nLabel at the canvas edge, with AutoAdjust",
+		hplot.WithLabelNormalized(true),
+		hplot.WithLabelAutoAdjust(true),
 	)
 	p.Add(l4)
 
@@ -51,14 +56,22 @@ func ExampleLabel() {
 		Color: plotutil.Color(2),
 		Font:  usrFont,
 	}
-	l5 := hplot.NewLabel(0.0, 0.1, "Label with a user-defined font",
-		hplot.WithTextStyle(sty),
-		hplot.WithNormalized(true),
+	l5 := hplot.NewLabel(
+		0.0, 0.1,
+		"(0.0,0.1)\nLabel with a user-defined font",
+		hplot.WithLabelTextStyle(sty),
+		hplot.WithLabelNormalized(true),
 	)
 	p.Add(l5)
 
+	p.Add(plotter.NewGlyphBoxes())
+	p.Add(hplot.NewGrid())
+
 	// Save the plot to a PNG file.
-	if err := p.Save(6*vg.Inch, -1, "testdata/label_plot.png"); err != nil {
+	err = p.Save(15*vg.Centimeter, -1, "testdata/label_plot.png")
+	if err != nil {
 		log.Fatalf("error saving plot: %v\n", err)
 	}
+
+	// Output:
 }
