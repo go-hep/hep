@@ -395,7 +395,6 @@ func TestBoostOf(t *testing.T) {
 	}
 }
 
-
 func TestVecOf(t *testing.T) {
 	for _, tc := range []struct {
 		p    P4
@@ -407,7 +406,7 @@ func TestVecOf(t *testing.T) {
 		},
 
 		{
-			p:    newPxPyPzE(NewPxPyPzE(10,  0, 10, 20)),
+			p:    newPxPyPzE(NewPxPyPzE(10, 0, 10, 20)),
 			want: r3.Vec{X: 10, Y: 0, Z: 10},
 		},
 
