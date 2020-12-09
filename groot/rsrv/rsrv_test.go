@@ -75,7 +75,7 @@ func TestOpenFile(t *testing.T) {
 		uri    string
 		status int
 	}{
-		{"https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", http.StatusOK},
+		{"https://github.com/go-hep/hep/raw/main/groot/testdata/simple.root", http.StatusOK},
 		{"root://ccxrootdgotest.in2p3.fr:9001/tmp/rootio/testdata/simple.root", http.StatusOK},
 		{"file://" + local, http.StatusOK},
 	} {
@@ -90,8 +90,8 @@ func TestDoubleOpenFile(t *testing.T) {
 	ts := newTestServer()
 	defer ts.Close()
 
-	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", 0)
-	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", http.StatusConflict)
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/simple.root", 0)
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/simple.root", http.StatusConflict)
 }
 
 func testOpenFile(t *testing.T, ts *httptest.Server, uri string, status int) {
@@ -201,10 +201,10 @@ func TestCloseFile(t *testing.T) {
 	ts := newTestServer()
 	defer ts.Close()
 
-	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", 0)
-	testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root")
-	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", http.StatusOK)
-	testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root")
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/simple.root", 0)
+	testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/simple.root")
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/simple.root", http.StatusOK)
+	testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/simple.root")
 }
 
 func testCloseFile(t *testing.T, ts *httptest.Server, uri string) {
@@ -238,14 +238,14 @@ func TestListFiles(t *testing.T) {
 	ts := newTestServer()
 	defer ts.Close()
 
-	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", 0)
-	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root", http.StatusOK)
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/simple.root", 0)
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/dirs-6.14.00.root", http.StatusOK)
 	testListFiles(t, ts, []File{
-		{"https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", 60600},
-		{"https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root", 61400},
+		{"https://github.com/go-hep/hep/raw/main/groot/testdata/simple.root", 60600},
+		{"https://github.com/go-hep/hep/raw/main/groot/testdata/dirs-6.14.00.root", 61400},
 	})
-	testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root")
-	testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root")
+	testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/simple.root")
+	testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/dirs-6.14.00.root")
 }
 
 func testListFiles(t *testing.T, ts *httptest.Server, want []File) {
@@ -290,11 +290,11 @@ func TestDirent(t *testing.T) {
 	ts := newTestServer()
 	defer ts.Close()
 
-	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root", http.StatusOK)
-	defer testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root")
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/simple.root", http.StatusOK)
+	defer testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/simple.root")
 
 	testDirent(t, ts, DirentRequest{
-		URI:       "https://github.com/go-hep/hep/raw/master/groot/testdata/simple.root",
+		URI:       "https://github.com/go-hep/hep/raw/main/groot/testdata/simple.root",
 		Dir:       "/",
 		Recursive: false,
 	}, []string{
@@ -302,11 +302,11 @@ func TestDirent(t *testing.T) {
 		"/tree",
 	})
 
-	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root", http.StatusOK)
-	defer testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root")
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/dirs-6.14.00.root", http.StatusOK)
+	defer testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/dirs-6.14.00.root")
 
 	testDirent(t, ts, DirentRequest{
-		URI:       "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root",
+		URI:       "https://github.com/go-hep/hep/raw/main/groot/testdata/dirs-6.14.00.root",
 		Dir:       "/",
 		Recursive: false,
 	}, []string{
@@ -316,7 +316,7 @@ func TestDirent(t *testing.T) {
 		"/dir3",
 	})
 	testDirent(t, ts, DirentRequest{
-		URI:       "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root",
+		URI:       "https://github.com/go-hep/hep/raw/main/groot/testdata/dirs-6.14.00.root",
 		Dir:       "/",
 		Recursive: true,
 	}, []string{
@@ -328,7 +328,7 @@ func TestDirent(t *testing.T) {
 		"/dir3",
 	})
 	testDirent(t, ts, DirentRequest{
-		URI:       "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root",
+		URI:       "https://github.com/go-hep/hep/raw/main/groot/testdata/dirs-6.14.00.root",
 		Dir:       "/dir1",
 		Recursive: false,
 	}, []string{
@@ -336,7 +336,7 @@ func TestDirent(t *testing.T) {
 		"/dir1/dir11",
 	})
 	testDirent(t, ts, DirentRequest{
-		URI:       "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root",
+		URI:       "https://github.com/go-hep/hep/raw/main/groot/testdata/dirs-6.14.00.root",
 		Dir:       "/dir1",
 		Recursive: true,
 	}, []string{
@@ -394,7 +394,7 @@ func TestTree(t *testing.T) {
 	ts := newTestServer()
 	defer ts.Close()
 
-	const uri = "https://github.com/go-hep/hep/raw/master/groot/testdata/small-flat-tree.root"
+	const uri = "https://github.com/go-hep/hep/raw/main/groot/testdata/small-flat-tree.root"
 	testOpenFile(t, ts, uri, http.StatusOK)
 	defer testCloseFile(t, ts, uri)
 
@@ -505,10 +505,10 @@ func TestPlotH1(t *testing.T) {
 	ts := newTestServer()
 	defer ts.Close()
 
-	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root", http.StatusOK)
-	defer testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root")
+	testOpenFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/dirs-6.14.00.root", http.StatusOK)
+	defer testCloseFile(t, ts, "https://github.com/go-hep/hep/raw/main/groot/testdata/dirs-6.14.00.root")
 
-	const uri = "https://github.com/go-hep/hep/raw/master/hbook/rootcnv/testdata/gauss-h1.root"
+	const uri = "https://github.com/go-hep/hep/raw/main/hbook/rootcnv/testdata/gauss-h1.root"
 	testOpenFile(t, ts, uri, http.StatusOK)
 	defer testCloseFile(t, ts, uri)
 
@@ -525,7 +525,7 @@ func TestPlotH1(t *testing.T) {
 		},
 		{
 			req: PlotH1Request{
-				URI: "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root",
+				URI: "https://github.com/go-hep/hep/raw/main/groot/testdata/dirs-6.14.00.root",
 				Dir: "/dir1/dir11",
 				Obj: "h1",
 			},
@@ -550,7 +550,7 @@ func TestPlotH1(t *testing.T) {
 		},
 		{
 			req: PlotH1Request{
-				URI: "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root",
+				URI: "https://github.com/go-hep/hep/raw/main/groot/testdata/dirs-6.14.00.root",
 				Dir: "/dir1/dir11",
 				Obj: "h1",
 				Options: PlotOptions{
@@ -561,7 +561,7 @@ func TestPlotH1(t *testing.T) {
 		},
 		{
 			req: PlotH1Request{
-				URI: "https://github.com/go-hep/hep/raw/master/groot/testdata/dirs-6.14.00.root",
+				URI: "https://github.com/go-hep/hep/raw/main/groot/testdata/dirs-6.14.00.root",
 				Dir: "/dir1/dir11",
 				Obj: "h1",
 				Options: PlotOptions{
@@ -636,7 +636,7 @@ func TestPlotH2(t *testing.T) {
 	ts := newTestServer()
 	defer ts.Close()
 
-	const uri = "https://github.com/go-hep/hep/raw/master/hbook/rootcnv/testdata/gauss-h2.root"
+	const uri = "https://github.com/go-hep/hep/raw/main/hbook/rootcnv/testdata/gauss-h2.root"
 	testOpenFile(t, ts, uri, http.StatusOK)
 	defer testCloseFile(t, ts, uri)
 
@@ -764,7 +764,7 @@ func TestPlotS2(t *testing.T) {
 	ts := newTestServer()
 	defer ts.Close()
 
-	const uri = "https://github.com/go-hep/hep/raw/master/groot/testdata/graphs.root"
+	const uri = "https://github.com/go-hep/hep/raw/main/groot/testdata/graphs.root"
 	testOpenFile(t, ts, uri, http.StatusOK)
 	defer testCloseFile(t, ts, uri)
 
@@ -895,7 +895,7 @@ func TestPlotTree(t *testing.T) {
 	ts := newTestServer()
 	defer ts.Close()
 
-	const uri = "https://github.com/go-hep/hep/raw/master/groot/testdata/small-flat-tree.root"
+	const uri = "https://github.com/go-hep/hep/raw/main/groot/testdata/small-flat-tree.root"
 	testOpenFile(t, ts, uri, http.StatusOK)
 	defer testCloseFile(t, ts, uri)
 

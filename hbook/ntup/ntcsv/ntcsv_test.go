@@ -71,14 +71,14 @@ func TestOpen(t *testing.T) {
 				ntcsv.Comment('#'),
 			},
 		},
-		{"http://github.com/go-hep/hep/raw/master/hbook/ntup/ntcsv/testdata/simple-with-comment.csv", `v1, v2, v3`,
+		{"http://github.com/go-hep/hep/raw/main/hbook/ntup/ntcsv/testdata/simple-with-comment.csv", `v1, v2, v3`,
 			[]ntcsv.Option{
 				ntcsv.Comma(';'),
 				ntcsv.Comment('#'),
 				ntcsv.Columns("v1", "v2", "v3"),
 			},
 		},
-		{"https://github.com/go-hep/hep/raw/master/hbook/ntup/ntcsv/testdata/simple-with-header.csv", `i64, f64, str`,
+		{"https://github.com/go-hep/hep/raw/main/hbook/ntup/ntcsv/testdata/simple-with-header.csv", `i64, f64, str`,
 			[]ntcsv.Option{
 				ntcsv.Header(),
 				ntcsv.Columns("i64", "f64", "str"),

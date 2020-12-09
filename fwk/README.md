@@ -29,7 +29,7 @@ The documentation is available on `godoc`:
 
 ### `fwk` tuto examples
 
-The [examples](https://github.com/go-hep/hep/blob/master/fwk/examples)
+The [examples](https://github.com/go-hep/hep/blob/main/fwk/examples)
 directory contains a few simple applications which exercize the `fwk`
 toolkit.
 

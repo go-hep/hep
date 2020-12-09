@@ -21,7 +21,7 @@ Is available on `godoc`: https://godoc.org/go-hep.org/x/hep/fads
 
 A test application is available over there:
 
-https://go-hep.org/x/hep/fads/blob/master/cmd/fads-app/main.go
+https://go-hep.org/x/hep/fads/blob/main/cmd/fads-app/main.go
 
 A more in-depth tutorial is available at [go-hep/tutos](https://github.com/go-hep/tutos) but, in a nutshell:
 

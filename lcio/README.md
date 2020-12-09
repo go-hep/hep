@@ -158,7 +158,7 @@ lcio-ex-read-event: read 50 events from file "./DST01-06_ppr004_bbcsdu.slcio"
 $> open out.png
 ```
 
-![hist-example](https://github.com/go-hep/hep/raw/master/lcio/example/lcio-ex-read-event/out.png)
+![hist-example](https://github.com/go-hep/hep/raw/main/lcio/example/lcio-ex-read-event/out.png)
 
 [embedmd]:# (example/lcio-ex-read-event/main.go go /func main/ /\n}/)
 ```go

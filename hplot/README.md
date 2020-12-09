@@ -23,7 +23,7 @@ https://godoc.org/go-hep.org/x/hep/hplot
 
 ### 1D histogram
 
-![hist-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_plot_golden.png)
+![hist-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/h1d_plot_golden.png)
 
 [embedmd]:# (h1d_example_test.go go /func ExampleH1D/ /\n}/)
 ```go
@@ -82,7 +82,7 @@ func ExampleH1D() {
 
 ### 1D histogram with y-error bars
 
-![hist-yerrs-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_yerrs_golden.png)
+![hist-yerrs-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/h1d_yerrs_golden.png)
 
 [embedmd]:# (h1d_example_test.go go /func ExampleH1D_withYErrBars/ /\n}/)
 ```go
@@ -144,7 +144,7 @@ func ExampleH1D_withYErrBars() {
 
 ### 1D histogram with y-error bars, no lines
 
-![hist-glyphs-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_glyphs_golden.png)
+![hist-glyphs-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/h1d_glyphs_golden.png)
 
 [embedmd]:# (h1d_example_test.go go /func ExampleH1D_withYErrBarsAndData/ /\n}/)
 ```go
@@ -218,7 +218,7 @@ func ExampleH1D_withYErrBarsAndData() {
 
 ### 1D histogram with y-error bars and error bands
 
-![hist-yerrs-band-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_yerrs_band_golden.png)
+![hist-yerrs-band-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/h1d_yerrs_band_golden.png)
 
 [embedmd]:# (h1d_example_test.go go /func ExampleH1D_withYErrBars_withBand/ /\n}/)
 ```go
@@ -281,7 +281,7 @@ func ExampleH1D_withYErrBars_withBand() {
 
 ### Tiles of 1D histograms
 
-![tiled-plot](https://github.com/go-hep/hep/raw/master/hplot/testdata/tiled_plot_histogram_golden.png)
+![tiled-plot](https://github.com/go-hep/hep/raw/main/hplot/testdata/tiled_plot_histogram_golden.png)
 
 [embedmd]:# (tiledplot_example_test.go go /func ExampleTiledPlot/ /\n}/)
 ```go
@@ -327,7 +327,7 @@ func ExampleTiledPlot() {
 }
 ```
 
-![tiled-plot-aligned](https://github.com/go-hep/hep/raw/master/hplot/testdata/tiled_plot_aligned_histogram_golden.png)
+![tiled-plot-aligned](https://github.com/go-hep/hep/raw/main/hplot/testdata/tiled_plot_aligned_histogram_golden.png)
 
 [embedmd]:# (tiledplot_example_test.go go /func ExampleTiledPlot_align/ /\n}/)
 ```go
@@ -380,13 +380,13 @@ func ExampleTiledPlot_align() {
 
 ### Subplots
 
-![sub-plot](https://github.com/go-hep/hep/raw/master/hplot/testdata/sub_plot_golden.png)
+![sub-plot](https://github.com/go-hep/hep/raw/main/hplot/testdata/sub_plot_golden.png)
 
 https://godoc.org/go-hep.org/x/hep/hplot#example-package--Subplot
 
 ### Ratio-plots
 
-![ratio-plot](https://github.com/go-hep/hep/raw/master/hplot/testdata/diff_plot_golden.png)
+![ratio-plot](https://github.com/go-hep/hep/raw/main/hplot/testdata/diff_plot_golden.png)
 
 [embedmd]:# (ratioplot_example_test.go go /func ExampleRatioPlot/ /\n}/)
 ```go
@@ -459,7 +459,7 @@ func ExampleRatioPlot() {
 
 ### LaTeX-plots
 
-[latex-plot (PDF)](https://github.com/go-hep/hep/raw/master/hplot/testdata/latex_plot_golden.pdf)
+[latex-plot (PDF)](https://github.com/go-hep/hep/raw/main/hplot/testdata/latex_plot_golden.pdf)
 
 https://godoc.org/go-hep.org/x/hep/hplot#example-package--Latexplot
 
@@ -502,7 +502,7 @@ func ExampleH2D() {
 	}
 }
 ```
-![h2d-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h2d_plot_golden.png)
+![h2d-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/h2d_plot_golden.png)
 
 ### Scatter2D
 
@@ -548,11 +548,11 @@ func ExampleS2D() {
 	}
 }
 ```
-![s2d-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/s2d_golden.png)
-![s2d-errbars-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/s2d_errbars_golden.png)
-![s2d-band-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/s2d_band_golden.png)
-![s2d-steps-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/s2d_steps_golden.png)
-![s2d-steps-band-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/s2d_steps_band_golden.png)
+![s2d-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/s2d_golden.png)
+![s2d-errbars-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/s2d_errbars_golden.png)
+![s2d-band-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/s2d_band_golden.png)
+![s2d-steps-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/s2d_steps_golden.png)
+![s2d-steps-band-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/s2d_steps_band_golden.png)
 
 ### Vertical lines
 
@@ -583,7 +583,7 @@ func ExampleVLine() {
 	}
 }
 ```
-![vline-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/vline_golden.png)
+![vline-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/vline_golden.png)
 
 ### Horizontal lines
 
@@ -614,7 +614,7 @@ func ExampleHLine() {
 	}
 }
 ```
-![hline-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/hline_golden.png)
+![hline-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/hline_golden.png)
 
 ### Band between lines
 
@@ -688,13 +688,13 @@ func ExampleBand() {
 	}
 }
 ```
-![band-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/band_golden.png)
+![band-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/band_golden.png)
 
 ### Plot with borders
 
 One can specify extra-space between the image borders (the physical file canvas) and the actual plot data.
 
-![plot-border-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/h1d_borders_golden.png)
+![plot-border-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/h1d_borders_golden.png)
 
 [embedmd]:# (h1d_example_test.go go /func ExampleH1D_withPlotBorders/ /\n}/)
 ```go
@@ -763,7 +763,7 @@ func ExampleH1D_withPlotBorders() {
 
 ### Stack of 1D histograms
 
-![hstack-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/hstack_golden.png)
+![hstack-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/hstack_golden.png)
 
 [embedmd]:# (hstack_example_test.go go /func ExampleHStack/ /\n}/)
 ```go
@@ -850,7 +850,7 @@ func ExampleHStack() {
 
 ### Stack of 1D histograms with a band
 
-![hstack-band-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/hstack_band_golden.png)
+![hstack-band-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/hstack_band_golden.png)
 
 [embedmd]:# (hstack_example_test.go go /func ExampleHStack_withBand/ /\n}/)
 ```go
@@ -977,7 +977,7 @@ func ExampleHStack_withBand() {
 
 ### Stack of 1D histograms with a band, with a log-y scale
 
-![hstack-logy-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/hstack_logy_golden.png)
+![hstack-logy-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/hstack_logy_golden.png)
 
 [embedmd]:# (hstack_example_test.go go /func ExampleHStack_withLogY/ /\n}/)
 ```go
@@ -1113,7 +1113,7 @@ func ExampleHStack_withLogY() {
 
 ## Labels
 
-![label-example](https://github.com/go-hep/hep/raw/master/hplot/testdata/label_plot_golden.png)
+![label-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/label_plot_golden.png)
 
 [embedmd]:# (label_example_test.go go /func ExampleLabel/ /\n}/)
 ```go

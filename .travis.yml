@@ -20,7 +20,7 @@ git:
 matrix:
  fast_finish: true
  include:
-   - go: master
+   - go: main
      env:
        - TAGS="-tags=ci"
        - COVERAGE="-race"
