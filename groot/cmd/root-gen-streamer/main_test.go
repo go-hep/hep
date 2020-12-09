@@ -103,6 +103,8 @@ key[000]: data;1 "" (go_hep_org::x::hep::groot::internal::rdatatest::T1) => &{he
 		//		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			os.Remove(tc.out)
 			os.Remove("testdata/run.go")
 			defer os.Remove(tc.out)
