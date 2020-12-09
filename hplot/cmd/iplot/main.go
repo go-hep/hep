@@ -51,7 +51,7 @@ func run() {
 			c := vggio.New(layout.NewContext(new(op.Ops), e), w, h)
 			p := newPlot()
 			p.Draw(draw.New(c))
-			c.Paint(e)
+			e.Frame(c.Paint())
 
 		case system.DestroyEvent:
 			return

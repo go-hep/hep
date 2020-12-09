@@ -126,7 +126,7 @@ func (w *window) handle(e event.Event) winState {
 		w.mu.Lock()
 		w.plt.Draw(draw.New(cnv))
 		w.mu.Unlock()
-		cnv.Paint(e)
+		e.Frame(cnv.Paint())
 
 	case key.Event:
 		switch e.Name {

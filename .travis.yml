@@ -35,10 +35,7 @@ notifications:
     on_failure: always
 
 before_install:
- - sudo apt-get install -qq pkg-config fuse libgles2-mesa-dev libxkbcommon-dev libxkbcommon-x11-dev
- - sudo modprobe fuse
- - sudo chmod 666 /dev/fuse
- - sudo chown root:$USER /etc/fuse.conf
+ - sudo apt-get install -qq pkg-config libwayland-dev libx11-dev libx11-xcb-dev libxkbcommon-dev libxkbcommon-x11-dev libgles2-mesa-dev libegl1-mesa-dev libffi-dev libxcursor-dev
 
 before_script:
  - go run ./ci/install-cxx-root.go -root-version=${ROOT_VERSION} -o=${HOME}
