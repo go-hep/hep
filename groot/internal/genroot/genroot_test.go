@@ -21,7 +21,7 @@ func TestExtractYear(t *testing.T) {
 		},
 		{
 			fname: "../../cmd/root-gen-rfunc/testdata/func1_golden.txt",
-			year:  2020,
+			year:  2021,
 		},
 	} {
 		t.Run(tc.fname, func(t *testing.T) {
