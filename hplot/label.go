@@ -50,8 +50,9 @@ type Label struct {
 func NewLabel(x, y float64, txt string, opts ...LabelOption) *Label {
 
 	style := draw.TextStyle{
-		Color: color.Black,
-		Font:  DefaultStyle.Fonts.Tick, // FIXME(sbinet): add a field in Style?
+		Color:   color.Black,
+		Font:    DefaultStyle.Fonts.Tick, // FIXME(sbinet): add a field in Style?
+		Handler: DefaultStyle.TextHandler,
 	}
 
 	cfg := &labelConfig{
@@ -60,6 +61,9 @@ func NewLabel(x, y float64, txt string, opts ...LabelOption) *Label {
 
 	for _, opt := range opts {
 		opt(cfg)
+	}
+	if cfg.TextStyle.Handler == nil {
+		cfg.TextStyle.Handler = style.Handler
 	}
 
 	if cfg.Normalized {
