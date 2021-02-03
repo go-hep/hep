@@ -171,8 +171,8 @@ func Boost(p P4, vec r3.Vec) P4 {
 		ee = p.E()
 
 		p3 = r3.Vec{X: px, Y: py, Z: pz}
-		v2 = vecDot(vec, vec)
-		bp = vecDot(vec, p3)
+		v2 = r3.Dot(vec, vec)
+		bp = r3.Dot(vec, p3)
 
 		gamma = 1 / math.Sqrt(1-v2)
 		beta  = (gamma - 1) / v2
@@ -199,8 +199,4 @@ func VecOf(p P4) r3.Vec {
 		Y: p.Py(),
 		Z: p.Pz(),
 	}
-}
-
-func vecDot(u, v r3.Vec) float64 {
-	return u.Dot(v)
 }

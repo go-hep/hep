@@ -43,12 +43,7 @@ func Dot(p1, p2 P4) float64 {
 func CosTheta(p1, p2 P4) float64 {
 	mag1 := p1.P2()
 	mag2 := p2.P2()
-	dot := vecDot(vecOf(p1), vecOf(p2))
+	dot := r3.Dot(VecOf(p1), VecOf(p2))
 	cosTh := dot / math.Sqrt(mag1*mag2)
 	return cosTh
-}
-
-// vecOf returns the space-components of a 4-vector.
-func vecOf(p P4) r3.Vec {
-	return r3.Vec{X: p.Px(), Y: p.Py(), Z: p.Pz()}
 }

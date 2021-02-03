@@ -35,3 +35,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 	modernc.org/ql v1.2.1
 )
+
+replace gonum.org/v1/gonum => gonum.org/v1/gonum v0.8.1-0.20210203072158-6eb8ed55bbee
