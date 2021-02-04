@@ -22,7 +22,7 @@ require (
 	github.com/peterh/liner v1.2.0
 	github.com/pierrec/lz4 v2.5.2+incompatible
 	github.com/pierrec/xxHash v0.1.5
-	github.com/sbinet/npyio v0.5.1
+	github.com/sbinet/npyio v0.5.2
 	github.com/ulikunitz/xz v0.5.8
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 	golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9
