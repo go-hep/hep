@@ -1,6 +1,6 @@
 module go-hep.org/x/hep
 
-go 1.13
+go 1.14
 
 require (
 	gioui.org v0.0.0-20201209164149-679bf092cb83
