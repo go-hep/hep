@@ -20,7 +20,9 @@ hep
 
 See [go-hep.org](https://go-hep.org) for more informations.
 
+## Forum
 
+Drop an email at [~sbinet/go-hep@lists.sr.ht](mailto:~sbinet/go-hep@lists.sr.ht) or visit the web interface [lists.sr.ht/~sbinet/go-hep](https://lists.sr.ht/~sbinet/go-hep) to discuss about `Go-HEP` or ask for help.
 
 
 ## License
