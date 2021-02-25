@@ -18,7 +18,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/jcmturner/gokrb5/v8 v8.4.2
-	github.com/klauspost/compress v1.11.7
+	github.com/klauspost/compress v1.11.8
 	github.com/peterh/liner v1.2.0
 	github.com/pierrec/lz4 v2.5.2+incompatible
 	github.com/pierrec/xxHash v0.1.5
