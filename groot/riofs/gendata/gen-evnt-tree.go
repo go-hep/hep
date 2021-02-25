@@ -1,3 +1,4 @@
+//go:build ignore
 // +build ignore
 
 // Copyright ©2018 The go-hep Authors. All rights reserved.
