@@ -37,3 +37,5 @@ require (
 )
 
 replace gonum.org/v1/gonum => gonum.org/v1/gonum v0.8.1-0.20210203072158-6eb8ed55bbee
+
+replace github.com/apache/arrow/go/arrow => git.sr.ht/~sbinet/go-arrow v0.1.1
