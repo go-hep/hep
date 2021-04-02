@@ -480,7 +480,8 @@ void rootls(const char *fname, const char *kname) {
 func TestOpenBigFile(t *testing.T) {
 	ch := make(chan error)
 	go func() {
-		f, err := riofs.Open("root://eospublic.cern.ch//eos/root-eos/cms_opendata_2012_nanoaod/SMHiggsToZZTo4L.root")
+		fname := rtests.XrdRemote("testdata/SMHiggsToZZTo4L.root")
+		f, err := riofs.Open(fname)
 		if err != nil {
 			ch <- err
 			return
