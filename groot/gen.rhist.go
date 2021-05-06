@@ -184,7 +184,7 @@ func New{{.Name}}From(h *hbook.H1D) *{{.Name}} {
 	hroot.setDist1D(nbins+1, oflow.SumW(), oflow.SumW2())
 
 	hroot.th1.SetName(h.Name())
-	if v, ok := h.Annotation()["title"]; ok {
+	if v, ok := h.Annotation()["title"]; ok && v != nil {
 		hroot.th1.SetTitle(v.(string))
 	}
 	hroot.th1.xaxis.xbins.Data = edges
@@ -507,7 +507,7 @@ func New{{.Name}}From(h *hbook.H2D) *{{.Name}} {
 	yedges = append(yedges, bins[ibin(0, h.Binning.Ny-1)].YMax())
 
 	hroot.th2.th1.SetName(h.Name())
-	if v, ok := h.Annotation()["title"]; ok {
+	if v, ok := h.Annotation()["title"]; ok && v != nil {
 		hroot.th2.th1.SetTitle(v.(string))
 	}
 	hroot.th2.th1.xaxis.xbins.Data = xedges
