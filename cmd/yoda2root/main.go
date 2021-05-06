@@ -122,7 +122,7 @@ func convert(w *riofs.File, fname string) error {
 		default:
 			key = v.Name()
 		}
-		err = w.Put(key, obj)
+		err = riofs.Dir(w).Put(key, obj)
 		if err != nil {
 			return fmt.Errorf("error writing %q from YODA file [%s]: %w", v.Name(), fname, err)
 		}
