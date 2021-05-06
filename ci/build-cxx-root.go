@@ -23,7 +23,7 @@ func main() {
 	log.SetPrefix("")
 	log.SetFlags(0)
 
-	rvers := flag.String("root-version", "6.22.02", "ROOT version to build")
+	rvers := flag.String("root-version", "6.24.00", "ROOT version to build")
 	nproc := flag.Int("j", runtime.NumCPU(), "number of parallel build processes")
 
 	flag.Parse()
