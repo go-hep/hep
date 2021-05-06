@@ -99,7 +99,7 @@ func NewH2FFrom(h *hbook.H2D) *H2F {
 	yedges = append(yedges, bins[ibin(0, h.Binning.Ny-1)].YMax())
 
 	hroot.th2.th1.SetName(h.Name())
-	if v, ok := h.Annotation()["title"]; ok {
+	if v, ok := h.Annotation()["title"]; ok && v != nil {
 		hroot.th2.th1.SetTitle(v.(string))
 	}
 	hroot.th2.th1.xaxis.xbins.Data = xedges
@@ -495,7 +495,7 @@ func NewH2DFrom(h *hbook.H2D) *H2D {
 	yedges = append(yedges, bins[ibin(0, h.Binning.Ny-1)].YMax())
 
 	hroot.th2.th1.SetName(h.Name())
-	if v, ok := h.Annotation()["title"]; ok {
+	if v, ok := h.Annotation()["title"]; ok && v != nil {
 		hroot.th2.th1.SetTitle(v.(string))
 	}
 	hroot.th2.th1.xaxis.xbins.Data = xedges
@@ -891,7 +891,7 @@ func NewH2IFrom(h *hbook.H2D) *H2I {
 	yedges = append(yedges, bins[ibin(0, h.Binning.Ny-1)].YMax())
 
 	hroot.th2.th1.SetName(h.Name())
-	if v, ok := h.Annotation()["title"]; ok {
+	if v, ok := h.Annotation()["title"]; ok && v != nil {
 		hroot.th2.th1.SetTitle(v.(string))
 	}
 	hroot.th2.th1.xaxis.xbins.Data = xedges

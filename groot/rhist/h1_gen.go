@@ -67,7 +67,7 @@ func NewH1FFrom(h *hbook.H1D) *H1F {
 	hroot.setDist1D(nbins+1, oflow.SumW(), oflow.SumW2())
 
 	hroot.th1.SetName(h.Name())
-	if v, ok := h.Annotation()["title"]; ok {
+	if v, ok := h.Annotation()["title"]; ok && v != nil {
 		hroot.th1.SetTitle(v.(string))
 	}
 	hroot.th1.xaxis.xbins.Data = edges
@@ -357,7 +357,7 @@ func NewH1DFrom(h *hbook.H1D) *H1D {
 	hroot.setDist1D(nbins+1, oflow.SumW(), oflow.SumW2())
 
 	hroot.th1.SetName(h.Name())
-	if v, ok := h.Annotation()["title"]; ok {
+	if v, ok := h.Annotation()["title"]; ok && v != nil {
 		hroot.th1.SetTitle(v.(string))
 	}
 	hroot.th1.xaxis.xbins.Data = edges
@@ -647,7 +647,7 @@ func NewH1IFrom(h *hbook.H1D) *H1I {
 	hroot.setDist1D(nbins+1, oflow.SumW(), oflow.SumW2())
 
 	hroot.th1.SetName(h.Name())
-	if v, ok := h.Annotation()["title"]; ok {
+	if v, ok := h.Annotation()["title"]; ok && v != nil {
 		hroot.th1.SetTitle(v.(string))
 	}
 	hroot.th1.xaxis.xbins.Data = edges
