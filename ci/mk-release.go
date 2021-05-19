@@ -175,6 +175,9 @@ loop:
 				bld := exec.Command("go", "build", "-o", exe, tags, cmd)
 				bld.Env = append([]string{}, os.Environ()...)
 				bld.Env = append(bld.Env, fmt.Sprintf("GOOS=%s", ctx.os), fmt.Sprintf("GOARCH=%s", ctx.arch))
+				if _, ok := needCgo[filepath.Base(cmd)]; !ok {
+					bld.Env = append(bld.Env, "CGO_ENABLED=0")
+				}
 				out, err := bld.CombinedOutput()
 				if err != nil {
 					log.Printf("could not compile %s: %+v\noutput:\n%s", name, err, out)
@@ -258,4 +261,10 @@ var excludeList = map[OSArch]map[string]struct{}{
 		"go-hep.org/x/hep/groot/cmd/root-fuse": struct{}{},
 		"go-hep.org/x/hep/xrootd/cmd/xrd-fuse": struct{}{},
 	},
+}
+
+var needCgo = map[string]struct{}{
+	"pawgo": {},
+	"iplot": {},
+	"hplot": {},
 }
