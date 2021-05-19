@@ -140,10 +140,10 @@ loop:
 	}{
 		{"linux", "amd64"},
 		{"linux", "386"},
+		{"linux", "arm64"},
 		{"windows", "amd64"},
 		{"windows", "386"},
 		{"darwin", "amd64"},
-		{"linux", "arm64"},
 		{"freebsd", "amd64"},
 	} {
 		var (
@@ -165,13 +165,14 @@ loop:
 			cmds = append(cmds, pkg)
 		}
 
+		tags := "-tags=netgo"
 		log.Printf("--> found %d commands", len(cmds))
 		for i := range cmds {
 			cmd := cmds[i]
 			grp.Go(func() error {
 				name := fmt.Sprintf("%s-%s_%s.exe", filepath.Base(cmd), ctx.os, ctx.arch)
 				exe := filepath.Join(tmp, name)
-				bld := exec.Command("go", "build", "-o", exe, cmd)
+				bld := exec.Command("go", "build", "-o", exe, tags, cmd)
 				bld.Env = append([]string{}, os.Environ()...)
 				bld.Env = append(bld.Env, fmt.Sprintf("GOOS=%s", ctx.os), fmt.Sprintf("GOARCH=%s", ctx.arch))
 				out, err := bld.CombinedOutput()
@@ -235,18 +236,25 @@ func upload(dir string, mod module.Version) {
 }
 
 var excludeList = map[OSArch]map[string]struct{}{
-	OSArch{"darwin", "amd64"}: map[string]struct{}{
+	{"linux", "386"}: {
 		"go-hep.org/x/hep/hplot/cmd/iplot": struct{}{},
 	},
-	OSArch{"freebsd", "amd64"}: map[string]struct{}{
+	{"linux", "arm64"}: {
+		"go-hep.org/x/hep/hplot/cmd/iplot": struct{}{},
+	},
+	{"darwin", "amd64"}: {
+		"go-hep.org/x/hep/hplot/cmd/iplot": {},
+	},
+	{"freebsd", "amd64"}: {
+		"go-hep.org/x/hep/hplot/cmd/iplot":     struct{}{},
 		"go-hep.org/x/hep/groot/cmd/root-fuse": struct{}{},
 		"go-hep.org/x/hep/xrootd/cmd/xrd-fuse": struct{}{},
 	},
-	OSArch{"windows", "amd64"}: map[string]struct{}{
+	{"windows", "amd64"}: {
 		"go-hep.org/x/hep/groot/cmd/root-fuse": struct{}{},
 		"go-hep.org/x/hep/xrootd/cmd/xrd-fuse": struct{}{},
 	},
-	OSArch{"windows", "386"}: map[string]struct{}{
+	{"windows", "386"}: {
 		"go-hep.org/x/hep/groot/cmd/root-fuse": struct{}{},
 		"go-hep.org/x/hep/xrootd/cmd/xrd-fuse": struct{}{},
 	},
