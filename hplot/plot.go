@@ -24,15 +24,10 @@ type Plot struct {
 func New() *Plot {
 	style := DefaultStyle
 	defer style.reset(plot.DefaultFont)
-	plot.DefaultFont = style.Fonts.Name
+	plot.DefaultFont = style.Fonts.Default
 
-	p, err := plot.New()
-	if err != nil {
-		// can not happen.
-		panic(err)
-	}
 	pp := &Plot{
-		Plot:  p,
+		Plot:  plot.New(),
 		Style: style,
 	}
 	pp.Style.Apply(pp)

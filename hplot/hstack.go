@@ -10,6 +10,7 @@ import (
 
 	"go-hep.org/x/hep/hbook"
 	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/font"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 )
@@ -284,31 +285,29 @@ func (hs *HStack) hplot(c draw.Canvas, p *plot.Plot, h *H1D, yoffs []float64, hs
 	}
 
 	if h.Infos.Style != HInfoNone {
-		fnt, err := vg.MakeFont(DefaultStyle.Fonts.Name, DefaultStyle.Fonts.Tick.Size)
-		if err == nil {
-			sty := draw.TextStyle{Font: fnt}
-			legend := histLegend{
-				ColWidth:  DefaultStyle.Fonts.Tick.Size,
-				TextStyle: sty,
-			}
-
-			for i := uint32(0); i < 32; i++ {
-				switch h.Infos.Style & (1 << i) {
-				case HInfoEntries:
-					legend.Add("Entries", hist.Entries())
-				case HInfoMean:
-					legend.Add("Mean", hist.XMean())
-				case HInfoRMS:
-					legend.Add("RMS", hist.XRMS())
-				case HInfoStdDev:
-					legend.Add("Std Dev", hist.XStdDev())
-				default:
-				}
-			}
-			legend.Top = true
-
-			legend.draw(c)
+		fnt := font.From(DefaultStyle.Fonts.Tick, DefaultStyle.Fonts.Tick.Size)
+		sty := draw.TextStyle{Font: fnt}
+		legend := histLegend{
+			ColWidth:  DefaultStyle.Fonts.Tick.Size,
+			TextStyle: sty,
 		}
+
+		for i := uint32(0); i < 32; i++ {
+			switch h.Infos.Style & (1 << i) {
+			case HInfoEntries:
+				legend.Add("Entries", hist.Entries())
+			case HInfoMean:
+				legend.Add("Mean", hist.XMean())
+			case HInfoRMS:
+				legend.Add("RMS", hist.XRMS())
+			case HInfoStdDev:
+				legend.Add("Std Dev", hist.XStdDev())
+			default:
+			}
+		}
+		legend.Top = true
+
+		legend.draw(c)
 	}
 
 	// handle stack, if any.
