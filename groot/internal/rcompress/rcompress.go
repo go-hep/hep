@@ -15,7 +15,7 @@ import (
 	"github.com/klauspost/compress/flate"
 	"github.com/klauspost/compress/zlib"
 	"github.com/klauspost/compress/zstd"
-	"github.com/pierrec/lz4"
+	"github.com/pierrec/lz4/v4"
 	"github.com/pierrec/xxHash/xxHash64"
 	"github.com/ulikunitz/xz"
 )
@@ -38,6 +38,7 @@ const (
 
 const (
 	zstdVersion = 1 // keep in sync with klauspost/compress/zstd and ROOT
+	lz4Version  = 1 // keep in sync with pierrec/lz4
 )
 
 var (
@@ -253,7 +254,7 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 	case LZ4:
 		hdr[0] = 'L'
 		hdr[1] = '4'
-		hdr[2] = lz4.Version
+		hdr[2] = lz4Version
 
 		const chksum = 8
 		var room = int(float64(srcsz) * 2e-4) // lz4 needs some extra scratch space
@@ -265,7 +266,8 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 			if lvl > 9 {
 				lvl = 9
 			}
-			n, err = lz4.CompressBlockHC(src, wrk[chksum:], lvl)
+			c := lz4.CompressorHC{Level: lz4.CompressionLevel(lvl)}
+			n, err = c.CompressBlock(src, wrk[chksum:])
 		default:
 			ht := make([]int, 1<<16)
 			n, err = lz4.CompressBlock(src, wrk[chksum:], ht)

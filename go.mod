@@ -8,7 +8,6 @@ require (
 	github.com/apache/arrow/go/arrow v0.0.0-20201119084055-60ea0dcac5a8
 	github.com/astrogo/fitsio v0.2.1
 	github.com/campoy/embedmd v1.0.0
-	github.com/frankban/quicktest v1.11.2 // indirect
 	github.com/go-mmap/mmap v0.4.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/gonuts/binary v0.2.0
@@ -18,9 +17,9 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/jcmturner/gokrb5/v8 v8.4.2
-	github.com/klauspost/compress v1.11.8
+	github.com/klauspost/compress v1.13.1
 	github.com/peterh/liner v1.2.0
-	github.com/pierrec/lz4 v2.5.2+incompatible
+	github.com/pierrec/lz4/v4 v4.1.8
 	github.com/pierrec/xxHash v0.1.5
 	github.com/sbinet/npyio v0.5.2
 	github.com/ulikunitz/xz v0.5.8
