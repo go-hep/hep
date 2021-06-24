@@ -330,7 +330,7 @@ func TestBranchRW(t *testing.T) {
 					newLeafL(nil, "leaf2", nil, signed, nil),
 				},
 				baskets: []Basket{
-					Basket{
+					{
 						key:     riofs.KeyFromDir(dir, "with-offsets", "title", "TBasket"),
 						bufsize: 5,
 						nevsize: 4,
@@ -379,7 +379,7 @@ func TestBranchRW(t *testing.T) {
 						newLeafL(nil, "leaf2", nil, signed, nil),
 					},
 					baskets: []Basket{
-						Basket{
+						{
 							key:     riofs.KeyFromDir(dir, "with-offsets", "title", "TBasket"),
 							bufsize: 5,
 							nevsize: 4,
@@ -439,7 +439,7 @@ func TestBranchRW(t *testing.T) {
 						newLeafL(nil, "leaf2", nil, signed, nil),
 					},
 					baskets: []Basket{
-						Basket{
+						{
 							key:     riofs.KeyFromDir(dir, "with-offsets", "title", "TBasket"),
 							bufsize: 5,
 							nevsize: 4,
@@ -494,7 +494,7 @@ func TestBranchRW(t *testing.T) {
 							newLeafI(nil, "leaf1", nil, signed, nil),
 						},
 						baskets: []Basket{
-							Basket{
+							{
 								key:     riofs.KeyFromDir(dir, "with-offsets", "title", "TBasket"),
 								bufsize: 5,
 								nevsize: 4,

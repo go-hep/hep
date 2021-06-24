@@ -824,10 +824,10 @@ func TestSelectColumns(t *testing.T) {
 			cols:  []string{"one"},
 			types: []interface{}{int32(0)},
 			vals: [][]eface{
-				[]eface{int32(1)},
-				[]eface{int32(2)},
-				[]eface{int32(3)},
-				[]eface{int32(4)},
+				{int32(1)},
+				{int32(2)},
+				{int32(3)},
+				{int32(4)},
 			},
 		},
 		{
@@ -835,10 +835,10 @@ func TestSelectColumns(t *testing.T) {
 			cols:  []string{"one"},
 			types: []interface{}{int32(0)},
 			vals: [][]eface{
-				[]eface{int32(1)},
-				[]eface{int32(2)},
-				[]eface{int32(3)},
-				[]eface{int32(4)},
+				{int32(1)},
+				{int32(2)},
+				{int32(3)},
+				{int32(4)},
 			},
 		},
 		{
@@ -846,10 +846,10 @@ func TestSelectColumns(t *testing.T) {
 			cols:  []string{"one", "two"},
 			types: []interface{}{int32(0), 0.0},
 			vals: [][]eface{
-				[]eface{int32(1), 1.1},
-				[]eface{int32(2), 2.2},
-				[]eface{int32(3), 3.3},
-				[]eface{int32(4), 4.4},
+				{int32(1), 1.1},
+				{int32(2), 2.2},
+				{int32(3), 3.3},
+				{int32(4), 4.4},
 			},
 		},
 		{
@@ -857,10 +857,10 @@ func TestSelectColumns(t *testing.T) {
 			cols:  []string{"one", "two"},
 			types: []interface{}{int32(0), 0.0},
 			vals: [][]eface{
-				[]eface{int32(1), 1.1},
-				[]eface{int32(2), 2.2},
-				[]eface{int32(3), 3.3},
-				[]eface{int32(4), 4.4},
+				{int32(1), 1.1},
+				{int32(2), 2.2},
+				{int32(3), 3.3},
+				{int32(4), 4.4},
 			},
 		},
 		{
@@ -868,10 +868,10 @@ func TestSelectColumns(t *testing.T) {
 			cols:  []string{"one", "two"},
 			types: []interface{}{int32(0), 0.0},
 			vals: [][]eface{
-				[]eface{int32(1), 1.1},
-				[]eface{int32(2), 2.2},
-				[]eface{int32(3), 3.3},
-				[]eface{int32(4), 4.4},
+				{int32(1), 1.1},
+				{int32(2), 2.2},
+				{int32(3), 3.3},
+				{int32(4), 4.4},
 			},
 		},
 		{
@@ -879,10 +879,10 @@ func TestSelectColumns(t *testing.T) {
 			cols:  []string{"one", "two"},
 			types: []interface{}{int32(0), 0.0},
 			vals: [][]eface{
-				[]eface{int32(1), 1.1},
-				[]eface{int32(2), 2.2},
-				[]eface{int32(3), 3.3},
-				[]eface{int32(4), 4.4},
+				{int32(1), 1.1},
+				{int32(2), 2.2},
+				{int32(3), 3.3},
+				{int32(4), 4.4},
 			},
 		},
 		{
@@ -890,10 +890,10 @@ func TestSelectColumns(t *testing.T) {
 			cols:  []string{"three"},
 			types: []interface{}{""},
 			vals: [][]eface{
-				[]eface{"uno"},
-				[]eface{"dos"},
-				[]eface{"tres"},
-				[]eface{"quatro"},
+				{"uno"},
+				{"dos"},
+				{"tres"},
+				{"quatro"},
 			},
 		},
 		{
@@ -901,10 +901,10 @@ func TestSelectColumns(t *testing.T) {
 			cols:  []string{"one", "two", "three"},
 			types: []interface{}{int32(0), 0.0, ""},
 			vals: [][]eface{
-				[]eface{int32(1), 1.1, "uno"},
-				[]eface{int32(2), 2.2, "dos"},
-				[]eface{int32(3), 3.3, "tres"},
-				[]eface{int32(4), 4.4, "quatro"},
+				{int32(1), 1.1, "uno"},
+				{int32(2), 2.2, "dos"},
+				{int32(3), 3.3, "tres"},
+				{int32(4), 4.4, "quatro"},
 			},
 		},
 		{
@@ -913,10 +913,10 @@ func TestSelectColumns(t *testing.T) {
 			types: []interface{}{"", 0.0, ""},
 			args:  []interface{}{"one", "three"},
 			vals: [][]eface{
-				[]eface{"one", 1.1, "three"},
-				[]eface{"one", 2.2, "three"},
-				[]eface{"one", 3.3, "three"},
-				[]eface{"one", 4.4, "three"},
+				{"one", 1.1, "three"},
+				{"one", 2.2, "three"},
+				{"one", 3.3, "three"},
+				{"one", 4.4, "three"},
 			},
 		},
 		{
@@ -925,10 +925,10 @@ func TestSelectColumns(t *testing.T) {
 			types: []interface{}{"", 0.0, ""},
 			args:  []interface{}{"one", "three"},
 			vals: [][]eface{
-				[]eface{"one", 1.1, "three"},
-				[]eface{"one", 2.2, "three"},
-				[]eface{"one", 3.3, "three"},
-				[]eface{"one", 4.4, "three"},
+				{"one", 1.1, "three"},
+				{"one", 2.2, "three"},
+				{"one", 3.3, "three"},
+				{"one", 4.4, "three"},
 			},
 		},
 		{
@@ -937,10 +937,10 @@ func TestSelectColumns(t *testing.T) {
 			types: []interface{}{"", 0.0, ""},
 			args:  []interface{}{"three", "one"},
 			vals: [][]eface{
-				[]eface{"one", 1.1, "three"},
-				[]eface{"one", 2.2, "three"},
-				[]eface{"one", 3.3, "three"},
-				[]eface{"one", 4.4, "three"},
+				{"one", 1.1, "three"},
+				{"one", 2.2, "three"},
+				{"one", 3.3, "three"},
+				{"one", 4.4, "three"},
 			},
 		},
 		{
@@ -949,10 +949,10 @@ func TestSelectColumns(t *testing.T) {
 			types: []interface{}{"", 0.0, ""},
 			args:  []interface{}{"three", "one", 10},
 			vals: [][]eface{
-				[]eface{"one", 11.1, "three"},
-				[]eface{"one", 12.2, "three"},
-				[]eface{"one", 13.3, "three"},
-				[]eface{"one", 14.4, "three"},
+				{"one", 11.1, "three"},
+				{"one", 12.2, "three"},
+				{"one", 13.3, "three"},
+				{"one", 14.4, "three"},
 			},
 		},
 		{
@@ -960,8 +960,8 @@ func TestSelectColumns(t *testing.T) {
 			cols:  []string{"one"},
 			types: []interface{}{int32(0)},
 			vals: [][]eface{
-				[]eface{int32(3)},
-				[]eface{int32(4)},
+				{int32(3)},
+				{int32(4)},
 			},
 		},
 		{
@@ -969,7 +969,7 @@ func TestSelectColumns(t *testing.T) {
 			cols:  []string{"one"},
 			types: []interface{}{int32(0)},
 			vals: [][]eface{
-				[]eface{int32(3)},
+				{int32(3)},
 			},
 		},
 		{
@@ -977,7 +977,7 @@ func TestSelectColumns(t *testing.T) {
 			cols:  []string{"one", "two"},
 			types: []interface{}{int32(0), 0.0},
 			vals: [][]eface{
-				[]eface{int32(4), 4.4},
+				{int32(4), 4.4},
 			},
 		},
 		{
@@ -986,7 +986,7 @@ func TestSelectColumns(t *testing.T) {
 			types: []interface{}{int32(0), 0.0, uint64(0)},
 			args:  []interface{}{idealUint(5), idealUint(10)},
 			vals: [][]eface{
-				[]eface{int32(4), 4.4, uint64(15)},
+				{int32(4), 4.4, uint64(15)},
 			},
 		},
 	} {

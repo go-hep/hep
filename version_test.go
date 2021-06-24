@@ -33,7 +33,7 @@ func TestVersion(t *testing.T) {
 		{
 			b: &debug.BuildInfo{
 				Deps: []*debug.Module{
-					&debug.Module{
+					{
 						Path:    "gonum.org/v1/gonum",
 						Version: "v0.1.0",
 						Sum:     "12345XYZ",
@@ -45,12 +45,12 @@ func TestVersion(t *testing.T) {
 		{
 			b: &debug.BuildInfo{
 				Deps: []*debug.Module{
-					&debug.Module{
+					{
 						Path:    "gonum.org/v1/gonum",
 						Version: "v0.1.0",
 						Sum:     "12345XYZ",
 					},
-					&debug.Module{
+					{
 						Path:    "go-hep.org/x/hep",
 						Version: "v0.18.0",
 						Sum:     "12345",
@@ -62,12 +62,12 @@ func TestVersion(t *testing.T) {
 		{
 			b: &debug.BuildInfo{
 				Deps: []*debug.Module{
-					&debug.Module{
+					{
 						Path:    "gonum.org/v1/gonum",
 						Version: "v0.1.0",
 						Sum:     "12345XYZ",
 					},
-					&debug.Module{
+					{
 						Path:    "go-hep.org/x/hep",
 						Version: "v0.18.0",
 						Sum:     "12345",
@@ -84,12 +84,12 @@ func TestVersion(t *testing.T) {
 		{
 			b: &debug.BuildInfo{
 				Deps: []*debug.Module{
-					&debug.Module{
+					{
 						Path:    "gonum.org/v1/gonum",
 						Version: "v0.1.0",
 						Sum:     "12345XYZ",
 					},
-					&debug.Module{
+					{
 						Path:    "go-hep.org/x/hep",
 						Version: "v0.18.0",
 						Sum:     "12345",
@@ -105,12 +105,12 @@ func TestVersion(t *testing.T) {
 		{
 			b: &debug.BuildInfo{
 				Deps: []*debug.Module{
-					&debug.Module{
+					{
 						Path:    "gonum.org/v1/gonum",
 						Version: "v0.1.0",
 						Sum:     "12345XYZ",
 					},
-					&debug.Module{
+					{
 						Path:    "go-hep.org/x/hep",
 						Version: "v0.18.0",
 						Sum:     "12345",
@@ -126,12 +126,12 @@ func TestVersion(t *testing.T) {
 		{
 			b: &debug.BuildInfo{
 				Deps: []*debug.Module{
-					&debug.Module{
+					{
 						Path:    "gonum.org/v1/gonum",
 						Version: "v0.1.0",
 						Sum:     "12345XYZ",
 					},
-					&debug.Module{
+					{
 						Path:    "go-hep.org/x/hep",
 						Version: "v0.18.0",
 						Sum:     "12345",
