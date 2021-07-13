@@ -97,18 +97,21 @@ func Take(dst, src []float64, indices []int) []float64 {
 		return dst
 	}
 
-	dst[0] = src[indices[0]]
-	for i := 1; i < len(indices); i++ {
-		v0 := indices[i-1]
-		v1 := indices[i]
+  n := len(indices)-1
+  v0 := indices[0]
+	for i:=0; i<n; i++ {
+		v1 := indices[i+1]
 		switch {
+		case v0 < v1:
 		case v0 == v1:
 			panic(errDuplicateIndices)
 		case v0 > v1:
 			panic(errSortedIndices)
 		}
-		dst[i] = src[v1]
+		dst[i] = src[v0]
+		v0 = v1
 	}
+	dst[n] = src[v0]
 
 	return dst
 }
