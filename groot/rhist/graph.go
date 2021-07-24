@@ -137,9 +137,9 @@ func (g *tgraph) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	w.WriteI32(g.npoints)
 	{
-		w.WriteI8(0)
+		w.WriteI8(1)
 		w.WriteFastArrayF64(g.x)
-		w.WriteI8(0)
+		w.WriteI8(1)
 		w.WriteFastArrayF64(g.y)
 	}
 
@@ -337,9 +337,9 @@ func (g *tgrapherrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	{
-		w.WriteI8(0)
+		w.WriteI8(1)
 		w.WriteFastArrayF64(g.xerr)
-		w.WriteI8(0)
+		w.WriteI8(1)
 		w.WriteFastArrayF64(g.yerr)
 	}
 
@@ -517,13 +517,13 @@ func (g *tgraphasymmerrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	{
-		w.WriteI8(0)
+		w.WriteI8(1)
 		w.WriteFastArrayF64(g.xerrlo)
-		w.WriteI8(0)
+		w.WriteI8(1)
 		w.WriteFastArrayF64(g.xerrhi)
-		w.WriteI8(0)
+		w.WriteI8(1)
 		w.WriteFastArrayF64(g.yerrlo)
-		w.WriteI8(0)
+		w.WriteI8(1)
 		w.WriteFastArrayF64(g.yerrhi)
 	}
 
