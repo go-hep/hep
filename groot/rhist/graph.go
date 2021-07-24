@@ -16,6 +16,7 @@ import (
 	"go-hep.org/x/hep/groot/rtypes"
 	"go-hep.org/x/hep/groot/rvers"
 	"go-hep.org/x/hep/hbook"
+	"go-hep.org/x/hep/hbook/yodacnv"
 )
 
 type tgraph struct {
@@ -218,6 +219,33 @@ func (g *tgraph) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+// MarshalYODA implements the YODAMarshaler interface.
+func (g *tgraph) MarshalYODA() ([]byte, error) {
+	pts := make([]hbook.Point2D, g.Len())
+	for i := range pts {
+		x, y := g.XY(i)
+		pts[i].X = x
+		pts[i].Y = y
+	}
+
+	s2d := hbook.NewS2D(pts...)
+	s2d.Annotation()["name"] = g.Name()
+	s2d.Annotation()["title"] = g.Title()
+	return s2d.MarshalYODA()
+}
+
+// UnmarshalYODA implements the YODAUnmarshaler interface.
+func (g *tgraph) UnmarshalYODA(raw []byte) error {
+	var gg hbook.S2D
+	err := gg.UnmarshalYODA(raw)
+	if err != nil {
+		return err
+	}
+
+	*g = *NewGraphFrom(&gg).(*tgraph)
+	return nil
+}
+
 type tgrapherrs struct {
 	tgraph
 
@@ -354,6 +382,40 @@ func (g *tgrapherrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 	r.CheckByteCount(pos, bcnt, beg, g.Class())
 	return r.Err()
+}
+
+// MarshalYODA implements the YODAMarshaler interface.
+func (g *tgrapherrs) MarshalYODA() ([]byte, error) {
+	pts := make([]hbook.Point2D, g.Len())
+	for i := range pts {
+		x, y := g.XY(i)
+		pts[i].X = x
+		pts[i].Y = y
+	}
+	for i := range pts {
+		xlo, xhi := g.XError(i)
+		ylo, yhi := g.YError(i)
+		pt := &pts[i]
+		pt.ErrX = hbook.Range{Min: xlo, Max: xhi}
+		pt.ErrY = hbook.Range{Min: ylo, Max: yhi}
+	}
+
+	s2d := hbook.NewS2D(pts...)
+	s2d.Annotation()["name"] = g.Name()
+	s2d.Annotation()["title"] = g.Title()
+	return s2d.MarshalYODA()
+}
+
+// UnmarshalYODA implements the YODAUnmarshaler interface.
+func (g *tgrapherrs) UnmarshalYODA(raw []byte) error {
+	var gg hbook.S2D
+	err := gg.UnmarshalYODA(raw)
+	if err != nil {
+		return err
+	}
+
+	*g = *NewGraphErrorsFrom(&gg).(*tgrapherrs)
+	return nil
 }
 
 type tgraphasymmerrs struct {
@@ -532,6 +594,40 @@ func (g *tgraphasymmerrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+// MarshalYODA implements the YODAMarshaler interface.
+func (g *tgraphasymmerrs) MarshalYODA() ([]byte, error) {
+	pts := make([]hbook.Point2D, g.Len())
+	for i := range pts {
+		x, y := g.XY(i)
+		pts[i].X = x
+		pts[i].Y = y
+	}
+	for i := range pts {
+		xlo, xhi := g.XError(i)
+		ylo, yhi := g.YError(i)
+		pt := &pts[i]
+		pt.ErrX = hbook.Range{Min: xlo, Max: xhi}
+		pt.ErrY = hbook.Range{Min: ylo, Max: yhi}
+	}
+
+	s2d := hbook.NewS2D(pts...)
+	s2d.Annotation()["name"] = g.Name()
+	s2d.Annotation()["title"] = g.Title()
+	return s2d.MarshalYODA()
+}
+
+// UnmarshalYODA implements the YODAUnmarshaler interface.
+func (g *tgraphasymmerrs) UnmarshalYODA(raw []byte) error {
+	var gg hbook.S2D
+	err := gg.UnmarshalYODA(raw)
+	if err != nil {
+		return err
+	}
+
+	*g = *NewGraphAsymmErrorsFrom(&gg).(*tgraphasymmerrs)
+	return nil
+}
+
 func init() {
 	{
 		f := func() reflect.Value {
@@ -557,26 +653,32 @@ func init() {
 }
 
 var (
-	_ root.Object        = (*tgraph)(nil)
-	_ root.Named         = (*tgraph)(nil)
-	_ root.Merger        = (*tgraph)(nil)
-	_ Graph              = (*tgraph)(nil)
-	_ rbytes.Marshaler   = (*tgraph)(nil)
-	_ rbytes.Unmarshaler = (*tgraph)(nil)
+	_ root.Object         = (*tgraph)(nil)
+	_ root.Named          = (*tgraph)(nil)
+	_ root.Merger         = (*tgraph)(nil)
+	_ Graph               = (*tgraph)(nil)
+	_ rbytes.Marshaler    = (*tgraph)(nil)
+	_ rbytes.Unmarshaler  = (*tgraph)(nil)
+	_ yodacnv.Marshaler   = (*tgraph)(nil)
+	_ yodacnv.Unmarshaler = (*tgraph)(nil)
 
-	_ root.Object        = (*tgrapherrs)(nil)
-	_ root.Named         = (*tgrapherrs)(nil)
-	_ root.Merger        = (*tgrapherrs)(nil)
-	_ Graph              = (*tgrapherrs)(nil)
-	_ GraphErrors        = (*tgrapherrs)(nil)
-	_ rbytes.Marshaler   = (*tgrapherrs)(nil)
-	_ rbytes.Unmarshaler = (*tgrapherrs)(nil)
+	_ root.Object         = (*tgrapherrs)(nil)
+	_ root.Named          = (*tgrapherrs)(nil)
+	_ root.Merger         = (*tgrapherrs)(nil)
+	_ Graph               = (*tgrapherrs)(nil)
+	_ GraphErrors         = (*tgrapherrs)(nil)
+	_ rbytes.Marshaler    = (*tgrapherrs)(nil)
+	_ rbytes.Unmarshaler  = (*tgrapherrs)(nil)
+	_ yodacnv.Marshaler   = (*tgrapherrs)(nil)
+	_ yodacnv.Unmarshaler = (*tgrapherrs)(nil)
 
-	_ root.Object        = (*tgraphasymmerrs)(nil)
-	_ root.Named         = (*tgraphasymmerrs)(nil)
-	_ root.Merger        = (*tgraphasymmerrs)(nil)
-	_ Graph              = (*tgraphasymmerrs)(nil)
-	_ GraphErrors        = (*tgraphasymmerrs)(nil)
-	_ rbytes.Marshaler   = (*tgraphasymmerrs)(nil)
-	_ rbytes.Unmarshaler = (*tgraphasymmerrs)(nil)
+	_ root.Object         = (*tgraphasymmerrs)(nil)
+	_ root.Named          = (*tgraphasymmerrs)(nil)
+	_ root.Merger         = (*tgraphasymmerrs)(nil)
+	_ Graph               = (*tgraphasymmerrs)(nil)
+	_ GraphErrors         = (*tgraphasymmerrs)(nil)
+	_ rbytes.Marshaler    = (*tgraphasymmerrs)(nil)
+	_ rbytes.Unmarshaler  = (*tgraphasymmerrs)(nil)
+	_ yodacnv.Marshaler   = (*tgraphasymmerrs)(nil)
+	_ yodacnv.Unmarshaler = (*tgraphasymmerrs)(nil)
 )
