@@ -20,7 +20,10 @@ import (
 )
 
 type tgraph struct {
-	named rbase.Named
+	rbase.Named
+	attline   rbase.AttLine
+	attfill   rbase.AttFill
+	attmarker rbase.AttMarker
 
 	maxsize int32
 	npoints int32
@@ -34,12 +37,15 @@ type tgraph struct {
 
 func newGraph(n int) *tgraph {
 	return &tgraph{
-		named:   *rbase.NewNamed("", ""),
-		maxsize: int32(n),
-		npoints: int32(n),
-		x:       make([]float64, n),
-		y:       make([]float64, n),
-		funcs:   rcont.NewList("", nil),
+		Named:     *rbase.NewNamed("", ""),
+		attline:   *rbase.NewAttLine(),
+		attfill:   *rbase.NewAttFill(),
+		attmarker: *rbase.NewAttMarker(),
+		maxsize:   int32(n),
+		npoints:   int32(n),
+		x:         make([]float64, n),
+		y:         make([]float64, n),
+		funcs:     rcont.NewList("", nil),
 	}
 }
 
@@ -60,9 +66,9 @@ func NewGraphFrom(s2 *hbook.S2D) Graph {
 		ymin = math.Min(ymin, pt.Y)
 	}
 
-	groot.named.SetName(s2.Name())
+	groot.Named.SetName(s2.Name())
 	if v, ok := s2.Annotation()["title"]; ok {
-		groot.named.SetTitle(v.(string))
+		groot.Named.SetTitle(v.(string))
 	}
 
 	groot.min = ymin
@@ -77,14 +83,6 @@ func (*tgraph) RVersion() int16 {
 
 func (g *tgraph) Class() string {
 	return "TGraph"
-}
-
-func (g *tgraph) Name() string {
-	return g.named.Name()
-}
-
-func (g *tgraph) Title() string {
-	return g.named.Title()
 }
 
 func (g *tgraph) Len() int {
@@ -125,10 +123,10 @@ func (g *tgraph) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	pos := w.WriteVersion(g.RVersion())
 
 	for _, a := range []rbytes.Marshaler{
-		&g.named,
-		&rbase.AttLine{},
-		&rbase.AttFill{},
-		&rbase.AttMarker{},
+		&g.Named,
+		&g.attline,
+		&g.attfill,
+		&g.attmarker,
 	} {
 		if _, err := a.MarshalROOT(w); err != nil {
 			return 0, err
@@ -161,10 +159,10 @@ func (g *tgraph) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(g.Class())
 
 	for _, a := range []rbytes.Unmarshaler{
-		&g.named,
-		&rbase.AttLine{},
-		&rbase.AttFill{},
-		&rbase.AttMarker{},
+		&g.Named,
+		&g.attline,
+		&g.attfill,
+		&g.attmarker,
 	} {
 		err := a.UnmarshalROOT(r)
 		if err != nil {
@@ -280,9 +278,9 @@ func NewGraphErrorsFrom(s2 *hbook.S2D) GraphErrors {
 		ymin = math.Min(ymin, pt.Y)
 	}
 
-	groot.tgraph.named.SetName(s2.Name())
+	groot.tgraph.Named.SetName(s2.Name())
 	if v, ok := s2.Annotation()["title"]; ok {
-		groot.tgraph.named.SetTitle(v.(string))
+		groot.tgraph.Named.SetTitle(v.(string))
 	}
 
 	groot.min = ymin
@@ -458,9 +456,9 @@ func NewGraphAsymmErrorsFrom(s2 *hbook.S2D) GraphErrors {
 		ymin = math.Min(ymin, pt.Y)
 	}
 
-	groot.tgraph.named.SetName(s2.Name())
+	groot.tgraph.Named.SetName(s2.Name())
 	if v, ok := s2.Annotation()["title"]; ok {
-		groot.tgraph.named.SetTitle(v.(string))
+		groot.tgraph.Named.SetTitle(v.(string))
 	}
 
 	groot.min = ymin
