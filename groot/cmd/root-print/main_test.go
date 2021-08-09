@@ -210,6 +210,13 @@ func TestPrint(t *testing.T) {
 				if err != nil {
 					t.Fatalf("could not read file %q: %+v", name, err)
 				}
+				if *cmpimg.GenerateTestData {
+					fname := filepath.Join("testdata", filepath.Base(name))
+					err = ioutil.WriteFile(fname, got, 0644)
+					if err != nil {
+						t.Fatalf("could not regenerate golden file %q: %+v", fname, err)
+					}
+				}
 				want, err := ioutil.ReadFile(filepath.Join("testdata", filepath.Base(name)))
 				if err != nil {
 					t.Fatalf("could not read ref file %q: %+v", name, err)
