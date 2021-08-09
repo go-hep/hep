@@ -5,13 +5,14 @@
 package hplot_test
 
 import (
-	"fmt"
 	"log"
 
+	xfnt "golang.org/x/image/font"
+	"gonum.org/v1/plot/font"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/plotutil"
+	"gonum.org/v1/plot/text"
 	"gonum.org/v1/plot/vg"
-	"gonum.org/v1/plot/vg/draw"
 
 	"go-hep.org/x/hep/hplot"
 )
@@ -48,11 +49,14 @@ func ExampleLabel() {
 	p.Add(l4)
 
 	// Label with a customed TextStyle
-	usrFont, err := vg.MakeFont("Courier-Bold", 12)
-	if err != nil {
-		panic(fmt.Errorf("could not create font (Courier-Bold, 12): %w", err))
+	usrFont := font.Font{
+		Typeface: "Liberation",
+		Variant:  "Mono",
+		Weight:   xfnt.WeightBold,
+		Style:    xfnt.StyleNormal,
+		Size:     12,
 	}
-	sty := draw.TextStyle{
+	sty := text.Style{
 		Color: plotutil.Color(2),
 		Font:  usrFont,
 	}
@@ -68,7 +72,7 @@ func ExampleLabel() {
 	p.Add(hplot.NewGrid())
 
 	// Save the plot to a PNG file.
-	err = p.Save(15*vg.Centimeter, -1, "testdata/label_plot.png")
+	err := p.Save(15*vg.Centimeter, -1, "testdata/label_plot.png")
 	if err != nil {
 		log.Fatalf("error saving plot: %v\n", err)
 	}

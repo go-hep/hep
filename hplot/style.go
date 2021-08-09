@@ -5,11 +5,13 @@
 package hplot
 
 import (
-	"github.com/golang/freetype/truetype"
+	"fmt"
+
 	"gonum.org/v1/plot"
-	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/font"
+	"gonum.org/v1/plot/font/liberation"
+	"gonum.org/v1/plot/text"
 	"gonum.org/v1/plot/vg/draw"
-	"gonum.org/v1/plot/vg/fonts"
 )
 
 var (
@@ -20,12 +22,16 @@ var (
 // Style stores a given plot style.
 type Style struct {
 	Fonts struct {
-		Name   string  // font name of this style
-		Title  vg.Font // font used for the plot title
-		Label  vg.Font // font used for the plot labels
-		Legend vg.Font // font used for the plot legend
-		Tick   vg.Font // font used for the plot's axes' ticks
+		Name    string    // font name of this style
+		Default font.Font // font used for the plot
+		Title   font.Font // font used for the plot title
+		Label   font.Font // font used for the plot labels
+		Legend  font.Font // font used for the plot legend
+		Tick    font.Font // font used for the plot's axes' ticks
+
+		Cache *font.Cache // cache of fonts for this plot.
 	}
+	TextHandler text.Handler
 }
 
 // Apply setups the plot p with the current style.
@@ -37,57 +43,69 @@ func (s *Style) Apply(p *Plot) {
 	p.Plot.Y.Tick.Label.Font = s.Fonts.Tick
 	p.Plot.Legend.TextStyle.Font = s.Fonts.Legend
 	p.Plot.Legend.YPosition = draw.PosCenter
+	p.Plot.TextHandler = s.TextHandler
 }
 
-func (s *Style) reset(name string) {
-	plot.DefaultFont = name
+func (s *Style) reset(fnt font.Font) {
+	plot.DefaultFont = fnt
 }
 
-// NewStyle creates a new style with the given truetype font.
-func NewStyle(name string, ft *truetype.Font) (Style, error) {
+// NewStyle creates a new style with the given font cache.
+func NewStyle(fnt font.Font, cache *font.Cache) (Style, error) {
 	var sty Style
-	err := sty.init(name, ft)
+
+	sty.Fonts.Name = fnt.Name()
+	sty.Fonts.Default = fnt
+	sty.Fonts.Title = fnt
+	sty.Fonts.Label = fnt
+	sty.Fonts.Legend = fnt
+	sty.Fonts.Tick = fnt
+	sty.Fonts.Cache = cache
+
+	err := sty.init(fnt.Name())
 	if err != nil {
 		return sty, err
+	}
+
+	sty.TextHandler = text.Plain{
+		Fonts: sty.Fonts.Cache,
 	}
 
 	return sty, nil
 }
 
-func (sty *Style) init(name string, ft *truetype.Font) error {
+func (sty *Style) init(name string) error {
 	sty.Fonts.Name = name
-	vg.AddFont(name, ft)
 	for _, t := range []struct {
-		ft   *vg.Font
-		size vg.Length
+		ft   *font.Font
+		size font.Length
 	}{
 		{&sty.Fonts.Title, 12},
 		{&sty.Fonts.Label, 12},
 		{&sty.Fonts.Legend, 12},
 		{&sty.Fonts.Tick, 10},
 	} {
-		ft, err := vg.MakeFont(sty.Fonts.Name, t.size)
-		if err != nil {
-			return err
+		if !sty.Fonts.Cache.Has(*t.ft) {
+			return fmt.Errorf("hplot: no font %v in cache", *t.ft)
 		}
-		*t.ft = ft
+		t.ft.Size = t.size
 	}
 
 	return nil
 }
 
 func init() {
-	vgfonts, err := fonts.Asset("LiberationSans-Regular.ttf")
-	if err != nil {
-		panic(err)
-	}
-
-	ft, err := truetype.Parse(vgfonts)
-	if err != nil {
-		panic(err)
-	}
-
-	err = DefaultStyle.init("Helvetica", ft)
+	var (
+		cache = font.NewCache(liberation.Collection())
+		err   error
+	)
+	DefaultStyle, err = NewStyle(
+		font.Font{
+			Typeface: "Liberation",
+			Variant:  "Sans",
+		},
+		cache,
+	)
 	if err != nil {
 		panic(err)
 	}

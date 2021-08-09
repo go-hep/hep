@@ -12,7 +12,9 @@ import (
 
 	"go-hep.org/x/hep/hbook"
 	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/font"
 	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/text"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 )
@@ -319,31 +321,32 @@ func (h *H1D) Plot(c draw.Canvas, p *plot.Plot) {
 	}
 
 	if h.Infos.Style != HInfoNone {
-		fnt, err := vg.MakeFont(DefaultStyle.Fonts.Name, DefaultStyle.Fonts.Tick.Size)
-		if err == nil {
-			sty := draw.TextStyle{Font: fnt}
-			legend := histLegend{
-				ColWidth:  DefaultStyle.Fonts.Tick.Size,
-				TextStyle: sty,
-			}
-
-			for i := uint32(0); i < 32; i++ {
-				switch h.Infos.Style & (1 << i) {
-				case HInfoEntries:
-					legend.Add("Entries", hist.Entries())
-				case HInfoMean:
-					legend.Add("Mean", hist.XMean())
-				case HInfoRMS:
-					legend.Add("RMS", hist.XRMS())
-				case HInfoStdDev:
-					legend.Add("Std Dev", hist.XStdDev())
-				default:
-				}
-			}
-			legend.Top = true
-
-			legend.draw(c)
+		fnt := font.From(DefaultStyle.Fonts.Tick, DefaultStyle.Fonts.Tick.Size)
+		sty := text.Style{
+			Font:    fnt,
+			Handler: p.Title.TextStyle.Handler,
 		}
+		legend := histLegend{
+			ColWidth:  DefaultStyle.Fonts.Tick.Size,
+			TextStyle: sty,
+		}
+
+		for i := uint32(0); i < 32; i++ {
+			switch h.Infos.Style & (1 << i) {
+			case HInfoEntries:
+				legend.Add("Entries", hist.Entries())
+			case HInfoMean:
+				legend.Add("Mean", hist.XMean())
+			case HInfoRMS:
+				legend.Add("RMS", hist.XRMS())
+			case HInfoStdDev:
+				legend.Add("Std Dev", hist.XStdDev())
+			default:
+			}
+		}
+		legend.Top = true
+
+		legend.draw(c)
 	}
 }
 
@@ -499,7 +502,7 @@ func newHistFromXYer(xys plotter.XYer, n int) *hbook.H1D {
 type histLegend struct {
 	// TextStyle is the style given to the legend
 	// entry texts.
-	draw.TextStyle
+	TextStyle draw.TextStyle
 
 	// Padding is the amount of padding to add
 	// betweeneach entry of the legend.  If Padding
