@@ -6,7 +6,6 @@ package riofs
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -17,7 +16,7 @@ import (
 )
 
 func TestRMemFile(t *testing.T) {
-	dir, err := ioutil.TempDir("", "riofs-")
+	dir, err := os.MkdirTemp("", "riofs-")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +48,7 @@ func TestRMemFile(t *testing.T) {
 		t.Fatalf("error closing file: %v", err)
 	}
 
-	raw, err := ioutil.ReadFile(fname)
+	raw, err := os.ReadFile(fname)
 	if err != nil {
 		t.Fatalf("error reading file: %v", err)
 	}

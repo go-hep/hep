@@ -12,7 +12,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -42,7 +41,7 @@ func publish(module, version string) {
 	log.Printf("publishing module=%q, version=%q", module, version)
 	modver := module + "@" + version
 
-	tmp, err := ioutil.TempDir("", "go-hep-release-")
+	tmp, err := os.MkdirTemp("", "go-hep-release-")
 	if err != nil {
 		log.Fatalf("could not create tmpdir: %+v", err)
 	}
@@ -80,7 +79,7 @@ import (
 func main() {}
 `
 
-	err = ioutil.WriteFile(filepath.Join(tmp, "main.go"), []byte(fmt.Sprintf(tmpl, module)), 0644)
+	err = os.WriteFile(filepath.Join(tmp, "main.go"), []byte(fmt.Sprintf(tmpl, module)), 0644)
 	if err != nil {
 		log.Fatalf("could not generate main: %+v", err)
 	}
@@ -99,7 +98,7 @@ func main() {}
 }
 
 func buildCmds(modname, fname string) {
-	data, err := ioutil.ReadFile(fname)
+	data, err := os.ReadFile(fname)
 	if err != nil {
 		log.Fatalf("could not read file %q: %+v", fname, err)
 	}
@@ -124,7 +123,7 @@ loop:
 		log.Fatalf("could not find module %q in modpub", modname)
 	}
 
-	tmp, err := ioutil.TempDir("", "go-hep-release-cmds-")
+	tmp, err := os.MkdirTemp("", "go-hep-release-cmds-")
 	if err != nil {
 		log.Fatalf("could not create tmp dir for build cmds: %+v", err)
 	}

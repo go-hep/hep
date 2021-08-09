@@ -7,7 +7,7 @@ package gdml
 import (
 	"bytes"
 	"encoding/xml"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -25,7 +25,7 @@ func TestReadSchema(t *testing.T) {
 		},
 	} {
 		t.Run(tc.fname, func(t *testing.T) {
-			raw, err := ioutil.ReadFile(tc.fname)
+			raw, err := os.ReadFile(tc.fname)
 			if err != nil {
 				t.Fatal(err)
 			}

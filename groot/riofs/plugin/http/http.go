@@ -7,7 +7,6 @@ package http
 
 import (
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -26,7 +25,7 @@ func openFile(path string) (riofs.Reader, error) {
 	}
 	defer resp.Body.Close()
 
-	f, err := ioutil.TempFile("", "riofs-remote-")
+	f, err := os.CreateTemp("", "riofs-remote-")
 	if err != nil {
 		return nil, err
 	}

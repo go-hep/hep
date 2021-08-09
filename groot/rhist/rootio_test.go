@@ -8,7 +8,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -24,7 +23,7 @@ import (
 
 func TestCreate(t *testing.T) {
 
-	dir, err := ioutil.TempDir("", "groot-")
+	dir, err := os.MkdirTemp("", "groot-")
 	if err != nil {
 		t.Fatal(err)
 	}

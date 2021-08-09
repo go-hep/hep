@@ -6,7 +6,6 @@ package riofs_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	stdpath "path"
@@ -83,7 +82,7 @@ func Example_mkdir() {
 }
 
 func Example_recursivePut() {
-	dir, err := ioutil.TempDir("", "groot-riofs-")
+	dir, err := os.MkdirTemp("", "groot-riofs-")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -173,7 +172,7 @@ func Example_recursivePut() {
 }
 
 func Example_recursiveMkdir() {
-	dir, err := ioutil.TempDir("", "groot-riofs-")
+	dir, err := os.MkdirTemp("", "groot-riofs-")
 	if err != nil {
 		log.Fatal(err)
 	}

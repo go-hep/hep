@@ -11,7 +11,6 @@ import (
 	"bytes"
 	"compress/flate"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -28,7 +27,7 @@ import (
 func TestCompress(t *testing.T) {
 	t.Parallel()
 
-	dir, err := ioutil.TempDir("", "groot-rcompress-")
+	dir, err := os.MkdirTemp("", "groot-rcompress-")
 	if err != nil {
 		t.Fatal(err)
 	}

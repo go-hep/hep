@@ -6,7 +6,6 @@ package rcmd_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,7 +19,7 @@ import (
 )
 
 func TestDiff(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "groot-rcmd-diff-")
+	tmp, err := os.MkdirTemp("", "groot-rcmd-diff-")
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}

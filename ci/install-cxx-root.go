@@ -12,7 +12,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -53,7 +52,7 @@ func main() {
 
 func install(rvers, odir string) {
 	log.Printf("installing ROOT %s to: %q...", rvers, odir)
-	tmp, err := ioutil.TempDir("", "go-hep-build-")
+	tmp, err := os.MkdirTemp("", "go-hep-build-")
 	if err != nil {
 		log.Fatalf("could not create top-level tmp dir: %+v", err)
 	}

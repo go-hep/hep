@@ -7,7 +7,6 @@ package rcmd_test
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -19,7 +18,7 @@ import (
 )
 
 func TestSplit(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "groot-root-split-")
+	tmp, err := os.MkdirTemp("", "groot-root-split-")
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}

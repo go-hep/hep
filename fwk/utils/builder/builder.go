@@ -16,7 +16,6 @@ import (
 	"go/token"
 	"go/types"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -68,7 +67,7 @@ options:
 		}
 		fm := fi.Mode()
 		if fm.IsRegular() {
-			src, err := ioutil.ReadFile(fname)
+			src, err := os.ReadFile(fname)
 			if err != nil {
 				return nil, fmt.Errorf("builder: could not read %q: %w", fname, err)
 			}
@@ -242,7 +241,7 @@ func (b *Builder) isMain() bool {
 
 func (b *Builder) genSources() error {
 	var err error
-	tmpdir, err := ioutil.TempDir("", "fwk-builder-")
+	tmpdir, err := os.MkdirTemp("", "fwk-builder-")
 	if err != nil {
 		return fmt.Errorf("builder: could not create tmpdir: %w", err)
 	}

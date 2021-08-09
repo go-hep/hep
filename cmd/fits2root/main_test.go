@@ -5,7 +5,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -17,7 +16,7 @@ import (
 )
 
 func TestConvert(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "fits2root-")
+	tmp, err := os.MkdirTemp("", "fits2root-")
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}

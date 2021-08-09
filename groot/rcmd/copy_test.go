@@ -6,7 +6,6 @@ package rcmd_test
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -21,7 +20,7 @@ import (
 )
 
 func TestROOTCp(t *testing.T) {
-	dir, err := ioutil.TempDir("", "groot-root-cp-")
+	dir, err := os.MkdirTemp("", "groot-root-cp-")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -228,7 +227,7 @@ func TestROOTCp(t *testing.T) {
 }
 
 func TestROOTCpTree(t *testing.T) {
-	dir, err := ioutil.TempDir("", "groot-root-cp-")
+	dir, err := os.MkdirTemp("", "groot-root-cp-")
 	if err != nil {
 		t.Fatal(err)
 	}

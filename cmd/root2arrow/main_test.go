@@ -6,7 +6,6 @@ package main // import "go-hep.org/x/hep/cmd/root2arrow"
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"testing"
@@ -69,7 +68,7 @@ func TestFile(t *testing.T) {
 		},
 	} {
 		t.Run(tc.want, func(t *testing.T) {
-			f, err := ioutil.TempFile("", "root2arrow-")
+			f, err := os.CreateTemp("", "root2arrow-")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -81,7 +80,7 @@ func TestFile(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			want, err := ioutil.ReadFile(tc.want)
+			want, err := os.ReadFile(tc.want)
 			if err != nil {
 				t.Fatal(err)
 			}

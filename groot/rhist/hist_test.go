@@ -6,7 +6,6 @@ package rhist_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -21,7 +20,7 @@ import (
 
 func TestRWHist(t *testing.T) {
 
-	dir, err := ioutil.TempDir("", "groot-")
+	dir, err := os.MkdirTemp("", "groot-")
 	if err != nil {
 		t.Fatal(err)
 	}

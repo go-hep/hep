@@ -7,7 +7,6 @@ package rcmd_test
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -22,7 +21,7 @@ import (
 )
 
 func TestMerge(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "groot-root-merge-")
+	tmp, err := os.MkdirTemp("", "groot-root-merge-")
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}

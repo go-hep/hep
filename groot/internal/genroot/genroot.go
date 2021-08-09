@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"go/format"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -19,7 +18,7 @@ import (
 // GoFmt formats a file using gofmt.
 func GoFmt(f *os.File) {
 	fname := f.Name()
-	src, err := ioutil.ReadFile(fname)
+	src, err := os.ReadFile(fname)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,7 +27,7 @@ func GoFmt(f *os.File) {
 		log.Fatalf("error formating sources of %q: %v\n", fname, err)
 	}
 
-	err = ioutil.WriteFile(fname, src, 0644)
+	err = os.WriteFile(fname, src, 0644)
 	if err != nil {
 		log.Fatalf("error writing back %q: %v\n", fname, err)
 	}
@@ -57,7 +56,7 @@ func GenImports(year int, pkg string, w io.Writer, imports ...string) {
 
 // ExtractYear returns the copyright year of a Go-HEP header file.
 func ExtractYear(fname string) int {
-	raw, err := ioutil.ReadFile(fname)
+	raw, err := os.ReadFile(fname)
 	if err != nil {
 		return gopherYear
 	}

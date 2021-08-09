@@ -6,7 +6,6 @@ package main
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,14 +17,14 @@ import (
 func TestProcess(t *testing.T) {
 	loadRef := func(fname string) string {
 		t.Helper()
-		raw, err := ioutil.ReadFile(fname)
+		raw, err := os.ReadFile(fname)
 		if err != nil {
 			t.Fatalf("could not load reference file %q: %+v", fname, err)
 		}
 		return string(raw)
 	}
 
-	tmp, err := ioutil.TempDir("", "root2npy-")
+	tmp, err := os.MkdirTemp("", "root2npy-")
 	if err != nil {
 		t.Fatalf("could not create tmp dir: %+v", err)
 	}

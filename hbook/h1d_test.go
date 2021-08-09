@@ -8,8 +8,8 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"io/ioutil"
 	"math"
+	"os"
 	"reflect"
 	"testing"
 
@@ -210,7 +210,7 @@ func TestH1DBinsWithGapsv1(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want, err := ioutil.ReadFile("testdata/h1d_gaps_v1_golden.yoda")
+	want, err := os.ReadFile("testdata/h1d_gaps_v1_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -291,7 +291,7 @@ func TestH1DBinsWithGapsv2(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want, err := ioutil.ReadFile("testdata/h1d_gaps_v2_golden.yoda")
+	want, err := os.ReadFile("testdata/h1d_gaps_v2_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -522,7 +522,7 @@ func TestH1DWriteYODA(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ref, err := ioutil.ReadFile("testdata/h1d_v2_golden.yoda")
+	ref, err := os.ReadFile("testdata/h1d_v2_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -538,7 +538,7 @@ func TestH1DWriteYODA(t *testing.T) {
 }
 
 func TestH1DReadYODAv1(t *testing.T) {
-	ref, err := ioutil.ReadFile("testdata/h1d_v1_golden.yoda")
+	ref, err := os.ReadFile("testdata/h1d_v1_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -565,7 +565,7 @@ func TestH1DReadYODAv1(t *testing.T) {
 }
 
 func TestH1DReadYODAv2(t *testing.T) {
-	ref, err := ioutil.ReadFile("testdata/h1d_v2_golden.yoda")
+	ref, err := os.ReadFile("testdata/h1d_v2_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -8,7 +8,6 @@ import (
 	"compress/flate"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"reflect"
@@ -156,13 +155,13 @@ func testCreateRunHeader(t *testing.T, compLevel int, fname string) {
 		return
 	}
 
-	chk, err := ioutil.ReadFile(fname)
+	chk, err := os.ReadFile(fname)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	ref, err := ioutil.ReadFile(strings.Replace(fname, ".slcio", "_golden.slcio", -1))
+	ref, err := os.ReadFile(strings.Replace(fname, ".slcio", "_golden.slcio", -1))
 	if err != nil {
 		t.Error(err)
 		return
@@ -346,12 +345,12 @@ func testCreateEvent(t *testing.T, compLevel int, fname string) {
 		t.Fatalf("%s: evts differ.\ngot:\n%v\nwant:\n%v\n", fname, &got, &want)
 	}
 
-	chk, err := ioutil.ReadFile(fname)
+	chk, err := os.ReadFile(fname)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ref, err := ioutil.ReadFile(strings.Replace(fname, ".slcio", "_golden.slcio", -1))
+	ref, err := os.ReadFile(strings.Replace(fname, ".slcio", "_golden.slcio", -1))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -6,7 +6,6 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path"
 	"runtime"
@@ -29,7 +28,7 @@ func TestPawgo(t *testing.T) {
 }
 
 func TestPawgoScript(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "pawgo-")
+	tmp, err := os.MkdirTemp("", "pawgo-")
 	if err != nil {
 		t.Fatalf("could not create tmpdir: %+v", err)
 	}
@@ -168,7 +167,7 @@ bye.
 				args   = []string{fname}
 			)
 
-			err = ioutil.WriteFile(fname, []byte(tc.script), 0644)
+			err = os.WriteFile(fname, []byte(tc.script), 0644)
 
 			rc := xmain(stdout, tc.interactive, args)
 			if rc != 0 {
@@ -188,7 +187,7 @@ bye.
 }
 
 func TestPawgoShellCommand(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "pawgo-")
+	tmp, err := os.MkdirTemp("", "pawgo-")
 	if err != nil {
 		t.Fatalf("could not create tmpdir: %+v", err)
 	}
@@ -206,7 +205,7 @@ func TestPawgoShellCommand(t *testing.T) {
 		script = "/! dir testdata\n"
 	}
 
-	err = ioutil.WriteFile(fname, []byte(script), 0644)
+	err = os.WriteFile(fname, []byte(script), 0644)
 	if err != nil {
 		t.Fatal(err)
 	}

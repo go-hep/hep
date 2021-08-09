@@ -7,7 +7,7 @@ package hbook
 import (
 	"bytes"
 	"encoding/gob"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 
@@ -52,7 +52,7 @@ func TestS2DWriteYODA(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ref, err := ioutil.ReadFile("testdata/s2d_v2_golden.yoda")
+	ref, err := os.ReadFile("testdata/s2d_v2_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +68,7 @@ func TestS2DWriteYODA(t *testing.T) {
 }
 
 func TestS2DReadYODAv1(t *testing.T) {
-	ref, err := ioutil.ReadFile("testdata/s2d_v1_golden.yoda")
+	ref, err := os.ReadFile("testdata/s2d_v1_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +95,7 @@ func TestS2DReadYODAv1(t *testing.T) {
 }
 
 func TestS2DReadYODAv2(t *testing.T) {
-	ref, err := ioutil.ReadFile("testdata/s2d_v2_golden.yoda")
+	ref, err := os.ReadFile("testdata/s2d_v2_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}

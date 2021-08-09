@@ -5,7 +5,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -57,7 +57,7 @@ func TestGenerate(t *testing.T) {
 				t.Fatalf("error: %+v", err)
 			}
 
-			want, err := ioutil.ReadFile(tc.want)
+			want, err := os.ReadFile(tc.want)
 			if err != nil {
 				t.Fatalf("could not read golden file %q: %+v", tc.want, err)
 			}

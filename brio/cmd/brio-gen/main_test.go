@@ -7,7 +7,7 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"testing"
 
@@ -43,12 +43,12 @@ func TestGenerate(t *testing.T) {
 			}
 
 			got := buf.Bytes()
-			want, err := ioutil.ReadFile(tc.want)
+			want, err := os.ReadFile(tc.want)
 			if err != nil {
 				t.Fatal(err)
 			}
 			if !bytes.Equal(got, want) {
-				err = ioutil.WriteFile(tc.want+"_got", got, 0644)
+				err = os.WriteFile(tc.want+"_got", got, 0644)
 				if err == nil && hasDiff {
 					out := new(bytes.Buffer)
 					cmd := exec.Command(diff, "-urN", tc.want+"_got", tc.want)

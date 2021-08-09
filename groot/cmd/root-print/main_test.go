@@ -5,7 +5,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -18,7 +17,7 @@ import (
 )
 
 func TestPrint(t *testing.T) {
-	dir, err := ioutil.TempDir("", "groot-root-print-")
+	dir, err := os.MkdirTemp("", "groot-root-print-")
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -184,7 +183,7 @@ func TestPrint(t *testing.T) {
 		tname := tc.fname
 		tname = tname[len(dir)+1:]
 		t.Run(tname, func(t *testing.T) {
-			odir, err := ioutil.TempDir("", "groot-root-print-out-")
+			odir, err := os.MkdirTemp("", "groot-root-print-out-")
 			if err != nil {
 				t.Fatalf("%+v", err)
 			}
@@ -206,18 +205,18 @@ func TestPrint(t *testing.T) {
 			}
 
 			for _, name := range files {
-				got, err := ioutil.ReadFile(name)
+				got, err := os.ReadFile(name)
 				if err != nil {
 					t.Fatalf("could not read file %q: %+v", name, err)
 				}
 				if *cmpimg.GenerateTestData {
 					fname := filepath.Join("testdata", filepath.Base(name))
-					err = ioutil.WriteFile(fname, got, 0644)
+					err = os.WriteFile(fname, got, 0644)
 					if err != nil {
 						t.Fatalf("could not regenerate golden file %q: %+v", fname, err)
 					}
 				}
-				want, err := ioutil.ReadFile(filepath.Join("testdata", filepath.Base(name)))
+				want, err := os.ReadFile(filepath.Join("testdata", filepath.Base(name)))
 				if err != nil {
 					t.Fatalf("could not read ref file %q: %+v", name, err)
 				}

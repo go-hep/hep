@@ -7,7 +7,7 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -36,7 +36,7 @@ func TestGenerator(t *testing.T) {
 				t.Fatalf("could not process %q: %+v", tc.name, err)
 			}
 
-			want, err := ioutil.ReadFile(tc.want)
+			want, err := os.ReadFile(tc.want)
 			if err != nil {
 				t.Fatalf("could not read reference file %q: %+v", tc.want, err)
 			}

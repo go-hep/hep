@@ -5,14 +5,13 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 )
 
 func TestXrdCp(t *testing.T) {
-	dir, err := ioutil.TempDir("", "xrootd-xrdcp-")
+	dir, err := os.MkdirTemp("", "xrootd-xrdcp-")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +44,7 @@ func BenchmarkXrdCp_Large(b *testing.B) {
 }
 
 func benchmarkXrdCp(b *testing.B, src string) {
-	dir, err := ioutil.TempDir("", "xrootd-xrdcp-")
+	dir, err := os.MkdirTemp("", "xrootd-xrdcp-")
 	if err != nil {
 		b.Fatal(err)
 	}

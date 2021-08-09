@@ -8,7 +8,6 @@
 package rcompress
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -16,13 +15,13 @@ import (
 func TestNotCompressible(t *testing.T) {
 	t.Parallel()
 
-	dir, err := ioutil.TempDir("", "groot-rcompress-")
+	dir, err := os.MkdirTemp("", "groot-rcompress-")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(dir)
 
-	src, err := ioutil.ReadFile("testdata/not-compressible.raw")
+	src, err := os.ReadFile("testdata/not-compressible.raw")
 	if err != nil {
 		t.Fatalf("could not read reference data: %+v", err)
 	}

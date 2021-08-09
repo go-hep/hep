@@ -6,7 +6,6 @@ package htex_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"runtime"
@@ -18,7 +17,7 @@ import (
 )
 
 func TestHandler(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "hplot-htex-")
+	tmp, err := os.MkdirTemp("", "hplot-htex-")
 	if err != nil {
 		t.Fatalf("could not create tmpdir: %+v", err)
 	}

@@ -5,7 +5,6 @@
 package rsrv
 
 import (
-	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
@@ -14,7 +13,7 @@ import (
 )
 
 func TestDB(t *testing.T) {
-	dir, err := ioutil.TempDir("", "groot-rsrv-db-")
+	dir, err := os.MkdirTemp("", "groot-rsrv-db-")
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}

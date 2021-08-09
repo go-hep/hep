@@ -9,7 +9,6 @@ package main
 
 import (
 	"flag"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -24,7 +23,7 @@ var (
 func main() {
 	flag.Parse()
 
-	tmp, err := ioutil.TempDir("", "groot-")
+	tmp, err := os.MkdirTemp("", "groot-")
 	if err != nil {
 		log.Fatalf("could not created tmp dir: %+v", err)
 	}

@@ -12,7 +12,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -151,7 +150,7 @@ func (drv *csvDriver) Open(cfg string) (driver.Conn, error) {
 			defer resp.Body.Close()
 			// FIXME(sbinet): devise a mechanism to remove that temporary file
 			// when we close the connection.
-			f, err = ioutil.TempFile("", "csvdriver-")
+			f, err = os.CreateTemp("", "csvdriver-")
 			if err != nil {
 				return nil, err
 			}

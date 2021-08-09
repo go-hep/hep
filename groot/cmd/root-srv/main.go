@@ -23,7 +23,6 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -61,7 +60,7 @@ options:
 	log.SetPrefix("root-srv: ")
 	log.SetFlags(0)
 
-	dir, err := ioutil.TempDir("", "groot-rsrv-")
+	dir, err := os.MkdirTemp("", "groot-rsrv-")
 	if err != nil {
 		log.Panicf("could not create temporary directory: %v", err)
 	}

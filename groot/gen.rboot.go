@@ -14,7 +14,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -307,7 +306,7 @@ fprintf(f, "{\"name\": \"{{.Name}}\", \"version\": %d},\n", {{.ClassVersion}});
 		log.Fatalf("could not run gen-rversions:\n%s\nerror: %+v", out, err)
 	}
 
-	f, err := ioutil.ReadFile(oname)
+	f, err := os.ReadFile(oname)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -5,13 +5,12 @@
 package http
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 )
 
 func TestTmpFile(t *testing.T) {
-	f, err := ioutil.TempFile("", "riofs-remote-")
+	f, err := os.CreateTemp("", "riofs-remote-")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +28,7 @@ func TestTmpFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	raw, err := ioutil.ReadFile(tmp.Name())
+	raw, err := os.ReadFile(tmp.Name())
 	if err != nil {
 		t.Fatal(err)
 	}

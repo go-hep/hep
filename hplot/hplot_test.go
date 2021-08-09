@@ -5,7 +5,6 @@
 package hplot_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"reflect"
@@ -37,11 +36,11 @@ func TestSubPlot(t *testing.T) {
 
 func TestLatexPlot(t *testing.T) {
 	Example_latexplot()
-	ref, err := ioutil.ReadFile("testdata/latex_plot_golden.tex")
+	ref, err := os.ReadFile("testdata/latex_plot_golden.tex")
 	if err != nil {
 		t.Fatal(err)
 	}
-	chk, err := ioutil.ReadFile("testdata/latex_plot.tex")
+	chk, err := os.ReadFile("testdata/latex_plot.tex")
 	if err != nil {
 		t.Fatal(err)
 	}

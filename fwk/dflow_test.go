@@ -6,7 +6,6 @@ package fwk_test
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -66,12 +65,12 @@ func TestDFlowSvcGraph(t *testing.T) {
 
 	app.Run()
 
-	got, err := ioutil.ReadFile(dotfile)
+	got, err := os.ReadFile(dotfile)
 	if err != nil {
 		t.Fatalf("could not read %q: %v", dotfile, err)
 	}
 
-	want, err := ioutil.ReadFile(wantfile)
+	want, err := os.ReadFile(wantfile)
 	if err != nil {
 		t.Fatalf("could not read reference file %q: %v", wantfile, err)
 	}

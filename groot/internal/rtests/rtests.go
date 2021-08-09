@@ -7,7 +7,6 @@ package rtests
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -40,17 +39,17 @@ var (
 // executes it via ROOT C++.
 // RunCxxROOT returns the combined stdout/stderr output and an error, if any.
 func RunCxxROOT(fct string, code []byte, args ...interface{}) ([]byte, error) {
-	tmp, err := ioutil.TempDir("", "groot-rtests-")
+	tmp, err := os.MkdirTemp("", "groot-rtests-")
 	if err != nil {
 		return nil, fmt.Errorf("could not create tmpdir: %w", err)
 	}
 	defer os.RemoveAll(tmp)
 
 	// create a dummy header file for ROOT-dictionary generation purposes.
-	_ = ioutil.WriteFile(filepath.Join(tmp, "__groot-Event.h"), []byte(""), 0644)
+	_ = os.WriteFile(filepath.Join(tmp, "__groot-Event.h"), []byte(""), 0644)
 
 	fname := filepath.Join(tmp, fct+".C")
-	err = ioutil.WriteFile(fname, []byte(code), 0644)
+	err = os.WriteFile(fname, []byte(code), 0644)
 	if err != nil {
 		return nil, fmt.Errorf("could not generate ROOT macro %q: %w", fname, err)
 	}
@@ -93,7 +92,7 @@ func GenROOTDictCode(event, linkdef string) ([]byte, error) {
 		return nil, ErrNoROOT
 	}
 
-	tmp, err := ioutil.TempDir("", "groot-rtests-")
+	tmp, err := os.MkdirTemp("", "groot-rtests-")
 	if err != nil {
 		return nil, fmt.Errorf("rtests: could not create tmp dir: %w", err)
 	}
@@ -105,12 +104,12 @@ func GenROOTDictCode(event, linkdef string) ([]byte, error) {
 		dname = filepath.Join(tmp, "dict.cxx")
 	)
 
-	err = ioutil.WriteFile(fname, []byte(event), 0644)
+	err = os.WriteFile(fname, []byte(event), 0644)
 	if err != nil {
 		return nil, fmt.Errorf("rtests: could not write event header file: %w", err)
 	}
 
-	err = ioutil.WriteFile(link, []byte(linkdef), 0644)
+	err = os.WriteFile(link, []byte(linkdef), 0644)
 	if err != nil {
 		return nil, fmt.Errorf("rtests: could not write event header file: %w", err)
 	}
@@ -128,7 +127,7 @@ func GenROOTDictCode(event, linkdef string) ([]byte, error) {
 		return nil, ROOTError{Err: err, Cmd: cmd.Path, Args: cmd.Args, Out: out}
 	}
 
-	dict, err := ioutil.ReadFile(dname)
+	dict, err := os.ReadFile(dname)
 	if err != nil {
 		return nil, fmt.Errorf("rtests: could not read dict file: %w", err)
 	}

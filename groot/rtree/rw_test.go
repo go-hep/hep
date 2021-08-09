@@ -8,7 +8,6 @@ import (
 	"compress/flate"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
@@ -27,7 +26,7 @@ import (
 )
 
 func TestBasketRW(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "groot-rtree-")
+	tmp, err := os.MkdirTemp("", "groot-rtree-")
 	if err != nil {
 		t.Fatalf("could not create temporary directory: %v", err)
 	}
@@ -215,7 +214,7 @@ func TestBranchRW(t *testing.T) {
 		signed   = false
 	)
 
-	tmp, err := ioutil.TempDir("", "groot-rtree-")
+	tmp, err := os.MkdirTemp("", "groot-rtree-")
 	if err != nil {
 		t.Fatalf("could not create temporary directory: %v", err)
 	}
@@ -666,7 +665,7 @@ func TestBranchRW(t *testing.T) {
 }
 
 func TestTreeRW(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "groot-rtree-")
+	tmp, err := os.MkdirTemp("", "groot-rtree-")
 	if err != nil {
 		t.Fatalf("could not create dir: %v", err)
 	}
@@ -1638,7 +1637,7 @@ void scan(const char* fname, const char* tree, const char *list, const char *ona
 					t.Fatalf("could not run C++ ROOT: %+v\noutput:\n%s", err, out)
 				}
 
-				got, err := ioutil.ReadFile(ofile)
+				got, err := os.ReadFile(ofile)
 				if err != nil {
 					t.Fatalf("could not read C++ ROOT scan file %q: %+v\noutput:\n%s", ofile, err, out)
 				}
@@ -1652,7 +1651,7 @@ void scan(const char* fname, const char* tree, const char *list, const char *ona
 }
 
 func TestNestedTreeRW(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "groot-rtree-")
+	tmp, err := os.MkdirTemp("", "groot-rtree-")
 	if err != nil {
 		t.Fatalf("could not create dir: %v", err)
 	}
@@ -2746,7 +2745,7 @@ void scan(const char *fname, const char *tname, const char *oname) {
 					t.Fatalf("could not run C++ ROOT: %+v\noutput:\n%s", err, out)
 				}
 
-				got, err := ioutil.ReadFile(ofile)
+				got, err := os.ReadFile(ofile)
 				if err != nil {
 					t.Fatalf("could not read C++ ROOT scan file %q: %+v\noutput:\n%s", ofile, err, out)
 				}
@@ -2760,7 +2759,7 @@ void scan(const char *fname, const char *tname, const char *oname) {
 }
 
 func TestTreeWriteSubdir(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "groot-rtree-")
+	tmp, err := os.MkdirTemp("", "groot-rtree-")
 	if err != nil {
 		t.Fatalf("could not create dir: %v", err)
 	}
@@ -2843,7 +2842,7 @@ void scan(const char *fname, const char *tree, const char *oname) {
 		t.Fatalf("could not run C++ ROOT: %+v\noutput:\n%s", err, out)
 	}
 
-	got, err := ioutil.ReadFile(ofile)
+	got, err := os.ReadFile(ofile)
 	if err != nil {
 		t.Fatalf("could not read C++ ROOT scan file %q: %+v\noutput:\n%s", ofile, err, out)
 	}
@@ -2867,7 +2866,7 @@ void scan(const char *fname, const char *tree, const char *oname) {
 var sumBenchReadTreeF64 = 0.0
 
 func BenchmarkReadTreeF64(b *testing.B) {
-	tmp, err := ioutil.TempDir("", "groot-rtree-read-tree-f64-")
+	tmp, err := os.MkdirTemp("", "groot-rtree-read-tree-f64-")
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -2966,7 +2965,7 @@ func BenchmarkReadTreeF64(b *testing.B) {
 var sumBenchReadTreeSliF64 = 0
 
 func BenchmarkReadTreeSliF64(b *testing.B) {
-	tmp, err := ioutil.TempDir("", "groot-rtree-read-tree-sli-f64s-")
+	tmp, err := os.MkdirTemp("", "groot-rtree-read-tree-sli-f64s-")
 	if err != nil {
 		b.Fatal(err)
 	}

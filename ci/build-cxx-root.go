@@ -11,7 +11,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -32,7 +31,7 @@ func main() {
 }
 
 func build(rvers string, nproc int) {
-	tmp, err := ioutil.TempDir("", "build-root-")
+	tmp, err := os.MkdirTemp("", "build-root-")
 	if err != nil {
 		log.Fatalf("could not create top-level tmp dir: %+v", err)
 	}
@@ -51,7 +50,7 @@ func build(rvers string, nproc int) {
 	}
 
 	fname := filepath.Join(tmp, "build.sh")
-	err = ioutil.WriteFile(fname, []byte(fmt.Sprintf(docker, rvers, nproc)), 0644)
+	err = os.WriteFile(fname, []byte(fmt.Sprintf(docker, rvers, nproc)), 0644)
 	if err != nil {
 		log.Fatalf("could not create build-script: %+v", err)
 	}

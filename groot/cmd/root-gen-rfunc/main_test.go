@@ -6,7 +6,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -82,7 +81,7 @@ func TestGenerate(t *testing.T) {
 		},
 	} {
 		t.Run(tc.test, func(t *testing.T) {
-			tmp, err := ioutil.TempFile("", "groot-gen-rfunc-")
+			tmp, err := os.CreateTemp("", "groot-gen-rfunc-")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -105,12 +104,12 @@ func TestGenerate(t *testing.T) {
 				// ok.
 			}
 
-			got, err := ioutil.ReadFile(tmp.Name())
+			got, err := os.ReadFile(tmp.Name())
 			if err != nil {
 				t.Fatalf("could not read generated rfunc: %+v", err)
 			}
 
-			want, err := ioutil.ReadFile(tc.want)
+			want, err := os.ReadFile(tc.want)
 			if err != nil {
 				t.Fatalf("could not read reference rfunc: %+v", err)
 			}

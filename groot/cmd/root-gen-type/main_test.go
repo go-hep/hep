@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -21,7 +20,7 @@ var (
 )
 
 func TestGenerate(t *testing.T) {
-	dir, err := ioutil.TempDir("", "groot-gen-type-")
+	dir, err := os.MkdirTemp("", "groot-gen-type-")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,16 +56,16 @@ func TestGenerate(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			got, err := ioutil.ReadFile(o.Name())
+			got, err := os.ReadFile(o.Name())
 			if err != nil {
 				t.Fatalf("could not read generated file: %v", err)
 			}
 
 			if *regen {
-				_ = ioutil.WriteFile(tc.want, got, 0644)
+				_ = os.WriteFile(tc.want, got, 0644)
 			}
 
-			want, err := ioutil.ReadFile(tc.want)
+			want, err := os.ReadFile(tc.want)
 			if err != nil {
 				t.Fatalf("could not read reference file: %v", err)
 			}
@@ -79,7 +78,7 @@ func TestGenerate(t *testing.T) {
 }
 
 func TestRW(t *testing.T) {
-	dir, err := ioutil.TempDir("", "groot-gen-type-")
+	dir, err := os.MkdirTemp("", "groot-gen-type-")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -219,16 +218,16 @@ func main() {
 				t.Fatal(err)
 			}
 
-			got, err := ioutil.ReadFile(o.Name())
+			got, err := os.ReadFile(o.Name())
 			if err != nil {
 				t.Fatalf("could not read generated file: %v", err)
 			}
 
 			if *regen {
-				_ = ioutil.WriteFile(tc.want, got, 0644)
+				_ = os.WriteFile(tc.want, got, 0644)
 			}
 
-			want, err := ioutil.ReadFile(tc.want)
+			want, err := os.ReadFile(tc.want)
 			if err != nil {
 				t.Fatalf("could not read reference file: %v", err)
 			}
@@ -237,7 +236,7 @@ func main() {
 				t.Fatalf("error:\n%v", diff(t, string(got), string(want)))
 			}
 
-			err = ioutil.WriteFile(filepath.Join(dir, "main.go"), []byte(tc.main), 0644)
+			err = os.WriteFile(filepath.Join(dir, "main.go"), []byte(tc.main), 0644)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -284,20 +283,20 @@ func diff(t *testing.T, chk, ref string) string {
 		return fmt.Sprintf("=== got ===\n%s\n=== want ===\n%s\n", chk, ref)
 	}
 
-	tmpdir, err := ioutil.TempDir("", "groot-diff-")
+	tmpdir, err := os.MkdirTemp("", "groot-diff-")
 	if err != nil {
 		t.Fatalf("could not create tmpdir: %v", err)
 	}
 	defer os.RemoveAll(tmpdir)
 
 	got := filepath.Join(tmpdir, "got.txt")
-	err = ioutil.WriteFile(got, []byte(chk), 0644)
+	err = os.WriteFile(got, []byte(chk), 0644)
 	if err != nil {
 		t.Fatalf("could not create %s file: %v", got, err)
 	}
 
 	want := filepath.Join(tmpdir, "want.txt")
-	err = ioutil.WriteFile(want, []byte(ref), 0644)
+	err = os.WriteFile(want, []byte(ref), 0644)
 	if err != nil {
 		t.Fatalf("could not create %s file: %v", want, err)
 	}

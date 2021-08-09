@@ -7,7 +7,6 @@ package csvdriver_test
 import (
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
@@ -288,7 +287,7 @@ func TestCreateRollback(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err := ioutil.ReadFile(fname)
+	got, err := os.ReadFile(fname)
 	if err != nil {
 		t.Fatal(err)
 	}

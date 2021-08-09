@@ -5,7 +5,7 @@
 package rcmd_test
 
 import (
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -16,7 +16,7 @@ import (
 func TestList(t *testing.T) {
 	loadRef := func(fname string) string {
 		t.Helper()
-		raw, err := ioutil.ReadFile(fname)
+		raw, err := os.ReadFile(fname)
 		if err != nil {
 			t.Fatalf("could not load reference file %q: %+v", fname, err)
 		}

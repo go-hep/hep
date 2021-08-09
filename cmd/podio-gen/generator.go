@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"go/format"
 	"io"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"strings"
 
@@ -104,7 +104,7 @@ func newGenerator(w io.Writer, pkg, fname, rules string) (*generator, error) {
 		}
 	)
 
-	raw, err := ioutil.ReadFile(fname)
+	raw, err := os.ReadFile(fname)
 	if err != nil {
 		return nil, fmt.Errorf("could not read input YAML file %q: %w", fname, err)
 	}

@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"reflect"
 )
 
@@ -161,7 +160,7 @@ func (rec *Record) readRecord(r io.Reader) error {
 		case io.Seeker:
 			_, err = r.Seek(clen, 0)
 		default:
-			_, err = io.CopyN(ioutil.Discard, r, clen)
+			_, err = io.CopyN(io.Discard, r, clen)
 		}
 		return err
 	}

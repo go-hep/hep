@@ -6,7 +6,7 @@ package fwk
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"sort"
 	"strings"
@@ -356,7 +356,7 @@ func (svc *dflowsvc) dumpGraph() error {
 	}
 	out = append(out, '\n')
 
-	err = ioutil.WriteFile(svc.dotfile, out, 0644)
+	err = os.WriteFile(svc.dotfile, out, 0644)
 	if err != nil {
 		return fmt.Errorf("could not write dataflow to dot-file %q: %w", svc.dotfile, err)
 	}

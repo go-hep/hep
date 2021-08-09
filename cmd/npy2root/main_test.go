@@ -6,7 +6,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
@@ -239,7 +238,7 @@ func TestConvert(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			tmp, err := ioutil.TempDir("", "npy2root-")
+			tmp, err := os.MkdirTemp("", "npy2root-")
 			if err != nil {
 				t.Fatalf("%+v", err)
 			}

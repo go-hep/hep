@@ -6,7 +6,6 @@ package riofs
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	stdpath "path"
 	"reflect"
@@ -98,7 +97,7 @@ func TestDir(t *testing.T) {
 }
 
 func TestRecDirMkdir(t *testing.T) {
-	tmp, err := ioutil.TempFile("", "groot-riofs-")
+	tmp, err := os.CreateTemp("", "groot-riofs-")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -179,7 +178,7 @@ func TestRecDirMkdir(t *testing.T) {
 }
 
 func TestRecDirPut(t *testing.T) {
-	tmp, err := ioutil.TempFile("", "groot-riofs-")
+	tmp, err := os.CreateTemp("", "groot-riofs-")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -294,7 +293,7 @@ func TestRecDirPut(t *testing.T) {
 }
 
 func TestFileOf(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "groot-riofs-")
+	tmp, err := os.MkdirTemp("", "groot-riofs-")
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}

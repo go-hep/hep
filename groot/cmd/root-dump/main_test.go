@@ -7,7 +7,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -32,7 +31,7 @@ func TestROOTDump(t *testing.T) {
 				t.Fatalf("could not dump %q: %+v", tc.name, err)
 			}
 
-			want, err := ioutil.ReadFile(tc.want)
+			want, err := os.ReadFile(tc.want)
 			if err != nil {
 				t.Fatalf("could not read reference file: %+v", err)
 			}
@@ -51,20 +50,20 @@ func diff(t *testing.T, chk, ref string) string {
 		return fmt.Sprintf("=== got ===\n%s\n=== want ===\n%s\n", chk, ref)
 	}
 
-	tmpdir, err := ioutil.TempDir("", "groot-diff-")
+	tmpdir, err := os.MkdirTemp("", "groot-diff-")
 	if err != nil {
 		t.Fatalf("could not create tmpdir: %+v", err)
 	}
 	defer os.RemoveAll(tmpdir)
 
 	got := filepath.Join(tmpdir, "got.txt")
-	err = ioutil.WriteFile(got, []byte(chk), 0644)
+	err = os.WriteFile(got, []byte(chk), 0644)
 	if err != nil {
 		t.Fatalf("could not create %s file: %+v", got, err)
 	}
 
 	want := filepath.Join(tmpdir, "want.txt")
-	err = ioutil.WriteFile(want, []byte(ref), 0644)
+	err = os.WriteFile(want, []byte(ref), 0644)
 	if err != nil {
 		t.Fatalf("could not create %s file: %+v", want, err)
 	}

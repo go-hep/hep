@@ -7,7 +7,6 @@ package riofs_test
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -312,7 +311,7 @@ func TestOpenEmptyFile(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	dir, err := ioutil.TempDir("", "riofs-")
+	dir, err := os.MkdirTemp("", "riofs-")
 	if err != nil {
 		t.Fatal(err)
 	}

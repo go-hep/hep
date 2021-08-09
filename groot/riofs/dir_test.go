@@ -5,7 +5,6 @@
 package riofs_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -19,7 +18,7 @@ import (
 )
 
 func TestDirs(t *testing.T) {
-	rootdir, err := ioutil.TempDir("", "groot-dir-subdir-")
+	rootdir, err := os.MkdirTemp("", "groot-dir-subdir-")
 	if err != nil {
 		t.Fatal(err)
 	}

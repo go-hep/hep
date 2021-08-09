@@ -6,7 +6,7 @@ package rarrow // import "go-hep.org/x/hep/groot/rarrow"
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -142,7 +142,7 @@ func TestRecord(t *testing.T) {
 				recs++
 			}
 
-			want, err := ioutil.ReadFile(tc.want)
+			want, err := os.ReadFile(tc.want)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -255,7 +255,7 @@ func TestRecordReader(t *testing.T) {
 				recs++
 			}
 
-			want, err := ioutil.ReadFile(tc.want)
+			want, err := os.ReadFile(tc.want)
 			if err != nil {
 				t.Fatal(err)
 			}

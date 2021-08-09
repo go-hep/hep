@@ -6,14 +6,13 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 )
 
 func TestROOTls(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "root-ls-")
+	tmp, err := os.MkdirTemp("", "root-ls-")
 	if err != nil {
 		t.Fatalf("could not create tmp dir: %+v", err)
 	}
@@ -66,7 +65,7 @@ func TestROOTls(t *testing.T) {
 			}
 
 			ref := filepath.Join("testdata", filepath.Base(tc.name)+".txt")
-			want, err := ioutil.ReadFile(ref)
+			want, err := os.ReadFile(ref)
 			if err != nil {
 				t.Fatalf("could not open reference file: %v", err)
 			}

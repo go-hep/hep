@@ -6,7 +6,7 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -21,7 +21,7 @@ func TestInspect(t *testing.T) {
 			inspect(buf, fname, -1, false)
 
 			got := buf.Bytes()
-			want, err := ioutil.ReadFile(fname + ".txt")
+			want, err := os.ReadFile(fname + ".txt")
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -6,7 +6,7 @@ package gen_test
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"testing"
 
@@ -37,7 +37,7 @@ func TestGenerator(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want, err := ioutil.ReadFile(golden)
+	want, err := os.ReadFile(golden)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,7 +46,7 @@ func TestGenerator(t *testing.T) {
 		diff, err := exec.LookPath("diff")
 		hasDiff := err == nil
 		if hasDiff {
-			err = ioutil.WriteFile(golden+"_got", got, 0644)
+			err = os.WriteFile(golden+"_got", got, 0644)
 			if err == nil {
 				out := new(bytes.Buffer)
 				cmd := exec.Command(diff, "-urN", golden+"_got", golden)

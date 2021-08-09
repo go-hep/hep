@@ -6,8 +6,8 @@ package hbook
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math"
+	"os"
 	"reflect"
 	"testing"
 
@@ -293,7 +293,7 @@ func TestH2DWriteYODA(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ref, err := ioutil.ReadFile("testdata/h2d_v2_golden.yoda")
+	ref, err := os.ReadFile("testdata/h2d_v2_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -309,7 +309,7 @@ func TestH2DWriteYODA(t *testing.T) {
 }
 
 func TestH2DReadYODAv1(t *testing.T) {
-	ref, err := ioutil.ReadFile("testdata/h2d_v1_golden.yoda")
+	ref, err := os.ReadFile("testdata/h2d_v1_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -336,7 +336,7 @@ func TestH2DReadYODAv1(t *testing.T) {
 }
 
 func TestH2DReadYODAv2(t *testing.T) {
-	ref, err := ioutil.ReadFile("testdata/h2d_v2_golden.yoda")
+	ref, err := os.ReadFile("testdata/h2d_v2_golden.yoda")
 	if err != nil {
 		t.Fatal(err)
 	}

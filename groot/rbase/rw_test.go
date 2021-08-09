@@ -6,7 +6,6 @@ package rbase
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
@@ -136,7 +135,7 @@ func TestWriteWBuffer(t *testing.T) {
 }
 
 func testWriteWBuffer(t *testing.T, name, file string, want interface{}) {
-	rdata, err := ioutil.ReadFile(file)
+	rdata, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -178,7 +177,7 @@ func testWriteWBuffer(t *testing.T, name, file string, want interface{}) {
 		t.Fatal(err)
 	}
 
-	err = ioutil.WriteFile(file+".new", wdata, 0644)
+	err = os.WriteFile(file+".new", wdata, 0644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -203,7 +202,7 @@ func TestReadRBuffer(t *testing.T) {
 }
 
 func testReadRBuffer(t *testing.T, name, file string, want interface{}) {
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
 	}

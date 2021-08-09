@@ -6,7 +6,6 @@ package lhef_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -16,7 +15,7 @@ import (
 const w_debug = false
 
 func TestLhefWriting(t *testing.T) {
-	f, err := ioutil.TempFile("", "lhef-write-")
+	f, err := os.CreateTemp("", "lhef-write-")
 	if err != nil {
 		t.Error(err)
 	}
@@ -133,7 +132,7 @@ func TestLhefWriting(t *testing.T) {
 	if w_debug {
 		defer func() {
 			enc.Close()
-			ww, _ := ioutil.ReadFile(f.Name())
+			ww, _ := os.ReadFile(f.Name())
 			fmt.Printf("===>\n%v<===\n", string(ww))
 		}()
 	}

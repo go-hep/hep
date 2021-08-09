@@ -7,7 +7,6 @@ package xrootd // import "go-hep.org/x/hep/xrootd"
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
@@ -56,7 +55,7 @@ func NewFSHandler(basePath string) Handler {
 
 // Dirlist implements server.Handler.Dirlist.
 func (h *fshandler) Dirlist(sessionID [16]byte, request *dirlist.Request) (xrdproto.Marshaler, xrdproto.ResponseStatus) {
-	files, err := ioutil.ReadDir(path.Join(h.basePath, request.Path))
+	files, err := os.ReadDir(path.Join(h.basePath, request.Path))
 	if err != nil {
 		return xrdproto.ServerError{
 			Code:    xrdproto.IOError,
@@ -70,7 +69,14 @@ func (h *fshandler) Dirlist(sessionID [16]byte, request *dirlist.Request) (xrdpr
 	}
 
 	for _, file := range files {
-		entry := xrdfs.EntryStatFrom(file)
+		info, err := file.Info()
+		if err != nil {
+			return xrdproto.ServerError{
+				Code:    xrdproto.IOError,
+				Message: fmt.Sprintf("An IO error occurred: %+v", err),
+			}, xrdproto.Error
+		}
+		entry := xrdfs.EntryStatFrom(info)
 		entry.HasStatInfo = resp.WithStatInfo
 		resp.Entries = append(resp.Entries, entry)
 	}

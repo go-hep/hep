@@ -7,7 +7,6 @@ package main
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"testing"
@@ -26,7 +25,7 @@ func TestDump(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want, err := ioutil.ReadFile("testdata/small.hepmc.ref")
+	want, err := os.ReadFile("testdata/small.hepmc.ref")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,7 +36,7 @@ func TestDump(t *testing.T) {
 }
 
 func TestDumpFail(t *testing.T) {
-	ref, err := ioutil.ReadFile("../testdata/small.hepmc")
+	ref, err := os.ReadFile("../testdata/small.hepmc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +56,7 @@ func TestDumpFail(t *testing.T) {
 		})
 	}
 
-	want, err := ioutil.ReadFile("testdata/small.hepmc.ref")
+	want, err := os.ReadFile("testdata/small.hepmc.ref")
 	if err != nil {
 		t.Fatal(err)
 	}

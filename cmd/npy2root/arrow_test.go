@@ -5,7 +5,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -38,7 +37,7 @@ func TestRecord(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			tmp, err := ioutil.TempDir("", "npy2root-")
+			tmp, err := os.MkdirTemp("", "npy2root-")
 			if err != nil {
 				t.Fatalf("%+v", err)
 			}

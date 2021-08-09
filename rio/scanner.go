@@ -7,7 +7,6 @@ package rio
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 )
 
 // Selector selects Records based on their name
@@ -131,7 +130,7 @@ func (s *Scanner) seek(offset int64, whence int) (ret int64, err error) {
 		if whence != 0 {
 			panic("not implemented")
 		}
-		return io.CopyN(ioutil.Discard, r, offset)
+		return io.CopyN(io.Discard, r, offset)
 	}
 }
 

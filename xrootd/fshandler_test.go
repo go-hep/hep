@@ -7,7 +7,6 @@ package xrootd_test // import "go-hep.org/x/hep/xrootd"
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"net"
 	"os"
@@ -36,7 +35,7 @@ func getTCPAddr() (string, error) {
 }
 
 func createServer(errorHandler func(err error)) (srv *xrootd.Server, addr, baseDir string, err error) {
-	baseDir, err = ioutil.TempDir("", "xrd-srv-")
+	baseDir, err = os.MkdirTemp("", "xrd-srv-")
 	if err != nil {
 		return nil, "", "", fmt.Errorf("xrd-srv: could not create test dir: %w", err)
 	}
@@ -81,7 +80,7 @@ func TestHandler_Dirlist(t *testing.T) {
 	}()
 
 	file := path.Join(baseDir, "file1.txt")
-	err = ioutil.WriteFile(file, nil, 0777)
+	err = os.WriteFile(file, nil, 0777)
 	if err != nil {
 		t.Fatalf("could not create test file: %v", err)
 	}
@@ -156,7 +155,7 @@ func TestHandler_Dirlist_With1000Requests(t *testing.T) {
 	}()
 
 	file := path.Join(baseDir, "file1.txt")
-	err = ioutil.WriteFile(file, nil, 0777)
+	err = os.WriteFile(file, nil, 0777)
 	if err != nil {
 		t.Fatalf("could not create test file: %v", err)
 	}
@@ -194,7 +193,7 @@ func BenchmarkHandler_Dirlist(b *testing.B) {
 	}()
 
 	file := path.Join(baseDir, "file1.txt")
-	err = ioutil.WriteFile(file, nil, 0777)
+	err = os.WriteFile(file, nil, 0777)
 	if err != nil {
 		b.Fatalf("could not create test file: %v", err)
 	}
@@ -293,7 +292,7 @@ func TestHandler_Open(t *testing.T) {
 			}()
 
 			if tc.createFile {
-				err = ioutil.WriteFile(path.Join(baseDir, tc.file), nil, 0777)
+				err = os.WriteFile(path.Join(baseDir, tc.file), nil, 0777)
 				if err != nil {
 					t.Fatalf("could not create test file: %v", err)
 				}
@@ -402,7 +401,7 @@ func TestHandler_Read(t *testing.T) {
 
 			file := path.Join(baseDir, "file1.txt")
 
-			err = ioutil.WriteFile(file, tc.data, 0777)
+			err = os.WriteFile(file, tc.data, 0777)
 			if err != nil {
 				t.Fatalf("could not create test file: %v", err)
 			}
@@ -498,7 +497,7 @@ func TestHandler_Write(t *testing.T) {
 
 			file := path.Join(baseDir, "file1.txt")
 
-			err = ioutil.WriteFile(file, tc.initialData, 0777)
+			err = os.WriteFile(file, tc.initialData, 0777)
 			if err != nil {
 				t.Fatalf("could not create test file: %v", err)
 			}
@@ -528,7 +527,7 @@ func TestHandler_Write(t *testing.T) {
 				t.Fatalf("could not call Sync: %v", err)
 			}
 
-			got, err := ioutil.ReadFile(file)
+			got, err := os.ReadFile(file)
 			if err != nil {
 				t.Fatalf("could not read written data: %v", err)
 			}
@@ -577,7 +576,7 @@ func TestHandler_Stat(t *testing.T) {
 			var entry string
 			if tc.isFile {
 				entry = "file1.txt"
-				err := ioutil.WriteFile(path.Join(baseDir, entry), []byte{1, 2, 3, 4, 5}, 0777)
+				err := os.WriteFile(path.Join(baseDir, entry), []byte{1, 2, 3, 4, 5}, 0777)
 				if err != nil {
 					t.Fatalf("could not create test file: %v", err)
 				}
@@ -680,7 +679,7 @@ func TestHandler_Truncate(t *testing.T) {
 			}()
 
 			entry := "file1.txt"
-			err = ioutil.WriteFile(path.Join(baseDir, entry), tc.data, 0777)
+			err = os.WriteFile(path.Join(baseDir, entry), tc.data, 0777)
 			if err != nil {
 				t.Fatalf("could not create test file: %v", err)
 			}
@@ -762,12 +761,12 @@ func TestHandler_Rename(t *testing.T) {
 			newName := "new.txt"
 
 			if tc.oldPathExist {
-				if err := ioutil.WriteFile(path.Join(baseDir, oldName), nil, 0777); err != nil {
+				if err := os.WriteFile(path.Join(baseDir, oldName), nil, 0777); err != nil {
 					t.Fatalf("could not create test file: %v", err)
 				}
 			}
 			if tc.newPathExist {
-				if err := ioutil.WriteFile(path.Join(baseDir, newName), nil, 0777); err != nil {
+				if err := os.WriteFile(path.Join(baseDir, newName), nil, 0777); err != nil {
 					t.Fatalf("could not create test file: %v", err)
 				}
 			}

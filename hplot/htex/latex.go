@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -44,7 +43,7 @@ func NewHandler(cmd string) Handler {
 
 // CompileLatex compiles the provided .tex document.
 func (pdf *pdfLatex) CompileLatex(fname string) error {
-	tmp, err := ioutil.TempDir("", "hplot-htex-")
+	tmp, err := os.MkdirTemp("", "hplot-htex-")
 	if err != nil {
 		return fmt.Errorf("htex: could not create tmp dir: %w", err)
 	}

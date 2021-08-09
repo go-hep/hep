@@ -7,7 +7,6 @@ package xrootd
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -29,7 +28,7 @@ var fstest = map[string]*xrdfs.EntryStat{
 }
 
 func tempdir(client *Client, dir, prefix string) (name string, err error) {
-	name, err = ioutil.TempDir("", prefix)
+	name, err = os.MkdirTemp("", prefix)
 	if err != nil {
 		return "", err
 	}

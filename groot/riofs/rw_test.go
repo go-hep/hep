@@ -6,7 +6,6 @@ package riofs
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -177,7 +176,7 @@ func TestWRBuffer(t *testing.T) {
 }
 
 func TestWriteBigFile(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "groot-riofs-")
+	tmp, err := os.MkdirTemp("", "groot-riofs-")
 	if err != nil {
 		t.Fatalf("could not create tmp dir: %+v", err)
 	}

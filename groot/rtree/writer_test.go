@@ -6,7 +6,6 @@ package rtree
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -106,7 +105,7 @@ func TestInvalidTreeMerger(t *testing.T) {
 }
 
 func TestConcurrentWrite(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "groot-rtree-")
+	tmp, err := os.MkdirTemp("", "groot-rtree-")
 	if err != nil {
 		t.Fatal(err)
 	}

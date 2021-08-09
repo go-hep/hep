@@ -5,7 +5,6 @@
 package main // import "go-hep.org/x/hep/cmd/arrow2root"
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,7 +14,7 @@ import (
 )
 
 func TestConvert(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "arrow2root-")
+	tmp, err := os.MkdirTemp("", "arrow2root-")
 	if err != nil {
 		t.Fatalf("could not create tmpdir: %+v", err)
 	}
@@ -73,7 +72,7 @@ func TestConvert(t *testing.T) {
 				t.Fatalf("could not dump ROOT file %q: %+v", oname, err)
 			}
 
-			want, err := ioutil.ReadFile(tc.name + ".txt")
+			want, err := os.ReadFile(tc.name + ".txt")
 			if err != nil {
 				t.Fatalf("could not load reference file %q: %+v", tc.name, err)
 			}

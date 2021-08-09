@@ -6,7 +6,6 @@ package main // import "go-hep.org/x/hep/cmd/root2csv"
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -45,7 +44,7 @@ func TestROOT2CSV(t *testing.T) {
 				t.Skipf("not ready (FIXME)")
 			}
 
-			f, err := ioutil.TempFile("", "root2csv-")
+			f, err := os.CreateTemp("", "root2csv-")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -57,12 +56,12 @@ func TestROOT2CSV(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			want, err := ioutil.ReadFile(tc.want)
+			want, err := os.ReadFile(tc.want)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			got, err := ioutil.ReadFile(f.Name())
+			got, err := os.ReadFile(f.Name())
 			if err != nil {
 				t.Fatal(err)
 			}

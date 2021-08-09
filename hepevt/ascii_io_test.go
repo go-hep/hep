@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
@@ -70,7 +69,7 @@ func TestDecoder(t *testing.T) {
 }
 
 func TestEncoder(t *testing.T) {
-	f, err := ioutil.TempFile("", "hepevt-")
+	f, err := os.CreateTemp("", "hepevt-")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,12 +85,12 @@ func TestEncoder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err := ioutil.ReadFile(f.Name())
+	got, err := os.ReadFile(f.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	want, err := ioutil.ReadFile("testdata/small.hepevt")
+	want, err := os.ReadFile("testdata/small.hepevt")
 	if err != nil {
 		t.Fatal(err)
 	}
