@@ -8,11 +8,10 @@ import (
 	"testing"
 
 	"golang.org/x/exp/rand"
-	"gonum.org/v1/plot/cmpimg"
 )
 
 func TestCurve2D(t *testing.T) {
-	checkPlot(cmpimg.CheckPlot)(ExampleCurveND_plane, t, "2d-plane-plot.png")
+	checkPlot(ExampleCurveND_plane, t, "2d-plane-plot.png")
 }
 
 func genData2D(n0, n1 int, f func(x, ps []float64) float64, ps []float64, x0min, x0max, x1min, x1max float64) ([][]float64, []float64) {

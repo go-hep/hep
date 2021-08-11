@@ -8,19 +8,21 @@ import (
 	"os"
 	"path"
 	"testing"
+
+	"gonum.org/v1/plot/cmpimg"
 )
 
-type chkplotFunc func(ExampleFunc func(), t *testing.T, filenames ...string)
+func checkPlot(ex func(), t *testing.T, filenames ...string) {
+	checkPlotApprox(ex, t, 0, filenames...)
+}
 
-func checkPlot(f chkplotFunc) chkplotFunc {
-	return func(ex func(), t *testing.T, filenames ...string) {
-		t.Helper()
-		f(ex, t, filenames...)
-		if t.Failed() {
-			return
-		}
-		for _, fname := range filenames {
-			_ = os.Remove(path.Join("testdata", fname))
-		}
+func checkPlotApprox(ex func(), t *testing.T, delta float64, filenames ...string) {
+	t.Helper()
+	cmpimg.CheckPlotApprox(ex, t, delta, filenames...)
+	if t.Failed() {
+		return
+	}
+	for _, fname := range filenames {
+		_ = os.Remove(path.Join("testdata", fname))
 	}
 }

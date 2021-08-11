@@ -10,7 +10,6 @@ import (
 	"math"
 	"math/rand"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -18,22 +17,19 @@ import (
 	"go-hep.org/x/hep/fit"
 	"go-hep.org/x/hep/hplot"
 	"gonum.org/v1/gonum/floats"
-	"gonum.org/v1/plot/cmpimg"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 )
 
 func TestCurve1D(t *testing.T) {
-	checkPlot(cmpimg.CheckPlot)(ExampleCurve1D_gaussian, t, "gauss-plot.png")
-	if runtime.GOOS != "darwin" {
-		checkPlot(cmpimg.CheckPlot)(ExampleCurve1D_exponential, t, "exp-plot.png")
-	}
-	checkPlot(cmpimg.CheckPlot)(ExampleCurve1D_poly, t, "poly-plot.png")
-	checkPlot(cmpimg.CheckPlot)(ExampleCurve1D_powerlaw, t, "powerlaw-plot.png")
+	checkPlot(ExampleCurve1D_gaussian, t, "gauss-plot.png")
+	checkPlotApprox(ExampleCurve1D_exponential, t, 0.1, "exp-plot.png")
+	checkPlot(ExampleCurve1D_poly, t, "poly-plot.png")
+	checkPlot(ExampleCurve1D_powerlaw, t, "powerlaw-plot.png")
 }
 
 func TestCurve1DGaussianDefaultOpt(t *testing.T) {
-	checkPlot(cmpimg.CheckPlot)(func() {
+	checkPlot(func() {
 		var (
 			cst   = 3.0
 			mean  = 30.0

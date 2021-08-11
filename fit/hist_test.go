@@ -6,10 +6,8 @@ package fit_test
 
 import (
 	"testing"
-
-	"gonum.org/v1/plot/cmpimg"
 )
 
 func TestH1D(t *testing.T) {
-	checkPlot(cmpimg.CheckPlot)(ExampleH1D_gaussian, t, "h1d-gauss-plot.png")
+	checkPlot(ExampleH1D_gaussian, t, "h1d-gauss-plot.png")
 }
