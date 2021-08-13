@@ -13,7 +13,7 @@ environment:
   GOPATH: c:\gopath
   PATH: '%GOPATH%\bin;%PATH%'
 
-stack: go 1.15
+stack: go 1.16
 
 build_script:
   - go get -v -t -tags purego ./...
