@@ -46,6 +46,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-root-${{ env.ROOT_VERSION }}
 
+    - name: Setup Git for Windows
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
+
     - name: Checkout code
       uses: actions/checkout@v2
 
