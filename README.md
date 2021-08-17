@@ -3,7 +3,6 @@ hep
 
 [![GitHub release](https://img.shields.io/github/release/go-hep/hep.svg)](https://github.com/go-hep/hep/releases)
 [![go.dev reference](https://pkg.go.dev/badge/go-hep.org/x/hep)](https://pkg.go.dev/go-hep.org/x/hep)
-[![Build status](https://ci.appveyor.com/api/projects/status/qnnp26vv2c71f560?svg=true)](https://ci.appveyor.com/project/sbinet/hep)
 [![CI](https://github.com/go-hep/hep/workflows/CI/badge.svg)](https://github.com/go-hep/hep/actions)
 [![codecov](https://codecov.io/gh/go-hep/hep/branch/main/graph/badge.svg)](https://codecov.io/gh/go-hep/hep)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-hep/hep)](https://goreportcard.com/report/github.com/go-hep/hep)
