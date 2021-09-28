@@ -48,7 +48,7 @@ func (fs *fileSystem) Open(ctx context.Context, path string, mode xrdfs.OpenMode
 	if err != nil {
 		return nil, err
 	}
-	return &file{fs, resp.FileHandle, resp.Compression, resp.Stat, server}, nil
+	return &file{fs: fs, handle: resp.FileHandle, compression: resp.Compression, info: resp.Stat, sessionID: server}, nil
 }
 
 // RemoveFile removes a file.
