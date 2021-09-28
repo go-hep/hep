@@ -717,7 +717,7 @@ type Weights struct {
 }
 
 // Add adds a new weight with name n and value v.
-func (w Weights) Add(n string, v float64) error {
+func (w *Weights) Add(n string, v float64) error {
 	_, ok := w.Map[n]
 	if ok {
 		return fmt.Errorf("hepmc.Weights.Add: name [%s] already in container", n)

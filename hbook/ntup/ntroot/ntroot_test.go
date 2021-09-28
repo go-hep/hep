@@ -40,7 +40,7 @@ func TestOpen(t *testing.T) {
 		t.Run(tc.name+":"+tc.tree, func(t *testing.T) {
 			nt, err := ntroot.Open(tc.name, tc.tree)
 			if err == nil {
-				nt.DB().Close()
+				_ = nt.DB().Close()
 			}
 
 			switch {

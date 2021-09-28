@@ -98,7 +98,12 @@ func testCSV(t *testing.T, name, query string, opts ...ntcsv.Option) {
 	if err != nil {
 		t.Fatalf("%s: error opening n-tuple: %v", name, err)
 	}
-	defer nt.DB().Close()
+	defer func() {
+		err = nt.DB().Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
 
 	type dataType struct {
 		i int64

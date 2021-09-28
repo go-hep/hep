@@ -41,10 +41,14 @@ func ExampleNtuple_scanH2D() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer nt.DB().Close()
+	defer func() {
+		err = nt.DB().Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	h, err := nt.ScanH2D("v1, v2", nil)
-
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,7 +82,13 @@ func ExampleNtuple_scan() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer nt.DB().Close()
+	defer func() {
+		err = nt.DB().Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	var (
 		v1min = +math.MaxFloat64
 		v1max = -math.MaxFloat64
@@ -119,7 +129,12 @@ func ExampleNtuple_scanH1D() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer nt.DB().Close()
+	defer func() {
+		err = nt.DB().Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	h, err := nt.ScanH1D("v1", nil)
 	if err != nil {

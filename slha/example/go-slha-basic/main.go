@@ -7,6 +7,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	"go-hep.org/x/hep/slha"
@@ -14,16 +15,14 @@ import (
 
 func handle(err error) {
 	if err != nil {
-		printf("**error: %v\n", err)
-		panic(err)
+		log.Panicf("**error: %+v\n", err)
 	}
 }
 
-func printf(format string, args ...interface{}) (int, error) {
-	return fmt.Fprintf(os.Stderr, format, args...)
-}
-
 func main() {
+	log.SetFlags(0)
+	log.SetPrefix("slha: ")
+
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, " $ %s <path-to-SLHA-file>\n", os.Args[0])
@@ -32,7 +31,7 @@ func main() {
 
 	flag.Parse()
 	if flag.NArg() <= 0 {
-		printf("**error** need an input file name\n")
+		log.Printf("**error** need an input file name\n")
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -41,14 +40,14 @@ func main() {
 
 	f, err := os.Open(fname)
 	if err != nil {
-		printf("could not open file [%s]: %v\n", fname, err)
+		log.Printf("could not open file [%s]: %v\n", fname, err)
 		os.Exit(1)
 	}
 	defer f.Close()
 
 	data, err := slha.Decode(f)
 	if err != nil {
-		printf("could not decode file [%s]: %v\n", fname, err)
+		log.Printf("could not decode file [%s]: %v\n", fname, err)
 		os.Exit(1)
 	}
 

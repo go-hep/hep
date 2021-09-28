@@ -16,7 +16,12 @@ func ExampleOpen() {
 	if err != nil {
 		log.Fatalf("could not open n-tuple: %+v", err)
 	}
-	defer nt.DB().Close()
+	defer func() {
+		err = nt.DB().Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	err = nt.Scan(
 		"(one, two, three)",

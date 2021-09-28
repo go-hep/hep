@@ -442,15 +442,11 @@ func typeFromDescr(typ reflect.Type, typename string, alen int, dims []int32) re
 
 	if alen < 0 {
 		// slice. drop one '*' from typename.
-		if strings.HasSuffix(typename, "*") {
-			typename = typename[:len(typename)-1]
-		}
+		typename = strings.TrimSuffix(typename, "*")
 	}
 	if typename == "char*" {
 		// slice. drop one '*' from typename.
-		if strings.HasSuffix(typename, "*") {
-			typename = typename[:len(typename)-1]
-		}
+		typename = strings.TrimSuffix(typename, "*")
 	}
 
 	// handle T***

@@ -733,7 +733,12 @@ func TestCreateInvalid(t *testing.T) {
 				t.Fatalf("got=%v. want=%v", err, tc.err)
 			}
 			if nt != nil {
-				defer nt.DB().Close()
+				defer func() {
+					err = nt.DB().Close()
+					if err != nil {
+						t.Fatal(err)
+					}
+				}()
 			}
 		})
 	}

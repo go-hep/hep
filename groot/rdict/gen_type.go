@@ -272,9 +272,7 @@ func (g *genGoType) typename(se rbytes.StreamerElement) string {
 		return t.Name()
 
 	case *StreamerLoop:
-		if strings.HasSuffix(tname, "*") {
-			tname = tname[:len(tname)-1]
-		}
+		tname = strings.TrimSuffix(tname, "*")
 		return "[]" + g.cxx2go(tname, qualNone)
 
 	case *StreamerObject:

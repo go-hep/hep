@@ -23,8 +23,12 @@ func ExampleOpen() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	defer nt.DB().Close()
+	defer func() {
+		err = nt.DB().Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	err = nt.Scan("v1, v2, v3", func(i int64, f float64, s string) error {
 		fmt.Printf("%d %f %q\n", i, f, s)
@@ -60,8 +64,12 @@ func ExampleOpen_fromRemote() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	defer nt.DB().Close()
+	defer func() {
+		err = nt.DB().Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	err = nt.Scan("v1, v2, v3", func(i int64, f float64, s string) error {
 		fmt.Printf("%d %f %q\n", i, f, s)
@@ -95,8 +103,12 @@ func ExampleOpen_withDefaultVarNames() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	defer nt.DB().Close()
+	defer func() {
+		err = nt.DB().Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	err = nt.Scan("var1, var2, var3", func(i int64, f float64, s string) error {
 		fmt.Printf("%d %f %q\n", i, f, s)
@@ -133,8 +145,12 @@ func ExampleOpen_withHeader() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	defer nt.DB().Close()
+	defer func() {
+		err = nt.DB().Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	err = nt.Scan("v1, v2, v3", func(i int64, f float64, s string) error {
 		fmt.Printf("%d %f %q\n", i, f, s)
@@ -170,8 +186,12 @@ func ExampleOpen_withHeaderAndImplicitColumns() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	defer nt.DB().Close()
+	defer func() {
+		err = nt.DB().Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	err = nt.Scan("i, f, str", func(i int64, f float64, s string) error {
 		fmt.Printf("%d %f %q\n", i, f, s)
@@ -208,8 +228,12 @@ func ExampleOpen_withHeaderAndExlicitColumns() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	defer nt.DB().Close()
+	defer func() {
+		err = nt.DB().Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	err = nt.Scan("v1, v2, v3", func(i int64, f float64, s string) error {
 		fmt.Printf("%d %f %q\n", i, f, s)
