@@ -26,7 +26,7 @@ require (
 	golang.org/x/exp v0.0.0-20210220032938-85be41e4509f
 	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/tools v0.1.6
+	golang.org/x/tools v0.1.7
 	gonum.org/v1/gonum v0.9.3
 	gonum.org/v1/plot v0.10.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
