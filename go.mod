@@ -1,6 +1,6 @@
 module go-hep.org/x/hep
 
-go 1.16
+go 1.18
 
 require (
 	gioui.org v0.0.0-20210309172710-4b377aa89637
@@ -31,6 +31,41 @@ require (
 	gonum.org/v1/plot v0.10.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	modernc.org/ql v1.4.0
+)
+
+require (
+	github.com/ajstarks/svgo v0.0.0-20210923152817-c3b6e2f0c527 // indirect
+	github.com/edsrzf/mmap-go v1.0.0 // indirect
+	github.com/fogleman/gg v1.3.0 // indirect
+	github.com/go-fonts/liberation v0.2.0 // indirect
+	github.com/go-latex/latex v0.0.0-20210823091927-c0d11ff05a81 // indirect
+	github.com/go-pdf/fpdf v0.5.0 // indirect
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
+	github.com/google/flatbuffers v1.12.0 // indirect
+	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
+	github.com/jcmturner/dnsutils/v2 v2.0.0 // indirect
+	github.com/jcmturner/gofork v1.0.0 // indirect
+	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
+	github.com/mattn/go-runewidth v0.0.3 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
+	golang.org/x/mod v0.4.2 // indirect
+	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
+	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 // indirect
+	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	modernc.org/b v1.0.2 // indirect
+	modernc.org/db v1.0.3 // indirect
+	modernc.org/file v1.0.3 // indirect
+	modernc.org/fileutil v1.0.0 // indirect
+	modernc.org/golex v1.0.1 // indirect
+	modernc.org/internal v1.0.2 // indirect
+	modernc.org/lldb v1.0.2 // indirect
+	modernc.org/mathutil v1.4.1 // indirect
+	modernc.org/sortutil v1.1.0 // indirect
+	modernc.org/strutil v1.1.1 // indirect
+	modernc.org/zappy v1.0.3 // indirect
+	rsc.io/pdf v0.1.1 // indirect
 )
 
 replace github.com/apache/arrow/go/arrow => git.sr.ht/~sbinet/go-arrow v0.1.1
