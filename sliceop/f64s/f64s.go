@@ -102,6 +102,8 @@ func Take(dst, src []float64, indices []int) []float64 {
 		v0 := indices[i-1]
 		v1 := indices[i]
 		switch {
+		case v0 < v1:
+			// ok.
 		case v0 == v1:
 			panic(errDuplicateIndices)
 		case v0 > v1:
