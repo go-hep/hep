@@ -158,6 +158,4 @@
 // disk, by reading the data record at offset fSeekInfo.
 // A streamer info is actually a list of streamer elements, one for each field
 // and, in C++, base class (in Go, this is emulated as an embedded field.)
-//
-// TODO: groot can not write trees yet.
 package groot // import "go-hep.org/x/hep/groot"
