@@ -219,6 +219,9 @@ func (si *StreamerInfo) build(sictx rbytes.StreamerInfoContext) error {
 	for i, descr := range si.descr {
 		si.roops = append(si.roops, si.makeROp(sictx, i, descr))
 		si.woops = append(si.woops, si.makeWOp(sictx, i, descr))
+		// FIXME(sbinet): handle member-wise r/w ops
+		// si.rmops
+		// si.wmops
 	}
 
 	return nil

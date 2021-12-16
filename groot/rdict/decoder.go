@@ -84,6 +84,16 @@ func (rr *rstreamerInfo) Bind(recv interface{}) error {
 		return fmt.Errorf("rdict: invalid kind (got=%T, want=pointer)", recv)
 	}
 	rr.recv = recv
+	if recv, ok := recv.(rbytes.Unmarshaler); ok && rr.kind == rbytes.ObjectWise {
+		// FIXME(sbinet): handle mbr-/obj-wise
+		rr.rops = []rstreamer{{
+			op: func(r *rbytes.RBuffer, _ interface{}, _ *streamerConfig) error {
+				return recv.UnmarshalROOT(r)
+			},
+			cfg: nil,
+		}}
+		return nil
+	}
 	if len(rr.rops) == 1 {
 		se := rr.rops[0].cfg.descr.elem
 		if se.Name() == "This" ||

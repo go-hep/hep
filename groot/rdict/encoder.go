@@ -75,6 +75,16 @@ func (ww *wstreamerInfo) Bind(recv interface{}) error {
 		return fmt.Errorf("rdict: invalid kind (got=%T, want=pointer)", recv)
 	}
 	ww.recv = recv
+	if recv, ok := recv.(rbytes.Marshaler); ok && ww.kind == rbytes.ObjectWise {
+		// FIXME(sbinet): handle mbr-/obj-wise
+		ww.wops = []wstreamer{{
+			op: func(w *rbytes.WBuffer, _ interface{}, _ *streamerConfig) (int, error) {
+				return recv.MarshalROOT(w)
+			},
+			cfg: nil,
+		}}
+		return nil
+	}
 	if len(ww.wops) == 1 && ww.wops[0].cfg.descr.elem.Name() == "This" {
 		// binding directly to 'recv'. assume no offset is to be applied
 		ww.wops[0].cfg.offset = -1
