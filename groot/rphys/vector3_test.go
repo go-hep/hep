@@ -5,6 +5,7 @@
 package rphys_test
 
 import (
+	"fmt"
 	"testing"
 
 	"go-hep.org/x/hep/groot/rphys"
@@ -42,9 +43,17 @@ func TestVector3(t *testing.T) {
 		})
 	}
 
+	if got, want := fmt.Sprintf("%v", p3), "TVector3{1, 2, 3}"; got != want {
+		t.Fatalf("invalid stringer value:\ngot= %q\nwant=%q", got, want)
+	}
+
 	p3.SetX(-1)
 	p3.SetY(-2)
 	p3.SetZ(-3)
+
+	if got, want := fmt.Sprintf("%v", p3), "TVector3{-1, -2, -3}"; got != want {
+		t.Fatalf("invalid stringer value:\ngot= %q\nwant=%q", got, want)
+	}
 
 	for _, tc := range []struct {
 		name string

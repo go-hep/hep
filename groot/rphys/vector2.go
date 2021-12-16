@@ -5,6 +5,7 @@
 package rphys
 
 import (
+	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -78,6 +79,10 @@ func (vec *Vector2) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	r.CheckByteCount(pos, bcnt, beg, vec.Class())
 	return r.Err()
+}
+
+func (vec *Vector2) String() string {
+	return fmt.Sprintf("TVector2{%v, %v}", vec.x, vec.y)
 }
 
 func init() {
