@@ -5,6 +5,7 @@
 package rphys
 
 import (
+	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -88,6 +89,14 @@ func (vec *LorentzVector) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	r.CheckByteCount(pos, bcnt, beg, vec.Class())
 	return r.Err()
+}
+
+func (vec *LorentzVector) String() string {
+	return fmt.Sprintf(
+		"TLorentzVector{P: {%v, %v, %v}, E: %v}",
+		vec.p.x, vec.p.y, vec.p.z,
+		vec.e,
+	)
 }
 
 func init() {
