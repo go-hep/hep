@@ -5,8 +5,11 @@
 package rphys_test
 
 import (
+	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"go-hep.org/x/hep/groot/rcmd"
 	"go-hep.org/x/hep/groot/rphys"
 )
 
@@ -82,5 +85,42 @@ func TestLorentzVector(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestLorentzVectorRStreamer(t *testing.T) {
+	const (
+		deep = true
+		want = `key[000]: tlv;1 "A four vector with (-,-,-,+) metric" (TLorentzVector) => "TLorentzVector{P: {10, 20, 30}, E: 40}"
+key[001]: tree;1 "my tree title" (TTree)
+[000][p4]: {{0 50331648} {{0 50331648} 0 1 2} 3}
+[001][p4]: {{0 50331648} {{0 50331648} 1 2 3} 4}
+[002][p4]: {{0 50331648} {{0 50331648} 2 3 4} 5}
+[003][p4]: {{0 50331648} {{0 50331648} 3 4 5} 6}
+[004][p4]: {{0 50331648} {{0 50331648} 4 5 6} 7}
+[005][p4]: {{0 50331648} {{0 50331648} 5 6 7} 8}
+[006][p4]: {{0 50331648} {{0 50331648} 6 7 8} 9}
+[007][p4]: {{0 50331648} {{0 50331648} 7 8 9} 10}
+[008][p4]: {{0 50331648} {{0 50331648} 8 9 10} 11}
+[009][p4]: {{0 50331648} {{0 50331648} 9 10 11} 12}
+`
+	)
+
+	for _, fname := range []string{
+		"../testdata/tlv-split00.root", // exercizes T{Branch,Leaf}Object
+		"../testdata/tlv-split01.root",
+		"../testdata/tlv-split99.root",
+	} {
+		t.Run(fname, func(t *testing.T) {
+			got := new(strings.Builder)
+			err := rcmd.Dump(got, fname, deep, nil)
+			if err != nil {
+				t.Fatalf("could not run root-dump: %+v", err)
+			}
+
+			if got, want := got.String(), want; got != want {
+				diff := cmp.Diff(want, got)
+				t.Fatalf("invalid root-dump output: -- (-ref +got)\n%s", diff)
+			}
+		})
+	}
 }
