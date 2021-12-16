@@ -226,6 +226,64 @@ func (leaf *tleaf) computeOffsetArray(base, nevts int) []int32 {
 	return o
 }
 
+// tleafObject is a Leaf for a general object derived from Object.
+type tleafObject struct {
+	tleaf
+	virtual bool
+	typ     reflect.Type
+}
+
+func (*tleafObject) RVersion() int16 {
+	return rvers.LeafObject
+}
+
+func (leaf *tleafObject) Class() string {
+	return "TLeafObject"
+}
+
+func (leaf *tleafObject) Type() reflect.Type {
+	return leaf.typ
+}
+
+func (leaf *tleafObject) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	pos := w.WriteVersion(leaf.RVersion())
+	_, _ = leaf.tleaf.MarshalROOT(w)
+	w.WriteBool(leaf.virtual)
+
+	return w.SetByteCount(pos, leaf.Class())
+}
+
+func (leaf *tleafObject) UnmarshalROOT(r *rbytes.RBuffer) error {
+	if r.Err() != nil {
+		return r.Err()
+	}
+	beg := r.Pos()
+
+	vers, pos, bcnt := r.ReadVersion(leaf.Class())
+	_ = leaf.tleaf.UnmarshalROOT(r)
+
+	if vers < 4 {
+		panic(fmt.Errorf(
+			"rtree: TLeafObject %q with version [%v] is not supported (too old)",
+			leaf.Name(),
+			vers,
+		))
+	}
+	leaf.virtual = r.ReadBool()
+
+	if !rtypes.Factory.HasKey(leaf.Title()) {
+		return fmt.Errorf("rtree: could not find type %q for TLeafObject %q", leaf.Title(), leaf.Name())
+	}
+	leaf.typ = rtypes.Factory.Get(leaf.Title())().Type().Elem()
+
+	r.CheckByteCount(pos, bcnt, beg, leaf.Class())
+	return r.Err()
+}
+
 const (
 	tleafHdrSize        = 0
 	tleafElementHdrSize = 1
@@ -243,6 +301,10 @@ type tleafElement struct {
 	rstreamer rbytes.RStreamer
 	wstreamer rbytes.WStreamer
 	streamers []rbytes.StreamerElement
+}
+
+func (*tleafElement) RVersion() int16 {
+	return rvers.LeafElement
 }
 
 func (leaf *tleafElement) Class() string {
@@ -436,6 +498,13 @@ func init() {
 			return reflect.ValueOf(o)
 		}
 		rtypes.Factory.Add("TLeaf", f)
+	}
+	{
+		f := func() reflect.Value {
+			o := &tleafObject{}
+			return reflect.ValueOf(o)
+		}
+		rtypes.Factory.Add("TLeafObject", f)
 	}
 	{
 		f := func() reflect.Value {
@@ -798,6 +867,12 @@ var (
 	_ Leaf               = (*tleaf)(nil)
 	_ rbytes.Marshaler   = (*tleaf)(nil)
 	_ rbytes.Unmarshaler = (*tleaf)(nil)
+
+	_ root.Object        = (*tleafObject)(nil)
+	_ root.Named         = (*tleafObject)(nil)
+	_ Leaf               = (*tleafObject)(nil)
+	_ rbytes.Marshaler   = (*tleafObject)(nil)
+	_ rbytes.Unmarshaler = (*tleafObject)(nil)
 
 	_ root.Object        = (*tleafElement)(nil)
 	_ root.Named         = (*tleafElement)(nil)

@@ -86,10 +86,12 @@ const (
 	ROOT_IOFeatures          = 1  // ROOT version for ROOT::TIOFeatures
 	Basket                   = 3  // ROOT version for TBasket
 	Branch                   = 13 // ROOT version for TBranch
+	BranchObject             = 1  // ROOT version for TBranchObject
 	BranchElement            = 10 // ROOT version for TBranchElement
 	BranchRef                = 1  // ROOT version for TBranchRef
 	Chain                    = 5  // ROOT version for TChain
 	Leaf                     = 2  // ROOT version for TLeaf
+	LeafObject               = 4  // ROOT version for TLeafObject
 	LeafElement              = 1  // ROOT version for TLeafElement
 	LeafO                    = 1  // ROOT version for TLeafO
 	LeafB                    = 1  // ROOT version for TLeafB

@@ -72,6 +72,8 @@ func asBranch(b Branch) *tbranch {
 	switch b := b.(type) {
 	case *tbranch:
 		return b
+	case *tbranchObject:
+		return &b.tbranch
 	case *tbranchElement:
 		return &b.tbranch
 	}

@@ -88,9 +88,9 @@ var (
 		// rtree
 		"ROOT::TIOFeatures",
 		"TBasket",
-		"TBranch", "TBranchElement", "TBranchRef",
+		"TBranch", "TBranchElement", "TBranchObject", "TBranchRef",
 		"TChain",
-		"TLeaf", "TLeafElement",
+		"TLeaf", "TLeafElement", "TLeafObject",
 		"TLeafO",
 		"TLeafB", "TLeafS", "TLeafI", "TLeafL",
 		"TLeafF", "TLeafD",

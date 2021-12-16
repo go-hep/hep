@@ -161,9 +161,60 @@ func rleafFrom(leaf Leaf, rvar ReadVar, rctx rleafCtx) rleaf {
 	case *tleafElement:
 		return newRLeafElem(leaf, rvar, rctx)
 
+	case *tleafObject:
+		return newRLeafObject(leaf, rvar, rctx)
+
 	default:
 		panic(fmt.Errorf("not implemented %T", leaf))
 	}
+}
+
+type rleafObject struct {
+	base *tleafObject
+	v    rbytes.Unmarshaler
+}
+
+var (
+	_ rleaf = (*rleafObject)(nil)
+)
+
+func newRLeafObject(leaf *tleafObject, rvar ReadVar, rctx rleafCtx) rleaf {
+	switch {
+	case leaf.count != nil:
+		panic("not implemented")
+	case leaf.len > 1:
+		panic("not implemented")
+	default:
+		return &rleafObject{
+			base: leaf,
+			v:    reflect.ValueOf(rvar.Value).Interface().(rbytes.Unmarshaler),
+		}
+	}
+}
+
+func (leaf *rleafObject) Leaf() Leaf { return leaf.base }
+
+func (leaf *rleafObject) Offset() int64 {
+	return int64(leaf.base.Offset())
+}
+
+func (leaf *rleafObject) readFromBuffer(r *rbytes.RBuffer) error {
+	if leaf.base.virtual {
+		var (
+			n     = int(r.ReadU8())
+			class = r.ReadCString(n + 1)
+		)
+		if class != leaf.base.Title() {
+			// FIXME(sbinet): we should be able to handle (C++) polymorphism.
+			// but in Go, this should translate to interfaces.
+			panic(fmt.Errorf(
+				"rtree: rleaf object with incompatible class names: got=%q, want=%q",
+				class, leaf.base.Title(),
+			))
+		}
+	}
+
+	return leaf.v.UnmarshalROOT(r)
 }
 
 func newRLeafElem(leaf *tleafElement, rvar ReadVar, rctx rleafCtx) rleaf {

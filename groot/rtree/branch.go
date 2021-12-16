@@ -784,6 +784,69 @@ func (b *tbranch) flush() error {
 	return nil
 }
 
+// tbranchObject is a Branch for objects.
+type tbranchObject struct {
+	tbranch
+	class string // class name of referenced object
+}
+
+func (b *tbranchObject) RVersion() int16 {
+	return rvers.BranchObject
+}
+
+func (b *tbranchObject) Class() string {
+	return "TBranchObject"
+}
+
+func (b *tbranchObject) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	pos := w.WriteVersion(b.RVersion())
+	if n, err := b.tbranch.MarshalROOT(w); err != nil {
+		return n, err
+	}
+	w.WriteString(b.class)
+
+	return w.SetByteCount(pos, b.Class())
+}
+
+// ROOTUnmarshaler is the interface implemented by an object that can
+// unmarshal itself from a ROOT buffer
+func (b *tbranchObject) UnmarshalROOT(r *rbytes.RBuffer) error {
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion(b.Class())
+	if vers < 1 {
+		r.SetErr(fmt.Errorf("rtree: TBranchObject version too old (%d < 8)", vers))
+		return r.Err()
+	}
+
+	if err := b.tbranch.UnmarshalROOT(r); err != nil {
+		return err
+	}
+
+	for _, leaf := range b.leaves {
+		switch leaf := leaf.(type) {
+		case *tleaf:
+			leaf.branch = b
+		case *tleafObject:
+			leaf.branch = b
+		case *tleafElement:
+			leaf.branch = b
+		}
+	}
+
+	b.class = r.ReadString()
+
+	r.CheckByteCount(pos, bcnt, beg, b.Class())
+	return r.Err()
+}
+
 // tbranchElement is a Branch for objects.
 type tbranchElement struct {
 	tbranch
@@ -914,6 +977,8 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	for _, leaf := range b.leaves {
 		switch leaf := leaf.(type) {
 		case *tleaf:
+			leaf.branch = b
+		case *tleafObject:
 			leaf.branch = b
 		case *tleafElement:
 			leaf.branch = b
@@ -1112,6 +1177,13 @@ func init() {
 	}
 	{
 		f := func() reflect.Value {
+			o := &tbranchObject{}
+			return reflect.ValueOf(o)
+		}
+		rtypes.Factory.Add("TBranchObject", f)
+	}
+	{
+		f := func() reflect.Value {
 			o := &tbranchElement{}
 			return reflect.ValueOf(o)
 		}
@@ -1175,6 +1247,12 @@ var (
 	_ Branch             = (*tbranch)(nil)
 	_ rbytes.Marshaler   = (*tbranch)(nil)
 	_ rbytes.Unmarshaler = (*tbranch)(nil)
+
+	_ root.Object        = (*tbranchObject)(nil)
+	_ root.Named         = (*tbranchObject)(nil)
+	_ Branch             = (*tbranchObject)(nil)
+	_ rbytes.Marshaler   = (*tbranchObject)(nil)
+	_ rbytes.Unmarshaler = (*tbranchObject)(nil)
 
 	_ root.Object        = (*tbranchElement)(nil)
 	_ root.Named         = (*tbranchElement)(nil)
