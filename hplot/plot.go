@@ -7,6 +7,7 @@ package hplot
 import (
 	"io"
 	"math"
+	"sync"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
@@ -19,9 +20,15 @@ type Plot struct {
 	Style Style
 }
 
+// muNewPlot protects access to gonum/plot.DefaultFont
+var muNewPlot sync.Mutex
+
 // New returns a new plot with some reasonable
 // default settings.
 func New() *Plot {
+	muNewPlot.Lock()
+	defer muNewPlot.Unlock()
+
 	style := DefaultStyle
 	defer style.reset(plot.DefaultFont)
 	plot.DefaultFont = style.Fonts.Default

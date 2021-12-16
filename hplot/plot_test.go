@@ -6,6 +6,7 @@ package hplot_test
 
 import (
 	"os"
+	"sync"
 	"testing"
 
 	"go-hep.org/x/hep/hplot"
@@ -41,4 +42,19 @@ func TestPlotWriterTo(t *testing.T) {
 			t.Fatal(err)
 		}
 	}, t, "plot_writerto.png")
+}
+
+func TestNewPlotRace(t *testing.T) {
+	const N = 100
+	var wg sync.WaitGroup
+	wg.Add(N)
+	for i := 0; i < N; i++ {
+		go func() {
+			defer wg.Done()
+
+			_ = hplot.New()
+		}()
+	}
+
+	wg.Wait()
 }
