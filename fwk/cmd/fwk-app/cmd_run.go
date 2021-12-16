@@ -5,13 +5,13 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 
 	"github.com/gonuts/commander"
-	"github.com/gonuts/flag"
 	"go-hep.org/x/hep/fwk/utils/builder"
 )
 
@@ -56,7 +56,7 @@ func fwk_run_cmd_run(cmd *commander.Command, args []string) error {
 		}
 		subargs = append(
 			subargs,
-			fmt.Sprintf("-"+nn+"=%v", val.Value.Get()),
+			fmt.Sprintf("-"+nn+"=%v", val.Value.(flag.Getter).Get()),
 		)
 	}
 
@@ -83,7 +83,7 @@ func fwk_run_cmd_run(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	if o := cmd.Flag.Lookup("o").Value.Get().(string); o != "" {
+	if o := cmd.Lookup("o").(string); o != "" {
 		bldr.Name = o
 	}
 
@@ -101,7 +101,7 @@ func fwk_run_cmd_run(cmd *commander.Command, args []string) error {
 		bin = filepath.Join(pwd, bin)
 	}
 
-	if !cmd.Flag.Lookup("k").Value.Get().(bool) {
+	if !cmd.Lookup("k").(bool) {
 		defer os.Remove(bin)
 	}
 

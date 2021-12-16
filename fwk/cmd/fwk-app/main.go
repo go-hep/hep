@@ -5,10 +5,10 @@
 package main
 
 import (
+	"flag"
 	"os"
 
 	"github.com/gonuts/commander"
-	"github.com/gonuts/flag"
 )
 
 func handle_err(err error) {

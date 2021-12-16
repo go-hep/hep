@@ -9,8 +9,7 @@ require (
 	github.com/campoy/embedmd v1.0.0
 	github.com/go-mmap/mmap v0.6.0
 	github.com/gonuts/binary v0.2.0
-	github.com/gonuts/commander v0.1.0
-	github.com/gonuts/flag v0.1.0
+	github.com/gonuts/commander v0.3.1
 	github.com/google/go-cmp v0.5.6
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-uuid v1.0.2

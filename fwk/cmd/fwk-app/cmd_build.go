@@ -5,10 +5,10 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 
 	"github.com/gonuts/commander"
-	"github.com/gonuts/flag"
 	"go-hep.org/x/hep/fwk/utils/builder"
 )
 
@@ -56,7 +56,7 @@ func fwk_run_cmd_build(cmd *commander.Command, args []string) error {
 		return err
 	}
 
-	if o := cmd.Flag.Lookup("o").Value.Get().(string); o != "" {
+	if o := cmd.Lookup("o").(string); o != "" {
 		bldr.Name = o
 	}
 
