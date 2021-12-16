@@ -23,6 +23,9 @@ import (
 //go:generate go run ./gendata/gen-multi-leaves-tree.go -f ../testdata/padding.root
 //go:generate go run ./gendata/gen-join-trees.go -d ../testdata
 //go:generate go run ./gendata/gen-bitset-tree.go -f ../testdata/std-bitset.root
+//go:generate go run ./gendata/gen-tlv.go -f ../testdata/tlv-split00.root -split=0
+//go:generate go run ./gendata/gen-tlv.go -f ../testdata/tlv-split01.root -split=1
+//go:generate go run ./gendata/gen-tlv.go -f ../testdata/tlv-split99.root -split=99
 
 // Directory describes a ROOT directory structure in memory.
 type Directory interface {
