@@ -26,6 +26,8 @@ import (
 //go:generate go run ./gendata/gen-tlv.go -f ../testdata/tlv-split00.root -split=0
 //go:generate go run ./gendata/gen-tlv.go -f ../testdata/tlv-split01.root -split=1
 //go:generate go run ./gendata/gen-tlv.go -f ../testdata/tlv-split99.root -split=99
+//go:generate go run ./gendata/gen-tntuple.go  -f ../testdata/tntuple.root
+//go:generate go run ./gendata/gen-tntupled.go -f ../testdata/tntupled.root
 
 // Directory describes a ROOT directory structure in memory.
 type Directory interface {

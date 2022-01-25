@@ -646,11 +646,46 @@ type tntuple struct {
 	nvars int
 }
 
+func (*tntuple) RVersion() int16 {
+	return rvers.Ntuple
+}
+
 func (*tntuple) Class() string {
 	return "TNtuple"
 }
 
 func (nt *tntuple) UnmarshalROOT(r *rbytes.RBuffer) error {
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	beg := r.Pos()
+	/*vers*/ _, pos, bcnt := r.ReadVersion(nt.Class())
+
+	if err := nt.ttree.UnmarshalROOT(r); err != nil {
+		return err
+	}
+
+	nt.nvars = int(r.ReadI32())
+
+	r.CheckByteCount(pos, bcnt, beg, nt.Class())
+	return r.Err()
+}
+
+type tntupleD struct {
+	ttree
+	nvars int
+}
+
+func (*tntupleD) RVersion() int16 {
+	return rvers.NtupleD
+}
+
+func (*tntupleD) Class() string {
+	return "TNtupleD"
+}
+
+func (nt *tntupleD) UnmarshalROOT(r *rbytes.RBuffer) error {
 	if r.Err() != nil {
 		return r.Err()
 	}
@@ -739,6 +774,13 @@ func init() {
 		}
 		rtypes.Factory.Add("TNtuple", f)
 	}
+	{
+		f := func() reflect.Value {
+			o := &tntupleD{}
+			return reflect.ValueOf(o)
+		}
+		rtypes.Factory.Add("TNtupleD", f)
+	}
 }
 
 var (
@@ -752,6 +794,11 @@ var (
 	_ root.Named         = (*tntuple)(nil)
 	_ Tree               = (*tntuple)(nil)
 	_ rbytes.Unmarshaler = (*tntuple)(nil)
+
+	_ root.Object        = (*tntupleD)(nil)
+	_ root.Named         = (*tntupleD)(nil)
+	_ Tree               = (*tntupleD)(nil)
+	_ rbytes.Unmarshaler = (*tntupleD)(nil)
 
 	_ root.Object        = (*tioFeatures)(nil)
 	_ rbytes.Marshaler   = (*tioFeatures)(nil)

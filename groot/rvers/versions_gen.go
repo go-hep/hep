@@ -104,5 +104,6 @@ const (
 	LeafD32                  = 1  // ROOT version for TLeafD32
 	LeafC                    = 1  // ROOT version for TLeafC
 	Ntuple                   = 2  // ROOT version for TNtuple
+	NtupleD                  = 1  // ROOT version for TNtupleD
 	Tree                     = 20 // ROOT version for TTree
 )

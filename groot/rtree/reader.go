@@ -253,6 +253,10 @@ func newReader(t Tree, rvars []ReadVar, n int, beg, end int64) reader {
 	switch t := t.(type) {
 	case *ttree:
 		return newRTree(t, rvars, n, beg, end)
+	case *tntuple:
+		return newRTree(&t.ttree, rvars, n, beg, end)
+	case *tntupleD:
+		return newRTree(&t.ttree, rvars, n, beg, end)
 	case *chain:
 		return newRChain(t, rvars, n, beg, end)
 	case *join:

@@ -5268,6 +5268,34 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 	}))
+	StreamerInfos.Add(NewCxxStreamerInfo("TNtupleD", 1, 0x8de8d873, []rbytes.StreamerElement{
+		NewStreamerBase(Element{
+			Name:   *rbase.NewNamed("TTree", "Tree descriptor (the main ROOT I/O class)"),
+			Type:   rmeta.Base,
+			Size:   0,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 1919213695, 0, 0, 0},
+			Offset: 0,
+			EName:  "BASE",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New(), 20),
+		&StreamerBasicType{StreamerElement: Element{
+			Name:   *rbase.NewNamed("fNvar", "Number of columns"),
+			Type:   rmeta.Int,
+			Size:   4,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
+			Offset: 0,
+			EName:  "int",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New()},
+	}))
 	StreamerInfos.Add(NewCxxStreamerInfo("TTree", 20, 0x7264e07f, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
 			Name:   *rbase.NewNamed("TNamed", "The basis for a named object (name, title)"),

@@ -96,7 +96,7 @@ var (
 		"TLeafF", "TLeafD",
 		"TLeafF16", "TLeafD32",
 		"TLeafC",
-		"TNtuple",
+		"TNtuple", "TNtupleD",
 		"TTree",
 	}
 )
