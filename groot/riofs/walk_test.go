@@ -13,9 +13,55 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/groot/rbase"
+	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/groot/root"
 )
 
+func TestGet(t *testing.T) {
+	f, err := Open("../testdata/dirs-6.14.00.root")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	h1, err := Get[rhist.H1](f, "dir1/dir11/h1")
+	if err != nil {
+		t.Fatalf("could not get histo: %+v", err)
+	}
+	if h1 == nil {
+		t.Fatalf("invalid H1 value")
+	}
+
+	h1f, err := Get[*rhist.H1F](f, "dir1/dir11/h1")
+	if err != nil {
+		t.Fatalf("could not get histo: %+v", err)
+	}
+	if h1f == nil {
+		t.Fatalf("invalid H1F value")
+	}
+
+	_, err = Get[*rhist.H1D](f, "dir1/dir11/h1")
+	if err == nil {
+		t.Fatalf("expected an error")
+	}
+	if want := fmt.Errorf(`riofs: could not convert "dir1/dir11/h1" (*rhist.H1F) to *rhist.H1D`); err.Error() != want.Error() {
+		t.Fatalf("invalid error:\ngot= %+v\nwant=%+v", err, want)
+	}
+
+	_, err = Get[any](f, "dir1/dir11/h1")
+	if err != nil {
+		t.Fatalf("could not get histo: %+v", err)
+	}
+
+	_, err = Get[any](f, "dir1/dir11/h1_XXX")
+	if err == nil {
+		t.Fatalf("expected an error")
+	}
+	if want := fmt.Errorf(`riofs: dir11: could not find key "h1_XXX;9999"`); err.Error() != want.Error() {
+		t.Fatalf("invalid error:\ngot= %+v\nwant=%+v", err, want)
+	}
+
+}
 func TestDir(t *testing.T) {
 	f, err := Open("../testdata/dirs-6.14.00.root")
 	if err != nil {

@@ -229,6 +229,22 @@ func fileOf(d Directory) *File {
 	panic("impossible")
 }
 
+// Get retrieves the named key from the provided directory.
+func Get[T any](dir Directory, key string) (T, error) {
+	obj, err := Dir(dir).Get(key)
+	if err != nil {
+		var v T
+		return v, err
+	}
+
+	v, ok := obj.(T)
+	if !ok {
+		return v, fmt.Errorf("riofs: could not convert %q (%T) to %T", key, obj, *new(T))
+	}
+
+	return v, nil
+}
+
 var (
 	_ Directory = (*recDir)(nil)
 )

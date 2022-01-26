@@ -10,6 +10,7 @@ import (
 	stdpath "path"
 	"strings"
 
+	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
 )
@@ -55,4 +56,21 @@ func ExampleWalk() {
 	// dirs-6.14.00.root/dir1 (TDirectoryFile)
 	// dirs-6.14.00.root/dir1/dir11 (TDirectoryFile)
 	// dirs-6.14.00.root/dir1/dir11/h1 (TH1F)
+}
+
+func ExampleGet() {
+	f, err := riofs.Open("../testdata/dirs-6.14.00.root")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	h1, err := riofs.Get[rhist.H1](f, "dir1/dir11/h1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("histo: %s (%s)", h1.Name(), h1.Class())
+
+	// Output:
+	// histo: h1 (TH1F)
 }
