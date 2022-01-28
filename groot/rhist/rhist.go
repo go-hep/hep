@@ -85,3 +85,11 @@ type GraphErrors interface {
 	// YError returns two error values for Y data.
 	YError(i int) (float64, float64)
 }
+
+// F1Composition describes a 1-dim functions composition.
+type F1Composition interface {
+	root.Object
+
+	isF1Composition() // FIXME(sbinet): have a more useful interface?
+	// Eval(xs, ps []float64) float64
+}

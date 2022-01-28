@@ -57,6 +57,12 @@ const (
 	StreamerSTLstring        = 2  // ROOT version for TStreamerSTLstring
 	StreamerArtificial       = 0  // ROOT version for TStreamerArtificial
 	Axis                     = 10 // ROOT version for TAxis
+	F1                       = 12 // ROOT version for TF1
+	F1AbsComposition         = 1  // ROOT version for TF1AbsComposition
+	F1Convolution            = 1  // ROOT version for TF1Convolution
+	F1NormSum                = 1  // ROOT version for TF1NormSum
+	F1Parameters             = 1  // ROOT version for TF1Parameters
+	Formula                  = 13 // ROOT version for TFormula
 	Graph                    = 4  // ROOT version for TGraph
 	GraphErrors              = 3  // ROOT version for TGraphErrors
 	GraphAsymmErrors         = 3  // ROOT version for TGraphAsymmErrors

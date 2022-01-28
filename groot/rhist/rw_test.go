@@ -13,6 +13,7 @@ import (
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rcont"
+	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
 )
@@ -248,6 +249,43 @@ func TestWRBuffer(t *testing.T) {
 
 			if !reflect.DeepEqual(obj, tc.want) {
 				t.Fatalf("error\ngot= %+v\nwant=%+v\n", obj, tc.want)
+			}
+		})
+	}
+}
+
+func TestReadF1(t *testing.T) {
+	f, err := riofs.Open("../testdata/tformula.root")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	for _, key := range []string{
+		"func1", "func2", "func3", "func4",
+		"fconv",
+		"fnorm",
+	} {
+		t.Run(key, func(t *testing.T) {
+			obj, err := f.Get(key)
+			if err != nil {
+				t.Fatalf("could not read object %q: %+v", key, err)
+			}
+			switch v := obj.(type) {
+			case *F1:
+				if got, want := v.Name(), key; got != want {
+					t.Fatalf("invalid name: got=%q, want=%q", got, want)
+				}
+				if got, want := v.Class(), "TF1"; got != want {
+					t.Fatalf("invalid class: got=%q, want=%q", got, want)
+				}
+				if got, want := v.chi2, 0.2; got != want {
+					t.Fatalf("invalid chi2: got=%v, want=%v", got, want)
+				}
+			case F1Composition:
+				// ok.
+			default:
+				t.Fatalf("invalid object type for %q", key)
 			}
 		})
 	}
