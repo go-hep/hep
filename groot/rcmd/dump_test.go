@@ -272,6 +272,16 @@ func TestDump(t *testing.T) {
 			name: "../testdata/ndim-slice.root",
 			want: loadRef("testdata/ndim-slice.root.txt"),
 		},
+		{
+			name: "../testdata/tformula.root",
+			want: `key[000]: func1;1 "[0] + [1]*x" (TF1) => "TF1{Formula: TFormula{[p0]+[p1]*x}}"
+key[001]: func2;1 "func2" (TF1) => "TF1{Params: TF1Parameters{Values: [10 20], Names: [p0 p1]}}"
+key[002]: func3;1 "func3" (TF1) => "TF1{Params: TF1Parameters{Values: [1 -0.3 0 1], Names: [p0 p1 p2 p3]}}"
+key[003]: func4;1 "func4" (TF1) => "TF1{Params: TF1Parameters{Values: [0 0 0 0 0 0], Names: [p0 p1 p2 p3 p4 p5]}}"
+key[004]: fconv;1 "" (TF1Convolution) => "TF1Convolution{Func1: TF1{Formula: TFormula{exp([Constant]+[Slope]*x)}}, Func2: TF1{Formula: TFormula{[Constant]*exp(-0.5*((x-[Mean])/[Sigma])*((x-[Mean])/[Sigma]))}}}"
+key[005]: fnorm;1 "" (TF1NormSum) => "TF1Convolution{Funcs: []{TF1{Formula: TFormula{[p0]+[p1]*x}}, TF1{Params: TF1Parameters{Values: [10 20], Names: [p0 p1]}}}, Coeffs: [10 20]}"
+`,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)
