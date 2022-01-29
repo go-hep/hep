@@ -41,6 +41,7 @@ import (
 
 	"go-hep.org/x/hep/csvutil"
 	"go-hep.org/x/hep/groot"
+	"go-hep.org/x/hep/groot/riofs"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 	"go-hep.org/x/hep/groot/rtree"
@@ -75,7 +76,7 @@ func process(oname, fname, tname string) error {
 	}
 	defer f.Close()
 
-	obj, err := f.Get(tname)
+	obj, err := riofs.Dir(f).Get(tname)
 	if err != nil {
 		return fmt.Errorf("could not get ROOT object: %w", err)
 	}

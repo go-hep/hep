@@ -43,6 +43,7 @@ import (
 	"github.com/apache/arrow/go/arrow/memory"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rarrow"
+	"go-hep.org/x/hep/groot/riofs"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 	"go-hep.org/x/hep/groot/rtree"
@@ -77,7 +78,7 @@ func process(oname, fname, tname string, stream bool) error {
 	}
 	defer f.Close()
 
-	obj, err := f.Get(tname)
+	obj, err := riofs.Dir(f).Get(tname)
 	if err != nil {
 		return err
 	}
