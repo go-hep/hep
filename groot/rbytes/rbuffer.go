@@ -456,6 +456,28 @@ func (r *RBuffer) ReadArrayString(arr []string) {
 	}
 }
 
+func (r *RBuffer) ReadStdVectorI32(sli *[]int32) {
+	if r.err != nil {
+		return
+	}
+	const typename = "vector<int>"
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion(typename)
+	if vers != rvers.StreamerInfo {
+		r.err = fmt.Errorf(
+			"rbytes: invalid %s version: got=%d, want=%d",
+			typename, vers, rvers.StreamerInfo,
+		)
+		return
+	}
+	n := int(r.ReadI32())
+	*sli = ResizeI32(*sli, n)
+	for i := range *sli {
+		(*sli)[i] = r.ReadI32()
+	}
+	r.CheckByteCount(pos, bcnt, beg, typename)
+}
+
 func (r *RBuffer) ReadStdVectorF64(sli *[]float64) {
 	if r.err != nil {
 		return
