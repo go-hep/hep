@@ -209,6 +209,44 @@ func TestWRBuffer(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "TConfidenceLevel",
+			want: &ConfidenceLevel{
+				base:   *rbase.NewObject(),
+				fNNMC:  3,
+				fDtot:  5,
+				fStot:  2,
+				fBtot:  3,
+				fTSD:   10,
+				fNMC:   11,
+				fMCL3S: 12,
+				fMCL5S: 13,
+				fTSB:   []float64{11, 12, 13},
+				fTSS:   []float64{21, 22, 23},
+				fLRS:   []float64{31, 32, 33},
+				fLRB:   []float64{41, 42, 43},
+				fISB:   []int32{1, 2, 3},
+				fISS:   []int32{4, 5, 6},
+			},
+		},
+		{
+			name: "TLimit",
+			want: &Limit{},
+		},
+		{
+			name: "TLimitDataSource",
+			want: &LimitDataSource{
+				base:     *rbase.NewObject(),
+				sig:      newObjArray("sig", "sig1"),
+				bkg:      newObjArray("bkg", "bkg1"),
+				data:     newObjArray("data", "data1"),
+				sigErr:   newObjArray("0", "1", "2"),
+				bkgErr:   newObjArray("3", "4", "5"),
+				ids:      newObjArray("6", "7", "8"),
+				dummyTA:  newObjArray("00", "11", "22"),
+				dummyIDs: newObjArray("11", "22", "33"),
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			{
@@ -289,4 +327,14 @@ func TestReadF1(t *testing.T) {
 			}
 		})
 	}
+}
+
+func newObjArray(vs ...string) rcont.ObjArray {
+	elems := make([]root.Object, len(vs))
+	for i, v := range vs {
+		elems[i] = rbase.NewObjString(v)
+	}
+	o := rcont.NewObjArray()
+	o.SetElems(elems)
+	return *o
 }

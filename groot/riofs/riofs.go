@@ -29,6 +29,7 @@ import (
 //go:generate go run ./gendata/gen-tntuple.go  -f ../testdata/tntuple.root
 //go:generate go run ./gendata/gen-tntupled.go -f ../testdata/tntupled.root
 //go:generate go run ./gendata/gen-tformula.go -f ../testdata/tformula.root
+//go:generate go run ./gendata/gen-tconflvl.go -f ../testdata/tconfidence-level.root
 
 // Directory describes a ROOT directory structure in memory.
 type Directory interface {

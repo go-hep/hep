@@ -57,6 +57,7 @@ const (
 	StreamerSTLstring        = 2  // ROOT version for TStreamerSTLstring
 	StreamerArtificial       = 0  // ROOT version for TStreamerArtificial
 	Axis                     = 10 // ROOT version for TAxis
+	ConfidenceLevel          = 1  // ROOT version for TConfidenceLevel
 	F1                       = 12 // ROOT version for TF1
 	F1AbsComposition         = 1  // ROOT version for TF1AbsComposition
 	F1Convolution            = 1  // ROOT version for TF1Convolution
@@ -81,6 +82,8 @@ const (
 	H2Poly                   = 3  // ROOT version for TH2Poly
 	H2PolyBin                = 1  // ROOT version for TH2PolyBin
 	H2S                      = 4  // ROOT version for TH2S
+	Limit                    = 2  // ROOT version for TLimit
+	LimitDataSource          = 2  // ROOT version for TLimitDataSource
 	Directory                = 5  // ROOT version for TDirectory
 	DirectoryFile            = 5  // ROOT version for TDirectoryFile
 	File                     = 8  // ROOT version for TFile

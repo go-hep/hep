@@ -282,6 +282,13 @@ key[004]: fconv;1 "" (TF1Convolution) => "TF1Convolution{Func1: TF1{Formula: TFo
 key[005]: fnorm;1 "" (TF1NormSum) => "TF1Convolution{Funcs: []{TF1{Formula: TFormula{[p0]+[p1]*x}}, TF1{Params: TF1Parameters{Values: [10 20], Names: [p0 p1]}}}, Coeffs: [10 20]}"
 `,
 		},
+		{
+			name: "../testdata/tconfidence-level.root",
+			want: `key[000]: clvl;1 "output for TLimit functions" (TConfidenceLevel) => ignoring key of type *rhist.ConfidenceLevel
+key[001]: limit;1 "object title" (TLimit) => ignoring key of type *rhist.Limit
+key[002]: dsrc;1 "input for TLimit routines" (TLimitDataSource) => ignoring key of type *rhist.LimitDataSource
+`,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)
