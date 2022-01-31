@@ -247,6 +247,21 @@ func TestWRBuffer(t *testing.T) {
 				dummyIDs: newObjArray("11", "22", "33"),
 			},
 		},
+		{
+			name: "TEfficiency",
+			want: func() *Efficiency {
+				f, err := riofs.Open("../testdata/tconfidence-level.root")
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer f.Close()
+				obj, err := f.Get("eff")
+				if err != nil {
+					t.Fatal(err)
+				}
+				return obj.(*Efficiency)
+			}(),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			{

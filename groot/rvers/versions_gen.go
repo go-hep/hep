@@ -58,6 +58,7 @@ const (
 	StreamerArtificial       = 0  // ROOT version for TStreamerArtificial
 	Axis                     = 10 // ROOT version for TAxis
 	ConfidenceLevel          = 1  // ROOT version for TConfidenceLevel
+	Efficiency               = 2  // ROOT version for TEfficiency
 	F1                       = 12 // ROOT version for TF1
 	F1AbsComposition         = 1  // ROOT version for TF1AbsComposition
 	F1Convolution            = 1  // ROOT version for TF1Convolution

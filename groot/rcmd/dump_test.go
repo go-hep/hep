@@ -287,6 +287,7 @@ key[005]: fnorm;1 "" (TF1NormSum) => "TF1Convolution{Funcs: []{TF1{Formula: TFor
 			want: `key[000]: clvl;1 "output for TLimit functions" (TConfidenceLevel) => ignoring key of type *rhist.ConfidenceLevel
 key[001]: limit;1 "object title" (TLimit) => ignoring key of type *rhist.Limit
 key[002]: dsrc;1 "input for TLimit routines" (TLimitDataSource) => ignoring key of type *rhist.LimitDataSource
+key[003]: eff;1 "efficiency" (TEfficiency) => ignoring key of type *rhist.Efficiency
 `,
 		},
 	} {

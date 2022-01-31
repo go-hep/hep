@@ -68,6 +68,7 @@ var (
 		// rhist
 		"TAxis",
 		"TConfidenceLevel",
+		"TEfficiency",
 		"TF1",
 		"TF1AbsComposition", "TF1Convolution", "TF1NormSum", "TF1Parameters",
 		"TFormula",

@@ -30,6 +30,8 @@ func main() {
 const script = `
 #include <vector>
 #include "TConfidenceLevel.h"
+#include "TEfficiency.h"
+#include "TF1.h"
 
 void gentconflvl(const char* fname) {
 	auto f = TFile::Open(fname, "RECREATE");
@@ -53,6 +55,12 @@ void gentconflvl(const char* fname) {
 
 	auto dsrc = new TLimitDataSource;
 	f->WriteTObject(dsrc, "dsrc");
+
+	auto eff = new TEfficiency("eff", "efficiency;x;y", 20, 0, 10);
+	eff->GetListOfFunctions()->AddFirst(new TF1("f1", "gaus", 0, 10));
+	eff->SetBetaBinParameters(1, 1, 2);
+	eff->SetBetaBinParameters(2, 2, 3);
+	f->WriteTObject(eff, "eff");
 
 	f->Write();
 	f->Close();
