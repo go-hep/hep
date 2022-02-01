@@ -19,6 +19,19 @@ import (
 )
 
 func TestWRBuffer(t *testing.T) {
+	loadFrom := func(fname, key string) rtests.ROOTer {
+		f, err := riofs.Open(fname)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+		obj, err := riofs.Dir(f).Get(key)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return obj.(rtests.ROOTer)
+	}
+
 	for _, tc := range []struct {
 		name string
 		want rtests.ROOTer
@@ -249,18 +262,15 @@ func TestWRBuffer(t *testing.T) {
 		},
 		{
 			name: "TEfficiency",
-			want: func() *Efficiency {
-				f, err := riofs.Open("../testdata/tconfidence-level.root")
-				if err != nil {
-					t.Fatal(err)
-				}
-				defer f.Close()
-				obj, err := f.Get("eff")
-				if err != nil {
-					t.Fatal(err)
-				}
-				return obj.(*Efficiency)
-			}(),
+			want: loadFrom("../testdata/tconfidence-level.root", "eff"),
+		},
+		{
+			name: "TProfile",
+			want: loadFrom("../testdata/tprofile.root", "p1d"),
+		},
+		{
+			name: "TProfile2D",
+			want: loadFrom("../testdata/tprofile.root", "p2d"),
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

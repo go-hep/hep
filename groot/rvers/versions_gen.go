@@ -85,6 +85,8 @@ const (
 	H2S                      = 4  // ROOT version for TH2S
 	Limit                    = 2  // ROOT version for TLimit
 	LimitDataSource          = 2  // ROOT version for TLimitDataSource
+	Profile                  = 7  // ROOT version for TProfile
+	Profile2D                = 8  // ROOT version for TProfile2D
 	Directory                = 5  // ROOT version for TDirectory
 	DirectoryFile            = 5  // ROOT version for TDirectoryFile
 	File                     = 8  // ROOT version for TFile
