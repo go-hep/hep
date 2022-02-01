@@ -53,6 +53,31 @@ func (f *Formula) Title() string {
 	return f.named.Title()
 }
 
+// MarshalROOT implements rbytes.Marshaler
+func (f *Formula) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	pos := w.WriteVersion(f.RVersion())
+	if n, err := f.named.MarshalROOT(w); err != nil {
+		return n, err
+	}
+	w.WriteStdVectorF64(f.clingParams)
+	w.WriteBool(f.allParamsSet)
+	if n, err := writeMapStringInt(w, f.params); err != nil {
+		return n, err
+	}
+	w.WriteString(f.formula)
+	w.WriteI32(f.ndim)
+	if n, err := writeStdVectorObjP(w, f.linearParts); err != nil {
+		return n, err
+	}
+	w.WriteBool(f.vectorized)
+
+	return w.SetByteCount(pos, f.Class())
+}
+
 func (f *Formula) UnmarshalROOT(r *rbytes.RBuffer) error {
 	if r.Err() != nil {
 		return r.Err()
@@ -79,53 +104,11 @@ func (f *Formula) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	r.ReadStdVectorF64(&f.clingParams)
 	f.allParamsSet = r.ReadBool()
-	f.params = func() map[string]int32 {
-		if r.Err() != nil {
-			return nil
-		}
-		const typename = "map<TString,int,TFormulaParamOrder>"
-		beg := r.Pos()
-		vers, pos, bcnt := r.ReadVersion(typename)
-		if vers != rvers.StreamerInfo {
-			r.SetErr(fmt.Errorf("rbytes: invalid %s version: got=%d, want=%d",
-				typename, vers, rvers.StreamerInfo,
-			))
-			return nil
-		}
-		n := int(r.ReadI32())
-		o := make(map[string]int32, n)
-		for i := 0; i < n; i++ {
-			k := r.ReadString()
-			v := r.ReadI32()
-			o[k] = v
-		}
-		r.CheckByteCount(pos, bcnt, beg, typename)
-		return o
-	}()
+	f.params = readMapStringInt(r)
 	f.formula = r.ReadString()
 	f.ndim = r.ReadI32()
 
-	f.linearParts = func() []root.Object {
-		if r.Err() != nil {
-			return nil
-		}
-		const typename = "vector<TObject*>"
-		beg := r.Pos()
-		vers, pos, bcnt := r.ReadVersion(typename)
-		if vers != rvers.StreamerInfo {
-			r.SetErr(fmt.Errorf("rbytes: invalid %s version: got=%d, want=%d",
-				typename, vers, rvers.StreamerInfo,
-			))
-			return nil
-		}
-		n := int(r.ReadI32())
-		o := make([]root.Object, n)
-		for i := range o {
-			o[i] = r.ReadObjectAny()
-		}
-		r.CheckByteCount(pos, bcnt, beg, typename)
-		return o
-	}()
+	f.linearParts = readStdVectorObjP(r)
 	f.vectorized = r.ReadBool()
 
 	r.CheckByteCount(pos, bcnt, beg, f.Class())
@@ -134,6 +117,83 @@ func (f *Formula) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 func (f *Formula) String() string {
 	return fmt.Sprintf("TFormula{%s}", f.formula)
+}
+
+func readMapStringInt(r *rbytes.RBuffer) map[string]int32 {
+	if r.Err() != nil {
+		return nil
+	}
+	const typename = "map<TString,int,TFormulaParamOrder>"
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion(typename)
+	if vers != rvers.StreamerInfo {
+		r.SetErr(fmt.Errorf("rbytes: invalid %s version: got=%d, want=%d",
+			typename, vers, rvers.StreamerInfo,
+		))
+		return nil
+	}
+	n := int(r.ReadI32())
+	o := make(map[string]int32, n)
+	for i := 0; i < n; i++ {
+		k := r.ReadString()
+		v := r.ReadI32()
+		o[k] = v
+	}
+	r.CheckByteCount(pos, bcnt, beg, typename)
+	return o
+}
+
+func readStdVectorObjP(r *rbytes.RBuffer) []root.Object {
+	if r.Err() != nil {
+		return nil
+	}
+	const typename = "vector<TObject*>"
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion(typename)
+	if vers != rvers.StreamerInfo {
+		r.SetErr(fmt.Errorf("rbytes: invalid %s version: got=%d, want=%d",
+			typename, vers, rvers.StreamerInfo,
+		))
+		return nil
+	}
+	n := int(r.ReadI32())
+	o := make([]root.Object, n)
+	for i := range o {
+		o[i] = r.ReadObjectAny()
+	}
+	r.CheckByteCount(pos, bcnt, beg, typename)
+	return o
+}
+
+func writeMapStringInt(w *rbytes.WBuffer, m map[string]int32) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+	const typename = "map<TString,int,TFormulaParamOrder>"
+	pos := w.WriteVersion(rvers.StreamerInfo)
+	w.WriteI32(int32(len(m)))
+	// FIXME(sbinet): write in correct order?
+	for k, v := range m {
+		w.WriteString(k)
+		w.WriteI32(v)
+	}
+	return w.SetByteCount(pos, typename)
+}
+
+func writeStdVectorObjP(w *rbytes.WBuffer, vs []root.Object) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+	const typename = "vector<TObject*>"
+	pos := w.WriteVersion(rvers.StreamerInfo)
+	w.WriteI32(int32(len(vs)))
+	for i := range vs {
+		err := w.WriteObjectAny(vs[i])
+		if err != nil {
+			return 0, err
+		}
+	}
+	return w.SetByteCount(pos, typename)
 }
 
 func init() {
@@ -149,5 +209,6 @@ func init() {
 var (
 	_ root.Object        = (*Formula)(nil)
 	_ root.Named         = (*Formula)(nil)
+	_ rbytes.Marshaler   = (*Formula)(nil)
 	_ rbytes.Unmarshaler = (*Formula)(nil)
 )

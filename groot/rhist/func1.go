@@ -77,6 +77,55 @@ func (f *F1) Title() string {
 	return f.named.Title()
 }
 
+// MarshalROOT implements rbytes.Marshaler
+func (f *F1) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	pos := w.WriteVersion(f.RVersion())
+	for _, v := range []rbytes.Marshaler{
+		&f.named, &f.attline, &f.attfill, &f.attmark,
+	} {
+		n, err := v.MarshalROOT(w)
+		if err != nil {
+			return n, err
+		}
+	}
+
+	w.WriteF64(f.xmin)
+	w.WriteF64(f.xmax)
+	w.WriteI32(f.npar)
+	w.WriteI32(f.ndim)
+	w.WriteI32(f.npx)
+	w.WriteI32(f.typ)
+	w.WriteI32(f.npfits)
+	w.WriteI32(f.ndf)
+	w.WriteF64(f.chi2)
+	w.WriteF64(f.fmin)
+	w.WriteF64(f.fmax)
+
+	w.WriteStdVectorF64(f.parErrs)
+	w.WriteStdVectorF64(f.parMin)
+	w.WriteStdVectorF64(f.parMax)
+	w.WriteStdVectorF64(f.save)
+
+	w.WriteBool(f.normalized)
+	w.WriteF64(f.normIntegral)
+
+	if err := w.WriteObjectAny(f.formula); err != nil {
+		return 0, err
+	}
+	if err := w.WriteObjectAny(f.params); err != nil {
+		return 0, err
+	}
+	if err := w.WriteObjectAny(f.compos); err != nil {
+		return 0, err
+	}
+
+	return w.SetByteCount(pos, f.Class())
+}
+
 func (f *F1) UnmarshalROOT(r *rbytes.RBuffer) error {
 	if r.Err() != nil {
 		return r.Err()
@@ -467,6 +516,7 @@ func init() {
 var (
 	_ root.Object        = (*F1)(nil)
 	_ root.Named         = (*F1)(nil)
+	_ rbytes.Marshaler   = (*F1)(nil)
 	_ rbytes.Unmarshaler = (*F1)(nil)
 
 	_ root.Object        = (*F1Parameters)(nil)
