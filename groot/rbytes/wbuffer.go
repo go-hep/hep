@@ -744,6 +744,22 @@ func (w *WBuffer) WriteFastArrayString(v []string) {
 	}
 }
 
+func (w *WBuffer) WriteStdVectorF64(v []float64) {
+	const typename = "vector<double>"
+	if w.err != nil {
+		return
+	}
+	var (
+		pos = w.WriteVersion(rvers.StreamerInfo)
+	)
+	w.WriteI32(int32(len(v)))
+	w.w.grow(len(v) * 8)
+	for _, v := range v {
+		w.writeF64(v)
+	}
+	_, _ = w.SetByteCount(pos, typename)
+}
+
 func (w *WBuffer) WriteStdVectorStrs(v []string) {
 	const typename = "vector<string>"
 	if w.err != nil {
