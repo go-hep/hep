@@ -267,6 +267,28 @@ func (g *genGoType) typename(se rbytes.StreamerElement) string {
 		}
 		t, ok := rmeta.CxxBuiltins[tname]
 		if !ok {
+			enum := se.Type().String()
+			switch se.Type() {
+			case rmeta.Uint8:
+				enum = "uint8_t"
+			case rmeta.Uint16:
+				enum = "uint16_t"
+			case rmeta.Uint32:
+				enum = "uint32_t"
+			case rmeta.Uint64:
+				enum = "uint64_t"
+			case rmeta.Int8:
+				enum = "int8_t"
+			case rmeta.Int16:
+				enum = "int16_t"
+			case rmeta.Int32:
+				enum = "int32_t"
+			case rmeta.Int64:
+				enum = "int64_t"
+			}
+			t, ok = rmeta.CxxBuiltins[enum]
+		}
+		if !ok {
 			panic(fmt.Errorf("gen-type: unknown C++ builtin %q", tname))
 		}
 		return t.Name()
