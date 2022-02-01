@@ -154,6 +154,20 @@ func (w *WBuffer) WriteVersion(vers int16) int64 {
 	return pos
 }
 
+func (w *WBuffer) WriteObject(obj root.Object) error {
+	if w.err != nil {
+		return w.err
+	}
+
+	if v := reflect.ValueOf(obj); (v == reflect.Value{}) || v.IsNil() {
+		w.WriteU32(0) // NULL pointer
+		return w.err
+	}
+
+	_, w.err = obj.(Marshaler).MarshalROOT(w)
+	return w.err
+}
+
 func (w *WBuffer) WriteObjectAny(obj root.Object) error {
 	if w.err != nil {
 		return w.err
