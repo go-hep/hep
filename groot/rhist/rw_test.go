@@ -272,6 +272,10 @@ func TestWRBuffer(t *testing.T) {
 			name: "TProfile2D",
 			want: loadFrom("../testdata/tprofile.root", "p2d"),
 		},
+		{
+			name: "TGraphMultiErrors",
+			want: loadFrom("../testdata/tgme.root", "gme"),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			{

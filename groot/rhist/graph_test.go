@@ -135,6 +135,59 @@ func TestGraphAsymmErrors(t *testing.T) {
 	}
 }
 
+func TestGraphMultiErrors(t *testing.T) {
+	f, err := groot.Open("../testdata/tgme.root")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	obj, err := f.Get("gme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	g, ok := obj.(rhist.GraphErrors)
+	if !ok {
+		t.Fatalf("'gme' not a rhist.GraphErrors: %T", obj)
+	}
+
+	if n, want := g.Len(), int(5); n != want {
+		t.Errorf("npts=%d. want=%d\n", n, want)
+	}
+
+	var (
+		xs   = []float64{0, 1, 2, 3, 4}
+		ys   = []float64{0, 2, 4, 1, 3}
+		xlos = []float64{0.3, 0.3, 0.3, 0.3, 0.3}
+		xhis = []float64{0.3, 0.3, 0.3, 0.3, 0.3}
+		ylos = []float64{1, 0.5, 1, 0.5, 1}
+		yhis = []float64{0.5, 1, 0.5, 1, 2}
+	)
+	for i := 0; i < g.Len(); i++ {
+		x, y := g.XY(i)
+		if x != xs[i] {
+			t.Errorf("x[%d]=%v. want=%v", i, x, xs[i])
+		}
+		if y != ys[i] {
+			t.Errorf("y[%d]=%v. want=%v", i, y, ys[i])
+		}
+		xlo, xhi := g.XError(i)
+		if want := xlos[i]; want != xlo {
+			t.Errorf("xerr[%d].low=%v want=%v", i, xlo, want)
+		}
+		if want := xhis[i]; want != xhi {
+			t.Errorf("xerr[%d].high=%v want=%v", i, xhi, want)
+		}
+		ylo, yhi := g.YError(i)
+		if want := ylos[i]; want != ylo {
+			t.Errorf("yerr[%d].low=%v want=%v", i, ylo, want)
+		}
+		if want := yhis[i]; want != yhi {
+			t.Errorf("yerr[%d].high=%v want=%v", i, yhi, want)
+		}
+	}
+}
+
 func TestInvalidGraphMerger(t *testing.T) {
 	var (
 		gr = hbook.NewS2D([]hbook.Point2D{

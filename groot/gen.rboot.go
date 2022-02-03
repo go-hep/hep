@@ -72,7 +72,7 @@ var (
 		"TF1",
 		"TF1AbsComposition", "TF1Convolution", "TF1NormSum", "TF1Parameters",
 		"TFormula",
-		"TGraph", "TGraphErrors", "TGraphAsymmErrors",
+		"TGraph", "TGraphErrors", "TGraphAsymmErrors", "TGraphMultiErrors",
 		"TH1", "TH1C", "TH1D", "TH1F", "TH1I", "TH1K", "TH1S",
 		"TH2", "TH2C", "TH2D", "TH2F", "TH2I", "TH2Poly", "TH2PolyBin", "TH2S",
 		"TLimit", "TLimitDataSource",

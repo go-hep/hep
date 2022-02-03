@@ -68,6 +68,7 @@ const (
 	Graph                    = 4  // ROOT version for TGraph
 	GraphErrors              = 3  // ROOT version for TGraphErrors
 	GraphAsymmErrors         = 3  // ROOT version for TGraphAsymmErrors
+	GraphMultiErrors         = 1  // ROOT version for TGraphMultiErrors
 	H1                       = 8  // ROOT version for TH1
 	H1C                      = 3  // ROOT version for TH1C
 	H1D                      = 3  // ROOT version for TH1D
