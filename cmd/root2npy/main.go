@@ -197,20 +197,6 @@ func process(oname, fname, tname string) error {
 	}
 	log.Printf("scanning leaves... [done]")
 
-	r, err := rtree.NewReader(tree, nt.args)
-	if err != nil {
-		return fmt.Errorf("could not create ROOT reader: %w", err)
-	}
-	defer r.Close()
-
-	err = r.Read(func(ctx rtree.RCtx) error {
-		nt.fill()
-		return nil
-	})
-	if err != nil {
-		return fmt.Errorf("could not read ROOT data: %w", err)
-	}
-
 	out, err := os.Create(oname)
 	if err != nil {
 		return fmt.Errorf("could not create NumPy file: %w", err)
@@ -220,22 +206,24 @@ func process(oname, fname, tname string) error {
 	npz := zip.NewWriter(out)
 	defer npz.Close()
 
-	work := make([]byte, 1*1024*1024)
-	for _, col := range nt.cols {
-		buf := new(bytes.Buffer)
-		err = npyio.Write(buf, col.slice.Interface())
+	wrk := make([]byte, 1*1024*1024)
+	buf := new(bytes.Buffer)
+	for i := range nt.cols {
+		col := &nt.cols[i]
+		buf.Reset()
+		err := col.process(buf, tree)
 		if err != nil {
-			return fmt.Errorf("could not write %q: %w", col.name, err)
+			return fmt.Errorf("could not process column %q: %w", col.rvar.Name, err)
 		}
 
-		wz, err := npz.Create(col.name)
+		wz, err := npz.Create(col.rvar.Name)
 		if err != nil {
-			return fmt.Errorf("could not create column %q: %w", col.name, err)
+			return fmt.Errorf("could not create column %q: %w", col.rvar.Name, err)
 		}
 
-		_, err = io.CopyBuffer(wz, buf, work)
+		_, err = io.CopyBuffer(wz, buf, wrk)
 		if err != nil {
-			return fmt.Errorf("could not save column %q: %w", col.name, err)
+			return fmt.Errorf("could not save column %q: %w", col.rvar.Name, err)
 		}
 	}
 
@@ -260,23 +248,14 @@ func process(oname, fname, tname string) error {
 type ntuple struct {
 	n    int64
 	cols []column
-	args []rtree.ReadVar
 }
 
 func (nt *ntuple) add(rvar rtree.ReadVar) {
 	nt.cols = append(nt.cols, newColumn(rvar, nt.n))
-	nt.args = append(nt.args, rvar)
-}
-
-func (nt *ntuple) fill() {
-	for i := range nt.cols {
-		col := &nt.cols[i]
-		col.fill()
-	}
 }
 
 type column struct {
-	name  string
+	rvar  rtree.ReadVar
 	i     int64
 	etype reflect.Type
 	shape []int
@@ -289,7 +268,7 @@ func newColumn(rvar rtree.ReadVar, n int64) column {
 	shape := []int{int(n)}
 	rtype := reflect.SliceOf(etype)
 	return column{
-		name:  rvar.Name,
+		rvar:  rvar,
 		i:     0,
 		etype: etype,
 		shape: shape,
@@ -298,7 +277,37 @@ func newColumn(rvar rtree.ReadVar, n int64) column {
 	}
 }
 
-func (col *column) fill() {
-	col.slice.Index(int(col.i)).Set(col.data)
-	col.i++
+func (col *column) process(w io.Writer, t rtree.Tree) error {
+	defer col.reset()
+
+	r, err := rtree.NewReader(t, []rtree.ReadVar{col.rvar})
+	if err != nil {
+		return fmt.Errorf(
+			"could not create ROOT reader for %q: %w",
+			col.rvar.Name, err,
+		)
+	}
+	defer r.Close()
+
+	err = r.Read(func(ctx rtree.RCtx) error {
+		col.slice.Index(int(col.i)).Set(col.data)
+		col.i++
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("could not read ROOT data for %q: %w", col.rvar.Name, err)
+	}
+
+	err = npyio.Write(w, col.slice.Interface())
+	if err != nil {
+		return fmt.Errorf("could not write %q: %w", col.rvar.Name, err)
+	}
+
+	return nil
+}
+
+func (col *column) reset() {
+	col.i = 0
+	col.slice = reflect.Zero(col.slice.Type())
+	col.data = reflect.Zero(col.data.Type())
 }

@@ -5,6 +5,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -97,3 +98,29 @@ func TestProcess(t *testing.T) {
 type nilNamer struct{}
 
 func (nilNamer) Name() string { return "output.npz" }
+
+func BenchmarkProcess(b *testing.B) {
+	tmp, err := os.MkdirTemp("", "root2npy-")
+	if err != nil {
+		b.Fatalf("could not create tmp dir: %+v", err)
+	}
+	defer os.RemoveAll(tmp)
+
+	const (
+		fname = "../../groot/testdata/small-flat-tree.root"
+		tname = "tree"
+	)
+	itr := 0
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		oname := filepath.Join(tmp, fmt.Sprintf("o-%d.npz", itr))
+		itr++
+		b.StartTimer()
+		err := process(oname, fname, tname)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
