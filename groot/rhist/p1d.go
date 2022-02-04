@@ -49,21 +49,14 @@ func (p *Profile1D) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(p.RVersion())
 
-	if n, err := p.h1d.MarshalROOT(w); err != nil {
-		return n, err
-	}
-
-	if n, err := p.binEntries.MarshalROOT(w); err != nil {
-		return n, err
-	}
+	w.WriteObject(&p.h1d)
+	w.WriteObject(&p.binEntries)
 	w.WriteI32(p.errMode)
 	w.WriteF64(p.ymin)
 	w.WriteF64(p.ymax)
 	w.WriteF64(p.sumwy)
 	w.WriteF64(p.sumwy2)
-	if n, err := p.binSumw2.MarshalROOT(w); err != nil {
-		return n, err
-	}
+	w.WriteObject(&p.binSumw2)
 
 	return w.SetByteCount(pos, p.Class())
 }
@@ -84,20 +77,14 @@ func (p *Profile1D) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf("rhist: too old TProfile version=%d < 7", vers))
 	}
 
-	if err := p.h1d.UnmarshalROOT(r); err != nil {
-		return err
-	}
-	if err := p.binEntries.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&p.h1d)
+	r.ReadObject(&p.binEntries)
 	p.errMode = r.ReadI32()
 	p.ymin = r.ReadF64()
 	p.ymax = r.ReadF64()
 	p.sumwy = r.ReadF64()
 	p.sumwy2 = r.ReadF64()
-	if err := p.binSumw2.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&p.binSumw2)
 
 	r.CheckByteCount(pos, bcnt, start, p.Class())
 	return r.Err()

@@ -4053,12 +4053,8 @@ func (p *PtrToAny_T) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(p.RVersion())
-	if err := w.WriteObjectAny(p.Pos); err != nil {
-		return 0, err
-	}
-	if err := w.WriteObjectAny(p.Nil); err != nil {
-		return 0, err
-	}
+	w.WriteObjectAny(p.Pos)
+	w.WriteObjectAny(p.Nil)
 
 	return w.SetByteCount(pos, p.Class())
 }

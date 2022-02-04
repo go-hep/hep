@@ -5,6 +5,7 @@
 package rbase
 
 import (
+	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbytes"
@@ -54,10 +55,14 @@ func (obj *ObjString) String() string {
 // unmarshal itself from a ROOT buffer
 func (obj *ObjString) UnmarshalROOT(r *rbytes.RBuffer) error {
 	start := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion(obj.Class())
-	if err := obj.obj.UnmarshalROOT(r); err != nil {
-		return err
+	vers, pos, bcnt := r.ReadVersion(obj.Class())
+	if vers > rvers.ObjString {
+		panic(fmt.Errorf(
+			"rbase: invalid %s version=%d > %d",
+			obj.Class(), vers, rvers.ObjString,
+		))
 	}
+	r.ReadObject(&obj.obj)
 	obj.str = r.ReadString()
 
 	r.CheckByteCount(pos, bcnt, start, obj.Class())
@@ -69,10 +74,7 @@ func (obj *ObjString) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 	pos := w.WriteVersion(obj.RVersion())
-	if _, err := obj.obj.MarshalROOT(w); err != nil {
-		return 0, err
-	}
-
+	w.WriteObject(&obj.obj)
 	w.WriteString(obj.str)
 
 	return w.SetByteCount(pos, obj.Class())

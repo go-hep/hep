@@ -105,29 +105,16 @@ func (h *th1) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(h.RVersion())
-	for _, v := range []rbytes.Marshaler{
-		&h.Named,
-		&h.attline,
-		&h.attfill,
-		&h.attmarker,
-	} {
-		if _, err := v.MarshalROOT(w); err != nil {
-			return 0, err
-		}
-	}
+	w.WriteObject(&h.Named)
+	w.WriteObject(&h.attline)
+	w.WriteObject(&h.attfill)
+	w.WriteObject(&h.attmarker)
 
 	w.WriteI32(int32(h.ncells))
 
-	for _, v := range []rbytes.Marshaler{
-		&h.xaxis,
-		&h.yaxis,
-		&h.zaxis,
-	} {
-		if _, err := v.MarshalROOT(w); err != nil {
-			return 0, err
-		}
-	}
-
+	w.WriteObject(&h.xaxis)
+	w.WriteObject(&h.yaxis)
+	w.WriteObject(&h.zaxis)
 	w.WriteI16(h.boffset)
 	w.WriteI16(h.bwidth)
 	w.WriteF64(h.entries)
@@ -138,22 +125,14 @@ func (h *th1) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteF64(h.max)
 	w.WriteF64(h.min)
 	w.WriteF64(h.norm)
-	if _, err := h.contour.MarshalROOT(w); err != nil {
-		return 0, err
-	}
-
-	if _, err := h.sumw2.MarshalROOT(w); err != nil {
-		return 0, err
-	}
-
+	w.WriteObject(&h.contour)
+	w.WriteObject(&h.sumw2)
 	w.WriteString(h.opt)
-	if _, err := h.funcs.MarshalROOT(w); err != nil {
-		return 0, err
-	}
+	w.WriteObject(&h.funcs)
 
 	w.WriteI32(int32(len(h.buffer)))
 	w.WriteI8(0) // FIXME(sbinet)
-	w.WriteFastArrayF64(h.buffer)
+	w.WriteArrayF64(h.buffer)
 	w.WriteI32(h.erropt)
 	if h.RVersion() > 7 {
 		w.WriteI32(h.oflow)
@@ -173,28 +152,16 @@ func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf("rhist: invalid TH1 version=%d > %d", vers, rvers.H1))
 	}
 
-	for _, v := range []rbytes.Unmarshaler{
-		&h.Named,
-		&h.attline,
-		&h.attfill,
-		&h.attmarker,
-	} {
-		if err := v.UnmarshalROOT(r); err != nil {
-			return err
-		}
-	}
+	r.ReadObject(&h.Named)
+	r.ReadObject(&h.attline)
+	r.ReadObject(&h.attfill)
+	r.ReadObject(&h.attmarker)
 
 	h.ncells = int(r.ReadI32())
 
-	for _, v := range []rbytes.Unmarshaler{
-		&h.xaxis,
-		&h.yaxis,
-		&h.zaxis,
-	} {
-		if err := v.UnmarshalROOT(r); err != nil {
-			return err
-		}
-	}
+	r.ReadObject(&h.xaxis)
+	r.ReadObject(&h.yaxis)
+	r.ReadObject(&h.zaxis)
 
 	h.boffset = r.ReadI16()
 	h.bwidth = r.ReadI16()
@@ -214,19 +181,12 @@ func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
 		h.max = r.ReadF64()
 		h.min = r.ReadF64()
 		h.norm = r.ReadF64()
-		if err := h.contour.UnmarshalROOT(r); err != nil {
-			return err
-		}
+		r.ReadObject(&h.contour)
 	}
 
-	if err := h.sumw2.UnmarshalROOT(r); err != nil {
-		return err
-	}
-
+	r.ReadObject(&h.sumw2)
 	h.opt = r.ReadString()
-	if err := h.funcs.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&h.funcs)
 
 	if vers > 3 {
 		n := int(r.ReadI32())
@@ -274,10 +234,7 @@ func (h *th2) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(h.RVersion())
 
-	if _, err := h.th1.MarshalROOT(w); err != nil {
-		return 0, err
-	}
-
+	w.WriteObject(&h.th1)
 	w.WriteF64(h.scale)
 	w.WriteF64(h.tsumwy)
 	w.WriteF64(h.tsumwy2)
@@ -297,10 +254,7 @@ func (h *th2) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return fmt.Errorf("rhist: TH2 version too old (%d<3)", vers)
 	}
 
-	if err := h.th1.UnmarshalROOT(r); err != nil {
-		return err
-	}
-
+	r.ReadObject(&h.th1)
 	h.scale = r.ReadF64()
 	h.tsumwy = r.ReadF64()
 	h.tsumwy2 = r.ReadF64()

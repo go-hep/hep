@@ -28,8 +28,8 @@ type Efficiency struct {
 
 	betaBinParams [][2]float64 // parameter for prior beta distribution different bin by bin
 
-	confLvl float64     // confidence level (default = 0.683, 1 sigma)
-	funcs   *rcont.List // ->pointer to list of functions
+	confLvl float64    // confidence level (default = 0.683, 1 sigma)
+	funcs   rcont.List // ->pointer to list of functions
 
 	passedHist H1      // histogram for events which passed certain criteria
 	statOpt    int32   // defines how the confidence intervals are determined
@@ -53,38 +53,26 @@ func (o *Efficiency) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(o.RVersion())
 
-	for _, v := range []rbytes.Marshaler{
-		&o.named, &o.attline, &o.attfill, &o.attmark,
-	} {
-		n, err := v.MarshalROOT(w)
-		if err != nil {
-			return n, err
-		}
-	}
+	w.WriteObject(&o.named)
+	w.WriteObject(&o.attline)
+	w.WriteObject(&o.attfill)
+	w.WriteObject(&o.attmark)
 	w.WriteF64(o.betaAlpha)
 	w.WriteF64(o.betaBeta)
-	if n, err := writeVecPairF64(w, o.betaBinParams); err != nil {
-		return n, err
-	}
+	writeVecPairF64(w, o.betaBinParams)
 	w.WriteF64(o.confLvl)
-	if err := w.WriteObject(o.funcs); err != nil { // obj-ptr
-		return 0, err
-	}
-	if err := w.WriteObjectAny(o.passedHist); err != nil { // obj-ptr
-		return 0, err
-	}
+	w.WriteObject(&o.funcs)        // obj-ptr
+	w.WriteObjectAny(o.passedHist) // obj-ptr
 	w.WriteI32(o.statOpt)
-	if err := w.WriteObjectAny(o.totHist); err != nil { // obj-ptr
-		return 0, err
-	}
+	w.WriteObjectAny(o.totHist) // obj-ptr
 	w.WriteF64(o.weight)
 
 	return w.SetByteCount(pos, o.Class())
 }
 
-func writeVecPairF64(w *rbytes.WBuffer, vs [][2]float64) (int, error) {
+func writeVecPairF64(w *rbytes.WBuffer, vs [][2]float64) {
 	if w.Err() != nil {
-		return 0, w.Err()
+		return
 	}
 
 	pos := w.WriteVersion(rvers.StreamerInfo | rbytes.StreamedMemberWise)
@@ -97,7 +85,8 @@ func writeVecPairF64(w *rbytes.WBuffer, vs [][2]float64) (int, error) {
 	for i := range vs {
 		w.WriteF64(vs[i][1])
 	}
-	return w.SetByteCount(pos, "vector<pair<double,double> >")
+
+	_, _ = w.SetByteCount(pos, "vector<pair<double,double> >")
 }
 
 // UnmarshalROOT implements rbytes.Unmarshaler
@@ -112,26 +101,17 @@ func (o *Efficiency) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf("rhist: invalid TEfficiency version=%d > %d", vers, rvers.Efficiency))
 	}
 
-	for _, v := range []rbytes.Unmarshaler{
-		&o.named, &o.attline, &o.attfill, &o.attmark,
-	} {
-		err := v.UnmarshalROOT(r)
-		if err != nil {
-			return err
-		}
-	}
+	r.ReadObject(&o.named)
+	r.ReadObject(&o.attline)
+	r.ReadObject(&o.attfill)
+	r.ReadObject(&o.attmark)
 	o.betaAlpha = r.ReadF64()
 	o.betaBeta = r.ReadF64()
 	if err := readVecPairF64(r, &o.betaBinParams); err != nil {
 		return err
 	}
 	o.confLvl = r.ReadF64()
-	{
-		o.funcs = nil
-		if oo := r.ReadObject("TList"); oo != nil { // obj-ptr
-			o.funcs = oo.(*rcont.List)
-		}
-	}
+	r.ReadObject(&o.funcs)
 	{
 		o.passedHist = nil
 		if oo := r.ReadObjectAny(); oo != nil { // obj-ptr

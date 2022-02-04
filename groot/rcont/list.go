@@ -76,18 +76,11 @@ func (li *List) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(li.RVersion())
-	if _, err := li.obj.MarshalROOT(w); err != nil {
-		return 0, err
-	}
-
+	w.WriteObject(&li.obj)
 	w.WriteString(li.name)
 	w.WriteI32(int32(len(li.objs)))
 	for _, obj := range li.objs {
-		err := w.WriteObjectAny(obj)
-		if err != nil {
-			return 0, err
-		}
-
+		w.WriteObjectAny(obj)
 		w.WriteU8(0) // FIXME(sbinet): properly serialize the 'OPTION'.
 	}
 
@@ -107,10 +100,7 @@ func (li *List) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return fmt.Errorf("rcont: TList version too old (%d <= 3)", vers)
 	}
 
-	if err := li.obj.UnmarshalROOT(r); err != nil {
-		return err
-	}
-
+	r.ReadObject(&li.obj)
 	li.name = r.ReadString()
 	size := int(r.ReadI32())
 

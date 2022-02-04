@@ -53,10 +53,7 @@ func (vec *Vector3) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(vec.RVersion())
-	if _, err := vec.obj.MarshalROOT(w); err != nil {
-		return 0, err
-	}
-
+	w.WriteObject(&vec.obj)
 	w.WriteF64(vec.x)
 	w.WriteF64(vec.y)
 	w.WriteF64(vec.z)
@@ -72,11 +69,15 @@ func (vec *Vector3) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
 	vers, pos, bcnt := r.ReadVersion(vec.Class())
+	if vers > rvers.Vector3 {
+		panic(fmt.Errorf(
+			"rphys: invalid %s version=%d > %d",
+			vec.Class(), vers, vec.RVersion(),
+		))
+	}
 
 	if vers != 2 {
-		if err := vec.obj.UnmarshalROOT(r); err != nil {
-			return err
-		}
+		r.ReadObject(&vec.obj)
 	}
 
 	vec.x = r.ReadF64()

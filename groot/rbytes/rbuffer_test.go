@@ -71,7 +71,7 @@ func BenchmarkReadF64s(b *testing.B) {
 			for i := range sli {
 				sli[i] = rnd.Float64()
 			}
-			wbuf.WriteFastArrayF64(sli)
+			wbuf.WriteArrayF64(sli)
 
 			rbuf := NewRBuffer(wbuf.Bytes(), nil, 0, nil)
 			b.ReportAllocs()
@@ -96,7 +96,7 @@ func BenchmarkReadF32s(b *testing.B) {
 			for i := range sli {
 				sli[i] = float32(rnd.Float64())
 			}
-			wbuf.WriteFastArrayF32(sli)
+			wbuf.WriteArrayF32(sli)
 
 			rbuf := NewRBuffer(wbuf.Bytes(), nil, 0, nil)
 			b.ReportAllocs()

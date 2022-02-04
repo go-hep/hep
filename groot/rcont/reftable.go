@@ -56,28 +56,21 @@ func (tbl *RefTable) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tbl.RVersion())
-	if _, err := tbl.obj.MarshalROOT(w); err != nil {
-		return 0, err
-	}
-
+	w.WriteObject(&tbl.obj)
 	w.WriteI32(tbl.size)
 	{
 		var obj root.Object
 		if tbl.parents != nil {
 			obj = tbl.parents
 		}
-		if err := w.WriteObjectAny(obj); err != nil {
-			return 0, err
-		}
+		w.WriteObjectAny(obj)
 	}
 	{
 		var obj root.Object
 		if tbl.owner != nil {
 			obj = tbl.owner
 		}
-		if err := w.WriteObjectAny(obj); err != nil {
-			return 0, err
-		}
+		w.WriteObjectAny(obj)
 	}
 	w.WriteStdVectorStrs(tbl.guids)
 
@@ -97,10 +90,7 @@ func (tbl *RefTable) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return fmt.Errorf("rcont: TRefTable version too old (%d < 3)", vers)
 	}
 
-	if err := tbl.obj.UnmarshalROOT(r); err != nil {
-		return err
-	}
-
+	r.ReadObject(&tbl.obj)
 	tbl.size = r.ReadI32()
 	{
 		obj := r.ReadObjectAny()

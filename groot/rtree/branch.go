@@ -250,22 +250,14 @@ func (b *tbranch) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(b.RVersion())
-	if n, err := b.named.MarshalROOT(w); err != nil {
-		return n, err
-	}
-	if n, err := b.attfill.MarshalROOT(w); err != nil {
-		return n, err
-	}
+	w.WriteObject(&b.named)
+	w.WriteObject(&b.attfill)
 	w.WriteI32(int32(b.compress))
 	w.WriteI32(int32(b.basketSize))
 	w.WriteI32(int32(b.entryOffsetLen))
 	w.WriteI32(int32(b.writeBasket))
 	w.WriteI64(b.entryNumber)
-
-	if n, err := b.iobits.MarshalROOT(w); err != nil {
-		return n, err
-	}
-
+	w.WriteObject(&b.iobits)
 	w.WriteI32(int32(b.offset))
 	w.WriteI32(int32(b.maxBaskets))
 	w.WriteI32(int32(b.splitLevel))
@@ -318,30 +310,30 @@ func (b *tbranch) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	{
 		sli := b.basketBytes[:b.writeBasket]
 		w.WriteI8(1)
-		w.WriteFastArrayI32(sli)
+		w.WriteArrayI32(sli)
 		if n := b.maxBaskets - len(sli); n > 0 {
 			// fill up with zeros.
-			w.WriteFastArrayI32(make([]int32, n))
+			w.WriteArrayI32(make([]int32, n))
 		}
 	}
 
 	{
 		sli := b.basketEntry[:b.writeBasket+1]
 		w.WriteI8(1)
-		w.WriteFastArrayI64(sli)
+		w.WriteArrayI64(sli)
 		if n := b.maxBaskets - len(sli); n > 0 {
 			// fill up with zeros.
-			w.WriteFastArrayI64(make([]int64, n))
+			w.WriteArrayI64(make([]int64, n))
 		}
 	}
 
 	{
 		sli := b.basketSeek[:b.writeBasket]
 		w.WriteI8(1)
-		w.WriteFastArrayI64(sli)
+		w.WriteArrayI64(sli)
 		if n := b.maxBaskets - len(sli); n > 0 {
 			// fill up with zeros.
-			w.WriteFastArrayI64(make([]int64, n))
+			w.WriteArrayI64(make([]int64, n))
 		}
 	}
 
@@ -370,13 +362,8 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 	switch {
 	case vers >= 10:
 
-		if err := b.named.UnmarshalROOT(r); err != nil {
-			return err
-		}
-
-		if err := b.attfill.UnmarshalROOT(r); err != nil {
-			return err
-		}
+		r.ReadObject(&b.named)
+		r.ReadObject(&b.attfill)
 
 		b.compress = int(r.ReadI32())
 		b.basketSize = int(r.ReadI32())
@@ -465,14 +452,10 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 		b.fname = r.ReadString()
 
 	case vers >= 6:
-		if err := b.named.UnmarshalROOT(r); err != nil {
-			return err
-		}
+		r.ReadObject(&b.named)
 
 		if vers > 7 {
-			if err := b.attfill.UnmarshalROOT(r); err != nil {
-				return err
-			}
+			r.ReadObject(&b.attfill)
 		}
 
 		b.compress = int(r.ReadI32())
@@ -804,9 +787,7 @@ func (b *tbranchObject) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(b.RVersion())
-	if n, err := b.tbranch.MarshalROOT(w); err != nil {
-		return n, err
-	}
+	w.WriteObject(&b.tbranch)
 	w.WriteString(b.class)
 
 	return w.SetByteCount(pos, b.Class())
@@ -826,9 +807,7 @@ func (b *tbranchObject) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	if err := b.tbranch.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&b.tbranch)
 
 	for _, leaf := range b.leaves {
 		switch leaf := leaf.(type) {
@@ -921,9 +900,7 @@ func (b *tbranchElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(b.RVersion())
-	if n, err := b.tbranch.MarshalROOT(w); err != nil {
-		return n, err
-	}
+	w.WriteObject(&b.tbranch)
 	w.WriteString(b.class)
 	w.WriteString(b.parent)
 	w.WriteString(b.clones)
@@ -939,18 +916,14 @@ func (b *tbranchElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		if b.bcount1 != nil {
 			obj = b.bcount1
 		}
-		if err := w.WriteObjectAny(obj); err != nil {
-			return int(w.Pos() - pos), err
-		}
+		w.WriteObjectAny(obj)
 	}
 	{
 		var obj root.Object
 		if b.bcount2 != nil {
 			obj = b.bcount2
 		}
-		if err := w.WriteObjectAny(obj); err != nil {
-			return int(w.Pos() - pos), err
-		}
+		w.WriteObjectAny(obj)
 	}
 
 	return w.SetByteCount(pos, b.Class())
@@ -970,9 +943,7 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	if err := b.tbranch.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&b.tbranch)
 
 	for _, leaf := range b.leaves {
 		switch leaf := leaf.(type) {

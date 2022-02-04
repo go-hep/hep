@@ -49,20 +49,14 @@ func (p2d *Profile2D) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(p2d.RVersion())
 
-	if n, err := p2d.h2d.MarshalROOT(w); err != nil {
-		return n, err
-	}
-	if n, err := p2d.binEntries.MarshalROOT(w); err != nil {
-		return n, err
-	}
+	w.WriteObject(&p2d.h2d)
+	w.WriteObject(&p2d.binEntries)
 	w.WriteI32(p2d.errMode)
 	w.WriteF64(p2d.zmin)
 	w.WriteF64(p2d.zmax)
 	w.WriteF64(p2d.sumwz)
 	w.WriteF64(p2d.sumwz2)
-	if n, err := p2d.binSumw2.MarshalROOT(w); err != nil {
-		return n, err
-	}
+	w.WriteObject(&p2d.binSumw2)
 
 	return w.SetByteCount(pos, p2d.Class())
 }
@@ -83,20 +77,14 @@ func (p2d *Profile2D) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf("rhist: too old TProfile2D version=%d < 8", vers))
 	}
 
-	if err := p2d.h2d.UnmarshalROOT(r); err != nil {
-		return err
-	}
-	if err := p2d.binEntries.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&p2d.h2d)
+	r.ReadObject(&p2d.binEntries)
 	p2d.errMode = r.ReadI32()
 	p2d.zmin = r.ReadF64()
 	p2d.zmax = r.ReadF64()
 	p2d.sumwz = r.ReadF64()
 	p2d.sumwz2 = r.ReadF64()
-	if err := p2d.binSumw2.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&p2d.binSumw2)
 
 	r.CheckByteCount(pos, bcnt, start, p2d.Class())
 	return r.Err()

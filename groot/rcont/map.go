@@ -49,14 +49,14 @@ func (m *Map) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(m.RVersion())
-	_, _ = m.obj.MarshalROOT(w)
+	w.WriteObject(&m.obj)
 	w.WriteString(m.name)
 
 	w.WriteI32(int32(len(m.tbl)))
 
 	for k, v := range m.tbl {
-		_ = w.WriteObjectAny(k)
-		_ = w.WriteObjectAny(v)
+		w.WriteObjectAny(k)
+		w.WriteObjectAny(v)
 	}
 
 	return w.SetByteCount(pos, m.Class())
@@ -73,9 +73,7 @@ func (m *Map) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(m.Class())
 
 	if vers > 2 {
-		if err := m.obj.UnmarshalROOT(r); err != nil {
-			return err
-		}
+		r.ReadObject(&m.obj)
 	}
 	if vers > 1 {
 		m.name = r.ReadString()

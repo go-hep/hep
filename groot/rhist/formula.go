@@ -60,19 +60,13 @@ func (f *Formula) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(f.RVersion())
-	if n, err := f.named.MarshalROOT(w); err != nil {
-		return n, err
-	}
+	w.WriteObject(&f.named)
 	w.WriteStdVectorF64(f.clingParams)
 	w.WriteBool(f.allParamsSet)
-	if n, err := writeMapStringInt(w, f.params); err != nil {
-		return n, err
-	}
+	writeMapStringInt(w, f.params)
 	w.WriteString(f.formula)
 	w.WriteI32(f.ndim)
-	if n, err := writeStdVectorObjP(w, f.linearParts); err != nil {
-		return n, err
-	}
+	writeStdVectorObjP(w, f.linearParts)
 	w.WriteBool(f.vectorized)
 
 	return w.SetByteCount(pos, f.Class())
@@ -94,14 +88,7 @@ func (f *Formula) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf("rhist: too old TFormula version=%d < 12", vers))
 	}
 
-	for _, v := range []rbytes.Unmarshaler{
-		&f.named,
-	} {
-		if err := v.UnmarshalROOT(r); err != nil {
-			return err
-		}
-	}
-
+	r.ReadObject(&f.named)
 	r.ReadStdVectorF64(&f.clingParams)
 	f.allParamsSet = r.ReadBool()
 	f.params = readMapStringInt(r)
@@ -165,9 +152,9 @@ func readStdVectorObjP(r *rbytes.RBuffer) []root.Object {
 	return o
 }
 
-func writeMapStringInt(w *rbytes.WBuffer, m map[string]int32) (int, error) {
+func writeMapStringInt(w *rbytes.WBuffer, m map[string]int32) {
 	if w.Err() != nil {
-		return 0, w.Err()
+		return
 	}
 	const typename = "map<TString,int,TFormulaParamOrder>"
 	pos := w.WriteVersion(rvers.StreamerInfo)
@@ -177,23 +164,20 @@ func writeMapStringInt(w *rbytes.WBuffer, m map[string]int32) (int, error) {
 		w.WriteString(k)
 		w.WriteI32(v)
 	}
-	return w.SetByteCount(pos, typename)
+	_, _ = w.SetByteCount(pos, typename)
 }
 
-func writeStdVectorObjP(w *rbytes.WBuffer, vs []root.Object) (int, error) {
+func writeStdVectorObjP(w *rbytes.WBuffer, vs []root.Object) {
 	if w.Err() != nil {
-		return 0, w.Err()
+		return
 	}
 	const typename = "vector<TObject*>"
 	pos := w.WriteVersion(rvers.StreamerInfo)
 	w.WriteI32(int32(len(vs)))
 	for i := range vs {
-		err := w.WriteObjectAny(vs[i])
-		if err != nil {
-			return 0, err
-		}
+		w.WriteObjectAny(vs[i])
 	}
-	return w.SetByteCount(pos, typename)
+	_, _ = w.SetByteCount(pos, typename)
 }
 
 func init() {

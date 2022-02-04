@@ -327,7 +327,7 @@ func (g *genStreamer) wt(t types.Type, n, meth, arr string) {
 		}
 
 	case *types.Struct:
-		g.printf("o.%s.MarshalROOT(w)\n", n)
+		g.printf("w.WriteObject(&o.%s)\n", n)
 
 	default:
 		log.Fatalf("unhandled marshal type: %v (underlying %v)", t, ut)
@@ -540,7 +540,7 @@ func (g *genStreamer) genMarshalType(t types.Type, n string) {
 	case *types.Array:
 		switch ut.Elem().Underlying().(type) {
 		case *types.Basic:
-			g.wt(ut.Elem(), n, "FastArray", "[:]")
+			g.wt(ut.Elem(), n, "Array", "[:]")
 		default:
 			g.printf("for i := range o.%s {\n", n)
 			g.wt(ut.Elem(), n+"[i]", "", "")
@@ -548,10 +548,10 @@ func (g *genStreamer) genMarshalType(t types.Type, n string) {
 		}
 
 	case *types.Slice:
-		g.wt(ut.Elem(), n, "FastArray", "")
+		g.wt(ut.Elem(), n, "Array", "")
 
 	case *types.Struct:
-		g.printf("o.%s.MarshalROOT(w)\n", n)
+		g.printf("w.WriteObject(&o.%s)\n", n)
 
 	default:
 		log.Fatalf("gen-marshal-type: unhandled type: %v (underlying: %v)\n", t, ut)

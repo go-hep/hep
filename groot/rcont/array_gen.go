@@ -52,7 +52,7 @@ func (arr *ArrayC) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.Pos()
 	w.WriteI32(int32(len(arr.Data)))
-	w.WriteFastArrayI8(arr.Data)
+	w.WriteArrayI8(arr.Data)
 
 	return int(w.Pos() - pos), w.Err()
 }
@@ -120,7 +120,7 @@ func (arr *ArrayS) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.Pos()
 	w.WriteI32(int32(len(arr.Data)))
-	w.WriteFastArrayI16(arr.Data)
+	w.WriteArrayI16(arr.Data)
 
 	return int(w.Pos() - pos), w.Err()
 }
@@ -188,7 +188,7 @@ func (arr *ArrayI) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.Pos()
 	w.WriteI32(int32(len(arr.Data)))
-	w.WriteFastArrayI32(arr.Data)
+	w.WriteArrayI32(arr.Data)
 
 	return int(w.Pos() - pos), w.Err()
 }
@@ -256,7 +256,7 @@ func (arr *ArrayL) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.Pos()
 	w.WriteI32(int32(len(arr.Data)))
-	w.WriteFastArrayI64(arr.Data)
+	w.WriteArrayI64(arr.Data)
 
 	return int(w.Pos() - pos), w.Err()
 }
@@ -324,7 +324,7 @@ func (arr *ArrayL64) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.Pos()
 	w.WriteI32(int32(len(arr.Data)))
-	w.WriteFastArrayI64(arr.Data)
+	w.WriteArrayI64(arr.Data)
 
 	return int(w.Pos() - pos), w.Err()
 }
@@ -392,7 +392,7 @@ func (arr *ArrayF) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.Pos()
 	w.WriteI32(int32(len(arr.Data)))
-	w.WriteFastArrayF32(arr.Data)
+	w.WriteArrayF32(arr.Data)
 
 	return int(w.Pos() - pos), w.Err()
 }
@@ -460,7 +460,7 @@ func (arr *ArrayD) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.Pos()
 	w.WriteI32(int32(len(arr.Data)))
-	w.WriteFastArrayF64(arr.Data)
+	w.WriteArrayF64(arr.Data)
 
 	return int(w.Pos() - pos), w.Err()
 }

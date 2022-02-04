@@ -86,14 +86,14 @@ func (arr *ObjArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(arr.RVersion())
-	_, _ = arr.obj.MarshalROOT(w)
+	w.WriteObject(&arr.obj)
 	w.WriteString(arr.name)
 
 	w.WriteI32(int32(len(arr.objs)))
 	w.WriteI32(arr.low)
 
 	for _, obj := range arr.objs {
-		_ = w.WriteObjectAny(obj)
+		w.WriteObjectAny(obj)
 	}
 
 	return w.SetByteCount(pos, arr.Class())
@@ -110,9 +110,7 @@ func (arr *ObjArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(arr.Class())
 
 	if vers > 2 {
-		if err := arr.obj.UnmarshalROOT(r); err != nil {
-			return err
-		}
+		r.ReadObject(&arr.obj)
 	}
 	if vers > 1 {
 		arr.name = r.ReadString()

@@ -82,9 +82,7 @@ func (n *Named) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf("rbase: invalid named version=%d > %d", vers, rvers.Named))
 	}
 
-	if err := n.obj.UnmarshalROOT(r); err != nil {
-		return r.Err()
-	}
+	r.ReadObject(&n.obj)
 
 	n.name = r.ReadString()
 	n.title = r.ReadString()
@@ -99,10 +97,7 @@ func (n *Named) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(n.RVersion())
-	if _, err := n.obj.MarshalROOT(w); err != nil {
-		return 0, err
-	}
-
+	w.WriteObject(&n.obj)
 	w.WriteString(n.name)
 	w.WriteString(n.title)
 

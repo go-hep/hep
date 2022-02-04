@@ -34,7 +34,8 @@ func TestRef(t *testing.T) {
 	obj.SetBit(kIsReferenced)
 
 	wbuf := rbytes.NewWBuffer(nil, nil, 0, nil)
-	_, err := obj.MarshalROOT(wbuf)
+	wbuf.WriteObject(obj)
+	err := wbuf.Err()
 	if err != nil {
 		t.Fatalf("could not marshal ROOT: %+v", err)
 	}

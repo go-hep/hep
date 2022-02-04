@@ -76,16 +76,13 @@ func (arr *RefArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(arr.RVersion())
-	if _, err := arr.obj.MarshalROOT(w); err != nil {
-		return 0, err
-	}
-
+	w.WriteObject(&arr.obj)
 	w.WriteString(arr.name)
 	w.WriteI32(int32(len(arr.refs)))
 	w.WriteI32(arr.lower)
 	w.WriteI16(0) // FIXME(sbinet): handle fPID ProcessID
 
-	w.WriteFastArrayU32(arr.refs)
+	w.WriteArrayU32(arr.refs)
 
 	return w.SetByteCount(pos, arr.Class())
 }
@@ -103,10 +100,7 @@ func (arr *RefArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return fmt.Errorf("rcont: TRefArray version too old (%d < 1)", vers)
 	}
 
-	if err := arr.obj.UnmarshalROOT(r); err != nil {
-		return err
-	}
-
+	r.ReadObject(&arr.obj)
 	arr.name = r.ReadString()
 	size := int(r.ReadI32())
 	arr.lower = r.ReadI32()

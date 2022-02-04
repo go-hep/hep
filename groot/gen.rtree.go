@@ -78,7 +78,7 @@ func genLeaves() {
 			RFuncArray: "r.ReadArrayBool",
 			ResizeFunc: "rbytes.ResizeBool",
 			WFunc:      "w.WriteBool",
-			WFuncArray: "w.WriteFastArrayBool",
+			WFuncArray: "w.WriteArrayBool",
 		},
 		{
 			Name:       "LeafB",
@@ -92,7 +92,7 @@ func genLeaves() {
 			RFuncArray: "r.ReadArrayI8",
 			ResizeFunc: "rbytes.ResizeI8",
 			WFunc:      "w.WriteI8",
-			WFuncArray: "w.WriteFastArrayI8",
+			WFuncArray: "w.WriteArrayI8",
 			Count:      true,
 		},
 		{
@@ -107,7 +107,7 @@ func genLeaves() {
 			RFuncArray: "r.ReadArrayI16",
 			ResizeFunc: "rbytes.ResizeI16",
 			WFunc:      "w.WriteI16",
-			WFuncArray: "w.WriteFastArrayI16",
+			WFuncArray: "w.WriteArrayI16",
 			Count:      true,
 		},
 		{
@@ -122,7 +122,7 @@ func genLeaves() {
 			RFuncArray: "r.ReadArrayI32",
 			ResizeFunc: "rbytes.ResizeI32",
 			WFunc:      "w.WriteI32",
-			WFuncArray: "w.WriteFastArrayI32",
+			WFuncArray: "w.WriteArrayI32",
 			Count:      true,
 		},
 		{
@@ -137,7 +137,7 @@ func genLeaves() {
 			RFuncArray: "r.ReadArrayI64",
 			ResizeFunc: "rbytes.ResizeI64",
 			WFunc:      "w.WriteI64",
-			WFuncArray: "w.WriteFastArrayI64",
+			WFuncArray: "w.WriteArrayI64",
 			Count:      true,
 		},
 		{
@@ -150,7 +150,7 @@ func genLeaves() {
 			RFuncArray: "r.ReadArrayF32",
 			ResizeFunc: "rbytes.ResizeF32",
 			WFunc:      "w.WriteF32",
-			WFuncArray: "w.WriteFastArrayF32",
+			WFuncArray: "w.WriteArrayF32",
 		},
 		{
 			Name:       "LeafD",
@@ -162,7 +162,7 @@ func genLeaves() {
 			RFuncArray: "r.ReadArrayF64",
 			ResizeFunc: "rbytes.ResizeF64",
 			WFunc:      "w.WriteF64",
-			WFuncArray: "w.WriteFastArrayF64",
+			WFuncArray: "w.WriteArrayF64",
 		},
 		{
 			Name:                "LeafF16",
@@ -174,7 +174,7 @@ func genLeaves() {
 			RFuncArray:          "r.ReadArrayF16",
 			ResizeFunc:          "rbytes.ResizeF16",
 			WFunc:               "w.WriteF16",
-			WFuncArray:          "w.WriteFastArrayF16",
+			WFuncArray:          "w.WriteArrayF16",
 			WithStreamerElement: true,
 			Meta:                "rmeta.Float16",
 		},
@@ -188,7 +188,7 @@ func genLeaves() {
 			RFuncArray:          "r.ReadArrayD32",
 			ResizeFunc:          "rbytes.ResizeD32",
 			WFunc:               "w.WriteD32",
-			WFuncArray:          "w.WriteFastArrayD32",
+			WFuncArray:          "w.WriteArrayD32",
 			WithStreamerElement: true,
 			Meta:                "rmeta.Double32",
 		},
@@ -202,7 +202,7 @@ func genLeaves() {
 			RFuncArray: "r.ReadArrayString",
 			ResizeFunc: "rbytes.ResizeStr",
 			WFunc:      "w.WriteString",
-			WFuncArray: "w.WriteFastArrayString",
+			WFuncArray: "w.WriteArrayString",
 			RangeType:  "int32",
 			RRangeFunc: "r.ReadI32()",
 			WRangeFunc: "w.WriteI32",
@@ -341,7 +341,7 @@ func (leaf *{{.Name}}) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.rvers)
-	leaf.tleaf.MarshalROOT(w)
+	w.WriteObject(&leaf.tleaf)
 {{- if .WithStreamerElement}}
 	{{.WRangeFunc}}(leaf.min, leaf.elm)
 	{{.WRangeFunc}}(leaf.max, leaf.elm)
@@ -358,9 +358,7 @@ func (leaf *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
-	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = {{.RRangeFunc}}
 	leaf.max = {{.RRangeFunc}}

@@ -154,14 +154,14 @@ func (leaf *tleaf) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.RVersion())
-	_, _ = leaf.named.MarshalROOT(w)
+	w.WriteObject(&leaf.named)
 
 	w.WriteI32(int32(leaf.len))
 	w.WriteI32(int32(leaf.etype))
 	w.WriteI32(int32(leaf.offset))
 	w.WriteBool(leaf.hasrange)
 	w.WriteBool(leaf.unsigned)
-	_ = w.WriteObjectAny(leaf.count)
+	w.WriteObjectAny(leaf.count)
 	return w.SetByteCount(pos, leaf.Class())
 }
 
@@ -171,13 +171,16 @@ func (leaf *tleaf) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	start := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion(leaf.Class())
-
-	if err := leaf.named.UnmarshalROOT(r); err != nil {
-		return err
+	vers, pos, bcnt := r.ReadVersion(leaf.Class())
+	if vers > rvers.Leaf {
+		panic(fmt.Errorf(
+			"rtree: invalid %s version=%d > %d",
+			leaf.Class(), vers, leaf.RVersion(),
+		))
 	}
-	leaf.shape = leafDims(leaf.Title())
 
+	r.ReadObject(&leaf.named)
+	leaf.shape = leafDims(leaf.Title())
 	leaf.len = int(r.ReadI32())
 	leaf.etype = int(r.ReadI32())
 	leaf.offset = int(r.ReadI32())
@@ -251,7 +254,7 @@ func (leaf *tleafObject) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.RVersion())
-	_, _ = leaf.tleaf.MarshalROOT(w)
+	w.WriteObject(&leaf.tleaf)
 	w.WriteBool(leaf.virtual)
 
 	return w.SetByteCount(pos, leaf.Class())
@@ -264,7 +267,12 @@ func (leaf *tleafObject) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
 	vers, pos, bcnt := r.ReadVersion(leaf.Class())
-	_ = leaf.tleaf.UnmarshalROOT(r)
+	if vers > rvers.LeafObject {
+		panic(fmt.Errorf(
+			"rtree: invalid %s version=%d > %d",
+			leaf.Class(), vers, leaf.RVersion(),
+		))
+	}
 
 	if vers < 4 {
 		panic(fmt.Errorf(
@@ -273,6 +281,8 @@ func (leaf *tleafObject) UnmarshalROOT(r *rbytes.RBuffer) error {
 			vers,
 		))
 	}
+
+	r.ReadObject(&leaf.tleaf)
 	leaf.virtual = r.ReadBool()
 
 	if !rtypes.Factory.HasKey(leaf.Title()) {
@@ -341,7 +351,7 @@ func (leaf *tleafElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.rvers)
-	_, _ = leaf.tleaf.MarshalROOT(w)
+	w.WriteObject(&leaf.tleaf)
 	w.WriteI32(leaf.id)
 	w.WriteI32(leaf.ltype)
 
@@ -355,9 +365,15 @@ func (leaf *tleafElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	beg := r.Pos()
 
 	vers, pos, bcnt := r.ReadVersion(leaf.Class())
+	if vers > rvers.LeafElement {
+		panic(fmt.Errorf(
+			"rtree: invalid %s version=%d > %d",
+			leaf.Class(), vers, leaf.RVersion(),
+		))
+	}
 	leaf.rvers = vers
 
-	_ = leaf.tleaf.UnmarshalROOT(r)
+	r.ReadObject(&leaf.tleaf)
 	leaf.id = r.ReadI32()
 	leaf.ltype = r.ReadI32()
 

@@ -79,7 +79,7 @@ func (leaf *LeafO) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.rvers)
-	leaf.tleaf.MarshalROOT(w)
+	w.WriteObject(&leaf.tleaf)
 	w.WriteBool(leaf.min)
 	w.WriteBool(leaf.max)
 
@@ -91,9 +91,7 @@ func (leaf *LeafO) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
-	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadBool()
 	leaf.max = r.ReadBool()
@@ -185,10 +183,10 @@ func (leaf *LeafO) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 			n = max
 		}
 		end := leaf.tleaf.len * n
-		w.WriteFastArrayBool((*leaf.sli)[:end])
+		w.WriteArrayBool((*leaf.sli)[:end])
 		nbytes += leaf.tleaf.etype * end
 	default:
-		w.WriteFastArrayBool((*leaf.sli)[:leaf.tleaf.len])
+		w.WriteArrayBool((*leaf.sli)[:leaf.tleaf.len])
 		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
@@ -289,7 +287,7 @@ func (leaf *LeafB) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.rvers)
-	leaf.tleaf.MarshalROOT(w)
+	w.WriteObject(&leaf.tleaf)
 	w.WriteI8(leaf.min)
 	w.WriteI8(leaf.max)
 
@@ -301,9 +299,7 @@ func (leaf *LeafB) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
-	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadI8()
 	leaf.max = r.ReadI8()
@@ -407,10 +403,10 @@ func (leaf *LeafB) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 			n = max
 		}
 		end := leaf.tleaf.len * n
-		w.WriteFastArrayI8((*leaf.sli)[:end])
+		w.WriteArrayI8((*leaf.sli)[:end])
 		nbytes += leaf.tleaf.etype * end
 	default:
-		w.WriteFastArrayI8((*leaf.sli)[:leaf.tleaf.len])
+		w.WriteArrayI8((*leaf.sli)[:leaf.tleaf.len])
 		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
@@ -511,7 +507,7 @@ func (leaf *LeafS) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.rvers)
-	leaf.tleaf.MarshalROOT(w)
+	w.WriteObject(&leaf.tleaf)
 	w.WriteI16(leaf.min)
 	w.WriteI16(leaf.max)
 
@@ -523,9 +519,7 @@ func (leaf *LeafS) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
-	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadI16()
 	leaf.max = r.ReadI16()
@@ -629,10 +623,10 @@ func (leaf *LeafS) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 			n = max
 		}
 		end := leaf.tleaf.len * n
-		w.WriteFastArrayI16((*leaf.sli)[:end])
+		w.WriteArrayI16((*leaf.sli)[:end])
 		nbytes += leaf.tleaf.etype * end
 	default:
-		w.WriteFastArrayI16((*leaf.sli)[:leaf.tleaf.len])
+		w.WriteArrayI16((*leaf.sli)[:leaf.tleaf.len])
 		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
@@ -733,7 +727,7 @@ func (leaf *LeafI) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.rvers)
-	leaf.tleaf.MarshalROOT(w)
+	w.WriteObject(&leaf.tleaf)
 	w.WriteI32(leaf.min)
 	w.WriteI32(leaf.max)
 
@@ -745,9 +739,7 @@ func (leaf *LeafI) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
-	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadI32()
 	leaf.max = r.ReadI32()
@@ -851,10 +843,10 @@ func (leaf *LeafI) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 			n = max
 		}
 		end := leaf.tleaf.len * n
-		w.WriteFastArrayI32((*leaf.sli)[:end])
+		w.WriteArrayI32((*leaf.sli)[:end])
 		nbytes += leaf.tleaf.etype * end
 	default:
-		w.WriteFastArrayI32((*leaf.sli)[:leaf.tleaf.len])
+		w.WriteArrayI32((*leaf.sli)[:leaf.tleaf.len])
 		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
@@ -955,7 +947,7 @@ func (leaf *LeafL) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.rvers)
-	leaf.tleaf.MarshalROOT(w)
+	w.WriteObject(&leaf.tleaf)
 	w.WriteI64(leaf.min)
 	w.WriteI64(leaf.max)
 
@@ -967,9 +959,7 @@ func (leaf *LeafL) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
-	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadI64()
 	leaf.max = r.ReadI64()
@@ -1073,10 +1063,10 @@ func (leaf *LeafL) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 			n = max
 		}
 		end := leaf.tleaf.len * n
-		w.WriteFastArrayI64((*leaf.sli)[:end])
+		w.WriteArrayI64((*leaf.sli)[:end])
 		nbytes += leaf.tleaf.etype * end
 	default:
-		w.WriteFastArrayI64((*leaf.sli)[:leaf.tleaf.len])
+		w.WriteArrayI64((*leaf.sli)[:leaf.tleaf.len])
 		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
@@ -1157,7 +1147,7 @@ func (leaf *LeafF) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.rvers)
-	leaf.tleaf.MarshalROOT(w)
+	w.WriteObject(&leaf.tleaf)
 	w.WriteF32(leaf.min)
 	w.WriteF32(leaf.max)
 
@@ -1169,9 +1159,7 @@ func (leaf *LeafF) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
-	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadF32()
 	leaf.max = r.ReadF32()
@@ -1266,10 +1254,10 @@ func (leaf *LeafF) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 			n = max
 		}
 		end := leaf.tleaf.len * n
-		w.WriteFastArrayF32((*leaf.sli)[:end])
+		w.WriteArrayF32((*leaf.sli)[:end])
 		nbytes += leaf.tleaf.etype * end
 	default:
-		w.WriteFastArrayF32((*leaf.sli)[:leaf.tleaf.len])
+		w.WriteArrayF32((*leaf.sli)[:leaf.tleaf.len])
 		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
@@ -1350,7 +1338,7 @@ func (leaf *LeafD) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.rvers)
-	leaf.tleaf.MarshalROOT(w)
+	w.WriteObject(&leaf.tleaf)
 	w.WriteF64(leaf.min)
 	w.WriteF64(leaf.max)
 
@@ -1362,9 +1350,7 @@ func (leaf *LeafD) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
-	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadF64()
 	leaf.max = r.ReadF64()
@@ -1459,10 +1445,10 @@ func (leaf *LeafD) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 			n = max
 		}
 		end := leaf.tleaf.len * n
-		w.WriteFastArrayF64((*leaf.sli)[:end])
+		w.WriteArrayF64((*leaf.sli)[:end])
 		nbytes += leaf.tleaf.etype * end
 	default:
-		w.WriteFastArrayF64((*leaf.sli)[:leaf.tleaf.len])
+		w.WriteArrayF64((*leaf.sli)[:leaf.tleaf.len])
 		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
@@ -1545,7 +1531,7 @@ func (leaf *LeafF16) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.rvers)
-	leaf.tleaf.MarshalROOT(w)
+	w.WriteObject(&leaf.tleaf)
 	w.WriteF16(leaf.min, leaf.elm)
 	w.WriteF16(leaf.max, leaf.elm)
 
@@ -1557,9 +1543,7 @@ func (leaf *LeafF16) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
-	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadF16(leaf.elm)
 	leaf.max = r.ReadF16(leaf.elm)
@@ -1663,10 +1647,10 @@ func (leaf *LeafF16) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 			n = max
 		}
 		end := leaf.tleaf.len * n
-		w.WriteFastArrayF16((*leaf.sli)[:end], leaf.elm)
+		w.WriteArrayF16((*leaf.sli)[:end], leaf.elm)
 		nbytes += leaf.tleaf.etype * end
 	default:
-		w.WriteFastArrayF16((*leaf.sli)[:leaf.tleaf.len], leaf.elm)
+		w.WriteArrayF16((*leaf.sli)[:leaf.tleaf.len], leaf.elm)
 		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
@@ -1749,7 +1733,7 @@ func (leaf *LeafD32) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.rvers)
-	leaf.tleaf.MarshalROOT(w)
+	w.WriteObject(&leaf.tleaf)
 	w.WriteD32(leaf.min, leaf.elm)
 	w.WriteD32(leaf.max, leaf.elm)
 
@@ -1761,9 +1745,7 @@ func (leaf *LeafD32) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
-	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadD32(leaf.elm)
 	leaf.max = r.ReadD32(leaf.elm)
@@ -1867,10 +1849,10 @@ func (leaf *LeafD32) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 			n = max
 		}
 		end := leaf.tleaf.len * n
-		w.WriteFastArrayD32((*leaf.sli)[:end], leaf.elm)
+		w.WriteArrayD32((*leaf.sli)[:end], leaf.elm)
 		nbytes += leaf.tleaf.etype * end
 	default:
-		w.WriteFastArrayD32((*leaf.sli)[:leaf.tleaf.len], leaf.elm)
+		w.WriteArrayD32((*leaf.sli)[:leaf.tleaf.len], leaf.elm)
 		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 
@@ -1951,7 +1933,7 @@ func (leaf *LeafC) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(leaf.rvers)
-	leaf.tleaf.MarshalROOT(w)
+	w.WriteObject(&leaf.tleaf)
 	w.WriteI32(leaf.min)
 	w.WriteI32(leaf.max)
 
@@ -1963,9 +1945,7 @@ func (leaf *LeafC) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(leaf.Class())
 	leaf.rvers = vers
 
-	if err := leaf.tleaf.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadI32()
 	leaf.max = r.ReadI32()
@@ -2064,10 +2044,10 @@ func (leaf *LeafC) writeToBuffer(w *rbytes.WBuffer) (int, error) {
 			n = max
 		}
 		end := leaf.tleaf.len * n
-		w.WriteFastArrayString((*leaf.sli)[:end])
+		w.WriteArrayString((*leaf.sli)[:end])
 		nbytes += leaf.tleaf.etype * end
 	default:
-		w.WriteFastArrayString((*leaf.sli)[:leaf.tleaf.len])
+		w.WriteArrayString((*leaf.sli)[:leaf.tleaf.len])
 		nbytes += leaf.tleaf.etype * leaf.tleaf.len
 	}
 

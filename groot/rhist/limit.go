@@ -81,22 +81,15 @@ func (o *LimitDataSource) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(o.RVersion())
 
-	for _, v := range []rbytes.Marshaler{
-		&o.base,
-		&o.sig,
-		&o.bkg,
-		&o.data,
-		&o.sigErr,
-		&o.bkgErr,
-		&o.ids,
-		&o.dummyTA,
-		&o.dummyIDs,
-	} {
-		n, err := v.MarshalROOT(w)
-		if err != nil {
-			return n, err
-		}
-	}
+	w.WriteObject(&o.base)
+	w.WriteObject(&o.sig)
+	w.WriteObject(&o.bkg)
+	w.WriteObject(&o.data)
+	w.WriteObject(&o.sigErr)
+	w.WriteObject(&o.bkgErr)
+	w.WriteObject(&o.ids)
+	w.WriteObject(&o.dummyTA)
+	w.WriteObject(&o.dummyIDs)
 
 	return w.SetByteCount(pos, o.Class())
 }
@@ -113,22 +106,15 @@ func (o *LimitDataSource) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf("rhist: invalid TLimitDataSource version=%d > %d", vers, rvers.LimitDataSource))
 	}
 
-	for _, v := range []rbytes.Unmarshaler{
-		&o.base,
-		&o.sig,
-		&o.bkg,
-		&o.data,
-		&o.sigErr,
-		&o.bkgErr,
-		&o.ids,
-		&o.dummyTA,
-		&o.dummyIDs,
-	} {
-		err := v.UnmarshalROOT(r)
-		if err != nil {
-			return err
-		}
-	}
+	r.ReadObject(&o.base)
+	r.ReadObject(&o.sig)
+	r.ReadObject(&o.bkg)
+	r.ReadObject(&o.data)
+	r.ReadObject(&o.sigErr)
+	r.ReadObject(&o.bkgErr)
+	r.ReadObject(&o.ids)
+	r.ReadObject(&o.dummyTA)
+	r.ReadObject(&o.dummyIDs)
 
 	r.CheckByteCount(pos, bcnt, start, o.Class())
 	return r.Err()

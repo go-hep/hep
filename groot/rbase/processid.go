@@ -61,9 +61,7 @@ func (pid *ProcessID) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf("rbase: invalid %s version=%d > %d", pid.Class(), vers, rvers.ProcessID))
 	}
 
-	if err := pid.named.UnmarshalROOT(r); err != nil {
-		return r.Err()
-	}
+	r.ReadObject(&pid.named)
 
 	r.CheckByteCount(pos, bcnt, beg, pid.Class())
 	return r.Err()
@@ -75,9 +73,7 @@ func (pid *ProcessID) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(pid.RVersion())
-	if _, err := pid.named.MarshalROOT(w); err != nil {
-		return 0, err
-	}
+	w.WriteObject(&pid.named)
 
 	return w.SetByteCount(pos, pid.Class())
 }

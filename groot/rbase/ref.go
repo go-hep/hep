@@ -70,9 +70,7 @@ func (ref *Ref) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	if err := ref.obj.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&ref.obj)
 
 	switch {
 	case ref.obj.TestBits(kHasUUID):
@@ -90,9 +88,7 @@ func (ref *Ref) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	beg := w.Pos()
-	if _, err := ref.obj.MarshalROOT(w); err != nil {
-		return 0, err
-	}
+	w.WriteObject(&ref.obj)
 
 	switch {
 	case ref.obj.TestBits(kHasUUID):

@@ -154,49 +154,45 @@ func (w *WBuffer) WriteVersion(vers int16) int64 {
 	return pos
 }
 
-func (w *WBuffer) WriteObject(obj root.Object) error {
+func (w *WBuffer) WriteObject(obj Marshaler) {
 	if w.err != nil {
-		return w.err
+		return
 	}
 
 	if v := reflect.ValueOf(obj); (v == reflect.Value{}) || v.IsNil() {
 		w.WriteU32(0) // NULL pointer
-		return w.err
+		return
 	}
 
-	_, w.err = obj.(Marshaler).MarshalROOT(w)
-	return w.err
+	_, w.err = obj.MarshalROOT(w)
 }
 
-func (w *WBuffer) WriteObjectAny(obj root.Object) error {
+func (w *WBuffer) WriteObjectAny(obj root.Object) {
 	if w.err != nil {
-		return w.err
+		return
 	}
 
 	if v := reflect.ValueOf(obj); (v == reflect.Value{}) || v.IsNil() {
 		w.WriteU32(0) // NULL pointer
-		return w.err
+		return
 	}
 
 	pos := w.Pos()
 	w.WriteU32(0) // placeholder for bytecount.
 
-	bcnt, err := w.WriteClass(pos, obj)
-	if err != nil {
-		w.err = err
-		return w.err
+	bcnt := w.WriteClass(pos, obj)
+	if w.err != nil {
+		return
 	}
 	end := w.Pos()
 	w.setPos(pos)
 	w.writeU32(bcnt)
 	w.setPos(end)
-
-	return w.err
 }
 
-func (w *WBuffer) WriteClass(beg int64, obj root.Object) (uint32, error) {
+func (w *WBuffer) WriteClass(beg int64, obj root.Object) uint32 {
 	if w.err != nil {
-		return 0, w.err
+		return 0
 	}
 
 	start := w.Pos()
@@ -204,7 +200,7 @@ func (w *WBuffer) WriteClass(beg int64, obj root.Object) (uint32, error) {
 		// we've already seen this value.
 		w.WriteU32(uint32(ref64))
 		bcnt := w.Pos() - start
-		return uint32(bcnt | kByteCountMask), w.err
+		return uint32(bcnt | kByteCountMask)
 	}
 
 	class := obj.Class()
@@ -220,24 +216,22 @@ func (w *WBuffer) WriteClass(beg int64, obj root.Object) (uint32, error) {
 
 		mobj := obj.(Marshaler)
 		if _, err := mobj.MarshalROOT(w); err != nil {
-			w.err = err
-			return 0, w.err
+			return 0
 		}
 
 		bcnt := w.Pos() - start
-		return uint32(bcnt | kByteCountMask), w.err
+		return uint32(bcnt | kByteCountMask)
 	}
 
 	// first time we see this value
 	w.WriteU32(uint32(ref64) | kClassMask)
 	if _, err := obj.(Marshaler).MarshalROOT(w); err != nil {
-		w.err = err
-		return 0, w.err
+		return 0
 	}
 
 	w.refs[obj] = beg + kMapOffset
 	bcnt := w.Pos() - start
-	return uint32(bcnt | kByteCountMask), w.err
+	return uint32(bcnt | kByteCountMask)
 }
 
 func (w *WBuffer) write(v []byte) {
@@ -261,54 +255,11 @@ func (w *WBuffer) writeI8(v int8) {
 	w.w.c++
 }
 
-func (w *WBuffer) WriteI16(v int16) {
-	if w.err != nil {
-		return
-	}
-	const sz = 2
-	w.w.grow(sz)
-	w.writeI16(v)
-}
-
-func (w *WBuffer) writeI16(v int16) {
-	const sz = 2
-	beg := w.w.c
-	end := w.w.c + sz
-	binary.BigEndian.PutUint16(w.w.p[beg:end], uint16(v))
-	w.w.c += sz
-}
-
-func (w *WBuffer) WriteI32(v int32) {
-	if w.err != nil {
-		return
-	}
-	const sz = 4
-	w.w.grow(sz)
-	w.writeI32(v)
-}
-
 func (w *WBuffer) writeI32(v int32) {
 	const sz = 4
 	beg := w.w.c
 	end := w.w.c + sz
 	binary.BigEndian.PutUint32(w.w.p[beg:end], uint32(v))
-	w.w.c += sz
-}
-
-func (w *WBuffer) WriteI64(v int64) {
-	if w.err != nil {
-		return
-	}
-	const sz = 8
-	w.w.grow(sz)
-	w.writeI64(v)
-}
-
-func (w *WBuffer) writeI64(v int64) {
-	const sz = 8
-	beg := w.w.c
-	end := w.w.c + sz
-	binary.BigEndian.PutUint64(w.w.p[beg:end], uint64(v))
 	w.w.c += sz
 }
 
@@ -325,30 +276,12 @@ func (w *WBuffer) writeU8(v uint8) {
 	w.w.c++
 }
 
-func (w *WBuffer) WriteU16(v uint16) {
-	if w.err != nil {
-		return
-	}
-	const sz = 2
-	w.w.grow(sz)
-	w.writeU16(v)
-}
-
 func (w *WBuffer) writeU16(v uint16) {
 	const sz = 2
 	beg := w.w.c
 	end := w.w.c + sz
 	binary.BigEndian.PutUint16(w.w.p[beg:end], uint16(v))
 	w.w.c += sz
-}
-
-func (w *WBuffer) WriteU32(v uint32) {
-	if w.err != nil {
-		return
-	}
-	const sz = 4
-	w.w.grow(sz)
-	w.writeU32(v)
 }
 
 func (w *WBuffer) writeU32(v uint32) {
@@ -359,47 +292,12 @@ func (w *WBuffer) writeU32(v uint32) {
 	w.w.c += sz
 }
 
-func (w *WBuffer) WriteU64(v uint64) {
-	if w.err != nil {
-		return
-	}
-	const sz = 8
-	w.w.grow(sz)
-	w.writeU64(v)
-}
-
-func (w *WBuffer) writeU64(v uint64) {
-	const sz = 8
-	beg := w.w.c
-	end := w.w.c + sz
-	binary.BigEndian.PutUint64(w.w.p[beg:end], v)
-	w.w.c += sz
-}
-
-func (w *WBuffer) WriteF32(v float32) {
-	if w.err != nil {
-		return
-	}
-	const sz = 4
-	w.w.grow(sz)
-	w.writeF32(v)
-}
-
 func (w *WBuffer) writeF32(v float32) {
 	const sz = 4
 	beg := w.w.c
 	end := w.w.c + sz
 	binary.BigEndian.PutUint32(w.w.p[beg:end], math.Float32bits(v))
 	w.w.c += sz
-}
-
-func (w *WBuffer) WriteF64(v float64) {
-	if w.err != nil {
-		return
-	}
-	const sz = 8
-	w.w.grow(sz)
-	w.writeF64(v)
 }
 
 func (w *WBuffer) WriteF16(v root.Float16, elm StreamerElement) {
@@ -505,14 +403,6 @@ func (w *WBuffer) WriteD32(v root.Double32, elm StreamerElement) {
 	}
 }
 
-func (w *WBuffer) writeF64(v float64) {
-	const sz = 8
-	beg := w.w.c
-	end := w.w.c + sz
-	binary.BigEndian.PutUint64(w.w.p[beg:end], math.Float64bits(v))
-	w.w.c += sz
-}
-
 func (w *WBuffer) WriteBool(v bool) {
 	var o uint8
 	if v {
@@ -522,7 +412,7 @@ func (w *WBuffer) WriteBool(v bool) {
 	w.writeU8(o)
 }
 
-func (w *WBuffer) WriteSTLString(v string) {
+func (w *WBuffer) WriteStdString(v string) {
 	if w.err != nil {
 		return
 	}
@@ -595,7 +485,7 @@ func (w *WBuffer) WriteStaticArrayI32(v []int32) {
 	}
 }
 
-func (w *WBuffer) WriteFastArrayBool(v []bool) {
+func (w *WBuffer) WriteArrayBool(v []bool) {
 	if w.err != nil {
 		return
 	}
@@ -609,7 +499,7 @@ func (w *WBuffer) WriteFastArrayBool(v []bool) {
 	}
 }
 
-func (w *WBuffer) WriteFastArrayI8(v []int8) {
+func (w *WBuffer) WriteArrayI8(v []int8) {
 	if w.err != nil {
 		return
 	}
@@ -619,37 +509,7 @@ func (w *WBuffer) WriteFastArrayI8(v []int8) {
 	}
 }
 
-func (w *WBuffer) WriteFastArrayI16(v []int16) {
-	if w.err != nil {
-		return
-	}
-	w.w.grow(len(v) * 2)
-	for _, v := range v {
-		w.writeI16(v)
-	}
-}
-
-func (w *WBuffer) WriteFastArrayI32(v []int32) {
-	if w.err != nil {
-		return
-	}
-	w.w.grow(len(v) * 4)
-	for _, v := range v {
-		w.writeI32(v)
-	}
-}
-
-func (w *WBuffer) WriteFastArrayI64(v []int64) {
-	if w.err != nil {
-		return
-	}
-	w.w.grow(len(v) * 8)
-	for _, v := range v {
-		w.writeI64(v)
-	}
-}
-
-func (w *WBuffer) WriteFastArrayU8(v []uint8) {
+func (w *WBuffer) WriteArrayU8(v []uint8) {
 	if w.err != nil {
 		return
 	}
@@ -659,63 +519,13 @@ func (w *WBuffer) WriteFastArrayU8(v []uint8) {
 	}
 }
 
-func (w *WBuffer) WriteFastArrayU16(v []uint16) {
-	if w.err != nil {
-		return
-	}
-	w.w.grow(len(v) * 2)
-	for _, v := range v {
-		w.writeU16(v)
-	}
-}
-
-func (w *WBuffer) WriteFastArrayU32(v []uint32) {
-	if w.err != nil {
-		return
-	}
-	w.w.grow(len(v) * 4)
-	for _, v := range v {
-		w.writeU32(v)
-	}
-}
-
-func (w *WBuffer) WriteFastArrayU64(v []uint64) {
-	if w.err != nil {
-		return
-	}
-	w.w.grow(len(v) * 8)
-	for _, v := range v {
-		w.writeU64(v)
-	}
-}
-
-func (w *WBuffer) WriteFastArrayF32(v []float32) {
-	if w.err != nil {
-		return
-	}
-	w.w.grow(len(v) * 4)
-	for _, v := range v {
-		w.writeF32(v)
-	}
-}
-
-func (w *WBuffer) WriteFastArrayF64(v []float64) {
-	if w.err != nil {
-		return
-	}
-	w.w.grow(len(v) * 8)
-	for _, v := range v {
-		w.writeF64(v)
-	}
-}
-
-func (w *WBuffer) WriteFastArrayF16(v []root.Float16, elm StreamerElement) {
+func (w *WBuffer) WriteArrayF16(v []root.Float16, elm StreamerElement) {
 	for _, v := range v {
 		w.WriteF16(v, elm)
 	}
 }
 
-func (w *WBuffer) WriteFastArrayD32(v []root.Double32, elm StreamerElement) {
+func (w *WBuffer) WriteArrayD32(v []root.Double32, elm StreamerElement) {
 	for _, v := range v {
 		w.WriteD32(v, elm)
 	}
@@ -729,7 +539,7 @@ func (w *WBuffer) strlen(v string) int {
 	return 1 + 4 + l
 }
 
-func (w *WBuffer) WriteFastArrayString(v []string) {
+func (w *WBuffer) WriteArrayString(v []string) {
 	if w.err != nil {
 		return
 	}
@@ -742,22 +552,6 @@ func (w *WBuffer) WriteFastArrayString(v []string) {
 	for _, v := range v {
 		w.writeString(v)
 	}
-}
-
-func (w *WBuffer) WriteStdVectorF64(v []float64) {
-	const typename = "vector<double>"
-	if w.err != nil {
-		return
-	}
-	var (
-		pos = w.WriteVersion(rvers.StreamerInfo)
-	)
-	w.WriteI32(int32(len(v)))
-	w.w.grow(len(v) * 8)
-	for _, v := range v {
-		w.writeF64(v)
-	}
-	_, _ = w.SetByteCount(pos, typename)
 }
 
 func (w *WBuffer) WriteStdVectorStrs(v []string) {

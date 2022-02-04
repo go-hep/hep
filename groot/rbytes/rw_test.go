@@ -42,8 +42,8 @@ func TestReadWriteObjectAny(t *testing.T) {
 
 			wbuf := rbytes.NewWBuffer(nil, nil, 0, nil)
 			for i, v := range tc.vs {
-				err := wbuf.WriteObjectAny(v)
-				if err != nil {
+				wbuf.WriteObjectAny(v)
+				if err := wbuf.Err(); err != nil {
 					t.Fatalf("could not write named[%d]=%v: %+v", i, v, err)
 				}
 			}
@@ -169,7 +169,7 @@ func TestRWFloat16(t *testing.T) {
 				elm = makeElm(tc.name)
 			}
 			wbuf := rbytes.NewWBuffer(nil, nil, 0, nil)
-			wbuf.WriteFastArrayF16([]root.Float16{tc.v}, elm)
+			wbuf.WriteArrayF16([]root.Float16{tc.v}, elm)
 			if err := wbuf.Err(); err != nil {
 				t.Fatalf("could not write f16=%v: %+v", tc.v, err)
 			}
@@ -244,7 +244,7 @@ func TestRWDouble32(t *testing.T) {
 				elm = makeElm(tc.name)
 			}
 			wbuf := rbytes.NewWBuffer(nil, nil, 0, nil)
-			wbuf.WriteFastArrayD32([]root.Double32{tc.v}, elm)
+			wbuf.WriteArrayD32([]root.Double32{tc.v}, elm)
 			if err := wbuf.Err(); err != nil {
 				t.Fatalf("could not write d32=%v: %+v", tc.v, err)
 			}

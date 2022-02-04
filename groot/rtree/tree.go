@@ -159,18 +159,11 @@ func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(tree.RVersion())
-	if n, err := tree.named.MarshalROOT(w); err != nil {
-		return n, err
-	}
-	if n, err := tree.attline.MarshalROOT(w); err != nil {
-		return n, err
-	}
-	if n, err := tree.attfill.MarshalROOT(w); err != nil {
-		return n, err
-	}
-	if n, err := tree.attmarker.MarshalROOT(w); err != nil {
-		return n, err
-	}
+	w.WriteObject(&tree.named)
+	w.WriteObject(&tree.attline)
+	w.WriteObject(&tree.attfill)
+	w.WriteObject(&tree.attmarker)
+
 	w.WriteI64(tree.entries)
 	w.WriteI64(tree.totBytes)
 	w.WriteI64(tree.zipBytes)
@@ -192,13 +185,11 @@ func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI64(tree.estimate)
 
 	w.WriteI8(0)
-	w.WriteFastArrayI64(tree.clusters.ranges)
+	w.WriteArrayI64(tree.clusters.ranges)
 	w.WriteI8(0)
-	w.WriteFastArrayI64(tree.clusters.sizes)
+	w.WriteArrayI64(tree.clusters.sizes)
 
-	if n, err := tree.iobits.MarshalROOT(w); err != nil {
-		return n, err
-	}
+	w.WriteObject(&tree.iobits)
 
 	{
 		branches := rcont.NewObjArray()
@@ -209,9 +200,7 @@ func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 			}
 			branches.SetElems(elems)
 		}
-		if n, err := branches.MarshalROOT(w); err != nil {
-			return n, err
-		}
+		w.WriteObject(branches)
 	}
 	{
 		leaves := rcont.NewObjArray()
@@ -222,9 +211,7 @@ func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 			}
 			leaves.SetElems(elems)
 		}
-		if n, err := leaves.MarshalROOT(w); err != nil {
-			return n, err
-		}
+		w.WriteObject(leaves)
 	}
 
 	{
@@ -232,9 +219,7 @@ func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		if tree.aliases != nil {
 			obj = tree.aliases
 		}
-		if err := w.WriteObjectAny(obj); err != nil {
-			return int(w.Pos() - pos), err
-		}
+		w.WriteObjectAny(obj)
 	}
 
 	{
@@ -242,9 +227,7 @@ func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		if tree.indexValues != nil {
 			obj = tree.indexValues
 		}
-		if err := w.WriteObjectAny(obj); err != nil {
-			return int(w.Pos() - pos), err
-		}
+		w.WriteObjectAny(obj)
 	}
 
 	{
@@ -252,9 +235,7 @@ func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		if tree.index != nil {
 			obj = tree.index
 		}
-		if err := w.WriteObjectAny(obj); err != nil {
-			return int(w.Pos() - pos), err
-		}
+		w.WriteObjectAny(obj)
 	}
 
 	{
@@ -262,9 +243,7 @@ func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		if tree.treeIndex != nil {
 			obj = tree.treeIndex
 		}
-		if err := w.WriteObjectAny(obj); err != nil {
-			return int(w.Pos() - pos), err
-		}
+		w.WriteObjectAny(obj)
 	}
 
 	{
@@ -272,9 +251,7 @@ func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		if tree.friends != nil {
 			obj = tree.friends
 		}
-		if err := w.WriteObjectAny(obj); err != nil {
-			return int(w.Pos() - pos), err
-		}
+		w.WriteObjectAny(obj)
 	}
 
 	{
@@ -282,9 +259,7 @@ func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		if tree.userInfo != nil {
 			obj = tree.userInfo
 		}
-		if err := w.WriteObjectAny(obj); err != nil {
-			return int(w.Pos() - pos), err
-		}
+		w.WriteObjectAny(obj)
 	}
 
 	{
@@ -292,9 +267,7 @@ func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		if tree.branchRef != nil {
 			obj = tree.branchRef
 		}
-		if err := w.WriteObjectAny(obj); err != nil {
-			return int(w.Pos() - pos), err
-		}
+		w.WriteObjectAny(obj)
 	}
 
 	return w.SetByteCount(pos, tree.Class())
@@ -312,17 +285,10 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 	vers, pos, bcnt := r.ReadVersion(tree.Class())
 	tree.rvers = vers
 
-	for _, a := range []rbytes.Unmarshaler{
-		&tree.named,
-		&tree.attline,
-		&tree.attfill,
-		&tree.attmarker,
-	} {
-		err := a.UnmarshalROOT(r)
-		if err != nil {
-			return err
-		}
-	}
+	r.ReadObject(&tree.named)
+	r.ReadObject(&tree.attline)
+	r.ReadObject(&tree.attfill)
+	r.ReadObject(&tree.attmarker)
 
 	switch {
 	default:
@@ -660,12 +626,15 @@ func (nt *tntuple) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion(nt.Class())
-
-	if err := nt.ttree.UnmarshalROOT(r); err != nil {
-		return err
+	vers, pos, bcnt := r.ReadVersion(nt.Class())
+	if vers > rvers.Ntuple {
+		panic(fmt.Errorf(
+			"rtree: invalid %s version=%d > %d",
+			nt.Class(), vers, nt.RVersion(),
+		))
 	}
 
+	r.ReadObject(&nt.ttree)
 	nt.nvars = int(r.ReadI32())
 
 	r.CheckByteCount(pos, bcnt, beg, nt.Class())
@@ -691,12 +660,15 @@ func (nt *tntupleD) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion(nt.Class())
-
-	if err := nt.ttree.UnmarshalROOT(r); err != nil {
-		return err
+	vers, pos, bcnt := r.ReadVersion(nt.Class())
+	if vers > rvers.NtupleD {
+		panic(fmt.Errorf(
+			"rtree: invalid %s version=%d > %d",
+			nt.Class(), vers, nt.RVersion(),
+		))
 	}
 
+	r.ReadObject(&nt.ttree)
 	nt.nvars = int(r.ReadI32())
 
 	r.CheckByteCount(pos, bcnt, beg, nt.Class())
@@ -704,6 +676,10 @@ func (nt *tntupleD) UnmarshalROOT(r *rbytes.RBuffer) error {
 }
 
 type tioFeatures uint8
+
+func (*tioFeatures) RVersion() int16 {
+	return rvers.ROOT_IOFeatures
+}
 
 func (*tioFeatures) Class() string { return "TIOFeatures" }
 
@@ -733,7 +709,13 @@ func (tio *tioFeatures) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	beg := r.Pos()
-	_ /*vers*/, pos, bcnt := r.ReadVersion(tio.Class())
+	vers, pos, bcnt := r.ReadVersion(tio.Class())
+	if vers > rvers.ROOT_IOFeatures {
+		panic(fmt.Errorf(
+			"rtree: invalid %s version=%d > %d",
+			tio.Class(), vers, tio.RVersion(),
+		))
+	}
 
 	var buf [4]byte // FIXME(sbinet) where do these 4 bytes come from ?
 	_, err := r.Read(buf[:1])
@@ -801,6 +783,7 @@ var (
 	_ rbytes.Unmarshaler = (*tntupleD)(nil)
 
 	_ root.Object        = (*tioFeatures)(nil)
+	_ rbytes.RVersioner  = (*tioFeatures)(nil)
 	_ rbytes.Marshaler   = (*tioFeatures)(nil)
 	_ rbytes.Unmarshaler = (*tioFeatures)(nil)
 )

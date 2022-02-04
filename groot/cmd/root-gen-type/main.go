@@ -50,7 +50,7 @@ options:
 
 	flag.Parse()
 
-	if *typeNames == "" {
+	if *typeNames == "" || *pkgPath == "" {
 		flag.Usage()
 		os.Exit(2)
 	}

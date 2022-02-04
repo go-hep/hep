@@ -8,7 +8,10 @@ package rbytes
 
 import (
 	"encoding/binary"
+	"fmt"
 	"math"
+
+	"go-hep.org/x/hep/groot/rvers"
 )
 
 func (r *RBuffer) ReadArrayU16(sli []uint16) {
@@ -46,6 +49,28 @@ func (r *RBuffer) ReadU16() uint16 {
 
 }
 
+func (r *RBuffer) ReadStdVectorU16(sli *[]uint16) {
+	if r.err != nil {
+		return
+	}
+	const typename = "vector<uint16>"
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion(typename)
+	if vers != rvers.StreamerInfo {
+		r.err = fmt.Errorf(
+			"rbytes: invalid %s version: got=%d, want=%d",
+			typename, vers, rvers.StreamerInfo,
+		)
+		return
+	}
+	n := int(r.ReadI32())
+	*sli = ResizeU16(*sli, n)
+	for i := range *sli {
+		(*sli)[i] = r.ReadU16()
+	}
+	r.CheckByteCount(pos, bcnt, beg, typename)
+}
+
 func (r *RBuffer) ReadArrayU32(sli []uint32) {
 	if r.err != nil {
 		return
@@ -79,6 +104,28 @@ func (r *RBuffer) ReadU32() uint32 {
 	v := binary.BigEndian.Uint32(r.r.p[beg:r.r.c])
 	return v
 
+}
+
+func (r *RBuffer) ReadStdVectorU32(sli *[]uint32) {
+	if r.err != nil {
+		return
+	}
+	const typename = "vector<uint32>"
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion(typename)
+	if vers != rvers.StreamerInfo {
+		r.err = fmt.Errorf(
+			"rbytes: invalid %s version: got=%d, want=%d",
+			typename, vers, rvers.StreamerInfo,
+		)
+		return
+	}
+	n := int(r.ReadI32())
+	*sli = ResizeU32(*sli, n)
+	for i := range *sli {
+		(*sli)[i] = r.ReadU32()
+	}
+	r.CheckByteCount(pos, bcnt, beg, typename)
 }
 
 func (r *RBuffer) ReadArrayU64(sli []uint64) {
@@ -116,6 +163,28 @@ func (r *RBuffer) ReadU64() uint64 {
 
 }
 
+func (r *RBuffer) ReadStdVectorU64(sli *[]uint64) {
+	if r.err != nil {
+		return
+	}
+	const typename = "vector<uint64>"
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion(typename)
+	if vers != rvers.StreamerInfo {
+		r.err = fmt.Errorf(
+			"rbytes: invalid %s version: got=%d, want=%d",
+			typename, vers, rvers.StreamerInfo,
+		)
+		return
+	}
+	n := int(r.ReadI32())
+	*sli = ResizeU64(*sli, n)
+	for i := range *sli {
+		(*sli)[i] = r.ReadU64()
+	}
+	r.CheckByteCount(pos, bcnt, beg, typename)
+}
+
 func (r *RBuffer) ReadArrayI16(sli []int16) {
 	if r.err != nil {
 		return
@@ -147,6 +216,28 @@ func (r *RBuffer) ReadI16() int16 {
 	r.r.c += 2
 	v := binary.BigEndian.Uint16(r.r.p[beg:r.r.c])
 	return int16(v)
+}
+
+func (r *RBuffer) ReadStdVectorI16(sli *[]int16) {
+	if r.err != nil {
+		return
+	}
+	const typename = "vector<int16>"
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion(typename)
+	if vers != rvers.StreamerInfo {
+		r.err = fmt.Errorf(
+			"rbytes: invalid %s version: got=%d, want=%d",
+			typename, vers, rvers.StreamerInfo,
+		)
+		return
+	}
+	n := int(r.ReadI32())
+	*sli = ResizeI16(*sli, n)
+	for i := range *sli {
+		(*sli)[i] = r.ReadI16()
+	}
+	r.CheckByteCount(pos, bcnt, beg, typename)
 }
 
 func (r *RBuffer) ReadArrayI32(sli []int32) {
@@ -182,6 +273,28 @@ func (r *RBuffer) ReadI32() int32 {
 	return int32(v)
 }
 
+func (r *RBuffer) ReadStdVectorI32(sli *[]int32) {
+	if r.err != nil {
+		return
+	}
+	const typename = "vector<int32>"
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion(typename)
+	if vers != rvers.StreamerInfo {
+		r.err = fmt.Errorf(
+			"rbytes: invalid %s version: got=%d, want=%d",
+			typename, vers, rvers.StreamerInfo,
+		)
+		return
+	}
+	n := int(r.ReadI32())
+	*sli = ResizeI32(*sli, n)
+	for i := range *sli {
+		(*sli)[i] = r.ReadI32()
+	}
+	r.CheckByteCount(pos, bcnt, beg, typename)
+}
+
 func (r *RBuffer) ReadArrayI64(sli []int64) {
 	if r.err != nil {
 		return
@@ -213,6 +326,28 @@ func (r *RBuffer) ReadI64() int64 {
 	r.r.c += 8
 	v := binary.BigEndian.Uint64(r.r.p[beg:r.r.c])
 	return int64(v)
+}
+
+func (r *RBuffer) ReadStdVectorI64(sli *[]int64) {
+	if r.err != nil {
+		return
+	}
+	const typename = "vector<int64>"
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion(typename)
+	if vers != rvers.StreamerInfo {
+		r.err = fmt.Errorf(
+			"rbytes: invalid %s version: got=%d, want=%d",
+			typename, vers, rvers.StreamerInfo,
+		)
+		return
+	}
+	n := int(r.ReadI32())
+	*sli = ResizeI64(*sli, n)
+	for i := range *sli {
+		(*sli)[i] = r.ReadI64()
+	}
+	r.CheckByteCount(pos, bcnt, beg, typename)
 }
 
 func (r *RBuffer) ReadArrayF32(sli []float32) {
@@ -248,6 +383,28 @@ func (r *RBuffer) ReadF32() float32 {
 	return math.Float32frombits(v)
 }
 
+func (r *RBuffer) ReadStdVectorF32(sli *[]float32) {
+	if r.err != nil {
+		return
+	}
+	const typename = "vector<float32>"
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion(typename)
+	if vers != rvers.StreamerInfo {
+		r.err = fmt.Errorf(
+			"rbytes: invalid %s version: got=%d, want=%d",
+			typename, vers, rvers.StreamerInfo,
+		)
+		return
+	}
+	n := int(r.ReadI32())
+	*sli = ResizeF32(*sli, n)
+	for i := range *sli {
+		(*sli)[i] = r.ReadF32()
+	}
+	r.CheckByteCount(pos, bcnt, beg, typename)
+}
+
 func (r *RBuffer) ReadArrayF64(sli []float64) {
 	if r.err != nil {
 		return
@@ -279,4 +436,26 @@ func (r *RBuffer) ReadF64() float64 {
 	r.r.c += 8
 	v := binary.BigEndian.Uint64(r.r.p[beg:r.r.c])
 	return math.Float64frombits(v)
+}
+
+func (r *RBuffer) ReadStdVectorF64(sli *[]float64) {
+	if r.err != nil {
+		return
+	}
+	const typename = "vector<float64>"
+	beg := r.Pos()
+	vers, pos, bcnt := r.ReadVersion(typename)
+	if vers != rvers.StreamerInfo {
+		r.err = fmt.Errorf(
+			"rbytes: invalid %s version: got=%d, want=%d",
+			typename, vers, rvers.StreamerInfo,
+		)
+		return
+	}
+	n := int(r.ReadI32())
+	*sli = ResizeF64(*sli, n)
+	for i := range *sli {
+		(*sli)[i] = r.ReadF64()
+	}
+	r.CheckByteCount(pos, bcnt, beg, typename)
 }

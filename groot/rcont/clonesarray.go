@@ -118,11 +118,7 @@ func (arr *ClonesArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(arr.RVersion())
 
-	_, err = arr.arr.obj.MarshalROOT(w)
-	if err != nil {
-		w.SetErr(err)
-		return 0, w.Err()
-	}
+	w.WriteObject(&arr.arr.obj)
 	w.WriteString(arr.arr.name)
 	w.WriteString(fmt.Sprintf("%s;%d", arr.cls, clsv))
 
@@ -139,7 +135,8 @@ func (arr *ClonesArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 				w.WriteI8(0)
 			default:
 				w.WriteI8(1)
-				if _, err := obj.(rbytes.Marshaler).MarshalROOT(w); err != nil {
+				w.WriteObject(obj.(rbytes.Marshaler))
+				if err := w.Err(); err != nil {
 					return 0, fmt.Errorf("rcont: could not marshal TClonesArray element [%d/%d] (%T): %w", i+1, len(arr.arr.objs), obj, err)
 				}
 			}
@@ -165,9 +162,7 @@ func (arr *ClonesArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(arr.Class())
 	if vers > 2 {
-		if err := arr.arr.obj.UnmarshalROOT(r); err != nil {
-			return err
-		}
+		r.ReadObject(&arr.arr.obj)
 	}
 	if vers > 1 {
 		arr.arr.name = r.ReadString()
@@ -176,7 +171,7 @@ func (arr *ClonesArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 	toks := strings.Split(clsv, ";")
 	arr.cls = toks[0]
 	clv, err := strconv.Atoi(toks[1])
-	if err != nil {
+	if err != nil && r.Err() == nil {
 		r.SetErr(fmt.Errorf("rcont: could not extract TClonesArray element version: %w", err))
 		return r.Err()
 	}
@@ -208,12 +203,7 @@ func (arr *ClonesArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 			nch := r.ReadI8()
 			if nch != 0 {
 				obj := fct().Interface().(root.Object)
-				if o, ok := obj.(rbytes.Unmarshaler); ok {
-					err := o.UnmarshalROOT(r)
-					if err != nil {
-						return fmt.Errorf("rcont: could not unmarshal TClonesArray element %d/%d: %w", i+1, nobjs, err)
-					}
-				}
+				r.ReadObject(obj.(rbytes.Unmarshaler))
 				if r.Err() != nil {
 					return r.Err()
 				}

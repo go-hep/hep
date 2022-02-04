@@ -106,37 +106,22 @@ func (a *taxis) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(a.RVersion())
 
-	for _, v := range []rbytes.Marshaler{
-		&a.Named,
-		&a.attaxis,
-	} {
-		if _, err := v.MarshalROOT(w); err != nil {
-			return 0, err
-		}
-	}
+	w.WriteObject(&a.Named)
+	w.WriteObject(&a.attaxis)
 
 	w.WriteI32(int32(a.nbins))
 	w.WriteF64(a.xmin)
 	w.WriteF64(a.xmax)
-
-	if _, err := a.xbins.MarshalROOT(w); err != nil {
-		return 0, err
-	}
-
+	w.WriteObject(&a.xbins)
 	w.WriteI32(int32(a.first))
 	w.WriteI32(int32(a.last))
 	w.WriteU16(a.bits2)
 	w.WriteBool(a.time)
 	w.WriteString(a.tfmt)
 
-	if err := w.WriteObjectAny(a.labels); err != nil {
-		return 0, err
-	}
-
+	w.WriteObjectAny(a.labels)
 	if a.RVersion() >= 10 {
-		if err := w.WriteObjectAny(a.modlabs); err != nil {
-			return 0, err
-		}
+		w.WriteObjectAny(a.modlabs)
 	}
 
 	return w.SetByteCount(pos, a.Class())
@@ -154,23 +139,13 @@ func (a *taxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return fmt.Errorf("rhist: TAxis version too old (%d<%d)", vers, minVers)
 	}
 
-	for _, v := range []rbytes.Unmarshaler{
-		&a.Named,
-		&a.attaxis,
-	} {
-		if err := v.UnmarshalROOT(r); err != nil {
-			return err
-		}
-	}
+	r.ReadObject(&a.Named)
+	r.ReadObject(&a.attaxis)
 
 	a.nbins = int(r.ReadI32())
 	a.xmin = r.ReadF64()
 	a.xmax = r.ReadF64()
-
-	if err := a.xbins.UnmarshalROOT(r); err != nil {
-		return err
-	}
-
+	r.ReadObject(&a.xbins)
 	a.first = int(r.ReadI32())
 	a.last = int(r.ReadI32())
 	if vers >= 9 {

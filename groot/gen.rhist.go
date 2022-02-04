@@ -210,14 +210,8 @@ func (h *{{.Name}}) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(h.RVersion())
 
-	for _, v := range []rbytes.Marshaler{
-		&h.th1,
-		&h.arr,
-	} {
-		if _, err := v.MarshalROOT(w); err != nil {
-			return 0, err
-		}
-	}
+	w.WriteObject(&h.th1)
+	w.WriteObject(&h.arr)
 
 	return w.SetByteCount(pos, h.Class())
 }
@@ -233,14 +227,8 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf("rhist: invalid {{.Name}} version=%d > %d", vers, rvers.{{.Name}}))
 	}
 
-	for _, v := range []rbytes.Unmarshaler{
-		&h.th1,
-		&h.arr,
-	} {
-		if err := v.UnmarshalROOT(r); err != nil {
-			return err
-		}
-	}
+	r.ReadObject(&h.th1)
+	r.ReadObject(&h.arr)
 
 	r.CheckByteCount(pos, bcnt, beg, h.Class())
 	return r.Err()
@@ -771,15 +759,8 @@ func (h *{{.Name}}) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(h.RVersion())
-
-	for _, v := range []rbytes.Marshaler{
-		&h.th2,
-		&h.arr,
-	} {
-		if _, err := v.MarshalROOT(w); err != nil {
-			return 0, err
-		}
-	}
+	w.WriteObject(&h.th2)
+	w.WriteObject(&h.arr)
 
 	return w.SetByteCount(pos, h.Class())
 }
@@ -795,14 +776,8 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return fmt.Errorf("rhist: T{{.Name}} version too old (%d<1)", vers)
 	}
 
-	for _, v := range []rbytes.Unmarshaler{
-		&h.th2,
-		&h.arr,
-	} {
-		if err := v.UnmarshalROOT(r); err != nil {
-			return err
-		}
-	}
+	r.ReadObject(&h.th2)
+	r.ReadObject(&h.arr)
 
 	r.CheckByteCount(pos, bcnt, beg, h.Class())
 	return r.Err()

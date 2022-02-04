@@ -83,19 +83,13 @@ func (b *Basket) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	beg := w.Pos()
 
-	if n, err := b.key.MarshalROOT(w); err != nil {
-		return n, err
-	}
-
+	w.WriteObject(&b.key)
 	w.WriteI16(b.RVersion())
 	w.WriteI32(int32(b.bufsize))
 	switch {
 	case b.iobits != 0:
 		w.WriteI32(int32(-b.nevsize))
-		if n, err := b.iobits.MarshalROOT(w); err != nil {
-			w.SetErr(fmt.Errorf("rtree: could not marshal iobits basket: %w", err))
-			return n, w.Err()
-		}
+		w.WriteObject(&b.iobits)
 	default:
 		w.WriteI32(int32(b.nevsize))
 	}
@@ -141,10 +135,10 @@ func (b *Basket) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 		if !mustGenOffsets && len(b.offsets) > 0 && b.nevbuf > 0 {
 			w.WriteI32(int32(b.nevbuf))
-			w.WriteFastArrayI32(b.offsets[:b.nevbuf])
+			w.WriteArrayI32(b.offsets[:b.nevbuf])
 			if len(b.displ) > 0 {
 				w.WriteI32(int32(b.nevbuf))
-				w.WriteFastArrayI32(b.displ)
+				w.WriteArrayI32(b.displ)
 			}
 		}
 		if b.wbuf != nil && b.wbuf.Len() > 0 {
@@ -169,10 +163,7 @@ func (b *Basket) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	if err := b.key.UnmarshalROOT(r); err != nil {
-		return err
-	}
-
+	r.ReadObject(&b.key)
 	if b.Class() != "TBasket" {
 		return fmt.Errorf("rtree: Key is not a Basket")
 	}
@@ -338,7 +329,7 @@ func (b *Basket) writeFile(f *riofs.File) (totBytes int64, zipBytes int64, err e
 			}
 		}
 		b.wbuf.WriteI32(int32(b.nevbuf + 1))
-		b.wbuf.WriteFastArrayI32(b.offsets[:b.nevbuf])
+		b.wbuf.WriteArrayI32(b.offsets[:b.nevbuf])
 		b.wbuf.WriteI32(0)
 	}
 	b.key, err = riofs.NewKey(nil, b.key.Name(), b.key.Title(), b.Class(), int16(b.key.Cycle()), b.wbuf.Bytes(), f)

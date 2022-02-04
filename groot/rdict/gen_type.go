@@ -68,6 +68,7 @@ func NewGenGoType(pkg string, sictx rbytes.StreamerInfoContext, verbose bool) (*
 		ctx:     sictx,
 		verbose: verbose,
 		imps: map[string]int{
+			"fmt":                           1,
 			"reflect":                       1,
 			"go-hep.org/x/hep/groot/rbytes": 1,
 			"go-hep.org/x/hep/groot/root":   1,
@@ -357,13 +358,7 @@ func (g *genGoType) typename(se rbytes.StreamerElement) string {
 				panic(fmt.Errorf("invalid stl-vector element type: %v -- %#v", se.ContainedType(), se))
 			}
 		case rmeta.STLmap:
-			types := rmeta.CxxTemplateArgsOf(se.TypeName())
-			if len(types) != 2 {
-				panic(fmt.Errorf(
-					"invalid stl-map: got %d template arguments instead of 2 for type %q",
-					len(types), se.TypeName(),
-				))
-			}
+			types := se.ElemTypeName()
 			k := g.cxx2go(types[0], qualNone)
 			v := g.cxx2go(types[1], qualNone)
 			return "map[" + k + "]" + v
@@ -451,7 +446,7 @@ func (o *%[1]s) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.StreamerElement) {
 	switch se := se.(type) {
 	case *StreamerBase:
-		g.printf("o.%s.MarshalROOT(w)\n", fmt.Sprintf("base%d", i))
+		g.printf("w.Write(&o.%s)\n", fmt.Sprintf("base%d", i))
 
 	case *StreamerBasicPointer:
 		title := se.Title()
@@ -462,27 +457,27 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 			wfunc := ""
 			switch se.Type() {
 			case rmeta.OffsetP + rmeta.Bool:
-				wfunc = "WriteFastArrayBool"
+				wfunc = "WriteArrayBool"
 			case rmeta.OffsetP + rmeta.Int8:
-				wfunc = "WriteFastArrayI8"
+				wfunc = "WriteArrayI8"
 			case rmeta.OffsetP + rmeta.Int16:
-				wfunc = "WriteFastArrayI16"
+				wfunc = "WriteArrayI16"
 			case rmeta.OffsetP + rmeta.Int32:
-				wfunc = "WriteFastArrayI32"
+				wfunc = "WriteArrayI32"
 			case rmeta.OffsetP + rmeta.Int64, rmeta.OffsetP + rmeta.Long64:
-				wfunc = "WriteFastArrayI64"
+				wfunc = "WriteArrayI64"
 			case rmeta.OffsetP + rmeta.Uint8:
-				wfunc = "WriteFastArrayU8"
+				wfunc = "WriteArrayU8"
 			case rmeta.OffsetP + rmeta.Uint16:
-				wfunc = "WriteFastArrayU16"
+				wfunc = "WriteArrayU16"
 			case rmeta.OffsetP + rmeta.Uint32:
-				wfunc = "WriteFastArrayU32"
+				wfunc = "WriteArrayU32"
 			case rmeta.OffsetP + rmeta.Uint64, rmeta.OffsetP + rmeta.ULong64:
-				wfunc = "WriteFastArrayU64"
+				wfunc = "WriteArrayU64"
 			case rmeta.OffsetP + rmeta.Float32:
-				wfunc = "WriteFastArrayF32"
+				wfunc = "WriteArrayF32"
 			case rmeta.OffsetP + rmeta.Float64:
-				wfunc = "WriteFastArrayF64"
+				wfunc = "WriteArrayF64"
 			default:
 				panic(fmt.Errorf("invalid element type: %v", se.Type()))
 			}
@@ -547,27 +542,27 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 			wfunc := ""
 			switch se.Type() {
 			case rmeta.OffsetL + rmeta.Bool:
-				wfunc = "WriteFastArrayBool"
+				wfunc = "WriteArrayBool"
 			case rmeta.OffsetL + rmeta.Int8:
-				wfunc = "WriteFastArrayI8"
+				wfunc = "WriteArrayI8"
 			case rmeta.OffsetL + rmeta.Int16:
-				wfunc = "WriteFastArrayI16"
+				wfunc = "WriteArrayI16"
 			case rmeta.OffsetL + rmeta.Int32:
-				wfunc = "WriteFastArrayI32"
+				wfunc = "WriteArrayI32"
 			case rmeta.OffsetL + rmeta.Int64, rmeta.OffsetL + rmeta.Long64:
-				wfunc = "WriteFastArrayI64"
+				wfunc = "WriteArrayI64"
 			case rmeta.OffsetL + rmeta.Uint8:
-				wfunc = "WriteFastArrayU8"
+				wfunc = "WriteArrayU8"
 			case rmeta.OffsetL + rmeta.Uint16:
-				wfunc = "WriteFastArrayU16"
+				wfunc = "WriteArrayU16"
 			case rmeta.OffsetL + rmeta.Uint32:
-				wfunc = "WriteFastArrayU32"
+				wfunc = "WriteArrayU32"
 			case rmeta.OffsetL + rmeta.Uint64, rmeta.OffsetL + rmeta.ULong64:
-				wfunc = "WriteFastArrayU64"
+				wfunc = "WriteArrayU64"
 			case rmeta.OffsetL + rmeta.Float32:
-				wfunc = "WriteFastArrayF32"
+				wfunc = "WriteArrayF32"
 			case rmeta.OffsetL + rmeta.Float64:
-				wfunc = "WriteFastArrayF64"
+				wfunc = "WriteArrayF64"
 			default:
 				panic(fmt.Errorf("invalid array element type: %v", se.Type()))
 			}
@@ -582,10 +577,10 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 		// FIXME(sbinet): check semantics
 		switch se.ArrayLen() {
 		case 0:
-			g.printf("o.%s.MarshalROOT(w) // obj\n", se.Name())
+			g.printf("w.WriteObject(&o.%s) // obj\n", se.Name())
 		default:
 			g.printf("for i := range o.%s {\n", se.Name())
-			g.printf("o.%s[i].MarshalROOT(w) // obj\n", se.Name())
+			g.printf("w.WriteObject(&o.%s[i]) // obj\n", se.Name())
 			g.printf("}\n")
 		}
 
@@ -593,10 +588,10 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 		// FIXME(sbinet): check semantics
 		switch se.ArrayLen() {
 		case 0:
-			g.printf("o.%s.MarshalROOT(w) // obj-any\n", se.Name())
+			g.printf("w.WriteObject(&o.%s) // obj-any\n", se.Name())
 		default:
 			g.printf("for i := range o.%s {\n", se.Name())
-			g.printf("o.%s[i].MarshalROOT(w) // obj-any\n", se.Name())
+			g.printf("w.WriteObject(&o.%s[i]) // obj-any\n", se.Name())
 			g.printf("}\n")
 		}
 
@@ -606,13 +601,13 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 
 	case *StreamerObjectPointer:
 		// FIXME(sbinet): check semantics
-		g.printf("w.WriteObjectAny(o.%s) // obj-ptr \n", se.Name())
+		g.printf("w.WriteObjectAny(o.%s) // obj-ptr\n", se.Name())
 
 	case *StreamerString:
 		g.printf("w.WriteString(o.%s)\n", se.Name())
 
 	case *StreamerSTLstring:
-		g.printf("w.WriteSTLString(o.%s)\n", se.Name())
+		g.printf("w.WriteStdString(o.%s)\n", se.Name())
 
 	case *StreamerSTL:
 		switch se.STLType() {
@@ -620,48 +615,39 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 			wfunc := ""
 			switch se.ContainedType() {
 			case rmeta.Bool:
-				wfunc = "WriteFastArrayBool"
+				wfunc = "WriteStdVectorBool"
 			case rmeta.Int8:
-				wfunc = "WriteFastArrayI8"
+				wfunc = "WriteStdVectorI8"
 			case rmeta.Int16:
-				wfunc = "WriteFastArrayI16"
+				wfunc = "WriteStdVectorI16"
 			case rmeta.Int32:
-				wfunc = "WriteFastArrayI32"
+				wfunc = "WriteStdVectorI32"
 			case rmeta.Int64, rmeta.Long64:
-				wfunc = "WriteFastArrayI64"
+				wfunc = "WriteStdVectorI64"
 			case rmeta.Uint8:
-				wfunc = "WriteFastArrayU8"
+				wfunc = "WriteStdVectorU8"
 			case rmeta.Uint16:
-				wfunc = "WriteFastArrayU16"
+				wfunc = "WriteStdVectorU16"
 			case rmeta.Uint32:
-				wfunc = "WriteFastArrayU32"
+				wfunc = "WriteStdVectorU32"
 			case rmeta.Uint64, rmeta.ULong64:
-				wfunc = "WriteFastArrayU64"
+				wfunc = "WriteStdVectorU64"
 			case rmeta.Float32:
-				wfunc = "WriteFastArrayF32"
+				wfunc = "WriteStdVectorF32"
 			case rmeta.Float64:
-				wfunc = "WriteFastArrayF64"
+				wfunc = "WriteStdVectorF64"
 			case rmeta.Object:
 				etn := se.ElemTypeName()
 				switch etn[0] {
 				case "string":
-					wfunc = "WriteFastArrayString"
+					wfunc = "WriteStdVectorStrs"
 				default:
 					panic(fmt.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
 				}
 			default:
 				panic(fmt.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
 			}
-			g.imps["go-hep.org/x/hep/groot/rvers"] = 1
-			g.printf("{\n")
-			g.printf("pos := w.WriteVersion(rvers.StreamerInfo)\n")
-			g.printf("w.WriteI32(int32(len(o.%s)))\n", se.Name())
 			g.printf("w.%s(o.%s)\n", wfunc, se.Name())
-			g.printf("if _, err := w.SetByteCount(pos, %q); err != nil {\n", se.TypeName())
-			g.printf("w.SetErr(err)\n")
-			g.printf("return 0, w.Err()\n")
-			g.printf("}\n")
-			g.printf("}\n")
 
 		default:
 			panic(fmt.Errorf("STL-type not implemented %#v", se))
@@ -680,7 +666,13 @@ func (o *%[1]s) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 	
 	start := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion(o.Class())
+	vers, pos, bcnt := r.ReadVersion(o.Class())
+	if vers > o.RVersion() {
+		panic(fmt.Errorf(
+			"rbytes: invalid %%s version=%%d > %%d",
+			o.Class(), vers, o.RVersion(),
+		))
+	}
 
 `,
 		g.cxx2go(si.Name(), qualNone),
@@ -696,7 +688,7 @@ func (o *%[1]s) UnmarshalROOT(r *rbytes.RBuffer) error {
 func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.StreamerElement) {
 	switch se := se.(type) {
 	case *StreamerBase:
-		g.printf("o.%s.UnmarshalROOT(r)\n", fmt.Sprintf("base%d", i))
+		g.printf("r.ReadObject(&o.%s)\n", fmt.Sprintf("base%d", i))
 
 	case *StreamerBasicPointer:
 		title := se.Title()
@@ -839,10 +831,10 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 		// FIXME(sbinet): check semantics
 		switch se.ArrayLen() {
 		case 0:
-			g.printf("o.%s.UnmarshalROOT(r) // obj\n", se.Name())
+			g.printf("r.ReadObject(&o.%s) // obj\n", se.Name())
 		default:
 			g.printf("for i := range o.%s {\n", se.Name())
-			g.printf("o.%s[i].UnmarshalROOT(r) // obj\n", se.Name())
+			g.printf("r.ReadObject(&o.%s[i]) // obj\n", se.Name())
 			g.printf("}\n")
 		}
 
@@ -850,10 +842,10 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 		// FIXME(sbinet): check semantics
 		switch se.ArrayLen() {
 		case 0:
-			g.printf("o.%s.UnmarshalROOT(r) // obj-any\n", se.Name())
+			g.printf("r.ReadObject(&o.%s) // obj-any\n", se.Name())
 		default:
 			g.printf("for i := range o.%s {\n", se.Name())
-			g.printf("o.%s[i].UnmarshalROOT(r) // obj-any\n", se.Name())
+			g.printf("r.ReadObject(&o.%s[i]) // obj-any\n", se.Name())
 			g.printf("}\n")
 		}
 
@@ -877,71 +869,47 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 		g.printf("o.%s = r.ReadString()\n", se.Name())
 
 	case *StreamerSTLstring:
-		g.printf("o.%s = r.ReadSTLString()\n", se.Name())
+		g.printf("o.%s = r.ReadStdString()\n", se.Name())
 
 	case *StreamerSTL:
 		switch se.STLType() {
 		case rmeta.STLvector:
 			rfunc := ""
-			rsize := ""
 			switch se.ContainedType() {
 			case rmeta.Bool:
-				rfunc = "ReadArrayBool"
-				rsize = "ResizeBool"
+				rfunc = "ReadStdVectorBool"
 			case rmeta.Int8:
-				rfunc = "ReadArrayI8"
-				rsize = "ResizeI8"
+				rfunc = "ReadStdVectorI8"
 			case rmeta.Int16:
-				rfunc = "ReadArrayI16"
-				rsize = "ResizeI16"
+				rfunc = "ReadStdVectorI16"
 			case rmeta.Int32:
-				rfunc = "ReadArrayI32"
-				rsize = "ResizeI32"
+				rfunc = "ReadStdVectorI32"
 			case rmeta.Int64, rmeta.Long64:
-				rfunc = "ReadArrayI64"
-				rsize = "ResizeI64"
+				rfunc = "ReadStdVectorI64"
 			case rmeta.Uint8:
-				rfunc = "ReadArrayU8"
-				rsize = "ResizeU8"
+				rfunc = "ReadStdVectorU8"
 			case rmeta.Uint16:
-				rfunc = "ReadArrayU16"
-				rsize = "ResizeU16"
+				rfunc = "ReadStdVectorU16"
 			case rmeta.Uint32:
-				rfunc = "ReadArrayU32"
-				rsize = "ResizeU32"
+				rfunc = "ReadStdVectorU32"
 			case rmeta.Uint64, rmeta.ULong64:
-				rfunc = "ReadArrayU64"
-				rsize = "ResizeU64"
+				rfunc = "ReadStdVectorU64"
 			case rmeta.Float32:
-				rfunc = "ReadArrayF32"
-				rsize = "ResizeF32"
+				rfunc = "ReadStdVectorF32"
 			case rmeta.Float64:
-				rfunc = "ReadArrayF64"
-				rsize = "ResizeF64"
+				rfunc = "ReadStdVectorF64"
 			case rmeta.Object:
 				etn := se.ElemTypeName()
 				switch etn[0] {
 				case "string":
-					rfunc = "ReadArrayString"
-					rsize = "ResizeStr"
+					rfunc = "ReadStdVectorStrs"
 				default:
 					panic(fmt.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
 				}
 			default:
 				panic(fmt.Errorf("invalid stl-vector element type: %v", se.ContainedType()))
 			}
-			g.imps["fmt"] = 1
-			g.imps["go-hep.org/x/hep/groot/rvers"] = 1
-			g.printf("{\n")
-			g.printf("vers, pos, bcnt := r.ReadVersion(%q)\n", se.TypeName())
-			g.printf("if vers != rvers.StreamerInfo {\n")
-			g.printf("r.SetErr(fmt.Errorf(\"rbytes: invalid version for \\\"%s\\\". got=%%v, want=%%v\", vers, rvers.StreamerInfo))\n", se.TypeName())
-			g.printf("return r.Err()\n")
-			g.printf("}\n")
-			g.printf("o.%s = rbytes.%s(nil, int(r.ReadI32()))\n", se.Name(), rsize)
-			g.printf("r.%s(o.%s)\n", rfunc, se.Name())
-			g.printf("r.CheckByteCount(pos, bcnt, start, %q)\n", se.TypeName())
-			g.printf("}\n")
+			g.printf("r.%s(&o.%s)\n", rfunc, se.Name())
 
 		default:
 			panic(fmt.Errorf("STL-type not implemented %#v", se))

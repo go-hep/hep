@@ -620,8 +620,8 @@ func wstreamObjPtr(wop wopFunc) wopFunc {
 			ptr = rv.Interface().(root.Object)
 		}
 
-		err := w.WriteObjectAny(ptr)
-		return int(w.Pos() - pos), err
+		w.WriteObjectAny(ptr)
+		return int(w.Pos() - pos), w.Err()
 	}
 }
 
@@ -636,8 +636,8 @@ func wstreamAnyPtr(wop wopFunc) wopFunc {
 			ptr = rv.Interface().(root.Object)
 		}
 
-		err := w.WriteObjectAny(ptr)
-		return int(w.Pos() - pos), err
+		w.WriteObjectAny(ptr)
+		return int(w.Pos() - pos), w.Err()
 	}
 }
 
@@ -967,7 +967,7 @@ func wstreamBools(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int
 	)
 	sli = sli[:n]
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayBool(sli)
+	w.WriteArrayBool(sli)
 	return 1 + n, w.Err()
 }
 
@@ -978,7 +978,7 @@ func wstreamI8s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, 
 	)
 	sli = (sli)[:n]
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayI8(sli)
+	w.WriteArrayI8(sli)
 	return 1 + n, w.Err()
 }
 
@@ -989,7 +989,7 @@ func wstreamI16s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	)
 	sli = (sli)[:n]
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayI16(sli)
+	w.WriteArrayI16(sli)
 	return 1 + n*2, w.Err()
 }
 
@@ -1000,7 +1000,7 @@ func wstreamI32s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	)
 	sli = (sli)[:n]
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayI32(sli)
+	w.WriteArrayI32(sli)
 	return 1 + n*4, w.Err()
 }
 
@@ -1011,7 +1011,7 @@ func wstreamI64s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	)
 	sli = (sli)[:n]
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayI64(sli)
+	w.WriteArrayI64(sli)
 	return 1 + n*8, w.Err()
 }
 
@@ -1022,7 +1022,7 @@ func wstreamU8s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, 
 	)
 	sli = (sli)[:n]
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayU8(sli)
+	w.WriteArrayU8(sli)
 	return 1 + n, w.Err()
 }
 
@@ -1033,7 +1033,7 @@ func wstreamU16s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	)
 	sli = (sli)[:n]
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayU16(sli)
+	w.WriteArrayU16(sli)
 	return 1 + n*2, w.Err()
 }
 
@@ -1044,7 +1044,7 @@ func wstreamU32s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	)
 	sli = (sli)[:n]
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayU32(sli)
+	w.WriteArrayU32(sli)
 	return 1 + n*4, w.Err()
 }
 
@@ -1055,7 +1055,7 @@ func wstreamU64s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	)
 	sli = (sli)[:n]
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayU64(sli)
+	w.WriteArrayU64(sli)
 	return 1 + n*8, w.Err()
 }
 
@@ -1066,7 +1066,7 @@ func wstreamF32s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	)
 	sli = (sli)[:n]
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayF32(sli)
+	w.WriteArrayF32(sli)
 	return 1 + n*4, w.Err()
 }
 
@@ -1077,7 +1077,7 @@ func wstreamF64s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	)
 	sli = (sli)[:n]
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayF64(sli)
+	w.WriteArrayF64(sli)
 	return 1 + n*8, w.Err()
 }
 
@@ -1089,7 +1089,7 @@ func wstreamF16s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	)
 	sli = sli[:n]
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayF16(sli, cfg.descr.elem)
+	w.WriteArrayF16(sli, cfg.descr.elem)
 	return int(w.Pos() - beg), w.Err()
 }
 
@@ -1101,7 +1101,7 @@ func wstreamD32s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	)
 	sli = sli[:n]
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayD32(sli, cfg.descr.elem)
+	w.WriteArrayD32(sli, cfg.descr.elem)
 	return int(w.Pos() - beg), w.Err()
 }
 
@@ -1113,7 +1113,7 @@ func wstreamStrs(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	)
 	sli = (sli)[:n]
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayString(sli)
+	w.WriteArrayString(sli)
 	return int(w.Pos() - beg), w.Err()
 }
 

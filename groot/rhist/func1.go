@@ -84,14 +84,10 @@ func (f *F1) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(f.RVersion())
-	for _, v := range []rbytes.Marshaler{
-		&f.named, &f.attline, &f.attfill, &f.attmark,
-	} {
-		n, err := v.MarshalROOT(w)
-		if err != nil {
-			return n, err
-		}
-	}
+	w.WriteObject(&f.named)
+	w.WriteObject(&f.attline)
+	w.WriteObject(&f.attfill)
+	w.WriteObject(&f.attmark)
 
 	w.WriteF64(f.xmin)
 	w.WriteF64(f.xmax)
@@ -113,15 +109,9 @@ func (f *F1) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteBool(f.normalized)
 	w.WriteF64(f.normIntegral)
 
-	if err := w.WriteObjectAny(f.formula); err != nil {
-		return 0, err
-	}
-	if err := w.WriteObjectAny(f.params); err != nil {
-		return 0, err
-	}
-	if err := w.WriteObjectAny(f.compos); err != nil {
-		return 0, err
-	}
+	w.WriteObjectAny(f.formula)
+	w.WriteObjectAny(f.params)
+	w.WriteObjectAny(f.compos)
 
 	return w.SetByteCount(pos, f.Class())
 }
@@ -142,16 +132,10 @@ func (f *F1) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf("rhist: invalid TF1 version=%d < 10", vers))
 	}
 
-	for _, v := range []rbytes.Unmarshaler{
-		&f.named,
-		&f.attline,
-		&f.attfill,
-		&f.attmark,
-	} {
-		if err := v.UnmarshalROOT(r); err != nil {
-			return err
-		}
-	}
+	r.ReadObject(&f.named)
+	r.ReadObject(&f.attline)
+	r.ReadObject(&f.attfill)
+	r.ReadObject(&f.attmark)
 
 	f.xmin = r.ReadF64()
 	f.xmax = r.ReadF64()
@@ -274,9 +258,7 @@ func (f *f1Composition) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf("rhist: invalid TF1AbsComposition version=%d < 1", vers))
 	}
 
-	if err := f.base.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&f.base)
 
 	r.CheckByteCount(pos, bcnt, beg, f.Class())
 	return r.Err()
@@ -329,9 +311,7 @@ func (f *F1Convolution) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf("rhist: invalid TF1Convolution version=%d < 1", vers))
 	}
 
-	if err := f.base.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&f.base)
 
 	for i, v := range []*F1{&f.func1, &f.func2} {
 		obj := r.ReadObjectAny()
@@ -408,9 +388,7 @@ func (f *F1NormSum) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf("rhist: invalid TF1NormSum version=%d < 1", vers))
 	}
 
-	if err := f.base.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&f.base)
 
 	f.nFuncs = r.ReadU32()
 	f.scale = r.ReadF64()

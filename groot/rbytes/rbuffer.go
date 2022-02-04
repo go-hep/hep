@@ -168,7 +168,7 @@ func (r *RBuffer) DumpHex(n int) {
 	fmt.Printf("--- hex --- (pos=%d len=%d end=%d)\n%s\n", r.Pos(), n, r.Len(), string(hex.Dump(buf)))
 }
 
-func (r *RBuffer) ReadSTLString() string {
+func (r *RBuffer) ReadStdString() string {
 	if r.Err() != nil {
 		return ""
 	}
@@ -456,50 +456,6 @@ func (r *RBuffer) ReadArrayString(arr []string) {
 	}
 }
 
-func (r *RBuffer) ReadStdVectorI32(sli *[]int32) {
-	if r.err != nil {
-		return
-	}
-	const typename = "vector<int>"
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
-		r.err = fmt.Errorf(
-			"rbytes: invalid %s version: got=%d, want=%d",
-			typename, vers, rvers.StreamerInfo,
-		)
-		return
-	}
-	n := int(r.ReadI32())
-	*sli = ResizeI32(*sli, n)
-	for i := range *sli {
-		(*sli)[i] = r.ReadI32()
-	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
-}
-
-func (r *RBuffer) ReadStdVectorF64(sli *[]float64) {
-	if r.err != nil {
-		return
-	}
-	const typename = "vector<double>"
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
-		r.err = fmt.Errorf(
-			"rbytes: invalid %s version: got=%d, want=%d",
-			typename, vers, rvers.StreamerInfo,
-		)
-		return
-	}
-	n := int(r.ReadI32())
-	*sli = ResizeF64(*sli, n)
-	for i := range *sli {
-		(*sli)[i] = r.ReadF64()
-	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
-}
-
 func (r *RBuffer) ReadStdVectorStrs(sli *[]string) {
 	if r.err != nil {
 		return
@@ -631,15 +587,12 @@ func (r *RBuffer) SkipObject() {
 	}
 }
 
-func (r *RBuffer) ReadObject(class string) root.Object {
+func (r *RBuffer) ReadObject(obj Unmarshaler) {
 	if r.err != nil {
-		return nil
+		return
 	}
 
-	fct := rtypes.Factory.Get(class)
-	obj := fct().Interface().(root.Object)
-	r.err = obj.(Unmarshaler).UnmarshalROOT(r)
-	return obj
+	r.err = obj.UnmarshalROOT(r)
 }
 
 func (r *RBuffer) ReadObjectAny() (obj root.Object) {
@@ -700,8 +653,8 @@ func (r *RBuffer) ReadObjectAny() (obj root.Object) {
 		}
 
 		obj = fct().Interface().(root.Object)
-		if err := obj.(Unmarshaler).UnmarshalROOT(r); err != nil {
-			r.err = err
+		r.ReadObject(obj.(Unmarshaler))
+		if r.Err() != nil {
 			return nil
 		}
 
@@ -733,8 +686,8 @@ func (r *RBuffer) ReadObjectAny() (obj root.Object) {
 			r.refs[int64(len(r.refs))+1] = obj
 		}
 
-		if err := obj.(Unmarshaler).UnmarshalROOT(r); err != nil {
-			r.err = err
+		r.ReadObject(obj.(Unmarshaler))
+		if r.Err() != nil {
 			return nil
 		}
 		return obj

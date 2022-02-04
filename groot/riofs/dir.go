@@ -48,16 +48,11 @@ func (dir *tdirectory) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(dir.RVersion())
-
-	if _, err := dir.named.MarshalROOT(w); err != nil {
-		return 0, w.Err()
-	}
-	if err := w.WriteObjectAny((*rbase.Object)(nil)); err != nil {
-		return 0, w.Err()
-	}
+	w.WriteObject(&dir.named)
+	w.WriteObjectAny((*rbase.Object)(nil))
 
 	// FIXME(sbinet): stream list
-	_, _ = dir.uuid.MarshalROOT(w)
+	w.WriteObject(&dir.uuid)
 
 	return w.SetByteCount(pos, dir.Class())
 }
@@ -69,16 +64,15 @@ func (dir *tdirectory) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	start := r.Pos()
 	vers, pos, bcnt := r.ReadVersion(dir.Class())
-
 	dir.rvers = vers
 
-	_ = dir.named.UnmarshalROOT(r)
+	r.ReadObject(&dir.named)
 	obj := r.ReadObjectAny()
 	if obj != nil {
 		dir.parent = obj.(Directory)
 	}
 	// FIXME(sbinet): stream list
-	_ = dir.uuid.UnmarshalROOT(r)
+	r.ReadObject(&dir.uuid)
 
 	r.CheckByteCount(pos, bcnt, start, dir.Class())
 	return r.Err()
@@ -196,8 +190,9 @@ func (dir *tdirectoryFile) readDirInfo() error {
 	}
 
 	r := rbytes.NewRBuffer(data[f.nbytesname:], nil, 0, nil)
-	if err := dir.UnmarshalROOT(r); err != nil {
-		return err
+	r.ReadObject(dir)
+	if r.Err() != nil {
+		return r.Err()
 	}
 
 	nk := 4 // Key::fNumberOfBytes

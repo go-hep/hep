@@ -50,10 +50,7 @@ func (o *ConfidenceLevel) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	pos := w.WriteVersion(o.RVersion())
 
-	if _, err := o.base.MarshalROOT(w); err != nil {
-		return 0, err
-	}
-
+	w.WriteObject(&o.base)
 	w.WriteI32(int32(o.fNNMC))
 	w.WriteI32(o.fDtot)
 	w.WriteF64(o.fStot)
@@ -63,17 +60,17 @@ func (o *ConfidenceLevel) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteF64(o.fMCL3S)
 	w.WriteF64(o.fMCL5S)
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayF64(o.fTSB[:o.fNNMC])
+	w.WriteArrayF64(o.fTSB[:o.fNNMC])
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayF64(o.fTSS[:o.fNNMC])
+	w.WriteArrayF64(o.fTSS[:o.fNNMC])
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayF64(o.fLRS[:o.fNNMC])
+	w.WriteArrayF64(o.fLRS[:o.fNNMC])
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayF64(o.fLRB[:o.fNNMC])
+	w.WriteArrayF64(o.fLRB[:o.fNNMC])
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayI32(o.fISS[:o.fNNMC])
+	w.WriteArrayI32(o.fISS[:o.fNNMC])
 	w.WriteI8(1) // is-array
-	w.WriteFastArrayI32(o.fISB[:o.fNNMC])
+	w.WriteArrayI32(o.fISB[:o.fNNMC])
 
 	return w.SetByteCount(pos, o.Class())
 }
@@ -90,9 +87,7 @@ func (o *ConfidenceLevel) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf("rhist: invalid TConfidenceLevel version=%d > %d", vers, rvers.ConfidenceLevel))
 	}
 
-	if err := o.base.UnmarshalROOT(r); err != nil {
-		return err
-	}
+	r.ReadObject(&o.base)
 	o.fNNMC = r.ReadI32()
 	o.fDtot = r.ReadI32()
 	o.fStot = r.ReadF64()

@@ -362,15 +362,8 @@ func (h *H2F) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(h.RVersion())
-
-	for _, v := range []rbytes.Marshaler{
-		&h.th2,
-		&h.arr,
-	} {
-		if _, err := v.MarshalROOT(w); err != nil {
-			return 0, err
-		}
-	}
+	w.WriteObject(&h.th2)
+	w.WriteObject(&h.arr)
 
 	return w.SetByteCount(pos, h.Class())
 }
@@ -386,14 +379,8 @@ func (h *H2F) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return fmt.Errorf("rhist: TH2F version too old (%d<1)", vers)
 	}
 
-	for _, v := range []rbytes.Unmarshaler{
-		&h.th2,
-		&h.arr,
-	} {
-		if err := v.UnmarshalROOT(r); err != nil {
-			return err
-		}
-	}
+	r.ReadObject(&h.th2)
+	r.ReadObject(&h.arr)
 
 	r.CheckByteCount(pos, bcnt, beg, h.Class())
 	return r.Err()
@@ -758,15 +745,8 @@ func (h *H2D) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(h.RVersion())
-
-	for _, v := range []rbytes.Marshaler{
-		&h.th2,
-		&h.arr,
-	} {
-		if _, err := v.MarshalROOT(w); err != nil {
-			return 0, err
-		}
-	}
+	w.WriteObject(&h.th2)
+	w.WriteObject(&h.arr)
 
 	return w.SetByteCount(pos, h.Class())
 }
@@ -782,14 +762,8 @@ func (h *H2D) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return fmt.Errorf("rhist: TH2D version too old (%d<1)", vers)
 	}
 
-	for _, v := range []rbytes.Unmarshaler{
-		&h.th2,
-		&h.arr,
-	} {
-		if err := v.UnmarshalROOT(r); err != nil {
-			return err
-		}
-	}
+	r.ReadObject(&h.th2)
+	r.ReadObject(&h.arr)
 
 	r.CheckByteCount(pos, bcnt, beg, h.Class())
 	return r.Err()
@@ -1154,15 +1128,8 @@ func (h *H2I) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(h.RVersion())
-
-	for _, v := range []rbytes.Marshaler{
-		&h.th2,
-		&h.arr,
-	} {
-		if _, err := v.MarshalROOT(w); err != nil {
-			return 0, err
-		}
-	}
+	w.WriteObject(&h.th2)
+	w.WriteObject(&h.arr)
 
 	return w.SetByteCount(pos, h.Class())
 }
@@ -1178,14 +1145,8 @@ func (h *H2I) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return fmt.Errorf("rhist: TH2I version too old (%d<1)", vers)
 	}
 
-	for _, v := range []rbytes.Unmarshaler{
-		&h.th2,
-		&h.arr,
-	} {
-		if err := v.UnmarshalROOT(r); err != nil {
-			return err
-		}
-	}
+	r.ReadObject(&h.th2)
+	r.ReadObject(&h.arr)
 
 	r.CheckByteCount(pos, bcnt, beg, h.Class())
 	return r.Err()

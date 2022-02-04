@@ -5,6 +5,7 @@
 package rphys
 
 import (
+	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -50,10 +51,7 @@ func (fc *FeldmanCousins) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 
 	pos := w.WriteVersion(fc.RVersion())
-	if _, err := fc.obj.MarshalROOT(w); err != nil {
-		return 0, err
-	}
-
+	w.WriteObject(&fc.obj)
 	w.WriteF64(fc.CL)
 	w.WriteF64(fc.UpLim)
 	w.WriteF64(fc.LoLim)
@@ -76,12 +74,15 @@ func (fc *FeldmanCousins) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	beg := r.Pos()
 
-	_, pos, bcnt := r.ReadVersion(fc.Class())
-
-	if err := fc.obj.UnmarshalROOT(r); err != nil {
-		return err
+	vers, pos, bcnt := r.ReadVersion(fc.Class())
+	if vers > rvers.FeldmanCousins {
+		panic(fmt.Errorf(
+			"rphys: invalid %s version=%d > %d",
+			fc.Class(), vers, fc.RVersion(),
+		))
 	}
 
+	r.ReadObject(&fc.obj)
 	fc.CL = r.ReadF64()
 	fc.UpLim = r.ReadF64()
 	fc.LoLim = r.ReadF64()
