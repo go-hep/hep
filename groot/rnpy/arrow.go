@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
+package rnpy
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/arrio"
 	"github.com/apache/arrow/go/arrow/memory"
-	"github.com/sbinet/npyio"
+	"github.com/sbinet/npyio/npy"
 )
 
 var (
@@ -47,7 +47,8 @@ type Record struct {
 	cols []array.Interface
 }
 
-func NewRecord(npy *npyio.Reader) *Record {
+// NewRecord returns an Arrow Record from a NumPy data file reader.
+func NewRecord(npy *npy.Reader) *Record {
 	var (
 		mem    = memory.NewGoAllocator()
 		schema = schemaFrom(npy)
@@ -125,7 +126,7 @@ func (rec *Record) NewSlice(i, j int64) array.Record {
 	panic("not implemented")
 }
 
-func (rec *Record) read(r *npyio.Reader, nelem int64, bldr array.Builder) {
+func (rec *Record) read(r *npy.Reader, nelem int64, bldr array.Builder) {
 	rt := dtypeFrom(rec.schema.Field(0).Type)
 	rv := reflect.New(reflect.SliceOf(rt)).Elem()
 	rv.Set(reflect.MakeSlice(rv.Type(), int(nelem), int(nelem)))
@@ -150,7 +151,7 @@ func (rec *Record) read(r *npyio.Reader, nelem int64, bldr array.Builder) {
 	rec.cols = append(rec.cols, bldr.NewArray())
 }
 
-func schemaFrom(npy *npyio.Reader) *arrow.Schema {
+func schemaFrom(npy *npy.Reader) *arrow.Schema {
 	var (
 		hdr   = npy.Header
 		dtype arrow.DataType

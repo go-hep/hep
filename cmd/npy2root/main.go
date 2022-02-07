@@ -45,9 +45,10 @@ import (
 	"os"
 
 	"github.com/apache/arrow/go/arrow/arrio"
-	"github.com/sbinet/npyio"
+	"github.com/sbinet/npyio/npy"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rarrow"
+	"go-hep.org/x/hep/groot/rnpy"
 	"go-hep.org/x/hep/groot/rtree"
 )
 
@@ -114,12 +115,12 @@ func process(oname, tname, fname string) error {
 	}
 	defer src.Close()
 
-	npy, err := npyio.NewReader(src)
+	npy, err := npy.NewReader(src)
 	if err != nil {
 		return fmt.Errorf("could not create numpy file reader %q: %w", fname, err)
 	}
 
-	rec := NewRecord(npy)
+	rec := rnpy.NewRecord(npy)
 	defer rec.Release()
 
 	dst, err := groot.Create(oname)
@@ -133,7 +134,7 @@ func process(oname, tname, fname string) error {
 		return fmt.Errorf("could not create output ROOT tree %q: %w", tname, err)
 	}
 
-	_, err = arrio.Copy(t, NewRecordReader(rec))
+	_, err = arrio.Copy(t, rnpy.NewRecordReader(rec))
 	if err != nil {
 		return fmt.Errorf("could not copy numpy array to ROOT tree %q: %w", tname, err)
 	}

@@ -12,7 +12,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/sbinet/npyio"
+	"github.com/sbinet/npyio/npy"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rtree"
 )
@@ -251,7 +251,7 @@ func TestConvert(t *testing.T) {
 			}
 			defer src.Close()
 
-			err = npyio.Write(src, tc.want)
+			err = npy.Write(src, tc.want)
 			if err != nil {
 				t.Fatalf("could not save NumPy data file: %+v", err)
 			}
