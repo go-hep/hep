@@ -49,8 +49,10 @@ func TypeFromSI(ctx rbytes.StreamerInfoContext, si rbytes.StreamerInfo) (reflect
 		}
 		return gotypes[reflect.String], nil
 
-	case strings.HasPrefix(name, "vector<"),
-		strings.HasPrefix(name, "map<"): // FIXME(sbinet): handle other std::containers?
+	case hasStdPrefix(name,
+		"vector", "list", "deque",
+		"set", "multiset", "unordered_set", "unordered_multiset",
+		"map", "multimap", "unordered_map", "unordered_multimap"):
 		var (
 			se      = si.Elements()[0]
 			rt, err = TypeFromSE(ctx, se)
@@ -189,24 +191,40 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 
 	case *StreamerSTL:
 		switch se.STLType() {
-		case rmeta.STLvector:
+		case rmeta.STLvector, rmeta.STLlist, rmeta.STLdeque:
 			var (
 				ct       = se.ContainedType()
-				typename = rmeta.CxxTemplateArgsOf(se.TypeName())[0]
+				ename    = rmeta.CxxTemplateFrom(se.TypeName()).Args[0]
 				typevers = int16(-1)
-				elt, err = typeFromTypeName(ctx, typename, typevers, ct, se, 1)
+				elt, err = typeFromTypeName(ctx, ename, typevers, ct, se, 1)
 			)
 			if err != nil {
-				return nil, fmt.Errorf("rdict: could not create type for std::vector<T> T=%q: %w", typename, err)
+				return nil, fmt.Errorf("rdict: could not create type for %q: %w", se.TypeName(), err)
 			}
 			return reflect.SliceOf(elt), nil
 
-		case rmeta.STLmap, rmeta.STLunorderedmap:
+		case rmeta.STLset, rmeta.STLunorderedset, rmeta.STLmultiset, rmeta.STLunorderedmultiset:
 			var (
 				ct       = se.ContainedType()
 				typename = se.TypeName()
 				typevers = int16(-1)
-				enames   = rmeta.CxxTemplateArgsOf(se.TypeName())
+				kname    = rmeta.CxxTemplateFrom(se.TypeName()).Args[0]
+			)
+
+			key, err := typeFromTypeName(ctx, kname, typevers, ct, se, 1)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"could not find key type %q for std::{,multi,unordered_}set %q: %w", kname, typename, err,
+				)
+			}
+			return reflect.MapOf(key, reflect.TypeOf(struct{}{})), nil
+
+		case rmeta.STLmap, rmeta.STLunorderedmap, rmeta.STLmultimap, rmeta.STLunorderedmultimap:
+			var (
+				ct       = se.ContainedType()
+				typename = se.TypeName()
+				typevers = int16(-1)
+				enames   = rmeta.CxxTemplateFrom(se.TypeName()).Args
 				kname    = enames[0]
 				vname    = enames[1]
 			)
@@ -214,13 +232,13 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 			key, err := typeFromTypeName(ctx, kname, typevers, ct, se, 1)
 			if err != nil {
 				return nil, fmt.Errorf(
-					"could not find key type %q for std::map %q: %w", kname, typename, err,
+					"could not find key type %q for std::{,multi,unordered_}map %q: %w", kname, typename, err,
 				)
 			}
 			val, err := typeFromTypeName(ctx, vname, typevers, ct, se, 1)
 			if err != nil {
 				return nil, fmt.Errorf(
-					"could not find val type %q for std::map %q: %w", vname, typename, err,
+					"could not find val type %q for std::{,multi,unordered_}map %q: %w", vname, typename, err,
 				)
 			}
 			return reflect.MapOf(key, val), nil
@@ -228,7 +246,7 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 		case rmeta.STLbitset:
 			var (
 				typename = se.TypeName()
-				enames   = rmeta.CxxTemplateArgsOf(typename)
+				enames   = rmeta.CxxTemplateFrom(typename).Args
 				_, err   = strconv.Atoi(enames[0])
 			)
 			if err != nil {
@@ -236,10 +254,16 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 					"could not infer bitset argument (type=%q): %w", typename, err,
 				)
 			}
+			// FIXME(sbinet): use a fixed-sized array rounded-up to n/8-bytes
+			//	bits2bytes := func(v int) int {
+			//		const len = 8-1
+			//		return (v + (8-(sz&len))&len)/8
+			//	}
+			//	n := bits2bytes(v)
 			return reflect.SliceOf(gotypes[reflect.Uint8]), nil
 
 		default:
-			return nil, fmt.Errorf("rdict: STL container not implemented: %#v", se)
+			return nil, fmt.Errorf("rdict: STL container not implemented: %#v (vtype=%+v)", se, se.STLType())
 		}
 	}
 }
@@ -386,17 +410,26 @@ func typeFromTypeName(ctx rbytes.StreamerInfoContext, typename string, typevers 
 	}
 
 	switch {
-	case strings.HasPrefix(typename, "vector<"), strings.HasPrefix(typename, "std::vector<"):
-		enames := rmeta.CxxTemplateArgsOf(typename)
+	case hasStdPrefix(typename, "vector", "list", "deque"):
+		enames := rmeta.CxxTemplateFrom(typename).Args
 		et, err := typeFromTypeName(ctx, enames[0], -1, -1, se, n)
 		if err != nil {
 			return nil, err
 		}
 		return reflect.SliceOf(et), nil
 
-	case strings.HasPrefix(typename, "map<"), strings.HasPrefix(typename, "std::map<"),
-		strings.HasPrefix(typename, "unordered_map<"), strings.HasPrefix(typename, "std::unordered_map<"):
-		enames := rmeta.CxxTemplateArgsOf(typename)
+	case hasStdPrefix(typename, "set", "multiset", "unordered_set", "unordered_multiset"):
+		enames := rmeta.CxxTemplateFrom(typename).Args
+		kname := enames[0]
+
+		kt, err := typeFromTypeName(ctx, kname, -1, -1, se, n)
+		if err != nil {
+			return nil, err
+		}
+		return reflect.MapOf(kt, reflect.TypeOf(struct{}{})), nil
+
+	case hasStdPrefix(typename, "map", "multimap", "unordered_map", "unordered_multimap"):
+		enames := rmeta.CxxTemplateFrom(typename).Args
 		kname := enames[0]
 		vname := enames[1]
 
@@ -410,9 +443,34 @@ func typeFromTypeName(ctx rbytes.StreamerInfoContext, typename string, typevers 
 		}
 		return reflect.MapOf(kt, vt), nil
 
-	case strings.HasPrefix(typename, "bitset<"):
+	case hasStdPrefix(typename, "pair"):
+		enames := rmeta.CxxTemplateFrom(typename).Args
+		p0 := enames[0]
+		p1 := enames[1]
+		t0, err := typeFromTypeName(ctx, p0, -1, -1, se, n)
+		if err != nil {
+			return nil, err
+		}
+		t1, err := typeFromTypeName(ctx, p1, -1, -1, se, n)
+		if err != nil {
+			return nil, err
+		}
+		return reflect.StructOf([]reflect.StructField{
+			{
+				Name: "ROOT_first",
+				Type: t0,
+				Tag:  reflect.StructTag(`groot:"first"`),
+			},
+			{
+				Name: "ROOT_second",
+				Type: t1,
+				Tag:  reflect.StructTag(`groot:"second"`),
+			},
+		}), nil
+
+	case hasStdPrefix(typename, "bitset"):
 		var (
-			enames = rmeta.CxxTemplateArgsOf(typename)
+			enames = rmeta.CxxTemplateFrom(typename).Args
 			_, err = strconv.Atoi(enames[0])
 		)
 
@@ -491,3 +549,14 @@ var (
 		reflect.String:  reflect.TypeOf(""),
 	}
 )
+
+func hasStdPrefix(typename string, ps ...string) bool {
+	for _, p := range ps {
+		switch {
+		case strings.HasPrefix(typename, p+"<"),
+			strings.HasPrefix(typename, "std::"+p+"<"):
+			return true
+		}
+	}
+	return false
+}

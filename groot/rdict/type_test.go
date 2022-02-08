@@ -205,6 +205,78 @@ func TestTypeFromSI(t *testing.T) {
 			})(nil)).Elem(),
 		},
 		{
+			name: "list<int>",
+			si: rdict.NewCxxStreamerInfo("list<int>", 1, 0, []rbytes.StreamerElement{
+				rdict.NewCxxStreamerSTL(rdict.Element{
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "list<int>",
+				}.New(), rmeta.STLlist, rmeta.Object),
+			}),
+			want: reflect.TypeOf((*[]int32)(nil)).Elem(),
+		},
+		{
+			name: "deque<int>",
+			si: rdict.NewCxxStreamerInfo("deque<int>", 1, 0, []rbytes.StreamerElement{
+				rdict.NewCxxStreamerSTL(rdict.Element{
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "deque<int>",
+				}.New(), rmeta.STLdeque, rmeta.Object),
+			}),
+			want: reflect.TypeOf((*[]int32)(nil)).Elem(),
+		},
+		{
+			name: "set<int>",
+			si: rdict.NewCxxStreamerInfo("set<int>", 1, 0, []rbytes.StreamerElement{
+				rdict.NewCxxStreamerSTL(rdict.Element{
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "set<int>",
+				}.New(), rmeta.STLset, rmeta.Object),
+			}),
+			want: reflect.TypeOf((*map[int32]struct{})(nil)).Elem(),
+		},
+		{
+			name: "multiset<int>",
+			si: rdict.NewCxxStreamerInfo("multiset<int>", 1, 0, []rbytes.StreamerElement{
+				rdict.NewCxxStreamerSTL(rdict.Element{
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "set<int>",
+				}.New(), rmeta.STLmultiset, rmeta.Object),
+			}),
+			want: reflect.TypeOf((*map[int32]struct{})(nil)).Elem(),
+		},
+		{
+			name: "unordered_set<int>",
+			si: rdict.NewCxxStreamerInfo("unordered_set<int>", 1, 0, []rbytes.StreamerElement{
+				rdict.NewCxxStreamerSTL(rdict.Element{
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "unordered_set<int>",
+				}.New(), rmeta.STLunorderedset, rmeta.Object),
+			}),
+			want: reflect.TypeOf((*map[int32]struct{})(nil)).Elem(),
+		},
+		{
+			name: "unordered_multiset<int>",
+			si: rdict.NewCxxStreamerInfo("unordered_multiset<int>", 1, 0, []rbytes.StreamerElement{
+				rdict.NewCxxStreamerSTL(rdict.Element{
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "unordered_multiset<int>",
+				}.New(), rmeta.STLunorderedmultiset, rmeta.Object),
+			}),
+			want: reflect.TypeOf((*map[int32]struct{})(nil)).Elem(),
+		},
+		{
 			name: "map<int,float>",
 			si: rdict.NewCxxStreamerInfo("map<int,float>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
@@ -213,6 +285,42 @@ func TestTypeFromSI(t *testing.T) {
 					Size:  48,
 					EName: "map<int,float>",
 				}.New(), rmeta.STLmap, rmeta.Object),
+			}),
+			want: reflect.TypeOf((*map[int32]float32)(nil)).Elem(),
+		},
+		{
+			name: "multimap<int,float>",
+			si: rdict.NewCxxStreamerInfo("multimap<int,float>", 1, 0, []rbytes.StreamerElement{
+				rdict.NewCxxStreamerSTL(rdict.Element{
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "multimap<int,float>",
+				}.New(), rmeta.STLmultimap, rmeta.Object),
+			}),
+			want: reflect.TypeOf((*map[int32]float32)(nil)).Elem(),
+		},
+		{
+			name: "unordered_map<int,float>",
+			si: rdict.NewCxxStreamerInfo("unordered_map<int,float>", 1, 0, []rbytes.StreamerElement{
+				rdict.NewCxxStreamerSTL(rdict.Element{
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "unordered_map<int,float>",
+				}.New(), rmeta.STLunorderedmap, rmeta.Object),
+			}),
+			want: reflect.TypeOf((*map[int32]float32)(nil)).Elem(),
+		},
+		{
+			name: "unordered_multimap<int,float>",
+			si: rdict.NewCxxStreamerInfo("unordered_multimap<int,float>", 1, 0, []rbytes.StreamerElement{
+				rdict.NewCxxStreamerSTL(rdict.Element{
+					Name:  *rbase.NewNamed("This", ""),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "unordered_multimap<int,float>",
+				}.New(), rmeta.STLunorderedmultimap, rmeta.Object),
 			}),
 			want: reflect.TypeOf((*map[int32]float32)(nil)).Elem(),
 		},
@@ -354,7 +462,7 @@ func TestTypeFromSI(t *testing.T) {
 		},
 		{
 			name: "vector<bitset<256> >",
-			si: rdict.NewCxxStreamerInfo("MyBitset", rvers.StreamerInfo, 0, []rbytes.StreamerElement{
+			si: rdict.NewCxxStreamerInfo("MyBitsets", rvers.StreamerInfo, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
 					Name:  *rbase.NewNamed("bs", ""),
 					Type:  rmeta.Streamer,

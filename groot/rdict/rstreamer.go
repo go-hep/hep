@@ -210,23 +210,23 @@ func (si *StreamerInfo) makeROp(sictx rbytes.StreamerInfoContext, i int, descr e
 
 				case *StreamerSTL:
 					switch se.STLType() {
-					case rmeta.STLvector:
+					case rmeta.STLvector, rmeta.STLlist, rmeta.STLdeque:
 						var (
 							ct       = se.ContainedType()
 							typename = se.TypeName()
-							enames   = rmeta.CxxTemplateArgsOf(typename)
+							enames   = rmeta.CxxTemplateFrom(typename).Args
 							rop      = ropFrom(sictx, enames[0], -1, ct, &descr)
 						)
 						return rstreamer{
-							rstreamType(typename, rstreamStdVector(typename, rop)),
+							rstreamType(typename, rstreamStdSlice(typename, rop)),
 							cfg,
 						}
 
-					case rmeta.STLset, rmeta.STLunorderedset:
+					case rmeta.STLset, rmeta.STLmultiset, rmeta.STLunorderedset, rmeta.STLunorderedmultiset:
 						var (
 							ct       = se.ContainedType()
 							typename = se.TypeName()
-							enames   = rmeta.CxxTemplateArgsOf(typename)
+							enames   = rmeta.CxxTemplateFrom(typename).Args
 							rop      = ropFrom(sictx, enames[0], -1, ct, &descr)
 						)
 						return rstreamer{
@@ -234,34 +234,10 @@ func (si *StreamerInfo) makeROp(sictx rbytes.StreamerInfoContext, i int, descr e
 							cfg,
 						}
 
-					case rmeta.STLlist:
-						var (
-							ct       = se.ContainedType()
-							typename = se.TypeName()
-							enames   = rmeta.CxxTemplateArgsOf(typename)
-							rop      = ropFrom(sictx, enames[0], -1, ct, &descr)
-						)
-						return rstreamer{
-							rstreamType(typename, rstreamStdList(typename, rop)),
-							cfg,
-						}
-
-					case rmeta.STLdeque:
-						var (
-							ct       = se.ContainedType()
-							typename = se.TypeName()
-							enames   = rmeta.CxxTemplateArgsOf(typename)
-							rop      = ropFrom(sictx, enames[0], -1, ct, &descr)
-						)
-						return rstreamer{
-							rstreamType(typename, rstreamStdList(typename, rop)),
-							cfg,
-						}
-
-					case rmeta.STLmap, rmeta.STLunorderedmap:
+					case rmeta.STLmap, rmeta.STLunorderedmap, rmeta.STLmultimap, rmeta.STLunorderedmultimap:
 						var (
 							ct     = se.ContainedType()
-							enames = rmeta.CxxTemplateArgsOf(se.TypeName())
+							enames = rmeta.CxxTemplateFrom(se.TypeName()).Args
 							kname  = enames[0]
 							vname  = enames[1]
 						)
@@ -276,7 +252,7 @@ func (si *StreamerInfo) makeROp(sictx rbytes.StreamerInfoContext, i int, descr e
 					case rmeta.STLbitset:
 						var (
 							typename = se.TypeName()
-							enames   = rmeta.CxxTemplateArgsOf(typename)
+							enames   = rmeta.CxxTemplateFrom(typename).Args
 							n, err   = strconv.Atoi(enames[0])
 						)
 
@@ -491,23 +467,23 @@ func (si *StreamerInfo) makeROp(sictx rbytes.StreamerInfoContext, i int, descr e
 
 		case *StreamerSTL:
 			switch se.STLType() {
-			case rmeta.STLvector:
+			case rmeta.STLvector, rmeta.STLlist, rmeta.STLdeque:
 				var (
 					ct       = se.ContainedType()
 					typename = se.TypeName()
-					enames   = rmeta.CxxTemplateArgsOf(typename)
+					enames   = rmeta.CxxTemplateFrom(typename).Args
 					rop      = ropFrom(sictx, enames[0], -1, ct, &descr)
 				)
 				return rstreamer{
-					rstreamType(typename, rstreamStdVector(typename, rop)),
+					rstreamType(typename, rstreamStdSlice(typename, rop)),
 					cfg,
 				}
 
-			case rmeta.STLset, rmeta.STLunorderedset:
+			case rmeta.STLset, rmeta.STLmultiset, rmeta.STLunorderedset, rmeta.STLunorderedmultiset:
 				var (
 					ct       = se.ContainedType()
 					typename = se.TypeName()
-					enames   = rmeta.CxxTemplateArgsOf(typename)
+					enames   = rmeta.CxxTemplateFrom(typename).Args
 					rop      = ropFrom(sictx, enames[0], -1, ct, &descr)
 				)
 				return rstreamer{
@@ -515,34 +491,10 @@ func (si *StreamerInfo) makeROp(sictx rbytes.StreamerInfoContext, i int, descr e
 					cfg,
 				}
 
-			case rmeta.STLlist:
-				var (
-					ct       = se.ContainedType()
-					typename = se.TypeName()
-					enames   = rmeta.CxxTemplateArgsOf(typename)
-					rop      = ropFrom(sictx, enames[0], -1, ct, &descr)
-				)
-				return rstreamer{
-					rstreamType(typename, rstreamStdList(typename, rop)),
-					cfg,
-				}
-
-			case rmeta.STLdeque:
-				var (
-					ct       = se.ContainedType()
-					typename = se.TypeName()
-					enames   = rmeta.CxxTemplateArgsOf(typename)
-					rop      = ropFrom(sictx, enames[0], -1, ct, &descr)
-				)
-				return rstreamer{
-					rstreamType(typename, rstreamStdList(typename, rop)),
-					cfg,
-				}
-
-			case rmeta.STLmap, rmeta.STLunorderedmap:
+			case rmeta.STLmap, rmeta.STLmultimap, rmeta.STLunorderedmap, rmeta.STLunorderedmultimap:
 				var (
 					ct     = se.ContainedType()
-					enames = rmeta.CxxTemplateArgsOf(se.TypeName())
+					enames = rmeta.CxxTemplateFrom(se.TypeName()).Args
 					kname  = enames[0]
 					vname  = enames[1]
 				)
@@ -557,7 +509,7 @@ func (si *StreamerInfo) makeROp(sictx rbytes.StreamerInfoContext, i int, descr e
 			case rmeta.STLbitset:
 				var (
 					typename = se.TypeName()
-					enames   = rmeta.CxxTemplateArgsOf(typename)
+					enames   = rmeta.CxxTemplateFrom(typename).Args
 					n, err   = strconv.Atoi(enames[0])
 				)
 
@@ -863,7 +815,7 @@ func rstreamType(typename string, rop ropFunc) ropFunc {
 	}
 }
 
-func rstreamStdVector(typename string, rop ropFunc) ropFunc {
+func rstreamStdSlice(typename string, rop ropFunc) ropFunc {
 	//	const typevers = 1
 	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
 		// FIXME(sbinet): use typevers to infer obj-/mbr-wise reading.
@@ -877,7 +829,7 @@ func rstreamStdVector(typename string, rop ropFunc) ropFunc {
 			err := rop(r, rv.Index(i).Addr().Interface(), nil)
 			if err != nil {
 				return fmt.Errorf(
-					"rdict: could not rstream std::vector<T> element %s[%d] of %s: %w",
+					"rdict: could not rstream element %s[%d] of %s: %w",
 					cfg.descr.elem.Name(), i, cfg.si.Name(), err,
 				)
 			}
@@ -888,17 +840,11 @@ func rstreamStdVector(typename string, rop ropFunc) ropFunc {
 
 func rstreamStdSet(typename string, rop ropFunc) ropFunc {
 	//	const typevers = 1
-	return rstreamStdVector(typename, rop)
-}
 
-func rstreamStdList(typename string, rop ropFunc) ropFunc {
-	//	const typevers = 1
-	return rstreamStdVector(typename, rop)
-}
-
-func rstreamStdDeque(typename string, rop ropFunc) ropFunc {
-	//	const typevers = 1
-	return rstreamStdVector(typename, rop)
+	// FIXME(sbinet): add special handling for std::set-like types
+	// the correct equivalent Go-type of std::set<T> is map[T]struct{}
+	// (or, when availaible, std.Set[T])
+	return rstreamStdSlice(typename, rop)
 }
 
 func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
@@ -1356,20 +1302,18 @@ func ropFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, 
 	}
 
 	switch {
-	case strings.HasPrefix(typename, "vector<"), strings.HasPrefix(typename, "std::vector<"):
-		enames := rmeta.CxxTemplateArgsOf(typename)
+	case hasStdPrefix(typename, "vector", "list", "deque"):
+		enames := rmeta.CxxTemplateFrom(typename).Args
 		rop := ropFrom(sictx, enames[0], -1, 0, nil)
-		return rstreamStdVector(typename, rop)
+		return rstreamStdSlice(typename, rop)
 
-	case strings.HasPrefix(typename, "set<"), strings.HasPrefix(typename, "std::set<"),
-		strings.HasPrefix(typename, "unordered_set<"), strings.HasPrefix(typename, "std::unordered_set<"):
-		enames := rmeta.CxxTemplateArgsOf(typename)
+	case hasStdPrefix(typename, "set", "multiset", "unordered_set", "unordered_multiset"):
+		enames := rmeta.CxxTemplateFrom(typename).Args
 		rop := ropFrom(sictx, enames[0], -1, 0, nil)
 		return rstreamStdSet(typename, rop)
 
-	case strings.HasPrefix(typename, "map<"), strings.HasPrefix(typename, "std::map<"),
-		strings.HasPrefix(typename, "unordered_map<"), strings.HasPrefix(typename, "std::unordered_map<"):
-		enames := rmeta.CxxTemplateArgsOf(typename)
+	case hasStdPrefix(typename, "map", "multimap", "unordered_map", "unordered_multimap"):
+		enames := rmeta.CxxTemplateFrom(typename).Args
 		kname := enames[0]
 		vname := enames[1]
 
@@ -1377,18 +1321,8 @@ func ropFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, 
 		vrop := ropFrom(sictx, vname, -1, 0, nil)
 		return rstreamStdMap(kname, vname, krop, vrop)
 
-	case strings.HasPrefix(typename, "list<"), strings.HasPrefix(typename, "std::list<"):
-		enames := rmeta.CxxTemplateArgsOf(typename)
-		rop := ropFrom(sictx, enames[0], -1, 0, nil)
-		return rstreamStdList(typename, rop)
-
-	case strings.HasPrefix(typename, "deque<"), strings.HasPrefix(typename, "std::deque<"):
-		enames := rmeta.CxxTemplateArgsOf(typename)
-		rop := ropFrom(sictx, enames[0], -1, 0, nil)
-		return rstreamStdDeque(typename, rop)
-
-	case strings.HasPrefix(typename, "bitset<"):
-		enames := rmeta.CxxTemplateArgsOf(typename)
+	case hasStdPrefix(typename, "bitset"):
+		enames := rmeta.CxxTemplateFrom(typename).Args
 		n, err := strconv.Atoi(enames[0])
 		if err != nil {
 			panic(fmt.Errorf("rdict: invalid STL bitset argument (type=%q): %+v", typename, err))

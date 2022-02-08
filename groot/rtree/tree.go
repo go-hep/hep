@@ -524,7 +524,7 @@ func (tree *ttree) attachStreamerElement(br Branch, se rbytes.StreamerElement, c
 	case *rdict.StreamerSTL:
 		var (
 			typename = strings.TrimSpace(se.TypeName())
-			enames   = rmeta.CxxTemplateArgsOf(typename)
+			enames   = rmeta.CxxTemplateFrom(typename).Args
 			typevers = -1
 		)
 		switch se.STLType() {
