@@ -206,7 +206,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 						var (
 							ct       = se.ContainedType()
 							typename = se.TypeName()
-							enames   = rmeta.CxxTemplateArgsOf(typename)
+							enames   = parseStdVector(typename)
 							wop, _   = wopFrom(sictx, enames[0], -1, ct, &descr)
 						)
 						return wstreamer{
@@ -214,11 +214,23 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 							cfg,
 						}
 
-					case rmeta.STLset, rmeta.STLunorderedset:
+					case rmeta.STLset:
 						var (
 							ct       = se.ContainedType()
 							typename = se.TypeName()
-							enames   = rmeta.CxxTemplateArgsOf(typename)
+							enames   = parseStdSet(typename)
+							wop, _   = wopFrom(sictx, enames[0], -1, ct, &descr)
+						)
+						return wstreamer{
+							wstreamType(typename, wstreamStdSet(typename, wop)),
+							cfg,
+						}
+
+					case rmeta.STLunorderedset:
+						var (
+							ct       = se.ContainedType()
+							typename = se.TypeName()
+							enames   = parseStdUnorderedSet(typename)
 							wop, _   = wopFrom(sictx, enames[0], -1, ct, &descr)
 						)
 						return wstreamer{
@@ -230,7 +242,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 						var (
 							ct       = se.ContainedType()
 							typename = se.TypeName()
-							enames   = rmeta.CxxTemplateArgsOf(typename)
+							enames   = parseStdList(typename)
 							wop, _   = wopFrom(sictx, enames[0], -1, ct, &descr)
 						)
 						return wstreamer{
@@ -242,7 +254,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 						var (
 							ct       = se.ContainedType()
 							typename = se.TypeName()
-							enames   = rmeta.CxxTemplateArgsOf(typename)
+							enames   = parseStdDeque(typename)
 							wop, _   = wopFrom(sictx, enames[0], -1, ct, &descr)
 						)
 						return wstreamer{
@@ -250,10 +262,29 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 							cfg,
 						}
 
-					case rmeta.STLmap, rmeta.STLunorderedmap:
+					case rmeta.STLmap:
 						var (
 							ct     = se.ContainedType()
-							enames = rmeta.CxxTemplateArgsOf(se.TypeName())
+							enames = parseStdMap(se.TypeName())
+							kname  = enames[0]
+							vname  = enames[1]
+						)
+
+						kwop, kvers := wopFrom(sictx, kname, -1, ct, &descr)
+						vwop, vvers := wopFrom(sictx, vname, -1, ct, &descr)
+						return wstreamer{
+							wstreamStdMap(
+								kname, vname,
+								kwop, vwop,
+								kvers, vvers,
+							),
+							cfg,
+						}
+
+					case rmeta.STLunorderedmap:
+						var (
+							ct     = se.ContainedType()
+							enames = parseStdUnorderedMap(se.TypeName())
 							kname  = enames[0]
 							vname  = enames[1]
 						)
@@ -272,7 +303,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 					case rmeta.STLbitset:
 						var (
 							typename = se.TypeName()
-							enames   = rmeta.CxxTemplateArgsOf(typename)
+							enames   = parseStdBitset(typename)
 							n, err   = strconv.Atoi(enames[0])
 						)
 
@@ -451,7 +482,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 				var (
 					ct       = se.ContainedType()
 					typename = se.TypeName()
-					enames   = rmeta.CxxTemplateArgsOf(typename)
+					enames   = parseStdVector(typename)
 					vname    = enames[0]
 					wop, _   = wopFrom(sictx, vname, -1, ct, &descr)
 				)
@@ -460,11 +491,24 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 					cfg,
 				}
 
-			case rmeta.STLset, rmeta.STLunorderedset:
+			case rmeta.STLset:
 				var (
 					ct       = se.ContainedType()
 					typename = se.TypeName()
-					enames   = rmeta.CxxTemplateArgsOf(typename)
+					enames   = parseStdSet(typename)
+					vname    = enames[0]
+					wop, _   = wopFrom(sictx, vname, -1, ct, &descr)
+				)
+				return wstreamer{
+					wstreamType(typename, wstreamStdSet(typename, wop)),
+					cfg,
+				}
+
+			case rmeta.STLunorderedset:
+				var (
+					ct       = se.ContainedType()
+					typename = se.TypeName()
+					enames   = parseStdUnorderedSet(typename)
 					vname    = enames[0]
 					wop, _   = wopFrom(sictx, vname, -1, ct, &descr)
 				)
@@ -477,7 +521,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 				var (
 					ct       = se.ContainedType()
 					typename = se.TypeName()
-					enames   = rmeta.CxxTemplateArgsOf(typename)
+					enames   = parseStdList(typename)
 					vname    = enames[0]
 					wop, _   = wopFrom(sictx, vname, -1, ct, &descr)
 				)
@@ -490,7 +534,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 				var (
 					ct       = se.ContainedType()
 					typename = se.TypeName()
-					enames   = rmeta.CxxTemplateArgsOf(typename)
+					enames   = parseStdDeque(typename)
 					vname    = enames[0]
 					wop, _   = wopFrom(sictx, vname, -1, ct, &descr)
 				)
@@ -499,10 +543,31 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 					cfg,
 				}
 
-			case rmeta.STLmap, rmeta.STLunorderedmap:
+			case rmeta.STLmap:
 				var (
 					ct     = se.ContainedType()
-					enames = rmeta.CxxTemplateArgsOf(se.TypeName())
+					enames = parseStdMap(se.TypeName())
+					kname  = enames[0]
+					vname  = enames[1]
+				)
+
+				kwop, kvers := wopFrom(sictx, kname, -1, ct, &descr)
+				vwop, vvers := wopFrom(sictx, vname, -1, ct, &descr)
+				return wstreamer{
+					wstreamStdMap(
+						kname, vname,
+						kwop,
+						vwop,
+						kvers,
+						vvers,
+					),
+					cfg,
+				}
+
+			case rmeta.STLunorderedmap:
+				var (
+					ct     = se.ContainedType()
+					enames = parseStdUnorderedMap(se.TypeName())
 					kname  = enames[0]
 					vname  = enames[1]
 				)
@@ -523,7 +588,7 @@ func (si *StreamerInfo) makeWOp(sictx rbytes.StreamerInfoContext, i int, descr e
 			case rmeta.STLbitset:
 				var (
 					typename = se.TypeName()
-					enames   = rmeta.CxxTemplateArgsOf(typename)
+					enames   = parseStdBitset(typename)
 					n, err   = strconv.Atoi(enames[0])
 				)
 
@@ -1200,19 +1265,31 @@ func wopFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, 
 
 	switch {
 	case strings.HasPrefix(typename, "vector<"), strings.HasPrefix(typename, "std::vector<"):
-		enames := rmeta.CxxTemplateArgsOf(typename)
+		enames := parseStdVector(typename)
 		wop, _ := wopFrom(sictx, enames[0], -1, 0, nil)
 		return wstreamStdVector(typename, wop), rvers.StreamerInfo
 
-	case strings.HasPrefix(typename, "set<"), strings.HasPrefix(typename, "std::set<"),
-		strings.HasPrefix(typename, "unordered_set<"), strings.HasPrefix(typename, "std::unordered_set<"):
-		enames := rmeta.CxxTemplateArgsOf(typename)
+	case strings.HasPrefix(typename, "set<"), strings.HasPrefix(typename, "std::set<"):
+		enames := parseStdSet(typename)
 		wop, _ := wopFrom(sictx, enames[0], -1, 0, nil)
 		return wstreamStdSet(typename, wop), rvers.StreamerInfo
 
-	case strings.HasPrefix(typename, "map<"), strings.HasPrefix(typename, "std::map<"),
-		strings.HasPrefix(typename, "unordered_map<"), strings.HasPrefix(typename, "std::unordered_map<"):
-		enames := rmeta.CxxTemplateArgsOf(typename)
+	case strings.HasPrefix(typename, "unordered_set<"), strings.HasPrefix(typename, "std::unordered_set<"):
+		enames := parseStdUnorderedSet(typename)
+		wop, _ := wopFrom(sictx, enames[0], -1, 0, nil)
+		return wstreamStdSet(typename, wop), rvers.StreamerInfo
+
+	case strings.HasPrefix(typename, "map<"), strings.HasPrefix(typename, "std::map<"):
+		enames := parseStdMap(typename)
+		kname := enames[0]
+		vname := enames[1]
+
+		kwop, kvers := wopFrom(sictx, kname, -1, 0, nil)
+		vwop, vvers := wopFrom(sictx, vname, -1, 0, nil)
+		return wstreamStdMap(kname, vname, kwop, vwop, kvers, vvers), rvers.StreamerInfo
+
+	case strings.HasPrefix(typename, "unordered_map<"), strings.HasPrefix(typename, "std::unordered_map<"):
+		enames := parseStdUnorderedMap(typename)
 		kname := enames[0]
 		vname := enames[1]
 
@@ -1221,17 +1298,17 @@ func wopFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, 
 		return wstreamStdMap(kname, vname, kwop, vwop, kvers, vvers), rvers.StreamerInfo
 
 	case strings.HasPrefix(typename, "list<"), strings.HasPrefix(typename, "std::list<"):
-		enames := rmeta.CxxTemplateArgsOf(typename)
+		enames := parseStdList(typename)
 		wop, _ := wopFrom(sictx, enames[0], -1, 0, nil)
 		return wstreamStdList(typename, wop), rvers.StreamerInfo
 
 	case strings.HasPrefix(typename, "deque<"), strings.HasPrefix(typename, "std::deque<"):
-		enames := rmeta.CxxTemplateArgsOf(typename)
+		enames := parseStdDeque(typename)
 		wop, _ := wopFrom(sictx, enames[0], -1, 0, nil)
 		return wstreamStdDeque(typename, wop), rvers.StreamerInfo
 
 	case strings.HasPrefix(typename, "bitset<"):
-		enames := rmeta.CxxTemplateArgsOf(typename)
+		enames := parseStdBitset(typename)
 		n, err := strconv.Atoi(enames[0])
 		if err != nil {
 			panic(fmt.Errorf("rdict: invalid STL bitset argument (type=%q): %+v", typename, err))

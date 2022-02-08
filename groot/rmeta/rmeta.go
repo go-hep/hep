@@ -6,59 +6,79 @@
 package rmeta // import "go-hep.org/x/hep/groot/rmeta"
 
 import (
+	"fmt"
 	"strings"
 )
 
-// CxxTemplateArgsOf extracts the typenames of a C++ templated typename.
+// CxxTemplate represents a C++ template, such as 'vector<T>', 'map<K,V,Cmp>'.
+type CxxTemplate struct {
+	Name string   // Name is the name of the template type
+	Args []string // Args is the list of template arguments
+}
+
+// CxxTemplateOf extracts the typenames of a C++ templated typename.
 // Ex:
 //  std::map<K,V> -> []string{"K", "V"}
 //  std::vector<T> -> []string{"T"}
 //  Foo<T1,T2,std::map<K,V>> -> []string{"T1", "T2", "std::map<K,V>"}
-func CxxTemplateArgsOf(typename string) []string {
-	name := strings.TrimSpace(typename)
-	name = name[strings.Index(name, "<")+1:] // drop heading 'xxx<'
-	name = name[:len(name)-1]                // drop trailing '>'
+func CxxTemplateFrom(typename string) CxxTemplate {
+	var (
+		name = strings.TrimSpace(typename)
+		lh   = strings.Index(name, "<")
+	)
+	if lh < 0 {
+		panic(fmt.Errorf("rmeta: missing '<' in %q", typename))
+	}
+	if !strings.HasSuffix(name, ">") {
+		panic(fmt.Errorf("rmeta: missing '>' in %q", typename))
+	}
+	cxx := CxxTemplate{
+		Name: name[:lh],
+	}
+	name = name[lh+1:]        // drop heading 'xxx<'
+	name = name[:len(name)-1] // drop trailing '>'
 	name = strings.TrimSpace(name)
 
-	switch strings.Count(name, ",") {
-	case 0:
-		return []string{name}
-	case 1:
-		// easy case of std::map<K,V> where none of K or V are templated.
-		i := strings.Index(name, ",")
-		k := strings.TrimSpace(name[:i])
-		v := strings.TrimSpace(name[i+1:])
-		return []string{k, v}
-	default:
-		var (
-			types []string
-			bldr  strings.Builder
-			tmpl  int
-		)
-		for _, s := range name {
-			switch s {
-			case '<':
-				tmpl++
-				bldr.WriteRune(s)
-			case '>':
-				tmpl--
-				bldr.WriteRune(s)
-			case ',':
-				switch {
-				case tmpl > 0:
-					bldr.WriteRune(s)
-				default:
-					types = append(types, strings.TrimSpace(bldr.String()))
-					bldr.Reset()
-				}
-			default:
-				bldr.WriteRune(s)
-
-			}
-		}
-		types = append(types, strings.TrimSpace(bldr.String()))
-		return types
+	if !strings.Contains(name, ",") {
+		cxx.Args = []string{name}
+		return cxx
 	}
+
+	var (
+		bldr strings.Builder
+		tmpl int
+	)
+	for _, s := range name {
+		switch s {
+		case '<':
+			tmpl++
+			bldr.WriteRune(s)
+		case '>':
+			tmpl--
+			bldr.WriteRune(s)
+		case ',':
+			switch {
+			case tmpl > 0:
+				bldr.WriteRune(s)
+			default:
+				typ := strings.TrimSpace(bldr.String())
+				if typ == "" {
+					panic(fmt.Errorf("rmeta: invalid empty type argument %q", typename))
+				}
+				cxx.Args = append(cxx.Args, typ)
+				bldr.Reset()
+			}
+		default:
+			bldr.WriteRune(s)
+
+		}
+	}
+	typ := strings.TrimSpace(bldr.String())
+	if typ == "" {
+		panic(fmt.Errorf("rmeta: invalid empty type argument %q", typename))
+	}
+	cxx.Args = append(cxx.Args, typ)
+	return cxx
 }
 
 // TypeName2Enum returns the Enum corresponding to the provided C++ (or Go) typename.
