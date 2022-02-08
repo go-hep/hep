@@ -205,156 +205,63 @@ func TestElementGetRange(t *testing.T) {
 	}
 }
 
-func TestParseStdContainers(t *testing.T) {
+func TestStreamerSTLElemTypeName(t *testing.T) {
 	for _, tc := range []struct {
-		name   string
-		parse  func(string) []string
-		want   []string
-		panics string
+		typ  rmeta.ESTLType
+		name string
+		want []string
 	}{
-		// std::vector
 		{
-			name:  "vector<int>",
-			parse: parseStdVector,
-			want:  []string{"int"},
+			typ:  rmeta.STLvector,
+			name: "vector<T>",
+			want: []string{"T"},
 		},
 		{
-			name:  "std::vector<int>",
-			parse: parseStdVector,
-			want:  []string{"int"},
+			typ:  rmeta.STLlist,
+			name: "list<T>",
+			want: []string{"T"},
 		},
 		{
-			name:  "vector<vector<int>>",
-			parse: parseStdVector,
-			want:  []string{"vector<int>"},
+			typ:  rmeta.STLdeque,
+			name: "deque<T>",
+			want: []string{"T"},
 		},
 		{
-			name:  "vector<int,allocator<int>>",
-			parse: parseStdVector,
-			want:  []string{"int", "allocator<int>"},
+			typ:  rmeta.STLset,
+			name: "set<T>",
+			want: []string{"T"},
 		},
 		{
-			name:  "vector<map<int,long int>>",
-			parse: parseStdVector,
-			want:  []string{"map<int,long int>"},
+			typ:  rmeta.STLunorderedset,
+			name: "unordered_set<T>",
+			want: []string{"T"},
 		},
 		{
-			name:   "vector<int",
-			parse:  parseStdVector,
-			panics: `invalid std::vector container name (missing '>'): "vector<int"`,
+			typ:  rmeta.STLmap,
+			name: "map<K,V>",
+			want: []string{"K", "V"},
 		},
 		{
-			name:   "xvector<int>",
-			parse:  parseStdVector,
-			panics: `invalid std::vector container name (missing 'vector<'): "xvector<int>"`,
+			typ:  rmeta.STLunorderedmap,
+			name: "unordered_map<K,V>",
+			want: []string{"K", "V"},
 		},
 		{
-			name:   "vector<>",
-			parse:  parseStdVector,
-			panics: `invalid std::vector container name (missing element type): "vector<>"`,
-		},
-		{
-			name:   "vector<t1,t2,t3>",
-			parse:  parseStdVector,
-			panics: `invalid std::vector template "vector<t1,t2,t3>"`,
-		},
-		// std::map
-		{
-			name:  "map< int , int >",
-			parse: parseStdMap,
-			want:  []string{"int", "int"},
-		},
-		{
-			name:  "map<int,int>",
-			parse: parseStdMap,
-			want:  []string{"int", "int"},
-		},
-		{
-			name:  "std::map<int,int>",
-			parse: parseStdMap,
-			want:  []string{"int", "int"},
-		},
-		{
-			name:  "map<int,int>",
-			parse: parseStdMap,
-			want:  []string{"int", "int"},
-		},
-		{
-			name:  "map<int,string>",
-			parse: parseStdMap,
-			want:  []string{"int", "string"},
-		},
-		{
-			name:  "map<int,vector<int>>",
-			parse: parseStdMap,
-			want:  []string{"int", "vector<int>"},
-		},
-		{
-			name:  "map<int,vector<int> >",
-			parse: parseStdMap,
-			want:  []string{"int", "vector<int>"},
-		},
-		{
-			name:  "map<int,map<string,int> >",
-			parse: parseStdMap,
-			want:  []string{"int", "map<string,int>"},
-		},
-		{
-			name:  "map<map<string,int>, int>",
-			parse: parseStdMap,
-			want:  []string{"map<string,int>", "int"},
-		},
-		{
-			name:  "map<map<string,int>, map<int,string>>",
-			parse: parseStdMap,
-			want:  []string{"map<string,int>", "map<int,string>"},
-		},
-		{
-			name:  "map<long int,long int>",
-			parse: parseStdMap,
-			want:  []string{"long int", "long int"},
-		},
-		{
-			name:  "map<long int, vector<long int>, allocator<pair<const long int, vector<long int>>>",
-			parse: parseStdMap,
-			want:  []string{"long int", "vector<long int>", "allocator<pair<const long int, vector<long int>>"},
-		},
-		{
-			name:   "map<k,v",
-			parse:  parseStdMap,
-			panics: `invalid std::map container name (missing '>'): "map<k,v"`,
-		},
-		{
-			name:   "map<k,v,a,XXX>",
-			parse:  parseStdMap,
-			panics: `invalid std::map template "map<k,v,a,XXX>"`,
-		},
-		{
-			name:   "map<>",
-			parse:  parseStdMap,
-			panics: `invalid std::map template "map<>"`,
-		},
-		{
-			name:   "xmap<k,v>",
-			parse:  parseStdMap,
-			panics: `invalid std::map container name (missing 'map<'): "xmap<k,v>"`,
+			typ:  rmeta.STLbitset,
+			name: "bitset<8>",
+			want: []string{"8"},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.panics != "" {
-				defer func() {
-					err := recover()
-					if err == nil {
-						t.Fatalf("expected a panic (%s)", tc.panics)
-					}
-					if got, want := err.(error).Error(), tc.panics; got != want {
-						t.Fatalf("invalid panic message: got=%s, want=%s", got, want)
-					}
-				}()
+			ts := StreamerSTL{
+				StreamerElement: StreamerElement{
+					ename: tc.name,
+				},
+				vtype: tc.typ,
 			}
-			got := tc.parse(tc.name)
-			if !reflect.DeepEqual(got, tc.want) {
-				t.Fatalf("got=%q, want=%q", got, tc.want)
+			got := ts.ElemTypeName()
+			if got, want := got, tc.want; !reflect.DeepEqual(got, want) {
+				t.Fatalf("invalid ElemTypeName:\ngot= %q\nwant=%q", got, want)
 			}
 		})
 	}

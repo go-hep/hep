@@ -1068,136 +1068,23 @@ func (tss *StreamerSTL) ElemTypeName() []string {
 	switch tss.vtype {
 	case rmeta.STLvector:
 		return parseStdVector(tss.ename)
+	case rmeta.STLlist:
+		return parseStdList(tss.ename)
+	case rmeta.STLdeque:
+		return parseStdDeque(tss.ename)
+	case rmeta.STLset:
+		return parseStdSet(tss.ename)
+	case rmeta.STLunorderedset:
+		return parseStdUnorderedSet(tss.ename)
 	case rmeta.STLmap:
 		return parseStdMap(tss.ename)
+	case rmeta.STLunorderedmap:
+		return parseStdUnorderedMap(tss.ename)
 	case rmeta.STLbitset:
 		return parseStdBitset(tss.ename)
 	default:
 		panic("not implemented")
 	}
-}
-
-func parseStdVector(tmpl string) []string {
-	v := tmpl
-	switch {
-	case strings.HasSuffix(v, ">"):
-		v = v[:len(v)-1]
-	default:
-		panic(fmt.Errorf("invalid std::vector container name (missing '>'): %q", tmpl))
-	}
-	switch {
-	case strings.HasPrefix(v, "vector<"):
-		v = v[len("vector<"):]
-	case strings.HasPrefix(v, "std::vector<"):
-		v = v[len("std::vector<"):]
-	default:
-		panic(fmt.Errorf("invalid std::vector container name (missing 'vector<'): %q", tmpl))
-	}
-	var (
-		keyT  string
-		allT  string
-		depth int
-		coms  []int
-	)
-	if strings.Contains(v, ",") {
-		for i, b := range []byte(v) {
-			switch b {
-			case '<':
-				depth++
-			case '>':
-				depth--
-			case ',':
-				if depth == 0 {
-					coms = append(coms, i)
-				}
-			}
-		}
-	}
-	switch len(coms) {
-	case 0:
-		keyT = v
-	case 1:
-		keyT = v[:coms[0]]
-		allT = v[coms[0]+1:]
-	default:
-		panic(fmt.Errorf("invalid std::vector template %q", tmpl))
-	}
-	keyT = strings.TrimSpace(keyT)
-	if keyT == "" {
-		panic(fmt.Errorf("invalid std::vector container name (missing element type): %q", tmpl))
-	}
-	allT = strings.TrimSpace(allT)
-	switch allT {
-	case "":
-		return []string{keyT}
-	default:
-		return []string{keyT, allT}
-	}
-}
-
-func parseStdMap(tmpl string) []string {
-	v := tmpl
-	switch {
-	case strings.HasSuffix(v, ">"):
-		v = v[:len(v)-1]
-	default:
-		panic(fmt.Errorf("invalid std::map container name (missing '>'): %q", tmpl))
-	}
-	switch {
-	case strings.HasPrefix(v, "map<"):
-		v = v[len("map<"):]
-	case strings.HasPrefix(v, "std::map<"):
-		v = v[len("std::map<"):]
-	default:
-		panic(fmt.Errorf("invalid std::map container name (missing 'map<'): %q", tmpl))
-	}
-	var (
-		keyT  string
-		valT  string
-		cmpT  string
-		depth int
-		coms  []int
-	)
-	for i, b := range []byte(v) {
-		switch b {
-		case '<':
-			depth++
-		case '>':
-			depth--
-		case ',':
-			if depth == 0 {
-				coms = append(coms, i)
-			}
-		}
-	}
-	switch len(coms) {
-	case 1:
-		keyT = v[:coms[0]]
-		valT = v[coms[0]+1:]
-	case 2:
-		keyT = v[:coms[0]]
-		valT = v[coms[0]+1 : coms[1]]
-		cmpT = v[coms[1]+1:]
-	default:
-		panic(fmt.Errorf("invalid std::map template %q", tmpl))
-	}
-	keyT = strings.TrimSpace(keyT)
-	valT = strings.TrimSpace(valT)
-	cmpT = strings.TrimSpace(cmpT)
-	switch cmpT {
-	case "":
-		return []string{keyT, valT}
-	default:
-		return []string{keyT, valT, cmpT}
-	}
-}
-
-func parseStdBitset(tmpl string) []string {
-	enames := rmeta.CxxTemplateArgsOf(tmpl)
-	if len(enames) > 1 {
-		panic(fmt.Errorf("invalid std::bitset template %q", tmpl))
-	}
-	return enames
 }
 
 func (tss *StreamerSTL) ContainedType() rmeta.Enum {
