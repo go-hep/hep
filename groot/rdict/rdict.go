@@ -1065,26 +1065,7 @@ func (tss *StreamerSTL) Class() string {
 }
 
 func (tss *StreamerSTL) ElemTypeName() []string {
-	switch tss.vtype {
-	case rmeta.STLvector:
-		return parseStdVector(tss.ename)
-	case rmeta.STLlist:
-		return parseStdList(tss.ename)
-	case rmeta.STLdeque:
-		return parseStdDeque(tss.ename)
-	case rmeta.STLset:
-		return parseStdSet(tss.ename)
-	case rmeta.STLunorderedset:
-		return parseStdUnorderedSet(tss.ename)
-	case rmeta.STLmap:
-		return parseStdMap(tss.ename)
-	case rmeta.STLunorderedmap:
-		return parseStdUnorderedMap(tss.ename)
-	case rmeta.STLbitset:
-		return parseStdBitset(tss.ename)
-	default:
-		panic("not implemented")
-	}
+	return rmeta.CxxTemplateFrom(tss.ename).Args
 }
 
 func (tss *StreamerSTL) ContainedType() rmeta.Enum {

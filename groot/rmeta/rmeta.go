@@ -40,7 +40,9 @@ func CxxTemplateFrom(typename string) CxxTemplate {
 	name = strings.TrimSpace(name)
 
 	if !strings.Contains(name, ",") {
-		cxx.Args = []string{name}
+		if name != "" {
+			cxx.Args = []string{name}
+		}
 		return cxx
 	}
 
