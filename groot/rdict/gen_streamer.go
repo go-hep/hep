@@ -130,7 +130,7 @@ func (g *genStreamer) Generate(typeName string) error {
 	}
 
 	if !types.Implements(tn.Type(), g.rvers) && !types.Implements(types.NewPointer(tn.Type()), g.rvers) {
-		return fmt.Errorf("type %q does not implement %q", tn.Pkg().Path()+"."+tn.Name(), "go-hep.org/x/hep/groot/rbytes.RVersioner")
+		g.genRVersioner(typ, typeName)
 	}
 
 	g.genStreamer(typ, typeName)
@@ -176,6 +176,10 @@ func (o *%[1]s) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 // 		typeName,
 // 	)
 // }
+
+func (g *genStreamer) genRVersioner(t types.Type, typeName string) {
+	g.printf("func (*%s) RVersion() int16 { return 1 }\n\n", typeName)
+}
 
 func (g *genStreamer) genStreamer(t types.Type, typeName string) {
 	g.printf(`func init() {
