@@ -205,10 +205,22 @@ func TestTypeFromSI(t *testing.T) {
 			})(nil)).Elem(),
 		},
 		{
+			name: "vector<int>",
+			si: rdict.NewCxxStreamerInfo("vector<int>", 1, 0, []rbytes.StreamerElement{
+				rdict.NewCxxStreamerSTL(rdict.Element{
+					Name:  *rbase.NewNamed("This", "<int> Used to call the proper TStreamerInfo case"),
+					Type:  rmeta.Streamer,
+					Size:  48,
+					EName: "vector<int>",
+				}.New(), rmeta.STLvector, rmeta.Object),
+			}),
+			want: reflect.TypeOf((*[]int32)(nil)).Elem(),
+		},
+		{
 			name: "list<int>",
 			si: rdict.NewCxxStreamerInfo("list<int>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<int> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "list<int>",
@@ -220,7 +232,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "deque<int>",
 			si: rdict.NewCxxStreamerInfo("deque<int>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<int> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "deque<int>",
@@ -232,7 +244,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "set<int>",
 			si: rdict.NewCxxStreamerInfo("set<int>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<int> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "set<int>",
@@ -244,7 +256,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "multiset<int>",
 			si: rdict.NewCxxStreamerInfo("multiset<int>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<int> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "set<int>",
@@ -256,7 +268,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "unordered_set<int>",
 			si: rdict.NewCxxStreamerInfo("unordered_set<int>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<int> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "unordered_set<int>",
@@ -268,7 +280,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "unordered_multiset<int>",
 			si: rdict.NewCxxStreamerInfo("unordered_multiset<int>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<int> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "unordered_multiset<int>",
@@ -280,7 +292,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "map<int,float>",
 			si: rdict.NewCxxStreamerInfo("map<int,float>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<pair<int,float>> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "map<int,float>",
@@ -292,7 +304,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "multimap<int,float>",
 			si: rdict.NewCxxStreamerInfo("multimap<int,float>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<pair<int,float>> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "multimap<int,float>",
@@ -304,7 +316,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "unordered_map<int,float>",
 			si: rdict.NewCxxStreamerInfo("unordered_map<int,float>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<pair<int,float>> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "unordered_map<int,float>",
@@ -316,7 +328,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "unordered_multimap<int,float>",
 			si: rdict.NewCxxStreamerInfo("unordered_multimap<int,float>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<pair<int,float>> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "unordered_multimap<int,float>",
@@ -328,7 +340,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "map<int,string>",
 			si: rdict.NewCxxStreamerInfo("map<int,string>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<pair<int,string>> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "map<int,string>",
@@ -340,7 +352,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "map<int,TNamed>",
 			si: rdict.NewCxxStreamerInfo("map<int,TNamed>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<pair<int,TNamed>> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "map<int,TNamed>",
@@ -352,7 +364,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "map<TNamed,int>",
 			si: rdict.NewCxxStreamerInfo("map<TNamed,int>", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<pair<TNamed,int>> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "map<TNamed,int>",
@@ -364,7 +376,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "map<int,vector<TNamed> >",
 			si: rdict.NewCxxStreamerInfo("map<int,vector<TNamed> >", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<pair<int,vector<TNamed> >> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "map<int,vector<TNamed> >",
@@ -376,7 +388,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "map<int,vector<string> >",
 			si: rdict.NewCxxStreamerInfo("map<int,vector<string> >", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<pair<int,vector<string> >> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "map<int,vector<string> >",
@@ -388,7 +400,7 @@ func TestTypeFromSI(t *testing.T) {
 			name: "map<int,map<int,vector<string> > >",
 			si: rdict.NewCxxStreamerInfo("map<int,map<int,vector<string> > >", 1, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
-					Name:  *rbase.NewNamed("This", ""),
+					Name:  *rbase.NewNamed("This", "<pair<int,map<int,vector<string> > >> Used to call the proper TStreamerInfo case"),
 					Type:  rmeta.Streamer,
 					Size:  48,
 					EName: "map<int,map<int,vector<string> > >",

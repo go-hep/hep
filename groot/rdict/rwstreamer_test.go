@@ -3252,6 +3252,24 @@ func TestRWStream(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "rmeta-stl-vector<set<int>>",
+			ptr: &struct {
+				F [][]int32
+			}{[][]int32{{1}, {2, 3}}},
+			si: &StreamerInfo{
+				named:  *rbase.NewNamed("T", "T"),
+				objarr: rcont.NewObjArray(),
+				elems: []rbytes.StreamerElement{
+					NewCxxStreamerSTL(Element{
+						Name:   *rbase.NewNamed("This", "Used to call the proper TStreamerInfo case"),
+						Type:   rmeta.STL,
+						MaxIdx: [5]int32{0, 0, 0, 0, 0},
+						EName:  "vector<set<int> >",
+					}.New(), rmeta.STLvector, rmeta.Object),
+				},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.skip {

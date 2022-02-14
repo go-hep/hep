@@ -194,10 +194,19 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 		case rmeta.STLvector, rmeta.STLlist, rmeta.STLdeque:
 			var (
 				ct       = se.ContainedType()
-				ename    = rmeta.CxxTemplateFrom(se.TypeName()).Args[0]
 				typevers = int16(-1)
-				elt, err = typeFromTypeName(ctx, ename, typevers, ct, se, 1)
+				ename    string
 			)
+			switch {
+			case hasThisHandling(se):
+				ename = se.Title()
+				ename = ename[:strings.Index(ename, "> Used to call the proper TStreamerInfo case")+1]
+				ename = strings.TrimSpace(ename)
+				ename = rmeta.CxxTemplateFrom("Type" + ename).Args[0]
+			default:
+				ename = rmeta.CxxTemplateFrom(se.TypeName()).Args[0]
+			}
+			elt, err := typeFromTypeName(ctx, ename, typevers, ct, se, 1)
 			if err != nil {
 				return nil, fmt.Errorf("rdict: could not create type for %q: %w", se.TypeName(), err)
 			}
@@ -208,8 +217,17 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 				ct       = se.ContainedType()
 				typename = se.TypeName()
 				typevers = int16(-1)
-				kname    = rmeta.CxxTemplateFrom(se.TypeName()).Args[0]
+				kname    string
 			)
+			switch {
+			case hasThisHandling(se):
+				kname = se.Title()
+				kname = kname[:strings.Index(kname, "> Used to call the proper TStreamerInfo case")+1]
+				kname = strings.TrimSpace(kname)
+				kname = rmeta.CxxTemplateFrom("Type" + kname).Args[0]
+			default:
+				kname = rmeta.CxxTemplateFrom(typename).Args[0]
+			}
 
 			key, err := typeFromTypeName(ctx, kname, typevers, ct, se, 1)
 			if err != nil {
@@ -224,10 +242,20 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 				ct       = se.ContainedType()
 				typename = se.TypeName()
 				typevers = int16(-1)
-				enames   = rmeta.CxxTemplateFrom(se.TypeName()).Args
-				kname    = enames[0]
-				vname    = enames[1]
+				enames   []string
 			)
+			switch {
+			case hasThisHandling(se):
+				ename := se.Title()
+				ename = ename[1:] // drop leading '<'
+				ename = ename[:strings.Index(ename, "> Used to call the proper TStreamerInfo case")]
+				ename = strings.TrimSpace(ename)
+				enames = rmeta.CxxTemplateFrom(ename).Args
+			default:
+				enames = rmeta.CxxTemplateFrom(typename).Args
+			}
+			kname := enames[0]
+			vname := enames[1]
 
 			key, err := typeFromTypeName(ctx, kname, typevers, ct, se, 1)
 			if err != nil {
@@ -559,4 +587,8 @@ func hasStdPrefix(typename string, ps ...string) bool {
 		}
 	}
 	return false
+}
+
+func hasThisHandling(se rbytes.StreamerElement) bool {
+	return se.Name() == "This" && strings.HasPrefix(se.Title(), "<")
 }
