@@ -250,7 +250,7 @@ func TestTypeFromSI(t *testing.T) {
 					EName: "set<int>",
 				}.New(), rmeta.STLset, rmeta.Object),
 			}),
-			want: reflect.TypeOf((*map[int32]struct{})(nil)).Elem(),
+			want: reflect.TypeOf((*[]int32)(nil)).Elem(),
 		},
 		{
 			name: "multiset<int>",
@@ -262,7 +262,7 @@ func TestTypeFromSI(t *testing.T) {
 					EName: "set<int>",
 				}.New(), rmeta.STLmultiset, rmeta.Object),
 			}),
-			want: reflect.TypeOf((*map[int32]struct{})(nil)).Elem(),
+			want: reflect.TypeOf((*[]int32)(nil)).Elem(),
 		},
 		{
 			name: "unordered_set<int>",
@@ -274,7 +274,7 @@ func TestTypeFromSI(t *testing.T) {
 					EName: "unordered_set<int>",
 				}.New(), rmeta.STLunorderedset, rmeta.Object),
 			}),
-			want: reflect.TypeOf((*map[int32]struct{})(nil)).Elem(),
+			want: reflect.TypeOf((*[]int32)(nil)).Elem(),
 		},
 		{
 			name: "unordered_multiset<int>",
@@ -286,7 +286,7 @@ func TestTypeFromSI(t *testing.T) {
 					EName: "unordered_multiset<int>",
 				}.New(), rmeta.STLunorderedmultiset, rmeta.Object),
 			}),
-			want: reflect.TypeOf((*map[int32]struct{})(nil)).Elem(),
+			want: reflect.TypeOf((*[]int32)(nil)).Elem(),
 		},
 		{
 			name: "map<int,float>",

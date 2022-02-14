@@ -235,7 +235,7 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 					"could not find key type %q for std::{,multi,unordered_}set %q: %w", kname, typename, err,
 				)
 			}
-			return reflect.MapOf(key, reflect.TypeOf(struct{}{})), nil
+			return reflect.SliceOf(key), nil
 
 		case rmeta.STLmap, rmeta.STLunorderedmap, rmeta.STLmultimap, rmeta.STLunorderedmultimap:
 			var (
@@ -454,7 +454,7 @@ func typeFromTypeName(ctx rbytes.StreamerInfoContext, typename string, typevers 
 		if err != nil {
 			return nil, err
 		}
-		return reflect.MapOf(kt, reflect.TypeOf(struct{}{})), nil
+		return reflect.SliceOf(kt), nil
 
 	case hasStdPrefix(typename, "map", "multimap", "unordered_map", "unordered_multimap"):
 		enames := rmeta.CxxTemplateFrom(typename).Args
