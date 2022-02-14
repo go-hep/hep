@@ -290,6 +290,14 @@ key[002]: dsrc;1 "input for TLimit routines" (TLimitDataSource) => ignoring key 
 key[003]: eff;1 "efficiency" (TEfficiency) => ignoring key of type *rhist.Efficiency
 `,
 		},
+		{
+			name: "../testdata/pod.root",
+			want: loadRef("testdata/pod.root.txt"),
+		},
+		{
+			name: "../testdata/pod-advanced.root",
+			want: loadRef("testdata/pod-advanced.root.txt"),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)

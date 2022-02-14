@@ -1,0 +1,2131 @@
+key[000]: orange;1 "orange" (TTree)
+[000][orange.Evtake_iwant]: 1
+[000][orange.Mc_x]: 0.05928909
+[000][orange.Mc_y]: 0.06879872
+[000][orange.Mc_q2]: 412.79605
+[000][orange.Mc_x_cr]: 0.05928909
+[000][orange.Mc_q2_cr]: 412.79605
+[000][orange.Sierror]: 0
+[000][orange.Sincand]: 1
+[000][orange.Siprob]: 0.9996465
+[000][orange.Sipos]: [65.15027 -122.76301 -153.03]
+[000][orange.Sipt]: 21.341833
+[000][orange.Sidca]: 0.9430077
+[000][orange.Sitrkp]: 28.992264
+[000][orange.Siein]: 27.941942
+[000][orange.Sienin]: 0.104010105
+[000][orange.Zvtx]: 1.1628128
+[000][orange.Sith]: 2.4102035
+[000][orange.Siecorr]: [27.68297 31.953434 31.953434]
+[000][orange.Sizuhmom]: [-9.470889 17.895542 92.43357 97.289894]
+[000][orange.Sicchmom]: [-9.34506 19.61221 93.16611 97.70189]
+[000][orange.Siccempz]: 4.53578
+[000][orange.Sixel]: 999.9
+[000][orange.Siq2el]: 450.45047
+[000][orange.Siyel]: -0.011151831
+[000][orange.Sixjb]: 0.050310485
+[000][orange.Siq2jb]: 449.55612
+[000][orange.Siyjb]: 0.08810456
+[000][orange.Sixda]: 0.047824934
+[000][orange.Siq2da]: 408.0094
+[000][orange.Siyda]: 0.084117964
+[001][orange.Evtake_iwant]: 2
+[001][orange.Mc_x]: 0.0032165002
+[001][orange.Mc_y]: 0.32034045
+[001][orange.Mc_q2]: 104.27393
+[001][orange.Mc_x_cr]: 0.0032165002
+[001][orange.Mc_q2_cr]: 104.27393
+[001][orange.Sierror]: 0
+[001][orange.Sincand]: 1
+[001][orange.Siprob]: 0.9992379
+[001][orange.Sipos]: [-64.80325 -6.03686 -153.03]
+[001][orange.Sipt]: 8.428044
+[001][orange.Sidca]: 0.8104763
+[001][orange.Sitrkp]: 1.6349368
+[001][orange.Siein]: 18.963993
+[001][orange.Sienin]: 0
+[001][orange.Zvtx]: -12.14236
+[001][orange.Sith]: 2.698265
+[001][orange.Siecorr]: [18.75179 19.648186 19.648186]
+[001][orange.Sizuhmom]: [7.108731 1.3012104 36.262302 51.735626]
+[001][orange.Sicchmom]: [5.726678 0.73540527 36.710247 50.45899]
+[001][orange.Siccempz]: 13.748746
+[001][orange.Sixel]: 0.003210485
+[001][orange.Siq2el]: 104.69512
+[001][orange.Siyel]: 0.32153538
+[001][orange.Sixjb]: 0.002550338
+[001][orange.Siq2jb]: 72.61046
+[001][orange.Siyjb]: 0.28072068
+[001][orange.Sixda]: 0.0031531644
+[001][orange.Siq2da]: 104.08673
+[001][orange.Siyda]: 0.32547808
+[002][orange.Evtake_iwant]: 2
+[002][orange.Mc_x]: 0.002186666
+[002][orange.Mc_y]: 0.5929771
+[002][orange.Mc_q2]: 131.22021
+[002][orange.Mc_x_cr]: 0.0021866655
+[002][orange.Mc_q2_cr]: 131.22018
+[002][orange.Sierror]: 0
+[002][orange.Sincand]: 1
+[002][orange.Siprob]: 0.9983739
+[002][orange.Sipos]: [48.941162 -120.3602 -153.03]
+[002][orange.Sipt]: 7.4883976
+[002][orange.Sidca]: 0.19647534
+[002][orange.Sitrkp]: 11.53257
+[002][orange.Siein]: 10.508001
+[002][orange.Sienin]: 0
+[002][orange.Zvtx]: 24.449774
+[002][orange.Sith]: 2.5112505
+[002][orange.Siecorr]: [10.327691 12.704663 12.704663]
+[002][orange.Sizuhmom]: [-0.4328698 6.753104 70.69264 102.750015]
+[002][orange.Sicchmom]: [0.84876406 4.048784 77.04198 98.32185]
+[002][orange.Siccempz]: 21.279882
+[002][orange.Sixel]: 0.0022747782
+[002][orange.Siq2el]: 134.5759
+[002][orange.Siyel]: 0.5833124
+[002][orange.Sixjb]: 0.0018554204
+[002][orange.Siq2jb]: 109.44302
+[002][orange.Siyjb]: 0.5815924
+[002][orange.Sixda]: 0.0020617046
+[002][orange.Siq2da]: 126.924355
+[002][orange.Siyda]: 0.6070039
+[003][orange.Evtake_iwant]: 1
+[003][orange.Mc_x]: 0.006301978
+[003][orange.Mc_y]: 0.67894465
+[003][orange.Mc_q2]: 433.00375
+[003][orange.Mc_x_cr]: 0.0063019786
+[003][orange.Mc_q2_cr]: 433.0038
+[003][orange.Sierror]: 0
+[003][orange.Sincand]: 2
+[003][orange.Siprob]: 0.994787
+[003][orange.Sipos]: [-32.62577 -121.359604 -54.913734]
+[003][orange.Sipt]: 11.051123
+[003][orange.Sidca]: 0.17840977
+[003][orange.Sitrkp]: 12.458743
+[003][orange.Siein]: 12.478888
+[003][orange.Sienin]: 0
+[003][orange.Zvtx]: -2.5409937
+[003][orange.Sith]: 1.9636128
+[003][orange.Siecorr]: [13.250133 12.550229 11.962231]
+[003][orange.Sizuhmom]: [4.318851 11.360578 157.38889 197.14392]
+[003][orange.Sicchmom]: [3.1642869 10.647852 158.15454 194.66129]
+[003][orange.Siccempz]: 36.506737
+[003][orange.Sixel]: 0.005733071
+[003][orange.Siq2el]: 406.9612
+[003][orange.Siyel]: 0.6999043
+[003][orange.Sixjb]: 0.0072442414
+[003][orange.Siq2jb]: 529.91095
+[003][orange.Siyjb]: 0.7212452
+[003][orange.Sixda]: 0.00611856
+[003][orange.Siq2da]: 425.7345
+[003][orange.Siyda]: 0.6860607
+[004][orange.Evtake_iwant]: 1
+[004][orange.Mc_x]: 0.010722046
+[004][orange.Mc_y]: 0.22830348
+[004][orange.Mc_q2]: 247.72543
+[004][orange.Mc_x_cr]: 0.010722046
+[004][orange.Mc_q2_cr]: 247.72543
+[004][orange.Sierror]: 0
+[004][orange.Sincand]: 1
+[004][orange.Siprob]: 0.999507
+[004][orange.Sipos]: [50.132175 -105.33603 -153.03]
+[004][orange.Sipt]: 14.11791
+[004][orange.Sidca]: 1.1086015
+[004][orange.Sitrkp]: 19.872149
+[004][orange.Siein]: 22.118984
+[004][orange.Sienin]: 0
+[004][orange.Zvtx]: 5.044134
+[004][orange.Sith]: 2.5079865
+[004][orange.Siecorr]: [21.736399 23.845615 23.845615]
+[004][orange.Sizuhmom]: [-5.672931 10.837427 39.00083 52.531685]
+[004][orange.Sicchmom]: [-5.0039964 9.382346 38.377056 48.802494]
+[004][orange.Siccempz]: 10.425438
+[004][orange.Sixel]: 0.011499584
+[004][orange.Siq2el]: 255.12228
+[004][orange.Siyel]: 0.21874556
+[004][orange.Sixjb]: 0.007965456
+[004][orange.Siq2jb]: 198.31412
+[004][orange.Siyjb]: 0.24547993
+[004][orange.Sixda]: 0.008878654
+[004][orange.Siq2da]: 239.64763
+[004][orange.Siyda]: 0.26613316
+[005][orange.Evtake_iwant]: 1
+[005][orange.Mc_x]: 0.0019739363
+[005][orange.Mc_y]: 0.7356059
+[005][orange.Mc_q2]: 146.94633
+[005][orange.Mc_x_cr]: 0.002907376
+[005][orange.Mc_q2_cr]: 188.44313
+[005][orange.Sierror]: 0
+[005][orange.Sincand]: 1
+[005][orange.Siprob]: 0.9939808
+[005][orange.Sipos]: [131.3998 63.135155 -153.03]
+[005][orange.Sipt]: 7.5301213
+[005][orange.Sidca]: 6.344707
+[005][orange.Sitrkp]: 7.649702
+[005][orange.Siein]: 8.639991
+[005][orange.Sienin]: 0
+[005][orange.Zvtx]: -7.4295263
+[005][orange.Sith]: 2.3616753
+[005][orange.Siecorr]: [8.523222 10.708049 10.708049]
+[005][orange.Sizuhmom]: [-7.6863704 -2.9016864 21.279882 52.576]
+[005][orange.Sicchmom]: [-6.529052 -2.93698 22.828304 52.18537]
+[005][orange.Siccempz]: 29.357073
+[005][orange.Sixel]: 0.002519464
+[005][orange.Siq2el]: 170.59251
+[005][orange.Siyel]: 0.667613
+[005][orange.Sixjb]: 0.0027120188
+[005][orange.Siq2jb]: 156.17122
+[005][orange.Siyjb]: 0.56778157
+[005][orange.Sixda]: 0.003232227
+[005][orange.Siq2da]: 200.04291
+[005][orange.Siyda]: 0.6102311
+[006][orange.Evtake_iwant]: 1
+[006][orange.Mc_x]: 0.006398023
+[006][orange.Mc_y]: 0.66353023
+[006][orange.Mc_q2]: 429.62238
+[006][orange.Mc_x_cr]: 0.007365432
+[006][orange.Mc_q2_cr]: 384.0974
+[006][orange.Sierror]: 0
+[006][orange.Sincand]: 2
+[006][orange.Siprob]: 0.99767435
+[006][orange.Sipos]: [50.364273 -115.13484 -50.22724]
+[006][orange.Sipt]: 11.989284
+[006][orange.Sidca]: 0.3335498
+[006][orange.Sitrkp]: 12.559047
+[006][orange.Siein]: 12.548984
+[006][orange.Sienin]: 0
+[006][orange.Zvtx]: 5.2239704
+[006][orange.Sith]: 1.9877632
+[006][orange.Siecorr]: [13.355829 13.489438 13.112765]
+[006][orange.Sizuhmom]: [-4.5526323 7.619008 57.77058 88.54146]
+[006][orange.Sicchmom]: [-4.991027 7.9212036 58.77489 89.109184]
+[006][orange.Siccempz]: 30.334316
+[006][orange.Sixel]: 0.0063691805
+[006][orange.Siq2el]: 430.05942
+[006][orange.Siyel]: 0.6657603
+[006][orange.Sixjb]: 0.0031496387
+[006][orange.Siq2jb]: 178.32755
+[006][orange.Siyjb]: 0.5582525
+[006][orange.Sixda]: 0.0056230733
+[006][orange.Siq2da]: 395.1526
+[006][orange.Siyda]: 0.6928897
+[007][orange.Evtake_iwant]: 1
+[007][orange.Mc_x]: 0.03406311
+[007][orange.Mc_y]: 0.048355963
+[007][orange.Mc_q2]: 166.69197
+[007][orange.Mc_x_cr]: 0.03890286
+[007][orange.Mc_q2_cr]: 167.33842
+[007][orange.Sierror]: 0
+[007][orange.Sincand]: 3
+[007][orange.Siprob]: 0.99938345
+[007][orange.Sipos]: [69.270035 23.247957 -153.03]
+[007][orange.Sipt]: 11.237161
+[007][orange.Sidca]: 1.9740777
+[007][orange.Sitrkp]: 14.501621
+[007][orange.Siein]: 24.79303
+[007][orange.Sienin]: 0
+[007][orange.Zvtx]: -9.6495905
+[007][orange.Sith]: 2.6802256
+[007][orange.Siecorr]: [24.156244 25.242254 25.242254]
+[007][orange.Sizuhmom]: [-11.028068 -3.3922398 47.482742 49.997383]
+[007][orange.Sicchmom]: [-11.417241 -3.1369953 49.120384 51.40226]
+[007][orange.Siccempz]: 2.2818837
+[007][orange.Sixel]: 0.010868017
+[007][orange.Siq2el]: 145.47327
+[007][orange.Siyel]: 0.13197932
+[007][orange.Sixjb]: 0.030147193
+[007][orange.Siq2jb]: 139.48923
+[007][orange.Siyjb]: 0.045621205
+[007][orange.Sixda]: 0.032282226
+[007][orange.Siq2da]: 159.43106
+[007][orange.Siyda]: 0.048694786
+[008][orange.Evtake_iwant]: 2
+[008][orange.Mc_x]: 0.14715344
+[008][orange.Mc_y]: 0.0073895995
+[008][orange.Mc_q2]: 110.04536
+[008][orange.Mc_x_cr]: 0.29884058
+[008][orange.Mc_q2_cr]: 109.62676
+[008][orange.Sierror]: 0
+[008][orange.Sincand]: 1
+[008][orange.Siprob]: 0.9991751
+[008][orange.Sipos]: [-55.756134 -22.171741 -153.03]
+[008][orange.Sipt]: 10.766786
+[008][orange.Sidca]: 0.6747976
+[008][orange.Sitrkp]: 6.58626
+[008][orange.Siein]: 28.482975
+[008][orange.Sienin]: 0
+[008][orange.Zvtx]: 2.908239
+[008][orange.Sith]: 2.7643955
+[008][orange.Siecorr]: [28.329336 29.232456 29.232456]
+[008][orange.Sizuhmom]: [7.813891 -0.44984668 177.3116 180.08829]
+[008][orange.Sicchmom]: [7.0737076 -0.46219316 176.87361 179.34822]
+[008][orange.Siccempz]: 2.474625
+[008][orange.Sixel]: 999.9
+[008][orange.Siq2el]: 113.2729
+[008][orange.Siyel]: -0.023401493
+[008][orange.Sixjb]: 0.012626264
+[008][orange.Siq2jb]: 64.50891
+[008][orange.Siyjb]: 0.05037532
+[008][orange.Sixda]: 0.016116882
+[008][orange.Siq2da]: 103.66342
+[008][orange.Siyda]: 0.06341872
+[009][orange.Evtake_iwant]: 1
+[009][orange.Mc_x]: 0.018938495
+[009][orange.Mc_y]: 0.10567841
+[009][orange.Mc_q2]: 202.54062
+[009][orange.Mc_x_cr]: 0.023986455
+[009][orange.Mc_q2_cr]: 197.78542
+[009][orange.Sierror]: 0
+[009][orange.Sincand]: 2
+[009][orange.Siprob]: 0.9994613
+[009][orange.Sipos]: [-79.08716 -21.587488 -153.03]
+[009][orange.Sipt]: 13.29814
+[009][orange.Sidca]: 13.168857
+[009][orange.Sitrkp]: 1.1389276
+[009][orange.Siein]: 25.321007
+[009][orange.Sienin]: 0
+[009][orange.Zvtx]: -12.164968
+[009][orange.Sith]: 2.604938
+[009][orange.Siecorr]: [25.070398 26.01033 26.01033]
+[009][orange.Sizuhmom]: [12.7374735 2.1854782 89.46776 93.693855]
+[009][orange.Sicchmom]: [12.049728 3.106955 90.80158 94.998924]
+[009][orange.Siccempz]: 4.197335
+[009][orange.Sixel]: 0.016213391
+[009][orange.Siq2el]: 201.5425
+[009][orange.Siyel]: 0.1225648
+[009][orange.Sixjb]: 0.023262342
+[009][orange.Siq2jb]: 180.88841
+[009][orange.Siyjb]: 0.07667085
+[009][orange.Sixda]: 0.02518849
+[009][orange.Siq2da]: 210.74623
+[009][orange.Siyda]: 0.08249557
+[010][orange.Evtake_iwant]: 2
+[010][orange.Mc_x]: 0.0080898795
+[010][orange.Mc_y]: 0.1575097
+[010][orange.Mc_q2]: 128.9525
+[010][orange.Mc_x_cr]: 0.0080898795
+[010][orange.Mc_q2_cr]: 128.9525
+[010][orange.Sierror]: 0
+[010][orange.Sincand]: 1
+[010][orange.Siprob]: 0.9992219
+[010][orange.Sipos]: [29.124332 -64.35821 -153.03]
+[010][orange.Sipt]: 10.28731
+[010][orange.Sidca]: 1.1683496
+[010][orange.Sitrkp]: 31.483484
+[010][orange.Siein]: 22.302988
+[010][orange.Sienin]: 0
+[010][orange.Zvtx]: -6.917248
+[010][orange.Sith]: 2.6940799
+[010][orange.Siecorr]: [22.169357 23.773342 23.773342]
+[010][orange.Sizuhmom]: [-2.7599256 9.857935 41.792206 49.533775]
+[010][orange.Sicchmom]: [-2.639552 8.480184 42.008747 49.243866]
+[010][orange.Siccempz]: 7.2351117
+[010][orange.Sixel]: 0.007073551
+[010][orange.Siq2el]: 129.0388
+[010][orange.Siyel]: 0.17986879
+[010][orange.Sixjb]: 0.008559071
+[010][orange.Siq2jb]: 121.91959
+[010][orange.Siyjb]: 0.14044937
+[010][orange.Sixda]: 0.009014551
+[010][orange.Siq2da]: 134.23769
+[010][orange.Siyda]: 0.14682613
+[011][orange.Evtake_iwant]: 1
+[011][orange.Mc_x]: 0.046069622
+[011][orange.Mc_y]: 0.034043767
+[011][orange.Mc_q2]: 158.72037
+[011][orange.Mc_x_cr]: 0.046069626
+[011][orange.Mc_q2_cr]: 158.72038
+[011][orange.Sierror]: 0
+[011][orange.Sincand]: 1
+[011][orange.Siprob]: 0.9993396
+[011][orange.Sipos]: [-23.792229 -67.63491 -153.03]
+[011][orange.Sipt]: 12.052096
+[011][orange.Sidca]: 5.620513
+[011][orange.Sitrkp]: 4.4622617
+[011][orange.Siein]: 25.58303
+[011][orange.Sienin]: 0
+[011][orange.Zvtx]: -6.188284
+[011][orange.Sith]: 2.682696
+[011][orange.Siecorr]: [25.948492 27.208149 27.208149]
+[011][orange.Sizuhmom]: [3.5502176 13.354859 190.11717 193.30287]
+[011][orange.Sicchmom]: [4.2181163 12.278128 186.10342 187.43225]
+[011][orange.Siccempz]: 1.3287846
+[011][orange.Sixel]: 0.023965375
+[011][orange.Siq2el]: 155.15758
+[011][orange.Siyel]: 0.06383542
+[011][orange.Sixjb]: 0.03457533
+[011][orange.Siq2jb]: 202.66975
+[011][orange.Siyjb]: 0.05779571
+[011][orange.Sixda]: 0.030349728
+[011][orange.Siq2da]: 157.26945
+[011][orange.Siyda]: 0.051093135
+[012][orange.Evtake_iwant]: 1
+[012][orange.Mc_x]: 0.03465781
+[012][orange.Mc_y]: 0.028990425
+[012][orange.Mc_q2]: 101.68013
+[012][orange.Mc_x_cr]: 0.03465781
+[012][orange.Mc_q2_cr]: 101.68013
+[012][orange.Sierror]: 0
+[012][orange.Sincand]: 1
+[012][orange.Siprob]: 0.9993299
+[012][orange.Sipos]: [-40.20288 -41.77009 -153.03]
+[012][orange.Sipt]: 9.81208
+[012][orange.Sidca]: 1.0824505
+[012][orange.Sitrkp]: 342.29642
+[012][orange.Siein]: 26.492954
+[012][orange.Sienin]: 0
+[012][orange.Zvtx]: 2.9307663
+[012][orange.Sith]: 2.7773743
+[012][orange.Siecorr]: [26.468958 27.545074 27.545074]
+[012][orange.Sizuhmom]: [9.024018 6.4646425 72.35909 74.79034]
+[012][orange.Sicchmom]: [8.841866 6.9000154 70.84396 72.51519]
+[012][orange.Siccempz]: 1.6712209
+[012][orange.Sixel]: 0.029469686
+[012][orange.Siq2el]: 99.59572
+[012][orange.Siyel]: 0.033322543
+[012][orange.Sixjb]: 0.028816553
+[012][orange.Siq2jb]: 128.91052
+[012][orange.Siyjb]: 0.0441082
+[012][orange.Sixda]: 0.025187306
+[012][orange.Siq2da]: 99.03462
+[012][orange.Siyda]: 0.038768437
+[013][orange.Evtake_iwant]: 2
+[013][orange.Mc_x]: 0.00853309
+[013][orange.Mc_y]: 0.1584482
+[013][orange.Mc_q2]: 136.82771
+[013][orange.Mc_x_cr]: 0.009151069
+[013][orange.Mc_q2_cr]: 135.36507
+[013][orange.Sierror]: 0
+[013][orange.Sincand]: 1
+[013][orange.Siprob]: 0.9987948
+[013][orange.Sipos]: [-54.59577 -39.349834 -153.03]
+[013][orange.Sipt]: 10.943306
+[013][orange.Sidca]: 3.1562037
+[013][orange.Sitrkp]: 5.632542
+[013][orange.Siein]: 23.593128
+[013][orange.Sienin]: 0
+[013][orange.Zvtx]: -11.997295
+[013][orange.Sith]: 2.6867924
+[013][orange.Siecorr]: [23.956835 24.91175 24.91175]
+[013][orange.Sizuhmom]: [3.8244534 4.717088 94.49606 101.727196]
+[013][orange.Sicchmom]: [4.2589855 4.787615 95.74851 102.41195]
+[013][orange.Siccempz]: 6.6634345
+[013][orange.Sixel]: 0.009689747
+[013][orange.Siq2el]: 139.58087
+[013][orange.Siyel]: 0.14203207
+[013][orange.Sixjb]: 0.003190145
+[013][orange.Siq2jb]: 42.44578
+[013][orange.Siyjb]: 0.13118891
+[013][orange.Sixda]: 0.005821478
+[013][orange.Siq2da]: 127.54361
+[013][orange.Siyda]: 0.21602221
+[014][orange.Evtake_iwant]: 2
+[014][orange.Mc_x]: 0.016292337
+[014][orange.Mc_y]: 0.093899004
+[014][orange.Mc_q2]: 154.81918
+[014][orange.Mc_x_cr]: 0.016292337
+[014][orange.Mc_q2_cr]: 154.81918
+[014][orange.Sierror]: 0
+[014][orange.Sincand]: 1
+[014][orange.Siprob]: 0.99934685
+[014][orange.Sipos]: [-67.80313 7.55143 -153.03]
+[014][orange.Sipt]: 11.729937
+[014][orange.Sidca]: 0.9035499
+[014][orange.Sitrkp]: 7.5854483
+[014][orange.Siein]: 25.219976
+[014][orange.Sienin]: 0
+[014][orange.Zvtx]: -14.731233
+[014][orange.Sith]: 2.6732018
+[014][orange.Siecorr]: [24.523676 25.982744 25.982744]
+[014][orange.Sizuhmom]: [10.3727255 -2.3355873 86.97528 91.871216]
+[014][orange.Sicchmom]: [10.760421 -1.5282166 88.36049 93.67129]
+[014][orange.Siccempz]: 5.3108096
+[014][orange.Sixel]: 0.014082374
+[014][orange.Siq2el]: 154.25046
+[014][orange.Siyel]: 0.10799995
+[014][orange.Sixjb]: 0.013772358
+[014][orange.Siq2jb]: 124.06857
+[014][orange.Siyjb]: 0.08882321
+[014][orange.Sixda]: 0.015520639
+[014][orange.Siq2da]: 155.80984
+[014][orange.Siyda]: 0.09898247
+[015][orange.Evtake_iwant]: 1
+[015][orange.Mc_x]: 0.010597381
+[015][orange.Mc_y]: 0.14075573
+[015][orange.Mc_q2]: 150.95413
+[015][orange.Mc_x_cr]: 0.010597382
+[015][orange.Mc_q2_cr]: 150.95415
+[015][orange.Sierror]: 0
+[015][orange.Sincand]: 1
+[015][orange.Siprob]: 0.99938226
+[015][orange.Sipos]: [77.273415 -36.377876 -153.03]
+[015][orange.Sipt]: 11.2656355
+[015][orange.Sidca]: 13.426168
+[015][orange.Sitrkp]: 1.3931884
+[015][orange.Siein]: 23.864985
+[015][orange.Sienin]: 0.29700994
+[015][orange.Zvtx]: 11.061617
+[015][orange.Sith]: 2.668906
+[015][orange.Siecorr]: [23.600206 24.744411 24.744411]
+[015][orange.Sizuhmom]: [-7.2722697 2.3597727 29.132595 39.865105]
+[015][orange.Sicchmom]: [-9.106042 3.5398297 32.512985 40.25185]
+[015][orange.Siccempz]: 7.738867
+[015][orange.Sixel]: 0.009740615
+[015][orange.Siq2el]: 149.55524
+[015][orange.Siyel]: 0.15138687
+[015][orange.Sixjb]: 0.0036757581
+[015][orange.Siq2jb]: 72.5882
+[015][orange.Siyjb]: 0.19471171
+[015][orange.Sixda]: 0.0051396736
+[015][orange.Siq2da]: 131.70653
+[015][orange.Siyda]: 0.2526648
+[016][orange.Evtake_iwant]: 1
+[016][orange.Mc_x]: 0.006894638
+[016][orange.Mc_y]: 0.76396567
+[016][orange.Mc_q2]: 533.04724
+[016][orange.Mc_x_cr]: 0.0068946374
+[016][orange.Mc_q2_cr]: 533.0472
+[016][orange.Sierror]: 0
+[016][orange.Sincand]: 2
+[016][orange.Siprob]: 0.9968357
+[016][orange.Sipos]: [86.108696 91.530785 -24.428442]
+[016][orange.Sipt]: 12.0702505
+[016][orange.Sidca]: 0.97593826
+[016][orange.Sitrkp]: 11.490431
+[016][orange.Siein]: 11.938035
+[016][orange.Sienin]: 0.114023685
+[016][orange.Zvtx]: -6.7180357
+[016][orange.Sith]: 1.7124218
+[016][orange.Siecorr]: [12.643895 12.723186 12.192322]
+[016][orange.Sizuhmom]: [-6.5259132 -6.2928705 44.363277 84.379364]
+[016][orange.Sicchmom]: [-6.5819736 -6.2121124 43.787395 82.13197]
+[016][orange.Siccempz]: 38.344566
+[016][orange.Sixel]: 0.0076124775
+[016][orange.Siq2el]: 577.18054
+[016][orange.Siyel]: 0.74758166
+[016][orange.Sixjb]: 0.0040735635
+[016][orange.Siq2jb]: 299.93484
+[016][orange.Siyjb]: 0.7259813
+[016][orange.Sixda]: 0.0058877114
+[016][orange.Siq2da]: 473.4873
+[016][orange.Siyda]: 0.7929298
+[017][orange.Evtake_iwant]: 1
+[017][orange.Mc_x]: 0.0071342825
+[017][orange.Mc_y]: 0.22821428
+[017][orange.Mc_q2]: 164.76825
+[017][orange.Mc_x_cr]: 0.0071342825
+[017][orange.Mc_q2_cr]: 164.76825
+[017][orange.Sierror]: 0
+[017][orange.Sincand]: 1
+[017][orange.Siprob]: 0.9994173
+[017][orange.Sipos]: [-81.473 -10.054664 -153.03]
+[017][orange.Sipt]: 10.931176
+[017][orange.Sidca]: 0.1720668
+[017][orange.Sitrkp]: 20.85482
+[017][orange.Siein]: 20.418941
+[017][orange.Sienin]: 0
+[017][orange.Zvtx]: -5.787742
+[017][orange.Sith]: 2.623568
+[017][orange.Siecorr]: [21.032276 22.07583 22.07583]
+[017][orange.Sizuhmom]: [7.8344555 0.63576984 79.7213 91.199974]
+[017][orange.Sicchmom]: [7.4938426 0.92963564 81.36245 91.49379]
+[017][orange.Siccempz]: 10.131321
+[017][orange.Sixel]: 0.0062579885
+[017][orange.Siq2el]: 159.64793
+[017][orange.Siyel]: 0.2515368
+[017][orange.Sixjb]: 0.0036946211
+[017][orange.Siq2jb]: 78.03322
+[017][orange.Siyjb]: 0.20824884
+[017][orange.Sixda]: 0.005435268
+[017][orange.Siq2da]: 153.79239
+[017][orange.Siyda]: 0.27898887
+[018][orange.Evtake_iwant]: 1
+[018][orange.Mc_x]: 0.01975112
+[018][orange.Mc_y]: 0.14778979
+[018][orange.Mc_q2]: 295.40414
+[018][orange.Mc_x_cr]: 0.022785392
+[018][orange.Mc_q2_cr]: 301.3432
+[018][orange.Sierror]: 0
+[018][orange.Sincand]: 2
+[018][orange.Siprob]: 0.9995048
+[018][orange.Sipos]: [33.098316 -116.395096 -153.03]
+[018][orange.Sipt]: 16.821316
+[018][orange.Sidca]: 1.9314636
+[018][orange.Sitrkp]: 25.253197
+[018][orange.Siein]: 25.06101
+[018][orange.Sienin]: 0
+[018][orange.Zvtx]: 4.2643113
+[018][orange.Sith]: 2.4868343
+[018][orange.Siecorr]: [25.092009 27.622679 27.622679]
+[018][orange.Sizuhmom]: [-5.2439494 13.48842 46.771214 54.145267]
+[018][orange.Sicchmom]: [-6.324046 17.069916 50.51158 59.2196]
+[018][orange.Siccempz]: 8.70802
+[018][orange.Sixel]: 0.030628659
+[018][orange.Siq2el]: 314.87332
+[018][orange.Siyel]: 0.10136333
+[018][orange.Sixjb]: 0.01781972
+[018][orange.Siq2jb]: 241.78258
+[018][orange.Siyjb]: 0.13378182
+[018][orange.Sixda]: 0.019965393
+[018][orange.Siq2da]: 298.70248
+[018][orange.Siyda]: 0.14751424
+[019][orange.Evtake_iwant]: 1
+[019][orange.Mc_x]: 0.043615744
+[019][orange.Mc_y]: 0.034532182
+[019][orange.Mc_q2]: 152.42201
+[019][orange.Mc_x_cr]: 0.043615744
+[019][orange.Mc_q2_cr]: 152.42201
+[019][orange.Sierror]: 0
+[019][orange.Sincand]: 1
+[019][orange.Siprob]: 0.99943537
+[019][orange.Sipos]: [-19.76105 77.77439 -153.03]
+[019][orange.Sipt]: 11.548996
+[019][orange.Sidca]: 1.076046
+[019][orange.Sitrkp]: 30.903149
+[019][orange.Siein]: 25.28304
+[019][orange.Sienin]: 0
+[019][orange.Zvtx]: 13.011742
+[019][orange.Sith]: 2.6903608
+[019][orange.Siecorr]: [25.374887 26.484001 26.484001]
+[019][orange.Sizuhmom]: [3.6939096 -7.480062 75.75879 78.38376]
+[019][orange.Sicchmom]: [3.9323854 -8.02285 75.99423 78.04484]
+[019][orange.Siccempz]: 2.0506155
+[019][orange.Sixel]: 0.01653377
+[019][orange.Siq2el]: 146.11037
+[019][orange.Siyel]: 0.08713289
+[019][orange.Sixjb]: 0.015129865
+[019][orange.Siq2jb]: 73.0764
+[019][orange.Siyjb]: 0.047622815
+[019][orange.Sixda]: 0.02185182
+[019][orange.Siq2da]: 149.27577
+[019][orange.Siyda]: 0.067355745
+[020][orange.Evtake_iwant]: 1
+[020][orange.Mc_x]: 0.009023739
+[020][orange.Mc_y]: 0.21649823
+[020][orange.Mc_q2]: 197.70665
+[020][orange.Mc_x_cr]: 0.009023739
+[020][orange.Mc_q2_cr]: 197.70665
+[020][orange.Sierror]: 0
+[020][orange.Sincand]: 2
+[020][orange.Siprob]: 0.9994415
+[020][orange.Sipos]: [-44.245068 -93.02883 -153.03]
+[020][orange.Sipt]: 13.398021
+[020][orange.Sidca]: 0.13118556
+[020][orange.Sitrkp]: 22.105942
+[020][orange.Siein]: 22.002935
+[020][orange.Sienin]: 0
+[020][orange.Zvtx]: 12.186373
+[020][orange.Sith]: 2.5796998
+[020][orange.Siecorr]: [22.108852 25.146954 25.146954]
+[020][orange.Sizuhmom]: [4.7211285 8.511283 79.5077 90.46836]
+[020][orange.Sicchmom]: [5.6781697 11.374846 80.357124 90.76594]
+[020][orange.Siccempz]: 10.408859
+[020][orange.Sixel]: 0.013324573
+[020][orange.Siq2el]: 213.11552
+[020][orange.Siyel]: 0.15770112
+[020][orange.Sixjb]: 0.0058630565
+[020][orange.Siq2jb]: 118.2439
+[020][orange.Siyjb]: 0.19885093
+[020][orange.Sixda]: 0.0076765446
+[020][orange.Siq2da]: 190.95879
+[020][orange.Siyda]: 0.24527135
+[021][orange.Evtake_iwant]: 2
+[021][orange.Mc_x]: 0.6158465
+[021][orange.Mc_y]: 0.0020879626
+[021][orange.Mc_q2]: 130.12946
+[021][orange.Mc_x_cr]: 0.6250693
+[021][orange.Mc_q2_cr]: 130.13342
+[021][orange.Sierror]: 0
+[021][orange.Sincand]: 1
+[021][orange.Siprob]: 0.99922407
+[021][orange.Sipos]: [-31.414347 -55.00716 -153.03]
+[021][orange.Sipt]: 12.071086
+[021][orange.Sidca]: 0.4388715
+[021][orange.Sitrkp]: 20.814144
+[021][orange.Siein]: 30.39205
+[021][orange.Sienin]: 0
+[021][orange.Zvtx]: -3.8722794
+[021][orange.Sith]: 2.7335098
+[021][orange.Siecorr]: [29.508417 30.417223 30.417223]
+[021][orange.Sizuhmom]: [5.204462 10.193421 219.59113 221.9607]
+[021][orange.Sicchmom]: [2.2917573 7.1468673 218.66875 219.2478]
+[021][orange.Siccempz]: 0.5790624
+[021][orange.Sixel]: 999.9
+[021][orange.Siq2el]: 137.67657
+[021][orange.Siyel]: -0.05835788
+[021][orange.Sixjb]: 0.031393655
+[021][orange.Siq2jb]: 136.8765
+[021][orange.Siyjb]: 0.042989258
+[021][orange.Sixda]: 0.029939853
+[021][orange.Siq2da]: 124.74118
+[021][orange.Siyda]: 0.04108026
+[022][orange.Evtake_iwant]: 1
+[022][orange.Mc_x]: 0.004344773
+[022][orange.Mc_y]: 0.6930046
+[022][orange.Mc_q2]: 304.70782
+[022][orange.Mc_x_cr]: 0.0043447735
+[022][orange.Mc_q2_cr]: 304.70782
+[022][orange.Sierror]: 0
+[022][orange.Sincand]: 2
+[022][orange.Siprob]: 0.99456596
+[022][orange.Sipos]: [75.49583 100.46381 -80.464066]
+[022][orange.Sipt]: 9.2757435
+[022][orange.Sidca]: 2.8983247
+[022][orange.Sitrkp]: 5.562321
+[022][orange.Siein]: 9.893
+[022][orange.Sienin]: 0
+[022][orange.Zvtx]: -8.996848
+[022][orange.Sith]: 2.0923257
+[022][orange.Siecorr]: [10.711248 10.783271 10.6979475]
+[022][orange.Sizuhmom]: [-3.3622413 -10.352139 60.906483 98.480606]
+[022][orange.Sicchmom]: [-4.457156 -10.065669 60.71231 98.12758]
+[022][orange.Siccempz]: 37.415264
+[022][orange.Sixel]: 0.004113636
+[022][orange.Siq2el]: 295.89285
+[022][orange.Siyel]: 0.709221
+[022][orange.Sixjb]: 0.005383209
+[022][orange.Siq2jb]: 372.1756
+[022][orange.Siyjb]: 0.6816786
+[022][orange.Sixda]: 0.0050221067
+[022][orange.Siq2da]: 339.44116
+[022][orange.Siyda]: 0.66642535
+[023][orange.Evtake_iwant]: 1
+[023][orange.Mc_x]: 0.0049190065
+[023][orange.Mc_y]: 0.2797658
+[023][orange.Mc_q2]: 139.26836
+[023][orange.Mc_x_cr]: 0.38407576
+[023][orange.Mc_q2_cr]: 100.67333
+[023][orange.Sierror]: 0
+[023][orange.Sincand]: 2
+[023][orange.Siprob]: 0.9993193
+[023][orange.Sipos]: [-48.50699 67.00477 -153.03]
+[023][orange.Sipt]: 9.653361
+[023][orange.Sidca]: 0.8503439
+[023][orange.Sitrkp]: 21.03483
+[023][orange.Siein]: 19.451975
+[023][orange.Sienin]: 0
+[023][orange.Zvtx]: 1.150195
+[023][orange.Sith]: 2.6448193
+[023][orange.Siecorr]: [19.301905 20.255003 20.255003]
+[023][orange.Sizuhmom]: [6.3878345 0.46188045 179.4893 190.93567]
+[023][orange.Sicchmom]: [6.6010895 0.33866903 180.41176 190.79898]
+[023][orange.Siccempz]: 10.3872175
+[023][orange.Sixel]: 0.0042995634
+[023][orange.Siq2el]: 134.95172
+[023][orange.Siyel]: 0.30947605
+[023][orange.Sixjb]: 0.002457969
+[023][orange.Siq2jb]: 51.76805
+[023][orange.Siyjb]: 0.20766266
+[023][orange.Sixda]: 0.0042510903
+[023][orange.Siq2da]: 134.47716
+[023][orange.Siyda]: 0.31190416
+[024][orange.Evtake_iwant]: 1
+[024][orange.Mc_x]: 0.035569258
+[024][orange.Mc_y]: 0.03756822
+[024][orange.Mc_q2]: 135.23085
+[024][orange.Mc_x_cr]: 0.03556925
+[024][orange.Mc_q2_cr]: 135.23083
+[024][orange.Sierror]: 0
+[024][orange.Sincand]: 1
+[024][orange.Siprob]: 0.99932444
+[024][orange.Sipos]: [29.976017 -62.321846 -153.03]
+[024][orange.Sipt]: 10.9278145
+[024][orange.Sidca]: 0.84798586
+[024][orange.Sitrkp]: 165.71365
+[024][orange.Siein]: 26.02607
+[024][orange.Sienin]: 0
+[024][orange.Zvtx]: 0.31600475
+[024][orange.Sith]: 2.7210412
+[024][orange.Siecorr]: [25.096367 26.766546 26.766546]
+[024][orange.Sizuhmom]: [-5.5945883 12.848852 58.321377 60.82587]
+[024][orange.Sicchmom]: [-5.405459 12.822391 57.732887 60.18314]
+[024][orange.Siccempz]: 2.4502523
+[024][orange.Sixel]: 0.017827077
+[024][orange.Siq2el]: 128.55806
+[024][orange.Siyel]: 0.07110369
+[024][orange.Sixjb]: 0.044645984
+[024][orange.Siq2jb]: 205.74068
+[024][orange.Siyjb]: 0.045437116
+[024][orange.Sixda]: 0.03577591
+[024][orange.Siq2da]: 133.3138
+[024][orange.Siyda]: 0.03674154
+[025][orange.Evtake_iwant]: 1
+[025][orange.Mc_x]: 0.021870412
+[025][orange.Mc_y]: 0.08397188
+[025][orange.Mc_q2]: 185.8537
+[025][orange.Mc_x_cr]: 0.022845779
+[025][orange.Mc_q2_cr]: 186.52516
+[025][orange.Sierror]: 0
+[025][orange.Sincand]: 2
+[025][orange.Siprob]: 0.9994242
+[025][orange.Sipos]: [-73.58846 17.627138 -153.03]
+[025][orange.Sipt]: 13.337242
+[025][orange.Sidca]: 1.2320096
+[025][orange.Sitrkp]: 9.621595
+[025][orange.Siein]: 26.329039
+[025][orange.Sienin]: 0
+[025][orange.Zvtx]: -14.27567
+[025][orange.Sith]: 2.6330698
+[025][orange.Siecorr]: [26.24812 27.392857 27.392857]
+[025][orange.Sizuhmom]: [12.198478 -1.3942121 170.10022 176.72836]
+[025][orange.Sicchmom]: [13.234288 -2.635283 174.61273 180.98532]
+[025][orange.Siccempz]: 6.372571
+[025][orange.Sixel]: 0.02732157
+[025][orange.Siq2el]: 191.05501
+[025][orange.Siyel]: 0.06894865
+[025][orange.Sixjb]: 0.014050068
+[025][orange.Siq2jb]: 171.3516
+[025][orange.Siyjb]: 0.12024934
+[025][orange.Sixda]: 0.014421371
+[025][orange.Siq2da]: 179.95604
+[025][orange.Siyda]: 0.12303618
+[026][orange.Evtake_iwant]: 1
+[026][orange.Mc_x]: 0.008613349
+[026][orange.Mc_y]: 0.19147027
+[026][orange.Mc_q2]: 166.89902
+[026][orange.Mc_x_cr]: 0.016364697
+[026][orange.Mc_q2_cr]: 149.41653
+[026][orange.Sierror]: 0
+[026][orange.Sincand]: 1
+[026][orange.Siprob]: 0.99945664
+[026][orange.Sipos]: [16.635626 -87.06574 -153.03]
+[026][orange.Sipt]: 10.944908
+[026][orange.Sidca]: 0.99934983
+[026][orange.Sitrkp]: 20.894938
+[026][orange.Siein]: 21.215977
+[026][orange.Sienin]: 0
+[026][orange.Zvtx]: 4.7117157
+[026][orange.Sith]: 2.6301386
+[026][orange.Siecorr]: [21.338573 22.361843 22.361843]
+[026][orange.Sizuhmom]: [-2.23296 13.222574 49.6738 55.22122]
+[026][orange.Sicchmom]: [-1.5930194 12.225924 48.383667 52.046234]
+[026][orange.Siccempz]: 3.662565
+[026][orange.Sixel]: 0.006465773
+[026][orange.Siq2el]: 157.72922
+[026][orange.Siyel]: 0.24052747
+[026][orange.Sixjb]: 0.019588593
+[026][orange.Siq2jb]: 199.9456
+[026][orange.Siyjb]: 0.10064254
+[026][orange.Sixda]: 0.018932743
+[026][orange.Siq2da]: 187.41241
+[026][orange.Siyda]: 0.097601786
+[027][orange.Evtake_iwant]: 1
+[027][orange.Mc_x]: 0.44495758
+[027][orange.Mc_y]: 0.0026847732
+[027][orange.Mc_q2]: 120.89452
+[027][orange.Mc_x_cr]: 0.4449576
+[027][orange.Mc_q2_cr]: 120.89453
+[027][orange.Sierror]: 0
+[027][orange.Sincand]: 1
+[027][orange.Siprob]: 0.9992523
+[027][orange.Sipos]: [18.265089 56.41696 -153.03]
+[027][orange.Sipt]: 6.4464364
+[027][orange.Sidca]: 19.255999
+[027][orange.Sitrkp]: 477.4602
+[027][orange.Siein]: 26.36999
+[027][orange.Sienin]: 0
+[027][orange.Zvtx]: 91.97556
+[027][orange.Sith]: 2.9069016
+[027][orange.Siecorr]: [26.72535 27.721539 27.721539]
+[027][orange.Sizuhmom]: [-3.374894 -8.564892 182.58897 190.59195]
+[027][orange.Sicchmom]: [-2.7206697 -9.907008 190.62126 195.16708]
+[027][orange.Siccempz]: 4.54577
+[027][orange.Sixel]: 0.052110005
+[027][orange.Siq2el]: 41.88857
+[027][orange.Siyel]: 0.007925878
+[027][orange.Sixjb]: 0.0067326776
+[027][orange.Siq2jb]: 99.14188
+[027][orange.Siyjb]: 0.14519186
+[027][orange.Sixda]: 0.0040622735
+[027][orange.Siq2da]: 38.298252
+[027][orange.Siyda]: 0.09295715
+[028][orange.Evtake_iwant]: 1
+[028][orange.Mc_x]: 0.0036215843
+[028][orange.Mc_y]: 0.27390003
+[028][orange.Mc_q2]: 100.38553
+[028][orange.Mc_x_cr]: 0.0036215845
+[028][orange.Mc_q2_cr]: 100.38554
+[028][orange.Sierror]: 0
+[028][orange.Sincand]: 1
+[028][orange.Siprob]: 0.9992132
+[028][orange.Sipos]: [-63.882084 -23.244202 -153.03]
+[028][orange.Sipt]: 8.424695
+[028][orange.Sidca]: 1.9564953
+[028][orange.Sitrkp]: 17.50046
+[028][orange.Siein]: 19.585014
+[028][orange.Sienin]: 0
+[028][orange.Zvtx]: 4.4318104
+[028][orange.Sith]: 2.724231
+[028][orange.Siecorr]: [19.583754 20.783754 20.783754]
+[028][orange.Sizuhmom]: [7.3818283 1.6242688 83.45137 97.58668]
+[028][orange.Sicchmom]: [6.7126036 1.2451137 82.65755 93.562225]
+[028][orange.Siccempz]: 10.904695
+[028][orange.Sixel]: 0.0034847362
+[028][orange.Siq2el]: 98.336555
+[028][orange.Siyel]: 0.27823904
+[028][orange.Sixjb]: 0.002954105
+[028][orange.Siq2jb]: 76.83321
+[028][orange.Siyjb]: 0.25644606
+[028][orange.Sixda]: 0.0033920985
+[028][orange.Siq2da]: 97.59496
+[028][orange.Siyda]: 0.2836821
+[029][orange.Evtake_iwant]: 1
+[029][orange.Mc_x]: 0.02958629
+[029][orange.Mc_y]: 0.07159083
+[029][orange.Mc_q2]: 214.35237
+[029][orange.Mc_x_cr]: 0.034511812
+[029][orange.Mc_q2_cr]: 211.89581
+[029][orange.Sierror]: 0
+[029][orange.Sincand]: 2
+[029][orange.Siprob]: 0.99952626
+[029][orange.Sipos]: [-49.928017 77.68888 -153.03]
+[029][orange.Sipt]: 13.667983
+[029][orange.Sidca]: 0.17610896
+[029][orange.Sitrkp]: 26.434885
+[029][orange.Siein]: 25.54202
+[029][orange.Sienin]: 0
+[029][orange.Zvtx]: 2.7489104
+[029][orange.Sith]: 2.602818
+[029][orange.Siecorr]: [25.212135 26.63885 26.63885]
+[029][orange.Sizuhmom]: [8.857185 -14.490272 98.458954 103.59757]
+[029][orange.Sicchmom]: [8.527074 -14.728763 98.061745 101.97073]
+[029][orange.Siccempz]: 3.9089942
+[029][orange.Sixel]: 0.020129452
+[029][orange.Siq2el]: 208.00696
+[029][orange.Siyel]: 0.101887025
+[029][orange.Sixjb]: 0.033640206
+[029][orange.Siq2jb]: 318.0701
+[029][orange.Siyjb]: 0.09322602
+[029][orange.Sixda]: 0.027335072
+[029][orange.Siq2da]: 213.74776
+[029][orange.Siyda]: 0.077099994
+[030][orange.Evtake_iwant]: 1
+[030][orange.Mc_x]: 0.08515279
+[030][orange.Mc_y]: 0.062275358
+[030][orange.Mc_q2]: 536.6554
+[030][orange.Mc_x_cr]: 0.090424545
+[030][orange.Mc_q2_cr]: 534.7813
+[030][orange.Sierror]: 0
+[030][orange.Sincand]: 2
+[030][orange.Siprob]: 0.9996174
+[030][orange.Sipos]: [64.76759 140.89311 -153.03]
+[030][orange.Sipt]: 21.765804
+[030][orange.Sidca]: 1.2893245
+[030][orange.Sitrkp]: 28.342646
+[030][orange.Siein]: 26.871025
+[030][orange.Sienin]: 0
+[030][orange.Zvtx]: -10.898945
+[030][orange.Sith]: 2.3158195
+[030][orange.Siecorr]: [26.567421 29.610432 29.610432]
+[030][orange.Sizuhmom]: [-8.773098 -22.324703 137.53116 141.16818]
+[030][orange.Sicchmom]: [-9.078874 -21.969948 137.624 140.87459]
+[030][orange.Siccempz]: 3.2505865
+[030][orange.Sixel]: 0.052563637
+[030][orange.Siq2el]: 525.5631
+[030][orange.Siyel]: 0.09858536
+[030][orange.Sixjb]: 0.0920494
+[030][orange.Siq2jb]: 616.006
+[030][orange.Siyjb]: 0.06598374
+[030][orange.Sixda]: 0.08654776
+[030][orange.Siq2da]: 546.7274
+[030][orange.Siyda]: 0.062285647
+[031][orange.Evtake_iwant]: 1
+[031][orange.Mc_x]: 0.016406028
+[031][orange.Mc_y]: 0.13726924
+[031][orange.Mc_q2]: 227.90671
+[031][orange.Mc_x_cr]: 0.016406028
+[031][orange.Mc_q2_cr]: 227.90671
+[031][orange.Sierror]: 0
+[031][orange.Sincand]: 1
+[031][orange.Siprob]: 0.99942845
+[031][orange.Sipos]: [-13.313352 86.68992 -153.03]
+[031][orange.Sipt]: 15.775875
+[031][orange.Sidca]: 12.472343
+[031][orange.Sitrkp]: 1.1629691
+[031][orange.Siein]: 27.189018
+[031][orange.Sienin]: 0
+[031][orange.Zvtx]: -19.395113
+[031][orange.Sith]: 2.5605767
+[031][orange.Siecorr]: [27.224943 28.74228 28.74228]
+[031][orange.Sizuhmom]: [5.4247155 -9.573896 170.6904 182.84442]
+[031][orange.Sicchmom]: [4.4061723 -11.0165825 170.01035 177.8866]
+[031][orange.Siccempz]: 7.8762116
+[031][orange.Sixel]: 0.060074337
+[031][orange.Siq2el]: 259.97083
+[031][orange.Siyel]: 0.042668622
+[031][orange.Sixjb]: 0.006946152
+[031][orange.Siq2jb]: 155.33958
+[031][orange.Siyjb]: 0.22050114
+[031][orange.Sixda]: 0.00810853
+[031][orange.Siq2da]: 204.14624
+[031][orange.Siyda]: 0.24824026
+[032][orange.Evtake_iwant]: 1
+[032][orange.Mc_x]: 0.010786196
+[032][orange.Mc_y]: 0.10898495
+[032][orange.Mc_q2]: 118.96391
+[032][orange.Mc_x_cr]: 0.017810028
+[032][orange.Mc_q2_cr]: 114.21861
+[032][orange.Sierror]: 0
+[032][orange.Sincand]: 1
+[032][orange.Siprob]: 0.99909294
+[032][orange.Sipos]: [-11.603408 -62.426945 -153.03]
+[032][orange.Sipt]: 10.145079
+[032][orange.Sidca]: 5.4573464
+[032][orange.Sitrkp]: 6.730906
+[032][orange.Siein]: 24.74904
+[032][orange.Sienin]: 0
+[032][orange.Zvtx]: -4.77489
+[032][orange.Sith]: 2.7335567
+[032][orange.Siecorr]: [24.457108 25.566769 25.566769]
+[032][orange.Sizuhmom]: [3.3135636 10.446785 61.34659 65.7284]
+[032][orange.Sicchmom]: [4.997308 11.115425 64.53879 69.26639]
+[032][orange.Siccempz]: 4.7276053
+[032][orange.Sixel]: 0.010332556
+[032][orange.Siq2el]: 115.6959
+[032][orange.Siyel]: 0.11040358
+[032][orange.Sixjb]: 0.016184522
+[032][orange.Siq2jb]: 130.4883
+[032][orange.Siyjb]: 0.079495884
+[032][orange.Sixda]: 0.015502059
+[032][orange.Siq2da]: 120.1182
+[032][orange.Siyda]: 0.07639983
+[033][orange.Evtake_iwant]: 1
+[033][orange.Mc_x]: 0.018246263
+[033][orange.Mc_y]: 0.22798212
+[033][orange.Mc_q2]: 420.97382
+[033][orange.Mc_x_cr]: 0.019191079
+[033][orange.Mc_q2_cr]: 414.94418
+[033][orange.Sierror]: 0
+[033][orange.Sincand]: 1
+[033][orange.Siprob]: 0.9991567
+[033][orange.Sipos]: [-51.193546 154.7247 -153.03]
+[033][orange.Sipt]: 16.336823
+[033][orange.Sidca]: 4.1805043
+[033][orange.Sitrkp]: 10.567617
+[033][orange.Siein]: 20.404995
+[033][orange.Sienin]: 0.15997887
+[033][orange.Zvtx]: 2.4681425
+[033][orange.Sith]: 2.3317206
+[033][orange.Siecorr]: [20.159225 22.558474 22.558474]
+[033][orange.Sizuhmom]: [6.0802965 -13.271089 176.96388 189.72496]
+[033][orange.Sicchmom]: [4.275954 -12.451286 180.02039 192.26163]
+[033][orange.Siccempz]: 12.241255
+[033][orange.Sixel]: 0.012335261
+[033][orange.Siq2el]: 385.96957
+[033][orange.Siyel]: 0.308516
+[033][orange.Sixjb]: 0.011809345
+[033][orange.Siq2jb]: 277.28796
+[033][orange.Siyjb]: 0.23151448
+[033][orange.Sixda]: 0.014688034
+[033][orange.Siq2da]: 406.03546
+[033][orange.Siyda]: 0.272567
+[034][orange.Evtake_iwant]: 2
+[034][orange.Mc_x]: 0.0054786364
+[034][orange.Mc_y]: 0.19046497
+[034][orange.Mc_q2]: 105.60099
+[034][orange.Mc_x_cr]: 0.0054786364
+[034][orange.Mc_q2_cr]: 105.601
+[034][orange.Sierror]: 0
+[034][orange.Sincand]: 1
+[034][orange.Siprob]: 0.99935246
+[034][orange.Sipos]: [-19.6314 -60.055325 -153.03]
+[034][orange.Sipt]: 8.758714
+[034][orange.Sidca]: 0.69458276
+[034][orange.Sitrkp]: 31.354824
+[034][orange.Siein]: 21.061005
+[034][orange.Sienin]: 0
+[034][orange.Zvtx]: -4.6759014
+[034][orange.Sith]: 2.7341635
+[034][orange.Siecorr]: [21.132505 22.103998 22.103998]
+[034][orange.Sizuhmom]: [6.0715203 11.266088 31.614079 44.82656]
+[034][orange.Sicchmom]: [4.379369 8.105178 31.156147 42.064075]
+[034][orange.Siccempz]: 10.907926
+[034][orange.Sixel]: 0.004260752
+[034][orange.Siq2el]: 99.73285
+[034][orange.Siyel]: 0.23079424
+[034][orange.Sixjb]: 0.008861298
+[034][orange.Siq2jb]: 215.42673
+[034][orange.Siyjb]: 0.23970397
+[034][orange.Sixda]: 0.005994276
+[034][orange.Siq2da]: 106.86558
+[034][orange.Siyda]: 0.17578188
+[035][orange.Evtake_iwant]: 2
+[035][orange.Mc_x]: 0.05087257
+[035][orange.Mc_y]: 0.030068127
+[035][orange.Mc_q2]: 154.79982
+[035][orange.Mc_x_cr]: 0.053610332
+[035][orange.Mc_q2_cr]: 154.95319
+[035][orange.Sierror]: 0
+[035][orange.Sincand]: 1
+[035][orange.Siprob]: 0.9993521
+[035][orange.Sipos]: [-44.99646 64.23891 -153.03]
+[035][orange.Sipt]: 12.615255
+[035][orange.Sidca]: 0.68254584
+[035][orange.Sitrkp]: 13.271998
+[035][orange.Siein]: 27.63599
+[035][orange.Sienin]: 0
+[035][orange.Zvtx]: 10.616556
+[035][orange.Sith]: 2.690514
+[035][orange.Siecorr]: [27.471992 28.938288 28.938288]
+[035][orange.Sizuhmom]: [7.8477025 -9.830767 119.059296 121.41986]
+[035][orange.Sicchmom]: [7.855924 -9.963853 121.113464 122.74904]
+[035][orange.Siccempz]: 1.6355929
+[035][orange.Sixel]: 0.62875545
+[035][orange.Siq2el]: 159.54381
+[035][orange.Siyel]: 0.002501907
+[035][orange.Sixjb]: 0.03805969
+[035][orange.Siq2jb]: 165.30997
+[035][orange.Siyjb]: 0.04282593
+[035][orange.Sixda]: 0.036626477
+[035][orange.Siq2da]: 153.34155
+[035][orange.Siyda]: 0.041279808
+[036][orange.Evtake_iwant]: 1
+[036][orange.Mc_x]: 0.019886315
+[036][orange.Mc_y]: 0.06519652
+[036][orange.Mc_q2]: 131.20764
+[036][orange.Mc_x_cr]: 0.019886311
+[036][orange.Mc_q2_cr]: 131.20763
+[036][orange.Sierror]: 0
+[036][orange.Sincand]: 2
+[036][orange.Siprob]: 0.9993198
+[036][orange.Sipos]: [23.512682 -44.856674 -153.03]
+[036][orange.Sipt]: 10.591764
+[036][orange.Sidca]: 15.221579
+[036][orange.Sitrkp]: 0.75517136
+[036][orange.Siein]: 25.398014
+[036][orange.Sienin]: 0
+[036][orange.Zvtx]: -41.739693
+[036][orange.Sith]: 2.7188725
+[036][orange.Siecorr]: [25.070704 25.818293 25.818293]
+[036][orange.Sizuhmom]: [-6.1635094 9.880992 114.19406 117.99601]
+[036][orange.Sicchmom]: [-5.360967 9.306998 116.65512 120.612144]
+[036][orange.Siccempz]: 3.9570289
+[036][orange.Sixel]: 0.011827553
+[036][orange.Siq2el]: 125.26676
+[036][orange.Siyel]: 0.10442727
+[036][orange.Sixjb]: 0.02082322
+[036][orange.Siq2jb]: 145.67061
+[036][orange.Siyjb]: 0.06897584
+[036][orange.Sixda]: 0.019688373
+[036][orange.Siq2da]: 130.71683
+[036][orange.Siyda]: 0.06546281
+[037][orange.Evtake_iwant]: 1
+[037][orange.Mc_x]: 0.08778241
+[037][orange.Mc_y]: 0.015586315
+[037][orange.Mc_q2]: 138.46223
+[037][orange.Mc_x_cr]: 0.3545947
+[037][orange.Mc_q2_cr]: 136.83047
+[037][orange.Sierror]: 0
+[037][orange.Sincand]: 2
+[037][orange.Siprob]: 0.99930507
+[037][orange.Sipos]: [-39.773685 -59.3142 -153.03]
+[037][orange.Sipt]: 9.049603
+[037][orange.Sidca]: 1.6163933
+[037][orange.Sitrkp]: 13.216125
+[037][orange.Siein]: 27.02403
+[037][orange.Sienin]: 0
+[037][orange.Zvtx]: 71.99086
+[037][orange.Sith]: 2.829424
+[037][orange.Siecorr]: [27.40395 29.465702 29.465702]
+[037][orange.Sizuhmom]: [1.9322442 9.085622 139.38474 145.13368]
+[037][orange.Sicchmom]: [1.7897385 8.948127 141.70338 145.43314]
+[037][orange.Siccempz]: 3.7297025
+[037][orange.Sixel]: 999.9
+[037][orange.Siq2el]: 78.495544
+[037][orange.Siyel]: -0.04331135
+[037][orange.Sixjb]: 0.009106497
+[037][orange.Siq2jb]: 96.3291
+[037][orange.Siyjb]: 0.104298756
+[037][orange.Sixda]: 0.0076167523
+[037][orange.Siq2da]: 68.55964
+[037][orange.Siyda]: 0.088750675
+[038][orange.Evtake_iwant]: 1
+[038][orange.Mc_x]: 0.021187205
+[038][orange.Mc_y]: 0.10334904
+[038][orange.Mc_q2]: 221.59528
+[038][orange.Mc_x_cr]: 0.023909522
+[038][orange.Mc_q2_cr]: 218.21893
+[038][orange.Sierror]: 0
+[038][orange.Sincand]: 1
+[038][orange.Siprob]: 0.9994323
+[038][orange.Sipos]: [-92.68043 -41.573456 -153.03]
+[038][orange.Sipt]: 14.384693
+[038][orange.Sidca]: 1.6862919
+[038][orange.Sitrkp]: 25.911589
+[038][orange.Siein]: 24.946987
+[038][orange.Sienin]: 0
+[038][orange.Zvtx]: 13.3322115
+[038][orange.Sith]: 2.5858865
+[038][orange.Siecorr]: [24.720629 27.26732 27.26732]
+[038][orange.Sizuhmom]: [11.863581 5.9033213 130.16391 134.60226]
+[038][orange.Sicchmom]: [12.493583 6.579663 133.04686 137.71051]
+[038][orange.Siccempz]: 4.663648
+[038][orange.Sixel]: 0.02621631
+[038][orange.Siq2el]: 226.15541
+[038][orange.Siyel]: 0.08505668
+[038][orange.Sixjb]: 0.02338448
+[038][orange.Siq2jb]: 190.97104
+[038][orange.Siyjb]: 0.08052167
+[038][orange.Sixda]: 0.025510626
+[038][orange.Siq2da]: 225.62457
+[038][orange.Siyda]: 0.08720437
+[039][orange.Evtake_iwant]: 2
+[039][orange.Mc_x]: 0.006975956
+[039][orange.Mc_y]: 0.35114542
+[039][orange.Mc_q2]: 247.89691
+[039][orange.Mc_x_cr]: 0.006975956
+[039][orange.Mc_q2_cr]: 247.89691
+[039][orange.Sierror]: 0
+[039][orange.Sincand]: 1
+[039][orange.Siprob]: 0.99931544
+[039][orange.Sipos]: [-107.33059 -54.600998 -153.03]
+[039][orange.Sipt]: 12.410499
+[039][orange.Sidca]: 1.4158529
+[039][orange.Sitrkp]: 17.837711
+[039][orange.Siein]: 17.765999
+[039][orange.Sienin]: 0
+[039][orange.Zvtx]: -3.2353437
+[039][orange.Sith]: 2.4574904
+[039][orange.Siecorr]: [17.621153 19.637564 19.637564]
+[039][orange.Sizuhmom]: [12.196154 6.6278434 63.191525 82.6052]
+[039][orange.Sicchmom]: [11.949771 6.525176 63.57273 82.53851]
+[039][orange.Siccempz]: 18.965792
+[039][orange.Sixel]: 0.0065323706
+[039][orange.Siq2el]: 243.5594
+[039][orange.Siyel]: 0.36762673
+[039][orange.Sixjb]: 0.008326503
+[039][orange.Siq2jb]: 297.4324
+[039][orange.Siyjb]: 0.3522075
+[039][orange.Sixda]: 0.0076260944
+[039][orange.Siq2da]: 257.11572
+[039][orange.Siyda]: 0.33242938
+[040][orange.Evtake_iwant]: 1
+[040][orange.Mc_x]: 0.17451273
+[040][orange.Mc_y]: 0.018858863
+[040][orange.Mc_q2]: 333.06042
+[040][orange.Mc_x_cr]: 0.17451274
+[040][orange.Mc_q2_cr]: 333.06046
+[040][orange.Sierror]: 0
+[040][orange.Sincand]: 1
+[040][orange.Siprob]: 0.9995618
+[040][orange.Sipos]: [-100.01852 43.153687 -153.03]
+[040][orange.Sipt]: 17.253942
+[040][orange.Sidca]: 0.8523338
+[040][orange.Sitrkp]: 28.77008
+[040][orange.Siein]: 26.279034
+[040][orange.Sienin]: 0
+[040][orange.Zvtx]: -6.7177105
+[040][orange.Sith]: 2.494811
+[040][orange.Siecorr]: [26.047064 28.63149 28.63149]
+[040][orange.Sizuhmom]: [18.6225 -6.44832 222.01965 225.0722]
+[040][orange.Sicchmom]: [17.342215 -5.8872137 220.584 221.66147]
+[040][orange.Siccempz]: 1.0774665
+[040][orange.Sixel]: 0.047593873
+[040][orange.Siq2el]: 318.74664
+[040][orange.Siyel]: 0.06603399
+[040][orange.Sixjb]: 0.07320101
+[040][orange.Siq2jb]: 411.14767
+[040][orange.Siyjb]: 0.055380102
+[040][orange.Sixda]: 0.06481925
+[040][orange.Siq2da]: 324.43997
+[040][orange.Siyda]: 0.04935184
+[041][orange.Evtake_iwant]: 2
+[041][orange.Mc_x]: 0.0022498665
+[041][orange.Mc_y]: 0.6295975
+[041][orange.Mc_q2]: 143.3508
+[041][orange.Mc_x_cr]: 0.0027666595
+[041][orange.Mc_q2_cr]: 157.57335
+[041][orange.Sierror]: 0
+[041][orange.Sincand]: 1
+[041][orange.Siprob]: 0.9174155
+[041][orange.Sipos]: [-84.47493 84.56545 -153.03]
+[041][orange.Sipt]: 8.117794
+[041][orange.Sidca]: 3.6820352
+[041][orange.Sitrkp]: 5.408981
+[041][orange.Siein]: 11.206032
+[041][orange.Sienin]: 0
+[041][orange.Zvtx]: -5.756652
+[041][orange.Sith]: 2.4551659
+[041][orange.Siecorr]: [11.206032 12.808591 12.808591]
+[041][orange.Sizuhmom]: [5.249106 -3.7347834 34.195442 71.746025]
+[041][orange.Sicchmom]: [5.3136706 -3.7676876 38.63865 65.123245]
+[041][orange.Siccempz]: 26.4846
+[041][orange.Sixel]: 0.0026818572
+[041][orange.Siq2el]: 159.90016
+[041][orange.Siyel]: 0.5878767
+[041][orange.Sixjb]: 0.0018844451
+[041][orange.Siq2jb]: 130.2021
+[041][orange.Siyjb]: 0.6812515
+[041][orange.Sixda]: 0.0018365782
+[041][orange.Siq2da]: 125.84933
+[041][orange.Siyda]: 0.6756386
+[042][orange.Evtake_iwant]: 1
+[042][orange.Mc_x]: 0.005758147
+[042][orange.Mc_y]: 0.23529746
+[042][orange.Mc_q2]: 137.11356
+[042][orange.Mc_x_cr]: 0.0057581477
+[042][orange.Mc_q2_cr]: 137.11357
+[042][orange.Sierror]: 0
+[042][orange.Sincand]: 1
+[042][orange.Siprob]: 0.9994217
+[042][orange.Sipos]: [-21.189884 -68.297 -153.03]
+[042][orange.Sipt]: 10.759796
+[042][orange.Sidca]: 1.0430741
+[042][orange.Sitrkp]: 19.091963
+[042][orange.Siein]: 21.744013
+[042][orange.Sienin]: 0
+[042][orange.Zvtx]: -12.404632
+[042][orange.Sith]: 2.6666439
+[042][orange.Siecorr]: [22.095598 23.529331 23.529331]
+[042][orange.Sizuhmom]: [0.3238278 14.215594 149.6919 166.55267]
+[042][orange.Sicchmom]: [0.34083027 14.197626 146.2236 162.24718]
+[042][orange.Siccempz]: 16.02357
+[042][orange.Sixel]: 0.0073147216
+[042][orange.Siq2el]: 143.54996
+[042][orange.Siyel]: 0.19349879
+[042][orange.Sixjb]: 0.009389295
+[042][orange.Siq2jb]: 291.29193
+[042][orange.Siyjb]: 0.30589223
+[042][orange.Sixda]: 0.006114786
+[042][orange.Siq2da]: 138.2986
+[042][orange.Siyda]: 0.22300237
+[043][orange.Evtake_iwant]: 2
+[043][orange.Mc_x]: 0.0040392554
+[043][orange.Mc_y]: 0.44478533
+[043][orange.Mc_q2]: 181.81604
+[043][orange.Mc_x_cr]: 0.0040392554
+[043][orange.Mc_q2_cr]: 181.81602
+[043][orange.Sierror]: 0
+[043][orange.Sincand]: 2
+[043][orange.Siprob]: 0.99896985
+[043][orange.Sipos]: [-59.366028 105.91564 -153.03]
+[043][orange.Sipt]: 10.210375
+[043][orange.Sidca]: 1.4625736
+[043][orange.Sitrkp]: 15.896764
+[043][orange.Siein]: 15.442014
+[043][orange.Sienin]: 0
+[043][orange.Zvtx]: 11.76407
+[043][orange.Sith]: 2.5038471
+[043][orange.Siecorr]: [15.551269 17.14918 17.14918]
+[043][orange.Sizuhmom]: [10.431202 -9.442277 92.74658 121.319595]
+[043][orange.Sicchmom]: [9.126541 -7.272046 95.10509 120.42294]
+[043][orange.Siccempz]: 25.317867
+[043][orange.Sixel]: 0.004173969
+[043][orange.Siq2el]: 185.80075
+[043][orange.Siyel]: 0.43890572
+[043][orange.Sixjb]: 0.007818293
+[043][orange.Siq2jb]: 411.04163
+[043][orange.Siyjb]: 0.5183783
+[043][orange.Sixda]: 0.0048699877
+[043][orange.Siq2da]: 198.23576
+[043][orange.Siyda]: 0.40135357
+[044][orange.Evtake_iwant]: 2
+[044][orange.Mc_x]: 0.015012672
+[044][orange.Mc_y]: 0.11328935
+[044][orange.Mc_q2]: 172.11847
+[044][orange.Mc_x_cr]: 0.015936354
+[044][orange.Mc_q2_cr]: 170.90654
+[044][orange.Sierror]: 0
+[044][orange.Sincand]: 1
+[044][orange.Siprob]: 0.99949515
+[044][orange.Sipos]: [28.688812 66.97711 -153.03]
+[044][orange.Sipt]: 13.261762
+[044][orange.Sidca]: 0.09861696
+[044][orange.Sitrkp]: 42.608185
+[044][orange.Siein]: 25.940956
+[044][orange.Sienin]: 0
+[044][orange.Zvtx]: -20.644566
+[044][orange.Sith]: 2.6437685
+[044][orange.Siecorr]: [26.671076 27.772457 27.772457]
+[044][orange.Sizuhmom]: [-2.6269357 -12.995789 214.31262 224.58025]
+[044][orange.Sicchmom]: [-3.2065241 -12.735524 214.94421 224.24841]
+[044][orange.Siccempz]: 9.304192
+[044][orange.Sixel]: 0.034277294
+[044][orange.Siq2el]: 185.80505
+[044][orange.Siyel]: 0.05344708
+[044][orange.Sixjb]: 0.011434928
+[044][orange.Siq2jb]: 216.03354
+[044][orange.Siyjb]: 0.18627766
+[044][orange.Sixda]: 0.009832575
+[044][orange.Siq2da]: 164.01202
+[044][orange.Siyda]: 0.164468
+[045][orange.Evtake_iwant]: 1
+[045][orange.Mc_x]: 0.25998232
+[045][orange.Mc_y]: 0.017506555
+[045][orange.Mc_q2]: 460.601
+[045][orange.Mc_x_cr]: 0.30115247
+[045][orange.Mc_q2_cr]: 461.74155
+[045][orange.Sierror]: 0
+[045][orange.Sincand]: 1
+[045][orange.Siprob]: 0.999616
+[045][orange.Sipos]: [124.43463 90.751144 -153.03]
+[045][orange.Sipt]: 19.949272
+[045][orange.Sidca]: 1.1430225
+[045][orange.Sitrkp]: 25.533026
+[045][orange.Siein]: 25.386036
+[045][orange.Sienin]: 0.08201599
+[045][orange.Zvtx]: 10.062295
+[045][orange.Sith]: 2.3899534
+[045][orange.Siecorr]: [25.386036 29.215265 29.215265]
+[045][orange.Sizuhmom]: [-16.806528 -12.769468 293.88705 297.0638]
+[045][orange.Sicchmom]: [-15.919868 -13.251013 288.43076 289.64386]
+[045][orange.Siccempz]: 1.2131337
+[045][orange.Sixel]: 0.05170035
+[045][orange.Siq2el]: 433.87457
+[045][orange.Siyel]: 0.082745366
+[045][orange.Sixjb]: 0.08088056
+[045][orange.Siq2jb]: 472.7658
+[045][orange.Siyjb]: 0.05763349
+[045][orange.Sixda]: 0.07853589
+[045][orange.Siq2da]: 446.49887
+[045][orange.Siyda]: 0.05605639
+[046][orange.Evtake_iwant]: 1
+[046][orange.Mc_x]: 0.0040659397
+[046][orange.Mc_y]: 0.257442
+[046][orange.Mc_q2]: 105.93043
+[046][orange.Mc_x_cr]: 0.0051786397
+[046][orange.Mc_q2_cr]: 91.495865
+[046][orange.Sierror]: 0
+[046][orange.Sincand]: 2
+[046][orange.Siprob]: 0.9989283
+[046][orange.Sipos]: [-54.309647 -43.05343 -153.03]
+[046][orange.Sipt]: 8.937889
+[046][orange.Sidca]: 0.17641357
+[046][orange.Sitrkp]: 18.665148
+[046][orange.Siein]: 20.39099
+[046][orange.Sienin]: 0
+[046][orange.Zvtx]: 2.5844827
+[046][orange.Sith]: 2.714014
+[046][orange.Siecorr]: [20.208569 21.554293 21.554293]
+[046][orange.Sizuhmom]: [7.3421955 8.106767 90.81509 106.446335]
+[046][orange.Sicchmom]: [5.7411895 6.9861145 93.400826 102.321495]
+[046][orange.Siccempz]: 8.920648
+[046][orange.Sixel]: 0.0041664606
+[046][orange.Siq2el]: 106.95922
+[046][orange.Siyel]: 0.25311852
+[046][orange.Sixjb]: 0.0058057103
+[046][orange.Siq2jb]: 166.98093
+[046][orange.Siyjb]: 0.2835858
+[046][orange.Sixda]: 0.004550795
+[046][orange.Siq2da]: 109.29562
+[046][orange.Siyda]: 0.2368037
+[047][orange.Evtake_iwant]: 1
+[047][orange.Mc_x]: 0.0054878066
+[047][orange.Mc_y]: 0.24541149
+[047][orange.Mc_q2]: 136.29317
+[047][orange.Mc_x_cr]: 0.0054878066
+[047][orange.Mc_q2_cr]: 136.29317
+[047][orange.Sierror]: 0
+[047][orange.Sincand]: 1
+[047][orange.Siprob]: 0.9994335
+[047][orange.Sipos]: [78.74532 -38.831085 -153.03]
+[047][orange.Sipt]: 9.966464
+[047][orange.Sidca]: 1.6092917
+[047][orange.Sitrkp]: 19.441528
+[047][orange.Siein]: 20.129978
+[047][orange.Sienin]: 0
+[047][orange.Zvtx]: 11.977613
+[047][orange.Sith]: 2.660057
+[047][orange.Siecorr]: [20.437082 21.5193 21.5193]
+[047][orange.Sizuhmom]: [-7.986153 4.628681 85.71493 97.85476]
+[047][orange.Sicchmom]: [-8.464827 2.9477196 86.33786 98.083664]
+[047][orange.Siccempz]: 11.745808
+[047][orange.Sixel]: 0.0050456636
+[047][orange.Siq2el]: 134.88261
+[047][orange.Siyel]: 0.26357892
+[047][orange.Sixjb]: 0.004891783
+[047][orange.Siq2jb]: 109.26918
+[047][orange.Siyjb]: 0.22024368
+[047][orange.Sixda]: 0.005592586
+[047][orange.Siq2da]: 138.45142
+[047][orange.Siyda]: 0.24409433
+[048][orange.Evtake_iwant]: 1
+[048][orange.Mc_x]: 0.017322589
+[048][orange.Mc_y]: 0.64214605
+[048][orange.Mc_q2]: 1125.7113
+[048][orange.Mc_x_cr]: 0.017322587
+[048][orange.Mc_q2_cr]: 1125.7112
+[048][orange.Sierror]: 0
+[048][orange.Sincand]: 1
+[048][orange.Siprob]: 0.9985497
+[048][orange.Sipos]: [67.74984 105.84213 -1.9585216]
+[048][orange.Sipt]: 21.255964
+[048][orange.Sidca]: 0.29424745
+[048][orange.Sitrkp]: 13.092172
+[048][orange.Siein]: 20.082056
+[048][orange.Sienin]: 0.15598536
+[048][orange.Zvtx]: -4.159041
+[048][orange.Sith]: 1.5531204
+[048][orange.Siecorr]: [20.925844 20.996675 21.259285]
+[048][orange.Sizuhmom]: [-11.343651 -17.982552 26.829617 60.86612]
+[048][orange.Sicchmom]: [-10.718397 -17.352385 26.647017 62.931423]
+[048][orange.Siccempz]: 36.284412
+[048][orange.Sixel]: 0.018930415
+[048][orange.Siq2el]: 1192.5236
+[048][orange.Siyel]: 0.6211262
+[048][orange.Sixjb]: 0.018870823
+[048][orange.Siq2jb]: 1181.8262
+[048][orange.Siyjb]: 0.6174983
+[048][orange.Sixda]: 0.019046577
+[048][orange.Siq2da]: 1197.0582
+[048][orange.Siyda]: 0.6196855
+[049][orange.Evtake_iwant]: 1
+[049][orange.Mc_x]: 0.004192049
+[049][orange.Mc_y]: 0.28082997
+[049][orange.Mc_q2]: 119.13798
+[049][orange.Mc_x_cr]: 0.012703408
+[049][orange.Mc_q2_cr]: 360.39462
+[049][orange.Sierror]: 0
+[049][orange.Sincand]: 2
+[049][orange.Siprob]: 0.99929774
+[049][orange.Sipos]: [69.06433 49.53295 -153.03]
+[049][orange.Sipt]: 8.620002
+[049][orange.Sidca]: 1.2552032
+[049][orange.Sitrkp]: 16.823086
+[049][orange.Siein]: 19.128025
+[049][orange.Sienin]: 0.083982944
+[049][orange.Zvtx]: 17.563768
+[049][orange.Sith]: 2.6871612
+[049][orange.Siecorr]: [18.682522 19.637707 19.637707]
+[049][orange.Sizuhmom]: [-8.674391 -8.547681 166.5677 183.90823]
+[049][orange.Sicchmom]: [-8.104091 -7.339464 166.26584 181.30884]
+[049][orange.Siccempz]: 15.043064
+[049][orange.Sixel]: 0.0033470774
+[049][orange.Siq2el]: 109.85504
+[049][orange.Siyel]: 0.32361394
+[049][orange.Sixjb]: 0.0067816824
+[049][orange.Siq2jb]: 216.38026
+[049][orange.Siyjb]: 0.314596
+[049][orange.Sixda]: 0.004864236
+[049][orange.Siq2da]: 122.18816
+[049][orange.Siyda]: 0.24767803
+[050][orange.Evtake_iwant]: 1
+[050][orange.Mc_x]: 0.007876082
+[050][orange.Mc_y]: 0.35271153
+[050][orange.Mc_q2]: 281.13202
+[050][orange.Mc_x_cr]: 0.008129395
+[050][orange.Mc_q2_cr]: 284.25717
+[050][orange.Sierror]: 0
+[050][orange.Sincand]: 1
+[050][orange.Siprob]: 0.9996071
+[050][orange.Sipos]: [-124.157875 54.683224 -153.03]
+[050][orange.Sipt]: 13.717168
+[050][orange.Sidca]: 2.0095358
+[050][orange.Sitrkp]: 10.6315775
+[050][orange.Siein]: 17.089008
+[050][orange.Sienin]: 0
+[050][orange.Zvtx]: 1.6709347
+[050][orange.Sith]: 2.4160848
+[050][orange.Siecorr]: [16.943632 20.67347 20.67347]
+[050][orange.Sizuhmom]: [4.2604294 -2.0649633 92.50178 135.89821]
+[050][orange.Sicchmom]: [11.689086 -4.181412 101.86692 119.62521]
+[050][orange.Siccempz]: 17.758287
+[050][orange.Sixel]: 0.008217549
+[050][orange.Siq2el]: 286.97427
+[050][orange.Siyel]: 0.34432903
+[050][orange.Sixjb]: 0.0013198444
+[050][orange.Siq2jb]: 105.388824
+[050][orange.Siyjb]: 0.7873083
+[050][orange.Sixda]: 0.00124045
+[050][orange.Siq2da]: 97.71894
+[050][orange.Siyda]: 0.7767344
+[051][orange.Evtake_iwant]: 2
+[051][orange.Mc_x]: 0.0125816865
+[051][orange.Mc_y]: 0.11427643
+[051][orange.Mc_q2]: 145.50433
+[051][orange.Mc_x_cr]: 0.012581685
+[051][orange.Mc_q2_cr]: 145.50432
+[051][orange.Sierror]: 0
+[051][orange.Sincand]: 1
+[051][orange.Siprob]: 0.9993278
+[051][orange.Sipos]: [42.20707 38.361633 -153.03]
+[051][orange.Sipt]: 11.276313
+[051][orange.Sidca]: 12.942051
+[051][orange.Sitrkp]: 11.754981
+[051][orange.Siein]: 24.293005
+[051][orange.Sienin]: 0
+[051][orange.Zvtx]: -40.437298
+[051][orange.Sith]: 2.6835096
+[051][orange.Siecorr]: [24.692415 25.498774 25.498774]
+[051][orange.Sizuhmom]: [-4.4660707 -11.899193 177.10585 187.74945]
+[051][orange.Sicchmom]: [-5.032904 -9.527448 181.2973 189.22658]
+[051][orange.Siccempz]: 7.929276
+[051][orange.Sixel]: 0.011664668
+[051][orange.Siq2el]: 144.90367
+[051][orange.Siyel]: 0.12248417
+[051][orange.Sixjb]: 0.010222194
+[051][orange.Siq2jb]: 200.19374
+[051][orange.Siyjb]: 0.19309871
+[051][orange.Sixda]: 0.008339524
+[051][orange.Siq2da]: 138.1565
+[051][orange.Siyda]: 0.16334394
+[052][orange.Evtake_iwant]: 1
+[052][orange.Mc_x]: 0.021516899
+[052][orange.Mc_y]: 0.046514906
+[052][orange.Mc_q2]: 101.28665
+[052][orange.Mc_x_cr]: 0.0215169
+[052][orange.Mc_q2_cr]: 101.28667
+[052][orange.Sierror]: 0
+[052][orange.Sincand]: 1
+[052][orange.Siprob]: 0.99929714
+[052][orange.Sipos]: [-77.39401 29.403671 -153.03]
+[052][orange.Sipt]: 9.679601
+[052][orange.Sidca]: 0.42682943
+[052][orange.Sitrkp]: 23.234016
+[052][orange.Siein]: 25.058983
+[052][orange.Sienin]: 0
+[052][orange.Zvtx]: 64.84917
+[052][orange.Sith]: 2.772057
+[052][orange.Siecorr]: [25.672626 26.799755 26.799755]
+[052][orange.Sizuhmom]: [7.29068 -2.2748573 42.922764 45.2015]
+[052][orange.Sicchmom]: [7.2694173 -2.2011387 41.969955 44.264282]
+[052][orange.Siccempz]: 2.2943273
+[052][orange.Sixel]: 0.01627664
+[052][orange.Siq2el]: 99.71829
+[052][orange.Siyel]: 0.06040641
+[052][orange.Sixjb]: 0.014511378
+[052][orange.Siq2jb]: 60.844383
+[052][orange.Siyjb]: 0.041341368
+[052][orange.Sixda]: 0.018764963
+[052][orange.Siq2da]: 100.52349
+[052][orange.Siyda]: 0.05281932
+[053][orange.Evtake_iwant]: 1
+[053][orange.Mc_x]: 0.003748424
+[053][orange.Mc_y]: 0.48443872
+[053][orange.Mc_q2]: 183.76718
+[053][orange.Mc_x_cr]: 0.003748424
+[053][orange.Mc_q2_cr]: 183.76718
+[053][orange.Sierror]: 0
+[053][orange.Sincand]: 1
+[053][orange.Siprob]: 0.99913824
+[053][orange.Sipos]: [-108.181755 46.465084 -153.03]
+[053][orange.Sipt]: 10.182408
+[053][orange.Sidca]: 1.1883696
+[053][orange.Sitrkp]: 13.977596
+[053][orange.Siein]: 14.979006
+[053][orange.Sienin]: 0
+[053][orange.Zvtx]: 0.8459824
+[053][orange.Sith]: 2.4818692
+[053][orange.Siecorr]: [14.942679 16.613535 16.613535]
+[053][orange.Sizuhmom]: [14.190125 -5.049391 61.907784 93.95916]
+[053][orange.Sicchmom]: [12.94266 -4.559685 63.209072 93.57873]
+[053][orange.Siccempz]: 30.369673
+[053][orange.Sixel]: 0.0041149263
+[053][orange.Siq2el]: 192.15683
+[053][orange.Siyel]: 0.4604333
+[053][orange.Sixjb]: 0.009191223
+[053][orange.Siq2jb]: 542.0481
+[053][orange.Siyjb]: 0.5814836
+[053][orange.Sixda]: 0.0048196553
+[053][orange.Siq2da]: 206.02753
+[053][orange.Siyda]: 0.42148513
+[054][orange.Evtake_iwant]: 2
+[054][orange.Mc_x]: 0.07290801
+[054][orange.Mc_y]: 0.07614516
+[054][orange.Mc_q2]: 561.8209
+[054][orange.Mc_x_cr]: 0.07476766
+[054][orange.Mc_q2_cr]: 562.891
+[054][orange.Sierror]: 0
+[054][orange.Sincand]: 1
+[054][orange.Siprob]: 0.9996847
+[054][orange.Sipos]: [75.43177 -157.67723 -153.03]
+[054][orange.Sipt]: 20.547136
+[054][orange.Sidca]: 1.3770444
+[054][orange.Sitrkp]: 28.794107
+[054][orange.Siein]: 25.714994
+[054][orange.Sienin]: 0
+[054][orange.Zvtx]: 2.6219664
+[054][orange.Sith]: 2.2999036
+[054][orange.Siecorr]: [25.757494 27.551594 27.551594]
+[054][orange.Sizuhmom]: [-10.815403 19.474289 124.471596 128.91016]
+[054][orange.Sicchmom]: [-10.060095 19.47916 124.83144 128.55005]
+[054][orange.Siccempz]: 3.7186208
+[054][orange.Sixel]: 0.029901866
+[054][orange.Siq2el]: 506.917
+[054][orange.Siyel]: 0.16715199
+[054][orange.Sixjb]: 0.06608081
+[054][orange.Siq2jb]: 539.6788
+[054][orange.Siyjb]: 0.08052541
+[054][orange.Sixda]: 0.06729195
+[054][orange.Siq2da]: 558.818
+[054][orange.Siyda]: 0.08188045
+[055][orange.Evtake_iwant]: 1
+[055][orange.Mc_x]: 0.034980886
+[055][orange.Mc_y]: 0.35853317
+[055][orange.Mc_q2]: 1269.2306
+[055][orange.Mc_x_cr]: 0.036269616
+[055][orange.Mc_q2_cr]: 1244.6752
+[055][orange.Sierror]: 0
+[055][orange.Sincand]: 2
+[055][orange.Siprob]: 0.9984404
+[055][orange.Sipos]: [-97.65027 -79.10132 -27.488672]
+[055][orange.Sipt]: 28.219254
+[055][orange.Sidca]: 0.27913895
+[055][orange.Sitrkp]: 19.128696
+[055][orange.Siein]: 27.795078
+[055][orange.Sienin]: 0
+[055][orange.Zvtx]: 0.10937685
+[055][orange.Sith]: 1.7844064
+[055][orange.Siecorr]: [28.982418 28.30264 28.875538]
+[055][orange.Sizuhmom]: [22.01528 16.339043 37.528225 56.027187]
+[055][orange.Sicchmom]: [20.989277 16.709568 38.196957 56.50966]
+[055][orange.Siccempz]: 18.312695
+[055][orange.Sixel]: 0.033873294
+[055][orange.Siq2el]: 1254.2133
+[055][orange.Siyel]: 0.36507908
+[055][orange.Sixjb]: 0.033236973
+[055][orange.Siq2jb]: 1131.3231
+[055][orange.Siyjb]: 0.33561254
+[055][orange.Sixda]: 0.035798486
+[055][orange.Siq2da]: 1279.3309
+[055][orange.Siyda]: 0.3523637
+[056][orange.Evtake_iwant]: 1
+[056][orange.Mc_x]: 0.0050008753
+[056][orange.Mc_y]: 0.22435302
+[056][orange.Mc_q2]: 113.542465
+[056][orange.Mc_x_cr]: 0.005000875
+[056][orange.Mc_q2_cr]: 113.54246
+[056][orange.Sierror]: 0
+[056][orange.Sincand]: 1
+[056][orange.Siprob]: 0.999384
+[056][orange.Sipos]: [28.857918 67.39417 -153.03]
+[056][orange.Sipt]: 9.696274
+[056][orange.Sidca]: 0.7603533
+[056][orange.Sitrkp]: 11.909218
+[056][orange.Siein]: 20.820023
+[056][orange.Sienin]: 0
+[056][orange.Zvtx]: 3.363589
+[056][orange.Sith]: 2.7080598
+[056][orange.Siecorr]: [21.642859 23.082 23.082]
+[056][orange.Sizuhmom]: [-3.4565716 -11.145277 67.331635 80.81965]
+[056][orange.Sicchmom]: [-4.6829023 -11.086754 68.81874 81.61609]
+[056][orange.Siccempz]: 12.797329
+[056][orange.Sixel]: 0.0057674083
+[056][orange.Siq2el]: 117.702
+[056][orange.Siyel]: 0.20122232
+[056][orange.Sixjb]: 0.0072641033
+[056][orange.Siq2jb]: 180.28012
+[056][orange.Siyjb]: 0.24470273
+[056][orange.Sixda]: 0.0057075014
+[056][orange.Siq2da]: 117.45394
+[056][orange.Siyda]: 0.20290583
+[057][orange.Evtake_iwant]: 1
+[057][orange.Mc_x]: 0.014345118
+[057][orange.Mc_y]: 0.49142322
+[057][orange.Mc_q2]: 713.4116
+[057][orange.Mc_x_cr]: 0.014345117
+[057][orange.Mc_q2_cr]: 713.41156
+[057][orange.Sierror]: 0
+[057][orange.Sincand]: 2
+[057][orange.Siprob]: 0.9985504
+[057][orange.Sipos]: [-18.660824 -124.27537 -49.736618]
+[057][orange.Sipt]: 19.91762
+[057][orange.Sidca]: 0.29925278
+[057][orange.Sitrkp]: 18.8887
+[057][orange.Siein]: 21.100044
+[057][orange.Sienin]: 0
+[057][orange.Zvtx]: -0.31891802
+[057][orange.Sith]: 1.9440295
+[057][orange.Siecorr]: [22.066938 22.189749 21.390268]
+[057][orange.Sizuhmom]: [2.4793234 23.041798 262.19348 290.57394]
+[057][orange.Sicchmom]: [0.6902307 21.409613 261.80402 290.11154]
+[057][orange.Siccempz]: 28.30744
+[057][orange.Sixel]: 0.015701067
+[057][orange.Siq2el]: 749.1238
+[057][orange.Siyel]: 0.47043258
+[057][orange.Sixjb]: 0.021200696
+[057][orange.Siq2jb]: 1107.1014
+[057][orange.Siyjb]: 0.514885
+[057][orange.Sixda]: 0.016691484
+[057][orange.Siq2da]: 770.63525
+[057][orange.Siyda]: 0.45522586
+[058][orange.Evtake_iwant]: 2
+[058][orange.Mc_x]: 0.005732221
+[058][orange.Mc_y]: 0.25495866
+[058][orange.Mc_q2]: 147.90167
+[058][orange.Mc_x_cr]: 0.005732221
+[058][orange.Mc_q2_cr]: 147.90167
+[058][orange.Sierror]: 0
+[058][orange.Sincand]: 1
+[058][orange.Siprob]: 0.9993752
+[058][orange.Sipos]: [-20.482315 -85.769775 -153.03]
+[058][orange.Sipt]: 10.744341
+[058][orange.Sidca]: 1.9166522
+[058][orange.Sitrkp]: 14.632115
+[058][orange.Siein]: 21.217047
+[058][orange.Sienin]: 0
+[058][orange.Zvtx]: 8.042803
+[058][orange.Sith]: 2.637467
+[058][orange.Siecorr]: [21.316837 22.243073 22.243073]
+[058][orange.Sizuhmom]: [2.5483756 9.662214 26.380878 39.870644]
+[058][orange.Sicchmom]: [2.5034304 8.147178 26.885332 38.258915]
+[058][orange.Siccempz]: 11.373582
+[058][orange.Sixel]: 0.006185586
+[058][orange.Siq2el]: 152.52267
+[058][orange.Siyel]: 0.24312328
+[058][orange.Sixjb]: 0.0053264457
+[058][orange.Siq2jb]: 132.2086
+[058][orange.Siyjb]: 0.2447345
+[058][orange.Sixda]: 0.0057149455
+[058][orange.Siq2da]: 149.52882
+[058][orange.Siyda]: 0.25797987
+[059][orange.Evtake_iwant]: 1
+[059][orange.Mc_x]: 0.012695336
+[059][orange.Mc_y]: 0.10393636
+[059][orange.Mc_q2]: 133.53407
+[059][orange.Mc_x_cr]: 0.012695334
+[059][orange.Mc_q2_cr]: 133.53406
+[059][orange.Sierror]: 0
+[059][orange.Sincand]: 2
+[059][orange.Siprob]: 0.9992079
+[059][orange.Sipos]: [-20.846245 63.68011 -153.03]
+[059][orange.Sipt]: 10.905719
+[059][orange.Sidca]: 2.0784256
+[059][orange.Sitrkp]: 9.703188
+[059][orange.Siein]: 24.710957
+[059][orange.Sienin]: 0
+[059][orange.Zvtx]: -7.0871487
+[059][orange.Sith]: 2.709258
+[059][orange.Siecorr]: [24.53098 26.028482 26.028482]
+[059][orange.Sizuhmom]: [4.3518767 -10.26161 66.71295 73.56384]
+[059][orange.Sicchmom]: [4.0025506 -9.992016 68.60904 74.60282]
+[059][orange.Siccempz]: 5.9937887
+[059][orange.Sixel]: 0.013144635
+[059][orange.Siq2el]: 132.00577
+[059][orange.Siyel]: 0.09901873
+[059][orange.Sixjb]: 0.011254719
+[059][orange.Siq2jb]: 141.87294
+[059][orange.Siyjb]: 0.12429048
+[059][orange.Sixda]: 0.010702949
+[059][orange.Siq2da]: 129.0897
+[059][orange.Siyda]: 0.1189217
+[060][orange.Evtake_iwant]: 1
+[060][orange.Mc_x]: 0.013090976
+[060][orange.Mc_y]: 0.14815651
+[060][orange.Mc_q2]: 196.2787
+[060][orange.Mc_x_cr]: 0.013090976
+[060][orange.Mc_q2_cr]: 196.2787
+[060][orange.Sierror]: 0
+[060][orange.Sincand]: 1
+[060][orange.Siprob]: 0.99951345
+[060][orange.Sipos]: [82.61836 -29.429579 -153.03]
+[060][orange.Sipt]: 12.128249
+[060][orange.Sidca]: 0.113362126
+[060][orange.Sitrkp]: 25.84511
+[060][orange.Siein]: 22.276997
+[060][orange.Sienin]: 0
+[060][orange.Zvtx]: -8.94407
+[060][orange.Sith]: 2.603363
+[060][orange.Siecorr]: [22.654427 23.659489 23.659489]
+[060][orange.Sizuhmom]: [-10.61031 5.3196497 154.13277 161.51236]
+[060][orange.Sicchmom]: [-10.506804 5.1580334 154.43901 160.90938]
+[060][orange.Siccempz]: 6.4703345
+[060][orange.Sixel]: 0.008990234
+[060][orange.Siq2el]: 184.37842
+[060][orange.Siyel]: 0.20221439
+[060][orange.Sixjb]: 0.011978819
+[060][orange.Siq2jb]: 162.65381
+[060][orange.Siyjb]: 0.13388231
+[060][orange.Sixda]: 0.013288693
+[060][orange.Siq2da]: 197.2826
+[060][orange.Siyda]: 0.14637925
+[061][orange.Evtake_iwant]: 2
+[061][orange.Mc_x]: 0.10485392
+[061][orange.Mc_y]: 0.018417442
+[061][orange.Mc_q2]: 195.43143
+[061][orange.Mc_x_cr]: 0.107584044
+[061][orange.Mc_q2_cr]: 195.52637
+[061][orange.Sierror]: 0
+[061][orange.Sincand]: 1
+[061][orange.Siprob]: 0.99931383
+[061][orange.Sipos]: [-28.284105 72.69745 -153.03]
+[061][orange.Sipt]: 14.485387
+[061][orange.Sidca]: 1.7774551
+[061][orange.Sitrkp]: 5.9904304
+[061][orange.Siein]: 29.718874
+[061][orange.Sienin]: 0
+[061][orange.Zvtx]: -9.158622
+[061][orange.Sith]: 2.6424096
+[061][orange.Siecorr]: [28.848047 30.259308 30.259308]
+[061][orange.Sizuhmom]: [6.2725716 -9.476443 232.14978 234.4438]
+[061][orange.Sicchmom]: [6.2020426 -8.741109 229.55334 230.57893]
+[061][orange.Siccempz]: 1.0255704
+[061][orange.Sixel]: 999.9
+[061][orange.Siq2el]: 203.52646
+[061][orange.Siyel]: -0.030954137
+[061][orange.Sixjb]: 0.03192526
+[061][orange.Siq2jb]: 134.75652
+[061][orange.Siyjb]: 0.04161868
+[061][orange.Sixda]: 0.037828535
+[061][orange.Siq2da]: 187.75456
+[061][orange.Siyda]: 0.048937745
+[062][orange.Evtake_iwant]: 2
+[062][orange.Mc_x]: 0.0032327126
+[062][orange.Mc_y]: 0.45157152
+[062][orange.Mc_q2]: 147.73183
+[062][orange.Mc_x_cr]: 0.0043374416
+[062][orange.Mc_q2_cr]: 166.93573
+[062][orange.Sierror]: 0
+[062][orange.Sincand]: 1
+[062][orange.Siprob]: 0.9991523
+[062][orange.Sipos]: [-26.523817 -95.75798 -153.03]
+[062][orange.Sipt]: 8.794408
+[062][orange.Sidca]: 0.85024136
+[062][orange.Sitrkp]: 16.533188
+[062][orange.Siein]: 14.631987
+[062][orange.Sienin]: 0.092983246
+[062][orange.Zvtx]: 0.4822875
+[062][orange.Sith]: 2.5637712
+[062][orange.Siecorr]: [14.5725975 16.101067 16.101067]
+[062][orange.Sizuhmom]: [2.8407614 8.3657 81.02128 102.31819]
+[062][orange.Sicchmom]: [1.4549507 6.72734 81.94236 100.07688]
+[062][orange.Siccempz]: 18.134558
+[062][orange.Sixel]: 0.0030669353
+[062][orange.Siq2el]: 144.08005
+[062][orange.Siyel]: 0.4632039
+[062][orange.Sixjb]: 0.003246097
+[062][orange.Siq2jb]: 127.20259
+[062][orange.Siyjb]: 0.3863736
+[062][orange.Sixda]: 0.0036937098
+[062][orange.Siq2da]: 156.37076
+[062][orange.Siyda]: 0.41741276
+[063][orange.Evtake_iwant]: 1
+[063][orange.Mc_x]: 0.11552847
+[063][orange.Mc_y]: 0.11444326
+[063][orange.Mc_q2]: 1338.0109
+[063][orange.Mc_x_cr]: 0.11552847
+[063][orange.Mc_q2_cr]: 1338.0109
+[063][orange.Sierror]: 0
+[063][orange.Sincand]: 1
+[063][orange.Siprob]: 0.99810296
+[063][orange.Sipos]: [123.40449 -23.747152 -28.583937]
+[063][orange.Sipt]: 34.292282
+[063][orange.Sidca]: 0.3738706
+[063][orange.Sitrkp]: 34.22558
+[063][orange.Siein]: 35.862926
+[063][orange.Sienin]: 0
+[063][orange.Zvtx]: 14.973394
+[063][orange.Sith]: 1.9087014
+[063][orange.Siecorr]: [37.054863 36.788532 36.3477]
+[063][orange.Sizuhmom]: [-31.977715 5.743142 139.41986 145.58507]
+[063][orange.Sicchmom]: [-31.96737 5.733044 139.3914 145.54698]
+[063][orange.Siccempz]: 6.1555595
+[063][orange.Sixel]: 0.108273804
+[063][orange.Siq2el]: 1339.307
+[063][orange.Siyel]: 0.121963456
+[063][orange.Sixjb]: 0.104768455
+[063][orange.Siq2jb]: 1188.4913
+[063][orange.Siyjb]: 0.111850634
+[063][orange.Sixda]: 0.111856006
+[063][orange.Siq2da]: 1344.5587
+[063][orange.Siyda]: 0.11852049
+[064][orange.Evtake_iwant]: 1
+[064][orange.Mc_x]: 0.012357895
+[064][orange.Mc_y]: 0.08827355
+[064][orange.Mc_q2]: 110.39654
+[064][orange.Mc_x_cr]: 0.012357895
+[064][orange.Mc_q2_cr]: 110.39654
+[064][orange.Sierror]: 0
+[064][orange.Sincand]: 1
+[064][orange.Siprob]: 0.9992259
+[064][orange.Sipos]: [-14.929377 -61.117794 -153.03]
+[064][orange.Sipt]: 10.518659
+[064][orange.Sidca]: 0.26349965
+[064][orange.Sitrkp]: 20.188404
+[064][orange.Siein]: 26.989042
+[064][orange.Sienin]: 0.1450181
+[064][orange.Zvtx]: 0.7878571
+[064][orange.Sith]: 2.7495062
+[064][orange.Siecorr]: [26.672197 27.5273 27.5273]
+[064][orange.Sizuhmom]: [4.260668 11.830099 114.363205 123.39482]
+[064][orange.Sicchmom]: [3.2254138 12.471061 115.62794 121.90105]
+[064][orange.Siccempz]: 6.273098
+[064][orange.Sixel]: 0.029047113
+[064][orange.Siq2el]: 115.14248
+[064][orange.Siyel]: 0.03908459
+[064][orange.Sixjb]: 0.011378336
+[064][orange.Siq2jb]: 189.08716
+[064][orange.Siyjb]: 0.1638537
+[064][orange.Sixda]: 0.00828255
+[064][orange.Siq2da]: 104.86696
+[064][orange.Siyda]: 0.12483823
+[065][orange.Evtake_iwant]: 1
+[065][orange.Mc_x]: 0.009466912
+[065][orange.Mc_y]: 0.7826392
+[065][orange.Mc_q2]: 749.8084
+[065][orange.Mc_x_cr]: 0.009466912
+[065][orange.Mc_q2_cr]: 749.8085
+[065][orange.Sierror]: 0
+[065][orange.Sincand]: 1
+[065][orange.Siprob]: 0.99733734
+[065][orange.Sipos]: [-114.25708 52.32508 -3.8060179]
+[065][orange.Sipt]: 12.57755
+[065][orange.Sidca]: 1.57422
+[065][orange.Sitrkp]: 13.54323
+[065][orange.Siein]: 12.390971
+[065][orange.Sienin]: 0
+[065][orange.Zvtx]: -10.94987
+[065][orange.Sith]: 1.5146953
+[065][orange.Siecorr]: [13.078431 12.533426 12.597369]
+[065][orange.Sizuhmom]: [11.170138 -2.2342076 220.51228 256.71005]
+[065][orange.Sicchmom]: [10.374489 -1.9672062 219.43408 255.2757]
+[065][orange.Siccempz]: 35.841606
+[065][orange.Sixel]: 0.009219122
+[065][orange.Siq2el]: 733.3013
+[065][orange.Siyel]: 0.7842704
+[065][orange.Sixjb]: 0.005675321
+[065][orange.Siq2jb]: 377.99847
+[065][orange.Siyjb]: 0.6567085
+[065][orange.Sixda]: 0.009971565
+[065][orange.Siq2da]: 779.4278
+[065][orange.Siyda]: 0.77070045
+[066][orange.Evtake_iwant]: 1
+[066][orange.Mc_x]: 0.009806418
+[066][orange.Mc_y]: 0.13235308
+[066][orange.Mc_q2]: 131.34842
+[066][orange.Mc_x_cr]: 0.009806418
+[066][orange.Mc_q2_cr]: 131.34842
+[066][orange.Sierror]: 0
+[066][orange.Sincand]: 1
+[066][orange.Siprob]: 0.99927866
+[066][orange.Sipos]: [69.81597 20.37103 -153.03]
+[066][orange.Sipt]: 10.060474
+[066][orange.Sidca]: 0.8648324
+[066][orange.Sitrkp]: 11.736059
+[066][orange.Siein]: 22.128998
+[066][orange.Sienin]: 0
+[066][orange.Zvtx]: -4.678233
+[066][orange.Sith]: 2.6955013
+[066][orange.Siecorr]: [21.8815 23.318218 23.318218]
+[066][orange.Sizuhmom]: [-11.564851 -3.4426348 96.466255 104.99909]
+[066][orange.Sicchmom]: [-9.914708 -5.803659 93.097626 100.26675]
+[066][orange.Siccempz]: 7.1691265
+[066][orange.Sixel]: 0.006349756
+[066][orange.Siq2el]: 125.778984
+[066][orange.Siyel]: 0.1953098
+[066][orange.Sixjb]: 0.010971996
+[066][orange.Siq2jb]: 172.26494
+[066][orange.Siyjb]: 0.15480474
+[066][orange.Sixda]: 0.009608497
+[066][orange.Siq2da]: 134.7016
+[066][orange.Siyda]: 0.13822618
+[067][orange.Evtake_iwant]: 1
+[067][orange.Mc_x]: 0.011639144
+[067][orange.Mc_y]: 0.6770985
+[067][orange.Mc_q2]: 797.54156
+[067][orange.Mc_x_cr]: 0.012709348
+[067][orange.Mc_q2_cr]: 845.7462
+[067][orange.Sierror]: 0
+[067][orange.Sincand]: 2
+[067][orange.Siprob]: 0.9949864
+[067][orange.Sipos]: [46.812073 116.624275 -11.919996]
+[067][orange.Sipt]: 17.847088
+[067][orange.Sidca]: 1.8796847
+[067][orange.Sitrkp]: 15.246511
+[067][orange.Siein]: 16.030014
+[067][orange.Sienin]: 0
+[067][orange.Zvtx]: 1.5436257
+[067][orange.Sith]: 1.6782832
+[067][orange.Siecorr]: [16.853811 17.646492 17.950684]
+[067][orange.Sizuhmom]: [-5.88129 -17.416208 37.77951 76.36944]
+[067][orange.Sicchmom]: [-4.185046 -18.84879 40.110275 74.97476]
+[067][orange.Siccempz]: 34.86448
+[067][orange.Sixel]: 0.013620962
+[067][orange.Siq2el]: 883.2943
+[067][orange.Siyel]: 0.639397
+[067][orange.Sixjb]: 0.015868971
+[067][orange.Siq2jb]: 1126.7837
+[067][orange.Siyjb]: 0.7001076
+[067][orange.Sixda]: 0.012812955
+[067][orange.Siq2da]: 849.059
+[067][orange.Siyda]: 0.65337354
+[068][orange.Evtake_iwant]: 2
+[068][orange.Mc_x]: 0.0034811767
+[068][orange.Mc_y]: 0.2838852
+[068][orange.Mc_q2]: 100.01134
+[068][orange.Mc_x_cr]: 0.0034811771
+[068][orange.Mc_q2_cr]: 100.01135
+[068][orange.Sierror]: 0
+[068][orange.Sincand]: 1
+[068][orange.Siprob]: 0.9717289
+[068][orange.Sipos]: [9.611102 67.30172 -153.03]
+[068][orange.Sipt]: 6.3598223
+[068][orange.Sidca]: 1.9863226
+[068][orange.Sitrkp]: 8.7275715
+[068][orange.Siein]: 13.969957
+[068][orange.Sienin]: 0
+[068][orange.Zvtx]: -6.5220475
+[068][orange.Sith]: 2.7098258
+[068][orange.Siecorr]: [14.227039 15.197572 15.197572]
+[068][orange.Sizuhmom]: [-1.0902478 -12.072569 82.72918 97.03867]
+[068][orange.Sicchmom]: [-0.441866 -11.784817 80.14546 93.49827]
+[068][orange.Siccempz]: 13.352804
+[068][orange.Sixel]: 0.0015995983
+[068][orange.Siq2el]: 76.87672
+[068][orange.Siyel]: 0.47386742
+[068][orange.Sixjb]: 0.007537408
+[068][orange.Siq2jb]: 198.45595
+[068][orange.Siyjb]: 0.2596062
+[068][orange.Sixda]: 0.0055650757
+[068][orange.Siq2da]: 116.06856
+[068][orange.Siyda]: 0.2056442
+[069][orange.Evtake_iwant]: 1
+[069][orange.Mc_x]: 0.07879663
+[069][orange.Mc_y]: 0.41535115
+[069][orange.Mc_q2]: 3312.1003
+[069][orange.Mc_x_cr]: 0.07879663
+[069][orange.Mc_q2_cr]: 3312.1006
+[069][orange.Sierror]: 0
+[069][orange.Sincand]: 1
+[069][orange.Siprob]: 0.9981877
+[069][orange.Sipos]: [-111.217606 -58.50845 39.546196]
+[069][orange.Sipt]: 37.5165
+[069][orange.Sidca]: 0.3912234
+[069][orange.Sitrkp]: 50.247105
+[069][orange.Siein]: 35.42304
+[069][orange.Sienin]: 0
+[069][orange.Zvtx]: -0.8644429
+[069][orange.Sith]: 1.263548
+[069][orange.Siecorr]: [36.61103 40.01724 39.359737]
+[069][orange.Sizuhmom]: [33.365936 19.38566 65.57649 88.4633]
+[069][orange.Sicchmom]: [33.56431 19.653591 66.08994 87.10906]
+[069][orange.Siccempz]: 21.019121
+[069][orange.Sixel]: 0.055511594
+[069][orange.Siq2el]: 2825.6482
+[069][orange.Siyel]: 0.50188863
+[069][orange.Sixjb]: 0.060467727
+[069][orange.Siq2jb]: 2546.4006
+[069][orange.Siyjb]: 0.4152179
+[069][orange.Sixda]: 0.06901653
+[069][orange.Siq2da]: 3133.3699
+[069][orange.Siyda]: 0.44764274
+[070][orange.Evtake_iwant]: 1
+[070][orange.Mc_x]: 0.0046625277
+[070][orange.Mc_y]: 0.21465252
+[070][orange.Mc_q2]: 101.283295
+[070][orange.Mc_x_cr]: 0.00478292
+[070][orange.Mc_q2_cr]: 100.56889
+[070][orange.Sierror]: 0
+[070][orange.Sincand]: 1
+[070][orange.Siprob]: 0.99938357
+[070][orange.Sipos]: [-44.146484 -47.632076 -153.03]
+[070][orange.Sipt]: 9.161852
+[070][orange.Sidca]: 0.6550814
+[070][orange.Sitrkp]: 23.755781
+[070][orange.Siein]: 22.153975
+[070][orange.Sienin]: 0
+[070][orange.Zvtx]: 1.2070435
+[070][orange.Sith]: 2.7352912
+[070][orange.Siecorr]: [22.2672 23.18197 23.18197]
+[070][orange.Sizuhmom]: [5.4975777 9.740634 101.464134 115.755264]
+[070][orange.Sicchmom]: [5.4754286 6.1055775 104.109055 109.61128]
+[070][orange.Siccempz]: 5.5022173
+[070][orange.Sixel]: 0.0053118803
+[070][orange.Siq2el]: 104.02641
+[070][orange.Siyel]: 0.19309379
+[070][orange.Sixjb]: 0.006422828
+[070][orange.Siq2jb]: 168.89262
+[070][orange.Siyjb]: 0.25927305
+[070][orange.Sixda]: 0.0048295897
+[070][orange.Siq2da]: 102.058426
+[070][orange.Siyda]: 0.20835869
