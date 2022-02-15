@@ -104,7 +104,7 @@ func (a *taxis) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(a.RVersion())
+	hdr := w.WriteHeader(a.Class(), a.RVersion())
 
 	w.WriteObject(&a.Named)
 	w.WriteObject(&a.attaxis)
@@ -124,7 +124,7 @@ func (a *taxis) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteObjectAny(a.modlabs)
 	}
 
-	return w.SetByteCount(pos, a.Class())
+	return w.SetHeader(hdr)
 }
 
 func (a *taxis) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -132,11 +132,13 @@ func (a *taxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(a.Class())
+	hdr := r.ReadHeader(a.Class())
+	if hdr.Vers > rvers.Axis {
+		panic(fmt.Errorf("rhist: invalid TAxis version=%d > %d", hdr.Vers, rvers.Axis))
+	}
 	const minVers = 6
-	if vers < minVers {
-		return fmt.Errorf("rhist: TAxis version too old (%d<%d)", vers, minVers)
+	if hdr.Vers < minVers {
+		return fmt.Errorf("rhist: TAxis version too old (%d<%d)", hdr.Vers, minVers)
 	}
 
 	r.ReadObject(&a.Named)
@@ -148,14 +150,14 @@ func (a *taxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 	r.ReadObject(&a.xbins)
 	a.first = int(r.ReadI32())
 	a.last = int(r.ReadI32())
-	if vers >= 9 {
+	if hdr.Vers >= 9 {
 		a.bits2 = r.ReadU16()
 	}
 	a.time = r.ReadBool()
 	a.tfmt = r.ReadString()
 
 	a.labels = nil
-	if vers >= 9 {
+	if hdr.Vers >= 9 {
 		labels := r.ReadObjectAny()
 		if labels != nil {
 			a.labels = labels.(*rcont.HashList)
@@ -163,14 +165,14 @@ func (a *taxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	a.modlabs = nil
-	if vers >= 10 {
+	if hdr.Vers >= 10 {
 		modlabs := r.ReadObjectAny()
 		if modlabs != nil {
 			a.modlabs = modlabs.(*rcont.List)
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, a.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

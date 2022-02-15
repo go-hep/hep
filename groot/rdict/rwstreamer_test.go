@@ -4052,11 +4052,11 @@ func (p *PtrToAny_T) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(p.RVersion())
+	hdr := w.WriteHeader(p.Class(), p.RVersion())
 	w.WriteObjectAny(p.Pos)
 	w.WriteObjectAny(p.Nil)
 
-	return w.SetByteCount(pos, p.Class())
+	return w.SetHeader(hdr)
 }
 
 func (p *PtrToAny_T) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -4064,10 +4064,9 @@ func (p *PtrToAny_T) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(p.Class())
-	if vers != p.RVersion() {
-		return fmt.Errorf("invalid particle version: got=%d, want=%d", vers, p.RVersion())
+	hdr := r.ReadHeader(p.Class())
+	if hdr.Vers != p.RVersion() {
+		return fmt.Errorf("invalid particle version: got=%d, want=%d", hdr.Vers, p.RVersion())
 	}
 
 	p.Pos = nil
@@ -4080,7 +4079,7 @@ func (p *PtrToAny_T) UnmarshalROOT(r *rbytes.RBuffer) error {
 		p.Nil = obj.(*rcont.ArrayD)
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, p.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

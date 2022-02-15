@@ -16,6 +16,14 @@ import (
 	"go-hep.org/x/hep/groot/root"
 )
 
+// Header represents a type header in a ROOT buffer.
+type Header struct {
+	Name string // name of the type being guarded by this header.
+	Vers int16  // version of the type being guarded by this header.
+	Pos  int64  // position of the type in the ROOT buffer.
+	Len  int32  // length of the value in the ROOT buffer.
+}
+
 // RVersioner is the interface implemented by an object that
 // can tell the ROOT system what is its current version.
 type RVersioner interface {

@@ -46,8 +46,8 @@ func (w *WBuffer) WriteStdVectorU16(sli []uint16) {
 	if w.err != nil {
 		return
 	}
-	const typename = "vector<uint16>"
-	pos := w.WriteVersion(rvers.StreamerInfo)
+
+	hdr := w.WriteHeader("vector<uint16>", rvers.StreamerInfo)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 2)
 
@@ -61,7 +61,10 @@ func (w *WBuffer) WriteStdVectorU16(sli []uint16) {
 	}
 	w.w.c += 2 * len(sli)
 
-	_, _ = w.SetByteCount(pos, typename)
+	if w.err != nil {
+		return
+	}
+	_, w.err = w.SetHeader(hdr)
 }
 
 func (w *WBuffer) WriteArrayU32(sli []uint32) {
@@ -97,8 +100,8 @@ func (w *WBuffer) WriteStdVectorU32(sli []uint32) {
 	if w.err != nil {
 		return
 	}
-	const typename = "vector<uint32>"
-	pos := w.WriteVersion(rvers.StreamerInfo)
+
+	hdr := w.WriteHeader("vector<uint32>", rvers.StreamerInfo)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 4)
 
@@ -112,7 +115,10 @@ func (w *WBuffer) WriteStdVectorU32(sli []uint32) {
 	}
 	w.w.c += 4 * len(sli)
 
-	_, _ = w.SetByteCount(pos, typename)
+	if w.err != nil {
+		return
+	}
+	_, w.err = w.SetHeader(hdr)
 }
 
 func (w *WBuffer) WriteArrayU64(sli []uint64) {
@@ -148,8 +154,8 @@ func (w *WBuffer) WriteStdVectorU64(sli []uint64) {
 	if w.err != nil {
 		return
 	}
-	const typename = "vector<uint64>"
-	pos := w.WriteVersion(rvers.StreamerInfo)
+
+	hdr := w.WriteHeader("vector<uint64>", rvers.StreamerInfo)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 8)
 
@@ -163,7 +169,10 @@ func (w *WBuffer) WriteStdVectorU64(sli []uint64) {
 	}
 	w.w.c += 8 * len(sli)
 
-	_, _ = w.SetByteCount(pos, typename)
+	if w.err != nil {
+		return
+	}
+	_, w.err = w.SetHeader(hdr)
 }
 
 func (w *WBuffer) WriteArrayI16(sli []int16) {
@@ -197,8 +206,8 @@ func (w *WBuffer) WriteStdVectorI16(sli []int16) {
 	if w.err != nil {
 		return
 	}
-	const typename = "vector<int16>"
-	pos := w.WriteVersion(rvers.StreamerInfo)
+
+	hdr := w.WriteHeader("vector<int16>", rvers.StreamerInfo)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 2)
 
@@ -211,7 +220,10 @@ func (w *WBuffer) WriteStdVectorI16(sli []int16) {
 	}
 	w.w.c += 2 * len(sli)
 
-	_, _ = w.SetByteCount(pos, typename)
+	if w.err != nil {
+		return
+	}
+	_, w.err = w.SetHeader(hdr)
 }
 
 func (w *WBuffer) WriteArrayI32(sli []int32) {
@@ -245,8 +257,8 @@ func (w *WBuffer) WriteStdVectorI32(sli []int32) {
 	if w.err != nil {
 		return
 	}
-	const typename = "vector<int32>"
-	pos := w.WriteVersion(rvers.StreamerInfo)
+
+	hdr := w.WriteHeader("vector<int32>", rvers.StreamerInfo)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 4)
 
@@ -259,7 +271,10 @@ func (w *WBuffer) WriteStdVectorI32(sli []int32) {
 	}
 	w.w.c += 4 * len(sli)
 
-	_, _ = w.SetByteCount(pos, typename)
+	if w.err != nil {
+		return
+	}
+	_, w.err = w.SetHeader(hdr)
 }
 
 func (w *WBuffer) WriteArrayI64(sli []int64) {
@@ -293,8 +308,8 @@ func (w *WBuffer) WriteStdVectorI64(sli []int64) {
 	if w.err != nil {
 		return
 	}
-	const typename = "vector<int64>"
-	pos := w.WriteVersion(rvers.StreamerInfo)
+
+	hdr := w.WriteHeader("vector<int64>", rvers.StreamerInfo)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 8)
 
@@ -307,7 +322,10 @@ func (w *WBuffer) WriteStdVectorI64(sli []int64) {
 	}
 	w.w.c += 8 * len(sli)
 
-	_, _ = w.SetByteCount(pos, typename)
+	if w.err != nil {
+		return
+	}
+	_, w.err = w.SetHeader(hdr)
 }
 
 func (w *WBuffer) WriteArrayF32(sli []float32) {
@@ -341,8 +359,8 @@ func (w *WBuffer) WriteStdVectorF32(sli []float32) {
 	if w.err != nil {
 		return
 	}
-	const typename = "vector<float32>"
-	pos := w.WriteVersion(rvers.StreamerInfo)
+
+	hdr := w.WriteHeader("vector<float32>", rvers.StreamerInfo)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 4)
 
@@ -355,7 +373,10 @@ func (w *WBuffer) WriteStdVectorF32(sli []float32) {
 	}
 	w.w.c += 4 * len(sli)
 
-	_, _ = w.SetByteCount(pos, typename)
+	if w.err != nil {
+		return
+	}
+	_, w.err = w.SetHeader(hdr)
 }
 
 func (w *WBuffer) WriteArrayF64(sli []float64) {
@@ -389,8 +410,8 @@ func (w *WBuffer) WriteStdVectorF64(sli []float64) {
 	if w.err != nil {
 		return
 	}
-	const typename = "vector<float64>"
-	pos := w.WriteVersion(rvers.StreamerInfo)
+
+	hdr := w.WriteHeader("vector<float64>", rvers.StreamerInfo)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 8)
 
@@ -403,5 +424,8 @@ func (w *WBuffer) WriteStdVectorF64(sli []float64) {
 	}
 	w.w.c += 8 * len(sli)
 
-	_, _ = w.SetByteCount(pos, typename)
+	if w.err != nil {
+		return
+	}
+	_, w.err = w.SetHeader(hdr)
 }

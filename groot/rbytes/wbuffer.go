@@ -129,29 +129,35 @@ func (w *WBuffer) Write(p []byte) (int, error) {
 	return n, w.err
 }
 
-func (w *WBuffer) SetByteCount(beg int64, class string) (int, error) {
+func (w *WBuffer) WriteHeader(typename string, vers int16) Header {
+	hdr := Header{
+		Name: typename,
+		Pos:  w.Pos(),
+		Vers: vers,
+	}
+	if w.err != nil {
+		return hdr
+	}
+
+	w.w.grow(6)
+	w.writeU32(0) // byte-count placeholder
+	w.writeU16(uint16(vers))
+
+	return hdr
+}
+
+func (w *WBuffer) SetHeader(hdr Header) (int, error) {
 	if w.err != nil {
 		return 0, w.err
 	}
 
 	cur := w.Pos()
-	bcnt := cur - beg - 4
-	w.setPos(beg)
-	w.WriteU32(uint32(bcnt | kByteCountMask))
+	cnt := cur - hdr.Pos - 4
+	w.setPos(hdr.Pos)
+	w.WriteU32(uint32(cnt | kByteCountMask))
 	w.setPos(cur)
 
-	return int(bcnt + 4), w.err
-}
-
-func (w *WBuffer) WriteVersion(vers int16) int64 {
-	pos := w.Pos()
-	if w.err != nil {
-		return pos
-	}
-	w.w.grow(6)
-	w.writeU32(0) // byte-count placeholder
-	w.writeU16(uint16(vers))
-	return pos
+	return int(cnt + 4), w.err
 }
 
 func (w *WBuffer) WriteObject(obj Marshaler) {
@@ -416,9 +422,10 @@ func (w *WBuffer) WriteStdString(v string) {
 	if w.err != nil {
 		return
 	}
-	pos := w.WriteVersion(rvers.StreamerInfo)
+
+	hdr := w.WriteHeader("string", rvers.StreamerInfo)
 	w.WriteString(v)
-	_, err := w.SetByteCount(pos, "string")
+	_, err := w.SetHeader(hdr)
 	if err != nil {
 		w.SetErr(err)
 	}
@@ -555,13 +562,11 @@ func (w *WBuffer) WriteArrayString(v []string) {
 }
 
 func (w *WBuffer) WriteStdVectorStrs(v []string) {
-	const typename = "vector<string>"
 	if w.err != nil {
 		return
 	}
-	var (
-		pos = w.WriteVersion(rvers.StreamerInfo)
-	)
+
+	hdr := w.WriteHeader("vector<string>", rvers.StreamerInfo)
 	w.WriteI32(int32(len(v)))
 
 	n := 0
@@ -573,7 +578,7 @@ func (w *WBuffer) WriteStdVectorStrs(v []string) {
 	for _, v := range v {
 		w.writeString(v)
 	}
-	_, _ = w.SetByteCount(pos, typename)
+	_, _ = w.SetHeader(hdr)
 }
 
 func (w *WBuffer) WriteStdBitset(v []uint8) {

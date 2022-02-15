@@ -38,11 +38,10 @@ func (a *AttFill) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(a.RVersion())
+	hdr := w.WriteHeader(a.Class(), a.RVersion())
 	w.WriteI16(a.Color)
 	w.WriteI16(a.Style)
-	return w.SetByteCount(pos, a.Class())
-
+	return w.SetHeader(hdr)
 }
 
 func (a *AttFill) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -50,13 +49,12 @@ func (a *AttFill) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion(a.Class())
+	hdr := r.ReadHeader(a.Class())
 
 	a.Color = r.ReadI16()
 	a.Style = r.ReadI16()
-	r.CheckByteCount(pos, bcnt, start, a.Class())
 
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

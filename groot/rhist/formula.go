@@ -59,7 +59,7 @@ func (f *Formula) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(f.RVersion())
+	hdr := w.WriteHeader(f.Class(), f.RVersion())
 	w.WriteObject(&f.named)
 	w.WriteStdVectorF64(f.clingParams)
 	w.WriteBool(f.allParamsSet)
@@ -69,7 +69,7 @@ func (f *Formula) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	writeStdVectorObjP(w, f.linearParts)
 	w.WriteBool(f.vectorized)
 
-	return w.SetByteCount(pos, f.Class())
+	return w.SetHeader(hdr)
 }
 
 func (f *Formula) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -77,15 +77,14 @@ func (f *Formula) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(f.Class())
-	if vers > rvers.Formula {
-		panic(fmt.Errorf("rhist: invalid TFormula version=%d > %d", vers, rvers.Formula))
+	hdr := r.ReadHeader(f.Class())
+	if hdr.Vers > rvers.Formula {
+		panic(fmt.Errorf("rhist: invalid TFormula version=%d > %d", hdr.Vers, rvers.Formula))
 	}
 
-	if vers < 12 || vers > 13 {
+	if hdr.Vers < 12 || hdr.Vers > 13 {
 		// tested with v12 and v13
-		panic(fmt.Errorf("rhist: too old TFormula version=%d < 12", vers))
+		panic(fmt.Errorf("rhist: too old TFormula version=%d < 12", hdr.Vers))
 	}
 
 	r.ReadObject(&f.named)
@@ -98,7 +97,7 @@ func (f *Formula) UnmarshalROOT(r *rbytes.RBuffer) error {
 	f.linearParts = readStdVectorObjP(r)
 	f.vectorized = r.ReadBool()
 
-	r.CheckByteCount(pos, bcnt, beg, f.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -110,12 +109,11 @@ func readMapStringInt(r *rbytes.RBuffer) map[string]int32 {
 	if r.Err() != nil {
 		return nil
 	}
-	const typename = "map<TString,int,TFormulaParamOrder>"
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
+
+	hdr := r.ReadHeader("map<TString,int,TFormulaParamOrder>")
+	if hdr.Vers != rvers.StreamerInfo {
 		r.SetErr(fmt.Errorf("rbytes: invalid %s version: got=%d, want=%d",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		))
 		return nil
 	}
@@ -126,7 +124,8 @@ func readMapStringInt(r *rbytes.RBuffer) map[string]int32 {
 		v := r.ReadI32()
 		o[k] = v
 	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
+
+	r.CheckHeader(hdr)
 	return o
 }
 
@@ -134,12 +133,11 @@ func readStdVectorObjP(r *rbytes.RBuffer) []root.Object {
 	if r.Err() != nil {
 		return nil
 	}
-	const typename = "vector<TObject*>"
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
+
+	hdr := r.ReadHeader("vector<TObject*>")
+	if hdr.Vers != rvers.StreamerInfo {
 		r.SetErr(fmt.Errorf("rbytes: invalid %s version: got=%d, want=%d",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		))
 		return nil
 	}
@@ -148,7 +146,8 @@ func readStdVectorObjP(r *rbytes.RBuffer) []root.Object {
 	for i := range o {
 		o[i] = r.ReadObjectAny()
 	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
+
+	r.CheckHeader(hdr)
 	return o
 }
 
@@ -157,14 +156,14 @@ func writeMapStringInt(w *rbytes.WBuffer, m map[string]int32) {
 		return
 	}
 	const typename = "map<TString,int,TFormulaParamOrder>"
-	pos := w.WriteVersion(rvers.StreamerInfo)
+	hdr := w.WriteHeader(typename, rvers.StreamerInfo)
 	w.WriteI32(int32(len(m)))
 	// FIXME(sbinet): write in correct order?
 	for k, v := range m {
 		w.WriteString(k)
 		w.WriteI32(v)
 	}
-	_, _ = w.SetByteCount(pos, typename)
+	_, _ = w.SetHeader(hdr)
 }
 
 func writeStdVectorObjP(w *rbytes.WBuffer, vs []root.Object) {
@@ -172,12 +171,12 @@ func writeStdVectorObjP(w *rbytes.WBuffer, vs []root.Object) {
 		return
 	}
 	const typename = "vector<TObject*>"
-	pos := w.WriteVersion(rvers.StreamerInfo)
+	hdr := w.WriteHeader(typename, rvers.StreamerInfo)
 	w.WriteI32(int32(len(vs)))
 	for i := range vs {
 		w.WriteObjectAny(vs[i])
 	}
-	_, _ = w.SetByteCount(pos, typename)
+	_, _ = w.SetHeader(hdr)
 }
 
 func init() {

@@ -55,7 +55,7 @@ func (tbl *RefTable) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tbl.RVersion())
+	hdr := w.WriteHeader(tbl.Class(), tbl.RVersion())
 	w.WriteObject(&tbl.obj)
 	w.WriteI32(tbl.size)
 	{
@@ -74,7 +74,7 @@ func (tbl *RefTable) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 	w.WriteStdVectorStrs(tbl.guids)
 
-	return w.SetByteCount(pos, tbl.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tbl *RefTable) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -82,12 +82,13 @@ func (tbl *RefTable) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
+	hdr := r.ReadHeader(tbl.Class())
+	if hdr.Vers > rvers.RefTable {
+		panic(fmt.Errorf("rcont: invalid TRefTable version=%d > %d", hdr.Vers, rvers.RefTable))
+	}
 
-	vers, pos, bcnt := r.ReadVersion(tbl.Class())
-
-	if vers < 3 {
-		return fmt.Errorf("rcont: TRefTable version too old (%d < 3)", vers)
+	if hdr.Vers < 3 {
+		return fmt.Errorf("rcont: TRefTable version too old (%d < 3)", hdr.Vers)
 	}
 
 	r.ReadObject(&tbl.obj)
@@ -108,7 +109,7 @@ func (tbl *RefTable) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 	r.ReadStdVectorStrs(&tbl.guids)
 
-	r.CheckByteCount(pos, bcnt, beg, tbl.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

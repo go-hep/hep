@@ -31,7 +31,7 @@ func (enc *encoder) EncodeROOT(ptr interface{}) error {
 	var (
 		typename = enc.si.Name()
 		typevers = int16(enc.si.ClassVersion())
-		pos      = enc.w.WriteVersion(typevers)
+		hdr      = enc.w.WriteHeader(typename, typevers)
 		err      error
 	)
 
@@ -42,7 +42,7 @@ func (enc *encoder) EncodeROOT(ptr interface{}) error {
 		}
 	}
 
-	_, err = enc.w.SetByteCount(pos, typename)
+	_, err = enc.w.SetHeader(hdr)
 	if err != nil {
 		return fmt.Errorf("rdict: could not set byte count for %q: %w", typename, err)
 	}

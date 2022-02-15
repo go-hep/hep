@@ -47,7 +47,7 @@ func (p2d *Profile2D) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(p2d.RVersion())
+	hdr := w.WriteHeader(p2d.Class(), p2d.RVersion())
 
 	w.WriteObject(&p2d.h2d)
 	w.WriteObject(&p2d.binEntries)
@@ -58,7 +58,7 @@ func (p2d *Profile2D) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteF64(p2d.sumwz2)
 	w.WriteObject(&p2d.binSumw2)
 
-	return w.SetByteCount(pos, p2d.Class())
+	return w.SetHeader(hdr)
 }
 
 // UnmarshalROOT implements rbytes.Unmarshaler
@@ -67,14 +67,13 @@ func (p2d *Profile2D) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(p2d.Class())
-	if vers > rvers.Profile2D {
-		panic(fmt.Errorf("rhist: invalid TProfile2D version=%d > %d", vers, rvers.Profile2D))
+	hdr := r.ReadHeader(p2d.Class())
+	if hdr.Vers > rvers.Profile2D {
+		panic(fmt.Errorf("rhist: invalid TProfile2D version=%d > %d", hdr.Vers, rvers.Profile2D))
 	}
-	if vers < 8 {
+	if hdr.Vers < 8 {
 		// tested with v8.
-		panic(fmt.Errorf("rhist: too old TProfile2D version=%d < 8", vers))
+		panic(fmt.Errorf("rhist: too old TProfile2D version=%d < 8", hdr.Vers))
 	}
 
 	r.ReadObject(&p2d.h2d)
@@ -86,7 +85,7 @@ func (p2d *Profile2D) UnmarshalROOT(r *rbytes.RBuffer) error {
 	p2d.sumwz2 = r.ReadF64()
 	r.ReadObject(&p2d.binSumw2)
 
-	r.CheckByteCount(pos, bcnt, start, p2d.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

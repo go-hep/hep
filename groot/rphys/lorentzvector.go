@@ -54,12 +54,12 @@ func (vec *LorentzVector) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(vec.RVersion())
+	hdr := w.WriteHeader(vec.Class(), vec.RVersion())
 	w.WriteObject(&vec.obj)
 	w.WriteObject(&vec.p)
 	w.WriteF64(vec.e)
 
-	return w.SetByteCount(pos, vec.Class())
+	return w.SetHeader(hdr)
 }
 
 func (vec *LorentzVector) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -67,13 +67,11 @@ func (vec *LorentzVector) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-
-	vers, pos, bcnt := r.ReadVersion(vec.Class())
-	if vers > rvers.LorentzVector {
+	hdr := r.ReadHeader(vec.Class())
+	if hdr.Vers > rvers.LorentzVector {
 		panic(fmt.Errorf(
 			"rphys: invalid %s version=%d > %d",
-			vec.Class(), vers, vec.RVersion(),
+			vec.Class(), hdr.Vers, vec.RVersion(),
 		))
 	}
 
@@ -81,7 +79,7 @@ func (vec *LorentzVector) UnmarshalROOT(r *rbytes.RBuffer) error {
 	r.ReadObject(&vec.p)
 	vec.e = r.ReadF64()
 
-	r.CheckByteCount(pos, bcnt, beg, vec.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

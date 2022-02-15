@@ -48,12 +48,12 @@ func (vec *Vector2) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(vec.RVersion())
+	hdr := w.WriteHeader(vec.Class(), vec.RVersion())
 	w.WriteObject(&vec.obj)
 	w.WriteF64(vec.x)
 	w.WriteF64(vec.y)
 
-	return w.SetByteCount(pos, vec.Class())
+	return w.SetHeader(hdr)
 }
 
 func (vec *Vector2) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -61,24 +61,22 @@ func (vec *Vector2) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-
-	vers, pos, bcnt := r.ReadVersion(vec.Class())
-	if vers > rvers.Vector2 {
+	hdr := r.ReadHeader(vec.Class())
+	if hdr.Vers > rvers.Vector2 {
 		panic(fmt.Errorf(
 			"rphys: invalid %s version=%d > %d",
-			vec.Class(), vers, vec.RVersion(),
+			vec.Class(), hdr.Vers, vec.RVersion(),
 		))
 	}
 
-	if vers != 2 {
+	if hdr.Vers != 2 {
 		r.ReadObject(&vec.obj)
 	}
 
 	vec.x = r.ReadF64()
 	vec.y = r.ReadF64()
 
-	r.CheckByteCount(pos, bcnt, beg, vec.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

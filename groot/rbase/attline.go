@@ -42,12 +42,11 @@ func (a *AttLine) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(a.RVersion())
+	hdr := w.WriteHeader(a.Class(), a.RVersion())
 	w.WriteI16(a.Color)
 	w.WriteI16(a.Style)
 	w.WriteI16(a.Width)
-	return w.SetByteCount(pos, a.Class())
-
+	return w.SetHeader(hdr)
 }
 
 func (a *AttLine) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -55,17 +54,16 @@ func (a *AttLine) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(a.Class())
-	if vers > rvers.AttLine {
-		panic(fmt.Errorf("rbase: invalid attline version=%d > %d", vers, rvers.AttLine))
+	hdr := r.ReadHeader(a.Class())
+	if hdr.Vers > rvers.AttLine {
+		panic(fmt.Errorf("rbase: invalid attline version=%d > %d", hdr.Vers, rvers.AttLine))
 	}
 
 	a.Color = r.ReadI16()
 	a.Style = r.ReadI16()
 	a.Width = r.ReadI16()
-	r.CheckByteCount(pos, bcnt, start, a.Class())
 
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

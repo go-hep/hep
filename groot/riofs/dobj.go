@@ -30,12 +30,11 @@ func (d *dobject) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(d.class)
-	d.rvers = vers
-	d.size = bcnt
-	r.SetPos(beg + int64(bcnt) + 4)
-	r.CheckByteCount(pos, bcnt, beg, d.class)
+	hdr := r.ReadHeader(d.class)
+	d.rvers = hdr.Vers
+	d.size = hdr.Len
+	r.SetPos(hdr.Pos + int64(hdr.Len) + 4)
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

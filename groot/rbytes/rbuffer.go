@@ -95,6 +95,40 @@ func (r *RBuffer) Reset(data []byte, refs map[int64]interface{}, offset uint32, 
 	return r
 }
 
+func (r *RBuffer) ReadHeader(class string) Header {
+	hdr := Header{
+		Name: class,
+		Pos:  r.Pos(),
+	}
+	if r.err != nil {
+		return hdr
+	}
+
+	bcnt := r.ReadU32()
+	if (int64(bcnt) & kByteCountMask) != 0 {
+		hdr.Len = int32(int64(bcnt) & ^kByteCountMask)
+		hdr.Vers = int16(r.ReadU16())
+	} else {
+		// no byte count. rewind and read version
+		r.setPos(int64(hdr.Pos))
+		hdr.Vers = int16(r.ReadU16())
+	}
+
+	if hdr.Vers <= 0 {
+		if hdr.Name != "" && r.sictx != nil {
+			si, err := r.sictx.StreamerInfo(hdr.Name, -1)
+			if err == nil && si.ClassVersion() != int(hdr.Vers) {
+				chksum := r.ReadU32()
+				if si.CheckSum() == int(chksum) {
+					hdr.Vers = int16(si.ClassVersion())
+				}
+			}
+		}
+	}
+
+	return hdr
+}
+
 // StreamerInfo returns the named StreamerInfo.
 // If version is negative, the latest version should be returned.
 func (r *RBuffer) StreamerInfo(name string, version int) (StreamerInfo, error) {
@@ -173,15 +207,14 @@ func (r *RBuffer) ReadStdString() string {
 		return ""
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion("string") // FIXME(sbinet): streamline with RStreamROOT
-	if vers != rvers.StreamerInfo {
-		r.SetErr(fmt.Errorf("rbytes: invalid version for std::string. got=%v, want=%v", vers, rvers.StreamerInfo))
+	hdr := r.ReadHeader("string") // FIXME(sbinet): streamline with RStreamROOT
+	if hdr.Vers != rvers.StreamerInfo {
+		r.SetErr(fmt.Errorf("rbytes: invalid version for std::string. got=%v, want=%v", hdr.Vers, rvers.StreamerInfo))
 		return ""
 	}
 
 	o := r.ReadString()
-	r.CheckByteCount(pos, bcnt, start, "string")
+	r.CheckHeader(hdr)
 
 	return o
 }
@@ -460,47 +493,14 @@ func (r *RBuffer) ReadStdVectorStrs(sli *[]string) {
 	if r.err != nil {
 		return
 	}
-	const typename = "vector<string>"
-	beg := r.Pos()
-	_ /*vers*/, pos, bcnt := r.ReadVersion(typename)
+
+	hdr := r.ReadHeader("vector<string>")
 	n := int(r.ReadI32())
 	*sli = ResizeStr(*sli, n)
 	for i := range *sli {
 		(*sli)[i] = r.ReadString()
 	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
-}
-
-func (r *RBuffer) ReadVersion(class string) (vers int16, pos, n int32) {
-	if r.err != nil {
-		return
-	}
-
-	pos = int32(r.Pos())
-
-	bcnt := r.ReadU32()
-	if (int64(bcnt) & kByteCountMask) != 0 {
-		n = int32(int64(bcnt) & ^kByteCountMask)
-		vers = int16(r.ReadU16())
-	} else {
-		// no byte count. rewind and read version
-		r.setPos(int64(pos))
-		vers = int16(r.ReadU16())
-	}
-
-	if vers <= 0 {
-		if class != "" && r.sictx != nil {
-			si, err := r.sictx.StreamerInfo(class, -1)
-			if err == nil && si.ClassVersion() != int(vers) {
-				chksum := r.ReadU32()
-				if si.CheckSum() == int(chksum) {
-					vers = int16(si.ClassVersion())
-				}
-			}
-		}
-	}
-
-	return vers, pos, n
+	r.CheckHeader(hdr)
 }
 
 func (r *RBuffer) SkipVersion(class string) {
@@ -533,17 +533,17 @@ func (r *RBuffer) SkipVersion(class string) {
 //	return got == want
 //}
 
-func (r *RBuffer) CheckByteCount(pos, count int32, start int64, class string) {
+func (r *RBuffer) CheckHeader(hdr Header) {
 	if r.err != nil {
 		return
 	}
 
-	if count <= 0 {
+	if hdr.Len <= 0 {
 		return
 	}
 
 	var (
-		want = int64(pos) + int64(count) + 4
+		want = hdr.Pos + int64(hdr.Len) + 4
 		got  = r.Pos()
 	)
 
@@ -552,14 +552,14 @@ func (r *RBuffer) CheckByteCount(pos, count int32, start int64, class string) {
 		return
 
 	case got > want:
-		r.err = fmt.Errorf("rbytes: read too many bytes. got=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
-			got, want, pos, count, start, class,
+		r.err = fmt.Errorf("rbytes: read too many bytes. got=%d, want=%d (pos=%d count=%d) [class=%q]",
+			got, want, hdr.Pos, hdr.Len, hdr.Name,
 		)
 		return
 
 	case got < want:
-		r.err = fmt.Errorf("rbytes: read too few bytes. got=%d, want=%d (pos=%d count=%d start=%d) [class=%q]",
-			got, want, pos, count, start, class,
+		r.err = fmt.Errorf("rbytes: read too few bytes. got=%d, want=%d (pos=%d count=%d) [class=%q]",
+			got, want, hdr.Pos, hdr.Len, hdr.Name,
 		)
 		return
 	}

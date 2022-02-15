@@ -147,7 +147,7 @@ func (o *%[1]s) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(o.RVersion())
+	hdr := w.WriteHeader(o.Class(), o.RVersion())
 
 `,
 		typeName,
@@ -160,7 +160,7 @@ func (o *%[1]s) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		g.genMarshalType(ft.Type(), n)
 	}
 
-	g.printf("\n\treturn w.SetByteCount(pos, o.Class())\n}\n\n")
+	g.printf("\n\treturn w.SetHeader(hdr)\n}\n\n")
 }
 
 // func (g *genStreamer) genUnmarshal(t types.Type, typeName string) {

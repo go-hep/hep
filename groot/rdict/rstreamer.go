@@ -782,35 +782,32 @@ func rstreamBasicSlice(sli ropFunc) ropFunc {
 	}
 }
 
-func readVersion(r *rbytes.RBuffer, typename string) (beg int64, pos int32, bcnt int32) {
+func rstreamHeader(r *rbytes.RBuffer, typename string) rbytes.Header {
 	if _, ok := rmeta.CxxBuiltins[typename]; ok && typename != "string" {
-		return -1, -1, -1
+		return rbytes.Header{Pos: -1}
 	}
-	beg = r.Pos()
-	_, pos, bcnt = r.ReadVersion(typename)
-	return beg, pos, bcnt
+	return r.ReadHeader(typename)
 }
 
-func rcheckByteCount(r *rbytes.RBuffer, pos int32, bcnt int32, beg int64, typename string) error {
-	if pos < 0 {
+func rcheckHeader(r *rbytes.RBuffer, hdr rbytes.Header) error {
+	if hdr.Pos < 0 {
 		return nil
 	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
 func rstreamType(typename string, rop ropFunc) ropFunc {
 	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
-		beg := r.Pos()
-		typevers, pos, bcnt := r.ReadVersion(typename)
+		hdr := r.ReadHeader(typename)
 		err := rop(r, recv, cfg)
 		if err != nil {
 			return fmt.Errorf(
 				"rdict: could not read (type=%q, vers=%d): %w",
-				typename, typevers, err,
+				hdr.Name, hdr.Vers, err,
 			)
 		}
-		r.CheckByteCount(pos, bcnt, beg, typename)
+		r.CheckHeader(hdr)
 		return r.Err()
 	}
 }
@@ -854,9 +851,8 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 	}
 	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
 		//typevers = int16(cfg.si.ClassVersion())
-		beg := r.Pos()
-		vers, pos, bcnt := r.ReadVersion(typename)
-		mbrwise := vers&rbytes.StreamedMemberWise != 0
+		hdr := r.ReadHeader(typename)
+		mbrwise := hdr.Vers&rbytes.StreamedMemberWise != 0
 		// if mbrwise {
 		// 	vers &= ^rbytes.StreamedMemberWise
 		// }
@@ -878,7 +874,7 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 		keys := reflect.New(keyT).Elem()
 		keys.Set(reflect.AppendSlice(keys, reflect.MakeSlice(keyT, n, n)))
 		if n > 0 {
-			beg, pos, bcnt := readVersion(r, kname)
+			hdr := rstreamHeader(r, kname)
 			for i := 0; i < n; i++ {
 				err := krop(r, keys.Index(i).Addr().Interface(), nil)
 				if err != nil {
@@ -888,7 +884,7 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 					)
 				}
 			}
-			err := rcheckByteCount(r, pos, bcnt, beg, kname)
+			err := rcheckHeader(r, hdr)
 			if err != nil {
 				return err
 			}
@@ -897,7 +893,7 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 		vals := reflect.New(valT).Elem()
 		vals.Set(reflect.AppendSlice(vals, reflect.MakeSlice(valT, n, n)))
 		if n > 0 {
-			beg, pos, bcnt := readVersion(r, vname)
+			hdr := rstreamHeader(r, vname)
 			for i := 0; i < n; i++ {
 				err := vrop(r, vals.Index(i).Addr().Interface(), nil)
 				if err != nil {
@@ -907,7 +903,7 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 					)
 				}
 			}
-			err := rcheckByteCount(r, pos, bcnt, beg, vname)
+			err := rcheckHeader(r, hdr)
 			if err != nil {
 				return err
 			}
@@ -920,7 +916,7 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 			rv.SetMapIndex(keys.Index(i), vals.Index(i))
 		}
 
-		r.CheckByteCount(pos, bcnt, beg, typename)
+		r.CheckHeader(hdr)
 		return r.Err()
 	}
 }
@@ -1093,12 +1089,11 @@ func rstreamStrs(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 
 func rstreamCat(typename string, typevers int16, rops []rstreamer) ropFunc {
 	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
-		beg := r.Pos()
-		vers, pos, bcnt := r.ReadVersion(typename)
-		if vers != typevers {
+		hdr := r.ReadHeader(typename)
+		if hdr.Vers != typevers {
 			r.SetErr(fmt.Errorf(
 				"rdict: inconsistent ROOT version type=%q (got=%d, want=%d)",
-				typename, vers, typevers,
+				hdr.Name, hdr.Vers, typevers,
 			))
 			return r.Err()
 		}
@@ -1113,7 +1108,7 @@ func rstreamCat(typename string, typevers int16, rops []rstreamer) ropFunc {
 				)
 			}
 		}
-		r.CheckByteCount(pos, bcnt, beg, typename)
+		r.CheckHeader(hdr)
 		return r.Err()
 	}
 }
@@ -1144,16 +1139,15 @@ func rstreamStdString(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) 
 // 			return err
 // 		}
 //
-// 		beg := r.Pos()
-// 		vers, pos, bcnt := r.ReadVersion(oclass)
+// 		hdr := r.ReadHeader(oclass)
 // 		switch {
-// 		case vers&rbytes.StreamedMemberWise != 0:
-// 			err = mbrwise(r, cfg.adjust(recv), cfg, vers)
+// 		case hdr.Vers&rbytes.StreamedMemberWise != 0:
+// 			err = mbrwise(r, cfg.adjust(recv), cfg, hdr.Vers)
 // 		default:
-// 			err = objwise(r, cfg.adjust(recv), cfg, vers, int32(beg))
+// 			err = objwise(r, cfg.adjust(recv), cfg, hdr.Vers, int32(beg))
 // 		}
 //
-// 		r.CheckByteCount(pos, bcnt, beg, oclass)
+// 		r.CheckHeader(hdr)
 // 		return err
 // 	}
 // }

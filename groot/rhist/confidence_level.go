@@ -48,7 +48,7 @@ func (o *ConfidenceLevel) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(o.RVersion())
+	hdr := w.WriteHeader(o.Class(), o.RVersion())
 
 	w.WriteObject(&o.base)
 	w.WriteI32(int32(o.fNNMC))
@@ -72,7 +72,7 @@ func (o *ConfidenceLevel) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI8(1) // is-array
 	w.WriteArrayI32(o.fISB[:o.fNNMC])
 
-	return w.SetByteCount(pos, o.Class())
+	return w.SetHeader(hdr)
 }
 
 // UnmarshalROOT implements rbytes.Unmarshaler
@@ -81,10 +81,9 @@ func (o *ConfidenceLevel) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(o.Class())
-	if vers > rvers.ConfidenceLevel {
-		panic(fmt.Errorf("rhist: invalid TConfidenceLevel version=%d > %d", vers, rvers.ConfidenceLevel))
+	hdr := r.ReadHeader(o.Class())
+	if hdr.Vers > rvers.ConfidenceLevel {
+		panic(fmt.Errorf("rhist: invalid TConfidenceLevel version=%d > %d", hdr.Vers, rvers.ConfidenceLevel))
 	}
 
 	r.ReadObject(&o.base)
@@ -115,7 +114,7 @@ func (o *ConfidenceLevel) UnmarshalROOT(r *rbytes.RBuffer) error {
 	o.fISB = rbytes.ResizeI32(nil, int(o.fNNMC))
 	r.ReadArrayI32(o.fISB)
 
-	r.CheckByteCount(pos, bcnt, start, o.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

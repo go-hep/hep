@@ -340,7 +340,7 @@ func (leaf *{{.Name}}) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(leaf.rvers)
+	hdr := w.WriteHeader(leaf.Class(), leaf.rvers)
 	w.WriteObject(&leaf.tleaf)
 {{- if .WithStreamerElement}}
 	{{.WRangeFunc}}(leaf.min, leaf.elm)
@@ -350,13 +350,20 @@ func (leaf *{{.Name}}) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	{{.WRangeFunc}}(leaf.max)
 {{- end}}
 
-	return w.SetByteCount(pos, leaf.Class())
+	return w.SetHeader(hdr)
 }
 
 func (leaf *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(leaf.Class())
-	leaf.rvers = vers
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(leaf.Class())
+	if hdr.Vers > rvers.{{.Name}} {
+		panic(fmt.Errorf("rtree: invalid T{{.Name}} version=%d > %d", hdr.Vers, rvers.{{.Name}}))
+	}
+
+	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
 
@@ -374,7 +381,7 @@ func (leaf *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 {{- end}}
 
-	r.CheckByteCount(pos, bcnt, start, leaf.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

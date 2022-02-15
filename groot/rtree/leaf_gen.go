@@ -78,25 +78,32 @@ func (leaf *LeafO) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(leaf.rvers)
+	hdr := w.WriteHeader(leaf.Class(), leaf.rvers)
 	w.WriteObject(&leaf.tleaf)
 	w.WriteBool(leaf.min)
 	w.WriteBool(leaf.max)
 
-	return w.SetByteCount(pos, leaf.Class())
+	return w.SetHeader(hdr)
 }
 
 func (leaf *LeafO) UnmarshalROOT(r *rbytes.RBuffer) error {
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(leaf.Class())
-	leaf.rvers = vers
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(leaf.Class())
+	if hdr.Vers > rvers.LeafO {
+		panic(fmt.Errorf("rtree: invalid TLeafO version=%d > %d", hdr.Vers, rvers.LeafO))
+	}
+
+	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadBool()
 	leaf.max = r.ReadBool()
 
-	r.CheckByteCount(pos, bcnt, start, leaf.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -286,25 +293,32 @@ func (leaf *LeafB) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(leaf.rvers)
+	hdr := w.WriteHeader(leaf.Class(), leaf.rvers)
 	w.WriteObject(&leaf.tleaf)
 	w.WriteI8(leaf.min)
 	w.WriteI8(leaf.max)
 
-	return w.SetByteCount(pos, leaf.Class())
+	return w.SetHeader(hdr)
 }
 
 func (leaf *LeafB) UnmarshalROOT(r *rbytes.RBuffer) error {
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(leaf.Class())
-	leaf.rvers = vers
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(leaf.Class())
+	if hdr.Vers > rvers.LeafB {
+		panic(fmt.Errorf("rtree: invalid TLeafB version=%d > %d", hdr.Vers, rvers.LeafB))
+	}
+
+	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadI8()
 	leaf.max = r.ReadI8()
 
-	r.CheckByteCount(pos, bcnt, start, leaf.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -506,25 +520,32 @@ func (leaf *LeafS) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(leaf.rvers)
+	hdr := w.WriteHeader(leaf.Class(), leaf.rvers)
 	w.WriteObject(&leaf.tleaf)
 	w.WriteI16(leaf.min)
 	w.WriteI16(leaf.max)
 
-	return w.SetByteCount(pos, leaf.Class())
+	return w.SetHeader(hdr)
 }
 
 func (leaf *LeafS) UnmarshalROOT(r *rbytes.RBuffer) error {
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(leaf.Class())
-	leaf.rvers = vers
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(leaf.Class())
+	if hdr.Vers > rvers.LeafS {
+		panic(fmt.Errorf("rtree: invalid TLeafS version=%d > %d", hdr.Vers, rvers.LeafS))
+	}
+
+	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadI16()
 	leaf.max = r.ReadI16()
 
-	r.CheckByteCount(pos, bcnt, start, leaf.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -726,25 +747,32 @@ func (leaf *LeafI) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(leaf.rvers)
+	hdr := w.WriteHeader(leaf.Class(), leaf.rvers)
 	w.WriteObject(&leaf.tleaf)
 	w.WriteI32(leaf.min)
 	w.WriteI32(leaf.max)
 
-	return w.SetByteCount(pos, leaf.Class())
+	return w.SetHeader(hdr)
 }
 
 func (leaf *LeafI) UnmarshalROOT(r *rbytes.RBuffer) error {
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(leaf.Class())
-	leaf.rvers = vers
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(leaf.Class())
+	if hdr.Vers > rvers.LeafI {
+		panic(fmt.Errorf("rtree: invalid TLeafI version=%d > %d", hdr.Vers, rvers.LeafI))
+	}
+
+	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadI32()
 	leaf.max = r.ReadI32()
 
-	r.CheckByteCount(pos, bcnt, start, leaf.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -946,25 +974,32 @@ func (leaf *LeafL) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(leaf.rvers)
+	hdr := w.WriteHeader(leaf.Class(), leaf.rvers)
 	w.WriteObject(&leaf.tleaf)
 	w.WriteI64(leaf.min)
 	w.WriteI64(leaf.max)
 
-	return w.SetByteCount(pos, leaf.Class())
+	return w.SetHeader(hdr)
 }
 
 func (leaf *LeafL) UnmarshalROOT(r *rbytes.RBuffer) error {
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(leaf.Class())
-	leaf.rvers = vers
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(leaf.Class())
+	if hdr.Vers > rvers.LeafL {
+		panic(fmt.Errorf("rtree: invalid TLeafL version=%d > %d", hdr.Vers, rvers.LeafL))
+	}
+
+	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadI64()
 	leaf.max = r.ReadI64()
 
-	r.CheckByteCount(pos, bcnt, start, leaf.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -1146,25 +1181,32 @@ func (leaf *LeafF) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(leaf.rvers)
+	hdr := w.WriteHeader(leaf.Class(), leaf.rvers)
 	w.WriteObject(&leaf.tleaf)
 	w.WriteF32(leaf.min)
 	w.WriteF32(leaf.max)
 
-	return w.SetByteCount(pos, leaf.Class())
+	return w.SetHeader(hdr)
 }
 
 func (leaf *LeafF) UnmarshalROOT(r *rbytes.RBuffer) error {
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(leaf.Class())
-	leaf.rvers = vers
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(leaf.Class())
+	if hdr.Vers > rvers.LeafF {
+		panic(fmt.Errorf("rtree: invalid TLeafF version=%d > %d", hdr.Vers, rvers.LeafF))
+	}
+
+	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadF32()
 	leaf.max = r.ReadF32()
 
-	r.CheckByteCount(pos, bcnt, start, leaf.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -1337,25 +1379,32 @@ func (leaf *LeafD) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(leaf.rvers)
+	hdr := w.WriteHeader(leaf.Class(), leaf.rvers)
 	w.WriteObject(&leaf.tleaf)
 	w.WriteF64(leaf.min)
 	w.WriteF64(leaf.max)
 
-	return w.SetByteCount(pos, leaf.Class())
+	return w.SetHeader(hdr)
 }
 
 func (leaf *LeafD) UnmarshalROOT(r *rbytes.RBuffer) error {
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(leaf.Class())
-	leaf.rvers = vers
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(leaf.Class())
+	if hdr.Vers > rvers.LeafD {
+		panic(fmt.Errorf("rtree: invalid TLeafD version=%d > %d", hdr.Vers, rvers.LeafD))
+	}
+
+	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadF64()
 	leaf.max = r.ReadF64()
 
-	r.CheckByteCount(pos, bcnt, start, leaf.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -1530,18 +1579,25 @@ func (leaf *LeafF16) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(leaf.rvers)
+	hdr := w.WriteHeader(leaf.Class(), leaf.rvers)
 	w.WriteObject(&leaf.tleaf)
 	w.WriteF16(leaf.min, leaf.elm)
 	w.WriteF16(leaf.max, leaf.elm)
 
-	return w.SetByteCount(pos, leaf.Class())
+	return w.SetHeader(hdr)
 }
 
 func (leaf *LeafF16) UnmarshalROOT(r *rbytes.RBuffer) error {
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(leaf.Class())
-	leaf.rvers = vers
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(leaf.Class())
+	if hdr.Vers > rvers.LeafF16 {
+		panic(fmt.Errorf("rtree: invalid TLeafF16 version=%d > %d", hdr.Vers, rvers.LeafF16))
+	}
+
+	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
 
@@ -1557,7 +1613,7 @@ func (leaf *LeafF16) UnmarshalROOT(r *rbytes.RBuffer) error {
 		leaf.elm = &elm
 	}
 
-	r.CheckByteCount(pos, bcnt, start, leaf.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -1732,18 +1788,25 @@ func (leaf *LeafD32) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(leaf.rvers)
+	hdr := w.WriteHeader(leaf.Class(), leaf.rvers)
 	w.WriteObject(&leaf.tleaf)
 	w.WriteD32(leaf.min, leaf.elm)
 	w.WriteD32(leaf.max, leaf.elm)
 
-	return w.SetByteCount(pos, leaf.Class())
+	return w.SetHeader(hdr)
 }
 
 func (leaf *LeafD32) UnmarshalROOT(r *rbytes.RBuffer) error {
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(leaf.Class())
-	leaf.rvers = vers
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(leaf.Class())
+	if hdr.Vers > rvers.LeafD32 {
+		panic(fmt.Errorf("rtree: invalid TLeafD32 version=%d > %d", hdr.Vers, rvers.LeafD32))
+	}
+
+	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
 
@@ -1759,7 +1822,7 @@ func (leaf *LeafD32) UnmarshalROOT(r *rbytes.RBuffer) error {
 		leaf.elm = &elm
 	}
 
-	r.CheckByteCount(pos, bcnt, start, leaf.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -1932,25 +1995,32 @@ func (leaf *LeafC) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(leaf.rvers)
+	hdr := w.WriteHeader(leaf.Class(), leaf.rvers)
 	w.WriteObject(&leaf.tleaf)
 	w.WriteI32(leaf.min)
 	w.WriteI32(leaf.max)
 
-	return w.SetByteCount(pos, leaf.Class())
+	return w.SetHeader(hdr)
 }
 
 func (leaf *LeafC) UnmarshalROOT(r *rbytes.RBuffer) error {
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(leaf.Class())
-	leaf.rvers = vers
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(leaf.Class())
+	if hdr.Vers > rvers.LeafC {
+		panic(fmt.Errorf("rtree: invalid TLeafC version=%d > %d", hdr.Vers, rvers.LeafC))
+	}
+
+	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
 
 	leaf.min = r.ReadI32()
 	leaf.max = r.ReadI32()
 
-	r.CheckByteCount(pos, bcnt, start, leaf.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

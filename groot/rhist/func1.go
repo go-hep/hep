@@ -83,7 +83,7 @@ func (f *F1) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(f.RVersion())
+	hdr := w.WriteHeader(f.Class(), f.RVersion())
 	w.WriteObject(&f.named)
 	w.WriteObject(&f.attline)
 	w.WriteObject(&f.attfill)
@@ -113,7 +113,7 @@ func (f *F1) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteObjectAny(f.params)
 	w.WriteObjectAny(f.compos)
 
-	return w.SetByteCount(pos, f.Class())
+	return w.SetHeader(hdr)
 }
 
 func (f *F1) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -121,15 +121,14 @@ func (f *F1) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(f.Class())
-	if vers > rvers.F1 {
-		panic(fmt.Errorf("rhist: invalid TF1 version=%d > %d", vers, rvers.F1))
+	hdr := r.ReadHeader(f.Class())
+	if hdr.Vers > rvers.F1 {
+		panic(fmt.Errorf("rhist: invalid TF1 version=%d > %d", hdr.Vers, rvers.F1))
 	}
 
-	if vers < 10 {
+	if hdr.Vers < 10 {
 		// tested with v10.
-		panic(fmt.Errorf("rhist: invalid TF1 version=%d < 10", vers))
+		panic(fmt.Errorf("rhist: invalid TF1 version=%d < 10", hdr.Vers))
 	}
 
 	r.ReadObject(&f.named)
@@ -169,7 +168,7 @@ func (f *F1) UnmarshalROOT(r *rbytes.RBuffer) error {
 		f.compos = obj.(F1Composition)
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, f.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -202,21 +201,20 @@ func (f *F1Parameters) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(f.Class())
-	if vers > rvers.F1Parameters {
-		panic(fmt.Errorf("rhist: invalid TF1Parameters version=%d > %d", vers, rvers.F1Parameters))
+	hdr := r.ReadHeader(f.Class())
+	if hdr.Vers > rvers.F1Parameters {
+		panic(fmt.Errorf("rhist: invalid TF1Parameters version=%d > %d", hdr.Vers, rvers.F1Parameters))
 	}
 
-	if vers < 1 {
+	if hdr.Vers < 1 {
 		// tested with v1.
-		panic(fmt.Errorf("rhist: invalid TF1Parameters version=%d < 1", vers))
+		panic(fmt.Errorf("rhist: invalid TF1Parameters version=%d < 1", hdr.Vers))
 	}
 
 	r.ReadStdVectorF64(&f.params)
 	r.ReadStdVectorStrs(&f.names)
 
-	r.CheckByteCount(pos, bcnt, beg, f.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -247,20 +245,19 @@ func (f *f1Composition) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(f.Class())
-	if vers > rvers.F1AbsComposition {
-		panic(fmt.Errorf("rhist: invalid TF1AbsComposition version=%d > %d", vers, rvers.F1AbsComposition))
+	hdr := r.ReadHeader(f.Class())
+	if hdr.Vers > rvers.F1AbsComposition {
+		panic(fmt.Errorf("rhist: invalid TF1AbsComposition version=%d > %d", hdr.Vers, rvers.F1AbsComposition))
 	}
 
-	if vers < 1 {
+	if hdr.Vers < 1 {
 		// tested with v1.
-		panic(fmt.Errorf("rhist: invalid TF1AbsComposition version=%d < 1", vers))
+		panic(fmt.Errorf("rhist: invalid TF1AbsComposition version=%d < 1", hdr.Vers))
 	}
 
 	r.ReadObject(&f.base)
 
-	r.CheckByteCount(pos, bcnt, beg, f.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -300,15 +297,14 @@ func (f *F1Convolution) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(f.Class())
-	if vers > rvers.F1Convolution {
-		panic(fmt.Errorf("rhist: invalid TF1Convolution version=%d > %d", vers, rvers.F1Convolution))
+	hdr := r.ReadHeader(f.Class())
+	if hdr.Vers > rvers.F1Convolution {
+		panic(fmt.Errorf("rhist: invalid TF1Convolution version=%d > %d", hdr.Vers, rvers.F1Convolution))
 	}
 
-	if vers < 1 {
+	if hdr.Vers < 1 {
 		// tested with v1.
-		panic(fmt.Errorf("rhist: invalid TF1Convolution version=%d < 1", vers))
+		panic(fmt.Errorf("rhist: invalid TF1Convolution version=%d < 1", hdr.Vers))
 	}
 
 	r.ReadObject(&f.base)
@@ -334,7 +330,7 @@ func (f *F1Convolution) UnmarshalROOT(r *rbytes.RBuffer) error {
 	f.nPoints = r.ReadI32()
 	f.flagFFT = r.ReadBool()
 
-	r.CheckByteCount(pos, bcnt, beg, f.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -377,15 +373,14 @@ func (f *F1NormSum) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(f.Class())
-	if vers > rvers.F1NormSum {
-		panic(fmt.Errorf("rhist: invalid TF1NormSum version=%d > %d", vers, rvers.F1NormSum))
+	hdr := r.ReadHeader(f.Class())
+	if hdr.Vers > rvers.F1NormSum {
+		panic(fmt.Errorf("rhist: invalid TF1NormSum version=%d > %d", hdr.Vers, rvers.F1NormSum))
 	}
 
-	if vers < 1 {
+	if hdr.Vers < 1 {
 		// tested with v1.
-		panic(fmt.Errorf("rhist: invalid TF1NormSum version=%d < 1", vers))
+		panic(fmt.Errorf("rhist: invalid TF1NormSum version=%d < 1", hdr.Vers))
 	}
 
 	r.ReadObject(&f.base)
@@ -400,7 +395,7 @@ func (f *F1NormSum) UnmarshalROOT(r *rbytes.RBuffer) error {
 	r.ReadStdVectorI32(&f.cstIndices)
 	r.ReadStdVectorStrs(&f.parNames)
 
-	r.CheckByteCount(pos, bcnt, beg, f.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -423,13 +418,12 @@ func readF1s(r *rbytes.RBuffer, sli *[]*F1) {
 	if r.Err() != nil {
 		return
 	}
-	const typename = "vector<TF1*>"
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
+
+	hdr := r.ReadHeader("vector<TF1*>")
+	if hdr.Vers != rvers.StreamerInfo {
 		r.SetErr(fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		))
 		return
 	}
@@ -450,7 +444,8 @@ func readF1s(r *rbytes.RBuffer, sli *[]*F1) {
 		}
 		(*sli)[i] = obj.(*F1)
 	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
+
+	r.CheckHeader(hdr)
 }
 
 func init() {

@@ -75,7 +75,7 @@ func (arr *RefArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(arr.RVersion())
+	hdr := w.WriteHeader(arr.Class(), arr.RVersion())
 	w.WriteObject(&arr.obj)
 	w.WriteString(arr.name)
 	w.WriteI32(int32(len(arr.refs)))
@@ -84,7 +84,7 @@ func (arr *RefArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	w.WriteArrayU32(arr.refs)
 
-	return w.SetByteCount(pos, arr.Class())
+	return w.SetHeader(hdr)
 }
 
 func (arr *RefArray) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -92,12 +92,12 @@ func (arr *RefArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-
-	vers, pos, bcnt := r.ReadVersion(arr.Class())
-
-	if vers < 1 {
-		return fmt.Errorf("rcont: TRefArray version too old (%d < 1)", vers)
+	hdr := r.ReadHeader(arr.Class())
+	if hdr.Vers > rvers.RefArray {
+		panic(fmt.Errorf("rcont: invalid TRefArray version=%d > %d", hdr.Vers, rvers.RefArray))
+	}
+	if hdr.Vers < 1 {
+		return fmt.Errorf("rcont: TRefArray version too old (%d < 1)", hdr.Vers)
 	}
 
 	r.ReadObject(&arr.obj)
@@ -115,7 +115,7 @@ func (arr *RefArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, arr.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

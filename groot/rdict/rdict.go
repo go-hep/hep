@@ -99,7 +99,7 @@ func (tsi *StreamerInfo) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tsi.RVersion())
+	hdr := w.WriteHeader(tsi.Class(), tsi.RVersion())
 	w.WriteObject(&tsi.named)
 	w.WriteU32(tsi.chksum)
 	w.WriteI32(tsi.clsver)
@@ -114,16 +114,19 @@ func (tsi *StreamerInfo) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteObjectAny(tsi.objarr)
 	tsi.objarr.SetElems(nil)
 
-	return w.SetByteCount(pos, "TStreamerInfo")
+	return w.SetHeader(hdr)
 }
 
 func (tsi *StreamerInfo) UnmarshalROOT(r *rbytes.RBuffer) error {
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(tsi.Class())
-	if vers > rvers.StreamerInfo {
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(tsi.Class())
+	if hdr.Vers > rvers.StreamerInfo {
 		panic(fmt.Errorf(
 			"rdict: invalid %s version=%d > %d",
-			tsi.Class(), vers, tsi.RVersion(),
+			tsi.Class(), hdr.Vers, tsi.RVersion(),
 		))
 	}
 
@@ -147,7 +150,7 @@ func (tsi *StreamerInfo) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 	tsi.objarr.SetElems(nil)
 
-	r.CheckByteCount(pos, bcnt, start, tsi.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -533,7 +536,7 @@ func (tse *StreamerElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tse.RVersion())
+	hdr := w.WriteHeader(tse.Class(), tse.RVersion())
 	w.WriteObject(&tse.named)
 	w.WriteI32(int32(tse.etype))
 	w.WriteI32(tse.esize)
@@ -552,16 +555,19 @@ func (tse *StreamerElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		// if (TestBit(kHasRange)) GetRange(GetTitle(),fXmin,fXmax,fFactor)
 	}
 
-	return w.SetByteCount(pos, tse.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tse *StreamerElement) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(tse.Class())
-	if vers > rvers.StreamerElement {
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(tse.Class())
+	if hdr.Vers > rvers.StreamerElement {
 		panic(fmt.Errorf(
 			"rdict: invalid %s version=%d > %d",
-			tse.Class(), vers, tse.RVersion(),
+			tse.Class(), hdr.Vers, tse.RVersion(),
 		))
 	}
 
@@ -571,7 +577,7 @@ func (tse *StreamerElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	tse.esize = r.ReadI32()
 	tse.arrlen = r.ReadI32()
 	tse.arrdim = r.ReadI32()
-	if vers == 1 {
+	if hdr.Vers == 1 {
 		copy(tse.maxidx[:], r.ReadStaticArrayI32())
 	} else {
 		r.ReadArrayI32(tse.maxidx[:])
@@ -591,15 +597,15 @@ func (tse *StreamerElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 		tse.xmin = 0
 		tse.xmax = 0
 		tse.factor = 0
-	case vers == 3:
+	case hdr.Vers == 3:
 		tse.xmin = r.ReadF64()
 		tse.xmax = r.ReadF64()
 		tse.factor = r.ReadF64()
-	case vers > 3:
+	case hdr.Vers > 3:
 		tse.xmin, tse.xmax, tse.factor = Element{}.getRange(tse.Title())
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, tse.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -628,30 +634,33 @@ func (tsb *StreamerBase) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tsb.RVersion())
+	hdr := w.WriteHeader(tsb.Class(), tsb.RVersion())
 	w.WriteObject(&tsb.StreamerElement)
 	w.WriteI32(tsb.vbase)
 
-	return w.SetByteCount(pos, tsb.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tsb *StreamerBase) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(tsb.Class())
-	if vers > rvers.StreamerBase {
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(tsb.Class())
+	if hdr.Vers > rvers.StreamerBase {
 		panic(fmt.Errorf(
 			"rdict: invalid %s version=%d > %d",
-			tsb.Class(), vers, tsb.RVersion(),
+			tsb.Class(), hdr.Vers, tsb.RVersion(),
 		))
 	}
 
 	r.ReadObject(&tsb.StreamerElement)
 
-	if vers > 2 {
+	if hdr.Vers > 2 {
 		tsb.vbase = r.ReadI32()
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, tsb.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -670,19 +679,22 @@ func (tsb *StreamerBasicType) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tsb.RVersion())
+	hdr := w.WriteHeader(tsb.Class(), tsb.RVersion())
 	w.WriteObject(&tsb.StreamerElement)
 
-	return w.SetByteCount(pos, tsb.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tsb *StreamerBasicType) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(tsb.Class())
-	if vers > rvers.StreamerBasicType {
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(tsb.Class())
+	if hdr.Vers > rvers.StreamerBasicType {
 		panic(fmt.Errorf(
 			"rdict: invalid %s version=%d > %d",
-			tsb.Class(), vers, tsb.RVersion(),
+			tsb.Class(), hdr.Vers, tsb.RVersion(),
 		))
 	}
 
@@ -715,7 +727,8 @@ func (tsb *StreamerBasicType) UnmarshalROOT(r *rbytes.RBuffer) error {
 	if basic && tsb.StreamerElement.arrlen > 0 {
 		tsb.StreamerElement.esize *= tsb.StreamerElement.arrlen
 	}
-	r.CheckByteCount(pos, bcnt, beg, tsb.Class())
+
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -750,23 +763,25 @@ func (tsb *StreamerBasicPointer) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tsb.RVersion())
+	hdr := w.WriteHeader(tsb.Class(), tsb.RVersion())
 	w.WriteObject(&tsb.StreamerElement)
 	w.WriteI32(tsb.cvers)
 	w.WriteString(tsb.cname)
 	w.WriteString(tsb.ccls)
 
-	return w.SetByteCount(pos, tsb.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tsb *StreamerBasicPointer) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-	vers, pos, bcnt := r.ReadVersion(tsb.Class())
-	if vers > rvers.StreamerBasicPointer {
+	hdr := r.ReadHeader(tsb.Class())
+	if hdr.Vers > rvers.StreamerBasicPointer {
 		panic(fmt.Errorf(
 			"rdict: invalid %s version=%d > %d",
-			tsb.Class(), vers, tsb.RVersion(),
+			tsb.Class(), hdr.Vers, tsb.RVersion(),
 		))
 	}
 
@@ -776,7 +791,7 @@ func (tsb *StreamerBasicPointer) UnmarshalROOT(r *rbytes.RBuffer) error {
 	tsb.cname = r.ReadString()
 	tsb.ccls = r.ReadString()
 
-	r.CheckByteCount(pos, bcnt, beg, tsb.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -813,23 +828,25 @@ func (tsl *StreamerLoop) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tsl.RVersion())
+	hdr := w.WriteHeader(tsl.Class(), tsl.RVersion())
 	w.WriteObject(&tsl.StreamerElement)
 	w.WriteI32(tsl.cvers)
 	w.WriteString(tsl.cname)
 	w.WriteString(tsl.cclass)
 
-	return w.SetByteCount(pos, tsl.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tsl *StreamerLoop) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-	vers, pos, bcnt := r.ReadVersion(tsl.Class())
-	if vers > rvers.StreamerLoop {
+	hdr := r.ReadHeader(tsl.Class())
+	if hdr.Vers > rvers.StreamerLoop {
 		panic(fmt.Errorf(
 			"rdict: invalid %s version=%d > %d",
-			tsl.Class(), vers, tsl.RVersion(),
+			tsl.Class(), hdr.Vers, tsl.RVersion(),
 		))
 	}
 
@@ -838,7 +855,7 @@ func (tsl *StreamerLoop) UnmarshalROOT(r *rbytes.RBuffer) error {
 	tsl.cname = r.ReadString()
 	tsl.cclass = r.ReadString()
 
-	r.CheckByteCount(pos, bcnt, beg, tsl.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -857,25 +874,27 @@ func (tso *StreamerObject) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tso.RVersion())
+	hdr := w.WriteHeader(tso.Class(), tso.RVersion())
 	w.WriteObject(&tso.StreamerElement)
-	return w.SetByteCount(pos, tso.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tso *StreamerObject) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-	vers, pos, bcnt := r.ReadVersion(tso.Class())
-	if vers > rvers.StreamerObject {
+	hdr := r.ReadHeader(tso.Class())
+	if hdr.Vers > rvers.StreamerObject {
 		panic(fmt.Errorf(
 			"rdict: invalid %s version=%d > %d",
-			tso.Class(), vers, tso.RVersion(),
+			tso.Class(), hdr.Vers, tso.RVersion(),
 		))
 	}
 
 	r.ReadObject(&tso.StreamerElement)
 
-	r.CheckByteCount(pos, bcnt, beg, tso.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -894,25 +913,27 @@ func (tso *StreamerObjectPointer) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tso.RVersion())
+	hdr := w.WriteHeader(tso.Class(), tso.RVersion())
 	w.WriteObject(&tso.StreamerElement)
-	return w.SetByteCount(pos, tso.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tso *StreamerObjectPointer) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-	vers, pos, bcnt := r.ReadVersion(tso.Class())
-	if vers > rvers.StreamerObjectPointer {
+	hdr := r.ReadHeader(tso.Class())
+	if hdr.Vers > rvers.StreamerObjectPointer {
 		panic(fmt.Errorf(
 			"rdict: invalid %s version=%d > %d",
-			tso.Class(), vers, tso.RVersion(),
+			tso.Class(), hdr.Vers, tso.RVersion(),
 		))
 	}
 
 	r.ReadObject(&tso.StreamerElement)
 
-	r.CheckByteCount(pos, bcnt, beg, tso.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -931,26 +952,28 @@ func (tso *StreamerObjectAny) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tso.RVersion())
+	hdr := w.WriteHeader(tso.Class(), tso.RVersion())
 	w.WriteObject(&tso.StreamerElement)
 
-	return w.SetByteCount(pos, tso.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tso *StreamerObjectAny) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-	vers, pos, bcnt := r.ReadVersion(tso.Class())
-	if vers > rvers.StreamerObjectAny {
+	hdr := r.ReadHeader(tso.Class())
+	if hdr.Vers > rvers.StreamerObjectAny {
 		panic(fmt.Errorf(
 			"rdict: invalid %s version=%d > %d",
-			tso.Class(), vers, tso.RVersion(),
+			tso.Class(), hdr.Vers, tso.RVersion(),
 		))
 	}
 
 	r.ReadObject(&tso.StreamerElement)
 
-	r.CheckByteCount(pos, bcnt, beg, tso.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -969,26 +992,28 @@ func (tso *StreamerObjectAnyPointer) MarshalROOT(w *rbytes.WBuffer) (int, error)
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tso.RVersion())
+	hdr := w.WriteHeader(tso.Class(), tso.RVersion())
 	w.WriteObject(&tso.StreamerElement)
 
-	return w.SetByteCount(pos, tso.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tso *StreamerObjectAnyPointer) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-	vers, pos, bcnt := r.ReadVersion(tso.Class())
-	if vers > rvers.StreamerObjectAnyPointer {
+	hdr := r.ReadHeader(tso.Class())
+	if hdr.Vers > rvers.StreamerObjectAnyPointer {
 		panic(fmt.Errorf(
 			"rdict: invalid %s version=%d > %d",
-			tso.Class(), vers, tso.RVersion(),
+			tso.Class(), hdr.Vers, tso.RVersion(),
 		))
 	}
 
 	r.ReadObject(&tso.StreamerElement)
 
-	r.CheckByteCount(pos, bcnt, beg, tso.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -1007,26 +1032,28 @@ func (tss *StreamerString) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tss.RVersion())
+	hdr := w.WriteHeader(tss.Class(), tss.RVersion())
 	w.WriteObject(&tss.StreamerElement)
 
-	return w.SetByteCount(pos, tss.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tss *StreamerString) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-	vers, pos, bcnt := r.ReadVersion(tss.Class())
-	if vers > rvers.StreamerString {
+	hdr := r.ReadHeader(tss.Class())
+	if hdr.Vers > rvers.StreamerString {
 		panic(fmt.Errorf(
 			"rdict: invalid %s version=%d > %d",
-			tss.Class(), vers, tss.RVersion(),
+			tss.Class(), hdr.Vers, tss.RVersion(),
 		))
 	}
 
 	r.ReadObject(&tss.StreamerElement)
 
-	r.CheckByteCount(pos, bcnt, beg, tss.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -1081,22 +1108,24 @@ func (tss *StreamerSTL) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tss.RVersion())
+	hdr := w.WriteHeader(tss.Class(), tss.RVersion())
 	w.WriteObject(&tss.StreamerElement)
 	w.WriteI32(int32(tss.vtype))
 	w.WriteI32(int32(tss.ctype))
 
-	return w.SetByteCount(pos, tss.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tss *StreamerSTL) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-	vers, pos, bcnt := r.ReadVersion(tss.Class())
-	if vers > rvers.StreamerSTL {
+	hdr := r.ReadHeader(tss.Class())
+	if hdr.Vers > rvers.StreamerSTL {
 		panic(fmt.Errorf(
 			"rdict: invalid %s version=%d > %d",
-			tss.Class(), vers, tss.RVersion(),
+			tss.Class(), hdr.Vers, tss.RVersion(),
 		))
 	}
 
@@ -1114,7 +1143,7 @@ func (tss *StreamerSTL) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, tss.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -1138,26 +1167,28 @@ func (tss *StreamerSTLstring) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tss.RVersion())
+	hdr := w.WriteHeader(tss.Class(), tss.RVersion())
 	w.WriteObject(&tss.StreamerSTL)
 
-	return w.SetByteCount(pos, tss.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tss *StreamerSTLstring) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-	vers, pos, bcnt := r.ReadVersion(tss.Class())
-	if vers > rvers.StreamerSTLstring {
+	hdr := r.ReadHeader(tss.Class())
+	if hdr.Vers > rvers.StreamerSTLstring {
 		panic(fmt.Errorf(
 			"rdict: invalid %s version=%d > %d",
-			tss.Class(), vers, tss.RVersion(),
+			tss.Class(), hdr.Vers, tss.RVersion(),
 		))
 	}
 
 	r.ReadObject(&tss.StreamerSTL)
 
-	r.CheckByteCount(pos, bcnt, beg, tss.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -1176,26 +1207,28 @@ func (tsa *StreamerArtificial) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tsa.RVersion())
+	hdr := w.WriteHeader(tsa.Class(), tsa.RVersion())
 	w.WriteObject(&tsa.StreamerElement)
 
-	return w.SetByteCount(pos, tsa.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tsa *StreamerArtificial) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-	vers, pos, bcnt := r.ReadVersion(tsa.Class())
-	if vers > rvers.StreamerArtificial {
+	hdr := r.ReadHeader(tsa.Class())
+	if hdr.Vers > rvers.StreamerArtificial {
 		panic(fmt.Errorf(
 			"rdict: invalid %s version=%d > %d",
-			tsa.Class(), vers, tsa.RVersion(),
+			tsa.Class(), hdr.Vers, tsa.RVersion(),
 		))
 	}
 
 	r.ReadObject(&tsa.StreamerElement)
 
-	r.CheckByteCount(pos, bcnt, beg, tsa.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

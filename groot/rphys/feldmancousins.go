@@ -50,7 +50,7 @@ func (fc *FeldmanCousins) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(fc.RVersion())
+	hdr := w.WriteHeader(fc.Class(), fc.RVersion())
 	w.WriteObject(&fc.obj)
 	w.WriteF64(fc.CL)
 	w.WriteF64(fc.UpLim)
@@ -64,7 +64,7 @@ func (fc *FeldmanCousins) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI32(fc.NMax)
 	w.WriteI32(fc.Quick)
 
-	return w.SetByteCount(pos, fc.Class())
+	return w.SetHeader(hdr)
 }
 
 func (fc *FeldmanCousins) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -72,13 +72,11 @@ func (fc *FeldmanCousins) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-
-	vers, pos, bcnt := r.ReadVersion(fc.Class())
-	if vers > rvers.FeldmanCousins {
+	hdr := r.ReadHeader(fc.Class())
+	if hdr.Vers > rvers.FeldmanCousins {
 		panic(fmt.Errorf(
 			"rphys: invalid %s version=%d > %d",
-			fc.Class(), vers, fc.RVersion(),
+			fc.Class(), hdr.Vers, fc.RVersion(),
 		))
 	}
 
@@ -95,7 +93,7 @@ func (fc *FeldmanCousins) UnmarshalROOT(r *rbytes.RBuffer) error {
 	fc.NMax = r.ReadI32()
 	fc.Quick = r.ReadI32()
 
-	r.CheckByteCount(pos, bcnt, beg, fc.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

@@ -249,7 +249,7 @@ func (b *tbranch) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		b.maxBaskets = defaultMaxBaskets
 	}
 
-	pos := w.WriteVersion(b.RVersion())
+	hdr := w.WriteHeader(b.Class(), b.RVersion())
 	w.WriteObject(&b.named)
 	w.WriteObject(&b.attfill)
 	w.WriteI32(int32(b.compress))
@@ -339,7 +339,7 @@ func (b *tbranch) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	w.WriteString(b.fname)
 
-	return w.SetByteCount(pos, b.Class())
+	return w.SetHeader(hdr)
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -349,8 +349,10 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(b.Class())
+	hdr := r.ReadHeader(b.Class())
+	if hdr.Vers > rvers.Branch {
+		panic(fmt.Errorf("rtree: invalid TBranch version=%d > %d", hdr.Vers, rvers.Branch))
+	}
 
 	b.tree = nil
 	b.ctx.bk = nil
@@ -360,7 +362,7 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	const minVers = 6
 	switch {
-	case vers >= 10:
+	case hdr.Vers >= 10:
 
 		r.ReadObject(&b.named)
 		r.ReadObject(&b.attfill)
@@ -370,7 +372,7 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 		b.entryOffsetLen = int(r.ReadI32())
 		b.writeBasket = int(r.ReadI32())
 		b.entryNumber = r.ReadI64()
-		if vers >= 13 {
+		if hdr.Vers >= 13 {
 			if err := b.iobits.UnmarshalROOT(r); err != nil {
 				return err
 			}
@@ -379,7 +381,7 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 		b.maxBaskets = int(r.ReadI32())
 		b.splitLevel = int(r.ReadI32())
 		b.entries = r.ReadI64()
-		if vers >= 11 {
+		if hdr.Vers >= 11 {
 			b.firstEntry = r.ReadI64()
 		}
 		b.totBytes = r.ReadI64()
@@ -451,10 +453,10 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 		b.fname = r.ReadString()
 
-	case vers >= 6:
+	case hdr.Vers >= 6:
 		r.ReadObject(&b.named)
 
-		if vers > 7 {
+		if hdr.Vers > 7 {
 			r.ReadObject(&b.attfill)
 		}
 
@@ -465,7 +467,7 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 		b.entryNumber = int64(r.ReadI32())
 		b.offset = int(r.ReadI32())
 		b.maxBaskets = int(r.ReadI32())
-		if vers > 6 {
+		if hdr.Vers > 6 {
 			b.splitLevel = int(r.ReadI32())
 		}
 		b.entries = int64(r.ReadF64())
@@ -549,15 +551,14 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 		b.fname = r.ReadString()
 
 	default:
-		panic(fmt.Errorf("rtree: too old TBranch version (%d<%d)", vers, minVers))
+		panic(fmt.Errorf("rtree: too old TBranch version (%d<%d)", hdr.Vers, minVers))
 	}
-
-	r.CheckByteCount(pos, bcnt, beg, b.Class())
 
 	if b.splitLevel == 0 && len(b.branches) > 0 {
 		b.splitLevel = 1
 	}
 
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -786,11 +787,11 @@ func (b *tbranchObject) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(b.RVersion())
+	hdr := w.WriteHeader(b.Class(), b.RVersion())
 	w.WriteObject(&b.tbranch)
 	w.WriteString(b.class)
 
-	return w.SetByteCount(pos, b.Class())
+	return w.SetHeader(hdr)
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -800,10 +801,13 @@ func (b *tbranchObject) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(b.Class())
-	if vers < 1 {
-		r.SetErr(fmt.Errorf("rtree: TBranchObject version too old (%d < 8)", vers))
+	hdr := r.ReadHeader(b.Class())
+	if hdr.Vers > rvers.BranchObject {
+		panic(fmt.Errorf("rtree: invalid TBranchObject version=%d > %d", hdr.Vers, rvers.BranchObject))
+	}
+
+	if hdr.Vers < 1 {
+		r.SetErr(fmt.Errorf("rtree: TBranchObject version too old (%d < 8)", hdr.Vers))
 		return r.Err()
 	}
 
@@ -822,7 +826,7 @@ func (b *tbranchObject) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	b.class = r.ReadString()
 
-	r.CheckByteCount(pos, bcnt, beg, b.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -899,7 +903,7 @@ func (b *tbranchElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(b.RVersion())
+	hdr := w.WriteHeader(b.Class(), b.RVersion())
 	w.WriteObject(&b.tbranch)
 	w.WriteString(b.class)
 	w.WriteString(b.parent)
@@ -926,7 +930,7 @@ func (b *tbranchElement) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteObjectAny(obj)
 	}
 
-	return w.SetByteCount(pos, b.Class())
+	return w.SetHeader(hdr)
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -936,10 +940,13 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(b.Class())
-	if vers < 1 {
-		r.SetErr(fmt.Errorf("rtree: TBranchElement version too old (%d < 8)", vers))
+	hdr := r.ReadHeader(b.Class())
+	if hdr.Vers > rvers.BranchElement {
+		panic(fmt.Errorf("rtree: invalid TBranchElement version=%d > %d", hdr.Vers, rvers.BranchElement))
+	}
+
+	if hdr.Vers < 1 {
+		r.SetErr(fmt.Errorf("rtree: TBranchElement version too old (%d < 8)", hdr.Vers))
 		return r.Err()
 	}
 
@@ -957,12 +964,12 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 
 	b.class = r.ReadString()
-	if vers > 1 {
+	if hdr.Vers > 1 {
 		b.parent = r.ReadString()
 		b.clones = r.ReadString()
 		b.chksum = r.ReadU32()
 	}
-	if vers >= 10 {
+	if hdr.Vers >= 10 {
 		b.clsver = r.ReadU16()
 	} else {
 		b.clsver = uint16(r.ReadU32())
@@ -970,7 +977,7 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 	b.id = r.ReadI32()
 	b.btype = r.ReadI32()
 	b.stype = r.ReadI32()
-	if vers > 1 {
+	if hdr.Vers > 1 {
 		b.max = r.ReadI32()
 
 		bcount1 := r.ReadObjectAny()
@@ -984,7 +991,7 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, b.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

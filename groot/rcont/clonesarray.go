@@ -116,7 +116,7 @@ func (arr *ClonesArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	}
 	clsv := si.ClassVersion()
 
-	pos := w.WriteVersion(arr.RVersion())
+	hdr := w.WriteHeader(arr.Class(), arr.RVersion())
 
 	w.WriteObject(&arr.arr.obj)
 	w.WriteString(arr.arr.name)
@@ -143,13 +143,11 @@ func (arr *ClonesArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		}
 	}
 
-	n, err := w.SetByteCount(pos, arr.Class())
-
 	if bypass {
 		arr.BypassStreamer(true)
 	}
 
-	return n, err
+	return w.SetHeader(hdr)
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -159,12 +157,14 @@ func (arr *ClonesArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(arr.Class())
-	if vers > 2 {
+	hdr := r.ReadHeader(arr.Class())
+	if hdr.Vers > rvers.ClonesArray {
+		panic(fmt.Errorf("rcont: invalid TClonesArray version=%d > %d", hdr.Vers, rvers.ClonesArray))
+	}
+	if hdr.Vers > 2 {
 		r.ReadObject(&arr.arr.obj)
 	}
-	if vers > 1 {
+	if hdr.Vers > 1 {
 		arr.arr.name = r.ReadString()
 	}
 	clsv := r.ReadString()
@@ -212,7 +212,7 @@ func (arr *ClonesArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, start, arr.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

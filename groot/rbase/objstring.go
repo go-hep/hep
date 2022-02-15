@@ -54,18 +54,17 @@ func (obj *ObjString) String() string {
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (obj *ObjString) UnmarshalROOT(r *rbytes.RBuffer) error {
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(obj.Class())
-	if vers > rvers.ObjString {
+	hdr := r.ReadHeader(obj.Class())
+	if hdr.Vers > rvers.ObjString {
 		panic(fmt.Errorf(
 			"rbase: invalid %s version=%d > %d",
-			obj.Class(), vers, rvers.ObjString,
+			obj.Class(), hdr.Vers, rvers.ObjString,
 		))
 	}
 	r.ReadObject(&obj.obj)
 	obj.str = r.ReadString()
 
-	r.CheckByteCount(pos, bcnt, start, obj.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -73,11 +72,11 @@ func (obj *ObjString) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
 		return 0, w.Err()
 	}
-	pos := w.WriteVersion(obj.RVersion())
+
+	hdr := w.WriteHeader(obj.Class(), obj.RVersion())
 	w.WriteObject(&obj.obj)
 	w.WriteString(obj.str)
-
-	return w.SetByteCount(pos, obj.Class())
+	return w.SetHeader(hdr)
 }
 
 func init() {

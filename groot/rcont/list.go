@@ -75,7 +75,7 @@ func (li *List) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(li.RVersion())
+	hdr := w.WriteHeader(li.Class(), li.RVersion())
 	w.WriteObject(&li.obj)
 	w.WriteString(li.name)
 	w.WriteI32(int32(len(li.objs)))
@@ -84,7 +84,7 @@ func (li *List) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteU8(0) // FIXME(sbinet): properly serialize the 'OPTION'.
 	}
 
-	return w.SetByteCount(pos, li.Class())
+	return w.SetHeader(hdr)
 }
 
 func (li *List) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -92,12 +92,12 @@ func (li *List) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-
-	vers, pos, bcnt := r.ReadVersion(li.Class())
-
-	if vers <= 3 {
-		return fmt.Errorf("rcont: TList version too old (%d <= 3)", vers)
+	hdr := r.ReadHeader(li.Class())
+	if hdr.Vers > rvers.List {
+		panic(fmt.Errorf("rcont: invalid TList version=%d > %d", hdr.Vers, rvers.List))
+	}
+	if hdr.Vers <= 3 {
+		return fmt.Errorf("rcont: TList version too old (%d <= 3)", hdr.Vers)
 	}
 
 	r.ReadObject(&li.obj)
@@ -123,7 +123,7 @@ func (li *List) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, li.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

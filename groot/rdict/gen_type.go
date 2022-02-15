@@ -430,7 +430,7 @@ func (o *%[1]s) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(o.RVersion())
+	hdr := w.WriteHeader(o.Class(), o.RVersion())
 
 `,
 		g.cxx2go(si.Name(), qualNone),
@@ -440,7 +440,7 @@ func (o *%[1]s) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		g.genMarshalField(si, i, se)
 	}
 
-	g.printf("\n\treturn w.SetByteCount(pos, o.Class())\n}\n\n")
+	g.printf("\n\treturn w.SetHeader(hdr)\n}\n\n")
 }
 
 func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.StreamerElement) {
@@ -665,12 +665,11 @@ func (o *%[1]s) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 	
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(o.Class())
-	if vers > o.RVersion() {
+	hdr := r.ReadHeader(o.Class())
+	if hdr.Vers > o.RVersion() {
 		panic(fmt.Errorf(
 			"rbytes: invalid %%s version=%%d > %%d",
-			o.Class(), vers, o.RVersion(),
+			o.Class(), hdr.Vers, o.RVersion(),
 		))
 	}
 
@@ -682,7 +681,7 @@ func (o *%[1]s) UnmarshalROOT(r *rbytes.RBuffer) error {
 		g.genUnmarshalField(si, i, se)
 	}
 
-	g.printf("\nr.CheckByteCount(pos, bcnt, start, o.Class())\nreturn r.Err()\n}\n\n")
+	g.printf("\nr.CheckHeader(hdr)\nreturn r.Err()\n}\n\n")
 }
 
 func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.StreamerElement) {
