@@ -769,29 +769,29 @@ func wstreamBasicSlice(sli wopFunc) wopFunc {
 	}
 }
 
-func writeVersion(w *rbytes.WBuffer, typename string, typevers int16) int64 {
+func wstreamHeader(w *rbytes.WBuffer, typename string, typevers int16) rbytes.Header {
 	if _, ok := rmeta.CxxBuiltins[typename]; ok && typename != "string" {
-		return -1
+		return rbytes.Header{Pos: -1}
 	}
-	return w.WriteVersion(typevers)
+	return w.WriteHeader(typename, typevers)
 }
 
-func writeByteCount(w *rbytes.WBuffer, pos int64, typename string) (int, error) {
-	if pos < 0 {
+func wsetHeader(w *rbytes.WBuffer, hdr rbytes.Header) (int, error) {
+	if hdr.Pos < 0 {
 		return 0, nil
 	}
-	return w.SetByteCount(pos, typename)
+	return w.SetHeader(hdr)
 }
 
 func wstreamType(typename string, wop wopFunc) wopFunc {
 	const typevers = rvers.StreamerInfo
 	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
-		pos := w.WriteVersion(int16(typevers))
+		hdr := w.WriteHeader(typename, int16(typevers))
 		n, err := wop(w, recv, cfg)
 		if err != nil {
 			return n, err
 		}
-		return w.SetByteCount(pos, typename)
+		return w.SetHeader(hdr)
 	}
 }
 
@@ -836,7 +836,7 @@ func wstreamStdMap(kname, vname string, kwop, vwop wopFunc, kvers, vvers int16) 
 			n  = rv.Len()
 			nn = 0
 		)
-		pos := w.WriteVersion(int16(typevers))
+		hdr := w.WriteHeader(typename, int16(typevers))
 		w.WriteI32(int32(n))
 		keyT := reflect.SliceOf(rv.Type().Key())
 		valT := reflect.SliceOf(rv.Type().Elem())
@@ -853,7 +853,7 @@ func wstreamStdMap(kname, vname string, kwop, vwop wopFunc, kvers, vvers int16) 
 			vals.Index(i).Set(val)
 		}
 		if n > 0 {
-			pos := writeVersion(w, kname, kvers)
+			hdr := wstreamHeader(w, kname, kvers)
 			for i := 0; i < n; i++ {
 				nb, err := kwop(w, keys.Index(i).Addr().Interface(), nil)
 				if err != nil {
@@ -864,7 +864,7 @@ func wstreamStdMap(kname, vname string, kwop, vwop wopFunc, kvers, vvers int16) 
 				}
 				nn += nb
 			}
-			nb, err := writeByteCount(w, pos, kname)
+			nb, err := wsetHeader(w, hdr)
 			if err != nil {
 				return nn, err
 			}
@@ -872,8 +872,7 @@ func wstreamStdMap(kname, vname string, kwop, vwop wopFunc, kvers, vvers int16) 
 		}
 
 		if n > 0 {
-			pos := writeVersion(w, kname, vvers)
-
+			hdr := wstreamHeader(w, kname, vvers)
 			for i := 0; i < n; i++ {
 				nb, err := vwop(w, vals.Index(i).Addr().Interface(), nil)
 				if err != nil {
@@ -884,13 +883,13 @@ func wstreamStdMap(kname, vname string, kwop, vwop wopFunc, kvers, vvers int16) 
 				}
 				nn += nb
 			}
-			_, err := writeByteCount(w, pos, vname)
+			_, err := wsetHeader(w, hdr)
 			if err != nil {
 				return nn, err
 			}
 		}
 
-		return w.SetByteCount(pos, typename)
+		return w.SetHeader(hdr)
 	}
 }
 
@@ -1064,7 +1063,7 @@ func wstreamStrs(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 
 func wstreamCat(typename string, typevers int16, wops []wstreamer) wopFunc {
 	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
-		pos := w.WriteVersion(typevers)
+		hdr := w.WriteHeader(typename, typevers)
 		recv = cfg.adjust(recv)
 		for i, wop := range wops {
 			_, err := wop.wstream(w, recv)
@@ -1075,7 +1074,7 @@ func wstreamCat(typename string, typevers int16, wops []wstreamer) wopFunc {
 				)
 			}
 		}
-		return w.SetByteCount(pos, typename)
+		return w.SetHeader(hdr)
 	}
 }
 

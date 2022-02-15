@@ -49,7 +49,7 @@ func (nt *NTuple) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(nt.RVersion())
+	hdr := w.WriteHeader(nt.Class(), nt.RVersion())
 
 	w.WriteU32(nt.rvers)
 	w.WriteU32(nt.size)
@@ -64,7 +64,7 @@ func (nt *NTuple) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	w.WriteU64(nt.reserved)
 
-	return w.SetByteCount(pos, nt.Class())
+	return w.SetHeader(hdr)
 }
 
 func (nt *NTuple) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -72,8 +72,7 @@ func (nt *NTuple) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	_ /*vers*/, pos, bcnt := r.ReadVersion(nt.Class())
+	hdr := r.ReadHeader(nt.Class())
 
 	nt.rvers = r.ReadU32()
 	nt.size = r.ReadU32()
@@ -88,7 +87,7 @@ func (nt *NTuple) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	nt.reserved = r.ReadU64()
 
-	r.CheckByteCount(pos, bcnt, beg, nt.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

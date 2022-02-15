@@ -55,15 +55,14 @@ func (pid *ProcessID) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(pid.Class())
-	if vers > rvers.ProcessID {
-		panic(fmt.Errorf("rbase: invalid %s version=%d > %d", pid.Class(), vers, rvers.ProcessID))
+	hdr := r.ReadHeader(pid.Class())
+	if hdr.Vers > rvers.ProcessID {
+		panic(fmt.Errorf("rbase: invalid %s version=%d > %d", pid.Class(), hdr.Vers, rvers.ProcessID))
 	}
 
 	r.ReadObject(&pid.named)
 
-	r.CheckByteCount(pos, bcnt, beg, pid.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -72,10 +71,9 @@ func (pid *ProcessID) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(pid.RVersion())
+	hdr := w.WriteHeader(pid.Class(), pid.RVersion())
 	w.WriteObject(&pid.named)
-
-	return w.SetByteCount(pos, pid.Class())
+	return w.SetHeader(hdr)
 }
 
 func init() {

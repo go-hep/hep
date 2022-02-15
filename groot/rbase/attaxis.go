@@ -57,7 +57,7 @@ func (a *AttAxis) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(a.RVersion())
+	hdr := w.WriteHeader(a.Class(), a.RVersion())
 	w.WriteI32(a.Ndivs)
 	w.WriteI16(a.AxisColor)
 	w.WriteI16(a.LabelColor)
@@ -70,7 +70,7 @@ func (a *AttAxis) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteI16(a.TitleColor)
 	w.WriteI16(a.TitleFont)
 
-	return w.SetByteCount(pos, a.Class())
+	return w.SetHeader(hdr)
 }
 
 func (a *AttAxis) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -78,10 +78,9 @@ func (a *AttAxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(a.Class())
-	if vers < 4 {
-		return fmt.Errorf("rbase: TAttAxis version too old (%d < 4)", vers)
+	hdr := r.ReadHeader(a.Class())
+	if hdr.Vers < 4 {
+		return fmt.Errorf("rbase: TAttAxis version too old (%d < 4)", hdr.Vers)
 	}
 
 	a.Ndivs = r.ReadI32()
@@ -96,7 +95,7 @@ func (a *AttAxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 	a.TitleColor = r.ReadI16()
 	a.TitleFont = r.ReadI16()
 
-	r.CheckByteCount(pos, bcnt, beg, a.Class())
+	r.CheckHeader(hdr)
 
 	return r.Err()
 }

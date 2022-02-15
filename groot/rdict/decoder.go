@@ -32,13 +32,12 @@ func (dec *decoder) DecodeROOT(ptr interface{}) error {
 	var (
 		typename = dec.si.Name()
 		typevers = int16(dec.si.ClassVersion())
-		beg      = dec.r.Pos()
+		hdr      = dec.r.ReadHeader(typename)
 	)
 
-	vers, pos, bcnt := dec.r.ReadVersion(typename)
-	if vers != typevers {
+	if hdr.Vers != typevers {
 		dec.r.SetErr(fmt.Errorf("rdict: inconsistent ROOT version type=%q (got=%d, want=%d)",
-			typename, vers, typevers,
+			typename, hdr.Vers, typevers,
 		))
 		return dec.r.Err()
 	}
@@ -50,7 +49,7 @@ func (dec *decoder) DecodeROOT(ptr interface{}) error {
 		}
 	}
 
-	dec.r.CheckByteCount(pos, bcnt, beg, typename)
+	dec.r.CheckHeader(hdr)
 	if err := dec.r.Err(); err != nil {
 		return fmt.Errorf("rdict: invalid bytecount for %q: %w", typename, err)
 	}

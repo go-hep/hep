@@ -104,7 +104,7 @@ func (h *th1) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(h.RVersion())
+	hdr := w.WriteHeader(h.Class(), h.RVersion())
 	w.WriteObject(&h.Named)
 	w.WriteObject(&h.attline)
 	w.WriteObject(&h.attfill)
@@ -138,7 +138,7 @@ func (h *th1) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteI32(h.oflow)
 	}
 
-	return w.SetByteCount(pos, h.Class())
+	return w.SetHeader(hdr)
 }
 
 func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -146,10 +146,9 @@ func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(h.Class())
-	if vers > rvers.H1 {
-		panic(fmt.Errorf("rhist: invalid TH1 version=%d > %d", vers, rvers.H1))
+	hdr := r.ReadHeader(h.Class())
+	if hdr.Vers > rvers.H1 {
+		panic(fmt.Errorf("rhist: invalid TH1 version=%d > %d", hdr.Vers, rvers.H1))
 	}
 
 	r.ReadObject(&h.Named)
@@ -170,7 +169,7 @@ func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
 	h.tsumw2 = r.ReadF64()
 	h.tsumwx = r.ReadF64()
 	h.tsumwx2 = r.ReadF64()
-	if vers < 2 {
+	if hdr.Vers < 2 {
 		h.max = float64(r.ReadF32())
 		h.min = float64(r.ReadF32())
 		h.norm = float64(r.ReadF32())
@@ -188,20 +187,20 @@ func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
 	h.opt = r.ReadString()
 	r.ReadObject(&h.funcs)
 
-	if vers > 3 {
+	if hdr.Vers > 3 {
 		n := int(r.ReadI32())
 		_ = r.ReadI8()
 		h.buffer = rbytes.ResizeF64(h.buffer, n)
 		r.ReadArrayF64(h.buffer)
-		if vers > 6 {
+		if hdr.Vers > 6 {
 			h.erropt = r.ReadI32()
 		}
-		if vers > 7 {
+		if hdr.Vers > 7 {
 			h.oflow = r.ReadI32()
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, h.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -232,7 +231,7 @@ func (h *th2) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(h.RVersion())
+	hdr := w.WriteHeader(h.Class(), h.RVersion())
 
 	w.WriteObject(&h.th1)
 	w.WriteF64(h.scale)
@@ -240,7 +239,7 @@ func (h *th2) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteF64(h.tsumwy2)
 	w.WriteF64(h.tsumwxy)
 
-	return w.SetByteCount(pos, h.Class())
+	return w.SetHeader(hdr)
 }
 
 func (h *th2) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -248,10 +247,12 @@ func (h *th2) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(h.Class())
-	if vers < 3 {
-		return fmt.Errorf("rhist: TH2 version too old (%d<3)", vers)
+	hdr := r.ReadHeader(h.Class())
+	if hdr.Vers > rvers.H2 {
+		panic(fmt.Errorf("rhist: invalid TH2 version=%d > %d", hdr.Vers, rvers.H2))
+	}
+	if hdr.Vers < 3 {
+		return fmt.Errorf("rhist: TH2 version too old (%d<3)", hdr.Vers)
 	}
 
 	r.ReadObject(&h.th1)
@@ -260,7 +261,7 @@ func (h *th2) UnmarshalROOT(r *rbytes.RBuffer) error {
 	h.tsumwy2 = r.ReadF64()
 	h.tsumwxy = r.ReadF64()
 
-	r.CheckByteCount(pos, bcnt, beg, h.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

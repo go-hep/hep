@@ -270,7 +270,7 @@ func (o *Event) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(o.RVersion())
+	hdr := w.WriteHeader(o.Class(), o.RVersion())
 
 	w.WriteString(o.name)
 	w.WriteU8(o.u8)
@@ -314,7 +314,7 @@ func (o *Event) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteObject(&o.SliHLV)
 	w.WriteArrayF64(o.ArrF64[:])
 
-	return w.SetByteCount(pos, o.Class())
+	return w.SetHeader(hdr)
 }
 
 func init() {
@@ -365,14 +365,14 @@ func (o *HLV) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(o.RVersion())
+	hdr := w.WriteHeader(o.Class(), o.RVersion())
 
 	w.WriteF64(o.px)
 	w.WriteF64(o.py)
 	w.WriteF64(o.pz)
 	w.WriteF64(o.e)
 
-	return w.SetByteCount(pos, o.Class())
+	return w.SetHeader(hdr)
 }
 
 func init() {
@@ -411,11 +411,11 @@ func (o *Particle) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(o.RVersion())
+	hdr := w.WriteHeader(o.Class(), o.RVersion())
 
 	w.WriteString(o.name)
 	w.WriteI64(int64(o.pid))
 	w.WriteObject(&o.mom)
 
-	return w.SetByteCount(pos, o.Class())
+	return w.SetHeader(hdr)
 }

@@ -5,6 +5,7 @@
 package rbase
 
 import (
+	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbytes"
@@ -40,11 +41,11 @@ func (a *AttMarker) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(a.RVersion())
+	hdr := w.WriteHeader(a.Class(), a.RVersion())
 	w.WriteI16(a.Color)
 	w.WriteI16(a.Style)
 	w.WriteF32(a.Width)
-	return w.SetByteCount(pos, a.Class())
+	return w.SetHeader(hdr)
 }
 
 func (a *AttMarker) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -52,14 +53,16 @@ func (a *AttMarker) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	/*vers*/ _, pos, bcnt := r.ReadVersion(a.Class())
+	hdr := r.ReadHeader(a.Class())
+	if hdr.Vers > rvers.AttMarker {
+		panic(fmt.Errorf("rbase: invalid attmarker version=%d > %d", hdr.Vers, rvers.AttMarker))
+	}
 
 	a.Color = r.ReadI16()
 	a.Style = r.ReadI16()
 	a.Width = r.ReadF32()
-	r.CheckByteCount(pos, bcnt, start, a.Class())
 
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

@@ -5,6 +5,7 @@
 package rcont
 
 import (
+	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -48,7 +49,7 @@ func (m *Map) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(m.RVersion())
+	hdr := w.WriteHeader(m.Class(), m.RVersion())
 	w.WriteObject(&m.obj)
 	w.WriteString(m.name)
 
@@ -59,7 +60,7 @@ func (m *Map) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteObjectAny(v)
 	}
 
-	return w.SetByteCount(pos, m.Class())
+	return w.SetHeader(hdr)
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -69,13 +70,14 @@ func (m *Map) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(m.Class())
-
-	if vers > 2 {
+	hdr := r.ReadHeader(m.Class())
+	if hdr.Vers > rvers.Map {
+		panic(fmt.Errorf("rcont: invalid TMap version=%d > %d", hdr.Vers, rvers.Map))
+	}
+	if hdr.Vers > 2 {
 		r.ReadObject(&m.obj)
 	}
-	if vers > 1 {
+	if hdr.Vers > 1 {
 		m.name = r.ReadString()
 	}
 
@@ -95,7 +97,7 @@ func (m *Map) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, start, m.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

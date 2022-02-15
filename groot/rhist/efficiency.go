@@ -51,7 +51,7 @@ func (o *Efficiency) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(o.RVersion())
+	hdr := w.WriteHeader(o.Class(), o.RVersion())
 
 	w.WriteObject(&o.named)
 	w.WriteObject(&o.attline)
@@ -67,15 +67,15 @@ func (o *Efficiency) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteObjectAny(o.totHist) // obj-ptr
 	w.WriteF64(o.weight)
 
-	return w.SetByteCount(pos, o.Class())
+	return w.SetHeader(hdr)
 }
 
 func writeVecPairF64(w *rbytes.WBuffer, vs [][2]float64) {
 	if w.Err() != nil {
 		return
 	}
-
-	pos := w.WriteVersion(rvers.StreamerInfo | rbytes.StreamedMemberWise)
+	const typename = "vector<pair<double,double> >"
+	hdr := w.WriteHeader(typename, rvers.StreamerInfo|rbytes.StreamedMemberWise)
 	w.WriteI16(0)        // class version
 	w.WriteU32(0xd7bed2) // checksum
 	w.WriteI32(int32(len(vs)))
@@ -86,7 +86,7 @@ func writeVecPairF64(w *rbytes.WBuffer, vs [][2]float64) {
 		w.WriteF64(vs[i][1])
 	}
 
-	_, _ = w.SetByteCount(pos, "vector<pair<double,double> >")
+	_, _ = w.SetHeader(hdr)
 }
 
 // UnmarshalROOT implements rbytes.Unmarshaler
@@ -95,10 +95,9 @@ func (o *Efficiency) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(o.Class())
-	if vers > rvers.Efficiency {
-		panic(fmt.Errorf("rhist: invalid TEfficiency version=%d > %d", vers, rvers.Efficiency))
+	hdr := r.ReadHeader(o.Class())
+	if hdr.Vers > rvers.Efficiency {
+		panic(fmt.Errorf("rhist: invalid TEfficiency version=%d > %d", hdr.Vers, rvers.Efficiency))
 	}
 
 	r.ReadObject(&o.named)
@@ -127,7 +126,7 @@ func (o *Efficiency) UnmarshalROOT(r *rbytes.RBuffer) error {
 	}
 	o.weight = r.ReadF64()
 
-	r.CheckByteCount(pos, bcnt, start, o.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -136,17 +135,15 @@ func readVecPairF64(r *rbytes.RBuffer, vs *[][2]float64) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	const typename = "vector<pair<double,double> >"
-	vers, pos, bcnt := r.ReadVersion(typename)
-	mbrwise := vers&rbytes.StreamedMemberWise != 0
+	hdr := r.ReadHeader("vector<pair<double,double> >")
+	mbrwise := hdr.Vers&rbytes.StreamedMemberWise != 0
 	if mbrwise {
-		vers &^= rbytes.StreamedMemberWise
+		hdr.Vers &^= rbytes.StreamedMemberWise
 	}
-	if vers != rvers.StreamerInfo {
+	if hdr.Vers != rvers.StreamerInfo {
 		r.SetErr(fmt.Errorf(
 			"rbytes: invalid version for %q. got=%v, want=%v",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		))
 		return r.Err()
 	}
@@ -162,7 +159,7 @@ func readVecPairF64(r *rbytes.RBuffer, vs *[][2]float64) error {
 	n := int(r.ReadI32())
 	if n == 0 {
 		*vs = nil
-		r.CheckByteCount(pos, bcnt, start, typename)
+		r.CheckHeader(hdr)
 		return r.Err()
 	}
 
@@ -184,7 +181,8 @@ func readVecPairF64(r *rbytes.RBuffer, vs *[][2]float64) error {
 			(*vs)[i][1] = r.ReadF64()
 		}
 	}
-	r.CheckByteCount(pos, bcnt, start, typename)
+
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

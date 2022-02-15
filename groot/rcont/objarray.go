@@ -5,6 +5,7 @@
 package rcont
 
 import (
+	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -85,7 +86,7 @@ func (arr *ObjArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(arr.RVersion())
+	hdr := w.WriteHeader(arr.Class(), arr.RVersion())
 	w.WriteObject(&arr.obj)
 	w.WriteString(arr.name)
 
@@ -96,7 +97,7 @@ func (arr *ObjArray) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteObjectAny(obj)
 	}
 
-	return w.SetByteCount(pos, arr.Class())
+	return w.SetHeader(hdr)
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -106,13 +107,15 @@ func (arr *ObjArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(arr.Class())
+	hdr := r.ReadHeader(arr.Class())
+	if hdr.Vers > rvers.ObjArray {
+		panic(fmt.Errorf("rcont: invalid TObjArray version=%d > %d", hdr.Vers, rvers.ObjArray))
+	}
 
-	if vers > 2 {
+	if hdr.Vers > 2 {
 		r.ReadObject(&arr.obj)
 	}
-	if vers > 1 {
+	if hdr.Vers > 1 {
 		arr.name = r.ReadString()
 	}
 
@@ -132,7 +135,7 @@ func (arr *ObjArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, start, arr.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

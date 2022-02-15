@@ -32,9 +32,8 @@ func (o *Limit) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(o.RVersion())
-
-	return w.SetByteCount(pos, o.Class())
+	hdr := w.WriteHeader(o.Class(), o.RVersion())
+	return w.SetHeader(hdr)
 }
 
 // UnmarshalROOT implements rbytes.Unmarshaler
@@ -43,13 +42,12 @@ func (o *Limit) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(o.Class())
-	if vers > rvers.Limit {
-		panic(fmt.Errorf("rhist: invalid TLimit version=%d > %d", vers, rvers.Limit))
+	hdr := r.ReadHeader(o.Class())
+	if hdr.Vers > rvers.Limit {
+		panic(fmt.Errorf("rhist: invalid TLimit version=%d > %d", hdr.Vers, rvers.Limit))
 	}
 
-	r.CheckByteCount(pos, bcnt, start, o.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -79,7 +77,7 @@ func (o *LimitDataSource) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(o.RVersion())
+	hdr := w.WriteHeader(o.Class(), o.RVersion())
 
 	w.WriteObject(&o.base)
 	w.WriteObject(&o.sig)
@@ -91,7 +89,7 @@ func (o *LimitDataSource) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteObject(&o.dummyTA)
 	w.WriteObject(&o.dummyIDs)
 
-	return w.SetByteCount(pos, o.Class())
+	return w.SetHeader(hdr)
 }
 
 // UnmarshalROOT implements rbytes.Unmarshaler
@@ -100,10 +98,9 @@ func (o *LimitDataSource) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(o.Class())
-	if vers > rvers.LimitDataSource {
-		panic(fmt.Errorf("rhist: invalid TLimitDataSource version=%d > %d", vers, rvers.LimitDataSource))
+	hdr := r.ReadHeader(o.Class())
+	if hdr.Vers > rvers.LimitDataSource {
+		panic(fmt.Errorf("rhist: invalid TLimitDataSource version=%d > %d", hdr.Vers, rvers.LimitDataSource))
 	}
 
 	r.ReadObject(&o.base)
@@ -116,7 +113,7 @@ func (o *LimitDataSource) UnmarshalROOT(r *rbytes.RBuffer) error {
 	r.ReadObject(&o.dummyTA)
 	r.ReadObject(&o.dummyIDs)
 
-	r.CheckByteCount(pos, bcnt, start, o.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

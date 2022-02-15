@@ -47,14 +47,14 @@ func (dir *tdirectory) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(dir.RVersion())
+	hdr := w.WriteHeader(dir.Class(), dir.RVersion())
 	w.WriteObject(&dir.named)
 	w.WriteObjectAny((*rbase.Object)(nil))
 
 	// FIXME(sbinet): stream list
 	w.WriteObject(&dir.uuid)
 
-	return w.SetByteCount(pos, dir.Class())
+	return w.SetHeader(hdr)
 }
 
 func (dir *tdirectory) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -62,9 +62,8 @@ func (dir *tdirectory) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(dir.Class())
-	dir.rvers = vers
+	hdr := r.ReadHeader(dir.Class())
+	dir.rvers = hdr.Vers
 
 	r.ReadObject(&dir.named)
 	obj := r.ReadObjectAny()
@@ -74,7 +73,7 @@ func (dir *tdirectory) UnmarshalROOT(r *rbytes.RBuffer) error {
 	// FIXME(sbinet): stream list
 	r.ReadObject(&dir.uuid)
 
-	r.CheckByteCount(pos, bcnt, start, dir.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

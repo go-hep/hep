@@ -77,7 +77,7 @@ func (o *Event) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(o.RVersion())
+	hdr := w.WriteHeader(o.Class(), o.RVersion())
 
 	w.WriteString(o.Beg)
 	w.WriteI16(o.I16)
@@ -138,7 +138,7 @@ func (o *Event) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteStdVectorStrs(o.StlVecStr)
 	w.WriteString(o.End)
 
-	return w.SetByteCount(pos, o.Class())
+	return w.SetHeader(hdr)
 }
 
 // UnmarshalROOT implements rbytes.Unmarshaler
@@ -147,12 +147,11 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(o.Class())
-	if vers > o.RVersion() {
+	hdr := r.ReadHeader(o.Class())
+	if hdr.Vers > o.RVersion() {
 		panic(fmt.Errorf(
 			"rbytes: invalid %s version=%d > %d",
-			o.Class(), vers, o.RVersion(),
+			o.Class(), hdr.Vers, o.RVersion(),
 		))
 	}
 
@@ -233,7 +232,7 @@ func (o *Event) UnmarshalROOT(r *rbytes.RBuffer) error {
 	r.ReadStdVectorStrs(&o.StlVecStr)
 	o.End = r.ReadString()
 
-	r.CheckByteCount(pos, bcnt, start, o.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -876,13 +875,13 @@ func (o *P3) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(o.RVersion())
+	hdr := w.WriteHeader(o.Class(), o.RVersion())
 
 	w.WriteI32(o.Px)
 	w.WriteF64(o.Py)
 	w.WriteI32(o.Pz)
 
-	return w.SetByteCount(pos, o.Class())
+	return w.SetHeader(hdr)
 }
 
 // UnmarshalROOT implements rbytes.Unmarshaler
@@ -891,12 +890,11 @@ func (o *P3) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(o.Class())
-	if vers > o.RVersion() {
+	hdr := r.ReadHeader(o.Class())
+	if hdr.Vers > o.RVersion() {
 		panic(fmt.Errorf(
 			"rbytes: invalid %s version=%d > %d",
-			o.Class(), vers, o.RVersion(),
+			o.Class(), hdr.Vers, o.RVersion(),
 		))
 	}
 
@@ -904,7 +902,7 @@ func (o *P3) UnmarshalROOT(r *rbytes.RBuffer) error {
 	o.Py = r.ReadF64()
 	o.Pz = r.ReadI32()
 
-	r.CheckByteCount(pos, bcnt, start, o.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

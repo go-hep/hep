@@ -76,10 +76,9 @@ func (n *Named) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(n.Class())
-	if vers > rvers.Named {
-		panic(fmt.Errorf("rbase: invalid named version=%d > %d", vers, rvers.Named))
+	hdr := r.ReadHeader(n.Class())
+	if hdr.Vers > rvers.Named {
+		panic(fmt.Errorf("rbase: invalid named version=%d > %d", hdr.Vers, rvers.Named))
 	}
 
 	r.ReadObject(&n.obj)
@@ -87,7 +86,7 @@ func (n *Named) UnmarshalROOT(r *rbytes.RBuffer) error {
 	n.name = r.ReadString()
 	n.title = r.ReadString()
 
-	r.CheckByteCount(pos, bcnt, beg, n.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -96,12 +95,11 @@ func (n *Named) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(n.RVersion())
+	hdr := w.WriteHeader(n.Class(), n.RVersion())
 	w.WriteObject(&n.obj)
 	w.WriteString(n.name)
 	w.WriteString(n.title)
-
-	return w.SetByteCount(pos, n.Class())
+	return w.SetHeader(hdr)
 }
 
 func init() {

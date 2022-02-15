@@ -47,7 +47,7 @@ func (p *Profile1D) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(p.RVersion())
+	hdr := w.WriteHeader(p.Class(), p.RVersion())
 
 	w.WriteObject(&p.h1d)
 	w.WriteObject(&p.binEntries)
@@ -58,7 +58,7 @@ func (p *Profile1D) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteF64(p.sumwy2)
 	w.WriteObject(&p.binSumw2)
 
-	return w.SetByteCount(pos, p.Class())
+	return w.SetHeader(hdr)
 }
 
 // UnmarshalROOT implements rbytes.Unmarshaler
@@ -67,14 +67,13 @@ func (p *Profile1D) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(p.Class())
-	if vers > rvers.Profile {
-		panic(fmt.Errorf("rhist: invalid TProfile version=%d > %d", vers, rvers.Profile))
+	hdr := r.ReadHeader(p.Class())
+	if hdr.Vers > rvers.Profile {
+		panic(fmt.Errorf("rhist: invalid TProfile version=%d > %d", hdr.Vers, rvers.Profile))
 	}
-	if vers < 7 {
+	if hdr.Vers < 7 {
 		// tested with v7.
-		panic(fmt.Errorf("rhist: too old TProfile version=%d < 7", vers))
+		panic(fmt.Errorf("rhist: too old TProfile version=%d < 7", hdr.Vers))
 	}
 
 	r.ReadObject(&p.h1d)
@@ -86,7 +85,7 @@ func (p *Profile1D) UnmarshalROOT(r *rbytes.RBuffer) error {
 	p.sumwy2 = r.ReadF64()
 	r.ReadObject(&p.binSumw2)
 
-	r.CheckByteCount(pos, bcnt, start, p.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

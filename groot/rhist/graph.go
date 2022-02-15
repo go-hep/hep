@@ -120,7 +120,7 @@ func (g *tgraph) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(g.RVersion())
+	hdr := w.WriteHeader(g.Class(), g.RVersion())
 
 	w.WriteObject(&g.Named)
 	w.WriteObject(&g.attline)
@@ -142,19 +142,21 @@ func (g *tgraph) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteF64(g.max)
 	}
 
-	return w.SetByteCount(pos, g.Class())
+	return w.SetHeader(hdr)
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (g *tgraph) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-	vers, pos, bcnt := r.ReadVersion(g.Class())
-	if vers > rvers.Graph {
+	hdr := r.ReadHeader(g.Class())
+	if hdr.Vers > rvers.Graph {
 		panic(fmt.Errorf(
 			"rhist: invalid %s version=%d > %d",
-			g.Class(), vers, g.RVersion(),
+			g.Class(), hdr.Vers, g.RVersion(),
 		))
 	}
 
@@ -165,7 +167,7 @@ func (g *tgraph) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	g.npoints = r.ReadI32()
 	g.maxsize = g.npoints
-	if vers < 2 {
+	if hdr.Vers < 2 {
 		_ = r.ReadI8()
 		xs := make([]float32, g.npoints)
 		r.ReadArrayF32(xs)
@@ -198,7 +200,7 @@ func (g *tgraph) UnmarshalROOT(r *rbytes.RBuffer) error {
 		g.histo = histo.(*H1F)
 	}
 
-	if vers < 2 {
+	if hdr.Vers < 2 {
 		g.min = float64(r.ReadF32())
 		g.max = float64(r.ReadF32())
 	} else {
@@ -206,7 +208,7 @@ func (g *tgraph) UnmarshalROOT(r *rbytes.RBuffer) error {
 		g.max = r.ReadF64()
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, g.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -321,7 +323,7 @@ func (g *tgrapherrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, nil
 	}
 
-	pos := w.WriteVersion(g.RVersion())
+	hdr := w.WriteHeader(g.Class(), g.RVersion())
 
 	w.WriteObject(&g.tgraph)
 	{
@@ -331,25 +333,27 @@ func (g *tgrapherrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteArrayF64(g.yerr)
 	}
 
-	return w.SetByteCount(pos, g.Class())
+	return w.SetHeader(hdr)
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (g *tgrapherrs) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-	vers, pos, bcnt := r.ReadVersion(g.Class())
-	if vers > rvers.GraphErrors {
+	hdr := r.ReadHeader(g.Class())
+	if hdr.Vers > rvers.GraphErrors {
 		panic(fmt.Errorf(
 			"rhist: invalid %s version=%d > %d",
-			g.Class(), vers, g.RVersion(),
+			g.Class(), hdr.Vers, g.RVersion(),
 		))
 	}
 
 	r.ReadObject(&g.tgraph)
 
-	if vers < 2 {
+	if hdr.Vers < 2 {
 		_ = r.ReadI8()
 		xerrs := make([]float32, g.tgraph.npoints)
 		r.ReadArrayF32(xerrs)
@@ -371,7 +375,8 @@ func (g *tgrapherrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 		g.yerr = make([]float64, g.tgraph.npoints)
 		r.ReadArrayF64(g.yerr)
 	}
-	r.CheckByteCount(pos, bcnt, beg, g.Class())
+
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -501,7 +506,7 @@ func (g *tgraphasymmerrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(g.RVersion())
+	hdr := w.WriteHeader(g.Class(), g.RVersion())
 
 	w.WriteObject(&g.tgraph)
 	{
@@ -515,19 +520,21 @@ func (g *tgraphasymmerrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteArrayF64(g.yerrhi)
 	}
 
-	return w.SetByteCount(pos, g.Class())
+	return w.SetHeader(hdr)
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (g *tgraphasymmerrs) UnmarshalROOT(r *rbytes.RBuffer) error {
-	beg := r.Pos()
+	if r.Err() != nil {
+		return r.Err()
+	}
 
-	vers, pos, bcnt := r.ReadVersion(g.Class())
-	if vers > rvers.GraphAsymmErrors {
+	hdr := r.ReadHeader(g.Class())
+	if hdr.Vers > rvers.GraphAsymmErrors {
 		panic(fmt.Errorf(
 			"rhist: invalid %s version=%d > %d",
-			g.Class(), vers, g.RVersion(),
+			g.Class(), hdr.Vers, g.RVersion(),
 		))
 	}
 
@@ -539,7 +546,7 @@ func (g *tgraphasymmerrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 	g.yerrlo = make([]float64, n)
 	g.yerrhi = make([]float64, n)
 	switch {
-	case vers < 2:
+	case hdr.Vers < 2:
 		// up to version 2, order is: xlo,ylo,xhi,yhi
 		xerrlo := make([]float32, n)
 		yerrlo := make([]float32, n)
@@ -559,7 +566,7 @@ func (g *tgraphasymmerrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 			g.yerrlo[i] = float64(yerrlo[i])
 			g.yerrhi[i] = float64(yerrhi[i])
 		}
-	case vers == 2:
+	case hdr.Vers == 2:
 		// version 2, order is: xlo,ylo,xhi,yhi (but in float64)
 		_ = r.ReadI8()
 		r.ReadArrayF64(g.xerrlo)
@@ -581,7 +588,8 @@ func (g *tgraphasymmerrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 		_ = r.ReadI8()
 		r.ReadArrayF64(g.yerrhi)
 	}
-	r.CheckByteCount(pos, bcnt, beg, g.Class())
+
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -704,7 +712,7 @@ func (g *tgraphmultierrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(g.RVersion())
+	hdr := w.WriteHeader(g.Class(), g.RVersion())
 
 	w.WriteObject(&g.tgraph)
 	w.WriteI32(g.nyerr)
@@ -717,7 +725,7 @@ func (g *tgraphmultierrs) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	writeStdVectorTArrayD(w, g.yerrhi)
 	writeStdVectorTAttFill(w, g.attfills)
 	writeStdVectorTAttLine(w, g.attlines)
-	return w.SetByteCount(pos, g.Class())
+	return w.SetHeader(hdr)
 }
 
 // UnmarshalROOT implements rbytes.Unmarshaler
@@ -726,10 +734,9 @@ func (g *tgraphmultierrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	start := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(g.Class())
-	if vers > rvers.GraphMultiErrors {
-		panic(fmt.Errorf("rhist: invalid TGraphMultiErrors version=%d > %d", vers, rvers.GraphMultiErrors))
+	hdr := r.ReadHeader(g.Class())
+	if hdr.Vers > rvers.GraphMultiErrors {
+		panic(fmt.Errorf("rhist: invalid TGraphMultiErrors version=%d > %d", hdr.Vers, rvers.GraphMultiErrors))
 	}
 
 	r.ReadObject(&g.tgraph)
@@ -747,7 +754,7 @@ func (g *tgraphmultierrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 	readStdVectorTAttFill(r, &g.attfills)
 	readStdVectorTAttLine(r, &g.attlines)
 
-	r.CheckByteCount(pos, bcnt, start, g.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -863,12 +870,12 @@ func writeStdVectorTArrayD(w *rbytes.WBuffer, vs []rcont.ArrayD) {
 		return
 	}
 	const typename = "vector<TArrayD>"
-	pos := w.WriteVersion(rvers.StreamerInfo)
+	hdr := w.WriteHeader(typename, rvers.StreamerInfo)
 	w.WriteI32(int32(len(vs)))
 	for i := range vs {
 		w.WriteObject(&vs[i])
 	}
-	_, _ = w.SetByteCount(pos, typename)
+	_, _ = w.SetHeader(hdr)
 }
 
 func writeStdVectorTAttFill(w *rbytes.WBuffer, vs []rbase.AttFill) {
@@ -876,12 +883,12 @@ func writeStdVectorTAttFill(w *rbytes.WBuffer, vs []rbase.AttFill) {
 		return
 	}
 	const typename = "vector<TAttFill>"
-	pos := w.WriteVersion(rvers.StreamerInfo)
+	hdr := w.WriteHeader(typename, rvers.StreamerInfo)
 	w.WriteI32(int32(len(vs)))
 	for i := range vs {
 		w.WriteObject(&vs[i])
 	}
-	_, _ = w.SetByteCount(pos, typename)
+	_, _ = w.SetHeader(hdr)
 }
 
 func writeStdVectorTAttLine(w *rbytes.WBuffer, vs []rbase.AttLine) {
@@ -889,12 +896,12 @@ func writeStdVectorTAttLine(w *rbytes.WBuffer, vs []rbase.AttLine) {
 		return
 	}
 	const typename = "vector<TAttLine>"
-	pos := w.WriteVersion(rvers.StreamerInfo)
+	hdr := w.WriteHeader(typename, rvers.StreamerInfo)
 	w.WriteI32(int32(len(vs)))
 	for i := range vs {
 		w.WriteObject(&vs[i])
 	}
-	_, _ = w.SetByteCount(pos, typename)
+	_, _ = w.SetHeader(hdr)
 }
 
 func readStdVectorTArrayD(r *rbytes.RBuffer, vs *[]rcont.ArrayD) {
@@ -902,13 +909,11 @@ func readStdVectorTArrayD(r *rbytes.RBuffer, vs *[]rcont.ArrayD) {
 		return
 	}
 
-	start := r.Pos()
-	const typename = "vector<TArrayD>"
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
+	hdr := r.ReadHeader("vector<TArrayD>")
+	if hdr.Vers != rvers.StreamerInfo {
 		r.SetErr(fmt.Errorf(
 			"rbytes: invalid version for %q. got=%v, want=%v",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		))
 		return
 	}
@@ -916,14 +921,15 @@ func readStdVectorTArrayD(r *rbytes.RBuffer, vs *[]rcont.ArrayD) {
 	n := int(r.ReadI32())
 	if n == 0 {
 		*vs = nil
-		r.CheckByteCount(pos, bcnt, start, typename)
+		r.CheckHeader(hdr)
 		return
 	}
 	*vs = make([]rcont.ArrayD, n)
 	for i := range *vs {
 		r.ReadObject(&(*vs)[i])
 	}
-	r.CheckByteCount(pos, bcnt, start, typename)
+
+	r.CheckHeader(hdr)
 }
 
 func readStdVectorTAttFill(r *rbytes.RBuffer, vs *[]rbase.AttFill) {
@@ -931,17 +937,15 @@ func readStdVectorTAttFill(r *rbytes.RBuffer, vs *[]rbase.AttFill) {
 		return
 	}
 
-	start := r.Pos()
-	const typename = "vector<TAttFill>"
-	vers, pos, bcnt := r.ReadVersion(typename)
-	mbrwise := vers&rbytes.StreamedMemberWise != 0
+	hdr := r.ReadHeader("vector<TAttFill>")
+	mbrwise := hdr.Vers&rbytes.StreamedMemberWise != 0
 	if mbrwise {
-		vers &^= rbytes.StreamedMemberWise
+		hdr.Vers &^= rbytes.StreamedMemberWise
 	}
-	if vers != rvers.StreamerInfo {
+	if hdr.Vers != rvers.StreamerInfo {
 		r.SetErr(fmt.Errorf(
 			"rbytes: invalid version for %q. got=%v, want=%v",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		))
 		return
 	}
@@ -959,7 +963,7 @@ func readStdVectorTAttFill(r *rbytes.RBuffer, vs *[]rbase.AttFill) {
 	n := int(r.ReadI32())
 	if n == 0 {
 		*vs = nil
-		r.CheckByteCount(pos, bcnt, start, typename)
+		r.CheckHeader(hdr)
 		return
 	}
 
@@ -980,7 +984,8 @@ func readStdVectorTAttFill(r *rbytes.RBuffer, vs *[]rbase.AttFill) {
 			r.ReadObject(&(*vs)[i])
 		}
 	}
-	r.CheckByteCount(pos, bcnt, start, typename)
+
+	r.CheckHeader(hdr)
 }
 
 func readStdVectorTAttLine(r *rbytes.RBuffer, vs *[]rbase.AttLine) {
@@ -988,17 +993,15 @@ func readStdVectorTAttLine(r *rbytes.RBuffer, vs *[]rbase.AttLine) {
 		return
 	}
 
-	start := r.Pos()
-	const typename = "vector<TAttLine>"
-	vers, pos, bcnt := r.ReadVersion(typename)
-	mbrwise := vers&rbytes.StreamedMemberWise != 0
+	hdr := r.ReadHeader("vector<TAttLine>")
+	mbrwise := hdr.Vers&rbytes.StreamedMemberWise != 0
 	if mbrwise {
-		vers &^= rbytes.StreamedMemberWise
+		hdr.Vers &^= rbytes.StreamedMemberWise
 	}
-	if vers != rvers.StreamerInfo {
+	if hdr.Vers != rvers.StreamerInfo {
 		r.SetErr(fmt.Errorf(
 			"rbytes: invalid version for %q. got=%v, want=%v",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		))
 		return
 	}
@@ -1016,7 +1019,7 @@ func readStdVectorTAttLine(r *rbytes.RBuffer, vs *[]rbase.AttLine) {
 	n := int(r.ReadI32())
 	if n == 0 {
 		*vs = nil
-		r.CheckByteCount(pos, bcnt, start, typename)
+		r.CheckHeader(hdr)
 		return
 	}
 	*vs = make([]rbase.AttLine, n)
@@ -1040,5 +1043,6 @@ func readStdVectorTAttLine(r *rbytes.RBuffer, vs *[]rbase.AttLine) {
 			r.ReadObject(&(*vs)[i])
 		}
 	}
-	r.CheckByteCount(pos, bcnt, start, typename)
+
+	r.CheckHeader(hdr)
 }

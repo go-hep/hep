@@ -53,13 +53,12 @@ func (r *RBuffer) ReadStdVectorU16(sli *[]uint16) {
 	if r.err != nil {
 		return
 	}
-	const typename = "vector<uint16>"
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
+
+	hdr := r.ReadHeader("vector<uint16>")
+	if hdr.Vers != rvers.StreamerInfo {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		)
 		return
 	}
@@ -68,7 +67,8 @@ func (r *RBuffer) ReadStdVectorU16(sli *[]uint16) {
 	for i := range *sli {
 		(*sli)[i] = r.ReadU16()
 	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
+
+	r.CheckHeader(hdr)
 }
 
 func (r *RBuffer) ReadArrayU32(sli []uint32) {
@@ -110,13 +110,12 @@ func (r *RBuffer) ReadStdVectorU32(sli *[]uint32) {
 	if r.err != nil {
 		return
 	}
-	const typename = "vector<uint32>"
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
+
+	hdr := r.ReadHeader("vector<uint32>")
+	if hdr.Vers != rvers.StreamerInfo {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		)
 		return
 	}
@@ -125,7 +124,8 @@ func (r *RBuffer) ReadStdVectorU32(sli *[]uint32) {
 	for i := range *sli {
 		(*sli)[i] = r.ReadU32()
 	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
+
+	r.CheckHeader(hdr)
 }
 
 func (r *RBuffer) ReadArrayU64(sli []uint64) {
@@ -167,13 +167,12 @@ func (r *RBuffer) ReadStdVectorU64(sli *[]uint64) {
 	if r.err != nil {
 		return
 	}
-	const typename = "vector<uint64>"
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
+
+	hdr := r.ReadHeader("vector<uint64>")
+	if hdr.Vers != rvers.StreamerInfo {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		)
 		return
 	}
@@ -182,7 +181,8 @@ func (r *RBuffer) ReadStdVectorU64(sli *[]uint64) {
 	for i := range *sli {
 		(*sli)[i] = r.ReadU64()
 	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
+
+	r.CheckHeader(hdr)
 }
 
 func (r *RBuffer) ReadArrayI16(sli []int16) {
@@ -222,13 +222,12 @@ func (r *RBuffer) ReadStdVectorI16(sli *[]int16) {
 	if r.err != nil {
 		return
 	}
-	const typename = "vector<int16>"
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
+
+	hdr := r.ReadHeader("vector<int16>")
+	if hdr.Vers != rvers.StreamerInfo {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		)
 		return
 	}
@@ -237,7 +236,8 @@ func (r *RBuffer) ReadStdVectorI16(sli *[]int16) {
 	for i := range *sli {
 		(*sli)[i] = r.ReadI16()
 	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
+
+	r.CheckHeader(hdr)
 }
 
 func (r *RBuffer) ReadArrayI32(sli []int32) {
@@ -277,13 +277,12 @@ func (r *RBuffer) ReadStdVectorI32(sli *[]int32) {
 	if r.err != nil {
 		return
 	}
-	const typename = "vector<int32>"
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
+
+	hdr := r.ReadHeader("vector<int32>")
+	if hdr.Vers != rvers.StreamerInfo {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		)
 		return
 	}
@@ -292,7 +291,8 @@ func (r *RBuffer) ReadStdVectorI32(sli *[]int32) {
 	for i := range *sli {
 		(*sli)[i] = r.ReadI32()
 	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
+
+	r.CheckHeader(hdr)
 }
 
 func (r *RBuffer) ReadArrayI64(sli []int64) {
@@ -332,13 +332,12 @@ func (r *RBuffer) ReadStdVectorI64(sli *[]int64) {
 	if r.err != nil {
 		return
 	}
-	const typename = "vector<int64>"
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
+
+	hdr := r.ReadHeader("vector<int64>")
+	if hdr.Vers != rvers.StreamerInfo {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		)
 		return
 	}
@@ -347,7 +346,8 @@ func (r *RBuffer) ReadStdVectorI64(sli *[]int64) {
 	for i := range *sli {
 		(*sli)[i] = r.ReadI64()
 	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
+
+	r.CheckHeader(hdr)
 }
 
 func (r *RBuffer) ReadArrayF32(sli []float32) {
@@ -387,13 +387,12 @@ func (r *RBuffer) ReadStdVectorF32(sli *[]float32) {
 	if r.err != nil {
 		return
 	}
-	const typename = "vector<float32>"
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
+
+	hdr := r.ReadHeader("vector<float32>")
+	if hdr.Vers != rvers.StreamerInfo {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		)
 		return
 	}
@@ -402,7 +401,8 @@ func (r *RBuffer) ReadStdVectorF32(sli *[]float32) {
 	for i := range *sli {
 		(*sli)[i] = r.ReadF32()
 	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
+
+	r.CheckHeader(hdr)
 }
 
 func (r *RBuffer) ReadArrayF64(sli []float64) {
@@ -442,13 +442,12 @@ func (r *RBuffer) ReadStdVectorF64(sli *[]float64) {
 	if r.err != nil {
 		return
 	}
-	const typename = "vector<float64>"
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
+
+	hdr := r.ReadHeader("vector<float64>")
+	if hdr.Vers != rvers.StreamerInfo {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		)
 		return
 	}
@@ -457,5 +456,6 @@ func (r *RBuffer) ReadStdVectorF64(sli *[]float64) {
 	for i := range *sli {
 		(*sli)[i] = r.ReadF64()
 	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
+
+	r.CheckHeader(hdr)
 }

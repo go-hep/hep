@@ -361,11 +361,11 @@ func (h *H2F) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(h.RVersion())
+	hdr := w.WriteHeader(h.Class(), h.RVersion())
 	w.WriteObject(&h.th2)
 	w.WriteObject(&h.arr)
 
-	return w.SetByteCount(pos, h.Class())
+	return w.SetHeader(hdr)
 }
 
 func (h *H2F) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -373,16 +373,18 @@ func (h *H2F) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(h.Class())
-	if vers < 1 {
-		return fmt.Errorf("rhist: TH2F version too old (%d<1)", vers)
+	hdr := r.ReadHeader(h.Class())
+	if hdr.Vers > rvers.H2F {
+		panic(fmt.Errorf("rhist: invalid H2F version=%d > %d", hdr.Vers, rvers.H2F))
+	}
+	if hdr.Vers < 1 {
+		return fmt.Errorf("rhist: TH2F version too old (%d<1)", hdr.Vers)
 	}
 
 	r.ReadObject(&h.th2)
 	r.ReadObject(&h.arr)
 
-	r.CheckByteCount(pos, bcnt, beg, h.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -744,11 +746,11 @@ func (h *H2D) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(h.RVersion())
+	hdr := w.WriteHeader(h.Class(), h.RVersion())
 	w.WriteObject(&h.th2)
 	w.WriteObject(&h.arr)
 
-	return w.SetByteCount(pos, h.Class())
+	return w.SetHeader(hdr)
 }
 
 func (h *H2D) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -756,16 +758,18 @@ func (h *H2D) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(h.Class())
-	if vers < 1 {
-		return fmt.Errorf("rhist: TH2D version too old (%d<1)", vers)
+	hdr := r.ReadHeader(h.Class())
+	if hdr.Vers > rvers.H2D {
+		panic(fmt.Errorf("rhist: invalid H2D version=%d > %d", hdr.Vers, rvers.H2D))
+	}
+	if hdr.Vers < 1 {
+		return fmt.Errorf("rhist: TH2D version too old (%d<1)", hdr.Vers)
 	}
 
 	r.ReadObject(&h.th2)
 	r.ReadObject(&h.arr)
 
-	r.CheckByteCount(pos, bcnt, beg, h.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -1127,11 +1131,11 @@ func (h *H2I) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(h.RVersion())
+	hdr := w.WriteHeader(h.Class(), h.RVersion())
 	w.WriteObject(&h.th2)
 	w.WriteObject(&h.arr)
 
-	return w.SetByteCount(pos, h.Class())
+	return w.SetHeader(hdr)
 }
 
 func (h *H2I) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -1139,16 +1143,18 @@ func (h *H2I) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(h.Class())
-	if vers < 1 {
-		return fmt.Errorf("rhist: TH2I version too old (%d<1)", vers)
+	hdr := r.ReadHeader(h.Class())
+	if hdr.Vers > rvers.H2I {
+		panic(fmt.Errorf("rhist: invalid H2I version=%d > %d", hdr.Vers, rvers.H2I))
+	}
+	if hdr.Vers < 1 {
+		return fmt.Errorf("rhist: TH2I version too old (%d<1)", hdr.Vers)
 	}
 
 	r.ReadObject(&h.th2)
 	r.ReadObject(&h.arr)
 
-	r.CheckByteCount(pos, bcnt, beg, h.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 

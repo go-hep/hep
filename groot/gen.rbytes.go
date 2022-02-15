@@ -164,13 +164,12 @@ func (r *RBuffer) ReadStdVector{{.Name}}(sli *[]{{.Type}}) {
 	if r.err != nil {
 		return
 	}
-	const typename = "vector<{{.Type}}>"
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(typename)
-	if vers != rvers.StreamerInfo {
+	
+	hdr := r.ReadHeader("vector<{{.Type}}>")
+	if hdr.Vers != rvers.StreamerInfo {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			typename, vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerInfo,
 		)
 		return
 	}
@@ -179,7 +178,8 @@ func (r *RBuffer) ReadStdVector{{.Name}}(sli *[]{{.Type}}) {
 	for i := range *sli {
 		(*sli)[i] = r.Read{{.Name}}()
 	}
-	r.CheckByteCount(pos, bcnt, beg, typename)
+
+	r.CheckHeader(hdr)
 }
 `
 
@@ -316,8 +316,8 @@ func (w *WBuffer) WriteStdVector{{.Name}}(sli []{{.Type}}) {
 	if w.err != nil {
 		return
 	}
-	const typename = "vector<{{.Type}}>"
-	pos := w.WriteVersion(rvers.StreamerInfo)
+
+	hdr := w.WriteHeader("vector<{{.Type}}>", rvers.StreamerInfo)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli)*{{.Size}})
 
@@ -337,6 +337,6 @@ func (w *WBuffer) WriteStdVector{{.Name}}(sli []{{.Type}}) {
 	if w.err != nil {
 		return
 	}
-	_, w.err = w.SetByteCount(pos, typename)
+	_, w.err = w.SetHeader(hdr)
 }
 `

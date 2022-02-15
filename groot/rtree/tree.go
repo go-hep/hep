@@ -158,7 +158,7 @@ func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		return 0, w.Err()
 	}
 
-	pos := w.WriteVersion(tree.RVersion())
+	hdr := w.WriteHeader(tree.Class(), tree.RVersion())
 	w.WriteObject(&tree.named)
 	w.WriteObject(&tree.attline)
 	w.WriteObject(&tree.attfill)
@@ -270,7 +270,7 @@ func (tree *ttree) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteObjectAny(obj)
 	}
 
-	return w.SetByteCount(pos, tree.Class())
+	return w.SetHeader(hdr)
 }
 
 // ROOTUnmarshaler is the interface implemented by an object that can
@@ -280,10 +280,12 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
+	hdr := r.ReadHeader(tree.Class())
+	if hdr.Vers > rvers.Tree {
+		panic(fmt.Errorf("rtree: invalid TTree version=%d > %d", hdr.Vers, rvers.Tree))
+	}
 
-	vers, pos, bcnt := r.ReadVersion(tree.Class())
-	tree.rvers = vers
+	tree.rvers = hdr.Vers
 
 	r.ReadObject(&tree.named)
 	r.ReadObject(&tree.attline)
@@ -295,12 +297,12 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 		panic(fmt.Errorf(
 			"rtree: tree [%s] with version [%v] is not supported (too old)",
 			tree.Name(),
-			vers,
+			hdr.Vers,
 		))
-	case vers > 4:
+	case hdr.Vers > 4:
 
 		switch {
-		case vers > 5:
+		case hdr.Vers > 5:
 			tree.entries = r.ReadI64()
 			tree.totBytes = r.ReadI64()
 			tree.zipBytes = r.ReadI64()
@@ -312,31 +314,31 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 			tree.savedBytes = int64(r.ReadF64())
 		}
 
-		if vers >= 18 {
+		if hdr.Vers >= 18 {
 			tree.flushedBytes = r.ReadI64()
 		}
 
-		if vers >= 16 {
+		if hdr.Vers >= 16 {
 			tree.weight = r.ReadF64()
 		}
 		tree.timerInterval = r.ReadI32()
 		tree.scanField = r.ReadI32()
 		tree.update = r.ReadI32()
 
-		if vers >= 17 {
+		if hdr.Vers >= 17 {
 			tree.defaultEntryOffsetLen = r.ReadI32()
 		}
 
 		nclus := 0
-		if vers >= 19 { // FIXME
+		if hdr.Vers >= 19 { // FIXME
 			nclus = int(r.ReadI32()) // fNClusterRange
 		}
 
-		if vers > 5 {
+		if hdr.Vers > 5 {
 			tree.maxEntries = r.ReadI64()
 		}
 		switch {
-		case vers > 5:
+		case hdr.Vers > 5:
 			tree.maxEntryLoop = r.ReadI64()
 			tree.maxVirtualSize = r.ReadI64()
 			tree.autoSave = r.ReadI64()
@@ -346,18 +348,18 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 			tree.autoSave = int64(r.ReadI32())
 		}
 
-		if vers >= 18 {
+		if hdr.Vers >= 18 {
 			tree.autoFlush = r.ReadI64()
 		}
 
 		switch {
-		case vers > 5:
+		case hdr.Vers > 5:
 			tree.estimate = r.ReadI64()
 		default:
 			tree.estimate = int64(r.ReadI32())
 		}
 
-		if vers >= 19 { // FIXME
+		if hdr.Vers >= 19 { // FIXME
 			tree.clusters.ranges = make([]int64, nclus)
 			tree.clusters.sizes = make([]int64, nclus)
 			_ = r.ReadI8()
@@ -366,7 +368,7 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 			r.ReadArrayI64(tree.clusters.sizes) // fClusterSize
 		}
 
-		if vers >= 20 {
+		if hdr.Vers >= 20 {
 			if err := tree.iobits.UnmarshalROOT(r); err != nil {
 				return err
 			}
@@ -394,7 +396,7 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 			//tree.leaves[i].SetBranch(tree.branches[i])
 		}
 
-		if vers > 5 {
+		if hdr.Vers > 5 {
 			if v := r.ReadObjectAny(); v != nil {
 				tree.aliases = v.(*rcont.List)
 			}
@@ -405,7 +407,7 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 		if v := r.ReadObjectAny(); v != nil {
 			tree.index = v.(*rcont.ArrayI)
 		}
-		if vers > 5 {
+		if hdr.Vers > 5 {
 			if v := r.ReadObjectAny(); v != nil {
 				tree.treeIndex = v
 			}
@@ -421,7 +423,7 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 		}
 	}
 
-	r.CheckByteCount(pos, bcnt, beg, tree.Class())
+	r.CheckHeader(hdr)
 
 	// attach streamers to branches
 	for i := range tree.branches {
@@ -625,19 +627,18 @@ func (nt *tntuple) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(nt.Class())
-	if vers > rvers.Ntuple {
+	hdr := r.ReadHeader(nt.Class())
+	if hdr.Vers > rvers.Ntuple {
 		panic(fmt.Errorf(
 			"rtree: invalid %s version=%d > %d",
-			nt.Class(), vers, nt.RVersion(),
+			nt.Class(), hdr.Vers, nt.RVersion(),
 		))
 	}
 
 	r.ReadObject(&nt.ttree)
 	nt.nvars = int(r.ReadI32())
 
-	r.CheckByteCount(pos, bcnt, beg, nt.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -659,19 +660,18 @@ func (nt *tntupleD) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(nt.Class())
-	if vers > rvers.NtupleD {
+	hdr := r.ReadHeader(nt.Class())
+	if hdr.Vers > rvers.NtupleD {
 		panic(fmt.Errorf(
 			"rtree: invalid %s version=%d > %d",
-			nt.Class(), vers, nt.RVersion(),
+			nt.Class(), hdr.Vers, nt.RVersion(),
 		))
 	}
 
 	r.ReadObject(&nt.ttree)
 	nt.nvars = int(r.ReadI32())
 
-	r.CheckByteCount(pos, bcnt, beg, nt.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
@@ -687,8 +687,7 @@ func (tio *tioFeatures) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	if w.Err() != nil {
 		return 0, w.Err()
 	}
-	const tioFeaturesVers = 1 // FIXME(sbinet): somehow extract this reliably.
-	pos := w.WriteVersion(tioFeaturesVers)
+	hdr := w.WriteHeader(tio.Class(), tio.RVersion())
 
 	if *tio != 0 {
 		var buf = [4]byte{0x1a, 0xa1, 0x2f, 0x10} // FIXME(sbinet) where do these 4 bytes come from ?
@@ -700,7 +699,7 @@ func (tio *tioFeatures) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	w.WriteU8(uint8(*tio))
 
-	return w.SetByteCount(pos, tio.Class())
+	return w.SetHeader(hdr)
 }
 
 func (tio *tioFeatures) UnmarshalROOT(r *rbytes.RBuffer) error {
@@ -708,12 +707,11 @@ func (tio *tioFeatures) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	beg := r.Pos()
-	vers, pos, bcnt := r.ReadVersion(tio.Class())
-	if vers > rvers.ROOT_IOFeatures {
+	hdr := r.ReadHeader(tio.Class())
+	if hdr.Vers > rvers.ROOT_IOFeatures {
 		panic(fmt.Errorf(
 			"rtree: invalid %s version=%d > %d",
-			tio.Class(), vers, tio.RVersion(),
+			tio.Class(), hdr.Vers, tio.RVersion(),
 		))
 	}
 
@@ -737,7 +735,7 @@ func (tio *tioFeatures) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	*tio = tioFeatures(u8)
 
-	r.CheckByteCount(pos, bcnt, beg, tio.Class())
+	r.CheckHeader(hdr)
 	return r.Err()
 }
 
