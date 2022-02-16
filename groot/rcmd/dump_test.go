@@ -257,6 +257,11 @@ func TestDump(t *testing.T) {
 			want: loadRef("testdata/std-map-split1.root.txt"),
 		},
 		{
+			// std::map, std::set, std::list, std::deque, std::unordered_map, std::unordered_set, TString
+			name: "../testdata/std-containers-split00.root",
+			want: loadRef("testdata/std-containers-split00.root.txt"),
+		},
+		{
 			// n-dim arrays
 			// FIXME(sbinet): arrays of Float16_t and Double32_t are flatten.
 			// This is because of:
