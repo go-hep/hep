@@ -773,6 +773,9 @@ func wstreamHeader(w *rbytes.WBuffer, typename string, typevers int16) rbytes.He
 	if _, ok := rmeta.CxxBuiltins[typename]; ok && typename != "string" {
 		return rbytes.Header{Pos: -1}
 	}
+	if typename == "TString" {
+		return rbytes.Header{Pos: -1}
+	}
 	return w.WriteHeader(typename, typevers)
 }
 

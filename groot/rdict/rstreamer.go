@@ -786,6 +786,9 @@ func rstreamHeader(r *rbytes.RBuffer, typename string) rbytes.Header {
 	if _, ok := rmeta.CxxBuiltins[typename]; ok && typename != "string" {
 		return rbytes.Header{Pos: -1}
 	}
+	if typename == "TString" {
+		return rbytes.Header{Pos: -1}
+	}
 	return r.ReadHeader(typename)
 }
 
