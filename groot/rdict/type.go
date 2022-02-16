@@ -29,6 +29,21 @@ func TypeFromSI(ctx rbytes.StreamerInfoContext, si rbytes.StreamerInfo) (reflect
 	}
 
 	switch {
+	case name == "TString":
+		if len(si.Elements()) == 0 {
+			sinfo := si.(*StreamerInfo)
+			sinfo.elems = append(sinfo.elems, &StreamerBasicType{
+				StreamerElement: Element{
+					Name:   *rbase.NewNamed("This", ""),
+					Type:   rmeta.TString,
+					Size:   25,
+					MaxIdx: [5]int32{0, 0, 0, 0, 0},
+					EName:  "TString",
+				}.New(),
+			})
+		}
+		return gotypes[reflect.String], nil
+
 	case name == "string", name == "std::string":
 		if len(si.Elements()) == 0 {
 			// fix for old (v=2) streamer for string
@@ -36,7 +51,7 @@ func TypeFromSI(ctx rbytes.StreamerInfoContext, si rbytes.StreamerInfo) (reflect
 			sinfo.elems = append(sinfo.elems, &StreamerSTLstring{
 				StreamerSTL: StreamerSTL{
 					StreamerElement: Element{
-						Name:   *rbase.NewNamed("This", ""),
+						Name:   *rbase.NewNamed("This", "Used to call the proper TStreamerInfo case"),
 						Type:   rmeta.STLstring,
 						Size:   32,
 						MaxIdx: [5]int32{0, 0, 0, 0, 0},

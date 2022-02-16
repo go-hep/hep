@@ -86,6 +86,18 @@ func TestTypeFromSI(t *testing.T) {
 			want: reflect.TypeOf((*rbase.Object)(nil)).Elem(),
 		},
 		{
+			name: "TString",
+			si: func() rbytes.StreamerInfo {
+				const name = "TString"
+				si, ok := rdict.StreamerInfos.Get(name, -1)
+				if !ok {
+					t.Fatalf("could not load streamer for %q", name)
+				}
+				return si
+			}(),
+			want: reflect.TypeOf((*string)(nil)).Elem(),
+		},
+		{
 			name: "TNamed",
 			si: func() rbytes.StreamerInfo {
 				const name = "TNamed"
