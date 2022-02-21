@@ -6,8 +6,7 @@ package riofs
 
 import (
 	"fmt"
-	"regexp"
-	"strings"
+	"reflect"
 
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rdict"
@@ -15,30 +14,19 @@ import (
 	"go-hep.org/x/hep/groot/root"
 )
 
-var (
-	reStdVector = regexp.MustCompile("^vector<(.+)>$")
-)
-
 func stdvecSIFrom(name, ename string, ctx rbytes.StreamerInfoContext) rbytes.StreamerInfo {
-	const vers = 1
-	ename = strings.TrimSpace(ename)
 	if etyp, ok := rmeta.CxxBuiltins[ename]; ok {
-		si := rdict.NewStreamerInfo(name, vers, []rbytes.StreamerElement{
-			rdict.NewStreamerSTL(
-				name, rmeta.STLvector, rmeta.GoType2ROOTEnum[etyp],
-			),
-		})
-		return si
+		return rdict.StreamerOf(ctx, reflect.SliceOf(etyp))
 	}
 	esi, err := ctx.StreamerInfo(ename, -1)
 	if esi == nil || err != nil {
 		return nil
 	}
-
-	si := rdict.NewStreamerInfo(name, vers, []rbytes.StreamerElement{
-		rdict.NewStreamerSTL(name, rmeta.STLvector, rmeta.Object),
-	})
-	return si
+	etyp, err := rdict.TypeFromSI(ctx, esi)
+	if err != nil || etyp == nil {
+		return nil
+	}
+	return rdict.StreamerOf(ctx, reflect.SliceOf(etyp))
 }
 
 type streamerInfoStore interface {

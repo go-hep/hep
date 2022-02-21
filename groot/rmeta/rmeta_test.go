@@ -78,6 +78,13 @@ func TestCxxTemplate(t *testing.T) {
 			},
 		},
 		{
+			name: "vector<float,ROOT::Detail::VecOps::RAdoptAllocator<float> >",
+			want: rmeta.CxxTemplate{
+				Name: "vector",
+				Args: []string{"float", "ROOT::Detail::VecOps::RAdoptAllocator<float>"},
+			},
+		},
+		{
 			name: "std::vector<std::map<K,V,Cmp>>",
 			want: rmeta.CxxTemplate{
 				Name: "std::vector",

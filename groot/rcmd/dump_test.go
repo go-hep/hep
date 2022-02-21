@@ -303,6 +303,10 @@ key[003]: eff;1 "efficiency" (TEfficiency) => ignoring key of type *rhist.Effici
 			name: "../testdata/pod-advanced.root",
 			want: loadRef("testdata/pod-advanced.root.txt"),
 		},
+		{
+			name: "../testdata/uproot/uproot-issue-172.root",
+			want: loadRef("testdata/uproot-issue-172.root.txt"),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)

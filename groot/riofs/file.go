@@ -797,13 +797,16 @@ func (f *File) StreamerInfo(name string, version int) (rbytes.StreamerInfo, erro
 	// no streamer for "name" in that file.
 	// try whether "name" isn't actually std::vector<T> and a streamer
 	// for T is in that file.
-	o := reStdVector.FindStringSubmatch(name)
-	if o != nil {
-		si := stdvecSIFrom(name, o[1], f)
-		if si != nil {
-			f.sinfos = append(f.sinfos, si)
-			rdict.StreamerInfos.Add(si)
-			return si, nil
+	if strings.Contains(name, "<") {
+		cxx := rmeta.CxxTemplateFrom(name)
+		switch cxx.Name {
+		case "vector":
+			si := stdvecSIFrom(name, cxx.Args[0], f)
+			if si != nil {
+				f.sinfos = append(f.sinfos, si)
+				rdict.StreamerInfos.Add(si)
+				return si, nil
+			}
 		}
 	}
 
