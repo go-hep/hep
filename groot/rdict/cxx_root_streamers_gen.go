@@ -268,6 +268,21 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 	}))
+	StreamerInfos.Add(NewCxxStreamerInfo("TDatime", 1, 0xb44671ee, []rbytes.StreamerElement{
+		&StreamerBasicType{StreamerElement: Element{
+			Name:   *rbase.NewNamed("fDatime", "Date (relative to 1995) + time"),
+			Type:   rmeta.UInt,
+			Size:   4,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
+			Offset: 0,
+			EName:  "unsigned int",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New()},
+	}))
 	StreamerInfos.Add(NewCxxStreamerInfo("TNamed", 1, 0xdfb74a3c, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
 			Name:   *rbase.NewNamed("TObject", "Basic ROOT object"),

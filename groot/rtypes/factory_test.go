@@ -14,7 +14,7 @@ import (
 
 func TestFactory(t *testing.T) {
 	n := rtypes.Factory.Len()
-	if got, want := n, 10; got != want {
+	if got, want := n, 11; got != want {
 		t.Fatalf("got=%d, want=%d", got, want)
 	}
 

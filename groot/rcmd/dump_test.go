@@ -307,6 +307,23 @@ key[003]: eff;1 "efficiency" (TEfficiency) => ignoring key of type *rhist.Effici
 			name: "../testdata/uproot/uproot-issue-172.root",
 			want: loadRef("testdata/uproot-issue-172.root.txt"),
 		},
+		{
+			name: "../testdata/tdatime.root",
+			want: `key[000]: tda;1 "object title" (TDatime) => "2006-01-02 15:04:05 +0000 UTC"
+key[001]: foo;1 "" (TFoo) => &{{0 50331648} 2006-01-02 15:04:05 +0000 UTC}
+key[002]: bar;1 "" (TBar) => &{{0 50331648} 2006-01-02 15:04:05 +0000 UTC [49 50 51 52 53 0]}
+key[003]: dat;1 "object title" (Date) => &{2006-01-02 15:04:05 +0000 UTC [49 50 51 52 53 0]}
+key[004]: tree;1 "my tree title" (TTree)
+[000][b0]: 2006-01-02 15:04:05 +0000 UTC
+[000][b1]: {{0 50331648} 2006-01-02 15:04:05 +0000 UTC}
+[000][b2]: {{0 50331648} 2006-01-02 15:04:05 +0000 UTC [49 50 51 52 53 0]}
+[000][b3]: {2006-01-02 15:04:05 +0000 UTC [49 50 51 52 53 0]}
+[001][b0]: 2006-01-03 15:04:05 +0000 UTC
+[001][b1]: {{0 50331648} 2006-01-03 15:04:05 +0000 UTC}
+[001][b2]: {{0 50331648} 2006-01-03 15:04:05 +0000 UTC [49 50 51 52 53 0]}
+[001][b3]: {2006-01-03 15:04:05 +0000 UTC [49 50 51 52 53 0]}
+`,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)

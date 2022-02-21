@@ -15,6 +15,7 @@ const (
 	AttFill                  = 2  // ROOT version for TAttFill
 	AttLine                  = 2  // ROOT version for TAttLine
 	AttMarker                = 2  // ROOT version for TAttMarker
+	Datime                   = 1  // ROOT version for TDatime
 	Named                    = 1  // ROOT version for TNamed
 	Object                   = 1  // ROOT version for TObject
 	ObjString                = 1  // ROOT version for TObjString

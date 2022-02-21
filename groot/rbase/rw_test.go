@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"go-hep.org/x/hep/groot/internal/rtests"
 	"go-hep.org/x/hep/groot/rbytes"
@@ -80,6 +81,13 @@ func TestWRBuffer(t *testing.T) {
 			want: &Ref{
 				obj: Object{ID: 0x0, Bits: 0x3000000},
 			},
+		},
+		{
+			name: "TDatime",
+			want: func() *Datime {
+				dt := Datime(time.Date(2006, 1, 2, 15, 4, 5, 0, time.UTC))
+				return &dt
+			}(),
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
