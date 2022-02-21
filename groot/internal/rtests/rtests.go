@@ -55,7 +55,7 @@ func RunCxxROOT(fct string, code []byte, args ...interface{}) ([]byte, error) {
 	}
 
 	o := new(strings.Builder)
-	fmt.Fprintf(o, "%s(", fname)
+	fmt.Fprintf(o, "%s+(", fname)
 	for i, arg := range args {
 		format := ""
 		if i > 0 {
