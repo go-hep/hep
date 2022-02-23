@@ -38,7 +38,13 @@ var (
 // RunCxxROOT creates a temporary file named '<fct>.C' from the provided C++ code and
 // executes it via ROOT C++.
 // RunCxxROOT returns the combined stdout/stderr output and an error, if any.
+// If 'fct' ends with a '+', RunCxxROOT will run the macro through ACliC.
 func RunCxxROOT(fct string, code []byte, args ...interface{}) ([]byte, error) {
+	aclic := ""
+	if strings.HasSuffix(fct, "+") {
+		aclic = "+"
+	}
+	fct = strings.TrimRight(fct, "+")
 	tmp, err := os.MkdirTemp("", "groot-rtests-")
 	if err != nil {
 		return nil, fmt.Errorf("could not create tmpdir: %w", err)
@@ -55,7 +61,7 @@ func RunCxxROOT(fct string, code []byte, args ...interface{}) ([]byte, error) {
 	}
 
 	o := new(strings.Builder)
-	fmt.Fprintf(o, "%s+(", fname)
+	fmt.Fprintf(o, "%s%s(", fname, aclic)
 	for i, arg := range args {
 		format := ""
 		if i > 0 {

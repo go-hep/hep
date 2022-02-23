@@ -22,7 +22,7 @@ var (
 func main() {
 	flag.Parse()
 
-	out, err := rtests.RunCxxROOT("gentree", []byte(class+script), *root, *split)
+	out, err := rtests.RunCxxROOT("gentree+", []byte(class+script), *root, *split)
 	if err != nil {
 		log.Fatalf("could not run ROOT macro:\noutput:\n%v\nerror: %+v", string(out), err)
 	}
