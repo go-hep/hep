@@ -324,6 +324,10 @@ key[004]: tree;1 "my tree title" (TTree)
 [001][b3]: {2006-01-03 15:04:05 +0000 UTC [49 50 51 52 53 0]}
 `,
 		},
+		{
+			name: "../testdata/tgme.root",
+			want: loadRef("testdata/tgme.root.txt"),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)

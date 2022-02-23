@@ -93,3 +93,10 @@ type F1Composition interface {
 	isF1Composition() // FIXME(sbinet): have a more useful interface?
 	// Eval(xs, ps []float64) float64
 }
+
+// MultiGraph describes a ROOT TMultiGraph
+type MultiGraph interface {
+	root.Named
+
+	Graphs() []Graph
+}

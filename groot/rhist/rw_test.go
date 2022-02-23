@@ -276,6 +276,10 @@ func TestWRBuffer(t *testing.T) {
 			name: "TGraphMultiErrors",
 			want: loadFrom("../testdata/tgme.root", "gme"),
 		},
+		{
+			name: "TMultiGraph",
+			want: loadFrom("../testdata/tgme.root", "mg"),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			{

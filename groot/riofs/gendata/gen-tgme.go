@@ -29,6 +29,12 @@ func main() {
 
 const script = `
 #include "TGraphMultiErrors.h"
+#include "TMultiGraph.h"
+#include "TGraph.h"
+#include "TGraphErrors.h"
+#include "TGraphAsymmErrors.h"
+
+#include "TFile.h"
 
 void gentgme(const char* fname) {
 	const Int_t np = 5;
@@ -54,6 +60,16 @@ void gentgme(const char* fname) {
 
 	auto f = TFile::Open(fname, "RECREATE");
 	f->WriteTObject(gme, "gme");
+
+	auto g1 = new TGraph(np, x, eylstat);
+	auto g2 = new TGraphErrors(np, x, y, exl, eylsys);
+	auto g3 = new TGraphAsymmErrors(np, x, y, exl, exh, eylstat, eyhstat);
+	auto mg = new TMultiGraph("mg", "multi-graph example");
+	mg->Add(g1);
+	mg->Add(g2);
+	mg->Add(g3);
+	mg->Fit("pol1", "FQ");
+	f->WriteTObject(mg, "mg");
 
 	f->Write();
 	f->Close();

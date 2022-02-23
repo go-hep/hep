@@ -92,6 +92,14 @@ func (cmd *dumpCmd) dumpObj(obj root.Object) error {
 	case rhist.Graph:
 		fmt.Fprintf(cmd.w, "\n")
 		err = cmd.dumpGraph(obj)
+	case rhist.MultiGraph:
+		for _, g := range obj.Graphs() {
+			fmt.Fprintf(cmd.w, "\n")
+			err = cmd.dumpGraph(g)
+			if err != nil {
+				return err
+			}
+		}
 	case root.List:
 		fmt.Fprintf(cmd.w, "\n")
 		err = cmd.dumpList(obj)
