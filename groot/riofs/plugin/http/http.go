@@ -9,7 +9,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"runtime"
 
+	"go-hep.org/x/hep/groot/internal/httpio"
 	"go-hep.org/x/hep/groot/riofs"
 )
 
@@ -19,6 +21,20 @@ func init() {
 }
 
 func openFile(path string) (riofs.Reader, error) {
+	r, err := httpio.Open(path)
+	if err != nil {
+		// HTTP server may not support accept-range.
+		return tmpFileFrom(path)
+	}
+	rc, err := rcacheOf(&preader{r: r, n: runtime.NumCPU()})
+	if err != nil {
+		_ = r.Close()
+		return tmpFileFrom(path)
+	}
+	return rc, nil
+}
+
+func tmpFileFrom(path string) (riofs.Reader, error) {
 	resp, err := http.Get(path)
 	if err != nil {
 		return nil, err
@@ -40,7 +56,6 @@ func openFile(path string) (riofs.Reader, error) {
 		return nil, err
 	}
 	return &tmpFile{f}, nil
-
 }
 
 // tmpFile wraps a regular os.File to automatically remove it when closed.
