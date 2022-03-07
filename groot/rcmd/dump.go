@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"strconv"
 
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rdict"
@@ -133,14 +134,38 @@ func (cmd *dumpCmd) dumpTree(t rtree.Tree) error {
 	}
 	defer r.Close()
 
+	names := make([][]byte, len(vars))
+	for i, v := range vars {
+		name := v.Name
+		if v.Leaf != "" && v.Leaf != v.Name {
+			name = v.Name + "." + v.Leaf
+		}
+		names[i] = []byte(name)
+	}
+
+	// FIXME(sbinet): don't use a "global" buffer for when rtree.Reader reads multiple
+	// events in parallel.
+	buf := make([]byte, 0, 8*1024)
 	err = r.Read(func(rctx rtree.RCtx) error {
-		for _, v := range vars {
-			name := v.Name
-			if v.Leaf != "" && v.Leaf != v.Name {
-				name = v.Name + "." + v.Leaf
+		for i, v := range vars {
+			buf = buf[:0]
+			buf = append(buf, '[')
+			switch {
+			case rctx.Entry < 10:
+				buf = append(buf, '0', '0')
+			case rctx.Entry < 100:
+				buf = append(buf, '0')
 			}
+			buf = strconv.AppendInt(buf, rctx.Entry, 10)
+			buf = append(buf, ']', '[')
+			buf = append(buf, names[i]...)
+			buf = append(buf, ']', ':', ' ')
 			rv := reflect.Indirect(reflect.ValueOf(v.Value))
-			fmt.Fprintf(cmd.w, "[%03d][%s]: %v\n", rctx.Entry, name, rv.Interface())
+			buf = append(buf, fmt.Sprintf("%v\n", rv.Interface())...)
+			_, err = cmd.w.Write(buf)
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})

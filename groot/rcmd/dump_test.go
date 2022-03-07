@@ -343,3 +343,18 @@ key[004]: tree;1 "my tree title" (TTree)
 		})
 	}
 }
+
+func BenchmarkDump(b *testing.B) {
+	const deep = true
+	out := new(strings.Builder)
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		out.Reset()
+		b.StartTimer()
+		// big-file.root is: rtests.XrdRemote("testdata/SMHiggsToZZTo4L.root")
+		err := rcmd.Dump(out, "../testdata/big-file.root", deep, nil)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
