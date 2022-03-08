@@ -24,7 +24,7 @@ type file struct {
 	handle      xrdfs.FileHandle
 	compression *xrdfs.FileCompression
 
-	mu        rsync.Mutex
+	mu        rsync.RWMutex
 	info      *xrdfs.EntryStat
 	sessionID string
 }
@@ -47,56 +47,36 @@ func (f *file) Handle() xrdfs.FileHandle {
 
 // Close closes the file.
 func (f *file) Close(ctx context.Context) error {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
-	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, nil, &xrdclose.Request{Handle: f.handle})
-	if err != nil {
-		return err
-	}
-	f.sessionID = newSessionID
-	return nil
+	return f.do(ctx, func(ctx context.Context, sid string) (string, error) {
+		return f.fs.c.sendSession(ctx, sid, nil, &xrdclose.Request{Handle: f.handle})
+	})
 }
 
 // CloseVerify closes the file and checks whether the file has the provided size.
 // A zero size suppresses the verification.
 func (f *file) CloseVerify(ctx context.Context, size int64) error {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
-	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, nil, &xrdclose.Request{Handle: f.handle, Size: size})
-	if err != nil {
-		return err
-	}
-	f.sessionID = newSessionID
-	return nil
+	return f.do(ctx, func(ctx context.Context, sid string) (string, error) {
+		return f.fs.c.sendSession(ctx, sid, nil, &xrdclose.Request{Handle: f.handle, Size: size})
+	})
 }
 
 // Sync commits all pending writes to an open file.
 func (f *file) Sync(ctx context.Context) error {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
-	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, nil, &sync.Request{Handle: f.handle})
-	if err != nil {
-		return err
-	}
-	f.sessionID = newSessionID
-	return nil
+	return f.do(ctx, func(ctx context.Context, sid string) (string, error) {
+		return f.fs.c.sendSession(ctx, sid, nil, &sync.Request{Handle: f.handle})
+	})
 }
 
 // ReadAtContext reads len(p) bytes into p starting at offset off.
 func (f *file) ReadAtContext(ctx context.Context, p []byte, off int64) (n int, err error) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
 	resp := read.Response{Data: p}
 	req := &read.Request{Handle: f.handle, Offset: off, Length: int32(len(p))}
-	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, &resp, req)
+	err = f.do(ctx, func(ctx context.Context, sid string) (string, error) {
+		return f.fs.c.sendSession(ctx, sid, &resp, req)
+	})
 	if err != nil {
 		return 0, err
 	}
-	f.sessionID = newSessionID
 	return len(resp.Data), nil
 }
 
@@ -107,15 +87,9 @@ func (f *file) ReadAt(p []byte, off int64) (n int, err error) {
 
 // WriteAtContext writes len(p) bytes from p to the file at offset off.
 func (f *file) WriteAtContext(ctx context.Context, p []byte, off int64) error {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
-	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, nil, &write.Request{Handle: f.handle, Offset: off, Data: p})
-	if err != nil {
-		return err
-	}
-	f.sessionID = newSessionID
-	return nil
+	return f.do(ctx, func(ctx context.Context, sid string) (string, error) {
+		return f.fs.c.sendSession(ctx, sid, nil, &write.Request{Handle: f.handle, Offset: off, Data: p})
+	})
 }
 
 // WriteAt writes len(p) bytes from p to the file at offset off.
@@ -129,30 +103,22 @@ func (f *file) WriteAt(p []byte, off int64) (n int, err error) {
 
 // Truncate changes the size of the named file.
 func (f *file) Truncate(ctx context.Context, size int64) error {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
-	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, nil, &truncate.Request{Handle: f.handle, Size: size})
-	if err != nil {
-		return err
-	}
-	f.sessionID = newSessionID
-	return nil
+	return f.do(ctx, func(ctx context.Context, sid string) (string, error) {
+		return f.fs.c.sendSession(ctx, sid, nil, &truncate.Request{Handle: f.handle, Size: size})
+	})
 }
 
 // StatVirtualFS fetches the virtual fs stat info from the XRootD server.
 // TODO: note that calling stat with vfs and handle may be invalid.
 // See https://github.com/xrootd/xrootd/issues/728 for the details.
 func (f *file) StatVirtualFS(ctx context.Context) (xrdfs.VirtualFSStat, error) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
 	var resp stat.VirtualFSResponse
-	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, &resp, &stat.Request{FileHandle: f.handle, Options: stat.OptionsVFS})
+	err := f.do(ctx, func(ctx context.Context, sid string) (string, error) {
+		return f.fs.c.sendSession(ctx, sid, &resp, &stat.Request{FileHandle: f.handle, Options: stat.OptionsVFS})
+	})
 	if err != nil {
 		return xrdfs.VirtualFSStat{}, err
 	}
-	f.sessionID = newSessionID
 	return resp.VirtualFSStat, nil
 }
 
@@ -160,16 +126,21 @@ func (f *file) StatVirtualFS(ctx context.Context) (xrdfs.VirtualFSStat, error) {
 // Note that Stat re-fetches value returned by the Info, so after the call to Stat
 // calls to Info may return different value than before.
 func (f *file) Stat(ctx context.Context) (xrdfs.EntryStat, error) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
+	f.mu.RLock()
+	sid := f.sessionID
+	f.mu.RUnlock()
 
 	var resp stat.DefaultResponse
-	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, &resp, &stat.Request{FileHandle: f.handle})
+	sid, err := f.fs.c.sendSession(ctx, sid, &resp, &stat.Request{FileHandle: f.handle})
 	if err != nil {
 		return xrdfs.EntryStat{}, err
 	}
+
+	f.mu.Lock()
+	f.sessionID = sid
 	f.info = &resp.EntryStat
-	f.sessionID = newSessionID
+	f.mu.Unlock()
+
 	return resp.EntryStat, nil
 }
 
@@ -178,14 +149,25 @@ func (f *file) Stat(ctx context.Context) (xrdfs.EntryStat, error) {
 // TODO: note that verifyw is not supported by the XRootD server.
 // See https://github.com/xrootd/xrootd/issues/738 for the details.
 func (f *file) VerifyWriteAt(ctx context.Context, p []byte, off int64) error {
-	f.mu.Lock()
-	defer f.mu.Unlock()
+	return f.do(ctx, func(ctx context.Context, sid string) (string, error) {
+		return f.fs.c.sendSession(ctx, sid, nil, verifyw.NewRequestCRC32(f.handle, off, p))
+	})
+}
 
-	newSessionID, err := f.fs.c.sendSession(ctx, f.sessionID, nil, verifyw.NewRequestCRC32(f.handle, off, p))
+func (f *file) do(ctx context.Context, fct func(ctx context.Context, sid string) (string, error)) error {
+	f.mu.RLock()
+	sid := f.sessionID
+	f.mu.RUnlock()
+
+	id, err := fct(ctx, sid)
 	if err != nil {
 		return err
 	}
-	f.sessionID = newSessionID
+
+	f.mu.Lock()
+	f.sessionID = id
+	f.mu.Unlock()
+
 	return nil
 }
 
