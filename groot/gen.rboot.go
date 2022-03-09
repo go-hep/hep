@@ -171,13 +171,17 @@ void genstreamers(const char* fname) {
 		log.Fatalf("missing streamers: got=%d, want=%d", got, want)
 	}
 
-	f, err := os.Create("rdict/cxx_root_streamers_gen.go")
+	var (
+		fname = "rdict/cxx_root_streamers_gen.go"
+		year  = genroot.ExtractYear(fname)
+	)
+	f, err := os.Create(fname)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
 
-	_, err = f.Write([]byte(`// Copyright ©2022 The go-hep Authors. All rights reserved.
+	_, err = f.Write([]byte(fmt.Sprintf(`// Copyright ©%d The go-hep Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -192,7 +196,7 @@ import (
 )
 
 func init() {
-`))
+`, year)))
 	if err != nil {
 		log.Fatalf("could not write groot streamers header: %+v", err)
 	}

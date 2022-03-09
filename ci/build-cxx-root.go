@@ -22,7 +22,7 @@ func main() {
 	log.SetPrefix("")
 	log.SetFlags(0)
 
-	rvers := flag.String("root-version", "6.24.00", "ROOT version to build")
+	rvers := flag.String("root-version", "6.26.00", "ROOT version to build")
 	nproc := flag.Int("j", runtime.NumCPU(), "number of parallel build processes")
 
 	flag.Parse()
@@ -56,11 +56,13 @@ func build(rvers string, nproc int) {
 	}
 
 	cmd := exec.Command("docker", "run", "--rm",
+		"--network=host",
 		"-v", fname+":/build.sh",
 		"-v", bdir+":/build/src",
 		"-v", dst+":/build/install",
-		"ubuntu:bionic", "/bin/sh", "/build.sh",
+		"ubuntu:20.04", "/bin/sh", "/build.sh",
 	)
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -90,12 +92,14 @@ const docker = `#!/bin/sh
 set -e
 set -x
 
-apt-get update -y
-apt-get install -y -q \
+export DEBIAN_FRONTEND=noninteractive
+
+apt update  -yq
+apt install -yq    \
 		cmake curl \
-		g++ git \
-		python \
-		;
+		g++ git    \
+		python     \
+;
 
 export ROOT_VERSION="%[1]s"
 

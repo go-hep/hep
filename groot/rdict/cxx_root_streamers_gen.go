@@ -1601,7 +1601,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fXmin", "low edge of first bin"),
+			Name:   *rbase.NewNamed("fXmin", "Low edge of first bin"),
 			Type:   rmeta.Double,
 			Size:   8,
 			ArrLen: 0,
@@ -1614,7 +1614,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fXmax", "upper edge of last bin"),
+			Name:   *rbase.NewNamed("fXmax", "Upper edge of last bin"),
 			Type:   rmeta.Double,
 			Size:   8,
 			ArrLen: 0,
@@ -1640,7 +1640,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fFirst", "first bin to display"),
+			Name:   *rbase.NewNamed("fFirst", "First bin to display"),
 			Type:   rmeta.Int,
 			Size:   4,
 			ArrLen: 0,
@@ -1653,7 +1653,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fLast", "last bin to display"),
+			Name:   *rbase.NewNamed("fLast", "Last bin to display"),
 			Type:   rmeta.Int,
 			Size:   4,
 			ArrLen: 0,
@@ -1666,7 +1666,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fBits2", "second bit status word"),
+			Name:   *rbase.NewNamed("fBits2", "Second bit status word"),
 			Type:   rmeta.UShort,
 			Size:   2,
 			ArrLen: 0,
@@ -1679,7 +1679,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fTimeDisplay", "on/off displaying time values instead of numerics"),
+			Name:   *rbase.NewNamed("fTimeDisplay", "On/off displaying time values instead of numerics"),
 			Type:   rmeta.Bool,
 			Size:   1,
 			ArrLen: 0,
@@ -1982,7 +1982,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 2),
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fBeta_alpha", "global parameter for prior beta distribution (default = 1)"),
+			Name:   *rbase.NewNamed("fBeta_alpha", "Global parameter for prior beta distribution (default = 1)"),
 			Type:   rmeta.Double,
 			Size:   8,
 			ArrLen: 0,
@@ -1995,7 +1995,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fBeta_beta", "global parameter for prior beta distribution (default = 1)"),
+			Name:   *rbase.NewNamed("fBeta_beta", "Global parameter for prior beta distribution (default = 1)"),
 			Type:   rmeta.Double,
 			Size:   8,
 			ArrLen: 0,
@@ -2008,7 +2008,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		NewCxxStreamerSTL(Element{
-			Name:   *rbase.NewNamed("fBeta_bin_params", "parameter for prior beta distribution different bin by bin"),
+			Name:   *rbase.NewNamed("fBeta_bin_params", "Parameter for prior beta distribution different bin by bin"),
 			Type:   rmeta.Streamer,
 			Size:   24,
 			ArrLen: 0,
@@ -2021,7 +2021,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 1, 61),
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fConfLevel", "confidence level (default = 0.683, 1 sigma)"),
+			Name:   *rbase.NewNamed("fConfLevel", "Confidence level (default = 0.683, 1 sigma)"),
 			Type:   rmeta.Double,
 			Size:   8,
 			ArrLen: 0,
@@ -2034,7 +2034,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerObjectPointer{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fFunctions", "->pointer to list of functions"),
+			Name:   *rbase.NewNamed("fFunctions", "->Pointer to list of functions"),
 			Type:   rmeta.Objectp,
 			Size:   8,
 			ArrLen: 0,
@@ -2047,7 +2047,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerObjectPointer{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fPassedHistogram", "histogram for events which passed certain criteria"),
+			Name:   *rbase.NewNamed("fPassedHistogram", "Histogram for events which passed certain criteria"),
 			Type:   rmeta.ObjectP,
 			Size:   8,
 			ArrLen: 0,
@@ -2060,7 +2060,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fStatisticOption", "defines how the confidence intervals are determined"),
+			Name:   *rbase.NewNamed("fStatisticOption", "Defines how the confidence intervals are determined"),
 			Type:   rmeta.Int,
 			Size:   4,
 			ArrLen: 0,
@@ -2073,7 +2073,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerObjectPointer{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fTotalHistogram", "histogram for total number of events"),
+			Name:   *rbase.NewNamed("fTotalHistogram", "Histogram for total number of events"),
 			Type:   rmeta.ObjectP,
 			Size:   8,
 			ArrLen: 0,
@@ -2086,7 +2086,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fWeight", "weight for all events (default = 1)"),
+			Name:   *rbase.NewNamed("fWeight", "Weight for all events (default = 1)"),
 			Type:   rmeta.Double,
 			Size:   8,
 			ArrLen: 0,
@@ -2640,7 +2640,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fXmin", "/ Minimal bound of range of NormSum"),
+			Name:   *rbase.NewNamed("fXmin", "Minimal bound of range of NormSum"),
 			Type:   rmeta.Double,
 			Size:   8,
 			ArrLen: 0,
@@ -2653,7 +2653,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fXmax", "/ Maximal bound of range of NormSum"),
+			Name:   *rbase.NewNamed("fXmax", "Maximal bound of range of NormSum"),
 			Type:   rmeta.Double,
 			Size:   8,
 			ArrLen: 0,
@@ -2761,7 +2761,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 1),
 		NewCxxStreamerSTL(Element{
-			Name:   *rbase.NewNamed("fClingParameters", "parameter values"),
+			Name:   *rbase.NewNamed("fClingParameters", "Parameter values"),
 			Type:   rmeta.Streamer,
 			Size:   24,
 			ArrLen: 0,
@@ -2774,7 +2774,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 1, 8),
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fAllParametersSetted", "flag to control if all parameters are setted"),
+			Name:   *rbase.NewNamed("fAllParametersSetted", "Flag to control if all parameters are setted"),
 			Type:   rmeta.Bool,
 			Size:   1,
 			ArrLen: 0,
@@ -2787,7 +2787,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		NewCxxStreamerSTL(Element{
-			Name:   *rbase.NewNamed("fParams", "|| list of  parameter names"),
+			Name:   *rbase.NewNamed("fParams", "|| List of  parameter names"),
 			Type:   rmeta.Streamer,
 			Size:   48,
 			ArrLen: 0,
@@ -2800,7 +2800,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 4, 61),
 		&StreamerString{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fFormula", "string representing the formula expression"),
+			Name:   *rbase.NewNamed("fFormula", "String representing the formula expression"),
 			Type:   rmeta.TString,
 			Size:   24,
 			ArrLen: 0,
@@ -2826,7 +2826,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		NewCxxStreamerSTL(Element{
-			Name:   *rbase.NewNamed("fLinearParts", "vector of linear functions"),
+			Name:   *rbase.NewNamed("fLinearParts", "Vector of linear functions"),
 			Type:   rmeta.Streamer,
 			Size:   24,
 			ArrLen: 0,
@@ -2839,7 +2839,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 1, 63),
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fVectorized", "whether we should use vectorized or regular variables"),
+			Name:   *rbase.NewNamed("fVectorized", "Whether we should use vectorized or regular variables"),
 			Type:   rmeta.Bool,
 			Size:   1,
 			ArrLen: 0,
@@ -3172,7 +3172,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 4, "fNpoints", "TGraph"),
 		NewCxxStreamerSTL(Element{
-			Name:   *rbase.NewNamed("fEyL", "two dimensional array of Y low errors"),
+			Name:   *rbase.NewNamed("fEyL", "Two dimensional array of Y low errors"),
 			Type:   rmeta.Streamer,
 			Size:   24,
 			ArrLen: 0,
@@ -3185,7 +3185,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 1, 61),
 		NewCxxStreamerSTL(Element{
-			Name:   *rbase.NewNamed("fEyH", "two dimensional array of Y high errors"),
+			Name:   *rbase.NewNamed("fEyH", "Two dimensional array of Y high errors"),
 			Type:   rmeta.Streamer,
 			Size:   24,
 			ArrLen: 0,
@@ -3198,7 +3198,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 1, 61),
 		NewCxxStreamerSTL(Element{
-			Name:   *rbase.NewNamed("fAttFill", "the AttFill attributes of the different errors"),
+			Name:   *rbase.NewNamed("fAttFill", "The AttFill attributes of the different errors"),
 			Type:   rmeta.Streamer,
 			Size:   24,
 			ArrLen: 0,
@@ -3211,7 +3211,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 1, 61),
 		NewCxxStreamerSTL(Element{
-			Name:   *rbase.NewNamed("fAttLine", "the AttLine attributes of the different errors"),
+			Name:   *rbase.NewNamed("fAttLine", "The AttLine attributes of the different errors"),
 			Type:   rmeta.Streamer,
 			Size:   24,
 			ArrLen: 0,
@@ -3278,7 +3278,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 2),
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fNcells", "number of bins(1D), cells (2D) +U/Overflows"),
+			Name:   *rbase.NewNamed("fNcells", "Number of bins(1D), cells (2D) +U/Overflows"),
 			Type:   rmeta.Int,
 			Size:   4,
 			ArrLen: 0,
@@ -3486,7 +3486,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerString{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fOption", "histogram options"),
+			Name:   *rbase.NewNamed("fOption", "Histogram options"),
 			Type:   rmeta.TString,
 			Size:   24,
 			ArrLen: 0,
@@ -3538,7 +3538,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 8, "fBufferSize", "TH1"),
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fBinStatErrOpt", "option for bin statistical errors"),
+			Name:   *rbase.NewNamed("fBinStatErrOpt", "Option for bin statistical errors"),
 			Type:   rmeta.Int,
 			Size:   4,
 			ArrLen: 0,
@@ -3551,7 +3551,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fStatOverflows", "per object flag to use under/overflows in statistics"),
+			Name:   *rbase.NewNamed("fStatOverflows", "Per object flag to use under/overflows in statistics"),
 			Type:   rmeta.Int,
 			Size:   4,
 			ArrLen: 0,
@@ -4258,7 +4258,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 1),
 		&StreamerObject{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fSignal", "packed input signal"),
+			Name:   *rbase.NewNamed("fSignal", "Packed input signal"),
 			Type:   rmeta.Object,
 			Size:   64,
 			ArrLen: 0,
@@ -4271,7 +4271,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerObject{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fBackground", "packed input background"),
+			Name:   *rbase.NewNamed("fBackground", "Packed input background"),
 			Type:   rmeta.Object,
 			Size:   64,
 			ArrLen: 0,
@@ -4284,7 +4284,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerObject{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fCandidates", "packed input candidates (data)"),
+			Name:   *rbase.NewNamed("fCandidates", "Packed input candidates (data)"),
 			Type:   rmeta.Object,
 			Size:   64,
 			ArrLen: 0,
@@ -4297,7 +4297,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerObject{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fErrorOnSignal", "packed error sources for signal"),
+			Name:   *rbase.NewNamed("fErrorOnSignal", "Packed error sources for signal"),
 			Type:   rmeta.Object,
 			Size:   64,
 			ArrLen: 0,
@@ -4310,7 +4310,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerObject{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fErrorOnBackground", "packed error sources for background"),
+			Name:   *rbase.NewNamed("fErrorOnBackground", "Packed error sources for background"),
 			Type:   rmeta.Object,
 			Size:   64,
 			ArrLen: 0,
@@ -4323,7 +4323,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerObject{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fIds", "packed IDs for the different error sources"),
+			Name:   *rbase.NewNamed("fIds", "Packed IDs for the different error sources"),
 			Type:   rmeta.Object,
 			Size:   64,
 			ArrLen: 0,
@@ -4336,7 +4336,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerObject{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fDummyTA", "array of dummy object (used for bookeeping)"),
+			Name:   *rbase.NewNamed("fDummyTA", "Array of dummy object (used for bookeeping)"),
 			Type:   rmeta.Object,
 			Size:   64,
 			ArrLen: 0,
@@ -4349,7 +4349,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerObject{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fDummyIds", "array of dummy object (used for bookeeping)"),
+			Name:   *rbase.NewNamed("fDummyIds", "Array of dummy object (used for bookeeping)"),
 			Type:   rmeta.Object,
 			Size:   64,
 			ArrLen: 0,
@@ -4563,7 +4563,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 4),
 		&StreamerObjectAny{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fBinEntries", "number of entries per bin"),
+			Name:   *rbase.NewNamed("fBinEntries", "Number of entries per bin"),
 			Type:   rmeta.Any,
 			Size:   24,
 			ArrLen: 0,
@@ -6134,7 +6134,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fType", "branch type"),
+			Name:   *rbase.NewNamed("fType", "Branch type"),
 			Type:   rmeta.Int,
 			Size:   4,
 			ArrLen: 0,
