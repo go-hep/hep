@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"sync"
 )
 
 // Reader presents an HTTP resource as an io.Reader and io.ReaderAt.
@@ -18,6 +19,8 @@ type Reader struct {
 	req    *http.Request
 	ctx    context.Context
 	cancel context.CancelFunc
+
+	pool sync.Pool
 
 	r    *io.SectionReader
 	len  int64
@@ -69,6 +72,13 @@ func Open(uri string, opts ...Option) (r *Reader, err error) {
 	r.etag = hdr.Header.Get("Etag")
 	r.r = io.NewSectionReader(r, 0, r.len)
 
+	r.req.Header.Set("Range", "")
+	r.pool = sync.Pool{
+		New: func() interface{} {
+			return r.req.Clone(r.ctx)
+		},
+	}
+
 	return r, nil
 }
 
@@ -107,8 +117,8 @@ func (r *Reader) ReadAt(p []byte, off int64) (int, error) {
 	}
 
 	rng := rng(off, off+int64(len(p))-1)
-	req := r.req.Clone(r.ctx)
-	req.Header.Set("Range", rng)
+	req := r.getReq(rng)
+	defer r.pool.Put(req)
 
 	resp, err := r.cli.Do(req)
 	if err != nil {
@@ -136,6 +146,13 @@ func (r *Reader) ReadAt(p []byte, off int64) (int, error) {
 	}
 
 	return n, nil
+}
+
+func (r *Reader) getReq(rng string) *http.Request {
+	o := r.pool.Get().(*http.Request)
+	o.Header = r.req.Header.Clone()
+	o.Header["Range"][0] = rng
+	return o
 }
 
 func rng(beg, end int64) string {
