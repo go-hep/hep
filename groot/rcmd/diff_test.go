@@ -790,27 +790,27 @@ key[dir-1/dir-11/tree][0004].Arr -- (-ref +chk)
 			},
 			err: fmt.Errorf("dir-1: values for dir-11 in directory differ: dir-1/dir-11: values for tree in directory differ: dir-1/dir-11/tree: trees differ"),
 			want: `key[dir-1/dir-11/tree][0000].I32 -- (-ref +chk)
-  interface{}(
+  any(
 - 	int64(0),
 + 	int32(0),
   )
 key[dir-1/dir-11/tree][0001].I32 -- (-ref +chk)
-  interface{}(
+  any(
 - 	int64(1),
 + 	int32(1),
   )
 key[dir-1/dir-11/tree][0002].I32 -- (-ref +chk)
-  interface{}(
+  any(
 - 	int64(2),
 + 	int32(2),
   )
 key[dir-1/dir-11/tree][0003].I32 -- (-ref +chk)
-  interface{}(
+  any(
 - 	int64(3),
 + 	int32(3),
   )
 key[dir-1/dir-11/tree][0004].I32 -- (-ref +chk)
-  interface{}(
+  any(
 - 	int64(4),
 + 	int32(4),
   )
