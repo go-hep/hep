@@ -21,7 +21,7 @@ require (
 	github.com/sbinet/npyio v0.6.0
 	github.com/ulikunitz/xz v0.5.10
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
-	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd
+	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064
 	golang.org/x/exp v0.0.0-20210220032938-85be41e4509f
 	golang.org/x/image v0.0.0-20220321031419-a8550c1d254a
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
@@ -41,8 +41,8 @@ require (
 	github.com/go-pdf/fpdf v0.6.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/flatbuffers v1.12.0 // indirect
-	github.com/hashicorp/errwrap v1.0.0 // indirect
-	github.com/hashicorp/go-multierror v1.0.0 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
 	github.com/jcmturner/dnsutils/v2 v2.0.0 // indirect
 	github.com/jcmturner/gofork v1.0.0 // indirect
