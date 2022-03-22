@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // list-groot-sinfos lists all the known StreamerInfos known to groot.
 package main

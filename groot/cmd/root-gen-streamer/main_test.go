@@ -145,7 +145,8 @@ key[000]: data;1 "" (go_hep_org::x::hep::groot::internal::rdatatest::T1) => &{he
 				t.Fatalf("could not recompile package with streamer data:\n%v\nerr: %v", out.String(), err)
 			}
 
-			err = os.WriteFile("testdata/run.go", []byte(fmt.Sprintf(`// +build ignore
+			err = os.WriteFile("testdata/run.go", []byte(fmt.Sprintf(`//go:build ignore
+
 package main
 
 import (

@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // gen.rboot generates rdict streamers from the C++/ROOT ones.
 // gen.rboot generates ROOT class versions from the C++/ROOT streamers.
