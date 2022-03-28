@@ -90,7 +90,6 @@ options:
 		f, err := groot.Open(fname)
 		if err != nil {
 			log.Fatalf("failed to open [%s]: %v\n", fname, err)
-			os.Exit(1)
 		}
 		defer f.Close()
 		for _, k := range uniq(f.Keys()) {
