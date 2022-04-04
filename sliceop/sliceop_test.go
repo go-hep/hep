@@ -1,8 +1,10 @@
-// Copyright ©2020 The go-hep Authors.  All rights reserved.
+// Copyright ©2021 The go-hep Authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package f64s
+//go:build go1.18
+
+package sliceop
 
 import (
 	"fmt"
@@ -27,19 +29,12 @@ func panics(t *testing.T, want error) func() {
 }
 
 func TestMap(t *testing.T) {
-	var errLength = fmt.Errorf("sliceop: length mismatch")
 	defer panics(t, errLength)()
 
 	_ = Map(make([]float64, 3), make([]float64, 5), nil)
 }
 
 func TestTake(t *testing.T) {
-	var (
-		errLength           = fmt.Errorf("sliceop: length mismatch")
-		errSortedIndices    = fmt.Errorf("sliceop: indices not sorted")
-		errDuplicateIndices = fmt.Errorf("sliceop: duplicate indices")
-	)
-
 	for _, tc := range []struct {
 		dst, src []float64
 		inds     []int
