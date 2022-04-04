@@ -11,7 +11,13 @@ import (
 	"strings"
 
 	"go-hep.org/x/hep/groot/root"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
+
+func toTitle(s string) string {
+	return cases.Title(language.Und, cases.NoLower).String(s)
+}
 
 // ReadVar describes a variable to be read out of a tree.
 type ReadVar struct {
@@ -91,7 +97,7 @@ func ReadVarsFromStruct(ptr interface{}) []ReadVar {
 			ft = rt.Field(i)
 			fv = rv.Field(i)
 		)
-		if ft.Name != strings.Title(ft.Name) {
+		if ft.Name != toTitle(ft.Name) {
 			// not exported. ignore.
 			continue
 		}

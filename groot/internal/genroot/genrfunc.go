@@ -273,7 +273,7 @@ func parseExpr(x string) (*types.Signature, error) {
 		}
 		par = mk(expr.Params)
 		res = mk(expr.Results)
-		sig = types.NewSignature(nil, par, res, false)
+		sig = types.NewSignatureType(nil, nil, nil, par, res, false)
 		return sig, nil
 	default:
 		panic(fmt.Errorf("error: expr=%T", expr))

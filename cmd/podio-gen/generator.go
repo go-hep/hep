@@ -13,8 +13,14 @@ import (
 	"regexp"
 	"strings"
 
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"gopkg.in/yaml.v3"
 )
+
+func toTitle(s string) string {
+	return cases.Title(language.Und, cases.NoLower).String(s)
+}
 
 type document struct {
 	Options struct {
@@ -225,7 +231,7 @@ type %s struct {
 		if doc != "" {
 			doc = "// " + doc
 		}
-		g.printf("\t%s %s%s\n", strings.Title(key.Value), g.genTypeName(val.Value), doc)
+		g.printf("\t%s %s%s\n", toTitle(key.Value), g.genTypeName(val.Value), doc)
 	}
 
 	g.printf("}\n\n")
@@ -347,7 +353,7 @@ func (g *generator) genMembers(node *yaml.Node) ([]member, error) {
 	mbrs := make([]member, 0, len(node.Content))
 	for _, elem := range node.Content {
 		mbr := g.genMember(strings.TrimSpace(elem.Value))
-		mbr.Name = strings.Title(mbr.Name)
+		mbr.Name = toTitle(mbr.Name)
 		mbrs = append(mbrs, mbr)
 	}
 	return mbrs, nil

@@ -80,7 +80,7 @@ func WriteVarsFromStruct(ptr interface{}, opts ...WriteOption) []WriteVar {
 			ft = rt.Field(i)
 			fv = rv.Field(i)
 		)
-		if ft.Name != strings.Title(ft.Name) {
+		if ft.Name != toTitle(ft.Name) {
 			// not exported. ignore.
 			continue
 		}

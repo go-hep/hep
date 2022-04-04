@@ -39,9 +39,7 @@ func (tsk *testhsvc) StartTask(ctx fwk.Context) error {
 	if !strings.HasPrefix(tsk.stream, "/") {
 		tsk.stream = "/" + tsk.stream
 	}
-	if strings.HasSuffix(tsk.stream, "/") {
-		tsk.stream = tsk.stream[:len(tsk.stream)-1]
-	}
+	tsk.stream = strings.TrimSuffix(tsk.stream[:len(tsk.stream)-1], "/")
 
 	tsk.h1d, err = tsk.hsvc.BookH1D(tsk.stream+"/h1d-"+tsk.Name(), 100, -10, 10)
 	if err != nil {
