@@ -101,8 +101,11 @@ func Take[T any](dst, src []T, indices []int) []T {
 	}
 
 	dst[0] = src[indices[0]]
-	for i := 1; i < len(indices); i++ {
-		v0 := indices[i-1]
+	var (
+		v0 = indices[0]
+		nn = len(indices)
+	)
+	for i := 1; i < nn; i++ {
 		v1 := indices[i]
 		switch {
 		case v0 < v1:
@@ -112,8 +115,10 @@ func Take[T any](dst, src []T, indices []int) []T {
 		case v0 > v1:
 			panic(errSortedIndices)
 		}
-		dst[i] = src[v1]
+		dst[i-1] = src[v0]
+		v0 = v1
 	}
+	dst[nn-1] = src[v0]
 
 	return dst
 }
