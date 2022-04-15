@@ -6,6 +6,12 @@ package riofs
 
 import "bytes"
 
+// RMemFile creates a simple in-memory read-only ROOT file
+// from the provided slice of bytes.
+func RMemFile(p []byte) Reader {
+	return &memFile{bytes.NewReader(p)}
+}
+
 // memFile is a simple in-memory read-only ROOT file
 type memFile struct {
 	r *bytes.Reader

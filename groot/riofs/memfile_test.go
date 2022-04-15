@@ -5,7 +5,6 @@
 package riofs
 
 import (
-	"bytes"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -53,7 +52,7 @@ func TestRMemFile(t *testing.T) {
 		t.Fatalf("error reading file: %v", err)
 	}
 
-	r, err := NewReader(&memFile{bytes.NewReader(raw)})
+	r, err := NewReader(RMemFile(raw))
 	if err != nil {
 		t.Fatal(err)
 	}
