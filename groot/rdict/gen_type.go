@@ -446,7 +446,7 @@ func (o *%[1]s) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.StreamerElement) {
 	switch se := se.(type) {
 	case *StreamerBase:
-		g.printf("w.Write(&o.%s)\n", fmt.Sprintf("base%d", i))
+		g.printf("w.WriteObject(&o.%s)\n", fmt.Sprintf("base%d", i))
 
 	case *StreamerBasicPointer:
 		title := se.Title()
