@@ -34,6 +34,7 @@ import (
 //go:generate go run ./gendata/gen-tprofile.go -f ../testdata/tprofile.root
 //go:generate go run ./gendata/gen-tgme.go -f ../testdata/tgme.root
 //go:generate go run ./gendata/gen-tdatime.go -f ../testdata/tdatime.root
+//go:generate go run ./gendata/gen-base.go -f ../testdata/tbase.root
 
 // Directory describes a ROOT directory structure in memory.
 type Directory interface {
