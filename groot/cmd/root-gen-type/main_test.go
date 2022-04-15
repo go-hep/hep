@@ -37,6 +37,11 @@ func TestGenerate(t *testing.T) {
 			want:  "testdata/small-evnt-tree-fullsplit.txt",
 			types: []string{"Event", "P3"},
 		},
+		{
+			fname: "../../testdata/tbase.root",
+			want:  "testdata/tbase.txt",
+			types: []string{"Base", "D1", "D2"},
+		},
 	} {
 		t.Run(tc.fname, func(t *testing.T) {
 			oname := filepath.Base(tc.fname) + ".go"
