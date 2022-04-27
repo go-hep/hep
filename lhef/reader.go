@@ -251,11 +251,13 @@ func (d *Decoder) Decode() (*HEPEUP, error) {
 	n := int(evt.NUP)
 	evt.IDUP = make([]int64, n)
 	evt.ISTUP = make([]int32, n)
-	evt.MOTHUP = make([][2]int32, n)
-	evt.ICOLUP = make([][2]int32, n)
+	n2 := make([][2]int32, 2*n)
+	evt.MOTHUP = n2[:n:n]
+	evt.ICOLUP = n2[n:]
 	evt.PUP = make([][5]float64, n)
-	evt.VTIMUP = make([]float64, n)
-	evt.SPINUP = make([]float64, n)
+	f64 := make([]float64, 2*n)
+	evt.VTIMUP = f64[:n:n]
+	evt.SPINUP = f64[n:]
 	for i := 0; i < n; i++ {
 		_, err = fmt.Fscanf(
 			buf,
