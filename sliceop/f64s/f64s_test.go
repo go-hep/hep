@@ -5,6 +5,7 @@
 package f64s
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"reflect"
@@ -35,9 +36,9 @@ func TestMap(t *testing.T) {
 
 func TestTake(t *testing.T) {
 	var (
-		errLength           = fmt.Errorf("sliceop: length mismatch")
-		errSortedIndices    = fmt.Errorf("sliceop: indices not sorted")
-		errDuplicateIndices = fmt.Errorf("sliceop: duplicate indices")
+		errLength           = errors.New("sliceop: length mismatch")
+		errSortedIndices    = errors.New("sliceop: indices not sorted")
+		errDuplicateIndices = errors.New("sliceop: duplicate indices")
 	)
 
 	for _, tc := range []struct {

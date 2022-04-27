@@ -8,14 +8,12 @@
 // slices package.
 package sliceop // import "go-hep.org/x/hep/sliceop"
 
-import (
-	"fmt"
-)
+import "errors"
 
 var (
-	errLength           = fmt.Errorf("sliceop: length mismatch")
-	errSortedIndices    = fmt.Errorf("sliceop: indices not sorted")
-	errDuplicateIndices = fmt.Errorf("sliceop: duplicate indices")
+	errLength           = errors.New("sliceop: length mismatch")
+	errSortedIndices    = errors.New("sliceop: indices not sorted")
+	errDuplicateIndices = errors.New("sliceop: duplicate indices")
 )
 
 // Filter creates a slice with all the elements x_i of src for which f(x_i) is true.
