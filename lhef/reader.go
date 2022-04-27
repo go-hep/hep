@@ -122,12 +122,17 @@ Loop:
 		return nil, err
 	}
 
-	d.Run.XSECUP = make([]float64, int(d.Run.NPRUP))
-	d.Run.XERRUP = make([]float64, int(d.Run.NPRUP))
-	d.Run.XMAXUP = make([]float64, int(d.Run.NPRUP))
-	d.Run.LPRUP = make([]int32, int(d.Run.NPRUP))
+	n := int(d.Run.NPRUP)
+	if n < 0 {
+		return nil, fmt.Errorf("lhef.Decoder: invalid NPRUP (%d)", d.Run.NPRUP)
+	}
+	f64 := make([]float64, 3*n)
+	d.Run.XSECUP = f64[:n:n]
+	d.Run.XERRUP = f64[n : 2*n : 2*n]
+	d.Run.XMAXUP = f64[2*n:]
+	d.Run.LPRUP = make([]int32, n)
 
-	for i := 0; i < int(d.Run.NPRUP); i++ {
+	for i := 0; i < n; i++ {
 		_, err = fmt.Fscanf(
 			buf,
 			"%f %f %f %d\n",
