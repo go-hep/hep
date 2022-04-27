@@ -27,6 +27,20 @@ func TestLhefReading(t *testing.T) {
 		t.Error(err)
 	}
 
+	n := int(dec.Run.NPRUP)
+	if len(dec.Run.XSECUP) != n || cap(dec.Run.XSECUP) != n {
+		t.Errorf("invalid XSECUP len")
+	}
+	if len(dec.Run.XERRUP) != n || cap(dec.Run.XERRUP) != n {
+		t.Errorf("invalid XRERUP len")
+	}
+	if len(dec.Run.XMAXUP) != n || cap(dec.Run.XMAXUP) != n {
+		t.Errorf("invalid XMAXUP len")
+	}
+	if len(dec.Run.LPRUP) != n || cap(dec.Run.LPRUP) != n {
+		t.Errorf("invalid LPRUP len")
+	}
+
 	for i := 0; ; i++ {
 		if r_debug {
 			fmt.Printf("===[%d]===\n", i)
