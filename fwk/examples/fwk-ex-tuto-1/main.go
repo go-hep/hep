@@ -13,7 +13,7 @@ import (
 	// job is the scripting interface to 'fwk'
 	"go-hep.org/x/hep/fwk/job"
 
-	// side-effect import 'testdata'.
+	// side-effect import 'fwktest'.
 	// merely importing it will register the components defined in this package
 	// with the fwk components' factory.
 	_ "go-hep.org/x/hep/fwk/internal/fwktest"
