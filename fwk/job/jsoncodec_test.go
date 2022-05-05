@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/fwk"
-	"go-hep.org/x/hep/fwk/testdata"
+	"go-hep.org/x/hep/fwk/internal/fwktest"
 )
 
 func TestJSONEncode(t *testing.T) {
@@ -25,7 +25,7 @@ func TestJSONEncode(t *testing.T) {
 	}
 
 	cfg0 := C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 		Name: "t0",
 		Props: P{
 			"Ints1": "t0-ints1",
@@ -34,7 +34,7 @@ func TestJSONEncode(t *testing.T) {
 	}
 
 	cfg1 := C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 		Name: "t1",
 		Props: P{
 			"Ints1": "t1-ints1",
@@ -43,11 +43,11 @@ func TestJSONEncode(t *testing.T) {
 	}
 
 	cfg2 := C{
-		Type: "go-hep.org/x/hep/fwk/testdata.svc1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.svc1",
 		Name: "svc1",
 		Props: P{
-			"Int":    testdata.MyInt(12),
-			"Struct": testdata.MyStruct{I: 12},
+			"Int":    fwktest.MyInt(12),
+			"Struct": fwktest.MyStruct{I: 12},
 		},
 	}
 
@@ -118,8 +118,8 @@ func TestJSONEncode(t *testing.T) {
 	}
 
 	// FIXME(sbinet)
-	//  issue is that JSON won't deserialize 'MyStruct' into testdata.MyStruct...
-	//  same for 'MyInt' and testdata.MyInt
+	//  issue is that JSON won't deserialize 'MyStruct' into fwktest.MyStruct...
+	//  same for 'MyInt' and fwktest.MyInt
 	//
 	// if !reflect.DeepEqual(exp, stmts) {
 	// 	t.Fatalf("unexpected statments:\nexp=%#v\ngot=%#v\n", exp, stmts)

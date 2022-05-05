@@ -28,7 +28,7 @@ func NewTask(typ, name string, mgr App) TaskBase {
 }
 
 // Type returns the fully qualified type of the underlying task.
-// e.g. "go-hep.org/x/hep/fwk/testdata.task1"
+// e.g. "go-hep.org/x/hep/fwk/internal/fwktest.task1"
 func (tsk *TaskBase) Type() string {
 	return tsk.t
 }
