@@ -16,9 +16,9 @@ import (
 	// job is the scripting interface to 'fwk'
 	"go-hep.org/x/hep/fwk/job"
 
-	// we need to access some tools defined in testdata (the ascii InputStream)
+	// we need to access some tools defined in fwktest (the ascii InputStream)
 	// so we need to directly import that package
-	"go-hep.org/x/hep/fwk/testdata"
+	"go-hep.org/x/hep/fwk/internal/fwktest"
 )
 
 var (
@@ -69,7 +69,7 @@ options:
 	// create a task that reads integers from some location
 	// and publish the square of these integers under some other location
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task2",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task2",
 		Name: "t2",
 		Props: job.P{
 			"Input":  "t1-ints1",
@@ -90,7 +90,7 @@ options:
 					Type: reflect.TypeOf(int64(0)), // type of that data
 				},
 			},
-			"Streamer": &testdata.InputStream{
+			"Streamer": &fwktest.InputStream{
 				R: f,
 			},
 		},

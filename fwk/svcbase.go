@@ -26,7 +26,7 @@ func NewSvc(typ, name string, mgr App) SvcBase {
 }
 
 // Type returns the fully qualified type of the underlying service.
-// e.g. "go-hep.org/x/hep/fwk/testdata.svc1"
+// e.g. "go-hep.org/x/hep/fwk/internal/fwktest.svc1"
 func (svc *SvcBase) Type() string {
 	return svc.t
 }

@@ -19,9 +19,9 @@ import (
 	// for persistency
 	"go-hep.org/x/hep/fwk/rio"
 
-	// we need to access some tools defined in testdata
+	// we need to access some tools defined in fwktest
 	// so we need to directly import that package
-	_ "go-hep.org/x/hep/fwk/testdata"
+	_ "go-hep.org/x/hep/fwk/internal/fwktest"
 )
 
 var (
@@ -70,7 +70,7 @@ options:
 	// create a task that reads integers from some location
 	// and publish the square of these integers under some other location
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task2",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task2",
 		Name: "t2",
 		Props: job.P{
 			"Input":  "t1-ints1-massaged",

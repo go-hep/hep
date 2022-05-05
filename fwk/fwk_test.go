@@ -14,7 +14,7 @@ import (
 
 	"go-hep.org/x/hep/fwk"
 	"go-hep.org/x/hep/fwk/job"
-	"go-hep.org/x/hep/fwk/testdata"
+	"go-hep.org/x/hep/fwk/internal/fwktest"
 )
 
 func newapp(evtmax int64, nprocs int) *job.Job {
@@ -30,7 +30,7 @@ func TestSimpleSeqApp(t *testing.T) {
 
 	app := newapp(10, 0)
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 		Name: "t0",
 		Props: job.P{
 			"Ints1": "t0-ints1",
@@ -39,7 +39,7 @@ func TestSimpleSeqApp(t *testing.T) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 		Name: "t1",
 		Props: job.P{
 			"Ints1": "t1-ints1",
@@ -48,7 +48,7 @@ func TestSimpleSeqApp(t *testing.T) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task2",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task2",
 		Name: "t2",
 		Props: job.P{
 			"Input":  "t1-ints1",
@@ -57,7 +57,7 @@ func TestSimpleSeqApp(t *testing.T) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.svc1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.svc1",
 		Name: "svc1",
 	})
 
@@ -69,7 +69,7 @@ func TestSimpleConcApp(t *testing.T) {
 	for _, nprocs := range []int{1, 2, 4, 8} {
 		app := newapp(10, nprocs)
 		app.Create(job.C{
-			Type: "go-hep.org/x/hep/fwk/testdata.task1",
+			Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 			Name: "t0",
 			Props: job.P{
 				"Ints1": "t0-ints1",
@@ -78,7 +78,7 @@ func TestSimpleConcApp(t *testing.T) {
 		})
 
 		app.Create(job.C{
-			Type: "go-hep.org/x/hep/fwk/testdata.task1",
+			Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 			Name: "t1",
 			Props: job.P{
 				"Ints1": "t1-ints1",
@@ -87,7 +87,7 @@ func TestSimpleConcApp(t *testing.T) {
 		})
 
 		app.Create(job.C{
-			Type: "go-hep.org/x/hep/fwk/testdata.task2",
+			Type: "go-hep.org/x/hep/fwk/internal/fwktest.task2",
 			Name: "t2",
 			Props: job.P{
 				"Input":  "t1-ints1",
@@ -101,7 +101,7 @@ func TestSimpleConcApp(t *testing.T) {
 func TestDuplicateOutputPort(t *testing.T) {
 	app := newapp(1, 1)
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 		Name: "t0",
 		Props: job.P{
 			"Ints1": "t0-ints1",
@@ -110,7 +110,7 @@ func TestDuplicateOutputPort(t *testing.T) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 		Name: "t1",
 		Props: job.P{
 			"Ints1": "t0-ints1",
@@ -131,7 +131,7 @@ fwk.DeclOutPort: component [t1] is trying to add a duplicate out-port [t0-ints1 
 func TestMissingInputPort(t *testing.T) {
 	app := newapp(1, 1)
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 		Name: "t1",
 		Props: job.P{
 			"Ints1": "t1-ints1",
@@ -140,7 +140,7 @@ func TestMissingInputPort(t *testing.T) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task2",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task2",
 		Name: "t2",
 		Props: job.P{
 			"Input":  "t1-ints1--NOT-THERE",
@@ -161,7 +161,7 @@ func TestMissingInputPort(t *testing.T) {
 func TestMismatchPortTypes(t *testing.T) {
 	app := newapp(1, 1)
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 		Name: "t1",
 		Props: job.P{
 			"Ints1": "t1-ints1",
@@ -170,7 +170,7 @@ func TestMismatchPortTypes(t *testing.T) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task2",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task2",
 		Name: "t2",
 		Props: job.P{
 			"Input":  "t1-ints1",
@@ -179,7 +179,7 @@ func TestMismatchPortTypes(t *testing.T) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task4",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task4",
 		Name: "t4",
 		Props: job.P{
 			"Input":  "data",
@@ -206,7 +206,7 @@ func TestMismatchPortTypes(t *testing.T) {
 func TestPortsCycles(t *testing.T) {
 	app := newapp(1, 1)
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task2",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task2",
 		Name: "t1-cycle",
 		Props: job.P{
 			"Input":  "input",
@@ -215,7 +215,7 @@ func TestPortsCycles(t *testing.T) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task2",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task2",
 		Name: "t2",
 		Props: job.P{
 			"Input":  "data-1",
@@ -224,7 +224,7 @@ func TestPortsCycles(t *testing.T) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task2",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task2",
 		Name: "t3",
 		Props: job.P{
 			"Input":  "data-2",
@@ -270,7 +270,7 @@ func TestInputStream(t *testing.T) {
 			app := newapp(evtmax, nprocs)
 
 			app.Create(job.C{
-				Type: "go-hep.org/x/hep/fwk/testdata.task2",
+				Type: "go-hep.org/x/hep/fwk/internal/fwktest.task2",
 				Name: "t2",
 				Props: job.P{
 					"Input":  "t1-ints1",
@@ -289,7 +289,7 @@ func TestInputStream(t *testing.T) {
 							Type: reflect.TypeOf(int64(1)),
 						},
 					},
-					"Streamer": &testdata.InputStream{
+					"Streamer": &fwktest.InputStream{
 						R: newTestReader(max),
 					},
 				},
@@ -297,7 +297,7 @@ func TestInputStream(t *testing.T) {
 
 			// check we read the expected amount values
 			app.Create(job.C{
-				Type: "go-hep.org/x/hep/fwk/testdata.reducer",
+				Type: "go-hep.org/x/hep/fwk/internal/fwktest.reducer",
 				Name: "reducer",
 				Props: job.P{
 					"Input": "t1-ints1-massaged",
@@ -342,14 +342,14 @@ func TestOutputStream(t *testing.T) {
 							Type: reflect.TypeOf(int64(1)),
 						},
 					},
-					"Streamer": &testdata.OutputStream{
+					"Streamer": &fwktest.OutputStream{
 						W: w,
 					},
 				},
 			})
 
 			app.Create(job.C{
-				Type: "go-hep.org/x/hep/fwk/testdata.task2",
+				Type: "go-hep.org/x/hep/fwk/internal/fwktest.task2",
 				Name: "t2",
 				Props: job.P{
 					"Input":  "t1-ints1",
@@ -359,7 +359,7 @@ func TestOutputStream(t *testing.T) {
 
 			// check we read the expected amount values
 			app.Create(job.C{
-				Type: "go-hep.org/x/hep/fwk/testdata.reducer",
+				Type: "go-hep.org/x/hep/fwk/internal/fwktest.reducer",
 				Name: "reducer",
 				Props: job.P{
 					"Input": "t1-ints1-massaged",
@@ -378,7 +378,7 @@ func TestOutputStream(t *testing.T) {
 							Type: reflect.TypeOf(int64(1)),
 						},
 					},
-					"Streamer": &testdata.InputStream{
+					"Streamer": &fwktest.InputStream{
 						R: newTestReader(max),
 					},
 				},
@@ -426,7 +426,7 @@ func TestOutputStream(t *testing.T) {
 func Benchmark___SeqApp(b *testing.B) {
 	app := newapp(100, 0)
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 		Name: "t0",
 		Props: job.P{
 			"Ints1": "t0-ints1",
@@ -435,7 +435,7 @@ func Benchmark___SeqApp(b *testing.B) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 		Name: "t1",
 		Props: job.P{
 			"Ints1": "t0",
@@ -448,7 +448,7 @@ func Benchmark___SeqApp(b *testing.B) {
 		name := fmt.Sprintf("tx-%d", i)
 		out := fmt.Sprintf("tx-%d", i)
 		app.Create(job.C{
-			Type: "go-hep.org/x/hep/fwk/testdata.task2",
+			Type: "go-hep.org/x/hep/fwk/internal/fwktest.task2",
 			Name: name,
 			Props: job.P{
 				"Input":  input,
@@ -481,7 +481,7 @@ func Benchmark___SeqApp(b *testing.B) {
 func Benchmark__ConcApp(b *testing.B) {
 	app := newapp(100, 4)
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 		Name: "t0",
 		Props: job.P{
 			"Ints1": "t0-ints1",
@@ -490,7 +490,7 @@ func Benchmark__ConcApp(b *testing.B) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 		Name: "t1",
 		Props: job.P{
 			"Ints1": "t0",
@@ -503,7 +503,7 @@ func Benchmark__ConcApp(b *testing.B) {
 		name := fmt.Sprintf("tx-%d", i)
 		out := fmt.Sprintf("tx-%d", i)
 		app.Create(job.C{
-			Type: "go-hep.org/x/hep/fwk/testdata.task2",
+			Type: "go-hep.org/x/hep/fwk/internal/fwktest.task2",
 			Name: name,
 			Props: job.P{
 				"Input":  input,

@@ -20,7 +20,7 @@ func TestDFlowSvcGraph(t *testing.T) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 		Name: "t0",
 		Props: job.P{
 			"Ints1": "t0-ints1",
@@ -29,7 +29,7 @@ func TestDFlowSvcGraph(t *testing.T) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task1",
 		Name: "t1",
 		Props: job.P{
 			"Ints1": "t1-ints1",
@@ -38,7 +38,7 @@ func TestDFlowSvcGraph(t *testing.T) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.task2",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.task2",
 		Name: "t2",
 		Props: job.P{
 			"Input":  "t1-ints1",
@@ -47,7 +47,7 @@ func TestDFlowSvcGraph(t *testing.T) {
 	})
 
 	app.Create(job.C{
-		Type: "go-hep.org/x/hep/fwk/testdata.svc1",
+		Type: "go-hep.org/x/hep/fwk/internal/fwktest.svc1",
 		Name: "svc1",
 	})
 
