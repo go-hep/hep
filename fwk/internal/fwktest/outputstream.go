@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package testdata
+package fwktest
 
 import (
 	"fmt"
@@ -11,28 +11,28 @@ import (
 	"go-hep.org/x/hep/fwk"
 )
 
-type InputStream struct {
-	output string
-	R      io.Reader
+type OutputStream struct {
+	input string
+
+	W io.Writer
 }
 
-func (stream *InputStream) Connect(ports []fwk.Port) error {
+func (out *OutputStream) Connect(ports []fwk.Port) error {
 	var err error
-	stream.output = ports[0].Name
-
+	out.input = ports[0].Name
 	return err
 }
 
-func (stream *InputStream) Read(ctx fwk.Context) error {
+func (out *OutputStream) Write(ctx fwk.Context) error {
 	var err error
 	store := ctx.Store()
-	var data int64
-	_, err = fmt.Fscanf(stream.R, "%d\n", &data)
+	v, err := store.Get(out.input)
 	if err != nil {
 		return err
 	}
 
-	err = store.Put(stream.output, data)
+	data := v.(int64)
+	_, err = out.W.Write([]byte(fmt.Sprintf("%d\n", data)))
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,8 @@ func (stream *InputStream) Read(ctx fwk.Context) error {
 	return err
 }
 
-func (stream *InputStream) Disconnect() error {
+func (out *OutputStream) Disconnect() error {
 	var err error
+
 	return err
 }
