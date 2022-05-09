@@ -13,8 +13,8 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/fwk"
-	"go-hep.org/x/hep/fwk/job"
 	"go-hep.org/x/hep/fwk/internal/fwktest"
+	"go-hep.org/x/hep/fwk/job"
 )
 
 func newapp(evtmax int64, nprocs int) *job.Job {
