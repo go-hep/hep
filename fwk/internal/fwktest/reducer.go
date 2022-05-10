@@ -23,9 +23,7 @@ type reducer struct {
 }
 
 func (tsk *reducer) Configure(ctx fwk.Context) error {
-	var err error
-
-	err = tsk.DeclInPort(tsk.input, reflect.TypeOf(int64(0)))
+	err := tsk.DeclInPort(tsk.input, reflect.TypeOf(int64(0)))
 	if err != nil {
 		return err
 	}
