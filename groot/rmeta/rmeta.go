@@ -18,9 +18,10 @@ type CxxTemplate struct {
 
 // CxxTemplateOf extracts the typenames of a C++ templated typename.
 // Ex:
-//  std::map<K,V> -> []string{"K", "V"}
-//  std::vector<T> -> []string{"T"}
-//  Foo<T1,T2,std::map<K,V>> -> []string{"T1", "T2", "std::map<K,V>"}
+//
+//	std::map<K,V> -> []string{"K", "V"}
+//	std::vector<T> -> []string{"T"}
+//	Foo<T1,T2,std::map<K,V>> -> []string{"T1", "T2", "std::map<K,V>"}
 func CxxTemplateFrom(typename string) CxxTemplate {
 	var (
 		name = strings.TrimSpace(typename)

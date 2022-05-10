@@ -7,8 +7,8 @@
 //
 // Example:
 //
-//  $> yoda2rio rivet.yoda >| rivet.rio
-//  $> yoda2rio rivet.yoda.gz >| rivet.rio
+//	$> yoda2rio rivet.yoda >| rivet.rio
+//	$> yoda2rio rivet.yoda.gz >| rivet.rio
 package main // import "go-hep.org/x/hep/cmd/yoda2rio"
 
 import (

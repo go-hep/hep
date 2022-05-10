@@ -6,18 +6,19 @@
 //
 // Usage:
 //
-//  $> xrd-ls [OPTIONS] <dir-1> [<dir-2> [...]]
+//	$> xrd-ls [OPTIONS] <dir-1> [<dir-2> [...]]
 //
 // Example:
 //
-//  $> xrd-ls root://server.example.com/some/dir
-//  $> xrd-ls -l root://server.example.com/some/dir
-//  $> xrd-ls -R root://server.example.com/some/dir
-//  $> xrd-ls -l -R root://server.example.com/some/dir
+//	$> xrd-ls root://server.example.com/some/dir
+//	$> xrd-ls -l root://server.example.com/some/dir
+//	$> xrd-ls -R root://server.example.com/some/dir
+//	$> xrd-ls -l -R root://server.example.com/some/dir
 //
 // Options:
-//   -R	list subdirectories recursively
-//   -l	use a long listing format
+//
+//	-R	list subdirectories recursively
+//	-l	use a long listing format
 package main
 
 import (

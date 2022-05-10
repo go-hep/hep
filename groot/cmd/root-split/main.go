@@ -8,16 +8,18 @@
 // Usage: root-split [options] file.root
 //
 // ex:
-//  $> root-split -o out.root -n 10 ./testdata/chain.flat.1.root
+//
+//	$> root-split -o out.root -n 10 ./testdata/chain.flat.1.root
 //
 // options:
-//   -n int
-//     	number of events to split into (default 100)
-//   -o string
-//     	path to output ROOT files (default "out.root")
-//   -t string
-//     	input tree name to split (default "tree")
-//   -v	enable verbose mode
+//
+//	-n int
+//	  	number of events to split into (default 100)
+//	-o string
+//	  	path to output ROOT files (default "out.root")
+//	-t string
+//	  	input tree name to split (default "tree")
+//	-v	enable verbose mode
 package main // import "go-hep.org/x/hep/groot/cmd/root-split"
 
 import (

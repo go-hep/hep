@@ -99,7 +99,7 @@ func (a float64Pred) subFloat64Pred(b float64Pred) float64Pred {
 // Conclusively, when multiplications are chained, the error also depends on the value
 // of the number, but this does not apply to sums or subtractions.
 //
-//If this is not a chained multiplication p.e will be 0, making that part irrelevant.
+// If this is not a chained multiplication p.e will be 0, making that part irrelevant.
 func (p float64Pred) mulFloat64(f float64) float64Pred {
 	p.n *= f
 	if p.n == 0 {

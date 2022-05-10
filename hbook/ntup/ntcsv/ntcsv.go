@@ -6,31 +6,31 @@
 //
 // Examples:
 //
-//  nt, err := ntcsv.Open("testdata/simple.csv")
-//  if err != nil {
-//      log.Fatal(err)
-//  }
-//  defer nt.DB().Close()
+//	nt, err := ntcsv.Open("testdata/simple.csv")
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	defer nt.DB().Close()
 //
 // or, with a different configuration for the comma/comment runes:
 //
-//  nt, err := ntcsv.Open("testdata/simple.csv", ntcsv.Comma(' '), ntcsv.Comment('#'))
-//  if err != nil {
-//      log.Fatal(err)
-//  }
-//  defer nt.DB().Close()
+//	nt, err := ntcsv.Open("testdata/simple.csv", ntcsv.Comma(' '), ntcsv.Comment('#'))
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	defer nt.DB().Close()
 //
 // Give our own names to the CSV columns (default: "var1", "var2", ...):
 //
-//  nt, err := ntcsv.Open("testdata/simple.csv", ntcsv.Columns("var1", "i64", "foo"))
+//	nt, err := ntcsv.Open("testdata/simple.csv", ntcsv.Columns("var1", "i64", "foo"))
 //
 // Take the names from the CSV header (note that the header *must* exist):
 //
-//  nt, err := ntcsv.Open("testdata/simple-with-header.csv", ntcsv.Header())
+//	nt, err := ntcsv.Open("testdata/simple-with-header.csv", ntcsv.Header())
 //
 // Override the names from the CSV header with our own:
 //
-//  nt, err := ntcsv.Open("testdata/simple-with-header.csv", ntcsv.Header(), ntcsv.Columns("v1", "v2", "v3")
+//	nt, err := ntcsv.Open("testdata/simple-with-header.csv", ntcsv.Header(), ntcsv.Columns("v1", "v2", "v3")
 package ntcsv // import "go-hep.org/x/hep/hbook/ntup/ntcsv"
 
 import (

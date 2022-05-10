@@ -207,17 +207,17 @@ func (h *H1D) Scale(factor float64) {
 //
 // Examples:
 //
-//    // integral of all in-range bins + overflows
-//    v := h.Integral()
+//	// integral of all in-range bins + overflows
+//	v := h.Integral()
 //
-//    // integral of all in-range bins, underflow and overflow bins included.
-//    v := h.Integral(math.Inf(-1), math.Inf(+1))
+//	// integral of all in-range bins, underflow and overflow bins included.
+//	v := h.Integral(math.Inf(-1), math.Inf(+1))
 //
-//    // integrall of all in-range bins, overflow bin included
-//    v := h.Integral(h.Binning.XRange.Min, math.Inf(+1))
+//	// integrall of all in-range bins, overflow bin included
+//	v := h.Integral(h.Binning.XRange.Min, math.Inf(+1))
 //
-//    // integrall of all bins for which the lower edge is in [0.5, 5.5)
-//    v := h.Integral(0.5, 5.5)
+//	// integrall of all bins for which the lower edge is in [0.5, 5.5)
+//	v := h.Integral(0.5, 5.5)
 func (h *H1D) Integral(args ...float64) float64 {
 	min, max := 0., 0.
 	switch len(args) {

@@ -7,9 +7,9 @@
 //
 // Example:
 //
-//  $> root2yoda file1.root file2.root > out.yoda
-//  $> root2yoda -o out.yoda file1.root file2.root
-//  $> root2yoda -o out.yoda.gz file1.root file2.root
+//	$> root2yoda file1.root file2.root > out.yoda
+//	$> root2yoda -o out.yoda file1.root file2.root
+//	$> root2yoda -o out.yoda.gz file1.root file2.root
 package main // import "go-hep.org/x/hep/cmd/root2yoda"
 
 import (

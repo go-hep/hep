@@ -69,7 +69,7 @@ func (p *Plot) Add(ps ...plot.Plotter) {
 //
 // Supported extensions are:
 //
-//  .eps, .jpg, .jpeg, .pdf, .png, .svg, .tex, .tif and .tiff.
+//	.eps, .jpg, .jpeg, .pdf, .png, .svg, .tex, .tif and .tiff.
 //
 // If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
 // If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
@@ -83,7 +83,7 @@ func (p *Plot) Save(w, h vg.Length, file string) error {
 //
 // Supported formats are:
 //
-//  eps, jpg|jpeg, pdf, png, svg, tex and tif|tiff.
+//	eps, jpg|jpeg, pdf, png, svg, tex and tif|tiff.
 func (p *Plot) WriterTo(w, h vg.Length, format string) (io.WriterTo, error) {
 	return WriterTo(p, w, h, format)
 }

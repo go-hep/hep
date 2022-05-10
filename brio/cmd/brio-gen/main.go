@@ -7,30 +7,31 @@
 // For each type given to brio-gen, marshaling and unmarshaling code will be
 // generated so the types implement binary.Binary(Un)Marshaler.
 //
-//  - values are encoded using binary.LittleEndian,
-//  - int and uint are encoded as (resp.) int64 and uint64,
-//  - booleans are encoded as a single uint8 (0==false, 1==true),
-//  - strings are encoded as a pair(uint64, []byte),
-//  - arrays are encoded as a sequence of Ts, the length is implicit as it is
-//    part of the array type,
-//  - slices are encoded as a pair(uint64, T...)
-//  - pointers are encoded as *T (like encoding/gob)
-//  - interfaces are not supported.
-//
+//   - values are encoded using binary.LittleEndian,
+//   - int and uint are encoded as (resp.) int64 and uint64,
+//   - booleans are encoded as a single uint8 (0==false, 1==true),
+//   - strings are encoded as a pair(uint64, []byte),
+//   - arrays are encoded as a sequence of Ts, the length is implicit as it is
+//     part of the array type,
+//   - slices are encoded as a pair(uint64, T...)
+//   - pointers are encoded as *T (like encoding/gob)
+//   - interfaces are not supported.
 //
 // Usage: brio-gen [options]
 //
 // ex:
-//  $> brio-gen -p image -t Point -o image_brio.go
-//  $> brio-gen -p go-hep.org/x/hep/hbook -t Dist0D,Dist1D,Dist2D -o foo_brio.go
+//
+//	$> brio-gen -p image -t Point -o image_brio.go
+//	$> brio-gen -p go-hep.org/x/hep/hbook -t Dist0D,Dist1D,Dist2D -o foo_brio.go
 //
 // options:
-//   -o string
-//     	output file name (default "brio_gen.go")
-//   -p string
-//     	package import path
-//   -t string
-//     	comma-separated list of type names
+//
+//	-o string
+//	  	output file name (default "brio_gen.go")
+//	-p string
+//	  	package import path
+//	-t string
+//	  	comma-separated list of type names
 package main
 
 import (

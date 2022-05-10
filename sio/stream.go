@@ -118,7 +118,8 @@ func (stream *Stream) SetCompressionLevel(lvl int) {
 }
 
 // CurPos returns the current position in the file
-//  -1 if error
+//
+//	-1 if error
 func (stream *Stream) CurPos() int64 {
 	pos, err := stream.f.Seek(0, 1)
 	if err != nil {

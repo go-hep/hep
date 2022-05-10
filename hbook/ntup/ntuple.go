@@ -46,8 +46,9 @@ type Ntuple struct {
 // If name is "", Open will connect to the one-and-only table in the db.
 //
 // e.g.:
-//  db, err := sql.Open("csv", "file.csv")
-//  nt, err := ntup.Open(db, "ntup")
+//
+//	db, err := sql.Open("csv", "file.csv")
+//	nt, err := ntup.Open(db, "ntup")
 func Open(db *sql.DB, name string) (*Ntuple, error) {
 	nt := &Ntuple{
 		db:   db,
@@ -60,13 +61,14 @@ func Open(db *sql.DB, name string) (*Ntuple, error) {
 
 // Create creates a new ntuple with the given name inside the given database handle.
 // The n-tuple schema is inferred from the cols argument. cols can be:
-//  - a single struct value (columns are inferred from the names+types of the exported fields)
-//  - a list of builtin values (the columns names are varX where X=[1-len(cols)])
-//  - a list of ntup.Descriptors
+//   - a single struct value (columns are inferred from the names+types of the exported fields)
+//   - a list of builtin values (the columns names are varX where X=[1-len(cols)])
+//   - a list of ntup.Descriptors
 //
 // e.g.:
-//  nt, err := ntup.Create(db, "nt", struct{X float64 `hbook:"x"`}{})
-//  nt, err := ntup.Create(db, "nt", int64(0), float64(0))
+//
+//	nt, err := ntup.Create(db, "nt", struct{X float64 `hbook:"x"`}{})
+//	nt, err := ntup.Create(db, "nt", int64(0), float64(0))
 func Create(db *sql.DB, name string, cols ...interface{}) (*Ntuple, error) {
 	var err error
 	nt := &Ntuple{
@@ -196,11 +198,12 @@ func getTag(tag reflect.StructTag, keys ...string) string {
 // Scan executes a query against the ntuple and runs the function f against that context.
 //
 // e.g.
-//  err = nt.Scan("x,y where z>10", func(x,y float64) error {
-//    h1.Fill(x, 1)
-//    h2.Fill(y, 1)
-//    return nil
-//  })
+//
+//	err = nt.Scan("x,y where z>10", func(x,y float64) error {
+//	  h1.Fill(x, 1)
+//	  h2.Fill(y, 1)
+//	  return nil
+//	})
 func (nt *Ntuple) Scan(query string, f interface{}) error {
 	if f == nil {
 		return fmt.Errorf("hbook/ntup: nil func")

@@ -53,9 +53,10 @@ func Delete(evt *Event) error {
 // Event represents a record for MC generators (for use at any stage of generation)
 //
 // This type is intended as both a "container class" ( to store a MC
-//  event for interface between MC generators and detector simulation )
-//  and also as a "work in progress class" ( that could be used inside
-//  a generator and modified as the event is built ).
+//
+//	event for interface between MC generators and detector simulation )
+//	and also as a "work in progress class" ( that could be used inside
+//	a generator and modified as the event is built ).
 type Event struct {
 	SignalProcessID int     // id of the signal process
 	EventNumber     int     // event number
@@ -352,7 +353,8 @@ func (ps Vertices) Swap(i, j int) {
 
 // Vertex represents a generator vertex within an event
 // A vertex is indirectly (via particle "edges") linked to other
-//   vertices ("nodes") to form a composite "graph"
+//
+//	vertices ("nodes") to form a composite "graph"
 type Vertex struct {
 	Position     fmom.PxPyPzE // 4-vector of vertex [mm]
 	ParticlesIn  []*Particle  // all incoming particles
@@ -668,37 +670,39 @@ type PdfInfo struct {
 //
 // Flow patterns are coded with an integer, in the same manner as in Herwig.
 // Note: 0 is NOT allowed as code index nor as flow code since it
-//       is used to indicate null.
+//
+//	is used to indicate null.
 //
 // This class can be used to keep track of flow patterns within
-//  a graph. An example is color flow. If we have two quarks going through
-//  an s-channel gluon to form two more quarks:
 //
-//  \q1       /q3   then we can keep track of the color flow with the
-//   \_______/      HepMC::Flow class as follows:
-//   /   g   \.
-//  /q2       \q4
+//	a graph. An example is color flow. If we have two quarks going through
+//	an s-channel gluon to form two more quarks:
 //
-//  lets say the color flows from q2-->g-->q3  and q1-->g-->q4
-//  the individual colors are unimportant, but the flow pattern is.
-//  We can capture this flow by assigning the first pattern (q2-->g-->q3)
-//  a unique (arbitrary) flow code 678 and the second pattern (q1-->g-->q4)
-//  flow code 269  ( you can ask HepMC::Flow to choose
-//  a unique code for you using Flow::set_unique_icode() ).
-//  these codes with the particles as follows:
-//    q2->flow().set_icode(1,678);
-//    g->flow().set_icode(1,678);
-//    q3->flow().set_icode(1,678);
-//    q1->flow().set_icode(1,269);
-//    g->flow().set_icode(2,269);
-//    q4->flow().set_icode(1,269);
-//  later on if we wish to know the color partner of q1 we can ask for a list
-//  of all particles connected via this code to q1 which do have less than
-//  2 color partners using:
-//    vector<GenParticle*> result=q1->dangling_connected_partners(q1->icode(1),1,2);
-//  this will return a list containing q1 and q4.
-//    vector<GenParticle*> result=q1->connected_partners(q1->icode(1),1,2);
-//  would return a list containing q1, g, and q4.
+//	\q1       /q3   then we can keep track of the color flow with the
+//	 \_______/      HepMC::Flow class as follows:
+//	 /   g   \.
+//	/q2       \q4
+//
+//	lets say the color flows from q2-->g-->q3  and q1-->g-->q4
+//	the individual colors are unimportant, but the flow pattern is.
+//	We can capture this flow by assigning the first pattern (q2-->g-->q3)
+//	a unique (arbitrary) flow code 678 and the second pattern (q1-->g-->q4)
+//	flow code 269  ( you can ask HepMC::Flow to choose
+//	a unique code for you using Flow::set_unique_icode() ).
+//	these codes with the particles as follows:
+//	  q2->flow().set_icode(1,678);
+//	  g->flow().set_icode(1,678);
+//	  q3->flow().set_icode(1,678);
+//	  q1->flow().set_icode(1,269);
+//	  g->flow().set_icode(2,269);
+//	  q4->flow().set_icode(1,269);
+//	later on if we wish to know the color partner of q1 we can ask for a list
+//	of all particles connected via this code to q1 which do have less than
+//	2 color partners using:
+//	  vector<GenParticle*> result=q1->dangling_connected_partners(q1->icode(1),1,2);
+//	this will return a list containing q1 and q4.
+//	  vector<GenParticle*> result=q1->connected_partners(q1->icode(1),1,2);
+//	would return a list containing q1, g, and q4.
 type Flow struct {
 	Particle *Particle   // the particle this flow describes
 	Icode    map[int]int // flow patterns as (code_index, icode)

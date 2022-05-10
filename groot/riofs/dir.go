@@ -350,14 +350,15 @@ func (dir *tdirectoryFile) writeHeader() error {
 }
 
 // Get returns the object identified by namecycle
-//   namecycle has the format name;cycle
-//   name  = * is illegal, cycle = * is illegal
-//   cycle = "" or cycle = 9999 ==> apply to a memory object
 //
-//   examples:
-//     foo   : get object named foo in memory
-//             if object is not in memory, try with highest cycle from file
-//     foo;1 : get cycle 1 of foo on file
+//	namecycle has the format name;cycle
+//	name  = * is illegal, cycle = * is illegal
+//	cycle = "" or cycle = 9999 ==> apply to a memory object
+//
+//	examples:
+//	  foo   : get object named foo in memory
+//	          if object is not in memory, try with highest cycle from file
+//	  foo;1 : get cycle 1 of foo on file
 func (dir *tdirectoryFile) Get(namecycle string) (root.Object, error) {
 	var keys []*Key
 	name, cycle := decodeNameCycle(namecycle)

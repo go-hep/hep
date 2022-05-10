@@ -7,11 +7,11 @@
 //
 // Example:
 //
-//  nt, err := ntroot.Open("testdata/simple.root", "mytree")
-//  if err != nil {
-//      log.Fatalf("%+v", err)
-//  }
-//  defer nt.DB().Close()
+//	nt, err := ntroot.Open("testdata/simple.root", "mytree")
+//	if err != nil {
+//	    log.Fatalf("%+v", err)
+//	}
+//	defer nt.DB().Close()
 package ntroot // import "go-hep.org/x/hep/hbook/ntup/ntroot"
 
 import (

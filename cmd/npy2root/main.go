@@ -8,34 +8,35 @@
 //
 // The NumPy data file format is described here:
 //
-//  https://numpy.org/neps/nep-0001-npy-format.html
+//	https://numpy.org/neps/nep-0001-npy-format.html
 //
 // Example:
 //
-//  $> npyio-ls input.npy
-//  ================================================================================
-//  file: input.npy
-//  npy-header: Header{Major:1, Minor:0, Descr:{Type:<f8, Fortran:false, Shape:[2 3]}}
-//  data = [0 1 2 3 4 5]
+//	$> npyio-ls input.npy
+//	================================================================================
+//	file: input.npy
+//	npy-header: Header{Major:1, Minor:0, Descr:{Type:<f8, Fortran:false, Shape:[2 3]}}
+//	data = [0 1 2 3 4 5]
 //
-//  $> npy2root -o output.root -t mytree ./input.npy
-//  $> root-ls -t ./output.root
-//  === [./output.root] ===
-//  version: 61804
-//    TTree   mytree       mytree  (entries=2)
-//      numpy "numpy[3]/D" TBranch
+//	$> npy2root -o output.root -t mytree ./input.npy
+//	$> root-ls -t ./output.root
+//	=== [./output.root] ===
+//	version: 61804
+//	  TTree   mytree       mytree  (entries=2)
+//	    numpy "numpy[3]/D" TBranch
 //
-//  $> root-dump ./output.root
-//  >>> file[./output.root]
-//  key[000]: mytree;1 "mytree" (TTree)
-//  [000][numpy]: [0 1 2]
-//  [001][numpy]: [3 4 5]
+//	$> root-dump ./output.root
+//	>>> file[./output.root]
+//	key[000]: mytree;1 "mytree" (TTree)
+//	[000][numpy]: [0 1 2]
+//	[001][numpy]: [3 4 5]
 //
 // Options:
-//   -o string
-//     	path to output ROOT file (default "output.root")
-//   -t string
-//     	name of the output ROOT tree (default "tree")
+//
+//	-o string
+//	  	path to output ROOT file (default "output.root")
+//	-t string
+//	  	name of the output ROOT tree (default "tree")
 package main
 
 import (

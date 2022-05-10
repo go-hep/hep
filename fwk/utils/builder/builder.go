@@ -5,8 +5,8 @@
 // package builder builds a fwk-app binary from a list of go files.
 //
 // builder's architecture and sources are heavily inspired from golint:
-//   https://github.com/golang/lint
 //
+//	https://github.com/golang/lint
 package builder // import "go-hep.org/x/hep/fwk/utils/builder"
 
 import (

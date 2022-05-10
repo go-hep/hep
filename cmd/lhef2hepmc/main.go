@@ -6,8 +6,8 @@
 //
 // Example:
 //
-//  $> lhef2hepmc -i in.lhef -o out.hepmc
-//  $> lhef2hepmc < in.lhef > out.hepmc
+//	$> lhef2hepmc -i in.lhef -o out.hepmc
+//	$> lhef2hepmc < in.lhef > out.hepmc
 package main // import "go-hep.org/x/hep/cmd/lhef2hepmc"
 
 import (

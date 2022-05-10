@@ -8,15 +8,16 @@
 //
 // Example:
 //
-//   $> podio-gen -p myedm -o out.go -r 'edm4hep::->edm_,ExNamespace::->exns_' edm.yaml
+//	$> podio-gen -p myedm -o out.go -r 'edm4hep::->edm_,ExNamespace::->exns_' edm.yaml
 //
 // Options:
-//   -o string
-//     	path to the output file containing the generated code (default "out.go")
-//   -p string
-//     	package name for the PODIO generated types (default "podio")
-//   -r string
-//     	comma-separated list of rewrite rules (e.g., 'edm4hep::->edm_')
+//
+//	-o string
+//	  	path to the output file containing the generated code (default "out.go")
+//	-p string
+//	  	package name for the PODIO generated types (default "podio")
+//	-r string
+//	  	comma-separated list of rewrite rules (e.g., 'edm4hep::->edm_')
 package main // import "go-hep.org/x/hep/cmd/podio-gen"
 
 import (

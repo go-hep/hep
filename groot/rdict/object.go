@@ -30,10 +30,10 @@ func ObjectFrom(si rbytes.StreamerInfo, sictx rbytes.StreamerInfoContext) *Objec
 
 // Object wraps a type created from a Streamer and implements the
 // following interfaces:
-//  - root.Object
-//  - rbytes.RVersioner
-//  - rbytes.Marshaler
-//  - rbytes.Unmarshaler
+//   - root.Object
+//   - rbytes.RVersioner
+//   - rbytes.Marshaler
+//   - rbytes.Unmarshaler
 type Object struct {
 	v interface{}
 

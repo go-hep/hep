@@ -81,16 +81,20 @@ func (o Response) MarshalXrd(wBuffer *xrdenc.WBuffer) error {
 
 // UnmarshalXrd implements xrdproto.Unmarshaler
 // When stat information is supported by the server, the format is
-//  ".\n"
-//  "0 0 0 0\n"
-//  "dirname\n"
-//  "id size flags modtime\n"
-//  ...
-//  0
+//
+//	".\n"
+//	"0 0 0 0\n"
+//	"dirname\n"
+//	"id size flags modtime\n"
+//	...
+//	0
+//
 // Otherwise, the format is the following:
-//  "dirname\n"
-//  ...
-//  0
+//
+//	"dirname\n"
+//	...
+//	0
+//
 // See xrootd protocol specification, page 45 for further details.
 func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	if rBuffer.Len() == 0 {

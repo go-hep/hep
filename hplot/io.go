@@ -32,7 +32,7 @@ type Drawer interface {
 //
 // Supported extensions are:
 //
-//  .eps, .jpg, .jpeg, .pdf, .png, .svg, .tex, .tif and .tiff.
+//	.eps, .jpg, .jpeg, .pdf, .png, .svg, .tex, .tif and .tiff.
 //
 // If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
 // If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
@@ -95,7 +95,7 @@ func Save(p Drawer, w, h vg.Length, fnames ...string) (err error) {
 // WriterTo returns an io.WriterTo that will write the plots as
 // the specified image format.
 //
-// Supported formats are the same ones than hplot.Plot.WriterTo
+// # Supported formats are the same ones than hplot.Plot.WriterTo
 //
 // If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
 // If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
@@ -122,7 +122,7 @@ func WriterTo(p Drawer, w, h vg.Length, format string) (io.WriterTo, error) {
 //
 // Supported formats are:
 //
-//  eps, jpg|jpeg, pdf, png, svg, tex and tif|tiff.
+//	eps, jpg|jpeg, pdf, png, svg, tex and tif|tiff.
 func newFormattedCanvas(w, h vg.Length, format string, dpi float64) (vg.CanvasWriterTo, error) {
 	var c vg.CanvasWriterTo
 	switch format {

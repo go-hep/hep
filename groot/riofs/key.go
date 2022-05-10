@@ -41,16 +41,16 @@ func (err keyTypeError) Error() string {
 
 // Key is a key (a label) in a ROOT file
 //
-//  The Key class includes functions to book space on a file,
-//   to create I/O buffers, to fill these buffers
-//   to compress/uncompress data buffers.
+//	The Key class includes functions to book space on a file,
+//	 to create I/O buffers, to fill these buffers
+//	 to compress/uncompress data buffers.
 //
-//  Before saving (making persistent) an object on a file, a key must
-//  be created. The key structure contains all the information to
-//  uniquely identify a persistent object on a file.
-//  The Key class is used by ROOT:
-//    - to write an object in the Current Directory
-//    - to write a new ntuple buffer
+//	Before saving (making persistent) an object on a file, a key must
+//	be created. The key structure contains all the information to
+//	uniquely identify a persistent object on a file.
+//	The Key class is used by ROOT:
+//	  - to write an object in the Current Directory
+//	  - to write a new ntuple buffer
 type Key struct {
 	f *File // underlying file
 

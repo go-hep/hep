@@ -30,8 +30,8 @@ var (
 	float32Type = reflect.TypeOf((*float32)(nil)).Elem()
 	float64Type = reflect.TypeOf((*float64)(nil)).Elem()
 
-//	complex64Type  = reflect.TypeOf((*complex64)(nil)).Elem()
-//	complex128Type = reflect.TypeOf((*complex128)(nil)).Elem()
+// complex64Type  = reflect.TypeOf((*complex64)(nil)).Elem()
+// complex128Type = reflect.TypeOf((*complex128)(nil)).Elem()
 )
 
 // Record is an in-memory Arrow Record backed by a NumPy data file.

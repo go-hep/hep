@@ -57,39 +57,41 @@ type FileOption func(f *File) error
 // the following format (see also the TKey class). If the key is
 // located past the 32 bit file limit (> 2 GB) then some fields will
 // be 8 instead of 4 bytes:
-//    1->4            Nbytes    = Length of compressed object (in bytes)
-//    5->6            Version   = TKey version identifier
-//    7->10           ObjLen    = Length of uncompressed object
-//    11->14          Datime    = Date and time when object was written to file
-//    15->16          KeyLen    = Length of the key structure (in bytes)
-//    17->18          Cycle     = Cycle of key
-//    19->22 [19->26] SeekKey   = Pointer to record itself (consistency check)
-//    23->26 [27->34] SeekPdir  = Pointer to directory header
-//    27->27 [35->35] lname     = Number of bytes in the class name
-//    28->.. [36->..] ClassName = Object Class Name
-//    ..->..          lname     = Number of bytes in the object name
-//    ..->..          Name      = lName bytes with the name of the object
-//    ..->..          lTitle    = Number of bytes in the object title
-//    ..->..          Title     = Title of the object
-//    ----->          DATA      = Data bytes associated to the object
+//
+//	1->4            Nbytes    = Length of compressed object (in bytes)
+//	5->6            Version   = TKey version identifier
+//	7->10           ObjLen    = Length of uncompressed object
+//	11->14          Datime    = Date and time when object was written to file
+//	15->16          KeyLen    = Length of the key structure (in bytes)
+//	17->18          Cycle     = Cycle of key
+//	19->22 [19->26] SeekKey   = Pointer to record itself (consistency check)
+//	23->26 [27->34] SeekPdir  = Pointer to directory header
+//	27->27 [35->35] lname     = Number of bytes in the class name
+//	28->.. [36->..] ClassName = Object Class Name
+//	..->..          lname     = Number of bytes in the object name
+//	..->..          Name      = lName bytes with the name of the object
+//	..->..          lTitle    = Number of bytes in the object title
+//	..->..          Title     = Title of the object
+//	----->          DATA      = Data bytes associated to the object
 //
 // The first data record starts at byte fBEGIN (currently set to kBEGIN).
 // Bytes 1->kBEGIN contain the file description, when fVersion >= 1000000
 // it is a large file (> 2 GB) and the offsets will be 8 bytes long and
 // fUnits will be set to 8:
-//    1->4            "root"      = Root file identifier
-//    5->8            fVersion    = File format version
-//    9->12           fBEGIN      = Pointer to first data record
-//    13->16 [13->20] fEND        = Pointer to first free word at the EOF
-//    17->20 [21->28] fSeekFree   = Pointer to FREE data record
-//    21->24 [29->32] fNbytesFree = Number of bytes in FREE data record
-//    25->28 [33->36] nfree       = Number of free data records
-//    29->32 [37->40] fNbytesName = Number of bytes in TNamed at creation time
-//    33->33 [41->41] fUnits      = Number of bytes for file pointers
-//    34->37 [42->45] fCompress   = Compression level and algorithm
-//    38->41 [46->53] fSeekInfo   = Pointer to TStreamerInfo record
-//    42->45 [54->57] fNbytesInfo = Number of bytes in TStreamerInfo record
-//    46->63 [58->75] fUUID       = Universal Unique ID
+//
+//	1->4            "root"      = Root file identifier
+//	5->8            fVersion    = File format version
+//	9->12           fBEGIN      = Pointer to first data record
+//	13->16 [13->20] fEND        = Pointer to first free word at the EOF
+//	17->20 [21->28] fSeekFree   = Pointer to FREE data record
+//	21->24 [29->32] fNbytesFree = Number of bytes in FREE data record
+//	25->28 [33->36] nfree       = Number of free data records
+//	29->32 [37->40] fNbytesName = Number of bytes in TNamed at creation time
+//	33->33 [41->41] fUnits      = Number of bytes for file pointers
+//	34->37 [42->45] fCompress   = Compression level and algorithm
+//	38->41 [46->53] fSeekInfo   = Pointer to TStreamerInfo record
+//	42->45 [54->57] fNbytesInfo = Number of bytes in TStreamerInfo record
+//	46->63 [58->75] fUUID       = Universal Unique ID
 type File struct {
 	r      Reader
 	w      Writer
@@ -850,14 +852,15 @@ func (f *File) addStreamer(streamer rbytes.StreamerInfo) {
 }
 
 // Get returns the object identified by namecycle
-//   namecycle has the format name;cycle
-//   name  = * is illegal, cycle = * is illegal
-//   cycle = "" or cycle = 9999 ==> apply to a memory object
 //
-//   examples:
-//     foo   : get object named foo in memory
-//             if object is not in memory, try with highest cycle from file
-//     foo;1 : get cycle 1 of foo on file
+//	namecycle has the format name;cycle
+//	name  = * is illegal, cycle = * is illegal
+//	cycle = "" or cycle = 9999 ==> apply to a memory object
+//
+//	examples:
+//	  foo   : get object named foo in memory
+//	          if object is not in memory, try with highest cycle from file
+//	  foo;1 : get cycle 1 of foo on file
 func (f *File) Get(namecycle string) (root.Object, error) {
 	return f.dir.Get(namecycle)
 }

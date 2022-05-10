@@ -6,21 +6,20 @@
 //
 // Examples:
 //
-//  $> root-print -f pdf ./testdata/histos.root
-//  $> root-print -f pdf ./testdata/histos.root:h1
-//  $> root-print -f pdf ./testdata/histos.root:h.*
-//  $> root-print -f pdf -o output ./testdata/histos.root:h1
+//	$> root-print -f pdf ./testdata/histos.root
+//	$> root-print -f pdf ./testdata/histos.root:h1
+//	$> root-print -f pdf ./testdata/histos.root:h.*
+//	$> root-print -f pdf -o output ./testdata/histos.root:h1
 //
-//  $> root-print -h
-//  Usage: root-print [options] file.root [file.root [...]]
+//	$> root-print -h
+//	Usage: root-print [options] file.root [file.root [...]]
 //
-//  options:
-//    -f string
-//      	output format for plots (pdf, png, svg, ...) (default "pdf")
-//    -o string
-//      	output directory for plots
-//    -v	enable verbose mode
-//
+//	options:
+//	  -f string
+//	    	output format for plots (pdf, png, svg, ...) (default "pdf")
+//	  -o string
+//	    	output directory for plots
+//	  -v	enable verbose mode
 package main // import "go-hep.org/x/hep/groot/cmd/root-print"
 
 import (

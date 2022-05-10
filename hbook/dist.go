@@ -28,7 +28,8 @@ func (d *Dist0D) Entries() int64 {
 }
 
 // EffEntries returns the number of weighted entries, such as:
-//  (\sum w)^2 / \sum w^2
+//
+//	(\sum w)^2 / \sum w^2
 func (d *Dist0D) EffEntries() float64 {
 	if d.SumW2 == 0 {
 		return 0
@@ -132,7 +133,9 @@ func (d *Dist1D) mean() float64 {
 }
 
 // variance returns the weighted variance of the distribution, defined as:
-//  sig2 = ( \sum(wx^2) * \sum(w) - \sum(wx)^2 ) / ( \sum(w)^2 - \sum(w^2) )
+//
+//	sig2 = ( \sum(wx^2) * \sum(w) - \sum(wx)^2 ) / ( \sum(w)^2 - \sum(w^2) )
+//
 // see: https://en.wikipedia.org/wiki/Weighted_arithmetic_mean
 func (d *Dist1D) variance() float64 {
 	// FIXME(sbinet): check for low stats?
@@ -156,7 +159,8 @@ func (d *Dist1D) stdErr() float64 {
 }
 
 // rms returns the weighted RMS of the distribution, defined as:
-//  rms = \sqrt{\sum{w . x^2} / \sum{w}}
+//
+//	rms = \sqrt{\sum{w . x^2} / \sum{w}}
 func (d *Dist1D) rms() float64 {
 	// FIXME(sbinet): check for low stats?
 	meansq := d.SumWX2() / d.SumW()

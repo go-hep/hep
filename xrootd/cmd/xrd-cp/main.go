@@ -7,20 +7,21 @@
 //
 // Usage:
 //
-//  $> xrd-cp [OPTIONS] <src-1> [<src-2> [...]] <dst>
+//	$> xrd-cp [OPTIONS] <src-1> [<src-2> [...]] <dst>
 //
 // Example:
 //
-//  $> xrd-cp root://server.example.com/some/file1.txt .
-//  $> xrd-cp root://gopher@server.example.com/some/file1.txt .
-//  $> xrd-cp root://server.example.com/some/file1.txt foo.txt
-//  $> xrd-cp root://server.example.com/some/file1.txt - > foo.txt
-//  $> xrd-cp -r root://server.example.com/some/dir .
-//  $> xrd-cp -r root://server.example.com/some/dir outdir
+//	$> xrd-cp root://server.example.com/some/file1.txt .
+//	$> xrd-cp root://gopher@server.example.com/some/file1.txt .
+//	$> xrd-cp root://server.example.com/some/file1.txt foo.txt
+//	$> xrd-cp root://server.example.com/some/file1.txt - > foo.txt
+//	$> xrd-cp -r root://server.example.com/some/dir .
+//	$> xrd-cp -r root://server.example.com/some/dir outdir
 //
 // Options:
-//   -r	copy directories recursively
-//   -v	enable verbose mode
+//
+//	-r	copy directories recursively
+//	-v	enable verbose mode
 package main
 
 import (

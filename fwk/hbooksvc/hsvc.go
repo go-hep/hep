@@ -378,10 +378,11 @@ func (svc *hsvc) fullname(stream, hid string) string {
 // split splits a booking histo name into (stream-name, histo-name).
 //
 // eg: "/my-stream/histo" -> ("my-stream", "histo")
-//     "my-stream/histo"  -> ("my-stream", "histo")
-//     "my-stream/histo/" -> ("my-stream", "histo")
-//     "/histo"           -> ("",          "histo")
-//     "histo"            -> ("",          "histo")
+//
+//	"my-stream/histo"  -> ("my-stream", "histo")
+//	"my-stream/histo/" -> ("my-stream", "histo")
+//	"/histo"           -> ("",          "histo")
+//	"histo"            -> ("",          "histo")
 func (svc *hsvc) split(n string) (string, string) {
 
 	n = strings.TrimPrefix(n, "/")

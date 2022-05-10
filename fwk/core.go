@@ -104,11 +104,11 @@ type App interface {
 }
 
 // Runner runs a fwk App in a batch fashion:
-//  - Configure
-//  - Start
-//  - Run event loop
-//  - Stop
-//  - Shutdown
+//   - Configure
+//   - Start
+//   - Run event loop
+//   - Stop
+//   - Shutdown
 type Runner interface {
 	Run() error
 }

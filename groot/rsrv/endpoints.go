@@ -41,8 +41,9 @@ func (srv *Server) handlePing(w http.ResponseWriter, r *http.Request) error {
 
 // OpenFile opens a ROOT file located at the provided URI.
 // OpenFile expects an OpenFileRequest payload as JSON:
-//   {"uri": "file:///some/file.root"}
-//   {"uri": "root://example.org/some/file.root"}
+//
+//	{"uri": "file:///some/file.root"}
+//	{"uri": "root://example.org/some/file.root"}
 //
 // OpenFile replies with a STATUS/OK or STATUS/NotFound if no such file exist.
 func (srv *Server) OpenFile(w http.ResponseWriter, r *http.Request) {
@@ -156,7 +157,8 @@ func (srv *Server) handleUpload(w http.ResponseWriter, r *http.Request) error {
 }
 
 // CloseFile closes a file specified by the CloseFileRequest:
-//   {"uri": "file:///some/file.root"}
+//
+//	{"uri": "file:///some/file.root"}
 func (srv *Server) CloseFile(w http.ResponseWriter, r *http.Request) {
 	srv.wrap(srv.handleCloseFile)(w, r)
 }
@@ -184,8 +186,9 @@ func (srv *Server) handleCloseFile(w http.ResponseWriter, r *http.Request) error
 
 // ListFiles lists all the files currently known to the server.
 // ListFiles replies with a StatusOK and a ListResponse:
-//   [{"uri": "file:///some/file.root"},
-//    {"uri": "root://example.org/file.root"}]
+//
+//	[{"uri": "file:///some/file.root"},
+//	 {"uri": "root://example.org/file.root"}]
 func (srv *Server) ListFiles(w http.ResponseWriter, r *http.Request) {
 	srv.wrap(srv.handleListFiles)(w, r)
 }
@@ -214,15 +217,18 @@ func (srv *Server) handleListFiles(w http.ResponseWriter, r *http.Request) error
 
 // Dirent lists the content of a ROOT directory inside a ROOT file.
 // Dirent expects a DirentRequest:
-//   {"uri": "file:///some/file.root", "dir": "/some/dir", "recursive": true}
-//   {"uri": "root://example.org/some/file.root", "dir": "/some/dir"}
+//
+//	{"uri": "file:///some/file.root", "dir": "/some/dir", "recursive": true}
+//	{"uri": "root://example.org/some/file.root", "dir": "/some/dir"}
+//
 // Dirent replies with a DirentResponse:
-//   {"uri": "file:///some/file.root", "content": [
-//     {"path": "/dir", "type": "TDirectoryFile", "name": "dir", "title": "my title"},
-//     {"path": "/dir/obj", "type": "TObjString", "name": "obj", "title": "obj string"},
-//     {"path": "/dir/sub", "type": "TDirectoryFile", "name": "sub", "title": "my sub dir"},
-//     {"path": "/dir/sub/obj", "type": "TObjString", "name": "obj", "title": "my sub obj string"}
-//   ]}
+//
+//	{"uri": "file:///some/file.root", "content": [
+//	  {"path": "/dir", "type": "TDirectoryFile", "name": "dir", "title": "my title"},
+//	  {"path": "/dir/obj", "type": "TObjString", "name": "obj", "title": "obj string"},
+//	  {"path": "/dir/sub", "type": "TDirectoryFile", "name": "sub", "title": "my sub dir"},
+//	  {"path": "/dir/sub/obj", "type": "TObjString", "name": "obj", "title": "my sub obj string"}
+//	]}
 func (srv *Server) Dirent(w http.ResponseWriter, r *http.Request) {
 	srv.wrap(srv.handleDirent)(w, r)
 }
@@ -335,16 +341,19 @@ func (srv *Server) handleDirent(w http.ResponseWriter, r *http.Request) error {
 }
 
 // Tree returns the structure of a TTree specified by the TreeRequest:
-//  {"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "myTree"}
+//
+//	{"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "myTree"}
+//
 // Tree replies with a TreeResponse:
-//  {"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "myTree",
-//    "tree": {
-//      "type": "TTree", "name": "myTree", "title": "my title", "cycle": 1,
-//      "entries": 42,
-//      "branches": [{"type": "TBranch", "name": "Int64"}, ...],
-//      "leaves": [{"type": "TLeafL", "name": "Int64"}, ...]
-//    }
-//  }
+//
+//	{"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "myTree",
+//	  "tree": {
+//	    "type": "TTree", "name": "myTree", "title": "my title", "cycle": 1,
+//	    "entries": 42,
+//	    "branches": [{"type": "TBranch", "name": "Int64"}, ...],
+//	    "leaves": [{"type": "TLeafL", "name": "Int64"}, ...]
+//	  }
+//	}
 func (srv *Server) Tree(w http.ResponseWriter, r *http.Request) {
 	srv.wrap(srv.handleTree)(w, r)
 }
@@ -437,13 +446,15 @@ func (srv *Server) handleTree(w http.ResponseWriter, r *http.Request) error {
 }
 
 // PlotH1 plots the 1-dim histogram specified by the PlotH1Request:
-//  {"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "h1", "type": "png"}
-//  {"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "h1", "type": "svg",
-//     "options": {
-//       "title": "my histo title", "x": "my x-axis", "y": "my y-axis",
-//       "line": {"color": "#ff0000ff", ...},
-//       "fill_color": "#00ff00ff"}
-//  }}
+//
+//	{"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "h1", "type": "png"}
+//	{"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "h1", "type": "svg",
+//	   "options": {
+//	     "title": "my histo title", "x": "my x-axis", "y": "my y-axis",
+//	     "line": {"color": "#ff0000ff", ...},
+//	     "fill_color": "#00ff00ff"}
+//	}}
+//
 // PlotH1 replies with a PlotResponse, where "data" contains the base64 encoded representation of
 // the plot.
 func (srv *Server) PlotH1(w http.ResponseWriter, r *http.Request) {
@@ -533,11 +544,13 @@ func (srv *Server) handlePlotH1(w http.ResponseWriter, r *http.Request) error {
 }
 
 // PlotH2 plots the 2-dim histogram specified by the PlotH2Request:
-//  {"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "h2", "type": "png"}
-//  {"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "h2", "type": "svg",
-//     "options": {
-//       "title": "my histo title", "x": "my x-axis", "y": "my y-axis"
-//  }}
+//
+//	{"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "h2", "type": "png"}
+//	{"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "h2", "type": "svg",
+//	   "options": {
+//	     "title": "my histo title", "x": "my x-axis", "y": "my y-axis"
+//	}}
+//
 // PlotH2 replies with a PlotResponse, where "data" contains the base64 encoded representation of
 // the plot.
 func (srv *Server) PlotH2(w http.ResponseWriter, r *http.Request) {
@@ -625,12 +638,14 @@ func (srv *Server) handlePlotH2(w http.ResponseWriter, r *http.Request) error {
 }
 
 // PlotS2 plots the 2-dim scatter specified by the PlotS2Request:
-//  {"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "gr", "type": "png"}
-//  {"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "gr", "type": "svg",
-//     "options": {
-//       "title": "my scatter title", "x": "my x-axis", "y": "my y-axis",
-//       "line": {"color": "#ff0000ff", ...}
-//  }}
+//
+//	{"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "gr", "type": "png"}
+//	{"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "gr", "type": "svg",
+//	   "options": {
+//	     "title": "my scatter title", "x": "my x-axis", "y": "my y-axis",
+//	     "line": {"color": "#ff0000ff", ...}
+//	}}
+//
 // PlotS2 replies with a PlotResponse, where "data" contains the base64 encoded representation of
 // the plot.
 func (srv *Server) PlotS2(w http.ResponseWriter, r *http.Request) {
@@ -725,12 +740,14 @@ func (srv *Server) handlePlotS2(w http.ResponseWriter, r *http.Request) error {
 }
 
 // PlotTree plots the Tree branch(es) specified by the PlotBranchRequest:
-//  {"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "gr", "type": "png", "vars": ["pt"]}
-//  {"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "gr", "type": "svg", "vars": ["pt", "eta"],
-//     "options": {
-//       "title": "my plot title", "x": "my x-axis", "y": "my y-axis",
-//       "line": {"color": "#ff0000ff", ...}
-//  }}
+//
+//	{"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "gr", "type": "png", "vars": ["pt"]}
+//	{"uri": "file:///some/file.root", "dir": "/some/dir", "obj": "gr", "type": "svg", "vars": ["pt", "eta"],
+//	   "options": {
+//	     "title": "my plot title", "x": "my x-axis", "y": "my y-axis",
+//	     "line": {"color": "#ff0000ff", ...}
+//	}}
+//
 // PlotBranch replies with a PlotResponse, where "data" contains the base64 encoded representation of
 // the plot.
 func (srv *Server) PlotTree(w http.ResponseWriter, r *http.Request) {

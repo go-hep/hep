@@ -61,7 +61,7 @@ func gotype2RMeta(t types.Type) rmeta.Enum {
 
 // GoName2Cxx translates a fully-qualified Go type name to a C++ one.
 // e.g.:
-//  - go-hep.org/x/hep/hbook.H1D -> go_hep_org::x::hep::hbook::H1D
+//   - go-hep.org/x/hep/hbook.H1D -> go_hep_org::x::hep::hbook::H1D
 func GoName2Cxx(name string) string {
 	repl := strings.NewReplacer(
 		"-", "_",

@@ -4,31 +4,30 @@
 
 // root2arrow converts the content of a ROOT TTree to an ARROW file.
 //
-//  Usage of root2arrow:
-//    -o string
-//      	path to output ARROW file name (default "output.data")
-//    -stream
-//      	enable ARROW stream (default is to create an ARROW file)
-//    -t string
-//      	name of the tree to convert (default "tree")
+//	Usage of root2arrow:
+//	  -o string
+//	    	path to output ARROW file name (default "output.data")
+//	  -stream
+//	    	enable ARROW stream (default is to create an ARROW file)
+//	  -t string
+//	    	name of the tree to convert (default "tree")
 //
 //
-//  $> root2arrow -o foo.data -t tree ../../groot/testdata/simple.root
-//  $> arrow-ls ./foo.data
-//  version: V4
-//  schema:
-//    fields: 3
-//      - one: type=int32
-//      - two: type=float32
-//      - three: type=utf8
-//  records: 1
-//  $> arrow-cat ./foo.data
-//  version: V4
-//  record 1/1...
-//    col[0] "one": [1 2 3 4]
-//    col[1] "two": [1.1 2.2 3.3 4.4]
-//    col[2] "three": ["uno" "dos" "tres" "quatro"]
-//
+//	$> root2arrow -o foo.data -t tree ../../groot/testdata/simple.root
+//	$> arrow-ls ./foo.data
+//	version: V4
+//	schema:
+//	  fields: 3
+//	    - one: type=int32
+//	    - two: type=float32
+//	    - three: type=utf8
+//	records: 1
+//	$> arrow-cat ./foo.data
+//	version: V4
+//	record 1/1...
+//	  col[0] "one": [1 2 3 4]
+//	  col[1] "two": [1.1 2.2 3.3 4.4]
+//	  col[2] "three": ["uno" "dos" "tres" "quatro"]
 package main // import "go-hep.org/x/hep/cmd/root2arrow"
 
 import (

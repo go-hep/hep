@@ -10,13 +10,13 @@
 //
 // ex:
 //
-//  $> root-srv -addr=:8080 &
-//  2017/04/06 15:13:59 server listening on :8080
+//	$> root-srv -addr=:8080 &
+//	2017/04/06 15:13:59 server listening on :8080
 //
-//  $> open localhost:8080
+//	$> open localhost:8080
 //
-//  $> root-srv -addr :8080 -serv https -host example.com
-//  2017/04/06 15:13:59 https server listening on :8080 at example.com
+//	$> root-srv -addr :8080 -serv https -host example.com
+//	2017/04/06 15:13:59 https server listening on :8080 at example.com
 package main // import "go-hep.org/x/hep/groot/cmd/root-srv"
 
 import (

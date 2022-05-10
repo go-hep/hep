@@ -7,9 +7,9 @@
 //
 // Example:
 //
-//  $> rio2yoda file1.rio file2.rio > out.yoda
-//  $> rio2yoda -o out.yoda file1.rio file2.rio
-//  $> rio2yoda -o out.yoda.gz file1.rio file2.rio
+//	$> rio2yoda file1.rio file2.rio > out.yoda
+//	$> rio2yoda -o out.yoda file1.rio file2.rio
+//	$> rio2yoda -o out.yoda.gz file1.rio file2.rio
 package main
 
 import (

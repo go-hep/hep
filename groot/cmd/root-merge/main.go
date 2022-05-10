@@ -7,13 +7,14 @@
 // Usage: root-merge [options] file1.root [file2.root [file3.root [...]]]
 //
 // ex:
-//  $> root-merge -o out.root ./testdata/chain.flat.1.root ./testdata/chain.flat.2.root
+//
+//	$> root-merge -o out.root ./testdata/chain.flat.1.root ./testdata/chain.flat.2.root
 //
 // options:
-//   -o string
-//     	path to merged output ROOT file (default "out.root")
-//   -v	enable verbose mode
 //
+//	-o string
+//	  	path to merged output ROOT file (default "out.root")
+//	-v	enable verbose mode
 package main // import "go-hep.org/x/hep/groot/cmd/root-merge"
 
 import (

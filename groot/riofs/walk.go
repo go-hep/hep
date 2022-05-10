@@ -204,8 +204,9 @@ func (rd *recDir) walk(dir Directory, path []string, cycle int16) (root.Object, 
 }
 
 // Dir wraps the given directory to handle fully specified directory names:
-//  rdir := Dir(dir)
-//  obj, err := rdir.Get("some/dir/object/name;1")
+//
+//	rdir := Dir(dir)
+//	obj, err := rdir.Get("some/dir/object/name;1")
 func Dir(dir Directory) Directory {
 	return &recDir{dir}
 }

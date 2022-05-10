@@ -288,7 +288,9 @@ const SecurityOverrideLength = 2
 // SecurityOverride is an alteration needed to the specified predefined security level.
 // It consists of the request index and the security requirement the associated request should have.
 // Request index is calculated as:
-//     (request code) - (request code of Auth request)
+//
+//	(request code) - (request code of Auth request)
+//
 // according to xrootd protocol specification.
 type SecurityOverride struct {
 	RequestIndex byte

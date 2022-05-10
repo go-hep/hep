@@ -3,7 +3,8 @@
 // license that can be found in the LICENSE file.
 
 // Package xrootd implements the XRootD protocol from
-//  http://xrootd.org
+//
+//	http://xrootd.org
 //
 // Package xrootd provides a Client and a Server.
 //
@@ -24,6 +25,6 @@
 //
 // The NewServer function creates a server:
 //
-//  srv := xrootd.NewServer(xrootd.Default(), nil)
-//  err := srv.Serve(listener)
+//	srv := xrootd.NewServer(xrootd.Default(), nil)
+//	err := srv.Serve(listener)
 package xrootd // import "go-hep.org/x/hep/xrootd"

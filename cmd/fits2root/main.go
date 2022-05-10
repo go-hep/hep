@@ -8,15 +8,16 @@
 //
 // Example:
 //
-//  $> fits2root -f ./input.fits -t MyHDU
+//	$> fits2root -f ./input.fits -t MyHDU
 //
 // Options:
-//   -f string
-//     	path to input FITS file name
-//   -o string
-//     	path to output ROOT file name (default "output.root")
-//   -t string
-//     	name of the FITS table to convert
+//
+//	-f string
+//	  	path to input FITS file name
+//	-o string
+//	  	path to output ROOT file name (default "output.root")
+//	-t string
+//	  	name of the FITS table to convert
 package main
 
 import (

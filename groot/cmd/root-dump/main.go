@@ -7,42 +7,41 @@
 //
 // Example:
 //
-//  $> root-dump ./testdata/small-flat-tree.root
-//  >>> file[./testdata/small-flat-tree.root]
-//  key[000]: tree;1 "my tree title" (TTree)
-//  [000][Int32]: 0
-//  [000][Int64]: 0
-//  [000][UInt32]: 0
-//  [000][UInt64]: 0
-//  [000][Float32]: 0
-//  [000][Float64]: 0
-//  [000][Str]: evt-000
-//  [000][ArrayInt32]: [0 0 0 0 0 0 0 0 0 0]
-//  [000][ArrayInt64]: [0 0 0 0 0 0 0 0 0 0]
-//  [000][ArrayInt32]: [0 0 0 0 0 0 0 0 0 0]
-//  [000][ArrayInt64]: [0 0 0 0 0 0 0 0 0 0]
-//  [000][ArrayFloat32]: [0 0 0 0 0 0 0 0 0 0]
-//  [000][ArrayFloat64]: [0 0 0 0 0 0 0 0 0 0]
-//  [000][N]: 0
-//  [000][SliceInt32]: []
-//  [000][SliceInt64]: []
-//  [...]
+//	$> root-dump ./testdata/small-flat-tree.root
+//	>>> file[./testdata/small-flat-tree.root]
+//	key[000]: tree;1 "my tree title" (TTree)
+//	[000][Int32]: 0
+//	[000][Int64]: 0
+//	[000][UInt32]: 0
+//	[000][UInt64]: 0
+//	[000][Float32]: 0
+//	[000][Float64]: 0
+//	[000][Str]: evt-000
+//	[000][ArrayInt32]: [0 0 0 0 0 0 0 0 0 0]
+//	[000][ArrayInt64]: [0 0 0 0 0 0 0 0 0 0]
+//	[000][ArrayInt32]: [0 0 0 0 0 0 0 0 0 0]
+//	[000][ArrayInt64]: [0 0 0 0 0 0 0 0 0 0]
+//	[000][ArrayFloat32]: [0 0 0 0 0 0 0 0 0 0]
+//	[000][ArrayFloat64]: [0 0 0 0 0 0 0 0 0 0]
+//	[000][N]: 0
+//	[000][SliceInt32]: []
+//	[000][SliceInt64]: []
+//	[...]
 //
-//  $> root-dump -h
-//  Usage: root-dump [options] f0.root [f1.root [...]]
+//	$> root-dump -h
+//	Usage: root-dump [options] f0.root [f1.root [...]]
 //
-//  ex:
-//   $> root-dump ./testdata/small-flat-tree.root
-//   $> root-dump -deep=0 ./testdata/small-flat-tree.root
+//	ex:
+//	 $> root-dump ./testdata/small-flat-tree.root
+//	 $> root-dump -deep=0 ./testdata/small-flat-tree.root
 //
-//  options:
-//    -cpu-profile string
-//      	path to CPU profile output file
-//    -deep
-//      	enable deep dumping of values (including Trees' entries) (default true)
-//    -name string
-//      	regex of object names to dump
-//
+//	options:
+//	  -cpu-profile string
+//	    	path to CPU profile output file
+//	  -deep
+//	    	enable deep dumping of values (including Trees' entries) (default true)
+//	  -name string
+//	    	regex of object names to dump
 package main // import "go-hep.org/x/hep/groot/cmd/root-dump"
 
 import (

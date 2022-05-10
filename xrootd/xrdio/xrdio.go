@@ -16,12 +16,12 @@ import (
 )
 
 // File wraps a xrdfs.File and implements the following interfaces:
-//  - io.Closer
-//  - io.Reader
-//  - io.Writer
-//  - io.ReaderAt
-//  - io.WriterAt
-//  - io.Seeker
+//   - io.Closer
+//   - io.Reader
+//   - io.Writer
+//   - io.ReaderAt
+//   - io.WriterAt
+//   - io.Seeker
 type File struct {
 	cli *xrootd.Client
 	fs  xrdfs.FileSystem
@@ -37,7 +37,7 @@ type File struct {
 //
 // Example:
 //
-//  f, err := xrdio.Open("root://server.example.com:1094//some/path/to/file")
+//	f, err := xrdio.Open("root://server.example.com:1094//some/path/to/file")
 func Open(name string) (*File, error) {
 	urn, err := Parse(name)
 	if err != nil {
@@ -72,7 +72,7 @@ func Open(name string) (*File, error) {
 //
 // Example:
 //
-//  f, err := xrdio.OpenFrom(fs, "/some/path/to/file")
+//	f, err := xrdio.OpenFrom(fs, "/some/path/to/file")
 func OpenFrom(fs xrdfs.FileSystem, name string) (*File, error) {
 	f, err := fs.Open(context.Background(), name, xrdfs.OpenModeOwnerRead, xrdfs.OpenOptionsOpenRead)
 	if err != nil {

@@ -8,8 +8,8 @@
 // with physics measurements.
 //
 // See:
-//  http://gdml.web.cern.ch/GDML/doc/GDMLmanual.pdf
 //
+//	http://gdml.web.cern.ch/GDML/doc/GDMLmanual.pdf
 package gdml
 
 import "encoding/xml"

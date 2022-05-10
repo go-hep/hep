@@ -4,32 +4,33 @@
 
 // root2csv converts the content of a ROOT TTree to a CSV file.
 //
-//  Usage of root2csv:
-//    -f string
-//      	path to input ROOT file name
-//    -o string
-//      	path to output CSV file name (default "output.csv")
-//    -t string
-//      	name of the tree to convert (default "tree")
+//	Usage of root2csv:
+//	  -f string
+//	    	path to input ROOT file name
+//	  -o string
+//	    	path to output CSV file name (default "output.csv")
+//	  -t string
+//	    	name of the tree to convert (default "tree")
 //
 // By default, root2csv will write out a CSV file with ';' as a column delimiter.
 // root2csv ignores the branches of the TTree that are not supported by CSV:
-//  - slices/arrays
-//  - C++ objects
+//   - slices/arrays
+//   - C++ objects
 //
 // Example:
-//  $> root2csv -o out.csv -t tree -f testdata/small-flat-tree.root
-//  $> head out.csv
-//  ## Automatically generated from "testdata/small-flat-tree.root"
-//  Int32;Int64;UInt32;UInt64;Float32;Float64;Str;N
-//  0;0;0;0;0;0;evt-000;0
-//  1;1;1;1;1;1;evt-001;1
-//  2;2;2;2;2;2;evt-002;2
-//  3;3;3;3;3;3;evt-003;3
-//  4;4;4;4;4;4;evt-004;4
-//  5;5;5;5;5;5;evt-005;5
-//  6;6;6;6;6;6;evt-006;6
-//  7;7;7;7;7;7;evt-007;7
+//
+//	$> root2csv -o out.csv -t tree -f testdata/small-flat-tree.root
+//	$> head out.csv
+//	## Automatically generated from "testdata/small-flat-tree.root"
+//	Int32;Int64;UInt32;UInt64;Float32;Float64;Str;N
+//	0;0;0;0;0;0;evt-000;0
+//	1;1;1;1;1;1;evt-001;1
+//	2;2;2;2;2;2;evt-002;2
+//	3;3;3;3;3;3;evt-003;3
+//	4;4;4;4;4;4;evt-004;4
+//	5;5;5;5;5;5;evt-005;5
+//	6;6;6;6;6;6;evt-006;6
+//	7;7;7;7;7;7;evt-007;7
 package main
 
 import (

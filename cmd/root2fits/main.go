@@ -8,16 +8,16 @@
 //
 // Example:
 //
-//  $> root2fits -f ./input.root -t tree
+//	$> root2fits -f ./input.root -t tree
 //
 // Options:
-//   -f string
-//     	path to input ROOT file name
-//   -o string
-//     	path to output FITS file name (default "output.fits")
-//   -t string
-//     	name of the ROOT tree to convert
 //
+//	-f string
+//	  	path to input ROOT file name
+//	-o string
+//	  	path to output FITS file name (default "output.fits")
+//	-t string
+//	  	name of the ROOT tree to convert
 package main
 
 import (

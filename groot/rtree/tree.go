@@ -21,12 +21,13 @@ import (
 )
 
 // A ttree object is a list of Branch.
-//   To Create a TTree object one must:
-//    - Create the TTree header via the TTree constructor
-//    - Call the TBranch constructor for every branch.
 //
-//   To Fill this object, use member function Fill with no parameters
-//     The Fill function loops on all defined TBranch
+//	To Create a TTree object one must:
+//	 - Create the TTree header via the TTree constructor
+//	 - Call the TBranch constructor for every branch.
+//
+//	To Fill this object, use member function Fill with no parameters
+//	  The Fill function loops on all defined TBranch
 type ttree struct {
 	f   *riofs.File     // underlying file
 	dir riofs.Directory // directory holding this tree

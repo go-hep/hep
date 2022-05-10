@@ -10,8 +10,8 @@ import (
 
 type location int
 
-//  PID digits (base 10) are: n Nr Nl Nq1 Nq2 Nq3 Nj
-//  The location enum provides a convenient index into the PID.
+// PID digits (base 10) are: n Nr Nl Nq1 Nq2 Nq3 Nj
+// The location enum provides a convenient index into the PID.
 const (
 	_ location = iota
 	Nj
@@ -35,7 +35,9 @@ type Quarks struct {
 
 // Particle Identification number
 // In the standard numbering scheme, the PID digits (base 10) are:
-//           +/- n Nr Nl Nq1 Nq2 Nq3 Nj
+//
+//	+/- n Nr Nl Nq1 Nq2 Nq3 Nj
+//
 // It is expected that any 7 digit number used as a PID will adhere to
 // the Monte Carlo numbering scheme documented by the PDG.
 // Note that particles not already explicitly defined

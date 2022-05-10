@@ -47,7 +47,8 @@ func WithBorder(b Border) FigOption {
 
 // WithLatexHandler allows to enable the automatic generation of PDFs from .tex files.
 // To enable the automatic generation of PDFs, use DefaultHandler:
-//  WithLatexHandler(htex.DefaultHandler)
+//
+//	WithLatexHandler(htex.DefaultHandler)
 func WithLatexHandler(h htex.Handler) FigOption {
 	return func(fig *Fig) {
 		fig.Latex = h

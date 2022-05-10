@@ -57,9 +57,10 @@ func Orientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 //
 // It computes the determinant of the matrix and returns the orientation based
 // on the value of the determinant.
-//  | x1 y1 1 |
-//  | x2 y2 1 |
-//  | x  y  1 |
+//
+//	| x1 y1 1 |
+//	| x2 y2 1 |
+//	| x  y  1 |
 func simpleOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 	if (x1 == x2 && x2 == x) || (y1 == y2 && y2 == y) {
 		// points are horizontally or vertically aligned
@@ -86,9 +87,10 @@ func simpleOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 //
 // It computes the determinant of the matrix and returns the orientation based
 // on the value of the determinant.
-//  | x1 y1 1 |
-//  | x2 y2 1 |
-//  | x  y  1 |
+//
+//	| x1 y1 1 |
+//	| x2 y2 1 |
+//	| x  y  1 |
 func robustOrientation(x1, y1, x2, y2, x, y *big.Rat) OrientationKind {
 	// Compute the determinant of the matrix
 	// det := x1*y2 + x2*y + x*y1 - x1*y - x2*y1 - x*y2
@@ -113,9 +115,10 @@ func robustOrientation(x1, y1, x2, y2, x, y *big.Rat) OrientationKind {
 // It first computes the conditional number of the matrix. When the condition number
 // is higher than the Condition Tolerance, then we assume the matrix is singular and
 // the determinant is 0. If the determinant is not 0 the sign of the determinant is computed.
-//  | x1 y1 1 |
-//  | x2 y2 1 |
-//  | x  y  1 |
+//
+//	| x1 y1 1 |
+//	| x2 y2 1 |
+//	| x  y  1 |
 func matOrientation(x1, y1, x2, y2, x, y float64) OrientationKind {
 	if (x1 == x2 && x2 == x) || (y1 == y2 && y2 == y) {
 		// points are horizontally or vertically aligned

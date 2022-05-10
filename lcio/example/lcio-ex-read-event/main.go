@@ -3,14 +3,14 @@
 // license that can be found in the LICENSE file.
 
 // lcio-ex-read-event is the hep/x/lcio example equivalent to:
-//  https://github.com/iLCSoft/LCIO/blob/master/examples/cpp/rootDict/readEventTree.C
+//
+//	https://github.com/iLCSoft/LCIO/blob/master/examples/cpp/rootDict/readEventTree.C
 //
 // example:
 //
-//  $> lcio-ex-read-event ./DST01-06_ppr004_bbcsdu.slcio
-//  lcio-ex-read-event: read 50 events from file "./DST01-06_ppr004_bbcsdu.slcio"
-//  $> open out.png
-//
+//	$> lcio-ex-read-event ./DST01-06_ppr004_bbcsdu.slcio
+//	lcio-ex-read-event: read 50 events from file "./DST01-06_ppr004_bbcsdu.slcio"
+//	$> open out.png
 package main
 
 import (
