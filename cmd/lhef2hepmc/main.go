@@ -120,7 +120,7 @@ func main() {
 			xsecerr2 := (sumw2/float64(nevt) - xsecval*xsecval) / float64(nevt)
 
 			if xsecerr2 < 0 {
-				log.Printf("WARNING: xsecerr^2 < 0. forcing to zero. (%f)\n", xsecerr2)
+				log.Printf("WARNING: event #%d: xsecerr^2 < 0. forcing to zero. (xsecerr^2=%g)\n", ievt, xsecerr2)
 				xsecerr2 = 0.
 			}
 			xsecerr = math.Sqrt(xsecerr2)
