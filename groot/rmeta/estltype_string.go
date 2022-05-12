@@ -24,11 +24,13 @@ func _() {
 	_ = x[STLunorderedmultimap-13]
 	_ = x[STLend-14]
 	_ = x[STLany-300]
+	_ = x[STLstdstring-365]
 }
 
 const (
 	_ESTLType_name_0 = "NotSTLSTLvectorSTLlistSTLdequeSTLmapSTLmultimapSTLsetSTLmultisetSTLbitsetSTLforwardlistSTLunorderedsetSTLunorderedmultisetSTLunorderedmapSTLunorderedmultimapSTLend"
 	_ESTLType_name_1 = "STLany"
+	_ESTLType_name_2 = "STLstdstring"
 )
 
 var (
@@ -41,6 +43,8 @@ func (i ESTLType) String() string {
 		return _ESTLType_name_0[_ESTLType_index_0[i]:_ESTLType_index_0[i+1]]
 	case i == 300:
 		return _ESTLType_name_1
+	case i == 365:
+		return _ESTLType_name_2
 	default:
 		return "ESTLType(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
