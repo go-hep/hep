@@ -206,7 +206,7 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 
 	case *StreamerSTL:
 		switch se.STLType() {
-		case rmeta.STLvector, rmeta.STLlist, rmeta.STLdeque:
+		case rmeta.STLvector, rmeta.STLlist, rmeta.STLdeque, rmeta.STLend:
 			var (
 				ct       = se.ContainedType()
 				typevers = int16(-1)

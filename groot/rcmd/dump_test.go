@@ -328,6 +328,11 @@ key[004]: tree;1 "my tree title" (TTree)
 			name: "../testdata/tgme.root",
 			want: loadRef("testdata/tgme.root.txt"),
 		},
+		{
+			// ROOT::VecOps::RVec<T>
+			name: "../testdata/rvec.root",
+			want: loadRef("testdata/rvec.root.txt"),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := new(strings.Builder)

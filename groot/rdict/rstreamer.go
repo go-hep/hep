@@ -210,7 +210,7 @@ func (si *StreamerInfo) makeROp(sictx rbytes.StreamerInfoContext, i int, descr e
 
 				case *StreamerSTL:
 					switch se.STLType() {
-					case rmeta.STLvector, rmeta.STLlist, rmeta.STLdeque:
+					case rmeta.STLvector, rmeta.STLlist, rmeta.STLdeque, rmeta.STLend:
 						var (
 							ct       = se.ContainedType()
 							typename = se.TypeName()
@@ -467,7 +467,7 @@ func (si *StreamerInfo) makeROp(sictx rbytes.StreamerInfoContext, i int, descr e
 
 		case *StreamerSTL:
 			switch se.STLType() {
-			case rmeta.STLvector, rmeta.STLlist, rmeta.STLdeque:
+			case rmeta.STLvector, rmeta.STLlist, rmeta.STLdeque, rmeta.STLend:
 				var (
 					ct       = se.ContainedType()
 					typename = se.TypeName()
