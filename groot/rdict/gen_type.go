@@ -196,7 +196,7 @@ func (g *genGoType) genField(si rbytes.StreamerInfo, i int, se rbytes.StreamerEl
 
 	case *StreamerSTL:
 		switch se.STLType() {
-		case rmeta.STLvector, rmeta.STLmap:
+		case rmeta.STLvector, rmeta.STLmap, rmeta.STLend:
 			tname := g.typename(se)
 			g.printf(docFmt, se.Name(), tname, g.stag(i, se), doc)
 		default:
@@ -317,7 +317,7 @@ func (g *genGoType) typename(se rbytes.StreamerElement) string {
 
 	case *StreamerSTL:
 		switch se.STLType() {
-		case rmeta.STLvector:
+		case rmeta.STLvector, rmeta.STLend:
 			switch se.ContainedType() {
 			case rmeta.Bool:
 				return "[]bool"
@@ -420,6 +420,9 @@ func (g *genGoType) cxx2go(name string, qual qualKind) string {
 	}
 	name = f(name)
 	name = strings.Replace(name, "::", "__", -1) // handle namespaces
+	name = strings.Replace(name, "<", "_", -1)   // handle C++ templates
+	name = strings.Replace(name, ">", "_", -1)   // handle C++ templates
+	name = strings.Replace(name, ",", "_", -1)   // handle C++ templates
 	return prefix + name
 }
 
@@ -611,7 +614,7 @@ func (g *genGoType) genMarshalField(si rbytes.StreamerInfo, i int, se rbytes.Str
 
 	case *StreamerSTL:
 		switch se.STLType() {
-		case rmeta.STLvector:
+		case rmeta.STLvector, rmeta.STLend:
 			wfunc := ""
 			switch se.ContainedType() {
 			case rmeta.Bool:
@@ -872,7 +875,7 @@ func (g *genGoType) genUnmarshalField(si rbytes.StreamerInfo, i int, se rbytes.S
 
 	case *StreamerSTL:
 		switch se.STLType() {
-		case rmeta.STLvector:
+		case rmeta.STLvector, rmeta.STLend:
 			rfunc := ""
 			switch se.ContainedType() {
 			case rmeta.Bool:

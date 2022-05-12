@@ -42,6 +42,11 @@ func TestGenerate(t *testing.T) {
 			want:  "testdata/tbase.txt",
 			types: []string{"Base", "D1", "D2"},
 		},
+		{
+			fname: "../../testdata/rvec.root",
+			want:  "testdata/rvec.txt",
+			types: []string{"RVec"},
+		},
 	} {
 		t.Run(tc.fname, func(t *testing.T) {
 			oname := filepath.Base(tc.fname) + ".go"
