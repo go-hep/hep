@@ -156,4 +156,19 @@
 // disk, by reading the data record at offset fSeekInfo.
 // A streamer info is actually a list of streamer elements, one for each field
 // and, in C++, base class (in Go, this is emulated as an embedded field.)
+//
+// # go generate groot
+//
+// groot is a pure-Go package, but to ensure two-way compatibility with ROOT/C++
+// (ie: groot can read files created with ROOT/C++ and ROOT/C++ can read files
+// created with groot), the groot package may require a proper ROOT/C++ installation.
+// This is the case, e.g., with the 'go generate go-hep.org/x/hep/groot' command.
+// This command will invoke ROOT/C++ to create ROOT files and to inspect a
+// ROOT/C++ installation for some metadata (ROOT version, TStreamerXXX versions, etc...)
+//
+// Installation of ROOT/C++ is documented here:
+//
+//	https://root.cern/install/
+//
+// groot should remain buildable without a ROOT/C++ installation.
 package groot // import "go-hep.org/x/hep/groot"
