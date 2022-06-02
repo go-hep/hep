@@ -26,12 +26,12 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go-version }}
  
     - name: Cache-ROOT
-      uses: actions/cache@v1
+      uses: actions/cache@v3
       with:
         path: ~/root-${{ env.ROOT_VERSION }}
         key: ${{ runner.os }}-root-${{ env.ROOT_VERSION }}
@@ -44,12 +44,12 @@ jobs:
         git config --global core.eol lf
 
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 1
 
     - name: Cache-Go
-      uses: actions/cache@v1
+      uses: actions/cache@v3
       with:
         # In order:
         # * Module download cache
