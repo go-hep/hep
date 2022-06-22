@@ -47,19 +47,22 @@ func TestGenerate(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			outfile := tc.want + "_got"
 			if !bytes.Equal(got, want) {
-				err = os.WriteFile(tc.want+"_got", got, 0644)
+				err = os.WriteFile(outfile, got, 0644)
 				if err == nil && hasDiff {
 					out := new(bytes.Buffer)
-					cmd := exec.Command(diff, "-urN", tc.want+"_got", tc.want)
+					cmd := exec.Command(diff, "-urN", outfile, tc.want)
 					cmd.Stdout = out
 					cmd.Stderr = out
 					err = cmd.Run()
 					t.Fatalf("generated code error: %v\n%v\n", err, out.String())
 				}
 				t.Fatalf("generated code error.\ngot:\n%s\nwant:\n%s\n", string(got), string(want))
-
 			}
+			// Remove output if test passes
+			// Note: output file are referenced in .gitignore
+			_ = os.Remove(outfile)
 		})
 	}
 }
