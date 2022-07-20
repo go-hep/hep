@@ -11,9 +11,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/apache/arrow/go/arrow/arrio"
-	"github.com/apache/arrow/go/arrow/ipc"
-	"github.com/apache/arrow/go/arrow/memory"
+	"git.sr.ht/~sbinet/go-arrow/arrio"
+	"git.sr.ht/~sbinet/go-arrow/ipc"
+	"git.sr.ht/~sbinet/go-arrow/memory"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rarrow"
 	"go-hep.org/x/hep/groot/rtree"

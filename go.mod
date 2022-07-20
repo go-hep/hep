@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	gioui.org v0.0.0-20210309172710-4b377aa89637
-	github.com/apache/arrow/go/arrow v0.0.0-20201119084055-60ea0dcac5a8
+	git.sr.ht/~sbinet/go-arrow v0.2.0
 	github.com/astrogo/fitsio v0.2.1
 	github.com/campoy/embedmd v1.0.0
 	github.com/go-mmap/mmap v0.6.0
@@ -57,7 +57,6 @@ require (
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	golang.org/x/sys v0.0.0-20220403205710-6acee93ad0eb // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	modernc.org/b v1.0.2 // indirect
 	modernc.org/db v1.0.4 // indirect
 	modernc.org/file v1.0.3 // indirect
@@ -71,5 +70,3 @@ require (
 	modernc.org/zappy v1.0.5 // indirect
 	rsc.io/pdf v0.1.1 // indirect
 )
-
-replace github.com/apache/arrow/go/arrow => git.sr.ht/~sbinet/go-arrow v0.1.1

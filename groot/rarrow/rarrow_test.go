@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/apache/arrow/go/arrow"
+	"git.sr.ht/~sbinet/go-arrow"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/rtree"

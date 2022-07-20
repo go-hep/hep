@@ -19,7 +19,7 @@ func init() {
 		return
 	}
 
-	o, err := exec.Command("go", "install", "github.com/apache/arrow/go/arrow/ipc/cmd/arrow-cat").CombinedOutput()
+	o, err := exec.Command("go", "install", "git.sr.ht/~sbinet/go-arrow/ipc/cmd/arrow-cat").CombinedOutput()
 	if err != nil {
 		panic(fmt.Errorf("could not install arrow-cat command:\n%v\nerr: %w", string(o), err))
 	}

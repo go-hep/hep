@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/apache/arrow/go/arrow/array"
-	"github.com/apache/arrow/go/arrow/memory"
+	"git.sr.ht/~sbinet/go-arrow/array"
+	"git.sr.ht/~sbinet/go-arrow/memory"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/rtree"

@@ -5,7 +5,7 @@
 package rarrow // import "go-hep.org/x/hep/groot/rarrow"
 
 import (
-	"github.com/apache/arrow/go/arrow/memory"
+	"git.sr.ht/~sbinet/go-arrow/memory"
 )
 
 type config struct {

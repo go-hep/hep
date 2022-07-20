@@ -45,7 +45,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/apache/arrow/go/arrow/arrio"
+	"git.sr.ht/~sbinet/go-arrow/arrio"
 	"github.com/sbinet/npyio/npy"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rarrow"

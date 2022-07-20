@@ -10,10 +10,10 @@ import (
 	"reflect"
 	"sync/atomic"
 
-	"github.com/apache/arrow/go/arrow"
-	"github.com/apache/arrow/go/arrow/array"
-	"github.com/apache/arrow/go/arrow/arrio"
-	"github.com/apache/arrow/go/arrow/memory"
+	"git.sr.ht/~sbinet/go-arrow"
+	"git.sr.ht/~sbinet/go-arrow/array"
+	"git.sr.ht/~sbinet/go-arrow/arrio"
+	"git.sr.ht/~sbinet/go-arrow/memory"
 	"github.com/sbinet/npyio/npy"
 )
 
