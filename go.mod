@@ -26,7 +26,7 @@ require (
 	golang.org/x/image v0.0.0-20220321031419-a8550c1d254a
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/text v0.3.7
-	golang.org/x/tools v0.1.10
+	golang.org/x/tools v0.1.11
 	gonum.org/v1/gonum v0.11.0
 	gonum.org/v1/plot v0.11.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -54,7 +54,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	golang.org/x/exp/shiny v0.0.0-20220328175248-053ad81199eb // indirect
-	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
+	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	golang.org/x/sys v0.0.0-20220403205710-6acee93ad0eb // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
