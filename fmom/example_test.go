@@ -25,7 +25,7 @@ func Example() {
 	p4 := fmom.Boost(&p1, r3.Vec{X: 0, Y: 0, Z: 0.99})
 	fmt.Printf("p4 = boost(p1, (0,0,0.99)) = %v\n", p4)
 
-	p5 := fmom.Boost(&p1, fmom.BoostOf(&p1).Scale(-1))
+	p5 := fmom.Boost(&p1, r3.Scale(-1, fmom.BoostOf(&p1)))
 	fmt.Printf("p5 = rest-frame(p1) = %v\n", p5)
 
 	// Output:
