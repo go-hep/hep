@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/groot/root"
@@ -400,6 +401,85 @@ func TestFileOf(t *testing.T) {
 				t.Fatalf("could not retrieve correct file for %q", tc.name)
 			}
 		})
+	}
+}
+
+func TestWalk(t *testing.T) {
+	tmp, err := os.MkdirTemp("", "groot-riofs-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmp)
+
+	err = os.MkdirAll(stdpath.Join(tmp, "data"), 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("could not get working directory: %+v", err)
+	}
+	defer os.Chdir(pwd)
+
+	err = os.Chdir(tmp)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fname := "./data/file.root"
+
+	f, err := Create(fname)
+	if err != nil {
+		t.Fatalf("could not create ROOT file: %+v", err)
+	}
+	defer f.Close()
+
+	err = os.Chdir(pwd)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rd := Dir(f)
+
+	display := func() string {
+		o := new(strings.Builder)
+		err := Walk(f, func(path string, obj root.Object, err error) error {
+			fmt.Fprintf(o, "%s (%s)\n", path, obj.Class())
+			return nil
+		})
+		if err != nil {
+			return fmt.Errorf("could not display file content: %w", err).Error()
+		}
+		return o.String()
+	}
+
+	for _, name := range []string{
+		"dir1/dir11/dir111",
+		"dir1/dir12/dir121",
+		"dir2/dir21",
+		"dir2/dir22",
+	} {
+		_, err = rd.Mkdir(name)
+		if err != nil {
+			t.Fatalf("could not create dir %q: %+v", name, err)
+		}
+	}
+
+	got := display()
+	want := `data/file.root (TFile)
+data/file.root/dir1 (TDirectoryFile)
+data/file.root/dir1/dir11 (TDirectoryFile)
+data/file.root/dir1/dir11/dir111 (TDirectoryFile)
+data/file.root/dir1/dir12 (TDirectoryFile)
+data/file.root/dir1/dir12/dir121 (TDirectoryFile)
+data/file.root/dir2 (TDirectoryFile)
+data/file.root/dir2/dir21 (TDirectoryFile)
+data/file.root/dir2/dir22 (TDirectoryFile)
+`
+	if got != want {
+		diff := cmp.Diff(want, got)
+		t.Fatalf("invalid Walk display: -- (-ref +got)\n%s", diff)
 	}
 }
 

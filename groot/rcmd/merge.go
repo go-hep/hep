@@ -109,12 +109,15 @@ func (cmd *mergeCmd) mergeTasksFrom(o *riofs.File, fname string) ([]task, error)
 	}
 	defer f.Close()
 
+	// handle relative/absolute path
+	top := stdpath.Join(f.Name(), ".")
+
 	var tsks []task
 	err = riofs.Walk(f, func(path string, obj root.Object, err error) error {
 		if err != nil {
 			return err
 		}
-		name := path[len(f.Name()):]
+		name := path[len(top):]
 		if name == "" {
 			return nil
 		}

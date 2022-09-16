@@ -23,7 +23,20 @@ var SkipDir = errors.New("riofs: skip this directory") //lint:ignore ST1012 EOF-
 //
 // If an object exists with multiple cycle values, only the latest one is considered.
 func Walk(dir Directory, walkFn WalkFunc) error {
-	err := walk(dir.(root.Named).Name(), dir.(root.Object), walkFn)
+	// prepare a "stable" top directory.
+	// depending on whether the dir is rooted in a file that was created
+	// with an absolute path, the call to Name() may return a path like:
+	//   ./data/file.root
+	// the first call to walkFn will be given "./data/file.root" as a 'path'
+	// argument.
+	// but the subsequent calls (walking through directories' hierarchy) will
+	// be given "data/file.root/dir11", instead of the probably expected
+	// "./data/file.root/dir11".
+	//
+	// side-step this by providing directly the "stable" top directory in a
+	// more regularized form.
+	top := stdpath.Join(dir.(root.Named).Name(), ".")
+	err := walk(top, dir.(root.Object), walkFn)
 	if err == SkipDir {
 		return nil
 	}
