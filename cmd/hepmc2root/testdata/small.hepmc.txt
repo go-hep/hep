@@ -1,0 +1,66 @@
+key[000]: tree;1 "tree" (TTree)
+[000][Event_processID]: 20
+[000][Event_nbr]: 1
+[000][Event_mpi]: 0
+[000][Event_scale]: 0
+[000][Event_alphaQCD]: 0
+[000][Event_alphaQED]: 0
+[000][Event_barcodeSPV]: -3
+[000][Event_barcodeBP1]: 0
+[000][Event_barcodeBP2]: 0
+[000][Event_nvtx]: 4
+[000][Event_npart]: 8
+[000][Event_inbcs]: [1 2 3 4 6]
+[000][Event_outbcs]: [3 4 5 6 7 8]
+[000][Weights_slice]: []
+[000][Weights_keys]: []
+[000][Weights_names]: []
+[000][Random_states]: []
+[000][Xsection_value]: 0
+[000][Xsection_error]: 0
+[000][HI_ncoll_hard]: 0
+[000][HI_npart_proj]: 0
+[000][HI_npart_targ]: 0
+[000][HI_ncoll]: 0
+[000][HI_nnw_coll]: 0
+[000][HI_nwn_coll]: 0
+[000][HI_nwnw_coll]: 0
+[000][HI_spect_neutrons]: 0
+[000][HI_spect_protons]: 0
+[000][HI_impact_param]: 0
+[000][HI_evt_plane_angle]: 0
+[000][HI_eccentricity]: 0
+[000][HI_sigma_inel_nn]: 0
+[000][PDF_parton1]: 0
+[000][PDF_parton2]: 0
+[000][PDF_x1]: 0
+[000][PDF_x2]: 0
+[000][PDF_Q2]: 0
+[000][PDF_x1f]: 0
+[000][PDF_x2f]: 0
+[000][PDF_id1]: 0
+[000][PDF_id2]: 0
+[000][Momentum_unit]: 0
+[000][Length_unit]: 0
+[000][Vertex_x]: [0 0 0 0.12]
+[000][Vertex_y]: [0 0 0 -0.3]
+[000][Vertex_z]: [0 0 0 0.05]
+[000][Vertex_t]: [0 0 0 0.004]
+[000][Vertex_id]: [0 0 0 0]
+[000][Vertex_bc]: [-1 -2 -3 -4]
+[000][Vertex_nin]: [1 1 2 1]
+[000][Vertex_nout]: [1 1 2 2]
+[000][Particle_bc]: [1 2 3 4 5 6 7 8]
+[000][Particle_pid]: [2212 2212 1 -2 22 -24 1 -2]
+[000][Particle_px]: [0 0 0.75 -3.047 -3.813 1.517 -2.445 3.962]
+[000][Particle_py]: [0 0 -1.569 -19 0.113 -20.68 28.816 -49.498]
+[000][Particle_pz]: [7000 -7000 32.191 -54.629 -1.833 -20.605 6.082 -26.687]
+[000][Particle_ene]: [7000 7000 32.238 57.92 4.233 85.925 29.552 56.373]
+[000][Particle_mass]: [0 0 0 0 0 0 0 0]
+[000][Particle_nflow]: [0 0 0 0 0 0 0 0]
+[000][Particle_flow]: [[] [] [] [] [] [] [] []]
+[000][Particle_theta]: [0 0 0 0 0 0 0 0]
+[000][Particle_phi]: [0 0 0 0 0 0 0 0]
+[000][Particle_status]: [3 3 3 3 1 3 1 1]
+[000][Particle_pvtx]: [0 0 -1 -2 -3 -3 -4 -4]
+[000][Particle_evtx]: [-1 -2 -3 -3 0 -4 0 0]
