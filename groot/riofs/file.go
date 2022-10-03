@@ -796,44 +796,15 @@ func (f *File) StreamerInfo(name string, version int) (rbytes.StreamerInfo, erro
 		return si, nil
 	}
 
-	// no streamer for "name" in that file.
-	// try whether "name" isn't actually std::vector<T> and a streamer
-	// for T is in that file.
-	if strings.Contains(name, "<") {
-		cxx := rmeta.CxxTemplateFrom(name)
-		switch cxx.Name {
-		case "vector":
-			si := stdvecSIFrom(name, cxx.Args[0], f)
-			if si != nil {
-				f.sinfos = append(f.sinfos, si)
-				rdict.StreamerInfos.Add(si)
-				return si, nil
-			}
-		}
-	}
-
-	if isCxxBuiltin(name) {
-		switch name {
-		case "string":
-			return rdict.NewStreamerInfo(name, version, []rbytes.StreamerElement{
-				&rdict.StreamerSTLstring{
-					StreamerSTL: *rdict.NewCxxStreamerSTL(
-						rdict.Element{
-							Name:  *rbase.NewNamed(name, ""),
-							Type:  rmeta.STLstring,
-							EName: "string",
-						}.New(), 0, rmeta.STLstring),
-				},
-			}), nil
-		}
-	}
-
 	return nil, fmt.Errorf("riofs: no streamer for %q", name)
 }
 
 // RegisterStreamer adds the given streamer info to the list of streamers
 // that will be stored in the ROOT file.
 func (f *File) RegisterStreamer(streamer rbytes.StreamerInfo) {
+	if old, err := f.StreamerInfo(streamer.Name(), streamer.ClassVersion()); err == nil && old != nil {
+		return
+	}
 	rdict.StreamerInfos.Add(streamer)
 	f.addStreamer(streamer)
 }
@@ -1011,3 +982,54 @@ var (
 	_ io.WriterAt = (*File)(nil)
 	_ io.Closer   = (*File)(nil)
 )
+
+// autogenCtx implements StreamerInfoContext.
+// autogenCtx automatically generates missing streamer infos when queried.
+//
+// We use a wrapper to break cycles in File.StreamerInfo and File.RegisterStreamer.
+type autogenCtx struct {
+	sictx rbytes.StreamerInfoContext
+}
+
+var _ rbytes.StreamerInfoContext = (*autogenCtx)(nil)
+
+func (agctx autogenCtx) StreamerInfo(name string, version int) (rbytes.StreamerInfo, error) {
+	si, err := agctx.sictx.StreamerInfo(name, version)
+	if err == nil {
+		return si, nil
+	}
+
+	// no streamer for "name" in that file.
+	// try whether "name" isn't actually std::vector<T> and a streamer
+	// for T is in that file.
+	if strings.Contains(name, "<") {
+		cxx := rmeta.CxxTemplateFrom(name)
+		switch cxx.Name {
+		case "vector":
+			si := stdvecSIFrom(name, cxx.Args[0], agctx.sictx)
+			if si != nil {
+				// agctx.f.sinfos = append(agctx.f.sinfos, si)
+				rdict.StreamerInfos.Add(si)
+				return si, nil
+			}
+		}
+	}
+
+	if isCxxBuiltin(name) {
+		switch name {
+		case "string":
+			return rdict.NewStreamerInfo(name, version, []rbytes.StreamerElement{
+				&rdict.StreamerSTLstring{
+					StreamerSTL: *rdict.NewCxxStreamerSTL(
+						rdict.Element{
+							Name:  *rbase.NewNamed(name, ""),
+							Type:  rmeta.STLstring,
+							EName: "string",
+						}.New(), 0, rmeta.STLstring),
+				},
+			}), nil
+		}
+	}
+
+	return nil, fmt.Errorf("riofs: no streamer for %q", name)
+}

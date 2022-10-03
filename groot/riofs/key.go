@@ -367,7 +367,9 @@ func (k *Key) Object() (root.Object, error) {
 		return nil, fmt.Errorf("riofs: class %q does not implement rbytes.Unmarshaler (key=%q)", k.class, k.Name())
 	}
 
-	err = vv.UnmarshalROOT(rbytes.NewRBuffer(buf, nil, uint32(k.keylen), k.f))
+	// use autogen context to automatically generate missing streamer infos when reading "old" files.
+	sictx := autogenCtx{k.f}
+	err = vv.UnmarshalROOT(rbytes.NewRBuffer(buf, nil, uint32(k.keylen), sictx))
 	if err != nil {
 		return nil, fmt.Errorf("riofs: could not unmarshal key payload: %w", err)
 	}

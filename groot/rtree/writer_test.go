@@ -170,3 +170,77 @@ func TestConcurrentWrite(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+func TestWriteThisStreamers(t *testing.T) {
+	tmp, err := os.MkdirTemp("", "groot-rtree-")
+	if err != nil {
+		t.Fatalf("could not create dir: %v", err)
+	}
+	defer os.RemoveAll(tmp)
+
+	fname := filepath.Join(tmp, "streamers.root")
+	o, err := riofs.Create(fname)
+	if err != nil {
+		t.Fatalf("could not create output ROOT file: %+v", err)
+	}
+	defer o.Close()
+
+	var evt struct {
+		F1 []float64 `groot:"F1"`
+		F2 []float64 `groot:"F2"`
+		F3 []int64   `groot:"F3"`
+		F4 []int64   `groot:"F4"`
+	}
+
+	wvars := WriteVarsFromStruct(&evt)
+	tree, err := NewWriter(o, "tree", wvars)
+	if err != nil {
+		t.Fatalf("could not create output ROOT tree %q: %+v", "tree", err)
+	}
+
+	for i := 0; i < 10; i++ {
+		evt.F1 = []float64{float64(i)}
+		evt.F2 = []float64{float64(i), float64(i)}
+		evt.F3 = []int64{int64(i)}
+		evt.F4 = []int64{int64(i), int64(i)}
+
+		_, err = tree.Write()
+		if err != nil {
+			t.Fatalf("could not write event %d: %+v", i, err)
+		}
+	}
+
+	err = tree.Close()
+	if err != nil {
+		t.Fatalf("could not close tree: %+v", err)
+	}
+
+	err = o.Close()
+	if err != nil {
+		t.Fatalf("could not close file: %+v", err)
+	}
+
+	f, err := riofs.Open(fname)
+	if err != nil {
+		t.Fatalf("could not re-open ROOT file: %+v", err)
+	}
+	defer f.Close()
+
+	sinfos := make(map[string]int)
+	for _, si := range f.StreamerInfos() {
+		sinfos[si.Name()]++
+	}
+
+	for _, tc := range []struct {
+		name string
+		want int
+	}{
+		{"vector<double>", 1},
+		{"vector<int64_t>", 1},
+	} {
+		got := sinfos[tc.name]
+		if got != tc.want {
+			t.Errorf("invalid count for %q: got=%d, want=%d", tc.name, got, tc.want)
+		}
+	}
+}
