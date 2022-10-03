@@ -58,7 +58,7 @@ func Map[T, U any](dst []U, src []T, f func(v T) U) []U {
 // Find creates a slice with all indices corresponding to elements for which f(x) is true.
 // Find uses dst as work buffer, storing indices at the start of the slice.
 // Find clears dst if a slice is passed, and allocates a new slice if dst is nil.
-func Find[T any](dst []int, src []T, f func(v T) bool) []int {
+func Find[S ~[]E, E any](dst []int, src S, f func(v E) bool) []int {
 
 	if dst == nil {
 		dst = make([]int, 0, len(src))
@@ -80,14 +80,14 @@ func Find[T any](dst []int, src []T, f func(v T) bool) []int {
 // Take will panic if indices is not sorted or has duplicates.
 // Take will panic if length of indices is larger than length of src.
 // Take will panic if length of indices is different from length of dst.
-func Take[T any](dst, src []T, indices []int) []T {
+func Take[S ~[]E, E any](dst, src S, indices []int) S {
 
 	if len(indices) > len(src) {
 		panic(errLength)
 	}
 
 	if dst == nil {
-		dst = make([]T, len(indices))
+		dst = make(S, len(indices))
 	}
 
 	if len(dst) != len(indices) {
