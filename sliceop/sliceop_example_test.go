@@ -49,3 +49,18 @@ func ExampleTake() {
 	// Output:
 	// [-99 -99]
 }
+
+// An example of resizing a slice.
+func ExampleResize() {
+	slice := []int{1, 2, 3, 4}
+	fmt.Printf("slice: len=%d, cap=%d, vs=%v\n", len(slice), cap(slice), slice)
+	slice = sliceop.Resize(slice, 8)
+	fmt.Printf("slice: len=%d, cap=%d, vs=%v\n", len(slice), cap(slice), slice)
+	slice = sliceop.Resize(slice, 3)
+	fmt.Printf("slice: len=%d, cap=%d, vs=%v\n", len(slice), cap(slice), slice)
+
+	// Output:
+	// slice: len=4, cap=4, vs=[1 2 3 4]
+	// slice: len=8, cap=8, vs=[1 2 3 4 0 0 0 0]
+	// slice: len=3, cap=8, vs=[1 2 3]
+}

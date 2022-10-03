@@ -120,3 +120,14 @@ func Take[T any](dst, src []T, indices []int) []T {
 
 	return dst
 }
+
+// Resize returns a slice of size n, reusing the storage of the provided
+// slice, appending new elements if the capacity is not sufficient.
+func Resize[S ~[]E, E any](sli S, n int) S {
+	if m := cap(sli); m < n {
+		sli = sli[:m]
+		sli = append(sli, make(S, n-m)...)
+	}
+	sli = sli[:n]
+	return sli
+}
