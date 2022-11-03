@@ -2,12 +2,21 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// hepmc2root converts HepMC files into ROOT files.
+// Command hepmc2root converts a HepMC2 ASCII file into a ROOT file and (flat) tree.
+//
+// Usage: hepmc2root [OPTIONS] hepmc.ascii
 //
 // Example:
 //
-//	$> hepmc2root -o hepmc.root hepmc.ascii
-//	$> hepmc2root -o hepmc.root -t mytree hepmc.ascii
+// $> hepmc2root ./hepmc.ascii
+// $> hepmc2root -o out.root -t mytree ./hepmc.ascii
+//
+// Options:
+//
+//	-o string
+//	  	path to output ROOT file name (default "out.root")
+//	-t string
+//	  	name of the output tree (default "tree")
 package main // import "go-hep.org/x/hep/cmd/hepmc2root"
 
 import (
@@ -30,6 +39,21 @@ func main() {
 
 	oname := flag.String("o", "out.root", "path to output ROOT file name")
 	tname := flag.String("t", "tree", "name of the output tree")
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, `hepmc2root converts a HepMC2 ASCII file into a ROOT file and (flat) tree.
+
+Usage: hepmc2root [OPTIONS] hepmc.ascii
+
+Example:
+
+$> hepmc2root ./hepmc.ascii
+$> hepmc2root -o out.root -t mytree ./hepmc.ascii
+
+Options:
+`)
+		flag.PrintDefaults()
+	}
 
 	flag.Parse()
 
