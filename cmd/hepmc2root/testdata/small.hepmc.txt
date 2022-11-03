@@ -40,13 +40,16 @@ key[000]: tree;1 "tree" (TTree)
 [000][PDF_x2f]: 0
 [000][PDF_id1]: 0
 [000][PDF_id2]: 0
-[000][Momentum_unit]: 0
+[000][Momentum_unit]: 1
 [000][Length_unit]: 0
 [000][Vertex_x]: [0 0 0 0.12]
 [000][Vertex_y]: [0 0 0 -0.3]
 [000][Vertex_z]: [0 0 0 0.05]
 [000][Vertex_t]: [0 0 0 0.004]
 [000][Vertex_id]: [0 0 0 0]
+[000][Vertex_wsli]: [[] [] [] []]
+[000][Vertex_wkey]: [[] [] [] []]
+[000][Vertex_wval]: [[] [] [] []]
 [000][Vertex_bc]: [-1 -2 -3 -4]
 [000][Vertex_nin]: [1 1 2 1]
 [000][Vertex_nout]: [1 1 2 2]
@@ -57,7 +60,6 @@ key[000]: tree;1 "tree" (TTree)
 [000][Particle_pz]: [7000 -7000 32.191 -54.629 -1.833 -20.605 6.082 -26.687]
 [000][Particle_ene]: [7000 7000 32.238 57.92 4.233 85.925 29.552 56.373]
 [000][Particle_mass]: [0 0 0 0 0 0 0 0]
-[000][Particle_nflow]: [0 0 0 0 0 0 0 0]
 [000][Particle_flow]: [[] [] [] [] [] [] [] []]
 [000][Particle_theta]: [0 0 0 0 0 0 0 0]
 [000][Particle_phi]: [0 0 0 0 0 0 0 0]
