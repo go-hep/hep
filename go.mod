@@ -18,6 +18,7 @@ require (
 	github.com/peterh/liner v1.2.2
 	github.com/pierrec/lz4/v4 v4.1.15
 	github.com/pierrec/xxHash v0.1.5
+	github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e
 	github.com/sbinet/npyio v0.7.0
 	github.com/ulikunitz/xz v0.5.10
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
