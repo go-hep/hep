@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"go-hep.org/x/hep/groot/rcmd"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestList(t *testing.T) {
@@ -87,8 +87,7 @@ version: 60600
 			}
 
 			if got, want := out.String(), tc.want; got != want {
-				diff := cmp.Diff(want, got)
-				t.Fatalf("invalid root-ls output: -- (-ref +got)\n%s", diff)
+				t.Fatalf("invalid root-ls output:\n%s", diff.Format(got, want))
 			}
 		})
 	}

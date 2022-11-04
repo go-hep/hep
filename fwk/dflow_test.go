@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/fwk/job"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestDFlowSvcGraph(t *testing.T) {
@@ -76,7 +77,7 @@ func TestDFlowSvcGraph(t *testing.T) {
 	}
 
 	if !bytes.Equal(got, want) {
-		t.Fatalf("dot files differ.\ngot:\n%s\nwant:\n%s\n", got, want)
+		t.Fatalf("dot files differ:\n%s", diff.Format(string(got), string(want)))
 	}
 
 	os.Remove(dotfile)

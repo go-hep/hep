@@ -10,11 +10,11 @@ import (
 	"io"
 	"log"
 	"os"
-	"os/exec"
 	"testing"
 
 	"go-hep.org/x/hep/fmom"
 	"go-hep.org/x/hep/hepmc"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestEventRW(t *testing.T) {
@@ -100,12 +100,9 @@ func testEventRW(t *testing.T, fname, outfname string, nevts int) {
 	}
 
 	// test output files
-	cmd := exec.Command("diff", "-urN", fname, outfname)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	err = diff.Files(outfname, fname)
 	if err != nil {
-		t.Fatalf("file: %s. err=%v\n", fname, err)
+		t.Fatalf("file: %s\n%+v", fname, err)
 	}
 }
 

@@ -8,17 +8,14 @@ package main
 import (
 	"bytes"
 	"os"
-	"os/exec"
 	"testing"
 
 	// make sure this has been compiled for TestGenerate
 	_ "go-hep.org/x/hep/brio/cmd/brio-gen/internal/briotest"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestGenerate(t *testing.T) {
-	diff, err := exec.LookPath("diff")
-	hasDiff := err == nil
-
 	for _, tc := range []struct {
 		name  string
 		types []string
@@ -49,16 +46,7 @@ func TestGenerate(t *testing.T) {
 			}
 			outfile := tc.want + "_got"
 			if !bytes.Equal(got, want) {
-				err = os.WriteFile(outfile, got, 0644)
-				if err == nil && hasDiff {
-					out := new(bytes.Buffer)
-					cmd := exec.Command(diff, "-urN", outfile, tc.want)
-					cmd.Stdout = out
-					cmd.Stderr = out
-					err = cmd.Run()
-					t.Fatalf("generated code error: %v\n%v\n", err, out.String())
-				}
-				t.Fatalf("generated code error.\ngot:\n%s\nwant:\n%s\n", string(got), string(want))
+				t.Fatalf("generated code error:\n%s\n", diff.Format(string(got), string(want)))
 			}
 			// Remove output if test passes
 			// Note: output file are referenced in .gitignore

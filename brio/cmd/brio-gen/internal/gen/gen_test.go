@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"go-hep.org/x/hep/brio/cmd/brio-gen/internal/gen"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestGenerator(t *testing.T) {
@@ -43,19 +44,6 @@ func TestGenerator(t *testing.T) {
 	}
 
 	if !bytes.Equal(got, want) {
-		diff, err := exec.LookPath("diff")
-		hasDiff := err == nil
-		if hasDiff {
-			err = os.WriteFile(golden+"_got", got, 0644)
-			if err == nil {
-				out := new(bytes.Buffer)
-				cmd := exec.Command(diff, "-urN", golden+"_got", golden)
-				cmd.Stdout = out
-				cmd.Stderr = out
-				err = cmd.Run()
-				t.Fatalf("files differ. err=%v\n%v\n", err, out.String())
-			}
-		}
-		t.Fatalf("files differ.\ngot = %s\nwant= %s\n", string(got), string(want))
+		t.Fatalf("files differ:\n%s\n", diff.Format(string(got), string(want)))
 	}
 }

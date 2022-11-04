@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestGenerate(t *testing.T) {
@@ -63,8 +63,7 @@ func TestGenerate(t *testing.T) {
 			}
 
 			if got, want := o.String(), string(want); got != want {
-				diff := cmp.Diff(got, want)
-				t.Fatalf("invalid code generation:\n%s", diff)
+				t.Fatalf("invalid code generation:\n%s", diff.Format(got, want))
 			}
 		})
 	}

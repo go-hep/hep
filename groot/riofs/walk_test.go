@@ -12,10 +12,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/groot/root"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestGet(t *testing.T) {
@@ -478,8 +478,7 @@ data/file.root/dir2/dir21 (TDirectoryFile)
 data/file.root/dir2/dir22 (TDirectoryFile)
 `
 	if got != want {
-		diff := cmp.Diff(want, got)
-		t.Fatalf("invalid Walk display: -- (-ref +got)\n%s", diff)
+		t.Fatalf("invalid Walk display:\n%s", diff.Format(got, want))
 	}
 }
 

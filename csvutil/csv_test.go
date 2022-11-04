@@ -5,13 +5,12 @@
 package csvutil_test
 
 import (
-	"bytes"
 	"fmt"
 	"io"
-	"os/exec"
 	"testing"
 
 	"go-hep.org/x/hep/csvutil"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestCSVReaderScanArgs(t *testing.T) {
@@ -349,7 +348,7 @@ func TestCSVWriterArgs(t *testing.T) {
 		t.Errorf("error closing table: %+v\n", err)
 	}
 
-	err = diff("testdata/write-results.csv", fname)
+	err = diff.Files("testdata/write-results.csv", fname)
 	if err != nil {
 		t.Errorf("files differ: %+v\n", err)
 	}
@@ -394,7 +393,7 @@ func TestCSVWriterStruct(t *testing.T) {
 		t.Errorf("error closing table: %+v\n", err)
 	}
 
-	err = diff("testdata/write-results.csv", fname)
+	err = diff.Files("testdata/write-results.csv", fname)
 	if err != nil {
 		t.Errorf("files differ: %+v\n", err)
 	}
@@ -432,7 +431,7 @@ func TestCSVWriterArgsSlice(t *testing.T) {
 		t.Fatalf("error closing table: %+v", err)
 	}
 
-	err = diff("testdata/write-results-slice.csv", fname)
+	err = diff.Files("testdata/write-results-slice.csv", fname)
 	if err != nil {
 		t.Fatalf("files differ: %+v", err)
 	}
@@ -506,7 +505,7 @@ func TestCSVAppend(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = diff("testdata/append.csv", fname)
+	err = diff.Files("testdata/append.csv", fname)
 	if err != nil {
 		t.Errorf("files differ: %+v\n", err)
 	}
@@ -649,23 +648,8 @@ func TestCSVWriterTypes(t *testing.T) {
 		t.Errorf("error closing table: %+v\n", err)
 	}
 
-	err = diff("testdata/types.csv.ref", fname)
+	err = diff.Files("testdata/types.csv.ref", fname)
 	if err != nil {
 		t.Errorf("files differ: %+v\n", err)
 	}
-}
-
-func diff(ref, chk string) error {
-	cmd := exec.Command("diff", "-urN", ref, chk)
-	buf := new(bytes.Buffer)
-	cmd.Stdout = buf
-	cmd.Stderr = buf
-	err := cmd.Run()
-	if err != nil {
-		return fmt.Errorf("diff %v %v failed: %w\n%v\n",
-			ref, chk, err,
-			buf.String(),
-		)
-	}
-	return nil
 }

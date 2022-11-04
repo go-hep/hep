@@ -6,12 +6,11 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestGenerator(t *testing.T) {
@@ -42,15 +41,8 @@ func TestGenerator(t *testing.T) {
 			}
 
 			if got, want := got.Bytes(), want; !bytes.Equal(got, want) {
-				t.Fatalf("invalid generated code:\n%s", txtDiff(got, want))
+				t.Fatalf("invalid generated code:\n%s", diff.Format(string(got), string(want)))
 			}
 		})
 	}
-}
-
-func txtDiff(got, want []byte) string {
-	diff := cmp.Diff(string(want), string(got))
-	var o strings.Builder
-	fmt.Fprintf(&o, "(-want +got)\n%s", diff)
-	return o.String()
 }

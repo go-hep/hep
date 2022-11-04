@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"go-hep.org/x/hep/groot/rcmd"
 	"go-hep.org/x/hep/groot/rphys"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestLorentzVector(t *testing.T) {
@@ -118,8 +118,7 @@ key[001]: tree;1 "my tree title" (TTree)
 			}
 
 			if got, want := got.String(), want; got != want {
-				diff := cmp.Diff(want, got)
-				t.Fatalf("invalid root-dump output: -- (-ref +got)\n%s", diff)
+				t.Fatalf("invalid root-dump output:\n%s", diff.Format(got, want))
 			}
 		})
 	}

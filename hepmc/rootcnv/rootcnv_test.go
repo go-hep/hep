@@ -8,14 +8,13 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/rtree"
 	"go-hep.org/x/hep/hepmc"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestRW(t *testing.T) {
@@ -92,9 +91,9 @@ func TestRW(t *testing.T) {
 				t.Fatalf("could not close hepmc writer: %+v", err)
 			}
 
-			if got, want := buf.Bytes(), raw; !reflect.DeepEqual(got, want) {
-				diff := cmp.Diff(string(want), string(got))
-				t.Fatalf("invalid r/w round trip:\n%s", diff)
+			if got, want := buf.String(), string(raw); got != want {
+				d := diff.Format(string(got), string(want))
+				t.Fatalf("invalid r/w round trip:\n%s", d)
 			}
 		})
 	}

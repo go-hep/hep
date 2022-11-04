@@ -10,7 +10,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func init() {
@@ -91,10 +91,9 @@ func TestFile(t *testing.T) {
 			}
 
 			if got, want := string(got), string(want); got != want {
-				diff := cmp.Diff(want, got)
 				t.Fatalf(
-					"arrow file/stream differ: -- (-ref +got)\n%s",
-					diff,
+					"arrow file/stream differ:\n%s",
+					diff.Format(got, want),
 				)
 			}
 		})

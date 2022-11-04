@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestGoName2Cxx(t *testing.T) {
@@ -782,10 +782,8 @@ func TestGenCxxStreamerInfo(t *testing.T) {
 			}
 
 			if got, want := got.String(), tc.want; got != want {
-				diff := cmp.Diff(got, want)
-				t.Fatalf("invalid streamer representation for %q:\n%s", tc.name, diff)
+				t.Fatalf("invalid streamer representation for %q:\n%s", tc.name, diff.Format(got, want))
 			}
 		})
 	}
-
 }

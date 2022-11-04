@@ -8,6 +8,8 @@ import (
 	"bytes"
 	"os"
 	"testing"
+
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestROOT2CSV(t *testing.T) {
@@ -67,7 +69,7 @@ func TestROOT2CSV(t *testing.T) {
 			}
 
 			if !bytes.Equal(got, want) {
-				t.Fatalf("CSV files differ")
+				t.Fatalf("CSV files differ:\n%s", diff.Format(string(got), string(want)))
 			}
 		})
 	}

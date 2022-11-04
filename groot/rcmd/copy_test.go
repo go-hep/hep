@@ -17,6 +17,7 @@ import (
 	"go-hep.org/x/hep/groot/riofs"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtree"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestROOTCp(t *testing.T) {
@@ -296,6 +297,6 @@ func TestROOTCpTree(t *testing.T) {
 	}
 
 	if got, want := got.String(), want.String(); got != want {
-		t.Fatalf("dumps differ:\ngot:\n%s\n===\nwant:\n%s\n===\n", got, want)
+		t.Fatalf("dumps differ:\n%s\n", diff.Format(got, want))
 	}
 }
