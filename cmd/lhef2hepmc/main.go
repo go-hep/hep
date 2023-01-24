@@ -26,6 +26,16 @@ var (
 	ifname = flag.String("i", "", "path to LHEF input file (default: STDIN)")
 	ofname = flag.String("o", "", "path to HEPMC output file (default: STDOUT)")
 
+	// see https://arxiv.org/pdf/hep-ph/0109068.pdf, page 7:
+	//   integer ISTUP(I) : status code
+	//     –1 Incoming particle
+	//     +1 Outgoing final state particle
+	//     –2 Intermediate space-like propagator defining an x and Q2 which should be preserved
+	//     +2 Intermediate resonance, Mass should be preserved
+	//     +3 Intermediate resonance, for documentation only
+	//     –9 Incoming beam particles at time t = −∞
+	keep = flag.Bool("keep-all", false, "keep internediaries (with |ISTUP| != 1)")
+
 	// in case IDWTUP == +/-4, one has to keep track of the accumulated
 	// weights and event numbers to evaluate the cross section on-the-fly.
 	// The last evaluation is the one used.
@@ -168,7 +178,7 @@ func main() {
 		nmax := 2
 		imax := int(lhevt.NUP)
 		for i := 0; i < imax; i++ {
-			if lhevt.ISTUP[i] != 1 {
+			if !*keep && lhevt.ISTUP[i] != 1 {
 				continue
 			}
 			nmax += 1
@@ -181,7 +191,7 @@ func main() {
 				),
 				GeneratedMass: lhevt.PUP[i][4],
 				PdgID:         lhevt.IDUP[i],
-				Status:        1,
+				Status:        int(lhevt.ISTUP[i]),
 				Barcode:       3 + i,
 			})
 			if err != nil {
