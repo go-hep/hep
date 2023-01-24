@@ -128,13 +128,14 @@ loop:
 			_ = tokens.next() // header 'N'
 			nWeights, err := tokens.int()
 			if err != nil {
-				return err
+				return fmt.Errorf("hepmc: could not decode N token: %w", err)
 			}
 			names := make(map[string]int, nWeights)
 			for i := 0; i < nWeights; i++ {
-				nn, err := strconv.Unquote(tokens.next())
+				tok := tokens.next()
+				nn, err := strconv.Unquote(tok)
 				if err != nil {
-					return err
+					return fmt.Errorf("hepmc: could not unquote weight %q: %w", tok, err)
 				}
 				names[nn] = i
 			}
