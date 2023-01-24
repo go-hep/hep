@@ -35,6 +35,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -72,12 +73,13 @@ func main() {
 }
 
 func dump(w io.Writer, r io.Reader) error {
-	var err error
 	dec := hepmc.NewDecoder(r)
 	for {
-		var evt hepmc.Event
-		err = dec.Decode(&evt)
-		if err == io.EOF {
+		var (
+			evt hepmc.Event
+			err = dec.Decode(&evt)
+		)
+		if errors.Is(err, io.EOF) {
 			return nil
 		}
 		if err != nil {
