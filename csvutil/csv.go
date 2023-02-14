@@ -13,6 +13,7 @@ import (
 	"bufio"
 	"encoding/csv"
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"reflect"
@@ -98,7 +99,7 @@ func Append(fname string) (*Table, error) {
 		return nil, err
 	}
 
-	_, err = f.Seek(0, os.SEEK_END)
+	_, err = f.Seek(0, io.SeekEnd)
 	if err != nil {
 		return nil, err
 	}
