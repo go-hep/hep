@@ -6,9 +6,9 @@ package xrootd // import "go-hep.org/x/hep/xrootd"
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
 	"log"
-	"math/rand"
 	"path"
 	"reflect"
 	"testing"
@@ -323,12 +323,6 @@ func TestFile_Stat(t *testing.T) {
 func testFile_StatVirtualFS(t *testing.T, addr string) {
 	t.Parallel()
 
-	want := xrdfs.VirtualFSStat{
-		NumberRW:      1,
-		FreeRW:        444,
-		UtilizationRW: 6,
-	}
-
 	client, err := NewClient(context.Background(), addr, "gopher")
 	if err != nil {
 		t.Fatalf("could not create client: %v", err)
@@ -344,6 +338,12 @@ func testFile_StatVirtualFS(t *testing.T, addr string) {
 
 	// FIXME: Investigate whether this request is allowed by the protocol: https://github.com/xrootd/xrootd/issues/728
 	t.Skip("Skipping this test because XRootD server probably doesn't support such requests.")
+
+	want := xrdfs.VirtualFSStat{
+		NumberRW:      1,
+		FreeRW:        444,
+		UtilizationRW: 6,
+	}
 
 	got, err := file.StatVirtualFS(context.Background())
 	if err != nil {

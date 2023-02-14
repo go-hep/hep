@@ -6,8 +6,8 @@ package xrootd_test // import "go-hep.org/x/hep/xrootd"
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
-	"math/rand"
 	"net"
 	"os"
 	"path"

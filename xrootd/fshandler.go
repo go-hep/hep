@@ -5,9 +5,9 @@
 package xrootd // import "go-hep.org/x/hep/xrootd"
 
 import (
+	"crypto/rand"
 	"fmt"
 	"io"
-	"math/rand"
 	"os"
 	"path"
 	"sync"
@@ -146,7 +146,6 @@ func (h *fshandler) Open(sessionID [16]byte, request *open.Request) (xrdproto.Ma
 	// we have appr. 0.7 probability to find a free handle by the random guess.
 	// Then, probability that no free handle is found by 100 tries is something near pow(0.3,100) = 1e-53.
 	for i := 0; i < 100; i++ {
-		// TODO: use crypto/rand under Windows (4 times faster than math/rand) if handle generation is on the hot path.
 		rand.Read(handle[:])
 		if _, dup := sess.handles[handle]; !dup {
 			resp := open.Response{FileHandle: handle}
