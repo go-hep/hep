@@ -24,7 +24,7 @@ require (
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 	golang.org/x/crypto v0.6.0
 	golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb
-	golang.org/x/image v0.4.0
+	golang.org/x/image v0.5.0
 	golang.org/x/sync v0.1.0
 	golang.org/x/text v0.7.0
 	golang.org/x/tools v0.6.0
