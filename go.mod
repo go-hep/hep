@@ -13,7 +13,7 @@ require (
 	github.com/google/go-cmp v0.5.9
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-uuid v1.0.3
-	github.com/jcmturner/gokrb5/v8 v8.4.3
+	github.com/jcmturner/gokrb5/v8 v8.4.4
 	github.com/klauspost/compress v1.15.15
 	github.com/peterh/liner v1.2.2
 	github.com/pierrec/lz4/v4 v4.1.17
@@ -23,7 +23,7 @@ require (
 	github.com/ulikunitz/xz v0.5.11
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 	golang.org/x/crypto v0.6.0
-	golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb
+	golang.org/x/exp v0.0.0-20230224173230-c95f2b4c22f2
 	golang.org/x/image v0.5.0
 	golang.org/x/sync v0.1.0
 	golang.org/x/text v0.7.0
