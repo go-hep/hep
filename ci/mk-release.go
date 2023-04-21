@@ -17,8 +17,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"golang.org/x/mod/modfile"
-	"golang.org/x/mod/module"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -29,14 +27,15 @@ func main() {
 	var (
 		module  = flag.String("module", "go-hep.org/x/hep", "module name to publish")
 		version = flag.String("version", "latest", "module version to publish")
+		repo    = flag.String("repo", "git@github.com:go-hep/hep", "VCS URL of repository")
 	)
 
 	flag.Parse()
 
-	publish(*module, *version)
+	publish(*module, *version, *repo)
 }
 
-func publish(module, version string) {
+func publish(module, version, repo string) {
 	log.Printf("publishing module=%q, version=%q", module, version)
 	modver := module + "@" + version
 
@@ -59,7 +58,7 @@ func publish(module, version string) {
 	}
 
 	log.Printf("## get %q...", modver)
-	cmd = exec.Command("go", "get", "-u", "-v", modver)
+	cmd = exec.Command("go", "get", "-v", modver)
 	cmd.Dir = tmp
 	cmd.Stderr = log.Writer()
 	cmd.Stdout = log.Writer()
@@ -83,6 +82,26 @@ func main() {}
 		log.Fatalf("could not generate main: %+v", err)
 	}
 
+	log.Printf("## mod download %q...", modver)
+	cmd = exec.Command("go", "mod", "download")
+	cmd.Dir = tmp
+	cmd.Stderr = log.Writer()
+	cmd.Stdout = log.Writer()
+	err = cmd.Run()
+	if err != nil {
+		log.Fatalf("could not mod-tidy %q module: %+v", modver, err)
+	}
+
+	log.Printf("## mod tidy %q...", modver)
+	cmd = exec.Command("go", "mod", "tidy")
+	cmd.Dir = tmp
+	cmd.Stderr = log.Writer()
+	cmd.Stdout = log.Writer()
+	err = cmd.Run()
+	if err != nil {
+		log.Fatalf("could not mod-tidy %q module: %+v", modver, err)
+	}
+
 	log.Printf("## go build...")
 	cmd = exec.Command("go", "build", "-v")
 	cmd.Dir = tmp
@@ -93,33 +112,29 @@ func main() {}
 		log.Fatalf("could not get %q module: %+v", modver, err)
 	}
 
-	buildCmds(module, filepath.Join(tmp, "go.mod"))
+	buildCmds(module, version, repo)
 }
 
-func buildCmds(modname, fname string) {
-	data, err := os.ReadFile(fname)
+func buildCmds(modname, version, repo string) {
+	top, err := os.MkdirTemp("", "go-hep-release-")
 	if err != nil {
-		log.Fatalf("could not read file %q: %+v", fname, err)
+		log.Fatalf("could not create tmp dir: %+v", err)
 	}
+	defer os.RemoveAll(top)
 
-	f, err := modfile.Parse(fname, data, nil)
+	src := filepath.Join(top, "hep")
+	cmd := exec.Command(
+		"git", "clone",
+		"-b", version, "--depth", "1",
+		repo,
+		src,
+	)
+	cmd.Dir = top
+	cmd.Stderr = log.Writer()
+	cmd.Stdout = log.Writer()
+	err = cmd.Run()
 	if err != nil {
-		log.Fatalf("could not parse modfile: %+v", err)
-	}
-	found := false
-	log.Printf("require:")
-	var mod module.Version
-loop:
-	for _, req := range f.Require {
-		log.Printf(" - %v: %v", req.Mod.Path, req.Mod.Version)
-		if req.Mod.Path == modname {
-			found = true
-			mod = req.Mod
-			break loop
-		}
-	}
-	if !found {
-		log.Fatalf("could not find module %q in modpub", modname)
+		log.Fatalf("could not clone %q: %+v", repo, err)
 	}
 
 	tmp, err := os.MkdirTemp("", "go-hep-release-cmds-")
@@ -128,7 +143,7 @@ loop:
 	}
 	defer os.RemoveAll(tmp)
 
-	allpkgs, err := pkgList(filepath.Dir(fname), modname, OSArch{"linux", "amd64"})
+	allpkgs, err := pkgList(src, modname, OSArch{"linux", "amd64"})
 	if err != nil {
 		log.Fatalf("could not build package list of module %q: %+v", modname, err)
 	}
@@ -148,6 +163,7 @@ loop:
 			grp errgroup.Group
 			ctx = osarch
 		)
+		grp.SetLimit(4)
 		log.Printf("--> GOOS=%s, GOARCH=%s", ctx.os, ctx.arch)
 		cmds := make([]string, 0, len(allpkgs))
 		for _, pkg := range allpkgs {
@@ -170,7 +186,15 @@ loop:
 			grp.Go(func() error {
 				name := fmt.Sprintf("%s-%s_%s.exe", filepath.Base(cmd), ctx.os, ctx.arch)
 				exe := filepath.Join(tmp, name)
-				bld := exec.Command("go", "build", "-o", exe, tags, cmd)
+				bld := exec.Command(
+					"go", "build",
+					"-trimpath",
+					"-buildvcs=true",
+					"-o", exe,
+					tags,
+					strings.Replace(cmd, modname, ".", 1),
+				)
+				bld.Dir = src
 				bld.Env = append([]string{}, os.Environ()...)
 				bld.Env = append(bld.Env, fmt.Sprintf("GOOS=%s", ctx.os), fmt.Sprintf("GOARCH=%s", ctx.arch))
 				if _, ok := needCgo[filepath.Base(cmd)]; !ok {
@@ -191,7 +215,7 @@ loop:
 		}
 	}
 
-	upload(tmp, mod)
+	upload(tmp, version)
 }
 
 type OSArch struct {
@@ -199,18 +223,30 @@ type OSArch struct {
 }
 
 func pkgList(dir, module string, ctx OSArch) ([]string, error) {
+	env := append([]string{}, os.Environ()...)
+	env = append(env, fmt.Sprintf("GOOS=%s", ctx.os), fmt.Sprintf("GOARCH=%s", ctx.arch))
+
+	cmd := exec.Command("go", "mod", "tidy")
+	cmd.Dir = dir
+	cmd.Env = env
+	cmd.Stdout = log.Writer()
+	cmd.Stderr = log.Writer()
+	err := cmd.Run()
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize list: %w", err)
+	}
+
 	out := new(bytes.Buffer)
-	cmd := exec.Command("go", "list", module+"/...")
+	cmd = exec.Command("go", "list", "./...")
 	cmd.Dir = dir
 	cmd.Stdout = out
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
-	cmd.Env = append([]string{}, os.Environ()...)
-	cmd.Env = append(cmd.Env, fmt.Sprintf("GOOS=%s", ctx.os), fmt.Sprintf("GOARCH=%s", ctx.arch))
+	cmd.Env = env
 
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
-		return nil, fmt.Errorf("could not get package list: %w", err)
+		return nil, fmt.Errorf("could not get package list (%s-%s): %w", ctx.os, ctx.arch, err)
 	}
 
 	var pkgs []string
@@ -220,14 +256,17 @@ func pkgList(dir, module string, ctx OSArch) ([]string, error) {
 		if strings.Contains(pkg, "vendor") {
 			continue
 		}
+		if !strings.HasPrefix(pkg, module) {
+			continue
+		}
 		pkgs = append(pkgs, pkg)
 	}
 
 	return pkgs, nil
 }
 
-func upload(dir string, mod module.Version) {
-	cmd := exec.Command("scp", "-r", dir, "root@clrwebgohep.in2p3.fr:/srv/go-hep.org/dist/"+mod.Version)
+func upload(dir string, version string) {
+	cmd := exec.Command("scp", "-r", dir, "root@clrwebgohep.in2p3.fr:/srv/go-hep.org/dist/"+version)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
