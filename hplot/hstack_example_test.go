@@ -63,7 +63,7 @@ func ExampleHStack() {
 	}
 
 	{
-		p := tp.Plot(1, 0)
+		p := tp.Plot(0, 1)
 		p.Title.Text = "HStack - stack: OFF"
 		p.Y.Label.Text = "Y"
 		hstack := hplot.NewHStack(hs)
@@ -77,7 +77,7 @@ func ExampleHStack() {
 	}
 
 	{
-		p := tp.Plot(2, 0)
+		p := tp.Plot(0, 2)
 		p.Title.Text = "Hstack - stack: ON"
 		p.X.Label.Text = "X"
 		p.Y.Label.Text = "Y"
@@ -163,7 +163,7 @@ func ExampleHStack_withBand() {
 	}
 
 	{
-		p := tp.Plot(0, 1)
+		p := tp.Plot(1, 0)
 		p.Title.Text = "Histos Without Band, Stack: OFF"
 		p.Title.Padding = 10
 		p.X.Label.Text = "X"
@@ -180,7 +180,7 @@ func ExampleHStack_withBand() {
 	}
 
 	{
-		p := tp.Plot(1, 0)
+		p := tp.Plot(0, 1)
 		p.Title.Text = "Histos With or Without Band, Stack: ON"
 		p.Title.Padding = 10
 		p.X.Label.Text = "X"
@@ -286,7 +286,7 @@ func ExampleHStack_withLogY() {
 	}
 
 	{
-		p := tp.Plot(0, 1)
+		p := tp.Plot(1, 0)
 		p.Title.Text = "Histos Without Band, Stack: OFF"
 		p.Title.Padding = 10
 		p.Y.Scale = plot.LogScale{}
@@ -305,7 +305,7 @@ func ExampleHStack_withLogY() {
 	}
 
 	{
-		p := tp.Plot(1, 0)
+		p := tp.Plot(0, 1)
 		p.Title.Text = "Histos With or Without Band, Stack: ON"
 		p.Title.Padding = 10
 		p.Y.Scale = plot.LogScale{}

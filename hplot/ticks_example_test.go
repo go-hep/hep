@@ -18,7 +18,7 @@ func ExampleTicks() {
 
 	for i := 0; i < tp.Tiles.Rows; i++ {
 		for j := 0; j < tp.Tiles.Cols; j++ {
-			p := tp.Plot(i, j)
+			p := tp.Plot(j, i)
 			switch i {
 			case 0:
 				p.X.Min = 0

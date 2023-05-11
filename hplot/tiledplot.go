@@ -48,7 +48,7 @@ func NewTiledPlot(tiles draw.Tiles) *TiledPlot {
 // tiles.
 // (0,0) is at the top-left of the set of tiles.
 func (tp *TiledPlot) Plot(i, j int) *Plot {
-	return tp.Plots[i*tp.Tiles.Cols+j]
+	return tp.Plots[j*tp.Tiles.Cols+i]
 }
 
 // Draw draws the tiled plot to a draw.Canvas.
