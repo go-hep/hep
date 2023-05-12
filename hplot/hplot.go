@@ -6,8 +6,7 @@
 // Use of this source code is governed by an MIT-style license
 // that can be found in the LICENSE file.
 
-//go:generate go get github.com/campoy/embedmd
-//go:generate embedmd -w README.md
+//go:generate go run github.com/campoy/embedmd -w README.md
 
 package hplot // import "go-hep.org/x/hep/hplot"
 
