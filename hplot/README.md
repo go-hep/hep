@@ -309,15 +309,15 @@ func ExampleTiledPlot() {
 
 	for i := 0; i < tp.Tiles.Rows; i++ {
 		for j := 0; j < tp.Tiles.Cols; j++ {
-			p := tp.Plot(i, j)
+			p := tp.Plot(j, i)
 			p.X.Min = -5
 			p.X.Max = +5
 			newHist(p)
-			p.Title.Text = fmt.Sprintf("hist - (%02d, %02d)", i, j)
+			p.Title.Text = fmt.Sprintf("hist - (%02d, %02d)", j, i)
 		}
 	}
 
-	// remove plot at (0,1)
+	// remove plot at (1,0)
 	tp.Plots[1] = nil
 
 	err := tp.Save(15*vg.Centimeter, -1, "testdata/tiled_plot_histogram.png")
@@ -356,7 +356,7 @@ func ExampleTiledPlot_align() {
 
 	for i := 0; i < tp.Tiles.Rows; i++ {
 		for j := 0; j < tp.Tiles.Cols; j++ {
-			p := tp.Plot(i, j)
+			p := tp.Plot(j, i)
 			p.X.Min = -5
 			p.X.Max = +5
 			s := hplot.NewS2D(hbook.NewS2D(points(i, j)...))
@@ -364,7 +364,7 @@ func ExampleTiledPlot_align() {
 			s.GlyphStyle.Radius = vg.Points(4)
 			p.Add(s)
 
-			p.Title.Text = fmt.Sprintf("hist - (%02d, %02d)", i, j)
+			p.Title.Text = fmt.Sprintf("hist - (%02d, %02d)", j, i)
 		}
 	}
 
@@ -813,7 +813,7 @@ func ExampleHStack() {
 	}
 
 	{
-		p := tp.Plot(1, 0)
+		p := tp.Plot(0, 1)
 		p.Title.Text = "HStack - stack: OFF"
 		p.Y.Label.Text = "Y"
 		hstack := hplot.NewHStack(hs)
@@ -827,7 +827,7 @@ func ExampleHStack() {
 	}
 
 	{
-		p := tp.Plot(2, 0)
+		p := tp.Plot(0, 2)
 		p.Title.Text = "Hstack - stack: ON"
 		p.X.Label.Text = "X"
 		p.Y.Label.Text = "Y"
@@ -920,7 +920,7 @@ func ExampleHStack_withBand() {
 	}
 
 	{
-		p := tp.Plot(0, 1)
+		p := tp.Plot(1, 0)
 		p.Title.Text = "Histos Without Band, Stack: OFF"
 		p.Title.Padding = 10
 		p.X.Label.Text = "X"
@@ -937,7 +937,7 @@ func ExampleHStack_withBand() {
 	}
 
 	{
-		p := tp.Plot(1, 0)
+		p := tp.Plot(0, 1)
 		p.Title.Text = "Histos With or Without Band, Stack: ON"
 		p.Title.Padding = 10
 		p.X.Label.Text = "X"
@@ -1050,7 +1050,7 @@ func ExampleHStack_withLogY() {
 	}
 
 	{
-		p := tp.Plot(0, 1)
+		p := tp.Plot(1, 0)
 		p.Title.Text = "Histos Without Band, Stack: OFF"
 		p.Title.Padding = 10
 		p.Y.Scale = plot.LogScale{}
@@ -1069,7 +1069,7 @@ func ExampleHStack_withLogY() {
 	}
 
 	{
-		p := tp.Plot(1, 0)
+		p := tp.Plot(0, 1)
 		p.Title.Text = "Histos With or Without Band, Stack: ON"
 		p.Title.Padding = 10
 		p.Y.Scale = plot.LogScale{}
@@ -1149,11 +1149,14 @@ func ExampleLabel() {
 	p.Add(l4)
 
 	// Label with a customed TextStyle
-	usrFont, err := vg.MakeFont("Courier-Bold", 12)
-	if err != nil {
-		panic(fmt.Errorf("could not create font (Courier-Bold, 12): %w", err))
+	usrFont := font.Font{
+		Typeface: "Liberation",
+		Variant:  "Mono",
+		Weight:   xfnt.WeightBold,
+		Style:    xfnt.StyleNormal,
+		Size:     12,
 	}
-	sty := draw.TextStyle{
+	sty := text.Style{
 		Color: plotutil.Color(2),
 		Font:  usrFont,
 	}
@@ -1169,7 +1172,7 @@ func ExampleLabel() {
 	p.Add(hplot.NewGrid())
 
 	// Save the plot to a PNG file.
-	err = p.Save(15*vg.Centimeter, -1, "testdata/label_plot.png")
+	err := p.Save(15*vg.Centimeter, -1, "testdata/label_plot.png")
 	if err != nil {
 		log.Fatalf("error saving plot: %v\n", err)
 	}
