@@ -36,6 +36,7 @@ func main() {
 }
 
 func publish(module, version, repo string) {
+	doLatest := version == "latest"
 	log.Printf("publishing module=%q, version=%q", module, version)
 	modver := module + "@" + version
 
@@ -112,7 +113,38 @@ func main() {}
 		log.Fatalf("could not get %q module: %+v", modver, err)
 	}
 
+	version, err = extractVersion(filepath.Join(tmp, "go.mod"), module)
+	if err != nil {
+		log.Fatalf("could not extract version from modpub module file: %+v", err)
+	}
+
 	buildCmds(module, version, repo)
+	if doLatest {
+		setLatest(version)
+	}
+}
+
+func extractVersion(fname, modname string) (string, error) {
+	f, err := os.Open(fname)
+	if err != nil {
+		return "", fmt.Errorf("could not open module file %q: %w", fname, err)
+	}
+	defer f.Close()
+
+	sc := bufio.NewScanner(f)
+	for sc.Scan() {
+		line := sc.Text()
+		if !strings.Contains(line, modname+" ") {
+			continue
+		}
+
+		_, after, ok := strings.Cut(line, modname)
+		if ok {
+			return strings.TrimSpace(after), nil
+		}
+	}
+
+	return "", fmt.Errorf("could not find module %q in modpub %q", modname, fname)
 }
 
 func buildCmds(modname, version, repo string) {
@@ -272,6 +304,19 @@ func upload(dir string, version string) {
 	err := cmd.Run()
 	if err != nil {
 		log.Fatalf("could not upload binaries to server: %+v", err)
+	}
+}
+
+func setLatest(version string) {
+	cmd := exec.Command("ssh", "root@clrwebgohep.in2p3.fr",
+		"--",
+		fmt.Sprintf("/bin/sh -c 'cd /srv/go-hep.org/dist && /bin/rm ./latest && ln -s %s latest'", version),
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalf("could not set latest to %q: %+v", version, err)
 	}
 }
 
