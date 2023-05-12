@@ -10,12 +10,14 @@ import (
 	"image/color"
 	"math/rand"
 	"os"
+	"strings"
 
 	"gioui.org/app"
 	"gioui.org/io/key"
 	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/op/clip"
 	"gioui.org/unit"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
@@ -39,30 +41,53 @@ func run() {
 	win := app.NewWindow(
 		app.Title("iplot"),
 		app.Size(
-			unit.Px(float32(w.Dots(dpi))),
-			unit.Px(float32(h.Dots(dpi))),
+			unit.Dp(float32(w.Dots(dpi))),
+			unit.Dp(float32(h.Dots(dpi))),
 		),
 	)
-	defer win.Close()
+	defer os.Exit(0)
+
+	keys := key.Set(strings.Join(
+		[]string{key.NameEscape, "Q", " ", key.NameReturn, key.NameEnter},
+		"|",
+	))
 
 	for e := range win.Events() {
 		switch e := e.(type) {
 		case system.FrameEvent:
-			c := vggio.New(layout.NewContext(new(op.Ops), e), w, h)
+			var (
+				ops op.Ops
+				gtx = layout.NewContext(&ops, e)
+			)
+			// register a global key listener for the escape key wrapping our entire UI.
+			area := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
+			key.InputOp{
+				Tag:  win,
+				Keys: keys,
+			}.Add(gtx.Ops)
+
+			for _, e := range gtx.Events(win) {
+				switch e := e.(type) {
+				case key.Event:
+					switch e.Name {
+					case "Q", key.NameEscape:
+						return
+					case " ", key.NameReturn, key.NameEnter:
+						if e.State == key.Press {
+							win.Invalidate()
+						}
+					}
+				}
+			}
+			area.Pop()
+
+			c := vggio.New(gtx, w, h)
 			p := newPlot()
 			p.Draw(draw.New(c))
 			e.Frame(c.Paint())
 
 		case system.DestroyEvent:
 			return
-
-		case key.Event:
-			switch e.Name {
-			case "Q", key.NameEscape:
-				os.Exit(0)
-			case " ", key.NameReturn, key.NameEnter:
-				win.Invalidate()
-			}
 		}
 	}
 }

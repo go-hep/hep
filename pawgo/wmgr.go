@@ -17,6 +17,7 @@ import (
 	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/op/clip"
 	"gioui.org/unit"
 	"go-hep.org/x/hep/hplot"
 	"gonum.org/v1/plot/vg"
@@ -62,6 +63,7 @@ func (wmgr *winMgr) newPlot(p *hplot.Plot) *window {
 
 type window struct {
 	w     *app.Window
+	keys  key.Set
 	ready chan int
 
 	mu  sync.Mutex
@@ -77,11 +79,12 @@ func newWindow(p *hplot.Plot) *window {
 		title = "PAW-Go [" + title + "]"
 	}
 
-	x := unit.Px(float32(xmax.Dots(dpi)))
-	y := unit.Px(float32(ymax.Dots(dpi)))
+	x := unit.Dp(float32(xmax.Dots(dpi)))
+	y := unit.Dp(float32(ymax.Dots(dpi)))
 
 	win := &window{
 		w:     app.NewWindow(app.Title(title), app.Size(x, y)),
+		keys:  key.NameEscape + "|Q",
 		plt:   p,
 		ready: make(chan int),
 	}
@@ -100,7 +103,6 @@ func (w *window) run(wmgr *winMgr) {
 				return
 			}
 		case <-wmgr.quit:
-			w.w.Close()
 			return
 		}
 	}
@@ -118,8 +120,30 @@ func (w *window) handle(e event.Event) winState {
 	case system.DestroyEvent:
 		return winStop
 	case system.FrameEvent:
+		var (
+			ops op.Ops
+			gtx = layout.NewContext(&ops, e)
+		)
+		// register a global key listener for the escape key wrapping our entire UI.
+		area := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
+		key.InputOp{
+			Tag:  w.w,
+			Keys: w.keys,
+		}.Add(gtx.Ops)
+
+		for _, e := range gtx.Events(w.w) {
+			switch e := e.(type) {
+			case key.Event:
+				switch e.Name {
+				case "Q", key.NameEscape:
+					return winStop
+				}
+			}
+		}
+		area.Pop()
+
 		cnv := vggio.New(
-			layout.NewContext(new(op.Ops), e),
+			gtx,
 			xmax, ymax,
 			vggio.UseDPI(dpi),
 		)
@@ -127,13 +151,6 @@ func (w *window) handle(e event.Event) winState {
 		w.plt.Draw(draw.New(cnv))
 		w.mu.Unlock()
 		e.Frame(cnv.Paint())
-
-	case key.Event:
-		switch e.Name {
-		case "Q", key.NameEscape:
-			w.w.Invalidate()
-			w.w.Close()
-		}
 	}
 	return winContinue
 }
