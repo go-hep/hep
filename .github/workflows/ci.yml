@@ -53,7 +53,7 @@ jobs:
       if: matrix.platform == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -qq pkg-config libwayland-dev libx11-dev libx11-xcb-dev libxkbcommon-dev libxkbcommon-x11-dev libgles2-mesa-dev libegl1-mesa-dev libffi-dev libxcursor-dev
+        sudo apt-get install -qq gcc pkg-config libwayland-dev libx11-dev libx11-xcb-dev libxkbcommon-x11-dev libgles2-mesa-dev libegl1-mesa-dev libffi-dev libxcursor-dev libvulkan-dev xvfb xdotool
         go run ./ci/install-cxx-root.go -root-version=${ROOT_VERSION} -o=${HOME}
         source $HOME/root-${ROOT_VERSION}/bin/thisroot.sh
         root.exe --version
