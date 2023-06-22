@@ -6,6 +6,7 @@
 package main // import "go-hep.org/x/hep/groot/cmd/root-gen-streamer"
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -54,7 +55,13 @@ options:
 	var (
 		err error
 		out io.WriteCloser
+		buf = new(bytes.Buffer)
 	)
+
+	err = generate(buf, *pkgPath, types)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	switch *output {
 	case "":
@@ -67,7 +74,7 @@ options:
 		defer out.Close()
 	}
 
-	err = generate(out, *pkgPath, types)
+	_, err = io.Copy(out, buf)
 	if err != nil {
 		log.Fatal(err)
 	}
