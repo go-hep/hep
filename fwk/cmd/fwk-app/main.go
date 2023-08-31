@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
@@ -41,6 +42,6 @@ func main() {
 	handle_err(err)
 
 	args := g_cmd.Flag.Args()
-	err = g_cmd.Dispatch(args)
+	err = g_cmd.Dispatch(context.Background(), args)
 	handle_err(err)
 }
