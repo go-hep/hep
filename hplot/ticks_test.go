@@ -13,3 +13,15 @@ import (
 func TestTicks(t *testing.T) {
 	checkPlot(cmpimg.CheckPlot)(ExampleTicks, t, "ticks.png")
 }
+
+func TestTicksTimeYearly(t *testing.T) {
+	checkPlot(cmpimg.CheckPlot)(ExampleTicks_yearly, t, "timeseries_yearly.png")
+}
+
+func TestTicksTimeMonthly(t *testing.T) {
+	checkPlot(cmpimg.CheckPlot)(ExampleTicks_monthly, t, "timeseries_monthly.png")
+}
+
+func TestTicksTimeDaily(t *testing.T) {
+	checkPlot(cmpimg.CheckPlot)(ExampleTicks_daily, t, "timeseries_daily.png")
+}
