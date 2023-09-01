@@ -15,6 +15,12 @@ func NewLine(xys plotter.XYer) (*plotter.Line, error) {
 	return plotter.NewLine(xys)
 }
 
+// NewLinePoints returns both a Line and a
+// Points for the given point data.
+func NewLinePoints(xys plotter.XYer) (*plotter.Line, *plotter.Scatter, error) {
+	return plotter.NewLinePoints(xys)
+}
+
 // NewScatter returns a Scatter that uses the
 // default glyph style.
 func NewScatter(xys plotter.XYer) (*plotter.Scatter, error) {
