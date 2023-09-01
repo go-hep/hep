@@ -6,6 +6,7 @@ package hplot
 
 import (
 	"go-hep.org/x/hep/hplot/htex"
+	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 	"gonum.org/v1/plot/vg/vgimg"
@@ -62,10 +63,21 @@ func WithDPI(dpi float64) FigOption {
 	}
 }
 
+// WithLegend enables the display of a legend on the righthand-side of a plot.
+func WithLegend(l Legend) FigOption {
+	return func(fig *Fig) {
+		leg := l
+		fig.Legend = &leg
+	}
+}
+
 // Fig is a figure, holding a plot and figure-level customizations.
 type Fig struct {
 	// Plot is a gonum/plot.Plot like value.
 	Plot Drawer
+
+	// Legend displays a legend on the righthand-side of the plot.
+	Legend *Legend
 
 	// Border specifies the borders' sizes, the space between the
 	// end of the plot image (PDF, PNG, ...) and the actual plot.
@@ -89,6 +101,27 @@ func (fig *Fig) Draw(dc draw.Canvas) {
 		fig.Border.Left, -fig.Border.Right,
 		fig.Border.Bottom, -fig.Border.Top,
 	)
+
+	if fig.Legend != nil {
+		var (
+			r      = fig.Legend.Rectangle(dc)
+			width  = r.Max.X - r.Min.X
+			height vg.Length
+		)
+		// adjust the legend down a little.
+		switch p := fig.Plot.(type) {
+		case *plot.Plot:
+			height = p.Title.TextStyle.FontExtents().Height
+		case *Plot:
+			height = p.Title.TextStyle.FontExtents().Height
+		}
+		fig.Legend.YOffs = -height
+
+		fig.Legend.Draw(dc)
+
+		// carve up space for the legend.
+		dc = draw.Crop(dc, 0, -width-vg.Millimeter, 0, 0)
+	}
 
 	fig.Plot.Draw(dc)
 }
