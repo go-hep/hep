@@ -1,0 +1,282 @@
+{
+  "size": {
+    "width": 10,
+    "height": 20
+  },
+  "ops": [
+    {
+      "type": "Push",
+      "value": {}
+    },
+    {
+      "type": "SetLineWidth",
+      "value": {
+        "width": 2
+      }
+    },
+    {
+      "type": "SetLineDash",
+      "value": {
+        "dashes": [
+          1,
+          2
+        ],
+        "offsets": 4
+      }
+    },
+    {
+      "type": "SetColor",
+      "value": {
+        "color": {
+          "r": 65535,
+          "g": 0,
+          "b": 0,
+          "a": 65535
+        }
+      }
+    },
+    {
+      "type": "SetColor",
+      "value": {
+        "color": {
+          "r": 25700,
+          "g": 25700,
+          "b": 25700,
+          "a": 65535
+        }
+      }
+    },
+    {
+      "type": "Rotate",
+      "value": {
+        "angle": 1.5707963267948966
+      }
+    },
+    {
+      "type": "Translate",
+      "value": {
+        "point": {
+          "x": 10,
+          "y": 20
+        }
+      }
+    },
+    {
+      "type": "Scale",
+      "value": {
+        "x": 15,
+        "y": 25
+      }
+    },
+    {
+      "type": "Pop",
+      "value": {}
+    },
+    {
+      "type": "Stroke",
+      "value": {
+        "path": []
+      }
+    },
+    {
+      "type": "Stroke",
+      "value": {
+        "path": [
+          {
+            "type": 0,
+            "pos": {
+              "x": 1,
+              "y": 2
+            }
+          },
+          {
+            "type": 1,
+            "pos": {
+              "x": 2,
+              "y": 3
+            }
+          },
+          {
+            "type": 2,
+            "pos": {
+              "x": 3,
+              "y": 4
+            },
+            "radius": 5,
+            "start": 6,
+            "angle": 7
+          },
+          {
+            "type": 3,
+            "pos": {
+              "x": 4,
+              "y": 5
+            },
+            "ctl": [
+              {
+                "x": 6,
+                "y": 7
+              }
+            ]
+          },
+          {
+            "type": 3,
+            "pos": {
+              "x": 5,
+              "y": 6
+            },
+            "ctl": [
+              {
+                "x": 7,
+                "y": 8
+              },
+              {
+                "x": 9,
+                "y": 10
+              }
+            ]
+          },
+          {
+            "type": 4,
+            "pos": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Fill",
+      "value": {
+        "path": []
+      }
+    },
+    {
+      "type": "Fill",
+      "value": {
+        "path": [
+          {
+            "type": 0,
+            "pos": {
+              "x": 1,
+              "y": 2
+            }
+          },
+          {
+            "type": 1,
+            "pos": {
+              "x": 2,
+              "y": 3
+            }
+          },
+          {
+            "type": 2,
+            "pos": {
+              "x": 3,
+              "y": 4
+            },
+            "radius": 5,
+            "start": 6,
+            "angle": 7
+          },
+          {
+            "type": 3,
+            "pos": {
+              "x": 4,
+              "y": 5
+            },
+            "ctl": [
+              {
+                "x": 6,
+                "y": 7
+              }
+            ]
+          },
+          {
+            "type": 3,
+            "pos": {
+              "x": 5,
+              "y": 6
+            },
+            "ctl": [
+              {
+                "x": 7,
+                "y": 8
+              },
+              {
+                "x": 9,
+                "y": 10
+              }
+            ]
+          },
+          {
+            "type": 4,
+            "pos": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "FillString",
+      "value": {
+        "font": {
+          "typeface": "Liberation",
+          "variant": "Serif",
+          "size": 13
+        },
+        "point": {
+          "x": 10,
+          "y": 20
+        },
+        "string": "hello\nworld"
+      }
+    },
+    {
+      "type": "FillString",
+      "value": {
+        "font": {
+          "typeface": "Liberation",
+          "variant": "Serif",
+          "size": 20
+        },
+        "point": {
+          "x": 20,
+          "y": 30
+        },
+        "string": "BYE."
+      }
+    },
+    {
+      "type": "DrawImage",
+      "value": {
+        "Rect": {
+          "min": {
+            "x": 1,
+            "y": 2
+          },
+          "max": {
+            "x": 3,
+            "y": 4
+          }
+        },
+        "data": "aVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQUJRQUFBQWVDQUlBQUFDamNLazhBQUFBSmtsRVFWUjRuR0pKUzB0aklCY3drYTF6VlBPbzVsSE5vNXBITlk5cUhnS2FBUUVBQVAvL2ZKc0JjWFJTRWJrQUFBQUFTVVZPUks1Q1lJST0="
+      }
+    }
+  ],
+  "fonts": [
+    {
+      "typeface": "Liberation",
+      "variant": "Serif",
+      "size": 13
+    },
+    {
+      "typeface": "Liberation",
+      "variant": "Serif",
+      "size": 20
+    }
+  ]
+}
