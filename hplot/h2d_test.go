@@ -19,6 +19,10 @@ func TestH2D(t *testing.T) {
 	checkPlot(cmpimg.CheckPlot)(ExampleH2D, t, "h2d_plot.png")
 }
 
+func TestH2DWithLegend(t *testing.T) {
+	checkPlot(cmpimg.CheckPlot)(ExampleH2D_withLegend, t, "h2d_plot_legend.png")
+}
+
 func TestH2DABCD(t *testing.T) {
 	checkPlot(cmpimg.CheckPlot)(func() {
 		h := hbook.NewH2D(2, 0, 2, 2, 0, 2)

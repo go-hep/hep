@@ -5,6 +5,8 @@
 package hplot
 
 import (
+	"fmt"
+
 	"go-hep.org/x/hep/hbook"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/palette"
@@ -56,6 +58,30 @@ func (h *H2D) DataRange() (xmin, xmax, ymin, ymax float64) {
 // plot.GlyphBoxer interface.
 func (h *H2D) GlyphBoxes(p *plot.Plot) []plot.GlyphBox {
 	return h.HeatMap.GlyphBoxes(p)
+}
+
+// Legend returns a legend constructed from the 2-dim data and palette.
+func (h *H2D) Legend() Legend {
+	legend := NewLegend()
+	thumbs := plotter.PaletteThumbnailers(h.HeatMap.Palette)
+	for i := len(thumbs) - 1; i >= 0; i-- {
+		t := thumbs[i]
+		if i != 0 && i != len(thumbs)-1 {
+			legend.Add("", t)
+			continue
+		}
+		var val float64
+		switch i {
+		case 0:
+			val = h.HeatMap.Min
+		case len(thumbs) - 1:
+			val = h.HeatMap.Max
+		}
+		legend.Add(fmt.Sprintf("%.2g", val), t)
+	}
+	legend.Top = true
+
+	return legend
 }
 
 // check interfaces
