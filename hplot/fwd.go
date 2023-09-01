@@ -5,6 +5,7 @@
 package hplot
 
 import (
+	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 )
 
@@ -24,4 +25,14 @@ func NewScatter(xys plotter.XYer) (*plotter.Scatter, error) {
 // horizontal lines using the default grid line style.
 func NewGrid() *plotter.Grid {
 	return plotter.NewGrid()
+}
+
+// A Legend gives a description of the meaning of different data elements of
+// the plot. Each legend entry has a name and a thumbnail, where the thumbnail
+// shows a small sample of the display style of the corresponding data.
+type Legend = plot.Legend
+
+// NewLegend returns a legend with the default parameter settings.
+func NewLegend() Legend {
+	return plot.NewLegend()
 }
