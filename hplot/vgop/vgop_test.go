@@ -111,3 +111,26 @@ func TestJSON(t *testing.T) {
 
 	defer os.Remove("testdata/simple.json")
 }
+
+func TestSaveJSON(t *testing.T) {
+	p := hplot.New()
+	p.Title.Text = "Title"
+	p.X.Min = -1
+	p.X.Max = +1
+	p.X.Label.Text = "X"
+	p.Y.Min = -10
+	p.Y.Max = +10
+	p.Y.Label.Text = "Y"
+
+	err := hplot.Save(p, 10*vg.Centimeter, 20*vg.Centimeter, "testdata/plot.json")
+	if err != nil {
+		t.Fatalf("could not save plot to JSON: %+v", err)
+	}
+
+	err = diff.Files("testdata/plot.json", "testdata/plot_golden.json")
+	if err != nil {
+		t.Fatalf("JSON files differ:\n%s", err)
+	}
+
+	defer os.Remove("testdata/plot.json")
+}

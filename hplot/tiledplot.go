@@ -98,7 +98,7 @@ func (tp *TiledPlot) Draw(c draw.Canvas) {
 // Save saves the plots to an image file.
 // The file format is determined by the extension.
 //
-// Supported extensions are the same ones than hplot.Plot.Save.
+// Supported extensions are the same ones than hplot.Save.
 //
 // If w or h are <= 0, the value is chosen such that it follows the Golden Ratio.
 // If w and h are <= 0, the values are chosen such that they follow the Golden Ratio
