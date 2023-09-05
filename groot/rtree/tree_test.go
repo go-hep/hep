@@ -1610,3 +1610,50 @@ func TestUprootTrees(t *testing.T) {
 		})
 	}
 }
+
+func TestReadG4Merge(t *testing.T) {
+	const fname = "../testdata/g4-merge.root"
+
+	f, err := riofs.Open(fname)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	tree, err := riofs.Get[Tree](f, "Photons")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	type Data struct {
+		X float64 `groot:"fX"`
+	}
+
+	var (
+		d    Data
+		want = []Data{
+			{X: 0.12123017145693009},
+			{X: 0.11744358487972842},
+			{X: 0.1142964503404715},
+			{X: 0.11702763375596258},
+			{X: 0.1160675474106288},
+		}
+	)
+
+	r, err := NewReader(tree, ReadVarsFromStruct(&d), WithRange(0, 5))
+	if err != nil {
+		t.Fatalf("could not create reader: %+v", err)
+	}
+	defer r.Close()
+
+	err = r.Read(func(ctx RCtx) error {
+		i := int(ctx.Entry)
+		if got, want := d, want[i]; got != want {
+			return fmt.Errorf("invalid entry[%d]: got=%v, want=%v", i, got, want)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("error: %+v", err)
+	}
+}
