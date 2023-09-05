@@ -91,7 +91,7 @@ jobs:
       with:
         install-go: false
         cache-key: ${{ matrix.platform }}
-        version: "2023.1"
+        version: "2023.1.5"
     - name: Upload-Coverage
       if: matrix.platform == 'ubuntu-20.04'
       uses: codecov/codecov-action@v3
