@@ -113,6 +113,7 @@ const (
 	LeafS                    = 1  // ROOT version for TLeafS
 	LeafI                    = 1  // ROOT version for TLeafI
 	LeafL                    = 1  // ROOT version for TLeafL
+	LeafG                    = 1  // ROOT version for TLeafG
 	LeafF                    = 1  // ROOT version for TLeafF
 	LeafD                    = 1  // ROOT version for TLeafD
 	LeafF16                  = 1  // ROOT version for TLeafF16

@@ -7,6 +7,7 @@ package rtree
 import (
 	"fmt"
 	"reflect"
+	"unsafe"
 
 	"go-hep.org/x/hep/groot/rbytes"
 	"go-hep.org/x/hep/groot/rdict"
@@ -147,6 +148,12 @@ func rleafFrom(leaf Leaf, rvar ReadVar, rctx rleafCtx) rleaf {
 			}
 			panic(fmt.Errorf("rvar mismatch for %T", leaf))
 		}
+	case *LeafG:
+		// FIXME(sbinet): should we bite the bullet and generate a whole
+		// set of types+funcs for LeafG instead of relying on the
+		// assumption that LeafG data has the same underlying layout and size
+		// than LeafL ? (ie: sizeof(Long_t) == sizeof(Long64_t))
+		return rleafFrom((*LeafL)(unsafe.Pointer(leaf)), rvar, rctx)
 	case *LeafF:
 		return newRLeafF32(leaf, rvar, rctx)
 	case *LeafD:

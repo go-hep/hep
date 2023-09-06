@@ -1124,6 +1124,233 @@ var (
 	_ rbytes.Unmarshaler = (*LeafL)(nil)
 )
 
+// LeafG implements ROOT TLeafG
+type LeafG struct {
+	rvers int16
+	tleaf
+	ptr *int64
+	sli *[]int64
+	min int64
+	max int64
+}
+
+func newLeafG(b Branch, name string, shape []int, unsigned bool, count Leaf) *LeafG {
+	const etype = 8
+	var lcnt leafCount
+	if count != nil {
+		lcnt = count.(leafCount)
+	}
+	return &LeafG{
+		rvers: rvers.LeafG,
+		tleaf: newLeaf(name, shape, etype, 0, false, unsigned, lcnt, b),
+	}
+}
+
+// Class returns the ROOT class name.
+func (leaf *LeafG) Class() string {
+	return "TLeafG"
+}
+
+// Minimum returns the minimum value of the leaf.
+func (leaf *LeafG) Minimum() int64 {
+	return leaf.min
+}
+
+// Maximum returns the maximum value of the leaf.
+func (leaf *LeafG) Maximum() int64 {
+	return leaf.max
+}
+
+// Kind returns the leaf's kind.
+func (leaf *LeafG) Kind() reflect.Kind {
+	if leaf.IsUnsigned() {
+		return reflect.Uint64
+	}
+	return reflect.Int64
+}
+
+// Type returns the leaf's type.
+func (leaf *LeafG) Type() reflect.Type {
+	if leaf.IsUnsigned() {
+		var v uint64
+		return reflect.TypeOf(v)
+	}
+	var v int64
+	return reflect.TypeOf(v)
+}
+
+// ivalue returns the first leaf value as int
+func (leaf *LeafG) ivalue() int {
+	return int(*leaf.ptr)
+}
+
+// imax returns the leaf maximum value as int
+func (leaf *LeafG) imax() int {
+	return int(leaf.max)
+}
+
+func (leaf *LeafG) TypeName() string {
+	if leaf.IsUnsigned() {
+		return "uint64"
+	}
+	return "int64"
+}
+
+func (leaf *LeafG) MarshalROOT(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	hdr := w.WriteHeader(leaf.Class(), leaf.rvers)
+	w.WriteObject(&leaf.tleaf)
+	w.WriteI64(leaf.min)
+	w.WriteI64(leaf.max)
+
+	return w.SetHeader(hdr)
+}
+
+func (leaf *LeafG) UnmarshalROOT(r *rbytes.RBuffer) error {
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	hdr := r.ReadHeader(leaf.Class())
+	if hdr.Vers > rvers.LeafG {
+		panic(fmt.Errorf("rtree: invalid TLeafG version=%d > %d", hdr.Vers, rvers.LeafG))
+	}
+
+	leaf.rvers = hdr.Vers
+
+	r.ReadObject(&leaf.tleaf)
+
+	leaf.min = r.ReadI64()
+	leaf.max = r.ReadI64()
+
+	r.CheckHeader(hdr)
+	return r.Err()
+}
+
+func (leaf *LeafG) readFromBuffer(r *rbytes.RBuffer) error {
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	if leaf.count == nil && leaf.ptr != nil {
+		*leaf.ptr = r.ReadI64()
+	} else {
+		if leaf.count != nil {
+			n := leaf.count.ivalue()
+			max := leaf.count.imax()
+			if n > max {
+				n = max
+			}
+			nn := leaf.tleaf.len * n
+			*leaf.sli = rbytes.ResizeI64(*leaf.sli, nn)
+			r.ReadArrayI64(*leaf.sli)
+		} else {
+			nn := leaf.tleaf.len
+			*leaf.sli = rbytes.ResizeI64(*leaf.sli, nn)
+			r.ReadArrayI64(*leaf.sli)
+		}
+	}
+	return r.Err()
+}
+
+func (leaf *LeafG) unsafeDecayArray(ptr interface{}) interface{} {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / 8
+	arr := (*[0]int64)(unsafe.Pointer(rv.UnsafeAddr()))
+	sli := (*arr)[:]
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
+	hdr.Len = int(sz)
+	hdr.Cap = int(sz)
+	return &sli
+}
+
+func (leaf *LeafG) setAddress(ptr interface{}) error {
+	if ptr == nil {
+		return leaf.setAddress(newValue(leaf))
+	}
+
+	if rv := reflect.Indirect(reflect.ValueOf(ptr)); rv.Kind() == reflect.Array {
+		sli := leaf.unsafeDecayArray(ptr)
+		switch sli := sli.(type) {
+		case *[]int64:
+			return leaf.setAddress(sli)
+		case *[]uint64:
+			return leaf.setAddress(sli)
+		default:
+			panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", ptr, leaf.Name(), leaf))
+		}
+	}
+
+	switch v := ptr.(type) {
+	case *int64:
+		leaf.ptr = v
+	case *[]int64:
+		leaf.sli = v
+		if *v == nil {
+			*leaf.sli = make([]int64, 0)
+		}
+	case *uint64:
+		leaf.ptr = (*int64)(unsafe.Pointer(v))
+	case *[]uint64:
+		leaf.sli = (*[]int64)(unsafe.Pointer(v))
+		if *v == nil {
+			*leaf.sli = make([]int64, 0)
+		}
+	default:
+		panic(fmt.Errorf("invalid ptr type %T (leaf=%s|%T)", v, leaf.Name(), leaf))
+	}
+	return nil
+}
+
+func (leaf *LeafG) writeToBuffer(w *rbytes.WBuffer) (int, error) {
+	if w.Err() != nil {
+		return 0, w.Err()
+	}
+
+	var nbytes int
+	switch {
+	case leaf.ptr != nil:
+		w.WriteI64(*leaf.ptr)
+		nbytes += leaf.tleaf.etype
+		if v := *leaf.ptr; v > leaf.max {
+			leaf.max = v
+		}
+	case leaf.count != nil:
+		n := leaf.count.ivalue()
+		max := leaf.count.imax()
+		if n > max {
+			n = max
+		}
+		end := leaf.tleaf.len * n
+		w.WriteArrayI64((*leaf.sli)[:end])
+		nbytes += leaf.tleaf.etype * end
+	default:
+		w.WriteArrayI64((*leaf.sli)[:leaf.tleaf.len])
+		nbytes += leaf.tleaf.etype * leaf.tleaf.len
+	}
+
+	return nbytes, w.Err()
+}
+
+func init() {
+	f := func() reflect.Value {
+		o := &LeafG{}
+		return reflect.ValueOf(o)
+	}
+	rtypes.Factory.Add("TLeafG", f)
+}
+
+var (
+	_ root.Object        = (*LeafG)(nil)
+	_ root.Named         = (*LeafG)(nil)
+	_ Leaf               = (*LeafG)(nil)
+	_ rbytes.Marshaler   = (*LeafG)(nil)
+	_ rbytes.Unmarshaler = (*LeafG)(nil)
+)
+
 // LeafF implements ROOT TLeafF
 type LeafF struct {
 	rvers int16

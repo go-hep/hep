@@ -6702,6 +6702,47 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 	}))
+	StreamerInfos.Add(NewCxxStreamerInfo("TLeafG", 1, 0xeca71cb7, []rbytes.StreamerElement{
+		NewStreamerBase(Element{
+			Name:   *rbase.NewNamed("TLeaf", "Leaf: description of a Branch data type"),
+			Type:   rmeta.Base,
+			Size:   0,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 1830715730, 0, 0, 0},
+			Offset: 0,
+			EName:  "BASE",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New(), 2),
+		&StreamerBasicType{StreamerElement: Element{
+			Name:   *rbase.NewNamed("fMinimum", "Minimum value if leaf range is specified"),
+			Type:   rmeta.Long,
+			Size:   8,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
+			Offset: 0,
+			EName:  "long",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New()},
+		&StreamerBasicType{StreamerElement: Element{
+			Name:   *rbase.NewNamed("fMaximum", "Maximum value if leaf range is specified"),
+			Type:   rmeta.Long,
+			Size:   8,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
+			Offset: 0,
+			EName:  "long",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New()},
+	}))
 	StreamerInfos.Add(NewCxxStreamerInfo("TLeafF", 1, 0x3add9d72, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
 			Name:   *rbase.NewNamed("TLeaf", "Leaf: description of a Branch data type"),

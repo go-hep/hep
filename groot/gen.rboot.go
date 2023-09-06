@@ -100,7 +100,7 @@ var (
 		"TChain",
 		"TLeaf", "TLeafElement", "TLeafObject",
 		"TLeafO",
-		"TLeafB", "TLeafS", "TLeafI", "TLeafL",
+		"TLeafB", "TLeafS", "TLeafI", "TLeafL", "TLeafG",
 		"TLeafF", "TLeafD",
 		"TLeafF16", "TLeafD32",
 		"TLeafC",
