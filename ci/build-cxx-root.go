@@ -21,7 +21,7 @@ func main() {
 	log.SetPrefix("")
 	log.SetFlags(0)
 
-	rvers := flag.String("root-version", "6.26.00", "ROOT version to build")
+	rvers := flag.String("root-version", "6.28.04", "ROOT version to build")
 	nproc := flag.Int("j", runtime.NumCPU(), "number of parallel build processes")
 
 	flag.Parse()
@@ -97,7 +97,7 @@ apt update  -yq
 apt install -yq    \
 		cmake curl \
 		g++ git    \
-		python     \
+		python3    \
 ;
 
 export ROOT_VERSION="%[1]s"

@@ -4710,7 +4710,7 @@ func init() {
 	}))
 	StreamerInfos.Add(NewCxxStreamerInfo("TDirectoryFile", 5, 0xbf9f443e, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
-			Name:   *rbase.NewNamed("TDirectory", ""),
+			Name:   *rbase.NewNamed("TDirectory", "Describe directory structure in memory"),
 			Type:   rmeta.Base,
 			Size:   0,
 			ArrLen: 0,
@@ -4881,7 +4881,7 @@ func init() {
 	}))
 	StreamerInfos.Add(NewCxxStreamerInfo("TFile", 8, 0x9468e382, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
-			Name:   *rbase.NewNamed("TDirectoryFile", ""),
+			Name:   *rbase.NewNamed("TDirectoryFile", "Describe directory structure in a ROOT file"),
 			Type:   rmeta.Base,
 			Size:   0,
 			ArrLen: 0,
