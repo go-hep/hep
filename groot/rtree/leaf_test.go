@@ -84,6 +84,10 @@ func TestLeafReadWriteBasket(t *testing.T) {
 			data: int64(-42),
 		},
 		{
+			leaf: newLeafG(br, "G64", nil, signed, nil),
+			data: int64(-42),
+		},
+		{
 			leaf: newLeafB(br, "U8", nil, unsigned, nil),
 			data: uint8(42),
 		},
@@ -97,6 +101,10 @@ func TestLeafReadWriteBasket(t *testing.T) {
 		},
 		{
 			leaf: newLeafL(br, "U64", nil, unsigned, nil),
+			data: uint64(42),
+		},
+		{
+			leaf: newLeafG(br, "U64", nil, unsigned, nil),
 			data: uint64(42),
 		},
 		{
@@ -156,6 +164,10 @@ func TestLeafReadWriteBasket(t *testing.T) {
 			data: [4]int64{1, 2, 3, 4},
 		},
 		{
+			leaf: newLeafG(br, "ArrG64", []int{4}, signed, nil),
+			data: [4]int64{1, 2, 3, 4},
+		},
+		{
 			leaf: newLeafB(br, "ArrU8", []int{4}, unsigned, nil),
 			data: [4]uint8{1, 2, 3, 4},
 		},
@@ -169,6 +181,10 @@ func TestLeafReadWriteBasket(t *testing.T) {
 		},
 		{
 			leaf: newLeafL(br, "ArrU64", []int{4}, unsigned, nil),
+			data: [4]uint64{1, 2, 3, 4},
+		},
+		{
+			leaf: newLeafG(br, "ArrU64", []int{4}, unsigned, nil),
 			data: [4]uint64{1, 2, 3, 4},
 		},
 		{
@@ -224,6 +240,11 @@ func TestLeafReadWriteBasket(t *testing.T) {
 			lcnt: newLeafI(br, "N", nil, signed, nil),
 		},
 		{
+			leaf: newLeafG(br, "SliG64", nil, signed, scnt),
+			data: []int64{1, 2, 3, 4},
+			lcnt: newLeafI(br, "N", nil, signed, nil),
+		},
+		{
 			leaf: newLeafB(br, "SliU8", nil, unsigned, ucnt),
 			data: []uint8{1, 2, 3, 4},
 			lcnt: newLeafI(br, "N", nil, unsigned, nil),
@@ -240,6 +261,11 @@ func TestLeafReadWriteBasket(t *testing.T) {
 		},
 		{
 			leaf: newLeafL(br, "SliU64", nil, unsigned, ucnt),
+			data: []uint64{1, 2, 3, 4},
+			lcnt: newLeafI(br, "N", nil, unsigned, nil),
+		},
+		{
+			leaf: newLeafG(br, "SliU64", nil, unsigned, ucnt),
 			data: []uint64{1, 2, 3, 4},
 			lcnt: newLeafI(br, "N", nil, unsigned, nil),
 		},
@@ -351,6 +377,7 @@ func (leaf *LeafB) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCoun
 func (leaf *LeafS) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCount) }
 func (leaf *LeafI) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCount) }
 func (leaf *LeafL) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCount) }
+func (leaf *LeafG) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCount) }
 func (leaf *LeafF) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCount) }
 func (leaf *LeafD) setLeafCount(lcnt Leaf)   { leaf.tleaf.count = lcnt.(leafCount) }
 func (leaf *LeafD32) setLeafCount(lcnt Leaf) { leaf.tleaf.count = lcnt.(leafCount) }

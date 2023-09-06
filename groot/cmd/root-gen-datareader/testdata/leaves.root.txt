@@ -16,10 +16,12 @@ type Data struct {
 	ROOT_I16    int16             `groot:"I16"`
 	ROOT_I32    int32             `groot:"I32"`
 	ROOT_I64    int64             `groot:"I64"`
+	ROOT_G64    int64             `groot:"G64"`
 	ROOT_U8     uint8             `groot:"U8"`
 	ROOT_U16    uint16            `groot:"U16"`
 	ROOT_U32    uint32            `groot:"U32"`
 	ROOT_U64    uint64            `groot:"U64"`
+	ROOT_UGG    uint64            `groot:"UGG"`
 	ROOT_F32    float32           `groot:"F32"`
 	ROOT_F64    float64           `groot:"F64"`
 	ROOT_D16    root.Float16      `groot:"D16"`
@@ -29,10 +31,12 @@ type Data struct {
 	ROOT_ArrI16 [10]int16         `groot:"ArrI16[10]"`
 	ROOT_ArrI32 [10]int32         `groot:"ArrI32[10]"`
 	ROOT_ArrI64 [10]int64         `groot:"ArrI64[10]"`
+	ROOT_ArrG64 [10]int64         `groot:"ArrG64[10]"`
 	ROOT_ArrU8  [10]uint8         `groot:"ArrU8[10]"`
 	ROOT_ArrU16 [10]uint16        `groot:"ArrU16[10]"`
 	ROOT_ArrU32 [10]uint32        `groot:"ArrU32[10]"`
 	ROOT_ArrU64 [10]uint64        `groot:"ArrU64[10]"`
+	ROOT_ArrUGG [10]uint64        `groot:"ArrUGG[10]"`
 	ROOT_ArrF32 [10]float32       `groot:"ArrF32[10]"`
 	ROOT_ArrF64 [10]float64       `groot:"ArrF64[10]"`
 	ROOT_ArrD16 [10]root.Float16  `groot:"ArrD16[10]"`
@@ -43,10 +47,12 @@ type Data struct {
 	ROOT_SliI16 []int16           `groot:"SliI16"`
 	ROOT_SliI32 []int32           `groot:"SliI32"`
 	ROOT_SliI64 []int64           `groot:"SliI64"`
+	ROOT_SliG64 []int64           `groot:"SliG64"`
 	ROOT_SliU8  []uint8           `groot:"SliU8"`
 	ROOT_SliU16 []uint16          `groot:"SliU16"`
 	ROOT_SliU32 []uint32          `groot:"SliU32"`
 	ROOT_SliU64 []uint64          `groot:"SliU64"`
+	ROOT_SliUGG []uint64          `groot:"SliUGG"`
 	ROOT_SliF32 []float32         `groot:"SliF32"`
 	ROOT_SliF64 []float64         `groot:"SliF64"`
 	ROOT_SliD16 []root.Float16    `groot:"SliD16"`

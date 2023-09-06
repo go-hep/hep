@@ -271,7 +271,7 @@ func TestBranchRW(t *testing.T) {
 		{
 			name: "TBranch-with-leaves",
 			want: &tbranch{
-				named:          *rbase.NewNamed("branch", "leaf1/I:leaf2/L"),
+				named:          *rbase.NewNamed("branch", "leaf1/I:leaf2/L:leaf3/G"),
 				attfill:        *rbase.NewAttFill(),
 				compress:       1,
 				basketSize:     defaultBasketSize,
@@ -290,6 +290,7 @@ func TestBranchRW(t *testing.T) {
 				leaves: []Leaf{
 					newLeafI(nil, "leaf1", nil, signed, nil),
 					newLeafL(nil, "leaf2", nil, signed, nil),
+					newLeafG(nil, "leaf3", nil, signed, nil),
 				},
 				baskets:     []Basket{},
 				basketBytes: []int32{86},
@@ -308,7 +309,7 @@ func TestBranchRW(t *testing.T) {
 		{
 			name: "TBranch-with-baskets",
 			want: &tbranch{
-				named:          *rbase.NewNamed("branch", "leaf1/I:leaf2/L"),
+				named:          *rbase.NewNamed("branch", "leaf1/I:leaf2/L:leaf3/G"),
 				attfill:        *rbase.NewAttFill(),
 				compress:       1,
 				basketSize:     defaultBasketSize,
@@ -327,6 +328,7 @@ func TestBranchRW(t *testing.T) {
 				leaves: []Leaf{
 					newLeafI(nil, "leaf1", nil, signed, nil),
 					newLeafL(nil, "leaf2", nil, signed, nil),
+					newLeafG(nil, "leaf3", nil, signed, nil),
 				},
 				baskets: []Basket{
 					{
@@ -357,7 +359,7 @@ func TestBranchRW(t *testing.T) {
 			name: "TBranchElement",
 			want: &tbranchElement{
 				tbranch: tbranch{
-					named:          *rbase.NewNamed("branch", "leaf1/I:leaf2/L"),
+					named:          *rbase.NewNamed("branch", "leaf1/I:leaf2/L:leaf3/G"),
 					attfill:        *rbase.NewAttFill(),
 					compress:       1,
 					basketSize:     defaultBasketSize,
@@ -376,6 +378,7 @@ func TestBranchRW(t *testing.T) {
 					leaves: []Leaf{
 						newLeafI(nil, "leaf1", nil, signed, nil),
 						newLeafL(nil, "leaf2", nil, signed, nil),
+						newLeafG(nil, "leaf3", nil, signed, nil),
 					},
 					baskets: []Basket{
 						{
@@ -417,7 +420,7 @@ func TestBranchRW(t *testing.T) {
 			name: "TBranchElement-with-bcount1",
 			want: &tbranchElement{
 				tbranch: tbranch{
-					named:          *rbase.NewNamed("branch", "leaf1/I:leaf2/L"),
+					named:          *rbase.NewNamed("branch", "leaf1/I:leaf2/L:leaf3/G"),
 					attfill:        *rbase.NewAttFill(),
 					compress:       1,
 					basketSize:     defaultBasketSize,
@@ -436,6 +439,7 @@ func TestBranchRW(t *testing.T) {
 					leaves: []Leaf{
 						newLeafI(nil, "leaf1", nil, signed, nil),
 						newLeafL(nil, "leaf2", nil, signed, nil),
+						newLeafG(nil, "leaf3", nil, signed, nil),
 					},
 					baskets: []Basket{
 						{
