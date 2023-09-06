@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/sbinet/npyio"
+	"go-hep.org/x/hep/internal/diff"
 )
 
 func TestProcess(t *testing.T) {
@@ -89,7 +90,7 @@ func TestProcess(t *testing.T) {
 			}
 
 			if got, want := got.String(), tc.want; got != want {
-				t.Fatalf("invalid npy:\ngot:\n%s\nwant:\n%s\n", got, want)
+				t.Fatalf("invalid npy:\ngot:\n%s\nwant:\n%s\ndiff:\n%s", got, want, diff.Format(got, want))
 			}
 		})
 	}
