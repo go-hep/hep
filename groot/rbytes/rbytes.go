@@ -148,3 +148,15 @@ const (
 	BypassStreamer                  uint32 = 1 << 12
 	CannotHandleMemberWiseStreaming uint32 = 1 << 17
 )
+
+// Member is a ROOT member of a ROOT class.
+type Member struct {
+	Name  string
+	Value any
+}
+
+// RSlicer wraps the RMembers method.
+type RSlicer interface {
+	// RMembers returns the list of (pointers to) members of a given ROOT value.
+	RMembers() []Member
+}

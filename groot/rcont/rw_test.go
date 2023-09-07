@@ -61,6 +61,7 @@ func TestWRBuffer(t *testing.T) {
 					rbase.NewNamed("n0", "t0"),
 					rbase.NewNamed("n1", "t1"),
 				},
+				opts: []string{"opt1", "opt2"},
 			},
 		},
 		{
@@ -338,6 +339,7 @@ var rwBufferCases = []struct {
 				rbase.NewNamed("n0", "t0"),
 				rbase.NewNamed("n1", "t1"),
 			},
+			opts: []string{"", ""},
 		},
 	},
 	{

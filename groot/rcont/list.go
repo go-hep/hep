@@ -6,7 +6,6 @@ package rcont
 
 import (
 	"fmt"
-	"io"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -20,6 +19,7 @@ type List struct {
 	obj  rbase.Object
 	name string
 	objs []root.Object
+	opts []string
 }
 
 func NewList(name string, objs []root.Object) *List {
@@ -27,6 +27,7 @@ func NewList(name string, objs []root.Object) *List {
 		obj:  rbase.Object{ID: 0x0, Bits: 0x3000000},
 		name: name,
 		objs: objs,
+		opts: make([]string, len(objs)),
 	}
 	return list
 }
@@ -68,6 +69,7 @@ func (li *List) Len() int {
 
 func (li *List) Append(obj root.Object) {
 	li.objs = append(li.objs, obj)
+	li.opts = append(li.opts, "")
 }
 
 func (li *List) MarshalROOT(w *rbytes.WBuffer) (int, error) {
@@ -79,9 +81,9 @@ func (li *List) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	w.WriteObject(&li.obj)
 	w.WriteString(li.name)
 	w.WriteI32(int32(len(li.objs)))
-	for _, obj := range li.objs {
+	for i, obj := range li.objs {
 		w.WriteObjectAny(obj)
-		w.WriteU8(0) // FIXME(sbinet): properly serialize the 'OPTION'.
+		w.WriteString(li.opts[i])
 	}
 
 	return w.SetHeader(hdr)
@@ -105,6 +107,7 @@ func (li *List) UnmarshalROOT(r *rbytes.RBuffer) error {
 	size := int(r.ReadI32())
 
 	li.objs = make([]root.Object, size)
+	li.opts = make([]string, size)
 
 	for i := range li.objs {
 		obj := r.ReadObjectAny()
@@ -114,13 +117,7 @@ func (li *List) UnmarshalROOT(r *rbytes.RBuffer) error {
 			// return r.Err()
 		}
 		li.objs[i] = obj
-
-		n := int(r.ReadU8())
-		if n > 0 {
-			opt := make([]byte, n)
-			_, _ = io.ReadFull(r, opt)
-			// drop the option on the floor. // FIXME(sbinet)
-		}
+		li.opts[i] = r.ReadString()
 	}
 
 	r.CheckHeader(hdr)
