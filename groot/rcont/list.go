@@ -124,6 +124,24 @@ func (li *List) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (l *List) RMembers() (mbrs []rbytes.Member) {
+	var (
+		arr  []root.Object
+		opts []string
+	)
+	if len(l.objs) > 0 {
+		arr = l.objs
+		opts = l.opts
+	}
+	mbrs = append(mbrs, []rbytes.Member{
+		{"name", &l.name},
+		{"arr", &arr},
+		{"opt", &opts},
+	}...)
+
+	return mbrs
+}
+
 type HashList struct {
 	List
 }

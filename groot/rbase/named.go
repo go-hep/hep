@@ -102,6 +102,14 @@ func (n *Named) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	return w.SetHeader(hdr)
 }
 
+func (n *Named) RMembers() []rbytes.Member {
+	o := n.obj.RMembers()
+	return append(o, []rbytes.Member{
+		{"fName", &n.name},
+		{"fTitle", &n.title},
+	}...)
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := NewNamed("", "")

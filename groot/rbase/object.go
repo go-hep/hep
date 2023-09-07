@@ -69,6 +69,13 @@ func (obj *Object) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	return int(w.Pos() - n), w.Err()
 }
 
+func (obj *Object) RMembers() []rbytes.Member {
+	return []rbytes.Member{
+		{"fUniqueID", &obj.ID},
+		{"fBits", &obj.Bits},
+	}
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := &Object{}

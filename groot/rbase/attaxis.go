@@ -100,6 +100,23 @@ func (a *AttAxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (a *AttAxis) RMembers() (mbrs []rbytes.Member) {
+	mbrs = append(mbrs, []rbytes.Member{
+		{"fNdivisions", &a.Ndivs},
+		{"fAxisColor", &a.AxisColor},
+		{"fLabelColor", &a.LabelColor},
+		{"fLabelFont", &a.LabelFont},
+		{"fLabelOffset", &a.LabelOffset},
+		{"fLabelSize", &a.LabelSize},
+		{"fTickLength", &a.Ticks},
+		{"fTitleOffset", &a.TitleOffset},
+		{"fTitleSize", &a.TitleSize},
+		{"fTitleColor", &a.TitleColor},
+		{"fTitleFont", &a.TitleFont},
+	}...)
+	return mbrs
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := NewAttAxis()

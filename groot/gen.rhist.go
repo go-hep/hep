@@ -232,6 +232,14 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (h *{{.Name}}) RMembers() (mbrs []rbytes.Member) {
+	mbrs = append(mbrs, h.th1.RMembers()...)
+	mbrs = append(mbrs, rbytes.Member{
+		"fArray", &h.arr.Data,
+	})
+	return mbrs
+}
+
 func (h *{{.Name}}) Array() {{.Type}} {
 	return h.arr
 }
@@ -411,6 +419,7 @@ var (
 	_ H1                 = (*{{.Name}})(nil)
 	_ rbytes.Marshaler   = (*{{.Name}})(nil)
 	_ rbytes.Unmarshaler = (*{{.Name}})(nil)
+	_ rbytes.RSlicer     = (*{{.Name}})(nil)
 )
 `
 
@@ -783,6 +792,14 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (h *{{.Name}}) RMembers() (mbrs []rbytes.Member) {
+	mbrs = append(mbrs, h.th2.RMembers()...)
+	mbrs = append(mbrs, rbytes.Member{
+		"fArray", &h.arr.Data,
+	})
+	return mbrs
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := new{{.Name}}()
@@ -797,5 +814,6 @@ var (
 	_ H2                 = (*{{.Name}})(nil)
 	_ rbytes.Marshaler   = (*{{.Name}})(nil)
 	_ rbytes.Unmarshaler = (*{{.Name}})(nil)
+	_ rbytes.RSlicer     = (*{{.Name}})(nil)
 )
 `

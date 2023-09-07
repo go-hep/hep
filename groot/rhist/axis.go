@@ -176,6 +176,25 @@ func (a *taxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (a *taxis) RMembers() (mbrs []rbytes.Member) {
+	mbrs = append(mbrs, a.Named.RMembers()...)
+	mbrs = append(mbrs, a.attaxis.RMembers()...)
+	mbrs = append(mbrs, []rbytes.Member{
+		{"fNbins", &a.nbins},
+		{"fXmin", &a.xmin},
+		{"fXmax", &a.xmax},
+		{"fXbins", &a.xbins.Data},
+		{"fFirst", &a.first},
+		{"fLast", &a.last},
+		{"fBits2", &a.bits2},
+		{"fTimeDisplay", &a.time},
+		{"fTimeFormat", &a.tfmt},
+		{"fLabels", &a.labels},
+		{"fModLabs", &a.modlabs},
+	}...)
+	return mbrs
+}
+
 func init() {
 	{
 		f := func() reflect.Value {

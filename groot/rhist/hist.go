@@ -204,6 +204,39 @@ func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (h *th1) RMembers() (mbrs []rbytes.Member) {
+	mbrs = append(mbrs, h.Named.RMembers()...)
+	mbrs = append(mbrs, h.attline.RMembers()...)
+	mbrs = append(mbrs, h.attfill.RMembers()...)
+	mbrs = append(mbrs, h.attmarker.RMembers()...)
+	mbrs = append(mbrs, []rbytes.Member{
+		{"fNcells", &h.ncells},
+		{"fXaxis", &h.xaxis},
+		{"fYaxis", &h.yaxis},
+		{"fZaxis", &h.zaxis},
+		{"fBarOffset", &h.boffset},
+		{"fBarWidth", &h.bwidth},
+		{"fEntries", &h.entries},
+		{"fTsumw", &h.tsumw},
+		{"fTsumw2", &h.tsumw2},
+		{"fTsumwx", &h.tsumwx},
+		{"fTsumwx2", &h.tsumwx2},
+		{"fMaximum", &h.max},
+		{"fMinimum", &h.min},
+		{"fNormFactor", &h.norm},
+		{"fContour", &h.contour.Data},
+		{"fSumw2", &h.sumw2.Data},
+		{"fOption", &h.opt},
+		{"fFunctions", &h.funcs},
+		{"fBufferSize", len(h.buffer)}, // FIXME(sbinet)
+		{"fBuffer", &h.buffer},
+		{"fBinStatErrOpt", &h.erropt},
+		{"fStatOverflows", &h.oflow},
+	}...)
+
+	return mbrs
+}
+
 type th2 struct {
 	th1
 	scale   float64 // scale factor
@@ -265,6 +298,18 @@ func (h *th2) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (h *th2) RMembers() (mbrs []rbytes.Member) {
+	mbrs = append(mbrs, h.th1.RMembers()...)
+	mbrs = append(mbrs, []rbytes.Member{
+		{"fScalefactor", &h.scale},
+		{"fTsumwy", &h.tsumwy},
+		{"fTsumwy2", &h.tsumwy2},
+		{"fTsumwxy", &h.tsumwxy},
+	}...)
+
+	return mbrs
+}
+
 // SumWY returns the total sum of weights*y
 func (h *th2) SumWY() float64 {
 	return h.tsumwy
@@ -302,6 +347,7 @@ var (
 	_ root.Named         = (*th1)(nil)
 	_ rbytes.Marshaler   = (*th1)(nil)
 	_ rbytes.Unmarshaler = (*th1)(nil)
+	_ rbytes.RSlicer     = (*th1)(nil)
 
 	_ root.Object        = (*th2)(nil)
 	_ root.Named         = (*th2)(nil)

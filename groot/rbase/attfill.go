@@ -58,6 +58,13 @@ func (a *AttFill) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (a *AttFill) RMembers() []rbytes.Member {
+	return []rbytes.Member{
+		{"fFillColor", &a.Color},
+		{"fFillStyle", &a.Style},
+	}
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := NewAttFill()

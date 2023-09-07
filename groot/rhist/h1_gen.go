@@ -115,6 +115,14 @@ func (h *H1F) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (h *H1F) RMembers() (mbrs []rbytes.Member) {
+	mbrs = append(mbrs, h.th1.RMembers()...)
+	mbrs = append(mbrs, rbytes.Member{
+		"fArray", &h.arr.Data,
+	})
+	return mbrs
+}
+
 func (h *H1F) Array() rcont.ArrayF {
 	return h.arr
 }
@@ -294,6 +302,7 @@ var (
 	_ H1                 = (*H1F)(nil)
 	_ rbytes.Marshaler   = (*H1F)(nil)
 	_ rbytes.Unmarshaler = (*H1F)(nil)
+	_ rbytes.RSlicer     = (*H1F)(nil)
 )
 
 // H1D implements ROOT TH1D
@@ -390,6 +399,14 @@ func (h *H1D) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	r.CheckHeader(hdr)
 	return r.Err()
+}
+
+func (h *H1D) RMembers() (mbrs []rbytes.Member) {
+	mbrs = append(mbrs, h.th1.RMembers()...)
+	mbrs = append(mbrs, rbytes.Member{
+		"fArray", &h.arr.Data,
+	})
+	return mbrs
 }
 
 func (h *H1D) Array() rcont.ArrayD {
@@ -571,6 +588,7 @@ var (
 	_ H1                 = (*H1D)(nil)
 	_ rbytes.Marshaler   = (*H1D)(nil)
 	_ rbytes.Unmarshaler = (*H1D)(nil)
+	_ rbytes.RSlicer     = (*H1D)(nil)
 )
 
 // H1I implements ROOT TH1I
@@ -667,6 +685,14 @@ func (h *H1I) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	r.CheckHeader(hdr)
 	return r.Err()
+}
+
+func (h *H1I) RMembers() (mbrs []rbytes.Member) {
+	mbrs = append(mbrs, h.th1.RMembers()...)
+	mbrs = append(mbrs, rbytes.Member{
+		"fArray", &h.arr.Data,
+	})
+	return mbrs
 }
 
 func (h *H1I) Array() rcont.ArrayI {
@@ -848,4 +874,5 @@ var (
 	_ H1                 = (*H1I)(nil)
 	_ rbytes.Marshaler   = (*H1I)(nil)
 	_ rbytes.Unmarshaler = (*H1I)(nil)
+	_ rbytes.RSlicer     = (*H1I)(nil)
 )

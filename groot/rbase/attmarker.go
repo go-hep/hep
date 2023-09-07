@@ -66,6 +66,14 @@ func (a *AttMarker) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (a *AttMarker) RMembers() []rbytes.Member {
+	return []rbytes.Member{
+		{"fMarkerColor", &a.Color},
+		{"fMarkerStyle", &a.Style},
+		{"fMarkerSize", &a.Width},
+	}
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := NewAttMarker()

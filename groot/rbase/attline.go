@@ -67,6 +67,14 @@ func (a *AttLine) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (a *AttLine) RMembers() []rbytes.Member {
+	return []rbytes.Member{
+		{"fLineColor", &a.Color},
+		{"fLineStyle", &a.Style},
+		{"fLineWidth", &a.Width},
+	}
+}
+
 func init() {
 	f := func() reflect.Value {
 		o := NewAttLine()
