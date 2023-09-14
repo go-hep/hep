@@ -212,6 +212,24 @@ func (g *tgraph) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (g *tgraph) RMembers() (mbrs []rbytes.Member) {
+	mbrs = append(mbrs, g.Named.RMembers()...)
+	mbrs = append(mbrs, g.attline.RMembers()...)
+	mbrs = append(mbrs, g.attfill.RMembers()...)
+	mbrs = append(mbrs, g.attmarker.RMembers()...)
+	mbrs = append(mbrs, []rbytes.Member{
+		{"fNpoints", &g.npoints},
+		{"fX", &g.x},
+		{"fY", &g.y},
+		{"fFunctions", g.funcs},
+		{"fHistogram", &g.histo},
+		{"fMinimum", &g.min},
+		{"fMaximum", &g.max},
+	}...)
+
+	return mbrs
+}
+
 // MarshalYODA implements the YODAMarshaler interface.
 func (g *tgraph) MarshalYODA() ([]byte, error) {
 	pts := make([]hbook.Point2D, g.Len())
@@ -378,6 +396,16 @@ func (g *tgrapherrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	r.CheckHeader(hdr)
 	return r.Err()
+}
+
+func (g *tgrapherrs) RMembers() (mbrs []rbytes.Member) {
+	mbrs = append(mbrs, g.tgraph.RMembers()...)
+	mbrs = append(mbrs, []rbytes.Member{
+		{"fEX", &g.xerr},
+		{"fEY", &g.yerr},
+	}...)
+
+	return mbrs
 }
 
 // MarshalYODA implements the YODAMarshaler interface.
@@ -593,6 +621,18 @@ func (g *tgraphasymmerrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (g *tgraphasymmerrs) RMembers() (mbrs []rbytes.Member) {
+	mbrs = append(mbrs, g.tgraph.RMembers()...)
+	mbrs = append(mbrs, []rbytes.Member{
+		{"fEXlow", &g.xerrlo},
+		{"fEXhigh", &g.xerrhi},
+		{"fEYlow", &g.yerrlo},
+		{"fEYhigh", &g.yerrhi},
+	}...)
+
+	return mbrs
+}
+
 // MarshalYODA implements the YODAMarshaler interface.
 func (g *tgraphasymmerrs) MarshalYODA() ([]byte, error) {
 	pts := make([]hbook.Point2D, g.Len())
@@ -640,6 +680,11 @@ type tgraphmultierrs struct {
 	yerrhi     []rcont.ArrayD  // two dimensional array of Y high errors
 	attfills   []rbase.AttFill // the AttFill attributes of the different errors
 	attlines   []rbase.AttLine // the AttLine attributes of the different errors
+}
+
+// NewGraphMultiErrorsFrom creates a new GraphMultiErrors from 2-dim hbook data points.
+func NewGraphMultiErrorsFrom(s2 *hbook.S2D) GraphErrors {
+	return newGraphMultiErrorsFrom(s2)
 }
 
 func newGraphMultiErrs(n, ny int) *tgraphmultierrs {
@@ -758,6 +803,44 @@ func (g *tgraphmultierrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
+func (g *tgraphmultierrs) RMembers() (mbrs []rbytes.Member) {
+	var (
+		yerrlo = make([][]float64, len(g.yerrlo))
+		yerrhi = make([][]float64, len(g.yerrhi))
+	)
+	for i, v := range g.yerrlo {
+		yerrlo[i] = v.Data
+	}
+
+	for i, v := range g.yerrhi {
+		yerrhi[i] = v.Data
+	}
+
+	var (
+		attfills = make([]*rbase.AttFill, len(g.attfills))
+		attlines = make([]*rbase.AttLine, len(g.attlines))
+	)
+	for i := range g.attfills {
+		attfills[i] = &g.attfills[i]
+	}
+	for i := range g.attlines {
+		attlines[i] = &g.attlines[i]
+	}
+	mbrs = append(mbrs, g.tgraph.RMembers()...)
+	mbrs = append(mbrs, []rbytes.Member{
+		{"fNYErrors", &g.nyerr},
+		{"fSumErrorsMode", &g.sumErrMode},
+		{"fExL", &g.xerrlo},
+		{"fExH", &g.xerrhi},
+		{"fEyL", &yerrlo},
+		{"fEyH", &yerrhi},
+		{"fAttFill", attfills},
+		{"fAttLine", attlines},
+	}...)
+
+	return mbrs
+}
+
 // MarshalYODA implements the YODAMarshaler interface.
 func (g *tgraphmultierrs) MarshalYODA() ([]byte, error) {
 	pts := make([]hbook.Point2D, g.Len())
@@ -793,6 +876,7 @@ func (g *tgraphmultierrs) UnmarshalYODA(raw []byte) error {
 	*g = *newGraphMultiErrorsFrom(&gg).(*tgraphmultierrs)
 	return nil
 }
+
 func init() {
 	{
 		f := func() reflect.Value {
@@ -831,6 +915,7 @@ var (
 	_ Graph               = (*tgraph)(nil)
 	_ rbytes.Marshaler    = (*tgraph)(nil)
 	_ rbytes.Unmarshaler  = (*tgraph)(nil)
+	_ rbytes.RSlicer      = (*tgraph)(nil)
 	_ yodacnv.Marshaler   = (*tgraph)(nil)
 	_ yodacnv.Unmarshaler = (*tgraph)(nil)
 
@@ -841,6 +926,7 @@ var (
 	_ GraphErrors         = (*tgrapherrs)(nil)
 	_ rbytes.Marshaler    = (*tgrapherrs)(nil)
 	_ rbytes.Unmarshaler  = (*tgrapherrs)(nil)
+	_ rbytes.RSlicer      = (*tgrapherrs)(nil)
 	_ yodacnv.Marshaler   = (*tgrapherrs)(nil)
 	_ yodacnv.Unmarshaler = (*tgrapherrs)(nil)
 
@@ -851,6 +937,7 @@ var (
 	_ GraphErrors         = (*tgraphasymmerrs)(nil)
 	_ rbytes.Marshaler    = (*tgraphasymmerrs)(nil)
 	_ rbytes.Unmarshaler  = (*tgraphasymmerrs)(nil)
+	_ rbytes.RSlicer      = (*tgraphasymmerrs)(nil)
 	_ yodacnv.Marshaler   = (*tgraphasymmerrs)(nil)
 	_ yodacnv.Unmarshaler = (*tgraphasymmerrs)(nil)
 
@@ -861,6 +948,7 @@ var (
 	_ GraphErrors         = (*tgraphmultierrs)(nil)
 	_ rbytes.Marshaler    = (*tgraphmultierrs)(nil)
 	_ rbytes.Unmarshaler  = (*tgraphmultierrs)(nil)
+	_ rbytes.RSlicer      = (*tgraphmultierrs)(nil)
 	_ yodacnv.Marshaler   = (*tgraphmultierrs)(nil)
 	_ yodacnv.Unmarshaler = (*tgraphmultierrs)(nil)
 )
