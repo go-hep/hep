@@ -49,16 +49,54 @@ func TestMarshal(t *testing.T) {
 				return rhist.NewH2DFrom(h)
 			},
 		},
-		// FIXME(sbinet)
-		//		{
-		//			name: "graph",
-		//			gen: func() root.Object {
-		//				s := hbook.NewS2DFrom([]float64{1, 2, 3}, []float64{2, 4, 6})
-		//				s.Annotation()["name"] = "s2"
-		//				s.Annotation()["title"] = "my title"
-		//				return rhist.NewGraphFrom(s)
-		//			},
-		//		},
+		{
+			name: "graph",
+			gen: func() root.Object {
+				s := hbook.NewS2DFrom([]float64{1, 2, 3}, []float64{2, 4, 6})
+				s.Annotation()["name"] = "s2"
+				s.Annotation()["title"] = "my title"
+				return rhist.NewGraphFrom(s)
+			},
+		},
+		{
+			name: "tge",
+			gen: func() root.Object {
+				s := hbook.NewS2D([]hbook.Point2D{
+					{X: 1, Y: 2, ErrX: hbook.Range{Min: 10, Max: 20}, ErrY: hbook.Range{Min: 11, Max: 22}},
+					{X: 2, Y: 4, ErrX: hbook.Range{Min: 20, Max: 30}, ErrY: hbook.Range{Min: 12, Max: 23}},
+					{X: 3, Y: 6, ErrX: hbook.Range{Min: 30, Max: 40}, ErrY: hbook.Range{Min: 13, Max: 24}},
+				}...)
+				s.Annotation()["name"] = "s2"
+				s.Annotation()["title"] = "my title"
+				return rhist.NewGraphErrorsFrom(s)
+			},
+		},
+		{
+			name: "tgae",
+			gen: func() root.Object {
+				s := hbook.NewS2D([]hbook.Point2D{
+					{X: 1, Y: 2, ErrX: hbook.Range{Min: 10, Max: 20}, ErrY: hbook.Range{Min: 11, Max: 22}},
+					{X: 2, Y: 4, ErrX: hbook.Range{Min: 20, Max: 30}, ErrY: hbook.Range{Min: 12, Max: 23}},
+					{X: 3, Y: 6, ErrX: hbook.Range{Min: 30, Max: 40}, ErrY: hbook.Range{Min: 13, Max: 24}},
+				}...)
+				s.Annotation()["name"] = "s2"
+				s.Annotation()["title"] = "my title"
+				return rhist.NewGraphAsymmErrorsFrom(s)
+			},
+		},
+		{
+			name: "tgme",
+			gen: func() root.Object {
+				s := hbook.NewS2D([]hbook.Point2D{
+					{X: 1, Y: 2, ErrX: hbook.Range{Min: 10, Max: 20}, ErrY: hbook.Range{Min: 11, Max: 22}},
+					{X: 2, Y: 4, ErrX: hbook.Range{Min: 20, Max: 30}, ErrY: hbook.Range{Min: 12, Max: 23}},
+					{X: 3, Y: 6, ErrX: hbook.Range{Min: 30, Max: 40}, ErrY: hbook.Range{Min: 13, Max: 24}},
+				}...)
+				s.Annotation()["name"] = "s2"
+				s.Annotation()["title"] = "my title"
+				return rhist.NewGraphMultiErrorsFrom(s)
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var (
