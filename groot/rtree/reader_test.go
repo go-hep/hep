@@ -274,10 +274,12 @@ func (ScannerData) want(i int64) (data ScannerData) {
 }
 
 func TestReaderStruct(t *testing.T) {
-	for _, fname := range []string{
+	files := []string{
 		"../testdata/x-flat-tree.root",
 		rtests.XrdRemote("testdata/x-flat-tree.root"),
-	} {
+	}
+	for i := range files {
+		fname := files[i]
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
 
@@ -319,10 +321,12 @@ func TestReaderStruct(t *testing.T) {
 }
 
 func TestReaderVars(t *testing.T) {
-	for _, fname := range []string{
+	files := []string{
 		"../testdata/x-flat-tree.root",
 		rtests.XrdRemote("testdata/x-flat-tree.root"),
-	} {
+	}
+	for i := range files {
+		fname := files[i]
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
 
@@ -368,10 +372,12 @@ func TestReaderVars(t *testing.T) {
 }
 
 func TestReaderVarsMultipleTimes(t *testing.T) {
-	for _, fname := range []string{
+	files := []string{
 		"../testdata/mc_105986.ZZ.root",
 		rtests.XrdRemote("testdata/mc_105986.ZZ.root"),
-	} {
+	}
+	for i := range files {
+		fname := files[i]
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
 
@@ -411,10 +417,12 @@ func TestReaderVarsMultipleTimes(t *testing.T) {
 }
 
 func TestReaderStructWithCounterLeaf(t *testing.T) {
-	for _, fname := range []string{
+	files := []string{
 		"../testdata/x-flat-tree.root",
 		rtests.XrdRemote("testdata/x-flat-tree.root"),
-	} {
+	}
+	for i := range files {
+		fname := files[i]
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
 
@@ -469,10 +477,12 @@ func TestReaderStructWithCounterLeaf(t *testing.T) {
 }
 
 func TestReaderVarsWithCounterLeaf(t *testing.T) {
-	for _, fname := range []string{
+	files := []string{
 		"../testdata/x-flat-tree.root",
 		rtests.XrdRemote("testdata/x-flat-tree.root"),
-	} {
+	}
+	for i := range files {
+		fname := files[i]
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
 
@@ -532,7 +542,8 @@ func TestScannerStructWithStdVectorBool(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, fname := range files {
+	for i := range files {
+		fname := files[i]
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
 

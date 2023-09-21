@@ -101,7 +101,7 @@ func TestSession_ConnectionAbort(t *testing.T) {
 		_, err := xrdproto.ReadRequest(conn)
 		if err != nil {
 			cancel()
-			t.Fatalf("could not read request: %v", err)
+			t.Errorf("could not read request: %v", err)
 		}
 		conn.Close()
 	}

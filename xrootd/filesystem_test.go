@@ -72,7 +72,8 @@ func testFileSystem_Dirlist(t *testing.T, addr string) {
 }
 
 func TestFileSystem_Dirlist(t *testing.T) {
-	for _, addr := range testClientAddrs {
+	for i := range testClientAddrs {
+		addr := testClientAddrs[i]
 		t.Run(addr, func(t *testing.T) {
 			t.Parallel()
 
@@ -129,11 +130,12 @@ func TestFileSystem_Open(t *testing.T) {
 		{"WithStat", xrdfs.OpenOptionsOpenRead | xrdfs.OpenOptionsReturnStatus, xrdfs.FileHandle{0, 0, 0, 0}, &emptyCompression, entryStat},
 	}
 
-	for _, addr := range testClientAddrs {
-		for _, tc := range testCases {
+	for i := range testClientAddrs {
+		addr := testClientAddrs[i]
+		for i := range testCases {
+			tc := testCases[i]
 			t.Run(addr+"/"+tc.name, func(t *testing.T) {
 				t.Parallel()
-
 				testFileSystem_Open(t, addr, tc.options, tc.handle, tc.compression, tc.info)
 			})
 		}
@@ -189,10 +191,10 @@ func testFileSystem_RemoveFile(t *testing.T, addr string) {
 }
 
 func TestFileSystem_RemoveFile(t *testing.T) {
-	for _, addr := range testClientAddrs {
+	for i := range testClientAddrs {
+		addr := testClientAddrs[i]
 		t.Run(addr, func(t *testing.T) {
 			t.Parallel()
-
 			testFileSystem_RemoveFile(t, addr)
 		})
 	}
@@ -268,10 +270,10 @@ func testFileSystem_Truncate(t *testing.T, addr string) {
 }
 
 func TestFileSystem_Truncate(t *testing.T) {
-	for _, addr := range testClientAddrs {
+	for i := range testClientAddrs {
+		addr := testClientAddrs[i]
 		t.Run(addr, func(t *testing.T) {
 			t.Parallel()
-
 			testFileSystem_Truncate(t, addr)
 		})
 	}
@@ -299,10 +301,10 @@ func testFileSystem_Stat(t *testing.T, addr string) {
 }
 
 func TestFileSystem_Stat(t *testing.T) {
-	for _, addr := range testClientAddrs {
+	for i := range testClientAddrs {
+		addr := testClientAddrs[i]
 		t.Run(addr, func(t *testing.T) {
 			t.Parallel()
-
 			testFileSystem_Stat(t, addr)
 		})
 	}
@@ -352,10 +354,10 @@ func testFileSystem_VirtualStat(t *testing.T, addr string) {
 }
 
 func TestFileSystem_VirtualStat(t *testing.T) {
-	for _, addr := range testClientAddrs {
+	for i := range testClientAddrs {
+		addr := testClientAddrs[i]
 		t.Run(addr, func(t *testing.T) {
 			t.Parallel()
-
 			testFileSystem_VirtualStat(t, addr)
 		})
 	}
@@ -419,17 +421,18 @@ func testFileSystem_RemoveDir(t *testing.T, addr string) {
 }
 
 func TestFileSystem_RemoveDir(t *testing.T) {
-	for _, addr := range testClientAddrs {
+	for i := range testClientAddrs {
+		addr := testClientAddrs[i]
 		t.Run(addr, func(t *testing.T) {
 			t.Parallel()
-
 			testFileSystem_RemoveDir(t, addr)
 		})
 	}
 }
 
 func TestFileSystem_RemoveAll(t *testing.T) {
-	for _, addr := range testClientAddrs {
+	for i := range testClientAddrs {
+		addr := testClientAddrs[i]
 		t.Run(addr, func(t *testing.T) {
 			t.Parallel()
 
@@ -562,10 +565,10 @@ func testFileSystem_Rename(t *testing.T, addr string) {
 }
 
 func TestFileSystem_Rename(t *testing.T) {
-	for _, addr := range testClientAddrs {
+	for i := range testClientAddrs {
+		addr := testClientAddrs[i]
 		t.Run(addr, func(t *testing.T) {
 			t.Parallel()
-
 			testFileSystem_Rename(t, addr)
 		})
 	}
@@ -643,10 +646,10 @@ func testFileSystem_Chmod(t *testing.T, addr string) {
 }
 
 func TestFileSystem_Chmod(t *testing.T) {
-	for _, addr := range testClientAddrs {
+	for i := range testClientAddrs {
+		addr := testClientAddrs[i]
 		t.Run(addr, func(t *testing.T) {
 			t.Parallel()
-
 			testFileSystem_Chmod(t, addr)
 		})
 	}
@@ -674,10 +677,10 @@ func testFileSystem_Statx(t *testing.T, addr string) {
 }
 
 func TestFileSystem_Statx(t *testing.T) {
-	for _, addr := range testClientAddrs {
+	for i := range testClientAddrs {
+		addr := testClientAddrs[i]
 		t.Run(addr, func(t *testing.T) {
 			t.Parallel()
-
 			testFileSystem_Statx(t, addr)
 		})
 	}

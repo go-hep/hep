@@ -383,10 +383,12 @@ func TestSimpleTreeOverHTTP(t *testing.T) {
 }
 
 func TestTreeWithBasketWithTKeyData(t *testing.T) {
-	for _, fname := range []string{
+	files := []string{
 		"../testdata/PhaseSpaceSimulation.root",
 		rtests.XrdRemote("testdata/PhaseSpaceSimulation.root"),
-	} {
+	}
+	for i := range files {
+		fname := files[i]
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
 
@@ -1571,7 +1573,8 @@ func TestUprootTrees(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, fname := range files {
+	for i := range files {
+		fname := files[i]
 		t.Run(fname, func(t *testing.T) {
 			t.Parallel()
 

@@ -226,7 +226,8 @@ func TestFileSystem_Open_Mock(t *testing.T) {
 		{"WithStat", xrdfs.FileHandle{0, 0, 0, 0}, &xrdfs.FileCompression{}, &xrdfs.EntryStat{HasStatInfo: true, EntrySize: 10}},
 	}
 
-	for _, tc := range testCases {
+	for i := range testCases {
+		tc := testCases[i]
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
