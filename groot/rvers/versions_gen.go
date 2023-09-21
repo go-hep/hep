@@ -94,6 +94,7 @@ const (
 	MultiGraph               = 2  // ROOT version for TMultiGraph
 	Profile                  = 7  // ROOT version for TProfile
 	Profile2D                = 8  // ROOT version for TProfile2D
+	Scatter                  = 2  // ROOT version for TScatter
 	Directory                = 5  // ROOT version for TDirectory
 	DirectoryFile            = 5  // ROOT version for TDirectoryFile
 	File                     = 8  // ROOT version for TFile

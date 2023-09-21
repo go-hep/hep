@@ -82,6 +82,7 @@ var (
 		"TLimit", "TLimitDataSource",
 		"TMultiGraph",
 		"TProfile", "TProfile2D",
+		"TScatter",
 
 		// riofs
 		"TDirectory",

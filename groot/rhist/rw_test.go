@@ -280,6 +280,10 @@ func TestWRBuffer(t *testing.T) {
 			name: "TMultiGraph",
 			want: loadFrom("../testdata/tgme.root", "mg"),
 		},
+		{
+			name: "TScatter",
+			want: loadFrom("../testdata/tscatter.root", "scatter"),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			{

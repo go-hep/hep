@@ -33,6 +33,7 @@ import (
 //go:generate go run ./gendata/gen-tconflvl.go -f ../testdata/tconfidence-level.root
 //go:generate go run ./gendata/gen-tprofile.go -f ../testdata/tprofile.root
 //go:generate go run ./gendata/gen-tgme.go -f ../testdata/tgme.root
+//go:generate go run ./gendata/gen-tscatter.go -f ../testdata/tscatter.root
 //go:generate go run ./gendata/gen-tdatime.go -f ../testdata/tdatime.root
 //go:generate go run ./gendata/gen-base.go -f ../testdata/tbase.root
 //go:generate go run ./gendata/gen-tcanvas.go -f ../testdata/tcanvas.root
