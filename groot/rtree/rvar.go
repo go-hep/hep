@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"go-hep.org/x/hep/groot/root"
@@ -142,9 +143,48 @@ func ReadVarsFromStruct(ptr interface{}) []ReadVar {
 func nameOf(field reflect.StructField) string {
 	tag, ok := field.Tag.Lookup("groot")
 	if ok {
+		if field.Type.Kind() != reflect.Array {
+			return tag
+		}
+
+		// regularize groot-tag for arrays.
+		// a groot use-case is to define a struct like so:
+		//
+		//   type T struct {
+		//		Array [1]int64 `groot:"array"`
+		//   }
+		//
+		// instead of the ROOT/C++ way:
+		//
+		//   type T struct {
+		//		Array [1]int64 `groot:"array[1]"
+		//	 }
+		//
+		// if the user didn't provide a dimension, build it.
+		if strings.Contains(tag, "[") {
+			return tag
+		}
+		dims := dimsOf(field.Type)
+		for _, dim := range dims {
+			tag += "[" + strconv.Itoa(dim) + "]"
+		}
 		return tag
 	}
 	return field.Name
+}
+
+func dimsOf(rt reflect.Type) []int {
+	var fct func(dims []int, rt reflect.Type) []int
+	fct = func(dims []int, rt reflect.Type) []int {
+		switch rt.Kind() {
+		case reflect.Array:
+			dims = append(dims, rt.Len())
+			dims = fct(dims, rt.Elem())
+		}
+		return dims
+	}
+
+	return fct(nil, rt)
 }
 
 func bindRVarsTo(t Tree, rvars []ReadVar) []ReadVar {

@@ -296,3 +296,66 @@ func TestReadVarsFromStruct(t *testing.T) {
 		})
 	}
 }
+
+func TestNameOf(t *testing.T) {
+	for _, tc := range []struct {
+		ptr  interface{}
+		want string
+	}{
+		{
+			ptr: &struct {
+				F int64 `groot:"field"`
+			}{},
+			want: "field",
+		},
+		{
+			ptr: &struct {
+				F [1]int64 `groot:"field[1]"`
+			}{},
+			want: "field[1]",
+		},
+		{
+			ptr: &struct {
+				F [1]int64 `groot:"field"`
+			}{},
+			want: "field[1]",
+		},
+		{
+			ptr: &struct {
+				F [1][2][3]int64 `groot:"field"`
+			}{},
+			want: "field[1][2][3]",
+		},
+		{
+			ptr: &struct {
+				F [1][2][3]int64 `groot:"field[6]"`
+			}{},
+			want: "field[6]",
+		},
+		{
+			ptr: &struct {
+				F []int64 `groot:"field"`
+			}{},
+			want: "field",
+		},
+		{
+			ptr: &struct {
+				N int32   `groot:"N"`
+				F []int64 `groot:"field[N]"`
+			}{},
+			want: "field[N]",
+		},
+	} {
+		t.Run("", func(t *testing.T) {
+			rt := reflect.TypeOf(tc.ptr).Elem()
+			field, ok := rt.FieldByName("F")
+			if !ok {
+				t.Fatalf("could not retrieve field named \"F\" for %T", tc.ptr)
+			}
+			got := nameOf(field)
+			if got, want := got, tc.want; got != want {
+				t.Fatalf("invalid name: got=%q, want=%q", got, want)
+			}
+		})
+	}
+}
