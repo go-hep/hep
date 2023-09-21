@@ -264,9 +264,25 @@ func TestReadVarsFromStruct(t *testing.T) {
 			name: "invalid-array-tag",
 			ptr: &struct {
 				N   int32
-				Arr [12]int32 `groot:"vs[1][2][3][4]"`
+				Arr [24]int32 `groot:"vs[1][2][3][4]"`
 			}{},
 			panics: "rtree: invalid number of array-dimension for field \"Arr\": \"vs[1][2][3][4]\"",
+		},
+		{
+			name: "invalid-array-tag-dimensions",
+			ptr: &struct {
+				N   int32
+				Arr [7]int32 `groot:"vs[1][2][x]"`
+			}{},
+			panics: "rtree: could not infer dimensions from \"vs[1][2][x]\": strconv.Atoi: parsing \"x\": invalid syntax",
+		},
+		{
+			name: "invalid-array-tag-capacity",
+			ptr: &struct {
+				N   int32
+				Arr [7]int32 `groot:"vs[1][2][3]"`
+			}{},
+			panics: "rtree: field type dimension inconsistency: groot-tag=\"vs[1][2][3]\" vs go-type=[7]int32: 6 vs 7",
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

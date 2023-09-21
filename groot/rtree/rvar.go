@@ -70,28 +70,9 @@ func ReadVarsFromStruct(ptr interface{}) []ReadVar {
 	}
 
 	var (
-		rt     = rv.Type()
-		rvars  = make([]ReadVar, 0, rt.NumField())
-		reDims = regexp.MustCompile(`\w*?\[(\w*)\]+?`)
+		rt    = rv.Type()
+		rvars = make([]ReadVar, 0, rt.NumField())
 	)
-
-	split := func(s string) (string, []string) {
-		n := s
-		if i := strings.Index(s, "["); i > 0 {
-			n = s[:i]
-		}
-
-		out := reDims.FindAllStringSubmatch(s, -1)
-		if len(out) == 0 {
-			return n, nil
-		}
-
-		dims := make([]string, len(out))
-		for i := range out {
-			dims[i] = out[i][1]
-		}
-		return n, dims
-	}
 
 	for i := 0; i < rt.NumField(); i++ {
 		var (
@@ -102,6 +83,10 @@ func ReadVarsFromStruct(ptr interface{}) []ReadVar {
 			// not exported. ignore.
 			continue
 		}
+
+		// check that struct-tag and field-type match
+		checkFieldTagConsistency(ft)
+
 		rvar := ReadVar{
 			Name:  nameOf(ft),
 			Value: fv.Addr().Interface(),
@@ -110,7 +95,7 @@ func ReadVarsFromStruct(ptr interface{}) []ReadVar {
 		if strings.Contains(rvar.Name, "[") {
 			switch ft.Type.Kind() {
 			case reflect.Slice:
-				sli, dims := split(rvar.Name)
+				sli, dims := splitNameDims(rvar.Name)
 				if len(dims) > 1 {
 					panic(fmt.Errorf("rtree: invalid number of slice-dimensions for field %q: %q", ft.Name, rvar.Name))
 				}
@@ -118,7 +103,7 @@ func ReadVarsFromStruct(ptr interface{}) []ReadVar {
 				rvar.count = dims[0]
 
 			case reflect.Array:
-				arr, dims := split(rvar.Name)
+				arr, dims := splitNameDims(rvar.Name)
 				if len(dims) > 3 {
 					panic(fmt.Errorf("rtree: invalid number of array-dimension for field %q: %q", ft.Name, rvar.Name))
 				}
@@ -185,6 +170,63 @@ func dimsOf(rt reflect.Type) []int {
 	}
 
 	return fct(nil, rt)
+}
+
+func checkFieldTagConsistency(ft reflect.StructField) {
+	tag, ok := ft.Tag.Lookup("groot")
+	if !ok {
+		// nothing to check
+		return
+	}
+
+	rt := ft.Type
+	switch rt.Kind() {
+	case reflect.Array:
+		if !strings.Contains(tag, "[") {
+			// nothing to check
+			return
+		}
+		fromTyp := 1
+		for _, d := range dimsOf(rt) {
+			fromTyp *= d
+		}
+		fromTag := 1
+		_, rdims := splitNameDims(tag)
+		for _, s := range rdims {
+			v, err := strconv.Atoi(s)
+			if err != nil {
+				panic(fmt.Errorf("rtree: could not infer dimensions from %q: %w", tag, err))
+			}
+			fromTag *= v
+		}
+
+		if fromTyp != fromTag {
+			panic(fmt.Errorf("rtree: field type dimension inconsistency: groot-tag=%q vs go-type=%v: %d vs %d",
+				tag, ft.Type, fromTag, fromTyp,
+			))
+		}
+	}
+}
+
+// splitNameDims returns the name and dimensions of a ROOT
+// branch title.
+func splitNameDims(s string) (string, []string) {
+	reDims := regexp.MustCompile(`\w*?\[(\w*)\]+?`)
+	n := s
+	if i := strings.Index(s, "["); i > 0 {
+		n = s[:i]
+	}
+
+	out := reDims.FindAllStringSubmatch(s, -1)
+	if len(out) == 0 {
+		return n, nil
+	}
+
+	dims := make([]string, len(out))
+	for i := range out {
+		dims[i] = out[i][1]
+	}
+	return n, dims
 }
 
 func bindRVarsTo(t Tree, rvars []ReadVar) []ReadVar {
