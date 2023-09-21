@@ -78,14 +78,17 @@ jobs:
       if: matrix.platform == 'ubuntu-20.04'
       run: |
         go run ./ci/run-tests.go $TAGS -race $COVERAGE
+        go vet $TAGS ./...
     - name: Test Windows
       if: matrix.platform == 'windows-latest'
       run: |
         go run ./ci/run-tests.go $TAGS
+        go vet $TAGS ./...
     - name: Test Darwin
       if: matrix.platform == 'macos-latest'
       run: |
         go run ./ci/run-tests.go $TAGS
+        go vet $TAGS ./...
     - name: static-check
       uses: dominikh/staticcheck-action@v1
       with:
