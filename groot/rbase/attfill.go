@@ -60,8 +60,8 @@ func (a *AttFill) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 func (a *AttFill) RMembers() []rbytes.Member {
 	return []rbytes.Member{
-		{"fFillColor", &a.Color},
-		{"fFillStyle", &a.Style},
+		{Name: "fFillColor", Value: &a.Color},
+		{Name: "fFillStyle", Value: &a.Style},
 	}
 }
 

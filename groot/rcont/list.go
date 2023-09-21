@@ -134,9 +134,9 @@ func (l *List) RMembers() (mbrs []rbytes.Member) {
 		opts = l.opts
 	}
 	mbrs = append(mbrs, []rbytes.Member{
-		{"name", &l.name},
-		{"arr", &arr},
-		{"opt", &opts},
+		{Name: "name", Value: &l.name},
+		{Name: "arr", Value: &arr},
+		{Name: "opt", Value: &opts},
 	}...)
 
 	return mbrs

@@ -69,9 +69,9 @@ func (a *AttLine) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 func (a *AttLine) RMembers() []rbytes.Member {
 	return []rbytes.Member{
-		{"fLineColor", &a.Color},
-		{"fLineStyle", &a.Style},
-		{"fLineWidth", &a.Width},
+		{Name: "fLineColor", Value: &a.Color},
+		{Name: "fLineStyle", Value: &a.Style},
+		{Name: "fLineWidth", Value: &a.Width},
 	}
 }
 

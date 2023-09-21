@@ -235,7 +235,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 func (h *{{.Name}}) RMembers() (mbrs []rbytes.Member) {
 	mbrs = append(mbrs, h.th1.RMembers()...)
 	mbrs = append(mbrs, rbytes.Member{
-		"fArray", &h.arr.Data,
+		Name: "fArray", Value: &h.arr.Data,
 	})
 	return mbrs
 }
@@ -795,7 +795,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 func (h *{{.Name}}) RMembers() (mbrs []rbytes.Member) {
 	mbrs = append(mbrs, h.th2.RMembers()...)
 	mbrs = append(mbrs, rbytes.Member{
-		"fArray", &h.arr.Data,
+		Name: "fArray", Value: &h.arr.Data,
 	})
 	return mbrs
 }

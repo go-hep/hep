@@ -210,28 +210,28 @@ func (h *th1) RMembers() (mbrs []rbytes.Member) {
 	mbrs = append(mbrs, h.attfill.RMembers()...)
 	mbrs = append(mbrs, h.attmarker.RMembers()...)
 	mbrs = append(mbrs, []rbytes.Member{
-		{"fNcells", &h.ncells},
-		{"fXaxis", &h.xaxis},
-		{"fYaxis", &h.yaxis},
-		{"fZaxis", &h.zaxis},
-		{"fBarOffset", &h.boffset},
-		{"fBarWidth", &h.bwidth},
-		{"fEntries", &h.entries},
-		{"fTsumw", &h.tsumw},
-		{"fTsumw2", &h.tsumw2},
-		{"fTsumwx", &h.tsumwx},
-		{"fTsumwx2", &h.tsumwx2},
-		{"fMaximum", &h.max},
-		{"fMinimum", &h.min},
-		{"fNormFactor", &h.norm},
-		{"fContour", &h.contour.Data},
-		{"fSumw2", &h.sumw2.Data},
-		{"fOption", &h.opt},
-		{"fFunctions", &h.funcs},
-		{"fBufferSize", len(h.buffer)}, // FIXME(sbinet)
-		{"fBuffer", &h.buffer},
-		{"fBinStatErrOpt", &h.erropt},
-		{"fStatOverflows", &h.oflow},
+		{Name: "fNcells", Value: &h.ncells},
+		{Name: "fXaxis", Value: &h.xaxis},
+		{Name: "fYaxis", Value: &h.yaxis},
+		{Name: "fZaxis", Value: &h.zaxis},
+		{Name: "fBarOffset", Value: &h.boffset},
+		{Name: "fBarWidth", Value: &h.bwidth},
+		{Name: "fEntries", Value: &h.entries},
+		{Name: "fTsumw", Value: &h.tsumw},
+		{Name: "fTsumw2", Value: &h.tsumw2},
+		{Name: "fTsumwx", Value: &h.tsumwx},
+		{Name: "fTsumwx2", Value: &h.tsumwx2},
+		{Name: "fMaximum", Value: &h.max},
+		{Name: "fMinimum", Value: &h.min},
+		{Name: "fNormFactor", Value: &h.norm},
+		{Name: "fContour", Value: &h.contour.Data},
+		{Name: "fSumw2", Value: &h.sumw2.Data},
+		{Name: "fOption", Value: &h.opt},
+		{Name: "fFunctions", Value: &h.funcs},
+		{Name: "fBufferSize", Value: len(h.buffer)}, // FIXME(sbinet)
+		{Name: "fBuffer", Value: &h.buffer},
+		{Name: "fBinStatErrOpt", Value: &h.erropt},
+		{Name: "fStatOverflows", Value: &h.oflow},
 	}...)
 
 	return mbrs
@@ -301,10 +301,10 @@ func (h *th2) UnmarshalROOT(r *rbytes.RBuffer) error {
 func (h *th2) RMembers() (mbrs []rbytes.Member) {
 	mbrs = append(mbrs, h.th1.RMembers()...)
 	mbrs = append(mbrs, []rbytes.Member{
-		{"fScalefactor", &h.scale},
-		{"fTsumwy", &h.tsumwy},
-		{"fTsumwy2", &h.tsumwy2},
-		{"fTsumwxy", &h.tsumwxy},
+		{Name: "fScalefactor", Value: &h.scale},
+		{Name: "fTsumwy", Value: &h.tsumwy},
+		{Name: "fTsumwy2", Value: &h.tsumwy2},
+		{Name: "fTsumwxy", Value: &h.tsumwxy},
 	}...)
 
 	return mbrs

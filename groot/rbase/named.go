@@ -105,8 +105,8 @@ func (n *Named) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 func (n *Named) RMembers() []rbytes.Member {
 	o := n.obj.RMembers()
 	return append(o, []rbytes.Member{
-		{"fName", &n.name},
-		{"fTitle", &n.title},
+		{Name: "fName", Value: &n.name},
+		{Name: "fTitle", Value: &n.title},
 	}...)
 }
 

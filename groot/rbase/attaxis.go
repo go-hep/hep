@@ -102,17 +102,17 @@ func (a *AttAxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 func (a *AttAxis) RMembers() (mbrs []rbytes.Member) {
 	mbrs = append(mbrs, []rbytes.Member{
-		{"fNdivisions", &a.Ndivs},
-		{"fAxisColor", &a.AxisColor},
-		{"fLabelColor", &a.LabelColor},
-		{"fLabelFont", &a.LabelFont},
-		{"fLabelOffset", &a.LabelOffset},
-		{"fLabelSize", &a.LabelSize},
-		{"fTickLength", &a.Ticks},
-		{"fTitleOffset", &a.TitleOffset},
-		{"fTitleSize", &a.TitleSize},
-		{"fTitleColor", &a.TitleColor},
-		{"fTitleFont", &a.TitleFont},
+		{Name: "fNdivisions", Value: &a.Ndivs},
+		{Name: "fAxisColor", Value: &a.AxisColor},
+		{Name: "fLabelColor", Value: &a.LabelColor},
+		{Name: "fLabelFont", Value: &a.LabelFont},
+		{Name: "fLabelOffset", Value: &a.LabelOffset},
+		{Name: "fLabelSize", Value: &a.LabelSize},
+		{Name: "fTickLength", Value: &a.Ticks},
+		{Name: "fTitleOffset", Value: &a.TitleOffset},
+		{Name: "fTitleSize", Value: &a.TitleSize},
+		{Name: "fTitleColor", Value: &a.TitleColor},
+		{Name: "fTitleFont", Value: &a.TitleFont},
 	}...)
 	return mbrs
 }

@@ -71,8 +71,8 @@ func (obj *Object) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 func (obj *Object) RMembers() []rbytes.Member {
 	return []rbytes.Member{
-		{"fUniqueID", &obj.ID},
-		{"fBits", &obj.Bits},
+		{Name: "fUniqueID", Value: &obj.ID},
+		{Name: "fBits", Value: &obj.Bits},
 	}
 }
 

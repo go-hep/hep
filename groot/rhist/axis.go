@@ -180,17 +180,17 @@ func (a *taxis) RMembers() (mbrs []rbytes.Member) {
 	mbrs = append(mbrs, a.Named.RMembers()...)
 	mbrs = append(mbrs, a.attaxis.RMembers()...)
 	mbrs = append(mbrs, []rbytes.Member{
-		{"fNbins", &a.nbins},
-		{"fXmin", &a.xmin},
-		{"fXmax", &a.xmax},
-		{"fXbins", &a.xbins.Data},
-		{"fFirst", &a.first},
-		{"fLast", &a.last},
-		{"fBits2", &a.bits2},
-		{"fTimeDisplay", &a.time},
-		{"fTimeFormat", &a.tfmt},
-		{"fLabels", &a.labels},
-		{"fModLabs", &a.modlabs},
+		{Name: "fNbins", Value: &a.nbins},
+		{Name: "fXmin", Value: &a.xmin},
+		{Name: "fXmax", Value: &a.xmax},
+		{Name: "fXbins", Value: &a.xbins.Data},
+		{Name: "fFirst", Value: &a.first},
+		{Name: "fLast", Value: &a.last},
+		{Name: "fBits2", Value: &a.bits2},
+		{Name: "fTimeDisplay", Value: &a.time},
+		{Name: "fTimeFormat", Value: &a.tfmt},
+		{Name: "fLabels", Value: &a.labels},
+		{Name: "fModLabs", Value: &a.modlabs},
 	}...)
 	return mbrs
 }

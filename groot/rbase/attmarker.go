@@ -68,9 +68,9 @@ func (a *AttMarker) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 func (a *AttMarker) RMembers() []rbytes.Member {
 	return []rbytes.Member{
-		{"fMarkerColor", &a.Color},
-		{"fMarkerStyle", &a.Style},
-		{"fMarkerSize", &a.Width},
+		{Name: "fMarkerColor", Value: &a.Color},
+		{Name: "fMarkerStyle", Value: &a.Style},
+		{Name: "fMarkerSize", Value: &a.Width},
 	}
 }
 

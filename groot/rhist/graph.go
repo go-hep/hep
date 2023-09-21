@@ -218,13 +218,13 @@ func (g *tgraph) RMembers() (mbrs []rbytes.Member) {
 	mbrs = append(mbrs, g.attfill.RMembers()...)
 	mbrs = append(mbrs, g.attmarker.RMembers()...)
 	mbrs = append(mbrs, []rbytes.Member{
-		{"fNpoints", &g.npoints},
-		{"fX", &g.x},
-		{"fY", &g.y},
-		{"fFunctions", g.funcs},
-		{"fHistogram", &g.histo},
-		{"fMinimum", &g.min},
-		{"fMaximum", &g.max},
+		{Name: "fNpoints", Value: &g.npoints},
+		{Name: "fX", Value: &g.x},
+		{Name: "fY", Value: &g.y},
+		{Name: "fFunctions", Value: g.funcs},
+		{Name: "fHistogram", Value: &g.histo},
+		{Name: "fMinimum", Value: &g.min},
+		{Name: "fMaximum", Value: &g.max},
 	}...)
 
 	return mbrs
@@ -401,8 +401,8 @@ func (g *tgrapherrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 func (g *tgrapherrs) RMembers() (mbrs []rbytes.Member) {
 	mbrs = append(mbrs, g.tgraph.RMembers()...)
 	mbrs = append(mbrs, []rbytes.Member{
-		{"fEX", &g.xerr},
-		{"fEY", &g.yerr},
+		{Name: "fEX", Value: &g.xerr},
+		{Name: "fEY", Value: &g.yerr},
 	}...)
 
 	return mbrs
@@ -624,10 +624,10 @@ func (g *tgraphasymmerrs) UnmarshalROOT(r *rbytes.RBuffer) error {
 func (g *tgraphasymmerrs) RMembers() (mbrs []rbytes.Member) {
 	mbrs = append(mbrs, g.tgraph.RMembers()...)
 	mbrs = append(mbrs, []rbytes.Member{
-		{"fEXlow", &g.xerrlo},
-		{"fEXhigh", &g.xerrhi},
-		{"fEYlow", &g.yerrlo},
-		{"fEYhigh", &g.yerrhi},
+		{Name: "fEXlow", Value: &g.xerrlo},
+		{Name: "fEXhigh", Value: &g.xerrhi},
+		{Name: "fEYlow", Value: &g.yerrlo},
+		{Name: "fEYhigh", Value: &g.yerrhi},
 	}...)
 
 	return mbrs
@@ -828,14 +828,14 @@ func (g *tgraphmultierrs) RMembers() (mbrs []rbytes.Member) {
 	}
 	mbrs = append(mbrs, g.tgraph.RMembers()...)
 	mbrs = append(mbrs, []rbytes.Member{
-		{"fNYErrors", &g.nyerr},
-		{"fSumErrorsMode", &g.sumErrMode},
-		{"fExL", &g.xerrlo},
-		{"fExH", &g.xerrhi},
-		{"fEyL", &yerrlo},
-		{"fEyH", &yerrhi},
-		{"fAttFill", attfills},
-		{"fAttLine", attlines},
+		{Name: "fNYErrors", Value: &g.nyerr},
+		{Name: "fSumErrorsMode", Value: &g.sumErrMode},
+		{Name: "fExL", Value: &g.xerrlo},
+		{Name: "fExH", Value: &g.xerrhi},
+		{Name: "fEyL", Value: &yerrlo},
+		{Name: "fEyH", Value: &yerrhi},
+		{Name: "fAttFill", Value: attfills},
+		{Name: "fAttLine", Value: attlines},
 	}...)
 
 	return mbrs
