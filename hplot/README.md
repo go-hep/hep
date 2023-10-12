@@ -1178,3 +1178,79 @@ func ExampleLabel() {
 	}
 }
 ```
+
+## Time series
+
+![timeseries-example](https://github.com/go-hep/hep/raw/main/hplot/testdata/timeseries_monthly_golden.png)
+
+[embedmd]:# (ticks_example_test.go go /func ExampleTicks_monthly/ /\n}/)
+```go
+func ExampleTicks_monthly() {
+	cnv := epok.UTCUnixTimeConverter{}
+
+	p := hplot.New()
+	p.Title.Text = "Time series (monthly)"
+	p.Y.Label.Text = "Goroutines"
+
+	p.Y.Min = 0
+	p.Y.Max = 4
+	p.X.AutoRescale = true
+	p.X.Tick.Marker = epok.Ticks{
+		Ruler: epok.Rules{
+			Major: epok.Rule{
+				Freq:  epok.Monthly,
+				Range: epok.RangeFrom(1, 13, 2),
+			},
+		},
+		Format:    "2006\nJan-02\n15:04:05",
+		Converter: cnv,
+	}
+
+	xysFrom := func(vs ...float64) plotter.XYs {
+		o := make(plotter.XYs, len(vs))
+		for i := range o {
+			o[i].X = vs[i]
+			o[i].Y = float64(i + 1)
+		}
+		return o
+	}
+	data := xysFrom(
+		cnv.FromTime(parse("2010-01-02 01:02:03")),
+		cnv.FromTime(parse("2010-02-01 01:02:03")),
+		cnv.FromTime(parse("2010-02-04 11:22:33")),
+		cnv.FromTime(parse("2010-03-04 01:02:03")),
+		cnv.FromTime(parse("2010-04-05 01:02:03")),
+		cnv.FromTime(parse("2010-04-05 01:02:03")),
+		cnv.FromTime(parse("2010-05-01 00:02:03")),
+		cnv.FromTime(parse("2010-05-04 04:04:04")),
+		cnv.FromTime(parse("2010-05-08 11:12:13")),
+		cnv.FromTime(parse("2010-06-15 01:02:03")),
+		cnv.FromTime(parse("2010-07-04 04:04:43")),
+		cnv.FromTime(parse("2010-07-14 14:17:09")),
+		cnv.FromTime(parse("2010-08-04 21:22:23")),
+		cnv.FromTime(parse("2010-08-15 11:12:13")),
+		cnv.FromTime(parse("2010-09-01 21:52:53")),
+		cnv.FromTime(parse("2010-10-25 01:19:23")),
+		cnv.FromTime(parse("2010-11-30 11:32:53")),
+		cnv.FromTime(parse("2010-12-24 23:59:59")),
+		cnv.FromTime(parse("2010-12-31 23:59:59")),
+		cnv.FromTime(parse("2011-01-12 01:02:03")),
+	)
+
+	line, pnts, err := hplot.NewLinePoints(data)
+	if err != nil {
+		log.Fatalf("could not create plotter: %+v", err)
+	}
+
+	line.Color = color.RGBA{B: 255, A: 255}
+	pnts.Shape = draw.CircleGlyph{}
+	pnts.Color = color.RGBA{R: 255, A: 255}
+
+	p.Add(line, pnts, hplot.NewGrid())
+
+	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, "testdata/timeseries_monthly.png")
+	if err != nil {
+		log.Fatalf("could not save plot: %+v", err)
+	}
+}
+```
