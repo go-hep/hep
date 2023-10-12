@@ -63,7 +63,7 @@ require (
 	github.com/teambition/rrule-go v1.8.2 // indirect
 	golang.org/x/exp/shiny v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/mod v0.13.0 // indirect
-	golang.org/x/net v0.16.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	modernc.org/b v1.1.0 // indirect
 	modernc.org/db v1.0.10 // indirect
