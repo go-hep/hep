@@ -10,7 +10,7 @@
 //	  -o string
 //	    	path to output CSV file name (default "output.csv")
 //	  -t string
-//	    	name of the tree to convert (default "tree")
+//	    	name of the tree or graph to convert (default "tree")
 //
 // By default, root2csv will write out a CSV file with ';' as a column delimiter.
 // root2csv ignores the branches of the TTree that are not supported by CSV:
@@ -42,6 +42,7 @@ import (
 
 	"go-hep.org/x/hep/csvutil"
 	"go-hep.org/x/hep/groot"
+	"go-hep.org/x/hep/groot/rhist"
 	"go-hep.org/x/hep/groot/riofs"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
@@ -54,7 +55,7 @@ func main() {
 
 	fname := flag.String("f", "", "path to input ROOT file name")
 	oname := flag.String("o", "output.csv", "path to output CSV file name")
-	tname := flag.String("t", "tree", "name of the tree to convert")
+	tname := flag.String("t", "tree", "name of the tree or graph to convert")
 
 	flag.Parse()
 
@@ -82,11 +83,19 @@ func process(oname, fname, tname string) error {
 		return fmt.Errorf("could not get ROOT object: %w", err)
 	}
 
-	tree, ok := obj.(rtree.Tree)
-	if !ok {
-		return fmt.Errorf("object %q in file %q is not a rtree.Tree", tname, fname)
+	switch obj := obj.(type) {
+	case rtree.Tree:
+		return processTree(oname, fname, obj)
+	case rhist.GraphErrors: // Note: test rhist.GraphErrors before rhist.Graph
+		return processGraphErrors(oname, fname, obj)
+	case rhist.Graph:
+		return processGraph(oname, fname, obj)
+	default:
+		return fmt.Errorf("object %q in file %q is not a rtree.Tree nor a rhist.Graph", tname, fname)
 	}
+}
 
+func processTree(oname, fname string, tree rtree.Tree) error {
 	var nt = ntuple{n: tree.Entries()}
 	log.Printf("scanning leaves...")
 	for _, leaf := range tree.Leaves() {
@@ -231,4 +240,82 @@ func newColumn(name string, leaf rtree.Leaf, n int64) column {
 func (col *column) fill() {
 	col.slice.Index(int(col.i)).Set(col.data)
 	col.i++
+}
+
+func processGraph(oname, fname string, g rhist.Graph) error {
+	names := []string{"x", "y"}
+
+	tbl, err := csvutil.Create(oname)
+	if err != nil {
+		return fmt.Errorf("could not create output CSV file: %w", err)
+	}
+	defer tbl.Close()
+	tbl.Writer.Comma = ';'
+
+	err = tbl.WriteHeader(fmt.Sprintf(
+		"## Automatically generated from %q\n%s\n",
+		fname,
+		strings.Join(names, string(tbl.Writer.Comma)),
+	))
+	if err != nil {
+		return fmt.Errorf("could not write CSV header: %w", err)
+	}
+
+	n := g.Len()
+	for i := 0; i < n; i++ {
+		var (
+			x, y = g.XY(i)
+		)
+		err = tbl.WriteRow(x, y)
+		if err != nil {
+			return fmt.Errorf("could not write row %d to CSV file: %w", i, err)
+		}
+	}
+
+	err = tbl.Close()
+	if err != nil {
+		return fmt.Errorf("could not close CSV output file: %w", err)
+	}
+
+	return nil
+}
+
+func processGraphErrors(oname, fname string, g rhist.GraphErrors) error {
+	names := []string{"x", "y", "ex-lo", "ex-hi", "ey-lo", "ey-hi"}
+
+	tbl, err := csvutil.Create(oname)
+	if err != nil {
+		return fmt.Errorf("could not create output CSV file: %w", err)
+	}
+	defer tbl.Close()
+	tbl.Writer.Comma = ';'
+
+	err = tbl.WriteHeader(fmt.Sprintf(
+		"## Automatically generated from %q\n%s\n",
+		fname,
+		strings.Join(names, string(tbl.Writer.Comma)),
+	))
+	if err != nil {
+		return fmt.Errorf("could not write CSV header: %w", err)
+	}
+
+	n := g.Len()
+	for i := 0; i < n; i++ {
+		var (
+			x, y     = g.XY(i)
+			xlo, xhi = g.XError(i)
+			ylo, yhi = g.YError(i)
+		)
+		err = tbl.WriteRow(x, y, xlo, xhi, ylo, yhi)
+		if err != nil {
+			return fmt.Errorf("could not write row %d to CSV file: %w", i, err)
+		}
+	}
+
+	err = tbl.Close()
+	if err != nil {
+		return fmt.Errorf("could not close CSV output file: %w", err)
+	}
+
+	return nil
 }

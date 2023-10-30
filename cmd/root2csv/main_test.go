@@ -40,6 +40,21 @@ func TestROOT2CSV(t *testing.T) {
 			want: "testdata/small-evnt-tree-nosplit.root.csv",
 			skip: true, // FIXME(sbinet)
 		},
+		{
+			file: "../../groot/testdata/graphs.root",
+			tree: "tg",
+			want: "testdata/graphs-tg.root.csv",
+		},
+		{
+			file: "../../groot/testdata/graphs.root",
+			tree: "tge",
+			want: "testdata/graphs-tge.root.csv",
+		},
+		{
+			file: "../../groot/testdata/graphs.root",
+			tree: "tgae",
+			want: "testdata/graphs-tgae.root.csv",
+		},
 	} {
 		t.Run(tc.file, func(t *testing.T) {
 			if tc.skip {
