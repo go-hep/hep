@@ -89,6 +89,28 @@ func TestWRBuffer(t *testing.T) {
 				return &dt
 			}(),
 		},
+		{
+			name: "TAttPad",
+			want: &AttPad{
+				fLeftMargin:      1,
+				fRightMargin:     2,
+				fBottomMargin:    3,
+				fTopMargin:       4,
+				fXfile:           5,
+				fYfile:           6,
+				fAfile:           7,
+				fXstat:           8,
+				fYstat:           9,
+				fAstat:           10,
+				fFrameFillColor:  11,
+				fFrameLineColor:  12,
+				fFrameFillStyle:  13,
+				fFrameLineStyle:  14,
+				fFrameLineWidth:  15,
+				fFrameBorderSize: 16,
+				fFrameBorderMode: 17,
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			{
@@ -196,6 +218,7 @@ func testWriteWBuffer(t *testing.T, name, file string, want interface{}) {
 
 	os.Remove(file + ".new")
 }
+
 func TestReadRBuffer(t *testing.T) {
 	for _, test := range rwBufferCases {
 		test := test

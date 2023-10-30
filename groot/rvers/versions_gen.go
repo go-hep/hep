@@ -12,18 +12,22 @@ const ROOT = 62804
 // ROOT classes versions
 const (
 	AttAxis                  = 4  // ROOT version for TAttAxis
+	AttBBox2D                = 0  // ROOT version for TAttBBox2D
 	AttFill                  = 2  // ROOT version for TAttFill
 	AttLine                  = 2  // ROOT version for TAttLine
 	AttMarker                = 2  // ROOT version for TAttMarker
+	AttPad                   = 4  // ROOT version for TAttPad
 	Datime                   = 1  // ROOT version for TDatime
 	Named                    = 1  // ROOT version for TNamed
 	Object                   = 1  // ROOT version for TObject
 	ObjString                = 1  // ROOT version for TObjString
 	ProcessID                = 1  // ROOT version for TProcessID
 	ProcessUUID              = 1  // ROOT version for TProcessUUID
+	QObject                  = 1  // ROOT version for TQObject
 	Ref                      = 1  // ROOT version for TRef
-	UUID                     = 1  // ROOT version for TUUID
 	String                   = 2  // ROOT version for TString
+	UUID                     = 1  // ROOT version for TUUID
+	VirtualPad               = 3  // ROOT version for TVirtualPad
 	Array                    = 1  // ROOT version for TArray
 	ArrayC                   = 1  // ROOT version for TArrayC
 	ArrayS                   = 1  // ROOT version for TArrayS
@@ -122,4 +126,7 @@ const (
 	Ntuple                   = 2  // ROOT version for TNtuple
 	NtupleD                  = 1  // ROOT version for TNtupleD
 	Tree                     = 20 // ROOT version for TTree
+	AttCanvas                = 1  // ROOT version for TAttCanvas
+	Canvas                   = 8  // ROOT version for TCanvas
+	Pad                      = 13 // ROOT version for TPad
 )

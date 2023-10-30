@@ -28,12 +28,16 @@ import (
 var (
 	classes = []string{
 		// rbase
-		"TAttAxis", "TAttFill", "TAttLine", "TAttMarker",
+		"TAttAxis", "TAttBBox2D", "TAttFill", "TAttLine", "TAttMarker", "TAttPad",
 		"TDatime",
 		"TNamed",
 		"TObject", "TObjString",
-		"TProcessID", "TProcessUUID", "TRef", "TUUID",
+		"TProcessID", "TProcessUUID",
+		"TQObject",
+		"TRef",
 		"TString",
+		"TUUID",
+		"TVirtualPad",
 
 		// rcont
 		"TArray", "TArrayC", "TArrayS", "TArrayI", "TArrayL", "TArrayL64", "TArrayF", "TArrayD",
@@ -106,6 +110,11 @@ var (
 		"TLeafC",
 		"TNtuple", "TNtupleD",
 		"TTree",
+
+		// rpad
+		"TAttCanvas",
+		"TCanvas",
+		"TPad",
 	}
 )
 
