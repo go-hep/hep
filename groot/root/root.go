@@ -86,3 +86,9 @@ type ObjString interface {
 type Merger interface {
 	ROOTMerge(src Object) error
 }
+
+// ObjectFinder is the interface that wraps the (C++ equivalent) FindObject method.
+type ObjectFinder interface {
+	Keys() []string
+	Get(name string) (Object, error)
+}
