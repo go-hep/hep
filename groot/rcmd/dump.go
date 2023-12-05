@@ -108,6 +108,22 @@ func (cmd *dumpCmd) dumpObj(obj root.Object) error {
 		fmt.Fprintf(cmd.w, " => %v\n", obj)
 	case fmt.Stringer:
 		fmt.Fprintf(cmd.w, " => %q\n", obj.String())
+	case root.ObjectFinder:
+		keys := obj.Keys()
+		if len(keys) == 0 {
+			return err
+		}
+		fmt.Fprintf(cmd.w, "\n")
+		for _, name := range keys {
+			sub, err := obj.Get(name)
+			if err != nil {
+				return err
+			}
+			err = cmd.dumpObj(sub)
+			if err != nil {
+				return err
+			}
+		}
 	default:
 		fmt.Fprintf(cmd.w, " => ignoring key of type %T\n", obj)
 		return errIgnoreKey

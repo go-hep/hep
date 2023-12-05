@@ -12,6 +12,7 @@ import (
 
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/riofs"
+	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtree"
 )
 
@@ -85,14 +86,22 @@ func (ls lsCmd) ls(fname string) error {
 
 	w := tabwriter.NewWriter(ls.w, 8, 4, 1, ' ', 0)
 	for _, k := range f.Keys() {
-		ls.walk(w, k)
+		ls.walk(w, &k)
 	}
 	w.Flush()
 
 	return nil
 }
 
-func (ls lsCmd) walk(w io.Writer, k riofs.Key) {
+type keyer interface {
+	ClassName() string
+	Name() string
+	Title() string
+	Cycle() int
+	Value() any
+}
+
+func (ls lsCmd) walk(w io.Writer, k keyer) {
 	if ls.trees && isTreelike(k.ClassName()) {
 		obj := k.Value()
 		tree, ok := obj.(rtree.Tree)
@@ -105,12 +114,30 @@ func (ls lsCmd) walk(w io.Writer, k riofs.Key) {
 		}
 	}
 	fmt.Fprintf(w, "%s\t%s\t%s\t(cycle=%d)\n", k.ClassName(), k.Name(), k.Title(), k.Cycle())
-	if isDirlike(k.ClassName()) {
+	switch {
+	case isDirlike(k.ClassName()):
 		obj := k.Value()
 		if dir, ok := obj.(riofs.Directory); ok {
 			w := newWindent(2, w)
 			for _, k := range dir.Keys() {
-				ls.walk(w, k)
+				ls.walk(w, &k)
+			}
+			w.Flush()
+		}
+	case isObjFinder(k.Value().(root.Object)):
+		v := k.Value()
+		if obj, ok := v.(root.ObjectFinder); ok {
+			keys := obj.Keys()
+			if len(keys) == 0 {
+				return
+			}
+			w := newWindent(2, w)
+			for _, k := range keys {
+				o, err := obj.Get(k)
+				if err != nil {
+					panic(err)
+				}
+				ls.walk(w, keyObj{k, o})
 			}
 			w.Flush()
 		}
@@ -131,6 +158,11 @@ func isTreelike(class string) bool {
 		return true
 	}
 	return false
+}
+
+func isObjFinder(o root.Object) bool {
+	_, ok := o.(root.ObjectFinder)
+	return ok
 }
 
 type windent struct {
@@ -184,4 +216,34 @@ func clip(s string, n int) string {
 		s = s[:n-5] + "[...]"
 	}
 	return s
+}
+
+type keyObj struct {
+	name string
+	obj  root.Object
+}
+
+var _ keyer = (*keyObj)(nil)
+
+func (k keyObj) ClassName() string {
+	return k.obj.Class()
+}
+
+func (k keyObj) Name() string {
+	return k.name
+}
+
+func (k keyObj) Title() string {
+	if n, ok := k.obj.(root.Named); ok {
+		return n.Title()
+	}
+	return ""
+}
+
+func (k keyObj) Cycle() int {
+	return 0
+}
+
+func (k keyObj) Value() any {
+	return k.obj
 }

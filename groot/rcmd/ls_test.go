@@ -78,6 +78,10 @@ version: 60600
 			opts: opts,
 			want: loadRef("./testdata/small-evnt-tree-nosplit.root-ls.txt"),
 		},
+		{
+			name: "../testdata/tcanvas.root",
+			want: loadRef("./testdata/tcanvas.root-ls.txt"),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			out := new(strings.Builder)

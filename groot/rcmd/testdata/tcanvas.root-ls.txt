@@ -1,0 +1,5 @@
+=== [../testdata/tcanvas.root] ===
+version: 62808
+TCanvas  c1      c1-title (cycle=1)
+  TGraph Graph   Graph    (cycle=0)
+    TF1  pol1    pol1     (cycle=0)
