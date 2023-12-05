@@ -55,6 +55,11 @@ func TestROOT2CSV(t *testing.T) {
 			tree: "tgae",
 			want: "testdata/graphs-tgae.root.csv",
 		},
+		{
+			file: "../../groot/testdata/tcanvas.root",
+			tree: "c1/Graph",
+			want: "testdata/tcanvas.root.csv",
+		},
 	} {
 		t.Run(tc.file, func(t *testing.T) {
 			if tc.skip {
