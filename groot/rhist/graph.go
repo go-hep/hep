@@ -257,6 +257,34 @@ func (g *tgraph) UnmarshalYODA(raw []byte) error {
 	return nil
 }
 
+// Keys implements the ObjectFinder interface.
+func (g *tgraph) Keys() []string {
+	var keys []string
+	for i := 0; i < g.funcs.Len(); i++ {
+		o, ok := g.funcs.At(i).(root.Named)
+		if !ok {
+			continue
+		}
+		keys = append(keys, o.Name())
+	}
+	return keys
+}
+
+// Get implements the ObjectFinder interface.
+func (g *tgraph) Get(name string) (root.Object, error) {
+	for i := 0; i < g.funcs.Len(); i++ {
+		o, ok := g.funcs.At(i).(root.Named)
+		if !ok {
+			continue
+		}
+		if o.Name() == name {
+			return g.funcs.At(i), nil
+		}
+	}
+
+	return nil, fmt.Errorf("no object named %q", name)
+}
+
 type tgrapherrs struct {
 	tgraph
 
@@ -912,6 +940,7 @@ var (
 	_ root.Object         = (*tgraph)(nil)
 	_ root.Named          = (*tgraph)(nil)
 	_ root.Merger         = (*tgraph)(nil)
+	_ root.ObjectFinder   = (*tgraph)(nil)
 	_ Graph               = (*tgraph)(nil)
 	_ rbytes.Marshaler    = (*tgraph)(nil)
 	_ rbytes.Unmarshaler  = (*tgraph)(nil)
@@ -922,6 +951,7 @@ var (
 	_ root.Object         = (*tgrapherrs)(nil)
 	_ root.Named          = (*tgrapherrs)(nil)
 	_ root.Merger         = (*tgrapherrs)(nil)
+	_ root.ObjectFinder   = (*tgrapherrs)(nil)
 	_ Graph               = (*tgrapherrs)(nil)
 	_ GraphErrors         = (*tgrapherrs)(nil)
 	_ rbytes.Marshaler    = (*tgrapherrs)(nil)
@@ -933,6 +963,7 @@ var (
 	_ root.Object         = (*tgraphasymmerrs)(nil)
 	_ root.Named          = (*tgraphasymmerrs)(nil)
 	_ root.Merger         = (*tgraphasymmerrs)(nil)
+	_ root.ObjectFinder   = (*tgraphasymmerrs)(nil)
 	_ Graph               = (*tgraphasymmerrs)(nil)
 	_ GraphErrors         = (*tgraphasymmerrs)(nil)
 	_ rbytes.Marshaler    = (*tgraphasymmerrs)(nil)
@@ -944,6 +975,7 @@ var (
 	_ root.Object         = (*tgraphmultierrs)(nil)
 	_ root.Named          = (*tgraphmultierrs)(nil)
 	_ root.Merger         = (*tgraphmultierrs)(nil)
+	_ root.ObjectFinder   = (*tgraphmultierrs)(nil)
 	_ Graph               = (*tgraphmultierrs)(nil)
 	_ GraphErrors         = (*tgraphmultierrs)(nil)
 	_ rbytes.Marshaler    = (*tgraphmultierrs)(nil)

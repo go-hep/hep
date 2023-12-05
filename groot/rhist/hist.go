@@ -237,6 +237,34 @@ func (h *th1) RMembers() (mbrs []rbytes.Member) {
 	return mbrs
 }
 
+// Keys implements the ObjectFinder interface.
+func (h *th1) Keys() []string {
+	var keys []string
+	for i := 0; i < h.funcs.Len(); i++ {
+		o, ok := h.funcs.At(i).(root.Named)
+		if !ok {
+			continue
+		}
+		keys = append(keys, o.Name())
+	}
+	return keys
+}
+
+// Get implements the ObjectFinder interface.
+func (h *th1) Get(name string) (root.Object, error) {
+	for i := 0; i < h.funcs.Len(); i++ {
+		o, ok := h.funcs.At(i).(root.Named)
+		if !ok {
+			continue
+		}
+		if o.Name() == name {
+			return h.funcs.At(i), nil
+		}
+	}
+
+	return nil, fmt.Errorf("no object named %q", name)
+}
+
 type th2 struct {
 	th1
 	scale   float64 // scale factor
@@ -345,12 +373,14 @@ func init() {
 var (
 	_ root.Object        = (*th1)(nil)
 	_ root.Named         = (*th1)(nil)
+	_ root.ObjectFinder  = (*th1)(nil)
 	_ rbytes.Marshaler   = (*th1)(nil)
 	_ rbytes.Unmarshaler = (*th1)(nil)
 	_ rbytes.RSlicer     = (*th1)(nil)
 
 	_ root.Object        = (*th2)(nil)
 	_ root.Named         = (*th2)(nil)
+	_ root.ObjectFinder  = (*th2)(nil)
 	_ rbytes.Marshaler   = (*th2)(nil)
 	_ rbytes.Unmarshaler = (*th2)(nil)
 )

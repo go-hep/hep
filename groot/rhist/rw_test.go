@@ -371,3 +371,64 @@ func newObjArray(vs ...string) rcont.ObjArray {
 	o.SetElems(elems)
 	return *o
 }
+
+func TestHistObjectFinder(t *testing.T) {
+	h := newH1()
+	h.funcs.Append(rbase.NewNamed("e1", "elem-1"))
+	h.funcs.Append(rbase.NewNamed("e2", "elem-2"))
+	h.funcs.Append(rbase.NewObject())
+	h.funcs.Append(rbase.NewNamed("e4", "elem-4"))
+
+	if got, want := h.Keys(), []string{"e1", "e2", "e4"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("invalid keys: got=%q, want=%q", got, want)
+	}
+
+	_, err := h.Get("Not-There")
+	if err == nil {
+		t.Fatalf("expected an error")
+	}
+
+	got, err := h.Get("e2")
+	if err != nil {
+		t.Fatalf("could not retrieve e2: %+v", err)
+	}
+
+	n2, ok := got.(*rbase.Named)
+	if !ok {
+		t.Fatalf("retrieved invalid element (not a Named: %T)", got)
+	}
+	if got, want := n2.Name(), "e2"; got != want {
+		t.Fatalf("invalid element name: got=%q, want=%q", got, want)
+	}
+}
+
+func TestGraphObjectFinder(t *testing.T) {
+	g := newGraph(2)
+	funcs := g.funcs.(*rcont.List)
+	funcs.Append(rbase.NewNamed("e1", "elem-1"))
+	funcs.Append(rbase.NewNamed("e2", "elem-2"))
+	funcs.Append(rbase.NewObject())
+	funcs.Append(rbase.NewNamed("e4", "elem-4"))
+
+	if got, want := g.Keys(), []string{"e1", "e2", "e4"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("invalid keys: got=%q, want=%q", got, want)
+	}
+
+	_, err := g.Get("Not-There")
+	if err == nil {
+		t.Fatalf("expected an error")
+	}
+
+	got, err := g.Get("e2")
+	if err != nil {
+		t.Fatalf("could not retrieve e2: %+v", err)
+	}
+
+	n2, ok := got.(*rbase.Named)
+	if !ok {
+		t.Fatalf("retrieved invalid element (not a Named: %T)", got)
+	}
+	if got, want := n2.Name(), "e2"; got != want {
+		t.Fatalf("invalid element name: got=%q, want=%q", got, want)
+	}
+}
