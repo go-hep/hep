@@ -124,7 +124,7 @@ func (dir *recDir) get(namecycle string) (root.Object, error) {
 	name, cycle := decodeNameCycle(namecycle)
 	name = strings.TrimPrefix(name, "/")
 	path := strings.Split(name, "/")
-	return dir.walk(dir.dir, path, cycle)
+	return dir.walkdir(dir.dir, path, cycle)
 }
 
 func (dir *recDir) put(name string, v root.Object) error {
@@ -199,7 +199,7 @@ func (dir *recDir) mkdir(path string) (Directory, error) {
 	return d, nil
 }
 
-func (rd *recDir) walk(dir Directory, path []string, cycle int16) (root.Object, error) {
+func (rd *recDir) walkdir(dir Directory, path []string, cycle int16) (root.Object, error) {
 	if len(path) == 1 {
 		name := fmt.Sprintf("%s;%d", path[0], cycle)
 		return dir.Get(name)
@@ -209,11 +209,32 @@ func (rd *recDir) walk(dir Directory, path []string, cycle int16) (root.Object, 
 	if err != nil {
 		return nil, err
 	}
-	sub, ok := o.(Directory)
-	if ok {
-		return rd.walk(sub, path[1:], cycle)
+	switch sub := o.(type) {
+	case Directory:
+		return rd.walkdir(sub, path[1:], cycle)
+	case root.ObjectFinder:
+		return rd.walkobj(sub, path[1:])
+	default:
+		return nil, fmt.Errorf("riofs: not a directory %q", strings.Join([]string{dir.(root.Named).Name(), path[0]}, "/"))
 	}
-	return nil, fmt.Errorf("riofs: not a directory %q", strings.Join([]string{dir.(root.Named).Name(), path[0]}, "/"))
+}
+
+func (rd *recDir) walkobj(dir root.ObjectFinder, path []string) (root.Object, error) {
+	if len(path) == 1 {
+		name := path[0]
+		return dir.Get(name)
+	}
+
+	o, err := dir.Get(path[0])
+	if err != nil {
+		return nil, err
+	}
+	switch sub := o.(type) {
+	case root.ObjectFinder:
+		return rd.walkobj(sub, path[1:])
+	default:
+		return nil, fmt.Errorf("riofs: not an object-finder %q", strings.Join([]string{dir.(root.Named).Name(), path[0]}, "/"))
+	}
 }
 
 // Dir wraps the given directory to handle fully specified directory names:
