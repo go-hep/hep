@@ -92,10 +92,7 @@ func (arr *RefArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(arr.Class())
-	if hdr.Vers > rvers.RefArray {
-		panic(fmt.Errorf("rcont: invalid TRefArray version=%d > %d", hdr.Vers, rvers.RefArray))
-	}
+	hdr := r.ReadHeader(arr.Class(), arr.RVersion())
 	if hdr.Vers < 1 {
 		return fmt.Errorf("rcont: TRefArray version too old (%d < 1)", hdr.Vers)
 	}

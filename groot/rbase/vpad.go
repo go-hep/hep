@@ -5,7 +5,6 @@
 package rbase
 
 import (
-	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbytes"
@@ -35,10 +34,7 @@ func (vpad *VirtualPad) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(vpad.Class())
-	if hdr.Vers > rvers.VirtualPad {
-		panic(fmt.Errorf("rbase: invalid virtualpad version=%d > %d", hdr.Vers, rvers.VirtualPad))
-	}
+	hdr := r.ReadHeader(vpad.Class(), vpad.RVersion())
 
 	r.ReadObject(&vpad.obj)
 	r.ReadObject(&vpad.attline)

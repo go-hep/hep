@@ -67,13 +67,7 @@ func (vec *LorentzVector) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(vec.Class())
-	if hdr.Vers > rvers.LorentzVector {
-		panic(fmt.Errorf(
-			"rphys: invalid %s version=%d > %d",
-			vec.Class(), hdr.Vers, vec.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(vec.Class(), vec.RVersion())
 
 	r.ReadObject(&vec.obj)
 	r.ReadObject(&vec.p)

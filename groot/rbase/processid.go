@@ -55,10 +55,7 @@ func (pid *ProcessID) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(pid.Class())
-	if hdr.Vers > rvers.ProcessID {
-		panic(fmt.Errorf("rbase: invalid %s version=%d > %d", pid.Class(), hdr.Vers, rvers.ProcessID))
-	}
+	hdr := r.ReadHeader(pid.Class(), pid.RVersion())
 
 	r.ReadObject(&pid.named)
 

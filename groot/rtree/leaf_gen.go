@@ -91,11 +91,7 @@ func (leaf *LeafO) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.LeafO {
-		panic(fmt.Errorf("rtree: invalid TLeafO version=%d > %d", hdr.Vers, rvers.LeafO))
-	}
-
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
@@ -306,11 +302,7 @@ func (leaf *LeafB) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.LeafB {
-		panic(fmt.Errorf("rtree: invalid TLeafB version=%d > %d", hdr.Vers, rvers.LeafB))
-	}
-
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
@@ -533,11 +525,7 @@ func (leaf *LeafS) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.LeafS {
-		panic(fmt.Errorf("rtree: invalid TLeafS version=%d > %d", hdr.Vers, rvers.LeafS))
-	}
-
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
@@ -760,11 +748,7 @@ func (leaf *LeafI) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.LeafI {
-		panic(fmt.Errorf("rtree: invalid TLeafI version=%d > %d", hdr.Vers, rvers.LeafI))
-	}
-
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
@@ -987,11 +971,7 @@ func (leaf *LeafL) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.LeafL {
-		panic(fmt.Errorf("rtree: invalid TLeafL version=%d > %d", hdr.Vers, rvers.LeafL))
-	}
-
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
@@ -1214,11 +1194,7 @@ func (leaf *LeafG) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.LeafG {
-		panic(fmt.Errorf("rtree: invalid TLeafG version=%d > %d", hdr.Vers, rvers.LeafG))
-	}
-
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
@@ -1421,11 +1397,7 @@ func (leaf *LeafF) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.LeafF {
-		panic(fmt.Errorf("rtree: invalid TLeafF version=%d > %d", hdr.Vers, rvers.LeafF))
-	}
-
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
@@ -1619,11 +1591,7 @@ func (leaf *LeafD) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.LeafD {
-		panic(fmt.Errorf("rtree: invalid TLeafD version=%d > %d", hdr.Vers, rvers.LeafD))
-	}
-
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
@@ -1819,11 +1787,7 @@ func (leaf *LeafF16) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.LeafF16 {
-		panic(fmt.Errorf("rtree: invalid TLeafF16 version=%d > %d", hdr.Vers, rvers.LeafF16))
-	}
-
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
@@ -2028,11 +1992,7 @@ func (leaf *LeafD32) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.LeafD32 {
-		panic(fmt.Errorf("rtree: invalid TLeafD32 version=%d > %d", hdr.Vers, rvers.LeafD32))
-	}
-
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)
@@ -2235,11 +2195,7 @@ func (leaf *LeafC) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.LeafC {
-		panic(fmt.Errorf("rtree: invalid TLeafC version=%d > %d", hdr.Vers, rvers.LeafC))
-	}
-
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)

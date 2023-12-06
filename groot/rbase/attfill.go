@@ -49,7 +49,7 @@ func (a *AttFill) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(a.Class())
+	hdr := r.ReadHeader(a.Class(), a.RVersion())
 
 	a.Color = r.ReadI16()
 	a.Style = r.ReadI16()

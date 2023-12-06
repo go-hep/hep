@@ -85,13 +85,7 @@ func (o *tmultigraph) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(o.Class())
-	if hdr.Vers > o.RVersion() {
-		panic(fmt.Errorf(
-			"rbytes: invalid %s version=%d > %d",
-			o.Class(), hdr.Vers, o.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(o.Class(), o.RVersion())
 
 	r.ReadObject(&o.Named)
 	{

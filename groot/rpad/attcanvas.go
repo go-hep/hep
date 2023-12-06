@@ -5,7 +5,6 @@
 package rpad
 
 import (
-	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbytes"
@@ -46,13 +45,7 @@ func (att *AttCanvas) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(att.Class())
-	if hdr.Vers > rvers.AttCanvas {
-		panic(fmt.Errorf(
-			"rpad: invalid %s version=%d > %d",
-			att.Class(), hdr.Vers, att.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(att.Class(), att.RVersion())
 
 	att.fXBetween = r.ReadF32()
 	att.fYBetween = r.ReadF32()

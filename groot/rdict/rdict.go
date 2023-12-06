@@ -122,13 +122,7 @@ func (tsi *StreamerInfo) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tsi.Class())
-	if hdr.Vers > rvers.StreamerInfo {
-		panic(fmt.Errorf(
-			"rdict: invalid %s version=%d > %d",
-			tsi.Class(), hdr.Vers, tsi.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tsi.Class(), tsi.RVersion())
 
 	r.ReadObject(&tsi.named)
 
@@ -563,13 +557,7 @@ func (tse *StreamerElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tse.Class())
-	if hdr.Vers > rvers.StreamerElement {
-		panic(fmt.Errorf(
-			"rdict: invalid %s version=%d > %d",
-			tse.Class(), hdr.Vers, tse.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tse.Class(), tse.RVersion())
 
 	r.ReadObject(&tse.named)
 
@@ -646,13 +634,7 @@ func (tsb *StreamerBase) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tsb.Class())
-	if hdr.Vers > rvers.StreamerBase {
-		panic(fmt.Errorf(
-			"rdict: invalid %s version=%d > %d",
-			tsb.Class(), hdr.Vers, tsb.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tsb.Class(), tsb.RVersion())
 
 	r.ReadObject(&tsb.StreamerElement)
 
@@ -690,13 +672,7 @@ func (tsb *StreamerBasicType) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tsb.Class())
-	if hdr.Vers > rvers.StreamerBasicType {
-		panic(fmt.Errorf(
-			"rdict: invalid %s version=%d > %d",
-			tsb.Class(), hdr.Vers, tsb.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tsb.Class(), tsb.RVersion())
 
 	r.ReadObject(&tsb.StreamerElement)
 
@@ -777,13 +753,7 @@ func (tsb *StreamerBasicPointer) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tsb.Class())
-	if hdr.Vers > rvers.StreamerBasicPointer {
-		panic(fmt.Errorf(
-			"rdict: invalid %s version=%d > %d",
-			tsb.Class(), hdr.Vers, tsb.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tsb.Class(), tsb.RVersion())
 
 	r.ReadObject(&tsb.StreamerElement)
 
@@ -842,13 +812,7 @@ func (tsl *StreamerLoop) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tsl.Class())
-	if hdr.Vers > rvers.StreamerLoop {
-		panic(fmt.Errorf(
-			"rdict: invalid %s version=%d > %d",
-			tsl.Class(), hdr.Vers, tsl.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tsl.Class(), tsl.RVersion())
 
 	r.ReadObject(&tsl.StreamerElement)
 	tsl.cvers = r.ReadI32()
@@ -884,13 +848,7 @@ func (tso *StreamerObject) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tso.Class())
-	if hdr.Vers > rvers.StreamerObject {
-		panic(fmt.Errorf(
-			"rdict: invalid %s version=%d > %d",
-			tso.Class(), hdr.Vers, tso.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tso.Class(), tso.RVersion())
 
 	r.ReadObject(&tso.StreamerElement)
 
@@ -923,13 +881,7 @@ func (tso *StreamerObjectPointer) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tso.Class())
-	if hdr.Vers > rvers.StreamerObjectPointer {
-		panic(fmt.Errorf(
-			"rdict: invalid %s version=%d > %d",
-			tso.Class(), hdr.Vers, tso.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tso.Class(), tso.RVersion())
 
 	r.ReadObject(&tso.StreamerElement)
 
@@ -963,13 +915,7 @@ func (tso *StreamerObjectAny) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tso.Class())
-	if hdr.Vers > rvers.StreamerObjectAny {
-		panic(fmt.Errorf(
-			"rdict: invalid %s version=%d > %d",
-			tso.Class(), hdr.Vers, tso.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tso.Class(), tso.RVersion())
 
 	r.ReadObject(&tso.StreamerElement)
 
@@ -1003,13 +949,7 @@ func (tso *StreamerObjectAnyPointer) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tso.Class())
-	if hdr.Vers > rvers.StreamerObjectAnyPointer {
-		panic(fmt.Errorf(
-			"rdict: invalid %s version=%d > %d",
-			tso.Class(), hdr.Vers, tso.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tso.Class(), tso.RVersion())
 
 	r.ReadObject(&tso.StreamerElement)
 
@@ -1043,13 +983,7 @@ func (tss *StreamerString) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tss.Class())
-	if hdr.Vers > rvers.StreamerString {
-		panic(fmt.Errorf(
-			"rdict: invalid %s version=%d > %d",
-			tss.Class(), hdr.Vers, tss.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tss.Class(), tss.RVersion())
 
 	r.ReadObject(&tss.StreamerElement)
 
@@ -1121,13 +1055,7 @@ func (tss *StreamerSTL) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tss.Class())
-	if hdr.Vers > rvers.StreamerSTL {
-		panic(fmt.Errorf(
-			"rdict: invalid %s version=%d > %d",
-			tss.Class(), hdr.Vers, tss.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tss.Class(), tss.RVersion())
 
 	r.ReadObject(&tss.StreamerElement)
 
@@ -1178,13 +1106,7 @@ func (tss *StreamerSTLstring) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tss.Class())
-	if hdr.Vers > rvers.StreamerSTLstring {
-		panic(fmt.Errorf(
-			"rdict: invalid %s version=%d > %d",
-			tss.Class(), hdr.Vers, tss.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tss.Class(), tss.RVersion())
 
 	r.ReadObject(&tss.StreamerSTL)
 
@@ -1218,13 +1140,7 @@ func (tsa *StreamerArtificial) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tsa.Class())
-	if hdr.Vers > rvers.StreamerArtificial {
-		panic(fmt.Errorf(
-			"rdict: invalid %s version=%d > %d",
-			tsa.Class(), hdr.Vers, tsa.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tsa.Class(), tsa.RVersion())
 
 	r.ReadObject(&tsa.StreamerElement)
 

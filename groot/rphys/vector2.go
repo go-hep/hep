@@ -61,15 +61,9 @@ func (vec *Vector2) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(vec.Class())
-	if hdr.Vers > rvers.Vector2 {
-		panic(fmt.Errorf(
-			"rphys: invalid %s version=%d > %d",
-			vec.Class(), hdr.Vers, vec.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(vec.Class(), vec.RVersion())
 
-	if hdr.Vers != 2 {
+	if hdr.Vers == 1 || hdr.Vers > 2 {
 		r.ReadObject(&vec.obj)
 	}
 

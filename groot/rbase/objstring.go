@@ -5,7 +5,6 @@
 package rbase
 
 import (
-	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbytes"
@@ -54,13 +53,7 @@ func (obj *ObjString) String() string {
 // ROOTUnmarshaler is the interface implemented by an object that can
 // unmarshal itself from a ROOT buffer
 func (obj *ObjString) UnmarshalROOT(r *rbytes.RBuffer) error {
-	hdr := r.ReadHeader(obj.Class())
-	if hdr.Vers > rvers.ObjString {
-		panic(fmt.Errorf(
-			"rbase: invalid %s version=%d > %d",
-			obj.Class(), hdr.Vers, rvers.ObjString,
-		))
-	}
+	hdr := r.ReadHeader(obj.Class(), obj.RVersion())
 	r.ReadObject(&obj.obj)
 	obj.str = r.ReadString()
 

@@ -5,7 +5,6 @@
 package rbase
 
 import (
-	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbytes"
@@ -76,10 +75,7 @@ func (n *Named) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(n.Class())
-	if hdr.Vers > rvers.Named {
-		panic(fmt.Errorf("rbase: invalid named version=%d > %d", hdr.Vers, rvers.Named))
-	}
+	hdr := r.ReadHeader(n.Class(), n.RVersion())
 
 	r.ReadObject(&n.obj)
 

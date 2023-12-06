@@ -373,10 +373,7 @@ func (h *H2F) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(h.Class())
-	if hdr.Vers > rvers.H2F {
-		panic(fmt.Errorf("rhist: invalid H2F version=%d > %d", hdr.Vers, rvers.H2F))
-	}
+	hdr := r.ReadHeader(h.Class(), h.RVersion())
 	if hdr.Vers < 1 {
 		return fmt.Errorf("rhist: TH2F version too old (%d<1)", hdr.Vers)
 	}
@@ -767,10 +764,7 @@ func (h *H2D) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(h.Class())
-	if hdr.Vers > rvers.H2D {
-		panic(fmt.Errorf("rhist: invalid H2D version=%d > %d", hdr.Vers, rvers.H2D))
-	}
+	hdr := r.ReadHeader(h.Class(), h.RVersion())
 	if hdr.Vers < 1 {
 		return fmt.Errorf("rhist: TH2D version too old (%d<1)", hdr.Vers)
 	}
@@ -1161,10 +1155,7 @@ func (h *H2I) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(h.Class())
-	if hdr.Vers > rvers.H2I {
-		panic(fmt.Errorf("rhist: invalid H2I version=%d > %d", hdr.Vers, rvers.H2I))
-	}
+	hdr := r.ReadHeader(h.Class(), h.RVersion())
 	if hdr.Vers < 1 {
 		return fmt.Errorf("rhist: TH2I version too old (%d<1)", hdr.Vers)
 	}

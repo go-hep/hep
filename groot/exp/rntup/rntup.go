@@ -35,7 +35,7 @@ func (*NTuple) Class() string {
 }
 
 func (*NTuple) RVersion() int16 {
-	return 0 // FIXME(sbinet): generate through gen.rboot
+	return 1 // FIXME(sbinet): generate through gen.rboot
 }
 
 func (nt *NTuple) String() string {
@@ -72,7 +72,7 @@ func (nt *NTuple) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(nt.Class())
+	hdr := r.ReadHeader(nt.Class(), nt.RVersion())
 
 	nt.rvers = r.ReadU32()
 	nt.size = r.ReadU32()

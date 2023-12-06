@@ -62,7 +62,7 @@ func (dir *tdirectory) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(dir.Class())
+	hdr := r.ReadHeader(dir.Class(), -1)
 	dir.rvers = hdr.Vers
 
 	r.ReadObject(&dir.named)

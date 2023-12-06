@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -47,13 +46,7 @@ func (o *D1) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(o.Class())
-	if hdr.Vers > o.RVersion() {
-		panic(fmt.Errorf(
-			"rbytes: invalid %s version=%d > %d",
-			o.Class(), hdr.Vers, o.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(o.Class(), o.RVersion())
 
 	r.ReadObject(&o.base0)
 	o.D32 = r.ReadI32()
@@ -140,13 +133,7 @@ func (o *Base) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(o.Class())
-	if hdr.Vers > o.RVersion() {
-		panic(fmt.Errorf(
-			"rbytes: invalid %s version=%d > %d",
-			o.Class(), hdr.Vers, o.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(o.Class(), o.RVersion())
 
 	o.I32 = r.ReadI32()
 
@@ -221,13 +208,7 @@ func (o *D2) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(o.Class())
-	if hdr.Vers > o.RVersion() {
-		panic(fmt.Errorf(
-			"rbytes: invalid %s version=%d > %d",
-			o.Class(), hdr.Vers, o.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(o.Class(), o.RVersion())
 
 	r.ReadObject(&o.base0)
 	o.I32 = r.ReadI32()

@@ -5,7 +5,6 @@
 package rphys
 
 import (
-	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -72,13 +71,7 @@ func (fc *FeldmanCousins) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(fc.Class())
-	if hdr.Vers > rvers.FeldmanCousins {
-		panic(fmt.Errorf(
-			"rphys: invalid %s version=%d > %d",
-			fc.Class(), hdr.Vers, fc.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(fc.Class(), fc.RVersion())
 
 	r.ReadObject(&fc.obj)
 	fc.CL = r.ReadF64()

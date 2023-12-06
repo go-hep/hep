@@ -372,11 +372,7 @@ func (leaf *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.{{.Name}} {
-		panic(fmt.Errorf("rtree: invalid T{{.Name}} version=%d > %d", hdr.Vers, rvers.{{.Name}}))
-	}
-
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)

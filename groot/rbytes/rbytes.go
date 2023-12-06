@@ -22,6 +22,8 @@ type Header struct {
 	Vers int16  // version of the type being guarded by this header.
 	Pos  int64  // position of the type in the ROOT buffer.
 	Len  int32  // length of the value in the ROOT buffer.
+
+	MemberWise bool // whether the value has been written member-wise.
 }
 
 // RVersioner is the interface implemented by an object that

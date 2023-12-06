@@ -94,10 +94,7 @@ func (li *List) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(li.Class())
-	if hdr.Vers > rvers.List {
-		panic(fmt.Errorf("rcont: invalid TList version=%d > %d", hdr.Vers, rvers.List))
-	}
+	hdr := r.ReadHeader(li.Class(), li.RVersion())
 	if hdr.Vers <= 3 {
 		return fmt.Errorf("rcont: TList version too old (%d <= 3)", hdr.Vers)
 	}

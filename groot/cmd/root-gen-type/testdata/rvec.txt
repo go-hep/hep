@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -45,13 +44,7 @@ func (o *ROOT__VecOps__RVec_float_) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(o.Class())
-	if hdr.Vers > o.RVersion() {
-		panic(fmt.Errorf(
-			"rbytes: invalid %s version=%d > %d",
-			o.Class(), hdr.Vers, o.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(o.Class(), o.RVersion())
 
 	r.ReadStdVectorF32(&o.This)
 
@@ -124,13 +117,7 @@ func (o *ROOT__VecOps__RVec_int_) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(o.Class())
-	if hdr.Vers > o.RVersion() {
-		panic(fmt.Errorf(
-			"rbytes: invalid %s version=%d > %d",
-			o.Class(), hdr.Vers, o.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(o.Class(), o.RVersion())
 
 	r.ReadStdVectorI32(&o.This)
 

@@ -5,7 +5,6 @@
 package rbase
 
 import (
-	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbytes"
@@ -53,10 +52,7 @@ func (a *AttMarker) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(a.Class())
-	if hdr.Vers > rvers.AttMarker {
-		panic(fmt.Errorf("rbase: invalid attmarker version=%d > %d", hdr.Vers, rvers.AttMarker))
-	}
+	hdr := r.ReadHeader(a.Class(), a.RVersion())
 
 	a.Color = r.ReadI16()
 	a.Style = r.ReadI16()

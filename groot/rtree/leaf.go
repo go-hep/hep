@@ -170,13 +170,7 @@ func (leaf *tleaf) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.Leaf {
-		panic(fmt.Errorf(
-			"rtree: invalid %s version=%d > %d",
-			leaf.Class(), hdr.Vers, leaf.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 
 	r.ReadObject(&leaf.named)
 	leaf.shape = leafDims(leaf.Title())
@@ -264,13 +258,7 @@ func (leaf *tleafObject) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.LeafObject {
-		panic(fmt.Errorf(
-			"rtree: invalid %s version=%d > %d",
-			leaf.Class(), hdr.Vers, leaf.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 
 	if hdr.Vers < 4 {
 		panic(fmt.Errorf(
@@ -361,13 +349,7 @@ func (leaf *tleafElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(leaf.Class())
-	if hdr.Vers > rvers.LeafElement {
-		panic(fmt.Errorf(
-			"rtree: invalid %s version=%d > %d",
-			leaf.Class(), hdr.Vers, leaf.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(leaf.Class(), leaf.RVersion())
 	leaf.rvers = hdr.Vers
 
 	r.ReadObject(&leaf.tleaf)

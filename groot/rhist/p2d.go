@@ -67,10 +67,7 @@ func (p2d *Profile2D) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(p2d.Class())
-	if hdr.Vers > rvers.Profile2D {
-		panic(fmt.Errorf("rhist: invalid TProfile2D version=%d > %d", hdr.Vers, rvers.Profile2D))
-	}
+	hdr := r.ReadHeader(p2d.Class(), p2d.RVersion())
 	if hdr.Vers < 8 {
 		// tested with v8.
 		panic(fmt.Errorf("rhist: too old TProfile2D version=%d < 8", hdr.Vers))

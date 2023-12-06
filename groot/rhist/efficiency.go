@@ -95,10 +95,7 @@ func (o *Efficiency) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(o.Class())
-	if hdr.Vers > rvers.Efficiency {
-		panic(fmt.Errorf("rhist: invalid TEfficiency version=%d > %d", hdr.Vers, rvers.Efficiency))
-	}
+	hdr := r.ReadHeader(o.Class(), o.RVersion())
 
 	r.ReadObject(&o.named)
 	r.ReadObject(&o.attline)
@@ -135,11 +132,7 @@ func readVecPairF64(r *rbytes.RBuffer, vs *[][2]float64) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader("vector<pair<double,double> >")
-	mbrwise := hdr.Vers&rbytes.StreamedMemberWise != 0
-	if mbrwise {
-		hdr.Vers &^= rbytes.StreamedMemberWise
-	}
+	hdr := r.ReadHeader("vector<pair<double,double> >", rvers.StreamerInfo)
 	if hdr.Vers != rvers.StreamerInfo {
 		r.SetErr(fmt.Errorf(
 			"rbytes: invalid version for %q. got=%v, want=%v",
@@ -147,7 +140,7 @@ func readVecPairF64(r *rbytes.RBuffer, vs *[][2]float64) error {
 		))
 		return r.Err()
 	}
-	if mbrwise {
+	if hdr.MemberWise {
 		clvers := r.ReadI16()
 		switch {
 		case clvers == 1:
@@ -165,7 +158,7 @@ func readVecPairF64(r *rbytes.RBuffer, vs *[][2]float64) error {
 
 	*vs = make([][2]float64, n)
 	switch {
-	case mbrwise:
+	case hdr.MemberWise:
 		p := make([]float64, n)
 		r.ReadArrayF64(p)
 		for i := range *vs {

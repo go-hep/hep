@@ -220,10 +220,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(h.Class())
-	if hdr.Vers > rvers.{{.Name}} {
-		panic(fmt.Errorf("rhist: invalid {{.Name}} version=%d > %d", hdr.Vers, rvers.{{.Name}}))
-	}
+	hdr := r.ReadHeader(h.Class(), h.RVersion())
 
 	r.ReadObject(&h.th1)
 	r.ReadObject(&h.arr)
@@ -777,10 +774,7 @@ func (h *{{.Name}}) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(h.Class())
-	if hdr.Vers > rvers.{{.Name}} {
-		panic(fmt.Errorf("rhist: invalid {{.Name}} version=%d > %d", hdr.Vers, rvers.{{.Name}}))
-	}
+	hdr := r.ReadHeader(h.Class(), h.RVersion())
 	if hdr.Vers < 1 {
 		return fmt.Errorf("rhist: T{{.Name}} version too old (%d<1)", hdr.Vers)
 	}

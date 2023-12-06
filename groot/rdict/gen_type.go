@@ -68,7 +68,6 @@ func NewGenGoType(pkg string, sictx rbytes.StreamerInfoContext, verbose bool) (*
 		ctx:     sictx,
 		verbose: verbose,
 		imps: map[string]int{
-			"fmt":                           1,
 			"reflect":                       1,
 			"go-hep.org/x/hep/groot/rbytes": 1,
 			"go-hep.org/x/hep/groot/root":   1,
@@ -668,13 +667,7 @@ func (o *%[1]s) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 	
-	hdr := r.ReadHeader(o.Class())
-	if hdr.Vers > o.RVersion() {
-		panic(fmt.Errorf(
-			"rbytes: invalid %%s version=%%d > %%d",
-			o.Class(), hdr.Vers, o.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(o.Class(), o.RVersion())
 
 `,
 		g.cxx2go(si.Name(), qualNone),

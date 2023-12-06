@@ -5,7 +5,6 @@
 package rhist
 
 import (
-	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -42,10 +41,7 @@ func (o *Limit) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(o.Class())
-	if hdr.Vers > rvers.Limit {
-		panic(fmt.Errorf("rhist: invalid TLimit version=%d > %d", hdr.Vers, rvers.Limit))
-	}
+	hdr := r.ReadHeader(o.Class(), o.RVersion())
 
 	r.CheckHeader(hdr)
 	return r.Err()
@@ -98,10 +94,7 @@ func (o *LimitDataSource) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(o.Class())
-	if hdr.Vers > rvers.LimitDataSource {
-		panic(fmt.Errorf("rhist: invalid TLimitDataSource version=%d > %d", hdr.Vers, rvers.LimitDataSource))
-	}
+	hdr := r.ReadHeader(o.Class(), o.RVersion())
 
 	r.ReadObject(&o.base)
 	r.ReadObject(&o.sig)

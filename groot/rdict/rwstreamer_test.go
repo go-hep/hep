@@ -4082,7 +4082,7 @@ func (p *PtrToAny_T) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(p.Class())
+	hdr := r.ReadHeader(p.Class(), p.RVersion())
 	if hdr.Vers != p.RVersion() {
 		return fmt.Errorf("invalid particle version: got=%d, want=%d", hdr.Vers, p.RVersion())
 	}

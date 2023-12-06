@@ -82,11 +82,7 @@ func (tbl *RefTable) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tbl.Class())
-	if hdr.Vers > rvers.RefTable {
-		panic(fmt.Errorf("rcont: invalid TRefTable version=%d > %d", hdr.Vers, rvers.RefTable))
-	}
-
+	hdr := r.ReadHeader(tbl.Class(), tbl.RVersion())
 	if hdr.Vers < 3 {
 		return fmt.Errorf("rcont: TRefTable version too old (%d < 3)", hdr.Vers)
 	}

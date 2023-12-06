@@ -95,7 +95,8 @@ func (r *RBuffer) Reset(data []byte, refs map[int64]interface{}, offset uint32, 
 	return r
 }
 
-func (r *RBuffer) ReadHeader(class string) Header {
+// ReadHeader reads the serialization header for the given class and its known maximum version.
+func (r *RBuffer) ReadHeader(class string, vmax int16) Header {
 	hdr := Header{
 		Name: class,
 		Pos:  r.Pos(),
@@ -114,6 +115,11 @@ func (r *RBuffer) ReadHeader(class string) Header {
 		hdr.Vers = int16(r.ReadU16())
 	}
 
+	hdr.MemberWise = hdr.Vers&StreamedMemberWise != 0
+	if hdr.MemberWise {
+		hdr.Vers &= ^StreamedMemberWise
+	}
+
 	if hdr.Vers <= 0 {
 		if hdr.Name != "" && r.sictx != nil {
 			si, err := r.sictx.StreamerInfo(hdr.Name, -1)
@@ -124,6 +130,11 @@ func (r *RBuffer) ReadHeader(class string) Header {
 				}
 			}
 		}
+	}
+
+	// vmax=-1 is a special "garbage-in/garbage-out" mode.
+	if vmax >= 0 && hdr.Vers > vmax {
+		panic(fmt.Errorf("rbytes: invalid version for %q: got=%d > max=%d", class, hdr.Vers, vmax))
 	}
 
 	return hdr
@@ -207,7 +218,7 @@ func (r *RBuffer) ReadStdString() string {
 		return ""
 	}
 
-	hdr := r.ReadHeader("string") // FIXME(sbinet): streamline with RStreamROOT
+	hdr := r.ReadHeader("string", rvers.StreamerInfo) // FIXME(sbinet): streamline with RStreamROOT
 	if hdr.Vers != rvers.StreamerInfo {
 		r.SetErr(fmt.Errorf("rbytes: invalid version for std::string. got=%v, want=%v", hdr.Vers, rvers.StreamerInfo))
 		return ""
@@ -494,7 +505,7 @@ func (r *RBuffer) ReadStdVectorStrs(sli *[]string) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<string>")
+	hdr := r.ReadHeader("vector<string>", rvers.StreamerInfo)
 	n := int(r.ReadI32())
 	*sli = ResizeStr(*sli, n)
 	for i := range *sli {

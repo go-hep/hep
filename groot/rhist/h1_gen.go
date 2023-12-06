@@ -103,10 +103,7 @@ func (h *H1F) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(h.Class())
-	if hdr.Vers > rvers.H1F {
-		panic(fmt.Errorf("rhist: invalid H1F version=%d > %d", hdr.Vers, rvers.H1F))
-	}
+	hdr := r.ReadHeader(h.Class(), h.RVersion())
 
 	r.ReadObject(&h.th1)
 	r.ReadObject(&h.arr)
@@ -389,10 +386,7 @@ func (h *H1D) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(h.Class())
-	if hdr.Vers > rvers.H1D {
-		panic(fmt.Errorf("rhist: invalid H1D version=%d > %d", hdr.Vers, rvers.H1D))
-	}
+	hdr := r.ReadHeader(h.Class(), h.RVersion())
 
 	r.ReadObject(&h.th1)
 	r.ReadObject(&h.arr)
@@ -675,10 +669,7 @@ func (h *H1I) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(h.Class())
-	if hdr.Vers > rvers.H1I {
-		panic(fmt.Errorf("rhist: invalid H1I version=%d > %d", hdr.Vers, rvers.H1I))
-	}
+	hdr := r.ReadHeader(h.Class(), h.RVersion())
 
 	r.ReadObject(&h.th1)
 	r.ReadObject(&h.arr)

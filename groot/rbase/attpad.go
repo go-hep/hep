@@ -74,7 +74,7 @@ func (a *AttPad) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(a.Class())
+	hdr := r.ReadHeader(a.Class(), a.RVersion())
 	a.fLeftMargin = r.ReadF32()
 	a.fRightMargin = r.ReadF32()
 	a.fBottomMargin = r.ReadF32()

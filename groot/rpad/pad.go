@@ -107,13 +107,7 @@ func (p *Pad) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(p.Class())
-	if hdr.Vers > rvers.Pad {
-		panic(fmt.Errorf(
-			"rpad: invalid %s version=%d > %d",
-			p.Class(), hdr.Vers, p.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(p.Class(), p.RVersion())
 
 	if hdr.Vers != 13 {
 		panic(fmt.Errorf(
@@ -124,7 +118,7 @@ func (p *Pad) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	r.ReadObject(&p.vpad)
 
-	_ = r.ReadHeader("TAttBBox2D")
+	_ = r.ReadHeader("TAttBBox2D", rvers.AttBBox2D)
 
 	p.fX1 = r.ReadF64()
 	p.fY1 = r.ReadF64()

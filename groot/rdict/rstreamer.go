@@ -15,6 +15,7 @@ import (
 	"go-hep.org/x/hep/groot/rmeta"
 	"go-hep.org/x/hep/groot/root"
 	"go-hep.org/x/hep/groot/rtypes"
+	"go-hep.org/x/hep/groot/rvers"
 )
 
 // RStreamerOf returns a read-streamer for the i-th element of the provided
@@ -782,14 +783,14 @@ func rstreamBasicSlice(sli ropFunc) ropFunc {
 	}
 }
 
-func rstreamHeader(r *rbytes.RBuffer, typename string) rbytes.Header {
+func rstreamHeader(r *rbytes.RBuffer, typename string, typevers int16) rbytes.Header {
 	if _, ok := rmeta.CxxBuiltins[typename]; ok && typename != "string" {
 		return rbytes.Header{Pos: -1}
 	}
 	if typename == "TString" {
 		return rbytes.Header{Pos: -1}
 	}
-	return r.ReadHeader(typename)
+	return r.ReadHeader(typename, typevers)
 }
 
 func rcheckHeader(r *rbytes.RBuffer, hdr rbytes.Header) error {
@@ -802,7 +803,7 @@ func rcheckHeader(r *rbytes.RBuffer, hdr rbytes.Header) error {
 
 func rstreamType(typename string, rop ropFunc) ropFunc {
 	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
-		hdr := r.ReadHeader(typename)
+		hdr := r.ReadHeader(typename, rvers.StreamerInfo)
 		err := rop(r, recv, cfg)
 		if err != nil {
 			return fmt.Errorf(
@@ -853,14 +854,9 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 		typename = fmt.Sprintf("map<%s,%s >", kname, vname)
 	}
 	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
-		//typevers = int16(cfg.si.ClassVersion())
-		hdr := r.ReadHeader(typename)
-		mbrwise := hdr.Vers&rbytes.StreamedMemberWise != 0
-		// if mbrwise {
-		// 	vers &= ^rbytes.StreamedMemberWise
-		// }
-
-		if mbrwise {
+		// typevers = int16(cfg.si.ClassVersion())
+		hdr := r.ReadHeader(typename, rvers.StreamerInfo)
+		if hdr.MemberWise {
 			clvers := r.ReadI16()
 			switch {
 			case clvers == 1:
@@ -877,7 +873,7 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 		keys := reflect.New(keyT).Elem()
 		keys.Set(reflect.AppendSlice(keys, reflect.MakeSlice(keyT, n, n)))
 		if n > 0 {
-			hdr := rstreamHeader(r, kname)
+			hdr := rstreamHeader(r, kname, -1) // FIXME(sbinet): use -1 passthrough or key-si-classversion ?
 			for i := 0; i < n; i++ {
 				err := krop(r, keys.Index(i).Addr().Interface(), nil)
 				if err != nil {
@@ -896,7 +892,7 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 		vals := reflect.New(valT).Elem()
 		vals.Set(reflect.AppendSlice(vals, reflect.MakeSlice(valT, n, n)))
 		if n > 0 {
-			hdr := rstreamHeader(r, vname)
+			hdr := rstreamHeader(r, vname, -1) // FIXME(sbinet): use -1 passthrough or val-si-classversion
 			for i := 0; i < n; i++ {
 				err := vrop(r, vals.Index(i).Addr().Interface(), nil)
 				if err != nil {
@@ -1092,7 +1088,7 @@ func rstreamStrs(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 
 func rstreamCat(typename string, typevers int16, rops []rstreamer) ropFunc {
 	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
-		hdr := r.ReadHeader(typename)
+		hdr := r.ReadHeader(typename, typevers)
 		if hdr.Vers != typevers {
 			r.SetErr(fmt.Errorf(
 				"rdict: inconsistent ROOT version type=%q (got=%d, want=%d)",
@@ -1142,9 +1138,9 @@ func rstreamStdString(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) 
 // 			return err
 // 		}
 //
-// 		hdr := r.ReadHeader(oclass)
+// 		hdr := r.ReadHeader(oclass, -1)
 // 		switch {
-// 		case hdr.Vers&rbytes.StreamedMemberWise != 0:
+// 		case hdr.MemberWise:
 // 			err = mbrwise(r, cfg.adjust(recv), cfg, hdr.Vers)
 // 		default:
 // 			err = objwise(r, cfg.adjust(recv), cfg, hdr.Vers, int32(beg))

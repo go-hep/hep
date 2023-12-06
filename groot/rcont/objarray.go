@@ -5,7 +5,6 @@
 package rcont
 
 import (
-	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -107,10 +106,7 @@ func (arr *ObjArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(arr.Class())
-	if hdr.Vers > rvers.ObjArray {
-		panic(fmt.Errorf("rcont: invalid TObjArray version=%d > %d", hdr.Vers, rvers.ObjArray))
-	}
+	hdr := r.ReadHeader(arr.Class(), arr.RVersion())
 
 	if hdr.Vers > 2 {
 		r.ReadObject(&arr.obj)

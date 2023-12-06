@@ -121,10 +121,7 @@ func (f *F1) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(f.Class())
-	if hdr.Vers > rvers.F1 {
-		panic(fmt.Errorf("rhist: invalid TF1 version=%d > %d", hdr.Vers, rvers.F1))
-	}
+	hdr := r.ReadHeader(f.Class(), f.RVersion())
 
 	if hdr.Vers < 10 {
 		// tested with v10.
@@ -201,10 +198,7 @@ func (f *F1Parameters) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(f.Class())
-	if hdr.Vers > rvers.F1Parameters {
-		panic(fmt.Errorf("rhist: invalid TF1Parameters version=%d > %d", hdr.Vers, rvers.F1Parameters))
-	}
+	hdr := r.ReadHeader(f.Class(), f.RVersion())
 
 	if hdr.Vers < 1 {
 		// tested with v1.
@@ -245,10 +239,7 @@ func (f *f1Composition) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(f.Class())
-	if hdr.Vers > rvers.F1AbsComposition {
-		panic(fmt.Errorf("rhist: invalid TF1AbsComposition version=%d > %d", hdr.Vers, rvers.F1AbsComposition))
-	}
+	hdr := r.ReadHeader(f.Class(), f.RVersion())
 
 	if hdr.Vers < 1 {
 		// tested with v1.
@@ -297,10 +288,7 @@ func (f *F1Convolution) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(f.Class())
-	if hdr.Vers > rvers.F1Convolution {
-		panic(fmt.Errorf("rhist: invalid TF1Convolution version=%d > %d", hdr.Vers, rvers.F1Convolution))
-	}
+	hdr := r.ReadHeader(f.Class(), f.RVersion())
 
 	if hdr.Vers < 1 {
 		// tested with v1.
@@ -373,10 +361,7 @@ func (f *F1NormSum) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(f.Class())
-	if hdr.Vers > rvers.F1NormSum {
-		panic(fmt.Errorf("rhist: invalid TF1NormSum version=%d > %d", hdr.Vers, rvers.F1NormSum))
-	}
+	hdr := r.ReadHeader(f.Class(), f.RVersion())
 
 	if hdr.Vers < 1 {
 		// tested with v1.
@@ -419,14 +404,8 @@ func readF1s(r *rbytes.RBuffer, sli *[]*F1) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<TF1*>")
-	if hdr.Vers != rvers.StreamerInfo {
-		r.SetErr(fmt.Errorf(
-			"rbytes: invalid %s version: got=%d, want=%d",
-			hdr.Name, hdr.Vers, rvers.StreamerInfo,
-		))
-		return
-	}
+	hdr := r.ReadHeader("vector<TF1*>", rvers.StreamerInfo)
+
 	n := int(r.ReadI32())
 	{
 		if m := cap(*sli); m < n {

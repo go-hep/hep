@@ -5,7 +5,6 @@
 package rbase
 
 import (
-	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbytes"
@@ -78,11 +77,7 @@ func (a *AttAxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(a.Class())
-	if hdr.Vers < 4 {
-		return fmt.Errorf("rbase: TAttAxis version too old (%d < 4)", hdr.Vers)
-	}
-
+	hdr := r.ReadHeader(a.Class(), a.RVersion())
 	a.Ndivs = r.ReadI32()
 	a.AxisColor = r.ReadI16()
 	a.LabelColor = r.ReadI16()

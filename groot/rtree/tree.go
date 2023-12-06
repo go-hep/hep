@@ -281,11 +281,7 @@ func (tree *ttree) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tree.Class())
-	if hdr.Vers > rvers.Tree {
-		panic(fmt.Errorf("rtree: invalid TTree version=%d > %d", hdr.Vers, rvers.Tree))
-	}
-
+	hdr := r.ReadHeader(tree.Class(), tree.RVersion())
 	tree.rvers = hdr.Vers
 
 	r.ReadObject(&tree.named)
@@ -628,13 +624,7 @@ func (nt *tntuple) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(nt.Class())
-	if hdr.Vers > rvers.Ntuple {
-		panic(fmt.Errorf(
-			"rtree: invalid %s version=%d > %d",
-			nt.Class(), hdr.Vers, nt.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(nt.Class(), nt.RVersion())
 
 	r.ReadObject(&nt.ttree)
 	nt.nvars = int(r.ReadI32())
@@ -661,13 +651,7 @@ func (nt *tntupleD) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(nt.Class())
-	if hdr.Vers > rvers.NtupleD {
-		panic(fmt.Errorf(
-			"rtree: invalid %s version=%d > %d",
-			nt.Class(), hdr.Vers, nt.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(nt.Class(), nt.RVersion())
 
 	r.ReadObject(&nt.ttree)
 	nt.nvars = int(r.ReadI32())
@@ -708,13 +692,7 @@ func (tio *tioFeatures) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(tio.Class())
-	if hdr.Vers > rvers.ROOT_IOFeatures {
-		panic(fmt.Errorf(
-			"rtree: invalid %s version=%d > %d",
-			tio.Class(), hdr.Vers, tio.RVersion(),
-		))
-	}
+	hdr := r.ReadHeader(tio.Class(), tio.RVersion())
 
 	var buf [4]byte // FIXME(sbinet) where do these 4 bytes come from ?
 	_, err := r.Read(buf[:1])

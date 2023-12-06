@@ -5,7 +5,6 @@
 package rcont
 
 import (
-	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -70,10 +69,7 @@ func (m *Map) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(m.Class())
-	if hdr.Vers > rvers.Map {
-		panic(fmt.Errorf("rcont: invalid TMap version=%d > %d", hdr.Vers, rvers.Map))
-	}
+	hdr := r.ReadHeader(m.Class(), m.RVersion())
 	if hdr.Vers > 2 {
 		r.ReadObject(&m.obj)
 	}

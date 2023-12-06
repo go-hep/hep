@@ -349,10 +349,7 @@ func (b *tbranch) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(b.Class())
-	if hdr.Vers > rvers.Branch {
-		panic(fmt.Errorf("rtree: invalid TBranch version=%d > %d", hdr.Vers, rvers.Branch))
-	}
+	hdr := r.ReadHeader(b.Class(), b.RVersion())
 
 	b.tree = nil
 	b.ctx.bk = nil
@@ -801,10 +798,7 @@ func (b *tbranchObject) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(b.Class())
-	if hdr.Vers > rvers.BranchObject {
-		panic(fmt.Errorf("rtree: invalid TBranchObject version=%d > %d", hdr.Vers, rvers.BranchObject))
-	}
+	hdr := r.ReadHeader(b.Class(), b.RVersion())
 
 	if hdr.Vers < 1 {
 		r.SetErr(fmt.Errorf("rtree: TBranchObject version too old (%d < 8)", hdr.Vers))
@@ -940,10 +934,7 @@ func (b *tbranchElement) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(b.Class())
-	if hdr.Vers > rvers.BranchElement {
-		panic(fmt.Errorf("rtree: invalid TBranchElement version=%d > %d", hdr.Vers, rvers.BranchElement))
-	}
+	hdr := r.ReadHeader(b.Class(), b.RVersion())
 
 	if hdr.Vers < 1 {
 		r.SetErr(fmt.Errorf("rtree: TBranchElement version too old (%d < 8)", hdr.Vers))

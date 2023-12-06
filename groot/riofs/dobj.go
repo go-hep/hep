@@ -30,7 +30,7 @@ func (d *dobject) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(d.class)
+	hdr := r.ReadHeader(d.class, -1)
 	d.rvers = hdr.Vers
 	d.size = hdr.Len
 	r.SetPos(hdr.Pos + int64(hdr.Len) + 4)

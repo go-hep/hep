@@ -77,10 +77,7 @@ func (f *Formula) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(f.Class())
-	if hdr.Vers > rvers.Formula {
-		panic(fmt.Errorf("rhist: invalid TFormula version=%d > %d", hdr.Vers, rvers.Formula))
-	}
+	hdr := r.ReadHeader(f.Class(), f.RVersion())
 
 	if hdr.Vers < 12 || hdr.Vers > 13 {
 		// tested with v12 and v13
@@ -110,13 +107,8 @@ func readMapStringInt(r *rbytes.RBuffer) map[string]int32 {
 		return nil
 	}
 
-	hdr := r.ReadHeader("map<TString,int,TFormulaParamOrder>")
-	if hdr.Vers != rvers.StreamerInfo {
-		r.SetErr(fmt.Errorf("rbytes: invalid %s version: got=%d, want=%d",
-			hdr.Name, hdr.Vers, rvers.StreamerInfo,
-		))
-		return nil
-	}
+	hdr := r.ReadHeader("map<TString,int,TFormulaParamOrder>", rvers.StreamerInfo)
+
 	n := int(r.ReadI32())
 	o := make(map[string]int32, n)
 	for i := 0; i < n; i++ {
@@ -134,13 +126,8 @@ func readStdVectorObjP(r *rbytes.RBuffer) []root.Object {
 		return nil
 	}
 
-	hdr := r.ReadHeader("vector<TObject*>")
-	if hdr.Vers != rvers.StreamerInfo {
-		r.SetErr(fmt.Errorf("rbytes: invalid %s version: got=%d, want=%d",
-			hdr.Name, hdr.Vers, rvers.StreamerInfo,
-		))
-		return nil
-	}
+	hdr := r.ReadHeader("vector<TObject*>", rvers.StreamerInfo)
+
 	n := int(r.ReadI32())
 	o := make([]root.Object, n)
 	for i := range o {

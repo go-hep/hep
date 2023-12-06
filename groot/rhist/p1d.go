@@ -67,10 +67,7 @@ func (p *Profile1D) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(p.Class())
-	if hdr.Vers > rvers.Profile {
-		panic(fmt.Errorf("rhist: invalid TProfile version=%d > %d", hdr.Vers, rvers.Profile))
-	}
+	hdr := r.ReadHeader(p.Class(), p.RVersion())
 	if hdr.Vers < 7 {
 		// tested with v7.
 		panic(fmt.Errorf("rhist: too old TProfile version=%d < 7", hdr.Vers))

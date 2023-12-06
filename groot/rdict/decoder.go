@@ -32,7 +32,7 @@ func (dec *decoder) DecodeROOT(ptr interface{}) error {
 	var (
 		typename = dec.si.Name()
 		typevers = int16(dec.si.ClassVersion())
-		hdr      = dec.r.ReadHeader(typename)
+		hdr      = dec.r.ReadHeader(typename, typevers)
 	)
 
 	if hdr.Vers != typevers {

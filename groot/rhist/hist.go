@@ -146,10 +146,7 @@ func (h *th1) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(h.Class())
-	if hdr.Vers > rvers.H1 {
-		panic(fmt.Errorf("rhist: invalid TH1 version=%d > %d", hdr.Vers, rvers.H1))
-	}
+	hdr := r.ReadHeader(h.Class(), h.RVersion())
 
 	r.ReadObject(&h.Named)
 	r.ReadObject(&h.attline)
@@ -308,10 +305,7 @@ func (h *th2) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(h.Class())
-	if hdr.Vers > rvers.H2 {
-		panic(fmt.Errorf("rhist: invalid TH2 version=%d > %d", hdr.Vers, rvers.H2))
-	}
+	hdr := r.ReadHeader(h.Class(), h.RVersion())
 	if hdr.Vers < 3 {
 		return fmt.Errorf("rhist: TH2 version too old (%d<3)", hdr.Vers)
 	}

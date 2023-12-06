@@ -132,10 +132,7 @@ func (a *taxis) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(a.Class())
-	if hdr.Vers > rvers.Axis {
-		panic(fmt.Errorf("rhist: invalid TAxis version=%d > %d", hdr.Vers, rvers.Axis))
-	}
+	hdr := r.ReadHeader(a.Class(), a.RVersion())
 	const minVers = 6
 	if hdr.Vers < minVers {
 		return fmt.Errorf("rhist: TAxis version too old (%d<%d)", hdr.Vers, minVers)

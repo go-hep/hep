@@ -5,7 +5,6 @@
 package rhist
 
 import (
-	"fmt"
 	"reflect"
 
 	"go-hep.org/x/hep/groot/rbase"
@@ -81,10 +80,7 @@ func (o *ConfidenceLevel) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(o.Class())
-	if hdr.Vers > rvers.ConfidenceLevel {
-		panic(fmt.Errorf("rhist: invalid TConfidenceLevel version=%d > %d", hdr.Vers, rvers.ConfidenceLevel))
-	}
+	hdr := r.ReadHeader(o.Class(), o.RVersion())
 
 	r.ReadObject(&o.base)
 	o.fNNMC = r.ReadI32()

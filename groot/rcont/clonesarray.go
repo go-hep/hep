@@ -157,10 +157,7 @@ func (arr *ClonesArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader(arr.Class())
-	if hdr.Vers > rvers.ClonesArray {
-		panic(fmt.Errorf("rcont: invalid TClonesArray version=%d > %d", hdr.Vers, rvers.ClonesArray))
-	}
+	hdr := r.ReadHeader(arr.Class(), arr.RVersion())
 	if hdr.Vers > 2 {
 		r.ReadObject(&arr.arr.obj)
 	}
@@ -171,8 +168,10 @@ func (arr *ClonesArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 	toks := strings.Split(clsv, ";")
 	arr.cls = toks[0]
 	clv, err := strconv.Atoi(toks[1])
-	if err != nil && r.Err() == nil {
-		r.SetErr(fmt.Errorf("rcont: could not extract TClonesArray element version: %w", err))
+	if err != nil {
+		if r.Err() == nil {
+			r.SetErr(fmt.Errorf("rcont: could not extract TClonesArray element version: %w", err))
+		}
 		return r.Err()
 	}
 
@@ -186,7 +185,9 @@ func (arr *ClonesArray) UnmarshalROOT(r *rbytes.RBuffer) error {
 	arr.arr.last = nobjs - 1
 	si, err := r.StreamerInfo(arr.cls, clv)
 	if err != nil {
-		r.SetErr(fmt.Errorf("rcont: could not find TClonesArray's element streamer %q and version=%d: %w", arr.cls, clv, err))
+		if r.Err() == nil {
+			r.SetErr(fmt.Errorf("rcont: could not find TClonesArray's element streamer %q and version=%d: %w", arr.cls, clv, err))
+		}
 		return r.Err()
 	}
 	fct := rtypes.Factory.Get(si.Name())
