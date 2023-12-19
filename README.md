@@ -10,7 +10,6 @@ hep
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.597940.svg)](https://doi.org/10.5281/zenodo.597940)
 [![JOSS Paper](http://joss.theoj.org/papers/0b007c81073186f7c61f95ea26ad7971/status.svg)](http://joss.theoj.org/papers/0b007c81073186f7c61f95ea26ad7971)
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/go-hep/binder/master)
-[![Twitter Follow](https://img.shields.io/twitter/follow/go_hep.svg?style=social&label=Follow)](https://twitter.com/go_hep)
 [![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/go-hep/hep)](https://www.tickgit.com/browse?repo=github.com/go-hep/hep)
 
 `hep` is a set of libraries and tools to perform High Energy Physics analyses with ease and [Go](https://golang.org)
