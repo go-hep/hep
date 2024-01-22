@@ -23,7 +23,7 @@ func main() {
 	log.SetFlags(0)
 
 	var (
-		rvers = flag.String("root-version", "6.28.04", "ROOT version to install")
+		rvers = flag.String("root-version", "6.30.02", "ROOT version to install")
 		odir  = flag.String("o", "", "install directory for ROOT")
 	)
 
