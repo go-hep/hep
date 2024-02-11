@@ -344,3 +344,27 @@ func (l *rleafCount) imax() int {
 var (
 	_ leafCount = (*rleafCount)(nil)
 )
+
+// FIXME(sbinet): directly use reflect.TypeFor[T]().Size()
+// instead of this shim function.
+// (when Go >= 1.22)
+func sizeOfT[T any]() uintptr {
+	var t T
+	return reflect.TypeOf(t).Size()
+}
+
+func unsafeDecayArray[T any](ptr any) *[]T {
+	rv := reflect.ValueOf(ptr).Elem()
+	sz := rv.Type().Size() / sizeOfT[T]()
+	sli := unsafe.Slice((*T)(unsafe.Pointer(rv.UnsafeAddr())), sz)
+	return &sli
+}
+
+func unsafeDecaySliceArray[T any](ptr *[]T, size int) *[]T {
+	var sli []T
+	if *ptr == nil {
+		return &sli
+	}
+	sli = unsafe.Slice(unsafe.SliceData(*ptr), size)
+	return &sli
+}

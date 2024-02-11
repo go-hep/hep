@@ -581,7 +581,6 @@ func genRLeaves() {
 		Size  int
 		Kind  Kind
 		Func  string
-		Decay string
 		Count bool
 
 		WithStreamerElement bool // for TLeaf{F16,D32}
@@ -695,13 +694,6 @@ func genRLeaves() {
 				typ.Func = typ.Name
 			}
 
-			switch typ.Type[0] {
-			case 'u':
-				typ.Decay = "unsafeDecayArrayU"
-			default:
-				typ.Decay = "unsafeDecayArray"
-			}
-
 			tmpl := template.Must(template.New(typ.Name).Parse(rleafTmpl))
 			err = tmpl.Execute(f, typ)
 			if err != nil {
@@ -757,7 +749,7 @@ func newRLeaf{{.Name}}(leaf *{{.Base}}, rvar ReadVar, rctx rleafCtx) rleaf {
 			}
 			sli := reflect.ValueOf(rvar.Value).Elem()
 			ptr := (*[]{{.Type}})(unsafe.Pointer(sli.UnsafeAddr()))
-			hdr := unsafeDecaySliceArray{{.Name}}(ptr, sz).(*[]{{.Type}})
+			hdr := unsafeDecaySliceArray[{{.Type}}](ptr, sz)
 			if *hdr == nil {
 				*hdr = make([]{{.Type}}, 0, rleafDefaultSliceCap*sz)
 			}
@@ -766,16 +758,15 @@ func newRLeaf{{.Name}}(leaf *{{.Base}}, rvar ReadVar, rctx rleafCtx) rleaf {
 				n:    rctx.rcountFunc(leaf.count.Name()),
 				v:    hdr,
 			}
-			rawSli := (*reflect.SliceHeader)(unsafe.Pointer(sli.UnsafeAddr()))
-			rawHdr := (*reflect.SliceHeader)(unsafe.Pointer(hdr))
+			rhdr := reflect.ValueOf(hdr).Elem()
+			rptr := reflect.ValueOf(ptr).Elem()
 
 			// alias slices
-			rawSli.Data = rawHdr.Data
+			rptr.Set(rhdr)
 
 			rleaf.set = func() {
 				n := rleaf.n()
-				rawSli.Len = n
-				rawSli.Cap = n
+				rptr.SetLen(n)
 			}
 
 			return rleaf
@@ -784,7 +775,7 @@ func newRLeaf{{.Name}}(leaf *{{.Base}}, rvar ReadVar, rctx rleafCtx) rleaf {
 	case leaf.len > 1:
 		return &rleafArr{{.Name}}{
 			base: leaf,
-			v:    reflect.ValueOf(unsafeDecayArray{{.Name}}(rvar.Value)).Elem().Interface().([]{{.Type}}),
+			v:    *unsafeDecayArray[{{.Type}}](rvar.Value),
 		}
 
 	default:
@@ -806,28 +797,6 @@ func (leaf *rleaf{{.Kind}}{{.Name}}) Offset() int64 {
 {{if .Count}}
 func (leaf *rleaf{{.Kind}}{{.Name}}) ivalue() int { return int(*leaf.v) }
 {{- end}}
-{{- end}}
-
-{{if eq .Kind "Arr"}}
-func unsafeDecayArray{{.Name}}(ptr interface{}) interface{} {
-	rv := reflect.ValueOf(ptr).Elem()
-	sz := rv.Type().Size() / {{.Size}}
-	arr := (*[0]{{.Type}})(unsafe.Pointer(rv.UnsafeAddr()))
-	sli := (*arr)[:]
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(sz)
-	hdr.Cap = int(sz)
-	return &sli
-}
-
-func unsafeDecaySliceArray{{.Name}}(ptr *[]{{.Type}}, size int) interface{} {
-	var sli []{{.Type}}
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(size)
-	hdr.Cap = int(size)
-	hdr.Data = (*reflect.SliceHeader)(unsafe.Pointer(ptr)).Data
-	return &sli
-}
 {{- end}}
 
 {{if .WithStreamerElement}}
