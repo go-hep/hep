@@ -432,11 +432,7 @@ func (leaf *{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
 func (leaf *{{.Name}}) unsafeDecayArray(ptr interface{}) interface{} {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / {{.GoLenType}}
-	arr := (*[0]{{.Type}})(unsafe.Pointer(rv.UnsafeAddr()))
-	sli := (*arr)[:]
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(sz)
-	hdr.Cap = int(sz)
+	sli := unsafe.Slice((*{{.Type}})(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 

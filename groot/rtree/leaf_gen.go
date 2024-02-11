@@ -132,11 +132,7 @@ func (leaf *LeafO) readFromBuffer(r *rbytes.RBuffer) error {
 func (leaf *LeafO) unsafeDecayArray(ptr interface{}) interface{} {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 1
-	arr := (*[0]bool)(unsafe.Pointer(rv.UnsafeAddr()))
-	sli := (*arr)[:]
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(sz)
-	hdr.Cap = int(sz)
+	sli := unsafe.Slice((*bool)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
@@ -343,11 +339,7 @@ func (leaf *LeafB) readFromBuffer(r *rbytes.RBuffer) error {
 func (leaf *LeafB) unsafeDecayArray(ptr interface{}) interface{} {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 1
-	arr := (*[0]int8)(unsafe.Pointer(rv.UnsafeAddr()))
-	sli := (*arr)[:]
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(sz)
-	hdr.Cap = int(sz)
+	sli := unsafe.Slice((*int8)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
@@ -566,11 +558,7 @@ func (leaf *LeafS) readFromBuffer(r *rbytes.RBuffer) error {
 func (leaf *LeafS) unsafeDecayArray(ptr interface{}) interface{} {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 2
-	arr := (*[0]int16)(unsafe.Pointer(rv.UnsafeAddr()))
-	sli := (*arr)[:]
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(sz)
-	hdr.Cap = int(sz)
+	sli := unsafe.Slice((*int16)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
@@ -789,11 +777,7 @@ func (leaf *LeafI) readFromBuffer(r *rbytes.RBuffer) error {
 func (leaf *LeafI) unsafeDecayArray(ptr interface{}) interface{} {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 4
-	arr := (*[0]int32)(unsafe.Pointer(rv.UnsafeAddr()))
-	sli := (*arr)[:]
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(sz)
-	hdr.Cap = int(sz)
+	sli := unsafe.Slice((*int32)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
@@ -1012,11 +996,7 @@ func (leaf *LeafL) readFromBuffer(r *rbytes.RBuffer) error {
 func (leaf *LeafL) unsafeDecayArray(ptr interface{}) interface{} {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 8
-	arr := (*[0]int64)(unsafe.Pointer(rv.UnsafeAddr()))
-	sli := (*arr)[:]
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(sz)
-	hdr.Cap = int(sz)
+	sli := unsafe.Slice((*int64)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
@@ -1235,11 +1215,7 @@ func (leaf *LeafG) readFromBuffer(r *rbytes.RBuffer) error {
 func (leaf *LeafG) unsafeDecayArray(ptr interface{}) interface{} {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 8
-	arr := (*[0]int64)(unsafe.Pointer(rv.UnsafeAddr()))
-	sli := (*arr)[:]
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(sz)
-	hdr.Cap = int(sz)
+	sli := unsafe.Slice((*int64)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
@@ -1438,11 +1414,7 @@ func (leaf *LeafF) readFromBuffer(r *rbytes.RBuffer) error {
 func (leaf *LeafF) unsafeDecayArray(ptr interface{}) interface{} {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 4
-	arr := (*[0]float32)(unsafe.Pointer(rv.UnsafeAddr()))
-	sli := (*arr)[:]
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(sz)
-	hdr.Cap = int(sz)
+	sli := unsafe.Slice((*float32)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
@@ -1632,11 +1604,7 @@ func (leaf *LeafD) readFromBuffer(r *rbytes.RBuffer) error {
 func (leaf *LeafD) unsafeDecayArray(ptr interface{}) interface{} {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 8
-	arr := (*[0]float64)(unsafe.Pointer(rv.UnsafeAddr()))
-	sli := (*arr)[:]
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(sz)
-	hdr.Cap = int(sz)
+	sli := unsafe.Slice((*float64)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
@@ -1837,11 +1805,7 @@ func (leaf *LeafF16) readFromBuffer(r *rbytes.RBuffer) error {
 func (leaf *LeafF16) unsafeDecayArray(ptr interface{}) interface{} {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 4
-	arr := (*[0]root.Float16)(unsafe.Pointer(rv.UnsafeAddr()))
-	sli := (*arr)[:]
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(sz)
-	hdr.Cap = int(sz)
+	sli := unsafe.Slice((*root.Float16)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
@@ -2042,11 +2006,7 @@ func (leaf *LeafD32) readFromBuffer(r *rbytes.RBuffer) error {
 func (leaf *LeafD32) unsafeDecayArray(ptr interface{}) interface{} {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 8
-	arr := (*[0]root.Double32)(unsafe.Pointer(rv.UnsafeAddr()))
-	sli := (*arr)[:]
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(sz)
-	hdr.Cap = int(sz)
+	sli := unsafe.Slice((*root.Double32)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
@@ -2236,11 +2196,7 @@ func (leaf *LeafC) readFromBuffer(r *rbytes.RBuffer) error {
 func (leaf *LeafC) unsafeDecayArray(ptr interface{}) interface{} {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 16
-	arr := (*[0]string)(unsafe.Pointer(rv.UnsafeAddr()))
-	sli := (*arr)[:]
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sli))
-	hdr.Len = int(sz)
-	hdr.Cap = int(sz)
+	sli := unsafe.Slice((*string)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
