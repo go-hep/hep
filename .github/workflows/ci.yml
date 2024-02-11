@@ -26,13 +26,13 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Install Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
         go-version: ${{ matrix.go-version }}
         cache: true
  
     - name: Cache-ROOT
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/root-${{ env.ROOT_VERSION }}
         key: ${{ runner.os }}-root-${{ env.ROOT_VERSION }}
@@ -45,7 +45,7 @@ jobs:
         git config --global core.eol lf
 
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 1
 
@@ -94,7 +94,7 @@ jobs:
       with:
         install-go: false
         cache-key: ${{ matrix.platform }}
-        version: "2023.1.5"
+        version: "2023.1.6"
     - name: Upload-Coverage
       if: matrix.platform == 'ubuntu-20.04'
       uses: codecov/codecov-action@v3
