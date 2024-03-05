@@ -30,3 +30,22 @@ func TestFactory(t *testing.T) {
 		}
 	}
 }
+
+func TestInvalidTypeName(t *testing.T) {
+	v := func() (ok bool) {
+		defer func() {
+			err := recover()
+			if err != nil {
+				want := "rtypes: invalid classname"
+				ok = err.(error).Error() == want
+			}
+		}()
+
+		_ = rtypes.Factory.Get("")
+		return false
+	}()
+
+	if !v {
+		t.Fatalf("expected a panic")
+	}
+}

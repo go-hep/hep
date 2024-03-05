@@ -5,8 +5,13 @@
 package rtypes
 
 import (
+	"errors"
 	"reflect"
 	"sync"
+)
+
+var (
+	errInvalidType = errors.New("rtypes: invalid classname")
 )
 
 // FactoryFct creates new values of a given type.
@@ -43,7 +48,7 @@ func (f *factory) HasKey(n string) bool {
 
 func (f *factory) Get(n string) FactoryFct {
 	if n == "" {
-		panic("rtypes: invalid classname")
+		panic(errInvalidType)
 	}
 
 	f.mu.RLock()
