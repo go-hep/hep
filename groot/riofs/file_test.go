@@ -547,3 +547,22 @@ func TestReadOnlyFile(t *testing.T) {
 		t.Fatalf("expected an error. got nil")
 	}
 }
+
+func TestTopLevelString(t *testing.T) {
+	f, err := groot.Open("../testdata/string-example.root")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	o, err := riofs.Get[*rbase.String](f, "FileSummaryRecord")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got := o.String()
+	want := `{"LumiCounter.eventsByRun":{"counts":{},"empty":true,"type":"LumiEventCounter"},"guid":"5FE9437E-D958-11EE-AB88-3CECEF1070AC"}`
+	if got != want {
+		t.Fatalf("got=%q, want=%q", got, want)
+	}
+}

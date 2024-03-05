@@ -53,6 +53,17 @@ func (f *factory) Get(n string) FactoryFct {
 		return fct
 	}
 
+	// if we are here, nobody registered a streamer+factory for 'string'.
+	// try our streamer-less rbase.String version.
+	if n == "string" {
+		f.mu.RLock()
+		fct, ok := f.db["*rbase.String"]
+		f.mu.RUnlock()
+		if ok {
+			return fct
+		}
+	}
+
 	f.mu.RLock()
 	obj := f.db["*rdict.Object"]
 	f.mu.RUnlock()

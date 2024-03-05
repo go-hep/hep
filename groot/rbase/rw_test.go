@@ -71,6 +71,18 @@ func TestWRBuffer(t *testing.T) {
 			},
 		},
 		{
+			name: "GoString",
+			want: NewString("go-string"),
+		},
+		{
+			name: "GoString-empty",
+			want: NewString(""),
+		},
+		{
+			name: "GoString-large",
+			want: NewString(strings.Repeat("*", 1024)), // len(str) > 255
+		},
+		{
 			name: "TProcessID",
 			want: &ProcessID{
 				named: Named{obj: Object{ID: 0x0, Bits: 0x3000000}, name: "my-name", title: "my-title"},
@@ -150,7 +162,7 @@ func TestWRBuffer(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(obj, tc.want) {
-				t.Fatalf("error\ngot= %+v\nwant=%+v\n", obj, tc.want)
+				t.Fatalf("error\ngot= %+v (%T)\nwant=%+v (%T)\n", obj, obj, tc.want, tc.want)
 			}
 		})
 	}
