@@ -16,8 +16,8 @@ codeberg.org/gonuts/binary v0.3.2 h1:7kSBmdRwbUv5fI8LaGp/gV+ow2OTi7EnRKO/pQ6YBJo
 codeberg.org/gonuts/binary v0.3.2/go.mod h1:hf+kigzXMZzpPTDOuSnTz+ppy5p037QluUFVtJ3OjWI=
 codeberg.org/gonuts/commander v0.5.1 h1:Rmy1GllX4L7/jtLEZURtPUzAkGX+XLJInyGepTF8ois=
 codeberg.org/gonuts/commander v0.5.1/go.mod h1:hFEcJLh+CwTVL4KNiHjpf/FydRGzbunV8mkK45SCXuU=
-codeberg.org/sbinet/npyio v0.8.1 h1:3YJp8lNXDAJWkFJ7OwrxRCbo5HJNzqFuOCU6pg9qwrI=
-codeberg.org/sbinet/npyio v0.8.1/go.mod h1:uWfDPrGbMgZZ5jvpg0+/pkPF0fgXFqjy/kWN7u0yEBo=
+codeberg.org/sbinet/npyio v0.11.0 h1:CnMQ+B4rK+eY9R3wUgXQz9mX8xu/pOc+gsLf+aRr6CI=
+codeberg.org/sbinet/npyio v0.11.0/go.mod h1:m2ec2Sj6SPfyCXXSrDVlRt9RXaeqmsZLzczzh+xcBjs=
 git.sr.ht/~sbinet/cmpimg v0.1.0 h1:E0zPRk2muWuCqSKSVZIWsgtU9pjsw3eKHi8VmQeScxo=
 git.sr.ht/~sbinet/cmpimg v0.1.0/go.mod h1:FU12psLbF4TfNXkKH2ZZQ29crIqoiqTZmeQ7dkp/pxE=
 git.sr.ht/~sbinet/epok v0.5.0 h1:eQcocQpGQVYWLiA93dkIgngH0jjjDiTdj7rS3vQLp6w=
@@ -73,6 +73,8 @@ github.com/jcmturner/rpc/v2 v2.0.3/go.mod h1:VUJYCIDm3PVOEHw8sgt091/20OJjskO/YJk
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.18.0 h1:c/Cqfb0r+Yi+JtIEq73FWXVkRonBlf0CRNYc8Zttxdo=
 github.com/klauspost/compress v1.18.0/go.mod h1:2Pp+KzxcywXVXMr50+X0Q/Lsb43OQHYWRCY2AiWywWQ=
+github.com/nlpodyssey/gopickle v0.3.0 h1:BLUE5gxFLyyNOPzlXxt6GoHEMMxD0qhsE4p0CIQyoLw=
+github.com/nlpodyssey/gopickle v0.3.0/go.mod h1:f070HJ/yR+eLi5WmM1OXJEGaTpuJEUiib19olXgYha0=
 github.com/pierrec/lz4/v4 v4.1.22 h1:cKFw6uJDK+/gfw5BcDL0JL5aBsAFdsIT18eRtLj7VIU=
 github.com/pierrec/lz4/v4 v4.1.22/go.mod h1:gZWDp/Ze/IJXGXf23ltt2EXimqmTUXEy0GFuRQyBid4=
 github.com/pierrec/xxHash v0.1.5 h1:n/jBpwTHiER4xYvK3/CdPVnLDPchj8eTJFFLUb4QHBo=

@@ -86,7 +86,7 @@ func TestProcess(t *testing.T) {
 			var got strings.Builder
 			err = npyio.Dump(&got, r)
 			if err != nil {
-				t.Fatalf("could not read output file")
+				t.Fatalf("could not read output file: %+v", err)
 			}
 
 			if got, want := got.String(), tc.want; got != want {

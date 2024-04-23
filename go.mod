@@ -7,7 +7,7 @@ require (
 	codeberg.org/go-mmap/mmap v0.8.0
 	codeberg.org/gonuts/binary v0.3.2
 	codeberg.org/gonuts/commander v0.5.1
-	codeberg.org/sbinet/npyio v0.8.1
+	codeberg.org/sbinet/npyio v0.11.0
 	git.sr.ht/~sbinet/epok v0.5.0
 	git.sr.ht/~sbinet/go-arrow v0.3.0
 	github.com/campoy/embedmd v1.0.0
@@ -46,6 +46,7 @@ require (
 	github.com/jcmturner/dnsutils/v2 v2.0.0 // indirect
 	github.com/jcmturner/gofork v1.7.6 // indirect
 	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
+	github.com/nlpodyssey/gopickle v0.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
