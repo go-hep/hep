@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	gioui.org v0.3.0
-	git.sr.ht/~sbinet/epok v0.4.0
+	git.sr.ht/~sbinet/epok v0.5.0
 	git.sr.ht/~sbinet/go-arrow v0.2.0
 	github.com/astrogo/fitsio v0.3.0
 	github.com/campoy/embedmd v1.0.0
@@ -15,21 +15,21 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-uuid v1.0.3
 	github.com/jcmturner/gokrb5/v8 v8.4.4
-	github.com/klauspost/compress v1.17.4
+	github.com/klauspost/compress v1.17.8
 	github.com/peterh/liner v1.2.2
 	github.com/pierrec/lz4/v4 v4.1.21
 	github.com/pierrec/xxHash v0.1.5
 	github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e
 	github.com/sbinet/npyio v0.8.0
-	github.com/ulikunitz/xz v0.5.11
+	github.com/ulikunitz/xz v0.5.12
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
-	golang.org/x/crypto v0.18.0
-	golang.org/x/exp v0.0.0-20231214170342-aacd6d4b4611
+	golang.org/x/crypto v0.22.0
+	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
 	golang.org/x/image v0.15.0
-	golang.org/x/sync v0.6.0
+	golang.org/x/sync v0.7.0
 	golang.org/x/text v0.14.0
-	golang.org/x/tools v0.17.0
-	gonum.org/v1/gonum v0.14.0
+	golang.org/x/tools v0.20.0
+	gonum.org/v1/gonum v0.15.0
 	gonum.org/v1/plot v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/ql v1.4.7
@@ -59,16 +59,16 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/rivo/uniseg v0.4.4 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/teambition/rrule-go v1.8.2 // indirect
 	golang.org/x/exp/shiny v0.0.0-20230905200255-921286631fa9 // indirect
-	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.20.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/net v0.24.0 // indirect
+	golang.org/x/sys v0.19.0 // indirect
 	modernc.org/b v1.1.0 // indirect
 	modernc.org/db v1.0.10 // indirect
 	modernc.org/file v1.0.8 // indirect
-	modernc.org/fileutil v1.2.0 // indirect
+	modernc.org/fileutil v1.3.0 // indirect
 	modernc.org/golex v1.1.0 // indirect
 	modernc.org/internal v1.1.0 // indirect
 	modernc.org/lldb v1.0.8 // indirect
