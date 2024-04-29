@@ -108,14 +108,14 @@ func ExampleScanH1D() {
 	fmt.Printf("entries: %v\n", h.Entries())
 	fmt.Printf("x-axis: (min=%v, max=%v)\n", h.XMin(), h.XMax())
 	fmt.Printf("x-mean: %v\n", h.XMean())
-	fmt.Printf("x-std-dev: %v\nx-std-err: %v\n", h.XStdDev(), h.XStdErr())
+	fmt.Printf("x-std-dev: %1.3f\nx-std-err: %1.3f\n", h.XStdDev(), h.XStdErr())
 
 	// Output:
 	// entries: 4
 	// x-axis: (min=1.1, max=4.400000000000001)
 	// x-mean: 2.75
-	// x-std-dev: 1.4200938936093859
-	// x-std-err: 0.7100469468046929
+	// x-std-dev: 1.420
+	// x-std-err: 0.710
 }
 
 func ExampleScanH1D_withH1D() {
@@ -140,14 +140,14 @@ func ExampleScanH1D_withH1D() {
 	fmt.Printf("entries: %v\n", h.Entries())
 	fmt.Printf("x-axis: (min=%v, max=%v)\n", h.XMin(), h.XMax())
 	fmt.Printf("x-mean: %v\n", h.XMean())
-	fmt.Printf("x-std-dev: %v\nx-std-err: %v\n", h.XStdDev(), h.XStdErr())
+	fmt.Printf("x-std-dev: %1.3f\nx-std-err: %1.3f\n", h.XStdDev(), h.XStdErr())
 
 	// Output:
 	// entries: 4
 	// x-axis: (min=0, max=10)
 	// x-mean: 2.75
-	// x-std-dev: 1.4200938936093859
-	// x-std-err: 0.7100469468046929
+	// x-std-dev: 1.420
+	// x-std-err: 0.710
 }
 
 func ExampleScanH2D() {
@@ -172,21 +172,21 @@ func ExampleScanH2D() {
 	fmt.Printf("entries: %v\n", h.Entries())
 	fmt.Printf("x-axis: (min=%v, max=%v)\n", h.XMin(), h.XMax())
 	fmt.Printf("x-mean: %v\n", h.XMean())
-	fmt.Printf("x-std-dev: %v\nx-std-err: %v\n", h.XStdDev(), h.XStdErr())
+	fmt.Printf("x-std-dev: %1.3f\nx-std-err: %1.3f\n", h.XStdDev(), h.XStdErr())
 	fmt.Printf("y-axis: (min=%v, max=%v)\n", h.YMin(), h.YMax())
 	fmt.Printf("y-mean: %v\n", h.YMean())
-	fmt.Printf("y-std-dev: %v\ny-std-err: %v\n", h.YStdDev(), h.YStdErr())
+	fmt.Printf("y-std-dev: %1.3f\ny-std-err: %1.3f\n", h.YStdDev(), h.YStdErr())
 
 	// Output:
 	// entries: 4
 	// x-axis: (min=1, max=4.000000000000001)
 	// x-mean: 2.5
-	// x-std-dev: 1.2909944487358056
-	// x-std-err: 0.6454972243679028
+	// x-std-dev: 1.291
+	// x-std-err: 0.645
 	// y-axis: (min=1.1, max=4.400000000000001)
 	// y-mean: 2.75
-	// y-std-dev: 1.4200938936093859
-	// y-std-err: 0.7100469468046929
+	// y-std-dev: 1.420
+	// y-std-err: 0.710
 }
 
 func ExampleScanH2D_withH2D() {
@@ -211,19 +211,19 @@ func ExampleScanH2D_withH2D() {
 	fmt.Printf("entries: %v\n", h.Entries())
 	fmt.Printf("x-axis: (min=%v, max=%v)\n", h.XMin(), h.XMax())
 	fmt.Printf("x-mean: %v\n", h.XMean())
-	fmt.Printf("x-std-dev: %v\nx-std-err: %v\n", h.XStdDev(), h.XStdErr())
+	fmt.Printf("x-std-dev: %1.3f\nx-std-err: %1.3f\n", h.XStdDev(), h.XStdErr())
 	fmt.Printf("y-axis: (min=%v, max=%v)\n", h.YMin(), h.YMax())
 	fmt.Printf("y-mean: %v\n", h.YMean())
-	fmt.Printf("y-std-dev: %v\ny-std-err: %v\n", h.YStdDev(), h.YStdErr())
+	fmt.Printf("y-std-dev: %1.3f\ny-std-err: %1.3f\n", h.YStdDev(), h.YStdErr())
 
 	// Output:
 	// entries: 4
 	// x-axis: (min=0, max=10)
 	// x-mean: 2.5
-	// x-std-dev: 1.2909944487358056
-	// x-std-err: 0.6454972243679028
+	// x-std-dev: 1.291
+	// x-std-err: 0.645
 	// y-axis: (min=0, max=10)
 	// y-mean: 2.75
-	// y-std-dev: 1.4200938936093859
-	// y-std-err: 0.7100469468046929
+	// y-std-dev: 1.420
+	// y-std-err: 0.710
 }

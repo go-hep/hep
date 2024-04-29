@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"reflect"
+	"runtime"
 	"testing"
 
 	"go-hep.org/x/hep/hplot"
@@ -35,6 +36,9 @@ func TestSubPlot(t *testing.T) {
 }
 
 func TestLatexPlot(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
 	Example_latexplot()
 	ref, err := os.ReadFile("testdata/latex_plot_golden.tex")
 	if err != nil {

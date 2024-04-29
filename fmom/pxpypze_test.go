@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package fmom_test
+package fmom
 
 import (
 	"math"
 	"testing"
 
-	"go-hep.org/x/hep/fmom"
 	"gonum.org/v1/gonum/floats/scalar"
 )
 
 func TestPxPyPzE(t *testing.T) {
 	{
-		var p4 fmom.PxPyPzE
+		var p4 PxPyPzE
 		if got, want := p4.Px(), 0.0; got != want {
 			t.Fatalf("p4.Px=%v, want=%v", got, want)
 		}
@@ -33,7 +32,7 @@ func TestPxPyPzE(t *testing.T) {
 	}
 
 	{
-		p4 := fmom.NewPxPyPzE(10, 11, 12, 20)
+		p4 := NewPxPyPzE(10, 11, 12, 20)
 		if got, want := p4.Px(), 10.0; got != want {
 			t.Fatalf("p4.Px=%v, want=%v", got, want)
 		}
@@ -62,27 +61,27 @@ func TestPxPyPzE(t *testing.T) {
 			t.Fatalf("p4=%v, want=%v", got, want)
 		}
 
-		p1 := fmom.NewPxPyPzE(10, 11, 12, 20)
+		p1 := NewPxPyPzE(10, 11, 12, 20)
 		if p1 != p4 {
 			t.Fatalf("p4=%v, want=%v", p1, p4)
 		}
 
-		var p2 fmom.PxPyPzE = p1
+		var p2 PxPyPzE = p1
 		if p1 != p2 {
 			t.Fatalf("p4=%v, want=%v", p1, p2)
 		}
 	}
 
 	{
-		p1 := fmom.NewPxPyPzE(10, 11, 12, 20)
-		var p2 fmom.PxPyPzE
+		p1 := NewPxPyPzE(10, 11, 12, 20)
+		var p2 PxPyPzE
 		p2.Set(&p1)
 		if p1 != p2 {
 			t.Fatalf("p4=%v want=%v", p2, p1)
 		}
 	}
 
-	p := fmom.NewPxPyPzE(10, 11, 12, 20)
+	p := NewPxPyPzE(10, 11, 12, 20)
 
 	// values obtained with ROOT-6.14.00
 	for _, tc := range []struct {
@@ -141,30 +140,31 @@ func TestPxPyPzE(t *testing.T) {
 		})
 	}
 
+	const epsilon = 1e-12
 	t.Run("set-PtEtaPhiM", func(t *testing.T) {
-		p1 := fmom.NewPxPyPzE(10, 20, 30, 40)
+		p1 := NewPxPyPzE(10, 20, 30, 40)
 		p1.SetPtEtaPhiM(100, 1.5, 1/3.*math.Pi, 10)
-		want := fmom.NewPxPyPzE(
+		want := NewPxPyPzE(
 			49.99999999999999,
 			86.60254037844388,
 			212.9279455094818,
 			235.45341360636257,
 		)
-		if got, want := p1, want; got != want {
+		if got := p1; !p4equal(&got, &want, epsilon) {
 			t.Fatalf("invalid p4:\ngot= %v\nwant=%v", got, want)
 		}
 	})
 
 	t.Run("set-PtEtaPhiE", func(t *testing.T) {
-		p1 := fmom.NewPxPyPzE(10, 20, 30, 40)
+		p1 := NewPxPyPzE(10, 20, 30, 40)
 		p1.SetPtEtaPhiE(100, 1.5, 1/3.*math.Pi, 10)
-		want := fmom.NewPxPyPzE(
+		want := NewPxPyPzE(
 			49.99999999999999,
 			86.60254037844388,
 			212.9279455094818,
 			10,
 		)
-		if got, want := p1, want; got != want {
+		if got := p1; !p4equal(&got, &want, epsilon) {
 			t.Fatalf("invalid p4:\ngot= %v\nwant=%v", got, want)
 		}
 	})

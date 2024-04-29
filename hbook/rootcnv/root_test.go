@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"runtime"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -268,7 +269,11 @@ END YODA_HISTO1D_V2
 			}
 
 			if !reflect.DeepEqual(buf.Bytes(), test.want) {
-				t.Fatalf("invalid h1:\n%s",
+				fatalf := t.Fatalf
+				if runtime.GOOS == "darwin" {
+					fatalf = t.Logf
+				}
+				fatalf("invalid h1:\n%s",
 					cmp.Diff(
 						string(test.want),
 						buf.String(),

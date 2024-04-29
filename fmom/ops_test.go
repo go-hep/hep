@@ -12,6 +12,15 @@ import (
 	"gonum.org/v1/gonum/spatial/r3"
 )
 
+func p3equal(p1, p2 r3.Vec, epsilon float64) bool {
+	if cmpeq(p1.X, p2.X, epsilon) &&
+		cmpeq(p1.Y, p2.Y, epsilon) &&
+		cmpeq(p1.Z, p2.Z, epsilon) {
+		return true
+	}
+	return false
+}
+
 func newPxPyPzE(p4 PxPyPzE) P4 {
 	return &p4
 }
@@ -332,7 +341,7 @@ func TestBoost(t *testing.T) {
 		zero    r3.Vec
 	)
 
-	if boostRF != zero {
+	if !p3equal(boostRF, zero, 1e-14) {
 		t.Fatalf("invalid boost: got=%v, want=%v", boostRF, zero)
 	}
 

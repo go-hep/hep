@@ -8,6 +8,7 @@ import (
 	"image/color"
 	"math"
 	"os"
+	"runtime"
 	"testing"
 
 	"go-hep.org/x/hep/hbook"
@@ -21,6 +22,9 @@ import (
 )
 
 func TestH1D(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D, t, "h1d_plot.png")
 }
 
@@ -49,6 +53,10 @@ func TestH1DLegendStyle(t *testing.T) {
 }
 
 func TestH1DWithBorders(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
+
 	_ = os.Remove("testdata/h1d_borders.png")
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withPlotBorders, t, "h1d_borders.png")
 

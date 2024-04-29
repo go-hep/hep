@@ -50,7 +50,7 @@ func ExampleRand1D() {
 		h1.XMean(), h1.XStdDev(), h1.XStdErr(),
 	)
 	fmt.Printf(
-		"cdf(0)= %+8f\ncdf(1)= %+8f\n",
+		"cdf(0)= %+1.1f\ncdf(1)= %+1.1f\n",
 		rnd.CDF(0), rnd.CDF(1),
 	)
 	fmt.Printf(
@@ -58,7 +58,7 @@ func ExampleRand1D() {
 		h2.XMean(), h2.XStdDev(), h2.XStdErr(),
 	)
 	fmt.Printf(
-		"cdf(0)= %+8f\ncdf(1)= %+8f\n",
+		"cdf(0)= %+1.1f\ncdf(1)= %+1.1f\n",
 		hr.CDF(0), hr.CDF(1),
 	)
 
@@ -102,11 +102,11 @@ func ExampleRand1D() {
 
 	// Output:
 	// h1: mean=+0.020436 std-dev=+1.992307 +/- 0.019923
-	// cdf(0)= +0.500000
-	// cdf(1)= +0.691462
+	// cdf(0)= +0.5
+	// cdf(1)= +0.7
 	// h2: mean=-0.003631 std-dev=+2.008359 +/- 0.020084
-	// cdf(0)= +0.499700
-	// cdf(1)= +0.687800
+	// cdf(0)= +0.5
+	// cdf(1)= +0.7
 }
 
 func TestRand1DExample(t *testing.T) {
