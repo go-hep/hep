@@ -7,7 +7,7 @@
 package rvers
 
 // ROOT version
-const ROOT = 63002
+const ROOT = 63200
 
 // ROOT classes versions
 const (
@@ -70,7 +70,7 @@ const (
 	F1NormSum                = 1  // ROOT version for TF1NormSum
 	F1Parameters             = 1  // ROOT version for TF1Parameters
 	Formula                  = 13 // ROOT version for TFormula
-	Graph                    = 4  // ROOT version for TGraph
+	Graph                    = 5  // ROOT version for TGraph
 	GraphErrors              = 3  // ROOT version for TGraphErrors
 	GraphAsymmErrors         = 3  // ROOT version for TGraphAsymmErrors
 	GraphMultiErrors         = 1  // ROOT version for TGraphMultiErrors

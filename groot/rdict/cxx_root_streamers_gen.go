@@ -3144,7 +3144,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 	}))
-	StreamerInfos.Add(NewCxxStreamerInfo("TGraph", 4, 0x5f7f465, []rbytes.StreamerElement{
+	StreamerInfos.Add(NewCxxStreamerInfo("TGraph", 5, 0xb932984f, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
 			Name:   *rbase.NewNamed("TNamed", "The basis for a named object (name, title)"),
 			Type:   rmeta.Base,
@@ -3222,7 +3222,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 4, "fNpoints", "TGraph"),
+		}.New(), 5, "fNpoints", "TGraph"),
 		NewStreamerBasicPointer(Element{
 			Name:   *rbase.NewNamed("fY", "[fNpoints] array of Y points"),
 			Type:   48,
@@ -3235,7 +3235,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 4, "fNpoints", "TGraph"),
+		}.New(), 5, "fNpoints", "TGraph"),
 		&StreamerObjectPointer{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fFunctions", "Pointer to list of functions (fits and user)"),
 			Type:   rmeta.ObjectP,
@@ -3288,21 +3288,34 @@ func init() {
 			XMax:   0.000000,
 			Factor: 0.000000,
 		}.New()},
+		&StreamerString{StreamerElement: Element{
+			Name:   *rbase.NewNamed("fOption", "Options used for drawing the graph"),
+			Type:   rmeta.TString,
+			Size:   24,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
+			Offset: 0,
+			EName:  "TString",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New()},
 	}))
-	StreamerInfos.Add(NewCxxStreamerInfo("TGraphErrors", 3, 0x2a7ce30f, []rbytes.StreamerElement{
+	StreamerInfos.Add(NewCxxStreamerInfo("TGraphErrors", 3, 0xbdadb119, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
 			Name:   *rbase.NewNamed("TGraph", "Graph graphics class"),
 			Type:   rmeta.Base,
 			Size:   0,
 			ArrLen: 0,
 			ArrDim: 0,
-			MaxIdx: [5]int32{0, 100136037, 0, 0, 0},
+			MaxIdx: [5]int32{0, -1187866545, 0, 0, 0},
 			Offset: 0,
 			EName:  "BASE",
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 4),
+		}.New(), 5),
 		NewStreamerBasicPointer(Element{
 			Name:   *rbase.NewNamed("fEX", "[fNpoints] array of X errors"),
 			Type:   48,
@@ -3315,7 +3328,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 4, "fNpoints", "TGraph"),
+		}.New(), 5, "fNpoints", "TGraph"),
 		NewStreamerBasicPointer(Element{
 			Name:   *rbase.NewNamed("fEY", "[fNpoints] array of Y errors"),
 			Type:   48,
@@ -3328,22 +3341,22 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 4, "fNpoints", "TGraph"),
+		}.New(), 5, "fNpoints", "TGraph"),
 	}))
-	StreamerInfos.Add(NewCxxStreamerInfo("TGraphAsymmErrors", 3, 0xcc46af3b, []rbytes.StreamerElement{
+	StreamerInfos.Add(NewCxxStreamerInfo("TGraphAsymmErrors", 3, 0x206d5315, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
 			Name:   *rbase.NewNamed("TGraph", "Graph graphics class"),
 			Type:   rmeta.Base,
 			Size:   0,
 			ArrLen: 0,
 			ArrDim: 0,
-			MaxIdx: [5]int32{0, 100136037, 0, 0, 0},
+			MaxIdx: [5]int32{0, -1187866545, 0, 0, 0},
 			Offset: 0,
 			EName:  "BASE",
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 4),
+		}.New(), 5),
 		NewStreamerBasicPointer(Element{
 			Name:   *rbase.NewNamed("fEXlow", "[fNpoints] array of X low errors"),
 			Type:   48,
@@ -3356,7 +3369,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 4, "fNpoints", "TGraph"),
+		}.New(), 5, "fNpoints", "TGraph"),
 		NewStreamerBasicPointer(Element{
 			Name:   *rbase.NewNamed("fEXhigh", "[fNpoints] array of X high errors"),
 			Type:   48,
@@ -3369,7 +3382,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 4, "fNpoints", "TGraph"),
+		}.New(), 5, "fNpoints", "TGraph"),
 		NewStreamerBasicPointer(Element{
 			Name:   *rbase.NewNamed("fEYlow", "[fNpoints] array of Y low errors"),
 			Type:   48,
@@ -3382,7 +3395,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 4, "fNpoints", "TGraph"),
+		}.New(), 5, "fNpoints", "TGraph"),
 		NewStreamerBasicPointer(Element{
 			Name:   *rbase.NewNamed("fEYhigh", "[fNpoints] array of Y high errors"),
 			Type:   48,
@@ -3395,22 +3408,22 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 4, "fNpoints", "TGraph"),
+		}.New(), 5, "fNpoints", "TGraph"),
 	}))
-	StreamerInfos.Add(NewCxxStreamerInfo("TGraphMultiErrors", 1, 0x1a63990a, []rbytes.StreamerElement{
+	StreamerInfos.Add(NewCxxStreamerInfo("TGraphMultiErrors", 1, 0xb3a16708, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
 			Name:   *rbase.NewNamed("TGraph", "Graph graphics class"),
 			Type:   rmeta.Base,
 			Size:   0,
 			ArrLen: 0,
 			ArrDim: 0,
-			MaxIdx: [5]int32{0, 100136037, 0, 0, 0},
+			MaxIdx: [5]int32{0, -1187866545, 0, 0, 0},
 			Offset: 0,
 			EName:  "BASE",
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 4),
+		}.New(), 5),
 		&StreamerBasicType{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fNYErrors", "The amount of different y-errors"),
 			Type:   rmeta.Int,
@@ -3449,7 +3462,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 4, "fNpoints", "TGraph"),
+		}.New(), 5, "fNpoints", "TGraph"),
 		NewStreamerBasicPointer(Element{
 			Name:   *rbase.NewNamed("fExH", "[fNpoints] array of X high errors"),
 			Type:   48,
@@ -3462,7 +3475,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 4, "fNpoints", "TGraph"),
+		}.New(), 5, "fNpoints", "TGraph"),
 		NewCxxStreamerSTL(Element{
 			Name:   *rbase.NewNamed("fEyL", "Two dimensional array of Y low errors"),
 			Type:   rmeta.Streamer,
@@ -6839,7 +6852,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fIsRange", "(=kTRUE if leaf has a range, kFALSE otherwise).  This is equivalent to being a 'leafcount'.  For a TLeafElement the range information is actually store in the TBranchElement."),
+			Name:   *rbase.NewNamed("fIsRange", "(=true if leaf has a range, false otherwise).  This is equivalent to being a 'leafcount'.  For a TLeafElement the range information is actually store in the TBranchElement."),
 			Type:   rmeta.Bool,
 			Size:   1,
 			ArrLen: 0,
@@ -6852,7 +6865,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
-			Name:   *rbase.NewNamed("fIsUnsigned", "(=kTRUE if unsigned, kFALSE otherwise)"),
+			Name:   *rbase.NewNamed("fIsUnsigned", "(=true if unsigned, false otherwise)"),
 			Type:   rmeta.Bool,
 			Size:   1,
 			ArrLen: 0,
