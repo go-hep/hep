@@ -33,6 +33,7 @@ type tgraph struct {
 	histo   *H1F
 	min     float64
 	max     float64
+	opt     string
 }
 
 func newGraph(n int) *tgraph {
@@ -46,6 +47,7 @@ func newGraph(n int) *tgraph {
 		x:         make([]float64, n),
 		y:         make([]float64, n),
 		funcs:     rcont.NewList("", nil),
+		opt:       "",
 	}
 }
 
@@ -141,6 +143,7 @@ func (g *tgraph) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		w.WriteF64(g.min)
 		w.WriteF64(g.max)
 	}
+	w.WriteString(g.opt)
 
 	return w.SetHeader(hdr)
 }
@@ -201,6 +204,9 @@ func (g *tgraph) UnmarshalROOT(r *rbytes.RBuffer) error {
 		g.min = r.ReadF64()
 		g.max = r.ReadF64()
 	}
+	if hdr.Vers > 4 {
+		g.opt = r.ReadString()
+	}
 
 	r.CheckHeader(hdr)
 	return r.Err()
@@ -219,6 +225,7 @@ func (g *tgraph) RMembers() (mbrs []rbytes.Member) {
 		{Name: "fHistogram", Value: &g.histo},
 		{Name: "fMinimum", Value: &g.min},
 		{Name: "fMaximum", Value: &g.max},
+		{Name: "fOption", Value: &g.opt},
 	}...)
 
 	return mbrs
