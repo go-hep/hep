@@ -201,7 +201,7 @@ func TypeFromSE(ctx rbytes.StreamerInfoContext, se rbytes.StreamerElement) (refl
 		if err != nil {
 			return nil, fmt.Errorf("rdict: could not create type for ptr-to-object %q: %w", typename, err)
 		}
-		typ = reflect.PtrTo(typ)
+		typ = reflect.PointerTo(typ)
 		return typeFromDescr(typ, typename, alen, se.ArrayDims()), nil
 
 	case *StreamerSTL:
@@ -555,7 +555,7 @@ func typeFromDescr(typ reflect.Type, typename string, alen int, dims []int32) re
 		if typename[len(typename)-1-i] != '*' {
 			break
 		}
-		typ = reflect.PtrTo(typ)
+		typ = reflect.PointerTo(typ)
 	}
 
 	return typ

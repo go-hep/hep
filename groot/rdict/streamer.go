@@ -129,7 +129,7 @@ func (bld *streamerBuilder) genStdVectorOf(typ reflect.Type, name string, offset
 	case reflect.Struct:
 		ename = fmt.Sprintf("vector<%s>", typenameOf(typ))
 		etype = rmeta.Any
-		if isTObject(typ) || isTObject(reflect.PtrTo(typ)) {
+		if isTObject(typ) || isTObject(reflect.PointerTo(typ)) {
 			etype = rmeta.Object
 		}
 	case reflect.Slice:
@@ -162,7 +162,7 @@ func (bld *streamerBuilder) genPtr(typ reflect.Type, name string, offset int32) 
 	//		panic(fmt.Errorf("rdict: invalid ptr-to type %v", typ))
 	//	}
 
-	ptr := reflect.PtrTo(typ)
+	ptr := reflect.PointerTo(typ)
 	se := StreamerElement{
 		named:  *rbase.NewNamed(name, ""),
 		etype:  rmeta.AnyP,
@@ -282,7 +282,7 @@ func (bld *streamerBuilder) genArrayOf(n int, typ reflect.Type, name string, off
 			},
 		}
 	case reflect.Struct:
-		if isTObject(typ) || isTObject(reflect.PtrTo(typ)) {
+		if isTObject(typ) || isTObject(reflect.PointerTo(typ)) {
 			return &StreamerObject{
 				StreamerElement{
 					named:  *rbase.NewNamed(name, ""),
@@ -715,7 +715,7 @@ func offsetOf(field reflect.StructField) int32 {
 
 func (bld *streamerBuilder) sizeOf(typ reflect.Type) int32 {
 	// FIXME(sbinet): compute ROOT-compatible size.
-	if ptr := reflect.PtrTo(typ); isTObject(ptr) || isTObject(typ) {
+	if ptr := reflect.PointerTo(typ); isTObject(ptr) || isTObject(typ) {
 		name := typenameOf(typ)
 		switch name {
 		case "TObjString":
@@ -740,7 +740,7 @@ func typenameOf(typ reflect.Type) string {
 			return name
 		}
 	}
-	if ptr := reflect.PtrTo(typ); isTObject(ptr) {
+	if ptr := reflect.PointerTo(typ); isTObject(ptr) {
 		name := reflect.New(typ).Interface().(root.Object).Class()
 		return name
 	}
