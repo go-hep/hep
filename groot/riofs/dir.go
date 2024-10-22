@@ -464,7 +464,7 @@ func (dir *tdirectoryFile) Put(name string, obj root.Object) error {
 		dir.addStreamer(si)
 	}
 
-	key, err := newKeyFrom(dir, name, title, rdict.GoName2Cxx(typename), obj, dir.file)
+	key, err := newKeyFrom(dir, name, title, rdict.GoName2Cxx(typename), obj, dir.file, nil) // FIXME(sbinet): wire in key-opt ?
 	if err != nil {
 		return fmt.Errorf("riofs: could not create key %q for object %T: %w", name, obj, err)
 	}

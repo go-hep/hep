@@ -5,6 +5,7 @@
 package rtree
 
 import (
+	"compress/flate"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,6 +13,7 @@ import (
 	"sync"
 	"testing"
 
+	"go-hep.org/x/hep/groot/internal/rcompress"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/riofs"
 	"golang.org/x/exp/rand"
@@ -242,5 +244,101 @@ func TestWriteThisStreamers(t *testing.T) {
 		if got != tc.want {
 			t.Errorf("invalid count for %q: got=%d, want=%d", tc.name, got, tc.want)
 		}
+	}
+}
+
+func TestWriterWithCompression(t *testing.T) {
+	tmp, err := os.MkdirTemp("", "groot-rtree-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		_ = os.RemoveAll(tmp)
+	}()
+
+	for _, tc := range []struct {
+		wopt WriteOption
+		want rcompress.Kind
+	}{
+		// {WithoutCompression(flate.BestCompression), rcompress.},
+		{WithLZ4(flate.BestCompression), rcompress.LZ4},
+		{WithLZMA(flate.BestCompression), rcompress.LZMA},
+		{WithZlib(flate.BestCompression), rcompress.ZLIB},
+		{WithZstd(flate.BestCompression), rcompress.ZSTD},
+	} {
+		t.Run("alg-"+tc.want.String(), func(t *testing.T) {
+			fname := filepath.Join(tmp, "groot-alg-"+tc.want.String())
+			f, err := riofs.Create(fname)
+			if err != nil {
+				t.Fatalf("could not create file %q: %v", fname, err)
+			}
+			defer f.Close()
+
+			var (
+				evt struct {
+					N   int32
+					Sli []float64 `groot:"Sli[N]"`
+				}
+				wvars = WriteVarsFromStruct(&evt)
+			)
+			w, err := NewWriter(f, "tree", wvars, tc.wopt)
+			if err != nil {
+				t.Errorf("could not create tree writer: %+v", err)
+				return
+			}
+			defer w.Close()
+
+			rng := rand.New(rand.NewSource(1234))
+			for i := 0; i < 100; i++ {
+				evt.N = rng.Int31n(10) + 1
+				evt.Sli = evt.Sli[:0]
+				for j := 0; j < int(evt.N); j++ {
+					evt.Sli = append(evt.Sli, rng.Float64())
+				}
+				_, err = w.Write()
+				if err != nil {
+					t.Errorf("could not write event %d: %+v", i, err)
+					return
+				}
+			}
+
+			err = w.Close()
+			if err != nil {
+				t.Errorf("could not close tree writer: %+v", err)
+				return
+			}
+
+			err = f.Close()
+			if err != nil {
+				t.Errorf("could not close root file: %+v", err)
+				return
+			}
+
+			{
+				f, err := riofs.Open(fname)
+				if err != nil {
+					t.Fatalf("could not open ROOT file %q: %v", fname, err)
+				}
+				defer f.Close()
+
+				tree, err := riofs.Get[Tree](f, "tree")
+				if err != nil {
+					t.Fatalf("could not open tree: %v", err)
+				}
+				bname := "Sli"
+				b := tree.Branch(bname)
+				if b == nil {
+					t.Fatalf("could not retrieve branch %q", bname)
+				}
+				bb, ok := b.(*tbranch)
+				if !ok {
+					t.Fatalf("unexpected type for branch %q: %T", bname, b)
+				}
+				xset := rcompress.SettingsFrom(int32(bb.compress))
+				if got, want := xset.Alg, tc.want; got != want {
+					t.Fatalf("invalid compression algorithm for branch %q: got=%v, want=%v", b.Name(), got, want)
+				}
+			}
+		})
 	}
 }

@@ -18,6 +18,27 @@ import (
 	"go-hep.org/x/hep/groot/rvers"
 )
 
+// KeyOption configures how a Key may be created.
+type KeyOption func(cfg *keyCfg) error
+
+// WithKeyCompression configures a Key to use the provided compression scheme.
+func WithKeyCompression(compression int32) KeyOption {
+	return func(cfg *keyCfg) error {
+		cfg.compr = rcompress.SettingsFrom(compression)
+		return nil
+	}
+}
+
+type keyCfg struct {
+	compr rcompress.Settings
+}
+
+func newKeyCfg() *keyCfg {
+	return &keyCfg{
+		compr: rcompress.Settings{Alg: rcompress.Inherit},
+	}
+}
+
 // noKeyError is the error returned when a riofs.Key could not be found.
 type noKeyError struct {
 	key string
@@ -122,18 +143,26 @@ func newKey(dir *tdirectoryFile, name, title, class string, objlen int32, f *Fil
 // NewKey creates a new key from the provided serialized object buffer.
 // NewKey puts the key and its payload at the end of the provided file f.
 // Depending on the file configuration, NewKey may compress the provided object buffer.
-func NewKey(dir Directory, name, title, class string, cycle int16, obj []byte, f *File) (Key, error) {
+func NewKey(dir Directory, name, title, class string, cycle int16, obj []byte, f *File, kopts ...KeyOption) (Key, error) {
 	var d *tdirectoryFile
 	if dir != nil {
 		d = dir.(*tdirectoryFile)
 	}
-	return newKeyFromBuf(d, name, title, class, cycle, obj, f)
+	return newKeyFromBuf(d, name, title, class, cycle, obj, f, kopts)
 }
 
-func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object, f *File) (Key, error) {
+func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object, f *File, kopts []KeyOption) (Key, error) {
 	var err error
 	if dir == nil {
 		dir = &f.dir
+	}
+
+	kcfg := newKeyCfg()
+	for _, opt := range kopts {
+		err = opt(kcfg)
+		if err != nil {
+			return Key{}, fmt.Errorf("riofs: could not setup Key option: %w", err)
+		}
 	}
 
 	keylen := keylenFor(name, title, class, dir, f.end)
@@ -171,7 +200,12 @@ func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object,
 		k.rvers += 1000
 	}
 
-	k.buf, err = rcompress.Compress(nil, buf.Bytes(), k.f.compression)
+	compress := k.f.compression
+	if kcfg.compr.Alg != rcompress.Inherit {
+		compress = kcfg.compr.Compression()
+	}
+
+	k.buf, err = rcompress.Compress(nil, buf.Bytes(), compress)
 	if err != nil {
 		return k, fmt.Errorf("riofs: could not compress object %T for key %q: %w", obj, name, err)
 	}
@@ -185,10 +219,18 @@ func newKeyFrom(dir *tdirectoryFile, name, title, class string, obj root.Object,
 	return k, nil
 }
 
-func newKeyFromBuf(dir *tdirectoryFile, name, title, class string, cycle int16, buf []byte, f *File) (Key, error) {
+func newKeyFromBuf(dir *tdirectoryFile, name, title, class string, cycle int16, buf []byte, f *File, kopts []KeyOption) (Key, error) {
 	var err error
 	if dir == nil {
 		dir = &f.dir
+	}
+
+	kcfg := newKeyCfg()
+	for _, opt := range kopts {
+		err = opt(kcfg)
+		if err != nil {
+			return Key{}, fmt.Errorf("riofs: could not setup Key option: %w", err)
+		}
 	}
 
 	keylen := keylenFor(name, title, class, dir, f.end)
@@ -212,7 +254,12 @@ func newKeyFromBuf(dir *tdirectoryFile, name, title, class string, cycle int16, 
 		k.rvers += 1000
 	}
 
-	k.buf, err = rcompress.Compress(nil, buf, k.f.compression)
+	compress := k.f.compression
+	if kcfg.compr.Alg != rcompress.Inherit {
+		compress = kcfg.compr.Compression()
+	}
+
+	k.buf, err = rcompress.Compress(nil, buf, compress)
 	if err != nil {
 		return k, fmt.Errorf("riofs: could not compress object %s for key %q: %w", class, name, err)
 	}

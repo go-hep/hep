@@ -306,7 +306,7 @@ func (b *Basket) grow(n int) {
 	b.offsets = append(b.offsets, make([]int32, delta)...)
 }
 
-func (b *Basket) writeFile(f *riofs.File) (totBytes int64, zipBytes int64, err error) {
+func (b *Basket) writeFile(f *riofs.File, compr int32) (totBytes int64, zipBytes int64, err error) {
 	header := b.header
 	b.header = true
 	defer func() {
@@ -332,7 +332,7 @@ func (b *Basket) writeFile(f *riofs.File) (totBytes int64, zipBytes int64, err e
 		b.wbuf.WriteArrayI32(b.offsets[:b.nevbuf])
 		b.wbuf.WriteI32(0)
 	}
-	b.key, err = riofs.NewKey(nil, b.key.Name(), b.key.Title(), b.Class(), int16(b.key.Cycle()), b.wbuf.Bytes(), f)
+	b.key, err = riofs.NewKey(nil, b.key.Name(), b.key.Title(), b.Class(), int16(b.key.Cycle()), b.wbuf.Bytes(), f, riofs.WithKeyCompression(compr))
 	if err != nil {
 		return 0, 0, fmt.Errorf("rtree: could not create basket-key: %w", err)
 	}

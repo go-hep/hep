@@ -55,6 +55,14 @@ type Settings struct {
 	Lvl int
 }
 
+// SettingsFrom create a Settings value from the provided compression
+// configuration (compression algorithm and compression level), using
+// ROOT's encoding.
+func SettingsFrom(compr int32) Settings {
+	alg, lvl := rootCompressAlgLvl(compr)
+	return Settings{Alg: alg, Lvl: lvl}
+}
+
 // DefaultSettings is the default compression algorithm and level used
 // in ROOT files and trees.
 var DefaultSettings = Settings{Alg: ZLIB, Lvl: flate.BestSpeed}

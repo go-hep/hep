@@ -749,7 +749,7 @@ func (b *tbranch) flush() error {
 	}
 
 	f := b.tree.getFile()
-	totBytes, zipBytes, err := b.ctx.bk.writeFile(f)
+	totBytes, zipBytes, err := b.ctx.bk.writeFile(f, int32(b.compress))
 	if err != nil {
 		return fmt.Errorf("could not marshal basket[%d] (branch=%q): %w", b.writeBasket, b.Name(), err)
 	}

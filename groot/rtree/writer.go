@@ -72,6 +72,14 @@ func WithZlib(level int) WriteOption {
 	}
 }
 
+// WithZstd configures a ROOT tree to use zstd as a compression mechanism.
+func WithZstd(level int) WriteOption {
+	return func(opt *wopt) error {
+		opt.compress = rcompress.Settings{Alg: rcompress.ZSTD, Lvl: level}.Compression()
+		return nil
+	}
+}
+
 // WithBasketSize configures a ROOT tree to use 'size' (in bytes) as a basket buffer size.
 // if size is <= 0, the default buffer size is used (DefaultBasketSize).
 func WithBasketSize(size int) WriteOption {
