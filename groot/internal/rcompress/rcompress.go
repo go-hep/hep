@@ -6,6 +6,8 @@
 // ROOT data payloads.
 package rcompress // import "go-hep.org/x/hep/groot/internal/rcompress"
 
+//go:generate stringer -type Kind
+
 import (
 	"encoding/binary"
 	"errors"
