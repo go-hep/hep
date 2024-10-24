@@ -13,7 +13,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
+	"os"
+	"runtime"
+	"strconv"
 
+	"git.sr.ht/~sbinet/pzlib"
 	"github.com/klauspost/compress/flate"
 	"github.com/klauspost/compress/zlib"
 	"github.com/klauspost/compress/zstd"
@@ -113,6 +118,9 @@ const HeaderSize = 9
 // of each block can not be bigger than 16Mb.
 const kMaxCompressedBlockSize = 0xffffff
 
+// minimum uncompressed data size (in bytes) for pzlib to be efficient
+const kMinPzlibBlockSize = 1 << 15
+
 // kindOf returns the kind of compression algorithm.
 func kindOf(buf []byte) Kind {
 	_ = buf[HeaderSize-1] // bound-check
@@ -187,6 +195,37 @@ func Compress(dst, src []byte, compr int32) ([]byte, error) {
 	return dst[:cur], nil
 }
 
+var (
+	pzlibBlockSize = kMinPzlibBlockSize
+	pzlibNumBlocks = 4
+)
+
+func init() {
+	pzlibNumBlocks = runtime.NumCPU()
+	for _, n := range []string{"GROOT_PZLIB_BLOCK_SIZE", "GROOT_PZLIB_NUM_BLOCKS"} {
+		v := os.Getenv(n)
+		if v == "" {
+			continue
+		}
+		i, err := strconv.ParseInt(v, 10, 32)
+		if err != nil {
+			log.Printf("could not parse %q value %q: %+v", n, v, err)
+			continue
+		}
+		switch n {
+		case "GROOT_PZLIB_BLOCK_SIZE":
+			pzlibBlockSize = int(i)
+		case "GROOT_PZLIB_NUM_BLOCKS":
+			pzlibNumBlocks = int(i)
+		}
+	}
+
+	if false {
+		log.Printf("PZLIB-BLOCK-SIZE=%d", pzlibBlockSize)
+		log.Printf("PZLIB-NUM-BLOCKS=%d", pzlibNumBlocks)
+	}
+}
+
 func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 	// FIXME(sbinet): rework tgt/dst to reduce buffer allocation.
 
@@ -206,9 +245,23 @@ func compressBlock(alg Kind, lvl int, tgt, src []byte) (int, error) {
 		hdr[0] = 'Z'
 		hdr[1] = 'L'
 		hdr[2] = 8 // zlib deflated
-		w, err := zlib.NewWriterLevel(buf, lvl)
-		if err != nil {
-			return 0, fmt.Errorf("rcompress: could not create ZLIB compressor: %w", err)
+		var (
+			w   io.WriteCloser
+			err error
+		)
+		if len(src) >= kMinPzlibBlockSize {
+			ww, err := pzlib.NewWriterLevel(buf, lvl)
+			if err != nil {
+				return 0, fmt.Errorf("rcompress: could not create ZLIB compressor: %w", err)
+			}
+			//ww.SetConcurrency(kMinPzlibBlockSize, 4)
+			ww.SetConcurrency(pzlibBlockSize, pzlibNumBlocks)
+			w = ww
+		} else {
+			w, err = zlib.NewWriterLevel(buf, lvl)
+			if err != nil {
+				return 0, fmt.Errorf("rcompress: could not create ZLIB compressor: %w", err)
+			}
 		}
 
 		_, err = w.Write(src)

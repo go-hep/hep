@@ -6,6 +6,7 @@ require (
 	gioui.org v0.3.0
 	git.sr.ht/~sbinet/epok v0.5.0
 	git.sr.ht/~sbinet/go-arrow v0.2.0
+	git.sr.ht/~sbinet/pzlib v0.1.0
 	github.com/astrogo/fitsio v0.3.0
 	github.com/campoy/embedmd v1.0.0
 	github.com/go-mmap/mmap v0.7.0
