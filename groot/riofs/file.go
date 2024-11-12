@@ -5,7 +5,6 @@
 package riofs
 
 import (
-	"compress/flate"
 	"errors"
 	"fmt"
 	"io"
@@ -171,22 +170,24 @@ func Create(name string, opts ...FileOption) (*File, error) {
 	}
 
 	f := &File{
-		w:           fd,
-		closer:      fd,
-		id:          name,
-		version:     root.Version,
-		begin:       kBEGIN,
-		end:         kBEGIN,
-		units:       4,
-		compression: 1,
-		sinfos:      nil,
-		simap:       make(map[rbytes.StreamerInfo]struct{}),
+		w:       fd,
+		closer:  fd,
+		id:      name,
+		version: root.Version,
+		begin:   kBEGIN,
+		end:     kBEGIN,
+		units:   4,
+		sinfos:  nil,
+		simap:   make(map[rbytes.StreamerInfo]struct{}),
 	}
 	f.dir = *newDirectoryFile(name, "", f, nil)
 	f.dir.dir.named.SetTitle("")
 	f.spans.add(f.begin, kStartBigFile)
 
-	f.setCompression(rcompress.ZLIB, flate.BestCompression)
+	{
+		cfg := rcompress.SettingsFrom(rcompress.DefaultSettings.Compression())
+		f.setCompression(cfg.Alg, cfg.Lvl)
+	}
 
 	for _, opt := range opts {
 		if opt == nil {
