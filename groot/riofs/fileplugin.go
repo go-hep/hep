@@ -7,6 +7,7 @@ package riofs
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -70,9 +71,15 @@ func openFile(path string) (Reader, error) {
 
 func openLocalFile(path string) (Reader, error) {
 	path = strings.TrimPrefix(path, "file://")
+	return os.Open(path)
+}
+
+func mmapLocalFile(path string) (Reader, error) {
+	path = strings.TrimPrefix(path, "file+mmap://")
 	return mmap.Open(path)
 }
 
 func init() {
 	Register("file", openLocalFile)
+	Register("file+mmap", mmapLocalFile)
 }
