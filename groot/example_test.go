@@ -226,3 +226,54 @@ func ExampleOpen_graph() {
 	// (x,y)[2] = (+3.000000e+00, +6.000000e+00)
 	// (x,y)[3] = (+4.000000e+00, +8.000000e+00)
 }
+
+// ExampleOpen_file shows how users can open a local ROOT file with the 'file://' protocol.
+func ExampleOpen_file() {
+	f, err := groot.Open("file://./testdata/simple.root")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	for _, key := range f.Keys() {
+		fmt.Printf("key:  %q cycle=%d title=%q\n", key.Name(), key.Cycle(), key.Title())
+	}
+
+	obj, err := f.Get("tree")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tree := obj.(rtree.Tree)
+	fmt.Printf("tree: %q, entries=%d\n", tree.Name(), tree.Entries())
+
+	// Output:
+	// key:  "tree" cycle=1 title="fake data"
+	// tree: "tree", entries=4
+}
+
+// ExampleOpen_mmap shows how users can open and mmap a local ROOT file.
+// mmap-ing a file may be useful for performances reasons.
+func ExampleOpen_mmap() {
+	f, err := groot.Open("file+mmap://./testdata/simple.root")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	for _, key := range f.Keys() {
+		fmt.Printf("key:  %q cycle=%d title=%q\n", key.Name(), key.Cycle(), key.Title())
+	}
+
+	obj, err := f.Get("tree")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tree := obj.(rtree.Tree)
+	fmt.Printf("tree: %q, entries=%d\n", tree.Name(), tree.Entries())
+
+	// Output:
+	// key:  "tree" cycle=1 title="fake data"
+	// tree: "tree", entries=4
+}
