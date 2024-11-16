@@ -13,6 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sync"
 
 	"github.com/klauspost/compress/flate"
 	"github.com/klauspost/compress/zlib"
@@ -371,21 +372,22 @@ func Decompress(dst []byte, src io.Reader) error {
 		lr := &io.LimitedReader{R: src, N: srcsz}
 		switch kindOf(hdr) {
 		case ZLIB:
-			rc, err := zlib.NewReader(lr)
+			rc, err := zlibNewReader(lr)
 			if err != nil {
 				return fmt.Errorf("rcompress: could not create ZLIB reader: %w", err)
 			}
-			defer rc.Close()
-
 			_, err = io.ReadFull(rc, dst[beg:end])
+			rc.Close()
+			zlibReaderPool.Put(rc)
 			if err != nil {
 				return fmt.Errorf("rcompress: could not decompress ZLIB buffer: %w", err)
 			}
 
 		case LZ4:
-			src := make([]byte, srcsz)
+			src := lz4NewBuffer(srcsz)
 			_, err = io.ReadFull(lr, src)
 			if err != nil {
+				lz4BufferPool.Put(src)
 				return fmt.Errorf("rcompress: could not read LZ4 block: %w", err)
 			}
 			const chksum = 8
@@ -396,7 +398,9 @@ func Decompress(dst []byte, src io.Reader) error {
 				case srcsz > tgtsz:
 					// no compression
 					copy(dst[beg:end], src[chksum:])
+					lz4BufferPool.Put(src)
 				default:
+					lz4BufferPool.Put(src)
 					return fmt.Errorf("rcompress: could not decompress LZ4 block: %w", err)
 				}
 			}
@@ -419,11 +423,13 @@ func Decompress(dst []byte, src io.Reader) error {
 			}
 
 		case ZSTD:
-			rc, err := zstd.NewReader(lr)
+			rc, err := zstdNewReader(lr)
 			if err != nil {
 				return fmt.Errorf("rcompress: could not create ZSTD reader: %w", err)
 			}
 			_, err = io.ReadFull(rc, dst[beg:end])
+			rc.Reset(nil)
+			zstdReaderPool.Put(rc)
 			if err != nil {
 				return fmt.Errorf("rcompress: could not decompress ZSTD block: %w", err)
 			}
@@ -457,3 +463,38 @@ func (w *wbuff) Write(p []byte) (int, error) {
 var (
 	_ io.Writer = (*wbuff)(nil)
 )
+
+// TODO writers, need to index by options (e.g. compression level)
+var (
+	lz4BufferPool  = sync.Pool{}
+	zlibReaderPool = sync.Pool{}
+	zstdReaderPool = sync.Pool{}
+)
+
+func lz4NewBuffer(size int64) []byte {
+	var b []byte
+	if bi := lz4BufferPool.Get(); bi != nil {
+		b = bi.([]byte)
+	}
+	if int64(cap(b)) >= size {
+		return b[:size]
+	}
+	return make([]byte, size)
+}
+
+func zlibNewReader(r io.Reader) (io.ReadCloser, error) {
+	if ri := zlibReaderPool.Get(); ri != nil {
+		ri.(zlib.Resetter).Reset(r, nil)
+		return ri.(io.ReadCloser), nil
+	}
+	return zlib.NewReader(r)
+}
+
+func zstdNewReader(r io.Reader) (*zstd.Decoder, error) {
+	if ri := zstdReaderPool.Get(); ri != nil {
+		rd := ri.(*zstd.Decoder)
+		rd.Reset(r)
+		return rd, nil
+	}
+	return zstd.NewReader(r)
+}
