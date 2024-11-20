@@ -87,10 +87,7 @@ func curveFit() {
 		fmt.Printf("err: %v\n", err)
 	}
 	{
-		p, err := plot.New()
-		if err != nil {
-			log.Fatal(err)
-		}
+		p := plot.New()
 		p.X.Label.Text = "x"
 		p.Y.Label.Text = "curve data"
 		p.Add(plotter.NewGrid())
@@ -145,10 +142,7 @@ func ceresFit() {
 	fmt.Printf("res.Stats: %+v\n", res.Stats)
 
 	{
-		p, err := plot.New()
-		if err != nil {
-			log.Fatal(err)
-		}
+		p := plot.New()
 		p.X.Label.Text = "x"
 		p.Y.Label.Text = "ceres data"
 		p.Add(plotter.NewGrid())
