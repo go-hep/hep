@@ -5,9 +5,9 @@
 package hbook
 
 import (
+	"math/rand/v2"
 	"sort"
 
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 

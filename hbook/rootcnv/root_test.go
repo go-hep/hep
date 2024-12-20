@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"math/rand/v2"
 	"reflect"
 	"runtime"
 	"testing"
@@ -19,7 +20,6 @@ import (
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hbook/yodacnv"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
@@ -383,7 +383,7 @@ func TestFromH1D(t *testing.T) {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
@@ -467,7 +467,7 @@ func TestFromH2D(t *testing.T) {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard

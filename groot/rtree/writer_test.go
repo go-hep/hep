@@ -7,6 +7,7 @@ package rtree
 import (
 	"compress/flate"
 	"fmt"
+	"math/rand/v2"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -16,7 +17,6 @@ import (
 	"go-hep.org/x/hep/groot/internal/rcompress"
 	"go-hep.org/x/hep/groot/rbase"
 	"go-hep.org/x/hep/groot/riofs"
-	"golang.org/x/exp/rand"
 )
 
 func TestFlattenArrayType(t *testing.T) {
@@ -143,9 +143,9 @@ func TestConcurrentWrite(t *testing.T) {
 			}
 			defer w.Close()
 
-			rng := rand.New(rand.NewSource(1234))
+			rng := rand.New(rand.NewPCG(1234, 1234))
 			for i := 0; i < 100; i++ {
-				evt.N = rng.Int31n(10) + 1
+				evt.N = rng.Int32N(10) + 1
 				evt.Sli = evt.Sli[:0]
 				for j := 0; j < int(evt.N); j++ {
 					evt.Sli = append(evt.Sli, rng.Float64())
@@ -288,9 +288,9 @@ func TestWriterWithCompression(t *testing.T) {
 			}
 			defer w.Close()
 
-			rng := rand.New(rand.NewSource(1234))
+			rng := rand.New(rand.NewPCG(1234, 1234))
 			for i := 0; i < 100; i++ {
-				evt.N = rng.Int31n(10) + 1
+				evt.N = rng.Int32N(10) + 1
 				evt.Sli = evt.Sli[:0]
 				for j := 0; j < int(evt.N); j++ {
 					evt.Sli = append(evt.Sli, rng.Float64())

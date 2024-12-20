@@ -7,13 +7,13 @@ package hplot_test
 import (
 	"image/color"
 	"math"
+	"math/rand/v2"
 	"os"
 	"runtime"
 	"testing"
 
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 	"gonum.org/v1/plot/cmpimg"
 	"gonum.org/v1/plot/vg"
@@ -69,7 +69,7 @@ func TestH1DWithBorders(t *testing.T) {
 		dist := distuv.Normal{
 			Mu:    0,
 			Sigma: 1,
-			Src:   rand.New(rand.NewSource(0)),
+			Src:   rand.New(rand.NewPCG(0, 0)),
 		}
 
 		// Draw some random values from the standard

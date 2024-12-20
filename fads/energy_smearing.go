@@ -6,12 +6,12 @@ package fads
 
 import (
 	"math"
+	"math/rand/v2"
 	"reflect"
 	"sync"
 
 	"go-hep.org/x/hep/fmom"
 	"go-hep.org/x/hep/fwk"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
@@ -45,7 +45,7 @@ func (tsk *EnergySmearing) Configure(ctx fwk.Context) error {
 
 func (tsk *EnergySmearing) StartTask(ctx fwk.Context) error {
 	var err error
-	tsk.src = rand.New(rand.NewSource(tsk.seed))
+	tsk.src = rand.New(rand.NewPCG(tsk.seed, tsk.seed))
 	return err
 }
 

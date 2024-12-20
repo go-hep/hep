@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"math/rand/v2"
 	"os"
 	"testing"
 
@@ -18,7 +19,6 @@ import (
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hbook/rootcnv"
 	"go-hep.org/x/hep/hbook/yodacnv"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
@@ -38,7 +38,7 @@ func ExampleCreate_histo1D() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
@@ -87,12 +87,12 @@ func ExampleCreate_histo1D() {
 
 	// Output:
 	// original histo:
-	// w-mean:    0.0023919
-	// w-rms:     1.0628679
+	// w-mean:    -0.0010939
+	// w-rms:     1.0575275
 	//
 	// histo read back:
-	// r-mean:    0.0023919
-	// r-rms:     1.0628679
+	// r-mean:    -0.0010939
+	// r-rms:     1.0575275
 }
 
 func ExampleCreate_histo2D() {
@@ -111,7 +111,7 @@ func ExampleCreate_histo2D() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
@@ -166,16 +166,16 @@ func ExampleCreate_histo2D() {
 
 	// Output:
 	// original histo:
-	// w-mean-x:    +0.046442
-	// w-rms-x:     +1.231044
-	// w-mean-y:    -0.018977
-	// w-rms-y:     +1.253143
+	// w-mean-x:    +0.016810
+	// w-rms-x:     +1.256504
+	// w-mean-y:    +0.030289
+	// w-rms-y:     +1.300039
 	//
 	// histo read back:
-	// w-mean-x:    +0.046442
-	// w-rms-x:     +1.231044
-	// w-mean-y:    -0.018977
-	// w-rms-y:     +1.253143
+	// w-mean-x:    +0.016810
+	// w-rms-x:     +1.256504
+	// w-mean-y:    +0.030289
+	// w-rms-y:     +1.300039
 }
 
 func TestH1(t *testing.T) {
@@ -185,7 +185,7 @@ func TestH1(t *testing.T) {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
@@ -285,7 +285,7 @@ func TestH2(t *testing.T) {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
