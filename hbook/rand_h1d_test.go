@@ -5,11 +5,11 @@
 package hbook
 
 import (
+	"math/rand/v2"
 	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"golang.org/x/exp/rand"
 )
 
 func TestRand1D(t *testing.T) {
@@ -22,7 +22,7 @@ func TestRand1D(t *testing.T) {
 		3, 3, 3, 3, 3,
 	}, nil)
 
-	hr := NewRand1D(h1, rand.NewSource(1234))
+	hr := NewRand1D(h1, rand.NewPCG(1234, 1234))
 	h2 := NewH1DFromEdges(edges)
 
 	if got, want := hr.cdf, []float64{0, 0.1, 0.4, 0.5, 1}; !reflect.DeepEqual(got, want) {

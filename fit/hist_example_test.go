@@ -8,11 +8,11 @@ import (
 	"image/color"
 	"log"
 	"math"
+	"math/rand/v2"
 
 	"go-hep.org/x/hep/fit"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/optimize"
 	"gonum.org/v1/gonum/stat/distuv"
@@ -36,7 +36,7 @@ func ExampleH1D_gaussian() {
 	dist := distuv.Normal{
 		Mu:    mean,
 		Sigma: sigma,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard

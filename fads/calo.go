@@ -7,12 +7,12 @@ package fads
 import (
 	"fmt"
 	"math"
+	"math/rand/v2"
 	"reflect"
 	"sort"
 	"sync"
 
 	"go-hep.org/x/hep/fwk"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
@@ -206,7 +206,7 @@ func (tsk *Calorimeter) Configure(ctx fwk.Context) error {
 		return err
 	}
 
-	tsk.src = rand.New(rand.NewSource(tsk.seed))
+	tsk.src = rand.New(rand.NewPCG(tsk.seed, tsk.seed))
 	tsk.gauss = distuv.Normal{Mu: 0, Sigma: 1, Src: tsk.src}
 	return err
 }
