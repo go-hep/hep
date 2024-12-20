@@ -5,11 +5,11 @@
 package fads
 
 import (
+	"math/rand/v2"
 	"reflect"
 	"sync"
 
 	"go-hep.org/x/hep/fwk"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
@@ -42,7 +42,7 @@ func (tsk *Efficiency) Configure(ctx fwk.Context) error {
 
 func (tsk *Efficiency) StartTask(ctx fwk.Context) error {
 	var err error
-	src := rand.New(rand.NewSource(tsk.seed))
+	src := rand.New(rand.NewPCG(tsk.seed, tsk.seed))
 	tsk.dist = distuv.Uniform{Min: 0, Max: 1, Src: src}
 	return err
 }

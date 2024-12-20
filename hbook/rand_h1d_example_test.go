@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"image/color"
 	"log"
+	"math/rand/v2"
 	"os"
 	"path"
 	"testing"
 
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 	"gonum.org/v1/plot/cmpimg"
 	"gonum.org/v1/plot/vg"
@@ -24,7 +24,7 @@ func ExampleRand1D() {
 	const N = 10000
 	var (
 		h1  = hbook.NewH1D(100, -10, 10)
-		src = rand.New(rand.NewSource(1234))
+		src = rand.New(rand.NewPCG(1234, 1234))
 		rnd = distuv.Normal{
 			Mu:    0,
 			Sigma: 2,
@@ -38,7 +38,7 @@ func ExampleRand1D() {
 
 	var (
 		h2 = hbook.NewH1D(100, -10, 10)
-		hr = hbook.NewRand1D(h1, rand.NewSource(5678))
+		hr = hbook.NewRand1D(h1, rand.NewPCG(5678, 5678))
 	)
 
 	for range N {
@@ -101,10 +101,10 @@ func ExampleRand1D() {
 	}
 
 	// Output:
-	// h1: mean=+0.020436 std-dev=+1.992307 +/- 0.019923
+	// h1: mean=+0.011317 std-dev=+2.027279 +/- 0.020273
 	// cdf(0)= +0.5
 	// cdf(1)= +0.7
-	// h2: mean=-0.003631 std-dev=+2.008359 +/- 0.020084
+	// h2: mean=-0.026749 std-dev=+2.022967 +/- 0.020230
 	// cdf(0)= +0.5
 	// cdf(1)= +0.7
 }

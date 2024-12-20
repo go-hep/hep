@@ -7,10 +7,10 @@ package hplot_test
 import (
 	"image/color"
 	"log"
+	"math/rand/v2"
 
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotutil"
@@ -26,7 +26,7 @@ func ExampleH1D() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
@@ -79,7 +79,7 @@ func ExampleH1D_toPDF() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
@@ -180,7 +180,7 @@ func ExampleH1D_withYErrBars() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
@@ -237,7 +237,7 @@ func ExampleH1D_withYErrBars_withBand() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
@@ -295,7 +295,7 @@ func ExampleH1D_withYErrBarsAndData() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
@@ -363,7 +363,7 @@ func ExampleH1D_withPlotBorders() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
@@ -432,7 +432,7 @@ func ExampleH1D_legendStyle() {
 		dist := distuv.Normal{
 			Mu:    mu,
 			Sigma: sigma,
-			Src:   rand.New(rand.NewSource(uint64(id))),
+			Src:   rand.New(rand.NewPCG(uint64(id), uint64(id))),
 		}
 
 		// Draw some random values from the standard

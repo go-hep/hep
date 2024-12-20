@@ -5,11 +5,11 @@
 package hbook
 
 import (
+	"math/rand/v2"
 	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"golang.org/x/exp/rand"
 )
 
 func TestRand1D(t *testing.T) {
@@ -22,7 +22,7 @@ func TestRand1D(t *testing.T) {
 		3, 3, 3, 3, 3,
 	}, nil)
 
-	hr := NewRand1D(h1, rand.NewSource(1234))
+	hr := NewRand1D(h1, rand.NewPCG(1234, 1234))
 	h2 := NewH1DFromEdges(edges)
 
 	if got, want := hr.cdf, []float64{0, 0.1, 0.4, 0.5, 1}; !reflect.DeepEqual(got, want) {
@@ -82,17 +82,17 @@ Path: /
 Title: ""
 Type: Histo1D
 ---
-# Mean: 2.502788e+00
+# Mean: 2.494672e+00
 # Area: 1.000000e+00
 # ID	 ID	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries
-Total   	Total   	1.000000e+00	1.000000e-03	2.502788e+00	7.531549e+00	1.000000e+03
+Total   	Total   	1.000000e+00	1.000000e-03	2.494672e+00	7.510616e+00	1.000000e+03
 Underflow	Underflow	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00
 Overflow	Overflow	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00	0.000000e+00
 # xlow	 xhigh	 sumw	 sumw2	 sumwx	 sumwx2	 numEntries
-0.000000e+00	1.000000e+00	9.200000e-02	9.200000e-05	4.339693e-02	2.823985e-02	9.200000e+01
-1.000000e+00	2.000000e+00	3.090000e-01	3.090000e-04	4.611849e-01	7.110522e-01	3.090000e+02
-2.000000e+00	3.000000e+00	8.700000e-02	8.700000e-05	2.154025e-01	5.413794e-01	8.700000e+01
-3.000000e+00	4.000000e+00	5.120000e-01	5.120000e-04	1.782804e+00	6.250877e+00	5.120000e+02
+0.000000e+00	1.000000e+00	9.800000e-02	9.800000e-05	4.971524e-02	3.505977e-02	9.800000e+01
+1.000000e+00	2.000000e+00	3.110000e-01	3.110000e-04	4.633349e-01	7.148637e-01	3.110000e+02
+2.000000e+00	3.000000e+00	8.900000e-02	8.900000e-05	2.272178e-01	5.882321e-01	8.900000e+01
+3.000000e+00	4.000000e+00	5.020000e-01	5.020000e-04	1.754404e+00	6.172460e+00	5.020000e+02
 END YODA_HISTO1D_V2
 
 `

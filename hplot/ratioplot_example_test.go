@@ -8,10 +8,10 @@ import (
 	"image/color"
 	"log"
 	"math"
+	"math/rand/v2"
 
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 	"gonum.org/v1/plot/vg"
 )
@@ -24,7 +24,7 @@ func ExampleRatioPlot() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	hist1 := hbook.NewH1D(20, -4, +4)

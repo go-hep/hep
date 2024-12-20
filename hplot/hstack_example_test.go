@@ -7,10 +7,10 @@ package hplot_test
 import (
 	"image/color"
 	"log"
+	"math/rand/v2"
 
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
@@ -350,7 +350,7 @@ func fillH1(h *hbook.H1D, n int, mu, sigma float64, seed uint64) {
 	dist := distuv.Normal{
 		Mu:    mu,
 		Sigma: sigma,
-		Src:   rand.New(rand.NewSource(seed)),
+		Src:   rand.New(rand.NewPCG(seed, seed)),
 	}
 
 	for range n {

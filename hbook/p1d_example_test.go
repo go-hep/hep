@@ -7,9 +7,9 @@ package hbook_test
 import (
 	"fmt"
 	"log"
+	"math/rand/v2"
 
 	"go-hep.org/x/hep/hbook"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/distmv"
 )
@@ -21,7 +21,7 @@ func ExampleP1D() {
 	dist, ok := distmv.NewNormal(
 		[]float64{0, 1},
 		mat.NewSymDense(2, []float64{4, 0, 0, 2}),
-		rand.New(rand.NewSource(1234)),
+		rand.New(rand.NewPCG(1234, 1234)),
 	)
 	if !ok {
 		log.Fatalf("error creating distmv.Normal")
@@ -41,8 +41,8 @@ func ExampleP1D() {
 	fmt.Printf("std-err: %v\n", p.XStdErr())
 
 	// Output:
-	// mean:    0.11198383683853215
-	// rms:     2.0240892891977125
-	// std-dev: 2.0220003848882695
-	// std-err: 0.06394126645984038
+	// mean:    0.0965063103552738
+	// rms:     2.0024868956390707
+	// std-dev: 2.0011608991313086
+	// std-err: 0.06328226405725404
 }

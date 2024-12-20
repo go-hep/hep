@@ -5,9 +5,8 @@
 package fit_test
 
 import (
+	"math/rand/v2"
 	"testing"
-
-	"golang.org/x/exp/rand"
 )
 
 func TestCurve2D(t *testing.T) {
@@ -18,7 +17,7 @@ func genData2D(n0, n1 int, f func(x, ps []float64) float64, ps []float64, x0min,
 	var (
 		xdata  = make([][]float64, n0*n1)
 		ydata  = make([]float64, n0*n1)
-		rnd    = rand.New(rand.NewSource(1234))
+		rnd    = rand.New(rand.NewPCG(1234, 1234))
 		x0step = (x0max - x0min) / float64(n0)
 		x1step = (x1max - x1min) / float64(n1)
 		p      = make([]float64, len(ps))

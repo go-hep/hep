@@ -8,11 +8,11 @@ import (
 	"image/color"
 	"log"
 	"math"
+	"math/rand/v2"
 
 	"go-hep.org/x/hep/fit"
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/optimize"
 	"gonum.org/v1/gonum/stat/distuv"
@@ -25,7 +25,7 @@ func ExampleH1D_gaussian() {
 		mean  = 2.0
 		sigma = 4.0
 		// Values from gonum/optimize:
-		want = []float64{447.0483517081991, 2.02127773281178, 3.9965893891862687}
+		want = []float64{450.56454241860934, 2.0146898541006277, 3.9613086671267466}
 		// Values from ROOT:
 		// want  = []float64{4.53720e+02, 1.93218e+00, 3.93188e+00}
 	)
@@ -36,7 +36,7 @@ func ExampleH1D_gaussian() {
 	dist := distuv.Normal{
 		Mu:    mean,
 		Sigma: sigma,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
