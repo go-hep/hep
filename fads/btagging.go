@@ -6,12 +6,12 @@ package fads
 
 import (
 	"math"
+	"math/rand/v2"
 	"reflect"
 	"sync"
 
 	"go-hep.org/x/hep/fmom"
 	"go-hep.org/x/hep/fwk"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
@@ -74,7 +74,7 @@ func (tsk *BTagging) Configure(ctx fwk.Context) error {
 		return err
 	}
 
-	tsk.src = rand.New(rand.NewSource(tsk.seed))
+	tsk.src = rand.New(rand.NewPCG(tsk.seed, tsk.seed))
 	tsk.flat = distuv.Uniform{Min: 0, Max: 1, Src: tsk.src}
 	return err
 }

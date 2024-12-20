@@ -7,13 +7,12 @@ package hplot_test
 import (
 	"image/color"
 	"log"
-
-	"golang.org/x/exp/rand"
-	"gonum.org/v1/gonum/stat/distuv"
-	"gonum.org/v1/plot/vg"
+	"math/rand/v2"
 
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
+	"gonum.org/v1/gonum/stat/distuv"
+	"gonum.org/v1/plot/vg"
 )
 
 // An example of making a colored binned error band
@@ -111,6 +110,6 @@ var (
 	gauss = distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 )

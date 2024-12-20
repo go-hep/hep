@@ -8,11 +8,11 @@ package main
 
 import (
 	"log"
+	"math/rand/v2"
 	"os"
 
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/rio"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/distmv"
 	"gonum.org/v1/gonum/stat/distuv"
@@ -68,7 +68,7 @@ func genH1() *hbook.H1D {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
@@ -90,7 +90,7 @@ func genH2() *hbook.H2D {
 	dist, ok := distmv.NewNormal(
 		[]float64{0, 1},
 		mat.NewSymDense(2, []float64{4, 0, 0, 2}),
-		rand.New(rand.NewSource(1234)),
+		rand.New(rand.NewPCG(1234, 1234)),
 	)
 	if !ok {
 		log.Fatalf("error creating distmv.Normal")
@@ -125,7 +125,7 @@ func genP1() *hbook.P1D {
 	dist, ok := distmv.NewNormal(
 		[]float64{0, 1},
 		mat.NewSymDense(2, []float64{4, 0, 0, 2}),
-		rand.New(rand.NewSource(1234)),
+		rand.New(rand.NewPCG(1234, 1234)),
 	)
 	if !ok {
 		log.Fatalf("error creating distmv.Normal")
