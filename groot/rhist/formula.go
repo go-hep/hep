@@ -25,6 +25,7 @@ type Formula struct {
 	params      map[string]int32 // list of parameter names
 	formula     string           // string representing the formula expression
 	ndim        int32            // Dimension - needed for lambda expressions
+	numID       int32            // Number used to identify pre-defined functions (gaus, expo,..)
 	linearParts []root.Object    // vector of linear functions
 	vectorized  bool             // whether we should use vectorized or regular variables
 }
@@ -66,6 +67,7 @@ func (f *Formula) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	writeMapStringInt(w, f.params)
 	w.WriteString(f.formula)
 	w.WriteI32(f.ndim)
+	w.WriteI32(f.numID)
 	writeStdVectorObjP(w, f.linearParts)
 	w.WriteBool(f.vectorized)
 
@@ -79,9 +81,14 @@ func (f *Formula) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	hdr := r.ReadHeader(f.Class(), f.RVersion())
 
-	if hdr.Vers < 12 || hdr.Vers > 13 {
-		// tested with v12 and v13
-		panic(fmt.Errorf("rhist: too old TFormula version=%d < 12", hdr.Vers))
+	if hdr.Vers < 12 || hdr.Vers > 14 {
+		// tested with v12 and v14
+		if hdr.Vers < 12 {
+			panic(fmt.Errorf("rhist: too old TFormula version=%d < 12", hdr.Vers))
+		}
+		if hdr.Vers > 14 {
+			panic(fmt.Errorf("rhist: too new TFormula version=%d > 14", hdr.Vers))
+		}
 	}
 
 	r.ReadObject(&f.named)
@@ -90,6 +97,9 @@ func (f *Formula) UnmarshalROOT(r *rbytes.RBuffer) error {
 	f.params = readMapStringInt(r)
 	f.formula = r.ReadString()
 	f.ndim = r.ReadI32()
+	if hdr.Vers > 13 {
+		f.numID = r.ReadI32()
+	}
 
 	f.linearParts = readStdVectorObjP(r)
 	f.vectorized = r.ReadBool()
