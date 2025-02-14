@@ -29,26 +29,50 @@ func TestH1D(t *testing.T) {
 }
 
 func TestH1DtoPDF(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
+
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_toPDF, t, "h1d_plot.pdf")
 }
 
 func TestH1DLogScale(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
+
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_logScaleY, t, "h1d_logy.png")
 }
 
 func TestH1DYErrs(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
+
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withYErrBars, t, "h1d_yerrs.png")
 }
 
 func TestH1DYErrsBand(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
+
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withYErrBars_withBand, t, "h1d_yerrs_band.png")
 }
 
 func TestH1DAsData(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
+
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withYErrBarsAndData, t, "h1d_glyphs.png")
 }
 
 func TestH1DLegendStyle(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
+
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_legendStyle, t, "h1d_legend.png")
 }
 
