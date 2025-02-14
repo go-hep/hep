@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"image/color"
 	"log"
+	"runtime"
 	"testing"
 
 	"go-hep.org/x/hep/hbook"
@@ -17,6 +18,10 @@ import (
 )
 
 func TestHStack(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
+
 	checkPlot(cmpimg.CheckPlot)(ExampleHStack, t, "hstack.png")
 	checkPlot(cmpimg.CheckPlot)(ExampleHStack_withBand, t, "hstack_band.png")
 	checkPlot(cmpimg.CheckPlot)(ExampleHStack_withLogY, t, "hstack_logy.png")
