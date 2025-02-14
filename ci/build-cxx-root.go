@@ -59,7 +59,7 @@ func build(rvers string, nproc int) {
 		"-v", fname+":/build.sh",
 		"-v", bdir+":/build/src",
 		"-v", dst+":/build/install",
-		"ubuntu:20.04", "/bin/sh", "/build.sh",
+		"ubuntu:24.04", "/bin/sh", "/build.sh",
 	)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
