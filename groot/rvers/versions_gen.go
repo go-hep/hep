@@ -7,7 +7,7 @@
 package rvers
 
 // ROOT version
-const ROOT = 63200
+const ROOT = 63404
 
 // ROOT classes versions
 const (
@@ -15,7 +15,7 @@ const (
 	AttBBox2D                = 0  // ROOT version for TAttBBox2D
 	AttFill                  = 2  // ROOT version for TAttFill
 	AttLine                  = 2  // ROOT version for TAttLine
-	AttMarker                = 2  // ROOT version for TAttMarker
+	AttMarker                = 3  // ROOT version for TAttMarker
 	AttPad                   = 4  // ROOT version for TAttPad
 	Datime                   = 1  // ROOT version for TDatime
 	Named                    = 1  // ROOT version for TNamed
@@ -69,7 +69,7 @@ const (
 	F1Convolution            = 1  // ROOT version for TF1Convolution
 	F1NormSum                = 1  // ROOT version for TF1NormSum
 	F1Parameters             = 1  // ROOT version for TF1Parameters
-	Formula                  = 13 // ROOT version for TFormula
+	Formula                  = 14 // ROOT version for TFormula
 	Graph                    = 5  // ROOT version for TGraph
 	GraphErrors              = 3  // ROOT version for TGraphErrors
 	GraphAsymmErrors         = 3  // ROOT version for TGraphAsymmErrors

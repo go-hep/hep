@@ -228,7 +228,7 @@ func init() {
 			Factor: 0.000000,
 		}.New()},
 	}))
-	StreamerInfos.Add(NewCxxStreamerInfo("TAttMarker", 2, 0x291d8bec, []rbytes.StreamerElement{
+	StreamerInfos.Add(NewCxxStreamerInfo("TAttMarker", 3, 0x291d8bec, []rbytes.StreamerElement{
 		&StreamerBasicType{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fMarkerColor", "Marker color"),
 			Type:   rmeta.Short,
@@ -2272,7 +2272,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 2),
+		}.New(), 3),
 		&StreamerBasicType{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fBeta_alpha", "Global parameter for prior beta distribution (default = 1)"),
 			Type:   rmeta.Double,
@@ -2443,7 +2443,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 2),
+		}.New(), 3),
 		&StreamerBasicType{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fXmin", "Lower bounds for the range"),
 			Type:   rmeta.Double,
@@ -2673,7 +2673,7 @@ func init() {
 			ArrDim: 0,
 			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 			Offset: 0,
-			EName:  "TFormula",
+			EName:  "TFormula*",
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
@@ -2686,7 +2686,7 @@ func init() {
 			ArrDim: 0,
 			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 			Offset: 0,
-			EName:  "TF1Parameters",
+			EName:  "TF1Parameters*",
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
@@ -2699,7 +2699,7 @@ func init() {
 			ArrDim: 0,
 			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 			Offset: 0,
-			EName:  "TF1AbsComposition",
+			EName:  "TF1AbsComposition*",
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
@@ -2742,7 +2742,7 @@ func init() {
 			ArrDim: 0,
 			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 			Offset: 0,
-			EName:  "TF1",
+			EName:  "TF1*",
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
@@ -2755,7 +2755,7 @@ func init() {
 			ArrDim: 0,
 			MaxIdx: [5]int32{0, 0, 0, 0, 0},
 			Offset: 0,
-			EName:  "TF1",
+			EName:  "TF1*",
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
@@ -3038,7 +3038,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 1, 61),
 	}))
-	StreamerInfos.Add(NewCxxStreamerInfo("TFormula", 13, 0x3d29ef01, []rbytes.StreamerElement{
+	StreamerInfos.Add(NewCxxStreamerInfo("TFormula", 14, 0xc741b47d, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
 			Name:   *rbase.NewNamed("TNamed", "The basis for a named object (name, title)"),
 			Type:   rmeta.Base,
@@ -3106,6 +3106,19 @@ func init() {
 		}.New()},
 		&StreamerBasicType{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fNdim", "Dimension - needed for lambda expressions"),
+			Type:   rmeta.Int,
+			Size:   4,
+			ArrLen: 0,
+			ArrDim: 0,
+			MaxIdx: [5]int32{0, 0, 0, 0, 0},
+			Offset: 0,
+			EName:  "int",
+			XMin:   0.000000,
+			XMax:   0.000000,
+			Factor: 0.000000,
+		}.New()},
+		&StreamerBasicType{StreamerElement: Element{
+			Name:   *rbase.NewNamed("fNumber", "Number used to identify pre-defined functions (gaus, expo,..)"),
 			Type:   rmeta.Int,
 			Size:   4,
 			ArrLen: 0,
@@ -3196,7 +3209,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 2),
+		}.New(), 3),
 		&StreamerBasicType{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fNpoints", "Number of points <= fMaxSize"),
 			Type:   rmeta.Counter,
@@ -3581,7 +3594,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 2),
+		}.New(), 3),
 		&StreamerBasicType{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fNcells", "Number of bins(1D), cells (2D) +U/Overflows"),
 			Type:   rmeta.Int,
@@ -5011,7 +5024,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 2),
+		}.New(), 3),
 		&StreamerBasicType{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fNpoints", "Number of points <= fMaxSize"),
 			Type:   rmeta.Counter,
@@ -7519,7 +7532,7 @@ func init() {
 			XMin:   0.000000,
 			XMax:   0.000000,
 			Factor: 0.000000,
-		}.New(), 2),
+		}.New(), 3),
 		&StreamerBasicType{StreamerElement: Element{
 			Name:   *rbase.NewNamed("fEntries", "Number of entries"),
 			Type:   rmeta.Long64,

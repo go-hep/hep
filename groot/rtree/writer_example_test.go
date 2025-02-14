@@ -482,7 +482,7 @@ func Example_createEventNtupleNoSplit() {
 	// -- filled tree with 5 entries
 	// -- read back ROOT file
 	// === [../testdata/groot-event-ntuple-nosplit.root] ===
-	// version: 63200
+	// version: 63404
 	//   TTree mytree          (entries=5)
 	//     evt "evt"   TBranchElement
 	//
@@ -627,7 +627,7 @@ func Example_createEventNtupleFullSplit() {
 	// -- filled tree with 5 entries
 	// -- read back ROOT file
 	// === [../testdata/groot-event-ntuple-fullsplit.root] ===
-	// version: 63200
+	// version: 63404
 	//   TTree mytree             (entries=5)
 	//     i32 "i32/I"    TBranch
 	//     f64 "f64/D"    TBranch

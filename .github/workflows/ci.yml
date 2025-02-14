@@ -10,7 +10,7 @@ on:
 
 env:
   GOPROXY: "https://proxy.golang.org"
-  ROOT_VERSION: "6.32.00"
+  ROOT_VERSION: "6.34.04"
   TAGS: "-tags=ci"
   COVERAGE: "-coverpkg=go-hep.org/x/hep/..."
   EGL_PLATFORM: "x11"

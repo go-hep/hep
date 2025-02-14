@@ -319,7 +319,7 @@ func TestGenCxxStreamerInfo(t *testing.T) {
 		XMin:   0.000000,
 		XMax:   0.000000,
 		Factor: 0.000000,
-	}.New(), 2),
+	}.New(), 3),
 	&StreamerBasicType{StreamerElement: Element{
 		Name:   *rbase.NewNamed("fEntries", "Number of entries"),
 		Type:   rmeta.Long64,
