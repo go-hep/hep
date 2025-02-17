@@ -1,6 +1,6 @@
 module go-hep.org/x/hep
 
-go 1.22.0
+go 1.23
 
 require (
 	git.sr.ht/~sbinet/epok v0.5.0
