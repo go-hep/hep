@@ -321,32 +321,12 @@ func setLatest(version string) {
 }
 
 var excludeList = map[OSArch]map[string]struct{}{
-	{"linux", "386"}: {
-		"go-hep.org/x/hep/hplot/cmd/iplot": struct{}{},
-	},
-	{"linux", "arm64"}: {
-		"go-hep.org/x/hep/hplot/cmd/iplot": struct{}{},
-	},
-	{"darwin", "amd64"}: {
-		"go-hep.org/x/hep/hplot/cmd/iplot": {},
-	},
-	{"freebsd", "amd64"}: {
-		"go-hep.org/x/hep/hplot/cmd/iplot":     struct{}{},
-		"go-hep.org/x/hep/groot/cmd/root-fuse": struct{}{},
-		"go-hep.org/x/hep/xrootd/cmd/xrd-fuse": struct{}{},
-	},
-	{"windows", "amd64"}: {
-		"go-hep.org/x/hep/groot/cmd/root-fuse": struct{}{},
-		"go-hep.org/x/hep/xrootd/cmd/xrd-fuse": struct{}{},
-	},
-	{"windows", "386"}: {
-		"go-hep.org/x/hep/groot/cmd/root-fuse": struct{}{},
-		"go-hep.org/x/hep/xrootd/cmd/xrd-fuse": struct{}{},
-	},
+	{"linux", "386"}:     {},
+	{"linux", "arm64"}:   {},
+	{"darwin", "amd64"}:  {},
+	{"freebsd", "amd64"}: {},
+	{"windows", "amd64"}: {},
+	{"windows", "386"}:   {},
 }
 
-var needCgo = map[string]struct{}{
-	"pawgo": {},
-	"iplot": {},
-	"hplot": {},
-}
+var needCgo = map[string]struct{}{}
