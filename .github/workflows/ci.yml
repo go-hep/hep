@@ -64,6 +64,8 @@ jobs:
     - name: Build-Linux-64b
       if: matrix.platform == 'ubuntu-latest'
       run: |
+        source $HOME/root-${ROOT_VERSION}/bin/thisroot.sh
+        root.exe --version
         GOARCH=amd64 go install -v $TAGS ./...       
     - name: Build-Windows
       if: matrix.platform == 'windows-latest'
@@ -76,6 +78,8 @@ jobs:
     - name: Test Linux
       if: matrix.platform == 'ubuntu-latest'
       run: |
+        source $HOME/root-${ROOT_VERSION}/bin/thisroot.sh
+        root.exe --version
         go run ./ci/run-tests.go $TAGS -race $COVERAGE
         go vet $TAGS ./...
     - name: Test Windows
