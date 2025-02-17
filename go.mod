@@ -4,7 +4,7 @@ go 1.23
 
 require (
 	git.sr.ht/~sbinet/epok v0.5.0
-	git.sr.ht/~sbinet/go-arrow v0.2.0
+	git.sr.ht/~sbinet/go-arrow v0.3.0
 	github.com/astrogo/fitsio v0.3.0
 	github.com/campoy/embedmd v1.0.0
 	github.com/go-mmap/mmap v0.7.0
@@ -40,7 +40,7 @@ require (
 	github.com/go-latex/latex v0.0.0-20240709081214-31cef3c7570e // indirect
 	github.com/go-pdf/fpdf v0.9.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
-	github.com/google/flatbuffers v23.5.26+incompatible // indirect
+	github.com/google/flatbuffers v25.2.10+incompatible // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
@@ -50,7 +50,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/teambition/rrule-go v1.8.2 // indirect
 	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/net v0.33.0 // indirect
