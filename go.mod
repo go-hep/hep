@@ -16,20 +16,20 @@ require (
 	github.com/klauspost/compress v1.17.11
 	github.com/pierrec/lz4/v4 v4.1.22
 	github.com/pierrec/xxHash v0.1.5
-	github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e
+	github.com/pkg/diff v0.0.0-20241224192749-4e6772a4315c
 	github.com/sbinet/npyio v0.8.0
 	github.com/ulikunitz/xz v0.5.12
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
-	golang.org/x/crypto v0.31.0
+	golang.org/x/crypto v0.33.0
 	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
-	golang.org/x/image v0.23.0
-	golang.org/x/sync v0.10.0
-	golang.org/x/text v0.21.0
-	golang.org/x/tools v0.28.0
+	golang.org/x/image v0.24.0
+	golang.org/x/sync v0.11.0
+	golang.org/x/text v0.22.0
+	golang.org/x/tools v0.30.0
 	gonum.org/v1/gonum v0.15.1
 	gonum.org/v1/plot v0.15.0
 	gopkg.in/yaml.v3 v3.0.1
-	modernc.org/ql v1.4.7
+	modernc.org/ql v1.4.10
 )
 
 require (
@@ -51,15 +51,15 @@ require (
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/teambition/rrule-go v1.8.2 // indirect
-	golang.org/x/mod v0.22.0 // indirect
-	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/mod v0.23.0 // indirect
+	golang.org/x/net v0.35.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 	modernc.org/b v1.1.0 // indirect
-	modernc.org/db v1.0.10 // indirect
-	modernc.org/file v1.0.8 // indirect
+	modernc.org/db v1.0.13 // indirect
+	modernc.org/file v1.0.9 // indirect
 	modernc.org/fileutil v1.3.0 // indirect
 	modernc.org/golex v1.1.0 // indirect
-	modernc.org/internal v1.1.0 // indirect
+	modernc.org/internal v1.1.1 // indirect
 	modernc.org/lldb v1.0.8 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/sortutil v1.2.1 // indirect
