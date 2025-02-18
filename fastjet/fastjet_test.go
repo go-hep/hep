@@ -5,12 +5,16 @@
 package fastjet_test
 
 import (
+	"embed"
 	"sort"
 	"testing"
 
 	"go-hep.org/x/hep/fastjet"
 	"go-hep.org/x/hep/fmom"
 )
+
+//go:embed testdata/*.ref testdata/*.dat
+var testFS embed.FS
 
 func TestSimple(t *testing.T) {
 	t.Parallel()

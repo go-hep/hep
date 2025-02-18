@@ -8,7 +8,6 @@ import (
 	"bufio"
 	"fmt"
 	"math"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -365,7 +364,7 @@ func TestExclusiveJetAlgorithms(t *testing.T) {
 }
 
 func loadParticles(name string) ([]fastjet.Jet, error) {
-	f, err := os.Open(name)
+	f, err := testFS.Open(name)
 	if err != nil {
 		return nil, err
 	}
@@ -408,7 +407,7 @@ func loadParticles(name string) ([]fastjet.Jet, error) {
 }
 
 func loadRef(name string) ([][3]float64, error) {
-	f, err := os.Open(name)
+	f, err := testFS.Open(name)
 	if err != nil {
 		return nil, err
 	}
