@@ -19,10 +19,10 @@ var (
 // Filter creates a slice with all the elements x_i of src for which f(x_i) is true.
 // Filter uses dst as work buffer, storing elements at the start of the slice.
 // Filter clears dst if a slice is passed, and allocates a new slice if dst is nil.
-func Filter[T any](dst, src []T, f func(v T) bool) []T {
+func Filter[S ~[]E, E any](dst, src S, f func(v E) bool) S {
 
 	if dst == nil {
-		dst = make([]T, 0, len(src))
+		dst = make(S, 0, len(src))
 	}
 
 	dst = dst[:0]
