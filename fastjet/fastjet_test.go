@@ -13,7 +13,7 @@ import (
 )
 
 func TestSimple(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
 
 	particles := []fastjet.Jet{
 		fastjet.NewJet(+99.0, +0.1, 0, 100.0),

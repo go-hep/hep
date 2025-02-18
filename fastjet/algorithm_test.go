@@ -248,7 +248,7 @@ func TestInclusiveJetAlgorithms(t *testing.T) {
 	} {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
+			//t.Parallel()
 
 			particles, err := loadParticles(test.input)
 			if err != nil {
@@ -316,7 +316,7 @@ func TestExclusiveJetAlgorithms(t *testing.T) {
 	} {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
+			//t.Parallel()
 
 			particles, err := loadParticles(test.input)
 			if err != nil {
