@@ -310,6 +310,12 @@ func (cs *ClusterSequence) jetScaleForAlgorithm(jet *Jet) float64 {
 		if p <= 0 && kt2 < 1e-300 {
 			kt2 = 1e-300
 		}
+		switch p {
+		case +0:
+			return 1
+		case -1:
+			return 1 / kt2
+		}
 		return math.Pow(kt2, p)
 
 	case CambridgeForPassiveAlgorithm:
@@ -325,6 +331,12 @@ func (cs *ClusterSequence) jetScaleForAlgorithm(jet *Jet) float64 {
 		p := cs.def.ExtraParam()
 		if p <= 0 && kt2 < 1e-300 {
 			kt2 = 1e-300
+		}
+		switch p {
+		case +0:
+			return 1
+		case -1:
+			return 1 / (kt2 * kt2)
 		}
 		return math.Pow(kt2, 2*p)
 
