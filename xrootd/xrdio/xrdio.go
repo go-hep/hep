@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 
 	"go-hep.org/x/hep/xrootd"
@@ -22,6 +23,7 @@ import (
 //   - io.ReaderAt
 //   - io.WriterAt
 //   - io.Seeker
+//   - fs.File
 type File struct {
 	cli *xrootd.Client
 	fs  xrdfs.FileSystem
@@ -177,4 +179,5 @@ var (
 	_ io.Writer   = (*File)(nil)
 	_ io.WriterAt = (*File)(nil)
 	_ io.Seeker   = (*File)(nil)
+	_ fs.File     = (*File)(nil)
 )
