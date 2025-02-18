@@ -31,12 +31,14 @@ func main() {
 		race    = flag.Bool("race", false, "enable race detector")
 		cover   = flag.String("coverpkg", "", "apply coverage analysis in each test to packages matching the patterns.")
 		tags    = flag.String("tags", "", "build tags")
+		count   = flag.String("count", "", "run each test, benchmark, and fuzz seed n times")
+		run     = flag.String("run", "", "run the specified test(s)")
 		verbose = flag.Bool("v", false, "enable verbose output")
 	)
 
 	flag.Parse()
 
-	pkgs, err := pkgList()
+	pkgs, err := pkgList(flag.Args())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,6 +59,12 @@ func main() {
 	}
 	if *tags != "" {
 		args = append(args, "-tags="+*tags)
+	}
+	if *count != "" {
+		args = append(args, "-count="+*count)
+	}
+	if *run != "" {
+		args = append(args, "-run="+*run)
 	}
 	switch {
 	case *race:
@@ -95,9 +103,16 @@ func main() {
 	}
 }
 
-func pkgList() ([]string, error) {
+func pkgList(vs []string) ([]string, error) {
+	args := []string{"list"}
+	switch len(vs) {
+	case 0:
+		args = append(args, "./...")
+	default:
+		args = append(args, vs...)
+	}
 	out := new(bytes.Buffer)
-	cmd := exec.Command("go", "list", "./...")
+	cmd := exec.Command("go", args...)
 	cmd.Stdout = out
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
