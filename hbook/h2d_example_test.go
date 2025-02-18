@@ -6,9 +6,9 @@ package hbook_test
 
 import (
 	"log"
+	"math/rand/v2"
 
 	"go-hep.org/x/hep/hbook"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/distmv"
 )
@@ -21,7 +21,7 @@ func ExampleH2D() {
 	dist, ok := distmv.NewNormal(
 		[]float64{0, 1},
 		mat.NewSymDense(2, []float64{4, 0, 0, 2}),
-		rand.New(rand.NewSource(1234)),
+		rand.New(rand.NewPCG(1234, 1234)),
 	)
 	if !ok {
 		log.Fatalf("error creating distmv.Normal")

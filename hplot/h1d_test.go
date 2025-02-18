@@ -7,13 +7,13 @@ package hplot_test
 import (
 	"image/color"
 	"math"
+	"math/rand/v2"
 	"os"
 	"runtime"
 	"testing"
 
 	"go-hep.org/x/hep/hbook"
 	"go-hep.org/x/hep/hplot"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 	"gonum.org/v1/plot/cmpimg"
 	"gonum.org/v1/plot/vg"
@@ -29,26 +29,50 @@ func TestH1D(t *testing.T) {
 }
 
 func TestH1DtoPDF(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
+
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_toPDF, t, "h1d_plot.pdf")
 }
 
 func TestH1DLogScale(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
+
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_logScaleY, t, "h1d_logy.png")
 }
 
 func TestH1DYErrs(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
+
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withYErrBars, t, "h1d_yerrs.png")
 }
 
 func TestH1DYErrsBand(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
+
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withYErrBars_withBand, t, "h1d_yerrs_band.png")
 }
 
 func TestH1DAsData(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
+
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_withYErrBarsAndData, t, "h1d_glyphs.png")
 }
 
 func TestH1DLegendStyle(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skipf("ignore test b/c of darwin+Mac-silicon")
+	}
+
 	checkPlot(cmpimg.CheckPlot)(ExampleH1D_legendStyle, t, "h1d_legend.png")
 }
 
@@ -69,7 +93,7 @@ func TestH1DWithBorders(t *testing.T) {
 		dist := distuv.Normal{
 			Mu:    0,
 			Sigma: 1,
-			Src:   rand.New(rand.NewSource(0)),
+			Src:   rand.New(rand.NewPCG(0, 0)),
 		}
 
 		// Draw some random values from the standard
