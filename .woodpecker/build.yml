@@ -1,0 +1,32 @@
+when:
+  - event: [push, pull_request, tag]
+    branch: ${CI_REPO_DEFAULT_BRANCH}
+
+steps:
+  build:
+    image: codeberg.org/go-hep/groot-docker:6.34.04
+    environment:
+      CGO_ENABLED: 1
+      GOVERSION: "1.24.1"
+      GOPROXY: "https://proxy.golang.org"
+      GOTAGS: "-tags=ci"
+      GORACE: "" ## or "-race"
+      GOCOVERAGE: "-coverpkg=go-hep.org/x/hep/..."
+
+    commands:
+      - . /opt/root/setup-groot.sh
+      - root.exe --version
+      - export PATH=/root/go/bin:$PATH
+      - GOARCH=amd64 go install -v $GOTAGS ./...
+      - go run ./ci/run-tests.go $GOTAGS $GORACE $GOCOVERAGE
+      - go vet $GOTAGS ./...
+      - go install honnef.co/go/tools/cmd/staticcheck@latest
+      - staticcheck ./...
+
+  codecov:
+    image: woodpeckerci/plugin-codecov
+    settings:
+      files:
+        - coverage.txt
+      token:
+        from_secret: codecov_token
