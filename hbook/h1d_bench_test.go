@@ -70,7 +70,7 @@ func BenchmarkH1DFillFlatGo(b *testing.B) {
 
 func st_process_evts(n int, hists []*H1D, process func(hists []*H1D)) {
 	var wg sync.WaitGroup
-	for i := 0; i < n; i++ {
+	for range n {
 		wg.Add(1)
 		go func() {
 			process(hists)
@@ -88,7 +88,7 @@ func st_process_evts_const(hists []*H1D) {
 func BenchmarkNH1DFillConst(b *testing.B) {
 	b.StopTimer()
 	hists := make([]*H1D, 100)
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		hists[i] = NewH1D(100, 0., 100.)
 	}
 	b.StartTimer()
@@ -107,7 +107,7 @@ func st_process_evts_flat(hists []*H1D) {
 func BenchmarkNH1DFillFlat(b *testing.B) {
 	b.StopTimer()
 	hists := make([]*H1D, 100)
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		hists[i] = NewH1D(100, 0., 100.)
 	}
 	b.StartTimer()

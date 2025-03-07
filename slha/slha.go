@@ -36,8 +36,8 @@ func (v *Value) Float() float64 {
 	return v.v.Float()
 }
 
-// Interface returns the value as an interface{}.
-func (v *Value) Interface() interface{} {
+// Interface returns the value as an empty interface.
+func (v *Value) Interface() any {
 	return v.v.Interface()
 }
 
@@ -76,7 +76,7 @@ func (b *Block) Get(args ...int) (Value, error) {
 // Set sets the Value at index args with v.
 // Set creates a new empty Value if none exists at args.
 // Note that args are 1-based indices.
-func (b *Block) Set(v interface{}, args ...int) error {
+func (b *Block) Set(v any, args ...int) error {
 	var err error
 	val, _ := b.Get(args...)
 	val.v = reflect.ValueOf(v)

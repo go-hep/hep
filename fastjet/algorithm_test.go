@@ -276,11 +276,8 @@ func TestInclusiveJetAlgorithms(t *testing.T) {
 				t.Fatalf("got %d jets, want %d", len(jets), len(want))
 			}
 
-			n := len(jets)
-			if len(want) < n {
-				n = len(want)
-			}
-			for i := 0; i < n; i++ {
+			n := min(len(want), len(jets))
+			for i := range n {
 				ref := want[i][:]
 				jet := jets[i]
 				rap := jet.Rapidity()
@@ -344,11 +341,8 @@ func TestExclusiveJetAlgorithms(t *testing.T) {
 				t.Fatalf("got %d jets, want %d", len(jets), len(want))
 			}
 
-			n := len(jets)
-			if len(want) < n {
-				n = len(want)
-			}
-			for i := 0; i < n; i++ {
+			n := min(len(want), len(jets))
+			for i := range n {
 				ref := want[i][:]
 				jet := jets[i]
 				rap := jet.Rapidity()

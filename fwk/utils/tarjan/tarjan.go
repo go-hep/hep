@@ -37,11 +37,11 @@ package tarjan // import "go-hep.org/x/hep/fwk/utils/tarjan"
 // vertex itself is also a connected group.
 //
 // The example shows the same graph as in the Wikipedia article.
-func Connections(graph map[interface{}][]interface{}) [][]interface{} {
+func Connections(graph map[any][]any) [][]any {
 	g := &data{
 		graph: graph,
 		nodes: make([]node, 0, len(graph)),
-		index: make(map[interface{}]int, len(graph)),
+		index: make(map[any]int, len(graph)),
 	}
 	for v := range g.graph {
 		if _, ok := g.index[v]; !ok {
@@ -53,11 +53,11 @@ func Connections(graph map[interface{}][]interface{}) [][]interface{} {
 
 // data contains all common data for a single operation.
 type data struct {
-	graph  map[interface{}][]interface{}
+	graph  map[any][]any
 	nodes  []node
-	stack  []interface{}
-	index  map[interface{}]int
-	output [][]interface{}
+	stack  []any
+	index  map[any]int
+	output [][]any
 }
 
 // node stores data for a single vertex in the connection process.
@@ -68,7 +68,7 @@ type node struct {
 
 // strongConnect runs Tarjan's algorithm recursivley and outputs a grouping of
 // strongly connected vertices.
-func (data *data) strongConnect(v interface{}) *node {
+func (data *data) strongConnect(v any) *node {
 	index := len(data.nodes)
 	data.index[v] = index
 	data.stack = append(data.stack, v)
@@ -90,7 +90,7 @@ func (data *data) strongConnect(v interface{}) *node {
 	}
 
 	if node.lowlink == index {
-		var vertices []interface{}
+		var vertices []any
 		i := len(data.stack) - 1
 		for {
 			w := data.stack[i]

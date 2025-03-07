@@ -65,7 +65,7 @@ func (r *preader) pread(p []byte, off int64) (int, error) {
 
 	var wg sync.WaitGroup
 	wg.Add(r.n)
-	for i := 0; i < r.n; i++ {
+	for range r.n {
 		go func() {
 			defer wg.Done()
 			for i := range wrk {

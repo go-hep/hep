@@ -67,7 +67,7 @@ type jsNode struct {
 	Attr     jsAttr   `json:"a_attr,omitempty"`
 }
 
-type jsAttr map[string]interface{}
+type jsAttr map[string]any
 
 type brancher interface {
 	Branches() []rtree.Branch

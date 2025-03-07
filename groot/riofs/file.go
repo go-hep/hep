@@ -520,7 +520,7 @@ func (f *File) readStreamerInfo() error {
 
 	objs := f.siKey.Value().(root.List)
 	f.sinfos = make([]rbytes.StreamerInfo, 0, objs.Len())
-	for i := 0; i < objs.Len(); i++ {
+	for i := range objs.Len() {
 		obj, ok := objs.At(i).(rbytes.StreamerInfo)
 		if !ok {
 			continue
@@ -651,10 +651,7 @@ func (f *File) markFree(beg, end int64) {
 	if span == nil {
 		return
 	}
-	nbytes := span.free()
-	if nbytes > 2000000000 {
-		nbytes = 2000000000
-	}
+	nbytes := min(span.free(), 2000000000)
 	buf := rbytes.NewWBuffer(make([]byte, 4), nil, 0, f)
 	buf.WriteI32(-int32(nbytes))
 	if end == f.end-1 {

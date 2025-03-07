@@ -84,10 +84,10 @@ func (svc *dflowsvc) StartSvc(ctx Context) error {
 	}
 
 	// detect cycles.
-	graph := make(map[interface{}][]interface{})
+	graph := make(map[any][]any)
 	for _, n := range nodenames {
 		node := svc.nodes[n]
-		graph[n] = []interface{}{}
+		graph[n] = []any{}
 		for in := range node.in {
 			for _, o := range nodenames {
 				if o == n {

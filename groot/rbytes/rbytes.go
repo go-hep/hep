@@ -87,12 +87,12 @@ type StreamerElement interface {
 
 // Decoder is the interface that wraps the basic DecodeROOT method.
 type Decoder interface {
-	DecodeROOT(ptr interface{}) error
+	DecodeROOT(ptr any) error
 }
 
 // Encoder is the interface that wraps the basic EncodeROOT method.
 type Encoder interface {
-	EncodeROOT(ptr interface{}) error
+	EncodeROOT(ptr any) error
 }
 
 // StreamerInfoContext defines the protocol to retrieve a ROOT StreamerInfo
@@ -138,7 +138,7 @@ type Streamer interface {
 
 // Binder wraps the Bind method.
 type Binder interface {
-	Bind(ptr interface{}) error
+	Bind(ptr any) error
 }
 
 // Counter wraps the Count method.

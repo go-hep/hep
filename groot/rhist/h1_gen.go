@@ -238,7 +238,7 @@ func (h *H1F) AsH1D() *hbook.H1D {
 		h.dist1D(nx + 1), // overflow
 	}
 
-	for i := 0; i < nx; i++ {
+	for i := range nx {
 		bin := &hh.Binning.Bins[i]
 		xmin := h.XBinLowEdge(i + 1)
 		xmax := h.XBinWidth(i+1) + xmin
@@ -521,7 +521,7 @@ func (h *H1D) AsH1D() *hbook.H1D {
 		h.dist1D(nx + 1), // overflow
 	}
 
-	for i := 0; i < nx; i++ {
+	for i := range nx {
 		bin := &hh.Binning.Bins[i]
 		xmin := h.XBinLowEdge(i + 1)
 		xmax := h.XBinWidth(i+1) + xmin
@@ -804,7 +804,7 @@ func (h *H1I) AsH1D() *hbook.H1D {
 		h.dist1D(nx + 1), // overflow
 	}
 
-	for i := 0; i < nx; i++ {
+	for i := range nx {
 		bin := &hh.Binning.Bins[i]
 		xmin := h.XBinLowEdge(i + 1)
 		xmax := h.XBinWidth(i+1) + xmin

@@ -226,7 +226,7 @@ func newContext(pkg, file, tree string, dataReader, verbose bool) *Context {
 	return ctx
 }
 
-func (ctx *Context) printf(format string, args ...interface{}) {
+func (ctx *Context) printf(format string, args ...any) {
 	if ctx.Verbose {
 		log.Printf(format, args...)
 	}

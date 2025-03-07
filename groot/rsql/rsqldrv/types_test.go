@@ -12,8 +12,8 @@ import (
 
 func TestCoerce(t *testing.T) {
 	for _, tc := range []struct {
-		v1, v2 interface{}
-		w1, w2 interface{}
+		v1, v2 any
+		w1, w2 any
 	}{
 		{
 			v1: int32(0),
@@ -79,8 +79,8 @@ func TestCoerce(t *testing.T) {
 
 func TestCoerce1(t *testing.T) {
 	for _, tc := range []struct {
-		v1, v2 interface{}
-		want   interface{}
+		v1, v2 any
+		want   any
 	}{
 		{
 			v1:   nil,

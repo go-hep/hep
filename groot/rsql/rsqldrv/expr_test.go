@@ -12,19 +12,19 @@ import (
 	"github.com/xwb1989/sqlparser"
 )
 
-type vctxType map[interface{}]interface{}
+type vctxType map[any]any
 
 func TestExpr(t *testing.T) {
 	for _, tc := range []struct {
 		expr string
 		vctx vctxType
-		want interface{}
+		want any
 		err  error
 	}{
 		{
 			expr: `select (x, y) from tbl`,
 			vctx: vctxType{"x": int32(1), "y": int32(2)},
-			want: []interface{}{int32(1), int32(2)},
+			want: []any{int32(1), int32(2)},
 		},
 		{
 			expr: `select (x + "foo") from tbl`,
@@ -810,20 +810,18 @@ func TestSelectColumns(t *testing.T) {
 	}
 	defer db.Close()
 
-	type eface = interface{}
-
 	for _, tc := range []struct {
 		query string
 		cols  []string
-		types []interface{}
-		args  []interface{}
-		vals  [][]eface
+		types []any
+		args  []any
+		vals  [][]any
 	}{
 		{
 			query: `select one from tree`,
 			cols:  []string{"one"},
-			types: []interface{}{int32(0)},
-			vals: [][]eface{
+			types: []any{int32(0)},
+			vals: [][]any{
 				{int32(1)},
 				{int32(2)},
 				{int32(3)},
@@ -833,8 +831,8 @@ func TestSelectColumns(t *testing.T) {
 		{
 			query: `select (one) from tree`,
 			cols:  []string{"one"},
-			types: []interface{}{int32(0)},
-			vals: [][]eface{
+			types: []any{int32(0)},
+			vals: [][]any{
 				{int32(1)},
 				{int32(2)},
 				{int32(3)},
@@ -844,8 +842,8 @@ func TestSelectColumns(t *testing.T) {
 		{
 			query: `select (one, two) from tree`,
 			cols:  []string{"one", "two"},
-			types: []interface{}{int32(0), 0.0},
-			vals: [][]eface{
+			types: []any{int32(0), 0.0},
+			vals: [][]any{
 				{int32(1), 1.1},
 				{int32(2), 2.2},
 				{int32(3), 3.3},
@@ -855,8 +853,8 @@ func TestSelectColumns(t *testing.T) {
 		{
 			query: `select (one, (two)) from tree`,
 			cols:  []string{"one", "two"},
-			types: []interface{}{int32(0), 0.0},
-			vals: [][]eface{
+			types: []any{int32(0), 0.0},
+			vals: [][]any{
 				{int32(1), 1.1},
 				{int32(2), 2.2},
 				{int32(3), 3.3},
@@ -866,8 +864,8 @@ func TestSelectColumns(t *testing.T) {
 		{
 			query: `select (one, ((two))) from tree`,
 			cols:  []string{"one", "two"},
-			types: []interface{}{int32(0), 0.0},
-			vals: [][]eface{
+			types: []any{int32(0), 0.0},
+			vals: [][]any{
 				{int32(1), 1.1},
 				{int32(2), 2.2},
 				{int32(3), 3.3},
@@ -877,8 +875,8 @@ func TestSelectColumns(t *testing.T) {
 		{
 			query: `select (((one), ((two)))) from tree`,
 			cols:  []string{"one", "two"},
-			types: []interface{}{int32(0), 0.0},
-			vals: [][]eface{
+			types: []any{int32(0), 0.0},
+			vals: [][]any{
 				{int32(1), 1.1},
 				{int32(2), 2.2},
 				{int32(3), 3.3},
@@ -888,8 +886,8 @@ func TestSelectColumns(t *testing.T) {
 		{
 			query: `select three from tree`,
 			cols:  []string{"three"},
-			types: []interface{}{""},
-			vals: [][]eface{
+			types: []any{""},
+			vals: [][]any{
 				{"uno"},
 				{"dos"},
 				{"tres"},
@@ -899,8 +897,8 @@ func TestSelectColumns(t *testing.T) {
 		{
 			query: `select (one, two, three) from tree`,
 			cols:  []string{"one", "two", "three"},
-			types: []interface{}{int32(0), 0.0, ""},
-			vals: [][]eface{
+			types: []any{int32(0), 0.0, ""},
+			vals: [][]any{
 				{int32(1), 1.1, "uno"},
 				{int32(2), 2.2, "dos"},
 				{int32(3), 3.3, "tres"},
@@ -910,9 +908,9 @@ func TestSelectColumns(t *testing.T) {
 		{
 			query: `select (?, two, ?) from tree`,
 			cols:  []string{"", "two", ""},
-			types: []interface{}{"", 0.0, ""},
-			args:  []interface{}{"one", "three"},
-			vals: [][]eface{
+			types: []any{"", 0.0, ""},
+			args:  []any{"one", "three"},
+			vals: [][]any{
 				{"one", 1.1, "three"},
 				{"one", 2.2, "three"},
 				{"one", 3.3, "three"},
@@ -922,9 +920,9 @@ func TestSelectColumns(t *testing.T) {
 		{
 			query: `select (:v1, two, :v2) from tree`,
 			cols:  []string{"", "two", ""},
-			types: []interface{}{"", 0.0, ""},
-			args:  []interface{}{"one", "three"},
-			vals: [][]eface{
+			types: []any{"", 0.0, ""},
+			args:  []any{"one", "three"},
+			vals: [][]any{
 				{"one", 1.1, "three"},
 				{"one", 2.2, "three"},
 				{"one", 3.3, "three"},
@@ -934,9 +932,9 @@ func TestSelectColumns(t *testing.T) {
 		{
 			query: `select (:v2, two, :v1) from tree`,
 			cols:  []string{"", "two", ""},
-			types: []interface{}{"", 0.0, ""},
-			args:  []interface{}{"three", "one"},
-			vals: [][]eface{
+			types: []any{"", 0.0, ""},
+			args:  []any{"three", "one"},
+			vals: [][]any{
 				{"one", 1.1, "three"},
 				{"one", 2.2, "three"},
 				{"one", 3.3, "three"},
@@ -946,9 +944,9 @@ func TestSelectColumns(t *testing.T) {
 		{
 			query: `select (:v2, two+:v3, :v1) from tree`,
 			cols:  []string{"", "", ""},
-			types: []interface{}{"", 0.0, ""},
-			args:  []interface{}{"three", "one", 10},
-			vals: [][]eface{
+			types: []any{"", 0.0, ""},
+			args:  []any{"three", "one", 10},
+			vals: [][]any{
 				{"one", 11.1, "three"},
 				{"one", 12.2, "three"},
 				{"one", 13.3, "three"},
@@ -958,8 +956,8 @@ func TestSelectColumns(t *testing.T) {
 		{
 			query: `select (one) from tree where (two > 3)`,
 			cols:  []string{"one"},
-			types: []interface{}{int32(0)},
-			vals: [][]eface{
+			types: []any{int32(0)},
+			vals: [][]any{
 				{int32(3)},
 				{int32(4)},
 			},
@@ -967,25 +965,25 @@ func TestSelectColumns(t *testing.T) {
 		{
 			query: `select (one) from tree where (3 <= two && two < 4)`,
 			cols:  []string{"one"},
-			types: []interface{}{int32(0)},
-			vals: [][]eface{
+			types: []any{int32(0)},
+			vals: [][]any{
 				{int32(3)},
 			},
 		},
 		{
 			query: `select (one, two) from tree where (three="quatro")`,
 			cols:  []string{"one", "two"},
-			types: []interface{}{int32(0), 0.0},
-			vals: [][]eface{
+			types: []any{int32(0), 0.0},
+			vals: [][]any{
 				{int32(4), 4.4},
 			},
 		},
 		{
 			query: `select (one, two, ?+:v2) from tree where (three="quatro")`,
 			cols:  []string{"one", "two", ""},
-			types: []interface{}{int32(0), 0.0, uint64(0)},
-			args:  []interface{}{idealUint(5), idealUint(10)},
-			vals: [][]eface{
+			types: []any{int32(0), 0.0, uint64(0)},
+			args:  []any{idealUint(5), idealUint(10)},
+			vals: [][]any{
 				{int32(4), 4.4, uint64(15)},
 			},
 		},
@@ -1006,9 +1004,9 @@ func TestSelectColumns(t *testing.T) {
 				t.Fatalf("invalid columns.\ngot= %q\nwant=%q", got, want)
 			}
 
-			var got [][]eface
+			var got [][]any
 			for rows.Next() {
-				vars := make([]interface{}, len(tc.types))
+				vars := make([]any, len(tc.types))
 				for i, v := range tc.types {
 					vars[i] = reflect.New(reflect.TypeOf(v)).Interface()
 				}
@@ -1016,7 +1014,7 @@ func TestSelectColumns(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				row := make([]eface, len(vars))
+				row := make([]any, len(vars))
 				for i, v := range vars {
 					row[i] = reflect.Indirect(reflect.ValueOf(v)).Interface()
 				}

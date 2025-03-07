@@ -99,7 +99,7 @@ func process(oname, tname, fname string) error {
 
 	var (
 		wvars = make([]rtree.WriteVar, tbl.NumCols())
-		wargs = make([]interface{}, tbl.NumCols())
+		wargs = make([]any, tbl.NumCols())
 	)
 	for i, col := range tbl.Cols() {
 		wvars[i] = wvarFrom(col)

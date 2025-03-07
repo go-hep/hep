@@ -70,7 +70,7 @@ type Leaf interface {
 
 	setBranch(Branch)
 	readFromBuffer(r *rbytes.RBuffer) error
-	setAddress(ptr interface{}) error
+	setAddress(ptr any) error
 
 	// write interface part
 	writeToBuffer(w *rbytes.WBuffer) (int, error)

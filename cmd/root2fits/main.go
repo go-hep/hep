@@ -118,7 +118,7 @@ func process(oname, tname, fname string) error {
 	defer tbl.Close()
 
 	rvars := rtree.NewReadVars(tree)
-	wvars := make([]interface{}, len(rvars))
+	wvars := make([]any, len(rvars))
 	for i, rvar := range rvars {
 		wvars[i] = rvar.Value
 	}

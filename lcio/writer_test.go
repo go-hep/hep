@@ -43,7 +43,7 @@ func ExampleWriter() {
 	}
 
 	const NEVENTS = 1
-	for ievt := 0; ievt < NEVENTS; ievt++ {
+	for ievt := range NEVENTS {
 		evt := lcio.Event{
 			RunNumber:   run.RunNumber,
 			Detector:    run.Detector,
@@ -239,7 +239,7 @@ func testCreateEvent(t *testing.T, compLevel int, fname string) {
 			Ints:    map[string][]int32{},
 		},
 	}
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		i32 := int32(i+1) * 10
 		f32 := float32(i+1) * 10
 		f64 := float64(i+1) * 10

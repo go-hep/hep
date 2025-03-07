@@ -50,7 +50,7 @@ func (stream *istream) close() error {
 	return err
 }
 
-func (stream *istream) read(name string, ptr interface{}) error {
+func (stream *istream) read(name string, ptr any) error {
 	var err error
 
 	seekr, ok := stream.f.(io.Seeker)

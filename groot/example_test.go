@@ -212,7 +212,7 @@ func ExampleOpen_graph() {
 	fmt.Printf("name:  %q\n", g.Name())
 	fmt.Printf("title: %q\n", g.Title())
 	fmt.Printf("#pts:  %d\n", g.Len())
-	for i := 0; i < g.Len(); i++ {
+	for i := range g.Len() {
 		x, y := g.XY(i)
 		fmt.Printf("(x,y)[%d] = (%+e, %+e)\n", i, x, y)
 	}

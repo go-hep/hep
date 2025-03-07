@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"slices"
 
 	"gonum.org/v1/plot/font"
 	"gonum.org/v1/plot/vg"
@@ -105,7 +106,7 @@ func (c *Canvas) SetLineWidth(w vg.Length) {
 // SetLineDash implements the SetLineDash method of the vg.Canvas interface.
 func (c *Canvas) SetLineDash(dashes []vg.Length, offs vg.Length) {
 	c.append(opSetLineDash{
-		Dashes:  append([]vg.Length(nil), dashes...),
+		Dashes:  slices.Clone(dashes),
 		Offsets: offs,
 	})
 }
@@ -142,12 +143,12 @@ func (c *Canvas) Pop() {
 
 // Stroke implements the Stroke method of the vg.Canvas interface.
 func (c *Canvas) Stroke(path vg.Path) {
-	c.append(opStroke{Path: append(vg.Path(nil), path...)})
+	c.append(opStroke{Path: slices.Clone(path)})
 }
 
 // Fill implements the Fill method of the vg.Canvas interface.
 func (c *Canvas) Fill(path vg.Path) {
-	c.append(opFill{Path: append(vg.Path(nil), path...)})
+	c.append(opFill{Path: slices.Clone(path)})
 }
 
 // FillString implements the FillString method of the vg.Canvas interface.

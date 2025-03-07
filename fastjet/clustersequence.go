@@ -100,11 +100,9 @@ func (cs *ClusterSequence) ExclusiveJetsUpTo(njets int) ([]Jet, error) {
 	// calculate the point where we have to stop the clustering
 	// relation between stoppt, njets assumes one extra jet disappears
 	// at each clustering
-	stoppt := 2*cs.initn - njets
+	//
 	// make sure it's safe when more jets are requested than there are particles
-	if stoppt < cs.initn {
-		stoppt = cs.initn
-	}
+	stoppt := max(2*cs.initn-njets, cs.initn)
 	// additional checking
 	if 2*cs.initn != len(cs.history) {
 		err = errors.New("fastjet: too few initial jets")
@@ -329,10 +327,7 @@ func (cs *ClusterSequence) jetScaleForAlgorithm(jet *Jet) float64 {
 		return math.Pow(kt2, 2*p)
 
 	case EeKtAlgorithm:
-		e := jet.E()
-		if e < 1e-300 {
-			e = 1e-300
-		}
+		e := max(jet.E(), 1e-300)
 		return e * e
 
 	default:
@@ -431,7 +426,7 @@ func (cs *ClusterSequence) runN3Dumb() error {
 		jj := -2
 		// find smallest beam distance
 		ymin := cs.jetScaleForAlgorithm(jets[0].jet)
-		for i := 0; i < n; i++ {
+		for i := range n {
 			y := cs.jetScaleForAlgorithm(jets[i].jet)
 			if y < ymin {
 				ymin = y
@@ -441,7 +436,7 @@ func (cs *ClusterSequence) runN3Dumb() error {
 		}
 
 		// find smallest distance between pair of jets
-		for i := 0; i < n-1; i++ {
+		for i := range n - 1 {
 			ijet := jets[i].jet
 			for j := i + 1; j < n; j++ {
 				jjet := jets[j].jet

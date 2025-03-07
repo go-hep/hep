@@ -138,7 +138,7 @@ func TestQuery(t *testing.T) {
 	}
 	for _, tc := range []struct {
 		query string
-		args  []interface{}
+		args  []any
 		cols  []string
 		want  []data
 	}{
@@ -175,7 +175,7 @@ func TestQuery(t *testing.T) {
 		{
 			query: `SELECT (one+?, two+?, ?+three+"--") FROM tree`,
 			cols:  []string{"", "", ""},
-			args:  []interface{}{int32(10), 20.0, "++"},
+			args:  []any{int32(10), 20.0, "++"},
 			want: []data{
 				{11, 21.1, "++uno--"},
 				{12, 22.2, "++dos--"},
@@ -202,7 +202,7 @@ func TestQuery(t *testing.T) {
 		{
 			query: `SELECT (one, two, three) FROM tree WHERE (one <= ?)`,
 			cols:  []string{"one", "two", "three"},
-			args:  []interface{}{int32(2)},
+			args:  []any{int32(2)},
 			want: []data{
 				{1, 1.1, "uno"},
 				{2, 2.2, "dos"},
@@ -211,7 +211,7 @@ func TestQuery(t *testing.T) {
 		{
 			query: `SELECT (one, two, three) FROM tree WHERE (one <= ?)`,
 			cols:  []string{"one", "two", "three"},
-			args:  []interface{}{2},
+			args:  []any{2},
 			want: []data{
 				{1, 1.1, "uno"},
 				{2, 2.2, "dos"},
@@ -220,7 +220,7 @@ func TestQuery(t *testing.T) {
 		{
 			query: `SELECT (one, two, three) FROM tree WHERE (two <= ?)`,
 			cols:  []string{"one", "two", "three"},
-			args:  []interface{}{2.2},
+			args:  []any{2.2},
 			want: []data{
 				{1, 1.1, "uno"},
 				{2, 2.2, "dos"},
@@ -229,7 +229,7 @@ func TestQuery(t *testing.T) {
 		{
 			query: `SELECT (one, two, three) FROM tree WHERE (two <= ?)`,
 			cols:  []string{"one", "two", "three"},
-			args:  []interface{}{3},
+			args:  []any{3},
 			want: []data{
 				{1, 1.1, "uno"},
 				{2, 2.2, "dos"},
@@ -238,7 +238,7 @@ func TestQuery(t *testing.T) {
 		{
 			query: `SELECT (one, two, three) FROM tree WHERE (three != ? && three != ?)`,
 			cols:  []string{"one", "two", "three"},
-			args:  []interface{}{"tres", "quatro"},
+			args:  []any{"tres", "quatro"},
 			want: []data{
 				{1, 1.1, "uno"},
 				{2, 2.2, "dos"},
@@ -327,7 +327,7 @@ func TestQuery(t *testing.T) {
 		{
 			query: `SELECT (one, two, three) FROM tree WHERE (three = ?)`,
 			cols:  []string{"one", "two", "three"},
-			args:  []interface{}{"quatro"},
+			args:  []any{"quatro"},
 			want: []data{
 				{4, 4.4, "quatro"},
 			},
@@ -459,7 +459,7 @@ func (eventData) want(i int64) (data eventData) {
 	data.SliF64 = make([]float64, int(data.N))
 	data.SliD16 = make([]root.Float16, int(data.N))
 	data.SliD32 = make([]root.Double32, int(data.N))
-	for ii := 0; ii < int(data.N); ii++ {
+	for ii := range int(data.N) {
 		data.SliBs[ii] = (ii + 1) == int(i)
 		data.SliI8[ii] = int8(-i)
 		data.SliI16[ii] = int16(-i)

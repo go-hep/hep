@@ -132,7 +132,7 @@ func (cmd *dumpCmd) dumpObj(obj root.Object) error {
 }
 
 func (cmd *dumpCmd) dumpList(lst root.List) error {
-	for i := 0; i < lst.Len(); i++ {
+	for i := range lst.Len() {
 		fmt.Fprintf(cmd.w, "lst[%s][%d]: ", lst.Name(), i)
 		err := cmd.dumpObj(lst.At(i))
 		if err != nil && !errors.Is(err, errIgnoreKey) {

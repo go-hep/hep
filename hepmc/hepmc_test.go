@@ -55,7 +55,7 @@ func testEventRW(t *testing.T, fname, outfname string, nevts int) {
 
 	const NEVTS = 10
 	evts := make([]*hepmc.Event, 0, NEVTS)
-	for ievt := 0; ievt < NEVTS; ievt++ {
+	for ievt := range NEVTS {
 		var evt hepmc.Event
 		err = dec.Decode(&evt)
 		if err != nil {
@@ -182,7 +182,7 @@ func TestRead(t *testing.T) {
 
 	const NEVTS = 10
 	const fname = "small.hepmc"
-	for ievt := 0; ievt < NEVTS; ievt++ {
+	for ievt := range NEVTS {
 		var evt hepmc.Event
 		err := dec.Decode(&evt)
 		if err != nil {

@@ -16,7 +16,7 @@ func newFormula(r *Reader, f rfunc.Formula) (rfunc.Formula, error) {
 	if len(rvs) != len(names) {
 		return nil, fmt.Errorf("rtree: could not find all needed ReadVars (missing: %v)", missing)
 	}
-	args := make([]interface{}, len(rvs))
+	args := make([]any, len(rvs))
 	for i, rv := range rvs {
 		args[i] = rv.Value
 	}

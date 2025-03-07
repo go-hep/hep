@@ -4,7 +4,10 @@
 
 package http
 
-import "sort"
+import (
+	"slices"
+	"sort"
+)
 
 type span struct {
 	off int64
@@ -93,7 +96,7 @@ func (p *spans) consolidate() {
 
 func (p *spans) remove(i int) {
 	list := *p
-	*p = append(list[:i], list[i+1:]...)
+	*p = slices.Delete(list, i, i+1)
 }
 
 func (p *spans) add(sp span) {

@@ -150,7 +150,7 @@ func (w *Writer) writeRecord(rec *Record, hdr, data []byte) error {
 
 // WriteValue writes a value to the stream.
 // The value is written to a record named `name` with one block `name`.
-func (w *Writer) WriteValue(name string, value interface{}) error {
+func (w *Writer) WriteValue(name string, value any) error {
 	var err error
 
 	rec := w.Record(name)
@@ -178,7 +178,7 @@ type encoder struct {
 	w io.Writer
 }
 
-func (enc *encoder) Encode(v interface{}) error {
+func (enc *encoder) Encode(v any) error {
 	switch v := v.(type) {
 	case Marshaler:
 		return v.RioMarshal(enc.w)

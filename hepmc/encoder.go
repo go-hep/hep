@@ -123,7 +123,7 @@ func (enc *Encoder) Encode(evt *Event) error {
 		if err != nil {
 			return err
 		}
-		for iw := 0; iw < nn; iw++ {
+		for iw := range nn {
 			_, err = fmt.Fprintf(enc.w, "%q ", names[iw])
 			if err != nil {
 				return err

@@ -77,7 +77,7 @@ func (rec *Record) Disconnect() {
 }
 
 // Connect connects a Block to this Record (for reading or writing)
-func (rec *Record) Connect(name string, ptr interface{}) error {
+func (rec *Record) Connect(name string, ptr any) error {
 	var err error
 	iblk, ok := rec.bindex[name]
 	if !ok {
@@ -177,7 +177,7 @@ func (rec *Record) read(r *reader) error {
 			if beg-end != int(hdr.Len) {
 				/*
 					if true {
-						var typ interface{}
+						var typ any
 						switch blk := blk.(type) {
 						case *userBlock:
 							typ = blk.blk

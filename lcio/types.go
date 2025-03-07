@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func typeFrom(name string) interface{} {
+func typeFrom(name string) any {
 	switch name {
 	case "MCParticle":
 		return new(McParticleContainer)
@@ -59,7 +59,7 @@ func typeFrom(name string) interface{} {
 	panic(fmt.Errorf("unhandled type %q", name))
 }
 
-func typeName(t interface{}) string {
+func typeName(t any) string {
 	switch t.(type) {
 	case *McParticleContainer:
 		return "MCParticle"

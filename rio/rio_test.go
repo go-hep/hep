@@ -107,7 +107,7 @@ func TestRW(t *testing.T) {
 	const nmax = 100
 	makeles := func(i int) []electron {
 		eles := make([]electron, 0, nmax)
-		for j := 0; j < nmax; j++ {
+		for range nmax {
 			eles = append(
 				eles,
 				electron{[4]float64{float64(i), float64(i + 1), float64(i + 2), float64(i + 3)}},
@@ -117,7 +117,7 @@ func TestRW(t *testing.T) {
 	}
 	makemuons := func(i int) []muon {
 		muons := make([]muon, 0, nmax)
-		for j := 0; j < nmax; j++ {
+		for range nmax {
 			muons = append(
 				muons,
 				muon{[4]float64{float64(-i), float64(-i - 1), float64(-i - 2), float64(-i - 3)}},
@@ -211,7 +211,7 @@ func TestRW(t *testing.T) {
 		}
 		wblk := wrec.Block("event")
 
-		for i := 0; i < nmax; i++ {
+		for i := range nmax {
 			data := event{
 				runnbr: int64(i),
 				evtnbr: int64(1000 + i),
@@ -252,7 +252,7 @@ func TestRW(t *testing.T) {
 		}
 		rblk := rrec.Block("event")
 
-		for i := 0; i < nmax; i++ {
+		for i := range nmax {
 			err := rrec.Read()
 			if err != nil {
 				t.Fatalf("test[%d]: error loading record[%d]: %v\nbuf: %v\nraw: %#v\n", ii, i, err,

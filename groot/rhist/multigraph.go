@@ -116,7 +116,7 @@ func (o *tmultigraph) UnmarshalROOT(r *rbytes.RBuffer) error {
 // MarshalYODA implements the YODAMarshaler interface.
 func (mg *tmultigraph) MarshalYODA() ([]byte, error) {
 	out := new(bytes.Buffer)
-	for i := 0; i < mg.graphs.Len(); i++ {
+	for i := range mg.graphs.Len() {
 		g := mg.graphs.At(i).(yodacnv.Marshaler)
 		raw, err := g.MarshalYODA()
 		if err != nil {

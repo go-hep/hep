@@ -17,7 +17,7 @@ import (
 type expression interface {
 	sql() sqlparser.Expr
 
-	eval(ectx *execCtx, vctx map[interface{}]interface{}) (v interface{}, err error)
+	eval(ectx *execCtx, vctx map[any]any) (v any, err error)
 	isStatic() bool
 }
 
@@ -50,7 +50,7 @@ func newBinExpr(expr sqlparser.Expr, op operator, x, y expression) (v expression
 }
 
 func (expr *binExpr) sql() sqlparser.Expr { return expr.expr }
-func (expr *binExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r interface{}, err error) {
+func (expr *binExpr) eval(ectx *execCtx, vctx map[any]any) (r any, err error) {
 	defer func() {
 		if e := recover(); e != nil {
 			switch x := e.(type) {
@@ -1171,12 +1171,12 @@ func (expr *binExpr) isStatic() bool {
 	return expr.l.isStatic() && expr.r.isStatic()
 }
 
-func (expr *binExpr) load(ectx *execCtx, vctx map[interface{}]interface{}) (l, r interface{}) {
+func (expr *binExpr) load(ectx *execCtx, vctx map[any]any) (l, r any) {
 	l, r = eval2(expr.l, expr.r, ectx, vctx)
 	return coerce(l, r)
 }
 
-func eval(v expression, ectx *execCtx, vctx map[interface{}]interface{}) (y interface{}) {
+func eval(v expression, ectx *execCtx, vctx map[any]any) (y any) {
 	y, err := v.eval(ectx, vctx)
 	if err != nil {
 		panic(err) // panic ok here
@@ -1184,7 +1184,7 @@ func eval(v expression, ectx *execCtx, vctx map[interface{}]interface{}) (y inte
 	return
 }
 
-func eval2(a, b expression, ectx *execCtx, vctx map[interface{}]interface{}) (x, y interface{}) {
+func eval2(a, b expression, ectx *execCtx, vctx map[any]any) (x, y any) {
 	return eval(a, ectx, vctx), eval(b, ectx, vctx)
 }
 
@@ -1297,7 +1297,7 @@ type identExpr struct {
 func (expr *identExpr) sql() sqlparser.Expr { return expr.expr }
 func (expr *identExpr) isStatic() bool      { return false }
 
-func (expr *identExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r interface{}, err error) {
+func (expr *identExpr) eval(ectx *execCtx, vctx map[any]any) (r any, err error) {
 	r, ok := vctx[expr.name]
 	if !ok {
 		err = fmt.Errorf("unknown field %q", expr.name)
@@ -1307,7 +1307,7 @@ func (expr *identExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (r 
 
 type valueExpr struct {
 	expr sqlparser.Expr
-	v    interface{}
+	v    any
 }
 
 func newValueExpr(expr *sqlparser.SQLVal, args []driver.NamedValue) (expression, error) {
@@ -1363,7 +1363,7 @@ func newValueExpr(expr *sqlparser.SQLVal, args []driver.NamedValue) (expression,
 	}
 }
 
-func idealValArgFrom(v interface{}) interface{} {
+func idealValArgFrom(v any) any {
 	switch rv := reflect.ValueOf(v); rv.Kind() {
 	case reflect.Int,
 		reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -1382,7 +1382,7 @@ func idealValArgFrom(v interface{}) interface{} {
 
 func (expr *valueExpr) sql() sqlparser.Expr { return expr.expr }
 func (expr *valueExpr) isStatic() bool      { return true }
-func (expr *valueExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (interface{}, error) {
+func (expr *valueExpr) eval(ectx *execCtx, vctx map[any]any) (any, error) {
 	return expr.v, nil
 }
 
@@ -1400,9 +1400,9 @@ func (expr *tupleExpr) isStatic() bool {
 	}
 	return true
 }
-func (expr *tupleExpr) eval(ectx *execCtx, vctx map[interface{}]interface{}) (interface{}, error) {
+func (expr *tupleExpr) eval(ectx *execCtx, vctx map[any]any) (any, error) {
 	var (
-		o   = make([]interface{}, len(expr.exprs))
+		o   = make([]any, len(expr.exprs))
 		err error
 	)
 	for i, e := range expr.exprs {

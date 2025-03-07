@@ -261,7 +261,7 @@ func (g *tgraph) UnmarshalYODA(raw []byte) error {
 // Keys implements the ObjectFinder interface.
 func (g *tgraph) Keys() []string {
 	var keys []string
-	for i := 0; i < g.funcs.Len(); i++ {
+	for i := range g.funcs.Len() {
 		o, ok := g.funcs.At(i).(root.Named)
 		if !ok {
 			continue
@@ -273,7 +273,7 @@ func (g *tgraph) Keys() []string {
 
 // Get implements the ObjectFinder interface.
 func (g *tgraph) Get(name string) (root.Object, error) {
-	for i := 0; i < g.funcs.Len(); i++ {
+	for i := range g.funcs.Len() {
 		o, ok := g.funcs.At(i).(root.Named)
 		if !ok {
 			continue
@@ -715,7 +715,7 @@ func newGraphMultiErrs(n, ny int) *tgraphmultierrs {
 		attfills: make([]rbase.AttFill, n),
 		attlines: make([]rbase.AttLine, n),
 	}
-	for i := 0; i < ny; i++ {
+	for i := range ny {
 		g.yerrlo[i].Data = make([]float64, n)
 		g.yerrhi[i].Data = make([]float64, n)
 	}

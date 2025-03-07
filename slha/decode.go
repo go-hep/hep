@@ -220,9 +220,9 @@ func addBlockEntry(line []byte, blk *Block) error {
 	return err
 }
 
-func anyvalue(str string) (interface{}, error) {
+func anyvalue(str string) (any, error) {
 	var err error
-	var vv interface{}
+	var vv any
 
 	vfloat, err := strconv.ParseFloat(str, 64)
 	if err == nil {

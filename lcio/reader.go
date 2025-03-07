@@ -147,7 +147,7 @@ func (r *Reader) remap() error {
 	r.evt.colls = nil
 	r.evt.names = nil
 	if len(r.ehdr.Blocks) > 0 {
-		r.evt.colls = make(map[string]interface{}, len(r.ehdr.Blocks))
+		r.evt.colls = make(map[string]any, len(r.ehdr.Blocks))
 		r.evt.names = make([]string, 0, len(r.ehdr.Blocks))
 		for _, blk := range r.ehdr.Blocks {
 			ptr := typeFrom(blk.Type)

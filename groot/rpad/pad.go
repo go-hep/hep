@@ -206,7 +206,7 @@ func (p *Pad) UnmarshalROOT(r *rbytes.RBuffer) error {
 func (pad *Pad) Keys() []string {
 	var keys []string
 	if pad.fPrimitives != nil && pad.fPrimitives.Len() > 0 {
-		for i := 0; i < pad.fPrimitives.Len(); i++ {
+		for i := range pad.fPrimitives.Len() {
 			o, ok := pad.fPrimitives.At(i).(root.Named)
 			if !ok {
 				continue
@@ -219,7 +219,7 @@ func (pad *Pad) Keys() []string {
 
 // Get implements the ObjectFinder interface.
 func (pad *Pad) Get(name string) (root.Object, error) {
-	for i := 0; i < pad.fPrimitives.Len(); i++ {
+	for i := range pad.fPrimitives.Len() {
 		v := pad.fPrimitives.At(i)
 		o, ok := v.(root.Named)
 		if !ok {

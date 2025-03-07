@@ -41,7 +41,7 @@ func (blk *Block) RioVersion() Version {
 }
 
 // Write writes data to the Writer, in the rio format
-func (blk *Block) Write(data interface{}) error {
+func (blk *Block) Write(data any) error {
 	var err error
 
 	buf := new(bytes.Buffer) // FIXME(sbinet): use a sync.Pool
@@ -57,7 +57,7 @@ func (blk *Block) Write(data interface{}) error {
 }
 
 // Read reads data from the Reader, in the rio format
-func (blk *Block) Read(data interface{}) error {
+func (blk *Block) Read(data any) error {
 	var err error
 	buf := bytes.NewReader(blk.raw.Data) // FIXME(sbinet): use a sync.Pool
 	dec := decoder{r: buf}

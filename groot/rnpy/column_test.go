@@ -18,7 +18,7 @@ func TestColumn(t *testing.T) {
 		fname string
 		tname string
 		aname rtree.ReadVar
-		want  interface{}
+		want  any
 		err   error
 	}{
 		{
@@ -43,7 +43,7 @@ func TestColumn(t *testing.T) {
 			fname: "../testdata/leaves.root",
 			tname: "tree",
 			aname: rtree.ReadVar{Name: "ArrF64"},
-			want: func() interface{} {
+			want: func() any {
 				o := make([][10]float64, 10)
 				for i := range o {
 					for j := range o[i] {
@@ -115,7 +115,7 @@ func TestColumn(t *testing.T) {
 			}
 			tree := obj.(rtree.Tree)
 
-			var sli interface{}
+			var sli any
 
 			col, err := NewColumn(tree, tc.aname)
 			if err == nil {

@@ -59,7 +59,7 @@ func (input *InputStreamer) Connect(ports []fwk.Port) error {
 func (input *InputStreamer) Read(ctx fwk.Context) error {
 	store := ctx.Store()
 	recs := make(map[string]struct{}, len(input.ports))
-	for i := 0; i < len(input.ports); i++ {
+	for range len(input.ports) {
 		if !input.scan.Scan() {
 			err := input.scan.Err()
 			if err == nil {

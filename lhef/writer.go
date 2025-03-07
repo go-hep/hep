@@ -76,7 +76,7 @@ func (e *Encoder) init() error {
 		return err
 	}
 
-	for i := 0; i < int(run.NPRUP); i++ {
+	for i := range int(run.NPRUP) {
 		_, err = fmt.Fprintf(
 			e.w,
 			" %13.6E %13.6E %13.6E %5d\n",
@@ -146,7 +146,7 @@ func (e *Encoder) Encode(evt *HEPEUP) error {
 		return err
 	}
 
-	for i := 0; i < int(evt.NUP); i++ {
+	for i := range int(evt.NUP) {
 		_, err = fmt.Fprintf(
 			e.w,
 			" %7d %4d %4d %4d %4d %4d %17.10E %17.10E %17.10E %17.10E %17.10E %1.f. %1.f.\n",

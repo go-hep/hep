@@ -22,7 +22,7 @@ func NewEncoder(w Writer) *Encoder {
 }
 
 // Encode writes the next value to the output sio stream.
-func (enc *Encoder) Encode(data interface{}) {
+func (enc *Encoder) Encode(data any) {
 	if enc.err != nil {
 		return
 	}
@@ -31,7 +31,7 @@ func (enc *Encoder) Encode(data interface{}) {
 
 // Tag tags a pointer, assigning it a unique identifier, so links between values
 // (inside a given sio record) can be stored.
-func (enc *Encoder) Tag(ptr interface{}) {
+func (enc *Encoder) Tag(ptr any) {
 	if enc.err != nil {
 		return
 	}
@@ -40,7 +40,7 @@ func (enc *Encoder) Tag(ptr interface{}) {
 
 // Pointer marks a (pointer to a) pointer, assigning it a unique identifier,
 // so links between values (inside a given SIO record) can be stored.
-func (enc *Encoder) Pointer(ptr interface{}) {
+func (enc *Encoder) Pointer(ptr any) {
 	if enc.err != nil {
 		return
 	}
@@ -54,14 +54,14 @@ func (dec *Encoder) Err() error {
 
 // marshal marshals ptr to a stream of bytes.
 // If ptr implements Codec, use it.
-func marshal(w Writer, ptr interface{}) error {
+func marshal(w Writer, ptr any) error {
 	if ptr, ok := ptr.(Marshaler); ok {
 		return ptr.MarshalSio(w)
 	}
 	return bwrite(w, ptr)
 }
 
-func bwrite(w Writer, data interface{}) error {
+func bwrite(w Writer, data any) error {
 
 	bo := binary.BigEndian
 	rrv := reflect.ValueOf(data)
@@ -107,7 +107,7 @@ func bwrite(w Writer, data interface{}) error {
 		if err != nil {
 			return err
 		}
-		for i := 0; i < int(sz); i++ {
+		for i := range int(sz) {
 			err = marshal(w, rv.Index(i).Addr().Interface())
 			if err != nil {
 				return err

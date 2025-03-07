@@ -19,7 +19,7 @@ type C struct {
 
 // P holds the configuration data (the properties) of a fwk.Component
 // a map of key-value pairs.
-type P map[string]interface{}
+type P map[string]any
 
 // Job is the go-based scripting interface to create, configure and run a fwk.App.
 type Job struct {
@@ -100,7 +100,7 @@ func (job *Job) Create(cfg C) fwk.Component {
 // SetProp sets the property name of the component c with the value v.
 // SetProp panics if the component does not have such property or
 // if the types do not match.
-func (job *Job) SetProp(c fwk.Component, name string, value interface{}) {
+func (job *Job) SetProp(c fwk.Component, name string, value any) {
 	job.setProp(c, name, value)
 	job.stmts = append(job.stmts, Stmt{
 		Type: StmtSetProp,
@@ -114,7 +114,7 @@ func (job *Job) SetProp(c fwk.Component, name string, value interface{}) {
 	})
 }
 
-func (job *Job) setProp(c fwk.Component, name string, value interface{}) {
+func (job *Job) setProp(c fwk.Component, name string, value any) {
 	if !job.app.HasProp(c, name) {
 		err := fmt.Errorf("component [%s:%s] has no property named %q",
 			c.Type(),
@@ -159,22 +159,22 @@ func (job *Job) Stmts() []Stmt {
 }
 
 // Debugf displays a (formated) DBG message
-func (job *Job) Debugf(format string, a ...interface{}) {
+func (job *Job) Debugf(format string, a ...any) {
 	job.app.Msg().Debugf(format, a...)
 }
 
 // Infof displays a (formated) INFO message
-func (job *Job) Infof(format string, a ...interface{}) {
+func (job *Job) Infof(format string, a ...any) {
 	job.app.Msg().Infof(format, a...)
 }
 
 // Warnf displays a (formated) WARN message
-func (job *Job) Warnf(format string, a ...interface{}) {
+func (job *Job) Warnf(format string, a ...any) {
 	job.app.Msg().Warnf(format, a...)
 }
 
 // Errorf displays a (formated) ERR message
-func (job *Job) Errorf(format string, a ...interface{}) {
+func (job *Job) Errorf(format string, a ...any) {
 	job.app.Msg().Errorf(format, a...)
 }
 

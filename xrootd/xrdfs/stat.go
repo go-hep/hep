@@ -84,7 +84,7 @@ func (es EntryStat) ModTime() time.Time {
 }
 
 // Sys implements os.FileInfo.
-func (es EntryStat) Sys() interface{} {
+func (es EntryStat) Sys() any {
 	return nil
 }
 

@@ -199,12 +199,9 @@ func TestChain(t *testing.T) {
 			}
 			{
 				brs := chain.Branches()
-				n := len(tc.brs)
-				if len(brs) < n {
-					n = len(brs)
-				}
+				n := min(len(brs), len(tc.brs))
 
-				for i := 0; i < n; i++ {
+				for i := range n {
 					if got, want := brs[i].Name(), tc.brs[i]; got != want {
 						t.Fatalf("invalid branch name[%d]: got=%q, want=%q", i, got, want)
 					}
@@ -231,12 +228,9 @@ func TestChain(t *testing.T) {
 			}
 			{
 				lvs := chain.Leaves()
-				n := len(tc.lvs)
-				if len(lvs) < n {
-					n = len(lvs)
-				}
+				n := min(len(lvs), len(tc.lvs))
 
-				for i := 0; i < n; i++ {
+				for i := range n {
 					if got, want := lvs[i].Name(), tc.lvs[i]; got != want {
 						t.Fatalf("invalid leaf name[%d]: got=%q, want=%q", i, got, want)
 					}
@@ -411,7 +405,7 @@ func TestChainReaderStruct(t *testing.T) {
 			evt.StlVecF64 = make([]float64, int(evt.N))
 			evt.StlVecStr = make([]string, int(evt.N))
 		}
-		for ii := 0; ii < int(evt.N); ii++ {
+		for ii := range int(evt.N) {
 			evt.SliF64[ii] = float64(i)
 			evt.StlVecF64[ii] = float64(i)
 			evt.StlVecStr[ii] = fmt.Sprintf("vec-%03d", i)

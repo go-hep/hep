@@ -60,7 +60,7 @@ func ExampleBinnedErrBand_fromH1D() {
 
 	// Histogram
 	h := hbook.NewH1D(20, -5, 5)
-	for i := 0; i < 1000; i++ {
+	for range 1000 {
 		x := gauss.Rand()
 		if 0 < x && x < 0.5 {
 			continue
@@ -98,7 +98,7 @@ func ExampleBinnedErrBand_fromH1D() {
 func newBinning(n int, xmin, xmax float64) []hbook.Range {
 	res := make([]hbook.Range, n)
 	dx := (xmax - xmin) / float64(n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		lo := xmin + float64(i)*dx
 		hi := lo + dx
 		res[i].Min = lo

@@ -22,7 +22,7 @@ type elemDescr struct {
 	method []int
 	oclass string
 	nclass string
-	mbr    interface{} // member streamer
+	mbr    any // member streamer
 }
 
 type streamerConfig struct {
@@ -35,14 +35,14 @@ type streamerConfig struct {
 	count func() int // optional func to give the length of ROOT's C var-len arrays.
 }
 
-func (cfg *streamerConfig) counter(recv interface{}) int {
+func (cfg *streamerConfig) counter(recv any) int {
 	if cfg.count != nil {
 		return cfg.count()
 	}
 	return int(reflect.ValueOf(recv).Elem().FieldByIndex(cfg.descr.method).Int())
 }
 
-func (cfg *streamerConfig) adjust(recv interface{}) interface{} {
+func (cfg *streamerConfig) adjust(recv any) any {
 	if cfg == nil || cfg.offset < 0 {
 		return recv
 	}

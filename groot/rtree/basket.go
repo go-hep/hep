@@ -143,10 +143,7 @@ func (b *Basket) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 		}
 		if b.wbuf != nil && b.wbuf.Len() > 0 {
 			raw := b.wbuf.Bytes()
-			n := b.last
-			if len(raw) < n {
-				n = len(raw)
-			}
+			n := min(len(raw), b.last)
 			_, err := w.Write(raw[:n])
 			if err != nil {
 				return int(w.Pos() - beg), err
@@ -281,10 +278,7 @@ func (b *Basket) update(offset int64) {
 	offset += int64(b.key.KeyLen())
 	if len(b.offsets) > 0 {
 		if b.nevbuf+1 >= b.nevsize {
-			nevsize := 10
-			if nevsize < 2*b.nevsize {
-				nevsize = 2 * b.nevsize
-			}
+			nevsize := max(10, 2*b.nevsize)
 			b.nevsize = nevsize
 			delta := len(b.offsets) - nevsize
 			if delta < 0 {

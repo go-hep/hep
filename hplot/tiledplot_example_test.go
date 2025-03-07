@@ -32,7 +32,7 @@ func ExampleTiledPlot() {
 	newHist := func(p *hplot.Plot) {
 		const npoints = 10000
 		hist := hbook.NewH1D(20, -4, +4)
-		for i := 0; i < npoints; i++ {
+		for range npoints {
 			v := dist.Rand()
 			hist.Fill(v, 1)
 		}
@@ -41,8 +41,8 @@ func ExampleTiledPlot() {
 		p.Add(h)
 	}
 
-	for i := 0; i < tp.Tiles.Rows; i++ {
-		for j := 0; j < tp.Tiles.Cols; j++ {
+	for i := range tp.Tiles.Rows {
+		for j := range tp.Tiles.Cols {
 			p := tp.Plot(j, i)
 			p.X.Min = -5
 			p.X.Max = +5
@@ -74,7 +74,7 @@ func ExampleTiledPlot_align() {
 		j = int(math.Pow(10, float64(n)))
 
 		var pts []hbook.Point2D
-		for ii := 0; ii < 10; ii++ {
+		for ii := range 10 {
 			pts = append(pts, hbook.Point2D{
 				X: float64(i + ii),
 				Y: float64(j + ii + 1),
@@ -84,8 +84,8 @@ func ExampleTiledPlot_align() {
 
 	}
 
-	for i := 0; i < tp.Tiles.Rows; i++ {
-		for j := 0; j < tp.Tiles.Cols; j++ {
+	for i := range tp.Tiles.Rows {
+		for j := range tp.Tiles.Cols {
 			p := tp.Plot(j, i)
 			p.X.Min = -5
 			p.X.Max = +5

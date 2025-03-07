@@ -57,7 +57,7 @@ func TestLeafReadWriteBasket(t *testing.T) {
 	for _, tc := range []struct {
 		leaf Leaf
 		lcnt Leaf
-		data interface{}
+		data any
 	}{
 		{
 			leaf: newLeafO(br, "BoolTrue", nil, signed, nil),
@@ -465,7 +465,7 @@ func TestLeafAPI(t *testing.T) {
 		typ      reflect.Type
 		class    string
 		typename string
-		ptrs     []interface{}
+		ptrs     []any
 	}{
 		{
 			leaf:     newLeafO(b, "leaf", shape, unsigned, count),
@@ -478,7 +478,7 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(false),
 			class:    "TLeafO",
 			typename: "bool",
-			ptrs: []interface{}{
+			ptrs: []any{
 				new(bool),
 				&[]bool{},
 				&[1][2][3][4][5]bool{},
@@ -495,7 +495,7 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(uint8(0)),
 			class:    "TLeafB",
 			typename: "uint8",
-			ptrs: []interface{}{
+			ptrs: []any{
 				new(int8),
 				&[]int8{},
 				&[1][2][3][4][5]int8{},
@@ -515,7 +515,7 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(int8(0)),
 			class:    "TLeafB",
 			typename: "int8",
-			ptrs: []interface{}{
+			ptrs: []any{
 				new(int8),
 				&[]int8{},
 				&[1][2][3][4][5]int8{},
@@ -535,7 +535,7 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(uint16(0)),
 			class:    "TLeafS",
 			typename: "uint16",
-			ptrs: []interface{}{
+			ptrs: []any{
 				new(int16),
 				&[]int16{},
 				&[1][2][3][4][5]int16{},
@@ -555,7 +555,7 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(int16(0)),
 			class:    "TLeafS",
 			typename: "int16",
-			ptrs: []interface{}{
+			ptrs: []any{
 				new(int16),
 				&[]int16{},
 				&[1][2][3][4][5]int16{},
@@ -575,7 +575,7 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(uint32(0)),
 			class:    "TLeafI",
 			typename: "uint32",
-			ptrs: []interface{}{
+			ptrs: []any{
 				new(int32),
 				&[]int32{},
 				&[1][2][3][4][5]int32{},
@@ -595,7 +595,7 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(int32(0)),
 			class:    "TLeafI",
 			typename: "int32",
-			ptrs: []interface{}{
+			ptrs: []any{
 				new(int32),
 				&[]int32{},
 				&[1][2][3][4][5]int32{},
@@ -615,7 +615,7 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(uint64(0)),
 			class:    "TLeafL",
 			typename: "uint64",
-			ptrs: []interface{}{
+			ptrs: []any{
 				new(int64),
 				&[]int64{},
 				&[1][2][3][4][5]int64{},
@@ -635,7 +635,7 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(int64(0)),
 			class:    "TLeafL",
 			typename: "int64",
-			ptrs: []interface{}{
+			ptrs: []any{
 				new(int64),
 				&[]int64{},
 				&[1][2][3][4][5]int64{},
@@ -655,7 +655,7 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(float32(0)),
 			class:    "TLeafF",
 			typename: "float32",
-			ptrs: []interface{}{
+			ptrs: []any{
 				new(float32),
 				&[]float32{},
 				&[1][2][3][4][5]float32{},
@@ -672,7 +672,7 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(float64(0)),
 			class:    "TLeafD",
 			typename: "float64",
-			ptrs: []interface{}{
+			ptrs: []any{
 				new(float64),
 				&[]float64{},
 				&[1][2][3][4][5]float64{},
@@ -689,7 +689,7 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(root.Float16(0)),
 			class:    "TLeafF16",
 			typename: "root.Float16",
-			ptrs: []interface{}{
+			ptrs: []any{
 				new(root.Float16),
 				&[]root.Float16{},
 				&[1][2][3][4][5]root.Float16{},
@@ -706,7 +706,7 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(root.Double32(0)),
 			class:    "TLeafD32",
 			typename: "root.Double32",
-			ptrs: []interface{}{
+			ptrs: []any{
 				new(root.Double32),
 				&[]root.Double32{},
 				&[1][2][3][4][5]root.Double32{},
@@ -723,7 +723,7 @@ func TestLeafAPI(t *testing.T) {
 			typ:      reflect.TypeOf(""),
 			class:    "TLeafC",
 			typename: "string",
-			ptrs: []interface{}{
+			ptrs: []any{
 				new(string),
 				&[]string{},
 				&[1][2][3][4][5]string{},

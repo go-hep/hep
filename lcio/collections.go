@@ -13,7 +13,7 @@ import (
 )
 
 // ID returns a unique identifier for ptr.
-func ID(ptr interface{}) uint32 {
+func ID(ptr any) uint32 {
 	rptr := reflect.ValueOf(ptr)
 	if !rptr.IsValid() || rptr.IsNil() {
 		return 0
@@ -420,8 +420,8 @@ type RelationContainer struct {
 }
 
 type Relation struct {
-	From   interface{}
-	To     interface{}
+	From   any
+	To     any
 	Weight float32
 }
 
@@ -489,7 +489,7 @@ func (rc *RelationContainer) UnmarshalSio(r sio.Reader) error {
 type References struct {
 	Flags  Flags
 	Params Params
-	Refs   []interface{}
+	Refs   []any
 }
 
 func (*References) VersionSio() uint32 {
@@ -514,7 +514,7 @@ func (refs *References) UnmarshalSio(r sio.Reader) error {
 	dec.Decode(&refs.Params)
 	var n int32
 	dec.Decode(&n)
-	refs.Refs = make([]interface{}, int(n))
+	refs.Refs = make([]any, int(n))
 	for i := range refs.Refs {
 		ref := &refs.Refs[i]
 		dec.Pointer(ref)

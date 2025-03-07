@@ -42,7 +42,7 @@ func WStreamerOf(sinfo rbytes.StreamerInfo, i int, kind rbytes.StreamKind) (rbyt
 }
 
 type wstreamerElem struct {
-	recv interface{}
+	recv any
 	wop  *wstreamer
 	i    int // streamer-element index (or -1 for the whole StreamerInfo)
 	kind rbytes.StreamKind
@@ -61,7 +61,7 @@ func newWStreamer(i int, si *StreamerInfo, kind rbytes.StreamKind, wops []wstrea
 	}, nil
 }
 
-func (ww *wstreamerElem) Bind(recv interface{}) error {
+func (ww *wstreamerElem) Bind(recv any) error {
 	rv := reflect.ValueOf(recv)
 	if rv.Kind() != reflect.Ptr {
 		return fmt.Errorf("rdict: invalid kind (got=%T, want=pointer)", recv)
@@ -92,21 +92,21 @@ var (
 )
 
 type wstreamOp interface {
-	wstream(w *rbytes.WBuffer, recv interface{}) (int, error)
+	wstream(w *rbytes.WBuffer, recv any) (int, error)
 }
 
 // type wstreamBufOp interface {
 // 	wstreamBuf(w *rbytes.WBuffer, recv reflect.Value, descr *elemDescr, beg, end int, n int, offset int, arrmode arrayMode) (int, error)
 // }
 
-type wopFunc func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error)
+type wopFunc func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error)
 
 type wstreamer struct {
 	op  wopFunc
 	cfg *streamerConfig
 }
 
-func (ww wstreamer) wstream(w *rbytes.WBuffer, recv interface{}) (int, error) {
+func (ww wstreamer) wstream(w *rbytes.WBuffer, recv any) (int, error) {
 	return ww.op(w, recv, ww.cfg)
 }
 
@@ -550,7 +550,7 @@ func wstreamSI(si *StreamerInfo) wopFunc {
 		obj := rtypes.Factory.Get(typename)().Interface()
 		_, ok := obj.(rbytes.Marshaler)
 		if ok {
-			return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+			return func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 				obj := cfg.adjust(recv).(rbytes.Marshaler)
 				return obj.MarshalROOT(w)
 			}
@@ -560,7 +560,7 @@ func wstreamSI(si *StreamerInfo) wopFunc {
 }
 
 func wstreamObjPtr(wop wopFunc) wopFunc {
-	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+	return func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 		var (
 			pos = w.Pos()
 			rv  = reflect.ValueOf(cfg.adjust(recv)).Elem()
@@ -576,7 +576,7 @@ func wstreamObjPtr(wop wopFunc) wopFunc {
 }
 
 func wstreamAnyPtr(wop wopFunc) wopFunc {
-	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+	return func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 		var (
 			pos = w.Pos()
 			rv  = reflect.ValueOf(cfg.adjust(recv)).Elem()
@@ -591,7 +591,7 @@ func wstreamAnyPtr(wop wopFunc) wopFunc {
 	}
 }
 
-func wstreamBool(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamBool(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	w.WriteBool(*cfg.adjust(recv).(*bool))
 	if err := w.Err(); err != nil {
 		return 0, err
@@ -599,7 +599,7 @@ func wstreamBool(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	return 1, nil
 }
 
-func wstreamU8(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamU8(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	w.WriteU8(*cfg.adjust(recv).(*uint8))
 	if err := w.Err(); err != nil {
 		return 0, err
@@ -607,7 +607,7 @@ func wstreamU8(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, e
 	return 1, nil
 }
 
-func wstreamU16(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamU16(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	w.WriteU16(*cfg.adjust(recv).(*uint16))
 	if err := w.Err(); err != nil {
 		return 0, err
@@ -615,7 +615,7 @@ func wstreamU16(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, 
 	return 2, nil
 }
 
-func wstreamU32(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamU32(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	w.WriteU32(*cfg.adjust(recv).(*uint32))
 	if err := w.Err(); err != nil {
 		return 0, err
@@ -623,7 +623,7 @@ func wstreamU32(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, 
 	return 4, nil
 }
 
-func wstreamU64(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamU64(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	w.WriteU64(*cfg.adjust(recv).(*uint64))
 	if err := w.Err(); err != nil {
 		return 0, err
@@ -631,7 +631,7 @@ func wstreamU64(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, 
 	return 8, nil
 }
 
-func wstreamI8(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamI8(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	w.WriteI8(*cfg.adjust(recv).(*int8))
 	if err := w.Err(); err != nil {
 		return 0, err
@@ -639,7 +639,7 @@ func wstreamI8(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, e
 	return 1, nil
 }
 
-func wstreamI16(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamI16(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	w.WriteI16(*cfg.adjust(recv).(*int16))
 	if err := w.Err(); err != nil {
 		return 0, err
@@ -647,7 +647,7 @@ func wstreamI16(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, 
 	return 2, nil
 }
 
-func wstreamI32(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamI32(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	w.WriteI32(*cfg.adjust(recv).(*int32))
 	if err := w.Err(); err != nil {
 		return 0, err
@@ -655,7 +655,7 @@ func wstreamI32(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, 
 	return 4, nil
 }
 
-func wstreamI64(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamI64(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	w.WriteI64(*cfg.adjust(recv).(*int64))
 	if err := w.Err(); err != nil {
 		return 0, err
@@ -663,7 +663,7 @@ func wstreamI64(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, 
 	return 8, nil
 }
 
-func wstreamF32(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamF32(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	w.WriteF32(*cfg.adjust(recv).(*float32))
 	if err := w.Err(); err != nil {
 		return 0, err
@@ -671,7 +671,7 @@ func wstreamF32(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, 
 	return 4, nil
 }
 
-func wstreamF64(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamF64(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	w.WriteF64(*cfg.adjust(recv).(*float64))
 	if err := w.Err(); err != nil {
 		return 0, err
@@ -679,7 +679,7 @@ func wstreamF64(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, 
 	return 8, nil
 }
 
-func wstreamBits(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamBits(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	// FIXME(sbinet) handle TObject reference
 	// if (bits&kIsReferenced) != 0 { ... }
 	w.WriteU32(*cfg.adjust(recv).(*uint32))
@@ -690,7 +690,7 @@ func wstreamBits(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 }
 
 func wstreamF16(se rbytes.StreamerElement) wopFunc {
-	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+	return func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 		beg := w.Pos()
 		w.WriteF16(*cfg.adjust(recv).(*root.Float16), se)
 		if err := w.Err(); err != nil {
@@ -701,7 +701,7 @@ func wstreamF16(se rbytes.StreamerElement) wopFunc {
 }
 
 func wstreamD32(se rbytes.StreamerElement) wopFunc {
-	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+	return func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 		beg := w.Pos()
 		w.WriteD32(*cfg.adjust(recv).(*root.Double32), se)
 		if err := w.Err(); err != nil {
@@ -711,29 +711,29 @@ func wstreamD32(se rbytes.StreamerElement) wopFunc {
 	}
 }
 
-func wstreamTString(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamTString(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	beg := w.Pos()
 	w.WriteString(*cfg.adjust(recv).(*string))
 	return int(w.Pos() - beg), w.Err()
 }
 
-func wstreamTObject(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamTObject(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	obj := cfg.adjust(recv).(*rbase.Object)
 	return obj.MarshalROOT(w)
 }
 
-func wstreamTNamed(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamTNamed(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	named := cfg.adjust(recv).(*rbase.Named)
 	return named.MarshalROOT(w)
 }
 
 func wstreamBasicArray(n int, arr wopFunc) wopFunc {
-	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+	return func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 		var (
 			nn = 0
 			rv = reflect.ValueOf(cfg.adjust(recv)).Elem()
 		)
-		for i := 0; i < n; i++ {
+		for i := range n {
 			nb, err := arr(w, rv.Index(i).Addr().Interface(), nil)
 			if err != nil {
 				return 0, fmt.Errorf(
@@ -748,14 +748,14 @@ func wstreamBasicArray(n int, arr wopFunc) wopFunc {
 }
 
 func wstreamBasicSlice(sli wopFunc) wopFunc {
-	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+	return func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 		w.WriteI8(1) // is-array
 		var (
 			nn = 1
 			n  = int(reflect.ValueOf(recv).Elem().FieldByIndex(cfg.descr.method).Int())
 			rv = reflect.ValueOf(cfg.adjust(recv)).Elem()
 		)
-		for i := 0; i < n; i++ {
+		for i := range n {
 			nb, err := sli(w, rv.Index(i).Addr().Interface(), nil)
 			if err != nil {
 				return nn, fmt.Errorf(
@@ -788,7 +788,7 @@ func wsetHeader(w *rbytes.WBuffer, hdr rbytes.Header) (int, error) {
 
 func wstreamType(typename string, wop wopFunc) wopFunc {
 	const typevers = rvers.StreamerInfo
-	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+	return func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 		hdr := w.WriteHeader(typename, int16(typevers))
 		n, err := wop(w, recv, cfg)
 		if err != nil {
@@ -799,14 +799,14 @@ func wstreamType(typename string, wop wopFunc) wopFunc {
 }
 
 func wstreamStdSlice(typename string, wop wopFunc) wopFunc {
-	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+	return func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 		var (
 			rv = reflect.ValueOf(cfg.adjust(recv)).Elem()
 			n  = rv.Len()
 			nn = 0
 		)
 		w.WriteI32(int32(n))
-		for i := 0; i < n; i++ {
+		for i := range n {
 			nb, err := wop(w, rv.Index(i).Addr().Interface(), nil)
 			if err != nil {
 				return nn, fmt.Errorf(
@@ -833,7 +833,7 @@ func wstreamStdMap(kname, vname string, kwop, vwop wopFunc, kvers, vvers int16) 
 		typename = fmt.Sprintf("map<%s,%s >", kname, vname)
 	}
 	const typevers = rvers.StreamerInfo
-	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+	return func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 		var (
 			rv = reflect.ValueOf(cfg.adjust(recv)).Elem()
 			n  = rv.Len()
@@ -857,7 +857,7 @@ func wstreamStdMap(kname, vname string, kwop, vwop wopFunc, kvers, vvers int16) 
 		}
 		if n > 0 {
 			hdr := wstreamHeader(w, kname, kvers)
-			for i := 0; i < n; i++ {
+			for i := range n {
 				nb, err := kwop(w, keys.Index(i).Addr().Interface(), nil)
 				if err != nil {
 					return nn, fmt.Errorf(
@@ -876,7 +876,7 @@ func wstreamStdMap(kname, vname string, kwop, vwop wopFunc, kvers, vvers int16) 
 
 		if n > 0 {
 			hdr := wstreamHeader(w, vname, vvers)
-			for i := 0; i < n; i++ {
+			for i := range n {
 				nb, err := vwop(w, vals.Index(i).Addr().Interface(), nil)
 				if err != nil {
 					return nn, fmt.Errorf(
@@ -897,7 +897,7 @@ func wstreamStdMap(kname, vname string, kwop, vwop wopFunc, kvers, vvers int16) 
 }
 
 func wstreamStdBitset(typename string, n int) wopFunc {
-	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+	return func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 		sli := *cfg.adjust(recv).(*[]uint8)
 		sli = sli[:n]
 
@@ -907,7 +907,7 @@ func wstreamStdBitset(typename string, n int) wopFunc {
 	}
 }
 
-func wstreamBools(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamBools(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
 		sli = *cfg.adjust(recv).(*[]bool)
@@ -918,7 +918,7 @@ func wstreamBools(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int
 	return 1 + n, w.Err()
 }
 
-func wstreamI8s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamI8s(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
 		sli = *cfg.adjust(recv).(*[]int8)
@@ -929,7 +929,7 @@ func wstreamI8s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, 
 	return 1 + n, w.Err()
 }
 
-func wstreamI16s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamI16s(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
 		sli = *cfg.adjust(recv).(*[]int16)
@@ -940,7 +940,7 @@ func wstreamI16s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	return 1 + n*2, w.Err()
 }
 
-func wstreamI32s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamI32s(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
 		sli = *cfg.adjust(recv).(*[]int32)
@@ -951,7 +951,7 @@ func wstreamI32s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	return 1 + n*4, w.Err()
 }
 
-func wstreamI64s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamI64s(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
 		sli = *cfg.adjust(recv).(*[]int64)
@@ -962,7 +962,7 @@ func wstreamI64s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	return 1 + n*8, w.Err()
 }
 
-func wstreamU8s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamU8s(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
 		sli = *cfg.adjust(recv).(*[]uint8)
@@ -973,7 +973,7 @@ func wstreamU8s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, 
 	return 1 + n, w.Err()
 }
 
-func wstreamU16s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamU16s(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
 		sli = *cfg.adjust(recv).(*[]uint16)
@@ -984,7 +984,7 @@ func wstreamU16s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	return 1 + n*2, w.Err()
 }
 
-func wstreamU32s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamU32s(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
 		sli = *cfg.adjust(recv).(*[]uint32)
@@ -995,7 +995,7 @@ func wstreamU32s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	return 1 + n*4, w.Err()
 }
 
-func wstreamU64s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamU64s(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
 		sli = *cfg.adjust(recv).(*[]uint64)
@@ -1006,7 +1006,7 @@ func wstreamU64s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	return 1 + n*8, w.Err()
 }
 
-func wstreamF32s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamF32s(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
 		sli = *cfg.adjust(recv).(*[]float32)
@@ -1017,7 +1017,7 @@ func wstreamF32s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	return 1 + n*4, w.Err()
 }
 
-func wstreamF64s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamF64s(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
 		sli = *cfg.adjust(recv).(*[]float64)
@@ -1028,7 +1028,7 @@ func wstreamF64s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	return 1 + n*8, w.Err()
 }
 
-func wstreamF16s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamF16s(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
 		sli = *cfg.adjust(recv).(*[]root.Float16)
@@ -1040,7 +1040,7 @@ func wstreamF16s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	return int(w.Pos() - beg), w.Err()
 }
 
-func wstreamD32s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamD32s(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
 		sli = *cfg.adjust(recv).(*[]root.Double32)
@@ -1052,7 +1052,7 @@ func wstreamD32s(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 	return int(w.Pos() - beg), w.Err()
 }
 
-func wstreamStrs(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamStrs(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	var (
 		n   = cfg.counter(recv)
 		sli = *cfg.adjust(recv).(*[]string)
@@ -1065,7 +1065,7 @@ func wstreamStrs(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int,
 }
 
 func wstreamCat(typename string, typevers int16, wops []wstreamer) wopFunc {
-	return func(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+	return func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 		hdr := w.WriteHeader(typename, typevers)
 		recv = cfg.adjust(recv)
 		for i, wop := range wops {
@@ -1081,7 +1081,7 @@ func wstreamCat(typename string, typevers int16, wops []wstreamer) wopFunc {
 	}
 }
 
-func wstreamStdString(w *rbytes.WBuffer, recv interface{}, cfg *streamerConfig) (int, error) {
+func wstreamStdString(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 	beg := w.Pos()
 	w.WriteString(*cfg.adjust(recv).(*string))
 	return int(w.Pos() - beg), w.Err()

@@ -71,7 +71,7 @@ func newBinning1DFromBins(xbins []Range) Binning1D {
 		bin.Range = xbin
 	}
 	sort.Sort(Bin1Ds(bng.Bins))
-	for i := 0; i < len(bng.Bins)-1; i++ {
+	for i := range len(bng.Bins) - 1 {
 		b0 := bng.Bins[i]
 		b1 := bng.Bins[i+1]
 		if b0.Range.Max > b1.Range.Min {

@@ -32,7 +32,7 @@ func ExampleRand1D() {
 		}
 	)
 
-	for i := 0; i < N; i++ {
+	for range N {
 		h1.Fill(rnd.Rand(), 1)
 	}
 
@@ -41,7 +41,7 @@ func ExampleRand1D() {
 		hr = hbook.NewRand1D(h1, rand.NewSource(5678))
 	)
 
-	for i := 0; i < N; i++ {
+	for range N {
 		h2.Fill(hr.Rand(), 1)
 	}
 

@@ -269,7 +269,7 @@ type Event struct {
 	TimeStamp   int64
 	Detector    string
 	Params      Params
-	colls       map[string]interface{}
+	colls       map[string]any
 	names       []string
 }
 
@@ -279,7 +279,7 @@ func (evt *Event) Names() []string {
 }
 
 // Get returns the event data labelled name.
-func (evt *Event) Get(name string) interface{} {
+func (evt *Event) Get(name string) any {
 	return evt.colls[name]
 }
 
@@ -293,13 +293,13 @@ func (evt *Event) Has(name string) bool {
 // with the given name.
 // Add panics if there is already some data labelled with the same name.
 // Add panics if ptr is not a pointer to some data.
-func (evt *Event) Add(name string, ptr interface{}) {
+func (evt *Event) Add(name string, ptr any) {
 	if _, dup := evt.colls[name]; dup {
 		panic(fmt.Errorf("lcio: duplicate key %q", name))
 	}
 	evt.names = append(evt.names, name)
 	if evt.colls == nil {
-		evt.colls = make(map[string]interface{})
+		evt.colls = make(map[string]any)
 	}
 	if rv := reflect.ValueOf(ptr); rv.Type().Kind() != reflect.Ptr {
 		panic("lcio: expects a pointer to a value")

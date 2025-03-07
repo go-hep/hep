@@ -174,7 +174,7 @@ func (o *Response) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 	o.SecurityOptions = SecurityOptions(rBuffer.ReadU8())
 	o.SecurityLevel = xrdproto.SecurityLevel(rBuffer.ReadU8())
 	o.SecurityOverrides = make([]xrdproto.SecurityOverride, rBuffer.ReadU8())
-	for i := 0; i < len(o.SecurityOverrides); i++ {
+	for i := range o.SecurityOverrides {
 		err := o.SecurityOverrides[i].UnmarshalXrd(rBuffer)
 		if err != nil {
 			return err

@@ -30,7 +30,7 @@ func ExampleRatioPlot() {
 	hist1 := hbook.NewH1D(20, -4, +4)
 	hist2 := hbook.NewH1D(20, -4, +4)
 
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v1 := dist.Rand() - 0.5
 		v2 := dist.Rand() + 0.5
 		hist1.Fill(v1, 1)
@@ -57,7 +57,7 @@ func ExampleRatioPlot() {
 	rp.Top.Add(hplot.NewGrid())
 
 	hist3 := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < hist3.Len(); i++ {
+	for i := range hist3.Len() {
 		v1 := hist1.Value(i)
 		v2 := hist2.Value(i)
 		x1, _ := hist1.XY(i)

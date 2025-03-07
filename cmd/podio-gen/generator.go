@@ -175,7 +175,7 @@ func (g *generator) generate() error {
 	return nil
 }
 
-func (g *generator) printf(format string, args ...interface{}) {
+func (g *generator) printf(format string, args ...any) {
 	fmt.Fprintf(g.buf, format, args...)
 }
 

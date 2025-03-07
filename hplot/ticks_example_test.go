@@ -20,8 +20,8 @@ func ExampleTicks() {
 	tp := hplot.NewTiledPlot(draw.Tiles{Cols: 2, Rows: 8})
 	tp.Align = true
 
-	for i := 0; i < tp.Tiles.Rows; i++ {
-		for j := 0; j < tp.Tiles.Cols; j++ {
+	for i := range tp.Tiles.Rows {
+		for j := range tp.Tiles.Cols {
 			p := tp.Plot(j, i)
 			switch i {
 			case 0:

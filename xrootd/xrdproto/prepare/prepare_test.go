@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"slices"
 	"testing"
 
 	"go-hep.org/x/hep/xrootd"
@@ -135,7 +136,7 @@ func Example() {
 
 	// cancel staging request
 
-	locid := append([]byte(nil), resp.Data...)
+	locid := slices.Clone(resp.Data)
 	req = prepare.Request{
 		Options: prepare.Cancel,
 		Paths:   []string{string(locid)},

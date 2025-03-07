@@ -90,7 +90,7 @@ func (tsk *UniqueObjectFinder) Process(ctx fwk.Context) error {
 			cand := &input[i]
 			unique := false
 		uniqueloop:
-			for jcol := 0; jcol < icol; jcol++ {
+			for jcol := range icol {
 				jcands := colls[jcol].In
 				for j := range jcands {
 					jcand := &jcands[j]

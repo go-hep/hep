@@ -146,7 +146,7 @@ func TestBasketRW(t *testing.T) {
 
 			for _, tt := range []struct {
 				name      string
-				got, want interface{}
+				got, want any
 			}{
 				{"bufsize", b.bufsize, tc.basket.bufsize},
 				{"nevsize", b.nevsize, tc.basket.nevsize},
@@ -548,7 +548,7 @@ func TestBranchRW(t *testing.T) {
 				}
 			}
 
-			asTBranch := func(b interface{}) *tbranch {
+			asTBranch := func(b any) *tbranch {
 				switch b := b.(type) {
 				case *tbranch:
 					return b
@@ -558,7 +558,7 @@ func TestBranchRW(t *testing.T) {
 				panic("impossible")
 			}
 
-			setupInput := func(b interface{}) {
+			setupInput := func(b any) {
 				if b := asTBranch(b); len(b.leaves) != 0 {
 					for i := range b.leaves {
 						b.leaves[i].setBranch(b)
@@ -635,7 +635,7 @@ func TestBranchRW(t *testing.T) {
 					}
 
 					for i, v := range []struct {
-						got, want interface{}
+						got, want any
 					}{
 						{got.tbranch, want.tbranch},
 						{got.class, want.class},
@@ -689,7 +689,7 @@ func TestTreeRW(t *testing.T) {
 		btitles []string
 		ltitles []string
 		total   int
-		want    func(i int) interface{}
+		want    func(i int) any
 		scan    []string // list of branches to use for ROOT TTree::Scan
 		cxx     string   // expected ROOT-TTree::Scan
 	}{
@@ -700,7 +700,7 @@ func TestTreeRW(t *testing.T) {
 			btitles: []string{},
 			ltitles: []string{},
 			total:   5 * (0),
-			want:    func(i int) interface{} { return nil },
+			want:    func(i int) any { return nil },
 			cxx: `************
 *    Row   *
 ************
@@ -722,7 +722,7 @@ func TestTreeRW(t *testing.T) {
 			btitles: []string{"i32/I", "f64/D"},
 			ltitles: []string{"i32", "f64"},
 			total:   5 * (4 + 8),
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				return struct {
 					I32 int32
 					F64 float64
@@ -773,7 +773,7 @@ func TestTreeRW(t *testing.T) {
 				"F32", "F64", "D16", "D32",
 			},
 			total: 5 * 50,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				return struct {
 					B   bool
 					I8  int8
@@ -826,7 +826,7 @@ func TestTreeRW(t *testing.T) {
 			btitles: []string{"i32/I", "f64/D", "str/C"},
 			ltitles: []string{"i32", "f64", "str"},
 			total:   5 * (4 + 8 + (3 + 1)), // 3: strings are "xxx" + 1:string-size
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				return struct {
 					I32 int32
 					F64 float64
@@ -858,7 +858,7 @@ func TestTreeRW(t *testing.T) {
 			btitles: []string{"s1/C", "s2/C"},
 			ltitles: []string{"s1", "s2"},
 			total:   30,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				return struct {
 					S1 string
 					S2 string
@@ -907,7 +907,7 @@ func TestTreeRW(t *testing.T) {
 				"ArrF32[5]", "ArrF64[5]",
 			},
 			total: 5 * 215,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				return struct {
 					ArrBool [5]bool
 					ArrI8   [5]int8
@@ -1000,7 +1000,7 @@ func TestTreeRW(t *testing.T) {
 				"ArrF32[2][3]", "ArrF64[2][3]",
 			},
 			total: 5 * 258,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				return struct {
 					ArrBool [2][3]bool
 					ArrI8   [2][3]int8
@@ -1121,7 +1121,7 @@ func TestTreeRW(t *testing.T) {
 				"SliU8[N]", "SliU16[N]", "SliU32[N]", "SliU64[N]",
 			},
 			total: 170,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				type Data struct {
 					N      int32
 					SliU8  []uint8
@@ -1176,7 +1176,7 @@ func TestTreeRW(t *testing.T) {
 				"SliI16[N]", "SliI32[N]", "SliI64[N]",
 			},
 			total: 160,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				type Data struct {
 					N      int32
 					SliI16 []int16
@@ -1226,7 +1226,7 @@ func TestTreeRW(t *testing.T) {
 				"N", "SliI8[N]",
 			},
 			total: 30,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				type Data struct {
 					N     int32
 					SliI8 []int8
@@ -1276,7 +1276,7 @@ func TestTreeRW(t *testing.T) {
 				"SliF32[N]", "SliF64[N]",
 			},
 			total: 150,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				type Data struct {
 					N       int32
 					SliBool []bool
@@ -1328,7 +1328,7 @@ func TestTreeRW(t *testing.T) {
 				"SliI64[N]",
 			},
 			total: 400000,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				type Data struct {
 					N      int32
 					SliI64 []int64
@@ -1355,7 +1355,7 @@ func TestTreeRW(t *testing.T) {
 			btitles: []string{"i32/I", "f64/D"},
 			ltitles: []string{"i32", "f64"},
 			total:   500 * (4 + 8),
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				return struct {
 					I32 int32
 					F64 float64
@@ -1376,7 +1376,7 @@ func TestTreeRW(t *testing.T) {
 			btitles: []string{"i32/I", "f64/D"},
 			ltitles: []string{"i32", "f64"},
 			total:   500 * (4 + 8),
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				return struct {
 					I32 int32
 					F64 float64
@@ -1397,7 +1397,7 @@ func TestTreeRW(t *testing.T) {
 			btitles: []string{"i32/I", "f64/D"},
 			ltitles: []string{"i32", "f64"},
 			total:   500 * (4 + 8),
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				return struct {
 					I32 int32
 					F64 float64
@@ -1418,7 +1418,7 @@ func TestTreeRW(t *testing.T) {
 			btitles: []string{"i32/I", "f64/D"},
 			ltitles: []string{"i32", "f64"},
 			total:   500 * (4 + 8),
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				return struct {
 					I32 int32
 					F64 float64
@@ -1439,7 +1439,7 @@ func TestTreeRW(t *testing.T) {
 			btitles: []string{"i32/I", "f64/D"},
 			ltitles: []string{"i32", "f64"},
 			total:   500 * (4 + 8),
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				return struct {
 					I32 int32
 					F64 float64
@@ -1489,7 +1489,7 @@ func TestTreeRW(t *testing.T) {
 				}
 
 				total := 0
-				for i := 0; i < int(tc.nevts); i++ {
+				for i := range int(tc.nevts) {
 					want := tc.want(i)
 					for j, wvar := range tc.wvars {
 						v := reflect.ValueOf(wvar.Value).Elem()
@@ -1678,7 +1678,7 @@ func TestNestedTreeRW(t *testing.T) {
 		btitles []string
 		ltitles []string
 		total   int
-		want    func(i int) interface{}
+		want    func(i int) any
 		macro   string // ROOT macro to execute to read back ROOT file
 		cxx     string // expected ROOT-TTree::Scan
 		sinfos  []rbytes.StreamerInfo
@@ -1699,7 +1699,7 @@ func TestNestedTreeRW(t *testing.T) {
 			btitles: []string{"evt"},
 			ltitles: []string{"evt"},
 			total:   460,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				var evt struct {
 					Data TNestedStruct1
 				}
@@ -1783,7 +1783,7 @@ evt[9]: run=19, evt=9, p3(19, 29, 39)
 			btitles: []string{"evt"},
 			ltitles: []string{"evt"},
 			total:   46 * 1000,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				var evt struct {
 					Data TNestedStruct1
 				}
@@ -1815,7 +1815,7 @@ evt[9]: run=19, evt=9, p3(19, 29, 39)
 			btitles: []string{"evt"},
 			ltitles: []string{"evt"},
 			total:   740,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				var evt struct {
 					Data TNestedStruct2
 				}
@@ -1830,7 +1830,7 @@ evt[9]: run=19, evt=9, p3(19, 29, 39)
 				default:
 					evt.Data.F32s = make([]float32, 0, i)
 				}
-				for j := 0; j < i; j++ {
+				for j := range i {
 					evt.Data.F32s = append(evt.Data.F32s, float32((i+1)*10+j))
 				}
 
@@ -1932,7 +1932,7 @@ evt[9]: run=19, evt=9, p3(19, 29, 39) f32s([100, 101, 102, 103, 104, 105, 106, 1
 			btitles: []string{"runnbr/L", "evtnbr/L", "p3", "f32s"},
 			ltitles: []string{"runnbr", "evtnbr", "p3", "f32s"},
 			total:   680,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				var evt struct {
 					Data TNestedStruct3
 				}
@@ -1947,7 +1947,7 @@ evt[9]: run=19, evt=9, p3(19, 29, 39) f32s([100, 101, 102, 103, 104, 105, 106, 1
 				default:
 					evt.Data.F32s = make([]float32, 0, i)
 				}
-				for j := 0; j < i; j++ {
+				for j := range i {
 					evt.Data.F32s = append(evt.Data.F32s, float32((i+1)*10+j))
 				}
 
@@ -2056,7 +2056,7 @@ evt[9]: run=19, evt=9, p3(19, 29, 39) f32s([100, 101, 102, 103, 104, 105, 106, 1
 			btitles: []string{"N/I", "vec"}, // "sli[N]/F"},
 			ltitles: []string{"N", "vec"},   // "sli[N]"},
 			total:   360,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				var evt struct {
 					N   int32
 					Vec []float32
@@ -2066,7 +2066,7 @@ evt[9]: run=19, evt=9, p3(19, 29, 39) f32s([100, 101, 102, 103, 104, 105, 106, 1
 				evt.N = int32(i) + 1
 				evt.Vec = make([]float32, evt.N)
 				//				evt.Sli = make([]float32, evt.N)
-				for j := 0; j < int(evt.N); j++ {
+				for j := range int(evt.N) {
 					evt.Vec[j] = -float32((i+1)*10 + j)
 					//					evt.Sli[j] = +float32((i+1)*10 + j)
 				}
@@ -2171,7 +2171,7 @@ evt[9]: 10 [-100 -101 -102 -103 -104 -105 -106 -107 -108 -109]
 			btitles: []string{"evt"},
 			ltitles: []string{"evt"},
 			total:   25520,
-			want: func(i int) interface{} {
+			want: func(i int) any {
 				var evt struct {
 					Event TNestedEvent1
 				}
@@ -2625,7 +2625,7 @@ void scan(const char *fname, const char *tname, const char *oname) {
 				}
 
 				total := 0
-				for i := 0; i < int(tc.nevts); i++ {
+				for i := range int(tc.nevts) {
 					want := tc.want(i)
 					for j, wvar := range tc.wvars {
 						v := reflect.ValueOf(wvar.Value).Elem()
@@ -2794,7 +2794,7 @@ func TestTreeWriteSubdir(t *testing.T) {
 	}
 	defer ntup.Close()
 
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		data.I32 = int32(i)
 		data.F64 = float64(i)
 		_, err = ntup.Write()
@@ -2903,7 +2903,7 @@ func BenchmarkReadTreeF64(b *testing.B) {
 		defer tree.Close()
 
 		rnd := rand.New(rand.NewSource(1234))
-		for i := 0; i < nevts; i++ {
+		for range nevts {
 			data.F64 = rnd.Float64() * 10
 
 			_, err = tree.Write()
@@ -3005,7 +3005,7 @@ func BenchmarkReadTreeSliF64(b *testing.B) {
 			defer tree.Close()
 
 			rnd := rand.New(rand.NewSource(1234))
-			for i := 0; i < nevts; i++ {
+			for range nevts {
 				data.N = int32(rnd.Float64() * 100)
 				data.Sli = make([]float64, int(data.N))
 				for j := range data.Sli {
@@ -3262,7 +3262,7 @@ func (TNestedEvent1) want(i int64) (data TNestedEvent1) {
 		//		data.SliP2 = make([]TNestedP2, int(data.N))
 		//		data.SliObj = make([]rbase.ObjString, int(data.N))
 	}
-	for ii := 0; ii < int(data.N); ii++ {
+	for ii := range int(data.N) {
 		data.SliBs[ii] = (ii + 1) == int(i)
 		//		data.SliStr[ii] = fmt.Sprintf("sli-%03d", i)
 		data.SliI8[ii] = int8(-i)
@@ -3320,7 +3320,7 @@ func (TNestedEvent1) want(i int64) (data TNestedEvent1) {
 		data.StdVecP2 = make([]TNestedP2, int(data.N))
 		data.StdVecObj = make([]rbase.ObjString, int(data.N))
 	}
-	for ii := 0; ii < int(data.N); ii++ {
+	for ii := range int(data.N) {
 		data.StdVecBs[ii] = (ii + 1) == int(i)
 		data.StdVecStr[ii] = fmt.Sprintf("std-%03d", i)
 		data.StdVecI8[ii] = int8(-i)
@@ -3352,7 +3352,7 @@ func (TNestedEvent1) want(i int64) (data TNestedEvent1) {
 		data.StdVecVecStr = make([][]string, data.N)
 		data.StdVecVecP2 = make([][]TNestedP2, data.N)
 	}
-	for ii := 0; ii < int(data.N); ii++ {
+	for ii := range int(data.N) {
 		data.StdVecVecF64[ii] = []float64{
 			float64(ii),
 			float64(ii + 1),

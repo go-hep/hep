@@ -25,10 +25,10 @@ func TestFuncToU32(t *testing.T) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
 	}
 
-	var ptrs []interface{}
+	var ptrs []any
 
 	{
-		bad := make([]interface{}, 1)
+		bad := make([]any, 1)
 		err := form.Bind(bad)
 		if err == nil {
 			t.Fatalf("expected an error for invalid args length")
@@ -61,20 +61,20 @@ func TestFuncU32ToU32(t *testing.T) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
 	}
 
-	ptrs := make([]interface{}, 1)
+	ptrs := make([]any, 1)
 	ptrs[0] = new(uint32)
 
 	{
-		bad := make([]interface{}, len(ptrs))
+		bad := make([]any, len(ptrs))
 		copy(bad, ptrs)
 		for i := len(ptrs) - 1; i >= 0; i-- {
-			bad[i] = interface{}(nil)
+			bad[i] = any(nil)
 			err := form.Bind(bad)
 			if err == nil {
 				t.Fatalf("expected an error for empty iface")
 			}
 		}
-		bad = append(bad, interface{}(nil))
+		bad = append(bad, any(nil))
 		err := form.Bind(bad)
 		if err == nil {
 			t.Fatalf("expected an error for invalid args length")
@@ -108,21 +108,21 @@ func TestFuncU32U32ToU32(t *testing.T) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
 	}
 
-	ptrs := make([]interface{}, 2)
+	ptrs := make([]any, 2)
 	ptrs[0] = new(uint32)
 	ptrs[1] = new(uint32)
 
 	{
-		bad := make([]interface{}, len(ptrs))
+		bad := make([]any, len(ptrs))
 		copy(bad, ptrs)
 		for i := len(ptrs) - 1; i >= 0; i-- {
-			bad[i] = interface{}(nil)
+			bad[i] = any(nil)
 			err := form.Bind(bad)
 			if err == nil {
 				t.Fatalf("expected an error for empty iface")
 			}
 		}
-		bad = append(bad, interface{}(nil))
+		bad = append(bad, any(nil))
 		err := form.Bind(bad)
 		if err == nil {
 			t.Fatalf("expected an error for invalid args length")
@@ -157,22 +157,22 @@ func TestFuncU32U32U32ToU32(t *testing.T) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
 	}
 
-	ptrs := make([]interface{}, 3)
+	ptrs := make([]any, 3)
 	ptrs[0] = new(uint32)
 	ptrs[1] = new(uint32)
 	ptrs[2] = new(uint32)
 
 	{
-		bad := make([]interface{}, len(ptrs))
+		bad := make([]any, len(ptrs))
 		copy(bad, ptrs)
 		for i := len(ptrs) - 1; i >= 0; i-- {
-			bad[i] = interface{}(nil)
+			bad[i] = any(nil)
 			err := form.Bind(bad)
 			if err == nil {
 				t.Fatalf("expected an error for empty iface")
 			}
 		}
-		bad = append(bad, interface{}(nil))
+		bad = append(bad, any(nil))
 		err := form.Bind(bad)
 		if err == nil {
 			t.Fatalf("expected an error for invalid args length")

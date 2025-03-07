@@ -79,12 +79,9 @@ func TestNewReadVars(t *testing.T) {
 		{Name: "SliD32", Leaf: "SliD32", Value: new([]root.Double32)},
 	}
 
-	n := len(want)
-	if len(vars) < n {
-		n = len(vars)
-	}
+	n := min(len(vars), len(want))
 
-	for i := 0; i < n; i++ {
+	for i := range n {
 		got := vars[i]
 		if got.Name != want[i].Name {
 			t.Fatalf("invalid read-var name[%d]: got=%q, want=%q", i, got.Name, want[i].Name)
@@ -105,7 +102,7 @@ func TestNewReadVars(t *testing.T) {
 func TestReadVarsFromStruct(t *testing.T) {
 	for _, tc := range []struct {
 		name   string
-		ptr    interface{}
+		ptr    any
 		want   []ReadVar
 		panics string
 	}{
@@ -315,7 +312,7 @@ func TestReadVarsFromStruct(t *testing.T) {
 
 func TestNameOf(t *testing.T) {
 	for _, tc := range []struct {
-		ptr  interface{}
+		ptr  any
 		want string
 	}{
 		{

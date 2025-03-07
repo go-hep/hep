@@ -167,7 +167,7 @@ func (EventType) want(i int64) EventType {
 	data.Evt.SliU64 = make([]uint64, int(data.Evt.N))
 	data.Evt.SliF32 = make([]float32, int(data.Evt.N))
 	data.Evt.SliF64 = make([]float64, int(data.Evt.N))
-	for ii := 0; ii < int(data.Evt.N); ii++ {
+	for ii := range int(data.Evt.N) {
 		data.Evt.SliI16[ii] = int16(i)
 		data.Evt.SliI32[ii] = int32(i)
 		data.Evt.SliI64[ii] = int64(i)
@@ -188,7 +188,7 @@ func (EventType) want(i int64) EventType {
 	data.Evt.VecF32 = make([]float32, int(data.Evt.N))
 	data.Evt.VecF64 = make([]float64, int(data.Evt.N))
 	data.Evt.VecStr = make([]string, int(data.Evt.N))
-	for ii := 0; ii < int(data.Evt.N); ii++ {
+	for ii := range int(data.Evt.N) {
 		data.Evt.VecI16[ii] = int16(i)
 		data.Evt.VecI32[ii] = int32(i)
 		data.Evt.VecI64[ii] = int64(i)

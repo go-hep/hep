@@ -177,7 +177,7 @@ func main() {
 
 		nmax := 2
 		imax := int(lhevt.NUP)
-		for i := 0; i < imax; i++ {
+		for i := range imax {
 			if !*keep && lhevt.ISTUP[i] != 1 {
 				continue
 			}

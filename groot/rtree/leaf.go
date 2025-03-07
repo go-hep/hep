@@ -136,7 +136,7 @@ func (leaf *tleaf) readFromBuffer(r *rbytes.RBuffer) error {
 	panic("not implemented: " + leaf.Name())
 }
 
-func (leaf *tleaf) setAddress(ptr interface{}) error {
+func (leaf *tleaf) setAddress(ptr any) error {
 	panic("not implemented: " + leaf.Name())
 }
 
@@ -211,7 +211,7 @@ func (leaf *tleaf) computeOffsetArray(base, nevts int) []int32 {
 		sz            int
 		offset        = int32(base)
 	)
-	for i := 0; i < nevts; i++ {
+	for i := range nevts {
 		o[i] = offset
 		leaf.count.Branch().getEntry(origEntry + int64(i))
 		sz = leaf.count.ivalue()
@@ -292,7 +292,7 @@ type tleafElement struct {
 	id    int32 // element serial number in fInfo
 	ltype int32 // leaf type
 
-	ptr       interface{}
+	ptr       any
 	src       reflect.Value
 	rstreamer rbytes.RStreamer
 	wstreamer rbytes.WStreamer
@@ -377,7 +377,7 @@ func (leaf *tleafElement) readFromBuffer(r *rbytes.RBuffer) error {
 	return nil
 }
 
-func (leaf *tleafElement) setAddress(ptr interface{}) error {
+func (leaf *tleafElement) setAddress(ptr any) error {
 	leaf.ptr = ptr
 	leaf.src = reflect.ValueOf(leaf.ptr).Elem()
 
@@ -392,7 +392,7 @@ func (leaf *tleafElement) setAddress(ptr interface{}) error {
 	return fmt.Errorf("rtree: leaf %q is neither read nor write", leaf.Name())
 }
 
-func (leaf *tleafElement) setReadAddress(ptr interface{}) error {
+func (leaf *tleafElement) setReadAddress(ptr any) error {
 	err := leaf.rstreamer.(rbytes.Binder).Bind(ptr)
 	if err != nil {
 		return fmt.Errorf("rtree: could not bind read-streamer for leaf=%q (type=%s) to ptr=%T: %w",
@@ -418,7 +418,7 @@ func (leaf *tleafElement) setReadAddress(ptr interface{}) error {
 	return nil
 }
 
-func (leaf *tleafElement) setWriteAddress(ptr interface{}) error {
+func (leaf *tleafElement) setWriteAddress(ptr any) error {
 	err := leaf.wstreamer.(rbytes.Binder).Bind(ptr)
 	if err != nil {
 		return fmt.Errorf("rtree: could not bind write-streamer for leaf=%q (type=%s) to ptr=%T: %w",
@@ -475,7 +475,7 @@ func (leaf *tleafElement) computeOffsetArray(base, nevts int) []int32 {
 		sz            int
 		offset        = int32(base)
 	)
-	for i := 0; i < nevts; i++ {
+	for i := range nevts {
 		o[i] = offset
 		leaf.count.Branch().getEntry(origEntry + int64(i))
 		sz = leaf.count.ivalue()

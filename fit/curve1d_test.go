@@ -101,7 +101,7 @@ func genXY(n int, f func(x float64, ps []float64) float64, ps []float64, xmin, x
 	rnd := rand.New(rand.NewSource(1234))
 	xstep := (xmax - xmin) / float64(n)
 	p := make([]float64, len(ps))
-	for i := 0; i < n; i++ {
+	for i := range n {
 		x := xmin + xstep*float64(i)
 		for j := range p {
 			v := rnd.NormFloat64()

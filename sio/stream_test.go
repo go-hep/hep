@@ -144,7 +144,7 @@ func testReadStream(t *testing.T, fname string) {
 		t.Fatalf("error connecting [RunHeader]: %v", err)
 	}
 
-	for nrecs := 0; nrecs < 100; nrecs++ {
+	for nrecs := range 100 {
 		//fmt.Printf("::: irec=%d, fname=%q\n", nrecs, fname)
 		rec, err := f.ReadRecord()
 		if err != nil {
@@ -245,7 +245,7 @@ func testWriteStream(t *testing.T, fname string) {
 		t.Fatalf("error connecting [RunHeader]: %v", err)
 	}
 
-	for irec := 0; irec < 10; irec++ {
+	for irec := range 10 {
 		runhdr = RunHeader{
 			RunNbr:   int32(irec),
 			Detector: "MyDetector",
@@ -377,7 +377,7 @@ func TestPointerStream(t *testing.T) {
 
 		for _, v := range []struct {
 			n   string
-			ptr interface{}
+			ptr any
 		}{
 			{"T1", &t1},
 			{"T2", &t2},
@@ -425,7 +425,7 @@ func TestPointerStream(t *testing.T) {
 
 		for _, v := range []struct {
 			n   string
-			ptr interface{}
+			ptr any
 		}{
 			{"T1", &t1},
 			{"T2", &t2},
@@ -591,7 +591,7 @@ func TestPointerCycleStream(t *testing.T) {
 
 		for _, v := range []struct {
 			n   string
-			ptr interface{}
+			ptr any
 		}{
 			{"C1", &c1},
 			{"C2", &c2},
@@ -631,7 +631,7 @@ func TestPointerCycleStream(t *testing.T) {
 
 		for _, v := range []struct {
 			n   string
-			ptr interface{}
+			ptr any
 		}{
 			{"C1", &c1},
 			{"C2", &c2},

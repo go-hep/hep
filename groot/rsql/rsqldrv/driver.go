@@ -235,9 +235,9 @@ type driverRows struct {
 	conn  *driverConn
 	args  []driver.NamedValue
 	cols  []string
-	types []colDescr    // types of the columns
-	deps  []string      // names of the columns to be read
-	vars  []interface{} // values of the columns that were read
+	types []colDescr // types of the columns
+	deps  []string   // names of the columns to be read
+	vars  []any      // values of the columns that were read
 
 	reader *rtree.Reader
 	row    rowCtx
@@ -298,13 +298,13 @@ func newDriverRows(ctx context.Context, conn *driverConn, stmt *sqlparser.Select
 	rows.types = make([]colDescr, len(rows.cols))
 	for i, name := range rows.cols {
 		if name == "" {
-			rows.types[i].Type = reflect.TypeOf(new(interface{})).Elem()
+			rows.types[i].Type = reflect.TypeOf(new(any)).Elem()
 			continue
 		}
 		rows.types[i].Name = name
 		branch := tree.Branch(name)
 		if branch == nil {
-			rows.types[i].Type = reflect.TypeOf(new(interface{})).Elem()
+			rows.types[i].Type = reflect.TypeOf(new(any)).Elem()
 			continue
 		}
 		rows.types[i] = colDescrFromLeaf(branch.Leaves()[0]) // FIXME(sbinet): multi-leaves' branches
@@ -357,8 +357,8 @@ func newDriverRows(ctx context.Context, conn *driverConn, stmt *sqlparser.Select
 	return rows, nil
 }
 
-func varsFrom(vars []rtree.ReadVar) []interface{} {
-	vs := make([]interface{}, len(vars))
+func varsFrom(vars []rtree.ReadVar) []any {
+	vs := make([]any, len(vars))
 	for i, v := range vars {
 		vs[i] = v.Value
 	}
@@ -554,7 +554,7 @@ func (r *driverRows) Close() error {
 
 type rowCtx struct {
 	ctx  rtree.RCtx
-	vs   interface{}
+	vs   any
 	done chan int
 	err  error
 }
@@ -566,7 +566,7 @@ func (r *driverRows) start() {
 		defer close(r.rows)
 		err := r.reader.Read(func(ctx rtree.RCtx) error {
 			ectx := newExecCtx(r.conn, r.args)
-			vctx := make(map[interface{}]interface{})
+			vctx := make(map[any]any)
 			for i, v := range r.vars {
 				vctx[r.deps[i]] = reflect.Indirect(reflect.ValueOf(v)).Interface()
 			}
@@ -639,7 +639,7 @@ func (r *driverRows) Next(dest []driver.Value) error {
 	}
 
 	switch vs := row.vs.(type) {
-	case []interface{}:
+	case []any:
 		for i, v := range vs {
 			switch v := v.(type) {
 			case string:

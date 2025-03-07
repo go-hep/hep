@@ -113,7 +113,7 @@ func init() {
 	add(h2)
 
 	p1 = hbook.NewP1D(10, -4, +4)
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		v := float64(i)
 		p1.Fill(v, v*2, 1)
 	}

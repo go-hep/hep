@@ -79,7 +79,7 @@ func (m *Map) UnmarshalROOT(r *rbytes.RBuffer) error {
 
 	nobjs := int(r.ReadI32())
 	m.tbl = make(map[root.Object]root.Object, nobjs)
-	for i := 0; i < nobjs; i++ {
+	for range nobjs {
 		k := r.ReadObjectAny()
 		if r.Err() != nil {
 			return r.Err()

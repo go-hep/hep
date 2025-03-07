@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"maps"
 	"math"
 	"sort"
 	"strings"
@@ -64,9 +65,7 @@ type S2DOpts struct {
 // only the first element is considered.
 func NewS2DFromH1D(h *H1D, opts ...S2DOpts) *S2D {
 	s := NewS2D()
-	for k, v := range h.Ann {
-		s.ann[k] = v
-	}
+	maps.Copy(s.ann, h.Ann)
 	var opt S2DOpts
 	if len(opts) > 0 {
 		opt = opts[0]
@@ -103,9 +102,7 @@ func NewS2DFromH1D(h *H1D, opts ...S2DOpts) *S2D {
 // only the first element is considered.
 func NewS2DFromP1D(p *P1D, opts ...S2DOpts) *S2D {
 	s := NewS2D()
-	for k, v := range p.ann {
-		p.ann[k] = v
-	}
+	maps.Copy(s.ann, p.ann)
 	var opt S2DOpts
 	if len(opts) > 0 {
 		opt = opts[0]

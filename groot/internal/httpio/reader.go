@@ -74,7 +74,7 @@ func Open(uri string, opts ...Option) (r *Reader, err error) {
 
 	r.req.Header.Set("Range", "")
 	r.pool = sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			return r.req.Clone(r.ctx)
 		},
 	}

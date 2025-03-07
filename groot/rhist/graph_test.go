@@ -163,7 +163,7 @@ func TestGraphMultiErrors(t *testing.T) {
 		ylos = []float64{1, 0.5, 1, 0.5, 1}
 		yhis = []float64{0.5, 1, 0.5, 1, 2}
 	)
-	for i := 0; i < g.Len(); i++ {
+	for i := range g.Len() {
 		x, y := g.XY(i)
 		if x != xs[i] {
 			t.Errorf("x[%d]=%v. want=%v", i, x, xs[i])

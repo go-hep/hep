@@ -28,13 +28,13 @@ func TestConvert(t *testing.T) {
 	for _, tc := range []struct {
 		name  string
 		nevts int
-		data  func(i int) interface{}
+		data  func(i int) any
 		want  string
 	}{
 		{
 			name:  "builtins",
 			nevts: 5,
-			data: func(i int) interface{} {
+			data: func(i int) any {
 				type D struct {
 					B   bool
 					I8  int8
@@ -134,7 +134,7 @@ Str        | 00004
 		{
 			name:  "arrays",
 			nevts: 5,
-			data: func(i int) interface{} {
+			data: func(i int) any {
 				type D struct {
 					B   [3]bool
 					I8  [3]int8
@@ -246,7 +246,7 @@ F64        | [14 24 34]
 					t.Fatalf("could not create tree writer: %v", err)
 				}
 
-				for i := 0; i < int(tc.nevts); i++ {
+				for i := range int(tc.nevts) {
 					want := reflect.ValueOf(tc.data(i)).Elem().Interface()
 					for j, wvar := range wvars {
 						v := reflect.ValueOf(wvar.Value).Elem()
@@ -321,7 +321,7 @@ func display(o io.Writer, hname, fname string) error {
 		}
 	}
 
-	data := make([]interface{}, ncols)
+	data := make([]any, ncols)
 	names := make([]string, ncols)
 	for i, col := range table.Cols() {
 		names[i] = col.Name
@@ -335,7 +335,7 @@ func display(o io.Writer, hname, fname string) error {
 			return fmt.Errorf("could not read row %d: %w", irow, err)
 		}
 		fmt.Fprintf(o, "== %05d/%05d %s\n", irow+1, nrows, hdrline)
-		for i := 0; i < ncols; i++ {
+		for i := range ncols {
 			rv := reflect.Indirect(reflect.ValueOf(data[i]))
 			fmt.Fprintf(o, rowfmt, names[i], rv.Interface())
 		}

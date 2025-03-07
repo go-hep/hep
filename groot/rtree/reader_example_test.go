@@ -293,7 +293,7 @@ var (
 )
 
 func (usr *UsrF64) RVars() []string { return usr.rvars }
-func (usr *UsrF64) Bind(args []interface{}) error {
+func (usr *UsrF64) Bind(args []any) error {
 	if got, want := len(args), 3; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -306,7 +306,7 @@ func (usr *UsrF64) Bind(args []interface{}) error {
 	return nil
 }
 
-func (usr *UsrF64) Func() interface{} {
+func (usr *UsrF64) Func() any {
 	return func() float64 {
 		return usr.fct(*usr.v1, *usr.v2, *usr.v3)
 	}
@@ -325,7 +325,7 @@ var (
 )
 
 func (usr *UsrStr) RVars() []string { return usr.rvars }
-func (usr *UsrStr) Bind(args []interface{}) error {
+func (usr *UsrStr) Bind(args []any) error {
 	if got, want := len(args), 3; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -338,7 +338,7 @@ func (usr *UsrStr) Bind(args []interface{}) error {
 	return nil
 }
 
-func (usr *UsrStr) Func() interface{} {
+func (usr *UsrStr) Func() any {
 	return func() string {
 		return usr.fct(*usr.v1, *usr.v2, *usr.v3)
 	}

@@ -15,7 +15,7 @@ func TestReadSolids(t *testing.T) {
 	for _, tc := range []struct {
 		name string
 		raw  string
-		want interface{}
+		want any
 	}{
 		{
 			name: "box",

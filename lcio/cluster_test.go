@@ -40,7 +40,7 @@ func testRWCluster(t *testing.T, compLevel int, fname string) {
 		CLUSERR = "ClustersWithEnergyError"
 	)
 
-	for i := 0; i < nevents; i++ {
+	for i := range nevents {
 		evt := lcio.Event{
 			RunNumber:   4711,
 			EventNumber: int32(i),
@@ -50,7 +50,7 @@ func testRWCluster(t *testing.T, compLevel int, fname string) {
 			clus    = lcio.ClusterContainer{Flags: lcio.BitsRChLong}
 			clusErr = lcio.ClusterContainer{Flags: lcio.BitsRChLong | lcio.BitsRChEnergyError}
 		)
-		for j := 0; j < N; j++ {
+		for j := range N {
 			clu := lcio.Cluster{
 				Energy: float32(i*j) + 117,
 				Pos:    [3]float32{float32(i), float32(j), float32(i * j)},
@@ -83,7 +83,7 @@ func testRWCluster(t *testing.T, compLevel int, fname string) {
 	}
 	defer r.Close()
 
-	for i := 0; i < nevents; i++ {
+	for i := range nevents {
 		if !r.Next() {
 			t.Errorf("%s: error reading event %d", fname, i)
 			return
@@ -112,7 +112,7 @@ func testRWCluster(t *testing.T, compLevel int, fname string) {
 		clus := evt.Get(CLUS).(*lcio.ClusterContainer)
 		clusErr := evt.Get(CLUSERR).(*lcio.ClusterContainer)
 
-		for j := 0; j < N; j++ {
+		for j := range N {
 			got := clus.Clusters[j]
 			want := lcio.Cluster{
 				Clusters:   []*lcio.Cluster{},

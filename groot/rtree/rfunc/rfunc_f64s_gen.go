@@ -29,7 +29,7 @@ func NewFuncF32sToF64s(rvars []string, fct func(arg00 []float32) []float64) *Fun
 func (f *FuncF32sToF64s) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncF32sToF64s) Bind(args []interface{}) error {
+func (f *FuncF32sToF64s) Bind(args []any) error {
 	if got, want := len(args), 1; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -50,7 +50,7 @@ func (f *FuncF32sToF64s) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncF32sToF64s) Func() interface{} {
+func (f *FuncF32sToF64s) Func() any {
 	return func() []float64 {
 		return f.fct(
 			*f.arg0,
@@ -81,7 +81,7 @@ func NewFuncF64sToF64s(rvars []string, fct func(arg00 []float64) []float64) *Fun
 func (f *FuncF64sToF64s) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncF64sToF64s) Bind(args []interface{}) error {
+func (f *FuncF64sToF64s) Bind(args []any) error {
 	if got, want := len(args), 1; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -102,7 +102,7 @@ func (f *FuncF64sToF64s) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncF64sToF64s) Func() interface{} {
+func (f *FuncF64sToF64s) Func() any {
 	return func() []float64 {
 		return f.fct(
 			*f.arg0,

@@ -173,7 +173,7 @@ func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 		pts.Band.Plot(c, plt)
 	}
 
-	for i := 0; i < pts.Data.Len(); i++ {
+	for i := range pts.Data.Len() {
 		x, y := pts.Data.XY(i)
 		c.DrawGlyph(pts.GlyphStyle, vg.Point{X: trX(x), Y: trY(y)})
 	}
@@ -246,7 +246,7 @@ func (pts *S2D) DataRange() (xmin, xmax, ymin, ymax float64) {
 // implementing the plot.GlyphBoxer interface.
 func (pts *S2D) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 	bs := make([]plot.GlyphBox, pts.Data.Len())
-	for i := 0; i < pts.Data.Len(); i++ {
+	for i := range pts.Data.Len() {
 		x, y := pts.Data.XY(i)
 		bs[i].X = plt.X.Norm(x)
 		bs[i].Y = plt.Y.Norm(y)

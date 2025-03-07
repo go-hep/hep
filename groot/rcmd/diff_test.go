@@ -463,7 +463,7 @@ func TestDiff(t *testing.T) {
 					t.Fatalf("%+v", err)
 				}
 
-				for i := 0; i < 5; i++ {
+				for i := range 5 {
 					data.I32 = int32(i)
 					data.F64 = float64(i)
 					data.Arr = [2]float64{float64(i + 1), float64(i + 2)}
@@ -510,7 +510,7 @@ func TestDiff(t *testing.T) {
 					t.Fatalf("%+v", err)
 				}
 
-				for i := 0; i < 6; i++ {
+				for i := range 6 {
 					data.I32 = int32(i)
 					data.F64 = float64(i)
 					data.Arr = [2]float64{float64(i + 1), float64(i + 2)}
@@ -561,7 +561,7 @@ func TestDiff(t *testing.T) {
 					t.Fatalf("%+v", err)
 				}
 
-				for i := 0; i < 5; i++ {
+				for i := range 5 {
 					data.I32 = int32(i)
 					data.F64 = float64(i + 1)
 					data.Arr = [2]float64{float64(i + 1), float64(i + 2)}
@@ -608,7 +608,7 @@ func TestDiff(t *testing.T) {
 					t.Fatalf("%+v", err)
 				}
 
-				for i := 0; i < 5; i++ {
+				for i := range 5 {
 					data.I32 = int32(i)
 					data.F64 = float64(i)
 					data.Arr = [2]float64{float64(i), float64(i + 2)}
@@ -715,7 +715,7 @@ key[dir-1/dir-11/tree][0004].Arr -- (-ref +chk)
 					t.Fatalf("%+v", err)
 				}
 
-				for i := 0; i < 5; i++ {
+				for i := range 5 {
 					data.I32 = int64(i)
 					data.F64 = float64(i + 1)
 					data.Arr = [2]float64{float64(i + 1), float64(i + 2)}
@@ -762,7 +762,7 @@ key[dir-1/dir-11/tree][0004].Arr -- (-ref +chk)
 					t.Fatalf("%+v", err)
 				}
 
-				for i := 0; i < 5; i++ {
+				for i := range 5 {
 					data.I32 = int32(i)
 					data.F64 = float64(i + 1)
 					data.Arr = [2]float64{float64(i + 1), float64(i + 2)}

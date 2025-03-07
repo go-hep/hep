@@ -6,6 +6,7 @@ package riofs
 
 import (
 	"reflect"
+	"slices"
 	"sort"
 
 	"go-hep.org/x/hep/groot/rbytes"
@@ -159,7 +160,7 @@ func (fl *freeList) consolidate() {
 
 func (fl *freeList) remove(i int) {
 	list := *fl
-	*fl = append(list[:i], list[i+1:]...)
+	*fl = slices.Delete(list, i, i+1)
 }
 
 // best returns the best free segment where to store nbytes.

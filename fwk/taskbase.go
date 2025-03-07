@@ -51,17 +51,17 @@ func (tsk *TaskBase) DeclOutPort(n string, t reflect.Type) error {
 
 // DeclProp declares this task has a property named n,
 // and takes a pointer to the associated value.
-func (tsk *TaskBase) DeclProp(n string, ptr interface{}) error {
+func (tsk *TaskBase) DeclProp(n string, ptr any) error {
 	return tsk.mgr.DeclProp(tsk, n, ptr)
 }
 
 // SetProp sets the property name n with the value v.
-func (tsk *TaskBase) SetProp(n string, v interface{}) error {
+func (tsk *TaskBase) SetProp(n string, v any) error {
 	return tsk.mgr.SetProp(tsk, n, v)
 }
 
 // GetProp returns the value of the property named n.
-func (tsk *TaskBase) GetProp(n string) (interface{}, error) {
+func (tsk *TaskBase) GetProp(n string) (any, error) {
 	return tsk.mgr.GetProp(tsk, n)
 }
 

@@ -487,7 +487,7 @@ func newHistFromXYer(xys plotter.XYer, n int) *hbook.H1D {
 	xmin, xmax := plotter.Range(plotter.XValues{XYer: xys})
 	h := hbook.NewH1D(n, xmin, xmax)
 
-	for i := 0; i < xys.Len(); i++ {
+	for i := range xys.Len() {
 		x, y := xys.XY(i)
 		h.Fill(x, y)
 	}
@@ -615,7 +615,7 @@ func (l *histLegend) entryWidth() (width vg.Length) {
 // Add adds an entry to the legend with the given name.
 // The entry's thumbnail is drawn as the composite of all of the
 // thumbnails.
-func (l *histLegend) Add(name string, value interface{}) {
+func (l *histLegend) Add(name string, value any) {
 	str := ""
 	switch value.(type) {
 	case float64, float32:

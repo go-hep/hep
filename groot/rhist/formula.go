@@ -121,7 +121,7 @@ func readMapStringInt(r *rbytes.RBuffer) map[string]int32 {
 
 	n := int(r.ReadI32())
 	o := make(map[string]int32, n)
-	for i := 0; i < n; i++ {
+	for range n {
 		k := r.ReadString()
 		v := r.ReadI32()
 		o[k] = v

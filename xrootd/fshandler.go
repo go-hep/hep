@@ -145,7 +145,7 @@ func (h *fshandler) Open(sessionID [16]byte, request *open.Request) (xrdproto.Ma
 	// Right now, we hope that even if 1000000000 of 256*256*256*256 handles are obtained by single user,
 	// we have appr. 0.7 probability to find a free handle by the random guess.
 	// Then, probability that no free handle is found by 100 tries is something near pow(0.3,100) = 1e-53.
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		rand.Read(handle[:])
 		if _, dup := sess.handles[handle]; !dup {
 			resp := open.Response{FileHandle: handle}

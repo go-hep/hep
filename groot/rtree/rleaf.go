@@ -281,7 +281,7 @@ func newRLeafElem(leaf *tleafElement, rvar ReadVar, rctx rleafCtx) rleaf {
 
 type rleafElem struct {
 	base     *tleafElement
-	v        interface{}
+	v        any
 	n        func() int
 	streamer rbytes.RStreamer
 }

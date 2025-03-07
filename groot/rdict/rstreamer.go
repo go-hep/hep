@@ -45,7 +45,7 @@ func RStreamerOf(sinfo rbytes.StreamerInfo, i int, kind rbytes.StreamKind) (rbyt
 }
 
 type rstreamerElem struct {
-	recv interface{}
+	recv any
 	rop  *rstreamer
 	i    int // streamer-element index (or -1 for the whole StreamerInfo)
 	kind rbytes.StreamKind
@@ -64,7 +64,7 @@ func newRStreamerElem(i int, si *StreamerInfo, kind rbytes.StreamKind, rops []rs
 	}, nil
 }
 
-func (rr *rstreamerElem) Bind(recv interface{}) error {
+func (rr *rstreamerElem) Bind(recv any) error {
 	rv := reflect.ValueOf(recv)
 	if rv.Kind() != reflect.Ptr {
 		return fmt.Errorf("rdict: invalid kind (got=%T, want=pointer)", recv)
@@ -101,21 +101,21 @@ var (
 )
 
 type rstreamOp interface {
-	rstream(r *rbytes.RBuffer, recv interface{}) error
+	rstream(r *rbytes.RBuffer, recv any) error
 }
 
 // type rstreamBufOp interface {
 // 	rstreamBuf(r *rbytes.RBuffer, recv reflect.Value, descr *elemDescr, beg, end int, n int, offset int, arrmode arrayMode) error
 // }
 
-type ropFunc func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
+type ropFunc func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error
 
 type rstreamer struct {
 	op  ropFunc
 	cfg *streamerConfig
 }
 
-func (rr rstreamer) rstream(r *rbytes.RBuffer, recv interface{}) error {
+func (rr rstreamer) rstream(r *rbytes.RBuffer, recv any) error {
 	return rr.op(r, recv, rr.cfg)
 }
 
@@ -587,7 +587,7 @@ func rstreamSI(si *StreamerInfo) ropFunc {
 		obj := rtypes.Factory.Get(typename)().Interface()
 		_, ok := obj.(rbytes.Unmarshaler)
 		if ok {
-			return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+			return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 				obj := cfg.adjust(recv).(rbytes.Unmarshaler)
 				return obj.UnmarshalROOT(r)
 			}
@@ -597,7 +597,7 @@ func rstreamSI(si *StreamerInfo) ropFunc {
 }
 
 func rstreamObjPtr(rop ropFunc) ropFunc {
-	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+	return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 		obj := r.ReadObjectAny()
 		if r.Err() != nil {
 			return r.Err()
@@ -615,7 +615,7 @@ func rstreamObjPtr(rop ropFunc) ropFunc {
 }
 
 func rstreamAnyPtr(rop ropFunc) ropFunc {
-	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+	return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 		obj := r.ReadObjectAny()
 		if r.Err() != nil {
 			return r.Err()
@@ -632,62 +632,62 @@ func rstreamAnyPtr(rop ropFunc) ropFunc {
 	}
 }
 
-func rstreamBool(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamBool(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	*(cfg.adjust(recv).(*bool)) = r.ReadBool()
 	return r.Err()
 }
 
-func rstreamI8(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamI8(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	*(cfg.adjust(recv).(*int8)) = r.ReadI8()
 	return r.Err()
 }
 
-func rstreamI16(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamI16(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	*(cfg.adjust(recv).(*int16)) = r.ReadI16()
 	return r.Err()
 }
 
-func rstreamI32(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamI32(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	*(cfg.adjust(recv).(*int32)) = r.ReadI32()
 	return r.Err()
 }
 
-func rstreamI64(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamI64(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	*(cfg.adjust(recv).(*int64)) = r.ReadI64()
 	return r.Err()
 }
 
-func rstreamU8(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamU8(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	*(cfg.adjust(recv).(*uint8)) = r.ReadU8()
 	return r.Err()
 }
 
-func rstreamU16(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamU16(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	*(cfg.adjust(recv).(*uint16)) = r.ReadU16()
 	return r.Err()
 }
 
-func rstreamU32(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamU32(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	*(cfg.adjust(recv).(*uint32)) = r.ReadU32()
 	return r.Err()
 }
 
-func rstreamU64(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamU64(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	*(cfg.adjust(recv).(*uint64)) = r.ReadU64()
 	return r.Err()
 }
 
-func rstreamF32(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamF32(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	*(cfg.adjust(recv).(*float32)) = r.ReadF32()
 	return r.Err()
 }
 
-func rstreamF64(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamF64(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	*(cfg.adjust(recv).(*float64)) = r.ReadF64()
 	return r.Err()
 }
 
-func rstreamBits(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamBits(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	*(cfg.adjust(recv).(*uint32)) = r.ReadU32()
 	// FIXME(sbinet) handle TObject reference
 	// if (bits&kIsReferenced) != 0 { ... }
@@ -695,7 +695,7 @@ func rstreamBits(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 }
 
 func rstreamF16(se rbytes.StreamerElement) ropFunc {
-	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+	return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 		recv = cfg.adjust(recv)
 		*(recv.(*root.Float16)) = r.ReadF16(se)
 		return r.Err()
@@ -703,24 +703,24 @@ func rstreamF16(se rbytes.StreamerElement) ropFunc {
 }
 
 func rstreamD32(se rbytes.StreamerElement) ropFunc {
-	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+	return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 		recv = cfg.adjust(recv)
 		*(recv.(*root.Double32)) = r.ReadD32(se)
 		return r.Err()
 	}
 }
 
-func rstreamTString(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamTString(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	*(cfg.adjust(recv).(*string)) = r.ReadString()
 	return r.Err()
 }
 
-func rstreamTObject(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamTObject(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	obj := cfg.adjust(recv).(*rbase.Object)
 	return obj.UnmarshalROOT(r)
 }
 
-func rstreamTNamed(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamTNamed(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	named := cfg.adjust(recv).(*rbase.Named)
 	return named.UnmarshalROOT(r)
 }
@@ -747,9 +747,9 @@ func rstreamCnv(to rmeta.Enum, from ropFunc) ropFunc {
 }
 
 func rstreamBasicArray(n int, arr ropFunc) ropFunc {
-	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+	return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 		rv := reflect.ValueOf(cfg.adjust(recv)).Elem()
-		for i := 0; i < n; i++ {
+		for i := range n {
 			err := arr(r, rv.Index(i).Addr().Interface(), nil)
 			if err != nil {
 				return fmt.Errorf(
@@ -763,14 +763,14 @@ func rstreamBasicArray(n int, arr ropFunc) ropFunc {
 }
 
 func rstreamBasicSlice(sli ropFunc) ropFunc {
-	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+	return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 		_ = r.ReadI8() // is-array
 		n := int(reflect.ValueOf(recv).Elem().FieldByIndex(cfg.descr.method).Int())
 		rv := reflect.ValueOf(cfg.adjust(recv)).Elem()
 		if nn := rv.Len(); nn < n {
 			rv.Set(reflect.AppendSlice(rv, reflect.MakeSlice(rv.Type(), n-nn, n-nn)))
 		}
-		for i := 0; i < n; i++ {
+		for i := range n {
 			err := sli(r, rv.Index(i).Addr().Interface(), nil)
 			if err != nil {
 				return fmt.Errorf(
@@ -802,7 +802,7 @@ func rcheckHeader(r *rbytes.RBuffer, hdr rbytes.Header) error {
 }
 
 func rstreamType(typename string, rop ropFunc) ropFunc {
-	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+	return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 		hdr := r.ReadHeader(typename, rvers.StreamerInfo)
 		err := rop(r, recv, cfg)
 		if err != nil {
@@ -818,7 +818,7 @@ func rstreamType(typename string, rop ropFunc) ropFunc {
 
 func rstreamStdSlice(typename string, rop ropFunc) ropFunc {
 	//	const typevers = 1
-	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+	return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 		// FIXME(sbinet): use typevers to infer obj-/mbr-wise reading.
 		n := int(r.ReadI32())
 		rv := reflect.ValueOf(cfg.adjust(recv)).Elem()
@@ -826,7 +826,7 @@ func rstreamStdSlice(typename string, rop ropFunc) ropFunc {
 			rv.Set(reflect.AppendSlice(rv, reflect.MakeSlice(rv.Type(), n-nn, n-nn)))
 		}
 		rv.SetLen(n)
-		for i := 0; i < n; i++ {
+		for i := range n {
 			err := rop(r, rv.Index(i).Addr().Interface(), nil)
 			if err != nil {
 				return fmt.Errorf(
@@ -853,7 +853,7 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 	if strings.HasSuffix(vname, ">") {
 		typename = fmt.Sprintf("map<%s,%s >", kname, vname)
 	}
-	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+	return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 		// typevers = int16(cfg.si.ClassVersion())
 		hdr := r.ReadHeader(typename, rvers.StreamerInfo)
 		if hdr.MemberWise {
@@ -874,7 +874,7 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 		keys.Set(reflect.AppendSlice(keys, reflect.MakeSlice(keyT, n, n)))
 		if n > 0 {
 			hdr := rstreamHeader(r, kname, -1) // FIXME(sbinet): use -1 passthrough or key-si-classversion ?
-			for i := 0; i < n; i++ {
+			for i := range n {
 				err := krop(r, keys.Index(i).Addr().Interface(), nil)
 				if err != nil {
 					return fmt.Errorf(
@@ -893,7 +893,7 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 		vals.Set(reflect.AppendSlice(vals, reflect.MakeSlice(valT, n, n)))
 		if n > 0 {
 			hdr := rstreamHeader(r, vname, -1) // FIXME(sbinet): use -1 passthrough or val-si-classversion
-			for i := 0; i < n; i++ {
+			for i := range n {
 				err := vrop(r, vals.Index(i).Addr().Interface(), nil)
 				if err != nil {
 					return fmt.Errorf(
@@ -911,7 +911,7 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 		if rv.IsNil() {
 			rv.Set(reflect.MakeMapWithSize(rv.Type(), n))
 		}
-		for i := 0; i < n; i++ {
+		for i := range n {
 			rv.SetMapIndex(keys.Index(i), vals.Index(i))
 		}
 
@@ -921,7 +921,7 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 }
 
 func rstreamStdBitset(typename string, n int) ropFunc {
-	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+	return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 		var (
 			bits = int(r.ReadI32())
 			sli  = cfg.adjust(recv).(*[]uint8)
@@ -932,7 +932,7 @@ func rstreamStdBitset(typename string, n int) ropFunc {
 	}
 }
 
-func rstreamBools(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamBools(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
@@ -943,7 +943,7 @@ func rstreamBools(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) erro
 	return r.Err()
 }
 
-func rstreamU8s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamU8s(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
@@ -954,7 +954,7 @@ func rstreamU8s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error 
 	return r.Err()
 }
 
-func rstreamU16s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamU16s(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
@@ -965,7 +965,7 @@ func rstreamU16s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 	return r.Err()
 }
 
-func rstreamU32s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamU32s(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
@@ -976,7 +976,7 @@ func rstreamU32s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 	return r.Err()
 }
 
-func rstreamU64s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamU64s(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
@@ -987,7 +987,7 @@ func rstreamU64s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 	return r.Err()
 }
 
-func rstreamI8s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamI8s(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
@@ -998,7 +998,7 @@ func rstreamI8s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error 
 	return r.Err()
 }
 
-func rstreamI16s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamI16s(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
@@ -1009,7 +1009,7 @@ func rstreamI16s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 	return r.Err()
 }
 
-func rstreamI32s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamI32s(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
@@ -1020,7 +1020,7 @@ func rstreamI32s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 	return r.Err()
 }
 
-func rstreamI64s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamI64s(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
@@ -1031,7 +1031,7 @@ func rstreamI64s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 	return r.Err()
 }
 
-func rstreamF32s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamF32s(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
@@ -1042,7 +1042,7 @@ func rstreamF32s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 	return r.Err()
 }
 
-func rstreamF64s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamF64s(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
@@ -1053,7 +1053,7 @@ func rstreamF64s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 	return r.Err()
 }
 
-func rstreamF16s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamF16s(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
@@ -1064,7 +1064,7 @@ func rstreamF16s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 	return r.Err()
 }
 
-func rstreamD32s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamD32s(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
@@ -1075,7 +1075,7 @@ func rstreamD32s(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 	return r.Err()
 }
 
-func rstreamStrs(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamStrs(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	var (
 		_   = r.ReadI8() // is-array
 		n   = cfg.counter(recv)
@@ -1087,7 +1087,7 @@ func rstreamStrs(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error
 }
 
 func rstreamCat(typename string, typevers int16, rops []rstreamer) ropFunc {
-	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+	return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 		hdr := r.ReadHeader(typename, typevers)
 		if hdr.Vers != typevers {
 			r.SetErr(fmt.Errorf(
@@ -1112,13 +1112,13 @@ func rstreamCat(typename string, typevers int16, rops []rstreamer) ropFunc {
 	}
 }
 
-func rstreamStdString(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+func rstreamStdString(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 	*(cfg.adjust(recv).(*string)) = r.ReadString()
 	return r.Err()
 
 }
 
-// func rstreamGeneric(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+// func rstreamGeneric(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 // 	const (
 // 		beg     = 0
 // 		end     = 1
@@ -1128,11 +1128,11 @@ func rstreamStdString(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) 
 // 	return cfg.si.rstream(r, recv, cfg.descr, beg, end, n, cfg.offset, arrmode)
 // }
 
-// type rmbrwiseSTLFunc func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig, vers int16) error
-// type robjwiseSTLFunc func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig, vers int16, start int32) error
+// type rmbrwiseSTLFunc func(r *rbytes.RBuffer, recv any, cfg *streamerConfig, vers int16) error
+// type robjwiseSTLFunc func(r *rbytes.RBuffer, recv any, cfg *streamerConfig, vers int16, start int32) error
 //
 // func rstreamSTL(mbrwise rmbrwiseSTLFunc, objwise robjwiseSTLFunc, oclass string) ropFunc {
-// 	return func(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) error {
+// 	return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 // 		err := r.Err()
 // 		if err != nil {
 // 			return err
@@ -1151,15 +1151,15 @@ func rstreamStdString(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) 
 // 	}
 // }
 //
-// func rstreamSTLArrayMbrWise(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig, vers int16) error {
+// func rstreamSTLArrayMbrWise(r *rbytes.RBuffer, recv any, cfg *streamerConfig, vers int16) error {
 // 	panic("not implemented")
 // }
 //
-// func rstreamSTLObjWise(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig, vers int16, start int32) error {
+// func rstreamSTLObjWise(r *rbytes.RBuffer, recv any, cfg *streamerConfig, vers int16, start int32) error {
 // 	panic("not implemented")
 // }
 
-// func (si *StreamerInfo) rstream(r *rbytes.RBuffer, recv interface{}, descr *elemDescr, beg, end, n, offset int, mode arrayMode) error {
+// func (si *StreamerInfo) rstream(r *rbytes.RBuffer, recv any, descr *elemDescr, beg, end, n, offset int, mode arrayMode) error {
 // 	needIncr := mode&2 == 0
 // 	mode &= ^2
 //
@@ -1221,7 +1221,7 @@ func rstreamStdString(r *rbytes.RBuffer, recv interface{}, cfg *streamerConfig) 
 // 	panic("not implemented")
 // }
 
-// func ptrAdjust(ptr interface{}, offsets []int) interface{} {
+// func ptrAdjust(ptr any, offsets []int) any {
 // 	recv := ptr
 // 	for _, offset := range offsets {
 // 		rv := reflect.ValueOf(recv).Elem()

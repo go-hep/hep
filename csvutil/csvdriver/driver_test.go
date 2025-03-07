@@ -184,7 +184,7 @@ func TestQL(t *testing.T) {
 		t.Fatalf("error creating table: %+v\n", err)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		f := float64(i)
 		s := fmt.Sprintf("str-%d", i)
 		_, err = tx.Exec("insert into csv values($1,$2,$3);", i, f, s)
@@ -226,7 +226,7 @@ func TestCreate(t *testing.T) {
 		t.Fatalf("error creating table: %+v\n", err)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		f := float64(i)
 		s := fmt.Sprintf("str-%d", i)
 		_, err = tx.Exec("insert into csv values($1,$2,$3);", i, f, s)
@@ -268,7 +268,7 @@ func TestCreateRollback(t *testing.T) {
 		t.Fatalf("error creating table: %+v\n", err)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		f := float64(i)
 		s := fmt.Sprintf("str-%d", i)
 		_, err = tx.Exec("insert into csv values($1,$2,$3);", i, f, s)

@@ -168,10 +168,7 @@ func Compress(dst, src []byte, compr int32) ([]byte, error) {
 	}
 
 	for beg = 0; beg < len(src); beg += blksz {
-		end = beg + blksz
-		if end > len(src) {
-			end = len(src)
-		}
+		end = min(beg+blksz, len(src))
 		// FIXME(sbinet): split out into compressBlock{Zlib,LZ4,...}
 		n, err := compressBlock(alg, lvl, dst[cur:], src[beg:end])
 		switch err {

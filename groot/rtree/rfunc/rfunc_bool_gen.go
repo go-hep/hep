@@ -26,7 +26,7 @@ func NewFuncToBool(rvars []string, fct func() bool) *FuncToBool {
 func (f *FuncToBool) RVars() []string { return nil }
 
 // Bind implements rfunc.Formula
-func (f *FuncToBool) Bind(args []interface{}) error {
+func (f *FuncToBool) Bind(args []any) error {
 	if got, want := len(args), 0; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -37,7 +37,7 @@ func (f *FuncToBool) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncToBool) Func() interface{} {
+func (f *FuncToBool) Func() any {
 	return func() bool {
 		return f.fct()
 	}
@@ -66,7 +66,7 @@ func NewFuncF32ToBool(rvars []string, fct func(arg00 float32) bool) *FuncF32ToBo
 func (f *FuncF32ToBool) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncF32ToBool) Bind(args []interface{}) error {
+func (f *FuncF32ToBool) Bind(args []any) error {
 	if got, want := len(args), 1; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -87,7 +87,7 @@ func (f *FuncF32ToBool) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncF32ToBool) Func() interface{} {
+func (f *FuncF32ToBool) Func() any {
 	return func() bool {
 		return f.fct(
 			*f.arg0,
@@ -119,7 +119,7 @@ func NewFuncF32F32ToBool(rvars []string, fct func(arg00 float32, arg01 float32) 
 func (f *FuncF32F32ToBool) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncF32F32ToBool) Bind(args []interface{}) error {
+func (f *FuncF32F32ToBool) Bind(args []any) error {
 	if got, want := len(args), 2; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -150,7 +150,7 @@ func (f *FuncF32F32ToBool) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncF32F32ToBool) Func() interface{} {
+func (f *FuncF32F32ToBool) Func() any {
 	return func() bool {
 		return f.fct(
 			*f.arg0,
@@ -184,7 +184,7 @@ func NewFuncF32F32F32ToBool(rvars []string, fct func(arg00 float32, arg01 float3
 func (f *FuncF32F32F32ToBool) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncF32F32F32ToBool) Bind(args []interface{}) error {
+func (f *FuncF32F32F32ToBool) Bind(args []any) error {
 	if got, want := len(args), 3; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -225,7 +225,7 @@ func (f *FuncF32F32F32ToBool) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncF32F32F32ToBool) Func() interface{} {
+func (f *FuncF32F32F32ToBool) Func() any {
 	return func() bool {
 		return f.fct(
 			*f.arg0,
@@ -258,7 +258,7 @@ func NewFuncF64ToBool(rvars []string, fct func(arg00 float64) bool) *FuncF64ToBo
 func (f *FuncF64ToBool) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncF64ToBool) Bind(args []interface{}) error {
+func (f *FuncF64ToBool) Bind(args []any) error {
 	if got, want := len(args), 1; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -279,7 +279,7 @@ func (f *FuncF64ToBool) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncF64ToBool) Func() interface{} {
+func (f *FuncF64ToBool) Func() any {
 	return func() bool {
 		return f.fct(
 			*f.arg0,
@@ -311,7 +311,7 @@ func NewFuncF64F64ToBool(rvars []string, fct func(arg00 float64, arg01 float64) 
 func (f *FuncF64F64ToBool) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncF64F64ToBool) Bind(args []interface{}) error {
+func (f *FuncF64F64ToBool) Bind(args []any) error {
 	if got, want := len(args), 2; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -342,7 +342,7 @@ func (f *FuncF64F64ToBool) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncF64F64ToBool) Func() interface{} {
+func (f *FuncF64F64ToBool) Func() any {
 	return func() bool {
 		return f.fct(
 			*f.arg0,
@@ -376,7 +376,7 @@ func NewFuncF64F64F64ToBool(rvars []string, fct func(arg00 float64, arg01 float6
 func (f *FuncF64F64F64ToBool) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncF64F64F64ToBool) Bind(args []interface{}) error {
+func (f *FuncF64F64F64ToBool) Bind(args []any) error {
 	if got, want := len(args), 3; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -417,7 +417,7 @@ func (f *FuncF64F64F64ToBool) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncF64F64F64ToBool) Func() interface{} {
+func (f *FuncF64F64F64ToBool) Func() any {
 	return func() bool {
 		return f.fct(
 			*f.arg0,

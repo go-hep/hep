@@ -168,7 +168,7 @@ func TestHandler_Dirlist_With1000Requests(t *testing.T) {
 
 	var wg sync.WaitGroup
 	wg.Add(1000)
-	for i := 0; i < 1000; i++ {
+	for range 1000 {
 		go func() {
 			defer wg.Done()
 			_, err := cli.FS().Dirlist(context.Background(), "/")

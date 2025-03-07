@@ -79,7 +79,7 @@ func NewGenerator(p string) (*Generator, error) {
 	}, nil
 }
 
-func (g *Generator) printf(format string, args ...interface{}) {
+func (g *Generator) printf(format string, args ...any) {
 	fmt.Fprintf(g.buf, format, args...)
 }
 

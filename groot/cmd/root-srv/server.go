@@ -304,7 +304,7 @@ func (srv *server) process(preq plotRequest) {
 	var (
 		h    http.HandlerFunc
 		hreq *http.Request
-		req  interface{}
+		req  any
 		ep   string
 		err  error
 		body = new(bytes.Buffer)

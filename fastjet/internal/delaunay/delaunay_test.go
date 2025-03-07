@@ -7,6 +7,7 @@ package delaunay
 import (
 	"math"
 	"math/rand"
+	"slices"
 	"testing"
 )
 
@@ -46,7 +47,7 @@ func TestHierarchicalDelaunayDuplicates(t *testing.T) {
 				ok = true
 				// remove triangles that have been matched from slice,
 				// in case there are duplicate triangles.
-				exp = append(exp[:j], exp[j+1:]...)
+				exp = slices.Delete(exp, j, j+1)
 				break
 			}
 		}
@@ -111,7 +112,7 @@ func TestHierarchicalDelaunayInsertSmall(t *testing.T) {
 				ok = true
 				// remove triangles that have been matched from slice,
 				// in case there are duplicate triangles.
-				exp = append(exp[:j], exp[j+1:]...)
+				exp = slices.Delete(exp, j, j+1)
 				break
 			}
 		}
@@ -199,7 +200,7 @@ func TestHierarchicalDelaunayInsertMedium(t *testing.T) {
 				ok = true
 				// remove triangles that have been matched from slice,
 				// in case there are duplicate triangles.
-				exp = append(exp[:j], exp[j+1:]...)
+				exp = slices.Delete(exp, j, j+1)
 				break
 			}
 		}
@@ -236,9 +237,9 @@ func grid(nx, ny int, angle float64) []*Point {
 	s := math.Sin(angle)
 	c := math.Cos(angle)
 	var points []*Point
-	for xi := 0; xi < nx; xi++ {
+	for xi := range nx {
 		tx := float64(xi)
-		for yi := 0; yi < ny; yi++ {
+		for yi := range ny {
 			ty := float64(yi)
 			x := tx*c - ty*s
 			y := tx*s + ty*c
@@ -270,7 +271,7 @@ func TestHierarchicalDelaunayGridRotated(t *testing.T) {
 
 func benchmarkHierarchicalDelaunayInsertion(i int, b *testing.B) {
 	ps := make([]*Point, i)
-	for j := 0; j < i; j++ {
+	for j := range i {
 		x := rand.Float64() * 1000
 		y := rand.Float64() * 1000
 		ps[j] = NewPoint(x, y)
@@ -401,7 +402,7 @@ func TestHierarchicalDelaunayRemovalSmall(t *testing.T) {
 				ok = true
 				// remove triangles that have been matched from slice,
 				// in case there are duplicate triangles.
-				exp = append(exp[:j], exp[j+1:]...)
+				exp = slices.Delete(exp, j, j+1)
 				break
 			}
 		}
@@ -506,7 +507,7 @@ func TestHierarchicalDelaunayRemovalMedium(t *testing.T) {
 				ok = true
 				// remove triangles that have been matched from slice,
 				// in case there are duplicate triangles.
-				exp = append(exp[:j], exp[j+1:]...)
+				exp = slices.Delete(exp, j, j+1)
 				break
 			}
 		}
@@ -542,7 +543,7 @@ func TestHierarchicalDelaunayRemovalMedium(t *testing.T) {
 
 func benchmarkHierarchicalDelaunayRemoval(i int, b *testing.B) {
 	ps := make([]*Point, i)
-	for j := 0; j < i; j++ {
+	for j := range i {
 		x := rand.Float64() * 1000
 		y := rand.Float64() * 1000
 		ps[j] = NewPoint(x, y)

@@ -24,7 +24,7 @@ func TestRWStream(t *testing.T) {
 		name string
 		skip bool
 		si   *StreamerInfo
-		ptr  interface{}
+		ptr  any
 		deps []rbytes.StreamerInfo
 		err  error
 	}{
@@ -736,7 +736,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "arr-TObjString",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F [3]rbase.ObjString
 				}
@@ -766,7 +766,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "arr-Pos",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type Pos struct {
 					X float32
 					Y float64
@@ -1298,7 +1298,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "sli-Pos",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type Pos struct {
 					Px float32
 					Py float64
@@ -1762,7 +1762,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "particle",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type P2 struct {
 					Px float32 `groot:"px"`
 					Py float64 `groot:"py"`
@@ -1823,7 +1823,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "event-objstring",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type Particle struct {
 					Name rbase.ObjString
 				}
@@ -1871,7 +1871,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "event-particle",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type P2 struct {
 					Px float32 `groot:"px"`
 					Py float64 `groot:"py"`
@@ -1952,7 +1952,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "std::vector<P2>",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type P2 struct {
 					Px float32
 					Py float64
@@ -2006,7 +2006,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "event-std::vector<particle>",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type P2 struct {
 					Px float32 `groot:"px"`
 					Py float64 `groot:"py"`
@@ -2086,7 +2086,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "base-object",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					rbase.Object `groot:",base"`
 					F1           float64
@@ -2120,7 +2120,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "base-named",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					rbase.Named `groot:",base"`
 					F1          float64
@@ -2154,7 +2154,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "base-objstring",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					rbase.ObjString `groot:",base"`
 					F1              float64
@@ -2188,7 +2188,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "ptr-to-object",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F1 *rbase.Named
 					F2 *rbase.Named
@@ -2266,7 +2266,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "event-particles",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type P2 struct {
 					Px float32 `groot:"px"`
 					Py float64 `groot:"py"`
@@ -2349,7 +2349,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "event-particles-tags",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type P2 struct {
 					Px float32 `groot:"px"`
 					Py float64 `groot:"py"`
@@ -2462,7 +2462,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "set<i32>",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F []int32
 				}
@@ -2486,7 +2486,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "set<TString>",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F []string
 				}
@@ -2510,7 +2510,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "set<vector<float> >",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F [][]float32
 				}
@@ -2538,7 +2538,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "set<set<float> >",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F [][]float32
 				}
@@ -2566,7 +2566,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "unordered_set<i32>",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F []int32
 				}
@@ -2590,7 +2590,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "unordered_set<TString>",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F []string
 				}
@@ -2614,7 +2614,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "unordered_set<vector<float> >",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F [][]float32
 				}
@@ -2642,7 +2642,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "unordered_set<unordered_set<float> >",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F [][]float32
 				}
@@ -2670,7 +2670,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "map<i32,i32>",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					Map map[int32]int32 `groot:"m"`
 				}
@@ -2698,7 +2698,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "map<i32,string>",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					Map map[int32]string `groot:"m"`
 				}
@@ -2726,7 +2726,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "map<i32,map<i32,string> >",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					Map map[int32]map[int32]string `groot:"m"`
 				}
@@ -2766,7 +2766,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "map<i32,vector<string> >",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					Map map[int32][]string `groot:"m"`
 				}
@@ -2794,7 +2794,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "unordered_map<i32,i32>",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					Map map[int32]int32 `groot:"m"`
 				}
@@ -2822,7 +2822,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "unordered_map<i32,string>",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					Map map[int32]string `groot:"m"`
 				}
@@ -2850,7 +2850,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "unordered_map<i32,unordered_map<i32,string> >",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					Map map[int32]map[int32]string `groot:"m"`
 				}
@@ -2890,7 +2890,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "unordered_map<i32,vector<string> >",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					Map map[int32][]string `groot:"m"`
 				}
@@ -2918,7 +2918,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "list<i32>",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F []int32
 				}
@@ -2942,7 +2942,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "list<TString>",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F []string
 				}
@@ -2966,7 +2966,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "list<vector<float> >",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F [][]float32
 				}
@@ -2994,7 +2994,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "list<list<float> >",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F [][]float32
 				}
@@ -3022,7 +3022,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "deque<i32>",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F []int32
 				}
@@ -3046,7 +3046,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "deque<TString>",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F []string
 				}
@@ -3070,7 +3070,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "deque<vector<float> >",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F [][]float32
 				}
@@ -3098,7 +3098,7 @@ func TestRWStream(t *testing.T) {
 		},
 		{
 			name: "deque<deque<float> >",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type T struct {
 					F [][]float32
 				}
@@ -3334,13 +3334,13 @@ func TestRWStreamerInfo(t *testing.T) {
 		name string
 		skip bool
 		si   *StreamerInfo
-		ptr  interface{}
+		ptr  any
 		deps []rbytes.StreamerInfo
 		err  error
 	}{
 		{
 			name: "event",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type P2 struct {
 					Px float32 `groot:"px"`
 					Py float64 `groot:"py"`
@@ -3502,13 +3502,13 @@ func TestRWStreamerElem(t *testing.T) {
 		name string
 		skip bool
 		si   *StreamerInfo
-		ptr  interface{}
+		ptr  any
 		deps []rbytes.StreamerInfo
 		err  error
 	}{
 		{
 			name: "event",
-			ptr: func() interface{} {
+			ptr: func() any {
 				type P2 struct {
 					Px float32 `groot:"px"`
 					Py float64 `groot:"py"`

@@ -67,8 +67,8 @@ func NewH2FFrom(h *hbook.H2D) *H2F {
 
 	ibin := func(ix, iy int) int { return iy*nxbins + ix }
 
-	for ix := 0; ix < h.Binning.Nx; ix++ {
-		for iy := 0; iy < h.Binning.Ny; iy++ {
+	for ix := range h.Binning.Nx {
+		for iy := range h.Binning.Ny {
 			i := ibin(ix, iy)
 			bin := bins[i]
 			if ix == 0 {
@@ -318,8 +318,8 @@ func (h *H2F) AsH2D() *hbook.H2D {
 	hh.Binning.Dist.Y.Stats.SumWX2 = float64(h.SumWY2())
 	hh.Binning.Dist.Stats.SumWXY = h.SumWXY()
 
-	for ix := 0; ix < nx; ix++ {
-		for iy := 0; iy < ny; iy++ {
+	for ix := range nx {
+		for iy := range ny {
 			var (
 				i    = iy*nx + ix
 				xmin = h.XBinLowEdge(ix + 1)
@@ -458,8 +458,8 @@ func NewH2DFrom(h *hbook.H2D) *H2D {
 
 	ibin := func(ix, iy int) int { return iy*nxbins + ix }
 
-	for ix := 0; ix < h.Binning.Nx; ix++ {
-		for iy := 0; iy < h.Binning.Ny; iy++ {
+	for ix := range h.Binning.Nx {
+		for iy := range h.Binning.Ny {
 			i := ibin(ix, iy)
 			bin := bins[i]
 			if ix == 0 {
@@ -709,8 +709,8 @@ func (h *H2D) AsH2D() *hbook.H2D {
 	hh.Binning.Dist.Y.Stats.SumWX2 = float64(h.SumWY2())
 	hh.Binning.Dist.Stats.SumWXY = h.SumWXY()
 
-	for ix := 0; ix < nx; ix++ {
-		for iy := 0; iy < ny; iy++ {
+	for ix := range nx {
+		for iy := range ny {
 			var (
 				i    = iy*nx + ix
 				xmin = h.XBinLowEdge(ix + 1)
@@ -849,8 +849,8 @@ func NewH2IFrom(h *hbook.H2D) *H2I {
 
 	ibin := func(ix, iy int) int { return iy*nxbins + ix }
 
-	for ix := 0; ix < h.Binning.Nx; ix++ {
-		for iy := 0; iy < h.Binning.Ny; iy++ {
+	for ix := range h.Binning.Nx {
+		for iy := range h.Binning.Ny {
 			i := ibin(ix, iy)
 			bin := bins[i]
 			if ix == 0 {
@@ -1100,8 +1100,8 @@ func (h *H2I) AsH2D() *hbook.H2D {
 	hh.Binning.Dist.Y.Stats.SumWX2 = float64(h.SumWY2())
 	hh.Binning.Dist.Stats.SumWXY = h.SumWXY()
 
-	for ix := 0; ix < nx; ix++ {
-		for iy := 0; iy < ny; iy++ {
+	for ix := range nx {
+		for iy := range ny {
 			var (
 				i    = iy*nx + ix
 				xmin = h.XBinLowEdge(ix + 1)

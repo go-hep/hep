@@ -17,7 +17,7 @@ const (
 )
 
 // UserInfo holds extra user information in a Jet
-type UserInfo interface{}
+type UserInfo any
 
 // Jet holds minimal information of use for jet-clustering routines
 type Jet struct {

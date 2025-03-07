@@ -255,7 +255,7 @@ func TestROOTCpTree(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		rdata.N = int32(i)
 		rdata.I32s = make([]int32, i)
 		for j := range rdata.I32s {

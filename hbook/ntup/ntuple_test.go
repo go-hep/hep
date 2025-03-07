@@ -42,7 +42,7 @@ func TestScanH1D(t *testing.T) {
 		t.Errorf("error. got %v bins. want=%d\n", h.Len(), want.len)
 	}
 
-	for i := 0; i < h.Len(); i++ {
+	for i := range h.Len() {
 		v := h.Value(i)
 		if v != 1 {
 			t.Errorf("error bin(%d)=%v. want=1\n", i, v)
@@ -59,7 +59,7 @@ func TestScanH1D(t *testing.T) {
 
 func TestScanH1DWithoutH1(t *testing.T) {
 	want := hbook.NewH1D(100, 0, nextULP(9))
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		want.Fill(float64(i), 1)
 	}
 
@@ -74,7 +74,7 @@ func TestScanH1DWithoutH1(t *testing.T) {
 		t.Errorf("error. got %v bins. want=%d\n", h.Len(), want.Len())
 	}
 
-	for i := 0; i < h.Len(); i++ {
+	for i := range h.Len() {
 		v := h.Value(i)
 		if v != want.Value(i) {
 			t.Errorf("error bin(%d)=%v. want=%v\n", i, v, want.Value(i))
@@ -124,7 +124,7 @@ func TestScanH1DWhere(t *testing.T) {
 				t.Errorf("error. got %v bins. want=%d\n", h.Len(), want.len)
 			}
 
-			for i := 0; i < h.Len(); i++ {
+			for i := range h.Len() {
 				v := h.Value(i)
 				want := float64(0)
 				if i > 4 {
@@ -170,7 +170,7 @@ func TestScanH1DInt(t *testing.T) {
 		t.Errorf("error. got %v bins. want=%d\n", h.Len(), want.len)
 	}
 
-	for i := 0; i < h.Len(); i++ {
+	for i := range h.Len() {
 		v := h.Value(i)
 		if v != 1 {
 			t.Errorf("error bin(%d)=%v. want=1\n", i, v)
@@ -187,7 +187,7 @@ func TestScanH1DInt(t *testing.T) {
 
 func TestScanH2D(t *testing.T) {
 	want := hbook.NewH2D(10, 0, 10, 10, 0, 10)
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		v := float64(i)
 		want.Fill(v, v, 1)
 	}
@@ -218,13 +218,13 @@ func TestScanH2D(t *testing.T) {
 		if ar != br {
 			t.Fatalf("got=%d want=%d", ar, br)
 		}
-		for i := 0; i < ar; i++ {
+		for i := range ar {
 			ay := a.Y(i)
 			by := b.Y(i)
 			if ay != by {
 				t.Fatalf("got=%v. want=%v", ay, by)
 			}
-			for j := 0; j < ac; j++ {
+			for j := range ac {
 				if i == 0 {
 					ax := a.X(j)
 					bx := b.X(j)
@@ -253,7 +253,7 @@ func TestScanH2D(t *testing.T) {
 
 func TestScanH2DWithoutH2D(t *testing.T) {
 	want := hbook.NewH2D(100, 0, nextULP(9), 100, 0, nextULP(9))
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		v := float64(i)
 		want.Fill(v, v, 1)
 	}
@@ -283,13 +283,13 @@ func TestScanH2DWithoutH2D(t *testing.T) {
 		if ar != br {
 			t.Fatalf("got=%d want=%d", ar, br)
 		}
-		for i := 0; i < ar; i++ {
+		for i := range ar {
 			ay := a.Y(i)
 			by := b.Y(i)
 			if ay != by {
 				t.Fatalf("got=%v. want=%v", ay, by)
 			}
-			for j := 0; j < ac; j++ {
+			for j := range ac {
 				if i == 0 {
 					ax := a.X(j)
 					bx := b.X(j)
@@ -344,7 +344,7 @@ func TestScan(t *testing.T) {
 		t.Errorf("error. got %v bins. want=%d\n", h.Len(), want.len)
 	}
 
-	for i := 0; i < h.Len(); i++ {
+	for i := range h.Len() {
 		v := h.Value(i)
 		if v != 1 {
 			t.Errorf("error bin(%d)=%v. want=1\n", i, v)
@@ -395,7 +395,7 @@ func TestScanH1DFromCSVWithCommas(t *testing.T) {
 		t.Errorf("error. got %v bins. want=%d\n", h.Len(), want.len)
 	}
 
-	for i := 0; i < h.Len(); i++ {
+	for i := range h.Len() {
 		v := h.Value(i)
 		if v != 1 {
 			t.Errorf("error bin(%d)=%v. want=1\n", i, v)
@@ -450,7 +450,7 @@ func TestScanH1DFromCSV(t *testing.T) {
 		t.Errorf("error. got %v bins. want=%d\n", h.Len(), want.len)
 	}
 
-	for i := 0; i < h.Len(); i++ {
+	for i := range h.Len() {
 		v := h.Value(i)
 		if v != 1 {
 			t.Errorf("error bin(%d)=%v. want=1\n", i, v)
@@ -468,7 +468,7 @@ func TestScanH1DFromCSV(t *testing.T) {
 func TestScanInvalid(t *testing.T) {
 	for _, tc := range []struct {
 		name string
-		fct  interface{}
+		fct  any
 	}{
 		{
 			name: "nil func",
@@ -534,7 +534,7 @@ func TestCreate(t *testing.T) {
 		t.Fatalf("invalid cols. got=%d. want=%d\n", len(nt.Cols()), len(descr))
 	}
 
-	for i := 0; i < len(descr); i++ {
+	for i := range descr {
 		col := nt.Cols()[i]
 		exp := descr[i]
 		if col.Name() != exp.n {
@@ -599,7 +599,7 @@ func TestCreateFromStruct(t *testing.T) {
 		t.Fatalf("invalid cols. got=%d. want=%d\n", len(nt.Cols()), len(descr))
 	}
 
-	for i := 0; i < len(descr); i++ {
+	for i := range descr {
 		col := nt.Cols()[i]
 		exp := descr[i]
 		if col.Name() != exp.n {
@@ -619,7 +619,7 @@ func TestCreateInvalid(t *testing.T) {
 	for _, tc := range []struct {
 		name string
 		err  error
-		cols []interface{}
+		cols []any
 	}{
 		{
 			name: "missing-col-def.db",
@@ -627,16 +627,16 @@ func TestCreateInvalid(t *testing.T) {
 		},
 		{
 			name: "one-value.db",
-			cols: []interface{}{int64(0)},
+			cols: []any{int64(0)},
 		},
 		{
 			name: "err-chan.db",
-			cols: []interface{}{make(chan int)},
+			cols: []any{make(chan int)},
 			err:  errChanType,
 		},
 		{
 			name: "err-struct-chan.db",
-			cols: []interface{}{func() interface{} {
+			cols: []any{func() any {
 				type Person struct {
 					Field chan int
 				}
@@ -647,22 +647,22 @@ func TestCreateInvalid(t *testing.T) {
 		},
 		//		{
 		//			name: "err-iface.db",
-		//			cols: []interface{}{(io.Writer)(os.Stdout)},
+		//			cols: []any{(io.Writer)(os.Stdout)},
 		//			err:  errIfaceType,
 		//		},
 		//		{
 		//			name: "err-eface.db",
-		//			cols: []interface{}{interface{}(nil)},
+		//			cols: []any{any(nil)},
 		//			err:  errIfaceType,
 		//		},
 		{
 			name: "err-map.db",
-			cols: []interface{}{make(map[string]int)},
+			cols: []any{make(map[string]int)},
 			err:  errMapType,
 		},
 		{
 			name: "err-struct-map.db",
-			cols: []interface{}{func() interface{} {
+			cols: []any{func() any {
 				type Person struct {
 					Field map[string]int
 				}
@@ -673,12 +673,12 @@ func TestCreateInvalid(t *testing.T) {
 		},
 		{
 			name: "err-slice.db",
-			cols: []interface{}{make([]int, 2)},
+			cols: []any{make([]int, 2)},
 			err:  errSliceType,
 		},
 		{
 			name: "err-struct-slice.db",
-			cols: []interface{}{func() interface{} {
+			cols: []any{func() any {
 				type Person struct {
 					Field []int
 				}
@@ -689,7 +689,7 @@ func TestCreateInvalid(t *testing.T) {
 		},
 		{
 			name: "err-struct.db",
-			cols: []interface{}{func() interface{} {
+			cols: []any{func() any {
 				type Name struct {
 					Name string
 				}
@@ -705,7 +705,7 @@ func TestCreateInvalid(t *testing.T) {
 		},
 		{
 			name: "err-estruct.db",
-			cols: []interface{}{func() interface{} {
+			cols: []any{func() any {
 				type Name struct{}
 				type Anon struct {
 					Name Name
@@ -760,7 +760,7 @@ func init() {
 		panic(err)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		x := float64(i)
 		_, err = tx.Exec("insert into data values($1, $2);", i, x)
 		if err != nil {

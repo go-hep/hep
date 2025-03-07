@@ -21,8 +21,8 @@ import (
 
 func TestFlattenArrayType(t *testing.T) {
 	for _, tc := range []struct {
-		typ   interface{}
-		want  interface{}
+		typ   any
+		want  any
 		shape []int
 	}{
 		{
@@ -119,7 +119,7 @@ func TestConcurrentWrite(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(N)
 
-	for i := 0; i < N; i++ {
+	for i := range N {
 		go func(i int) {
 			defer wg.Done()
 			f, err := riofs.Create(filepath.Join(tmp, fmt.Sprintf("file-%03d.root", i)))
@@ -144,10 +144,10 @@ func TestConcurrentWrite(t *testing.T) {
 			defer w.Close()
 
 			rng := rand.New(rand.NewSource(1234))
-			for i := 0; i < 100; i++ {
+			for i := range 100 {
 				evt.N = rng.Int31n(10) + 1
 				evt.Sli = evt.Sli[:0]
-				for j := 0; j < int(evt.N); j++ {
+				for range int(evt.N) {
 					evt.Sli = append(evt.Sli, rng.Float64())
 				}
 				_, err = w.Write()
@@ -200,7 +200,7 @@ func TestWriteThisStreamers(t *testing.T) {
 		t.Fatalf("could not create output ROOT tree %q: %+v", "tree", err)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		evt.F1 = []float64{float64(i)}
 		evt.F2 = []float64{float64(i), float64(i)}
 		evt.F3 = []int64{int64(i)}
@@ -289,10 +289,10 @@ func TestWriterWithCompression(t *testing.T) {
 			defer w.Close()
 
 			rng := rand.New(rand.NewSource(1234))
-			for i := 0; i < 100; i++ {
+			for i := range 100 {
 				evt.N = rng.Int31n(10) + 1
 				evt.Sli = evt.Sli[:0]
-				for j := 0; j < int(evt.N); j++ {
+				for range int(evt.N) {
 					evt.Sli = append(evt.Sli, rng.Float64())
 				}
 				_, err = w.Write()

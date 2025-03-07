@@ -72,8 +72,8 @@ type ObjArray interface {
 // Array describes ROOT abstract array type.
 type Array interface {
 	Len() int // number of array elements
-	Get(i int) interface{}
-	Set(i int, v interface{})
+	Get(i int) any
+	Set(i int, v any)
 }
 
 // ObjString is a ROOT string that implements ROOT TObject.

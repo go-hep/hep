@@ -42,29 +42,29 @@ func newMsgStream(name string, lvl Level, w WriteSyncer) msgstream {
 }
 
 // Debugf displays a (formated) DBG message
-func (msg msgstream) Debugf(format string, a ...interface{}) {
+func (msg msgstream) Debugf(format string, a ...any) {
 	msg.Msg(LvlDebug, format, a...)
 }
 
 // Infof displays a (formated) INFO message
-func (msg msgstream) Infof(format string, a ...interface{}) {
+func (msg msgstream) Infof(format string, a ...any) {
 	msg.Msg(LvlInfo, format, a...)
 }
 
 // Warnf displays a (formated) WARN message
-func (msg msgstream) Warnf(format string, a ...interface{}) {
+func (msg msgstream) Warnf(format string, a ...any) {
 	defer msg.flush()
 	msg.Msg(LvlWarning, format, a...)
 }
 
 // Errorf displays a (formated) ERR message
-func (msg msgstream) Errorf(format string, a ...interface{}) {
+func (msg msgstream) Errorf(format string, a ...any) {
 	defer msg.flush()
 	msg.Msg(LvlError, format, a...)
 }
 
 // Msg displays a (formated) message with level lvl.
-func (msg msgstream) Msg(lvl Level, format string, a ...interface{}) {
+func (msg msgstream) Msg(lvl Level, format string, a ...any) {
 	if lvl < msg.lvl {
 		return
 	}

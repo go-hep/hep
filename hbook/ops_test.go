@@ -82,7 +82,7 @@ func ExampleDivideH1D() {
 func TestDivideH1D(t *testing.T) {
 	h1 := NewH1D(5, 0, 5)
 	h2 := NewH1D(5, 0, 5)
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		h1.Fill(float64(i), float64(i+1))
 		h2.Fill(float64(i), float64(i+3))
 	}

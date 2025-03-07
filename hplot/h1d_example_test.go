@@ -32,7 +32,7 @@ func ExampleH1D() {
 	// Draw some random values from the standard
 	// normal distribution.
 	hist := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		hist.Fill(v, 1)
 	}
@@ -85,7 +85,7 @@ func ExampleH1D_toPDF() {
 	// Draw some random values from the standard
 	// normal distribution.
 	hist := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		hist.Fill(v, 1)
 	}
@@ -186,7 +186,7 @@ func ExampleH1D_withYErrBars() {
 	// Draw some random values from the standard
 	// normal distribution.
 	hist := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		hist.Fill(v, 1)
 	}
@@ -243,7 +243,7 @@ func ExampleH1D_withYErrBars_withBand() {
 	// Draw some random values from the standard
 	// normal distribution.
 	hist := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		hist.Fill(v, 1)
 	}
@@ -301,7 +301,7 @@ func ExampleH1D_withYErrBarsAndData() {
 	// Draw some random values from the standard
 	// normal distribution.
 	hist := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		hist.Fill(v, 1)
 	}
@@ -369,7 +369,7 @@ func ExampleH1D_withPlotBorders() {
 	// Draw some random values from the standard
 	// normal distribution.
 	hist := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		hist.Fill(v, 1)
 	}
@@ -438,7 +438,7 @@ func ExampleH1D_legendStyle() {
 		// Draw some random values from the standard
 		// normal distribution.
 		hists[id] = hbook.NewH1D(15, mu-4*sigma, mu+4*sigma)
-		for i := 0; i < npoints; i++ {
+		for range npoints {
 			v := dist.Rand()
 			hists[id].Fill(v, 1)
 		}

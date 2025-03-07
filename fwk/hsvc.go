@@ -12,7 +12,7 @@ import (
 // be saved or loaded by the HistSvc.
 type Hist interface {
 	Name() string
-	Value() interface{}
+	Value() any
 }
 
 // HID is a histogram, scatter or profile identifier
@@ -28,7 +28,7 @@ func (h H1D) Name() string {
 	return string(h.ID)
 }
 
-func (h H1D) Value() interface{} {
+func (h H1D) Value() any {
 	return h.Hist
 }
 
@@ -42,7 +42,7 @@ func (h H2D) Name() string {
 	return string(h.ID)
 }
 
-func (h H2D) Value() interface{} {
+func (h H2D) Value() any {
 	return h.Hist
 }
 
@@ -56,7 +56,7 @@ func (p P1D) Name() string {
 	return string(p.ID)
 }
 
-func (p P1D) Value() interface{} {
+func (p P1D) Value() any {
 	return p.Profile
 }
 
@@ -70,7 +70,7 @@ func (s S2D) Name() string {
 	return string(s.ID)
 }
 
-func (s S2D) Value() interface{} {
+func (s S2D) Value() any {
 	return s.Scatter
 }
 

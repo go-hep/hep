@@ -75,7 +75,7 @@ func TestH1DWithBorders(t *testing.T) {
 		// Draw some random values from the standard
 		// normal distribution.
 		hist := hbook.NewH1D(20, -4, +4)
-		for i := 0; i < npoints; i++ {
+		for range npoints {
 			v := dist.Rand()
 			hist.Fill(v, 1)
 		}

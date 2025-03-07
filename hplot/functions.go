@@ -63,7 +63,7 @@ func (f *Function) Plot(c draw.Canvas, p *plot.Plot) {
 			line  = 0
 			lines = [][]vg.Point{make([]vg.Point, 0, f.Samples)}
 		)
-		for i := 0; i < f.Samples; i++ {
+		for i := range f.Samples {
 			x := min + float64(i)*d
 			y := f.F(x)
 			switch {

@@ -131,7 +131,7 @@ loop:
 				return fmt.Errorf("hepmc: could not decode N token: %w", err)
 			}
 			names := make(map[string]int, nWeights)
-			for i := 0; i < nWeights; i++ {
+			for i := range nWeights {
 				tok := tokens.next()
 				nn, err := strconv.Unquote(tok)
 				if err != nil {
@@ -198,7 +198,7 @@ loop:
 	pidxToEndVtx := make(map[int]int, nVtx) // particle-idx to end_vtx barcode
 
 	// decode the vertices
-	for i := 0; i < nVtx; i++ {
+	for i := range nVtx {
 		if i != 0 {
 			tokens, err = dec.readline()
 			if err != nil {
@@ -440,7 +440,7 @@ func (dec *Decoder) decodeEvent(evt *Event, nVtx *int, tokens tokens) error {
 	}
 
 	rndmStates := make([]int64, nRndm)
-	for i := 0; i < nRndm; i++ {
+	for i := range nRndm {
 		rndmStates[i], err = tokens.int64()
 		if err != nil {
 			return err
@@ -453,7 +453,7 @@ func (dec *Decoder) decodeEvent(evt *Event, nVtx *int, tokens tokens) error {
 	}
 
 	weights := make([]float64, nWeights)
-	for i := 0; i < nWeights; i++ {
+	for i := range nWeights {
 		weights[i], err = tokens.float64()
 		if err != nil {
 			return err
@@ -541,7 +541,7 @@ func (dec *Decoder) decodeVertex(evt *Event, vtx *Vertex, pidxToEndVtx map[int]i
 
 	// FIXME: reuse buffers ?
 	vtx.Weights.Slice = make([]float64, nWeights)
-	for i := 0; i < nWeights; i++ {
+	for i := range nWeights {
 		vtx.Weights.Slice[i], err = tokens.float64()
 		if err != nil {
 			return err
@@ -551,7 +551,7 @@ func (dec *Decoder) decodeVertex(evt *Event, vtx *Vertex, pidxToEndVtx map[int]i
 	// read and create the associated particles
 	// outgoing particles are added to their production vertices immediately.
 	// incoming particles are added to a map and handled later.
-	for i := 0; i < orphans; i++ {
+	for range orphans {
 		p := &Particle{}
 		tokens, err = dec.readline()
 		if err != nil {
@@ -565,7 +565,7 @@ func (dec *Decoder) decodeVertex(evt *Event, vtx *Vertex, pidxToEndVtx map[int]i
 	}
 	// FIXME: reuse buffers ?
 	vtx.ParticlesOut = make([]*Particle, nPartsOut)
-	for i := 0; i < nPartsOut; i++ {
+	for i := range nPartsOut {
 		p := &Particle{ProdVertex: vtx}
 		tokens, err = dec.readline()
 		if err != nil {
@@ -670,7 +670,7 @@ func (dec *Decoder) decodeFlow(flow *Flow, tokens *tokens) error {
 		return err
 	}
 	flow.Icode = make(map[int]int, nFlow)
-	for i := 0; i < nFlow; i++ {
+	for range nFlow {
 		k, err := tokens.int()
 		if err != nil {
 			return err
@@ -876,7 +876,7 @@ func (dec *Decoder) decodeASCII(evt *Event, nVtx *int, tokens tokens) error {
 	}
 
 	rndmStates := make([]int64, nRndm)
-	for i := 0; i < nRndm; i++ {
+	for i := range nRndm {
 		rndmStates[i], err = tokens.int64()
 		if err != nil {
 			return err
@@ -889,7 +889,7 @@ func (dec *Decoder) decodeASCII(evt *Event, nVtx *int, tokens tokens) error {
 	}
 
 	weights := make([]float64, nWeights)
-	for i := 0; i < nWeights; i++ {
+	for i := range nWeights {
 		weights[i], err = tokens.float64()
 		if err != nil {
 			return err

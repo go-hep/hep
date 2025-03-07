@@ -87,7 +87,7 @@ func Encode(w io.Writer, data *SLHA) error {
 		for _, item := range blk.Data {
 			v := item.Value
 			idx := item.Index.Index() //
-			args := make([]interface{}, 0, len(idx)+2)
+			args := make([]any, 0, len(idx)+2)
 			if blk.Name != "ALPHA" {
 				for _, v := range idx {
 					args = append(args, v)

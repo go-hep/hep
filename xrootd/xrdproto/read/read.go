@@ -90,7 +90,7 @@ func (o *OptionalArgs) UnmarshalXrd(rBuffer *xrdenc.RBuffer) error {
 		return nil
 	}
 	o.ReadAheads = make([]ReadAhead, (alen-8)/16)
-	for i := 0; i < len(o.ReadAheads); i++ {
+	for i := range o.ReadAheads {
 		err := o.ReadAheads[i].UnmarshalXrd(rBuffer)
 		if err != nil {
 			return err

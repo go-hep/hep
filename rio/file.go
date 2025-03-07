@@ -87,7 +87,7 @@ func (f *File) Keys() []RecordDesc {
 }
 
 // Get reads the value `name` into `ptr`
-func (f *File) Get(name string, ptr interface{}) error {
+func (f *File) Get(name string, ptr any) error {
 	offsets, ok := f.meta.Offsets[name]
 	if !ok {
 		return fmt.Errorf("rio: no record [%s]", name)

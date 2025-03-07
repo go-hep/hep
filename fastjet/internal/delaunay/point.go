@@ -7,6 +7,7 @@ package delaunay
 import (
 	"fmt"
 	"math"
+	"slices"
 
 	"go-hep.org/x/hep/fastjet/internal/predicates"
 )
@@ -311,11 +312,8 @@ func (ps points) remove(pts ...*Point) points {
 	out := make(points, 0, len(ps))
 	for _, p := range ps {
 		keep := true
-		for _, pt := range pts {
-			if p.Equals(pt) {
-				keep = false
-				break
-			}
+		if slices.ContainsFunc(pts, p.Equals) {
+			keep = false
 		}
 		if keep {
 			out = append(out, p)
@@ -330,7 +328,7 @@ func (ps points) remove(pts ...*Point) points {
 func (points points) polyArea() float64 {
 	var area float64
 	j := len(points) - 1
-	for i := 0; i < len(points); i++ {
+	for i := range points {
 		area += (points[j].x + points[i].x) * (points[j].y - points[i].y)
 		j = i
 	}

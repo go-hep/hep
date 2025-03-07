@@ -16,7 +16,7 @@ func TestRecord(t *testing.T) {
 	for _, tc := range []struct {
 		name   string
 		forder bool // Fortran order
-		want   interface{}
+		want   any
 	}{
 		{
 			name: "float64_4x3x2-c-order",

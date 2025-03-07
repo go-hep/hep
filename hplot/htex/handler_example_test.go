@@ -15,7 +15,7 @@ import (
 func ExampleGoHandler() {
 	hdlr := htex.NewGoHandler(-1, "pdflatex")
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		name := fmt.Sprintf("plot-%0d", i)
 		p := hplot.New()
 		p.Title.Text = name

@@ -145,7 +145,7 @@ key[000]: data;1 "" (go_hep_org::x::hep::groot::internal::rdatatest::T1) => &{he
 				t.Fatalf("could not recompile package with streamer data:\n%v\nerr: %v", out.String(), err)
 			}
 
-			err = os.WriteFile("testdata/run.go", []byte(fmt.Sprintf(`//go:build ignore
+			err = os.WriteFile("testdata/run.go", fmt.Appendf(nil, `//go:build ignore
 
 package main
 
@@ -175,7 +175,7 @@ func main() {
 	}
 }
 `, tc.tmpl,
-			)), 0644)
+			), 0644)
 
 			if err != nil {
 				t.Fatalf("could not generate test-write program: %v", err)

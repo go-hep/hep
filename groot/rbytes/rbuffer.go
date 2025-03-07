@@ -60,13 +60,13 @@ type RBuffer struct {
 	r      rbuff
 	err    error
 	offset uint32
-	refs   map[int64]interface{}
+	refs   map[int64]any
 	sictx  StreamerInfoContext
 }
 
-func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32, ctx StreamerInfoContext) *RBuffer {
+func NewRBuffer(data []byte, refs map[int64]any, offset uint32, ctx StreamerInfoContext) *RBuffer {
 	if refs == nil {
-		refs = make(map[int64]interface{})
+		refs = make(map[int64]any)
 	}
 
 	return &RBuffer{
@@ -77,7 +77,7 @@ func NewRBuffer(data []byte, refs map[int64]interface{}, offset uint32, ctx Stre
 	}
 }
 
-func (r *RBuffer) Reset(data []byte, refs map[int64]interface{}, offset uint32, ctx StreamerInfoContext) *RBuffer {
+func (r *RBuffer) Reset(data []byte, refs map[int64]any, offset uint32, ctx StreamerInfoContext) *RBuffer {
 	if r == nil {
 		return NewRBuffer(data, refs, offset, ctx)
 	}
@@ -266,7 +266,7 @@ func (r *RBuffer) ReadCString(n int) string {
 	}
 
 	buf := make([]byte, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		r.read(buf[i : i+1])
 		if buf[i] == 0 {
 			buf = buf[:i]
@@ -705,7 +705,7 @@ func (r *RBuffer) ReadObjectAny() (obj root.Object) {
 	}
 }
 
-func (r *RBuffer) RStream(si StreamerInfo, ptr interface{}) error {
+func (r *RBuffer) RStream(si StreamerInfo, ptr any) error {
 	const kind = ObjectWise
 	dec, err := si.NewDecoder(kind, r)
 	if err != nil {

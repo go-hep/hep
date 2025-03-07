@@ -23,7 +23,7 @@ func newDecoder(r *rbytes.RBuffer, si *StreamerInfo, kind rbytes.StreamKind, ops
 	return &decoder{r, si, kind, ops}, nil
 }
 
-func (dec *decoder) DecodeROOT(ptr interface{}) error {
+func (dec *decoder) DecodeROOT(ptr any) error {
 	rv := reflect.ValueOf(ptr)
 	if rv.Kind() != reflect.Ptr {
 		return fmt.Errorf("rdict: invalid kind (got=%T, want=pointer)", ptr)
@@ -62,7 +62,7 @@ var (
 )
 
 type rstreamerInfo struct {
-	recv interface{}
+	recv any
 	rops []rstreamer
 	kind rbytes.StreamKind
 	si   *StreamerInfo
@@ -77,7 +77,7 @@ func newRStreamerInfo(si *StreamerInfo, kind rbytes.StreamKind, rops []rstreamer
 	}, nil
 }
 
-func (rr *rstreamerInfo) Bind(recv interface{}) error {
+func (rr *rstreamerInfo) Bind(recv any) error {
 	rv := reflect.ValueOf(recv)
 	if rv.Kind() != reflect.Ptr {
 		return fmt.Errorf("rdict: invalid kind (got=%T, want=pointer)", recv)
@@ -86,7 +86,7 @@ func (rr *rstreamerInfo) Bind(recv interface{}) error {
 	if recv, ok := recv.(rbytes.Unmarshaler); ok && rr.kind == rbytes.ObjectWise {
 		// FIXME(sbinet): handle mbr-/obj-wise
 		rr.rops = []rstreamer{{
-			op: func(r *rbytes.RBuffer, _ interface{}, _ *streamerConfig) error {
+			op: func(r *rbytes.RBuffer, _ any, _ *streamerConfig) error {
 				return recv.UnmarshalROOT(r)
 			},
 			cfg: nil,

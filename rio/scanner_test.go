@@ -81,7 +81,7 @@ func TestScanner(t *testing.T) {
 
 func makeEvents(n int) []event {
 	evts := make([]event, 0, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		evts = append(evts, event{
 			runnbr: int64(1000 + n),
 			evtnbr: int64(10000 + n),

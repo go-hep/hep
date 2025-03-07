@@ -26,7 +26,7 @@ func NewFuncToU64(rvars []string, fct func() uint64) *FuncToU64 {
 func (f *FuncToU64) RVars() []string { return nil }
 
 // Bind implements rfunc.Formula
-func (f *FuncToU64) Bind(args []interface{}) error {
+func (f *FuncToU64) Bind(args []any) error {
 	if got, want := len(args), 0; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -37,7 +37,7 @@ func (f *FuncToU64) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncToU64) Func() interface{} {
+func (f *FuncToU64) Func() any {
 	return func() uint64 {
 		return f.fct()
 	}
@@ -66,7 +66,7 @@ func NewFuncU64ToU64(rvars []string, fct func(arg00 uint64) uint64) *FuncU64ToU6
 func (f *FuncU64ToU64) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncU64ToU64) Bind(args []interface{}) error {
+func (f *FuncU64ToU64) Bind(args []any) error {
 	if got, want := len(args), 1; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -87,7 +87,7 @@ func (f *FuncU64ToU64) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncU64ToU64) Func() interface{} {
+func (f *FuncU64ToU64) Func() any {
 	return func() uint64 {
 		return f.fct(
 			*f.arg0,
@@ -119,7 +119,7 @@ func NewFuncU64U64ToU64(rvars []string, fct func(arg00 uint64, arg01 uint64) uin
 func (f *FuncU64U64ToU64) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncU64U64ToU64) Bind(args []interface{}) error {
+func (f *FuncU64U64ToU64) Bind(args []any) error {
 	if got, want := len(args), 2; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -150,7 +150,7 @@ func (f *FuncU64U64ToU64) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncU64U64ToU64) Func() interface{} {
+func (f *FuncU64U64ToU64) Func() any {
 	return func() uint64 {
 		return f.fct(
 			*f.arg0,
@@ -184,7 +184,7 @@ func NewFuncU64U64U64ToU64(rvars []string, fct func(arg00 uint64, arg01 uint64, 
 func (f *FuncU64U64U64ToU64) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncU64U64U64ToU64) Bind(args []interface{}) error {
+func (f *FuncU64U64U64ToU64) Bind(args []any) error {
 	if got, want := len(args), 3; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -225,7 +225,7 @@ func (f *FuncU64U64U64ToU64) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncU64U64U64ToU64) Func() interface{} {
+func (f *FuncU64U64U64ToU64) Func() any {
 	return func() uint64 {
 		return f.fct(
 			*f.arg0,

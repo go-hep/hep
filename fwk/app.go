@@ -11,6 +11,7 @@ import (
 	"math"
 	"reflect"
 	"runtime"
+	"slices"
 	"sort"
 	"time"
 
@@ -21,7 +22,7 @@ type appmgr struct {
 	state fsm.State
 	name  string
 
-	props map[string]map[string]interface{}
+	props map[string]map[string]any
 	dflow *dflowsvc
 	store *datastore
 	msg   msgstream
@@ -47,7 +48,7 @@ func NewApp() App {
 	app = &appmgr{
 		state: fsm.Undefined,
 		name:  appname,
-		props: make(map[string]map[string]interface{}),
+		props: make(map[string]map[string]any),
 		dflow: nil,
 		store: nil,
 		msg: newMsgStream(
@@ -229,11 +230,11 @@ func (app *appmgr) Svcs() []Svc {
 	return app.svcs
 }
 
-func (app *appmgr) DeclProp(c Component, name string, ptr interface{}) error {
+func (app *appmgr) DeclProp(c Component, name string, ptr any) error {
 	cname := c.Name()
 	_, ok := app.props[cname]
 	if !ok {
-		app.props[cname] = make(map[string]interface{})
+		app.props[cname] = make(map[string]any)
 	}
 	switch reflect.TypeOf(ptr).Kind() {
 	case reflect.Ptr:
@@ -250,7 +251,7 @@ func (app *appmgr) DeclProp(c Component, name string, ptr interface{}) error {
 	return nil
 }
 
-func (app *appmgr) SetProp(c Component, name string, value interface{}) error {
+func (app *appmgr) SetProp(c Component, name string, value any) error {
 	cname := c.Name()
 	m, ok := app.props[cname]
 	if !ok {
@@ -279,7 +280,7 @@ func (app *appmgr) SetProp(c Component, name string, value interface{}) error {
 	return nil
 }
 
-func (app *appmgr) GetProp(c Component, name string) (interface{}, error) {
+func (app *appmgr) GetProp(c Component, name string) (any, error) {
 	cname := c.Name()
 	m, ok := app.props[cname]
 	if !ok {
@@ -632,7 +633,7 @@ func (app *appmgr) runConcurrent(ctx Context) error {
 	defer close(ostream.Quit)
 
 	workers := make([]worker, app.nprocs)
-	for i := 0; i < app.nprocs; i++ {
+	for i := range app.nprocs {
 		workers[i] = *newWorker(i, app, &ctrl)
 	}
 
@@ -732,7 +733,7 @@ func (app *appmgr) startInputStream() (StreamControl, error) {
 		app.istream = tsk
 	case 1:
 		app.istream = inputs[0]
-		app.tsks = append(app.tsks[:idx], app.tsks[idx+1:]...)
+		app.tsks = slices.Delete(app.tsks, idx, idx+1)
 		err := inputs[0].connect(ctrl)
 		if err != nil {
 			return ctrl, err

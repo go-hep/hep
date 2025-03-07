@@ -429,14 +429,14 @@ func (leaf *{{.Name}}) readFromBuffer(r *rbytes.RBuffer) error {
     return r.Err()
 }
 
-func (leaf *{{.Name}}) unsafeDecayArray(ptr interface{}) interface{} {
+func (leaf *{{.Name}}) unsafeDecayArray(ptr any) any {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / {{.GoLenType}}
 	sli := unsafe.Slice((*{{.Type}})(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
-func (leaf *{{.Name}}) setAddress(ptr interface{}) error {
+func (leaf *{{.Name}}) setAddress(ptr any) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}

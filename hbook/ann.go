@@ -17,7 +17,7 @@ import (
 )
 
 // Annotation is a bag of attributes that are attached to a histogram.
-type Annotation map[string]interface{}
+type Annotation map[string]any
 
 func (ann Annotation) clone() Annotation {
 	buf := new(bytes.Buffer)
@@ -90,7 +90,7 @@ func (ann *Annotation) unmarshalYODAv2(data []byte) error {
 
 // MarshalBinary implements encoding.BinaryMarshaler
 func (ann *Annotation) MarshalBinary() ([]byte, error) {
-	var v map[string]interface{} = *ann
+	var v map[string]any = *ann
 	buf := new(bytes.Buffer)
 	err := gob.NewEncoder(buf).Encode(v)
 	return buf.Bytes(), err
@@ -98,7 +98,7 @@ func (ann *Annotation) MarshalBinary() ([]byte, error) {
 
 // UnmarshalBinary implements encoding.BinaryUnmarshaler
 func (ann *Annotation) UnmarshalBinary(data []byte) error {
-	var v = make(map[string]interface{})
+	var v = make(map[string]any)
 	buf := bytes.NewReader(data)
 	err := gob.NewDecoder(buf).Decode(&v)
 	if err != nil {

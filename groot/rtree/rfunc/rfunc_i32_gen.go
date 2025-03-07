@@ -26,7 +26,7 @@ func NewFuncToI32(rvars []string, fct func() int32) *FuncToI32 {
 func (f *FuncToI32) RVars() []string { return nil }
 
 // Bind implements rfunc.Formula
-func (f *FuncToI32) Bind(args []interface{}) error {
+func (f *FuncToI32) Bind(args []any) error {
 	if got, want := len(args), 0; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -37,7 +37,7 @@ func (f *FuncToI32) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncToI32) Func() interface{} {
+func (f *FuncToI32) Func() any {
 	return func() int32 {
 		return f.fct()
 	}
@@ -66,7 +66,7 @@ func NewFuncI32ToI32(rvars []string, fct func(arg00 int32) int32) *FuncI32ToI32 
 func (f *FuncI32ToI32) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncI32ToI32) Bind(args []interface{}) error {
+func (f *FuncI32ToI32) Bind(args []any) error {
 	if got, want := len(args), 1; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -87,7 +87,7 @@ func (f *FuncI32ToI32) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncI32ToI32) Func() interface{} {
+func (f *FuncI32ToI32) Func() any {
 	return func() int32 {
 		return f.fct(
 			*f.arg0,
@@ -119,7 +119,7 @@ func NewFuncI32I32ToI32(rvars []string, fct func(arg00 int32, arg01 int32) int32
 func (f *FuncI32I32ToI32) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncI32I32ToI32) Bind(args []interface{}) error {
+func (f *FuncI32I32ToI32) Bind(args []any) error {
 	if got, want := len(args), 2; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -150,7 +150,7 @@ func (f *FuncI32I32ToI32) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncI32I32ToI32) Func() interface{} {
+func (f *FuncI32I32ToI32) Func() any {
 	return func() int32 {
 		return f.fct(
 			*f.arg0,
@@ -184,7 +184,7 @@ func NewFuncI32I32I32ToI32(rvars []string, fct func(arg00 int32, arg01 int32, ar
 func (f *FuncI32I32I32ToI32) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncI32I32I32ToI32) Bind(args []interface{}) error {
+func (f *FuncI32I32I32ToI32) Bind(args []any) error {
 	if got, want := len(args), 3; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -225,7 +225,7 @@ func (f *FuncI32I32I32ToI32) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncI32I32I32ToI32) Func() interface{} {
+func (f *FuncI32I32I32ToI32) Func() any {
 	return func() int32 {
 		return f.fct(
 			*f.arg0,

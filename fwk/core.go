@@ -124,9 +124,9 @@ type Scripter interface {
 
 // PropMgr manages properties attached to components.
 type PropMgr interface {
-	DeclProp(c Component, name string, ptr interface{}) error
-	SetProp(c Component, name string, value interface{}) error
-	GetProp(c Component, name string) (interface{}, error)
+	DeclProp(c Component, name string, ptr any) error
+	SetProp(c Component, name string, value any) error
+	GetProp(c Component, name string) (any, error)
 	HasProp(c Component, name string) bool
 }
 
@@ -134,15 +134,15 @@ type PropMgr interface {
 // Properties of a given component can be modified
 // by a job-option or by other components.
 type Property interface {
-	DeclProp(name string, ptr interface{}) error
-	SetProp(name string, value interface{}) error
-	GetProp(name string) (interface{}, error)
+	DeclProp(name string, ptr any) error
+	SetProp(name string, value any) error
+	GetProp(name string) (any, error)
 }
 
-// Store provides access to a concurrent-safe map[string]interface{} store.
+// Store provides access to a concurrent-safe map[string]any store.
 type Store interface {
-	Get(key string) (interface{}, error)
-	Put(key string, value interface{}) error
+	Get(key string) (any, error)
+	Put(key string, value any) error
 	Has(key string) bool
 }
 
@@ -211,12 +211,12 @@ func (lvl Level) String() string {
 
 // MsgStream provides access to verbosity-defined formated messages, a la fmt.Printf.
 type MsgStream interface {
-	Debugf(format string, a ...interface{})
-	Infof(format string, a ...interface{})
-	Warnf(format string, a ...interface{})
-	Errorf(format string, a ...interface{})
+	Debugf(format string, a ...any)
+	Infof(format string, a ...any)
+	Warnf(format string, a ...any)
+	Errorf(format string, a ...any)
 
-	Msg(lvl Level, format string, a ...interface{})
+	Msg(lvl Level, format string, a ...any)
 }
 
 // Deleter prepares values to be GC-reclaimed

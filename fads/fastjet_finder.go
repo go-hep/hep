@@ -37,7 +37,7 @@ type FastJetFinder struct {
 	overlapThreshold float64
 
 	// fastjet area method ---
-	areaDef    interface{}
+	areaDef    any
 	areaAlg    int
 	computeRho bool
 

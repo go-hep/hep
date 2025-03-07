@@ -23,7 +23,7 @@ func TestP1D(t *testing.T) {
 
 	p.Annotation()["name"] = "p1d"
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		v := float64(i)
 		p.Fill(v, v*2, 1)
 	}
@@ -97,7 +97,7 @@ func TestP1DWriteYODA(t *testing.T) {
 		t.Fatalf("nil pointer to P1D")
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		v := float64(i)
 		p.Fill(v, v*2, 1)
 	}
@@ -188,7 +188,7 @@ func TestP1DSerialization(t *testing.T) {
 		t.Fatalf("nil pointer to P1D")
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		v := float64(i)
 		pref.Fill(v, v*2, 1)
 	}

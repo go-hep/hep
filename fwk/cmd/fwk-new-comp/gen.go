@@ -18,7 +18,7 @@ func gen_svc(c Component) error {
 	return gen(os.Stdout, g_svc_template, c)
 }
 
-func gen(w io.Writer, text string, data interface{}) error {
+func gen(w io.Writer, text string, data any) error {
 	t := template.Must(template.New("fwk").Parse(text))
 	return t.Execute(w, data)
 }

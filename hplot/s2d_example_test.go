@@ -37,7 +37,7 @@ func ExampleS2D() {
 	v := make([]float64, 2)
 	// Draw some random values from the standard
 	// normal distribution.
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v = dist.Rand(v)
 		s2d.Fill(hbook.Point2D{X: v[0], Y: v[1]})
 	}

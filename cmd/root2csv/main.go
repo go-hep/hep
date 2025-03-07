@@ -163,8 +163,8 @@ func processTree(oname, fname string, tree rtree.Tree) error {
 		return fmt.Errorf("could not write CSV header: %w", err)
 	}
 
-	row := make([]interface{}, len(nt.cols))
-	for irow := 0; irow < nrows; irow++ {
+	row := make([]any, len(nt.cols))
+	for irow := range nrows {
 		for i, col := range nt.cols {
 			row[i] = col.slice.Index(irow).Interface()
 		}
@@ -186,7 +186,7 @@ type ntuple struct {
 	n    int64
 	cols []column
 	args []rtree.ReadVar
-	vars []interface{}
+	vars []any
 }
 
 func (nt *ntuple) add(name string, leaf rtree.Leaf) {
@@ -262,7 +262,7 @@ func processGraph(oname, fname string, g rhist.Graph) error {
 	}
 
 	n := g.Len()
-	for i := 0; i < n; i++ {
+	for i := range n {
 		var (
 			x, y = g.XY(i)
 		)
@@ -300,7 +300,7 @@ func processGraphErrors(oname, fname string, g rhist.GraphErrors) error {
 	}
 
 	n := g.Len()
-	for i := 0; i < n; i++ {
+	for i := range n {
 		var (
 			x, y     = g.XY(i)
 			xlo, xhi = g.XError(i)

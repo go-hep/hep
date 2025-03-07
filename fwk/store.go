@@ -9,7 +9,7 @@ import (
 	"reflect"
 )
 
-type achan chan interface{}
+type achan chan any
 
 // datastore stores (event) data and provides concurrent-safe access to it.
 type datastore struct {
@@ -22,7 +22,7 @@ func (ds *datastore) Configure(ctx Context) error {
 	return nil
 }
 
-func (ds *datastore) Get(k string) (interface{}, error) {
+func (ds *datastore) Get(k string) (any, error) {
 	ch, ok := ds.store[k]
 	if !ok {
 		return nil, fmt.Errorf("Store.Get: no such key [%v]", k)
@@ -39,7 +39,7 @@ func (ds *datastore) Get(k string) (interface{}, error) {
 	}
 }
 
-func (ds *datastore) Put(k string, v interface{}) error {
+func (ds *datastore) Put(k string, v any) error {
 	select {
 	case ds.store[k] <- v:
 		return nil

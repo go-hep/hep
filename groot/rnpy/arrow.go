@@ -136,10 +136,10 @@ func (rec *Record) read(r *npy.Reader, nelem int64, bldr array.Builder) {
 		panic(fmt.Errorf("npy2root: could not read numpy data: %w", err))
 	}
 
-	ch := make(chan interface{}, nelem/2)
+	ch := make(chan any, nelem/2)
 	go func() {
 		defer close(ch)
-		for i := 0; i < rv.Len(); i++ {
+		for i := range rv.Len() {
 			ch <- rv.Index(i).Interface()
 		}
 	}()
@@ -306,7 +306,7 @@ func dtypeFrom(dt arrow.DataType) reflect.Type {
 	}
 }
 
-func appendData(bldr array.Builder, ch <-chan interface{}, dt arrow.DataType) {
+func appendData(bldr array.Builder, ch <-chan any, dt arrow.DataType) {
 	switch bldr := bldr.(type) {
 	case *array.BooleanBuilder:
 		v := <-ch
@@ -347,7 +347,7 @@ func appendData(bldr array.Builder, ch <-chan interface{}, dt arrow.DataType) {
 		n := int(dt.Len())
 		sub.Reserve(n)
 		bldr.Append(true)
-		for i := 0; i < n; i++ {
+		for range n {
 			appendData(sub, ch, dt.Elem())
 		}
 	default:

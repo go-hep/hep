@@ -182,9 +182,9 @@ func (st *schemaType) Decl() string {
 	return strings.Join(o, ", ")
 }
 
-func (st *schemaType) Args() ([]driver.NamedValue, []interface{}) {
+func (st *schemaType) Args() ([]driver.NamedValue, []any) {
 	vargs := make([]driver.NamedValue, len(*st))
-	pargs := make([]interface{}, len(*st))
+	pargs := make([]any, len(*st))
 	for i, v := range *st {
 		ptr := reflect.New(v.v.Type())
 		vargs[i] = driver.NamedValue{

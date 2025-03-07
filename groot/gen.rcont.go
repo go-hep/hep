@@ -135,11 +135,11 @@ func (arr *{{.Name}}) At(i int) {{.Type}} {
 	return arr.Data[i]
 }
 
-func (arr *{{.Name}}) Get(i int) interface{} {
+func (arr *{{.Name}}) Get(i int) any {
 	return arr.Data[i]
 }
 
-func (arr *{{.Name}}) Set(i int, v interface{}) {
+func (arr *{{.Name}}) Set(i int, v any) {
 	arr.Data[i] = v.({{.Type}})
 }
 

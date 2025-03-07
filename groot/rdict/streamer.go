@@ -58,7 +58,7 @@ func (bld *streamerBuilder) genStreamer(typ reflect.Type) rbytes.StreamerInfo {
 	switch typ.Kind() {
 	case reflect.Struct:
 		si.elems = make([]rbytes.StreamerElement, 0, typ.NumField())
-		for i := 0; i < typ.NumField(); i++ {
+		for i := range typ.NumField() {
 			ft := typ.Field(i)
 			si.elems = append(si.elems, bld.genField(typ, ft))
 		}
@@ -757,7 +757,7 @@ func typenameOf(typ reflect.Type) string {
 			dims []int
 			et   = typ
 		)
-		for i := 0; i < 10; i++ {
+		for range 10 {
 			dims = append(dims, et.Len())
 			et = et.Elem()
 			if et.Kind() != reflect.Array {

@@ -29,7 +29,7 @@ func NewFuncI32ToF64(rvars []string, fct func(arg00 int32) float64) *FuncI32ToF6
 func (f *FuncI32ToF64) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncI32ToF64) Bind(args []interface{}) error {
+func (f *FuncI32ToF64) Bind(args []any) error {
 	if got, want := len(args), 1; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -50,7 +50,7 @@ func (f *FuncI32ToF64) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncI32ToF64) Func() interface{} {
+func (f *FuncI32ToF64) Func() any {
 	return func() float64 {
 		return f.fct(
 			*f.arg0,
@@ -81,7 +81,7 @@ func NewFuncF32ToF64(rvars []string, fct func(arg00 float32) float64) *FuncF32To
 func (f *FuncF32ToF64) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncF32ToF64) Bind(args []interface{}) error {
+func (f *FuncF32ToF64) Bind(args []any) error {
 	if got, want := len(args), 1; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -102,7 +102,7 @@ func (f *FuncF32ToF64) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncF32ToF64) Func() interface{} {
+func (f *FuncF32ToF64) Func() any {
 	return func() float64 {
 		return f.fct(
 			*f.arg0,
@@ -130,7 +130,7 @@ func NewFuncToF64(rvars []string, fct func() float64) *FuncToF64 {
 func (f *FuncToF64) RVars() []string { return nil }
 
 // Bind implements rfunc.Formula
-func (f *FuncToF64) Bind(args []interface{}) error {
+func (f *FuncToF64) Bind(args []any) error {
 	if got, want := len(args), 0; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -141,7 +141,7 @@ func (f *FuncToF64) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncToF64) Func() interface{} {
+func (f *FuncToF64) Func() any {
 	return func() float64 {
 		return f.fct()
 	}
@@ -170,7 +170,7 @@ func NewFuncF64ToF64(rvars []string, fct func(arg00 float64) float64) *FuncF64To
 func (f *FuncF64ToF64) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncF64ToF64) Bind(args []interface{}) error {
+func (f *FuncF64ToF64) Bind(args []any) error {
 	if got, want := len(args), 1; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -191,7 +191,7 @@ func (f *FuncF64ToF64) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncF64ToF64) Func() interface{} {
+func (f *FuncF64ToF64) Func() any {
 	return func() float64 {
 		return f.fct(
 			*f.arg0,
@@ -223,7 +223,7 @@ func NewFuncF64F64ToF64(rvars []string, fct func(arg00 float64, arg01 float64) f
 func (f *FuncF64F64ToF64) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncF64F64ToF64) Bind(args []interface{}) error {
+func (f *FuncF64F64ToF64) Bind(args []any) error {
 	if got, want := len(args), 2; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -254,7 +254,7 @@ func (f *FuncF64F64ToF64) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncF64F64ToF64) Func() interface{} {
+func (f *FuncF64F64ToF64) Func() any {
 	return func() float64 {
 		return f.fct(
 			*f.arg0,
@@ -288,7 +288,7 @@ func NewFuncF64F64F64ToF64(rvars []string, fct func(arg00 float64, arg01 float64
 func (f *FuncF64F64F64ToF64) RVars() []string { return f.rvars }
 
 // Bind implements rfunc.Formula
-func (f *FuncF64F64F64ToF64) Bind(args []interface{}) error {
+func (f *FuncF64F64F64ToF64) Bind(args []any) error {
 	if got, want := len(args), 3; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -329,7 +329,7 @@ func (f *FuncF64F64F64ToF64) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *FuncF64F64F64ToF64) Func() interface{} {
+func (f *FuncF64F64F64ToF64) Func() any {
 	return func() float64 {
 		return f.fct(
 			*f.arg0,

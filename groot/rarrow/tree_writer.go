@@ -64,7 +64,7 @@ func (fw *flatTreeWriter) Write(rec array.Record) error {
 		}
 	}
 
-	for irow := 0; irow < nrows; irow++ {
+	for irow := range nrows {
 		for icol, col := range rec.Columns() {
 			wvar := &fw.ctx.wvars[icol]
 			err := fw.ctx.readFrom(wvar, irow, col)
@@ -271,7 +271,7 @@ func (ctx *contextWriter) readFrom(wvar *rtree.WriteVar, irow int, arr array.Int
 		ptr := &rtree.WriteVar{
 			Name: "_rarrow_elem_" + wvar.Name,
 		}
-		for i := 0; i < rv.Len(); i++ {
+		for i := range rv.Len() {
 			ptr.Value = rv.Index(i).Addr().Interface()
 			err := ctx.readFrom(ptr, i, ra)
 			if err != nil {
@@ -310,7 +310,7 @@ func (ctx *contextWriter) readFrom(wvar *rtree.WriteVar, irow int, arr array.Int
 		ptr := &rtree.WriteVar{
 			Name: "_rarrow_elem_" + wvar.Name,
 		}
-		for i := 0; i < sli.Len(); i++ {
+		for i := range sli.Len() {
 			ptr.Value = rv.Index(i).Addr().Interface()
 			err := ctx.readFrom(ptr, i, sli)
 			if err != nil {

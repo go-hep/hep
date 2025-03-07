@@ -133,7 +133,7 @@ Loop:
 	d.Run.XMAXUP = f64[2*n:]
 	d.Run.LPRUP = make([]int32, n)
 
-	for i := 0; i < n; i++ {
+	for i := range n {
 		_, err = fmt.Fscanf(
 			buf,
 			"%f %f %f %d\n",
@@ -258,7 +258,7 @@ func (d *Decoder) Decode() (*HEPEUP, error) {
 	f64 := make([]float64, 2*n)
 	evt.VTIMUP = f64[:n:n]
 	evt.SPINUP = f64[n:]
-	for i := 0; i < n; i++ {
+	for i := range n {
 		_, err = fmt.Fscanf(
 			buf,
 			"%d %d %d %d %d %d %f %f %f %f %f %f %f\n",

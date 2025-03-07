@@ -258,7 +258,7 @@ func TestTypenameOf(t *testing.T) {
 		},
 		{
 			name: "struct-event",
-			typ: reflect.TypeOf(func() interface{} {
+			typ: reflect.TypeOf(func() any {
 				type Event struct{}
 				return Event{}
 			}()),

@@ -23,8 +23,8 @@ func genData2D(n0, n1 int, f func(x, ps []float64) float64, ps []float64, x0min,
 		x1step = (x1max - x1min) / float64(n1)
 		p      = make([]float64, len(ps))
 	)
-	for i := 0; i < n0; i++ {
-		for j := 0; j < n1; j++ {
+	for i := range n0 {
+		for j := range n1 {
 			x := []float64{x0min + x0step*float64(i), x1min + x1step*float64(j)}
 			for k := range p {
 				v := rnd.NormFloat64()

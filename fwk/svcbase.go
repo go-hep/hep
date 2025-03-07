@@ -39,17 +39,17 @@ func (svc *SvcBase) Name() string {
 
 // DeclProp declares this service has a property named n,
 // and takes a pointer to the associated value.
-func (svc *SvcBase) DeclProp(n string, ptr interface{}) error {
+func (svc *SvcBase) DeclProp(n string, ptr any) error {
 	return svc.mgr.DeclProp(svc, n, ptr)
 }
 
 // SetProp sets the property name n with the value v.
-func (svc *SvcBase) SetProp(name string, value interface{}) error {
+func (svc *SvcBase) SetProp(name string, value any) error {
 	return svc.mgr.SetProp(svc, name, value)
 }
 
 // GetProp returns the value of the property named n.
-func (svc *SvcBase) GetProp(name string) (interface{}, error) {
+func (svc *SvcBase) GetProp(name string) (any, error) {
 	return svc.mgr.GetProp(svc, name)
 }
 

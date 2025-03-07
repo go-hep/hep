@@ -239,7 +239,7 @@ func TestWriteWBuffer(t *testing.T) {
 	}
 }
 
-func testWriteWBuffer(t *testing.T, name, file string, want interface{}) {
+func testWriteWBuffer(t *testing.T, name, file string, want any) {
 	rdata, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
@@ -306,7 +306,7 @@ func TestReadRBuffer(t *testing.T) {
 	}
 }
 
-func testReadRBuffer(t *testing.T, name, file string, want interface{}) {
+func testReadRBuffer(t *testing.T, name, file string, want any) {
 	data, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)

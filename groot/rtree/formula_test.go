@@ -19,9 +19,9 @@ func TestFormulaFunc(t *testing.T) {
 		fname    string
 		tname    string
 		rvars    int
-		fct      interface{}
+		fct      any
 		branches []string
-		want     []interface{}
+		want     []any
 		err      error
 	}{
 		{
@@ -30,7 +30,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(x int32) int32 { return x },
 			branches: []string{"one"},
-			want:     []interface{}{int32(1), int32(2)},
+			want:     []any{int32(1), int32(2)},
 		},
 		{
 			fname: "../testdata/simple.root",
@@ -40,7 +40,7 @@ func TestFormulaFunc(t *testing.T) {
 				return float64(x1) + float64(x2*100)
 			},
 			branches: []string{"one", "two"},
-			want:     []interface{}{float64(111), float64(222)},
+			want:     []any{float64(111), float64(222)},
 		},
 		{
 			fname: "../testdata/simple.root",
@@ -50,7 +50,7 @@ func TestFormulaFunc(t *testing.T) {
 				return float64(x1) + float64(x2*100)
 			},
 			branches: []string{"one", "two"},
-			want:     []interface{}{float64(111), float64(222)},
+			want:     []any{float64(111), float64(222)},
 		},
 		{
 			fname: "../testdata/simple.root",
@@ -60,7 +60,7 @@ func TestFormulaFunc(t *testing.T) {
 				return float64(x1) + float64(x2*100)
 			},
 			branches: []string{"one", "two"},
-			want:     []interface{}{float64(111), float64(222)},
+			want:     []any{float64(111), float64(222)},
 		},
 		{
 			fname: "../testdata/simple.root",
@@ -70,7 +70,7 @@ func TestFormulaFunc(t *testing.T) {
 				return x1 * x1
 			},
 			branches: []string{"one"},
-			want:     []interface{}{int32(1), int32(4)},
+			want:     []any{int32(1), int32(4)},
 		},
 		{
 			fname: "../testdata/simple.root",
@@ -80,7 +80,7 @@ func TestFormulaFunc(t *testing.T) {
 				return math.Sqrt(float64(x1 * x1))
 			},
 			branches: []string{"one"},
-			want:     []interface{}{float64(1), float64(2)},
+			want:     []any{float64(1), float64(2)},
 		},
 		{
 			fname: "../testdata/simple.root",
@@ -90,7 +90,7 @@ func TestFormulaFunc(t *testing.T) {
 				return fmt.Sprintf("%d", x1)
 			},
 			branches: []string{"one"},
-			want:     []interface{}{"1", "2"},
+			want:     []any{"1", "2"},
 		},
 		{
 			fname: "../testdata/leaves.root",
@@ -100,7 +100,7 @@ func TestFormulaFunc(t *testing.T) {
 				return x
 			},
 			branches: []string{"ArrU64"},
-			want:     []interface{}{[10]uint64{}, [10]uint64{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
+			want:     []any{[10]uint64{}, [10]uint64{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
 		},
 		{
 			fname: "../testdata/leaves.root",
@@ -110,7 +110,7 @@ func TestFormulaFunc(t *testing.T) {
 				return x[0]
 			},
 			branches: []string{"ArrU64"},
-			want:     []interface{}{uint64(0), uint64(1)},
+			want:     []any{uint64(0), uint64(1)},
 		},
 		{
 			fname: "../testdata/leaves.root",
@@ -124,7 +124,7 @@ func TestFormulaFunc(t *testing.T) {
 				return o
 			},
 			branches: []string{"SliF32"},
-			want:     []interface{}{[]float64{}, []float64{2}},
+			want:     []any{[]float64{}, []float64{2}},
 		},
 		{
 			fname: "../testdata/small-evnt-tree-fullsplit.root",
@@ -138,7 +138,7 @@ func TestFormulaFunc(t *testing.T) {
 				return o
 			},
 			branches: []string{"evt.SliceF32"},
-			want:     []interface{}{[]float64{}, []float64{2}},
+			want:     []any{[]float64{}, []float64{2}},
 		},
 		{
 			fname: "../testdata/small-evnt-tree-fullsplit.root",
@@ -152,7 +152,7 @@ func TestFormulaFunc(t *testing.T) {
 				return o
 			},
 			branches: []string{"evt.StlVecF32"},
-			want:     []interface{}{[]float64{}, []float64{2}},
+			want:     []any{[]float64{}, []float64{2}},
 		},
 		{
 			fname: "../testdata/embedded-std-vector.root",
@@ -166,7 +166,7 @@ func TestFormulaFunc(t *testing.T) {
 				return o
 			},
 			branches: []string{"hits_time_mc"},
-			want: []interface{}{
+			want: []any{
 				[]float64{
 					24.412797927856445, 23.422243118286133,
 					23.469839096069336, 24.914079666137695,
@@ -192,7 +192,7 @@ func TestFormulaFunc(t *testing.T) {
 				return x
 			},
 			branches: []string{"D16"},
-			want:     []interface{}{root.Float16(0.0), root.Float16(1.0)},
+			want:     []any{root.Float16(0.0), root.Float16(1.0)},
 		},
 		{
 			fname: "../testdata/leaves.root",
@@ -202,7 +202,7 @@ func TestFormulaFunc(t *testing.T) {
 				return x
 			},
 			branches: []string{"D32"},
-			want:     []interface{}{root.Double32(0.0), root.Double32(1.0)},
+			want:     []any{root.Double32(0.0), root.Double32(1.0)},
 		},
 		{
 			fname: "../testdata/leaves.root",
@@ -212,7 +212,7 @@ func TestFormulaFunc(t *testing.T) {
 				return x[0]
 			},
 			branches: []string{"ArrD32"},
-			want:     []interface{}{root.Double32(0), root.Double32(1)},
+			want:     []any{root.Double32(0), root.Double32(1)},
 		},
 		{
 			fname: "../testdata/leaves.root",
@@ -222,7 +222,7 @@ func TestFormulaFunc(t *testing.T) {
 				return float64(x1) + float64(len(x2))
 			},
 			branches: []string{"D32", "SliI64"},
-			want:     []interface{}{0.0, 2.0},
+			want:     []any{0.0, 2.0},
 		},
 		{
 			fname: "../testdata/leaves.root",
@@ -232,7 +232,7 @@ func TestFormulaFunc(t *testing.T) {
 				return 42.0
 			},
 			branches: nil,
-			want:     []interface{}{42.0, 42.0},
+			want:     []any{42.0, 42.0},
 		},
 		{
 			fname:    "../testdata/leaves.root",
@@ -240,7 +240,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(v bool) bool { return v },
 			branches: []string{"B"},
-			want:     []interface{}{true, false},
+			want:     []any{true, false},
 		},
 		{
 			fname:    "../testdata/leaves.root",
@@ -248,7 +248,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(v int8) int8 { return v },
 			branches: []string{"I8"},
-			want:     []interface{}{int8(0), int8(-1)},
+			want:     []any{int8(0), int8(-1)},
 		},
 		{
 			fname:    "../testdata/leaves.root",
@@ -256,7 +256,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(v int16) int16 { return v },
 			branches: []string{"I16"},
-			want:     []interface{}{int16(0), int16(-1)},
+			want:     []any{int16(0), int16(-1)},
 		},
 		{
 			fname:    "../testdata/leaves.root",
@@ -264,7 +264,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(v int32) int32 { return v },
 			branches: []string{"I32"},
-			want:     []interface{}{int32(0), int32(-1)},
+			want:     []any{int32(0), int32(-1)},
 		},
 		{
 			fname:    "../testdata/leaves.root",
@@ -272,7 +272,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(v int64) int64 { return v },
 			branches: []string{"I64"},
-			want:     []interface{}{int64(0), int64(-1)},
+			want:     []any{int64(0), int64(-1)},
 		},
 		{
 			fname:    "../testdata/leaves.root",
@@ -280,7 +280,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(v uint8) uint8 { return v },
 			branches: []string{"U8"},
-			want:     []interface{}{uint8(0), uint8(1)},
+			want:     []any{uint8(0), uint8(1)},
 		},
 		{
 			fname:    "../testdata/leaves.root",
@@ -288,7 +288,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(v uint16) uint16 { return v },
 			branches: []string{"U16"},
-			want:     []interface{}{uint16(0), uint16(1)},
+			want:     []any{uint16(0), uint16(1)},
 		},
 		{
 			fname:    "../testdata/leaves.root",
@@ -296,7 +296,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(v uint32) uint32 { return v },
 			branches: []string{"U32"},
-			want:     []interface{}{uint32(0), uint32(1)},
+			want:     []any{uint32(0), uint32(1)},
 		},
 		{
 			fname:    "../testdata/leaves.root",
@@ -304,7 +304,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(v uint64) uint64 { return v },
 			branches: []string{"U64"},
-			want:     []interface{}{uint64(0), uint64(1)},
+			want:     []any{uint64(0), uint64(1)},
 		},
 		{
 			fname:    "../testdata/leaves.root",
@@ -312,7 +312,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(v float32) float32 { return v },
 			branches: []string{"F32"},
-			want:     []interface{}{float32(0), float32(1)},
+			want:     []any{float32(0), float32(1)},
 		},
 		{
 			fname:    "../testdata/leaves.root",
@@ -320,7 +320,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(v float64) float64 { return v },
 			branches: []string{"F64"},
-			want:     []interface{}{float64(0), float64(1)},
+			want:     []any{float64(0), float64(1)},
 		},
 		{
 			fname:    "../testdata/leaves.root",
@@ -328,7 +328,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(v string) string { return v },
 			branches: []string{"Str"},
-			want:     []interface{}{"str-0", "str-1"},
+			want:     []any{"str-0", "str-1"},
 		},
 		{
 			fname:    "../testdata/leaves.root",
@@ -336,7 +336,7 @@ func TestFormulaFunc(t *testing.T) {
 			rvars:    -1,
 			fct:      func(v string) [1]string { return [1]string{v} },
 			branches: []string{"Str"},
-			want:     []interface{}{[1]string{"str-0"}, [1]string{"str-1"}},
+			want:     []any{[1]string{"str-0"}, [1]string{"str-1"}},
 		},
 		{
 			fname:    "../testdata/simple.root",
@@ -466,7 +466,7 @@ var sumBenchFormulaFunc float64
 func BenchmarkFormulaFunc(b *testing.B) {
 	for _, tc := range []struct {
 		name string
-		fct  interface{}
+		fct  any
 		brs  []string
 	}{
 		{

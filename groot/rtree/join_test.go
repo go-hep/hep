@@ -337,12 +337,9 @@ func TestJoin(t *testing.T) {
 			}
 			{
 				rvars := NewReadVars(tree)
-				n := len(tc.rvars)
-				if len(rvars) < n {
-					n = len(rvars)
-				}
+				n := min(len(rvars), len(tc.rvars))
 
-				for i := 0; i < n; i++ {
+				for i := range n {
 					got := rvars[i]
 					want := tc.rvars[i]
 					if got.Name != want.Name {
@@ -362,12 +359,9 @@ func TestJoin(t *testing.T) {
 			}
 			{
 				brs := tree.Branches()
-				n := len(tc.brs)
-				if len(brs) < n {
-					n = len(brs)
-				}
+				n := min(len(brs), len(tc.brs))
 
-				for i := 0; i < n; i++ {
+				for i := range n {
 					if got, want := brs[i].Name(), tc.brs[i]; got != want {
 						t.Fatalf("invalid branch name[%d]: got=%q, want=%q", i, got, want)
 					}
@@ -392,12 +386,9 @@ func TestJoin(t *testing.T) {
 			}
 			{
 				lvs := tree.Leaves()
-				n := len(tc.lvs)
-				if len(lvs) < n {
-					n = len(lvs)
-				}
+				n := min(len(lvs), len(tc.lvs))
 
-				for i := 0; i < n; i++ {
+				for i := range n {
 					if got, want := lvs[i].Name(), tc.lvs[i]; got != want {
 						t.Fatalf("invalid leaf name[%d]: got=%q, want=%q", i, got, want)
 					}

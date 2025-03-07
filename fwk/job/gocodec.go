@@ -33,7 +33,7 @@ type GoEncoder struct {
 }
 
 // Encode encodes data into the underlying io.Writer
-func (enc *GoEncoder) Encode(data interface{}) error {
+func (enc *GoEncoder) Encode(data any) error {
 	var err error
 	stmts, ok := data.([]Stmt)
 	if !ok {
@@ -164,7 +164,7 @@ func newApp() *job.Job {
 
 		case StmtSetProp:
 			var key string
-			var val interface{}
+			var val any
 			for k, v := range stmt.Data.Props {
 				key = k
 				val = v
@@ -204,7 +204,7 @@ func (enc *GoEncoder) repr(props P) []byte {
 	return buf.Bytes()
 }
 
-func (enc *GoEncoder) value(v interface{}) string {
+func (enc *GoEncoder) value(v any) string {
 	typ := reflect.TypeOf(v)
 	prop := ""
 	switch typ.Kind() {

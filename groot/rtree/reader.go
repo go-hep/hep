@@ -167,7 +167,7 @@ func (r *Reader) Reset(opts ...ReadOption) error {
 
 // FormulaFunc creates a new formula based on the provided function and
 // the list of branches as inputs.
-func (r *Reader) FormulaFunc(branches []string, fct interface{}) (rfunc.Formula, error) {
+func (r *Reader) FormulaFunc(branches []string, fct any) (rfunc.Formula, error) {
 	f, err := rfunc.NewGenericFormula(branches, fct)
 	if err != nil {
 		return nil, fmt.Errorf("rtree: could not create formula: %w", err)
@@ -284,7 +284,7 @@ func newRTree(t *ttree, rvars []ReadVar, n int, beg, end int64) *rtree {
 		leaf := t.Branch(rvar.Name).Leaf(rvar.Leaf).LeafCount()
 		name := leaf.Branch().Name() + "." + leaf.Name()
 		if _, ok := usr[name]; !ok {
-			var ptr interface{}
+			var ptr any
 			switch leaf := leaf.(type) {
 			case *LeafB:
 				ptr = new(int8)

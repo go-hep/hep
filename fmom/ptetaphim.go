@@ -102,11 +102,8 @@ func (p4 *PtEtaPhiM) CosTh() float64 {
 
 func (p4 *PtEtaPhiM) SinTh() float64 {
 	eta := p4.Eta()
-	abseta := math.Abs(eta)
 	// avoid numeric overflow if very large eta
-	if abseta > 710 {
-		abseta = 710
-	}
+	abseta := min(math.Abs(eta), 710)
 	return 1 / math.Cosh(abseta)
 }
 

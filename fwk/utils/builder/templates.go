@@ -65,7 +65,7 @@ func main() {
 `
 )
 
-func render(w io.Writer, text string, data interface{}) error {
+func render(w io.Writer, text string, data any) error {
 	t := template.New("fwk-main")
 	t.Funcs(template.FuncMap{
 		"trim":       strings.TrimSpace,

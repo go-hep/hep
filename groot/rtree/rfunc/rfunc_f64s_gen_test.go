@@ -26,20 +26,20 @@ func TestFuncF32sToF64s(t *testing.T) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
 	}
 
-	ptrs := make([]interface{}, 1)
+	ptrs := make([]any, 1)
 	ptrs[0] = new([]float32)
 
 	{
-		bad := make([]interface{}, len(ptrs))
+		bad := make([]any, len(ptrs))
 		copy(bad, ptrs)
 		for i := len(ptrs) - 1; i >= 0; i-- {
-			bad[i] = interface{}(nil)
+			bad[i] = any(nil)
 			err := form.Bind(bad)
 			if err == nil {
 				t.Fatalf("expected an error for empty iface")
 			}
 		}
-		bad = append(bad, interface{}(nil))
+		bad = append(bad, any(nil))
 		err := form.Bind(bad)
 		if err == nil {
 			t.Fatalf("expected an error for invalid args length")
@@ -72,20 +72,20 @@ func TestFuncF64sToF64s(t *testing.T) {
 		t.Fatalf("invalid rvars: got=%#v, want=%#v", got, want)
 	}
 
-	ptrs := make([]interface{}, 1)
+	ptrs := make([]any, 1)
 	ptrs[0] = new([]float64)
 
 	{
-		bad := make([]interface{}, len(ptrs))
+		bad := make([]any, len(ptrs))
 		copy(bad, ptrs)
 		for i := len(ptrs) - 1; i >= 0; i-- {
-			bad[i] = interface{}(nil)
+			bad[i] = any(nil)
 			err := form.Bind(bad)
 			if err == nil {
 				t.Fatalf("expected an error for empty iface")
 			}
 		}
-		bad = append(bad, interface{}(nil))
+		bad = append(bad, any(nil))
 		err := form.Bind(bad)
 		if err == nil {
 			t.Fatalf("expected an error for invalid args length")

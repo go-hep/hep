@@ -163,13 +163,13 @@ func genRFuncName(sig *types.Signature) string {
 	}
 
 	params := sig.Params()
-	for i := 0; i < params.Len(); i++ {
+	for i := range params.Len() {
 		o.WriteString(code(params.At(i).Type()))
 	}
 	res := sig.Results()
 	if res.Len() > 0 {
 		o.WriteString("To")
-		for i := 0; i < res.Len(); i++ {
+		for i := range res.Len() {
 			o.WriteString(code(res.At(i).Type()))
 		}
 	}
@@ -417,7 +417,7 @@ func (f *{{.Type}}) RVars() []string { return nil }
 {{end}}
 
 // Bind implements rfunc.Formula
-func (f *{{.Type}}) Bind(args []interface{}) error {
+func (f *{{.Type}}) Bind(args []any) error {
 	if got, want := len(args), {{.NumIn}}; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -440,7 +440,7 @@ func (f *{{.Type}}) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *{{.Type}}) Func() interface{} {
+func (f *{{.Type}}) Func() any {
 	return func() {{.Return}} {
 		return f.fct(
 {{- range $i, $typ := .In}}
@@ -476,26 +476,26 @@ const rfuncTestTmpl = `func Test{{.Type}}(t *testing.T) {
 	}
 
 {{if gt .NumIn 0}}
-	ptrs := make([]interface{}, {{.NumIn}})
+	ptrs := make([]any, {{.NumIn}})
 {{- range $i, $typ := .In}}
 	ptrs[{{$i}}] = new({{$typ}})
 {{- end}}
 {{else}}
-	var ptrs []interface{}
+	var ptrs []any
 {{- end}}
 
 {{if gt .NumIn 0}}
 	{
-		bad := make([]interface{}, len(ptrs))
+		bad := make([]any, len(ptrs))
 		copy(bad, ptrs)
 		for i := len(ptrs)-1; i >= 0; i-- {
-			bad[i] = interface{}(nil)
+			bad[i] = any(nil)
 			err := form.Bind(bad)
 			if err == nil {
 				t.Fatalf("expected an error for empty iface")
 			}
 		}
-		bad = append(bad, interface{}(nil))
+		bad = append(bad, any(nil))
 		err := form.Bind(bad)
 		if err == nil {
 			t.Fatalf("expected an error for invalid args length")
@@ -503,7 +503,7 @@ const rfuncTestTmpl = `func Test{{.Type}}(t *testing.T) {
 	}
 {{- else}}
 	{
-		bad := make([]interface{}, 1)
+		bad := make([]any, 1)
 		err := form.Bind(bad)
 		if err == nil {
 			t.Fatalf("expected an error for invalid args length")

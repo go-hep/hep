@@ -30,7 +30,7 @@ func ExampleH2D() {
 	v := make([]float64, 2)
 	// Draw some random values from the standard
 	// normal distribution.
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v = dist.Rand(v)
 		h.Fill(v[0], v[1], 1)
 	}

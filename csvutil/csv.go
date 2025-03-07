@@ -28,7 +28,7 @@ func min(a, b int) int {
 	return b
 }
 
-func formatValue(val interface{}, quotes bool, recBuilder *strings.Builder) error {
+func formatValue(val any, quotes bool, recBuilder *strings.Builder) error {
 	rv := reflect.Indirect(reflect.ValueOf(val))
 	rt := rv.Type()
 	switch rt.Kind() {
@@ -48,7 +48,7 @@ func formatValue(val interface{}, quotes bool, recBuilder *strings.Builder) erro
 		}
 	case reflect.Slice:
 		recBuilder.WriteString("[")
-		for i := 0; i < rv.Len(); i++ {
+		for i := range rv.Len() {
 			if i > 0 {
 				recBuilder.WriteString(", ")
 			}
@@ -177,7 +177,7 @@ func (tbl *Table) WriteHeader(hdr string) error {
 }
 
 // WriteRow writes the data into the columns at the current row.
-func (tbl *Table) WriteRow(args ...interface{}) error {
+func (tbl *Table) WriteRow(args ...any) error {
 	var err error
 	if tbl.Writer == nil {
 		return fmt.Errorf("csvutil: Table is not in write mode")
@@ -206,7 +206,7 @@ func (tbl *Table) WriteRow(args ...interface{}) error {
 	return err
 }
 
-func (tbl *Table) write(args ...interface{}) error {
+func (tbl *Table) write(args ...any) error {
 	rec := make([]string, len(args))
 	var recBuilder strings.Builder
 	for i, arg := range args {
@@ -222,7 +222,7 @@ func (tbl *Table) write(args ...interface{}) error {
 
 func (tbl *Table) writeStruct(rv reflect.Value) error {
 	rt := rv.Type()
-	args := make([]interface{}, rt.NumField())
+	args := make([]any, rt.NumField())
 	for i := range args {
 		args[i] = rv.Field(i).Interface()
 	}
@@ -278,7 +278,7 @@ func (rows *Rows) Fields() []string {
 // dest can be either:
 // - a pointer to a struct value (whose fields will be filled with column values)
 // - a slice of values
-func (rows *Rows) Scan(dest ...interface{}) error {
+func (rows *Rows) Scan(dest ...any) error {
 	var err error
 	defer func() {
 		rows.err = err
@@ -304,10 +304,10 @@ func (rows *Rows) Scan(dest ...interface{}) error {
 	return err
 }
 
-func (rows *Rows) scan(args ...interface{}) error {
+func (rows *Rows) scan(args ...any) error {
 	var err error
 	n := min(len(rows.record), len(args))
-	for i := 0; i < n; i++ {
+	for i := range n {
 		rec := rows.record[i]
 		rv := reflect.ValueOf(args[i]).Elem()
 		rt := reflect.TypeOf(args[i]).Elem()
@@ -353,8 +353,8 @@ func (rows *Rows) scan(args ...interface{}) error {
 
 func (rows *Rows) scanStruct(rv reflect.Value) error {
 	rt := rv.Type()
-	args := make([]interface{}, rt.NumField())
-	for i := 0; i < rt.NumField(); i++ {
+	args := make([]any, rt.NumField())
+	for i := range rt.NumField() {
 		args[i] = rv.Field(i).Addr().Interface()
 	}
 	return rows.scan(args...)

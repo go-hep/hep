@@ -104,7 +104,7 @@ func (g *genStreamer) init() error {
 	return nil
 }
 
-func (g *genStreamer) printf(format string, args ...interface{}) {
+func (g *genStreamer) printf(format string, args ...any) {
 	fmt.Fprintf(g.buf, format, args...)
 }
 
@@ -154,7 +154,7 @@ func (o *%[1]s) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 	)
 
 	typ := t.Underlying().(*types.Struct)
-	for i := 0; i < typ.NumFields(); i++ {
+	for i := range typ.NumFields() {
 		ft := typ.Field(i)
 		n := ft.Name() // no `groot:"foo"` redirection.
 		g.genMarshalType(ft.Type(), n)
@@ -191,7 +191,7 @@ func (g *genStreamer) genStreamer(t types.Type, typeName string) {
 	)
 
 	typ := t.Underlying().(*types.Struct)
-	for i := 0; i < typ.NumFields(); i++ {
+	for i := range typ.NumFields() {
 		ft := typ.Field(i)
 		n := ft.Name()
 		if tag := typ.Tag(i); tag != "" {

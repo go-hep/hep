@@ -39,7 +39,7 @@ var (
 // executes it via ROOT C++.
 // RunCxxROOT returns the combined stdout/stderr output and an error, if any.
 // If 'fct' ends with a '+', RunCxxROOT will run the macro through ACliC.
-func RunCxxROOT(fct string, code []byte, args ...interface{}) ([]byte, error) {
+func RunCxxROOT(fct string, code []byte, args ...any) ([]byte, error) {
 	aclic := ""
 	if strings.HasSuffix(fct, "+") {
 		aclic = "+"

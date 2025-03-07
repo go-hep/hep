@@ -18,7 +18,7 @@ type (
 	idealUint  uint64
 )
 
-func coerce(a, b interface{}) (x, y interface{}) {
+func coerce(a, b any) (x, y any) {
 	if reflect.TypeOf(a) == reflect.TypeOf(b) {
 		return a, b
 	}
@@ -46,7 +46,7 @@ func coerce(a, b interface{}) (x, y interface{}) {
 	}
 }
 
-func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
+func coerce1(inVal, otherVal any) (coercedInVal any) {
 	coercedInVal = inVal
 	if otherVal == nil {
 		return

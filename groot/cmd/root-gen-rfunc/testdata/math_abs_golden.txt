@@ -19,7 +19,7 @@ func (f *MyAbs) RVars() []string { return f.rvars }
 
 
 // Bind implements rfunc.Formula
-func (f *MyAbs) Bind(args []interface{}) error {
+func (f *MyAbs) Bind(args []any) error {
 	if got, want := len(args), 1; got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -40,7 +40,7 @@ func (f *MyAbs) Bind(args []interface{}) error {
 }
 
 // Func implements rfunc.Formula
-func (f *MyAbs) Func() interface{} {
+func (f *MyAbs) Func() any {
 	return func()  float64 {
 		return f.fct(
 			*f.arg0,

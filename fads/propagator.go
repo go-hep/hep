@@ -189,10 +189,7 @@ func (tsk *Propagator) Process(ctx fwk.Context) error {
 
 			output = append(output, *c)
 			if math.Abs(q) > 1e-9 {
-				pid := c.Pid
-				if pid < 0 {
-					pid = 0
-				}
+				pid := max(c.Pid, 0)
 				switch pid {
 				case 11:
 					eles = append(eles, *c)
@@ -306,10 +303,7 @@ func (tsk *Propagator) Process(ctx fwk.Context) error {
 
 				output = append(output, *c)
 				if math.Abs(q) > 1e-9 {
-					pid := c.Pid
-					if pid < 0 {
-						pid = 0
-					}
+					pid := max(c.Pid, 0)
 					switch pid {
 					case 11:
 						eles = append(eles, *c)

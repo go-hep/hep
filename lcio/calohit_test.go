@@ -40,7 +40,7 @@ func testRWCalo(t *testing.T, compLevel int, fname string) {
 		CALHITSERR = "CalorimeterHitsWithEnergyError"
 	)
 
-	for i := 0; i < nevents; i++ {
+	for i := range nevents {
 		evt := lcio.Event{
 			RunNumber:   4711,
 			EventNumber: int32(i),
@@ -50,7 +50,7 @@ func testRWCalo(t *testing.T, compLevel int, fname string) {
 			calhits    = lcio.CalorimeterHitContainer{Flags: lcio.BitsRChLong}
 			calhitsErr = lcio.CalorimeterHitContainer{Flags: lcio.BitsRChLong | lcio.BitsRChEnergyError}
 		)
-		for j := 0; j < nhits; j++ {
+		for j := range nhits {
 			hit := lcio.CalorimeterHit{
 				CellID0:   int32(i*100000 + j),
 				Energy:    float32(i*j) + 117,
@@ -85,7 +85,7 @@ func testRWCalo(t *testing.T, compLevel int, fname string) {
 	}
 	defer r.Close()
 
-	for i := 0; i < nevents; i++ {
+	for i := range nevents {
 		if !r.Next() {
 			t.Errorf("%s: error reading event %d", fname, i)
 			return
@@ -114,7 +114,7 @@ func testRWCalo(t *testing.T, compLevel int, fname string) {
 		calhits := evt.Get(CALHITS).(*lcio.CalorimeterHitContainer)
 		calhitsErr := evt.Get(CALHITSERR).(*lcio.CalorimeterHitContainer)
 
-		for j := 0; j < nhits; j++ {
+		for j := range nhits {
 			got := calhits.Hits[j]
 			want := lcio.CalorimeterHit{
 				CellID0: int32(i*100000 + j),

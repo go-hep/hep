@@ -13,7 +13,7 @@ import (
 // FIXME B/op is higher here, than for PQ
 func BenchmarkHeap(b *testing.B) {
 	var items []*pair
-	for i := 0; i < 5000; i++ {
+	for range 5000 {
 		jeti := rand.Int()
 		jetj := rand.Int()
 		dij := rand.Float64()
@@ -34,7 +34,7 @@ func BenchmarkHeap(b *testing.B) {
 
 func BenchmarkPQ(b *testing.B) {
 	var items []*pair
-	for i := 0; i < 5000; i++ {
+	for range 5000 {
 		jeti := rand.Int()
 		jetj := rand.Int()
 		dij := rand.Float64()
@@ -148,12 +148,12 @@ func (pq PQ) Swap(i, j int) {
 	pq[i], pq[j] = pq[j], pq[i]
 }
 
-func (pq *PQ) Push(x interface{}) {
+func (pq *PQ) Push(x any) {
 	item := x.(*pair)
 	*pq = append(*pq, item)
 }
 
-func (pq *PQ) Pop() interface{} {
+func (pq *PQ) Pop() any {
 	old := *pq
 	n := len(old)
 	item := old[n-1]

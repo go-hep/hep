@@ -67,9 +67,9 @@ func TestH2MinMax(t *testing.T) {
 			{2, 1}: 1,
 			{2, 2}: 2,
 		}
-		for i := 0; i < n; i++ {
+		for i := range n {
 			ix := float64(i)
-			for j := 0; j < n; j++ {
+			for j := range n {
 				iy := float64(j)
 				p := pair{i, j}
 				v := ws[p]

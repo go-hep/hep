@@ -23,7 +23,7 @@ func TestParallelMaxPar(t *testing.T) {
 	n := 0
 	tot := 0
 	r := parallel.NewRun(maxPar)
-	for i := 0; i < totalDo; i++ {
+	for range totalDo {
 		r.Do(func() error {
 			mu.Lock()
 			tot++
@@ -66,7 +66,7 @@ func TestParallelError(t *testing.T) {
 		errDo   = 5
 	)
 	r := parallel.NewRun(6)
-	for i := 0; i < totalDo; i++ {
+	for i := range totalDo {
 		i := i
 		if i >= errDo {
 			r.Do(func() error {

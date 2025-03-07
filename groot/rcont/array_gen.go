@@ -37,11 +37,11 @@ func (arr *ArrayC) At(i int) int8 {
 	return arr.Data[i]
 }
 
-func (arr *ArrayC) Get(i int) interface{} {
+func (arr *ArrayC) Get(i int) any {
 	return arr.Data[i]
 }
 
-func (arr *ArrayC) Set(i int, v interface{}) {
+func (arr *ArrayC) Set(i int, v any) {
 	arr.Data[i] = v.(int8)
 }
 
@@ -105,11 +105,11 @@ func (arr *ArrayS) At(i int) int16 {
 	return arr.Data[i]
 }
 
-func (arr *ArrayS) Get(i int) interface{} {
+func (arr *ArrayS) Get(i int) any {
 	return arr.Data[i]
 }
 
-func (arr *ArrayS) Set(i int, v interface{}) {
+func (arr *ArrayS) Set(i int, v any) {
 	arr.Data[i] = v.(int16)
 }
 
@@ -173,11 +173,11 @@ func (arr *ArrayI) At(i int) int32 {
 	return arr.Data[i]
 }
 
-func (arr *ArrayI) Get(i int) interface{} {
+func (arr *ArrayI) Get(i int) any {
 	return arr.Data[i]
 }
 
-func (arr *ArrayI) Set(i int, v interface{}) {
+func (arr *ArrayI) Set(i int, v any) {
 	arr.Data[i] = v.(int32)
 }
 
@@ -241,11 +241,11 @@ func (arr *ArrayL) At(i int) int64 {
 	return arr.Data[i]
 }
 
-func (arr *ArrayL) Get(i int) interface{} {
+func (arr *ArrayL) Get(i int) any {
 	return arr.Data[i]
 }
 
-func (arr *ArrayL) Set(i int, v interface{}) {
+func (arr *ArrayL) Set(i int, v any) {
 	arr.Data[i] = v.(int64)
 }
 
@@ -309,11 +309,11 @@ func (arr *ArrayL64) At(i int) int64 {
 	return arr.Data[i]
 }
 
-func (arr *ArrayL64) Get(i int) interface{} {
+func (arr *ArrayL64) Get(i int) any {
 	return arr.Data[i]
 }
 
-func (arr *ArrayL64) Set(i int, v interface{}) {
+func (arr *ArrayL64) Set(i int, v any) {
 	arr.Data[i] = v.(int64)
 }
 
@@ -377,11 +377,11 @@ func (arr *ArrayF) At(i int) float32 {
 	return arr.Data[i]
 }
 
-func (arr *ArrayF) Get(i int) interface{} {
+func (arr *ArrayF) Get(i int) any {
 	return arr.Data[i]
 }
 
-func (arr *ArrayF) Set(i int, v interface{}) {
+func (arr *ArrayF) Set(i int, v any) {
 	arr.Data[i] = v.(float32)
 }
 
@@ -445,11 +445,11 @@ func (arr *ArrayD) At(i int) float64 {
 	return arr.Data[i]
 }
 
-func (arr *ArrayD) Get(i int) interface{} {
+func (arr *ArrayD) Get(i int) any {
 	return arr.Data[i]
 }
 
-func (arr *ArrayD) Set(i int, v interface{}) {
+func (arr *ArrayD) Set(i int, v any) {
 	arr.Data[i] = v.(float64)
 }
 

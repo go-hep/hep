@@ -52,7 +52,7 @@ func (enc *encoder) encode(v any) error {
 		if err != nil {
 			return err
 		}
-		for i := 0; i < rv.Len(); i++ {
+		for i := range rv.Len() {
 			if i > 0 {
 				_, err := w.Write([]byte(","))
 				if err != nil {

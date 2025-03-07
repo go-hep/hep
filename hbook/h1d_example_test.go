@@ -26,7 +26,7 @@ func ExampleH1D() {
 	// Draw some random values from the standard
 	// normal distribution.
 	h := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		h.Fill(v, 1)
 	}
@@ -70,7 +70,7 @@ func ExampleAddH1D() {
 
 	hsum := hbook.AddH1D(h1, h2)
 	fmt.Printf("Under: %.1f +/- %.1f\n", hsum.Binning.Outflows[0].SumW(), math.Sqrt(hsum.Binning.Outflows[0].SumW2()))
-	for i := 0; i < hsum.Len(); i++ {
+	for i := range hsum.Len() {
 		fmt.Printf("Bin %v: %.1f +/- %.1f\n", i, hsum.Binning.Bins[i].SumW(), math.Sqrt(hsum.Binning.Bins[i].SumW2()))
 	}
 	fmt.Printf("Over : %.1f +/- %.1f\n", hsum.Binning.Outflows[1].SumW(), math.Sqrt(hsum.Binning.Outflows[1].SumW2()))
@@ -110,7 +110,7 @@ func ExampleAddScaledH1D() {
 
 	hsum := hbook.AddScaledH1D(h1, 10, h2)
 	fmt.Printf("Under: %.1f +/- %.1f\n", hsum.Binning.Outflows[0].SumW(), math.Sqrt(hsum.Binning.Outflows[0].SumW2()))
-	for i := 0; i < hsum.Len(); i++ {
+	for i := range hsum.Len() {
 		fmt.Printf("Bin %v: %.1f +/- %.1f\n", i, hsum.Binning.Bins[i].SumW(), math.Sqrt(hsum.Binning.Bins[i].SumW2()))
 	}
 	fmt.Printf("Over : %.1f +/- %.1f\n", hsum.Binning.Outflows[1].SumW(), math.Sqrt(hsum.Binning.Outflows[1].SumW2()))

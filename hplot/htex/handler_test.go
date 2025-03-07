@@ -67,7 +67,7 @@ func TestGoHandler(t *testing.T) {
 
 			fig := hplot.Figure(p, hplot.WithLatexHandler(tc.latex))
 
-			for i := 0; i < 10; i++ {
+			for i := range 10 {
 				fname := fmt.Sprintf("%s/%s-%02d.tex", tmp, name, i)
 				defer os.RemoveAll(fname)
 

@@ -23,15 +23,15 @@ import (
 )
 
 func TestTypeString(t *testing.T) {
-	graph := make(map[interface{}][]interface{})
-	graph["1"] = []interface{}{"2"}
-	graph["2"] = []interface{}{"3"}
-	graph["3"] = []interface{}{"1"}
-	graph["4"] = []interface{}{"2", "3", "5"}
-	graph["5"] = []interface{}{"4", "6"}
-	graph["6"] = []interface{}{"3", "7"}
-	graph["7"] = []interface{}{"6"}
-	graph["8"] = []interface{}{"5", "7", "8"}
+	graph := make(map[any][]any)
+	graph["1"] = []any{"2"}
+	graph["2"] = []any{"3"}
+	graph["3"] = []any{"1"}
+	graph["4"] = []any{"2", "3", "5"}
+	graph["5"] = []any{"4", "6"}
+	graph["6"] = []any{"3", "7"}
+	graph["7"] = []any{"6"}
+	graph["8"] = []any{"5", "7", "8"}
 
 	o := Connections(graph)
 	output := sortConnections(o)
@@ -47,15 +47,15 @@ func TestTypeString(t *testing.T) {
 }
 
 func TestTypeInt(t *testing.T) {
-	graph := make(map[interface{}][]interface{})
-	graph[1] = []interface{}{2}
-	graph[2] = []interface{}{3}
-	graph[3] = []interface{}{1}
-	graph[4] = []interface{}{2, 3, 5}
-	graph[5] = []interface{}{4, 6}
-	graph[6] = []interface{}{3, 7}
-	graph[7] = []interface{}{6}
-	graph[8] = []interface{}{5, 7, 8}
+	graph := make(map[any][]any)
+	graph[1] = []any{2}
+	graph[2] = []any{3}
+	graph[3] = []any{1}
+	graph[4] = []any{2, 3, 5}
+	graph[5] = []any{4, 6}
+	graph[6] = []any{3, 7}
+	graph[7] = []any{6}
+	graph[8] = []any{5, 7, 8}
 
 	o := Connections(graph)
 	output := sortConnections(o)
@@ -71,15 +71,15 @@ func TestTypeInt(t *testing.T) {
 }
 
 func TestTypeMixed(t *testing.T) {
-	graph := make(map[interface{}][]interface{})
-	graph[1] = []interface{}{2}
-	graph[2] = []interface{}{"3"}
-	graph["3"] = []interface{}{1}
-	graph[4] = []interface{}{2, "3", 5}
-	graph[5] = []interface{}{4, "6"}
-	graph["6"] = []interface{}{"3", 7}
-	graph[7] = []interface{}{"6"}
-	graph[8] = []interface{}{5, 7, 8}
+	graph := make(map[any][]any)
+	graph[1] = []any{2}
+	graph[2] = []any{"3"}
+	graph["3"] = []any{1}
+	graph[4] = []any{2, "3", 5}
+	graph[5] = []any{4, "6"}
+	graph["6"] = []any{"3", 7}
+	graph[7] = []any{"6"}
+	graph[8] = []any{5, 7, 8}
 
 	o := Connections(graph)
 	output := sortConnections(o)
@@ -95,7 +95,7 @@ func TestTypeMixed(t *testing.T) {
 }
 
 func TestEmptyGraph(t *testing.T) {
-	graph := make(map[interface{}][]interface{})
+	graph := make(map[any][]any)
 
 	output := Connections(graph)
 	if len(output) != 0 {
@@ -104,8 +104,8 @@ func TestEmptyGraph(t *testing.T) {
 }
 
 func TestSingleVertex(t *testing.T) {
-	graph := make(map[interface{}][]interface{})
-	graph["1"] = []interface{}{}
+	graph := make(map[any][]any)
+	graph["1"] = []any{}
 
 	o := Connections(graph)
 	output := sortConnections(o)
@@ -115,8 +115,8 @@ func TestSingleVertex(t *testing.T) {
 }
 
 func TestSingleVertexLoop(t *testing.T) {
-	graph := make(map[interface{}][]interface{})
-	graph["1"] = []interface{}{"1"}
+	graph := make(map[any][]any)
+	graph["1"] = []any{"1"}
 
 	o := Connections(graph)
 	output := sortConnections(o)
@@ -126,10 +126,10 @@ func TestSingleVertexLoop(t *testing.T) {
 }
 
 func TestMultipleVertexLoop(t *testing.T) {
-	graph := make(map[interface{}][]interface{})
-	graph["1"] = []interface{}{"2"}
-	graph["2"] = []interface{}{"3"}
-	graph["3"] = []interface{}{"1"}
+	graph := make(map[any][]any)
+	graph["1"] = []any{"2"}
+	graph["2"] = []any{"3"}
+	graph["3"] = []any{"1"}
 
 	o := Connections(graph)
 	output := sortConnections(o)
@@ -145,15 +145,15 @@ func TestMultipleVertexLoop(t *testing.T) {
 }
 
 func ExampleConnections() {
-	graph := make(map[interface{}][]interface{})
-	graph["1"] = []interface{}{"2"}
-	graph["2"] = []interface{}{"3"}
-	graph["3"] = []interface{}{"1"}
-	graph["4"] = []interface{}{"2", "3", "5"}
-	graph["5"] = []interface{}{"4", "6"}
-	graph["6"] = []interface{}{"3", "7"}
-	graph["7"] = []interface{}{"6"}
-	graph["8"] = []interface{}{"5", "7", "8"}
+	graph := make(map[any][]any)
+	graph["1"] = []any{"2"}
+	graph["2"] = []any{"3"}
+	graph["3"] = []any{"1"}
+	graph["4"] = []any{"2", "3", "5"}
+	graph["5"] = []any{"4", "6"}
+	graph["6"] = []any{"3", "7"}
+	graph["7"] = []any{"6"}
+	graph["8"] = []any{"5", "7", "8"}
 
 	o := Connections(graph)
 	output := sortConnections(o)
@@ -163,7 +163,7 @@ func ExampleConnections() {
 	// [[1 2 3] [6 7] [4 5] [8]]
 }
 
-func sortConnections(connections [][]interface{}) [][]string {
+func sortConnections(connections [][]any) [][]string {
 	out := make([][]string, 0, len(connections))
 	for _, cons := range connections {
 		slice := make([]string, 0, len(cons))

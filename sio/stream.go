@@ -390,10 +390,10 @@ func (stream *Stream) WriteRecord(record *Record) error {
 	return err
 }
 
-func (stream *Stream) read(data interface{}) error {
+func (stream *Stream) read(data any) error {
 	return binary.Read(stream.f, binary.BigEndian, data)
 }
 
-func (stream *Stream) write(data interface{}) error {
+func (stream *Stream) write(data any) error {
 	return binary.Write(stream.f, binary.BigEndian, data)
 }

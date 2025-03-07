@@ -90,7 +90,7 @@ func TestTClonesArrayRW(t *testing.T) {
 				if g, w := got.Last(), want.Last(); g != w {
 					return false
 				}
-				for i := 0; i < got.Len(); i++ {
+				for i := range got.Len() {
 					if g, w := got.At(i), want.At(i); !reflect.DeepEqual(g, w) {
 						return false
 					}

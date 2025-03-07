@@ -91,7 +91,7 @@ func Example_writeStruct() {
 		log.Fatalf("error writing header: %v\n", err)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		data := struct {
 			I int
 			F float64
@@ -127,7 +127,7 @@ func Example_writeSlice() {
 		log.Fatalf("error writing header: %v\n", err)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		var (
 			f = float64(i)
 			s = fmt.Sprintf("str-%d", i)

@@ -151,7 +151,7 @@ func TestDecoderFail(t *testing.T) {
 }
 
 func TestEncoderFail(t *testing.T) {
-	for i := 0; i < 256; i++ {
+	for i := range 256 {
 		nbytes := i
 		t.Run("", func(t *testing.T) {
 			w := newWriter(nbytes)

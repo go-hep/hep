@@ -33,7 +33,7 @@ func TestHbookSvcSeq(t *testing.T) {
 
 	app := newapp(nentries, 0)
 
-	for i := 0; i < nhists; i++ {
+	for i := range nhists {
 		app.Create(job.C{
 			Type:  "go-hep.org/x/hep/fwk/hbooksvc.testhsvc",
 			Name:  fmt.Sprintf("t%03d", i),
@@ -64,7 +64,7 @@ func TestHbookSvcConc(t *testing.T) {
 		app := newapp(nentries, nprocs)
 		app.Infof("=== nprocs: %d ===\n", nprocs)
 
-		for i := 0; i < nhists; i++ {
+		for i := range nhists {
 			app.Create(job.C{
 				Type:  "go-hep.org/x/hep/fwk/hbooksvc.testhsvc",
 				Name:  fmt.Sprintf("t%03d", i),

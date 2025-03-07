@@ -285,7 +285,7 @@ func appendData(bldr array.Builder, v rtree.ReadVar, dt arrow.DataType) {
 		v := reflect.ValueOf(v.Value).Elem()
 		sub.Reserve(v.Len())
 		bldr.Append(true)
-		for i := 0; i < v.Len(); i++ {
+		for i := range v.Len() {
 			appendValue(sub, v.Index(i).Interface())
 		}
 
@@ -294,14 +294,14 @@ func appendData(bldr array.Builder, v rtree.ReadVar, dt arrow.DataType) {
 		v := reflect.ValueOf(v.Value).Elem()
 		sub.Reserve(v.Len())
 		bldr.Append(true)
-		for i := 0; i < v.Len(); i++ {
+		for i := range v.Len() {
 			appendValue(sub, v.Index(i).Interface())
 		}
 
 	case *array.StructBuilder:
 		bldr.Append(true)
 		v := reflect.ValueOf(v.Value).Elem()
-		for i := 0; i < bldr.NumField(); i++ {
+		for i := range bldr.NumField() {
 			f := bldr.FieldBuilder(i)
 			appendValue(f, v.Field(i).Interface())
 		}
@@ -311,7 +311,7 @@ func appendData(bldr array.Builder, v rtree.ReadVar, dt arrow.DataType) {
 	}
 }
 
-func appendValue(bldr array.Builder, v interface{}) {
+func appendValue(bldr array.Builder, v any) {
 	switch b := bldr.(type) {
 	case *array.BooleanBuilder:
 		b.Append(v.(bool))
@@ -352,7 +352,7 @@ func appendValue(bldr array.Builder, v interface{}) {
 		b.Append(true)
 		sub := b.ValueBuilder()
 		v := reflect.ValueOf(v)
-		for i := 0; i < v.Len(); i++ {
+		for i := range v.Len() {
 			appendValue(sub, v.Index(i).Interface())
 		}
 
@@ -360,14 +360,14 @@ func appendValue(bldr array.Builder, v interface{}) {
 		b.Append(true)
 		sub := b.ValueBuilder()
 		v := reflect.ValueOf(v)
-		for i := 0; i < v.Len(); i++ {
+		for i := range v.Len() {
 			appendValue(sub, v.Index(i).Interface())
 		}
 
 	case *array.StructBuilder:
 		b.Append(true)
 		v := reflect.ValueOf(v)
-		for i := 0; i < b.NumField(); i++ {
+		for i := range b.NumField() {
 			f := b.FieldBuilder(i)
 			appendValue(f, v.Field(i).Interface())
 		}

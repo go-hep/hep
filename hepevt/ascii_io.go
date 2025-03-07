@@ -26,7 +26,7 @@ func (enc *Encoder) Encode(evt *Event) error {
 		return fmt.Errorf("could not encode event header line: %w", err)
 	}
 
-	for i := 0; i < evt.Nhep; i++ {
+	for i := range evt.Nhep {
 		_, err = fmt.Fprintf(
 			enc.w,
 			"%d %d %d %d %d %d %E %E %E %E %E %E %E %E %E\n",
@@ -82,7 +82,7 @@ func (dec *Decoder) Decode(evt *Event) error {
 		evt.Vhep = append(evt.Vhep, make([][4]float64, sz)...)
 	}
 
-	for i := 0; i < evt.Nhep; i++ {
+	for i := range evt.Nhep {
 		_, err = fmt.Fscanf(
 			dec.r,
 			"%d %d %d %d %d %d %E %E %E %E %E %E %E %E %E\n",

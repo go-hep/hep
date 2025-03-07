@@ -90,7 +90,7 @@ func newBkReader(b Branch, n int, beg, end int64) *bkreader {
 		}
 	}
 
-	for i := 0; i < n; i++ {
+	for range n {
 		bkr.reuse <- bkReq{bkt: new(rbasket), err: nil}
 	}
 

@@ -6,7 +6,7 @@ package job
 
 // Encoder encodes data into the underlying io.Writer
 type Encoder interface {
-	Encode(data interface{}) error
+	Encode(data any) error
 }
 
 // Save saves a job's configuration description using the Encoder enc.
@@ -16,7 +16,7 @@ func Save(stmts []Stmt, enc Encoder) error {
 
 // Decoder decodes data from the unerlying io.Reader
 type Decoder interface {
-	Decode(ptr interface{}) error
+	Decode(ptr any) error
 }
 
 // Load loads a job's configuration description using the Decoder dec.

@@ -129,14 +129,14 @@ func (leaf *LeafO) readFromBuffer(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafO) unsafeDecayArray(ptr interface{}) interface{} {
+func (leaf *LeafO) unsafeDecayArray(ptr any) any {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 1
 	sli := unsafe.Slice((*bool)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
-func (leaf *LeafO) setAddress(ptr interface{}) error {
+func (leaf *LeafO) setAddress(ptr any) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
@@ -336,14 +336,14 @@ func (leaf *LeafB) readFromBuffer(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafB) unsafeDecayArray(ptr interface{}) interface{} {
+func (leaf *LeafB) unsafeDecayArray(ptr any) any {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 1
 	sli := unsafe.Slice((*int8)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
-func (leaf *LeafB) setAddress(ptr interface{}) error {
+func (leaf *LeafB) setAddress(ptr any) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
@@ -555,14 +555,14 @@ func (leaf *LeafS) readFromBuffer(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafS) unsafeDecayArray(ptr interface{}) interface{} {
+func (leaf *LeafS) unsafeDecayArray(ptr any) any {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 2
 	sli := unsafe.Slice((*int16)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
-func (leaf *LeafS) setAddress(ptr interface{}) error {
+func (leaf *LeafS) setAddress(ptr any) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
@@ -774,14 +774,14 @@ func (leaf *LeafI) readFromBuffer(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafI) unsafeDecayArray(ptr interface{}) interface{} {
+func (leaf *LeafI) unsafeDecayArray(ptr any) any {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 4
 	sli := unsafe.Slice((*int32)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
-func (leaf *LeafI) setAddress(ptr interface{}) error {
+func (leaf *LeafI) setAddress(ptr any) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
@@ -993,14 +993,14 @@ func (leaf *LeafL) readFromBuffer(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafL) unsafeDecayArray(ptr interface{}) interface{} {
+func (leaf *LeafL) unsafeDecayArray(ptr any) any {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 8
 	sli := unsafe.Slice((*int64)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
-func (leaf *LeafL) setAddress(ptr interface{}) error {
+func (leaf *LeafL) setAddress(ptr any) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
@@ -1212,14 +1212,14 @@ func (leaf *LeafG) readFromBuffer(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafG) unsafeDecayArray(ptr interface{}) interface{} {
+func (leaf *LeafG) unsafeDecayArray(ptr any) any {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 8
 	sli := unsafe.Slice((*int64)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
-func (leaf *LeafG) setAddress(ptr interface{}) error {
+func (leaf *LeafG) setAddress(ptr any) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
@@ -1411,14 +1411,14 @@ func (leaf *LeafF) readFromBuffer(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafF) unsafeDecayArray(ptr interface{}) interface{} {
+func (leaf *LeafF) unsafeDecayArray(ptr any) any {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 4
 	sli := unsafe.Slice((*float32)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
-func (leaf *LeafF) setAddress(ptr interface{}) error {
+func (leaf *LeafF) setAddress(ptr any) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
@@ -1601,14 +1601,14 @@ func (leaf *LeafD) readFromBuffer(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafD) unsafeDecayArray(ptr interface{}) interface{} {
+func (leaf *LeafD) unsafeDecayArray(ptr any) any {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 8
 	sli := unsafe.Slice((*float64)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
-func (leaf *LeafD) setAddress(ptr interface{}) error {
+func (leaf *LeafD) setAddress(ptr any) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
@@ -1802,14 +1802,14 @@ func (leaf *LeafF16) readFromBuffer(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafF16) unsafeDecayArray(ptr interface{}) interface{} {
+func (leaf *LeafF16) unsafeDecayArray(ptr any) any {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 4
 	sli := unsafe.Slice((*root.Float16)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
-func (leaf *LeafF16) setAddress(ptr interface{}) error {
+func (leaf *LeafF16) setAddress(ptr any) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
@@ -2003,14 +2003,14 @@ func (leaf *LeafD32) readFromBuffer(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafD32) unsafeDecayArray(ptr interface{}) interface{} {
+func (leaf *LeafD32) unsafeDecayArray(ptr any) any {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 8
 	sli := unsafe.Slice((*root.Double32)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
-func (leaf *LeafD32) setAddress(ptr interface{}) error {
+func (leaf *LeafD32) setAddress(ptr any) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}
@@ -2193,14 +2193,14 @@ func (leaf *LeafC) readFromBuffer(r *rbytes.RBuffer) error {
 	return r.Err()
 }
 
-func (leaf *LeafC) unsafeDecayArray(ptr interface{}) interface{} {
+func (leaf *LeafC) unsafeDecayArray(ptr any) any {
 	rv := reflect.ValueOf(ptr).Elem()
 	sz := rv.Type().Size() / 16
 	sli := unsafe.Slice((*string)(unsafe.Pointer(rv.UnsafeAddr())), sz)
 	return &sli
 }
 
-func (leaf *LeafC) setAddress(ptr interface{}) error {
+func (leaf *LeafC) setAddress(ptr any) error {
 	if ptr == nil {
 		return leaf.setAddress(newValue(leaf))
 	}

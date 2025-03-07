@@ -353,7 +353,7 @@ func fillH1(h *hbook.H1D, n int, mu, sigma float64, seed uint64) {
 		Src:   rand.New(rand.NewSource(seed)),
 	}
 
-	for i := 0; i < n; i++ {
+	for range n {
 		v := dist.Rand()
 		h.Fill(v, 1)
 	}

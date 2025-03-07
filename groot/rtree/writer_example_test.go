@@ -58,7 +58,7 @@ func Example_createFlatNtuple() {
 			fmt.Printf("branch[%d]: name=%q, title=%q\n", i, b.Name(), b.Title())
 		}
 
-		for i := 0; i < nevts; i++ {
+		for i := range nevts {
 			evt.I32 = int32(i)
 			evt.F64 = float64(i)
 			evt.Str = fmt.Sprintf("evt-%0d", i)
@@ -173,7 +173,7 @@ func Example_createFlatNtupleWithLZMA() {
 			fmt.Printf("branch[%d]: name=%q, title=%q\n", i, b.Name(), b.Title())
 		}
 
-		for i := 0; i < nevts; i++ {
+		for i := range nevts {
 			evt.I32 = int32(i)
 			evt.F64 = float64(i)
 			evt.Str = fmt.Sprintf("evt-%0d", i)
@@ -280,7 +280,7 @@ func Example_createFlatNtupleFromStruct() {
 			fmt.Printf("branch[%d]: name=%q, title=%q\n", i, b.Name(), b.Title())
 		}
 
-		for i := 0; i < nevts; i++ {
+		for i := range nevts {
 			evt.I32 = int32(i)
 			evt.F64 = float64(i)
 			evt.Str = fmt.Sprintf("evt-%0d", i)
@@ -420,7 +420,7 @@ func Example_createEventNtupleNoSplit() {
 			fmt.Printf("branch[%d]: name=%q, title=%q\n", i, b.Name(), b.Title())
 		}
 
-		for i := 0; i < nevts; i++ {
+		for i := range nevts {
 			evt.I32 = int32(i)
 			evt.F64 = float64(i)
 			evt.Str = fmt.Sprintf("evt-%0d", i)
@@ -559,7 +559,7 @@ func Example_createEventNtupleFullSplit() {
 			fmt.Printf("branch[%d]: name=%q, title=%q\n", i, b.Name(), b.Title())
 		}
 
-		for i := 0; i < nevts; i++ {
+		for i := range nevts {
 			evt.I32 = int32(i)
 			evt.F64 = float64(i)
 			evt.Str = fmt.Sprintf("evt-%0d", i)

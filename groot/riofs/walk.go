@@ -247,7 +247,7 @@ func Dir(dir Directory) Directory {
 
 func fileOf(d Directory) *File {
 	const max = 1<<31 - 1
-	for i := 0; i < max; i++ {
+	for range max {
 		p := d.Parent()
 		if p == nil {
 			switch d := d.(type) {

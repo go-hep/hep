@@ -389,7 +389,7 @@ func TestFromH1D(t *testing.T) {
 	// Draw some random values from the standard
 	// normal distribution.
 	h := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		h.Fill(v, 1)
 	}
@@ -473,7 +473,7 @@ func TestFromH2D(t *testing.T) {
 	// Draw some random values from the standard
 	// normal distribution.
 	h := hbook.NewH2D(5, -4, +4, 6, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		x := dist.Rand()
 		y := dist.Rand()
 		h.Fill(x, y, 1)

@@ -252,7 +252,7 @@ func getsumsq(n int64) int64 {
 
 func newTestReader(max int) io.Reader {
 	buf := new(bytes.Buffer)
-	for i := 0; i < max; i++ {
+	for i := range max {
 		fmt.Fprintf(buf, "%d\n", int64(i))
 	}
 	return buf
@@ -444,7 +444,7 @@ func Benchmark___SeqApp(b *testing.B) {
 	})
 
 	input := "t0"
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		name := fmt.Sprintf("tx-%d", i)
 		out := fmt.Sprintf("tx-%d", i)
 		app.Create(job.C{
@@ -499,7 +499,7 @@ func Benchmark__ConcApp(b *testing.B) {
 	})
 
 	input := "t0"
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		name := fmt.Sprintf("tx-%d", i)
 		out := fmt.Sprintf("tx-%d", i)
 		app.Create(job.C{

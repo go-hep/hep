@@ -349,8 +349,8 @@ func (h *H2D) marshalYODAv1() ([]byte, error) {
 
 	// bins
 	fmt.Fprintf(buf, "# xlow\t xhigh\t ylow\t yhigh\t sumw\t sumw2\t sumwx\t sumwx2\t sumwy\t sumwy2\t sumwxy\t numEntries\n")
-	for ix := 0; ix < h.Binning.Nx; ix++ {
-		for iy := 0; iy < h.Binning.Ny; iy++ {
+	for ix := range h.Binning.Nx {
+		for iy := range h.Binning.Ny {
 			bin := h.Binning.Bins[iy*h.Binning.Nx+ix]
 			d := bin.Dist
 			fmt.Fprintf(
@@ -392,8 +392,8 @@ func (h *H2D) marshalYODAv2() ([]byte, error) {
 
 	// bins
 	fmt.Fprintf(buf, "# xlow\t xhigh\t ylow\t yhigh\t sumw\t sumw2\t sumwx\t sumwx2\t sumwy\t sumwy2\t sumwxy\t numEntries\n")
-	for ix := 0; ix < h.Binning.Nx; ix++ {
-		for iy := 0; iy < h.Binning.Ny; iy++ {
+	for ix := range h.Binning.Nx {
+		for iy := range h.Binning.Ny {
 			bin := h.Binning.Bins[iy*h.Binning.Nx+ix]
 			d := bin.Dist
 			fmt.Fprintf(
@@ -515,8 +515,8 @@ scanLoop:
 	h.Binning = newBinning2D(len(xset), xmin, xmax, len(yset), ymin, ymax)
 	h.Binning.Dist = dist
 	// YODA bins are transposed wrt ours
-	for ix := 0; ix < h.Binning.Nx; ix++ {
-		for iy := 0; iy < h.Binning.Ny; iy++ {
+	for ix := range h.Binning.Nx {
+		for iy := range h.Binning.Ny {
 			h.Binning.Bins[iy*h.Binning.Nx+ix] = bins[ix*h.Binning.Ny+iy]
 		}
 	}
@@ -617,8 +617,8 @@ scanLoop:
 	h.Binning = newBinning2D(len(xset), xmin, xmax, len(yset), ymin, ymax)
 	h.Binning.Dist = dist
 	// YODA bins are transposed wrt ours
-	for ix := 0; ix < h.Binning.Nx; ix++ {
-		for iy := 0; iy < h.Binning.Ny; iy++ {
+	for ix := range h.Binning.Nx {
+		for iy := range h.Binning.Ny {
 			h.Binning.Bins[iy*h.Binning.Nx+ix] = bins[ix*h.Binning.Ny+iy]
 		}
 	}

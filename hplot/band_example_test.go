@@ -36,7 +36,7 @@ func ExampleBand() {
 
 	// Draw some random values from the standard
 	// normal distribution.
-	for i := 0; i < npoints; i++ {
+	for i := range npoints {
 		x := float64(i+1) / xmax
 
 		v1 := dist.Rand()

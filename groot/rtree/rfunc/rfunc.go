@@ -25,23 +25,23 @@ type Formula interface {
 	// Bind provides the arguments to the user function.
 	// ptrs is a slice of pointers to the rtree.ReadVars, in the same order
 	// than requested by RVars.
-	Bind(ptrs []interface{}) error
+	Bind(ptrs []any) error
 
 	// Func returns the user function closing on the bound pointer-to-arguments
 	// and returning the expected evaluated value.
-	Func() interface{}
+	Func() any
 }
 
 // NewGenericFormula returns a new formula from the provided list of needed
 // tree variables and the provided user function.
 // NewGenericFormula uses reflect to bind read-vars and the generic function.
-func NewGenericFormula(rvars []string, fct interface{}) (Formula, error) {
+func NewGenericFormula(rvars []string, fct any) (Formula, error) {
 	return newGenericFormula(rvars, fct)
 }
 
 type genericFormula struct {
 	names []string
-	fct   interface{}
+	fct   any
 
 	ptrs []reflect.Value
 	args []reflect.Value
@@ -51,7 +51,7 @@ type genericFormula struct {
 	ufct reflect.Value // user-provided function
 }
 
-func newGenericFormula(names []string, fct interface{}) (*genericFormula, error) {
+func newGenericFormula(names []string, fct any) (*genericFormula, error) {
 	rv := reflect.ValueOf(fct)
 	if rv.Kind() != reflect.Func {
 		return nil, fmt.Errorf("rfunc: formula expects a func")
@@ -93,7 +93,7 @@ func newGenericFormula(names []string, fct interface{}) (*genericFormula, error)
 }
 
 func (f *genericFormula) RVars() []string { return f.names }
-func (f *genericFormula) Bind(args []interface{}) error {
+func (f *genericFormula) Bind(args []any) error {
 	if got, want := len(args), len(f.ptrs); got != want {
 		return fmt.Errorf(
 			"rfunc: invalid number of bind arguments (got=%d, want=%d)",
@@ -128,7 +128,7 @@ func (f *genericFormula) eval() {
 	f.out = f.ufct.Call(f.args)
 }
 
-func (f *genericFormula) Func() interface{} {
+func (f *genericFormula) Func() any {
 	return f.rfct.Interface()
 }
 

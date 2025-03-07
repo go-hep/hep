@@ -204,8 +204,8 @@ func makeFlatTree(n int) func(t *testing.T, fname string) error {
 			t.Fatalf("could not create tree writer: %+v", err)
 		}
 
-		for j := 0; j < n; j++ {
-			for i := 0; i < nevts; i++ {
+		for range n {
+			for i := range nevts {
 				evt.I32 = int32(i)
 				evt.F64 = float64(i)
 				evt.Str = fmt.Sprintf("evt-%0d", i)
@@ -253,7 +253,7 @@ func makeH1F(n int) func(t *testing.T, fname string) error {
 
 		h := hbook.NewH1D(10, 0, 10)
 		h.Annotation()["title"] = "h1f"
-		for i := 0; i < n; i++ {
+		for range n {
 			h.Fill(5, 1)
 			h.Fill(6, 2)
 		}
@@ -292,7 +292,7 @@ func makeH1D(n int) func(t *testing.T, fname string) error {
 
 		h := hbook.NewH1D(10, 0, 10)
 		h.Annotation()["title"] = "h1d"
-		for i := 0; i < n; i++ {
+		for range n {
 			h.Fill(5, 1)
 			h.Fill(6, 2)
 		}
@@ -331,7 +331,7 @@ func makeH1I(n int) func(t *testing.T, fname string) error {
 
 		h := hbook.NewH1D(10, 0, 10)
 		h.Annotation()["title"] = "h1i"
-		for i := 0; i < n; i++ {
+		for range n {
 			h.Fill(5, 1)
 			h.Fill(6, 2)
 		}
@@ -370,7 +370,7 @@ func makeH2D(n int) func(t *testing.T, fname string) error {
 
 		h := hbook.NewH2D(10, 0, 10, 10, 0, 10)
 		h.Annotation()["title"] = "h2d"
-		for i := 0; i < n; i++ {
+		for range n {
 			h.Fill(5, 5, 1)
 			h.Fill(6, 6, 2)
 		}
@@ -412,7 +412,7 @@ func makeGraph(beg, end int) func(t *testing.T, fname string) error {
 			ys []float64
 		)
 		for i := beg; i < end; i++ {
-			for j := 0; j < 10; j++ {
+			for j := range 10 {
 				xs = append(xs, float64(10*(1+i)+j))
 				ys = append(ys, float64(10*(1+i)+j))
 			}
@@ -456,7 +456,7 @@ func makeGraphErr(beg, end int) func(t *testing.T, fname string) error {
 			pts []hbook.Point2D
 		)
 		for i := beg; i < end; i++ {
-			for j := 0; j < 10; j++ {
+			for j := range 10 {
 				var (
 					x    = float64(10*(1+i) + j)
 					y    = float64(10*(1+i) + j)
@@ -510,7 +510,7 @@ func makeGraphAsymmErr(beg, end int) func(t *testing.T, fname string) error {
 			pts []hbook.Point2D
 		)
 		for i := beg; i < end; i++ {
-			for j := 0; j < 10; j++ {
+			for j := range 10 {
 				var (
 					x = float64(10*(1+i) + j)
 					y = float64(10*(1+i) + j)

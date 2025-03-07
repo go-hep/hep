@@ -379,7 +379,7 @@ func (k *Key) ObjectType() reflect.Type {
 }
 
 // Value returns the data corresponding to the Key's value
-func (k *Key) Value() interface{} {
+func (k *Key) Value() any {
 	v, err := k.Object()
 	if err != nil {
 		panic(fmt.Errorf("error loading payload for %q: %w", k.Name(), err))

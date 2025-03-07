@@ -42,7 +42,7 @@ func ExampleH1D_gaussian() {
 	// Draw some random values from the standard
 	// normal distribution.
 	hist := hbook.NewH1D(100, -20, +25)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		hist.Fill(v, 1)
 	}

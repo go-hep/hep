@@ -5,8 +5,8 @@
 package fwktest
 
 import (
-	"fmt"
 	"io"
+	"strconv"
 
 	"go-hep.org/x/hep/fwk"
 )
@@ -32,7 +32,7 @@ func (out *OutputStream) Write(ctx fwk.Context) error {
 	}
 
 	data := v.(int64)
-	_, err = out.W.Write([]byte(fmt.Sprintf("%d\n", data)))
+	_, err = out.W.Write([]byte(strconv.FormatInt(data, 10) + "\n"))
 	if err != nil {
 		return err
 	}

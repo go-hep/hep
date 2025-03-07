@@ -17,7 +17,7 @@ func TestMux_Claim(t *testing.T) {
 	defer m.Close()
 	claimedIds := map[xrdproto.StreamID]bool{}
 
-	for i := 0; i < streamIDPoolSize; i++ {
+	for range streamIDPoolSize {
 		id, channel, err := m.Claim()
 
 		if err != nil {
@@ -45,7 +45,7 @@ func TestMux_Claim_AfterUnclaim(t *testing.T) {
 	defer m.Close()
 	claimedIds := map[xrdproto.StreamID]bool{}
 
-	for i := 0; i < streamIDPoolSize; i++ {
+	for range streamIDPoolSize {
 		id, _, _ := m.Claim()
 		claimedIds[id] = true
 	}

@@ -459,7 +459,7 @@ func TestH1DNegativeWeights(t *testing.T) {
 func TestH1DSerialization(t *testing.T) {
 	const nentries = 50
 	href := NewH1D(100, 0., 100.)
-	for i := 0; i < nentries; i++ {
+	for range nentries {
 		href.Fill(rnd()*100., 1.)
 	}
 	href.Annotation()["title"] = "histo title"

@@ -19,8 +19,8 @@ type Reader interface {
 	io.Reader
 
 	Versioner
-	Tag(ptr interface{}) error
-	Pointer(ptr interface{}) error
+	Tag(ptr any) error
+	Pointer(ptr any) error
 }
 
 // Writer is the interface that wraps the basic io.Writer interface
@@ -29,8 +29,8 @@ type Writer interface {
 	io.Writer
 
 	Versioner
-	Tag(ptr interface{}) error
-	Pointer(ptr interface{}) error
+	Tag(ptr any) error
+	Pointer(ptr any) error
 }
 
 // Marshaler is the interface implemented by an object that can marshal
@@ -68,15 +68,15 @@ type Versioner interface {
 type reader struct {
 	buf *bytes.Buffer
 	ver uint32
-	ptr map[interface{}]uint32
-	tag map[interface{}]uint32
+	ptr map[any]uint32
+	tag map[any]uint32
 }
 
 func newReader(data []byte) *reader {
 	return &reader{
 		buf: bytes.NewBuffer(data),
-		ptr: make(map[interface{}]uint32),
-		tag: make(map[interface{}]uint32),
+		ptr: make(map[any]uint32),
+		tag: make(map[any]uint32),
 	}
 }
 
@@ -102,7 +102,7 @@ func (r *reader) VersionSio() uint32 {
 	return maj*1000 + min
 }
 
-func (r *reader) Tag(ptr interface{}) error {
+func (r *reader) Tag(ptr any) error {
 	var pid uint32
 	err := binary.Read(r.buf, binary.BigEndian, &pid)
 	if err != nil {
@@ -115,7 +115,7 @@ func (r *reader) Tag(ptr interface{}) error {
 	return nil
 }
 
-func (r *reader) Pointer(ptr interface{}) error {
+func (r *reader) Pointer(ptr any) error {
 	rptr := reflect.ValueOf(ptr)
 	if !(rptr.Kind() == reflect.Ptr && (rptr.Elem().Kind() == reflect.Ptr || rptr.Elem().Kind() == reflect.Interface)) {
 		panic(fmt.Errorf("sio: Reader.Pointer expects a pointer to pointer"))
@@ -152,15 +152,15 @@ type writer struct {
 	buf *bytes.Buffer
 	ver uint32
 	ids uint32
-	ptr map[uint32]interface{}
-	tag map[interface{}]uint32
+	ptr map[uint32]any
+	tag map[any]uint32
 }
 
 func newWriter() *writer {
 	return &writer{
 		buf: new(bytes.Buffer),
-		ptr: make(map[uint32]interface{}),
-		tag: make(map[interface{}]uint32),
+		ptr: make(map[uint32]any),
+		tag: make(map[any]uint32),
 	}
 }
 
@@ -192,7 +192,7 @@ func (w *writer) VersionSio() uint32 {
 	return maj*1000 + min
 }
 
-func (w *writer) Tag(ptr interface{}) error {
+func (w *writer) Tag(ptr any) error {
 	var id uint32 = ptagMarker
 	if _, ok := w.tag[ptr]; !ok {
 		err := w.genID()
@@ -209,7 +209,7 @@ func (w *writer) Tag(ptr interface{}) error {
 	return nil
 }
 
-func (w *writer) Pointer(ptr interface{}) error {
+func (w *writer) Pointer(ptr any) error {
 	ptr = reflect.ValueOf(ptr).Elem().Interface()
 	var id uint32 = pntrMarker
 	if _, ok := w.tag[ptr]; !ok {

@@ -22,9 +22,9 @@ func toTitle(s string) string {
 
 // ReadVar describes a variable to be read out of a tree.
 type ReadVar struct {
-	Name  string      // name of the branch to read
-	Leaf  string      // name of the leaf to read
-	Value interface{} // pointer to the value to fill
+	Name  string // name of the branch to read
+	Leaf  string // name of the leaf to read
+	Value any    // pointer to the value to fill
 
 	count string // name of the leaf-count, if any
 	leaf  Leaf   // leaf to which this read-var is bound
@@ -49,7 +49,7 @@ func NewReadVars(t Tree) []ReadVar {
 }
 
 // Deref returns the value pointed at by this read-var.
-func (rv ReadVar) Deref() interface{} {
+func (rv ReadVar) Deref() any {
 	return reflect.ValueOf(rv.Value).Elem().Interface()
 }
 
@@ -58,7 +58,7 @@ func (rv ReadVar) Deref() interface{} {
 //
 // ReadVarsFromStruct panicks if the provided value is not a pointer to
 // a struct value.
-func ReadVarsFromStruct(ptr interface{}) []ReadVar {
+func ReadVarsFromStruct(ptr any) []ReadVar {
 	rv := reflect.ValueOf(ptr)
 	if rv.Kind() != reflect.Ptr {
 		panic(fmt.Errorf("rtree: expect a pointer value, got %T", ptr))
@@ -74,7 +74,7 @@ func ReadVarsFromStruct(ptr interface{}) []ReadVar {
 		rvars = make([]ReadVar, 0, rt.NumField())
 	)
 
-	for i := 0; i < rt.NumField(); i++ {
+	for i := range rt.NumField() {
 		var (
 			ft = rt.Field(i)
 			fv = rv.Field(i)
@@ -238,7 +238,7 @@ func bindRVarsTo(t Tree, rvars []ReadVar) []ReadVar {
 		rv := reflect.ValueOf(rvar.Value).Elem()
 		get := func(name string) int {
 			rt := rv.Type()
-			for i := 0; i < rt.NumField(); i++ {
+			for i := range rt.NumField() {
 				ft := rt.Field(i)
 				nn := nameOf(ft)
 				if nn == name {
@@ -321,7 +321,7 @@ func bindRVarsTo(t Tree, rvars []ReadVar) []ReadVar {
 	return ors
 }
 
-func newValue(leaf Leaf) interface{} {
+func newValue(leaf Leaf) any {
 	etype := leaf.Type()
 	unsigned := leaf.IsUnsigned()
 

@@ -52,7 +52,7 @@ func (app *appmgr) New(t, n string) (Component, error) {
 	if _, dup := app.props[n]; dup {
 		return nil, fmt.Errorf("component with name [%s] already created", n)
 	}
-	app.props[n] = make(map[string]interface{})
+	app.props[n] = make(map[string]any)
 
 	c, err := fct(t, n, app)
 	if err != nil {

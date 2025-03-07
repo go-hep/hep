@@ -53,7 +53,7 @@ func (srv *Server) render(p *hplot.Plot, opt PlotOptions) ([]byte, error) {
 
 type floats struct {
 	leaf rtree.Leaf
-	ptr  interface{}
+	ptr  any
 	vals func() []float64
 }
 

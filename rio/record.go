@@ -46,7 +46,7 @@ func newRecord(name string, options Options) *Record {
 }
 
 // Connect connects a Block to this Record (for reading or writing)
-func (rec *Record) Connect(name string, ptr interface{}) error {
+func (rec *Record) Connect(name string, ptr any) error {
 	_, dup := rec.bmap[name]
 	if dup {
 		return fmt.Errorf("rio: block [%s] already connected to record [%s]", name, rec.Name())

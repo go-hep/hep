@@ -31,7 +31,7 @@ func ExampleGraph() {
 	fmt.Printf("name:  %q\n", g.Name())
 	fmt.Printf("title: %q\n", g.Title())
 	fmt.Printf("#pts:  %d\n", g.Len())
-	for i := 0; i < g.Len(); i++ {
+	for i := range g.Len() {
 		x, y := g.XY(i)
 		fmt.Printf("(x,y)[%d] = (%+e, %+e)\n", i, x, y)
 	}
@@ -62,7 +62,7 @@ func ExampleGraphErrors() {
 	fmt.Printf("name:  %q\n", g.Name())
 	fmt.Printf("title: %q\n", g.Title())
 	fmt.Printf("#pts:  %d\n", g.Len())
-	for i := 0; i < g.Len(); i++ {
+	for i := range g.Len() {
 		x, y := g.XY(i)
 		xlo, xhi := g.XError(i)
 		ylo, yhi := g.YError(i)
@@ -95,7 +95,7 @@ func ExampleGraphErrors_asymmErrors() {
 	fmt.Printf("name:  %q\n", g.Name())
 	fmt.Printf("title: %q\n", g.Title())
 	fmt.Printf("#pts:  %d\n", g.Len())
-	for i := 0; i < g.Len(); i++ {
+	for i := range g.Len() {
 		x, y := g.XY(i)
 		xlo, xhi := g.XError(i)
 		ylo, yhi := g.YError(i)

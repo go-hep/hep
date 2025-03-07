@@ -96,7 +96,7 @@ func (col Column) Name() string {
 
 // Slice reads the whole data slice from the underlying ROOT Tree
 // into memory.
-func (col Column) Slice() (sli interface{}, err error) {
+func (col Column) Slice() (sli any, err error) {
 	r, err := rtree.NewReader(col.tree, []rtree.ReadVar{col.rvar})
 	if err != nil {
 		return nil, fmt.Errorf(

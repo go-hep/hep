@@ -330,7 +330,7 @@ func TestCSVWriterArgs(t *testing.T) {
 		t.Errorf("error writing header: %+v\n", err)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		var (
 			f = float64(i)
 			s = fmt.Sprintf("str-%d", i)
@@ -369,7 +369,7 @@ func TestCSVWriterStruct(t *testing.T) {
 		t.Errorf("error writing header: %+v\n", err)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		data := struct {
 			I int
 			F float64
@@ -413,7 +413,7 @@ func TestCSVWriterArgsSlice(t *testing.T) {
 		t.Fatalf("error writing header: %+v", err)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		var (
 			lii = [][]int{{1, 2, 3}, {2, 3, 4}, {7, 8, 15}}
 			lss = [][]string{{"foo", "bar", "baz"}, {"abc", "def", "ghi"}, {"qwerty"}}
@@ -453,7 +453,7 @@ func TestCSVAppend(t *testing.T) {
 		t.Errorf("error writing header: %+v\n", err)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		data := struct {
 			I int
 			F float64

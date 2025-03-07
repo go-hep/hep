@@ -246,7 +246,7 @@ func (w *wtree) Close() error {
 
 func fileOf(d riofs.Directory) *riofs.File {
 	const max = 1<<31 - 1
-	for i := 0; i < max; i++ {
+	for range max {
 		p := d.Parent()
 		if p == nil {
 			return d.(*riofs.File)
@@ -262,7 +262,7 @@ func flattenArrayType(rt reflect.Type) (reflect.Type, []int) {
 		kind  = rt.Kind()
 	)
 	const max = 1<<31 - 1
-	for i := 0; i < max; i++ {
+	for range max {
 		if kind != reflect.Array {
 			return rt, shape
 		}

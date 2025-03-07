@@ -237,7 +237,7 @@ func (h *th1) RMembers() (mbrs []rbytes.Member) {
 // Keys implements the ObjectFinder interface.
 func (h *th1) Keys() []string {
 	var keys []string
-	for i := 0; i < h.funcs.Len(); i++ {
+	for i := range h.funcs.Len() {
 		o, ok := h.funcs.At(i).(root.Named)
 		if !ok {
 			continue
@@ -249,7 +249,7 @@ func (h *th1) Keys() []string {
 
 // Get implements the ObjectFinder interface.
 func (h *th1) Get(name string) (root.Object, error) {
-	for i := 0; i < h.funcs.Len(); i++ {
+	for i := range h.funcs.Len() {
 		o, ok := h.funcs.At(i).(root.Named)
 		if !ok {
 			continue

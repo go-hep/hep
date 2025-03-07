@@ -9,7 +9,7 @@ import "testing"
 func TestWriteVarsFromStruct(t *testing.T) {
 	for _, tc := range []struct {
 		name   string
-		ptr    interface{}
+		ptr    any
 		wopts  []WriteOption
 		want   []WriteVar
 		panics string

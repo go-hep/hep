@@ -13,15 +13,15 @@ import (
 
 // WriteVar describes a variable to be written out to a tree.
 type WriteVar struct {
-	Name  string      // name of the variable
-	Value interface{} // pointer to the value to write
-	Count string      // name of the branch holding the count-leaf value for slices
+	Name  string // name of the variable
+	Value any    // pointer to the value to write
+	Count string // name of the branch holding the count-leaf value for slices
 }
 
 // WriteVarsFromStruct creates a slice of WriteVars from the ptr value.
 // WriteVarsFromStruct panics if ptr is not a pointer to a struct value.
 // WriteVarsFromStruct ignores fields that are not exported.
-func WriteVarsFromStruct(ptr interface{}, opts ...WriteOption) []WriteVar {
+func WriteVarsFromStruct(ptr any, opts ...WriteOption) []WriteVar {
 	cfg := wopt{
 		splitlvl: defaultSplitLevel,
 	}
@@ -75,7 +75,7 @@ func WriteVarsFromStruct(ptr interface{}, opts ...WriteOption) []WriteVar {
 		wvars = make([]WriteVar, 0, rt.NumField())
 	)
 
-	for i := 0; i < rt.NumField(); i++ {
+	for i := range rt.NumField() {
 		var (
 			ft = rt.Field(i)
 			fv = rv.Field(i)

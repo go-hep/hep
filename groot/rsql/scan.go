@@ -18,7 +18,7 @@ import (
 
 // Scan executes a query against the given tree and runs the function f
 // within that context.
-func Scan(tree rtree.Tree, query string, f interface{}) error {
+func Scan(tree rtree.Tree, query string, f any) error {
 	if f == nil {
 		return fmt.Errorf("groot/rsql: nil func")
 	}
@@ -31,7 +31,7 @@ func Scan(tree rtree.Tree, query string, f interface{}) error {
 		return fmt.Errorf("groot/rsql: expected a func returning an error. got %T", f)
 	}
 	vargs := make([]reflect.Value, rt.NumIn())
-	args := make([]interface{}, rt.NumIn())
+	args := make([]any, rt.NumIn())
 	for i := range args {
 		ptr := reflect.New(rt.In(i))
 		args[i] = ptr.Interface()

@@ -35,8 +35,8 @@ func NewTiledPlot(tiles draw.Tiles) *TiledPlot {
 		Tiles: tiles,
 	}
 
-	for i := 0; i < tiles.Rows; i++ {
-		for j := 0; j < tiles.Cols; j++ {
+	for i := range tiles.Rows {
+		for j := range tiles.Cols {
 			plot.Plots[i*tiles.Cols+j] = New()
 		}
 	}
@@ -59,7 +59,7 @@ func (tp *TiledPlot) Draw(c draw.Canvas) {
 	switch {
 	case tp.Align:
 		ps := make([][]*plot.Plot, tp.Tiles.Rows)
-		for row := 0; row < tp.Tiles.Rows; row++ {
+		for row := range tp.Tiles.Rows {
 			ps[row] = make([]*plot.Plot, tp.Tiles.Cols)
 			for col := range ps[row] {
 				p := tp.Plots[row*tp.Tiles.Cols+col]
@@ -70,8 +70,8 @@ func (tp *TiledPlot) Draw(c draw.Canvas) {
 			}
 		}
 		cs := plot.Align(ps, tp.Tiles, c)
-		for i := 0; i < tp.Tiles.Rows; i++ {
-			for j := 0; j < tp.Tiles.Cols; j++ {
+		for i := range tp.Tiles.Rows {
+			for j := range tp.Tiles.Cols {
 				p := ps[i][j]
 				if p == nil {
 					continue
@@ -81,8 +81,8 @@ func (tp *TiledPlot) Draw(c draw.Canvas) {
 		}
 
 	default:
-		for row := 0; row < tp.Tiles.Rows; row++ {
-			for col := 0; col < tp.Tiles.Cols; col++ {
+		for row := range tp.Tiles.Rows {
+			for col := range tp.Tiles.Cols {
 				sub := tp.Tiles.At(c, col, row)
 				i := row*tp.Tiles.Cols + col
 				p := tp.Plots[i]

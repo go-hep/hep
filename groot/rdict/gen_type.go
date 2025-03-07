@@ -1276,7 +1276,7 @@ func (g *genGoType) genStreamerType(si rbytes.StreamerInfo, i int, se rbytes.Str
 	}
 }
 
-func (g *genGoType) printf(format string, args ...interface{}) {
+func (g *genGoType) printf(format string, args ...any) {
 	fmt.Fprintf(g.buf, format, args...)
 }
 

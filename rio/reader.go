@@ -103,7 +103,7 @@ type decoder struct {
 	r io.Reader
 }
 
-func (dec *decoder) Decode(v interface{}) error {
+func (dec *decoder) Decode(v any) error {
 	switch v := v.(type) {
 	case Unmarshaler:
 		return v.RioUnmarshal(dec.r)

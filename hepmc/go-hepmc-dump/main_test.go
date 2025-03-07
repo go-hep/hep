@@ -61,7 +61,7 @@ func TestDumpFail(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for i := 0; i < len(want)-1; i++ {
+	for range len(want) - 1 {
 		nbytes := 0
 		t.Run("output", func(t *testing.T) {
 			r := bytes.NewReader(ref)

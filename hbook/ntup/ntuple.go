@@ -69,7 +69,7 @@ func Open(db *sql.DB, name string) (*Ntuple, error) {
 //
 //	nt, err := ntup.Create(db, "nt", struct{X float64 `hbook:"x"`}{})
 //	nt, err := ntup.Create(db, "nt", int64(0), float64(0))
-func Create(db *sql.DB, name string, cols ...interface{}) (*Ntuple, error) {
+func Create(db *sql.DB, name string, cols ...any) (*Ntuple, error) {
 	var err error
 	nt := &Ntuple{
 		db:   db,
@@ -136,7 +136,7 @@ func (col *columnDescr) Type() reflect.Type {
 func schemaFromStruct(rt reflect.Type) ([]Descriptor, error) {
 	var schema []Descriptor
 	var err error
-	for i := 0; i < rt.NumField(); i++ {
+	for i := range rt.NumField() {
 		f := rt.Field(i)
 		if !ast.IsExported(f.Name) {
 			continue
@@ -163,7 +163,7 @@ func schemaFromStruct(rt reflect.Type) ([]Descriptor, error) {
 	return schema, err
 }
 
-func schemaFrom(src ...interface{}) ([]Descriptor, error) {
+func schemaFrom(src ...any) ([]Descriptor, error) {
 	var schema []Descriptor
 	var err error
 	for i, col := range src {
@@ -204,7 +204,7 @@ func getTag(tag reflect.StructTag, keys ...string) string {
 //	  h2.Fill(y, 1)
 //	  return nil
 //	})
-func (nt *Ntuple) Scan(query string, f interface{}) error {
+func (nt *Ntuple) Scan(query string, f any) error {
 	if f == nil {
 		return fmt.Errorf("hbook/ntup: nil func")
 	}
@@ -217,7 +217,7 @@ func (nt *Ntuple) Scan(query string, f interface{}) error {
 		return fmt.Errorf("hbook/ntup: expected a func returning an error. got %T", f)
 	}
 	vargs := make([]reflect.Value, rt.NumIn())
-	args := make([]interface{}, rt.NumIn())
+	args := make([]any, rt.NumIn())
 	for i := range args {
 		ptr := reflect.New(rt.In(i))
 		args[i] = ptr.Interface()

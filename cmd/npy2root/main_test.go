@@ -20,7 +20,7 @@ import (
 func TestConvert(t *testing.T) {
 	for _, tc := range []struct {
 		name string
-		want interface{}
+		want any
 	}{
 		// 4 scalars
 		{

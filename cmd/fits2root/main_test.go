@@ -25,7 +25,7 @@ func TestConvert(t *testing.T) {
 	for _, tc := range []struct {
 		name string
 		cols []fitsio.Column
-		data interface{}
+		data any
 		want string
 	}{
 		{
@@ -287,7 +287,7 @@ func TestConvert(t *testing.T) {
 				defer tbl.Close()
 
 				rslice := reflect.ValueOf(tc.data)
-				for i := 0; i < rslice.Len(); i++ {
+				for i := range rslice.Len() {
 					data := rslice.Index(i).Addr()
 					err = tbl.Write(data.Interface())
 					if err != nil {

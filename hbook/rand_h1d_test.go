@@ -39,7 +39,7 @@ func TestRand1D(t *testing.T) {
 	}
 
 	const N = 1000
-	for i := 0; i < N; i++ {
+	for range N {
 		h2.Fill(hr.Rand(), 1)
 	}
 

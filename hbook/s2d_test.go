@@ -129,7 +129,7 @@ func TestS2DReadYODAv2(t *testing.T) {
 
 func TestS2DSerialization(t *testing.T) {
 	sref := NewS2D()
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		v := float64(i)
 		sref.Fill(Point2D{X: v, Y: v, ErrX: Range{Min: v, Max: 2 * v}, ErrY: Range{Min: v, Max: 3 * v}})
 	}

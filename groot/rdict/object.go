@@ -35,7 +35,7 @@ func ObjectFrom(si rbytes.StreamerInfo, sictx rbytes.StreamerInfoContext) *Objec
 //   - rbytes.Marshaler
 //   - rbytes.Unmarshaler
 type Object struct {
-	v interface{}
+	v any
 
 	si    *StreamerInfo
 	rvers int16

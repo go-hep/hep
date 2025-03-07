@@ -23,7 +23,7 @@ func NewDecoder(r Reader) *Decoder {
 
 // Decode reads the next value from the input sio stream and stores it in
 // the data, an empty interface value wrapping a pointer to a concrete value.
-func (dec *Decoder) Decode(ptr interface{}) {
+func (dec *Decoder) Decode(ptr any) {
 	if dec.err != nil {
 		return
 	}
@@ -33,7 +33,7 @@ func (dec *Decoder) Decode(ptr interface{}) {
 
 // Tag tags a pointer, assigning it a unique identifier, so links between values
 // (inside a given SIO record) can be rebuilt.
-func (dec *Decoder) Tag(ptr interface{}) {
+func (dec *Decoder) Tag(ptr any) {
 	if dec.err != nil {
 		return
 	}
@@ -42,7 +42,7 @@ func (dec *Decoder) Tag(ptr interface{}) {
 
 // Pointer marks a (pointer to a) pointer, assigning it a unique identifier,
 // so links between values (inside a given SIO record) can be rebuilt.
-func (dec *Decoder) Pointer(ptr interface{}) {
+func (dec *Decoder) Pointer(ptr any) {
 	if dec.err != nil {
 		return
 	}
@@ -56,14 +56,14 @@ func (dec *Decoder) Err() error {
 
 // unmarshal unmarshals a stream of bytes into ptr.
 // If ptr implements Codec, use it.
-func unmarshal(r Reader, ptr interface{}) error {
+func unmarshal(r Reader, ptr any) error {
 	if ptr, ok := ptr.(Unmarshaler); ok {
 		return ptr.UnmarshalSio(r)
 	}
 	return bread(r, ptr)
 }
 
-func bread(r Reader, data interface{}) error {
+func bread(r Reader, data any) error {
 	bo := binary.BigEndian
 	rv := reflect.ValueOf(data)
 	//fmt.Printf("::: [%v] :::...\n", rv.Type())
@@ -113,7 +113,7 @@ func bread(r Reader, data interface{}) error {
 		}
 		//fmt.Printf("<<< slice: %d [%v]\n", sz, rv.Type())
 		slice := reflect.MakeSlice(rv.Type(), int(sz), int(sz))
-		for i := 0; i < int(sz); i++ {
+		for i := range int(sz) {
 			err = unmarshal(r, slice.Index(i).Addr().Interface())
 			if err != nil {
 				return err

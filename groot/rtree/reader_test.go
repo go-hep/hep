@@ -255,7 +255,7 @@ func (ScannerData) want(i int64) (data ScannerData) {
 	data.SliF64 = make([]float64, int(data.N))
 	data.SliD16 = make([]root.Float16, int(data.N))
 	data.SliD32 = make([]root.Double32, int(data.N))
-	for ii := 0; ii < int(data.N); ii++ {
+	for ii := range int(data.N) {
 		data.SliBs[ii] = (ii + 1) == int(i)
 		data.SliI8[ii] = int8(-i)
 		data.SliI16[ii] = int16(-i)
@@ -392,7 +392,7 @@ func TestReaderVarsMultipleTimes(t *testing.T) {
 			}
 			tree := obj.(Tree)
 
-			for i := 0; i < 2; i++ {
+			for range 2 {
 				var (
 					data  []float32
 					rvars = []ReadVar{
@@ -448,7 +448,7 @@ func TestReaderStructWithCounterLeaf(t *testing.T) {
 				var data Data
 				n := int32(i) % 10
 				data.Sli = make([]int32, int(n))
-				for ii := 0; ii < int(n); ii++ {
+				for ii := range int(n) {
 					data.Sli[ii] = int32(-i)
 				}
 				return data
@@ -502,7 +502,7 @@ func TestReaderVarsWithCounterLeaf(t *testing.T) {
 			want := func(i int64) []int32 {
 				n := int32(i) % 10
 				data := make([]int32, int(n))
-				for ii := 0; ii < int(n); ii++ {
+				for ii := range int(n) {
 					data[ii] = int32(-i)
 				}
 				return data
@@ -585,7 +585,7 @@ func TestScannerStructWithStdVectorBool(t *testing.T) {
 					data.SliBool = make([]bool, int(data.N))
 					data.StlBool = make([]bool, int(data.N))
 				}
-				for ii := 0; ii < int(data.N); ii++ {
+				for ii := range int(data.N) {
 					data.SliBool[ii] = i%2 == 0
 					data.StlBool[ii] = i%2 == 0
 				}
@@ -683,12 +683,9 @@ func TestNewReadVarsLeaves(t *testing.T) {
 		{Name: "SliD32", Leaf: "SliD32", Value: new([]root.Double32)},
 	}
 
-	n := len(want)
-	if len(vars) < n {
-		n = len(vars)
-	}
+	n := min(len(vars), len(want))
 
-	for i := 0; i < n; i++ {
+	for i := range n {
 		got := vars[i]
 		if got.Name != want[i].Name {
 			t.Fatalf("invalid read-var name[%d]: got=%q, want=%q", i, got.Name, want[i].Name)

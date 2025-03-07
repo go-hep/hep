@@ -244,10 +244,7 @@ func (b *tbranch) MarshalROOT(w *rbytes.WBuffer) (int, error) {
 
 	maxBaskets := b.maxBaskets
 	defer func() { b.maxBaskets = maxBaskets }()
-	b.maxBaskets = b.writeBasket + 1
-	if b.maxBaskets < defaultMaxBaskets {
-		b.maxBaskets = defaultMaxBaskets
-	}
+	b.maxBaskets = max(b.writeBasket+1, defaultMaxBaskets)
 
 	hdr := w.WriteHeader(b.Class(), b.RVersion())
 	w.WriteObject(&b.named)
@@ -1117,7 +1114,7 @@ func btopOf(b Branch) Branch {
 		return nil
 	}
 	const max = 1<<31 - 1
-	for i := 0; i < max; i++ {
+	for range max {
 		switch bb := b.(type) {
 		case *tbranch:
 			if bb.bup == nil {
