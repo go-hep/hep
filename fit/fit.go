@@ -87,6 +87,14 @@ func (f *Func1D) init() {
 	}
 }
 
+// Hessian computes the hessian matrix at the provided x point.
+func (f *Func1D) Hessian(hess *mat.SymDense, x []float64) {
+	if f.hess == nil {
+		f.init()
+	}
+	f.hess(hess, x)
+}
+
 // FuncND describes a multivariate function F(x0, x1... xn; p0, p1... pn)
 // for which the parameters ps can be found with a fit.
 type FuncND struct {
