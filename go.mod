@@ -1,7 +1,6 @@
 module go-hep.org/x/hep
 
 go 1.23
-
 require (
 	git.sr.ht/~sbinet/epok v0.5.0
 	git.sr.ht/~sbinet/go-arrow v0.3.0
@@ -20,7 +19,7 @@ require (
 	github.com/sbinet/npyio v0.8.0
 	github.com/ulikunitz/xz v0.5.12
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
-	golang.org/x/crypto v0.33.0
+	golang.org/x/crypto v0.35.0
 	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
 	golang.org/x/image v0.24.0
 	golang.org/x/sync v0.11.0
@@ -52,7 +51,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/teambition/rrule-go v1.8.2 // indirect
 	golang.org/x/mod v0.23.0 // indirect
-	golang.org/x/net v0.35.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	modernc.org/b v1.1.0 // indirect
 	modernc.org/db v1.0.13 // indirect
