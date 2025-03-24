@@ -1,3 +1,5 @@
+codeberg.org/astrogo/fitsio v0.4.0 h1:ATDKD8+cDIi9VJ609JbnPGnJblJPV59iojHGL377Ur0=
+codeberg.org/astrogo/fitsio v0.4.0/go.mod h1:MlK0U74YrpQ6WGly5Zw2vHvu74YtzWhi4fUY1oDDvWY=
 git.sr.ht/~sbinet/cmpimg v0.1.0 h1:E0zPRk2muWuCqSKSVZIWsgtU9pjsw3eKHi8VmQeScxo=
 git.sr.ht/~sbinet/cmpimg v0.1.0/go.mod h1:FU12psLbF4TfNXkKH2ZZQ29crIqoiqTZmeQ7dkp/pxE=
 git.sr.ht/~sbinet/epok v0.5.0 h1:eQcocQpGQVYWLiA93dkIgngH0jjjDiTdj7rS3vQLp6w=
@@ -11,8 +13,6 @@ github.com/ajstarks/deck v0.0.0-20200831202436-30c9fc6549a9/go.mod h1:JynElWSGnm
 github.com/ajstarks/deck/generate v0.0.0-20210309230005-c3f852c02e19/go.mod h1:T13YZdzov6OU0A1+RfKZiZN9ca6VeKdBdyDV+BY97Tk=
 github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b h1:slYM766cy2nI3BwyRiyQj/Ud48djTMtMebDqepE95rw=
 github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b/go.mod h1:1KcenG0jGWcpt8ov532z81sp/kMMUG485J2InIOyADM=
-github.com/astrogo/fitsio v0.3.0 h1:iQ/lGCREuct04H1dTzPLndbzGo/4SNgpO0JuAhM+YtE=
-github.com/astrogo/fitsio v0.3.0/go.mod h1:QRvq9GRh56Pa+TkX3iBHo6Upwd7KKIKgL2KO291Gdu0=
 github.com/campoy/embedmd v1.0.0 h1:V4kI2qTJJLf4J29RzI/MAt2c3Bl4dQSYPuflzwFH2hY=
 github.com/campoy/embedmd v1.0.0/go.mod h1:oxyr9RCiSXg0M3VJ3ks0UGfp98BpSSGr0kpiX3MzVl8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

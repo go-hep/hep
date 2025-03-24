@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/astrogo/fitsio"
+	"codeberg.org/astrogo/fitsio"
 	"go-hep.org/x/hep/groot/rcmd"
 )
 

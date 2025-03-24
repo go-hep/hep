@@ -3,9 +3,9 @@ module go-hep.org/x/hep
 go 1.23.0
 
 require (
+	codeberg.org/astrogo/fitsio v0.4.0
 	git.sr.ht/~sbinet/epok v0.5.0
 	git.sr.ht/~sbinet/go-arrow v0.3.0
-	github.com/astrogo/fitsio v0.3.0
 	github.com/campoy/embedmd v1.0.0
 	github.com/go-mmap/mmap v0.7.0
 	github.com/gonuts/binary v0.2.0
