@@ -6,6 +6,7 @@ require (
 	codeberg.org/astrogo/fitsio v0.4.0
 	codeberg.org/go-mmap/mmap v0.8.0
 	codeberg.org/gonuts/commander v0.5.1
+	codeberg.org/sbinet/npyio v0.8.1
 	git.sr.ht/~sbinet/epok v0.5.0
 	git.sr.ht/~sbinet/go-arrow v0.3.0
 	github.com/campoy/embedmd v1.0.0
@@ -17,7 +18,6 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.22
 	github.com/pierrec/xxHash v0.1.5
 	github.com/pkg/diff v0.0.0-20241224192749-4e6772a4315c
-	github.com/sbinet/npyio v0.8.0
 	github.com/ulikunitz/xz v0.5.12
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 	golang.org/x/crypto v0.36.0

@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/sbinet/npyio"
+	"codeberg.org/sbinet/npyio"
 )
 
 func TestRecord(t *testing.T) {

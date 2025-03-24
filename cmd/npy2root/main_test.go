@@ -12,7 +12,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/sbinet/npyio/npy"
+	"codeberg.org/sbinet/npyio/npy"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rtree"
 )

@@ -29,7 +29,7 @@
 //	 'two':   array([ 1.10000002,  2.20000005,  3.29999995,  4.4000001 ], dtype=float32),
 //	 'three': array(['uno', 'dos', 'tres', 'quatro'], dtype='<U6')}
 //
-//	$> go get github.com/sbinet/npyio/cmd/npyio-ls
+//	$> go install codeberg.org/sbinet/npyio/cmd/npyio-ls@latest
 //	$> npyio-ls ./output.npz
 //	================================================================================
 //	file: ./output.npz
@@ -132,7 +132,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/sbinet/npyio"
+	"codeberg.org/sbinet/npyio"
 
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/riofs"

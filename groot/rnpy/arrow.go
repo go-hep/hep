@@ -10,11 +10,11 @@ import (
 	"reflect"
 	"sync/atomic"
 
+	"codeberg.org/sbinet/npyio/npy"
 	"git.sr.ht/~sbinet/go-arrow"
 	"git.sr.ht/~sbinet/go-arrow/array"
 	"git.sr.ht/~sbinet/go-arrow/arrio"
 	"git.sr.ht/~sbinet/go-arrow/memory"
-	"github.com/sbinet/npyio/npy"
 )
 
 var (

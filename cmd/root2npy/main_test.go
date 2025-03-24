@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/sbinet/npyio"
+	"codeberg.org/sbinet/npyio"
 	"go-hep.org/x/hep/internal/diff"
 )
 

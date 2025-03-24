@@ -45,8 +45,8 @@ import (
 	"log"
 	"os"
 
+	"codeberg.org/sbinet/npyio/npy"
 	"git.sr.ht/~sbinet/go-arrow/arrio"
-	"github.com/sbinet/npyio/npy"
 	"go-hep.org/x/hep/groot"
 	"go-hep.org/x/hep/groot/rarrow"
 	"go-hep.org/x/hep/groot/rnpy"
