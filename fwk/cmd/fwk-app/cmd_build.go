@@ -8,7 +8,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/gonuts/commander"
+	"codeberg.org/gonuts/commander"
 	"go-hep.org/x/hep/fwk/utils/builder"
 )
 

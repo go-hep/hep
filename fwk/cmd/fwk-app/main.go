@@ -9,7 +9,7 @@ import (
 	"flag"
 	"os"
 
-	"github.com/gonuts/commander"
+	"codeberg.org/gonuts/commander"
 )
 
 func handle_err(err error) {

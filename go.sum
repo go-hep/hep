@@ -2,6 +2,8 @@ codeberg.org/astrogo/fitsio v0.4.0 h1:ATDKD8+cDIi9VJ609JbnPGnJblJPV59iojHGL377Ur
 codeberg.org/astrogo/fitsio v0.4.0/go.mod h1:MlK0U74YrpQ6WGly5Zw2vHvu74YtzWhi4fUY1oDDvWY=
 codeberg.org/go-mmap/mmap v0.8.0 h1:YFf2yIHZZTV8lfh86OHd7IDBKsJZARkf0/Rvxz1pVlM=
 codeberg.org/go-mmap/mmap v0.8.0/go.mod h1:KgnsNFKF7t8JQJiXODKzoiYpbUTegWihtCrK3BtB8oA=
+codeberg.org/gonuts/commander v0.5.1 h1:Rmy1GllX4L7/jtLEZURtPUzAkGX+XLJInyGepTF8ois=
+codeberg.org/gonuts/commander v0.5.1/go.mod h1:hFEcJLh+CwTVL4KNiHjpf/FydRGzbunV8mkK45SCXuU=
 git.sr.ht/~sbinet/cmpimg v0.1.0 h1:E0zPRk2muWuCqSKSVZIWsgtU9pjsw3eKHi8VmQeScxo=
 git.sr.ht/~sbinet/cmpimg v0.1.0/go.mod h1:FU12psLbF4TfNXkKH2ZZQ29crIqoiqTZmeQ7dkp/pxE=
 git.sr.ht/~sbinet/epok v0.5.0 h1:eQcocQpGQVYWLiA93dkIgngH0jjjDiTdj7rS3vQLp6w=
@@ -39,8 +41,6 @@ github.com/golang/snappy v0.0.3 h1:fHPg5GQYlCeLIPB9BZqMVR5nR9A+IM5zcgeTdjMYmLA=
 github.com/golang/snappy v0.0.3/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/gonuts/binary v0.2.0 h1:caITwMWAoQWlL0RNvv2lTU/AHqAJlVuu6nZmNgfbKW4=
 github.com/gonuts/binary v0.2.0/go.mod h1:kM+CtBrCGDSKdv8WXTuCUsw+loiy8f/QEI8YCCC0M/E=
-github.com/gonuts/commander v0.4.1 h1:7lmZMnCuDHA0365niE4V5N0Om/hsl6fXskt4MWaKPvg=
-github.com/gonuts/commander v0.4.1/go.mod h1:qkKJBkuvjm1FgHrH7PO3pMIOuGpl/CDfy+6qw3VKNQs=
 github.com/google/flatbuffers v25.2.10+incompatible h1:F3vclr7C3HpB1k9mxCGRMXq6FdUalZ6H/pNX4FP1v0Q=
 github.com/google/flatbuffers v25.2.10+incompatible/go.mod h1:1AeVuKshWv4vARoZatz6mlQ0JxURH0Kv5+zNeJKJCa8=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
