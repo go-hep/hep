@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/go-mmap/mmap"
+	"codeberg.org/go-mmap/mmap"
 )
 
 var drivers = struct {
