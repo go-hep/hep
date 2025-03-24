@@ -9,7 +9,7 @@ import (
 	"compress/flate"
 	"io"
 
-	riobin "github.com/gonuts/binary"
+	riobin "codeberg.org/gonuts/binary"
 )
 
 type cwriter struct {

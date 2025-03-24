@@ -2,6 +2,8 @@ codeberg.org/astrogo/fitsio v0.4.0 h1:ATDKD8+cDIi9VJ609JbnPGnJblJPV59iojHGL377Ur
 codeberg.org/astrogo/fitsio v0.4.0/go.mod h1:MlK0U74YrpQ6WGly5Zw2vHvu74YtzWhi4fUY1oDDvWY=
 codeberg.org/go-mmap/mmap v0.8.0 h1:YFf2yIHZZTV8lfh86OHd7IDBKsJZARkf0/Rvxz1pVlM=
 codeberg.org/go-mmap/mmap v0.8.0/go.mod h1:KgnsNFKF7t8JQJiXODKzoiYpbUTegWihtCrK3BtB8oA=
+codeberg.org/gonuts/binary v0.3.2 h1:7kSBmdRwbUv5fI8LaGp/gV+ow2OTi7EnRKO/pQ6YBJo=
+codeberg.org/gonuts/binary v0.3.2/go.mod h1:hf+kigzXMZzpPTDOuSnTz+ppy5p037QluUFVtJ3OjWI=
 codeberg.org/gonuts/commander v0.5.1 h1:Rmy1GllX4L7/jtLEZURtPUzAkGX+XLJInyGepTF8ois=
 codeberg.org/gonuts/commander v0.5.1/go.mod h1:hFEcJLh+CwTVL4KNiHjpf/FydRGzbunV8mkK45SCXuU=
 codeberg.org/sbinet/npyio v0.8.1 h1:3YJp8lNXDAJWkFJ7OwrxRCbo5HJNzqFuOCU6pg9qwrI=
@@ -41,8 +43,6 @@ github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 h1:DACJavvAHhabrF0
 github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0/go.mod h1:E/TSTwGwJL78qG/PmXZO1EjYhfJinVAhrmmHX6Z8B9k=
 github.com/golang/snappy v0.0.3 h1:fHPg5GQYlCeLIPB9BZqMVR5nR9A+IM5zcgeTdjMYmLA=
 github.com/golang/snappy v0.0.3/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
-github.com/gonuts/binary v0.2.0 h1:caITwMWAoQWlL0RNvv2lTU/AHqAJlVuu6nZmNgfbKW4=
-github.com/gonuts/binary v0.2.0/go.mod h1:kM+CtBrCGDSKdv8WXTuCUsw+loiy8f/QEI8YCCC0M/E=
 github.com/google/flatbuffers v25.2.10+incompatible h1:F3vclr7C3HpB1k9mxCGRMXq6FdUalZ6H/pNX4FP1v0Q=
 github.com/google/flatbuffers v25.2.10+incompatible/go.mod h1:1AeVuKshWv4vARoZatz6mlQ0JxURH0Kv5+zNeJKJCa8=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=

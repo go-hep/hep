@@ -5,12 +5,12 @@ go 1.23.0
 require (
 	codeberg.org/astrogo/fitsio v0.4.0
 	codeberg.org/go-mmap/mmap v0.8.0
+	codeberg.org/gonuts/binary v0.3.2
 	codeberg.org/gonuts/commander v0.5.1
 	codeberg.org/sbinet/npyio v0.8.1
 	git.sr.ht/~sbinet/epok v0.5.0
 	git.sr.ht/~sbinet/go-arrow v0.3.0
 	github.com/campoy/embedmd v1.0.0
-	github.com/gonuts/binary v0.2.0
 	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/go-uuid v1.0.3
 	github.com/jcmturner/gokrb5/v8 v8.4.4

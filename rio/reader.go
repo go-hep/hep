@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"io"
 
-	riobin "github.com/gonuts/binary"
+	riobin "codeberg.org/gonuts/binary"
 )
 
 // Reader is a rio read-only stream
