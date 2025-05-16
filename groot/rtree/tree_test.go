@@ -346,7 +346,7 @@ func TestSimpleTree(t *testing.T) {
 func TestSimpleTreeOverHTTP(t *testing.T) {
 	t.Parallel()
 
-	f, err := riofs.Open("https://github.com/go-hep/hep/raw/main/groot/testdata/simple.root")
+	f, err := riofs.Open("https://codeberg.org/go-hep/hep/raw/branch/main/groot/testdata/simple.root")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -53,11 +53,11 @@ func ExampleOpen() {
 
 func ExampleOpen_fromRemote() {
 	// Open a new n-tuple pointing at a remote CSV file
-	// "https://github.com/go-hep/hep/raw/main/hbook/ntup/ntcsv/testdata/simple.csv"
+	// "https://codeberg.org/go-hep/hep/raw/branch/main/hbook/ntup/ntcsv/testdata/simple.csv"
 	// whose field separator is ';'.
 	// We rename the columns v1, v2 and v3.
 	nt, err := ntcsv.Open(
-		"https://github.com/go-hep/hep/raw/main/hbook/ntup/ntcsv/testdata/simple.csv",
+		"https://codeberg.org/go-hep/hep/raw/branch/main/hbook/ntup/ntcsv/testdata/simple.csv",
 		ntcsv.Comma(';'),
 		ntcsv.Columns("v1", "v2", "v3"),
 	)

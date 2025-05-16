@@ -8,7 +8,7 @@
 
 ### Fit a gaussian
 
-![h1d-gaussian-example](https://github.com/go-hep/hep/raw/main/fit/testdata/h1d-gauss-plot_golden.png)
+![h1d-gaussian-example](https://codeberg.org/go-hep/hep/raw/branch/main/fit/testdata/h1d-gauss-plot_golden.png)
 
 [embedmd]:# (hist_example_test.go go /func ExampleH1D_gaussian/ /\n}/)
 ```go
@@ -96,7 +96,7 @@ func ExampleH1D_gaussian() {
 
 ### Fit a gaussian
 
-![func1d-gaussian-example](https://github.com/go-hep/hep/raw/main/fit/testdata/gauss-plot_golden.png)
+![func1d-gaussian-example](https://codeberg.org/go-hep/hep/raw/branch/main/fit/testdata/gauss-plot_golden.png)
 
 [embedmd]:# (curve1d_example_test.go go /func ExampleCurve1D_gaussian/ /\n}/)
 ```go
@@ -168,7 +168,7 @@ func ExampleCurve1D_gaussian() {
 
 ### Fit a powerlaw (with Y-errors)
 
-![func1d-powerlaw-example](https://github.com/go-hep/hep/raw/main/fit/testdata/powerlaw-plot_golden.png)
+![func1d-powerlaw-example](https://codeberg.org/go-hep/hep/raw/branch/main/fit/testdata/powerlaw-plot_golden.png)
 
 [embedmd]:# (curve1d_example_test.go go /func ExampleCurve1D_powerlaw/ /\n}/)
 ```go
@@ -251,7 +251,7 @@ func ExampleCurve1D_powerlaw() {
 
 ### Fit an exponential
 
-![func1d-exp-example](https://github.com/go-hep/hep/raw/main/fit/testdata/exp-plot_golden.png)
+![func1d-exp-example](https://codeberg.org/go-hep/hep/raw/branch/main/fit/testdata/exp-plot_golden.png)
 
 [embedmd]:# (curve1d_example_test.go go /func ExampleCurve1D_exponential/ /\n}/)
 ```go
@@ -325,7 +325,7 @@ func ExampleCurve1D_exponential() {
 
 ### Fit a polynomial
 
-![func1d-poly-example](https://github.com/go-hep/hep/raw/main/fit/testdata/poly-plot_golden.png)
+![func1d-poly-example](https://codeberg.org/go-hep/hep/raw/branch/main/fit/testdata/poly-plot_golden.png)
 
 [embedmd]:# (curve1d_example_test.go go /func ExampleCurve1D_poly/ /\n}/)
 ```go
@@ -396,7 +396,7 @@ func ExampleCurve1D_poly() {
 ## Fitting with more than one independent variable (x has more than one dimension)
 ### Fit a flat plane
 
-![2d-example](https://github.com/go-hep/hep/raw/main/fit/testdata/2d-plane-plot_golden.png)
+![2d-example](https://codeberg.org/go-hep/hep/raw/branch/main/fit/testdata/2d-plane-plot_golden.png)
 
 [embedmd]:# (curve_nd_example_test.go go /func ExampleCurveND_plane/ /\n}/)
 ```go
