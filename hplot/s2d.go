@@ -129,6 +129,12 @@ func (pts *S2D) withBand() error {
 				bot[i].Y = y - math.Abs(ymin)
 			}
 		}
+	case PreSteps:
+		panic("presteps not implemented")
+	case MidSteps:
+		panic("midsteps not implemented")
+	case PostSteps:
+		panic("poststeps not implemented")
 	}
 	pts.Band = NewBand(color.Gray{200}, top, bot)
 	return nil
@@ -162,6 +168,18 @@ func NewS2D(data plotter.XYer, opts ...Options) *S2D {
 		s.GlyphStyle = cfg.glyph
 	}
 
+	switch s.Steps {
+	case HiSteps:
+		// check we have ErrX for all data points.
+		xerrs := s.Data.(plotter.XErrorer)
+		for i := range s.Data.Len() {
+			xmin, xmax := xerrs.XError(i)
+			if xmin == 0 && xmax == 0 {
+				panic("s2d with HiSteps needs XErr informations for all points")
+			}
+		}
+	}
+
 	return s
 }
 
@@ -185,7 +203,8 @@ func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 			panic(err)
 		}
 
-		if pts.Steps == HiSteps {
+		switch pts.Steps {
+		case HiSteps:
 			xerr := pts.Data.(plotter.XErrorer)
 			dsteps := make(plotter.XYs, 0, 2*len(data))
 			for i, d := range data {
@@ -194,6 +213,48 @@ func (pts *S2D) Plot(c draw.Canvas, plt *plot.Plot) {
 				dsteps = append(dsteps, plotter.XY{X: d.X + xmax, Y: d.Y})
 			}
 			data = dsteps
+		case PreSteps:
+			var (
+				prev   plotter.XY
+				dsteps = make(plotter.XYs, 0, 2*len(data))
+			)
+			prev.X, prev.Y = data.XY(0)
+			dsteps = append(dsteps, prev)
+			for _, pt := range data[1:] {
+				dsteps = append(dsteps, plotter.XY{X: prev.X, Y: pt.Y})
+				dsteps = append(dsteps, pt)
+				prev = pt
+			}
+			data = dsteps
+		case MidSteps:
+			var (
+				prev   plotter.XY
+				dsteps = make(plotter.XYs, 0, 2*len(data))
+			)
+			prev.X, prev.Y = data.XY(0)
+			dsteps = append(dsteps, prev)
+			for _, pt := range data[1:] {
+				dsteps = append(dsteps, plotter.XY{X: 0.5 * (prev.X + pt.X), Y: prev.Y})
+				dsteps = append(dsteps, plotter.XY{X: 0.5 * (prev.X + pt.X), Y: pt.Y})
+				dsteps = append(dsteps, pt)
+				prev = pt
+			}
+			data = dsteps
+		case PostSteps:
+			var (
+				prev   plotter.XY
+				dsteps = make(plotter.XYs, 0, 2*len(data))
+			)
+			prev.X, prev.Y = data.XY(0)
+			dsteps = append(dsteps, prev)
+			for _, pt := range data[1:] {
+				dsteps = append(dsteps, plotter.XY{X: pt.X, Y: prev.Y})
+				dsteps = append(dsteps, pt)
+				prev = pt
+			}
+			data = dsteps
+		case NoSteps:
+			// ok.
 		}
 
 		line := plotter.Line{

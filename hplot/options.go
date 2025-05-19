@@ -16,7 +16,20 @@ type StepsKind byte
 
 const (
 	NoSteps StepsKind = iota
+
+	// HiSteps connects two points by following lines: horizontal, vertical, horizontal.
+	// Vertical line is placed following the histogram/error-bins informations.
 	HiSteps
+
+	// PreSteps connects two points by following lines: vertical, horizontal.
+	PreSteps
+
+	// MidSteps connects two points by following lines: horizontal, vertical, horizontal.
+	// Vertical line is placed in the middle of the interval.
+	MidSteps
+
+	// PostSteps connects two points by following lines: horizontal, vertical.
+	PostSteps
 )
 
 type config struct {

@@ -157,6 +157,49 @@ func ExampleS2D_withStepsKind() {
 	}
 }
 
+// ExampleS2D_withPreMidPostSteps draws some scatter points using a step-like style
+func ExampleS2D_withPreMidPostSteps() {
+	s2ds := make(map[hplot.StepsKind]*hbook.S2D)
+	steps := []hplot.StepsKind{hplot.PreSteps, hplot.MidSteps, hplot.PostSteps}
+	names := []string{"pre-steps", "mid-steps", "post-steps"}
+
+	for i, step := range steps {
+		pts := []hbook.Point2D{
+			{X: 1 + float64(i)*10, Y: 1},
+			{X: 2 + float64(i)*10, Y: 2},
+			{X: 3 + float64(i)*10, Y: 3},
+			{X: 4 + float64(i)*10, Y: 4},
+		}
+		s2ds[step] = hbook.NewS2D(pts...)
+	}
+
+	p := hplot.New()
+	p.Title.Text = "Scatter-2D (with steps)"
+	p.X.Label.Text = "X"
+	p.X.Min = 0
+	p.X.Max = 25
+	p.Y.Label.Text = "Y"
+	p.Y.Min = 0
+	p.Add(plotter.NewGrid())
+
+	for i, step := range steps {
+		s := hplot.NewS2D(s2ds[step], hplot.WithStepsKind(step))
+		s.GlyphStyle.Shape = draw.CircleGlyph{}
+		s.GlyphStyle.Color = plotutil.Color(i + 1)
+		s.GlyphStyle.Radius = vg.Points(2)
+		s.LineStyle.Width = 1
+		s.LineStyle.Color = plotutil.Color(i + 1)
+
+		p.Add(s)
+		p.Legend.Add(names[i], s)
+	}
+
+	err := p.Save(10*vg.Centimeter, 10*vg.Centimeter, "testdata/s2d_premidpost_steps.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 // ExampleS2D_withSteps_withBand draws some scatter points
 // with their error bars, using a step-like style together with a band
 func ExampleS2D_withStepsKind_withBand() {
