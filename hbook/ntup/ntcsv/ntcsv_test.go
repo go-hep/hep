@@ -71,7 +71,7 @@ func TestOpen(t *testing.T) {
 				ntcsv.Comment('#'),
 			},
 		},
-		{"http://github.com/go-hep/hep/raw/main/hbook/ntup/ntcsv/testdata/simple-with-comment.csv", `v1, v2, v3`,
+		{"https://codeberg.org/go-hep/hep/raw/branch/main/hbook/ntup/ntcsv/testdata/simple-with-comment.csv", `v1, v2, v3`,
 			[]ntcsv.Option{
 				ntcsv.Comma(';'),
 				ntcsv.Comment('#'),

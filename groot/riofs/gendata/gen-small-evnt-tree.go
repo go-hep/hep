@@ -9,7 +9,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/go-hep/croot"
+	"codeberg.org/go-hep/croot"
 )
 
 const ARRAYSZ = 10

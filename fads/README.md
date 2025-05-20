@@ -23,7 +23,7 @@ A test application is available over there:
 
 https://go-hep.org/x/hep/fads/blob/main/cmd/fads-app/main.go
 
-A more in-depth tutorial is available at [go-hep/tutos](https://github.com/go-hep/tutos) but, in a nutshell:
+A more in-depth tutorial is available at [go-hep/tutos](https://codeberg.org/go-hep/tutos) but, in a nutshell:
 
 ```sh
 $ fads-app -help
