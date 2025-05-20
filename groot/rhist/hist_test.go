@@ -107,7 +107,7 @@ void rootls(const char *fname, const char *kname) {
 }
 
 func TestROOT4Hist(t *testing.T) {
-	f, err := groot.Open("https://github.com/scikit-hep/uproot/raw/master/tests/samples/from-geant4.root")
+	f, err := groot.Open("../testdata/g4-hist.root")
 	if err != nil {
 		t.Fatalf("could not open uproot geant4 test file: %+v", err)
 	}
