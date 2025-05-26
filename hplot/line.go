@@ -6,6 +6,7 @@ package hplot
 
 import (
 	"image/color"
+	"math"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
@@ -104,6 +105,15 @@ func (vline *VertLine) Thumbnail(c *draw.Canvas) {
 	}
 }
 
+// DataRange returns the range of X and Y values.
+func (vline *VertLine) DataRange() (xmin, xmax, ymin, ymax float64) {
+	xmin = vline.X
+	xmax = vline.X
+	ymin = math.Inf(+1)
+	ymax = math.Inf(-1)
+	return
+}
+
 // HorizLine draws a horizontal line at Y and colors the
 // top and bottom portions of the plot with the provided
 // colors.
@@ -195,9 +205,21 @@ func (hline *HorizLine) Thumbnail(c *draw.Canvas) {
 	}
 }
 
+// DataRange returns the range of X and Y values.
+func (hline *HorizLine) DataRange() (xmin, xmax, ymin, ymax float64) {
+	xmin = math.Inf(+1)
+	xmax = math.Inf(-1)
+	ymin = hline.Y
+	ymax = hline.Y
+	return
+}
+
 var (
 	_ plot.Plotter = (*VertLine)(nil)
 	_ plot.Plotter = (*HorizLine)(nil)
+
+	_ plot.DataRanger = (*VertLine)(nil)
+	_ plot.DataRanger = (*HorizLine)(nil)
 
 	_ plot.Thumbnailer = (*VertLine)(nil)
 	_ plot.Thumbnailer = (*HorizLine)(nil)
