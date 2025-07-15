@@ -218,9 +218,9 @@ func (r *RBuffer) ReadStdString() string {
 		return ""
 	}
 
-	hdr := r.ReadHeader("string", rvers.StreamerInfo) // FIXME(sbinet): streamline with RStreamROOT
-	if hdr.Vers != rvers.StreamerInfo {
-		r.SetErr(fmt.Errorf("rbytes: invalid version for std::string. got=%v, want=%v", hdr.Vers, rvers.StreamerInfo))
+	hdr := r.ReadHeader("string", rvers.StreamerBaseSTL) // FIXME(sbinet): streamline with RStreamROOT
+	if hdr.Vers != rvers.StreamerBaseSTL {
+		r.SetErr(fmt.Errorf("rbytes: invalid version for std::string. got=%v, want=%v", hdr.Vers, rvers.StreamerBaseSTL))
 		return ""
 	}
 
@@ -505,7 +505,7 @@ func (r *RBuffer) ReadStdVectorStrs(sli *[]string) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<string>", rvers.StreamerInfo)
+	hdr := r.ReadHeader("vector<string>", rvers.StreamerBaseSTL)
 	n := int(r.ReadI32())
 	*sli = ResizeStr(*sli, n)
 	for i := range *sli {

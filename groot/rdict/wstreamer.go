@@ -787,7 +787,7 @@ func wsetHeader(w *rbytes.WBuffer, hdr rbytes.Header) (int, error) {
 }
 
 func wstreamType(typename string, wop wopFunc) wopFunc {
-	const typevers = rvers.StreamerInfo
+	const typevers = rvers.StreamerBaseSTL
 	return func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 		hdr := w.WriteHeader(typename, int16(typevers))
 		n, err := wop(w, recv, cfg)
@@ -832,7 +832,7 @@ func wstreamStdMap(kname, vname string, kwop, vwop wopFunc, kvers, vvers int16) 
 	if strings.HasSuffix(vname, ">") {
 		typename = fmt.Sprintf("map<%s,%s >", kname, vname)
 	}
-	const typevers = rvers.StreamerInfo
+	const typevers = rvers.StreamerBaseSTL
 	return func(w *rbytes.WBuffer, recv any, cfg *streamerConfig) (int, error) {
 		var (
 			rv = reflect.ValueOf(cfg.adjust(recv)).Elem()
@@ -1149,12 +1149,12 @@ func wopFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, 
 	case hasStdPrefix(typename, "vector", "list", "deque"):
 		enames := rmeta.CxxTemplateFrom(typename).Args
 		wop, _ := wopFrom(sictx, enames[0], -1, 0, nil)
-		return wstreamStdSlice(typename, wop), rvers.StreamerInfo
+		return wstreamStdSlice(typename, wop), rvers.StreamerBaseSTL
 
 	case hasStdPrefix(typename, "set", "multiset", "unordered_set", "unordered_multiset"):
 		enames := rmeta.CxxTemplateFrom(typename).Args
 		wop, _ := wopFrom(sictx, enames[0], -1, 0, nil)
-		return wstreamStdSet(typename, wop), rvers.StreamerInfo
+		return wstreamStdSet(typename, wop), rvers.StreamerBaseSTL
 
 	case hasStdPrefix(typename, "map", "multimap", "unordered_map", "unordered_multimap"):
 		enames := rmeta.CxxTemplateFrom(typename).Args
@@ -1163,7 +1163,7 @@ func wopFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, 
 
 		kwop, kvers := wopFrom(sictx, kname, -1, 0, nil)
 		vwop, vvers := wopFrom(sictx, vname, -1, 0, nil)
-		return wstreamStdMap(kname, vname, kwop, vwop, kvers, vvers), rvers.StreamerInfo
+		return wstreamStdMap(kname, vname, kwop, vwop, kvers, vvers), rvers.StreamerBaseSTL
 
 	case hasStdPrefix(typename, "bitset"):
 		enames := rmeta.CxxTemplateFrom(typename).Args
@@ -1171,7 +1171,7 @@ func wopFrom(sictx rbytes.StreamerInfoContext, typename string, typevers int16, 
 		if err != nil {
 			panic(fmt.Errorf("rdict: invalid STL bitset argument (type=%q): %+v", typename, err))
 		}
-		return wstreamStdBitset(typename, n), rvers.StreamerInfo
+		return wstreamStdBitset(typename, n), rvers.StreamerBaseSTL
 	}
 
 	osi, err := sictx.StreamerInfo(typename, int(typevers))

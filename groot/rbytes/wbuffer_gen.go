@@ -47,7 +47,7 @@ func (w *WBuffer) WriteStdVectorU16(sli []uint16) {
 		return
 	}
 
-	hdr := w.WriteHeader("vector<uint16>", rvers.StreamerInfo)
+	hdr := w.WriteHeader("vector<uint16>", rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 2)
 
@@ -101,7 +101,7 @@ func (w *WBuffer) WriteStdVectorU32(sli []uint32) {
 		return
 	}
 
-	hdr := w.WriteHeader("vector<uint32>", rvers.StreamerInfo)
+	hdr := w.WriteHeader("vector<uint32>", rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 4)
 
@@ -155,7 +155,7 @@ func (w *WBuffer) WriteStdVectorU64(sli []uint64) {
 		return
 	}
 
-	hdr := w.WriteHeader("vector<uint64>", rvers.StreamerInfo)
+	hdr := w.WriteHeader("vector<uint64>", rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 8)
 
@@ -207,7 +207,7 @@ func (w *WBuffer) WriteStdVectorI16(sli []int16) {
 		return
 	}
 
-	hdr := w.WriteHeader("vector<int16>", rvers.StreamerInfo)
+	hdr := w.WriteHeader("vector<int16>", rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 2)
 
@@ -258,7 +258,7 @@ func (w *WBuffer) WriteStdVectorI32(sli []int32) {
 		return
 	}
 
-	hdr := w.WriteHeader("vector<int32>", rvers.StreamerInfo)
+	hdr := w.WriteHeader("vector<int32>", rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 4)
 
@@ -309,7 +309,7 @@ func (w *WBuffer) WriteStdVectorI64(sli []int64) {
 		return
 	}
 
-	hdr := w.WriteHeader("vector<int64>", rvers.StreamerInfo)
+	hdr := w.WriteHeader("vector<int64>", rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 8)
 
@@ -360,7 +360,7 @@ func (w *WBuffer) WriteStdVectorF32(sli []float32) {
 		return
 	}
 
-	hdr := w.WriteHeader("vector<float32>", rvers.StreamerInfo)
+	hdr := w.WriteHeader("vector<float32>", rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 4)
 
@@ -411,7 +411,7 @@ func (w *WBuffer) WriteStdVectorF64(sli []float64) {
 		return
 	}
 
-	hdr := w.WriteHeader("vector<float64>", rvers.StreamerInfo)
+	hdr := w.WriteHeader("vector<float64>", rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli) * 8)
 

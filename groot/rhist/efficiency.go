@@ -75,7 +75,7 @@ func writeVecPairF64(w *rbytes.WBuffer, vs [][2]float64) {
 		return
 	}
 	const typename = "vector<pair<double,double> >"
-	hdr := w.WriteHeader(typename, rvers.StreamerInfo|rbytes.StreamedMemberWise)
+	hdr := w.WriteHeader(typename, rvers.StreamerBaseSTL|rbytes.StreamedMemberWise)
 	w.WriteI16(0)        // class version
 	w.WriteU32(0xd7bed2) // checksum
 	w.WriteI32(int32(len(vs)))
@@ -132,11 +132,11 @@ func readVecPairF64(r *rbytes.RBuffer, vs *[][2]float64) error {
 		return r.Err()
 	}
 
-	hdr := r.ReadHeader("vector<pair<double,double> >", rvers.StreamerInfo)
-	if hdr.Vers != rvers.StreamerInfo {
+	hdr := r.ReadHeader("vector<pair<double,double> >", rvers.StreamerBaseSTL)
+	if hdr.Vers != rvers.StreamerBaseSTL {
 		r.SetErr(fmt.Errorf(
 			"rbytes: invalid version for %q. got=%v, want=%v",
-			hdr.Name, hdr.Vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerBaseSTL,
 		))
 		return r.Err()
 	}

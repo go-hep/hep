@@ -423,7 +423,7 @@ func (w *WBuffer) WriteStdString(v string) {
 		return
 	}
 
-	hdr := w.WriteHeader("string", rvers.StreamerInfo)
+	hdr := w.WriteHeader("string", rvers.StreamerBaseSTL)
 	w.WriteString(v)
 	_, err := w.SetHeader(hdr)
 	if err != nil {
@@ -566,7 +566,7 @@ func (w *WBuffer) WriteStdVectorStrs(v []string) {
 		return
 	}
 
-	hdr := w.WriteHeader("vector<string>", rvers.StreamerInfo)
+	hdr := w.WriteHeader("vector<string>", rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(v)))
 
 	n := 0

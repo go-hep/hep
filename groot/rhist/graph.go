@@ -976,7 +976,7 @@ func writeStdVectorTArrayD(w *rbytes.WBuffer, vs []rcont.ArrayD) {
 		return
 	}
 	const typename = "vector<TArrayD>"
-	hdr := w.WriteHeader(typename, rvers.StreamerInfo)
+	hdr := w.WriteHeader(typename, rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(vs)))
 	for i := range vs {
 		w.WriteObject(&vs[i])
@@ -989,7 +989,7 @@ func writeStdVectorTAttFill(w *rbytes.WBuffer, vs []rbase.AttFill) {
 		return
 	}
 	const typename = "vector<TAttFill>"
-	hdr := w.WriteHeader(typename, rvers.StreamerInfo)
+	hdr := w.WriteHeader(typename, rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(vs)))
 	for i := range vs {
 		w.WriteObject(&vs[i])
@@ -1002,7 +1002,7 @@ func writeStdVectorTAttLine(w *rbytes.WBuffer, vs []rbase.AttLine) {
 		return
 	}
 	const typename = "vector<TAttLine>"
-	hdr := w.WriteHeader(typename, rvers.StreamerInfo)
+	hdr := w.WriteHeader(typename, rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(vs)))
 	for i := range vs {
 		w.WriteObject(&vs[i])
@@ -1015,7 +1015,7 @@ func readStdVectorTArrayD(r *rbytes.RBuffer, vs *[]rcont.ArrayD) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<TArrayD>", rvers.StreamerInfo)
+	hdr := r.ReadHeader("vector<TArrayD>", rvers.StreamerBaseSTL)
 
 	// FIXME(sbinet): use rbytes.Resize[T]
 	n := int(r.ReadI32())
@@ -1037,7 +1037,7 @@ func readStdVectorTAttFill(r *rbytes.RBuffer, vs *[]rbase.AttFill) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<TAttFill>", rvers.StreamerInfo)
+	hdr := r.ReadHeader("vector<TAttFill>", rvers.StreamerBaseSTL)
 	if hdr.MemberWise {
 		clvers := r.ReadI16()
 		switch {
@@ -1082,7 +1082,7 @@ func readStdVectorTAttLine(r *rbytes.RBuffer, vs *[]rbase.AttLine) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<TAttLine>", rvers.StreamerInfo)
+	hdr := r.ReadHeader("vector<TAttLine>", rvers.StreamerBaseSTL)
 	if hdr.MemberWise {
 		clvers := r.ReadI16()
 		switch {

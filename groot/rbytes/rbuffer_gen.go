@@ -54,11 +54,11 @@ func (r *RBuffer) ReadStdVectorU16(sli *[]uint16) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<uint16>", rvers.StreamerInfo)
-	if hdr.Vers != rvers.StreamerInfo {
+	hdr := r.ReadHeader("vector<uint16>", rvers.StreamerBaseSTL)
+	if hdr.Vers != rvers.StreamerBaseSTL {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			hdr.Name, hdr.Vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerBaseSTL,
 		)
 		return
 	}
@@ -111,11 +111,11 @@ func (r *RBuffer) ReadStdVectorU32(sli *[]uint32) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<uint32>", rvers.StreamerInfo)
-	if hdr.Vers != rvers.StreamerInfo {
+	hdr := r.ReadHeader("vector<uint32>", rvers.StreamerBaseSTL)
+	if hdr.Vers != rvers.StreamerBaseSTL {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			hdr.Name, hdr.Vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerBaseSTL,
 		)
 		return
 	}
@@ -168,11 +168,11 @@ func (r *RBuffer) ReadStdVectorU64(sli *[]uint64) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<uint64>", rvers.StreamerInfo)
-	if hdr.Vers != rvers.StreamerInfo {
+	hdr := r.ReadHeader("vector<uint64>", rvers.StreamerBaseSTL)
+	if hdr.Vers != rvers.StreamerBaseSTL {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			hdr.Name, hdr.Vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerBaseSTL,
 		)
 		return
 	}
@@ -223,11 +223,11 @@ func (r *RBuffer) ReadStdVectorI16(sli *[]int16) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<int16>", rvers.StreamerInfo)
-	if hdr.Vers != rvers.StreamerInfo {
+	hdr := r.ReadHeader("vector<int16>", rvers.StreamerBaseSTL)
+	if hdr.Vers != rvers.StreamerBaseSTL {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			hdr.Name, hdr.Vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerBaseSTL,
 		)
 		return
 	}
@@ -278,11 +278,11 @@ func (r *RBuffer) ReadStdVectorI32(sli *[]int32) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<int32>", rvers.StreamerInfo)
-	if hdr.Vers != rvers.StreamerInfo {
+	hdr := r.ReadHeader("vector<int32>", rvers.StreamerBaseSTL)
+	if hdr.Vers != rvers.StreamerBaseSTL {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			hdr.Name, hdr.Vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerBaseSTL,
 		)
 		return
 	}
@@ -333,11 +333,11 @@ func (r *RBuffer) ReadStdVectorI64(sli *[]int64) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<int64>", rvers.StreamerInfo)
-	if hdr.Vers != rvers.StreamerInfo {
+	hdr := r.ReadHeader("vector<int64>", rvers.StreamerBaseSTL)
+	if hdr.Vers != rvers.StreamerBaseSTL {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			hdr.Name, hdr.Vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerBaseSTL,
 		)
 		return
 	}
@@ -388,11 +388,11 @@ func (r *RBuffer) ReadStdVectorF32(sli *[]float32) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<float32>", rvers.StreamerInfo)
-	if hdr.Vers != rvers.StreamerInfo {
+	hdr := r.ReadHeader("vector<float32>", rvers.StreamerBaseSTL)
+	if hdr.Vers != rvers.StreamerBaseSTL {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			hdr.Name, hdr.Vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerBaseSTL,
 		)
 		return
 	}
@@ -443,11 +443,11 @@ func (r *RBuffer) ReadStdVectorF64(sli *[]float64) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<float64>", rvers.StreamerInfo)
-	if hdr.Vers != rvers.StreamerInfo {
+	hdr := r.ReadHeader("vector<float64>", rvers.StreamerBaseSTL)
+	if hdr.Vers != rvers.StreamerBaseSTL {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			hdr.Name, hdr.Vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerBaseSTL,
 		)
 		return
 	}

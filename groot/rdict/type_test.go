@@ -436,7 +436,7 @@ func TestTypeFromSI(t *testing.T) {
 		},
 		{
 			name: "vector<TObject>",
-			si: rdict.NewCxxStreamerInfo("vector<TObject>", rvers.StreamerInfo, 0, []rbytes.StreamerElement{
+			si: rdict.NewCxxStreamerInfo("vector<TObject>", rvers.StreamerBaseSTL, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
 					Name:  *rbase.NewNamed("vector<TObject>", ""),
 					Type:  rmeta.Streamer,
@@ -448,7 +448,7 @@ func TestTypeFromSI(t *testing.T) {
 		},
 		{
 			name: "vector<TNamed>",
-			si: rdict.NewCxxStreamerInfo("vector<TNamed>", rvers.StreamerInfo, 0, []rbytes.StreamerElement{
+			si: rdict.NewCxxStreamerInfo("vector<TNamed>", rvers.StreamerBaseSTL, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
 					Name:  *rbase.NewNamed("vector<TNamed>", ""),
 					Type:  rmeta.Streamer,
@@ -460,7 +460,7 @@ func TestTypeFromSI(t *testing.T) {
 		},
 		{
 			name: "vector<TObjString>",
-			si: rdict.NewCxxStreamerInfo("vector<TObjString>", rvers.StreamerInfo, 0, []rbytes.StreamerElement{
+			si: rdict.NewCxxStreamerInfo("vector<TObjString>", rvers.StreamerBaseSTL, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
 					Name:  *rbase.NewNamed("vector<TObjString>", ""),
 					Type:  rmeta.Streamer,
@@ -472,7 +472,7 @@ func TestTypeFromSI(t *testing.T) {
 		},
 		{
 			name: "bitset<256>",
-			si: rdict.NewCxxStreamerInfo("MyBitset", rvers.StreamerInfo, 0, []rbytes.StreamerElement{
+			si: rdict.NewCxxStreamerInfo("MyBitset", rvers.StreamerBaseSTL, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
 					Name:  *rbase.NewNamed("bs", ""),
 					Type:  rmeta.Streamer,
@@ -486,7 +486,7 @@ func TestTypeFromSI(t *testing.T) {
 		},
 		{
 			name: "vector<bitset<256> >",
-			si: rdict.NewCxxStreamerInfo("MyBitsets", rvers.StreamerInfo, 0, []rbytes.StreamerElement{
+			si: rdict.NewCxxStreamerInfo("MyBitsets", rvers.StreamerBaseSTL, 0, []rbytes.StreamerElement{
 				rdict.NewCxxStreamerSTL(rdict.Element{
 					Name:  *rbase.NewNamed("bs", ""),
 					Type:  rmeta.Streamer,

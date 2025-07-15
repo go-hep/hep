@@ -803,7 +803,7 @@ func rcheckHeader(r *rbytes.RBuffer, hdr rbytes.Header) error {
 
 func rstreamType(typename string, rop ropFunc) ropFunc {
 	return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
-		hdr := r.ReadHeader(typename, rvers.StreamerInfo)
+		hdr := r.ReadHeader(typename, rvers.StreamerBaseSTL)
 		err := rop(r, recv, cfg)
 		if err != nil {
 			return fmt.Errorf(
@@ -855,7 +855,7 @@ func rstreamStdMap(kname, vname string, krop, vrop ropFunc) ropFunc {
 	}
 	return func(r *rbytes.RBuffer, recv any, cfg *streamerConfig) error {
 		// typevers = int16(cfg.si.ClassVersion())
-		hdr := r.ReadHeader(typename, rvers.StreamerInfo)
+		hdr := r.ReadHeader(typename, rvers.StreamerBaseSTL)
 		if hdr.MemberWise {
 			clvers := r.ReadI16()
 			switch {

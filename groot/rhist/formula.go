@@ -117,7 +117,7 @@ func readMapStringInt(r *rbytes.RBuffer) map[string]int32 {
 		return nil
 	}
 
-	hdr := r.ReadHeader("map<TString,int,TFormulaParamOrder>", rvers.StreamerInfo)
+	hdr := r.ReadHeader("map<TString,int,TFormulaParamOrder>", rvers.StreamerBaseSTL)
 
 	n := int(r.ReadI32())
 	o := make(map[string]int32, n)
@@ -136,7 +136,7 @@ func readStdVectorObjP(r *rbytes.RBuffer) []root.Object {
 		return nil
 	}
 
-	hdr := r.ReadHeader("vector<TObject*>", rvers.StreamerInfo)
+	hdr := r.ReadHeader("vector<TObject*>", rvers.StreamerBaseSTL)
 
 	n := int(r.ReadI32())
 	o := make([]root.Object, n)
@@ -153,7 +153,7 @@ func writeMapStringInt(w *rbytes.WBuffer, m map[string]int32) {
 		return
 	}
 	const typename = "map<TString,int,TFormulaParamOrder>"
-	hdr := w.WriteHeader(typename, rvers.StreamerInfo)
+	hdr := w.WriteHeader(typename, rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(m)))
 	// FIXME(sbinet): write in correct order?
 	for k, v := range m {
@@ -168,7 +168,7 @@ func writeStdVectorObjP(w *rbytes.WBuffer, vs []root.Object) {
 		return
 	}
 	const typename = "vector<TObject*>"
-	hdr := w.WriteHeader(typename, rvers.StreamerInfo)
+	hdr := w.WriteHeader(typename, rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(vs)))
 	for i := range vs {
 		w.WriteObjectAny(vs[i])

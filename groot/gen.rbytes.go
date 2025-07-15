@@ -164,11 +164,11 @@ func (r *RBuffer) ReadStdVector{{.Name}}(sli *[]{{.Type}}) {
 		return
 	}
 	
-	hdr := r.ReadHeader("vector<{{.Type}}>", rvers.StreamerInfo)
-	if hdr.Vers != rvers.StreamerInfo {
+	hdr := r.ReadHeader("vector<{{.Type}}>", rvers.StreamerBaseSTL)
+	if hdr.Vers != rvers.StreamerBaseSTL {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
-			hdr.Name, hdr.Vers, rvers.StreamerInfo,
+			hdr.Name, hdr.Vers, rvers.StreamerBaseSTL,
 		)
 		return
 	}
@@ -316,7 +316,7 @@ func (w *WBuffer) WriteStdVector{{.Name}}(sli []{{.Type}}) {
 		return
 	}
 
-	hdr := w.WriteHeader("vector<{{.Type}}>", rvers.StreamerInfo)
+	hdr := w.WriteHeader("vector<{{.Type}}>", rvers.StreamerBaseSTL)
 	w.WriteI32(int32(len(sli)))
 	w.w.grow(len(sli)*{{.Size}})
 

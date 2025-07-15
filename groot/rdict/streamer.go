@@ -63,7 +63,7 @@ func (bld *streamerBuilder) genStreamer(typ reflect.Type) rbytes.StreamerInfo {
 			si.elems = append(si.elems, bld.genField(typ, ft))
 		}
 	case reflect.Slice:
-		si.clsver = rvers.StreamerInfo
+		si.clsver = rvers.StreamerBaseSTL
 		si.elems = []rbytes.StreamerElement{
 			bld.genStdVectorOf(typ.Elem(), "This", 0),
 		}

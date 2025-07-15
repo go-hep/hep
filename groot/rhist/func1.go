@@ -404,7 +404,7 @@ func readF1s(r *rbytes.RBuffer, sli *[]*F1) {
 		return
 	}
 
-	hdr := r.ReadHeader("vector<TF1*>", rvers.StreamerInfo)
+	hdr := r.ReadHeader("vector<TF1*>", rvers.StreamerBaseSTL)
 
 	n := int(r.ReadI32())
 	{
