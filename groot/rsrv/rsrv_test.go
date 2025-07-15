@@ -24,6 +24,7 @@ import (
 	"time"
 
 	uuid "github.com/hashicorp/go-uuid"
+	"go-hep.org/x/hep/groot/internal/rtests"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/http"
 	_ "go-hep.org/x/hep/groot/riofs/plugin/xrootd"
 	"gonum.org/v1/plot/cmpimg"
@@ -76,7 +77,7 @@ func TestOpenFile(t *testing.T) {
 		status int
 	}{
 		{"https://codeberg.org/go-hep/hep/raw/branch/main/groot/testdata/simple.root", http.StatusOK},
-		{"root://ccxrootdgotest.in2p3.fr:9001/tmp/rootio/testdata/simple.root", http.StatusOK},
+		{rtests.XrdRemote("testdata/simple.root"), http.StatusOK},
 		{"file://" + local, http.StatusOK},
 	} {
 		t.Run(tc.uri, func(t *testing.T) {
