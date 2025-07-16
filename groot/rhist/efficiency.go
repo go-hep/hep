@@ -133,7 +133,7 @@ func readVecPairF64(r *rbytes.RBuffer, vs *[][2]float64) error {
 	}
 
 	hdr := r.ReadHeader("vector<pair<double,double> >", rvers.StreamerBaseSTL)
-	if hdr.Vers != rvers.StreamerBaseSTL {
+	if hdr.Vers > rvers.StreamerBaseSTL {
 		r.SetErr(fmt.Errorf(
 			"rbytes: invalid version for %q. got=%v, want=%v",
 			hdr.Name, hdr.Vers, rvers.StreamerBaseSTL,

@@ -219,7 +219,7 @@ func (r *RBuffer) ReadStdString() string {
 	}
 
 	hdr := r.ReadHeader("string", rvers.StreamerBaseSTL) // FIXME(sbinet): streamline with RStreamROOT
-	if hdr.Vers != rvers.StreamerBaseSTL {
+	if hdr.Vers > rvers.StreamerBaseSTL {
 		r.SetErr(fmt.Errorf("rbytes: invalid version for std::string. got=%v, want=%v", hdr.Vers, rvers.StreamerBaseSTL))
 		return ""
 	}

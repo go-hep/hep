@@ -8,9 +8,10 @@ package rvers // import "go-hep.org/x/hep/groot/rvers"
 
 const (
 	// Groot version for STL-based classes.
-	// This used to be just StreamerInfo (v=9), but ROOT-6.36.xx bumped TStreamerInfo to v=10.
-	// And, apparently, the "artificial" class version we see in front of std::xxx classes is
-	// still v=9.
-	// So: make up our own class version name for the streamer elements.
-	StreamerBaseSTL = 9
+	// This used to be just StreamerInfo (v=9), but ROOT-6.36.xx bumped TStreamerInfo to v=10
+	// and this demonstrated our handling of STL-based classes (the reading part) was subpar.
+	//
+	// So now we still use the latest version of StreamerInfo, but under a new name to ease
+	// later (if any) debugging.
+	StreamerBaseSTL = StreamerInfo
 )

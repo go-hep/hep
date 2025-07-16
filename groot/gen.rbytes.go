@@ -165,7 +165,7 @@ func (r *RBuffer) ReadStdVector{{.Name}}(sli *[]{{.Type}}) {
 	}
 	
 	hdr := r.ReadHeader("vector<{{.Type}}>", rvers.StreamerBaseSTL)
-	if hdr.Vers != rvers.StreamerBaseSTL {
+	if hdr.Vers > rvers.StreamerBaseSTL {
 		r.err = fmt.Errorf(
 			"rbytes: invalid %s version: got=%d, want=%d",
 			hdr.Name, hdr.Vers, rvers.StreamerBaseSTL,
