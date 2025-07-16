@@ -7,7 +7,7 @@
 package rvers
 
 // ROOT version
-const ROOT = 63404
+const ROOT = 63602
 
 // ROOT classes versions
 const (
@@ -47,7 +47,7 @@ const (
 	RefArray                 = 1  // ROOT version for TRefArray
 	RefTable                 = 3  // ROOT version for TRefTable
 	SeqCollection            = 0  // ROOT version for TSeqCollection
-	StreamerInfo             = 9  // ROOT version for TStreamerInfo
+	StreamerInfo             = 10 // ROOT version for TStreamerInfo
 	StreamerElement          = 4  // ROOT version for TStreamerElement
 	StreamerBase             = 3  // ROOT version for TStreamerBase
 	StreamerBasicType        = 2  // ROOT version for TStreamerBasicType

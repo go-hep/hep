@@ -1408,7 +1408,7 @@ func init() {
 			Factor: 0.000000,
 		}.New(), 3),
 	}))
-	StreamerInfos.Add(NewCxxStreamerInfo("TStreamerInfo", 9, 0x90566883, []rbytes.StreamerElement{
+	StreamerInfos.Add(NewCxxStreamerInfo("TStreamerInfo", 10, 0x90566883, []rbytes.StreamerElement{
 		NewStreamerBase(Element{
 			Name:   *rbase.NewNamed("TVirtualStreamerInfo", "Abstract Interface describing Streamer information for one class"),
 			Type:   rmeta.Base,
