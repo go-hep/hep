@@ -20,6 +20,8 @@ import (
 
 func TestWRBuffer(t *testing.T) {
 	loadFrom := func(fname, key string) rtests.ROOTer {
+		t.Helper()
+
 		f, err := riofs.Open(fname)
 		if err != nil {
 			t.Fatal(err)
