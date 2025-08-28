@@ -18,7 +18,7 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.22
 	github.com/pierrec/xxHash v0.1.5
 	github.com/pkg/diff v0.0.0-20241224192749-4e6772a4315c
-	github.com/ulikunitz/xz v0.5.12
+	github.com/ulikunitz/xz v0.5.14
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 	golang.org/x/crypto v0.38.0
 	golang.org/x/image v0.27.0
