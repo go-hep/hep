@@ -11,27 +11,14 @@ import (
 )
 
 func TestGofmt(t *testing.T) {
-	exe, err := exec.LookPath("goimports")
-	if err != nil {
-		switch e := err.(type) {
-		case *exec.Error:
-			if e.Err == exec.ErrNotFound {
-				exe, err = exec.LookPath("gofmt")
-			}
-		}
-	}
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	cmd := exec.Command(exe, "-d", ".")
+	cmd := exec.Command("go", "tool", "golang.org/x/tools/cmd/goimports", "-d", ".")
 	buf := new(bytes.Buffer)
 	cmd.Stdout = buf
 	cmd.Stderr = buf
 
-	err = cmd.Run()
+	err := cmd.Run()
 	if err != nil {
-		t.Fatalf("error running %s:\n%s\n%v", exe, buf.String(), err)
+		t.Fatalf("error running goimports:\n%s\n%v", buf.String(), err)
 	}
 
 	if len(buf.Bytes()) != 0 {
