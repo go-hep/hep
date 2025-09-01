@@ -1,6 +1,6 @@
 module go-hep.org/x/hep
 
-go 1.23.0
+go 1.24.0
 
 require (
 	codeberg.org/astrogo/fitsio v0.4.0

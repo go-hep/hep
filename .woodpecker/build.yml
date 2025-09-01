@@ -7,7 +7,7 @@ steps:
     image: codeberg.org/go-hep/groot-docker:6.36.02
     environment:
       CGO_ENABLED: 1
-      GOVERSION: "1.24.1"
+      GOVERSION: "1.25.0"
       GOPROXY: "https://proxy.golang.org"
       GOTAGS: "-tags=ci"
       GORACE: "" ## or "-race"

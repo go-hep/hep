@@ -9,7 +9,7 @@ before_script:
 stages:
  - build
 
-go-1.24:
+go-1.25:
  image: codeberg.org/go-hep/groot-docker:6.36.02
  stage: build
  script:
