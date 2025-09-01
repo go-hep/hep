@@ -8,8 +8,7 @@ import (
 	"math"
 )
 
-//go:generate go get github.com/campoy/embedmd
-//go:generate embedmd -w README.md
+//go:generate go tool github.com/campoy/embedmd -w README.md
 
 //go:generate -command brio-gen go run go-hep.org/x/hep/brio/cmd/brio-gen
 //go:generate brio-gen -p go-hep.org/x/hep/hbook -t Dist0D,Dist1D,Dist2D -o dist_brio.go

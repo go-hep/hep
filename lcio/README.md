@@ -93,7 +93,7 @@ func ExampleWriter() {
 	}
 
 	const NEVENTS = 1
-	for ievt := 0; ievt < NEVENTS; ievt++ {
+	for ievt := range NEVENTS {
 		evt := lcio.Event{
 			RunNumber:   run.RunNumber,
 			Detector:    run.Detector,

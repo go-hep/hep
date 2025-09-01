@@ -5,5 +5,4 @@
 // Package lcio provides read/write access to the LCIO data model.
 package lcio // import "go-hep.org/x/hep/lcio"
 
-//go:generate go get github.com/campoy/embedmd
-//go:generate embedmd -w README.md
+//go:generate go tool github.com/campoy/embedmd -w README.md

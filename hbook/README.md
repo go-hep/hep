@@ -33,13 +33,13 @@ func ExampleH1D() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
 	// normal distribution.
 	h := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		h.Fill(v, 1)
 	}
@@ -47,16 +47,16 @@ func ExampleH1D() {
 	h.FillN([]float64{1, 2, 3}, []float64{1, 1, 1})
 	h.FillN([]float64{1, 2, 3}, nil) // all weights are 1.
 
-	fmt.Printf("mean:    %v\n", h.XMean())
-	fmt.Printf("rms:     %v\n", h.XRMS())
-	fmt.Printf("std-dev: %v\n", h.XStdDev())
-	fmt.Printf("std-err: %v\n", h.XStdErr())
+	fmt.Printf("mean:    %.12f\n", h.XMean())
+	fmt.Printf("rms:     %.12f\n", h.XRMS())
+	fmt.Printf("std-dev: %.12f\n", h.XStdDev())
+	fmt.Printf("std-err: %.12f\n", h.XStdErr())
 
 	// Output:
-	// mean:    0.005589967511734562
-	// rms:     1.0062596231244403
-	// std-dev: 1.0062943821322063
-	// std-err: 0.010059926295994191
+	// mean:    0.002104228518
+	// rms:     1.000617135827
+	// std-dev: 1.000664927794
+	// std-err: 0.010003648633
 }
 ```
 
@@ -86,7 +86,7 @@ func ExampleAddH1D() {
 
 	hsum := hbook.AddH1D(h1, h2)
 	fmt.Printf("Under: %.1f +/- %.1f\n", hsum.Binning.Outflows[0].SumW(), math.Sqrt(hsum.Binning.Outflows[0].SumW2()))
-	for i := 0; i < hsum.Len(); i++ {
+	for i := range hsum.Len() {
 		fmt.Printf("Bin %v: %.1f +/- %.1f\n", i, hsum.Binning.Bins[i].SumW(), math.Sqrt(hsum.Binning.Bins[i].SumW2()))
 	}
 	fmt.Printf("Over : %.1f +/- %.1f\n", hsum.Binning.Outflows[1].SumW(), math.Sqrt(hsum.Binning.Outflows[1].SumW2()))
@@ -128,7 +128,7 @@ func ExampleAddScaledH1D() {
 
 	hsum := hbook.AddScaledH1D(h1, 10, h2)
 	fmt.Printf("Under: %.1f +/- %.1f\n", hsum.Binning.Outflows[0].SumW(), math.Sqrt(hsum.Binning.Outflows[0].SumW2()))
-	for i := 0; i < hsum.Len(); i++ {
+	for i := range hsum.Len() {
 		fmt.Printf("Bin %v: %.1f +/- %.1f\n", i, hsum.Binning.Bins[i].SumW(), math.Sqrt(hsum.Binning.Bins[i].SumW2()))
 	}
 	fmt.Printf("Over : %.1f +/- %.1f\n", hsum.Binning.Outflows[1].SumW(), math.Sqrt(hsum.Binning.Outflows[1].SumW2()))
@@ -201,7 +201,7 @@ func ExampleH2D() {
 	dist, ok := distmv.NewNormal(
 		[]float64{0, 1},
 		mat.NewSymDense(2, []float64{4, 0, 0, 2}),
-		rand.New(rand.NewSource(1234)),
+		rand.New(rand.NewPCG(1234, 1234)),
 	)
 	if !ok {
 		log.Fatalf("error creating distmv.Normal")
@@ -210,7 +210,7 @@ func ExampleH2D() {
 	v := make([]float64, 2)
 	// Draw some random values from the standard
 	// normal distribution.
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v = dist.Rand(v)
 		h.Fill(v[0], v[1], 1)
 	}

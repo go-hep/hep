@@ -34,13 +34,13 @@ func ExampleH1D() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
 	// normal distribution.
 	hist := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		hist.Fill(v, 1)
 	}
@@ -93,13 +93,13 @@ func ExampleH1D_withYErrBars() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
 	// normal distribution.
 	hist := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		hist.Fill(v, 1)
 	}
@@ -155,13 +155,13 @@ func ExampleH1D_withYErrBarsAndData() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
 	// normal distribution.
 	hist := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		hist.Fill(v, 1)
 	}
@@ -229,13 +229,13 @@ func ExampleH1D_withYErrBars_withBand() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
 	// normal distribution.
 	hist := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		hist.Fill(v, 1)
 	}
@@ -292,13 +292,13 @@ func ExampleTiledPlot() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	newHist := func(p *hplot.Plot) {
 		const npoints = 10000
 		hist := hbook.NewH1D(20, -4, +4)
-		for i := 0; i < npoints; i++ {
+		for range npoints {
 			v := dist.Rand()
 			hist.Fill(v, 1)
 		}
@@ -307,8 +307,8 @@ func ExampleTiledPlot() {
 		p.Add(h)
 	}
 
-	for i := 0; i < tp.Tiles.Rows; i++ {
-		for j := 0; j < tp.Tiles.Cols; j++ {
+	for i := range tp.Tiles.Rows {
+		for j := range tp.Tiles.Cols {
 			p := tp.Plot(j, i)
 			p.X.Min = -5
 			p.X.Max = +5
@@ -344,7 +344,7 @@ func ExampleTiledPlot_align() {
 		j = int(math.Pow(10, float64(n)))
 
 		var pts []hbook.Point2D
-		for ii := 0; ii < 10; ii++ {
+		for ii := range 10 {
 			pts = append(pts, hbook.Point2D{
 				X: float64(i + ii),
 				Y: float64(j + ii + 1),
@@ -354,8 +354,8 @@ func ExampleTiledPlot_align() {
 
 	}
 
-	for i := 0; i < tp.Tiles.Rows; i++ {
-		for j := 0; j < tp.Tiles.Cols; j++ {
+	for i := range tp.Tiles.Rows {
+		for j := range tp.Tiles.Cols {
 			p := tp.Plot(j, i)
 			p.X.Min = -5
 			p.X.Max = +5
@@ -398,13 +398,13 @@ func ExampleRatioPlot() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	hist1 := hbook.NewH1D(20, -4, +4)
 	hist2 := hbook.NewH1D(20, -4, +4)
 
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v1 := dist.Rand() - 0.5
 		v2 := dist.Rand() + 0.5
 		hist1.Fill(v1, 1)
@@ -431,7 +431,7 @@ func ExampleRatioPlot() {
 	rp.Top.Add(hplot.NewGrid())
 
 	hist3 := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < hist3.Len(); i++ {
+	for i := range hist3.Len() {
 		v1 := hist1.Value(i)
 		v2 := hist2.Value(i)
 		x1, _ := hist1.XY(i)
@@ -475,7 +475,7 @@ func ExampleH2D() {
 	dist, ok := distmv.NewNormal(
 		[]float64{0, 1},
 		mat.NewSymDense(2, []float64{4, 0, 0, 2}),
-		rand.New(rand.NewSource(1234)),
+		rand.New(rand.NewPCG(1234, 1234)),
 	)
 	if !ok {
 		log.Fatalf("error creating distmv.Normal")
@@ -484,7 +484,7 @@ func ExampleH2D() {
 	v := make([]float64, 2)
 	// Draw some random values from the standard
 	// normal distribution.
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v = dist.Rand(v)
 		h.Fill(v[0], v[1], 1)
 	}
@@ -514,7 +514,7 @@ func ExampleS2D() {
 	dist, ok := distmv.NewNormal(
 		[]float64{0, 1},
 		mat.NewSymDense(2, []float64{4, 0, 0, 2}),
-		rand.New(rand.NewSource(1234)),
+		rand.New(rand.NewPCG(1234, 1234)),
 	)
 	if !ok {
 		log.Fatalf("error creating distmv.Normal")
@@ -525,7 +525,7 @@ func ExampleS2D() {
 	v := make([]float64, 2)
 	// Draw some random values from the standard
 	// normal distribution.
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v = dist.Rand(v)
 		s2d.Fill(hbook.Point2D{X: v[0], Y: v[1]})
 	}
@@ -630,7 +630,7 @@ func ExampleBand() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	topData := make(plotter.XYs, npoints)
@@ -638,7 +638,7 @@ func ExampleBand() {
 
 	// Draw some random values from the standard
 	// normal distribution.
-	for i := 0; i < npoints; i++ {
+	for i := range npoints {
 		x := float64(i+1) / xmax
 
 		v1 := dist.Rand()
@@ -705,13 +705,13 @@ func ExampleH1D_withPlotBorders() {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
-		Src:   rand.New(rand.NewSource(0)),
+		Src:   rand.New(rand.NewPCG(0, 0)),
 	}
 
 	// Draw some random values from the standard
 	// normal distribution.
 	hist := hbook.NewH1D(20, -4, +4)
-	for i := 0; i < npoints; i++ {
+	for range npoints {
 		v := dist.Rand()
 		hist.Fill(v, 1)
 	}
