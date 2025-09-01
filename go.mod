@@ -67,3 +67,10 @@ require (
 	modernc.org/zappy v1.1.0 // indirect
 	rsc.io/pdf v0.1.1 // indirect
 )
+
+tool (
+	github.com/campoy/embedmd
+	go-hep.org/x/hep/brio/cmd/brio-gen
+	golang.org/x/tools/cmd/goimports
+	golang.org/x/tools/cmd/stringer
+)
