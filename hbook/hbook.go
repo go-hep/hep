@@ -10,11 +10,10 @@ import (
 
 //go:generate go tool github.com/campoy/embedmd -w README.md
 
-//go:generate -command brio-gen go run go-hep.org/x/hep/brio/cmd/brio-gen
-//go:generate brio-gen -p go-hep.org/x/hep/hbook -t Dist0D,Dist1D,Dist2D -o dist_brio.go
-//go:generate brio-gen -p go-hep.org/x/hep/hbook -t Range,Binning1D,binningP1D,Bin1D,BinP1D,Binning2D,Bin2D -o binning_brio.go
-//go:generate brio-gen -p go-hep.org/x/hep/hbook -t Point2D -o points_brio.go
-//go:generate brio-gen -p go-hep.org/x/hep/hbook -t H1D,H2D,P1D,S2D -o hbook_brio.go
+//go:generate go tool go-hep.org/x/hep/brio/cmd/brio-gen -p go-hep.org/x/hep/hbook -t Dist0D,Dist1D,Dist2D -o dist_brio.go
+//go:generate go tool go-hep.org/x/hep/brio/cmd/brio-gen -p go-hep.org/x/hep/hbook -t Range,Binning1D,binningP1D,Bin1D,BinP1D,Binning2D,Bin2D -o binning_brio.go
+//go:generate go tool go-hep.org/x/hep/brio/cmd/brio-gen -p go-hep.org/x/hep/hbook -t Point2D -o points_brio.go
+//go:generate go tool go-hep.org/x/hep/brio/cmd/brio-gen -p go-hep.org/x/hep/hbook -t H1D,H2D,P1D,S2D -o hbook_brio.go
 
 // Bin models 1D, 2D, ... bins.
 type Bin interface {
